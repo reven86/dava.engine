@@ -55,6 +55,10 @@ LOCAL_SRC_FILES :=  \
                     Entity/Entity.cpp \
                     Entity/EntityFamily.cpp \
                     Entity/EntityManager.cpp \
+                    Entity/LandscapeGeometryComponent.cpp \
+                    Entity/MeshInstanceComponent.cpp \
+                    Entity/MeshInstanceDrawSystem.cpp \
+                    Entity/TransformComponent.cpp \
                     Entity/PoolSystem.cpp \
                     Entity/VisibilityAABBoxComponent.cpp \
                     \
@@ -99,8 +103,10 @@ LOCAL_SRC_FILES :=  \
                     \
                     Particles/Particle.cpp \
                     Particles/ParticleEmitter.cpp \
+                    Particles/ParticleEmitter3D.cpp \
                     Particles/ParticleEmitterObject.cpp \
                     Particles/ParticleLayer.cpp \
+                    Particles/ParticleLayer3D.cpp \
                     Particles/ParticlePropertyLine.cpp \
                     Particles/ParticleSystem.cpp \
                     \
@@ -142,6 +148,7 @@ LOCAL_SRC_FILES :=  \
                     Render/RenderManagerFactory.cpp \
                     Render/RenderManagerGL.cpp \
                     Render/RenderManagerGL20.cpp \
+                    Render/RenderOptions.cpp \
                     Render/RenderResource.cpp \
                     Render/RenderStateBlock.cpp \
                     Render/Shader.cpp \

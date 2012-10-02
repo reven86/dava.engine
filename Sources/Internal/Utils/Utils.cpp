@@ -30,7 +30,8 @@
 
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
-
+#include "Platform/Thread.h"
+#include "Render/RenderManager.h"
 #include "FileSystem/YamlParser.h"
 
 namespace DAVA
@@ -105,9 +106,9 @@ void BindTexture(int32 tId)
 	{
 		glBindTexture(GL_TEXTURE_2D, tId);
 
-//		GLenum err = glGetError();
-//		if (err != GL_NO_ERROR)
-//			Logger::Debug("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindTexture(GL_TEXTURE_2D, tId)", __FILE__, __LINE__, err);
+		GLenum err = glGetError();
+		if (err != GL_NO_ERROR)
+			Logger::Debug("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindTexture(GL_TEXTURE_2D, tId)", __FILE__, __LINE__, err);
 
 		lastBindedTexture = tId;
 	}
@@ -133,12 +134,14 @@ int32 GetSavedFBO()
 
 	return saveFBO;
 }
-void BindFBO(int32 fbo)
+void BindFBO(const int32 fbo)
 {
 //	if(0 != fbo)
 	{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__)
 		glBindFramebufferOES(GL_FRAMEBUFFER_OES, fbo);	// Unbind the FBO for now
+#elif  defined(__DAVAENGINE_ANDROID__)
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);	// Unbind the FBO for now
 #else //Non ES platforms
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);	// Unbind the FBO for now
 #endif //PLATFORMS

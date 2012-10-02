@@ -228,22 +228,27 @@ void Texture::ReleaseTextureData()
     
 	if(fboID != (uint32)-1)
 	{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__)
 		RENDER_VERIFY(glDeleteFramebuffersOES(1, &fboID));
+#elif defined(__DAVAENGINE_ANDROID__)
+		RENDER_VERIFY(glDeleteFramebuffers(1, &fboID));
 #else //Non ES platforms
 		RENDER_VERIFY(glDeleteFramebuffersEXT(1, &fboID));
 #endif //PLATFORMS
         
+    }
+    
 #if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
 		SafeDeleteArray(savedData);
 		savedDataSize = 0;
 #endif// #if defined(__DAVAENGINE_ANDROID__)
-    }
     
 	if(rboID != (uint32)-1)
 	{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__)
 		RENDER_VERIFY(glDeleteRenderbuffersOES(1, &rboID));
+#elif defined(__DAVAENGINE_ANDROID__)
+		RENDER_VERIFY(glDeleteRenderbuffers(1, &rboID));
 #else //Non ES platforms
 		RENDER_VERIFY(glDeleteRenderbuffersEXT(1, &rboID));
 #endif //PLATFORMS
@@ -1098,16 +1103,16 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
 	
 		// Setup our FBO
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	RENDER_VERIFY(glGenFramebuffersOES(1, &tx->fboID));
+	RENDER_VERIFY(glGenFramebuffers(1, &tx->fboID));
 	BindFBO(tx->fboID);
 		
 	// And attach it to the FBO so we can render to it
-	RENDER_VERIFY(glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D, tx->id, 0));
+	RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tx->id, 0));
 		
-	GLenum status = glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
-	if(status != GL_FRAMEBUFFER_COMPLETE_OES)
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if(status != GL_FRAMEBUFFER_COMPLETE)
 	{
-		Logger::Error("glCheckFramebufferStatusOES: %d", status);
+		Logger::Error("glCheckFramebufferStatus: %d", status);
 	}
 
 #else //PLATFORMS
@@ -1367,8 +1372,10 @@ void Texture::Lost()
 
 	if(fboID != (uint32)-1)
 	{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__)
 		RENDER_VERIFY(glDeleteFramebuffersOES(1, &fboID));
+#elif defined(__DAVAENGINE_ANDROID__) 
+        RENDER_VERIFY(glDeleteFramebuffers(1, &fboID));
 #else //Non ES platforms
 		RENDER_VERIFY(glDeleteFramebuffersEXT(1, &fboID));
 #endif //PLATFORMS
@@ -1416,8 +1423,7 @@ void Texture::Invalidate()
 		RENDER_VERIFY(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 		RENDER_VERIFY(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 		RENDER_VERIFY(glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)        
+#if defined(__DAVAENGINE_IPHONE__)        
 		// Setup our FBO
 		RENDER_VERIFY(glGenFramebuffersOES(1, &fboID));
 		BindFBO(fboID);
@@ -1429,6 +1435,19 @@ void Texture::Invalidate()
 		if(status != GL_FRAMEBUFFER_COMPLETE_OES)
 		{
 			Logger::Error("[Texture::Invalidate] glCheckFramebufferStatusOES: %d", status);
+		}
+#elif defined(__DAVAENGINE_ANDROID__)
+		// Setup our FBO
+		RENDER_VERIFY(glGenFramebuffers(1, &fboID));
+		BindFBO(fboID);
+        
+		// And attach it to the FBO so we can render to it
+		RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
+        
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if(status != GL_FRAMEBUFFER_COMPLETE)
+		{
+			Logger::Error("[Texture::Invalidate] glCheckFramebufferStatus: %d", status);
 		}
 #elif defined(__DAVAENGINE_MACOS__)
         RENDER_VERIFY(glGenFramebuffersEXT(1, &fboID));
