@@ -128,6 +128,8 @@ public:
 	virtual void DidAppear();
 	virtual void WillDisappear();
 	
+    virtual void SetVisible(bool isVisible, bool hierarchic = true);
+    
     virtual void OnFocused();
     virtual void OnFocusLost(UIControl *newFocus);
 

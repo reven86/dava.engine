@@ -195,7 +195,17 @@ void UITextField::WillDisappear()
 	textFieldiPhone->HideField();
 #endif
 }
+void UITextField::SetVisible(bool isVisible, bool hierarchic)
+{   
+#ifdef __DAVAENGINE_IPHONE__
+    if(isVisible && !GetVisible())
+        textFieldiPhone->ShowField();
+    if(!isVisible && GetVisible())
+        textFieldiPhone->HideField();
+#endif    
     
+    UIControl::SetVisible(isVisible, hierarchic);    
+}
 void UITextField::OnFocused()
 {
 #ifdef __DAVAENGINE_IPHONE__

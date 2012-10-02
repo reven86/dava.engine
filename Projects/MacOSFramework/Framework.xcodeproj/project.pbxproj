@@ -10,6 +10,7 @@
 		0224B70015989F7400CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B6FF15989F7400CDEF9E /* libtheora_macos.a */; };
 		0224B70415989FD900CDEF9E /* TheoraPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0224B70215989FD900CDEF9E /* TheoraPlayer.cpp */; };
 		0224B70515989FD900CDEF9E /* TheoraPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 0224B70315989FD900CDEF9E /* TheoraPlayer.h */; };
+		023C7567161347D800219BAA /* LocalizationMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 023C7566161347D800219BAA /* LocalizationMacOS.mm */; };
 		16E520F11541C3CD0066BFB1 /* libcurl_ios_mac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 16E520F01541C3CD0066BFB1 /* libcurl_ios_mac.a */; };
 		4730931113A7E08200C28765 /* UIHierarchyNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 4730930F13A7E08200C28765 /* UIHierarchyNode.h */; };
 		4730931213A7E08200C28765 /* UIHierarchyNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4730931013A7E08200C28765 /* UIHierarchyNode.cpp */; };
@@ -578,6 +579,8 @@
 		0224B6FF15989F7400CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
 		0224B70215989FD900CDEF9E /* TheoraPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TheoraPlayer.cpp; sourceTree = "<group>"; };
 		0224B70315989FD900CDEF9E /* TheoraPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraPlayer.h; sourceTree = "<group>"; };
+		023C7564161347C200219BAA /* LocalizationMacOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocalizationMacOS.h; sourceTree = "<group>"; };
+		023C7566161347D800219BAA /* LocalizationMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalizationMacOS.mm; sourceTree = "<group>"; };
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -1532,6 +1535,8 @@
 				FECFC0ED12E87E3000C71562 /* KeyedArchive.h */,
 				FECFC0F212E87E3000C71562 /* LocalizationIPhone.h */,
 				FECFC0F312E87E3000C71562 /* LocalizationIPhone.mm */,
+				023C7564161347C200219BAA /* LocalizationMacOS.h */,
+				023C7566161347D800219BAA /* LocalizationMacOS.mm */,
 				FECFC0F412E87E3000C71562 /* LocalizationSystem.cpp */,
 				FECFC0F512E87E3000C71562 /* LocalizationSystem.h */,
 				FECFC0F612E87E3000C71562 /* Logger.cpp */,
@@ -2617,6 +2622,7 @@
 				5C19F49715A42D920064E889 /* KeyedUnarchiver.cpp in Sources */,
 				5C8E672B15A58CA400A87103 /* FileSystemObjective.mm in Sources */,
 				5CBF71CD15C6DFCB00CD1736 /* RenderOptions.cpp in Sources */,
+				023C7567161347D800219BAA /* LocalizationMacOS.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

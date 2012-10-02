@@ -51,6 +51,10 @@ public:
 	
 	const WideString & GetLocalizedString(const WideString & key);
 
+    
+    int32 graphicsFontDrawYoffset1;
+    int32 graphicsFontDrawYoffset2;
+    
 private:
 
 	void LoadStringFile(const String & fileName);

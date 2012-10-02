@@ -276,7 +276,10 @@ public:
     
 
     static void ReplaceBundleName(const String &newBundlePath);
-
+    
+    static const char * FilepathRelativeToBundle(const char * relativePathname);
+    static const char * FilepathRelativeToBundle(const String & relativePathname);
+    
 private:
     
     String tempRetPath;
@@ -295,8 +298,6 @@ private:
 
     static String virtualBundlePath;
 
-    static const char * FilepathRelativeToBundle(const char * relativePathname);
-    static const char * FilepathRelativeToBundle(const String & relativePathname);
 
 #if defined(__DAVAENGINE_ANDROID__)
 private:	

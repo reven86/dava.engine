@@ -161,9 +161,9 @@ bool GraphicsFont::IsCharAvaliable(char16 ch)
 
 uint32 GraphicsFont::GetFontHeight()
 {
-	return (uint32)((fdef->fontHeight) * fontScaleCoeff);
+	return (uint32)((fdef->fontHeight + LocalizationSystem::Instance()->graphicsFontDrawYoffset1) * fontScaleCoeff);
 }
-	
+
 void GraphicsFont::SetHorizontalSpacing(int32 _horizontalSpacing)
 {
     horizontalSpacing = _horizontalSpacing;
@@ -385,8 +385,7 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 		// draw on baseline Y = currentY - fontSprite->GetHeight() + charTopBottomPadding + fontDescent
 
 		float32 drawX = currentX;
-		float32 drawY = currentY - fontSprite->GetHeight() * fontScaleCoeff + (fdef->charTopBottomPadding + fdef->fontDescent + fdef->fontAscent) * fontScaleCoeff;
-		
+		float32 drawY = currentY - (fontSprite->GetHeight() - LocalizationSystem::Instance()->graphicsFontDrawYoffset1) * fontScaleCoeff + (fdef->charTopBottomPadding + fdef->fontDescent + fdef->fontAscent - LocalizationSystem::Instance()->graphicsFontDrawYoffset2) * fontScaleCoeff;
 		
 		//if (indexInString != 0)
 		drawX += fdef->characterPreShift[chIndex] * fontScaleCoeff;

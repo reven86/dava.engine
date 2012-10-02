@@ -52,6 +52,16 @@ float GetUITextViewSizeDivider()
     return divider;
 }
 
+@implementation UITextField (DisableEditMenu)
+
+-(BOOL)canPerformAction:(SEL)action withSender:(id)sender
+{    
+    [UIMenuController sharedMenuController].menuVisible = NO;
+    return NO;
+}
+
+@end
+
 @interface UITextFieldHolder : UIView < UITextFieldDelegate >
 {
 @public
@@ -62,6 +72,7 @@ float GetUITextViewSizeDivider()
 - (void) dealloc;
 - (BOOL)textFieldShouldReturn:(UITextField *)textField;
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
+- (void)textFieldDidBeginEditing:(UITextField *)textField;
 
 @end
 
@@ -72,7 +83,7 @@ float GetUITextViewSizeDivider()
 	if (self = [super init])
 	{
         float divider = GetUITextViewSizeDivider();
-		self.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(-90.0f));
+		self.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(90.0f));
 		self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider);
 		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);	
 		self.userInteractionEnabled = FALSE;
@@ -91,6 +102,8 @@ float GetUITextViewSizeDivider()
         
 		textField.delegate = self;
 		
+        textField.textAlignment = UITextAlignmentCenter;
+        
 		[self addSubview:textField];
 	}
 	return self;
@@ -136,7 +149,13 @@ float GetUITextViewSizeDivider()
 	return TRUE;
 }
 
-
+- (void)textFieldDidBeginEditing:(UITextField *)textField_
+{
+    
+    [textField_ selectAll:textField_];
+    [UIMenuController sharedMenuController].menuVisible = NO;
+    
+}
 @end
 
 void CreateTextField(DAVA::UITextField  * tf)
@@ -258,8 +277,6 @@ namespace DAVA
             string[i] = (wchar_t)uchar;
         }
     }
-    
-    
 }
 
 #endif
