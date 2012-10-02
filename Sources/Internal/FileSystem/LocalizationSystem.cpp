@@ -37,7 +37,9 @@
 #ifdef __DAVAENGINE_IPHONE__
 #include "FileSystem/LocalizationIPhone.h"
 #endif
-
+#ifdef __DAVAENGINE_MACOS__
+#include "FileSystem/LocalizationMacOS.h"
+#endif
 
 namespace DAVA 
 {
@@ -48,6 +50,9 @@ LocalizationSystem::LocalizationSystem()
 
 	dataHolder = new YamlParser::YamlDataHolder();
 	dataHolder->data = 0;
+    
+    graphicsFontDrawYoffset1 = 0;
+    graphicsFontDrawYoffset2 = 0;
 }
 
 LocalizationSystem::~LocalizationSystem()
@@ -69,6 +74,26 @@ void LocalizationSystem::InitWithDirectory(const String &directoryPath)
 {
 #ifdef __DAVAENGINE_IPHONE__
 	LocalizationIPhone::SelecePreferedLocalizationForPath(directoryPath);
+#endif
+#if defined (__DAVAENGINE_MACOS__)
+    LocalizationMacOS::SelectLocalizationForPath(directoryPath);
+#endif
+#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
+    if(langId == "en" || langId == "ru")
+    {
+        graphicsFontDrawYoffset1 = 4;
+        graphicsFontDrawYoffset2 = 2;
+    }
+    else if (langId == "ja" || langId == "zh" || langId == "ko")
+    {
+        graphicsFontDrawYoffset1 = 0;
+        graphicsFontDrawYoffset2 = 0;
+    }
+    else
+    {
+        graphicsFontDrawYoffset1 = 4;
+        graphicsFontDrawYoffset2 = 1;
+    }
 #endif
 	LoadStringFile(directoryPath + "/" + langId.c_str() + ".yaml");
 }

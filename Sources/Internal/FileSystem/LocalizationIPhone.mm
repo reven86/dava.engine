@@ -32,16 +32,32 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/Logger.h"
-
+#include "Render/2D/GraphicsFont.h"
 
 namespace DAVA
 {
 void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directoryPath)
 {
-    NSString * lang = [[NSUserDefaults standardUserDefaults] stringForKey:@"lang"];
+    NSString * lang = [[NSUserDefaults standardUserDefaults] stringForKey:@"LOCALE"];
     
-    if(lang)
+    if(lang != nil && ![lang isEqualToString:@""])
     {
+        if([lang isEqualToString:@"en"] || [lang isEqualToString:@"ru"])
+        {
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 5;
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 4;
+        }
+        else if ([lang isEqualToString:@"ja"] || [lang isEqualToString:@"zh"] || [lang isEqualToString:@"ko"])
+        {
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 0;
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 0;
+        }
+        else
+        {
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 6;
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 3;
+        }
+        
         String lid = [lang UTF8String];
 		File *fl = File::Create(directoryPath + "/" + lid.c_str() + ".yaml", File::OPEN|File::READ);
 		if(fl)
@@ -63,6 +79,22 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directo
             File *fl = File::Create(directoryPath + "/" + lid.c_str() + ".yaml", File::OPEN|File::READ);
             if(fl)
             {
+                if(lid == "en" || lid == "ru")
+                {
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 5;
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 4;
+                }
+                else if (lid == "ja" || lid == "zh" || lid == "ko")
+                {
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 0;
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 0;
+                }
+                else
+                {
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 6;
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 3;
+                }
+                
                 Logger::Info("LocalizationIPhone:: selected lang = %s", lid.c_str());
                 LocalizationSystem::Instance()->SetCurrentLocale(lid);
                 SafeRelease(fl);
