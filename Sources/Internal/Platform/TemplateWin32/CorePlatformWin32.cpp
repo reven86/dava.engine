@@ -236,8 +236,7 @@ namespace DAVA
 			fullscreenMode = FindBestMode(fullscreenMode);
 
 			isFullscreen = (0 != options->GetInt32("fullscreen"));	
-			String title = options->GetString("title", "[set application title using core options property 'title']");
-			WideString titleW = StringToWString(title);
+			WideString titleW = options->GetWideString("title", L"[set application title using core options property 'title']");
 			SetWindowText(hWindow, titleW.c_str());
 		}
 
