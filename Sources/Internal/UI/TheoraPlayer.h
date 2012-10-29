@@ -67,9 +67,9 @@ public:
     void OpenFile(const String & filePath);
     
     /**
-     \brief close currect video file
+     \brief release theora data and close file
 	 */
-    void CloseFile();
+    void ReleaseData();
     
     /**
 	 \brief Calls on every frame with frame delata time parameter. 

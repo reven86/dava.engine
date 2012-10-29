@@ -49,7 +49,7 @@ struct TheoraData
     ogg_int64_t         videoBufGranulePos;
 };
     
-TheoraPlayer::TheoraPlayer(const String & filePath) :
+TheoraPlayer::TheoraPlayer(const String & _filePath) :
 isPlaying(false),
 theora_p(0),
 isVideoBufReady(false),
@@ -64,13 +64,13 @@ frameBuffer(0)
     theoraData->thSetup = 0;
     theoraData->thCtx = 0;
     theoraData->videoBufGranulePos = -1;
-    SetClipContents(true);
+    filePath = _filePath;
     OpenFile(filePath);
 }
 
 TheoraPlayer::~TheoraPlayer()
 {
-    CloseFile();
+    ReleaseData();
     SafeDelete(theoraData);
 }
 
@@ -82,7 +82,7 @@ int32 TheoraPlayer::BufferData()
     return bytes;
 }
 
-void TheoraPlayer::CloseFile()
+void TheoraPlayer::ReleaseData()
 {
     if(theoraData)
     {
@@ -104,10 +104,13 @@ void TheoraPlayer::CloseFile()
         delete [] frameBuffer;
         frameBuffer = 0;
     }
+    isPlaying = false;
 }
 
 void TheoraPlayer::OpenFile(const String &path)
 {
+    ReleaseData();
+    
     if(path == "")
         return;
     
@@ -222,6 +225,8 @@ void TheoraPlayer::OpenFile(const String &path)
     repeatFilePos = file->GetPos();
     
     frameTime = (float32)(theoraData->thInfo.fps_denominator)/(float32)(theoraData->thInfo.fps_numerator);
+    
+    isPlaying = true;
 }
 
 void TheoraPlayer::SetPlaying(bool _isPlaying)
@@ -306,18 +311,24 @@ void TheoraPlayer::Update(float32 timeElapsed)
     
         for(int i = 0; i < frameBufferH; i++) //Y
         {
-            int yShift = theoraData->yuvBuffer[0].stride * i;
-            int uShift = theoraData->yuvBuffer[1].stride * (i / 2);
-            int vShift = theoraData->yuvBuffer[2].stride * (i / 2);
+            int yShift = 0, uShift = 0, vShift = 0;
+            const bool inBuffer = (i <= theoraData->yuvBuffer[0].height);
+            if(inBuffer)
+            {
+                yShift = theoraData->yuvBuffer[0].stride * i;
+                uShift = theoraData->yuvBuffer[1].stride * (i / 2);
+                vShift = theoraData->yuvBuffer[2].stride * (i / 2);
+            }
+            
             for(int j = 0; j < frameBufferW; j++) //X
             {
-                int index = (i * frameBufferW + j) * 4;
+                const int index = (i * frameBufferW + j) * 4;
                 
-                if(i <= theoraData->yuvBuffer[0].height && j <= theoraData->yuvBuffer[0].width)
+                if(inBuffer && j <= theoraData->yuvBuffer[0].width)
                 {
-                    unsigned char Y = *(theoraData->yuvBuffer[0].data + yShift + j);
-                    unsigned char U = *(theoraData->yuvBuffer[1].data + uShift + j / 2);
-                    unsigned char V = *(theoraData->yuvBuffer[2].data + vShift + j / 2);
+                    const unsigned char Y = *(theoraData->yuvBuffer[0].data + yShift + j);
+                    const unsigned char U = *(theoraData->yuvBuffer[1].data + uShift + j / 2);
+                    const unsigned char V = *(theoraData->yuvBuffer[2].data + vShift + j / 2);
                 
                     frameBuffer[index]   = ClampFloatToByte(Y + 1.371f * (V - 128));
                     frameBuffer[index+1] = ClampFloatToByte(Y - 0.698f * (V - 128) - 0.336f * (U - 128));
@@ -358,7 +369,7 @@ void TheoraPlayer::Update(float32 timeElapsed)
     }
     if(isRepeat && file->GetPos() == file->GetSize())
     {
-        CloseFile();
+        ReleaseData();
         OpenFile(filePath);
     }
 }
