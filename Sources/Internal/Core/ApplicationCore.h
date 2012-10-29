@@ -182,6 +182,19 @@ public:
 	 */
     virtual void OnExitFullscreen();
     
+    /**
+     \brief Called before entering fullscreen.
+	 */
+    virtual void WillEnterFullscreen();
+    
+    /**
+     \brief Called before exiting fullscreen.
+	 */
+    
+    virtual void WillExitFullscreen();
+    
+    virtual void DidCalculateScaleMultipliers();
+    
 protected:
 	/**
 		\brief Called immediately after application initialized and all singletons are created. 

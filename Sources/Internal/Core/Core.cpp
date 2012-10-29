@@ -613,6 +613,8 @@ void Core::SystemProcessFrame()
 			RenderManager::Instance()->SetRenderOrientation(screenOrientation);
             UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();
+            
+            core->DidCalculateScaleMultipliers();
 		}
 
 		float32 frameDelta = SystemTimer::Instance()->FrameDelta();

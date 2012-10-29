@@ -112,5 +112,18 @@ void ApplicationCore::OnExitFullscreen()
     
 }
 
+void ApplicationCore::WillEnterFullscreen()
+{
+        
+}
 
+void ApplicationCore::WillExitFullscreen()
+{
+        
+}
+
+void ApplicationCore::DidCalculateScaleMultipliers()
+{
+        
+}
 };
