@@ -38,26 +38,56 @@ namespace DAVA
 {
     void LocalizationMacOS::SelectLocalizationForPath(const String &directoryPath)
     {
-        NSString * localeString = [[NSLocale currentLocale] localeIdentifier];
-        NSString * lang = [[[localeString componentsSeparatedByString:@"_"] objectAtIndex:0] lowercaseString];
-        NSString * region = [[[localeString componentsSeparatedByString:@"_"] objectAtIndex:1] lowercaseString];
-        
-        String lid = [lang UTF8String];
-        String rid = [region UTF8String];
+        NSArray *ar = [NSLocale preferredLanguages];
 
-        if(rid == "br" && lid == "pt")
-            lid = "br";
-        
-        Logger::Info("LocalizationMacOS:: lang = %s", lid.c_str());
-        
-        File *fl = File::Create(directoryPath + "/" + lid.c_str() + ".yaml", File::OPEN|File::READ);
-        if(fl == 0)
+        for (int i = 0; i < (int)[ar count]; i++) 
         {
-            lid = "en";
+            NSString * lang = [[[[ar objectAtIndex:i] componentsSeparatedByString:@"-"] objectAtIndex:0] lowercaseString];
+            String lid = [lang UTF8String];
+            if(lid == "pt")
+            {
+                lang = [[[[ar objectAtIndex:i] componentsSeparatedByString:@"-"] objectAtIndex:1] lowercaseString];
+                lid = [lang UTF8String];
+            }
+            
+            Logger::Info("LocalizationMacOS:: pref lang = %s", lid.c_str());
+            File *fl = File::Create(directoryPath + "/" + lid.c_str() + ".yaml", File::OPEN|File::READ);
+            if(fl)
+            {
+                Logger::Info("LocalizationMacOS:: selected lang = %s", lid.c_str());
+                LocalizationSystem::Instance()->SetCurrentLocale(lid);
+                SafeRelease(fl);
+                return;
+            }
+            else
+            {
+                Logger::Info("LocalizationMacOS:: Localization file %s not found", lid.c_str());
+            }
         }
         
-        Logger::Info("LocalizationMacOS:: selected lang = %s", lid.c_str());
-        LocalizationSystem::Instance()->SetCurrentLocale(lid);
-        SafeRelease(fl);
+        LocalizationSystem::Instance()->SetCurrentLocale("en");
+        return;
+        
+//        NSString * localeString = [[NSLocale currentLocale] localeIdentifier];
+//        NSString * lang = [[[localeString componentsSeparatedByString:@"_"] objectAtIndex:0] lowercaseString];
+//        NSString * region = [[[localeString componentsSeparatedByString:@"_"] objectAtIndex:1] lowercaseString];
+//        
+//        String lid = [lang UTF8String];
+//        String rid = [region UTF8String];
+//
+//        if(rid == "br" && lid == "pt")
+//            lid = "br";
+//        
+//        Logger::Info("LocalizationMacOS:: lang = %s", lid.c_str());
+//        
+//        File *fl = File::Create(directoryPath + "/" + lid.c_str() + ".yaml", File::OPEN|File::READ);
+//        if(fl == 0)
+//        {
+//            lid = "en";
+//        }
+//        
+//        Logger::Info("LocalizationMacOS:: selected lang = %s", lid.c_str());
+//        LocalizationSystem::Instance()->SetCurrentLocale(lid);
+//        SafeRelease(fl);
     }
 };
