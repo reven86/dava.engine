@@ -359,7 +359,7 @@ void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat
 	// Clear created render target first 
 	RenderManager::Instance()->LockNonMain();
 	RenderManager::Instance()->SetRenderTarget(this);
-	RenderManager::Instance()->ClearWithColor(0, 1.f, 0, 1.f);
+	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 	RenderManager::Instance()->RestoreRenderTarget();
 	RenderManager::Instance()->UnlockNonMain();
 }
