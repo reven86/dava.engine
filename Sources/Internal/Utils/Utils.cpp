@@ -155,6 +155,12 @@ void BindFBO(const int32 fbo)
 	}
 }
 
+    
+int32 GetLastBindedFBO()
+{
+    return lastBindedFBO;
+}
+    
 #endif //#ifdef __DAVAENGINE_OPENGL__
 
 #if defined(__DAVAENGINE_DIRECTX9__)
