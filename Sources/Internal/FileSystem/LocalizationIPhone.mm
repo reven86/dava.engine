@@ -28,24 +28,32 @@
         * Created by Vitaliy Borodovsky 
 =====================================================================================*/
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #include "FileSystem/LocalizationIPhone.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/Logger.h"
 #include "Render/2D/GraphicsFont.h"
+#include "DAVAEngine.h"
 
 namespace DAVA
 {
 void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directoryPath)
 {
-    NSString * lang = [[NSUserDefaults standardUserDefaults] stringForKey:@"LOCALE"];
+    NSString * lang = [[NSUserDefaults standardUserDefaults] stringForKey:@"KD_LOCALE"];
+    
+    int padOffset = 0;
+    unsigned int scv = (unsigned int)[[::UIScreen mainScreen] scale];
+    if (scv == 2) 
+        padOffset = -2;
+
     
     if(lang != nil && ![lang isEqualToString:@""])
     {
         if([lang isEqualToString:@"en"] || [lang isEqualToString:@"ru"])
         {
             LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 5;
-            LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 4;
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 4 - padOffset;
         }
         else if ([lang isEqualToString:@"ja"] || [lang isEqualToString:@"zh"] || [lang isEqualToString:@"ko"])
         {
@@ -55,7 +63,7 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directo
         else
         {
             LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 6;
-            LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 3;
+            LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 3 - padOffset;
         }
         
         String lid = [lang UTF8String];
@@ -66,14 +74,26 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directo
 			LocalizationSystem::Instance()->SetCurrentLocale(lid);
 			SafeRelease(fl);
 			return;
-		}        
+		}
     }
     else
     {
-        NSArray *ar = [NSLocale preferredLanguages];
-        for (int i = 0; i < (int)[ar count]; i++) 
+        NSArray *languages = [NSLocale preferredLanguages];
+        for (int i = 0; i < (int)[languages count]; i++) 
         {
-            String lid = [[ar objectAtIndex:i] UTF8String];
+            NSArray * ar = [[languages objectAtIndex:i] componentsSeparatedByString:@"-"];
+            NSString * lang = [[ar objectAtIndex:0] lowercaseString];
+            String lid = [lang UTF8String];
+            if(lid == "pt")
+            {
+                if([ar count] == 1)
+                    lid = "br";
+                else
+                {
+                    lang = [[ar objectAtIndex:1] lowercaseString];
+                    lid = [lang UTF8String];
+                }
+            }
 
             Logger::Info("LocalizationIPhone:: pref lang = %s", lid.c_str());
             File *fl = File::Create(directoryPath + "/" + lid.c_str() + ".yaml", File::OPEN|File::READ);
@@ -82,7 +102,7 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directo
                 if(lid == "en" || lid == "ru")
                 {
                     LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 5;
-                    LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 4;
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 4 - padOffset;
                 }
                 else if (lid == "ja" || lid == "zh" || lid == "ko")
                 {
@@ -92,7 +112,7 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directo
                 else
                 {
                     LocalizationSystem::Instance()->graphicsFontDrawYoffset1 = 6;
-                    LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 3;
+                    LocalizationSystem::Instance()->graphicsFontDrawYoffset2 = 3 - padOffset;
                 }
                 
                 Logger::Info("LocalizationIPhone:: selected lang = %s", lid.c_str());
