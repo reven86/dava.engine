@@ -1343,23 +1343,26 @@ void Sprite::ConvertToVirtualSize()
     float32 virtualToPhysicalFactor = Core::Instance()->GetVirtualToPhysicalFactor();
     float32 resourceToVirtualFactor = Core::Instance()->GetResourceToVirtualFactor(GetResourceSizeIndex());
     
-	frameVertices[0][0] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][1] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][2] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][3] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][4] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][5] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][6] *= virtualToPhysicalFactor * resourceToVirtualFactor;
-	frameVertices[0][7] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+    for(int i = 0; i < frameCount; i++)
+    {
+        frameVertices[i][0] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+        frameVertices[i][1] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+        frameVertices[i][2] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+        frameVertices[i][3] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+        frameVertices[i][4] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+        frameVertices[i][5] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+        frameVertices[i][6] *= virtualToPhysicalFactor * resourceToVirtualFactor;
+        frameVertices[i][7] *= virtualToPhysicalFactor * resourceToVirtualFactor;
     
-    texCoords[0][0] *= resourceToVirtualFactor;
-    texCoords[0][1] *= resourceToVirtualFactor;
-    texCoords[0][2] *= resourceToVirtualFactor;
-    texCoords[0][3] *= resourceToVirtualFactor;
-    texCoords[0][4] *= resourceToVirtualFactor;
-    texCoords[0][5] *= resourceToVirtualFactor;
-    texCoords[0][6] *= resourceToVirtualFactor;
-    texCoords[0][7] *= resourceToVirtualFactor;
+        texCoords[i][0] *= resourceToVirtualFactor;
+        texCoords[i][1] *= resourceToVirtualFactor;
+        texCoords[i][2] *= resourceToVirtualFactor;
+        texCoords[i][3] *= resourceToVirtualFactor;
+        texCoords[i][4] *= resourceToVirtualFactor;
+        texCoords[i][5] *= resourceToVirtualFactor;
+        texCoords[i][6] *= resourceToVirtualFactor;
+        texCoords[i][7] *= resourceToVirtualFactor;
+    }
 }
 
 void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState)
