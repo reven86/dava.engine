@@ -31,7 +31,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import "Platform/TemplateiOS/EAGLViewController.h"
-
+#import "UI/UITextFieldHolder.h"
 
 @implementation EAGLViewController
 
@@ -44,6 +44,9 @@
     return self;
 }
 */
+
+static float orientationAngle = 90.f;
+
 - (id) init
 {
     if (self = [super init])
@@ -60,12 +63,12 @@
     {
         if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
         {
-            glView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 768, 1024)];
+            glView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 1024, 768)];
         }
         else
         {
             // The device is an iPhone or iPod touch.
-            glView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 320, 480)];
+            glView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, 480, 320)];
         } 
     }    
 }
@@ -90,12 +93,41 @@
 */
 
 // Override to allow orientations other than the default portrait orientation.
-/*- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
 {
     // Return YES for supported orientations
-    return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft);
-}*/
+    return (interfaceOrientation == UIInterfaceOrientationLandscapeRight || interfaceOrientation == UIInterfaceOrientationLandscapeLeft);
+}
 
+-(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+    [[[[UIApplication sharedApplication] keyWindow] subviews] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+     {
+         if([obj isKindOfClass:[UITextFieldHolder class]])
+         {
+             [(UITextFieldHolder *)obj setOrientationAngle: orientationAngle];
+             [(UITextFieldHolder *)obj setHidden:NO];
+         }
+     }];
+}
+
+-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    if(toInterfaceOrientation == UIInterfaceOrientationLandscapeLeft)
+    {
+        orientationAngle = -90.f;
+    }
+    else if(toInterfaceOrientation == UIInterfaceOrientationLandscapeRight)
+    {
+        orientationAngle = 90.f;
+    }
+    [[[[UIApplication sharedApplication] keyWindow] subviews] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+     {
+         if([obj isKindOfClass:[UITextFieldHolder class]])
+             [(UITextFieldHolder *)obj setHidden:YES];
+     }];
+    return;
+}
 
 - (void)didReceiveMemoryWarning 
 {

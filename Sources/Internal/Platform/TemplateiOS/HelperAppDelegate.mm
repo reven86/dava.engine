@@ -49,7 +49,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 		if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
 		{
 			// The device is an iPad.
-			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(768, 1024);
+			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(1024, 768);
             if (DAVA::Core::IsAutodetectContentScaleFactor()) 
 			{
 				if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
@@ -58,16 +58,16 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 					unsigned int scv = (unsigned int)[[::UIScreen mainScreen] scale];
 					if (scv != 2) 
 					{
-						DAVA::Core::Instance()->SetPhysicalScreenSize(768, 1024);
+						DAVA::Core::Instance()->SetPhysicalScreenSize(1024, 768);
 					}
 					else 
 					{
-						DAVA::Core::Instance()->SetPhysicalScreenSize(1536, 2048);
+						DAVA::Core::Instance()->SetPhysicalScreenSize(2048, 1536);
 					}
 				}
 				else 
 				{
-					DAVA::Core::Instance()->SetPhysicalScreenSize(768, 1024);
+					DAVA::Core::Instance()->SetPhysicalScreenSize(1024, 768);
 				}
 			}
 			else 
@@ -78,7 +78,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 		else
 		{
 			// The device is an iPhone or iPod touch.
-			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(320, 480);
+			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(480, 320);
 			if (DAVA::Core::IsAutodetectContentScaleFactor()) 
 			{
 				if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
@@ -87,21 +87,21 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 					unsigned int scv = (unsigned int)[[::UIScreen mainScreen] scale];
 					if (scv != 2) 
 					{
-						DAVA::Core::Instance()->SetPhysicalScreenSize(320.0f, 480.0f);
+						DAVA::Core::Instance()->SetPhysicalScreenSize(480.0f, 320.0f);
 					}
 					else 
 					{
-						DAVA::Core::Instance()->SetPhysicalScreenSize(640.0f, 960.0f);
+						DAVA::Core::Instance()->SetPhysicalScreenSize(960.0f, 640.0f);
 					}
 				}
 				else 
 				{
-					DAVA::Core::Instance()->SetPhysicalScreenSize(320, 480);
+					DAVA::Core::Instance()->SetPhysicalScreenSize(480, 320);
 				}
 			}
 			else 
 			{
-				DAVA::Core::Instance()->SetPhysicalScreenSize(320, 480);
+				DAVA::Core::Instance()->SetPhysicalScreenSize(480, 320);
 			}
 		}
 		
