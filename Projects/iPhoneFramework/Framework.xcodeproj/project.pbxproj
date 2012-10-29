@@ -13,6 +13,7 @@
 		0224B74B1598B40100CDEF9E /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7491598B40100CDEF9E /* libogg_macos.a */; };
 		022CC0BC159A0FA800A3FE06 /* TheoraPlayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022CC0BA159A0FA800A3FE06 /* TheoraPlayer.cpp */; };
 		022CC0BD159A0FA800A3FE06 /* TheoraPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 022CC0BB159A0FA800A3FE06 /* TheoraPlayer.h */; };
+		02DC6AFE161D90D0003C24EA /* UITextFieldHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = 02DC6AFD161D90D0003C24EA /* UITextFieldHolder.h */; };
 		475D59561300236500A18EC7 /* Box2DGameObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 475D59501300236500A18EC7 /* Box2DGameObject.cpp */; };
 		475D59571300236500A18EC7 /* Box2DGameObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 475D59511300236500A18EC7 /* Box2DGameObject.h */; };
 		475D59581300236500A18EC7 /* Box2DHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 475D59521300236500A18EC7 /* Box2DHelper.cpp */; };
@@ -560,6 +561,7 @@
 		0224B7491598B40100CDEF9E /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/libs/libogg_macos.a; sourceTree = "<group>"; };
 		022CC0BA159A0FA800A3FE06 /* TheoraPlayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TheoraPlayer.cpp; sourceTree = "<group>"; };
 		022CC0BB159A0FA800A3FE06 /* TheoraPlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TheoraPlayer.h; sourceTree = "<group>"; };
+		02DC6AFD161D90D0003C24EA /* UITextFieldHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldHolder.h; sourceTree = "<group>"; };
 		475D59501300236500A18EC7 /* Box2DGameObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DGameObject.cpp; sourceTree = "<group>"; };
 		475D59511300236500A18EC7 /* Box2DGameObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Box2DGameObject.h; sourceTree = "<group>"; };
 		475D59521300236500A18EC7 /* Box2DHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Box2DHelper.cpp; sourceTree = "<group>"; };
@@ -1818,6 +1820,7 @@
 				FECFB47612E5904500C71562 /* UITextField.cpp */,
 				FECFB47712E5904500C71562 /* UITextField.h */,
 				FECFB47812E5904500C71562 /* UITextFieldiPhone.h */,
+				02DC6AFD161D90D0003C24EA /* UITextFieldHolder.h */,
 				FECFB47912E5904500C71562 /* UITextFieldiPhone.mm */,
 				FECFB47A12E5904500C71562 /* UIYamlLoader.cpp */,
 				FECFB47B12E5904500C71562 /* UIYamlLoader.h */,
@@ -2175,6 +2178,7 @@
 				5C44738F15B5A1C500028948 /* Mallocator.h in Headers */,
 				5C44739015B5A1C500028948 /* TemplateHelpers.h in Headers */,
 				5CBF71E015C6E46100CD1736 /* RenderOptions.h in Headers */,
+				02DC6AFE161D90D0003C24EA /* UITextFieldHolder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

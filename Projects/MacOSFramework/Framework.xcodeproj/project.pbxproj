@@ -284,8 +284,6 @@
 		FECFC24D12E87E3000C71562 /* FileSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FECFC0EB12E87E3000C71562 /* FileSystem.h */; };
 		FECFC24E12E87E3000C71562 /* KeyedArchive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FECFC0EC12E87E3000C71562 /* KeyedArchive.cpp */; };
 		FECFC24F12E87E3000C71562 /* KeyedArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = FECFC0ED12E87E3000C71562 /* KeyedArchive.h */; };
-		FECFC25412E87E3000C71562 /* LocalizationIPhone.h in Headers */ = {isa = PBXBuildFile; fileRef = FECFC0F212E87E3000C71562 /* LocalizationIPhone.h */; };
-		FECFC25512E87E3000C71562 /* LocalizationIPhone.mm in Sources */ = {isa = PBXBuildFile; fileRef = FECFC0F312E87E3000C71562 /* LocalizationIPhone.mm */; };
 		FECFC25612E87E3000C71562 /* LocalizationSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FECFC0F412E87E3000C71562 /* LocalizationSystem.cpp */; };
 		FECFC25712E87E3000C71562 /* LocalizationSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = FECFC0F512E87E3000C71562 /* LocalizationSystem.h */; };
 		FECFC25812E87E3000C71562 /* Logger.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FECFC0F612E87E3000C71562 /* Logger.cpp */; };
@@ -866,8 +864,6 @@
 		FECFC0EB12E87E3000C71562 /* FileSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystem.h; sourceTree = "<group>"; };
 		FECFC0EC12E87E3000C71562 /* KeyedArchive.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedArchive.cpp; sourceTree = "<group>"; };
 		FECFC0ED12E87E3000C71562 /* KeyedArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KeyedArchive.h; sourceTree = "<group>"; };
-		FECFC0F212E87E3000C71562 /* LocalizationIPhone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationIPhone.h; sourceTree = "<group>"; };
-		FECFC0F312E87E3000C71562 /* LocalizationIPhone.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = LocalizationIPhone.mm; sourceTree = "<group>"; };
 		FECFC0F412E87E3000C71562 /* LocalizationSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationSystem.cpp; sourceTree = "<group>"; };
 		FECFC0F512E87E3000C71562 /* LocalizationSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationSystem.h; sourceTree = "<group>"; };
 		FECFC0F612E87E3000C71562 /* Logger.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logger.cpp; sourceTree = "<group>"; };
@@ -1533,8 +1529,6 @@
 				FECFC0FA12E87E3000C71562 /* VariantType.h */,
 				FECFC0EC12E87E3000C71562 /* KeyedArchive.cpp */,
 				FECFC0ED12E87E3000C71562 /* KeyedArchive.h */,
-				FECFC0F212E87E3000C71562 /* LocalizationIPhone.h */,
-				FECFC0F312E87E3000C71562 /* LocalizationIPhone.mm */,
 				023C7564161347C200219BAA /* LocalizationMacOS.h */,
 				023C7566161347D800219BAA /* LocalizationMacOS.mm */,
 				FECFC0F412E87E3000C71562 /* LocalizationSystem.cpp */,
@@ -2054,7 +2048,6 @@
 				FECFC24B12E87E3000C71562 /* File.h in Headers */,
 				FECFC24D12E87E3000C71562 /* FileSystem.h in Headers */,
 				FECFC24F12E87E3000C71562 /* KeyedArchive.h in Headers */,
-				FECFC25412E87E3000C71562 /* LocalizationIPhone.h in Headers */,
 				FECFC25712E87E3000C71562 /* LocalizationSystem.h in Headers */,
 				FECFC25912E87E3000C71562 /* Logger.h in Headers */,
 				FECFC25C12E87E3000C71562 /* VariantType.h in Headers */,
@@ -2400,7 +2393,6 @@
 				FECFC24A12E87E3000C71562 /* File.cpp in Sources */,
 				FECFC24C12E87E3000C71562 /* FileSystem.cpp in Sources */,
 				FECFC24E12E87E3000C71562 /* KeyedArchive.cpp in Sources */,
-				FECFC25512E87E3000C71562 /* LocalizationIPhone.mm in Sources */,
 				FECFC25612E87E3000C71562 /* LocalizationSystem.cpp in Sources */,
 				FECFC25812E87E3000C71562 /* Logger.cpp in Sources */,
 				FECFC25A12E87E3000C71562 /* LoggerMacOS.mm in Sources */,
