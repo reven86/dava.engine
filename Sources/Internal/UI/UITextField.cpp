@@ -58,10 +58,14 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone = new UITextFieldiPhone(this);
 #else
-    staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
+    staticText = new UIStaticText(Rect(0, 0, GetRect().dx, GetRect().dy));
+    cursorText = new UIStaticText(Rect(0, 0, GetRect().dx, GetRect().dy));
+    cursorText->SetInputEnabled(false);
     AddControl(staticText);
+    staticText->AddControl(cursorText);
     
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    staticText->SetSpriteAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    cursorText->SetSpriteAlign(ALIGN_LEFT | ALIGN_VCENTER);
 #endif
     
     cursorTime = 0;
@@ -75,31 +79,18 @@ UITextField::UITextField() : delegate(NULL), cursorBlinkingTime(0.f),
 	textFieldiPhone = new UITextFieldiPhone(this);
 #else
     staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
+    cursorText = new UIStaticText(Rect(0, 0, GetRect().dx, GetRect().dy));
+    cursorText->SetInputEnabled(false);
     AddControl(staticText);
+    staticText->AddControl(cursorText);
     
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    staticText->SetSpriteAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    cursorText->SetSpriteAlign(ALIGN_LEFT | ALIGN_VCENTER);
 #endif
     
     cursorTime = 0;
     showCursor = true;
 }
-
-//void UITextField::InitAfterYaml()
-//{
-//#ifdef __DAVAENGINE_IPHONE__
-//	textFieldiPhone = new UITextFieldiPhone(this);
-//#else
-//    
-//    staticText = new UIStaticText(Rect(0,0,GetRect().dx, GetRect().dy));
-//    staticText->SetFont(textFont);
-//    AddControl(staticText);
-//
-//    staticText->GetBackground()->SetAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-//#endif
-//
-//    cursorTime = 0;
-//    showCursor = true;
-//}
 	
 UITextField::~UITextField()
 {
@@ -146,28 +137,48 @@ void UITextField::Update(float32 timeElapsed)
     {
         cursorTime = 0;
         showCursor = !showCursor;
+        cursorText->SetVisible(showCursor);
         needRedraw = true;
     }
-
-	if(this == UIControlSystem::Instance()->GetFocusedControl())
-	{
-		if(needRedraw)
-		{
-			WideString txt = text;
-
-			if (showCursor)
-				txt += L"_";
-			else
-				txt += L" ";
-
-			staticText->SetText(txt);
-			needRedraw = false;
-		}
-	}
-	else
-	{
-		staticText->SetText(text);
-	}
+    
+    staticText->SetText(text);
+    cursorText->SetText(L"_");
+    
+    Rect cursorRect = cursorText->GetRect();
+    cursorRect.x = staticText->GetTextSize().dx;
+    cursorRect.dx = cursorText->GetTextSize().dx;
+    
+    int32 align = staticText->GetTextBlock()->GetAlign();
+    if(align & ALIGN_HCENTER)
+    {
+        cursorRect.x += (GetRect().dx - staticText->GetTextSize().dx) / 2;
+    }
+    if(align & ALIGN_RIGHT)
+    {
+        cursorRect.x = GetRect().dx - cursorText->GetTextSize().dx;
+    }
+    cursorText->SetRect(cursorRect);
+    
+//	if(this == UIControlSystem::Instance()->GetFocusedControl())
+//	{
+//		if(needRedraw)
+//		{
+//			WideString txt = text;
+//
+//			if (showCursor)
+//				txt += L"_";
+//			else
+//				txt += L" ";
+//
+//			staticText->SetText(txt);
+//            
+//			needRedraw = false;
+//		}
+//	}
+//	else
+//	{
+//		staticText->SetText(text);
+//	}
 
 #endif
 }
@@ -427,6 +438,7 @@ void UITextField::LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader)
     if(staticText)
     {
         staticText->SetRect(Rect(0,0,GetRect().dx, GetRect().dy));
+        cursorText->SetRect(Rect(0,0,GetRect().dx, GetRect().dy));
     }
     //InitAfterYaml();
 

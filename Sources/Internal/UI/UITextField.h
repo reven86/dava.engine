@@ -175,6 +175,7 @@ public:
         SafeRelease(textFont);
         textFont = SafeRetain(font);
 		staticText->SetFont(textFont);
+        cursorText->SetFont(textFont);
     }
 protected:
     bool needRedraw;
@@ -195,6 +196,7 @@ private:
 #endif
 
     UIStaticText * staticText;
+    UIStaticText * cursorText;
     float32 cursorTime;
     bool showCursor;
 
