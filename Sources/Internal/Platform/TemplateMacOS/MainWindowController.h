@@ -50,6 +50,8 @@
 	BOOL stayInFullScreenMode;          // this flag indicating that we want to leave full screen mode
 	
 	ApplicationCore * core;
+    
+    bool isStartInFullscreen;
 }
 
 - (void)switchToFullScreen;

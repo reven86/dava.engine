@@ -245,6 +245,11 @@ extern void FrameworkMain(int argc, char *argv[]);
 	return YES;
 }
 
+- (BOOL) needsPanelToBecomeKey
+{
+    return YES;
+}
+
 static Vector<DAVA::UIEvent> activeTouches;
 void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outTouches)
 {

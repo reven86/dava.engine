@@ -45,9 +45,15 @@ namespace DAVA
 		core->CreateSingletons();
 
 		[NSApplication sharedApplication];
-		[NSApp setDelegate:[[[MainWindowController alloc] init] autorelease]];
+        MainWindowController * mwc = [[[MainWindowController alloc] init] autorelease];
+		[NSApp setDelegate:mwc];
 		
-		int retVal = NSApplicationMain(argc,  (const char **) argv);
+        NSNotificationCenter * nc = [[NSWorkspace sharedWorkspace] notificationCenter];
+        [nc addObserver:mwc selector:@selector(computerWillSleep:) name:NSWorkspaceWillSleepNotification object:nil];
+		
+        [nc addObserver:mwc selector:@selector(computerDidAwake:) name:NSWorkspaceDidWakeNotification object:nil];
+        
+        int retVal = NSApplicationMain(argc,  (const char **) argv);
         // This method never returns, so release code transfered to termination message 
         // - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
         // core->ReleaseSingletons() is called from there
@@ -97,6 +103,8 @@ namespace DAVA
 - (void)windowWillMiniaturize:(NSNotification *)notification;
 - (void)windowDidMiniaturize:(NSNotification *)notification;
 - (void)windowDidDeminiaturize:(NSNotification *)notification;
+
+- (void)computerWillSleepNotification:(NSNotification *)notification;
 @end
 
 @implementation MainWindowController
@@ -137,7 +145,7 @@ namespace DAVA
 		timeBefore = 0;
 		stayInFullScreenMode = NO;          // this flag indicating that we want to leave full screen mode
 		core = 0;		
-
+        isStartInFullscreen = NO;
 	}
 	return self;
 }
@@ -167,8 +175,11 @@ namespace DAVA
 	KeyedArchive * options = DAVA::Core::Instance()->GetOptions();
 	int32 width = options->GetInt32("width", 800);
 	int32 height = options->GetInt32("height", 600);
+    
+    if(options->GetInt32("fullscreen", 0))
+        isStartInFullscreen = YES;
 	
-	String title = options->GetString("title", "[set application title using core options property 'title']");
+	WideString title = options->GetWideString("title", L"[set application title using core options property 'title']");
 	
 	mainWindow = [[NSWindow alloc] initWithContentRect:NSMakeRect((fullscreenMode.width - width) / 2, 
 																  (fullscreenMode.height - height) / 2, width, height) 
@@ -178,9 +189,26 @@ namespace DAVA
     [mainWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     
 	[mainWindow setDelegate:self];
+    
 	openGLView = [[OpenGLView alloc]initWithFrame: NSMakeRect(0, 0, width, height)];
-	[mainWindow setContentView: openGLView];
-
+    
+    if(floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_7)
+    {
+        if(isStartInFullscreen)
+        {
+            [mainWindow toggleFullScreen: nil];
+        }
+        else
+        {
+            [mainWindow setContentView: openGLView];
+            [mainWindow makeFirstResponder: openGLView];
+        }
+    }
+    else
+    {
+        [mainWindow setContentView: openGLView];
+        [mainWindow makeFirstResponder: openGLView];
+    }
 	NSRect rect;
 	rect.origin.x = 0;
 	rect.origin.y = 0;
@@ -201,7 +229,7 @@ namespace DAVA
 	// make window main
 	[mainWindow makeKeyAndOrderFront:nil];
 	//[mainWindow setLevel: NSMainMenuWindowLevel + 1];
-	[mainWindow setTitle:[NSString stringWithFormat:@"%s", title.c_str()]];
+	[mainWindow setTitle:[[[NSString alloc] initWithBytes:(char*)title.data() length:title.size() * sizeof(wchar_t) encoding:CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF32LE)] autorelease]];
 	[mainWindow setAcceptsMouseMovedEvents:YES];
 
 //	if ([mainWindow isMainWindow])
@@ -241,6 +269,16 @@ namespace DAVA
 	[mainWindow makeKeyAndOrderFront:nil];
 	[fullscreenWindow orderOut:nil];
 	[fullscreenWindow release];
+}
+
+- (void)computerWillSleep:(NSNotification *)notification
+{
+    [self OnSuspend];
+}
+
+- (void)computerDidAwake:(NSNotification*) notification
+{
+    [self OnResume];
 }
 
 // some macros to make code more readable.
@@ -288,8 +326,24 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
     [self OnResume];
 }
 
+- (void)windowWillEnterFullScreen:(NSNotification *)notification
+{
+    Core::Instance()->GetApplicationCore()->WillEnterFullscreen();
+}
+
+- (void)windowWillExitFullScreen:(NSNotification *)notification
+{
+    Core::Instance()->GetApplicationCore()->WillExitFullscreen();
+}
+
 - (void)windowDidEnterFullScreen:(NSNotification *)notification
 {
+    if(isStartInFullscreen)
+    {
+        isStartInFullscreen = NO;
+        [mainWindow setContentView: openGLView];
+        [mainWindow makeFirstResponder: openGLView];
+    }
     Core::Instance()->GetApplicationCore()->OnEnterFullscreen();
 }
 
@@ -771,6 +825,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 //	[NSMenu setMenuBarVisible: NO];
 //	[NSMenu setMenuBarVisible: YES];
 	[self createWindows];
+    
 	NSLog(@"[CoreMacOSPlatform] Application will finish launching: %@", [[NSBundle mainBundle] bundlePath]);
 	Core::Instance()->SystemAppStarted();
 }
