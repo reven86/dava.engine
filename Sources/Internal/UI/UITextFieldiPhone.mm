@@ -36,6 +36,7 @@
 #include "UI/UITextField.h"
 #include "UI/UITextFieldiPhone.h"
 #include "Core/Core.h"
+#include "UITextFieldHolder.h"
 
 float GetUITextViewSizeDivider()
 {
@@ -62,32 +63,32 @@ float GetUITextViewSizeDivider()
 
 @end
 
-@interface UITextFieldHolder : UIView < UITextFieldDelegate >
-{
-@public
-	UITextField * textField;
-	DAVA::UITextField * cppTextField;
-}
-- (id) init : (DAVA::UITextField  *) tf;
-- (void) dealloc;
-- (BOOL)textFieldShouldReturn:(UITextField *)textField;
-- (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string;
-- (void)textFieldDidBeginEditing:(UITextField *)textField;
-
-@end
-
 @implementation UITextFieldHolder
+
+- (void)setOrientationAngle:(float) angle
+{
+    self.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(angle));
+}
 
 - (id) init : (DAVA::UITextField  *) tf
 {
 	if (self = [super init])
 	{
         float divider = GetUITextViewSizeDivider();
-		self.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(90.0f));
-		self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider);
-		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);	
+        
+        float orientationAngle = 0.f;
+        UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+        if(orientation == UIInterfaceOrientationLandscapeLeft)
+            orientationAngle = -90.f;
+        if(orientation == UIInterfaceOrientationLandscapeRight)
+            orientationAngle = 90.f;
+        
+        [self setOrientationAngle:orientationAngle];
+        
+		self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider);
+		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider);	
 		self.userInteractionEnabled = FALSE;
-		
+        
 		cppTextField = tf;
 		DAVA::Rect rect = tf->GetRect();
 		textField = [[UITextField alloc] initWithFrame: CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) 
@@ -116,7 +117,6 @@ float GetUITextViewSizeDivider()
 	textField = 0;
 	[super dealloc];
 }
-
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
@@ -276,6 +276,12 @@ namespace DAVA
             unichar uchar = [textFieldHolder->textField.text characterAtIndex:i];
             string[i] = (wchar_t)uchar;
         }
+    }
+    
+    void UITextFieldiPhone::SetOrientationAngle(float32 angle)
+    {
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        [textFieldHolder setOrientationAngle: angle];
     }
 }
 

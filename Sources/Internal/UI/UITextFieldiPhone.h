@@ -31,8 +31,6 @@
 #ifndef __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
 #define __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
 
-#include "UI/UITextField.h"
-
 namespace DAVA 
 {
 class UITextFieldiPhone
@@ -56,10 +54,10 @@ public:
 	
 	void SetReturnKey(int32 returnType);
 
+    void SetOrientationAngle(float32 angle);
 
 private:
 	void * objcClassPtr;
 };
 };
-
 #endif // __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
