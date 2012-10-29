@@ -258,7 +258,7 @@ void TextBlock::Prepare()
 		
 		Size2i textSize;
 		stringSizes.clear();
-
+        
 		if(!isMultilineEnabled)
 		{
 			textSize = font->GetStringSize(text);
@@ -442,8 +442,6 @@ void TextBlock::Prepare()
 				textSize.dy = 0;
 				
 				int32 yOffset = font->GetVerticalSpacing();
-//				int32 fontHeight = font->GetFontHeight() + 1 + yOffset;
-//				textSize.dy = yOffset*2 + fontHeight * (int32)multilineStrings.size();
 				int32 fontHeight = font->GetFontHeight() + yOffset;
 				textSize.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
 				float lastSize = font->GetSize();
@@ -518,8 +516,6 @@ void TextBlock::Prepare()
 					textSize.dy = 0;
 					
 					int32 yOffset = font->GetVerticalSpacing();
-//					int32 fontHeight = font->GetFontHeight() + 1 + yOffset;
-//					textSize.dy = yOffset*2 + fontHeight * (int32)multilineStrings.size();
 					int32 fontHeight = font->GetFontHeight() + yOffset;
 					textSize.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
 					
@@ -543,11 +539,7 @@ void TextBlock::Prepare()
 			textSize.dy = 0;
 			
 			int32 yOffset = font->GetVerticalSpacing();
-//			Logger::Info("yOffset = %.4d", yOffset);
-//			int32 fontHeight = font->GetFontHeight() + 1 + yOffset;
-//			textSize.dy = yOffset*2 + fontHeight * (int32)multilineStrings.size();
 			int32 fontHeight = font->GetFontHeight() + yOffset;
-//			Logger::Info("fontHeight = %.4d", fontHeight);
 			textSize.dy = fontHeight * (int32)multilineStrings.size() - yOffset;
 			for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
 			{
@@ -692,7 +684,7 @@ void TextBlock::ProcessAlign()
 	}
 	
 	float x = 0, y = 0;
-
+    
 	if(align & ALIGN_TOP)
 	{
 	}

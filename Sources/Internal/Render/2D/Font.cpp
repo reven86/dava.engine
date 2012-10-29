@@ -113,7 +113,7 @@ int32 Font::GetVerticalSpacing()
     
 void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
-	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
+	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor() * Core::Instance()->GetResourceToVirtualFactor(0));
     int32 totalSize = (int)text.length();
     
     int32 currentLineStart = 0;
@@ -171,7 +171,7 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
 }    
 void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
-	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
+	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor() * Core::Instance()->GetResourceToVirtualFactor(0));
 
 	enum
 	{
