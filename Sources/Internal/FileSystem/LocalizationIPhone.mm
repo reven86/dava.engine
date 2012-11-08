@@ -42,9 +42,9 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const String &directo
 {
     NSString * lang = [[NSUserDefaults standardUserDefaults] stringForKey:@"KD_LOCALE"];
     
-    int padOffset = 0;
     unsigned int scv = (unsigned int)[[::UIScreen mainScreen] scale];
-    if (scv == 2) 
+    int padOffset = 0;
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && scv == 2)
         padOffset = -2;
 
     
