@@ -110,7 +110,12 @@ Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *cha
 		if (indexInString == 0)
 		{
 			DVASSERT(chIndex < fdef->tableLenght);
-			sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff;
+            
+            if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+                sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff;
+            else
+                sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff / Core::Instance()->GetResourceToVirtualFactor(Core::Instance()->GetDesirableResourceIndex());
+            
 			currentX -= sizeFix;
 		}
 		
@@ -130,12 +135,15 @@ Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *cha
 		}
 			
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
-//		if (c == ' ')currentX += fdef->characterWidthTable[chIndex] * fontScaleCoeff;
-//		else currentX += fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::ACTIVE_WIDTH) * fontScaleCoeff;
 		
 		// BORODA: Probably charSizes should be float??? 
 		int32 newSize = (int32)(currentX + sizeFix - prevX);
-		newSize = (int32)((float32)newSize*Core::GetVirtualToPhysicalFactor());
+        
+        if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+            newSize = (int32)((float32)newSize*Core::GetVirtualToPhysicalFactor());
+        else
+            newSize = (int32)((float32)newSize);
+        
 		if (charSizes)charSizes->push_back(newSize);
 		prevX = currentX;
 		prevChIndex = chIndex;
@@ -144,14 +152,29 @@ Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *cha
 	
 	DVASSERT(prevChIndex < fdef->tableLenght);
 
-	currentX -= (fdef->characterWidthTable[prevChIndex] + horizontalSpacing) * fontScaleCoeff;
-	currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)) * fontScaleCoeff; // characterWidthTable[prevChIndex];
+    
+    if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+    {
+        currentX -= (fdef->characterWidthTable[prevChIndex] + horizontalSpacing) * fontScaleCoeff;
+        currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)) * fontScaleCoeff; // characterWidthTable[prevChIndex];
+    }
+    else
+    {
+        currentX += fdef->characterPreShift[prevChIndex] * fontScaleCoeff;
+        currentX -= (fdef->characterWidthTable[prevChIndex] + horizontalSpacing) * fontScaleCoeff;
+        currentX = floorf(currentX + 0.5f);
+        currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)/ Core::Instance()->GetResourceToVirtualFactor(Core::Instance()->GetDesirableResourceIndex())) * fontScaleCoeff;
+    }
 
 //	float32 lastCharSize = fdef->characterWidthTable[prevChIndex] * fontScaleCoeff;
 //	float32 lastCharSize = fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH) * fontScaleCoeff;
 //	currentX += lastCharSize; // characterWidthTable[prevChIndex];
 	if (charSizes)charSizes->push_back((int32)(currentX + sizeFix - prevX));
-	return Size2i((int32)(currentX + sizeFix + 1.5f), GetFontHeight());
+    
+    if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+        return Size2i((int32)(currentX + sizeFix + 1.5f), GetFontHeight());
+    else
+        return Size2i((int32)(ceilf(currentX) + sizeFix), GetFontHeight());
 }
 	
 bool GraphicsFont::IsCharAvaliable(char16 ch)
@@ -364,7 +387,11 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 		
 		if (indexInString == 0)
 		{
-			sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff;
+            if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+                sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff;
+            else
+                sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff / Core::Instance()->GetResourceToVirtualFactor(Core::Instance()->GetDesirableResourceIndex());
+                
 			currentX -= sizeFix;
 		}
 		
@@ -385,32 +412,39 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 		// draw on baseline Y = currentY - fontSprite->GetHeight() + charTopBottomPadding + fontDescent
 
 		float32 drawX = currentX;
-		float32 drawY = currentY - (fontSprite->GetHeight() - LocalizationSystem::Instance()->graphicsFontDrawYoffset1) * fontScaleCoeff + (fdef->charTopBottomPadding + fdef->fontDescent + fdef->fontAscent - LocalizationSystem::Instance()->graphicsFontDrawYoffset2) * fontScaleCoeff;
+		float32 drawY = 0;
+        
+        if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+            drawY = currentY - (fontSprite->GetHeight() - LocalizationSystem::Instance()->graphicsFontDrawYoffset1) * fontScaleCoeff + (fdef->charTopBottomPadding + fdef->fontDescent + fdef->fontAscent - LocalizationSystem::Instance()->graphicsFontDrawYoffset2) * fontScaleCoeff;
+        else
+            drawY = currentY - (fontSprite->GetHeight()*Core::Instance()->GetVirtualToPhysicalFactor() - LocalizationSystem::Instance()->graphicsFontDrawYoffset1) * fontScaleCoeff + (fdef->charTopBottomPadding + fdef->fontDescent + fdef->fontAscent - LocalizationSystem::Instance()->graphicsFontDrawYoffset2) * fontScaleCoeff;
+        
+        if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+            drawX += fdef->characterPreShift[chIndex] * fontScaleCoeff;
+        else if (indexInString != 0)
+            drawX += fdef->characterPreShift[chIndex] * fontScaleCoeff;
 		
-		//if (indexInString != 0)
-		drawX += fdef->characterPreShift[chIndex] * fontScaleCoeff;
-		
-		
-		state.SetScale(fontScaleCoeff, fontScaleCoeff);
+        if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+            state.SetScale(fontScaleCoeff, fontScaleCoeff);
+        else
+            state.SetScale(fontScaleCoeff*Core::Instance()->GetVirtualToPhysicalFactor(), fontScaleCoeff*Core::Instance()->GetVirtualToPhysicalFactor());
+        
 		state.SetPosition(drawX, drawY);
         
 		fontSprite->Draw(&state);
-
-//		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//		RenderManager::Instance()->DrawRect(Rect(drawX + fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff, drawY + fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::Y_OFFSET_TO_ACTIVE) * fontScaleCoeff, fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::ACTIVE_WIDTH), fontSprite->GetHeight() * fontScaleCoeff));
-//		RenderManager::Instance()->ResetColor();
 		
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
-//		Logger::Debug("%c w:%f pos: %f\n", c, fdef->characterWidthTable[chIndex] * fontScaleCoeff, currentX); 
-//		if (c == ' ')currentX += fdef->characterWidthTable[chIndex] * fontScaleCoeff;
-//		else currentX += fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::ACTIVE_WIDTH) * fontScaleCoeff;
 
 		prevChIndex = chIndex;
 	}
     RenderManager::Instance()->ResetColor();
 
 	currentX -= (fdef->characterWidthTable[prevChIndex] + horizontalSpacing) * fontScaleCoeff;
-	currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)) * fontScaleCoeff; // characterWidthTable[prevChIndex];
+    
+    if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+        currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)) * fontScaleCoeff; // characterWidthTable[prevChIndex];
+    else
+        currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)/ Core::Instance()->GetResourceToVirtualFactor(Core::Instance()->GetDesirableResourceIndex())) * fontScaleCoeff;
 	
 //	Sprite::DrawState drwState;
 //	float32 drawX = 100;
@@ -427,7 +461,10 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 //	RenderManager::Instance()->ResetColor();
 	
 	
-	return Size2i((int32)(currentX + sizeFix + 1.5f - x), GetFontHeight());
+    if(Core::Instance()->GetPhysicalScreenWidth() == 2048)
+        return Size2i((int32)(currentX + sizeFix + 1.5f - x), GetFontHeight());
+    else
+        return Size2i((int32)(currentX - x), GetFontHeight());
 }
 
 };
