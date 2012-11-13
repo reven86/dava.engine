@@ -147,11 +147,13 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 	{
 		// The device is an iPhone or iPod touch.
 	}
-	
+    
 	glController = [[EAGLViewController alloc] init];
 	DAVA::UIScreenManager::Instance()->RegisterController(CONTROLLER_GL, glController);
 	DAVA::UIScreenManager::Instance()->SetGLControllerId(CONTROLLER_GL);
 	
+    [application.keyWindow setRootViewController:glController];
+    
 	DAVA::Core::Instance()->SystemAppStarted();
 }
 

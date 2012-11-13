@@ -92,6 +92,16 @@ static float orientationAngle = 90.f;
 }
 */
 
+- (BOOL)shouldAutorotate
+{
+    return true;
+}
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
+}
+
 // Override to allow orientations other than the default portrait orientation.
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
 {
