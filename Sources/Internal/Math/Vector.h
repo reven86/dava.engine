@@ -335,6 +335,7 @@ inline const Vector2 & Vector2::operator /=(const Vector2 & _v)
 {
 	x /= _v.x;
 	y /= _v.y;
+	return *this;
 }
 
 inline const Vector2 & Vector2::operator *= (float32 _f)
