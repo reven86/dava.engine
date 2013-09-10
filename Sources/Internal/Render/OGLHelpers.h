@@ -101,11 +101,13 @@ namespace DAVA
     #define glGenerateMipmap glGenerateMipmapOES
 	#define glBindFramebuffer glBindFramebufferOES
     #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
+	#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
     
 #elif defined(__DAVAENGINE_ANDROID__)
     
     #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
 	#define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
+	#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
     
 #elif defined(__DAVAENGINE_MACOS__)
 	

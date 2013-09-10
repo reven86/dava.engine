@@ -254,4 +254,83 @@ void UIScrollView::RecalculateContentSize()
 	}
 }
 
+void UIScrollView::SetReturnSpeed(int32 speedInPixelsPerSec)
+{
+	if (scrollContainer)
+	{
+		scrollContainer->SetReturnSpeed(speedInPixelsPerSec);
+	}
 }
+
+float32 UIScrollView::VisibleAreaSize(UIScrollBar *forScrollBar)
+{
+	if (!forScrollBar || !scrollContainer)
+	{
+		return 0.0f;
+	}
+
+	// Visible area is our rect.
+	Vector2 visibleAreaSize(GetRect().dx, GetRect().dy);
+	return GetParameterForScrollBar(forScrollBar, visibleAreaSize);
+}
+
+float32 UIScrollView::TotalAreaSize(UIScrollBar *forScrollBar)
+{
+	if (!forScrollBar || !scrollContainer)
+	{
+		return 0.0f;
+	}
+
+	// Total area is the rect of the container.
+	Vector2 totalAreaSize(scrollContainer->GetRect().dx, scrollContainer->GetRect().dy);
+	return GetParameterForScrollBar(forScrollBar, totalAreaSize);
+}
+
+float32 UIScrollView::ViewPosition(UIScrollBar *forScrollBar)
+{
+	if (!forScrollBar || !scrollContainer)
+	{
+		return 0.0f;
+	}
+
+	// View position is the position of the scroll container in relation to us.
+	Vector2 viewPosition = Vector2(scrollContainer->GetRect().x, scrollContainer->GetRect().y);
+	return GetParameterForScrollBar(forScrollBar, viewPosition);
+}
+ 
+void UIScrollView::OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition)
+{
+	if (!byScrollBar || !scrollContainer)
+	{
+		return;
+	}
+
+	Rect curContainerRect = scrollContainer->GetRect();
+	if (byScrollBar->GetOrientation() == UIScrollBar::ORIENTATION_HORIZONTAL)
+	{
+		curContainerRect.x = -newPosition;
+	}
+	else if (byScrollBar->GetOrientation() == UIScrollBar::ORIENTATION_VERTICAL)
+	{
+		curContainerRect.y = -newPosition;
+	}
+	
+	scrollContainer->SetRect(curContainerRect);
+}
+
+float32 UIScrollView::GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam)
+{
+	if (forScrollBar->GetOrientation() == UIScrollBar::ORIENTATION_HORIZONTAL)
+	{
+		return vectorParam.x;
+	}
+	else if (forScrollBar->GetOrientation() == UIScrollBar::ORIENTATION_VERTICAL)
+	{
+		return vectorParam.y;
+	}
+
+	DVASSERT_MSG(false, "Unknown orientation!")
+	return 0.0f;
+}
+
+};

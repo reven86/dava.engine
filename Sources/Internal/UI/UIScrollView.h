@@ -24,7 +24,7 @@ namespace DAVA
 
 class UIScrollViewContainer;
 
-class UIScrollView : public UIControl
+class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
 public:
 	UIScrollView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
@@ -46,12 +46,25 @@ public:
 	const Vector2 GetContentSize() const;
 	
 	void RecalculateContentSize();
+	
+	// Set the speed of returning scroll container to bounds.
+	void SetReturnSpeed(int32 speedInPixelsPerSec);
+
+	// UIScrollBarDelegate implementation.
+	virtual float32 VisibleAreaSize(UIScrollBar *forScrollBar);
+    virtual float32 TotalAreaSize(UIScrollBar *forScrollBar);
+    virtual float32 ViewPosition(UIScrollBar *forScrollBar);
+    virtual void OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition);
+	
 protected:
 	virtual void LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader);
     virtual void LoadFromYamlNodeCompleted();
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 
 	Vector2 GetMaxSize(UIControl *control, Vector2 currentMaxSize, Vector2 parentShift);
+
+	// Get the X or Y parameter from the vector depending on the scrollbar orientation.
+	float32 GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam);
 
 	UIScrollViewContainer *scrollContainer;
 

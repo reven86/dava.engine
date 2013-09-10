@@ -19,10 +19,9 @@
 
 namespace DAVA 
 {
-UIScrollBar::UIScrollBar()
-{
-}
 
+REGISTER_CLASS(UIScrollBar);
+	
 UIScrollBar::UIScrollBar(const Rect &rect, eScrollOrientation requiredOrientation, bool rectInAbsoluteCoordinates/* = false*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
 ,	delegate(NULL)
@@ -154,4 +153,15 @@ void UIScrollBar::Draw(const UIGeometricData &geometricData)
     }
     UIControl::Draw(geometricData);
 }
+
+UIScrollBar::eScrollOrientation UIScrollBar::GetOrientation() const
+{
+	return (eScrollOrientation)orientation;
+}
+
+void UIScrollBar::SetOrientation(eScrollOrientation value)
+{
+	orientation = value;
+}
+
 };

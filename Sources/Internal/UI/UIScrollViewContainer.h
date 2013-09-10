@@ -34,8 +34,11 @@ public:
 public:
 	virtual void Update(float32 timeElapsed);
 	virtual void Input(UIEvent *currentTouch);
-	
+	virtual bool SystemInput(UIEvent *currentInput);
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+
+	// Set the speed of returning control to bounds.
+	void SetReturnSpeed(int32 speedInPixelsPerSec);
 
 	Vector2		scrollOrigin;
 
@@ -47,7 +50,10 @@ protected:
 	void		ScrollToPosition(const Vector2& position);
 	void   		SaveChilds(UIControl *parent, UIYamlLoader * loader, YamlNode * parentNode);
 
-	enum 
+	// Calculate the "out-of-bounds" offset for the container.
+	Vector2		CalculateOutboundsOffset();
+
+	enum
 	{
 		STATE_NONE = 0,
 		STATE_SCROLL,
@@ -62,6 +68,14 @@ protected:
 	Vector2		scrollStartInitialPosition;	// position of click
 	Vector2		scrollStartPosition;		// position related to current scroll start pos, can be different from scrollStartInitialPosition
 	Vector2		scrollCurrentPosition;	// scroll current position
+
+	// "Return to bounds" behaviour.
+	Vector2		scrollOutboundsOfset;		// how far the inner control is moved outside of the container.
+
+	// Return to bounds speed, in pixels per second.
+	int32		returnToBoundsSpeed;
+	
+	int 		mainTouch;	
 	bool		scrollStartMovement;
 	UIEvent		scrollTouch;
 };

@@ -876,7 +876,7 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
     {
         glGenRenderbuffers(1, &tx->rboID);
         glBindRenderbuffer(GL_RENDERBUFFER, tx->rboID);
-        glRenderbufferStorage(GL_RENDERBUFFER, DAVA_GL_DEPTH_COMPONENT, dx, dy);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, dx, dy);
     }
 		
 	RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tx->id, 0));
@@ -884,7 +884,9 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
     if(DEPTH_RENDERBUFFER == _depthFormat)
     {
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, tx->rboID);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, tx->rboID);
     }
+
 		
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if(status != GL_FRAMEBUFFER_COMPLETE)

@@ -19,4 +19,4 @@ APP_LDLIBS := -fuse-ld=gold -fno-exceptions
 APP_ABI := armeabi-v7a
 
 APP_CFLAGS += -std=c++11
-NDK_TOOLCHAIN_VERSION=4.7
+NDK_TOOLCHAIN_VERSION=4.8

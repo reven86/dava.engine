@@ -41,6 +41,10 @@ public:
 	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
 	virtual void SetBackgroundTransparency(bool enabled);
 
+	// Bounces control.
+	virtual bool GetBounces() const;
+	virtual void SetBounces(bool value);
+
 protected:
 	// Get the scale divider for Retina devices.
 	float GetScaleDivider();

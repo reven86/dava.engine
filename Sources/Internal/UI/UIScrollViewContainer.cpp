@@ -22,10 +22,13 @@ namespace DAVA
 REGISTER_CLASS(UIScrollViewContainer);
 
 const float32 SCROLL_BEGIN_PIXELS = 8.0f;
+const int32	DEFAULT_RETURN_TO_BOUNDS_SPEED = 200; // in pixels per second.
 
 UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
 :	UIControl(rect, rectInAbsoluteCoordinates),
-	scrollOrigin(0, 0)
+	scrollOrigin(0, 0),
+	returnToBoundsSpeed(DEFAULT_RETURN_TO_BOUNDS_SPEED),
+	mainTouch(-1)
 {
 	this->SetInputEnabled(true);
 	this->SetMultiInput(true);
@@ -51,17 +54,26 @@ void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
 	scrollOrigin = t->scrollOrigin;
 }
 
+void UIScrollViewContainer::SetReturnSpeed(int32 speedInPixelsPerSec)
+{
+	this->returnToBoundsSpeed = speedInPixelsPerSec;
+}
+
 void UIScrollViewContainer::StartScroll(Vector2 _startScrollPosition)
 {
 	scrollStartInitialPosition = _startScrollPosition;
 	scrollStartPosition = _startScrollPosition;
 	scrollCurrentPosition = _startScrollPosition;
 	scrollStartMovement = false;
+
+	scrollOutboundsOfset = CalculateOutboundsOffset();
 }
 
 void UIScrollViewContainer::ProcessScroll(Vector2 _currentScrollPosition)
 {
 	scrollCurrentPosition = _currentScrollPosition;
+
+	scrollOutboundsOfset = CalculateOutboundsOffset();
 
 	//	This check is required on iPhone, to avoid bugs in movement.	
 #if defined(__DAVAENGINE_IPHONE__)
@@ -144,6 +156,40 @@ void UIScrollViewContainer::Input(UIEvent *currentTouch)
 	}
 }
 
+bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
+{
+	if(!inputEnabled || !visible || controlState & STATE_DISABLED)
+	{
+		return false;
+	}
+	
+	if(currentTouch->phase == UIEvent::PHASE_BEGAN)
+	{
+		if(IsPointInside(currentTouch->point))
+		{
+			mainTouch = currentTouch->tid;
+			PerformEvent(EVENT_TOUCH_DOWN);
+			Input(currentTouch); 
+		}
+	}
+	else if(currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::PHASE_DRAG)
+	{
+		UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+		Input(currentTouch);
+	}
+	else if(currentTouch->tid == mainTouch && currentTouch->phase == UIEvent::PHASE_ENDED)
+	{
+		mainTouch = -1;
+	}
+
+	if (scrollStartMovement && currentTouch->tid == mainTouch)
+	{
+		return true;
+	}
+	
+	return UIControl::SystemInput(currentTouch);
+}
+
 void UIScrollViewContainer::Update(float32 timeElapsed)
 {
 	if (state == STATE_NONE)
@@ -161,31 +207,68 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 	{
 		Rect contentRect = this->GetRect();
 		Rect parentRect = this->GetParent()->GetRect();
-	
-		float32 shiftSizeX = abs(contentRect.x) + parentRect.dx;
-		float32 shiftSizeY = abs(contentRect.y) + parentRect.dy;
-	
-		if (contentRect.x > 0)
+
+		Vector2 curOutboundOffset = CalculateOutboundsOffset();
+		if (FLOAT_EQUAL(curOutboundOffset.x, 0.0f) && FLOAT_EQUAL(curOutboundOffset.y, 0.0f))
 		{
-			contentRect.x -= 1;
-			this->SetRect(contentRect);
+			// Returned back to the bounds.
+			return;
 		}
-		else if (shiftSizeX > contentRect.dx)
+
+		// Calculate the new position and clamp it to avoid overscrolling and flickering.
+		float32 curOffset = (timeElapsed * returnToBoundsSpeed);
+		
+		// Position and clamp X axis.
+		const float32 SCROLLING_EPSILON = 1.0f;
+		if (FLOAT_EQUAL(scrollOutboundsOfset.x, 0.0f))
 		{
-			contentRect.x += 1;
-			this->SetRect(contentRect);
+			// Do nothing in this case.
 		}
-	
-		if (contentRect.y > 0)
+		else if (scrollOutboundsOfset.x > 0)
 		{
-			contentRect.y -=  1;
-			this->SetRect(contentRect);
+			contentRect.x -= curOffset;
+			// Clamp "too right".
+			if (contentRect.x < SCROLLING_EPSILON)
+			{
+				contentRect.x = 0.0f;
+			}
 		}
-		else if (shiftSizeY > contentRect.dy)
+		else if (scrollOutboundsOfset.x < 0)
 		{
-			contentRect.y += 1;
-			this->SetRect(contentRect);
+			contentRect.x += curOffset;
+			// Clamp "too left".
+			if (contentRect.x + contentRect.dx > parentRect.dx)
+			{
+				contentRect.x = parentRect.dx - contentRect.dx;
+			}
 		}
+		
+		// The same with Y.
+		if (FLOAT_EQUAL(scrollOutboundsOfset.y, 0.0f))
+		{
+			// Do nothing in this case.
+		}
+		if (scrollOutboundsOfset.y > 0)
+		{
+			contentRect.y -= curOffset;
+			// Clamp "too top".
+			if (contentRect.y < SCROLLING_EPSILON)
+			{
+				contentRect.y = 0.0f;
+			}
+		}
+		else if (scrollOutboundsOfset.y < 0)
+		{
+			contentRect.y += curOffset;
+			// Clamp "too bottom".
+			if (contentRect.y + contentRect.dy > parentRect.dy)
+			{
+				contentRect.y = parentRect.dy - contentRect.dy;
+			}
+		}
+
+		// Done calculations.
+		this->SetRect(contentRect);
 	}
 }
 
@@ -215,6 +298,40 @@ void UIScrollViewContainer::SaveChilds(UIControl *parent, UIYamlLoader * loader,
 		// Save sub-childs
 		SaveChilds(childControl, loader, childNode);
 	}
+}
+
+Vector2 UIScrollViewContainer::CalculateOutboundsOffset()
+{
+	Rect contentRect = this->GetRect();
+	Rect parentRect = this->GetParent()->GetRect();
+	
+	float32 shiftSizeX = abs(contentRect.x) + parentRect.dx;
+	float32 shiftSizeY = abs(contentRect.y) + parentRect.dy;
+
+	Vector2 outboundsOffset;
+	if (contentRect.x > 0.0f)
+	{
+		// Scrolled too right.
+		outboundsOffset.x = contentRect.x;
+	}
+	else if (shiftSizeX > contentRect.dx)
+	{
+		// Scrolled too left (the offset is negative).
+		outboundsOffset.x = contentRect.dx - shiftSizeX;
+	}
+	
+	if (contentRect.y > 0.0f)
+	{
+		// Scrolled too bottom.
+		outboundsOffset.y = contentRect.y;
+	}
+	else if (shiftSizeY > contentRect.dy)
+	{
+		// Scrolled too top (the offset is negative).
+		outboundsOffset.y = contentRect.dy - shiftSizeY;
+	}
+
+	return outboundsOffset;
 }
 
 };

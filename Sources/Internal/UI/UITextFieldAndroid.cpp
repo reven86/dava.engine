@@ -40,11 +40,25 @@ void JniTextField::ShowField(UITextField* textField, const Rect& controlRect, co
 	if (activeTextField)
 		HideField();
 
-	jmethodID mid = GetMethodID("ShowField", "(FFFFLjava/lang/String;Z)V");
+	jmethodID mid = GetMethodID("ShowField", "(FFFFLjava/lang/String;ZIIIIII)V");
 	if (mid)
 	{
 		jstring jStrDefaultText = GetEnvironment()->NewStringUTF(defaultText);
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, rect.x, rect.y, rect.dx, rect.dy, jStrDefaultText, textField->IsPassword());
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				rect.x,
+				rect.y,
+				rect.dx,
+				rect.dy,
+				jStrDefaultText,
+				textField->IsPassword(),
+				textField->GetAutoCapitalizationType(),
+				textField->GetAutoCorrectionType(),
+				textField->GetSpellCheckingType(),
+				textField->GetKeyboardAppearanceType(),
+				textField->GetKeyboardType(),
+				textField->GetReturnKeyType());
 		GetEnvironment()->DeleteLocalRef(jStrDefaultText);
 		activeTextField = textField;
 		SafeRetain(activeTextField);
@@ -92,12 +106,19 @@ bool JniTextField::TextFieldKeyPressed(int32 replacementLocation, int32 replacem
 	if (!activeTextField)
 		return false;
 
-	UITextFieldDelegate* delegate = activeTextField->GetDelegate();
-	if (!delegate)
-		return true;
-
+	bool res = true;
 	WideString strText = StringToWString(text);
-	return delegate->TextFieldKeyPressed(activeTextField, replacementLocation, replacementLength, strText);
+	UITextFieldDelegate* delegate = activeTextField->GetDelegate();
+	if (delegate)
+		res = delegate->TextFieldKeyPressed(activeTextField, replacementLocation, replacementLength, strText);
+
+	if (res)
+	{
+		WideString curText = activeTextField->GetText();
+		curText.replace(replacementLocation, replacementLength, strText);
+		activeTextField->SetText(curText);
+	}
+	return res;
 }
 
 UITextFieldAndroid::UITextFieldAndroid(UITextField* textField)

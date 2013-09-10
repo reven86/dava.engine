@@ -60,6 +60,10 @@ public:
 	
 	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView) = 0;
 	virtual void SetBackgroundTransparency(bool enabled) { };
+
+	// Bounces settings.
+	virtual bool GetBounces() const {return false;};
+	virtual void SetBounces(bool value) {};
 };
 
 };

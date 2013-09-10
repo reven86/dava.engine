@@ -5,11 +5,8 @@ import java.util.TimeZone;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 import java.math.BigInteger;
-
-import android.bluetooth.BluetoothAdapter;
 import android.os.Build;
 import android.provider.Settings.Secure;
-import android.util.Log;
 
 public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";

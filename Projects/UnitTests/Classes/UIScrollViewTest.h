@@ -34,9 +34,10 @@ private:
 	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
 	
 private:
-	UIButton* finishTestBtn;
+	UIButton* 		finishTestBtn;
+	UIStaticText*	testMessageText;
 	UIScrollView*	scrollView;
-	bool testFinished;
+	bool 			testFinished;
 		
 	float32 onScreenTime;
 };

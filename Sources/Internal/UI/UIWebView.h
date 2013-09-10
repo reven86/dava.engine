@@ -41,6 +41,10 @@ public:
 	void SetDelegate(IUIWebViewDelegate* delegate);
 	void SetBackgroundTransparency(bool enabled);
 
+	// Enable/disable bounces.
+	void SetBounces(bool value);
+	bool GetBounces() const;
+
 protected:
 
 	// Platform-specific implementation of the Web View Control.

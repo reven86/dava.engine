@@ -150,6 +150,7 @@ void InputTest::LoadResources()
     webView2->SetVisible(false);
     webView2->SetDelegate((UIWebViewDelegate*)delegate);
 	webView2->OpenURL("http://www.apple.com");
+	webView2->SetBounces(true);
 	AddControl(webView2);
 
 	FilePath srcDir("~res:/TestData/InputTest/");
