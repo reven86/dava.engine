@@ -37,7 +37,9 @@ class Animation : public EventDispatcher
 {
 public:
 /*
- */	
+ */
+ 	static const int32 INFINITE = -1;
+		
 	enum
 	{
 		EVENT_ANIMATION_START = 1, 
@@ -113,7 +115,7 @@ inline void Animation::EnableReverse()
 
 inline void Animation::SetRepeatCount(int _repeatCount)
 {
-	repeatCount = _repeatCount - 1;
+	repeatCount = (_repeatCount == INFINITE) ? INFINITE : _repeatCount - 1;
 }
 
 inline void Animation::SetTagId(int tag)
