@@ -143,7 +143,7 @@ void Animation::Update(float32 timeElapsed)
 				{
 					time -= timeLength;
 					// Do not decrement repeat counter for loop
-					if (repeatCount != INFINITE)
+					if (repeatCount != INFINITE_LOOP)
 					{
 						repeatCount--;
 					}
