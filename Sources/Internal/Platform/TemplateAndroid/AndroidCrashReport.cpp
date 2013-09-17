@@ -50,6 +50,7 @@ static int fatalSignalsCount = (sizeof(fatalSignals) / sizeof(fatalSignals[0]));
 stack_t AndroidCrashReport::s_sigstk;
 
 jclass JniCrashReporter::gJavaClass = NULL;
+jclass JniCrashReporter::gStringClass = NULL;
 const char* JniCrashReporter::gJavaClassName = NULL;
 
 jclass JniCrashReporter::GetJavaClass() const
@@ -62,14 +63,27 @@ const char* JniCrashReporter::GetJavaClassName() const
 	return gJavaClassName;
 }
 
-void JniCrashReporter::ThrowJavaExpetion(const String& cppSignal)
+void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 {
-	jmethodID mid = GetMethodID("ThrowJavaExpetion", "(Ljava/lang/String;)V");
+	jmethodID mid = GetMethodID("ThrowJavaExpetion", "([Ljava/lang/String;[Ljava/lang/String;[I)V");
 	if (mid)
 	{
-		jstring jCppSignal = GetEnvironment()->NewStringUTF(cppSignal.c_str());
-		env->CallStaticVoidMethod(GetJavaClass(), mid, jCppSignal);
-		GetEnvironment()->DeleteLocalRef(jCppSignal);
+		jobjectArray jModuleArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
+		jobjectArray jFunctionArray = GetEnvironment()->NewObjectArray(chashSteps.size(), gStringClass, 0);
+		jintArray jFileLineArray = GetEnvironment()->NewIntArray(chashSteps.size());
+
+		int* fileLines = new int[chashSteps.size()];
+		for (uint i = 0; i < chashSteps.size(); ++i)
+		{
+			GetEnvironment()->SetObjectArrayElement(jModuleArray, i, GetEnvironment()->NewStringUTF(chashSteps[i].module.c_str()));
+			GetEnvironment()->SetObjectArrayElement(jFunctionArray, i, GetEnvironment()->NewStringUTF(chashSteps[i].function.c_str()));
+			fileLines[i] = chashSteps[i].fileLine;
+		}
+		GetEnvironment()->SetIntArrayRegion(jFileLineArray, 0, chashSteps.size(), fileLines);
+
+		env->CallStaticVoidMethod(GetJavaClass(), mid, jModuleArray, jFunctionArray, jFileLineArray);
+
+		delete [] fileLines;
 	}
 }
 
@@ -158,35 +172,34 @@ void AndroidCrashReport::Init()
 
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
-	String log;
+	Vector<JniCrashReporter::CrashStep> crashSteps;
 	if (unwind_backtrace_signal_arch != NULL)  {
 		map_info_t *map_info = acquire_my_map_info_list();
 		backtrace_frame_t frames[256] = {0};
 		backtrace_symbol_t symbols[256] = {0};
-		char temp[255];
 
 		const ssize_t size = unwind_backtrace_signal_arch(siginfo, sigcontext, map_info, frames, 0, 255);
-		sprintf(temp, "stack size: %d\n", size);
-		log += temp;
 		get_backtrace_symbols(frames,  size, symbols);
 		for (int i = 0; i < size; ++i)
 		{
-			log += "module name: ";		log += symbols[i].map_name;
-			log += "	function name: ";	log += symbols[i].demangled_name ? symbols[i].demangled_name : symbols[i].symbol_name;
-
-			sprintf(temp, "	pc: 0x%08x\n", symbols[i].relative_pc);
-			log += temp;
+			JniCrashReporter::CrashStep step;
+			step.module = symbols[i].map_name;
+			step.function = symbols[i].demangled_name ? symbols[i].demangled_name : symbols[i].symbol_name;;
+			step.fileLine = symbols[i].relative_pc;
+			crashSteps.push_back(step);
 		}
 		free_backtrace_symbols(symbols, size);
 		release_my_map_info_list(map_info);
 	}
 	else
 	{
-		log = "There is no cpp stack";
+		JniCrashReporter::CrashStep step;
+		step.module = "There is no cpp stack";
+		crashSteps.push_back(step);
 	}
 
 	JniCrashReporter crashReport;
-	crashReport.ThrowJavaExpetion(log);
+	crashReport.ThrowJavaExpetion(crashSteps);
 }
 
 

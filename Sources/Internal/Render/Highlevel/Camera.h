@@ -74,7 +74,7 @@ public:
         
         \param[in] fovInDegrees new for in degrees for the camera
      */ 
-	void SetFOV(const float32 &fovxInDegrees);
+	virtual void SetFOV(const float32 &fovxInDegrees);
 
 	/**
         \brief Function change width in ortho camera.
@@ -170,7 +170,7 @@ public:
         \brief return current Field Of View of this camera
         \returns FOV for this camera
      */ 
-    float32 GetFOV() const;
+    virtual float32 GetFOV() const;
         
     /** 
         \brief return current aspect for this camera

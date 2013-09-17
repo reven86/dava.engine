@@ -36,9 +36,13 @@ public:
 	virtual void Input(UIEvent *currentTouch);
 	virtual bool SystemInput(UIEvent *currentInput);
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
-
+	virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	
 	// Set the speed of returning control to bounds.
 	void SetReturnSpeed(int32 speedInPixelsPerSec);
+	// The amount of pixels user must move the finger on the button to switch from button to scrolling (default 15)
+	void SetTouchTreshold(int32 holdDelta);
+	int32 GetTouchTreshold();
 
 	Vector2		scrollOrigin;
 
@@ -48,7 +52,7 @@ protected:
 	void		ProcessScroll(Vector2 currentScrollPosition);
 	void		EndScroll();
 	void		ScrollToPosition(const Vector2& position);
-	void   		SaveChilds(UIControl *parent, UIYamlLoader * loader, YamlNode * parentNode);
+	void   		SaveChildren(UIControl *parent, UIYamlLoader * loader, YamlNode * parentNode);
 
 	// Calculate the "out-of-bounds" offset for the container.
 	Vector2		CalculateOutboundsOffset();
@@ -72,6 +76,9 @@ protected:
 	// "Return to bounds" behaviour.
 	Vector2		scrollOutboundsOfset;		// how far the inner control is moved outside of the container.
 
+	int32 		touchTreshold;
+	bool		enableHorizontalScroll;
+	bool		enableVerticalScroll;
 	// Return to bounds speed, in pixels per second.
 	int32		returnToBoundsSpeed;
 	

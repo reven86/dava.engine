@@ -64,7 +64,8 @@ JniExtension::~JniExtension()
 void JniExtension::SetJavaClass(JNIEnv* env, const char* className, jclass* gJavaClass, const char** gJavaClassName)
 {
 	*gJavaClass = (jclass) env->NewGlobalRef(env->FindClass(className));
-	*gJavaClassName = className;
+	if (gJavaClassName)
+		*gJavaClassName = className;
 }
 
 jmethodID JniExtension::GetMethodID(const char *methodName, const char *paramCode) const

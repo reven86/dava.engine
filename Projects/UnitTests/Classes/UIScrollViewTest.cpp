@@ -26,12 +26,39 @@ void UIScrollViewTest::LoadResources()
     DVASSERT(font);
 	font->SetSize(14);
     font->SetColor(Color::White());
+
+    UIYamlLoader::Load( this, "~res:/UI/Test/ScrollScreen.yaml" );
+	scrollView = DynamicTypeCheck<UIScrollView *>( FindByName( "Scrollview" ) );
 	
-	scrollView = new UIScrollView(Rect(10, 10, 250, 180));
-	scrollView->SetDebugDraw(true);
-	scrollView->SetReturnSpeed(500);
-	AddControl(scrollView);
+	UIControl* innerControl = FindByName("UIControl1");
+	if (innerControl)
+	{
+		innerControl->SetSprite("~res:/Gfx/UI/HorizontalScroll", 0);
+		innerControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+	}
 	
+    UIControl *control = FindByName("HorizontalScrollbar");
+    if( control )
+    {
+        UIScrollBar *horizontalScrollbar = DynamicTypeCheck<UIScrollBar *>( control );
+        horizontalScrollbar->GetSlider()->SetSprite("~res:/Gfx/UI/HorizontalScroll", 0);
+        horizontalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_HORIZONTAL);
+		horizontalScrollbar->GetSlider()->GetBackground()->SetLeftRightStretchCap(10);
+        horizontalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_HORIZONTAL );
+        horizontalScrollbar->SetDelegate(scrollView);
+    }
+	
+    control = FindByName("VerticalScrollbar");
+    if( control )
+    {
+        UIScrollBar *verticalScrollbar = DynamicTypeCheck<UIScrollBar *>( control );
+        verticalScrollbar->GetSlider()->SetSprite("~res:/Gfx/UI/VerticalScroll", 0);
+        verticalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
+        verticalScrollbar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
+        verticalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_VERTICAL );
+        verticalScrollbar->SetDelegate(scrollView);
+    }
+
 	UIControl *testControlChild = new UIControl(Rect(100, 100, 150, 150));
 	testControlChild->SetDebugDraw(true);
 	testControlChild->GetBackground()->SetColor(Color(0.3333, 0.3333, 0.5555, 1.0000));
@@ -75,7 +102,6 @@ void UIScrollViewTest::LoadResources()
 void UIScrollViewTest::UnloadResources()
 {
 	RemoveAllControls();
-	SafeRelease(scrollView);
 	SafeRelease(finishTestBtn);
 	SafeRelease(testMessageText);
 }

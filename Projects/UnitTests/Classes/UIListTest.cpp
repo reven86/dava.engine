@@ -8,9 +8,8 @@
 
 #include "UIListTest.h"
 
-#define CELL_COUNT 3;
-
-static const float LIST_TEST_AUTO_CLOSE_TIME = 30.0f;
+static const int32 CELL_COUNT = 50;
+static const float32 LIST_TEST_AUTO_CLOSE_TIME = 300.0f;
 
 UIListTestDelegate::UIListTestDelegate(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 	: UIControl(rect, rectInAbsoluteCoordinates)
@@ -72,7 +71,9 @@ void UIListTest::LoadResources()
 
 	YamlParser * parser = YamlParser::Create("~res:/TestData/ListTest/ListData.yaml");
 	UIYamlLoader * loader = new UIYamlLoader();
-			
+
+	bool scrollBarAddedToFirstList = false;
+
 	if (parser && parser->GetRootNode())
 	{
 		for (MultiMap<String, YamlNode*>::iterator t = parser->GetRootNode()->AsMap().begin(); t != parser->GetRootNode()->AsMap().end(); ++t)
@@ -90,13 +91,26 @@ void UIListTest::LoadResources()
 			UIListTestDelegate *listDelegate = NULL;
 			listDelegate = new UIListTestDelegate(list->GetRect());
 			list->SetDelegate(listDelegate);
-		
+			
 			AddControl(list);
+			
+			if (!scrollBarAddedToFirstList)
+			{
+				UIScrollBar *verticalScrollbar = new UIScrollBar(Rect(940, 0, 20, 620));
+				verticalScrollbar->GetSlider()->SetSprite("~res:/Gfx/UI/VerticalScroll", 0);
+				verticalScrollbar->GetSlider()->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_VERTICAL);
+				verticalScrollbar->GetSlider()->GetBackground()->SetTopBottomStretchCap(10);
+				verticalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_VERTICAL );
+				verticalScrollbar->SetDelegate(list);
+				AddControl(verticalScrollbar);
+
+				scrollBarAddedToFirstList = true;
+			}
 		}
 	}
-	
+
 	SafeRelease(loader);
-	SafeRelease(parser);	
+	SafeRelease(parser);
 
 	finishTestBtn = new UIButton(Rect(10, 210, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);

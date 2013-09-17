@@ -72,7 +72,7 @@ float GetUITextViewSizeDivider()
 		self.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(-90.0f));
 		self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider);
 		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);	
-		self.userInteractionEnabled = FALSE;
+		self.userInteractionEnabled = TRUE;
 		
 		cppTextField = tf;
 		DAVA::Rect rect = tf->GetRect();
@@ -94,6 +94,12 @@ float GetUITextViewSizeDivider()
 	return self;
 }
 
+-(id)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+    id hitView = [super hitTest:point withEvent:event];
+    if (hitView == self) return nil;
+    else return hitView;
+}
 
 - (void) dealloc
 {

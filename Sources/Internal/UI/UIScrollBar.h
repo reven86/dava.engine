@@ -61,6 +61,10 @@ public:
 	eScrollOrientation GetOrientation() const;
 	void SetOrientation(eScrollOrientation value);
 
+protected:
+	// Calculate the start offset based on the initial click point.
+	void CalculateStartOffset(const Vector2& inputPoint);
+
 private:
     int32 orientation;
     UIScrollBarDelegate *delegate;
@@ -68,7 +72,9 @@ private:
     UIControl *slider;
     
     bool resizeSliderProportionally;
-    
+
+	Vector2 startPoint;
+	Vector2 startOffset;
 };
 
 

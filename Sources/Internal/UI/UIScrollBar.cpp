@@ -55,29 +55,83 @@ void UIScrollBar::Input(UIEvent *currentInput)
     {
         return;
     }
-    
-    if (currentInput->phase == UIEvent::PHASE_BEGAN
-        || currentInput->phase == UIEvent::PHASE_DRAG
-        || currentInput->phase == UIEvent::PHASE_ENDED)
+
+    if ((currentInput->phase == UIEvent::PHASE_BEGAN) ||
+		(currentInput->phase == UIEvent::PHASE_DRAG) ||
+		(currentInput->phase == UIEvent::PHASE_ENDED))
     {
+		if (currentInput->phase == UIEvent::PHASE_BEGAN)
+		{
+			startPoint = currentInput->point;
+			CalculateStartOffset(currentInput->point);
+		}
+
         float32 newPos;
-        const Rect &r = GetGeometricData().GetUnrotatedRect();
-        if(orientation == ORIENTATION_HORIZONTAL)
-        {
-            newPos = (currentInput->point.x - r.x - slider->size.x/2) * (delegate->TotalAreaSize(this) / size.x);
-        }
-        else 
-        {
-            newPos = (currentInput->point.y - r.y - slider->size.y/2) * (delegate->TotalAreaSize(this) / size.y);
-        }
-        
+		if(orientation == ORIENTATION_HORIZONTAL)
+		{
+			float32 centerOffsetX = (currentInput->point.x - startPoint.x);
+			newPos = (startOffset.x + centerOffsetX) * (delegate->TotalAreaSize(this) / size.x);
+
+		}
+		else
+		{
+			float32 centerOffsetY = (currentInput->point.y - startPoint.y);
+			newPos = (startOffset.y + centerOffsetY) * (delegate->TotalAreaSize(this) / size.y);
+		}
+
+		// Clamp.
         newPos = Min(Max(0.0f, newPos), delegate->TotalAreaSize(this) - delegate->VisibleAreaSize(this));
         
         delegate->OnViewPositionChanged(this, newPos);
     }
 }
 
-    
+void UIScrollBar::CalculateStartOffset(const Vector2& inputPoint)
+{
+    const Rect &r = GetGeometricData().GetUnrotatedRect();
+	Rect sliderRect = slider->GetRect();
+
+	if(orientation == ORIENTATION_HORIZONTAL)
+	{
+		if (((inputPoint.x - r.x) >= sliderRect.x) &&
+			((inputPoint.x - r.x) <= sliderRect.x + sliderRect.dx))
+		{
+			// The tap happened inside the slider - start "as is".
+			startOffset.x = (sliderRect.x - r.x);
+		}
+		else
+		{
+			// The tap happened outside of the slider - center the slider.
+			startOffset.x = (inputPoint.x - r.x - slider->size.x/2);
+		}
+	}
+	else
+	{
+		// The same with Y.
+		if (((inputPoint.y - r.y) >= sliderRect.y) &&
+			((inputPoint.y - r.y) <= sliderRect.y + sliderRect.dy))
+		{
+			// The tap happened inside the slider - start "as is".
+			startOffset.y = (sliderRect.y - r.y);
+		}
+		else
+		{
+			// The tap happened outside of the slider - center the slider.
+			startOffset.y = (inputPoint.y - r.y - slider->size.y/2);
+		}
+	}
+	
+	if (startOffset.x < 0.0f)
+	{
+		startOffset.x = 0.0f;
+	}
+	
+	if (startOffset.y < 0.0f)
+	{
+		startOffset.y = 0.0f;
+	}
+}
+	
 void UIScrollBar::Draw(const UIGeometricData &geometricData)
 {
     if (delegate) 

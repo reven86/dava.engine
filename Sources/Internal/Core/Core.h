@@ -227,6 +227,8 @@ public:
 
 	virtual float32 GetVirtualScreenWidth();
 	virtual float32 GetVirtualScreenHeight();
+    virtual float32 GetRequestedVirtualScreenWidth();
+    virtual float32 GetRequestedVirtualScreenHeight();
 	virtual float32 GetVirtualScreenXMin();
 	virtual float32 GetVirtualScreenXMax();
 	virtual float32 GetVirtualScreenYMin();

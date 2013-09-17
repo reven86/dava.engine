@@ -757,4 +757,14 @@ void Core::SetIcon(int32 /*iconId*/)
 {
 };
 
+DAVA::float32 Core::GetRequestedVirtualScreenWidth()
+{
+    return requestedVirtualScreenWidth;
+}
+
+DAVA::float32 Core::GetRequestedVirtualScreenHeight()
+{
+    return requestedVirtualScreenHeight;
+}
+
 };

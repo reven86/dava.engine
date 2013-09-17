@@ -43,7 +43,13 @@ private:
 class JniCrashReporter: public JniExtension
 {
 public:
-	void ThrowJavaExpetion(const String& cppSignal);
+	struct CrashStep
+	{
+		String module;
+		String function;
+		int32 fileLine;
+	};
+	void ThrowJavaExpetion(const Vector<CrashStep>& chashSteps);
 
 protected:
 	virtual jclass GetJavaClass() const;
@@ -52,6 +58,7 @@ protected:
 public:
 	static jclass gJavaClass;
 	static const char* gJavaClassName;
+	static jclass gStringClass;
 };
 
 

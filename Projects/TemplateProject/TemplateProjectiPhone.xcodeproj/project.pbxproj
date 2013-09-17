@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		02F8B02B17CFAA6F00D5A334 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02F8B02717CFAA1F00D5A334 /* MessageUI.framework */; };
 		02F8B02C17CFAA7700D5A334 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 02F8B02917CFAA3800D5A334 /* AdSupport.framework */; };
+		02F8B04A17DE1AEC00D5A334 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 02F8B04917DE1AEC00D5A334 /* MainWindow-iPad.xib */; };
+		02F8B08A17E345BE00D5A334 /* TestScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B08817E345BE00D5A334 /* TestScreen.cpp */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
@@ -21,7 +23,6 @@
 		FE76DA041163F32F009E83B6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76DA031163F32F009E83B6 /* QuartzCore.framework */; };
 		FEC3CBD91284374A00541220 /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CBC51284374A00541220 /* FrameworkMain.cpp */; };
 		FEC3CBDA1284374A00541220 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CBC71284374A00541220 /* GameCore.cpp */; };
-		FEC3CBE01284374A00541220 /* TestScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CBD31284374A00541220 /* TestScreen.cpp */; };
 		FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */; };
 		FEC9201013BA2D7D006F347F /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = FEC9200D13BA2D7D006F347F /* main.mm */; };
 		FEC9201113BA2D7D006F347F /* MainWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = FEC9200E13BA2D7D006F347F /* MainWindow.xib */; };
@@ -49,6 +50,9 @@
 /* Begin PBXFileReference section */
 		02F8B02717CFAA1F00D5A334 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		02F8B02917CFAA3800D5A334 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		02F8B04917DE1AEC00D5A334 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = "MainWindow-iPad.xib"; path = "iOSSpecific/iPad/MainWindow-iPad.xib"; sourceTree = "<group>"; };
+		02F8B08817E345BE00D5A334 /* TestScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestScreen.cpp; sourceTree = "<group>"; };
+		02F8B08917E345BE00D5A334 /* TestScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestScreen.h; sourceTree = "<group>"; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D6058910D05DD3D006BFB54 /* TemplateProjectiPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TemplateProjectiPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -67,8 +71,6 @@
 		FEC3CBC61284374A00541220 /* FrameworkMain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameworkMain.h; sourceTree = "<group>"; };
 		FEC3CBC71284374A00541220 /* GameCore.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameCore.cpp; sourceTree = "<group>"; };
 		FEC3CBC81284374A00541220 /* GameCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameCore.h; sourceTree = "<group>"; };
-		FEC3CBD31284374A00541220 /* TestScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestScreen.cpp; sourceTree = "<group>"; };
-		FEC3CBD41284374A00541220 /* TestScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestScreen.h; sourceTree = "<group>"; };
 		FEC9200B13BA2D7D006F347F /* iPhoneProjectDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = iPhoneProjectDelegate.h; path = iOSSpecific/iPhoneProjectDelegate.h; sourceTree = "<group>"; };
 		FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = iPhoneProjectDelegate.mm; path = iOSSpecific/iPhoneProjectDelegate.mm; sourceTree = "<group>"; };
 		FEC9200D13BA2D7D006F347F /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = main.mm; path = iOSSpecific/main.mm; sourceTree = "<group>"; };
@@ -104,13 +106,13 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				02F8B08817E345BE00D5A334 /* TestScreen.cpp */,
+				02F8B08917E345BE00D5A334 /* TestScreen.h */,
 				FEC3CBC21284374A00541220 /* AppScreens.h */,
 				FEC3CBC51284374A00541220 /* FrameworkMain.cpp */,
 				FEC3CBC61284374A00541220 /* FrameworkMain.h */,
 				FEC3CBC71284374A00541220 /* GameCore.cpp */,
 				FEC3CBC81284374A00541220 /* GameCore.h */,
-				FEC3CBD31284374A00541220 /* TestScreen.cpp */,
-				FEC3CBD41284374A00541220 /* TestScreen.h */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -148,6 +150,7 @@
 		29B97317FDCFA39411CA2CEA /* Platform Dependant */ = {
 			isa = PBXGroup;
 			children = (
+				02F8B04917DE1AEC00D5A334 /* MainWindow-iPad.xib */,
 				FEC9200B13BA2D7D006F347F /* iPhoneProjectDelegate.h */,
 				FEC9200C13BA2D7D006F347F /* iPhoneProjectDelegate.mm */,
 				FEC9200D13BA2D7D006F347F /* main.mm */,
@@ -253,6 +256,7 @@
 			files = (
 				FEFCD63412AE78D90060A1A1 /* Data in Resources */,
 				FEC9201113BA2D7D006F347F /* MainWindow.xib in Resources */,
+				02F8B04A17DE1AEC00D5A334 /* MainWindow-iPad.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,9 +285,9 @@
 			files = (
 				FEC3CBD91284374A00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CBDA1284374A00541220 /* GameCore.cpp in Sources */,
-				FEC3CBE01284374A00541220 /* TestScreen.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
+				02F8B08A17E345BE00D5A334 /* TestScreen.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -308,7 +312,9 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = TemplateProjectiPhone;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -320,7 +326,9 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				PRODUCT_NAME = TemplateProjectiPhone;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

@@ -28,7 +28,6 @@
         * Created by Vitaliy Borodovsky 
 =====================================================================================*/
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
-#import "AppScreens.h"
 #import "DAVAEngine.h"
 #import "GameCore.h"
 
