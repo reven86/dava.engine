@@ -6,9 +6,9 @@ ifeq ($(OS),Windows_NT)
 	OS_INFO:=Windows
 else
 	os_mkdir=mkdir -p $1
-	OS_UIC:=~/QtSDK/Desktop/Qt/4.8.1/gcc/bin/uic
-	OS_MOC:=~/QtSDK/Desktop/Qt/4.8.1/gcc/bin/moc
-	OS_RCC:=~/QtSDK/Desktop/Qt/4.8.1/gcc/bin/rcc
+	OS_UIC:=/Developer/Tools/Qt/uic
+	OS_MOC:=/Developer/Tools/Qt/moc
+	OS_RCC:=/Developer/Tools/Qt/rcc
 	OS_INFO:=Unix
 endif
 

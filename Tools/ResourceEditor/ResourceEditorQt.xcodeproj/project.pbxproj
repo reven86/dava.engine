@@ -3990,7 +3990,7 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib";
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -4001,16 +4001,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				HEADER_SEARCH_PATHS = (
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtCore.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtNetwork.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtNetwork",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtGui.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtOpenGL.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtOpenGL",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/macx-xcode",
+					/Library/Frameworks/QtGui.framework/Headers,
+					/Library/Frameworks/QtCore.framework/Headers,
 					../../Sources/Internal,
 					../../Sources/Tools,
 					../../Sources/External,
@@ -4037,8 +4029,6 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
-					/System/Library/Frameworks/,
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
@@ -4109,23 +4099,15 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COPY_PHASE_STRIP = YES;
-				FRAMEWORK_SEARCH_PATHS = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib";
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = DAVA_QT;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				HEADER_SEARCH_PATHS = (
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtCore.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtCore",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtNetwork.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtNetwork",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtGui.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtGui",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtOpenGL.framework/Versions/4/Headers",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include/QtOpenGL",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/include",
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/mkspecs/macx-xcode",
+					/Library/Frameworks/QtGui.framework/Headers,
+					/Library/Frameworks/QtCore.framework/Headers,
 					../../Sources/Internal,
 					../../Sources/Tools,
 					../../Sources/External,
@@ -4152,8 +4134,6 @@
 				);
 				INFOPLIST_FILE = Info.plist;
 				LIBRARY_SEARCH_PATHS = (
-					"~/QtSDK/Desktop/Qt/4.8.1/gcc/lib",
-					/System/Library/Frameworks/,
 					../../Libs/libs/,
 					../../Libs/freetype/lib/,
 					../../Libs/oggvorbis/lib/,
