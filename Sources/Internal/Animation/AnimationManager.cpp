@@ -138,11 +138,11 @@ Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _
 	return 0;
 }
 
-bool AnimationManager::IsAnimating(AnimatedObject * owner, int32 track)
+bool AnimationManager::IsAnimating(const AnimatedObject * owner, int32 track) const
 {
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	for (Vector<Animation*>::const_iterator t = animations.begin(); t != animations.end(); ++t)
 	{
-		Animation * animation = *t;
+		const Animation * animation = *t;
 		if ((track != -1) && (animation->groupId != track))continue;
 		
 		if ((animation->owner == owner) && (animation->state & Animation::STATE_IN_PROGRESS))

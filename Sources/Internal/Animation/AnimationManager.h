@@ -69,7 +69,7 @@ public:
 	void SetAnimationsMultiplier(float32 f, int tag = 0);
 private:
 	Animation * FindLastAnimation(AnimatedObject * owner, int32 _groupId);
-	bool IsAnimating(AnimatedObject * owner, int32 trackId);
+	bool IsAnimating(const AnimatedObject * owner, int32 trackId) const;
 	
 	void AddAnimation(Animation * _animation);
 	void RemoveAnimation(Animation * _animation);
