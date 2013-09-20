@@ -253,6 +253,14 @@ namespace DAVA
 		windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
 		MoveWindow(hWindow, windowLeft, windowTop, realWidth, realHeight, TRUE);
 	
+        RAWINPUTDEVICE Rid;
+
+        Rid.usUsagePage = 0x01; 
+        Rid.usUsage = 0x02; 
+        Rid.dwFlags = 0;
+        Rid.hwndTarget = 0;
+
+        RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
 
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
@@ -529,6 +537,9 @@ namespace DAVA
 		SendMessage(hWindow, WM_SETICON, ICON_BIG, (LPARAM)smallIcon);
 	}
 
+    bool isLeftButtonPressed = false;
+    bool isRightButtonPressed = false;
+    bool isMiddleButtonPressed = false;
 	static Vector<DAVA::UIEvent> activeTouches;
 	int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEvent> *outTouches)
 	{
@@ -583,7 +594,7 @@ namespace DAVA
 			phase = UIEvent::PHASE_ENDED;
 			//		NSLog(@"Event phase PHASE_ENDED");
 		}
-		else if(LOWORD(wParam)&MK_LBUTTON || LOWORD(wParam)&MK_RBUTTON || LOWORD(wParam)&MK_MBUTTON /*|| LOWORD(wParam)&MK_XBUTTON1 || LOWORD(wParam)&MK_XBUTTON2*/)
+		else if(LOWORD(wParam)&MK_LBUTTON || LOWORD(wParam)&MK_RBUTTON || LOWORD(wParam)&MK_MBUTTON || isRightButtonPressed || isLeftButtonPressed /*|| LOWORD(wParam)&MK_XBUTTON1 || LOWORD(wParam)&MK_XBUTTON2*/)
 		{
 			phase = UIEvent::PHASE_DRAG;
 		}
@@ -780,8 +791,65 @@ namespace DAVA
 			OnMouseEvent(message, wParam, lParam);
 			break;
 
+        case WM_INPUT:
+        {
+            UINT dwSize;
+
+            GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, 
+                sizeof(RAWINPUTHEADER));
+            LPBYTE lpb = new BYTE[dwSize];
+            if (lpb == NULL)
+                return 0;
+
+            if (GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, 
+                sizeof(RAWINPUTHEADER)) != dwSize )
+                OutputDebugString (TEXT("GetRawInputData does not return correct size !\n")); 
+
+            RAWINPUT* raw = (RAWINPUT*)lpb;
+
+            if(raw->header.dwType == RIM_TYPEMOUSE && !raw->data.mouse.usFlags)
+            {
+                LONG x = raw->data.mouse.lLastX;
+                LONG y = raw->data.mouse.lLastY;
+
+                if(InputSystem::Instance()->IsCursorPining())
+                {
+                    RECT wndRect;
+                    GetWindowRect(hWnd, &wndRect);
+                    int centerX = (int)((wndRect.left + wndRect.right) >> 1);
+                    int centerY = (int)((wndRect.bottom + wndRect.top) >> 1);
+                    SetCursorPos(centerX, centerY);
+                }
+                else
+                {
+                    POINT p;
+                    GetCursorPos(&p);
+                    ScreenToClient(hWnd, &p);
+                    x += p.x;
+                    y += p.y;
+                }
+
+                USHORT buttsFlags = raw->data.mouse.usButtonFlags;
+                if(buttsFlags & RI_MOUSE_LEFT_BUTTON_DOWN)
+                    isLeftButtonPressed = true;
+                if(buttsFlags & RI_MOUSE_LEFT_BUTTON_UP)
+                    isLeftButtonPressed = false;
+                if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_DOWN)
+                    isRightButtonPressed = true;
+                if(buttsFlags & RI_MOUSE_RIGHT_BUTTON_UP)
+                    isRightButtonPressed = false;
+                if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_DOWN)
+                    isMiddleButtonPressed = true;
+                if(buttsFlags & RI_MOUSE_MIDDLE_BUTTON_UP)
+                    isMiddleButtonPressed = false;
+
+                OnMouseEvent(message, 0, MAKELPARAM(x, y));
+            }
+
+            break;
+        }
 		case WM_MOUSEMOVE:
-			OnMouseEvent(message, wParam, lParam);
+            //OnMouseEvent(message, wParam, lParam);
 			break;
 
 		case WM_NCMOUSEMOVE:

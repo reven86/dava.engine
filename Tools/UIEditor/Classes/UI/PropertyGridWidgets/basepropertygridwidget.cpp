@@ -329,9 +329,12 @@ void BasePropertyGridWidget::HandleLineEditEditingFinished(QLineEdit* senderWidg
     }
     
 	
-	// Don't update the property if the text wasn't actually changed.
-    QString curValue = PropertiesHelper::GetAllPropertyValues<QString>(this->activeMetadata, iter->second.getProperty().name());
-	if (curValue == senderWidget->text())
+	// Don't update the property if the text wasn't actually changed. One exception though -
+	// if the property values differ for different states, force update them. See please
+	// DF-1987 for details.
+	bool isValueDifferForStates = false;
+    QString curValue = PropertiesHelper::GetAllPropertyValues<QString>(this->activeMetadata, iter->second.getProperty().name(), isValueDifferForStates);
+	if (curValue == senderWidget->text() && !isValueDifferForStates)
 	{
 		return;
 	}

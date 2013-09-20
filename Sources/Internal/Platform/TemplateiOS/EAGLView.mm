@@ -68,6 +68,11 @@
 //			// The device is an iPhone or iPod touch.
 ////			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(320, 480);
 //		}
+
+		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrame:) name:UIKeyboardDidChangeFrameNotification object:nil];
+
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
         eaglLayer.opaque = TRUE;
@@ -140,7 +145,7 @@
 		currFPS = 60;
 		displayLink = nil;
 		animationTimer = nil;
-		blockDrawViewIfAssertHappened = false;
+		blockDrawView = false;
 		
         // A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
         // class is used as fallback when it isn't available.
@@ -159,9 +164,9 @@
 
 - (void) drawView:(id)sender
 {
-	if (blockDrawViewIfAssertHappened)
+	if (blockDrawView)
 	{
-		// Yuri Coder, 2013/02/06. We are displaying ASSERT dialog and need block  rendering because RenderManager might be already locked here.
+		// Yuri Coder, 2013/02/06. In case we are displaying ASSERT dialog we need to block rendering because RenderManager might be already locked here.
 		return;
 	}
 
@@ -362,7 +367,17 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 
 - (void) blockDrawing
 {
-	blockDrawViewIfAssertHappened = true;
+	blockDrawView = true;
+}
+
+- (void)keyboardWillChangeFrame:(NSNotification *)notification
+{
+	blockDrawView = true;
+}
+
+- (void)keyboardDidChangeFrame:(NSNotification *)notification
+{
+	blockDrawView = false;
 }
 
 @end

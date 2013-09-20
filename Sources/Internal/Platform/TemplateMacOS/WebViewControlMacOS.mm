@@ -201,7 +201,7 @@ void WebViewControl::SetRect(const Rect& rect)
 	webViewRect.size.height = rect.dy * Core::GetVirtualToPhysicalFactor();
 	
 	webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-	webViewRect.origin.y = (Core::Instance()->GetPhysicalScreenHeight() - rect.y - rect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
+	webViewRect.origin.y = Core::Instance()->GetPhysicalScreenHeight() - (rect.y + rect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
 	
 	webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
 	webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;

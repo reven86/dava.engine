@@ -184,7 +184,6 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	PrepareSprite();
 	textBlock->PreDraw();
 
-	background->SetDrawColor(textColor);
 	UIControl::Draw(geometricData);
 
 	if(0 != shadowColor.a && (0 != shadowOffset.dx || 0 != shadowOffset.dy))

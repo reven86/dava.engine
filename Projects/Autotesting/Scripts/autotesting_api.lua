@@ -133,6 +133,19 @@ function SaveArchiveToDB(name, archive, document)
 	autotestingSystem:SaveKeyedArchiveToDB(name, archive, document)
 end
 
+function GetParameter(name, default)
+	var = testData[name]
+	if not var then
+		if default then
+			return default
+		else
+			OnError("Couldn't find value for variable "..name)
+		end
+	end
+	
+	return var
+end
+
 function ReadString(name)
 	return autotestingSystem:ReadString(name)
 end
@@ -362,7 +375,7 @@ function GetTimeElapsed()
 end
 function WaitControl(name, time)
     local waitTime = time or TIMEOUT
-    Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
+    --Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
     
     local elapsedTime = 0.0
     while elapsedTime < waitTime do

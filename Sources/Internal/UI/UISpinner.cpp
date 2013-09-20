@@ -284,30 +284,20 @@ void UISpinner::LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader)
 
 void UISpinner::CopyDataFrom(UIControl *srcControl)
 {
-	UIControl* buttonPrevClone = buttonPrevious->Clone();
-	UIControl* buttonNextClone = buttonNext->Clone();
-	UIControl* contentClone = content->Clone();
     ReleaseButtons();
-
     UIControl::CopyDataFrom(srcControl);
-	
-	// Yuri Coder, 2013/03/28. CopyDataFrom works with real children,
-	// so need to copy inner buttons explicitely.
-	AddControl(buttonPrevClone);
-	SafeRelease(buttonPrevClone);
 
-	AddControl(buttonNextClone);
-	SafeRelease(buttonNextClone);
+	// Yuri Coder, 2013/03/28. CopyDataFrom works with real children, so need to copy inner buttons explicitely.
+	UISpinner* t = static_cast<UISpinner*>(srcControl);
 
-	AddControl(contentClone);
-	SafeRelease(contentClone);
+	this->buttonPrevious = static_cast<UIButton*>(t->buttonPrevious->Clone());
+	this->buttonNext = static_cast<UIButton*>(t->buttonNext->Clone());
+	this->content = t->content->Clone();
 
-    if (IsPointerToExactClass<UISpinner>(srcControl)) //we can also copy other controls, that's why we check
-    {
-        UISpinner * srcSpinner = static_cast<UISpinner*>(srcControl);
-        buttonNext->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(srcSpinner, &UISpinner::OnNextPressed));
-        buttonPrevious->RemoveEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(srcSpinner, &UISpinner::OnPreviousPressed));
-    }
+	AddControl(buttonPrevious);
+	AddControl(buttonNext);
+	AddControl(content);
+
     InitButtons();
 }
 
@@ -363,12 +353,12 @@ YamlNode * UISpinner::SaveToYamlNode(UIYamlLoader * loader)
 
 	//Control Type
 	SetPreferredNodeType(node, "UISpinner");
-	
+
 	// "Prev/Next" buttons have to be saved too.
-	YamlNode* prevButtonNode = buttonPrevious->SaveToYamlNode(loader);
-	YamlNode* nextButtonNode = buttonNext->SaveToYamlNode(loader);
-	YamlNode* contentNode = content->SaveToYamlNode(loader);
-	
+	YamlNode* prevButtonNode = SaveToYamlNodeRecursive(loader, buttonPrevious);
+	YamlNode* nextButtonNode = SaveToYamlNodeRecursive(loader, buttonNext);
+	YamlNode* contentNode = SaveToYamlNodeRecursive(loader, content);
+
 	node->AddNodeToMap(UISPINNER_BUTTON_PREVIOUS_NAME, prevButtonNode);
 	node->AddNodeToMap(UISPINNER_BUTTON_NEXT_NAME, nextButtonNode);
 	node->AddNodeToMap(UISPINNER_CONTENT_NAME, contentNode);
@@ -393,7 +383,8 @@ List<UIControl* > UISpinner::GetSubcontrols()
 	// Lookup for the contols by their names.
 	AddControlToList(subControls, UISPINNER_BUTTON_PREVIOUS_NAME);
 	AddControlToList(subControls, UISPINNER_BUTTON_NEXT_NAME);
-    
+	AddControlToList(subControls, UISPINNER_CONTENT_NAME);
+
 	return subControls;
 }
 
