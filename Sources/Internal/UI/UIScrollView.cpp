@@ -317,4 +317,17 @@ float32 UIScrollView::GetParameterForScrollBar(UIScrollBar* forScrollBar, const 
 	return 0.0f;
 }
 
+void UIScrollView::AddControlToContainer(UIControl* control)
+{
+	if (scrollContainer)
+	{
+		scrollContainer->AddControl(control);
+	}
+}
+	
+UIScrollViewContainer* UIScrollView::GetContainer()
+{
+	return scrollContainer;
+}
+
 };

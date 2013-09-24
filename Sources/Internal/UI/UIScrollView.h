@@ -33,7 +33,13 @@ public:
 	virtual void AddControl(UIControl *control);
 	virtual List<UIControl* >& GetRealChildren();
     virtual List<UIControl* > GetSubcontrols();
-	
+
+	// Add the control directly to the Scroll View Container.
+	void AddControlToContainer(UIControl* control);
+
+	// Access to the Scroll View Container.
+	UIScrollViewContainer* GetContainer();
+
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 	
