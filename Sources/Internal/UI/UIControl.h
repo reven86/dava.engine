@@ -438,7 +438,7 @@ public:
 	 \brief Returns actual control transformation and metrics.
 	 \returns control geometric data.
 	 */
-	virtual const UIGeometricData &GetGeometricData();
+	virtual const UIGeometricData &GetGeometricData() const;
 
 	/**
 	 \brief Sets the scaled control rect.
@@ -1093,7 +1093,7 @@ public:
 	 \param[in] expandWithFocus Is area should be expanded with focus.
 	 \returns True if inside the control rect.
 	 */
-	virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false);
+	virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false) const;
 
     virtual bool IsLostFocusAllowed(UIControl *newFocus);
 
@@ -1169,7 +1169,7 @@ protected:
 	bool _bottomAlignEnabled;
 	
 	Rect returnedRect;
-	UIGeometricData tempGeometricData;
+	mutable UIGeometricData tempGeometricData;
 
 	EventDispatcher *eventDispatcher;
 	
