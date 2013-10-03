@@ -45,6 +45,8 @@ public:
 	
 	void SetIsPassword(bool isPassword);
 
+	void SetInputEnabled(bool value);
+
 	// Keyboard traits.
 	void SetAutoCapitalizationType(DAVA::int32 value);
 	void SetAutoCorrectionType(DAVA::int32 value);

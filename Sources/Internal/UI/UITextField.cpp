@@ -832,7 +832,14 @@ void UITextField::SetEnableReturnKeyAutomatically(bool value)
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetEnableReturnKeyAutomatically(value);
 #endif
+}
 
+void UITextField::SetInputEnabled(bool isEnabled, bool hierarchic)
+{
+	UIControl::SetInputEnabled(isEnabled, hierarchic);
+#ifdef __DAVAENGINE_IPHONE__
+	textFieldiPhone->SetInputEnabled(isEnabled);
+#endif
 }
 
 }; // namespace

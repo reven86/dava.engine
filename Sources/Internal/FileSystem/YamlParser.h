@@ -232,6 +232,9 @@ private:
     // Return the identation string of the appropriate depth.
     String PrepareIdentedString(int16 depth);
 
+	// Replace \n characters to "\n" string.
+	WideString ReplaceLineEndings(const WideString& rawString) const;
+
 	YamlNode			* rootObject;
 	String				lastMapKey;
 	

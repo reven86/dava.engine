@@ -178,6 +178,11 @@ public:
     virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 	
 	/**
+	 \brief Sets contol input processing ability.
+	 */
+	virtual void SetInputEnabled(bool isEnabled, bool hierarchic = true);
+
+	/**
 	 \brief Returns the font of control
 	 \returns Font font of the control
 	 */

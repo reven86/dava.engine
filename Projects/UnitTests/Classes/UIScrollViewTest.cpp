@@ -84,7 +84,7 @@ void UIScrollViewTest::LoadResources()
 	testButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIScrollViewTest::ButtonPressed));
 	testButton->AddControl(testControl);
 	
-	scrollView->AddControl(testButton);
+	scrollView->AddControlToContainer(testButton);
 	
 	testMessageText = new UIStaticText(Rect(10, 210, 300, 30));
 	testMessageText->SetFont(font);

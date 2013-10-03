@@ -297,8 +297,9 @@ void UIControlMetadata::SetSelected(const bool value)
     {
         return;
     }
-    
-    GetActiveUIControl()->SetSelected(value);
+
+   	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
+    GetActiveUIControl()->SetSelected(value, false);
 }
 
 bool UIControlMetadata::GetVisible() const
@@ -319,7 +320,8 @@ void UIControlMetadata::SetVisible(const bool value)
         return;
     }
     
-    GetActiveUIControl()->SetVisible(value);
+	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
+    GetActiveUIControl()->SetVisible(value, false);
 }
 
 bool UIControlMetadata::GetEnabled() const
@@ -338,8 +340,9 @@ void UIControlMetadata::SetEnabled(const bool value)
     {
         return;
     }
-    
-    GetActiveUIControl()->SetDisabled(!value);
+
+   	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
+    GetActiveUIControl()->SetDisabled(!value, false);
 }
 
 bool UIControlMetadata::GetInput() const
@@ -358,8 +361,9 @@ void UIControlMetadata::SetInput(const bool value)
     {
         return;
     }
-    
-    GetActiveUIControl()->SetInputEnabled(value);
+
+   	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
+    GetActiveUIControl()->SetInputEnabled(value, false);
 }
 
 bool UIControlMetadata::GetClipContents() const

@@ -1345,20 +1345,11 @@ bool YamlParser::WriteStringListNodeToYamlFie(File* fileToSave, const String& no
 	const char16* NAME_VALUE_DELIMITER = L"\": ";
 	WideString resultString = L"\"";
 
-	// String nodes must be enquoted.
-	resultString += StringToWString(nodeName);
-
+	// String nodes must be enquoted and contains no "\n" chars.
+	resultString += ReplaceLineEndings(StringToWString(nodeName));
 	resultString += NAME_VALUE_DELIMITER;
 
-	WideString nodeValue = currentNode->AsWString();
-	
-	size_t pos = WideString::npos;
-	while ((pos = nodeValue.find(L"\n")) != WideString::npos)
-	{
-		nodeValue.replace(pos, WideString(L"\n").length(), L"\\n");
-	}
-
-	resultString += nodeValue;
+	resultString += ReplaceLineEndings(currentNode->AsWString());
 	resultString += L"\n";
 
 	return WriteStringToYamlFile(fileToSave, resultString);
@@ -1529,6 +1520,18 @@ String YamlParser::PrepareIdentedString(int16 depth)
     delete[] spacesBuffer;
 
     return resultString;
+}
+
+WideString YamlParser::ReplaceLineEndings(const WideString& rawString) const
+{
+	WideString resultString = rawString;
+	size_t pos = WideString::npos;
+	while ((pos = resultString.find(L"\n")) != WideString::npos)
+	{
+		resultString.replace(pos, WideString(L"\n").length(), L"\\n");
+	}
+
+	return resultString;
 }
 
 bool YamlParser::SaveNodeRecursive(File* fileToSave, const String& nodeName,
