@@ -28,6 +28,10 @@
 namespace DAVA
 {
 
+int32 DeviceInfo::screenHeight;
+int32 DeviceInfo::screenWidth;
+int32 DeviceInfo::screenScale;
+
 String DeviceInfo::GetVersion()
 {
 	NSString* systemVersion = [[UIDevice currentDevice] systemVersion];
@@ -212,6 +216,19 @@ WideString DeviceInfo::GetName()
     NSData* pSData              =   [ deviceName dataUsingEncoding : pEncode ];
     
     return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
+}
+
+
+DeviceInfo::ScreenInfo DeviceInfo::GetScreenInfo()
+{
+	return DeviceInfo::ScreenInfo(screenWidth, screenHeight, screenScale);
+}
+
+void DeviceInfo::SetScreenInfo(int32 w, int32 h, int32 scale)
+{
+	screenWidth = w;
+	screenHeight = h;
+	screenScale = scale;
 }
 
 }
