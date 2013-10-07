@@ -28,7 +28,9 @@ static const String UISCROLL_VIEW_CONTAINER_NAME = "scrollContainerControl";
 
 UIScrollView::UIScrollView(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
 :	UIControl(rect, rectInAbsoluteCoordinates),
-	scrollContainer(new UIScrollViewContainer())
+	scrollContainer(new UIScrollViewContainer()),
+	scrollHorizontal(new ScrollHelper()),
+	scrollVertical(new ScrollHelper())
 {
 	inputEnabled = true;
 	multiInput = true;
@@ -42,12 +44,16 @@ UIScrollView::UIScrollView(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 UIScrollView::~UIScrollView()
 {
 	SafeRelease(scrollContainer);
+	SafeRelease(scrollHorizontal);
+	SafeRelease(scrollVertical);
 }
 
 void UIScrollView::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 {
 	UIControl::SetRect(rect, rectInAbsoluteCoordinates);
-	
+
+	scrollHorizontal->SetViewSize(rect.dx);
+	scrollVertical->SetViewSize(rect.dy);
 	RecalculateContentSize();
 }
 
@@ -55,6 +61,8 @@ void UIScrollView::SetSize(const DAVA::Vector2 &newSize)
 {
     UIControl::SetSize(newSize);
 
+	scrollHorizontal->SetViewSize(newSize.x);
+	scrollVertical->SetViewSize(newSize.y);
 	RecalculateContentSize();
 }
 
@@ -160,9 +168,11 @@ void UIScrollView::FindRequiredControls()
 
 void UIScrollView::SetPadding(const Vector2 & padding)
 {
-	if (!scrollContainer)
+	if (!scrollHorizontal || !scrollVertical || !scrollContainer)
+	{
 		return;
-
+	}
+	
 	Rect parentRect = this->GetRect();
 	Rect contentRect = scrollContainer->GetRect();
 	
@@ -178,6 +188,8 @@ void UIScrollView::SetPadding(const Vector2 & padding)
 	}
 	
 	scrollContainer->SetRect(contentRect);
+	scrollHorizontal->SetPosition(contentRect.x);
+	scrollVertical->SetPosition(contentRect.y);
 }
 
 const Vector2 UIScrollView::GetPadding() const
@@ -223,68 +235,86 @@ YamlNode * UIScrollView::SaveToYamlNode(UIYamlLoader * loader)
 
 void UIScrollView::RecalculateContentSize()
 {
-	if (scrollContainer)
+	if (!scrollHorizontal || !scrollVertical || !scrollContainer)
 	{
-		Rect contentRect = scrollContainer->GetRect();
-		Rect parentRect = this->GetRect();
-		
-		// Get max size of content - all childrens
-		Vector2 maxSize = GetMaxSize(scrollContainer,
-										Vector2(parentRect.dx + abs(contentRect.x), parentRect.dy + abs(contentRect.y)),
-										Vector2(0, 0));
-
-		// Update scroll view content size
-		scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
+		return;
 	}
+	
+	Rect contentRect = scrollContainer->GetRect();
+	Rect parentRect = this->GetRect();
+		
+	// Get max size of content - all childrens
+	Vector2 maxSize = GetMaxSize(scrollContainer,
+									Vector2(parentRect.dx + abs(contentRect.x), parentRect.dy + abs(contentRect.y)),
+									Vector2(0, 0));
+
+	// Update scroll view content size
+	scrollContainer->SetRect(Rect(contentRect.x, contentRect.y, maxSize.x, maxSize.y));
+	scrollHorizontal->SetElementSize(maxSize.x);
+	scrollVertical->SetElementSize(maxSize.y);
 }
 
-void UIScrollView::SetReturnSpeed(int32 speedInPixelsPerSec)
+void UIScrollView::SetReturnSpeed(float32 speedInSeconds)
 {
-	if (scrollContainer)
+	if (!scrollHorizontal || !scrollVertical)
 	{
-		scrollContainer->SetReturnSpeed(speedInPixelsPerSec);
+		return;
 	}
+	
+	scrollHorizontal->SetBorderMoveModifer(speedInSeconds);
+	scrollVertical->SetBorderMoveModifer(speedInSeconds);
+}
+
+void UIScrollView::SetScrollSpeed(float32 speedInSeconds)
+{
+	if (!scrollHorizontal || !scrollVertical)
+	{
+		return;
+	}
+	
+	scrollHorizontal->SetSlowDownTime(speedInSeconds);
+	scrollVertical->SetSlowDownTime(speedInSeconds);
 }
 
 float32 UIScrollView::VisibleAreaSize(UIScrollBar *forScrollBar)
 {
-	if (!forScrollBar || !scrollContainer)
+	if (!forScrollBar || !scrollHorizontal || !scrollVertical)
 	{
 		return 0.0f;
 	}
 
 	// Visible area is our rect.
-	Vector2 visibleAreaSize(GetRect().dx, GetRect().dy);
+	Vector2 visibleAreaSize(scrollHorizontal->GetViewSize(), scrollVertical->GetViewSize());
 	return GetParameterForScrollBar(forScrollBar, visibleAreaSize);
 }
 
 float32 UIScrollView::TotalAreaSize(UIScrollBar *forScrollBar)
 {
-	if (!forScrollBar || !scrollContainer)
+	if (!forScrollBar || !scrollHorizontal || !scrollVertical)
 	{
 		return 0.0f;
 	}
 
 	// Total area is the rect of the container.
-	Vector2 totalAreaSize(scrollContainer->GetRect().dx, scrollContainer->GetRect().dy);
+	Vector2 totalAreaSize(scrollHorizontal->GetElementSize(), scrollVertical->GetElementSize());
 	return GetParameterForScrollBar(forScrollBar, totalAreaSize);
 }
 
 float32 UIScrollView::ViewPosition(UIScrollBar *forScrollBar)
 {
-	if (!forScrollBar || !scrollContainer)
+	if (!forScrollBar || !scrollHorizontal || !scrollVertical)
 	{
 		return 0.0f;
 	}
 
 	// View position is the position of the scroll container in relation to us.
-	Vector2 viewPosition = Vector2(scrollContainer->GetRect().x, scrollContainer->GetRect().y);
+	Vector2 viewPosition = Vector2(scrollHorizontal->GetPosition(), scrollVertical->GetPosition());
 	return GetParameterForScrollBar(forScrollBar, viewPosition);
 }
  
 void UIScrollView::OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPosition)
 {
-	if (!byScrollBar || !scrollContainer)
+	if (!byScrollBar || !scrollContainer || !scrollHorizontal || !scrollVertical)
 	{
 		return;
 	}
@@ -299,7 +329,8 @@ void UIScrollView::OnViewPositionChanged(UIScrollBar *byScrollBar, float32 newPo
 		curContainerRect.y = -newPosition;
 	}
 	
-	scrollContainer->SetRect(curContainerRect);
+	scrollHorizontal->SetPosition(curContainerRect.x);
+	scrollVertical->SetPosition(curContainerRect.y);
 }
 
 float32 UIScrollView::GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam)
@@ -328,6 +359,16 @@ void UIScrollView::AddControlToContainer(UIControl* control)
 UIScrollViewContainer* UIScrollView::GetContainer()
 {
 	return scrollContainer;
+}
+
+ScrollHelper* UIScrollView::GetHorizontalScroll()
+{
+	return scrollHorizontal;
+}
+
+ScrollHelper* UIScrollView::GetVerticalScroll()
+{
+	return scrollVertical;
 }
 
 };

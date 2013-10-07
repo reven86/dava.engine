@@ -9,12 +9,12 @@ Scrollview:
     type: "UIScrollView"
     scrollContainerControl:
         drawType: "DRAW_ALIGNED"
-        rect: [0.0000, 0.0000, 1095.0000, 2000.0000]
+        rect: [0.0000, 0.0000, 1500.0000, 2000.0000]
         type: "UIScrollViewContainer"
         BigContent:
             drawType: "DRAW_FILL"
             noInput: "true"
-            rect: [0.0000, 0.0000, 1095.0000, 1753.0000]
+            rect: [0.0000, 0.0000, 1500.0000, 2000.0000]
             type: "UIControl"
             UIControl1:
                 color: [0.6431, 0.0627, 1.0000, 1.0000]

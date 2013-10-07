@@ -167,9 +167,10 @@ bool HierarchyTreeAggregatorNode::Save(YamlNode* node, const QString& path, bool
 		DVASSERT(aggregatorControl);
 		if (!aggregatorControl)
 			continue;
-
-		String aggregatorName = FilePath(path.toStdString()).GetFilename();
-		aggregatorControl->SetAggregatorPath(aggregatorName);
+			
+		// DF-2164 - Get proper relative path for aggregator
+		String aggregatorPath = ResourcesManageHelper::GetResourceRelativePath(path, true).toStdString();
+		aggregatorControl->SetAggregatorPath(aggregatorPath);
 	}
 	
 	node->Set(WIDTH_NODE, (int32)rect.dx);

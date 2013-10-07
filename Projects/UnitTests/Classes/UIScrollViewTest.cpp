@@ -58,6 +58,14 @@ void UIScrollViewTest::LoadResources()
         verticalScrollbar->SetOrientation( UIScrollBar::ORIENTATION_VERTICAL );
         verticalScrollbar->SetDelegate(scrollView);
     }
+	
+	UIControl *testControl4 = new UIControl(Rect(1200, 1400, 250, 250));
+	testControl4->SetDebugDraw(true);
+	testControl4->GetBackground()->SetColor(Color(0.3333, 0.3333, 0.5555, 1.0000));
+	testControl4->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+	testControl4->SetName("CONTROL_4");
+	testControl4->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIScrollViewTest::ButtonPressed));
+	scrollView->AddControlToContainer(testControl4);
 
 	UIControl *testControlChild = new UIControl(Rect(100, 100, 150, 150));
 	testControlChild->SetDebugDraw(true);
@@ -86,12 +94,16 @@ void UIScrollViewTest::LoadResources()
 	
 	scrollView->AddControlToContainer(testButton);
 	
-	testMessageText = new UIStaticText(Rect(10, 210, 300, 30));
+	testMessageText = new UIStaticText(Rect(10, 10, 300, 30));
 	testMessageText->SetFont(font);
+	testMessageText->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+	testMessageText->GetBackground()->SetColor(Color(0.5, 0.0, 0.25, 1.0));
+	testMessageText->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
 	AddControl(testMessageText);
 	
-	finishTestBtn = new UIButton(Rect(10, 260, 300, 30));
+	finishTestBtn = new UIButton(Rect(10, 310, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);
+	finishTestBtn->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
 	finishTestBtn->SetStateText(0xFF, L"Finish test");
 
 	finishTestBtn->SetDebugDraw(true);

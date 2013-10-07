@@ -75,6 +75,7 @@ public:
     float32 GetViewSize();
     float32 GetElementSize();
 	
+	float32 GetCurrentSpeed();
 	
 	/**
 	 \brief Returns scroll position accordingly to the new incoming data.

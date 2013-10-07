@@ -72,6 +72,10 @@ namespace DAVA
         return elementSize;
     }
 
+	float32 ScrollHelper::GetCurrentSpeed()
+	{
+		return speed;
+	}
 
 	void ScrollHelper::SetSlowDownTime(float newValue)
 	{
