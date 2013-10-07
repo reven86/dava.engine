@@ -1258,7 +1258,9 @@ namespace DAVA
 		visible = srcControl->visible;
 		inputEnabled = srcControl->inputEnabled;
 		clipContents = srcControl->clipContents;
-		
+
+		customControlType = srcControl->GetCustomControlType();
+
 		SafeRelease(eventDispatcher);
 		if(srcControl->eventDispatcher)
 		{
