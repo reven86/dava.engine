@@ -14,6 +14,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 #include "BaseTypes.h"
+#include "Platform/DeviceInfo.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 
@@ -29,26 +30,30 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	DAVA::Core * core = new DAVA::Core();
 	core->CreateSingletons();
+	
+	//detecting physical screen size and initing core system with this size
+	::UIScreen* mainScreen = [::UIScreen mainScreen];
+	unsigned int width = [mainScreen bounds].size.width;
+	unsigned int height = [mainScreen bounds].size.height;
+	unsigned int scale = 1;
+		
+	if (DAVA::Core::IsAutodetectContentScaleFactor())
+	{
+		if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+			&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+		{
+			scale = (unsigned int)[[::UIScreen mainScreen] scale];
+		}
+	}
+	// Setup screen info
+	DeviceInfo::SetScreenInfo(width, height, scale);
+
 	FrameworkDidLaunched();
 	
-	{//detecting physical screen size and initing core system with this size
-		
-		::UIScreen* mainScreen = [::UIScreen mainScreen];
-		unsigned int width = [mainScreen bounds].size.width;
-		unsigned int height = [mainScreen bounds].size.height;
-		unsigned int scale = 1;
-		
-		if (DAVA::Core::IsAutodetectContentScaleFactor())
-		{
-			if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-				&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ]) 
-			{
-				scale = (unsigned int)[[::UIScreen mainScreen] scale];
-			}
-		}
-		DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
-	}
+	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
+	DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
+	
+	DeviceInfo::ScreenInfo scInfo = DeviceInfo::GetScreenInfo();
 		
 	int retVal = UIApplicationMain(argc, argv, nil, nil);
 	
