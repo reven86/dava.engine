@@ -45,15 +45,13 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 			scale = (unsigned int)[[::UIScreen mainScreen] scale];
 		}
 	}
-	// Setup screen info
+	// DF-2274 - Setup screen info
 	DeviceInfo::SetScreenInfo(width, height, scale);
 
 	FrameworkDidLaunched();
 	
 	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 	DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
-	
-	DeviceInfo::ScreenInfo scInfo = DeviceInfo::GetScreenInfo();
 		
 	int retVal = UIApplicationMain(argc, argv, nil, nil);
 	

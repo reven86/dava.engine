@@ -24,6 +24,7 @@ extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 
 namespace DAVA
@@ -184,7 +185,8 @@ namespace DAVA
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");
 
 			ResizeView(w, h);
-
+			// DF-2274 - Set proper width and height before call FrameworkDidlaunched
+			DeviceInfo::SetScreenInfo(w, h, 1);
 			FrameworkDidLaunched();
 
 			RenderManager::Instance()->SetFPS(60);
