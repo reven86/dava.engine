@@ -24,7 +24,26 @@ namespace DAVA
 
 class DeviceInfo
 {
+private:
+    static int32 screenWidth;
+    static int32 screenHeight;
+    static int32 screenScale;
+	
 public:
+	struct ScreenInfo
+	{
+		int32 scrWidth;
+		int32 scrHeight;
+		int32 scrScale;
+		
+		ScreenInfo(int32 w, int32 h, int32 scale)
+		{
+			scrWidth = w;
+			scrHeight = h;
+			scrScale = scale;
+		}
+	};
+
 	enum ePlatform
 	{
 		PLATFORM_MACOS = 0,
@@ -46,6 +65,10 @@ public:
 	static String GetTimeZone();
     static String GetUDID();
     static WideString GetName();
+	
+   	static ScreenInfo GetScreenInfo();
+    //internal?
+    static void SetScreenInfo(int32 w, int32 h, int32 scale);
 };
 
 };
