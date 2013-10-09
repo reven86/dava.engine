@@ -18,6 +18,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include "HierarchyTreeController.h"
+#include "HierarchyTreeAggregatorControlNode.h"
 #include "ItemsCommand.h"
 #include "CommandsController.h"
 #include "CopyPasteController.h"
@@ -225,6 +226,14 @@ void HierarchyTreeControl::dragEnterEvent(QDragEnterEvent *event)
 
 	HierarchyTreeNode * selectedTreeNode = HierarchyTreeController::Instance()->GetTree().GetNode(*(mimeData->GetItems().begin()));
 	HierarchyTreeControlNode * selectedControlNode =  dynamic_cast<HierarchyTreeControlNode*>(selectedTreeNode);
+
+	HierarchyTreeAggregatorNode * aggregatorNode =  dynamic_cast<HierarchyTreeAggregatorNode*>(selectedControlNode);
+	if (aggregatorNode)
+	{
+		// Don't allow to drop anything to aggregator.
+		return;
+	}
+
 	if(selectedControlNode)
 	{
 		if(SubcontrolsHelper::ControlIsSubcontrol(selectedControlNode->GetUIObject()))
@@ -257,6 +266,13 @@ void HierarchyTreeControl::dragMoveEvent(QDragMoveEvent *event)
 	const HierarchyTreeControlMimeData* mimeData = dynamic_cast<const HierarchyTreeControlMimeData* >(event->mimeData()->userData(TREE_MIME_DATA));
 	if (!mimeData)
 		return;
+
+	HierarchyTreeAggregatorControlNode* aggregatorControlNode = dynamic_cast<HierarchyTreeAggregatorControlNode*>(node);
+	if (aggregatorControlNode)
+	{
+		// Don't allow to drop controls to aggregator controls.
+		return;
+	}
 
 	if (mimeData->IsDropEnable(node))
 	{
