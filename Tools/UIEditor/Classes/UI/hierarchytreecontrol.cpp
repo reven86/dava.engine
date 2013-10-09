@@ -424,13 +424,6 @@ void HierarchyTreeControl::HandleDragMoveHierarchyMimeData(QDragMoveEvent *event
 		return;
 	}
 
-	HierarchyTreeAggregatorControlNode* aggregatorControlNode = dynamic_cast<HierarchyTreeAggregatorControlNode*>(node);
-	if (aggregatorControlNode)
-	{
-		// Don't allow to drop controls to aggregator controls.
-		return;
-	}
-
 	if (mimeData->IsDropEnable(node))
 	{
 		event->accept();
