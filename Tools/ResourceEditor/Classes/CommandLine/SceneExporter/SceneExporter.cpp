@@ -1,27 +1,41 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "SceneExporter.h"
 #include "SceneEditor/SceneValidator.h"
 
-#include "TextureCompression/PVRConverter.h"
-#include "TextureCompression/DXTConverter.h"
+#include "TextureCompression/TextureConverter.h"
 
 #include "Render/TextureDescriptor.h"
-#include "Qt/Scene/SceneDataManager.h"
+#include "Qt/Scene/SceneHelper.h"
+#include "EditorScene.h"
 
 #include "Render/GPUFamilyDescriptor.h"
 
@@ -34,6 +48,7 @@ using namespace DAVA;
 SceneExporter::SceneExporter()
 {
     exportForGPU = GPU_UNKNOWN;
+	optimizeOnExport = true;
 }
 
 SceneExporter::~SceneExporter()
@@ -64,7 +79,7 @@ void SceneExporter::SetGPUForExporting(const eGPUFamily newGPU)
 
 void SceneExporter::ExportFile(const String &fileName, Set<String> &errorLog)
 {
-    Logger::Info("[SceneExporter::ExportFile] %s", fileName.c_str());
+    Logger::FrameworkDebug("[SceneExporter::ExportFile] %s", fileName.c_str());
     
     FilePath filePath = sceneUtils.dataSourceFolder + fileName;
     
@@ -118,12 +133,7 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     //save scene to new place
     FilePath tempSceneName = FilePath::CreateWithNewExtension(sceneUtils.dataSourceFolder + relativeFilename, ".exported.sc2");
     
-    SceneFileV2 * outFile = new SceneFileV2();
-    outFile->EnableSaveForGame(true);
-    outFile->EnableDebugLog(false);
-    
-    outFile->SaveScene(tempSceneName, scene);
-    SafeRelease(outFile);
+	SceneHelper::SaveScene(scene, tempSceneName, optimizeOnExport);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
 	if(!moved)
@@ -175,7 +185,7 @@ void SceneExporter::RemoveEditorNodes(DAVA::Entity *rootNode)
 void SceneExporter::ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog)
 {
     Set<FilePath> descriptorsForExport;
-    SceneDataManager::EnumerateDescriptors(scene, descriptorsForExport);
+    SceneHelper::EnumerateDescriptors(scene, descriptorsForExport);
 
     Set<FilePath>::const_iterator endIt = descriptorsForExport.end();
     Set<FilePath>::iterator it = descriptorsForExport.begin();
@@ -311,7 +321,7 @@ void SceneExporter::ExportLandscapeFullTiledTexture(Landscape *landscape, Set<St
         String workingPathname = fullTiledPathname.GetRelativePathname(sceneUtils.dataSourceFolder);
         sceneUtils.PrepareFolderForCopyFile(workingPathname, errorLog);
 
-        Texture *fullTiledTexture = Texture::GetPinkPlaceholder();
+        Texture *fullTiledTexture = Texture::CreatePink();
         Image *image = fullTiledTexture->CreateImageFromMemory();
         if(image)
         {
@@ -345,7 +355,8 @@ void SceneExporter::ExportLandscapeFullTiledTexture(Landscape *landscape, Set<St
             errorLog.insert(String(Format("Can't create image for fullTiled Texture for file %s", workingPathname.c_str())));
             landscape->SetTextureName(Landscape::TEXTURE_TILE_FULL, String(""));
         }
-        
+
+		fullTiledTexture->Release();
         landscape->SetTextureName(Landscape::TEXTURE_TILE_FULL, sceneUtils.dataSourceFolder + workingPathname);
     }
 }
@@ -369,28 +380,14 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
         //TODO: convert to pvr/dxt
         //TODO: do we need to convert to pvr if needToConvert is false, but *.pvr file isn't at filesystem
         
-        const String & extension = GPUFamilyDescriptor::GetCompressedFileExtension((eGPUFamily)descriptor->exportedAsGpuFamily, (PixelFormat)descriptor->exportedAsPixelFormat);
-        
-        if(extension == ".pvr")
-        {
-            DeleteOldPVRTextureIfPowerVr_IOS(descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);
-            PVRConverter::Instance()->ConvertPngToPvr(*descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);
-        }
-        else if(extension == ".dds")
-        {
-            DeleteOldDXTTextureIfTegra(descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);
-            DXTConverter::ConvertPngToDxt(*descriptor, (eGPUFamily)descriptor->exportedAsGpuFamily);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-        
-        bool wasUpdated = descriptor->UpdateCrcForFormat((eGPUFamily)descriptor->exportedAsGpuFamily);
-        if(wasUpdated)
-        {
-            descriptor->Save();
-        }
+		eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
+		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, (PixelFormat)descriptor->exportedAsPixelFormat);
+		TextureConverter::ConvertTexture(*descriptor, gpuFamily, true);
     }
+}
+
+void SceneExporter::EnableOptimizations( bool enable )
+{
+	optimizeOnExport = enable;
 }
 

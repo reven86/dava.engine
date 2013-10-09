@@ -14,6 +14,8 @@
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765FC0DF74451002DB57D /* CoreGraphics.framework */; };
+		EA56553C17CCF06B00426EB8 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA56553B17CCF06B00426EB8 /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		EA56553E17CCF07D00426EB8 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EA56553D17CCF07D00426EB8 /* MessageUI.framework */; };
 		FE7569131541CBE500EDC0E4 /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FE7569111541CBB500EDC0E4 /* libFramework.a */; };
 		FE76D9EE1163F2F0009E83B6 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
@@ -59,6 +61,8 @@
 		288765FC0DF74451002DB57D /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		32CA4F630368D1EE00C91783 /* TemplateProjectiPhone_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemplateProjectiPhone_Prefix.pch; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* TemplateProjectiPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TemplateProjectiPhone-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		EA56553B17CCF06B00426EB8 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
+		EA56553D17CCF07D00426EB8 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		FE7569051541CBB400EDC0E4 /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../dava.framework/Projects/iPhoneFramework/Framework.xcodeproj; sourceTree = "<group>"; };
 		FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -84,8 +88,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02F8B02C17CFAA7700D5A334 /* AdSupport.framework in Frameworks */,
-				02F8B02B17CFAA6F00D5A334 /* MessageUI.framework in Frameworks */,
+				EA56553E17CCF07D00426EB8 /* MessageUI.framework in Frameworks */,
+				EA56553C17CCF06B00426EB8 /* AdSupport.framework in Frameworks */,
 				FE7569131541CBE500EDC0E4 /* libFramework.a in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
@@ -163,8 +167,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				02F8B02917CFAA3800D5A334 /* AdSupport.framework */,
-				02F8B02717CFAA1F00D5A334 /* MessageUI.framework */,
+				EA56553D17CCF07D00426EB8 /* MessageUI.framework */,
+				EA56553B17CCF06B00426EB8 /* AdSupport.framework */,
 				FEFB01D211C8F28A00B65B8B /* GameKit.framework */,
 				FE76DA031163F32F009E83B6 /* QuartzCore.framework */,
 				FE76D9FE1163F316009E83B6 /* AudioToolbox.framework */,
@@ -346,7 +350,7 @@
 					./../dava.framework/Sources/Internal,
 					./../dava.framework/Sources/External,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				LIBRARY_SEARCH_PATHS = ./../dava.framework/Libs/libs;
 				OTHER_LDFLAGS = (
 					"-ObjC",
@@ -373,7 +377,7 @@
 					./../dava.framework/Sources/Internal,
 					./../dava.framework/Sources/External,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
 				LIBRARY_SEARCH_PATHS = ./../dava.framework/Libs/libs;
 				OTHER_LDFLAGS = (
 					"-ObjC",

@@ -38,7 +38,6 @@ void DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 	// Modal Types are ignored on MacOS - there is no way to show non-modal alerts on this platform.
     [alert runModal];
     [alert release];
-	
 	//VI: no need to release contents since its created on autorelease pool
     //[contents release];
 #elif defined(__DAVAENGINE_IPHONE__)

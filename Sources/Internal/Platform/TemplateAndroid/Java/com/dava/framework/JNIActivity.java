@@ -259,6 +259,11 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     	super.onPostResume();
     }
     
+    @Override
+    public void onBackPressed() {
+    	
+    }
+    
     public void onAccelerationChanged(float x, float y, float z)
 	{
 		nativeOnAccelerometer(x, y, z);

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_TEXTURE_H__
 #define __DAVAENGINE_TEXTURE_H__
 
@@ -67,6 +81,32 @@ public:
 	{
 		DEPTH_NONE = 0,
 		DEPTH_RENDERBUFFER
+	};
+	
+	//VI: each face is optional
+	enum CubemapFace
+	{
+		CUBE_FACE_POSITIVE_X = 0,
+		CUBE_FACE_NEGATIVE_X = 1,
+		CUBE_FACE_POSITIVE_Y = 2,
+		CUBE_FACE_NEGATIVE_Y = 3,
+		CUBE_FACE_POSITIVE_Z = 4,
+		CUBE_FACE_NEGATIVE_Z = 5,
+		CUBE_FACE_MAX_COUNT = 6,
+		CUBE_FACE_INVALID = 0xFFFFFFFF
+	};
+	
+	enum TextureType
+	{
+		TEXTURE_2D = 0,
+		TEXTURE_CUBE = 1
+	};
+
+	enum TextureState
+	{
+		STATE_INVALID	=	0,
+		STATE_DATA_LOADED,
+		STATE_VALID
 	};
 	
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
@@ -146,12 +186,8 @@ public:
      */
 	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat);
 	
-    /**
-        \brief Function to load specific mip-map level from file
-        \param[in] level level of mip map you want to replace
-        \param[in] pathName path to file you want to use for texture
-     */
-	void LoadMipMapFromFile(int32 level, const FilePath & pathName);
+	static Texture * CreatePink(const FilePath &path = FilePath());
+
 
 	/**
         \brief Sets default RGBA format that is used for textures loaded from files. 
@@ -178,7 +214,7 @@ public:
 	void GenerateMipmaps();
 	void GeneratePixelesation();
 	
-	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize);
+	void TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId);
     
 	void SetWrapMode(TextureWrap wrapS, TextureWrap wrapT);
 	
@@ -199,16 +235,12 @@ public:
     
     Image * CreateImageFromMemory();
 
-	static Texture * GetPinkPlaceholder();
-	static void ReleasePinkPlaceholder();
-
-	/**
-        \brief Check if texture was created by GetPinkPlaceholder()
-     */
 	bool IsPinkPlaceholder();
     
-    
     static PixelFormatDescriptor GetPixelFormatDescriptor(PixelFormat formatID);
+	
+	static void GenerateCubeFaceNames(const String& baseName, Vector<String>& faceNames);
+	static void GenerateCubeFaceNames(const String& baseName, const Vector<String>& faceNameSuffixes, Vector<String>& faceNames);
 
     TextureDescriptor * CreateDescriptor() const;
 
@@ -216,6 +248,8 @@ public:
     void ReloadAs(eGPUFamily gpuFamily);
 	void ReloadAs(eGPUFamily gpuFamily, const TextureDescriptor *descriptor);
 	void SetInvalidater(TextureInvalidater* invalidater);
+
+	inline TextureState GetState() const;
 
 public:							// properties for fast access
 
@@ -243,11 +277,10 @@ public:							// properties for fast access
 
 	FilePath relativePathname;
 
+	bool		isPink;
 	String		debugInfo;
 	uint32		width;			// texture width 
 	uint32		height;			// texture height
-//	uint32		imageWidth;		// image width
-//	uint32		imageHeight;	// image height
 #if defined(__DAVAENGINE_OPENGL__)
 	uint32		fboID;			// id of frame buffer object
 	uint32		rboID;
@@ -255,6 +288,7 @@ public:							// properties for fast access
 	PixelFormat format;			// texture format 
 	DepthFormat depthFormat;
 	bool		isRenderTarget;
+	uint32		textureType;
 	TextureInvalidater* invalidater;
 
 	void SetDebugInfo(const String & _debugInfo);
@@ -277,15 +311,25 @@ private:
     
 	static Map<String, Texture*> textureMap;
 	static Texture * Get(const FilePath & name);
+	static void AddToMap(Texture *tex, const FilePath & pathname);
     
-	static Texture * CreateFromDescriptor(TextureDescriptor *descriptor);
-	static Texture * CreateFromImage(const FilePath & pathname, TextureDescriptor *descriptor);
-	static Texture * CreateFromImage(File *file, TextureDescriptor *descriptor);
+	static Texture * CreateFromDescriptor(const TextureDescriptor *descriptor);
+	static Texture * CreateFromImage(const TextureDescriptor *descriptor, eGPUFamily gpu);
 
-    bool LoadFromImage(File *file, const TextureDescriptor *descriptor);
-    bool CheckImageSize(const Vector<Image *> &imageSet);
-    bool IsCompressedFormat(PixelFormat format);
+	Vector<Image *> images;
+	bool LoadImages(const TextureDescriptor *descriptor, eGPUFamily gpu);
+	void SetParamsFromImages();
+	void FlushDataToRenderer(const TextureDescriptor *descriptor);
+	void ReleaseImages();
+
+    void MakePink();
+
+    static bool CheckImageSize(const Vector<Image *> &imageSet);
+    static bool IsCompressedFormat(PixelFormat format);
     
+	static uint32 ConvertToPower2FBOValue(uint32 value);
+
+
 	static PixelFormat defaultRGBAFormat;
 	Texture();
 	virtual ~Texture();
@@ -298,6 +342,8 @@ private:
     static void SetPixelDescription(PixelFormat index, const String &name, int32 size, GLenum type, GLenum format, GLenum internalFormat);
     
 #if defined(__DAVAENGINE_OPENGL__)
+	void HWglCreateFBOBuffers();
+
     static GLint HWglFilterToGLFilter(TextureFilter filter);
     static GLint HWglConvertWrapMode(TextureWrap wrap);
 #endif //#if defined(__DAVAENGINE_OPENGL__)
@@ -307,8 +353,10 @@ private:
     
     static bool IsLoadAvailable(const eGPUFamily gpuFamily, const TextureDescriptor *descriptor);
     
-    static FilePath GetActualFilename(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily);
 	static eGPUFamily GetFormatForLoading(const eGPUFamily requestedGPU, const TextureDescriptor *descriptor);
+
+
+	TextureState state;
 };
     
 // Implementation of inline functions
@@ -327,6 +375,12 @@ inline const eGPUFamily Texture::GetSourceFileGPUFamily() const
 {
     return loadedAsFile;
 }
+
+inline Texture::TextureState Texture::GetState() const
+{
+	return state;
+}
+
 
 };
 #endif // __DAVAENGINE_TEXTUREGLES_H__

@@ -77,6 +77,11 @@
      </item>
      <item>
       <property name="text">
+       <string>UIScrollBar</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>UIScrollView</string>
       </property>
      </item>

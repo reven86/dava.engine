@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "ItemsCommand.h"
 #include "HierarchyTreeController.h"
 #include "ScreenWrapper.h"
@@ -202,7 +216,20 @@ CreateControlCommand::CreateControlCommand(const QString& type, const QPoint& po
 	this->type = type;
 	this->pos = pos;
 	this->createdControlID = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
+
+	this->commandMode = CREATE_FROM_POINT;
+	this->parentNode = NULL;
+	this->redoNode = NULL;
+}
+
+CreateControlCommand::CreateControlCommand(const QString& type, HierarchyTreeNode* parent)
+{
+	this->type = type;
+	this->pos = pos;
+	this->createdControlID = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
 	
+	this->commandMode = CREATE_FROM_NODE;
+	this->parentNode = parent;
 	this->redoNode = NULL;
 }
 
@@ -215,8 +242,32 @@ void CreateControlCommand::Execute()
 		return;
 	}
 
+	
 	// The command is executed for the first time; create the node.
-	HierarchyTreeNode::HIERARCHYTREENODEID newControlID = HierarchyTreeController::Instance()->CreateNewControl(type, pos);
+	HierarchyTreeNode::HIERARCHYTREENODEID newControlID = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
+	switch (this->commandMode)
+	{
+		case CREATE_FROM_POINT:
+		{
+			// Use the point passed.
+			newControlID = HierarchyTreeController::Instance()->CreateNewControl(type, pos);
+			break;
+		}
+
+		case CREATE_FROM_NODE:
+		{
+			static const Vector2 NEW_CONTROL_OFFSET = Vector2(10, 10);
+			DVASSERT(parentNode);
+			newControlID = HierarchyTreeController::Instance()->CreateNewControl(type, NEW_CONTROL_OFFSET, this->parentNode);
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+	}
+
 	if (newControlID == HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY)
 	{
 		// The control wasn't created.

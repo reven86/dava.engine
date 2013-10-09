@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "DAVAConfig.h"
 #include "Debug/MemoryManager.h"
 #include "Debug/List.h"
@@ -373,7 +387,7 @@ void	*MemoryManagerImpl::New(size_t size)
     
     uint8 * outmemBlock = (uint8*)block;
     outmemBlock += sizeof(MemoryBlock) + 16;
-    //Logger::Debug("malloc: %p %p", block, outmemBlock);
+    //Logger::FrameworkDebug("malloc: %p %p", block, outmemBlock);
     return outmemBlock;
 }
 
@@ -436,7 +450,7 @@ void	MemoryManagerImpl::Delete(void * ptr)
         {
             Logger::Error("fatal: block: %p overwritten during usage", ptr);
         }
-        //Logger::Debug("free: %p %p", block, ptr);
+        //Logger::FrameworkDebug("free: %p %p", block, ptr);
         
         DeleteUpdateStats(block);
         EraseMemoryBlock(block);
@@ -450,18 +464,18 @@ void MemoryManagerImpl::FinalLog()
 {
     DisableLeakTracking();
     
-	Logger::Debug("    M E M O R Y     M A N A G E R     R E P O R T   ");
-	Logger::Debug("----------------------------------------------------");
+	Logger::FrameworkDebug("    M E M O R Y     M A N A G E R     R E P O R T   ");
+	Logger::FrameworkDebug("----------------------------------------------------");
 	// 
-	Logger::Debug("* Currently Allocated Memory Size : %d", currentAllocatedMemory);
-	Logger::Debug("* Memory Leaks Count: %d", blockCount);
-	Logger::Debug("* Peak Memory Usage : %d", peakMemoryUsage);
-	Logger::Debug("* Max Allocated Block Size: %d", maximumBlockSize);
+	Logger::FrameworkDebug("* Currently Allocated Memory Size : %d", currentAllocatedMemory);
+	Logger::FrameworkDebug("* Memory Leaks Count: %d", blockCount);
+	Logger::FrameworkDebug("* Peak Memory Usage : %d", peakMemoryUsage);
+	Logger::FrameworkDebug("* Max Allocated Block Size: %d", maximumBlockSize);
     
-	Logger::Debug("* Peak Manager Overhead: %d", peakManagerOverheadSize);
-	Logger::Debug("* Current Manager Overhead : %d", managerOverheadSize);
-    Logger::Debug("* Overhead percentage: %0.3f %%", (float)peakManagerOverheadSize / (float)peakMemoryUsage * 100.0f);
-    Logger::Debug("* Total backtrace count: %d", backtraceSet.size()); 
+	Logger::FrameworkDebug("* Peak Manager Overhead: %d", peakManagerOverheadSize);
+	Logger::FrameworkDebug("* Current Manager Overhead : %d", managerOverheadSize);
+    Logger::FrameworkDebug("* Overhead percentage: %0.3f %%", (float)peakManagerOverheadSize / (float)peakMemoryUsage * 100.0f);
+    Logger::FrameworkDebug("* Total backtrace count: %d", backtraceSet.size()); 
 	
     
     EnableLeakTracking();
@@ -498,22 +512,22 @@ void MemoryManagerImpl::CheckMemoryLeaks()
 		//if (block.filename)
         if (currentBlock->flags & FLAG_LEAK_TRACKING_ENABLED)
 		{
-			//Logger::Debug("****** 	Memory Leak Found	******");
+			//Logger::FrameworkDebug("****** 	Memory Leak Found	******");
             memoryLog << "****** 	Memory Leak Found	******" << std::endl;
-			//Logger::Debug("* Source File : %s", block->filename);
-			//Logger::Debug("* Source Line : %d", block->line);
-			//Logger::Debug("* Allocation Size : %d bytes", currentBlock->size);
+			//Logger::FrameworkDebug("* Source File : %s", block->filename);
+			//Logger::FrameworkDebug("* Source Line : %d", block->line);
+			//Logger::FrameworkDebug("* Allocation Size : %d bytes", currentBlock->size);
             memoryLog << Format("* Allocation Size : %d bytes", currentBlock->size) << std::endl;
             BacktraceLog log;
             CreateBacktraceLog(currentBlock->backtrace, &log);
             for (uint32 k = 0; k < currentBlock->backtrace->size; ++k) 
             {
-                //Logger::Debug("%s",log.strings[k]); 
+                //Logger::FrameworkDebug("%s",log.strings[k]); 
                 memoryLog << log.strings[k] << std::endl;
             }
             ReleaseBacktraceLog(&log);
-			//Logger::Debug("* Was placed : " << (block.isPlaced ? " true" : " false")<< std::endl;
-			//Logger::Debug("************************************");
+			//Logger::FrameworkDebug("* Was placed : " << (block.isPlaced ? " true" : " false")<< std::endl;
+			//Logger::FrameworkDebug("************************************");
 		}
 	}
     memoryLog.close();

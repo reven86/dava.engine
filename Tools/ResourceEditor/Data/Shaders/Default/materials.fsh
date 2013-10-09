@@ -17,6 +17,9 @@ precision highp float;
 #if defined(MATERIAL_TEXTURE)
 uniform sampler2D texture0;
 varying mediump vec2 varTexCoord0;
+#elif defined(MATERIAL_SKYBOX)
+uniform samplerCube texture0;
+varying mediump vec3 varTexCoord0;
 #endif
 
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
@@ -69,13 +72,17 @@ void main()
 {
     // FETCH PHASE
 #if defined(MATERIAL_TEXTURE)
+	
 #if defined(GLOSS) || defined(OPAQUE) || defined(ALPHABLEND)
     lowp vec4 textureColor0 = texture2D(texture0, varTexCoord0);
 #else
     lowp vec3 textureColor0 = texture2D(texture0, varTexCoord0).rgb;
 #endif
+	
+#elif defined(MATERIAL_SKYBOX)
+	lowp vec4 textureColor0 = textureCube(texture0, varTexCoord0);
 #endif
-
+	
 #if defined(MATERIAL_TEXTURE)
 #if defined(OPAQUE)
     float alpha = textureColor0.a;
@@ -160,12 +167,16 @@ void main()
     vec3 color = textureColor0.rgb * textureColor1.rgb * 2.0;
 #elif defined(MATERIAL_TEXTURE)
     vec3 color = textureColor0.rgb;
+#elif defined(MATERIAL_SKYBOX)
+	vec4 color = textureColor0;
 #else
 	vec3 color = vec3(1.0);
 #endif
 
 #if defined(ALPHABLEND) && defined(MATERIAL_TEXTURE)
 	gl_FragColor = vec4(color, textureColor0.a);
+#elif defined(MATERIAL_SKYBOX)
+	gl_FragColor = color;
 #else
     gl_FragColor = vec4(color, 1.0);
 #endif

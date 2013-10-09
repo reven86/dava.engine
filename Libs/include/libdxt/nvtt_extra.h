@@ -47,9 +47,15 @@ namespace nvtt
 		
 		NVTT_API void erase();
 
-		NVTT_API bool process(void * data, unsigned int size, unsigned int mipmapNumber) const;
+		NVTT_API bool process(void * data, unsigned int size, unsigned int mipmapNumber, unsigned int face = 0) const;
 
-		NVTT_API bool getInfo(unsigned int & mipmapCount, unsigned int & width, unsigned int & heigth, unsigned int & size, unsigned int & headerSize) const;
+		NVTT_API bool getInfo(unsigned int & mipmapCount,
+							  unsigned int & width,
+							  unsigned int & heigth,
+							  unsigned int & size,
+							  unsigned int & headerSize,
+							  unsigned int & faceCount,
+							  unsigned int & faceFlags) const;
 		
 		NVTT_API bool getCompressionFormat(Format & comprFormat) const;
 		

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image.h"
 #include "Render/RenderManager.h"
@@ -71,8 +85,6 @@ Landscape::Landscape()
     uniformFogColor = -1;
     uniformFogDensityFT = -1;
     uniformFogColorFT = -1;
-
-    SetTiledShaderMode(TILED_MODE_MIXED);
     
     heightmap = new Heightmap();
         
@@ -81,10 +93,15 @@ Landscape::Landscape()
     isFogEnabled = false;
     fogDensity = 0.006f;
     fogColor = Color::White();
+	
+	//VI: init shaders AFTER all member variables were initialized
+	SetTiledShaderMode(TILED_MODE_MIXED);
     
     LandscapeChunk * chunk = new LandscapeChunk(this);
     AddRenderBatch(chunk);
     SafeRelease(chunk);
+    
+    drawIndices = 0;
 }
 
 Landscape::~Landscape()
@@ -124,30 +141,30 @@ void Landscape::InitShaders()
     
     tileMaskShader->Recompile();
     
-    uniformTextures[TEXTURE_TILE0] = tileMaskShader->FindUniformLocationByName("tileTexture0");
-    uniformTextures[TEXTURE_TILE1] = tileMaskShader->FindUniformLocationByName("tileTexture1");
-    uniformTextures[TEXTURE_TILE2] = tileMaskShader->FindUniformLocationByName("tileTexture2");
-    uniformTextures[TEXTURE_TILE3] = tileMaskShader->FindUniformLocationByName("tileTexture3");
-    uniformTextures[TEXTURE_TILE_MASK] = tileMaskShader->FindUniformLocationByName("tileMask");
-    uniformTextures[TEXTURE_COLOR] = tileMaskShader->FindUniformLocationByName("colorTexture");
+    uniformTextures[TEXTURE_TILE0] = tileMaskShader->FindUniformIndexByName("tileTexture0");
+    uniformTextures[TEXTURE_TILE1] = tileMaskShader->FindUniformIndexByName("tileTexture1");
+    uniformTextures[TEXTURE_TILE2] = tileMaskShader->FindUniformIndexByName("tileTexture2");
+    uniformTextures[TEXTURE_TILE3] = tileMaskShader->FindUniformIndexByName("tileTexture3");
+    uniformTextures[TEXTURE_TILE_MASK] = tileMaskShader->FindUniformIndexByName("tileMask");
+    uniformTextures[TEXTURE_COLOR] = tileMaskShader->FindUniformIndexByName("colorTexture");
     
-    uniformCameraPosition = tileMaskShader->FindUniformLocationByName("cameraPosition");
+    uniformCameraPosition = tileMaskShader->FindUniformIndexByName("cameraPosition");
     
-    uniformTextureTiling[TEXTURE_TILE0] = tileMaskShader->FindUniformLocationByName("texture0Tiling");
-    uniformTextureTiling[TEXTURE_TILE1] = tileMaskShader->FindUniformLocationByName("texture1Tiling");
-    uniformTextureTiling[TEXTURE_TILE2] = tileMaskShader->FindUniformLocationByName("texture2Tiling");
-    uniformTextureTiling[TEXTURE_TILE3] = tileMaskShader->FindUniformLocationByName("texture3Tiling");
+    uniformTextureTiling[TEXTURE_TILE0] = tileMaskShader->FindUniformIndexByName("texture0Tiling");
+    uniformTextureTiling[TEXTURE_TILE1] = tileMaskShader->FindUniformIndexByName("texture1Tiling");
+    uniformTextureTiling[TEXTURE_TILE2] = tileMaskShader->FindUniformIndexByName("texture2Tiling");
+    uniformTextureTiling[TEXTURE_TILE3] = tileMaskShader->FindUniformIndexByName("texture3Tiling");
     
-    uniformTileColor[TEXTURE_TILE0] = tileMaskShader->FindUniformLocationByName("tileColor0");
-    uniformTileColor[TEXTURE_TILE1] = tileMaskShader->FindUniformLocationByName("tileColor1");
-    uniformTileColor[TEXTURE_TILE2] = tileMaskShader->FindUniformLocationByName("tileColor2");
-    uniformTileColor[TEXTURE_TILE3] = tileMaskShader->FindUniformLocationByName("tileColor3");
+    uniformTileColor[TEXTURE_TILE0] = tileMaskShader->FindUniformIndexByName("tileColor0");
+    uniformTileColor[TEXTURE_TILE1] = tileMaskShader->FindUniformIndexByName("tileColor1");
+    uniformTileColor[TEXTURE_TILE2] = tileMaskShader->FindUniformIndexByName("tileColor2");
+    uniformTileColor[TEXTURE_TILE3] = tileMaskShader->FindUniformIndexByName("tileColor3");
 
     
 	if(isFogEnabled && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
     {
-        uniformFogColor = tileMaskShader->FindUniformLocationByName("fogColor");
-        uniformFogDensity = tileMaskShader->FindUniformLocationByName("fogDensity");   
+        uniformFogColor = tileMaskShader->FindUniformIndexByName("fogColor");
+        uniformFogDensity = tileMaskShader->FindUniformIndexByName("fogDensity");   
     }
     
     fullTiledShader = new Shader();
@@ -161,8 +178,8 @@ void Landscape::InitShaders()
     
     if(isFogEnabled && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
     {
-        uniformFogColorFT = fullTiledShader->FindUniformLocationByName("fogColor");
-        uniformFogDensityFT = fullTiledShader->FindUniformLocationByName("fogDensity");   
+        uniformFogColorFT = fullTiledShader->FindUniformIndexByName("fogColor");
+        uniformFogDensityFT = fullTiledShader->FindUniformIndexByName("fogDensity");   
     }
 }
     
@@ -187,7 +204,7 @@ void Landscape::ReleaseShaders()
 
 int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {
-//    Logger::Debug("AllocateRDOQuad: %d %d size: %d", quad->x, quad->y, quad->size);
+//    Logger::FrameworkDebug("AllocateRDOQuad: %d %d size: %d", quad->x, quad->y, quad->size);
     DVASSERT(quad->size == RENDER_QUAD_WIDTH - 1);
     LandscapeVertex * landscapeVertices = new LandscapeVertex[(quad->size + 1) * (quad->size + 1)];
     
@@ -200,7 +217,7 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 
             landscapeVertices[index].texCoord = texCoord;
             //landscapeVertices[index].texCoord -= Vector2(0.5f, 0.5f);
-//            Logger::Debug("AllocateRDOQuad: %d pos(%f, %f)", index, landscapeVertices[index].texCoord.x, landscapeVertices[index].texCoord.y);
+//            Logger::FrameworkDebug("AllocateRDOQuad: %d pos(%f, %f)", index, landscapeVertices[index].texCoord.x, landscapeVertices[index].texCoord.y);
             index++;
         }
     
@@ -215,7 +232,7 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
     
     landscapeRDOArray.push_back(landscapeRDO);
     
-//    Logger::Debug("Allocated vertices: %d KB", sizeof(LandscapeVertex) * (quad->size + 1) * (quad->size + 1) / 1024);
+//    Logger::FrameworkDebug("Allocated vertices: %d KB", sizeof(LandscapeVertex) * (quad->size + 1) * (quad->size + 1) / 1024);
     
     return (int16)landscapeRDOArray.size() - 1;
 }
@@ -311,10 +328,10 @@ void Landscape::BuildLandscape()
         indices = new uint16[INDEX_ARRAY_COUNT];
     }
     
-//    Logger::Debug("Allocated indices: %d KB", RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2 / 1024);
-//    Logger::Debug("Allocated memory for quads: %d KB", allocatedMemoryForQuads / 1024);
-//    Logger::Debug("sizeof(LandscapeQuad): %d bytes", sizeof(LandscapeQuad));
-//    Logger::Debug("sizeof(QuadTreeNode): %d bytes", sizeof(QuadTreeNode<LandscapeQuad>));
+//    Logger::FrameworkDebug("Allocated indices: %d KB", RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2 / 1024);
+//    Logger::FrameworkDebug("Allocated memory for quads: %d KB", allocatedMemoryForQuads / 1024);
+//    Logger::FrameworkDebug("sizeof(LandscapeQuad): %d bytes", sizeof(LandscapeQuad));
+//    Logger::FrameworkDebug("sizeof(QuadTreeNode): %d bytes", sizeof(QuadTreeNode<LandscapeQuad>));
 }
     
 /*
@@ -663,6 +680,8 @@ void Landscape::FlushQueue()
 	RenderManager::Instance()->AttachRenderData();
     RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, queueRenderCount, EIF_16, indices); 
 
+    drawIndices += queueRenderCount;
+    
     ClearQueue();
     
     ++flashQueueCounter;
@@ -685,14 +704,13 @@ void Landscape::DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod
     {
         //int32 newdepth = (int)(logf((float)depth) / logf(2.0f) + 0.5f);
         int32 newdepth2 = CountLeadingZeros(depth);
-        //Logger::Debug("dp: %d %d %d", depth, newdepth, newdepth2);
+        //Logger::FrameworkDebug("dp: %d %d %d", depth, newdepth, newdepth2);
         //DVASSERT(newdepth == newdepth2); // Check of math, we should use optimized version with depth2
         
         MarkFrames(currentNode, newdepth2);
     }
     
-    int32 step = (1 << lod);
-    
+    int32 step = Min((int16)(1 << lod), currentNode->data.size);
     
     if ((currentNode->data.rdoQuad != queueRdoQuad) && (queueRdoQuad != -1))
     {
@@ -849,8 +867,39 @@ void Landscape::DrawFans()
         RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLEFAN, count, EIF_16, indices); 
     }
  */
-}  
-    
+}
+	
+int Landscape::GetMaxLod(float32 quadDistance)
+{
+	int32 maxLod = 0;
+		
+	for (int32 k = 0; k < lodLevelsCount; ++k)
+	{
+		if (quadDistance > lodSqDistance[k])
+		{
+			maxLod = k + 1;
+		}
+		else //DF-1863 (stop checking for max lod when distance is less than in lodSqDistance since lodSqDistance is sorted)
+		{
+			break;
+		}
+	}
+		
+	return maxLod;
+}
+	
+float32 Landscape::GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad)
+{
+	Vector3 v = camPos - quad.bbox.max;
+	float32 dist0 = v.SquareLength();
+	
+	v = camPos - quad.bbox.min;
+	float32 dist1 = v.SquareLength();
+	
+	dist0 = Max(dist0, dist1);
+	return dist0;
+}
+	
 void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode)
 {
     //Frustum * frustum = scene->GetClipCamera()->GetFrustum();
@@ -919,16 +968,52 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode)
         if (maxDist > lodSqDistance[k])
             maxLod = k + 1;
     }
+	
+	//VI: this check should fix occasional cracks on the landscape
+	//VI: DF-1864 - select max distance from camera to quad and calculate max lod for that distance only
+	/*if(minLod == maxLod)
+	{
+		LandQuadTreeNode<LandscapeQuad> * parentNode = currentNode->parent;
+		float32 maxQuadDistance = -1.0f;
+		
+		if(parentNode)
+		{
+			if(parentNode->neighbours[LEFT])
+			{
+				maxQuadDistance = GetQuadToCameraDistance(cameraPos, parentNode->neighbours[LEFT]->data);
+			}
+			
+			if(parentNode->neighbours[RIGHT])
+			{
+				maxQuadDistance = Max(maxQuadDistance, GetQuadToCameraDistance(cameraPos, parentNode->neighbours[RIGHT]->data));
+			}
+			
+			if(parentNode->neighbours[TOP])
+			{
+				maxQuadDistance = Max(maxQuadDistance, GetQuadToCameraDistance(cameraPos, parentNode->neighbours[TOP]->data));
+			}
+			
+			if(parentNode->neighbours[BOTTOM])
+			{
+				maxQuadDistance = Max(maxQuadDistance, GetQuadToCameraDistance(cameraPos, parentNode->neighbours[BOTTOM]->data));
+			}
+			
+			if(maxQuadDistance >= 0.0f)
+			{
+				maxLod = Max(maxLod, GetMaxLod(maxQuadDistance));
+			}
+		}
+    }*/
     
     // debug block
 #if 1
     if (currentNode == &quadTreeHead)
     {
-        //Logger::Debug("== draw start ==");
+        //Logger::FrameworkDebug("== draw start ==");
     }
-    //Logger::Debug("%f %f %d %d", minDist, maxDist, minLod, maxLod);
+    //Logger::FrameworkDebug("%f %f %d %d", minDist, maxDist, minLod, maxLod);
 #endif
-                      
+
 //    if (frustum->IsFullyInside(currentNode->data.bbox))
 //    {
 //        RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -938,7 +1023,7 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode)
     
     if ((minLod == maxLod) && (/*frustum->IsFullyInside(currentNode->data.bbox)*/(frustumRes == Frustum::EFR_INSIDE) || currentNode->data.size <= (1 << maxLod) + 1) )
     {
-        //Logger::Debug("lod: %d depth: %d pos(%d, %d)", minLod, currentNode->data.lod, currentNode->data.x, currentNode->data.y);
+        //Logger::FrameworkDebug("lod: %d depth: %d pos(%d, %d)", minLod, currentNode->data.lod, currentNode->data.x, currentNode->data.y);
         
 //        if (currentNode->data.size <= (1 << maxLod))
 //            RenderManager::Instance()->SetColor(0.0f, 1.0f, 0.0f, 1.0f);
@@ -1029,53 +1114,53 @@ void Landscape::BindMaterial(int32 lodLayer)
         RenderManager::Instance()->FlushState();
         
         if (uniformTextures[TEXTURE_TILE0] != -1)
-            tileMaskShader->SetUniformValue(uniformTextures[TEXTURE_TILE0], 0);
+            tileMaskShader->SetUniformValueByIndex(uniformTextures[TEXTURE_TILE0], 0);
         
         if (uniformTextures[TEXTURE_TILE1] != -1)
-            tileMaskShader->SetUniformValue(uniformTextures[TEXTURE_TILE1], 1);
+            tileMaskShader->SetUniformValueByIndex(uniformTextures[TEXTURE_TILE1], 1);
         
         if (uniformTextures[TEXTURE_TILE2] != -1)
-            tileMaskShader->SetUniformValue(uniformTextures[TEXTURE_TILE2], 2);
+            tileMaskShader->SetUniformValueByIndex(uniformTextures[TEXTURE_TILE2], 2);
         
         if (uniformTextures[TEXTURE_TILE3] != -1)
-            tileMaskShader->SetUniformValue(uniformTextures[TEXTURE_TILE3], 3);
+            tileMaskShader->SetUniformValueByIndex(uniformTextures[TEXTURE_TILE3], 3);
         
         if (uniformTextures[TEXTURE_TILE_MASK] != -1)
-            tileMaskShader->SetUniformValue(uniformTextures[TEXTURE_TILE_MASK], 4);
+            tileMaskShader->SetUniformValueByIndex(uniformTextures[TEXTURE_TILE_MASK], 4);
         
         if (uniformTextures[TEXTURE_COLOR] != -1)
-            tileMaskShader->SetUniformValue(uniformTextures[TEXTURE_COLOR], 5);
+            tileMaskShader->SetUniformValueByIndex(uniformTextures[TEXTURE_COLOR], 5);
         
         if (uniformCameraPosition != -1)
-            tileMaskShader->SetUniformValue(uniformCameraPosition, cameraPos);    
+            tileMaskShader->SetUniformValueByIndex(uniformCameraPosition, cameraPos);
         
         if (uniformTextureTiling[TEXTURE_TILE0] != -1)
-            tileMaskShader->SetUniformValue(uniformTextureTiling[TEXTURE_TILE0], textureTiling[TEXTURE_TILE0]);
+            tileMaskShader->SetUniformValueByIndex(uniformTextureTiling[TEXTURE_TILE0], textureTiling[TEXTURE_TILE0]);
         
         if (uniformTextureTiling[TEXTURE_TILE1] != -1)
-            tileMaskShader->SetUniformValue(uniformTextureTiling[TEXTURE_TILE1], textureTiling[TEXTURE_TILE1]);
+            tileMaskShader->SetUniformValueByIndex(uniformTextureTiling[TEXTURE_TILE1], textureTiling[TEXTURE_TILE1]);
         
         if (uniformTextureTiling[TEXTURE_TILE2] != -1)
-            tileMaskShader->SetUniformValue(uniformTextureTiling[TEXTURE_TILE2], textureTiling[TEXTURE_TILE2]);
+            tileMaskShader->SetUniformValueByIndex(uniformTextureTiling[TEXTURE_TILE2], textureTiling[TEXTURE_TILE2]);
         
         if (uniformTextureTiling[TEXTURE_TILE3] != -1)
-            tileMaskShader->SetUniformValue(uniformTextureTiling[TEXTURE_TILE3], textureTiling[TEXTURE_TILE3]);
+            tileMaskShader->SetUniformValueByIndex(uniformTextureTiling[TEXTURE_TILE3], textureTiling[TEXTURE_TILE3]);
 
         
         if (uniformTileColor[TEXTURE_TILE0] != -1)
-            tileMaskShader->SetUniformColor3(uniformTileColor[TEXTURE_TILE0], tileColor[TEXTURE_TILE0]);
+            tileMaskShader->SetUniformColor3ByIndex(uniformTileColor[TEXTURE_TILE0], tileColor[TEXTURE_TILE0]);
         if (uniformTileColor[TEXTURE_TILE1] != -1)
-            tileMaskShader->SetUniformColor3(uniformTileColor[TEXTURE_TILE1], tileColor[TEXTURE_TILE1]);
+            tileMaskShader->SetUniformColor3ByIndex(uniformTileColor[TEXTURE_TILE1], tileColor[TEXTURE_TILE1]);
         if (uniformTileColor[TEXTURE_TILE2] != -1)
-            tileMaskShader->SetUniformColor3(uniformTileColor[TEXTURE_TILE2], tileColor[TEXTURE_TILE2]);
+            tileMaskShader->SetUniformColor3ByIndex(uniformTileColor[TEXTURE_TILE2], tileColor[TEXTURE_TILE2]);
         if (uniformTileColor[TEXTURE_TILE3] != -1)
-            tileMaskShader->SetUniformColor3(uniformTileColor[TEXTURE_TILE3], tileColor[TEXTURE_TILE3]);
+            tileMaskShader->SetUniformColor3ByIndex(uniformTileColor[TEXTURE_TILE3], tileColor[TEXTURE_TILE3]);
                 
         
         if (uniformFogColor != -1)
-            tileMaskShader->SetUniformColor3(uniformFogColor, fogColor);
+            tileMaskShader->SetUniformColor3ByIndex(uniformFogColor, fogColor);
         if (uniformFogDensity != -1)
-            tileMaskShader->SetUniformValue(uniformFogDensity, fogDensity);
+            tileMaskShader->SetUniformValueByIndex(uniformFogDensity, fogDensity);
     }
     else 
     {
@@ -1086,9 +1171,9 @@ void Landscape::BindMaterial(int32 lodLayer)
         RenderManager::Instance()->FlushState();
         
         if (uniformFogColorFT != -1)
-            tileMaskShader->SetUniformColor3(uniformFogColorFT, fogColor);
+            fullTiledShader->SetUniformColor3ByIndex(uniformFogColorFT, fogColor);
         if (uniformFogDensityFT != -1)
-            tileMaskShader->SetUniformValue(uniformFogDensityFT, fogDensity);
+            fullTiledShader->SetUniformValueByIndex(uniformFogDensityFT, fogDensity);
     }
     
     prevLodLayer = lodLayer;
@@ -1126,6 +1211,8 @@ void Landscape::UnbindMaterial()
     
 void Landscape::Draw(Camera * camera)
 {
+    drawIndices = 0;
+    
     TIME_PROFILE("LandscapeNode.Draw");
 
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::LANDSCAPE_DRAW))
@@ -1230,7 +1317,7 @@ void Landscape::Draw(Camera * camera)
 
     
 	FlushQueue();
-    //    Logger::Debug("[LN] flashQueueCounter = %d", flashQueueCounter);
+    //    Logger::FrameworkDebug("[LN] flashQueueCounter = %d", flashQueueCounter);
 	DrawFans();
     
 #if defined(__DAVAENGINE_MACOS__)
@@ -1310,7 +1397,7 @@ void Landscape::Draw(Camera * camera)
     
     //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
     //uint64 drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
-    //Logger::Debug("landscape draw time: %lld", drawTime);
+    //Logger::FrameworkDebug("landscape draw time: %lld", drawTime);
 }
 
 
@@ -1398,7 +1485,7 @@ void Landscape::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
         String relPath  = textureNames[k].GetRelativePathname(sceneFile->GetScenePath());
         
         if(sceneFile->DebugLogEnabled())
-            Logger::Debug("landscape tex save: %s rel: %s", textureNames[k].GetAbsolutePathname().c_str(), relPath.c_str());
+            Logger::FrameworkDebug("landscape tex save: %s rel: %s", textureNames[k].GetAbsolutePathname().c_str(), relPath.c_str());
         
         archive->SetString(Format("tex_%d", k), relPath);
         archive->SetByteArrayAsType(Format("tiling_%d", k), textureTiling[k]);
@@ -1446,7 +1533,7 @@ void Landscape::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
         }
 
         if(sceneFile->DebugLogEnabled())
-            Logger::Debug("landscape tex %d load: %s abs:%s", k, textureName.c_str(), absPath.GetAbsolutePathname().c_str());
+            Logger::FrameworkDebug("landscape tex %d load: %s abs:%s", k, textureName.c_str(), absPath.GetAbsolutePathname().c_str());
 
         if (sceneFile->GetVersion() >= 4)
         {
@@ -1644,7 +1731,7 @@ FilePath Landscape::SaveFullTiledTexture()
         }
     }
     
-    Logger::Debug("[LN] SaveFullTiledTexture: %s", pathToSave.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[LN] SaveFullTiledTexture: %s", pathToSave.GetAbsolutePathname().c_str());
     return pathToSave;
 }
     
@@ -1694,11 +1781,11 @@ void Landscape::SetTiledShaderMode(DAVA::Landscape::eTiledShaderMode _tiledShade
     InitShaders();
 }
     
-void Landscape::SetFog(bool _isFogEnabled)
+void Landscape::SetFog(const bool& fogState)
 {
-    if(isFogEnabled != _isFogEnabled)
+    if(isFogEnabled != fogState)
     {
-        isFogEnabled = _isFogEnabled;
+        isFogEnabled = fogState;
         
         InitShaders();
     }
@@ -1761,6 +1848,11 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
     }
 
 	return newObject;
+}
+	
+int32 Landscape::GetDrawIndices() const
+{
+    return drawIndices;
 }
 
 

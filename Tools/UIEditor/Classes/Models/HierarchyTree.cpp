@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 
 #include "HierarchyTree.h"
@@ -70,17 +84,17 @@ bool HierarchyTree::Load(const QString& projectPath)
     // LocalizedStrings obtaining will interfere with the loading process!
     LocalizationSystem::Instance()->Cleanup();
 
-    Map<HierarchyTreePlatformNode*, YamlNode*> loadedPlatforms;
+    Map<HierarchyTreePlatformNode*, const YamlNode*> loadedPlatforms;
 
 	bool result = true;
-	YamlNode* platforms = projectRoot->Get(PLATFORMS_NODE);
+	const YamlNode* platforms = projectRoot->Get(PLATFORMS_NODE);
 	for (int32 i = 0; i < platforms->GetCount(); i++)
 	{
-		YamlNode* platform = platforms->Get(i);
+		const YamlNode* platform = platforms->Get(i);
 		if (!platform)
 			continue;
 		
-		String platformName = platform->AsString();
+		const String &platformName = platform->AsString();
 		HierarchyTreePlatformNode* platformNode = new HierarchyTreePlatformNode(&rootNode, QString::fromStdString(platformName));
 		result &= platformNode->Load(platform);
 		rootNode.AddTreeNode(platformNode);
@@ -90,15 +104,15 @@ bool HierarchyTree::Load(const QString& projectPath)
 	}
 	
 	// Get font node
-	YamlNode *font = projectRoot->Get(FONT_NODE);
+	const YamlNode *font = projectRoot->Get(FONT_NODE);
 	if (font)
 	{
 		// Get default font node
-		YamlNode *fontPath = font->Get(DEFAULT_FONT_PATH_NODE);
+		const YamlNode *fontPath = font->Get(DEFAULT_FONT_PATH_NODE);
 		if (fontPath)
 		{
 			// Get font values into array
-			Vector<YamlNode*> fontPathArray = fontPath->AsVector();
+			const Vector<YamlNode*> &fontPathArray = fontPath->AsVector();
 			EditorFontManager::DefaultFontPath defaultFontPath("", "");
 			// True type font
 			if (fontPathArray.size() == 1)
@@ -119,7 +133,7 @@ bool HierarchyTree::Load(const QString& projectPath)
     UpdateExtraData(BaseMetadata::UPDATE_EXTRADATA_FROM_CONTROL);
 
     // Now we can load the Localization for each Platform.
-    for (Map<HierarchyTreePlatformNode*, YamlNode*>::iterator iter = loadedPlatforms.begin();
+    for (Map<HierarchyTreePlatformNode*, const YamlNode*>::iterator iter = loadedPlatforms.begin();
          iter != loadedPlatforms.end(); iter ++)
     {
         iter->first->LoadLocalization(iter->second);
@@ -160,9 +174,25 @@ void HierarchyTree::CreateProject()
 void HierarchyTree::CloseProject()
 {
 	projectCreated = false;
+	// Remove closed project resource folder
+	FilePath bundleName(rootNode.GetProjectDir().toStdString());
+	if (!bundleName.IsEmpty())
+	{
+		bundleName.MakeDirectoryPathname();
+		// DF-1805 - Do not remove bundleName which is not in resources
+        List<FilePath> resFolders = FilePath::GetResourcesFolders();
+        List<FilePath>::const_iterator searchIt = find(resFolders.begin(), resFolders.end(), bundleName);
+        
+        if(searchIt != resFolders.end())
+        {
+			FilePath::RemoveResourcesFolder(bundleName);
+		}
+	}  
 	// Reset project path
 	rootNode.SetProjectFilePath(QString());
 	rootNode.ResetUnsavedChanges();
+	// Reset default font
+	EditorFontManager::Instance()->ResetDefaultFont();
 	Clear();
 }
 
@@ -185,9 +215,35 @@ HierarchyTreeScreenNode* HierarchyTree::AddScreen(const QString& name, Hierarchy
 	}
 	
 	HierarchyTreeScreenNode* screenNode = new HierarchyTreeScreenNode(platformNode, name);
-	platformNode->AddTreeNode(screenNode);
+	InsertScreenNode(platformNode, screenNode);
 
 	return screenNode;
+}
+
+void HierarchyTree::InsertScreenNode(HierarchyTreePlatformNode* platformNode, HierarchyTreeScreenNode* screenNode)
+{
+	// Insert the new Screen Node right at the end of the screens list,
+	// but before the Aggregators. See pls DF-2011 for details.
+	HierarchyTreeNode* nodeToInsertAfter = NULL;
+
+	HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter;
+	for (iter = platformNode->GetChildNodes().begin(); iter != platformNode->GetChildNodes().end(); ++iter)
+    {
+		HierarchyTreeNode* node = (*iter);
+		if (dynamic_cast<HierarchyTreeAggregatorNode*>(node))
+		{
+			// Stop here.
+			break;
+		}
+
+		if (dynamic_cast<HierarchyTreeScreenNode*>(node))
+		{
+			nodeToInsertAfter = node;
+			continue;
+		}
+	}
+
+	platformNode->AddTreeNode(screenNode, nodeToInsertAfter);
 }
 
 HierarchyTreeAggregatorNode* HierarchyTree::AddAggregator(const QString& name, HierarchyTreeNode::HIERARCHYTREENODEID platformId, const Rect& rect)
@@ -326,7 +382,6 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 {
 	bool result = true;
 	YamlNode root(YamlNode::TYPE_MAP);
-	MultiMap<String, YamlNode*> &rootMap = root.AsMap();
 	
 	// Get paths for default font
 	const EditorFontManager::DefaultFontPath& defaultFontPath = EditorFontManager::Instance()->GetDefaultFontPath();
@@ -337,11 +392,9 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	{
 		// Create font node
 		YamlNode* fontNode = new YamlNode(YamlNode::TYPE_MAP);
-		rootMap.erase(FONT_NODE);
-		rootMap.insert(std::pair<String, YamlNode*>(FONT_NODE, fontNode));
+		root.SetNodeToMap( FONT_NODE, fontNode );
 	
 		// Create fonts array
-		MultiMap<String, YamlNode*> &fontMap = fontNode->AsMap();	
 		YamlNode* fontPathNode = new YamlNode(YamlNode::TYPE_ARRAY);
 		
 		// Put font path
@@ -352,12 +405,11 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 			fontPathNode->AddValueToArray(fontSpritePath.GetFrameworkPath());
 		}
 		// Insert array into node
-		fontMap.insert(std::pair<String, YamlNode*>(DEFAULT_FONT_PATH_NODE, fontPathNode));
+		fontNode->AddNodeToMap(DEFAULT_FONT_PATH_NODE, fontPathNode);
 	}
 	
 	YamlNode* platforms = new YamlNode(YamlNode::TYPE_MAP);
-	rootMap.erase(PLATFORMS_NODE);
-	rootMap.insert(std::pair<String, YamlNode*>(PLATFORMS_NODE, platforms));
+	root.SetNodeToMap( PLATFORMS_NODE, platforms );
 
     // Prior to Save we need to put the Localization Keys FROM the ExtraData TO the
     // appropriate text controls to save the localization keys, and not values.

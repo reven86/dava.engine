@@ -58,14 +58,8 @@
     <Filter Include="Form Files\PropertyGridWidgets">
       <UniqueIdentifier>{b3f4a243-35ab-40b2-9d99-c25873885539}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sources\Tools">
-      <UniqueIdentifier>{96891271-63f5-4a83-8bd8-43ca9ad6dc52}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Tools\TextureCompression">
-      <UniqueIdentifier>{498b966c-c59c-4b23-99e8-5379c3d3ba3b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Sources\Tools\TexturePacker">
-      <UniqueIdentifier>{c517ea7e-2fa7-46c7-8860-952172c82f17}</UniqueIdentifier>
+    <Filter Include="Sources\AlignDistribute">
+      <UniqueIdentifier>{09fe1967-6c8b-4f88-b2e3-9c0c5ca249a1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -585,41 +579,11 @@
     <ClCompile Include="Classes\UI\Dialogs\importdialog.cpp">
       <Filter>Sources\UI\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TextureCompression\DXTConverter.cpp">
-      <Filter>Sources\Tools\TextureCompression</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TextureCompression\PVRConverter.cpp">
-      <Filter>Sources\Tools\TextureCompression</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\DefinitionFile.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\ImagePacker.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\PngImage.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\ResourcePacker2D.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\TexturePacker.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Metadata\PropertyNames.cpp">
       <Filter>Sources\Metadata</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\FramePathHelper.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Helpers\ListPropertyGridWidgetHelper.cpp">
       <Filter>Sources\Helpers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\FramePathHelper.cpp">
-      <Filter>Sources\Tools\TexturePacker</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Metadata\UIScrollViewMetadata.cpp">
       <Filter>Sources\Metadata</Filter>
@@ -632,6 +596,48 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Metadata\UIScrollViewMetadata_moc.cpp">
       <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands\ChangeAlignPropertyCommand.cpp">
+      <Filter>Sources\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\ScaleSlider.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\ScaleSlider_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\scrollcontrolpropertygridwidget.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Metadata\UIScrollBarMetadata.cpp">
+      <Filter>Sources\Metadata</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Helpers\ScrollPropertyGridWidgetHelper.cpp">
+      <Filter>Sources\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\UIScrollBarMetadata_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\scrollcontrolpropertygridwidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\regexpinputdialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\Dialogs\regexpinputdialog_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\AlignDistribute\AlignDistributeManager.cpp">
+      <Filter>Sources\AlignDistribute</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\AlignDistribute\AlignHandlers.cpp">
+      <Filter>Sources\AlignDistribute</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\AlignDistribute\ControlsPositionData.cpp">
+      <Filter>Sources\AlignDistribute</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\AlignDistribute\DistributeHandlers.cpp">
+      <Filter>Sources\AlignDistribute</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -965,38 +971,8 @@
     <ClInclude Include="Classes\UI\Dialogs\importdialog.h">
       <Filter>Sources\UI\Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TextureCompression\DXTConverter.h">
-      <Filter>Sources\Tools\TextureCompression</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TextureCompression\PVRConverter.h">
-      <Filter>Sources\Tools\TextureCompression</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\DefinitionFile.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\ImagePacker.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\PngImage.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\ResourcePacker2D.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\TexturePacker.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\FramePathHelper.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Helpers\ListPropertyGridWidgetHelper.h">
       <Filter>Sources\Helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\FramePathHelper.h">
-      <Filter>Sources\Tools\TexturePacker</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Metadata\UIScrollViewMetadata.h">
       <Filter>Sources\Metadata</Filter>
@@ -1006,6 +982,45 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_scrollviewpropertygridwidget.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands\ChangeAlignPropertyCommand.h">
+      <Filter>Sources\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\ScaleSlider.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\scrollcontrolpropertygridwidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Metadata\UIScrollBarMetadata.h">
+      <Filter>Sources\Metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Helpers\ScrollPropertyGridWidgetHelper.h">
+      <Filter>Sources\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_scrollcontrolpropertygridwidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\version.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\regexpinputdialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\AlignDistribute\AlignDistributeEnums.h">
+      <Filter>Sources\AlignDistribute</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\AlignDistribute\AlignDistributeManager.h">
+      <Filter>Sources\AlignDistribute</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\AlignDistribute\AlignHandlers.h">
+      <Filter>Sources\AlignDistribute</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\AlignDistribute\ControlsPositionData.h">
+      <Filter>Sources\AlignDistribute</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\AlignDistribute\DistributeHandlers.h">
+      <Filter>Sources\AlignDistribute</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1083,6 +1098,9 @@
     </None>
     <None Include="UI\platformimportdialog.ui">
       <Filter>Form Files\Dialogs</Filter>
+    </None>
+    <None Include="UI\scrollcontrolpropertygridwidget.ui">
+      <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
   </ItemGroup>
 </Project>

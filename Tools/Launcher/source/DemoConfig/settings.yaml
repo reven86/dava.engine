@@ -1,4 +1,0 @@
-CONFIG_UPDATE_INTERVAL: 30
-LAUNCHER:
-  LAUNCHER_UPDATE_URL: http://192.168.2.1/~adebt/Launcher/config.yaml
-  LAUNCHER_VER: 0.1

@@ -213,7 +213,7 @@ WideString DeviceInfo::GetName()
     
     return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
 }
-
+    
 }
 
 #endif

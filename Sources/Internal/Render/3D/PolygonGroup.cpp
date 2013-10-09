@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/3D/PolygonGroup.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Render/RenderHelper.h"
@@ -29,6 +43,7 @@ PolygonGroup::PolygonGroup()
     vertexCount(0),
 	indexCount(0),
 	textureCoordCount(0),
+	cubeTextureCoordCount(0),
 	vertexStride(0),
 	vertexFormat(0),
     indexFormat(EIF_16),
@@ -36,10 +51,11 @@ PolygonGroup::PolygonGroup()
 	
 	vertexArray(0), 
 	textureCoordArray(0),
+	cubeTextureCoordArray(0),
 	normalArray(0), 
 	tangentArray(0),
 	binormalArray(0),
-	jointIdxArray(0), 
+	jointIdxArray(0),
 	weightArray(0),
 	jointCountArray(0),
 	
@@ -125,7 +141,6 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         
         renderDataObject->SetStream(EVF_BINORMAL, TYPE_FLOAT, 3, vertexStride, binormalArray);
 	}
-    
 	if (vertexFormat & EVF_JOINTWEIGHT)
 	{
 		jointIdxArray = reinterpret_cast<int32*>(meshData + baseShift);
@@ -134,6 +149,34 @@ void PolygonGroup::UpdateDataPointersAndStreams()
 		
 		SafeDeleteArray(jointCountArray);
 		jointCountArray = new int32[vertexCount];
+	}
+	if (vertexFormat & EVF_CUBETEXCOORD0)
+	{
+		cubeTextureCoordArray[0] = reinterpret_cast<Vector3*>(meshData + baseShift);
+		baseShift += GetVertexSize(EVF_CUBETEXCOORD0);
+        
+        renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[0]);
+	}
+	if (vertexFormat & EVF_CUBETEXCOORD1)
+	{
+		cubeTextureCoordArray[1] = reinterpret_cast<Vector3*>(meshData + baseShift);
+		baseShift += GetVertexSize(EVF_CUBETEXCOORD1);
+        
+        renderDataObject->SetStream(EVF_TEXCOORD1, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[1]);
+    }
+	if (vertexFormat & EVF_CUBETEXCOORD2)
+	{
+		cubeTextureCoordArray[2] = reinterpret_cast<Vector3*>(meshData + baseShift);
+		baseShift += GetVertexSize(EVF_CUBETEXCOORD2);
+        
+        renderDataObject->SetStream(EVF_TEXCOORD2, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[2]);
+	}
+	if (vertexFormat & EVF_CUBETEXCOORD3)
+	{
+		cubeTextureCoordArray[3] = reinterpret_cast<Vector3*>(meshData + baseShift);
+		baseShift += GetVertexSize(EVF_CUBETEXCOORD3);
+        
+        renderDataObject->SetStream(EVF_TEXCOORD3, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[3]);
 	}
 }
 
@@ -144,10 +187,12 @@ void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _in
 	vertexStride = GetVertexSize(_meshFormat);
 	vertexFormat = _meshFormat;
 	textureCoordCount = GetTexCoordCount(vertexFormat);
+	cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
 
 	meshData = new uint8[vertexStride * vertexCount];
 	indexArray = new int16[indexCount];
 	textureCoordArray = new Vector2*[textureCoordCount];
+	cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
 	
     renderDataObject = new RenderDataObject();
     
@@ -365,6 +410,7 @@ void PolygonGroup::ReleaseData()
     SafeDeleteArray(meshData);
     SafeDeleteArray(indexArray);
     SafeDeleteArray(textureCoordArray);
+	SafeDeleteArray(cubeTextureCoordArray);
 }
 	
 void PolygonGroup::BuildBuffers()
@@ -392,12 +438,13 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
     keyedArchive->SetByteArray("vertices", meshData, vertexCount * vertexStride);
     keyedArchive->SetInt32("indexFormat", indexFormat);
     keyedArchive->SetByteArray("indices", (uint8*)indexArray, indexCount * INDEX_FORMAT_SIZE[indexFormat]);
+	keyedArchive->SetInt32("cubeTextureCoordCount", cubeTextureCoordCount);
 
 //    for (int32 k = 0; k < GetVertexCount(); ++k)
 //    {
 //        Vector3 normal;
 //        GetNormal(k, normal);
-//        Logger::Debug("savenorm2: %f %f %f", normal.x, normal.y, normal.z);
+//        Logger::FrameworkDebug("savenorm2: %f %f %f", normal.x, normal.y, normal.z);
 //    }
     
 
@@ -413,6 +460,7 @@ void PolygonGroup::Load(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
     indexCount = keyedArchive->GetInt32("indexCount");
     textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
     primitiveType = (ePrimitiveType)keyedArchive->GetInt32("primitiveType");
+	cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
     
     int32 formatPacking = keyedArchive->GetInt32("packing");
     if (formatPacking == PACKING_NONE)
@@ -446,6 +494,12 @@ void PolygonGroup::Load(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
 
 	SafeDeleteArray(textureCoordArray);
 	textureCoordArray = new Vector2*[textureCoordCount];
+	
+	SafeDeleteArray(cubeTextureCoordArray);
+	if(cubeTextureCoordCount)
+	{
+		cubeTextureCoordArray = new Vector3*[cubeTextureCoordCount];
+	}
 
 	SafeRelease(renderDataObject);
     renderDataObject = new RenderDataObject();
@@ -505,13 +559,111 @@ public:
     DynamicObjectCacheData<Vertex>
 };*/
 
-
-void PolygonGroup::OptimizeVertices(float32 eplison)
+void PolygonGroup::CopyData(uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
-    
+	if (vertexFormat & format)
+	{
+		uint32 formatSize = GetVertexSize(format);
+		if (newVertexFormat & format)
+		{
+			memcpy(*newMeshData, *meshData, formatSize);
+			*newMeshData += formatSize;
+		}
+		*meshData += formatSize;
+	}
+}
+
+bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const
+{
+	if (vertexFormat & format)
+	{
+		uint32 size = GetVertexSize(format);
+		uint32 count = size / sizeof(float32);
+		for (uint32 i = 0; i < count; ++i)
+		{
+			float32 x1 = **meshData;
+			*meshData += sizeof(float32);
+			float32 x2 = **optData;
+			*optData += sizeof(float32);
+			if (!FLOAT_EQUAL_EPS(x1, x2, 0.00001f))
+				return false;
+		}
+	}
+	return true;
+}
+	
+int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat) const
+{
+	uint32 optimizedVertexCount = optMeshData.size() / GetVertexSize(vertexFormat);
+
+	for (uint32 i = 0; i < optimizedVertexCount; ++i)
+	{
+		const float32 * optData = (float32*)(&optMeshData[i * GetVertexSize(vertexFormat)]);
+		const float32 * tmpMeshData = (float32*) meshData;
+		
+		bool skip = false;
+		for (uint32 mask = 1; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+		{
+			if (!IsFloatDataEqual(&tmpMeshData, &optData, vertexFormat, EVF_VERTEX))
+			{
+				skip = true;
+				break;
+			}
+		}
+		if (skip)
+			continue;
+
+		return i;
+	}
+
+	optMeshData.resize(GetVertexSize(vertexFormat) * (optimizedVertexCount + 1));
+	
+	uint8* dest = &optMeshData[GetVertexSize(vertexFormat) * optimizedVertexCount];
+	memcpy(dest, meshData, GetVertexSize(vertexFormat));
+	return optimizedVertexCount;
+}
+	
+void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
+{	
+	int32 newVertexStride = GetVertexSize(newVertexFormat);
+	uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
+	memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
+	
+	uint8 * tmpMesh = meshData;
+	uint8 * tmpNewMesh = newMeshData;
+	for (int32 i = 0; i < vertexCount; ++i)
+	{
+		for (uint32 mask = 1; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+		{
+			CopyData(&tmpMesh, &tmpNewMesh, vertexFormat, newVertexFormat, mask);
+		}
+	}
+	
+	Vector<uint8> optMeshData;
+	tmpNewMesh = newMeshData;
+	for (int32 i = 0; i < vertexCount; ++i)
+	{
+		int16 newIndex = OptimazeVertexes(tmpNewMesh, optMeshData, newVertexFormat);
+		tmpNewMesh += GetVertexSize(newVertexFormat);
+		
+		for (int32 i1 = 0; i1 < indexCount; ++i1)
+		{
+			if (indexArray[i1] == i)
+				indexArray[i1] = newIndex;
+		}
+	}
+
+	uint32 newVertexCount = optMeshData.size() / GetVertexSize(newVertexFormat);
+	
+	SAFE_DELETE_ARRAY(meshData);
+	SAFE_DELETE_ARRAY(newMeshData);
+	vertexCount = newVertexCount;
+	vertexStride = newVertexStride;
+	vertexFormat = newVertexFormat;
+	
+	meshData = new uint8[vertexStride * vertexCount];
+	memcpy(meshData, &optMeshData[0], vertexStride * vertexCount);
 };
-    
-    
     
 };
 

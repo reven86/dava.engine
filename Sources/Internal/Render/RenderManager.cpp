@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/RenderManager.h"
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"
@@ -43,7 +57,7 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     needGLScreenShot(false),
     screenShotCallback(NULL)
 {
-//	Logger::Debug("[RenderManager] created");
+//	Logger::FrameworkDebug("[RenderManager] created");
 
     Texture::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
@@ -118,10 +132,11 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     
 #if defined (__DAVAENGINE_OPENGL__)
     bufferBindingId[0] = 0;
-    bufferBindingId[1] = 1;
+    bufferBindingId[1] = 0;
     
     lastBindedTexture = 0;
     lastBindedFBO = 0;
+	lastBindedTextureType = Texture::TEXTURE_2D;
 #endif //#if defined (__DAVAENGINE_OPENGL__)
     
 	cursor = 0;
@@ -146,7 +161,7 @@ RenderManager::~RenderManager()
     SafeRelease(TEXTURE_MUL_FLAT_COLOR);
     SafeRelease(TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST);
 	SafeRelease(cursor);
-	Logger::Debug("[RenderManager] released");
+	Logger::FrameworkDebug("[RenderManager] released");
 }
 
 void RenderManager::SetDebug(bool isDebugEnabled)
@@ -174,7 +189,7 @@ void RenderManager::InitFBSize(int32 _frameBufferWidth, int32 _frameBufferHeight
     hardwareState.Reset(false);
 	currentState.Reset(true);
     
-	Logger::Debug("[RenderManager::InitFBSize] size: %d x %d", frameBufferWidth, frameBufferHeight);
+	Logger::FrameworkDebug("[RenderManager::InitFBSize] size: %d x %d", frameBufferWidth, frameBufferHeight);
 }
 #endif //    #ifdef __DAVAENGINE_ANDROID__    
 
@@ -223,9 +238,9 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 	frameBufferWidth = _frameBufferWidth;
 	frameBufferHeight = _frameBufferHeight;
 #if defined (__DAVAENGINE_OPENGL__)
-//	Logger::Debug("[RenderManager::Init] orientation: %d x %d", frameBufferWidth, frameBufferHeight);
+//	Logger::FrameworkDebug("[RenderManager::Init] orientation: %d x %d", frameBufferWidth, frameBufferHeight);
 #else
-//	Logger::Debug("[RenderManager::Init] orientation: %d x %d ", frameBufferWidth, frameBufferHeight);
+//	Logger::FrameworkDebug("[RenderManager::Init] orientation: %d x %d ", frameBufferWidth, frameBufferHeight);
 #endif
     // TODO: Rethink of initialization concepts because they changed
     pointerArraysRendererState = pointerArraysCurrentState = 0;
@@ -321,7 +336,7 @@ void RenderManager::SetTexture(Texture *texture, uint32 textureLevel)
 		{
 			if(debugEnabled)
 			{
-				Logger::Debug("Bind texture: id %d", texture->id);
+				Logger::FrameworkDebug("Bind texture: id %d", texture->id);
 			}
             
 #if defined(__DAVAENGINE_OPENGL__)
@@ -401,7 +416,7 @@ void RenderManager::ClipRect(const Rect &rect)
 	}
 	
 	r = r.Intersection(rect);
-	SetHWClip(rect);
+	SetHWClip(r);
 }
 
 void RenderManager::ClipPush()
@@ -783,9 +798,9 @@ void RenderManager::ProcessStats()
     if (statsFrameCountToShowDebug >= frameToShowDebugStats)
     {
         statsFrameCountToShowDebug = 0;
-        Logger::Debug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d ==", stats.drawArraysCalls, stats.drawElementsCalls);
+        Logger::FrameworkDebug("== Frame stats: DrawArraysCount: %d DrawElementCount: %d ==", stats.drawArraysCalls, stats.drawElementsCalls);
         for (int32 k = 0; k < PRIMITIVETYPE_COUNT; ++k)
-            Logger::Debug("== Primitive Stats: %d ==", stats.primitiveCount[k]);
+            Logger::FrameworkDebug("== Primitive Stats: %d ==", stats.primitiveCount[k]);
     }
 }
     

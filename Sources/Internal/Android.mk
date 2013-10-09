@@ -24,6 +24,8 @@ DAVA_ROOT := $(LOCAL_PATH)
 # clear all variables
 include $(CLEAR_VARS)
 
+LOCAL_ARM_NEON := true
+
 # set module name
 LOCAL_MODULE := libInternal
 

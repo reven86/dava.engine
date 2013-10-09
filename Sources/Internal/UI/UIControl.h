@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #ifndef __DAVAENGINE_UI_CONTROL_H__
 #define __DAVAENGINE_UI_CONTROL_H__
@@ -187,7 +201,14 @@ public:
 		EVENT_TOUCH_UP_OUTSIDE		= 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
         EVENTS_COUNT
 	};	
-	
+
+	enum eDebugDrawPivotMode
+	{
+		DRAW_NEVER					= 1, //!<Never draw the Pivot Point.
+		DRAW_ONLY_IF_NONZERO,			 //!<Draw the Pivot Point only if it is defined (nonzero).
+		DRAW_ALWAYS						 //!<Always draw the Pivot Point mark.
+	};
+
 	friend class ControlSystem;
 
 	
@@ -687,6 +708,10 @@ public:
 	 */
 	virtual void RemoveControl(UIControl *control);
 	/**
+	 \brief Remove this control from its parent, if any.
+	 */
+	virtual void RemoveFromParent();
+	/**
 	 \brief Removes all children from the control.
 	 */
 	virtual void RemoveAllControls();
@@ -907,8 +932,15 @@ public:
 	 */
 	void	SetDebugDraw(bool _debugDrawEnabled, bool hierarchic = false);
 	void	SetDebugDrawColor(const Color& color);
-	Color	GetDebugDrawColor() const;
-	
+	const Color	&GetDebugDrawColor() const;
+
+	/**
+	 \brief Set the draw pivot point mode for the control.
+	 \param[in] mode draw pivot point mode
+	 \param[in] hierarchic Is value need to be changed in all coltrol children.
+	 */
+	void SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic = false);
+
 public:
 	
 	/**
@@ -1070,7 +1102,7 @@ public:
 	virtual void DrawAfterChilds(const UIGeometricData &geometricData);
 	
 		//TODO: Борода напиши дескрипшн.
-	virtual void LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader);
+	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
 	/**
 	 \brief Save the control to YAML node and return it.
 	 */
@@ -1118,6 +1150,18 @@ public:
 
 	// Find the control by name and add it to the list, if found.
 	bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
+
+	// Get the framework path for sprite, don't process it if it is empty.
+	static String GetSpriteFrameworkPath( const Sprite* sprite);
+
+	// Get/set the Initial State.
+	int32 GetInitialState() const;
+	void SetInitialState(int32 newState);
+
+	// Get/set visible flag for UI editor. Should not be serialized.
+	bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
+	void SetVisibleForUIEditor(bool value) { visibleForUIEditor = value; };
+
 public:
 
 	Vector2 relativePosition;//!<position in the parent control.
@@ -1143,6 +1187,7 @@ protected:
 //	Rect absoluteRect;
 	int32 controlState;
 	bool visible;
+	bool visibleForUIEditor;
 	bool inputEnabled;
 	bool clipContents;
 
@@ -1178,8 +1223,13 @@ protected:
 	bool debugDrawEnabled;
 	Color debugDrawColor;
 
+	eDebugDrawPivotMode drawPivotPointMode;
+
 	// If this UI control represents Custom Control - its type is stored here.
 	String customControlType;
+
+	// Initial control's state which is stored on Yaml.
+	int32 initialState;
 
 	void SetParent(UIControl *newParent);
 
@@ -1202,8 +1252,10 @@ private:
 	
 	void RecalculateAlignProperties();
 	void RecalculateChildsSize();
+
 	void DrawDebugRect(const Rect &drawRect, bool useAlpha = false);
-	
+	void DrawPivotPoint(const Rect &drawRect);
+
 	float32 GetSizeX(UIControl *parent, int32 leftAlign, int32 rightAlign, bool useHalfParentSize = false);
 	float32 GetSizeY(UIControl *parent, int32 topAlign, int32 bottomAlign, bool useHalfParentSize = false);
 	

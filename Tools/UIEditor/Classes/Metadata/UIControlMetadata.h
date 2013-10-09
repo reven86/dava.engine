@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #ifndef __UIEditor__ControlNodeMetadata__
 #define __UIEditor__ControlNodeMetadata__
@@ -65,9 +79,7 @@ class UIControlMetadata : public BaseMetadata
 	Q_PROPERTY(float TopBottomStretchCap READ GetTopBottomStretchCap WRITE SetTopBottomStretchCap);
 
     // Flag Properties
-    Q_PROPERTY(bool Selected READ GetSelected WRITE SetSelected);
     Q_PROPERTY(bool Visible READ GetVisible WRITE SetVisible);
-    Q_PROPERTY(bool Enabled READ GetEnabled WRITE SetEnabled);
     Q_PROPERTY(bool Input READ GetInput WRITE SetInput);
     Q_PROPERTY(bool ClipContents READ GetClipContents WRITE SetClipContents);
 	
@@ -86,7 +98,10 @@ class UIControlMetadata : public BaseMetadata
 	Q_PROPERTY(bool TopAlignEnabled READ GetTopAlignEnabled WRITE SetTopAlignEnabled);
 	Q_PROPERTY(bool VCenterAlignEnabled READ GetVCenterAlignEnabled WRITE SetVCenterAlignEnabled);
 	Q_PROPERTY(bool BottomAlignEnabled READ GetBottomAlignEnabled WRITE SetBottomAlignEnabled);
-    
+
+	// Initial State Property.
+	Q_PROPERTY(int InitialState READ GetInitialState WRITE SetInitialState);
+
 	// Custom Control Name property.
 	Q_PROPERTY(QString CustomControlName READ GetCustomControlName WRITE SetCustomControlName);
 
@@ -165,14 +180,8 @@ protected:
     virtual int GetSpriteModification();
 
     //Boolean gettes/setters
-    bool GetSelected() const;
-    void SetSelected(const bool value);
-
     bool GetVisible() const;
     void SetVisible(const bool value);
-
-    bool GetEnabled() const;
-    void SetEnabled(const bool value);
 
     bool GetInput() const;
     void SetInput(const bool value);
@@ -182,44 +191,48 @@ protected:
 	
 	// Align getters/setters
 	int GetLeftAlign();
-	void SetLeftAlign(int value);
+	virtual void SetLeftAlign(int value);
 	
 	int GetHCenterAlign();
-	void SetHCenterAlign(int value);
+	virtual void SetHCenterAlign(int value);
 	
 	int GetRightAlign();
-	void SetRightAlign(int value);
+	virtual void SetRightAlign(int value);
 	
 	int GetTopAlign();
-	void SetTopAlign(int value);
+	virtual void SetTopAlign(int value);
 	
 	int GetVCenterAlign();
-	void SetVCenterAlign(int value);
+	virtual void SetVCenterAlign(int value);
 	
 	int GetBottomAlign();
-	void SetBottomAlign(int value);
+	virtual void SetBottomAlign(int value);
 	
 	// Enable align getters/setters
 	bool GetLeftAlignEnabled() const;
-	void SetLeftAlignEnabled(const bool value);
+	virtual void SetLeftAlignEnabled(const bool value);
 	
 	bool GetHCenterAlignEnabled() const;
-	void SetHCenterAlignEnabled(const bool value);
+	virtual void SetHCenterAlignEnabled(const bool value);
 	
 	bool GetRightAlignEnabled() const;
-	void SetRightAlignEnabled(const bool value);
+	virtual void SetRightAlignEnabled(const bool value);
 	
 	bool GetTopAlignEnabled() const;
-	void SetTopAlignEnabled(const bool value);
+	virtual void SetTopAlignEnabled(const bool value);
 	
 	bool GetVCenterAlignEnabled() const;
-	void SetVCenterAlignEnabled(const bool value);
+	virtual void SetVCenterAlignEnabled(const bool value);
 	
 	bool GetBottomAlignEnabled() const;
-	void SetBottomAlignEnabled(const bool value);
+	virtual void SetBottomAlignEnabled(const bool value);
 
 	QString GetCustomControlName() const;
 	void SetCustomControlName(const QString& value);
+
+	// Initial state.
+	int GetInitialState() const;
+	void SetInitialState(int value);
 
 	virtual void SetActiveControlRect(const Rect& rect);
 

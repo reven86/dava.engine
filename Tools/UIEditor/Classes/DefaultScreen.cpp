@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "DefaultScreen.h"
 #include "ScreenWrapper.h"
 #include "ControlCommands.h"
@@ -21,11 +35,17 @@
 #include "CopyPasteController.h"
 #include "HierarchyTreeAggregatorControlNode.h"
 
-#define SIZE_CURSOR_DELTA 4
+#include <QMenu>
+#include <QAction>
+#include <QApplication>
+
+#define SIZE_CURSOR_DELTA 5
 #define MIN_DRAG_DELTA 3
 #define KEY_MOVE_DELTA 5
 
 #define MOVE_SCREEN_KEY DVKEY_SPACE
+
+const char* MENU_PROPERTY_ID = "id";
 
 class UISelectorControl: public UIControl
 {
@@ -51,9 +71,6 @@ DefaultScreen::DefaultScreen()
 	
 	selectorControl = new UISelectorControl();
 	
-	oldSmartSelected = NULL;
-	oldSmartSelectedId = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
-	
 	copyControlsInProcess = false;
 	mouseAlreadyPressed = false;
 }
@@ -61,21 +78,12 @@ DefaultScreen::DefaultScreen()
 DefaultScreen::~DefaultScreen()
 {
 	SafeRelease(selectorControl);
-	SAFE_DELETE(oldSmartSelected);
 }
 
 void DefaultScreen::Update(float32 /*timeElapsed*/)
 {
-	if (inputState == InputStateScreenMove)
-	{
-		//reset screen move state if space key released
-		if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(MOVE_SCREEN_KEY))
-		{
-			inputState = InputStateSelection;
-			ScreenWrapper::Instance()->RequestUpdateCursor();
-		}
-	}
-	
+	CheckScreenMoveState();
+
 	//update view port
 	RenderManager::Instance()->SetDrawScale(scale);
 	RenderManager::Instance()->SetDrawTranslate(pos);
@@ -134,7 +142,7 @@ void DefaultScreen::Input(DAVA::UIEvent* event)
 		}break;
 		case UIEvent::PHASE_MOVE:
 		{
-			ScreenWrapper::Instance()->SetCursor(GetCursor(event->point));
+			ScreenWrapper::Instance()->SetCursor(event->point, GetCursor(event->point));
 		}break;
 		case UIEvent::PHASE_ENDED:
 		{
@@ -257,6 +265,14 @@ HierarchyTreeNode::HIERARCHYTREENODEID DefaultScreen::SmartSelection::GetLast() 
 	return this->id;
 }
 
+DefaultScreen::SmartSelection::SelectionVector DefaultScreen::SmartSelection::GetAll() const
+{
+	SelectionVector selection;
+	FormatSelectionVector(selection);
+	
+	return selection;
+}
+
 void DefaultScreen::SmartSelection::FormatSelectionVector(SelectionVector &selection) const
 {
 	for (childsSet::const_iterator iter = childs.begin();
@@ -346,24 +362,10 @@ HierarchyTreeControlNode* DefaultScreen::GetSelectedControl(const Vector2& point
 
 HierarchyTreeControlNode* DefaultScreen::SmartGetSelectedControl(const Vector2& point)
 {
-	SmartSelection* root = new SmartSelection(HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY);
-	SmartGetSelectedControl(root, HierarchyTreeController::Instance()->GetActiveScreen(), point);
-	
-	if (oldSmartSelected && oldSmartSelected->IsEqual(root))
-	{
-		oldSmartSelectedId = root->GetNext(oldSmartSelectedId);
-		if (oldSmartSelectedId == HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY)
-			oldSmartSelectedId = root->GetLast();
-	}
-	else
-	{
-		oldSmartSelectedId = root->GetLast();
-	}
-	
-	SAFE_DELETE(oldSmartSelected);
-	oldSmartSelected = root;
-	
-	return dynamic_cast<HierarchyTreeControlNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(oldSmartSelectedId));
+	SmartSelection root(HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY);
+	SmartGetSelectedControl(&root, HierarchyTreeController::Instance()->GetActiveScreen(), point);
+	// DF-1593 - Always select first control (on top)
+	return dynamic_cast<HierarchyTreeControlNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(root.GetLast()));
 }
 
 void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST& list, const Rect& rect, const HierarchyTreeNode* parent) const
@@ -414,8 +416,14 @@ HierarchyTreeController::SELECTEDCONTROLNODES DefaultScreen::GetActiveMoveContro
 				break;
 			}
 		}
+		
 		if (!isChild)
-			selectedList.insert(controlNode);
+		{
+			if (std::find(selectedList.begin(), selectedList.end(), controlNode) == selectedList.end())
+			{
+				selectedList.push_back(controlNode);
+			}
+		}
 	}
 
 	return selectedList;
@@ -482,10 +490,16 @@ void DefaultScreen::DeleteSelectedControls()
 		{			
 			if (node->IsHasChild(*innerIter))
 			{
-				parentNodes.erase(*innerIter);
+				HierarchyTreeController::SELECTEDCONTROLNODES::iterator parentNodeIter =
+					std::find(parentNodes.begin(), parentNodes.end(), *innerIter);
+				if (parentNodeIter != parentNodes.end())
+				{
+					parentNodes.erase(parentNodeIter);
+				}
 			}
 		}
 	}
+
 	// DF-1273 - put only "parent" nodes to delete
 	for (iter = parentNodes.begin(); iter != parentNodes.end(); ++iter)
 		nodes.push_back(*iter);
@@ -501,7 +515,7 @@ void DefaultScreen::DeleteSelectedControls()
 Qt::CursorShape DefaultScreen::GetCursor(const Vector2& point)
 {
 	if (inputState == InputStateScreenMove)
-		return Qt::SizeAllCursor;
+		return Qt::OpenHandCursor;
 		
 	if (inputState == InputStateSize)
 		return ResizeTypeToQt(resizeType);
@@ -521,7 +535,7 @@ Qt::CursorShape DefaultScreen::GetCursor(const Vector2& point)
 		
 		Rect rect = GetControlRect(node);
 		
-		if (!rect.PointInside(pos))
+		if (!IsPointInsideRectWithDelta(rect, pos, SIZE_CURSOR_DELTA))
 			continue;
 		
 		cursor = Qt::SizeAllCursor;
@@ -546,20 +560,21 @@ DefaultScreen::ResizeType DefaultScreen::GetResizeType(const HierarchyTreeContro
 	 
 	//check is resize
 	Rect rect = GetControlRect(selectedControlNode);
-	if (!rect.PointInside(pos))
+
+	if (!IsPointInsideRectWithDelta(rect, pos, SIZE_CURSOR_DELTA))
 		return ResizeTypeNoResize;
 	
 	bool horLeft = false;
 	bool horRight = false;
 	bool verTop = false;
 	bool verBottom = false;
-	if ((pos.x >= rect.x) && (pos.x <= (rect.x + SIZE_CURSOR_DELTA)))
+	if ((pos.x >= rect.x - SIZE_CURSOR_DELTA) && (pos.x <= (rect.x + SIZE_CURSOR_DELTA)))
 		horLeft = true;
-	if ((pos.x <= (rect.x + rect.dx)) && (pos.x >= (rect.x + rect.dx - SIZE_CURSOR_DELTA)))
+	if ((pos.x <= (rect.x + rect.dx + SIZE_CURSOR_DELTA)) && (pos.x >= (rect.x + rect.dx - SIZE_CURSOR_DELTA)))
 		horRight = true;
-	if ((pos.y >= rect.y) && (pos.y <= (rect.y + SIZE_CURSOR_DELTA)))
+	if ((pos.y >= rect.y - SIZE_CURSOR_DELTA) && (pos.y <= (rect.y + SIZE_CURSOR_DELTA)))
 		verTop = true;
-	if ((pos.y <= (rect.y + rect.dy)) && (pos.y >= (rect.y + rect.dy - SIZE_CURSOR_DELTA)))
+	if ((pos.y <= (rect.y + rect.dy + SIZE_CURSOR_DELTA)) && (pos.y >= (rect.y + rect.dy - SIZE_CURSOR_DELTA)))
 		verBottom = true;
 	
 	if (horLeft && verTop)
@@ -594,6 +609,14 @@ Qt::CursorShape DefaultScreen::ResizeTypeToQt(ResizeType resize)
 		return Qt::SizeVerCursor;
 
 	return Qt::ArrowCursor;
+}
+
+bool DefaultScreen::IsPointInsideRectWithDelta(const Rect& rect, const Vector2& point, int32 pointDelta) const
+{
+    if ((point.x >= (rect.x - pointDelta)) && (point.x <= (rect.x + rect.dx + pointDelta))
+		&& (point.y >= (rect.y - pointDelta)) && (point.y <= (rect.y + rect.dy + pointDelta)))
+			return true;
+	return false;
 }
 
 void DefaultScreen::ApplySizeDelta(const Vector2& delta)
@@ -736,7 +759,7 @@ void DefaultScreen::ApplyMouseSelection(const Vector2& rectSize)
 	{
 		HierarchyTreeNode* node = (*iter);
 		HierarchyTreeControlNode* controlNode = dynamic_cast<HierarchyTreeControlNode*>(node);
-		if (controlNode && oldNodes.find(controlNode) == oldNodes.end())
+		if (controlNode && std::find(oldNodes.begin(), oldNodes.end(), controlNode) == oldNodes.end())
 		{
 			HierarchyTreeController::Instance()->SelectControl(controlNode);
 		}
@@ -751,6 +774,11 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 		return;
 	}
 	this->mouseAlreadyPressed = true;
+
+	if (event->tid == UIEvent::BUTTON_1 && CheckEnterScreenMoveState())
+	{
+		return;
+	}
 
 	if (inputState == InputStateScreenMove)
 		return;
@@ -790,7 +818,7 @@ void DefaultScreen::MouseInputBegin(const DAVA::UIEvent* event)
 		}
 		else
 		{
-			if (HierarchyTreeController::Instance()->IsNodeActive(selectedControlNode))
+			if (HierarchyTreeController::Instance()->IsControlSelected(selectedControlNode))
 			{
 				//Don't check active controls size anymore - we have to be able to deselect any control
 				if (/*HierarchyTreeController::Instance()->GetActiveControlNodes().size() > 1 &&*/
@@ -868,6 +896,8 @@ void DefaultScreen::MouseInputDrag(const DAVA::UIEvent* event)
 		return;
 	}
 
+	HandleScreenMove(event);
+
 	Vector2 delta = GetInputDelta(event->point);
 	
 	if (inputState == InputStateSelection)
@@ -912,6 +942,8 @@ void DefaultScreen::MouseInputEnd(const DAVA::UIEvent* event)
 		Vector2 delta = GetInputDelta(event->point);
 		ResetMoveDelta();
 		MoveControl(delta);
+		startControlPos.clear();
+
 	}
 	
 	if (inputState == InputStateSize)
@@ -926,29 +958,102 @@ void DefaultScreen::MouseInputEnd(const DAVA::UIEvent* event)
 	
 	//Use additional control selection. This will allow to scroll through multiple contols
 	//located in the same area
+	bool bResetControlPosition = true;
 	if ((inputState == InputStateSelection) && useMouseUpSelection)
 	{		
 		Vector2 localPoint = event->point;
 		Vector2 point = LocalToInternal(localPoint);
-		
-		HierarchyTreeControlNode* selectedControlNode = SmartGetSelectedControl(point);
-		
-		if (selectedControlNode)
+			
+		switch(event->tid)
 		{
-			if (!HierarchyTreeController::Instance()->IsNodeActive(selectedControlNode))
+			case UIEvent::BUTTON_1: // For left mouse button we use standard selection
+				HandleMouseLeftButtonClick(point);
+				break;
+			case UIEvent::BUTTON_2: // For right mouse button we should show context menu with avaiable controls at current point
 			{
-				if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
-					HierarchyTreeController::Instance()->ResetSelectedControl();
-
-					HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
+				HandleMouseRightButtonClick(point);
+				bResetControlPosition = false;
+				break;
 			}
-			SaveControlsPostion();
+			default: // Do nothing for other buttons
+				break;
 		}
 	}
+	
+	CheckExitScreenMoveState();
 
-	lastSelectedControl = NULL;
-	inputState = InputStateSelection;
-	startControlPos.clear();
+	// We don't have to reset control for right mouse click. Control position is not changed and we don't select another control
+	// So we have to keep previous "selection" for that case
+	if (bResetControlPosition)
+	{
+		lastSelectedControl = NULL;
+		inputState = InputStateSelection;
+		startControlPos.clear();
+	}
+}
+
+void DefaultScreen::HandleMouseRightButtonClick(const Vector2& point)
+{
+	SmartSelection selection(HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY);
+	SmartGetSelectedControl(&selection, HierarchyTreeController::Instance()->GetActiveScreen(), point);
+	ShowControlContextMenu(selection);
+}
+
+void DefaultScreen::HandleMouseLeftButtonClick(const Vector2& point)
+{
+	HierarchyTreeControlNode* selectedControlNode = SmartGetSelectedControl(point);
+	if (selectedControlNode)
+	{
+		if (!HierarchyTreeController::Instance()->IsControlSelected(selectedControlNode))
+		{
+			if (!InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+				HierarchyTreeController::Instance()->ResetSelectedControl();
+
+				HierarchyTreeController::Instance()->SelectControl(selectedControlNode);
+		}
+		SaveControlsPostion();
+	}
+}
+
+void DefaultScreen::ShowControlContextMenu(const SmartSelection& selection)
+{
+	QMenu menu;
+	// Get the whole selection vector available
+	const DefaultScreen::SmartSelection::SelectionVector selectionVector = selection.GetAll();
+	for (int32 i = selectionVector.size() - 1; i >= 0; i--)
+	{
+		HierarchyTreeNode *node = HierarchyTreeController::Instance()->GetTree().GetNode(selectionVector[i]);
+		HierarchyTreeControlNode *controlNode = dynamic_cast<HierarchyTreeControlNode*>(node);
+			
+		if (!controlNode)
+			continue;
+		// Create menu action and put nodeId to it as property
+		QAction* controlAction = new QAction(controlNode->GetName(), &menu);
+		controlAction->setProperty(MENU_PROPERTY_ID, selectionVector[i]);
+		menu.addAction(controlAction);
+	}
+	
+  	connect(&menu, SIGNAL(triggered(QAction*)), this, SLOT(ControlContextMenuTriggered(QAction*)));
+	menu.exec(QCursor::pos());
+}
+
+void DefaultScreen::ControlContextMenuTriggered(QAction* action)
+{
+	// Get controlNode for specific action triggered
+	int nodeId = action->property(MENU_PROPERTY_ID).toInt();
+	HierarchyTreeNode *node = HierarchyTreeController::Instance()->GetTree().GetNode(nodeId);
+	HierarchyTreeControlNode *controlNode = dynamic_cast<HierarchyTreeControlNode*>(node);
+			
+	if (controlNode)
+	{
+		if (!HierarchyTreeController::Instance()->IsControlSelected(controlNode))
+		{
+			HierarchyTreeController::Instance()->ResetSelectedControl();
+			HierarchyTreeController::Instance()->SelectControl(controlNode);			
+		}
+		
+		SaveControlsPostion();
+	}
 }
 
 void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
@@ -988,15 +1093,6 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		case DVKEY_BACKSPACE:
 		{
 			DeleteSelectedControls();
-		}break;
-		case MOVE_SCREEN_KEY:
-		{
-			if (inputState == InputStateSelection)
-			{
-				inputState = InputStateScreenMove;
-				ScreenWrapper::Instance()->RequestUpdateCursor();
-				inputPos = Vector2(-1, -1);
-			}
 		}break;
 		case DVKEY_C:
 		{
@@ -1042,23 +1138,16 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 	
 }
 
-void DefaultScreen::MouseInputMove(const Vector2& pos)
-{
-	if (inputState == InputStateScreenMove)
-	{
-		if (Abs(inputPos.x + 1) < 0.1f && (inputPos.y + 1) < 0.1f)
-			inputPos = pos;
-		Vector2 delta = GetInputDelta(pos);
-		ScreenWrapper::Instance()->RequestViewMove(-delta);
-		inputPos = pos;
-	}
-}
-
-Vector2 DefaultScreen::GetInputDelta(const Vector2& point) const
+Vector2 DefaultScreen::GetInputDelta(const Vector2& point, bool applyScale) const
 {
 	Vector2 delta = point - inputPos;
-	delta.x /= scale.x;
-	delta.y /= scale.y;
+
+	if (applyScale)
+	{
+		delta.x /= scale.x;
+		delta.y /= scale.y;
+	}
+
 	return delta;
 }
 
@@ -1066,10 +1155,10 @@ void DefaultScreen::BacklightControl(const Vector2& position)
 {
 	Vector2 pos = LocalToInternal(position);
 	
-	HierarchyTreeControlNode* newSelectedNode = GetSelectedControl(pos, HierarchyTreeController::Instance()->GetActiveScreen());
+	HierarchyTreeControlNode* newSelectedNode = SmartGetSelectedControl(pos);
 	if (newSelectedNode)
 	{
-		if (!HierarchyTreeController::Instance()->IsNodeActive(newSelectedNode))
+		if (!HierarchyTreeController::Instance()->IsControlSelected(newSelectedNode))
 		{
 			HierarchyTreeController::Instance()->ResetSelectedControl();
 			HierarchyTreeController::Instance()->SelectControl(newSelectedNode);
@@ -1105,4 +1194,64 @@ Rect DefaultScreen::GetControlRect(const HierarchyTreeControlNode* controlNode) 
 	rect += controlNode->GetParentDelta(true);
 
 	return rect;
+}
+
+bool DefaultScreen::CheckEnterScreenMoveState()
+{
+	// If we are here - the Mouse Down event just happened. Check whether we are
+	// in appropriate state and the key is pressed.
+	if (inputState == InputStateSelection && IsMoveScreenKeyPressed())
+	{
+		inputState = InputStateScreenMove;
+		ScreenWrapper::Instance()->RequestUpdateCursor();
+		inputPos = Vector2(-1, -1);
+
+		return true;
+	}
+	
+	return false;
+}
+
+void DefaultScreen::CheckScreenMoveState()
+{
+	// This is called on every frame. If the move sceeen key is released -
+	// treat this as "reset Screen Move state".
+	if (inputState == InputStateScreenMove && !IsMoveScreenKeyPressed())
+	{
+		inputState = InputStateSelection;
+	}
+}
+
+void DefaultScreen::CheckExitScreenMoveState()
+{
+	// Reset in any case.
+	if (inputState == InputStateScreenMove)
+	{
+		inputState = InputStateSelection;
+		ScreenWrapper::Instance()->RequestUpdateCursor();
+	}
+}
+
+bool DefaultScreen::IsMoveScreenKeyPressed()
+{
+	//return InputSystem::Instance()->GetKeyboard()->IsKeyPressed(MOVE_SCREEN_KEY);
+	Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+	return (modifiers & Qt::AltModifier);
+}
+
+void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
+{
+	if (inputState == InputStateScreenMove)
+	{
+		const Vector2& pos = event->point;
+		if (Abs(inputPos.x + 1) < 0.1f && (inputPos.y + 1) < 0.1f)
+		{
+			inputPos = pos;
+		}
+
+		// In this particular case don't take Scale into account.
+		Vector2 delta = GetInputDelta(pos, false);
+		ScreenWrapper::Instance()->RequestViewMove(-delta);
+		inputPos = pos;
+	}
 }

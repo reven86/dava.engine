@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "Autotesting/AutotestingSystemLua.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -55,7 +84,7 @@ void AutotestingSystemLua::SetDelegate(AutotestingSystemLuaDelegate *_delegate)
     
 void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 {
-    Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.c_str());
     if(!luaState)
     {
         autotestingLocalizationSystem->SetCurrentLocale(LocalizationSystem::Instance()->GetCurrentLocale());
@@ -126,20 +155,20 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
 
 void AutotestingSystemLua::StartTest()
 {
-    Logger::Debug("AutotestingSystemLua::StartTest");
+    Logger::FrameworkDebug("AutotestingSystemLua::StartTest");
     RunScript();
 }
     
 void AutotestingSystemLua::WaitForMaster()
 {
-    Logger::Debug("AutotestingSystemLua::WaitForMaster");
+    Logger::FrameworkDebug("AutotestingSystemLua::WaitForMaster");
     AutotestingSystem::Instance()->InitMultiplayer(false);
     AutotestingSystem::Instance()->RegisterHelperInDB();
 }
     
 void AutotestingSystemLua::WaitForHelpers(DAVA::int32 helpersCount)
 {
-    Logger::Debug("AutotestingSystemLua::WaitForHelpers %d", helpersCount);
+    Logger::FrameworkDebug("AutotestingSystemLua::WaitForHelpers %d", helpersCount);
     AutotestingSystem::Instance()->InitMultiplayer(true);
     AutotestingSystem::Instance()->RegisterMasterInDB(helpersCount);
 }
@@ -147,31 +176,31 @@ void AutotestingSystemLua::WaitForHelpers(DAVA::int32 helpersCount)
 // Multiplayer API
 void AutotestingSystemLua::WriteState(const String & device, const String & state)
 {
-	Logger::Debug("AutotestingSystemLua::WriteState device=%s state=%s", device.c_str(), state.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::WriteState device=%s state=%s", device.c_str(), state.c_str());
 	AutotestingSystem::Instance()->WriteState(device,state);
 }
 
 void AutotestingSystemLua::WriteCommand(const String & device, const String & state)
 {
-	Logger::Debug("AutotestingSystemLua::WriteCommand device=%s command=%s", device.c_str(), state.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::WriteCommand device=%s command=%s", device.c_str(), state.c_str());
 	AutotestingSystem::Instance()->WriteCommand(device,state);
 }
 
 String AutotestingSystemLua::ReadState(const String & device)
 {
-	Logger::Debug("AutotestingSystemLua::ReadState device=%s", device.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::ReadState device=%s", device.c_str());
 	return AutotestingSystem::Instance()->ReadState(device);
 }
 
 String AutotestingSystemLua::ReadCommand(const String & device)
 {
-	Logger::Debug("AutotestingSystemLua::ReadCommand device=%s", device.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::ReadCommand device=%s", device.c_str());
 	return AutotestingSystem::Instance()->ReadCommand(device);
 }
 
 void AutotestingSystemLua::InitializeDevice(const String & device)
 {
-	Logger::Debug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::InitializeDevice device=%s", device.c_str());
 	AutotestingSystem::Instance()->InitializeDevice(device);
 }
 
@@ -188,61 +217,61 @@ float32 AutotestingSystemLua::GetTimeElapsed()
     
 void AutotestingSystemLua::OnError(const String &errorMessage)
 {
-    Logger::Debug("AutotestingSystemLua::OnError %s", errorMessage.c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::OnError %s", errorMessage.c_str());
     AutotestingSystem::Instance()->OnError(errorMessage);
 }
     
 void AutotestingSystemLua::OnTestStep(const String &stepName, bool isPassed, const String &error)
 {
-    Logger::Debug("AutotestingSystemLua::OnTestStep %s %d %s", stepName.c_str(), isPassed, error.c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::OnTestStep %s %d %s", stepName.c_str(), isPassed, error.c_str());
     AutotestingSystem::Instance()->OnTestStep(stepName, isPassed, error);
 }
 
 void AutotestingSystemLua::OnTestStart(const String &testName)
 {
-	Logger::Debug("AutotestingSystemLua::OnTestStart %s", testName.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::OnTestStart %s", testName.c_str());
 	AutotestingSystem::Instance()->OnTestStart(testName);
 }
 
 void AutotestingSystemLua::OnTestFinished()
 {
-    Logger::Debug("AutotestingSystemLua::OnTestFinished");
+    Logger::FrameworkDebug("AutotestingSystemLua::OnTestFinished");
     AutotestingSystem::Instance()->OnTestsFinished();
 }
     
 void AutotestingSystemLua::OnStepStart(const String &stepName)
 {
-	Logger::Debug("AutotestingSystemLua::OnStepStart %s", stepName.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::OnStepStart %s", stepName.c_str());
 	AutotestingSystem::Instance()->OnStepStart(stepName);
 }
 
 void AutotestingSystemLua::Log(const String &level, const String &message)
 {
-	Logger::Debug("AutotestingSystemLua::Log [%s]%s", level.c_str(), message.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::Log [%s]%s", level.c_str(), message.c_str());
 	AutotestingSystem::Instance()->Log(level, message);
 }
 
 void AutotestingSystemLua::WriteString(const String & name, const String & text)
 {
-	Logger::Debug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::WriteString name=%s text=%s", name.c_str(), text.c_str());
 	AutotestingSystem::Instance()->WriteString(name, text);
 }
 
 String AutotestingSystemLua::ReadString(const String & name)
 {
-	Logger::Debug("AutotestingSystemLua::ReadString name=%s", name.c_str());
+	Logger::FrameworkDebug("AutotestingSystemLua::ReadString name=%s", name.c_str());
 	return AutotestingSystem::Instance()->ReadString(name);
 }
 
 bool AutotestingSystemLua::SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName)
 {
-	Logger::Debug("AutotestingSystemLua::SaveKeyedArchiveToDB");
+	Logger::FrameworkDebug("AutotestingSystemLua::SaveKeyedArchiveToDB");
 	return AutotestingSystem::Instance()->SaveKeyedArchiveToDB(archiveName, archive, docName);
 }
 
 String AutotestingSystemLua::MakeScreenshot()
 {
-	Logger::Debug("AutotestingSystemLua::MakeScreenshot");
+	Logger::FrameworkDebug("AutotestingSystemLua::MakeScreenshot");
 	AutotestingSystem::Instance()->MakeScreenShot();
 	return AutotestingSystem::Instance()->GetScreenShotName();
 }
@@ -254,7 +283,7 @@ UIControl *AutotestingSystemLua::GetScreen()
 
 UIControl *AutotestingSystemLua::FindControl(const String &path)
 {
-    Logger::Debug("AutotestingSystemLua::FindControl %s", path.c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::FindControl %s", path.c_str());
     
     Vector<String> controlPath;
     ParsePath(path, controlPath);
@@ -264,7 +293,7 @@ UIControl *AutotestingSystemLua::FindControl(const String &path)
     
 bool AutotestingSystemLua::SetText(const String &path, const String &text)
 {
-    Logger::Debug("AutotestingSystemLua::SetText %s %s", path.c_str(), text.c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::SetText %s %s", path.c_str(), text.c_str());
     UITextField *tf = dynamic_cast<UITextField*>(FindControl(path));
     if(tf)
     {
@@ -285,7 +314,7 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
 		keyPress.tapCount = 1;
 		keyPress.keyChar = keyChar;
 
-		Logger::Debug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase, keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
+		Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase, keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
 
 		if (keyPress.tid == DVKEY_BACKSPACE)
 		{
@@ -323,7 +352,7 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
 	keyPress.tapCount = 1;
 	keyPress.keyChar = keyChar;
 
-	Logger::Debug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase, keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
+	Logger::FrameworkDebug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase, keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
 
 	Vector<UIEvent> emptyTouches;
 	Vector<UIEvent> touches;
@@ -385,7 +414,7 @@ bool AutotestingSystemLua::CheckMsgText(UIControl *control, const String &key)
     
 void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId)
 {
-    Logger::Debug("AutotestingSystemLua::TouchDown point=(%f,%f) touchId=%d", point.x, point.y, touchId);
+    Logger::FrameworkDebug("AutotestingSystemLua::TouchDown point=(%f,%f) touchId=%d", point.x, point.y, touchId);
       
     UIEvent touchDown;
     touchDown.phase = UIEvent::PHASE_BEGAN;
@@ -399,9 +428,9 @@ void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId)
     
 void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
 {
-    Logger::Debug("AutotestingSystemLua::TouchMove point=(%f,%f) touchId=%d", point.x, point.y, touchId);
+    Logger::FrameworkDebug("AutotestingSystemLua::TouchMove point=(%f,%f) touchId=%d", point.x, point.y, touchId);
     
-    //Logger::Debug("TouchAction::TouchMove point=(%f, %f)", point.x, point.y);
+    //Logger::FrameworkDebug("TouchAction::TouchMove point=(%f, %f)", point.x, point.y);
     UIEvent touchMove;
     touchMove.tid = touchId;
     touchMove.tapCount = 1;
@@ -426,7 +455,7 @@ void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
     
 void AutotestingSystemLua::TouchUp(int32 touchId)
 {
-    Logger::Debug("AutotestingSystemLua::TouchUp touchId=%d", touchId);
+    Logger::FrameworkDebug("AutotestingSystemLua::TouchUp touchId=%d", touchId);
     UIEvent touchUp;
     if(!AutotestingSystem::Instance()->FindTouch(touchId, touchUp))
     {
@@ -440,7 +469,7 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
 
 void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
 {
-    Logger::Debug("AutotestingSystemLua::ParsePath path=%s", path.c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::ParsePath path=%s", path.c_str());
     Split(path, "/", parsedPath);
 }
     
@@ -490,7 +519,7 @@ bool AutotestingSystemLua::LoadScriptFromFile(const String &luaFilePath)
     
 bool AutotestingSystemLua::RunScriptFromFile(const String &luaFilePath)
 {
-    Logger::Debug("AutotestingSystemLua::RunScriptFromFile %s", luaFilePath.c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::RunScriptFromFile %s", luaFilePath.c_str());
     if(LoadScriptFromFile(luaFilePath))
     {
         return RunScript();
@@ -500,7 +529,7 @@ bool AutotestingSystemLua::RunScriptFromFile(const String &luaFilePath)
     
 bool AutotestingSystemLua::RunScript(const DAVA::String &luaScript)
 {
-    //Logger::Debug("AutotestingSystemLua::RunScript %s", luaScript.c_str());
+    //Logger::FrameworkDebug("AutotestingSystemLua::RunScript %s", luaScript.c_str());
     if(LoadScript(luaScript))
     {
         return RunScript();
@@ -510,7 +539,7 @@ bool AutotestingSystemLua::RunScript(const DAVA::String &luaScript)
     
 bool AutotestingSystemLua::RunScript()
 {
-    //Logger::Debug("AutotestingSystemLua::RunScript");
+    //Logger::FrameworkDebug("AutotestingSystemLua::RunScript");
     lua_pcall(luaState, 0, 0, 0); //TODO: LUA_MULTRET?
     //TODO: check if lua_pcall was successfull
     return true;

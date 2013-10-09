@@ -1,13 +1,13 @@
 Font_0:
     color: [1.0000, 1.0000, 1.0000, 1.0000]
     name: "~res:/Fonts/korinna.ttf"
-    size: 21.0000
+    size: 12.0000
     type: "FTFont"
     verticalSpacing: 0
 
 UIButton1:
     color: [0.3333, 0.6667, 0.0000, 1.0000]
-    rect: [0.0000, 0.0000, 100.0000, 30.0000]
+    rect: [0.0000, 0.0000, 100.0000, 40.0000]
     stateDrawTypeDisabled: "DRAW_SCALE_TO_RECT"
     stateDrawTypeHover: "DRAW_SCALE_TO_RECT"
     stateDrawTypeNormal: "DRAW_FILL"
@@ -33,13 +33,13 @@ UIButton1:
     stateShadowoffsetPressedOutside: [0.0000, 0.0000]
     stateShadowoffsetSelected: [0.0000, 0.0000]
     stateTextDisabled: "UIButton1"
-    stateTextHover: "UIButton1"
-    stateTextNormal: ""
+    stateTextHover: "ListTestHover"
+    stateTextNormal: "ListTestNormal"
     stateTextPressedInside: "UIButton1"
     stateTextPressedOutside: "UIButton1"
     stateTextSelected: "UIButton1"
     stateTextcolorDisabled: [1.0000, 1.0000, 1.0000, 1.0000]
-    stateTextcolorHover: [1.0000, 1.0000, 1.0000, 1.0000]
+    stateTextcolorHover: [1.0000, 0.0000, 0.0000, 1.0000]
     stateTextcolorNormal: [1.0000, 1.0000, 1.0000, 1.0000]
     stateTextcolorPressedInside: [1.0000, 1.0000, 1.0000, 1.0000]
     stateTextcolorPressedOutside: [1.0000, 1.0000, 1.0000, 1.0000]

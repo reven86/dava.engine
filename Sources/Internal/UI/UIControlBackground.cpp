@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "UI/UIControlBackground.h"
 #include "Debug/DVAssert.h"
@@ -40,6 +54,7 @@ UIControlBackground::UIControlBackground()
 ,	tilesVertices(NULL)
 ,	tilesTexCoords(NULL)
 ,	tilesIndeces(NULL)
+, 	generateTilesArrays(false)
 {
 	rdoObject = new RenderDataObject();
     vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
@@ -647,7 +662,7 @@ void UIControlBackground::DrawStretched(const Rect &drawRect)
 	/*GLenum glErr = glGetError();
 	if (glErr != GL_NO_ERROR)
 	{
-		Logger::Debug("GLError: 0x%x", glErr);
+		Logger::FrameworkDebug("GLError: 0x%x", glErr);
 	}*/
 }
 
@@ -663,6 +678,7 @@ void UIControlBackground::GenerateCell(float32* vertices, int32 offset, float32 
 void UIControlBackground::InitTilesArrays(int32 vertexCount, int32 trianglesCount)
 {	
 	DeleteTilesArrays();
+	SetGenerateTilesArraysFlag();
 	
 	tilesVertices = new float32[vertexCount];
 	tilesTexCoords = new float32[vertexCount];
@@ -689,6 +705,11 @@ void UIControlBackground::ResetTilesArrays()
 	}
 }
 
+void UIControlBackground::SetGenerateTilesArraysFlag()
+{
+	generateTilesArrays = true;
+}
+
 void UIControlBackground::DrawTiled(const Rect &drawRect)
 {
 	if (!spr)return;
@@ -696,8 +717,10 @@ void UIControlBackground::DrawTiled(const Rect &drawRect)
 	
 	float32 texX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
 	float32 texY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
-	float32 texDx = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
-	float32 texDy = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
+	// DF-1470 - We should always use sprite actual size instead of using active frame
+	// Textures for tiling shouldn't have transparent corners
+	float32 texDx = spr->GetWidth(); // spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
+	float32 texDy = spr->GetHeight(); // spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
 
 	float32 textureWidth = (float32)texture->GetWidth();
     float32 textureHeight = (float32)texture->GetHeight();
@@ -723,138 +746,139 @@ void UIControlBackground::DrawTiled(const Rect &drawRect)
 	float32 verticalStretchCap = texDy - topStretchCap * 2;
 	
 	// The overall horizontal and vertical cells number
-	int32 cellsHCount = ceilf(cellsH) + 2;
-	int32 cellsVCount = ceilf(cellsV) + 2;
+	int32 cellsHCount = (int32)ceilf(cellsH) + 2;
+	int32 cellsVCount = (int32)ceilf(cellsV) + 2;
 	
 	// The number of vertices for cells - 8 coordinates for each cells - 4 "X" and 4 "Y"
 	int32 vertexCount = cellsHCount * cellsVCount * 4 * 2;
 	// The number of triangles
 	int32 vertInTriCount = cellsHCount * cellsVCount * 6;
+	
+	// Do not re-generate cells if tiles arrays available
 	if (!tilesVertices || !tilesTexCoords || !tilesIndeces)
 	{
 		InitTilesArrays(vertexCount, vertInTriCount);
 	}
 	
-	// Generate coorinates for corner cells
-	// Top left corner cell
-	GenerateCell(tilesVertices, 0, leftStretchCap, topStretchCap, x, y);
-	// Top right corner cell
-	GenerateCell(tilesVertices, (cellsHCount - 1) * 8, leftStretchCap, topStretchCap, x + dx - leftStretchCap, y);
-	// Bottom left corner cell
-	GenerateCell(tilesVertices, (cellsHCount * (cellsVCount - 1)) * 8, leftStretchCap, topStretchCap, x, y + dy - topStretchCap);
-	// Bottom right corner cell
-	GenerateCell(tilesVertices, (cellsHCount * cellsVCount - 1) * 8, leftStretchCap, topStretchCap, x + dx - leftStretchCap, y + dy - topStretchCap);	
+	if (generateTilesArrays)
+	{
+		// Generate coorinates for corner cells
+		// Top left corner cell
+		GenerateCell(tilesVertices, 0, leftStretchCap, topStretchCap, x, y);
+		// Top right corner cell
+		GenerateCell(tilesVertices, (cellsHCount - 1) * 8, leftStretchCap, topStretchCap, x + dx - leftStretchCap, y);
+		// Bottom left corner cell
+		GenerateCell(tilesVertices, (cellsHCount * (cellsVCount - 1)) * 8, leftStretchCap, topStretchCap, x, y + dy - topStretchCap);
+		// Bottom right corner cell
+		GenerateCell(tilesVertices, (cellsHCount * cellsVCount - 1) * 8, leftStretchCap, topStretchCap, x + dx - leftStretchCap, y + dy - topStretchCap);	
 	
-	// Generate texture coordinates for cells
-	// Top left
-	GenerateCell(tilesTexCoords, 0, leftStretchCap, topStretchCap,
+		// Generate texture coordinates for cells
+		// Top left
+		GenerateCell(tilesTexCoords, 0, leftStretchCap, topStretchCap,
 					texX, texY, textureWidth, textureHeight);
-	// Top right
-	GenerateCell(tilesTexCoords, (cellsHCount - 1) * 8, leftStretchCap, topStretchCap,
+		// Top right
+		GenerateCell(tilesTexCoords, (cellsHCount - 1) * 8, leftStretchCap, topStretchCap,
 					texX + texDx - leftStretchCap, texY, textureWidth, textureHeight);
-	// Bottom left
-	GenerateCell(tilesTexCoords, (cellsHCount * (cellsVCount - 1)) * 8, leftStretchCap, topStretchCap,
+		// Bottom left
+		GenerateCell(tilesTexCoords, (cellsHCount * (cellsVCount - 1)) * 8, leftStretchCap, topStretchCap,
 					texX, texY + texDy - topStretchCap, textureWidth, textureHeight);
-	// Bottom right
-	GenerateCell(tilesTexCoords, (cellsHCount * cellsVCount - 1) * 8, leftStretchCap, topStretchCap,
+		// Bottom right
+		GenerateCell(tilesTexCoords, (cellsHCount * cellsVCount - 1) * 8, leftStretchCap, topStretchCap,
 					texX + texDx - leftStretchCap, texY + texDy - topStretchCap, textureWidth, textureHeight);
 				
-	// Horizontal border cells
-	for (int32 i = 1; i <= cellsHCount - 2; ++i)
-	{	
-		float32 lastCellOffset = 0;
-		// For the last cell in row - we should calculate offset
-		if (i == cellsHCount - 2)
-		{		
-			lastCellOffset = ((cellsHCount - 2) * horizontalStretchCap + 2 * leftStretchCap) - dx;
-			if (lastCellOffset < 0) lastCellOffset = 0;
-		}		
-		// Left border cell
-		GenerateCell(tilesVertices, i * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
-					x + leftStretchCap + horizontalStretchCap * (i - 1), y);
-		// Right border cell
-		GenerateCell(tilesVertices, (i + cellsHCount * (cellsVCount - 1)) * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
-					x + leftStretchCap + horizontalStretchCap * (i - 1), y + dy - topStretchCap);
-		// Left border cell texture
-		GenerateCell(tilesTexCoords, i * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
-						texX + leftStretchCap, texY, textureWidth, textureHeight);
-		// Right border cell texture
-		GenerateCell(tilesTexCoords, (i + cellsHCount * (cellsVCount - 1)) * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
-						texX + leftStretchCap, texY + texDy - topStretchCap, textureWidth, textureHeight);
-	}
-	
-	// Vertical border cells
-	for (int32 i = 1; i <= cellsVCount - 2; ++i)
-	{
-		float32 lastCellOffset = 0;
-		// For the last cell in row - we should calculate offset
-		if (i == cellsVCount - 2)
-		{		
-			lastCellOffset = ((cellsVCount - 2) * verticalStretchCap + 2 * topStretchCap) - dy;
-			if (lastCellOffset < 0) lastCellOffset = 0;
-		}		
-		// Top border cell
-		GenerateCell(tilesVertices, (i * cellsHCount) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
-					x, y + topStretchCap + verticalStretchCap * (i - 1));
-		// Bottom border cell
-		GenerateCell(tilesVertices, (i * cellsHCount + cellsHCount - 1) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
-					x + dx - leftStretchCap, y + topStretchCap + verticalStretchCap * (i - 1));
-		// Top border cell texture part
-		GenerateCell(tilesTexCoords, (i * cellsHCount) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
-						texX, texY + topStretchCap, textureWidth, textureHeight);
-		// Bottom border cell texture part
-		GenerateCell(tilesTexCoords, (i * cellsHCount + cellsHCount - 1) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
-						texX + texDx - leftStretchCap, texY + topStretchCap, textureWidth, textureHeight);
-	}
-	
-	// Central cells - tiles
-	for (int32 iy = 1; iy <= cellsVCount - 2; ++iy)
-	{
-		float32 lastCellVOffset = 0;
-		// For the last cell in row - we should calculate offset
-		if (iy == cellsVCount - 2)
-		{		
-			lastCellVOffset = ((cellsVCount - 2) * verticalStretchCap + 2 * topStretchCap) - dy;
-			if (lastCellVOffset < 0) lastCellVOffset = 0;
-		}		
-	
-		for (int32 ix = 1; ix <= cellsHCount - 2; ++ix)
-		{
-			float32 lastCellHOffset = 0;
+		// Horizontal border cells
+		for (int32 i = 1; i <= cellsHCount - 2; ++i)
+		{	
+			float32 lastCellOffset = 0;
 			// For the last cell in row - we should calculate offset
-			if (ix == cellsHCount - 2)
+			if (i == cellsHCount - 2)
 			{		
-				lastCellHOffset = ((cellsHCount - 2) * horizontalStretchCap + 2 * leftStretchCap) - dx;
-				if (lastCellHOffset < 0) lastCellHOffset = 0;
+				lastCellOffset = ((cellsHCount - 2) * horizontalStretchCap + 2 * leftStretchCap) - dx;
+				if (lastCellOffset < 0) lastCellOffset = 0;
 			}		
-			// Central cell used for "tiling"
-			GenerateCell(tilesVertices, (ix + cellsHCount * iy) * 8, horizontalStretchCap - lastCellHOffset, verticalStretchCap - lastCellVOffset,
-						x + leftStretchCap + horizontalStretchCap * (ix - 1), y +  topStretchCap + verticalStretchCap * (iy - 1));
-			// Central cell texture part
-			GenerateCell(tilesTexCoords, (ix + cellsHCount * iy) * 8, horizontalStretchCap - lastCellHOffset, verticalStretchCap - lastCellVOffset,
-						texX + leftStretchCap, texY + topStretchCap,
-						textureWidth, textureHeight);
+			// Left border cell
+			GenerateCell(tilesVertices, i * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
+						x + leftStretchCap + horizontalStretchCap * (i - 1), y);
+			// Right border cell
+			GenerateCell(tilesVertices, (i + cellsHCount * (cellsVCount - 1)) * 8, horizontalStretchCap - lastCellOffset, topStretchCap,	x + leftStretchCap + horizontalStretchCap * (i - 1), y + dy - topStretchCap);
+			// Left border cell texture
+			GenerateCell(tilesTexCoords, i * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
+							texX + leftStretchCap, texY, textureWidth, textureHeight);
+			// Right border cell texture
+			GenerateCell(tilesTexCoords, (i + cellsHCount * (cellsVCount - 1)) * 8, horizontalStretchCap - lastCellOffset,topStretchCap, texX + leftStretchCap, texY + texDy - topStretchCap, textureWidth, textureHeight);
 		}
-	}
+	
+		// Vertical border cells
+		for (int32 i = 1; i <= cellsVCount - 2; ++i)
+		{
+			float32 lastCellOffset = 0;
+			// For the last cell in row - we should calculate offset
+			if (i == cellsVCount - 2)
+			{
+				lastCellOffset = ((cellsVCount - 2) * verticalStretchCap + 2 * topStretchCap) - dy;
+				if (lastCellOffset < 0) lastCellOffset = 0;
+			}
+			// Top border cell
+			GenerateCell(tilesVertices, (i * cellsHCount) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
+						x, y + topStretchCap + verticalStretchCap * (i - 1));
+			// Bottom border cell
+			GenerateCell(tilesVertices, (i * cellsHCount + cellsHCount - 1) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,	x + dx - leftStretchCap, y + topStretchCap + verticalStretchCap * (i - 1));
+			// Top border cell texture part
+			GenerateCell(tilesTexCoords, (i * cellsHCount) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
+							texX, texY + topStretchCap, textureWidth, textureHeight);
+			// Bottom border cell texture part
+			GenerateCell(tilesTexCoords, (i * cellsHCount + cellsHCount - 1) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,	texX + texDx - leftStretchCap, texY + topStretchCap, textureWidth, textureHeight);
+		}
+	
+		// Central cells - tiles
+		for (int32 iy = 1; iy <= cellsVCount - 2; ++iy)
+		{
+			float32 lastCellVOffset = 0;
+			// For the last cell in row - we should calculate offset
+			if (iy == cellsVCount - 2)
+			{		
+				lastCellVOffset = ((cellsVCount - 2) * verticalStretchCap + 2 * topStretchCap) - dy;
+				if (lastCellVOffset < 0) lastCellVOffset = 0;
+			}		
+	
+			for (int32 ix = 1; ix <= cellsHCount - 2; ++ix)
+			{
+				float32 lastCellHOffset = 0;
+				// For the last cell in row - we should calculate offset
+				if (ix == cellsHCount - 2)
+				{		
+					lastCellHOffset = ((cellsHCount - 2) * horizontalStretchCap + 2 * leftStretchCap) - dx;
+					if (lastCellHOffset < 0) lastCellHOffset = 0;
+				}		
+				// Central cell used for "tiling"
+				GenerateCell(tilesVertices, (ix + cellsHCount * iy) * 8, horizontalStretchCap - lastCellHOffset, verticalStretchCap - lastCellVOffset,
+					x + leftStretchCap + horizontalStretchCap * (ix - 1), y +  topStretchCap + verticalStretchCap * (iy - 1));
+				// Central cell texture part
+				GenerateCell(tilesTexCoords, (ix + cellsHCount * iy) * 8, horizontalStretchCap - lastCellHOffset, verticalStretchCap - lastCellVOffset, texX + leftStretchCap, texY + topStretchCap,
+					textureWidth, textureHeight);
+			}
+		}
 	
 
-	// Generate triangles points - first 2 triangles -  0,1,2, 1,3,2
-	int32 a = 0;
-	for (int32 i1 = 0; i1 < cellsVCount; ++i1)
-	{
-		for (int32 i2 = 0; i2 < cellsHCount; ++i2)
+		// Generate triangles points - first 2 triangles -  0,1,2, 1,3,2
+		int32 a = 0;
+		for (int32 i1 = 0; i1 < cellsVCount; ++i1)
 		{
-			tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 0] = a;
-			tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 1] = a + 1;
-			tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 2] = a + 2;
+			for (int32 i2 = 0; i2 < cellsHCount; ++i2)
+			{
+				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 0] = a;
+				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 1] = a + 1;
+				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 2] = a + 2;
 		
-			tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 3] = a + 1;
-			tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 4] = a + 3;
-			tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 5] = a + 2;
-			a += 4;
+				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 3] = a + 1;
+				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 4] = a + 3;
+				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 5] = a + 2;
+				a += 4;
+			}
 		}
+		
+		generateTilesArrays = false;
 	}
-	
 	vertexStream->Set(TYPE_FLOAT, 2, 0, tilesVertices);
 	texCoordStream->Set(TYPE_FLOAT, 2, 0, tilesTexCoords);
 

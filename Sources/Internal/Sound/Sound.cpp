@@ -1,17 +1,29 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
 #include "Sound/Sound.h"
@@ -41,7 +53,19 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
 		sound->is3d = true;
 
     File * file = File::Create(fileName, File::OPEN | File::READ);
+    if(!file)
+    {
+        SafeRelease(sound);
+        return 0;
+    }
+
     int32 fileSize = file->GetSize();
+    if(!fileSize)
+    {
+        SafeRelease(sound);
+        return 0;
+    }
+
     sound->soundData = new uint8[fileSize];
     file->Read(sound->soundData, fileSize);
     SafeRelease(file);
@@ -61,6 +85,13 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
 		FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createStream((char *)sound->soundData, FMOD_LOOP_NORMAL | FMOD_OPENMEMORY | flags, &exInfo, &sound->fmodSound));
 		break;
 	}
+
+    if(!sound->fmodSound)
+    {
+        SafeRelease(sound);
+        return 0;
+    }
+
 #if !defined DONT_USE_DEFAULT_3D_SOUND_SETTINGS
     if( sound->is3d && sound->fmodSound )
         FMOD_VERIFY( sound->fmodSound->set3DMinMaxDistance(5.0f, 100.0f) );
@@ -78,16 +109,20 @@ Sound::Sound(const FilePath & _fileName, eType _type, int32 _priority)
 	type(_type),
 	priority(_priority),
 	is3d(false),
-    soundData(0)
+    soundData(0),
+    fmodSound(0),
+    fmodInstanceGroup(0)
 {
 }
 
 Sound::~Sound()
 {
-    SafeDeleteArray(soundData);
+    if(fmodInstanceGroup)
+	    FMOD_VERIFY(fmodInstanceGroup->release());
+    if(fmodSound)
+	    FMOD_VERIFY(fmodSound->release());
 
-	FMOD_VERIFY(fmodInstanceGroup->release());
-	FMOD_VERIFY(fmodSound->release());
+    SafeDeleteArray(soundData);
 }
 
 void Sound::SetSoundGroup(const FastName & groupName)
@@ -99,7 +134,7 @@ void Sound::SetSoundGroup(const FastName & groupName)
 	}
 }
 
-void Sound::Play()
+void Sound::Play(const Message & msg)
 {
 	FMOD::Channel * fmodInstance = 0;
 	FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodInstance)); //start sound paused
@@ -108,6 +143,9 @@ void Sound::Play()
 	FMOD_VERIFY(fmodInstance->setCallback(SoundInstanceEndPlaying));
 	FMOD_VERIFY(fmodInstance->setUserData(this));
 	FMOD_VERIFY(fmodInstance->setChannelGroup(fmodInstanceGroup));
+
+    if(fmodInstance && !msg.IsEmpty())
+        callbacks[fmodInstance] = msg;
 
 	if(is3d)
 		FMOD_VERIFY(fmodInstance->set3DAttributes(&pos, 0));
@@ -184,9 +222,16 @@ void Sound::SetLoopCount(int32 loopCount)
 	FMOD_VERIFY(fmodSound->setLoopCount(loopCount));
 }
 
-void Sound::PerformPlaybackComplete()
+void Sound::PerformCallback(FMOD::Channel * instance)
 {
-	eventDispatcher.PerformEvent(EVENT_SOUND_COMPLETED, this);
+    Map<FMOD::Channel *, Message>::iterator it = callbacks.find(instance);
+    if(it != callbacks.end())
+    {
+        it->second(this);
+        callbacks.erase(it);
+    }
+
+    SoundSystem::Instance()->ReleaseOnUpdate(this);
 }
 
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2)
@@ -194,9 +239,13 @@ FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANN
 	if(type == FMOD_CHANNEL_CALLBACKTYPE_END)
 	{
 		FMOD::Channel *cppchannel = (FMOD::Channel *)channel;
-		Sound * sound = 0;
-        FMOD_VERIFY(cppchannel->getUserData((void**)&sound));
-        SoundSystem::Instance()->SendCallbackOnUpdate(sound);
+        if(cppchannel)
+        {
+            Sound * sound = 0;
+            FMOD_VERIFY(cppchannel->getUserData((void**)&sound));
+            if(sound)
+                sound->PerformCallback(cppchannel);
+        }
 	}
 
 	return FMOD_OK;

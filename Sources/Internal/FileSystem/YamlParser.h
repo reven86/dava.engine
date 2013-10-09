@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_YAML_DOM_PARSER_H__
 #define __DAVAENGINE_YAML_DOM_PARSER_H__
 
@@ -52,35 +66,35 @@ public:
 	virtual ~YamlNode();
 	
 	void Print(int32 identation);
-    void PrintToFile(DAVA::File* file, uint32 identationDepth = 0);
+    void PrintToFile(DAVA::File* file, uint32 identationDepth = 0) const;
 	
-	bool			AsBool();
-	int32			AsInt();//left for old code
-    int32			AsInt32();
-    uint32			AsUInt32();
-    int64			AsInt64();
-    uint64			AsUInt64();
-	float32			AsFloat();
-	const String &	AsString();
-	const WideString & AsWString();
-	Vector<YamlNode*> & AsVector();
-    MultiMap<String, YamlNode*> & AsMap();
+	bool			AsBool() const;
+	int32			AsInt() const;//left for old code
+    int32			AsInt32() const;
+    uint32			AsUInt32() const;
+    int64			AsInt64() const;
+    uint64			AsUInt64() const;
+	float32			AsFloat() const;
+	const String &	AsString() const;
+	const WideString & AsWString() const;
+	const Vector<YamlNode*> & AsVector() const;
+    const MultiMap<String, YamlNode*> & AsMap() const;
 	
 	/*
 		These functions work only if type of node is array
 		All values must be integer or float to perform this conversion
 	 */
-	Vector2			AsPoint();//Dizz: this one exists cause of Boroda
-	Vector2			AsVector2();
-	Vector3			AsVector3();
-  	Vector4			AsVector4();
-	Color			AsColor();
-	Rect			AsRect();	
-    VariantType     AsVariantType();
+	Vector2			AsPoint() const;//Dizz: this one exists cause of Boroda
+	Vector2			AsVector2() const;
+	Vector3			AsVector3() const;
+  	Vector4			AsVector4() const;
+	Color			AsColor() const;
+	Rect			AsRect() const;
+    VariantType     AsVariantType() const;
 	
-	YamlNode *		Get(const String & name);
-	YamlNode *		Get(int32 index); 
-	const String &	GetItemKeyName(int32 index); 
+	const YamlNode *		Get(const String & name) const;
+	const YamlNode *		Get(int32 index) const;
+	const String &	GetItemKeyName(int32 index) const;
 	
 	// "Adders". These methods ADD node to the map, even in case the node with the same name is added.
     void            Add(const String& name, bool value);
@@ -134,8 +148,9 @@ public:
     // Remove node value from map
     void            RemoveNodeFromMap(const String & name);
     
-	eType			GetType() { return type; }
-	int32			GetCount();
+	eType			GetType() const { return type; }
+	int32			GetCount() const;
+	bool			IsWideString() const { return isWideString; };
 
     void            InitFromKeyedArchive(KeyedArchive* archive);
     void            InitFromVariantType(VariantType* varType);
@@ -144,7 +159,7 @@ protected:
     void            FillContentAccordingToVariantTypeValue(VariantType* varType);
     void            ProcessMatrix(const float32* array,uint32 dimension);
     void            ProcessVector(const float32 array[],uint32 dimension);
-    bool            IsContainingMap();
+    bool            IsContainingMap() const;
     String          FloatToCuttedString(float f);
     
 	// Internal setters, which can both add or replace value in the map.
@@ -170,6 +185,7 @@ private:
 	String					 nwStringValue;
 	Vector<YamlNode*>		 objectArray;
     MultiMap<String, YamlNode*>	objectMap;
+	bool					isWideString;
 	friend class YamlParser;
 };
 
@@ -193,7 +209,7 @@ public:
 	static YamlParser	* Create(const FilePath & fileName);
 	
     // Save to YAML file.
-	bool SaveToYamlFile(const FilePath & fileName, YamlNode * rootNode, bool skipRootNode, uint32 attr = File::CREATE | File::WRITE);
+	bool SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool skipRootNode, uint32 attr = File::CREATE | File::WRITE);
     
 	// Save the strings list (needed for Localization).
 	bool SaveStringsList(const FilePath & fileName, YamlNode * rootNode, uint32 attr = File::CREATE | File::WRITE);
@@ -210,27 +226,27 @@ public:
 
 private:
 	YamlNode			* GetNodeByPath(const String & path);
-	bool                SaveNodeRecursive(File* fileToSave, const String& nodeName, YamlNode* currentNode, int16 depth);
+	bool                SaveNodeRecursive(File* fileToSave, const String& nodeName, const YamlNode* currentNode, int16 depth) const;
 
     // Order the YAML node with type "Map" according to the depth.
-    Vector<YamlNodeKeyValuePair> OrderMapYamlNode(const MultiMap<String, YamlNode*>& mapNodes);
+    void OrderMapYamlNode(const MultiMap<String, YamlNode*>& mapNodes, Vector<YamlNodeKeyValuePair> &sortedChildren ) const;
 
     // Write different Yaml node types to the file.
-    bool WriteScalarNodeToYamlFile(File* fileToSave, const String& nodeName, const String& nodeValue, int16 depth);
+    bool WriteScalarNodeToYamlFile(File* fileToSave, const String& nodeName, const YamlNode* currentNode, int16 depth) const;
     bool WriteArrayNodeToYamlFile(File* fileToSave, const String& nodeName,
-                                  YamlNode* currentNode, int16 depth);
-    bool WriteMapNodeToYamlFile(File* fileToSave, const String& mapNodeName, int16 depth);
+                                  const YamlNode* currentNode, int16 depth) const;
+    bool WriteMapNodeToYamlFile(File* fileToSave, const String& mapNodeName, int16 depth) const;
 
-    bool WriteStringToYamlFile(File* fileToSave, const String& stringToWrite);
-	bool WriteStringToYamlFile(File* fileToSave, const WideString& stringToWrite);
+    bool WriteStringToYamlFile(File* fileToSave, const String& stringToWrite) const;
+	bool WriteStringToYamlFile(File* fileToSave, const WideString& stringToWrite) const;
 
-	bool WriteStringListNodeToYamlFie(File* fileToSave, const String& nodeName, YamlNode* currentNode);
+	bool WriteStringListNodeToYamlFie(File* fileToSave, const String& nodeName, const YamlNode* currentNode) const;
 
     // Recursively get the array node representation string.
-    String GetArrayNodeRepresentation(const String& nodeName, YamlNode* currentNode, int16 depth, bool writeAsOuterNode = true);
+    String GetArrayNodeRepresentation(const String& nodeName, const YamlNode* currentNode, int16 depth, bool writeAsOuterNode = true) const;
 
     // Return the identation string of the appropriate depth.
-    String PrepareIdentedString(int16 depth);
+    String PrepareIdentedString(int16 depth) const;
 
 	// Replace \n characters to "\n" string.
 	WideString ReplaceLineEndings(const WideString& rawString) const;

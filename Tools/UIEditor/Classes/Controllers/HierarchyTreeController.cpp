@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "HierarchyTreeController.h"
 #include "ScreenWrapper.h"
@@ -22,6 +36,9 @@
 #include "MetadataFactory.h"
 #include "LibraryController.h"
 #include "CommandsController.h"
+#include "ControlCommands.h"
+
+#include "AlignDistribute/AlignDistributeManager.h"
 
 HierarchyTreeController::HierarchyTreeController(QObject* parent) :
 	QObject(parent)
@@ -130,15 +147,18 @@ void HierarchyTreeController::ChangeItemSelection(HierarchyTreeControlNode* cont
 
 void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control)
 {
-	if (activeControlNodes.find(control) != activeControlNodes.end())
+	if (IsControlSelected(control))
+	{
 		return;
+	}
 	
 	//add selection
-	activeControlNodes.insert(control);
+	InsertSelectedControlToList(control);
 	UIControl* uiControl = control->GetUIObject();
 	if (uiControl)
 	{
 		uiControl->SetDebugDraw(true);
+		uiControl->SetDrawPivotPointMode(UIControl::DRAW_ONLY_IF_NONZERO);
 		uiControl->SetDebugDrawColor(Color(1.f, 0, 0, 1.f));
 	
 		//YZ draw parent rect
@@ -157,16 +177,21 @@ void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control)
 
 void HierarchyTreeController::UnselectControl(HierarchyTreeControlNode* control, bool emitSelectedControlNodesChanged)
 {
-	if (activeControlNodes.find(control) == activeControlNodes.end())
+	if (false == IsControlSelected(control))
+	{
 		return;
+	}
 	
 	//remove selection
-	activeControlNodes.erase(control);
+	RemoveSelectedControlFromList(control);
+
 	UIControl* uiControl = control->GetUIObject();
 	if (uiControl)
 	{
 		uiControl->SetDebugDraw(false);
-		
+		uiControl->SetState(uiControl->GetInitialState());
+		uiControl->SetDrawPivotPointMode(UIControl::DRAW_NEVER);
+
 		//YZ draw parent rect
 		UIControl* parentToRemove = uiControl->GetParent();
 		if (parentToRemove)
@@ -196,9 +221,28 @@ void HierarchyTreeController::UnselectControl(HierarchyTreeControlNode* control,
 		emit SelectedControlNodesChanged(activeControlNodes);
 }
 
+void HierarchyTreeController::InsertSelectedControlToList(HierarchyTreeControlNode* control)
+{
+	SELECTEDCONTROLNODES::iterator iter = std::find(activeControlNodes.begin(), activeControlNodes.end(), control);
+	if (iter == activeControlNodes.end())
+	{
+		activeControlNodes.push_back(control);
+	}
+}
+
+void HierarchyTreeController::RemoveSelectedControlFromList(HierarchyTreeControlNode* control)
+{
+	SELECTEDCONTROLNODES::iterator iter = std::find(activeControlNodes.begin(), activeControlNodes.end(), control);
+	if (iter != activeControlNodes.end())
+	{
+		activeControlNodes.erase(iter);
+	}
+}
+
 bool HierarchyTreeController::IsControlSelected(HierarchyTreeControlNode* control) const
 {
-	return (activeControlNodes.find(control) != activeControlNodes.end());
+	SELECTEDCONTROLNODES::const_iterator iter = std::find(activeControlNodes.begin(), activeControlNodes.end(), control);
+	return (iter != activeControlNodes.end());
 }
 
 void HierarchyTreeController::ResetSelectedControl()
@@ -227,10 +271,6 @@ HierarchyTreeNode::HIERARCHYTREENODEID HierarchyTreeController::CreateNewControl
 		return HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
 	}
 		
-    // Create the control itself.
-	String type = strType.toStdString();
-	String newName = activeScreen->GetNewControlName(type);
-
 	HierarchyTreeNode* parentNode = activeScreen;
 	Vector2 parentDelta(0, 0);
 	if (activeControlNodes.size() == 1)
@@ -246,12 +286,27 @@ HierarchyTreeNode::HIERARCHYTREENODEID HierarchyTreeController::CreateNewControl
 	if (screen)
 		point = screen->LocalToInternal(point);
 	point -= parentDelta;
+	
+	// Can create.
+	return CreateNewControl(strType, point, parentNode);
+}
+
+HierarchyTreeNode::HIERARCHYTREENODEID HierarchyTreeController::CreateNewControl(const QString& strType, const Vector2& position,
+																				 HierarchyTreeNode* parentNode)
+{
+	// Create the control itself.
+	String type = strType.toStdString();
+	String newName = activeScreen->GetNewControlName(type);
 
     // Add the tree node - we need it before initializing control.
-	HierarchyTreeControlNode* controlNode = LibraryController::Instance()->CreateNewControl(parentNode, strType, QString::fromStdString(newName), point);
+	HierarchyTreeControlNode* controlNode = LibraryController::Instance()->CreateNewControl(parentNode, strType,
+																							QString::fromStdString(newName),
+																							position);
 	if (!controlNode)
+	{
 		return HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
-
+	}
+	
 	emit HierarchyTreeUpdated();
 	ResetSelectedControl();
 	SelectControl(controlNode);
@@ -322,11 +377,6 @@ HierarchyTreeScreenNode* HierarchyTreeController::GetActiveScreen() const
 const HierarchyTreeController::SELECTEDCONTROLNODES& HierarchyTreeController::GetActiveControlNodes() const
 {
 	return activeControlNodes;
-}
-
-bool HierarchyTreeController::IsNodeActive(const HierarchyTreeControlNode* control) const
-{
-	return (activeControlNodes.find((HierarchyTreeControlNode* )control) != activeControlNodes.end());
 }
 
 void HierarchyTreeController::EmitHierarchyTreeUpdated(bool needRestoreSelection)
@@ -593,4 +643,18 @@ HierarchyTreeScreenNode* HierarchyTreeController::GetScreenNodeForNode(Hierarchy
 	}
 
 	return NULL;
+}
+
+void HierarchyTreeController::AlignSelectedControls(eAlignControlsType alignType)
+{
+	BaseCommand* command = new ControlsAlignDistributeCommand(activeControlNodes, alignType);
+    CommandsController::Instance()->ExecuteCommand(command);
+	SafeRelease(command);
+}
+
+void HierarchyTreeController::DistributeSelectedControls(eDistributeControlsType distributeType)
+{
+	BaseCommand* command = new ControlsAlignDistributeCommand(activeControlNodes, distributeType);
+    CommandsController::Instance()->ExecuteCommand(command);
+	SafeRelease(command);
 }

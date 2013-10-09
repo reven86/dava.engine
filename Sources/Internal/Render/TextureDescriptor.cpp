@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/TextureDescriptor.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/File.h"
@@ -61,7 +75,7 @@ TextureDescriptor::~TextureDescriptor()
 {
 }
 
-TextureDescriptor *TextureDescriptor::CreateFromFile(const FilePath &filePathname)
+TextureDescriptor * TextureDescriptor::CreateFromFile(const FilePath &filePathname)
 {
 	if(filePathname.IsEmpty() || filePathname.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
@@ -79,6 +93,29 @@ TextureDescriptor *TextureDescriptor::CreateFromFile(const FilePath &filePathnam
     return descriptor;
 }
     
+TextureDescriptor * TextureDescriptor::CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps)
+{
+    TextureDescriptor *descriptor = new TextureDescriptor();
+	
+	descriptor->settings.wrapModeS = wrap;
+	descriptor->settings.wrapModeT = wrap;
+    
+    descriptor->settings.generateMipMaps = generateMipmaps;
+	if(descriptor->settings.generateMipMaps)
+	{
+		descriptor->settings.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
+		descriptor->settings.magFilter = Texture::FILTER_LINEAR;
+	}
+	else
+	{
+		descriptor->settings.minFilter = Texture::FILTER_LINEAR;
+		descriptor->settings.magFilter = Texture::FILTER_LINEAR;
+	}
+    
+    return descriptor;
+}
+
+    
     
 void TextureDescriptor::InitializeValues()
 {
@@ -91,6 +128,7 @@ void TextureDescriptor::InitializeValues()
     
     exportedAsGpuFamily = GPU_UNKNOWN;
     exportedAsPixelFormat = FORMAT_INVALID;
+	faceDescription = 0;
 }
     
 void TextureDescriptor::SetDefaultValues()
@@ -169,6 +207,8 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
         return false;
     }
     
+	file->Read(&faceDescription, sizeof(faceDescription));
+	
     SafeRelease(file);
     
     return true;
@@ -202,6 +242,8 @@ void TextureDescriptor::Save(const FilePath &filePathname) const
     {
         WriteCompression(file, compression[i]);
     }
+	
+	file->Write(&faceDescription, sizeof(faceDescription));
     
     SafeRelease(file);
 }
@@ -224,6 +266,8 @@ void TextureDescriptor::Export(const FilePath &filePathname)
     WriteGeneralSettings(file);
     file->Write(&exportedAsGpuFamily, sizeof(exportedAsGpuFamily));
     file->Write(&exportedAsPixelFormat, sizeof(exportedAsPixelFormat));
+	
+	file->Write(&faceDescription, sizeof(faceDescription));
 
     SafeRelease(file);
 }
@@ -248,10 +292,10 @@ void TextureDescriptor::ConvertToCurrentVersion(int8 version, int32 signature, D
     {
         LoadVersion5(signature, file);
     }
-    else if(version == 6)
-    {
-        LoadVersion6(signature, file);
-    }
+	else if(version == 6)
+	{
+		LoadVersion6(signature, file);
+	}
 }
     
 void TextureDescriptor::LoadVersion2(int32 signature, DAVA::File *file)
@@ -325,7 +369,7 @@ void TextureDescriptor::LoadVersion5(int32 signature, DAVA::File *file)
 
     if(signature == COMPRESSED_FILE)
 	{
-		file->Read(&exportedAsGpuFamily, sizeof(exportedAsGpuFamily));
+		// file->Read(&exportedAsGpuFamily, sizeof(exportedAsGpuFamily));
 	}
 	else if(signature == NOTCOMPRESSED_FILE)
 	{
@@ -377,7 +421,7 @@ void TextureDescriptor::LoadVersion5(int32 signature, DAVA::File *file)
 		}
 	}
 }
- 
+
 void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
 {
     file->Read(&settings.wrapModeS, sizeof(settings.wrapModeS));
@@ -405,7 +449,6 @@ void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
         }
     }
 }
-    
     
 void TextureDescriptor::LoadNotCompressed(File *file)
 {
@@ -554,13 +597,16 @@ String TextureDescriptor::GetSupportedTextureExtensions()
     return String(".png;.pvr;.dxt;") + TextureDescriptor::GetDescriptorExtension();
 }
 
-
-
 bool TextureDescriptor::IsCompressedFile() const
 {
     return isCompressedFile;
 }
 
+bool TextureDescriptor::IsCubeMap() const
+{
+	return (faceDescription != 0);
+}
+	
 uint32 TextureDescriptor::ReadSourceCRC() const
 {
 	uint32 crc = 0;

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/RenderManager.h"
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"
@@ -76,7 +90,7 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 		int32 subVersion = HIWORD(dai.DriverVersion.LowPart);
 		int32 build = LOWORD(dai.DriverVersion.LowPart);
 
-		Logger::Debug("[RenderManager::Create] device info: %s %s %d.%d.%d.%d", dai.Description, dai.Driver, product, version, subVersion, build);
+		Logger::FrameworkDebug("[RenderManager::Create] device info: %s %s %d.%d.%d.%d", dai.Description, dai.Driver, product, version, subVersion, build);
 	} else
 	{
 		Logger::Error("[RenderManager::Create] failed to create direct 3d object");
@@ -128,7 +142,7 @@ bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
 	HRESULT hr = direct3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
 	if (FAILED(hr))
 	{
-		Logger::Debug("Error: Could not get adapter display mode.");
+		Logger::Error("Error: Could not get adapter display mode.");
 		return false;
 	}
 
@@ -222,12 +236,12 @@ bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
 		HRESULT res;
 		res = direct3D->GetAdapterIdentifier(adapter,0,&identifier);
 
-		Logger::Debug(Format("[RenderManagerDX9] %s", identifier.Description));
+		Logger::FrameworkDebug(Format("[RenderManagerDX9] %s", identifier.Description));
 		if (strstr(identifier.Description,"PerfHUD") != 0)
 		{
 			adapterToUse=adapter;
 			deviceType=D3DDEVTYPE_REF;
-			Logger::Debug("[RenderManagerDX9] NV PerfHUD device found");
+			Logger::FrameworkDebug("[RenderManagerDX9] NV PerfHUD device found");
 			break;
 		}
 	}
@@ -289,7 +303,7 @@ bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
 	D3DSafeRelease(renderQuery);
 	RENDER_VERIFY(direct3DDevice->CreateQuery(D3DQUERYTYPE_EVENT, &renderQuery));
 
-	Logger::Debug("[RenderManager::Create] successfull");
+	Logger::FrameworkDebug("[RenderManager::Create] successfull");
 	return true;
 }
 
@@ -314,7 +328,7 @@ void RenderManager::DetectRenderingCapabilities()
 
 void RenderManager::SetupDefaultDeviceState()
 {
-	Logger::Debug("[RenderManagerDX9 setup default device state");
+	Logger::FrameworkDebug("[RenderManagerDX9 setup default device state");
 	
 	RENDER_VERIFY(direct3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE));
 
@@ -393,7 +407,7 @@ void RenderManager::Release()
 	D3DSafeRelease(direct3DDevice);
 	D3DSafeRelease(direct3D);
 
-	Logger::Debug("[RenderManager::Release] successfull");
+	Logger::FrameworkDebug("[RenderManager::Release] successfull");
 
 	Singleton<RenderManager>::Release();
 }
@@ -423,7 +437,7 @@ bool RenderManager::IsDeviceLost()
 	HRESULT hr = direct3DDevice->TestCooperativeLevel(); 
 	if (hr == D3DERR_DEVICELOST)
 	{
-		Logger::Debug("[RenderManagerDX9] device lost");
+		Logger::FrameworkDebug("[RenderManagerDX9] device lost");
 		OnDeviceLost();
 		Sleep(50);
 		return true;
@@ -444,7 +458,7 @@ bool RenderManager::IsDeviceLost()
 	}
 	else if (hr == S_OK)
 	{
-		//Logger::Debug("[RenderManagerDX9] device active");
+		//Logger::FrameworkDebug("[RenderManagerDX9] device active");
 		return false;
 	}
 	return true;
@@ -503,12 +517,12 @@ void RenderManager::EndFrame()
 // 		sourceRect.top = 0;
 // 		sourceRect.right = frameBufferWidth;
 // 		sourceRect.bottom = frameBufferHeight;
-// 		Logger::Debug("Present: %d %d", sourceRect.right, sourceRect.bottom);
+// 		Logger::FrameworkDebug("Present: %d %d", sourceRect.right, sourceRect.bottom);
 // 		hr = direct3DDevice->Present(&sourceRect, 0, hWnd, 0);
 // 	}
 	if (hr == D3DERR_DEVICELOST)
 	{
-		Logger::Debug("RenderManager::EndFrame() device lost");
+		Logger::FrameworkDebug("RenderManager::EndFrame() device lost");
 		IsDeviceLost();
 	}
 
@@ -684,7 +698,7 @@ void RenderManager::SetVertexPointer(int size, eVertexDataType _typeIndex, int s
 // 			float32 x = (*(float32*)ptr) - 0.5f;
 // 			float32 y = (*(float32*)(ptr + 4)) - 0.5f;
 // 
-// 			Logger::Debug("vset:%d %f %f",
+// 			Logger::FrameworkDebug("vset:%d %f %f",
 // 				k,
 // 				x,
 // 				y);
@@ -796,7 +810,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 	{
 		uint8 * ptr = (uint8*)buffers[BUFFER_VERTEX].pointer;
 		int32 stride = buffers[BUFFER_VERTEX].stride;
-		// Logger::Debug("cnt: %d, start: %d stride: %d ptr:%08x", count, startVertex, stride, buffers[BUFFER_VERTEX].pointer);
+		// Logger::FrameworkDebug("cnt: %d, start: %d stride: %d ptr:%08x", count, startVertex, stride, buffers[BUFFER_VERTEX].pointer);
 		for(int k = 0; k < maxIndex; ++k)
 		{
 			if (buffers[BUFFER_VERTEX].size == 2)
@@ -805,7 +819,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 				dataPtr[k].y = *(float32*)(ptr + 4) - 0.5f;
 				dataPtr[k].z = 0;
 
-				// 					Logger::Debug("v:%d %f %f %f",
+				// 					Logger::FrameworkDebug("v:%d %f %f %f",
 				// 						k,
 				// 						*(float32*)ptr,
 				// 						*(float32*)(ptr + 4),
@@ -829,7 +843,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 			hardwareState.color.b * hardwareState.color.a, hardwareState.color.a);
 		dataPtr[k].u = 0;
 		dataPtr[k].v = 0;
-		// Logger::Debug("v:%f %f %f %f c: #%08x", oldR, oldG, oldB, oldA, dataPtr[k].color);
+		// Logger::FrameworkDebug("v:%f %f %f %f c: #%08x", oldR, oldG, oldB, oldA, dataPtr[k].color);
 	}
 	if (buffers[BUFFER_TEXCOORD0].isEnabled)
 	{
@@ -850,7 +864,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 
 	// 		for(int k = 0; k < count; ++k)
 	// 		{
-	// 			Logger::Debug("v:%d %f %f %f uv: %f %f c: #%08x",
+	// 			Logger::FrameworkDebug("v:%d %f %f %f uv: %f %f c: #%08x",
 	// 				k,
 	// 				dataPtr[k].x,
 	// 				dataPtr[k].y,
@@ -864,7 +878,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 
 	
 
-	//Logger::Debug("[RenderManager::DrawArrays] type: %d startVertex: %d count: %d", type, startVertex, count);
+	//Logger::FrameworkDebug("[RenderManager::DrawArrays] type: %d startVertex: %d count: %d", type, startVertex, count);
 	RENDER_VERIFY(direct3DDevice->SetStreamSource(0, vertexBuffer->GetNativeBuffer(), 0, vertexBuffer->GetVertexSize()));
 	RENDER_VERIFY(direct3DDevice->SetFVF(vertexBuffer->GetFVF()));
 
@@ -933,7 +947,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 
 	if(debugEnabled)
 	{
-		Logger::Debug("Draw arrays texture: id %d", currentState.currentTexture[0]->id);
+		Logger::FrameworkDebug("Draw arrays texture: id %d", currentState.currentTexture[0]->id);
 	}
 	//if (type == PRIMITIVETYPE_TRIANGLESTRIP || type == PRIMITIVETYPE_TRIANGLEFAN || || type == PRIMITIVETYPE_TRIANGLEFAN))
 	{
@@ -946,7 +960,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 		{
 			uint8 * ptr = (uint8*)buffers[BUFFER_VERTEX].pointer;
 			int32 stride = buffers[BUFFER_VERTEX].stride;
-			// Logger::Debug("cnt: %d, start: %d stride: %d ptr:%08x", count, startVertex, stride, buffers[BUFFER_VERTEX].pointer);
+			// Logger::FrameworkDebug("cnt: %d, start: %d stride: %d ptr:%08x", count, startVertex, stride, buffers[BUFFER_VERTEX].pointer);
 			for(int k = 0; k < count; ++k)
 			{
 				if (buffers[BUFFER_VERTEX].size == 2)
@@ -955,7 +969,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 					dataPtr[k].y = *(float32*)(ptr + 4) - 0.5f;
 					dataPtr[k].z = 0;
 
-// 					Logger::Debug("v:%d %f %f %f",
+// 					Logger::FrameworkDebug("v:%d %f %f %f",
 // 						k,
 // 						*(float32*)ptr,
 // 						*(float32*)(ptr + 4),
@@ -981,7 +995,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 			dataPtr[k].color = oldColorD3D;
 			dataPtr[k].u = 0;
 			dataPtr[k].v = 0;
-			// Logger::Debug("v:%f %f %f %f c: #%08x", oldR, oldG, oldB, oldA, dataPtr[k].color);
+			// Logger::FrameworkDebug("v:%f %f %f %f c: #%08x", oldR, oldG, oldB, oldA, dataPtr[k].color);
 		}
 		if (buffers[BUFFER_TEXCOORD0].isEnabled)
 		{
@@ -1002,7 +1016,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 
 // 		for(int k = 0; k < count; ++k)
 // 		{
-// 			Logger::Debug("v:%d %f %f %f uv: %f %f c: #%08x",
+// 			Logger::FrameworkDebug("v:%d %f %f %f uv: %f %f c: #%08x",
 // 				k,
 // 				dataPtr[k].x,
 // 				dataPtr[k].y,
@@ -1016,7 +1030,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 
 
 
-		//Logger::Debug("[RenderManager::DrawArrays] type: %d startVertex: %d count: %d", type, startVertex, count);
+		//Logger::FrameworkDebug("[RenderManager::DrawArrays] type: %d startVertex: %d count: %d", type, startVertex, count);
 		RENDER_VERIFY(direct3DDevice->SetStreamSource(0, vertexBuffer->GetNativeBuffer(), 0, vertexBuffer->GetVertexSize()));
 
 
@@ -1155,7 +1169,7 @@ void RenderManager::SetHWClip(const Rect &rect)
 
 void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 {
-	//Logger::Debug("[RenderManagerDX9] set render target: 0x%08x", renderTarget);
+	//Logger::FrameworkDebug("[RenderManagerDX9] set render target: 0x%08x", renderTarget);
 	if (renderTarget == 0)
 	{
 		RENDER_VERIFY(direct3DDevice->SetRenderTarget(0, backBufferSurface));

@@ -7,6 +7,8 @@ precision highp float;
 #define mediump
 #endif
 
+//#define TEXTURE0_SHIFT_ENABLED
+
 // INPUT ATTRIBUTES
 attribute vec4 inPosition;
 
@@ -14,7 +16,11 @@ attribute vec4 inPosition;
 attribute vec3 inNormal;
 #endif 
 
+#if defined(MATERIAL_SKYBOX)
+attribute vec3 inTexCoord0;
+#else
 attribute vec2 inTexCoord0;
+#endif
 
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
 attribute vec2 inTexCoord1;
@@ -57,7 +63,11 @@ uniform mediump vec2 uvScale;
 
 
 // OUTPUT ATTRIBUTES
+#if defined(MATERIAL_SKYBOX)
+varying vec3 varTexCoord0;
+#else
 varying vec2 varTexCoord0;
+#endif
 
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
 varying vec2 varTexCoord1;
@@ -88,9 +98,20 @@ varying lowp float varLightmapSize;
 varying lowp vec4 varVertexColor;
 #endif
 
+#if defined(TEXTURE0_SHIFT_ENABLED)
+uniform mediump vec2 texture0Shift;
+#endif 
+
+
 void main()
 {
+#if defined(MATERIAL_SKYBOX)
+	vec4 vecPos = (modelViewProjectionMatrix * inPosition);
+	gl_Position = vec4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
+#else
 	gl_Position = modelViewProjectionMatrix * inPosition;
+#endif
+
 #if defined(VERTEX_LIT)
     vec3 eyeCoordsPosition = vec3(modelViewMatrix * inPosition);
     vec3 normal = normalize(normalMatrix * inNormal); // normal in eye coordinates
@@ -181,6 +202,11 @@ void main()
 #endif
 
 	varTexCoord0 = inTexCoord0;
+	
+#if defined(TEXTURE0_SHIFT_ENABLED)
+	varTexCoord0 += texture0Shift;
+#endif
+		
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
 	
 	#if defined(SETUP_LIGHTMAP)

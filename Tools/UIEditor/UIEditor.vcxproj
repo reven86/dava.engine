@@ -11,16 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Sources\Tools\TextureCompression\DXTConverter.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TextureCompression\PVRConverter.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\DefinitionFile.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\FramePathHelper.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\ImagePacker.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\PngImage.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\ResourcePacker2D.cpp" />
-    <ClCompile Include="..\..\Sources\Tools\TexturePacker\TexturePacker.cpp" />
+    <ClCompile Include="Classes\AlignDistribute\AlignDistributeManager.cpp" />
+    <ClCompile Include="Classes\AlignDistribute\AlignHandlers.cpp" />
+    <ClCompile Include="Classes\AlignDistribute\ControlsPositionData.cpp" />
+    <ClCompile Include="Classes\AlignDistribute\DistributeHandlers.cpp" />
     <ClCompile Include="Classes\Commands\BaseCommand.cpp" />
+    <ClCompile Include="Classes\Commands\ChangeAlignPropertyCommand.cpp" />
     <ClCompile Include="Classes\Commands\ControlCommands.cpp" />
     <ClCompile Include="Classes\Commands\ImportCommands.cpp" />
     <ClCompile Include="Classes\Commands\ItemsCommand.cpp" />
@@ -42,6 +38,7 @@
     <ClCompile Include="Classes\Helpers\LocalizationSystemHelper.cpp" />
     <ClCompile Include="Classes\Helpers\PropertiesHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ResourcesManageHelper.cpp" />
+    <ClCompile Include="Classes\Helpers\ScrollPropertyGridWidgetHelper.cpp" />
     <ClCompile Include="Classes\Helpers\SubcontrolsHelper.cpp" />
     <ClCompile Include="Classes\Helpers\UIControlStateHelper.cpp" />
     <ClCompile Include="Classes\Helpers\WidgetSignalsBlocker.cpp" />
@@ -57,6 +54,7 @@
     <ClCompile Include="Classes\Metadata\UIButtonMetadata.cpp" />
     <ClCompile Include="Classes\Metadata\UIControlMetadata.cpp" />
     <ClCompile Include="Classes\Metadata\UIListMetadata.cpp" />
+    <ClCompile Include="Classes\Metadata\UIScrollBarMetadata.cpp" />
     <ClCompile Include="Classes\Metadata\UIScrollViewMetadata.cpp" />
     <ClCompile Include="Classes\Metadata\UISliderMetadata.cpp" />
     <ClCompile Include="Classes\Metadata\UISpinnerMetadata.cpp" />
@@ -73,6 +71,7 @@
     <ClCompile Include="Classes\Models\HierarchyTreePlatformNode.cpp" />
     <ClCompile Include="Classes\Models\HierarchyTreeRootNode.cpp" />
     <ClCompile Include="Classes\Models\HierarchyTreeScreenNode.cpp" />
+    <ClCompile Include="Classes\ScaleSlider.cpp" />
     <ClCompile Include="Classes\ScreenControl.cpp" />
     <ClCompile Include="Classes\ScreenManager.cpp" />
     <ClCompile Include="Classes\ScreenWrapper.cpp" />
@@ -84,6 +83,7 @@
     <ClCompile Include="Classes\UI\Dialogs\createaggregatordlg.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\importdialog.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\localizationeditordialog.cpp" />
+    <ClCompile Include="Classes\UI\Dialogs\regexpinputdialog.cpp" />
     <ClCompile Include="Classes\UI\fontmanagerdialog.cpp" />
     <ClCompile Include="Classes\UI\hierarchytreecontrol.cpp" />
     <ClCompile Include="Classes\UI\hierarchytreewidget.cpp" />
@@ -104,6 +104,7 @@
     <ClCompile Include="Classes\UI\PropertyGridWidgets\PropertyGridWidgetsFactory.cpp" />
     <ClCompile Include="Classes\UI\PropertyGridWidgets\rectpropertygridwidget.cpp" />
     <ClCompile Include="Classes\UI\PropertyGridWidgets\screenpropertygridwidget.cpp" />
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\scrollcontrolpropertygridwidget.cpp" />
     <ClCompile Include="Classes\UI\PropertyGridWidgets\scrollviewpropertygridwidget.cpp" />
     <ClCompile Include="Classes\UI\PropertyGridWidgets\sliderpropertygridwidget.cpp" />
     <ClCompile Include="Classes\UI\PropertyGridWidgets\spinnerpropertygridwidget.cpp" />
@@ -144,6 +145,7 @@
     <ClCompile Include="GeneratedFiles\Metadata\UIButtonMetadata_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Metadata\UIControlMetadata_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Metadata\UIListMetadata_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\Metadata\UIScrollBarMetadata_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Metadata\UIScrollViewMetadata_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Metadata\UISliderMetadata_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Metadata\UISpinnerMetadata_moc.cpp" />
@@ -160,6 +162,7 @@
     <ClCompile Include="GeneratedFiles\Models\HierarchyTreeRootNode_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Models\HierarchyTreeScreenNode_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Models\HierarchyTree_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\ScaleSlider_moc.cpp" />
     <ClCompile Include="GeneratedFiles\ScreenControl_moc.cpp" />
     <ClCompile Include="GeneratedFiles\ScreenManager_moc.cpp" />
     <ClCompile Include="GeneratedFiles\ScreenWrapper_moc.cpp" />
@@ -171,6 +174,7 @@
     <ClCompile Include="GeneratedFiles\UI\Dialogs\createaggregatordlg_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\importdialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\localizationeditordialog_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\UI\Dialogs\regexpinputdialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\fontmanagerdialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\hierarchytreecontrol_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\hierarchytreewidget_moc.cpp" />
@@ -190,6 +194,7 @@
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\PropertyGridWidgetsFactory_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\rectpropertygridwidget_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\screenpropertygridwidget_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\scrollcontrolpropertygridwidget_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\scrollviewpropertygridwidget_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\sliderpropertygridwidget_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\spinnerpropertygridwidget_moc.cpp" />
@@ -200,16 +205,13 @@
     <ClCompile Include="GeneratedFiles\UI\StateComboBoxItemDelegate_moc.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Sources\Tools\TextureCompression\DXTConverter.h" />
-    <ClInclude Include="..\..\Sources\Tools\TextureCompression\PVRConverter.h" />
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\CommandLineParser.h" />
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\DefinitionFile.h" />
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\FramePathHelper.h" />
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\ImagePacker.h" />
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\PngImage.h" />
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\ResourcePacker2D.h" />
-    <ClInclude Include="..\..\Sources\Tools\TexturePacker\TexturePacker.h" />
+    <ClInclude Include="Classes\AlignDistribute\AlignDistributeEnums.h" />
+    <ClInclude Include="Classes\AlignDistribute\AlignDistributeManager.h" />
+    <ClInclude Include="Classes\AlignDistribute\AlignHandlers.h" />
+    <ClInclude Include="Classes\AlignDistribute\ControlsPositionData.h" />
+    <ClInclude Include="Classes\AlignDistribute\DistributeHandlers.h" />
     <ClInclude Include="Classes\Commands\BaseCommand.h" />
+    <ClInclude Include="Classes\Commands\ChangeAlignPropertyCommand.h" />
     <ClInclude Include="Classes\Commands\ChangePropertyCommand.h" />
     <ClInclude Include="Classes\Commands\ControlCommands.h" />
     <ClInclude Include="Classes\Commands\ImportCommands.h" />
@@ -272,6 +274,7 @@
     <ClInclude Include="Classes\Helpers\LocalizationSystemHelper.h" />
     <ClInclude Include="Classes\Helpers\PropertiesHelper.h" />
     <ClInclude Include="Classes\Helpers\ResourcesManageHelper.h" />
+    <ClInclude Include="Classes\Helpers\ScrollPropertyGridWidgetHelper.h" />
     <ClInclude Include="Classes\Helpers\SubcontrolsHelper.h" />
     <ClInclude Include="Classes\Helpers\UIControlStateHelper.h" />
     <ClInclude Include="Classes\Helpers\WidgetSignalsBlocker.h" />
@@ -331,6 +334,7 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">"$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\bin\moc.exe"   -D_WINDOWS -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DNDEBUG -D_CRT_SECURE_NO_DEPRECATE -DDAVA_QT -DDAVA_SAVE_TO_YAML  "-I." "-I.\..\..\Sources\Internal" "-I.\..\..\Sources\External" "-I.\..\..\Libs\glew\Include" "-I.\..\..\Libs\include" "-I.\Classes" "-I.\Classes\Commands" "-I.\Classes\Controllers" "-I.\Classes\Helpers" "-I.\Classes\Metadata" "-I.\Classes\Models" "-I.\Classes\UI" "-I.\Classes\UI\Dialogs" "-I.\Classes\UI\PropertyGridWidgets" "-I$(DXSDK_DIR)\include" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtCore" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtNetwork" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtGui" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtOpenGL" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\ActiveQt" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\mkspecs\default" "-Ic:\Program Files\OpenAL 1.1 SDK\include" "-Ic:\Program Files (x86)\OpenAL 1.1 SDK\include" "-I$(Configuration)\." "-I.\GeneratedFiles" "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </ClInclude>
     <ClInclude Include="Classes\Metadata\UIListMetadata.h" />
+    <ClInclude Include="Classes\Metadata\UIScrollBarMetadata.h" />
     <ClInclude Include="Classes\Metadata\UIScrollViewMetadata.h" />
     <ClInclude Include="Classes\Metadata\UISpinnerMetadata.h" />
     <ClInclude Include="Classes\Metadata\UIStaticTextMetadata.h">
@@ -373,6 +377,7 @@
     <ClInclude Include="Classes\Models\HierarchyTreePlatformNode.h" />
     <ClInclude Include="Classes\Models\HierarchyTreeRootNode.h" />
     <ClInclude Include="Classes\Models\HierarchyTreeScreenNode.h" />
+    <ClInclude Include="Classes\ScaleSlider.h" />
     <ClInclude Include="Classes\ScreenControl.h" />
     <ClInclude Include="Classes\ScreenWrapper.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
@@ -445,6 +450,7 @@
     </ClInclude>
     <ClInclude Include="Classes\UI\Dialogs\createaggregatordlg.h" />
     <ClInclude Include="Classes\UI\Dialogs\importdialog.h" />
+    <ClInclude Include="Classes\UI\Dialogs\regexpinputdialog.h" />
     <ClInclude Include="Classes\UI\IconHelper.h" />
     <ClInclude Include="Classes\UI\importdialogfilewidget.h" />
     <ClInclude Include="Classes\UI\PropertyGridWidgets\aggregatorpropertygridwidget.h" />
@@ -592,6 +598,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">"$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\bin\moc.exe"   -D_WINDOWS -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DNDEBUG -D_CRT_SECURE_NO_DEPRECATE -DDAVA_QT -DDAVA_SAVE_TO_YAML  "-I." "-I.\..\..\Sources\Internal" "-I.\..\..\Sources\External" "-I.\..\..\Libs\glew\Include" "-I.\..\..\Libs\include" "-I.\Classes" "-I.\Classes\Commands" "-I.\Classes\Controllers" "-I.\Classes\Helpers" "-I.\Classes\Metadata" "-I.\Classes\Models" "-I.\Classes\UI" "-I.\Classes\UI\Dialogs" "-I.\Classes\UI\PropertyGridWidgets" "-I$(DXSDK_DIR)\include" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtCore" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtNetwork" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtGui" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtOpenGL" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\ActiveQt" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\mkspecs\default" "-Ic:\Program Files\OpenAL 1.1 SDK\include" "-Ic:\Program Files (x86)\OpenAL 1.1 SDK\include" "-I$(Configuration)\." "-I.\GeneratedFiles" "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\scrollcontrolpropertygridwidget.h" />
     <ClInclude Include="Classes\UI\PropertyGridWidgets\scrollviewpropertygridwidget.h" />
     <ClInclude Include="Classes\UI\PropertyGridWidgets\spinnerpropertygridwidget.h" />
     <ClInclude Include="Classes\UI\PropertyGridWidgets\statepropertygridwidget.h">
@@ -644,6 +651,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">"$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\bin\moc.exe"   -D_WINDOWS -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_HAVE_MMX -DQT_HAVE_3DNOW -DQT_HAVE_SSE -DQT_HAVE_MMXEXT -DQT_HAVE_SSE2 -DQT_THREAD_SUPPORT -DNDEBUG -D_CRT_SECURE_NO_DEPRECATE -DDAVA_QT -DDAVA_SAVE_TO_YAML  "-I." "-I.\..\..\Sources\Internal" "-I.\..\..\Sources\External" "-I.\..\..\Libs\glew\Include" "-I.\..\..\Libs\include" "-I.\Classes" "-I.\Classes\Commands" "-I.\Classes\Controllers" "-I.\Classes\Helpers" "-I.\Classes\Metadata" "-I.\Classes\Models" "-I.\Classes\UI" "-I.\Classes\UI\Dialogs" "-I.\Classes\UI\PropertyGridWidgets" "-I$(DXSDK_DIR)\include" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtCore" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtNetwork" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtGui" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\QtOpenGL" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\include\ActiveQt" "-I$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\mkspecs\default" "-Ic:\Program Files\OpenAL 1.1 SDK\include" "-Ic:\Program Files (x86)\OpenAL 1.1 SDK\include" "-I$(Configuration)\." "-I.\GeneratedFiles" "-I." "-I." "-I." "-I." "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </ClInclude>
+    <ClInclude Include="Classes\version.h" />
     <ClInclude Include="GeneratedFiles\ui_alignspropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_backgroundpropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_basepropertygridwidget.h" />
@@ -664,6 +672,7 @@
     <ClInclude Include="GeneratedFiles\ui_propertygridcontainerwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_rectpropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_screenpropertygridwidget.h" />
+    <ClInclude Include="GeneratedFiles\ui_scrollcontrolpropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_scrollviewpropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_sliderpropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_statepropertygridwidget.h" />
@@ -788,6 +797,7 @@
     <None Include="UI\propertygridcontainerwidget.ui" />
     <None Include="UI\rectpropertygridwidget.ui" />
     <None Include="UI\screenpropertygridwidget.ui" />
+    <None Include="UI\scrollcontrolpropertygridwidget.ui" />
     <None Include="UI\sliderpropertygridwidget.ui" />
     <None Include="UI\statepropertygridwidget.ui" />
     <None Include="UI\uitextfieldpropertygridwidget.ui" />
@@ -864,8 +874,8 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glu32.lib;opengl32.lib;gdi32.lib;user32.lib;Win32Framework.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;c:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib;qtmaind.lib;QtOpenGLd4.lib;QtGuid4.lib;QtNetworkd4.lib;QtCored4.lib;kernel32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;msvcmrtd.lib;msvcrtd.lib;CORE_DB_Magick++_.lib;CORE_DB_magick_.lib;CORE_DB_bzlib_.lib;CORE_DB_coders_.lib;CORE_DB_filters_.lib;CORE_DB_jbig_.lib;CORE_DB_jp2_.lib;CORE_DB_jpeg_.lib;CORE_DB_lcms_.lib;CORE_DB_libxml_.lib;CORE_DB_tiff_.lib;CORE_DB_ttf_.lib;CORE_DB_wand_.lib;CORE_DB_wmf_.lib;CORE_DB_xlib_.lib;CORE_DB_zlib_.lib;X11.lib;Xext.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/lib;../../Projects\Win32Framework\DebugQt;../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/bin;../../Libs/glew/lib/;../../Libs/ImageMagick-6.7.4-Windows/Magick++/lib/;$(QT_HOME)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glu32.lib;opengl32.lib;gdi32.lib;user32.lib;Win32Framework.lib;FrameworkTools.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;c:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib;qtmaind.lib;QtOpenGLd4.lib;QtGuid4.lib;QtNetworkd4.lib;QtCored4.lib;kernel32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;msvcmrtd.lib;msvcrtd.lib;CORE_DB_Magick++_.lib;CORE_DB_magick_.lib;CORE_DB_bzlib_.lib;CORE_DB_coders_.lib;CORE_DB_filters_.lib;CORE_DB_jbig_.lib;CORE_DB_jp2_.lib;CORE_DB_jpeg_.lib;CORE_DB_lcms_.lib;CORE_DB_libxml_.lib;CORE_DB_tiff_.lib;CORE_DB_ttf_.lib;CORE_DB_wand_.lib;CORE_DB_wmf_.lib;CORE_DB_xlib_.lib;CORE_DB_zlib_.lib;X11.lib;Xext.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../Projects/Win32Framework/DebugQt;../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/lib;../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/bin;../../Libs/glew/lib/;../../Libs/ImageMagick-6.7.4-Windows/Magick++/lib/;$(QT_HOME)\lib;../../Projects/Win32Framework/FrameworkTools/.DebugQt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -911,8 +921,8 @@
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Win32Framework.lib;kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;glu32.lib;opengl32.lib;qtmain.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;c:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib;QtOpenGL4.lib;QtGui4.lib;QtNetwork4.lib;QtCore4.lib;msvcmrt.lib;msvcrt.lib;CORE_RL_Magick++_.lib;CORE_RL_magick_.lib;CORE_RL_bzlib_.lib;CORE_RL_coders_.lib;CORE_RL_filters_.lib;CORE_RL_jbig_.lib;CORE_RL_jp2_.lib;CORE_RL_jpeg_.lib;CORE_RL_lcms_.lib;CORE_RL_libxml_.lib;CORE_RL_tiff_.lib;CORE_RL_ttf_.lib;CORE_RL_wand_.lib;CORE_RL_wmf_.lib;CORE_RL_xlib_.lib;CORE_RL_zlib_.lib;X11.lib;Xext.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(QT_HOME)\lib;../../Projects\Win32Framework\ReleaseQt;../../Libs/glew/lib/;../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/lib;../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/bin;../../Libs/ImageMagick-6.7.4-Windows/Magick++/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Win32Framework.lib;FrameworkTools.lib;kernel32.lib;user32.lib;gdi32.lib;odbc32.lib;odbccp32.lib;ole32.lib;oleaut32.lib;winmm.lib;wsock32.lib;advapi32.lib;glu32.lib;opengl32.lib;qtmain.lib;glew32.lib;$(DXSDK_DIR)/Lib/x86/DxErr.lib;$(DXSDK_DIR)/Lib/x86/d3d9.lib;shfolder.lib;Shell32.lib;c:\Program Files (x86)\OpenAL 1.1 SDK\libs\Win32\OpenAL32.lib;QtOpenGL4.lib;QtGui4.lib;QtNetwork4.lib;QtCore4.lib;msvcmrt.lib;msvcrt.lib;CORE_RL_Magick++_.lib;CORE_RL_magick_.lib;CORE_RL_bzlib_.lib;CORE_RL_coders_.lib;CORE_RL_filters_.lib;CORE_RL_jbig_.lib;CORE_RL_jp2_.lib;CORE_RL_jpeg_.lib;CORE_RL_lcms_.lib;CORE_RL_libxml_.lib;CORE_RL_tiff_.lib;CORE_RL_ttf_.lib;CORE_RL_wand_.lib;CORE_RL_wmf_.lib;CORE_RL_xlib_.lib;CORE_RL_zlib_.lib;X11.lib;Xext.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QT_HOME)\lib;../../Projects\Win32Framework\ReleaseQt;../../Libs/glew/lib/;../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/lib;../../Libs/ImageMagick-6.7.4-Windows/VisualMagick/bin;../../Libs/ImageMagick-6.7.4-Windows/Magick++/lib;../../Projects\Win32Framework\FrameworkTools/ReleaseQt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>

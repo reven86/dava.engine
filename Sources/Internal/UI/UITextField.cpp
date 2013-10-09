@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "UI/UITextField.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/StringFormat.h"
@@ -60,6 +74,14 @@ bool UITextFieldDelegate::IsTextFieldShouldSetFocusedOnAppear(UITextField * /*te
 bool UITextFieldDelegate::IsTextFieldCanLostFocus(UITextField * textField)
 {
 	return true;
+}
+	
+void UITextFieldDelegate::OnKeyboardShown(const Rect& /*keyboardRect*/)
+{
+}
+
+void UITextFieldDelegate::OnKeyboardHidden()
+{
 }
     
 UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= false*/)
@@ -298,10 +320,6 @@ void UITextField::SetTextColor(const Color& fontColor)
 #endif
 }
 
-void UITextField::SetFontColor(const Color& fontColor)
-{
-    SetTextColor(fontColor);
-}
 
 void UITextField::SetShadowOffset(const DAVA::Vector2 &offset)
 {
@@ -501,17 +519,17 @@ void UITextField::RenderText()
 #endif
 }
 
-void UITextField::LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader)
+void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
 	UIControl::LoadFromYamlNode(node, loader);
 
-    YamlNode * textNode = node->Get("text");
+    const YamlNode * textNode = node->Get("text");
 	if (textNode)
     {
         SetText(textNode->AsWString());
     }
 
-    YamlNode * fontNode = node->Get("font");
+    const YamlNode * fontNode = node->Get("font");
     if (fontNode)
     {
         Font * font = loader->GetFontByName(fontNode->AsString());
@@ -519,61 +537,62 @@ void UITextField::LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader)
             SetFont(font);
     }
     
-    YamlNode * passwordNode = node->Get("isPassword");
+    const YamlNode * passwordNode = node->Get("isPassword");
     if (passwordNode)
     {
 		SetIsPassword(passwordNode->AsBool());
     }
 
 	// Keyboard customization params.
-	YamlNode* autoCapitalizationTypeNode = node->Get("autoCapitalizationType");
+	const YamlNode* autoCapitalizationTypeNode = node->Get("autoCapitalizationType");
 	if (autoCapitalizationTypeNode)
 	{
 		autoCapitalizationType = (eAutoCapitalizationType)autoCapitalizationTypeNode->AsInt32();
 	}
 
-	YamlNode* autoCorrectionTypeNode = node->Get("autoCorrectionType");
+	const YamlNode* autoCorrectionTypeNode = node->Get("autoCorrectionType");
 	if (autoCorrectionTypeNode)
 	{
 		autoCorrectionType = (eAutoCorrectionType)autoCorrectionTypeNode->AsInt32();
 	}
 
-	YamlNode* spellCheckingTypeNode = node->Get("spellCheckingType");
+	const YamlNode* spellCheckingTypeNode = node->Get("spellCheckingType");
 	if (spellCheckingTypeNode)
 	{
 		spellCheckingType = (eSpellCheckingType)spellCheckingTypeNode->AsInt32();
 	}
 
-	YamlNode* keyboardAppearanceTypeNode = node->Get("keyboardAppearanceType");
+	const YamlNode* keyboardAppearanceTypeNode = node->Get("keyboardAppearanceType");
 	if (keyboardAppearanceTypeNode)
 	{
 		keyboardAppearanceType = (eKeyboardAppearanceType)keyboardAppearanceTypeNode->AsInt32();
 	}
 
-	YamlNode* keyboardTypeNode = node->Get("keyboardType");
+	const YamlNode* keyboardTypeNode = node->Get("keyboardType");
 	if (keyboardTypeNode)
 	{
 		keyboardType = (eKeyboardType)keyboardTypeNode->AsInt32();
 	}
 
-	YamlNode* returnKeyTypeNode = node->Get("returnKeyType");
+	const YamlNode* returnKeyTypeNode = node->Get("returnKeyType");
 	if (returnKeyTypeNode)
 	{
 		returnKeyType = (eReturnKeyType)returnKeyTypeNode->AsInt32();
 	}
 
-	YamlNode* enableReturnKeyAutomaticallyNode = node->Get("enableReturnKeyAutomatically");
+	const YamlNode* enableReturnKeyAutomaticallyNode = node->Get("enableReturnKeyAutomatically");
 	if (enableReturnKeyAutomaticallyNode)
 	{
 		enableReturnKeyAutomatically = enableReturnKeyAutomaticallyNode->AsBool();
 	}
 
-    if(staticText)
-    {
-        staticText->SetRect(Rect(0,0,GetRect().dx, GetRect().dy));
+	if(staticText)
+	{
+		staticText->SetRect(Rect(0,0,GetRect().dx, GetRect().dy));
 		
-		YamlNode * shadowColorNode = node->Get("shadowcolor");
-		YamlNode * shadowOffsetNode = node->Get("shadowoffset");
+		const YamlNode * shadowColorNode = node->Get("shadowcolor");
+		const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
+
 		if(shadowColorNode)
 		{
 			Vector4 c = shadowColorNode->AsVector4();
@@ -586,8 +605,9 @@ void UITextField::LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader)
 		}
 	}
 
-	YamlNode * textColorNode = node->Get("textcolor");
-	YamlNode * textAlignNode = node->Get("textalign");
+
+	const YamlNode * textColorNode = node->Get("textcolor");
+	const YamlNode * textAlignNode = node->Get("textalign");
 
 	if(textColorNode)
 	{
@@ -602,7 +622,7 @@ void UITextField::LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader)
     //InitAfterYaml();
 
 #if 0
-	YamlNode * orientNode = node->Get("orientation");
+	const YamlNode * orientNode = node->Get("orientation");
 	if (orientNode)
 	{
 		if (orientNode->AsString() == "Vertical")

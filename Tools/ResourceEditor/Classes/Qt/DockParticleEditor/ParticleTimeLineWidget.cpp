@@ -1,50 +1,56 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+
 #include "ParticleTimeLineWidget.h"
+#include "ParticleTimeLineColumns.h"
 #include <QPainter>
 #include <QMouseEvent>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include "Commands/ParticleEditorCommands.h"
+#include "Commands2/ParticleEditorCommands.h"
 #include "Commands/CommandsManager.h"
+#include "Commands/CommandSignals.h"
 #include "../Scene/SceneDataManager.h"
-
+#include "Qt/Scene/SceneSignals.h"
 #include "ParticlesEditorController.h"
-
-#define LEFT_INDENT 20
-#define TOP_INDENT 14
-#define BOTTOM_INDENT 24
-#define RIGHT_INDENT 104
-#define LINE_STEP 16
-#define RECT_SIZE 3
-#define LINE_WIDTH 3
-
-#define PARTICLES_INFO_CONTROL_OFFSET 8
-#define PARTICLES_INFO_CONTROL_WIDTH 50
-
-#define UPDATE_LAYERS_EXTRA_INFO_PERIOD 250 // in milliseconds
 
 ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget *parent/* = 0*/) :
 	ScrollZoomWidget(parent),
 	selectedPoint(-1, -1),
+	selectedEffect(NULL),
+	selectedEmitter(NULL),
 	selectedLine(-1),	
 	emitterNode(NULL),
 	effectNode(NULL),
 	selectedLayer(NULL),
+	activeScene(NULL),
 #ifdef Q_WS_WIN
 	nameFont("Courier", 8, QFont::Normal)
 #else
@@ -56,31 +62,72 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget *parent/* = 0*/) :
 	
 	gridStyle = GRID_STYLE_LIMITS;
 	
-	connect(ParticlesEditorController::Instance(),
-			SIGNAL(EmitterSelected(Entity*, BaseParticleEditorNode*)),
+	// Signals handling from Scene Tree.
+	connect(SceneSignals::Instance(),
+			SIGNAL(EffectSelected(SceneEditor2*, DAVA::Entity*)),
 			this,
-			SLOT(OnNodeSelected(Entity*)));
-	connect(ParticlesEditorController::Instance(),
-			SIGNAL(LayerSelected(Entity*, ParticleLayer*, BaseParticleEditorNode*, bool)),
+			SLOT(OnEffectSelectedFromSceneTree(SceneEditor2*, DAVA::Entity*)));
+	connect(SceneSignals::Instance(),
+			SIGNAL(EmitterSelected(SceneEditor2*, DAVA::Entity*)),
 			this,
-			SLOT(OnLayerSelected(Entity*, ParticleLayer*)));
-	connect(ParticlesEditorController::Instance(),
-			SIGNAL(ForceSelected(Entity*, ParticleLayer*, int32, BaseParticleEditorNode*)),
+			SLOT(OnEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::Entity*)));
+	connect(SceneSignals::Instance(),
+			SIGNAL(InnerEmitterSelected(SceneEditor2*, DAVA::ParticleEmitter*)),
 			this,
-			SLOT(OnNodeSelected(Entity*)));
+			SLOT(OnInnerEmitterSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleEmitter*)));
+	connect(SceneSignals::Instance(),
+			SIGNAL(LayerSelected(SceneEditor2*, DAVA::ParticleLayer*, bool)),
+			this,
+			SLOT(OnLayerSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleLayer*, bool)));
+	connect(SceneSignals::Instance(),
+			SIGNAL(ForceSelected(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)),
+			this,
+			SLOT(OnForceSelectedFromSceneTree(SceneEditor2*, DAVA::ParticleLayer*, DAVA::int32)));
 
-	connect(ParticlesEditorController::Instance(),
-			SIGNAL(EffectSelected(Entity*)),
+	// Get the notification about changes in Particle Editor items.
+	connect(SceneSignals::Instance(),
+			SIGNAL(ParticleEmitterValueChanged(SceneEditor2*, DAVA::ParticleEmitter*)),
 			this,
-			SLOT(OnEffectNodeSelected(Entity*)));
+			SLOT(OnParticleEmitterValueChanged(SceneEditor2*, DAVA::ParticleEmitter*)));
+	connect(SceneSignals::Instance(),
+			SIGNAL(ParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)),
+			this,
+			SLOT(OnParticleLayerValueChanged(SceneEditor2*, DAVA::ParticleLayer*)));
+
+	// Particle Effect Started/Stopped notification is also needed to set/reset stats.
+	connect(SceneSignals::Instance(),
+			SIGNAL(ParticleEffectStateChanged(SceneEditor2*, DAVA::Entity*, bool)),
+			this,
+			SLOT(OnParticleEffectStateChanged(SceneEditor2*, DAVA::Entity*, bool)));
+	
+	// Particle Emitter Loaded notification is needed to re-initialize the Timeline.
+	connect(SceneSignals::Instance(),
+			SIGNAL(ParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitter*)),
+			this,
+			SLOT(OnParticleEmitterLoaded(SceneEditor2*, DAVA::ParticleEmitter*)));
+
+	// Notifications about structure changes are needed to re-initialize the Timeline.
+	connect(SceneSignals::Instance(),
+			SIGNAL(ParticleLayerAdded(SceneEditor2*, DAVA::ParticleLayer*)),
+			this,
+			SLOT(OnParticleLayerAdded(SceneEditor2*, DAVA::ParticleLayer*)));
+	connect(SceneSignals::Instance(),
+			SIGNAL(ParticleLayerRemoved(SceneEditor2*, DAVA::ParticleEmitter*)),
+			this,
+			SLOT(OnParticleLayerRemoved(SceneEditor2*, DAVA::ParticleEmitter*)));
 	
 	Init(0, 0);
 	
 	setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
 	// Init and start updating the particles grid.
-	this->countWidget = new ParticlesCountWidget(this, this);
-	this->areaWidget = new ParticlesAreaWidget(this, this);
+	infoColumns.push_back(new ParticlesCountColumn(this, this));
+	infoColumns.push_back(new ParticlesAverageCountColumn(this, this));
+	infoColumns.push_back(new ParticlesMaxCountColumn(this, this));
+
+	infoColumns.push_back(new ParticlesAreaColumn(this, this));
+	infoColumns.push_back(new ParticlesAverageAreaColumn(this, this));
+	infoColumns.push_back(new ParticlesMaxAreaColumn(this, this));
 
     connect(&updateTimer, SIGNAL(timeout()),
 			this, SLOT(OnUpdateLayersExtraInfoNeeded()));
@@ -89,82 +136,84 @@ ParticleTimeLineWidget::ParticleTimeLineWidget(QWidget *parent/* = 0*/) :
 
 ParticleTimeLineWidget::~ParticleTimeLineWidget()
 {
-	SafeDelete(this->countWidget);
-	SafeDelete(this->areaWidget);
-
 	updateTimer.stop();
+
+	for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+		 iter != infoColumns.end(); iter ++)
+	{
+		SafeDelete(*iter);
+	}
+	
+	infoColumns.clear();
 }
 
 void ParticleTimeLineWidget::OnLayerSelected(Entity* node, ParticleLayer* layer)
 {
 	if (!node || !layer)
 	{
+		CleanupTimelines();
 		emit ChangeVisible(false);
 		return;
 	}
 	
-	HandleNodeSelected(node, layer);
+	ParticleEmitter* emitter = GetEmitter(node);
+	HandleEmitterSelected(emitter, layer);
 }
 
 void ParticleTimeLineWidget::OnNodeSelected(Entity* node)
 {
-	HandleNodeSelected(node, NULL);
+	ParticleEmitter* emitter = GetEmitter(node);
+	HandleEmitterSelected(emitter, NULL);
 }
 
-void ParticleTimeLineWidget::HandleNodeSelected(Entity* node, ParticleLayer* layer)
+void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEmitter* emitter, ParticleLayer* layer)
 {
-	emitterNode = node;
-	selectedLayer = layer;
-	effectNode = NULL;
-	
-	float32 minTime = 0;
-	float32 maxTime = 0;
-	ParticleEmitter* emitter = NULL;
-	if (node)
+	if (!emitter)
 	{
-		emitter = GetEmitter(node);
-		if (!emitter)
-		{
-		    return;
-		}
-
-		maxTime = emitter->GetLifeTime();
+		CleanupTimelines();
+		emit ChangeVisible(false);
+		return;
 	}
 
+	selectedEmitter = emitter;
+	selectedLayer = layer;
+	selectedEffect = NULL;
+	
+	float32 minTime = 0;
+	float32 maxTime = emitter->GetLifeTime();
+
 	Init(minTime, maxTime);
-	if (emitter)
+	QColor colors[3] = {Qt::blue, Qt::darkGreen, Qt::red};
+	uint32 colorsCount = sizeof(colors) / sizeof(*colors);
+
+	if (!layer)
 	{
-		QColor colors[3] = {Qt::blue, Qt::darkGreen, Qt::red};
-		uint32 colorsCount = sizeof(colors) / sizeof(*colors);
-
-		if (!layer)
+		// No particular layer specified - add all ones.
+		const Vector<ParticleLayer*> & layers = emitter->GetLayers();
+		for (uint32 i = 0; i < layers.size(); ++i)
 		{
-			// No particular layer specified - add all ones.
-			const Vector<ParticleLayer*> & layers = emitter->GetLayers();
-			for (uint32 i = 0; i < layers.size(); ++i)
+			AddLayerLine(i, minTime, maxTime, colors[i % colorsCount], layers[i]);
+		}
+	}
+	else
+	{
+		// Add the particular layer only.
+		int layerIndex = 0;
+		const Vector<ParticleLayer*> & layers = emitter->GetLayers();
+		for (uint32 i = 0; i < layers.size(); i ++)
+		{
+			if (layers[i] == layer)
 			{
-				AddLayerLine(i, minTime, maxTime, colors[i % colorsCount], layers[i]);
+				layerIndex = i;
+				break;
 			}
 		}
-		else
-		{
-			// Add the particular layer only.
-			int layerIndex = 0;
-			const Vector<ParticleLayer*> & layers = emitter->GetLayers();
-			for (uint32 i = 0; i < layers.size(); i ++)
-			{
-				if (layers[i] == layer)
-				{
-					layerIndex = i;
-					break;
-				}
-			}
 
-			AddLayerLine(layerIndex, minTime, maxTime, colors[layerIndex % colorsCount], layer);
-		}
+		AddLayerLine(layerIndex, minTime, maxTime, colors[layerIndex % colorsCount], layer);
 	}
 
 	UpdateSizePolicy();
+	NotifyLayersExtraInfoChanged();
 	UpdateLayersExtraInfoPosition();
 
 	if (lines.size())
@@ -214,9 +263,10 @@ QRect ParticleTimeLineWidget::GetDecreaseRect() const
 
 void ParticleTimeLineWidget::OnEffectNodeSelected(Entity* node)
 {
-	emitterNode = NULL;
-	effectNode = node;
-	
+	selectedEffect = node;
+	selectedEmitter = NULL;
+	selectedLayer = NULL;
+
 	float32 minTime = 0;
 	float32 maxTime = 0;
 	if (node)
@@ -262,8 +312,13 @@ void ParticleTimeLineWidget::OnEffectNodeSelected(Entity* node)
 					{
 						float32 startTime = Max(minTime, layers[iLayer]->startTime);
 						float32 endTime = Min(maxTime, layers[iLayer]->endTime);
-						AddLine(iLines, startTime, endTime, colors[iLines % 3],
-								QString::fromStdString(layers[iLayer]->layerName), layers[iLayer]);
+						float32 deltaTime = layers[iLayer]->GetDeltaTime();
+						float32 loopEndTime = layers[iLayer]->GetLoopEndTime();
+						bool isLooped = layers[iLayer]->GetLooped();
+						bool hasLoopVariation = (layers[iLayer]->GetLoopVariation() > 0) ||
+												(layers[iLayer]->GetDeltaVariation() > 0);
+						AddLine(iLines, startTime, endTime, deltaTime, loopEndTime, isLooped, hasLoopVariation,
+								colors[iLines % 3],	QString::fromStdString(layers[iLayer]->layerName), layers[iLayer]);
 						iLines++;
 					}
 				}
@@ -299,15 +354,25 @@ void ParticleTimeLineWidget::AddLayerLine(uint32 layerLineID, float32 minTime, f
 	
 	float32 startTime = Max(minTime, layer->startTime);
 	float32 endTime = Min(maxTime, layer->endTime);
+	float32 deltaTime = layer->GetDeltaTime();
+	float32 loopEndTime = layer->GetLoopEndTime();
+	bool isLooped = layer->GetLooped();
+	bool hasLoopVariation = (layer->GetLoopVariation() > 0) || (layer->GetDeltaVariation() > 0);
 	
-	AddLine(layerLineID, startTime, endTime, layerColor, QString::fromStdString(layer->layerName), layer);
+	AddLine(layerLineID, startTime, endTime, deltaTime, loopEndTime, isLooped, hasLoopVariation, layerColor,
+			 QString::fromStdString(layer->layerName), layer);
 }
 
-void ParticleTimeLineWidget::AddLine(uint32 lineId, float32 startTime, float32 endTime, const QColor& color, const QString& legend, ParticleLayer* layer)
+void ParticleTimeLineWidget::AddLine(uint32 lineId, float32 startTime, float32 endTime, float32 deltaTime, float32 loopEndTime,
+	bool isLooped, bool hasLoopVariation, const QColor& color, const QString& legend, ParticleLayer* layer)
 {
 	LINE line;
 	line.startTime = startTime;
 	line.endTime = endTime;
+	line.deltaTime = deltaTime;
+	line.loopEndTime = loopEndTime;
+	line.isLooped = isLooped;
+	line.hasLoopVariation = hasLoopVariation;
 	line.color = color;
 	line.legend = legend;
 	line.layer = layer;
@@ -414,8 +479,7 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent *e)
 			}
 		}
 		painter.drawText(QPoint(LEFT_INDENT, startRect.bottom()), legend);
-	
-		painter.setPen(QPen(line.color, LINE_WIDTH));
+		painter.setPen(QPen(line.hasLoopVariation ? Qt::gray: line.color, LINE_WIDTH));
 		if (selectedPoint.x() == iter->first)
 		{
 			QBrush brush(line.color);
@@ -445,6 +509,70 @@ void ParticleTimeLineWidget::paintEvent(QPaintEvent *e)
 
 			painter.drawLine(startPoint, endPoint);
 		}
+		// Draw additional lines if layer is looped
+		if (line.isLooped)
+		{
+			float32 loopEndTime = line.loopEndTime;
+			float32 deltaTime = line.deltaTime;
+			
+			float32 durationTime = line.endTime - line.startTime;
+			float32 currentStartTime = line.endTime;
+			float32 currentEndTime;
+			
+			bool useDeltaTime = (line.deltaTime > 0);
+			Qt::PenStyle lineStyle;
+			QColor lineColor;
+			
+			while (currentStartTime < loopEndTime)
+			{
+				// Use gray color for layer which has time variations.
+				if (line.hasLoopVariation)
+				{
+					lineColor = Qt::gray;
+				}
+				else
+				{
+					lineColor = line.color;
+				}
+				// If delta time is used - we should use different calculations
+				// and draw dotted line
+				if (useDeltaTime)
+				{				
+					currentEndTime = currentStartTime + deltaTime;
+					lineStyle = Qt::DotLine;
+					useDeltaTime = false;
+				}
+				else
+				{
+					currentEndTime = currentStartTime + durationTime;
+					lineStyle = Qt::SolidLine;
+					useDeltaTime = (line.deltaTime > 0);
+				}
+				// We should not exceed loopEnd time
+				currentEndTime = Min(currentEndTime, loopEndTime);
+							
+				GetLoopedLineRect(iter->first, startRect, endRect, currentStartTime, currentEndTime);
+				// We should start next line section from current End time
+				currentStartTime = currentEndTime;
+			
+				startPosition =  GetPointPositionFromDrawingRect(startRect.center());
+				endPosition =  GetPointPositionFromDrawingRect(endRect.center());
+			
+				QPoint startPoint(startRect.center());
+				startPoint.setX(startPoint.x() + 3);
+				QPoint endPoint(endRect.center());
+				endPoint.setX(endPoint.x() - 3);
+			
+				if(!(startPosition == endPosition && startPosition != POSITION_INSIDE))
+				{
+					painter.setPen(QPen(lineColor, LINE_WIDTH));
+					painter.drawRect(endRect);
+			
+					painter.setPen(QPen(lineColor, LINE_WIDTH, lineStyle));
+					painter.drawLine(startPoint, endPoint);
+				}
+			}
+		}
 
 		UpdateLayersExtraInfoPosition();
 	}
@@ -462,9 +590,27 @@ bool ParticleTimeLineWidget::GetLineRect(uint32 id, QRect& startRect, QRect& end
 			continue;
 		
 		const LINE& line = iter->second;
-		
+	
 		QPoint startPoint(grapRect.left() + (line.startTime - minTime) / (maxTime - minTime) * grapRect.width(), grapRect.top() + (i + 1) * LINE_STEP);
 		QPoint endPoint(grapRect.left() + (line.endTime - minTime) / (maxTime - minTime) * grapRect.width(), grapRect.top() + (i + 1) * LINE_STEP);
+		startRect = QRect(startPoint - QPoint(RECT_SIZE, RECT_SIZE), startPoint + QPoint(RECT_SIZE, RECT_SIZE));
+		endRect = QRect(endPoint - QPoint(RECT_SIZE, RECT_SIZE), endPoint + QPoint(RECT_SIZE, RECT_SIZE));
+		return true;
+	}
+	return false;
+}
+
+bool ParticleTimeLineWidget::GetLoopedLineRect(uint32 id, QRect& startRect, QRect& endRect, float32 startTime, float32 endTime) const
+{
+	uint32 i = 0;
+	QRect grapRect = GetGraphRect();
+	for (LINE_MAP::const_iterator iter = lines.begin(); iter != lines.end(); ++iter, ++i)
+	{
+		if (iter->first != id)
+			continue;
+	
+		QPoint startPoint(grapRect.left() + (startTime - minTime) / (maxTime - minTime) * grapRect.width(), grapRect.top() + (i + 1) * LINE_STEP);
+		QPoint endPoint(grapRect.left() + (endTime - minTime) / (maxTime - minTime) * grapRect.width(), grapRect.top() + (i + 1) * LINE_STEP);
 		startRect = QRect(startPoint - QPoint(RECT_SIZE, RECT_SIZE), startPoint + QPoint(RECT_SIZE, RECT_SIZE));
 		endRect = QRect(endPoint - QPoint(RECT_SIZE, RECT_SIZE), endPoint + QPoint(RECT_SIZE, RECT_SIZE));
 		return true;
@@ -498,29 +644,69 @@ void ParticleTimeLineWidget::UpdateLayersExtraInfoPosition()
 {
 	if (lines.size() == 0)
 	{
-		countWidget->setVisible(false);
-		areaWidget->setVisible(false);
+		ShowLayersExtraInfoValues(false);
 		return;
 	}
-	
+
+	ShowLayersExtraInfoValues(true);
 	QRect graphRect = GetGraphRect();
-	QRect extraInfoRect(graphRect.right() + PARTICLES_INFO_CONTROL_OFFSET,
-					   0,
-					   PARTICLES_INFO_CONTROL_WIDTH + 1,
-					   graphRect.height() + TOP_INDENT + 1);
-	countWidget->setGeometry(extraInfoRect);
-	countWidget->setVisible(true);
 	
-	extraInfoRect.moveRight(extraInfoRect.right() + PARTICLES_INFO_CONTROL_WIDTH);
-	areaWidget->setGeometry(extraInfoRect);
-	areaWidget->setVisible(true);
+	List<ParticlesExtraInfoColumn*>::iterator firstIter = infoColumns.begin();
+	ParticlesExtraInfoColumn* firstColumn = (*firstIter);
+	
+	QRect extraInfoRect(graphRect.right() + PARTICLES_INFO_CONTROL_OFFSET, 0,
+						firstColumn->GetColumnWidth(), graphRect.height() + TOP_INDENT + 1);
+	firstColumn->setGeometry(extraInfoRect);
+
+	firstIter ++;
+	for (List<ParticlesExtraInfoColumn*>::iterator iter = firstIter;
+		 iter != infoColumns.end(); iter ++)
+	{
+		int curRight = extraInfoRect.right();
+		extraInfoRect.setLeft(curRight);
+		extraInfoRect.setRight(curRight + (*iter)->GetColumnWidth());
+
+		(*iter)->setGeometry(extraInfoRect);
+	}
+}
+
+void ParticleTimeLineWidget::ShowLayersExtraInfoValues(bool isVisible)
+{
+	for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+		 iter != infoColumns.end(); iter ++)
+	{
+		(*iter)->setVisible(isVisible);
+	}
 }
 
 void ParticleTimeLineWidget::UpdateLayersExtraInfoValues()
 {
-	// Just invalidate and repaint the counter widgets.
-	this->countWidget->repaint();
-	this->areaWidget->repaint();
+	// Just invalidate and repaint the columns.
+	for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+		 iter != infoColumns.end(); iter ++)
+	{
+		(*iter)->repaint();
+	}
+}
+
+void ParticleTimeLineWidget::ResetLayersExtraInfoValues()
+{
+	// Just invalidate and repaint the columns.
+	for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+		 iter != infoColumns.end(); iter ++)
+	{
+		(*iter)->Reset();
+	}
+}
+
+void ParticleTimeLineWidget::NotifyLayersExtraInfoChanged()
+{
+	// Just invalidate and repaint the columns.
+	for (List<ParticlesExtraInfoColumn*>::iterator iter = infoColumns.begin();
+		 iter != infoColumns.end(); iter ++)
+	{
+		(*iter)->OnLayersListChanged();
+	}
 }
 
 void ParticleTimeLineWidget::UpdateSizePolicy()
@@ -574,8 +760,6 @@ void ParticleTimeLineWidget::mouseMoveEvent(QMouseEvent * event)
 	}
 
 	ScrollZoomWidget::mouseMoveEvent(event);
-	
-	
 }
 
 void ParticleTimeLineWidget::mousePressEvent(QMouseEvent * event)
@@ -632,6 +816,10 @@ void ParticleTimeLineWidget::mouseDoubleClickEvent(QMouseEvent * event)
 	if (iter != lines.end())
 	{
 		LINE& line = iter->second;
+		
+		if (line.hasLoopVariation)
+			return;
+			
 		float32 value = point.y() == 0 ? line.startTime : line.endTime;
 		float32 minValue = point.y() == 0 ? minTime : line.startTime;
 		float32 maxValue = point.y() == 0 ? line.endTime : maxTime;
@@ -692,27 +880,192 @@ void ParticleTimeLineWidget::OnValueChanged(int lineId)
 	if (iter == lines.end())
 		return;
 	
-	CommandUpdateParticleLayerTime* cmd = new CommandUpdateParticleLayerTime(iter->second.layer);
-	cmd->Init(iter->second.startTime, iter->second.endTime);
-	CommandsManager::Instance()->ExecuteAndRelease(cmd,
-												   SceneDataManager::Instance()->SceneGetActive()->GetScene());
-	
+	if (activeScene)
+	{
+		CommandUpdateParticleLayerTime* cmd = new CommandUpdateParticleLayerTime(iter->second.layer);
+		cmd->Init(iter->second.startTime, iter->second.endTime);
+		activeScene->Exec(cmd);
+	}
+
 	emit ValueChanged();
 }
 
 void ParticleTimeLineWidget::OnUpdate()
 {
-	if (selectedLayer && emitterNode)
-		OnLayerSelected(emitterNode, selectedLayer);
-	else if (emitterNode)
-		OnNodeSelected(emitterNode);
-	else if (effectNode)
-		OnEffectNodeSelected(effectNode);
+	if (selectedEmitter)
+	{
+		HandleEmitterSelected(selectedEmitter, selectedLayer);
+	}
+	else if (selectedEffect)
+	{
+		OnEffectNodeSelected(selectedEffect);
+	}
 }
 
 void ParticleTimeLineWidget::OnUpdateLayersExtraInfoNeeded()
 {
 	UpdateLayersExtraInfoValues();
+}
+
+void ParticleTimeLineWidget::OnParticleEffectStateChanged(SceneEditor2* scene, DAVA::Entity* effect, bool isStarted)
+{
+	// The particle effect was started, stopped or restarted. Reset all the extra info.
+	ResetLayersExtraInfoValues();
+}
+
+void ParticleTimeLineWidget::OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::Entity* effectNode)
+{
+	activeScene = scene;
+
+	OnEffectNodeSelected(effectNode);
+}
+
+void ParticleTimeLineWidget::OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::Entity* emitterNode)
+{
+	activeScene = scene;
+
+	ParticleEmitter* emitter = NULL;
+	if (emitterNode)
+	{
+		emitter = GetEmitter(emitterNode);
+	}
+
+	HandleEmitterSelected(emitter, NULL);
+}
+
+void ParticleTimeLineWidget::OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+{
+	activeScene = scene;	
+	HandleEmitterSelected(emitter, NULL);
+}
+
+void ParticleTimeLineWidget::OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, bool forceRefresh)
+{
+	activeScene = scene;
+
+	ParticleEmitter* emitter = NULL;
+	if (layer)
+	{
+		emitter = layer->GetEmitter();
+	}
+	
+	HandleEmitterSelected(emitter, layer);
+}
+
+void ParticleTimeLineWidget::OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
+{
+	activeScene = scene;
+
+	// Handle in the same way as Layer.
+	ParticleEmitter* emitter = NULL;
+	if (layer)
+	{
+		emitter = layer->GetEmitter();
+	}
+	
+	HandleEmitterSelected(emitter, layer);
+}
+
+void ParticleTimeLineWidget::OnParticleEmitterValueChanged(SceneEditor2* /*scene*/, DAVA::ParticleEmitter* emitter)
+{
+	if (!emitter)
+	{
+		return;
+	}
+
+	// Update the timeline parameters which are related to the whole emitter.
+	if (this->maxTime != emitter->GetLifeTime())
+	{
+		this->maxTime = emitter->GetLifeTime();
+		repaint();
+	}
+}
+
+void ParticleTimeLineWidget::OnParticleLayerValueChanged(SceneEditor2* scene, DAVA::ParticleLayer* layer)
+{
+	// Update the params related to the particular layer.
+	int lineIndex = 0;
+	for (LINE_MAP::iterator iter = lines.begin(); iter != lines.end(); ++iter, ++ lineIndex)
+	{
+		LINE& line = iter->second;
+		if (line.layer != layer)
+		{
+			continue;
+		}
+		
+		if (line.startTime != layer->startTime || line.endTime != layer->endTime)
+		{
+			line.startTime = layer->startTime;
+			line.endTime = layer->endTime;
+			repaint();
+		}
+		
+		if (line.isLooped != layer->GetLooped())
+		{
+			line.isLooped = layer->GetLooped();
+			repaint();
+		}
+		
+		if (line.deltaTime != layer->deltaTime || line.loopEndTime != layer->loopEndTime)
+		{
+			line.deltaTime = layer->deltaTime;
+			line.loopEndTime = layer->loopEndTime;
+			repaint();
+		}
+		
+		bool hasLoopVariation = (layer->GetLoopVariation() > 0) || (layer->GetDeltaVariation() > 0);
+		if (line.hasLoopVariation !=  hasLoopVariation)
+		{
+			line.hasLoopVariation = hasLoopVariation;
+			repaint();
+		}
+
+		break;
+	}
+}
+
+void ParticleTimeLineWidget::OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+{
+	if (!emitter)
+	{
+		return;
+	}
+
+	// Handle in the same way as new emitter is selected.
+	activeScene = scene;
+	HandleEmitterSelected(emitter, NULL);
+}
+
+void ParticleTimeLineWidget::OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleLayer* layer)
+{
+	if (!layer)
+	{
+		return;
+	}
+	
+	// Handle in the same way as new emitter is selected.
+	activeScene = scene;
+	HandleEmitterSelected(layer->GetEmitter(), NULL);
+}
+
+void ParticleTimeLineWidget::OnParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
+{
+	if (!emitter)
+	{
+		return;
+	}
+	
+	// Handle in the same way as new emitter is selected.
+	activeScene = scene;
+	HandleEmitterSelected(emitter, NULL);
+}
+
+void ParticleTimeLineWidget::CleanupTimelines()
+{
+	lines.clear();
+	UpdateSizePolicy();
+	NotifyLayersExtraInfoChanged();
+	UpdateLayersExtraInfoPosition();
 }
 
 ParticleTimeLineWidget::SetPointValueDlg::SetPointValueDlg(float32 value, float32 minValue, float32 maxValue, QWidget *parent) :
@@ -754,156 +1107,4 @@ ParticleTimeLineWidget::SetPointValueDlg::SetPointValueDlg(float32 value, float3
 	btnOk->setDefault(true);
 	valueSpin->setFocus();
 	valueSpin->selectAll();	
-}
-
-////////////////////////////////////////////////////////////////////////////////////
-ParticlesExtraInfoWidget::ParticlesExtraInfoWidget(const ParticleTimeLineWidget* timeLineWidget,
-											   QWidget *parent) :
-	QWidget(parent)
-{
-	this->timeLineWidget = timeLineWidget;
-}
-
-void ParticlesExtraInfoWidget::paintEvent(QPaintEvent *)
-{
-	if (!this->timeLineWidget)
-	{
-		return;
-	}
-
-	QPainter painter(this);
-	painter.setPen(Qt::black);
-	
-	QRect ourRect = rect();
-	ourRect.adjust(0, 0, -1, -1);
-	painter.drawRect(ourRect);
-
-	// Draw the header.
-	painter.setFont(timeLineWidget->nameFont);
-	painter.setPen(Qt::black);
-	QRect textRect(0, 0, rect().width(), TOP_INDENT);
-	painter.drawRect(textRect);
-	painter.drawText(textRect, Qt::AlignHCenter | Qt::AlignVCenter, GetExtraInfoHeader());
-
-	// Draw the per-layer particles count.
-	OnBeforeGetExtraInfoLoop();
-
-	QFontMetrics fontMetrics(timeLineWidget->nameFont);
-	painter.setFont(timeLineWidget->nameFont);
-
-	int32 i = 0;
-	for (ParticleTimeLineWidget::LINE_MAP::const_iterator iter = timeLineWidget->lines.begin();
-		 iter != timeLineWidget->lines.end(); ++iter, ++i)
-	{
-		const ParticleTimeLineWidget::LINE& line = iter->second;
-
-		painter.setPen(QPen(line.color, LINE_WIDTH));
-		int startY = i * LINE_STEP + LINE_STEP / 2;
-		QRect textRect (EXTRA_INFO_LEFT_PADDING, TOP_INDENT + startY,
-						rect().width() - EXTRA_INFO_LEFT_PADDING, LINE_STEP);
-		painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter,
-						 GetExtraInfoForLayerLine(line));
-	}
-
-	OnAfterGetExtraInfoLoop();
-
-	// Draw the "Total" box.
-	QPoint totalPoint(EXTRA_INFO_LEFT_PADDING, rect().bottom() - 3);
-	QFont totalFont = timeLineWidget->nameFont;
-	totalFont.setBold(true);
-
-	painter.setPen(QPen(Qt::black, LINE_WIDTH));
-	painter.drawText(totalPoint, GetExtraInfoFooter());
-}
-
-////////////////////////////////////////////////////////////////////////////////////
-ParticlesCountWidget::ParticlesCountWidget(const ParticleTimeLineWidget* timeLineWidget,
-										   QWidget *parent) :
-	ParticlesExtraInfoWidget(timeLineWidget, parent)
-{
-	this->totalParticlesCount = 0;
-}
-
-void ParticlesCountWidget::OnBeforeGetExtraInfoLoop()
-{
-	this->totalParticlesCount = 0;
-}
-
-QString ParticlesCountWidget::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
-{
-	if (!line.layer)
-	{
-		return QString();
-	}
-	
-	int32 particlesNumber = line.layer->GetActiveParticlesCount();
-	this->totalParticlesCount += particlesNumber;
-
-	return QString::number(particlesNumber);
-}
-
-QString ParticlesCountWidget::GetExtraInfoHeader()
-{
-	return "Count";
-}
-
-QString ParticlesCountWidget::GetExtraInfoFooter()
-{
-	return QString::number(this->totalParticlesCount);
-}
-
-////////////////////////////////////////////////////////////////////////////////////
-ParticlesAreaWidget::ParticlesAreaWidget(const ParticleTimeLineWidget* timeLineWidget,
-									   QWidget *parent) :
-ParticlesExtraInfoWidget(timeLineWidget, parent)
-{
-	this->totalParticlesArea = 0.0f;
-}
-
-void ParticlesAreaWidget::OnBeforeGetExtraInfoLoop()
-{
-	this->totalParticlesArea = 0;
-}
-
-QString ParticlesAreaWidget::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
-{
-	if (!line.layer)
-	{
-		return QString();
-	}
-	
-	float32 area = line.layer->GetActiveParticlesArea();
-	this->totalParticlesArea += area;
-
-	return FormatFloat(area);
-}
-
-QString ParticlesAreaWidget::GetExtraInfoHeader()
-{
-	return "Area";
-}
-
-QString ParticlesAreaWidget::GetExtraInfoFooter()
-{
-	return FormatFloat(this->totalParticlesArea);
-}
-
-QString ParticlesAreaWidget::FormatFloat(float32 value)
-{
-	QString strValue;
-	if (fabs(value) < 10)
-	{
-		strValue = "%.4f";
-	}
-	else if (fabs(value) < 100)
-	{
-		strValue = "%.2f";
-	}
-	else
-	{
-		strValue = "%.0f";
-	}
-
-	strValue.sprintf(strValue.toAscii(), value);
-	return strValue;
 }

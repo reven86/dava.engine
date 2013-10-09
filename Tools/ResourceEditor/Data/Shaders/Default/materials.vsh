@@ -16,7 +16,11 @@ attribute vec4 inPosition;
 attribute vec3 inNormal;
 #endif 
 
+#if defined(MATERIAL_SKYBOX)
+attribute vec3 inTexCoord0;
+#else
 attribute vec2 inTexCoord0;
+#endif
 
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
 attribute vec2 inTexCoord1;
@@ -32,7 +36,6 @@ attribute vec4 inColor;
 #if defined(PIXEL_LIT)
 attribute vec3 inTangent;
 #endif
-
 
 // UNIFORMS
 uniform mat4 modelViewProjectionMatrix;
@@ -59,7 +62,11 @@ uniform mediump vec2 uvScale;
 
 
 // OUTPUT ATTRIBUTES
+#if defined(MATERIAL_SKYBOX)
+varying vec3 varTexCoord0;
+#else
 varying vec2 varTexCoord0;
+#endif
 
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
 varying vec2 varTexCoord1;
@@ -97,7 +104,13 @@ uniform mediump vec2 texture0Shift;
 
 void main()
 {
+#if defined(MATERIAL_SKYBOX)
+	vec4 vecPos = (modelViewProjectionMatrix * inPosition);
+	gl_Position = vec4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
+#else
 	gl_Position = modelViewProjectionMatrix * inPosition;
+#endif
+
 #if defined(VERTEX_LIT)
     vec3 eyeCoordsPosition = vec3(modelViewMatrix * inPosition);
     vec3 normal = normalize(normalMatrix * inNormal); // normal in eye coordinates
@@ -200,7 +213,7 @@ void main()
 		varTexCoord1 = inTexCoord1;
 	#elif defined(MATERIAL_LIGHTMAP)
 		varTexCoord1 = uvScale*inTexCoord1+uvOffset;
-	#else
+    #else
 		varTexCoord1 = inTexCoord1;
 	#endif
 #endif

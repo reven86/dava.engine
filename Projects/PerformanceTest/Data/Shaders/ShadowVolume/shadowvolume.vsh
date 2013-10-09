@@ -8,8 +8,6 @@ uniform mat3 normalMatrix;
 
 uniform vec3 lightPosition0;
 
-varying vec3 clr;
-
 void main()
 {
 	vec3 normal = normalMatrix * inNormal.xyz;
@@ -21,7 +19,7 @@ void main()
 	{
 		if(PosView.z < lightPosition0.z)
 		{
-			PosView.xyz -= LightVecView * (5000.0 - 10.0 + PosView.z) / LightVecView.z;
+			PosView.xyz -= LightVecView * (1000.0 - 10.0 + PosView.z) / LightVecView.z;
 		}
 		else
 		{
@@ -34,6 +32,4 @@ void main()
 		gl_Position = modelViewProjectionMatrix * inPosition;
 	}
 
-	//gl_Position = modelViewProjectionMatrix * inPosition;
-	clr = inNormal;
 }

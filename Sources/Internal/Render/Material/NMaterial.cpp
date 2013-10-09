@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Render/Material/NMaterial.h"
 #include "Render/RenderManager.h"
@@ -141,7 +155,7 @@ void NMaterialInstance::PrepareInstanceForShader(Shader * _shader)
     {
         //Shader::eUniformType uniformType = shader->GetUniformType(uniformIndex);
         const String & uniformName = shader->GetUniformName(uniformIndex);
-        //Logger::Debug("Find uniform: %s", uniformName.c_str());
+        //Logger::FrameworkDebug("Find uniform: %s", uniformName.c_str());
         
         if ((uniformName == "texture[0]") || (uniformName == "texture"))
         {
@@ -183,61 +197,61 @@ void NMaterialInstance::BindUniforms()
         
         if (uniformInfo.flags & SKIP_UNIFORM)continue;
         
-//        Logger::Debug("Bind uniform: %s", shader->GetUniformName(uniformIndex).c_str());
+//        Logger::FrameworkDebug("Bind uniform: %s", shader->GetUniformName(uniformIndex).c_str());
         
         uint8 * data = &uniformData[uniformInfo.shift];
         switch(uniformType)
         {
             case Shader::UT_FLOAT:
-                RENDER_VERIFY(glUniform1fv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (float*)data));
+                RENDER_VERIFY(glUniform1fv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (float*)data));
                 break;
             case Shader::UT_FLOAT_VEC2:
-                RENDER_VERIFY(glUniform2fv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (float*)data));
+                RENDER_VERIFY(glUniform2fv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (float*)data));
                 break;
             case Shader::UT_FLOAT_VEC3:
-                RENDER_VERIFY(glUniform3fv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (float*)data));
+                RENDER_VERIFY(glUniform3fv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (float*)data));
                 break;
             case Shader::UT_FLOAT_VEC4:
-                RENDER_VERIFY(glUniform4fv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (float*)data));
+                RENDER_VERIFY(glUniform4fv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (float*)data));
                 break;
             case Shader::UT_INT:
-                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_INT_VEC2:
-                RENDER_VERIFY(glUniform2iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform2iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_INT_VEC3:
-                RENDER_VERIFY(glUniform3iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform3iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_INT_VEC4:
-                RENDER_VERIFY(glUniform4iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform4iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_BOOL:
-                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_BOOL_VEC2:
-                RENDER_VERIFY(glUniform2iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform2iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_BOOL_VEC3:
-                RENDER_VERIFY(glUniform3iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform3iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_BOOL_VEC4:
-                RENDER_VERIFY(glUniform4iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform4iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_FLOAT_MAT2:
-                RENDER_VERIFY(glUniformMatrix2fv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, GL_FALSE, (float32*)data));
+                RENDER_VERIFY(glUniformMatrix2fv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, GL_FALSE, (float32*)data));
                 break;
             case Shader::UT_FLOAT_MAT3:
-                RENDER_VERIFY(glUniformMatrix3fv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, GL_FALSE, (float32*)data));
+                RENDER_VERIFY(glUniformMatrix3fv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, GL_FALSE, (float32*)data));
                 break;
             case Shader::UT_FLOAT_MAT4:
-                RENDER_VERIFY(glUniformMatrix4fv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, GL_FALSE, (float32*)data));
+                RENDER_VERIFY(glUniformMatrix4fv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, GL_FALSE, (float32*)data));
                 break;
             case Shader::UT_SAMPLER_2D:
-                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
             case Shader::UT_SAMPLER_CUBE:
-                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocation(uniformIndex), uniformInfo.arraySize, (int32*)data));
+                RENDER_VERIFY(glUniform1iv(shader->GetUniformLocationByIndex(uniformIndex), uniformInfo.arraySize, (int32*)data));
                 break;
         };
     }

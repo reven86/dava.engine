@@ -141,6 +141,10 @@
 	NSRect rect = self.frame;
 	RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 	UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+    
+    Core::Instance()->UnregisterAllAvailableResourceSizes();
+    Core::Instance()->RegisterAvailableResourceSize(rect.size.width, rect.size.height, "Gfx");
+    
 	Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
     Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
 	

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/CollisionSystem/CollisionRenderObject.h"
@@ -34,6 +48,7 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
 	, rayIntersectCached(false)
 	, drawMode(ST_COLL_DRAW_NOTHING)
+	, curLandscape(NULL)
 {
 	btVector3 worldMin(-1000,-1000,-1000);
 	btVector3 worldMax(1000,1000,1000);
@@ -158,14 +173,15 @@ const EntityGroup* SceneCollisionSystem::ObjectsRayTestFromCamera()
 	return ObjectsRayTest(traceFrom, traceTo);
 }
 
-DAVA::Vector3 SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to)
+bool SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to, DAVA::Vector3& intersectionPoint)
 {
 	DAVA::Vector3 ret;
 
 	// check if cache is available 
-	if(lastLandRayFrom == from && lastLandRayTo == to)
+	if(landIntersectCached && lastLandRayFrom == from && lastLandRayTo == to)
 	{
-		return lastLandCollision;
+		intersectionPoint = lastLandCollision;
+		return landIntersectCached;
 	}
 
 	// no cache. start new ray test
@@ -178,6 +194,8 @@ DAVA::Vector3 SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const
 
 	btVector3 btFrom(from.x, from.y, from.z);
 
+	landIntersectCached = false;
+
 	while (rayLength > 0)
 	{
 		btVector3 btTo(btFrom.x() + rayStep.x, btFrom.y() + rayStep.y, btFrom.z() + rayStep.z);
@@ -189,6 +207,7 @@ DAVA::Vector3 SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const
 			btVector3 hitPoint = btCallback.m_hitPointWorld;
 			ret = DAVA::Vector3(hitPoint.x(), hitPoint.y(), hitPoint.z());
 
+			landIntersectCached = true;
 			break;
 		}
 
@@ -197,10 +216,11 @@ DAVA::Vector3 SceneCollisionSystem::LandRayTest(const DAVA::Vector3 &from, const
 	}
 
 	lastLandCollision = ret;
-	return ret;
+	intersectionPoint = ret;
+	return landIntersectCached;
 }
 
-DAVA::Vector3 SceneCollisionSystem::LandRayTestFromCamera()
+bool SceneCollisionSystem::LandRayTestFromCamera(DAVA::Vector3& intersectionPoint)
 {
 	SceneCameraSystem *cameraSystem	= ((SceneEditor2 *) GetScene())->cameraSystem;
 
@@ -210,7 +230,12 @@ DAVA::Vector3 SceneCollisionSystem::LandRayTestFromCamera()
 	DAVA::Vector3 traceFrom = camPos;
 	DAVA::Vector3 traceTo = traceFrom + camDir * 1000.0f;
 
-	return LandRayTest(traceFrom, traceTo);
+	return LandRayTest(traceFrom, traceTo, intersectionPoint);
+}
+
+DAVA::Landscape* SceneCollisionSystem::GetLandscape() const
+{
+	return curLandscape;
 }
 
 void SceneCollisionSystem::UpdateCollisionObject(DAVA::Entity *entity)
@@ -248,6 +273,12 @@ void SceneCollisionSystem::Update(DAVA::float32 timeElapsed)
 {
 	// reset cache on new frame
 	rayIntersectCached = false;
+
+	if(drawMode & ST_COLL_DRAW_LAND_COLLISION)
+	{
+		DAVA::Vector3 tmp;
+		LandRayTestFromCamera(tmp);
+	}
 }
 
 void SceneCollisionSystem::ProcessUIEvent(DAVA::UIEvent *event)
@@ -319,7 +350,7 @@ void SceneCollisionSystem::Draw()
 	DAVA::RenderManager::Instance()->SetState(oldState);
 }
 
-void SceneCollisionSystem::PropeccCommand(const Command2 *command, bool redo)
+void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(NULL != command)
 	{
@@ -327,9 +358,11 @@ void SceneCollisionSystem::PropeccCommand(const Command2 *command, bool redo)
 		switch(command->GetId())
 		{
 		case CMDID_TRANSFORM:
+		case CMDID_ENTITY_MOVE:
 			// update bullet object
 			UpdateCollisionObject(entity);
 			break;
+			/*
 		case CMDID_ENTITY_MOVE:
 			{
 				const EntityMoveCommand* moveCommand = (EntityMoveCommand*) command;
@@ -340,6 +373,7 @@ void SceneCollisionSystem::PropeccCommand(const Command2 *command, bool redo)
 				}
 			}
 			break;
+			*/
 		default:
 			break;
 		}
@@ -393,6 +427,7 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 	if(NULL != landscape)
 	{
 		collObj = new CollisionLandscape(entity, landCollWorld, landscape);
+		curLandscape = landscape;
 	}
 	else if(NULL != particleEmitter)
 	{
@@ -415,6 +450,11 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 void SceneCollisionSystem::DestroyFromEntity(DAVA::Entity * entity)
 {
 	CollisionBaseObject *cObj = entityToCollision.value(entity, NULL);
+
+	if(curLandscape == DAVA::GetLandscape(entity))
+	{
+		curLandscape = NULL;
+	}
 
 	if(NULL != cObj)
 	{

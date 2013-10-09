@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_MATH2DMATRIX3_H__
 #define __DAVAENGINE_MATH2DMATRIX3_H__
 
@@ -60,6 +74,7 @@ struct Matrix3
 	inline void	BuildTranslation(const Vector2 & vec);
 	inline void	BuildScale(const Vector2 & vec);
 	inline bool GetInverse(Matrix3 & out, float32 fTolerance = 1e-06) const;
+	inline void Decomposition(Matrix3 &kQ, Vector3 &kD, Vector3 &kU) const;
 
 	inline Matrix3& operator *= (const Matrix3 & arg);
 	inline Matrix3 operator *	(const Matrix3 & arg) const;
@@ -287,6 +302,108 @@ inline bool Matrix3::GetInverse(Matrix3 & out, float32 fTolerance) const
 	}
 	
 	return true;
+}
+
+inline void Matrix3::Decomposition(Matrix3 &kQ, Vector3 &kD, Vector3 &kU) const
+{
+	// Factor M = QR = QDU where Q is orthogonal, D is diagonal,
+	// and U is upper triangular with ones on its diagonal.  Algorithm uses
+	// Gram-Schmidt orthogonalization (the QR algorithm).
+	//
+	// If M = [ m0 | m1 | m2 ] and Q = [ q0 | q1 | q2 ], then
+	//
+	//   q0 = m0/|m0|
+	//   q1 = (m1-(q0*m1)q0)/|m1-(q0*m1)q0|
+	//   q2 = (m2-(q0*m2)q0-(q1*m2)q1)/|m2-(q0*m2)q0-(q1*m2)q1|
+	//
+	// where |V| indicates length of vector V and A*B indicates dot
+	// product of vectors A and B.  The matrix R has entries
+	//
+	//   r00 = q0*m0  r01 = q0*m1  r02 = q0*m2
+	//   r10 = 0      r11 = q1*m1  r12 = q1*m2
+	//   r20 = 0      r21 = 0      r22 = q2*m2
+	//
+	// so D = diag(r00,r11,r22) and U has entries u01 = r01/r00,
+	// u02 = r02/r00, and u12 = r12/r11.
+
+	// Q = rotation
+	// D = scaling
+	// U = shear
+
+	// D stores the three diagonal entries r00, r11, r22
+	// U stores the entries U[0] = u01, U[1] = u02, U[2] = u12
+
+	// build orthogonal matrix Q
+	float32 fInvLength = sqrtf(_data[0][0] * _data[0][0] + _data[1][0]* _data[1][0] + _data[2][0] * _data[2][0]);
+
+	kQ._data[0][0] = _data[0][0]*fInvLength;
+	kQ._data[1][0] = _data[1][0]*fInvLength;
+	kQ._data[2][0] = _data[2][0]*fInvLength;
+
+	float32 fDot = kQ._data[0][0]*_data[0][1] + kQ._data[1][0]*_data[1][1] +
+		kQ._data[2][0]*_data[2][1];
+	kQ._data[0][1] = _data[0][1]-fDot*kQ._data[0][0];
+	kQ._data[1][1] = _data[1][1]-fDot*kQ._data[1][0];
+	kQ._data[2][1] = _data[2][1]-fDot*kQ._data[2][0];
+	fInvLength = sqrtf(kQ._data[0][1]*kQ._data[0][1] + kQ._data[1][1]*kQ._data[1][1] + kQ._data[2][1]*kQ._data[2][1]);
+
+	kQ._data[0][1] *= fInvLength;
+	kQ._data[1][1] *= fInvLength;
+	kQ._data[2][1] *= fInvLength;
+
+	fDot = kQ._data[0][0]*_data[0][2] + kQ._data[1][0]*_data[1][2] +
+		kQ._data[2][0]*_data[2][2];
+	kQ._data[0][2] = _data[0][2]-fDot*kQ._data[0][0];
+	kQ._data[1][2] = _data[1][2]-fDot*kQ._data[1][0];
+	kQ._data[2][2] = _data[2][2]-fDot*kQ._data[2][0];
+	fDot = kQ._data[0][1]*_data[0][2] + kQ._data[1][1]*_data[1][2] +
+		kQ._data[2][1]*_data[2][2];
+	kQ._data[0][2] -= fDot*kQ._data[0][1];
+	kQ._data[1][2] -= fDot*kQ._data[1][1];
+	kQ._data[2][2] -= fDot*kQ._data[2][1];
+	fInvLength = sqrtf(kQ._data[0][2]*kQ._data[0][2] + kQ._data[1][2]*kQ._data[1][2] + kQ._data[2][2]*kQ._data[2][2]);
+
+	kQ._data[0][2] *= fInvLength;
+	kQ._data[1][2] *= fInvLength;
+	kQ._data[2][2] *= fInvLength;
+
+	// guarantee that orthogonal matrix has determinant 1 (no reflections)
+	float32 fDet = kQ._data[0][0]*kQ._data[1][1]*kQ._data[2][2] + kQ._data[0][1]*kQ._data[1][2]*kQ._data[2][0] +
+		kQ._data[0][2]*kQ._data[1][0]*kQ._data[2][1] - kQ._data[0][2]*kQ._data[1][1]*kQ._data[2][0] -
+		kQ._data[0][1]*kQ._data[1][0]*kQ._data[2][2] - kQ._data[0][0]*kQ._data[1][2]*kQ._data[2][1];
+
+	if(fDet < 0.0)
+	{
+		for (size_t iRow = 0; iRow < 3; iRow++)
+			for (size_t iCol = 0; iCol < 3; iCol++)
+				kQ._data[iRow][iCol] = -kQ._data[iRow][iCol];
+	}
+
+	// build "right" matrix R
+	Matrix3 kR;
+	kR._data[0][0] = kQ._data[0][0]*_data[0][0] + kQ._data[1][0]*_data[1][0] +
+		kQ._data[2][0]*_data[2][0];
+	kR._data[0][1] = kQ._data[0][0]*_data[0][1] + kQ._data[1][0]*_data[1][1] +
+		kQ._data[2][0]*_data[2][1];
+	kR._data[1][1] = kQ._data[0][1]*_data[0][1] + kQ._data[1][1]*_data[1][1] +
+		kQ._data[2][1]*_data[2][1];
+	kR._data[0][2] = kQ._data[0][0]*_data[0][2] + kQ._data[1][0]*_data[1][2] +
+		kQ._data[2][0]*_data[2][2];
+	kR._data[1][2] = kQ._data[0][1]*_data[0][2] + kQ._data[1][1]*_data[1][2] +
+		kQ._data[2][1]*_data[2][2];
+	kR._data[2][2] = kQ._data[0][2]*_data[0][2] + kQ._data[1][2]*_data[1][2] +
+		kQ._data[2][2]*_data[2][2];
+
+	// the scaling component
+	kD.x = kR._data[0][0];
+	kD.y = kR._data[1][1];
+	kD.z = kR._data[2][2];
+
+	// the shear component
+	float32 fInvD0 = 1.0f/kD.x;
+	kU.x = kR._data[0][1]*fInvD0;
+	kU.y = kR._data[0][2]*fInvD0;
+	kU.z = kR._data[1][2]/kD.y;
 }
 	
 inline bool Matrix3::operator == (const Matrix3 & _m) const

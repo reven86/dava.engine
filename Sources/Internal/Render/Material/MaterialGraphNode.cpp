@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/Material/MaterialGraphNode.h"
 #include "Render/Material/MaterialGraph.h"
 
@@ -64,10 +78,10 @@ MaterialGraphNode::~MaterialGraphNode()
     inputConnectors.clear();
 }
     
-void MaterialGraphNode::InitFromYamlNode(YamlNode * graphNode)
+void MaterialGraphNode::InitFromYamlNode(const YamlNode * graphNode)
 {
-    YamlNode * typeNode = graphNode->Get("node");
-    YamlNode * nameNode = graphNode->Get("name");
+    const YamlNode * typeNode = graphNode->Get("node");
+    const YamlNode * nameNode = graphNode->Get("name");
     SetType(typeNode->AsString());
     SetName(nameNode->AsString());
         
@@ -76,19 +90,19 @@ void MaterialGraphNode::InitFromYamlNode(YamlNode * graphNode)
     
     if (type == TYPE_SAMPLE_2D)
     {
-        YamlNode * textureChannelNode = graphNode->Get("channel");
+        const YamlNode * textureChannelNode = graphNode->Get("channel");
         if (textureChannelNode)
             textureChannelIndex = textureChannelNode->AsInt();
     }
     if (type == TYPE_TEX_COORD_INPUT)
     {
-        YamlNode * inputNode = graphNode->Get("input");
+        const YamlNode * inputNode = graphNode->Get("input");
         if (inputNode)
             textureInputIndex = inputNode->AsInt();
     }
     if (type == TYPE_CONST)
     {
-        YamlNode * valueNode = graphNode->Get("value");
+        const YamlNode * valueNode = graphNode->Get("value");
         if (valueNode->GetType() == YamlNode::TYPE_STRING)
         {
             constValue.SetFloat(valueNode->AsFloat());
@@ -292,7 +306,7 @@ MaterialGraphNode::eNodeUsage MaterialGraphNode::RecursiveSetRealUsageBack(Mater
 {
     
     // DEBUG
-    //Logger::Debug("eval node: %s", node->GetName().c_str());
+    //Logger::FrameworkDebug("eval node: %s", node->GetName().c_str());
 
     //Map<String, eNodeUsage> resultUsage;
     Map<String, MaterialGraphNodeConnector*> & inputConnectors = node->GetInputConnectors();

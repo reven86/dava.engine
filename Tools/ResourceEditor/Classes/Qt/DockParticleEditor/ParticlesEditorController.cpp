@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "ParticlesEditorController.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "ParticlesEditorQT/Helpers/ParticlesEditorNodeNameHelper.h"
@@ -248,117 +262,6 @@ void ParticlesEditorController::RemoveParticleEmitterNode(Entity* emitterSceneNo
     }
 }
 
-void ParticlesEditorController::CleanupParticleEmitterEditorNode(EmitterParticleEditorNode* emitterNode)
-{
-    // Leave the node itself, but cleanup all the children.
-    while (!emitterNode->GetChildren().empty())
-    {
-        emitterNode->RemoveNode(emitterNode->GetChildren().front());
-    }
-}
-
-LayerParticleEditorNode* ParticlesEditorController::AddParticleLayerToNode(EmitterParticleEditorNode* emitterNode)
-{
-    if (!emitterNode)
-    {
-        return NULL;
-    }
-    
-    ParticleEmitter* emitter = emitterNode->GetParticleEmitter();
-    if (!emitter)
-    {
-        return NULL;
-    }
-    
-    // Create the new layer.
-    ParticleLayer *layer;
-    if(emitter->GetIs3D())
-    {
-        layer = new ParticleLayer3D(emitter);
-    }
-    else
-    {
-        layer = new ParticleLayer();
-    }
-
-	layer->startTime = 0;
-    layer->endTime = LIFETIME_FOR_NEW_PARTICLE_EMITTER;
-	layer->life = new PropertyLineValue<float32>(emitter->GetLifeTime());
-    layer->layerName = ParticlesEditorNodeNameHelper::GetNewLayerName(String("Layer"), emitter);
-
-    emitter->AddLayer(layer);
-
-    // Create the new node and add it to the tree.
-    LayerParticleEditorNode* layerNode = new LayerParticleEditorNode(emitterNode, layer);
-    emitterNode->AddNode(layerNode);
-
-    SafeRelease(layer);
-
-    return layerNode;
-}
-
-LayerParticleEditorNode* ParticlesEditorController::CloneParticleLayerNode(LayerParticleEditorNode* layerToClone)
-{
-    if (!layerToClone || !layerToClone->GetLayer())
-    {
-        return NULL;
-    }
-    
-    EmitterParticleEditorNode* emitterNode = layerToClone->GetEmitterEditorNode();
-    if (!emitterNode)
-    {
-        return NULL;
-    }
-
-    ParticleEmitter* emitter = emitterNode->GetParticleEmitter();
-    if (!emitter)
-    {
-        return NULL;
-    }
-
-    ParticleLayer* clonedLayer = layerToClone->GetLayer()->Clone();
-    emitter->AddLayer(clonedLayer);
-    
-    LayerParticleEditorNode* clonedEditorNode = new LayerParticleEditorNode(emitterNode, clonedLayer);
-    emitterNode->AddNode(clonedEditorNode);
-
-    return clonedEditorNode;
-}
-
-void ParticlesEditorController::RemoveParticleLayerNode(LayerParticleEditorNode* layerToRemove)
-{
-    if (!layerToRemove)
-    {
-        return;
-    }
-    
-    EmitterParticleEditorNode* emitterNode = layerToRemove->GetEmitterEditorNode();
-    if (!emitterNode)
-    {
-        return;
-    }
-
-    ParticleEmitter* emitter = emitterNode->GetParticleEmitter();
-    if (!emitter)
-    {
-        return;
-    }
-    
-    // Lookup for the layer to be removed.
-    int32 layerIndex = layerToRemove->GetLayerIndex();
-    if (layerIndex == -1)
-    {
-        return;
-    }
-
-	// Reset the selected node in case it is one to be removed.
-	CleanupSelectedNodeIfDeleting(layerToRemove);
-
-    // Remove the node from the layers list and also from the emitter.
-    emitter->RemoveLayer(layerIndex);
-    
-    emitterNode->RemoveNode(layerToRemove);
-}
 
 ForceParticleEditorNode* ParticlesEditorController::AddParticleForceToNode(LayerParticleEditorNode* layerNode)
 {
@@ -377,6 +280,7 @@ ForceParticleEditorNode* ParticlesEditorController::AddParticleForceToNode(Layer
 	ParticleForce* newForce = new ParticleForce(RefPtr<PropertyLine<Vector3> >(new PropertyLineValue<Vector3>(Vector3(0, 0, 0))),
 												RefPtr<PropertyLine<Vector3> >(NULL), RefPtr<PropertyLine<float32> >(NULL));
 	layer->AddForce(newForce);
+	newForce->Release();
 
     // Create the node for the new layer.
     int newLayerIndex = layer->forces.size() - 1;

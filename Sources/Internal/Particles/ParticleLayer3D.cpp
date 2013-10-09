@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Particles/ParticleLayer3D.h"
 #include "Render/RenderDataObject.h"
@@ -47,21 +61,39 @@ ParticleLayer3D::ParticleLayer3D(ParticleEmitter* parent)
 
 ParticleLayer3D::~ParticleLayer3D()
 {
-	DeleteAllParticles();
 	SafeRelease(renderData);
 }
 
 void ParticleLayer3D::Draw(Camera * camera)
 {
-	DrawLayer(camera);
+	//render data are now prepared explicitly
+	//DrawLayer(camera);	
 }
 
-void ParticleLayer3D::DrawLayer(Camera* camera)
+void ParticleLayer3D::PrepareRenderData(Camera* camera)
 {
+	AABBox3 bbox;
+	if (emitter->GetWorldTransformPtr())
+	{
+		Vector3 emmiterPos = emitter->GetWorldTransformPtr()->GetTranslationVector();
+		bbox = AABBox3(emmiterPos, emmiterPos);
+	}	
 	// Yuri Coder, 2013/06/07. Don't draw SuperEmitter layers - see pls DF-1251 for details.
 	if (!sprite || type == TYPE_SUPEREMITTER_PARTICLES)
-	{
-		renderBatch->SetTotalCount(0);
+	{		
+		//build bounding box as sum of inner particle emitters bboxes
+		if (type == TYPE_SUPEREMITTER_PARTICLES)
+		{
+			Particle *current = head;
+			while (current)
+			{
+				bbox.AddAABBox(current->GetInnerEmitter()->GetBoundingBox());
+				current=current->next;
+			}
+		}
+		
+		renderBatch->SetLayerBoundingBox(bbox);
+		renderBatch->SetTotalCount(0);		
 		return;
 	}
 
@@ -104,15 +136,9 @@ void ParticleLayer3D::DrawLayer(Camera* camera)
 
 	int32 verticesCount = 0;
 	int32 texturesCount = 0;
-	int32 colorsCount = 0;
-
+	int32 colorsCount = 0;	
 	while(current != 0)
-	{
-		Particle* parent = emitter->GetParentParticle();
-		if(NULL != parent && IsLong())
-		{
-			current->direction = parent->direction;
-		}
+	{		
 
 		Vector3 topRight;
 		Vector3 topLeft;
@@ -170,6 +196,11 @@ void ParticleLayer3D::DrawLayer(Camera* camera)
 		verts[verticesCount] = botRight.z;
 		verticesCount ++;
 
+		bbox.AddPoint(topLeft);
+		bbox.AddPoint(topRight);
+		bbox.AddPoint(botLeft);
+		bbox.AddPoint(botRight);
+
 		float32 *pT = sprite->GetTextureVerts(current->frame);
 
 		textures[texturesCount] = pT[0];
@@ -216,9 +247,10 @@ void ParticleLayer3D::DrawLayer(Camera* camera)
 		current = TYPE_PARTICLES == type ? current->next : 0;
 	}
 
-	renderBatch->SetTotalCount(totalCount);
+	renderBatch->SetTotalCount(totalCount);	
+	renderBatch->SetLayerBoundingBox(bbox);
 	if(totalCount > 0)
-	{			
+	{					
 		renderData->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, &verts.front());
 		renderData->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &textures.front());
 		renderData->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, 0, &colors.front());
@@ -230,6 +262,7 @@ void ParticleLayer3D::DrawLayer(Camera* camera)
 		}
 		renderBatch->SetRenderDataObject(renderData);
 	}
+	
 }
 
 void ParticleLayer3D::CalcNonLong(Particle* current,
@@ -273,10 +306,22 @@ void ParticleLayer3D::CalcLong(Particle* current,
 							   Vector3& botLeft,
 							   Vector3& botRight)
 {
-	Vector3 vecShort = current->direction.CrossProduct(direction);
+
+	Vector3 currDirection;
+	Particle* parent = emitter->GetParentParticle();		
+	if ((NULL != parent)&&inheritPosition)
+	{		
+		currDirection = current->direction*current->speed*current->velocityOverLife + parent->direction*parent->speed*parent->velocityOverLife;
+		currDirection.Normalize();
+	}else
+	{
+		currDirection = current->direction;
+	}
+
+	Vector3 vecShort = currDirection.CrossProduct(direction);
 	vecShort /= 2.f;
 		
-	Vector3 vecLong = -current->direction;
+	Vector3 vecLong = -currDirection;
 
 	float32 widthDiv2 = sprite->GetWidth()*current->size.x*current->sizeOverLife.x;
 	float32 heightDiv2 = sprite->GetHeight()*current->size.y*current->sizeOverLife.y;
@@ -291,7 +336,7 @@ void ParticleLayer3D::CalcLong(Particle* current,
 }
 
 
-void ParticleLayer3D::LoadFromYaml(const FilePath & configPath, YamlNode * node)
+void ParticleLayer3D::LoadFromYaml(const FilePath & configPath, const YamlNode * node)
 {
 	ParticleLayer::LoadFromYaml(configPath, node);
 	SetAdditive(additive);
@@ -359,7 +404,10 @@ void ParticleLayer3D::UpdateCurrentParticlePosition(Particle* particle)
 	{
 		// For Superemitter adjust the particle position according to the
 		// current emitter position.
-		this->currentParticlePosition = particle->position + (emitter->GetPosition() - emitter->GetInitialTranslationVector());
+		if (inheritPosition)
+			this->currentParticlePosition = particle->position + (emitter->GetPosition() - emitter->GetInitialTranslationVector());
+		else
+			this->currentParticlePosition = particle->position;
 	}
 	else
 	{

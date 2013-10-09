@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 //
 //  InputTest.cpp
 //  TemplateProjectMacOS
@@ -18,6 +47,34 @@ class UIWebViewDelegate: public IUIWebViewDelegate
 	virtual eAction URLChanged(UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick);
 
 	virtual void PageLoaded(UIWebView* webview);
+};
+
+class UIMoveableTextFieldDelegate : public UITextFieldDelegate
+{
+public:
+	UIMoveableTextFieldDelegate(UITextField* textField)
+	{
+		this->moveableTextField = textField;
+	}
+	
+	virtual void OnKeyboardShown(const Rect& keyboardRect)
+	{
+		this->initialTextFieldRect = this->moveableTextField->GetRect();
+		Rect newRect = this->initialTextFieldRect;
+		
+		newRect.y = keyboardRect.y - newRect.dy;
+
+		this->moveableTextField->SetRect(newRect);
+	}
+
+	virtual void OnKeyboardHidden()
+	{
+		this->moveableTextField->SetRect(initialTextFieldRect);
+	}
+
+protected:
+	UITextField* moveableTextField;
+	Rect initialTextFieldRect;
 };
 
 IUIWebViewDelegate::eAction UIWebViewDelegate::URLChanged(UIWebView* webview, const String& newURL, bool isInitiatedByUser)
@@ -60,6 +117,7 @@ InputTest::InputTest() :
 	passwordTextField = NULL;
 	staticText = NULL;
 	testButton = NULL;
+	removeFromParentButton = NULL;
 	
 	onScreenTime = 0.0f;
 	testFinished = false;
@@ -77,15 +135,14 @@ void InputTest::LoadResources()
 	Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
 	font->SetSize(20);
-    font->SetColor(Color::White());
 	
 	passwordTextField = new UITextField(Rect(0, 30, 512, 50));
 #ifdef __DAVAENGINE_IPHONE__
-	Color color(1.f, 1.f, 1.f, 1.f);
-	passwordTextField->SetFontColor(color);
 #else
 	passwordTextField->SetFont(font);
 #endif
+    passwordTextField->SetTextColor(Color::White());
+
 	passwordTextField->SetSprite(spr,0);
     passwordTextField->SetSpriteAlign(ALIGN_RIGHT);
 	passwordTextField->SetTextAlign(ALIGN_LEFT | ALIGN_BOTTOM);
@@ -97,15 +154,16 @@ void InputTest::LoadResources()
 //	passwordTextField->SetInputEnabled(false, false);
 	AddControl(passwordTextField);
 	
-	textField = new UITextField(Rect(600, 10, 100, 100));
+	textField = new UITextField(Rect(0, 600, 950, 40));
 #ifdef __DAVAENGINE_IPHONE__
-	textField->SetFontColor(color);
 #else
 	textField->SetFont(font);
 #endif
-	textField->SetText(L"Traited Field");
+    textField->SetTextColor(Color::White());
+
+	textField->SetText(L"This field will auto-move over the keyboard.");
 	textField->SetDebugDraw(true);
-	textField->SetDelegate(new UITextFieldDelegate());
+	textField->SetDelegate(new UIMoveableTextFieldDelegate(textField));
 
 	textField->SetAutoCapitalizationType(DAVA::UITextField::AUTO_CAPITALIZATION_TYPE_NONE);
 	textField->SetAutoCorrectionType(DAVA::UITextField::AUTO_CORRECTION_TYPE_NO);
@@ -117,17 +175,27 @@ void InputTest::LoadResources()
 
 	textField = new UITextField(Rect(750, 10, 100, 500));
 #ifdef __DAVAENGINE_IPHONE__
-	textField->SetFontColor(color);
 #else
 	textField->SetFont(font);
 #endif
+    
+    textField->SetTextColor(Color::White());
+
 	textField->SetText(L"textField");
 	textField->SetDebugDraw(true);
 	textField->SetDelegate(new UITextFieldDelegate());
 	AddControl(textField);
 
+	removeFromParentButton = new UIButton(Rect(320, 300, 300, 30));
+	removeFromParentButton->SetStateFont(0xFF, font);
+	removeFromParentButton->SetStateFontColor(0xFF, Color::White());
+	removeFromParentButton->SetStateText(0xFF, L"Remove From Parent Test");
+	removeFromParentButton->SetDebugDraw(true);
+	removeFromParentButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &InputTest::ButtonPressed));
+
 	testButton = new UIButton(Rect(0, 300, 300, 30));
 	testButton->SetStateFont(0xFF, font);
+	testButton->SetStateFontColor(0xFF, Color::White());
 	testButton->SetStateText(0xFF, L"Finish Test");
 	testButton->SetDebugDraw(true);
 	testButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &InputTest::ButtonPressed));
@@ -135,6 +203,7 @@ void InputTest::LoadResources()
 	staticText = new UIStaticText(Rect(0, 0, 512, 20));
 	font->SetSize(10);
 	staticText->SetFont(font);
+    staticText->SetTextColor(Color::White());
 	staticText->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);// 12 - Rtop
 	staticText->SetText(L"Type password in the field below");
 	staticText->SetDebugDraw(true);
@@ -144,13 +213,13 @@ void InputTest::LoadResources()
 	webView1->SetVisible(false);
 	delegate = new UIWebViewDelegate();
 	webView1->SetDelegate((UIWebViewDelegate*)delegate);
-	webView1->OpenURL("http://www.linux.org.ru");
+	webView1->OpenURL("http://www.google.com");
 	AddControl(webView1);
 
 	webView2 = new UIWebView(Rect(305, 300, 440, 190));
     webView2->SetVisible(false);
     webView2->SetDelegate((UIWebViewDelegate*)delegate);
-	webView2->OpenURL("http://www.apple.com");
+	webView2->OpenURL("http://www.google.com");
 	webView2->SetBounces(true);
 	AddControl(webView2);
 
@@ -171,7 +240,8 @@ void InputTest::LoadResources()
 	AddControl(webView3);
 
 	AddControl(testButton);
-    
+	AddControl(removeFromParentButton);
+
     SafeRelease(spr);
     SafeRelease(texture);
 
@@ -190,6 +260,7 @@ void InputTest::UnloadResources()
 	RemoveAllControls();
 
 	SafeRelease(testButton);
+	SafeRelease(removeFromParentButton);
 	SafeRelease(textField);
 	SafeRelease(staticText);
 	
@@ -231,7 +302,14 @@ bool InputTest::RunTest(int32 testNum)
 
 void InputTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
 {
-	testFinished = true;
+	if (obj == testButton)
+	{
+		testFinished = true;
+	}
+	else if (obj == removeFromParentButton)
+	{
+		removeFromParentButton->RemoveFromParent();
+	}
 }
 
 bool InputTest::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString)

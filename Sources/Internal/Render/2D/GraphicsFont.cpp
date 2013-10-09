@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Base/BaseTypes.h"
 #include "Render/2D/GraphicsFont.h"
 #include "Render/RenderManager.h"
@@ -48,7 +62,6 @@ GraphicsFontDefinition::~GraphicsFontDefinition()
 GraphicsFont::GraphicsFont()
 	:fontSprite(0)
 {
-	color = Color::White();
 	fontType = TYPE_GRAPHICAL;
 	fdef = 0;
 	fontScaleCoeff = 1.0f;
@@ -57,11 +70,17 @@ GraphicsFont::GraphicsFont()
 	FontManager::Instance()->RegisterFont(this);
 }
     
-bool GraphicsFont::IsEqual(Font *font)
+bool GraphicsFont::IsEqual(const Font *font) const
 {
+	if (font->GetFontType() != this->GetFontType())
+	{
+		return false;
+	}
+
+    const GraphicsFont * gfont = DynamicTypeCheck<const GraphicsFont*>(font);
     if (!Font::IsEqual(font) ||
-        fontDefinitionName != ((GraphicsFont*)font)->fontDefinitionName ||
-        fontSprite != ((GraphicsFont*)font)->fontSprite)
+        fontDefinitionName != gfont->fontDefinitionName ||
+        fontSprite != gfont->fontSprite)
     {
         return false;
     }
@@ -75,19 +94,18 @@ GraphicsFont::~GraphicsFont()
 	FontManager::Instance()->UnregisterFont(this);
 }	
 
-int32 GraphicsFont::GetHorizontalSpacing()
+int32 GraphicsFont::GetHorizontalSpacing() const
 {
     return horizontalSpacing;
 }
     
-Font * GraphicsFont::Clone()
+Font * GraphicsFont::Clone() const
 {
 	GraphicsFont * cloneFont = new GraphicsFont();
 
 	cloneFont->fdef = SafeRetain(this->fdef);	
 	cloneFont->fontSprite = SafeRetain(this->fontSprite);
 
-	cloneFont->SetColor(this->GetColor());
 	cloneFont->SetVerticalSpacing(this->GetVerticalSpacing());
     cloneFont->SetHorizontalSpacing(this->GetHorizontalSpacing());
 	cloneFont->SetSize(this->GetSize());
@@ -96,7 +114,7 @@ Font * GraphicsFont::Clone()
 	return cloneFont;
 }
 
-Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *charSizes)
+Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *charSizes) const
 {
 	uint32 length = (uint32)string.length();
 	if (length == 0)
@@ -124,14 +142,14 @@ Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *cha
 		if (chIndex == GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
 		{
             if(c != '\n')
-                Logger::Debug("*** Error: can't find character %c in font", c);
+                Logger::Error("*** Error: can't find character %c in font", c);
 			if (charSizes)charSizes->push_back(0); // push zero size if character is not available
 			continue;
 		}
 		
 		if (prevChIndex != GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
 		{
-			//Logger::Debug("kern: %c-%c = %f", string[indexInString - 1], c,  GetDistanceFromAtoB(prevChIndex, chIndex));
+			//Logger::FrameworkDebug("kern: %c-%c = %f", string[indexInString - 1], c,  GetDistanceFromAtoB(prevChIndex, chIndex));
 			DVASSERT(chIndex < fdef->tableLenght);
 			currentX += GetDistanceFromAtoB(prevChIndex, chIndex);
 		}
@@ -161,12 +179,12 @@ Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *cha
 	return Size2i((int32)(currentX + sizeFix + 1.5f), GetFontHeight());
 }
 	
-bool GraphicsFont::IsCharAvaliable(char16 ch)
+bool GraphicsFont::IsCharAvaliable(char16 ch) const
 {
 	return (fdef->CharacterToIndex(ch) != GraphicsFontDefinition::INVALID_CHARACTER_INDEX);
 }
 
-uint32 GraphicsFont::GetFontHeight()
+uint32 GraphicsFont::GetFontHeight() const
 {
 	return (uint32)((fdef->fontHeight) * fontScaleCoeff);
 }
@@ -182,7 +200,7 @@ void GraphicsFont::SetSize(float32 _size)
 	fontScaleCoeff = size / (fdef->fontAscent + fdef->fontDescent);	
 }
 
-YamlNode * GraphicsFont::SaveToYamlNode()
+YamlNode * GraphicsFont::SaveToYamlNode() const
 {
     YamlNode *node = Font::SaveToYamlNode();
     
@@ -211,7 +229,7 @@ Sprite *GraphicsFont::GetFontSprite()
     return fontSprite;
 }
     
-FilePath & GraphicsFont::GetFontDefinitionName()
+const FilePath & GraphicsFont::GetFontDefinitionName() const
 {
     return fontDefinitionName;
 }
@@ -276,7 +294,7 @@ bool GraphicsFontDefinition::LoadFontDefinition(const FilePath & fontDefName)
 		characterTable[t] = c;
 		DVVERIFY(file->Read(&characterPreShift[t], 4) == 4);
 		DVVERIFY(file->Read(&characterWidthTable[t], 4) == 4);
-		//Logger::Debug("char: %c idx: %d",  characterTable[t], t);
+		//Logger::FrameworkDebug("char: %c idx: %d",  characterTable[t], t);
 	}
 	
 	DVVERIFY(file->Read(&defaultShiftValue, 4) == 4);
@@ -284,7 +302,7 @@ bool GraphicsFontDefinition::LoadFontDefinition(const FilePath & fontDefName)
 	for (int t = 0; t < tableLenght; ++t)
 	{
 		DVVERIFY(file->Read(&kerningBaseShift[t], 4) == 4);
-		//Logger::Debug("base: %c baseshift:%f preshift:%f", characterTable[t], kerningBaseShift[t], characterPreShift[t]);
+		//Logger::FrameworkDebug("base: %c baseshift:%f preshift:%f", characterTable[t], kerningBaseShift[t], characterPreShift[t]);
 	}
 	
 	DVVERIFY(file->Read(&kerningPairCount, 4) == 4);
@@ -310,7 +328,7 @@ bool GraphicsFontDefinition::LoadFontDefinition(const FilePath & fontDefName)
 	
 //	for (int32 t = 0; t < tableLenght; ++t)
 //	{
-//		//Logger::Debug("char check: %c idx: %d",  characterTable[t], t);
+//		//Logger::FrameworkDebug("char check: %c idx: %d",  characterTable[t], t);
 //	}
 	
 	
@@ -371,12 +389,12 @@ GraphicsFont * GraphicsFont::Create(const FilePath & fontDefName, const FilePath
 	return font;
 }
 
-bool GraphicsFont::IsTextSupportsHardwareRendering() 
+bool GraphicsFont::IsTextSupportsHardwareRendering() const
 { 
 	return true; 
 };
 
-float32 GraphicsFont::GetDistanceFromAtoB(int32 prevChIndex, int32 chIndex)
+float32 GraphicsFont::GetDistanceFromAtoB(int32 prevChIndex, int32 chIndex) const
 {
 	float32 currentX = 0.0f;
 	currentX += fdef->defaultShiftValue;
@@ -400,8 +418,7 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 	float32 currentX = x;
 	float32 currentY = y;
 	float32 sizeFix = 0.0f;
-	//Logger::Debug("%S startX:%f", string.c_str(), currentX);
-    RenderManager::Instance()->SetColor(color);
+	//Logger::FrameworkDebug("%S startX:%f", string.c_str(), currentX);
 	for (uint32 indexInString = 0; indexInString < length; ++indexInString)
 	{
 		char16 c = string[indexInString];
@@ -416,13 +433,13 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 		if (chIndex == GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
 		{
             if(c != '\n')
-                Logger::Debug("*** Error: can't find character %c in font", c);
+                Logger::Error("*** Error: can't find character %c in font", c);
 			continue;
 		}
 		
 		if (prevChIndex != GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
 		{
-			//Logger::Debug("kern: %c-%c = %f", string[indexInString - 1], c,  GetDistanceFromAtoB(prevChIndex, chIndex));
+			//Logger::FrameworkDebug("kern: %c-%c = %f", string[indexInString - 1], c,  GetDistanceFromAtoB(prevChIndex, chIndex));
 			currentX += GetDistanceFromAtoB(prevChIndex, chIndex);
 		}
 		
@@ -447,13 +464,12 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 //		RenderManager::Instance()->ResetColor();
 		
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
-//		Logger::Debug("%c w:%f pos: %f\n", c, fdef->characterWidthTable[chIndex] * fontScaleCoeff, currentX); 
+//		Logger::FrameworkDebug("%c w:%f pos: %f\n", c, fdef->characterWidthTable[chIndex] * fontScaleCoeff, currentX); 
 //		if (c == ' ')currentX += fdef->characterWidthTable[chIndex] * fontScaleCoeff;
 //		else currentX += fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::ACTIVE_WIDTH) * fontScaleCoeff;
 
 		prevChIndex = chIndex;
 	}
-    RenderManager::Instance()->ResetColor();
 
 	currentX -= (fdef->characterWidthTable[prevChIndex] + horizontalSpacing) * fontScaleCoeff;
 	currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)) * fontScaleCoeff; // characterWidthTable[prevChIndex];

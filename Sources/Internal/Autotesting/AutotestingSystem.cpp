@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Autotesting/AutotestingSystem.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -316,7 +330,7 @@ bool AutotestingSystem::ConnectToDB()
 
 void AutotestingSystem::WriteString(const String & name, const String & text)
 {
-	Logger::Debug("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());
 
 	MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 	KeyedArchive* currentRunArchive = FindOrInsertRunArchive(dbUpdateObject, "_aux");
@@ -326,12 +340,12 @@ void AutotestingSystem::WriteString(const String & name, const String & text)
 	SaveToDB(dbUpdateObject);
 	SafeRelease(dbUpdateObject);
 
-	Logger::Debug("AutotestingSystem::WriteString finish");
+	Logger::FrameworkDebug("AutotestingSystem::WriteString finish");
 }
 
 String AutotestingSystem::ReadString(const String & name)
 {
-	Logger::Debug("AutotestingSystem::ReadString name=%s", name.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::ReadString name=%s", name.c_str());
 	
 	MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 	KeyedArchive* currentRunArchive = FindOrInsertRunArchive(dbUpdateObject, "_aux");
@@ -340,7 +354,7 @@ String AutotestingSystem::ReadString(const String & name)
 	result = currentRunArchive->GetString(name.c_str(), "not_found");
 
 	SafeRelease(dbUpdateObject);
-	Logger::Debug("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::ReadString name=%name: '%s'", name.c_str(), result.c_str());
 	return result;
 }
 
@@ -378,7 +392,7 @@ KeyedArchive *AutotestingSystem::FindOrInsertRunArchive(MongodbUpdateObject* dbU
 	if(!isFound)
 	{
 		dbUpdateObject->SetObjectName(testsName);
-		Logger::Debug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
+		Logger::FrameworkDebug("AutotestingSystem::InsertTestArchive new MongodbUpdateObject %s", testsName.c_str());
 		dbUpdateObject->LoadData();
 		dbUpdateData = dbUpdateObject->GetData();
 
@@ -415,7 +429,7 @@ bool AutotestingSystem::SaveKeyedArchiveToDB(const String &archiveName, KeyedArc
 
 KeyedArchive *AutotestingSystem::FindOrInsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId)
 {
-    Logger::Debug("AutotestingSystem::FindOrInsertTestArchive testId=%s", testId.c_str());
+    Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestArchive testId=%s", testId.c_str());
     KeyedArchive* currentTestArchive = NULL;
     
     KeyedArchive* dbUpdateData = FindOrInsertRunArchive(dbUpdateObject, "");
@@ -430,18 +444,18 @@ KeyedArchive *AutotestingSystem::FindOrInsertTestArchive(MongodbUpdateObject* db
         currentTestArchive->SetString("FileName", testFileName);
         
         dbUpdateData->SetArchive(testId, currentTestArchive);
-        Logger::Debug("AutotestingSystem::FindOrInsertTestArchive new %s", testId.c_str());
+        Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestArchive new %s", testId.c_str());
     }
     SafeRelease(currentTestArchive);
     currentTestArchive = dbUpdateData->GetArchive(testId);
     
-	//Logger::Debug("AutotestingSystem::FindOrInsertTestArchive finish");
+	//Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestArchive finish");
     return currentTestArchive;
 }
    
 KeyedArchive *AutotestingSystem::InsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId, const String &testName, bool needClearGroup)
 {
-	Logger::Debug("AutotestingSystem::InsertTestArchive testId=%s testName=%s", testId.c_str(), testName.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::InsertTestArchive testId=%s testName=%s", testId.c_str(), testName.c_str());
 	KeyedArchive* currentTestArchive = NULL;
 
 	KeyedArchive* dbUpdateData = FindOrInsertRunArchive(dbUpdateObject, "");
@@ -456,7 +470,7 @@ KeyedArchive *AutotestingSystem::InsertTestArchive(MongodbUpdateObject* dbUpdate
 	SafeRelease(stepsArchive);
 
 	dbUpdateData->SetArchive(testId, currentTestArchive);
-	Logger::Debug("AutotestingSystem::InsertTestArchive new %s", testId.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::InsertTestArchive new %s", testId.c_str());
 
 	SafeRelease(currentTestArchive);
 	currentTestArchive = dbUpdateData->GetArchive(testId);
@@ -466,7 +480,7 @@ KeyedArchive *AutotestingSystem::InsertTestArchive(MongodbUpdateObject* dbUpdate
 
 KeyedArchive *AutotestingSystem::FindOrInsertTestStepArchive(KeyedArchive *testArchive, const String &stepId)
 {
-    Logger::Debug("AutotestingSystem::FindOrInsertTestStepArchive stepId=%s", stepId.c_str());
+    Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestStepArchive stepId=%s", stepId.c_str());
     
     KeyedArchive* currentTestStepArchive = NULL;
     KeyedArchive* testStepsArchive = NULL;
@@ -488,19 +502,19 @@ KeyedArchive *AutotestingSystem::FindOrInsertTestStepArchive(KeyedArchive *testA
             testStepsArchive = SafeRetain(testArchive->GetArchive(AUTOTESTING_STEPS));
         }
         testStepsArchive->SetArchive(stepId, currentTestStepArchive);
-        Logger::Debug("AutotestingSystem::FindOrInsertTestStepArchive new %s", stepId.c_str());
+        Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestStepArchive new %s", stepId.c_str());
     }
     SafeRelease(currentTestStepArchive);
     currentTestStepArchive = testStepsArchive->GetArchive(stepId);
     SafeRelease(testStepsArchive);
     
-	//Logger::Debug("AutotestingSystem::FindOrInsertTestStepArchive finish");
+	//Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestStepArchive finish");
     return currentTestStepArchive;
 }
 
 KeyedArchive *AutotestingSystem::FindStepArchive(KeyedArchive *testArchive, const String &stepId)
 {
-	Logger::Debug("AutotestingSystem::FindStepArchive stepId=%s", stepId.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::FindStepArchive stepId=%s", stepId.c_str());
 
 	KeyedArchive* currentTestStepArchive = NULL;
 	KeyedArchive* testStepsArchive = NULL;
@@ -517,7 +531,7 @@ KeyedArchive *AutotestingSystem::FindStepArchive(KeyedArchive *testArchive, cons
 
 KeyedArchive *AutotestingSystem::InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description)
 {
-	Logger::Debug("AutotestingSystem::InsertStepArchive stepId=%s description=%s", stepId.c_str(), description.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::InsertStepArchive stepId=%s description=%s", stepId.c_str(), description.c_str());
 
 	KeyedArchive* currentStepArchive = NULL;
 	KeyedArchive* testStepsArchive = NULL;
@@ -540,7 +554,7 @@ KeyedArchive *AutotestingSystem::InsertStepArchive(KeyedArchive *testArchive, co
 	SafeRelease(logArchive);
 
 	testStepsArchive->SetArchive(stepId, currentStepArchive);
-	Logger::Debug("AutotestingSystem::InsertStepArchive new %s", stepId.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::InsertStepArchive new %s", stepId.c_str());
 	
 	SafeRelease(currentStepArchive);
 	currentStepArchive = testStepsArchive->GetArchive(stepId);
@@ -551,7 +565,7 @@ KeyedArchive *AutotestingSystem::InsertStepArchive(KeyedArchive *testArchive, co
     
 KeyedArchive *AutotestingSystem::FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId)
 {
-    Logger::Debug("AutotestingSystem::FindOrInsertTestStepLogEntryArchive logId=%s", logId.c_str());
+    Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestStepLogEntryArchive logId=%s", logId.c_str());
     
     KeyedArchive* currentTestStepLogEntryArchive = NULL;
     KeyedArchive* testStepLogArchive = NULL;
@@ -578,7 +592,7 @@ KeyedArchive *AutotestingSystem::FindOrInsertTestStepLogEntryArchive(KeyedArchiv
     currentTestStepLogEntryArchive = testStepLogArchive->GetArchive(logId);
     SafeRelease(testStepLogArchive);
     
-	//Logger::Debug("AutotestingSystem::FindOrInsertTestStepLogEntryArchive finish");
+	//Logger::FrameworkDebug("AutotestingSystem::FindOrInsertTestStepLogEntryArchive finish");
     return currentTestStepLogEntryArchive;
 }
     
@@ -592,7 +606,7 @@ uint64 AutotestingSystem::GetCurrentTimeMS()
 // Multiplayer API
 void AutotestingSystem::WriteState(const String & device, const String & state)
 {
-	Logger::Debug("AutotestingSystem::WriteState device=%s state=%s", device.c_str(), state.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::WriteState device=%s state=%s", device.c_str(), state.c_str());
 
 	MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 	KeyedArchive* currentRunArchive = FindOrInsertRunArchive(dbUpdateObject, "_multiplayer");
@@ -603,12 +617,12 @@ void AutotestingSystem::WriteState(const String & device, const String & state)
 	SaveToDB(dbUpdateObject);
 	SafeRelease(dbUpdateObject);
 
-	//Logger::Debug("AutotestingSystem::WriteState finish");
+	//Logger::FrameworkDebug("AutotestingSystem::WriteState finish");
 }
 
 String AutotestingSystem::ReadState(const String & device)
 {
-	Logger::Debug("AutotestingSystem::ReadState device=%s", device.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::ReadState device=%s", device.c_str());
 	
 
 	MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
@@ -617,13 +631,13 @@ String AutotestingSystem::ReadState(const String & device)
 
 	result = currentRunArchive->GetString(device.c_str(), "not_found");
 	SafeRelease(dbUpdateObject);
-	Logger::Debug("AutotestingSystem::ReadState device=%s: '%s'", device.c_str(), result.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::ReadState device=%s: '%s'", device.c_str(), result.c_str());
 	return result;
 }
 
 void AutotestingSystem::WriteCommand(const String & device, const String & command)
 {
-	Logger::Debug("AutotestingSystem::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
 
 	MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 	KeyedArchive* currentRunArchive = FindOrInsertRunArchive(dbUpdateObject, "_multiplayer");
@@ -632,12 +646,12 @@ void AutotestingSystem::WriteCommand(const String & device, const String & comma
 
 	SaveToDB(dbUpdateObject);
 	SafeRelease(dbUpdateObject);
-	//Logger::Debug("AutotestingSystem::WriteCommand finish");
+	//Logger::FrameworkDebug("AutotestingSystem::WriteCommand finish");
 }
 
 String AutotestingSystem::ReadCommand(const String & device)
 {
-	Logger::Debug("AutotestingSystem::ReadCommand device=%s", device.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::ReadCommand device=%s", device.c_str());
 
 	MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 	KeyedArchive* currentRunArchive = FindOrInsertRunArchive(dbUpdateObject, "_multiplayer");
@@ -647,13 +661,13 @@ String AutotestingSystem::ReadCommand(const String & device)
 
 	SafeRelease(dbUpdateObject);
 	
-	Logger::Debug("AutotestingSystem::ReadCommand device=%s: '%s'", device.c_str(), result.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::ReadCommand device=%s: '%s'", device.c_str(), result.c_str());
 	return result;
 }
 
 void AutotestingSystem::InitializeDevice(const String & device)
 {
-	Logger::Debug("AutotestingSystem::InitializeDevice device=%s", device.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::InitializeDevice device=%s", device.c_str());
 	deviceName = device.c_str();
 }
 
@@ -664,7 +678,7 @@ String AutotestingSystem::GetCurrentTimeString()
     uint16 hours = (timeAbsMs/3600000)%12;
     uint16 minutes = (timeAbsMs/60000)%60;
     uint16 seconds = (timeAbsMs/1000)%60;
-	//Logger::Debug("TIME: %02d:%02d:%02d", hours, minutes, seconds);
+	//Logger::FrameworkDebug("TIME: %02d:%02d:%02d", hours, minutes, seconds);
     return Format("%02d:%02d:%02d", hours, minutes, seconds);
 }
 
@@ -680,7 +694,7 @@ String AutotestingSystem::GetCurrentTimeMsString()
 
 void AutotestingSystem::OnTestStart(const String &_testName)
 {
-	Logger::Debug("AutotestingSystem::OnTestStart %s", _testName.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::OnTestStart %s", _testName.c_str());
     testName = _testName;
     
     String testId = GetTestId(testIndex);
@@ -695,7 +709,7 @@ void AutotestingSystem::OnTestStart(const String &_testName)
 
 void AutotestingSystem::OnStepStart(const String &stepName)
 {
-	Logger::Debug("AutotestingSystem::OnStepStart %s", stepName.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::OnStepStart %s", stepName.c_str());
 
 	OnStepFinished();
 
@@ -879,7 +893,7 @@ bool AutotestingSystem::CheckSavedObjectInDB(MongodbUpdateObject *dbUpdateObject
 bool AutotestingSystem::SaveToDB(MongodbUpdateObject *dbUpdateObject)
 {
 	uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
-	Logger::Debug("AutotestingSystem::SaveToDB");
+	Logger::FrameworkDebug("AutotestingSystem::SaveToDB");
 
     bool ret = dbUpdateObject->SaveToDB(dbClient);
 
@@ -889,20 +903,20 @@ bool AutotestingSystem::SaveToDB(MongodbUpdateObject *dbUpdateObject)
     }
 
 	uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-	Logger::Debug("AutotestingSystem::SaveToDB FINISH result time %d", finishTime - startTime);
+	Logger::FrameworkDebug("AutotestingSystem::SaveToDB FINISH result time %d", finishTime - startTime);
 	return ret;
 	/*
     else
     {
 
-		Logger::Debug("AutotestingSystem::SaveToDB Ok");
+		Logger::FrameworkDebug("AutotestingSystem::SaveToDB Ok");
 		return ret;
 		int32 maxAttemptsToWait = 1;
         int32 attemptsToWaitLeft = maxAttemptsToWait;
 		int32 maxAttemptsToRetry = 5;
 		int32 attemptsToRetryLeft = maxAttemptsToRetry;
 
-		Logger::Debug("AutotestingSystem::SaveToDB CheckSavedObjectInDB wait=%d retry=%d", attemptsToWaitLeft, attemptsToRetryLeft);
+		Logger::FrameworkDebug("AutotestingSystem::SaveToDB CheckSavedObjectInDB wait=%d retry=%d", attemptsToWaitLeft, attemptsToRetryLeft);
 
         while(!CheckSavedObjectInDB(dbUpdateObject))
         {
@@ -925,7 +939,7 @@ bool AutotestingSystem::SaveToDB(MongodbUpdateObject *dbUpdateObject)
 							break;
 						}
 
-						Logger::Debug("AutotestingSystem::SaveToDB retry failed wait=%d retry=%d, sleep 1 sec", attemptsToWaitLeft, attemptsToRetryLeft);
+						Logger::FrameworkDebug("AutotestingSystem::SaveToDB retry failed wait=%d retry=%d, sleep 1 sec", attemptsToWaitLeft, attemptsToRetryLeft);
 #if !defined( _WIN32 )
             //sleep( 1 );
 #else
@@ -945,7 +959,7 @@ bool AutotestingSystem::SaveToDB(MongodbUpdateObject *dbUpdateObject)
 				}
             }
 
-			Logger::Debug("AutotestingSystem::SaveToDB CheckSavedObjectInDB failed wait=%d retry=%d, sleep 1 sec", attemptsToWaitLeft, attemptsToRetryLeft);
+			Logger::FrameworkDebug("AutotestingSystem::SaveToDB CheckSavedObjectInDB failed wait=%d retry=%d, sleep 1 sec", attemptsToWaitLeft, attemptsToRetryLeft);
 #if !defined( _WIN32 )
             sleep( 1 );
 #else
@@ -958,7 +972,7 @@ bool AutotestingSystem::SaveToDB(MongodbUpdateObject *dbUpdateObject)
 
 void AutotestingSystem::Log(const String &level, const String &message)
 {
-	Logger::Debug("AutotestingSystem::Log [%s]%s", level.c_str(), message.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::Log [%s]%s", level.c_str(), message.c_str());
 	uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 	String testId = GetTestId(testIndex);
 	String stepId = GetStepId(stepIndex);
@@ -981,14 +995,14 @@ void AutotestingSystem::Log(const String &level, const String &message)
 
     SaveToDB(dbUpdateObject);
 	SafeRelease(dbUpdateObject);
-	//Logger::Debug("AutotestingSystem::Log finish");
+	//Logger::FrameworkDebug("AutotestingSystem::Log finish");
 	uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-	Logger::Debug("AutotestingSystem::Log FINISH  summary time %d", finishTime - startTime);
+	Logger::FrameworkDebug("AutotestingSystem::Log FINISH  summary time %d", finishTime - startTime);
 }
 
 void AutotestingSystem::SaveScreenShotNameToDB()
 {
-	Logger::Debug("AutotestingSystem::SaveScreenShotNameToDB %s", screenShotName.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::SaveScreenShotNameToDB %s", screenShotName.c_str());
 	
 	String testId = GetTestId(testIndex);
 	String stepId = GetStepId(stepIndex);
@@ -1005,7 +1019,7 @@ void AutotestingSystem::SaveScreenShotNameToDB()
 
 void AutotestingSystem::OnStepFinished()
 {
-	Logger::Debug("AutotestingSystem::OnStepFinished");
+	Logger::FrameworkDebug("AutotestingSystem::OnStepFinished");
 
 	// Mark step as SUCCESS
 	String testId = GetTestId(testIndex);
@@ -1038,7 +1052,7 @@ void AutotestingSystem::SaveTestStepToDB(const String &stepDescription, bool isP
 	return;
     //if(!isDB) return;
     
-    Logger::Debug("AutotestingSystem::SaveTestStepToDB %s %d %s", stepDescription.c_str(), isPassed, error.c_str());
+    Logger::FrameworkDebug("AutotestingSystem::SaveTestStepToDB %s %d %s", stepDescription.c_str(), isPassed, error.c_str());
     
     String testId = GetTestId(testIndex);
     String stepId = GetStepId(++stepIndex);
@@ -1050,7 +1064,7 @@ void AutotestingSystem::SaveTestStepToDB(const String &stepDescription, bool isP
     currentTestStepArchive->SetBool("Success", isPassed);
     currentTestStepArchive->SetString("Description", stepDescription);
     
-    Logger::Debug("AutotestingSystem::SaveTestStepToDB testId=%s stepId=%s", testId.c_str(), stepId.c_str());
+    Logger::FrameworkDebug("AutotestingSystem::SaveTestStepToDB testId=%s stepId=%s", testId.c_str(), stepId.c_str());
     
     if(!error.empty())
     {
@@ -1059,7 +1073,7 @@ void AutotestingSystem::SaveTestStepToDB(const String &stepDescription, bool isP
         
         currentLogEntryArchive->SetString("Type", "ERROR");
         String currentTime = GetCurrentTimeString();
-        Logger::Debug("currentTime=%s", currentTime.c_str());
+        Logger::FrameworkDebug("currentTime=%s", currentTime.c_str());
         currentLogEntryArchive->SetString("Time", currentTime);
         currentLogEntryArchive->SetString("Message", error);
     }
@@ -1075,7 +1089,7 @@ void AutotestingSystem::SaveTestStepLogEntryToDB(const String &type, const Strin
 	return;
     //if(!isDB) return;
     
-    Logger::Debug("AutotestingSystem::SaveTestStepLogEntryToDB %s %s %s", type.c_str(), time.c_str(), message.c_str());
+    Logger::FrameworkDebug("AutotestingSystem::SaveTestStepLogEntryToDB %s %s %s", type.c_str(), time.c_str(), message.c_str());
     
     String testId = GetTestId(testIndex);
     String stepId = GetStepId(stepIndex);
@@ -1160,7 +1174,7 @@ void AutotestingSystem::Draw()
 
 void AutotestingSystem::OnTestsSatrted()
 {
-    Logger::Debug("AutotestingSystem::OnTestsStarted");
+    Logger::FrameworkDebug("AutotestingSystem::OnTestsStarted");
     
     startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
     
@@ -1186,7 +1200,7 @@ void AutotestingSystem::InitMultiplayer(bool _isMaster)
         masterId = ReadMasterIDFromDB(); //TODO: DB set or get name
         
         multiplayerName = Format("%u_multiplayer", testsDate);
-        Logger::Debug("AutotestingSystem::InitMultiplayer %s", multiplayerName.c_str());
+        Logger::FrameworkDebug("AutotestingSystem::InitMultiplayer %s", multiplayerName.c_str());
         isRunning = false;
         isWaiting = true;
         waitTimeLeft = 300.0f;
@@ -1223,7 +1237,7 @@ void AutotestingSystem::RegisterMasterInDB(int32 helpersCount)
     dbUpdateObject->GetData()->SetArchive(masterId, masterArchive);
     
     isRegistered = SaveToDB(dbUpdateObject);
-    Logger::Debug("AutotestingSystem::RegisterMasterInDB %d", isRegistered);
+    Logger::FrameworkDebug("AutotestingSystem::RegisterMasterInDB %d", isRegistered);
     
     // delete created archives
     SafeRelease(masterArchive);
@@ -1252,7 +1266,7 @@ void AutotestingSystem::RegisterHelperInDB()
                 dbUpdateObject->GetData()->SetArchive(masterId, masterArchive);
                 
                 isRegistered = SaveToDB(dbUpdateObject);
-                Logger::Debug("AutotestingSystem::RegisterHelperInDB %d", isRegistered);
+                Logger::FrameworkDebug("AutotestingSystem::RegisterHelperInDB %d", isRegistered);
             }
         }
         // delete created archives
@@ -1264,7 +1278,7 @@ void AutotestingSystem::RegisterHelperInDB()
     
 bool AutotestingSystem::CheckMasterHelpersReadyDB()
 {
-    //Logger::Debug("AutotestingSystem::CheckMasterHelpersReadyDB");
+    //Logger::FrameworkDebug("AutotestingSystem::CheckMasterHelpersReadyDB");
     bool isReady = false;
     
     if(!isRegistered)
@@ -1324,11 +1338,11 @@ bool AutotestingSystem::CheckMasterHelpersReadyDB()
                                 isReady = SaveToDB(dbUpdateObject);
                                 if(isReady)
                                 {
-                                    Logger::Debug("AutotestingSystem::CheckMasterHelpersReadyDB Master: %d helpers ready", requestedHelpers);
+                                    Logger::FrameworkDebug("AutotestingSystem::CheckMasterHelpersReadyDB Master: %d helpers ready", requestedHelpers);
                                 }
                                 else
                                 {
-                                    Logger::Debug("AutotestingSystem::CheckMasterHelpersReadyDB Master: failed to run");
+                                    Logger::FrameworkDebug("AutotestingSystem::CheckMasterHelpersReadyDB Master: failed to run");
                                 }
                             }
                         }
@@ -1341,7 +1355,7 @@ bool AutotestingSystem::CheckMasterHelpersReadyDB()
                             isReady = true;
                             //TODO: get task from DB
                             masterTask = masterArchive->GetString("task");
-                            Logger::Debug("AutotestingSystem::CheckMasterHelpersReadyDB Helper: run test %s", masterTask.c_str());
+                            Logger::FrameworkDebug("AutotestingSystem::CheckMasterHelpersReadyDB Helper: run test %s", masterTask.c_str());
                         }
                     }
                 }
@@ -1356,7 +1370,7 @@ bool AutotestingSystem::CheckMasterHelpersReadyDB()
 void AutotestingSystem::OnTestStep(const String & stepName, bool isPassed, const String &error)
 {
     String assertMsg = Format("%s: %s %s", testName.c_str(), stepName.c_str(), (isPassed ? "PASSED" : "FAILED"));
-    Logger::Debug("AutotestingSystem::OnTestStep %s", assertMsg.c_str());
+    Logger::FrameworkDebug("AutotestingSystem::OnTestStep %s", assertMsg.c_str());
     
     //AddTestResult(stepName, isPassed, error);
 	//SaveTestToDB();
@@ -1377,7 +1391,7 @@ void AutotestingSystem::OnTestStep(const String & stepName, bool isPassed, const
 
 void AutotestingSystem::OnMessage(const String & logMessage)
 {
-	Logger::Debug("AutotestingSystem::OnMessage %s", logMessage.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::OnMessage %s", logMessage.c_str());
     
 	String logMsg = Format("%s OnMessage %s", testName.c_str(), logMessage.c_str());
 	if(reportFile)
@@ -1413,7 +1427,7 @@ void AutotestingSystem::OnError(const String & errorMessage)
 
 void AutotestingSystem::MakeScreenShot()
 {
-	Logger::Debug("AutotestingSystem::MakeScreenShot");
+	Logger::FrameworkDebug("AutotestingSystem::MakeScreenShot");
 	uint64 timeAbsMs = GetCurrentTimeMS();
     uint16 hours = (timeAbsMs/3600000)%60;
     uint16 minutes = (timeAbsMs/60000)%60;
@@ -1425,13 +1439,13 @@ void AutotestingSystem::MakeScreenShot()
 
 String AutotestingSystem::GetScreenShotName()
 {
-	Logger::Debug("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::GetScreenShotName %s", screenShotName.c_str());
 	return screenShotName.c_str();
 }
 
 void AutotestingSystem::OnScreenShot(Image *image)
 {
-	Logger::Debug("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
+	Logger::FrameworkDebug("AutotestingSystem::OnScreenShot %s", screenShotName.c_str());
 	uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
 	FilePath systemFilePath = "~doc:/screenshot.png";
 	image->ResizeImage(1024, 768);
@@ -1439,17 +1453,17 @@ void AutotestingSystem::OnScreenShot(Image *image)
 
 	if(dbClient)
 	{
-		//Logger::Debug("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
+		//Logger::FrameworkDebug("Image: datasize %d, %d x %d", image->dataSize, image->GetHeight(), image->GetWidth());
 		dbClient->SaveBufferToGridFS(screenShotName, reinterpret_cast<char*>( image->GetData()), image->dataSize);
 		
 		uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-		Logger::Debug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
+		Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
 	}
 }
     
 void AutotestingSystem::OnTestsFinished()
 {
-    Logger::Debug("AutotestingSystem::OnTestsFinished");
+    Logger::FrameworkDebug("AutotestingSystem::OnTestsFinished");
     
 	// Mark last step as SUCCESS
 	OnStepFinished();
@@ -1483,7 +1497,7 @@ void AutotestingSystem::OnTestsFinished()
 
 void AutotestingSystem::OnInput(const UIEvent &input)
 {
-    Logger::Debug("AutotestingSystem::OnInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c",input.tid, input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
+    Logger::FrameworkDebug("AutotestingSystem::OnInput %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c",input.tid, input.phase, input.tapCount, input.point.x, input.point.y, input.physPoint.x, input.physPoint.y, input.keyChar);
     
     int32 id = input.tid;
     switch(input.phase)

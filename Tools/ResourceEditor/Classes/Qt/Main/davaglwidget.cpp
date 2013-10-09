@@ -1,20 +1,36 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+
 #include "DAVAEngine.h"
+#include "UI/UIEvent.h"
+#include "UI/UIControlSystem.h"
 
 #include "davaglwidget.h"
 #include "ui_davaglwidget.h"
@@ -27,6 +43,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QFocusEvent>
+#include <QDateTime>
 
 #if defined (__DAVAENGINE_MACOS__)
 	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
@@ -39,6 +56,9 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QWidget(parent)
     , ui(new Ui::DavaGLWidget)
 	, maxFPS(60)
+	, fps(0)
+	, fpsCountTime(0)
+	, fpsCount(0)
 	, minFrameTimeMs(0)
 {
 	ui->setupUi(this);
@@ -71,6 +91,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 	setAttribute(Qt::WA_OpaquePaintEvent, true);
 	setAttribute(Qt::WA_NoSystemBackground, true);
 	setAttribute(Qt::WA_PaintOnScreen, true);
+	setAcceptDrops(true);
 
 	// Setup FPS
 	SetMaxFPS(maxFPS);
@@ -130,6 +151,34 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 	DAVA::QtLayer::Instance()->LockKeyboardInput(false);
 }
 
+void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+	event->accept();
+}
+
+void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
+{
+	DAVA::Vector<DAVA::UIEvent> touches;
+	DAVA::Vector<DAVA::UIEvent> emptyTouches;
+
+	DAVA::UIEvent newTouch;
+	newTouch.tid = 1;
+	newTouch.physPoint.x = event->pos().x();
+	newTouch.physPoint.y = event->pos().y();
+	newTouch.phase = DAVA::UIEvent::PHASE_MOVE;
+	touches.push_back(newTouch);
+
+	DAVA::UIControlSystem::Instance()->OnInput(DAVA::UIEvent::PHASE_MOVE, emptyTouches, touches);
+
+	event->accept();
+}
+
+void DavaGLWidget::dropEvent(QDropEvent *event)
+{
+	const QMimeData *mimeData = event->mimeData();
+	emit OnDrop(mimeData);
+}
+
 #if defined(Q_WS_WIN)
 bool DavaGLWidget::winEvent(MSG *message, long *result)
 {
@@ -178,6 +227,11 @@ void DavaGLWidget::SetMaxFPS(int fps)
 	DAVA::RenderManager::Instance()->SetFPS(maxFPS);
 }
 
+int DavaGLWidget::GetFPS() const
+{
+	return fps;
+}
+
 void DavaGLWidget::Render()
 {
 	QElapsedTimer frameTimer;
@@ -185,15 +239,24 @@ void DavaGLWidget::Render()
 
 	DAVA::QtLayer::Instance()->ProcessFrame();
 
-	qint64 waitUntilNextFrameMs = (qint64) minFrameTimeMs - frameTimer.elapsed();
+	if(QDateTime::currentMSecsSinceEpoch() >= fpsCountTime)
+	{
+		fps = fpsCount;
+		fpsCount = 0;
+		fpsCountTime = QDateTime::currentMSecsSinceEpoch() + 1000.0;
+	}
+	else
+	{
+		fpsCount++;
+	}
 
+	qint64 waitUntilNextFrameMs = (qint64) minFrameTimeMs - frameTimer.elapsed();
 	if(waitUntilNextFrameMs <= 0)
 	{
 		// our render is too slow to reach maxFPS,
 		// so we can wait a minimum time
 		waitUntilNextFrameMs = 1;
 	}
-
 	QTimer::singleShot(waitUntilNextFrameMs, this, SLOT(Render()));
 }
 

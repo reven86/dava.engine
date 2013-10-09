@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "ResourcesManageHelper.h"
 #include "HierarchyTreeController.h"
@@ -55,13 +69,9 @@ static const String FONTS_RES_PATH("~res:/Fonts/");
 static const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
 // Button background image path
 static const String BACKGROUND_IMAGE_PATH("~res:/Images/buttonBg.png");
-// Help contents path
-// Help contents path
-#if defined(__DAVAENGINE_WIN32__)
-static const String HELP_CONTENTS_PATH("/Data/Help/UIEditor.html");
-#else
-static const String HELP_CONTENTS_PATH("~res:/Help/UIEditor.html");
-#endif
+// Documentation path.
+static const QString DOCUMENTATION_PATH = "~doc:/UIEditorHelp/";
+
 // Additional text constants
 static const QString GFX = "/Gfx/";
 static const QString FONTS = "/Fonts/";
@@ -81,6 +91,8 @@ static const QString PROJECT_DATASOURCE_GRAPHICS_FONTS = PROJECT_DATASOURCE_GFX 
 static const QString PROJECT_DATA_GFX = PROJECT_DATA + GFX;
 // Project converted graphics fonts sprites folder
 static const QString PROJECT_DATA_GRAPHICS_FONTS = PROJECT_DATA_GFX + FONTS;
+// Default project title
+static const QString PROJECT_TITLE = "UIEdtior";
 
 // Resource wrong location error message
 static const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not located inside project 'Data' folder. It can't be linked with project or control!";
@@ -89,7 +101,6 @@ static const QString RES_WRONG_LOCATION_ERROR_MESSAGE = "Resource %1 is not loca
 static const QStringList FONTS_EXTENSIONS_FILTER = (QStringList() << "*.ttf" << "*.otf" << "*.fon" << "*.fnt" << "*.def");
 
 QString ResourcesManageHelper::buttonBackgroundImagePath;
-QString ResourcesManageHelper::helpContentsPath;
 QString ResourcesManageHelper::projectTitle;
 
 QString ResourcesManageHelper::GetFontAbsolutePath(const QString& resourceFileName, bool graphicsFont)
@@ -211,25 +222,19 @@ QStringList ResourcesManageHelper::GetFontsList()
 void ResourcesManageHelper::InitInternalResources()
 {
 	buttonBackgroundImagePath = QString::fromStdString(FilePath(BACKGROUND_IMAGE_PATH).GetAbsolutePathname());
-
-#if defined(__DAVAENGINE_WIN32__)
-	FilePath currentFolder = FileSystem::Instance()->GetCurrentWorkingDirectory();
-	helpContentsPath = ConvertPathToUnixStyle(QString::fromStdString((currentFolder + HELP_CONTENTS_PATH).GetAbsolutePathname()));
-#else
-    helpContentsPath = QString::fromStdString(FilePath(HELP_CONTENTS_PATH).GetAbsolutePathname());
-#endif
+	
 	// Save project default title
     if(DAVA::Core::Instance())
     {
         DAVA::KeyedArchive *options = DAVA::Core::Instance()->GetOptions();
         if(options)
         {
-           	projectTitle = options->GetString("title", "UIEditor").c_str();
+			projectTitle = options->GetString("title", PROJECT_TITLE.toStdString()).c_str();
         }
     }
 	// If project name wasn't set - create default name
 	if (projectTitle.isNull() || projectTitle.isEmpty())
-		projectTitle = "UIEditor";
+		projectTitle = PROJECT_TITLE;
 }
 
 QString ResourcesManageHelper::GetButtonBackgroundImagePath()
@@ -237,9 +242,9 @@ QString ResourcesManageHelper::GetButtonBackgroundImagePath()
 	return buttonBackgroundImagePath;
 }
 
-QString ResourcesManageHelper::GetHelpContentsPath()
+QString ResourcesManageHelper::GetDocumentationPath()
 {
-	return helpContentsPath;
+	return DOCUMENTATION_PATH;
 }
 
 QString ResourcesManageHelper::GetProjectPath()

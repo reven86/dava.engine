@@ -1,0 +1,253 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
+#include "CubemapEditor/ClickableQLabel.h"
+#include "Debug/DVAssert.h"
+
+#include <QMouseEvent>
+#include <QPainter>
+
+const float DEFAULT_ROTATION_BUTTON_OPACITY = 0.6f;
+const float HOVER_ROTATION_BUTTON_OPACITY = 1.0f;
+
+QImage ClickableQLabel::rotateClockwiseImage;
+QImage ClickableQLabel::rotateCounterclockwiseImage;
+
+ClickableQLabel::ClickableQLabel(QWidget *parent) : QLabel(parent)
+{
+	mouseEntered = false;
+	buttonDrawFlags = ClickableQLabel::None;
+	currentRotation = 0;
+	faceLoaded = false;
+	
+	setMouseTracking(true);
+	
+	if(rotateClockwiseImage.isNull())
+	{
+		bool loadResult = rotateClockwiseImage.load(":/QtIcons/btn_rotate_cw.png");
+		DVASSERT(loadResult); //the image is required
+	}
+	
+	if(rotateCounterclockwiseImage.isNull())
+	{
+		bool loadResult = rotateCounterclockwiseImage.load(":/QtIcons/btn_rotate_ccw.png");
+		DVASSERT(loadResult); //the image is required
+	}
+}
+
+ClickableQLabel::~ClickableQLabel()
+{
+	
+}
+
+void ClickableQLabel::SetRotation(int rotation)
+{
+	currentRotation = rotation;
+}
+
+int ClickableQLabel::GetRotation()
+{
+	return currentRotation;
+}
+
+void ClickableQLabel::SetFaceLoaded(bool loaded)
+{
+	faceLoaded = loaded;
+}
+
+bool ClickableQLabel::GetFaceLoaded()
+{
+	return faceLoaded;
+}
+
+void ClickableQLabel::mousePressEvent(QMouseEvent *ev)
+{
+	if(ev->button() == Qt::LeftButton)
+	{
+		if(ClickableQLabel::RotateClockwise == buttonDrawFlags)
+		{
+			currentRotation += 90;
+			if(currentRotation >= 360)
+			{
+				currentRotation = currentRotation - 360;
+			}
+			
+			this->update();
+			
+			emit OnRotationChanged();
+		}
+		else if(ClickableQLabel::RotateCounterclockwise == buttonDrawFlags)
+		{
+			currentRotation -= 90;
+			if(currentRotation < 0)
+			{
+				currentRotation = 360 + currentRotation;
+			}
+			
+			this->update();
+			
+			emit OnRotationChanged();
+		}
+		else
+		{
+			emit OnLabelClicked();
+			
+			mouseEntered = false;
+			buttonDrawFlags = ClickableQLabel::None;
+			this->update();
+		}
+	}
+	
+	QLabel::mousePressEvent(ev);
+}
+
+void ClickableQLabel::enterEvent(QEvent *ev)
+{
+	mouseEntered = true;
+	buttonDrawFlags = ClickableQLabel::None;
+	this->update();
+}
+
+void ClickableQLabel::leaveEvent(QEvent *ev)
+{
+	mouseEntered = false;
+	buttonDrawFlags = ClickableQLabel::None;
+	this->update();
+}
+
+void ClickableQLabel::paintEvent(QPaintEvent *ev)
+{
+	if(faceLoaded)
+	{
+		DrawFaceImage(ev);
+		
+		if(mouseEntered)
+		{
+			if(ClickableQLabel::None == buttonDrawFlags)
+			{
+				DrawRotationIcon(ev, GetPointForButton(ClickableQLabel::RotateClockwise), DEFAULT_ROTATION_BUTTON_OPACITY, false);
+				DrawRotationIcon(ev, GetPointForButton(ClickableQLabel::RotateCounterclockwise), DEFAULT_ROTATION_BUTTON_OPACITY, true);
+			}
+			else if(ClickableQLabel::RotateClockwise == buttonDrawFlags)
+			{
+				DrawRotationIcon(ev, GetPointForButton(ClickableQLabel::RotateClockwise), HOVER_ROTATION_BUTTON_OPACITY, false);
+				DrawRotationIcon(ev, GetPointForButton(ClickableQLabel::RotateCounterclockwise), DEFAULT_ROTATION_BUTTON_OPACITY, true);
+			}
+			else if(ClickableQLabel::RotateCounterclockwise == buttonDrawFlags)
+			{
+				DrawRotationIcon(ev, GetPointForButton(ClickableQLabel::RotateClockwise), DEFAULT_ROTATION_BUTTON_OPACITY, false);
+				DrawRotationIcon(ev, GetPointForButton(ClickableQLabel::RotateCounterclockwise), HOVER_ROTATION_BUTTON_OPACITY, true);
+			}
+		}
+	}
+	else
+	{
+		QLabel::paintEvent(ev);
+	}
+}
+
+void ClickableQLabel::mouseMoveEvent(QMouseEvent *ev)
+{
+	if(IsPointInsideClockwiseRotationArea(ev))
+	{
+		buttonDrawFlags = ClickableQLabel::RotateClockwise;
+	}
+	else if(IsPointInsideCounterclockwiseRotationArea(ev))
+	{
+		buttonDrawFlags = ClickableQLabel::RotateCounterclockwise;
+	}
+	else
+	{
+		if(IsPointOutsideControl(ev))
+		{
+			mouseEntered = false;
+		}
+
+		buttonDrawFlags = ClickableQLabel::None;
+	}
+	
+	this->update();
+}
+
+bool ClickableQLabel::IsPointInsideClockwiseRotationArea(QMouseEvent *ev)
+{
+	QRect rect = QRect(GetPointForButton(ClickableQLabel::RotateClockwise),
+					   QSize(rotateClockwiseImage.width(), rotateClockwiseImage.height()));
+	return rect.contains(ev->pos());
+}
+
+bool ClickableQLabel::IsPointInsideCounterclockwiseRotationArea(QMouseEvent *ev)
+{
+	QRect rect = QRect(GetPointForButton(ClickableQLabel::RotateCounterclockwise),
+					   QSize(rotateCounterclockwiseImage.width(), rotateCounterclockwiseImage.height()));
+	return rect.contains(ev->pos());
+}
+
+void ClickableQLabel::DrawRotationIcon(QPaintEvent *ev, QPoint position, float opacity, bool flipped)
+{
+	QPainter painter(this);
+	painter.setOpacity(opacity);
+	painter.drawImage(position, (flipped) ? rotateCounterclockwiseImage : rotateClockwiseImage);
+}
+
+void ClickableQLabel::DrawFaceImage(QPaintEvent *ev)
+{
+	QPainter painter(this);
+
+	painter.translate(QPoint(width() / 2, height() / 2));
+	painter.rotate(currentRotation);
+	
+	const QPixmap& pixmap = *this->pixmap();
+	painter.drawPixmap(QPoint(-pixmap.width() / 2, -pixmap.height() / 2), pixmap);
+	
+	painter.resetTransform();
+	painter.setPen(QPen(QBrush(Qt::black), 1.0f));
+	painter.drawRect(0, 0, width() - 1, height() - 1);
+}
+
+QPoint ClickableQLabel::GetPointForButton(RotateButtonDrawFlags flag)
+{
+	QPoint pt(-1, -1);
+	
+	if(ClickableQLabel::RotateClockwise == flag)
+	{
+		pt = QPoint(0, 0);
+	}
+	else if(ClickableQLabel::RotateCounterclockwise == flag)
+	{
+		pt = QPoint(width() - rotateClockwiseImage.width(), height() - rotateClockwiseImage.height());
+	}
+	
+	return pt;
+}
+
+bool ClickableQLabel::IsPointOutsideControl(QMouseEvent *ev)
+{
+	return rect().contains(ev->globalPos());
+}

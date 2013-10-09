@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "ParticlesEditorSceneModelHelper.h"
 #include "DockParticleEditor/ParticlesEditorController.h"
@@ -20,7 +34,7 @@
 
 #include "Commands/CommandsManager.h"
 #include "Commands/SceneGraphCommands.h"
-#include "Commands/ParticleEditorCommands.h"
+#include "Commands2/ParticleEditorCommands.h"
 
 #include "Entity/Component.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
@@ -490,15 +504,20 @@ void ParticlesEditorSceneModelHelper::AddPopupMenuItems(QMenu& menu, const QMode
     // Which kind of Node is it?
     if (dynamic_cast<EffectParticleEditorNode*>(extraUserData))
     {
+		// Yuri Coder, 2013/07/24. These commands aren't used now and to be removed soon.
+		/*
         // Effect Node. Allow to add Particle Emitters and start/stop the animation.
 		QMenu* emittersMenu = menu.addMenu("Particle Effect");
         AddActionToMenu(emittersMenu, QString("Add Particle Emitter"), new CommandAddParticleEmitter());
         AddActionToMenu(emittersMenu, QString("Start Particle Effect"), new CommandStartStopParticleEffect(true));
         AddActionToMenu(emittersMenu, QString("Stop Particle Effect"), new CommandStartStopParticleEffect(false));
         AddActionToMenu(emittersMenu, QString("Restart Particle Effect"), new CommandRestartParticleEffect());
+		 */
     }
     else if (dynamic_cast<EmitterParticleEditorNode*>(extraUserData))
     {
+		// Yuri Coder, 2013/07/24. These commands aren't used now and to be removed soon.
+		/*
         // For Particle Emitter we also allow to load/save it.
         AddActionToMenu(&menu, QString("Load Emitter from Yaml"), new CommandLoadParticleEmitterFromYaml());
         AddActionToMenu(&menu, QString("Save Emitter to Yaml"), new CommandSaveParticleEmitterToYaml(false));
@@ -507,32 +526,43 @@ void ParticlesEditorSceneModelHelper::AddPopupMenuItems(QMenu& menu, const QMode
         // Emitter node. Allow to remove it and also add Layers.
         AddActionToMenu(&menu, QString("Remove Particle Emitter"), new CommandRemoveSceneNode());
         AddActionToMenu(&menu, QString("Add Layer"), new CommandAddParticleEmitterLayer());
+		*/
     }
     else if (dynamic_cast<LayerParticleEditorNode*>(extraUserData))
     {
+		// Yuri Coder, 2013/07/24. These commands aren't used now and to be removed soon.
+		/*
         // Layer Node. Allow to remove it and add new Force.
         AddActionToMenu(&menu, QString("Remove Layer"), new CommandRemoveParticleEmitterLayer());
+		
         AddActionToMenu(&menu, QString("Clone Layer"), new CommandCloneParticleEmitterLayer());
         AddActionToMenu(&menu, QString("Add Force"), new CommandAddParticleEmitterForce());
+		 */
     }
     else if (dynamic_cast<ForceParticleEditorNode*>(extraUserData))
     {
+		// Yuri Coder, 2013/07/24. These commands aren't used now and to be removed soon.
+		/*
         // Force Node. Allow to remove it.
         AddActionToMenu(&menu, QString("Remove Force"), new CommandRemoveParticleEmitterForce());
+		 */
     }
 	else if (dynamic_cast<InnerEmitterParticleEditorNode*>(extraUserData))
 	{
+		/*
+		// TODO!!! YURI CODER, 2013/07/22. TEMPORARILY commented out!!!
 		// Inner Emitter node, similar to Emitter one.
 		AddActionToMenu(&menu, QString("Load Emitter from Yaml"), new CommandLoadInnerEmitterFromYaml());
         AddActionToMenu(&menu, QString("Save Emitter to Yaml"), new CommandSaveInnerEmitterToYaml(false));
         AddActionToMenu(&menu, QString("Save Emitter to Yaml As"), new CommandSaveInnerEmitterToYaml(true));
+		 */
 	}
 }
 
-void ParticlesEditorSceneModelHelper::AddActionToMenu(QMenu *menu, const QString &actionTitle, Command *command) const
+void ParticlesEditorSceneModelHelper::AddActionToMenu(QMenu *menu, const QString &actionTitle, Command2 *command) const
 {
     QAction *action = menu->addAction(actionTitle);
-    action->setData(PointerHolder<Command *>::ToQVariant(command));
+    //action->setData(PointerHolder<Command2 *>::ToQVariant(command));
 }
 
 bool ParticlesEditorSceneModelHelper::NeedMoveItemToParent(GraphItem* movedItem, GraphItem* newParentItem)
@@ -759,8 +789,10 @@ void ParticlesEditorSceneModelHelper::SetCheckableStateForGraphItem(GraphItem* g
 	}
 	
 	// Execute the appropriate command.
+	/*
 	CommandsManager::Instance()->ExecuteAndRelease(new CommandUpdateParticleLayerEnabled(layerEditorNode->GetLayer(), value),
 												   SceneDataManager::Instance()->SceneGetActive()->GetScene());
+	 */
 }
 
 LayerParticleEditorNode* ParticlesEditorSceneModelHelper::GetLayerEditorNodeByGraphItem(GraphItem* graphItem) const

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 
 #include "UIControlMetadata.h"
@@ -280,27 +294,6 @@ void UIControlMetadata::SetAngle(float value)
     GetActiveUIControl()->SetAngle(DegToRad(value));
 }
 
-//Boolean getters/setters
-bool UIControlMetadata::GetSelected() const
-{
-    if (!VerifyActiveParamID())
-    {
-        return false;
-    }
-
-    return GetActiveUIControl()->GetSelected();
-}
-
-void UIControlMetadata::SetSelected(const bool value)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-
-   	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
-    GetActiveUIControl()->SetSelected(value, false);
-}
 
 bool UIControlMetadata::GetVisible() const
 {
@@ -322,27 +315,6 @@ void UIControlMetadata::SetVisible(const bool value)
     
 	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
     GetActiveUIControl()->SetVisible(value, false);
-}
-
-bool UIControlMetadata::GetEnabled() const
-{
-    if (!VerifyActiveParamID())
-    {
-        return false;
-    }
-    
-    return !GetActiveUIControl()->GetDisabled();
-}
-
-void UIControlMetadata::SetEnabled(const bool value)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-
-   	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
-    GetActiveUIControl()->SetDisabled(!value, false);
 }
 
 bool UIControlMetadata::GetInput() const
@@ -918,6 +890,26 @@ void UIControlMetadata::SetCustomControlName(const QString& value)
 	{
 		GetActiveUIControl()->SetCustomControlType(value.toStdString());
 	}
+}
+
+int UIControlMetadata::GetInitialState() const
+{
+	if (!VerifyActiveParamID())
+	{
+		return -1;
+	}
+	
+	return (int)GetActiveUIControl()->GetInitialState();
+}
+
+void UIControlMetadata::SetInitialState(int value)
+{
+	if (!VerifyActiveParamID())
+	{
+		return;
+	}
+	
+	GetActiveUIControl()->SetInitialState((int)value);
 }
 
 void UIControlMetadata::ResizeScrollViewContent(UIControl * control)

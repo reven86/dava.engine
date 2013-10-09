@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1037</width>
-    <height>668</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>300</width>
-    <height>200</height>
+    <width>960</width>
+    <height>700</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -35,7 +35,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QSlider" name="scaleSlider">
+         <widget class="ScaleSlider" name="scaleSlider">
           <property name="minimum">
            <number>1</number>
           </property>
@@ -54,18 +54,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="scaleSpin">
-          <property name="minimum">
-           <double>0.100000000000000</double>
+         <widget class="QComboBox" name="scaleCombo">
+          <property name="editable">
+           <bool>true</bool>
           </property>
-          <property name="maximum">
-           <double>5.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
+          <property name="maxVisibleItems">
+           <number>12</number>
           </property>
          </widget>
         </item>
@@ -199,9 +193,9 @@
      <enum>Qt::ActionsContextMenu</enum>
     </property>
     <property name="title">
-     <string> Help</string>
+     <string>Help</string>
     </property>
-    <addaction name="actionHelpContents"/>
+    <addaction name="actionHelp"/>
    </widget>
    <widget class="QMenu" name="menu">
     <property name="title">
@@ -246,6 +240,22 @@
    <addaction name="separator"/>
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
+   <addaction name="separator"/>
+   <addaction name="actionAlign_Left"/>
+   <addaction name="actionAlign_Horz_Center"/>
+   <addaction name="actionAlign_Right"/>
+   <addaction name="actionAlign_Top"/>
+   <addaction name="actionAlign_Vert_Center"/>
+   <addaction name="actionAlign_Bottom"/>
+   <addaction name="separator"/>
+   <addaction name="actionEqualBetweenLeftEdges"/>
+   <addaction name="actionEqualBetweenXCenters"/>
+   <addaction name="actionEqualBetweenRightEdges"/>
+   <addaction name="actionEqualBetweenXObjects"/>
+   <addaction name="actionEqualBetweenTopEdges"/>
+   <addaction name="actionEqualBetweenYCenters"/>
+   <addaction name="actionEqualBetweenBottomEdges"/>
+   <addaction name="actionEqualBetweenYObjects"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="propertiesDockWidget">
@@ -386,9 +396,13 @@
     <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
-  <action name="actionHelpContents">
+  <action name="actionHelp">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/help.png</normaloff>:/Icons/help.png</iconset>
+   </property>
    <property name="text">
-    <string>Help contents</string>
+    <string>UI Editor Help</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -503,6 +517,109 @@
     <string>Import existing platform</string>
    </property>
   </action>
+  <action name="actionAlign_Left">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/align_left.png</normaloff>:/Icons/align_left.png</iconset>
+   </property>
+   <property name="text">
+    <string>Align Left</string>
+   </property>
+   <property name="toolTip">
+    <string>Align Left</string>
+   </property>
+  </action>
+  <action name="actionAlign_Horz_Center">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/align_hcenter.png</normaloff>:/Icons/align_hcenter.png</iconset>
+   </property>
+   <property name="text">
+    <string>Align Horz Center</string>
+   </property>
+   <property name="toolTip">
+    <string>Align Horizontal Center</string>
+   </property>
+  </action>
+  <action name="actionAlign_Right">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/align_right.png</normaloff>:/Icons/align_right.png</iconset>
+   </property>
+   <property name="text">
+    <string>Align Right</string>
+   </property>
+  </action>
+  <action name="actionAlign_Top">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/align_top.png</normaloff>:/Icons/align_top.png</iconset>
+   </property>
+   <property name="text">
+    <string>Align Top</string>
+   </property>
+  </action>
+  <action name="actionAlign_Vert_Center">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/align_vcenter.png</normaloff>:/Icons/align_vcenter.png</iconset>
+   </property>
+   <property name="text">
+    <string>Align Vert Center</string>
+   </property>
+  </action>
+  <action name="actionAlign_Bottom">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/align_bottom.png</normaloff>:/Icons/align_bottom.png</iconset>
+   </property>
+   <property name="text">
+    <string>Align Bottom</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenLeftEdges">
+   <property name="text">
+    <string>Eq Left</string>
+   </property>
+   <property name="toolTip">
+    <string>Equal Distance between Left Edges</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenXCenters">
+   <property name="text">
+    <string>Eq X Centers</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenRightEdges">
+   <property name="text">
+    <string>Eq Right</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenXObjects">
+   <property name="text">
+    <string>Eq X</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenTopEdges">
+   <property name="text">
+    <string>Eq Top</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenYCenters">
+   <property name="text">
+    <string>Eq Y Centers</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenBottomEdges">
+   <property name="text">
+    <string>Eq Bottom</string>
+   </property>
+  </action>
+  <action name="actionEqualBetweenYObjects">
+   <property name="text">
+    <string>Eq Y</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -529,6 +646,11 @@
    <extends>QWidget</extends>
    <header>propertygridcontainerwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ScaleSlider</class>
+   <extends>QSlider</extends>
+   <header>ScaleSlider.h</header>
   </customwidget>
  </customwidgets>
  <resources>

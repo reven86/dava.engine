@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_PARTICLE_LAYER_H__
 #define __DAVAENGINE_PARTICLE_LAYER_H__
 
@@ -71,6 +85,82 @@ public:
 	void Restart(bool isDeleteAllParticles = true);
 	
 	/**
+		\brief This function restarts this layer. It should be used only if layer is looped
+		You can delete particles at restart. 
+		\param[in] isDeleteAllParticles if it's set to true layer deletes all previous particles that was generated
+	 */
+	void RestartLoop(bool isDeleteAllParticles = true);
+	
+	/**
+	 \brief Enable/disable loop otion.
+	 If loop option is enabled, layer will automatically restart after it's lifeTime ends.
+	 Option is disbled by default.
+	 \param[in] autoRestart enable autorestart if true
+	 */
+	void SetLooped(bool isLopped);
+
+	/**
+	 \brief Get isLooped state.
+	 \returns current layer autorestart state.
+	 */
+	bool GetLooped();
+	
+	/**
+	 \brief Set looped layer delta time.
+	 DeltaTime handle time delay between each layer loop
+	 \param[in] deltaTime time delay between layer restarts
+	 */
+	void SetDeltaTime(float32 deltaTime);
+	
+	/**
+	 \brief Get delta time.
+	 \returns current deltaTime delay
+	 */
+	float32 GetDeltaTime();
+	
+	/**
+	 \brief Set delta time variation
+	 DeltaVariation defines maximum shift of deltaTime
+	 For each loop we should calculate random deltaTime shift in range [0..deltaVariation]
+	 \param[in] deltaVariation time variation for deltaTime
+	 */
+	void SetDeltaVariation(float32 deltaVariation);
+	
+	/**
+	 \brief Get delta variation.
+	 \returns current delta variation maximum shift
+	 */
+	float32 GetDeltaVariation();
+	
+	/**
+	 \brief Set loop time variation
+	 loopVariation defines maximum shift of loop life (loopLife = endTime - startTime)
+	 For each loop we should calculate random loopLife shift in range [0..loopVariation]
+	 \param[in] loopVariation time variation for loop life
+	 */
+	void SetLoopVariation(float32 loopVariation);
+	
+	/**
+	 \brief Get loop variation.
+	 \returns current loop variation maximum shift
+	 */
+	float32 GetLoopVariation();
+
+	/**
+	 \brief Set end time of looped layer.
+	 endTime defines the time at which looped layer should stop "playing" and
+	 wait for ParticleEmitter restart
+	 \param[in] deltaTime time delay between layer restarts
+	 */
+	void SetLoopEndTime(float32 endTime);
+	
+	/**
+	 \brief Get isLooped state.
+	 \returns current autorestart state.
+	 */
+	float32 GetLoopEndTime();
+	
+	/**
 		\brief This function retrieve current particle count from current layer.
 		\returns particle count
 	 */
@@ -79,12 +169,18 @@ public:
 	/**
 		\brief This function updates layer properties and layer particles. 
 	 */
-	void Update(float32 timeElapsed);
+	void Update(float32 timeElapsed, bool generateNewParticles = true);
 	
 	/**
 		\brief This function draws layer properties and layer particles. 
 	 */
 	virtual void Draw(Camera * camera);
+
+	/**
+		\brief it is not implemented for old 2d particles yet - they just use draw.
+		ParticleLayer3d uses it to prepare render data.
+	 */
+	virtual void PrepareRenderData(Camera * camera);
 	
 	/** 
 		\brief Function to set emitter for layer. 
@@ -107,7 +203,7 @@ public:
 		\brief Function to load layer from yaml node.
 		Normally this function is called from ParticleEmitter. 	 
 	 */
-	virtual void LoadFromYaml(const FilePath & configPath, YamlNode * node);
+	virtual void LoadFromYaml(const FilePath & configPath, const YamlNode * node);
 
 	/**
      \brief Function to save layer to yaml node.
@@ -132,6 +228,8 @@ public:
 	virtual void SetAdditive(bool additive);
 	bool GetAdditive() const {return additive;};
 
+	void SetInheritPosition(bool inherit);
+	bool GetInheritPosition() const {return inheritPosition;}
 
 	// Logic to work with Particle Forces.
 	void AddForce(ParticleForce* force);
@@ -173,10 +271,14 @@ public:
 	// Handle the situation when layer is removed from the system.
 	void HandleRemoveFromSystem();
 
+	bool IsLodActive(int32 lod);
+	void SetLodActive(int32 lod, bool active);	
+
 protected:
 	void GenerateNewParticle(int32 emitIndex);
 	void GenerateSingleParticle();
-	
+
+	void RestartLayerIfNeed();
 
 	void DeleteAllParticles();
 	
@@ -213,6 +315,7 @@ protected:
 	// time properties for the particle layer
 	float32 particlesToGenerate;
 	float32 layerTime;
+	float32 loopLayerTime;
 	
 	// parent emitter (required to know emitter params during generation)
 	ParticleEmitter * emitter;
@@ -224,9 +327,15 @@ protected:
 
 	bool		isDisabled;
 	bool		additive;
+	bool		isLooped;
+
+	bool inheritPosition;  //for supperemitter - if true the whole emitter would be moved, otherwise just emission point
+
 	float32		playbackSpeed;
 
 	Vector2		layerPivotPoint;
+
+	Vector<bool> activeLODS;	
 
 public:
 	String			layerName;
@@ -274,14 +383,22 @@ public:
 
 	float32		startTime;
 	float32		endTime;
+	// Layer loop paremeters
+	float32		deltaTime;
+	float32 	deltaVariation;
+	float32 	loopVariation;
+	float32 	loopEndTime;
+	
 	void		UpdateLayerTime(float32 startTime, float32 endTime);
 
 	int32		frameStart;
 	int32		frameEnd;
+
 	eType		type;
 
 	bool		frameOverLifeEnabled;
 	float32		frameOverLifeFPS;
+	bool		randomFrameOnStart;
 
 	ParticleEmitter* innerEmitter;
 	FilePath	innerEmitterPath;
@@ -293,6 +410,10 @@ private:
 		String layerTypeName;
 	};
 	static const LayerTypeNamesInfo layerTypeNamesInfoMap[];
+	void RecalculateVariation();
+	float32 GetRandomFactor();
+	float32 currentLoopVariation;
+	float32 currentDeltaVariation;
 
 public:
     

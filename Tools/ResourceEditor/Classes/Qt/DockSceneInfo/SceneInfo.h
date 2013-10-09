@@ -1,29 +1,43 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #ifndef __SCENE_INFO_H__
 #define __SCENE_INFO_H__
 
-#include "QtPosSaver/QtPosSaver.h"
-#include "QtPropertyEditor/QtPropertyEditor.h"
-#include "../DockProperties/PropertyEditorStateHelper.h"
+#include "Tools/QtPosSaver/QtPosSaver.h"
+#include "Tools/QtPropertyEditor/QtPropertyEditor.h"
+#include "DockProperties/PropertyEditorStateHelper.h"
 
 #include <QShowEvent>
 
-class SceneData;
+class SceneEditor2;
 class SceneInfo : public QtPropertyEditor
 {
 	Q_OBJECT
@@ -33,7 +47,7 @@ protected:
     struct LODInfo
     {
         DAVA::uint32 trianglesOnLod[DAVA::LodComponent::MAX_LOD_LAYERS];
-        DAVA::uint32 trianglesOnLandscape;
+        DAVA::uint32 trianglesOnObjects;
         
         void Clear()
         {
@@ -41,7 +55,7 @@ protected:
             {
                 trianglesOnLod[i] = 0;
             }
-            trianglesOnLandscape = 0;
+            trianglesOnObjects = 0;
         }
     };
     
@@ -50,10 +64,14 @@ public:
 	~SceneInfo();
 
 
-public slots:
-	void sceneActivated(SceneData *scene);
-	void sceneChanged(SceneData *scene);
-	void sceneReleased(SceneData *scene);
+protected slots:
+    
+    void EntitySelected(SceneEditor2 *scene, DAVA::Entity *entity);
+	void EntityDeselected(SceneEditor2 *scene, DAVA::Entity *entity);
+    
+    void SceneActivated(SceneEditor2 *scene);
+	void SceneDeactivated(SceneEditor2 *scene);
+    void SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
 
 //TODO: add set of slots to different scene changes
 //    void nodeDeleted(SceneData *scene);
@@ -63,7 +81,7 @@ public slots:
     
 protected slots:
     
-    void timerDone();
+    void UpdateInfoByTimer();
     
 protected:
     
@@ -75,20 +93,22 @@ protected:
     void InitializeGeneralSection();
     void Initialize3DDrawSection();
     void InitializeMaterialsSection();
-    void InitializeLODSection();
+    void InitializeLODSectionInFrame();
+    void InitializeLODSectionForSelection();
     void InitializeParticlesSection();
 
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();
     void RefreshMaterialsInfo();
-    void RefreshLODInfo();
+    void RefreshLODInfoInFrame();
+    void RefreshLODInfoForSelection();
     void RefreshParticlesInfo();
 
     
-	void RefreshAllData(SceneData *sceneData);
+	void RefreshAllData(SceneEditor2 *scene);
 
-    void CollectSceneData(SceneData *sceneData, bool force);
     void ClearData();
+    void ClearSelectionData();
     
     void SaveTreeState();
     void RestoreTreeState();
@@ -101,9 +121,14 @@ protected:
     void SetChild(const QString & key, const QVariant &value, QtPropertyData *parent);
     
     
+    void CollectSceneData(SceneEditor2 *scene);
     void CollectSceneTextures();
     void CollectParticlesData();
-    void CollectLODData();
+    void CollectLODDataInFrame();
+    void CollectLODDataInFrameRecursive(DAVA::Entity *entity);
+    void CollectLODDataForSelection();
+    static void CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lods, LODInfo &info);
+    
     void CollectTexture(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, const DAVA::FilePath &pathname, DAVA::Texture *tex);
     
     static DAVA::uint32 CalculateTextureSize(const DAVA::Map<DAVA::String, DAVA::Texture *> &textures);
@@ -114,8 +139,9 @@ protected:
 	QtPosSaver posSaver;
     PropertyEditorStateHelper treeStateHelper;
     
-    DAVA::Scene * scene;
+    SceneEditor2 * activeScene;
     DAVA::Vector<DAVA::Entity *> nodesAtScene;
+    DAVA::Landscape *landscape;
     
     DAVA::Vector<DAVA::Material *>materialsAtScene;
     DAVA::Vector<DAVA::DataNode *>dataNodesAtScene;
@@ -130,7 +156,8 @@ protected:
     DAVA::uint32 emittersCount;
     DAVA::uint32 spritesCount;
     
-    LODInfo lodInfo;
+    LODInfo lodInfoSelection;
+    LODInfo lodInfoInFrame;
 };
 
 #endif // __SCENE_INFO_H__

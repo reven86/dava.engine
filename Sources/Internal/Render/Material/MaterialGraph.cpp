@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/Material/MaterialGraph.h"
 #include "Render/Material/MaterialGraphNode.h"
 #include "FileSystem/FileSystem.h"
@@ -77,21 +91,21 @@ bool MaterialGraph::LoadFromFile(const FilePath & pathname)
     materialPathname = pathname;
         
     
-    YamlNode * rootNode = materialFileParser->GetRootNode();
-    YamlNode * materialNode = rootNode->Get("material");
+    const YamlNode * rootNode = materialFileParser->GetRootNode();
+    const YamlNode * materialNode = rootNode->Get("material");
     
-    YamlNode * vertexShaderFileNode = materialNode->Get("vertexShader");
+    const YamlNode * vertexShaderFileNode = materialNode->Get("vertexShader");
     vertexShaderFilename = vertexShaderFileNode->AsString();
     
-    YamlNode * pixelShaderFileNode = materialNode->Get("pixelShader");
+    const YamlNode * pixelShaderFileNode = materialNode->Get("pixelShader");
     pixelShaderFilename = pixelShaderFileNode->AsString();
     
-    YamlNode * nodes = rootNode->Get("nodes");
+    const YamlNode * nodes = rootNode->Get("nodes");
     if (nodes && nodes->GetType() == YamlNode::TYPE_ARRAY)
     {
         for (int32 k = 0; k < nodes->GetCount(); ++k)
         {
-            YamlNode * graphNode = nodes->Get(k);
+            const YamlNode * graphNode = nodes->Get(k);
             bool result = LoadNode(graphNode);
             if (!result)break;
         }
@@ -101,7 +115,7 @@ bool MaterialGraph::LoadFromFile(const FilePath & pathname)
     return true;
 }
 
-bool MaterialGraph::LoadNode(YamlNode * graphNode)
+bool MaterialGraph::LoadNode(const YamlNode * graphNode)
 {
 
     MaterialGraphNode * node = new MaterialGraphNode(this);
@@ -114,18 +128,18 @@ bool MaterialGraph::LoadNode(YamlNode * graphNode)
         usedTextures++;
     
     //YamlNode *
-    YamlNode * nameNode = graphNode->Get("name");
-    YamlNode * typeNode = graphNode->Get("node");
-    Logger::Debug("- Read Node %s %s", typeNode->AsString().c_str(), nameNode->AsString().c_str());
+    const YamlNode * nameNode = graphNode->Get("name");
+    const YamlNode * typeNode = graphNode->Get("node");
+    Logger::FrameworkDebug("- Read Node %s %s", typeNode->AsString().c_str(), nameNode->AsString().c_str());
 
     // Parse inputs
-    std::multimap<String, YamlNode*> & map = graphNode->AsMap();
-    std::pair<std::multimap<String, YamlNode*>::iterator, std::multimap<String, YamlNode*>::iterator> inputs = map.equal_range("input");
+    const MultiMap<String, YamlNode*> & map = graphNode->AsMap();
+    std::pair<MultiMap<String, YamlNode*>::const_iterator, MultiMap<String, YamlNode*>::const_iterator> inputs = map.equal_range("input");
     
     uint32 count = 0;
-    for (std::multimap<String, YamlNode*>::iterator it = inputs.first; it != inputs.second; ++it)
+    for (MultiMap<String, YamlNode*>::const_iterator it = inputs.first; it != inputs.second; ++it)
     {
-        YamlNode * inputNode = it->second;
+        const YamlNode * inputNode = it->second;
         const String & inputName = inputNode->Get(0)->AsString();
         const String & nodeName = inputNode->Get(1)->AsString();
         const String & connectionModifier = inputNode->Get(2)->AsString();
@@ -133,7 +147,7 @@ bool MaterialGraph::LoadNode(YamlNode * graphNode)
         MaterialGraphNode * connectNode = GetNodeByName(nodeName);
         if (connectNode)
         {
-            Logger::Debug("- Read Input: %s connected:%s filter:%s",
+            Logger::FrameworkDebug("- Read Input: %s connected:%s filter:%s",
                           inputNode->Get(0)->AsString().c_str(),
                           inputNode->Get(1)->AsString().c_str(),
                           inputNode->Get(2)->AsString().c_str());
@@ -177,7 +191,7 @@ void MaterialGraph::SortByDepthMarkerAndRemoveUnused()
         MaterialGraphNode * node = *it;
         if (node->GetDepthMarker() == -1)
         {
-            Logger::Debug("- remove empty node: %s", node->GetName().c_str());
+            Logger::FrameworkDebug("- remove empty node: %s", node->GetName().c_str());
             RemoveNodeRecursive(node);
             it = allNodes.begin();
             continue;

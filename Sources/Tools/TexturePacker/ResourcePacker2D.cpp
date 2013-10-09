@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TexturePacker/DefinitionFile.h"
 #include "TexturePacker/TexturePacker.h"
@@ -41,7 +70,7 @@ void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & o
     
 void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 {
-	Logger::Debug("Input: %s \nOutput: %s \nExclude: %s\n",
+	Logger::FrameworkDebug("Input: %s \nOutput: %s \nExclude: %s\n",
                   inputGfxDirectory.GetAbsolutePathname().c_str(),
                   outputGfxDirectory.GetAbsolutePathname().c_str(),
                   excludeDirectory.GetAbsolutePathname().c_str());
@@ -75,7 +104,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 		bool result = FileSystem::Instance()->DeleteDirectory(outputGfxDirectory);
 		if (result)
 		{
-			Logger::Debug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
+			Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
 		}
 		if (!result && Core::Instance()->IsConsoleMode())
 		{
@@ -196,7 +225,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			layers.push_back(layers[0]);
 		}
 		
-		//Logger::Debug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
+		//Logger::FrameworkDebug("psd file: %s wext: %s", psdPathname.c_str(), psdNameWithoutExtension.c_str());
 		
 		int width = (int)layers[0].columns();
 		int height = (int)layers[0].rows();
@@ -335,7 +364,7 @@ void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 	if (CommandLineParser::Instance()->GetVerbose())
 		for (int k = 0; k < (int) tokens.size(); ++k)
 		{
-			Logger::Debug("Token: %s", tokens[k].c_str());
+			Logger::FrameworkDebug("Token: %s", tokens[k].c_str());
 		}
 
 //	if (Core::Instance()->IsConsoleMode())

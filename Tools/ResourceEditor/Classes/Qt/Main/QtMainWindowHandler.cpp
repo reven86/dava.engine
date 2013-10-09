@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "QtMainWindowHandler.h"
 
@@ -42,9 +56,17 @@
 #include "TextureBrowser/TextureBrowser.h"
 #include "Project/ProjectManager.h"
 #include "ModificationWidget.h"
+#include "TextureBrowser/TextureConvertor.h"
 #include "../Commands/CommandSignals.h"
 #include "SceneEditor/EntityOwnerPropertyHelper.h"
 #include "StringConstants.h"
+#include "../CubemapEditor/CubemapEditorDialog.h"
+#include "../CubemapEditor/CubemapTextureBrowser.h"
+
+#include "../Scene/System/TilemaskEditorSystem.h"
+#include "../Scene/System/HeightmapEditorSystem.h"
+#include "../Scene/System/CustomColorsSystem.h"
+#include "../Scene/System/VisibilityToolSystem.h"
 
 #include <QPoint>
 #include <QMenu>
@@ -59,11 +81,16 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QMimeData>
 #include <QColorDialog>
 
 #include "Render/LibDxtHelper.h"
 #include "Scene3D/Components/ActionComponent.h"
 
+#include "Scene3D/SkyBoxNode.h"
+#include "./../Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
+#include "./../Qt/Tools/MimeDataHelper/MimeDataHelper.h"
+#include "Commands2/AddSwitchEntityCommand.h"
 #include "Classes/EditorScene.h"
 
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
@@ -78,7 +105,7 @@ QtMainWindowHandler::QtMainWindowHandler(QObject *parent)
 {
     new CommandsManager();
 	new TextureBrowser((QWidget *) parent);
-    
+
     ClearActions(ResourceEditor::NODE_COUNT, nodeActions);
     ClearActions(ResourceEditor::VIEWPORT_COUNT, viewportActions);
     ClearActions(ResourceEditor::HIDABLEWIDGET_COUNT, hidablewidgetActions);
@@ -100,7 +127,13 @@ QtMainWindowHandler::QtMainWindowHandler(QObject *parent)
 	connect(CommandSignals::Instance(), SIGNAL(CommandAffectsEntities(DAVA::Scene* , CommandList::eCommandId , const DAVA::Set<DAVA::Entity*>& ) ) ,
 			this,SLOT( OnEntityModified(DAVA::Scene* , CommandList::eCommandId , const DAVA::Set<DAVA::Entity*>& ) ));
     
-    connect(this, SIGNAL(UpdateCameraLightOnScene(bool)), sceneDataManager, SLOT(UpdateCameraLightOnScene(bool)));
+	QWidget* parentWdget = (QWidget *) parent;
+#if defined (__DAVAENGINE_MACOS__)
+	//omg, due to https://bugreports.qt-project.org/browse/QTBUG-25493s
+	parentWdget = NULL;
+#endif
+	new AddSwitchEntityDialog(parentWdget);
+	connect(AddSwitchEntityDialog::Instance(), SIGNAL(accepted()), this, SLOT(AddSwitchEntity()));
 }
 
 QtMainWindowHandler::~QtMainWindowHandler()
@@ -120,6 +153,7 @@ QtMainWindowHandler::~QtMainWindowHandler()
 
 	TextureBrowser::Instance()->Release();
     CommandsManager::Instance()->Release();
+	AddSwitchEntityDialog::Instance()->Release();
 }
 
 void QtMainWindowHandler::ClearActions(int32 count, QAction **actions)
@@ -150,6 +184,10 @@ void QtMainWindowHandler::NewScene()
                 return;
             }
         }
+
+        //Release CommandsQueue for Level Tab at old scene editor
+        CommandsManager::Instance()->SceneReleased(levelScene->GetScene());
+
         
 		// Can now create the scene.
 		screen->NewScene();
@@ -298,8 +336,18 @@ void QtMainWindowHandler::SaveToFolderWithChilds()
 
 void QtMainWindowHandler::CreateNode(ResourceEditor::eNodeType type)
 {
-    CommandsManager::Instance()->ExecuteAndRelease(new CommandCreateNode(type),
+	if(type == ResourceEditor::NODE_SWITCH_NODE)
+	{
+		AddSwitchEntityDialog::Instance()->ErasePathWidgets();
+		AddSwitchEntityDialog::Instance()->SetOpenDialogsDefaultPath( EditorSettings::Instance()->GetDataSourcePath().GetAbsolutePathname());
+		AddSwitchEntityDialog::Instance()->show();
+		return;
+	}
+	else
+	{
+		CommandsManager::Instance()->ExecuteAndRelease(new CommandCreateNode(type),
 												   SceneDataManager::Instance()->SceneGetActive()->GetScene());
+	}
 }
 
 void QtMainWindowHandler::Materials()
@@ -573,6 +621,16 @@ void QtMainWindowHandler::ReplaceZeroMipmaps()
     MipMapReplacer::ReplaceMipMaps(scene, 0);
 }
 
+void QtMainWindowHandler::CubemapEditor()
+{
+	//static CubemapEditorDialog dlg(dynamic_cast<QWidget*>(parent()));
+	//dlg.show();
+	
+	CubeMapTextureBrowser dlg(dynamic_cast<QWidget*>(parent()));
+	dlg.exec();
+}
+
+
 void QtMainWindowHandler::SetDefaultFocusWidget(QWidget *widget)
 {
 	defaultFocusWidget = widget;
@@ -680,6 +738,8 @@ void QtMainWindowHandler::ReloadSceneTextures()
 
 void QtMainWindowHandler::OnEntityModified(DAVA::Scene* scene, CommandList::eCommandId id, const DAVA::Set<DAVA::Entity*>& affectedEntities)
 {
+	HandleMenuItemsState(id, affectedEntities);
+
 	for(DAVA::Set<DAVA::Entity*>::iterator it = affectedEntities.begin(); it != affectedEntities.end(); ++it)
 	{
 		EntityOwnerPropertyHelper::Instance()->UpdateEntityOwner((*it)->GetCustomProperties());
@@ -1143,6 +1203,7 @@ void QtMainWindowHandler::OnSceneActivated(SceneData *scene)
 void QtMainWindowHandler::OnSceneCreated(SceneData *scene)
 {
 	UpdateRecentScenesList();
+	UpdateSkyboxMenuItemAfterSceneLoaded(scene);
 }
 
 void QtMainWindowHandler::OnSceneReleased(SceneData *scene)
@@ -1159,12 +1220,838 @@ void QtMainWindowHandler::ConvertToShadow()
 												   SceneDataManager::Instance()->SceneGetActive()->GetScene());
 }
 
+
+void QtMainWindowHandler::RegisterHeightmapEditorWidgets(QPushButton* toggleButton,
+														 QSlider* brushSize,
+														 QComboBox* brushImage,
+														 QRadioButton* relativeDrawing,
+														 QRadioButton* averageDrawing,
+														 QRadioButton* absoluteDrawing,
+														 QSlider* strength,
+														 QSlider* averageStrength,
+														 QLabel* dropperHeight,
+														 QRadioButton* dropper,
+														 QRadioButton* copyPaste,
+														 QCheckBox* copyHeightmap,
+														 QCheckBox* copyTilemask)
+{
+	heightmapToggleButton = toggleButton;
+	heightmapBrushSize = brushSize;
+	heightmapToolImage = brushImage;
+	heightmapDrawingRelative = relativeDrawing;
+	heightmapDrawingAverage = averageDrawing;
+	heightmapDrawingAbsolute = absoluteDrawing;
+	heightmapStrength = strength;
+	heightmapAverageStrength = averageStrength;
+	heightmapDropperHeight = dropperHeight;
+	heightmapDropper = dropper;
+	heightmapCopyPaste = copyPaste;
+	heightmapCopyHeightmap = copyHeightmap;
+	heightmapCopyTilemask = copyTilemask;
+}
+
+void QtMainWindowHandler::SetHeightmapEditorWidgetsState(bool state)
+{
+	DVASSERT(heightmapToggleButton && heightmapBrushSize && heightmapToolImage && heightmapDrawingRelative &&
+			 heightmapDrawingAverage && heightmapDrawingAbsolute && heightmapStrength && heightmapAverageStrength &&
+			 heightmapDropperHeight && heightmapDropper && heightmapCopyPaste && heightmapCopyHeightmap &&
+			 heightmapCopyTilemask);
+
+//	heightmapDropper
+//	heightmapCopyPaste
+//	heightmapCopyHeightmap
+//	heightmapCopyTilemask
+
+	heightmapToggleButton->blockSignals(true);
+	heightmapToggleButton->setCheckable(state);
+	heightmapToggleButton->setChecked(state);
+	heightmapToggleButton->blockSignals(false);
+
+	QString buttonText = state ? tr("Disable Heightmap Editor") : tr("Enable Heightmap Editor");
+	heightmapToggleButton->setText(buttonText);
+
+	heightmapBrushSize->setEnabled(state);
+	heightmapToolImage->setEnabled(state);
+	heightmapDrawingRelative->setEnabled(state);
+	heightmapDrawingAverage->setEnabled(state);
+	heightmapDrawingAbsolute->setEnabled(state);
+	heightmapStrength->setEnabled(state);
+	heightmapAverageStrength->setEnabled(state);
+	heightmapDropper->setEnabled(state);
+	heightmapCopyPaste->setEnabled(state);
+	heightmapCopyHeightmap->setEnabled(state);
+	heightmapCopyTilemask->setEnabled(state);
+
+	heightmapBrushSize->blockSignals(!state);
+	heightmapToolImage->blockSignals(!state);
+	heightmapDrawingRelative->blockSignals(!state);
+	heightmapDrawingAverage->blockSignals(!state);
+	heightmapDrawingAbsolute->blockSignals(!state);
+	heightmapStrength->blockSignals(!state);
+	heightmapAverageStrength->blockSignals(!state);
+	heightmapDropper->blockSignals(!state);
+	heightmapCopyPaste->blockSignals(!state);
+	heightmapCopyHeightmap->blockSignals(!state);
+	heightmapCopyTilemask->blockSignals(!state);
+}
+
+void QtMainWindowHandler::ToggleHeightmapEditor()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	if (sep->heightmapEditorSystem->IsLandscapeEditingEnabled())
+	{
+		if (sep->heightmapEditorSystem->DisableLandscapeEdititing())
+		{
+			SetHeightmapEditorWidgetsState(false);
+		}
+		else
+		{
+			// show "Couldn't disable heightmap editing" message box
+		}
+	}
+	else
+	{
+		if (sep->heightmapEditorSystem->EnableLandscapeEditing())
+		{
+			SetHeightmapEditorWidgetsState(true);
+
+			SetHeightmapEditorBrushSize(heightmapBrushSize->value());
+			SetHeightmapEditorStrength(heightmapStrength->value());
+			SetHeightmapEditorAverageStrength(heightmapAverageStrength->value());
+			SetHeightmapEditorToolImage(heightmapToolImage->currentIndex());
+			SetHeightmapCopyPasteHeightmap(heightmapCopyHeightmap->checkState());
+			SetHeightmapCopyPasteTilemask(heightmapCopyTilemask->checkState());
+		}
+		else
+		{
+			// show "Couldn't enable heightmap editing" message box
+		}
+	}
+}
+
+void QtMainWindowHandler::SetHeightmapEditorBrushSize(int brushSize)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->heightmapEditorSystem->SetBrushSize(brushSize);
+}
+
+void QtMainWindowHandler::SetHeightmapEditorToolImage(int imageIndex)
+{
+	QString s = heightmapToolImage->itemData(imageIndex).toString();
+
+	if (!s.isEmpty())
+	{
+		QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+		SceneEditor2* sep = window->GetCurrentScene();
+		if (!sep)
+		{
+			return;
+		}
+
+		FilePath fp(s.toStdString());
+		sep->heightmapEditorSystem->SetToolImage(fp);
+	}
+}
+
+void QtMainWindowHandler::SetRelativeHeightmapDrawing()
+{
+	SetHeightmapDrawingType(HeightmapEditorSystem::HEIGHTMAP_DRAW_RELATIVE);
+}
+
+void QtMainWindowHandler::SetAverageHeightmapDrawing()
+{
+	SetHeightmapDrawingType(HeightmapEditorSystem::HEIGHTMAP_DRAW_AVERAGE);
+}
+
+void QtMainWindowHandler::SetAbsoluteHeightmapDrawing()
+{
+	SetHeightmapDrawingType(HeightmapEditorSystem::HEIGHTMAP_DRAW_ABSOLUTE_DROPPER);
+}
+
+void QtMainWindowHandler::SetHeightmapDropper()
+{
+	SetHeightmapDrawingType(HeightmapEditorSystem::HEIGHTMAP_DROPPER);
+}
+
+void QtMainWindowHandler::SetHeightmapCopyPaste()
+{
+	SetHeightmapDrawingType(HeightmapEditorSystem::HEIGHTMAP_COPY_PASTE);
+}
+
+void QtMainWindowHandler::SetHeightmapDrawingType(HeightmapEditorSystem::eHeightmapDrawType type)
+{
+	heightmapDrawingRelative->blockSignals(true);
+	heightmapDrawingAverage->blockSignals(true);
+	heightmapDrawingAbsolute->blockSignals(true);
+	heightmapDropper->blockSignals(true);
+	heightmapCopyPaste->blockSignals(true);
+
+	heightmapDrawingRelative->setChecked(false);
+	heightmapDrawingAverage->setChecked(false);
+	heightmapDrawingAbsolute->setChecked(false);
+	heightmapDropper->setChecked(false);
+	heightmapCopyPaste->setChecked(false);
+
+	switch (type) {
+		default:
+			type = HeightmapEditorSystem::HEIGHTMAP_DRAW_RELATIVE;
+
+		case HeightmapEditorSystem::HEIGHTMAP_DRAW_RELATIVE:
+			heightmapDrawingRelative->setChecked(true);
+			break;
+
+		case HeightmapEditorSystem::HEIGHTMAP_DRAW_AVERAGE:
+			heightmapDrawingAverage->setChecked(true);
+			break;
+
+		case HeightmapEditorSystem::HEIGHTMAP_DRAW_ABSOLUTE_DROPPER:
+			heightmapDrawingAbsolute->setChecked(true);
+			break;
+
+		case HeightmapEditorSystem::HEIGHTMAP_DROPPER:
+			heightmapDropper->setChecked(true);
+			break;
+
+		case HeightmapEditorSystem::HEIGHTMAP_COPY_PASTE:
+			heightmapCopyPaste->setChecked(true);
+			break;
+	}
+
+	heightmapDrawingRelative->blockSignals(false);
+	heightmapDrawingAverage->blockSignals(false);
+	heightmapDrawingAbsolute->blockSignals(false);
+	heightmapDropper->blockSignals(false);
+	heightmapCopyPaste->blockSignals(false);
+
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+	
+	sep->heightmapEditorSystem->SetDrawingType(type);
+}
+
+void QtMainWindowHandler::SetHeightmapEditorStrength(int strength)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->heightmapEditorSystem->SetStrength(strength);
+}
+
+void QtMainWindowHandler::SetHeightmapEditorAverageStrength(int averageStrength)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	float32 avStr = (float32)averageStrength;
+	float32 max = heightmapAverageStrength->maximum();
+	float32 v = avStr / max;
+	sep->heightmapEditorSystem->SetAverageStrength(v);
+}
+
+void QtMainWindowHandler::SetHeightmapDropperHeight(SceneEditor2 *scene, double height)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (sep != scene)
+	{
+		return;
+	}
+
+	heightmapDropperHeight->setText(QString::number(height));
+}
+
+void QtMainWindowHandler::SetHeightmapCopyPasteHeightmap(int state)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->heightmapEditorSystem->SetCopyPasteHeightmap(state == Qt::Checked);
+}
+
+void QtMainWindowHandler::SetHeightmapCopyPasteTilemask(int state)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->heightmapEditorSystem->SetCopyPasteTilemask(state == Qt::Checked);
+}
+
+
+void QtMainWindowHandler::RegisterTilemaskEditorWidgets(QPushButton* toggleButton,
+														QSlider* brushSize,
+														QComboBox* brushImage,
+														QSlider* strength,
+														QComboBox* tileTexture)
+{
+	this->tilemaskToggleButton = toggleButton;
+	this->tilemaskBrushSize = brushSize;
+	this->tilemaskToolImage = brushImage;
+	this->tilemaskStrength = strength;
+	this->tilemaskDrawTexture = tileTexture;
+}
+
+void QtMainWindowHandler::SetTilemaskEditorWidgetsState(bool state)
+{
+	DVASSERT(tilemaskToggleButton && tilemaskBrushSize && tilemaskToolImage && tilemaskStrength && tilemaskDrawTexture);
+
+	tilemaskToggleButton->blockSignals(true);
+	tilemaskToggleButton->setCheckable(state);
+	tilemaskToggleButton->setChecked(state);
+	tilemaskToggleButton->blockSignals(false);
+
+	QString buttonText = state ? tr("Disable Tilemask Editor") : tr("Enable Tilemask Editor");
+	tilemaskToggleButton->setText(buttonText);
+
+	tilemaskBrushSize->setEnabled(state);
+	tilemaskToolImage->setEnabled(state);
+	tilemaskStrength->setEnabled(state);
+	tilemaskDrawTexture->setEnabled(state);
+
+	tilemaskBrushSize->blockSignals(!state);
+	tilemaskToolImage->blockSignals(!state);
+	tilemaskStrength->blockSignals(!state);
+	tilemaskDrawTexture->blockSignals(!state);
+}
+
+void QtMainWindowHandler::ToggleTilemaskEditor()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	if (sep->tilemaskEditorSystem->IsLandscapeEditingEnabled())
+	{
+		if (sep->tilemaskEditorSystem->DisableLandscapeEdititing())
+		{
+			SetTilemaskEditorWidgetsState(false);
+		}
+		else
+		{
+			// show "Couldn't disable tilemask editing" message box
+		}
+	}
+	else
+	{
+		if (sep->tilemaskEditorSystem->EnableLandscapeEditing())
+		{
+			SetTilemaskEditorWidgetsState(true);
+
+			UpdateTilemaskTileTextures();
+
+			SetTilemaskEditorBrushSize(tilemaskBrushSize->value());
+			SetTilemaskEditorStrength(tilemaskStrength->value());
+			SetTilemaskEditorToolImage(tilemaskToolImage->currentIndex());
+		}
+		else
+		{
+			// show "Couldn't enable tilemask editing" message box
+		}
+	}
+}
+
+void QtMainWindowHandler::UpdateTilemaskTileTextures()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	tilemaskDrawTexture->clear();
+
+	QSize iconSize = tilemaskDrawTexture->iconSize();
+	iconSize = iconSize.expandedTo(QSize(150, 32));
+	tilemaskDrawTexture->setIconSize(iconSize);
+
+	for (int32 i = 0; i < sep->tilemaskEditorSystem->GetTileTextureCount(); ++i)
+	{
+		Texture* tileTexture = sep->tilemaskEditorSystem->GetTileTexture(i);
+
+		uint32 previewWidth = Min(tileTexture->GetWidth(), 150);
+		uint32 previewHeight = Min(tileTexture->GetHeight(), 32);
+
+		Image* tileImage = tileTexture->CreateImageFromMemory();
+		tileImage->ResizeCanvas(previewWidth, previewHeight);
+
+		QImage img = TextureConvertor::FromDavaImage(tileImage);
+		QIcon icon = QIcon(QPixmap::fromImage(img));
+
+		tilemaskDrawTexture->addItem(icon, "");
+	}
+}
+
+void QtMainWindowHandler::SetTilemaskEditorBrushSize(int brushSize)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->tilemaskEditorSystem->SetBrushSize(brushSize);
+}
+
+void QtMainWindowHandler::SetTilemaskEditorToolImage(int imageIndex)
+{
+	QString s = tilemaskToolImage->itemData(imageIndex).toString();
+
+	if (!s.isEmpty())
+	{
+		QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+		SceneEditor2* sep = window->GetCurrentScene();
+		if (!sep)
+		{
+			return;
+		}
+
+		FilePath fp(s.toStdString());
+		sep->tilemaskEditorSystem->SetToolImage(fp);
+	}
+}
+
+void QtMainWindowHandler::SetTilemaskEditorStrength(int strength)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	float32 max = 2.f * tilemaskStrength->maximum();
+	sep->tilemaskEditorSystem->SetStrength(strength / max);
+}
+
+void QtMainWindowHandler::SetTilemaskDrawTexture(int textureIndex)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->tilemaskEditorSystem->SetTileTexture(textureIndex);
+}
+
+
+void QtMainWindowHandler::RegisterCustomColorsEditorWidgets(QPushButton* toggleButton,
+															QPushButton* saveTextureButton,
+															QSlider* brushSizeSlider,
+															QComboBox* colorComboBox,
+															QPushButton* loadTextureButton)
+{
+	customColorsEditorToggleButton = toggleButton;
+	customColorsSaveTexture = saveTextureButton;
+	customColorsBrushSize = brushSizeSlider;
+	customColorsColor = colorComboBox;
+	customColorsLoadTexture = loadTextureButton;
+}
+
+void QtMainWindowHandler::SetCustomColorsEditorWidgetsState(bool state)
+{
+	DVASSERT(customColorsEditorToggleButton &&
+			 customColorsSaveTexture &&
+			 customColorsBrushSize &&
+			 customColorsColor &&
+			 customColorsLoadTexture);
+
+	customColorsEditorToggleButton->blockSignals(true);
+	customColorsEditorToggleButton->setCheckable(state);
+	customColorsEditorToggleButton->setChecked(state);
+	customColorsEditorToggleButton->blockSignals(false);
+
+	QString buttonText = state ? tr("Disable Custom Colors Editor") : tr("Enable Custom Colors Editor");
+	customColorsEditorToggleButton->setText(buttonText);
+
+	customColorsSaveTexture->setEnabled(state);
+	customColorsBrushSize->setEnabled(state);
+	customColorsColor->setEnabled(state);
+	customColorsLoadTexture->setEnabled(state);
+	customColorsSaveTexture->blockSignals(!state);
+	customColorsBrushSize->blockSignals(!state);
+	customColorsColor->blockSignals(!state);
+	customColorsLoadTexture->blockSignals(!state);
+}
+
+void QtMainWindowHandler::ToggleCustomColorsEditor()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	if (sep->customColorsSystem->IsLandscapeEditingEnabled())
+	{
+		if (sep->customColorsSystem->DisableLandscapeEdititing())
+		{
+			SetCustomColorsEditorWidgetsState(false);
+		}
+		else
+		{
+			// show "Couldn't disable custom colors editing" message box
+		}
+	}
+	else
+	{
+		if (sep->customColorsSystem->EnableLandscapeEditing())
+		{
+			SetCustomColorsEditorWidgetsState(true);
+
+			SetCustomColorsBrushSize(customColorsBrushSize->value());
+			SetCustomColorsColor(customColorsColor->currentIndex());
+		}
+		else
+		{
+			// show "Couldn't enable custom colors editing" message box
+		}
+	}
+}
+
+void QtMainWindowHandler::SaveCustomColorsTexture()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* scene = window->GetCurrentScene();
+	if (!scene)
+	{
+		return;
+	}
+
+	FilePath selectedPathname = scene->customColorsSystem->GetCurrentSaveFileName();
+	if (selectedPathname.IsEmpty())
+	{
+		selectedPathname = scene->GetScenePath().GetDirectory();
+	}
+
+	QString filePath = QFileDialog::getSaveFileName(NULL, QString("Save texture"),
+													QString(selectedPathname.GetAbsolutePathname().c_str()),
+													QString("PNG image (*.png)"));
+	selectedPathname = PathnameToDAVAStyle(filePath);
+
+	if (!selectedPathname.IsEmpty())
+	{
+		scene->customColorsSystem->SaveTexture(selectedPathname);
+	}
+}
+
+void QtMainWindowHandler::LoadCustomColorsTexture()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* scene = window->GetCurrentScene();
+	if (!scene)
+	{
+		return;
+	}
+
+	FilePath currentPath = scene->customColorsSystem->GetCurrentSaveFileName();
+	if (currentPath.IsEmpty())
+	{
+		currentPath = scene->GetScenePath().GetDirectory();
+	}
+
+	FilePath selectedPathname = GetOpenFileName(String("Load texture"), currentPath, String("PNG image (*.png)"));
+	if(!selectedPathname.IsEmpty())
+	{
+		scene->customColorsSystem->LoadTexture(selectedPathname);
+	}
+}
+
+void QtMainWindowHandler::SetCustomColorsBrushSize(int brushSize)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->customColorsSystem->SetBrushSize(brushSize);
+}
+
+void QtMainWindowHandler::SetCustomColorsColor(int colorIndex)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->customColorsSystem->SetColor(colorIndex);
+}
+
+void QtMainWindowHandler::NeedSaveCustomColorsTexture(SceneEditor2 *scene)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (sep != scene)
+	{
+		return;
+	}
+
+	FilePath selectedPathname = scene->customColorsSystem->GetCurrentSaveFileName();
+	if(!selectedPathname.IsEmpty())
+	{
+		scene->customColorsSystem->SaveTexture(selectedPathname);
+	}
+	else
+	{
+		SaveCustomColorsTexture();
+	}
+}
+
+
+void QtMainWindowHandler::RegisterVisibilityToolWidgets(QPushButton* toggleButton,
+														QPushButton* saveTextureButton,
+														QPushButton* setPointButton,
+														QPushButton* setAreaButton,
+														QSlider* areaSizeSlider)
+{
+	this->visibilityToolEditorToggleButton = toggleButton;
+	this->visibilityToolSaveTexture = saveTextureButton;
+	this->visibilityToolSetPoint = setPointButton;
+	this->visibilityToolSetArea = setAreaButton;
+	this->visibilityToolAreaSize = areaSizeSlider;
+}
+
+void QtMainWindowHandler::SetVisibilityToolWidgetsState(bool state)
+{
+	DVASSERT(visibilityToolEditorToggleButton &&
+			 visibilityToolSaveTexture &&
+			 visibilityToolSetPoint &&
+			 visibilityToolSetArea &&
+			 visibilityToolAreaSize);
+
+	visibilityToolEditorToggleButton->blockSignals(true);
+	visibilityToolEditorToggleButton->setCheckable(state);
+	visibilityToolEditorToggleButton->setChecked(state);
+	visibilityToolEditorToggleButton->blockSignals(false);
+
+	QString toggleButtonText = state ? tr("Disable Visibility Tool"): tr("Enable Visibility Tool");
+	visibilityToolEditorToggleButton->setText(toggleButtonText);
+
+	visibilityToolSaveTexture->setEnabled(state);
+	visibilityToolSetPoint->setEnabled(state);
+	visibilityToolSetArea->setEnabled(state);
+	visibilityToolAreaSize->setEnabled(state);
+	visibilityToolSaveTexture->blockSignals(!state);
+	visibilityToolSetPoint->blockSignals(!state);
+	visibilityToolSetArea->blockSignals(!state);
+	visibilityToolAreaSize->blockSignals(!state);
+}
+
+void QtMainWindowHandler::SetVisibilityToolButtonsState(SceneEditor2* scene)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+
+	if (sep != scene)
+	{
+		return;
+	}
+
+	VisibilityToolSystem::eVisibilityToolState state = scene->visibilityToolSystem->GetState();
+	bool pointButton = false;
+	bool areaButton = false;
+
+	switch (state) {
+		case VisibilityToolSystem::VT_STATE_SET_AREA:
+			areaButton = true;
+			break;
+
+		case VisibilityToolSystem::VT_STATE_SET_POINT:
+			pointButton = true;
+			break;
+	}
+	bool b;
+
+	b = visibilityToolSetPoint->signalsBlocked();
+	visibilityToolSetPoint->blockSignals(true);
+	visibilityToolSetPoint->setChecked(pointButton);
+	visibilityToolSetPoint->blockSignals(b);
+
+	b = visibilityToolSetArea->signalsBlocked();
+	visibilityToolSetArea->blockSignals(true);
+	visibilityToolSetArea->setChecked(areaButton);
+	visibilityToolSetArea->blockSignals(b);
+}
+
+void QtMainWindowHandler::ToggleVisibilityToolEditor()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	if (sep->visibilityToolSystem->IsLandscapeEditingEnabled())
+	{
+		if (sep->visibilityToolSystem->DisableLandscapeEdititing())
+		{
+			SetVisibilityToolWidgetsState(false);
+		}
+		else
+		{
+			// show "Couldn't disable visibility tool" message box
+		}
+	}
+	else
+	{
+		if (sep->visibilityToolSystem->EnableLandscapeEditing())
+		{
+			SetVisibilityToolWidgetsState(true);
+
+			SetVisibilityToolAreaSize(visibilityToolAreaSize->value());
+		}
+		else
+		{
+			// show "Couldn't enable visibility tool" message box
+		}
+	}
+}
+
+void QtMainWindowHandler::SaveVisibilityToolTexture()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* scene = window->GetCurrentScene();
+	if (!scene)
+	{
+		return;
+	}
+
+    FilePath currentPath = FileSystem::Instance()->GetUserDocumentsPath();
+	QString filePath = QFileDialog::getSaveFileName(NULL,
+													QString("Save visibility tool texture"),
+													QString(currentPath.GetAbsolutePathname().c_str()),
+													QString("PNG image (*.png)"));
+
+	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
+
+	if(!selectedPathname.IsEmpty())
+	{
+		scene->visibilityToolSystem->SaveTexture(selectedPathname);
+	}
+}
+
+void QtMainWindowHandler::SetVisibilityToolAreaSize(int size)
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->visibilityToolSystem->SetBrushSize(size);
+}
+
+void QtMainWindowHandler::SetVisibilityPoint()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->visibilityToolSystem->SetVisibilityPoint();
+}
+
+void QtMainWindowHandler::SetVisibilityArea()
+{
+	QtMainWindow *window = dynamic_cast<QtMainWindow *>(parent());
+	SceneEditor2* sep = window->GetCurrentScene();
+	if (!sep)
+	{
+		return;
+	}
+
+	sep->visibilityToolSystem->SetVisibilityArea();
+}
+
 void QtMainWindowHandler::CameraLightTrigerred()
 {
-    bool enabled = EditorSettings::Instance()->GetShowEditorCamerLight();
-    EditorSettings::Instance()->SetShowEditorCamerLight(!enabled);
-    
-    emit UpdateCameraLightOnScene(!enabled);
+	SceneEditor2 *curScene = QtMainWindow::Instance()->GetUI()->sceneTabWidget->GetCurrentScene();
+	if(NULL != curScene)
+	{
+		bool enabled = curScene->editorLightSystem->GetCameraLightEnabled();
+		curScene->editorLightSystem->SetCameraLightEnabled(!enabled);
+	}
+    else
+    {
+        int32 currentTab = QtMainWindow::Instance()->GetUI()->sceneTabWidget->GetCurrentTab();
+        if(0 == currentTab)
+        {
+            int32 count = SceneDataManager::Instance()->SceneCount();
+            for(int32 i = 0 ; i < count; ++i)
+            {
+                SceneData *sc = SceneDataManager::Instance()->SceneGet(i);
+
+                bool enabled = sc->GetScene()->editorLightSystem->GetCameraLightEnabled();
+                sc->GetScene()->editorLightSystem->SetCameraLightEnabled(!enabled);
+                
+            }
+            
+            SceneData *activeScene = SceneDataManager::Instance()->SceneGetActive();
+            activeScene->RebuildSceneGraph();
+        }
+    }
+}
+
+void QtMainWindowHandler::AddSwitchEntity()
+{
+	SceneEditor2 *curSceneEditor = QtMainWindow::Instance()->GetUI()->sceneTabWidget->GetCurrentScene();
+	if(NULL != curSceneEditor )
+	{
+		Entity* firstChildEntity = NULL;
+		Entity* secondChildEntity = NULL;
+		AddSwitchEntityDialog::Instance()->GetSelectedEntities(&firstChildEntity, &secondChildEntity, curSceneEditor);
+
+		if(firstChildEntity && secondChildEntity)
+		{
+			curSceneEditor->Exec(new AddSwitchEntityCommand(firstChildEntity, secondChildEntity, curSceneEditor));
+		}
+	}
 }
 
 
@@ -1173,6 +2060,33 @@ void QtMainWindowHandler::OpenHelp()
     FilePath docsPath = ResourceEditor::DOCUMENTATION_PATH + "index.html";
     QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
     QDesktopServices::openUrl(QUrl(docsFile));
+}
+
+void QtMainWindowHandler::HandleMenuItemsState(CommandList::eCommandId id, const DAVA::Set<DAVA::Entity*>& affectedEntities)
+{
+	switch (id)
+	{
+		case CommandList::ID_COMMAND_CREATE_NODE:
+		case CommandList::ID_COMMAND_CREATE_NODE_SCENE_EDITOR:
+		{
+			CheckNeedEnableSkyboxMenu(affectedEntities, false);
+			break;
+		}
+
+		case CommandList::ID_COMMAND_REMOVE_SCENE_NODE:
+		case CommandList::ID_COMMAND_REMOVE_ROOT_NODES:
+		{
+			CheckNeedEnableSkyboxMenu(affectedEntities, true);
+			break;
+		}
+
+		// Add checks for other menu items here.
+
+		default:
+		{
+			break;
+		}
+	}
 }
 
 void QtMainWindowHandler::AddActionComponent()
@@ -1197,6 +2111,20 @@ void QtMainWindowHandler::AddActionComponent()
 	}
 }
 
+void QtMainWindowHandler::CheckNeedEnableSkyboxMenu(const DAVA::Set<DAVA::Entity*>& affectedEntities,
+													bool isEnabled)
+{
+	for (DAVA::Set<DAVA::Entity*>::iterator iter = affectedEntities.begin();
+		 iter != affectedEntities.end(); iter ++)
+	{
+		if (dynamic_cast<SkyBoxNode*>(*iter))
+		{
+			EnableSkyboxMenuItem(isEnabled);
+			break;
+		}
+	}
+}
+
 void QtMainWindowHandler::RemoveActionComponent()
 {
 	SceneData* sceneData = SceneDataManager::Instance()->SceneGetActive();
@@ -1213,6 +2141,23 @@ void QtMainWindowHandler::RemoveActionComponent()
 			sceneData->SelectNode(entity);
 		}
 	}
+}
+
+void QtMainWindowHandler::EnableSkyboxMenuItem(bool isEnabled)
+{
+	if (nodeActions[ResourceEditor::NODE_SKYBOX])
+	{
+		nodeActions[ResourceEditor::NODE_SKYBOX]->setEnabled(isEnabled);
+	}
+}
+
+void QtMainWindowHandler::UpdateSkyboxMenuItemAfterSceneLoaded(SceneData* sceneData)
+{
+	EditorScene* scene = sceneData->GetScene();
+	Vector<SkyBoxNode*> nodes;
+    scene->GetChildNodes(nodes);
+	
+	EnableSkyboxMenuItem(nodes.size() == 0);
 }
 
 void QtMainWindowHandler::SetShadowColor()

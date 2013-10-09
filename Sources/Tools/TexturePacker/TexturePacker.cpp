@@ -1,3 +1,32 @@
+/*==================================================================================
+    Copyright (c) 2008, binaryzebra
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+=====================================================================================*/
+
+
 #include "TexturePacker/TexturePacker.h"
 #include "TexturePacker/CommandLineParser.h"
 #include "TexturePacker/ImagePacker.h"
@@ -5,9 +34,7 @@
 #include "TexturePacker/DefinitionFile.h"
 #include "Render/TextureDescriptor.h"
 #include "FileSystem/FileSystem.h"
-#include "Render/Texture.h"
-#include "TextureCompression/PVRConverter.h"
-#include "TextureCompression/DXTConverter.h"
+#include "TextureCompression/TextureConverter.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "FramePathHelper.h"
 
@@ -39,10 +66,10 @@ bool TexturePacker::TryToPack(const Rect2i & textureRect, List<DefinitionFile*> 
 			return false;
 		}
 		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::Info("p: %s %d\n",defFile->filename.GetAbsolutePathname().c_str(), frame);
+			Logger::FrameworkDebug("p: %s %d\n",defFile->filename.GetAbsolutePathname().c_str(), frame);
 	}
 	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::Info("\n* %d x %d - success\n", textureRect.dx, textureRect.dy);
+		Logger::FrameworkDebug("\n* %d x %d - success\n", textureRect.dx, textureRect.dy);
 	
 	if (lastPackedPacker)
 	{
@@ -122,7 +149,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 		int bestXResolution, bestYResolution;
 		
 		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::Info("* Packing tries started: ");
+			Logger::FrameworkDebug("* Packing tries started: ");
 		
 		for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
 			for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
@@ -138,7 +165,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 					}
 			}
 		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::Info("\n");
+			Logger::FrameworkDebug("\n");
         
 		if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
 		{
@@ -146,7 +173,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			sprintf(textureNameWithIndex, "texture%d", textureIndex++);
 			FilePath textureName = outputPath + textureNameWithIndex;
 			if (CommandLineParser::Instance()->GetVerbose())
-				Logger::Info("* Writing final texture (%d x %d): %s\n", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
+				Logger::FrameworkDebug("* Writing final texture (%d x %d): %s\n", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 			
 			PngImageExt finalImage;
 			finalImage.Create(bestXResolution, bestYResolution);
@@ -199,7 +226,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 	int bestXResolution, bestYResolution;
 	
 	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::Info("* Packing tries started: ");
+		Logger::FrameworkDebug("* Packing tries started: ");
 	
     bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
 	for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
@@ -218,12 +245,12 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 				 }
 		 }
 	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::Info("\n");
+		Logger::FrameworkDebug("\n");
 	if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
 	{
 		FilePath textureName = outputPath + "texture";
 		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::Info("* Writing final texture (%d x %d): %s\n", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
+			Logger::FrameworkDebug("* Writing final texture (%d x %d): %s\n", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 	
 		PngImageExt finalImage;
 		finalImage.Create(bestXResolution, bestYResolution);
@@ -275,7 +302,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		DefinitionFile * defFile = sortVector[i].defFile;
 		int frame = sortVector[i].frameIndex;
 		if (CommandLineParser::Instance()->GetVerbose())
-            Logger::Info("[MultiPack] prepack: %s frame: %d w:%d h:%d\n", defFile->filename.GetAbsolutePathname().c_str(), frame, defFile->frameRects[frame].dx, defFile->frameRects[frame].dy);
+            Logger::FrameworkDebug("[MultiPack] prepack: %s frame: %d w:%d h:%d\n", defFile->filename.GetAbsolutePathname().c_str(), frame, defFile->frameRects[frame].dx, defFile->frameRects[frame].dy);
 	}
 	
 	Vector<ImagePacker*> & packers = usedPackers;
@@ -288,7 +315,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		float maxValue = 0.0f;
 		//int bestResolution = 1025 * 1025;
 		
-		if (CommandLineParser::Instance()->GetVerbose())Logger::Info("* Packing tries started: ");
+		if (CommandLineParser::Instance()->GetVerbose())Logger::FrameworkDebug("* Packing tries started: ");
 		
 		ImagePacker * bestPackerForThisStep = 0;
 		Vector<SizeSortItem> newWorkVector;
@@ -318,7 +345,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		packers.push_back(bestPackerForThisStep);
 	}
 	
-	if (CommandLineParser::Instance()->GetVerbose())Logger::Info("* Writing %d final textures \n", (int)packers.size());
+	if (CommandLineParser::Instance()->GetVerbose())Logger::FrameworkDebug("* Writing %d final textures \n", (int)packers.size());
 
 	Vector<PngImageExt*> finalImages;
 	
@@ -358,7 +385,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 			
 			if (foundPacker)
 			{
-				if (CommandLineParser::Instance()->GetVerbose())Logger::Info("[MultiPack] pack to texture: %d\n", packerIndex);
+				if (CommandLineParser::Instance()->GetVerbose())Logger::FrameworkDebug("[MultiPack] pack to texture: %d\n", packerIndex);
 				PngImageExt image;
 				image.Read(imagePath);
 				finalImages[packerIndex]->DrawImage(destRect->x, destRect->y, &image);
@@ -431,7 +458,7 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 {
 	String fileName = defFile->filename.GetFilename();
 	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::Info("* Write definition: %s\n", fileName.c_str());
+		Logger::FrameworkDebug("* Write definition: %s\n", fileName.c_str());
 	
 	FilePath defFilePath = outputPath + fileName;
 	FILE * fp = fopen(defFilePath.GetAbsolutePathname().c_str(), "wt");
@@ -471,7 +498,7 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 {
 	String fileName = defFile->filename.GetFilename();
 	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::Info("* Write definition: %s\n", fileName.c_str());
+		Logger::FrameworkDebug("* Write definition: %s\n", fileName.c_str());
 	
 	FilePath defFilePath = outputPath + fileName;
 	FILE * fp = fopen(defFilePath.GetAbsolutePathname().c_str(), "wt");
@@ -575,19 +602,7 @@ void TexturePacker::ExportImage(PngImageExt *image, const FilePath &exportedPath
     eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
     if(gpuFamily != GPU_UNKNOWN)
     {
-        const String & extension = GPUFamilyDescriptor::GetCompressedFileExtension(gpuFamily, (PixelFormat)descriptor->exportedAsPixelFormat);
-        if(extension == ".pvr")
-        {
-            PVRConverter::Instance()->ConvertPngToPvr(*descriptor, gpuFamily);
-        }
-        else if(extension == ".dds")
-        {
-            DXTConverter::ConvertPngToDxt(*descriptor, gpuFamily);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+		TextureConverter::ConvertTexture(*descriptor, gpuFamily, false);
         
         FileSystem::Instance()->DeleteFile(exportedPathname);
     }

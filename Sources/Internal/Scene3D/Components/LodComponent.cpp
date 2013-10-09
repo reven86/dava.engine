@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Entity.h"
@@ -26,7 +40,7 @@ const float32 LodComponent::MAX_LOD_DISTANCE = 1000.f;
 
 LodComponent::LodDistance::LodDistance()
 {
-	distance = nearDistance = nearDistanceSq = farDistance = farDistanceSq = (float32) INVALID_DISTANCE;
+	distance = nearDistanceSq = farDistanceSq = (float32) INVALID_DISTANCE;
 }
 
 void LodComponent::LodDistance::SetDistance(const float32 &newDistance)
@@ -36,15 +50,25 @@ void LodComponent::LodDistance::SetDistance(const float32 &newDistance)
 
 void LodComponent::LodDistance::SetNearDistance(const float32 &newDistance)
 {
-	nearDistance = newDistance;
-	nearDistanceSq = nearDistance * nearDistance;
+	nearDistanceSq = newDistance * newDistance;
 }
+
+float32 LodComponent::LodDistance::GetNearDistance() const
+{
+	return sqrtf(nearDistanceSq);
+}
+
 
 void LodComponent::LodDistance::SetFarDistance(const float32 &newDistance)
 {
-	farDistance = newDistance;
-	farDistanceSq = farDistance * farDistance;
+	farDistanceSq = newDistance * newDistance;
 }
+
+float32 LodComponent::LodDistance::GetFarDistance() const
+{
+	return sqrtf(farDistanceSq);
+}
+
 
 Component * LodComponent::Clone(Entity * toEntity)
 {
@@ -58,52 +82,9 @@ Component * LodComponent::Clone(Entity * toEntity)
 		LodData & ld = *it;
 		ld.nodes.clear();
 	}
-	//if(!newLod->lodLayers.empty())
-	//{
-	//	const List<LodData>::const_iterator endLod = newLod->lodLayers.end();
-	//	newLod->currentLod = &(*newLod->lodLayers.begin());
-	//	for (List<LodData>::iterator it = newLod->lodLayers.begin(); it != endLod; ++it)
-	//	{
-	//		LodData & ld = *it;
-	//		uint32 size = ld.nodes.size();
-	//		for (uint32 idx = 0; idx < size; ++idx)
-	//		{
-	//			int32 count = entity->GetChildrenCount();
-	//			for (int32 i = 0; i < count; i++) 
-	//			{
-	//				Entity * child = entity->GetChild(i);
-	//				if(child == ld.nodes[idx])
-	//				{
-	//					ld.nodes[idx] = toEntity->GetChild(i);
-	//					if (newLod->currentLod != &ld) 
-	//					{
-	//						ld.nodes[idx]->SetUpdatable(false);
-	//					}
-	//					else 
-	//					{
-	//						ld.nodes[idx]->SetUpdatable(true);
-	//					}
-
-	//					break;
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
 
 	//Lod values
-	for(int32 iLayer = 0; iLayer < MAX_LOD_LAYERS; ++iLayer)
-	{
-		newLod->lodLayersArray[iLayer].distance = lodLayersArray[iLayer].distance;
-		newLod->lodLayersArray[iLayer].nearDistance = lodLayersArray[iLayer].nearDistance;
-		newLod->lodLayersArray[iLayer].nearDistanceSq = lodLayersArray[iLayer].nearDistanceSq;
-		newLod->lodLayersArray[iLayer].farDistance = lodLayersArray[iLayer].farDistance;
-		newLod->lodLayersArray[iLayer].farDistanceSq = lodLayersArray[iLayer].farDistanceSq;
-	}
-
-	newLod->forceDistance = forceDistance;
-	newLod->forceDistanceSq = forceDistanceSq;
-	newLod->forceLodLayer = forceLodLayer;
+    newLod->CopyLODSettings(this);
 
 	return newLod;
 }
@@ -117,17 +98,12 @@ void LodComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 		uint32 i;
 
 		archive->SetUInt32("lc.flags", flags);
-		archive->SetFloat("lc.forceDistance", forceDistance);
-		archive->SetFloat("lc.forceDistanceSq", forceDistanceSq);
-		archive->SetInt32("lc.forceLodLayer", forceLodLayer);
 
 		KeyedArchive *lodDistArch = new KeyedArchive();
 		for (i = 0; i < MAX_LOD_LAYERS; ++i)
 		{
 			KeyedArchive *lodDistValuesArch = new KeyedArchive();
 			lodDistValuesArch->SetFloat("ld.distance", lodLayersArray[i].distance);
-			lodDistValuesArch->SetFloat("ld.neardist", lodLayersArray[i].nearDistance);
-			lodDistValuesArch->SetFloat("ld.fardist", lodLayersArray[i].farDistance);
 			lodDistValuesArch->SetFloat("ld.neardistsq", lodLayersArray[i].nearDistanceSq);
 			lodDistValuesArch->SetFloat("ld.fardistsq", lodLayersArray[i].farDistanceSq);
 
@@ -172,10 +148,11 @@ void LodComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 	if(NULL != archive)
 	{
 		if(archive->IsKeyExists("lc.flags")) flags = archive->GetUInt32("lc.flags");
-		if(archive->IsKeyExists("lc.forceDistance")) forceDistance = archive->GetFloat("lc.forceDistance");
-		if(archive->IsKeyExists("lc.forceDistanceSq")) forceDistanceSq = archive->GetFloat("lc.forceDistanceSq");
-		if(archive->IsKeyExists("lc.forceLodLayer")) forceLodLayer = archive->GetInt32("lc.forceLodLayer");
 
+        forceDistance = INVALID_DISTANCE;
+        forceDistanceSq = INVALID_DISTANCE;
+        forceLodLayer = INVALID_LOD_LAYER;
+        
 		KeyedArchive *lodDistArch = archive->GetArchive("lc.loddist");
 		if(NULL != lodDistArch)
 		{
@@ -185,8 +162,6 @@ void LodComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 				if(NULL != lodDistValuesArch)
 				{
 					lodLayersArray[i].distance = lodDistValuesArch->GetFloat("ld.distance");
-					lodLayersArray[i].nearDistance = lodDistValuesArch->GetFloat("ld.neardist");
-					lodLayersArray[i].farDistance = lodDistValuesArch->GetFloat("ld.fardist");
 					lodLayersArray[i].nearDistanceSq = lodDistValuesArch->GetFloat("ld.neardistsq");
 					lodLayersArray[i].farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
 				}
@@ -229,7 +204,7 @@ LodComponent::LodComponent()
 :	forceLodLayer(INVALID_LOD_LAYER),
 	forceDistance(INVALID_DISTANCE),
 	forceDistanceSq(INVALID_DISTANCE),
-	currentLod(NULL)
+    currentLod(INVALID_LOD_LAYER)
 {
 	lodLayersArray.resize(MAX_LOD_LAYERS);
 
@@ -250,24 +225,16 @@ float32 LodComponent::GetDefaultDistance(int32 layer)
 	return distance;
 }
 
-void LodComponent::SetCurrentLod(LodData *newLod)
+void LodComponent::SetCurrentLod(int32 newLod)
 {
 	if (newLod != currentLod) 
 	{
-		if (currentLod) 
+		if (currentLod!=INVALID_LOD_LAYER) 
 		{
-			int32 size = currentLod->nodes.size();
-			for (int i = 0; i < size; i++) 
-			{
-				currentLod->nodes[i]->SetLodVisible(false);
-			}
+			SetLayerVisibility(currentLod, false);
 		}
-		currentLod = newLod;
-		int32 size = currentLod->nodes.size();
-		for (int i = 0; i < size; i++) 
-		{
-			currentLod->nodes[i]->SetLodVisible(true);
-		}
+		currentLod = newLod;		
+		SetLayerVisibility(currentLod, true);
 	}
 }
 
@@ -305,7 +272,7 @@ void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
         
         if(GetLodLayersCount() - 1 == layerNum)
         {
-            lodLayersArray[layerNum].SetFarDistance(MAX_LOD_DISTANCE * 2);
+            lodLayersArray[layerNum].SetFarDistance(MAX_LOD_DISTANCE * 1.05f);
         }
         if(layerNum)
         {
@@ -326,18 +293,18 @@ void LodComponent::SetForceLodLayer(int32 layer)
     forceLodLayer = layer;
 }
     
-int32 LodComponent::GetForceLodLayer()
+int32 LodComponent::GetForceLodLayer() const
 {
     return forceLodLayer;
 }
 
-int32 LodComponent::GetMaxLodLayer()
+int32 LodComponent::GetMaxLodLayer() const
 {
 	int32 ret = -1;
 	const Vector<LodData>::const_iterator &end = lodLayers.end();
-	for (Vector<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
+	for (Vector<LodData>::const_iterator it = lodLayers.begin(); it != end; ++it)
 	{
-		LodData & ld = *it;
+		const LodData & ld = *it;
 		if(ld.layer > ret)
 		{
 			ret = ld.layer;
@@ -347,5 +314,44 @@ int32 LodComponent::GetMaxLodLayer()
 	return ret;
 }
 
-    
+void LodComponent::SetLayerVisibility(int32 layerNum, bool visible)
+{
+	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
+
+	int32 size = lodLayers[layerNum].nodes.size();
+	for (int32 i = 0; i < size; i++) 
+	{
+		lodLayers[layerNum].nodes[i]->SetLodVisible(visible);
+	}
+}
+
+void LodComponent::CopyLODSettings(const LodComponent * fromLOD)
+{
+    lodLayersArray = fromLOD->lodLayersArray;
+
+    forceDistance = fromLOD->forceDistance;
+    forceDistanceSq = fromLOD->forceDistanceSq;
+    forceLodLayer = fromLOD->forceLodLayer;
+}
+
+void LodComponent::SetForceLayerAsCurrent()
+{
+	if(lodLayers.size())
+	{
+		if((int32)lodLayers.size() <= forceLodLayer)
+		{
+			currentLod = lodLayers.size() - 1;
+		}
+		else
+		{
+			currentLod = forceLodLayer;
+		}
+	}
+	else
+	{
+		currentLod = INVALID_LOD_LAYER;
+	}
+}
+
+
 };

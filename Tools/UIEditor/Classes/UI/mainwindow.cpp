@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -32,6 +46,7 @@
 #include "ResourcesManageHelper.h"
 #include "Dialogs/importdialog.h"
 #include "ImportCommands.h"
+#include "AlignDistribute/AlignDistributeEnums.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -47,6 +62,16 @@ const QString APP_COMPANY = "DAVA";
 const QString APP_GEOMETRY = "geometry";
 const QString APP_STATE = "windowstate";
 
+static const int SCALE_PERCENTAGES[] =
+{
+	10,   25,   50,  75,
+	100,  200,  400, 800,
+	1200, 1600, 3200
+};
+
+static const int32 DEFAULT_SCALE_PERCENTAGE_INDEX = 4; // 100%
+static const char* PERCENTAGE_FORMAT = "%1 %";
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -59,9 +84,26 @@ MainWindow::MainWindow(QWidget *parent) :
     
 	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
-	ui->scaleSlider->setMinimum((int)(ui->scaleSpin->minimum() * SPIN_SCALE));
-	ui->scaleSlider->setMaximum((int)(ui->scaleSpin->maximum() * SPIN_SCALE));
-	
+	int32 scalesCount = COUNT_OF(SCALE_PERCENTAGES);
+
+	// Setup the Scale Slider.
+	ui->scaleSlider->setTickInterval(1);
+	ui->scaleSlider->setMinimum(0);
+	ui->scaleSlider->setMaximum(scalesCount - 1);
+	ui->scaleSlider->setValue(DEFAULT_SCALE_PERCENTAGE_INDEX);
+	connect(ui->scaleSlider, SIGNAL(valueChanged(int)), this, SLOT(OnScaleSliderValueChanged(int)));
+
+	// Setup the Scale Combo.
+	for (int32 i = 0; i < scalesCount; i ++)
+	{
+		ui->scaleCombo->addItem(QString(PERCENTAGE_FORMAT).arg(SCALE_PERCENTAGES[i]));
+	}
+	ui->scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
+	ui->scaleCombo->lineEdit()->setMaxLength(6);
+	ui->scaleCombo->setInsertPolicy(QComboBox::NoInsert);
+	connect(ui->scaleCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(OnScaleComboIndexChanged(int)));
+	connect(ui->scaleCombo->lineEdit(), SIGNAL(editingFinished()), this, SLOT(OnScaleComboTextEditingFinished()));
+
 	connect(ui->verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnSliderMoved()));
 	connect(ui->horizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnSliderMoved()));
 
@@ -193,24 +235,203 @@ void MainWindow::CreateHierarchyDockWidgetToolbar()
  	ui->hierarchyDockWidget->setWidget(window);
 }
 
+void MainWindow::UpdateScaleControls()
+{
+	float32 newScale = ScreenWrapper::Instance()->GetScale();
+	float32 scaleInPercents = ScreenWrapper::Instance()->GetScale() * 100;
+
+	float32 minDistance = FLT_MAX;
+	int32 nearestScaleIndex = 0;
+
+	// Setup the nearest scale index.
+	if (scaleInPercents > SCALE_PERCENTAGES[0])
+	{
+		for (uint32 i = 0; i < COUNT_OF(SCALE_PERCENTAGES); i ++)
+		{
+			float32 curDistance = fabsf(scaleInPercents - SCALE_PERCENTAGES[i]);
+			if (curDistance < minDistance)
+			{
+				minDistance = curDistance;
+				nearestScaleIndex = i;
+			}
+		}
+	}
+	else
+	{
+		minDistance = 0.0f;
+	}
+
+	// Done, perform update.
+	int32 scaleValue = SCALE_PERCENTAGES[nearestScaleIndex];
+	UpdateScaleSlider(scaleValue);
+	
+	if (FLOAT_EQUAL(minDistance, 0.0f))
+	{
+		// Exact match.
+		UpdateScaleComboIndex(nearestScaleIndex);
+	}
+	else
+	{
+		// Set the current scale as-is.
+		this->ui->scaleCombo->setEditText(QString("%1 %").arg(scaleInPercents));
+	}
+
+	// Re-update the scale on the Screen Wrapper level to sync everything.
+	ScreenWrapper::Instance()->SetScale(newScale);
+}
+
 void MainWindow::OnUpdateScaleRequest(float scaleDelta)
 {
-	ui->scaleSpin->setValue(ui->scaleSpin->value() + scaleDelta);
+	// Lookup for the next/prev index.
+	int32 curScaleIndex = ui->scaleSlider->value();
+	if (scaleDelta > 0)
+	{
+		curScaleIndex ++;
+		int32 maxIndex = (int32)(COUNT_OF(SCALE_PERCENTAGES) - 1);
+		if (curScaleIndex > maxIndex)
+		{
+			curScaleIndex = maxIndex;
+		}
+	}
+	else
+	{
+		curScaleIndex --;
+		if (curScaleIndex < 0)
+		{
+			curScaleIndex = 0;
+		}
+	}
+
+	UpdateScaleAndScaleSliderByIndex(curScaleIndex);
+	UpdateScaleComboIndex(curScaleIndex);
 }
 
-void MainWindow::on_scaleSpin_valueChanged(double arg1)
+void MainWindow::OnScaleComboIndexChanged(int value)
 {
-	ui->scaleSlider->setValue(int(arg1 * SPIN_SCALE));
-	ScreenWrapper::Instance()->SetScale((float)arg1);
+	UpdateScaleAndScaleSliderByIndex(value);
+}
+
+void MainWindow::OnScaleComboTextEditingFinished()
+{
+	// Firstly verify whether the value is already set.
+	QString curTextValue = ui->scaleCombo->currentText().trimmed();
+	int scaleValue = 0;
+	if (curTextValue.endsWith(" %"))
+	{
+		int endCharPos = curTextValue.lastIndexOf(" %");
+		QString remainderNumber = curTextValue.left(endCharPos);
+		scaleValue = remainderNumber.toInt();
+	}
+	else
+	{
+		// Try to parse the value.
+		scaleValue = curTextValue.toFloat();
+	}
+
+	// Do the validation.
+	bool needSetDefaultIndex = false;
+	if ((scaleValue < SCALE_PERCENTAGES[0]) ||
+		(scaleValue > SCALE_PERCENTAGES[COUNT_OF(SCALE_PERCENTAGES) - 1]))
+	{
+		// The value is wrong or can't be parsed, use the default one.
+		scaleValue = SCALE_PERCENTAGES[DEFAULT_SCALE_PERCENTAGE_INDEX];
+		needSetDefaultIndex = true;
+	}
+
+	// Update the value in the combo.
+	ui->scaleCombo->blockSignals(true);
+	ui->scaleCombo->lineEdit()->blockSignals(true);
+
+	ui->scaleCombo->setEditText(QString(PERCENTAGE_FORMAT).arg((int)scaleValue));
+	if (needSetDefaultIndex)
+	{
+		ui->scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
+	}
+
+	ui->scaleCombo->lineEdit()->blockSignals(false);
+	ui->scaleCombo->blockSignals(false);
+
+	// Update the rest of the controls.
+	UpdateScale(scaleValue);
+	UpdateScaleSlider(scaleValue);
+}
+
+void MainWindow::OnScaleSliderValueChanged(int value)
+{
+	int32 scaleValue = SCALE_PERCENTAGES[value];
+	UpdateScale(scaleValue);
+	UpdateScaleComboIndex(value);
+}
+
+void MainWindow::UpdateScaleAndScaleSliderByIndex(int32 index)
+{
+	if (index < 0 || index >= (int)COUNT_OF(SCALE_PERCENTAGES))
+	{
+		return;
+	}
+	
+	int32 scaleValue = SCALE_PERCENTAGES[index];
+	UpdateScale(scaleValue);
+	UpdateScaleSlider(scaleValue);
+}
+
+void MainWindow::UpdateScale(int32 newScalePercents)
+{
+	// Scale is sent in percents, so need to divide by 100.
+	float prevScale = ScreenWrapper::Instance()->GetScale();
+	float newScale = (float)newScalePercents / 100;
+	
+	if (FLOAT_EQUAL(prevScale, newScale))
+	{
+		return;
+	}
+	
+	// Remember the current "absolute" view area position to position the same point
+	// under mouse cursor after scale level will be changed.
+	Vector2 cursorPos = ScreenWrapper::Instance()->GetCursorPosition();
+	Vector2 scenePosition = CalculateScenePositionForPoint(ui->davaGlWidget->rect(), cursorPos, prevScale);
+
+	ScreenWrapper::Instance()->SetScale(newScale);
+
 	UpdateSliders();
 	UpdateScreenPosition();
+
+	// Position back the view area to show the "scene position" remembered under mouse cursor.
+	ScrollToScenePositionAndPoint(scenePosition, cursorPos, newScale);
 }
 
-void MainWindow::on_scaleSlider_valueChanged(int value)
+void MainWindow::UpdateScaleComboIndex(int newIndex)
 {
-	double spinValue = value / SPIN_SCALE;
-	if (Abs(spinValue - ui->scaleSpin->value()) > 0.01)
-		ui->scaleSpin->setValue(spinValue);
+	if (newIndex < 0 || newIndex >= (int)COUNT_OF(SCALE_PERCENTAGES))
+	{
+		return;
+	}
+
+	ui->scaleCombo->blockSignals(true);
+	ui->scaleCombo->setCurrentIndex(newIndex);
+	ui->scaleCombo->blockSignals(false);
+}
+
+void MainWindow::UpdateScaleSlider(int32 newScalePercents)
+{
+	// Find the nearest value for the slider.
+	int32 nearestDistance = INT_MAX;
+	int32 nearestIndex = 0;
+
+	int32 scalesCount = COUNT_OF(SCALE_PERCENTAGES);
+	for (int32 i = 0; i < scalesCount; i ++)
+	{
+		int32 curDistance = abs(SCALE_PERCENTAGES[i] - newScalePercents);
+		if (curDistance < nearestDistance)
+		{
+			nearestDistance = curDistance;
+			nearestIndex = i;
+		}
+	}
+
+	ui->scaleSlider->blockSignals(true);
+	ui->scaleSlider->setValue(nearestIndex);
+	ui->scaleSlider->blockSignals(false);
 }
 
 void MainWindow::OnSliderMoved()
@@ -220,10 +441,22 @@ void MainWindow::OnSliderMoved()
 
 void MainWindow::resizeEvent(QResizeEvent * event)
 {
-	QMainWindow::resizeEvent(event);
+	// Need to reposition the center of the viewport according to the new window size.
+	QSize widgetSize = ui->davaGlWidget->GetPrevSize();
+	QRect oldWidgetRect(QPoint(0, 0), widgetSize);
+	Vector2 oldViewPortCenter = Vector2(oldWidgetRect.center().x(), oldWidgetRect.center().y());
 
+	float32 curScale = ScreenWrapper::Instance()->GetScale();
+	Vector2 viewPortSceneCenter = CalculateScenePositionForPoint(oldWidgetRect, oldViewPortCenter, curScale);
+
+	QMainWindow::resizeEvent(event);
 	UpdateSliders();
-	UpdateScreenPosition();
+
+	// Widget size is now changed - reposition center of viewport.
+	widgetSize = ui->davaGlWidget->size();
+	Vector2 newViewPortCenter = Vector2(widgetSize.width() / 2, widgetSize.height() / 2);
+
+	ScrollToScenePositionAndPoint(viewPortSceneCenter, newViewPortCenter, curScale);
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -248,11 +481,26 @@ void MainWindow::OnSelectedScreenChanged()
 	screenChangeUpdate = true;
 	if (HierarchyTreeController::Instance()->GetActiveScreen())
 	{
-		ui->scaleSpin->setValue(HierarchyTreeController::Instance()->GetActiveScreen()->GetScale());
-
 		UpdateSliders();
-		ui->horizontalScrollBar->setValue(HierarchyTreeController::Instance()->GetActiveScreen()->GetPosX());
-		ui->verticalScrollBar->setValue(HierarchyTreeController::Instance()->GetActiveScreen()->GetPosY());
+		UpdateScaleControls();
+
+		HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+		float posX = activeScreen->GetPosX();
+		float posY = activeScreen->GetPosY();
+
+		if (FLOAT_EQUAL(posX, HierarchyTreeScreenNode::POSITION_UNDEFINED) &&
+			FLOAT_EQUAL(posY, HierarchyTreeScreenNode::POSITION_UNDEFINED))
+		{
+			// The screen was just loaded and wasn't positioned yet. Need to center it in the
+			// screen according to the DF-1873.
+			// Since sliders were just updated, just take their centers.
+			posX = (ui->horizontalScrollBar->maximum() - ui->horizontalScrollBar->minimum()) / 2;
+			posY = (ui->verticalScrollBar->maximum() - ui->verticalScrollBar->minimum()) / 2;
+		}
+
+		ui->horizontalScrollBar->setValue(posX);
+		ui->verticalScrollBar->setValue(posY);
+
 		// Enable library widget for selected screen
 		ui->libraryDockWidget->setEnabled(true);
 	}
@@ -319,13 +567,11 @@ void MainWindow::OnOpenLocalizationManager()
     }
 }
 
-void MainWindow::OnShowHelpContents()
+void MainWindow::OnShowHelp()
 {
-    //Get help contents file absolute path
-    QString helpPath = "file:///";
-    helpPath += ResourcesManageHelper::GetHelpContentsPath();
-    //Open help file in default browser new window
-    QDesktopServices::openUrl(QUrl(helpPath));
+	FilePath docsPath = ResourcesManageHelper::GetDocumentationPath().toStdString() + "index.html";
+	QString docsFile = QString::fromStdString("file:///" + docsPath.GetAbsolutePathname());
+	QDesktopServices::openUrl(QUrl(docsFile));
 }
 
 void MainWindow::InitMenu()
@@ -370,11 +616,31 @@ void MainWindow::InitMenu()
     }
 	
 	//Help contents dialog
-    connect(ui->actionHelpContents, SIGNAL(triggered()), this, SLOT(OnShowHelpContents()));
+    connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnShowHelp()));
 	
 	// Undo/Redo.
 	connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndoRequested()));
 	connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(OnRedoRequested()));
+
+	// Align.
+	connect(ui->actionAlign_Left, SIGNAL(triggered()), this, SLOT(OnAlignLeft()));
+	connect(ui->actionAlign_Horz_Center, SIGNAL(triggered()), this, SLOT(OnAlignHorzCenter()));
+	connect(ui->actionAlign_Right, SIGNAL(triggered()),this, SLOT(OnAlignRight()));
+
+	connect(ui->actionAlign_Top, SIGNAL(triggered()), this, SLOT(OnAlignTop()));
+	connect(ui->actionAlign_Vert_Center, SIGNAL(triggered()), this, SLOT(OnAlignVertCenter()));
+	connect(ui->actionAlign_Bottom, SIGNAL(triggered()), this, SLOT(OnAlignBottom()));
+
+	// Distribute.
+	connect(ui->actionEqualBetweenLeftEdges , SIGNAL(triggered()), this, SLOT(OnDistributeEqualDistanceBetweenLeftEdges ()));
+	connect(ui->actionEqualBetweenXCenters, SIGNAL(triggered()), this, SLOT(OnDistributeEqualDistanceBetweenXCenters()));
+	connect(ui->actionEqualBetweenRightEdges, SIGNAL(triggered()),this, SLOT(OnDistributeEqualDistanceBetweenRightEdges()));
+	connect(ui->actionEqualBetweenXObjects, SIGNAL(triggered()),this, SLOT(OnDistributeEqualDistanceBetweenX()));
+
+	connect(ui->actionEqualBetweenTopEdges , SIGNAL(triggered()), this, SLOT(OnDistributeEqualDistanceBetweenTopEdges()));
+	connect(ui->actionEqualBetweenYCenters, SIGNAL(triggered()), this, SLOT(OnDistributeEqualDistanceBetweenYCenters()));
+	connect(ui->actionEqualBetweenBottomEdges, SIGNAL(triggered()),this, SLOT(OnDistributeEqualDistanceBetweenBottomEdges()));
+	connect(ui->actionEqualBetweenYObjects, SIGNAL(triggered()),this, SLOT(OnDistributeEqualDistanceBetweenY()));
 
 	UpdateMenu();
 }
@@ -417,6 +683,9 @@ void MainWindow::OnNewProject()
 void MainWindow::OnProjectCreated()
 {
 	UpdateMenu();
+	UpdateScaleSlider(SCALE_PERCENTAGES[DEFAULT_SCALE_PERCENTAGE_INDEX]);
+	UpdateScaleComboIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
+
 	// Release focus from Dava GL widget, so after the first click to it
 	// it will lock the keyboard and will process events successfully.
 	ui->hierarchyDockWidget->setFocus();
@@ -703,12 +972,12 @@ void MainWindow::OnRedoRequested()
 
 void MainWindow::OnZoomInRequested()
 {
-	OnUpdateScaleRequest(ui->scaleSpin->singleStep());
+	OnUpdateScaleRequest(1.0f);
 }
 
 void MainWindow::OnZoomOutRequested()
 {
-	OnUpdateScaleRequest(ui->scaleSpin->singleStep() * (-1));
+	OnUpdateScaleRequest(-1.0f);
 }
 
 void MainWindow::OnUndoRedoAvailabilityChanged()
@@ -730,4 +999,128 @@ void MainWindow::OnUnsavedChangesNumberChanged()
 		projectTitle += " *";
 	}
 	setWindowTitle(projectTitle);
+}
+
+Vector2 MainWindow::CalculateScenePositionForPoint(const QRect& widgetRect, const Vector2& point, float curScale)
+{
+	// Correctly handle scales less then 100%.
+	QRect viewRect = ScreenWrapper::Instance()->GetRect();
+	
+	// If horz/vert offset is less than zero, it means no scroll bars visible, and the view size
+	// less than widget size. This situation should be handled separately.
+	float hOffset = (viewRect.width() - widgetRect.width()) / 2;
+	if (hOffset > 0)
+	{
+		hOffset = ui->horizontalScrollBar->value();
+	}
+	
+	float vOffset = (viewRect.height() - widgetRect.height()) / 2;
+	if (vOffset > 0)
+	{
+		vOffset = ui->verticalScrollBar->value();
+	}
+	
+	Vector2 resultPosition;
+	resultPosition.x = (hOffset + point.x) / curScale;
+	resultPosition.y = (vOffset + point.y) / curScale;
+	Logger::Warning("Scene position under mouse: X:%f, Y:%f", resultPosition.x, resultPosition.y);
+	
+	return resultPosition;
+}
+
+void MainWindow::ScrollToScenePositionAndPoint(const Vector2& scenePosition, const Vector2& point,
+											   float newScale)
+{
+	float newHScrollValue = (scenePosition.x * newScale) - point.x;
+	if (newHScrollValue < ui->horizontalScrollBar->minimum())
+	{
+		newHScrollValue = ui->horizontalScrollBar->minimum();
+	}
+	if (newHScrollValue > ui->horizontalScrollBar->maximum())
+	{
+		newHScrollValue = ui->horizontalScrollBar->maximum();
+	}
+	
+	float newVScrollValue = (scenePosition.y * newScale) - point.y;
+	if (newVScrollValue < ui->verticalScrollBar->minimum())
+	{
+		newVScrollValue = ui->verticalScrollBar->minimum();
+	}
+	if (newVScrollValue > ui->verticalScrollBar->maximum())
+	{
+		newVScrollValue = ui->verticalScrollBar->maximum();
+	}
+	
+	ui->horizontalScrollBar->setValue(newHScrollValue);
+	ui->verticalScrollBar->setValue(newVScrollValue);
+}
+
+void MainWindow::OnAlignLeft()
+{
+	HierarchyTreeController::Instance()->AlignSelectedControls(ALIGN_CONTROLS_LEFT);
+}
+
+void MainWindow::OnAlignHorzCenter()
+{
+	HierarchyTreeController::Instance()->AlignSelectedControls(ALIGN_CONTROLS_HORZ_CENTER);
+}
+
+void MainWindow::OnAlignRight()
+{
+	HierarchyTreeController::Instance()->AlignSelectedControls(ALIGN_CONTROLS_RIGHT);
+}
+
+void MainWindow::OnAlignTop()
+{
+	HierarchyTreeController::Instance()->AlignSelectedControls(ALIGN_CONTROLS_TOP);
+}
+
+void MainWindow::OnAlignVertCenter()
+{
+	HierarchyTreeController::Instance()->AlignSelectedControls(ALIGN_CONTROLS_VERT_CENTER);
+}
+
+void MainWindow::OnAlignBottom()
+{
+	HierarchyTreeController::Instance()->AlignSelectedControls(ALIGN_CONTROLS_BOTTOM);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenLeftEdges()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_LEFT_EDGES);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenXCenters()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_X_CENTERS);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenRightEdges()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_RIGHT_EDGES);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenX()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_X);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenTopEdges()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_TOP_EDGES);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenYCenters()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_Y_CENTERS);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenBottomEdges()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_BOTTOM_EDGES);
+}
+
+void MainWindow::OnDistributeEqualDistanceBetweenY()
+{
+	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_Y);
 }

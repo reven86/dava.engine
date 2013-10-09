@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
@@ -34,6 +48,7 @@ namespace DAVA
 		parent = NULL;
 		controlState = STATE_NORMAL;
 		visible = true;
+		visibleForUIEditor = true;
 		/* 
 			VB:
 			please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -56,7 +71,9 @@ namespace DAVA
 		debugDrawEnabled = false;
 		debugDrawColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 		absolutePosition = Vector2(0, 0);
-		
+
+		drawPivotPointMode = DRAW_NEVER;
+
 		pivotPoint = Vector2(0, 0);
 		scale = Vector2(1.0f, 1.0f);
 		angle = 0;
@@ -90,6 +107,7 @@ namespace DAVA
 		__touchStart = Vector2(0.f, 0.f);
 		__oldRect = relativeRect;
 #endif
+		initialState = STATE_NORMAL;
 	}
 	
 	UIControl::~UIControl()
@@ -267,6 +285,24 @@ namespace DAVA
 		resultList.erase(std::unique(resultList.begin(), resultList.end()), resultList.end());
 		
 		return resultList;
+	}
+
+	String UIControl::GetSpriteFrameworkPath( const Sprite* sprite)
+	{
+		if (!sprite)
+		{
+			return "";
+		}
+
+		FilePath path(sprite->GetRelativePathname());
+		String pathName = "";
+		if (!path.IsEmpty())
+		{
+			path.TruncateExtension();
+			pathName = path.GetFrameworkPath();
+		}
+		
+		return pathName;
 	}
 
 	void UIControl::SetName(const String & _name)
@@ -787,6 +823,8 @@ namespace DAVA
 				relativePosition = absolutePosition = position;
 			}
 		}
+		// DF-1482 - Each time we change control's position - we have to re-generate tiles arrays for DRAW_TILED option
+		GetBackground()->SetGenerateTilesArraysFlag();
 	}
 	
 	const Vector2 &UIControl::GetSize() const
@@ -1055,6 +1093,16 @@ namespace DAVA
 			}
 		}
 	}
+	
+	void UIControl::RemoveFromParent()
+	{
+		UIControl* parentControl = this->GetParent();
+		if (parentControl)
+		{
+			parentControl->RemoveControl(this);
+		}
+	}
+
 	void UIControl::RemoveAllControls()
 	{
 		while(!childs.empty())
@@ -1256,10 +1304,15 @@ namespace DAVA
 
 		controlState = srcControl->controlState;
 		visible = srcControl->visible;
+		visibleForUIEditor = srcControl->visibleForUIEditor;
 		inputEnabled = srcControl->inputEnabled;
 		clipContents = srcControl->clipContents;
 
 		customControlType = srcControl->GetCustomControlType();
+		initialState = srcControl->GetInitialState();
+		drawPivotPointMode = srcControl->drawPivotPointMode;
+		debugDrawColor = srcControl->debugDrawColor;
+		debugDrawEnabled = srcControl->debugDrawEnabled;
 
 		SafeRelease(eventDispatcher);
 		if(srcControl->eventDispatcher)
@@ -1488,21 +1541,24 @@ namespace DAVA
 			GetBackground()->SetParentColor(Color(1.0f, 1.0f, 1.0f, 1.0f));
 		}
 				
+		const Rect& unrotatedRect = drawData.GetUnrotatedRect();
+		
 		if(clipContents)
 		{//WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
 			RenderManager::Instance()->ClipPush();
-			RenderManager::Instance()->ClipRect(drawData.GetUnrotatedRect());
+			RenderManager::Instance()->ClipRect(unrotatedRect);
 		}
 
-		if(visible)
+		if(visible && visibleForUIEditor)
 		{
 			Draw(drawData);
 		}
-		
+	
 		if (debugDrawEnabled && !clipContents)
 		{	//TODO: Add debug draw for rotated controls
-			DrawDebugRect(drawData.GetUnrotatedRect());
+			DrawDebugRect(unrotatedRect);
 		}
+		DrawPivotPoint(unrotatedRect);
 		
 		isIteratorCorrupted = false;
 		List<UIControl*>::iterator it = childs.begin();
@@ -1513,7 +1569,7 @@ namespace DAVA
 			DVASSERT(!isIteratorCorrupted);
 		}
 		
-		if(visible)
+		if(visible && visibleForUIEditor)
 		{
 			DrawAfterChilds(drawData);
 		}
@@ -1523,15 +1579,17 @@ namespace DAVA
 			
 			if(debugDrawEnabled)
 			{ //TODO: Add debug draw for rotated controls
-				DrawDebugRect(drawData.GetUnrotatedRect());
+				DrawDebugRect(unrotatedRect);
 			}
 		}
+		
+		DrawPivotPoint(unrotatedRect);
 
 		if(debugDrawEnabled && NULL != parent && parent->GetClipContents())
 		{	
 			RenderManager::Instance()->ClipPush();
 			RenderManager::Instance()->ClipRect(Rect(0, 0, -1, -1));
-			DrawDebugRect(drawData.GetUnrotatedRect(), true);
+			DrawDebugRect(unrotatedRect, true);
 			RenderManager::Instance()->ClipPop();
 		}
 	}
@@ -1552,6 +1610,45 @@ namespace DAVA
 			RenderManager::Instance()->SetColor(debugDrawColor);
 		}
 		RenderHelper::Instance()->DrawRect(drawRect);
+
+		RenderManager::Instance()->ClipPop();
+		RenderManager::Instance()->SetColor(oldColor);
+	}
+
+	void UIControl::DrawPivotPoint(const Rect &drawRect)
+	{
+		if (drawPivotPointMode == DRAW_NEVER)
+		{
+			return;
+		}
+		
+		if (drawPivotPointMode == DRAW_ONLY_IF_NONZERO && pivotPoint.IsZero())
+		{
+			return;
+		}
+
+		static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
+		static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
+
+		Color oldColor = RenderManager::Instance()->GetColor();
+		RenderManager::Instance()->ClipPush();
+		RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
+
+		Vector2 pivotPointCenter = drawRect.GetPosition() + pivotPoint;
+		RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS);
+
+		// Draw the cross mark.
+		Vector2 lineStartPoint = pivotPointCenter;
+		Vector2 lineEndPoint = pivotPointCenter;
+		lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+		lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint);
+		
+		lineStartPoint = pivotPointCenter;
+		lineEndPoint = pivotPointCenter;
+		lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+		lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint);
 
 		RenderManager::Instance()->ClipPop();
 		RenderManager::Instance()->SetColor(oldColor);
@@ -1743,7 +1840,7 @@ namespace DAVA
 								relativePosition = __oldPosition + currentInput->point - __touchStart;
 								__oldPosition = relativePosition;
 								__touchStart = Vector2(0.f, 0.f);
-								Logger::Info("DEBUG_CONTROL_COORDINATE: Vector2(%.1f, %.1f)", relativeRect.x, relativeRect.y); 
+								Logger::FrameworkDebug("DEBUG_CONTROL_COORDINATE: Vector2(%.1f, %.1f)", relativeRect.x, relativeRect.y); 
 #endif
 								if (IsPointInside(currentInput->point, true))
 								{
@@ -1957,12 +2054,9 @@ namespace DAVA
 		Sprite *sprite =  this->GetSprite();
 		if (sprite)
 		{
-			FilePath path(sprite->GetRelativePathname());
-			path.TruncateExtension();
-
-            String pathname = path.GetFrameworkPath();
-			node->Set("sprite", pathname);
+			node->Set("sprite", GetSpriteFrameworkPath(sprite));
 		}
+
 		// Color
 		Color color =  this->GetBackground()->GetColor();
 		if (baseControl->GetBackground()->color != color)
@@ -2062,7 +2156,13 @@ namespace DAVA
 		{
 			node->Set("spriteModification", this->GetBackground()->GetModification());
 		}
-        
+
+		// Initial state.
+		if (baseControl->GetInitialState() != this->initialState)
+		{
+			node->Set("initialState", this->initialState);
+		}
+
 		// Release variantType variable
 		SafeDelete(nodeValue);
 		// Release model variable
@@ -2071,30 +2171,31 @@ namespace DAVA
 		return node;
 	}
 
-	void UIControl::LoadFromYamlNode(YamlNode * node, UIYamlLoader * loader)
+	void UIControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 	{
-		YamlNode * spriteNode = node->Get("sprite");
-		YamlNode * colorNode = node->Get("color");
-		YamlNode * frameNode = node->Get("frame"); 
-		YamlNode * rectNode = node->Get("rect");
-		YamlNode * alignNode = node->Get("align");
-		YamlNode * leftAlignNode = node->Get("leftAlign");
-		YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
-		YamlNode * rightAlignNode = node->Get("rightAlign");
-		YamlNode * topAlignNode = node->Get("topAlign");
-		YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
-		YamlNode * bottomAlignNode = node->Get("bottomAlign");
-		YamlNode * pivotNode = node->Get("pivot");
-		YamlNode * colorInheritNode = node->Get("colorInherit");
+		const YamlNode * spriteNode = node->Get("sprite");
+		const YamlNode * colorNode = node->Get("color");
+		const YamlNode * frameNode = node->Get("frame"); 
+		const YamlNode * rectNode = node->Get("rect");
+		const YamlNode * alignNode = node->Get("align");
+		const YamlNode * leftAlignNode = node->Get("leftAlign");
+		const YamlNode * hcenterAlignNode = node->Get("hcenterAlign");
+		const YamlNode * rightAlignNode = node->Get("rightAlign");
+		const YamlNode * topAlignNode = node->Get("topAlign");
+		const YamlNode * vcenterAlignNode = node->Get("vcenterAlign");
+		const YamlNode * bottomAlignNode = node->Get("bottomAlign");
+		const YamlNode * pivotNode = node->Get("pivot");
+		const YamlNode * colorInheritNode = node->Get("colorInherit");
         
-        YamlNode * drawTypeNode = node->Get("drawType");
-        YamlNode * leftRightStretchCapNode = node->Get("leftRightStretchCap");
-        YamlNode * topBottomStretchCapNode = node->Get("topBottomStretchCap");
+        const YamlNode * drawTypeNode = node->Get("drawType");
+        const YamlNode * leftRightStretchCapNode = node->Get("leftRightStretchCap");
+        const YamlNode * topBottomStretchCapNode = node->Get("topBottomStretchCap");
 		
-		YamlNode * angleNode = node->Get("angle");
-		YamlNode * tagNode = node->Get("tag");
+		const YamlNode * angleNode = node->Get("angle");
+		const YamlNode * tagNode = node->Get("tag");
 
-		YamlNode * spriteModificationNode = node->Get("spriteModification");
+		const YamlNode * spriteModificationNode = node->Get("spriteModification");
+		const YamlNode * initialStateNode = node->Get("initialState");
 		
 		Rect rect = GetRect();
 		if (rectNode)
@@ -2174,14 +2275,14 @@ namespace DAVA
 			SetBottomAlign(bottomAlign);
 		}
 	
-		YamlNode * clipNode = node->Get("clip");
+		const YamlNode * clipNode = node->Get("clip");
 		if (clipNode)
 		{
 			bool clipContents = loader->GetBoolFromYamlNode(clipNode, false); 
 			SetClipContents(clipContents);
 		}
 		
-		YamlNode * visibleNode = node->Get("visible");
+		const YamlNode * visibleNode = node->Get("visible");
 		if(visibleNode)
 		{
 			bool visible = loader->GetBoolFromYamlNode(visibleNode, false); 
@@ -2204,7 +2305,7 @@ namespace DAVA
             }
 		}
 
-        YamlNode * inputNode = node->Get("noInput");
+        const YamlNode * inputNode = node->Get("noInput");
 
         if (inputNode)
         {
@@ -2251,6 +2352,13 @@ namespace DAVA
 			int32 spriteModification = spriteModificationNode->AsInt32();
             GetBackground()->SetModification(spriteModification);
         }
+		
+		if (initialStateNode)
+		{
+			int32 newInitialState = initialStateNode->AsInt32();
+			SetInitialState(newInitialState);
+			SetState(newInitialState);
+		}
 	}
 	
 	Animation *	UIControl::WaitAnimation(float32 time, int32 track)
@@ -2416,11 +2524,24 @@ namespace DAVA
 		debugDrawColor = color;
 	}
 	
-	Color UIControl::GetDebugDrawColor() const
+	const Color &UIControl::GetDebugDrawColor() const
 	{
 		return debugDrawColor;
 	}
     
+	void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic /*=false*/)
+	{
+		drawPivotPointMode = mode;
+		if (hierarchic)
+		{
+			List<UIControl*>::iterator it = childs.begin();
+			for(; it != childs.end(); ++it)
+			{
+				(*it)->SetDrawPivotPointMode(mode, hierarchic);
+			}
+		}
+	}
+
     bool UIControl::IsLostFocusAllowed( UIControl *newFocus )
     {
         return true;
@@ -2676,6 +2797,16 @@ namespace DAVA
 			// The type coincides with the node type name passed, no base type exists.
 			node->Set("type", nodeTypeName);
 		}
+	}
+
+	int32 UIControl::GetInitialState() const
+	{
+		return initialState;
+	}
+	
+	void UIControl::SetInitialState(int32 newState)
+	{
+		initialState = newState;
 	}
 
 	YamlNode * UIControl::SaveToYamlNodeRecursive(UIYamlLoader* loader, UIControl* control,  YamlNode* rootNode)

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #ifndef __DAVAENGINE_LOD_COMPONENT_H__
 #define __DAVAENGINE_LOD_COMPONENT_H__
@@ -44,10 +58,6 @@ public:
 	struct LodDistance
 	{
 		float32 distance;
-
-		float32 nearDistance;
-		float32 farDistance;
-
 		float32 nearDistanceSq;
 		float32 farDistanceSq;
 
@@ -56,15 +66,16 @@ public:
         float32 GetDistance() const { return distance; };
         
 		void SetNearDistance(const float32 &newDistance);
-        float32 GetNearDistance() const {return  nearDistance; };
-        
 		void SetFarDistance(const float32 &newDistance);
-        float32 GetFarDistance() const {return farDistance; };
         
+		float32 GetNearDistance() const;
+		float32 GetFarDistance() const;
+
+
         INTROSPECTION(LodDistance,
             PROPERTY("distance", "Distance", GetDistance, SetDistance, I_SAVE | I_VIEW | I_EDIT)
-            PROPERTY("nearDistance", "Near Distance", GetNearDistance, SetNearDistance, I_EDIT)
-            PROPERTY("farDistance", "Far Distance", GetFarDistance, SetFarDistance, I_EDIT)
+            MEMBER(nearDistanceSq, "Near Distance", I_SAVE)
+            MEMBER(farDistanceSq, "Far Distance", I_SAVE)
         );
 	};
 
@@ -87,18 +98,18 @@ public:
 	virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
 
 	static float32 GetDefaultDistance(int32 layer);
-	void SetCurrentLod(LodData *newLod);
+	void SetCurrentLod(int32 newLod);
 
-	inline int32 GetLodLayersCount();
-	inline float32 GetLodLayerDistance(int32 layerNum);
-	inline float32 GetLodLayerNear(int32 layerNum);
-	inline float32 GetLodLayerFar(int32 layerNum);
-	inline float32 GetLodLayerNearSquare(int32 layerNum);
-	inline float32 GetLodLayerFarSquare(int32 layerNum);
+	inline int32 GetLodLayersCount() const;
+	inline float32 GetLodLayerDistance(int32 layerNum) const;
+	inline float32 GetLodLayerNear(int32 layerNum) const;
+	inline float32 GetLodLayerFar(int32 layerNum) const;
+	inline float32 GetLodLayerNearSquare(int32 layerNum) const;
+	inline float32 GetLodLayerFarSquare(int32 layerNum) const;
 
 	void GetLodData(Vector<LodData*> &retLodLayers);
 
-	LodData *currentLod;
+	int32 currentLod;
 	Vector<LodData> lodLayers;
 	Vector<LodDistance> lodLayersArray;
 	int32 forceLodLayer;
@@ -123,9 +134,15 @@ public:
          \param[in] layer layer to set on the for the scene. Use -1 to disable forced lod layer.
 	 */
     void SetForceLodLayer(int32 layer);
-    int32 GetForceLodLayer();
+    int32 GetForceLodLayer() const;
 
-	int32 GetMaxLodLayer();
+	int32 GetMaxLodLayer() const;
+
+	void SetLayerVisibility(int32 layerNum, bool visible);
+
+    void CopyLODSettings(const LodComponent * fromLOD);
+    
+	void SetForceLayerAsCurrent();
 
 public:
     
@@ -135,66 +152,26 @@ public:
         PROPERTY("forceDistance", "Force Distance", GetForceDistance, SetForceDistance, I_SAVE | I_VIEW | I_EDIT)
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
     );
-    
-//    Entity::Save(archive, sceneFile);
-//    archive->SetInt32("lodCount", (int32)lodLayers.size());
-//    
-//    int32 lodIdx = 0;
-//    const List<LodData>::const_iterator &end = lodLayers.end();
-//    for (List<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
-//    {
-//        LodData & ld = *it;
-//        archive->SetInt32(Format("lod%d_layer", lodIdx), (int32)ld.layer);
-//        size_t size = ld.nodes.size();
-//        archive->SetInt32(Format("lod%d_cnt", lodIdx), (int32)size);
-//        for (size_t idx = 0; idx < size; ++idx)
-//        {
-//            for (int32 i = 0; i < (int32)children.size(); i++)
-//            {
-//                if(children[i] == ld.nodes[idx])
-//                {
-//                    archive->SetInt32(Format("l%d_%d_ni", lodIdx, idx), i);
-//                    break;
-//                }
-//            }
-//        }
-//        
-//        archive->SetFloat(Format("lod%d_dist", lodIdx), GetLodLayerDistance(lodIdx));
-//        lodIdx++;
-//    }
-
 };
 
-int32 LodComponent::GetLodLayersCount()
+int32 LodComponent::GetLodLayersCount() const
 {
 	return (int32)lodLayers.size();
 }
 
-float32 LodComponent::GetLodLayerDistance(int32 layerNum)
+float32 LodComponent::GetLodLayerDistance(int32 layerNum) const
 {
 	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
 	return lodLayersArray[layerNum].distance;
 }
 
-float32 LodComponent::GetLodLayerNear(int32 layerNum)
-{
-	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
-	return lodLayersArray[layerNum].nearDistance;
-}
-
-float32 LodComponent::GetLodLayerFar(int32 layerNum)
-{
-	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
-	return lodLayersArray[layerNum].farDistance;
-}
-
-float32 LodComponent::GetLodLayerNearSquare(int32 layerNum)
+float32 LodComponent::GetLodLayerNearSquare(int32 layerNum) const
 {
 	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
 	return lodLayersArray[layerNum].nearDistanceSq;
 }
 
-float32 LodComponent::GetLodLayerFarSquare(int32 layerNum)
+float32 LodComponent::GetLodLayerFarSquare(int32 layerNum) const
 {
 	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
 	return lodLayersArray[layerNum].farDistanceSq;

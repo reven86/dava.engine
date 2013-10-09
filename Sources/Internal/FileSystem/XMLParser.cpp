@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "FileSystem/XMLParser.h"
 
@@ -34,21 +48,21 @@ namespace DAVA
 
 	bool XMLParser::ParseFile(const FilePath &fileName, XMLParserDelegate *delegateptr)
 	{
-// 		Logger::Debug("[XMLParser::ParseFile] fileName = %s", fileName.c_str());
-// 		Logger::Debug("[XMLParser::ParseFile] delegateptr = %p", delegateptr);
+// 		Logger::FrameworkDebug("[XMLParser::ParseFile] fileName = %s", fileName.c_str());
+// 		Logger::FrameworkDebug("[XMLParser::ParseFile] delegateptr = %p", delegateptr);
 
 		bool retValue = false;
 		File *xmlFile = File::Create(fileName, File::OPEN | File::READ);
 		if(xmlFile)
 		{
 			int32 dataSize = xmlFile->GetSize();
-//			Logger::Debug("[XMLParser::ParseFile] dataSize = %d", dataSize);
+//			Logger::FrameworkDebug("[XMLParser::ParseFile] dataSize = %d", dataSize);
 
 			uint8 *data = new uint8[dataSize];
 			if(data)
 			{
 				int32 readBytes = xmlFile->Read(data, dataSize);
-//				Logger::Debug("[XMLParser::ParseFile] readBytes = %d", readBytes);
+//				Logger::FrameworkDebug("[XMLParser::ParseFile] readBytes = %d", readBytes);
 				if(readBytes == dataSize)
 				{
 					retValue = XMLParser::ParseBytes(data, dataSize, delegateptr);
@@ -74,13 +88,13 @@ namespace DAVA
 			Logger::Error("[XMLParser::ParseFile] can't create file");
 		}
 
-//		Logger::Debug("[XMLParser::ParseFile] retValue = %d", retValue);
+//		Logger::FrameworkDebug("[XMLParser::ParseFile] retValue = %d", retValue);
 		return retValue;
 	}
 
 	bool XMLParser::ParseBytes(const unsigned char *bytes, int length, XMLParserDelegate *delegateptr)
 	{
-//		Logger::Debug("[XMLParser::ParseBytes] delegateptr = %p", delegateptr);
+//		Logger::FrameworkDebug("[XMLParser::ParseBytes] delegateptr = %p", delegateptr);
 
 		bool retValue = false;
 		
@@ -92,20 +106,20 @@ namespace DAVA
 		saxHandler.characters = XMLParser::Characters;
 
 		int32 retCode = xmlSAXUserParseMemory( &saxHandler, (void*)delegateptr, (char *)bytes, length);
-//		Logger::Debug("[XMLParser::ParseBytes] retCode = %d", retCode);
+//		Logger::FrameworkDebug("[XMLParser::ParseBytes] retCode = %d", retCode);
 		if(0 <= retCode)
 		{
 			retValue = true;
 		}
 
-//		Logger::Debug("[XMLParser::ParseBytes] retValue = %d", retValue);
+//		Logger::FrameworkDebug("[XMLParser::ParseBytes] retValue = %d", retValue);
 		return retValue;
 	}
 
 
 	void XMLParser::StartDocument(void *user_data)
 	{
-//		Logger::Debug("[XMLParser::StartDocument] user_data = %p", user_data);
+//		Logger::FrameworkDebug("[XMLParser::StartDocument] user_data = %p", user_data);
 		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
 		if(delegateptr)
 		{
@@ -114,7 +128,7 @@ namespace DAVA
 	}
 	void XMLParser::EndDocument(void *user_data)
 	{
-//		Logger::Debug("[XMLParser::EndDocument] user_data = %p", user_data);
+//		Logger::FrameworkDebug("[XMLParser::EndDocument] user_data = %p", user_data);
 		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
 		if(delegateptr)
 		{
@@ -124,7 +138,7 @@ namespace DAVA
 
 	void XMLParser::Characters(void *user_data, const xmlChar *ch, int len)
 	{
-//		Logger::Debug("[XMLParser::Characters] user_data = %p, len = %d", user_data, len);
+//		Logger::FrameworkDebug("[XMLParser::Characters] user_data = %p, len = %d", user_data, len);
 		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
 		if(delegateptr)
 		{
@@ -140,7 +154,7 @@ namespace DAVA
 
 	void XMLParser::StartElement(void *user_data, const xmlChar *name, const xmlChar **attrs)
 	{
-//		Logger::Debug("[XMLParser::StartElement] %s, user_data = %p", name, user_data);
+//		Logger::FrameworkDebug("[XMLParser::StartElement] %s, user_data = %p", name, user_data);
 		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
 		if(delegateptr)
 		{
@@ -148,7 +162,7 @@ namespace DAVA
 
 			if(attrs)
 			{
-//				Logger::Debug("[XMLParser::StartElement] attrs in");
+//				Logger::FrameworkDebug("[XMLParser::StartElement] attrs in");
 
 				int32 i = 0;
 				while(attrs[i])
@@ -156,12 +170,12 @@ namespace DAVA
 					char *str = (attrs[i+1]) ? (char *)attrs[i+1] : (char *)"";
 					attributes[(char *)attrs[i]] = str;
 
-//					Logger::Debug("[XMLParser::StartElement] %s = %s", attrs[i], str);
+//					Logger::FrameworkDebug("[XMLParser::StartElement] %s = %s", attrs[i], str);
 
 					i += 2;
 				}
 
-//				Logger::Debug("[XMLParser::StartElement] attrs out");
+//				Logger::FrameworkDebug("[XMLParser::StartElement] attrs out");
 			}
 
 			delegateptr->OnElementStarted((char *)name, "", "", attributes);
@@ -170,7 +184,7 @@ namespace DAVA
 
 	void XMLParser::EndElement(void *user_data, const xmlChar *name)
 	{
-//		Logger::Debug("[XMLParser::EndElement] %s", name);
+//		Logger::FrameworkDebug("[XMLParser::EndElement] %s", name);
 		XMLParserDelegate *delegateptr = (XMLParserDelegate *)user_data;
 		if(delegateptr)
 		{
@@ -180,7 +194,7 @@ namespace DAVA
 
 // 	xmlEntityPtr XMLParser::GetEntity(void *user_data, const xmlChar *name)
 // 	{
-// 		Logger::Debug("[XMLParser::GetEntity] %s", name);
+// 		Logger::FrameworkDebug("[XMLParser::GetEntity] %s", name);
 // 		XMLParserDelegate *delegate = (XMLParserDelegate *)user_data;
 // 		if(delegate)
 // 		{

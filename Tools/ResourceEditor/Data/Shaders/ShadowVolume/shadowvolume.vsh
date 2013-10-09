@@ -19,7 +19,7 @@ void main()
 	{
 		if(PosView.z < lightPosition0.z)
 		{
-			PosView.xyz -= LightVecView * (2000.0 - 10.0 + PosView.z) / LightVecView.z;
+			PosView.xyz -= LightVecView * (1000.0 - 10.0 + PosView.z) / LightVecView.z;
 		}
 		else
 		{

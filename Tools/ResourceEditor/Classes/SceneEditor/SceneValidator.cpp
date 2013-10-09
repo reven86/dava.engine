@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "SceneValidator.h"
 #include "EditorSettings.h"
@@ -181,8 +195,15 @@ void SceneValidator::ValidateLodComponent(Entity *ownerNode, Set<String> &errors
     LodComponent *lodComponent = GetLodComponent(ownerNode);
     if(!lodComponent) return;
 
-
     int32 layersCount = lodComponent->GetLodLayersCount();
+	if (GetEmitter(ownerNode))
+		layersCount = LodComponent::MAX_LOD_LAYERS;
+    
+    if(layersCount == 0)
+    {
+        errorsLog.insert(Format("Node %s: Count of layers is 0", ownerNode->GetName().c_str()));
+    }
+    
     for(int32 layer = 0; layer < layersCount; ++layer)
     {
         float32 distance = lodComponent->GetLodLayerDistance(layer);
@@ -214,17 +235,45 @@ void SceneValidator::ValidateLodComponent(Entity *ownerNode, Set<String> &errors
 void SceneValidator::ValidateParticleEmitterComponent(DAVA::Entity *ownerNode, Set<String> &errorsLog)
 {
 	ParticleEmitter * emitter = GetEmitter(ownerNode);
-    if(!emitter) 
+    if(!emitter)
+	{
 		return;
+	}
 
-    String validationMsg;
-    if (!ParticlesEditorSceneDataHelper::ValidateParticleEmitter(emitter, validationMsg))
-    {
-        errorsLog.insert(validationMsg);
-    }
+	LodComponent * lodComponent = GetLodComponent(ownerNode);
+	if (!lodComponent)
+	{
+		lodComponent = new LodComponent();
+		ownerNode->AddComponent(lodComponent);		
+	}
+
+	ValidateParticleEmitter(emitter, errorsLog);
 }
 
-
+bool SceneValidator::ValidateParticleEmitter(ParticleEmitter* emitter, Set<String> &errorsLog)
+{
+	if (!emitter)
+	{
+		return true;
+	}
+	
+	if (emitter->Is3DFlagCorrect())
+	{
+		return true;
+	}
+	
+	// Don't use Format() helper here - the string with path might be too long for Format().
+	String validationMsg = ("\"3d\" flag value is wrong for Particle Emitter Configuration file ");
+	validationMsg += emitter->GetConfigPath().GetAbsolutePathname().c_str();
+	validationMsg += ". Please verify whether you are using the correct configuration file.\n\"3d\" flag for this Particle Emitter will be reset to TRUE.";
+	errorsLog.insert(validationMsg);
+	
+	// Yuri Coder, 2013/05/08. Since Particle Editor works with 3D Particles only - have to set this flag
+	// manually.
+	emitter->Set3D(true);
+	
+	return false;
+}
 
 void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog)
 {
@@ -401,21 +450,13 @@ void SceneValidator::ValidateTexture(Texture *texture, const FilePath &texturePa
 	String path = texturePathname.GetRelativePathname(EditorSettings::Instance()->GetProjectPath());
 	String textureInfo = path + " for object: " + validatedObjectName;
 
-	if(texture == Texture::GetPinkPlaceholder())
+	if(texture->IsPinkPlaceholder())
 	{
 		errorsLog.insert("Can't load texture: " + textureInfo);
 	}
 
 	bool pathIsCorrect = ValidatePathname(texturePathname, validatedObjectName);
-	if(pathIsCorrect)
-	{
-		if(!IsFBOTexture(texture))
-		{
-			// if there is no descriptor file for this texture - generate it
-			TextureDescriptorUtils::CreateDescriptorIfNeed(texturePathname);
-		}
-	}
-	else
+	if(!pathIsCorrect)
 	{
 		errorsLog.insert("Wrong path of: " + textureInfo);
 	}
@@ -531,8 +572,6 @@ bool SceneValidator::ValidateTexturePathname(const FilePath &pathForValidation, 
 			errorsLog.insert(Format("Path %s has incorrect extension", pathForValidation.GetAbsolutePathname().c_str()));
 			return false;
 		}
-
-        TextureDescriptorUtils::CreateDescriptorIfNeed(pathForValidation);
 	}
 	else
 	{

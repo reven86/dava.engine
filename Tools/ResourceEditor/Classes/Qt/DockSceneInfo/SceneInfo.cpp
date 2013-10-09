@@ -1,22 +1,35 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
-#include "Scene/SceneDataManager.h"
 #include "../../SceneEditor/EditorSettings.h"
 #include "../../EditorScene.h"
 
@@ -29,6 +42,12 @@
 
 #include "../../ImageTools/ImageTools.h"
 
+#include "../Qt/CubemapEditor/MaterialHelper.h"
+
+#include "Classes/Qt/Scene/SceneSignals.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/DockLODEditor/EditorLODData.h"
+#include "Classes/Qt/Main/mainwindow.h"
 
 #include <QHeaderView>
 #include <QTimer>
@@ -38,14 +57,20 @@ using namespace DAVA;
 
 SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
 	: QtPropertyEditor(parent)
-    , scene(NULL)
+    , activeScene(NULL)
+	, landscape(NULL)
     , treeStateHelper(this, this->curModel)
 {
 	// global scene manager signals
-	QObject::connect(SceneDataManager::Instance(), SIGNAL(SceneActivated(SceneData *)), this, SLOT(sceneActivated(SceneData *)));
-	QObject::connect(SceneDataManager::Instance(), SIGNAL(SceneChanged(SceneData *)), this, SLOT(sceneChanged(SceneData *)));
-	QObject::connect(SceneDataManager::Instance(), SIGNAL(SceneReleased(SceneData *)), this, SLOT(sceneReleased(SceneData *)));
-
+    connect(SceneSignals::Instance(), SIGNAL(Selected(SceneEditor2 *, DAVA::Entity *)), SLOT(EntitySelected(SceneEditor2 *, DAVA::Entity *)));
+    connect(SceneSignals::Instance(), SIGNAL(Deselected(SceneEditor2 *, DAVA::Entity *)), SLOT(EntityDeselected(SceneEditor2 *, DAVA::Entity *)));
+    
+    connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), SLOT(SceneActivated(SceneEditor2 *)));
+    connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), SLOT(SceneDeactivated(SceneEditor2 *)));
+    connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
+    
+    connect(QtMainWindow::Instance(), SIGNAL(GlobalInvalidateTimeout()), SLOT(UpdateInfoByTimer()));
+    
 	// MainWindow actions
 	posSaver.Attach(this, "DockSceneInfo");
 	
@@ -65,25 +90,6 @@ SceneInfo::~SceneInfo()
 	posSaver.SaveValue("splitPos", v);
 }
 
-void SceneInfo::sceneChanged(SceneData *sceneData)
-{
-    if(NULL == sceneData) return;
-    
-	RefreshAllData(sceneData);
-}
-
-void SceneInfo::sceneActivated(SceneData *sceneData)
-{
-    if(NULL == sceneData) return;
-    
-	RefreshAllData(sceneData);
-}
-
-void SceneInfo::sceneReleased(SceneData *sceneData)
-{ }
-
-
-
 void SceneInfo::InitializeInfo()
 {
     RemovePropertyAll();
@@ -91,7 +97,8 @@ void SceneInfo::InitializeInfo()
     InitializeGeneralSection();
     Initialize3DDrawSection();
     InitializeMaterialsSection();
-    InitializeLODSection();
+    InitializeLODSectionInFrame();
+    InitializeLODSectionForSelection();
     InitializeParticlesSection();
 }
 
@@ -129,12 +136,11 @@ void SceneInfo::Initialize3DDrawSection()
 
 void SceneInfo::Refresh3DDrawInfo()
 {
+    if(!activeScene) return;
+    
     QtPropertyData* header = GetInfoHeader("DrawInfo");
     
-    SceneData *sceneData = SceneDataManager::Instance()->SceneGetActive();
-    EditorScene *scene = sceneData->GetScene();
-
-    const RenderManager::Stats & renderStats = scene->GetRenderStats();
+    const RenderManager::Stats & renderStats = activeScene->GetRenderStats();
     
     SetChild("ArraysCalls", renderStats.drawArraysCalls, header);
     SetChild("ElementsCalls", renderStats.drawElementsCalls, header);
@@ -163,35 +169,67 @@ void SceneInfo::RefreshMaterialsInfo()
     SetChild("Textures Size", QString::fromStdString(SizeInBytesToString((float32)sceneTexturesSize)), header);
 }
 
-void SceneInfo::InitializeLODSection()
+void SceneInfo::InitializeLODSectionInFrame()
 {
-    QtPropertyData* header = CreateInfoHeader("LOD");
+    QtPropertyData* header = CreateInfoHeader("LOD in Frame");
     
     for(int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
     {
         AddChild(Format("Objects LOD%d Triangles", i), header);
     }
     
-    AddChild("Objects LOD Triangles", header);
+    AddChild("All LOD Triangles", header);
+    AddChild("Objects without LOD Triangles", header);
     AddChild("Landscape Triangles", header);
     AddChild("All Triangles", header);
 }
 
-void SceneInfo::RefreshLODInfo()
+void SceneInfo::InitializeLODSectionForSelection()
 {
-    QtPropertyData* header = GetInfoHeader("LOD");
+    QtPropertyData* header = CreateInfoHeader("LOD Info for Selected Entities");
+    
+    for(int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        AddChild(Format("Objects LOD%d Triangles", i), header);
+    }
+    
+    AddChild("All LOD Triangles", header);
+}
 
+
+void SceneInfo::RefreshLODInfoInFrame()
+{
+    QtPropertyData* header = GetInfoHeader("LOD in Frame");
+
+    uint32 lodTriangles = 0;
+    for(int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        SetChild(Format("Objects LOD%d Triangles", i), lodInfoInFrame.trianglesOnLod[i], header);
+        
+        lodTriangles += lodInfoInFrame.trianglesOnLod[i];
+    }
+    
+    int32 landTriangles = (landscape) ? landscape->GetDrawIndices() : 0;
+    landTriangles /= 3;
+    SetChild("All LOD Triangles", lodTriangles, header);
+    SetChild("Objects without LOD Triangles", lodInfoInFrame.trianglesOnObjects, header);
+    SetChild("Landscape Triangles", landTriangles, header);
+    SetChild("All Triangles", lodInfoInFrame.trianglesOnObjects + landTriangles + lodTriangles, header);
+}
+
+void SceneInfo::RefreshLODInfoForSelection()
+{
+    QtPropertyData* header = GetInfoHeader("LOD Info for Selected Entities");
+    
     uint32 objectTriangles = 0;
     for(int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
     {
-        SetChild(Format("Objects LOD%d Triangles", i), lodInfo.trianglesOnLod[i], header);
+        SetChild(Format("Objects LOD%d Triangles", i), lodInfoSelection.trianglesOnLod[i], header);
         
-        objectTriangles += lodInfo.trianglesOnLod[i];
+        objectTriangles += lodInfoSelection.trianglesOnLod[i];
     }
     
-    SetChild("Objects LOD Triangles", objectTriangles, header);
-    SetChild("Landscape Triangles", lodInfo.trianglesOnLandscape, header);
-    SetChild("All Triangles", lodInfo.trianglesOnLandscape + objectTriangles, header);
+    SetChild("All LOD Triangles", objectTriangles, header);
 }
 
 
@@ -252,21 +290,24 @@ uint32 SceneInfo::CalculateTextureSize(const Map<String, Texture *> &textures)
 
 
 
-void SceneInfo::CollectSceneData(SceneData *sceneData, bool force)
+void SceneInfo::CollectSceneData(SceneEditor2 *scene)
 {
-    if(sceneData->GetScene() != scene || force)
+    ClearData();
+
+    if(scene)
     {
-        ClearData();
-        
-        scene = sceneData->GetScene();
-        DVASSERT(scene);
- 
         scene->GetChildNodes(nodesAtScene);
         scene->GetDataNodes(materialsAtScene);
+		//VI: remove skybox materials so they not to appear in the lists
+		MaterialHelper::FilterMaterialsByType(materialsAtScene, DAVA::Material::MATERIAL_SKYBOX);
+
         scene->GetDataNodes(dataNodesAtScene);
         
         CollectSceneTextures();
         CollectParticlesData();
+        
+        CollectLODDataInFrame();
+        CollectLODDataForSelection();
         
         sceneTexturesSize = CalculateTextureSize(sceneTextures);
         particleTexturesSize = CalculateTextureSize(particleTextures);
@@ -281,12 +322,19 @@ void SceneInfo::ClearData()
     sceneTextures.clear();
     particleTextures.clear();
     
-    lodInfo.Clear();
+    lodInfoInFrame.Clear();
+    
+    ClearSelectionData();
     
     sceneTexturesSize = 0;
     particleTexturesSize = 0;
     emittersCount = 0;
     spritesCount = 0;
+}
+
+void SceneInfo::ClearSelectionData()
+{
+    lodInfoSelection.Clear();
 }
 
 void SceneInfo::CollectSceneTextures()
@@ -361,9 +409,75 @@ void SceneInfo::CollectParticlesData()
     spritesCount = (uint32)sprites.size();
 }
 
-void SceneInfo::CollectLODData()
+void SceneInfo::CollectLODDataForSelection()
 {
-    //TODO: Will be done later
+    if(!activeScene) return;
+    
+    Vector<LodComponent *>lods;
+    const EntityGroup *selection = activeScene->selectionSystem->GetSelection();
+    size_t entitiesCount = selection->Size();
+    for(size_t i = 0; i < entitiesCount; ++i)
+    {
+        EditorLODData::EnumerateLODsRecursive(selection->GetEntity(i), lods);
+    }
+    
+    CollectLODTriangles(lods, lodInfoSelection);
+}
+
+void SceneInfo::CollectLODDataInFrame()
+{
+    lodInfoInFrame.Clear();
+
+    if(!activeScene) return;
+
+    CollectLODDataInFrameRecursive(activeScene);
+}
+
+void SceneInfo::CollectLODDataInFrameRecursive(DAVA::Entity *entity)
+{
+    DAVA::LodComponent *lod = GetLodComponent(entity);
+    
+    if(lod)
+    {
+        Vector<LodComponent::LodData*> lodLayers;
+        lod->GetLodData(lodLayers);
+        Vector<LodComponent::LodData*>::const_iterator lodLayerIt = lodLayers.begin();
+        DAVA::uint32 layersCount = lod->GetForceLodLayer();
+        for(DAVA::uint32 layer = 0; layer < layersCount && lodLayerIt != lodLayers.end(); ++layer, ++lodLayerIt)
+        {
+            lodInfoInFrame.trianglesOnLod[layer] += EditorLODData::GetTrianglesForLodLayer(*lodLayerIt, true);
+        }
+    }
+    else
+    {
+        lodInfoInFrame.trianglesOnObjects = EditorLODData::GetTrianglesForEntity(entity, true);
+    }
+    
+    
+    DAVA::int32 count = entity->GetChildrenCount();
+    for(DAVA::int32 i = 0; i < count; ++i)
+    {
+        CollectLODDataInFrameRecursive(entity->GetChild(i));
+    }
+}
+
+
+
+void SceneInfo::CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lods, LODInfo &info)
+{
+    uint32 count = (uint32)lods.size();
+    for(uint32 i = 0; i < count; ++i)
+    {
+        Vector<LodComponent::LodData*> lodLayers;
+        lods[i]->GetLodData(lodLayers);
+
+        int32 layersCount = lods[i]->GetLodLayersCount();
+        Vector<LodComponent::LodData*>::const_iterator lodLayerIt = lodLayers.begin();
+        for(int32 layer = 0; layer < layersCount; ++layer, ++lodLayerIt)
+        {
+            info.trianglesOnLod[layer] += EditorLODData::GetTrianglesForLodLayer(*lodLayerIt, false);
+        }
+    }
 }
 
 
@@ -441,37 +555,71 @@ void SceneInfo::RestoreTreeState()
 void SceneInfo::showEvent ( QShowEvent * event )
 {
     QtPropertyEditor::showEvent(event);
-    
-    if(isVisible() && !CommandLineManager::Instance()->IsCommandLineModeEnabled())
-    {
-        QTimer::singleShot(1000, this, SLOT(timerDone()));
-    }
 }
 
-void SceneInfo::timerDone()
+void SceneInfo::UpdateInfoByTimer()
 {
-    SceneData *sceneData = SceneDataManager::Instance()->SceneGetActive();
-    if(sceneData)
-        RefreshAllData(sceneData);
+    if(!isVisible()) return;
+
+    Refresh3DDrawInfo();
     
-    if(isVisible())
-    {
-        QTimer::singleShot(1000, this, SLOT(timerDone()));
-    }
+    CollectLODDataInFrame();
+    RefreshLODInfoInFrame();
 }
 
-void SceneInfo::RefreshAllData(SceneData *sceneData)
+void SceneInfo::RefreshAllData(SceneEditor2 *scene)
 {
-	CollectSceneData(sceneData, true);
+	CollectSceneData(scene);
 
 	SaveTreeState();
 
 	RefreshSceneGeneralInfo();
 	Refresh3DDrawInfo();
 	RefreshMaterialsInfo();
-	RefreshLODInfo();
+	RefreshLODInfoInFrame();
+    RefreshLODInfoForSelection();
 	RefreshParticlesInfo();
 
 	RestoreTreeState();
 }
 
+void SceneInfo::SceneActivated(SceneEditor2 *scene)
+{
+    activeScene = scene;
+    landscape = activeScene->structureSystem->FindLanscape();
+    RefreshAllData(scene);
+}
+
+void SceneInfo::SceneDeactivated(SceneEditor2 *scene)
+{
+    if(activeScene == scene)
+    {
+        activeScene = NULL;
+        landscape = NULL;
+        RefreshAllData(NULL);
+    }
+}
+
+void SceneInfo::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
+{
+    if(activeScene == scene)
+    {
+        landscape = activeScene->structureSystem->FindLanscape();
+        RefreshAllData(scene);
+    }
+}
+
+
+void SceneInfo::EntitySelected(SceneEditor2 *scene, DAVA::Entity *entity)
+{
+    ClearSelectionData();
+    CollectLODDataForSelection();
+    RefreshLODInfoForSelection();
+}
+
+void SceneInfo::EntityDeselected(SceneEditor2 *scene, DAVA::Entity *entity)
+{
+    ClearSelectionData();
+    CollectLODDataForSelection();
+    RefreshLODInfoForSelection();
+}

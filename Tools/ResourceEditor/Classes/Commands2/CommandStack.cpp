@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Commands2/CommandStack.h"
 #include "Commands2/CommandAction.h"
@@ -20,6 +34,8 @@
 CommandStack::CommandStack()
 	: commandListLimit(0)
 	, nextCommandIndex(0)
+	, cleanCommandIndex(0)
+	, lastCheckCleanState(true)
 	, curBatchCommand(NULL)
 {
 	stackCommandsNotify = new CommandStackNotify(this);
@@ -28,8 +44,7 @@ CommandStack::CommandStack()
 CommandStack::~CommandStack()
 {
 	Clear();
-
-	delete stackCommandsNotify;
+	SafeRelease(stackCommandsNotify);
 }
 
 bool CommandStack::CanUndo() const
@@ -59,6 +74,7 @@ bool CommandStack::CanRedo() const
 void CommandStack::Clear()
 {
 	nextCommandIndex = 0;
+	cleanCommandIndex = 0;
 	
 	std::list<Command2 *>::iterator i = commandList.begin();
 	std::list<Command2 *>::iterator end = commandList.end();
@@ -69,6 +85,8 @@ void CommandStack::Clear()
 	}
 
 	commandList.clear();
+
+	CleanCheck();
 }
 
 void CommandStack::Undo()
@@ -76,14 +94,16 @@ void CommandStack::Undo()
 	if(CanUndo())
 	{
 		nextCommandIndex--;
-
 		Command2* commandToUndo = GetCommand(nextCommandIndex);
+
 		if(NULL != commandToUndo)
 		{
 			commandToUndo->Undo();
 			EmitNotify(commandToUndo, false);
 		}
 	}
+
+	CleanCheck();
 }
 
 void CommandStack::Redo()
@@ -91,14 +111,16 @@ void CommandStack::Redo()
 	if(CanRedo())
 	{
 		Command2* commandToRedo = GetCommand(nextCommandIndex);
+		nextCommandIndex++;
+
 		if(NULL != commandToRedo)
 		{
 			commandToRedo->Redo();
 			EmitNotify(commandToRedo, true);
 		}
-
-		nextCommandIndex++;
 	}
+
+	CleanCheck();
 }
 
 void CommandStack::Exec(Command2 *command)
@@ -120,6 +142,7 @@ void CommandStack::Exec(Command2 *command)
 		else
 		{
 			action->Redo();
+			EmitNotify(command, true);
 			delete action;
 		}
 	}
@@ -131,7 +154,7 @@ void CommandStack::BeginBatch(const DAVA::String &text)
 	{
 		curBatchCommand = new CommandBatch();
 		curBatchCommand->SetText(text);
-		curBatchCommand->SetNotify(stackCommandsNotify, false);
+		curBatchCommand->SetNotify(stackCommandsNotify);
 	}
 }
 
@@ -154,6 +177,25 @@ void CommandStack::EndBatch()
 	}
 }
 
+bool CommandStack::IsClean() const
+{
+	return (cleanCommandIndex == nextCommandIndex);
+}
+
+void CommandStack::SetClean(bool clean)
+{
+	if(clean)
+	{
+		cleanCommandIndex = nextCommandIndex;
+	}
+	else
+	{
+		cleanCommandIndex = -1;
+	}
+
+	CleanCheck();
+}
+
 size_t CommandStack::GetUndoLimit() const
 {
 	return commandListLimit;
@@ -173,12 +215,14 @@ void CommandStack::ExecInternal(Command2 *command, bool runCommand)
 
 	if(runCommand)
 	{
-		command->SetNotify(stackCommandsNotify, false);
+		command->SetNotify(stackCommandsNotify);
 		command->Redo();
 	}
 
 	EmitNotify(command, true);
 	ClearLimitedCommands();
+
+	CleanCheck();
 }
 
 void CommandStack::ClearRedoCommands()
@@ -215,7 +259,18 @@ void CommandStack::ClearLimitedCommands()
 		}
 
 		commandList.pop_front();
+
 		nextCommandIndex--;
+		cleanCommandIndex--;
+	}
+}
+
+void CommandStack::CleanCheck()
+{
+	if(lastCheckCleanState != IsClean())
+	{
+		lastCheckCleanState = IsClean();
+		EmitCleanChanged(lastCheckCleanState);
 	}
 }
 

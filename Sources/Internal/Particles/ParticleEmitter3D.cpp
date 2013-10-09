@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Particles/ParticleEmitter3D.h"
 #include "Particles/ParticleLayer3D.h"
@@ -62,6 +76,17 @@ void ParticleEmitter3D::Draw(Camera * camera)
 	//Dizz: now layer->Draw is called from ParticleLayerBatch
 }
 
+void ParticleEmitter3D::RecalcBoundingBox()
+{
+	RenderObject::RecalcBoundingBox(); //transpass ParticleEmitter::RecalcBoundingBox()
+	if (GetWorldTransformPtr()) //add emmiter anyway
+	{
+		Vector3 emmiterPos = GetWorldTransformPtr()->GetTranslationVector();
+		bbox.AddPoint(emmiterPos);
+	}	
+}
+
+
 void ParticleEmitter3D::PrepareEmitterParameters(Particle * particle, float32 velocity, int32 emitIndex)
 {
 	Vector3 tempPosition = Vector3();
@@ -81,15 +106,15 @@ void ParticleEmitter3D::PrepareEmitterParameters(Particle * particle, float32 ve
         particle->position = tempPosition;
     }
     else if (emitterType == EMITTER_RECT)
-    {
-        // TODO: add emitter angle support
+    {        
         float32 rand05_x = (float32)Random::Instance()->RandFloat() - 0.5f; // [-0.5f, 0.5f]
         float32 rand05_y = (float32)Random::Instance()->RandFloat() - 0.5f; // [-0.5f, 0.5f]
         float32 rand05_z = (float32)Random::Instance()->RandFloat() - 0.5f; // [-0.5f, 0.5f]
         Vector3 lineDirection(0, 0, 0);
         if(size)
-            lineDirection = Vector3(size->GetValue(time).x * rand05_x, size->GetValue(time).y * rand05_y, size->GetValue(time).z * rand05_z);
-        particle->position = tempPosition + lineDirection;
+            lineDirection = Vector3(size->GetValue(time).x * rand05_x, size->GetValue(time).y * rand05_y, size->GetValue(time).z * rand05_z);		
+		//particle->position = tempPosition + lineDirection;
+        particle->position = tempPosition + TransformPerserveLength(lineDirection, rotationMatrix);
     }
 	else if ((emitterType == EMITTER_ONCIRCLE_VOLUME) ||
 			 (emitterType == EMITTER_ONCIRCLE_EDGES))
@@ -165,7 +190,7 @@ void ParticleEmitter3D::CalculateParticlePositionForCircle(Particle* particle, c
 		directionVector = rotatedVector;
 	}
 		
-	particle->position = TransformPerserveLength(tempPosition + directionVector, rotationMatrix);	
+	particle->position = tempPosition + TransformPerserveLength(directionVector, rotationMatrix);	
 }
 	
 void ParticleEmitter3D::PrepareEmitterParametersShockwave(Particle * particle, float32 velocity,
@@ -188,7 +213,7 @@ void ParticleEmitter3D::PrepareEmitterParametersShockwave(Particle * particle, f
 							curRadius * sinAngle,
 							0.0f);
 
-	particle->position = TransformPerserveLength(tempPosition + directionVector, rotationMatrix);	
+	particle->position = tempPosition + TransformPerserveLength(directionVector, rotationMatrix);	
 
 	particle->speed = velocity;
 
@@ -213,9 +238,7 @@ void ParticleEmitter3D::PrepareEmitterParametersShockwave(Particle * particle, f
 	}
 
 	particle->direction = directionVector;
-	float dirLength = particle->direction.Length();
-	particle->direction*=(1.0f/dirLength);
-	particle->speed*=dirLength;
+	particle->direction.Normalize();
 }
 
 void ParticleEmitter3D::PrepareEmitterParametersGeneric(Particle * particle, float32 velocity,
@@ -228,11 +251,6 @@ void ParticleEmitter3D::PrepareEmitterParametersGeneric(Particle * particle, flo
 		// Yuri Coder, 2013/04/12. Need to invert the directions in the emission vector, since
 		// their coordinates are in the opposite directions for the Particles Editor.        
 		vel = emissionVector->GetValue(0) * -1.0f;
-		//do not rotate velocity as direction vector will be rotated later
-		/*float32 velLength = vel.Length();		
-		vel = vel*rotationMatrix;		
-		vel.Normalize();
-		vel*=velLength;*/
 	}
 
     Vector3 rotVect(0, 0, 1);
@@ -293,7 +311,7 @@ void ParticleEmitter3D::PrepareEmitterParametersGeneric(Particle * particle, flo
     //particle->angle = atanf(particle->direction.z/particle->direction.x);
 }
 
-void ParticleEmitter3D::LoadParticleLayerFromYaml(YamlNode* yamlNode, bool isLong)
+void ParticleEmitter3D::LoadParticleLayerFromYaml(const YamlNode* yamlNode, bool isLong)
 {
 	ParticleLayer3D* layer = new ParticleLayer3D(this);
 	layer->SetLong(isLong);
@@ -374,6 +392,7 @@ RenderObject * ParticleEmitter3D::Clone(RenderObject *newObject)
 		}
 
 		clonedEmitter->AddLayer(clonedLayer);
+		SafeRelease(clonedLayer);
 	}
 
 	return newObject;

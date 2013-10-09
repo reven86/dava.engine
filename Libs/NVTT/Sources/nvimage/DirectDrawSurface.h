@@ -131,6 +131,8 @@ namespace nv
 		bool isTexture3D() const;
 		bool isTextureCube() const;
 		bool getRawDate(void* buffer, unsigned int size) ;
+		uint getFaceCount();
+		uint getFaceFlags();
 
 		void setNormalFlag(bool b);
 		

@@ -1,30 +1,47 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "QtUtils.h"
 #include "../../SceneEditor/SceneValidator.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QToolButton>
 #include "mainwindow.h"
 #include "QtMainWindowHandler.h"
 
 #include "TexturePacker/CommandLineParser.h"
 #include "../../Commands/FileCommands.h"
 #include "../../Commands/CommandsManager.h"
+
+#include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "DAVAEngine.h"
 using namespace DAVA;
@@ -41,7 +58,8 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
     QString filePath = QFileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                     QString(filter.c_str()));
     
-    QtMainWindowHandler::Instance()->RestoreDefaultFocus();
+	// TODO: mainwindow
+    //QtMainWindowHandler::Instance()->RestoreDefaultFocus();
 
     FilePath openedPathname = PathnameToDAVAStyle(filePath);
     if(!openedPathname.IsEmpty() && !SceneValidator::Instance()->IsPathCorrectForProject(openedPathname))
@@ -49,6 +67,12 @@ DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &
         //Need to Show Error
 		ShowErrorDialog(String(Format("File(%s) was selected from incorect project.", openedPathname.GetAbsolutePathname().c_str())));
         openedPathname = FilePath();
+    }
+    
+    if(openedPathname.IsEqualToExtension(".png"))
+    {
+        //VK: create descriptor only for *.png without paired *.tex
+        TextureDescriptorUtils::CreateDescriptorIfNeed(openedPathname);
     }
     
     return openedPathname;
@@ -160,20 +184,23 @@ int ShowSaveSceneQuestion(DAVA::Scene *scene)
     return answer;
 }
 
-void DeleteOldPVRTextureIfPowerVr_IOS(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu)
+void ShowActionWithText(QToolBar *toolbar, QAction *action, bool showText)
 {
-    if(!descriptor || gpu != GPU_POWERVR_IOS) return;
-    
-    FilePath oldPvrPath = FilePath::CreateWithNewExtension(descriptor->pathname, ".pvr");
-    FileSystem::Instance()->DeleteFile(oldPvrPath);
-}
-
-void DeleteOldDXTTextureIfTegra(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu)
-{
-    if(!descriptor || gpu != GPU_TEGRA) return;
-    
-    FilePath oldDdsPath = FilePath::CreateWithNewExtension(descriptor->pathname, ".dds");
-    FileSystem::Instance()->DeleteFile(oldDdsPath);
+	if(NULL != toolbar && NULL != action)
+	{
+		QToolButton *toolBnt = dynamic_cast<QToolButton *>(toolbar->widgetForAction(action));
+		if(NULL != toolBnt)
+		{
+			if(showText)
+			{
+				toolBnt->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+			}
+			else
+			{
+				toolBnt->setToolButtonStyle(Qt::ToolButtonIconOnly);
+			}
+		}
+	}
 }
 
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on)

@@ -10,15 +10,22 @@ precision highp float;
 //#define MATERIAL_TEXTURE
 //#define VERTEX_COLOR
 //#define ALPHABLEND
+//#define FLATCOLOR
+//#define VERTEX_FOG
 
 // DECLARATIONS
+#if defined(MATERIAL_TEXTURE)
 uniform sampler2D texture0;
 varying mediump vec2 varTexCoord0;
+#elif defined(MATERIAL_SKYBOX)
+uniform samplerCube texture0;
+varying mediump vec3 varTexCoord0;
+#endif
 
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
 uniform sampler2D texture1;
 varying mediump vec2 varTexCoord1;
-#endif 
+#endif
 
 #if defined(PIXEL_LIT)
 uniform sampler2D normalMapTexture;
@@ -57,15 +64,26 @@ varying lowp float varLightmapSize;
 varying lowp vec4 varVertexColor;
 #endif
 
+#if defined(FLATCOLOR)
+uniform lowp vec4 flatColor;
+#endif
+
 void main()
 {
     // FETCH PHASE
+#if defined(MATERIAL_TEXTURE)
+	
 #if defined(GLOSS) || defined(OPAQUE) || defined(ALPHABLEND)
     lowp vec4 textureColor0 = texture2D(texture0, varTexCoord0);
 #else
     lowp vec3 textureColor0 = texture2D(texture0, varTexCoord0).rgb;
 #endif
-
+	
+#elif defined(MATERIAL_SKYBOX)
+	lowp vec4 textureColor0 = textureCube(texture0, varTexCoord0);
+#endif
+	
+#if defined(MATERIAL_TEXTURE)
 #if defined(OPAQUE)
     float alpha = textureColor0.a;
     #if defined(VERTEX_COLOR)
@@ -73,8 +91,9 @@ void main()
     #endif
     if (alpha < 0.5)discard;
 #endif
+#endif
     
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
     lowp vec3 textureColor1 = texture2D(texture1, varTexCoord1).rgb;
 #if defined(SETUP_LIGHTMAP)
 	vec3 lightGray = vec3(0.75, 0.75, 0.75);
@@ -139,22 +158,41 @@ void main()
     	#endif
 	}
 #endif
-	
+
+#elif defined(MATERIAL_VIEW_LIGHTMAP_ONLY)	
+    vec3 color = textureColor1.rgb;
+#elif defined(MATERIAL_VIEW_TEXTURE_ONLY)
+    vec3 color = textureColor0.rgb;
+#elif defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_DETAIL)
+    vec3 color = textureColor0.rgb * textureColor1.rgb * 2.0;
 #elif defined(MATERIAL_TEXTURE)
     vec3 color = textureColor0.rgb;
-#elif defined(MATERIAL_DECAL) || defined(MATERIAL_LIGHTMAP)
-    vec3 color = textureColor0.rgb * textureColor1.rgb * 2.0;
-#elif defined(MATERIAL_DETAIL)
-    vec3 color = textureColor0.rgb * textureColor1.rgb * 2.0;
+#elif defined(MATERIAL_SKYBOX)
+	vec4 color = textureColor0;
+#else
+	vec3 color = vec3(1.0);
 #endif
 
-#if defined(VERTEX_COLOR)
-	gl_FragColor = vec4(textureColor0*varVertexColor);
-#elif defined(VERTEX_FOG)
-    gl_FragColor = vec4(mix(fogColor, color, varFogFactor), 1.0);
-#elif defined(ALPHABLEND)
+#if defined(ALPHABLEND) && defined(MATERIAL_TEXTURE)
 	gl_FragColor = vec4(color, textureColor0.a);
+#elif defined(MATERIAL_SKYBOX)
+	gl_FragColor = color;
 #else
     gl_FragColor = vec4(color, 1.0);
 #endif
+
+#if defined(VERTEX_COLOR)
+	gl_FragColor *= varVertexColor;
+#endif
+
+#if defined(FLATCOLOR)
+    gl_FragColor *= flatColor;
+#endif
+	
+#if defined(VERTEX_FOG)
+    gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
+#endif
+
+    
+
 }

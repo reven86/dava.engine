@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Particles/ParticleEmitter.h"
 #include "Particles/Particle.h"
 #include "Particles/ParticleLayer.h"
@@ -41,6 +55,11 @@ ParticleEmitter::ParticleEmitter()
 	bbox = AABBox3(Vector3(), Vector3());
 	parentParticle = NULL;
 	deferredTimeElapsed = 0.0f;
+
+	currentLodLevel = 0;
+	desiredLodLevel = 0;
+	shortEffect = false;
+	lodLevelLocked = false;
 }
 
 ParticleEmitter::~ParticleEmitter()
@@ -179,7 +198,8 @@ void ParticleEmitter::AddLayer(ParticleLayer * layer)
 	{
 		layer->GetEmitter()->RemoveLayer(layer);
 	}
-
+	// DF-1213 - Set loopEndTime initial value
+	layer->SetLoopEndTime(this->GetLifeTime());
 	layers.push_back(layer);
 	layer->SetEmitter(this);
 	AddRenderBatch(layer->GetRenderBatch());
@@ -263,6 +283,28 @@ ParticleLayer* ParticleEmitter::GetNextLayer(ParticleLayer* layer)
 	return number->GetValue(time);
 } */
 
+void ParticleEmitter::SetDesiredLodLevel(int32 level)
+{
+	desiredLodLevel = level;
+	if (!lodLevelLocked){
+		currentLodLevel = desiredLodLevel;
+	}
+}
+
+bool ParticleEmitter::IsShortEffect()
+{
+	return shortEffect;
+}
+void ParticleEmitter::SetShortEffect(bool isShort)
+{
+	shortEffect = isShort;
+	if (!isShort)
+	{
+		lodLevelLocked = false; //once effect is not considered short anymore - unlock lod
+		currentLodLevel = desiredLodLevel;
+	}
+}
+
 void ParticleEmitter::Play()
 {
     Pause(false);
@@ -297,16 +339,20 @@ void ParticleEmitter::DoRestart(bool isDeleteAllParticles)
 
 	time = 0.0f;
 	repeatCount = 0;
+	lodLevelLocked = false;
+	currentLodLevel = desiredLodLevel;
 }
 
-void ParticleEmitter::DeferredUpdate(float32 timeElapsed)
+bool ParticleEmitter::DeferredUpdate(float32 timeElapsed)
 {
 	deferredTimeElapsed += timeElapsed;
 	if (deferredTimeElapsed > PARTICLE_EMITTER_DEFERRED_UPDATE_INTERVAL)
 	{
 		Update(deferredTimeElapsed);
 		deferredTimeElapsed = 0.0f;
-	}
+		return true;
+	}	
+	return false;	
 }
 	
 void ParticleEmitter::Update(float32 timeElapsed)
@@ -340,7 +386,17 @@ void ParticleEmitter::Update(float32 timeElapsed)
 	for(it = layers.begin(); it != layers.end(); ++it)
 	{
         if(!(*it)->GetDisabled())
-            (*it)->Update(timeElapsed);
+            (*it)->Update(timeElapsed, (*it)->IsLodActive(currentLodLevel));
+	}
+
+	if (shortEffect)
+		lodLevelLocked = true;
+}
+
+void ParticleEmitter::PrepareRenderData(Camera * camera){
+	for(Vector<ParticleLayer*>::iterator it = layers.begin(), e = layers.end(); it!=e; ++it)
+	{
+		(*it)->PrepareRenderData(camera);
 	}
 }
 
@@ -465,7 +521,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 
 	YamlNode * rootNode = parser->GetRootNode();
 
-	YamlNode * emitterNode = rootNode->Get("emitter");
+	const YamlNode * emitterNode = rootNode->Get("emitter");
 	if (emitterNode)
 	{
 		if (emitterNode->Get("emissionAngle"))
@@ -474,7 +530,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 		if (emitterNode->Get("emissionVector"))
 			emissionVector = PropertyLineYamlReader::CreateVector3PropertyLineFromYamlNode(emitterNode, "emissionVector");
         
-		YamlNode* emissionVectorInvertedNode = emitterNode->Get("emissionVectorInverted");
+		const YamlNode* emissionVectorInvertedNode = emitterNode->Get("emissionVectorInverted");
 		if (!emissionVectorInvertedNode)
 		{
 			// Yuri Coder, 2013/04/12. This means that the emission vector in the YAML file is not inverted yet.
@@ -491,11 +547,11 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 			radius = PropertyLineYamlReader::CreateFloatPropertyLineFromYamlNode(emitterNode, "radius");
 		
 		emitPointsCount = -1; 
-		YamlNode * emitAtPointsNode = emitterNode->Get("emitAtPoints");
+		const YamlNode * emitAtPointsNode = emitterNode->Get("emitAtPoints");
 		if (emitAtPointsNode)
 			emitPointsCount = emitAtPointsNode->AsInt();
 		
-		YamlNode * lifeTimeNode = emitterNode->Get("life");
+		const YamlNode * lifeTimeNode = emitterNode->Get("life");
 		if (lifeTimeNode)
 		{
 			lifeTime = lifeTimeNode->AsFloat();
@@ -505,13 +561,16 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 		}
         
         is3D = false;
-		YamlNode * _3dNode = emitterNode->Get("3d");
+		const YamlNode * _3dNode = emitterNode->Get("3d");
 		if (_3dNode)
 		{	
 			is3D = _3dNode->AsBool();
 		}
+		const YamlNode * shortEffectNode = emitterNode->Get("shortEffect");
+		if (shortEffectNode)
+			shortEffect = shortEffectNode->AsBool();
         
-		YamlNode * typeNode = emitterNode->Get("type");
+		const YamlNode * typeNode = emitterNode->Get("type");
 		if (typeNode)
 		{	
 			if (typeNode->AsString() == "point")
@@ -540,26 +599,26 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
         if(size == 0)
         {
             Vector3 _size(0, 0, 0);
-            YamlNode * widthNode = emitterNode->Get("width");
+            const YamlNode * widthNode = emitterNode->Get("width");
             if (widthNode)
                 _size.x = widthNode->AsFloat();
 
-            YamlNode * heightNode = emitterNode->Get("height");
+            const YamlNode * heightNode = emitterNode->Get("height");
             if (heightNode)
                 _size.y = heightNode->AsFloat();
 
-            YamlNode * depthNode = emitterNode->Get("depth");
+            const YamlNode * depthNode = emitterNode->Get("depth");
             if (depthNode)
                 _size.y = depthNode->AsFloat();
             
             size = new PropertyLineValue<Vector3>(_size);
         }
         
-		YamlNode * autorestartNode = emitterNode->Get("autorestart");
+		const YamlNode * autorestartNode = emitterNode->Get("autorestart");
 		if(autorestartNode)
 			isAutorestart = autorestartNode->AsBool();
 
-		YamlNode * particlesFollowNode = emitterNode->Get("particlesFollow");
+		const YamlNode * particlesFollowNode = emitterNode->Get("particlesFollow");
 		if(particlesFollowNode)
 			particlesFollow = particlesFollowNode->AsBool();
 	}
@@ -567,10 +626,10 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 	int cnt = rootNode->GetCount();
 	for (int k = 0; k < cnt; ++k)
 	{
-		YamlNode * node = rootNode->Get(k);
-		YamlNode * typeNode = node->Get("type");
+		const YamlNode * node = rootNode->Get(k);
+		const YamlNode * typeNode = node->Get("type");
 		
-		YamlNode * longNode = node->Get("isLong");
+		const YamlNode * longNode = node->Get("isLong");
 		bool isLong = false;
 		if(longNode && (longNode->AsBool() == true))
 		{
@@ -607,6 +666,7 @@ void ParticleEmitter::SaveToYaml(const FilePath & filename)
     
     emitterYamlNode->Set("3d", this->is3D);
     emitterYamlNode->Set("type", GetEmitterTypeName());
+	emitterYamlNode->Set("shortEffect", shortEffect);
     
     // Write the property lines.
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "emissionAngle", this->emissionAngle);
@@ -794,7 +854,7 @@ void ParticleEmitter::UpdateLayerNameIfEmpty(ParticleLayer* layer, int32 index)
 }
 
 
-void ParticleEmitter::LoadParticleLayerFromYaml(YamlNode* yamlNode, bool isLong)
+void ParticleEmitter::LoadParticleLayerFromYaml(const YamlNode* yamlNode, bool isLong)
 {
 	ParticleLayer* layer = new ParticleLayer();
 	AddLayer(layer);

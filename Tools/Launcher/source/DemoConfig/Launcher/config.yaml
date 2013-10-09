@@ -1,6 +1,0 @@
-URL_launcher: http://127.0.0.1/~adebt/Launcher/Launcher.app.zip
-launcher_ver: 0.2
-
-URL_stable: http://127.0.0.1/~adebt/Launcher/stable.yaml
-URL_development: http://127.0.0.1/~adebt/Launcher/development.yaml
-URL_dependencies: http://127.0.0.1/~adebt/Launcher/dependencies.yaml

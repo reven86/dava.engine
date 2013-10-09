@@ -1439,3 +1439,66 @@ bool DirectDrawSurface::getFormat(nvtt::Format * retFormat) const
 	return true;
 }
 
+uint DirectDrawSurface::getFaceCount()
+{
+	uint faceCount = 1;
+	if((header.caps.caps2 & DDSCAPS2_CUBEMAP_ALL_FACES) == DDSCAPS2_CUBEMAP_ALL_FACES)
+	{
+		faceCount = 6;
+	}
+	else
+	{
+		faceCount = 0;
+		static uint faces[] = {
+			DDSCAPS2_CUBEMAP_POSITIVEX,
+			DDSCAPS2_CUBEMAP_NEGATIVEX,
+			DDSCAPS2_CUBEMAP_POSITIVEY,
+			DDSCAPS2_CUBEMAP_NEGATIVEY,
+			DDSCAPS2_CUBEMAP_POSITIVEZ,
+			DDSCAPS2_CUBEMAP_NEGATIVEZ
+		};
+		
+		for(int i = 0; i < 6; ++i)
+		{
+			if(header.caps.caps2 & faces[i])
+			{
+				faceCount++;
+			}
+		}
+	}
+
+	return faceCount;
+}
+
+uint DirectDrawSurface::getFaceFlags()
+{
+	uint faceMask = 0;
+	
+	if((header.caps.caps2 & DDSCAPS2_CUBEMAP_ALL_FACES) == DDSCAPS2_CUBEMAP_ALL_FACES)
+	{
+		faceMask = 0x0000003F;
+	}
+	else
+	{
+		static uint faces[] = {
+			DDSCAPS2_CUBEMAP_POSITIVEX,
+			DDSCAPS2_CUBEMAP_NEGATIVEX,
+			DDSCAPS2_CUBEMAP_POSITIVEY,
+			DDSCAPS2_CUBEMAP_NEGATIVEY,
+			DDSCAPS2_CUBEMAP_POSITIVEZ,
+			DDSCAPS2_CUBEMAP_NEGATIVEZ
+		};
+		
+		for(int i = 0; i < 6; ++i)
+		{
+			if(header.caps.caps2 & faces[i])
+			{
+				faceMask = faceMask | (1 << i);
+			}
+		}
+	}
+	
+	return faceMask;
+}
+
+

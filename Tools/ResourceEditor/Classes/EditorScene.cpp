@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 
 #include "EditorScene.h"
@@ -36,7 +50,6 @@ REGISTER_CLASS_WITH_ALIAS(EditorScene, "Scene");
 EditorScene::EditorScene()
 :Scene()
 {
-    cameraLight = NULL;
     selectedEntity = NULL;
     originalHandler = NULL;
 	selection = 0;
@@ -58,15 +71,17 @@ EditorScene::EditorScene()
 	renderSystem->AddRenderLayer(LAYER_ARROWS, PASS_FORWARD, LAST_LAYER);
 
     SetDrawGrid(true);
-    
-    CreateCameraLight();
 
+    editorLightSystem = new EditorLightSystem(this);
+	AddSystem(editorLightSystem, 1 << Component::LIGHT_COMPONENT);
+    
 	SetShadowBlendMode(ShadowVolumeRenderPass::MODE_BLEND_MULTIPLY);
 }
 
 EditorScene::~EditorScene()
 {
-    SafeRelease(cameraLight);
+	RemoveSystem(editorLightSystem);
+	SafeDelete(editorLightSystem);
     
 	ReleaseUserData(this);
 	SafeDelete(collisionWorld);
@@ -82,9 +97,9 @@ EditorScene::~EditorScene()
 
 void EditorScene::Update(float32 timeElapsed)
 {    
-    UpdateCameraLight();
-
 	Scene::Update(timeElapsed);
+
+	editorLightSystem->Process();
 
 	CheckNodes(this);
 	UpdateBullet(this);
@@ -296,7 +311,7 @@ void EditorScene::TrySelection(Vector3 from, Vector3 direction)
 	btCollisionObject * coll = 0;
 	if (cb.hasHit()) 
     {
-		//Logger::Debug("Has Hit");
+		//Logger::FrameworkDebug("Has Hit");
 		int findedIndex = cb.m_collisionObjects.size() - 1;
 		if(lastSelectedPhysics)
 		{
@@ -317,7 +332,7 @@ void EditorScene::TrySelection(Vector3 from, Vector3 direction)
 				findedIndex = findedIndex % cb.m_collisionObjects.size();
 			}
 		}
-			//		Logger::Debug("size:%d selIndex:%d", cb.m_collisionObjects.size(), findedIndex);
+			//		Logger::FrameworkDebug("size:%d selIndex:%d", cb.m_collisionObjects.size(), findedIndex);
 		
 		if (findedIndex == -1)
 			findedIndex = cb.m_collisionObjects.size() - 1;
@@ -398,7 +413,7 @@ bool EditorScene::LandscapeIntersection(const DAVA::Vector3 &from, const DAVA::V
 	uint64 time2;
     landCollisionWorld->rayTest(pos, to, cb);
 	time2 = SystemTimer::Instance()->AbsoluteMS();
-	//Logger::Debug("raytest %lld", time2-time1);
+	//Logger::FrameworkDebug("raytest %lld", time2-time1);
 	btCollisionObject * coll = 0;
 	if (cb.hasHit()) 
     {
@@ -678,51 +693,7 @@ const RenderManager::Stats & EditorScene::GetRenderStats() const
     return renderStats;
 }
 
-void EditorScene::CreateCameraLight()
-{
-    SafeRelease(cameraLight);
-    
-    Light *light = new Light();
-    light->SetType(Light::TYPE_DIRECTIONAL);
 
-    cameraLight = new Entity();
-    cameraLight->SetName(ResourceEditor::EDITOR_CAMERA_LIGHT);
-    cameraLight->AddComponent(new LightComponent(light));
-    light->Release();
-    
-    UpdateCameraLightOnScene();
-}
-
-void EditorScene::UpdateCameraLight()
-{
-    Camera *camera = GetCurrentCamera();
-    if(!camera || !cameraLight || !cameraLight->GetParent()) return;
-    
-    
-    Matrix4 m = Matrix4::MakeTranslation(camera->GetPosition() + camera->GetLeft() * 20.f + camera->GetUp() * 20.f);
-    cameraLight->SetLocalTransform(m);
-}
-
-void EditorScene::UpdateCameraLightOnScene()
-{
-    UpdateCameraLightOnScene(EditorSettings::Instance()->GetShowEditorCamerLight());
-}
-
-void EditorScene::UpdateCameraLightOnScene(bool show)
-{
-    if(show)
-    {
-        bool foundLight = IsLightOnSceneRecursive(this);
-        if(!foundLight)
-        {   //only one case for showing camera relative light
-            AddEditorEntity(cameraLight);
-            return;
-        }
-    }
-
-    //Need to hide camera
-    HideCameraLight();
-}
 
 void EditorScene::AddEditorEntity(Entity *editorEntity)
 {
@@ -736,29 +707,6 @@ void EditorScene::AddEditorEntity(Entity *editorEntity)
     }
 }
 
-
-void EditorScene::HideCameraLight()
-{
-    if(cameraLight->GetParent())
-    {
-        cameraLight->GetParent()->RemoveNode(cameraLight);
-    }
-}
-
-bool EditorScene::IsLightOnSceneRecursive(Entity *entity)
-{
-    if(entity->GetComponent(Component::LIGHT_COMPONENT) && entity != cameraLight)
-        return true;
-    
-    int32 count = entity->GetChildrenCount();
-    for(int32 i = 0; i < count; ++i)
-    {
-        if(IsLightOnSceneRecursive(entity->GetChild(i)))
-            return true;
-    }
-    
-    return false;
-}
 
 void EditorScene::UpdateShadowColorFromLandscape()
 {
@@ -786,6 +734,7 @@ void EditorScene::SetShadowColor( const Color &color )
 	UpdateShadowColorFromLandscape();
 }
 
+
 Color EditorScene::GetShadowColor()
 {
 	return GetRenderSystem()->GetShadowRectColor();
@@ -803,5 +752,4 @@ ShadowVolumeRenderPass::eBlend EditorScene::GetShadowBlendMode()
 	ShadowVolumeRenderPass *shadowPass = DynamicTypeCheck<ShadowVolumeRenderPass*>( GetRenderSystem()->GetRenderPass(PASS_SHADOW_VOLUME) );
 	return shadowPass->GetBlendMode();
 }
-
 

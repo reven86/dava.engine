@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import com.bda.controller.ControllerListener;
 import com.bda.controller.StateEvent;
 
-import android.app.ActionBar.OnNavigationListener;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -45,7 +43,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 
 		//setPreserveEGLContextOnPause(true);
 		setEGLContextFactory(new JNIContextFactory());
-		setEGLConfigChooser(new JNIConfigChooser(8, 8, 8, 8, 16, 8));
+		setEGLConfigChooser(new JNIConfigChooser());
 
 		mRenderer = new JNIRenderer();
 		setRenderer(mRenderer);

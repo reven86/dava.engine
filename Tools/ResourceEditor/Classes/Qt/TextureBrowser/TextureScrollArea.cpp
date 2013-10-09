@@ -1,20 +1,35 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+
 #include "TextureScrollArea.h"
+#include "Render/Texture.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
@@ -30,6 +45,19 @@
 #include <QMovie>
 #include <QLabel>
 
+const int TILE_WIDTH = 3;
+const int TILE_HEIGHT = 4;
+
+static int facePositions[6][2] =
+{
+	{1, 0}, //pos x
+	{1, 2}, //neg x
+	{0, 1}, //pos y
+	{2, 1}, //neg y
+	{1, 1}, //pos z
+	{1, 3}  //neg z
+};
+
 TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 	: QGraphicsView(parent)
 	, textureColorMask((int) ChannelAll)
@@ -39,6 +67,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 	, zoomFactor(1.0)
 	, tiledBgDoDraw(false)
 	, warningVisible(false)
+	, compositeImagesFlags(0)
 {
 	// create and setup scene
 	textureScene = new QGraphicsScene();
@@ -96,11 +125,16 @@ TextureScrollArea::~TextureScrollArea()
 
 void TextureScrollArea::setImage(const QImage &image)
 {
+	currentCompositeImages.clear();
+	compositeImagesFlags = 0;
+	cubeDrawPixmap = QPixmap(1, 1);
+	
 	currentTextureImage = image;
 	QImage::Format imgFormat = image.format();
 
-	applyCurrentImageToScenePixmap();
-	applyCurrentImageBorder();
+	//applyCurrentImageToScenePixmap();
+	applyTextureImageToScenePixmap();
+	applyTextureImageBorder();
 
 	warningVisible = currentTextureImage.isNull();
 	warningProxy->setVisible(warningVisible);
@@ -111,7 +145,8 @@ void TextureScrollArea::setImage(const QImage &image)
 void TextureScrollArea::setColorChannel(int mask)
 {
 	textureColorMask = mask;
-	applyCurrentImageToScenePixmap();
+	//applyCurrentImageToScenePixmap();
+	applyTextureImageToScenePixmap();
 }
 
 float TextureScrollArea::getTextureZoom()
@@ -122,11 +157,38 @@ float TextureScrollArea::getTextureZoom()
 QColor TextureScrollArea::getPixelColor(QPoint pos)
 {
 	QRgb rgb = 0;
-
-	if(pos.x() >= 0 && pos.x() < currentTextureImage.width() &&
-		pos.y() >= 0 && pos.y() < currentTextureImage.height())
+	
+	if(isCompositeImage())
 	{
-		rgb = currentTextureImage.pixel(pos);
+		int tileWidth = currentCompositeImages[0].width();
+		int tileHeight = currentCompositeImages[0].height();
+		for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+		{
+			if((compositeImagesFlags & (1 << i)) != 0)
+			{
+				int px = facePositions[i][0] * tileWidth;
+				int py = facePositions[i][1] * tileHeight;
+				
+				if(pos.x() >= px &&
+				   pos.x() <= px + tileWidth &&
+				   pos.y() >= py &&
+				   pos.y() <= py + tileWidth)
+				{
+					int x = pos.x() - px;
+					int y = pos.y() - py;
+					
+					rgb = currentCompositeImages[i].pixel(QPoint(x, y));
+				}
+			}
+		}
+	}
+	else
+	{
+		if(pos.x() >= 0 && pos.x() < currentTextureImage.width() &&
+		   pos.y() >= 0 && pos.y() < currentTextureImage.height())
+		{
+			rgb = currentTextureImage.pixel(pos);
+		}
 	}
 
 	return QColor::fromRgba(rgb);
@@ -246,48 +308,11 @@ void TextureScrollArea::mouseReleaseEvent(QMouseEvent *event)
 
 void TextureScrollArea::applyCurrentImageToScenePixmap()
 {
-	// TODO: optimize this code
-
 	if(~textureColorMask)
 	{
-		int mask = 0xFFFFFFFF;
-		int maskA = 0;
-
-		QImage tmpImage = currentTextureImage.convertToFormat(QImage::Format_ARGB32);
-
-		if(!(textureColorMask & ChannelR)) mask &= 0xFF00FFFF;
-		if(!(textureColorMask & ChannelG)) mask &= 0xFFFF00FF;
-		if(!(textureColorMask & ChannelB)) mask &= 0xFFFFFF00;
-		if(!(textureColorMask & ChannelA)) maskA |= 0xFF000000;
-
-		if(mask == 0xFF000000)
-		{
-			maskA ^= 0xFF000000;
-
-			// only alpha, so show it
-			for (int y = 0; y < tmpImage.height(); y++) 
-			{
-				QRgb *line = (QRgb *) tmpImage.scanLine(y);
-				for (int x = 0; x < tmpImage.width(); x++) 
-				{
-					int c = (line[x] & 0xFF000000) >> 24;
-					line[x] = (maskA | c << 16 | c << 8 | c);
-				}
-			}
-		}
-		else
-		{
-			for (int y = 0; y < tmpImage.height(); y++) 
-			{
-				QRgb *line = (QRgb *) tmpImage.scanLine(y);
-				for (int x = 0; x < tmpImage.width(); x++) 
-				{
-					line[x] &= mask;
-					line[x] |= maskA;
-				}
-			}
-		}
-
+		QImage tmpImage;
+		prepareImageWithColormask(currentTextureImage, tmpImage);
+		
 		QPixmap pixmap = QPixmap::fromImage(tmpImage);
 		textureScene->setSceneRect(pixmap.rect());
 		texturePixmap->setPixmap(pixmap);
@@ -297,7 +322,7 @@ void TextureScrollArea::applyCurrentImageToScenePixmap()
 		QPixmap pixmap = QPixmap::fromImage(currentTextureImage);
 		textureScene->setSceneRect(pixmap.rect());
 		texturePixmap->setPixmap(pixmap);
-	}
+	}	
 }
 
 void TextureScrollArea::applyCurrentImageBorder()
@@ -364,4 +389,181 @@ void TextureScrollArea::sutupCustomTiledBg()
 QImage TextureScrollArea::getImage()
 {
 	return currentTextureImage;
+}
+
+void TextureScrollArea::setImage(const DAVA::Vector<QImage>& images, int flags)
+{
+	currentTextureImage = QImage();
+	currentCompositeImages.clear();
+	currentCompositeImages.resize(images.size());
+	
+	for(size_t i = 0; i < images.size(); ++i)
+	{
+		currentCompositeImages[i] = images[i];
+	}
+	
+	compositeImagesFlags = flags;
+		
+	applyTextureImageToScenePixmap();
+	applyTextureImageBorder();
+	
+	if(isCompositeImage())
+	{
+		warningVisible = (images.size() == 0);
+		warningProxy->setVisible(warningVisible);
+	}
+	else
+	{
+		warningVisible = currentTextureImage.isNull();
+		warningProxy->setVisible(warningVisible);
+	}
+	
+	adjustWidgetsPos();
+}
+
+bool TextureScrollArea::isCompositeImage() const
+{
+	return (currentCompositeImages.size() > 0);
+}
+
+void TextureScrollArea::prepareImageWithColormask(QImage& srcImage, QImage& dstImage)
+{
+	// TODO: optimize this code
+
+	int mask = 0xFFFFFFFF;
+	int maskA = 0;
+	
+	dstImage = srcImage.convertToFormat(QImage::Format_ARGB32);
+	
+	if(!(textureColorMask & ChannelR)) mask &= 0xFF00FFFF;
+	if(!(textureColorMask & ChannelG)) mask &= 0xFFFF00FF;
+	if(!(textureColorMask & ChannelB)) mask &= 0xFFFFFF00;
+	if(!(textureColorMask & ChannelA)) maskA |= 0xFF000000;
+	
+	if(mask == 0xFF000000)
+	{
+		maskA ^= 0xFF000000;
+		
+		// only alpha, so show it
+		for (int y = 0; y < dstImage.height(); y++)
+		{
+			QRgb *line = (QRgb *) dstImage.scanLine(y);
+			for (int x = 0; x < dstImage.width(); x++)
+			{
+				int c = (line[x] & 0xFF000000) >> 24;
+				line[x] = (maskA | c << 16 | c << 8 | c);
+			}
+		}
+	}
+	else
+	{
+		for (int y = 0; y < dstImage.height(); y++)
+		{
+			QRgb *line = (QRgb *) dstImage.scanLine(y);
+			for (int x = 0; x < dstImage.width(); x++)
+			{
+				line[x] &= mask;
+				line[x] |= maskA;
+			}
+		}
+	}
+}
+
+void TextureScrollArea::applyCurrentCompositeImagesToScenePixmap()
+{	
+	int tileWidth = currentCompositeImages[0].width();
+	int tileHeight = currentCompositeImages[0].height();
+	
+	cubeDrawPixmap = QPixmap(tileWidth * 3,
+							 tileHeight * 4);
+	
+	QPainter p(&cubeDrawPixmap);
+	p.setBrush(QBrush(QColor(0, 0, 0)));
+	p.setPen(Qt::NoPen);
+	p.drawRect(0, 0, cubeDrawPixmap.width(), cubeDrawPixmap.height());
+
+	QMatrix rotation;
+	rotation.rotate(90);
+	int currentIndex = 0;
+	for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+	{
+		if((compositeImagesFlags & (1 << i)) != 0)
+		{
+			int px = facePositions[i][0] * tileWidth;
+			int py = facePositions[i][1] * tileHeight;
+			
+			if(~textureColorMask)
+			{
+				QImage tmpImage;
+				prepareImageWithColormask(currentCompositeImages[currentIndex], tmpImage);
+				p.drawImage(QPoint(px, py), tmpImage.transformed(rotation));
+			}
+			else
+			{
+				p.drawImage(QPoint(px, py), currentCompositeImages[currentIndex].transformed(rotation));
+			}
+			
+			currentIndex++;
+		}
+	}
+	
+	textureScene->setSceneRect(cubeDrawPixmap.rect());
+	texturePixmap->setPixmap(cubeDrawPixmap);
+}
+
+void TextureScrollArea::applyTextureImageToScenePixmap()
+{
+	if(isCompositeImage())
+	{
+		applyCurrentCompositeImagesToScenePixmap();
+	}
+	else
+	{
+		applyCurrentImageToScenePixmap();
+	}
+}
+
+void TextureScrollArea::applyTextureImageBorder()
+{
+	if(isCompositeImage())
+	{
+		applyCompositeImageBorder();
+	}
+	else
+	{
+		applyCurrentImageBorder();
+	}
+}
+
+void TextureScrollArea::applyCompositeImageBorder()
+{
+	QRectF r(cubeDrawPixmap.rect());
+	
+	if(r.width() != 0 && r.height() != 0)
+	{
+		r.adjust(-0.1, -0.1, 0.1, 0.1);
+	}
+	
+	textureBorder->setRect(r);
+	r.adjust(0, 0, 1, 1);
+	textureScene->setSceneRect(r);	
+}
+
+QSize TextureScrollArea::getContentSize()
+{
+	QSize size;
+	if(isCompositeImage())
+	{
+		int tileWidth = currentCompositeImages[0].width();
+		int tileHeight = currentCompositeImages[0].height();
+
+		size.setWidth(tileWidth * 3);
+		size.setHeight(tileHeight * 4);
+	}
+	else
+	{
+		size = currentTextureImage.size();
+	}
+
+	return size;
 }

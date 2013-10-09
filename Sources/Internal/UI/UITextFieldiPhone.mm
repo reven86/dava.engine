@@ -92,6 +92,15 @@ float GetUITextViewSizeDivider()
 		textField.delegate = self;
 		
 		[self setupTraits];
+		
+		// Attach to "keyboard shown/keyboard hidden" notifications.
+		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+		[center addObserver:self selector:@selector(keyboardDidShow:)
+					   name:UIKeyboardDidShowNotification object:nil];
+		[center addObserver:self selector:@selector(keyboardWillHide:)
+					   name:UIKeyboardWillHideNotification object:nil];
+
+		// Done!
 		[self addSubview:textField];
 	}
 	return self;
@@ -108,6 +117,8 @@ float GetUITextViewSizeDivider()
 {
 	[textField release];
 	textField = 0;
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+
 	[super dealloc];
 }
 
@@ -389,6 +400,46 @@ float GetUITextViewSizeDivider()
 			return UIReturnKeyDefault;
 		}
 	}
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification
+{
+	if (cppTextField && cppTextField->GetDelegate())
+	{
+		cppTextField->GetDelegate()->OnKeyboardHidden();
+	}
+}
+
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+	if (!cppTextField || !cppTextField->GetDelegate())
+	{
+		return;
+	}
+
+	// keyboard frame is in window coordinates
+	NSDictionary *userInfo = [notification userInfo];
+	CGRect rawKeyboardFrame = [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+
+	// convert own frame to window coordinates, frame is in superview's coordinates
+	CGRect ownFrame = [textField.window convertRect:self.frame fromView:textField.superview];
+
+	// calculate the area of own frame that is covered by keyboard
+	CGRect keyboardFrame = CGRectIntersection(ownFrame, rawKeyboardFrame);
+
+	// now this might be rotated, so convert it back
+	keyboardFrame = [textField.window convertRect:keyboardFrame toView:textField.superview];
+
+	// Recalculate to virtual coordinates.
+	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
+	keyboardOrigin *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
+	keyboardOrigin += DAVA::UIControlSystem::Instance()->GetInputOffset();
+	
+	DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
+	keyboardSize *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
+	keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
+
+	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
 
 @end

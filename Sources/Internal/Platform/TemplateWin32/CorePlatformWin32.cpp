@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/TemplateWin32/WindowsSpecifics.h"
 #include "Platform/Thread.h"
@@ -104,7 +118,7 @@ namespace DAVA
 				WideString w = szArglist[i];
 				String nonWide = WStringToString(w);
 				cl.push_back(nonWide);
-				Logger::Debug("%d: %s\n", i, nonWide.c_str());
+				Logger::FrameworkDebug("%d: %s\n", i, nonWide.c_str());
 			}
 		}
 		// Free memory allocated for CommandLineToArgvW arguments.
@@ -237,7 +251,7 @@ namespace DAVA
 			SetWindowText(hWindow, titleW.c_str());
 		}
 
-		Logger::Info("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
+		Logger::FrameworkDebug("[PlatformWin32] best display fullscreen mode matched: %d x %d x %d refreshRate: %d", fullscreenMode.width, fullscreenMode.height, fullscreenMode.bpp, fullscreenMode.refreshRate);
 
 		currentMode = windowedMode;
 		if (isFullscreen)
@@ -318,6 +332,38 @@ namespace DAVA
 		FrameworkWillTerminate();
 	}
 
+/*	void CoreWin32Platform::InitOpenGL()
+	{
+		hDC = GetDC(hWindow);
+
+		PIXELFORMATDESCRIPTOR pfd;
+		ZeroMemory( &pfd, sizeof( pfd ) );
+		pfd.nSize = sizeof( pfd );
+		pfd.nVersion = 1;
+		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		pfd.iPixelType = PFD_TYPE_RGBA;
+		pfd.cColorBits = 24;
+		pfd.cDepthBits = 16;
+		pfd.iLayerType = PFD_MAIN_PLANE;
+		int iFormat = ChoosePixelFormat(hDC, &pfd);
+		SetPixelFormat(hDC, iFormat, &pfd);
+
+		hRC = wglCreateContext(hDC);
+		Thread::secondaryContext = wglCreateContext(hDC);
+		Thread::currentDC = hDC;
+		
+		wglShareLists(Thread::secondaryContext, hRC);
+		wglMakeCurrent(hDC, hRC);
+
+		Thread * t = Thread::Create(Message());
+		t->EnableCopyContext();
+		t->Start();
+
+		glewInit();
+		const GLubyte * extensions = glGetString(GL_EXTENSIONS);
+		Logger::FrameworkDebug("[CoreWin32Platform] gl extensions: %s", (const char*)extensions);
+	}*/
+
 	void CoreWin32Platform::ReleaseOpenGL()
 	{
 		wglMakeCurrent(0, 0);
@@ -362,7 +408,7 @@ namespace DAVA
 			SetWindowPos( hWindow, HWND_NOTOPMOST, windowPositionBeforeFullscreen.left, windowPositionBeforeFullscreen.top, windowedRect.right - windowedRect.left, windowedRect.bottom - windowedRect.top, SWP_NOACTIVATE | SWP_SHOWWINDOW );
 		}
 		
-		Logger::Debug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
+		Logger::FrameworkDebug("[RenderManagerDX9] toggle mode: %d x %d isFullscreen: %d", currentMode.width, currentMode.height, isFullscreen);
 
 		RenderManager::Instance()->ChangeDisplayMode(currentMode, isFullscreen);
 		RenderManager::Instance()->Init(currentMode.width, currentMode.height);
@@ -411,7 +457,7 @@ namespace DAVA
 			ZeroMemory (&dmi, sizeof(dmi)) ;
 			availableDisplayModes.push_back(mode);
 
-			Logger::Debug(L"[RenderManagerDX9::GetAvailableDisplayModes] mode found: %d x %d x %d",
+			Logger::FrameworkDebug(L"[RenderManagerDX9::GetAvailableDisplayModes] mode found: %d x %d x %d",
 				mode.width,
 				mode.height,
 				mode.bpp);
@@ -572,6 +618,8 @@ namespace DAVA
 	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam)
 	{
 		{
+			//Logger::FrameworkDebug("ms: %d %d", GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+
 			Vector<DAVA::UIEvent> touches;
 			Vector<DAVA::UIEvent> emptyTouches;
 
@@ -752,7 +800,7 @@ namespace DAVA
                 WORD hiWord = HIWORD(wParam);
                 if(!loWord || hiWord)
                 {
-                    Logger::Debug("[PlatformWin32] deactivate application");
+                    Logger::FrameworkDebug("[PlatformWin32] deactivate application");
                     RenderResource::SaveAllResourcesToSystemMem();
 					
                     if(core)
@@ -766,7 +814,7 @@ namespace DAVA
                 }
                 else
                 {
-                    Logger::Debug("[PlatformWin32] activate application");
+                    Logger::FrameworkDebug("[PlatformWin32] activate application");
 					if(core)
 					{
 						core->OnResume();

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
@@ -26,6 +40,7 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	, cameraSystem(camSys)
 	, curMode(ST_MODIF_OFF)
 	, moseOverAxis(ST_AXIS_NONE)
+    , curScale(1.0f)
 	, curHood(NULL)
 	, moveHood()
 	, lockedScale(false)
@@ -78,17 +93,17 @@ HoodSystem::~HoodSystem()
 
 DAVA::Vector3 HoodSystem::GetPosition() const
 {
-	return (curPos + curOffset);
+	return (curPos + modifOffset);
 }
 
 void HoodSystem::SetPosition(const DAVA::Vector3 &pos)
 {
 	if(!lockedScale)
 	{
-		if(curPos != pos)
+		if(curPos != pos || !modifOffset.IsZero())
 		{
 			curPos = pos;
-			curOffset = DAVA::Vector3(0, 0, 0);
+			ResetModifValues();
 
 			if(NULL != curHood)
 			{
@@ -99,17 +114,33 @@ void HoodSystem::SetPosition(const DAVA::Vector3 &pos)
 	}
 }
 
-void HoodSystem::MovePosition(const DAVA::Vector3 &offset)
+void HoodSystem::SetModifOffset(const DAVA::Vector3 &offset)
 {
-	if(curOffset != offset)
+	if(modifOffset != offset)
 	{
-		curOffset = offset;
+		modifOffset = offset;
 
 		if(NULL != curHood)
 		{
-			curHood->UpdatePos(curPos + curOffset);
-			normalHood.UpdatePos(curPos + curOffset);
+			curHood->UpdatePos(curPos + modifOffset);
+			normalHood.UpdatePos(curPos + modifOffset);
 		}
+	}
+}
+
+void HoodSystem::SetModifRotate(const DAVA::float32 &angle)
+{
+	if(curHood == &rotateHood)
+	{
+		rotateHood.modifRotate = angle;
+	}
+}
+
+void HoodSystem::SetModifScale(const DAVA::float32 &scale)
+{
+	if(curHood == &scaleHood)
+	{
+		scaleHood.modifScale = scale;
 	}
 }
 
@@ -127,6 +158,11 @@ void HoodSystem::SetScale(DAVA::float32 scale)
 			collWorld->updateAabbs();
 		}
 	}
+}
+
+DAVA::float32 HoodSystem::GetScale() const
+{
+	return curScale;
 }
 
 void HoodSystem::SetModifMode(ST_ModifMode mode)
@@ -159,7 +195,7 @@ void HoodSystem::SetModifMode(ST_ModifMode mode)
 		{
 			AddCollObjects(&curHood->collObjects);
 
-			curHood->UpdatePos(curPos + curOffset);
+			curHood->UpdatePos(curPos + modifOffset);
 			curHood->UpdateScale(curScale);
 		}
 
@@ -199,6 +235,13 @@ void HoodSystem::RemCollObjects(const DAVA::Vector<HoodCollObject*>* objects)
 	}
 }
 
+void HoodSystem::ResetModifValues()
+{
+	modifOffset = DAVA::Vector3(0, 0, 0);
+
+	rotateHood.modifRotate = 0;
+	scaleHood.modifScale = 0;
+}
 
 void HoodSystem::Update(float timeElapsed)
 {
@@ -254,6 +297,8 @@ void HoodSystem::Draw()
 {
 	if(visible && NULL != curHood)
 	{
+		TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
+
 		if(!lockedModif)
 		{
 			ST_Axis showAsSelected = curAxis;
@@ -266,19 +311,19 @@ void HoodSystem::Draw()
 				}
 			}
 
-			curHood->Draw(showAsSelected, moseOverAxis);
+			curHood->Draw(showAsSelected, moseOverAxis, textDrawSys);
 
 			// debug draw axis collision word
 			//collWorld->debugDrawWorld();
 		}
 		else
 		{
-			normalHood.Draw(curAxis, ST_AXIS_NONE);
+			normalHood.Draw(curAxis, ST_AXIS_NONE, textDrawSys);
 		}
 	}
 }
 
-void HoodSystem::PropeccCommand(const Command2 *command, bool redo)
+void HoodSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 
 }

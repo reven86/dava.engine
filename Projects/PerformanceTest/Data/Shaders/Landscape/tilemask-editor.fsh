@@ -12,7 +12,7 @@ varying vec2 varTexCoord0;
 void main()
 {
 	vec4 colorMaskOld = texture2D(texture0, varTexCoord0);
-	vec4 outColor;
+	vec4 outColor = vec4(1.0, 0.0, 1.0, 1.0);
 	
 	if(0 == colorType)//r
 	{

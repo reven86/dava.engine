@@ -157,7 +157,8 @@ FORMS    += \
     UI/listpropertygridwidget.ui \
     UI/alignspropertygridwidget.ui \
     UI/sliderpropertygridwidget.ui \
-    UI/scrollviewpropertygridwidget.ui
+    UI/scrollviewpropertygridwidget.ui \
+    UI/scrollcontrolpropertygridwidget.ui
 
 
 #debug dependent

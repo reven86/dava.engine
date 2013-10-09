@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_RENDER_BASE_H__
 #define __DAVAENGINE_RENDER_BASE_H__
 
@@ -435,6 +449,10 @@ enum eVertexFormat
     EVF_TANGENT			= 128,
     EVF_BINORMAL		= 256,
     EVF_JOINTWEIGHT		= 512,
+	EVF_CUBETEXCOORD0	= 1024,
+    EVF_CUBETEXCOORD1	= 2048,
+    EVF_CUBETEXCOORD2	= 4096,
+    EVF_CUBETEXCOORD3	= 8192,
     EVF_LOWER_BIT		= EVF_VERTEX,
     EVF_HIGHER_BIT		= EVF_JOINTWEIGHT, 
     EVF_NEXT_AFTER_HIGHER_BIT
@@ -459,6 +477,21 @@ inline int32 GetTexCoordCount(int32 vertexFormat)
 
 	return ret;
 }
+	
+inline int32 GetCubeTexCoordCount(int32 vertexFormat)
+{
+	int32 ret = 0;
+	for(int32 i = EVF_CUBETEXCOORD0; i < EVF_CUBETEXCOORD3+1; i = (i << 1))
+	{
+		if(vertexFormat & i)
+		{
+			ret++;
+		}
+	}
+		
+	return ret;
+}
+
     
     
 inline int32 GetVertexSize(int32 flags)
@@ -474,7 +507,13 @@ inline int32 GetVertexSize(int32 flags)
     if (flags & EVF_TANGENT) size += 3 * sizeof(float32);
     if (flags & EVF_BINORMAL) size += 3 * sizeof(float32);
     
-    if (flags & EVF_JOINTWEIGHT) size += 2 * sizeof(float32); // 4 * 3 + 4 * 3= 12 + 12 
+    if (flags & EVF_JOINTWEIGHT) size += 2 * sizeof(float32); // 4 * 3 + 4 * 3= 12 + 12
+	
+	if (flags & EVF_CUBETEXCOORD0) size += 3 * sizeof(float32);
+    if (flags & EVF_CUBETEXCOORD1) size += 3 * sizeof(float32);
+    if (flags & EVF_CUBETEXCOORD2) size += 3 * sizeof(float32);
+    if (flags & EVF_CUBETEXCOORD3) size += 3 * sizeof(float32);
+	
     return size;
 }
 

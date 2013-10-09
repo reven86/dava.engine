@@ -145,6 +145,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/Config.h</locationURI>
 		</link>
 		<link>
+			<name>src/Classes/ControlRotationTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/ControlRotationTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.h</locationURI>
+		</link>
+		<link>
 			<name>src/Classes/DLCSystemTests.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.cpp</locationURI>
@@ -388,6 +398,16 @@
 			<name>bin/classes/Classes/Config.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/Config.h</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/ControlRotationTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/ControlRotationTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.h</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/DLCSystemTests.cpp</name>

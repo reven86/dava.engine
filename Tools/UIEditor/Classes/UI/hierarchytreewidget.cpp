@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Classes/UI/hierarchytreewidget.h"
 #include "ui_hierarchytreewidget.h"
 #include "HierarchyTreeController.h"
@@ -23,13 +37,15 @@
 #include "ItemsCommand.h"
 #include "CommandsController.h"
 #include "CopyPasteController.h"
+#include "IconHelper.h"
+#include "SubcontrolsHelper.h"
+#include "ResourcesManageHelper.h"
+#include "WidgetSignalsBlocker.h"
+
 #include <QVariant>
 #include <QMenu>
 #include <QMessageBox>
 #include <QFileDialog>
-#include "IconHelper.h"
-#include "SubcontrolsHelper.h"
-#include "ResourcesManageHelper.h"
 
 #define ITEM_ID 0, Qt::UserRole
 
@@ -56,6 +72,8 @@ HierarchyTreeWidget::HierarchyTreeWidget(QWidget *parent) :
 			SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &)));
 	
 	connect(ui->treeWidget, SIGNAL(ShowCustomMenu(const QPoint&)), this, SLOT(OnShowCustomMenu(const QPoint&)));
+	connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(OnTreeItemChanged(QTreeWidgetItem*, int)));
+
 	internalSelectionChanged = false;
 }
 
@@ -175,6 +193,7 @@ void HierarchyTreeWidget::AddControlItem(QTreeWidgetItem* parent, const Hierarch
 		QTreeWidgetItem* controlItem = new QTreeWidgetItem();
 		controlItem->setData(ITEM_ID, controlNode->GetId());
 		controlItem->setText(0, controlNode->GetName());
+		controlItem->setCheckState(0, controlNode->GetVisibleFlag() ? Qt::Checked : Qt::Unchecked);
 
 		Decorate(controlItem, controlNode->GetUIObject());
 
@@ -632,3 +651,39 @@ HierarchyTreeNode* HierarchyTreeWidget::GetNodeFromTreeItem(QTreeWidgetItem* ite
 	HierarchyTreeNode::HIERARCHYTREENODEID id = data.toInt();
 	return HierarchyTreeController::Instance()->GetTree().GetNode(id);
 }
+
+void HierarchyTreeWidget::OnTreeItemChanged(QTreeWidgetItem *item, int column)
+{
+	bool currentVisibleFlag = (item->checkState(column) == Qt::Checked);
+	
+	WidgetSignalsBlocker blocker(this);
+	UpdateVisibleFlagRecursive(item, column, currentVisibleFlag);
+}
+
+void HierarchyTreeWidget::UpdateVisibleFlagRecursive(QTreeWidgetItem* rootItem, int column, bool flagValue)
+{
+	HierarchyTreeControlNode* controlNode = GetControlNodeByTreeItem(rootItem);
+	if (!controlNode)
+	{
+		return;
+	}
+
+	rootItem->setCheckState(column, flagValue ? Qt::Checked : Qt::Unchecked);
+	controlNode->SetVisibleFlag(flagValue);
+	
+	// Repeat for all children.
+	int childCount = rootItem->childCount();
+	for (int count = 0; count < childCount; count ++)
+	{
+		UpdateVisibleFlagRecursive(rootItem->child(count), column, flagValue);
+	}
+}
+
+HierarchyTreeControlNode* HierarchyTreeWidget::GetControlNodeByTreeItem(QTreeWidgetItem* item)
+{
+	QVariant data = item->data(ITEM_ID);
+	HierarchyTreeNode::HIERARCHYTREENODEID id = data.toInt();
+	
+	return dynamic_cast<HierarchyTreeControlNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(id));
+}
+

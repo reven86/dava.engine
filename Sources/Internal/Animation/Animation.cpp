@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Animation/Animation.h"
 #include "Animation/AnimationManager.h"
 #include "FileSystem/Logger.h"
@@ -50,10 +64,10 @@ void Animation::Start(int _groupId)
 //#ifdef ANIMATIONS_DEBUG
 //	if(AnimationManager::Instance()->IsAnimationLoggerEnabled())
 //	{
-//		Logger::Debug("ANIMATION LOGGER: Animation::Start 0x%x    for owner 0x%x", (int)this, (int)owner);
+//		Logger::FrameworkDebug("ANIMATION LOGGER: Animation::Start 0x%x    for owner 0x%x", (int)this, (int)owner);
 //	}
 //#endif
-	//Logger::Debug("Animation started: %d", _groupId);
+	//Logger::FrameworkDebug("Animation started: %d", _groupId);
 	Reset();
 	groupId = _groupId;
 	
@@ -61,17 +75,17 @@ void Animation::Start(int _groupId)
 	
 	if (!prevAnimation || (prevAnimation == this))
 	{
-		//Logger::Debug("real anim start");
+		//Logger::FrameworkDebug("real anim start");
 		state |= STATE_IN_PROGRESS;
 		OnStart();
 	}
 	else
 	{	
-		//Logger::Debug("add to queue");
+		//Logger::FrameworkDebug("add to queue");
 //#ifdef ANIMATIONS_DEBUG
 //		if(AnimationManager::Instance()->IsAnimationLoggerEnabled())
 //		{
-//			Logger::Debug("ANIMATION LOGGER: Animation::Set animation 0x%x as next for 0x%x   for owner 0x%x", (int)this, (int)prevAnimation, (int)owner);
+//			Logger::FrameworkDebug("ANIMATION LOGGER: Animation::Set animation 0x%x as next for 0x%x   for owner 0x%x", (int)this, (int)prevAnimation, (int)owner);
 //		}
 //#endif
 		prevAnimation->next = this;
@@ -80,7 +94,7 @@ void Animation::Start(int _groupId)
 
 void Animation::Stop()
 {
-	//Logger::Debug("Animation stopped: %d", groupId);
+	//Logger::FrameworkDebug("Animation stopped: %d", groupId);
 	state &= ~STATE_IN_PROGRESS; 
 	state |= STATE_DELETE_ME;
 	OnStop();
@@ -158,7 +172,7 @@ void Animation::OnStart()
 //#ifdef ANIMATIONS_DEBUG
 //	if(AnimationManager::Instance()->IsAnimationLoggerEnabled())
 //	{
-//		Logger::Debug("ANIMATION LOGGER: Animation::OnStart 0x%x    for owner 0x%x", (int)this, (int)owner);
+//		Logger::FrameworkDebug("ANIMATION LOGGER: Animation::OnStart 0x%x    for owner 0x%x", (int)this, (int)owner);
 //	}
 //#endif
 	PerformEvent(EVENT_ANIMATION_START);
@@ -169,14 +183,14 @@ void Animation::OnStop()
 //#ifdef ANIMATIONS_DEBUG
 //	if(AnimationManager::Instance()->IsAnimationLoggerEnabled())
 //	{
-//		Logger::Debug("ANIMATION LOGGER: Animation::OnStop 0x%x    for owner 0x%x", (int)this, (int)owner);
+//		Logger::FrameworkDebug("ANIMATION LOGGER: Animation::OnStop 0x%x    for owner 0x%x", (int)this, (int)owner);
 //	}
 //#endif
 	PerformEvent(EVENT_ANIMATION_END);
 //#ifdef ANIMATIONS_DEBUG
 //	if(AnimationManager::Instance()->IsAnimationLoggerEnabled())
 //	{
-//		Logger::Debug("ANIMATION LOGGER: Animation::OnStop DONE 0x%x    for owner 0x%x", (int)this, (int)owner);
+//		Logger::FrameworkDebug("ANIMATION LOGGER: Animation::OnStop DONE 0x%x    for owner 0x%x", (int)this, (int)owner);
 //	}
 //#endif
 };

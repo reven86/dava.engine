@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>572</width>
-    <height>16</height>
+    <width>282</width>
+    <height>38</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -27,10 +27,19 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
-    <number>6</number>
+    <number>2</number>
    </property>
-   <property name="margin">
-    <number>0</number>
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>1</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>1</number>
    </property>
    <item>
     <widget class="QLabel" name="label">
@@ -41,7 +50,10 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>x:</string>
+      <string>X:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -55,7 +67,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>100</width>
+       <width>70</width>
        <height>0</height>
       </size>
      </property>
@@ -79,7 +91,10 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>y:</string>
+      <string>Y:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -93,7 +108,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>100</width>
+       <width>70</width>
        <height>0</height>
       </size>
      </property>
@@ -117,10 +132,13 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>z:</string>
+      <string>Z:</string>
      </property>
      <property name="textFormat">
       <enum>Qt::AutoText</enum>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
    </item>
@@ -134,7 +152,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>100</width>
+       <width>70</width>
        <height>0</height>
       </size>
      </property>
@@ -155,7 +173,7 @@
   <customwidget>
    <class>EventFilterDoubleSpinBox</class>
    <extends>QDoubleSpinBox</extends>
-   <header location="global">CustomControls/EventFilterDoubleSpinBox.h</header>
+   <header location="global">Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "FileSystem/Logger.h"
@@ -53,11 +67,11 @@ public:
 		int32 justifyWidth, int32 spaceAddon,
 		Vector<int32> *charSizes = NULL,
 		bool contentScaleIncluded = false);
-	uint32 GetFontHeight(float32 size);
+	uint32 GetFontHeight(float32 size) const;
 
-	bool IsCharAvaliable(char16 ch);
+	bool IsCharAvaliable(char16 ch) const;
 
-	void SetFTCharSize(float32 size);
+	void SetFTCharSize(float32 size) const;
 
 	virtual int32 Release();
 
@@ -119,11 +133,10 @@ FTFont * FTFont::Create(const FilePath& path)
 	return font;
 }
 	
-FTFont *	FTFont::Clone()
+FTFont *	FTFont::Clone() const
 {
 	FTFont *retFont = new FTFont(internalFont);
 	retFont->size =	size;
-	retFont->SetColor(color);
 
 	retFont->verticalSpacing =	verticalSpacing;
 
@@ -132,9 +145,15 @@ FTFont *	FTFont::Clone()
 	return retFont;
 }
 
-bool FTFont::IsEqual(Font *font)
+bool FTFont::IsEqual(const Font *font) const
 {
-	if (!Font::IsEqual(font) || internalFont != ((FTFont*)font)->internalFont)
+	if (font->GetFontType() != this->GetFontType())
+	{
+		return false;
+	}
+
+    const FTFont *ftfont = DynamicTypeCheck<const FTFont *>(font);
+	if (!Font::IsEqual(font) || internalFont != ftfont->internalFont)
 	{
 		return false;
 	}
@@ -144,35 +163,31 @@ bool FTFont::IsEqual(Font *font)
 	
 Size2i FTFont::DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded )
 {
-	uint8 r = ((uint8)(color.r * 255.0f));
-	uint8 g = ((uint8)(color.g * 255.0f)); 
-	uint8 b = ((uint8)(color.b * 255.0f)); 
-	uint8 a = ((uint8)(color.a * 255.0f));
-	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, r, g, b, a, size, true, offsetX, offsetY, justifyWidth, spaceAddon, NULL, contentScaleIncluded );
+	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, 255, 255, 255, 255, size, true, offsetX, offsetY, justifyWidth, spaceAddon, NULL, contentScaleIncluded );
 }
 
-Size2i FTFont::GetStringSize(const WideString& str, Vector<int32> *charSizes)
+Size2i FTFont::GetStringSize(const WideString& str, Vector<int32> *charSizes) const
 {
 	return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, size, false, 0, 0, 0, 0, charSizes);
 }
 
-uint32 FTFont::GetFontHeight()
+uint32 FTFont::GetFontHeight() const
 {
 	return internalFont->GetFontHeight(size);
 }
 
 
-bool FTFont::IsCharAvaliable(char16 ch)
+bool FTFont::IsCharAvaliable(char16 ch) const
 {
 	return internalFont->IsCharAvaliable(ch);
 }
 
-const FilePath & FTFont::GetFontPath()
+const FilePath & FTFont::GetFontPath() const
 {
 	return internalFont->fontPath;
 }
 
-YamlNode * FTFont::SaveToYamlNode()
+YamlNode * FTFont::SaveToYamlNode() const
 {
 	YamlNode *node = Font::SaveToYamlNode();
 	//Type
@@ -417,19 +432,19 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 }
 
 
-bool FTInternalFont::IsCharAvaliable(char16 ch)
+bool FTInternalFont::IsCharAvaliable(char16 ch) const
 {
 	return FT_Get_Char_Index(face, ch) != 0;
 }
 	
 
-uint32 FTInternalFont::GetFontHeight(float32 size)
+uint32 FTInternalFont::GetFontHeight(float32 size) const
 {
 	SetFTCharSize(size);
 	return (uint32)ceilf((float32)((FT_MulFix(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale)))/64.f);
 }
 	
-void FTInternalFont::SetFTCharSize(float32 size)
+void FTInternalFont::SetFTCharSize(float32 size) const
 {
 	FT_Error error = FT_Set_Char_Size(face, 0, (int32)(size * 64), 0, (FT_UInt)Font::GetDPI()); 
 	

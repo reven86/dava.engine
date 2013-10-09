@@ -13,6 +13,8 @@
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; };
 		02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01217CF994300D5A334 /* ThreadSyncTest.cpp */; };
+		1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF5717DF6CC200000391 /* UIMovieTest.cpp */; };
+		1770DF5B17DF763700000391 /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF5A17DF763700000391 /* QTKit.framework */; };
 		495B67091797DCA30017D8DD /* TransparentWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 495B67071797DCA30017D8DD /* TransparentWebViewTest.cpp */; };
 		49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */; };
 		49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */; };
@@ -24,8 +26,8 @@
 		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
 		5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF2253E157E555D00DF5395 /* BaseScreen.cpp */; };
 		7410E83117146D5B0028AAAA /* UIListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7410E82F17146D5B0028AAAA /* UIListTest.cpp */; };
+		7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497446617B3C38D00282DAA /* AlignTest.cpp */; };
 		749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */; };
-		749A3DCE17B8CF400008EC12 /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A3DCC17B8CF400008EC12 /* AlignTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
 		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
@@ -58,7 +60,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		495B67051797DC8D0017D8DD /* PBXContainerItemProxy */ = {
+		1770DF5517DF6CAE00000391 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
 			proxyType = 2;
@@ -111,6 +113,9 @@
 		02F8B01317CF994300D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Classes/ThreadSyncTest.h; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		1770DF5717DF6CC200000391 /* UIMovieTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIMovieTest.cpp; path = Classes/UIMovieTest.cpp; sourceTree = "<group>"; };
+		1770DF5817DF6CC200000391 /* UIMovieTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIMovieTest.h; path = Classes/UIMovieTest.h; sourceTree = "<group>"; };
+		1770DF5A17DF763700000391 /* QTKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QTKit.framework; path = System/Library/Frameworks/QTKit.framework; sourceTree = SDKROOT; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* TemplateProjectMacOS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemplateProjectMacOS_Prefix.pch; sourceTree = "<group>"; };
@@ -139,6 +144,8 @@
 		5CF2253F157E555D00DF5395 /* BaseScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BaseScreen.h; path = Classes/BaseScreen.h; sourceTree = "<group>"; };
 		7410E82F17146D5B0028AAAA /* UIListTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIListTest.cpp; path = Classes/UIListTest.cpp; sourceTree = "<group>"; };
 		7410E83017146D5B0028AAAA /* UIListTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIListTest.h; path = Classes/UIListTest.h; sourceTree = "<group>"; };
+		7497446617B3C38D00282DAA /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
+		7497446717B3C38D00282DAA /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignTest.h; path = Classes/AlignTest.h; sourceTree = "<group>"; };
 		749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIScrollViewTest.cpp; path = Classes/UIScrollViewTest.cpp; sourceTree = "<group>"; };
 		749A1B4E174A73130082B080 /* UIScrollViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIScrollViewTest.h; path = Classes/UIScrollViewTest.h; sourceTree = "<group>"; };
 		749A3DCC17B8CF400008EC12 /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
@@ -205,6 +212,7 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */,
 				FE5288A5132FA5EB000FE4F0 /* OpenAL.framework in Frameworks */,
+				1770DF5B17DF763700000391 /* QTKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,6 +257,15 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
+		1770DF5217DF6CAD00000391 /* UIMovieTest */ = {
+			isa = PBXGroup;
+			children = (
+				1770DF5717DF6CC200000391 /* UIMovieTest.cpp */,
+				1770DF5817DF6CC200000391 /* UIMovieTest.h */,
+			);
+			name = UIMovieTest;
+			sourceTree = "<group>";
+		};
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -260,6 +277,7 @@
 		29B97314FDCFA39411CA2CEA /* TemplateProjectMacOS */ = {
 			isa = PBXGroup;
 			children = (
+				1770DF5A17DF763700000391 /* QTKit.framework */,
 				02E9E45C173A43A900C501BC /* libfmodevent.dylib */,
 				02E9E45D173A43A900C501BC /* libfmodex.dylib */,
 				C151B18E16D37E2700E09BAF /* WebKit.framework */,
@@ -345,9 +363,11 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				1770DF5217DF6CAD00000391 /* UIMovieTest */,
 				02F8B01717CF994900D5A334 /* ThreadSyncTest */,
 				749A3DC917B8CF330008EC12 /* AlignTest */,
 				495B67021797DC8D0017D8DD /* TransparentWebViewTest */,
+				7497446117B3C29900282DAA /* AlignTest */,
 				E8679170175F405F00C5A6A2 /* FormatsTest */,
 				749A1B48174A70C80082B080 /* UIScrollViewTest */,
 				E87402CF172582C900A4A75A /* FileSystemTests */,
@@ -410,6 +430,15 @@
 				7410E83017146D5B0028AAAA /* UIListTest.h */,
 			);
 			name = UIListTest;
+			sourceTree = "<group>";
+		};
+		7497446117B3C29900282DAA /* AlignTest */ = {
+			isa = PBXGroup;
+			children = (
+				7497446617B3C38D00282DAA /* AlignTest.cpp */,
+				7497446717B3C38D00282DAA /* AlignTest.h */,
+			);
+			name = AlignTest;
 			sourceTree = "<group>";
 		};
 		749A1B48174A70C80082B080 /* UIScrollViewTest */ = {
@@ -547,7 +576,7 @@
 			children = (
 				FE98931811638F3C00500198 /* libFramework.a */,
 				E81F2AED16BFA49100C4545E /* libFrameworkQt.a */,
-				495B67061797DC8D0017D8DD /* libFrameworkNPAPI.a */,
+				1770DF5617DF6CAE00000391 /* libFrameworkNPAPI.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -638,11 +667,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		495B67061797DC8D0017D8DD /* libFrameworkNPAPI.a */ = {
+		1770DF5617DF6CAE00000391 /* libFrameworkNPAPI.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libFrameworkNPAPI.a;
-			remoteRef = 495B67051797DC8D0017D8DD /* PBXContainerItemProxy */;
+			remoteRef = 1770DF5517DF6CAE00000391 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		E81F2AED16BFA49100C4545E /* libFrameworkQt.a */ = {
@@ -728,8 +757,9 @@
 				E87402D9172582DB00A4A75A /* FileSystemTest.cpp in Sources */,
 				495B67091797DCA30017D8DD /* TransparentWebViewTest.cpp in Sources */,
 				E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */,
-				749A3DCE17B8CF400008EC12 /* AlignTest.cpp in Sources */,
+				7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */,
 				02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */,
+				1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

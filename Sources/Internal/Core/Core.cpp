@@ -1,22 +1,37 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "FileSystem/FileSystem.h"
 #include "Base/ObjectFactory.h"
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
+#include "Core/PerformanceSettings.h"
 #include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "Platform/Thread.h"
@@ -30,6 +45,7 @@
 #include "Sound/Sound.h"
 #include "Input/InputSystem.h"
 #include "Platform/DPIHelper.h"
+#include "Base/AllocatorFactory.h"
 
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -41,6 +57,10 @@
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
 #endif
+
+#ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+#include <EGL/eglext.h>
+#endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 
 namespace DAVA 
 {
@@ -88,6 +108,7 @@ void Core::CreateSingletons()
     
     // check types size
 	new Logger();
+	new AllocatorFactory();
 
 	new FileSystem();
     FilePath::InitializeBundleName();
@@ -102,7 +123,7 @@ void Core::CreateSingletons()
 		 */
 		Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
 	}
-//	Logger::Debug("[Core::Create] successfull");
+//	Logger::FrameworkDebug("[Core::Create] successfull");
     
 	new LocalizationSystem();
 
@@ -113,6 +134,7 @@ void Core::CreateSingletons()
 	new UIControlSystem();
 	new SoundSystem(64);
 	new InputSystem();
+	new PerformanceSettings();
 	
 #if defined __DAVAENGINE_IPHONE__
 	new AccelerometeriPhoneImpl();
@@ -144,7 +166,7 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
-	Texture::ReleasePinkPlaceholder();
+	PerformanceSettings::Instance()->Release();
 	UIScreenManager::Instance()->Release();
 	UIControlSystem::Instance()->Release();
 	SoundSystem::Instance()->Release();
@@ -156,7 +178,7 @@ void Core::ReleaseSingletons()
 	//SoundSystem::Instance()->Release();
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	LocalizationSystem::Instance()->Release();
-//	Logger::Debug("[Core::Release] successfull");
+//	Logger::FrameworkDebug("[Core::Release] successfull");
 	FileSystem::Instance()->Release();
 	Random::Instance()->Release();
 	RenderManager::Instance()->Release();
@@ -165,6 +187,7 @@ void Core::ReleaseSingletons()
 #endif
 
 	InputSystem::Instance()->Release();
+	AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
 }
 
@@ -314,7 +337,7 @@ void Core::CalculateScaleMultipliers()
         TextBlock::ScreenResolutionChanged();
     }
 			
-//	Logger::Debug("[Core] CalculateScaleMultipliers desirableIndex: %d", desirableIndex);
+//	Logger::FrameworkDebug("[Core] CalculateScaleMultipliers desirableIndex: %d", desirableIndex);
 		
 }
 	
@@ -427,13 +450,13 @@ float32 Core::GetVirtualScreenYMax()
 	
 Core::eScreenMode Core::GetScreenMode()
 {
-	Logger::Debug("[Core::GetScreenMode] return screen mode MODE_UNSUPPORTED");
+	Logger::FrameworkDebug("[Core::GetScreenMode] return screen mode MODE_UNSUPPORTED");
 	return MODE_UNSUPPORTED;
 }
 
 void Core::SwitchScreenToMode(eScreenMode screenMode)
 {
-	Logger::Debug("[Core::SwitchScreenToMode] do not supported by platform implementation of core");
+	Logger::FrameworkDebug("[Core::SwitchScreenToMode] do not supported by platform implementation of core");
 }
 
 void Core::GetAvailableDisplayModes(List<DisplayMode> & availableModes)
@@ -553,7 +576,7 @@ DisplayMode Core::GetCurrentDisplayMode()
 void Core::Quit()
 {
     exit(0);
-	Logger::Debug("[Core::Quit] do not supported by platform implementation of core");
+	Logger::FrameworkDebug("[Core::Quit] do not supported by platform implementation of core");
 }
 	
 void Core::SetApplicationCore(ApplicationCore * _core)
@@ -595,6 +618,24 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
+#ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+	static bool isInit = false;
+	static EGLuint64NV frequency;
+	static PFNEGLGETSYSTEMTIMENVPROC eglGetSystemTimeNV;
+	static PFNEGLGETSYSTEMTIMEFREQUENCYNVPROC eglGetSystemTimeFrequencyNV;
+	if (!isInit)
+	{
+		eglGetSystemTimeNV = (PFNEGLGETSYSTEMTIMENVPROC) eglGetProcAddress("eglGetSystemTimeNV");
+		eglGetSystemTimeFrequencyNV = (PFNEGLGETSYSTEMTIMEFREQUENCYNVPROC) eglGetProcAddress("eglGetSystemTimeFrequencyNV");
+		if (!eglGetSystemTimeNV || !eglGetSystemTimeFrequencyNV)
+		{
+			DVASSERT(!"Error export eglGetSystemTimeNV, eglGetSystemTimeFrequencyNV");
+			exit(0);
+		}
+		frequency = eglGetSystemTimeFrequencyNV();
+	}
+	EGLuint64NV start = eglGetSystemTimeNV() / frequency;
+#endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
     Stats::Instance()->BeginFrame();
     TIME_PROFILE("Core::SystemProcessFrame");
     
@@ -660,6 +701,11 @@ void Core::SystemProcessFrame()
 	}
     Stats::Instance()->EndFrame();
 	globalFrameIndex++;
+	
+#ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
+	EGLuint64NV end = eglGetSystemTimeNV() / frequency;
+	EGLuint64NV interval = end - start;
+#endif //__DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 }
 
 	

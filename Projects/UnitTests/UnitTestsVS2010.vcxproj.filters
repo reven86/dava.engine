@@ -34,6 +34,7 @@
     <ClCompile Include="Classes\UIScrollViewTest.cpp" />
     <ClCompile Include="Classes\AlignTest.cpp" />
     <ClCompile Include="Classes\ThreadSyncTest.cpp" />
+    <ClCompile Include="Classes\UIMovieTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\BaseScreen.h" />
@@ -69,5 +70,6 @@
     <ClInclude Include="Classes\UIScrollViewTest.h" />
     <ClInclude Include="Classes\AlignTest.h" />
     <ClInclude Include="Classes\ThreadSyncTest.h" />
+    <ClInclude Include="Classes\UIMovieTest.h" />
   </ItemGroup>
 </Project>

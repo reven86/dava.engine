@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Scene3D/MeshInstanceNode.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
@@ -168,7 +182,7 @@ void PolygonGroupWithMaterial::Draw()
 MeshInstanceNode::MeshInstanceNode()
 :	Entity()
 {
-    //Logger::Debug("MeshInstance: %p", this);
+    //Logger::FrameworkDebug("MeshInstance: %p", this);
 	materialState = new InstanceMaterialState();
     
     //RenderComponent * renderComponent = new RenderComponent();
@@ -191,7 +205,7 @@ MeshInstanceNode::~MeshInstanceNode()
     
     SafeRelease(materialState);
 
-    //Logger::Debug("~MeshInstance: %p", this);
+    //Logger::FrameworkDebug("~MeshInstance: %p", this);
 }
 
 void MeshInstanceNode::AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, Material* material)
@@ -562,7 +576,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
                 DVASSERT(pgIndex != errorIdx);
 
                 if(sceneFile->DebugLogEnabled())
-                    Logger::Debug("+ assign material: %s", material->GetName().c_str());
+                    Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
                 
                 AddPolygonGroup(mesh, pgIndex, material);
             }
@@ -591,7 +605,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
                         DVASSERT(pgIndex != errorIdx);
 
                         if(sceneFile->DebugLogEnabled())
-                            Logger::Debug("+ assign material: %s", material->GetName().c_str());
+                            Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
                         
                         AddPolygonGroup(mesh, pgIndex, material);
                     }
@@ -610,7 +624,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
     //                {
     //                    Material * material = sceneFile->GetMaterial(materialIndex);
     //                    StaticMesh * mesh = sceneFile->GetStaticMesh(meshIndex);
-    //                    Logger::Debug("+ assign material: %s index: %d", material->GetName().c_str(), materialIndex);
+    //                    Logger::FrameworkDebug("+ assign material: %s index: %d", material->GetName().c_str(), materialIndex);
     //                    
     //                    AddPolygonGroupForLayer(mesh, pgIndex, material);
     //                }
@@ -760,7 +774,7 @@ void MeshInstanceNode::BakeTransforms()
     bool canBakeEverything = true;
     for (int k = 0; k < (int32)polygroups.size(); ++k)
     {
-        //Logger::Debug("%d - mesh: %d pg: %d", k, polygroups[k]->GetMesh()->GetRetainCount(), polygroups[k]->GetPolygonGroup()->GetRetainCount());
+        //Logger::FrameworkDebug("%d - mesh: %d pg: %d", k, polygroups[k]->GetMesh()->GetRetainCount(), polygroups[k]->GetPolygonGroup()->GetRetainCount());
      
         StaticMesh * mesh = polygroups[k]->GetMesh();
         PolygonGroup * polygroup = polygroups[k]->GetPolygonGroup();

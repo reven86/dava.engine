@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_POLYGONGROUP_H__
 #define __DAVAENGINE_POLYGONGROUP_H__
 
@@ -60,6 +74,7 @@ public:
 	
 	inline void	GetColor(int32 i, RGBColor & v);
 	inline void	GetTexcoord(int32 ti, int32 i, Vector2 & v);
+	inline void	GetCubeTexcoord(int32 ti, int32 i, Vector3 & v);
 	inline void	GetIndex(int32 i, int32 & index);
     
     inline ePrimitiveType GetPrimitiveType();
@@ -72,6 +87,7 @@ public:
 	
 	inline void	SetColor(int32 i, const RGBColor & v);
 	inline void	SetTexcoord(int32 ti, int32 i, const Vector2 & v);
+	inline void	SetCubeTexcoord(int32 ti, int32 i, const Vector3 & v);
 	inline void	SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue);
 	inline void SetJointCount(int32 vIndex, int32 jointCount);
 	inline void	SetWeight(int32 vIndex, int32 jointIndex, float32 boneWeightValue);
@@ -95,6 +111,7 @@ public:
 	int32	indexFormat;
 	int32	triangleCount;
     ePrimitiveType primitiveType;
+	int32	cubeTextureCoordCount;
 	
 	Vector3		*vertexArray;
 	Vector2		**textureCoordArray;
@@ -103,6 +120,7 @@ public:
 	Vector3		*binormalArray;
 	int32		*jointIdxArray;
 	float32		*weightArray;
+	Vector3		**cubeTextureCoordArray;
 
 	int32		*jointCountArray;
 	
@@ -149,7 +167,7 @@ public:
     /*
         Go through all vertices and optimize it, remove redundant vertices. 
      */ 
-    void    OptimizeVertices(float32 eplison = 1e-6f);
+    void    OptimizeVertices(uint32 newVertexFormat, float32 eplison = 1e-6f);
     
     /*
         Use greedy algorithm to convert mesh from triangle lists to triangle strips
@@ -170,6 +188,9 @@ public:
 
 private:	
     void    UpdateDataPointersAndStreams();
+	void	CopyData(uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
+	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
+ 	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
     
 public:
     
@@ -225,6 +246,12 @@ inline void	PolygonGroup::SetColor(int32 i, const RGBColor & _c)
 inline void	PolygonGroup::SetTexcoord(int32 ti, int32 i, const Vector2 & _t)
 {
 	Vector2 * t = (Vector2 *)((uint8 *)textureCoordArray[ti] + i * vertexStride);  
+	*t = _t;
+}
+	
+inline void	PolygonGroup::SetCubeTexcoord(int32 ti, int32 i, const Vector3 & _t)
+{
+	Vector3 * t = (Vector3 *)((uint8 *)cubeTextureCoordArray[ti] + i * vertexStride);
 	*t = _t;
 }
 	
@@ -297,6 +324,12 @@ inline void	PolygonGroup::GetTexcoord(int32 ti, int32 i, Vector2 & _t)
 	_t = *t;
 }
 
+inline void	PolygonGroup::GetCubeTexcoord(int32 ti, int32 i, Vector3 & _t)
+{
+	Vector3 * t = (Vector3 *)((uint8 *)cubeTextureCoordArray[ti] + i * vertexStride);
+	_t = *t;
+}
+	
 inline void	PolygonGroup::GetIndex(int32 i, int32 &index)
 {
 	index = indexArray[i];

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Render/RenderState.h"
 #include "Render/RenderManager.h"
 #include "Debug/Backtrace.h"
@@ -67,7 +81,7 @@ void RenderState::Reset(bool doHardwareReset)
     if (doHardwareReset)
     {
         RenderManager::Instance()->LockNonMain();
-//        Logger::Debug("Do hardware reset");
+//        Logger::FrameworkDebug("Do hardware reset");
         // PrintBackTraceToLog();
         SetColorInHW();
         SetEnableBlendingInHW();
@@ -121,7 +135,7 @@ void RenderState::Flush(RenderState * hardwareState) const
     RenderManager::Instance()->LockNonMain();
 
 #if defined (LOG_FINAL_RENDER_STATE)
-    Logger::Debug("RenderState::Flush started");
+    Logger::FrameworkDebug("RenderState::Flush started");
 #endif    
 
     uint32 diffState = state ^ hardwareState->state;
@@ -353,7 +367,7 @@ void RenderState::Flush(RenderState * hardwareState) const
     hardwareState->shader = shader;
     
 #if defined (LOG_FINAL_RENDER_STATE)
-    Logger::Debug("RenderState::Flush finished");
+    Logger::FrameworkDebug("RenderState::Flush finished");
 #endif    
     RenderManager::Instance()->UnlockNonMain();
 
@@ -366,7 +380,7 @@ inline void RenderState::SetColorInHW() const
     if (renderer != Core::RENDERER_OPENGL_ES_2_0)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::color = (%f, %f, %f, %f)", color.r, color.g, color.b, color.a);
+        Logger::FrameworkDebug("RenderState::color = (%f, %f, %f, %f)", color.r, color.g, color.b, color.a);
 #endif
         RENDER_VERIFY(glColor4f(color.r, color.g, color.b, color.a));
     }
@@ -380,7 +394,7 @@ inline void RenderState::SetColorMaskInHW() const
     GLboolean alphaMask = (state & STATE_COLORMASK_ALPHA) != 0;
     
 #if defined (LOG_FINAL_RENDER_STATE)
-    Logger::Debug("RenderState::colormask = %d %d %d %d", redMask, greenMask, blueMask, alphaMask);
+    Logger::FrameworkDebug("RenderState::colormask = %d %d %d %d", redMask, greenMask, blueMask, alphaMask);
 #endif    
     RENDER_VERIFY(glColorMask(redMask, 
                               greenMask, 
@@ -393,14 +407,14 @@ inline void RenderState::SetStensilTestInHW() const
 	if (state & STATE_STENCIL_TEST)
 	{
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::stencil = true");
+        Logger::FrameworkDebug("RenderState::stencil = true");
 #endif    
 		RENDER_VERIFY(glEnable(GL_STENCIL_TEST));
 	}
 	else
 	{
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::stencil = false");
+        Logger::FrameworkDebug("RenderState::stencil = false");
 #endif    
 		RENDER_VERIFY(glDisable(GL_STENCIL_TEST));
 	}
@@ -411,14 +425,14 @@ inline void RenderState::SetEnableBlendingInHW() const
     if (state & STATE_BLEND)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::blend = true");
+        Logger::FrameworkDebug("RenderState::blend = true");
 #endif    
         RENDER_VERIFY(glEnable(GL_BLEND));
     }
     else 
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::blend = false");
+        Logger::FrameworkDebug("RenderState::blend = false");
 #endif    
         RENDER_VERIFY(glDisable(GL_BLEND));
     }
@@ -429,7 +443,7 @@ inline void RenderState::SetCullInHW() const
     if (state & STATE_CULL)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::cullface = true");
+        Logger::FrameworkDebug("RenderState::cullface = true");
 #endif    
 
         RENDER_VERIFY(glEnable(GL_CULL_FACE));
@@ -437,7 +451,7 @@ inline void RenderState::SetCullInHW() const
     else 
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::cullface = false");
+        Logger::FrameworkDebug("RenderState::cullface = false");
 #endif    
         RENDER_VERIFY(glDisable(GL_CULL_FACE));
     }
@@ -446,7 +460,7 @@ inline void RenderState::SetCullInHW() const
 inline void RenderState::SetCullModeInHW() const
 {
 #if defined (LOG_FINAL_RENDER_STATE)
-    Logger::Debug("RenderState::cull_mode = %d", cullMode);
+    Logger::FrameworkDebug("RenderState::cull_mode = %d", cullMode);
 #endif    
 
     RENDER_VERIFY(glCullFace(CULL_FACE_MAP[cullMode]));
@@ -456,7 +470,7 @@ inline void RenderState::SetCullModeInHW() const
 inline void RenderState::SetBlendModeInHW() const
 {
 #if defined (LOG_FINAL_RENDER_STATE)
-    Logger::Debug("RenderState::blend_src_dst = (%d, %d)", sourceFactor, destFactor);
+    Logger::FrameworkDebug("RenderState::blend_src_dst = (%d, %d)", sourceFactor, destFactor);
 #endif    
 
     RENDER_VERIFY(glBlendFunc(BLEND_MODE_MAP[sourceFactor], BLEND_MODE_MAP[destFactor]));
@@ -468,13 +482,13 @@ inline void RenderState::SetTextureLevelInHW(uint32 textureLevel) const
     if(currentTexture[textureLevel])
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::bind_texture %d = (%d)", textureLevel, currentTexture[textureLevel]->id);
+        Logger::FrameworkDebug("RenderState::bind_texture %d = (%d)", textureLevel, currentTexture[textureLevel]->id);
 #endif    
-        RenderManager::Instance()->HWglBindTexture(currentTexture[textureLevel]->id);
+        RenderManager::Instance()->HWglBindTexture(currentTexture[textureLevel]->id, currentTexture[textureLevel]->textureType);
     }else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::bind_texture %d = (%d)", textureLevel, 0);
+        Logger::FrameworkDebug("RenderState::bind_texture %d = (%d)", textureLevel, 0);
 #endif    
         RenderManager::Instance()->HWglBindTexture(0);
     }    
@@ -484,14 +498,14 @@ inline void RenderState::SetDepthTestInHW() const
     if(state & STATE_DEPTH_TEST)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::depth_test = true");
+        Logger::FrameworkDebug("RenderState::depth_test = true");
 #endif    
         RENDER_VERIFY(glEnable(GL_DEPTH_TEST));
     }
     else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::depth_test = false");
+        Logger::FrameworkDebug("RenderState::depth_test = false");
 #endif    
         RENDER_VERIFY(glDisable(GL_DEPTH_TEST));
     }    
@@ -502,7 +516,7 @@ inline void RenderState::SetDepthWriteInHW() const
     if(state & STATE_DEPTH_WRITE)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::depth_mask = true");
+        Logger::FrameworkDebug("RenderState::depth_mask = true");
 #endif    
 
         RENDER_VERIFY(glDepthMask(GL_TRUE));
@@ -510,7 +524,7 @@ inline void RenderState::SetDepthWriteInHW() const
     else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::depth_mask = false");
+        Logger::FrameworkDebug("RenderState::depth_mask = false");
 #endif    
         RENDER_VERIFY(glDepthMask(GL_FALSE));
     }
@@ -521,7 +535,7 @@ inline void RenderState::SetAlphaTestInHW() const
     if(state & STATE_ALPHA_TEST)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::alpha_test = true");
+        Logger::FrameworkDebug("RenderState::alpha_test = true");
 #endif    
 
         RENDER_VERIFY(glEnable(GL_ALPHA_TEST));
@@ -529,7 +543,7 @@ inline void RenderState::SetAlphaTestInHW() const
     else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::alpha_test = false");
+        Logger::FrameworkDebug("RenderState::alpha_test = false");
 #endif    
         RENDER_VERIFY(glDisable(GL_ALPHA_TEST));
     }
@@ -540,14 +554,14 @@ inline void RenderState::SetAlphaTestFuncInHW() const
     if (renderer == Core::RENDERER_OPENGL)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
+        Logger::FrameworkDebug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
 #endif    
 
         RENDER_VERIFY(glAlphaFunc(COMPARE_FUNCTION_MAP[alphaFunc], (float32)alphaFuncCmpValue / 255.0f) );
     }else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
+        Logger::FrameworkDebug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
 #endif    
         RENDER_VERIFY(glAlphaFunc(COMPARE_FUNCTION_MAP[alphaFunc], alphaFuncCmpValue) );
     }
@@ -556,7 +570,7 @@ inline void RenderState::SetAlphaTestFuncInHW() const
 inline void RenderState::SetDepthFuncInHW() const
 {
 #if defined (LOG_FINAL_RENDER_STATE)
-    Logger::Debug("RenderState::depth func = (%d)", depthFunc);
+    Logger::FrameworkDebug("RenderState::depth func = (%d)", depthFunc);
 #endif    
 
 	RENDER_VERIFY(glDepthFunc(COMPARE_FUNCTION_MAP[depthFunc]));
@@ -567,14 +581,14 @@ inline void RenderState::SetScissorTestInHW() const
 	if(state & STATE_SCISSOR_TEST)
 	{
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::scissor_test = true");
+        Logger::FrameworkDebug("RenderState::scissor_test = true");
 #endif  
 		RENDER_VERIFY(glEnable(GL_SCISSOR_TEST));
 	}
 	else
 	{
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::Debug("RenderState::scissor_test = false");
+        Logger::FrameworkDebug("RenderState::scissor_test = false");
 #endif  
 		RENDER_VERIFY(glDisable(GL_SCISSOR_TEST));
 	}
@@ -583,7 +597,7 @@ inline void RenderState::SetScissorTestInHW() const
 inline void RenderState::SetScissorRectInHW() const
 {
 #if defined (LOG_FINAL_RENDER_STATE)
-    Logger::Debug("RenderState::scissor_rect = (%d, %d, %d, %d)", scissorRect.x, scissorRect.y, scissorRect.dx, scissorRect.dy);
+    Logger::FrameworkDebug("RenderState::scissor_rect = (%d, %d, %d, %d)", scissorRect.x, scissorRect.y, scissorRect.dx, scissorRect.dy);
 #endif  
 
 	RENDER_VERIFY(glScissor((GLint)scissorRect.x, (GLint)scissorRect.y, (GLsizei)scissorRect.dx, (GLsizei)scissorRect.dy));
@@ -830,15 +844,15 @@ void RenderState::LoadFromYamlFile(const FilePath & filePath)
 	SafeRelease(parser);
 }
 
-void RenderState::LoadFromYamlNode(YamlNode * rootNode)
+void RenderState::LoadFromYamlNode(const YamlNode * rootNode)
 {
 	if (!rootNode)
 		return;
 
-	YamlNode * renderStateNode = rootNode->Get("RenderState");
+	const YamlNode * renderStateNode = rootNode->Get("RenderState");
 	if(renderStateNode)
 	{
-		YamlNode * stateNode = renderStateNode->Get("state");
+		const YamlNode * stateNode = renderStateNode->Get("state");
 		if(stateNode)
 		{
 			Vector<String> states;
@@ -850,8 +864,8 @@ void RenderState::LoadFromYamlNode(YamlNode * rootNode)
 			state = currentState;
 		}
 
-		YamlNode * blendSrcNode = renderStateNode->Get("blendSrc");
-		YamlNode * blendDestNode = renderStateNode->Get("blendDest");
+		const YamlNode * blendSrcNode = renderStateNode->Get("blendSrc");
+		const YamlNode * blendDestNode = renderStateNode->Get("blendDest");
 		if(blendSrcNode && blendDestNode)
 		{
 			eBlendMode newBlendScr = GetBlendModeByName(blendSrcNode->AsString());
@@ -859,22 +873,22 @@ void RenderState::LoadFromYamlNode(YamlNode * rootNode)
 			SetBlendMode(newBlendScr, newBlendDest);
 		}
 
-		YamlNode * cullModeNode = renderStateNode->Get("cullMode");
+		const YamlNode * cullModeNode = renderStateNode->Get("cullMode");
 		if(cullModeNode)
 		{
 			int32 newCullMode = (int32)GetFaceByName(cullModeNode->AsString());
 			SetCullMode(newCullMode);
 		}
 
-		YamlNode * depthFuncNode = renderStateNode->Get("depthFunc");
+		const YamlNode * depthFuncNode = renderStateNode->Get("depthFunc");
 		if(depthFuncNode)
 		{
 			eCmpFunc newDepthFunc = GetCmpFuncByName(depthFuncNode->AsString());
 			SetDepthFunc(newDepthFunc);
 		}
 
-		YamlNode * alphaFuncNode = renderStateNode->Get("alphaFunc");
-		YamlNode * alphaFuncCmpValueNode = renderStateNode->Get("alphaFuncCmpValue");
+		const YamlNode * alphaFuncNode = renderStateNode->Get("alphaFunc");
+		const YamlNode * alphaFuncCmpValueNode = renderStateNode->Get("alphaFuncCmpValue");
 		if(alphaFuncNode && alphaFuncCmpValueNode)
 		{
 			eCmpFunc newAlphaFunc = GetCmpFuncByName(alphaFuncNode->AsString());
@@ -882,39 +896,39 @@ void RenderState::LoadFromYamlNode(YamlNode * rootNode)
 			SetAlphaFunc(newAlphaFunc, newCmpValue);
 		}
 
-		YamlNode * stencilNode = renderStateNode->Get("stencil");
+		const YamlNode * stencilNode = renderStateNode->Get("stencil");
 		if(stencilNode)
 		{
-			YamlNode * stencilRefNode = stencilNode->Get("ref");
+			const YamlNode * stencilRefNode = stencilNode->Get("ref");
 			if(stencilRefNode)
 				SetStencilRef(stencilRefNode->AsInt32());
 
-			YamlNode * stencilMaskNode = stencilNode->Get("mask");
+			const YamlNode * stencilMaskNode = stencilNode->Get("mask");
 			if(stencilMaskNode)
 				SetStencilMask(stencilMaskNode->AsUInt32());
 
-			YamlNode * stencilFuncNode = stencilNode->Get("funcFront");
+			const YamlNode * stencilFuncNode = stencilNode->Get("funcFront");
 			if(stencilFuncNode)
 				SetStencilFunc(FACE_FRONT, GetCmpFuncByName(stencilFuncNode->AsString()));
 			stencilFuncNode = stencilNode->Get("funcBack");
 			if(stencilFuncNode)
 				SetStencilFunc(FACE_BACK, GetCmpFuncByName(stencilFuncNode->AsString()));
 
-			YamlNode * stencilPassNode = stencilNode->Get("passFront");
+			const YamlNode * stencilPassNode = stencilNode->Get("passFront");
 			if(stencilPassNode)
 				SetStencilPass(FACE_FRONT, GetStencilOpByName(stencilPassNode->AsString()));
 			stencilPassNode = stencilNode->Get("passBack");
 			if(stencilPassNode)
 				SetStencilPass(FACE_BACK, GetStencilOpByName(stencilPassNode->AsString()));
 
-			YamlNode * stencilFailNode = stencilNode->Get("failFront");
+			const YamlNode * stencilFailNode = stencilNode->Get("failFront");
 			if(stencilFailNode)
 				SetStencilFail(FACE_FRONT, GetStencilOpByName(stencilFailNode->AsString()));
 			stencilFailNode = stencilNode->Get("failBack");
 			if(stencilFailNode)
 				SetStencilFail(FACE_BACK, GetStencilOpByName(stencilFailNode->AsString()));
 
-			YamlNode * stencilZFailNode = stencilNode->Get("zFailFront");
+			const YamlNode * stencilZFailNode = stencilNode->Get("zFailFront");
 			if(stencilZFailNode)
 				SetStencilZFail(FACE_FRONT, GetStencilOpByName(stencilZFailNode->AsString()));
 			stencilZFailNode = stencilNode->Get("zFailBack");

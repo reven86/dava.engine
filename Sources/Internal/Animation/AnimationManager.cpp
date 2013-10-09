@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Animation/AnimationManager.h"
 #include "FileSystem/Logger.h"
 #include "Render/RenderManager.h"
@@ -54,7 +68,7 @@ void AnimationManager::AddAnimation(Animation * animation)
 //#ifdef ANIMATIONS_DEBUG
 //	if(animationLoggerEnabled)
 //	{
-//		Logger::Debug("ANIMATION LOGGER: AnimationManager::AddAnimation 0x%x   new animations size %d", (int)animation, animations.size());
+//		Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::AddAnimation 0x%x   new animations size %d", (int)animation, animations.size());
 //	}
 //#endif
 }
@@ -62,7 +76,7 @@ void AnimationManager::AddAnimation(Animation * animation)
 void AnimationManager::RemoveAnimation(Animation * animation)
 {
 	//Debug::Log("");
-	//Logger::Debug("RemoveAnimation: before animations: %d\n", animations.size());
+	//Logger::FrameworkDebug("RemoveAnimation: before animations: %d\n", animations.size());
 	//std::remo ve(animations.begin(), animations.end(), animation);
 	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
@@ -72,14 +86,14 @@ void AnimationManager::RemoveAnimation(Animation * animation)
 //#ifdef ANIMATIONS_DEBUG
 //			if(animationLoggerEnabled)
 //			{
-//				Logger::Debug("ANIMATION LOGGER: AnimationManager::RemoveAnimation 0x%x   new animations size %d", (int)animation, animations.size());
+//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::RemoveAnimation 0x%x   new animations size %d", (int)animation, animations.size());
 //			}
 //#endif
 			break;
 		}
 
 	}
-	//Logger::Debug("RemoveAnimation: after animations: %d\n", animations.size());
+	//Logger::FrameworkDebug("RemoveAnimation: after animations: %d\n", animations.size());
 	
 }
     
@@ -109,7 +123,7 @@ RenderManager::Instance()->LockNonMain();
 //#ifdef ANIMATIONS_DEBUG
 //			if(animationLoggerEnabled)
 //			{
-//				Logger::Debug("ANIMATION LOGGER: AnimationManager::Set  DELETE_ME 0x%x    for owner 0x%x", (int)animation, (int)_owner);
+//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Set  DELETE_ME 0x%x    for owner 0x%x", (int)animation, (int)_owner);
 //			}
 //#endif
             animation->owner = 0;   // zero owner to avoid any issues (it was a problem with DumpState, when animations was deleted before). 
@@ -197,8 +211,8 @@ void AnimationManager::Update(float timeElapsed)
 			//#ifdef ANIMATIONS_DEBUG
 			//			if(animationLoggerEnabled)
 			//			{
-			//				Logger::Debug("ANIMATION LOGGER: AnimationManager::Finishing animation 0x%x    for owner 0x%x", (int)animation, (int)animation->owner);
-			//				Logger::Debug("ANIMATION LOGGER: AnimationManager::Finishing index %d", k);
+			//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Finishing animation 0x%x    for owner 0x%x", (int)animation, (int)animation->owner);
+			//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Finishing index %d", k);
 			//			}
 			//#endif
 			animation->Stop(); 
@@ -220,8 +234,8 @@ void AnimationManager::Update(float timeElapsed)
 //#ifdef ANIMATIONS_DEBUG
 //			if(animationLoggerEnabled)
 //			{
-//				Logger::Debug("ANIMATION LOGGER: AnimationManager::Deleting animation 0x%x    for owner 0x%x", (int)animation, (int)animation->owner);
-//				Logger::Debug("ANIMATION LOGGER: AnimationManager::Finishing index %d", k);
+//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Deleting animation 0x%x    for owner 0x%x", (int)animation, (int)animation->owner);
+//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Finishing index %d", k);
 //			}
 //#endif
 			if(animation->next && !(animation->next->state  & Animation::STATE_DELETE_ME))
@@ -229,7 +243,7 @@ void AnimationManager::Update(float timeElapsed)
 //#ifdef ANIMATIONS_DEBUG
 //				if(animationLoggerEnabled)
 //				{
-//					Logger::Debug("ANIMATION LOGGER: AnimationManager::Starting next animation 0x%x    for owner 0x%x", (int)animation->next, (int)animation->next->owner);
+//					Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Starting next animation 0x%x    for owner 0x%x", (int)animation->next, (int)animation->next->owner);
 //				}
 //#endif
 				animation->next->state |= Animation::STATE_IN_PROGRESS;
@@ -243,7 +257,7 @@ void AnimationManager::Update(float timeElapsed)
 //					if(animations[n]->next == animation)
 //					{
 //						Logger::Error("PIZDEC");
-//						Logger::Debug("ANIMATION LOGGER: AnimationManager::Animation 0x%x (%d) used as next for 0x%x (%d)   for owner 0x%x", (int)animation, k, animations[n], n, (int)animation->owner);
+//						Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Animation 0x%x (%d) used as next for 0x%x (%d)   for owner 0x%x", (int)animation, k, animations[n], n, (int)animation->owner);
 //					}
 //				}
 //			}
@@ -254,7 +268,7 @@ void AnimationManager::Update(float timeElapsed)
 //#ifdef ANIMATIONS_DEBUG
 //			if(animationLoggerEnabled)
 //			{
-//				Logger::Debug("ANIMATION LOGGER: AnimationManager::After Deleting index %d", k);
+//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::After Deleting index %d", k);
 //			}
 //#endif
 		}
@@ -263,8 +277,8 @@ void AnimationManager::Update(float timeElapsed)
 	
 void AnimationManager::DumpState()
 {
-	Logger::Info("============================================================");
-	Logger::Info("------------ Currently allocated animations - %2d ---------", animations.size());
+	Logger::FrameworkDebug("============================================================");
+	Logger::FrameworkDebug("------------ Currently allocated animations - %2d ---------", animations.size());
 	for (int k = 0; k < (int)animations.size(); ++k)
 	{
 		Animation * animation = animations[k];  
@@ -272,9 +286,9 @@ void AnimationManager::DumpState()
         String ownerName = "no owner";
         if (animation->owner)
             ownerName = typeid(*animation->owner).name();
-		Logger::Debug("addr:0x%08x state:%d class: %s ownerClass: %s", animation, animation->state, typeid(*animation).name(), ownerName.c_str());
+		Logger::FrameworkDebug("addr:0x%08x state:%d class: %s ownerClass: %s", animation, animation->state, typeid(*animation).name(), ownerName.c_str());
 	}
-	Logger::Info("============================================================");
+	Logger::FrameworkDebug("============================================================");
 }
 
 

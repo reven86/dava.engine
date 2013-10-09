@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1068</width>
+    <width>1103</width>
     <height>796</height>
    </rect>
   </property>
@@ -49,75 +49,6 @@
      <widget class="SceneTabWidget" name="sceneTabWidget" native="true"/>
     </item>
    </layout>
-  </widget>
-  <widget class="QDockWidget" name="dockSceneGraph">
-   <property name="floating">
-    <bool>false</bool>
-   </property>
-   <property name="allowedAreas">
-    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
-   </property>
-   <property name="windowTitle">
-    <string>Scene Graph</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="sceneGraphBody">
-    <property name="minimumSize">
-     <size>
-      <width>150</width>
-      <height>0</height>
-     </size>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <property name="spacing">
-      <number>3</number>
-     </property>
-     <property name="margin">
-      <number>1</number>
-     </property>
-     <item>
-      <widget class="QSceneGraphTreeView" name="sceneGraphTree">
-       <property name="contextMenuPolicy">
-        <enum>Qt::CustomContextMenu</enum>
-       </property>
-       <property name="acceptDrops">
-        <bool>true</bool>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"> QTreeView::branch:has-children:!has-siblings:closed,
- QTreeView::branch:closed:has-children:has-siblings {
-         border-image: none;
-         image: url(:/QtImages/tree-closed.png);
- }
-
- QTreeView::branch:open:has-children:!has-siblings,
- QTreeView::branch:open:has-children:has-siblings  {
-         border-image: none;
-         image: url(:/QtImages/tree-open.png);
- }
-</string>
-       </property>
-       <property name="dragEnabled">
-        <bool>true</bool>
-       </property>
-       <property name="dragDropMode">
-        <enum>QAbstractItemView::InternalMove</enum>
-       </property>
-       <property name="defaultDropAction">
-        <enum>Qt::MoveAction</enum>
-       </property>
-       <property name="indentation">
-        <number>16</number>
-       </property>
-       <attribute name="headerVisible">
-        <bool>false</bool>
-       </attribute>
-      </widget>
-     </item>
-    </layout>
-   </widget>
   </widget>
   <widget class="QDockWidget" name="dockLibrary">
    <property name="minimumSize">
@@ -195,20 +126,6 @@
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>
-       <property name="styleSheet">
-        <string notr="true"> QTreeView::branch:has-children:!has-siblings:closed,
- QTreeView::branch:closed:has-children:has-siblings {
-         border-image: none;
-         image: url(:/QtImages/tree-closed.png);
- }
-
- QTreeView::branch:open:has-children:!has-siblings,
- QTreeView::branch:open:has-children:has-siblings  {
-         border-image: none;
-         image: url(:/QtImages/tree-open.png);
- }
-</string>
-       </property>
       </widget>
      </item>
     </layout>
@@ -263,20 +180,6 @@
        <property name="mouseTracking">
         <bool>false</bool>
        </property>
-       <property name="styleSheet">
-        <string notr="true"> QTreeView::branch:has-children:!has-siblings:closed,
- QTreeView::branch:closed:has-children:has-siblings {
-         border-image: none;
-         image: url(:/QtImages/tree-closed.png);
- }
-
- QTreeView::branch:open:has-children:!has-siblings,
- QTreeView::branch:open:has-children:has-siblings  {
-         border-image: none;
-         image: url(:/QtImages/tree-open.png);
- }
-</string>
-       </property>
        <property name="editTriggers">
         <set>QAbstractItemView::AllEditTriggers</set>
        </property>
@@ -296,7 +199,7 @@
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="windowTitle">
-    <string>Tool Bar</string>
+    <string>Main Toolbar</string>
    </property>
    <property name="iconSize">
     <size>
@@ -329,76 +232,14 @@
    <addaction name="actionTileMapEditor"/>
    <addaction name="actionShowNotPassableLandscape"/>
    <addaction name="actionRulerTool"/>
-   <addaction name="separator"/>
-   <addaction name="actionReloadAll"/>
-  </widget>
-  <widget class="QDockWidget" name="dockReferences">
-   <property name="minimumSize">
-    <size>
-     <width>225</width>
-     <height>190</height>
-    </size>
-   </property>
-   <property name="windowTitle">
-    <string>References</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="referencesBody">
-    <widget class="QFrame" name="frame">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>251</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::StyledPanel</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="QLineEdit" name="referenceSuffixEdit">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="placeholderText">
-         <string>type suffix here</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="applyReferenceSuffixButton">
-        <property name="text">
-         <string>Apply</string>
-        </property>
-        <property name="autoDefault">
-         <bool>false</bool>
-        </property>
-        <property name="default">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1068</width>
-     <height>21</height>
+     <width>1103</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -417,15 +258,17 @@
      <addaction name="separator"/>
      <addaction name="actionExportPNG"/>
     </widget>
-    <addaction name="actionNewScene"/>
-    <addaction name="separator"/>
-    <addaction name="actionOpenScene"/>
     <addaction name="actionOpenProject"/>
     <addaction name="separator"/>
-    <addaction name="separator"/>
+    <addaction name="actionNewScene"/>
+    <addaction name="actionOpenScene"/>
     <addaction name="actionSaveScene"/>
+    <addaction name="actionSaveSceneAs"/>
+    <addaction name="separator"/>
     <addaction name="actionSaveToFolder"/>
+    <addaction name="separator"/>
     <addaction name="menuExport"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuCreateNode">
     <property name="title">
@@ -448,6 +291,8 @@
     <addaction name="actionParticle_Emitter"/>
     <addaction name="menuAdd"/>
     <addaction name="actionRemoveEntity"/>
+    <addaction name="separator"/>
+    <addaction name="actionUniteEntitiesWithLODs"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -460,6 +305,13 @@
      <addaction name="actionDynamicBlendModeAlpha"/>
      <addaction name="actionDynamicBlendModeMultiply"/>
     </widget>
+    <widget class="QMenu" name="menuLandscape">
+     <property name="title">
+      <string>Landscape</string>
+     </property>
+     <addaction name="actionSaveHeightmapToPNG"/>
+     <addaction name="actionSaveTiledTexture"/>
+    </widget>
     <addaction name="actionMaterialEditor"/>
     <addaction name="actionTextureConverter"/>
     <addaction name="separator"/>
@@ -467,6 +319,7 @@
     <addaction name="actionTileMapEditor"/>
     <addaction name="actionShowNotPassableLandscape"/>
     <addaction name="actionRulerTool"/>
+    <addaction name="actionCubemapEditor"/>
     <addaction name="separator"/>
     <addaction name="actionBeast"/>
     <addaction name="separator"/>
@@ -474,8 +327,11 @@
     <addaction name="separator"/>
     <addaction name="actionShowSettings"/>
     <addaction name="actionEnableCameraLight"/>
+    <addaction name="actionSkyboxEditor"/>
     <addaction name="actionSetShadowColor"/>
     <addaction name="menuDynamicShadowBlendMode"/>
+    <addaction name="separator"/>
+    <addaction name="menuLandscape"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -502,10 +358,16 @@
      <addaction name="actionIPad"/>
      <addaction name="actionDefault"/>
     </widget>
+    <widget class="QMenu" name="menuToolbars">
+     <property name="title">
+      <string>Toolbars</string>
+     </property>
+    </widget>
     <addaction name="menuViewPort"/>
     <addaction name="menuTexturesForGPU"/>
+    <addaction name="actionReloadSprites"/>
     <addaction name="separator"/>
-    <addaction name="actionRestoreViews"/>
+    <addaction name="menuToolbars"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -522,6 +384,7 @@
     <addaction name="separator"/>
     <addaction name="actionModifyPlaceOnLandscape"/>
     <addaction name="actionModifySnapToLandscape"/>
+    <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionConvertToShadow"/>
    </widget>
@@ -548,27 +411,6 @@
    <addaction name="menuComponent"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
-  </widget>
-  <widget class="QDockWidget" name="dockCustomColors">
-   <property name="floating">
-    <bool>false</bool>
-   </property>
-   <property name="windowTitle">
-    <string>Custom Colors</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="margin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="CustomColorsView" name="customColorsView" native="true"/>
-     </item>
-    </layout>
-   </widget>
   </widget>
   <widget class="QDockWidget" name="dockSetSwitchIndex">
    <property name="maximumSize">
@@ -625,30 +467,6 @@
    </attribute>
    <widget class="ParticleEditorWidget" name="dockWidgetContents_3"/>
   </widget>
-  <widget class="QDockWidget" name="dockVisibilityTool">
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="windowTitle">
-    <string>Visibility Check Tool</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_4">
-    <layout class="QVBoxLayout" name="verticalLayout_4">
-     <property name="margin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="VisibilityToolView" name="visibilityToolView" native="true"/>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <widget class="QDockWidget" name="dockParticleEditorTimeLine">
    <property name="windowTitle">
     <string>Particle Time Line</string>
@@ -660,7 +478,7 @@
   </widget>
   <widget class="QToolBar" name="modificationToolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Modifications Toolbar</string>
    </property>
    <property name="iconSize">
     <size>
@@ -679,9 +497,13 @@
    <addaction name="actionModifyRotate"/>
    <addaction name="actionModifyScale"/>
    <addaction name="separator"/>
+   <addaction name="actionPivotCommon"/>
+   <addaction name="actionPivotCenter"/>
+   <addaction name="separator"/>
    <addaction name="actionModifyPlaceOnLandscape"/>
    <addaction name="actionModifySnapToLandscape"/>
    <addaction name="separator"/>
+   <addaction name="actionManualModifMode"/>
    <addaction name="actionModifyReset"/>
   </widget>
   <widget class="QDockWidget" name="dockHangingObjects">
@@ -726,7 +548,7 @@
   </widget>
   <widget class="QToolBar" name="viewModeToolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>View Mode  Toolbar</string>
    </property>
    <property name="movable">
     <bool>true</bool>
@@ -748,7 +570,7 @@
    </attribute>
    <addaction name="actionShowMipmapLevel"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="StatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget">
    <property name="windowTitle">
     <string>Material View Options</string>
@@ -801,20 +623,6 @@
        <property name="autoFillBackground">
         <bool>false</bool>
        </property>
-       <property name="styleSheet">
-        <string notr="true"> QTreeView::branch:has-children:!has-siblings:closed,
- QTreeView::branch:closed:has-children:has-siblings {
-         border-image: none;
-         image: url(:/QtImages/tree-closed.png);
- }
-
- QTreeView::branch:open:has-children:!has-siblings,
- QTreeView::branch:open:has-children:has-siblings  {
-         border-image: none;
-         image: url(:/QtImages/tree-open.png);
- }
-</string>
-       </property>
        <property name="frameShadow">
         <enum>QFrame::Plain</enum>
        </property>
@@ -848,7 +656,7 @@
    <widget class="QWidget" name="dockSceneTreeContent">
     <layout class="QVBoxLayout" name="verticalLayout_9">
      <property name="spacing">
-      <number>3</number>
+      <number>2</number>
      </property>
      <property name="margin">
       <number>1</number>
@@ -870,16 +678,45 @@
        <property name="floatable">
         <bool>true</bool>
        </property>
-       <addaction name="actionRefreshSceneGraph"/>
        <addaction name="actionAddNewEntity"/>
        <addaction name="actionRemoveEntity"/>
       </widget>
      </item>
      <item>
+      <widget class="QFrame" name="frame_5">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>3</number>
+        </property>
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="sceneTreeFilterEdit">
+          <property name="placeholderText">
+           <string>Type here to search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="sceneTreeFilterClear">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="QtIcons.qrc">
+            <normaloff>:/QtIconsTextureDialog/editclear.png</normaloff>:/QtIconsTextureDialog/editclear.png</iconset>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <widget class="SceneTree" name="sceneTree">
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
        <property name="editTriggers">
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
@@ -891,6 +728,60 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="dockHeightmapEditor">
+   <property name="windowTitle">
+    <string>Height Map Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_7">
+    <layout class="QVBoxLayout" name="verticalLayout_10">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="HeightmapEditorPropertiesView" name="heightmapEditorPropertiesView" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockTilemaskEditor">
+   <property name="windowTitle">
+    <string>Tile Mask Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_8">
+    <layout class="QVBoxLayout" name="verticalLayout_11">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="TilemaskEditorPropertiesView" name="widget_2" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockCustomColorsEditor">
+   <property name="windowTitle">
+    <string>Custom Colors Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_9">
+    <layout class="QVBoxLayout" name="verticalLayout_12">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="CustomColorsPropertiesView" name="widget_3" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <widget class="QDockWidget" name="dockConsole">
    <property name="windowTitle">
     <string>Console</string>
@@ -898,8 +789,8 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_7">
-    <layout class="QVBoxLayout" name="verticalLayout_10">
+   <widget class="QWidget" name="dockWidgetContents_11">
+    <layout class="QVBoxLayout" name="verticalLayout_20">
      <property name="spacing">
       <number>1</number>
      </property>
@@ -936,6 +827,33 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockVisibilityToolEditor">
+   <property name="windowTitle">
+    <string>Visibility Tool Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_10">
+    <layout class="QVBoxLayout" name="verticalLayout_13">
+     <property name="margin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="VisibilityToolPropertiesView" name="widget_4" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockLODEditor">
+   <property name="windowTitle">
+    <string>LOD Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="LODEditor" name="dockLODEditorContent"/>
   </widget>
   <action name="actionNewScene">
    <property name="icon">
@@ -1072,7 +990,7 @@
      <normaloff>:/QtIcons/tilemapeditor.png</normaloff>:/QtIcons/tilemapeditor.png</iconset>
    </property>
    <property name="text">
-    <string>Tile Map Editor</string>
+    <string>Tile Mask Editor</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
@@ -1140,7 +1058,7 @@
   </action>
   <action name="actionShowNotPassableLandscape">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1157,6 +1075,9 @@
    </property>
   </action>
   <action name="actionRulerTool">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
      <normaloff>:/QtIcons/rulertool.png</normaloff>:/QtIcons/rulertool.png</iconset>
@@ -1169,16 +1090,25 @@
    </property>
   </action>
   <action name="actionReloadPoverVRIOS">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>PowerVR iOS</string>
    </property>
   </action>
   <action name="actionReloadPoverVRAndroid">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>PowerVR Android</string>
    </property>
   </action>
   <action name="actionReloadTegra">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Tegra</string>
    </property>
@@ -1243,7 +1173,7 @@
   </action>
   <action name="actionModifyPlaceOnLandscape">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1252,13 +1182,16 @@
    <property name="text">
     <string>Place On Landscape</string>
    </property>
+   <property name="shortcut">
+    <string>З, P</string>
+   </property>
   </action>
   <action name="actionModifySnapToLandscape">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1329,15 +1262,6 @@
    </property>
    <property name="text">
     <string>Advanced View</string>
-   </property>
-  </action>
-  <action name="actionRefreshSceneGraph">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/refresh.png</normaloff>:/QtIcons/refresh.png</iconset>
-   </property>
-   <property name="text">
-    <string>refreshSceneGraph</string>
    </property>
   </action>
   <action name="actionReloadAll">
@@ -1432,11 +1356,17 @@
    </property>
   </action>
   <action name="actionReloadMali">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Mali</string>
    </property>
   </action>
   <action name="actionReloadAdreno">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Adreno</string>
    </property>
@@ -1447,6 +1377,9 @@
    </property>
   </action>
   <action name="actionReloadPNG">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>PNG</string>
    </property>
@@ -1495,22 +1428,91 @@
     <string>Show Zero Mipmap Level</string>
    </property>
   </action>
-  <action name="actionAddActionComponent">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/addcomponent.png</normaloff>:/QtIcons/addcomponent.png</iconset>
-   </property>
+  <action name="actionSaveSceneAs">
    <property name="text">
-    <string>Add ActionComponent</string>
+    <string>Save Scene As...</string>
+   </property>
+   <property name="toolTip">
+    <string>Save Scene As...</string>
    </property>
   </action>
-  <action name="actionRemoveActionComponent">
+  <action name="actionPivotCenter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/removecomponent.png</normaloff>:/QtIcons/removecomponent.png</iconset>
+     <normaloff>:/QtIcons/pivot_center.png</normaloff>:/QtIcons/pivot_center.png</iconset>
    </property>
    <property name="text">
-    <string>Remove ActionComponent</string>
+    <string>pivotCenter</string>
+   </property>
+   <property name="toolTip">
+    <string>Use Pivot Point Center</string>
+   </property>
+  </action>
+  <action name="actionPivotCommon">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/pivot_common.png</normaloff>:/QtIcons/pivot_common.png</iconset>
+   </property>
+   <property name="text">
+    <string>pivotCommon</string>
+   </property>
+   <property name="toolTip">
+    <string>Use Selection Center</string>
+   </property>
+  </action>
+  <action name="actionManualModifMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/move_absolute.png</normaloff>
+     <normalon>:/QtIcons/move_offset.png</normalon>:/QtIcons/move_absolute.png</iconset>
+   </property>
+   <property name="text">
+    <string>manualModifMode</string>
+   </property>
+   <property name="toolTip">
+    <string>Manual transform mode - Absolute/Offset</string>
+   </property>
+  </action>
+  <action name="actionCubemapEditor">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/cubemap.png</normaloff>:/QtIcons/cubemap.png</iconset>
+   </property>
+   <property name="text">
+    <string>Cubemap Editor</string>
+   </property>
+  </action>
+  <action name="actionReloadTextures">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload Textures</string>
+   </property>
+  </action>
+  <action name="actionSkyboxNode">
+   <property name="text">
+    <string>Skybox Node</string>
+   </property>
+  </action>
+  <action name="actionSetupSkybox">
+   <property name="text">
+    <string>Setup Skybox</string>
+   </property>
+  </action>
+  <action name="actionSkyboxEditor">
+   <property name="text">
+    <string>Set up Skybox</string>
    </property>
   </action>
   <action name="actionSetShadowColor">
@@ -1538,30 +1540,51 @@
     <string>Multiply</string>
    </property>
   </action>
+  <action name="actionReloadSprites">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/reloadtextures.png</normaloff>:/QtIcons/reloadtextures.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload Sprites</string>
+   </property>
+  </action>
+  <action name="actionUniteEntitiesWithLODs">
+   <property name="text">
+    <string>Group to entity with merged LODs</string>
+   </property>
+  </action>
+  <action name="actionSaveHeightmapToPNG">
+   <property name="text">
+    <string>Save Heightmap to PNG</string>
+   </property>
+  </action>
+  <action name="actionSaveTiledTexture">
+   <property name="text">
+    <string>Save Tiled Texture</string>
+   </property>
+  </action>
+  <action name="actionAddActionComponent">
+   <property name="text">
+    <string>Add Action Component</string>
+   </property>
+  </action>
+  <action name="actionRemoveActionComponent">
+   <property name="text">
+    <string>Remove Action Component</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>QSceneGraphTreeView</class>
-   <extends>QTreeView</extends>
-   <header>DockSceneGraph/QSceneGraphTreeView.h</header>
-  </customwidget>
-  <customwidget>
    <class>LibraryView</class>
    <extends>QTreeView</extends>
    <header>DockLibrary/libraryview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>CustomColorsView</class>
-   <extends>QWidget</extends>
-   <header>DockCustomColors/CustomColorsView.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>VisibilityToolView</class>
-   <extends>QWidget</extends>
-   <header>DockVisibilityTool/VisibilityToolView.h</header>
-   <container>1</container>
+   <slots>
+    <slot>ShowDAE(bool)</slot>
+    <slot>ShowSC2(bool)</slot>
+   </slots>
   </customwidget>
   <customwidget>
    <class>PropertyEditor</class>
@@ -1616,9 +1639,77 @@
    <extends>QPlainTextEdit</extends>
    <header>DockConsole/ConsoleView.h</header>
   </customwidget>
+  <customwidget>
+   <class>HeightmapEditorPropertiesView</class>
+   <extends>QWidget</extends>
+   <header>DockHeightmapEditor/HeightmapEditorPropertiesView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TilemaskEditorPropertiesView</class>
+   <extends>QWidget</extends>
+   <header>DockTilemaskEditor/TilemaskEditorPropertiesView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CustomColorsPropertiesView</class>
+   <extends>QWidget</extends>
+   <header>DockCustomColorsEditor/CustomColorsPropertiesView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>VisibilityToolPropertiesView</class>
+   <extends>QWidget</extends>
+   <header>DockVisibilityToolEditor/VisibilityToolPropertiesView.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LODEditor</class>
+   <extends>QWidget</extends>
+   <header>DockLODEditor/LODEditor.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>StatusBar</class>
+   <extends>QStatusBar</extends>
+   <header>Main/StatusBar.h</header>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="QtIcons.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>cbShowDAEFiles</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>libraryView</receiver>
+   <slot>ShowDAE(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>823</x>
+     <y>121</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>840</x>
+     <y>154</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbShowSC2Files</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>libraryView</receiver>
+   <slot>ShowSC2(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>953</x>
+     <y>121</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>957</x>
+     <y>164</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

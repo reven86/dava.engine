@@ -7,6 +7,8 @@
 # Make sure that /usr/X11R6/bin is in your PATH prior to running configure.
 #
 
+#in case of the problems with png convertion occures macPorts should be installed and line "./configure ..." must be updated to LDFLAGS="-L$currPath/$installPath/delegates/lib -L/opt/local/lib"
+
 type -p X &>/dev/null && echo 'X11 is installed' || echo 'WARNING: X11 is not detected. It is strongly recommended that the X11R6 package be installed since this enables ImageMagick X11 support (animate, display, and import will work). Make sure that /usr/X11R6/bin is in your PATH.'
 
 installPath="ImageMagick-6.7.4"

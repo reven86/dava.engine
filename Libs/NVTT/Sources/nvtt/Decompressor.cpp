@@ -39,6 +39,12 @@
 #include "InputOptions.h"
 #include "CompressionOptions.h"
 
+#define DDSCAPS2_CUBEMAP_POSITIVEX 0x00000400U
+#define DDSCAPS2_CUBEMAP_NEGATIVEX 0x00000800U
+#define DDSCAPS2_CUBEMAP_POSITIVEY 0x00001000U
+#define DDSCAPS2_CUBEMAP_NEGATIVEY 0x00002000U
+#define DDSCAPS2_CUBEMAP_POSITIVEZ 0x00004000U
+#define DDSCAPS2_CUBEMAP_NEGATIVEZ 0x00008000U
 
 using namespace nv;
 using namespace nvtt;
@@ -143,12 +149,12 @@ void Decompressor::Private::erase()
 }
 
 //NVTT_API bool process(void * data, unsigned int size, unsigned int mimpmapNumber) const;
-bool Decompressor::process(void * data, unsigned int size, unsigned int mipmapNumber) const
+bool Decompressor::process(void * data, unsigned int size, unsigned int mipmapNumber, unsigned int face) const
 {
-	return m.decompress( data, size, mipmapNumber);
+	return m.decompress( data, size, mipmapNumber, face);
 }
 
-bool Decompressor::Private::decompress(void * data, unsigned int size, unsigned int mipmapNumber) const
+bool Decompressor::Private::decompress(void * data, unsigned int size, unsigned int mipmapNumber, unsigned int face) const
 {
 	if(NULL == m_dds || NULL == data || 0 == size)
 	{
@@ -156,7 +162,7 @@ bool Decompressor::Private::decompress(void * data, unsigned int size, unsigned 
 	}
 
 	nv::Image img;
-	m_dds->mipmap(&img, 0, mipmapNumber); 
+	m_dds->mipmap(&img, face, mipmapNumber);
 	
 	Color32 * innerContent = img.pixels();
 	uint innerSize = img.width() * img.height() ;
@@ -174,12 +180,24 @@ bool Decompressor::Private::decompress(void * data, unsigned int size, unsigned 
 }
 
 //NVTT_API bool getMipMapCount(unsigned int * mipmapCount) const;
-bool Decompressor::getInfo(unsigned int & mipmapCount, unsigned int & width, unsigned int & height, unsigned int & size, unsigned int & headerSize)  const
+bool Decompressor::getInfo(unsigned int & mipmapCount,
+						   unsigned int & width,
+						   unsigned int & height,
+						   unsigned int & size,
+						   unsigned int & headerSize,
+						   unsigned int & faceCount,
+						   unsigned int & faceFlags)  const
 {
-	return m.getInfo(mipmapCount, width, height, size, headerSize);
+	return m.getInfo(mipmapCount, width, height, size, headerSize, faceCount, faceFlags);
 }
 
-bool Decompressor::Private::getInfo(unsigned int & mipmapCount, unsigned int & width, unsigned int & height, unsigned int & size, unsigned int & headerSize) const
+bool Decompressor::Private::getInfo(unsigned int & mipmapCount,
+									unsigned int & width,
+									unsigned int & height,
+									unsigned int & size,
+									unsigned int & headerSize,
+									unsigned int & faceCount,
+									unsigned int & faceFlags) const
 {
 	if(NULL == m_dds)
 	{
@@ -191,6 +209,14 @@ bool Decompressor::Private::getInfo(unsigned int & mipmapCount, unsigned int & w
 	height = m_dds->height();
 	size = m_dds->size();
 	headerSize = m_dds->headerSize();
+	faceCount = 1;
+	faceFlags = 0;
+	
+	if(m_dds->isTextureCube())
+	{
+		faceCount = m_dds->getFaceCount();
+		faceFlags = m_dds->getFaceFlags();
+	}
 	
 	return true;
 }

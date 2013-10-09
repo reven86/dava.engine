@@ -1,55 +1,68 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "DAVAEngine.h"
 #include "Scene/SceneDataManager.h"
 #include "Entity/Component.h"
 #include "Main/mainwindow.h"
 
+#include <QPushButton>
+
 #include "DockProperties/PropertyEditor.h"
-#include "QtPropertyEditor/QtPropertyItem.h"
-#include "QtPropertyEditor/QtProperyData/QtPropertyDataIntrospection.h"
-#include "QtPropertyEditor/QtProperyData/QtPropertyDataDavaVariant.h"
+#include "Tools/QtPropertyEditor/QtPropertyItem.h"
+#include "Tools/QtPropertyEditor/QtProperyData/QtPropertyDataIntrospection.h"
+#include "Tools/QtPropertyEditor/QtProperyData/QtPropertyDataDavaVariant.h"
 
 #include "PropertyEditorStateHelper.h"
 
 #include "ActionComponentEditor.h"
 
-PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */)
+PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
 	, advancedMode(false)
 	, curNode(NULL)
 	, treeStateHelper(this, this->curModel)
 {
-	SetRefreshTimeout(1000);
+	SetRefreshTimeout(5000);
 	
-	// global scene manager signals
-	QObject::connect(SceneDataManager::Instance(), SIGNAL(SceneActivated(SceneData *)), this, SLOT(sceneActivated(SceneData *)));
-	QObject::connect(SceneDataManager::Instance(), SIGNAL(SceneChanged(SceneData *)), this, SLOT(sceneChanged(SceneData *)));
-	QObject::connect(SceneDataManager::Instance(), SIGNAL(SceneReleased(SceneData *)), this, SLOT(sceneReleased(SceneData *)));
-	QObject::connect(SceneDataManager::Instance(), SIGNAL(SceneNodeSelected(SceneData *, DAVA::Entity *)), this, SLOT(sceneNodeSelected(SceneData *, DAVA::Entity *)));
+	if(connectToSceneSignals)
+	{
+		QObject::connect(SceneSignals::Instance(), SIGNAL(Selected(SceneEditor2 *, DAVA::Entity *)), this, SLOT(EntitySelected(SceneEditor2 *, DAVA::Entity *)));
+		QObject::connect(SceneSignals::Instance(), SIGNAL(Deselected(SceneEditor2 *, DAVA::Entity *)), this, SLOT(EntityDeselected(SceneEditor2 *, DAVA::Entity *)));
+		QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
+		QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
 
-	// 
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Selected(SceneEditor2 *, DAVA::Entity *)), this, SLOT(EntitySelected(SceneEditor2 *, DAVA::Entity *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deselected(SceneEditor2 *, DAVA::Entity *)), this, SLOT(EntityDeselected(SceneEditor2 *, DAVA::Entity *)));
-
-	// MainWindow actions
-	QObject::connect(QtMainWindow::Instance()->GetUI()->actionShowAdvancedProp, SIGNAL(triggered()), this, SLOT(actionShowAdvanced()));
-	advancedMode = QtMainWindow::Instance()->GetUI()->actionShowAdvancedProp->isChecked();
-
+		// MainWindow actions
+		QObject::connect(QtMainWindow::Instance()->GetUI()->actionShowAdvancedProp, SIGNAL(triggered()), this, SLOT(actionShowAdvanced()));
+		advancedMode = QtMainWindow::Instance()->GetUI()->actionShowAdvancedProp->isChecked();
+	}
 	posSaver.Attach(this, "DocPropetyEditor");
 	
 	DAVA::VariantType v = posSaver.LoadValue("splitPos");
@@ -178,28 +191,17 @@ QtPropertyData* PropertyEditor::AppendIntrospectionInfo(void *object, const DAVA
 	return propData;
 }
 
-void PropertyEditor::sceneChanged(SceneData *sceneData)
+void PropertyEditor::sceneActivated(SceneEditor2 *scene)
 {
-	if(NULL != sceneData)
+	if(NULL != scene)
 	{
-		SetNode(sceneData->GetSelectedNode());
+		SetNode(scene->selectionSystem->GetSelection()->GetEntity(0));
 	}
 }
 
-void PropertyEditor::sceneActivated(SceneData *sceneData)
+void PropertyEditor::sceneDeactivated(SceneEditor2 *scene)
 {
-	if(NULL != sceneData)
-	{
-		SetNode(sceneData->GetSelectedNode());
-	}
-}
-
-void PropertyEditor::sceneReleased(SceneData *sceneData)
-{ }
-
-void PropertyEditor::sceneNodeSelected(SceneData *sceneData, DAVA::Entity *node)
-{
-	SetNode(node);
+	SetNode(NULL);
 }
 
 void PropertyEditor::actionShowAdvanced()
@@ -224,18 +226,11 @@ void PropertyEditor::EntityDeselected(SceneEditor2 *scene, DAVA::Entity *entity)
 
 void PropertyEditor::EditActionComponent()
 {
-	SceneData* sceneData = SceneDataManager::Instance()->SceneGetActive();
-	
-	if(sceneData)
+	if(curNode)
 	{
-		DAVA::Entity* entity = SceneDataManager::Instance()->SceneGetSelectedNode(sceneData);
-		
-		if(entity)
-		{
-			ActionComponentEditor editor;
-			editor.SetComponent((DAVA::ActionComponent*)entity->GetComponent(DAVA::Component::ACTION_COMPONENT));
+		ActionComponentEditor editor;
+		editor.SetComponent((DAVA::ActionComponent*)curNode->GetComponent(DAVA::Component::ACTION_COMPONENT));
 			
-			editor.exec();
-		}
+		editor.exec();
 	}	
 }

@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #ifndef __DAVAENGINE_SCENENODE_H__
 #define __DAVAENGINE_SCENENODE_H__
 
@@ -23,7 +37,7 @@
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Entity/Component.h"
 #include "FileSystem/KeyedArchive.h"
-
+#include "Scene3D/Components/CustomPropertiesComponent.h"
 
 namespace DAVA
 {
@@ -62,7 +76,7 @@ public:
     void AddComponent(Component * component);
     void RemoveComponent(Component * component);
     void RemoveComponent(uint32 componentType);
-    Component * GetComponent(uint32 componentType);
+    Component * GetComponent(uint32 componentType) const;
 	Component * GetOrCreateComponent(uint32 componentType);
     uint32 GetComponentCount();
     
@@ -111,7 +125,7 @@ public:
         \brief Get name of this particular node.
         \returns name of this node
      */
-    inline const String & GetName();
+    inline const String & GetName() const;
 
     /**
         \brief Get full name of this node from root. This function is slow because it go up by hierarchy and make full node name.
@@ -157,7 +171,7 @@ public:
         If you dont want to modify matrix call GetLocalTransform().
      */
 	Matrix4 & ModifyLocalTransform(); 
-    const Matrix4 & GetWorldTransform();
+    const Matrix4 & GetWorldTransform() const;
     const Matrix4 & GetDefaultLocalTransform(); 
     
     void SetLocalTransform(const Matrix4 & newMatrix);
@@ -252,10 +266,10 @@ public:
     uint32 GetDebugFlags() const;
     	
     void SetSolid(bool isSolid);
-    bool GetSolid() const;
+    bool GetSolid();
 
 	void SetLocked(bool isLocked);
-	bool GetLocked() const;
+	bool GetLocked();
 
     /**
         \brief function returns maximum bounding box of scene in world coordinates.
@@ -282,7 +296,7 @@ public:
         \brief Function returns keyed archive of custom properties for this object. 
         Custom properties can be set for each node in editor, and used in the game later to implement game logic.
      */
-    KeyedArchive *GetCustomProperties();
+    KeyedArchive* GetCustomProperties();
     
     /**
         \brief This function should be implemented in each node that have data nodes inside it.
@@ -293,7 +307,11 @@ public:
      */
     template<template <typename> class Container, class T>
 	void GetDataNodes(Container<T> & container);
-    
+	/**
+	 \brief Optimize scene before export.
+     */
+	void OptimizeBeforeExport();
+
     /**
         \brief Function to get child nodes of requested type and move them to specific container you provide.
         For example if you want to get a list of MeshInstanceNodes you should do the following.
@@ -332,6 +350,7 @@ public:
 protected:
 
     String RecursiveBuildFullName(Entity * node, Entity * endNode);
+	CustomPropertiesComponent* GetCustomPropertiesComponent();
 
 //    virtual Entity* CopyDataTo(Entity *dstNode);
 	void SetParent(Entity * node);
@@ -344,8 +363,6 @@ protected:
 	int32	tag;
 
     uint32 flags;
-
-    KeyedArchive *customProperties;
     
 private:
 	Vector<Component *> components;
@@ -359,7 +376,6 @@ private:
 public:
 	INTROSPECTION_EXTEND(Entity, BaseObject,
 		MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-		MEMBER(customProperties, "Custom properties", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
 
@@ -404,7 +420,7 @@ inline Entity * Entity::GetParent()
 	return parent;
 }
     
-inline const String & Entity::GetName()
+inline const String & Entity::GetName() const
 {
     return name;
 }

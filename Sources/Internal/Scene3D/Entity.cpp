@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneNodeAnimation.h"
@@ -34,6 +48,8 @@
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Utils/Random.h"
 
+#define CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION 8
+
 
 namespace DAVA
 {
@@ -51,7 +67,7 @@ Entity::Entity()
     , tag(0)
 	, entity(0)
 {
-//    Logger::Debug("Entity: %p", this);
+//    Logger::FrameworkDebug("Entity: %p", this);
     componentFlags = 0;
 
 	components.resize(Component::COMPONENT_COUNT);
@@ -63,8 +79,6 @@ Entity::Entity()
     //debugFlags = DEBUG_DRAW_NONE;
     flags = NODE_VISIBLE | NODE_UPDATABLE | NODE_LOCAL_MATRIX_IDENTITY;
     
-    customProperties = new KeyedArchive();
-
 	AddComponent(new TransformComponent());
     
 //    Stats::Instance()->RegisterEvent("Scene.Update.Entity.Update", "Entity update time");
@@ -85,8 +99,6 @@ Entity::~Entity()
 	RemoveAllChildren();
 	SetScene(0);
 
-    SafeRelease(customProperties);
-
 	for(int32 i = 0; i < Component::COMPONENT_COUNT; ++i)
 	{
 		if(components[i])
@@ -95,7 +107,7 @@ Entity::~Entity()
 		}
 	}
 
-//  Logger::Debug("~Entity: %p", this);
+//  Logger::FrameworkDebug("~Entity: %p", this);
 }
     
 void Entity::AddComponent(Component * component)
@@ -112,21 +124,20 @@ void Entity::AddComponent(Component * component)
     componentFlags |= 1 << component->GetType();
 }
 
-void Entity::RemoveComponent(Component * component)
-{
-    if (scene)
+	void Entity::RemoveComponent(Component * component)
 	{
-        scene->RemoveComponent(this, component);
+		if (scene)
+		{
+			scene->RemoveComponent(this, component);
+		}
+		
+		component->SetEntity(0);
+		components[component->GetType()] = 0;
+		
+		// SHOULD BE DONE AFTER scene->RemoveComponent
+		componentFlags &= ~(1 << component->GetType());
+		delete(component);
 	}
-
-	component->SetEntity(0);
-	components[component->GetType()] = 0;
-
-	// SHOULD BE DONE AFTER scene->RemoveComponent
-    componentFlags &= ~(1 << component->GetType());
-	delete(component);
-}
-    
 void Entity::RemoveComponent(uint32 componentType)
 {
     if (components[componentType])
@@ -134,7 +145,7 @@ void Entity::RemoveComponent(uint32 componentType)
 }
 
     
-Component * Entity::GetComponent(uint32 componentType)
+Component * Entity::GetComponent(uint32 componentType) const
 {
     return components[componentType];
 }
@@ -153,14 +164,14 @@ Component * Entity::GetOrCreateComponent(uint32 componentType)
     
 uint32 Entity::GetComponentCount()
 {
-    uint32 count = 0;
-    for (uint32 k = 0; k < Component::COMPONENT_COUNT; ++k)
-        if (componentFlags >> k)
-            count++;
-    return count;
+	uint32 bits = componentFlags;
+	uint32 count = 0;
+	for(; 0 != bits; count++)
+	{
+		bits &= bits - 1;
+	}
+	return count;
 }
-
-
 
 void Entity::SetScene(Scene * _scene)
 {
@@ -218,24 +229,43 @@ void Entity::AddNode(Entity * node)
     
 void Entity::InsertBeforeNode(Entity *newNode, Entity *beforeNode)
 {
-    if (newNode)
+    if(newNode && newNode != beforeNode)
     {
-        const Vector<Entity*>::iterator &itEnd = children.end();
+		bool canBeInserted = false;
+
+		//need 2 passes because iterator will be invalidated when the entity
+		//is already present in the list of children and changes its position.
+		
+		Vector<Entity*>::iterator itEnd = children.end();
         for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
         {
             if(beforeNode == (*it))
             {
-                newNode->Retain();
-                if (newNode->parent)
-                {
-                    newNode->parent->RemoveNode(newNode);
-                }
-				children.insert(it, newNode);
-                newNode->SetParent(this);
-                newNode->SetScene(GetScene());
+				canBeInserted = true;
                 break;
             }
         }
+
+		if(canBeInserted)
+		{
+			newNode->Retain();
+			if (newNode->parent)
+			{
+				newNode->parent->RemoveNode(newNode);
+			}
+
+			itEnd = children.end();
+			for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
+			{
+				if(beforeNode == (*it))
+				{
+					children.insert(it, newNode);
+					newNode->SetParent(this);
+					newNode->SetScene(GetScene());
+					break;
+				}
+			}
+		}
     }
 }
 
@@ -588,9 +618,6 @@ Entity* Entity::Clone(Entity *dstNode)
     dstNode->name = name;
     dstNode->tag = tag;
     //dstNode->flags = flags;
-
-    SafeRelease(dstNode->customProperties);
-    dstNode->customProperties = new KeyedArchive(*customProperties);
     
     dstNode->nodeAnimations = nodeAnimations;
     
@@ -734,15 +761,7 @@ void Entity::Save(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
 {
     // Perform refactoring and add Matrix4, Vector4 types to VariantType and KeyedArchive
     BaseObject::Save(archive);
-    
-    String savedPath = "";
-    if(customProperties && customProperties->IsKeyExists("editor.referenceToOwner"))
-    {
-        savedPath = customProperties->GetString("editor.referenceToOwner");
-        String newPath = FilePath(savedPath).GetRelativePathname(sceneFileV2->GetScenePath());
-        customProperties->SetString("editor.referenceToOwner", newPath);
-    }
-    
+        
     archive->SetString("name", name);
     archive->SetInt32("tag", tag);
     archive->SetByteArrayAsType("localTransform", GetLocalTransform());
@@ -750,25 +769,29 @@ void Entity::Save(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
     
     archive->SetUInt32("flags", flags);
 //    archive->SetUInt32("debugFlags", debugFlags);
-    
-    archive->SetByteArrayFromArchive("customprops", customProperties);
-    
-    if(customProperties && savedPath.length())
-    {
-        customProperties->SetString("editor.referenceToOwner", savedPath);
-    }
-
+        
 	KeyedArchive *compsArch = new KeyedArchive();
 	for(uint32 i = 0; i < components.size(); ++i)
 	{
 		if(NULL != components[i])
 		{
+			//don't save empty custom properties
+			if(Component::CUSTOM_PROPERTIES_COMPONENT == i)
+			{
+				CustomPropertiesComponent* customProps = cast_if_equal<CustomPropertiesComponent*>(components[i]);
+				if(customProps && customProps->GetArchive()->Count() <= 0)
+				{
+					continue;
+				}
+			}
+			
 			KeyedArchive *compArch = new KeyedArchive();
 			components[i]->Serialize(compArch, sceneFileV2);
 			compsArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), compArch);
 			compArch->Release();
 		}
 	}
+	
 	archive->SetArchive("components", compsArch);
 	compsArch->Release();
 }
@@ -791,24 +814,6 @@ void Entity::Load(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
     /// InvalidateLocalTransform();
 //    debugFlags = archive->GetUInt32("debugFlags", 0);
     
-    SafeRelease(customProperties);
-    customProperties = archive->GetArchiveFromByteArray("customprops");
-    if (!customProperties)
-    {
-        customProperties = new KeyedArchive();
-    }
-    else
-    {
-        if(customProperties->IsKeyExists("editor.referenceToOwner"))
-        {
-            FilePath newPath(sceneFileV2->GetScenePath());
-            newPath += customProperties->GetString("editor.referenceToOwner");
-
-            //TODO: why we use absolute pathname instead of relative?
-            customProperties->SetString("editor.referenceToOwner", newPath.GetAbsolutePathname());
-        }
-    }
-
 	KeyedArchive *compsArch = archive->GetArchive("components");
 	if(NULL != compsArch)
 	{
@@ -830,33 +835,61 @@ void Entity::Load(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
 			}
 		}
 	}
+	
+	if(sceneFileV2->GetVersion() < CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION)
+	{
+		KeyedArchive* customProps = archive->GetArchiveFromByteArray("customprops");
+		
+		if(customProps != NULL)
+		{
+			CustomPropertiesComponent* customPropsComponent = GetCustomPropertiesComponent();
+			customPropsComponent->LoadFromArchive(*customProps, sceneFileV2);
+			
+			SafeRelease(customProps);
+		}
+	}
 }
-
-KeyedArchive * Entity::GetCustomProperties()
+	
+CustomPropertiesComponent* Entity::GetCustomPropertiesComponent()
 {
-    return customProperties;
+	CustomPropertiesComponent* component = cast_if_equal<CustomPropertiesComponent*>(GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT));
+	
+	if(NULL == component)
+	{
+		component = new CustomPropertiesComponent();
+		AddComponent(component);
+	}
+	
+    return component;
+
+}
+	
+KeyedArchive* Entity::GetCustomProperties()
+{
+	CustomPropertiesComponent* component = GetCustomPropertiesComponent();	
+    return component->GetArchive();
 }
     
 void Entity::SetSolid(bool isSolid)
 {
 //    isSolidNode = isSolid;
-    customProperties->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
+    GetCustomProperties()->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
 }
     
-bool Entity::GetSolid() const
+bool Entity::GetSolid()
 {
 //    return isSolidNode;
-    return customProperties->GetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
+    return GetCustomProperties()->GetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
 }
 
 void Entity::SetLocked(bool isLocked)
 {
-	customProperties->SetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, isLocked);
+	GetCustomProperties()->SetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, isLocked);
 }
 
-bool Entity::GetLocked() const
+bool Entity::GetLocked()
 {
-	return customProperties->GetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, false);
+	return GetCustomProperties()->GetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, false);
 }
 
 void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
@@ -876,6 +909,20 @@ void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
     }
 }
 
+void Entity::OptimizeBeforeExport()
+{
+	for (uint32 i = 0; i < Component::COMPONENT_COUNT; ++i)
+	{
+		if (components[i])
+			components[i]->OptimizeBeforeExport();
+	}
+	
+	uint32 size = (uint32)children.size();
+	for (uint32 c = 0; c < size; ++c)
+	{
+		children[c]->OptimizeBeforeExport();
+	}
+}
     
 void Entity::AddFlagRecursive(int32 flagToAdd)
 {
@@ -984,7 +1031,7 @@ const Matrix4 & Entity::GetLocalTransform()
 	return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->GetLocalTransform();
 }
 
-const Matrix4 & Entity::GetWorldTransform()
+const Matrix4 & Entity::GetWorldTransform() const
 {
 	return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransform();
 }

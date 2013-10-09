@@ -1,18 +1,32 @@
 /*==================================================================================
-    Copyright (c) 2008, DAVA, INC
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-    * Neither the name of the DAVA, INC nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
 
-    THIS SOFTWARE IS PROVIDED BY THE DAVA, INC AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL DAVA, INC BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+    * Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    * Neither the name of the binaryzebra nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+
 
 #include "EditorConfig.h"
 
@@ -82,20 +96,20 @@ void EditorConfig::ParseConfig(const FilePath &filePath)
 		YamlNode *rootNode = parser->GetRootNode();
 		if(rootNode)
 		{
-			Vector<YamlNode*> &yamlNodes = rootNode->AsVector();
+			const Vector<YamlNode*> &yamlNodes = rootNode->AsVector();
 			int32 propertiesCount = yamlNodes.size();
 			for(int32 i = 0; i < propertiesCount; ++i)
 			{
 				YamlNode *propertyNode = yamlNodes[i];
 				if(propertyNode)
 				{
-					YamlNode *nameNode = propertyNode->Get("name");
-					YamlNode *typeNode = propertyNode->Get("type");
-					YamlNode *defaultNode = propertyNode->Get("default");
+					const YamlNode *nameNode = propertyNode->Get("name");
+					const YamlNode *typeNode = propertyNode->Get("type");
+					const YamlNode *defaultNode = propertyNode->Get("default");
 					if(nameNode && typeNode)
 					{
-						String nameStr = nameNode->AsString();
-						String typeStr = typeNode->AsString();
+						const String &nameStr = nameNode->AsString();
+						const String &typeStr = typeNode->AsString();
 						int32 type = ParseType(typeStr);
 						if(type)
 						{
@@ -166,10 +180,10 @@ void EditorConfig::ParseConfig(const FilePath &filePath)
 										}
 										properties[nameStr]->defaultValue.SetInt32(defaultValue);
 
-										YamlNode *comboNode = propertyNode->Get("list");
+										const YamlNode *comboNode = propertyNode->Get("list");
 										if(comboNode)
 										{
-											Vector<YamlNode*> comboValueNodes = comboNode->AsVector();
+											const Vector<YamlNode*> &comboValueNodes = comboNode->AsVector();
 											int32 comboValuesCount = comboValueNodes.size();
 											for(int32 i = 0; i < comboValuesCount; ++i)
 											{
@@ -187,14 +201,14 @@ void EditorConfig::ParseConfig(const FilePath &filePath)
                                         }
                                         properties[nameStr]->defaultValue.SetInt32(defaultValue);
                                         
-                                        YamlNode *colorListNode = propertyNode->Get("list");
+                                        const YamlNode *colorListNode = propertyNode->Get("list");
                                         if(colorListNode)
                                         {
-                                            Vector<YamlNode*> colorListNodes = colorListNode->AsVector();
+                                            const Vector<YamlNode*> &colorListNodes = colorListNode->AsVector();
                                             int32 colorListValuesCount = colorListNodes.size();
                                             for(int32 i = 0; i < colorListValuesCount; ++i)
                                             {
-                                                YamlNode* colorNode = colorListNodes[i];
+                                                const YamlNode* colorNode = colorListNodes[i];
                                                 if(!colorNode || colorNode->GetCount() != 4)
                                                     continue;
                                                 
