@@ -328,6 +328,11 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
 		if (!control->GetVisible())
 			continue;
 		
+		if (!control->GetVisibleForUIEditor())
+		{
+			continue;
+		}
+
 		Rect controlRect = GetControlRect(controlNode);
 		if (controlRect.PointInside(point))
 		{

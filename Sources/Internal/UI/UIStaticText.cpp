@@ -79,10 +79,14 @@ void UIStaticText::CopyDataFrom(UIControl *srcControl)
 {
 	UIControl::CopyDataFrom(srcControl);
     UIStaticText *t = (UIStaticText *)srcControl;
+
+    SafeRelease(textBlock);
     textBlock = t->textBlock->Clone();
+    
     textColor = t->textColor;
     shadowColor = t->shadowColor;
     shadowOffset = t->shadowOffset;
+    
     SafeRelease(shadowBg);
 	SafeRelease(textBg);
     shadowBg = t->shadowBg->Clone();

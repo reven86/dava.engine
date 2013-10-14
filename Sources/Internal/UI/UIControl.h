@@ -1160,7 +1160,7 @@ public:
 
 	// Get/set visible flag for UI editor. Should not be serialized.
 	bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
-	void SetVisibleForUIEditor(bool value) { visibleForUIEditor = value; };
+	void SetVisibleForUIEditor(bool value, bool hierarchic = true);
 
 public:
 

@@ -170,6 +170,7 @@ void InputTest::LoadResources()
 	textField->SetKeyboardAppearanceType(DAVA::UITextField::KEYBOARD_APPEARANCE_ALERT);
 	textField->SetReturnKeyType(DAVA::UITextField::RETURN_KEY_JOIN);
 	textField->SetKeyboardType(DAVA::UITextField::KEYBOARD_TYPE_TWITTER);
+	textField->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 
 	AddControl(textField);
 

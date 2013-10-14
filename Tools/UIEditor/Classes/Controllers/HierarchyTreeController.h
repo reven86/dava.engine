@@ -164,6 +164,10 @@ protected:
 	void InsertSelectedControlToList(HierarchyTreeControlNode* control);
 	void RemoveSelectedControlFromList(HierarchyTreeControlNode* control);
 
+	// Whether align/distribute is possible.
+	bool CanPerformAlign(eAlignControlsType alignType);
+	bool CanPerformDistribute(eDistributeControlsType distributeType);
+
     // Hierarchy Tree.
     HierarchyTree hierarchyTree;
     

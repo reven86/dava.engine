@@ -181,7 +181,7 @@ template<typename Type>
         HierarchyTreeNode::HIERARCHYTREENODEID nodeID = params.GetTreeNodeID();
 		// Get rect for control node
 		UIControl *control = params.GetUIControl();
-		Rect controlRect = control->GetRect();
+		Rect controlRect = control ? control->GetRect() : Rect(); // there might not be UI Control for Platform/Screen/Aggregator.
 
         Type nodeValue = PropertiesHelper::GetPropertyValue<Type>(baseMetadata, GetPropertyName(), i);
         ChangePropertyCommandHelper<Type>::RetainBeforeStore(nodeValue);

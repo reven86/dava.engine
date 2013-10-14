@@ -46,6 +46,7 @@ UITextFieldPropertyGridWidget::UITextFieldPropertyGridWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 	SetPropertyBlockName(TEXTFIELD_PROPERTY_BLOCK_NAME);
+	BasePropertyGridWidget::InstallEventFiltersForWidgets(this);
 }
 
 UITextFieldPropertyGridWidget::~UITextFieldPropertyGridWidget()

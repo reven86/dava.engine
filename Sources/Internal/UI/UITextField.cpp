@@ -90,6 +90,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	delegate(0)
 ,	cursorBlinkingTime(0.0f)
 ,   textFont(NULL)
+,	constFont(NULL)
 ,   staticText(NULL)
 ,   isPassword(false)
 ,	autoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES)
@@ -121,6 +122,7 @@ UITextField::UITextField()
 :   delegate(NULL)
 ,   cursorBlinkingTime(0.f)
 ,   textFont(NULL)
+,	constFont(NULL)
 ,   staticText(NULL)
 ,   isPassword(false)
 ,	autoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES)
@@ -168,6 +170,7 @@ UITextField::UITextField()
 UITextField::~UITextField()
 {
     SafeRelease(textFont);
+	SafeRelease(constFont);
 #ifdef __DAVAENGINE_ANDROID__
 	SafeDelete(textFieldAndroid);
 #endif
@@ -305,8 +308,14 @@ void UITextField::ReleaseFocus()
 void UITextField::SetFont(Font * font)
 {
 #ifndef __DAVAENGINE_IPHONE__
-    SafeRelease(textFont);
-    textFont = SafeRetain(font);
+	// Yuri Coder, 2013/10/10. The implementation is copied from TextBlock.cpp
+	//Do not change the code above. This magic realised to avoid font destruction.
+	//For example in this case UITextField->SetFont(UITextField->GetFont()); code should work correct
+	SafeRelease(constFont);
+	constFont = font->Clone();
+	SafeRelease(textFont);
+	textFont = constFont->Clone();
+
     staticText->SetFont(textFont);
 #endif
 }

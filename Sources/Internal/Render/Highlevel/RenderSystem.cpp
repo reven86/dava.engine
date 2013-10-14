@@ -335,7 +335,16 @@ void RenderSystem::AddLight(Light * light)
     
 void RenderSystem::RemoveLight(Light * light)
 {
-    lights.erase(std::remove(lights.begin(), lights.end(), light), lights.end());
+    Vector<Light *>::const_iterator endIt = lights.end();
+    for(Vector<Light *>::iterator it = lights.begin(); it != endIt; ++it)
+    {
+        if(*it == light)
+        {
+            SafeRelease(*it);
+            lights.erase(it);
+            break;
+        }
+    }
 }
 
 Vector<Light*> & RenderSystem::GetLights()

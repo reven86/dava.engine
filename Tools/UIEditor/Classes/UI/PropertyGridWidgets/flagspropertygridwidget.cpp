@@ -45,6 +45,8 @@ FlagsPropertyGridWidget::FlagsPropertyGridWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     SetPropertyBlockName(FLAGS_PROPERTY_BLOCK_NAME);
+
+	BasePropertyGridWidget::InstallEventFiltersForWidgets(this);
 }
 
 FlagsPropertyGridWidget::~FlagsPropertyGridWidget()

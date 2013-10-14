@@ -647,6 +647,11 @@ HierarchyTreeScreenNode* HierarchyTreeController::GetScreenNodeForNode(Hierarchy
 
 void HierarchyTreeController::AlignSelectedControls(eAlignControlsType alignType)
 {
+	if (!CanPerformAlign(alignType))
+	{
+		return;
+	}
+
 	BaseCommand* command = new ControlsAlignDistributeCommand(activeControlNodes, alignType);
     CommandsController::Instance()->ExecuteCommand(command);
 	SafeRelease(command);
@@ -654,7 +659,24 @@ void HierarchyTreeController::AlignSelectedControls(eAlignControlsType alignType
 
 void HierarchyTreeController::DistributeSelectedControls(eDistributeControlsType distributeType)
 {
+	if (!CanPerformDistribute(distributeType))
+	{
+		return;
+	}
+
 	BaseCommand* command = new ControlsAlignDistributeCommand(activeControlNodes, distributeType);
     CommandsController::Instance()->ExecuteCommand(command);
 	SafeRelease(command);
+}
+
+bool HierarchyTreeController::CanPerformAlign(eAlignControlsType /*alignType*/)
+{
+	// Align is not possible if less than two controls selected.
+	return activeControlNodes.size() >= 2;
+}
+
+bool HierarchyTreeController::CanPerformDistribute(eDistributeControlsType /*distributeType*/)
+{
+	// Distribute is not possible if less than three controls selected.
+	return activeControlNodes.size() >= 3;
 }

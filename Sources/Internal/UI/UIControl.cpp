@@ -951,7 +951,20 @@ namespace DAVA
 			}
 		}
 	}
-	
+
+	void UIControl::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
+	{
+		visibleForUIEditor = value;
+		if(hierarchic)
+		{
+			List<UIControl*>::iterator it = childs.begin();
+			for(; it != childs.end(); ++it)
+			{
+				(*it)->SetVisibleForUIEditor(value, hierarchic);
+			}
+		}
+	}
+
 	bool UIControl::GetInputEnabled() const
 	{
 		return inputEnabled;
