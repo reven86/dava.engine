@@ -38,17 +38,19 @@ namespace DAVA
 
 class DeviceInfo
 {
-private:
-    static int32 screenWidth;
-    static int32 screenHeight;
-    static int32 screenScale;
-	
 public:
 	struct ScreenInfo
 	{
 		int32 scrWidth;
 		int32 scrHeight;
 		int32 scrScale;
+		
+		ScreenInfo()
+		{
+			scrWidth = 0;
+			scrHeight = 0;
+			scrScale = 1;
+		}
 		
 		ScreenInfo(int32 w, int32 h, int32 scale)
 		{
@@ -58,6 +60,10 @@ public:
 		}
 	};
 
+private:
+	static ScreenInfo screenInfo;
+	
+public:
 	enum ePlatform
 	{
 		PLATFORM_MACOS = 0,

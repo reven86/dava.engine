@@ -31,6 +31,7 @@
 #include "Platform/Qt/MacOS/CorePlatformMacOS.h"
 #include "Platform/Qt/QtLayer.h"
 #include "Platform/Qt/MacOS/QTLayerMacOS.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 
@@ -60,6 +61,15 @@ int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
     core->CreateSingletons();
 
     Logger::Instance()->EnableConsoleMode();
+	
+	QDesktopWidget *mydesk = QApplication::QDesktopWidget;
+	
+	// DF-2274 - Get actual screen resolution and save it inside DeviceInfo
+	CGRect mainMonitor = CGDisplayBounds(CGMainDisplayID());
+	int nScreenHeight = (int)CGRectGetHeight(mainMonitor);
+	int nScreenWidth = (int)CGRectGetWidth(mainMonitor);
+
+	DeviceInfo::SetScreenInfo(nScreenWidth, nScreenHeight, 1);
 
     FrameworkDidLaunched();
     FrameworkWillTerminate();

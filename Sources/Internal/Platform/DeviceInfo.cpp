@@ -37,9 +37,7 @@
 namespace DAVA
 {
 
-int32 DeviceInfo::screenHeight;
-int32 DeviceInfo::screenWidth;
-int32 DeviceInfo::screenScale;
+DeviceInfo::ScreenInfo DeviceInfo::screenInfo;
 
 DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 {
@@ -101,14 +99,12 @@ String DeviceInfo::GetPlatformString()
 
 DeviceInfo::ScreenInfo DeviceInfo::GetScreenInfo()
 {
-	return DeviceInfo::ScreenInfo(screenWidth, screenHeight, screenScale);
+	return screenInfo;
 }
 
 void DeviceInfo::SetScreenInfo(int32 w, int32 h, int32 scale)
 {
-	screenWidth = w;
-	screenHeight = h;
-	screenScale = scale;
+	screenInfo = DeviceInfo::ScreenInfo(w, h, scale);
 }
 
 }

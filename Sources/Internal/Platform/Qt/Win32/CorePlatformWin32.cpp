@@ -29,6 +29,7 @@
 
 #include "Platform/Qt/Win32/CorePlatformWin32.h"
 #include "Platform/Qt/Win32/WindowsSpecifics.h"
+#include "Platform/DeviceInfo.h"
 #include "Platform/Thread.h"
 #include "Utils/Utils.h"
 
@@ -60,6 +61,12 @@ int Core::RunCmdTool(int argc, char * argv[], AppHandle handle)
 	core->InitArgs();
 
 	Logger::Instance()->EnableConsoleMode();
+	
+	// DF-2274 - Get actual screen resolution and save it inside DeviceInfo
+	int nScreenWidth = ::GetSystemMetrics(SM_CXSCREEN);
+	int nScreenHeight = ::GetSystemMetrics(SM_CYSCREEN);
+
+	DeviceInfo::SetScreenInfo(nScreenWidth, nScreenHeight, 1);
 
 	FrameworkDidLaunched();
 	FrameworkWillTerminate();
