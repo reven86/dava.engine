@@ -62,8 +62,6 @@ int Core::RunCmdTool(int argc, char *argv[], AppHandle handle)
 
     Logger::Instance()->EnableConsoleMode();
 	
-	QDesktopWidget *mydesk = QApplication::QDesktopWidget;
-	
 	// DF-2274 - Get actual screen resolution and save it inside DeviceInfo
 	CGRect mainMonitor = CGDisplayBounds(CGMainDisplayID());
 	int nScreenHeight = (int)CGRectGetHeight(mainMonitor);
