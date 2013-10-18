@@ -678,9 +678,28 @@ void DefaultScreen::ApplySizeDelta(const Vector2& delta)
 			
 		default:break;
 	}
-		
+	// DF-2009 - Don't allow to "turn out" controls. Now dx and dy can't be less than zero.
+	if (rect.dx < MIN_CONTROL_SIZE)
+	{
+		rect.dx = MIN_CONTROL_SIZE;
+		// Keep control position when current size is equal 1.
+		if ((resizeType == ResizeTypeLeft) || (resizeType == ResizeTypeLeftBottom) || (resizeType == ResizeTypeLeftTop))
+		{
+			rect.x = resizeRect.x + resizeRect.dx - MIN_CONTROL_SIZE;
+		}
+	}
+	
+	if (rect.dy < MIN_CONTROL_SIZE)
+	{
+		rect.dy = MIN_CONTROL_SIZE;
+				
+		if ((resizeType == ResizeTypeTop) || (resizeType == ResizeTypeRigthTop) || (resizeType == ResizeTypeLeftTop))
+		{			
+			rect.y = resizeRect.y + resizeRect.dy - MIN_CONTROL_SIZE;
+		}
+	}
+	
 	lastSelectedControl->GetUIObject()->SetRect(rect);
-
 }
 
 void DefaultScreen::ResetSizeDelta()
@@ -700,17 +719,6 @@ void DefaultScreen::ResizeControl()
 		return;
 	
 	Rect rect = lastSelectedControl->GetUIObject()->GetRect();
-	if (rect.dx < 0)
-	{
-		rect.x += rect.dx;
-		rect.dx = -rect.dx;
-	}
-	
-	if (rect.dy < 0)
-	{
-		rect.y += rect.dy;
-		rect.dy = -rect.dy;
-	}
 
 	ResetSizeDelta();
 	ControlResizeCommand* cmd = new ControlResizeCommand(lastSelectedControl->GetId(), resizeRect, rect);

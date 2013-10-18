@@ -35,21 +35,14 @@ char text[256] = {0};
 
 extern "C"
 {
-	void Java_com_dava_framework_JNITextField_FieldHiddenWithText(JNIEnv* env, jobject classthis, jstring jStrText)
+	void Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
 	{
-		CreateStringFromJni(env, jStrText, text);
-		DAVA::JniTextField::FieldHiddenWithText(text);
+		DAVA::UITextFieldAndroid::TextFieldShouldReturn(id);
 	}
 
-
-	void Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis)
-	{
-		DAVA::JniTextField::TextFieldShouldReturn();
-	}
-
-	bool Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, int replacementLocation, int replacementLength, jstring replacementString)
+	bool Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jstring replacementString)
 	{
 		CreateStringFromJni(env, replacementString, text);
-		return DAVA::JniTextField::TextFieldKeyPressed(replacementLocation, replacementLength, text);
+		return DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, text);
 	}
 };

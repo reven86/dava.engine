@@ -249,6 +249,10 @@ void UIControlMetadata::SetPivotX(float value)
     }
     
     GetActiveUIControl()->pivotPoint.x = value;
+	// DF-2009 - Re-set align properties if pivot point was changed
+	SetLeftAlign(GetLeftAlign());
+	SetHCenterAlign(GetHCenterAlign());
+	SetRightAlign(GetRightAlign());
 }
 
 float UIControlMetadata::GetPivotY() const
@@ -269,6 +273,10 @@ void UIControlMetadata::SetPivotY(float value)
     }
     
     GetActiveUIControl()->pivotPoint.y = value;
+	// DF-2009 - Re-set align properties if pivot point was changed
+	SetTopAlign(GetTopAlign());
+	SetVCenterAlign(GetVCenterAlign());
+	SetBottomAlign(GetBottomAlign());
 }
 
 float UIControlMetadata::GetAngle() const

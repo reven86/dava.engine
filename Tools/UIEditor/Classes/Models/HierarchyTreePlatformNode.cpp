@@ -273,7 +273,7 @@ bool HierarchyTreePlatformNode::Save(YamlNode* node, bool saveAll)
 	node->SetNodeToMap( GetName().toStdString(), platform );
 	ActivatePlatform();
 	
-	YamlNode* screens = new YamlNode(YamlNode::TYPE_ARRAY);
+	YamlNode* screens = new YamlNode(YamlNode::TYPE_ARRAY, YamlNode::REPRESENT_ARRAY_AS_MULTI_LINE);
 	platform->SetNodeToMap( SCREENS_NODE, screens );
 	
 	YamlNode* aggregators = new YamlNode(YamlNode::TYPE_MAP);

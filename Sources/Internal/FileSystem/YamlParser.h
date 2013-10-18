@@ -59,10 +59,23 @@ public:
 		TYPE_MAP,
 	};
 
+	// Representation Type. For example, lists can be represented as ["val1", "val2", "val3"] or
+	//- val1
+	//- val2
+	//- val3
+	// See also DF-2389 for details.
+	enum eRepresentationType
+	{
+		
+		REPRESENT_AS_DEFAULT,
+		REPRESENT_ARRAY_AS_SINGLE_LINE,
+		REPRESENT_ARRAY_AS_MULTI_LINE
+	};
+
     // Predefined node name to store Relative Depth.
     static const char8* YAML_NODE_RELATIVE_DEPTH_NAME;
 
-	YamlNode(eType type);
+	YamlNode(eType type, eRepresentationType repType = REPRESENT_AS_DEFAULT);
 	virtual ~YamlNode();
 	
 	void Print(int32 identation);
@@ -181,6 +194,7 @@ private:
 	int						mapIndex;
 	int						mapCount;
 	eType					type;
+	eRepresentationType		representationType;
 	WideString				stringValue;
 	String					 nwStringValue;
 	Vector<YamlNode*>		 objectArray;
@@ -244,6 +258,7 @@ private:
 
     // Recursively get the array node representation string.
     String GetArrayNodeRepresentation(const String& nodeName, const YamlNode* currentNode, int16 depth, bool writeAsOuterNode = true) const;
+	String GetArrayNodeRepresentationMultiline(const String& nodeName, const YamlNode* currentNode, int16 depth) const;
 
     // Return the identation string of the appropriate depth.
     String PrepareIdentedString(int16 depth) const;

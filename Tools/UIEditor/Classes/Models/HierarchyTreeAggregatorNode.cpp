@@ -90,9 +90,7 @@ void HierarchyTreeAggregatorNode::SetRect(const Rect& rect)
 
 Rect HierarchyTreeAggregatorNode::GetRect() const
 {
-	Rect rect = this->rect;
-	CombineRectWithChild(rect);
-	return rect;
+	return this->rect;
 }
 
 void HierarchyTreeAggregatorNode::SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter)
@@ -153,8 +151,12 @@ void HierarchyTreeAggregatorNode::UpdateChilds()
 			aggregatorControl->InsertChildBelow(newControl, belowControl);
 			aggregatorControl->AddAggregatorChild(newControl);
 		}
-		//aggregatorControl->SetSize(screen->GetSize()); TODO:// update child size 
+
+		// Have to remember Align Data prior to changing rectangle and then apply the alignment
+		// back, since SetRect affects the alignment. See please DF-2342.
+		AlignData alignData = SaveAlignData(aggregatorControl);
 		aggregatorControl->SetRect(aggregatorControl->GetRect());	//update childs size and position
+		RestoreAlignData(aggregatorControl, alignData);
 	}
 }
 
@@ -295,4 +297,39 @@ const HierarchyTreeAggregatorNode::CHILDS& HierarchyTreeAggregatorNode::GetChild
 const FilePath& HierarchyTreeAggregatorNode::GetPath()
 {
 	return path;
+}
+
+HierarchyTreeAggregatorNode::AlignData HierarchyTreeAggregatorNode::SaveAlignData(UIControl* uiControl)
+{
+	AlignData resultData;
+	if (!uiControl)
+	{
+		return resultData;
+	}
+	
+	resultData.leftAlign = uiControl->GetLeftAlign();
+	resultData.hcenterAlign = uiControl->GetHCenterAlign();
+	resultData.rightAlign = uiControl->GetRightAlign();
+	
+	resultData.topAlign = uiControl->GetTopAlign();
+	resultData.vcenterAlign = uiControl->GetVCenterAlign();
+	resultData.bottomAlign = uiControl->GetBottomAlign();
+	
+	return resultData;
+}
+
+void HierarchyTreeAggregatorNode::RestoreAlignData(UIControl* uiControl, const HierarchyTreeAggregatorNode::AlignData& alignData)
+{
+	if (!uiControl)
+	{
+		return;
+	}
+
+	uiControl->SetLeftAlign(alignData.leftAlign);
+	uiControl->SetHCenterAlign(alignData.hcenterAlign);
+	uiControl->SetRightAlign(alignData.rightAlign);
+
+	uiControl->SetTopAlign(alignData.topAlign);
+	uiControl->SetVCenterAlign(alignData.vcenterAlign);
+	uiControl->SetBottomAlign(alignData.bottomAlign);
 }

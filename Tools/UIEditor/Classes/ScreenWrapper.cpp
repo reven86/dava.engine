@@ -181,12 +181,6 @@ bool ScreenWrapper::IsDropEnable(const QPoint& pos)
 	return res;
 }
 
-void ScreenWrapper::RequestUpdateView()
-{
-	UpdateScaleRequest(1);
-	UpdateScaleRequest(-1);
-}
-
 void ScreenWrapper::SetCursor(const Vector2& position, Qt::CursorShape cursor)
 {
 	cursorPosition = position;

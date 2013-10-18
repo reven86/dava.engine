@@ -41,13 +41,6 @@
 
 #include "Autotesting/MongodbUpdateObject.h"
 
-//#define AUTOTESTING_DB_HOST    "10.128.19.33"
-#define AUTOTESTING_DB_HOST    "by2-buildmachine.wargaming.net"
-//#define AUTOTESTING_DB_HOST    "10.128.128.5"
-//#define AUTOTESTING_DB_HOST    "192.168.1.2"
-#define AUTOTESTING_DB_PORT  27017
-#define AUTOTESTING_DB_NAME  "Autotesting"
-
 #if defined (__DAVAENGINE_MACOS__)
 #define AUTOTESTING_PLATFORM_NAME  "MacOS"
 #elif defined (__DAVAENGINE_IPHONE__)
@@ -81,19 +74,19 @@ public:
     
     void OnInit();
     inline bool IsInit() { return isInit; };
-    
-    void SetProjectName(const String &_projectName);
 
 	void OnScreenShot(Image *image);
     
     void RunTests();
     
-	// multiplayer api
-	void WriteState(const String & device, const String & state);
-	void WriteCommand(const String & device, const String & state);
+	// Parameters from DB
+	void FetchParametersFromDB();
+	void FetchParametersFromIdTxt();
+	void SetUpConnectionToDB();
 
-	String ReadState(const String & device);
-	String ReadCommand(const String & device);
+	String GetDeviceName();
+
+
 
 	void InitializeDevice(const String & device);
 
@@ -101,13 +94,10 @@ public:
 	void OnTestStart(const String &testName);
 	void OnStepStart( const String & stepName );
 	void OnStepFinished();
-
-	void Log(const String &level, const String &message);
-
-    void OnTestsSatrted();
-    void OnTestStep(const String & stepName, bool isPassed, const String & error = "");
+	void OnTestsSatrted();
     void OnError(const String & errorMessage = "");
 	void OnMessage(const String & logMessage = "");
+	void ForceQuit(const String & logMessage = "");
     void OnTestsFinished();
     
     // helpers
@@ -117,47 +107,32 @@ public:
     bool FindTouch(int32 id, UIEvent &touch);
     bool IsTouchDown(int32 id);
 
-	// DB storing
-	void WriteString(const String & name, const String & text);
-	String ReadString(const String & name);
-
 	String GetScreenShotName();
 	void MakeScreenShot();
-
-	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName);
 
     // DB Master-Helper relations
     void InitMultiplayer(bool _isMaster);
     void RegisterMasterInDB(int32 helpersCount);
     void RegisterHelperInDB();
-    
-protected:
-	String GetTestId(int32 index) { return Format("Test%03d", index); };
-	String GetStepId(int32 index) { return Format("Step%03d", index); };
-	String GetLogId(int32 index) { return  Format("Message%03d", index); };
 
+	String GetTestId() { return Format("Test%03d", testIndex); };
+	String GetStepId() { return Format("Step%03d", stepIndex); };
+	String GetLogId() { return  Format("Message%03d", logIndex); };
+    
 	uint64 GetCurrentTimeMS();
 	String GetCurrentTimeString();
 	String GetCurrentTimeMsString();
-//DB
-	KeyedArchive *FindOrInsertRunArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg);
-    void ClearTestInDB();
-    
-    KeyedArchive *FindOrInsertTestArchive(MongodbUpdateObject *dbUpdateObject, const String &testId);
-    KeyedArchive *FindOrInsertTestStepArchive(KeyedArchive *testArchive, const String &stepId);
-    KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
+protected:
 
-	KeyedArchive *InsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId, const String &testName, bool needClearGroup);
-	KeyedArchive *InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description);
+//DB
+    void ClearTestInDB();
 
 	//KeyedArchive *FindTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId);
     KeyedArchive *FindStepArchive(KeyedArchive *testArchive, const String &stepId);
     
-    bool SaveToDB(MongodbUpdateObject *dbUpdateObject);
     bool CheckSavedObjectInDB(MongodbUpdateObject *dbUpdateObject);
     bool CheckKeyedArchivesEqual(const String &name, KeyedArchive* firstKeyedArchive, KeyedArchive* secondKeyedArchive);
 
-    bool ConnectToDB();
 //    void AddTestResult(const String &text, bool isPassed, const String & error = "");
 //    void SaveTestToDB();
     void SaveTestStepToDB(const String &stepDescription, bool isPassed, const String &error = "");
@@ -173,7 +148,7 @@ protected:
     
     void ExitApp();
 	
-
+public:
 	uint64 startTimeMS;
 
     bool isInit;
@@ -183,8 +158,8 @@ protected:
     
     String projectName;
     String groupName;
-	String device;
-    uint32 testsId;
+	String deviceId;
+	String deviceName;
     uint32 testsDate;
     int32 testIndex;
     int32 stepIndex;
@@ -194,7 +169,7 @@ protected:
     String testFileName;
     String testFilePath;
 
-	String deviceName;
+	
 //    struct TestResult
 //    {
 //        TestResult(const String &_name, bool _isPassed, const String &_error) : name(_name), isPassed(_isPassed), error(_error) {}
@@ -205,7 +180,6 @@ protected:
 //    };
 //    Vector< TestResult > testResults;
 
-    MongodbClient *dbClient;
     bool isDB;
     bool needClearGroupInDB;
     
@@ -220,9 +194,6 @@ protected:
     String multiplayerName;
     float32 waitTimeLeft;
     float32 waitCheckTimeLeft;
-
-    FilePath testReportsFolder;
-    File* reportFile;
 
     Map<int32, UIEvent> touches;
     UIEvent mouseMove;

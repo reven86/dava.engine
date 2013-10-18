@@ -7,6 +7,7 @@
 %import Base/BaseTypes.h
 
 
+
 %{
 #include "AutotestingSystemLua.h"
 
@@ -18,6 +19,8 @@
 %include "std_string.i"
 
 %import "UIControl.i"
+%import "UI/UIList.h"
+%import "UI/UIEvent.h"
 %include "KeyedArchive.i"
 
 %include "AutotestingSystemLua.h"

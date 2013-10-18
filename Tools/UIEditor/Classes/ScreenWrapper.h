@@ -61,7 +61,6 @@ public:
 	QRect GetRect() const;
 	void SetViewPos(int posX, int posY, const QRect& size);
 	void RequestViewMove(const Vector2& delta);
-	void RequestUpdateView();
 
 	void SetScale(float scale);
 	float GetScale() const;
@@ -79,7 +78,8 @@ public:
 signals:
 	void UpdateScaleRequest(float scaleDelta);
 	void UpdateScreenPositionRequest(const QPoint& posDelta);
-    
+	void UpdateView();
+
 private:
 	QWidget* GetMainWindow();
 	

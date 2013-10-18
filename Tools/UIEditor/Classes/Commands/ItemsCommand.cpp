@@ -546,7 +546,6 @@ void ChangeNodeHeirarchy::Execute()
 	
 	HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated(false);
 	HierarchyTreeController::Instance()->ResetSelectedControl();
-	ScreenWrapper::Instance()->RequestUpdateView();
 }
 
 void ChangeNodeHeirarchy::Rollback()
@@ -566,7 +565,6 @@ void ChangeNodeHeirarchy::Rollback()
 	}
 	
 	HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
-	ScreenWrapper::Instance()->RequestUpdateView();
 }
 
 void ChangeNodeHeirarchy::IncrementUnsavedChanges()

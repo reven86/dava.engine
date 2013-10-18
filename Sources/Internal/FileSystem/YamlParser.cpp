@@ -73,9 +73,10 @@ private:
     YamlNode* yamlNodeValue;
 };
     
-YamlNode::YamlNode(eType _type)
+YamlNode::YamlNode(eType _type, eRepresentationType _repType)
 {
 	type = _type;
+	representationType = _repType;
 	mapIndex = 0;
 	mapCount = 0;
 	isWideString = false;
@@ -1423,7 +1424,22 @@ bool YamlParser::WriteArrayNodeToYamlFile(File* fileToSave, const String& nodeNa
 {
     DVASSERT(currentNode->GetType() == YamlNode::TYPE_ARRAY);
 
-    String resultString = GetArrayNodeRepresentation(nodeName, currentNode, depth);
+    String resultString;
+    switch (currentNode->representationType)
+    {
+        case YamlNode::REPRESENT_ARRAY_AS_MULTI_LINE:
+        {
+            resultString = GetArrayNodeRepresentationMultiline(nodeName, currentNode, depth);
+            break;
+        }
+
+        default:
+        {
+            resultString = GetArrayNodeRepresentation(nodeName, currentNode, depth);
+            break;
+        }
+    }
+
     return WriteStringToYamlFile(fileToSave, resultString);
 }
 
@@ -1490,6 +1506,48 @@ String YamlParser::GetArrayNodeRepresentation(const String& nodeName, const Yaml
     if (writeAsOuterNode)
     {
         resultString += '\n';
+    }
+
+    return resultString;
+}
+
+String YamlParser::GetArrayNodeRepresentationMultiline(const String& nodeName, const YamlNode* currentNode, int16 depth) const
+{
+    DVASSERT(currentNode->GetType() == YamlNode::TYPE_ARRAY);
+    
+    const char8* NAME_VALUE_DELIMITER = ":\n";
+    const char8* LIST_ITEM_START_MARK = "- ";
+    const char8* LIST_ITEM_END_MARK = "\n";
+
+    // Yuri Coder, 2013/10/17. Currently inner array nodes aren't supported.
+    String resultString = PrepareIdentedString(depth);
+    resultString += nodeName;
+    resultString += NAME_VALUE_DELIMITER;
+
+    const Vector<YamlNode*>& arrayData = currentNode->AsVector();
+    for (Vector<YamlNode*>::const_iterator iter = arrayData.begin(); iter != arrayData.end(); iter ++)
+    {
+        YamlNode* arrayNode = (*iter);
+        
+        switch (arrayNode->GetType())
+        {
+            case YamlNode::TYPE_STRING:
+            {
+                // Just get the string value
+                resultString += PrepareIdentedString(depth + 1);
+                resultString += LIST_ITEM_START_MARK;
+                resultString += arrayNode->AsString();
+                resultString += LIST_ITEM_END_MARK;
+                break;
+            }
+
+            default:
+            {
+                // Other node types inside array aren't supported yet.
+                DVASSERT(false);
+                break;
+            }
+        }
     }
 
     return resultString;

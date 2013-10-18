@@ -35,8 +35,6 @@ using namespace DAVA;
 jclass JniTextField::gJavaClass = NULL;
 const char* JniTextField::gJavaClassName = NULL;
 
-UITextField* JniTextField::activeTextField = NULL;
-
 jclass JniTextField::GetJavaClass() const
 {
 	return gJavaClass;
@@ -47,117 +45,478 @@ const char* JniTextField::GetJavaClassName() const
 	return gJavaClassName;
 }
 
-void JniTextField::ShowField(UITextField* textField, const Rect& controlRect, const char* defaultText)
+JniTextField::JniTextField(uint32_t id)
+{
+	this->id = id;
+}
+
+void JniTextField::Create(Rect controlRect)
 {
 	Rect rect = V2P(controlRect);
-
-	if (activeTextField)
-		HideField();
-
-	jmethodID mid = GetMethodID("ShowField", "(FFFFLjava/lang/String;ZIIIIII)V");
+	jmethodID mid = GetMethodID("Create", "(IFFFF)V");
 	if (mid)
 	{
-		jstring jStrDefaultText = GetEnvironment()->NewStringUTF(defaultText);
 		GetEnvironment()->CallStaticVoidMethod(
 				GetJavaClass(),
 				mid,
+				id,
 				rect.x,
 				rect.y,
 				rect.dx,
-				rect.dy,
-				jStrDefaultText,
-				textField->IsPassword(),
-				textField->GetAutoCapitalizationType(),
-				textField->GetAutoCorrectionType(),
-				textField->GetSpellCheckingType(),
-				textField->GetKeyboardAppearanceType(),
-				textField->GetKeyboardType(),
-				textField->GetReturnKeyType());
+				rect.dy);
+	}
+}
+
+void JniTextField::Destroy()
+{
+	jmethodID mid = GetMethodID("Destroy", "(I)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id);
+	}
+}
+
+void JniTextField::UpdateRect(const Rect & controlRect)
+{
+	Rect rect = V2P(controlRect);
+	jmethodID mid = GetMethodID("UpdateRect", "(IFFFF)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				rect.x,
+				rect.y,
+				rect.dx,
+				rect.dy);
+	}
+}
+
+void JniTextField::SetText(const char* text)
+{
+	jmethodID mid = GetMethodID("SetText", "(ILjava/lang/String;)V");
+	if (mid)
+	{
+		jstring jStrDefaultText = GetEnvironment()->NewStringUTF(text);
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				jStrDefaultText);
 		GetEnvironment()->DeleteLocalRef(jStrDefaultText);
-		activeTextField = textField;
-		SafeRetain(activeTextField);
+	}
+}
+
+void JniTextField::SetTextColor(float r, float g, float b, float a)
+{
+	jmethodID mid = GetMethodID("SetTextColor", "(IFFFF)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				r,
+				g,
+				b,
+				a);
+	}
+}
+
+void JniTextField::SetFontSize(float size)
+{
+	jmethodID mid = GetMethodID("SetFontSize", "(IF)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				size);
+	}
+}
+
+void JniTextField::SetIsPassword(bool isPassword)
+{
+	jmethodID mid = GetMethodID("SetIsPassword", "(IZ)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				isPassword);
+	}
+}
+
+void JniTextField::SetTextAlign(int32_t align)
+{
+	jmethodID mid = GetMethodID("SetTextAlign", "(II)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				align);
+	}
+}
+
+void JniTextField::SetInputEnabled(bool value)
+{
+	jmethodID mid = GetMethodID("SetInputEnabled", "(IZ)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
+	}
+}
+
+void JniTextField::SetAutoCapitalizationType(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetAutoCapitalizationType", "(II)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
+	}
+}
+
+void JniTextField::SetAutoCorrectionType(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetAutoCorrectionType", "(II)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
+	}
+}
+
+void JniTextField::SetSpellCheckingType(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetSpellCheckingType", "(II)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
+	}
+}
+
+void JniTextField::SetKeyboardAppearanceType(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetKeyboardAppearanceType", "(II)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
+	}
+}
+
+void JniTextField::SetKeyboardType(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetKeyboardType", "(II)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
+	}
+}
+
+void JniTextField::SetReturnKeyType(int32_t value)
+{
+	jmethodID mid = GetMethodID("SetReturnKeyType", "(II)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
+	}
+}
+
+void JniTextField::SetEnableReturnKeyAutomatically(bool value)
+{
+	jmethodID mid = GetMethodID("SetEnableReturnKeyAutomatically", "(IZ)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id,
+				value);
 	}
 }
 
 void JniTextField::HideField()
 {
-	jmethodID mid = GetMethodID("HideField", "()V");
+	jmethodID mid = GetMethodID("HideField", "(I)V");
 	if (mid)
 	{
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid);
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id);
 	}
 }
 
-void JniTextField::FieldHiddenWithText(const char* text)
+void JniTextField::ShowField()
 {
-	if (!activeTextField)
-		return;
-
-	UITextField* _activeTextField = activeTextField;
-	activeTextField = NULL;
-
-	WideString strText = StringToWString(text);
-	_activeTextField->SetText(strText);
-
-	UIControl* curentActiveControl = UIControlSystem::Instance()->GetFocusedControl();
-	if (curentActiveControl == _activeTextField)
+	jmethodID mid = GetMethodID("ShowField", "(I)V");
+	if (mid)
 	{
-		UIControlSystem::Instance()->SetFocusedControl(_activeTextField->GetParent(), true);
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id);
 	}
-	SafeRelease(_activeTextField);
 }
 
-void JniTextField::TextFieldShouldReturn()
+void JniTextField::OpenKeyboard()
 {
-	DVASSERT(activeTextField);
-	UITextFieldDelegate* delegate = activeTextField->GetDelegate();
-	if (delegate)
-		delegate->TextFieldShouldReturn(activeTextField);
-}
-
-bool JniTextField::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const char* text)
-{
-	if (!activeTextField)
-		return false;
-
-	bool res = true;
-	WideString strText = StringToWString(text);
-	UITextFieldDelegate* delegate = activeTextField->GetDelegate();
-	if (delegate)
-		res = delegate->TextFieldKeyPressed(activeTextField, replacementLocation, replacementLength, strText);
-
-	if (res)
+	jmethodID mid = GetMethodID("OpenKeyboard", "(I)V");
+	if (mid)
 	{
-		WideString curText = activeTextField->GetText();
-		curText.replace(replacementLocation, replacementLength, strText);
-		activeTextField->SetText(curText);
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id);
 	}
-	return res;
 }
+
+void JniTextField::CloseKeyboard()
+{
+	jmethodID mid = GetMethodID("CloseKeyboard", "(I)V");
+	if (mid)
+	{
+		GetEnvironment()->CallStaticVoidMethod(
+				GetJavaClass(),
+				mid,
+				id);
+	}
+}
+
+
+uint32_t UITextFieldAndroid::sId = 0;
+DAVA::Map<uint32_t, UITextFieldAndroid*> UITextFieldAndroid::controls;
 
 UITextFieldAndroid::UITextFieldAndroid(UITextField* textField)
 {
 	this->textField = textField;
+	id = sId++;
+	rect = textField->GetRect();
+	JniTextField jniTextField(id);
+	jniTextField.Create(rect);
+
+	controls[id] = this;
 }
 
 UITextFieldAndroid::~UITextFieldAndroid()
 {
+	controls.erase(id);
 
+	JniTextField jniTextField(id);
+	jniTextField.Destroy();
+}
+
+void UITextFieldAndroid::OpenKeyboard()
+{
+	JniTextField jniTextField(id);
+	jniTextField.OpenKeyboard();
+}
+
+void UITextFieldAndroid::CloseKeyboard()
+{
+	JniTextField jniTextField(id);
+	jniTextField.CloseKeyboard();
+}
+
+void UITextFieldAndroid::GetText(WideString & string)
+{
+	string = text;
+}
+
+void UITextFieldAndroid::SetText(const WideString & string)
+{
+	if (text.compare(string) != 0)
+	{
+		text = string;
+		JniTextField jniTextField(id);
+		String utfText = WStringToString(text);
+		jniTextField.SetText(utfText.c_str());
+	}
+}
+
+void UITextFieldAndroid::UpdateRect(const Rect & rect)
+{
+	if (rect != this->rect)
+	{
+		this->rect = rect;
+		JniTextField jniTextField(id);
+		jniTextField.UpdateRect(rect);
+	}
+}
+
+void UITextFieldAndroid::SetTextColor(const DAVA::Color &color)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetTextColor(color.r, color.g, color.b, color.a);
+}
+
+void UITextFieldAndroid::SetFontSize(float size)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetFontSize(size);
+}
+
+void UITextFieldAndroid::SetTextAlign(DAVA::int32 align)
+{
+	this->align = align;
+	JniTextField jniTextField(id);
+	jniTextField.SetTextAlign(align);
+}
+
+DAVA::int32 UITextFieldAndroid::GetTextAlign()
+{
+	return align;
 }
 
 void UITextFieldAndroid::ShowField()
 {
-	String text = WStringToString(textField->GetText());
-	JniTextField jniTextField;
-	jniTextField.ShowField(textField, textField->GetRect(), text.c_str());
+	JniTextField jniTextField(id);
+	jniTextField.ShowField();
 }
 
 void UITextFieldAndroid::HideField()
 {
-	JniTextField jniTextField;
+	JniTextField jniTextField(id);
 	jniTextField.HideField();
 }
 
+void UITextFieldAndroid::SetIsPassword(bool isPassword)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetIsPassword(isPassword);
+}
 
-//TextFieldKeyPressed
-//TextFieldShouldReturn
+void UITextFieldAndroid::SetInputEnabled(bool value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetInputEnabled(value);
+}
+
+// Keyboard traits.
+void UITextFieldAndroid::SetAutoCapitalizationType(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetAutoCapitalizationType(value);
+}
+
+void UITextFieldAndroid::SetAutoCorrectionType(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetAutoCorrectionType(value);
+}
+
+void UITextFieldAndroid::SetSpellCheckingType(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetSpellCheckingType(value);
+}
+
+void UITextFieldAndroid::SetKeyboardAppearanceType(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetKeyboardAppearanceType(value);
+}
+
+void UITextFieldAndroid::SetKeyboardType(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetKeyboardType(value);
+}
+
+void UITextFieldAndroid::SetReturnKeyType(DAVA::int32 value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetReturnKeyType(value);
+}
+
+void UITextFieldAndroid::SetEnableReturnKeyAutomatically(bool value)
+{
+	JniTextField jniTextField(id);
+	jniTextField.SetEnableReturnKeyAutomatically(value);
+}
+
+bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const char* text)
+{
+	bool res = true;
+	WideString strText = StringToWString(text);
+	UITextFieldDelegate* delegate = textField->GetDelegate();
+	if (delegate)
+		res = delegate->TextFieldKeyPressed(textField, replacementLocation, replacementLength, strText);
+
+	if (res)
+	{
+		WideString curText = textField->GetText();
+		curText.replace(replacementLocation, replacementLength, strText);
+		this->text = curText;
+	}
+	return res;
+}
+
+bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const char* text)
+{
+	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+	if (!control)
+		return false;
+
+	return control->TextFieldKeyPressed(replacementLocation, replacementLength, text);
+}
+
+void UITextFieldAndroid::TextFieldShouldReturn()
+{
+	UITextFieldDelegate* delegate = textField->GetDelegate();
+	if (delegate)
+		delegate->TextFieldShouldReturn(textField);
+}
+
+void UITextFieldAndroid::TextFieldShouldReturn(uint32_t id)
+{
+	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+	if (!control)
+		return;
+
+	control->TextFieldShouldReturn();
+}
+
+UITextFieldAndroid* UITextFieldAndroid::GetUITextFieldAndroid(uint32_t id)
+{
+	DAVA::Map<uint32_t, UITextFieldAndroid*>::iterator iter = controls.find(id);
+	if (iter != controls.end())
+		return iter->second;
+
+	return NULL;
+}

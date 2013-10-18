@@ -50,12 +50,9 @@
 		176DE8FE174B5561007A983B /* KeyframeAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AC916BD24E400732C04 /* KeyframeAnimation.h */; };
 		176DE8FF174B5561007A983B /* LinearAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACB16BD24E400732C04 /* LinearAnimation.h */; };
 		176DE900174B5561007A983B /* NamedAnimationsList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */; };
-		176DE901174B5561007A983B /* Action.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACF16BD24E400732C04 /* Action.h */; };
-		176DE902174B5561007A983B /* AssertAction.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD116BD24E400732C04 /* AssertAction.h */; };
 		176DE903174B5561007A983B /* AutotestingSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD316BD24E400732C04 /* AutotestingSystem.h */; };
 		176DE904174B5561007A983B /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD416BD24E400732C04 /* Config.h */; };
 		176DE905174B5561007A983B /* MongodbUpdateObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */; };
-		176DE906174B5561007A983B /* TouchAction.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD816BD24E400732C04 /* TouchAction.h */; };
 		176DE907174B5561007A983B /* BaseMath.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADB16BD24E400732C04 /* BaseMath.h */; };
 		176DE908174B5561007A983B /* BaseObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADD16BD24E400732C04 /* BaseObject.h */; };
 		176DE909174B5561007A983B /* BaseObjectChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADF16BD24E400732C04 /* BaseObjectChecker.h */; };
@@ -376,11 +373,8 @@
 		176DEA46174B5561007A983B /* Interpolation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AC616BD24E400732C04 /* Interpolation.cpp */; };
 		176DEA47174B5561007A983B /* KeyframeAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AC816BD24E400732C04 /* KeyframeAnimation.cpp */; };
 		176DEA48174B5561007A983B /* LinearAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ACA16BD24E400732C04 /* LinearAnimation.cpp */; };
-		176DEA49174B5561007A983B /* Action.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ACE16BD24E400732C04 /* Action.cpp */; };
-		176DEA4A174B5561007A983B /* AssertAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD016BD24E400732C04 /* AssertAction.cpp */; };
 		176DEA4B174B5561007A983B /* AutotestingSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */; };
 		176DEA4C174B5561007A983B /* MongodbUpdateObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */; };
-		176DEA4D174B5561007A983B /* TouchAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD716BD24E400732C04 /* TouchAction.cpp */; };
 		176DEA4E174B5561007A983B /* BaseMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADA16BD24E400732C04 /* BaseMath.cpp */; };
 		176DEA4F174B5561007A983B /* BaseObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADC16BD24E400732C04 /* BaseObject.cpp */; };
 		176DEA50174B5561007A983B /* BaseObjectChecker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADE16BD24E400732C04 /* BaseObjectChecker.cpp */; };
@@ -729,6 +723,32 @@
 		74D1EAB9172E950700EDE0B7 /* UIScrollViewContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74D1EAB6172E950700EDE0B7 /* UIScrollViewContainer.cpp */; };
 		74D1EABA172E950700EDE0B7 /* UIScrollViewContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 74D1EAB7172E950700EDE0B7 /* UIScrollViewContainer.h */; };
 		74D1EABB172E950700EDE0B7 /* UIScrollViewContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 74D1EAB7172E950700EDE0B7 /* UIScrollViewContainer.h */; };
+		7A16933B180EE618005F1FBC /* KeyedArchiveSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C70B56401753C2BB008966FA /* KeyedArchiveSwig.cpp */; };
+		7A16933C180EE618005F1FBC /* AutotestingSystemLua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFA816CD1FE5006F1B3F /* AutotestingSystemLua.cpp */; };
+		7A16933D180EE618005F1FBC /* AutotestingSystemLua.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFA916CD1FE5006F1B3F /* AutotestingSystemLua.h */; };
+		7A16933E180EE618005F1FBC /* AutotestingSystemSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAA16CD1FE5006F1B3F /* AutotestingSystemSwig.cpp */; };
+		7A16933F180EE618005F1FBC /* RectSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAE16CD1FE5006F1B3F /* RectSwig.cpp */; };
+		7A169340180EE618005F1FBC /* UIControlSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFB016CD1FE5006F1B3F /* UIControlSwig.cpp */; };
+		7A169341180EE618005F1FBC /* VectorSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFB216CD1FE5006F1B3F /* VectorSwig.cpp */; };
+		7A169342180EE619005F1FBC /* KeyedArchiveSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C70B56401753C2BB008966FA /* KeyedArchiveSwig.cpp */; };
+		7A169343180EE619005F1FBC /* AutotestingSystemLua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFA816CD1FE5006F1B3F /* AutotestingSystemLua.cpp */; };
+		7A169344180EE619005F1FBC /* AutotestingSystemLua.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFA916CD1FE5006F1B3F /* AutotestingSystemLua.h */; };
+		7A169345180EE619005F1FBC /* AutotestingSystemSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAA16CD1FE5006F1B3F /* AutotestingSystemSwig.cpp */; };
+		7A169346180EE619005F1FBC /* RectSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAE16CD1FE5006F1B3F /* RectSwig.cpp */; };
+		7A169347180EE619005F1FBC /* UIControlSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFB016CD1FE5006F1B3F /* UIControlSwig.cpp */; };
+		7A169348180EE619005F1FBC /* VectorSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFB216CD1FE5006F1B3F /* VectorSwig.cpp */; };
+		7A16934D180EE75A005F1FBC /* AutotestingDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A169349180EE75A005F1FBC /* AutotestingDB.cpp */; };
+		7A16934E180EE75A005F1FBC /* AutotestingDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A169349180EE75A005F1FBC /* AutotestingDB.cpp */; };
+		7A16934F180EE75A005F1FBC /* AutotestingDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A169349180EE75A005F1FBC /* AutotestingDB.cpp */; };
+		7A169350180EE75A005F1FBC /* AutotestingDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A16934A180EE75A005F1FBC /* AutotestingDB.h */; };
+		7A169351180EE75A005F1FBC /* AutotestingDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A16934A180EE75A005F1FBC /* AutotestingDB.h */; };
+		7A169352180EE75A005F1FBC /* AutotestingDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A16934A180EE75A005F1FBC /* AutotestingDB.h */; };
+		7A169353180EE75A005F1FBC /* GameAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A16934B180EE75A005F1FBC /* GameAPI.cpp */; };
+		7A169354180EE75A005F1FBC /* GameAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A16934B180EE75A005F1FBC /* GameAPI.cpp */; };
+		7A169355180EE75A005F1FBC /* GameAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A16934B180EE75A005F1FBC /* GameAPI.cpp */; };
+		7A169356180EE75A005F1FBC /* GameAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A16934C180EE75A005F1FBC /* GameAPI.h */; };
+		7A169357180EE75A005F1FBC /* GameAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A16934C180EE75A005F1FBC /* GameAPI.h */; };
+		7A169358180EE75A005F1FBC /* GameAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A16934C180EE75A005F1FBC /* GameAPI.h */; };
 		840D24221703311400267C58 /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840D24201703311400267C58 /* DeviceInfo.cpp */; };
 		840D24231703311400267C58 /* DeviceInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = 840D24211703311400267C58 /* DeviceInfo.h */; };
 		840ED3E116D5089E00D2BA6C /* DPIHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 840ED3E016D5089E00D2BA6C /* DPIHelper.h */; };
@@ -787,8 +807,6 @@
 		C7FBCFB416CD1FE5006F1B3F /* AutotestingSystemLua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFA816CD1FE5006F1B3F /* AutotestingSystemLua.cpp */; };
 		C7FBCFB516CD1FE5006F1B3F /* AutotestingSystemLua.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFA916CD1FE5006F1B3F /* AutotestingSystemLua.h */; };
 		C7FBCFB616CD1FE5006F1B3F /* AutotestingSystemSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAA16CD1FE5006F1B3F /* AutotestingSystemSwig.cpp */; };
-		C7FBCFB716CD1FE5006F1B3F /* AutotestingSystemYaml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAB16CD1FE5006F1B3F /* AutotestingSystemYaml.cpp */; };
-		C7FBCFB816CD1FE5006F1B3F /* AutotestingSystemYaml.h in Headers */ = {isa = PBXBuildFile; fileRef = C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */; };
 		C7FBCFB916CD1FE5006F1B3F /* Rect_wrap.cxx in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAD16CD1FE5006F1B3F /* Rect_wrap.cxx */; };
 		C7FBCFBA16CD1FE5006F1B3F /* RectSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAE16CD1FE5006F1B3F /* RectSwig.cpp */; };
 		C7FBCFBB16CD1FE5006F1B3F /* UIControl_wrap.cxx in Sources */ = {isa = PBXBuildFile; fileRef = C7FBCFAF16CD1FE5006F1B3F /* UIControl_wrap.cxx */; };
@@ -934,17 +952,11 @@
 		E8989DA616BD24E500732C04 /* LinearAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ACA16BD24E400732C04 /* LinearAnimation.cpp */; };
 		E8989DA716BD24E500732C04 /* LinearAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACB16BD24E400732C04 /* LinearAnimation.h */; };
 		E8989DA816BD24E500732C04 /* NamedAnimationsList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */; };
-		E8989DA916BD24E500732C04 /* Action.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ACE16BD24E400732C04 /* Action.cpp */; };
-		E8989DAA16BD24E500732C04 /* Action.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACF16BD24E400732C04 /* Action.h */; };
-		E8989DAB16BD24E500732C04 /* AssertAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD016BD24E400732C04 /* AssertAction.cpp */; };
-		E8989DAC16BD24E500732C04 /* AssertAction.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD116BD24E400732C04 /* AssertAction.h */; };
 		E8989DAD16BD24E500732C04 /* AutotestingSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */; };
 		E8989DAE16BD24E500732C04 /* AutotestingSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD316BD24E400732C04 /* AutotestingSystem.h */; };
 		E8989DAF16BD24E500732C04 /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD416BD24E400732C04 /* Config.h */; };
 		E8989DB016BD24E500732C04 /* MongodbUpdateObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */; };
 		E8989DB116BD24E500732C04 /* MongodbUpdateObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */; };
-		E8989DB216BD24E500732C04 /* TouchAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD716BD24E400732C04 /* TouchAction.cpp */; };
-		E8989DB316BD24E500732C04 /* TouchAction.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD816BD24E400732C04 /* TouchAction.h */; };
 		E8989DB416BD24E500732C04 /* BaseMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADA16BD24E400732C04 /* BaseMath.cpp */; };
 		E8989DB516BD24E500732C04 /* BaseMath.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADB16BD24E400732C04 /* BaseMath.h */; };
 		E8989DB616BD24E500732C04 /* BaseObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADC16BD24E400732C04 /* BaseObject.cpp */; };
@@ -1439,12 +1451,9 @@
 		E898A05A16BD265400732C04 /* KeyframeAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AC916BD24E400732C04 /* KeyframeAnimation.h */; };
 		E898A05B16BD265400732C04 /* LinearAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACB16BD24E400732C04 /* LinearAnimation.h */; };
 		E898A05C16BD265400732C04 /* NamedAnimationsList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */; };
-		E898A05D16BD265400732C04 /* Action.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ACF16BD24E400732C04 /* Action.h */; };
-		E898A05E16BD265400732C04 /* AssertAction.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD116BD24E400732C04 /* AssertAction.h */; };
 		E898A05F16BD265400732C04 /* AutotestingSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD316BD24E400732C04 /* AutotestingSystem.h */; };
 		E898A06016BD265400732C04 /* Config.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD416BD24E400732C04 /* Config.h */; };
 		E898A06116BD265400732C04 /* MongodbUpdateObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */; };
-		E898A06216BD265400732C04 /* TouchAction.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989AD816BD24E400732C04 /* TouchAction.h */; };
 		E898A06316BD265400732C04 /* BaseMath.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADB16BD24E400732C04 /* BaseMath.h */; };
 		E898A06416BD265400732C04 /* BaseObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADD16BD24E400732C04 /* BaseObject.h */; };
 		E898A06516BD265400732C04 /* BaseObjectChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989ADF16BD24E400732C04 /* BaseObjectChecker.h */; };
@@ -1716,11 +1725,8 @@
 		E898A19F16BD265400732C04 /* Interpolation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AC616BD24E400732C04 /* Interpolation.cpp */; };
 		E898A1A016BD265400732C04 /* KeyframeAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AC816BD24E400732C04 /* KeyframeAnimation.cpp */; };
 		E898A1A116BD265400732C04 /* LinearAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ACA16BD24E400732C04 /* LinearAnimation.cpp */; };
-		E898A1A216BD265400732C04 /* Action.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ACE16BD24E400732C04 /* Action.cpp */; };
-		E898A1A316BD265400732C04 /* AssertAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD016BD24E400732C04 /* AssertAction.cpp */; };
 		E898A1A416BD265400732C04 /* AutotestingSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */; };
 		E898A1A516BD265400732C04 /* MongodbUpdateObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */; };
-		E898A1A616BD265400732C04 /* TouchAction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989AD716BD24E400732C04 /* TouchAction.cpp */; };
 		E898A1A716BD265400732C04 /* BaseMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADA16BD24E400732C04 /* BaseMath.cpp */; };
 		E898A1A816BD265400732C04 /* BaseObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADC16BD24E400732C04 /* BaseObject.cpp */; };
 		E898A1A916BD265400732C04 /* BaseObjectChecker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989ADE16BD24E400732C04 /* BaseObjectChecker.cpp */; };
@@ -2106,6 +2112,10 @@
 		74A909AA1701FA51003FDB31 /* CRC32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CRC32.h; sourceTree = "<group>"; };
 		74D1EAB6172E950700EDE0B7 /* UIScrollViewContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollViewContainer.cpp; sourceTree = "<group>"; };
 		74D1EAB7172E950700EDE0B7 /* UIScrollViewContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollViewContainer.h; sourceTree = "<group>"; };
+		7A169349180EE75A005F1FBC /* AutotestingDB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingDB.cpp; sourceTree = "<group>"; };
+		7A16934A180EE75A005F1FBC /* AutotestingDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingDB.h; sourceTree = "<group>"; };
+		7A16934B180EE75A005F1FBC /* GameAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameAPI.cpp; sourceTree = "<group>"; };
+		7A16934C180EE75A005F1FBC /* GameAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameAPI.h; sourceTree = "<group>"; };
 		840D24201703311400267C58 /* DeviceInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DeviceInfo.cpp; sourceTree = "<group>"; };
 		840D24211703311400267C58 /* DeviceInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeviceInfo.h; sourceTree = "<group>"; };
 		840ED3E016D5089E00D2BA6C /* DPIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPIHelper.h; sourceTree = "<group>"; };
@@ -2144,8 +2154,6 @@
 		C7FBCFA816CD1FE5006F1B3F /* AutotestingSystemLua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingSystemLua.cpp; sourceTree = "<group>"; };
 		C7FBCFA916CD1FE5006F1B3F /* AutotestingSystemLua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystemLua.h; sourceTree = "<group>"; };
 		C7FBCFAA16CD1FE5006F1B3F /* AutotestingSystemSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingSystemSwig.cpp; sourceTree = "<group>"; };
-		C7FBCFAB16CD1FE5006F1B3F /* AutotestingSystemYaml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingSystemYaml.cpp; sourceTree = "<group>"; };
-		C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystemYaml.h; sourceTree = "<group>"; };
 		C7FBCFAD16CD1FE5006F1B3F /* Rect_wrap.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rect_wrap.cxx; sourceTree = "<group>"; };
 		C7FBCFAE16CD1FE5006F1B3F /* RectSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RectSwig.cpp; sourceTree = "<group>"; };
 		C7FBCFAF16CD1FE5006F1B3F /* UIControl_wrap.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIControl_wrap.cxx; sourceTree = "<group>"; };
@@ -2228,17 +2236,11 @@
 		E8989ACA16BD24E400732C04 /* LinearAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LinearAnimation.cpp; sourceTree = "<group>"; };
 		E8989ACB16BD24E400732C04 /* LinearAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LinearAnimation.h; sourceTree = "<group>"; };
 		E8989ACC16BD24E400732C04 /* NamedAnimationsList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NamedAnimationsList.h; sourceTree = "<group>"; };
-		E8989ACE16BD24E400732C04 /* Action.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Action.cpp; sourceTree = "<group>"; };
-		E8989ACF16BD24E400732C04 /* Action.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Action.h; sourceTree = "<group>"; };
-		E8989AD016BD24E400732C04 /* AssertAction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AssertAction.cpp; sourceTree = "<group>"; };
-		E8989AD116BD24E400732C04 /* AssertAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AssertAction.h; sourceTree = "<group>"; };
 		E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingSystem.cpp; sourceTree = "<group>"; };
 		E8989AD316BD24E400732C04 /* AutotestingSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingSystem.h; sourceTree = "<group>"; };
 		E8989AD416BD24E400732C04 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MongodbUpdateObject.cpp; sourceTree = "<group>"; };
 		E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MongodbUpdateObject.h; sourceTree = "<group>"; };
-		E8989AD716BD24E400732C04 /* TouchAction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TouchAction.cpp; sourceTree = "<group>"; };
-		E8989AD816BD24E400732C04 /* TouchAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TouchAction.h; sourceTree = "<group>"; };
 		E8989ADA16BD24E400732C04 /* BaseMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseMath.cpp; sourceTree = "<group>"; };
 		E8989ADB16BD24E400732C04 /* BaseMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BaseMath.h; sourceTree = "<group>"; };
 		E8989ADC16BD24E400732C04 /* BaseObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseObject.cpp; sourceTree = "<group>"; };
@@ -2931,31 +2933,27 @@
 		E8989ACD16BD24E400732C04 /* Autotesting */ = {
 			isa = PBXGroup;
 			children = (
+				7A169349180EE75A005F1FBC /* AutotestingDB.cpp */,
+				7A16934A180EE75A005F1FBC /* AutotestingDB.h */,
+				7A16934B180EE75A005F1FBC /* GameAPI.cpp */,
+				7A16934C180EE75A005F1FBC /* GameAPI.h */,
 				C70B563F1753C2BB008966FA /* KeyedArchive_wrap.cxx */,
-				C70B56401753C2BB008966FA /* KeyedArchiveSwig.cpp */,
 				C7FBCFA716CD1FE5006F1B3F /* AutotestingSystem_wrap.cxx */,
+				C7FBCFAD16CD1FE5006F1B3F /* Rect_wrap.cxx */,
+				C7FBCFAF16CD1FE5006F1B3F /* UIControl_wrap.cxx */,
+				C7FBCFB116CD1FE5006F1B3F /* Vector_wrap.cxx */,
+				C70B56401753C2BB008966FA /* KeyedArchiveSwig.cpp */,
 				C7FBCFA816CD1FE5006F1B3F /* AutotestingSystemLua.cpp */,
 				C7FBCFA916CD1FE5006F1B3F /* AutotestingSystemLua.h */,
 				C7FBCFAA16CD1FE5006F1B3F /* AutotestingSystemSwig.cpp */,
-				C7FBCFAB16CD1FE5006F1B3F /* AutotestingSystemYaml.cpp */,
-				C7FBCFAC16CD1FE5006F1B3F /* AutotestingSystemYaml.h */,
-				C7FBCFAD16CD1FE5006F1B3F /* Rect_wrap.cxx */,
 				C7FBCFAE16CD1FE5006F1B3F /* RectSwig.cpp */,
-				C7FBCFAF16CD1FE5006F1B3F /* UIControl_wrap.cxx */,
 				C7FBCFB016CD1FE5006F1B3F /* UIControlSwig.cpp */,
-				C7FBCFB116CD1FE5006F1B3F /* Vector_wrap.cxx */,
 				C7FBCFB216CD1FE5006F1B3F /* VectorSwig.cpp */,
-				E8989ACE16BD24E400732C04 /* Action.cpp */,
-				E8989ACF16BD24E400732C04 /* Action.h */,
-				E8989AD016BD24E400732C04 /* AssertAction.cpp */,
-				E8989AD116BD24E400732C04 /* AssertAction.h */,
 				E8989AD216BD24E400732C04 /* AutotestingSystem.cpp */,
 				E8989AD316BD24E400732C04 /* AutotestingSystem.h */,
 				E8989AD416BD24E400732C04 /* Config.h */,
 				E8989AD516BD24E400732C04 /* MongodbUpdateObject.cpp */,
 				E8989AD616BD24E400732C04 /* MongodbUpdateObject.h */,
-				E8989AD716BD24E400732C04 /* TouchAction.cpp */,
-				E8989AD816BD24E400732C04 /* TouchAction.h */,
 			);
 			path = Autotesting;
 			sourceTree = "<group>";
@@ -3886,12 +3884,9 @@
 				176DE8FE174B5561007A983B /* KeyframeAnimation.h in Headers */,
 				176DE8FF174B5561007A983B /* LinearAnimation.h in Headers */,
 				176DE900174B5561007A983B /* NamedAnimationsList.h in Headers */,
-				176DE901174B5561007A983B /* Action.h in Headers */,
-				176DE902174B5561007A983B /* AssertAction.h in Headers */,
 				176DE903174B5561007A983B /* AutotestingSystem.h in Headers */,
 				176DE904174B5561007A983B /* Config.h in Headers */,
 				176DE905174B5561007A983B /* MongodbUpdateObject.h in Headers */,
-				176DE906174B5561007A983B /* TouchAction.h in Headers */,
 				176DE907174B5561007A983B /* BaseMath.h in Headers */,
 				176DE908174B5561007A983B /* BaseObject.h in Headers */,
 				176DE909174B5561007A983B /* BaseObjectChecker.h in Headers */,
@@ -3995,6 +3990,7 @@
 				176DE96B174B5561007A983B /* BaseNetworkConnection.h in Headers */,
 				176DE96C174B5561007A983B /* BTNetworkConnection.h in Headers */,
 				176DE96D174B5561007A983B /* NetworkConnection.h in Headers */,
+				7A169352180EE75A005F1FBC /* AutotestingDB.h in Headers */,
 				176DE96E174B5561007A983B /* NetworkConnectionIPhone.h in Headers */,
 				176DE96F174B5561007A983B /* NetworkDelegate.h in Headers */,
 				176DE970174B5561007A983B /* NetworkPacket.h in Headers */,
@@ -4065,6 +4061,7 @@
 				176DE9B2174B5561007A983B /* VertexBuffer.h in Headers */,
 				176DE9B3174B5561007A983B /* Box2DDebugDraw.h in Headers */,
 				176DE9B4174B5561007A983B /* Box2DGameObject.h in Headers */,
+				7A169358180EE75A005F1FBC /* GameAPI.h in Headers */,
 				176DE9B5174B5561007A983B /* Box2DGameObjectManager.h in Headers */,
 				176DE9B6174B5561007A983B /* Box2DHelper.h in Headers */,
 				176DE9B7174B5561007A983B /* Box2DTileCollider.h in Headers */,
@@ -4161,6 +4158,7 @@
 				176DEA12174B5561007A983B /* ComponentHelpers.h in Headers */,
 				176DEA13174B5561007A983B /* ParticleForce.h in Headers */,
 				176DEA14174B5561007A983B /* DPIHelper.h in Headers */,
+				7A169344180EE619005F1FBC /* AutotestingSystemLua.h in Headers */,
 				176DEA15174B5561007A983B /* UIWebView.h in Headers */,
 				176DEA16174B5561007A983B /* IWebViewControl.h in Headers */,
 				176DEA17174B5561007A983B /* DVAssertMessage.h in Headers */,
@@ -4232,12 +4230,9 @@
 				E8989DA516BD24E500732C04 /* KeyframeAnimation.h in Headers */,
 				E8989DA716BD24E500732C04 /* LinearAnimation.h in Headers */,
 				E8989DA816BD24E500732C04 /* NamedAnimationsList.h in Headers */,
-				E8989DAA16BD24E500732C04 /* Action.h in Headers */,
-				E8989DAC16BD24E500732C04 /* AssertAction.h in Headers */,
 				E8989DAE16BD24E500732C04 /* AutotestingSystem.h in Headers */,
 				E8989DAF16BD24E500732C04 /* Config.h in Headers */,
 				E8989DB116BD24E500732C04 /* MongodbUpdateObject.h in Headers */,
-				E8989DB316BD24E500732C04 /* TouchAction.h in Headers */,
 				E8989DB516BD24E500732C04 /* BaseMath.h in Headers */,
 				E8989DB716BD24E500732C04 /* BaseObject.h in Headers */,
 				E8989DB916BD24E500732C04 /* BaseObjectChecker.h in Headers */,
@@ -4357,6 +4352,7 @@
 				E8989EBB16BD24E500732C04 /* SystemTimer.h in Headers */,
 				E8989EC716BD24E500732C04 /* AppDelegate.h in Headers */,
 				E8989ECA16BD24E500732C04 /* CorePlatformMacOS.h in Headers */,
+				7A169350180EE75A005F1FBC /* AutotestingDB.h in Headers */,
 				E8989ECB16BD24E500732C04 /* MainWindowController.h in Headers */,
 				E8989ECD16BD24E500732C04 /* NSFullScreenWindow.h in Headers */,
 				E8989ECF16BD24E500732C04 /* OpenGLView.h in Headers */,
@@ -4498,6 +4494,7 @@
 				E898A03F16BD24E500732C04 /* UITextField.h in Headers */,
 				E898A04316BD24E500732C04 /* UIYamlLoader.h in Headers */,
 				E898A04416BD24E500732C04 /* HTTPDownloader.h in Headers */,
+				7A169356180EE75A005F1FBC /* GameAPI.h in Headers */,
 				E898A04816BD24E500732C04 /* MD5.h in Headers */,
 				E898A04916BD24E500732C04 /* Random.h in Headers */,
 				E898A04B16BD24E500732C04 /* StringFormat.h in Headers */,
@@ -4506,7 +4503,6 @@
 				50D6C8EA16C107D500BB3F78 /* GlobalEventSystem.h in Headers */,
 				CCB4C41B16CBC5B200F2B085 /* ComponentHelpers.h in Headers */,
 				C7FBCFB516CD1FE5006F1B3F /* AutotestingSystemLua.h in Headers */,
-				C7FBCFB816CD1FE5006F1B3F /* AutotestingSystemYaml.h in Headers */,
 				1799E52716CCEC030058061F /* ParticleForce.h in Headers */,
 				840ED3E116D5089E00D2BA6C /* DPIHelper.h in Headers */,
 				171F938616CE6F28007038AB /* UIWebView.h in Headers */,
@@ -4586,12 +4582,9 @@
 				E898A05A16BD265400732C04 /* KeyframeAnimation.h in Headers */,
 				E898A05B16BD265400732C04 /* LinearAnimation.h in Headers */,
 				E898A05C16BD265400732C04 /* NamedAnimationsList.h in Headers */,
-				E898A05D16BD265400732C04 /* Action.h in Headers */,
-				E898A05E16BD265400732C04 /* AssertAction.h in Headers */,
 				E898A05F16BD265400732C04 /* AutotestingSystem.h in Headers */,
 				E898A06016BD265400732C04 /* Config.h in Headers */,
 				E898A06116BD265400732C04 /* MongodbUpdateObject.h in Headers */,
-				E898A06216BD265400732C04 /* TouchAction.h in Headers */,
 				E898A06316BD265400732C04 /* BaseMath.h in Headers */,
 				E898A06416BD265400732C04 /* BaseObject.h in Headers */,
 				E898A06516BD265400732C04 /* BaseObjectChecker.h in Headers */,
@@ -4604,6 +4597,7 @@
 				E898A06C16BD265400732C04 /* FastNameMap.h in Headers */,
 				E898A06D16BD265400732C04 /* FixedSizePoolAllocator.h in Headers */,
 				E898A06E16BD265400732C04 /* Hash.h in Headers */,
+				7A169357180EE75A005F1FBC /* GameAPI.h in Headers */,
 				E898A06F16BD265400732C04 /* HashMap.h in Headers */,
 				E898A07016BD265400732C04 /* Introspection.h in Headers */,
 				E898A07116BD265400732C04 /* IntrospectionBase.h in Headers */,
@@ -4659,6 +4653,7 @@
 				E898A0A316BD265400732C04 /* KeyedUnarchiver.h in Headers */,
 				E898A0A416BD265400732C04 /* LocalizationSystem.h in Headers */,
 				E898A0A516BD265400732C04 /* Logger.h in Headers */,
+				7A16933D180EE618005F1FBC /* AutotestingSystemLua.h in Headers */,
 				E898A0A716BD265400732C04 /* ResourceArchive.h in Headers */,
 				E898A0A816BD265400732C04 /* VariantType.h in Headers */,
 				E898A0A916BD265400732C04 /* XMLParser.h in Headers */,
@@ -4768,6 +4763,7 @@
 				E898A12D16BD265400732C04 /* Box2DHelper.h in Headers */,
 				E898A12E16BD265400732C04 /* Box2DTileCollider.h in Headers */,
 				E898A12F16BD265400732C04 /* GameObject.h in Headers */,
+				7A169351180EE75A005F1FBC /* AutotestingDB.h in Headers */,
 				E898A13016BD265400732C04 /* GameObjectAnimations.h in Headers */,
 				E898A13116BD265400732C04 /* GameObjectManager.h in Headers */,
 				E898A13216BD265400732C04 /* TextGameObject.h in Headers */,
@@ -5026,17 +5022,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				176DEA42174B5561007A983B /* AnimatedObject.cpp in Sources */,
+				7A169347180EE619005F1FBC /* UIControlSwig.cpp in Sources */,
 				176DEA43174B5561007A983B /* Animation.cpp in Sources */,
 				176DEA44174B5561007A983B /* AnimationManager.cpp in Sources */,
 				176DEA45174B5561007A983B /* BezierSplineAnimation.cpp in Sources */,
 				176DEA46174B5561007A983B /* Interpolation.cpp in Sources */,
 				176DEA47174B5561007A983B /* KeyframeAnimation.cpp in Sources */,
 				176DEA48174B5561007A983B /* LinearAnimation.cpp in Sources */,
-				176DEA49174B5561007A983B /* Action.cpp in Sources */,
-				176DEA4A174B5561007A983B /* AssertAction.cpp in Sources */,
 				176DEA4B174B5561007A983B /* AutotestingSystem.cpp in Sources */,
 				176DEA4C174B5561007A983B /* MongodbUpdateObject.cpp in Sources */,
-				176DEA4D174B5561007A983B /* TouchAction.cpp in Sources */,
 				176DEA4E174B5561007A983B /* BaseMath.cpp in Sources */,
 				176DEA4F174B5561007A983B /* BaseObject.cpp in Sources */,
 				176DEA50174B5561007A983B /* BaseObjectChecker.cpp in Sources */,
@@ -5132,6 +5126,7 @@
 				176DEAAB174B5561007A983B /* Sprite.cpp in Sources */,
 				176DEAAC174B5561007A983B /* TextBlock.cpp in Sources */,
 				176DEAAD174B5561007A983B /* AnimatedMesh.cpp in Sources */,
+				7A169342180EE619005F1FBC /* KeyedArchiveSwig.cpp in Sources */,
 				176DEAAE174B5561007A983B /* EdgeAdjacency.cpp in Sources */,
 				176DEAAF174B5561007A983B /* PolygonGroup.cpp in Sources */,
 				176DEAB0174B5561007A983B /* StaticMesh.cpp in Sources */,
@@ -5146,6 +5141,7 @@
 				176DEAB9174B5561007A983B /* LibPngHelpers.cpp in Sources */,
 				176DEABA174B5561007A983B /* LibPVRHelper.cpp in Sources */,
 				176DEABB174B5561007A983B /* MaterialCompiler.cpp in Sources */,
+				7A169348180EE619005F1FBC /* VectorSwig.cpp in Sources */,
 				176DEABC174B5561007A983B /* MaterialGraph.cpp in Sources */,
 				176DEABD174B5561007A983B /* MaterialGraphNode.cpp in Sources */,
 				176DEABE174B5561007A983B /* NMaterial.cpp in Sources */,
@@ -5198,7 +5194,9 @@
 				176DEAED174B5561007A983B /* ParticleEmitterNode.cpp in Sources */,
 				176DEAEE174B5561007A983B /* PathManip.cpp in Sources */,
 				176DEAEF174B5561007A983B /* PolygonGroupInstance.cpp in Sources */,
+				7A169345180EE619005F1FBC /* AutotestingSystemSwig.cpp in Sources */,
 				176DEAF0174B5561007A983B /* ProxyNode.cpp in Sources */,
+				7A16934F180EE75A005F1FBC /* AutotestingDB.cpp in Sources */,
 				176DEAF1174B5561007A983B /* Scene.cpp in Sources */,
 				176DEAF2174B5561007A983B /* SceneAnimationMixer.cpp in Sources */,
 				176DEAF3174B5561007A983B /* SceneFile.cpp in Sources */,
@@ -5226,6 +5224,7 @@
 				176DEB09174B5561007A983B /* SoundGroup.cpp in Sources */,
 				176DEB0A174B5561007A983B /* SoundSystem.cpp in Sources */,
 				176DEB0B174B5561007A983B /* ScrollHelper.cpp in Sources */,
+				7A169343180EE619005F1FBC /* AutotestingSystemLua.cpp in Sources */,
 				176DEB0C174B5561007A983B /* TheoraPlayer.cpp in Sources */,
 				176DEB0D174B5561007A983B /* UI3DView.cpp in Sources */,
 				176DEB0E174B5561007A983B /* UIButton.cpp in Sources */,
@@ -5292,6 +5291,7 @@
 				176DEB4B174B5561007A983B /* ShadowVolume.cpp in Sources */,
 				176DEB4C174B5561007A983B /* ShadowVolumeRenderPass.cpp in Sources */,
 				176DEB4D174B5561007A983B /* SpriteObject.cpp in Sources */,
+				7A169346180EE619005F1FBC /* RectSwig.cpp in Sources */,
 				176DEB4E174B5561007A983B /* SpriteRenderBatch.cpp in Sources */,
 				176DEB4F174B5561007A983B /* RenderState.cpp in Sources */,
 				176DEB50174B5561007A983B /* UpdateSystem.cpp in Sources */,
@@ -5309,6 +5309,7 @@
 				176DEB5C174B5561007A983B /* NMaterialConsts.cpp in Sources */,
 				17F687E1174B63BA000783FD /* NPAPIEntryPoint.mm in Sources */,
 				1795E4BA174CB86800050F64 /* NPAPIPluginMacOS.mm in Sources */,
+				7A169355180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				1795E4BB174CB86D00050F64 /* NPAPIOpenGLLayerMacOS.mm in Sources */,
 				1795E4C4174CC24D00050F64 /* NPAPICorePlatformMacOS.cpp in Sources */,
 				A6E4FE0C1761D9C600B48E41 /* ActionComponent.cpp in Sources */,
@@ -5336,11 +5337,8 @@
 				E8989DA216BD24E500732C04 /* Interpolation.cpp in Sources */,
 				E8989DA416BD24E500732C04 /* KeyframeAnimation.cpp in Sources */,
 				E8989DA616BD24E500732C04 /* LinearAnimation.cpp in Sources */,
-				E8989DA916BD24E500732C04 /* Action.cpp in Sources */,
-				E8989DAB16BD24E500732C04 /* AssertAction.cpp in Sources */,
 				E8989DAD16BD24E500732C04 /* AutotestingSystem.cpp in Sources */,
 				E8989DB016BD24E500732C04 /* MongodbUpdateObject.cpp in Sources */,
-				E8989DB216BD24E500732C04 /* TouchAction.cpp in Sources */,
 				E8989DB416BD24E500732C04 /* BaseMath.cpp in Sources */,
 				E8989DB616BD24E500732C04 /* BaseObject.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
@@ -5388,6 +5386,7 @@
 				E8989E4616BD24E500732C04 /* LoggerMacOS.mm in Sources */,
 				E8989E4916BD24E500732C04 /* ResourceArchive.cpp in Sources */,
 				E8989E4B16BD24E500732C04 /* VariantType.cpp in Sources */,
+				7A169353180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				E8989E4D16BD24E500732C04 /* XMLParser.cpp in Sources */,
 				E8989E4F16BD24E500732C04 /* XMLParser.mm in Sources */,
 				E8989E5016BD24E500732C04 /* YamlArchive.cpp in Sources */,
@@ -5567,7 +5566,6 @@
 				CCB4C41A16CBC5B200F2B085 /* ComponentHelpers.cpp in Sources */,
 				C7FBCFB416CD1FE5006F1B3F /* AutotestingSystemLua.cpp in Sources */,
 				C7FBCFB616CD1FE5006F1B3F /* AutotestingSystemSwig.cpp in Sources */,
-				C7FBCFB716CD1FE5006F1B3F /* AutotestingSystemYaml.cpp in Sources */,
 				C7FBCFB916CD1FE5006F1B3F /* Rect_wrap.cxx in Sources */,
 				C7FBCFBA16CD1FE5006F1B3F /* RectSwig.cpp in Sources */,
 				C7FBCFBB16CD1FE5006F1B3F /* UIControl_wrap.cxx in Sources */,
@@ -5576,6 +5574,7 @@
 				C7FBCFBE16CD1FE5006F1B3F /* VectorSwig.cpp in Sources */,
 				1799E52616CCEC030058061F /* ParticleForce.cpp in Sources */,
 				840ED3E316D5095000D2BA6C /* DPIHelperMacOS.mm in Sources */,
+				7A16934D180EE75A005F1FBC /* AutotestingDB.cpp in Sources */,
 				171F938516CE6F28007038AB /* UIWebView.cpp in Sources */,
 				C151B17716D3747E00E09BAF /* DVAssertMessage.cpp in Sources */,
 				C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */,
@@ -5637,7 +5636,6 @@
 				4F64848117AFB73C00034454 /* AllocatorFactory.cpp in Sources */,
 				A679101F17B3C71B000AA2F2 /* SkyboxRenderObject.cpp in Sources */,
 				EA56554A17CDFF4B00426EB8 /* PerformanceSettings.cpp in Sources */,
-				1AD7C36717D895AE00B9977C /* Vector.cpp in Sources */,
 				17DC600017DE11650075813E /* UIMovieView.cpp in Sources */,
 				1770DF5017DF67E500000391 /* MovieViewControlMacOS.mm in Sources */,
 			);
@@ -5656,12 +5654,10 @@
 				E898A19E16BD265400732C04 /* BezierSplineAnimation.cpp in Sources */,
 				E898A19F16BD265400732C04 /* Interpolation.cpp in Sources */,
 				E898A1A016BD265400732C04 /* KeyframeAnimation.cpp in Sources */,
+				7A169340180EE618005F1FBC /* UIControlSwig.cpp in Sources */,
 				E898A1A116BD265400732C04 /* LinearAnimation.cpp in Sources */,
-				E898A1A216BD265400732C04 /* Action.cpp in Sources */,
-				E898A1A316BD265400732C04 /* AssertAction.cpp in Sources */,
 				E898A1A416BD265400732C04 /* AutotestingSystem.cpp in Sources */,
 				E898A1A516BD265400732C04 /* MongodbUpdateObject.cpp in Sources */,
-				E898A1A616BD265400732C04 /* TouchAction.cpp in Sources */,
 				E898A1A716BD265400732C04 /* BaseMath.cpp in Sources */,
 				E898A1A816BD265400732C04 /* BaseObject.cpp in Sources */,
 				E898A1A916BD265400732C04 /* BaseObjectChecker.cpp in Sources */,
@@ -5705,6 +5701,7 @@
 				E898A1CF16BD265400732C04 /* KeyedArchiver.cpp in Sources */,
 				E898A1D016BD265400732C04 /* KeyedUnarchiver.cpp in Sources */,
 				E898A1D116BD265400732C04 /* LocalizationSystem.cpp in Sources */,
+				7A169354180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				E898A1D216BD265400732C04 /* Logger.cpp in Sources */,
 				E898A1D316BD265400732C04 /* LoggerMacOS.mm in Sources */,
 				E898A1D516BD265400732C04 /* ResourceArchive.cpp in Sources */,
@@ -5769,6 +5766,7 @@
 				E898A22916BD265400732C04 /* ImageLoader.cpp in Sources */,
 				E898A22A16BD265400732C04 /* LibDxtHelper.cpp in Sources */,
 				E898A22B16BD265400732C04 /* LibPngHelpers.cpp in Sources */,
+				7A16933B180EE618005F1FBC /* KeyedArchiveSwig.cpp in Sources */,
 				E898A22C16BD265400732C04 /* LibPVRHelper.cpp in Sources */,
 				E898A22D16BD265400732C04 /* MaterialCompiler.cpp in Sources */,
 				E898A22E16BD265400732C04 /* MaterialGraph.cpp in Sources */,
@@ -5807,6 +5805,7 @@
 				E898A25216BD265400732C04 /* CameraComponent.cpp in Sources */,
 				E898A25316BD265400732C04 /* DebugRenderComponent.cpp in Sources */,
 				E898A25416BD265400732C04 /* LightComponent.cpp in Sources */,
+				7A16934E180EE75A005F1FBC /* AutotestingDB.cpp in Sources */,
 				E898A25516BD265400732C04 /* LodComponent.cpp in Sources */,
 				E898A25616BD265400732C04 /* ParticleEffectComponent.cpp in Sources */,
 				E898A25816BD265400732C04 /* RenderComponent.cpp in Sources */,
@@ -5866,6 +5865,7 @@
 				E898A29B16BD265400732C04 /* UIHoleTransition.cpp in Sources */,
 				E898A29C16BD265400732C04 /* UIJoypad.cpp in Sources */,
 				E898A29D16BD265400732C04 /* UIList.cpp in Sources */,
+				7A16933C180EE618005F1FBC /* AutotestingSystemLua.cpp in Sources */,
 				E898A29E16BD265400732C04 /* UIListCell.cpp in Sources */,
 				E898A29F16BD265400732C04 /* UILoadingTransition.cpp in Sources */,
 				E898A2A016BD265400732C04 /* UIMoveInTransition.cpp in Sources */,
@@ -5892,6 +5892,7 @@
 				E83F10A416D6737300C6ED39 /* DPIHelperMacOS.mm in Sources */,
 				CC24800916DD174E00183D40 /* UserComponent.cpp in Sources */,
 				E9EA496D16DF93FA00C44B6F /* UISpinner.cpp in Sources */,
+				7A169341180EE618005F1FBC /* VectorSwig.cpp in Sources */,
 				E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */,
 				E9E798AA16F0BE7600745AF5 /* UISwitch.cpp in Sources */,
 				CCC7A42616F1D6170061EA5D /* Camera.cpp in Sources */,
@@ -5909,6 +5910,7 @@
 				CCC7A45C16F1D6170061EA5D /* RenderObject.cpp in Sources */,
 				CCC7A46016F1D6170061EA5D /* RenderPass.cpp in Sources */,
 				CCC7A46416F1D6170061EA5D /* RenderSystem.cpp in Sources */,
+				7A16933F180EE618005F1FBC /* RectSwig.cpp in Sources */,
 				CCC7A46816F1D6170061EA5D /* ShadowRect.cpp in Sources */,
 				CCC7A46C16F1D6170061EA5D /* ShadowVolume.cpp in Sources */,
 				CCC7A47016F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
@@ -5916,6 +5918,7 @@
 				CCC7A47816F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				CCC7A47E16F1D64D0061EA5D /* RenderState.cpp in Sources */,
 				CCC7A48416F1D6700061EA5D /* UpdateSystem.cpp in Sources */,
+				7A16933E180EE618005F1FBC /* AutotestingSystemSwig.cpp in Sources */,
 				CCC7A48A16F1D6B80061EA5D /* Entity.cpp in Sources */,
 				C18593DC16F30BF2005D30E2 /* UIAggregatorControl.cpp in Sources */,
 				7489A9D01702F5A500D9AE2D /* CRC32.cpp in Sources */,

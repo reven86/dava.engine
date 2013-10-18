@@ -18,8 +18,8 @@ import filecmp;
 
 arguments = sys.argv[1:]
 
-if len(arguments) != 5:
-    print 'Usage: ./autotesting_init.py PlatformName Device ProjectName ProjectFolder TestsGroupName'
+if len(arguments) != 3:
+    print 'Usage: ./autotesting_init.py PlatformName ProjectName ProjectFolder'
     exit(1)
 
 def copy_file(srcFolder, destFolder, fileName):
@@ -33,15 +33,8 @@ def copy_file(srcFolder, destFolder, fileName):
     
 print "*** DAVA Initializing autotesting"
 platformName = arguments[0]
-device = arguments[1]
-projectName = arguments[2]
-projectFolder = arguments[3]
-testsGroupName = arguments[4]
-
-
-#if 3 == len(arguments):
-#    testsGroupName = arguments[2]
-testsSrcFolder = "/Tests/" + testsGroupName
+projectName = arguments[1]
+projectFolder = arguments[2]
 
 print "platform.system: " + platform.system()
 
@@ -51,6 +44,8 @@ projectDir = os.path.realpath(currentDir + "/../../../../" + projectFolder)
 print "Framework directory:" + frameworkDir
 print "Project directory:" + projectDir
 
+
+# Change Config.h ot turn on AUTOTESTING mode
 if 2 <= len(arguments):
     autotestingConfigSrcPath = os.path.realpath(currentDir + "/../Data/Config.h")
     autotestingConfigDestPath = os.path.realpath(frameworkDir + "/Sources/Internal/Autotesting/Config.h")
@@ -85,7 +80,7 @@ if os.path.exists(autotestingReportsFolder):
     print "remove previous report folder: " + autotestingReportsFolder       
     shutil.rmtree(autotestingReportsFolder)
 
-	
+    
 print "copy scripts from " + currentDir + " to " + autotestingSrcFolder
 for scriptName in scripts:
     scriptSrcPath = os.path.realpath(currentDir + scriptName)
@@ -106,16 +101,17 @@ luaScriptDestFolder = os.path.realpath(autotestingDestFolder + "/Scripts")
 os.mkdir(luaScriptDestFolder)
 
 copy_file(currentDir, luaScriptDestFolder, "autotesting_api.lua")
-copy_file(currentDir, luaScriptDestFolder, "logger.lua")
 copy_file(currentDir, luaScriptDestFolder, "coxpcall.lua")
+copy_file(autotestingSrcFolder, autotestingDestFolder, "dbConfig.yaml")
 
-os.chdir(autotestingSrcFolder)
+os.chdir(projectDir)
 
-params = ["python", "./copy_tests.py", testsSrcFolder, autotestingDestFolder]
+
+params = ["python", "./Autotesting/copy_tests.py"]
 print "subprocess.call " + "[%s]" % ", ".join(map(str, params))
 subprocess.call(params)
 
-params = ["python", "./generate_id.py", projectName, autotestingDestFolder, testsGroupName, device]
+params = ["python", "./Autotesting/generate_id.py", projectName]
 print "subprocess.call " + "[%s]" % ", ".join(map(str, params))
 subprocess.call(params)
 

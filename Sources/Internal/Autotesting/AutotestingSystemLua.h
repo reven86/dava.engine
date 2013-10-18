@@ -38,7 +38,9 @@
 #include "Base/BaseMath.h"
 #include "Math/Vector.h"
 #include "Base/Singleton.h"
+
 #include "UI/UIControl.h"
+#include "UI/UIList.h"
 
 #include "FileSystem/LocalizationSystem.h"
 
@@ -71,12 +73,8 @@ public:
     void Update(float32 timeElapsed);
 #endif //SWIG
     
-    // autotesting system api
-    void WaitForMaster();
-    void WaitForHelpers(DAVA::int32 helpersCount);
-    
+    // autotesting system api   
     void OnError(const String &errorMessage);
-    void OnTestStep(const String &stepName, bool isPassed, const String &error = "");
     void OnTestFinished();
     
     float32 GetTimeElapsed();
@@ -91,12 +89,20 @@ public:
     // autotesting api
     UIControl *GetScreen();
     UIControl *FindControl(const String &path);
+	UIControl* FindControl(UIControl* srcControl, const String &controlName);
+	UIControl* FindControl(UIControl* srcControl, int32 index);
+	UIControl* FindControl(UIList* srcList, int32 index);
+
+	bool IsCenterInside(UIControl* parent, UIControl* child);
+
     void TouchDown(const Vector2 &point, int32 touchId);
     void TouchMove(const Vector2 &point, int32 touchId);
     void TouchUp(int32 touchId);
     
 	// Keyboard action
 	void KeyPress(int32 keyChar);
+
+	void ProcessInput(const UIEvent &input);
 
     // helpers
     bool SetText(const String &path, const String &text); // lua uses ansi strings
@@ -114,6 +120,8 @@ public:
 
 	// DB storing
 	bool SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName = "aux");
+
+	String GetTestParameter(const String & device);
 
 	void WriteString(const String & name, const String & text);
 	String ReadString(const String & name);

@@ -329,8 +329,6 @@ protected:
 	WideString text;
 	UITextFieldDelegate * delegate;
 	float32	cursorBlinkingTime;
-    Font * textFont;
-    Font * constFont;
     bool isPassword;
 	
 	// Keyboard customization params.
@@ -354,10 +352,11 @@ private:
 	UITextFieldiPhone * textFieldiPhone;
 #elif defined(__DAVAENGINE_ANDROID__)
 	UITextFieldAndroid* textFieldAndroid;
-#endif
-
-
+#else
     UIStaticText * staticText;
+    Font * textFont;
+    Font * constFont;
+#endif
     float32 cursorTime;
     bool showCursor;
 

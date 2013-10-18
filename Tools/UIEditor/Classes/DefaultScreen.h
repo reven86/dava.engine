@@ -42,6 +42,8 @@ class DefaultScreen : public QObject, public UIScreen
 {
 	Q_OBJECT
 	
+	const static int32 MIN_CONTROL_SIZE = 1;
+	
 public:
 	DefaultScreen();
 	virtual ~DefaultScreen();

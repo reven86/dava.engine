@@ -42,6 +42,25 @@ class HierarchyTreeAggregatorNode: public HierarchyTreeScreenNode
 {
 public:
 	typedef Set<HierarchyTreeControlNode*> CHILDS;
+	struct AlignData
+	{
+		AlignData()
+		{
+			leftAlign = 0;
+			hcenterAlign = 0;
+			rightAlign = 0;
+			topAlign = 0;
+			vcenterAlign = 0;
+			bottomAlign = 0;
+		};
+
+		int32 leftAlign;
+		int32 hcenterAlign;
+		int32 rightAlign;
+		int32 topAlign;
+		int32 vcenterAlign;
+		int32 bottomAlign;
+	};
 
 	HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent, const QString& name, const Rect& rect);
 	HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent,
@@ -71,7 +90,11 @@ public:
 private:
 	void CopyAggregatorControls();
 	void ReplaceAggregator(HierarchyTreeControlNode* node);
-	
+
+	// Save/restore Align Data for the control.
+	AlignData SaveAlignData(UIControl* uiControl);
+	void RestoreAlignData(UIControl* uiControl, const AlignData& alignData);
+
 private:
 	Rect rect;
 	
