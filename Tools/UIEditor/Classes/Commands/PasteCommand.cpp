@@ -190,8 +190,12 @@ int PasteCommand::PasteControls(HierarchyTreeNode::HIERARCHYTREENODESLIST* newCo
 
 		UIControl* clone = copy->GetUIObject();
 		if (clone && bUpdateNameAndShiftPosition)
+		{
+			HierarchyTreeNode::AlignData alignData = HierarchyTreeNode::SaveAlignData(clone);
 			clone->SetPosition(clone->GetPosition() + COPY_DELTA);
-				
+			HierarchyTreeNode::RestoreAlignData(clone, alignData);
+		}
+
 		count++;
 		newControls->push_back(copy);
 	}

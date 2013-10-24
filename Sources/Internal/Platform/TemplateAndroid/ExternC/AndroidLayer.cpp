@@ -143,6 +143,17 @@ bool CreateStringFromJni(JNIEnv* env, jstring jniString, char *generalString)
 	return ret;
 }
 
+void CreateWStringFromJni(JNIEnv* env, jstring jniString, DAVA::WideString& string)
+{
+	const jchar *raw = env->GetStringChars(jniString, 0);
+	jsize len = env->GetStringLength(jniString);
+	const jchar *temp = raw;
+
+	string.assign(raw, raw + len);
+
+	env->ReleaseStringChars(jniString, raw);
+}
+
 void InitApplication(JNIEnv * env)
 {
 	if(!core)

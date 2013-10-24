@@ -43,6 +43,27 @@ using namespace DAVA;
 class HierarchyTreeNode
 {
 public:
+	// Alignment data.
+	struct AlignData
+	{
+		AlignData()
+		{
+			leftAlign = 0;
+			hcenterAlign = 0;
+			rightAlign = 0;
+			topAlign = 0;
+			vcenterAlign = 0;
+			bottomAlign = 0;
+		};
+
+		int32 leftAlign;
+		int32 hcenterAlign;
+		int32 rightAlign;
+		int32 topAlign;
+		int32 vcenterAlign;
+		int32 bottomAlign;
+	};
+
     // Type definitions for the Tree Node.
 	typedef std::list<HierarchyTreeNode*> HIERARCHYTREENODESLIST;
     typedef HIERARCHYTREENODESLIST::iterator HIERARCHYTREENODESITER;
@@ -99,6 +120,10 @@ public:
 	void IncrementUnsavedChanges();
 	void DecrementUnsavedChanges();
 	void ResetUnsavedChanges();
+
+	// Save/restore Align Data for the control.
+	static AlignData SaveAlignData(UIControl* uiControl);
+	static void RestoreAlignData(UIControl* uiControl, const AlignData& alignData);
 
 protected:
 	HIERARCHYTREENODEID id;

@@ -30,8 +30,7 @@
 
 #include "AndroidLayer.h"
 #include "UI/UITextFieldAndroid.h"
-
-char text[256] = {0};
+#include "Base/BaseTypes.h"
 
 extern "C"
 {
@@ -42,7 +41,8 @@ extern "C"
 
 	bool Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jstring replacementString)
 	{
-		CreateStringFromJni(env, replacementString, text);
-		return DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, text);
+		DAVA::WideString string;
+		CreateWStringFromJni(env, replacementString, string);
+		return DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
 	}
 };

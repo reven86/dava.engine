@@ -229,6 +229,7 @@ void UIScrollView::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 void UIScrollView::LoadFromYamlNodeCompleted()
 {
 	FindRequiredControls();
+	RecalculateContentSize();
 }
 
 YamlNode * UIScrollView::SaveToYamlNode(UIYamlLoader * loader)

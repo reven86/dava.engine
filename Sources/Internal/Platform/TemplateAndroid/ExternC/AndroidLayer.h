@@ -48,6 +48,7 @@
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, "davaFrameworkLog", __VA_ARGS__)
 
 bool CreateStringFromJni(JNIEnv* env, jstring jniString, char *generalString);
+void CreateWStringFromJni(JNIEnv* env, jstring jniString, DAVA::WideString& string);
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

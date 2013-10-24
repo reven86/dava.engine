@@ -163,7 +163,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		{
 			for (int i = 0; i < events.size(); ++i)
 			{
-				nativeOnInput(action, events.get(i).id, events.get(i).x, events.get(i).y, time, events.get(i).source);
+				nativeOnInput(action, events.get(i).id + 1, events.get(i).x, events.get(i).y, time, events.get(i).source);
 			}
 		}
     }

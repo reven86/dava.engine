@@ -470,24 +470,23 @@ void UITextFieldAndroid::SetEnableReturnKeyAutomatically(bool value)
 	jniTextField.SetEnableReturnKeyAutomatically(value);
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const char* text)
+bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
 	bool res = true;
-	WideString strText = StringToWString(text);
 	UITextFieldDelegate* delegate = textField->GetDelegate();
 	if (delegate)
-		res = delegate->TextFieldKeyPressed(textField, replacementLocation, replacementLength, strText);
+		res = delegate->TextFieldKeyPressed(textField, replacementLocation, replacementLength, text);
 
 	if (res)
 	{
 		WideString curText = textField->GetText();
-		curText.replace(replacementLocation, replacementLength, strText);
+		curText.replace(replacementLocation, replacementLength, text);
 		this->text = curText;
 	}
 	return res;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const char* text)
+bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
 	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
 	if (!control)

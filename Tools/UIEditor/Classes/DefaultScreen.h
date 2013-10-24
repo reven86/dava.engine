@@ -184,6 +184,10 @@ private:
 	// Get the state of the "Move Screen" key.
 	bool IsMoveScreenKeyPressed();
 
+	// Check control's visibility in a recursive way.
+	bool IsControlVisible(UIControl* uiControl);
+	void IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible);
+
 private slots:
 	void ControlContextMenuTriggered(QAction* action);
 };

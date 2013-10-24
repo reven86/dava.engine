@@ -112,9 +112,9 @@ public:
 	void SetReturnKeyType(DAVA::int32 value);
 	void SetEnableReturnKeyAutomatically(bool value);
 
-	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const char* text);
+	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
 	void TextFieldShouldReturn();
-	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const char* text);
+	static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
 	static void TextFieldShouldReturn(uint32_t id);
 
 private:

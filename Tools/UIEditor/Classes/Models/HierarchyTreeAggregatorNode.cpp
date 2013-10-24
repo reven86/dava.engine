@@ -298,38 +298,3 @@ const FilePath& HierarchyTreeAggregatorNode::GetPath()
 {
 	return path;
 }
-
-HierarchyTreeAggregatorNode::AlignData HierarchyTreeAggregatorNode::SaveAlignData(UIControl* uiControl)
-{
-	AlignData resultData;
-	if (!uiControl)
-	{
-		return resultData;
-	}
-	
-	resultData.leftAlign = uiControl->GetLeftAlign();
-	resultData.hcenterAlign = uiControl->GetHCenterAlign();
-	resultData.rightAlign = uiControl->GetRightAlign();
-	
-	resultData.topAlign = uiControl->GetTopAlign();
-	resultData.vcenterAlign = uiControl->GetVCenterAlign();
-	resultData.bottomAlign = uiControl->GetBottomAlign();
-	
-	return resultData;
-}
-
-void HierarchyTreeAggregatorNode::RestoreAlignData(UIControl* uiControl, const HierarchyTreeAggregatorNode::AlignData& alignData)
-{
-	if (!uiControl)
-	{
-		return;
-	}
-
-	uiControl->SetLeftAlign(alignData.leftAlign);
-	uiControl->SetHCenterAlign(alignData.hcenterAlign);
-	uiControl->SetRightAlign(alignData.rightAlign);
-
-	uiControl->SetTopAlign(alignData.topAlign);
-	uiControl->SetVCenterAlign(alignData.vcenterAlign);
-	uiControl->SetBottomAlign(alignData.bottomAlign);
-}

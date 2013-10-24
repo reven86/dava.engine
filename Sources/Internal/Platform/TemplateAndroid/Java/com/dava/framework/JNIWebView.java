@@ -106,6 +106,8 @@ public class JNIWebView {
 				params.height = (int)(dy + 0.5f);
 				webView.setWebViewClient(new InternalViewClient(id));
 				webView.getSettings().setJavaScriptEnabled(true);
+				webView.getSettings().setLoadWithOverviewMode(true);
+				webView.getSettings().setUseWideViewPort(true);
 				
 				activity.addContentView(webView, params);
 				views.put(id, webView);

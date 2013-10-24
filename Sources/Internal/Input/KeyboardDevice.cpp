@@ -133,7 +133,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     for(int32 i = 0; i < 10; ++i)
     {
         keyTranslator[0x30 + i] = DVKEY_0 + i;
-        keyTranslator[0x60 + i] = DVKEY_0 + i;
+        keyTranslator[0x60 + i] = DVKEY_NUMPAD0 + i;
     }
     
 #endif

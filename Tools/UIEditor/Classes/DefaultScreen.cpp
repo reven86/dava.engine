@@ -324,10 +324,13 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
 		UIControl* control = controlNode->GetUIObject();
 		if (!control)
 			continue;
-		
-		if (!control->GetVisible())
+
+		// Control can be selected if at least its subcontrol is visible (see pls DF-2420).
+		if (!IsControlVisible(control))
+		{
 			continue;
-		
+		}
+
 		if (!control->GetVisibleForUIEditor())
 		{
 			continue;
@@ -1268,3 +1271,29 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 		inputPos = pos;
 	}
 }
+
+bool DefaultScreen::IsControlVisible(UIControl* uiControl)
+{
+	bool isVisible = false;
+	IsControlVisibleRecursive(uiControl, isVisible);
+
+	return isVisible;
+}
+
+void DefaultScreen::IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible)
+{
+	if (!uiControl)
+	{
+		isVisible = false;
+		return;
+	}
+
+	isVisible |= uiControl->GetVisible();
+
+	const List<UIControl*>& children = uiControl->GetChildren();
+	for(List<UIControl*>::const_iterator iter = children.begin(); iter != children.end(); iter ++)
+	{
+		IsControlVisibleRecursive(*iter, isVisible);
+	}
+}
+
