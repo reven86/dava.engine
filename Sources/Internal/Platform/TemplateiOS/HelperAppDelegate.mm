@@ -37,6 +37,11 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	unsigned int height = [mainScreen bounds].size.height;
 	unsigned int scale = 1;
 		
+	// DF-2274 - Setup screen info - actual width and height
+	DeviceInfo::SetScreenInfo(width, height, scale);
+
+	FrameworkDidLaunched();
+	
 	if (DAVA::Core::IsAutodetectContentScaleFactor())
 	{
 		if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
@@ -45,10 +50,9 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 			scale = (unsigned int)[[::UIScreen mainScreen] scale];
 		}
 	}
-	// DF-2274 - Setup screen info
+	
+	// DF-2274 - Setup screen info - actual scale
 	DeviceInfo::SetScreenInfo(width, height, scale);
-
-	FrameworkDidLaunched();
 	
 	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 	DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
