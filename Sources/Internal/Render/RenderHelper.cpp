@@ -108,6 +108,44 @@ void RenderHelper::FillRect(const Rect & rect)
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
 }
 
+void RenderHelper::FillRotatedRect(const Rect & rect, const Vector2& pivotPoint, float32 angle)
+{
+	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	{
+		return;
+	}
+	// Calculate rotation matrix for angle
+  	Matrix4 rotationMatrix = Matrix4::IDENTITY;
+    rotationMatrix.CreateRotation(Vector3(0.f, 0.f, -1.0f), angle);
+	// Get four points of rect
+	Vector3 p1(-pivotPoint.x, -pivotPoint.y, 0.f);
+	p1 = p1 * rotationMatrix;
+	
+	Vector3 p2(rect.dx - pivotPoint.x, -pivotPoint.y, 0.f);
+	p2 = p2 * rotationMatrix;
+	
+	Vector3 p3(-pivotPoint.x, rect.dy - pivotPoint.y, 0.f);
+	p3 = p3 * rotationMatrix;
+	
+	Vector3 p4(rect.dx - pivotPoint.x, rect.dy - pivotPoint.y, 0.f);
+	p4 = p4 * rotationMatrix;
+	
+	vertices[0] = p1.x + rect.x + pivotPoint.x;
+    vertices[1] = p1.y + rect.y + pivotPoint.y;
+    vertices[2] = p2.x + rect.x + pivotPoint.x;
+    vertices[3] = p2.y + rect.y + pivotPoint.y;
+    vertices[4] = p3.x + rect.x + pivotPoint.x;
+    vertices[5] = p3.y + rect.y + pivotPoint.y;
+    vertices[6] = p4.x + rect.x + pivotPoint.x;
+    vertices[7] = p4.y + rect.y + pivotPoint.y;
+
+    vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
+    
+    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderData(renderDataObject);
+    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
+}
+
 void RenderHelper::DrawRect(const Rect & rect)
 {
     vertices[0] = rect.x;						

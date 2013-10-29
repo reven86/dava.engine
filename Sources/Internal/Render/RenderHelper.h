@@ -94,6 +94,13 @@ public:
         \param pt2 ending point
 	 */ 
     void FillRect(const Rect & rect);
+	
+    /**
+        \brief Fills given rect in 2D space and rotates it to specefied angle around pivotpoint
+        \param pivotPoint rotation point 
+        \param angle rotation angle in radians
+	 */ 	
+	void FillRotatedRect(const Rect & rect, const Vector2& pivotPoint, float32 angle);
     
 	// point helpers
     
