@@ -120,15 +120,31 @@ uint32 CRC32::ForFile(const FilePath & pathName)
 	uint32 n = 0;
 	while((n = f->Read(buf, BUFSIZE)) > 0)
 	{
-		for(uint32 i = 0; i < n; i++)
-		{
-			crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ buf[i]) & 0xff];
-		}
+		crc32 = ProcessData(buf, n, crc32);
 	}
 
 	crc32 ^= 0xffffffff;
 
 	f->Release();
+	return crc32;
+}
+
+uint32 CRC32::ForBuffer(const char* data, uint32 size)
+{
+	uint32 crc32 = 0xffffffff;
+	crc32 = ProcessData(data, size, crc32);
+	crc32 ^= 0xffffffff;
+
+	return crc32;
+}
+
+uint32 CRC32::ProcessData(const char* data, uint32 size, uint32 crc32)
+{
+	for(uint32 i = 0; i < size; i++)
+	{
+		crc32 = (crc32 >> 8) ^ crc32_tab[(crc32 ^ data[i]) & 0xff];
+	}
+
 	return crc32;
 }
 

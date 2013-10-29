@@ -49,8 +49,6 @@ FontManager::FontManager()
 	{
 		Logger::Error("FontManager FT_Init_FreeType failed");
 	}
-
-	trackedFontId = 0;
 }
 	
 FontManager::~FontManager()
@@ -84,8 +82,10 @@ void FontManager::SetFontName(Font* font, const String& name)
 {
 	if (registeredFonts.find(font) == registeredFonts.end())
 		return;
-	
-	registeredFonts[font] = name;
+
+	// The names of all fonts should coincide with their hashed names (see DF-2316).
+	String fontHashName = GetFontHashName(font);
+	registeredFonts[font] = fontHashName;
 }
 	
 String FontManager::GetFontName(Font *font)
@@ -111,9 +111,11 @@ String FontManager::GetFontName(Font *font)
 		
 		String name = fontIter->second;
 		if (name.empty())
-			//generate name
-			name = Format("Font_%d", trackedFontId++);
-		
+		{
+			// YuriCoder, 2013/10/18. Font name HAVE TO BE unique, otherwise it might not be saved correctly.
+			name = GetFontHashName(font);
+		}
+
 		fontName->name = name;
 		return name;
 	}
@@ -125,8 +127,7 @@ void FontManager::PrepareToSaveFonts()
 	Clear();
 	fontsName.clear();
 	trackedFonts.clear();
-	trackedFontId = 0;
-	
+
 	for (REGISTERED_FONTS::iterator iter = registeredFonts.begin();
 		 iter != registeredFonts.end();
 		 ++iter)
@@ -174,6 +175,11 @@ const FontManager::TRACKED_FONTS& FontManager::GetTrackedFont() const
 {
 	return trackedFonts;
 }
-	
+
+String FontManager::GetFontHashName(Font* font)
+{
+	return Format("Font_%X", font->GetHashCode());
+}
+
 };
 

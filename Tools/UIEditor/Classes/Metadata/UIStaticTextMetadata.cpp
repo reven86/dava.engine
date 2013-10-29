@@ -100,8 +100,10 @@ void UIStaticTextMetadata::SetFontSize(float fontSize)
     Font *font = GetActiveStaticText()->GetFont();
     if (font)
     {
-        font->SetSize(fontSize);
-        GetActiveStaticText()->SetFont(font);
+        Font* newFont = font->Clone();
+        newFont->SetSize(fontSize);
+        GetActiveStaticText()->SetFont(newFont);
+        newFont->Release();
     }
 }
 

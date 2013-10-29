@@ -516,7 +516,13 @@ namespace DAVA
             BringChildBack(selectedText);
 		}
 	}
-	
+
+	void UIButton::Input(UIEvent *currentInput)
+	{
+		UIControl::Input(currentInput);
+		currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
+	}
+
 	void UIButton::SetBackground(UIControlBackground *newBg)
 	{
 		DVASSERT(false);

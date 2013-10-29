@@ -88,10 +88,9 @@ public:
 	
 private:
 	void Clear();
-	
+	String GetFontHashName(Font* font);
+
 private:
-	uint32 trackedFontId;
-	
 	typedef Map<Font*, String> REGISTERED_FONTS;
 	REGISTERED_FONTS registeredFonts;
 

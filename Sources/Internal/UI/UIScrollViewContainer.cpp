@@ -138,7 +138,14 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 	{
 		return false;
 	}
-	
+
+	bool systemInput = UIControl::SystemInput(currentTouch);
+	if (currentTouch->GetInputHandledType() == UIEvent::INPUT_HANDLED_HARD)
+	{
+		// Can't scroll - some child control already processed this input.
+		return systemInput;
+	}
+
 	if(currentTouch->phase == UIEvent::PHASE_BEGAN)
 	{
 		if(IsPointInside(currentTouch->point))
@@ -169,7 +176,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 		return true;
 	}
 	
-	return UIControl::SystemInput(currentTouch);
+	return systemInput;
 }
 
 void UIScrollViewContainer::Update(float32 timeElapsed)

@@ -160,7 +160,12 @@ bool FTFont::IsEqual(const Font *font) const
 
 	return true;
 }
-	
+
+String FTFont::GetRawHashString()
+{
+	return fontPath.GetFrameworkPath() + "_" + Font::GetRawHashString();
+}
+
 Size2i FTFont::DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded )
 {
 	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, 255, 255, 255, 255, size, true, offsetX, offsetY, justifyWidth, spaceAddon, NULL, contentScaleIncluded );

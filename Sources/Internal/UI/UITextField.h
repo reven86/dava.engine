@@ -355,7 +355,6 @@ private:
 #else
     UIStaticText * staticText;
     Font * textFont;
-    Font * constFont;
 #endif
     float32 cursorTime;
     bool showCursor;

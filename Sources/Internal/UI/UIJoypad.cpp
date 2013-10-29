@@ -245,7 +245,7 @@ void UIJoypad::Input(UIEvent *currentInput)
 
 	needRecalcAnalog = true;
 	needRecalcDigital = true;
-
+	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 void UIJoypad::InputCancelled(UIEvent *currentInput)
 {

@@ -1756,7 +1756,12 @@ namespace DAVA
 					return true;
 				}
 			}
-				break;
+			break;
+            case UIEvent::PHASE_WHEEL:
+            {
+                 Input(currentInput);
+            }
+            break;
 #endif
 			case UIEvent::PHASE_BEGAN:
 			{
@@ -2033,12 +2038,12 @@ namespace DAVA
 	void UIControl::DidRemoveHovered()
     {
     }
-    
 
 	void UIControl::Input(UIEvent *currentInput)
 	{
-		
+		currentInput->SetInputHandledType(UIEvent::INPUT_NOT_HANDLED);
 	}
+
 	void UIControl::InputCancelled(UIEvent *currentInput)
 	{
 	}

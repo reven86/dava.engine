@@ -74,7 +74,10 @@ protected:
 	virtual ~GraphicsFont();
 	
 	float32 GetDistanceFromAtoB(int32 aIndex, int32 bIndex) const;
-    
+
+	// Get the raw hash string (identical for identical fonts).
+	virtual String GetRawHashString();
+
 	int32 horizontalSpacing;
     
 	Sprite * fontSprite;

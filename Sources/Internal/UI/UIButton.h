@@ -262,8 +262,9 @@ public:
 	virtual void SetSelected(bool isSelected, bool hierarchic = true);
 	virtual void SetExclusiveInput(bool isExclusiveInput, bool hierarchic = true);
 	virtual void SetMultiInput(bool isMultiInput, bool hierarchic = true);
-	
-	
+
+	virtual void Input(UIEvent *currentInput);
+
 	virtual void SystemDraw(const UIGeometricData &geometricData);
 	
 	virtual UIControl *Clone();

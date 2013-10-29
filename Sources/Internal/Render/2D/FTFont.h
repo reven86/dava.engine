@@ -121,6 +121,10 @@ public:
 	// Put font properties into YamlNode
 	virtual YamlNode * SaveToYamlNode() const;
 
+protected:
+	// Get the raw hash string (identical for identical fonts).
+	virtual String GetRawHashString();
+
 private:
 	FTFont(FTInternalFont* internalFont);
 	FTInternalFont	* internalFont;

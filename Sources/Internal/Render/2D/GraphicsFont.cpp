@@ -87,6 +87,13 @@ bool GraphicsFont::IsEqual(const Font *font) const
     return true;
 }
 
+String GraphicsFont::GetRawHashString()
+{
+    return fontDefinitionName.GetFrameworkPath() + "_" +
+           fontSprite->GetRelativePathname().GetFrameworkPath() + "_" +
+           Font::GetRawHashString();
+}
+
 GraphicsFont::~GraphicsFont()
 {
 	SafeRelease(fdef);

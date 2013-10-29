@@ -615,19 +615,29 @@ namespace DAVA
 
 	static bool mouseCursorShown = true;
 
-	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam)
-	{
+	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
+    {
+        Vector<DAVA::UIEvent> touches;
+        Vector<DAVA::UIEvent> emptyTouches;
+        int32 touchPhase = -1;
+
+        if(buttsFlags & RI_MOUSE_WHEEL)
+        {
+            UIEvent newTouch;
+            newTouch.tid = 0;
+            newTouch.physPoint.x = ((SHORT)buttonData) / 120.f;
+            newTouch.physPoint.y = ((SHORT)buttonData) / 120.f;
+            newTouch.phase = touchPhase = UIEvent::PHASE_WHEEL;
+            touches.push_back(newTouch);
+        }
+        else
 		{
-			//Logger::FrameworkDebug("ms: %d %d", GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-
-			Vector<DAVA::UIEvent> touches;
-			Vector<DAVA::UIEvent> emptyTouches;
-
-			int32 touchPhase = MoveTouchsToVector(buttsFlags, wParam, lParam, &touches);
-
-            if(touchPhase != -1 && HIWORD(wParam)) // HIWORD(wParam) - isPoint inside window
-			    UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
+            if(HIWORD(wParam)) // HIWORD(wParam) - isPoint inside window
+			    touchPhase = MoveTouchsToVector(buttsFlags, wParam, lParam, &touches);
 		}
+
+        if(touchPhase != -1)
+            UIControlSystem::Instance()->OnInput(touchPhase, emptyTouches, touches);
 
 		if (RenderManager::Instance()->GetCursor() != 0 && mouseCursorShown)
 		{
@@ -768,7 +778,7 @@ namespace DAVA
 
                 bool isInside = (x > clientRect.left && x < clientRect.right && y > clientRect.top && y < clientRect.bottom) || InputSystem::Instance()->IsCursorPining();
 
-                OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y)); // only move and drag events
+                OnMouseEvent(raw->data.mouse.usButtonFlags, MAKEWPARAM(isMove, isInside), MAKELPARAM(x, y), raw->data.mouse.usButtonData); // only move, drag and wheel events
             }
 
             break;

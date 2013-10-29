@@ -602,6 +602,11 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	[openGLView mouseDown:theEvent];
 }
 
+- (void)scrollWheel:(NSEvent *)theEvent
+{
+    [openGLView scrollWheel:theEvent];
+}
+
 - (void)mouseMoved:(NSEvent *)theEvent
 {
 	//NSLog(@"[CoreMacOSPlatform] mouse moved fullscreen");	

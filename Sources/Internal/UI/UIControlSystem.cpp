@@ -369,6 +369,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 					(*it).physPoint = (*wit).physPoint;
 					RecalculatePointToVirtual((*it).physPoint, (*it).point);
 					(*it).tapCount = (*wit).tapCount;
+					(*it).inputHandledType = (*wit).inputHandledType;
 					break;
 				}
 			}
@@ -393,6 +394,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 						(*it).point = (*wit).point;
 						RecalculatePointToVirtual((*it).physPoint, (*it).point);
 						(*it).tapCount = (*wit).tapCount;
+						(*it).inputHandledType = (*wit).inputHandledType;
 						break;
 					}
 				}

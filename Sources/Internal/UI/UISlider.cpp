@@ -335,9 +335,9 @@ void UISlider::Input(UIEvent *currentInput)
 		/* if not continuos always perform event because last move position almost always the same as end pos */
 		PerformEvent(EVENT_VALUE_CHANGED);
 	}
-			  
-			  
+
 	RecalcButtonPos();
+	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 void UISlider::Draw(const UIGeometricData &geometricData)

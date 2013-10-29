@@ -32,6 +32,9 @@
 #include "FileSystem/YamlParser.h"
 #include "FontManager.h"
 
+#include "Utils/StringFormat.h"
+#include "Utils/CRC32.h"
+
 namespace DAVA
 {
 	
@@ -78,6 +81,17 @@ bool Font::IsEqual(const Font *font) const
 	}
 	
 	return true;
+}
+
+uint32 Font::GetHashCode()
+{
+	String rawHashString = GetRawHashString();
+	return CRC32::ForBuffer(rawHashString.c_str(), rawHashString.length());
+}
+
+String Font::GetRawHashString()
+{
+	return Format("%i_%.0f_%i", fontType, size, verticalSpacing);
 }
 
 void Font::SetSize(float32 _size)

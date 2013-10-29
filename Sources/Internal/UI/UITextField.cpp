@@ -91,7 +91,6 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	cursorBlinkingTime(0.0f)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   textFont(NULL)
-,	constFont(NULL)
 ,   staticText(NULL)
 #endif
 ,   isPassword(false)
@@ -123,7 +122,6 @@ UITextField::UITextField()
 ,   cursorBlinkingTime(0.f)
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
 ,   textFont(NULL)
-,	constFont(NULL)
 ,   staticText(NULL)
 #endif
 ,   isPassword(false)
@@ -175,7 +173,6 @@ UITextField::~UITextField()
 	SafeDelete(textFieldiPhone);
 #else
     SafeRelease(textFont);
-	SafeRelease(constFont);
     RemoveAllControls();
     SafeRelease(staticText);
 #endif
@@ -305,13 +302,11 @@ void UITextField::ReleaseFocus()
 void UITextField::SetFont(Font * font)
 {
 #if !defined (__DAVAENGINE_IPHONE__) && !defined (__DAVAENGINE_ANDROID__)
-	// Yuri Coder, 2013/10/10. The implementation is copied from TextBlock.cpp
-	//Do not change the code above. This magic realised to avoid font destruction.
-	//For example in this case UITextField->SetFont(UITextField->GetFont()); code should work correct
-	SafeRelease(constFont);
-	constFont = font->Clone();
-	SafeRelease(textFont);
-	textFont = constFont->Clone();
+    if (font == textFont)
+    {
+        return;
+    }
+
     SafeRelease(textFont);
     textFont = SafeRetain(font);
     staticText->SetFont(textFont);
@@ -506,6 +501,7 @@ void UITextField::Input(UIEvent *currentInput)
         }
     }
 
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 #endif
 }
     

@@ -497,6 +497,8 @@ void UIList::Input(UIEvent *currentInput)
 		}
 			break;
 	}
+
+	currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 bool UIList::SystemInput(UIEvent *currentInput)

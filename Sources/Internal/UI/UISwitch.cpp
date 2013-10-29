@@ -316,6 +316,8 @@ void UISwitch::Input(UIEvent *currentInput)
         Animation * animation = new TogglePositionAnimation(causedByTap, this, &(toggle->relativePosition.x), toggleX, SWITCH_ANIMATION_TIME, Interpolation::EASY_IN);
         animation->Start(MOVE_ANIMATION_TRACK);
     }
+
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 void UISwitch::SetIsLeftSelected(bool aIsLeftSelected)

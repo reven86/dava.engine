@@ -536,6 +536,8 @@ void UIHierarchy::Input(UIEvent *currentInput)
                 break;
         }
     }
+
+    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_HARD); // Drag is handled - see please DF-2508.
 }
 
 bool UIHierarchy::SystemInput(UIEvent *currentInput)
