@@ -47,6 +47,9 @@ using namespace DAVA;
 UIWebView::UIWebView()
 {
 	webViewControl = new WebViewControl();
+	// Initialize web view with empty rect
+	// This will allow to avoid crash after calling SetDelegate
+	webViewControl->Initialize(Rect());
 }
 
 UIWebView::~UIWebView()
