@@ -109,7 +109,7 @@ public:
 	virtual void Initialize(const Rect& rect);
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen);
+	virtual void OpenURL(const String& urlToOpen, bool isUrl = true);
 	
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);

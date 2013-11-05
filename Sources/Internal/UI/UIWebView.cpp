@@ -69,9 +69,9 @@ void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 	webViewControl->SetDelegate(delegate, this);
 }
 
-void UIWebView::OpenURL(const String& urlToOpen)
+void UIWebView::OpenURL(const String& urlToOpen, bool isUrl)
 {
-	this->webViewControl->OpenURL(urlToOpen);
+	this->webViewControl->OpenURL(urlToOpen, isUrl);
 }
 
 void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)

@@ -220,7 +220,7 @@ void InputTest::LoadResources()
 	webView2 = new UIWebView(Rect(305, 300, 440, 190));
     webView2->SetVisible(false);
     webView2->SetDelegate((UIWebViewDelegate*)delegate);
-	webView2->OpenURL("http://www.google.com");
+	webView2->OpenURL("<a href='http://www.davaconsulting.com/'>HELLO DAVA</b>", false);
 	webView2->SetBounces(true);
 	AddControl(webView2);
 

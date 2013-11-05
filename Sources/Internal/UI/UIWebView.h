@@ -45,7 +45,7 @@ public:
 	virtual ~UIWebView();
 		
 	// Open the URL.
-	void OpenURL(const String& urlToOpen);
+	void OpenURL(const String& urlToOpen, bool isUrl = true);
 
 	// Overloaded virtual methods.
 	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);

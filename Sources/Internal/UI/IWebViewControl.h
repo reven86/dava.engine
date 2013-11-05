@@ -66,7 +66,7 @@ public:
 	virtual void Initialize(const Rect& rect) = 0;
 	
 	// Open the URL requested.
-	virtual void OpenURL(const String& urlToOpen) = 0;
+	virtual void OpenURL(const String& urlToOpen, bool isUrl = true) = 0;
 	
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect) = 0;
