@@ -356,7 +356,7 @@ void WebViewControl::OpenURL(const String& urlToOpen, bool isUrl)
         {
             htmlString.insert(0, "about:"); 
         }
-        this->browserContainer->OpenUrl(StringToWString(urlToOpen.c_str()).c_str());
+        this->browserContainer->OpenUrl(StringToWString(htmlString.c_str()).c_str());
 	}
 }
 
