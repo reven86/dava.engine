@@ -132,8 +132,14 @@ String AutotestingSystem::GetDeviceName()
 		return Format("%s", DeviceInfo::GetName());
 	}
 	*/
-	
-	return WStringToString(DeviceInfo::GetName());
+	if (AUTOTESTING_PLATFORM_NAME == "Android")
+	{
+		return DeviceInfo::GetModel();
+	}
+	else
+	{
+		return WStringToString(DeviceInfo::GetName());
+	}	
 }
 // Get test parameters from id.tx
 void AutotestingSystem::FetchParametersFromIdTxt()
@@ -445,7 +451,7 @@ void AutotestingSystem::MakeScreenShot()
     uint16 hours = (timeAbsMs/3600000)%24;
     uint16 minutes = (timeAbsMs/60000)%60;
     uint16 seconds = (timeAbsMs/1000)%60;
-	screenShotName = Format("%s_%s_%02d_%02d_%02d", AUTOTESTING_PLATFORM_NAME, groupName.c_str(), hours, minutes, seconds);
+	screenShotName = Format("%s_%s_%s_%02d_%02d_%02d", AUTOTESTING_PLATFORM_NAME, deviceName.c_str(), groupName.c_str(), hours, minutes, seconds);
 
 	RenderManager::Instance()->RequestGLScreenShot(this);
 }

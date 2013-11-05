@@ -145,7 +145,7 @@ namespace DAVA
 
 		if (auxArg.length() != 0)
 		{
-			testsName = Format("%u_%s", AutotestingSystem::Instance()->testsDate, auxArg.c_str());
+			testsName = Format("%u_%s_%s", AutotestingSystem::Instance()->testsDate, AutotestingSystem::Instance()->deviceName.c_str(), auxArg.c_str());
 		}
 		else
 		{
@@ -161,11 +161,6 @@ namespace DAVA
 			dbUpdateObject->LoadData();
 			dbUpdateData = dbUpdateObject->GetData();
 
-			dbUpdateData->SetString("Platform", AUTOTESTING_PLATFORM_NAME);
-			dbUpdateData->SetString("Date", Format("%u", AutotestingSystem::Instance()->testsDate));
-			dbUpdateData->SetString("Group", AutotestingSystem::Instance()->groupName.c_str());
-			dbUpdateData->SetString("Device", AutotestingSystem::Instance()->deviceName.c_str());
-
 			//SaveToDB(dbUpdateObject);
 		}
 		else
@@ -173,6 +168,11 @@ namespace DAVA
 			dbUpdateObject->LoadData();
 			dbUpdateData = dbUpdateObject->GetData();
 		}
+		dbUpdateData->SetString("Platform", AUTOTESTING_PLATFORM_NAME);
+		dbUpdateData->SetString("Date", Format("%u", AutotestingSystem::Instance()->testsDate));
+		dbUpdateData->SetString("Group", AutotestingSystem::Instance()->groupName.c_str());
+		dbUpdateData->SetString("Device", AutotestingSystem::Instance()->deviceName.c_str());
+
 
 		return dbUpdateData;
 	}
