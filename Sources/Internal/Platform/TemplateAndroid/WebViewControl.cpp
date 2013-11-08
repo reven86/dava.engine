@@ -180,10 +180,10 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	jniWebView.OpenURL(webViewId, urlToOpen);
 }
 
-void WebViewControl::LoadHtmlString(const String& htmlString)
+void WebViewControl::LoadHtmlString(const String& urlToOpen)
 {
 	JniWebView jniWebView;
-	jniWebView.LoadHtmlString(webViewId, htmlString);
+	jniWebView.LoadHtmlString(webViewId, urlToOpen);
 }
 
 void WebViewControl::SetRect(const Rect& rect)
