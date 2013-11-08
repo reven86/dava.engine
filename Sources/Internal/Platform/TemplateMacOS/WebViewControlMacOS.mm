@@ -193,6 +193,12 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	[(WebView*)webViewPtr setMainFrameURL:nsURLPathToOpen];
 }
 
+void WebViewControl::LoadHtmlString(const String& htlmString)
+{
+	NSString *htmlPageToLoad = [NSString stringWithUTF8String:htlmString.c_str()];
+    [[(WebView*)webViewPtr mainFrame] loadHTMLString:htmlPageToLoad baseURL:nil];
+}
+
 void WebViewControl::SetRect(const Rect& rect)
 {
 	NSRect webViewRect = [(WebView*)webViewPtr frame];
