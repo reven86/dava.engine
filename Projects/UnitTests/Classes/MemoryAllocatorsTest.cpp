@@ -77,7 +77,7 @@ void MemoryAllocatorsTest::PoolAllocatorTest(PerfFuncData * data)
 }
 
 
-class ObjectWithNDOverload
+/*class ObjectWithNDOverload
 {
 public:
     Vector3 position;
@@ -98,7 +98,7 @@ void * ObjectWithNDOverload::operator new(size_t size)
 void ObjectWithNDOverload::operator delete(void * pointer, size_t size)
 {
     return pool.Delete(pointer);
-}
+}*/
 class ObjectWithoutNDOverload
 {
 public:
@@ -110,11 +110,11 @@ public:
 
 void MemoryAllocatorsTest::PoolAllocatorNewDeleteTest(PerfFuncData * data)
 {
-    ObjectWithNDOverload * object1 = new ObjectWithNDOverload;
+ /*   ObjectWithNDOverload * object1 = new ObjectWithNDOverload;
     SafeDelete(object1);
     
     ObjectWithNDOverload * object2 = new ObjectWithNDOverload;
-    SafeDelete(object2);
+    SafeDelete(object2);*/
 }
 
 

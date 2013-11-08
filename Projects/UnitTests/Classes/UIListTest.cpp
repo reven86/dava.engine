@@ -66,7 +66,6 @@ UIListCell *UIListTestDelegate::CellAtIndex(UIList *list, int32 index)
 		/*Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     	DVASSERT(font);
 		font->SetSize(20);
-    	font->SetColor(Color::White());
 		
 		cell->SetStateFont(UIControl::STATE_NORMAL, font);
 		cell->SetStateText(UIControl::STATE_NORMAL, StringToWString(Format("Cell %d",index)));*/

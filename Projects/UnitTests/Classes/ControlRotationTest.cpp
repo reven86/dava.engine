@@ -60,12 +60,12 @@ void ControlRotationTest::LoadResources()
     DVASSERT(font);
     
     font->SetSize(20);
-    font->SetColor(Color::White());
-    
+
     description = new UIStaticText(Rect(0, 256, 512, 200));
     description->SetAlign(ALIGN_LEFT | ALIGN_VCENTER);
     description->SetMultiline(true);
     description->SetFont(font);
+    description->SetTextColor(Color::White());
     AddControl(description);
     
     SafeRelease(font);

@@ -54,6 +54,8 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
+	// Load html page from string
+	virtual void LoadHtmlString(const String& htmlString);
 
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
@@ -76,6 +78,7 @@ public:
 	void Deinitialize(int id);
 
 	void OpenURL(int id, const String& urlToOpen);
+	void LoadHtmlString(int id, const String& htmlString);
 
 	void SetRect(int id, const Rect& rect);
 	void SetVisible(int id, bool isVisible);
