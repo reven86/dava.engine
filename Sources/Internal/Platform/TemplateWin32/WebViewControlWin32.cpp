@@ -346,17 +346,23 @@ bool WebViewControl::InititalizeBrowserContainer()
 	return browserContainer->Initialize(this->browserWindow);
 }
 
-void WebViewControl::OpenURL(const String& urlToOpen, bool isUrl)
+void WebViewControl::OpenURL(const String& urlToOpen)
 {
 	if (this->browserContainer)
 	{
-        String htmlString = urlToOpen;
+        this->browserContainer->OpenUrl(StringToWString(urlToOpen.c_str()).c_str());
+	}
+}
+
+void WebViewControl::LoadHtmlString(const String& htmlString)
+{
+	if (this->browserContainer)
+	{
+        String htmlStringToOpen = htmlString;
         // For string with html inside - use protocol "about"
-        if (!isUrl)
-        {
-            htmlString.insert(0, "about:"); 
-        }
-        this->browserContainer->OpenUrl(StringToWString(htmlString.c_str()).c_str());
+        htmlStringToOpen.insert(0, "about:"); 
+      
+        this->browserContainer->OpenUrl(StringToWString(htmlStringToOpen.c_str()).c_str());
 	}
 }
 
