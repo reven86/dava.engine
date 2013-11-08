@@ -74,6 +74,11 @@ void UIWebView::OpenURL(const String& urlToOpen)
 	this->webViewControl->OpenURL(urlToOpen);
 }
 
+void UIWebView::LoadHtmlString(const String& htmlString)
+{
+	this->webViewControl->LoadHtmlString(htmlString);
+}
+
 void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
 {
 	UIControl::SetPosition(position, positionInAbsoluteCoordinates);

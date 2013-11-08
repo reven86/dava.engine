@@ -111,8 +111,8 @@ public class JNIMovieViewControl {
 			@Override
 			public void run() {
 				MovieControl control = controls.remove(id);
-				control.player.release();
 				((ViewGroup)control.view.getParent()).removeView(control.view);
+				control.player.release();
 			}
 		});
 	}

@@ -151,6 +151,23 @@ public class JNIWebView {
 		});
 	}
 	
+	public static void LoadHtmlString(final int id, final String htmlString)
+	{
+		final JNIActivity activity = JNIActivity.GetActivity();
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!views.containsKey(id))
+				{
+					Log.d(TAG, String.format("Unknown view id %d", id));
+					return;
+				}
+				WebView webView = views.get(id);
+				webView.loadData(htmlString, "text/html", null);
+			}
+		});
+	}
+	
 	public static void SetRect(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();

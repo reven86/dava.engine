@@ -80,6 +80,18 @@ void JniWebView::OpenURL(int id, const String& urlToOpen)
 	}
 }
 
+void JniWebView::LoadHtmlString(int id, const String& htmlString)
+{
+	jmethodID mid = GetMethodID("LoadHtmlString", "(ILjava/lang/String;)V");
+	if (mid)
+	{
+		jstring jHtmlStringToOpen = GetEnvironment()->NewStringUTF(htmlString.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jHtmlStringToOpen);
+		GetEnvironment()->DeleteLocalRef(jHtmlStringToOpen);
+	}
+}
+
+
 void JniWebView::SetRect(int id, const Rect& controlRect)
 {
 	Rect rect = V2P(controlRect);
@@ -166,6 +178,12 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 {
 	JniWebView jniWebView;
 	jniWebView.OpenURL(webViewId, urlToOpen);
+}
+
+void WebViewControl::LoadHtmlString(const String& urlToOpen)
+{
+	JniWebView jniWebView;
+	jniWebView.LoadHtmlString(webViewId, urlToOpen);
 }
 
 void WebViewControl::SetRect(const Rect& rect)
