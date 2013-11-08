@@ -354,6 +354,18 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	}
 }
 
+void WebViewControl::LoadHtmlString(const String& htmlString)
+{
+	if (this->browserContainer)
+	{
+        String htmlStringToOpen = htmlString;
+        // For string with html inside - use protocol "about"
+        htmlStringToOpen.insert(0, "about:"); 
+      
+        this->browserContainer->OpenUrl(StringToWString(htmlStringToOpen.c_str()).c_str());
+	}
+}
+
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
 	if (this->browserWindow != 0)
