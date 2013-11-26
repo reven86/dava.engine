@@ -398,6 +398,8 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
+			attributes = {
+			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TemplateProjectiPhone" */;
 			compatibilityVersion = "Xcode 3.1";
 			developmentRegion = English;
@@ -566,7 +568,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
@@ -609,7 +611,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
@@ -635,7 +637,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
