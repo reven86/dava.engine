@@ -256,6 +256,8 @@
    <addaction name="actionEqualBetweenYCenters"/>
    <addaction name="actionEqualBetweenBottomEdges"/>
    <addaction name="actionEqualBetweenYObjects"/>
+   <addaction name="separator"/>
+   <addaction name="actionAdjustControlSize"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="propertiesDockWidget">
@@ -618,6 +620,14 @@
   <action name="actionEqualBetweenYObjects">
    <property name="text">
     <string>Eq Y</string>
+   </property>
+  </action>
+  <action name="actionAdjustControlSize">
+   <property name="text">
+    <string>AD</string>
+   </property>
+   <property name="toolTip">
+    <string>Adjust control size</string>
    </property>
   </action>
  </widget>

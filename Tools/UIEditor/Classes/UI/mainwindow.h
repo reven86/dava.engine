@@ -99,7 +99,10 @@ private slots:
 	void OnChangePropertySucceeded();
 
 	void OnUnsavedChangesNumberChanged();
-
+	
+	// Adjust size
+	void OnAdjustSize();
+	
 	// Align block.
 	void OnAlignLeft();
 	void OnAlignHorzCenter();

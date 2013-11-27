@@ -77,6 +77,29 @@ private:
 	Rect newRect;
 };
 
+// Adjust controls size to fit sizeo of sprite
+class ControlsAdjustSizeCommand: public BaseCommand
+{
+public:
+	ControlsAdjustSizeCommand(const HierarchyTreeController::SELECTEDCONTROLNODES& controls);
+	
+	virtual void Execute();
+	virtual void Rollback();
+	
+	virtual bool IsUndoRedoSupported() {return true;};
+	
+protected:
+	ControlsPositionData ApplyAjustedSize(HierarchyTreeController::SELECTEDCONTROLNODES& controls);
+	void UndoAdjustedSize(const ControlsPositionData& sizeData);
+	
+private:
+	// List of selected controls
+	HierarchyTreeController::SELECTEDCONTROLNODES selectedControls;
+	
+	// Adjust size result - needed for Undo.
+	ControlsPositionData prevSizeData;
+};
+
 // Align/distribute the controls.
 class ControlsAlignDistributeCommand : public BaseCommand
 {

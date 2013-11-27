@@ -669,6 +669,13 @@ void HierarchyTreeController::DistributeSelectedControls(eDistributeControlsType
 	SafeRelease(command);
 }
 
+void HierarchyTreeController::AdjustSelectedControlsSize()
+{
+	BaseCommand* command = new ControlsAdjustSizeCommand(activeControlNodes);
+    CommandsController::Instance()->ExecuteCommand(command);
+	SafeRelease(command);
+}
+
 bool HierarchyTreeController::CanPerformAlign(eAlignControlsType /*alignType*/)
 {
 	// Align is not possible if less than two controls selected.
