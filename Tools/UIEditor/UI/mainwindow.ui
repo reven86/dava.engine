@@ -248,6 +248,8 @@
    <addaction name="actionAlign_Vert_Center"/>
    <addaction name="actionAlign_Bottom"/>
    <addaction name="separator"/>
+   <addaction name="actionAdjustControlSize"/>
+   <addaction name="separator"/>
    <addaction name="actionEqualBetweenLeftEdges"/>
    <addaction name="actionEqualBetweenXCenters"/>
    <addaction name="actionEqualBetweenRightEdges"/>
@@ -256,8 +258,6 @@
    <addaction name="actionEqualBetweenYCenters"/>
    <addaction name="actionEqualBetweenBottomEdges"/>
    <addaction name="actionEqualBetweenYObjects"/>
-   <addaction name="separator"/>
-   <addaction name="actionAdjustControlSize"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="propertiesDockWidget">
@@ -623,11 +623,15 @@
    </property>
   </action>
   <action name="actionAdjustControlSize">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/adjust_size.png</normaloff>:/Icons/adjust_size.png</iconset>
+   </property>
    <property name="text">
-    <string>AD</string>
+    <string>Adjust control size</string>
    </property>
    <property name="toolTip">
-    <string>Adjust control size</string>
+    <string>Adjust control size to fit its sprite size</string>
    </property>
   </action>
  </widget>

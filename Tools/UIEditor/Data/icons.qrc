@@ -32,5 +32,6 @@
         <file>Icons/align_right.png</file>
         <file>Icons/align_top.png</file>
         <file>Icons/align_vcenter.png</file>
+        <file>Icons/adjust_size.png</file>
     </qresource>
 </RCC>
