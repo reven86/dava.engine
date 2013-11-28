@@ -48,7 +48,7 @@ UIControlSystem::UIControlSystem()
 {
 	frameSkip = 0;
 	transitionType = 0;
-	
+	transition = 0;
 	currentScreen = 0;
 	nextScreen = 0;
 	prevScreen = NULL;
@@ -79,7 +79,22 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
 		return;
 	}
 
+    if (transition)
+    {
+       if (transition->IsLoadingTransition())
+        {
+            UILoadingTransition * loadingTransition = dynamic_cast<UILoadingTransition*> (transition);
+			// DF-2672 - Unlock input for current running transition
+            if(loadingTransition->IsTransitionInProcess())
+            {
+                UnlockInput();
+            }
+        }
+    }
+
 	LockInput();
+
+ //   SafeRelease(transition);
 	transition = SafeRetain(_transition);
 	
 	if (_nextScreen == 0)
@@ -90,6 +105,9 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
 	if (nextScreen)
 	{
 		Logger::Warning("2 screen switches during one frame.");
+		// DF-2672 - If we have double SetScreen call on one frame - we should unlock input here also
+		// Loading transition do not recieve start signal - so previous fix will not work
+		// UnlockInput();
 	}
 	nextScreen = SafeRetain(_nextScreen);
 }

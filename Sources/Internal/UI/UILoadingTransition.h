@@ -63,12 +63,14 @@ public:
 	inline UIScreenTransition * GetInTransition();	
 	
 	bool IsLoadingTransition();
+	bool IsTransitionInProcess();
 	
 protected:
 	Sprite * backgroundSprite;
 	Sprite * animationSprite;
 	float32 animationTime;
 	float32 animationDuration;
+    bool transitionInProcess;
 
 	UIScreenTransition * inTransition;
 	UIScreenTransition * outTransition;
