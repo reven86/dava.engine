@@ -103,6 +103,11 @@ void UIWebView::SetVisible(bool isVisible, bool hierarchic)
 	this->webViewControl->SetVisible(isVisible, hierarchic);
 }
 
+void UIWebView::SetScalesPageToFit(bool isScalesToFit)
+{
+	this->webViewControl->SetScalesPageToFit(isScalesToFit);
+}
+
 void UIWebView::SetBackgroundTransparency(bool enabled)
 {
 	this->webViewControl->SetBackgroundTransparency(enabled);
