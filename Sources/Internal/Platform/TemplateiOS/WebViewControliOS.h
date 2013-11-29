@@ -53,6 +53,8 @@ public:
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
 	virtual void SetVisible(bool isVisible, bool hierarchic);
+	
+	virtual void SetScalesPageToFit(bool isScalesToFit);
 
 	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
 	virtual void SetBackgroundTransparency(bool enabled);

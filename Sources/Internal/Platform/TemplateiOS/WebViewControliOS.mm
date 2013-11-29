@@ -116,12 +116,8 @@ namespace DAVA
 
 WebViewControl::WebViewControl()
 {
-    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
-	UIWebView* webview = [[UIWebView alloc] initWithFrame:emptyRect];
-    webview.scalesPageToFit = YES;
-    
-    webViewPtr = webview;
-
+	CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
+	webViewPtr = [[UIWebView alloc] initWithFrame:emptyRect];
 	SetBounces(false);
 
 	UIWebView* localWebView = (UIWebView*)webViewPtr;
@@ -249,6 +245,11 @@ void WebViewControl::SetRect(const Rect& rect)
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
 	[(UIWebView*)webViewPtr setHidden:!isVisible];
+}
+
+void WebViewControl::SetScalesPageToFit(bool isScalesToFit)
+{
+	[(UIWebView*)webViewPtr setScalesPageToFit:isScalesToFit];
 }
 
 float WebViewControl::GetScaleDivider()
