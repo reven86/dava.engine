@@ -357,7 +357,7 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
 	Image *image = Image::CreateFromData(_width, _height, _format, _data);
 	if(!image) return NULL;
 
-	TextureDescriptor *descriptor = TextureDescriptor::CreateDescriptor(WRAP_CLAMP_TO_EDGE, true);
+	TextureDescriptor *descriptor = TextureDescriptor::CreateDescriptor(WRAP_CLAMP_TO_EDGE, generateMipMaps);
 
 	Texture * texture = new Texture();
 	texture->images.push_back(image);
