@@ -834,22 +834,6 @@ namespace DAVA
 				relativePosition = absolutePosition = position;
 			}
 		}
-		// DF-1482 - Each time we change control's position - we have to re-generate tiles arrays for DRAW_TILED option				
-		SetGenerateTilesArraysFlag();
-	}
-	
-	void UIControl::SetGenerateTilesArraysFlag(bool hierarchic)
-	{
-		GetBackground()->SetGenerateTilesArraysFlag();
-		// DF-2525 - Set generateTilesArrays flag for all children
-		if(hierarchic)
-		{
-			List<UIControl*>::iterator it = childs.begin();
-			for(; it != childs.end(); ++it)
-			{
-				(*it)->SetGenerateTilesArraysFlag();
-			}
-		}
 	}
 	
 	const Vector2 &UIControl::GetSize() const
