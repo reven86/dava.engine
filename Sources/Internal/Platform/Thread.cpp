@@ -74,12 +74,7 @@ Thread::Thread(const Thread& t)
 }
 	
 Thread::Thread(const Message& _msg)
-:	needCopyContext(false)
 {
-#if defined (__DAVAENGINE_WIN32__)
-	handle = 0;
-	tid = 0;
-#endif //#if defined (__DAVAENGINE_WIN32__)
 	msg = _msg;
 }
 
@@ -129,6 +124,16 @@ void Thread::Broadcast(ConditionalVariable * cv)
         Logger::FrameworkDebug("[Thread::Broadcast]: pthread_cond_broadcast error code %d", ret);
 }
 
+void Thread::SetThreadId(const ThreadId & _threadId)
+{
+	threadId = _threadId;
+}
+
+Thread::ThreadId Thread::GetThreadId()
+{
+	return threadId;
+}
+    
 #ifndef __DAVAENGINE_WIN32__
 void Thread::SleepThread(uint32 timeMS)
 {

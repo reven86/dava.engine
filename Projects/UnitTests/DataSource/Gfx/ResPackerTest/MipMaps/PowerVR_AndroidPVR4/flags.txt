@@ -1,0 +1,1 @@
+--generateMipMaps --PowerVR_Android PVR4

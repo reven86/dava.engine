@@ -32,7 +32,6 @@
 
 namespace DAVA 
 {
-//    REGISTER_CLASS(UIListCell);
 
 UIHierarchyCell::UIHierarchyCell()
 :   UIButton()

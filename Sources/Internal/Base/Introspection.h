@@ -213,7 +213,6 @@ namespace DAVA
 	};
 };
 
-
 // Определение интоспекции внутри класса. См. пример в описании класса IntrospectionInfo
 #define INTROSPECTION(_type, _members) \
 	static const DAVA::InspInfo* TypeInfo() \

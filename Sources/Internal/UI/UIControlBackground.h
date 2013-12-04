@@ -259,7 +259,8 @@ public:
     
 protected:
 	void DrawStretched(const Rect &drawRect);
-	void DrawTiled(const Rect &drawRect);
+	void DrawTiled(const UIGeometricData &geometricData);
+	void DrawFilled(const UIGeometricData &geometricData);
 
 	Sprite *spr;
 	int32 align;
@@ -278,19 +279,27 @@ protected:
     ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
 private:
-	void GenerateCell(float32* vertices, int32 offset, float32 leftStretchCap, float32 topStretchCap, float32 x, float32 y, float32 tWidth = 1, float32 tHeight = 1);
-	void InitTilesArrays(int32 vertexCount, int32 trianglesCount);
-	void DeleteTilesArrays();
-		
-	float32* tilesVertices;
-	float32* tilesTexCoords;
-	uint32 *tilesIndeces;
-	bool generateTilesArrays;
+	struct TiledDrawData
+	{
+		Vector< Vector2 > tilesVerticesList;
+		Vector< Vector2 > tilesTexCoordsList;
+		Vector< uint32  > tilesIndecesList;
+
+		Vector< Vector2 > transformedVerList;
+
+		Sprite *lastSprite;
+		int32 lastFrame;
+		Vector2 lastSize;
+		Vector2 lastStretchCap;
+		Matrix3 lastTransformMatr;
+	};
+
+	TiledDrawData *tiledDrawData;
+
 	
 public:
-	void ResetTilesArrays(); // Delete all tiles arrays
-	void SetGenerateTilesArraysFlag(); // Drop generateTilesArrays flag - so new tiles arrays values need to be calculated
-    
+	void ReleaseSpecDrawData(); // Delete all spec draw data
+
 protected:
 	~UIControlBackground();
 	Color drawColor;

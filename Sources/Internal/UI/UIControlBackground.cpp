@@ -51,10 +51,7 @@ UIControlBackground::UIControlBackground()
 ,	colorInheritType(COLOR_IGNORE_PARENT)
 ,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
 ,	lastDrawPos(0, 0)
-,	tilesVertices(NULL)
-,	tilesTexCoords(NULL)
-,	tilesIndeces(NULL)
-, 	generateTilesArrays(false)
+,	tiledDrawData(NULL)
 {
 	rdoObject = new RenderDataObject();
     vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
@@ -89,7 +86,7 @@ UIControlBackground::~UIControlBackground()
 {
 	SafeRelease(rdoObject);
 	SafeRelease(spr);
-	DeleteTilesArrays();
+	ReleaseSpecDrawData();
 }
 	
 Sprite*	UIControlBackground::GetSprite()
@@ -126,7 +123,6 @@ void UIControlBackground::SetSprite(const FilePath &spriteName, int32 drawFrame)
 {
 	Sprite *tempSpr = Sprite::Create(spriteName);
 	SetSprite(tempSpr, drawFrame);
-	ResetTilesArrays();
 	SafeRelease(tempSpr);
 }
 
@@ -142,43 +138,37 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 	SafeRelease(spr);
 	spr = SafeRetain(drawSprite);
 	frame =  drawFrame;
-	ResetTilesArrays();
 }
 void UIControlBackground::SetFrame(int32 drawFrame)
 {
 	DVASSERT(spr);
 	frame = drawFrame;
-	ResetTilesArrays();
 }
 
 void UIControlBackground::SetAlign(int32 drawAlign)
 {
 	align = drawAlign;
-	ResetTilesArrays();
 }
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
 	type = drawType;
-	ResetTilesArrays();
+	ReleaseSpecDrawData();
 }
 
 void UIControlBackground::SetModification(int32 modification)
 {
 	spriteModification = modification;
-	ResetTilesArrays();
 }
 	
 void UIControlBackground::SetColorInheritType(UIControlBackground::eColorInheritType inheritType)
 {
 	DVASSERT(inheritType >= 0 && inheritType < COLOR_INHERIT_TYPES_COUNT);
 	colorInheritType = inheritType;
-	ResetTilesArrays();
 }
     
 void UIControlBackground::SetPerPixelAccuracyType(ePerPixelAccuracyType accuracyType)
 {
     perPixelAccuracyType = accuracyType;
-	ResetTilesArrays();
 }
     
 UIControlBackground::ePerPixelAccuracyType UIControlBackground::GetPerPixelAccuracyType() const
@@ -469,17 +459,8 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 		break;
 		
 		case DRAW_FILL:
-		{	// DF-2560 - Use different function for rotation of filled rect
-			if(geometricData.angle != 0)
-			{
-				RenderHelper::Instance()->FillRotatedRect(drawRect,
-															geometricData.pivotPoint * geometricData.scale,
-															geometricData.angle);
-			}
-			else
-			{
-				RenderHelper::Instance()->FillRect(drawRect);
-			}
+		{
+			DrawFilled( geometricData );
 		}	
 		break;
 			
@@ -490,7 +471,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 		break;
 		
 		case DRAW_TILED:
-			DrawTiled(drawRect);
+			DrawTiled( geometricData );
 		break;
 	}
 	
@@ -675,238 +656,225 @@ void UIControlBackground::DrawStretched(const Rect &drawRect)
 	}*/
 }
 
-void UIControlBackground::GenerateCell(float32* vertices, int32 offset, float32 leftStretchCap, float32 topStretchCap, float32 x, float32 y, float32 tWidth, float32 tHeight)
+void UIControlBackground::ReleaseSpecDrawData()
 {
-	for (int32 i = 0; i < 8; i+=2)
-	{
-		vertices[offset + i] = (x + (((i % 4) > 0) ? leftStretchCap : 0)) / tWidth;
-		vertices[offset + i + 1] = (y + ((i >= 4) ? topStretchCap : 0)) / tHeight;
-	}
+	SafeDelete(tiledDrawData);
 }
 
-void UIControlBackground::InitTilesArrays(int32 vertexCount, int32 trianglesCount)
-{	
-	DeleteTilesArrays();
-	SetGenerateTilesArraysFlag();
-	
-	tilesVertices = new float32[vertexCount];
-	tilesTexCoords = new float32[vertexCount];
-	tilesIndeces = new uint32[trianglesCount];
-	 
-	memset(tilesVertices, 0,  vertexCount * sizeof(float32));
-	memset(tilesTexCoords, 0, vertexCount * sizeof(float32));
-	memset(tilesIndeces, 0, trianglesCount * sizeof(uint32));
-}
-
-void UIControlBackground::DeleteTilesArrays()
-{
-	SafeDeleteArray(tilesVertices);
-	SafeDeleteArray(tilesTexCoords);
-	SafeDeleteArray(tilesIndeces);
-}
-
-void UIControlBackground::ResetTilesArrays()
-{
-	// Delete tiles arrays for DRAW_TILED option - need to recalculate them
-	if (type == UIControlBackground::DRAW_TILED)
-	{
-		DeleteTilesArrays();
-	}
-}
-
-void UIControlBackground::SetGenerateTilesArraysFlag()
-{
-	generateTilesArrays = true;
-}
-
-void UIControlBackground::DrawTiled(const Rect &drawRect)
+void UIControlBackground::DrawTiled(const UIGeometricData &gd)
 {
 	if (!spr)return;
+
+	if( leftStretchCap < 0.0f || topStretchCap < 0.0f )
+		return;
+
+	Vector2 spriteSize( spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT) );
+
+	Vector2 stretchCap( Min( leftStretchCap, spriteSize.x * 0.5f ),
+						Min( topStretchCap , spriteSize.y * 0.5f ) );
+
+	const Vector2 &size = gd.size;
+
+	stretchCap.x = Min( stretchCap.x, size.x * 0.5f );
+	stretchCap.y = Min( stretchCap.y, size.y * 0.5f );
+
 	Texture *texture = spr->GetTexture(frame);
-	
-	float32 texX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
-	float32 texY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
-	// DF-1470 - We should always use sprite actual size instead of using active frame
-	// Textures for tiling shouldn't have transparent corners
-	float32 texDx = spr->GetWidth(); // spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
-	float32 texDy = spr->GetHeight(); // spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
 
-	float32 textureWidth = (float32)texture->GetWidth();
-    float32 textureHeight = (float32)texture->GetHeight();
-	
-	// Don't calculate tiles when texture is damaged
-	DVASSERT((textureWidth > 0) && (textureHeight > 0));
-	if ((textureWidth <= 0) || (textureHeight <= 0))
-		return;
-	
-	float32 x = drawRect.x;
-	float32 y = drawRect.y;
-	float32 dx = drawRect.dx;
-	float32 dy = drawRect.dy;	
-	
-	// We have to avoid division on zero
-	if ((texDx - leftStretchCap * 2) <= 0 ||  (texDy - topStretchCap * 2) <= 0)
-		return;
-	// The number of horizontal and vertical "tiles"
-	const float32 cellsH =  Max( 0.0f, (dx - leftStretchCap * 2) / (texDx - leftStretchCap * 2) );
-	const float32 cellsV =  Max( 0.0f, (dy - topStretchCap * 2) / (texDy - topStretchCap * 2) );
-	// The size of a single "tile"
-	float32 horizontalStretchCap = texDx - leftStretchCap * 2;
-	float32 verticalStretchCap = texDy - topStretchCap * 2;
-	
-	// The overall horizontal and vertical cells number
-	int32 cellsHCount = (int32)ceilf(cellsH) + 2;
-	int32 cellsVCount = (int32)ceilf(cellsV) + 2;
-	
-	// The number of vertices for cells - 8 coordinates for each cells - 4 "X" and 4 "Y"
-	int32 vertexCount = cellsHCount * cellsVCount * 4 * 2;
-	// The number of triangles
-	int32 vertInTriCount = cellsHCount * cellsVCount * 6;
-	
-	// Do not re-generate cells if tiles arrays available
-	if (!tilesVertices || !tilesTexCoords || !tilesIndeces)
+	bool needGenerateTileData = false;
+	if( !tiledDrawData )
 	{
-		InitTilesArrays(vertexCount, vertInTriCount);
+		tiledDrawData = new TiledDrawData();
+		needGenerateTileData = true;
 	}
-	
-	if (generateTilesArrays)
+	else
 	{
-		// Generate coorinates for corner cells
-		// Top left corner cell
-		GenerateCell(tilesVertices, 0, leftStretchCap, topStretchCap, x, y);
-		// Top right corner cell
-		GenerateCell(tilesVertices, (cellsHCount - 1) * 8, leftStretchCap, topStretchCap, x + dx - leftStretchCap, y);
-		// Bottom left corner cell
-		GenerateCell(tilesVertices, (cellsHCount * (cellsVCount - 1)) * 8, leftStretchCap, topStretchCap, x, y + dy - topStretchCap);
-		// Bottom right corner cell
-		GenerateCell(tilesVertices, (cellsHCount * cellsVCount - 1) * 8, leftStretchCap, topStretchCap, x + dx - leftStretchCap, y + dy - topStretchCap);	
-	
-		// Generate texture coordinates for cells
-		// Top left
-		GenerateCell(tilesTexCoords, 0, leftStretchCap, topStretchCap,
-					texX, texY, textureWidth, textureHeight);
-		// Top right
-		GenerateCell(tilesTexCoords, (cellsHCount - 1) * 8, leftStretchCap, topStretchCap,
-					texX + texDx - leftStretchCap, texY, textureWidth, textureHeight);
-		// Bottom left
-		GenerateCell(tilesTexCoords, (cellsHCount * (cellsVCount - 1)) * 8, leftStretchCap, topStretchCap,
-					texX, texY + texDy - topStretchCap, textureWidth, textureHeight);
-		// Bottom right
-		GenerateCell(tilesTexCoords, (cellsHCount * cellsVCount - 1) * 8, leftStretchCap, topStretchCap,
-					texX + texDx - leftStretchCap, texY + texDy - topStretchCap, textureWidth, textureHeight);
-				
-		// Horizontal border cells
-		for (int32 i = 1; i <= cellsHCount - 2; ++i)
-		{	
-			float32 lastCellOffset = 0;
-			// For the last cell in row - we should calculate offset
-			if (i == cellsHCount - 2)
-			{		
-				lastCellOffset = ((cellsHCount - 2) * horizontalStretchCap + 2 * leftStretchCap) - dx;
-				if (lastCellOffset < 0) lastCellOffset = 0;
-			}		
-			// Left border cell
-			GenerateCell(tilesVertices, i * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
-						x + leftStretchCap + horizontalStretchCap * (i - 1), y);
-			// Right border cell
-			GenerateCell(tilesVertices, (i + cellsHCount * (cellsVCount - 1)) * 8, horizontalStretchCap - lastCellOffset, topStretchCap,	x + leftStretchCap + horizontalStretchCap * (i - 1), y + dy - topStretchCap);
-			// Left border cell texture
-			GenerateCell(tilesTexCoords, i * 8, horizontalStretchCap - lastCellOffset, topStretchCap,
-							texX + leftStretchCap, texY, textureWidth, textureHeight);
-			// Right border cell texture
-			GenerateCell(tilesTexCoords, (i + cellsHCount * (cellsVCount - 1)) * 8, horizontalStretchCap - lastCellOffset,topStretchCap, texX + leftStretchCap, texY + texDy - topStretchCap, textureWidth, textureHeight);
-		}
-	
-		// Vertical border cells
-		for (int32 i = 1; i <= cellsVCount - 2; ++i)
-		{
-			float32 lastCellOffset = 0;
-			// For the last cell in row - we should calculate offset
-			if (i == cellsVCount - 2)
-			{
-				lastCellOffset = ((cellsVCount - 2) * verticalStretchCap + 2 * topStretchCap) - dy;
-				if (lastCellOffset < 0) lastCellOffset = 0;
-			}
-			// Top border cell
-			GenerateCell(tilesVertices, (i * cellsHCount) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
-						x, y + topStretchCap + verticalStretchCap * (i - 1));
-			// Bottom border cell
-			GenerateCell(tilesVertices, (i * cellsHCount + cellsHCount - 1) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,	x + dx - leftStretchCap, y + topStretchCap + verticalStretchCap * (i - 1));
-			// Top border cell texture part
-			GenerateCell(tilesTexCoords, (i * cellsHCount) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,
-							texX, texY + topStretchCap, textureWidth, textureHeight);
-			// Bottom border cell texture part
-			GenerateCell(tilesTexCoords, (i * cellsHCount + cellsHCount - 1) * 8, leftStretchCap, verticalStretchCap - lastCellOffset,	texX + texDx - leftStretchCap, texY + topStretchCap, textureWidth, textureHeight);
-		}
-	
-		// Central cells - tiles
-		for (int32 iy = 1; iy <= cellsVCount - 2; ++iy)
-		{
-			float32 lastCellVOffset = 0;
-			// For the last cell in row - we should calculate offset
-			if (iy == cellsVCount - 2)
-			{		
-				lastCellVOffset = ((cellsVCount - 2) * verticalStretchCap + 2 * topStretchCap) - dy;
-				if (lastCellVOffset < 0) lastCellVOffset = 0;
-			}		
-	
-			for (int32 ix = 1; ix <= cellsHCount - 2; ++ix)
-			{
-				float32 lastCellHOffset = 0;
-				// For the last cell in row - we should calculate offset
-				if (ix == cellsHCount - 2)
-				{		
-					lastCellHOffset = ((cellsHCount - 2) * horizontalStretchCap + 2 * leftStretchCap) - dx;
-					if (lastCellHOffset < 0) lastCellHOffset = 0;
-				}		
-				// Central cell used for "tiling"
-				GenerateCell(tilesVertices, (ix + cellsHCount * iy) * 8, horizontalStretchCap - lastCellHOffset, verticalStretchCap - lastCellVOffset,
-					x + leftStretchCap + horizontalStretchCap * (ix - 1), y +  topStretchCap + verticalStretchCap * (iy - 1));
-				// Central cell texture part
-				GenerateCell(tilesTexCoords, (ix + cellsHCount * iy) * 8, horizontalStretchCap - lastCellHOffset, verticalStretchCap - lastCellVOffset, texX + leftStretchCap, texY + topStretchCap,
-					textureWidth, textureHeight);
-			}
-		}
-	
-
-		// Generate triangles points - first 2 triangles -  0,1,2, 1,3,2
-		int32 a = 0;
-		for (int32 i1 = 0; i1 < cellsVCount; ++i1)
-		{
-			for (int32 i2 = 0; i2 < cellsHCount; ++i2)
-			{
-				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 0] = a;
-				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 1] = a + 1;
-				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 2] = a + 2;
-		
-				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 3] = a + 1;
-				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 4] = a + 3;
-				tilesIndeces[(i2 + i1 * cellsHCount) * 6 + 5] = a + 2;
-				a += 4;
-			}
-		}
-		
-		generateTilesArrays = false;
+		needGenerateTileData |= stretchCap != tiledDrawData->lastStretchCap;
+		needGenerateTileData |= frame != tiledDrawData->lastFrame;
+		needGenerateTileData |= spr != tiledDrawData->lastSprite;
+		needGenerateTileData |= size != tiledDrawData->lastSize;
 	}
-	vertexStream->Set(TYPE_FLOAT, 2, 0, tilesVertices);
-	texCoordStream->Set(TYPE_FLOAT, 2, 0, tilesTexCoords);
 
-	RenderManager::Instance()->SetTexture(texture);
+	TiledDrawData &td = *tiledDrawData;
+
+	if( needGenerateTileData )
+	{
+		Vector2 textureSize( (float32)texture->GetWidth(), (float32)texture->GetHeight() );
+
+		Vector2 sideCellSize = stretchCap;
+
+		Vector2 centerCellSize( spriteSize.x - sideCellSize.x * 2.0f,
+								spriteSize.y - sideCellSize.y * 2.0f );
+
+		Vector2 tileAreaSize( size.x - sideCellSize.x * 2.0f,
+							  size.y - sideCellSize.y * 2.0f );
+
+		Vector2 partCellSize( tileAreaSize.x - floorf( tileAreaSize.x / centerCellSize.x ) * centerCellSize.x,
+							  tileAreaSize.y - floorf( tileAreaSize.y / centerCellSize.y ) * centerCellSize.y );
+
+		Vector2 centerCellTexSize( centerCellSize.x / textureSize.x,
+								   centerCellSize.y / textureSize.y );
+
+		Vector2 sideCellTexSize( sideCellSize.x / textureSize.x,
+								 sideCellSize.y / textureSize.y );
+
+		Size2i gridSize( (int32)ceilf( ( size.x - sideCellSize.x * 2.0f ) / centerCellSize.x ),
+						 (int32)ceilf( ( size.y - sideCellSize.y * 2.0f ) / centerCellSize.y ) );
+
+		if( sideCellSize.x > 0.0f )
+			gridSize.dx += 2;
+		if( sideCellSize.y > 0.0f )
+			gridSize.dy += 2;
+
+		Vector< Vector3 > cellsWidth;
+		cellsWidth.resize( gridSize.dx );
+
+		int32 beginOffset = 0;
+		int32 endOffset = 0;
+		if( sideCellSize.x > 0.0f )
+		{
+			cellsWidth.front() = Vector3( sideCellSize.x, sideCellTexSize.x, 0.0f );
+			cellsWidth.back() = Vector3( sideCellSize.x, sideCellTexSize.x, sideCellTexSize.x + centerCellTexSize.x );
+			beginOffset = 1;
+			endOffset = 1;
+		}
+
+		if( partCellSize.x > 0.0f )
+		{
+			++endOffset;
+			const int32 index = gridSize.dx - endOffset;
+			cellsWidth[index].x = partCellSize.x;
+			cellsWidth[index].y = partCellSize.x / textureSize.x;
+			cellsWidth[index].z = sideCellTexSize.x;
+		}
+
+		std::fill( cellsWidth.begin() + beginOffset, cellsWidth.begin() + gridSize.dx - endOffset, Vector3( centerCellSize.x, centerCellTexSize.x, sideCellTexSize.x ) );
+
+		Vector< Vector3 > cellsHeight;
+		cellsHeight.resize( gridSize.dy );
+
+		beginOffset = 0;
+		endOffset = 0;
+		if( sideCellSize.y > 0.0f )
+		{
+			cellsHeight.front() = Vector3( sideCellSize.y, sideCellTexSize.y, 0.0f );
+			cellsHeight.back() = Vector3( sideCellSize.y, sideCellTexSize.y, sideCellTexSize.y + centerCellTexSize.y );
+			beginOffset = 1;
+			endOffset = 1;
+		}
+
+		if( partCellSize.y > 0.0f )
+		{
+			++endOffset;
+			const int32 index = gridSize.dy - endOffset;
+			cellsHeight[index].x = partCellSize.y;
+			cellsHeight[index].y = partCellSize.y / textureSize.y;
+			cellsHeight[index].z = sideCellTexSize.y;
+		}
+		std::fill( cellsHeight.begin() + beginOffset, cellsHeight.begin() + gridSize.dy - endOffset, Vector3( centerCellSize.y, centerCellTexSize.y, sideCellTexSize.y ) );
+
+		int32 vertexCount = 4 *gridSize.dx * gridSize.dy;
+		td.tilesVerticesList.resize( vertexCount );
+		td.transformedVerList.resize( vertexCount );
+		td.tilesTexCoordsList.resize( vertexCount );
+
+		int32 indecesCount = 6 *gridSize.dx * gridSize.dy;
+		td.tilesIndecesList.resize( indecesCount );
+
+		int32 offsetIndex = 0;
+		const float32 * textCoords = spr->GetTextureCoordsForFrame(frame);
+		Vector2 trasformOffset;
+		Vector2 cellSize;
+		Vector2 texTrasformOffset;
+		Vector2 texCellSize;
+		Vector2 tempTexCoordsPt( textCoords[0], textCoords[1] );
+		for( int32 row = 0; row < gridSize.dy; ++row )
+		{
+			cellSize.y = cellsHeight[row].x;
+			texCellSize.y = cellsHeight[row].y;
+			texTrasformOffset.y = cellsHeight[row].z;
+			trasformOffset.x = 0.0f;
+
+			for( int32 column = 0; column < gridSize.dx; ++column, ++offsetIndex )
+			{
+				cellSize.x = cellsWidth[column].x;
+				texCellSize.x = cellsWidth[column].y;
+				texTrasformOffset.x = cellsWidth[column].z;
+
+				int32 vertIndex = offsetIndex*4;
+				td.tilesVerticesList[vertIndex + 0] = trasformOffset;
+				td.tilesVerticesList[vertIndex + 1] = trasformOffset + Vector2( cellSize.x, 0.0f );
+				td.tilesVerticesList[vertIndex + 2] = trasformOffset + Vector2( 0.0f, cellSize.y );
+				td.tilesVerticesList[vertIndex + 3] = trasformOffset + cellSize;
+
+				const Vector2 texel = tempTexCoordsPt + texTrasformOffset;
+				td.tilesTexCoordsList[vertIndex + 0] = texel;
+				td.tilesTexCoordsList[vertIndex + 1] = texel + Vector2( texCellSize.x, 0.0f );
+				td.tilesTexCoordsList[vertIndex + 2] = texel + Vector2( 0.0f, texCellSize.y );
+				td.tilesTexCoordsList[vertIndex + 3] = texel + texCellSize;
+
+				int32 indecesIndex = offsetIndex*6;
+				td.tilesIndecesList[indecesIndex + 0] = vertIndex;
+				td.tilesIndecesList[indecesIndex + 1] = vertIndex + 1;
+				td.tilesIndecesList[indecesIndex + 2] = vertIndex + 2;
+
+				td.tilesIndecesList[indecesIndex + 3] = vertIndex + 1;
+				td.tilesIndecesList[indecesIndex + 4] = vertIndex + 3;
+				td.tilesIndecesList[indecesIndex + 5] = vertIndex + 2;
+
+				trasformOffset.x += cellSize.x;
+			}
+			trasformOffset.y += cellSize.y;
+		}
+		td.lastStretchCap = stretchCap;
+		td.lastSize = size;
+		td.lastFrame = frame;
+		td.lastSprite = spr;
+	}
+
+	Matrix3 transformMatr;
+	gd.BuildTransformMatrix( transformMatr );
+
+	if( needGenerateTileData || td.lastTransformMatr != transformMatr )
+	{
+		for( uint32 index = 0; index < td.tilesVerticesList.size(); ++index )
+		{
+			td.transformedVerList[index] = td.tilesVerticesList[index] * transformMatr;
+		}
+		td.lastTransformMatr = transformMatr;
+	}
+
+	vertexStream->Set(TYPE_FLOAT, 2, 0, &td.transformedVerList[0]);
+	texCoordStream->Set(TYPE_FLOAT, 2, 0, &td.tilesTexCoordsList[0]);
+
+	RenderManager::Instance()->SetTexture( texture );
 	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 	RenderManager::Instance()->SetRenderData(rdoObject);
-	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, vertInTriCount, EIF_32, tilesIndeces);
+	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.tilesIndecesList.size(), EIF_32, &td.tilesIndecesList[0]);
+}
+
+void UIControlBackground::DrawFilled( const UIGeometricData &gd )
+{
+	if( gd.angle != 0.0f ) 
+	{
+		Polygon2 poly;
+		gd.GetPolygon( poly );
+
+		RenderHelper::Instance()->FillPolygon( poly );
+	}
+	else
+	{
+		RenderHelper::Instance()->FillRect( gd.GetUnrotatedRect() );
+	}
 }
 
 void UIControlBackground::SetLeftRightStretchCap(float32 _leftStretchCap)
 {
 	leftStretchCap = _leftStretchCap;
-	ResetTilesArrays();
 }
 
 void UIControlBackground::SetTopBottomStretchCap(float32 _topStretchCap)
 {
 	topStretchCap = _topStretchCap;
-	ResetTilesArrays();
 }
 	
 float32 UIControlBackground::GetLeftRightStretchCap() const

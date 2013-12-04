@@ -41,9 +41,10 @@ namespace DAVA
 class ParticleLayer;
 class ParticleLayerBatch : public RenderBatch
 {
+protected:
+	virtual ~ParticleLayerBatch();
 public:
 	ParticleLayerBatch();
-	virtual ~ParticleLayerBatch();
 
 	virtual void Draw(Camera * camera);
 	void SetTotalCount(int32 totalCount);
@@ -52,9 +53,11 @@ public:
 	virtual RenderBatch * Clone(RenderBatch * destination = 0);
 
 	void SetLayerBoundingBox(const AABBox3 & bbox);
+	void SetIndices(Vector<uint16> *indices);
 protected:
 	int32 totalCount;
 	ParticleLayer * particleLayer;
+	Vector<uint16> *indices;
     
 public:
     INTROSPECTION_EXTEND(ParticleLayerBatch, RenderBatch,

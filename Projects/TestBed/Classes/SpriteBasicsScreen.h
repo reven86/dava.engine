@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class SpriteBasicsScreen : public UIScreen
 {
+protected:
+	~SpriteBasicsScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

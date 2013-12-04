@@ -344,6 +344,8 @@ void BackGroundPropertyGridWidget::HandleDrawTypeComboBox()
 			SetStretchCapMaxValues();
 			break;
 		case UIControlBackground::DRAW_ALIGNED:
+   		case UIControlBackground::DRAW_SCALE_PROPORTIONAL:
+   		case UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE:
 			alignComboBoxState = true;
 			break;
 		default:

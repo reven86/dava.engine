@@ -30,7 +30,7 @@
 
 #include "Scene/System/CollisionSystem/CollisionParticleEmitter.h"
 
-const DAVA::float32 CollisionParticleEmitter::boxHalfSize = 0.25f;
+const DAVA::float32 CollisionParticleEmitter::boxHalfSize = 0.15f;
 
 CollisionParticleEmitter::CollisionParticleEmitter(DAVA::Entity *entity, btCollisionWorld *word, DAVA::ParticleEmitter *emitter)
 	: CollisionBaseObject(entity, word)

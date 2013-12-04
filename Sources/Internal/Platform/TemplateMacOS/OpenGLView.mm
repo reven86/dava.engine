@@ -75,6 +75,8 @@ extern void FrameworkMain(int argc, char *argv[]);
 	GLint swapInt = 1;
     [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 	
+	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
+	
 	activeCursor = 0;
     
     //RenderManager::Create(Core::RENDERER_OPENGL);
@@ -151,7 +153,7 @@ extern void FrameworkMain(int argc, char *argv[]);
     if(willQuit)
         return;
     
-//	Logger::Debug("drawRect started");
+//	Logger::FrameworkDebug("drawRect started");
 	
 	if (activeCursor != RenderManager::Instance()->GetCursor())
 	{
@@ -194,7 +196,7 @@ extern void FrameworkMain(int argc, char *argv[]);
         [[self openGLContext] flushBuffer];
     }
 	DAVA::RenderManager::Instance()->Unlock();
-//	Logger::Debug("drawRect ended");
+//	Logger::FrameworkDebug("drawRect ended");
 
 }
 
@@ -435,7 +437,7 @@ static int32 oldModifersFlags = 0;
 - (void) keyDown:(NSEvent *)event
 {
 	{
-			//		Logger::Debug("glview keypress!");
+			//		Logger::FrameworkDebug("glview keypress!");
 		unichar c = [[event characters] characterAtIndex:0];
 		
 		Vector<DAVA::UIEvent> touches;

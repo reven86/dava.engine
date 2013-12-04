@@ -68,6 +68,7 @@ TextPropertyGridWidget::~TextPropertyGridWidget()
 	delete localizationKeyNameLabel;
 	delete localizationKeyTextLabel;
 	delete multilineCheckBox;
+	delete multilineBySymbolCheckBox;
 }
 
 void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
@@ -113,15 +114,20 @@ void TextPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 	ui->returnKeyTypeComboBox->setVisible(isUITextField);
 	ui->isReturnKeyAutomatically->setVisible(isUITextField);
 		
-	bool enableMultilineCheckBox = (dynamic_cast<UIStaticTextMetadata*>(activeMetadata)	!= NULL);
+	bool enableMultilineContols = (dynamic_cast<UIStaticTextMetadata*>(activeMetadata)	!= NULL);
+
+	multilineCheckBox->setEnabled(enableMultilineContols);
+	multilineCheckBox->setVisible(enableMultilineContols);
+	multilineBySymbolCheckBox->setEnabled(false); // false by default - this checkbox depends on multilineCheckBox one.
+	multilineBySymbolCheckBox->setVisible(enableMultilineContols);
+
 	// Register checkbox widget for property Multiline only for UIStaticText
-	if (enableMultilineCheckBox)
+	if (enableMultilineContols)
 	{
 		RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_MULTILINE, multilineCheckBox, false, true);
+		RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL, multilineBySymbolCheckBox, false, true);
 	}
-	multilineCheckBox->setEnabled(enableMultilineCheckBox);
-	multilineCheckBox->setVisible(enableMultilineCheckBox);
-		
+
 	bool showIsPasswordCheckbox = (dynamic_cast<UITextFieldMetadata*>(activeMetadata) != NULL);
 	ui->isPasswordCheckbox->setVisible(showIsPasswordCheckbox);
 
@@ -136,11 +142,11 @@ void TextPropertyGridWidget::InsertLocalizationFields()
 	ui->textLineEdit->setVisible(false);
 	ui->textLabel->setVisible(false);
 	
-	this->resize(300, 322);
-    this->setMinimumSize(QSize(300, 322));
+	this->resize(300, 342);
+    this->setMinimumSize(QSize(300, 342));
 
-	ui->groupBox->resize(300, 322);
-    ui->groupBox->setMinimumSize(QSize(300, 322));
+	ui->groupBox->resize(300, 342);
+    ui->groupBox->setMinimumSize(QSize(300, 342));
 	
 	localizationKeyNameLabel = new QLabel(ui->groupBox);
 	localizationKeyNameLabel->setObjectName(QString::fromUtf8("localizationKeyNameLabel"));
@@ -162,35 +168,43 @@ void TextPropertyGridWidget::InsertLocalizationFields()
 	
 	multilineCheckBox = new QCheckBox(ui->groupBox);
 	multilineCheckBox->setObjectName(QString::fromUtf8("multilineCheckBox"));
-	multilineCheckBox->setGeometry(QRect(200, 125, 91, 20));
-	multilineCheckBox->setText(QString::fromUtf8("Wrap text:"));
-	multilineCheckBox->setLayoutDirection(Qt::RightToLeft);
-	
-	ui->fontNameLabel->setGeometry(QRect(10, 155, 31, 16));
-	ui->fontSizeSpinBox->setGeometry(QRect(234, 151, 57, 25));
-	ui->fontSelectButton->setGeometry(QRect(50, 146, 181, 38));
-	ui->fontColorLabel->setGeometry(QRect(10, 200, 71, 16));
-	ui->textColorPushButton->setGeometry(QRect(85, 198, 205, 21));
-	ui->shadowOffsetLabel->setGeometry(QRect(10, 232, 91, 16));
-	ui->offsetYLabel->setGeometry(QRect(210, 232, 16, 16));
-	ui->shadowColorLabel->setGeometry(QRect(10, 262, 91, 16));
-	ui->shadowOffsetXSpinBox->setGeometry(QRect(140, 228, 57, 25));
-	ui->shadowOffsetYSpinBox->setGeometry(QRect(230, 228, 57, 25));
-	ui->shadowColorButton->setGeometry(QRect(105, 260, 185, 21));
-	ui->offsetXLabel->setGeometry(QRect(120, 232, 16, 16));
-	ui->AlignLabel->setGeometry(QRect(10, 296, 62, 16));
-	ui->alignComboBox->setGeometry(QRect(80, 290, 209, 26));
+	multilineCheckBox->setGeometry(QRect(10, 125, 200, 20));
+	multilineCheckBox->setText(QString::fromUtf8("Multiline"));
+
+	multilineBySymbolCheckBox = new QCheckBox(ui->groupBox);
+	multilineBySymbolCheckBox->setObjectName(QString::fromUtf8("multilineBySymbolCheckBox"));
+	multilineBySymbolCheckBox->setGeometry(QRect(10, 145, 200, 20));
+	multilineBySymbolCheckBox->setText(QString::fromUtf8("Multiline by Symbol"));
+	multilineBySymbolCheckBox->setEnabled(false);
+
+	ui->fontNameLabel->setGeometry(QRect(10, 175, 31, 16));
+	ui->fontSizeSpinBox->setGeometry(QRect(234, 171, 57, 25));
+	ui->fontSelectButton->setGeometry(QRect(50, 166, 181, 38));
+	ui->fontColorLabel->setGeometry(QRect(10, 220, 71, 16));
+	ui->textColorPushButton->setGeometry(QRect(85, 218, 205, 21));
+	ui->shadowOffsetLabel->setGeometry(QRect(10, 252, 91, 16));
+	ui->offsetYLabel->setGeometry(QRect(210, 252, 36, 16));
+	ui->shadowColorLabel->setGeometry(QRect(10, 282, 91, 16));
+	ui->shadowOffsetXSpinBox->setGeometry(QRect(140, 248, 57, 25));
+	ui->shadowOffsetYSpinBox->setGeometry(QRect(230, 248, 57, 25));
+	ui->shadowColorButton->setGeometry(QRect(105, 280, 185, 21));
+	ui->offsetXLabel->setGeometry(QRect(120, 252, 16, 16));
+	ui->AlignLabel->setGeometry(QRect(10, 316, 62, 16));
+	ui->alignComboBox->setGeometry(QRect(80, 310, 209, 26));
 }
 
 void TextPropertyGridWidget::Cleanup()
 {
     UnregisterGridWidgetAsStateAware();
     UnregisterLineEditWidget(localizationKeyNameLineEdit);
-	// Don't unregister multiline property for UIButton and UITextField
-	if (dynamic_cast<UIStaticTextMetadata*>(this->activeMetadata) != NULL)
-	{
-		UnregisterCheckBoxWidget(multilineCheckBox);
-	}
+
+    // Don't unregister multiline property for UIButton and UITextField
+    if (dynamic_cast<UIStaticTextMetadata*>(this->activeMetadata) != NULL)
+    {
+        UnregisterCheckBoxWidget(multilineCheckBox);
+        UnregisterCheckBoxWidget(multilineBySymbolCheckBox);
+    }
+
     UITextFieldPropertyGridWidget::Cleanup();
 }
 
@@ -241,4 +255,22 @@ void TextPropertyGridWidget::HandleChangePropertyFailed(const QString& propertyN
         // Localization Key is updated - update the value.
         UpdateLocalizationValue();
     }
+}
+
+void TextPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty)
+{
+    // Yuri Coder, 2013/10/24. "Multiline By Symbol" checkbox should be unchecked and disabled if
+    // "Multiline" one is unchecked - see please DF-2393.
+    if (checkBoxWidget && multilineCheckBox && checkBoxWidget == multilineCheckBox)
+    {
+        bool multilineChecked = (checkBoxWidget->checkState() == Qt::Checked);
+        multilineBySymbolCheckBox->setEnabled(multilineChecked);
+
+        if (!multilineChecked)
+        {
+            multilineBySymbolCheckBox->setCheckState(Qt::Unchecked);
+        }
+    }
+
+    UITextFieldPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(checkBoxWidget, curProperty);
 }

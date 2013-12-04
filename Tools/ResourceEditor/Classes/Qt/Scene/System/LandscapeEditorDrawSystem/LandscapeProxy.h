@@ -41,6 +41,14 @@ class CustomLandscape;
 class LandscapeProxy: public BaseObject
 {
 public:
+	enum eTilemaskSprites
+	{
+		TILEMASK_SPRITE_SOURCE = 0,
+		TILEMASK_SPRITE_DESTINATION,
+		
+		TILEMASK_SPRITES_COUNT
+	};
+
 	enum eLandscapeMode
 	{
 		MODE_CUSTOM_LANDSCAPE = 0,
@@ -48,9 +56,10 @@ public:
 
 		MODES_COUNT
 	};
-
-	LandscapeProxy(Landscape* landscape);
+protected:
 	virtual ~LandscapeProxy();
+public:
+	LandscapeProxy(Landscape* landscape);
 
 	void SetMode(LandscapeProxy::eLandscapeMode mode);
 	void SetDisplayingTexture(Texture* texture);
@@ -60,7 +69,9 @@ public:
 
 	AABBox3 GetLandscapeBoundingBox();
 	Texture* GetLandscapeTexture(Landscape::eTextureLevel level);
-	
+	Color GetLandscapeTileColor(Landscape::eTextureLevel level);
+	void SetLandscapeTileColor(Landscape::eTextureLevel level, const Color& color);
+
 	void SetTilemaskTexture(Texture* texture);
 	void SetTilemaskTextureEnabled(bool enabled);
 
@@ -91,6 +102,21 @@ public:
 
 	Vector3 PlacePoint(const Vector3& point);
 
+	bool IsTilemaskChanged();
+	void ResetTilemaskChanged();
+	void IncreaseTilemaskChanges();
+	void DecreaseTilemaskChanges();
+
+	void InitTilemaskImageCopy();
+	Image* GetTilemaskImageCopy();
+
+	void InitTilemaskSprites();
+	Sprite* GetTilemaskSprite(int32 number);
+	void SwapTilemaskSprites();
+
+	bool IsFogEnabled();
+	void SetFogEnabled(bool enabled);
+
 protected:
 	enum eTextureType
 	{
@@ -104,6 +130,11 @@ protected:
 	
 	Texture* texturesToBlend[TEXTURE_TYPES_COUNT];
 	bool texturesEnabled[TEXTURE_TYPES_COUNT];
+
+	Image* tilemaskImageCopy;
+	Sprite* tilemaskSprites[TILEMASK_SPRITES_COUNT];
+
+	int32 tilemaskWasChanged;
 	
 	Texture* displayingTexture;
 	Landscape* baseLandscape;

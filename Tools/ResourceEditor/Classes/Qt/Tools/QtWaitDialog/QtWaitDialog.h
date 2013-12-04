@@ -58,6 +58,9 @@ public:
 	void SetRangeMin(int min);
 	void SetRangeMax(int max);
 	void SetValue(int value);
+	void EnableCancel(bool enable);
+
+	bool WasCanceled() const;
 
 signals:
 	void canceled();
@@ -67,7 +70,10 @@ protected slots:
 	void WaitCanceled();
 
 private:
+	void Setup(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel);
 	Ui::QtWaitDialog *ui;
+
+	bool wasCanceled;
 };
 
 #endif // __RESOURCEEDITORQT__MAINWAITDIALOG__

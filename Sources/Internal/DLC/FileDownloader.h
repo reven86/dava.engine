@@ -62,11 +62,12 @@ public:
 
 class FileDownloader: public BaseObject
 {
+protected:
+    virtual ~FileDownloader();
 public:
     //
     FileDownloader();
     FileDownloader(const String & _sourceUrl, const FilePath & _savePath, bool reload = false);
-    virtual ~FileDownloader();
     
     // Start download file & save with same name
     // return type CURLcode

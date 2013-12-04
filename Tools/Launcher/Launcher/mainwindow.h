@@ -46,6 +46,16 @@ class MainWindow : public QMainWindow
     Q_OBJECT
     
 public:
+
+    enum ListItemType
+    {
+        LIST_ITEM_NEWS = 0,
+        LIST_ITEM_FAVORITES,
+        LIST_ITEM_BRANCH,
+
+        LIST_ITEM_COUNT
+    };
+
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -76,7 +86,8 @@ private:
 
     void GetTableApplicationIDs(int rowNumber, QString & appID, QString & installedVersionID, QString & avalibleVersionID);
 
-    QListWidgetItem * CreateListItem(const QString & stringID);
+    QListWidgetItem * CreateListItem(const QString & stringID, ListItemType type);
+    QListWidgetItem * CreateSeparatorItem();
     QWidget * CreateAppNameTableItem(const QString & stringID);
     QWidget * CreateAppInstalledTableItem(const QString & stringID);
     QWidget * CreateAppAvalibleTableItem(Application * app);
@@ -88,6 +99,7 @@ private:
     QString selectedBranchID;
 
     QFont listFont;
+    QFont listFontFav;
     QFont tableFont;
 };
 

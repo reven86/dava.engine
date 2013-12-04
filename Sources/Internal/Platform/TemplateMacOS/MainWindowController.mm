@@ -318,11 +318,11 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	if (exactMatch)
 	{
 		CGDisplaySwitchToMode (kCGDirectMainDisplay,  displayMode);
-		Logger::Debug("[CoreMacOSPlatform] switch to %d x %d x %d fullscreen mode", width, height, bpp);
+		Logger::FrameworkDebug("[CoreMacOSPlatform] switch to %d x %d x %d fullscreen mode", width, height, bpp);
 	}else 
 	{
 		CGDisplaySwitchToMode (kCGDirectMainDisplay,  displayMode);
-		Logger::Debug("[CoreMacOSPlatform] switch to closes mode to %d x %d x %d fullscreen mode", width, height, bpp);
+		Logger::FrameworkDebug("[CoreMacOSPlatform] switch to closes mode to %d x %d x %d fullscreen mode", width, height, bpp);
 	}
 
     // Pixel Format Attributes for the FullScreen NSOpenGLContext
@@ -417,7 +417,7 @@ long GetDictionaryLong(CFDictionaryRef theDict, const void* key)
 	currentMode.height = GetModeHeight(displayMode);
 	
 	NSLog(@"[CoreMacOSPlatform] init internal renderer: %d x %d", currentMode.width, currentMode.height);
-
+	
 	RenderManager::Instance()->Init(currentMode.width, currentMode.height);
 	UIControlSystem::Instance()->SetInputScreenAreaSize(currentMode.width, currentMode.height);
 	Core::Instance()->SetPhysicalScreenSize(currentMode.width, currentMode.height);
@@ -884,7 +884,7 @@ void CoreMacOSPlatform::SwitchScreenToMode(eScreenMode screenMode)
 		}
 	}else
 	{
-		Logger::Debug("[CoreMacOSPlatform::SwitchScreenToMode] Current screen mode is the same as previous. Do nothing");
+		Logger::FrameworkDebug("[CoreMacOSPlatform::SwitchScreenToMode] Current screen mode is the same as previous. Do nothing");
 	}
 }
 

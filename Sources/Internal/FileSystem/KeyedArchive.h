@@ -52,10 +52,11 @@ class YamlNode;
     
 class KeyedArchive : public BaseObject
 {
+protected:
+	virtual ~KeyedArchive();
 public:
 	KeyedArchive();
 	KeyedArchive(const KeyedArchive &arc);
-	virtual ~KeyedArchive();
 	
 	/**
         \brief Dumps archive to console

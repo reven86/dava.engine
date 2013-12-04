@@ -858,7 +858,17 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth)
 		if(0 != lineWidth && from != to)
 		{
 			Vector3 d = to - from;
-			Vector3 c = to - d / Min(arrowLength, d.Length());
+			float32 ln = Min(arrowLength, d.Length());
+
+			Vector3 c;
+			if(ln < 1)
+			{
+				c = to - d * ln;
+			}
+			else
+			{
+				c = to - d / ln;
+			}
 
 			DAVA::float32 k = (to - c).Length() / 4;
 
@@ -1039,4 +1049,22 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth)
 			FillPolygon(poly);
 		}
 	}
+
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+	void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
+	{
+		int32 lineWidthMin = 1;
+		int32 lineWidthMax = 1;
+
+#if defined (__DAVAENGINE_OPENGL__)
+		GLint range[2];
+		glGetIntegerv(GL_LINE_WIDTH_RANGE, range);
+		lineWidthMin = range[0];
+		lineWidthMax = range[1];
+#endif
+
+		rangeMin = lineWidthMin;
+		rangeMax = lineWidthMax;
+	}
+#endif
 };

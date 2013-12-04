@@ -53,9 +53,8 @@ class MongodbClient: public BaseObject
 {
 protected:
 	MongodbClient();
-	
-public:
 	virtual ~MongodbClient();
+public:
 
 	static MongodbClient *Create(const String &ip, int32 port);
 	

@@ -42,9 +42,10 @@ namespace DAVA
 // Temporary solution. Later will be populated by logic
 class LandscapeChunk : public RenderBatch
 {
+protected:
+    ~LandscapeChunk();
 public:
     LandscapeChunk(Landscape * node = 0);
-    ~LandscapeChunk();
     
 	virtual void Save(KeyedArchive *archive, SceneFileV2 *sceneFile);
 	virtual void Load(KeyedArchive *archive, SceneFileV2 *sceneFile);

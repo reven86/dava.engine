@@ -50,10 +50,10 @@ public:
 class NodesPropertyControl: public UIControl, public PropertyListDelegate, public CreatePropertyControlDelegate, public UIListDelegate
 {
     static const int32 CELL_HEIGHT = 20;
-    
+protected:
+    virtual ~NodesPropertyControl();
 public:
     NodesPropertyControl(const Rect & rect, bool createNodeProperties);
-    virtual ~NodesPropertyControl();
     
     virtual void WillAppear();
     virtual void WillDisappear();

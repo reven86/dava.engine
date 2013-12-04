@@ -83,8 +83,6 @@ public:
 	void DrawGrid();
 	void SetBulletUpdate(Entity* curr, bool value);
 	void ReleaseUserData(Entity * curr);
-	static Landscape * GetLandscape(Entity *node);
-	static Entity* GetLandscapeNode(Entity *node);
     
     void SetDrawGrid(bool newDrawGrid);
 	

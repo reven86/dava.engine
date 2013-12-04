@@ -126,7 +126,7 @@ void CoreMacOSPlatform::SwitchScreenToMode(eScreenMode screenMode)
         }
     }else
     {
-        Logger::Debug("[CoreMacOSPlatform::SwitchScreenToMode] Current screen mode is the same as previous. Do nothing");
+        Logger::FrameworkDebug("[CoreMacOSPlatform::SwitchScreenToMode] Current screen mode is the same as previous. Do nothing");
     }
 }
 
@@ -227,7 +227,7 @@ void CoreMacOSPlatform::GetAvailableDisplayModes(List<DisplayMode> & availableMo
 //					mode.refreshRate = displayMode.RefreshRate;
 //					availableDisplayModes.push_back(mode);
 //					
-//					Logger::Debug("[RenderManagerDX9::GetAvailableDisplayModes] mode found: %d x %d x %d", 
+//					Logger::FrameworkDebug("[RenderManagerDX9::GetAvailableDisplayModes] mode found: %d x %d x %d", 
 //								  mode.width,
 //								  mode.height,
 //								  mode.bpp);

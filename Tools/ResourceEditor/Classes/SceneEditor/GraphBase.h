@@ -51,10 +51,10 @@ class GraphBase:
         public UIHierarchyDelegate, 
         public NodesPropertyDelegate
 {
-    
+protected:
+    virtual ~GraphBase();
 public:
     GraphBase(GraphBaseDelegate *newDelegate, const Rect &rect);
-    virtual ~GraphBase();
     
     UIControl * GetGraphPanel();
     UIControl * GetPropertyPanel();

@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class CacheTest: public TestTemplate<CacheTest>
 {
+protected:
+    ~CacheTest(){}
 public:
 	CacheTest(const String &testName);
     

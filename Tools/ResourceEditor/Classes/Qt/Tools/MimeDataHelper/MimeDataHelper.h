@@ -42,8 +42,6 @@ namespace DAVA
 class MimeDataHelper
 {
 public:
-	
-	static void ConvertFromMimeData(const QMimeData* mimeData, List<Entity*> &, SceneEditor2* sceneEditor );
 
 	static bool IsMimeDataTypeSupported(const QMimeData* mimeData);
 	
@@ -55,13 +53,9 @@ public:
 
 	static void ConvertToMimeData(List<Entity*>&, QMimeData* mimeData);
 	
+	static List<Entity*> GetPointersFromSceneTreeMime(const QMimeData* mimeData);
+	
 protected:
-
-	static void ConvertQMimeDataFromSceneTree(const QMimeData* mimeData, List<Entity*>&,
-											  SceneEditor2* sceneEditor = NULL);
-
-	static void ConvertQMimeDataFromFilePath(const QMimeData* mimeData, List<Entity*>&,
-											 SceneEditor2* sceneEditor = NULL);
 	
 	static void GetItemNamesFromSceneTreeMime(const QMimeData* mimeData, List<String> & nameList);
 	
@@ -71,15 +65,11 @@ protected:
 	{
 		DAVA::String format;
 		void (*getNameFuncPtr) (const QMimeData* mimeData, List<String> & nameList);
-		void (*convertFuncPtr) (const QMimeData* mimeData, List<Entity*> & nameList, SceneEditor2* sceneEditor);
 		MimeHandler(DAVA::String _format,
-					void (*_getNameFuncPtr) (const QMimeData* mimeData, List<String> & nameList),
-					void (*_convertFuncPtr) (const QMimeData* mimeData, List<Entity*> & nameList,
-					SceneEditor2* sceneEditor))
+					void (*_getNameFuncPtr) (const QMimeData* mimeData, List<String> & nameList))
 		{
 			format = _format;
 			getNameFuncPtr = _getNameFuncPtr;
-			convertFuncPtr = _convertFuncPtr;
 		}
 	};
 	

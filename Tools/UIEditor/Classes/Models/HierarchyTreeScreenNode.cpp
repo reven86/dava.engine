@@ -174,8 +174,8 @@ bool HierarchyTreeScreenNode::IsNameExist(const QString &name, const HierarchyTr
 
 bool HierarchyTreeScreenNode::Load(const QString& path)
 {
-	UIYamlLoader loader;
-	loader.Load(screen, path.toStdString());
+	ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
+	loader->Load(screen, path.toStdString());
 	
 	BuildHierarchyTree(this, screen->GetChildren());
 	return true;

@@ -3805,10 +3805,6 @@ static int _wrap_KeyedArchive_Count(lua_State* L) {
 }
 
 
-static void swig_delete_KeyedArchive(void *obj) {
-DAVA::KeyedArchive *arg1 = (DAVA::KeyedArchive *) obj;
-delete arg1;
-}
 static swig_lua_method swig_DAVA_KeyedArchive_methods[] = {
     {"IsKeyExists", _wrap_KeyedArchive_IsKeyExists}, 
     {"GetBool", _wrap_KeyedArchive_GetBool}, 
@@ -3841,7 +3837,7 @@ static swig_lua_attribute swig_DAVA_KeyedArchive_attributes[] = {
 };
 static swig_lua_class *swig_DAVA_KeyedArchive_bases[] = {0};
 static const char *swig_DAVA_KeyedArchive_base_names[] = {0};
-static swig_lua_class _wrap_class_DAVA_KeyedArchive = { "KeyedArchive", &SWIGTYPE_p_DAVA__KeyedArchive,_wrap_new_KeyedArchive, swig_delete_KeyedArchive, swig_DAVA_KeyedArchive_methods, swig_DAVA_KeyedArchive_attributes, swig_DAVA_KeyedArchive_bases, swig_DAVA_KeyedArchive_base_names };
+static swig_lua_class _wrap_class_DAVA_KeyedArchive = { "KeyedArchive", &SWIGTYPE_p_DAVA__KeyedArchive,_wrap_new_KeyedArchive,0, swig_DAVA_KeyedArchive_methods, swig_DAVA_KeyedArchive_attributes, swig_DAVA_KeyedArchive_bases, swig_DAVA_KeyedArchive_base_names };
 
 static int _wrap_new_AutotestingSystemLua(lua_State* L) {
   int SWIG_arg = 0;
@@ -4586,6 +4582,37 @@ fail:
 }
 
 
+static int _wrap_AutotestingSystemLua_GetText(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
+  DAVA::UIControl *arg2 = (DAVA::UIControl *) 0 ;
+  DAVA::String result;
+  
+  SWIG_check_num_args("DAVA::AutotestingSystemLua::GetText",2,2)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetText",1,"DAVA::AutotestingSystemLua *");
+  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("DAVA::AutotestingSystemLua::GetText",2,"DAVA::UIControl *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__AutotestingSystemLua,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_GetText",1,SWIGTYPE_p_DAVA__AutotestingSystemLua);
+  }
+  
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_DAVA__UIControl,0))){
+    SWIG_fail_ptr("AutotestingSystemLua_GetText",2,SWIGTYPE_p_DAVA__UIControl);
+  }
+  
+  result = (arg1)->GetText(arg2);
+  lua_pushlstring(L,(&result)->data(),(&result)->size()); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_AutotestingSystemLua_WriteState(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::AutotestingSystemLua *arg1 = (DAVA::AutotestingSystemLua *) 0 ;
@@ -5017,6 +5044,7 @@ static swig_lua_method swig_DAVA_AutotestingSystemLua_methods[] = {
     {"SetText", _wrap_AutotestingSystemLua_SetText}, 
     {"CheckText", _wrap_AutotestingSystemLua_CheckText}, 
     {"CheckMsgText", _wrap_AutotestingSystemLua_CheckMsgText}, 
+    {"GetText", _wrap_AutotestingSystemLua_GetText}, 
     {"WriteState", _wrap_AutotestingSystemLua_WriteState}, 
     {"WriteCommand", _wrap_AutotestingSystemLua_WriteCommand}, 
     {"ReadState", _wrap_AutotestingSystemLua_ReadState}, 

@@ -70,6 +70,7 @@ void DeviceInfoTest::TestFunction(TestTemplate<DeviceInfoTest>::PerfFuncData *da
 	Logger::Debug("Time zone: %s", timezone.c_str());
     Logger::Debug("UDID: %s", udid.c_str());
     Logger::Debug("Name: %s", WStringToString(name).c_str());
+    Logger::Debug("ZBufferSize: %d", DeviceInfo::GetZBufferSize());
 	Logger::Debug("********** Device info **********");
 
 	data->testData.message = "DeviceInfo test - passed";

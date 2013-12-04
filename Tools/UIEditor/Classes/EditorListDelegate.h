@@ -42,11 +42,11 @@ class EditorListDelegate : public UIControl, public UIListDelegate
 	const static int32 DEFAULT_AGGREGATOR_ID = 0;
 	const static int32 DEFAULT_CELL_HEIGHT = 30;
 	const static int32 DEFAULT_CELL_WIDTH = 100;
-
+protected:
+	virtual ~EditorListDelegate();
 public:
 	EditorListDelegate(const Rect &rect = Rect(), UIList::eListOrientation orientation =  UIList::ORIENTATION_VERTICAL,
 																				 bool rectInAbsoluteCoordinates = false);
-	virtual ~EditorListDelegate();
 
 	// UIListDelegate
     virtual int32 ElementsCount(UIList *forList);

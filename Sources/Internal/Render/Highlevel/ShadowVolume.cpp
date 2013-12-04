@@ -39,23 +39,31 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(ShadowVolume);
+Shader * ShadowVolume::shader = 0;
+int32 ShadowVolume::uniformLightPosition0 = 0;
 
 ShadowVolume::ShadowVolume()
 :   shadowPolygonGroup(0)
 {
-	shader = new Shader();
-	shader->LoadFromYaml("~res:/Shaders/ShadowVolume/shadowvolume.shader");
-	shader->Recompile();
+	if(!shader)
+	{
+		//TODO: shader is never deleted on old materials
+		shader = new Shader();
+		shader->LoadFromYaml("~res:/Shaders/ShadowVolume/shadowvolume.shader");
+		shader->Recompile();
+		uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
+	}
+
 
     SetOwnerLayerName(LAYER_SHADOW_VOLUME);
     
     aabbox = AABBox3(Vector3(), Vector3());
+
+    
 }
 
 ShadowVolume::~ShadowVolume()
 {
-	SafeRelease(shader);
 	SafeRelease(shadowPolygonGroup);
 }
 
@@ -97,7 +105,6 @@ void ShadowVolume::Draw(Camera * camera)
 	RenderManager::Instance()->AttachRenderData();
 
 	//Vector3 position = Vector3() * GetWorldTransform();
-	int32 uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
 	if (light && uniformLightPosition0 != -1)
 	{
 		Vector3 lightPosition0 = light->GetPosition();
@@ -468,6 +475,9 @@ void ShadowVolume::MakeShadowVolumeFromPolygonGroup(PolygonGroup * oldPolygonGro
 	Memcpy(shadowPolygonGroup->indexArray, newPolygonGroup->indexArray, nextIndex*sizeof(int16));
 
 	SafeRelease(newPolygonGroup);
+
+	SafeDeleteArray(adjacency);
+	SafeDeleteArray(mapping);
 }
 
 void ShadowVolume::GetDataNodes(Set<DataNode*> & dataNodes)

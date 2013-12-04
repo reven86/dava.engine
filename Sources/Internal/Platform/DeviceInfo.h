@@ -89,6 +89,7 @@ public:
    	static ScreenInfo GetScreenInfo();
     //internal?
     static void SetScreenInfo(int32 w, int32 h, int32 scale);
+    static int GetZBufferSize();
 };
 
 };

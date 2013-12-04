@@ -155,23 +155,30 @@ ConfigParser::ConfigParser(const QByteArray & configData) :
                 webPageURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_WEBPAGE_KEY));
                 remoteConfigURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_REMOTE_URL_KEY), REMOTE_CONFIG_URL_DEFAULT);
                 newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
+                favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
 
-                it = stringsNode->begin();
-                while(it != stringsNode->end())
+                if(stringsNode)
                 {
-                    QString key = GetStringValueFromYamlNode(&it.first());
-                    QString value = GetStringValueFromYamlNode(&it.second());
-                    strings[key] = value;
-                    ++it;
+                    it = stringsNode->begin();
+                    while(it != stringsNode->end())
+                    {
+                        QString key = GetStringValueFromYamlNode(&it.first());
+                        QString value = GetStringValueFromYamlNode(&it.second());
+                        strings[key] = value;
+                        ++it;
+                    }
                 }
 
-                it = branchesNode->begin();
-                while(it != branchesNode->end())
+                if(branchesNode)
                 {
-                    Branch branch = Branch::LoadFromYamlNode(&it.second());
-                    branch.id = GetStringValueFromYamlNode(&it.first());
-                    branches.push_back(branch);
-                    ++it;
+                    it = branchesNode->begin();
+                    while(it != branchesNode->end())
+                    {
+                        Branch branch = Branch::LoadFromYamlNode(&it.second());
+                        branch.id = GetStringValueFromYamlNode(&it.first());
+                        branches.push_back(branch);
+                        ++it;
+                    }
                 }
             }
             else
@@ -186,12 +193,14 @@ ConfigParser::ConfigParser(const QByteArray & configData) :
     }
 }
 
-void ConfigParser::CopyStringsFromConfig(const ConfigParser & parser)
+void ConfigParser::CopyStringsAndFavsFromConfig(const ConfigParser & parser)
 {
     QMap<QString, QString>::ConstIterator it = parser.strings.begin();
     QMap<QString, QString>::ConstIterator itEnd = parser.strings.end();
     for(; it != itEnd; ++it)
         strings[it.key()] = it.value();
+
+    favorites = parser.favorites;
 }
 
 void ConfigParser::SaveToYamlFile(const QString & filePath)
@@ -205,6 +214,17 @@ void ConfigParser::SaveToYamlFile(const QString & filePath)
     emitter << YAML::Key << CONFIG_LAUNCHER_WEBPAGE_KEY << YAML::Value << webPageURL.toStdString();
     emitter << YAML::Key << CONFIG_LAUNCHER_REMOTE_URL_KEY << YAML::Value << remoteConfigURL.toStdString();
     emitter << YAML::Key << CONFIG_LAUNCHER_NEWSID_KEY << YAML::Value << newsID.toStdString();
+
+    int favCount = favorites.size();
+    if(favCount)
+    {
+        emitter << YAML::Key << CONFIG_LAUNCHER_FAVORITES_KEY << YAML::Value;
+        emitter << YAML::BeginSeq;
+        for(int i = 0; i < favCount; i++)
+            emitter << favorites[i].toStdString();
+        emitter << YAML::EndSeq;
+    }
+
     emitter << YAML::EndMap;
 
     //Strings
@@ -425,6 +445,11 @@ void ConfigParser::SetLastNewsID(const QString & id)
     newsID = id;
 }
 
+const QVector<QString> & ConfigParser::GetFavorites()
+{
+    return favorites;
+}
+
 QString GetStringValueFromYamlNode(const YAML::Node * node, QString defaultValue /* "" */)
 {
     if(!node)
@@ -433,4 +458,26 @@ QString GetStringValueFromYamlNode(const YAML::Node * node, QString defaultValue
     std::string stdStr;
     node->GetScalar(stdStr);
     return QString(stdStr.c_str());
+}
+
+QVector<QString> GetArrayValueFromYamlNode(const YAML::Node * node)
+{
+    QVector<QString> array;
+
+    if(!node)
+        return array;
+
+    if(node->Type() == YAML::NodeType::Scalar)
+        array.push_back(GetStringValueFromYamlNode(node));
+
+    if(node->Type() == YAML::NodeType::Sequence)
+    {
+        YAML::Iterator it = node->begin();
+        while(it != node->end())
+        {
+            array.push_back(GetStringValueFromYamlNode(&(*it)));
+            ++it;
+        }
+    }
+    return array;
 }

@@ -79,6 +79,7 @@ const ScopedPtr<BASE_OBJECT>& ScopedPtr<BASE_OBJECT>::operator=(const ScopedPtr&
 		return *this;
 	}
 
+    SafeRelease(object);
 	object = scopedPtr.object;
 	object->Retain();
 

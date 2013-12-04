@@ -76,6 +76,8 @@ RenderSystem::RenderSystem()
 	particleEmitterSystem = new ParticleEmitterSystem();
 
 	markedObjects.reserve(100);
+
+	spatialTree = NULL;
 }
 
 RenderSystem::~RenderSystem()
@@ -97,6 +99,8 @@ RenderSystem::~RenderSystem()
         SafeDelete(layer);
     }
     renderLayersMap.Clear();
+
+	SafeRelease(spatialTree);
 }
     
 
@@ -145,13 +149,25 @@ void RenderSystem::RemoveFromRender(RenderObject * renderObject)
 void RenderSystem::AddRenderObject(RenderObject * renderObject)
 {
 	particleEmitterSystem->AddIfEmitter(renderObject);
+
+	/*on add calculate valid world bbox*/
+	renderObject->RecalculateWorldBoundingBox();
+
+	if (spatialTree&&!renderObject->GetBoundingBox().IsEmpty())
+	{
+		if (!(renderObject->GetFlags()&RenderObject::ALWAYS_CLIPPING_VISIBLE))
+			spatialTree->AddObject(renderObject);
+	}
 	renderObject->SetRenderSystem(this);
+	
 }
 
 void RenderSystem::RemoveRenderObject(RenderObject * renderObject)
 {
     particleEmitterSystem->RemoveIfEmitter(renderObject);
-	renderObject->SetRenderSystem(0);
+	if (renderObject->GetTreeNodeIndex() != INVALID_TREE_NODE_INDEX)
+		spatialTree->RemoveObject(renderObject);
+	renderObject->SetRenderSystem(0);	
 }
 
 void RenderSystem::AddRenderBatch(RenderBatch * renderBatch)
@@ -196,6 +212,53 @@ Camera * RenderSystem::GetCamera()
 {
 	return camera;
 }
+
+void RenderSystem::CreateSpatialTree(const AABBox3 &worldBox, int32 maxTreeDepth)
+{
+	if (spatialTree)
+		RemoveSpatialTree();
+
+	spatialTree = new QuadTree(worldBox, maxTreeDepth);	
+
+	uint32 size = renderObjectArray.size();
+	for (uint32 pos = 0; pos < size; ++pos)
+	{
+		if (!(renderObjectArray[pos]->GetFlags()&RenderObject::ALWAYS_CLIPPING_VISIBLE))
+		{
+			spatialTree->AddObject(renderObjectArray[pos]);
+		}
+
+	}	
+}
+
+void RenderSystem::RemoveSpatialTree()
+{
+	SafeRelease(spatialTree);
+	uint32 size = renderObjectArray.size();
+	for (uint32 pos = 0; pos < size; ++pos)
+		renderObjectArray[pos]->SetTreeNodeIndex(INVALID_TREE_NODE_INDEX);
+}
+//
+
+void RenderSystem::CreateSpatialTree()
+{	
+	AABBox3 worldBox;	
+	uint32 size = renderObjectArray.size();
+	for (uint32 pos = 0; pos < size; ++pos)
+	{
+		if (!(renderObjectArray[pos]->GetFlags()&RenderObject::ALWAYS_CLIPPING_VISIBLE))
+			worldBox.AddAABBox(renderObjectArray[pos]->GetWorldBoundingBox());				
+	}	
+	if (worldBox.IsEmpty())
+		worldBox = AABBox3(Vector3(0,0,0), Vector3(0,0,0));
+	CreateSpatialTree(worldBox, 10);	
+}
+
+void RenderSystem::DebugDrawSpatialTree()
+{
+	if (spatialTree)
+		spatialTree->DebugDraw();
+}
     
 void RenderSystem::ProcessClipping()
 {
@@ -204,52 +267,76 @@ void RenderSystem::ProcessClipping()
     for (Vector<RenderObject*>::iterator it = markedObjects.begin(); it != end; ++it)
     {
         RenderObject * obj = *it;
-		if (obj->GetType()==RenderObject::TYPE_PARTICLE_EMTITTER) //as particle render batch doesn't use transformation matrix
-			obj->GetWorldBoundingBox() = obj->GetBoundingBox();
-		else
-			obj->GetBoundingBox().GetTransformedBox(*obj->GetWorldTransformPtr(), obj->GetWorldBoundingBox());
+
+		obj->RecalculateWorldBoundingBox();
+		
 		FindNearestLights(obj);
+		if (obj->GetTreeNodeIndex()!=INVALID_TREE_NODE_INDEX)					
+			spatialTree->ObjectUpdated(obj);		
+		
         objectBoxesUpdated++;
     }
     markedObjects.clear();
     
-//    List<RenderObject*>::iterator endLights = movedLights.end();
-//    for (List<LightNode*>::iterator it = movedLights.begin(); it != endLights; ++it)
-//    {
-//        FindNearestLights(*it);
-//    }
     if (movedLights.size() > 0)
     {
         FindNearestLights();
     }
-    movedLights.clear();
-    
-    
-    int32 objectsCulled = 0;
+    movedLights.clear();       
+
+	if (!spatialTree)
+		CreateSpatialTree();
+
+	if (spatialTree)
+		spatialTree->UpdateTree();
     
     Frustum * frustum = camera->GetFrustum();
-
+	int32 objectsToClip = 0;
     uint32 size = renderObjectArray.size();
     for (uint32 pos = 0; pos < size; ++pos)
     {
         RenderObject * node = renderObjectArray[pos];
-		
-		uint32 flags = node->GetFlags();
-		flags = (flags | RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME) & RenderObject::VISIBILITY_CRITERIA;
-		if (flags != RenderObject::VISIBILITY_CRITERIA)
+				
+		if ((node->GetFlags()&RenderObject::CLIPPING_VISIBILITY_CRITERIA) != RenderObject::CLIPPING_VISIBILITY_CRITERIA)
 		{
 			continue;
 		}
-
-        node->AddFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
-        //Logger::FrameworkDebug("Cull Node: %s rc: %d", node->GetFullName().c_str(), node->GetRetainCount());
-        if (RenderObject::TYPE_SKYBOX != node->GetType() &&
-			!frustum->IsInside(node->GetWorldBoundingBox()))
-        {
-            node->RemoveFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
-            objectsCulled++;
-        }
+		node->RemoveFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
+		if (node->GetTreeNodeIndex()==INVALID_TREE_NODE_INDEX) //process clipping if not in spatial tree for some reason (eg. no SpatialTree)
+		{						
+			if ((RenderObject::ALWAYS_CLIPPING_VISIBLE&node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))
+			{
+				node->AddFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
+			}
+		}
+		else
+			objectsToClip++;
+        
     }
+	if (spatialTree)
+		spatialTree->ProcessClipping(frustum);
+	
+
+	//spatial tree validation test
+	/*int32 mismatchCount = 0;
+	for (uint32 pos = 0; pos < size; ++pos)
+	{
+		RenderObject * node = renderObjectArray[pos];
+
+		if ((node->GetFlags()&RenderObject::CLIPPING_VISIBILITY_CRITERIA) != RenderObject::CLIPPING_VISIBILITY_CRITERIA)
+		{
+			continue;
+		}
+		if (RenderObject::ALWAYS_CLIPPING_VISIBLE&node->GetFlags())	
+			continue;			
+		bool treeClippingResult = node->GetFlags()&RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME;
+		bool frustumClippingResult = frustum->IsInside(node->GetWorldBoundingBox());
+		if (treeClippingResult!=frustumClippingResult)
+		{
+			mismatchCount++;
+		}		
+
+	}*/
 }
 
 void RenderSystem::MarkForUpdate(RenderObject * renderObject)

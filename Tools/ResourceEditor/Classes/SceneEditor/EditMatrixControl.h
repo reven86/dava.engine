@@ -38,9 +38,10 @@ namespace DAVA
 {
 class EditMatrixControl : public UIControl, public UITextFieldDelegate
 {
+protected:
+    ~EditMatrixControl();
 public:
     EditMatrixControl(const Rect & _rect, bool _readOnly = false);
-    ~EditMatrixControl();
     
 
     void SetMatrix(const Matrix4 & _matrix);

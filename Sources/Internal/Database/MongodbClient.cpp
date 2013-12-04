@@ -42,6 +42,13 @@ namespace DAVA
 {
 class MongodbClientInternalData: public BaseObject
 {
+protected:
+	virtual ~MongodbClientInternalData()
+	{
+		mongo_write_concern_destroy( write_concern );
+		mongo_destroy(connection);
+		SafeDelete(connection);
+	}
 public:
 
 	MongodbClientInternalData()
@@ -56,13 +63,6 @@ public:
 		mongo_write_concern_init( write_concern );
 		write_concern->w = 1;
 		mongo_write_concern_finish( write_concern );
-	}
-
-	virtual ~MongodbClientInternalData()
-	{
-		mongo_write_concern_destroy( write_concern );
-		mongo_destroy(connection);
-		SafeDelete(connection);
 	}
 
 public:

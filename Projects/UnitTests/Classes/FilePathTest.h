@@ -37,6 +37,8 @@ using namespace DAVA;
 
 class FilePathTest: public TestTemplate<FilePathTest>
 {
+protected:
+    ~FilePathTest(){}
 public:
 	FilePathTest();
 

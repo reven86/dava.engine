@@ -37,9 +37,10 @@ using namespace DAVA;
 
 class TouchEffectsControl : public UIControl
 {
+protected:
+	~TouchEffectsControl();
 public:
 	TouchEffectsControl();
-	~TouchEffectsControl();
 	
 	
 	GameObjectManager * effectManager;

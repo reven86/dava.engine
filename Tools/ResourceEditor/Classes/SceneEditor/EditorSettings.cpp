@@ -222,7 +222,7 @@ void EditorSettings::AddLastOpenedFile(const FilePath & pathToFile)
 
     filesList.insert(filesList.begin(), pathToFile.GetAbsolutePathname());
     count = 0;
-    for(;(count < (int32)filesList.size()) && (count < RESENT_FILES_COUNT); ++count)
+    for(;(count < (int32)filesList.size()) && (count < RESENT_FILES_MAX_COUNT); ++count)
     {
         settings->SetString(Format("LastOpenedFile_%d", count), filesList[count]);
     }
@@ -259,6 +259,7 @@ eGPUFamily EditorSettings::GetTextureViewGPU()
 void EditorSettings::SetTextureViewGPU(int32 gpu)
 {
     settings->SetInt32(String("TextureViewGPU"), gpu);
+	Save();
 }
 
 
@@ -310,17 +311,6 @@ void EditorSettings::SetDesignerName(const String &userName)
 {
     settings->SetString("DesignerName", userName);
 }
-
-// bool EditorSettings::GetShowEditorCamerLight()
-// {
-//     return settings->GetBool("ShowEditorCamerLight", true);
-// }
-// 
-// void EditorSettings::SetShowEditorCamerLight(bool show)
-// {
-//     settings->SetBool("ShowEditorCamerLight", show);
-//     Save();
-// }
 
 void EditorSettings::SetPreviewDialogEnabled(bool enabled)
 {

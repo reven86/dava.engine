@@ -54,9 +54,10 @@ public:
 		float32 time;
 		Keyframe * next;
 	};
-	
-	KeyframeData();
+protected:
 	virtual ~KeyframeData();
+public:
+	KeyframeData();
 	
 	void AddKeyframe(int32 frame, float32 time);
 	float32 GetLength();
@@ -67,9 +68,10 @@ public:
 
 class KeyframeAnimation : public Animation
 {
+protected:
+	virtual ~KeyframeAnimation();
 public:
 	KeyframeAnimation(AnimatedObject * _owner, int32 * _var, KeyframeData * data, float32 _animationTimeLength);
-	virtual ~KeyframeAnimation();
 	
 	virtual void Update(float32 timeElapsed);
 	virtual void OnStart();

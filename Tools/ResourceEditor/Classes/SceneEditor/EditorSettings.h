@@ -40,11 +40,7 @@ class EditorSettings: public Singleton<EditorSettings>
     
 public: 
     
-    enum eDefaultSettings
-    {
-        LOD_LEVELS_COUNT = 8,
-        RESENT_FILES_COUNT = 5,
-    };
+    static const int32 RESENT_FILES_MAX_COUNT = 5;
     
 public:
     EditorSettings();

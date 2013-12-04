@@ -48,10 +48,10 @@ class UIJoypad : public UIControl
     {
         TOUCH_INVALID_ID = -1
     };
-    
+protected:
+    virtual ~UIJoypad();
 public:
 	UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates = FALSE);
-    virtual ~UIJoypad();
 	
 	const Vector2 & GetDigitalPosition();
 	const Vector2 & GetAnalogPosition();

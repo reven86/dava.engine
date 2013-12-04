@@ -37,9 +37,10 @@ using namespace DAVA;
 
 class CustomColorsProxy: public BaseObject
 {
+protected:
+	~CustomColorsProxy();
 public:
 	CustomColorsProxy(int32 size);
-	~CustomColorsProxy();
 	
 	Sprite* GetSprite();
 	void UpdateRect(const Rect& rect);

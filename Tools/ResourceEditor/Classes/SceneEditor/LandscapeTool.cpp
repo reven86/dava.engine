@@ -41,8 +41,6 @@ LandscapeTool::LandscapeTool(int32 _ID, eToolType _type, const FilePath & _image
     imageName = _imageName;
     image = CreateTopLevelImage(imageName);
     
-    RenderManager::Instance()->LockNonMain();
-    
     float32 sideSize = (float32)image->width;
     sprite = Sprite::CreateAsRenderTarget(sideSize, sideSize, FORMAT_RGBA8888);
     
@@ -67,8 +65,6 @@ LandscapeTool::LandscapeTool(int32 _ID, eToolType _type, const FilePath & _image
     
     SafeRelease(srcSprite);
     SafeRelease(srcTex);
-    
-    RenderManager::Instance()->UnlockNonMain();
     
     maxSize = 0.f;
     size = 0.f;

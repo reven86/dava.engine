@@ -44,7 +44,8 @@ class PVRTest : public TestTemplate<PVRTest>
         TESTS_COUNT = 10,
         ACCETABLE_DELTA_IN_PERSENTS = 2
     };
-    
+protected:
+    ~PVRTest(){}
 public:
 	PVRTest();
 

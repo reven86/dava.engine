@@ -39,6 +39,8 @@ namespace DAVA {
 // Particle Force class is needed to store Particle Force data.
 class ParticleForce : public BaseObject
 {
+protected:
+	~ParticleForce(){}
 public:
 	// Initialization constructor.
 	ParticleForce(RefPtr<PropertyLine<Vector3> > force, RefPtr<PropertyLine<Vector3> > forceVariation,
@@ -50,12 +52,18 @@ public:
 	void Update(RefPtr<PropertyLine<Vector3> > force, RefPtr<PropertyLine<Vector3> > forceVariation,
 				RefPtr<PropertyLine<float32> > forceOverLife);
 
+	void SetForce(const RefPtr<PropertyLine<Vector3> > &force);
+	void SetForceVariation(const RefPtr<PropertyLine<Vector3> > &forceVariation);
+	void SetForceOverLife(const RefPtr<PropertyLine<float32> > &forceOverLife);
+
 	// Accessors.
 	RefPtr<PropertyLine<Vector3> > GetForce() {return force;};
 	RefPtr<PropertyLine<Vector3> > GetForceVariation() {return forceVariation; };
 	RefPtr<PropertyLine<float32> > GetForceOverlife() { return forceOverLife; };
+
+	void GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables);
 	
-protected:
+public:
 	RefPtr<PropertyLine<Vector3> > force;
 	RefPtr<PropertyLine<Vector3> > forceVariation;
 	RefPtr<PropertyLine<float32> > forceOverLife;

@@ -99,7 +99,8 @@ public:
 	enum TextureType
 	{
 		TEXTURE_2D = 0,
-		TEXTURE_CUBE = 1
+		TEXTURE_CUBE = 1,
+		TEXTURE_TYPE_COUNT = 2
 	};
 
 	enum TextureState
@@ -121,7 +122,7 @@ public:
 	static const int MIN_HEIGHT = 8;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-	// Main constructurs
+	// Main constructors
 	
     static void InitializePixelFormatDescriptors();
 
@@ -167,7 +168,7 @@ public:
 		If file cannot be opened, returns "pink placeholder" texture.
         \param[in] pathName path to the png or pvr file
      */
-	static Texture * CreateFromFile(const FilePath & pathName);
+	static Texture * CreateFromFile(const FilePath & pathName, TextureType typeHint = Texture::TEXTURE_2D);
 
 	/**
         \brief Create texture from given file. Supported formats .png, .pvr (only on iOS). 
@@ -186,7 +187,7 @@ public:
      */
 	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat);
 	
-	static Texture * CreatePink(const FilePath &path = FilePath());
+	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D);
 
 
 	/**
@@ -242,11 +243,8 @@ public:
 	static void GenerateCubeFaceNames(const String& baseName, Vector<String>& faceNames);
 	static void GenerateCubeFaceNames(const String& baseName, const Vector<String>& faceNameSuffixes, Vector<String>& faceNames);
 
-    TextureDescriptor * CreateDescriptor() const;
-
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
-	void ReloadAs(eGPUFamily gpuFamily, const TextureDescriptor *descriptor);
 	void SetInvalidater(TextureInvalidater* invalidater);
 
 	inline TextureState GetState() const;
@@ -298,6 +296,13 @@ public:							// properties for fast access
     int32 GetDataSize() const;
     
     void ReleaseTextureData();
+	struct ReleaseTextureDataContainer
+	{
+		uint32 textureType;
+		uint32 id;
+		uint32 fboID;
+		uint32 rboID;
+	};
 
     void GenerateID();
     
@@ -306,29 +311,35 @@ public:							// properties for fast access
     
     
     inline const eGPUFamily GetSourceFileGPUFamily() const;
+    inline TextureDescriptor * GetDescriptor() const;
     
 private:
     
 	static Map<String, Texture*> textureMap;
 	static Texture * Get(const FilePath & name);
-	static void AddToMap(Texture *tex, const FilePath & pathname);
+	static void AddToMap(Texture *tex);
     
-	static Texture * CreateFromDescriptor(const TextureDescriptor *descriptor);
-	static Texture * CreateFromImage(const TextureDescriptor *descriptor, eGPUFamily gpu);
+	static Texture * CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu);
+
 
 	Vector<Image *> images;
-	bool LoadImages(const TextureDescriptor *descriptor, eGPUFamily gpu);
+	bool LoadImages(eGPUFamily gpu);
 	void SetParamsFromImages();
-	void FlushDataToRenderer(const TextureDescriptor *descriptor);
+	void FlushDataToRendererInternal(BaseObject * caller, void * param, void *callerData);
+	void FlushDataToRenderer();
 	void ReleaseImages();
 
-    void MakePink();
+    void MakePink(TextureType requestedType = Texture::TEXTURE_2D);
+	void ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData);
+
+	void GeneratePixelesationInternal(BaseObject * caller, void * param, void *callerData);
 
     static bool CheckImageSize(const Vector<Image *> &imageSet);
     static bool IsCompressedFormat(PixelFormat format);
     
 	static uint32 ConvertToPower2FBOValue(uint32 value);
 
+	void GenerateMipmapsInternal(BaseObject * caller, void * param, void *callerData);
 
 	static PixelFormat defaultRGBAFormat;
 	Texture();
@@ -343,6 +354,7 @@ private:
     
 #if defined(__DAVAENGINE_OPENGL__)
 	void HWglCreateFBOBuffers();
+	void HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, void *callerData);
 
     static GLint HWglFilterToGLFilter(TextureFilter filter);
     static GLint HWglConvertWrapMode(TextureWrap wrap);
@@ -357,6 +369,7 @@ private:
 
 
 	TextureState state;
+	TextureDescriptor *texDescriptor;
 };
     
 // Implementation of inline functions
@@ -379,6 +392,11 @@ inline const eGPUFamily Texture::GetSourceFileGPUFamily() const
 inline Texture::TextureState Texture::GetState() const
 {
 	return state;
+}
+
+inline TextureDescriptor * Texture::GetDescriptor() const
+{
+    return texDescriptor;
 }
 
 

@@ -73,6 +73,8 @@ public:
     
 public:
     
+	static void ReleaseFonts();
+
     static void AddBorder(UIControl *c);
     
     static UIButton *CreateButton(Vector2 pos, const WideString &buttonText, bool designers = false);

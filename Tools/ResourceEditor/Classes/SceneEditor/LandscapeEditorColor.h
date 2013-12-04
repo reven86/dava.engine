@@ -45,11 +45,11 @@ class LandscapeEditorColor
     ,   public LandscapeEditorPropertyControlDelegate
 
 {
-    
+protected:
+    virtual ~LandscapeEditorColor();
 public:
     
     LandscapeEditorColor(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl, const Rect &toolsRect); 
-    virtual ~LandscapeEditorColor();
     
 	virtual void Draw(const UIGeometricData &geometricData);
 

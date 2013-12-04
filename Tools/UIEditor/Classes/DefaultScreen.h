@@ -44,9 +44,10 @@ class DefaultScreen : public QObject, public UIScreen
 	
 	const static int32 MIN_CONTROL_SIZE = 1;
 	
+protected:
+	virtual ~DefaultScreen();
 public:
 	DefaultScreen();
-	virtual ~DefaultScreen();
 	
 	virtual void Draw(const UIGeometricData &geometricData);
 	virtual void SystemDraw(const UIGeometricData &geometricData);

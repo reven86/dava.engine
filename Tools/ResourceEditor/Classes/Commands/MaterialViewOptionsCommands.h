@@ -34,7 +34,6 @@
 #include "Command.h"
 #include "DAVAEngine.h"
 #include "../Constants.h"
-#include "../Qt/DockSetSwitchIndex/SetSwitchIndexHelper.h"
 
 class CommandChangeMaterialViewOption: public Command
 {

@@ -50,6 +50,8 @@ class UIControl;
 class YamlNode;
 class UIYamlLoader : public BaseObject
 {
+protected:
+    ~UIYamlLoader(){}
 public:
 	UIYamlLoader();
 

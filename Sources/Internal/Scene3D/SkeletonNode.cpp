@@ -33,7 +33,6 @@
 namespace DAVA 
 {
     
-REGISTER_CLASS(SkeletonNode);
 
 SkeletonNode::SkeletonNode()
 	: BoneNode(0)

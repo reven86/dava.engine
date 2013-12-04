@@ -57,7 +57,6 @@ void GPUFamilyDescriptor::SetupGPUFormats()
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_A8] = ".pvr";
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR4] = ".pvr";
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR2] = ".pvr";
-	gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_ETC1] = ".pvr"; //VI: hack in order to avoid crash
     
 
     //pvr android
@@ -213,6 +212,14 @@ eGPUFamily GPUFamilyDescriptor::GetGPUByName(const String & name)
     return GPU_UNKNOWN;
 }
 
+bool GPUFamilyDescriptor::IsFormatSupported(const eGPUFamily gpu, const PixelFormat format)
+{
+	if(gpu <= GPU_UNKNOWN || gpu >= GPU_FAMILY_COUNT)
+	{
+		return false;
+	}
+	return gpuData[gpu].availableFormats.find(format) != gpuData[gpu].availableFormats.end();
+}
     
 const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {

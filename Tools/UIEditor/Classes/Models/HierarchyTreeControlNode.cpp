@@ -214,6 +214,16 @@ void HierarchyTreeControlNode::SetParent(HierarchyTreeNode* node, HierarchyTreeN
 			}
 			newParentUI->InsertChildBelow(uiObject, belowControl);
 		}
+		// DF-2395 - Recalculate scrollContainer content each time we add controls to it
+		UIScrollViewContainer *container = dynamic_cast<UIScrollViewContainer*>(newParentUI);
+		if (container)
+		{
+			UIScrollView *scroll =  dynamic_cast<UIScrollView*>(container->GetParent());
+			if (scroll)
+			{
+				scroll->RecalculateContentSize();
+			}
+		}
 	}
 	
 	parent = node;
@@ -311,6 +321,15 @@ void HierarchyTreeControlNode::ReturnTreeNodeToScene()
 Rect HierarchyTreeControlNode::GetRect() const
 {
 	Rect rect;
+    
+    if (uiObject && dynamic_cast<UIScrollView*>(uiObject))
+    {
+        // We are Scroll View, and our child controls should not be taken into account
+        // while calculating the rect. See pls DF-1844 and DF-2704.
+        UIScrollView* scrollView = dynamic_cast<UIScrollView*>(uiObject);
+        return Rect(scrollView->GetPosition(true), scrollView->GetSize());
+    }
+
 	if (uiObject)
 		rect = uiObject->GetRect(true);
 
@@ -322,19 +341,6 @@ Rect HierarchyTreeControlNode::GetRect() const
 			continue;
 		
 		Rect controlRect = control->GetRect();
-		// Yuri Coder, 2013/08/28. Don't take into account controls inside the Scroll View Containers
-		// because of issue #1844. Take the Container size instead.
-		if (control->GetUIObject() && control->GetUIObject()->GetParent() &&
-			dynamic_cast<UIScrollViewContainer*>(control->GetUIObject()->GetParent()))
-		{
-			UIScrollViewContainer* container = dynamic_cast<UIScrollViewContainer*>(control->GetUIObject()->GetParent());
-			UIScrollView* scrollView = dynamic_cast<UIScrollView*>(container->GetParent());
-			if (scrollView)
-			{
-				controlRect = Rect(scrollView->GetPosition(), container->GetSize());
-			}
-		}
-		
 		rect = rect.Combine(controlRect);
 	}
 

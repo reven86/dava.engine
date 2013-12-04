@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class TestScreen : public UIScreen
 {
+protected:
+	~TestScreen(){}
 public:
 	void OnButtonPressed(BaseObject * owner, void * userData, void * callerData);
 	void OnSwitchScreenMode(BaseObject * sender, void * userData, void * callerData);

@@ -53,8 +53,8 @@ public:
     
     virtual void Process();
 
-	void SetLocked(bool locked);
-	bool IsLocked();
+	virtual void SetLocked(bool locked);
+	virtual bool IsLocked();
 
 protected:
 	Scene * GetScene() const;

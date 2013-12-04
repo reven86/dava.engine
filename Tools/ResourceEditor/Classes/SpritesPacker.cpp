@@ -51,17 +51,17 @@ void SpritesPacker::SetOutputDir(const FilePath & _outputDir)
 	outputDir = _outputDir;
 }
 
-void SpritesPacker::PackLightmaps()
+void SpritesPacker::PackLightmaps(DAVA::eGPUFamily gpu)
 {
-	return PerformPack(true);
+	return PerformPack(true, gpu);
 }
 
-void SpritesPacker::PackTextures()
+void SpritesPacker::PackTextures(DAVA::eGPUFamily gpu)
 {
-	return PerformPack(false);
+	return PerformPack(false, gpu);
 }
 
-void SpritesPacker::PerformPack(bool isLightmapPacking)
+void SpritesPacker::PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu)
 {
 	FileSystem::Instance()->CreateDirectory(outputDir, true);
 
@@ -72,12 +72,9 @@ void SpritesPacker::PerformPack(bool isLightmapPacking)
 	resourcePacker->clearProcessDirectory = true;
 	resourcePacker->inputGfxDirectory = inputDir;
 	resourcePacker->outputGfxDirectory = outputDir;
-
 	resourcePacker->excludeDirectory = inputDir + "../";
-
 	resourcePacker->isLightmapsPacking = isLightmapPacking;
-
-	resourcePacker->PackResources(EditorSettings::Instance()->GetTextureViewGPU());
+	resourcePacker->PackResources(gpu);
 
 	SafeDelete(resourcePacker);
 }

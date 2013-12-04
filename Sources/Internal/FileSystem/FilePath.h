@@ -171,7 +171,7 @@ public:
 	/**
         \brief Function to modify absolute to be path to folder. For example "Users/Document" after function call will be "Users/Document/"
 	 */
-    void MakeDirectoryPathname();
+    FilePath & MakeDirectoryPathname();
 
 	/**
         \brief Function to truncate extension from path
@@ -242,8 +242,9 @@ public:
      */
     inline ePathType GetType() const;
     
-    
+	static bool ContainPath(const FilePath& basePath, const FilePath& partPath);
     static void AddResourcesFolder(const FilePath & folder);
+	static void AddTopResourcesFolder(const FilePath & folder);
     static void RemoveResourcesFolder(const FilePath & folder);
     static const List<FilePath> GetResourcesFolders();
     

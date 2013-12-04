@@ -43,11 +43,12 @@ namespace DAVA
 
 class GridSprite : public BaseObject
 {
+protected:
+	~GridSprite();
 public:
 	static GridSprite * Create();
 
 	GridSprite();
-	~GridSprite();
 	
 	void SetGridSize(int32 gridSizeX, int32 gridSizeY);
 	void SetJointColor(int32 jointX, int32 jointY, const Vector4 & color);

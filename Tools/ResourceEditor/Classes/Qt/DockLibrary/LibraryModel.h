@@ -61,6 +61,8 @@ public:
     
     virtual QVariant data(const QModelIndex &index, int role) const;
 	
+	QMimeData *	mimeData(const QModelIndexList & indexes) const;
+
 protected:
 	QVariant GetColorForExtension(const QString& extension, const ExtensionToColorMap* colorMap,
 								const QModelIndex &index, int role) const;

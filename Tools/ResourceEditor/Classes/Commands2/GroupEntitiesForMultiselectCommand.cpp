@@ -31,17 +31,25 @@
 #include "Commands2/GroupEntitiesForMultiselectCommand.h"
 #include "../Qt/Scene/SceneDataManager.h"
 
-GroupEntitiesForMultiselectCommand::GroupEntitiesForMultiselectCommand(const EntityGroup* entities)
+GroupEntitiesForMultiselectCommand::GroupEntitiesForMultiselectCommand(const EntityGroup &entities)
 	: Command2(CMDID_GROUP_ENTITIES_FOR_MULTISELECT, "Add complex entity with LODs")
 {
-	this->entitiesToGroup = (*entities);
-	this->resultEntity = NULL;
-	Entity* en = entitiesToGroup.GetEntity(0);
-	sceneEditor = NULL;
-	if(NULL != en)
-	{
-		sceneEditor = dynamic_cast<SceneEditor2 *>(en->GetScene());
-	}
+    sceneEditor = NULL;
+    resultEntity = NULL;
+    
+    if(!IsSelectionValid(entities))
+    {
+        Logger::Error("Wrong selection.");
+    }
+    else
+    {
+        entitiesToGroup = entities;
+        Entity* en = entitiesToGroup.GetEntity(0);
+        if(NULL != en)
+        {
+            sceneEditor = dynamic_cast<SceneEditor2 *>(en->GetScene());
+        }
+    }
 }
 
 GroupEntitiesForMultiselectCommand::~GroupEntitiesForMultiselectCommand()
@@ -51,7 +59,7 @@ GroupEntitiesForMultiselectCommand::~GroupEntitiesForMultiselectCommand()
 		it != originalLodComponents.end(); ++it)
 	{
 		DAVA::Component* lodComponent = it->second;
-		delete(lodComponent);
+		SafeRelease(lodComponent);
 	}
 	originalLodComponents.clear();
 }
@@ -87,6 +95,7 @@ void GroupEntitiesForMultiselectCommand::Undo()
 	for(Map<Entity*,DAVA::Component*>::iterator it = originalLodComponents.begin();
 		it != originalLodComponents.end(); ++it)
 	{
+		it->first->RemoveComponent(it->second->GetType());
 		it->first->AddComponent(it->second);
 	}
 	originalLodComponents.clear();
@@ -141,6 +150,7 @@ void GroupEntitiesForMultiselectCommand::Redo()
 		UpdateTransformMatrixes(en, originalMatrixes[en]);
 	}
 	
+	complexEntity->SetSolid(true);
 	resultEntity = complexEntity;
 }
 
@@ -238,4 +248,32 @@ void GroupEntitiesForMultiselectCommand::MoveEntity(Entity* entity, Vector3& des
 	DAVA::Matrix4 newTransform = entity->GetWorldTransform() * moveModification;
 	
 	UpdateTransformMatrixes(entity,newTransform);
+}
+
+bool GroupEntitiesForMultiselectCommand::IsSelectionValid(const EntityGroup &entities)
+{
+    if(entities.Size() < 2) return false;
+
+    sceneEditor = dynamic_cast<SceneEditor2 *>(entities.GetEntity(0)->GetScene());
+    for(size_t ei = 0; ei < entities.Size(); ++ei)
+    {
+        Entity *e = entities.GetEntity(ei)->GetParent();
+        while (e && e != sceneEditor)
+        {
+            for(size_t ci = 0; ci < entities.Size(); ++ci)
+            {
+                if(ci == ei) continue;
+                
+                if(e == entities.GetEntity(ci))
+                {
+                    sceneEditor = NULL;
+                    return false;
+                }
+            }
+            
+            e = e->GetParent();
+        }
+    }
+    
+    return true;
 }

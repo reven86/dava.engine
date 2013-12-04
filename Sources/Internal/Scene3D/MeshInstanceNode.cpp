@@ -47,7 +47,6 @@ namespace DAVA
 {
     
     
-REGISTER_CLASS(MeshInstanceNode);
     
     
     

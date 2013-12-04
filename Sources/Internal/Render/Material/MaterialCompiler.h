@@ -51,6 +51,8 @@ struct MaterialShaders
 
 class MaterialCompiler : public BaseObject
 {
+protected:
+    ~MaterialCompiler(){}
 public:
     enum eCompileResult
     {

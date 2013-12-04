@@ -40,10 +40,10 @@ using namespace DAVA;
 
 class SceneNodeUserData : public BaseObject
 {
-public:
-    
-    SceneNodeUserData();
+protected:
     ~SceneNodeUserData();
+public:
+    SceneNodeUserData();
     
     BulletObject * bulletObject;
 protected:

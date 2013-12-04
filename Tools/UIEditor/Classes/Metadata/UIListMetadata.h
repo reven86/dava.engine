@@ -77,7 +77,7 @@ protected:
 	virtual void SetVCenterAlignEnabled(const bool value);
 	virtual void SetBottomAlignEnabled(const bool value);
 	
-	virtual void SetActiveControlRect(const Rect& rect);
+	virtual void SetActiveControlRect(const Rect& rect, bool restoreAlign);
 
 private:
 	void UpdateListCellSize();

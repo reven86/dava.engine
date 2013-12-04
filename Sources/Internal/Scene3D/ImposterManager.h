@@ -44,11 +44,12 @@ class Scene;
 
 class ImposterManager : public BaseObject, public Observer //Dizz: I know you hate multiple inheritance
 {
+protected:
+	virtual ~ImposterManager();
 public:
 	static const int32 MAX_UPDATES_PER_FRAME = 3;
 
 	ImposterManager(Scene * scene);
-	virtual ~ImposterManager();
 
 	bool IsEmpty();
 	void Add(ImposterNode * node);

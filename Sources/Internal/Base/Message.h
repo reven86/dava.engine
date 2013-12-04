@@ -39,8 +39,9 @@ namespace DAVA
 
 class MessageBase : public BaseObject
 {
-public:
+protected:
 	virtual ~MessageBase() {};
+public:
 	virtual void operator () (BaseObject *, void *, void *) = 0;
 	virtual MessageBase * Clone() const = 0;
 	virtual bool IsEqual(const MessageBase * message) const = 0;
@@ -52,6 +53,8 @@ class MessageBaseClassFunctionImpl : public MessageBase
 {
 	T * targetObject;
 	void (T::*targetFunction)(BaseObject *, void *, void *);
+protected:
+	~MessageBaseClassFunctionImpl(){}
 public:
 	MessageBaseClassFunctionImpl(T *_object, void (T::*_function)(BaseObject *, void *, void *)) 
 	{
@@ -83,6 +86,8 @@ public:
 class MessageBaseStaticFunctionImpl : public MessageBase
 {
 	void (*targetFunction)(BaseObject *, void *, void *);
+protected:
+	~MessageBaseStaticFunctionImpl(){}
 public:
 	MessageBaseStaticFunctionImpl(void (*_function)(BaseObject *, void *, void *)) 
 	{

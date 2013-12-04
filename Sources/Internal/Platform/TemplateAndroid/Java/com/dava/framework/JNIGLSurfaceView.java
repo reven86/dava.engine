@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.bda.controller.ControllerListener;
 import com.bda.controller.StateEvent;
-
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
@@ -12,6 +11,7 @@ import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.ViewGroup.LayoutParams;
 
 public class JNIGLSurfaceView extends GLSurfaceView
 {
@@ -55,6 +55,15 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		{
 			setPreserveEGLContextOnPause(true);
 		}
+	}
+	
+	@Override
+	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+		//YZ rewrite size parameter from fill parent to fixed size
+		LayoutParams params = getLayoutParams();
+		params.height = h;
+		params.width = w;
+		super.onSizeChanged(w, h, oldw, oldh);
 	}
 	
 	@Override

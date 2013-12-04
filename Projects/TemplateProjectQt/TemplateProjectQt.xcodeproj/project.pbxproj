@@ -21,7 +21,6 @@
 		A1A53E936FB558523CF7F427 /* davaglwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 28F4A364A8315EAF07B938F8 /* davaglwidget.cpp */; settings = {ATTRIBUTES = (); }; };
 		A51FBC516D952C0C5AB72EA1 /* QtGui.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 9B8EE51E126C761F3F797428 /* QtGui.framework */; };
 		A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 419FFB6CDDEB353FF0A4F469 /* QtCore.framework */; };
-		A9F72A8809110F713D328E52 /* OpenAL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 52F4216CE5F81A8073DE30C0 /* OpenAL.framework */; };
 		B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */; };
 		BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = DA18A6831232F53228631AD1 /* OpenGL.framework */; };
 		BFD3E114F55B37D3F6410D4E /* moc_davaglwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = DC6F844281BC84CC17E72FBF /* moc_davaglwidget.cpp */; settings = {ATTRIBUTES = (); }; };
@@ -102,7 +101,6 @@
 				5CCC10E715B460BF00DA83EB /* libz.dylib in Frameworks & Libraries */,
 				5C654C4115B4151C000B196B /* libFrameworkQt.a in Frameworks & Libraries */,
 				77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */,
-				A9F72A8809110F713D328E52 /* OpenAL.framework in Frameworks & Libraries */,
 				B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */,
 				A51FBC516D952C0C5AB72EA1 /* QtGui.framework in Frameworks & Libraries */,
 				A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */,

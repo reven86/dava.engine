@@ -85,17 +85,24 @@ public:
         VISIBLE_AFTER_CLIPPING_THIS_FRAME = 1 << 1,
 		VISIBLE_LOD = 1 << 2,
 		VISIBLE_SWITCH = 1 << 3,
+		ALWAYS_CLIPPING_VISIBLE = 1 << 4,
+		TREE_NODE_NEED_UPDATE = 1 << 5,
         TRANSFORM_UPDATED = 1 << 15,
 	};
 
 	static const uint32 VISIBILITY_CRITERIA = VISIBLE | VISIBLE_AFTER_CLIPPING_THIS_FRAME | VISIBLE_LOD | VISIBLE_SWITCH;
-
-    RenderObject();
+	const static uint32 CLIPPING_VISIBILITY_CRITERIA = RenderObject::VISIBLE | RenderObject::VISIBLE_LOD | RenderObject::VISIBLE_SWITCH;
+protected:
     virtual ~RenderObject();
+public:
+    RenderObject();
     
     
     inline void SetRemoveIndex(uint32 removeIndex);
     inline uint32 GetRemoveIndex();
+
+	inline void SetTreeNodeIndex(uint16 index);
+	inline uint16 GetTreeNodeIndex();	
     
     void AddRenderBatch(RenderBatch * batch);
     void RemoveRenderBatch(RenderBatch * batch);
@@ -132,6 +139,10 @@ public:
 
 	virtual void BakeTransform(const Matrix4 & transform);
 	virtual ShadowVolume * CreateShadow() {return 0;}
+
+	virtual void RecalculateWorldBoundingBox();
+
+	uint8 startClippingPlane;
     
 protected:
 //    eType type; //TODO: waiting for enums at introspection
@@ -141,6 +152,7 @@ protected:
     uint32 flags;
     uint32 debugFlags;
     uint32 removeIndex;
+	uint16 treeNodeIndex;	
     AABBox3 bbox;
     AABBox3 worldBBox;
     Matrix4 * worldTransform;                    // temporary - this should me moved directly to matrix uniforms
@@ -174,6 +186,16 @@ inline void RenderObject::SetRemoveIndex(uint32 _removeIndex)
 {
     removeIndex = _removeIndex;
 }
+
+inline void RenderObject::SetTreeNodeIndex(uint16 index)
+{
+	treeNodeIndex = index;
+}
+inline uint16 RenderObject::GetTreeNodeIndex()
+{
+	return treeNodeIndex;
+}
+
     
 inline void RenderObject::SetAABBox(const AABBox3 & _bbox)
 {

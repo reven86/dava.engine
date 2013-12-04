@@ -53,6 +53,8 @@ FontManager::FontManager()
 	
 FontManager::~FontManager()
 {
+	FTFont::ClearCache();
+
 	FT_Error error = FT_Done_FreeType(library);
 	if(error)
 	{

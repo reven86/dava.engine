@@ -91,7 +91,9 @@ namespace DAVA
 		
 		if(NULL != archive && archive->IsKeyExists("cpc.properties"))
 		{
-			LoadFromArchive(*(archive->GetArchiveFromByteArray("cpc.properties")), sceneFile);
+            KeyedArchive *props = archive->GetArchiveFromByteArray("cpc.properties");
+			LoadFromArchive(*props, sceneFile);
+            props->Release();
 		}
 		
 		Component::Deserialize(archive, sceneFile);

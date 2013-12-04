@@ -59,7 +59,7 @@ public:
 		NOTCOMPRESSED_FILE = 0x00EE00EE
 	};
     
-    struct Compression : public BaseObject
+    struct Compression: public InspBase
     {
         int32 format;
         mutable uint32 sourceFileCrc;
@@ -79,8 +79,9 @@ public:
 			)
     };
     
-    struct TextureSettings : public BaseObject
+    struct TextureSettings: public InspBase
     {
+    public:
         TextureSettings() { SetDefaultValues(); }
         
         int8 wrapModeS;
@@ -101,10 +102,10 @@ public:
 			MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
 		)
     };
-
+protected:
+    virtual ~TextureDescriptor();
 public:
     TextureDescriptor();
-    virtual ~TextureDescriptor();
 
     void SetDefaultValues();
 
@@ -162,9 +163,6 @@ protected:
     
     void ConvertToCurrentVersion(int8 version, int32 signature, File *file);
 
-    DAVA_DEPRECATED(void LoadVersion2(int32 signature, File *file));
-	DAVA_DEPRECATED(void LoadVersion3(int32 signature, File *file));
-	DAVA_DEPRECATED(void LoadVersion4(int32 signature, File *file));
 	void LoadVersion5(int32 signature, File *file);
 	void LoadVersion6(int32 signature, File *file);
     

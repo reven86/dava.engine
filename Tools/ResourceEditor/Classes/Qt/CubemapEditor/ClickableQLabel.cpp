@@ -132,6 +132,8 @@ void ClickableQLabel::enterEvent(QEvent *ev)
 	mouseEntered = true;
 	buttonDrawFlags = ClickableQLabel::None;
 	this->update();
+
+	QLabel::enterEvent(ev);
 }
 
 void ClickableQLabel::leaveEvent(QEvent *ev)
@@ -139,6 +141,18 @@ void ClickableQLabel::leaveEvent(QEvent *ev)
 	mouseEntered = false;
 	buttonDrawFlags = ClickableQLabel::None;
 	this->update();
+
+	QLabel::leaveEvent(ev);
+}
+
+void ClickableQLabel::OnParentMouseMove(QMouseEvent *ev)
+{
+	if(mouseEntered &&
+		IsPointOutsideControl(ev))
+	{
+		mouseEntered = false;
+		this->update();
+	}
 }
 
 void ClickableQLabel::paintEvent(QPaintEvent *ev)
@@ -193,6 +207,8 @@ void ClickableQLabel::mouseMoveEvent(QMouseEvent *ev)
 	}
 	
 	this->update();
+
+	QLabel::mouseMoveEvent(ev);
 }
 
 bool ClickableQLabel::IsPointInsideClockwiseRotationArea(QMouseEvent *ev)
@@ -249,5 +265,8 @@ QPoint ClickableQLabel::GetPointForButton(RotateButtonDrawFlags flag)
 
 bool ClickableQLabel::IsPointOutsideControl(QMouseEvent *ev)
 {
-	return rect().contains(ev->globalPos());
+    QRect r = rect();
+	QRect currentRect = QRect(mapToGlobal(QPoint(r.left(), r.top())), size());
+	QPoint pos = ev->globalPos();
+	return !currentRect.contains(pos);
 }

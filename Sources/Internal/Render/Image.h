@@ -63,8 +63,10 @@ public:
 	static const int MIN_HEIGHT = 8;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	
-	Image();
+protected:
 	virtual ~Image();
+public:
+	Image();
 	
 	static Image * Create(uint32 width, uint32 height, PixelFormat format);
 	static Image * CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data);
@@ -95,6 +97,12 @@ public:
 								  uint32 newWidth, uint32 newHeight,
 								  uint32 xOffset = 0, uint32 yOffset = 0);
 	static Image* CopyImageRegion(const Image* imageToCopy, const Rect& rect);
+
+	void InsertImage(const Image* image, uint32 dstX, uint32 dstY,
+					 uint32 srcX = 0, uint32 srcY = 0,
+					 uint32 srcWidth = -1, uint32 srcHeight = -1);
+	void InsertImage(const Image* image, const Vector2& dstPos,
+					 const Rect& srcRect);
 
     // changes size of image canvas to square
     void ResizeToSquare();

@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class EntityDefaultAllocator : public BaseObject
 {
+protected:
+    ~EntityDefaultAllocator(){}
 public:
     Component * components[Component::COMPONENT_COUNT];
     Vector<EntityDefaultAllocator*> children;
@@ -45,6 +47,8 @@ public:
 
 class EntityCustomAllocator : public BaseObject
 {
+protected:
+    ~EntityCustomAllocator(){}
 public:
     Component * components[Component::COMPONENT_COUNT];
     Vector<EntityCustomAllocator*> children;
@@ -65,6 +69,8 @@ public:
 
 class EntityCustomSmallAllocator : public BaseObject
 {
+protected:
+    ~EntityCustomSmallAllocator(){}
 public:
     uint32 flags;
     void * dataPtr;
@@ -116,6 +122,8 @@ public:
 
 class MemoryAllocationTraverseTest: public TestTemplate<MemoryAllocationTraverseTest>
 {
+protected:
+    ~MemoryAllocationTraverseTest(){}
 public:
 	MemoryAllocationTraverseTest(const String &testName);
     

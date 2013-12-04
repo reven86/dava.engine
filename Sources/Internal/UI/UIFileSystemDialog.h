@@ -95,7 +95,9 @@ public:
         int32 indexInFileList;
         int32 type;
     };
-    
+protected:
+    ~UIFileSystemDialog(){}
+public:
     UIFileSystemDialog(const FilePath &_fontPath);
 //	virtual void WillAppear();
     

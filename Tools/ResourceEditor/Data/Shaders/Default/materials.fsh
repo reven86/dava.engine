@@ -25,6 +25,8 @@ varying mediump vec3 varTexCoord0;
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
 uniform sampler2D texture1;
 varying highp vec2 varTexCoord1;
+#elif defined(FRAME_BLEND)
+varying mediump vec2 varTexCoord1;
 #endif
 
 #if defined(PIXEL_LIT)
@@ -56,12 +58,21 @@ uniform vec3 fogColor;
 varying float varFogFactor;
 #endif
 
+#if defined(MATERIAL_SPEED_TREE_LEAF)
+uniform lowp vec3 treeLeafColorMul;
+uniform lowp float treeLeafOcclusionOffset;
+#endif
+
 #if defined(SETUP_LIGHTMAP)
 varying lowp float varLightmapSize;
 #endif
 
 #if defined(VERTEX_COLOR)
 varying lowp vec4 varVertexColor;
+#endif
+
+#if defined(FRAME_BLEND)
+varying lowp float varTime;
 #endif
 
 #if defined(FLATCOLOR)
@@ -77,6 +88,11 @@ void main()
     lowp vec4 textureColor0 = texture2D(texture0, varTexCoord0);
 #else
     lowp vec3 textureColor0 = texture2D(texture0, varTexCoord0).rgb;
+#endif
+
+#if defined(FRAME_BLEND)
+	  lowp vec4 blendFrameColor = texture2D(texture0, varTexCoord1);
+	  textureColor0 = mix(textureColor0, blendFrameColor, varTime);
 #endif
 	
 #elif defined(MATERIAL_SKYBOX)
@@ -181,7 +197,9 @@ void main()
     gl_FragColor = vec4(color, 1.0);
 #endif
 
-#if defined(VERTEX_COLOR)
+#if defined(MATERIAL_SPEED_TREE_LEAF)
+	gl_FragColor *= vec4(varVertexColor.rgb * treeLeafColorMul + vec3(treeLeafOcclusionOffset), varVertexColor.a);
+#elif defined(VERTEX_COLOR)
 	gl_FragColor *= varVertexColor;
 #endif
 

@@ -468,11 +468,13 @@ public:
 	VariantType& operator=(const VariantType& other);
 
 	const MetaInfo* Meta();
+	void* MetaObject();
 
 	static VariantType LoadData(const void *src, const MetaInfo *meta);
 	static void SaveData(void *dst, const MetaInfo *meta, const VariantType &val);
 
 	static VariantType FromType(int type);
+	static VariantType Convert(const VariantType &val, int type);
     
 private:
 	// This constructor is private to prevent creation of VariantType from pointer

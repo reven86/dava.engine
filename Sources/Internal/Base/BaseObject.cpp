@@ -38,7 +38,7 @@ namespace DAVA
 REGISTER_CLASS(BaseObject);    
     
 
-const String & BaseObject::GetClassName()
+const String & BaseObject::GetClassName() const
 {
     return ObjectFactory::Instance()->GetName(this);
 }

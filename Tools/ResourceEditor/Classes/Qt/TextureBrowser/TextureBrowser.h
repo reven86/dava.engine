@@ -61,6 +61,7 @@ public:
     ~TextureBrowser();
 
 	void Close();
+	void Update();
 
 	static QColor gpuColor_PVR_ISO;
 	static QColor gpuColor_PVR_Android;
@@ -75,8 +76,7 @@ protected:
 public slots:
 	void sceneActivated(SceneEditor2 *scene);
 	void sceneDeactivated(SceneEditor2 *scene);
-	void sceneNodeSelected(SceneEditor2 *scene, DAVA::Entity *entity);
-	void sceneNodeDeselected(SceneEditor2 *scene, DAVA::Entity *entity);
+	void sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 
 private:
     Ui::TextureBrowser *ui;
@@ -151,6 +151,8 @@ private slots:
 
 	void convertStatusImg(const QString &curPath, int curGpu);
 	void convertStatusQueue(int curJob, int jobCount);
+    
+    void clearFilter();
 };
 
 #endif // __TEXTURE_BROWSER_H__

@@ -45,9 +45,10 @@ namespace DAVA
  */
 class ParticleEmitterObject : public GameObject
 {
+protected:
+	virtual ~ParticleEmitterObject();
 public:	
 	ParticleEmitterObject();
-	virtual ~ParticleEmitterObject();
 	
 	/**
 		\brief Function sets emitter to particle emitter object.

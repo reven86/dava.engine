@@ -47,16 +47,10 @@ struct DistanceWidget
     QLabel *name;
     QDoubleSpinBox *distance;
 
-    QLabel *trianglesName;
-    QLineEdit *triangles;
-
     void SetVisible(bool visible)
     {
         name->setVisible(visible);
         distance->setVisible(visible);
-        
-        trianglesName->setVisible(visible);
-        triangles->setVisible(visible);
     }
 };
 
@@ -115,13 +109,8 @@ void LODEditor::SetupInternalUI()
     ui->forceSlider->setRange(0, DAVA::LodComponent::MAX_LOD_DISTANCE);
     ui->forceSlider->setValue(0);
     
-    connect(ui->distanceSlider, SIGNAL(DistanceChanged(int, double)), SLOT(LODDistanceChangedBySlider(int, double)));
+    connect(ui->distanceSlider, SIGNAL(DistanceChanged(const QVector<int> &, bool)), SLOT(LODDistanceChangedBySlider(const QVector<int> &, bool)));
     
-    InitTriangles(ui->labelTriangles0, ui->triangles0, 0);
-    InitTriangles(ui->labelTriangles1, ui->triangles1, 1);
-    InitTriangles(ui->labelTriangles2, ui->triangles2, 2);
-    InitTriangles(ui->labelTriangles3, ui->triangles3, 3);
-
     InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, 0);
     InitDistanceSpinBox(ui->lod1Name, ui->lod1Distance, 1);
     InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 2);
@@ -196,15 +185,6 @@ void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int i
     distanceWidgets->SetVisible(false);
 }
 
-void LODEditor::InitTriangles(QLabel *name, QLineEdit *lineedit, int index)
-{
-    distanceWidgets[index].trianglesName = name;
-    distanceWidgets[index].triangles = lineedit;
-    
-    lineedit->setText("0");
-}
-
-
 
 void LODEditor::UpdateSpinboxColor(QDoubleSpinBox *spinbox)
 {
@@ -247,7 +227,7 @@ void LODEditor::LODDataChanged()
         SetSpinboxValue(distanceWidgets[i].distance, distance);
         ui->distanceSlider->SetDistance(i, distance);
         
-        distanceWidgets[i].triangles->setText(Format("%d", editedLODData->GetLayerTriangles(i)));
+        distanceWidgets[i].name->setText(Format("%d. (%d):", i, editedLODData->GetLayerTriangles(i)));
     }
     for (DAVA::int32 i = lodLayersCount; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
@@ -257,10 +237,30 @@ void LODEditor::LODDataChanged()
     UpdateWidgetVisibility();
 }
 
-void LODEditor::LODDistanceChangedBySlider(int layerNum, double value)
+void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous)
 {
-    editedLODData->SetLayerDistance(layerNum, value);
-    SetSpinboxValue(distanceWidgets[layerNum].distance, value);
+	ui->distanceSlider->LockDistances(true);
+
+	if(changedLayers.size() != 0)
+	{
+		DAVA::Map<DAVA::int32, DAVA::float32> lodDistances;
+		for (int i = 0; i < changedLayers.size(); i++)
+		{
+			int layer = changedLayers[i];
+
+			double value = ui->distanceSlider->GetDistance(layer);
+			SetSpinboxValue(distanceWidgets[layer].distance, value);
+
+			if(!continuous)
+			{
+				lodDistances[layer] = value;
+			}
+		}
+
+		editedLODData->UpdateDistances(lodDistances);
+	}
+
+	ui->distanceSlider->LockDistances(false);
 }
 
 void LODEditor::LODDistanceChangedBySpinbox(double value)
@@ -298,6 +298,12 @@ void LODEditor::SetForceLayerValues(int layersCount)
     {
         ui->forceLayer->addItem(Format("%d", i), QVariant(i));
     }
+    
+    int requestedIndex = editedLODData->GetForceLayer() + 1;
+    if(requestedIndex <= layersCount)
+    {
+        ui->forceLayer->setCurrentIndex(requestedIndex);
+    }
 }
 
 void LODEditor::GlobalSettingsButtonReleased()
@@ -314,6 +320,15 @@ void LODEditor::ViewLODButtonReleased()
 
     QIcon icon = (ui->frameViewLOD->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
     ui->viewLODButton->setIcon(icon);
+    
+    if(ui->frameViewLOD->isVisible() == false)
+    {
+        editedLODData->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
+        editedLODData->SetForceLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
+        
+        ui->enableForceDistance->setCheckState(Qt::Unchecked);
+        ui->forceLayer->setCurrentIndex(0);
+    }
 }
 
 void LODEditor::EditLODButtonReleased()

@@ -66,7 +66,6 @@
 #include "../Commands/FileCommands.h"
 
 #include "../CommandLine/CommandLineManager.h"
-#include "../CommandLine/Beast/BeastCommandLineTool.h"
 #include "TexturePacker/CommandLineParser.h"
 
 #include "Scene3D/Components/CustomPropertiesComponent.h"
@@ -217,35 +216,6 @@ FilePath EditorBodyControl::CustomColorsGetCurrentSaveFileName()
 }
 
 
-void EditorBodyControl::PushEditorEntities()
-{
-	DVASSERT(poppedEditorEntitiesForSave.size() == 0);
-
-	Vector<Entity *>entities;
-	scene->GetChildNodes(entities);
-
-	uint32 count = entities.size();
-	for(uint32 i = 0; i < count; ++i)
-	{
-		if(entities[i]->GetName().find("editor.") != String::npos)
-		{
-			poppedEditorEntitiesForSave.push_back(SafeRetain(entities[i]));
-			entities[i]->GetParent()->RemoveNode(entities[i]);
-		}
-	}
-}
-
-void EditorBodyControl::PopEditorEntities()
-{
-	uint32 count = poppedEditorEntitiesForSave.size();
-	for(uint32 i = 0; i < count; ++i)
-	{
-		scene->AddEditorEntity(poppedEditorEntitiesForSave[i]);
-		SafeRelease(poppedEditorEntitiesForSave[i]);
-	}
-	
-	poppedEditorEntitiesForSave.clear();
-}
 
 void EditorBodyControl::CreateModificationPanel(void)
 {
@@ -749,86 +719,6 @@ void EditorBodyControl::Update(float32 timeElapsed)
     
     
     UIControl::Update(timeElapsed);
-
-	BeastProxy::Instance()->Update(beastManager);
-	if(BeastProxy::Instance()->IsJobDone(beastManager))
-	{
-		PackLightmaps();
-		BeastProxy::Instance()->SafeDeleteManager(&beastManager);
-
-		Landscape *land = scene->GetLandscape(scene);
-		if(land)
-		{
-			FilePath textureName = land->GetTextureName(DAVA::Landscape::TEXTURE_COLOR);
-			textureName.ReplaceFilename("temp_beast.png");
-
-			FileSystem::Instance()->DeleteFile(textureName);
-		}
-
-#if defined (__DAVAENGINE_WIN32__)
-		BeastCommandLineTool *beastTool = dynamic_cast<BeastCommandLineTool *>(CommandLineManager::Instance()->GetActiveCommandLineTool());
-        if(beastTool)
-        {
-			// TODO: mainwindow
-            // QtMainWindowHandler::Instance()->SaveScene(scene, beastTool->GetScenePathname());
-
-			bool forceClose =	CommandLineParser::CommandIsFound(String("-force"))
-							||  CommandLineParser::CommandIsFound(String("-forceclose"));
-			if(forceClose)
-	            Core::Instance()->Quit();
-        }
-#endif //#if defined (__DAVAENGINE_WIN32__)
-		// TODO: mainwindow
-		// QtMainWindowHandler::Instance()->ReloadSceneTextures();
-	}
-}
-
-void EditorBodyControl::ReloadRootScene(const FilePath &pathToFile)
-{
-    scene->ReleaseRootNode(pathToFile);
-    
-    ReloadNode(scene, pathToFile);
-    
-    scene->SetSelection(0);
-    for (int32 i = 0; i < (int32)nodesToAdd.size(); i++) 
-    {
-        scene->ReleaseUserData(nodesToAdd[i].nodeToRemove);
-        nodesToAdd[i].parent->RemoveNode(nodesToAdd[i].nodeToRemove);
-        nodesToAdd[i].parent->AddNode(nodesToAdd[i].nodeToAdd);
-        SafeRelease(nodesToAdd[i].nodeToAdd);
-    }
-    nodesToAdd.clear();
-
-	modificationPanel->OnReloadScene();
-    Refresh();
-}
-
-void EditorBodyControl::ReloadNode(Entity *node, const FilePath &pathToFile)
-{//если в рут ноды сложить такие же рут ноды то на релоаде все накроет пиздой
-    KeyedArchive *customProperties = node->GetCustomProperties();
-    if (customProperties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, "") == pathToFile.GetAbsolutePathname())
-    {
-        Entity *newNode = scene->GetRootNode(pathToFile)->Clone();
-        newNode->SetLocalTransform(node->GetLocalTransform());
-        newNode->GetCustomProperties()->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, pathToFile.GetAbsolutePathname());
-        newNode->SetSolid(true);
-        
-        Entity *parent = node->GetParent();
-        AddedNode addN;
-        addN.nodeToAdd = newNode;
-        addN.nodeToRemove = node;
-        addN.parent = parent;
-
-        nodesToAdd.push_back(addN);
-        return;
-    }
-    
-    int32 csz = node->GetChildrenCount();
-    for (int ci = 0; ci < csz; ++ci)
-    {
-        Entity * child = node->GetChild(ci);
-        ReloadNode(child, pathToFile);
-    }
 }
 
 
@@ -957,7 +847,7 @@ void EditorBodyControl::PackLightmaps()
 	packer.SetInputDir(inputDir);
 
 	packer.SetOutputDir(outputDir);
-	packer.PackLightmaps();
+	packer.PackLightmaps(EditorSettings::Instance()->GetTextureViewGPU());
 	packer.CreateDescriptors();
 	packer.ParseSpriteDescriptors();
 
@@ -978,7 +868,7 @@ void EditorBodyControl::Draw(const UIGeometricData &geometricData)
 
 void EditorBodyControl::RecreteFullTilingTexture()
 {
-    Landscape *landscape = scene->GetLandscape(scene);
+    Landscape *landscape = FindLandscape(scene);
     if (landscape)
     {
         landscape->UpdateFullTiledTexture();
@@ -1096,7 +986,7 @@ void EditorBodyControl::LandscapeEditorStarted()
         AddControl(toolsPanel);
     }
     
-	Entity* sceneNode = EditorScene::GetLandscapeNode(scene);
+	Entity* sceneNode = FindLandscapeEntity(scene);
 	if (sceneNode)
 	{
 		scene->SetSelection(sceneNode);
@@ -1492,7 +1382,7 @@ Matrix4 EditorBodyControl::GetLandscapeOffset(const Matrix4& transform)
 	Matrix4 resTransform;
 	resTransform.Identity();
 
-	Landscape* landscape = scene->GetLandscape(scene);
+	Landscape* landscape = FindLandscape(scene);
 	if(!landscape) return resTransform;
 
 	Vector3 p = Vector3(0, 0, 0) * transform;

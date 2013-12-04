@@ -122,7 +122,7 @@ WebViewControl::WebViewControl()
 
 	UIWebView* localWebView = (UIWebView*)webViewPtr;
 	HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-	[[[appDelegate glController] view] addSubview:localWebView];
+	[[appDelegate glController].backgroundView addSubview:localWebView];
 
 	webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
 	[localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
@@ -179,61 +179,17 @@ void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
 
-	Core::eScreenOrientation screenOrientation = Core::Instance()->GetScreenOrientation();
-	switch (screenOrientation)
-	{
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-		{
-			// X and Y are swapped in this case.
-			webViewRect.origin.y = (DAVA::Core::Instance()->GetVirtualScreenXMax() - rect.x - rect.dx) * DAVA::Core::GetVirtualToPhysicalFactor();
-			webViewRect.origin.x = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
+	
+    // Minimum recalculations are needed, no swapping, no rotation.
+    webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
+    webViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
 			
-			webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().y;
-			webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().x;
+    webViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
+    webViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
 
-			// Height and width are swapped in this case,
-			webViewRect.size.width = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-			webViewRect.size.height = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			((UIWebView*)webViewPtr).transform = CGAffineTransformMakeRotation(DAVA::DegToRad(-90.0f));
-			break;
-		}
+    webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
+    webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
 
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-		{
-			// X and Y are swapped in this case.
-			webViewRect.origin.y = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-			webViewRect.origin.x = (DAVA::Core::Instance()->GetVirtualScreenYMax() - rect.y - rect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			// Height and width are swapped in this case,
-			webViewRect.size.width = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-			webViewRect.size.height = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			((UIWebView*)webViewPtr).transform = CGAffineTransformMakeRotation(DAVA::DegToRad(90.0f));
-			break;
-		}
-
-		case Core::SCREEN_ORIENTATION_PORTRAIT:
-		case Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
-		{
-			// Minimum recalculations are needed, no swapping, no rotation.
-			webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-			webViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			webViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-			webViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-
-			webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-			webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
-
-			break;
-		}
-
-		default:
-		{
-			break;
-		}
-	}
 	
 	// Apply the Retina scale divider, if any.
 	float scaleDivider = GetScaleDivider();

@@ -68,7 +68,7 @@ LandscapeEditorBase::LandscapeEditorBase(LandscapeEditorDelegate *newDelegate, E
     
     landscapeSize = 0;
 
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.png");
+	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
 	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
     
     savedShaderMode = Landscape::TILED_MODE_TILE_DETAIL_MASK;
@@ -101,8 +101,8 @@ bool LandscapeEditorBase::SetScene(EditorScene *newScene)
 {
     SafeRelease(workingScene);
     
-    workingLandscape = SafeRetain(newScene->GetLandscape(newScene));
-	workingLandscapeEntity = SafeRetain(newScene->GetLandscapeNode(newScene));
+    workingLandscape = SafeRetain(FindLandscape(newScene));
+	workingLandscapeEntity = SafeRetain(FindLandscapeEntity(newScene));
 
     if(!workingLandscape)
     {

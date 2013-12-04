@@ -46,9 +46,10 @@ namespace DAVA
 class Animation;
 class SoundGroup : public VolumeAnimatedObject
 {
+protected:
+	~SoundGroup();
 public:
 	SoundGroup();
-	~SoundGroup();
 
 	void SetVolume(float32 volume);
 	float32	GetVolume();

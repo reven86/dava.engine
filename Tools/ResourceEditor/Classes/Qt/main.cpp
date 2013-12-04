@@ -28,19 +28,41 @@
 
 
 
-#include <QtGui/QApplication>
-#include "Main/mainwindow.h"
-#include "Project/ProjectManager.h"
 #include "DAVAEngine.h"
+#include <QApplication>
+
+#include "version.h"
+#include "Main/mainwindow.h"
+#include "Main/davaglwidget.h"
+#include "Project/ProjectManager.h"
+#include "Utils/TeamcityOutput.h"
+#include "TexturePacker/CommandLineParser.h"
+#include "TexturePacker/ResourcePacker2D.h"
+#include "TextureCompression/PVRConverter.h"
+#include "SceneEditor/EditorSettings.h"
+#include "SceneEditor/EditorConfig.h"
+#include "SceneEditor/SceneValidator.h"
+#include "SceneEditor/TextureSquarenessChecker.h"
+#include "CommandLine/CommandLineManager.h"
+#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Classes/SceneEditor/ControlsFactory.h"
+#include "FileSystem/ResourceArchive.h"
 
 #if defined (__DAVAENGINE_MACOS__)
-#include "Platform/Qt/MacOS/QtLayerMacOS.h"
+	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
-#include "Platform/Qt/Win32/QtLayerWin32.h"
-#include "Platform/Qt/Win32/CorePlatformWin32.h"
-#endif //#if defined (__DAVAENGINE_MACOS__)
+	#include "Platform/Qt/Win32/QtLayerWin32.h"
+	#include "Platform/Qt/Win32/CorePlatformWin32.h"
+#endif
 
-#include "../CommandLine/CommandLineManager.h"
+#ifdef __DAVAENGINE_BEAST__
+#include "BeastProxyImpl.h"
+#else
+#include "BeastProxy.h"
+#endif //__DAVAENGINE_BEAST__
+
+void UnpackHelpDoc();
 
 int main(int argc, char *argv[])
 {
@@ -49,51 +71,111 @@ int main(int argc, char *argv[])
 
 #if defined (__DAVAENGINE_MACOS__)
     DAVA::Core::Run(argc, argv);
-	new CommandLineManager();
 	new DAVA::QtLayerMacOS();
+	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCL"));
 #elif defined (__DAVAENGINE_WIN32__)
 	HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
 	DAVA::Core::Run(argc, argv, hInstance);
-	new CommandLineManager();
 	new DAVA::QtLayerWin32();
+	DAVA::PVRConverter::Instance()->SetPVRTexTool(String("~res:/PVRTexToolCL.exe"));
 #else
 	DVASSERT(false && "Wrong platform")
 #endif
 
-    bool needInvalidateTimer = (CommandLineManager::Instance()->IsCommandLineModeEnabled() == false);
-    new QtMainWindow(needInvalidateTimer);
+#ifdef __DAVAENGINE_BEAST__
+	new BeastProxyImpl();
+#else 
+	new BeastProxy();
+#endif //__DAVAENGINE_BEAST__
 
-    bool needToQuit = false;
-    if(CommandLineManager::Instance()->IsCommandLineModeEnabled())
-    {
-        if(CommandLineManager::Instance()->IsToolInitialized())
-        {
-            CommandLineManager::Instance()->Process();
-            CommandLineManager::Instance()->PrintResults();
-            needToQuit = CommandLineManager::Instance()->NeedCloseApplication();
-        }
-        else
-        {
-            CommandLineManager::Instance()->PrintResults();
-            CommandLineManager::Instance()->PrintUsageForActiveTool();
-            needToQuit = true;
-        }
-    }
-    
-    if(!needToQuit)
-    {
-        QtMainWindow::Instance()->show();
+	CommandLineManager cmdLine;
+
+	if(cmdLine.IsEnabled())
+	{
+        DAVA::Logger::Instance()->SetLogLevel(DAVA::Logger::LEVEL_WARNING);
+        
+		new SceneValidator();
+		DavaGLWidget* davaGL = new DavaGLWidget();
+
+		//DAVA::TeamcityOutput *out = new DAVA::TeamcityOutput();
+		//DAVA::Logger::AddCustomOutput(out);
+
+		if(!cmdLine.IsToolInitialized())
+		{
+			cmdLine.PrintUsageForActiveTool();
+		}
+		else
+		{
+            //Trick for correct loading of sprites.
+            Core::Instance()->UnregisterAllAvailableResourceSizes();
+            Core::Instance()->RegisterAvailableResourceSize(1, 1, "Gfx");
+            
+			cmdLine.Process();
+			cmdLine.PrintResults();
+		}
+
+		SafeDelete(davaGL);
+		SceneValidator::Instance()->Release();
+	}
+	else
+	{
+		new EditorSettings();
+		new EditorConfig();
+		new SceneValidator();
+		new TextureSquarenessChecker();
+
+		LocalizationSystem::Instance()->SetCurrentLocale("en");
+		LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
+
+		DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
+
+		// check and unpack help documents
+		UnpackHelpDoc();
+
+		// create and init UI
+		new QtMainWindow();
+		QtMainWindow::Instance()->EnableGlobalTimeout(true);
+		QtMainWindow::Instance()->show();
 		ProjectManager::Instance()->ProjectOpenLast();
+        if(ProjectManager::Instance()->IsOpened())
+            QtMainWindow::Instance()->OnSceneNew();
 
-        ret = a.exec();
-    }
+		// start app
+		ret = a.exec();
 
-	QtMainWindow::Instance()->Release();
-	CommandLineManager::Instance()->Release();
+		QtMainWindow::Instance()->Release();
+		ControlsFactory::ReleaseFonts();
 
+		TextureSquarenessChecker::Instance()->Release();
+		SceneValidator::Instance()->Release();
+		EditorConfig::Instance()->Release();
+		EditorSettings::Instance()->Release();
+	}
+
+	BeastProxy::Instance()->Release();
 	DAVA::QtLayer::Instance()->Release();
 	DAVA::Core::Instance()->ReleaseSingletons();
 	DAVA::Core::Instance()->Release();
 
 	return ret;
+}
+
+void UnpackHelpDoc()
+{
+	DAVA::KeyedArchive* settings = EditorSettings::Instance()->GetSettings();
+	DAVA::String editorVer = settings->GetString("editor.version");
+	DAVA::FilePath docsPath = FilePath(ResourceEditor::DOCUMENTATION_PATH);
+	if(editorVer != RESOURCE_EDITOR_VERSION || !docsPath.Exists())
+	{
+		DAVA::Logger::Info("Unpacking Help...");
+		DAVA::ResourceArchive * helpRA = new DAVA::ResourceArchive();
+		if(helpRA->Open("~res:/Help.docs"))
+		{
+			DAVA::FileSystem::Instance()->DeleteDirectory(docsPath);
+			DAVA::FileSystem::Instance()->CreateDirectory(docsPath, true);
+			helpRA->UnpackToFolder(docsPath);
+		}
+		DAVA::SafeRelease(helpRA);
+	}
+	settings->SetString("editor.version", RESOURCE_EDITOR_VERSION);
 }

@@ -88,6 +88,9 @@ protected:
 	bool LoadImageTo(const DAVA::String& filePath, int face, bool silent);
 	ClickableQLabel* GetLabelForFace(int face);
 	bool IsCubemapEdited();
+
+
+	void mouseMoveEvent(QMouseEvent *ev);
 	
 protected slots:
 

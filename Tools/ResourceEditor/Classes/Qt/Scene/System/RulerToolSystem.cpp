@@ -46,7 +46,8 @@ RulerToolSystem::RulerToolSystem(Scene* scene)
 ,	curToolSize(0)
 ,	cursorSize(0)
 ,	prevCursorPos(Vector2(-1.f, -1.f))
-,	length(0)
+,	previewEnabled(true)
+,	lineWidth(1)
 {
 	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
 	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
@@ -58,37 +59,28 @@ RulerToolSystem::~RulerToolSystem()
 {
 }
 
-bool RulerToolSystem::IsCanBeEnabled()
+LandscapeEditorDrawSystem::eErrorType RulerToolSystem::IsCanBeEnabled()
 {
-	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-	DVASSERT(scene);
-	
-	bool canBeEnabled = true;
-	canBeEnabled &= !(scene->visibilityToolSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->heightmapEditorSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->tilemaskEditorSystem->IsLandscapeEditingEnabled());
-//	canBeEnabled &= !(scene->rulerToolSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->customColorsSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled());
-	
-	return canBeEnabled;
+	return drawSystem->VerifyLandscape();
 }
 
-bool RulerToolSystem::EnableLandscapeEditing()
+LandscapeEditorDrawSystem::eErrorType RulerToolSystem::EnableLandscapeEditing()
 {
 	if (enabled)
 	{
-		return true;
+		return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 	}
 
-	if (!IsCanBeEnabled())
+	LandscapeEditorDrawSystem::eErrorType canBeEnabledError = IsCanBeEnabled();
+	if ( canBeEnabledError!= LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
-		return false;
+		return canBeEnabledError;
 	}
-
-	if (!drawSystem->EnableCustomDraw())
+	
+	LandscapeEditorDrawSystem::eErrorType enableCustomDrawError = drawSystem->EnableCustomDraw();
+	if (enableCustomDrawError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
-		return false;
+		return enableCustomDrawError;
 	}
 
 	selectionSystem->SetLocked(true);
@@ -102,15 +94,16 @@ bool RulerToolSystem::EnableLandscapeEditing()
 	drawSystem->EnableCursor(landscapeSize);
 	drawSystem->SetCursorSize(0);
 
-	previewLength = 0;
+	previewLength = -1.f;
+	previewEnabled = true;
 
 	Clear();
 	DrawPoints();
 
-	SceneSignals::Instance()->EmitRulerToolLengthChanged(dynamic_cast<SceneEditor2*>(GetScene()), length, previewLength);
+	SendUpdatedLength();
 
 	enabled = true;
-	return enabled;
+	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool RulerToolSystem::DisableLandscapeEdititing()
@@ -129,7 +122,9 @@ bool RulerToolSystem::DisableLandscapeEdititing()
 	drawSystem->GetLandscapeProxy()->SetRulerToolTexture(NULL);
 	drawSystem->GetLandscapeProxy()->SetRulerToolTextureEnabled(false);
 
-	SceneSignals::Instance()->EmitRulerToolLengthChanged(dynamic_cast<SceneEditor2*>(GetScene()), -1.0, -1.0);
+	Clear();
+	previewLength = -1.f;
+	SendUpdatedLength();
 
 	enabled = false;
 	return !enabled;
@@ -160,7 +155,28 @@ void RulerToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	Vector3 point;
 	collisionSystem->LandRayTestFromCamera(point);
 
-	if(UIEvent::BUTTON_1 == event->tid)
+	if (UIEvent::PHASE_KEYCHAR == event->phase)
+	{
+		if (DVKEY_BACKSPACE == event->tid)
+		{
+			if (previewEnabled)
+			{
+				RemoveLastPoint();
+			}
+			else
+			{
+				previewEnabled = true;
+			}
+			CalcPreviewPoint(point, true);
+			DrawPoints();
+		}
+		else if (DVKEY_ESCAPE == event->tid)
+		{
+			DisablePreview();
+			DrawPoints();
+		}
+	}
+	else if(UIEvent::BUTTON_1 == event->tid)
 	{
 		if(UIEvent::PHASE_ENDED == event->phase)
 		{
@@ -206,6 +222,11 @@ void RulerToolSystem::UpdateCursorPosition(int32 landscapeSize)
 
 		drawSystem->SetCursorPosition(cursorPosition);
 	}
+	else
+	{
+		// hide cursor
+		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
+	}
 }
 
 void RulerToolSystem::SetStartPoint(const DAVA::Vector3 &point)
@@ -214,7 +235,8 @@ void RulerToolSystem::SetStartPoint(const DAVA::Vector3 &point)
 
 	previewPoint = point;
 	linePoints.push_back(point);
-	SceneSignals::Instance()->EmitRulerToolLengthChanged(dynamic_cast<SceneEditor2*>(GetScene()), length, length);
+	lengths.push_back(0.f);
+	SendUpdatedLength();
 }
 
 void RulerToolSystem::AddPoint(const DAVA::Vector3 &point)
@@ -222,29 +244,53 @@ void RulerToolSystem::AddPoint(const DAVA::Vector3 &point)
 	if(0 < linePoints.size())
 	{
 		Vector3 prevPoint = *(linePoints.rbegin());
-		length += GetLength(prevPoint, point);
+		float32 l = lengths.back();
+		l += GetLength(prevPoint, point);
 
 		linePoints.push_back(point);
+		lengths.push_back(l);
 
-		SceneSignals::Instance()->EmitRulerToolLengthChanged(dynamic_cast<SceneEditor2*>(GetScene()), length, length);
+		SendUpdatedLength();
 	}
 }
 
-void RulerToolSystem::CalcPreviewPoint(const Vector3& point)
+void RulerToolSystem::RemoveLastPoint()
 {
-	if (isIntersectsLandscape && previewPoint != point && linePoints.size() > 0)
+	//remove points except start point
+	if (linePoints.size() > 1)
+	{
+		List<Vector3>::iterator pointsIter = linePoints.end();
+		--pointsIter;
+		linePoints.erase(pointsIter);
+
+		List<float32>::iterator lengthsIter = lengths.end();
+		--lengthsIter;
+		lengths.erase(lengthsIter);
+
+		SendUpdatedLength();
+	}
+}
+
+void RulerToolSystem::CalcPreviewPoint(const Vector3& point, bool force)
+{
+	if (!previewEnabled)
+	{
+		return;
+	}
+
+	if ((isIntersectsLandscape && linePoints.size() > 0) && (force || previewPoint != point))
 	{
 		Vector3 lastPoint = linePoints.back();
 		float32 previewLen = GetLength(lastPoint, point);
 
 		previewPoint = point;
-		previewLength = length + previewLen;
+		previewLength = lengths.back() + previewLen;
 	}
 	else if (!isIntersectsLandscape)
 	{
 		previewLength = -1.f;
 	}
-	SceneSignals::Instance()->EmitRulerToolLengthChanged(dynamic_cast<SceneEditor2*>(GetScene()), length, previewLength);
+	SendUpdatedLength();
 }
 
 DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector3 &startPoint, const DAVA::Vector3 &endPoint)
@@ -270,6 +316,11 @@ DAVA::float32 RulerToolSystem::GetLength(const DAVA::Vector3 &startPoint, const 
 
 void RulerToolSystem::DrawPoints()
 {
+	if (!drawSystem->GetRulerToolProxy())
+	{
+		return;
+	}
+
 	Sprite* sprite = drawSystem->GetRulerToolProxy()->GetSprite();
 	Texture* targetTexture = sprite->GetTexture();
 
@@ -280,7 +331,7 @@ void RulerToolSystem::DrawPoints()
 	points.reserve(linePoints.size() + 1);
 	std::copy(linePoints.begin(), linePoints.end(), std::back_inserter(points));
 
-	if (isIntersectsLandscape)
+	if (previewEnabled && isIntersectsLandscape)
 	{
 		points.push_back(previewPoint);
 	}
@@ -300,7 +351,7 @@ void RulerToolSystem::DrawPoints()
 		Vector3 startPoint = points[0];
 		for (uint32 i = 1; i < points.size(); ++i)
 		{
-			if (isIntersectsLandscape && i == (points.size() - 1))
+			if (previewEnabled && isIntersectsLandscape && i == (points.size() - 1))
 			{
 				RenderManager::Instance()->SetColor(blue);
 			}
@@ -309,7 +360,9 @@ void RulerToolSystem::DrawPoints()
 
 			Vector3 startPosition = (startPoint - offsetPoint) * koef;
 			Vector3 endPosition = (endPoint - offsetPoint) * koef;
-			RenderHelper::Instance()->DrawLine(DAVA::Vector2(startPosition.x, startPosition.y), DAVA::Vector2(endPosition.x, endPosition.y));
+			RenderHelper::Instance()->DrawLine(DAVA::Vector3(startPosition.x, startPosition.y, 0),
+											   DAVA::Vector3(endPosition.x, endPosition.y, 0),
+											   (float32)lineWidth);
 
 			startPoint = endPoint;
 		}
@@ -324,5 +377,59 @@ void RulerToolSystem::DrawPoints()
 void RulerToolSystem::Clear()
 {
 	linePoints.clear();
-	length = 0;
+	lengths.clear();
+}
+
+void RulerToolSystem::DisablePreview()
+{
+	previewEnabled = false;
+	previewLength = -1.f;
+
+	SendUpdatedLength();
+}
+
+void RulerToolSystem::SendUpdatedLength()
+{
+	float32 length = GetLength();
+	float32 previewLength = GetPreviewLength();
+
+	SceneSignals::Instance()->EmitRulerToolLengthChanged(dynamic_cast<SceneEditor2*>(GetScene()),
+														 length, previewLength);
+}
+
+void RulerToolSystem::SetLineWidth(int32 width)
+{
+	if (width > 0)
+	{
+		lineWidth = width;
+	}
+
+	DrawPoints();
+}
+
+int32 RulerToolSystem::GetLineWidth()
+{
+	return lineWidth;
+}
+
+float32 RulerToolSystem::GetLength()
+{
+	float32 length = -1.f;
+	if (lengths.size() > 0)
+	{
+		length = lengths.back();
+	}
+
+	return length;
+}
+
+float32 RulerToolSystem::GetPreviewLength()
+{
+	float32 previewLength = -1.f;
+	if (previewEnabled)
+	{
+		previewLength = this->previewLength;
+	}
+
+	return previewLength;
 }

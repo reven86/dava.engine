@@ -102,6 +102,9 @@ void UpdateDialog::StartNextTask()
 {
     if(!tasks.isEmpty())
     {
+        ui->progressBar->setValue(0);
+        ui->progressBar2->setValue(0);
+
         setWindowTitle(QString("Updating in progress... (%1/%2)").arg(tasksCount - tasks.size() + 1).arg(tasksCount));
 
         UpdateTask task = tasks.front();
@@ -201,8 +204,15 @@ void UpdateDialog::UnpackProgress(int current, int count)
 void UpdateDialog::UnpackError(int code)
 {
     ErrorMessanger::Instance()->ShowErrorMessage(ErrorMessanger::ERROR_UNPACK, code, unpacker->GetErrorString(code));
+    ui->cancelButton->setEnabled(true);
 
-    UnpackComplete();
+    tasks.dequeue();
+    FileManager::Instance()->ClearTempDirectory();
+
+    UpdateLastLogValue("Unpack Fail!");
+    BreakLog();
+
+    StartNextTask();
 }
 
 void UpdateDialog::UnpackComplete()
@@ -237,6 +247,7 @@ void UpdateDialog::AddTopLogValue(const QString & log)
     ui->treeWidget->addTopLevelItem(currentTopLogItem);
 
     ui->treeWidget->expandAll();
+    ui->treeWidget->scrollToBottom();
 }
 
 void UpdateDialog::AddLogValue(const QString & log)
@@ -251,6 +262,7 @@ void UpdateDialog::AddLogValue(const QString & log)
     currentTopLogItem->addChild(currentLogItem);
 
     ui->treeWidget->expandAll();
+    ui->treeWidget->scrollToBottom();
 }
 
 void UpdateDialog::UpdateLastLogValue(const QString & log)

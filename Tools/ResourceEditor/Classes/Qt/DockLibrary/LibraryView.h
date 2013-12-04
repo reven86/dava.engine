@@ -79,7 +79,7 @@ public:
 
 public slots:
 	void ProjectOpened(const QString &path);
-	void ProjectClosed(const QString &path);
+	void ProjectClosed();
 	void LibraryFileTypesChanged(bool showDAEFiles, bool showSC2Files);
 	void OnModelEdit();
 	void OnModelAdd();

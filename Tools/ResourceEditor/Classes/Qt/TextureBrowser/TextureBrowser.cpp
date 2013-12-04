@@ -43,6 +43,8 @@
 #include "CubemapEditor/CubemapUtils.h"
 #include "ImageTools/ImageTools.h"
 
+#include "Classes/Constants.h"
+
 #include "ui_texturebrowser.h"
 
 #include <QComboBox>
@@ -83,8 +85,7 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 	// global scene manager signals
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(sceneActivated(SceneEditor2 *)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Selected(SceneEditor2 *, DAVA::Entity *)), this, SLOT(sceneNodeSelected(SceneEditor2 *, DAVA::Entity *)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(Deselected(SceneEditor2 *, DAVA::Entity *)), this, SLOT(sceneNodeDeselected(SceneEditor2 *, DAVA::Entity *)));
+	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
 
 	// convertor signals
 	QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor *, DAVA::Vector<QImage>&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor *, DAVA::Vector<QImage>&)));
@@ -139,6 +140,11 @@ void TextureBrowser::Close()
 
 	// clear cache
 	TextureCache::Instance()->clearAll();
+}
+
+void TextureBrowser::Update()
+{
+	setScene(curScene);
 }
 
 void TextureBrowser::closeEvent(QCloseEvent * e)
@@ -443,6 +449,7 @@ void TextureBrowser::setupStatusBar()
 void TextureBrowser::setupTexturesList()
 {
 	QObject::connect(ui->listViewTextures, SIGNAL(selected(const QModelIndex &)), this, SLOT(texturePressed(const QModelIndex &)));
+	QObject::connect(ui->clearFilterButton, SIGNAL(released()), this, SLOT(clearFilter()));
 
 	ui->listViewTextures->setItemDelegate(textureListImagesDelegate);
 	ui->listViewTextures->setModel(textureListModel);
@@ -470,7 +477,7 @@ void TextureBrowser::setupTextureToolbar()
 	toolbarZoomSlider = new QSlider();
 	toolbarZoomSliderValue = new QLabel();
 	toolbarZoomSlider->setOrientation(Qt::Horizontal);
-	toolbarZoomSlider->setMaximumWidth(100);
+	toolbarZoomSlider->setMaximumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
 	toolbarZoomSlider->setTracking(true);
 	toolbarZoomSlider->setRange(-90, 90);
 	toolbarZoomSlider->setTickPosition(QSlider::TicksBelow);
@@ -958,6 +965,10 @@ void TextureBrowser::sceneActivated(SceneEditor2 *scene)
 	{
 		setScene(scene);
 	}
+	else
+	{
+		Update();
+	}
 }
 
 void TextureBrowser::sceneDeactivated(SceneEditor2 *scene)
@@ -968,18 +979,21 @@ void TextureBrowser::sceneDeactivated(SceneEditor2 *scene)
 	}
 }
 
-void TextureBrowser::sceneNodeSelected(SceneEditor2 *scene, DAVA::Entity *entity)
+void TextureBrowser::sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-	textureListModel->setHighlight(entity);
-}
-
-void TextureBrowser::sceneNodeDeselected(SceneEditor2 *scene, DAVA::Entity *entity)
-{
-	textureListModel->setHighlight(NULL);
+	if(!isHidden())
+	{
+		textureListModel->setHighlight(selected);
+	}
 }
 
 void TextureBrowser::textureViewChanged(int index)
 {
 	DAVA::eGPUFamily newView = (DAVA::eGPUFamily) ui->viewTabBar->tabData(index).toInt();
 	setTextureView(newView);
+}
+
+void TextureBrowser::clearFilter()
+{
+    ui->textureFilterEdit->setText("");
 }

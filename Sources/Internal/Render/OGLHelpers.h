@@ -61,9 +61,13 @@ namespace DAVA
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || (defined(__DAVAENGINE_IPHONE__) && defined (__DAVAENGINE_DEBUG__))
 #define RENDER_VERIFY(command) \
 { \
-	if(!Thread::IsMainThread() && RenderManager::Instance()->GetNonMainLockCount() == 0)\
+	if(!Thread::IsMainThread())\
 	{\
-		DVASSERT(0 && "Application tried to call GL or DX in separate thread without lock");\
+		DVASSERT(0 && "Application tried to call GL or DX in separate thread");\
+	}\
+	if(Thread::IsMainThread())\
+	{\
+		RenderManager::Instance()->VerifyRenderContext();\
 	}\
 	command;\
 	GLenum err = glGetError();\

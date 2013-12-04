@@ -34,23 +34,24 @@
 #include <QList>
 #include <QUrl>
 #include <QFileInfo>
+#include <QStringList>
 
 namespace DAVA
 {
 
 #define BEGIM_MIME_HANDLER_MAP const MimeDataHelper::MimeHandler MimeDataHelper::mimeHandlerMap[] = {
 
-#define MIME_HANDLER(formatName, getNameFuncPtr, convertFuncPtr)\
-	MimeDataHelper::MimeHandler(formatName, &getNameFuncPtr, &convertFuncPtr),
+#define MIME_HANDLER(formatName, getNameFuncPtr)\
+	MimeDataHelper::MimeHandler(formatName, &getNameFuncPtr),
 
 #define END_MIME_HNADLER_MAP };
 
 #define MIME_HANDLERS_COUNT sizeof(MimeDataHelper::mimeHandlerMap) / sizeof(*MimeDataHelper::mimeHandlerMap)
 
 BEGIM_MIME_HANDLER_MAP
-	MIME_HANDLER("application/dava.entity",	MimeDataHelper::GetItemNamesFromSceneTreeMime,	MimeDataHelper::ConvertQMimeDataFromSceneTree)
-	MIME_HANDLER("application/dava.emitter",MimeDataHelper::GetItemNamesFromSceneTreeMime,	MimeDataHelper::ConvertQMimeDataFromSceneTree)
-	MIME_HANDLER("text/uri-list",			MimeDataHelper::GetItemNamesFromFilePathMime,	MimeDataHelper::ConvertQMimeDataFromFilePath)
+	MIME_HANDLER("application/dava.entity",	MimeDataHelper::GetItemNamesFromSceneTreeMime)
+	MIME_HANDLER("application/dava.emitter",MimeDataHelper::GetItemNamesFromSceneTreeMime)
+	MIME_HANDLER("text/uri-list",			MimeDataHelper::GetItemNamesFromFilePathMime)
 END_MIME_HNADLER_MAP
 
 bool MimeDataHelper::IsMimeDataTypeSupported(const QMimeData* mimeData)
@@ -78,7 +79,7 @@ bool MimeDataHelper::IsMimeDataTypeSupported(const String& mimeType)
 }
 
 void MimeDataHelper::GetItemNamesFromMimeData(const QMimeData* mimeData, List<String>& nameList)
-{	
+{
 	for(int32 i = 0; i < MIME_HANDLERS_COUNT; ++i)
 	{
 		if(mimeData->hasFormat(QString(mimeHandlerMap[i].format.c_str())))
@@ -86,7 +87,6 @@ void MimeDataHelper::GetItemNamesFromMimeData(const QMimeData* mimeData, List<St
 			mimeHandlerMap[i].getNameFuncPtr(mimeData, nameList);
 		}
 	}
-	
 }
 
 void MimeDataHelper::ConvertToMimeData(List<FilePath>& filePathList, QMimeData* mimeData)
@@ -100,7 +100,7 @@ void MimeDataHelper::ConvertToMimeData(List<FilePath>& filePathList, QMimeData* 
 	QList<QUrl> list;
 	for(List<FilePath>::const_iterator it = filePathList.begin(); it != filePathList.end(); ++it)
 	{
-		list.append(QUrl(QString(it->GetAbsolutePathname().c_str())));
+		list.append(QUrl::fromLocalFile(it->GetAbsolutePathname().c_str()));
 	}
 	mimeData->setUrls(list);
 }
@@ -124,60 +124,32 @@ void MimeDataHelper::ConvertToMimeData(List<Entity*>& entityList, QMimeData* mim
 	mimeData->setData(QString(mimeHandlerMap[0].format.c_str()), encodedData);
 }
 
-void MimeDataHelper::ConvertQMimeDataFromSceneTree(const QMimeData* mimeData, List<Entity*>& retList,
-													SceneEditor2* sceneEditor)
+	
+List<Entity*> MimeDataHelper::GetPointersFromSceneTreeMime(const QMimeData* mimeData)
 {
+	List<Entity*> retList;
 	if(mimeData == NULL)
 	{
-		return;
+		return retList;
 	}
-	retList.clear();
-	QByteArray encodedData = mimeData->data(QString(mimeHandlerMap[0].format.c_str()));
+	QByteArray encodedData = mimeData->data(mimeData->formats().first());
 	QDataStream stream(&encodedData, QIODevice::ReadOnly);
-
+	
 	while(!stream.atEnd())
 	{
-		Entity *entity = NULL;
-		stream.readRawData((char *) &entity, sizeof(Entity*));
+		DAVA::Entity *entity = NULL;
+		stream.readRawData((char *) &entity, sizeof(DAVA::Entity*));
 		if(NULL != entity)
 		{
 			retList.push_back(entity);
 		}
 	}
-}
-
-void MimeDataHelper::ConvertQMimeDataFromFilePath(const QMimeData* mimeData,List<Entity*>& retList,
-												   SceneEditor2* sceneEditor)
-{
-	if(mimeData == NULL || sceneEditor == NULL || !mimeData->hasUrls())
-	{
-		return;
-	}
-	
-	retList.clear();
-
-	QList<QUrl> droppedUrls = mimeData->urls();
-
-	Q_FOREACH(QUrl url, droppedUrls)
-	{
-		FilePath filePath(url.toString().toStdString());
-		if(!(filePath.Exists() && filePath.GetExtension() == ".sc2"))
-		{
-			continue;
-		}
-		
-		Entity * entity = sceneEditor->GetRootNode(filePath);
-		if(NULL != entity)
-		{
-			retList.push_back(entity);
-		}
-	}
+	return retList;
 }
 
 void MimeDataHelper::GetItemNamesFromSceneTreeMime(const QMimeData* mimeData, List<String> & nameList)
 {
-	List<Entity*> entityList;
-	ConvertQMimeDataFromSceneTree(mimeData, entityList);
+	List<Entity*> entityList = GetPointersFromSceneTreeMime(mimeData);
 	if(entityList.size() == 0)
 	{
 		return;
@@ -202,17 +174,6 @@ void MimeDataHelper::GetItemNamesFromFilePathMime(const QMimeData* mimeData, Lis
 	Q_FOREACH(QUrl url, droppedUrls)
 	{
 		nameList.push_back(url.toLocalFile().toStdString());
-	}
-}
-
-void MimeDataHelper::ConvertFromMimeData(const QMimeData* mimeData, List<Entity*>& retList, SceneEditor2* sceneEditor)
-{
-	for(int32 i = 0; i < MIME_HANDLERS_COUNT; ++i)
-	{
-		if(mimeData->hasFormat(QString(mimeHandlerMap[i].format.c_str())))
-		{
-			mimeHandlerMap[i].convertFuncPtr(mimeData, retList, sceneEditor);
-		}
 	}
 }
 

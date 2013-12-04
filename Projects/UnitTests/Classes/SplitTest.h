@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class SplitTest : public TestTemplate<SplitTest>
 {
+protected:
+    ~SplitTest(){}
 public:
 	SplitTest();
     

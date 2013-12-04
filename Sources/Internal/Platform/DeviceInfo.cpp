@@ -107,4 +107,10 @@ void DeviceInfo::SetScreenInfo(int32 w, int32 h, int32 scale)
 	screenInfo = DeviceInfo::ScreenInfo(w, h, scale);
 }
 
+#ifndef __DAVAENGINE_ANDROID__
+int DeviceInfo::GetZBufferSize()
+{
+	return 24;
+}
+#endif
 }

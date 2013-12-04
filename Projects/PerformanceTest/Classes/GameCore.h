@@ -39,9 +39,10 @@ class TestData;
 class BaseScreen;
 class GameCore : public ApplicationCore
 {
+protected:
+	virtual ~GameCore();
 public:	
 	GameCore();
-	virtual ~GameCore();
 
 	static GameCore * Instance() 
 	{ 

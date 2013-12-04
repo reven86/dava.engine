@@ -114,7 +114,6 @@ void GameCore::OnAppStarted()
 	new EntityTest();	
 	new MemoryAllocatorsTest();
 	new HashMapTest();
-	new SplitTest();
 	new KeyedArchiveYamlTest();
 	new DLCTest();
 	new UIListTest();

@@ -56,7 +56,7 @@ LibraryView::LibraryView(QWidget *parent /* = 0 */)
 	setModel(libModel);
 
 	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(ProjectOpened(const QString &)));
-	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectClosed(const QString &)), this, SLOT(ProjectClosed(const QString &)));
+	QObject::connect(ProjectManager::Instance(), SIGNAL(ProjectClosed()), this, SLOT(ProjectClosed()));
 
 	QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowContextMenu(const QPoint &)));
 	QObject::connect(selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(FileSelectionChanged(const QItemSelection &, const QItemSelection &)));
@@ -81,7 +81,7 @@ void LibraryView::ProjectOpened(const QString &path)
 	libModel->SetLibraryPath(ProjectManager::Instance()->CurProjectDataSourcePath());
 }
 
-void LibraryView::ProjectClosed(const QString &path)
+void LibraryView::ProjectClosed()
 {
 	libModel->SetLibraryPath("");
 }
@@ -96,6 +96,9 @@ void LibraryView::ShowContextMenu(const QPoint &point)
 		QString fileExtension = fileInfo.suffix();
 		if(fileInfo.isFile())
 		{
+			SceneTabWidget *widget = QtMainWindow::Instance()->GetSceneWidget();
+			widget->HideScenePreview();
+
 			QMenu contextMenu(this);
 
 			if(0 == fileExtension.compare("sc2", Qt::CaseInsensitive))
@@ -106,7 +109,7 @@ void LibraryView::ShowContextMenu(const QPoint &point)
 			else if(0 == fileExtension.compare("dae", Qt::CaseInsensitive))
 			{
 				contextMenu.addAction("Convert", this, SLOT(OnDAEConvert()));
-				contextMenu.addAction("Convert with saved settings", this, SLOT(OnDAEConvertWithSavingOfSettings()));
+				contextMenu.addAction("Convert geometry", this, SLOT(OnDAEConvertWithSavingOfSettings()));
 			}
 
 			contextMenu.exec(mapToGlobal(point));
@@ -121,6 +124,8 @@ void LibraryView::ModelRootPathChanged(const QString & newPath)
 
 void LibraryView::FileSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
+    if(selected.size() == 0) return;
+    
 	DAVA::String previewPath;
 	const QModelIndex index = selected.indexes().first();
 
@@ -132,8 +137,9 @@ void LibraryView::FileSelectionChanged(const QItemSelection & selected, const QI
 			previewPath = fileInfo.filePath().toStdString();
 		}
 	}
-    
-    SceneDataManager::Instance()->SceneShowPreview(previewPath);
+
+	SceneTabWidget *widget = QtMainWindow::Instance()->GetSceneWidget();
+	widget->ShowScenePreview(previewPath);
 }
 
 void LibraryView::LibraryFileTypesChanged(bool showDAEFiles, bool showSC2Files)
@@ -147,8 +153,7 @@ void LibraryView::OnModelEdit()
 	if(index.isValid())
 	{
 		QFileInfo fileInfo = libModel->fileInfo(index);
-		int tabId = QtMainWindow::Instance()->GetSceneWidget()->OpenTab(fileInfo.absoluteFilePath().toStdString());
-		QtMainWindow::Instance()->GetSceneWidget()->SetCurrentTab(tabId);
+		QtMainWindow::Instance()->OpenScene(fileInfo.absoluteFilePath());
 	}
 }
 
@@ -211,3 +216,4 @@ void LibraryView::ShowSC2(bool show)
 {
 	libModel->SetFileNameFilters(libModel->IsDAEShown(), show);
 }
+

@@ -42,9 +42,10 @@ class PolygonGroup;
 
 class ShadowVolumeNode : public Entity
 {
+protected:
+	virtual ~ShadowVolumeNode();
 public:
 	ShadowVolumeNode();
-	virtual ~ShadowVolumeNode();
 
 	virtual void Draw();
 
@@ -62,6 +63,7 @@ public:
 private:
 	Shader * shader;
 
+    int32 uniformLightPosition0;
 
 	//shadow mesh generation
 	PolygonGroup * shadowPolygonGroup;

@@ -93,6 +93,7 @@ protected:
 	~TextBlock();
 	
 	void Prepare();
+	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
 	
 	void DrawToBuffer(int16 *buf);
 

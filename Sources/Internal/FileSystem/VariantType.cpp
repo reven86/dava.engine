@@ -354,6 +354,8 @@ void VariantType::SetFilePath(const FilePath & value)
 
 void VariantType::SetVariant(const VariantType& var)
 {
+	type = TYPE_NONE;
+
 	switch(var.type)
 	{
 	case TYPE_BOOLEAN:
@@ -1221,6 +1223,57 @@ const MetaInfo* VariantType::Meta()
 	return NULL;
 }
 
+void* VariantType::MetaObject()
+{
+	const void *ret = NULL;
+
+	switch(type)
+	{
+	case TYPE_BOOLEAN:
+		ret = &boolValue;
+		break;
+	case TYPE_INT32:
+		ret = &int32Value;
+		break;	
+	case TYPE_UINT32:
+		ret = &uint32Value;
+		break;	
+	case TYPE_FLOAT:
+		ret = &floatValue;
+		break;	
+	case TYPE_STRING:
+		ret = stringValue;
+		break;	
+	case TYPE_WIDE_STRING:
+		ret = wideStringValue;
+		break;
+	case TYPE_INT64:
+	case TYPE_UINT64:
+	case TYPE_VECTOR2:
+	case TYPE_BYTE_ARRAY:
+	case TYPE_VECTOR3:
+	case TYPE_VECTOR4:
+	case TYPE_MATRIX2:
+	case TYPE_MATRIX3:
+	case TYPE_MATRIX4:
+	case TYPE_COLOR:
+	case TYPE_FASTNAME:
+	case TYPE_AABBOX3:
+	case TYPE_FILEPATH:
+		ret = pointerValue;
+		break;
+	case TYPE_KEYED_ARCHIVE:
+		ret = &pointerValue;
+		break;
+	default:
+		{
+			//DVASSERT(0 && "Something went wrong with VariantType");
+		}
+	}
+
+	return (void *) ret;
+}
+
 VariantType VariantType::LoadData(const void *src, const MetaInfo *meta)
 {
 	VariantType v;
@@ -1527,6 +1580,74 @@ VariantType VariantType::FromType(int type)
 	}
 
 	return v;
+}
+
+VariantType VariantType::Convert(const VariantType &val, int type)
+{
+	VariantType ret;
+
+	if(val.type == type)
+	{
+		ret = val;
+	}
+	else
+	{
+		switch (type)
+		{
+		case TYPE_INT32:
+			{
+				switch (val.type)
+				{
+				case TYPE_UINT32: ret.SetInt32((DAVA::int32) val.AsUInt32()); break;
+				case TYPE_UINT64: ret.SetInt32((DAVA::int32) val.AsUInt64()); break;
+				case TYPE_INT64: ret.SetInt32((DAVA::int32) val.AsUInt64()); break;
+				default: break;
+				}
+			}
+			break;
+
+		case TYPE_UINT32:
+			{
+				switch (val.type)
+				{
+				case TYPE_INT32: ret.SetUInt32((DAVA::uint32) val.AsInt32()); break;
+				case TYPE_UINT64: ret.SetUInt32((DAVA::uint32) val.AsUInt64()); break;
+				case TYPE_INT64: ret.SetUInt32((DAVA::uint32) val.AsUInt64()); break;
+				default: break;
+				}
+			}
+			break;
+
+		case TYPE_INT64:
+			{
+				switch (val.type)
+				{
+				case TYPE_UINT32: ret.SetInt64((DAVA::int64) val.AsUInt32()); break;
+				case TYPE_UINT64: ret.SetInt64((DAVA::int64) val.AsUInt64()); break;
+				case TYPE_INT32: ret.SetInt64((DAVA::int64) val.AsInt32()); break;
+				default: break;
+				}
+			}
+			break;
+
+		case TYPE_UINT64:
+			{
+				switch (val.type)
+				{
+				case TYPE_UINT32: ret.SetInt64((DAVA::uint64) val.AsUInt32()); break;
+				case TYPE_INT64: ret.SetInt64((DAVA::uint64) val.AsInt64()); break;
+				case TYPE_INT32: ret.SetInt64((DAVA::uint64) val.AsInt32()); break;
+				default: break;
+				}
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	return ret;
 }
 
 };

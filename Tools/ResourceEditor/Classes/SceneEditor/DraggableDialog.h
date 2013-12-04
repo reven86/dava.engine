@@ -39,10 +39,11 @@ using namespace DAVA;
 
 class DraggableDialog : public UIControl
 {
+protected:
+    ~DraggableDialog();
 public:
     
     DraggableDialog(const Rect &rect);
-    ~DraggableDialog();
     
 	virtual void DidAppear(); 
 	virtual void DidDisappear();

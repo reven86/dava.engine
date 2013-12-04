@@ -59,6 +59,8 @@ using namespace DAVA;
 
 class EntityTest : public TestTemplate<EntityTest>
 {
+protected:
+    ~EntityTest(){}
 public:
 	EntityTest();
 

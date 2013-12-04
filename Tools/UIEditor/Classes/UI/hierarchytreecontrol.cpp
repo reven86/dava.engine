@@ -114,6 +114,7 @@ HierarchyTreeControl::HierarchyTreeControl(QWidget *parent) :
 {
 	setAcceptDrops(true);
 	setAutoScroll(true);
+	setDropIndicatorShown(true);
 }
 
 void HierarchyTreeControl::contextMenuEvent(QContextMenuEvent * event)
@@ -360,6 +361,9 @@ void HierarchyTreeControl::dragMoveEvent(QDragMoveEvent *event)
 
 void HierarchyTreeControl::HandleDragMoveControlMimeData(QDragMoveEvent *event, const ControlMimeData* /*mimeData*/)
 {
+    DropIndicatorPosition position = dropIndicatorPosition();
+    Logger::Warning("POSITION TYPE^ %i", position);
+
 	// Where we are in tree?
 	QTreeWidgetItem* item = itemAt(event->pos());
 	if (!item)

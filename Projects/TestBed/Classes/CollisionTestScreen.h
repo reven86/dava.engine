@@ -36,6 +36,8 @@ using namespace DAVA;
 
 class CollisionTestScreen : public UIScreen
 {
+protected:
+	~CollisionTestScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

@@ -35,6 +35,7 @@
 
 #include "CubemapEditor/CubeListItemDelegate.h"
 #include "Base/BaseTypes.h"
+#include "Scene/SceneEditor2.h"
 
 namespace Ui {
 class CubeMapTextureBrowser;
@@ -45,12 +46,13 @@ class CubeMapTextureBrowser : public QDialog
     Q_OBJECT
     
 public:
-    explicit CubeMapTextureBrowser(QWidget *parent = 0);
+    explicit CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget *parent = 0);
     ~CubeMapTextureBrowser();
 	
 protected:
 	
 	CubeListItemDelegate cubeListItemDelegate;
+	SceneEditor2* scene;
 	
 protected:
 	

@@ -38,9 +38,10 @@ namespace DAVA
 class SkeletonNode;
 class BoneNode : public Entity
 {
+protected:
+	virtual ~BoneNode();
 public:
 	BoneNode(SkeletonNode * owner = 0);
-	virtual ~BoneNode();
 	
 	virtual void Draw();
 	

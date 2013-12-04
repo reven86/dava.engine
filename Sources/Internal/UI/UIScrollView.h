@@ -40,9 +40,10 @@ class UIScrollViewContainer;
 
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
+protected:
+	virtual ~UIScrollView();
 public:
 	UIScrollView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	virtual ~UIScrollView();
 	
 	virtual void AddControl(UIControl *control);
 	virtual List<UIControl* >& GetRealChildren();
@@ -85,7 +86,9 @@ protected:
     virtual void LoadFromYamlNodeCompleted();
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 
-	Vector2 GetMaxSize(UIControl *control, Vector2 currentMaxSize, Vector2 parentShift);
+	Vector2 GetMaxSize(UIControl *control, Vector2 currentMaxSize, Vector2 parentShift);	
+	void PushContentToBounds(UIControl *control);
+	Vector2 GetControlOffset(UIControl *control, Vector2 currentContentOffset);
 
 	// Get the X or Y parameter from the vector depending on the scrollbar orientation.
 	float32 GetParameterForScrollBar(UIScrollBar* forScrollBar, const Vector2& vectorParam);

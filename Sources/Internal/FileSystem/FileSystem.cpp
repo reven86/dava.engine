@@ -238,16 +238,16 @@ bool FileSystem::CopyDirectory(const FilePath & sourceDirectory, const FilePath 
     
 	bool ret = true;
 
-	FileList fileList(sourceDirectory);
-	int32 count = fileList.GetCount();
+	ScopedPtr<FileList> fileList( new FileList(sourceDirectory));
+	int32 count = fileList->GetCount();
 	String fileOnly;
 	String pathOnly;
 	for(int32 i = 0; i < count; ++i)
 	{
-		if(!fileList.IsDirectory(i) && !fileList.IsNavigationDirectory(i))
+		if(!fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
 		{
-            const FilePath destinationPath = destinationDirectory + fileList.GetFilename(i);
-			if(!CopyFile(fileList.GetPathname(i), destinationPath))
+            const FilePath destinationPath = destinationDirectory + fileList->GetFilename(i);
+			if(!CopyFile(fileList->GetPathname(i), destinationPath))
 			{
 				ret = false;
 			}
@@ -562,8 +562,8 @@ void FileSystem::AttachArchive(const String & archiveName, const String & attach
 
 	if (!resourceArchive->Open(archiveName)) 
 	{
-		delete resourceArchive;
-		resourceArchive = 0;
+		SafeRelease(resourceArchive);
+		resourceArchive = NULL;
 		return;
 	}
 	ResourceArchiveItem item;

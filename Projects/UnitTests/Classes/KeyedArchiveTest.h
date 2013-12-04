@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class KeyedArchiveTest : public TestTemplate<KeyedArchiveTest>
 {
+protected:
+    ~KeyedArchiveTest(){}
 public:
 	KeyedArchiveTest();
     
@@ -53,8 +55,8 @@ private:
     
     void FillArchive(KeyedArchive *arch);
 
-    KeyedArchive archiveToSave;
-    KeyedArchive loadedArchive;
+    RefPtr<KeyedArchive> archiveToSave;
+    RefPtr<KeyedArchive> loadedArchive;
 };
 
 #endif

@@ -53,16 +53,6 @@ public:
 	static const DAVA::String& GetFaceNameSuffix(int faceId);
 	static const DAVA::String& GetDefaultFaceExtension();
 	static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& initialValue, const DAVA::String& defaultValue);
-
-public:
-	
-	class CubemapTextureValidator : public DAVA::SkyboxRenderObject::SkyboxTextureValidator
-	{
-	public:
-		
-		virtual bool IsValid(const DAVA::FilePath& filePath);
-	};
-
 };
 
 #endif /* defined(__CUBEMAP_UTILS_H__) */

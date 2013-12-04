@@ -60,6 +60,8 @@ signals:
 private:
 	QString curProjectPath;
 	QString curProjectPathDataSource;
+
+	void LoadProjectSettings();
 };
 
 #endif // __PROJECT_MANAGER_H__ 

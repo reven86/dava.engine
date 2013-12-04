@@ -381,7 +381,7 @@ bool HierarchyTree::SaveAll(const QString& projectPath)
 bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 {
 	bool result = true;
-	YamlNode root(YamlNode::TYPE_MAP);
+	ScopedPtr<YamlNode> root( new YamlNode(YamlNode::TYPE_MAP) );
 	
 	// Get paths for default font
 	const EditorFontManager::DefaultFontPath& defaultFontPath = EditorFontManager::Instance()->GetDefaultFontPath();
@@ -392,7 +392,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	{
 		// Create font node
 		YamlNode* fontNode = new YamlNode(YamlNode::TYPE_MAP);
-		root.SetNodeToMap( FONT_NODE, fontNode );
+		root->SetNodeToMap( FONT_NODE, fontNode );
 	
 		// Create fonts array
 		YamlNode* fontPathNode = new YamlNode(YamlNode::TYPE_ARRAY);
@@ -409,7 +409,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	}
 	
 	YamlNode* platforms = new YamlNode(YamlNode::TYPE_MAP);
-	root.SetNodeToMap( PLATFORMS_NODE, platforms );
+	root->SetNodeToMap( PLATFORMS_NODE, platforms );
 
     // Prior to Save we need to put the Localization Keys FROM the ExtraData TO the
     // appropriate text controls to save the localization keys, and not values.
@@ -444,7 +444,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	QDir().mkpath(ResourcesManageHelper::GetPlatformRootPath(projectPath));
 
 	// Save project file
-	result &= parser->SaveToYamlFile(projectFile.toStdString(), &root, true);
+	result &= parser->SaveToYamlFile(projectFile.toStdString(), root, true);
 	
     // Return the Localized Values.
     UpdateExtraData(BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);

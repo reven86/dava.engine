@@ -46,11 +46,10 @@ class LandscapeEditorCustomColors
     ,   public LandscapeEditorPropertyControlDelegate
 
 {
-    
-public:
-    
-    LandscapeEditorCustomColors(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl, const Rect &toolsRect);
+protected:
     virtual ~LandscapeEditorCustomColors();
+public:
+    LandscapeEditorCustomColors(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl, const Rect &toolsRect);
     
 	virtual void Draw(const UIGeometricData &geometricData);
 

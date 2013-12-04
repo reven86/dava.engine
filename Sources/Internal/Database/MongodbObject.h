@@ -49,11 +49,10 @@ class MongodbObject: public BaseObject
 protected:
     
     void * InternalObject();
-    
+    virtual ~MongodbObject();
 public:
     
     MongodbObject();
-    virtual ~MongodbObject();
     
     
     void EnableForEdit();

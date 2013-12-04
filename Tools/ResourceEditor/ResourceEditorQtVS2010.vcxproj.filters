@@ -82,12 +82,6 @@
     <Filter Include="Classes\Qt\DockSceneGraph">
       <UniqueIdentifier>{39430818-6e4e-42bf-bbd9-946b83c94b54}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Qt\DockSetSwitchIndex">
-      <UniqueIdentifier>{1060010d-a6c2-4da3-9613-72895b684bf2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Qt\DockHangingObjects">
-      <UniqueIdentifier>{06e43fbc-e3e3-484d-93ff-02f41732442e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Classes\Qt\DockMaterialViewOptions">
       <UniqueIdentifier>{ac0aff53-678a-41e9-976e-47ea3e28317e}</UniqueIdentifier>
     </Filter>
@@ -178,18 +172,6 @@
     <Filter Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem">
       <UniqueIdentifier>{30a6df1e-48ed-41bc-a2eb-bf705284f27f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Qt\DockCustomColorsEditor">
-      <UniqueIdentifier>{f401e18e-e902-4ff8-b57e-77b6980e7831}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Qt\DockHeightmapEditor">
-      <UniqueIdentifier>{c2006956-cf5e-4259-8302-e0fc6c7b9d0b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Qt\DockTilemaskEditor">
-      <UniqueIdentifier>{8f5725f4-9491-432f-9e2e-78ec14525544}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Qt\DockVisibilityToolEditor">
-      <UniqueIdentifier>{7a554f19-2c3d-483f-a78d-59eaa7a16ec6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Classes\Qt\Tools\AddParticleEmitterDialog">
       <UniqueIdentifier>{503fb82f-68b2-4432-8414-d2664ea762e9}</UniqueIdentifier>
     </Filter>
@@ -217,14 +199,44 @@
     <Filter Include="Classes\Qt\Tools\LabeledSlider">
       <UniqueIdentifier>{6ede20eb-ce62-4548-96a9-aa34fa463912}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Qt\SettingsDialog">
-      <UniqueIdentifier>{4535800f-030e-4c16-b5e6-52e487679816}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Classes\Qt\Tools\SettingsDialog">
       <UniqueIdentifier>{2a103ada-c8f2-4c94-9110-478ab33c842e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Classes\Qt\Settings">
       <UniqueIdentifier>{0c11ce84-cd79-4a91-8ae8-eb63aca96f0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\AddSkyboxDialog">
+      <UniqueIdentifier>{003b6607-47e6-4c21-815d-c9384bd67946}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\DockLandscapeEditorControls">
+      <UniqueIdentifier>{69848df9-8843-43e4-80a6-8a929925294f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels">
+      <UniqueIdentifier>{92112a20-3635-4fde-8e68-3e6ff366542f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\LandscapeDialog">
+      <UniqueIdentifier>{fe13beb5-ca0a-4281-bd6f-ffa62e960101}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\QtLabelWithActions">
+      <UniqueIdentifier>{f45b0c79-9408-4fd0-9fe0-45f7474237de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\HangingObjectsHeight">
+      <UniqueIdentifier>{dd963721-b170-45e4-8709-701ee3388a0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\ToolButtonWithWidget">
+      <UniqueIdentifier>{ea518442-bcb2-4598-a8b0-f59de80f1624}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\SliderWidget">
+      <UniqueIdentifier>{77209fd5-5cd1-4465-9f21-223b539f5da1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\QtFileDialog">
+      <UniqueIdentifier>{bd109383-7ec3-4aa9-98e4-92206aa6b482}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\Tools\TileTexturePreviewWidget">
+      <UniqueIdentifier>{db27caa7-9656-4101-a102-5e4083d818d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Qt\SpeedTree">
+      <UniqueIdentifier>{e22291cd-1e6a-41a0-909a-dc1b06a4a034}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -331,12 +343,6 @@
       <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="Classes\UIFileTreeCell.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\UIScrollView.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\UISpriteEditor.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="Classes\VertexOctTree.cpp">
@@ -1146,9 +1152,6 @@
     <ClCompile Include="Classes\Commands\TilemapEditorCommands.cpp">
       <Filter>Classes\Commands</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Commands\ToolsCommands.cpp">
-      <Filter>Classes\Commands</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Commands\VisibilityCheckToolCommands.cpp">
       <Filter>Classes\Commands</Filter>
     </ClCompile>
@@ -1158,20 +1161,8 @@
     <ClCompile Include="Classes\SceneEditor\ArrowsNode.cpp">
       <Filter>Classes\SceneEditor</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\DockSetSwitchIndex\SetSwitchIndexView.cpp">
-      <Filter>Classes\Qt\DockSetSwitchIndex</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\DockSetSwitchIndex\SetSwitchIndexHelper.cpp">
-      <Filter>Classes\Qt\DockSetSwitchIndex</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\LandscapeEditor\EditorLandscape.cpp">
       <Filter>Classes\LandscapeEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\DockHangingObjects\HangingObjectsView.cpp">
-      <Filter>Classes\Qt\DockHangingObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\DockHangingObjects\HangingObjectsHelper.cpp">
-      <Filter>Classes\Qt\DockHangingObjects</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Qt\DockSceneGraph\ExtraUserData.cpp">
       <Filter>Classes\Qt\DockSceneGraph</Filter>
@@ -1311,9 +1302,6 @@
     <ClCompile Include="Classes\Qt\DockConsole\ConsoleView.cpp">
       <Filter>Classes\Qt\DockConsole</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\SceneEditor\EntityOwnerPropertyHelper.cpp">
-      <Filter>Classes\SceneEditor</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\ParticlesEditorQT\Helpers\ParticlesEditorNodeNameHelper.cpp">
       <Filter>Classes\ParticlesEditorQT\Helpers</Filter>
     </ClCompile>
@@ -1344,9 +1332,6 @@
     <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp">
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Commands2\EntityMoveCommand.cpp">
-      <Filter>Classes\Commands2</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Qt\DockSceneTree\SceneTreeDelegate.cpp">
       <Filter>Classes\Qt\DockSceneTree</Filter>
     </ClCompile>
@@ -1370,9 +1355,6 @@
     </ClCompile>
     <ClCompile Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.cpp">
       <Filter>Classes\Qt\Tools\AddSwitchEntityDialog</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\SelectPathWidget\SelectPathWidget.cpp">
-      <Filter>Classes\Qt\Tools\SelectPathWidget</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Deprecated\ScenePreviewControl.cpp">
       <Filter>Classes\Deprecated</Filter>
@@ -1398,19 +1380,19 @@
     <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyModel.cpp">
       <Filter>Classes\Qt\Tools\QtPropertyEditor</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataDavaKeyedArchive.cpp">
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataDavaKeyedArchive.cpp">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataDavaVariant.cpp">
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataDavaVariant.cpp">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataIntoCollection.cpp">
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspColl.cpp">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataIntrospection.cpp">
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataIntrospection.cpp">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataMetaObject.cpp">
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataMetaObject.cpp">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\QtColorLineEdit.cpp">
@@ -1515,18 +1497,6 @@
     <ClCompile Include="Classes\Qt\Scene\System\VisibilityToolSystem.cpp">
       <Filter>Classes\Qt\Scene\System</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\DockCustomColorsEditor\CustomColorsPropertiesView.cpp">
-      <Filter>Classes\Qt\DockCustomColorsEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\DockHeightmapEditor\HeightmapEditorPropertiesView.cpp">
-      <Filter>Classes\Qt\DockHeightmapEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\DockTilemaskEditor\TilemaskEditorPropertiesView.cpp">
-      <Filter>Classes\Qt\DockTilemaskEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\DockVisibilityToolEditor\VisibilityToolPropertiesView.cpp">
-      <Filter>Classes\Qt\DockVisibilityToolEditor</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Qt\Tools\MimeDataHelper\MimeDataHelper.cpp">
       <Filter>Classes\Qt\Tools\MimeDataHelper</Filter>
     </ClCompile>
@@ -1566,16 +1536,10 @@
     <ClCompile Include="Classes\Commands\SceneGraphCommands.cpp">
       <Filter>Classes\Commands</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Commands\SetSwitchIndexCommands.cpp">
-      <Filter>Classes\Commands</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Commands\TextureOptionsCommands.cpp">
       <Filter>Classes\Commands</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Commands\TilemapEditorCommands.cpp">
-      <Filter>Classes\Commands</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Commands\ToolsCommands.cpp">
       <Filter>Classes\Commands</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Commands\VisibilityCheckToolCommands.cpp">
@@ -1588,18 +1552,6 @@
       <Filter>QtGenerated</Filter>
     </ClCompile>
     <ClCompile Include="_GeneratedQt\DockConsole\Console_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockCustomColorsEditor\CustomColorsPropertiesView_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockHangingObjects\HangingObjectsHelper_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockHangingObjects\HangingObjectsView_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockHeightmapEditor\HeightmapEditorPropertiesView_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
     <ClCompile Include="_GeneratedQt\DockLibrary\LibraryModel_moc.cpp">
@@ -1699,21 +1651,6 @@
       <Filter>QtGenerated</Filter>
     </ClCompile>
     <ClCompile Include="_GeneratedQt\DockSceneTree\SceneTree_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockSetSwitchIndex\SetSwitchIndexHelper_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockSetSwitchIndex\SetSwitchIndexView_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockTilemaskEditor\TilemaskEditorPropertiesView_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockVisibilityTool\VisibilityToolView_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DockVisibilityToolEditor\VisibilityToolPropertiesView_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
     <ClCompile Include="_GeneratedQt\Main\davaglwidget_moc.cpp">
@@ -1932,22 +1869,19 @@
     <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyWidgets\QtColorLineEdit_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataDavaKeyedArchive_moc.cpp">
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataDavaKeyedArchive_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataDavaVariant_moc.cpp">
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataDavaVariant_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataIntoCollection_moc.cpp">
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspColl_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataIntrospection_moc.cpp">
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataIntrospection_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataMetaObject_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\Tools\SelectPathWidget\SelectPathWidget_moc.cpp">
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataMetaObject_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
     <ClCompile Include="Classes\Qt\CubemapEditor\ClickableQLabel.cpp">
@@ -2010,9 +1944,6 @@
     <ClCompile Include="_GeneratedQt\Tools\QtWaitDialog\QtWaitDialog_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Commands2\AddEntityCommand.cpp">
-      <Filter>Classes\Commands2</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.cpp">
       <Filter>Classes\Qt\Tools\BaseAddEntityDialog</Filter>
     </ClCompile>
@@ -2061,12 +1992,6 @@
     <ClCompile Include="_GeneratedQt\DockLODEditor\LODEditor_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\SettingsDialog\GeneralSettingsEditor.cpp">
-      <Filter>Classes\Qt\SettingsDialog</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\Tools\SettingsDialog\SettingsDialogQt.cpp">
-      <Filter>Classes\Qt\SettingsDialog</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Qt\Tools\SettingsDialog\SettingsDialogQt.cpp">
       <Filter>Classes\Qt\Tools\SettingsDialog</Filter>
     </ClCompile>
@@ -2103,8 +2028,212 @@
     <ClCompile Include="_GeneratedQt\Main\StatusBar_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\SettingsDialog\SystemsSettingsEditor.cpp">
+      <Filter>Classes\Qt\Tools\SettingsDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\SettingsDialog\GeneralSettingsEditor.cpp">
+      <Filter>Classes\Qt\Tools\SettingsDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\SettingsDialog\SettingsDialogQt.cpp">
+      <Filter>Classes\Qt\Tools\SettingsDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\SettingsDialog\SystemsSettingsEditor_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Settings\SettingsStateDialog.cpp">
+      <Filter>Classes\Qt\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Settings\SettingsStateDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\InspMemebrModifyCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspMember.cpp">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\RulerToolActions.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\LandscapeEditorDrawSystemActions.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataKeyedArchiveMember.cpp">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Scene\System\CollisionSystem\CollisionBox.cpp">
+      <Filter>Classes\Qt\Scene\System\CollisionSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\SelectPathWidget\SelectEntityPathWidget.cpp">
+      <Filter>Classes\Qt\Tools\SelectPathWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\SelectPathWidget\SelectPathWidgetBase.cpp">
+      <Filter>Classes\Qt\Tools\SelectPathWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\SelectPathWidget\SelectEntityPathWidget_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\SelectPathWidget\SelectPathWidgetBase_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\ChangeLODDistanceCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\AddSkyboxDialog\AddSkyboxDialog.cpp">
+      <Filter>Classes\Qt\Tools\AddSkyboxDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Main\Request.cpp">
+      <Filter>Classes\Qt\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Main\Request.cpp">
+      <Filter>Classes\Qt\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\dava.speedtree\Sources\SpeedTreeImporter.cpp">
+      <Filter>Classes\Qt\SpeedTree</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\Commands2\ConvertToShadowCommand.cpp">
       <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\BeastAction.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorControlsPlaceholder.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\CustomColorsPanel.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\HeightmapEditorPanel.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\LandscapeEditorBasePanel.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\RulerToolPanel.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\TilemaskEditorPanel.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\VisibilityToolPanel.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorControlsPlaceholder_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\CustomColorsPanel_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\HeightmapEditorPanel_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\LandscapeEditorBasePanel_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\RulerToolPanel_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\TilemaskEditorPanel_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\VisibilityToolPanel_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\LandscapeDialog\LandscapeDialog.cpp">
+      <Filter>Classes\Qt\Tools\LandscapeDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\LandscapeDialog\LandscapeDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorShortcutManager.cpp">
+      <Filter>Classes\Qt\DockLandscapeEditorControls</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Scene\System\DebugDrawSystem.cpp">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\QtLabelWithActions\QtLabelWithActions.cpp">
+      <Filter>Classes\Qt\Tools\QtLabelWithActions</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\QtLabelWithActions\QtLabelWithActions_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\AddSkyboxDialog\AddSkyboxDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Scene\System\BeastSystem.cpp">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\EntityAddCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\QtComboFake.cpp">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyWidgets\QtComboFake_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\DynamicShadowCommands.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.cpp">
+      <Filter>Classes\Qt\Tools\HangingObjectsHeight</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\HangingObjectsHeight\HangingObjectsHeight_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.cpp">
+      <Filter>Classes\Qt\Tools\ToolButtonWithWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\ToolButtonWithWidget\ToolButtonWithWidget_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\SliderWidget\PopupEditorDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\SliderWidget\SliderWidget_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\SliderWidget\PopupEditorDialog.cpp">
+      <Filter>Classes\Qt\Tools\SliderWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\SliderWidget\SliderWidget.cpp">
+      <Filter>Classes\Qt\Tools\SliderWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Scene\System\OwnersSignatureSystem.cpp">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\LandscapeSetTexturesCommands.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget.cpp">
+      <Filter>Classes\Qt\Tools\TileTexturePreviewWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate.cpp">
+      <Filter>Classes\Qt\Tools\TileTexturePreviewWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\SpeedTreeImport\SpeedTreeImportDialog.cpp">
+      <Filter>Classes\Qt\SpeedTree</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\SpeedTreeImport\SpeedTreeImportDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2223,12 +2352,6 @@
       <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="Classes\UIFileTreeCell.h">
-      <Filter>Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\UIScrollView.h">
-      <Filter>Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\UISpriteEditor.h">
       <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="Classes\VertexOctTree.h">
@@ -3095,23 +3218,11 @@
     <ClInclude Include="Classes\SceneEditor\ArrowsNode.h">
       <Filter>Classes\SceneEditor</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\DockSetSwitchIndex\SetSwitchIndexView.h">
-      <Filter>Classes\Qt\DockSetSwitchIndex</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\DockSetSwitchIndex\SetSwitchIndexHelper.h">
-      <Filter>Classes\Qt\DockSetSwitchIndex</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Collada\ColladaErrorCodes.h">
       <Filter>Classes\Collada</Filter>
     </ClInclude>
     <ClInclude Include="Classes\LandscapeEditor\EditorLandscape.h">
       <Filter>Classes\LandscapeEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\DockHangingObjects\HangingObjectsView.h">
-      <Filter>Classes\Qt\DockHangingObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\DockHangingObjects\HangingObjectsHelper.h">
-      <Filter>Classes\Qt\DockHangingObjects</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Qt\DockSceneGraph\ExtraUserData.h">
       <Filter>Classes\Qt\DockSceneGraph</Filter>
@@ -3257,9 +3368,6 @@
     <ClInclude Include="Classes\Qt\DockConsole\ConsoleView.h">
       <Filter>Classes\Qt\DockConsole</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\SceneEditor\EntityOwnerPropertyHelper.h">
-      <Filter>Classes\SceneEditor</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\ParticlesEditorQT\Helpers\ParticlesEditorNodeNameHelper.h">
       <Filter>Classes\ParticlesEditorQT\Helpers</Filter>
     </ClInclude>
@@ -3296,9 +3404,6 @@
     <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h">
       <Filter>Classes\Commands2</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Commands2\EntityMoveCommand.h">
-      <Filter>Classes\Commands2</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Qt\DockSceneTree\SceneTreeDelegate.h">
       <Filter>Classes\Qt\DockSceneTree</Filter>
     </ClInclude>
@@ -3322,9 +3427,6 @@
     </ClInclude>
     <ClInclude Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.h">
       <Filter>Classes\Qt\Tools\AddSwitchEntityDialog</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\SelectPathWidget\SelectPathWidget.h">
-      <Filter>Classes\Qt\Tools\SelectPathWidget</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Deprecated\ScenePreviewControl.h">
       <Filter>Classes\Deprecated</Filter>
@@ -3350,19 +3452,19 @@
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyModel.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataDavaKeyedArchive.h">
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataDavaKeyedArchive.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataDavaVariant.h">
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataDavaVariant.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataIntoCollection.h">
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspColl.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataIntrospection.h">
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataIntrospection.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtProperyData\QtPropertyDataMetaObject.h">
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataMetaObject.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\QtColorLineEdit.h">
@@ -3428,18 +3530,6 @@
     <ClInclude Include="Classes\Qt\Scene\System\VisibilityToolSystem.h">
       <Filter>Classes\Qt\Scene\System</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\DockCustomColorsEditor\CustomColorsPropertiesView.h">
-      <Filter>Classes\Qt\DockCustomColorsEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\DockHeightmapEditor\HeightmapEditorPropertiesView.h">
-      <Filter>Classes\Qt\DockHeightmapEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\DockTilemaskEditor\TilemaskEditorPropertiesView.h">
-      <Filter>Classes\Qt\DockTilemaskEditor</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\DockVisibilityToolEditor\VisibilityToolPropertiesView.h">
-      <Filter>Classes\Qt\DockVisibilityToolEditor</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Qt\Tools\MimeDataHelper\MimeDataHelper.h">
       <Filter>Classes\Qt\Tools\MimeDataHelper</Filter>
     </ClInclude>
@@ -3485,34 +3575,19 @@
     <ClInclude Include="Classes\Commands\SceneGraphCommands.h">
       <Filter>Classes\Commands</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Commands\SetSwitchIndexCommands.h">
-      <Filter>Classes\Commands</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Commands\TextureOptionsCommands.h">
       <Filter>Classes\Commands</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Commands\TilemapEditorCommands.h">
       <Filter>Classes\Commands</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Commands\ToolsCommands.h">
-      <Filter>Classes\Commands</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Commands\VisibilityCheckToolCommands.h">
       <Filter>Classes\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="_GeneratedQt\ui_CustomColorsProperties.h">
-      <Filter>QtGenerated</Filter>
-    </ClInclude>
-    <ClInclude Include="_GeneratedQt\ui_CustomColorsView.h">
-      <Filter>QtGenerated</Filter>
     </ClInclude>
     <ClInclude Include="_GeneratedQt\ui_davaglwidget.h">
       <Filter>QtGenerated</Filter>
     </ClInclude>
     <ClInclude Include="_GeneratedQt\ui_HangingObjectsView.h">
-      <Filter>QtGenerated</Filter>
-    </ClInclude>
-    <ClInclude Include="_GeneratedQt\ui_heightmapEditorProperties.h">
       <Filter>QtGenerated</Filter>
     </ClInclude>
     <ClInclude Include="_GeneratedQt\ui_mainwindow.h">
@@ -3534,15 +3609,6 @@
       <Filter>QtGenerated</Filter>
     </ClInclude>
     <ClInclude Include="_GeneratedQt\ui_texturebrowser.h">
-      <Filter>QtGenerated</Filter>
-    </ClInclude>
-    <ClInclude Include="_GeneratedQt\ui_tilemaskEditorProperties.h">
-      <Filter>QtGenerated</Filter>
-    </ClInclude>
-    <ClInclude Include="_GeneratedQt\ui_VisibilityToolPropertiesView.h">
-      <Filter>QtGenerated</Filter>
-    </ClInclude>
-    <ClInclude Include="_GeneratedQt\ui_VisibilityToolView.h">
       <Filter>QtGenerated</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Qt\CubemapEditor\ClickableQLabel.h">
@@ -3581,9 +3647,6 @@
     <ClInclude Include="Classes\Qt\Tools\QtWaitDialog\QtWaitDialog.h">
       <Filter>Classes\Qt\Tools\QtWaitDialog</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Commands2\AddEntityCommand.h">
-      <Filter>Classes\Commands2</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.h">
       <Filter>Classes\Qt\Tools\BaseAddEntityDialog</Filter>
     </ClInclude>
@@ -3619,12 +3682,6 @@
     </ClInclude>
     <ClInclude Include="_GeneratedQt\ui_LODEditor.h">
       <Filter>QtGenerated</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\SettingsDialog\GeneralSettingsEditor.h">
-      <Filter>Classes\Qt\SettingsDialog</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\SettingsDialog\SettingsDialogQt.h">
-      <Filter>Classes\Qt\SettingsDialog</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Commands2\MetaObjModifyCommand.h">
       <Filter>Classes\Commands2</Filter>
@@ -3662,8 +3719,152 @@
     <ClInclude Include="Classes\Qt\Main\StatusBar.h">
       <Filter>Classes\Qt\Main</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\SettingsDialog\SystemsSettingsEditor.h">
+      <Filter>Classes\Qt\Tools\SettingsDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\SettingsDialog\GeneralSettingsEditor.h">
+      <Filter>Classes\Qt\Tools\SettingsDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\SettingsDialog\SettingsDialogQt.h">
+      <Filter>Classes\Qt\Tools\SettingsDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Settings\SettingsStateDialog.h">
+      <Filter>Classes\Qt\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\InspMemberModifyCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspMember.h">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\RulerToolActions.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\LandscapeEditorDrawSystemActions.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataKeyedArchiveMember.h">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyData</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Scene\System\CollisionSystem\CollisionBox.h">
+      <Filter>Classes\Qt\Scene\System\CollisionSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\SelectPathWidget\SelectEntityPathWidget.h">
+      <Filter>Classes\Qt\Tools\SelectPathWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\SelectPathWidget\SelectPathWidgetBase.h">
+      <Filter>Classes\Qt\Tools\SelectPathWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\ChangeLODDistanceCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\AddSkyboxDialog\AddSkyboxDialog.h">
+      <Filter>Classes\Qt\Tools\AddSkyboxDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Main\Request.h">
+      <Filter>Classes\Qt\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Main\Request.h">
+      <Filter>Classes\Qt\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\dava.speedtree\Sources\SpeedTreeImporter.h">
+      <Filter>Classes\Qt\SpeedTree</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\Commands2\ConvertToShadowCommand.h">
       <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\BeastAction.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorControlsPlaceholder.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\CustomColorsPanel.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\HeightmapEditorPanel.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\LandscapeEditorBasePanel.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\RulerToolPanel.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\TilemaskEditorPanel.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\VisibilityToolPanel.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\LandscapeDialog\LandscapeDialog.h">
+      <Filter>Classes\Qt\Tools\LandscapeDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\AddComponentCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorShortcutManager.h">
+      <Filter>Classes\Qt\DockLandscapeEditorControls</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Scene\System\DebugDrawSystem.h">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\QtLabelWithActions\QtLabelWithActions.h">
+      <Filter>Classes\Qt\Tools\QtLabelWithActions</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Scene\System\BeastSystem.h">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\EntityAddCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\QtComboFake.h">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\DynamicShadowCommands.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.h">
+      <Filter>Classes\Qt\Tools\HangingObjectsHeight</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.h">
+      <Filter>Classes\Qt\Tools\ToolButtonWithWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\SliderWidget\PopupEditorDialog.h">
+      <Filter>Classes\Qt\Tools\SliderWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\SliderWidget\SliderWidget.h">
+      <Filter>Classes\Qt\Tools\SliderWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Scene\System\OwnersSignatureSystem.h">
+      <Filter>Classes\Qt\Scene\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\QtFileDialog\QtFileDialog.h">
+      <Filter>Classes\Qt\Tools\QtFileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\LandscapeSetTexturesCommands.h">
+      <Filter>QtGenerated</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget.h">
+      <Filter>Classes\Qt\Tools\TileTexturePreviewWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate.h">
+      <Filter>Classes\Qt\Tools\TileTexturePreviewWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\SpeedTreeImport\SpeedTreeImportDialog.h">
+      <Filter>Classes\Qt\SpeedTree</Filter>
+    </ClInclude>
+    <ClInclude Include="_GeneratedQt\ui_treeimportdialog.h">
+      <Filter>QtGenerated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3871,6 +4072,9 @@
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\CubeMapTextureBrowser.ui">
+      <Filter>QtData</Filter>
+    </None>
+    <None Include="DataQt\treeimportdialog.ui">
       <Filter>QtData</Filter>
     </None>
   </ItemGroup>

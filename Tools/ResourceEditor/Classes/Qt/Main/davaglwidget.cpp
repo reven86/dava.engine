@@ -87,10 +87,7 @@ DavaGLWidget::DavaGLWidget(QWidget *parent)
 
 	}
 
-	// Disable Widget blinking
-	setAttribute(Qt::WA_OpaquePaintEvent, true);
-	setAttribute(Qt::WA_NoSystemBackground, true);
-	setAttribute(Qt::WA_PaintOnScreen, true);
+	EnableCustomPaintFlags(true);
 	setAcceptDrops(true);
 
 	// Setup FPS
@@ -110,16 +107,29 @@ QPaintEngine *DavaGLWidget::paintEngine() const
 	return NULL;
 }
 
-void DavaGLWidget::paintEvent(QPaintEvent *)
+void DavaGLWidget::paintEvent(QPaintEvent *event)
 {
-	// We have custom rendering (by timer), so here nothing to do
-	return;
+	// We have custom rendering (by timer), so draw only if control is disabled
+	if(!isEnabled())
+	{
+		QWidget::paintEvent(event);
+	}
 }
 
 void DavaGLWidget::resizeEvent(QResizeEvent *e)
 {
     QWidget::resizeEvent(e);
 	DAVA::QtLayer::Instance()->Resize(e->size().width(), e->size().height());
+
+	emit Resized(e->size().width(), e->size().height());
+}
+
+void DavaGLWidget::changeEvent(QEvent * event)
+{
+	if(event->type() == QEvent::EnabledChange)
+	{
+		EnableCustomPaintFlags(isEnabled());
+	}
 }
 
 void DavaGLWidget::showEvent(QShowEvent *e)
@@ -232,12 +242,16 @@ int DavaGLWidget::GetFPS() const
 	return fps;
 }
 
+
 void DavaGLWidget::Render()
 {
 	QElapsedTimer frameTimer;
 	frameTimer.start();
 
-	DAVA::QtLayer::Instance()->ProcessFrame();
+	if(isEnabled())
+	{
+		DAVA::QtLayer::Instance()->ProcessFrame();
+	}
 
 	if(QDateTime::currentMSecsSinceEpoch() >= fpsCountTime)
 	{
@@ -257,6 +271,7 @@ void DavaGLWidget::Render()
 		// so we can wait a minimum time
 		waitUntilNextFrameMs = 1;
 	}
+
 	QTimer::singleShot(waitUntilNextFrameMs, this, SLOT(Render()));
 }
 
@@ -264,4 +279,12 @@ void DavaGLWidget::Quit()
 {
 //    DAVA::Logger::Info("[QUIT]");
     exit(0);
+}
+
+void DavaGLWidget::EnableCustomPaintFlags(bool enable)
+{
+	// Disable Widget blinking
+	setAttribute(Qt::WA_OpaquePaintEvent, enable);
+	setAttribute(Qt::WA_NoSystemBackground, enable);
+	setAttribute(Qt::WA_PaintOnScreen, enable);
 }

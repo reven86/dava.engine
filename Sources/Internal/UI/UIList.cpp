@@ -36,7 +36,6 @@
 
 namespace DAVA 
 {
-	REGISTER_CLASS(UIList);
 	
 int32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
 {

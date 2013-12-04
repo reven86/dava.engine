@@ -35,6 +35,7 @@
 #include "Base/FastNameMap.h"
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/IRenderUpdatable.h"
+#include "Render/Highlevel/SpatialTree.h"
 
 namespace DAVA
 {
@@ -111,8 +112,15 @@ public:
     
     void SetShadowRectColor(const Color &color);
     const Color & GetShadowRectColor();
+
+	void DebugDrawSpatialTree();
     
+	void CreateSpatialTree(const AABBox3 &worldBox, int32 maxTreeDepth);
+	void CreateSpatialTree();
+	void RemoveSpatialTree();
+
 private:
+	
     void ProcessClipping();
     void FindNearestLights();
     void FindNearestLights(RenderObject * renderObject);
@@ -144,6 +152,8 @@ private:
     //Vector<RenderObject*> forRemove;
     
 	ParticleEmitterSystem * particleEmitterSystem;
+
+	AbstractSpatialTree *spatialTree;
     
     friend class RenderPass;
 };

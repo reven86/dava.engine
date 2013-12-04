@@ -614,6 +614,61 @@ namespace DAVA
 	}
 
 	static bool mouseCursorShown = true;
+	static USHORT mouseButtonsDownMask = 0;
+
+	void HandleMouseButtonsPressed(USHORT buttsFlags)
+	{
+		if (buttsFlags & RI_MOUSE_BUTTON_1_DOWN)
+		{
+			mouseButtonsDownMask |= RI_MOUSE_BUTTON_1_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_2_DOWN)
+		{
+			mouseButtonsDownMask |= RI_MOUSE_BUTTON_2_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_3_DOWN)
+		{
+			mouseButtonsDownMask |= RI_MOUSE_BUTTON_3_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_4_DOWN)
+		{
+			mouseButtonsDownMask |= RI_MOUSE_BUTTON_4_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_5_DOWN)
+		{
+			mouseButtonsDownMask |= RI_MOUSE_BUTTON_5_DOWN;
+		}
+	}
+
+	void HandleMouseButtonsReleased(USHORT buttsFlags)
+	{
+		if (mouseButtonsDownMask == 0)
+		{
+			return;
+		}
+
+		// Reset the mouse buttons mask, release capture if mask is empty (all buttons released).
+		if (buttsFlags & RI_MOUSE_BUTTON_1_UP)
+		{
+			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_1_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_2_UP)
+		{
+			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_2_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_3_UP)
+		{
+			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_3_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_4_UP)
+		{
+			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_4_DOWN;
+		}
+		if (buttsFlags & RI_MOUSE_BUTTON_5_UP)
+		{
+			mouseButtonsDownMask &= ~RI_MOUSE_BUTTON_5_DOWN;
+		}
+	}
 
 	void OnMouseEvent(USHORT buttsFlags, WPARAM wParam, LPARAM lParam, USHORT buttonData)
     {
@@ -621,19 +676,26 @@ namespace DAVA
         Vector<DAVA::UIEvent> emptyTouches;
         int32 touchPhase = -1;
 
+        if (HIWORD(wParam) || mouseButtonsDownMask > 0) // isPoint inside window or some clicks already captured
+        {
+            HandleMouseButtonsPressed(buttsFlags);
+        }
+
         if(buttsFlags & RI_MOUSE_WHEEL)
         {
             UIEvent newTouch;
             newTouch.tid = 0;
-            newTouch.physPoint.x = ((SHORT)buttonData) / 120.f;
-            newTouch.physPoint.y = ((SHORT)buttonData) / 120.f;
+            newTouch.physPoint.x = 0;
+            newTouch.physPoint.y = ((SHORT)buttonData) / (float32)(WHEEL_DELTA);
             newTouch.phase = touchPhase = UIEvent::PHASE_WHEEL;
             touches.push_back(newTouch);
         }
         else
 		{
-            if(HIWORD(wParam)) // HIWORD(wParam) - isPoint inside window
+            if(HIWORD(wParam) || mouseButtonsDownMask > 0) // HIWORD(wParam) - isPoint inside window
+			{
 			    touchPhase = MoveTouchsToVector(buttsFlags, wParam, lParam, &touches);
+			}
 		}
 
         if(touchPhase != -1)
@@ -649,6 +711,8 @@ namespace DAVA
 			ShowCursor(false);
 			mouseCursorShown = false;
 		}
+
+		HandleMouseButtonsReleased(buttsFlags);
 	}
 
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

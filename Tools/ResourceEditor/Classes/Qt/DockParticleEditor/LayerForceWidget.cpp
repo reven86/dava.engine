@@ -92,17 +92,17 @@ void LayerForceWidget::Init(SceneEditor2* scene, ParticleEmitter* emitter, Parti
 	Vector<QString> legends;
 	legends.push_back("force x"); legends.push_back("force y"); legends.push_back("force z");
 	forceTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true, false);
-	forceTimeLine->AddLines(PropLineWrapper<Vector3>(curForce->GetForce()).GetProps(), colors, legends);
+	forceTimeLine->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(curForce->GetForce())).GetProps(), colors, legends);
 	forceTimeLine->EnableLock(true);
 
 	legends.clear();
 	legends.push_back("force variable x"); legends.push_back("force variable y"); legends.push_back("force variable z");
 	forceVariationTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true, false);
-	forceVariationTimeLine->AddLines(PropLineWrapper<Vector3>(curForce->GetForceVariation()).GetProps(), colors, legends);
+	forceVariationTimeLine->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(curForce->GetForceVariation())).GetProps(), colors, legends);
 	forceVariationTimeLine->EnableLock(true);
 
 	forceOverLifeTimeLine->Init(0, 1, updateMinimized, true, false);
-	forceOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(curForce->GetForceOverlife()).GetProps(), Qt::blue, "forces over life");
+	forceOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(curForce->GetForceOverlife())).GetProps(), Qt::blue, "forces over life");
 
 	blockSignals = false;
 }

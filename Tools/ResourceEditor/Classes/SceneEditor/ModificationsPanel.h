@@ -69,10 +69,10 @@ public:
 	};
 
     
-    
+protected:
+    virtual ~ModificationsPanel();
 public:
     ModificationsPanel(ModificationsPanelDelegate *newDelegate, const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    virtual ~ModificationsPanel();
     
 	virtual void Update(float32 timeElapsed);
     virtual void Input(UIEvent * touch);

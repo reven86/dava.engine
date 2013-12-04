@@ -39,10 +39,11 @@ namespace DAVA {
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
 class UIWebView : public UIControl
 {
+protected:
+	virtual ~UIWebView();
 public:
 	UIWebView();
 	UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates = false);
-	virtual ~UIWebView();
 		
 	// Open the URL.
 	void OpenURL(const String& urlToOpen);

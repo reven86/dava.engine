@@ -45,6 +45,8 @@ public:
 
 class UICheckBox : public UIControl
 {
+protected:
+    ~UICheckBox(){}
 public:
 
 	UICheckBox();

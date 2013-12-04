@@ -16,9 +16,8 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 	private native void nativeRenderRecreated();
 	private native void nativeOnResumeView();
 	private native void nativeOnPauseView(boolean isLock);
-
-	private int framebuffer = 0;
-	private int colorRenderbuffer = 0;
+	
+	private boolean skipFirstFrame = false;
 
 	private int width = 0;
 	private int height = 0;
@@ -64,6 +63,7 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 			isRenderRecreated = false;
 		}
 		OnResume();
+		skipFirstFrame = true;
 
 		Log.w(JNIConst.LOG_TAG, "_________onSurfaceChanged__DONE___");
 	}
@@ -72,9 +72,11 @@ public class JNIRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		// GLES20.glClearColor(red, green, blue, alpha);
-		// GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT |
-		// GLES20.GL_COLOR_BUFFER_BIT);
+		if (skipFirstFrame) {
+			skipFirstFrame = false;
+			return;
+		}
+			
 		nativeRender();
 	}
 	

@@ -42,7 +42,7 @@ QtColorLineEdit::QtColorLineEdit(QWidget * parent)
 	: QLineEdit(parent)
 {
 	QRegExpValidator *validator = new QRegExpValidator();
-	validator->setRegExp(QRegExp("#[A-F0-9]{8}", Qt::CaseInsensitive));
+	validator->setRegExp(QRegExp("#{0,1}[A-F0-9]{8}", Qt::CaseInsensitive));
 
 	setValidator(validator);
 
@@ -64,7 +64,8 @@ QColor QtColorLineEdit::GetColor() const
 void QtColorLineEdit::EditFinished()
 {
 	int r = 0, g = 0, b = 0, a = 255;
-	if(4 == sscanf(text().toStdString().c_str(), "#%02x%02x%02x%02x", &r, &g, &b, &a))
+	QString colorString = text().startsWith("#") ? text() : "#" + text();
+	if(4 == sscanf(colorString.toStdString().c_str(), "#%02x%02x%02x%02x", &r, &g, &b, &a))
 	{
 		curColor = QColor(r, g, b, a);
 	}

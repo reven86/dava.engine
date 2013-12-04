@@ -42,10 +42,10 @@ class ColorDetailControl: public UIControl
 protected:
     
     static const int32 SECTIONS_COUNT = 6;
-    
+    virtual ~ColorDetailControl();
 public:    
     ColorDetailControl(const Rect &rect);
-    virtual ~ColorDetailControl();
+
     
 	virtual void DrawAfterChilds(const UIGeometricData &geometricData);
     virtual void Input(UIEvent *currentInput);

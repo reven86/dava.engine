@@ -44,9 +44,10 @@ class RenderManagerGL20;
     
 class RenderDataStream : public BaseObject
 {
+protected:
+    virtual ~RenderDataStream();
 public:
     RenderDataStream();
-    virtual ~RenderDataStream();
     
     void Set(eVertexDataType type, int32 size, int32 stride, const void * pointer);
     
@@ -62,11 +63,13 @@ public:
 
 class RenderDataObject : public RenderResource //BaseObject
 {
+protected:
+    virtual ~RenderDataObject();
 public:
     RenderDataObject();
-    virtual ~RenderDataObject();
     
     RenderDataStream * SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer);
+	void RemoveStream(eVertexFormat formatMark);
     uint32 GetResultFormat() const;
 
     uint32 GetStreamCount() const { return (uint32)streamArray.size(); };
@@ -77,6 +80,8 @@ public:
         for interleaved data. This means we can have only 1 buffer for 1 RenderDataObject
     */
     void BuildVertexBuffer(int32 vertexCount); // pack data to VBOs and allow to use VBOs instead of SetStreams
+	void BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData);
+	void DeleteBuffersInternal(BaseObject * caller, void * param, void *callerData);
     
 //#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
 //	virtual void SaveToSystemMemory();
@@ -88,6 +93,7 @@ public:
     
     void SetIndices(eIndexFormat format, uint8 * indices, int32 count);
     void BuildIndexBuffer();
+	void BuildIndexBufferInternal(BaseObject * caller, void * param, void *callerData);
     uint32 GetIndexBufferID() const { return indexBuffer; };
 
     
@@ -109,6 +115,12 @@ private:
     
     friend class RenderManager;
     friend class RenderManagerGL20;
+
+	struct DestructorContainer
+	{
+		uint32 vboBuffer;
+		uint32 indexBuffer;
+	};
 };
     
 };

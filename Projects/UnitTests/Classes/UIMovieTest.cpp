@@ -106,6 +106,7 @@ void UIMovieTest::LoadResources()
 	finishTestBtn->SetDebugDraw(true);
 	finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIMovieTest::ButtonPressed));
 	AddControl(finishTestBtn);
+	SafeRelease(font);
 }
 
 void UIMovieTest::UnloadResources()

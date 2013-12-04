@@ -70,9 +70,10 @@ public:
 		SEEK_FROM_END		= 2, //! Seek from end of file
 		SEEK_FROM_CURRENT	= 3, //! Seek from current file position relatively
 	};
-	
-	File();
+protected:
 	virtual ~ File();
+public:
+	File();
 	
 	/** 
 		\brief funciton to create a file instance with give attributes

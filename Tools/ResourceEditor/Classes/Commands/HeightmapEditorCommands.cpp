@@ -301,7 +301,7 @@ void CommandCopyPasteHeightmap::UpdateLandscapeTilemap(DAVA::Image *image)
 	{
 		SceneEditorScreenMain *screen = dynamic_cast<SceneEditorScreenMain *>(UIScreenManager::Instance()->GetScreen());
 		EditorScene* scene = screen->FindCurrentBody()->bodyControl->GetScene();
-		Landscape* landscape = scene->GetLandscape(scene);
+		Landscape* landscape = FindLandscape(scene);
 
 		landscape->SetTexture(Landscape::TEXTURE_TILE_MASK, texture);
 		landscape->UpdateFullTiledTexture();

@@ -384,17 +384,17 @@ void MainScreen::ConvertGraphics(const String &path)
 
 void MainScreen::ExecutePacker(const String &path)
 {
-    FileList fl(path);
-    for(int i = 0; i < fl.GetCount(); i++)
+    ScopedPtr<FileList> fl( new FileList(path) );
+    for(int i = 0; i < fl->GetCount(); i++)
     {
-        if(fl.IsDirectory(i) && !fl.IsNavigationDirectory(i))
+        if(fl->IsDirectory(i) && !fl->IsNavigationDirectory(i))
         {
-            String name = fl.GetFilename(i);
+            String name = fl->GetFilename(i);
             size_t find = name.find("Gfx");
 		    if(find != name.npos)
 		    {
                 // convert only Gfx directories
-                String gfxSrcPath = fl.GetPathname(i);
+                String gfxSrcPath = fl->GetPathname(i);
                 // ResourcePacker
 #ifdef __DAVAENGINE_WIN32__
                 String spawnCommand = Format("ResourcePacker %s", gfxSrcPath.c_str());

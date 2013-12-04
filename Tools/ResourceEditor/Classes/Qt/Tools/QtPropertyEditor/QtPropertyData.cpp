@@ -35,6 +35,7 @@ QtPropertyData::QtPropertyData()
 	: curFlags(0)
 	, parent(NULL)
 	, optionalWidgetViewport(NULL)
+	, updatingValue(false)
 { }
 
 QtPropertyData::QtPropertyData(const QVariant &value)
@@ -42,16 +43,14 @@ QtPropertyData::QtPropertyData(const QVariant &value)
 	, curFlags(0)
 	, parent(NULL)
 	, optionalWidgetViewport(NULL)
+	, updatingValue(false)
 { }
 
 QtPropertyData::~QtPropertyData() 
 {
-	QHashIterator<QString, QtPropertyData*> i = QHashIterator<QString, QtPropertyData*>(children);
-	while(i.hasNext())
+	for(int i = 0; i < childrenData.size(); ++i)
 	{
-		i.next();
-
-		QtPropertyData *data = i.value();
+		QtPropertyData *data = childrenData.at(i);
 		if(NULL != data)
 		{
 			delete data;
@@ -69,23 +68,19 @@ QtPropertyData::~QtPropertyData()
 
 QVariant QtPropertyData::GetValue()
 {
-	QVariant internalValue = GetValueInternal();
-
-	if(internalValue != curValue)
+	if(curValue.isNull() || !curValue.isValid())
 	{
-		curValue = internalValue;
-		ChildNeedUpdate();
+		curValue = GetValueInternal();
+	}
+	else
+	{
+		UpdateValue();
 	}
 
 	return curValue;
 }
 
-QVariant QtPropertyData::GetAlias()
-{
-	return GetValueAlias();
-}
-
-void QtPropertyData::SetValue(const QVariant &value)
+void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
 {
 	QVariant oldValue = curValue;
 
@@ -94,14 +89,42 @@ void QtPropertyData::SetValue(const QVariant &value)
 
 	if(curValue != oldValue)
 	{
-		emit ValueChanged();
+		UpdateDown();
+		UpdateUp();
+
+		emit ValueChanged(reason);
+	}
+}
+
+bool QtPropertyData::UpdateValue()
+{
+	bool ret = false;
+
+	if(!updatingValue)
+	{
+		updatingValue = true;
+
+		if(UpdateValueInternal())
+		{
+			curValue = GetValueInternal();
+			emit ValueChanged(VALUE_SOURCE_CHANGED);
+
+			ret = true;
+		}
+
+		updatingValue = false;
 	}
 
-	// change signal going down to childs
-	ChildNeedUpdate();
+	return ret;
+}
 
-	// change signal going up to parents
-	ParentUpdate();
+QVariant QtPropertyData::GetAlias()
+{
+	// this will force update internalValue if 
+	// it source was changed 
+	GetValue();
+
+	return GetValueAlias();
 }
 
 void QtPropertyData::SetIcon(const QIcon &icon)
@@ -143,12 +166,25 @@ bool QtPropertyData::SetEditorData(QWidget *editor)
     return SetEditorDataInternal(editor);
 }
 
-void QtPropertyData::ParentUpdate()
+void QtPropertyData::UpdateUp()
 {
 	if(NULL != parent)
 	{
-		parent->ChildChanged(parent->children.key(this), this);
-		parent->ParentUpdate();
+		parent->UpdateValue();
+		parent->UpdateUp();
+	}
+}
+
+void QtPropertyData::UpdateDown()
+{
+	for(int i = 0; i < childrenData.size(); ++i)
+	{
+		QtPropertyData *child = childrenData.at(i);
+		if(NULL != child)
+		{
+			child->UpdateValue();
+			child->UpdateDown();
+		}
 	}
 }
 
@@ -156,11 +192,9 @@ void QtPropertyData::ChildAdd(const QString &key, QtPropertyData *data)
 {
 	if(NULL != data && !key.isEmpty())
 	{
-		int sz = children.size();
-        
-        children.insert(key, data);
-        childrenOrder.insert(key, sz);
-
+		childrenNames.append(key);
+		childrenData.append(data);
+	    
 		data->parent = this;
 
 		emit ChildAdded(key, data);
@@ -174,17 +208,17 @@ void QtPropertyData::ChildAdd(const QString &key, const QVariant &value)
 
 int QtPropertyData::ChildCount()
 {
-	return children.size();
+	return childrenData.size();
 }
 
 QPair<QString, QtPropertyData*> QtPropertyData::ChildGet(int i)
 {
 	QPair<QString, QtPropertyData*> p("", NULL);
 
-	if(i >= 0 && i < children.size())
+	if(i >= 0 && i < childrenData.size())
 	{
-		p.first = childrenOrder.key(i);
-		p.second = children[p.first];
+		p.first = childrenNames.at(i);
+		p.second = childrenData.at(i);
 	}
 
 	return p;
@@ -194,9 +228,10 @@ QtPropertyData * QtPropertyData::ChildGet(const QString &key)
 {
 	QtPropertyData *data = NULL;
 
-	if(children.contains(key))
+	int index = childrenNames.indexOf(key);
+	if(-1 != index)
 	{
-		data = children[key];
+		data = childrenData.at(index);
 	}
 
 	return data;
@@ -204,40 +239,29 @@ QtPropertyData * QtPropertyData::ChildGet(const QString &key)
 
 void QtPropertyData::ChildRemove(const QString &key)
 {
-	QtPropertyData *data = ChildGet(key);
-
-	if(NULL != data)
-	{
-		emit ChildRemoving(key, data);
-
-		children.remove(key);
-		childrenOrder.remove(key);
-
-		delete data;
-	}
-}
-
-void QtPropertyData::ChildRemove(int i)
-{
-	QPair<QString, QtPropertyData*> pair = ChildGet(i);
-
-	if(!pair.first.isEmpty() && NULL != pair.second)
-	{
-		emit ChildRemoving(pair.first, pair.second);
-
-		children.remove(pair.first);
-		childrenOrder.remove(pair.first);
-
-		delete pair.second;
-	}
+	int index = childrenNames.indexOf(key);
+	ChildRemove(index);
 }
 
 void QtPropertyData::ChildRemove(QtPropertyData *data)
 {
-	QString key = children.key(data, "");
-	if(!key.isEmpty())
+	int index = childrenData.indexOf(data);
+	ChildRemove(index);
+}
+
+void QtPropertyData::ChildRemove(int index)
+{
+	if(index >= 0 && index < childrenData.size())
 	{
-		ChildRemove(key);
+		QtPropertyData *data = childrenData.at(index);
+
+		emit ChildRemoving(childrenNames.at(index), data);
+
+		childrenData.removeAt(index);
+		childrenNames.removeAt(index);
+
+		delete data;
+		data = NULL;
 	}
 }
 
@@ -265,6 +289,7 @@ void QtPropertyData::AddOW(const QtPropertyOW &ow)
 	if(NULL != ow.widget)
 	{
 		ow.widget->setParent(optionalWidgetViewport);
+		ow.widget->hide();
 	}
 }
 
@@ -278,6 +303,18 @@ void QtPropertyData::RemOW(int index)
 		}
 
 		optionalWidgets.remove(index);
+	}
+}
+
+void QtPropertyData::RemOW(QWidget *widget)
+{
+	for(int i = 0; i < optionalWidgets.size(); ++i)
+	{
+		if(optionalWidgets[i].widget == widget)
+		{
+			RemOW(i);
+			break;
+		}
 	}
 }
 
@@ -298,12 +335,18 @@ void QtPropertyData::SetOWViewport(QWidget *viewport)
 		}
 	}
 
-	QHashIterator<QString, QtPropertyData*> i(children);
-	while (i.hasNext()) 
+	
+	for (int i = 0; i < childrenData.size(); i++)
 	{
-		i.next();
-		i.value()->SetOWViewport(viewport);
+		childrenData.at(i)->SetOWViewport(viewport);
 	}
+}
+
+void* QtPropertyData::CreateLastCommand() const
+{
+	// can be re-implemented by sub-class
+
+	return NULL;
 }
 
 QVariant QtPropertyData::GetValueInternal()
@@ -311,6 +354,11 @@ QVariant QtPropertyData::GetValueInternal()
 	// should be re-implemented by sub-class
 
 	return curValue;
+}
+
+bool QtPropertyData::UpdateValueInternal()
+{
+	return false;
 }
 
 QVariant QtPropertyData::GetValueAlias()
@@ -346,13 +394,14 @@ bool QtPropertyData::SetEditorDataInternal(QWidget *editor)
 	return false;
 }
 
-void QtPropertyData::ChildChanged(const QString &key, QtPropertyData *data)
+/*
+void QtPropertyData::ChildChanged(const QString &key, QtPropertyData *data, ValueChangeReason reason)
 {
 	// should be re-implemented by sub-class
 }
 
-void QtPropertyData::ChildNeedUpdate()
+void QtPropertyData::ChildNeedUpdate(ValueChangeReason reason)
 {
 	// should be re-implemented by sub-class
 }
-
+*/

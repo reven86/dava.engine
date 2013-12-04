@@ -33,5 +33,13 @@
         <file>Icons/align_top.png</file>
         <file>Icons/align_vcenter.png</file>
         <file>Icons/adjust_size.png</file>
+        <file>Icons/distribute_horizontal_center.png</file>
+        <file>Icons/distribute_horizontal_gaps.png</file>
+        <file>Icons/distribute_horizontal_left.png</file>
+        <file>Icons/distribute_horizontal_right.png</file>
+        <file>Icons/distribute_vertical_bottom.png</file>
+        <file>Icons/distribute_vertical_center.png</file>
+        <file>Icons/distribute_vertical_gaps.png</file>
+        <file>Icons/distribute_vertical_top.png</file>
     </qresource>
 </RCC>

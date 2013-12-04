@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class SpritePerfScreen : public UIScreen
 {
+protected:
+	~SpritePerfScreen(){}
 public:
 	struct PerfFuncData
 	{

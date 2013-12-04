@@ -48,7 +48,27 @@ namespace DAVA
 class AABBox3
 {
 public:
-	Vector3 min, max;
+	
+	Vector3 min;
+	Vector3 max;
+	
+
+/*	union
+	{
+		struct 
+		{
+			struct
+			{
+				float32 x, y, z;				
+			}min, max;
+		};
+		struct
+		{
+			float32 x,y,z;
+		} verts[2];
+	};*/
+		
+	
 	
 	//! \brief construct empty bounding box
 	inline AABBox3();

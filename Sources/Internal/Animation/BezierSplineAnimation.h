@@ -43,6 +43,8 @@ namespace DAVA
 	
 class BezierSplineAnimation2 : public Animation
 {
+protected:
+    ~BezierSplineAnimation2(){}
 public:
 	BezierSplineAnimation2(AnimatedObject * _owner, Vector2 * _var, BezierSpline2 * _spline, float32 _animationTimeLength, Interpolation::FuncType _iType);
 	virtual void Update(float32 timeElapsed);
@@ -55,6 +57,8 @@ private:
 
 class BezierSplineAnimation3 : public Animation
 {
+protected:
+    ~BezierSplineAnimation3(){}
 public:
 	BezierSplineAnimation3(AnimatedObject * _owner, Vector3 * _var, BezierSpline3 * _spline, float32 _animationTimeLength, Interpolation::FuncType _iType);
 	virtual void Update(float32 timeElapsed);

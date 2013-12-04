@@ -14,12 +14,23 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 #include "Base/BaseTypes.h"
+#include "Core/Core.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import "Platform/TemplateiOS/EAGLViewController.h"
 
+@implementation BackgroundView
+
+- (void)drawRect:(CGRect)rect
+{
+    // Do nothing to reduce fill usage.
+}
+
+@end
 
 @implementation EAGLViewController
+
+@synthesize backgroundView;
 
 /*
  // The designated initializer.  Override if you create the controller programmatically and want to perform customization that is not appropriate for viewDidLoad.
@@ -35,6 +46,7 @@
     if (self = [super init])
     {
         glView = nil;
+        backgroundView = nil;
         [self createGLView];
     }
     return self;
@@ -54,10 +66,24 @@
 	// To Hottych: Here should be proper initialization code ??? I mean, size of this view for iPhone / iPhone 4 / iPad
 	// Check please what should be here
 	[self createGLView];
-    
+
+    // Add the background view needed to place native iOS components on it.
+    backgroundView = [[BackgroundView alloc] initWithFrame:[glView frame]];
+    [backgroundView setBackgroundColor:[UIColor clearColor]];
+    [backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
+    [backgroundView setMultipleTouchEnabled:YES]; // to pass touches to framework, see please DF-2796.
+
+    [glView addSubview:backgroundView];
+    [backgroundView release];
+
     self.view = glView;
 //	[glView release];
 //   glView = nil;
+}
+
+-(UIView*) getBackgroundView
+{
+    return backgroundView;
 }
 
 /*
@@ -68,11 +94,69 @@
 */
 
 // Override to allow orientations other than the default portrait orientation.
-/*- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation 
 {
-    // Return YES for supported orientations
-    return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft);
-}*/
+    DAVA::Core::eScreenOrientation orientation = DAVA::Core::Instance()->GetScreenOrientation();
+    switch (orientation) {
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+            return interfaceOrientation == UIInterfaceOrientationLandscapeLeft;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+            return interfaceOrientation == UIInterfaceOrientationLandscapeRight;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+            return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft)||(interfaceOrientation == UIInterfaceOrientationLandscapeRight);
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+            return interfaceOrientation == UIInterfaceOrientationPortrait;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+            return interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+            return (interfaceOrientation == UIInterfaceOrientationPortrait)||(interfaceOrientation == UIInterfaceOrientationPortraitUpsideDown);
+            break;
+        default:
+            return FALSE;
+            break;
+    }
+    
+}
+
+-(BOOL)shouldAutorotate
+{
+    /*return (DAVA::Core::Instance()->GetScreenOrientation()==DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE)||(DAVA::Core::Instance()->GetScreenOrientation()==DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE);*/
+    return TRUE;
+}
+-(NSUInteger)supportedInterfaceOrientations
+{
+    DAVA::Core::eScreenOrientation orientation = DAVA::Core::Instance()->GetScreenOrientation();
+    switch (orientation) {
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
+            return UIInterfaceOrientationMaskLandscapeLeft;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
+            return UIInterfaceOrientationMaskLandscapeRight;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE:
+            return UIInterfaceOrientationMaskLandscape;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT:
+            return UIInterfaceOrientationMaskPortrait;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
+            return UIInterfaceOrientationMaskPortraitUpsideDown;
+            break;
+        case DAVA::Core::SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE:
+            return UIInterfaceOrientationMaskPortrait;
+            break;
+        default:
+            return UIInterfaceOrientationMaskPortrait;
+            break;
+    }
+
+}
+
 
 
 - (void)didReceiveMemoryWarning 

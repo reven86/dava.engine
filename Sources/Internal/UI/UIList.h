@@ -265,11 +265,13 @@ protected:
 	
 	float oldPos;
 	float newPos;
-	bool lockTouch;
 	
 	int32 touchHoldSize;
 	
-	bool needRefresh;
+	// Private boolean variables are grouped together because of DF-2149.
+	bool lockTouch : 1;
+	bool needRefresh : 1;
+	
 	FilePath aggregatorPath;
 
 	Map<String,Vector<UIListCell*>*> cellStore;

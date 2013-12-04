@@ -79,9 +79,10 @@ if (renderer == rendererType)\
 
 class RenderEffect : public BaseObject 
 {
+protected:
+    virtual ~RenderEffect();
 public:
     RenderEffect();
-    virtual ~RenderEffect();
     
     virtual const char * GetName();
     virtual void DrawArrays(ePrimitiveType mode, int32 first, int32 count);	

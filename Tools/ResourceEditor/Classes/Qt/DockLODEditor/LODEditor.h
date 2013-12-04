@@ -70,7 +70,7 @@ protected slots:
     
     void LODDataChanged();
     void LODDistanceChangedBySpinbox(double value);
-    void LODDistanceChangedBySlider(int layerNum, double value);
+    void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
     
     void ForceLayerActivated(int index);
     
@@ -79,7 +79,6 @@ protected:
     void SetupInternalUI();
     void InitCorrectionSpinBox(QDoubleSpinBox *spinbox, int index);
     void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
-    void InitTriangles(QLabel *name, QLineEdit *lineedit, int index);
     
     void SetupSceneSignals();
     

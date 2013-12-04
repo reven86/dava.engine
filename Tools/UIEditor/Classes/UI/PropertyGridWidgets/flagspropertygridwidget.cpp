@@ -33,6 +33,7 @@
 #include "WidgetSignalsBlocker.h"
 #include "UIControlStateHelper.h"
 #include "PropertiesHelper.h"
+#include "UIStaticTextMetadata.h"
 
 #include "CommandsController.h"
 #include "ChangePropertyCommand.h"
@@ -68,6 +69,9 @@ void FlagsPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     RegisterCheckBoxWidgetForProperty(propertiesMap, "ClipContents", ui->clipContentsCheckbox);
 	
 	RegisterComboBoxWidgetForProperty(propertiesMap, "InitialState", ui->initialStateComboBox);
+    
+    bool disableInputFlag = dynamic_cast<UIStaticTextMetadata*>(activeMetadata);
+    ui->inputCheckBox->setEnabled(!disableInputFlag);
 }
 
 void FlagsPropertyGridWidget::Cleanup()

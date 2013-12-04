@@ -65,6 +65,8 @@ namespace DAVA
 template<class T>
 class LinearAnimation : public Animation
 {
+protected:
+    ~LinearAnimation(){}
 public:
 	LinearAnimation(AnimatedObject * _owner, T * _var, T _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType);
 	// TODO: 
@@ -121,6 +123,8 @@ void LinearAnimation<int32>::Update(float32 timeElapsed)
 	
 class RectLinearAnimation : public Animation
 {
+protected:
+    ~RectLinearAnimation(){}
 public:
 	RectLinearAnimation(AnimatedObject * _owner, Rect * _var, Rect _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType);
 	virtual void Update(float32 timeElapsed);
@@ -134,6 +138,8 @@ private:
 
 class TwoVector2LinearAnimation : public Animation
 {
+protected:
+    ~TwoVector2LinearAnimation(){}
 public:
 	TwoVector2LinearAnimation(AnimatedObject * _owner, Vector2 * _var1, Vector2 _endValue1, Vector2 * _var2, Vector2 _endValue2, float32 _animationTimeLength, Interpolation::FuncType _iType);
 	virtual void Update(float32 timeElapsed);

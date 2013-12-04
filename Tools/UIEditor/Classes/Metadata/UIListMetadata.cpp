@@ -109,12 +109,12 @@ void UIListMetadata::SetOrientation(int value)
     }	
     
 	UpdateListCellSize();
-	GetActiveUIList()->SetOrientation((UIList::eListOrientation)value);	
+	GetActiveUIList()->SetOrientation((UIList::eListOrientation)value);
 }
 
-void UIListMetadata::SetActiveControlRect(const Rect& rect)
+void UIListMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign)
 {
-	UIControlMetadata::SetActiveControlRect(rect);
+	UIControlMetadata::SetActiveControlRect(rect, restoreAlign);
 	UpdateListCellSize();
 }
 

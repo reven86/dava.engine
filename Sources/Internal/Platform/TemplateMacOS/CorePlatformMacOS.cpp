@@ -111,7 +111,7 @@ void CoreMacOSPlatform::GetAvailableDisplayModes(List<DisplayMode> & availableMo
 //					mode.refreshRate = displayMode.RefreshRate;
 //					availableDisplayModes.push_back(mode);
 //					
-//					Logger::Debug("[RenderManagerDX9::GetAvailableDisplayModes] mode found: %d x %d x %d", 
+//					Logger::FrameworkDebug("[RenderManagerDX9::GetAvailableDisplayModes] mode found: %d x %d x %d", 
 //								  mode.width,
 //								  mode.height,
 //								  mode.bpp);

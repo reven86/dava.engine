@@ -38,9 +38,10 @@ using namespace DAVA;
 
 class GraphItem: public BaseObject
 {
+protected:
+    virtual ~GraphItem();
 public:
     GraphItem(GraphItem *parent = 0);
-    virtual ~GraphItem();
     
 	GraphItem *GetParent();
     void SetParent(GraphItem * parent);

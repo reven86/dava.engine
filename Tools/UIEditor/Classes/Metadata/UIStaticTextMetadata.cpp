@@ -279,6 +279,30 @@ void UIStaticTextMetadata::SetMultiline(const bool value)
     {
         return;
     }
-	
-	GetActiveStaticText()->SetMultiline(value);
+
+    // Have to keep current MultilineBySymbol value.
+    bool curMultilineBySymbolValue = GetActiveStaticText()->GetMultilineBySymbol();
+    GetActiveStaticText()->SetMultiline(value, curMultilineBySymbolValue);
+}
+
+bool UIStaticTextMetadata::GetMultilineBySymbol() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+
+    return GetActiveStaticText()->GetMultilineBySymbol();
+}
+
+void UIStaticTextMetadata::SetMultilineBySymbol(const bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    // Have to keep current Multiline value.
+    bool curMultilineValue = GetActiveStaticText()->GetMultiline();
+    GetActiveStaticText()->SetMultiline(curMultilineValue, value);
 }

@@ -39,6 +39,8 @@ using namespace DAVA;
 
 class TransparentWebViewTest: public TestTemplate<TransparentWebViewTest>
 {
+protected:
+    ~TransparentWebViewTest(){};
 public:
 	TransparentWebViewTest();
 

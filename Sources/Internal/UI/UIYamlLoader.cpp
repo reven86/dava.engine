@@ -295,11 +295,7 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
 		Logger::Error("Failed to open yaml file: %s", yamlPathname.GetAbsolutePathname().c_str());
 		return;
 	}
-
 	currentPath = yamlPathname.GetDirectory();
-
-// 	String filename;
-// 	FileSystem::SplitPath(yamlPathname, currentPath, filename);
 
 	YamlNode * rootNode = parser->GetRootNode();
     if (!rootNode)

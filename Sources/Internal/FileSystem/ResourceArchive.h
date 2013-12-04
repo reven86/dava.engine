@@ -70,10 +70,10 @@ class FileSystem;
 //! \brief class to work with resource archives
 class ResourceArchive : public BaseObject
 {
+protected:
+	virtual ~ResourceArchive();
 public:
 	ResourceArchive();
-	virtual ~ResourceArchive();
-
 
 	// Loading resources functions
 	

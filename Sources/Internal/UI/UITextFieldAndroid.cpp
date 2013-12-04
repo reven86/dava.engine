@@ -480,8 +480,11 @@ bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 re
 	if (res)
 	{
 		WideString curText = textField->GetText();
-		curText.replace(replacementLocation, replacementLength, text);
-		this->text = curText;
+		if (curText.length() >= replacementLocation)
+		{
+			curText.replace(replacementLocation, replacementLength, text);
+			this->text = curText;
+		}
 	}
 	return res;
 }

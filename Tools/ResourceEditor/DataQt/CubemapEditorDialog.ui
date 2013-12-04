@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>605</width>
+    <width>604</width>
     <height>445</height>
    </rect>
   </property>
@@ -19,67 +19,10 @@
   <property name="modal">
    <bool>false</bool>
   </property>
-  <widget class="ClickableQLabel" name="labelNX">
-   <property name="geometry">
-    <rect>
-     <x>300</x>
-     <y>160</y>
-     <width>128</width>
-     <height>128</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Box</enum>
-   </property>
-   <property name="text">
-    <string>Click to load face</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="ClickableQLabel" name="labelNZ">
-   <property name="geometry">
-    <rect>
-     <x>160</x>
-     <y>160</y>
-     <width>128</width>
-     <height>128</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Box</enum>
-   </property>
-   <property name="text">
-    <string>Click to load face</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="ClickableQLabel" name="labelPX">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>160</y>
-     <width>128</width>
-     <height>128</height>
-    </rect>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::Box</enum>
-   </property>
-   <property name="text">
-    <string>Click to load face</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
   <widget class="ClickableQLabel" name="labelPZ">
    <property name="geometry">
     <rect>
-     <x>440</x>
+     <x>320</x>
      <y>160</y>
      <width>128</width>
      <height>128</height>
@@ -98,8 +41,27 @@
   <widget class="ClickableQLabel" name="labelNY">
    <property name="geometry">
     <rect>
-     <x>160</x>
-     <y>20</y>
+     <x>180</x>
+     <y>160</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string>Click to load face</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="ClickableQLabel" name="labelNZ">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>160</y>
      <width>128</width>
      <height>128</height>
     </rect>
@@ -117,7 +79,45 @@
   <widget class="ClickableQLabel" name="labelPY">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>460</x>
+     <y>160</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string>Click to load face</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="ClickableQLabel" name="labelNX">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>20</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::Box</enum>
+   </property>
+   <property name="text">
+    <string>Click to load face</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="ClickableQLabel" name="labelPX">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
      <y>300</y>
      <width>128</width>
      <height>128</height>
@@ -139,7 +139,7 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>40</x>
      <y>367</y>
      <width>128</width>
      <height>32</height>
@@ -155,7 +155,7 @@
   <widget class="QPushButton" name="buttonClose">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>40</x>
      <y>403</y>
      <width>128</width>
      <height>32</height>
@@ -177,9 +177,9 @@
   <widget class="QLabel" name="labelDescription">
    <property name="geometry">
     <rect>
-     <x>320</x>
-     <y>10</y>
-     <width>271</width>
+     <x>30</x>
+     <y>20</y>
+     <width>280</width>
      <height>41</height>
     </rect>
    </property>
@@ -201,9 +201,9 @@
   <widget class="QLabel" name="label_7">
    <property name="geometry">
     <rect>
-     <x>370</x>
-     <y>80</y>
-     <width>81</width>
+     <x>80</x>
+     <y>90</y>
+     <width>90</width>
      <height>16</height>
     </rect>
    </property>
@@ -217,9 +217,9 @@
   <widget class="QLabel" name="label_8">
    <property name="geometry">
     <rect>
-     <x>370</x>
-     <y>100</y>
-     <width>81</width>
+     <x>80</x>
+     <y>110</y>
+     <width>90</width>
      <height>16</height>
     </rect>
    </property>
@@ -233,9 +233,9 @@
   <widget class="QLabel" name="labelFaceWidth">
    <property name="geometry">
     <rect>
-     <x>460</x>
-     <y>80</y>
-     <width>81</width>
+     <x>170</x>
+     <y>90</y>
+     <width>90</width>
      <height>16</height>
     </rect>
    </property>
@@ -249,9 +249,9 @@
   <widget class="QLabel" name="labelFaceHeight">
    <property name="geometry">
     <rect>
-     <x>460</x>
-     <y>100</y>
-     <width>81</width>
+     <x>170</x>
+     <y>110</y>
+     <width>90</width>
      <height>16</height>
     </rect>
    </property>
@@ -265,96 +265,8 @@
   <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>320</x>
      <y>20</y>
-     <width>128</width>
-     <height>128</height>
-    </rect>
-   </property>
-   <property name="lineWidth">
-    <number>0</number>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="textFormat">
-    <enum>Qt::PlainText</enum>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example0.png</pixmap>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_10">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>160</y>
-     <width>128</width>
-     <height>128</height>
-    </rect>
-   </property>
-   <property name="lineWidth">
-    <number>0</number>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="textFormat">
-    <enum>Qt::PlainText</enum>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example5.png</pixmap>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_11">
-   <property name="geometry">
-    <rect>
-     <x>300</x>
-     <y>160</y>
-     <width>128</width>
-     <height>128</height>
-    </rect>
-   </property>
-   <property name="lineWidth">
-    <number>0</number>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="textFormat">
-    <enum>Qt::PlainText</enum>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example3.png</pixmap>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_12">
-   <property name="geometry">
-    <rect>
-     <x>440</x>
-     <y>160</y>
-     <width>128</width>
-     <height>128</height>
-    </rect>
-   </property>
-   <property name="lineWidth">
-    <number>0</number>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="textFormat">
-    <enum>Qt::PlainText</enum>
-   </property>
-   <property name="pixmap">
-    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example2.png</pixmap>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_13">
-   <property name="geometry">
-    <rect>
-     <x>160</x>
-     <y>300</y>
      <width>128</width>
      <height>128</height>
     </rect>
@@ -372,10 +284,10 @@
     <pixmap resource="QtIcons.qrc">:/QtImages/sky_example4.png</pixmap>
    </property>
   </widget>
-  <widget class="QLabel" name="label_14">
+  <widget class="QLabel" name="label_10">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>40</x>
      <y>160</y>
      <width>128</width>
      <height>128</height>
@@ -394,11 +306,99 @@
     <pixmap resource="QtIcons.qrc">:/QtImages/sky_example1.png</pixmap>
    </property>
   </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>160</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="lineWidth">
+    <number>0</number>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::PlainText</enum>
+   </property>
+   <property name="pixmap">
+    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example2.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_12">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>160</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="lineWidth">
+    <number>0</number>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::PlainText</enum>
+   </property>
+   <property name="pixmap">
+    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example5.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_13">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>300</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="lineWidth">
+    <number>0</number>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::PlainText</enum>
+   </property>
+   <property name="pixmap">
+    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example0.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_14">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>160</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="lineWidth">
+    <number>0</number>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::PlainText</enum>
+   </property>
+   <property name="pixmap">
+    <pixmap resource="QtIcons.qrc">:/QtImages/sky_example3.png</pixmap>
+   </property>
+  </widget>
   <widget class="QWidget" name="legend" native="true">
    <property name="geometry">
     <rect>
-     <x>430</x>
-     <y>391</y>
+     <x>0</x>
+     <y>300</y>
      <width>261</width>
      <height>41</height>
     </rect>
@@ -406,7 +406,7 @@
    <widget class="QLabel" name="label_15">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>40</x>
       <y>0</y>
       <width>16</width>
       <height>16</height>
@@ -431,7 +431,7 @@
    <widget class="QLabel" name="label_18">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>70</x>
       <y>20</y>
       <width>181</width>
       <height>16</height>
@@ -444,7 +444,7 @@
    <widget class="QLabel" name="label_17">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>70</x>
       <y>0</y>
       <width>181</width>
       <height>16</height>
@@ -457,7 +457,7 @@
    <widget class="QLabel" name="label_16">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>40</x>
       <y>20</y>
       <width>16</width>
       <height>16</height>
@@ -480,17 +480,44 @@
     </property>
    </widget>
   </widget>
+  <widget class="QLabel" name="lblSaving">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>0</width>
+     <height>0</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>18</pointsize>
+    </font>
+   </property>
+   <property name="autoFillBackground">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Saving...</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
   <zorder>label_14</zorder>
   <zorder>label_13</zorder>
   <zorder>label_12</zorder>
   <zorder>label_11</zorder>
   <zorder>label_10</zorder>
-  <zorder>labelPX</zorder>
-  <zorder>label_9</zorder>
   <zorder>labelNZ</zorder>
-  <zorder>labelPZ</zorder>
+  <zorder>label_9</zorder>
   <zorder>labelNY</zorder>
   <zorder>labelPY</zorder>
+  <zorder>labelNX</zorder>
+  <zorder>labelPX</zorder>
   <zorder>buttonSave</zorder>
   <zorder>buttonClose</zorder>
   <zorder>labelDescription</zorder>
@@ -498,8 +525,9 @@
   <zorder>label_8</zorder>
   <zorder>labelFaceWidth</zorder>
   <zorder>labelFaceHeight</zorder>
-  <zorder>labelNX</zorder>
+  <zorder>labelPZ</zorder>
   <zorder>legend</zorder>
+  <zorder>lblSaving</zorder>
  </widget>
  <customwidgets>
   <customwidget>

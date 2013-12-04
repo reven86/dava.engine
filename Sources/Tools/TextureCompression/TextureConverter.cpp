@@ -73,6 +73,10 @@ namespace DAVA
 			bool wasUpdated = descriptor.UpdateCrcForFormat(gpuFamily);
 			if(wasUpdated)
 			{
+				// Potential problem may occur in case of multithread convertion of
+				// one texture: Save() will dump to drive unvalid compression info
+				// and final variant of descriptor must be dumped again after finishing
+				// of all threads.
 				descriptor.Save();
 			}
 		}

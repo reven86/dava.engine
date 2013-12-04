@@ -32,7 +32,7 @@
 
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
-#include "Scene3D/Scene.h"
+//#include "Scene3D/Scene.h"
 #include "Render/3D/StaticMesh.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Utils/Utils.h"
@@ -90,7 +90,7 @@ namespace DAVA
      Scene * scene = ...;
      scene->Load("filename
 */
-
+class Scene;
 class SceneFileV2 : public BaseObject
 {
 public: 
@@ -100,10 +100,10 @@ public:
         ERROR_FAILED_TO_CREATE_FILE = 2,
         ERROR_FILE_WRITE_ERROR = 3,
     };
-    
-    
-    SceneFileV2();
+protected:
     virtual ~SceneFileV2();
+public:
+    SceneFileV2();
     
     eError SaveScene(const FilePath & filename, Scene * _scene);
     eError LoadScene(const FilePath & filename, Scene * _scene);
@@ -151,10 +151,7 @@ private:
     void LoadHierarchy(Scene * scene, Entity * node, File * file, int32 level);
 
     bool ReplaceNodeAfterLoad(Entity * node);
-	void ReplaceOldNodes(Entity * currentNode);
-
-	// Stop all the Particle Effect Components for which appropriate flag is set.
-	void StopParticleEffectComponents(Entity* rootNode);
+	void ReplaceOldNodes(Entity * currentNode);	
 
     bool isDebugLogEnabled;
     bool isSaveForGame;

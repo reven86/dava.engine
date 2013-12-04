@@ -96,7 +96,7 @@ const char8* GetIndentString(char8 indentChar, int32 level)
 
     
     
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
     
 #define ZEROPAD	1		/* pad with zero */
 #define SIGN	2		/* unsigned/signed long */
@@ -114,7 +114,7 @@ n = ((unsigned long long) n) / (unsigned) base; \
 __res; })
     
     
-    static int32 skip_atoi_android(const char16 **s)
+    static int32 SkipAtoi(const char16 **s)
     {
         int32 i=0;
         
@@ -127,7 +127,7 @@ __res; })
     }
     
     
-    static char16 * number_android (char16 *str, int64 num, int32 base, int32 size, int32 precision, int32 type)
+    static char16 * Number (char16 *str, int64 num, int32 base, int32 size, int32 precision, int32 type)
     {
         const char16 *digits = L"0123456789abcdefghijklmnopqrstuvwxyz";
         if (type & LARGE)
@@ -244,7 +244,7 @@ __res; })
         return str;
     }
     
-    static char16 * numberf_android (char16 *str, float64 num, int32 base, int32 size, int32 precision, int32 type)
+    static char16 * Numberf (char16 *str, float64 num, int32 base, int32 size, int32 precision, int32 type)
     {
         int32 whole = (int32)num;
         
@@ -258,13 +258,13 @@ __res; })
         int32 tail = (int32)num;
         
         type = SIGN | LEFT;
-        char16 *firstStr = number_android(str, whole, 10, -1, -1, type);
+        char16 *firstStr = Number(str, whole, 10, -1, -1, type);
         if(tail)
         {
             *firstStr++ = '.';
             
             type = LEFT;
-            firstStr = number_android(firstStr, tail, 10, -1, -1, type);
+            firstStr = Number(firstStr, tail, 10, -1, -1, type);
         }
         
         return firstStr;
@@ -272,7 +272,7 @@ __res; })
     
     
     
-    int32 _vsnwprintf_android(char16 *buf, size_t cnt, const char16 *fmt, va_list args)
+    int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list args)
     {
         int32 len;
         uint64 num;
@@ -317,7 +317,7 @@ __res; })
             field_width = -1;
             if (iswdigit(*fmt))
             {
-                field_width = skip_atoi_android(&fmt);
+                field_width = SkipAtoi(&fmt);
             }
             else if (*fmt == L'*')
             {
@@ -338,7 +338,7 @@ __res; })
                 ++fmt;
                 if (iswdigit(*fmt))
                 {
-                    precision = skip_atoi_android(&fmt);
+                    precision = SkipAtoi(&fmt);
                 }
                 else if (*fmt == L'*')
                 {
@@ -609,7 +609,7 @@ __res; })
                         flags |= ZEROPAD;
                     }
                     
-                    str = number_android(str,
+                    str = Number(str,
                                          (unsigned long) va_arg(args, void *), 16,
                                          field_width, precision, flags);
                     continue;
@@ -704,7 +704,7 @@ __res; })
                     precision = 6;
                 }
                 
-                str = numberf_android(str, floatValue, base, field_width, precision, flags);
+                str = Numberf(str, floatValue, base, field_width, precision, flags);
             }
             else
             {
@@ -738,7 +738,7 @@ __res; })
                         num = va_arg(args, uint32);
                     }
                 }
-                str = number_android(str, num, base, field_width, precision, flags);
+                str = Number(str, num, base, field_width, precision, flags);
             }
         }
         
@@ -746,7 +746,7 @@ __res; })
         return str-buf;
     }
     
-#endif //#if defined(__DAVAENDGINE_ANDROID__)
+#endif //#if defined(__DAVAENDGINE_ANDROID__) || defined(__DAVAENDGINE_IPHONE__)
     
     
 
@@ -765,14 +765,19 @@ const char16* Format(const char16 * text, ...)
 
 #if defined(_WIN32)
 	int32 len = vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
-#elif defined (__DAVAENGINE_ANDROID__)
-    int32 len = _vsnwprintf_android((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
-#else // MAC_OS & other nix systems
+#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
+    int32 len = Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
+#else
+    // MAC_OS & other nix systems
 	int32 len = vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
 #endif
 	va_end(ll);
 
-	if(len < 0 || len > FORMAT_STRING_MAX_LEN)
+	if(len < 0)
+    {
+        Logger::Error("[Format16] len = %d", len);
+    }
+    else if(len > FORMAT_STRING_MAX_LEN)
 	{
 		Logger::Error("[Format16] len = %d, str = %s", len,  WStringToString(WideString(buffer, len)).c_str());
 

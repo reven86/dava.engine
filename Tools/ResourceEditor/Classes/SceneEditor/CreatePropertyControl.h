@@ -56,10 +56,10 @@ public:
         
         EPT_COUNT
     };
-    
+protected:
+    virtual ~CreatePropertyControl();
 public:
     CreatePropertyControl(const Rect & rect, CreatePropertyControlDelegate *newDelegate);
-    virtual ~CreatePropertyControl();
     
     virtual void WillAppear();
 

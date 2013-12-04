@@ -480,6 +480,7 @@ extern void FrameworkWillTerminate();
     DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
 
 	NSRect rect = NSRectFromCGRect([openGLLayer frame]);
+	DAVA::RenderManager::Instance()->SetRenderContextId((uint64)CGLGetCurrentContext());
 	DAVA::RenderManager::Instance()->Init(rect.size.width, rect.size.height);
 	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
 	DAVA::Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);

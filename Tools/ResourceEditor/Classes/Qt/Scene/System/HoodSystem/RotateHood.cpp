@@ -263,6 +263,33 @@ void RotateHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 	DAVA::RenderManager::Instance()->SetColor(colorZ);
 	DAVA::RenderHelper::Instance()->FillDodecahedron(axisZ->curTo, radius);
 
+	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
+
+	if(0 != modifRotate)
+	{
+		char tmp[255];
+		tmp[0] = 0;
+
+		if(selectedAxis == ST_AXIS_X || selectedAxis == ST_AXIS_YZ)
+		{
+			sprintf(tmp, "[%.2f, 0.00, 0.00]", DAVA::RadToDeg(modifRotate));
+		}
+		if(selectedAxis == ST_AXIS_Y || selectedAxis == ST_AXIS_XZ)
+		{
+			sprintf(tmp, "[0.00, %.2f, 0.00]", DAVA::RadToDeg(modifRotate));
+		}
+		if(selectedAxis == ST_AXIS_Z || selectedAxis == ST_AXIS_XY)
+		{
+			sprintf(tmp, "[0.00, 0.00, %.2f]", DAVA::RadToDeg(modifRotate));
+		}
+
+		if(0 != tmp[0])
+		{
+			DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
+			textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
+		}
+	}
+
 	DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
 	DAVA::RenderManager::Instance()->SetState(oldState);
 }

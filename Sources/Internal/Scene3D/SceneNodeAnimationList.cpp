@@ -41,6 +41,7 @@ SceneNodeAnimationList::SceneNodeAnimationList()
 ,	currentTime(0.0f)
 ,	duration(0.0f)
 ,	blendTo(0)
+,	eventDispatcher( new EventDispatcher() )
 {	
 }
 
@@ -188,7 +189,7 @@ void SceneNodeAnimationList::Update(float32 timeElapsed)
 			}
 			
 			this->StopAnimation();
-			eventDispatcher.PerformEvent(ANIMATION_ENDED);
+			eventDispatcher->PerformEvent(ANIMATION_ENDED);
 			return;
 		}
 	}

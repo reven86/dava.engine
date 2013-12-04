@@ -54,10 +54,25 @@
 #include "Scene/System/EditorParticlesSystem.h"
 #include "Scene/System/EditorLightSystem.h"
 #include "Scene/System/TextDrawSystem.h"
+#include "Scene/System/DebugDrawSystem.h"
+#include "Scene/System/BeastSystem.h"
+#include "Scene/System/OwnersSignatureSystem.h"
 
 class SceneEditor2 : public DAVA::Scene
 {
 public:
+	enum LandscapeTools
+	{
+		LANDSCAPE_TOOL_CUSTOM_COLOR			= 1 << 0,
+		LANDSCAPE_TOOL_VISIBILITY			= 1 << 1,
+		LANDSCAPE_TOOL_HEIGHTMAP_EDITOR		= 1 << 2,
+		LANDSCAPE_TOOL_TILEMAP_EDITOR		= 1 << 3,
+		LANDSCAPE_TOOL_RULER				= 1 << 4,
+		LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN	= 1 << 5,
+
+		LANDSCAPE_TOOLS_ALL					= 0x7FFFFFFF
+	};
+
 	SceneEditor2();
 	~SceneEditor2();
 
@@ -78,12 +93,14 @@ public:
 	EditorParticlesSystem *particlesSystem;
 	EditorLightSystem *editorLightSystem;
 	TextDrawSystem *textDrawSystem;
-
+	DebugDrawSystem *debugDrawSystem;
+	BeastSystem	*beastSystem;
+	OwnersSignatureSystem *ownersSignatureSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);
-	bool Save(const DAVA::FilePath &path);
-	bool Save();
+    virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
+	SceneFileV2::eError Save();
 	bool Export(const DAVA::eGPUFamily newGPU);
 
 	DAVA::FilePath GetScenePath();
@@ -100,14 +117,21 @@ public:
 	void EndBatch();
 
 	void Exec(Command2 *command);
+	void ClearCommands(int commandId);
+	const CommandStack* GetCommandStack() const;
 
 	// checks whether the scene changed since the last save
 	bool IsLoaded() const;
 	bool IsChanged() const;
 	void SetChanged(bool changed);
 
+	// enable/disable drawing custom HUD
+	void SetHUDVisible(bool visible);
+	bool IsHUDVisible() const;
+
 	// DAVA events
 	void PostUIEvent(DAVA::UIEvent *event);
+	virtual void Update(float timeElapsed);
 
 	// this function should be called each time UI3Dview changes its position
 	// viewport rect is used to calc. ray from camera to any 2d point on this viewport
@@ -125,18 +149,35 @@ public:
 
     const RenderManager::Stats & GetRenderStats() const;
 
+	void DisableTools(int32 toolFlags);
+	bool IsToolsEnabled(int32 toolFlags);
+	int32 GetEnabledTools();
+
+	SceneEditor2 *CreateCopyForExport();	//Need to prevent changes of original scene
+	virtual Entity* Clone(Entity *dstNode = NULL);
+
+	DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
+
 protected:
 	bool isLoaded;
+	bool isHUDVisible;
 
 	DAVA::FilePath curScenePath;
 	CommandStack commandStack;
     
     RenderManager::Stats renderStats;
 
+	DAVA::Vector<DAVA::Entity *> editorEntities;
 
 	virtual void EditorCommandProcess(const Command2 *command, bool redo);
-	virtual void Update(float timeElapsed);
 	virtual void Draw();
+
+    void ExtractEditorEntities();
+	void InjectEditorEntities();
+
+	void RemoveSystems();
+
+	bool wasChanged; //deprecated
 
 private:
 	friend struct EditorCommandNotify;

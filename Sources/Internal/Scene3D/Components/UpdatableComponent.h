@@ -69,7 +69,9 @@ public:
 
 		UPDATES_COUNT
 	};
-
+protected:
+    ~UpdatableComponent(){};
+public:
 	UpdatableComponent();
 	virtual Component * Clone(Entity * toEntity);
 

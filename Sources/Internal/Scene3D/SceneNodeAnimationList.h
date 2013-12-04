@@ -39,6 +39,8 @@ namespace DAVA
 	
 class SceneNodeAnimationList : public Entity
 {
+protected:
+	virtual ~SceneNodeAnimationList();
 public:
 	enum
 	{
@@ -47,7 +49,6 @@ public:
 	
 	
 	SceneNodeAnimationList();
-	virtual ~SceneNodeAnimationList();
 
 	void AddAnimation(SceneNodeAnimation * node);
 	

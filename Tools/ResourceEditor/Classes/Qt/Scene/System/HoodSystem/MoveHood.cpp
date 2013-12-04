@@ -195,22 +195,16 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 		DAVA::RenderHelper::Instance()->DrawLine(axisYZ2->curFrom, axisYZ2->curTo);
 	}
 
-	DAVA::Vector2 textPos;
+	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
-	// x
-	textPos = textDrawSystem->ToPos2d(axisX->curTo);
-	textPos.y -= 15;
-	textDrawSystem->DrawText(textPos, "X", colorX);
+	if(!modifOffset.IsZero())
+	{
+		char tmp[255];
+		DAVA::Vector2 topPos = DAVA::Vector2((r.x + r.dx)/2, r.y - 20);
 
-	// y
-	textPos = textDrawSystem->ToPos2d(axisY->curTo);
-	textPos.y -= 15;
-	textDrawSystem->DrawText(textPos, "Y", colorY);
-
-	// z
-	textPos = textDrawSystem->ToPos2d(axisZ->curTo);
-	textPos.y -= 15;
-	textDrawSystem->DrawText(textPos, "Z", colorZ);
+		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifOffset.x, modifOffset.y, modifOffset.z);
+		textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
+	}
 
 	DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
 	DAVA::RenderManager::Instance()->SetState(oldState);

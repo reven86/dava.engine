@@ -50,7 +50,8 @@ public:
 	
 	void SetArguments(int argc, char * argv[]);
 	void SetArguments(const Vector<String> & arguments);
-
+    void AddArgument(const String & arg);
+    
 	void Clear();
 
 	bool IsFlagSet(const String & s);

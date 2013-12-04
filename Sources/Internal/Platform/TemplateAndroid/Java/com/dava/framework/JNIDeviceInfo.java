@@ -66,6 +66,11 @@ public class JNIDeviceInfo {
 			serial = "ErrorGetSerialNumber";
 		SetJString(serial);
 	}
+	
+	public static int GetZBufferSize()
+	{
+		return JNIConfigChooser.GetDepthBufferSize();
+	}
 
 	public static native void SetJString(String str);
 }

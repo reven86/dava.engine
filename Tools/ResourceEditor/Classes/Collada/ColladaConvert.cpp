@@ -43,10 +43,9 @@ eColladaErrorCodes ConvertDaeToSce(const DAVA::FilePath & pathToFile)
         return code;
     }
     
-    DAVA::FilePath path(pathToFile);
-    path.ReplaceExtension(".sce");
+    DAVA::FilePath path = DAVA::FilePath::CreateWithNewExtension(pathToFile, ".sce");
 
-    colladaDocument.SaveScene(path.GetDirectory().GetAbsolutePathname(), path.GetFilename());
+    colladaDocument.SaveScene(path.GetDirectory(), path.GetFilename());
     colladaDocument.Close();
     
     FCollada::Release();

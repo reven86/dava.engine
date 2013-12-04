@@ -54,7 +54,7 @@ void UndoRedoController::CleanupStack(Deque<BaseCommand*>& stackToCleanup)
 	while (!stackToCleanup.empty())
 	{
 		BaseCommand* command = stackToCleanup.front();
-		SafeDelete(command);
+		SafeRelease(command);
 		stackToCleanup.pop_front();
 	}
 }
@@ -124,7 +124,7 @@ void UndoRedoController::AddCommandToStack(Deque<BaseCommand*>& stackToAdd, Base
 	if (stackToAdd.size() > MAX_UNDO_REDO_STACK_SIZE)
 	{
 		BaseCommand* commandToRemove = stackToAdd.back();
-		SafeDelete(commandToRemove);
+		SafeRelease(commandToRemove);
 		stackToAdd.pop_back();
 	}
 }

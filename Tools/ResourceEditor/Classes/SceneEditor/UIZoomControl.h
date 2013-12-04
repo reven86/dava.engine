@@ -38,9 +38,10 @@ using namespace DAVA;
 
 class UIZoomControl : public UIControl
 {
+protected:
+	virtual ~UIZoomControl();
 public:
 	UIZoomControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	virtual ~UIZoomControl();
 	
 	void SetScales(float32 minScale, float32 maxScale);
 	void SetContentSize(const Vector2 &_contentSize);

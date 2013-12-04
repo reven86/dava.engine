@@ -57,31 +57,31 @@ void FileSystemTest::ResTestFunction(PerfFuncData * data)
 {
     Logger::Debug("[FileSystemTest::ResTestFunction]");
 
-    FileList fileList("~res:/TestData/FileSystemTest/");
+    ScopedPtr<FileList> fileList( new FileList("~res:/TestData/FileSystemTest/") );
 
-    TEST_VERIFY(fileList.GetDirectoryCount() == 3);
-    TEST_VERIFY(fileList.GetFileCount() == 0);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetFileCount() == 0);
 
-    for(int32 ifo = 0; ifo < fileList.GetCount(); ++ifo)
+    for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
     {
-        if(fileList.IsNavigationDirectory(ifo)) continue;
+        if(fileList->IsNavigationDirectory(ifo)) continue;
 
-        String filename = fileList.GetFilename(ifo);
-        FilePath pathname = fileList.GetPathname(ifo);
-        FileList files(pathname);
-        TEST_VERIFY(files.GetDirectoryCount() == 0);
+        String filename = fileList->GetFilename(ifo);
+        FilePath pathname = fileList->GetPathname(ifo);
+        ScopedPtr<FileList> files( new FileList(pathname) );
+        TEST_VERIFY(files->GetDirectoryCount() == 0);
         
         if(filename == "Folder1")
         {
             TEST_VERIFY(pathname == "~res:/TestData/FileSystemTest/Folder1/");
-            TEST_VERIFY(files.GetFileCount() == 3);
+            TEST_VERIFY(files->GetFileCount() == 3);
 
-            for(int32 ifi = 0; ifi < files.GetCount(); ++ifi)
+            for(int32 ifi = 0; ifi < files->GetCount(); ++ifi)
             {
-                if(files.IsNavigationDirectory(ifi)) continue;
+                if(files->IsNavigationDirectory(ifi)) continue;
 
-                String filename = files.GetFilename(ifi);
-                FilePath pathname = files.GetPathname(ifi);
+                String filename = files->GetFilename(ifi);
+                FilePath pathname = files->GetPathname(ifi);
 
                 File *file = File::Create(pathname, File::OPEN | File::READ);
                 TEST_VERIFY(file != NULL);
@@ -120,31 +120,31 @@ void FileSystemTest::ResTestFunction(PerfFuncData * data)
 void FileSystemTest::DocTestFunctionCheckCopy(PerfFuncData * data)
 {
     Logger::Debug("[FileSystemTest::DocTestFunctionCheckCopy]");
-    FileList fileList("~doc:/TestData/FileSystemTest/");
+    ScopedPtr<FileList> fileList( new FileList("~doc:/TestData/FileSystemTest/") );
     
-    TEST_VERIFY(fileList.GetDirectoryCount() == 3);
-    TEST_VERIFY(fileList.GetFileCount() == 0);
+    TEST_VERIFY(fileList->GetDirectoryCount() == 3);
+    TEST_VERIFY(fileList->GetFileCount() == 0);
     
-    for(int32 ifo = 0; ifo < fileList.GetCount(); ++ifo)
+    for(int32 ifo = 0; ifo < fileList->GetCount(); ++ifo)
     {
-        if(fileList.IsNavigationDirectory(ifo)) continue;
+        if(fileList->IsNavigationDirectory(ifo)) continue;
         
-        String filename = fileList.GetFilename(ifo);
-        FilePath pathname = fileList.GetPathname(ifo);
-        FileList files(pathname);
-        TEST_VERIFY(files.GetDirectoryCount() == 0);
+        String filename = fileList->GetFilename(ifo);
+        FilePath pathname = fileList->GetPathname(ifo);
+        ScopedPtr<FileList> files( new FileList(pathname) );
+        TEST_VERIFY(files->GetDirectoryCount() == 0);
         
         if(filename == "Folder1")
         {
             TEST_VERIFY(pathname == "~doc:/TestData/FileSystemTest/Folder1/");
-            TEST_VERIFY(files.GetFileCount() == 3);
+            TEST_VERIFY(files->GetFileCount() == 3);
             
-            for(int32 ifi = 0; ifi < files.GetCount(); ++ifi)
+            for(int32 ifi = 0; ifi < files->GetCount(); ++ifi)
             {
-                if(files.IsNavigationDirectory(ifi)) continue;
+                if(files->IsNavigationDirectory(ifi)) continue;
                 
-                String filename = files.GetFilename(ifi);
-                FilePath pathname = files.GetPathname(ifi);
+                String filename = files->GetFilename(ifi);
+                FilePath pathname = files->GetPathname(ifi);
                 
                 File *file = File::Create(pathname, File::OPEN | File::READ);
                 TEST_VERIFY(file != NULL);
@@ -234,8 +234,8 @@ void FileSystemTest::DocTestFunction(PerfFuncData * data)
     uint32 count = FileSystem::Instance()->DeleteDirectoryFiles("~doc:/TestData/FileSystemTest/Folder1/");
     TEST_VERIFY(count == 2);
 
-    FileList fileList("~doc:/TestData/FileSystemTest/Folder1/");
-    TEST_VERIFY(fileList.GetFileCount() == 0);
+    ScopedPtr<FileList> fileList( new FileList("~doc:/TestData/FileSystemTest/Folder1/") );
+    TEST_VERIFY(fileList->GetFileCount() == 0);
 }
 
 
@@ -251,12 +251,12 @@ bool FileSystemTest::RecursiveCopy(const DAVA::FilePath &src, const DAVA::FilePa
 
     bool retCode = true;
     
-    FileList fileList(src);
-    for(int32 i = 0; i < fileList.GetCount(); ++i)
+    ScopedPtr<FileList> fileList( new FileList(src) );
+    for(int32 i = 0; i < fileList->GetCount(); ++i)
     {
-        if(fileList.IsDirectory(i) && !fileList.IsNavigationDirectory(i))
+        if(fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
         {
-            retCode &= RecursiveCopy(fileList.GetPathname(i), dst + (fileList.GetFilename(i) + "/"));
+            retCode &= RecursiveCopy(fileList->GetPathname(i), dst + (fileList->GetFilename(i) + "/"));
         }
     }
     

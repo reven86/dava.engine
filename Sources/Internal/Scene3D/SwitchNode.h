@@ -38,6 +38,8 @@ namespace DAVA
 
 class SwitchNode : public Entity
 {
+protected:
+    ~SwitchNode(){}
 public:
 	SwitchNode();
 

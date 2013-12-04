@@ -36,6 +36,8 @@
 #include <QStatusBar>
 
 class QLabel;
+class SceneEditor2;
+class EntityGroup;
 class StatusBar : public QStatusBar
 {
 	Q_OBJECT
@@ -44,13 +46,24 @@ public:
 	explicit StatusBar(QWidget *parent = 0);
 	~StatusBar();
 
-    void SetDistanceToCamera(DAVA::float32 distance);
-    void ResetDistanceToCamera();
-    
+
+public slots:
+	void SceneActivated(SceneEditor2 *scene);
+	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
+
+	void UpdateByTimer();
+
+	void OnSceneGeometryChaged(int width, int height);
+
 protected:
-    
+	void UpdateDistanceToCamera();
+	void SetDistanceToCamera(DAVA::float32 distance);
+	void ResetDistanceToCamera();
+
+
+
     QLabel * distanceToCamera;
-    
+	QLabel * sceneGeometry;
 };
 
 #endif // __STATUS_BAR_H__

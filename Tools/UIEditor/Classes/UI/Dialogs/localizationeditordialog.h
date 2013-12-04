@@ -52,8 +52,8 @@ protected:
 	// Setup the Localization Table Model.
 	void SetupLocalizationTable();
 	
-	// Reload the Localization Table each time Current Locale is changed.
-	void ReloadLocalizationTable();
+	// Reload the Localization Table each time Current Locale or Filter is changed.
+    void ReloadLocalizationTable();
 
 	// Cleanup the UI controls related to selection.
 	void CleanupLocalizationUIControls();
@@ -126,6 +126,10 @@ private slots:
 	// Add/Remove String slots.
 	void OnAddNewLocalizationString();
 	void OnRemoveSelectedLocalizationString();
+    
+    // Filter functionality.
+    void OnFilterTextChanged(const QString& value);
+    void OnFilterTextCleared();
 
 private:
 	// Localization Table Model.
@@ -136,6 +140,9 @@ private:
 
 	// Global index for the strings currently added.
 	static int addedStringsCount;
+    
+    // Current filter value.
+    QString filterValue;
 };
 
 #endif // LOCALIZATIONEDITORDIALOG_H

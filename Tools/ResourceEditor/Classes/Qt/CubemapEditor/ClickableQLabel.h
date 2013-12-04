@@ -45,6 +45,8 @@ public:
 	int GetRotation();
 	void SetFaceLoaded(bool loaded);
 	bool GetFaceLoaded();
+
+	void OnParentMouseMove(QMouseEvent *ev);
 	
 protected:
 	
@@ -53,7 +55,7 @@ protected:
     void leaveEvent(QEvent *ev);
     void paintEvent(QPaintEvent *ev);
     void mouseMoveEvent(QMouseEvent *ev);
-	
+
 signals:
 
 	void OnLabelClicked();

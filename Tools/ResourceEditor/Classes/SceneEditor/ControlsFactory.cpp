@@ -546,3 +546,9 @@ void ControlsFactory::AddFogSubsection(PropertyList *propertyList, bool enabled,
     propertyList->SetColorPropertyValue("property.material.fogcolor", newColor);
 }
 
+void ControlsFactory::ReleaseFonts()
+{
+	SafeRelease(font12);
+	SafeRelease(font20);
+}
+

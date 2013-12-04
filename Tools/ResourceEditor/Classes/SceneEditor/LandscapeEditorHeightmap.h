@@ -47,11 +47,11 @@ class LandscapeEditorHeightmap
     :   public LandscapeEditorBase
     ,   public LandscapeEditorPropertyControlDelegate
 {
-    
+protected:
+    virtual ~LandscapeEditorHeightmap();
 public:
     
     LandscapeEditorHeightmap(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl, const Rect &toolsRect); 
-    virtual ~LandscapeEditorHeightmap();
     
     virtual void Update(float32 timeElapsed);
 

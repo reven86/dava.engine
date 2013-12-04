@@ -47,7 +47,8 @@ using namespace DAVA;
 class DPITest: public TestTemplate<DPITest>
 {
     static float32 AUTO_CLOSE_TIME;
-    
+protected:
+    ~DPITest(){}
 public:
 	DPITest();
 

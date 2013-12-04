@@ -50,7 +50,7 @@ SpritePackerHelper::SpritePackerHelper()
 	QObject::connect(&watcher, SIGNAL(finished()), this, SLOT(threadRepackAllFinished()), Qt::QueuedConnection);
 }
 
-void SpritePackerHelper::UpdateParticleSprites()
+void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 {
 	FilePath projectPath = EditorSettings::Instance()->GetProjectPath();
     if(projectPath.IsEmpty())
@@ -59,12 +59,12 @@ void SpritePackerHelper::UpdateParticleSprites()
         return;
     }
 
-	Pack();
+	Pack(gpu);
 	
 	Reload();
 }
 
-void SpritePackerHelper::Pack()
+void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 {
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
 	FilePath projectPath = EditorSettings::Instance()->GetProjectPath();
@@ -90,7 +90,7 @@ void SpritePackerHelper::Pack()
 	SpritesPacker packer;
 	packer.SetInputDir(inputDir);
 	packer.SetOutputDir(outputDir);
-	packer.PackTextures();
+	packer.PackTextures(gpu);
 	DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 }
 
@@ -194,23 +194,6 @@ void SpritePackerHelper::EnumerateSpritesForParticleEmitter(ParticleEmitter* emi
 		{
 			EnumerateSpritesForParticleEmitter(curLayer->GetInnerEmitter(), sprites);
 		}
-	}
-}
-
-void SpritePackerHelper::UpdateParticleSpritesAsync()
-{
-	FilePath projectPath = EditorSettings::Instance()->GetProjectPath();
-    if(projectPath.IsEmpty())
-    {
-        Logger::Warning("[ParticlesEditorSpritePackerHelper::UpdateParticleSprites] Project path not set.");
-        return;
-    }
-
-	if(NULL == future)
-	{
-		future = new QFuture<void>;
-		*future = QtConcurrent::run(this, &SpritePackerHelper::Pack);
-		watcher.setFuture(*future);
 	}
 }
 

@@ -124,6 +124,10 @@ void LocalizationEditorDialog::ConnectToSignals()
 	
 	connect(ui->addStringButton, SIGNAL(clicked()), this, SLOT(OnAddNewLocalizationString()));
 	connect(ui->removeStringButton, SIGNAL(clicked()), this, SLOT(OnRemoveSelectedLocalizationString()));
+    
+    // Filter behaviour.
+    connect(ui->filterTextBox, SIGNAL(textChanged(const QString&)), this, SLOT(OnFilterTextChanged(const QString&)));
+    connect(ui->clearFilterButton, SIGNAL(clicked()), this, SLOT(OnFilterTextCleared()));
 }
 
 void LocalizationEditorDialog::SetLocalizationDirectoryPath()
@@ -202,8 +206,11 @@ void LocalizationEditorDialog::ReinitializeLocalizationSystem(const QString& loc
     
     if (!localizationDirectory.isEmpty())
     {
+        FilePath localizationFilePath(localizationDirectory.toStdString());
+        localizationFilePath.MakeDirectoryPathname();
+
         LocalizationSystem::Instance()->SetCurrentLocale(languageId);
-        LocalizationSystem::Instance()->InitWithDirectory(localizationDirectory.toStdString());
+        LocalizationSystem::Instance()->InitWithDirectory(localizationFilePath);
     }
     
 	ReloadLocalizationTable();
@@ -257,11 +264,15 @@ void LocalizationEditorDialog::ReloadLocalizationTable()
 	// Fill the values.
 	for (Map<WideString, WideString>::iterator iter = localizationTable.begin(); iter != localizationTable.end(); iter ++)
 	{
-        QList<QStandardItem *> itemsList;
-		itemsList.append(new QStandardItem(WideStringToQString(iter->first)));
-		itemsList.append(new QStandardItem(WideStringToQString(iter->second)));
-        
-        tableModel->appendRow(itemsList);
+        // Add only strings which pass filter (or all strings if filter is not defined).
+        QString keyValue = WideStringToQString(iter->first);
+        if (filterValue.isEmpty() || keyValue.contains(filterValue, Qt::CaseInsensitive))
+        {
+            QList<QStandardItem *> itemsList;
+            itemsList.append(new QStandardItem(keyValue));
+            itemsList.append(new QStandardItem(WideStringToQString(iter->second)));
+            tableModel->appendRow(itemsList);
+        }
     }
 	
 	// Restore the selection if possible.
@@ -533,3 +544,16 @@ void LocalizationEditorDialog::OnRemoveSelectedLocalizationString()
 {
 	RemoveSelectedLocalizationString();
 }
+
+void LocalizationEditorDialog::OnFilterTextChanged(const QString& value)
+{
+    filterValue = value;
+    ReloadLocalizationTable();
+}
+
+void LocalizationEditorDialog::OnFilterTextCleared()
+{
+    filterValue.clear();
+    ui->filterTextBox->clear();
+}
+

@@ -21,7 +21,6 @@
 		FEC3E469133A9AA500442ADD /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3E463133A9AA500442ADD /* AppKit.framework */; };
 		FEC3E46A133A9AA500442ADD /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3E464133A9AA500442ADD /* CoreData.framework */; };
 		FEC3E46B133A9AA500442ADD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3E465133A9AA500442ADD /* Foundation.framework */; };
-		FEC3E46C133A9AA500442ADD /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3E466133A9AA500442ADD /* OpenAL.framework */; };
 		FEC3E4EB133CBC1100442ADD /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3E4EA133CBC1100442ADD /* main.cpp */; };
 		FEC3EC7113432F4400442ADD /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3EC7013432F4400442ADD /* libz.dylib */; };
 		FEC3EC7313432F5500442ADD /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = FEC3EC7213432F5500442ADD /* libbz2.dylib */; };
@@ -130,7 +129,6 @@
 				FEC3E469133A9AA500442ADD /* AppKit.framework in Frameworks */,
 				FEC3E46A133A9AA500442ADD /* CoreData.framework in Frameworks */,
 				FEC3E46B133A9AA500442ADD /* Foundation.framework in Frameworks */,
-				FEC3E46C133A9AA500442ADD /* OpenAL.framework in Frameworks */,
 				FEC3EC7113432F4400442ADD /* libz.dylib in Frameworks */,
 				FEC3EC7313432F5500442ADD /* libbz2.dylib in Frameworks */,
 				E8C4C849165F6966009DB9E1 /* libpng-static.a in Frameworks */,

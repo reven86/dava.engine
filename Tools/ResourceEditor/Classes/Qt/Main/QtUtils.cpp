@@ -30,8 +30,8 @@
 
 #include "QtUtils.h"
 #include "../../SceneEditor/SceneValidator.h"
+#include "Tools/QtFileDialog/QtFileDialog.h"
 
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QToolButton>
 #include "mainwindow.h"
@@ -55,7 +55,7 @@ DAVA::FilePath PathnameToDAVAStyle(const QString &convertedPathname)
 
 DAVA::FilePath GetOpenFileName(const DAVA::String &title, const DAVA::FilePath &pathname, const DAVA::String &filter)
 {
-    QString filePath = QFileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
+    QString filePath = QtFileDialog::getOpenFileName(NULL, QString(title.c_str()), QString(pathname.GetAbsolutePathname().c_str()),
                                                     QString(filter.c_str()));
     
 	// TODO: mainwindow

@@ -106,6 +106,9 @@ protected:
     // Build the Command Data based on the type.
     Vector<ChangePropertyCommandData<Type> > BuildCommandData(BaseMetadata* baseMetadata);
 
+    // Preprocess the current value in case it should be different for each command data item.
+    virtual Type PreprocessPropertyValue(const COMMANDDATAVECTITER& iter, const Type& curValue);
+
     // Get the Metadata with Params attached for the Tree Node passed.
     BaseMetadata* GetMetadataForTreeNode(HierarchyTreeNode::HIERARCHYTREENODEID treeNodeID);
 
@@ -193,6 +196,13 @@ template<typename Type>
 }
 
 template<typename Type>
+    Type ChangePropertyCommand<Type>::PreprocessPropertyValue(const COMMANDDATAVECTITER& iter, const Type& curValue)
+{
+    // Default implementation doesn't do any postprocessing.
+    return curValue;
+}
+
+template<typename Type>
     BaseMetadata* ChangePropertyCommand<Type>::GetMetadataForTreeNode(HierarchyTreeNode::HIERARCHYTREENODEID treeNodeID)
 {
     const HierarchyTreeNode* treeNode = HierarchyTreeController::Instance()->GetTree().GetNode(treeNodeID);
@@ -233,7 +243,9 @@ template<typename Type>
 	QString propertyName = GetPropertyName();
     for (COMMANDDATAVECTITER iter = this->commandData.begin(); iter != commandData.end(); iter ++)
     {
-		bool propertySetOK = ApplyPropertyValue(iter, curValue);
+        Type activeValue =  PreprocessPropertyValue(iter, curValue);
+        bool propertySetOK = ApplyPropertyValue(iter, activeValue);
+
         if (propertySetOK)
         {
             CommandsController::Instance()->EmitChangePropertySucceeded(propertyName);

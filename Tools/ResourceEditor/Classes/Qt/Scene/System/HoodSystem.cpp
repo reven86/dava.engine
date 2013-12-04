@@ -45,7 +45,8 @@ HoodSystem::HoodSystem(DAVA::Scene * scene, SceneCameraSystem *camSys)
 	, moveHood()
 	, lockedScale(false)
 	, lockedModif(false)
-	, visible(false)
+	, lockedAxis(false)
+	, isVisible(true)
 {
 	btVector3 worldMin(-1000,-1000,-1000);
 	btVector3 worldMax(1000,1000,1000);
@@ -98,7 +99,7 @@ DAVA::Vector3 HoodSystem::GetPosition() const
 
 void HoodSystem::SetPosition(const DAVA::Vector3 &pos)
 {
-	if(!lockedScale)
+	if(!IsLocked() && !lockedScale)
 	{
 		if(curPos != pos || !modifOffset.IsZero())
 		{
@@ -116,21 +117,26 @@ void HoodSystem::SetPosition(const DAVA::Vector3 &pos)
 
 void HoodSystem::SetModifOffset(const DAVA::Vector3 &offset)
 {
-	if(modifOffset != offset)
+	if(!IsLocked())
 	{
-		modifOffset = offset;
+		moveHood.modifOffset = offset;
 
-		if(NULL != curHood)
+		if(modifOffset != offset)
 		{
-			curHood->UpdatePos(curPos + modifOffset);
-			normalHood.UpdatePos(curPos + modifOffset);
+			modifOffset = offset;
+
+			if(NULL != curHood)
+			{
+				curHood->UpdatePos(curPos + modifOffset);
+				normalHood.UpdatePos(curPos + modifOffset);
+			}
 		}
 	}
 }
 
 void HoodSystem::SetModifRotate(const DAVA::float32 &angle)
 {
-	if(curHood == &rotateHood)
+	if(!IsLocked())
 	{
 		rotateHood.modifRotate = angle;
 	}
@@ -138,7 +144,7 @@ void HoodSystem::SetModifRotate(const DAVA::float32 &angle)
 
 void HoodSystem::SetModifScale(const DAVA::float32 &scale)
 {
-	if(curHood == &scaleHood)
+	if(!IsLocked())
 	{
 		scaleHood.modifScale = scale;
 	}
@@ -146,16 +152,19 @@ void HoodSystem::SetModifScale(const DAVA::float32 &scale)
 
 void HoodSystem::SetScale(DAVA::float32 scale)
 {
-	if(curScale != scale)
+	if(!IsLocked())
 	{
-		curScale = scale;
-
-		if(NULL != curHood)
+		if(curScale != scale && 0 != scale)
 		{
-			curHood->UpdateScale(curScale);
-			normalHood.UpdateScale(curScale);
+			curScale = scale;
 
-			collWorld->updateAabbs();
+			if(NULL != curHood)
+			{
+				curHood->UpdateScale(curScale);
+				normalHood.UpdateScale(curScale);
+
+				collWorld->updateAabbs();
+			}
 		}
 	}
 }
@@ -167,39 +176,42 @@ DAVA::float32 HoodSystem::GetScale() const
 
 void HoodSystem::SetModifMode(ST_ModifMode mode)
 {
-	if(curMode != mode)
+	if(!IsLocked())
 	{
-		if(NULL != curHood)
+		if(curMode != mode)
 		{
-			RemCollObjects(&curHood->collObjects);
+			if(NULL != curHood)
+			{
+				RemCollObjects(&curHood->collObjects);
+			}
+
+			curMode = mode;
+			switch (mode)
+			{
+			case ST_MODIF_MOVE:
+				curHood = &moveHood;
+				break;
+			case ST_MODIF_SCALE:
+				curHood = &scaleHood;
+				break;
+			case ST_MODIF_ROTATE:
+				curHood = &rotateHood;
+				break;
+			default:
+				curHood = &normalHood;
+				break;
+			}
+
+			if(NULL != curHood)
+			{
+				AddCollObjects(&curHood->collObjects);
+
+				curHood->UpdatePos(curPos + modifOffset);
+				curHood->UpdateScale(curScale);
+			}
+
+			collWorld->updateAabbs();
 		}
-
-		curMode = mode;
-		switch (mode)
-		{
-		case ST_MODIF_MOVE:
-			curHood = &moveHood;
-			break;
-		case ST_MODIF_SCALE:
-			curHood = &scaleHood;
-			break;
-		case ST_MODIF_ROTATE:
-			curHood = &rotateHood;
-			break;
-		default:
-			curHood = &normalHood;
-			break;
-		}
-
-		if(NULL != curHood)
-		{
-			AddCollObjects(&curHood->collObjects);
-
-			curHood->UpdatePos(curPos + modifOffset);
-			curHood->UpdateScale(curScale);
-		}
-
-		collWorld->updateAabbs();
 	}
 }
 
@@ -211,6 +223,19 @@ ST_ModifMode HoodSystem::GetModifMode() const
 	}
 
 	return curMode;
+}
+
+void HoodSystem::SetVisible(bool visible)
+{
+	if(!IsLocked())
+	{
+		isVisible = visible;
+	}
+}
+
+bool HoodSystem::IsVisible() const
+{
+	return isVisible;
 }
 
 void HoodSystem::AddCollObjects(const DAVA::Vector<HoodCollObject*>* objects)
@@ -245,7 +270,7 @@ void HoodSystem::ResetModifValues()
 
 void HoodSystem::Update(float timeElapsed)
 {
-	if(visible && !lockedScale)
+	if(!IsLocked() && !lockedScale)
 	{
 		// scale hood depending on current camera position
 		DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
@@ -255,38 +280,41 @@ void HoodSystem::Update(float timeElapsed)
 
 void HoodSystem::ProcessUIEvent(DAVA::UIEvent *event)
 {
-	// before checking result mark that there is no hood axis under mouse
-	if(!lockedScale)
+	if(!event->point.IsZero())
 	{
-		moseOverAxis = ST_AXIS_NONE;
-	}
-	
-	// if is visible and not locked check mouse over status
-	if(visible && !lockedScale && !lockedModif && NULL != curHood)
-	{
-		// get intersected items in the line from camera to current mouse position
-		DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
-		DAVA::Vector3 camToPointDirection = cameraSystem->GetPointDirection(event->point);
-		DAVA::Vector3 traceTo = camPosition + camToPointDirection * 1000.0f;
-
-		btVector3 btFrom(camPosition.x, camPosition.y, camPosition.z);
-		btVector3 btTo(traceTo.x, traceTo.y, traceTo.z);
-
-		btCollisionWorld::AllHitsRayResultCallback btCallback(btFrom, btTo);
-		collWorld->rayTest(btFrom, btTo, btCallback);
-
-		if(btCallback.hasHit())
+		// before checking result mark that there is no hood axis under mouse
+		if(!lockedScale && !lockedAxis)
 		{
-			const DAVA::Vector<HoodCollObject*>* curHoodObjects = &curHood->collObjects;
-			for(size_t i = 0; i < curHoodObjects->size(); ++i)
-			{
-				HoodCollObject *hObj = curHoodObjects->operator[](i);
+			moseOverAxis = ST_AXIS_NONE;
 
-				if(hObj->btObject == btCallback.m_collisionObjects[0])
+			// if is visible and not locked check mouse over status
+			if(!lockedModif && NULL != curHood)
+			{
+				// get intersected items in the line from camera to current mouse position
+				DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
+				DAVA::Vector3 camToPointDirection = cameraSystem->GetPointDirection(event->point);
+				DAVA::Vector3 traceTo = camPosition + camToPointDirection * 1000.0f;
+
+				btVector3 btFrom(camPosition.x, camPosition.y, camPosition.z);
+				btVector3 btTo(traceTo.x, traceTo.y, traceTo.z);
+
+				btCollisionWorld::AllHitsRayResultCallback btCallback(btFrom, btTo);
+				collWorld->rayTest(btFrom, btTo, btCallback);
+
+				if(btCallback.hasHit())
 				{
-					// mark that mouse is over one of hood axis
-					moseOverAxis = hObj->axis;
-					break;
+					const DAVA::Vector<HoodCollObject*>* curHoodObjects = &curHood->collObjects;
+					for(size_t i = 0; i < curHoodObjects->size(); ++i)
+					{
+						HoodCollObject *hObj = curHoodObjects->operator[](i);
+
+						if(hObj->btObject == btCallback.m_collisionObjects[0])
+						{
+							// mark that mouse is over one of hood axis
+							moseOverAxis = hObj->axis;
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -295,11 +323,12 @@ void HoodSystem::ProcessUIEvent(DAVA::UIEvent *event)
 
 void HoodSystem::Draw()
 {
-	if(visible && NULL != curHood)
+	if(NULL != curHood && IsVisible())
 	{
 		TextDrawSystem *textDrawSys = ((SceneEditor2 *) GetScene())->textDrawSystem;
 
-		if(!lockedModif)
+		// modification isn't locked and whole system isn't locked
+		if(!IsLocked() && !lockedModif)
 		{
 			ST_Axis showAsSelected = curAxis;
 
@@ -313,6 +342,10 @@ void HoodSystem::Draw()
 
 			curHood->Draw(showAsSelected, moseOverAxis, textDrawSys);
 
+			// zero pos point
+			DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
+			DAVA::RenderHelper::Instance()->DrawPoint(GetPosition(), 1.0f);
+			
 			// debug draw axis collision word
 			//collWorld->debugDrawWorld();
 		}
@@ -356,7 +389,7 @@ void HoodSystem::LockModif(bool lock)
 	lockedModif = lock;
 }
 
-void HoodSystem::Show(bool show)
+void HoodSystem::LockAxis(bool lock)
 {
-	visible = show;
+	lockedAxis = lock;
 }

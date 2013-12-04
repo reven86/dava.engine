@@ -39,7 +39,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(ParticleEmitterNode);
 
 ParticleEmitterNode::ParticleEmitterNode()
 :	emitter(0)

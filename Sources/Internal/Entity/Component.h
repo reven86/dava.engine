@@ -31,6 +31,7 @@
 #define __DAVAENGINE_SCENE3D_COMPONENT_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseObject.h"
 #include "Base/Serializable.h"
 #include "Base/Introspection.h"
 
@@ -39,7 +40,7 @@ namespace DAVA
     
 class DataNode;
 class Entity;
-class Component : public Serializable
+class Component : public Serializable, public BaseObject
 {
 public:
     enum eType
@@ -66,10 +67,12 @@ public:
         COMPONENT_COUNT
     };
 
+protected:
+    virtual ~Component();
+public:
 	static Component * CreateByType(uint32 componentType);
 
 	Component();
-    virtual ~Component();
 
     virtual uint32 GetType() = 0;
     virtual Component* Clone(Entity * toEntity) = 0;

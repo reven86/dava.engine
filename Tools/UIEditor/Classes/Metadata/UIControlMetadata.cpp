@@ -205,7 +205,7 @@ void UIControlMetadata::SetSizeX(float value)
 	Rect rect = GetActiveUIControl()->GetRect();
 	rect.dx = value;
 	
-	SetActiveControlRect(rect);
+	SetActiveControlRect(rect, true);
 }
 
 float UIControlMetadata::GetSizeY() const
@@ -228,7 +228,7 @@ void UIControlMetadata::SetSizeY(float value)
 	Rect rect = GetActiveUIControl()->GetRect();
 	rect.dy = value;
 	
-	SetActiveControlRect(rect);
+	SetActiveControlRect(rect, true);
 }
 
 float UIControlMetadata::GetPivotX() const
@@ -249,10 +249,8 @@ void UIControlMetadata::SetPivotX(float value)
     }
     
     GetActiveUIControl()->pivotPoint.x = value;
-	// DF-2009 - Re-set align properties if pivot point was changed
-	SetLeftAlign(GetLeftAlign());
-	SetHCenterAlign(GetHCenterAlign());
-	SetRightAlign(GetRightAlign());
+    // DF-2009 - Re-set align properties if pivot point was changed
+    RefreshAlign();
 }
 
 float UIControlMetadata::GetPivotY() const
@@ -273,10 +271,39 @@ void UIControlMetadata::SetPivotY(float value)
     }
     
     GetActiveUIControl()->pivotPoint.y = value;
-	// DF-2009 - Re-set align properties if pivot point was changed
-	SetTopAlign(GetTopAlign());
-	SetVCenterAlign(GetVCenterAlign());
-	SetBottomAlign(GetBottomAlign());
+    // DF-2009 - Re-set align properties if pivot point was changed
+    RefreshAlign();
+}
+
+QPointF UIControlMetadata::GetPivot() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return QPointF();
+    }
+
+    return QPointF(GetActiveUIControl()->pivotPoint.x, GetActiveUIControl()->pivotPoint.y);
+}
+
+void UIControlMetadata::SetPivot(const QPointF& value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    GetActiveUIControl()->pivotPoint.x = value.x();
+    GetActiveUIControl()->pivotPoint.y = value.y();
+
+    // DF-2009 - Re-set align properties if pivot point was changed
+    RefreshAlign();
+}
+
+void UIControlMetadata::RefreshAlign()
+{
+    SetTopAlign(GetTopAlign());
+    SetVCenterAlign(GetVCenterAlign());
+    SetBottomAlign(GetBottomAlign());
 }
 
 float UIControlMetadata::GetAngle() const
@@ -301,7 +328,6 @@ void UIControlMetadata::SetAngle(float value)
     // Angle is passed in degrees, but stored in radians.
     GetActiveUIControl()->SetAngle(DegToRad(value));
 }
-
 
 bool UIControlMetadata::GetVisible() const
 {
@@ -385,7 +411,7 @@ void UIControlMetadata::ApplyMove(const Vector2& moveDelta)
 	rect.x -= pivotPoint.x;
 	rect.y -= pivotPoint.y;
 	
-	SetActiveControlRect(rect);
+	SetActiveControlRect(rect, false);
 }
 
 void UIControlMetadata::ApplyResize(const Rect& /*originalRect*/, const Rect& newRect)
@@ -395,7 +421,7 @@ void UIControlMetadata::ApplyResize(const Rect& /*originalRect*/, const Rect& ne
         return;
     }
     
-	SetActiveControlRect(newRect);
+	SetActiveControlRect(newRect, false);
 }
                  
 QColor UIControlMetadata::GetColor()
@@ -866,10 +892,24 @@ void UIControlMetadata::SetBottomAlignEnabled(const bool value)
 	GetActiveUIControl()->SetBottomAlignEnabled(value);
 }
 
-void UIControlMetadata::SetActiveControlRect(const Rect& rect)
+void UIControlMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign)
 {
-	GetActiveUIControl()->SetRect(rect);
-	
+	// Save/restore Align Data before changing the Control Rect, if requested.
+	UIControl* activeControl = GetActiveUIControl();
+
+	HierarchyTreeNode::AlignData alignData;
+	if (restoreAlign)
+	{
+		alignData = HierarchyTreeNode::SaveAlignData(activeControl);
+	}
+
+	activeControl->SetRect(rect);
+
+	if (restoreAlign)
+	{
+		HierarchyTreeNode::RestoreAlignData(activeControl, alignData);
+	}
+
 	ResizeScrollViewContent(GetActiveUIControl());
 }
 

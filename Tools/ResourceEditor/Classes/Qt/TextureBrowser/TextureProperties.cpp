@@ -164,7 +164,7 @@ void TextureProperties::ReloadProperties()
 		curGPU < DAVA::GPU_FAMILY_COUNT)
 	{
 		QtPropertyItem *header;
-		DAVA::BaseObject *object;
+		DAVA::InspBase *object = NULL;
 
 		object = &curTextureDescriptor->settings;
 
@@ -172,6 +172,14 @@ void TextureProperties::ReloadProperties()
 		header = AddHeader("Texture settings");
 		propMipMap = AddPropertyItem("generateMipMaps", object, header);
 		propMipMap->SetFlags(QtPropertyData::FLAG_IS_CHECKABLE | QtPropertyData::FLAG_IS_NOT_EDITABLE);
+        
+        //TODO: magic to display introspection info as bool, not int
+        bool savedValue = propMipMap->GetValue().toBool();
+        propMipMap->SetValue(!savedValue);
+        propMipMap->SetValue(savedValue);
+        //END of TODO
+
+
 		propWrapModeS = AddPropertyItem("wrapModeS", object, header);
 		propWrapModeT = AddPropertyItem("wrapModeT", object, header);
 		propMinFilter = AddPropertyItem("minFilter", object, header);
@@ -188,13 +196,13 @@ void TextureProperties::ReloadProperties()
 
 		LoadCurSizeToProp();
 
-		QObject::connect(propMipMap, SIGNAL(ValueChanged()), this, SLOT(PropMipMapChanged()));
-		QObject::connect(propWrapModeS, SIGNAL(ValueChanged()), this, SLOT(PropWrapChanged()));
-		QObject::connect(propWrapModeT, SIGNAL(ValueChanged()), this, SLOT(PropWrapChanged()));
-		QObject::connect(propMinFilter, SIGNAL(ValueChanged()), this, SLOT(PropFilterChanged()));
-		QObject::connect(propMagFilter, SIGNAL(ValueChanged()), this, SLOT(PropFilterChanged()));
-		QObject::connect(propFormat, SIGNAL(ValueChanged()), this, SLOT(PropFormatChanged()));
-		QObject::connect(propSizes, SIGNAL(ValueChanged()), this, SLOT(PropSizeChanged()));
+		QObject::connect(propMipMap, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(PropMipMapChanged(QtPropertyData::ValueChangeReason)));
+		QObject::connect(propWrapModeS, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(PropWrapChanged(QtPropertyData::ValueChangeReason)));
+		QObject::connect(propWrapModeT, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(PropWrapChanged(QtPropertyData::ValueChangeReason)));
+		QObject::connect(propMinFilter, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(PropFilterChanged(QtPropertyData::ValueChangeReason)));
+		QObject::connect(propMagFilter, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(PropFilterChanged(QtPropertyData::ValueChangeReason)));
+		QObject::connect(propFormat, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(PropFormatChanged(QtPropertyData::ValueChangeReason)));
+		QObject::connect(propSizes, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(PropSizeChanged(QtPropertyData::ValueChangeReason)));
 
 		ReloadEnumFormats();
 		ReloadEnumWrap();
@@ -279,23 +287,7 @@ void TextureProperties::ReloadEnumWrap()
 	enumWpar.Register(DAVA::Texture::WRAP_CLAMP_TO_EDGE, globalFormats->ToString(DAVA::Texture::WRAP_CLAMP_TO_EDGE));
 }
 
-QtPropertyItem* TextureProperties::AddHeader(const char *text)
-{
-	QPair<QtPropertyItem*, QtPropertyItem*> propHeader;
-
-	propHeader = AppendProperty(text, NULL);
-
-	QFont boldFont = propHeader.first->font();
-	boldFont.setBold(true);
-
-	propHeader.first->setFont(boldFont);
-	propHeader.first->setBackground(QBrush(QColor(Qt::lightGray)));
-	propHeader.second->setBackground(QBrush(QColor(Qt::lightGray)));
-
-	return propHeader.first;
-}
-
-QtPropertyDataMetaObject* TextureProperties::AddPropertyItem(const char *name, DAVA::BaseObject *object, QtPropertyItem *parent)
+QtPropertyDataMetaObject* TextureProperties::AddPropertyItem(const char *name, DAVA::InspBase *object, QtPropertyItem *parent)
 {
 	QtPropertyDataMetaObject* ret = NULL;
 	const DAVA::InspInfo* info = object->GetTypeInfo();
@@ -329,7 +321,7 @@ void TextureProperties::SetPropertyItemValidValues(QtPropertyDataMetaObject* ite
 	}
 }
 
-void TextureProperties::PropMipMapChanged()
+void TextureProperties::PropMipMapChanged(QtPropertyData::ValueChangeReason reason)
 {
 	ReloadEnumFilters();
 	SetPropertyItemValidValues(propMinFilter, &enumFiltersMin);
@@ -337,22 +329,22 @@ void TextureProperties::PropMipMapChanged()
 	emit PropertyChanged(PROP_MIPMAP);
 }
 
-void TextureProperties::PropFormatChanged()
+void TextureProperties::PropFormatChanged(QtPropertyData::ValueChangeReason reason)
 {
 	emit PropertyChanged(PROP_FORMAT);
 }
 
-void TextureProperties::PropFilterChanged()
+void TextureProperties::PropFilterChanged(QtPropertyData::ValueChangeReason reason)
 {
 	emit PropertyChanged(PROP_FILTER);
 }
 
-void TextureProperties::PropWrapChanged()
+void TextureProperties::PropWrapChanged(QtPropertyData::ValueChangeReason reason)
 {
 	emit PropertyChanged(PROP_WRAP);
 }
 
-void TextureProperties::PropSizeChanged()
+void TextureProperties::PropSizeChanged(QtPropertyData::ValueChangeReason reason)
 {
 	SaveCurSizeFromProp();
 

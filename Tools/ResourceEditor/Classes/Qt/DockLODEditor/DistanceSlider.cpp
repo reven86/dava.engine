@@ -32,6 +32,7 @@
 #include "DAVAEngine.h"
 
 #include <QHBoxLayout>
+#include <QApplication>
 
 static const QColor backgroundColors[DAVA::LodComponent::MAX_LOD_LAYERS] =
 {
@@ -46,12 +47,12 @@ static const int MIN_WIDGET_WIDTH = 1;
 DistanceSlider::DistanceSlider(QWidget *parent /*= 0*/)
 	: QFrame(parent)
     , layersCount(0)
+	, locked(false)
 {
-
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setObjectName(QString::fromUtf8("layout"));
     
-    splitter = new QSplitter(this);
+    splitter = new DistanceSplitter(this);
     splitter->setObjectName(QString::fromUtf8("splitter"));
     splitter->setGeometry(geometry());
     splitter->setOrientation(Qt::Horizontal);
@@ -100,6 +101,11 @@ DistanceSlider::~DistanceSlider()
 }
 
 
+void DistanceSlider::LockDistances(bool lock)
+{
+	locked = lock;
+}
+
 void DistanceSlider::SetLayersCount(int count)
 {
     layersCount = count;
@@ -112,66 +118,75 @@ void DistanceSlider::SetLayersCount(int count)
 
 void DistanceSlider::SetDistance(int layer, double value)
 {
-    DVASSERT(0 <= layer && layer < DAVA::LodComponent::MAX_LOD_LAYERS);
-    stretchSize[layer] = value;
+	if(!locked)
+	{
+		DVASSERT(0 <= layer && layer < DAVA::LodComponent::MAX_LOD_LAYERS);
+		stretchSize[layer] = value;
     
-    int scaleSize = GetScaleSize();
+		int scaleSize = GetScaleSize();
     
-    QList<int> sizes;
-    for(int i = 1; i < layersCount; ++i)
-    {
-        sizes.push_back((stretchSize[i] - stretchSize[i-1]) * splitter->geometry().width() / scaleSize);
-    }
+		QList<int> sizes;
+		for(int i = 1; i < layersCount; ++i)
+		{
+			sizes.push_back((stretchSize[i] - stretchSize[i-1]) * splitter->geometry().width() / scaleSize);
+		}
     
-    if(layersCount)
-        sizes.push_back((scaleSize - stretchSize[layer]) * splitter->geometry().width() / scaleSize);
+		if(layersCount)
+			sizes.push_back((scaleSize - stretchSize[layer]) * splitter->geometry().width() / scaleSize);
 
     
-    bool wasBlocked = splitter->blockSignals(true);
-    splitter->setSizes(sizes);
-    splitter->blockSignals(wasBlocked);
+		bool wasBlocked = splitter->blockSignals(true);
+		splitter->setSizes(sizes);
+		splitter->blockSignals(wasBlocked);
+	}
+}
+
+double DistanceSlider::GetDistance(int layer) const
+{
+	DVASSERT(0 <= layer && layer < DAVA::LodComponent::MAX_LOD_LAYERS);
+
+	return stretchSize[layer];
 }
 
 void DistanceSlider::SplitterMoved(int pos, int index)
 {
-    QList<int> sizes = splitter->sizes();
+	if(layersCount > 0)
+	{
+		QList<int> sizes = splitter->sizes();
     
-    double scaleSize = GetScaleSize();
-    
-    int fullSize = 0;
-    for(int i = 0; i  < sizes.size() && i < layersCount-1; ++i)
-    {
-        int sz = sizes.at(i);
-        if(sz <= MIN_WIDGET_WIDTH)
-        {
-            int sz = sizes.at(i);
-            if(sz <= MIN_WIDGET_WIDTH)
-            {
-                if(i >= index)
-                {
-                    int ind = i + 1;
-                    double value = fullSize * scaleSize / splitter->geometry().width();
-                    stretchSize[ind] = value;
-                    emit DistanceChanged(ind, (double)stretchSize[ind]);
-                }
-                else
-                {
-                    int ind = i;
-                    double value = fullSize * scaleSize / splitter->geometry().width();
-                    stretchSize[ind] = value;
-                    emit DistanceChanged(ind, (double)stretchSize[ind]);
-                }
-            }
-        }
-        
-        fullSize += sz;
-    }
-    
-    
-    double value = pos * scaleSize / splitter->geometry().width();
+		double scaleSize = GetScaleSize();
+		bool continious = false;
 
-    stretchSize[index] = value;
-    emit DistanceChanged(index, (double)stretchSize[index]);
+		Qt::MouseButtons mouseBtnState = QApplication::mouseButtons();
+		if(mouseBtnState & Qt::LeftButton)
+		{
+			continious = true;
+		}
+    
+		QVector<int> changedLayers;
+
+		int fullSize = 0;
+		int splitterWidth = splitter->geometry().width() - splitter->handleWidth() * (layersCount - 1);
+
+		for(int i = 0; i < sizes.size(); ++i)
+		{
+			int sz = sizes.at(i);
+			double value = fullSize * scaleSize / splitterWidth;
+
+			if(stretchSize[i] != value)
+			{
+				stretchSize[i] = value;
+				changedLayers.push_front(i);
+			}
+
+			fullSize += sz;
+		}
+    
+		if(changedLayers.size() > 0)
+		{
+			emit DistanceChanged(changedLayers, continious);
+		}
+	}
 }
 
 int DistanceSlider::GetScaleSize()

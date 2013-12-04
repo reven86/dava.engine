@@ -77,12 +77,9 @@ Rect VisibilityToolProxy::GetChangedRect()
 
 void VisibilityToolProxy::UpdateRect(const DAVA::Rect &rect)
 {
+	Rect bounds(0.f, 0.f, size - 1, size - 1);
 	changedRect = rect;
-
-	changedRect.x = (float32)Clamp((int32)rect.x, 0, size - 1);
-	changedRect.y = (float32)Clamp((int32)rect.y, 0, size - 1);
-	changedRect.dx = Clamp((rect.x + rect.dx), 0.f, (float32)size - 1.f) - rect.x;
-	changedRect.dy = Clamp((rect.y + rect.dy), 0.f, (float32)size - 1.f) - rect.y;
+	bounds.ClampToRect(changedRect);
 
 	spriteChanged = true;
 }

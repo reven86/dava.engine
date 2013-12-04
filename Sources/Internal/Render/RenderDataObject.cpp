@@ -30,6 +30,8 @@
 #include "Render/RenderBase.h"
 #include "Render/RenderDataObject.h"
 #include "Render/RenderManager.h"
+#include "Job/JobManager.h"
+#include "Job/JobWaiter.h"
 
 namespace DAVA 
 {
@@ -93,29 +95,30 @@ RenderDataObject::~RenderDataObject()
     //streamArray.clear();
     //streamMap.clear();
     
+	DestructorContainer * container = new DestructorContainer();
+	container->vboBuffer = vboBuffer;
+	container->indexBuffer = indexBuffer;
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::DeleteBuffersInternal, container));
+}
+
+void RenderDataObject::DeleteBuffersInternal(BaseObject * caller, void * param, void *callerData)
+{
+	DestructorContainer * container = (DestructorContainer*)param;
+	DVASSERT(container);
 #if defined(__DAVAENGINE_OPENGL__)
-
-    //TODO: ios build has assert without LockNonMain()
-	RenderManager::Instance()->LockNonMain();
-
-
-    #if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
-        if (vboBuffer)
-            RENDER_VERIFY(glDeleteBuffersARB(1, &vboBuffer));
-        if (indexBuffer)
-            RENDER_VERIFY(glDeleteBuffersARB(1, &indexBuffer));
-    #else 
-        if (vboBuffer)
-            RENDER_VERIFY(glDeleteBuffers(1, &vboBuffer));
-        if (indexBuffer)
-            RENDER_VERIFY(glDeleteBuffers(1, &indexBuffer));
-    #endif
-    
-    RenderManager::Instance()->UnlockNonMain();
-    //ENDOF TODO
-
+#if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
+	if (container->vboBuffer)
+		RENDER_VERIFY(glDeleteBuffersARB(1, &container->vboBuffer));
+	if (container->indexBuffer)
+		RENDER_VERIFY(glDeleteBuffersARB(1, &container->indexBuffer));
+#else 
+	if (container->vboBuffer)
+		RENDER_VERIFY(glDeleteBuffers(1, &container->vboBuffer));
+	if (container->indexBuffer)
+		RENDER_VERIFY(glDeleteBuffers(1, &container->indexBuffer));
 #endif
-    
+#endif
+	SafeDelete(container);
 }
 
 RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer)
@@ -141,6 +144,29 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
     return stream;
 }
 
+void RenderDataObject::RemoveStream(eVertexFormat formatMark)
+{
+	Map<eVertexFormat, RenderDataStream*>::iterator it = streamMap.find(formatMark);
+	if (it!=streamMap.end())
+	{
+		RenderDataStream *stream = (*it).second;
+		streamMap.erase(it);
+		resultVertexFormat &= ~formatMark;	
+		/*remove from array*/
+		for (Vector<RenderDataStream *>::iterator vec_it = streamArray.begin(), e = streamArray.end(); vec_it!=e; ++vec_it)
+		{
+			if ((*vec_it) == stream)
+			{
+				streamArray.erase(vec_it);
+				break;
+			}
+		}
+		SafeRelease(stream);
+	}
+	
+	
+}
+
 uint32 RenderDataObject::GetResultFormat() const
 {
     return resultVertexFormat;
@@ -148,24 +174,20 @@ uint32 RenderDataObject::GetResultFormat() const
     
 void RenderDataObject::BuildVertexBuffer(int32 vertexCount)
 {
-    RenderManager::Instance()->LockNonMain();
-//#if !defined(__DAVAENGINE_MACOS__)
-    
-//    Logger::FrameworkDebug("[RenderDataObject::BuildVertexBuffer] vbo = %d", vboBuffer);
-    
+	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildVertexBufferInternal, (void*)vertexCount));
+}
+
+void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData)
+{
+	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
     uint32 size = streamArray.size();
     if (size == 0)return;
 
-//#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
-//    savedVertexCount = vertexCount;
-//#endif//#if defined(__DAVAENGINE_ANDROID__)
-
     for (uint32 k = 1; k < size; ++k)
     {
         DVASSERT(streamArray[k]->stride == streamArray[k - 1]->stride);
-        //DVASSERT((uint8*)streamArray[k]->pointer == (uint8*)streamArray[k - 1]->pointer + GetVertexSize(streamArray[k - 1]->formatMark));
     }
     
     uint32 format = 0;
@@ -183,23 +205,20 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount)
     }
     
     RENDER_VERIFY(glGenBuffers(1, &vboBuffer));
-//    Logger::FrameworkDebug("glGenBuffers: %d", vboBuffer);
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, vboBuffer));
+
+	int32 vertexCount = (int32)((int64)param);
     RENDER_VERIFY(glBufferData(GL_ARRAY_BUFFER, vertexCount * stride, streamArray[0]->pointer, GL_STATIC_DRAW));
 
     streamArray[0]->pointer = 0;
     for (uint32 k = 1; k < size; ++k)
     {
         streamArray[k]->pointer = (uint8*)streamArray[k - 1]->pointer + GetVertexSize(streamArray[k - 1]->formatMark);
-        //Logger::FrameworkDebug("vbo offset: %d", (uint32)streamArray[k]->pointer);
     }
     
     RENDER_VERIFY(RenderManager::Instance()->HWglBindBuffer(GL_ARRAY_BUFFER, 0));
 
 #endif // #if defined (__DAVAENGINE_OPENGL__)
-    
-//#endif // #if !defined(__DAVAENGINE_MACOS__)
-    RenderManager::Instance()->UnlockNonMain();
 } 
     
 void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 _count)
@@ -215,8 +234,12 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 
 void RenderDataObject::BuildIndexBuffer()
 {
-    RenderManager::Instance()->LockNonMain();
-    
+	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildIndexBufferInternal));
+}
+
+void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * param, void *callerData)
+{
+	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
     
@@ -250,8 +273,6 @@ void RenderDataObject::BuildIndexBuffer()
 #endif
     
 #endif // #if defined (__DAVAENGINE_OPENGL__)
-  
-    RenderManager::Instance()->UnlockNonMain();
 }
 
 //#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)

@@ -41,11 +41,12 @@ namespace DAVA
 class BaseObject;
 class BulletComponent : public Component
 {
+protected:
+	virtual ~BulletComponent();
 public:
 	IMPLEMENT_COMPONENT_TYPE(BULLET_COMPONENT);
 
 	BulletComponent();
-	virtual ~BulletComponent();
 
 	void SetBulletObject(BaseObject * bulletObject);
 	BaseObject * GetBulletObject();

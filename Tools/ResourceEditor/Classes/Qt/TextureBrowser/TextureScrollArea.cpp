@@ -50,10 +50,10 @@ const int TILE_HEIGHT = 4;
 
 static int facePositions[6][2] =
 {
-	{1, 0}, //pos x
-	{1, 2}, //neg x
-	{0, 1}, //pos y
-	{2, 1}, //neg y
+	{2, 1}, //pos x
+	{0, 1}, //neg x
+	{1, 0}, //pos y
+	{1, 2}, //neg y
 	{1, 1}, //pos z
 	{1, 3}  //neg z
 };
@@ -483,7 +483,7 @@ void TextureScrollArea::applyCurrentCompositeImagesToScenePixmap()
 	p.drawRect(0, 0, cubeDrawPixmap.width(), cubeDrawPixmap.height());
 
 	QMatrix rotation;
-	rotation.rotate(90);
+	rotation.rotate(-90);
 	int currentIndex = 0;
 	for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
 	{

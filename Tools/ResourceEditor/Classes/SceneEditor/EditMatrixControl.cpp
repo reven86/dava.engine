@@ -86,6 +86,9 @@ EditMatrixControl::EditMatrixControl(const Rect & _rect, bool _readOnly)
 
 EditMatrixControl::~EditMatrixControl()
 {
+	SafeRelease(textField);
+	SafeRelease(textFieldBackground);
+
     for (int32 i = 0; i < 4; ++i)
         for (int32 j = 0; j < 4; ++j)
         {

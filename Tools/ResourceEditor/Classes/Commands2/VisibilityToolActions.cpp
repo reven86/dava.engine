@@ -30,12 +30,81 @@
 
 #include "VisibilityToolActions.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/VisibilityToolProxy.h"
+#include "../Qt/Scene/SceneEditor2.h"
+#include "../Qt/Scene/SceneSignals.h"
+
+#include "../Qt/Main/QtUtils.h"
+
+ActionEnableVisibilityTool::ActionEnableVisibilityTool(SceneEditor2* forSceneEditor)
+:	CommandAction(CMDID_VISIBILITY_TOOL_ENABLE)
+,	sceneEditor(forSceneEditor)
+{
+}
+
+void ActionEnableVisibilityTool::Redo()
+{
+	if (sceneEditor == NULL)
+	{
+		return;
+	}
+	
+	bool enabled = sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
+	if (enabled)
+	{
+		return;
+	}
+
+	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+	
+	if (!success )
+	{
+		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+	}
+	
+	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->visibilityToolSystem->EnableLandscapeEditing();
+	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+	{
+		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+	}
+	SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
+}
+
+ActionDisableVisibilityTool::ActionDisableVisibilityTool(SceneEditor2* forSceneEditor)
+:	CommandAction(CMDID_VISIBILITY_TOOL_DISABLE)
+,	sceneEditor(forSceneEditor)
+{
+}
+
+void ActionDisableVisibilityTool::Redo()
+{
+	if (sceneEditor == NULL)
+	{
+		return;
+	}
+	
+	bool disabled = !sceneEditor->visibilityToolSystem->IsLandscapeEditingEnabled();
+	if (disabled)
+	{
+		return;
+	}
+
+	disabled = sceneEditor->visibilityToolSystem->DisableLandscapeEdititing();
+	if (!disabled)
+	{
+		ShowErrorDialog(ResourceEditor::VISIBILITY_TOOL_DISABLE_ERROR);
+	}
+
+	SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
+}
+
 
 ActionSetVisibilityPoint::ActionSetVisibilityPoint(Image* originalImage,
 												   Sprite* cursorSprite,
 												   VisibilityToolProxy* visibilityToolProxy,
 												   const Vector2& visibilityPoint)
-:	CommandAction(CMDID_SET_VISIBILITY_POINT, "Set Visibility Point")
+:	CommandAction(CMDID_VISIBILITY_TOOL_SET_POINT, "Set Visibility Point")
 {
 //	this->undoImage = SafeRetain(originalImage);
 	this->cursorSprite = SafeRetain(cursorSprite);
@@ -102,7 +171,7 @@ void ActionSetVisibilityPoint::Redo()
 ActionSetVisibilityArea::ActionSetVisibilityArea(Image* originalImage,
 												 VisibilityToolProxy* visibilityToolProxy,
 												 const Rect& updatedRect)
-:	CommandAction(CMDID_SET_VISIBILITY_AREA, "Set Visibility Area")
+:	CommandAction(CMDID_VISIBILITY_TOOL_SET_AREA, "Set Visibility Area")
 {
 	Image* currentImage = visibilityToolProxy->GetSprite()->GetTexture()->CreateImageFromMemory();
 
@@ -143,7 +212,7 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 
 	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
 	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->ClipRect(updatedRect);
+	RenderManager::Instance()->SetClip(updatedRect);
 
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 	sprite->SetPosition(updatedRect.x, updatedRect.y);

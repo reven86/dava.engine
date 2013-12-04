@@ -27,13 +27,6 @@
 =====================================================================================*/
 
 
-//
-//  main.m
-//  TemplateProjectMacOS
-//
-//  Created by Vitaliy  Borodovsky on 3/16/10.
-//  Copyright __MyCompanyName__ 2010. All rights reserved.
-//
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
@@ -73,32 +66,37 @@ bool CheckPosition(int32 commandPosition)
 }
 
 
-void ProcessRecourcePacker()
+void DumpCommandLine()
 {
     Vector<String> & commandLine = Core::Instance()->GetCommandLine();
-    if(CommandLineParser::Instance()->GetVerbose())
+    int32 count = CommandLineParser::GetCommandsCount();
+    for(int32 i = 0; i < count; ++i)
     {
-        int32 count = CommandLineParser::GetCommandsCount();
-        for(int32 i = 0; i < count; ++i)
-        {
-            String command = CommandLineParser::GetCommand(i);
-            printf("\n\t command: %s, param: %s", command.c_str(), CommandLineParser::GetCommandParam(command).c_str());
-        }
-        
-        printf("\n\n");
-        
-        count = commandLine.size();
-        for(int32 i = 0; i < count; ++i)
-        {
-            String command = commandLine[i];
-            printf("\n\t command: %s", command.c_str());
-        }
-        
-        printf("\n");
+        String command = CommandLineParser::GetCommand(i);
+        Logger::FrameworkDebug("command: %s, param: %s", command.c_str(), CommandLineParser::GetCommandParam(command).c_str());
     }
     
+    Logger::FrameworkDebug("");
+    
+    count = commandLine.size();
+    for(int32 i = 0; i < count; ++i)
+    {
+        String command = commandLine[i];
+        Logger::FrameworkDebug("command: %s", command.c_str());
+    }
+    Logger::FrameworkDebug("");
+}
+
+void ProcessRecourcePacker()
+{
+    if(CommandLineParser::Instance()->GetVerbose())
+    {
+        DumpCommandLine();
+    }
+
     ResourcePacker2D * resourcePacker = new ResourcePacker2D();
     
+    Vector<String> & commandLine = Core::Instance()->GetCommandLine();
     FilePath commandLinePath(commandLine[1]);
     commandLinePath.MakeDirectoryPathname();
     
@@ -109,19 +107,19 @@ void ProcessRecourcePacker()
     
     if(resourcePacker->excludeDirectory.IsEmpty())
     {
-        printf("[FATAL ERROR: Packer has wrong input pathname]");
+        Logger::Error("[FATAL ERROR: Packer has wrong input pathname]");
         return;
     }
     
     if (resourcePacker->excludeDirectory.GetLastDirectoryName() != "DataSource")
     {
-        printf("[FATAL ERROR: Packer working only inside DataSource directory]");
+        Logger::Error("[FATAL ERROR: Packer working only inside DataSource directory]");
         return;
     }
     
     if(commandLine.size() < 3)
     {
-        printf("[FATAL ERROR: PVRTexTool path need to be second parameter]");
+        Logger::Error("[FATAL ERROR: PVRTexTool path need to be second parameter]");
         return;
     }
     
@@ -133,10 +131,10 @@ void ProcessRecourcePacker()
     PVRConverter::Instance()->SetPVRTexTool(resourcePacker->excludeDirectory + (commandLine[2] + toolName));
     
     uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
-    Logger::Debug("[Resource Packer Started]\n");
-    Logger::Debug("[INPUT DIR] - [%s]\n", resourcePacker->inputGfxDirectory.GetAbsolutePathname().c_str());
-    Logger::Debug("[OUTPUT DIR] - [%s]\n", resourcePacker->outputGfxDirectory.GetAbsolutePathname().c_str());
-    Logger::Debug("[EXCLUDE DIR] - [%s]\n", resourcePacker->excludeDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[Resource Packer Started]");
+    Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker->inputGfxDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker->outputGfxDirectory.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker->excludeDirectory.GetAbsolutePathname().c_str());
     
     Texture::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
@@ -151,14 +149,14 @@ void ProcessRecourcePacker()
     
     resourcePacker->PackResources(exportForGPU);
     elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
-    Logger::Debug("[Resource Packer Compile Time: %0.3lf seconds]\n", (float64)elapsedTime / 1000.0);
+    Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", (float64)elapsedTime / 1000.0);
     
     SafeDelete(resourcePacker);
 }
 
 void FrameworkDidLaunched()
 {
-    Logger::Instance()->SetLogLevel(Logger::LEVEL_DEBUG);
+    Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
 
 	if (Core::Instance()->IsConsoleMode())
 	{
@@ -171,14 +169,18 @@ void FrameworkDidLaunched()
 			return;
         }
 		
-        if(CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("-verbose")))
-        {
-            CommandLineParser::Instance()->SetVerbose(true);
-        }
-        
         if(CommandLineParser::CommandIsFound(String("-exo")))
         {
             CommandLineParser::Instance()->SetExtendedOutput(true);
+            
+            Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
+        }
+        
+        if(CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("-verbose")))
+        {
+            CommandLineParser::Instance()->SetVerbose(true);
+
+            Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
         }
 	}
 

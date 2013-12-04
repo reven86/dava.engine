@@ -57,6 +57,8 @@ namespace DAVA
 class SkeletonNode;
 class SceneFile : public BaseObject
 {
+protected:
+	~SceneFile(){}
 public:
 	SceneFile();
 	

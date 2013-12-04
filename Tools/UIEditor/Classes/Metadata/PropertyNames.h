@@ -60,6 +60,7 @@ public:
     
     static const char* TEXT_PROPERTY_NAME;
 	static const char* TEXT_PROPERTY_MULTILINE;
+    static const char* TEXT_PROPERTY_MULTILINE_BY_SYMBOL;
     static const char* TEXT_COLOR_PROPERTY_NAME;
 	static const char* TEXT_ALIGN_PROPERTY_NAME;
 

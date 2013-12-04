@@ -417,9 +417,9 @@ VariantType YamlNode::AsVariantType() const
         }
         if(innerTypeName == DAVA::VariantType::TYPENAME_KEYED_ARCHIVE)
         {
-            KeyedArchive innerArch;
-            innerArch.LoadFromYamlNode(this);
-            retValue.SetKeyedArchive(&innerArch);
+            ScopedPtr<KeyedArchive> innerArch(new KeyedArchive());
+            innerArch->LoadFromYamlNode(this);
+            retValue.SetKeyedArchive(innerArch);
         }
         if(innerTypeName == DAVA::VariantType::TYPENAME_VECTOR2)
         {

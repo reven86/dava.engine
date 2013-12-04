@@ -67,7 +67,7 @@ protected:
 
 private:
 	static bool settingsArchiveIsLoaded;
-	static DAVA::KeyedArchive settingsArchive;
+	static DAVA::RefPtr<DAVA::KeyedArchive> settingsArchive;
 };
 
 #endif // __QT_POS_SAVER_H__

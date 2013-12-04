@@ -60,16 +60,16 @@ bool TexturePacker::TryToPack(const Rect2i & textureRect, List<DefinitionFile*> 
 	{
 		DefinitionFile * defFile = sortVector[i].defFile;
 		int frame = sortVector[i].frameIndex;
-		if (!packer->AddImage(Size2i(defFile->frameRects[frame].dx, defFile->frameRects[frame].dy), &defFile->frameRects[frame]))
+
+		if (!packer->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
 		{
 			SafeDelete(packer);
 			return false;
 		}
-		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::FrameworkDebug("p: %s %d\n",defFile->filename.GetAbsolutePathname().c_str(), frame);
+
+        Logger::FrameworkDebug("p: %s %d",defFile->filename.GetAbsolutePathname().c_str(), frame);
 	}
-	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::FrameworkDebug("\n* %d x %d - success\n", textureRect.dx, textureRect.dy);
+    Logger::FrameworkDebug("* %d x %d - success", textureRect.dx, textureRect.dy);
 	
 	if (lastPackedPacker)
 	{
@@ -88,7 +88,7 @@ int TexturePacker::TryToPackFromSortVector(ImagePacker * packer,Vector<SizeSortI
 	{
 		DefinitionFile * defFile = tempSortVector[i].defFile;
 		int frame = tempSortVector[i].frameIndex;
-		if (packer->AddImage(Size2i(defFile->frameRects[frame].dx, defFile->frameRects[frame].dy), &defFile->frameRects[frame]))
+		if (packer->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
 		{
 			packedCount++;
 			tempSortVector.erase(tempSortVector.begin() + i);
@@ -107,10 +107,9 @@ float TexturePacker::TryToPackFromSortVectorWeight(ImagePacker * packer,Vector<S
 	{
 		DefinitionFile * defFile = tempSortVector[i].defFile;
 		int frame = tempSortVector[i].frameIndex;
-		if (packer->AddImage(Size2i(defFile->frameRects[frame].dx, defFile->frameRects[frame].dy), &defFile->frameRects[frame]))
+		if (packer->AddImage(defFile->GetFrameSize(frame), &defFile->frameRects[frame]))
 		{
-			//float weightCoeff = (float)(tempSortVector.size() - i) / (float)(tempSortVector.size());
-			weight += (defFile->frameRects[frame].dx * defFile->frameRects[frame].dy);// * weightCoeff;
+			weight += (defFile->GetFrameWidth(frame) * defFile->GetFrameHeight(frame));// * weightCoeff;
 			tempSortVector.erase(tempSortVector.begin() + i);
 			i--;
 		}
@@ -136,7 +135,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 		for (int frame = 0; frame < defFile->frameCount; ++frame)
 		{
 			SizeSortItem sortItem;
-			sortItem.imageSize = defFile->frameRects[frame].dx * defFile->frameRects[frame].dy;
+			sortItem.imageSize = defFile->GetFrameWidth(frame) * defFile->GetFrameHeight(frame);
 			sortItem.defFile = defFile;
 			sortItem.frameIndex = frame;
 			sortVector.push_back(sortItem);
@@ -148,8 +147,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 		int bestResolution = (maxTextureSize + 1) * (maxTextureSize + 1);
 		int bestXResolution, bestYResolution;
 		
-		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::FrameworkDebug("* Packing tries started: ");
+        Logger::FrameworkDebug("* Packing tries started: ");
 		
 		for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
 			for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
@@ -164,16 +162,15 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 						bestYResolution = yResolution;
 					}
 			}
-		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::FrameworkDebug("\n");
+
+        Logger::FrameworkDebug("");
         
 		if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
 		{
 			char textureNameWithIndex[50];
 			sprintf(textureNameWithIndex, "texture%d", textureIndex++);
 			FilePath textureName = outputPath + textureNameWithIndex;
-			if (CommandLineParser::Instance()->GetVerbose())
-				Logger::FrameworkDebug("* Writing final texture (%d x %d): %s\n", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
+            Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 			
 			PngImageExt finalImage;
 			finalImage.Create(bestXResolution, bestYResolution);
@@ -182,19 +179,19 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
 				Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
-				if (!destRect)Logger::Error("*** ERROR Can't find rect for frame\n");
+				if (!destRect)Logger::Error("*** ERROR Can't find rect for frame");
 				
 				FilePath withoutExt(defFile->filename);
                 withoutExt.TruncateExtension();
 
 				PngImageExt image;
 				image.Read(FramePathHelper::GetFramePathRelative(withoutExt, frame));
-				finalImage.DrawImage(destRect->x, destRect->y, &image);
+				DrawToFinalImage(finalImage, image, *destRect, defFile->frameRects[frame]);
 			}
 			
 			if (!WriteDefinition(excludeFolder, outputPath, textureNameWithIndex, defFile))
 			{
-				Logger::Error("* ERROR: failed to write definition\n");
+				Logger::Error("* ERROR: failed to write definition");
 			}
 
             textureName.ReplaceExtension(".png");
@@ -212,7 +209,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 		for (int frame = 0; frame < defFile->frameCount; ++frame)
 		{
 			SizeSortItem sortItem;
-			sortItem.imageSize = defFile->frameRects[frame].dx * defFile->frameRects[frame].dy;
+			sortItem.imageSize = defFile->GetFrameWidth(frame) * defFile->GetFrameHeight(frame);
 			sortItem.defFile = defFile;
 			sortItem.frameIndex = frame;
 			sortVector.push_back(sortItem);
@@ -225,8 +222,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 	int bestResolution = (maxTextureSize + 1) * (maxTextureSize + 1);
 	int bestXResolution, bestYResolution;
 	
-	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::FrameworkDebug("* Packing tries started: ");
+    Logger::FrameworkDebug("* Packing tries started: ");
 	
     bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
 	for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
@@ -244,13 +240,12 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 					 bestYResolution = yResolution;
 				 }
 		 }
-	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::FrameworkDebug("\n");
+    Logger::FrameworkDebug("\n");
+
 	if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
 	{
 		FilePath textureName = outputPath + "texture";
-		if (CommandLineParser::Instance()->GetVerbose())
-			Logger::FrameworkDebug("* Writing final texture (%d x %d): %s\n", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
+        Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
 	
 		PngImageExt finalImage;
 		finalImage.Create(bestXResolution, bestYResolution);
@@ -262,24 +257,19 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
 				Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
-				if (!destRect)Logger::Error("*** ERROR Can't find rect for frame\n");
+				if (!destRect)Logger::Error("*** ERROR Can't find rect for frame");
 				
                 FilePath withoutExt(defFile->filename);
                 withoutExt.TruncateExtension();
 
 				PngImageExt image;
 				image.Read(FramePathHelper::GetFramePathRelative(withoutExt, frame));
-				finalImage.DrawImage(destRect->x, destRect->y, &image);
-
-				if (CommandLineParser::Instance()->IsFlagSet("--debug"))
-				{
-					finalImage.DrawRect(*destRect, 0xFF0000FF);
-				}
+				DrawToFinalImage(finalImage, image, *destRect, defFile->frameRects[frame]);
 			}
 			
 			if (!WriteDefinition(excludeFolder, outputPath, "texture", defFile))
 			{
-				Logger::Error("* ERROR: failed to write definition\n");
+				Logger::Error("* ERROR: failed to write definition");
 			}
 		}
 
@@ -295,14 +285,14 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defList, eGPUFamily forGPU)
 {
 	if (defList.size() != 1)
-		if (CommandLineParser::Instance()->GetVerbose())Logger::Error("* ERROR: failed to pack to multiple textures\n");
+        Logger::Error("* ERROR: failed to pack to multiple textures");
 
 	for (int i = 0; i < (int)sortVector.size(); ++i)
 	{
 		DefinitionFile * defFile = sortVector[i].defFile;
 		int frame = sortVector[i].frameIndex;
-		if (CommandLineParser::Instance()->GetVerbose())
-            Logger::FrameworkDebug("[MultiPack] prepack: %s frame: %d w:%d h:%d\n", defFile->filename.GetAbsolutePathname().c_str(), frame, defFile->frameRects[frame].dx, defFile->frameRects[frame].dy);
+        
+        Logger::FrameworkDebug("[MultiPack] prepack: %s frame: %d w:%d h:%d", defFile->filename.GetAbsolutePathname().c_str(), frame, defFile->frameRects[frame].dx, defFile->frameRects[frame].dy);
 	}
 	
 	Vector<ImagePacker*> & packers = usedPackers;
@@ -315,7 +305,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		float maxValue = 0.0f;
 		//int bestResolution = 1025 * 1025;
 		
-		if (CommandLineParser::Instance()->GetVerbose())Logger::FrameworkDebug("* Packing tries started: ");
+        Logger::FrameworkDebug("* Packing tries started: ");
 		
 		ImagePacker * bestPackerForThisStep = 0;
 		Vector<SizeSortItem> newWorkVector;
@@ -345,7 +335,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		packers.push_back(bestPackerForThisStep);
 	}
 	
-	if (CommandLineParser::Instance()->GetVerbose())Logger::FrameworkDebug("* Writing %d final textures \n", (int)packers.size());
+    Logger::FrameworkDebug("* Writing %d final textures", (int)packers.size());
 
 	Vector<PngImageExt*> finalImages;
 	
@@ -385,14 +375,11 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 			
 			if (foundPacker)
 			{
-				if (CommandLineParser::Instance()->GetVerbose())Logger::FrameworkDebug("[MultiPack] pack to texture: %d\n", packerIndex);
+                Logger::FrameworkDebug("[MultiPack] pack to texture: %d", packerIndex);
+                
 				PngImageExt image;
 				image.Read(imagePath);
-				finalImages[packerIndex]->DrawImage(destRect->x, destRect->y, &image);
-				if (CommandLineParser::Instance()->IsFlagSet("--debug"))
-				{
-					finalImages[packerIndex]->DrawRect(*destRect, 0xFF0000FF);
-				}
+				DrawToFinalImage(*finalImages[packerIndex], image, *destRect, defFile->frameRects[frame]);
 			}
 		}
 	}
@@ -412,7 +399,7 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		FilePath textureName = outputPath + "texture";
 		if (!WriteMultipleDefinition(excludeFolder, outputPath, "texture", defFile))
 		{
-			Logger::Error("* ERROR: failed to write definition\n");
+			Logger::Error("* ERROR: failed to write definition");
 		}
 	}	
 }
@@ -457,8 +444,7 @@ Rect2i TexturePacker::ReduceRectToOriginalSize(const Rect2i & _input)
 bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const FilePath & outputPath, const String & _textureName, DefinitionFile * defFile)
 {
 	String fileName = defFile->filename.GetFilename();
-	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::FrameworkDebug("* Write definition: %s\n", fileName.c_str());
+    Logger::FrameworkDebug("* Write definition: %s", fileName.c_str());
 	
 	FilePath defFilePath = outputPath + fileName;
 	FILE * fp = fopen(defFilePath.GetAbsolutePathname().c_str(), "wt");
@@ -476,9 +462,9 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 		Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
 		Rect2i origRect = defFile->frameRects[frame];
 		Rect2i writeRect = ReduceRectToOriginalSize(*destRect);
-		fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, origRect.x, origRect.y, 0);
+		WriteDefinitionString(fp, writeRect, origRect, 0);
 
-        if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
+		if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
         {
             Logger::Error("In sprite %s.psd frame %d has size bigger than sprite size!", defFile->filename.GetBasename().c_str(), frame);
         }
@@ -497,8 +483,7 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, const FilePath & outputPath, const String & _textureName, DefinitionFile * defFile)
 {
 	String fileName = defFile->filename.GetFilename();
-	if (CommandLineParser::Instance()->GetVerbose())
-		Logger::FrameworkDebug("* Write definition: %s\n", fileName.c_str());
+    Logger::FrameworkDebug("* Write definition: %s", fileName.c_str());
 	
 	FilePath defFilePath = outputPath + fileName;
 	FILE * fp = fopen(defFilePath.GetAbsolutePathname().c_str(), "wt");
@@ -559,6 +544,7 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 			Rect2i origRect = defFile->frameRects[frame];
 			Rect2i writeRect = ReduceRectToOriginalSize(*destRect);
 			fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, origRect.x, origRect.y, packerIndex);
+			WriteDefinitionString(fp, writeRect, origRect, packerIndex);
 
             if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
             {
@@ -742,6 +728,35 @@ bool TexturePacker::CheckFrameSize(const Size2i &spriteSize, const Size2i &frame
     bool isSizeCorrect = ((frameSize.dx <= spriteSize.dx) && (frameSize.dy <= spriteSize.dy));
     
     return isSizeCorrect;
+}
+
+void TexturePacker::DrawToFinalImage( PngImageExt & finalImage, PngImageExt & drawedImage, const Rect2i & drawRect, const Rect2i &frameRect )
+{
+	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
+	{
+		finalImage.DrawImage(drawRect.x + frameRect.x, drawRect.y + frameRect.y, &drawedImage);
+	}
+	else
+	{
+		finalImage.DrawImage(drawRect.x, drawRect.y, &drawedImage);
+	}
+
+	if (CommandLineParser::Instance()->IsFlagSet("--debug"))
+	{
+		finalImage.DrawRect(drawRect, 0xFF0000FF);
+	}
+}
+
+void TexturePacker::WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex)
+{
+	if(CommandLineParser::Instance()->IsFlagSet("--disableCropAlpha"))
+	{
+		fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, 0, 0, textureIndex);
+	}
+	else
+	{
+		fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, originRect.x, originRect.y, textureIndex);
+	}
 }
 
 

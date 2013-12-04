@@ -29,7 +29,6 @@
 
 
 #include "TextureListModel.h"
-#include "Scene/SceneHelper.h"
 #include <QPainter>
 #include <QFileInfo>
 
@@ -188,23 +187,30 @@ void TextureListModel::setScene(DAVA::Scene *scene)
 	endResetModel();
 }
 
-void TextureListModel::setHighlight(DAVA::Entity *node)
+void TextureListModel::setHighlight(const EntityGroup *nodes)
 {
 	beginResetModel();
 
 	textureDescriptorsHighlight.clear();
 
-	DAVA::Map<DAVA::String, DAVA::Texture *> texturesInNode;
-	SceneHelper::EnumerateTextures(node, texturesInNode);
-
-	for(DAVA::Map<DAVA::String, DAVA::Texture *>::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
+	if(NULL != nodes)
 	{
-		const DAVA::String descPath = t->first;
-		for(int i = 0; i < textureDescriptorsAll.size(); ++i)
+		for(int i = 0; i < nodes->Size(); ++i)
 		{
-			if(textureDescriptorsAll[i]->pathname == descPath)
+			DAVA::Entity *node = nodes->GetEntity(i);
+			DAVA::Map<DAVA::String, DAVA::Texture *> texturesInNode;
+			SceneHelper::EnumerateTextures(node, texturesInNode);
+
+			for(DAVA::Map<DAVA::String, DAVA::Texture *>::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
 			{
-				textureDescriptorsHighlight.push_back(textureDescriptorsAll[i]);
+				const DAVA::String descPath = t->first;
+				for(int i = 0; i < textureDescriptorsAll.size(); ++i)
+				{
+					if(textureDescriptorsAll[i]->pathname == descPath)
+					{
+						textureDescriptorsHighlight.push_back(textureDescriptorsAll[i]);
+					}
+				}
 			}
 		}
 	}

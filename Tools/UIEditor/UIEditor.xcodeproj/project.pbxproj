@@ -126,6 +126,7 @@
 		176D395B162C3CAA0099AACF /* BaseMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 176D3959162C3CAA0099AACF /* BaseMetadata.cpp */; };
 		176D395E162C3DF90099AACF /* UIButtonMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 176D395C162C3DF90099AACF /* UIButtonMetadata.cpp */; };
 		176D3961162C3E890099AACF /* UIControlMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 176D395F162C3E890099AACF /* UIControlMetadata.cpp */; };
+		1775862D1834E02200908EE9 /* CenterPivotPointCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1775862B1834E02200908EE9 /* CenterPivotPointCommand.cpp */; };
 		178F303E165677BF008678AD /* StringUtils.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 178F303C165677BF008678AD /* StringUtils.cpp */; };
 		17C5CCD516F31E5300FB90B4 /* spinnerpropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17C5CCD416F31E5300FB90B4 /* spinnerpropertygridwidget.ui */; };
 		17C5CCD916F323B700FB90B4 /* spinnerpropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C5CCD816F323B700FB90B4 /* spinnerpropertygridwidget_moc.cpp */; };
@@ -196,7 +197,6 @@
 		A51FBC516D952C0C5AB72EA1 /* QtGui.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 9B8EE51E126C761F3F797428 /* QtGui.framework */; };
 		A641262F17D0C98B004D3C5E /* libFrameworkToolsQt.a in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = A641262C17D0C97C004D3C5E /* libFrameworkToolsQt.a */; };
 		A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 419FFB6CDDEB353FF0A4F469 /* QtCore.framework */; };
-		A9F72A8809110F713D328E52 /* OpenAL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 52F4216CE5F81A8073DE30C0 /* OpenAL.framework */; };
 		B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */; };
 		BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = DA18A6831232F53228631AD1 /* OpenGL.framework */; };
 		C10740DE163A94360069A640 /* createplatformdlg.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = C10740DA163A94360069A640 /* createplatformdlg.cpp */; };
@@ -482,6 +482,8 @@
 		176D395D162C3DF90099AACF /* UIButtonMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIButtonMetadata.h; path = Metadata/UIButtonMetadata.h; sourceTree = "<group>"; };
 		176D395F162C3E890099AACF /* UIControlMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIControlMetadata.cpp; path = Metadata/UIControlMetadata.cpp; sourceTree = "<group>"; };
 		176D3960162C3E890099AACF /* UIControlMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIControlMetadata.h; path = Metadata/UIControlMetadata.h; sourceTree = "<group>"; };
+		1775862B1834E02200908EE9 /* CenterPivotPointCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CenterPivotPointCommand.cpp; path = Commands/CenterPivotPointCommand.cpp; sourceTree = "<group>"; };
+		1775862C1834E02200908EE9 /* CenterPivotPointCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CenterPivotPointCommand.h; path = Commands/CenterPivotPointCommand.h; sourceTree = "<group>"; };
 		178F303C165677BF008678AD /* StringUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringUtils.cpp; sourceTree = "<group>"; };
 		178F303D165677BF008678AD /* StringUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringUtils.h; sourceTree = "<group>"; };
 		179D0ECB17C5F65B006F59CA /* AlignDistributeEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AlignDistributeEnums.h; path = AlignDistribute/AlignDistributeEnums.h; sourceTree = "<group>"; };
@@ -705,7 +707,6 @@
 				5CCC10E915B460C900DA83EB /* libbz2.dylib in Frameworks & Libraries */,
 				5CCC10E715B460BF00DA83EB /* libz.dylib in Frameworks & Libraries */,
 				77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */,
-				A9F72A8809110F713D328E52 /* OpenAL.framework in Frameworks & Libraries */,
 				B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */,
 				A51FBC516D952C0C5AB72EA1 /* QtGui.framework in Frameworks & Libraries */,
 				A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */,
@@ -1058,6 +1059,8 @@
 		17F2EF2916355E1000DEE054 /* Commands */ = {
 			isa = PBXGroup;
 			children = (
+				1775862B1834E02200908EE9 /* CenterPivotPointCommand.cpp */,
+				1775862C1834E02200908EE9 /* CenterPivotPointCommand.h */,
 				C15D3E4F16415A3600161684 /* ControlCommands.cpp */,
 				C15D3E5016415A3600161684 /* ControlCommands.h */,
 				17112B51163921700017E713 /* ChangePropertyCommand.h */,
@@ -1689,6 +1692,7 @@
 				C18593E216F30C06005D30E2 /* HierarchyTreeAggregatorControlNode.cpp in Build Sources */,
 				C18593E316F30C06005D30E2 /* HierarchyTreeAggregatorNode.cpp in Build Sources */,
 				C18593E616F30C10005D30E2 /* UIAggregatorMetadata.cpp in Build Sources */,
+				1775862D1834E02200908EE9 /* CenterPivotPointCommand.cpp in Build Sources */,
 				C18593F516F30D74005D30E2 /* createaggregatordlg.cpp in Build Sources */,
 				C18593F916F314F2005D30E2 /* createaggregatordlg_moc.cpp in Build Sources */,
 				C18593FE16F31B3A005D30E2 /* aggregatorpropertygridwidget.cpp in Build Sources */,
@@ -1865,7 +1869,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = UIEditor;
 				SDKROOT = macosx10.8;
 			};
@@ -1910,7 +1914,7 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
 				);
 				LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../Libs/fmod/lib/macos\"";
-				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = UIEditor;
 				SDKROOT = macosx10.8;
 			};

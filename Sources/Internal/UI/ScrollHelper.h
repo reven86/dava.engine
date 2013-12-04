@@ -51,6 +51,8 @@ class ScrollHelper : public BaseObject
 		float deltaMove;
 		float deltaTime;
 	};
+protected:
+    ~ScrollHelper(){}
 public:
 	
 	/**

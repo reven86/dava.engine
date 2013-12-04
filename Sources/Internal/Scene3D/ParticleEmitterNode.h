@@ -42,9 +42,10 @@ namespace DAVA
 class Material;
 class ParticleEmitterNode : public Entity
 {
+protected:
+	virtual ~ParticleEmitterNode();
 public:
 	ParticleEmitterNode();
-	virtual ~ParticleEmitterNode();
 
 	ParticleEmitter * GetEmitter();
 

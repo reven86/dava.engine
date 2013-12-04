@@ -70,13 +70,12 @@ void ResourcePacker2D::InitFolders(const FilePath & inputPath,const FilePath & o
     
 void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 {
-	Logger::FrameworkDebug("Input: %s \nOutput: %s \nExclude: %s\n",
+	Logger::FrameworkDebug("\nInput: %s \nOutput: %s \nExclude: %s",
                   inputGfxDirectory.GetAbsolutePathname().c_str(),
                   outputGfxDirectory.GetAbsolutePathname().c_str(),
                   excludeDirectory.GetAbsolutePathname().c_str());
 
-    if(CommandLineParser::Instance()->GetVerbose())
-        printf("For GPU: %s \n", GPUFamilyDescriptor::GetGPUName(forGPU).c_str());
+    Logger::FrameworkDebug("For GPU: %s", (GPU_UNKNOWN != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
 
     
 	requestedGPUFamily = forGPU;
@@ -97,7 +96,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 	if (IsMD5ChangedDir(processDirectoryPath, outputGfxDirectory, gfxDirName + ".md5", true))
 	{
 		if (Core::Instance()->IsConsoleMode())
-			printf("[Gfx not available or changed - performing full repack]\n");
+			Logger::FrameworkDebug("[Gfx not available or changed - performing full repack]");
 		isGfxModified = true;
 	
 		// Remove whole output directory
@@ -106,9 +105,9 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 		{
 			Logger::FrameworkDebug("Removed output directory: %s", outputGfxDirectory.GetAbsolutePathname().c_str());
 		}
-		if (!result && Core::Instance()->IsConsoleMode())
+		if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
 		{
-			printf("[ERROR: Can't delete directory %s]\n", outputGfxDirectory.GetAbsolutePathname().c_str());
+			Logger::Error("[ERROR: Can't delete directory %s]", outputGfxDirectory.GetAbsolutePathname().c_str());
 		}
 	}
 
@@ -232,11 +231,11 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		
 		for(int k = 1; k < (int)layers.size(); ++k)
 		{
+			FilePath outputFile = FramePathHelper::GetFramePathRelative(psdNameWithoutExtension, k - 1);
+
 			Magick::Image & currentLayer = layers[k];
-			
 			currentLayer.crop(Magick::Geometry(width,height, 0, 0));
 			currentLayer.magick("PNG");
-			FilePath outputFile = FramePathHelper::GetFramePathRelative(psdNameWithoutExtension, k - 1);
 			currentLayer.write(outputFile.GetAbsolutePathname());
 		}
 
@@ -264,15 +263,13 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			
 			if ((defFile->frameRects[k - 1].dx >= maxTextureSize) || (defFile->frameRects[k - 1].dy >= maxTextureSize))
 			{
-				
-				printf("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!\n", psdName.c_str(), k - 1, maxTextureSize
+				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
 					   , defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
+                
 				defFile->frameRects[k - 1].dx = width;
 				defFile->frameRects[k - 1].dy = height;
 			}
 				
-			
-			
 			if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
 			{
 				
@@ -307,7 +304,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	}
 	catch( Magick::Exception &error_ )
     {
-        printf("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str());
+        Logger::Error("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str());
 		return 0;
     }
 	return 0;
@@ -319,7 +316,9 @@ void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 	if (!file)
 	{
 		Logger::Error("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str());
+        return;
 	}
+    
 	char flagsTmpBuffer[4096] = {0};
 	int flagsSize = 0;
 	while(!file->IsEof())
@@ -361,22 +360,11 @@ void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 		pos     = flags.find_first_of(delims, lastPos);
 	}
 	
-	if (CommandLineParser::Instance()->GetVerbose())
-		for (int k = 0; k < (int) tokens.size(); ++k)
-		{
-			Logger::FrameworkDebug("Token: %s", tokens[k].c_str());
-		}
+    for (int k = 0; k < (int) tokens.size(); ++k)
+    {
+        Logger::FrameworkDebug("Token: %s", tokens[k].c_str());
+    }
 
-//	if (Core::Instance()->IsConsoleMode())
-//	{
-//		for (int k = 0; k < (int) tokens.size(); ++k)
-//		{
-//			String sub = tokens[k].substr(0, 2);
-//			if (sub != "--")
-//				printf("\n[WARNING: flag %s incorrect]\n", tokens[k].c_str());
-//		}
-//	}
-	
 	CommandLineParser::Instance()->SetArguments(tokens);
 	
 	SafeRelease(file);
@@ -490,6 +478,16 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				packer.SetMaxTextureSize(2048);
 			}
 
+            if(definitionFileList.size() == 1)
+            {
+                DefinitionFile * def = definitionFileList.front();
+                if(def->frameCount == 1)
+                {
+                    def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
+                    CommandLineParser::Instance()->AddArgument("--add0pixel");
+                }
+            }
+
 			if (CommandLineParser::Instance()->IsFlagSet("--split"))
 			{
 				packer.PackToTexturesSeparate(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
@@ -505,16 +503,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 
 	if (Core::Instance()->IsConsoleMode())
 	{
-		if (CommandLineParser::Instance()->IsExtendedOutput())
-		{
-			printf("[%d files packed with flags: %s]\n", (int)definitionFileList.size(), currentFlags.c_str());
-		}
+        Logger::Info("[%d files packed with flags: %s]", (int)definitionFileList.size(), currentFlags.c_str());
 	
 		String result = "[unchanged]";
 		if (modified)
 			result = "[REPACKED]";
 
-		printf("[%s - %.2lf secs] - %s\n", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result.c_str());
+		Logger::Info("[%s - %.2lf secs] - %s", inputPath.GetAbsolutePathname().c_str(), (float64)packTime / 1000.0f, result.c_str());
 	}
 
 	

@@ -151,8 +151,8 @@ public:
 
     virtual void WillAppear();
     
-protected:    
-
+protected:
+    
     FilePath GetPathname();
     String GetExtensionFilter();
     

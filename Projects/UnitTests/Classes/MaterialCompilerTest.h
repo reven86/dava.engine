@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class MaterialCompilerTest : public TestTemplate<MaterialCompilerTest>
 {
+protected:
+    ~MaterialCompilerTest(){}
 public:
 	MaterialCompilerTest();
 

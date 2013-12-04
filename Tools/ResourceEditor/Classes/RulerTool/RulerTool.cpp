@@ -78,7 +78,7 @@ bool RulerTool::EnableTool(EditorScene *scene)
     editorScene = SafeRetain(scene);
     if(scene)
     {
-		if (EditorScene::GetLandscape(scene))
+		if (FindLandscape(scene))
         {
             SceneData *activeScene = SceneDataManager::Instance()->SceneGetActive();
             landscapesController = SafeRetain(activeScene->GetLandscapesController());

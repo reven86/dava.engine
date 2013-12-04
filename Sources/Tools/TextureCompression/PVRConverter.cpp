@@ -31,6 +31,7 @@
 #include "Render/TextureDescriptor.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
+#include "Platform/Process.h"
 
 #include "Render/GPUFamilyDescriptor.h"
 
@@ -83,20 +84,33 @@ PVRConverter::~PVRConverter()
 FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
 {
 	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
-	String command = GetCommandLinePVR(descriptor, outputName, gpuFamily);
-    Logger::FrameworkDebug("[PVRConverter::ConvertPngToPvr] (%s)", command.c_str());
-    
-	if(!command.empty())
+
+	Vector<String> args;
+	GetToolCommandLine(descriptor, outputName, gpuFamily, args);
+	Process process(pvrTexToolPathname, args);
+	if(process.Run(false))
 	{
-		FileSystem::Instance()->Spawn(command);		
+		process.Wait();
+			
+		const String& procOutput = process.GetOutput();
+		if(procOutput.size() > 0)
+		{
+			Logger::FrameworkDebug(procOutput.c_str());
+		}
+			
 		outputName = GetPVRToolOutput(descriptor, gpuFamily);
 	}
-	
+	else
+	{
+		Logger::Error("Failed to run PVR tool! %s", pvrTexToolPathname.GetAbsolutePathname().c_str());
+		DVASSERT(false);
+	}
+		
 	if(descriptor.IsCubeMap())
 	{
 		CleanupCubemapAfterConversion(descriptor);
 	}
-
+		
 	return outputName;
 }
 
@@ -145,6 +159,49 @@ String PVRConverter::GetCommandLinePVR(const TextureDescriptor &descriptor, File
     }
 
 	return command;
+}
+	
+void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
+										FilePath fileToConvert,
+										eGPUFamily gpuFamily,
+										Vector<String>& args)
+{
+	String format = pixelFormatToPVRFormat[(PixelFormat) descriptor.compression[gpuFamily].format];
+	FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
+		
+	// assemble command
+	args.push_back("-i");
+	args.push_back(fileToConvert.GetAbsolutePathname());
+		
+	if(descriptor.IsCubeMap())
+	{
+		args.push_back("-s");
+	}
+		
+	// output format
+	args.push_back(Format("-f%s", format.c_str()));
+		
+	// pvr should be always flipped-y
+	args.push_back("-yflip0");
+		
+	// mipmaps
+	if(descriptor.settings.generateMipMaps)
+	{
+		args.push_back("-m");
+	}
+		
+	// base mipmap level (base resize)
+	if(0 != descriptor.compression[gpuFamily].compressToWidth && descriptor.compression[gpuFamily].compressToHeight != 0)
+	{
+		args.push_back("-x");
+		args.push_back(Format("%d", descriptor.compression[gpuFamily].compressToWidth));
+		args.push_back("-y");
+		args.push_back(Format("%d", descriptor.compression[gpuFamily].compressToHeight));
+	}
+		
+	// output file
+	args.push_back("-o");
+	args.push_back(outputFile.GetAbsolutePathname());
 }
 
 FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)

@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class Box2DGameObjectTestScreen : public UIScreen
 {
+protected:
+	~Box2DGameObjectTestScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

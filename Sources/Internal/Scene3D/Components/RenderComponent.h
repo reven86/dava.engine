@@ -40,9 +40,10 @@ namespace DAVA
 
 class RenderComponent : public Component
 {
+protected:
+    virtual ~RenderComponent();
 public:
     RenderComponent(RenderObject * _object = 0);
-    virtual ~RenderComponent();
     
     IMPLEMENT_COMPONENT_TYPE(RENDER_COMPONENT);
 

@@ -51,9 +51,10 @@ class NMaterialInstance;
 
 class PolygonGroupWithMaterial : public RenderBatch
 {
+protected:
+    virtual ~PolygonGroupWithMaterial();
 public:
     PolygonGroupWithMaterial();
-    virtual ~PolygonGroupWithMaterial();
     
     void Setup(StaticMesh * mesh, int32 polygroupIndex, Material * material, TransformComponent * transform);
     virtual void Draw();
@@ -91,9 +92,11 @@ public:
 		Vector2 uvOffset;
 		Vector2 uvScale;
 	};
-
-	MeshInstanceNode();
+protected:
 	~MeshInstanceNode();
+public:
+	MeshInstanceNode();
+
 	
 	void AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, Material* material);
 

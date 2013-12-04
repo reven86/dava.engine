@@ -145,10 +145,10 @@ namespace DAVA
  */
 class ApplicationCore : public BaseObject
 {
-public:
-	
-	ApplicationCore();
+protected:
 	virtual ~ApplicationCore();
+public:
+	ApplicationCore();
 
 	/**
 		\brief Called when application is suspended or minimized.

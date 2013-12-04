@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class ClipTestScreen : public UIScreen
 {
+protected:
+	~ClipTestScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

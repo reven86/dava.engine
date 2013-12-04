@@ -135,7 +135,7 @@ IUIWebViewDelegate::eAction JniWebView::URLChanged(int id, const String& newURL)
 	if (!delegate)
 		return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 
-	return delegate->URLChanged(control->webView, newURL, false);
+	return delegate->URLChanged(control->webView, newURL, true);
 }
 
 void JniWebView::PageLoaded(int id)

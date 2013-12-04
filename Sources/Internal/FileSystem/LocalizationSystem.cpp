@@ -216,7 +216,7 @@ bool LocalizationSystem::SaveToYamlFile(const StringFile* stringFile)
 	
 	bool result = parser->SaveStringsList(stringFile->pathName, node);
 
-	SafeDelete(node);
+	SafeRelease(node);
 	SafeRelease(parser);
 	return result;
 }

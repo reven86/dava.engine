@@ -42,11 +42,12 @@ namespace DAVA
 	
 	class NetworkPacket : public BaseObject 
 	{
+	protected:
+		~NetworkPacket();
 	public:
 		NetworkPacket();
 		NetworkPacket(File *file);
 		NetworkPacket(const void * data, int32 dataSize);
-		~NetworkPacket();
 		
 		KeyedArchive *GetArchive();
 	private:

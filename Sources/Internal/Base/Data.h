@@ -44,10 +44,11 @@ namespace DAVA
 	
 class Data : public BaseObject
 {
+protected:
+	~Data();
 public:
     Data(uint32 _size);
     Data(uint8 * _data, uint32 _size);
-	~Data();
     
     /**
         \brief Get pointer to data array

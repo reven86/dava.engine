@@ -359,17 +359,19 @@ HashMap<K, V>::HashMapIterator::HashMapIterator(const HashMap<K, V> *map)
 	if(NULL != table && szTable > 0)
 	{
 		for (uint32 k = 0; k < szTable; ++k)
+		{
 			if (table[k] != 0)
 			{
 				current_item = table[k];
 				current_index = k;
 				break;
 			}
+		}
 
-			if(NULL == current_item)
-			{
-				GoEnd();
-			}
+		if(NULL == current_item)
+		{
+			GoEnd();
+		}
 	}
 }
 
@@ -401,15 +403,13 @@ typename HashMap<K, V>::HashMapIterator& HashMap<K, V>::HashMapIterator::operato
 		}
 		else
 		{
-			current_index++;
-
-			current_item = 0;
-			while(current_index < szTable && current_item == 0)
+			current_item = NULL;
+			while(((current_index + 1) < szTable) && (current_item == NULL))
 			{
-				current_item = table[current_index++];
+				current_item = table[++current_index];
 			}
 
-			if (current_item == 0)
+			if (current_item == NULL)
 			{
 				GoEnd();
 			}

@@ -54,10 +54,10 @@ class UISwitch : public UIControl
 {
 
     friend class TogglePositionAnimation;
-
+protected:
+    virtual ~UISwitch();
 public:
     UISwitch(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    virtual ~UISwitch();
 
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual void LoadFromYamlNodeCompleted();
@@ -99,8 +99,9 @@ protected:
     UIButton * buttonRight;
     UIButton * toggle;
 
-    bool switchOnTapBesideToggle;
-    bool isLeftSelected;
+	// Boolean variables are grouped together because of DF-2149.
+    bool switchOnTapBesideToggle : 1;
+    bool isLeftSelected : 1;
 };
 
 }

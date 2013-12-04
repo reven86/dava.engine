@@ -33,11 +33,6 @@
 #include "DAVAConfig.h"
 #include "Debug/Replay.h"
 
-
-#if defined(__DAVAENGINE_ANDROID__)
-#include "Platform/Mutex.h"
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-
 namespace DAVA 
 {
 
@@ -58,24 +53,18 @@ static int frameCount;
 #if defined(__DAVAENGINE_ANDROID__)
 void SystemTimer::InitTickCount()
 {
-	if(!tickMutex)
-		return;
-
-	tickMutex->Lock();
+	tickMutex.Lock();
 	struct timeval tv; 
 	gettimeofday(&tv,NULL); 
 	savedSec = tv.tv_sec;
-	tickMutex->Unlock();
+	tickMutex.Unlock();
 
 	Logger::FrameworkDebug("[SystemTimer::InitTickCount] savedSec = %ld", savedSec);
 }
 
 uint64 SystemTimer::GetTickCount() 
 { 
-	if(!tickMutex)
-		return 0;
-
-	tickMutex->Lock();
+	tickMutex.Lock();
 	struct timeval tv; 
 	gettimeofday(&tv,NULL);
 
@@ -85,7 +74,7 @@ uint64 SystemTimer::GetTickCount()
 	msec = msec / 1000;
 	uint64 ret = sec + msec;
 
-	tickMutex->Unlock();
+	tickMutex.Unlock();
  	return  ret;
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
@@ -102,7 +91,6 @@ SystemTimer::SystemTimer()
 		Logger::FrameworkDebug("[SystemTimer] High frequency timer support enabled\n");
 	}
 #elif defined(__DAVAENGINE_ANDROID__)
-	tickMutex = new Mutex();
 	savedSec = 0;
 	InitTickCount();
  	//t0 = (float32)(GetTickCount() / 1000.0f);
@@ -121,10 +109,6 @@ SystemTimer::SystemTimer()
 
 SystemTimer::~SystemTimer()
 {
-#if defined(__DAVAENGINE_ANDROID__)
-	SafeRelease(tickMutex);
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-
 }
 
 void SystemTimer::Start()

@@ -75,8 +75,11 @@ public:
     // Predefined node name to store Relative Depth.
     static const char8* YAML_NODE_RELATIVE_DEPTH_NAME;
 
-	YamlNode(eType type, eRepresentationType repType = REPRESENT_AS_DEFAULT);
+protected:
 	virtual ~YamlNode();
+public:
+	YamlNode(eType type, eRepresentationType repType = REPRESENT_AS_DEFAULT);
+
 	
 	void Print(int32 identation);
     void PrintToFile(DAVA::File* file, uint32 identationDepth = 0) const;

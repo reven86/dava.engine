@@ -35,8 +35,6 @@ using namespace DAVA;
 
 #define AGGREGATOR_PATH "aggregatorPath"
 
-REGISTER_CLASS(UIAggregatorControl);
-
 UIAggregatorControl::UIAggregatorControl(const Rect &rect, bool rectInAbsoluteCoordinates) :
 	UIControl(rect, rectInAbsoluteCoordinates)
 {
@@ -68,8 +66,8 @@ void UIAggregatorControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader *
 	{
 		aggregatorPath = FilePath(pathNode->AsString());
 		// DF-2230 - Pass relative path to loader
-		UIYamlLoader loader;
-		loader.Load(this, aggregatorPath);
+		ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
+		loader->Load(this, aggregatorPath);
 	}
 }
 

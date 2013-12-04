@@ -67,6 +67,8 @@ public:
     static const String & GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat);
     
     static eGPUFamily GetGPUByName(const String & name);
+	
+	static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
     
 protected:
 

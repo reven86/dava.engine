@@ -44,36 +44,36 @@ void ProcessHelper::RunProcess(const QString& path)
     QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
 }
 
-bool ProcessHelper::GetProcessPSN(const QString& path, ProcessSerialNumber& psn)
-{
-    psn.highLongOfPSN = kNoProcess;
-    psn.lowLongOfPSN = kNoProcess;
+//bool ProcessHelper::GetProcessPSN(const QString& path, ProcessSerialNumber& psn)
+//{
+//    psn.highLongOfPSN = kNoProcess;
+//    psn.lowLongOfPSN = kNoProcess;
 
-    char buffer[400];
-    CFStringRef key = CFSTR("CFBundleExecutable");
+//    char buffer[400];
+//    CFStringRef key = CFSTR("CFBundleExecutable");
 
-    OSStatus status = GetNextProcess(&psn);
-    while (status == 0){
-        CFDictionaryRef processInfoDict =
-            ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
+//    OSStatus status = GetNextProcess(&psn);
+//    while (status == 0){
+//        CFDictionaryRef processInfoDict =
+//            ProcessInformationCopyDictionary(&psn, kProcessDictionaryIncludeAllInformationMask);
 
-        CFStringRef value = (CFStringRef) CFDictionaryGetValue(processInfoDict, key);
+//        CFStringRef value = (CFStringRef) CFDictionaryGetValue(processInfoDict, key);
 
-        CFIndex length = CFStringGetLength(value);
-        CFIndex maxSize =
-            CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
-        CFStringGetCString(value, buffer, maxSize, kCFStringEncodingUTF8);
+//        CFIndex length = CFStringGetLength(value);
+//        CFIndex maxSize =
+//            CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
+//        CFStringGetCString(value, buffer, maxSize, kCFStringEncodingUTF8);
 
-        QString curBundle;
-        curBundle += buffer;
-        if (path.compare(curBundle) == 0)
-            return true;
+//        QString curBundle;
+//        curBundle += buffer;
+//        if (path.compare(curBundle) == 0)
+//            return true;
 
-        status = GetNextProcess(&psn);
-    }
+//        status = GetNextProcess(&psn);
+//    }
 
-    return false;
-}
+//    return false;
+//}
 #endif
 
 #ifdef Q_OS_WIN
@@ -195,8 +195,8 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam)
 
 bool ProcessHelper::IsProcessRuning(const QString& path) {
 #ifdef Q_OS_DARWIN
-    ProcessSerialNumber psn;
-    return ProcessHelper::GetProcessPSN(path, psn);
+//    ProcessSerialNumber psn;
+//    return ProcessHelper::GetProcessPSN(path, psn);
 #elif defined Q_OS_WIN
     quint32 pid = 0;
     return GetProcessID(path, pid);
@@ -206,9 +206,9 @@ bool ProcessHelper::IsProcessRuning(const QString& path) {
 
 void ProcessHelper::SetActiveProcess(const QString& path) {
 #ifdef Q_OS_DARWIN
-    ProcessSerialNumber psn;
-    if (ProcessHelper::GetProcessPSN(path, psn))
-        SetFrontProcess(&psn);
+//    ProcessSerialNumber psn;
+//    if (ProcessHelper::GetProcessPSN(path, psn))
+//        SetFrontProcess(&psn);
 #elif defined Q_OS_WIN
     quint32 pid = 0;
     HWND hWnd = 0;

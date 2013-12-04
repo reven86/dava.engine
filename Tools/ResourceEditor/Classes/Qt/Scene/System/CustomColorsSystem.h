@@ -33,11 +33,11 @@
 
 #include "Entity/SceneSystem.h"
 #include "EditorScene.h"
+#include "LandscapeEditorDrawSystem.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
-class LandscapeEditorDrawSystem;
 
 class CustomColorsSystem: public DAVA::SceneSystem
 {
@@ -45,20 +45,20 @@ public:
 	CustomColorsSystem(Scene* scene);
 	virtual ~CustomColorsSystem();
 	
-	bool EnableLandscapeEditing();
+	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
 	bool IsLandscapeEditingEnabled() const;
 	
 	void Update(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
 	
-	void SetBrushSize(int32 brushSize);
+	void SetBrushSize(int32 brushSize, bool updateDrawSystem = true);
 	int32 GetBrushSize();
 	void SetColor(int32 colorIndex);
 	int32 GetColor();
 
 	void SaveTexture(const FilePath& filePath);
-	void LoadTexture(const FilePath& filePath);
+	void LoadTexture(const FilePath& filePath, bool createUndo = true);
 	FilePath GetCurrentSaveFileName();
 
 protected:
@@ -108,7 +108,9 @@ protected:
 	String GetRelativePathToProjectPath(const FilePath& absolutePath);
 	FilePath GetAbsolutePathFromProjectPath(const String& relativePath);
 
-	bool IsCanBeEnabled();
+	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
+
+	void FinishEditing();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSSYSTEM__) */

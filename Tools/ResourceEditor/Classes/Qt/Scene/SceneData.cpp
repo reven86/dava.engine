@@ -235,7 +235,7 @@ void SceneData::CreateScene(bool createEditorCameras)
         
         ScopedPtr<Entity> node(new Entity());
         node->SetName(ResourceEditor::EDITOR_MAIN_CAMERA);
-        node->AddComponent(new CameraComponent(cam));
+        node->AddComponent(ScopedPtr<CameraComponent> (new CameraComponent(cam)));
         createdScene->AddNode(node);
         createdScene->AddCamera(cam);
         createdScene->SetCurrentCamera(cam);
@@ -251,7 +251,7 @@ void SceneData::CreateScene(bool createEditorCameras)
         
         ScopedPtr<Entity> node2(new Entity());
         node2->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
-        node2->AddComponent(new CameraComponent(cam2));
+        node2->AddComponent(ScopedPtr<CameraComponent> (new CameraComponent(cam2)));
         createdScene->AddNode(node2);
         createdScene->AddCamera(cam2);
         

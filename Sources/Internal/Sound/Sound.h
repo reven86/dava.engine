@@ -55,6 +55,8 @@ public:
 		TYPE_STREAMED
 	};
 
+    virtual int32 Release();
+
 	static Sound * Create(const FilePath & fileName, eType type, const FastName & groupName, int32 priority = 128);
 	static Sound * Create3D(const FilePath & fileName, eType type, const FastName & groupName, int32 priority = 128);
 

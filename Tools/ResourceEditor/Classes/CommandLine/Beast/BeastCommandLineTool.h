@@ -33,6 +33,8 @@
 
 #include "../CommandLineTool.h"
 
+#if defined (__DAVAENGINE_BEAST__)
+
 class BeastCommandLineTool: public CommandLineTool
 {
 public:
@@ -47,10 +49,9 @@ public:
     const DAVA::FilePath & GetScenePathname() const;
     
 protected:
-
     DAVA::FilePath scenePathname;
-    
 };
 
+#endif //#if defined (__DAVAENGINE_BEAST__)
 
 #endif // __BEAST_COMMAND_LINE_TOOL_H__

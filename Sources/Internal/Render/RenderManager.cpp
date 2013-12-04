@@ -99,7 +99,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 
 	fps = 60;
 
-	lockCount = 0;
 	debugEnabled = false;
 	fboViewRenderbuffer = 0;
 	fboViewFramebuffer = 0;
@@ -134,9 +133,14 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
     
-    lastBindedTexture = 0;
-    lastBindedFBO = 0;
+	for(uint32 i  = 0; i < Texture::TEXTURE_TYPE_COUNT; ++i)
+	{
+		lastBindedTexture[i] = 0;
+	}
 	lastBindedTextureType = Texture::TEXTURE_2D;
+	
+    lastBindedFBO = 0;
+	
 #endif //#if defined (__DAVAENGINE_OPENGL__)
     
 	cursor = 0;
@@ -151,6 +155,8 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     FLAT_COLOR = 0;
     TEXTURE_MUL_FLAT_COLOR = 0;
     TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
+	
+	renderContextId = 0;
 }
 	
 RenderManager::~RenderManager()
@@ -209,29 +215,27 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 	currentState.direct3DDevice = GetD3DDevice();
 #endif
     
-    RenderManager::LockNonMain();
 	currentState.Reset(false);
     hardwareState.Reset(true);
 
 #if defined(__DAVAENGINE_OPENGL__)
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)//Dizz: glDisableClientState functions are not supported by GL ES 2.0
-    glDisableClientState(GL_VERTEX_ARRAY);
+    RENDER_VERIFY(glDisableClientState(GL_VERTEX_ARRAY));
     oldVertexArrayEnabled = 0;                      
 
-    glDisableClientState(GL_NORMAL_ARRAY);
+    RENDER_VERIFY(glDisableClientState(GL_NORMAL_ARRAY));
     oldNormalArrayEnabled = 0;                      
 	for (int k = 0; k < RenderState::MAX_TEXTURE_LEVELS; ++k)
     {
-        glClientActiveTexture(GL_TEXTURE0 + k);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0 + k));
+        RENDER_VERIFY(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
         oldTextureCoordArrayEnabled[k] = 0;                
     }
-    glClientActiveTexture(GL_TEXTURE0);
+    RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0));
     
-    glDisableClientState(GL_COLOR_ARRAY);
+    RENDER_VERIFY(glDisableClientState(GL_COLOR_ARRAY));
     oldColorArrayEnabled = 0;                       
 
-    RenderManager::UnlockNonMain();
 #endif    
 #endif
     
@@ -326,8 +330,9 @@ void RenderManager::ResetColor()
 	
 	
 void RenderManager::SetTexture(Texture *texture, uint32 textureLevel)
-{
+{	
     currentState.SetTexture(texture, textureLevel);
+	
 /*  DVASSERT(textureLevel < MAX_TEXTURE_LEVELS);
 	if(texture != currentTexture[textureLevel])
 	{
@@ -408,11 +413,11 @@ void RenderManager::ClipRect(const Rect &rect)
 	Rect r = currentClip;
 	if(r.dx < 0)
 	{
-		r.dx = (float32)retScreenWidth;
+		r.dx = (float32)retScreenWidth * Core::GetPhysicalToVirtualFactor();
 	}
 	if(r.dy < 0)
 	{
-		r.dy = (float32)retScreenHeight;
+		r.dy = (float32)retScreenHeight * Core::GetPhysicalToVirtualFactor();
 	}
 	
 	r = r.Intersection(rect);
@@ -525,35 +530,6 @@ void RenderManager::Lock()
 void RenderManager::Unlock()
 {
 	glMutex.Unlock();
-}
-	
-void RenderManager::LockNonMain()
-{
-	if(!Thread::IsMainThread())
-	{
-		if(!lockCount)
-		{
-			Lock();
-		}
-		lockCount++;
-	}
-}
-	
-int32 RenderManager::GetNonMainLockCount()
-{
-	return lockCount;
-}
-
-void RenderManager::UnlockNonMain()
-{
-	if(!Thread::IsMainThread())
-	{
-		lockCount--;
-		if(!lockCount)
-		{
-			Unlock();
-		}
-	}
 }
 
 void RenderManager::SetFPS(int32 newFps)
@@ -706,36 +682,7 @@ void RenderManager::ClearStats()
     
 void RenderManager::RectFromRenderOrientationToViewport(Rect & rect)
 {
-    switch(renderOrientation)
-    {
-        case Core::SCREEN_ORIENTATION_PORTRAIT:
-            break;
-        case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-            {
-                float32 newX = (float32)frameBufferWidth - (rect.y + rect.dy);
-                float32 newY = (float32)frameBufferHeight - rect.x;
-                float32 newDX = rect.dy;
-                float32 newDY = rect.dx;
-                rect.x = newX;
-                rect.y = newY;
-                rect.dx = newDX;
-                rect.dy = newDY;
-            }
-            break;
-        case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-            {
-                float32 newX = (float32)frameBufferWidth - (rect.y + rect.dy);
-                float32 newY = (float32)frameBufferHeight - rect.x;
-                float32 newDX = rect.dy;
-                float32 newDY = rect.dx;
-                rect.x = newX;
-                rect.y = newY;
-                rect.dx = newDX;
-                rect.dy = newDY;
-            }            
-            break;
-            
-    };
+
 }
 
 const Matrix4 & RenderManager::GetMatrix(eMatrixType type)
@@ -866,5 +813,42 @@ uint32 RenderManager::GetFBOViewFramebuffer() const
     return fboViewFramebuffer;
 }
 
-    
+void RenderManager::SetRenderContextId(uint64 contextId)
+{
+	renderContextId = contextId;
+}
+	
+uint64 RenderManager::GetRenderContextId()
+{
+	return renderContextId;
+}
+	
+void RenderManager::VerifyRenderContext()
+{
+	
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
+	
+#if defined(__DAVAENGINE_WIN32__)
+	uint64 curRenderContext = (uint64)wglGetCurrentContext();
+#elif defined(__DAVAENGINE_MACOS__)
+	uint64 curRenderContext = (uint64)CGLGetCurrentContext();
+#endif
+	
+	//VI: if you see this assert then something wrong happened to
+	//opengl context and current context doesn't match the one that was
+	//stored as a reference context.
+	//It may happen in several cases:
+	//1. This check was performed in another thread without prior updating renderContextId
+	//2. OpenGL context was invalidated and recreated without updating renderContextId
+	//3. Something really bad happened and opengl context was set to thread local storage by external forces
+	//In order to deal with cases 1) and 2) just check app logic and update renderContextId when it's appropriate.
+	//In order to deal with 3) seek for the solution. For example on MacOSX 10.8 NSOpenPanel runs in another process.
+	//And after returning from file selection dialog the opengl context is completely wrong until the end of current event loop.
+	//In order to fix call QApplication::processEvents in case of Qt or equivalent in case of native app or
+	//postpone result processing via delayed selector execution.
+	DVASSERT(curRenderContext == renderContextId);
+	
+#endif
+}
+	
 };

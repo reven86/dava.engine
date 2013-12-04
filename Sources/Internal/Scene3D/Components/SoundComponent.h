@@ -42,9 +42,10 @@ class SoundEvent;
 class SoundUpdateSystem;
 class SoundComponent : public Component
 {
+protected:
+	virtual ~SoundComponent();
 public:
 	SoundComponent();
-	virtual ~SoundComponent();
 
 	IMPLEMENT_COMPONENT_TYPE(SOUND_COMPONENT);
 

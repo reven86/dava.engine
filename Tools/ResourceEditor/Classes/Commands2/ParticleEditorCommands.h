@@ -141,14 +141,13 @@ class CommandUpdateEffect: public CommandAction
 {
 public:
 	CommandUpdateEffect(ParticleEffectComponent* particleEffect);
-	void Init(float32 playbackSpeed, bool stopOnLoad);
+	void Init(float32 playbackSpeed);
 	virtual void Redo();
 
 protected:
 	ParticleEffectComponent* particleEffect;
 
-	float32 playbackSpeed;
-	bool stopOnLoad;
+	float32 playbackSpeed;	
 };
 
 class CommandUpdateEmitter: public CommandAction
@@ -203,12 +202,18 @@ public:
 	CommandUpdateParticleLayer(ParticleEmitter* emitter, ParticleLayer* layer);
 	void Init(const String& layerName,
 			  ParticleLayer::eType layerType,
-			  bool isDisabled,
-			  bool additive,
+			  bool isDisabled,			  
 			  bool inheritPosition,
   			  bool isLong,
+			  float32 scaleVelocityBase,
+			  float32 scaleVelocityFactor,
 			  bool isLooped,
 			  Sprite* sprite,
+			  eBlendMode srcFactor,
+			  eBlendMode dstFactor,
+			  bool enableFog,
+			  bool enableFrameBlending,
+			  int32 particleOrientation,
 			  RefPtr< PropertyLine<float32> > life,
 			  RefPtr< PropertyLine<float32> > lifeVariation,
 			  RefPtr< PropertyLine<float32> > number,
@@ -222,6 +227,7 @@ public:
 			  RefPtr< PropertyLine<float32> > spin,
 			  RefPtr< PropertyLine<float32> > spinVariation,
 			  RefPtr< PropertyLine<float32> > spinOverLife,
+			  bool randomSpinDirection,
 
 			  RefPtr< PropertyLine<Color> > colorRandom,
 			  RefPtr< PropertyLine<float32> > alphaOverLife,
@@ -238,6 +244,8 @@ public:
 			  bool frameOverLifeEnabled,
 			  float32 frameOverLifeFPS,
 			  bool randomFrameOnStart,
+			  bool loopSpriteAnimation,
+			  RefPtr< PropertyLine<float32> > animSpeedOverLife,
 
 			  float32 pivotPointX,
 			  float32 pivotPointY);
@@ -250,11 +258,16 @@ protected:
 	String layerName;
 	ParticleLayer::eType layerType;
 	bool isDisabled;
-	bool isLong;
-	bool additive;
+	bool isLong;	
+	float32 scaleVelocityBase;
+	float32 scaleVelocityFactor;
 	bool inheritPosition;
 	bool isLooped;
 	Sprite* sprite;
+	eBlendMode srcFactor, dstFactor;
+	bool enableFog;
+	bool enableFrameBlending;
+	int32 particleOrientation;
 	RefPtr< PropertyLine<float32> > life;
 	RefPtr< PropertyLine<float32> > lifeVariation;
 	RefPtr< PropertyLine<float32> > number;
@@ -268,11 +281,11 @@ protected:
 	RefPtr< PropertyLine<float32> > spin;
 	RefPtr< PropertyLine<float32> > spinVariation;
 	RefPtr< PropertyLine<float32> > spinOverLife;
+	bool randomSpinDirection;
 
 	RefPtr< PropertyLine<Color> > colorRandom;
 	RefPtr< PropertyLine<float32> > alphaOverLife;
-	RefPtr< PropertyLine<Color> > colorOverLife;
-	RefPtr< PropertyLine<float32> > frameOverLife;
+	RefPtr< PropertyLine<Color> > colorOverLife;	
 	RefPtr< PropertyLine<float32> > angle;
 	RefPtr< PropertyLine<float32> > angleVariation;
 
@@ -285,6 +298,8 @@ protected:
 	bool frameOverLifeEnabled;
 	float32 frameOverLifeFPS;
 	bool randomFrameOnStart;
+	bool loopSpriteAnimation;
+	RefPtr< PropertyLine<float32> > animSpeedOverLife;
 
 	float32 pivotPointX;
 	float32 pivotPointY;

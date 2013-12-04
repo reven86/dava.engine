@@ -47,7 +47,7 @@ public:
      \param[in] scene scene for validation
      \returns true if errors were found
 	 */
-    bool ValidateSceneAndShowErrors(Scene *scene);
+    bool ValidateSceneAndShowErrors(Scene *scene, const DAVA::FilePath &scenePath);
     
 	/*
      \brief Function to validate Particle Emitter upon loading.
@@ -61,7 +61,7 @@ public:
      \param[in] scene scene for validation
      \param[out] errorsLog set for validation erros
 	 */
-    void ValidateScene(Scene *scene, Set<String> &errorsLog);
+    void ValidateScene(Scene *scene, const DAVA::FilePath &scenePath, Set<String> &errorsLog);
     
     /*
      \brief Function to find Scales in models transformations
@@ -140,8 +140,10 @@ protected:
 
     
 	void ValidateLandscapeTexture(Landscape *landscape, Landscape::eTextureLevel texLevel, Set<String> &errorsLog);
+	void ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog);
 
-    
+	bool ValidateColor(Color& color);
+
     int32 EnumerateSceneNodes(Entity *node);
     
 	void ValidateScalesInternal(Entity *sceneNode, Set<String> &errorsLog);

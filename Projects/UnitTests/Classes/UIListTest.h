@@ -46,10 +46,10 @@ using namespace DAVA;
 
 class UIListTestDelegate: public UIControl, public UIListDelegate
 {
-
+protected:
+	virtual ~UIListTestDelegate();
 public:
 	UIListTestDelegate(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	virtual ~UIListTestDelegate();
 
 	// UIListDelegate
     virtual int32 ElementsCount(UIList *list);
@@ -64,7 +64,8 @@ private:
 
 class UIListTest: public TestTemplate<UIListTest>
 {
-
+protected:
+    ~UIListTest(){}
 public:
 	UIListTest();
 

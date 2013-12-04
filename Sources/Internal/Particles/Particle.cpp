@@ -46,7 +46,7 @@ ForceData::ForceData(float32 forceValue, const Vector3& forceDirection, float32 
 
 Particle::Particle()
 {
-    frameLastUpdateTime = 0.0f;
+    animTime = 0.0f;
 	innerParticleEmitter = NULL;
 }
 
@@ -84,27 +84,22 @@ bool Particle::Update(float32 timeElapsed)
 		return false;
 	}
 
-	position += direction * speed * timeElapsed * velocityOverLife;
+	position += speed * timeElapsed * velocityOverLife;
 	angle += spin * timeElapsed * spinOverLife;
 	
 	int32 forcesCount = (int32)forces.size();
-	if(forcesCount > 0)
+	
+	for(int i = 0; i < forcesCount; i++)
 	{
-		Vector3 velocity = direction*speed;
-		for(int i = 0; i < forcesCount; i++)
+		Vector3 newVelocity = forces[i].direction * forces[i].value;
+		if (forces[i].overlifeEnabled)
 		{
-			Vector3 newVelocity = forces[i].direction * forces[i].value;
-			if (forces[i].overlifeEnabled)
-			{
-				newVelocity *= forces[i].overlife;
-			}
-
-			velocity += (newVelocity  * timeElapsed);
+			newVelocity *= forces[i].overlife;
 		}
-		float32 invSqrt = InvSqrtFast(velocity.SquareLength());
-		speed = 1.f/invSqrt;
-		direction = velocity*invSqrt;
+
+		speed += (newVelocity  * timeElapsed);
 	}
+	
 	
 	// In case the particle contains inner emitter - update it too.
 	UpdateInnerEmitter(timeElapsed);
@@ -146,7 +141,9 @@ void Particle::InitializeInnerEmitter(ParticleEmitter* parentEmitter, ParticleEm
 	innerParticleEmitter->SetRenderSystem(parentEmitter->GetRenderSystem());
 	innerParticleEmitter->SetWorldTransformPtr(parentEmitter->GetWorldTransformPtr());
 	innerParticleEmitter->RememberInitialTranslationVector();
-	innerParticleEmitter->SetParentParticle(this);
+	innerParticleEmitter->SetParentParticle(this);		
+	innerParticleEmitter->SetAutoRestart(false);
+	innerParticleEmitter->Play();
 
 	RegisterInnerEmitterInRenderSystem(true);
 }

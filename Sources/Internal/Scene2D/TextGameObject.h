@@ -43,6 +43,8 @@ namespace DAVA
  */
 class TextGameObject : public GameObject
 {
+protected:
+    ~TextGameObject(){}
 public: // from UIStaticText
     TextGameObject(const Rect &rect);
     TextGameObject(const Rect &rect, Font *font, const WideString &string);

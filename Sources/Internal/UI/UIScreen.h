@@ -51,9 +51,10 @@ public:
 		,	FILL_BORDER_AFTER_DRAW
 		,	FILL_BORDER_NONE
 	};
-	
-	UIScreen(const Rect &rect = Rect(0.0f,0.0f,(float32)GetScreenWidth(),(float32)GetScreenHeight()));
+protected:
 	virtual ~UIScreen();
+public:
+	UIScreen(const Rect &rect = Rect(0.0f,0.0f,(float32)GetScreenWidth(),(float32)GetScreenHeight()));
 
 	/**
 	 \brief Sets the fill border ordrer. Borders fills Only when they are present on the screen. You can change filling type by overloading FillScreenBorders method.

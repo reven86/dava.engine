@@ -47,6 +47,8 @@ using namespace DAVA;
 
 class InputTest: public TestTemplate<InputTest>, public UITextFieldDelegate
 {
+protected:
+    ~InputTest(){}
 public:
 	InputTest();
 
@@ -64,7 +66,8 @@ public:
 	
 private:
 	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
-	
+	void DisplayUIControlsSize();
+
 private:
 	UITextField* textField;
 	UITextField* passwordTextField;

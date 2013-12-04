@@ -61,6 +61,7 @@ class UIControlMetadata : public BaseMetadata
 
     Q_PROPERTY(float PivotX READ GetPivotX WRITE SetPivotX);
     Q_PROPERTY(float PivotY READ GetPivotY WRITE SetPivotY);
+    Q_PROPERTY(QPointF Pivot READ GetPivot WRITE SetPivot);
 
     Q_PROPERTY(float Angle READ GetAngle WRITE SetAngle);
 
@@ -143,6 +144,9 @@ protected:
     void SetPivotX(float value);
     float GetPivotY() const;
     void SetPivotY(float value);
+
+    QPointF GetPivot() const;
+    void SetPivot(const QPointF& value);
 
     float GetAngle() const;
     void SetAngle(float value);
@@ -234,7 +238,10 @@ protected:
 	int GetInitialState() const;
 	void SetInitialState(int value);
 
-	virtual void SetActiveControlRect(const Rect& rect);
+	virtual void SetActiveControlRect(const Rect& rect, bool restoreAlign);
+
+	// Refresh the align params.
+	void RefreshAlign();
 
 private:
 	void ResizeScrollViewContent(UIControl *control);

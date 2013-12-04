@@ -52,6 +52,7 @@ void DAEConvertAction::Redo()
 		if(code == COLLADA_OK)
 		{
             ConvertFromSceToSc2();
+			FileSystem::Instance()->DeleteFile(FilePath::CreateWithNewExtension(daePath, ".sce"));
         }
 		else if(code == COLLADA_ERROR_OF_ROOT_NODE)
 		{
@@ -68,7 +69,7 @@ void DAEConvertAction::ConvertFromSceToSc2() const
 {
     Scene *scene = CreateSceneFromSce();
     FilePath sc2Path = FilePath::CreateWithNewExtension(daePath, ".sc2");
-	SceneHelper::SaveScene(scene, sc2Path);
+    scene->Save(sc2Path);
     scene->Release();
 }
 
@@ -79,8 +80,13 @@ DAVA::Scene * DAEConvertAction::CreateSceneFromSce() const
     
     Scene *scene = new Scene();
     Entity *rootNode = scene->GetRootNode(scePath);
-    scene->AddNode(rootNode);
-    scene->BakeTransforms();
+	if(rootNode)
+	{
+		rootNode = rootNode->Clone();
+		scene->AddNode(rootNode);
+		scene->BakeTransforms();
+		rootNode->Release();
+	}
     
     return scene;
 }
@@ -101,8 +107,8 @@ void DAEConvertWithSettingsAction::ConvertFromSceToSc2() const
         
         FilePath newSc2Path = sc2Path;
         newSc2Path.ReplaceBasename(sc2Path.GetBasename() + "_new");
-        SceneHelper::SaveScene(scene, newSc2Path);
-        SafeRelease(scene);
+        scene->Save(newSc2Path);
+        scene->Release();
         
         TryToMergeScenes(sc2Path, newSc2Path);
         
@@ -120,12 +126,9 @@ void DAEConvertWithSettingsAction::TryToMergeScenes(const DAVA::FilePath &origin
     Scene * oldScene = CreateSceneFromSc2(originalPath);
     Scene * newScene = CreateSceneFromSc2(newPath);
     
-    CopyMaterialsSettings(oldScene, newScene);
-    CopyLODSettings(oldScene, newScene);
-	CopyShadowSettings(oldScene, newScene);
-    
-    SceneHelper::SaveScene(newScene, originalPath);
-    
+	CopyGeometryRecursive(newScene, oldScene);
+	oldScene->Save(originalPath);
+
     oldScene->Release();
     newScene->Release();
 }
@@ -137,6 +140,8 @@ DAVA::Scene * DAEConvertWithSettingsAction::CreateSceneFromSc2(const DAVA::FileP
     Entity * rootNode = scene->GetRootNode(scenePathname);
 	if(rootNode)
 	{
+		rootNode = rootNode->Clone();
+
 		Vector<Entity*> tmpEntities;
 		uint32 entitiesCount = (uint32)rootNode->GetChildrenCount();
         
@@ -153,107 +158,90 @@ DAVA::Scene * DAEConvertWithSettingsAction::CreateSceneFromSc2(const DAVA::FileP
 			tmpEntities.push_back(rootNode->GetChild(i));
 		}
         
+
 		// now we can safely add entities into our hierarchy
 		for (uint32 i = 0; i < (uint32) tmpEntities.size(); ++i)
 		{
 			scene->AddNode(tmpEntities[i]);
 		}
 
+		rootNode->Release();
+
         Set<String> errorsLog;
-        SceneValidator::Instance()->ValidateScene(scene, errorsLog);
+        SceneValidator::Instance()->ValidateScene(scene, scenePathname, errorsLog);
 	}
     
     return scene;
 }
 
 
-void DAEConvertWithSettingsAction::CopyMaterialsSettings(DAVA::Scene * srcScene, DAVA::Scene * dstScene)
+void DAEConvertWithSettingsAction::CopyGeometryRecursive( DAVA::Entity *srcEntity, DAVA::Entity *dstEntity )
 {
-    Vector<Material *> srcMaterials = CreateMaterialsVector(srcScene);
-    Vector<Material *> dstMaterials = CreateMaterialsVector(dstScene);
-    
-    if (srcMaterials.size() == dstMaterials.size())
-    {
-        uint32 count = srcMaterials.size();
-        for (uint32 i = 0; i < count; ++i)
-        {
-            if(srcMaterials[i]->GetName() == dstMaterials[i]->GetName())
-            {
-				dstMaterials[i]->CopySettings(srcMaterials[i]);
-            }
-        }
-    }
-}
-
-DAVA::Vector<DAVA::Material *> DAEConvertWithSettingsAction::CreateMaterialsVector(DAVA::Scene *scene)
-{
-    Vector<Material *> materials;
-    SceneHelper::EnumerateMaterials(scene, materials);
-    
-    if(materials.size())
-    {
-        std::sort(materials.begin(), materials.end(), DAEConvertWithSettingsAction::CompareMaterials);
-    }
-    
-    return materials;
-}
-
-bool DAEConvertWithSettingsAction::CompareMaterials(const DAVA::Material *left, const DAVA::Material *right)
-{
-    return (left->GetName() < right->GetName());
-}
-
-
-void DAEConvertWithSettingsAction::CopyLODSettings(DAVA::Scene * srcScene, DAVA::Scene * dstScene)
-{
-    Vector<LodComponent *> srcLODs;
-    EditorLODData::EnumerateLODsRecursive(srcScene, srcLODs);
-
-    Vector<LodComponent *> dstLODs;
-    EditorLODData::EnumerateLODsRecursive(dstScene, dstLODs);
-
-    if(srcLODs.size() == dstLODs.size())
-    {
-        uint32 count = srcLODs.size();
-        for (uint32 i = 0; i < count; ++i)
-        {
-            if(srcLODs[i]->GetEntity()->GetName() == dstLODs[i]->GetEntity()->GetName())
-            {
-                dstLODs[i]->CopyLODSettings(srcLODs[i]);
-            }
-        }
-    }
-}
-
-void DAEConvertWithSettingsAction::CopyShadowSettings( DAVA::Scene * srcScene, DAVA::Scene * dstScene )
-{
-	uint32 srcCount = srcScene->GetChildrenCount();
-	uint32 dstCount = dstScene->GetChildrenCount();
-	if(srcCount == dstCount)
-	{
-		for(uint32 i = 0; i < srcCount; ++i)
-		{
-			CopyShadowSettingsRecursive(srcScene->GetChild(i), dstScene->GetChild(i));
-		}
-	}
-}
-
-
-void DAEConvertWithSettingsAction::CopyShadowSettingsRecursive(const DAVA::Entity * srcEntity, DAVA::Entity * dstEntity )
-{
-	if((srcEntity->GetName() == dstEntity->GetName()) && ConvertToShadowCommand::IsEntityWithShadowVolume(srcEntity))
-	{
-		DAVA::RenderBatch *oldBatch = ConvertToShadowCommand::ConvertToShadowVolume(dstEntity);
-		SafeRelease(oldBatch);
-	}
+	CopyGeometry(srcEntity, dstEntity);
 
 	uint32 srcCount = srcEntity->GetChildrenCount();
 	uint32 dstCount = dstEntity->GetChildrenCount();
-	if(srcCount == dstCount)
+	for(uint32 iSrc = 0, iDst = 0; iSrc < srcCount && iDst < dstCount; )
 	{
-		for(uint32 i = 0; i < srcCount; ++i)
+		Entity * src = srcEntity->GetChild(iSrc);
+		Entity * dst = dstEntity->GetChild(iDst);
+
+		if(src->GetName() == dst->GetName())
 		{
-			CopyShadowSettingsRecursive(srcEntity->GetChild(i), dstEntity->GetChild(i));
+			CopyGeometryRecursive(src, dst);
+			++iSrc;
+			++iDst;
+		}
+		else
+		{
+			++iDst;
 		}
 	}
 }
+
+void DAEConvertWithSettingsAction::CopyGeometry(DAVA::Entity *srcEntity, DAVA::Entity *dstEntity)
+{
+	if(ConvertToShadowCommand::IsEntityWithShadowVolume(dstEntity))
+	{
+		DAVA::RenderBatch *oldBatch = ConvertToShadowCommand::ConvertToShadowVolume(srcEntity);
+		SafeRelease(oldBatch);
+	}
+
+	RenderObject *srcRo = GetRenderObject(srcEntity);
+	RenderObject *dstRo = GetRenderObject(dstEntity);
+	if(srcRo && dstRo)
+	{
+		bool ret = CopyRenderObjects(srcRo, dstRo);
+        if(ret)
+        {
+            dstEntity->SetLocalTransform(srcEntity->GetLocalTransform());
+        }
+		else
+		{
+			Logger::Error("Can't copy geometry from %s to %s", srcEntity->GetName().c_str(), dstEntity->GetName().c_str());
+		}
+	}
+}
+
+
+bool DAEConvertWithSettingsAction::CopyRenderObjects( DAVA::RenderObject *srcRo, DAVA::RenderObject *dstRo )
+{
+	uint32 srcBatchCount = srcRo->GetRenderBatchCount();
+	uint32 dstBatchCount = dstRo->GetRenderBatchCount();
+
+	if(srcBatchCount != dstBatchCount)
+	{
+		return false;
+	}
+
+	for(uint32 i = 0; i < srcBatchCount; ++i)
+	{
+		RenderBatch *srcBatch = srcRo->GetRenderBatch(i);
+		RenderBatch *dstBatch = dstRo->GetRenderBatch(i);
+
+		dstBatch->SetPolygonGroup(srcBatch->GetPolygonGroup());
+	}
+
+	return true;
+}
+

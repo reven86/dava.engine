@@ -44,8 +44,6 @@ public:
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 protected:
-	QIcon lockedIcon;
-
 	void customDraw(QPainter *painter, QStyleOptionViewItem *option, const QModelIndex &index) const;
 };
 

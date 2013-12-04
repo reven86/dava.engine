@@ -54,11 +54,42 @@ void ParticleEffectSystem::Process()
 	}
 }
 
+void ParticleEffectSystem::AddEntity(Entity * entity)
+{
+	BaseProcessSystem::AddEntity(entity);
+	//set global externals
+	ParticleEffectComponent *comp = (ParticleEffectComponent *)entity->GetComponent(processingComponentId);
+	for (Map<String, float32>::iterator it = globalExternalValues.begin(), e = globalExternalValues.end(); it!=e; ++it)
+		comp->SetExtertnalValue((*it).first, (*it).second);
+}
+
 void ParticleEffectSystem::RemoveEntity(Entity * entity)
 {
 	BaseProcessSystem::RemoveEntity(entity);
 	--size;
 	--index;
+}
+
+
+void ParticleEffectSystem::SetGlobalExtertnalValue(const String& name, float32 value)
+{
+	globalExternalValues[name] = value;
+	for (Vector<Component *>::iterator it = components.begin(), e=components.end(); it!=e; ++it)
+		((ParticleEffectComponent *)(*it))->SetExtertnalValue(name, value);
+}
+
+float32 ParticleEffectSystem::GetGlobalExternalValue(const String& name)
+{
+	Map<String, float32>::iterator it = globalExternalValues.find(name);
+	if (it!=globalExternalValues.end())
+		return (*it).second;
+	else
+		return 0.0f;
+}
+
+Map<String, float32> ParticleEffectSystem::GetGlobalExternals()
+{
+	return globalExternalValues;
 }
 
 }

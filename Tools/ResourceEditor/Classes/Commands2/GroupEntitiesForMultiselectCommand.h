@@ -39,7 +39,7 @@
 class GroupEntitiesForMultiselectCommand : public Command2
 {
 public:
-	GroupEntitiesForMultiselectCommand(const EntityGroup* entities);
+	GroupEntitiesForMultiselectCommand(const EntityGroup &entities);
 	virtual ~GroupEntitiesForMultiselectCommand();
 
 	virtual void Undo();
@@ -60,6 +60,8 @@ protected:
 	void MoveEntity(Entity* entity, Vector3& destPoint);
 	Entity* GetEntityWithSolidProp(Entity* en);
 	void GetLodComponentsRecursive(Entity* fromEntity, DAVA::Map<DAVA::Entity*, DAVA::Component*>& hostEntitiesAndComponents);
+    
+    bool IsSelectionValid(const EntityGroup &entities);
 };
 
 #endif // __GROUP_ENTITIES_FOR_MULTISELECT__COMMAND_H__

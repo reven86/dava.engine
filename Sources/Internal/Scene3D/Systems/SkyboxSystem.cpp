@@ -34,6 +34,8 @@
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Entity.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
+#include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 //do not create lower cube face
 const int SKYBOX_VERTEX_COUNT = (5 * 6);
@@ -58,18 +60,9 @@ namespace DAVA
 	
 	void SkyboxSystem::AddEntity(Entity * entity)
 	{
-		DVASSERT(NULL != entity);
-		
-		if(NULL == skyboxEntity &&
-		   NULL != entity)
+		if((NULL == skyboxEntity) && GetSkybox(entity))
 		{
-			RenderComponent* renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
-			SkyboxRenderObject* renderObj = cast_if_equal<SkyboxRenderObject*>(renderComponent->GetRenderObject());
-			
-			if(renderObj)
-			{
-				skyboxEntity = SafeRetain(entity);
-			}
+            skyboxEntity = SafeRetain(entity);
 		}
 	}
 	
@@ -96,21 +89,59 @@ namespace DAVA
 			
 			AABBox3 box = AABBox3(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f));
 			skyboxRenderObject->Initialize(box); //first time initialization
-			skyboxRenderObject->SetTexture("~res:/3d/Skybox/skystub.tex");
 			
 			RenderComponent* renderComponent = new RenderComponent();
 			renderComponent->SetRenderObject(skyboxRenderObject);
-			SafeRelease(skyboxRenderObject);
+			
 			
 			result = new Entity();
 			result->SetName("Skybox");
+
+			result->RemoveComponent(Component::RENDER_COMPONENT);
 			result->AddComponent(renderComponent);
+			renderComponent->Release();
+
 			GetScene()->AddNode(result);
+			
+			Matrix4 * worldTransformPointer = ((TransformComponent*)result->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+			skyboxRenderObject->SetWorldTransformPtr(worldTransformPointer);
+			result->GetScene()->renderSystem->MarkForUpdate(skyboxRenderObject);
+			SafeRelease(skyboxRenderObject);
 			
 			DVASSERT(skyboxEntity);
 			result->Release();
 		}
 		
 		return result;
+	}
+	
+	Entity* SkyboxSystem::GetSkyboxEntity() const
+	{
+		return skyboxEntity;
+	}
+	
+	void SkyboxSystem::Reload()
+	{
+		if(skyboxEntity)
+		{
+			RenderComponent* renderComponent = static_cast<RenderComponent*>(skyboxEntity->GetComponent(Component::RENDER_COMPONENT));
+			SkyboxRenderObject* renderObj = cast_if_equal<SkyboxRenderObject*>(renderComponent->GetRenderObject());
+			
+			if(renderObj &&
+			   renderObj->GetRenderBatchCount() > 0)
+			{
+				RenderBatch* renderBatch = renderObj->GetRenderBatch(0);
+				Material* material = renderBatch->GetMaterial();
+				
+				if(material)
+				{
+					Texture* texture = material->GetTexture(Material::TEXTURE_DIFFUSE);
+					if(texture)
+					{
+						texture->Reload();
+					}
+				}
+			}
+		}
 	}
 };

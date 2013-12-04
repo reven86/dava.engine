@@ -35,6 +35,8 @@ namespace DAVA
 
 class NamedAnimationList : public BaseObject
 {
+protected:
+    ~NamedAnimationList(){}
 public:
 	struct CompoundAnimation
 	{

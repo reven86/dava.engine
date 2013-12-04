@@ -53,8 +53,11 @@ class SceneEditor2;
 class DAVAUI3DView;
 class MainTabBar;
 
+class ScenePreviewDialog;
+
 Q_DECLARE_METATYPE(SceneEditor2 *);
 
+class Request;
 class SceneTabWidget : public QWidget
 {
 	Q_OBJECT
@@ -74,11 +77,24 @@ public:
 	SceneEditor2* GetCurrentScene() const;
 	SceneEditor2* GetTabScene(int index) const;
 
+	void ShowScenePreview(const DAVA::FilePath &scenePath);
+	void HideScenePreview();
+    
+    void AddToolWidget(QWidget *widget);
+
+	DavaGLWidget * GetDavaWidget() const;
+
+signals:
+    
+    void CloseTabRequest(int index, Request *closeRequest);
+	void Escape();
+    
 public slots:
 	// this slot redirects any UIEvent to the active sceneProxy for processing
 	void ProcessDAVAUIEvent(DAVA::UIEvent *event);
 	void TabBarCurrentChanged(int index);
 	void TabBarCloseRequest(int index);
+	void TabBarCloseCurrentRequest();
 	void TabBarDataDropped(const QMimeData *data);
 	void DAVAWidgetDataDropped(const QMimeData *data);
 
@@ -95,13 +111,24 @@ protected:
 	const int davaUIScreenID;
 	const int dava3DViewMargin;
 
+	QWidget *toolWidgetContainer;
+	QLayout *toolWidgetLayout;
+
 	void InitDAVAUI();
 	void ReleaseDAVAUI();
 	void UpdateTabName(int index);
+	void UpdateToolWidget();
 
 	void SetTabScene(int index, SceneEditor2* scene);
 
-	virtual void resizeEvent(QResizeEvent * event);
+	virtual bool eventFilter(QObject *object, QEvent *event);
+	virtual void dragEnterEvent(QDragEnterEvent *event);
+	virtual void dropEvent(QDropEvent *event);
+	virtual void keyReleaseEvent(QKeyEvent * event);
+
+	ScenePreviewDialog *previewDialog;
+
+	int FindTab(const DAVA::FilePath & scenePath);
 
 private:
 	int newSceneCounter;

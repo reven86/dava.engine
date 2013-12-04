@@ -49,6 +49,7 @@ public:
 	bool CanUndo() const;
 
 	void Clear();
+	void Clear(int commandId);
 	
 	void Undo();
 	void Redo();
@@ -60,8 +61,14 @@ public:
 	bool IsClean() const;
 	void SetClean(bool clean);
 
+	size_t GetCleanIndex() const;
+	size_t GetNextIndex() const;
+
 	size_t GetUndoLimit() const;
 	void SetUndoLimit(size_t limit);
+
+	size_t GetCount() const;
+	const Command2* GetCommand(size_t index) const;
 
 protected:
 	DAVA::List<Command2 *> commandList;
@@ -74,13 +81,13 @@ protected:
 	CommandStackNotify *stackCommandsNotify;
 
 	void ExecInternal(Command2 *command, bool runCommand);
+	Command2* GetCommandInternal(size_t index) const;
 
 	void ClearRedoCommands();
 	void ClearLimitedCommands();
+	void ClearCommand(size_t index);
 
 	void CleanCheck();
-
-	Command2* GetCommand(size_t index);
 	void CommandExecuted(const Command2 *command, bool redo);
 };
 

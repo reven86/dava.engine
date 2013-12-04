@@ -37,6 +37,8 @@ namespace DAVA
 {
 	class UIAggregatorControl : public UIControl
 	{
+	protected:
+		~UIAggregatorControl(){}
 	public:
 		UIAggregatorControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 		virtual UIControl *Clone();

@@ -56,11 +56,10 @@ protected:
     static const float32 SLIDER_WIDTH;
     static const float32 TEXTFIELD_WIDTH;
     static const float32 TEXT_WIDTH;
-    
+    virtual ~LandscapeToolsPanel();
 public:
     LandscapeToolsPanel(LandscapeToolsPanelDelegate *newDelegate, const Rect & rect);
 	LandscapeToolsPanel(const Rect & rect); // for custom panels
-    virtual ~LandscapeToolsPanel();
     
     virtual void WillAppear();
     virtual void Input(UIEvent *currentInput);

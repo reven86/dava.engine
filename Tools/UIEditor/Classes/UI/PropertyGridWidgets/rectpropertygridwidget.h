@@ -52,6 +52,9 @@ protected:
     virtual void OnPropertiesChangedFromExternalSource();
 	virtual void HandleChangePropertySucceeded(const QString& propertyName);
 
+protected slots:
+	void OnCenterPivotPointButtonClicked();
+
 private:
     Ui::RectPropertyGridWidget *ui;
 	void UpdateWidgetStates(bool updateHorizontalWidgets = true);

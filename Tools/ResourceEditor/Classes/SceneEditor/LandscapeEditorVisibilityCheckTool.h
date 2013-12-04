@@ -53,11 +53,10 @@ class LandscapeEditorVisibilityCheckTool
     ,   public LandscapeEditorPropertyControlDelegate
 
 {
-    
-public:
-    
-    LandscapeEditorVisibilityCheckTool(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl, const Rect &toolsRect);
+protected:
     virtual ~LandscapeEditorVisibilityCheckTool();
+public:
+    LandscapeEditorVisibilityCheckTool(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl, const Rect &toolsRect);
     
 	virtual void Draw(const UIGeometricData &geometricData);
 

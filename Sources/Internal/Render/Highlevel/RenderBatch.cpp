@@ -42,7 +42,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(RenderBatch)
     
 RenderBatch::RenderBatch()
     :   ownerLayer(0)
@@ -59,6 +58,7 @@ RenderBatch::RenderBatch()
     materialInstance = new InstanceMaterialState();
     ownerLayerName = INHERIT_FROM_MATERIAL;
 	visiblityCriteria = RenderObject::VISIBILITY_CRITERIA;
+	aabbox = AABBox3(Vector3(), Vector3());
 }
     
 RenderBatch::~RenderBatch()
@@ -107,7 +107,7 @@ void RenderBatch::Draw(Camera * camera)
 	
     Matrix4 finalMatrix = (*worldTransformPtr) * camera->GetMatrix();
     RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, finalMatrix);
-    material->Draw(dataSource,  materialInstance);
+    material->Draw(dataSource,  materialInstance, worldTransformPtr);
 }
     
     

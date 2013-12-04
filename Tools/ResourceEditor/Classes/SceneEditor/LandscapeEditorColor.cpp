@@ -133,7 +133,6 @@ void LandscapeEditorColor::CreateMaskFromTexture(Texture *tex)
     
     if(tex)
     {
-        RenderManager::Instance()->LockNonMain();
         RenderManager::Instance()->SetBlendMode(BLEND_ONE, BLEND_ZERO);
         
         Sprite *oldMask = Sprite::CreateFromTexture(tex, 0, 0, (float32)tex->width, (float32)tex->height);
@@ -149,8 +148,6 @@ void LandscapeEditorColor::CreateMaskFromTexture(Texture *tex)
         RenderManager::Instance()->RestoreRenderTarget();
         
         SafeRelease(oldMask);
-        
-        RenderManager::Instance()->UnlockNonMain();
     }
     
 	workingLandscape->SetTexture(Landscape::TEXTURE_TILE_MASK, oldMaskSprite->GetTexture());
@@ -430,7 +427,7 @@ void LandscapeEditorColor::RecreateHeightmapNode()
 
 bool LandscapeEditorColor::SetScene(EditorScene *newScene)
 {
-    EditorLandscape *editorLandscape = dynamic_cast<EditorLandscape *>(newScene->GetLandscape(newScene));
+    EditorLandscape *editorLandscape = dynamic_cast<EditorLandscape *>(FindLandscape(newScene));
     if(editorLandscape)
     {
         ShowErrorDialog(String("Cannot start tile mask editor. Remove EditorLandscape from scene"));

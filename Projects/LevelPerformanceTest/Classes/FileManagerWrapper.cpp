@@ -33,16 +33,16 @@ using namespace DAVA;
 
 const Vector<String> FileManagerWrapper::GetFileListByExtension(const String& path, const String& ext, int32 maxLevel)
 {
-    FileList fileList(path);
+    ScopedPtr<FileList> fileList( new FileList(path) );
 
     Vector<String> list;
-    for(int32 i = 0; i < fileList.GetCount(); ++i)
+    for(int32 i = 0; i < fileList->GetCount(); ++i)
     {
-        if(fileList.IsDirectory(i))
+        if(fileList->IsDirectory(i))
 		{
 			if (maxLevel > 0)
 			{
-				String subDirName = fileList.GetFilename(i) + "/";
+				String subDirName = fileList->GetFilename(i) + "/";
 				if (subDirName == "./" || subDirName == "../")
 				{
 					continue;
@@ -60,7 +60,7 @@ const Vector<String> FileManagerWrapper::GetFileListByExtension(const String& pa
 			}
 		}
 
-        String curFileName = fileList.GetFilename(i);
+        String curFileName = fileList->GetFilename(i);
         int32 dotIndex = curFileName.rfind('.');
         if(dotIndex != String::npos)
         {

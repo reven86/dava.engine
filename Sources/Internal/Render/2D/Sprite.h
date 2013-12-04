@@ -231,6 +231,8 @@ public:
 		\brief Function to get rect & offset of sprite frame position in texture
 	 */
 	float32 GetRectOffsetValueForFrame(int32 frame, eRectsAndOffsets valueType) const;
+	const float32 * GetFrameVerticesForFrame(int32 frame) const;
+	const float32 * GetTextureCoordsForFrame(int32 frame) const;
 
 	/** 
 		\brief Access to texCoords private field

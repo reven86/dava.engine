@@ -75,9 +75,12 @@ public:
 		STATE_FINISHED		= 1 << 3,	
 		STATE_PAUSED		= 1 << 4
 	};
-	
-	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0); 
+
+protected:
 	virtual ~Animation();
+
+public:
+	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0); 
 	
 	virtual void	Reset();				
 	virtual void	Start(int _groupId);

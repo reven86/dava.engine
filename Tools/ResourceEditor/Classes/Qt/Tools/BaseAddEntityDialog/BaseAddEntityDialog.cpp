@@ -26,14 +26,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "BaseAddEntityDialog.h"
 #include "ui_BaseAddEntityDialog.h"
 #include "Qt/Main/QtUtils.h"
 #include <QSizePolicy>
+#include <Qlabel>
+#include "QScrollBar.h"
+#include "Scene/System/BeastSystem.h"
 
-BaseAddEntityDialog::BaseAddEntityDialog(QWidget* parent)
+
+#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
+#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataKeyedArchiveMember.h"
+#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
+#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
+#include "Main/mainwindow.h"
+
+BaseAddEntityDialog::BaseAddEntityDialog(QWidget* parent, QDialogButtonBox::StandardButtons buttons)
 :	QDialog(parent),
 	entity(NULL),
 	ui(new Ui::BaseAddEntityDialog)
@@ -41,49 +49,100 @@ BaseAddEntityDialog::BaseAddEntityDialog(QWidget* parent)
 	ui->setupUi(this);
 	setAcceptDrops(false);
 	setWindowModality(Qt::NonModal);
-	setWindowFlags(WINDOWFLAG_ON_TOP_OF_APPLICATION);	
-	setAttribute( Qt::WA_MacAlwaysShowToolWindow);// on top of all applications
+	setWindowFlags(WINDOWFLAG_ON_TOP_OF_APPLICATION | Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint);	
+	setAttribute( Qt::WA_MacAlwaysShowToolWindow); // on top of all applications
+
+	propEditor = ui->propertyEditor;
+	propEditor->setMouseTracking(false);
+	propEditor->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	propEditor->setTabKeyNavigation(false);
+	propEditor->setAlternatingRowColors(true);
+	propEditor->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+	propEditor->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+	propEditor->setIndentation(16);
+	propEditor->SetEditTracking(true);
+	connect(propEditor, SIGNAL(PropertyEdited(const QString &, QtPropertyData *)), this, SLOT(OnItemEdited(const QString &, QtPropertyData *)));
+
+	ui->buttonBox->setStandardButtons(buttons);
+    
+    connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
 }
 
 BaseAddEntityDialog::~BaseAddEntityDialog()
 {
-	delete ui;
+	propEditor->RemovePropertyAll();
 	SafeRelease(entity);
+
+	for(DAVA::Map<QWidget*, QWidget*>::iterator it = additionalWidgetMap.begin(); it != additionalWidgetMap.end(); ++it)
+	{
+		delete it->second;
+	}
+	additionalWidgetMap.clear();
+
+	delete ui;
 }
 
-void BaseAddEntityDialog::showEvent ( QShowEvent * event )
+void BaseAddEntityDialog::showEvent(QShowEvent * event)
 {
 	QDialog::showEvent(event);
-	if(!entity)
-	{
-		return;
-	}
-	PropertyEditor* pEditor = ui->propEditor;
-	pEditor->SetNode(entity);
-	pEditor->expandAll();
-	int height= ui->verticalLayout->sizeHint().height();
-	QRect rect = geometry();
-	rect.setHeight(height);
-	setMinimumHeight(height);
-	setGeometry(rect);
+	propEditor->expandAll();
+	PerformResize();
 }
 
-void BaseAddEntityDialog::hideEvent ( QHideEvent * event )
+void BaseAddEntityDialog::PerformResize()
 {
-	QDialog::hideEvent(event);
-	ui->propEditor->SetNode(NULL);
+	QList<int> sizes;
+	sizes.push_back(geometry().height() - ui->scrollAreaWidgetContents_2->geometry().height() - ui->buttonBox->height() - layout()->spacing() * 4);
+	sizes.push_back(ui->scrollAreaWidgetContents_2->geometry().height());
+	ui->splitter->setSizes(sizes);
+}
+
+QtPropertyData* BaseAddEntityDialog::AddInspMemberToEditor(void *object, const DAVA::InspMember * member)
+{
+	int flags = DAVA::I_VIEW | DAVA::I_EDIT;
+	QtPropertyData* propData = QtPropertyDataIntrospection::CreateMemberData(object, member, flags);
+	propEditor->AppendProperty(member->Name(), propData);
+	return propData;
+}
+
+QtPropertyData* BaseAddEntityDialog::AddKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key, const DAVA::String& rowName)
+{
+	QtPropertyData*  propData = new QtPropertyKeyedArchiveMember(_archive, _key);
+	propEditor->AppendProperty(rowName.c_str(), propData);
+	return propData;
+}
+
+QtPropertyData* BaseAddEntityDialog::AddMetaObject(void *_object, const DAVA::MetaInfo *_meta, const String& rowName)
+{
+	QtPropertyData*  propData = new QtPropertyDataMetaObject( _object, _meta);
+	propEditor->AppendProperty(rowName.c_str(), propData);
+	return propData;
 }
 
 void BaseAddEntityDialog::SetEntity(DAVA::Entity* _entity)
 {
 	SafeRelease(entity);
-	
-	entity = _entity;
-	SafeRetain(entity);
-	if(entity)
+	entity = SafeRetain(_entity);
+}
+
+void BaseAddEntityDialog::AddButton( QWidget* widget, eButtonAlign orientation)
+{
+	switch (orientation)
 	{
-		setWindowTitle(QString("Add ") + QString(entity->GetName().c_str()));
+		case BUTTON_ALIGN_LEFT:
+			ui->lowerLayOut->insertWidget(0, widget);
+			break;
+		case BUTTON_ALIGN_RIGHT:
+			ui->lowerLayOut->addWidget(widget);
+			break;
+		default:
+			break;
 	}
+}
+
+DAVA::Entity* BaseAddEntityDialog::GetEntity()
+{
+	return entity;
 }
 
 void BaseAddEntityDialog::AddControlToUserContainer(QWidget* widget)
@@ -91,28 +150,48 @@ void BaseAddEntityDialog::AddControlToUserContainer(QWidget* widget)
 	ui->userContentLayout->addWidget(widget);
 }
 
+
+void BaseAddEntityDialog::AddControlToUserContainer(QWidget* widget, const DAVA::String& labelString)
+{
+	QLabel* label = new QLabel(labelString.c_str(),this);
+	int rowCount = ui->userContentLayout->rowCount();
+	ui->userContentLayout->addWidget(label, rowCount, 0);
+	ui->userContentLayout->addWidget(widget, rowCount, 1);
+	additionalWidgetMap[widget] = label;
+}
+
 void BaseAddEntityDialog::RemoveControlFromUserContainer(QWidget* widget)
 {
-	setMinimumHeight(minimumHeight() - widget->height());
 	ui->userContentLayout->removeWidget(widget);
+	if(additionalWidgetMap.find(widget) != additionalWidgetMap.end())
+	{
+		QWidget* additionalWidget = additionalWidgetMap[widget];
+		additionalWidgetMap.erase(additionalWidgetMap.find(widget));
+		delete additionalWidget;
+	}
 }
 
 void BaseAddEntityDialog::RemoveAllControlsFromUserContainer()
 {
-	QVBoxLayout* container = ui->userContentLayout;
+	QLayout* container = ui->userContentLayout;
 	while (QLayoutItem* item = container->takeAt(0))
 	{
 		if (QWidget* widget = item->widget())
 		{
 			container->removeWidget( widget);
-			setMinimumHeight(minimumHeight() - widget->height());
+			if(additionalWidgetMap.find(widget) != additionalWidgetMap.end())
+			{
+				QWidget* additionalWidget = additionalWidgetMap[widget];
+				additionalWidgetMap.erase(additionalWidgetMap.find(widget));
+				delete additionalWidget;
+			}
 		}
 	}
 }
 
 void BaseAddEntityDialog::GetIncludedControls(QList<QWidget*>& includedWidgets)
 {
-	QVBoxLayout* container = ui->userContentLayout;
+	QLayout* container = ui->userContentLayout;
 	for (int i = 0; i < container->count(); ++i)
 	{
 		QWidget* child = container->itemAt(i)->widget();
@@ -123,3 +202,23 @@ void BaseAddEntityDialog::GetIncludedControls(QList<QWidget*>& includedWidgets)
 	}
 }
 
+void BaseAddEntityDialog::OnItemEdited(const QString &name, QtPropertyData *data)
+{
+	Command2 *command = (Command2 *) data->CreateLastCommand();
+	if(NULL != command)
+	{
+		SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+		if(NULL != curScene)
+		{
+			curScene->Exec(command);
+		}
+	}
+}
+
+void BaseAddEntityDialog::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+{
+    if(propEditor)
+    {
+        propEditor->Update();
+    }
+}

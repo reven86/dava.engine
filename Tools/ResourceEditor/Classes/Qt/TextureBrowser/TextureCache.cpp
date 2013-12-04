@@ -36,7 +36,10 @@ DAVA::Vector<QImage> TextureCache::getOriginal(const DAVA::TextureDescriptor *de
 
 	if(NULL != descriptor && cacheOriginal.contains(descriptor))
 	{
-		images = cacheOriginal[descriptor];
+		// update weight for this cached
+		cacheOriginal[descriptor].weight = curOriginalWeight++;
+
+		images = cacheOriginal[descriptor].images;
 	}
 
 	return images;
@@ -50,7 +53,10 @@ DAVA::Vector<QImage> TextureCache::getConverted(const DAVA::TextureDescriptor *d
 		gpu > DAVA::GPU_UNKNOWN && gpu < DAVA::GPU_FAMILY_COUNT &&
 		cacheConverted[gpu].contains(descriptor))
 	{
-		images = cacheConverted[gpu][descriptor];
+		// update weight for this cached
+		cacheConverted[gpu][descriptor].weight = curConvertedWeight[gpu]++;
+
+		images = cacheConverted[gpu][descriptor].images;
 	}
 
 	return images;
@@ -66,7 +72,23 @@ void TextureCache::setOriginal(const DAVA::TextureDescriptor *descriptor, DAVA::
 			tmpImages.push_back(images[i]);
 		}
 		
-		cacheOriginal[descriptor] = tmpImages;
+		cacheOriginal[descriptor] = CacheEntity(tmpImages, curOriginalWeight++);
+
+		// reached max count
+		if(cacheOriginal.size() > maxOrigCount)
+		{
+			int weightToRemove = curOriginalWeight - maxOrigCount;
+			
+			QMapIterator<const DAVA::TextureDescriptor*, CacheEntity> iter(cacheOriginal);
+			while(iter.hasNext())
+			{
+				iter.next();
+				if(iter.value().weight < weightToRemove)
+				{
+					cacheOriginal.remove(iter.key());
+				}
+			}
+		}
 	}
 }
 
@@ -81,7 +103,23 @@ void TextureCache::setConverted(const DAVA::TextureDescriptor *descriptor, DAVA:
 			tmpImages.push_back(images[i]);
 		}
 
-		cacheConverted[gpu][descriptor] = tmpImages;
+		cacheConverted[gpu][descriptor] = CacheEntity(tmpImages, curConvertedWeight[gpu]++);
+
+		// reached max count
+		if(cacheConverted[gpu].size() > maxConvertedCount)
+		{
+			int weightToRemove = curConvertedWeight[gpu] - maxConvertedCount;
+
+			QMapIterator<const DAVA::TextureDescriptor*, CacheEntity> iter(cacheConverted[gpu]);
+			while(iter.hasNext())
+			{
+				iter.next();
+				if(iter.value().weight < weightToRemove)
+				{
+					cacheConverted[gpu].remove(iter.key());
+				}
+			}
+		}
 	}
 }
 

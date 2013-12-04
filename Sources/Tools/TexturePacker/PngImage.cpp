@@ -57,11 +57,7 @@ bool PngImageExt::Read(const FilePath & filename)
     int32 retCode = LibPngWrapper::ReadPngFile(filename, internalData, FORMAT_RGBA8888);
     if(1 != retCode)
     {
-        if (CommandLineParser::Instance()->GetVerbose())
-        {
-            Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
-        }
-
+        Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
         SafeRelease(internalData);
     }
     
@@ -144,9 +140,9 @@ void PngImageExt::DrawImage(int32 sx, int32 sy, PngImageExt * image)
     for (uint32 y = 0; y < image->GetHeight(); ++y)
 		for (uint32 x = 0; x < image->GetWidth(); ++x)
 		{
-			if ((sx + x) < 0)continue;
+			if (int32(sx + x) < 0)continue;
 			if ((sx + x) >= (int32)GetWidth())continue;
-			if ((sy + y) < 0)continue;
+			if (int32(sy + y) < 0)continue;
 			if ((sy + y) >= (int32)GetHeight())continue;
 			
 			uint32 srcRead  = srcData32[x + y * image->GetWidth()];

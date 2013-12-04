@@ -45,9 +45,10 @@ using namespace DAVA;
 
 class GridControl : public UIControl
 {
+protected:
+	~GridControl();
 public:	
 	GridControl();
-	~GridControl();
 	
 	virtual void WillAppear();
 	virtual void Update(float32 timeElapsed);
@@ -56,9 +57,10 @@ public:
 
 class PropertyLineEditControl : public UIControl
 {
+protected:
+	~PropertyLineEditControl();
 public:
 	PropertyLineEditControl();
-	~PropertyLineEditControl();
 	
 	
 	virtual void Update(float32 timeElapsed);

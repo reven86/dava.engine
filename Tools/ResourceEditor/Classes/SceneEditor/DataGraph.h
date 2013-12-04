@@ -38,10 +38,10 @@ using namespace DAVA;
 
 class DataGraph: public GraphBase
 {
-    
+protected:
+    virtual ~DataGraph();
 public:
     DataGraph(GraphBaseDelegate *newDelegate, const Rect &rect);
-    virtual ~DataGraph();
     
     virtual void SelectNode(BaseObject *node);
     virtual void UpdatePropertyPanel();

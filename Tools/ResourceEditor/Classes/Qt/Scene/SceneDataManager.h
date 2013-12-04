@@ -55,18 +55,6 @@ public:
 	// Create the new scene.
 	SceneData* CreateNewScene();
 
-	// Add the new scene.
-	Entity* AddScene(const FilePath &scenePathname);
-
-	// Edit the existing level scene.
-	void EditLevelScene(const FilePath &scenePathname);
-
-	// Edit the active scene.
-	void EditActiveScene(const FilePath &scenePathname);
-
-	// Reload the scene.
-	void ReloadScene(const FilePath &scenePathname, const FilePath &newScenePathname);
-
 	DAVA::Entity*	SceneGetSelectedNode(SceneData *scene);
 	DAVA::Entity*	SceneGetRootNode(SceneData *scene);
 	SceneData*			SceneGetActive();
@@ -131,12 +119,6 @@ protected:
 	void RestoreTexture(const DAVA::FilePath &descriptorPathname, DAVA::Texture *texture);
 	void CompressTextures(const List<Texture *> texturesForCompression, DAVA::eGPUFamily forGPU);
 
-	// Edit Scene implementation for any kind of scenes.
-	void EditScene(SceneData* sceneData, const FilePath &scenePathname);
-
-	// Reload the scene node in a recursive way.
-	void ReloadNode(EditorScene* scene, Entity *node, const FilePath &nodePathname, const FilePath &fromPathname, Set<String> &errors);
-
 	// Update the Particle Editor sprites.
 	void UpdateParticleSprites();
 
@@ -156,11 +138,6 @@ protected:
     };
 	
     DAVA::Vector<AddedNode> nodesToAdd;
-    
-    //Deprecated
-public:
-    void SceneShowPreview(const FilePath &path);
-    void SceneHidePreview();
 };
 
 #endif // __SCENE_DATA_MANAGER_H__

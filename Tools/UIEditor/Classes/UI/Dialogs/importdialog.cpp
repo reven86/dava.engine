@@ -301,30 +301,30 @@ HierarchyTreeNode::HIERARCHYTREENODEID ImportDialog::GetPlatformId()
 
 Vector<String> ImportDialog::GetDirectoryContent(const FilePath& path, bool getFiles, const String& fileMask, bool removeExtension)
 {
-	FileList fileList(path);
-	fileList.Sort();
+	ScopedPtr<FileList> fileList( new FileList(path) );
+	fileList->Sort();
 	
 	Vector<String> list;
-	for (int32 i = 0; i < fileList.GetCount(); ++i)
+	for (int32 i = 0; i < fileList->GetCount(); ++i)
 	{
-		String s = fileList.GetFilename(i);
-		bool isDirectory = fileList.IsDirectory(i);
+		String s = fileList->GetFilename(i);
+		bool isDirectory = fileList->IsDirectory(i);
 		
 		if (isDirectory && !getFiles)
 		{
-			if (!fileList.IsNavigationDirectory(i))
+			if (!fileList->IsNavigationDirectory(i))
 			{
 				list.push_back(s);
 			}
 		}
 		else if (!isDirectory && getFiles)
 		{
-			String ext = fileList.GetPathname(i).GetExtension();
+			String ext = fileList->GetPathname(i).GetExtension();
 			if (ext == fileMask)
 			{
 				if (removeExtension)
 				{
-					s = fileList.GetPathname(i).GetBasename();
+					s = fileList->GetPathname(i).GetBasename();
 				}
 				list.push_back(s);
 			}

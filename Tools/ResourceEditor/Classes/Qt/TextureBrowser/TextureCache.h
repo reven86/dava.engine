@@ -53,8 +53,28 @@ public:
 	void clearConverted(const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu);
 
 private:
-	QMap<const DAVA::TextureDescriptor*, DAVA::Vector<QImage> > cacheOriginal;
-	QMap<const DAVA::TextureDescriptor*, DAVA::Vector<QImage> > cacheConverted[DAVA::GPU_FAMILY_COUNT];
+	struct CacheEntity
+	{
+		CacheEntity()
+			: weight(0)
+		{ }
+
+		CacheEntity(const DAVA::Vector<QImage> _images, int _weight)
+			: images(_images), weight(_weight)
+		{ }
+
+		DAVA::Vector<QImage> images;
+		size_t weight;
+	};
+
+	size_t curOriginalWeight;
+	size_t curConvertedWeight[DAVA::GPU_FAMILY_COUNT];
+
+	static const size_t maxOrigCount = 20;
+	static const size_t maxConvertedCount = 7; // per gpu
+
+	QMap<const DAVA::TextureDescriptor*, CacheEntity> cacheOriginal;
+	QMap<const DAVA::TextureDescriptor*, CacheEntity> cacheConverted[DAVA::GPU_FAMILY_COUNT];
 };
 
 #endif // __TEXTURE_CACHE_H__

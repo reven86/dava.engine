@@ -61,7 +61,7 @@ const int AlignTest::alignTypesData[] =
 };
 
 AlignTest::AlignTest():
-TestTemplate<AlignTest>("SplitTest"),
+TestTemplate<AlignTest>("AlignTest"),
 	currentAlignIndex(0),
 	currenTestIndex(0),
 	data(NULL)
@@ -79,8 +79,15 @@ TestTemplate<AlignTest>("SplitTest"),
 
 void AlignTest::LoadResources()
 {
-    font = FTFont::Create("~res:/Fonts/korinna.ttf");		
-  
+	// DF-1627 - Always set black background for this test for Windows - all screenshots should be the same
+#ifdef __DAVAENGINE_WIN32__
+	GetBackground()->SetColor(Color::Black());
+	GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+#endif
+
+    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");		
+    DVASSERT(font);
+
     staticText = new UIStaticText();
     staticText->SetRect(Rect(10.f, 10.f, 400.f, 200.f));
 	staticText->SetTextColor(Color::White());
@@ -96,6 +103,8 @@ void AlignTest::LoadResources()
     staticText2->SetFont(font);
 	staticText2->SetText(controlText);
 	AddControl(staticText2);
+
+	SafeRelease(font);
 }
 
 void AlignTest::UnloadResources()
@@ -103,7 +112,6 @@ void AlignTest::UnloadResources()
 	RemoveAllControls();
     SafeRelease(staticText);
     SafeRelease(staticText2);
-    SafeRelease(font);
 }
 
 void AlignTest::MultilineEnable(PerfFuncData * testData)
@@ -174,7 +182,7 @@ void AlignTest::OnScreenShot(Image *testImage)
 {
 	//Use this code to generate new reference screenshots
 //	FilePath workingPath = FileSystem::Instance()->GetCurrentWorkingDirectory();
-//	ImageLoader::Save(testImage,workingPath + Format("Data/TestData/AlignTest/Win32/test%d.png", currenTestIndex));
+//	ImageLoader::Save(testImage, workingPath + Format("Data/test%d.png", currenTestIndex));
 	VerifyTestImage(testImage);
 }
 
@@ -197,7 +205,6 @@ void AlignTest::VerifyTestImage(Image *testImage)
 				
 		differencePersentage = ((float32)result.difference / ((float32)result.bytesCount * 256.f)) * 100.f;
 	}
-
 	// Verify compare results
 	if (data)
 	{

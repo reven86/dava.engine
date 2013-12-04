@@ -33,7 +33,6 @@
 namespace DAVA 
 {
 
-REGISTER_CLASS(ProxyNode);
     
 ProxyNode::ProxyNode()
     : DataNode()

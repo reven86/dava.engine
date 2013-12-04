@@ -40,9 +40,10 @@ class HierarchyTreeNode;
 
 class ScreenControl: public UIControl
 {
+protected:
+	~ScreenControl();
 public:
 	ScreenControl();
-	~ScreenControl();
 	
 	virtual bool IsPointInside(const Vector2& point, bool expandWithFocus);
 };

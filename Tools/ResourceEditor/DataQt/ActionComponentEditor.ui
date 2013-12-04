@@ -39,6 +39,11 @@
    </attribute>
    <column>
     <property name="text">
+     <string>EventType</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
      <string>Action Type</string>
     </property>
    </column>

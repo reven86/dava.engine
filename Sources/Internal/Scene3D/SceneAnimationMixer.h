@@ -40,9 +40,10 @@ namespace DAVA
 
 class SceneAnimationMixer : public BaseObject
 {
+protected:
+	~SceneAnimationMixer();
 public:
 	SceneAnimationMixer(Scene * scene);
-	~SceneAnimationMixer();
 	
 	// void SetTimeMultiplier(float32 timeMult);
 	

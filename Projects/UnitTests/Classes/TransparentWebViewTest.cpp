@@ -42,9 +42,9 @@ TransparentWebViewTest::TransparentWebViewTest()
 
 void TransparentWebViewTest::LoadResources()
 {
-	webView1 = new UIWebView(Rect(5, 5, 500, 500));
+	webView1 = new UIWebView(Rect(5, 5, 700, 500));
 	webView1->SetVisible(true);
-	webView1->OpenURL("http://google.com/");
+	webView1->OpenURL("http://ru.wikipedia.org/");
 	AddControl(webView1);
 
 	FilePath srcDir("~res:/TestData/TransparentWebViewTest/");
@@ -56,7 +56,7 @@ void TransparentWebViewTest::LoadResources()
 	FileSystem::Instance()->CopyFile(srcFile, cpyFile);
 	String url = "file:///" + cpyFile.GetAbsolutePathname();
 
-	webView2 = new UIWebView(Rect(30, 150, 200, 100));
+	webView2 = new UIWebView(Rect(710, 5, 300, 250));
 	webView2->SetVisible(true);
 	webView2->SetBackgroundTransparency(true);
 	webView2->OpenURL(url);

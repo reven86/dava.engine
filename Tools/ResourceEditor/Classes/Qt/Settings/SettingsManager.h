@@ -101,4 +101,30 @@ protected:
 	
 	DAVA::KeyedArchive *settings;
 };
+
+/*
+class SettingsManager2: public QObject, public DAVA::Singleton<SettingsManager2>
+{
+	Q_OBJECT
+
+public:
+	SettingsManager2();
+	virtual ~SettingsManager2();
+
+	const DAVA::VariantType& GetValue(DAVA::FastName key);
+	void SetValue(DAVA::FastName key, const DAVA::VariantType& value);
+
+	void TrackSettings(DAVA::InspInfo *insp, void *object);
+
+protected:
+	struct SettingRow
+	{
+		void *object;
+		DAVA::InspMember *member;
+	};
+
+	DAVA::FastNameMap<SettingRow> settings;
+};
+*/
+
 #endif /* defined(__RESOURCEEDITORQT__SETTINGS_MANAGER__) */

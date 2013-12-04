@@ -34,7 +34,6 @@
 
 namespace DAVA 
 {
-    REGISTER_CLASS(UIListCell);
 
     UIListCell::UIListCell()
         :   UIButton()
@@ -53,10 +52,11 @@ namespace DAVA
 		if (!aggregatorPath.IsEmpty())
 		{
 			UIAggregatorControl *aggregator = new UIAggregatorControl();
-			UIYamlLoader loader;
-			loader.Load(aggregator, aggregatorPath);
+			ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
+			loader->Load(aggregator, aggregatorPath);
 			
 			this->AddControl(aggregator);
+			SafeRelease(aggregator);
 		}
     }
         

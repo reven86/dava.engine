@@ -174,8 +174,8 @@ public:
         C c = dynamic_cast<C>(pObject);
         if (!c)
         {//assert emulation )
-            int i = 0;
-            *((int*)i) = 0;
+            int *i = NULL;
+            *(i) = 0;
         }
         return c;
 #else

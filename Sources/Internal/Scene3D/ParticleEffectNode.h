@@ -39,6 +39,8 @@ namespace DAVA {
 // Particle Effect Node.
 class ParticleEffectNode : public Entity
 {
+protected:
+    ~ParticleEffectNode(){};
 public:
     ParticleEffectNode();
 

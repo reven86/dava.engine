@@ -145,8 +145,6 @@ void LandscapeEditorHeightmap::UpdateToolImage()
 
 Image *LandscapeEditorHeightmap::CreateToolImage(int32 sideSize)
 {
-    RenderManager::Instance()->LockNonMain();
-    
     Image *image = currentTool->image;
     Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)sideSize, (float32)sideSize, FORMAT_RGBA8888);
     Texture *srcTex = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(), 
@@ -172,8 +170,6 @@ Image *LandscapeEditorHeightmap::CreateToolImage(int32 sideSize)
     SafeRelease(srcSprite);
     SafeRelease(srcTex);
     SafeRelease(dstSprite);
-    
-    RenderManager::Instance()->UnlockNonMain();
     
     return retImage;
 }

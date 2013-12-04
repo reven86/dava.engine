@@ -39,9 +39,10 @@ class TestScreen;
 
 class GameCore : public DAVA::ApplicationCore
 {
+protected:
+	virtual ~GameCore();
 public:	
 	GameCore();
-	virtual ~GameCore();
     
     static GameCore * Instance()
 	{

@@ -50,8 +50,17 @@ namespace DAVA
 				TYPE_PARTICLE_EFFECT,
 				TYPE_SOUND
 			};
+
+			enum eEvent
+			{
+				EVENT_SWITCH_CHANGED = 0,
+				EVENT_ADDED_TO_SCENE,
+
+				EVENTS_COUNT
+			};
 			
 			eType type;
+			eEvent eventType;
 			int32 switchIndex;
 			float32 delay;
 			String entityName;
@@ -60,14 +69,15 @@ namespace DAVA
 			bool stopWhenEmpty;
 
 			
-			Action() : type(TYPE_NONE), delay(0.0f), switchIndex(-1),
+			Action() : type(TYPE_NONE), eventType(EVENT_SWITCH_CHANGED), delay(0.0f), switchIndex(-1),
 						stopAfterNRepeats(-1), stopWhenEmpty(false)
-			{
+			{				
 			}
 			
 			const Action& operator=(const Action& action)
 			{
 				type = action.type;
+				eventType = action.eventType;
 				delay = action.delay;
 				entityName = action.entityName;
 				switchIndex = action.switchIndex;
@@ -81,16 +91,16 @@ namespace DAVA
 						  NULL);
 
 		};
-		
-	public:
-		
-		ActionComponent();
+	protected:
 		virtual ~ActionComponent();
+	public:
+		ActionComponent();
 		
-		void Start(int32 switchIndex = -1);
+		void StartSwitch(int32 switchIndex = -1);
+		void StartAdd();
 		bool IsStarted();
 		void StopAll();
-		void Stop(int32 switchIndex = -1);
+		void StopSwitch(int32 switchIndex = -1);
 		
 		void Add(ActionComponent::Action action);
 		void Remove(const ActionComponent::Action& action);

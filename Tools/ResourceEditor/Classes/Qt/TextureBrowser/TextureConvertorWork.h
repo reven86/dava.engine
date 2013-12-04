@@ -57,7 +57,7 @@ public:
 	JobStack();
 	~JobStack();
 
-	void push(const JobItem &item);
+	bool push(const JobItem &item);
 	JobItem* pop();
 	int size();
 

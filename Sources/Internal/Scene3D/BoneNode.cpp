@@ -33,7 +33,6 @@
 
 namespace DAVA 
 {
-REGISTER_CLASS(BoneNode);
 
 BoneNode::BoneNode(SkeletonNode * owner)
 	: Entity()

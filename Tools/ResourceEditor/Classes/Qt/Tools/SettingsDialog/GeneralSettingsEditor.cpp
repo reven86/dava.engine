@@ -52,14 +52,14 @@
 #define INITIALIZE_PROPERTY_WITH_ARGUMENTS(propertyName, configName, localizationName, argumentsList)\
 	QtPropertyDataDavaVariant* propertyName = new QtPropertyDataDavaVariant(VariantType(SettingsManager::Instance()->GetValue(DAVA::String(configName), argumentsList)));\
 	AppendProperty(QString((WStringToString(LocalizedString(localizationName))).c_str()),	propertyName, NULL);\
-	connect(propertyName,SIGNAL(ValueChanged()),this, SLOT(OnValueChanged()));\
-	propertiesMap[propertyName] = std::make_pair(DAVA::String(configName), argumentsList);
+	connect(propertyName,SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)),this, SLOT(OnValueChanged(QtPropertyData::ValueChangeReason)));\
+	propertiesMap[propertyName] = PropertyData(DAVA::String(configName), argumentsList, VariantType(SettingsManager::Instance()->GetValue(DAVA::String(configName), argumentsList)));
 
 #define INITIALIZE_PROPERTY(propertyName, configName, localizationName)\
 	QtPropertyDataDavaVariant* propertyName = new QtPropertyDataDavaVariant(VariantType(SettingsManager::Instance()->GetValue(DAVA::String(configName))));\
 	AppendProperty(QString((WStringToString(LocalizedString(localizationName))).c_str()),	propertyName, NULL);\
-	connect(propertyName,SIGNAL(ValueChanged()),this, SLOT(OnValueChanged()));\
-	propertiesMap[propertyName] = std::make_pair(DAVA::String(configName), DAVA::List<DAVA::VariantType>());
+	connect(propertyName,SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)),this, SLOT(OnValueChanged(QtPropertyData::ValueChangeReason)));\
+	propertiesMap[propertyName] = PropertyData(DAVA::String(configName), DAVA::List<DAVA::VariantType>(), VariantType(SettingsManager::Instance()->GetValue(DAVA::String(configName))));
 
 
 void GeneralSettingsEditor::InitializeProperties()
@@ -92,6 +92,14 @@ void GeneralSettingsEditor::InitializeProperties()
 	propertyLanguage->AddAllowedValue(DAVA::VariantType(String("ru")), "ru");
 }
 
+void GeneralSettingsEditor::RestoreInitialSettings()
+{
+	for (DAVA::Map<QtPropertyDataDavaVariant *, PropertyData>::iterator it= propertiesMap.begin(); it != propertiesMap.end(); ++it)
+	{
+		SettingsManager::Instance()->SetValue(it->second.configName, it->second.initialValue, it->second.argumentList);
+	}
+}
+
 GeneralSettingsEditor::GeneralSettingsEditor( QWidget* parent)
 		:QtPropertyEditor(parent)
 {
@@ -104,7 +112,7 @@ GeneralSettingsEditor::GeneralSettingsEditor( QWidget* parent)
 
 GeneralSettingsEditor::~GeneralSettingsEditor()
 {
-	for (DAVA::Map<QtPropertyDataDavaVariant *, std::pair<DAVA::String, DAVA::List<DAVA::VariantType> > >::iterator it= propertiesMap.begin(); it != propertiesMap.end(); ++it)
+	for (DAVA::Map<QtPropertyDataDavaVariant *, PropertyData>::iterator it= propertiesMap.begin(); it != propertiesMap.end(); ++it)
 	{
 		delete it->first;
 	}
@@ -112,7 +120,7 @@ GeneralSettingsEditor::~GeneralSettingsEditor()
 	propertiesMap.clear();
 }
 
-void GeneralSettingsEditor::OnValueChanged()
+void GeneralSettingsEditor::OnValueChanged(QtPropertyData::ValueChangeReason)
 {
 	QtPropertyDataDavaVariant* sender = dynamic_cast<QtPropertyDataDavaVariant*>(QObject::sender());
 	if(!sender)
@@ -121,6 +129,6 @@ void GeneralSettingsEditor::OnValueChanged()
 	}
 	VariantType senderContent(sender->GetVariantValue());
 	
-	SettingsManager::Instance()->SetValue(propertiesMap[sender].first, senderContent, propertiesMap[sender].second);
+	SettingsManager::Instance()->SetValue(propertiesMap[sender].configName, senderContent, propertiesMap[sender].argumentList);
 }
 

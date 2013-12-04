@@ -31,8 +31,7 @@
 #include "EditorLODData.h"
 
 #include "Classes/Qt/Scene/SceneSignals.h"
-#include "Classes/Commands2/Command2.h"
-#include "Classes/Commands2/MetaObjModifyCommand.h"
+#include "Classes/Commands2/ChangeLODDistanceCommand.h"
 
 EditorLODData::EditorLODData()
     :   lodLayersCount(0)
@@ -41,16 +40,12 @@ EditorLODData::EditorLODData()
     ,   forceLayer(DAVA::LodComponent::INVALID_LOD_LAYER)
     ,   activeScene(NULL)
 {
-    connect(SceneSignals::Instance(), SIGNAL(Selected(SceneEditor2 *, DAVA::Entity *)), SLOT(EntitySelected(SceneEditor2 *, DAVA::Entity *)));
-    connect(SceneSignals::Instance(), SIGNAL(Deselected(SceneEditor2 *, DAVA::Entity *)), SLOT(EntityDeselected(SceneEditor2 *, DAVA::Entity *)));
-    
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), SLOT(SceneActivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), SLOT(SceneDeactivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
 
     connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
-
-
 }
 
 EditorLODData::~EditorLODData()
@@ -63,13 +58,10 @@ EditorLODData::~EditorLODData()
 }
 
 
-void EditorLODData::Clear()
+void EditorLODData::ClearLODData()
 {
     lodLayersCount = 0;
     
-    forceDistance = 0.f;
-    forceLayer = DAVA::LodComponent::INVALID_LOD_LAYER;
-
     for(DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
         lodDistances[i] = 0;
@@ -81,6 +73,11 @@ void EditorLODData::Clear()
     emit DataChanged();
 }
 
+void EditorLODData::ClearForceData()
+{
+    forceDistance = 0.f;
+    forceLayer = DAVA::LodComponent::INVALID_LOD_LAYER;
+}
 
 DAVA::int32 EditorLODData::GetLayersCount() const
 {
@@ -103,28 +100,47 @@ void EditorLODData::SetLayerDistance(DAVA::int32 layerNum, DAVA::float32 distanc
     {
         activeScene->BeginBatch("LOD Distance Changed");
         
-        for(DAVA::int32 i = 0; i < componentsCount; ++i)
+        for(DAVA::uint32 i = 0; i < componentsCount; ++i)
         {
-            //TODO: need correct introspection
             if(layerNum >= GetLayersCount(lodData[i]))
                 continue;
-            
-            lodData[i]->SetLodLayerDistance(layerNum, distance);
-            
-//            const DAVA::InspMember *member = lodData[i]->lodLayersArray[layerNum].GetTypeInfo()->Member("distance");
-//            if(!member)
-//                continue;
-//            
-//            const DAVA::MetaInfo *info = member->Type();
-//            void *object = member->Pointer(&lodData[i]->lodLayersArray[layerNum]);
-//            
-//            DAVA::VariantType v(distance);
-//            activeScene->Exec(new MetaObjModifyCommand(info, object, v));
+           
+			activeScene->Exec(new ChangeLODDistanceCommand(lodData[i], layerNum, distance));
         }
         
         activeScene->EndBatch();
     }
 }
+
+void EditorLODData::UpdateDistances( const DAVA::Map<DAVA::int32, DAVA::float32> & newDistances )
+{
+	DAVA::uint32 componentsCount = (DAVA::uint32)lodData.size();
+	if(componentsCount && activeScene && newDistances.size() != 0)
+	{
+		activeScene->BeginBatch("LOD Distances Changed");
+
+		DAVA::Map<DAVA::int32, DAVA::float32>::const_iterator endIt = newDistances.end();
+		for(auto it = newDistances.begin(); it != endIt; ++it)
+		{
+			DAVA::int32 layerNum = it->first;
+			DAVA::float32 distance = it->second;
+
+			DVASSERT(0 <= layerNum && layerNum < lodLayersCount)
+			lodDistances[layerNum] = distance;
+
+			for(DAVA::uint32 i = 0; i < componentsCount; ++i)
+			{
+				if(layerNum < GetLayersCount(lodData[i]))
+				{
+					activeScene->Exec(new ChangeLODDistanceCommand(lodData[i], layerNum, distance));
+				}
+			}
+		}
+
+		activeScene->EndBatch();
+	}
+}
+
 
 
 DAVA::uint32 EditorLODData::GetLayerTriangles(DAVA::int32 layerNum) const
@@ -134,18 +150,18 @@ DAVA::uint32 EditorLODData::GetLayerTriangles(DAVA::int32 layerNum) const
 }
 
 
-void EditorLODData::EntitySelected(SceneEditor2 *scene, DAVA::Entity *entity)
+void EditorLODData::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
     if(activeScene == scene)
-        GetDataFromSelection();
-}
+    {
+		for(size_t i = 0; i < deselected->Size(); ++i)
+		{
+			ResetForceState(deselected->GetEntity(i));
+		}
 
-void EditorLODData::EntityDeselected(SceneEditor2 *scene, DAVA::Entity *entity)
-{
-    ResetForceState(entity);
-
-    if(activeScene == scene)
-        GetDataFromSelection();
+		GetDataFromSelection();
+        UpdateForceData();
+    }
 }
 
 void EditorLODData::ResetForceState(DAVA::Entity *entity)
@@ -175,6 +191,14 @@ void EditorLODData::SetForceDistance(DAVA::float32 distance)
             lodData[i]->SetForceLodLayer(DAVA::LodComponent::INVALID_LOD_LAYER);
         }
     }
+	else
+	{
+		DAVA::uint32 count = lodData.size();
+		for(DAVA::uint32 i = 0; i < count; ++i)
+		{
+			lodData[i]->SetForceDistance(DAVA::LodComponent::INVALID_DISTANCE);
+		}
+	}
 }
 
 DAVA::float32 EditorLODData::GetForceDistance() const
@@ -185,7 +209,7 @@ DAVA::float32 EditorLODData::GetForceDistance() const
 void EditorLODData::EnableForceDistance(bool enable)
 {
     forceDistanceEnabled = enable;
-    SetForceDistance(forceDistance);
+	SetForceDistance(forceDistance);
 }
 
 bool EditorLODData::GetForceDistanceEnabled() const
@@ -196,7 +220,7 @@ bool EditorLODData::GetForceDistanceEnabled() const
 
 void EditorLODData::GetDataFromSelection()
 {
-    Clear();
+    ClearLODData();
     EnumerateSelectionLODs(activeScene);
 
     DAVA::int32 lodComponentsSize = lodData.size();
@@ -294,12 +318,12 @@ DAVA::uint32 EditorLODData::GetTrianglesForEntity(DAVA::Entity *entity, bool che
 
 void EditorLODData::EnumerateSelectionLODs(SceneEditor2 * scene)
 {
-    const EntityGroup * selection = scene->selectionSystem->GetSelection();
+    EntityGroup selection = scene->selectionSystem->GetSelection();
     
-    DAVA::uint32 count = selection->Size();
+    DAVA::uint32 count = selection.Size();
     for(DAVA::uint32 i = 0; i < count; ++i)
     {
-        EnumerateLODsRecursive(selection->GetEntity(i), lodData);
+        EnumerateLODsRecursive(selection.GetEntity(i), lodData);
     }
 }
 
@@ -341,6 +365,7 @@ void EditorLODData::SceneActivated(SceneEditor2 *scene)
 {
     activeScene = scene;
     GetDataFromSelection();
+    ClearForceData();
 }
 
 void EditorLODData::SceneDeactivated(SceneEditor2 *scene)
@@ -351,7 +376,8 @@ void EditorLODData::SceneDeactivated(SceneEditor2 *scene)
         activeScene = NULL;
     }
 
-    Clear();
+    ClearLODData();
+    ClearForceData();
 }
 
 void EditorLODData::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
@@ -362,12 +388,22 @@ void EditorLODData::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *par
     {
         GetDataFromSelection();
     }
-    
+
+    UpdateForceData();
+}
+
+void EditorLODData::UpdateForceData()
+{
     if(forceDistanceEnabled)
     {
         SetForceDistance(forceDistance);
     }
+    else if(forceLayer != DAVA::LodComponent::INVALID_LOD_LAYER)
+    {
+        SetForceLayer(forceLayer);
+    }
 }
+
 
 DAVA::int32 EditorLODData::GetLayersCount(DAVA::LodComponent *lod) const
 {
@@ -381,11 +417,15 @@ DAVA::int32 EditorLODData::GetLayersCount(DAVA::LodComponent *lod) const
 
 void EditorLODData::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
-    int commandId = command->GetId();
-    
-    if(commandId == CMDID_META_OBJ_MODIFY /* || commandId == ... */) //TODO: need second command id
+    if(command->GetId() == CMDID_BATCH)
     {
-        GetDataFromSelection();
+		CommandBatch *batch = (CommandBatch *)command;
+		Command2 *firstCommand = batch->GetCommand(0);
+		if(firstCommand && (firstCommand->GetId() == CMDID_LOD_DISTANCE_CHANGE))
+		{
+			GetDataFromSelection();
+		}
     }
 }
+
 

@@ -40,9 +40,10 @@ namespace DAVA
 
 class SpriteRenderBatch : public RenderBatch
 {
+protected:
+	virtual ~SpriteRenderBatch();
 public:
 	SpriteRenderBatch();
-	virtual ~SpriteRenderBatch();
 
 	virtual void Draw(Camera * camera);
 

@@ -116,7 +116,7 @@ FTFont * FTFont::Create(const FilePath& path)
 	}
 	
 	if(!iFont)
-	{//TODO: for now internal fonts is never released, need to be fixed later
+	{	
 		iFont = new FTInternalFont(path);
         if( !iFont->face )
         {
@@ -132,6 +132,16 @@ FTFont * FTFont::Create(const FilePath& path)
 	
 	return font;
 }
+
+void FTFont::ClearCache()
+{
+	while (fontMap.size())
+	{
+		SafeRelease(fontMap.begin()->second);
+		fontMap.erase(fontMap.begin());
+	}
+}
+
 	
 FTFont *	FTFont::Clone() const
 {
@@ -203,7 +213,9 @@ YamlNode * FTFont::SaveToYamlNode() const
 
 	return node;
 }
-	
+
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -246,6 +258,8 @@ FTInternalFont::FTInternalFont(const FilePath & path)
 	
 FTInternalFont::~FTInternalFont()
 {
+	ClearString();
+
 	FT_Done_Face(face);
 	SafeDeleteArray(memoryFont);
 }
@@ -253,10 +267,10 @@ FTInternalFont::~FTInternalFont()
 
 int32 FTInternalFont::Release()
 {
-	if(1 == GetRetainCount())
-	{
-		fontMap.erase(fontPath.GetAbsolutePathname());
-	}
+// 	if(1 == GetRetainCount())
+// 	{
+// 		fontMap.erase(fontPath.GetAbsolutePathname());
+// 	}
 	
 	return BaseObject::Release();
 }

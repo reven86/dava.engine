@@ -34,3 +34,4 @@ BeastManager * BeastProxy::CreateManager()
 {
 	return 0;
 }
+

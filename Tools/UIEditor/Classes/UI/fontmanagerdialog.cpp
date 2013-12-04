@@ -87,7 +87,7 @@ FontManagerDialog::~FontManagerDialog()
 {
     SafeDelete(tableModel);
     SafeDelete(ui);
-    SafeDelete(dialogResultFont);
+    SafeRelease(dialogResultFont);
 }
 
 void FontManagerDialog::ConnectToSignals()

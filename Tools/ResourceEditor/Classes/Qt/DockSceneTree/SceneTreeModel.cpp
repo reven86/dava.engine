@@ -29,6 +29,8 @@
 
 
 #include <QMimeData>
+#include "Particles/ParticleEmitter.h"
+#include "Particles/ParticleLayer.h"
 
 #include "DockSceneTree/SceneTreeModel.h"
 #include "Scene/SceneSignals.h"
@@ -55,7 +57,6 @@ SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
 	headerLabels.append("Scene hierarchy");
 	setHorizontalHeaderLabels(headerLabels);
 
-	QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), this, SLOT(StructureChanged(SceneEditor2 *, DAVA::Entity *)));
 	QObject::connect(this, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(ItemChanged(QStandardItem *)));
 }
 
@@ -83,10 +84,9 @@ void SceneTreeModel::SetScene(SceneEditor2 *scene)
 	if(NULL != curScene)
 	{
 		curScene->Retain();
-		ResyncStructure(invisibleRootItem(), curScene);
 	}
 
-	RebuildIndexesCache();
+	ResyncStructure(invisibleRootItem(), curScene);
 }
 
 SceneEditor2* SceneTreeModel::GetScene() const
@@ -135,6 +135,73 @@ bool SceneTreeModel::GetLocked(const QModelIndex &index) const
 	if(NULL != entity)
 	{
 		ret = entity->GetLocked();
+	}
+
+	return ret;
+}
+
+QVector<QIcon> SceneTreeModel::GetCustomIcons(const QModelIndex &index) const
+{
+	static QIcon lockedIcon = QIcon(":/QtIcons/locked.png");
+	static QIcon eyeIcon = QIcon(":/QtIcons/eye.png");
+
+	QVector<QIcon> ret;
+	SceneTreeItem *item = GetItem(index);
+
+	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
+	if(NULL != entity)
+	{
+		if(entity->GetLocked())
+		{
+			ret.push_back(lockedIcon);
+		}
+
+		if(NULL != GetCamera(entity))
+		{
+			if(curScene->GetCurrentCamera() == GetCamera(entity))
+			{
+				ret.push_back(eyeIcon);
+			}
+		}
+	}
+
+	return ret;
+}
+
+int SceneTreeModel::GetCustomFlags(const QModelIndex &index) const
+{
+	int ret = 0;
+
+	SceneTreeItem *item = GetItem(index);
+	DAVA::Entity *entity = SceneTreeItemEntity::GetEntity(item);
+
+	if(NULL != entity)
+	{
+		if( entity->GetName().find("editor.") != DAVA::String::npos ||
+			NULL != DAVA::GetLandscape(entity) ||
+			NULL != DAVA::GetSkybox(entity))
+		{
+			ret |= CF_Disabled;
+		}
+	}
+	else
+	{
+		DAVA::ParticleLayer *layer = SceneTreeItemParticleLayer::GetLayer(item);
+		if(NULL != layer)
+		{
+			DAVA::Entity *emitter = SceneTreeItemEntity::GetEntity(GetItem(index.parent()));
+			if(NULL != emitter)
+			{
+				DAVA::LodComponent *lodComp = GetLodComponent(emitter);
+				if(NULL != lodComp)
+				{
+					if(!layer->IsLodActive(lodComp->currentLod))
+					{
+						ret |= CF_Invisible;
+					}
+				}
+			}
+		}
 	}
 
 	return ret;
@@ -266,7 +333,7 @@ bool SceneTreeModel::dropMimeData(const QMimeData * data, Qt::DropAction action,
 					entityGroup.Add((DAVA::Entity*) entitiesV->at(i));
 				}
 
-				curScene->structureSystem->Move(&entityGroup, parentEntity, beforeEntity);
+				curScene->structureSystem->Move(entityGroup, parentEntity, beforeEntity);
 				ret = true;
 			}
 
@@ -368,8 +435,13 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 		{
 			ret = true;
 
-			// 1. don't accept entity to be dropped anywhere except other entity
+			// don't accept entity to be dropped anywhere except other entity
 			if(NULL != parentItem && parentItem->ItemType() != SceneTreeItem::EIT_Entity)
+			{
+				ret = false;
+			}
+			// don't accept drops inside disabled (by custom flags) entity 
+			else if(GetCustomFlags(parent) & CF_Disabled)
 			{
 				ret = false;
 			}
@@ -379,16 +451,40 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 				QVector<void*> *entities = DecodeMimeData(data, mimeFormatEntity);
 				if(NULL != entities)
 				{
-					DAVA::Entity *parentEntity = SceneTreeItemEntity::GetEntity(parentItem);
+					DAVA::Entity *targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
 
 					for (int i = 0; i < entities->size(); ++i)
 					{
 						DAVA::Entity *entity = (DAVA::Entity *) entities->at(i);
+						QModelIndex entityIndex = GetIndex(entity);
 
-						// 2. we don't accept drops if it has locked items
+						// 1. we don't accept drops if it has locked items
+						if(NULL != entity && entity->GetLocked()) 
+						{
+							ret = false;
+							break;
+						}
+
+						// 2. or it has entity with CF_Disabled flag
+						if(GetCustomFlags(entityIndex) & CF_Disabled)
+						{
+							ret = false;
+							break;
+						}
+
 						// 3. or this is self-drop
-						if((NULL != entity && entity->GetLocked()) ||
-							parentEntity == entity)
+						if( targetEntity == entity || // dropping into
+							entityIndex == index(row, column, parent) || // dropping above
+							entityIndex == index(row - 1, column, parent)) // dropping below
+						{
+							ret = false;
+							break;
+						}
+
+						// 4. or we are dropping last element to the bottom of the list
+						if( NULL == targetEntity && row == -1 && // dropping to be bottom of the list
+							!entityIndex.parent().isValid() && // no parent
+							entityIndex.row() == (rowCount(entityIndex.parent()) - 1)) // dropped item is already bottom
 						{
 							ret = false;
 							break;
@@ -435,8 +531,6 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 		}
 		break;
 
-	case DropingUnknown:
-	case DropingMixed:
 	default:
 		break;
 	}
@@ -447,15 +541,6 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
 bool SceneTreeModel::DropAccepted() const
 {
 	return dropAccepted;
-}
-
-void SceneTreeModel::StructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
-{
-	if(curScene == scene)
-	{
-		ResyncStructure(invisibleRootItem(), curScene);
-		RebuildIndexesCache();
-	}
 }
 
 void SceneTreeModel::ItemChanged(QStandardItem * item)
@@ -477,6 +562,7 @@ void SceneTreeModel::ItemChanged(QStandardItem * item)
 void SceneTreeModel::ResyncStructure(QStandardItem *item, DAVA::Entity *entity)
 {
 	SceneTreeItemEntity::DoSync(item, entity);
+	RebuildIndexesCache();
 }
 
 void SceneTreeModel::RebuildIndexesCache()
@@ -560,12 +646,7 @@ int SceneTreeModel::GetDropType(const QMimeData *data) const
 
 	if(NULL != data)
 	{
-		if(data->formats().size() > 1)
-		{
-			// more than one format in data
-			ret = DropingMixed;
-		}
-		else if(data->hasFormat(mimeFormatEntity))
+		if(data->hasFormat(mimeFormatEntity))
 		{
 			ret = DropingEntity;
 		}

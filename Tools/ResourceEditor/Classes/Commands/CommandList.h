@@ -121,12 +121,6 @@ class CommandChangeMaterialViewOption;
 
 
 /*
- * SetSwitchIndexCommands.h
- */
-class CommandToggleSetSwitchIndex;
-
-
-/*
  * VisibilityCheckToolCommands.h
  */
 class CommandSaveTextureVisibilityTool;
@@ -192,7 +186,6 @@ class CommandDebugFlags;
 /*
  * ToolsCommands.h
  */
-class CommandBeast;
 class CommandConvertToShadow;
 
 

@@ -30,6 +30,7 @@
 
 #include "Base/GlobalEnum.h"
 #include "Render/Texture.h"
+#include "Render/Highlevel/Light.h"
 
 using namespace DAVA;
 
@@ -81,6 +82,14 @@ ENUM_DECLARE(PixelFormat)
 	ENUM_ADD_DESCR(FORMAT_ATC_RGB, "ATC_RGB");
 	ENUM_ADD_DESCR(FORMAT_ATC_RGBA_EXPLICIT_ALPHA, "ATC_RGBA_EXPLICIT_ALPHA");
 	ENUM_ADD_DESCR(FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, "ATC_RGBA_INTERPOLATED_ALPHA");
+}
+
+ENUM_DECLARE(Light::eType)
+{
+	ENUM_ADD_DESCR(Light::TYPE_DIRECTIONAL, "Directional");
+	ENUM_ADD_DESCR(Light::TYPE_SPOT, "Spot");
+	ENUM_ADD_DESCR(Light::TYPE_POINT, "Point");
+	ENUM_ADD_DESCR(Light::TYPE_SKY, "Sky");
 }
 
 /*

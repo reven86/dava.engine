@@ -41,6 +41,8 @@ namespace DAVA
  */
 class YamlArchive : public BaseObject
 {
+protected:
+	~YamlArchive(){}
 public:
 	
 	

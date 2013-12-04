@@ -44,10 +44,10 @@ public:
 
 class FogControl: public UIControl
 {
-    
+protected:
+    virtual ~FogControl();
 public:
     FogControl(const Rect & rect, FogControlDelegate *newDelegate);
-    virtual ~FogControl();
     
     virtual void WillAppear();
     

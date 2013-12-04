@@ -38,7 +38,8 @@ using namespace DAVA;
 
 class CloneTest : public TestTemplate<CloneTest>
 {
-    
+protected:
+    ~CloneTest(){}
 public:
 	CloneTest();
 

@@ -35,6 +35,8 @@ using namespace DAVA;
 
 class MainScreen : public UIScreen, public UIFileSystemDialogDelegate, public UIListDelegate
 {
+protected:
+    ~MainScreen(){}
 public:
     
     MainScreen();

@@ -42,7 +42,8 @@ class TreeTest: public TestTemplate<TreeTest>
     {
         TEST_FRAMES_COUNT = 100
     };
-    
+protected:
+	~TreeTest(){}
 public:
 	TreeTest(const String &testName, const String &scenePathname);
 

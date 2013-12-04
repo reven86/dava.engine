@@ -37,6 +37,8 @@ using namespace DAVA;
 
 class Test: public DAVA::UIScreen
 {
+protected:
+	~Test(){}
 public:
 	Test(const FilePath & fullName);
 	

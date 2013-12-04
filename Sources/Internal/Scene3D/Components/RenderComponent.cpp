@@ -75,12 +75,11 @@ void RenderComponent::OptimizeBeforeExport()
 		if(NULL != renderBatch)
 		{
 			PolygonGroup* polygonGroup = renderBatch->GetPolygonGroup();
-			if (polygonGroup)
+			Material* material = renderBatch->GetMaterial();
+			if(NULL != polygonGroup && NULL != material)
 			{
-				uint32 newFormat = MaterialOptimizer::GetOptimizedVertexFormat((Material::eType)renderBatch->GetMaterial()->type);
-                //TODO::VK crash on Tanks/USSR/T-28_crash.sc2
-//				polygonGroup->OptimizeVertices(newFormat);
-                
+				uint32 newFormat = MaterialOptimizer::GetOptimizedVertexFormat((Material::eType)material->type);
+				// polygonGroup->OptimizeVertices(newFormat); //TODO::VK crash on Tanks/USSR/T-28_crash.sc2
 			}
 		}
 	}

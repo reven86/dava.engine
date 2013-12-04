@@ -43,7 +43,8 @@ class DXTTest : public TestTemplate<DXTTest>
         TESTS_COUNT = 6,
         ACCETABLE_DELTA_IN_PERSENTS = 2
     };
-    
+protected:
+    ~DXTTest(){}
 public:
 	DXTTest();
 

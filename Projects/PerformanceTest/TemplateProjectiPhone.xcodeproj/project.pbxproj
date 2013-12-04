@@ -22,7 +22,6 @@
 		E8C0A70317D5E7A000F8F93C /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8C0A70217D5E7A000F8F93C /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		E8C0A70517D5E82100F8F93C /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8C0A70417D5E82100F8F93C /* MessageUI.framework */; };
 		FE40BC8B1579376B0014BB7D /* CacheTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE40BC891579376B0014BB7D /* CacheTest.cpp */; };
-		FE76D9EE1163F2F0009E83B6 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -111,7 +110,6 @@
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
-				FE76D9EE1163F2F0009E83B6 /* OpenAL.framework in Frameworks */,
 				FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */,
 				FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */,
 				FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */,

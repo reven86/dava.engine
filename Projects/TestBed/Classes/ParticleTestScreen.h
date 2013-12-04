@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class ParticleTestScreen : public UIScreen
 {
+protected:
+	~ParticleTestScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

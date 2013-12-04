@@ -37,7 +37,14 @@
 
 QtPropertyItemDelegate::QtPropertyItemDelegate(QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
-{ }
+{
+	childWidgetsStyle = new QWindowsStyle();
+}
+
+QtPropertyItemDelegate::~QtPropertyItemDelegate()
+{
+	delete childWidgetsStyle;
+}
 
 void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -57,7 +64,7 @@ void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	QSize s = QStyledItemDelegate::sizeHint(option, index);
-    return QSize(s.width(), s.height() + 3);
+    return QSize(s.width(), s.height() + 5);
 }
 
 QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -78,6 +85,25 @@ QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptio
 	}
 
     return editWidget;
+}
+
+bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
+{
+	bool ret = QStyledItemDelegate::editorEvent(event, model, option, index);
+
+	const QtPropertyModel *propertyModel = dynamic_cast<const QtPropertyModel *>(index.model());
+	if(NULL != propertyModel)
+	{
+		QtPropertyItem* item = (QtPropertyItem*) propertyModel->itemFromIndex(index);
+		QtPropertyData* data = item->GetPropertyData();
+
+		if(NULL != data && NULL != item && item->isCheckable())
+		{
+			data->SetValue((item->checkState() == Qt::Checked), QtPropertyData::VALUE_EDITED);
+		}
+	}
+
+	return ret;
 }
 
 void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
@@ -132,7 +158,7 @@ void QtPropertyItemDelegate::updateEditorGeometry(QWidget * editor, const QStyle
 		editor->setObjectName("customPropertyEditor");
 		editor->setStyleSheet("#customPropertyEditor{ border: 1px solid gray; }");
 		QRect r = option.rect;
-		r.adjust(2, -1, 0, 1);
+		//r.adjust(2, -1, 0, 1);
 
 		if(!index.model()->data(index, Qt::DecorationRole).isNull())
 		{
@@ -181,10 +207,9 @@ void QtPropertyItemDelegate::recalcOptionalWidgets(const QModelIndex &index, QSt
 		int owSpacing = 1;
 		int optionRectRight = option->rect.right();
 
-		int dataCount = data->GetOWCount();
-		for (int i = 0; i < dataCount; ++i)
+		int owCount = data->GetOWCount();
+		for (int i = (owCount - 1); i >= 0; --i)
 		{
-
 			const QtPropertyOW *ow = data->GetOW(i);
 			if(NULL != ow && NULL != owViewport && NULL != ow->widget)
 			{
@@ -196,6 +221,11 @@ void QtPropertyItemDelegate::recalcOptionalWidgets(const QModelIndex &index, QSt
 					QRect owRect = option->rect;
 					owRect.setLeft(optionRectRight - owWidth - prevOWSpace);
 					owRect.setRight(owRect.left() + owWidth);
+
+					if(owWidget->style() != childWidgetsStyle)
+					{
+						owWidget->setStyle(childWidgetsStyle);
+					}
 
 					owWidget->setGeometry(owRect);
 					owWidget->show();

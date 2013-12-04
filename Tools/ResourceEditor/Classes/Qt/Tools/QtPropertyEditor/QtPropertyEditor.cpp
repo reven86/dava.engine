@@ -31,6 +31,7 @@
 #include <QMouseEvent>
 #include <QHeaderView>
 #include <QPainter>
+#include <QWindowsStyle>
 
 #include "QtPropertyEditor.h"
 #include "QtPropertyModel.h"
@@ -38,7 +39,8 @@
 
 QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
 	: QTreeView(parent)
-	, refreshTimeout(0)
+	, updateTimeout(0)
+	, doUpdateOnPaintEvent(false)
 {
 	curModel = new QtPropertyModel();
 	setModel(curModel);
@@ -46,10 +48,11 @@ QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
 	curItemDelegate = new QtPropertyItemDelegate();
 	setItemDelegate(curItemDelegate);
 
-	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(ItemClicked(const QModelIndex &)));
+	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnItemClicked(const QModelIndex &)));
 	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), curItemDelegate, SLOT(expand(const QModelIndex &)));
 	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), curItemDelegate, SLOT(collapse(const QModelIndex &)));
-	QObject::connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(OnRefreshTimeout()));
+	QObject::connect(curModel, SIGNAL(ItemEdited(const QString &, QtPropertyData *)), this, SLOT(OnItemEdited(const QString &, QtPropertyData *)));
+	QObject::connect(&updateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeout()));
 }
 
 QtPropertyEditor::~QtPropertyEditor()
@@ -93,28 +96,70 @@ QtPropertyData *QtPropertyEditor::GetPropertyData(const QString &key, QtProperty
 	return ret;
 }
 
+void QtPropertyEditor::SetEditTracking(bool enabled)
+{
+	curModel->SetEditTracking(enabled);
+}
+
+bool QtPropertyEditor::GetEditTracking()
+{
+	return curModel->GetEditTracking();
+}
+
 void QtPropertyEditor::Expand(QtPropertyItem *item)
 {
 	expand(curModel->indexFromItem(item));
 }
 
-void QtPropertyEditor::SetRefreshTimeout(int ms)
+void QtPropertyEditor::SetUpdateTimeout(int ms)
 {
-	refreshTimeout = ms;
+	updateTimeout = ms;
 
-	if(0 != refreshTimeout)
+	if(0 != updateTimeout)
 	{
-		refreshTimer.start(refreshTimeout);
+		updateTimer.start(updateTimeout);
 	}
 	else
 	{
-		refreshTimer.stop();
+		updateTimer.stop();
 	}
 }
 
-int QtPropertyEditor::GetRefreshTimeout()
+int QtPropertyEditor::GetUpdateTimeout()
 {
-	return refreshTimeout;
+	return updateTimeout;
+}
+
+void QtPropertyEditor::Update()
+{
+	OnUpdateTimeout();
+}
+
+void QtPropertyEditor::OnUpdateTimeout()
+{
+	if(state() != QAbstractItemView::EditingState)
+	{
+		doUpdateOnPaintEvent = false;
+		curModel->UpdateStructure();
+	}
+
+	SetUpdateTimeout(updateTimeout);
+}
+
+QtPropertyItem* QtPropertyEditor::AddHeader(const char *text)
+{
+	QPair<QtPropertyItem*, QtPropertyItem*> propHeader;
+	
+	propHeader = AppendProperty(text, NULL);
+	
+	QFont boldFont = propHeader.first->font();
+	boldFont.setBold(true);
+	
+	propHeader.first->setFont(boldFont);
+	propHeader.first->setBackground(QBrush(QColor(Qt::lightGray)));
+	propHeader.second->setBackground(QBrush(QColor(Qt::lightGray)));
+	
+	return propHeader.first;
 }
 
 void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &option, const QModelIndex & index) const
@@ -152,19 +197,21 @@ void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &o
 	}
 }
 
-void QtPropertyEditor::ItemClicked(const QModelIndex &index)
+void QtPropertyEditor::paintEvent(QPaintEvent * event)
+{
+	QTreeView::paintEvent(event);
+}
+
+void QtPropertyEditor::OnItemClicked(const QModelIndex &index)
 {
 	QStandardItem *item = curModel->itemFromIndex(index);
 	if(NULL != item && item->isEditable() && item->isEnabled())
 	{
-		edit(index);
+		edit(index, QAbstractItemView::DoubleClicked, NULL);
 	}
 }
 
-void QtPropertyEditor::OnRefreshTimeout()
+void QtPropertyEditor::OnItemEdited(const QString &name, QtPropertyData *data)
 {
-	if(state() != QAbstractItemView::EditingState)
-	{
-		curModel->RefreshAll();
-	}
+	emit PropertyEdited(name, data);
 }

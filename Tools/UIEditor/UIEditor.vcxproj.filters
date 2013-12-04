@@ -639,6 +639,9 @@
     <ClCompile Include="Classes\AlignDistribute\DistributeHandlers.cpp">
       <Filter>Sources\AlignDistribute</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Commands\CenterPivotPointCommand.cpp">
+      <Filter>Sources\Commands</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\DefaultScreen.h">
@@ -1021,6 +1024,9 @@
     </ClInclude>
     <ClInclude Include="Classes\AlignDistribute\DistributeHandlers.h">
       <Filter>Sources\AlignDistribute</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands\CenterPivotPointCommand.h">
+      <Filter>Sources\Commands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

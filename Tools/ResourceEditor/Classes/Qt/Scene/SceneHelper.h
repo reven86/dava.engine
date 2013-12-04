@@ -39,9 +39,8 @@ public:
 	static void EnumerateTextures(DAVA::Entity *forNode, DAVA::Map<DAVA::String, DAVA::Texture *> &textures);
 	static void EnumerateDescriptors(DAVA::Entity *forNode, DAVA::Set<DAVA::FilePath> &descriptors);
 	static void EnumerateMaterials(DAVA::Entity *forNode, DAVA::Vector<DAVA::Material *> &materials);
-
-	static DAVA::SceneFileV2::eError SaveScene(DAVA::Scene *scene, const DAVA::FilePath & pathname, bool saveForGame = false);
-
+	static DAVA::int32 EnumerateModifiedTextures(DAVA::Entity *forNode, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures);
+	
 protected:
 	static void CollectLandscapeTextures(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, DAVA::Landscape *forNode);
 	static void CollectTexture(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, const DAVA::String &name, DAVA::Texture *tex);

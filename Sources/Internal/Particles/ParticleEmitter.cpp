@@ -44,8 +44,9 @@ namespace DAVA
 
 #define PARTICLE_EMITTER_DEFAULT_LIFE_TIME 100.0f
 #define PARTICLE_EMITTER_DEFERRED_UPDATE_INTERVAL 0.1f // in seconds
-	
-REGISTER_CLASS(ParticleEmitter);
+
+
+Map<String, ParticleEmitter::EmitterYamlCacheEntry> ParticleEmitter::emitterYamlCache;
 
 ParticleEmitter::ParticleEmitter()
 {
@@ -56,15 +57,20 @@ ParticleEmitter::ParticleEmitter()
 	parentParticle = NULL;
 	deferredTimeElapsed = 0.0f;
 
+	time = 0.0f;
+	repeatCount = 0;
 	currentLodLevel = 0;
 	desiredLodLevel = 0;
 	shortEffect = false;
 	lodLevelLocked = false;
+	particleCount = 0;		
+	state = STATE_STOPPED;	
 }
 
 ParticleEmitter::~ParticleEmitter()
 {
 	CleanupLayers();
+	ReleaseFromCache(emitterFileName);
 }
 
 void ParticleEmitter::Cleanup(bool needCleanupLayers)
@@ -81,9 +87,12 @@ void ParticleEmitter::Cleanup(bool needCleanupLayers)
 	radius = 0;
 
 	// number = new PropertyLineValue<float>(1.0f);
-
+	particleCount = 0;
 	time = 0.0f;
 	repeatCount = 0;
+	lodLevelLocked = false;
+	currentLodLevel = 0;
+	desiredLodLevel = 0;
 	lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
 	emitPointsCount = -1;
 	isPaused = false;
@@ -198,8 +207,7 @@ void ParticleEmitter::AddLayer(ParticleLayer * layer)
 	{
 		layer->GetEmitter()->RemoveLayer(layer);
 	}
-	// DF-1213 - Set loopEndTime initial value
-	layer->SetLoopEndTime(this->GetLifeTime());
+		
 	layers.push_back(layer);
 	layer->SetEmitter(this);
 	AddRenderBatch(layer->GetRenderBatch());
@@ -305,30 +313,35 @@ void ParticleEmitter::SetShortEffect(bool isShort)
 	}
 }
 
-void ParticleEmitter::Play()
+Matrix3 ParticleEmitter::GetRotationMatrix()
 {
-    Pause(false);
-    DoRestart(false);
-}
-    
-void ParticleEmitter::Stop(bool isDeleteAllParticles)
-{
-    DoRestart(isDeleteAllParticles);
-    Pause(true);
-}
-    
-bool ParticleEmitter::IsStopped()
-{
-    // Currently the same as isPaused.
-    return isPaused;
+	Matrix4 * worldTransformPtr = GetWorldTransformPtr();
+	Matrix3 rotationMatrix;	
+
+	if(worldTransformPtr)
+	{	
+		rotationMatrix = Matrix3(*worldTransformPtr);
+	}
+	else
+	{
+		rotationMatrix.Identity();
+	}
+
+	return rotationMatrix;
 }
 
-void ParticleEmitter::Restart(bool isDeleteAllParticles)
+void ParticleEmitter::Pause(bool _isPaused)
 {
-	DoRestart(isDeleteAllParticles);
-	Pause(false);
+	isPaused = _isPaused;
+
+	// Also update Inner Emitters.
+	int32 layersCount = layers.size();
+	for (int32 i = 0; i < layersCount; i ++)
+	{
+		layers[i]->PauseInnerEmitter(_isPaused);
+	}
 }
-	
+
 void ParticleEmitter::DoRestart(bool isDeleteAllParticles)
 {
 	Vector<ParticleLayer*>::iterator it;
@@ -343,6 +356,60 @@ void ParticleEmitter::DoRestart(bool isDeleteAllParticles)
 	currentLodLevel = desiredLodLevel;
 }
 
+void ParticleEmitter::Play()
+{
+	isPaused = false;
+	state = STATE_PLAYING;
+	int32 layersCount = layers.size();
+	for (int32 i = 0; i < layersCount; i ++)
+	{
+		layers[i]->PauseInnerEmitter(false);
+	}
+    /*Pause(false);
+    DoRestart(false);*/
+}
+    
+void ParticleEmitter::Stop(bool isDeleteAllParticles)
+{
+	state = STATE_STOPPING;
+	time = 0.0f;
+	repeatCount = 0;
+	lodLevelLocked = false;
+	currentLodLevel = desiredLodLevel;
+	Vector<ParticleLayer*>::iterator it;
+	for(it = layers.begin(); it != layers.end(); ++it)
+	{
+		(*it)->Restart(isDeleteAllParticles);
+	}	
+
+}
+
+void ParticleEmitter::Restart(bool isDeleteAllParticles)
+{
+	state = STATE_PLAYING;
+	isPaused = false;
+	time = 0.0f;
+	repeatCount = 0;
+	lodLevelLocked = false;
+	currentLodLevel = desiredLodLevel;
+	Vector<ParticleLayer*>::iterator it;
+	for(it = layers.begin(); it != layers.end(); ++it)
+	{
+		(*it)->Restart(isDeleteAllParticles);
+	}	
+}
+    
+bool ParticleEmitter::IsPaused()
+{
+	return isPaused;
+}
+
+bool ParticleEmitter::IsStopped()
+{    
+    return (state == STATE_STOPPED);
+}
+	
+
 bool ParticleEmitter::DeferredUpdate(float32 timeElapsed)
 {
 	deferredTimeElapsed += timeElapsed;
@@ -356,41 +423,46 @@ bool ParticleEmitter::DeferredUpdate(float32 timeElapsed)
 }
 	
 void ParticleEmitter::Update(float32 timeElapsed)
-{
+{	
 	timeElapsed *= playbackSpeed;
 
-	if (false == isPaused)
+	
+	time += timeElapsed;
+	float32 t = time / lifeTime;
+
+	if (colorOverLife)
 	{
-		time += timeElapsed;
-		float32 t = time / lifeTime;
-
-		if (colorOverLife)
-		{
-			currentColor = colorOverLife->GetValue(t);
-		}
-
-		if(isAutorestart && (time > lifeTime))
-		{
-			time -= lifeTime;
-
-			// Restart() resets repeatCount, so store it locally and then revert.
-			int16 curRepeatCount = repeatCount;
-			Restart(true);
-			repeatCount = curRepeatCount;
-
-			repeatCount ++;
-		}
+		currentColor = colorOverLife->GetValue(t);
 	}
 
+	if(isAutorestart && (time > lifeTime))
+	{
+		time -= lifeTime;
+
+		// Restart() resets repeatCount, so store it locally and then revert.
+		int16 curRepeatCount = repeatCount;
+		Restart(true);
+		repeatCount = curRepeatCount;
+
+		repeatCount ++;
+	}
+
+
+	particleCount = 0;
 	Vector<ParticleLayer*>::iterator it;
 	for(it = layers.begin(); it != layers.end(); ++it)
 	{
         if(!(*it)->GetDisabled())
             (*it)->Update(timeElapsed, (*it)->IsLodActive(currentLodLevel));
+		particleCount+=(*it)->GetParticleCount();
 	}
 
 	if (shortEffect)
 		lodLevelLocked = true;
+	if ((state == STATE_STOPPING) && (particleCount == 0))
+	{
+		state = STATE_STOPPED;
+	}
 }
 
 void ParticleEmitter::PrepareRenderData(Camera * camera){
@@ -497,17 +569,62 @@ void ParticleEmitter::PrepareEmitterParameters(Particle * particle, float32 velo
             particle->position += vel * radius->GetValue(time);
     }
         
-    particle->direction.x = vel.x;
-    particle->direction.y = vel.y;
-	particle->speed = velocity;
+    particle->speed.x = vel.x*velocity;
+    particle->speed.y = vel.y*velocity;	
     particle->angle = particleAngle;
+}
+
+void ParticleEmitter::RetainInCache(const String& name)
+{
+	Map<String, EmitterYamlCacheEntry>::iterator it = emitterYamlCache.find(name);
+	if (it!=emitterYamlCache.end())
+	{
+		(*it).second.refCount++;
+	}
+}
+
+void ParticleEmitter::ReleaseFromCache(const String& name)
+{
+	Map<String, EmitterYamlCacheEntry>::iterator it = emitterYamlCache.find(name);
+	if (it!=emitterYamlCache.end())
+	{
+		(*it).second.refCount--;
+		if (!(*it).second.refCount)
+		{
+			SafeRelease((*it).second.parser);
+			emitterYamlCache.erase(it);
+		}
+	}
+}
+
+YamlParser* ParticleEmitter::GetParser(const FilePath &filename)
+{
+	YamlParser *res = NULL;
+	String name = filename.GetAbsolutePathname();
+	Map<String, EmitterYamlCacheEntry>::iterator it = emitterYamlCache.find(name);
+	if (it!=emitterYamlCache.end())
+	{
+		(*it).second.refCount++;
+		res = (*it).second.parser;
+	}
+	else
+	{
+		res = YamlParser::Create(filename);
+		EmitterYamlCacheEntry entry;
+		entry.parser = res;
+		entry.refCount = 1;
+		emitterYamlCache[name] = entry;
+	}
+	ReleaseFromCache(emitterFileName);
+	emitterFileName = name;
+	return res;
 }
 
 void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 {
     Cleanup(true);
     
-	YamlParser * parser = YamlParser::Create(filename);
+	YamlParser * parser = GetParser(filename);
 	if(!parser)
 	{
 		Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
@@ -525,10 +642,10 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 	if (emitterNode)
 	{
 		if (emitterNode->Get("emissionAngle"))
-			emissionAngle = PropertyLineYamlReader::CreateFloatPropertyLineFromYamlNode(emitterNode, "emissionAngle");
+			emissionAngle = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("emissionAngle"));
         
 		if (emitterNode->Get("emissionVector"))
-			emissionVector = PropertyLineYamlReader::CreateVector3PropertyLineFromYamlNode(emitterNode, "emissionVector");
+			emissionVector = PropertyLineYamlReader::CreatePropertyLine<Vector3>(emitterNode->Get("emissionVector"));
         
 		const YamlNode* emissionVectorInvertedNode = emitterNode->Get("emissionVectorInverted");
 		if (!emissionVectorInvertedNode)
@@ -539,12 +656,12 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 		}
 
 		if (emitterNode->Get("emissionRange"))
-			emissionRange = PropertyLineYamlReader::CreateFloatPropertyLineFromYamlNode(emitterNode, "emissionRange");
+			emissionRange = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("emissionRange"));
         
 		if (emitterNode->Get("colorOverLife"))
-			colorOverLife = PropertyLineYamlReader::CreateColorPropertyLineFromYamlNode(emitterNode, "colorOverLife");
+			colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(emitterNode->Get("colorOverLife"));
 		if (emitterNode->Get("radius"))
-			radius = PropertyLineYamlReader::CreateFloatPropertyLineFromYamlNode(emitterNode, "radius");
+			radius = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("radius"));
 		
 		emitPointsCount = -1; 
 		const YamlNode * emitAtPointsNode = emitterNode->Get("emitAtPoints");
@@ -594,7 +711,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 		}else
 			emitterType = EMITTER_POINT;
 		
-        size = PropertyLineYamlReader::CreateVector3PropertyLineFromYamlNode(emitterNode, "size");
+        size = PropertyLineYamlReader::CreatePropertyLine<Vector3>(emitterNode->Get("size"));
         
         if(size == 0)
         {
@@ -644,9 +761,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename)
 	
 	// Yuri Coder, 2013/01/15. The "name" node for Layer was just added and may not exist for
 	// old yaml files. Generate the default name for nodes with empty names.
-	UpdateEmptyLayerNames();
-	
-	SafeRelease(parser);
+	UpdateEmptyLayerNames();		
 }
 
 void ParticleEmitter::SaveToYaml(const FilePath & filename)
@@ -679,7 +794,7 @@ void ParticleEmitter::SaveToYaml(const FilePath & filename)
 
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "radius", this->radius);
 
-    PropertyLineYamlWriter::WriteColorPropertyLineToYamlNode(emitterYamlNode, "colorOverLife", this->colorOverLife);
+    PropertyLineYamlWriter::WritePropertyLineToYamlNode<Color>(emitterYamlNode, "colorOverLife", this->colorOverLife);
 
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(emitterYamlNode, "size", this->size);
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<float32>(emitterYamlNode, "life", this->lifeTime);
@@ -694,16 +809,24 @@ void ParticleEmitter::SaveToYaml(const FilePath & filename)
     parser->SaveToYamlFile(filename, rootYamlNode, true);
     parser->Release();
 }
+
+void ParticleEmitter::GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables)
+{
+	PropertyLineHelper::AddIfModifiable(emissionVector.Get(), modifiables);
+	PropertyLineHelper::AddIfModifiable(emissionRange.Get(), modifiables);
+	PropertyLineHelper::AddIfModifiable(radius.Get(), modifiables);
+	PropertyLineHelper::AddIfModifiable(size.Get(), modifiables);
+	PropertyLineHelper::AddIfModifiable(colorOverLife.Get(), modifiables);
+	int32 layersCount = this->layers.size();
+	for (int32 i = 0; i < layersCount; i ++)
+	{
+		layers[i]->GetModifableLines(modifiables);
+	}
+}
     
 int32 ParticleEmitter::GetParticleCount()
 {
-	int32 cnt = 0;
-	Vector<ParticleLayer*>::iterator it;
-	for(it = layers.begin(); it != layers.end(); ++it)
-	{
-		cnt += (*it)->GetParticleCount();
-	}
-	return cnt;
+	return particleCount;
 }
 
 int32 ParticleEmitter::GetRepeatCount()
@@ -743,30 +866,9 @@ void ParticleEmitter::SetLifeTime(float32 time)
 float32 ParticleEmitter::GetTime()
 {
     return time;
-}
-    
-void ParticleEmitter::Pause(bool _isPaused)
-{
-	isPaused = _isPaused;
+}    
 
-	// Also update Inner Emitters.
-	int32 layersCount = layers.size();
-	for (int32 i = 0; i < layersCount; i ++)
-	{
-		layers[i]->PauseInnerEmitter(_isPaused);
-	}
-}
-bool ParticleEmitter::IsPaused()
-{
-	return isPaused;
-}
-
-void ParticleEmitter::SetAutorestart(bool _isAutorestart)
-{
-	isAutorestart = _isAutorestart;
-}
-
-bool ParticleEmitter::GetAutorestart()
+bool ParticleEmitter::GetAutoRestart()
 {
 	return isAutorestart;
 }
@@ -936,6 +1038,11 @@ void ParticleEmitter::SetDisabledForAllLayers(bool value)
 void ParticleEmitter::RecalcBoundingBox()
 {
 	bbox = AABBox3(Vector3(), Vector3());
+}
+
+void ParticleEmitter::RecalculateWorldBoundingBox()
+{
+	worldBBox = bbox; //as ParticelEmmiter dont use world transform for particle rendering, just for generation
 }
 
 void ParticleEmitter::SetLongToAllLayers(bool isLong)

@@ -36,6 +36,7 @@
 #include "Scene3D/Entity.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Light.h"
+#include "Scene3D/SceneFileV2.h"
 
 namespace DAVA
 {
@@ -88,9 +89,10 @@ class SkyboxSystem;
  */
 class Scene : public Entity
 {
+protected:
+	virtual ~Scene();
 public:	
 	Scene();
-	virtual ~Scene();
 	
     /**
         \brief Function to register node in scene. This function is called when you add node to the node that already in the scene. 
@@ -254,6 +256,9 @@ public:
 
 	EventSystem * GetEventSystem();
 	RenderSystem * GetRenderSystem() const;
+    
+    virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
+
     
 protected:	
     

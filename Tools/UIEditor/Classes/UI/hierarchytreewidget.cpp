@@ -322,8 +322,20 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
 	
 	if (selectedControl)
 	{
-		if (ui->treeWidget->selectedItems().size() == 1)
+		int32 selectedItemsSize = ui->treeWidget->selectedItems().size();
+		if (selectedItemsSize == 0)
+		{
+			// Just reset selected control and don't select anything else.
+			// See please DF-2377 for details.
 			HierarchyTreeController::Instance()->ResetSelectedControl();
+			return;
+		}
+		else if (selectedItemsSize == 1)
+		{
+			// Only one control is selected, reset the previous selection and continue.
+			HierarchyTreeController::Instance()->ResetSelectedControl();
+		}
+
 		HierarchyTreeController::Instance()->SelectControl(selectedControl);
 	}
 }

@@ -45,6 +45,7 @@ public:
 	virtual DAVA::Entity* GetEntity() const;
 
 	static bool IsEntityWithShadowVolume(const DAVA::Entity *entity);
+	static bool IsAvailableForConvertionToShadowVolume(const DAVA::Entity *entity);
 	static DAVA::RenderBatch * ConvertToShadowVolume(DAVA::Entity *entity);
 
 protected:

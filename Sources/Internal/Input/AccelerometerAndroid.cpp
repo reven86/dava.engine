@@ -76,7 +76,7 @@ namespace DAVA
 				accelerationData.y = y;
 				accelerationData.z = z;
 
-				eventDispatcher.PerformEvent(DAVA::Accelerometer::EVENT_ACCELLEROMETER_DATA);
+				eventDispatcher->PerformEvent(DAVA::Accelerometer::EVENT_ACCELLEROMETER_DATA);
 			}
 		}
 	}

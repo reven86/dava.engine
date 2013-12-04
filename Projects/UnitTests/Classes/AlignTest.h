@@ -40,6 +40,8 @@ using namespace DAVA;
 
 class AlignTest : public TestTemplate<AlignTest>, public ScreenShotCallbackDelegate
 {
+protected:
+    ~AlignTest(){}
 public:
 	AlignTest();
     
@@ -54,7 +56,6 @@ public:
 private:
     UIStaticText * staticText;
     UIStaticText * staticText2;
-    Font * font;
 	
 	void OnScreenShot(Image *testImage);
 	void MakeScreenShot();

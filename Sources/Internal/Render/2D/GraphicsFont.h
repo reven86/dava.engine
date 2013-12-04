@@ -90,9 +90,10 @@ protected:
 		
 class GraphicsFontDefinition : public BaseObject
 {
+protected:
+	~GraphicsFontDefinition();
 public:
 	GraphicsFontDefinition();
-	~GraphicsFontDefinition();
 	
 	float32 fontAscent;		// in points
 	float32 fontDescent;	// in points

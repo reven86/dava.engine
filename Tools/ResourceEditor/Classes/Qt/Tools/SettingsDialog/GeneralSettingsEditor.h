@@ -34,7 +34,7 @@
 #include "DAVAEngine.h"
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Tools/QtPropertyEditor/QtPropertyData.h"
-#include "Tools/QtPropertyEditor/QtProperyData/QtPropertyDataMetaObject.h"
+#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 
 class GeneralSettingsEditor: public QtPropertyEditor
 {
@@ -44,19 +44,34 @@ public:
 	explicit GeneralSettingsEditor(QWidget* parent = 0);
 	
 	~GeneralSettingsEditor();
-
-protected slots:
-	
-void	OnValueChanged();
-	
-protected:
 	
 	void InitializeProperties();
 	
-	QtPropertyItem* AddHeader(const char *text);
-	QtPropertyDataMetaObject* AddPropertyItem(const char *name, DAVA::BaseObject *object, QtPropertyItem *parent);
+	void RestoreInitialSettings();
+
+protected slots:
 	
-	DAVA::Map<QtPropertyDataDavaVariant* , std::pair<DAVA::String, DAVA::List<DAVA::VariantType> > > propertiesMap;
+void	OnValueChanged(QtPropertyData::ValueChangeReason reason);
 	
+protected:
+	
+	struct PropertyData
+	{
+		DAVA::String					configName;
+		DAVA::List<DAVA::VariantType>	argumentList;
+		DAVA::VariantType				initialValue;
+		PropertyData()
+		{
+		}
+		PropertyData(const DAVA::String& _configName, const DAVA::List<DAVA::VariantType>& _argumentList, const DAVA::VariantType& _initialValue)
+		{
+			configName = _configName;
+			argumentList = _argumentList;
+			initialValue = _initialValue;
+		}
+	};
+
+	DAVA::Map<QtPropertyDataDavaVariant* , PropertyData > propertiesMap;
+		
 };
 #endif /* defined(__RESOURCEEDITORQT__GENERAL_SETTINGS_EDITOR__) */

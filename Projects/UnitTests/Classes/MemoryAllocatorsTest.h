@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class MemoryAllocatorsTest : public TestTemplate<MemoryAllocatorsTest>
 {
+protected:
+    ~MemoryAllocatorsTest(){}
 public:
 	MemoryAllocatorsTest();
 

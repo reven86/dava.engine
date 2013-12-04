@@ -42,9 +42,10 @@ namespace DAVA
  */
 class KeyedArchiver : public BaseObject
 {
+protected:
+	virtual ~KeyedArchiver();
 public:
 	KeyedArchiver();
-	virtual ~KeyedArchiver();
 
 	bool StartEncodingToFile(const FilePath & pathName);
 	bool StartEncodingToFile(File *file);

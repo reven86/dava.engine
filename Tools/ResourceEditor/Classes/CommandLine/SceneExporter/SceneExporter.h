@@ -59,6 +59,7 @@ public:
 protected:
     
     void RemoveEditorNodes(Entity *rootNode);
+    void RemoveEditorCustomProperties(Entity *rootNode);
     
     void ExportDescriptors(Scene *scene, Set<String> &errorLog);
     bool ExportTextureDescriptor(const FilePath &pathname, Set<String> &errorLog);

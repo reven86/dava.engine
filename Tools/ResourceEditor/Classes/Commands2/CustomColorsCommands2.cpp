@@ -31,10 +31,80 @@
 #include "Commands2/CustomColorsCommands2.h"
 #include "../Qt/Scene/System/LandscapeEditorDrawSystem/CustomColorsProxy.h"
 
+#include "../Qt/Scene/SceneEditor2.h"
+#include "../Qt/Scene/SceneSignals.h"
+
+#include "../Qt/Main/QtUtils.h"
+
+ActionEnableCustomColors::ActionEnableCustomColors(SceneEditor2* forSceneEditor)
+:	CommandAction(CMDID_CUSTOM_COLORS_ENABLE)
+,	sceneEditor(forSceneEditor)
+{
+}
+
+void ActionEnableCustomColors::Redo()
+{
+	if (sceneEditor == NULL)
+	{
+		return;
+	}
+	
+	bool enabled = sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
+	if (enabled)
+	{
+		return;
+	}
+	
+	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+
+	bool success = !sceneEditor->IsToolsEnabled(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+	if (!success )
+	{
+		ShowErrorDialog(ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_DISABLE_EDITORS);
+	}
+	
+	LandscapeEditorDrawSystem::eErrorType enablingError = sceneEditor->customColorsSystem->EnableLandscapeEditing();
+	if (enablingError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
+	{
+		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
+	}
+
+	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
+}
+
+ActionDisableCustomColors::ActionDisableCustomColors(SceneEditor2* forSceneEditor)
+:	CommandAction(CMDID_CUSTOM_COLORS_DISABLE)
+,	sceneEditor(forSceneEditor)
+{
+}
+
+void ActionDisableCustomColors::Redo()
+{
+	if (sceneEditor == NULL)
+	{
+		return;
+	}
+	
+	bool disabled = !sceneEditor->customColorsSystem->IsLandscapeEditingEnabled();
+	if (disabled)
+	{
+		return;
+	}
+	
+	disabled = sceneEditor->customColorsSystem->DisableLandscapeEdititing();
+	if (!disabled)
+	{
+		ShowErrorDialog(ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR);
+	}
+
+	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
+}
+
+
 ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage,
 													 CustomColorsProxy* customColorsProxy,
 													 const Rect& updatedRect)
-:	Command2(CMDID_MODIFY_CUSTOM_COLORS, "Custom Colors Modification")
+:	Command2(CMDID_CUSTOM_COLORS_MODIFY, "Custom Colors Modification")
 {
 	this->updatedRect = updatedRect;
 	this->customColorsProxy = SafeRetain(customColorsProxy);
@@ -76,9 +146,8 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 	
 	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
 	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->ClipRect(updatedRect);
-	
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
+	RenderManager::Instance()->SetClip(updatedRect);
+
 	sprite->SetPosition(updatedRect.x, updatedRect.y);
 	sprite->Draw();
 	

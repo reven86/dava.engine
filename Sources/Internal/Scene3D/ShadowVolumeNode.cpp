@@ -39,7 +39,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(ShadowVolumeNode);
 
 ShadowVolumeNode::ShadowVolumeNode()
 : shadowPolygonGroup(0)
@@ -47,6 +46,8 @@ ShadowVolumeNode::ShadowVolumeNode()
 	shader = new Shader();
 	shader->LoadFromYaml("~res:/Shaders/ShadowVolume/shadowvolume.shader");
 	shader->Recompile();
+
+    uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
 }
 
 DAVA::ShadowVolumeNode::~ShadowVolumeNode()
@@ -75,7 +76,6 @@ void DAVA::ShadowVolumeNode::DrawShadow()
 
 	Vector3 position = Vector3() * GetWorldTransform();
 	Light * light = scene->GetNearestDynamicLight(Light::TYPE_COUNT, position);
-	int32 uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
 	if (light && uniformLightPosition0 != -1)
 	{
 		Vector3 lightPosition0 = light->GetPosition();

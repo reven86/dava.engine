@@ -30,6 +30,7 @@
 
 #include "QtPropertyItem.h"
 #include "QtPropertyData.h"
+#include "QtPropertyModel.h"
 
 QtPropertyItem::QtPropertyItem()
 	: QStandardItem()
@@ -58,7 +59,7 @@ QtPropertyItem::QtPropertyItem(QtPropertyData* data, QtPropertyItem *name)
 
 		QObject::connect(data, SIGNAL(ChildRemoving(const QString &, QtPropertyData *)), this, SLOT(DataChildRemoving(const QString &, QtPropertyData *)));
 		QObject::connect(data, SIGNAL(ChildAdded(const QString &, QtPropertyData *)), this, SLOT(DataChildAdded(const QString &, QtPropertyData *)));
-		QObject::connect(data, SIGNAL(ValueChanged()), this, SLOT(DataValueChanged()));
+		QObject::connect(data, SIGNAL(ValueChanged(QtPropertyData::ValueChangeReason)), this, SLOT(DataValueChanged(QtPropertyData::ValueChangeReason)));
 		QObject::connect(data, SIGNAL(FlagsChanged()), this, SLOT(DataFlagsChanged()));
 	}
 }
@@ -84,6 +85,11 @@ QtPropertyItem::~QtPropertyItem()
 QtPropertyData* QtPropertyItem::GetPropertyData() const
 {
 	return itemData;
+}
+
+QtPropertyItem* QtPropertyItem::GetParentNameItem() const
+{
+	return parentName;
 }
 
 int QtPropertyItem::type() const
@@ -134,13 +140,25 @@ void QtPropertyItem::setData(const QVariant & value, int role)
 	case Qt::EditRole:
 		if(NULL != itemData)
 		{
-			itemData->SetValue(value);
+			itemData->SetValue(value, QtPropertyData::VALUE_EDITED);
 		}
 		break;
 	default:
 		QStandardItem::setData(value, role);
 		break;
 	}
+}
+
+bool QtPropertyItem::Update()
+{
+	bool ret = false;
+
+	if(NULL != itemData)
+	{
+		return itemData->UpdateValue();
+	}
+
+	return ret;
 }
 
 void QtPropertyItem::ChildAdd(const QString &key, QtPropertyData* data)
@@ -211,9 +229,16 @@ void QtPropertyItem::ApplyDataFlags()
 		}
 			
 		setCheckable(dataFlags & QtPropertyData::FLAG_IS_CHECKABLE);
-		if(dataFlags & QtPropertyData::FLAG_IS_CHECKABLE && itemData->GetValue().toBool())
+		if(dataFlags & QtPropertyData::FLAG_IS_CHECKABLE)
 		{
-			setCheckState(Qt::Checked);
+			if(itemData->GetValue().toBool())
+			{
+				setCheckState(Qt::Checked);
+			}
+			else
+			{
+				setCheckState(Qt::Unchecked);
+			}
 		}
 
 		if(NULL != model())
@@ -243,7 +268,17 @@ void QtPropertyItem::DataFlagsChanged()
 	ApplyDataFlags();
 }
 
-void QtPropertyItem::DataValueChanged()
+void QtPropertyItem::DataValueChanged(QtPropertyData::ValueChangeReason reason)
 {
-	emitDataChanged();
+	ApplyDataFlags();
+
+	if(reason == QtPropertyData::VALUE_EDITED)
+	{
+		QtPropertyModel *propModel = (QtPropertyModel *) model();
+		propModel->EmitDataEdited(this);
+	}
+	else
+	{
+		emitDataChanged();
+	}
 }

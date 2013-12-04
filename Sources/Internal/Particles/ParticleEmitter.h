@@ -94,6 +94,13 @@ public:
 		EMITTER_SHOCKWAVE
 	};
 
+	enum eState
+	{
+		STATE_PLAYING,    
+		STATE_STOPPING, //emitter is stopping - no new particle generation, still need to update and recalculate
+		STATE_STOPPED   //emitter is completely stopped - no processing at all
+	};
+
 	ParticleEmitter();
 	virtual ~ParticleEmitter();
 	
@@ -180,6 +187,8 @@ public:
 		\returns is emitter paused 
 	 */
 	bool IsPaused();
+
+	eState GetState(){return state;}
 	
 	/**
 		\brief Function adds layer to emitter.
@@ -236,6 +245,9 @@ public:
 	virtual void Save(KeyedArchive *archive, SceneFileV2 *sceneFile);
 	virtual void Load(KeyedArchive *archive, SceneFileV2 *sceneFile);
 	virtual void RecalcBoundingBox();
+
+	/*from RenderObject*/
+	virtual void RecalculateWorldBoundingBox();
 	
 	/**
 		\brief Function to get number of repeats for current particle emitter.
@@ -287,19 +299,10 @@ public:
 	 */
 	virtual void RenderUpdate(Camera *camera, float32 timeElapsed);
 
-	/**
-	 \brief Enable/disable autorestart.
-	 If autorestart is enabled, emitter will automatically start it's work from beginning after it's lifeTime ends. 
-	 Option is enabled by default.
-	 \param[in] autoRestart enable autorestart if true
-	 */
-	void SetAutorestart(bool isAutorestart);
+		
 
-	/**
-	 \brief Get autorestart state.
-	 \returns current autorestart state.
-	 */
-	bool GetAutorestart();
+	
+	bool GetAutoRestart();
 
 	/**
 	 \brief Get emitter's size.
@@ -377,7 +380,7 @@ public:
 
 	bool IsToBeDeleted()
 	{
-		return shouldBeDeleted;
+		return shouldBeDeleted&&(!particleCount); //let inner emitter particles finish
 	};
 
 	void SetToBeDeleted(bool value)
@@ -396,6 +399,10 @@ public:
 	void SetDesiredLodLevel(int32 level);
 	bool IsShortEffect();
 	void SetShortEffect(bool isShort);
+
+	void GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables);
+
+	Matrix3 GetRotationMatrix();	
 
 protected:
 	// Virtual methods which are different for 2D and 3D emitters.
@@ -423,6 +430,15 @@ protected:
 	float32 time;
 	int32	emitPointsCount;
 	bool	isPaused;
+	
+	eState  state;
+	
+	/**
+	 \brief Enable/disable autorestart.
+	 If autorestart is enabled, emitter will automatically start it's work from beginning after it's lifeTime ends. 
+	 Option is enabled by default.
+	 \param[in] autoRestart enable autorestart if true
+	 */
 	bool	isAutorestart;
 	bool	particlesFollow;
     bool    is3D;
@@ -439,6 +455,7 @@ protected:
 	uint32 currentLodLevel, desiredLodLevel; //if lodLevelLocked - set lod level updates desired level
 	bool lodLevelLocked; //short effect locks it's lod layer once started
 	
+	int32 particleCount;
 
 public:
 	RefPtr< PropertyLine<Vector3> > emissionVector;
@@ -460,11 +477,27 @@ public:
 	inline void SetRepeatCount(int32 repeatCount) {this->repeatCount = repeatCount;};
 	inline void SetTime(float32 time) {this->time = time;};
 	inline void SetEmitPointsCount(int32 emitPointsCount) {this->emitPointsCount = emitPointsCount;};
-	inline void SetPaused(bool isPaused) {this->isPaused = isPaused;};
+	inline void SetPaused(bool isPaused) {this->isPaused = isPaused;};	
 	inline void SetAutoRestart(bool isAutorestart) {this->isAutorestart = isAutorestart;};
     inline void Set3D(bool is3D) {this->is3D = is3D;};
 	inline void SetConfigPath(const FilePath& configPath) {this->configPath = configPath;};
 	inline void SetInitialTranslationVector(const Vector3& translationVector) {this->initialTranslationVector = translationVector;};
+
+
+private:
+	struct EmitterYamlCacheEntry
+	{
+		YamlParser *parser;
+		int refCount;
+	};
+	static Map<String, EmitterYamlCacheEntry> emitterYamlCache;
+	
+protected:
+	friend class ParticleEmitter3D;
+	YamlParser* GetParser(const FilePath &filename);
+	void RetainInCache(const String& name);
+	void ReleaseFromCache(const String& name);	
+	String emitterFileName;
 
 public:
     

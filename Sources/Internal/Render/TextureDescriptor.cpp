@@ -97,8 +97,8 @@ TextureDescriptor * TextureDescriptor::CreateDescriptor(Texture::TextureWrap wra
 {
     TextureDescriptor *descriptor = new TextureDescriptor();
 	
-	descriptor->settings.wrapModeS = wrap;
-	descriptor->settings.wrapModeT = wrap;
+    descriptor->settings.wrapModeS = wrap;
+    descriptor->settings.wrapModeT = wrap;
     
     descriptor->settings.generateMipMaps = generateMipmaps;
 	if(descriptor->settings.generateMipMaps)
@@ -276,19 +276,7 @@ void TextureDescriptor::ConvertToCurrentVersion(int8 version, int32 signature, D
 {
 //    Logger::Info("[TextureDescriptor::ConvertToCurrentVersion] (%s) from version %d", pathname.c_str(), version);
     
-    if(version == 2)
-    {
-        LoadVersion2(signature, file);
-    }
-	else if(version == 3)
-	{
-		LoadVersion3(signature, file);
-	}
-	else if(version == 4)
-	{
-		LoadVersion4(signature, file);
-	}
-    else if(version == 5)
+	if(version == 5)
     {
         LoadVersion5(signature, file);
     }
@@ -298,66 +286,6 @@ void TextureDescriptor::ConvertToCurrentVersion(int8 version, int32 signature, D
 	}
 }
     
-void TextureDescriptor::LoadVersion2(int32 signature, DAVA::File *file)
-{
-    Logger::Warning("[TextureDescriptor::LoadVersion2] function will be deleted");
-    
-    file->Read(&settings.wrapModeS, sizeof(settings.wrapModeS));
-    file->Read(&settings.wrapModeT, sizeof(settings.wrapModeT));
-    file->Read(&settings.generateMipMaps, sizeof(settings.generateMipMaps));
-    
-    if(signature == COMPRESSED_FILE)
-    {
-		file->Read(&exportedAsGpuFamily, sizeof(exportedAsGpuFamily));
-    }
-    else if(signature == NOTCOMPRESSED_FILE)
-    {
-        ReadCompressionWithDateOld(file, compression[GPU_POWERVR_IOS]);
-        ReadCompressionWithDateOld(file, compression[GPU_TEGRA]);
-    }
-}
- 
-void TextureDescriptor::LoadVersion3(int32 signature, DAVA::File *file)
-{
-    Logger::Warning("[TextureDescriptor::LoadVersion3] function will be deleted");
-    
-    file->Read(&settings.wrapModeS, sizeof(settings.wrapModeS));
-    file->Read(&settings.wrapModeT, sizeof(settings.wrapModeT));
-    file->Read(&settings.generateMipMaps, sizeof(settings.generateMipMaps));
-    file->Read(&settings.minFilter, sizeof(settings.minFilter));
-    file->Read(&settings.magFilter, sizeof(settings.magFilter));
-    
-	if(signature == COMPRESSED_FILE)
-	{
-		file->Read(&exportedAsGpuFamily, sizeof(exportedAsGpuFamily));
-	}
-	else if(signature == NOTCOMPRESSED_FILE)
-	{
-        ReadCompressionWithDateOld(file, compression[GPU_POWERVR_IOS]);
-        ReadCompressionWithDateOld(file, compression[GPU_TEGRA]);
-	}
-}
-
-void TextureDescriptor::LoadVersion4(int32 signature, DAVA::File *file)
-{
-    Logger::Warning("[TextureDescriptor::LoadVersion4] function will be deleted");
-    
-    file->Read(&settings.wrapModeS, sizeof(settings.wrapModeS));
-    file->Read(&settings.wrapModeT, sizeof(settings.wrapModeT));
-    file->Read(&settings.generateMipMaps, sizeof(settings.generateMipMaps));
-    file->Read(&settings.minFilter, sizeof(settings.minFilter));
-    file->Read(&settings.magFilter, sizeof(settings.magFilter));
-    
-	if(signature == COMPRESSED_FILE)
-	{
-		file->Read(&exportedAsGpuFamily, sizeof(exportedAsGpuFamily));
-	}
-	else if(signature == NOTCOMPRESSED_FILE)
-	{
-		ReadCompressionWith16CRCOld(file, compression[GPU_POWERVR_IOS]);
-		ReadCompressionWith16CRCOld(file, compression[GPU_TEGRA]);
-	}
-}
 
 void TextureDescriptor::LoadVersion5(int32 signature, DAVA::File *file)
 {
@@ -369,7 +297,7 @@ void TextureDescriptor::LoadVersion5(int32 signature, DAVA::File *file)
 
     if(signature == COMPRESSED_FILE)
 	{
-		// file->Read(&exportedAsGpuFamily, sizeof(exportedAsGpuFamily));
+		exportedAsGpuFamily = GPU_UNKNOWN;
 	}
 	else if(signature == NOTCOMPRESSED_FILE)
 	{
@@ -563,8 +491,6 @@ FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathnam
     {
         return texturePathname;
     }
-    
-    DVASSERT(GPUFamilyDescriptor::GetGPUForPathname(texturePathname) == GPU_UNKNOWN);
     
     return FilePath::CreateWithNewExtension(texturePathname, GetDescriptorExtension());
 }

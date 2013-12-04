@@ -34,7 +34,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(SwitchNode);
 
 SwitchNode::SwitchNode()
 :	oldSwitchIndex(0),

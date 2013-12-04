@@ -875,6 +875,14 @@ void DefaultScreen::CopySelectedControls()
 	HierarchyTreeNode* parentConrol = NULL;
 	//Get current selected controls on screen
 	const HierarchyTreeController::SELECTEDCONTROLNODES &selectedNodes = HierarchyTreeController::Instance()->GetActiveControlNodes();
+
+    // Need to check whether we have at least one subcontrol and disable copying in this case.
+    // See please DF-2684 for details.
+    if (CopyPasteController::Instance()->SubcontrolsSelected(selectedNodes))
+    {
+        return;
+    }
+
 	//Get firt parent control from list of selected controls
 	for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedNodes.begin();
 		 iter != selectedNodes.end();

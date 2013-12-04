@@ -46,9 +46,11 @@ public:
         TOOL_DROPPER,
         TOOL_COPYPASTE
     };
-    
-    LandscapeTool(int32 _ID, eToolType _type, const FilePath & _imageName);
+
+protected:
     virtual ~LandscapeTool();
+public:
+    LandscapeTool(int32 _ID, eToolType _type, const FilePath & _imageName);
 
     static float32 SizeColorMin();
     static float32 SizeColorMax();

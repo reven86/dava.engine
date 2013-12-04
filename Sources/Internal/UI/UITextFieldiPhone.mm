@@ -23,6 +23,8 @@
 #include "UI/UITextFieldiPhone.h"
 #include "Core/Core.h"
 
+#import <HelperAppDelegate.h>
+
 float GetUITextViewSizeDivider()
 {
     float divider = 1.f;
@@ -71,9 +73,10 @@ float GetUITextViewSizeDivider()
 	if (self = [super init])
 	{
         float divider = GetUITextViewSizeDivider();
-		self.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(-90.0f));
-		self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider);
-		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);	
+        
+        self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider);
+        
+		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
 		self.userInteractionEnabled = TRUE;
 		textInputAllowed = YES;
 
@@ -586,7 +589,9 @@ namespace DAVA
     void UITextFieldiPhone::ShowField()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        [[[UIApplication sharedApplication] keyWindow] addSubview: textFieldHolder];
+        HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+        [[appDelegate glController].backgroundView addSubview:textFieldHolder];
+        //[[[UIApplication sharedApplication] keyWindow] addSubview: textFieldHolder];
     }
     
     void UITextFieldiPhone::HideField()

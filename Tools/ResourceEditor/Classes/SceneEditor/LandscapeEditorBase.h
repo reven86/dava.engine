@@ -73,11 +73,10 @@ class LandscapeEditorBase
     static const int32 INVALID_TOUCH_ID = -1;
     static const int32 RAY_TRACING_DISTANCE = 1000;
     
-    
-public:
-    
-    LandscapeEditorBase(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl); 
+protected:
     virtual ~LandscapeEditorBase();
+public:
+    LandscapeEditorBase(LandscapeEditorDelegate *newDelegate, EditorBodyControl *parentControl); 
     
 	virtual void Draw(const UIGeometricData &geometricData);
     virtual void Update(float32 timeElapsed);

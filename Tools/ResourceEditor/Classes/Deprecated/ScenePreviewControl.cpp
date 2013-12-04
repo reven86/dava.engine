@@ -258,8 +258,11 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
         rootNode = editorScene->GetRootNode(pathToFile);
         if(rootNode)
         {
+			rootNode = rootNode->Clone();
+
             currentScenePath = pathToFile;
             editorScene->AddNode(rootNode);
+			rootNode->Release();
             
             needSetCamera = true;
             Camera *cam = editorScene->GetCamera(0);
@@ -274,10 +277,9 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
                 cam->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f); 
                 
 
-                
                 ScopedPtr<Entity> node(new Entity());
                 node->SetName("preview-camera");
-                node->AddComponent(new CameraComponent(cam));
+                node->AddComponent(ScopedPtr<CameraComponent> (new CameraComponent(cam)));
                 editorScene->AddNode(node);
                 editorScene->AddCamera(cam);
                 editorScene->SetCurrentCamera(cam);
@@ -294,7 +296,8 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
         }
     }
     
-    SceneValidator::Instance()->ValidateSceneAndShowErrors(editorScene);
+	Set<String> errorsLogToHideDialog;
+	SceneValidator::Instance()->ValidateScene(editorScene, pathToFile, errorsLogToHideDialog);
     
     return retError;
 }

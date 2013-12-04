@@ -41,6 +41,8 @@ namespace DAVA
 
 class SwitchComponent : public Component
 {
+protected:
+    ~SwitchComponent(){};
 public:
 	IMPLEMENT_COMPONENT_TYPE(SWITCH_COMPONENT);
 

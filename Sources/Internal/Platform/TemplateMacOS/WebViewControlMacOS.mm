@@ -90,17 +90,17 @@ using namespace DAVA;
 			switch (action)
 			{
 				case IUIWebViewDelegate::PROCESS_IN_WEBVIEW:
-					Logger::Debug("PROCESS_IN_WEBVIEW");
+					Logger::FrameworkDebug("PROCESS_IN_WEBVIEW");
 					break;
 					
 				case IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
-					Logger::Debug("PROCESS_IN_SYSTEM_BROWSER");
+					Logger::FrameworkDebug("PROCESS_IN_SYSTEM_BROWSER");
 					process = NO;
 					[[NSWorkspace sharedWorkspace] openURL:[request URL]];
 					break;
 					
 				case IUIWebViewDelegate::NO_PROCESS:
-					Logger::Debug("NO_PROCESS");
+					Logger::FrameworkDebug("NO_PROCESS");
 					
 				default:
 					process = NO;

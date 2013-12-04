@@ -36,9 +36,10 @@
 
 class SceneGraphItem: public GraphItem
 {
+protected:
+    virtual ~SceneGraphItem();
 public:
     SceneGraphItem(GraphItem *parent = 0);
-    virtual ~SceneGraphItem();
     
 	virtual QVariant Data(int32 column);
 	virtual void SetUserData(void *data);

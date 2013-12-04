@@ -75,12 +75,16 @@ public:
 
 	void LockScale(bool lock);
 	void LockModif(bool lock);
-	void Show(bool show);
+	void LockAxis(bool lock);
+
+	void SetVisible(bool visible);
+	bool IsVisible() const;
 
 protected:
 	bool lockedScale;
 	bool lockedModif;
-	bool visible;
+	bool lockedAxis;
+	bool isVisible;
 
 	ST_ModifMode curMode;
 	ST_Axis curAxis;

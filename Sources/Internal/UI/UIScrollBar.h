@@ -60,10 +60,11 @@ public:
             ORIENTATION_VERTICAL = 0
         ,	ORIENTATION_HORIZONTAL
     };
-    
+protected:
+    virtual ~UIScrollBar();
+public:
     UIScrollBar(const Rect &rect = Rect(), eScrollOrientation requiredOrientation = ORIENTATION_VERTICAL,
 				bool rectInAbsoluteCoordinates = false);
-    virtual ~UIScrollBar();
 
     void SetDelegate(UIScrollBarDelegate *newDelegate);
     UIControl *GetSlider();

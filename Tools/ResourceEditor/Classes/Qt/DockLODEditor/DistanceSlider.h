@@ -35,7 +35,42 @@
 
 #include <QFrame>
 #include <QSplitter>
+#include <QSplitterHandle>
 #include <QFrame>
+#include <QSet>
+
+class DistanceSplitterHandle : public QSplitterHandle
+{
+public:
+	DistanceSplitterHandle(Qt::Orientation o, QSplitter *parent) 
+		: QSplitterHandle(o, parent)
+	{ }
+
+protected:
+	virtual void mouseReleaseEvent(QMouseEvent * e)
+	{
+		bool opq = splitter()->opaqueResize();
+
+		splitter()->setOpaqueResize(false);
+		QSplitterHandle::mouseReleaseEvent(e);
+		splitter()->setOpaqueResize(opq);
+	}
+};
+
+
+class DistanceSplitter : public QSplitter
+{
+public:
+	DistanceSplitter(QWidget *parent = 0)
+		: QSplitter(parent)
+	{ }
+
+protected:
+	virtual QSplitterHandle* createHandle()
+	{
+		return new DistanceSplitterHandle(orientation(), this);
+	}
+};
 
 class DistanceSlider: public QFrame
 {
@@ -46,11 +81,14 @@ public:
 	~DistanceSlider();
 
     void SetLayersCount(int count);
+
     void SetDistance(int layer, double value);
-    
+	double GetDistance(int layer) const;
+
+	void LockDistances(bool lock);
 
 signals:
-    void DistanceChanged(int, double);
+    void DistanceChanged(const QVector<int> &changedLayers, bool continious);
     
 protected slots:
 
@@ -63,6 +101,7 @@ protected:
 private:
     QSplitter *splitter;
     QFrame *frames[DAVA::LodComponent::MAX_LOD_LAYERS];
+	bool locked;
     
     int layersCount;
     

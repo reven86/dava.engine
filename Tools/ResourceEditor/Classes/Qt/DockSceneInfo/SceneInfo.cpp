@@ -62,14 +62,10 @@ SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
     , treeStateHelper(this, this->curModel)
 {
 	// global scene manager signals
-    connect(SceneSignals::Instance(), SIGNAL(Selected(SceneEditor2 *, DAVA::Entity *)), SLOT(EntitySelected(SceneEditor2 *, DAVA::Entity *)));
-    connect(SceneSignals::Instance(), SIGNAL(Deselected(SceneEditor2 *, DAVA::Entity *)), SLOT(EntityDeselected(SceneEditor2 *, DAVA::Entity *)));
-    
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), SLOT(SceneActivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), SLOT(SceneDeactivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), SLOT(SceneStructureChanged(SceneEditor2 *, DAVA::Entity *)));
-    
-    connect(QtMainWindow::Instance(), SIGNAL(GlobalInvalidateTimeout()), SLOT(UpdateInfoByTimer()));
+    connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
     
 	// MainWindow actions
 	posSaver.Attach(this, "DockSceneInfo");
@@ -194,6 +190,8 @@ void SceneInfo::InitializeLODSectionForSelection()
     }
     
     AddChild("All LOD Triangles", header);
+    AddChild("Objects without LOD Triangles", header);
+    AddChild("All Triangles", header);
 }
 
 
@@ -221,15 +219,18 @@ void SceneInfo::RefreshLODInfoForSelection()
 {
     QtPropertyData* header = GetInfoHeader("LOD Info for Selected Entities");
     
-    uint32 objectTriangles = 0;
+    uint32 lodTriangles = 0;
     for(int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
     {
         SetChild(Format("Objects LOD%d Triangles", i), lodInfoSelection.trianglesOnLod[i], header);
         
-        objectTriangles += lodInfoSelection.trianglesOnLod[i];
+        lodTriangles += lodInfoSelection.trianglesOnLod[i];
     }
     
-    SetChild("All LOD Triangles", objectTriangles, header);
+    SetChild("All LOD Triangles", lodTriangles, header);
+    
+    SetChild("Objects without LOD Triangles", lodInfoSelection.trianglesOnObjects, header);
+    SetChild("All Triangles", lodInfoSelection.trianglesOnObjects + lodTriangles, header);
 }
 
 
@@ -414,11 +415,10 @@ void SceneInfo::CollectLODDataForSelection()
     if(!activeScene) return;
     
     Vector<LodComponent *>lods;
-    const EntityGroup *selection = activeScene->selectionSystem->GetSelection();
-    size_t entitiesCount = selection->Size();
-    for(size_t i = 0; i < entitiesCount; ++i)
+    for(size_t i = 0; i < activeScene->selectionSystem->GetSelectionCount(); ++i)
     {
-        EditorLODData::EnumerateLODsRecursive(selection->GetEntity(i), lods);
+        EditorLODData::EnumerateLODsRecursive(activeScene->selectionSystem->GetSelectionEntity(i), lods);
+        lodInfoSelection.trianglesOnObjects += GetTrianglesForNotLODEntityRecursive(activeScene->selectionSystem->GetSelectionEntity(i), false);
     }
     
     CollectLODTriangles(lods, lodInfoSelection);
@@ -431,6 +431,7 @@ void SceneInfo::CollectLODDataInFrame()
     if(!activeScene) return;
 
     CollectLODDataInFrameRecursive(activeScene);
+    lodInfoInFrame.trianglesOnObjects += GetTrianglesForNotLODEntityRecursive(activeScene, true);
 }
 
 void SceneInfo::CollectLODDataInFrameRecursive(DAVA::Entity *entity)
@@ -448,11 +449,6 @@ void SceneInfo::CollectLODDataInFrameRecursive(DAVA::Entity *entity)
             lodInfoInFrame.trianglesOnLod[layer] += EditorLODData::GetTrianglesForLodLayer(*lodLayerIt, true);
         }
     }
-    else
-    {
-        lodInfoInFrame.trianglesOnObjects = EditorLODData::GetTrianglesForEntity(entity, true);
-    }
-    
     
     DAVA::int32 count = entity->GetChildrenCount();
     for(DAVA::int32 i = 0; i < count; ++i)
@@ -480,6 +476,21 @@ void SceneInfo::CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lo
     }
 }
 
+DAVA::uint32 SceneInfo::GetTrianglesForNotLODEntityRecursive(DAVA::Entity *entity, bool checkVisibility)
+{
+    if(GetLodComponent(entity))
+        return 0;
+    
+    DAVA::uint32 triangles = EditorLODData::GetTrianglesForEntity(entity, checkVisibility);
+    
+    DAVA::uint32 count = entity->GetChildrenCount();
+    for(DAVA::uint32 i = 0; i < count; ++i)
+    {
+        triangles += GetTrianglesForNotLODEntityRecursive(entity->GetChild(i), checkVisibility);
+    }
+    
+    return triangles;
+}
 
 void SceneInfo::CollectTexture(Map<String, Texture *> &textures, const FilePath &name, Texture *tex)
 {
@@ -586,7 +597,7 @@ void SceneInfo::RefreshAllData(SceneEditor2 *scene)
 void SceneInfo::SceneActivated(SceneEditor2 *scene)
 {
     activeScene = scene;
-    landscape = activeScene->structureSystem->FindLanscape();
+    landscape = FindLandscape(activeScene);
     RefreshAllData(scene);
 }
 
@@ -604,20 +615,13 @@ void SceneInfo::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 {
     if(activeScene == scene)
     {
-        landscape = activeScene->structureSystem->FindLanscape();
+        landscape = FindLandscape(activeScene);
         RefreshAllData(scene);
     }
 }
 
 
-void SceneInfo::EntitySelected(SceneEditor2 *scene, DAVA::Entity *entity)
-{
-    ClearSelectionData();
-    CollectLODDataForSelection();
-    RefreshLODInfoForSelection();
-}
-
-void SceneInfo::EntityDeselected(SceneEditor2 *scene, DAVA::Entity *entity)
+void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
     ClearSelectionData();
     CollectLODDataForSelection();

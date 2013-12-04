@@ -66,9 +66,19 @@ public:
 		TYPE_PARTICLES,				// default for any particle layer loaded from yaml file
 		TYPE_SUPEREMITTER_PARTICLES
 	};
-	
-	ParticleLayer();
+
+	enum eParticleOrientation
+	{
+		PARTICLE_ORIENTATION_CAMERA_FACING = 1<<0, //default
+		PARTICLE_ORIENTATION_X_FACING = 1<<1,
+		PARTICLE_ORIENTATION_Y_FACING = 1<<2,
+		PARTICLE_ORIENTATION_Z_FACING = 1<<3,
+		PARTICLE_ORIENTATION_WORLD_ALIGN = 1<<4 
+	};
+protected:
 	virtual ~ParticleLayer();
+public:
+	ParticleLayer();
 	
 	/**
 		\brief Function to clone particle layer
@@ -225,8 +235,17 @@ public:
     
 	RenderBatch * GetRenderBatch();
 
-	virtual void SetAdditive(bool additive);
-	bool GetAdditive() const {return additive;};
+	DAVA_DEPRECATED(void SetAdditive(bool additive));
+	DAVA_DEPRECATED(bool GetAdditive() const);
+	virtual void SetBlendMode(eBlendMode sFactor, eBlendMode dFactor);	
+	eBlendMode GetBlendSrcFactor();
+	eBlendMode GetBlendDstFactor();
+
+	virtual void SetFog(bool enable);
+	bool IsFogEnabled();
+
+	virtual void SetFrameBlend(bool enable);
+	bool IsFrameBlendEnabled();
 
 	void SetInheritPosition(bool inherit);
 	bool GetInheritPosition() const {return inheritPosition;}
@@ -274,6 +293,8 @@ public:
 	bool IsLodActive(int32 lod);
 	void SetLodActive(int32 lod, bool active);	
 
+	void GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables);
+
 protected:
 	void GenerateNewParticle(int32 emitIndex);
 	void GenerateSingleParticle();
@@ -286,7 +307,7 @@ protected:
 	void RemoveFromList(Particle * particle);
 	
 	void RunParticle(Particle * particle);
-	void ProcessParticle(Particle * particle);
+	void ProcessParticle(Particle * particle, float32 timeElapsed);	
 	
     void SaveForcesToYamlNode(YamlNode* layerNode);
 
@@ -325,17 +346,24 @@ protected:
 
 	ParticleLayerBatch * renderBatch;
 
-	bool		isDisabled;
-	bool		additive;
+	bool		isDisabled;	
 	bool		isLooped;
 
-	bool inheritPosition;  //for supperemitter - if true the whole emitter would be moved, otherwise just emission point
+	eBlendMode srcBlendFactor, dstBlendFactor;
+
+	bool enableFog;
+
+	bool enableFrameBlend;
+
+	bool inheritPosition;  //for super emitter - if true the whole emitter would be moved, otherwise just emission point
 
 	float32		playbackSpeed;
 
 	Vector2		layerPivotPoint;
 
 	Vector<bool> activeLODS;	
+
+	List<std::pair<String, ModifiablePropertyLineBase *> > modifiables;
 
 public:
 	String			layerName;
@@ -363,14 +391,8 @@ public:
 	RefPtr< PropertyLine<float32> > spin;				// spin of angle / second
 	RefPtr< PropertyLine<float32> > spinVariation;
 	RefPtr< PropertyLine<float32> > spinOverLife;
-	
-	RefPtr< PropertyLine<float32> > motionRandom;		//
-	RefPtr< PropertyLine<float32> > motionRandomVariation;
-	RefPtr< PropertyLine<float32> > motionRandomOverLife;
-	
-	RefPtr< PropertyLine<float32> > bounce;				//
-	RefPtr< PropertyLine<float32> > bounceVariation;
-	RefPtr< PropertyLine<float32> > bounceOverLife;	
+	bool randomSpinDirection;
+		
 	
 	RefPtr< PropertyLine<Color> > colorRandom;		
 	RefPtr< PropertyLine<float32> > alphaOverLife;	
@@ -378,6 +400,8 @@ public:
 
 	RefPtr< PropertyLine<float32> > angle;				// sprite angle in degrees
 	RefPtr< PropertyLine<float32> > angleVariation;		// variations in degrees
+
+	RefPtr< PropertyLine<float32> > animSpeedOverLife;	
 
 	float32		alignToMotion;
 
@@ -390,15 +414,20 @@ public:
 	float32 	loopEndTime;
 	
 	void		UpdateLayerTime(float32 startTime, float32 endTime);
-
-	int32		frameStart;
-	int32		frameEnd;
+	
 
 	eType		type;
+
+	int32 particleOrientation;
 
 	bool		frameOverLifeEnabled;
 	float32		frameOverLifeFPS;
 	bool		randomFrameOnStart;
+	bool		loopSpriteAnimation;
+
+	//for long particles
+	float32 scaleVelocityBase;
+	float32 scaleVelocityFactor;
 
 	ParticleEmitter* innerEmitter;
 	FilePath	innerEmitterPath;
@@ -450,14 +479,6 @@ public:
 //        MEMBER(spinVariation, "Spin Variation", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
 //        MEMBER(spinOverLife, "Spin Over Life", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
 //
-//        MEMBER(motionRandom, "Motion Random", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-//        MEMBER(motionRandomVariation, "Motion Random Variation", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-//        MEMBER(motionRandomOverLife, "Motion Random Over Life", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-//                         
-//        MEMBER(bounce, "Bounce", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-//        MEMBER(bounceVariation, "Bounce Variation", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-//        MEMBER(bounceOverLife, "Bounce Over Life", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-//                         
 //        MEMBER(colorRandom, "Color Random", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
 //        MEMBER(alphaOverLife, "Alpha Over Life", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
 //        MEMBER(colorOverLife, "Color Over Life", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)

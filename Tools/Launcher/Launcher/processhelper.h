@@ -32,7 +32,7 @@
 
 #include <QString>
 #ifdef Q_OS_DARWIN
-#include "Processes.h"
+//#include "Processes.h"
 #endif
 
 class ProcessHelper
@@ -44,7 +44,7 @@ public:
 
 private:
 #ifdef Q_OS_DARWIN
-    static bool GetProcessPSN(const QString& path, ProcessSerialNumber& psn);
+//    static bool GetProcessPSN(const QString& path, ProcessSerialNumber& psn);
 #elif defined Q_OS_WIN
     static bool GetProcessID(QString path, quint32& dwPID);
 #endif

@@ -36,7 +36,7 @@
 #include "ModificationWidget.h"
 #include "Tools/QtWaitDialog/QtWaitDialog.h"
 
-#include "Base/Singleton.h"
+#include "DAVAEngine.h"
 
 #include "Scene/SceneEditor2.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
@@ -44,8 +44,12 @@
 // TODO: remove old screen -->
 #include "Classes/SceneEditor/MaterialEditor.h"
 // <---
-class AddSwitchEntityDialog;
 
+class AddSwitchEntityDialog;
+class Request;
+class QtLabelWithActions;
+class LandscapeDialog;
+class HangingObjectsHeight;
 class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 {
 	Q_OBJECT
@@ -53,15 +57,17 @@ class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 protected:
     
     static const int GLOBAL_INVALIDATE_TIMER_DELTA = 1000;
-    
+
 public:
-	explicit QtMainWindow(bool enableGlobalTimeout, QWidget *parent = 0);
+	explicit QtMainWindow(QWidget *parent = 0);
 	~QtMainWindow();
 
 	Ui::MainWindow* GetUI();
 	SceneTabWidget* GetSceneWidget();
 	SceneEditor2* GetCurrentScene();
 
+    bool OpenScene(const QString & path);
+	bool SaveScene(SceneEditor2 *scene);
 	bool SaveSceneAs(SceneEditor2 *scene);
 
 	void SetGPUFormat(DAVA::eGPUFamily gpu);
@@ -72,11 +78,13 @@ public:
 	void WaitSetValue(int value);
 	void WaitStop();
 
-    void EnableGlobalTimeout(bool enable);
-    
+	void BeastWaitSetMessage(const QString &messsage);
+	bool BeastWaitCanceled();
+
+	void EnableGlobalTimeout(bool enable);
+
 signals:
     void GlobalInvalidateTimeout();
-
     
 // qt actions slots
 public slots:
@@ -90,14 +98,18 @@ public slots:
 	void OnRecentTriggered(QAction *recentAction);
 	void ExportMenuTriggered(QAction *exportAsAction);
 
+    void OnImportSpeedTreeXML();
+
 	void OnUndo();
 	void OnRedo();
 
+	void OnEditorGizmoToggle(bool show);
+	void OnAllowOnSceneSelectionToggle(bool allow);
+
 	void OnReloadTextures();
 	void OnReloadTexturesTriggered(QAction *reloadAction);
+	void OnReloadSprites();
 
-    void OnReloadSprites();
-    
 	void OnSelectMode();
 	void OnMoveMode();
 	void OnRotateMode();
@@ -107,6 +119,7 @@ public slots:
 	void OnManualModifMode();
 	void OnPlaceOnLandscape();
 	void OnSnapToLandscape();
+	void OnResetTransform();
 
 	void OnMaterialEditor();
 	void OnTextureBrowser();
@@ -116,54 +129,89 @@ public slots:
 		
 	void OnLandscapeDialog();
 	void OnLightDialog();
-	void OnServiceNodeDialog();
 	void OnCameraDialog();
-	void OnImposterDialog();
+	void OnEmptyEntity();
 
 	void OnUserNodeDialog();
 	void OnSwitchEntityDialog();
 	void OnParticleEffectDialog();
 	void OnUniteEntitiesWithLODs();
 	void OnAddEntityMenuAboutToShow();
-	
-	void OnNotPassableTerrain();
-	void OnRulerTool();
-	
+	void OnAddEntityFromSceneTree();
+
 	void OnSetSkyboxNode();
 	
 	void OnShowSettings();
-
 	void OnOpenHelp();
 
 	void OnSetShadowColor();
-	void OnShadowBlendModeMenu();
+	void OnShadowBlendModeWillShow();
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();
+
+	void OnSaveHeightmapToPNG();
+	void OnSaveTiledTexture();
+
+	void OnConvertModifiedTextures();
     
-    void OnSaveHeightmapToPNG();
-    void OnSaveTiledTexture();
-    
-    void OnConvertToShadow();
+	void OnCloseTabRequest(int tabIndex, Request *closeRequest);
+
+	void OnBeast();
+	void OnBeastAndSave();
+
+	void OnConvertToShadow();
+
+	void OnCameraSpeed0();
+	void OnCameraSpeed1();
+	void OnCameraSpeed2();
+	void OnCameraSpeed3();
+	void OnCameraLookFromTop();
+
+	void OnLandscapeEditorToggled(SceneEditor2* scene);
+	void OnCustomColorsEditor();
+	void OnHeightmapEditor();
+	void OnRulerTool();
+	void OnTilemaskEditor();
+	void OnVisibilityTool();
+	void OnNotPassableTerrain();
 	
 	void OnAddActionComponent();
 	void OnRemoveActionComponent();
 
+	void OnObjectsTypeMenuWillShow();
+	void OnObjectsTypeChanged(QAction *action);
+    void OnObjectsTypeChanged(int type);
+
+	void OnHangingObjects();
+	void OnHangingObjectsHeight(double value);
+
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
+	void closeEvent(QCloseEvent * e);
 
 	void SetupMainMenu();
 	void SetupToolBars();
+	void SetupStatusBar();
 	void SetupDocks();
 	void SetupActions();
 	void SetupTitle();
+	void SetupShortCuts();
 
 	void InitRecent();
 	void AddRecent(const QString &path);
     
     void CreateMaterialEditorIfNeed();
     
-    void UpdateStatusBar();
     void StartGlobalInvalidateTimer();
+
+	void RunBeast();
+
+
+	bool IsAnySceneChanged();
+
+	void SetLandscapeSettingsEnabled(bool);
+
+	void DiableUIForFutureUsing();
 
 protected slots:
 	void ProjectOpened(const QString &path);
@@ -172,41 +220,58 @@ protected slots:
 	void SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 	void SceneActivated(SceneEditor2 *scene);
 	void SceneDeactivated(SceneEditor2 *scene);
-	void EntitySelected(SceneEditor2 *scene, DAVA::Entity *entity);
-	void EntityDeselected(SceneEditor2 *scene, DAVA::Entity *entity);
-    
-	void AddSwitchDialogFinished(int result);
-
-	void UpdateRulerToolLength(SceneEditor2* scene, double length, double previewLength);
 
     void OnGlobalInvalidateTimeout();
 
-	void NotPassableToggled(SceneEditor2* scene);
-
 	void EditorLightEnabled(bool enabled);
 
+	void OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
+
+	void UnmodalDialogFinished(int);
 private:
 	Ui::MainWindow *ui;
 	QtWaitDialog *waitDialog;
+	QtWaitDialog *beastWaitDialog;
+
 	QtPosSaver posSaver;
+	bool globalInvalidate;
 
 	QList<QAction *> recentScenes;
 	ModificationWidget *modificationWidget;
-	AddSwitchEntityDialog* addSwitchEntityDialog;
 
 	// TODO: remove this old screen -->
 	MaterialEditor *materialEditor;
 	// <--
 
+	QtLabelWithActions *objectTypesLabel;
+    QComboBox *objectTypesWidget;
+
+	AddSwitchEntityDialog*	addSwitchEntityDialog;
+	LandscapeDialog*		landscapeDialog;
+	HangingObjectsHeight*	hangingObjectsWidget;
+
+	void EnableSceneActions(bool enable);
+	void EnableProjectActions(bool enable);
+	void UpdateConflictingActionsState(bool enable);
+
+	void LoadViewState(SceneEditor2 *scene);
 	void LoadUndoRedoState(SceneEditor2 *scene);
 	void LoadModificationState(SceneEditor2 *scene);
 	void LoadEditorLightState(SceneEditor2 *scene);
-	void LoadNotPassableState(SceneEditor2* scene);
-	void LoadRulerToolState(SceneEditor2* scene);
+	void LoadShadowBlendModeState(SceneEditor2* scene);
 	void LoadGPUFormat();
-	void CreateAndDisplayAddEntityDialog(Entity* sceneNode);
-    
-    bool globalInvalidateTimeoutEnabled;
+	void LoadLandscapeEditorState(SceneEditor2* scene);
+	void LoadObjectTypes(SceneEditor2 *scene);
+	void LoadHangingObjects(SceneEditor2 *scene);
+
+	bool SaveTilemask(bool forAllTabs = true);
+
+	// Landscape editor specific
+	// TODO: remove later -->
+	bool IsTilemaskModificationCommand(const Command2* cmd);
+	bool LoadAppropriateTextureFormat();
+	bool IsSavingAllowed();
+	// <--
 };
 
 

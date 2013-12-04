@@ -44,9 +44,10 @@ using namespace DAVA;
 
 class InfoControl : public UIControl
 {
+protected:
+    virtual ~InfoControl();
 public:
     InfoControl(UIControl* watched);
-    virtual ~InfoControl();
     
     enum eInfoTypes
     {

@@ -37,9 +37,10 @@ using namespace DAVA;
 
 class RulerToolProxy: public BaseObject
 {
+protected:
+	~RulerToolProxy();
 public:
 	RulerToolProxy(int32 size);
-	~RulerToolProxy();
 
 	int32 GetSize();
 

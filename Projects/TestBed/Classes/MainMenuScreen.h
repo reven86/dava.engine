@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class MainMenuScreen : public UIScreen
 {
+protected:
+	~MainMenuScreen(){}
 public:
 
 

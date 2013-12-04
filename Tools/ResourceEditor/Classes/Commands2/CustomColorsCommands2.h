@@ -32,11 +32,35 @@
 #define __RESOURCEEDITORQT__CUSTOMCOLORSCOMMANDS2__
 
 #include "Commands2/Command2.h"
+#include "CommandAction.h"
 #include "DAVAEngine.h"
 
 class CustomColorsProxy;
+class SceneEditor2;
 
 using namespace DAVA;
+
+class ActionEnableCustomColors: public CommandAction
+{
+public:
+	ActionEnableCustomColors(SceneEditor2* forSceneEditor);
+	
+protected:
+	SceneEditor2* sceneEditor;
+	
+	virtual void Redo();
+};
+
+class ActionDisableCustomColors: public CommandAction
+{
+public:
+	ActionDisableCustomColors(SceneEditor2* forSceneEditor);
+	
+protected:
+	SceneEditor2* sceneEditor;
+	
+	virtual void Redo();
+};
 
 class ModifyCustomColorsCommand: public Command2
 {

@@ -41,9 +41,10 @@ namespace DAVA
 class SceneFileV2;
 class StaticMesh : public DataNode
 {
+protected:
+	~StaticMesh();
 public:
 	StaticMesh(Scene * _scene = 0);
-	~StaticMesh();
     
     virtual void SetScene(Scene * _scene);
     virtual int32 Release();

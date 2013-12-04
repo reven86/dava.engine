@@ -38,6 +38,31 @@
 
 namespace DAVA
 {
+static const String RENDER_STATES_NAMES[] = 
+{
+	"STATE_BLEND",
+	"STATE_DEPTH_TEST",
+	"STATE_DEPTH_WRITE",
+	"STATE_STENCIL_TEST",
+	"STATE_CULL",
+
+	"STATE_ALPHA_TEST",
+	"STATE_SCISSOR_TEST",
+
+	"STATE_TEXTURE0",
+	"STATE_TEXTURE1",
+	"STATE_TEXTURE2",
+	"STATE_TEXTURE3",
+	"STATE_TEXTURE4",
+	"STATE_TEXTURE5",
+	"STATE_TEXTURE6",
+	"STATE_TEXTURE7",
+
+	"STATE_COLORMASK_RED",
+	"STATE_COLORMASK_GREEN",
+	"STATE_COLORMASK_BLUE",
+	"STATE_COLORMASK_ALPHA"
+};
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 IDirect3DDevice9 * RenderState::direct3DDevice = 0; 
@@ -80,7 +105,6 @@ void RenderState::Reset(bool doHardwareReset)
     
     if (doHardwareReset)
     {
-        RenderManager::Instance()->LockNonMain();
 //        Logger::FrameworkDebug("Do hardware reset");
         // PrintBackTraceToLog();
         SetColorInHW();
@@ -100,8 +124,6 @@ void RenderState::Reset(bool doHardwareReset)
         {
             SetTextureLevelInHW(textureLevel);
         }
-        RenderManager::Instance()->UnlockNonMain();
-
     }
 }
 bool RenderState::IsEqual(RenderState * anotherState)
@@ -132,8 +154,6 @@ bool RenderState::IsEqual(RenderState * anotherState)
 
 void RenderState::Flush(RenderState * hardwareState) const
 {
-    RenderManager::Instance()->LockNonMain();
-
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::Flush started");
 #endif    
@@ -369,8 +389,6 @@ void RenderState::Flush(RenderState * hardwareState) const
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::Flush finished");
 #endif    
-    RenderManager::Instance()->UnlockNonMain();
-
 }
     
     

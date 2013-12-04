@@ -44,9 +44,10 @@ class NMaterial;
 
 class MaterialGraph : public BaseObject
 {
+protected:
+    ~MaterialGraph();
 public:
     MaterialGraph();
-    ~MaterialGraph();
     
     bool LoadFromFile(const FilePath & pathname);
     bool LoadNode(const YamlNode * graphNode);

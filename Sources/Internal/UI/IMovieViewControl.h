@@ -38,7 +38,7 @@ namespace DAVA {
 
 enum eMovieScalingMode
 {
-	scalingModeNone,       // No scaling
+	scalingModeNone = 0,       // No scaling
     scalingModeAspectFit,  // Uniform scale until one dimension fits
     scalingModeAspectFill, // Uniform scale until the movie fills the visible bounds. One dimension may have clipped contents
     scalingModeFill        // Non-uniform scale. Both render dimensions will exactly match the visible bounds

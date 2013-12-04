@@ -47,7 +47,8 @@ using namespace DAVA;
 class EMailTest: public TestTemplate<EMailTest>
 {
 	static float32 AUTO_CLOSE_TIME;
-
+protected:
+    ~EMailTest(){}
 public:
 	EMailTest();
 

@@ -79,4 +79,14 @@ void DAVA::EnableSleepTimer()
 	jniUtils.EnableSleepTimer();
 }
 
+uint64 DAVA::EglGetCurrentContext()
+{
+	//TODO: in case if context checking will ever be needed on Android,
+	//TODO: implement this method similar to any other platform
+	//TODO: it should return uint64 representation of the current OpenGL context
+	//TDOD: see iOS implementation for example
+	DVASSERT(false && "Implement this method for Android if needed");
+	return 0;
+}
+
 #endif //#if defined(__DAVAENGINE_ANDROID__)

@@ -58,9 +58,10 @@ public:
 		Texture::DepthFormat depthFormat;
 		Vector<std::pair<int32, Vector2> > blocks; //pair is <blocksCount, blockSize>
 	};
-
-	SharedFBO(Setup * setup);
+protected:
 	~SharedFBO();
+public:
+	SharedFBO(Setup * setup);
 
 	Block * AcquireBlock(const Vector2 & size);
 	void ReleaseBlock(Block * block);

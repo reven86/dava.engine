@@ -44,6 +44,9 @@ namespace DAVA
 class Vector2
 {
 public:
+    static const Vector2 UnitX;
+    static const Vector2 UnitY;
+
 	union{
 		struct
 		{
@@ -129,6 +132,10 @@ inline Vector2 Reflect(const Vector2 & v, const Vector2 & n);
 class Vector3
 {
 public:
+
+    static const Vector3 UnitX;
+    static const Vector3 UnitY;
+    static const Vector3 UnitZ;
 
 	union{
 		struct

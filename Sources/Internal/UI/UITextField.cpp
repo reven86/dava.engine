@@ -47,8 +47,6 @@ extern void CloseKeyboard();
 namespace DAVA 
 {
 
-REGISTER_CLASS(UITextField);
-
 void UITextFieldDelegate::TextFieldShouldReturn(UITextField * /*textField*/)
 {
 }
@@ -173,6 +171,7 @@ UITextField::~UITextField()
 	SafeDelete(textFieldiPhone);
 #else
     SafeRelease(textFont);
+
     RemoveAllControls();
     SafeRelease(staticText);
 #endif

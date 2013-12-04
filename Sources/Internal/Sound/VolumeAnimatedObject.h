@@ -40,6 +40,8 @@ namespace DAVA
 class Animation;
 class VolumeAnimatedObject : public AnimatedObject
 {
+protected:
+    ~VolumeAnimatedObject(){}
 public:
 	VolumeAnimatedObject();
 

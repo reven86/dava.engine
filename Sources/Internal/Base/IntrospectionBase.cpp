@@ -44,7 +44,7 @@ InspDesc::InspDesc(const char *_text, const EnumMap* _enumMap)
 	, enumMap(_enumMap)
 { }
 
-InspMember::InspMember(const char *_name, const InspDesc &_desc, const int _offset, const MetaInfo *_type, int _flags /* = 0 */)
+InspMember::InspMember(const char *_name, const InspDesc &_desc, const long int _offset, const MetaInfo *_type, int _flags /* = 0 */)
 	: name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags)
 { }
 

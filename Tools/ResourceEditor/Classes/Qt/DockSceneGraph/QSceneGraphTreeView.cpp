@@ -234,10 +234,6 @@ void QSceneGraphTreeView::ShowSceneGraphMenu(const QModelIndex &index, const QPo
                     String filePathname = properties->GetString(String(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
 
                     AddActionToMenu(&menu, QString("Remove Root Nodes"), new CommandRemoveRootNodes());
-                    
-                    AddActionToMenu(&menu, QString("Edit Model"), new CommandEditScene(filePathname));
-                    AddActionToMenu(&menu, QString("Reload Model"), new CommandReloadScene(filePathname));
-                    AddActionToMenu(&menu, QString("Reload Model From"), new CommandReloadEntityFrom(filePathname));
 				}
 			}
 			FilePath filePathForSaveAs(activeScene->GetScenePathname());

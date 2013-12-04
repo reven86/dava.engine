@@ -43,9 +43,10 @@ namespace DAVA
 class SceneNodeAnimationList;
 class SceneNodeAnimation : public BaseObject
 {
+protected:
+	virtual ~SceneNodeAnimation();
 public:
 	SceneNodeAnimation(int32 keyCount);
-	virtual ~SceneNodeAnimation();
 	
 	SceneNodeAnimationKey & Intepolate(float32 t);
 	

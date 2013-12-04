@@ -35,6 +35,9 @@ namespace DAVA
 {
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2);
 
+Map<String, FMOD::Sound*> soundMap;
+Map<FMOD::Sound*, int32> soundRefsMap;
+
 Sound * Sound::Create(const FilePath & fileName, eType type, const FastName & groupName, int32 priority /* = 128 */)
 {
 	return CreateWithFlags(fileName, type, groupName, 0, priority);
@@ -49,56 +52,64 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
 {
 	Sound * sound = new Sound(fileName, type, priority);
 
-	if(flags & FMOD_3D)
-		sound->is3d = true;
+    if(flags & FMOD_3D)
+        sound->is3d = true;
 
-    File * file = File::Create(fileName, File::OPEN | File::READ);
-    if(!file)
+    Map<String, FMOD::Sound*>::iterator it;
+    it = soundMap.find(fileName.GetAbsolutePathname());
+    if (it != soundMap.end())
     {
-        SafeRelease(sound);
-        return 0;
+        sound->fmodSound = it->second;
+        soundRefsMap[sound->fmodSound]++;
     }
-
-    int32 fileSize = file->GetSize();
-    if(!fileSize)
-    {
-        SafeRelease(sound);
-        return 0;
-    }
-
-    sound->soundData = new uint8[fileSize];
-    file->Read(sound->soundData, fileSize);
-    SafeRelease(file);
-
-    FMOD_CREATESOUNDEXINFO exInfo;
-    memset(&exInfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
-    exInfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
-    exInfo.length = fileSize;
-
-	switch (type)
-	{
-	case TYPE_STATIC:
-        FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createSound((char *)sound->soundData, FMOD_LOOP_NORMAL | FMOD_OPENMEMORY | flags, &exInfo, &sound->fmodSound));
-        SafeDelete(sound->soundData);
-		break;
-	case TYPE_STREAMED:
-		FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createStream((char *)sound->soundData, FMOD_LOOP_NORMAL | FMOD_OPENMEMORY | flags, &exInfo, &sound->fmodSound));
-		break;
-	}
 
     if(!sound->fmodSound)
     {
-        SafeRelease(sound);
-        return 0;
-    }
+        File * file = File::Create(fileName, File::OPEN | File::READ);
+        if(!file)
+        {
+            SafeRelease(sound);
+            return 0;
+        }
+
+        int32 fileSize = file->GetSize();
+        if(!fileSize)
+        {
+            SafeRelease(sound);
+            return 0;
+        }
+
+        sound->soundData = new uint8[fileSize];
+        file->Read(sound->soundData, fileSize);
+        SafeRelease(file);
+
+        FMOD_CREATESOUNDEXINFO exInfo;
+        memset(&exInfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
+        exInfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
+        exInfo.length = fileSize;
+
+        switch (type)
+        {
+        case TYPE_STATIC:
+            FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createSound((char *)sound->soundData, FMOD_LOOP_NORMAL | FMOD_OPENMEMORY | flags, &exInfo, &sound->fmodSound));
+            SafeDelete(sound->soundData);
+            break;
+        case TYPE_STREAMED:
+            FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createStream((char *)sound->soundData, FMOD_LOOP_NORMAL | FMOD_OPENMEMORY | flags, &exInfo, &sound->fmodSound));
+            break;
+        }
+
+        sound->SetSoundGroup(groupName);
+        sound->SetLoopCount(0);
 
 #if !defined DONT_USE_DEFAULT_3D_SOUND_SETTINGS
-    if( sound->is3d && sound->fmodSound )
-        FMOD_VERIFY( sound->fmodSound->set3DMinMaxDistance(5.0f, 100.0f) );
+        if( sound->is3d && sound->fmodSound )
+            FMOD_VERIFY( sound->fmodSound->set3DMinMaxDistance(12.0f, 1000.0f) );
 #endif
 
-	sound->SetSoundGroup(groupName);
-	sound->SetLoopCount(0);
+        soundMap[sound->fileName.GetAbsolutePathname()] = sound->fmodSound;
+        soundRefsMap[sound->fmodSound] = 1;
+    }
 
 	FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createChannelGroup(0, &sound->fmodInstanceGroup));
 
@@ -117,14 +128,27 @@ Sound::Sound(const FilePath & _fileName, eType _type, int32 _priority)
 
 Sound::~Sound()
 {
-    if(fmodInstanceGroup)
-	    FMOD_VERIFY(fmodInstanceGroup->release());
-    if(fmodSound)
-	    FMOD_VERIFY(fmodSound->release());
-
     SafeDeleteArray(soundData);
+
+    if(fmodInstanceGroup)
+        FMOD_VERIFY(fmodInstanceGroup->release());
 }
 
+int32 Sound::Release()
+{
+    if(GetRetainCount() == 1)
+    {
+        soundRefsMap[fmodSound]--;
+        if(soundRefsMap[fmodSound] == 0)
+        {
+            soundMap.erase(fileName.GetAbsolutePathname());
+            soundRefsMap.erase(fmodSound);
+            FMOD_VERIFY(fmodSound->release());
+        }
+    }
+
+    return BaseObject::Release();
+}
 void Sound::SetSoundGroup(const FastName & groupName)
 {
 	SoundGroup * soundGroup = SoundSystem::Instance()->CreateSoundGroup(groupName);

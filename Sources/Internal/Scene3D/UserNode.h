@@ -37,9 +37,10 @@ namespace DAVA
 
 class UserNode : public Entity
 {
+protected:
+	virtual ~UserNode();
 public:	
 	UserNode();
-	virtual ~UserNode();
 	virtual void	Draw();
 
 	AABBox3 drawBox;

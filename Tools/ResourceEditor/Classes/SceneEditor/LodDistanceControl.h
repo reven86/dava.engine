@@ -45,10 +45,11 @@ public:
 
 class LodDistanceControl : public UIControl, public UITextFieldDelegate
 {
+protected:
+    virtual ~LodDistanceControl();
 public:
 
 	LodDistanceControl(LodDistanceControlDelegate *newDelegate, const Rect &rect, bool rectInAbsoluteCoordinates = false);
-    virtual ~LodDistanceControl();
 
     virtual void WillDisappear();
     

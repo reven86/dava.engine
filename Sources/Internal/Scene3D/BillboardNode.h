@@ -38,9 +38,10 @@ namespace DAVA
 {
 class BillboardNode : public Entity
 {
+protected:
+    virtual ~BillboardNode();
 public:
     BillboardNode();
-    virtual ~BillboardNode();
     
     virtual void Draw();
 };

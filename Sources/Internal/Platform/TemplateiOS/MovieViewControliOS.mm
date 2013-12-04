@@ -52,7 +52,7 @@ MovieViewControl::MovieViewControl()
 	}
 
 	HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
-	[[[appDelegate glController] view] addSubview:player.view];
+	[[appDelegate glController].backgroundView addSubview:player.view];
 }
 
 MovieViewControl::~MovieViewControl()
@@ -83,61 +83,17 @@ void MovieViewControl::SetRect(const Rect& rect)
 	MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
 
 	CGRect playerViewRect = player.view.frame;
-	Core::eScreenOrientation screenOrientation = Core::Instance()->GetScreenOrientation();
-	switch (screenOrientation)
-	{
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-		{
-			// X and Y are swapped in this case.
-			playerViewRect.origin.y = (DAVA::Core::Instance()->GetVirtualScreenXMax() - rect.x - rect.dx) * DAVA::Core::GetVirtualToPhysicalFactor();
-			playerViewRect.origin.x = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
+	
+    playerViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
+    playerViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
 			
-			playerViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().y;
-			playerViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().x;
+    playerViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
+    playerViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
 			
-			// Height and width are swapped in this case,
-			playerViewRect.size.width = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-			playerViewRect.size.height = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
+    playerViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
+    playerViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
 			
-			player.view.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(-90.0f));
-			break;
-		}
-			
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-		{
-			// X and Y are swapped in this case.
-			playerViewRect.origin.y = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-			playerViewRect.origin.x = (DAVA::Core::Instance()->GetVirtualScreenYMax() - rect.y - rect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			// Height and width are swapped in this case,
-			playerViewRect.size.width = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-			playerViewRect.size.height = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			player.view.transform = CGAffineTransformMakeRotation(DAVA::DegToRad(90.0f));
-			break;
-		}
-			
-		case Core::SCREEN_ORIENTATION_PORTRAIT:
-		case Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
-		{
-			// Minimum recalculations are needed, no swapping, no rotation.
-			playerViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-			playerViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			playerViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-			playerViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
-			
-			playerViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-			playerViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
-			
-			break;
-		}
-			
-		default:
-		{
-			break;
-		}
-	}
+		
 	
 	// Apply the Retina scale divider, if any.
 	float scaleDivider = GetScaleDivider();

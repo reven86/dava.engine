@@ -66,6 +66,11 @@ public:
 	*/
 	static		FTFont * Create(const FilePath & path);
 	
+	/**
+		\brief Function clears cache of internal fonts
+	*/
+	static void ClearCache();
+
 	virtual		~FTFont();
 
 	/**

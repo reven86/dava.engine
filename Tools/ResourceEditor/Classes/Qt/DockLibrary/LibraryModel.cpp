@@ -33,6 +33,8 @@
 #include "Main/QtUtils.h"
 #include "DockLibrary/LibraryModel.h"
 #include "DAVAEngine.h"
+#include "Classes/Qt/Scene/SceneTabWidget.h"
+#include "Classes/Qt/Main/mainwindow.h"
 
 using namespace DAVA;
 
@@ -133,4 +135,12 @@ QVariant LibraryModel::GetColorForExtension(const QString& extension, const Exte
 	}
 
     return QFileSystemModel::data(index, role);
+}
+
+QMimeData * LibraryModel::mimeData( const QModelIndexList & indexes ) const
+{
+	SceneTabWidget *widget = QtMainWindow::Instance()->GetSceneWidget();
+	widget->HideScenePreview();
+
+	return QFileSystemModel::mimeData(indexes);
 }

@@ -59,9 +59,10 @@ void UI3DView::SetScene(Scene * _scene)
     
     if(scene)
     {
+        float32 aspect = size.dx / size.dy;
         for (int32 k = 0; k < scene->GetCameraCount(); ++k)
         {
-            scene->GetCamera(k)->SetAspect(size.dy / size.dx);
+            scene->GetCamera(k)->SetAspect(aspect);
         }
     }
 }
@@ -150,12 +151,13 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)
 {
     UIControl::SetSize(newSize);
+    float32 aspect = size.dx / size.dy;
     
     if(scene)
     {
         for (int32 k = 0; k < scene->GetCameraCount(); ++k)
         {
-            scene->GetCamera(k)->SetAspect(size.dy / size.dx);
+            scene->GetCamera(k)->SetAspect(aspect);
         }
     }
 }

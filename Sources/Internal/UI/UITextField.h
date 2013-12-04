@@ -165,10 +165,11 @@ public:
 		RETURN_KEY_EMERGENCY_CALL
 	};
 
-    UITextField();
-	
-	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+protected:
 	virtual ~UITextField();
+public:
+	UITextField();
+	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
 	
 	virtual void WillAppear();
 	virtual void DidAppear();
@@ -325,24 +326,24 @@ public:
 	virtual void CopyDataFrom(UIControl *srcControl);
 
 protected:
-    bool needRedraw;
 	WideString text;
 	UITextFieldDelegate * delegate;
 	float32	cursorBlinkingTime;
-    bool isPassword;
-	
-	// Keyboard customization params.
+
+    // Keyboard customization params.
 	eAutoCapitalizationType autoCapitalizationType;
 	eAutoCorrectionType autoCorrectionType;
 	eSpellCheckingType spellCheckingType;
 	eKeyboardAppearanceType keyboardAppearanceType;
 	eKeyboardType keyboardType;
 	eReturnKeyType returnKeyType;
-	bool enableReturnKeyAutomatically;
 
-//    Sprite *textSprite;
 
-//    virtual void Draw(const UIGeometricData &geometricData);
+	// All Boolean variables are grouped together because of DF-2149.
+	bool needRedraw : 1;
+	bool isPassword : 1;
+	bool enableReturnKeyAutomatically : 1;
+	bool showCursor : 1;
 
     void RenderText();
 private:
@@ -357,8 +358,6 @@ private:
     Font * textFont;
 #endif
     float32 cursorTime;
-    bool showCursor;
-
 };
 
 };

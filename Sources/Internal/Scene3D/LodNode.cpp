@@ -63,7 +63,6 @@ void LodNode::LodDistance::SetFarDistance(float32 newDistance)
 }
     
 
-REGISTER_CLASS(LodNode);
     
 const float32 LodNode::INVALID_DISTANCE = -1.f;
 const float32 LodNode::MIN_LOD_DISTANCE = 0;

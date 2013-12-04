@@ -34,46 +34,31 @@
 #include "DAVAEngine.h"
 
 class CommandLineTool;
-class CommandLineManager: public DAVA::Singleton<CommandLineManager>
+class CommandLineManager
 {    
 public:
 	CommandLineManager();
 	virtual ~CommandLineManager();
     
-    bool IsCommandLineModeEnabled() { return isCommandLineModeEnabled; };
+    bool IsEnabled() { return isEnabled; };
     bool IsToolInitialized() { return isToolInitialized; };
     
     void Process();
     void PrintResults();
-	bool NeedCloseApplication();
-    
-    CommandLineTool * GetActiveCommandLineTool() { return  activeTool; };
-    
-
-	DAVA::uint32 GetErrorsCount() const;
-
-    
-    void PrintUsageForActiveTool();
+	void PrintUsage();
+	void PrintUsageForActiveTool();
     
 protected:
-
     void AddCommandLineTool(CommandLineTool *tool);
-    
     void ParseCommandLine();
-    void PrintUsage();
-    
     void DetectCommandLineMode();
-    
     void FindActiveTool();
     
     DAVA::Map<DAVA::String, CommandLineTool *> commandLineTools;
-    bool isCommandLineModeEnabled;
+    bool isEnabled;
     
     CommandLineTool *activeTool;
     bool isToolInitialized;
 };
 
-
-
 #endif // __COMMAND_LINE_MANAGER_H__
-

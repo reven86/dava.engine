@@ -80,7 +80,6 @@
 namespace DAVA 
 {
     
-REGISTER_CLASS(Scene);
     
 Scene::Scene()
 	:   Entity()
@@ -593,6 +592,8 @@ void Scene::Draw()
     renderSystem->Render();
     debugRenderSystem->SetCamera(currentCamera);
     debugRenderSystem->Process();
+	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, currentCamera->GetMatrix());
+	//renderSystem->DebugDrawSpatialTree();
 
     RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
     
@@ -829,6 +830,16 @@ void Scene::Load(KeyedArchive * archive)
     Entity::Load(archive);
 }*/
     
+    
+    
+SceneFileV2::eError Scene::Save(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
+{
+    ScopedPtr<SceneFileV2> file( new SceneFileV2() );
+	file->EnableDebugLog(false);
+	file->EnableSaveForGame(saveForGame);
+	return file->SaveScene(pathname, this);
+}
+
 
 
 

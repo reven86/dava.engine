@@ -108,7 +108,8 @@ FastName attributeStrings[VERTEX_FORMAT_STREAM_MAX_COUNT] =
         "inTexCoord3",
         "inTangent",
         "inBinormal",
-        "inJointWeight"
+        "inJointWeight",
+		"inTime"
     };
     
 Shader::eUniform Shader::GetUniformByName(const FastName & name)
@@ -386,21 +387,32 @@ Shader::~Shader()
     DeleteShaders();
 }
     
-bool Shader::Recompile()
+void Shader::Recompile()
+{
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::RecompileInternal));
+	JobInstanceWaiter waiter(job);
+	waiter.Wait();
+}
+
+void Shader::RecompileAsync()
+{
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::RecompileInternal));
+}
+
+void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerData)
 {
     DVASSERT((vertexShader == 0) && (fragmentShader == 0) && (program == 0));
     
-    RenderManager::Instance()->LockNonMain();
     if (!CompileShader(&vertexShader, GL_VERTEX_SHADER, vertexShaderData->GetSize(), (GLchar*)vertexShaderData->GetPtr(), vertexShaderDefines))
     {
         Logger::Error("Failed to compile vertex shader: %s", vertexShaderPath.GetAbsolutePathname().c_str());
-        return false;
+        return;
     }
     
     if (!CompileShader(&fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderData->GetSize(), (GLchar*)fragmentShaderData->GetPtr(), fragmentShaderDefines))
     {
         Logger::Error("Failed to compile fragment shader: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
-        return false;
+        return;
     }
     
     program = glCreateProgram();
@@ -412,7 +424,7 @@ bool Shader::Recompile()
         Logger::Error("Failed to Link program for shader: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
 
         DeleteShaders();
-        return false;
+        return;
     }
     
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes));
@@ -592,9 +604,6 @@ bool Shader::Recompile()
 			}
 		}
     }
-    
-    RenderManager::Instance()->UnlockNonMain();
-    return true;
 }
     	
 void Shader::SetUniformValueByIndex(int32 uniformIndex, int32 value)
@@ -699,29 +708,38 @@ int32 Shader::GetAttributeIndex(eVertexFormat vertexFormat)
 
 void Shader::DeleteShaders()
 {
-    RenderManager::Instance()->LockNonMain();
     DVASSERT(vertexShader != 0);  
     DVASSERT(fragmentShader != 0);
     DVASSERT(program != 0);
     
-    
-    RENDER_VERIFY(glDetachShader(program, vertexShader));
-    RENDER_VERIFY(glDetachShader(program, fragmentShader));
-    RENDER_VERIFY(glDeleteShader(vertexShader));
-    RENDER_VERIFY(glDeleteShader(fragmentShader));
-    RENDER_VERIFY(glDeleteProgram(program));
+	DeleteShaderContainer * container = new DeleteShaderContainer();
+	container->program = program;
+	container->vertexShader = vertexShader;
+	container->fragmentShader = fragmentShader;
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::DeleteShadersInternal, container));
+
     vertexShader = 0;
     fragmentShader = 0;
     program = 0;
+}
 
-    RenderManager::Instance()->UnlockNonMain();
+void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *callerData)
+{
+	DeleteShaderContainer * container = (DeleteShaderContainer*) param;
+	DVASSERT(container);
+
+	RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
+	RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
+	RENDER_VERIFY(glDeleteShader(container->vertexShader));
+	RENDER_VERIFY(glDeleteShader(container->fragmentShader));
+	RENDER_VERIFY(glDeleteProgram(container->program));
+
+	SafeDelete(container);
 }
 
 /* Link a program with all currently attached shaders */
 GLint Shader::LinkProgram(GLuint prog)
 {
-    RenderManager::Instance()->LockNonMain();
-
     GLint status;
     
     RENDER_VERIFY(glLinkProgram(prog));
@@ -742,8 +760,6 @@ GLint Shader::LinkProgram(GLuint prog)
     RENDER_VERIFY(glGetProgramiv(prog, GL_LINK_STATUS, &status));
     if (status == GL_FALSE)
         Logger::Error("Failed to link program %d", prog);
-    
-    RenderManager::Instance()->UnlockNonMain();
 
     return status;
 }
@@ -751,8 +767,6 @@ GLint Shader::LinkProgram(GLuint prog)
 /* Create and compile a shader from the provided source(s) */
 GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLchar * sources, const String & defines)
 {
-    RenderManager::Instance()->LockNonMain();
-
     GLint status;
     //const GLchar *sources;
         
@@ -795,8 +809,6 @@ GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLch
     {
         Logger::Error("Failed to compile shader: status == GL_FALSE\n");
     }
-    RenderManager::Instance()->UnlockNonMain();
-
     return status;
 }
     
@@ -901,11 +913,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
     shader->vertexShaderData = SafeRetain(vertexShaderData);
     shader->fragmentShaderData = SafeRetain(fragmentShaderData);
     shader->SetDefineList(combination);
-    if (!shader->Recompile())
+    
+	//TODO: return "invalid shader" on error;
+	shader->Recompile();
+	/*if (!shader->Recompile())
     {
         SafeRelease(shader);
         return 0;
-    }
+    }*/
     return shader;
 }
 

@@ -74,6 +74,9 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 	SetPixelFormat( hDC, iFormat, &pfd );
 
 	hRC = wglCreateContext(hDC);
+
+	renderContextId = (uint64)hRC;
+	
 	Thread::secondaryContext = wglCreateContext(hDC);
 	Thread::currentDC = hDC;
 
@@ -270,11 +273,7 @@ void RenderManager::MakeGLScreenShot()
     
     // picture is rotated (framebuffer coordinates start from bottom left)
     Image *image = NULL;
-#if defined(__DAVAENGINE_IPHONE__)    
-    image = Image::Create(height, width, formatDescriptor.formatID);
-#else
     image = Image::Create(width, height, formatDescriptor.formatID);
-#endif
     uint8 *imageData = image->GetData();
     
     int32 formatSize = Texture::GetPixelFormatSizeInBytes(formatDescriptor.formatID);
@@ -283,8 +282,7 @@ void RenderManager::MakeGLScreenShot()
     uint32 imageDataSize = width * height * formatSize;
     tempData = new uint8[imageDataSize];
 
-    LockNonMain();
-    glBindFramebuffer(GL_FRAMEBUFFER, fboViewRenderbuffer);
+    RENDER_VERIFY(glBindFramebuffer(GL_FRAMEBUFFER, fboViewRenderbuffer));
 //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 //    glBindFramebuffer(GL_FRAMEBUFFER_BINDING_OES, fboViewRenderbuffer);
 //#else
@@ -293,26 +291,13 @@ void RenderManager::MakeGLScreenShot()
     
     RENDER_VERIFY(glPixelStorei( GL_UNPACK_ALIGNMENT, 1 ));
     RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)tempData));
-    UnlockNonMain();
     
     //TODO: optimize (ex. use pre-allocated buffer instead of dynamic allocation)
     
     // iOS frame buffer starts from bottom left corner, but we need from top left, so we rotate picture here
     uint32 newIndex = 0;
     uint32 oldIndex = 0;
-#if defined(__DAVAENGINE_IPHONE__)
-    for(int32 w = 0; w < width; ++w)
-    {
-        for(int32 h = 0; h < height; ++h)
-        {
-            for(int32 b = 0; b < formatSize; ++b)
-            {
-                oldIndex = formatSize*width*h + formatSize*w + b;
-                imageData[newIndex++] = tempData[oldIndex];
-            }
-        }
-    }
-#else
+
     //MacOS
     //TODO: test on Windows and android
 
@@ -328,7 +313,6 @@ void RenderManager::MakeGLScreenShot()
         }
     }
     
-#endif
     SafeDeleteArray(tempData);
     
     if(screenShotCallback)
@@ -364,37 +348,11 @@ void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates
     width = (int32)(rect.dx * currentDrawScale.x);
     height = (int32)(rect.dy * currentDrawScale.y);    
     
-    
-    switch(renderOrientation)
+    if (renderOrientation!=Core::SCREEN_ORIENTATION_TEXTURE)
     {
-        case Core::SCREEN_ORIENTATION_PORTRAIT:
-        { 
-            y = frameBufferHeight - y - height;
-        }
-        break;    
-        
-        case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-		{
-			int32 tmpY = y;
-			y = x;
-			x = tmpY;
-			tmpY = height;
-			height = width;
-			width = tmpY;
-		}
-        break;
-        case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-		{
-			int32 tmpY = height;
-			height = width;
-			width = tmpY;
-			tmpY = y;
-			y = frameBufferHeight/* * Core::GetVirtualToPhysicalFactor()*/ - x - height;
-			x = frameBufferWidth/* * Core::GetVirtualToPhysicalFactor()*/ - tmpY - width;
-		}
-        break;
-            
-    }    
+        y = frameBufferHeight - y - height;
+    }
+    
     RENDER_VERIFY(glViewport(x, y, width, height));
     viewport.x = (float32)x;
     viewport.y = (float32)y;
@@ -423,39 +381,10 @@ void RenderManager::SetRenderOrientation(int32 orientation)
 
     orthoMatrix.glOrtho(0.0f, (float32)frameBufferWidth, (float32)frameBufferHeight, 0.0f, -1.0f, 1.0f);
 	
-    switch (orientation) 
-	{
-		case Core::SCREEN_ORIENTATION_PORTRAIT:
-		case Core::SCREEN_ORIENTATION_TEXTURE:
-			retScreenWidth = frameBufferWidth;
-			retScreenHeight = frameBufferHeight;
-			break;
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-            
-            //mark glTranslatef(0.0f, (float32)frameBufferHeight, 0.0f);
-			//mark glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-            
-            glTranslate.glTranslate(0.0f, (float32)frameBufferHeight, 0.0f);
-            glRotate.glRotate(-90.0f, 0.0f, 0.0f, 1.0f);
-            
-            orthoMatrix = glRotate * glTranslate * orthoMatrix;
-            
-			retScreenWidth = frameBufferHeight;
-			retScreenHeight = frameBufferWidth;
-            break;
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-			//mark glTranslatef((float32)frameBufferWidth, 0.0f, 0.0f);
-			//mark glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-            
-            glTranslate.glTranslate((float32)frameBufferWidth, 0.0f, 0.0f);
-            glRotate.glRotate(90.0f, 0.0f, 0.0f, 1.0f);
-            
-            orthoMatrix = glRotate * glTranslate * orthoMatrix;
-
-			retScreenWidth = frameBufferHeight;
-			retScreenHeight = frameBufferWidth;
-			break;
-	}
+    
+    retScreenWidth = frameBufferWidth;
+    retScreenHeight = frameBufferHeight;
+	
     
     SetMatrix(MATRIX_PROJECTION, orthoMatrix);
 
@@ -801,35 +730,12 @@ void RenderManager::SetHWClip(const Rect &rect)
 	int32 y2= (int32)ceilf((rect.dy + rect.y) * currentDrawScale.y + currentDrawOffset.y);
 	int32 width = x2 - x;
 	int32 height = y2 - y;
-	switch (renderOrientation) 
-	{
-	case Core::SCREEN_ORIENTATION_PORTRAIT:
-		{
-			//			x = frameBufferWidth - x;
-			y = frameBufferHeight/* * Core::GetVirtualToPhysicalFactor()*/ - y - height;
-		}
-		break;
-	case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-		{
-			int32 tmpY = y;
-			y = x;
-			x = tmpY;
-			tmpY = height;
-			height = width;
-			width = tmpY;
-		}
-		break;
-	case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-		{
-			int32 tmpY = height;
-			height = width;
-			width = tmpY;
-			tmpY = y;
-			y = frameBufferHeight/* * Core::GetVirtualToPhysicalFactor()*/ - x - height;
-			x = frameBufferWidth/* * Core::GetVirtualToPhysicalFactor()*/ - tmpY - width;
-		}
-		break;
-	}
+    
+    if (renderOrientation!=Core::SCREEN_ORIENTATION_TEXTURE)
+    {
+        y = frameBufferHeight/* * Core::GetVirtualToPhysicalFactor()*/ - y - height;
+    }
+	
 	RENDER_VERIFY(glEnable(GL_SCISSOR_TEST));
 	RENDER_VERIFY(glScissor(x, y, width, height));
 }
@@ -938,7 +844,6 @@ void RenderManager::AttachRenderData()
     const int DEBUG = 0;
 	Shader * shader = hardwareState.shader;
     
-    RenderManager::Instance()->LockNonMain();
     if (!shader)
     {
         // TODO: should be moved to RenderManagerGL
@@ -1103,7 +1008,6 @@ void RenderManager::AttachRenderData()
         enabledAttribCount = currentEnabledAttribCount;
         //pointerArraysRendererState = pointerArraysCurrentState;
     }
-    RenderManager::Instance()->UnlockNonMain();
 }
 
 
@@ -1130,9 +1034,9 @@ void RenderManager::AttachRenderData()
 
     
     
-int32 RenderManager::HWglGetLastTextureID()
+int32 RenderManager::HWglGetLastTextureID(int textureType)
 {
-    return lastBindedTexture;
+    return lastBindedTexture[textureType];
 
     
 //#if defined(__DAVAENGINE_ANDROID__)
@@ -1147,24 +1051,31 @@ int32 RenderManager::HWglGetLastTextureID()
 //#endif //#if defined(__DAVAENGINE_ANDROID__)
 }
 	
-uint32 RenderManager::HWglGetLastTextureType()
-{
-	return lastBindedTextureType;
-}
-
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
     if(0 != tId)
     {
         glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId);
         
-        //		GLenum err = glGetError();
-        //		if (err != GL_NO_ERROR)
-        //			Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindTexture(GL_TEXTURE_2D, tId)", __FILE__, __LINE__, err);
+        		//GLenum err = glGetError();
+        		//if (err != GL_NO_ERROR)
+        		//	Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindTexture(GL_TEXTURE_2D, tId)", __FILE__, __LINE__, err);
         
-        lastBindedTexture = tId;
+        lastBindedTexture[textureType] = tId;
 		lastBindedTextureType = textureType;
     }
+}
+	
+void RenderManager::HWglForceBindTexture(int32 tId, uint32 textureType)
+{
+	glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId);
+	
+	//GLenum err = glGetError();
+	//if (err != GL_NO_ERROR)
+	//	Logger::Error("%s file:%s line:%d gl failed with errorcode: 0x%08x", "glBindTexture(GL_TEXTURE_2D, tId)", __FILE__, __LINE__, err);
+	
+	lastBindedTexture[textureType] = tId;
+	lastBindedTextureType = textureType;
 }
 
 int32 RenderManager::HWglGetLastFBO()
@@ -1210,8 +1121,16 @@ void RenderManager::HWglBindFBO(const int32 fbo)
 #if defined(__DAVAENGINE_ANDROID__)
 void RenderManager::Lost()
 {
+    bufferBindingId[0] = 0;
+    bufferBindingId[1] = 0;
+
 	enabledAttribCount = 0;
-	lastBindedTexture = 0;
+	for(int32 i = 0; i < Texture::TEXTURE_TYPE_COUNT; ++i)
+	{
+		lastBindedTexture[i] = 0;
+	}
+    lastBindedTextureType = Texture::TEXTURE_2D;
+
 	lastBindedFBO = 0;
 }
 

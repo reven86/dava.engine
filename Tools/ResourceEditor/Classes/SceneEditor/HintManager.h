@@ -37,10 +37,11 @@ using namespace DAVA;
 
 class HintControl: public UIControl
 {
+protected:
+    virtual ~HintControl();
 public:
     
     HintControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    virtual ~HintControl();
     
     void SetText(const WideString &hintMessage);
     

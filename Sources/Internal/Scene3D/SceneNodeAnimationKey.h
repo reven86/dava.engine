@@ -35,7 +35,7 @@
 
 namespace DAVA 
 {
-class SceneNodeAnimationKey : public BaseObject
+class SceneNodeAnimationKey
 {
 public:
 	float32 time;

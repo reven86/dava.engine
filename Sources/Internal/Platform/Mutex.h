@@ -43,7 +43,7 @@ namespace DAVA
 	Main difference that on Win32 it allows recursive locks from one thread. On Unix it doesn't because of it's mutex implementation.
 	So be careful and try to avoid recursive locks because in this case code will not be portable. 
 */
-class Mutex : public BaseObject
+class Mutex
 {
 public:
 	Mutex();

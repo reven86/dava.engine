@@ -56,6 +56,11 @@ class UIFileTree;
 class UITreeItemInfo : public BaseObject
 {
     friend class UIFileTree;
+protected:
+    ~UITreeItemInfo() 
+    {
+        RemoveChildren();
+    };
 public:
 	UITreeItemInfo(UIFileTree * _ownerTree)
 	{
@@ -65,10 +70,6 @@ public:
 		isDirectory = false;
         name = String();
 	}
-	~UITreeItemInfo() 
-	{
-		RemoveChildren();
-	};
 	
 	void Set(int32 _level, const String & _name, const FilePath & _pathname, bool _isDirectory)
 	{

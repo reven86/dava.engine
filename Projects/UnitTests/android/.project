@@ -185,6 +185,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/DXTTest.h</locationURI>
 		</link>
 		<link>
+			<name>src/Classes/DeviceInfoTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DeviceInfoTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/DeviceInfoTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DeviceInfoTest.h</locationURI>
+		</link>
+		<link>
 			<name>src/Classes/EntityTest.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/EntityTest.cpp</locationURI>
@@ -438,6 +448,16 @@
 			<name>bin/classes/Classes/DXTTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/DXTTest.h</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/DeviceInfoTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DeviceInfoTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/DeviceInfoTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DeviceInfoTest.h</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/EntityTest.cpp</name>

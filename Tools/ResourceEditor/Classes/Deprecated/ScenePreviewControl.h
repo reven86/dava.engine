@@ -37,6 +37,8 @@ using namespace DAVA;
 
 class PreviewCameraController: public CameraController
 {
+protected:
+    ~PreviewCameraController(){}
 public:
     
     PreviewCameraController();

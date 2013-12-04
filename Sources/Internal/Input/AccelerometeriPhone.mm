@@ -34,6 +34,7 @@ UIAccelerometerEventCatcher *realCatcher;
 namespace DAVA 
 {
 AccelerometeriPhoneImpl::AccelerometeriPhoneImpl()
+	: eventDispatcher( new EventDispatcher() )
 {
 	[UIAccelerometer sharedAccelerometer].delegate = nil;
 	realCatcher = [[UIAccelerometerEventCatcher alloc] init];
@@ -70,7 +71,7 @@ void AccelerometeriPhoneImpl::SetAccelerationData(float x, float y, float z)
 
 EventDispatcher * AccelerometeriPhoneImpl::GetEventDispatcher()
 {
-	return &eventDispatcher;
+	return eventDispatcher.Get();
 }
 };
 

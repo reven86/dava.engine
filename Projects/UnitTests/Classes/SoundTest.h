@@ -40,6 +40,8 @@ using namespace DAVA;
 
 class SoundTest : public TestTemplate<SoundTest>
 {
+protected:
+    ~SoundTest(){}
 public:
 	SoundTest();
     

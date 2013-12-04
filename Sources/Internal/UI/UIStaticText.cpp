@@ -40,8 +40,6 @@
 namespace DAVA 
 {
 	
-REGISTER_CLASS(UIStaticText);
-
 UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/) 
 :	UIControl(rect, rectInAbsoluteCoordinates)
 	, textColor(1.0f, 1.0f, 1.0f, 1.0f)
@@ -80,13 +78,13 @@ void UIStaticText::CopyDataFrom(UIControl *srcControl)
 	UIControl::CopyDataFrom(srcControl);
     UIStaticText *t = (UIStaticText *)srcControl;
 
-    SafeRelease(textBlock);
+	SafeRelease(textBlock);
     textBlock = t->textBlock->Clone();
-    
+
     textColor = t->textColor;
     shadowColor = t->shadowColor;
     shadowOffset = t->shadowOffset;
-    
+
     SafeRelease(shadowBg);
 	SafeRelease(textBg);
     shadowBg = t->shadowBg->Clone();
@@ -144,6 +142,11 @@ void UIStaticText::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 bool UIStaticText::GetMultiline() const
 {
 	return textBlock->GetMultiline();
+}
+
+bool UIStaticText::GetMultilineBySymbol() const
+{
+	return textBlock->GetMultilineBySymbol();
 }
 
 void UIStaticText::SetAlign(int32 _align)

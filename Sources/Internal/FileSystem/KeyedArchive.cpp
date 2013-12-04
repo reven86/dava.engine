@@ -141,16 +141,9 @@ bool KeyedArchive::Save(File *archive)
     
 bool KeyedArchive::LoadFromYamlFile(const FilePath & pathName)
 {
-    File * archive = File::Create(pathName, File::OPEN|File::READ);
-	if (!archive)
-    {
-        return false;    
-    }
-    
 	YamlParser	*parser	= YamlParser::Create(pathName);
     if(NULL == parser)
     {
-      	SafeRelease(archive);
         return false;
     }
 	
@@ -158,8 +151,6 @@ bool KeyedArchive::LoadFromYamlFile(const FilePath & pathName)
     bool retValue = LoadFromYamlNode(rootNode);
     
 	SafeRelease(parser);
-	   
-	SafeRelease(archive);
 	return retValue;
 }
 
@@ -170,8 +161,13 @@ bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
         return  false;
     }
 
-    const Vector<YamlNode*> &rootVector = rootNode->Get(VariantType::TYPENAME_KEYED_ARCHIVE)->AsVector();
-    
+    const YamlNode * archieveNode = rootNode->Get(VariantType::TYPENAME_KEYED_ARCHIVE);
+    if(!archieveNode)
+    {
+        return false;
+    }
+
+    const Vector<YamlNode*> &rootVector = archieveNode->AsVector();
     for (Vector<YamlNode*>::const_iterator it = rootVector.begin(); it != rootVector.end(); ++it)
     {
 		const YamlNode * node = *it;
@@ -198,9 +194,9 @@ bool KeyedArchive::SaveToYamlFile(const FilePath & pathName)
 	if (NULL == archive)
         return false;
     
-	YamlNode node(YamlNode::TYPE_STRING);
-    node.InitFromKeyedArchive(this);
-    node.PrintToFile(archive);
+	ScopedPtr<YamlNode> node( new YamlNode(YamlNode::TYPE_STRING) );
+    node->InitFromKeyedArchive(this);
+    node->PrintToFile(archive);
  
 	SafeRelease(archive);
 	return true;

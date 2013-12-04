@@ -36,6 +36,8 @@ using namespace DAVA;
 
 class AnimationTestScreen : public UIScreen, public UIHierarchyDelegate
 {
+protected:
+	~AnimationTestScreen(){}
 public:
 	void ButtonPressed(BaseObject * owner, void * v);
 	

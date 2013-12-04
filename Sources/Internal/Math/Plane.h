@@ -62,6 +62,7 @@ public:
 
 	//! Find distance from plane to point
 	inline float32 DistanceToPoint(const Vector3 & point) const;
+	inline float32 DistanceToPoint(float px, float py, float pz) const;
     
     //! Find intersection with ray.
 	inline bool IntersectByRay(const Vector3 & from, const Vector3 & to, float32 & intrsectDistance) const;
@@ -129,6 +130,11 @@ inline float32 Plane::DistanceToPoint(const Vector3 & point) const
 {
     return (n.x * point.x + n.y * point.y + n.z * point.z + d);
 	//return (n.DotProduct(point) + d);
+}
+
+inline float32 Plane::DistanceToPoint(float px, float py, float pz) const
+{
+	return (n.x * px + n.y * py + n.z * pz + d);
 }
 
 inline bool Plane::IntersectByRay(const Vector3 & from, const Vector3 & to, float32 & intrsectDistance) const

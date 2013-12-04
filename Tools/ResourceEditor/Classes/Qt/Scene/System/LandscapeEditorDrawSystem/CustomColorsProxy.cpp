@@ -80,10 +80,9 @@ Rect CustomColorsProxy::GetChangedRect()
 
 void CustomColorsProxy::UpdateRect(const DAVA::Rect &rect)
 {
-	changedRect.x = (float32)Clamp((int32)rect.x, 0, size - 1);
-	changedRect.y = (float32)Clamp((int32)rect.y, 0, size - 1);
-	changedRect.dx = Clamp((rect.x + rect.dx), 0.f, (float32)size - 1.f) - rect.x;
-	changedRect.dy = Clamp((rect.y + rect.dy), 0.f, (float32)size - 1.f) - rect.y;
+	Rect bounds(0.f, 0.f, size, size);
+	changedRect = rect;
+	bounds.ClampToRect(changedRect);
 
 	spriteChanged = true;
 }

@@ -44,10 +44,7 @@ void SceneHelper::EnumerateTextures(Entity *forNode, Map<String, Texture *> &tex
 
 	for(int32 n = 0; n < (int32)nodes.size(); ++n)
 	{
-		RenderComponent *rc = static_cast<RenderComponent *>(nodes[n]->GetComponent(Component::RENDER_COMPONENT));
-		if(!rc) continue;
-
-		RenderObject *ro = rc->GetRenderObject();
+		RenderObject *ro = GetRenderObject(nodes[n]);
 		if(!ro) continue;
 
 		uint32 count = ro->GetRenderBatchCount();
@@ -79,11 +76,55 @@ void SceneHelper::EnumerateTextures(Entity *forNode, Map<String, Texture *> &tex
 	}
 }
 
+int32 SceneHelper::EnumerateModifiedTextures(DAVA::Entity *forNode, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures)
+{
+	int32 retValue = 0;
+	textures.clear();
+	Map<String, Texture *> allTextures;
+	EnumerateTextures(forNode, allTextures);
+	for(DAVA::Map<DAVA::String, DAVA::Texture *>::iterator it = allTextures.begin(); it != allTextures.end(); ++it)
+	{
+		DAVA::Texture * texture = it->second;
+		if(NULL == texture)
+		{
+			continue;
+		}
+		
+		DAVA::TextureDescriptor *descriptor = texture->GetDescriptor();
+		if(NULL == descriptor)
+		{
+			continue;
+		}
+				
+		DAVA::Vector< DAVA::eGPUFamily> markedGPUs;
+		for(int i = DAVA::GPU_UNKNOWN + 1; i < DAVA::GPU_FAMILY_COUNT; ++i)
+		{
+			eGPUFamily gpu = (eGPUFamily)i;
+			if(GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu].format))
+			{
+				FilePath texPath = descriptor->GetSourceTexturePathname();
+				if(texPath.Exists() && !descriptor->IsCompressedTextureActual(gpu))
+				{
+					markedGPUs.push_back(gpu);
+					retValue++;
+				}
+			}
+		}
+		if(markedGPUs.size() > 0)
+		{
+			textures[texture] = markedGPUs;
+		}
+	}
+	return retValue;
+}
+
 void SceneHelper::CollectLandscapeTextures(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, Landscape *forNode)
 {
 	for(int32 t = 0; t < Landscape::TEXTURE_COUNT; t++)
 	{
-		CollectTexture(textures, forNode->GetTextureName((Landscape::eTextureLevel)t).GetAbsolutePathname(), forNode->GetTexture((Landscape::eTextureLevel)t));
+		CollectTexture(textures, 
+			forNode->GetTextureName((Landscape::eTextureLevel)t).GetAbsolutePathname(), 
+			forNode->GetTexture((Landscape::eTextureLevel)t));
 	}
 }
 
@@ -172,12 +213,4 @@ void SceneHelper::EnumerateMaterials(DAVA::Entity *forNode, Vector<Material *> &
 		//VI: remove skybox materials so they not to appear in the lists
 		MaterialHelper::FilterMaterialsByType(materials, DAVA::Material::MATERIAL_SKYBOX);
 	}
-}
-
-DAVA::SceneFileV2::eError  SceneHelper::SaveScene( DAVA::Scene *scene, const DAVA::FilePath & pathname, bool saveForGame/* = false */ )
-{
-	SceneFileV2 file;
-	file.EnableDebugLog(false);
-	file.EnableSaveForGame(saveForGame);
-	return file.SaveScene(pathname, scene);
 }

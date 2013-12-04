@@ -40,9 +40,10 @@ TextDrawSystem::TextDrawSystem(DAVA::Scene * scene, SceneCameraSystem *_cameraSy
 	, cameraSystem(_cameraSystem)
 	, font(NULL)
 {
-	font = DAVA::GraphicsFont::Create("d:/Projects/dava.framework/Tools/ResourceEditor/Data/Fonts/terminus.def", "d:/Projects/dava.framework/Tools/ResourceEditor/Data/Gfx/Fonts/terminus.txt");
-	//font = DAVA::GraphicsFont::Create("/Users/smile4u/Projects/dava.framework/Tools/ResourceEditor/Data/Fonts/terminus.def", "/Users/smile4u/Projects/dava.framework/Tools/ResourceEditor/Data/Gfx/Fonts/terminus.txt");
-	//font = DAVA::GraphicsFont::Create("d:/Projects/dava.framework/Tools/ResourceEditor/Data/Fonts/arial_mono_11.def", "d:/Projects/dava.framework/Tools/ResourceEditor/Data/Gfx/Fonts/arial_mono_11.txt");
+	DAVA::FilePath defPath = DAVA::FilePath("~res:/Fonts/terminus.def");
+	DAVA::FilePath txtPath = DAVA::FilePath("~res:/Gfx/Fonts/terminus.txt");
+
+	font = DAVA::GraphicsFont::Create(defPath.GetAbsolutePathname(), txtPath.GetAbsolutePathname());
 }
 
 TextDrawSystem::~TextDrawSystem()
@@ -55,18 +56,24 @@ void TextDrawSystem::Update(float timeElapsed)
 
 DAVA::Vector2 TextDrawSystem::ToPos2d(const DAVA::Vector3 &pos3d) const
 {
-	return cameraSystem->GetScreenPos(pos3d);
+	DAVA::Vector3 pos2ddepth = cameraSystem->GetScreenPosAndDepth(pos3d);
+	if(pos2ddepth.z >= 0)
+	{
+		return DAVA::Vector2(pos2ddepth.x, pos2ddepth.y);
+	}
+
+	return DAVA::Vector2(-1, -1);
 }
 
 void TextDrawSystem::Draw()
 {
 	if(listToDraw.size() > 0)
 	{
+
 		if(NULL != font)
 		{
 			DAVA::RenderManager::Instance()->SetRenderOrientation(DAVA::Core::SCREEN_ORIENTATION_PORTRAIT);
-			DAVA::RenderManager::Instance()->SetRenderEffect(NULL);
-			DAVA::RenderManager::Instance()->SetColor(255, 0, 0, 255);
+			DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::DEFAULT_2D_STATE_BLEND);
 
 			DAVA::List<TextToDraw>::iterator i  = listToDraw.begin();
 			DAVA::List<TextToDraw>::iterator end  = listToDraw.end();
@@ -76,31 +83,63 @@ void TextDrawSystem::Draw()
 				DAVA::WideString wStr = DAVA::StringToWString(i->text);
 				DAVA::Size2i sSize = font->GetStringSize(wStr);
 
-//				font->SetColor(i->color);
-				font->DrawString(i->pos.x - sSize.dx / 2, i->pos.y - sSize.dy, wStr);
-			}
+				DAVA::float32 x = i->pos.x;
+				DAVA::float32 y = i->pos.y;
 
+				DAVA::RenderManager::Instance()->SetColor(i->color);
+
+				switch(i->align)
+				{
+				case TopLeft:
+					break;
+				case TopCenter:
+					x -= (sSize.dx/2);
+					break;
+				case TopRight:
+					x -= sSize.dx;
+					break;
+				case Left:
+					y -= (sSize.dy/2);
+					break;
+				case Center:
+					x -= (sSize.dx/2);
+					y -= (sSize.dy/2);
+					break;
+				case Right:
+					x -= sSize.dx;
+					y -= (sSize.dy/2);
+					break;
+				case BottomLeft:
+					y -= sSize.dy;
+					break;
+				case BottomCenter:
+					x -= (sSize.dx/2);
+					y -= sSize.dy;
+					break;
+				case BottomRight:
+					x -= sSize.dx;
+					y -= sSize.dy;
+					break;
+				}
+
+				font->DrawString(x, y, wStr);
+			}
 		}
 
 		listToDraw.clear();
 	}
 }
 
-void TextDrawSystem::DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color)
+void TextDrawSystem::DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color, Align align)
 {
 	DrawText(DAVA::Vector2((DAVA::float32)x, (DAVA::float32)y), text, color);
 }
 
-void TextDrawSystem::DrawText(DAVA::Vector2 pos2d, const DAVA::String &text, const DAVA::Color &color)
+void TextDrawSystem::DrawText(DAVA::Vector2 pos2d, const DAVA::String &text, const DAVA::Color &color, Align align)
 {
-	TextToDraw ttd(pos2d, text, color);
-	listToDraw.push_back(ttd);
-}
-
-void TextDrawSystem::DrawText(DAVA::Vector3 pos3d, const DAVA::String &text, const DAVA::Color &color)
-{
-	if(NULL != cameraSystem)
+	if(pos2d.x >= 0 && pos2d.y >= 0)
 	{
-		DrawText(ToPos2d(pos3d), text, color);
+		TextToDraw ttd(pos2d, text, color, align);
+		listToDraw.push_back(ttd);
 	}
 }

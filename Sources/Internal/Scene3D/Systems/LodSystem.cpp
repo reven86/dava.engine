@@ -191,16 +191,27 @@ void LodSystem::UpdateLod(Entity * entity, float32 psLodOffsetSq, float32 psLodM
 bool LodSystem::RecheckLod(Entity * entity, float32 psLodOffsetSq, float32 psLodMultSq)
 {
 	LodComponent * lodComponent = GetLodComponent(entity);
+	bool usePsSettings = (GetEmitter(entity) != NULL);
+
 	if(LodComponent::INVALID_LOD_LAYER != lodComponent->forceLodLayer) 
 	{
-		lodComponent->SetForceLayerAsCurrent();
+		if (usePsSettings)
+			lodComponent->currentLod = lodComponent->forceLodLayer;
+		else if(lodComponent->lodLayers.size())
+		{
+			lodComponent->currentLod = Min((int32)lodComponent->lodLayers.size() - 1, lodComponent->forceLodLayer);
+		}
+		else
+		{
+			lodComponent->currentLod = LodComponent::INVALID_LOD_LAYER;
+		}
 		return true;
 	}
 
 	int32 layersCount = lodComponent->GetLodLayersCount();	
 	float32 dst = CalculateDistanceToCamera(entity, lodComponent);
 
-	bool usePsSettings = (GetEmitter(entity) != NULL);
+	
 	if (usePsSettings)
 	{
 		layersCount = LodComponent::MAX_LOD_LAYERS;
@@ -327,7 +338,8 @@ void LodSystem::LodMerger::GetLodComponentsRecursive(Entity * fromEntity, Vector
 	if(fromEntity != toEntity)
 	{
 		LodComponent * lod = GetLodComponent(fromEntity);
-		if(lod)
+		ParticleEmitter *emitter = GetEmitter(fromEntity);
+		if(lod&&(!emitter)) //as emitters have separate LOD logic
 		{
 			if(lod->flags & LodComponent::NEED_UPDATE_AFTER_LOAD)
 			{

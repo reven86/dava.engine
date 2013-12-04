@@ -45,9 +45,10 @@ namespace DAVA
 
 class SoundEventCategory : public VolumeAnimatedObject
 {
+protected:
+	~SoundEventCategory();
 public:
 	SoundEventCategory(FMOD::EventCategory * category);
-	~SoundEventCategory();
 
 	void SetVolume(float32 volume);
 	float32	GetVolume();

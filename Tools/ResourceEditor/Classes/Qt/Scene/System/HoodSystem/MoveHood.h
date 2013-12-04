@@ -40,6 +40,8 @@ struct MoveHood : public HoodObject
 
 	virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem);
 
+	DAVA::Vector3 modifOffset;
+
 	HoodCollObject *axisX;
 	HoodCollObject *axisY;
 	HoodCollObject *axisZ;

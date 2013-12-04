@@ -33,6 +33,7 @@
 
 QtPropertyModel::QtPropertyModel(QObject* parent /* = 0 */)
 	: QStandardItemModel(parent)
+	, trackEdit(false)
 {
 	QStringList headerLabels;
 
@@ -41,8 +42,6 @@ QtPropertyModel::QtPropertyModel(QObject* parent /* = 0 */)
 
 	setColumnCount(2);
 	setHorizontalHeaderLabels(headerLabels);
-
-	QObject::connect(this, SIGNAL(itemChanged(QStandardItem *)), this, SLOT(OnItemChanged(QStandardItem *)));
 }
 
 QtPropertyModel::~QtPropertyModel()
@@ -108,20 +107,53 @@ void QtPropertyModel::RemovePropertyAll()
 	removeRows(0, rowCount());
 }
 
-void QtPropertyModel::RefreshAll()
+void QtPropertyModel::UpdateStructure(const QModelIndex &parent /* = QModelIndex */)
 {
-	emit dataChanged(index(0, 0), index(rowCount(), 1));
+	//beginResetModel();
+	UpdateStructureInternal(parent);
+	//endResetModel();
 }
 
-void QtPropertyModel::OnItemChanged(QStandardItem* item)
+void QtPropertyModel::UpdateStructureInternal(const QModelIndex &i)
 {
-	QtPropertyItem *propItem = (QtPropertyItem *) item;
-
-	if(NULL != propItem)
+	QModelIndex itemIndex = index(i.row(), 1, i.parent());
+	QtPropertyItem *item = (QtPropertyItem *) itemFromIndex(itemIndex);
+	if(NULL != item)
 	{
-		if(propItem->isCheckable())
+		if(item->Update())
 		{
-			propItem->GetPropertyData()->SetValue(QVariant(propItem->checkState() == Qt::Checked));
+			emit dataChanged(itemIndex, itemIndex);
 		}
 	}
+
+	for(int row = 0; row < rowCount(i); ++row)
+	{
+		UpdateStructureInternal(index(row, 0, i));
+	}
+}
+
+void QtPropertyModel::EmitDataEdited(QtPropertyItem *editedItem)
+{
+	if(trackEdit)
+	{
+		QString name;
+
+		QtPropertyItem *parentName = editedItem->GetParentNameItem();
+		if(NULL != parentName)
+		{
+			name = parentName->text();
+		}
+
+		emit ItemEdited(name, editedItem->GetPropertyData());
+	}
+}
+
+void QtPropertyModel::SetEditTracking(bool enabled)
+{
+	trackEdit = enabled;
+}
+
+bool QtPropertyModel::GetEditTracking()
+{
+	return trackEdit;
 }

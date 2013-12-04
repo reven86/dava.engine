@@ -47,6 +47,8 @@ class Shader;
     
 class MaterialGraphNodeConnector : public BaseObject
 {
+protected:
+    ~MaterialGraphNodeConnector(){}
 public:
     MaterialGraphNode * GetNode() { return node; }
     
@@ -83,9 +85,10 @@ public:
         USE_PIXEL = 1,
         USE_BOTH = 2,
     };
-    
-    MaterialGraphNode(MaterialGraph * graph);
+protected:
     ~MaterialGraphNode();
+public:
+    MaterialGraphNode(MaterialGraph * graph);
     
     void InitFromYamlNode(const YamlNode * graphNode);
     

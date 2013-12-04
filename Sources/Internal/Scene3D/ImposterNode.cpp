@@ -40,7 +40,6 @@ namespace DAVA
 
 const float32 ImposterNode::TOGGLE_SQUARE_DISTANCE = 2500.f;
 
-REGISTER_CLASS(ImposterNode);
 
 ImposterNode::ImposterNode()
 :	Entity()

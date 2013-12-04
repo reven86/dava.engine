@@ -54,6 +54,7 @@ struct Rect
 	inline Rect Intersection(const Rect & rect) const;
 	inline bool RectIntersects(const Rect & rect) const;
 	inline void ClampToRect(Vector2 & point) const;
+	inline void ClampToRect(Rect& rect) const;
 	inline Rect Combine(const Rect& rect) const;
 
 	inline Vector2 GetCenter() const;
@@ -105,8 +106,8 @@ inline Rect::Rect( const Vector2 & point, const Vector2 & size )
 
 inline bool Rect::PointInside(const Vector2 & point) const
 {	
-    if ((point.x >= x) && (point.x <= x + dx) 
-		&& (point.y >= y) && (point.y <= y + dy))
+    if ((point.x >= x) && (point.x < x + dx) 
+		&& (point.y >= y) && (point.y < y + dy))
 			return true;
 	return false;
 }
@@ -157,6 +158,17 @@ inline void Rect::ClampToRect(Vector2 & point) const
 	if (point.y < y)point.y = y;
 	if (point.x > x + dx)point.x = x + dx;
 	if (point.y > y + dy)point.y = y + dy;
+}
+
+inline void Rect::ClampToRect(Rect& rect) const
+{
+	Vector2 topLeft(rect.x, rect.y);
+	Vector2 bottomRight = topLeft + Vector2(rect.dx, rect.dy);
+
+	ClampToRect(topLeft);
+	ClampToRect(bottomRight);
+
+	rect = Rect(topLeft, bottomRight - topLeft);
 }
 	
 inline Rect Rect::Combine(const Rect& rect) const

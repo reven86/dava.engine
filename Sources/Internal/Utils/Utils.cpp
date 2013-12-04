@@ -33,7 +33,6 @@
 #include "Platform/Thread.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/YamlParser.h"
-#include <sstream>
 
 namespace DAVA
 {

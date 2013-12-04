@@ -33,8 +33,6 @@
 namespace DAVA 
 {
 
-REGISTER_CLASS(UISpinner);
-
 //use these names for children buttons to define UISpinner in .yaml
 static const String UISPINNER_BUTTON_NEXT_NAME = "buttonNext";
 static const String UISPINNER_BUTTON_PREVIOUS_NAME = "buttonPrevious";

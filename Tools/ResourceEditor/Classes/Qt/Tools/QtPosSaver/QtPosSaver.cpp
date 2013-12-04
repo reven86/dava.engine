@@ -32,19 +32,20 @@
 #include <QHeaderView>
 
 bool QtPosSaver::settingsArchiveIsLoaded = false;
-DAVA::KeyedArchive QtPosSaver::settingsArchive;
+DAVA::RefPtr<DAVA::KeyedArchive> QtPosSaver::settingsArchive( NULL );
 
 QtPosSaver::QtPosSaver()
 	: attachedWidget(NULL)
 {
 	if(!settingsArchiveIsLoaded)
 	{
+		settingsArchive.Set( new DAVA::KeyedArchive() );
+		settingsArchive->Load("~doc:/ResourceEditorPos.archive");
 		settingsArchiveIsLoaded = true;
-		settingsArchive.Load("~doc:/ResourceEditorPos.archive");
 	}
 	else
 	{
-		settingsArchive.Retain();
+		settingsArchive->Retain();
 	}
 }
 
@@ -57,13 +58,15 @@ QtPosSaver::~QtPosSaver()
 			SaveGeometry(attachedWidget);
 		}
 
-		if(1 == settingsArchive.GetRetainCount())
+		if(1 == settingsArchive->GetRetainCount())
 		{
-			settingsArchive.Save("~doc:/ResourceEditorPos.archive");
+			settingsArchive->Save("~doc:/ResourceEditorPos.archive");
+			settingsArchive.Set( NULL );
+			settingsArchiveIsLoaded = false;
 		}
 		else
 		{
-			settingsArchive.Release();
+			settingsArchive->Release();
 		}
 	}
 }
@@ -164,7 +167,7 @@ void QtPosSaver::SaveValue(const QString &key, const DAVA::VariantType &value)
 	if(settingsArchiveIsLoaded && !key.isEmpty())
 	{
 		QString k = attachedWidgetName + "-" + key;
-		settingsArchive.SetVariant(k.toStdString(), value);
+		settingsArchive->SetVariant(k.toStdString(), value);
 	}
 }
 
@@ -175,7 +178,7 @@ DAVA::VariantType QtPosSaver::LoadValue(const QString &key)
 	if(settingsArchiveIsLoaded && !key.isEmpty())
 	{
 		QString k = attachedWidgetName + "-" + key;
-		DAVA::VariantType *val = settingsArchive.GetVariant(k.toStdString());
+		DAVA::VariantType *val = settingsArchive->GetVariant(k.toStdString());
 		if(NULL != val)
 		{
 			v = *val;
@@ -189,7 +192,7 @@ void QtPosSaver::Save(const QString &key, const QByteArray &data)
 {
 	if(settingsArchiveIsLoaded && !key.isEmpty() && !data.isEmpty())
 	{
-		settingsArchive.SetByteArray(key.toStdString(), (const DAVA::uint8 *) data.constData(), data.size());
+		settingsArchive->SetByteArray(key.toStdString(), (const DAVA::uint8 *) data.constData(), data.size());
 	}
 }
 
@@ -199,8 +202,8 @@ QByteArray QtPosSaver::Load(const QString &key)
 
 	if(settingsArchiveIsLoaded && !key.isEmpty())
 	{
-		int sz = settingsArchive.GetByteArraySize(key.toStdString());
-		const DAVA::uint8 *dt = settingsArchive.GetByteArray(key.toStdString());
+		int sz = settingsArchive->GetByteArraySize(key.toStdString());
+		const DAVA::uint8 *dt = settingsArchive->GetByteArray(key.toStdString());
 
 		if(NULL != dt)
 		{

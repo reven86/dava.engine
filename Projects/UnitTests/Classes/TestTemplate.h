@@ -38,6 +38,8 @@ using namespace DAVA;
 template <class T>
 class TestTemplate : public BaseScreen
 {
+protected:
+	~TestTemplate(){};
 public:
 
 	struct PerfFuncData

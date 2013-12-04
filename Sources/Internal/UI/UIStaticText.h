@@ -42,10 +42,11 @@ namespace DAVA
 {
 class UIStaticText : public UIControl 
 {
+protected:
+	virtual ~UIStaticText();
 public:
 	
 	UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false); 
-	virtual ~UIStaticText();
 
 	//if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
 	//if requested size is >0 - text creates int the rect with the requested size
@@ -59,6 +60,8 @@ public:
 
 	void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
 	bool GetMultiline() const;
+	bool GetMultilineBySymbol() const;
+
 	void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
 	
 	//for background sprite

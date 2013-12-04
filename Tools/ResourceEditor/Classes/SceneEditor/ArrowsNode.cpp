@@ -64,8 +64,7 @@ ArrowsNode::ArrowsNode():
 	renderObject->AddRenderBatch(renderBatch);
 	renderComponent->SetRenderObject(renderObject);
 	AddComponent(renderComponent);
-
-	AddComponent(new TransformComponent());
+	renderComponent->Release();
 
 	SafeRelease(renderBatch);
 	SafeRelease(renderObject);

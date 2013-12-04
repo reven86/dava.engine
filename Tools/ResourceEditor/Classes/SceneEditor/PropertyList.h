@@ -67,9 +67,10 @@ public:
         PROPERTY_IS_EDITABLE = 0,
         PROPERTY_IS_READ_ONLY
     };
-    
-    PropertyList(const Rect &rect, PropertyListDelegate *propertiesDelegate);
+protected:
     virtual ~PropertyList();
+public:
+    PropertyList(const Rect &rect, PropertyListDelegate *propertiesDelegate);
     
     bool IsPropertyAvaliable(const String &propertyName);
 

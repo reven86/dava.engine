@@ -46,7 +46,8 @@ using namespace DAVA;
 
 class UIScrollViewTest: public TestTemplate<UIScrollViewTest>
 {
-
+protected:
+    ~UIScrollViewTest(){}
 public:
 	UIScrollViewTest();
 

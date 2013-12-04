@@ -61,7 +61,13 @@ public:
 	bool GetLandscapeSnap() const;
 	void SetLandscapeSnap(bool snap);
 
-	void PlaceOnLandscape(const EntityGroup *entities);
+	void PlaceOnLandscape(const EntityGroup &entities);
+	void ResetTransform(const EntityGroup &entities);
+
+	bool InModifState() const;
+	bool InCloneState() const;
+
+	virtual void RemoveEntity(DAVA::Entity * entity);
 
 protected:
 	SceneCollisionSystem *collisionSystem;
@@ -86,6 +92,15 @@ protected:
 		DAVA::Matrix4 moveFromZeroPos;
 	};
 
+	enum CloneState
+	{
+		CLONE_DONT,
+		CLONE_NEED,
+		CLONE_DONE
+	};
+
+	CloneState cloneState;
+
 	bool inModifState;
 	bool modified;
 
@@ -100,6 +115,7 @@ protected:
 
 	// entities to modify
 	DAVA::Vector<EntityToModify> modifEntities;
+	DAVA::Vector<DAVA::Entity *> clonedEntities;
 
 	// values calculated, when starting modification
 	ST_PivotPoint modifPivotPoint;
@@ -112,11 +128,14 @@ protected:
 	DAVA::float32 crossXZ;
 	DAVA::float32 crossYZ;
 
-	void BeginModification(const EntityGroup *entities);
+	void BeginModification(const EntityGroup &entities);
 	void EndModification();
 
+	void CloneBegin();
+	void CloneEnd();
+
 	void ApplyModification();
-	bool ModifCanStart(const EntityGroup *selectedEntities) const;
+	bool ModifCanStart(const EntityGroup &selectedEntities) const;
 
 	DAVA::Vector3 CamCursorPosToModifPos(const DAVA::Vector3 &camPosition, const DAVA::Vector3 &camPointDirection, const DAVA::Vector3 &planePoint);
 	DAVA::Vector2 Cam2dProjection(const DAVA::Vector3 &from, const DAVA::Vector3 &to);
@@ -126,11 +145,6 @@ protected:
 	DAVA::float32 Scale(const DAVA::Vector2 &newPos2d);
 
 	DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3 &point, const DAVA::Matrix4 &originalParentTransform) const;
-
-	void MoveDone(const DAVA::Vector2 &newPos3d);
-	void RotateDone(const DAVA::Vector2 &newPos2d);
-	void ScaleDone(const DAVA::Vector2 &newPos2d);
-
 	bool IsEntityContainRecursive(const DAVA::Entity *entity, const DAVA::Entity *child) const;
 };
 

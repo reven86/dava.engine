@@ -32,7 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Base/StaticSingleton.h"
+#include "Base/Singleton.h"
 #include "Render/RenderBase.h"
 
 #include "Render/Texture.h"
@@ -51,7 +51,7 @@ class RenderDataStream;
     Keep in mind that output of all line-drawing functions can depend on hardware and look differently on different systems
  */
 
-class RenderHelper : public StaticSingleton<RenderHelper>
+class RenderHelper : public Singleton<RenderHelper>
 {
 public:
 	RenderHelper();
@@ -234,6 +234,10 @@ public:
 	void DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect);
     //static void DrawLineWithEndPoints(const Vector3 & pt1, const Vector3 & pt2); 
 	//static void DrawStrippedLine(Polygon2 & polygon, float lineLen, float spaceLen, float halfWidth, Texture * texture, float initialPos);
+
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);
+#endif
 
 private:
     RenderDataObject * renderDataObject;

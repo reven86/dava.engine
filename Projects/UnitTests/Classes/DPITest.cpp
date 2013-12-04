@@ -81,6 +81,7 @@ void DPITest::LoadResources()
 	testButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DPITest::ButtonPressed));
 
 	AddControl(testButton);
+	SafeRelease(font);
 }
 
 void DPITest::UnloadResources()

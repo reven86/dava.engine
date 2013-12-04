@@ -28,6 +28,8 @@
 
 #include "DAVAEngine.h"
 
+#include "Utils/Utils.h"
+
 @implementation EAGLView
 
 @synthesize animating;
@@ -135,6 +137,7 @@
 			}
 		}
         
+		DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
         DAVA::RenderManager::Instance()->Init(DAVA::Core::Instance()->GetPhysicalScreenWidth(), DAVA::Core::Instance()->GetPhysicalScreenHeight());
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         
@@ -202,7 +205,9 @@
 - (void) layoutSubviews
 {
 	[renderer resizeFromLayer:(CAEAGLLayer*)self.layer];
-    [self drawView:nil];
+    
+    // Yuri Coder, 2013/11/28. The line below is commented out because of DF-2799.
+    // [self drawView:nil];
 }
 
 - (NSInteger) animationFrameInterval

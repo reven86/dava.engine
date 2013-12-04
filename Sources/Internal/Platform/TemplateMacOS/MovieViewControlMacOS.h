@@ -64,8 +64,8 @@ public:
 	virtual bool IsPlaying();
 
 private:
-	// Pointer to MacOS media player (QTMovieView).
-	void* movieView;
+	// Pointer to MacOS video player helper.
+	void* moviePlayerHelper;
 };
 	
 };

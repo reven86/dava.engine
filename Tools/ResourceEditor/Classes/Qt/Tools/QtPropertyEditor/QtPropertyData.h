@@ -67,13 +67,22 @@ public:
 		FLAG_IS_NOT_EDITABLE	= 0x4,
 	};
 
+	enum ValueChangeReason
+	{
+		VALUE_SOURCE_CHANGED,
+		VALUE_SET,
+		VALUE_EDITED
+	};
+
 	QtPropertyData();
 	QtPropertyData(const QVariant &value);
 	virtual ~QtPropertyData() ;
 
 	QVariant GetValue();
+	void SetValue(const QVariant &value, ValueChangeReason reason = QtPropertyData::VALUE_SET);
+	bool UpdateValue();
+
 	QVariant GetAlias();
-	void SetValue(const QVariant &value);
 
 	virtual QIcon GetIcon();
 	virtual void SetIcon(const QIcon &icon);
@@ -94,8 +103,10 @@ public:
 	void ChildRemove(QtPropertyData *data);
 	void ChildRemove(int i);
 
+	virtual void* CreateLastCommand() const;
+
 signals:
-	void ValueChanged();
+	void ValueChanged(QtPropertyData::ValueChangeReason reason);
 	void FlagsChanged();
 	void ChildAdded(const QString &key, QtPropertyData *data);
 	void ChildRemoving(const QString &key, QtPropertyData *data);
@@ -104,29 +115,32 @@ protected:
 	QVariant curValue;
 	QIcon curIcon;
 	int curFlags;
-
+	bool updatingValue;
+	
 	QtPropertyData *parent;
-	QHash<QString, QtPropertyData *> children;
-	QHash<QString, int> childrenOrder;
 
-	void ParentUpdate();
+	QList<QString> childrenNames;
+	QList<QtPropertyData*> childrenData;
+
+	virtual void UpdateUp();
+	virtual void UpdateDown();
 
 	// Functions should be re-implemented by sub-class
 	virtual QVariant GetValueInternal();
 	virtual QVariant GetValueAlias();
 	virtual void SetValueInternal(const QVariant &value);
+	virtual bool UpdateValueInternal();
 	virtual QWidget* CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option);
 	virtual bool EditorDoneInternal(QWidget *editor);
 	virtual bool SetEditorDataInternal(QWidget *editor);
-	virtual void ChildChanged(const QString &key, QtPropertyData *data);
-	virtual void ChildNeedUpdate();
-	
+
 public:
 	// Option widgets
 	int GetOWCount();
 	const QtPropertyOW* GetOW(int index = 0);
 	void AddOW(const QtPropertyOW &ow);
 	void RemOW(int index);
+	void RemOW(QWidget *widget);
 
 	QWidget* GetOWViewport();
 	void SetOWViewport(QWidget *viewport);

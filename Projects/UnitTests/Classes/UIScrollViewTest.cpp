@@ -94,6 +94,7 @@ void UIScrollViewTest::LoadResources()
 	testControl4->SetName("CONTROL_4");
 	testControl4->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIScrollViewTest::ButtonPressed));
 	scrollView->AddControlToContainer(testControl4);
+	SafeRelease(testControl4);
 
 	UIControl *testControlChild = new UIControl(Rect(100, 100, 150, 150));
 	testControlChild->SetDebugDraw(true);
@@ -122,6 +123,47 @@ void UIScrollViewTest::LoadResources()
 	testButton->AddControl(testControl);
 	
 	scrollView->AddControlToContainer(testButton);
+	// Check how controls with negative coodinates are pushed inside scrollContainer
+	UIControl *testControl5 = new UIControl(Rect(-50, 500, 150, 150));
+	testControl5->SetDebugDraw(true);
+	testControl5->GetBackground()->SetColor(Color(0.3333, 0.3333, 0.5555, 1.0000));
+	testControl5->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+	testControl5->SetName("CONTROL_5");
+
+	UIControl *testControl6 = new UIControl(Rect(-50, -50, 25, 25));
+	testControl6->SetDebugDraw(true);
+	testControl6->GetBackground()->SetColor(Color(0.3333, 0.6667, 0.4980, 1.0000));
+	testControl6->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+	testControl6->SetName("CONTROL_6");
+
+	testControl5->AddControl(testControl6);
+	
+	UIControl *testControl7 = new UIControl(Rect(-100, 15, 35, 35));
+	testControl7->SetDebugDraw(true);
+	testControl7->GetBackground()->SetColor(Color(0.6667, 0.3333, 0.7880, 1.0000));
+	testControl7->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+	testControl7->SetName("CONTROL_7");
+
+	testControl6->AddControl(testControl7);
+	SafeRelease(testControl6);
+	SafeRelease(testControl7);
+	
+	UIControl *testControl8 = new UIControl(Rect(-70, 50, 25, 25));
+	testControl8->SetDebugDraw(true);
+	testControl8->GetBackground()->SetColor(Color(0.6667, 0.3333, 0.4980, 1.0000));
+	testControl8->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+	testControl8->SetName("CONTROL_8");
+
+	testControl5->AddControl(testControl8);
+	SafeRelease(testControl8);
+
+	scrollView->AddControlToContainer(testControl5);
+	scrollView->RecalculateContentSize();
+	SafeRelease(testControl5);
+
+	SafeRelease(testControlChild);
+	SafeRelease(testControl);
+	SafeRelease(testButton);
 	
 	testMessageText = new UIStaticText(Rect(10, 10, 300, 30));
 	testMessageText->SetFont(font);
@@ -138,6 +180,8 @@ void UIScrollViewTest::LoadResources()
 	finishTestBtn->SetDebugDraw(true);
 	finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIScrollViewTest::ButtonPressed));
 	AddControl(finishTestBtn);
+
+	SafeRelease(font);
 }
 
 void UIScrollViewTest::UnloadResources()

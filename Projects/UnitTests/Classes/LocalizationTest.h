@@ -42,7 +42,8 @@ class LocalizationTest : public TestTemplate<LocalizationTest>
 		FIRST_TEST = 0,
 		TEST_COUNT = 6
 	};
-
+protected:
+    ~LocalizationTest(){}
 public:
 	LocalizationTest();
 

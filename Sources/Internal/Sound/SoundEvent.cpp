@@ -37,7 +37,8 @@ namespace DAVA
 FMOD_RESULT F_CALLBACK SoundEventCallback(FMOD_EVENT *  event, FMOD_EVENT_CALLBACKTYPE  type, void *  param1, void *  param2, void *  userdata);
 
 SoundEvent::SoundEvent(FMOD::Event * _fmodEvent) :
-	fmodEvent(_fmodEvent)
+	fmodEvent(_fmodEvent),
+	eventDispatcher( new EventDispatcher() )
 {
 	FMOD_VERIFY(fmodEvent->setCallback(SoundEventCallback, this));
 }
@@ -94,7 +95,7 @@ bool SoundEvent::IsPaused()
 
 void SoundEvent::PerformCallback(eEvent eventType)
 {
-	eventDispatcher.PerformEvent(eventType, this);
+	eventDispatcher->PerformEvent(eventType, this);
 }
 
 FMOD_RESULT F_CALLBACK SoundEventCallback(FMOD_EVENT * event, FMOD_EVENT_CALLBACKTYPE  type, void * param1, void * param2, void * userdata)

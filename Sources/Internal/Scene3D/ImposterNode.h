@@ -53,9 +53,10 @@ public:
 		STATE_QUEUED,
 		STATE_REDRAW_APPROVED
 	};
-
-	ImposterNode();
+protected:
 	virtual ~ImposterNode();
+public:
+	ImposterNode();
 
 	void UpdateState();
 	virtual void Draw();

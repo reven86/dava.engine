@@ -147,6 +147,8 @@ void EMailTest::LoadResources()
 	finishTestBtn->SetDebugDraw(true);
 	finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &EMailTest::ButtonPressed));
 	AddControl(finishTestBtn);
+
+	SafeRelease(font);
 }
 
 void EMailTest::UnloadResources()

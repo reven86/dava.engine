@@ -7,5 +7,5 @@ varying lowp vec4 varColor;
 void main()
 {
 	gl_Position = modelViewProjectionMatrix * inPosition;
-	varColor = flatColor * flatColor.a;
+	varColor = flatColor;
 }

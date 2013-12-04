@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class SpriteTest : public TestTemplate<SpriteTest>
 {
+protected:
+	~SpriteTest(){}
 public:
 	SpriteTest(const String &screenName);
 

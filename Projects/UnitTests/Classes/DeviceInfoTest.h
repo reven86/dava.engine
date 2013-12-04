@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class DeviceInfoTest : public TestTemplate<DeviceInfoTest>
 {
+protected:
+    ~DeviceInfoTest(){}
 public:
 	DeviceInfoTest();
 	

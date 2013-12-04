@@ -80,9 +80,10 @@ public:
         int32 layer;
         bool isDummy;
     };
-    
-	LodNode();
+protected:
 	virtual ~LodNode();
+public:
+	LodNode();
 	
     
     virtual void	AddNodeInLayer(Entity * node, int32 layer);//adds new node and registers this node as a LOD layer

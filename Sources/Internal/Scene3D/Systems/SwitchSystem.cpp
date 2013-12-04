@@ -71,7 +71,7 @@ void SwitchSystem::Process()
 			ActionComponent* actionComponent = cast_if_equal<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
 			if(NULL != actionComponent)
 			{
-				actionComponent->Start(sw->newSwitchIndex);
+				actionComponent->StartSwitch(sw->newSwitchIndex);
 			}
 		}
 	}

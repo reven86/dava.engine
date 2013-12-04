@@ -48,6 +48,7 @@ public:
 	String GetTimeZone();
 	String GetUDID();
 	String GetName();
+	int GetZBufferSize();
 
 protected:
 	virtual jclass GetJavaClass() const;

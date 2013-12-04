@@ -73,9 +73,9 @@ public:
 
 
         INTROSPECTION(LodDistance,
-            PROPERTY("distance", "Distance", GetDistance, SetDistance, I_SAVE | I_VIEW | I_EDIT)
-            MEMBER(nearDistanceSq, "Near Distance", I_SAVE)
-            MEMBER(farDistanceSq, "Far Distance", I_SAVE)
+            PROPERTY("distance", "Distance", GetDistance, SetDistance, I_SAVE | I_VIEW)
+            MEMBER(nearDistanceSq, "Near Distance", I_SAVE | I_VIEW)
+            MEMBER(farDistanceSq, "Far Distance", I_SAVE | I_VIEW)
         );
 	};
 
@@ -91,7 +91,9 @@ public:
 		int32 layer;
 		bool isDummy;
 	};
-
+protected:
+    ~LodComponent(){};
+public:
 	LodComponent();
 	virtual Component * Clone(Entity * toEntity);
 	virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
@@ -140,16 +142,14 @@ public:
 
 	void SetLayerVisibility(int32 layerNum, bool visible);
 
-    void CopyLODSettings(const LodComponent * fromLOD);
-    
-	void SetForceLayerAsCurrent();
+    void CopyLODSettings(const LodComponent * fromLOD);	
 
 public:
     
     INTROSPECTION_EXTEND(LodComponent, Component,
-        COLLECTION(lodLayersArray, "Lod Layers Array", I_SAVE | I_VIEW | I_EDIT)
-        MEMBER(forceLodLayer, "Force Lod Layer", I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("forceDistance", "Force Distance", GetForceDistance, SetForceDistance, I_SAVE | I_VIEW | I_EDIT)
+        COLLECTION(lodLayersArray, "Lod Layers Array", I_SAVE | I_VIEW)
+        MEMBER(forceLodLayer, "Force Lod Layer", I_SAVE | I_VIEW)
+        PROPERTY("forceDistance", "Force Distance", GetForceDistance, SetForceDistance, I_SAVE | I_VIEW)
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
     );
 };

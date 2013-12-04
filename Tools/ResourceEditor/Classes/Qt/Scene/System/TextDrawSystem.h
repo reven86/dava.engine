@@ -45,24 +45,36 @@ public:
 	TextDrawSystem(DAVA::Scene * scene, SceneCameraSystem *cameraSystem);
 	~TextDrawSystem();
 
+	enum Align
+	{
+		TopLeft,
+		TopCenter,
+		TopRight,
+		Left,
+		Center,
+		Right,
+		BottomLeft,
+		BottomCenter,
+		BottomRight
+	};
+
 	DAVA::Vector2 ToPos2d(const DAVA::Vector3 &pos3d) const;
 
-	void DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color);
-	void DrawText(DAVA::Vector2 pos2d, const DAVA::String &text, const DAVA::Color &color);
-	void DrawText(DAVA::Vector3 pos3d, const DAVA::String &text, const DAVA::Color &color);
+	void DrawText(int x, int y, const DAVA::String &text, const DAVA::Color &color, Align align = TopLeft);
+	void DrawText(DAVA::Vector2 pos2d, const DAVA::String &text, const DAVA::Color &color, Align align = TopLeft);
 
 protected:
 	struct TextToDraw
 	{
-		TextToDraw(DAVA::Vector2 _pos, const DAVA::String &_text, const DAVA::Color &_color)
-			: pos(_pos), text(_text), color(_color)
+		TextToDraw(DAVA::Vector2 _pos, const DAVA::String &_text, const DAVA::Color &_color, Align _align)
+			: pos(_pos), text(_text), color(_color), align(_align)
 		{}
 
 		DAVA::Vector2 pos;
 		DAVA::String text;
 		DAVA::Color color;
+		Align align;
 	};
-
 
 	SceneCameraSystem *cameraSystem;
 

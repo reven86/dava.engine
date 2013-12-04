@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class StaticTextScreen : public UIScreen
 {
+protected:
+	~StaticTextScreen(){}
 public:
 
 	virtual void LoadResources();

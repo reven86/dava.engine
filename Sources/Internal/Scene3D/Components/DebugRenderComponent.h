@@ -58,9 +58,10 @@ public:
 		DEBUG_AUTOCREATED		= 0x80000000,
         DEBUG_DRAW_ALL			= 0xFFFFFFFF,
 	};
-    
-    DebugRenderComponent();
+protected:
     virtual ~DebugRenderComponent();
+public:
+    DebugRenderComponent();
     
     IMPLEMENT_COMPONENT_TYPE(DEBUG_RENDER_COMPONENT);
 

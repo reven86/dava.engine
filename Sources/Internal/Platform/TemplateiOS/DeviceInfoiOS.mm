@@ -85,6 +85,16 @@ String DeviceInfo::GetModel()
 		if ([modelName hasPrefix:@"iPhone5,2"])
 			model = "iPhone 5 CDMA LTE";
 
+		if ([modelName hasPrefix:@"iPhone5,3"])
+			model = "iPhone 5C GSM";
+		if ([modelName hasPrefix:@"iPhone5,4"])
+			model = "iPhone 5C GSM+CDMA";
+
+		if ([modelName hasPrefix:@"iPhone6,1"])
+			model = "iPhone 5S GSM";
+		if ([modelName hasPrefix:@"iPhone6,2"])
+			model = "iPhone 5S GSM+CDMA";
+
 		// iPad
 		if ([modelName hasPrefix:@"iPad1,1"])
 			model = "iPad 1";

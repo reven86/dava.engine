@@ -33,19 +33,28 @@
 
 #include "Entity/SceneSystem.h"
 #include "EditorScene.h"
+#include "Commands2/MetaObjModifyCommand.h"
+#include "LandscapeEditorDrawSystem.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
-class LandscapeEditorDrawSystem;
 
 class TilemaskEditorSystem: public DAVA::SceneSystem
 {
 public:
+	enum eTilemaskDrawType
+	{
+		TILEMASK_DRAW_NORMAL = 0,
+		TILEMASK_DRAW_COPY_PASTE,
+		
+		TILEMASK_DRAW_TYPES_COUNT
+	};
+
 	TilemaskEditorSystem(Scene* scene);
 	virtual ~TilemaskEditorSystem();
 	
-	bool EnableLandscapeEditing();
+	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
 	bool IsLandscapeEditingEnabled() const;
 	
@@ -64,7 +73,12 @@ public:
 
 	uint32 GetTileTextureCount() const;
 	Texture* GetTileTexture(int32 index);
-	
+	Color GetTileColor(int32 index);
+	void SetTileColor(int32 index, const Color& color);
+
+	void SetDrawingType(eTilemaskDrawType type);
+	eTilemaskDrawType GetDrawingType();
+
 protected:
 	bool enabled;
 	
@@ -80,7 +94,9 @@ protected:
 	Image* toolImage;
 	Sprite* toolImageSprite;
 	uint32 tileTextureNum;
-	
+
+	eTilemaskDrawType drawingType;
+	eTilemaskDrawType activeDrawingType;
 	float32 strength;
 	FilePath toolImagePath;
 	int32 toolImageIndex;
@@ -88,24 +104,26 @@ protected:
 	bool isIntersectsLandscape;
 	Vector2 cursorPosition;
 	Vector2 prevCursorPos;
+	Vector2 copyPasteFrom;
+	Vector2 copyPasteTo;
 	
 	Rect updatedRectAccumulator;
 	
 	bool editingIsEnabled;
 	
+	Sprite* stencilSprite;
 	Sprite* toolSprite;
-	Sprite* maskSprite;
-	Sprite* oldMaskSprite;
 	bool toolSpriteUpdated;
 
 	eBlendMode srcBlendMode;
 	eBlendMode dstBlendMode;
 	Shader* tileMaskEditorShader;
-
-	Image* originalMask;
+	Shader* tileMaskCopyPasteShader;
 
 	bool needCreateUndo;
-	
+
+	Landscape::eTextureLevel textureLevel;
+
 	void UpdateCursorPosition();
 	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool();
@@ -119,9 +137,15 @@ protected:
 	void CreateMaskFromTexture(Texture* texture);
 
 	void CreateUndoPoint();
-	void StoreOriginalState();
 
-	bool IsCanBeEnabled();
+	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
+
+	void InitSprites();
+
+	void FinishEditing();
+
+	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level,
+												 const Color& color);
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

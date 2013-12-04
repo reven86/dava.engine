@@ -47,7 +47,6 @@
 namespace DAVA 
 {
 
-REGISTER_CLASS(InstanceMaterialState)
     
 InstanceMaterialState::InstanceMaterialState()
     :   flatColor(1.0f, 1.0f, 1.0f, 1.0f)
@@ -214,7 +213,6 @@ void InstanceMaterialState::InitFromState(const InstanceMaterialState * state)
 
 
 
-REGISTER_CLASS(Material);
     
 UberShader * Material::uberShader = 0;
     
@@ -246,10 +244,14 @@ const char8 * Material::GetTypeName(eType format)
             return "PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP";
 		case MATERIAL_VERTEX_COLOR_ALPHABLENDED:
 			return "VERTEX_COLOR_ALPHABLEND";
+		case MATERIAL_VERTEX_COLOR_ALPHABLENDED_FRAME_BLEND:
+			return "VERTEX_COLOR_ALPHABLEND_FRAME_BLEND";
 		case MATERIAL_FLAT_COLOR:
 			return "FLAT_COLOR";
 		case MATERIAL_SKYBOX:
 			return "SKYBOX";
+        case MATERIAL_SPEED_TREE_LEAF:
+            return "MATERIAL_SPEED_TREE_LEAF";
         default:
             break;
     };
@@ -263,6 +265,9 @@ Material::Material()
     ,   specularColor(0.0f, 0.0f, 0.0f, 1.0f)
     ,   ambientColor(0.2f, 0.2f, 0.2f, 1.0f)
     ,   emissiveColor(0.0f, 0.0f, 0.0f, 1.0f)
+    ,   treeLeafColor(1.f, 1.f, 1.f, 1.f)
+    ,   treeLeafOcclusionOffset(0.f)
+    ,   treeLeafOcclusionMul(1.f)
     ,   shininess(1.0f)
     ,   isTranslucent(false)
     ,   isTwoSided(false)
@@ -354,7 +359,11 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
 	newMaterial->uniformFogDensity = uniformFogDensity;
 	newMaterial->uniformFogColor = uniformFogColor;
 	newMaterial->uniformFlatColor = uniformFlatColor;
-	newMaterial->uniformTexture0Shift = uniformTexture0Shift;
+    newMaterial->uniformTexture0Shift = uniformTexture0Shift;
+    newMaterial->uniformWorldTranslate = uniformWorldTranslate;
+    newMaterial->uniformWorldScale = uniformWorldScale;
+    newMaterial->uniformTreeLeafColorMul = uniformTreeLeafColorMul;
+    newMaterial->uniformTreeLeafOcclusionOffset = uniformTreeLeafOcclusionOffset;
 
 	newMaterial->renderStateBlock = renderStateBlock;
     
@@ -405,6 +414,10 @@ void Material::CopySettings(Material *fromMaterial)
 	diffuseColor = fromMaterial->diffuseColor;
 	specularColor = fromMaterial->specularColor;
 	emissiveColor = fromMaterial->emissiveColor;
+    treeLeafColor = fromMaterial->treeLeafColor;
+
+    treeLeafOcclusionMul = fromMaterial->treeLeafOcclusionMul;
+    treeLeafOcclusionOffset = fromMaterial->treeLeafOcclusionOffset;
 
 	isFogEnabled = fromMaterial->isFogEnabled;
 	fogDensity = fromMaterial->fogDensity;
@@ -507,6 +520,10 @@ void Material::RebuildShader()
     uniformFogColor = -1;
     uniformFlatColor = -1;
     uniformTexture0Shift = -1;
+    uniformWorldTranslate = -1;
+    uniformWorldScale = -1;
+    uniformTreeLeafColorMul = -1;
+    uniformTreeLeafOcclusionOffset = -1;
     
     String shaderCombileCombo = "";
     
@@ -543,6 +560,9 @@ void Material::RebuildShader()
 		case MATERIAL_VERTEX_COLOR_ALPHABLENDED:
 			shaderCombileCombo = "MATERIAL_TEXTURE;ALPHABLEND;VERTEX_COLOR";
 			break;
+		case MATERIAL_VERTEX_COLOR_ALPHABLENDED_FRAME_BLEND:
+			shaderCombileCombo = "MATERIAL_TEXTURE;ALPHABLEND;VERTEX_COLOR;FRAME_BLEND";
+			break;
         case MATERIAL_FLAT_COLOR:
             isFlatColorEnabled = true;
             break;
@@ -552,7 +572,9 @@ void Material::RebuildShader()
 			isFlatColorEnabled = true;
 			break;
 		}
-			
+        case MATERIAL_SPEED_TREE_LEAF:
+            shaderCombileCombo = "MATERIAL_SPEED_TREE_LEAF;MATERIAL_TEXTURE;VERTEX_COLOR";
+			break;
         default:
             break;
     };
@@ -644,7 +666,13 @@ void Material::RebuildShader()
             uniformLightIntensity0 = shader->FindUniformIndexByName("lightIntensity0");
             uniformLightAttenuationQ = shader->FindUniformIndexByName("uniformLightAttenuationQ");
             break;
-
+        case MATERIAL_SPEED_TREE_LEAF:
+            uniformWorldTranslate = shader->FindUniformIndexByName("worldTranslate");
+            uniformTexture0 = shader->FindUniformIndexByName("texture0");
+            uniformWorldScale = shader->FindUniformIndexByName("worldScale");
+            uniformTreeLeafColorMul = shader->FindUniformIndexByName("treeLeafColorMul");
+            uniformTreeLeafOcclusionOffset = shader->FindUniformIndexByName("treeLeafOcclusionOffset");
+            break;
         default:
             break;
     };
@@ -674,7 +702,7 @@ void Material::RebuildShader()
 
     //RetrieveTextureSlotNames();
 }
-    
+
 void Material::RetrieveTextureSlotNames()
 {
     // 
@@ -733,6 +761,10 @@ void Material::Save(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
     keyedArchive->SetByteArrayAsType("mat.specular", specularColor);
     keyedArchive->SetByteArrayAsType("mat.emission", emissiveColor);
     keyedArchive->SetFloat("mat.shininess", shininess);
+
+    keyedArchive->SetByteArrayAsType("mat.tree.leaf.color", treeLeafColor);
+    keyedArchive->SetFloat("mat.tree.leaf.occlusion.offset", treeLeafOcclusionOffset);
+    keyedArchive->SetFloat("mat.tree.leaf.occlusion.mul", treeLeafOcclusionMul);
 
     keyedArchive->SetBool("mat.isOpaque", isTranslucent);
     keyedArchive->SetBool("mat.isTwoSided", isTwoSided);
@@ -796,7 +828,11 @@ void Material::Load(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
     specularColor = keyedArchive->GetByteArrayAsType("mat.specular", specularColor);
     emissiveColor = keyedArchive->GetByteArrayAsType("mat.emission", emissiveColor);
     shininess = keyedArchive->GetFloat("mat.shininess", shininess);
-    
+
+    treeLeafColor = keyedArchive->GetByteArrayAsType("mat.tree.leaf.color", treeLeafColor);
+    treeLeafOcclusionOffset = keyedArchive->GetFloat("mat.tree.leaf.occlusion.offset");
+    treeLeafOcclusionMul = keyedArchive->GetFloat("mat.tree.leaf.occlusion.mul");
+
     isTranslucent = keyedArchive->GetBool("mat.isOpaque", isTranslucent);
     isTwoSided = keyedArchive->GetBool("mat.isTwoSided", isTwoSided);
 
@@ -886,7 +922,7 @@ float32 Material::GetShininess() const
     return shininess;
 }
     
-void Material::SetFog(bool _isFogEnabled)
+void Material::SetFog(const bool & _isFogEnabled)
 {
     isFogEnabled = _isFogEnabled;
     RebuildShader();
@@ -906,7 +942,7 @@ Material::eViewOptions Material::GetViewOption()
 	return viewOptions;
 }
     
-bool Material::IsFogEnabled() const
+const bool & Material::IsFogEnabled() const
 {
     return isFogEnabled;
 }
@@ -931,15 +967,16 @@ const Color & Material::GetFogColor() const
     return fogColor;
 }
 
-void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState)
+void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
     ///float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
 
     if(MATERIAL_UNLIT_TEXTURE_LIGHTMAP == type)
 	{
-        if (!instanceMaterialState->lightmapTexture)
+        if (NULL == instanceMaterialState->lightmapTexture)
         {
             SetSetupLightmap(true);
+			renderStateBlock.SetTexture(NULL, 1);
         }
 		else
         {
@@ -951,8 +988,6 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState)
     {
         renderStateBlock.SetTexture(textures[Material::TEXTURE_DECAL], 1);
     }
-
-
     
 	renderStateBlock.shader = shader;
 
@@ -1033,7 +1068,6 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState)
 			shader->SetUniformValueByIndex(lightmapSizePosition, (float32)instanceMaterialState->GetLightmapSize()); 
 		}
 	}
-    
 
 	if(MATERIAL_UNLIT_TEXTURE_LIGHTMAP == type)
 	{
@@ -1052,6 +1086,28 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState)
         shader->SetUniformColor3ByIndex(uniformFogColor, fogColor);
 	}
     
+    if(MATERIAL_SPEED_TREE_LEAF == type)
+    {
+        if(uniformWorldTranslate != -1)
+        {
+            Vector3 trVector = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW).GetTranslationVector();
+            shader->SetUniformValueByIndex(uniformWorldTranslate, trVector);
+        }
+
+        if(uniformWorldScale != -1 && worldMxPtr)
+        {
+            shader->SetUniformValueByIndex(uniformWorldScale, worldMxPtr->GetScaleVector());
+        }
+        if(uniformTreeLeafColorMul != -1)
+        {
+            shader->SetUniformColor3ByIndex(uniformTreeLeafColorMul, treeLeafColor * treeLeafOcclusionMul);
+        }
+        if(uniformTreeLeafOcclusionOffset != -1)
+        {
+            shader->SetUniformValueByIndex(uniformTreeLeafOcclusionOffset, treeLeafOcclusionOffset);
+        }
+    }
+
     if (instanceMaterialState)
     {
         if (isFlatColorEnabled)
@@ -1109,7 +1165,7 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState)
 
 }
 
-void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState)
+void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::MATERIAL_DRAW))
 	{
@@ -1125,6 +1181,11 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 	{
 		return;
 	}
+
+    if(type == MATERIAL_SPEED_TREE_LEAF && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPEEDTREE_LEAFS_DRAW))
+    {
+        return;
+    }
 
 	//Dizz: uniformFogDensity != -1 is a check if fog is inabled in shader
 	if(isFogEnabled && (uniformFogDensity != -1) && !RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::FOG_ENABLE))
@@ -1147,7 +1208,7 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 		oldDst = RenderManager::Instance()->GetDestBlend();
 	}
 
-	PrepareRenderState(instanceMaterialState);
+	PrepareRenderState(instanceMaterialState, worldMxPtr);
 
     // TODO: rethink this code
     if (group->renderDataObject->GetIndexBufferID() != 0)

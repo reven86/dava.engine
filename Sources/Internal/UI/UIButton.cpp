@@ -1,4 +1,4 @@
-/*==================================================================================
+ /*==================================================================================
     Copyright (c) 2008, binaryzebra
     All rights reserved.
 
@@ -39,7 +39,6 @@
 
 namespace DAVA 
 {
-	REGISTER_CLASS(UIButton);
 
     const int32 stateArray[] = {UIControl::STATE_NORMAL, UIControl::STATE_PRESSED_INSIDE, UIControl::STATE_PRESSED_OUTSIDE, UIControl::STATE_DISABLED, UIControl::STATE_SELECTED, UIControl::STATE_HOVER};
     const String statePostfix[] = {"Normal", "PressedInside", "PressedOutside", "Disabled", "Selected", "Hover"};
@@ -1037,5 +1036,16 @@ namespace DAVA
 			}
 		}
 	}
-
+    
+    void UIButton::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
+	{
+        UIControl::SetVisibleForUIEditor(value, hierarchic);
+        for(int i = 0; i < DRAW_STATE_COUNT; i++)
+		{
+            if (stateTexts[i])
+            {
+                stateTexts[i]->SetVisibleForUIEditor(value, hierarchic);
+            }
+		}
+    }
 };

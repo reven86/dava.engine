@@ -167,6 +167,7 @@ void EditorScene::CheckNodes(Entity * curr)
 			dbgComp = new DebugRenderComponent();
 			newDebugComp = true;
 			curr->AddComponent(dbgComp);
+			dbgComp->Release();
 		}
 
 		// check other debug settings
@@ -437,42 +438,6 @@ bool EditorScene::LandscapeIntersection(const DAVA::Vector3 &from, const DAVA::V
     return false;
 }
 
-Landscape * EditorScene::GetLandscape(Entity *node)
-{
-    Landscape *landscape = DAVA::GetLandscape(node);
-    if(!landscape)
-    {
-        for (int ci = 0; ci < node->GetChildrenCount(); ++ci)
-        {
-            landscape = EditorScene::GetLandscape(node->GetChild(ci));
-            if(landscape)
-            {
-                break;
-            }
-        }
-
-    }
-	return landscape;
-}
-
-Entity* EditorScene::GetLandscapeNode(Entity *node)
-{
-    Landscape *landscape = DAVA::GetLandscape(node);
-    if(landscape)
-    {
-        return node;
-    }
-    
-    for (int ci = 0; ci < node->GetChildrenCount(); ++ci)
-    {
-        Entity * child = node->GetChild(ci);
-		Entity * result = GetLandscapeNode(child);
-		if (result)
-			return result;
-    }
-    
-	return NULL;
-}
 
 HeightmapNode * EditorScene::FindHeightmap(Entity * curr, btCollisionObject * coll)
 {
@@ -711,7 +676,7 @@ void EditorScene::AddEditorEntity(Entity *editorEntity)
 void EditorScene::UpdateShadowColorFromLandscape()
 {
 	// try to get shadow color for landscape
-	Entity *land = GetLandscapeNode(this);
+	Entity *land = FindLandscapeEntity(this);
 	if(!land) return;
 
 	KeyedArchive * props = land->GetCustomProperties();
@@ -723,7 +688,7 @@ void EditorScene::UpdateShadowColorFromLandscape()
 
 void EditorScene::SetShadowColor( const Color &color )
 {
-	Entity *land = GetLandscapeNode(this);
+	Entity *land = FindLandscapeEntity(this);
 	if(!land) return;
 
 	KeyedArchive * props = land->GetCustomProperties();

@@ -33,11 +33,11 @@
 
 #include "Entity/SceneSystem.h"
 #include "EditorScene.h"
+#include "LandscapeEditorDrawSystem.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
-class LandscapeEditorDrawSystem;
 
 class VisibilityToolSystem: public DAVA::SceneSystem
 {
@@ -54,7 +54,7 @@ public:
 	VisibilityToolSystem(Scene* scene);
 	virtual ~VisibilityToolSystem();
 
-	bool EnableLandscapeEditing();
+	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
 	bool IsLandscapeEditingEnabled() const;
 
@@ -85,7 +85,6 @@ protected:
 	Texture* crossTexture;
 	uint32 cursorSize;
 	uint32 curToolSize;
-	Sprite* toolImageSprite;
 
 	int32 landscapeSize;
 	bool isIntersectsLandscape;
@@ -107,10 +106,9 @@ protected:
 
 	Vector2 visibilityPoint;
 
+	Landscape::eTextureLevel textureLevel;
+
 	void UpdateCursorPosition(int32 landscapeSize);
-	void UpdateToolImage(bool force = false);
-	void UpdateBrushTool(float32 timeElapsed);
-	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
 
 	void AddRectToAccumulator(const Rect& rect);
 	void ResetAccumulatorRect();
@@ -137,7 +135,7 @@ protected:
 							   const Vector2& point);
 	void DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> &points);
 
-	bool IsCanBeEnabled();
+	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
 };
 
 #endif /* defined(__RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__) */

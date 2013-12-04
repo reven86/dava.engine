@@ -41,6 +41,7 @@ class QtPropertyItemDelegate : public QStyledItemDelegate
 
 public:
     QtPropertyItemDelegate(QWidget *parent = 0);
+	virtual ~QtPropertyItemDelegate();
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
     QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
@@ -53,8 +54,11 @@ public slots:
 	void collapse(const QModelIndex & index);
 	void expand(const QModelIndex & index);
 	bool helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index);
+	bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index);
 
 protected:
+	QStyle *childWidgetsStyle;
+
 	void recalcOptionalWidgets(const QModelIndex &index, QStyleOptionViewItem *option) const;
 	void hideAllChildOptionalWidgets(QtPropertyData* data);
 };

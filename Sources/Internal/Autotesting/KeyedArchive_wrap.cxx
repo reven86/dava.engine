@@ -3724,10 +3724,6 @@ static int _wrap_KeyedArchive_Count(lua_State* L) {
 }
 
 
-static void swig_delete_KeyedArchive(void *obj) {
-DAVA::KeyedArchive *arg1 = (DAVA::KeyedArchive *) obj;
-delete arg1;
-}
 static swig_lua_method swig_DAVA_KeyedArchive_methods[] = {
     {"IsKeyExists", _wrap_KeyedArchive_IsKeyExists}, 
     {"GetBool", _wrap_KeyedArchive_GetBool}, 
@@ -3760,7 +3756,7 @@ static swig_lua_attribute swig_DAVA_KeyedArchive_attributes[] = {
 };
 static swig_lua_class *swig_DAVA_KeyedArchive_bases[] = {0};
 static const char *swig_DAVA_KeyedArchive_base_names[] = {0};
-static swig_lua_class _wrap_class_DAVA_KeyedArchive = { "KeyedArchive", &SWIGTYPE_p_DAVA__KeyedArchive,_wrap_new_KeyedArchive, swig_delete_KeyedArchive, swig_DAVA_KeyedArchive_methods, swig_DAVA_KeyedArchive_attributes, swig_DAVA_KeyedArchive_bases, swig_DAVA_KeyedArchive_base_names };
+static swig_lua_class _wrap_class_DAVA_KeyedArchive = { "KeyedArchive", &SWIGTYPE_p_DAVA__KeyedArchive,_wrap_new_KeyedArchive,0, swig_DAVA_KeyedArchive_methods, swig_DAVA_KeyedArchive_attributes, swig_DAVA_KeyedArchive_bases, swig_DAVA_KeyedArchive_base_names };
 
 #ifdef __cplusplus
 }

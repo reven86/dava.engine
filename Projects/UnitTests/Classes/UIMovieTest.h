@@ -37,7 +37,8 @@ using namespace DAVA;
 
 class UIMovieTest: public TestTemplate<UIMovieTest>
 {
-	
+protected:
+    ~UIMovieTest(){}
 public:
 	UIMovieTest();
 

@@ -45,9 +45,10 @@ namespace DAVA
  */
 class ProxyNode : public DataNode
 {
+protected:
+	virtual ~ProxyNode();
 public:	
 	ProxyNode();
-	virtual ~ProxyNode();
 	
     virtual void SetNode(Entity * node);
     virtual Entity * GetNode();

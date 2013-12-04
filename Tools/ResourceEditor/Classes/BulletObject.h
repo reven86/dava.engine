@@ -41,13 +41,14 @@ using namespace DAVA;
 
 class BulletObject : public BaseObject
 {
+protected:
+    ~BulletObject();
 public:
     
     BulletObject(Scene * scene, btCollisionWorld *collisionWorld, MeshInstanceNode *_meshNode, const Matrix4 &pWorldTransform);
 	BulletObject(Scene * scene, btCollisionWorld *collisionWorld, UserNode *_userNode, const Matrix4 &pWorldTransform);
 	BulletObject(Scene * scene, btCollisionWorld *collisionWorld, Entity * _entity, const Matrix4 &pWorldTransform);
 	BulletObject(Scene * scene, btCollisionWorld *collisionWorld, Entity * _entity, const AABBox3 &b, const Matrix4 &pWorldTransform);
-    ~BulletObject();
 	
 	void UpdateCollisionObject(void);
 	

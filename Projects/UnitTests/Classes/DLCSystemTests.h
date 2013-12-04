@@ -96,6 +96,8 @@ private:
 
 class DLCTest: public TestTemplate<DLCTest>
 {
+protected:
+    ~DLCTest(){}
 public:
 	DLCTest();
 

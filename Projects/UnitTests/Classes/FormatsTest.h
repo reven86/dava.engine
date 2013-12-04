@@ -38,7 +38,8 @@ using namespace DAVA;
 
 class FormatsTest : public TestTemplate<FormatsTest>
 {
-    
+protected:
+    ~FormatsTest(){}
 public:
 	FormatsTest();
 
@@ -51,9 +52,13 @@ public:
     
 	virtual void DidAppear();
 	virtual void Update(float32 timeElapsed);
+
+private:
+	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
     
 protected:
-    
+ 	UIButton* finishTestBtn;
+
     bool testFinished;
 	float onScreenTime;
 

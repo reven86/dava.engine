@@ -42,6 +42,8 @@ public:
 	PropertyEditorDialog(QWidget *parent = 0):PropertyEditor(parent,false){};
 	
 	~PropertyEditorDialog(){};
+	
+	virtual void  RestoreInitialSettings(){}
 };
 
 #endif // __QT_PROPERTY_DIALOG_WIDGET_H__

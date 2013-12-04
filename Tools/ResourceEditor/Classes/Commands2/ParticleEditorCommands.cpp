@@ -61,26 +61,24 @@ using namespace DAVA;
 // Yuri Coder, 03/12/2012. New commands for Particle Editor QT.
 
 CommandUpdateEffect::CommandUpdateEffect(ParticleEffectComponent* particleEffect):
-	CommandAction(CMDID_UPDATE_PARTICLE_EFFECT)
+	CommandAction(CMDID_PARTICLE_EFFECT_UPDATE)
 {
 	this->particleEffect = particleEffect;
 }
 
-void CommandUpdateEffect::Init(float32 playbackSpeed, bool stopOnLoad)
+void CommandUpdateEffect::Init(float32 playbackSpeed)
 {
-	this->playbackSpeed = playbackSpeed;
-	this->stopOnLoad = stopOnLoad;
+	this->playbackSpeed = playbackSpeed;	
 }
 
 void CommandUpdateEffect::Redo()
 {
 	DVASSERT(particleEffect);
-	particleEffect->SetPlaybackSpeed(playbackSpeed);
-	particleEffect->SetStopOnLoad(stopOnLoad);
+	particleEffect->SetPlaybackSpeed(playbackSpeed);	
 }
 
 CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitter* emitter):
-	CommandAction(CMDID_UPDATE_PARTICLE_EMITTER)
+	CommandAction(CMDID_PARTICLE_EMITTER_UPDATE)
 {
 	this->emitter = emitter;
 }
@@ -111,18 +109,18 @@ void CommandUpdateEmitter::Redo()
 	DVASSERT(emitter);
 
 	emitter->emitterType = emitterType;
-	emitter->emissionRange = emissionRange;
-	emitter->emissionVector = emissionVector;
-	emitter->radius = radius;
-	emitter->colorOverLife = colorOverLife;
-	emitter->size = size;
+	PropertyLineHelper::SetValueLine(emitter->emissionRange, emissionRange);
+	PropertyLineHelper::SetValueLine(emitter->emissionVector, emissionVector);
+	PropertyLineHelper::SetValueLine(emitter->radius, radius);
+	PropertyLineHelper::SetValueLine(emitter->colorOverLife, colorOverLife);
+	PropertyLineHelper::SetValueLine(emitter->size, size);
 	emitter->SetLifeTime(life);
 	emitter->SetPlaybackSpeed(playbackSpeed);
 	emitter->SetShortEffect(isShortEffect);
 }
 
 CommandUpdateParticleLayer::CommandUpdateParticleLayer(ParticleEmitter* emitter, ParticleLayer* layer) :
-	CommandUpdateParticleLayerBase(CMDID_UPDATE_PARTICLE_LAYER)
+	CommandUpdateParticleLayerBase(CMDID_PARTICLE_LAYER_UPDATE)
 {
 	this->emitter = emitter;
 	this->layer = layer;
@@ -130,12 +128,18 @@ CommandUpdateParticleLayer::CommandUpdateParticleLayer(ParticleEmitter* emitter,
 
 void CommandUpdateParticleLayer::Init(const String& layerName,
 									  ParticleLayer::eType layerType,
-									  bool isDisabled,
-									  bool additive,
+									  bool isDisabled,									  
 									  bool inheritPosition,
 									  bool isLong,
+									  float32 scaleVelocityBase,
+									  float32 scaleVelocityFactor,
 									  bool isLooped,
 									  Sprite* sprite,
+									  eBlendMode srcFactor,
+									  eBlendMode dstFactor,
+									  bool enableFog,
+									  bool enableFrameBlending,
+									  int32 particleOrientation,
 									  RefPtr< PropertyLine<float32> > life,
 									  RefPtr< PropertyLine<float32> > lifeVariation,
 									  RefPtr< PropertyLine<float32> > number,
@@ -149,6 +153,8 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 									  RefPtr< PropertyLine<float32> > spin,
 									  RefPtr< PropertyLine<float32> > spinVariation,
 									  RefPtr< PropertyLine<float32> > spinOverLife,
+									  bool randomSpinDirection,
+
 									  RefPtr< PropertyLine<Color> > colorRandom,
 									  RefPtr< PropertyLine<float32> > alphaOverLife,
 									  RefPtr< PropertyLine<Color> > colorOverLife,
@@ -164,18 +170,25 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 									  bool frameOverLifeEnabled,
 									  float32 frameOverLifeFPS,
 									  bool randomFrameOnStart,
+									  bool loopSpriteAnimation,
+									  RefPtr< PropertyLine<float32> > animSpeedOverLife,
 									  
 									  float32 pivotPointX,
 									  float32 pivotPointY)
 {
 	this->layerName = layerName;
 	this->layerType = layerType;
-	this->isDisabled = isDisabled;
-	this->additive = additive;
+	this->isDisabled = isDisabled;	
 	this->inheritPosition = inheritPosition;
 	this->isLooped = isLooped;
 	this->isLong = isLong;
+	this->scaleVelocityBase = scaleVelocityBase;
+	this->scaleVelocityFactor = scaleVelocityFactor;
 	this->sprite = sprite;
+	this->srcFactor = srcFactor;
+	this->dstFactor = dstFactor;
+	this->enableFog = enableFog;
+	this->enableFrameBlending = enableFrameBlending;
 	this->life = life;
 	this->lifeVariation = lifeVariation;
 	this->number = number;
@@ -189,11 +202,12 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 	this->spin = spin;
 	this->spinVariation = spinVariation;
 	this->spinOverLife = spinOverLife;
+	this->randomSpinDirection = randomSpinDirection;
+	this->particleOrientation = particleOrientation;
 
 	this->colorRandom = colorRandom;
 	this->alphaOverLife = alphaOverLife;
-	this->colorOverLife = colorOverLife;
-	this->frameOverLife = frameOverLife;
+	this->colorOverLife = colorOverLife;	
 	this->angle = angle;
 	this->angleVariation = angleVariation;
 
@@ -206,6 +220,8 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 	this->frameOverLifeEnabled = frameOverLifeEnabled;
 	this->frameOverLifeFPS = frameOverLifeFPS;
 	this->randomFrameOnStart = randomFrameOnStart;
+	this->loopSpriteAnimation = loopSpriteAnimation;
+	this->animSpeedOverLife = animSpeedOverLife;
 	
 	this->pivotPointX = pivotPointX;
 	this->pivotPointY = pivotPointY;
@@ -215,35 +231,43 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 void CommandUpdateParticleLayer::Redo()
 {
 	layer->layerName = layerName;
-	layer->SetDisabled(isDisabled);
-	layer->SetAdditive(additive);
+	layer->SetDisabled(isDisabled);	
 	layer->SetInheritPosition(inheritPosition);
 	layer->SetLong(isLong);
+	layer->scaleVelocityBase = scaleVelocityBase;
+	layer->scaleVelocityFactor = scaleVelocityFactor;
 	layer->SetLooped(isLooped);
-	layer->life = life;
-	layer->lifeVariation = lifeVariation;
-	layer->number = number;
-	layer->numberVariation = numberVariation;
-	layer->size = size;
-	layer->sizeVariation = sizeVariation;
-	layer->sizeOverLifeXY = sizeOverLife;
-	layer->velocity = velocity;
-	layer->velocityVariation = velocityVariation;
-	layer->velocityOverLife = velocityOverLife;
-	layer->spin = spin;
-	layer->spinVariation = spinVariation;
-	layer->spinOverLife = spinOverLife;
+	layer->SetBlendMode(srcFactor, dstFactor);
+	layer->SetFog(enableFog);
+	layer->SetFrameBlend(enableFrameBlending);
+	PropertyLineHelper::SetValueLine(layer->life , life);
+	PropertyLineHelper::SetValueLine(layer->lifeVariation, lifeVariation);
+	PropertyLineHelper::SetValueLine(layer->number, number);
+	PropertyLineHelper::SetValueLine(layer->numberVariation, numberVariation);
+	PropertyLineHelper::SetValueLine(layer->size, size);
+	PropertyLineHelper::SetValueLine(layer->sizeVariation, sizeVariation);
+	PropertyLineHelper::SetValueLine(layer->sizeOverLifeXY, sizeOverLife);
+	PropertyLineHelper::SetValueLine(layer->velocity, velocity);
+	PropertyLineHelper::SetValueLine(layer->velocityVariation, velocityVariation);
+	PropertyLineHelper::SetValueLine(layer->velocityOverLife, velocityOverLife);
+	PropertyLineHelper::SetValueLine(layer->spin, spin);
+	PropertyLineHelper::SetValueLine(layer->spinVariation, spinVariation);
+	PropertyLineHelper::SetValueLine(layer->spinOverLife, spinOverLife);
+	layer->randomSpinDirection = randomSpinDirection;
+	layer->particleOrientation = particleOrientation;
 
-	layer->colorRandom = colorRandom;
-	layer->alphaOverLife = alphaOverLife;
-	layer->colorOverLife = colorOverLife;
+	PropertyLineHelper::SetValueLine(layer->colorRandom, colorRandom);
+	PropertyLineHelper::SetValueLine(layer->alphaOverLife, alphaOverLife);
+	PropertyLineHelper::SetValueLine(layer->colorOverLife, colorOverLife);
 	
 	layer->frameOverLifeEnabled = frameOverLifeEnabled;
 	layer->frameOverLifeFPS = frameOverLifeFPS;
 	layer->randomFrameOnStart = randomFrameOnStart;
+	layer->loopSpriteAnimation = loopSpriteAnimation;
+	PropertyLineHelper::SetValueLine(layer->animSpeedOverLife, animSpeedOverLife);
 
-	layer->angle = angle;
-	layer->angleVariation = angleVariation;
+	PropertyLineHelper::SetValueLine(layer->angle, angle);
+	PropertyLineHelper::SetValueLine(layer->angleVariation, angleVariation);
 
 	layer->UpdateLayerTime(startTime, endTime);	
 	layer->deltaTime = deltaTime;
@@ -275,7 +299,10 @@ void CommandUpdateParticleLayer::Redo()
 		{
 			layer->CreateInnerEmitter();
 			if (!layer->innerEmitterPath.IsEmpty())
-				layer->GetInnerEmitter()->LoadFromYaml(layer->innerEmitterPath);
+			{
+				layer->GetInnerEmitter()->LoadFromYaml(layer->innerEmitterPath);				
+			}
+			layer->GetInnerEmitter()->SetPlaybackSpeed(layer->GetPlaybackSpeed());
 		}
 		emitter->Play();
 	}
@@ -301,7 +328,7 @@ void CommandUpdateParticleLayer::Redo()
 }
 
 CommandUpdateParticleLayerTime::CommandUpdateParticleLayerTime(ParticleLayer* layer) :
-	CommandUpdateParticleLayerBase(CMDID_UPDATE_PARTILCE_LAYER_TIME)
+	CommandUpdateParticleLayerBase(CMDID_PARTILCE_LAYER_UPDATE_TIME)
 {
 	this->layer = layer;
 }
@@ -318,7 +345,7 @@ void CommandUpdateParticleLayerTime::Redo()
 }
 
 CommandUpdateParticleLayerEnabled::CommandUpdateParticleLayerEnabled(ParticleLayer* layer, bool isEnabled) :
-	CommandUpdateParticleLayerBase(CMDID_UPDATE_PARTICLE_LAYER_ENABLED)
+	CommandUpdateParticleLayerBase(CMDID_PARTICLE_LAYER_UPDATE_ENABLED)
 {
 	this->layer = layer;
 	this->isEnabled = isEnabled;
@@ -329,12 +356,12 @@ void CommandUpdateParticleLayerEnabled::Redo()
 	if (this->layer)
 	{
 		this->layer->SetDisabled(!isEnabled);
-		ParticlesEditorController::Instance()->RefreshSelectedNode(true);
+		//ParticlesEditorController::Instance()->RefreshSelectedNode(true); //looks like depricated
 	}
 }
 
 CommandUpdateParticleLayerLods::CommandUpdateParticleLayerLods(ParticleLayer* layer, const Vector<bool>& lods) :
-CommandUpdateParticleLayerBase(CMDID_UPDATE_PARTICLE_LAYER_LODS)
+CommandUpdateParticleLayerBase(CMDID_PARTICLE_LAYER_UPDATE_LODS)
 {
 	this->layer = layer;
 	this->lods = lods;
@@ -348,12 +375,12 @@ void CommandUpdateParticleLayerLods::Redo()
 		{
 			this->layer->SetLodActive(i, lods[i]);
 		}		
-		ParticlesEditorController::Instance()->RefreshSelectedNode(true);
+		//ParticlesEditorController::Instance()->RefreshSelectedNode(true); //looks like depricated
 	}
 }
 
 CommandUpdateParticleForce::CommandUpdateParticleForce(ParticleLayer* layer, uint32 forceId) :
-	CommandAction(CMDID_UPDATE_PARTICLE_FORCE)
+	CommandAction(CMDID_PARTICLE_FORCE_UPDATE)
 {
 	this->layer = layer;
 	this->forceId = forceId;
@@ -363,9 +390,9 @@ void CommandUpdateParticleForce::Init(RefPtr< PropertyLine<Vector3> > force,
 									  RefPtr< PropertyLine<Vector3> > forcesVariation,
 									RefPtr< PropertyLine<float32> > forcesOverLife)
 {
-	this->force = force;
-	this->forcesVariation = forcesVariation;
-	this->forcesOverLife = forcesOverLife;
+	PropertyLineHelper::SetValueLine(this->force,force);
+	PropertyLineHelper::SetValueLine(this->forcesVariation, forcesVariation);
+	PropertyLineHelper::SetValueLine(this->forcesOverLife, forcesOverLife);
 }
 
 void CommandUpdateParticleForce::Redo()
@@ -378,7 +405,7 @@ void CommandUpdateParticleForce::Redo()
 // Yuri Coder, 03/12/2012. New commands for Particle Editor QT.
 
 CommandAddParticleEmitter::CommandAddParticleEmitter(DAVA::Entity* effect) :
-    CommandAction(CMDID_ADD_PARTICLE_EMITTER)
+    CommandAction(CMDID_PARTICLE_EMITTER_ADD)
 {
 	this->effectEntity = effect;
 }
@@ -401,13 +428,14 @@ void CommandAddParticleEmitter::Redo()
 	Entity* emitterEntity = new Entity();
 	emitterEntity->SetName("Particle Emitter");
 	emitterEntity->AddComponent(renderComponent);
-	LodComponent * lodComponent = new LodComponent();
-	emitterEntity->AddComponent(lodComponent);
+	renderComponent->Release();
+
+	emitterEntity->AddComponent(ScopedPtr<LodComponent> (new LodComponent()));
 	effectEntity->AddNode(emitterEntity);
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart) :
-    CommandAction(CMDID_START_STOP_PARTICLE_EFFECT)
+    CommandAction(CMDID_PARTICLE_EFFECT_START_STOP)
 {
     this->isStart = isStart;
 	this->effectEntity = effect;
@@ -439,7 +467,7 @@ DAVA::Entity* CommandStartStopParticleEffect::GetEntity() const
 }
 
 CommandRestartParticleEffect::CommandRestartParticleEffect(DAVA::Entity* effect) :
-    CommandAction(CMDID_RESTART_PARTICLE_EFFECT)
+    CommandAction(CMDID_PARTICLE_EFFECT_RESTART)
 {
 	this->effectEntity = effect;
 }
@@ -462,7 +490,7 @@ DAVA::Entity* CommandRestartParticleEffect::GetEntity() const
 }
 
 CommandAddParticleEmitterLayer::CommandAddParticleEmitterLayer(ParticleEmitter* emitter) :
-    CommandAction(CMDID_ADD_PARTICLE_EMITTER_LAYER)
+    CommandAction(CMDID_PARTICLE_EMITTER_LAYER_ADD)
 {
 	this->selectedEmitter = emitter;
 	this->createdLayer = NULL;
@@ -491,6 +519,7 @@ void CommandAddParticleEmitterLayer::Redo()
 	createdLayer->life = new PropertyLineValue<float32>(selectedEmitter->GetLifeTime());
     createdLayer->layerName = ParticlesEditorNodeNameHelper::GetNewLayerName(ResourceEditor::LAYER_NODE_NAME, selectedEmitter);
 
+	createdLayer->SetLoopEndTime(selectedEmitter->GetLifeTime());	
     selectedEmitter->AddLayer(createdLayer);
 
 	if (!isStopped)
@@ -500,7 +529,7 @@ void CommandAddParticleEmitterLayer::Redo()
 }
 
 CommandRemoveParticleEmitterLayer::CommandRemoveParticleEmitterLayer(ParticleLayer* layer) :
-    CommandAction(CMDID_REMOVE_PARTICLE_EMITTER_LAYER)
+    CommandAction(CMDID_PARTICLE_EMITTER_LAYER_REMOVE)
 {
 	this->selectedLayer = layer;
 }
@@ -533,7 +562,7 @@ void CommandRemoveParticleEmitterLayer::Redo()
 }
 
 CommandCloneParticleEmitterLayer::CommandCloneParticleEmitterLayer(ParticleLayer* layer) :
-	CommandAction(CMDID_CLONE_PARTICLE_EMITTER_LAYER)
+	CommandAction(CMDID_PARTICLE_EMITTER_LAYER_CLONE)
 {
 	this->selectedLayer = layer;
 }
@@ -557,7 +586,7 @@ void CommandCloneParticleEmitterLayer::Redo()
 }
 
 CommandAddParticleEmitterForce::CommandAddParticleEmitterForce(ParticleLayer* layer) :
-    CommandAction(CMDID_ADD_PARTICLE_EMITTER_FORCE)
+    CommandAction(CMDID_PARTICLE_EMITTER_FORCE_ADD)
 {
 	this->selectedLayer = layer;
 }
@@ -594,7 +623,7 @@ void CommandAddParticleEmitterForce::Redo()
 }
 
 CommandRemoveParticleEmitterForce::CommandRemoveParticleEmitterForce(ParticleLayer* layer, ParticleForce* force) :
-    CommandAction(CMDID_REMOVE_PARTICLE_EMITTER_FORCE)
+    CommandAction(CMDID_PARTICLE_EMITTER_FORCE_REMOVE)
 {
 	this->selectedLayer = layer;
 	this->selectedForce = force;
@@ -628,7 +657,7 @@ void CommandRemoveParticleEmitterForce::Redo()
 }
 
 CommandLoadParticleEmitterFromYaml::CommandLoadParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path) :
-	CommandAction(CMDID_LOAD_PARTICLE_EMITTER_FROM_YAML)
+	CommandAction(CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML)
 {
 	this->selectedEmitter = emitter;
 	this->filePath = path;
@@ -656,7 +685,7 @@ void CommandLoadParticleEmitterFromYaml::Redo()
 }
 
 CommandSaveParticleEmitterToYaml::CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path) :
-	CommandAction(CMDID_SAVE_PARTICLE_EMITTER_TO_YAML)
+	CommandAction(CMDID_PARTICLE_EMITTER_SAVE_TO_YAML)
 {
 	this->selectedEmitter = emitter;
 	this->filePath = path;

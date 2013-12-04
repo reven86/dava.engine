@@ -47,9 +47,10 @@ enum eBufferType
 //! Interface to work with VertexBuffers
 class VertexBuffer : public RenderResource
 {
+protected:
+	virtual ~VertexBuffer() {};
 public:
 	VertexBuffer() {};
-	virtual ~VertexBuffer() {};
 
 
 	virtual void			* Lock(const int32 vertexCount, int32 & startVertex) = 0;

@@ -36,6 +36,8 @@ using namespace DAVA;
 
 class TextinputTestScreen : public UIScreen, UITextFieldDelegate
 {
+protected:
+	~TextinputTestScreen(){}
 public:
 	TextinputTestScreen(const WideString & headerText);
 

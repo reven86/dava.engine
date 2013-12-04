@@ -60,6 +60,7 @@ private:
 	void DrawDebugInfoForEmitter(DAVA::Entity* parentEntity);
 	
 	void DrawSizeCircle(DAVA::Entity *entity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
+	void DrawSizeCircleShockWave(DAVA::ParticleEmitter *emitter,DAVA::Vector3 center);
 	void DrawSizeBox(DAVA::Entity *entity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
 	void DrawVectorArrow(DAVA::Entity *entity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
 	

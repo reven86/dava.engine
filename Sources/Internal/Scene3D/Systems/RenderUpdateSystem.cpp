@@ -79,7 +79,8 @@ void RenderUpdateSystem::AddEntity(Entity * entity)
 {
     RenderObject * renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
     if (!renderObject)return;
-    
+	Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+    renderObject->SetWorldTransformPtr(worldTransformPointer);
     entityObjectMap.Insert(entity, renderObject);
 	GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
 }

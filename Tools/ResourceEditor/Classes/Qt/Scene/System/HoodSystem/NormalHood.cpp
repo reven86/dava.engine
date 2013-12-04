@@ -55,7 +55,6 @@ NormalHood::~NormalHood()
 
 void NormalHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
 {
-	DAVA::Vector2 textPos;
 	int oldState = DAVA::RenderManager::Instance()->GetState();
 	DAVA::eBlendMode oldBlendSrc = DAVA::RenderManager::Instance()->GetSrcBlend();
 	DAVA::eBlendMode oldBlendDst = DAVA::RenderManager::Instance()->GetDestBlend();
@@ -67,25 +66,15 @@ void NormalHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSyste
 	DAVA::RenderManager::Instance()->SetColor(colorX);
 	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo);
 
-	textPos = textDrawSystem->ToPos2d(axisX->curTo);
-	textPos.y -= 15;
-	textDrawSystem->DrawText(textPos, "X", colorX);
-
 	// y
 	DAVA::RenderManager::Instance()->SetColor(colorY);
 	DAVA::RenderHelper::Instance()->DrawLine(axisY->curFrom, axisY->curTo);
-
-	textPos = textDrawSystem->ToPos2d(axisY->curTo);
-	textPos.y -= 15;
-	textDrawSystem->DrawText(textPos, "Y", colorY);
 
 	// z
 	DAVA::RenderManager::Instance()->SetColor(colorZ);
 	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo);
 
-	textPos = textDrawSystem->ToPos2d(axisZ->curTo);
-	textPos.y -= 15;
-	textDrawSystem->DrawText(textPos, "Z", colorZ);
+	DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
 	DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
 	DAVA::RenderManager::Instance()->SetState(oldState);

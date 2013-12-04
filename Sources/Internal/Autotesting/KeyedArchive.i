@@ -14,11 +14,12 @@ namespace DAVA
 
 class KeyedArchive
 {
+protected:
+	virtual ~KeyedArchive();
 public:
 	KeyedArchive();
 	KeyedArchive(const KeyedArchive &arc);
-	virtual ~KeyedArchive();
-	
+		
 	bool IsKeyExists(const String & key);
 	
 	bool GetBool(const String & key, bool defaultValue = false);

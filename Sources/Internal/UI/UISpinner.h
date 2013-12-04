@@ -71,9 +71,9 @@ public:
         virtual void OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, bool isSelectedChanged) = 0;
 
     };
-
+protected:
     virtual ~SpinnerAdapter() {};
-
+public:
     /*
      * This method actually displays selected element in a manner specific for particular control (it can be text or image or whatever).
      *
@@ -124,9 +124,10 @@ protected:
  */
 class UISpinner : public UIControl, SpinnerAdapter::SelectionObserver
 {
+protected:
+    virtual ~UISpinner();
 public:
     UISpinner(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    virtual ~UISpinner();
 
     SpinnerAdapter * GetAdater() {return adapter;}
     void SetAdapter(SpinnerAdapter * adapter);

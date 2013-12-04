@@ -37,9 +37,10 @@ namespace DAVA {
 // The purpose of UIMovieView class is to display movies.
 class UIMovieView : public UIControl
 {
+protected:
+	virtual ~UIMovieView();
 public:
 	UIMovieView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-	virtual ~UIMovieView();
 
 	// Open the Movie.
 	void OpenMovie(const FilePath& moviePath, const OpenMovieParams& params);

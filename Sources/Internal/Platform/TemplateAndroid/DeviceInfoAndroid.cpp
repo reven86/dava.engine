@@ -148,6 +148,15 @@ String JniDeviceInfo::GetName()
 	return intermediateStr;
 }
 
+int JniDeviceInfo::GetZBufferSize()
+{
+	jmethodID mid = GetMethodID("GetZBufferSize", "()I");
+	if (mid)
+		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+
+	return 0;
+}
+
 String DeviceInfo::GetVersion()
 {
 	JniDeviceInfo jniDeviceInfo;
@@ -210,6 +219,12 @@ WideString DeviceInfo::GetName()
 	String name = jniDeviceInfo.GetName();
 
 	return StringToWString(name);
+}
+
+int DeviceInfo::GetZBufferSize()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetZBufferSize();
 }
 
 }

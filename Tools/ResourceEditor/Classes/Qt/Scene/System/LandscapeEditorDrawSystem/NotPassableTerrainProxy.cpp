@@ -142,6 +142,11 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 											const AABBox3& landscapeBoundingBox,
 											const DAVA::Rect &forRect)
 {
+	if (forRect.dx <= 0 || forRect.dy <= 0)
+	{
+		return;
+	}
+
 	Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
 	
 	float32 angleCellDistance = landSize.x / (float32)(heightmap->Size() - 1);
@@ -154,12 +159,11 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	RenderManager* renderManager = RenderManager::Instance();
 	RenderHelper* renderHelper = RenderHelper::Instance();
 	
-	renderManager->LockNonMain();
 	renderManager->SetRenderTarget(notPassableMapSprite);
 	
 	Rect drawRect(forRect.x * dx, forRect.y * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
 	renderManager->ClipPush();
-	renderManager->ClipRect(drawRect);
+	renderManager->SetClip(drawRect);
 	
 	renderManager->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 	
@@ -205,5 +209,4 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	renderManager->ClipPop();
 	
 	renderManager->RestoreRenderTarget();
-	renderManager->UnlockNonMain();
 }

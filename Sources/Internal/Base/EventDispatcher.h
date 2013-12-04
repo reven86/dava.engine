@@ -42,9 +42,10 @@ namespace DAVA
  */
 class EventDispatcher : public BaseObject
 {
+protected:
+	virtual ~EventDispatcher();
 public:
 	EventDispatcher(); 
-	virtual ~EventDispatcher();
 
 	/**
 		\brief Function to add event to event dispatcher.
@@ -132,11 +133,11 @@ protected:
  */
 #define IMPLEMENT_EVENT_DISPATCHER(eventDispatcherName)	\
 public:\
-	void AddEvent(int32 eventType, const Message &msg){eventDispatcherName.AddEvent(eventType, msg); }; \
-	bool RemoveEvent(int32 eventType, const Message &msg){return eventDispatcherName.RemoveEvent(eventType, msg); };\
-	bool RemoveAllEvents(){return eventDispatcherName.RemoveAllEvents(); };\
+	void AddEvent(int32 eventType, const Message &msg){eventDispatcherName->AddEvent(eventType, msg); }; \
+	bool RemoveEvent(int32 eventType, const Message &msg){return eventDispatcherName->RemoveEvent(eventType, msg); };\
+	bool RemoveAllEvents(){return eventDispatcherName->RemoveAllEvents(); };\
 protected:\
-	EventDispatcher eventDispatcherName;
+	RefPtr<EventDispatcher> eventDispatcherName;
 	
 	
 	

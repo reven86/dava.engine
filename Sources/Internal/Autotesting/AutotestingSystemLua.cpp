@@ -418,6 +418,22 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
 	*/
 }
 
+String AutotestingSystemLua::GetText(UIControl *control)
+{
+	Logger::Debug("AutotestingSystemLua::GetText =%s", control->GetName().c_str());
+	UIStaticText *uiStaticText = dynamic_cast<UIStaticText*>(control);
+	if(uiStaticText)
+	{
+		return WStringToString(uiStaticText->GetText());
+	}
+	UITextField *uiTextField = dynamic_cast<UITextField*>(control);
+	if(uiTextField)
+	{
+		return WStringToString(uiTextField->GetText());
+	}
+	return "";
+}
+
 bool AutotestingSystemLua::CheckText(UIControl *control, const String &expectedText)
 {
 	UIStaticText *uiStaticText = dynamic_cast<UIStaticText*>(control);

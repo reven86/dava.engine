@@ -29,24 +29,292 @@
 
 #include "MovieViewControlMacOS.h"
 
-#import <QTKit/QTKit.h>
+#import <AVFoundation/AVFoundation.h>
+#import <CoreMedia/CoreMedia.h>
+
+enum MoviePlayerHelperState
+{
+    eStateNone,
+    eStateInitializing,
+    eStateInitializedOK,
+    eStateInitializedWithError
+};
+
+enum MoviePlayerHelperPlaybackState
+{
+    eNone,
+    eStopped,
+    ePlayback,
+    ePaused,
+};
+
+// MacOS movie player helper which uses AVFoundation logic to play video.
+@interface MoviePlayerHelper : NSObject
+{
+    AVURLAsset* videoAsset;
+    AVPlayer* videoPlayer;
+    NSView* videoView;
+    
+    // Current player helper state.
+    MoviePlayerHelperState playerState;
+    
+    // Playback state.
+    MoviePlayerHelperPlaybackState playbackState;
+    
+    // Cached video parameters, which are to be applied after initialization.
+    DAVA::Rect videoRect;
+    
+    // Whether the video screen is visible.
+    bool videoVisible;
+}
+
+// Set the video rectangle.
+-(void) setRect:(const DAVA::Rect&) rect;
+
+// Set the visible flag.
+-(void) setVisible:(bool) isVisible;
+
+// Load the movie in async way.
+-(void) loadMovie:(NSURL*) movieURL;
+
+// Playback control.
+-(void) play;
+-(void) pause;
+-(void) stop;
+
+// Whether the movie is playing?
+-(bool) isPlaying;
+
+@end
+
+@implementation MoviePlayerHelper
+
+-(MoviePlayerHelper*) init
+{
+    if (self = [super init])
+    {
+        videoAsset = nil;
+        videoPlayer = nil;
+        videoView = nil;
+
+        playbackState = eNone;
+        playerState = eStateNone;
+        videoVisible = true;
+    }
+    
+    return self;
+}
+
+-(void) dealloc
+{
+    [videoView removeFromSuperview];
+    [videoView release];
+    videoView = nil;
+
+    [videoAsset release];
+    videoAsset = nil;
+    
+    [videoPlayer release];
+    videoPlayer = nil;
+
+    [super dealloc];
+}
+
+-(void) loadMovie:(NSURL *)movieURL
+{
+    videoPlayer = [[AVPlayer alloc] init];
+    videoAsset = [[AVAsset assetWithURL:movieURL] retain];
+
+    playerState = eStateInitializing;
+    NSArray *assetKeysToLoadAndTest = [NSArray arrayWithObjects:@"playable", @"tracks", @"duration", nil];
+    [videoAsset loadValuesAsynchronouslyForKeys:assetKeysToLoadAndTest completionHandler:^(void)
+    {
+        // The asset invokes its completion handler on an arbitrary queue when loading is complete.
+        // Because we want to access our AVPlayer in our ensuing set-up, we must dispatch our handler to the main queue.
+        dispatch_async(dispatch_get_main_queue(), ^(void)
+        {
+            [self setUpPlaybackOfVideoAsset:videoAsset withKeys:assetKeysToLoadAndTest];
+        });
+    }];
+}
+
+- (void)setUpPlaybackOfVideoAsset:(AVAsset *)asset withKeys:(NSArray *)keys
+{
+    // First test whether the values of each of the keys we need have been successfully loaded.
+    for (NSString *key in keys)
+    {
+        NSError *error = nil;
+        if ([asset statusOfValueForKey:key error:&error] == AVKeyValueStatusFailed)
+        {
+            NSLog(@"MoviePlayerHelper: unable to retreive key %@", key);
+            playerState = eStateInitializedWithError;
+            return;
+        }
+    }
+    
+    if (![asset isPlayable] || [asset hasProtectedContent])
+    {
+        NSLog(@"MoviePlayerHelper: asset is not playable or has protected content!");
+        playerState = eStateInitializedWithError;
+        return;
+    }
+
+    if ([[asset tracksWithMediaType:AVMediaTypeVideo] count] == 0)
+    {
+        NSLog(@"MoviePlayerHelper: no Video Tracks found!");
+        playerState = eStateInitializedWithError;
+        return;
+    }
+
+    // We can play this asset.
+    videoView = [[NSView alloc] init];
+  	[videoView setWantsLayer:YES];
+    videoView.layer.backgroundColor = [[NSColor clearColor] CGColor];
+    NSView* openGLView = (NSView*)DAVA::Core::Instance()->GetOpenGLView();
+    [openGLView addSubview:videoView];
+
+    AVPlayerLayer *newPlayerLayer = [AVPlayerLayer playerLayerWithPlayer:videoPlayer];
+    [newPlayerLayer setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
+    [[videoView layer] addSublayer:newPlayerLayer];
+    
+    // Create a new AVPlayerItem and make it our player's current item.
+    AVPlayerItem *playerItem = [AVPlayerItem playerItemWithAsset:asset];
+    [videoPlayer replaceCurrentItemWithPlayerItem:playerItem];
+    playerState = eStateInitializedOK;
+
+    // Apply the cached states, if any.
+    [self applyVideoRect];
+    [self applyPlaybackState];
+    [self applyVisible];
+}
+
+-(void) setRect:(const DAVA::Rect&)rect
+{
+    videoRect = rect;
+    if (playerState == eStateInitializedOK)
+    {
+        [self applyVideoRect];
+    }
+}
+
+-(void) setVisible:(bool) isVisible
+{
+    videoVisible = isVisible;
+    if (playerState == eStateInitializedOK)
+    {
+        [self applyVisible];
+    }
+}
+
+-(void) play
+{
+    [self setPlaybackState:ePlayback];
+}
+
+-(void) stop
+{
+    [self setPlaybackState:eStopped];
+}
+
+-(void) pause
+{
+    [self setPlaybackState:ePaused];
+}
+
+-(void) setPlaybackState:(MoviePlayerHelperPlaybackState) state
+{
+    playbackState = state;
+    if (playerState == eStateInitializedOK)
+    {
+        [self applyPlaybackState];
+    }
+}
+
+-(void) applyVideoRect
+{
+    NSRect movieViewRect = [videoView frame];
+
+    movieViewRect.size.width = videoRect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
+    movieViewRect.size.height = videoRect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
+
+    movieViewRect.origin.x = videoRect.x * DAVA::Core::GetVirtualToPhysicalFactor();
+    movieViewRect.origin.y = (DAVA::Core::Instance()->GetPhysicalScreenHeight() - videoRect.y - videoRect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
+
+    movieViewRect.origin.x += DAVA::Core::Instance()->GetPhysicalDrawOffset().x;
+    movieViewRect.origin.y += DAVA::Core::Instance()->GetPhysicalDrawOffset().y;
+    
+    [videoView setFrame:movieViewRect];
+}
+
+-(void) applyPlaybackState
+{
+    if (!videoPlayer || playerState != eStateInitializedOK)
+    {
+        return;
+    }
+
+    switch (playbackState)
+    {
+        case ePlayback:
+        {
+            [videoPlayer play];
+            break;
+        }
+
+        case eStopped:
+        {
+            [videoPlayer pause];
+            [videoPlayer seekToTime:CMTimeMakeWithSeconds(0, 1)];
+            break;
+        }
+
+        case ePaused:
+        {
+            [videoPlayer pause];
+            break;
+        }
+        
+        default:
+        {
+            break;
+        }
+    }
+}
+
+-(void) applyVisible
+{
+    if (!videoView)
+    {
+        return;
+    }
+    
+    [videoView setHidden:!videoVisible];
+}
+
+-(bool) isPlaying
+{
+    if (!videoPlayer)
+    {
+        return false;
+    }
+    
+    NSLog(@"Video player rate: %f", [videoPlayer rate]);
+    return ([videoPlayer rate] != 0.0f);
+}
+
+@end
 
 namespace DAVA
 {
 MovieViewControl::MovieViewControl()
 {
-	movieView = [[QTMovieView alloc] init];
-	NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
-	[openGLView addSubview:(QTMovieView*)movieView];
+	moviePlayerHelper = [[MoviePlayerHelper alloc] init];
 }
 	
 MovieViewControl::~MovieViewControl()
 {
-	QTMovieView* player = (QTMovieView*)movieView;
-	[player removeFromSuperview];
-	[player release];
-	
-	movieView = nil;
+    MoviePlayerHelper* helper = (MoviePlayerHelper*)moviePlayerHelper;
+    [helper release];
 }
 
 void MovieViewControl::Initialize(const Rect& rect)
@@ -56,49 +324,48 @@ void MovieViewControl::Initialize(const Rect& rect)
 
 void MovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMovieParams& params)
 {
-	NSURL* movieURL = [NSURL fileURLWithPath:[NSString stringWithCString:moviePath.GetAbsolutePathname().c_str() encoding:NSASCIIStringEncoding]];
-	QTMovie* movie = [QTMovie movieWithURL:movieURL error:nil];
-	
-	QTMovieView* player = (QTMovieView*)movieView;
-	[player setPreservesAspectRatio: params.scalingMode == scalingModeAspectFit];
-	[player setMovie:movie];
+   	NSURL* movieURL = [NSURL fileURLWithPath:[NSString stringWithCString:moviePath.GetAbsolutePathname().c_str() encoding:NSASCIIStringEncoding]];
+    [(MoviePlayerHelper*)moviePlayerHelper loadMovie:movieURL];
 }
 	
 void MovieViewControl::SetRect(const Rect& rect)
 {
-	NSRect movieViewRect = [(QTMovieView*)movieView frame];
-	
-	movieViewRect.size.width = rect.dx * Core::GetVirtualToPhysicalFactor();
-	movieViewRect.size.height = rect.dy * Core::GetVirtualToPhysicalFactor();
-	
-	movieViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-	movieViewRect.origin.y = (Core::Instance()->GetPhysicalScreenHeight() - rect.y - rect.dy) * DAVA::Core::GetVirtualToPhysicalFactor();
-	
-	movieViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-	movieViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
-	
-	[(QTMovieView*)movieView setFrame: movieViewRect];
+    if (moviePlayerHelper)
+    {
+        [(MoviePlayerHelper*)moviePlayerHelper setRect:rect];
+    }
 }
 
 void MovieViewControl::SetVisible(bool isVisible)
 {
-	[(QTMovieView*)movieView setHidden:!isVisible];
+    if (moviePlayerHelper)
+    {
+        [(MoviePlayerHelper*)moviePlayerHelper setVisible:isVisible];
+    }
 }
 
 void MovieViewControl::Play()
 {
-	[(QTMovieView*)movieView play:nil];
+    if (moviePlayerHelper)
+    {
+        [(MoviePlayerHelper*)moviePlayerHelper play];
+    }
 }
 
 void MovieViewControl::Stop()
 {
-	Pause();
-	[(QTMovieView*)movieView gotoBeginning:nil];
+    if (moviePlayerHelper)
+    {
+        [(MoviePlayerHelper*)moviePlayerHelper stop];
+    }
 }
 	
 void MovieViewControl::Pause()
 {
-	[(QTMovieView*)movieView pause:nil];
+    if (moviePlayerHelper)
+    {
+        [(MoviePlayerHelper*)moviePlayerHelper pause];
+    }
 }
 	
 void MovieViewControl::Resume()
@@ -108,13 +375,27 @@ void MovieViewControl::Resume()
 	
 bool MovieViewControl::IsPlaying()
 {
-	QTMovie* curMovie = [(QTMovieView*)movieView movie];
-	if (!curMovie)
-	{
-		return false;
-	}
-	
-	return [curMovie rate] != 0;
+    if (!moviePlayerHelper)
+    {
+        return false;
+    }
+    
+    return [(MoviePlayerHelper*)moviePlayerHelper isPlaying];
+    /*
+    if (!movieView)
+    {
+        return false;
+    }
+
+//    AVPlayer* player = [(AVPlayerView*)movieView player];
+//    if (!player)
+    {
+        return false;
+    }
+    
+//    return ([player rate] != 0.0f);
+     */
+     return true;
 }
 
 }

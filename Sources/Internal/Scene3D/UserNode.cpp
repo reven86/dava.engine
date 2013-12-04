@@ -33,7 +33,6 @@
 
 namespace DAVA
 {
-REGISTER_CLASS(UserNode);
 	
 UserNode::UserNode()
 	:drawBox(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f))

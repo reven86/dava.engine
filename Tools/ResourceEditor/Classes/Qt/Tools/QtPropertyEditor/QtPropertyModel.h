@@ -42,6 +42,8 @@ class QtPropertyModel : public QStandardItemModel
 {
 	Q_OBJECT
 
+	friend class QtPropertyItem;
+
 public:
 	QtPropertyModel(QObject* parent = 0);
 	~QtPropertyModel();
@@ -49,13 +51,23 @@ public:
 	QPair<QtPropertyItem*, QtPropertyItem*> AppendProperty(const QString &name, QtPropertyData* data, QtPropertyItem* parent = NULL);
 	QPair<QtPropertyItem*, QtPropertyItem*> GetProperty(const QString &name, QtPropertyItem* parent = NULL);
 
+	bool GetEditTracking();
+	void SetEditTracking(bool enabled);
+
 	void RemoveProperty(QtPropertyItem* item);
 	void RemovePropertyAll();
 
-	void RefreshAll();
+	void UpdateStructure(const QModelIndex &parent = QModelIndex());
 
-protected slots:
-	void OnItemChanged(QStandardItem * item);
+signals:
+	void ItemEdited(const QString &name, QtPropertyData *data);
+	void ItemChanged(const QString &name, QtPropertyData *data);
+
+protected:
+	bool trackEdit;
+
+	void EmitDataEdited(QtPropertyItem *item);
+	void UpdateStructureInternal(const QModelIndex &i);
 };
 
 #endif // __QT_PROPERTY_MODEL_H__

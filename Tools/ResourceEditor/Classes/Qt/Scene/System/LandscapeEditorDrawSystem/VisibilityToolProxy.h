@@ -37,9 +37,10 @@ using namespace DAVA;
 
 class VisibilityToolProxy: public BaseObject
 {
+protected:
+	~VisibilityToolProxy();
 public:
 	VisibilityToolProxy(int32 size);
-	~VisibilityToolProxy();
 
 	int32 GetSize();
 

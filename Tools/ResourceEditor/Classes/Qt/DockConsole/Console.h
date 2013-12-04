@@ -35,7 +35,17 @@
 #include "Base/StaticSingleton.h"
 #include "FileSystem/Logger.h"
 
-class Console : public QObject, public DAVA::StaticSingleton<Console>
+class LoggerToConsole : public DAVA::LoggerOutput
+{
+public:
+	LoggerToConsole();
+	~LoggerToConsole();
+
+	virtual void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) const;
+	virtual void Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text) const;
+};
+
+class Console : public QObject, public DAVA::Singleton<Console>
 {
 	Q_OBJECT
 
@@ -55,16 +65,8 @@ signals:
 
 protected:
 	DAVA::Vector<DAVA::String> log;
-};
 
-class LoggerToConsole : public DAVA::LoggerOutput
-{
-public:
-	LoggerToConsole();
-	~LoggerToConsole();
-
-	virtual void Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* text) const;
-	virtual void Output(DAVA::Logger::eLogLevel ll, const DAVA::char16* text) const;
+	LoggerToConsole *output;
 };
 
 #endif // __QT_CONSOLE_H__

@@ -37,8 +37,6 @@
 namespace DAVA 
 {
     
-REGISTER_CLASS(Camera);
-
 
 Camera::Camera()
 :	orthoWidth(35.f)
@@ -199,27 +197,22 @@ void Camera::Recalc()
 {
 	flags |= REQUIRE_REBUILD_PROJECTION;
 
-	float32 realAspect = aspect;
-	if ((RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_PORTRAIT) || (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN) || (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_TEXTURE))
-	{
-		realAspect = 1.0f / realAspect;
-	}
 
 	if(ortho)
 	{
 		xmax = orthoWidth/2.f;
 		xmin = -xmax;
 
-		ymax = xmax * realAspect;
-		ymin = xmin * realAspect;
+		ymax = xmax * aspect;
+		ymin = xmin * aspect;
 	}
 	else
 	{
 		xmax = znear * tanf(fovX * PI / 360.0f);
 		xmin = -xmax;
 
-		ymax = xmax * realAspect;
-		ymin = xmin * realAspect;
+		ymax = xmax * aspect;
+		ymin = xmin * aspect;
 	}
 
     CalculateZoomFactor();
@@ -227,33 +220,20 @@ void Camera::Recalc()
 
 Vector2 Camera::GetOnScreenPosition(const Vector3 &forPoint, const Rect & viewport)
 {
-    Vector4 pv(forPoint);
-    pv = pv * GetUniformProjModelMatrix();
-//    return Vector2((viewport.dx * 0.5f) * (1.f + pv.x/pv.w) + viewport.x
-//                   , (viewport.dy * 0.5f) * (1.f + pv.y/pv.w) + viewport.y);
+	Vector3 v = GetOnScreenPositionAndDepth(forPoint, viewport);
+	return Vector2(v.x, v.y);
+}
 
+Vector3 Camera::GetOnScreenPositionAndDepth(const Vector3 & forPoint, const Rect & viewport)
+{
+	Vector4 pv(forPoint);
+	pv = pv * GetUniformProjModelMatrix();
+	//    return Vector2((viewport.dx * 0.5f) * (1.f + pv.x/pv.w) + viewport.x
+	//                   , (viewport.dy * 0.5f) * (1.f + pv.y/pv.w) + viewport.y);
 
-	switch(RenderManager::Instance()->GetRenderOrientation())
-	{
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-        {
-            return Vector2((viewport.dx * 0.5f) * (1.f + pv.y/pv.w) + viewport.x
-                            , (viewport.dy * 0.5f) * (1.f + pv.x/pv.w) + viewport.y);
-        }
-            break;
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-        {
-            DVASSERT(false);
-        }
-                //add code here
-			break;
-        default:
-            return Vector2(((pv.x/pv.w)*0.5f+0.5f)*viewport.dx+viewport.x,
-                       (1.0f - ((pv.y/pv.w)*0.5f+0.5f))*viewport.dy+viewport.y);
-            break;
-	}
-    DVASSERT(false);
-	return Vector2();
+    return Vector3(((pv.x/pv.w)*0.5f+0.5f)*viewport.dx+viewport.x,
+			(1.0f - ((pv.y/pv.w)*0.5f+0.5f))*viewport.dy+viewport.y, pv.w + pv.z);
+
 }
 
 const Matrix4 &Camera::GetUniformProjModelMatrix()
@@ -297,29 +277,18 @@ void Camera::RecalcTransform()
 {
     flags &= ~REQUIRE_REBUILD_MODEL;
     flags |= REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
-
-//	Core::eScreenOrientation orientation = Core::Instance()->GetScreenOrientation();
-	modelMatrix = Matrix4::IDENTITY;
     
-	switch(RenderManager::Instance()->GetRenderOrientation())
+	if (RenderManager::Instance()->GetRenderOrientation()==Core::SCREEN_ORIENTATION_TEXTURE)
 	{
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-                //glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-			modelMatrix.CreateRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(-90.0f));
-            break;
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-                //glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-            modelMatrix.CreateRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(90.0f));
-			break;
-		case Core::SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN:
-		case Core::SCREEN_ORIENTATION_TEXTURE:
-                //glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-            modelMatrix.CreateRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(180.0f));
-			break;
-        default:
-            break;
-	}
-    modelMatrix = cameraTransform * modelMatrix;
+        modelMatrix = Matrix4::IDENTITY;
+        modelMatrix.CreateRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(180.0f));
+        modelMatrix = cameraTransform * modelMatrix;
+        
+    }
+    else
+    {
+        modelMatrix = cameraTransform;   
+    }
 }
 
     
@@ -576,28 +545,9 @@ Vector3 Camera::UnProject(float32 winx, float32 winy, float32 winz, const Rect &
 
 	/* Map x and y from window coordinates */
 
-	
-	switch(RenderManager::Instance()->GetRenderOrientation())
-	{
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-        {
-			float32 xx = (in.y - viewport.y) / viewport.dy;
-			float32 yy = (in.x - viewport.x) / viewport.dx;
-			
-			in.x = xx;
-			in.y = yy;
-        }
-            break;
-		case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-        {
-            DVASSERT(false);
-        }
-			break;
-        default:
-			in.x = (in.x - viewport.x) / viewport.dx;
-			in.y = 1.0f - (in.y - viewport.y) / viewport.dy;
-            break;
-	}
+    in.x = (in.x - viewport.x) / viewport.dx;
+    in.y = 1.0f - (in.y - viewport.y) / viewport.dy;
+    
 
 	/* Map to range -1 to 1 */
 	in.x = in.x * 2 - 1;

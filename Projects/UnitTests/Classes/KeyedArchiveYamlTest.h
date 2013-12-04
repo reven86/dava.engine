@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class KeyedArchiveYamlTest : public TestTemplate<KeyedArchiveYamlTest>
 {
+protected:
+	~KeyedArchiveYamlTest(){}
 public:
 	KeyedArchiveYamlTest();
     
@@ -46,7 +48,7 @@ public:
     
     void PerformTest(PerfFuncData * data);
 private:
-    KeyedArchive loadedArchive;
+    RefPtr<KeyedArchive> loadedArchive;
 };
 
 #endif

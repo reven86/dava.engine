@@ -52,9 +52,10 @@ class Light;
 
 class NMaterialDescriptor : public BaseObject
 {
+protected:
+    virtual ~NMaterialDescriptor();
 public:
     NMaterialDescriptor();
-    virtual ~NMaterialDescriptor();
 
     uint32 GetTextureSlotByName(const String & textureName);
     uint32 GetUniformSlotByName(const String & uniformName);
@@ -72,9 +73,10 @@ private:
  */
 class NMaterialInstance : public BaseObject
 {
+protected:
+    virtual ~NMaterialInstance();
 public:
     NMaterialInstance();
-    virtual ~NMaterialInstance();
     
     bool LoadFromYaml(const String & pathname);
     uint32 GetLightCount() { return lightCount; };
@@ -113,9 +115,10 @@ private:
  
 class NMaterial : public BaseObject
 {
+protected:
+    virtual ~NMaterial();
 public:
     NMaterial(uint32 shaderCount);
-    virtual ~NMaterial();
     
     NMaterialDescriptor * GetDescriptor();
     void SetShader(uint32 index, Shader * shader);

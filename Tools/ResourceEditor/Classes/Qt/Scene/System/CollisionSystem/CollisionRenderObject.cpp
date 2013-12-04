@@ -41,6 +41,8 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 		bool anyPolygonAdded = false;
 		DAVA::Matrix4 curEntityTransform = entity->GetWorldTransform();
 
+		DAVA::AABBox3 commonBox;
+
 		for(DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
 		{
 			DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i);
@@ -78,16 +80,16 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 				}
 
 				// save original bbox
-				boundingBox = pg->GetBoundingBox();
-				
-				// increase bbox a a little bit
-				boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
-				boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
+				boundingBox.AddAABBox(pg->GetBoundingBox());
 			}
 		}
 
 		if(anyPolygonAdded)
 		{
+			// increase bbox a a little bit
+			boundingBox.AddPoint(boundingBox.min - DAVA::Vector3(0.5f, 0.5f, 0.5f));
+			boundingBox.AddPoint(boundingBox.max + DAVA::Vector3(0.5f, 0.5f, 0.5f));
+
 			DAVA::Vector3 pos = curEntityTransform.GetTranslationVector();
 
 			btObject = new btCollisionObject();

@@ -43,9 +43,10 @@ namespace DAVA
 */
 class	FileList : public BaseObject
 {
+protected:
+	virtual ~FileList();
 public:
 	FileList(const FilePath & filepath);
-	virtual ~FileList();
 
 	/**
 		\brief Get total item count in current list

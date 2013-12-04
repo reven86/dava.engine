@@ -57,42 +57,12 @@ void	Thread::InitMacOS()
 	}
 }
 	
-void * PthreadMain(void * param)
+void* PthreadMain(void * param)
 {	
 	NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 	
 	Thread * t = (Thread*)param;
-	if(t->needCopyContext)
-	{
-#if defined(__DAVAENGINE_IPHONE__)
-		
-//		EAGLContext *cont = [[EAGLContext alloc] initWithAPI:((EAGLContext*)t->glContext).API sharegroup:((EAGLContext*)t->glContext).sharegroup];
-//		if(![EAGLContext setCurrentContext:cont])
-//		{
-//			Logger::Error("Unable to set thread context");
-//		}
-//		[cont autorelease];
-		if(![EAGLContext setCurrentContext:(EAGLContext*)t->glContext])
-		{
-			Logger::Error("Unable to set thread context 0x%x", (int)t->glContext);
-		}
-		Logger::Info("Thread context 0x%x", (int)EAGLContext.currentContext);
-#elif defined(__DAVAENGINE_MACOS__)
-	#if defined (__DAVAENGINE_NPAPI__)
-		CGLError err = CGLSetCurrentContext(t->npAPIGLContext);
-		NSLog(@"CGLSetCurrentContext returned %i", err);
-	#else
-		NSOpenGLContext * context = (NSOpenGLContext*)t->glContext;
-		[context makeCurrentContext];
-//		if(![NSOpenGLContext setCurrentContext:(NSOpenGLContext*)t->glContext])
-//		{
-//			Logger::Error("Unable to set thread context 0x%x", (int)t->glContext);
-//		}
-//		Logger::Info("Thread context 0x%x", (int)EAGLContext.currentContext);
-	#endif // #if defined (__DAVAENGINE_NPAPI__)
-#endif
-	
-	}
+	t->SetThreadId(Thread::GetCurrentThreadId());
 
 	
 	t->state = Thread::STATE_RUNNING;
@@ -101,42 +71,12 @@ void * PthreadMain(void * param)
 	t->state = Thread::STATE_ENDED;
 	t->Release();
 	
-	if(t->needCopyContext)
-	{
-#if defined(__DAVAENGINE_IPHONE__)
-		[EAGLContext setCurrentContext:nil];
-#elif defined(__DAVAENGINE_MACOS__)
-		// нужно ли что-то здесь освобождать после выхода из потока???
-		// зачем контекст обнуляется в iPhone версии? 
-		// [NSOpenGLContext setCurrentContext: nil];
-	#if defined (__DAVAENGINE_NPAPI__)
-		CGLDestroyContext(t->npAPIGLContext);
-	#endif // #if defined (__DAVAENGINE_NPAPI__)
-#endif
-		
-	}
 	[pool release];
 	pthread_exit(0);
 }
 
-void	Thread::StartMacOS()
+void Thread::StartMacOS()
 {
-	if(needCopyContext)
-	{
-#if defined(__DAVAENGINE_IPHONE__)
-		glContext = [EAGLContext currentContext];
-		Logger::Info("Current context 0x%x", (int)glContext);
-#elif defined(__DAVAENGINE_MACOS__)
-	#if defined (__DAVAENGINE_NPAPI__)
-		// NPAPI code
-		this->npAPIGLContext = NULL;
-		[NPAPIOpenGLLayerMacOS getThreadChildContext:&this->npAPIGLContext];
-	#else
-		// Pure MacOS code.
-		glContext = [NSOpenGLContext currentContext];
-	#endif // #if defined (__DAVAENGINE_NPAPI__)
-#endif
-	}
 
 	pthread_t threadId;
 	pthread_create(&threadId, 0, PthreadMain, (void*)this);
@@ -149,7 +89,15 @@ bool Thread::IsMainThread()
     
 void Thread::YieldThread()
 {
-    return pthread_yield_np();
+    pthread_yield_np();
+}
+    
+Thread::ThreadId Thread::GetCurrentThreadId()
+{
+    ThreadId ret;
+    ret.internalTid = pthread_self();
+    
+    return ret;
 }
 	
 };

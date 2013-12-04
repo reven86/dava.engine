@@ -57,9 +57,10 @@ namespace DAVA
  */
 class RenderResource : public BaseObject
 {
+protected:
+	virtual ~RenderResource();
 public:
 	RenderResource();
-	virtual ~RenderResource();
 	
 	/**
 		\brief 	This function is called when you need to save resource to system memory for easy restore later. 

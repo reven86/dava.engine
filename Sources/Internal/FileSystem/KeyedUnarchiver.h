@@ -43,9 +43,10 @@ namespace DAVA
  */
 class KeyedUnarchiver : public BaseObject
 {
+protected:
+	virtual ~KeyedUnarchiver();
 public:
 	KeyedUnarchiver();
-	virtual ~KeyedUnarchiver();
 	
 	bool UnarchiveFile(const FilePath & pathName);
 	bool UnarchiveFile(File *file);

@@ -51,9 +51,10 @@ inline int32 GetIndexSize(int32 indexFormat)
 //! Interface to work with Index Buffers
 class IndexBuffer : public RenderResource
 {
+protected:
+	virtual ~IndexBuffer() {};
 public:
 	IndexBuffer() {};
-	virtual ~IndexBuffer() {};
 
 	virtual void			* Lock(const int32 indexCount, int32 & startIndex) = 0;
 	virtual void			Unlock() = 0;

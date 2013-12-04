@@ -82,6 +82,27 @@ public class JNITextField {
 			}
 			return null;
 		}
+		
+		public void AsyncRun() {
+			Runnable inTask = new Runnable() {
+				@Override
+				public void run() {
+					InputFilter[] filters = null;
+					if (text != null) {
+						filters = text.getFilters();
+						text.setFilters(new InputFilter[]{});
+					}
+					try {
+						task.call();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					if (text != null)
+						text.setFilters(filters);
+				}
+			};
+			JNIActivity.GetActivity().runOnUiThread(inTask);
+		}
 	}
 
 	public static void Create(final int id, final float x, final float y,
@@ -225,7 +246,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetTextColor(int id, final float r, final float g,

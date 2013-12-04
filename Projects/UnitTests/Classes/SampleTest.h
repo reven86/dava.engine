@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class SampleTest : public TestTemplate<SampleTest>
 {
+protected:
+    ~SampleTest(){}
 public:
 	SampleTest();
 

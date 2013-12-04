@@ -49,13 +49,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
     ui->tableWidget->setStyleSheet(TABLE_STYLESHEET);
 
-#ifdef Q_OS_WIN
-    listFont.setPointSize(11);
-    tableFont.setPointSize(10);
-#endif
+    listFontFav.setPointSize(listFontFav.pointSize() + 1);
+    listFontFav.setBold(true);
 
     setWindowTitle(QString("DAVA Launcher %1").arg(LAUNCHER_VER));
-    ui->listWidget->setSortingEnabled(true);
 
     connect(ui->webView, SIGNAL(linkClicked(QUrl)), this, SLOT(OnlinkClicked(QUrl)));
     connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(OnRefreshClicked()));
@@ -172,9 +169,13 @@ void MainWindow::RefreshApps()
 
 void MainWindow::OnListItemClicked(QModelIndex qindex)
 {
-    selectedBranchID = ui->listWidget->item(qindex.row())->data(DAVA_WIDGET_ROLE).toString();
-    selectedListItem = ui->listWidget->currentIndex();
-    ShowTable(selectedBranchID);
+    QString dataRole = ui->listWidget->item(qindex.row())->data(DAVA_WIDGET_ROLE).toString();
+    if(!dataRole.isEmpty())
+    {
+        selectedBranchID = dataRole;
+        selectedListItem = ui->listWidget->currentIndex();
+        ShowTable(selectedBranchID);
+    }
 }
 
 void MainWindow::OnCellClicked(const QPoint & pos)
@@ -215,7 +216,6 @@ void MainWindow::ShowTable(const QString & branchID)
     ConfigParser * localConfig = appManager->GetLocalConfig();
     ConfigParser * remoteConfig = appManager->GetRemoteConfig();
 
-//REFACTOR !
     QVector<int> states;
     if(remoteConfig)
     {
@@ -350,27 +350,76 @@ void MainWindow::RefreshBranchesList()
     ui->listWidget->clear();
 
     if(!localConfig->GetWebpageURL().isEmpty())
-        ui->listWidget->addItem(CreateListItem(CONFIG_LAUNCHER_WEBPAGE_KEY));
+    {
+        ui->listWidget->addItem(CreateListItem(CONFIG_LAUNCHER_WEBPAGE_KEY, LIST_ITEM_NEWS));
+        ui->listWidget->addItem(CreateSeparatorItem());
+    }
 
+    QVector<QString> favs;
     QSet<QString> branchIDs;
     if(localConfig)
+    {
         localConfig->MergeBranchesIDs(branchIDs);
+        favs = localConfig->GetFavorites();
+    }
     if(remoteConfig)
+    {
         remoteConfig->MergeBranchesIDs(branchIDs);
+        favs = remoteConfig->GetFavorites();
+    }
 
-    QSet<QString>::iterator it = branchIDs.begin();
-    QSet<QString>::iterator itEnd = branchIDs.end();
+    QList<QString> branchesList = branchIDs.toList();
+    qSort(branchesList);
 
-    for(; it != itEnd; ++it)
-        ui->listWidget->addItem(CreateListItem(*it));
+    int branchesCount = branchesList.size();
+
+    //Add favorites branches
+    if(favs.size())
+    {
+        bool hasFavorite = false;
+        for(int i = 0; i < branchesCount; i++)
+        {
+            const QString & branchID = branchesList[i];
+            if(favs.contains(branchID))
+            {
+                ui->listWidget->addItem(CreateListItem(branchID, LIST_ITEM_FAVORITES));
+                hasFavorite = true;
+            }
+        }
+
+        if(hasFavorite)
+            ui->listWidget->addItem(CreateSeparatorItem());
+    }
+
+    //Add Others
+    for(int i = 0; i < branchesCount; i++)
+    {
+        const QString & branchID = branchesList[i];
+        if(!favs.contains(branchID))
+            ui->listWidget->addItem(CreateListItem(branchID, LIST_ITEM_BRANCH));
+    }
 }
 
-QListWidgetItem * MainWindow::CreateListItem(const QString &stringID)
+QListWidgetItem * MainWindow::CreateListItem(const QString &stringID, ListItemType type)
 {
     QListWidgetItem * item = new QListWidgetItem(appManager->GetString(stringID));
-    item->setSizeHint(QSize(-1, 40));
-    item->setFont(listFont);
+    item->setSizeHint(QSize(-1, 34));
+    if(type == LIST_ITEM_FAVORITES)
+        item->setFont(listFontFav);
+    else
+        item->setFont(listFont);
+    if(type == LIST_ITEM_BRANCH)
+        item->setTextColor(QColor(100, 100, 100));
     item->setData(DAVA_WIDGET_ROLE, stringID);
+    return item;
+}
+
+QListWidgetItem * MainWindow::CreateSeparatorItem()
+{
+    QListWidgetItem * item = new QListWidgetItem();
+    item->setFlags(Qt::NoItemFlags);
+    item->setBackground(QBrush(QColor(180, 180, 180), Qt::HorPattern));
+    item->setSizeHint(QSize(0, 7));
     return item;
 }
 
@@ -412,6 +461,8 @@ QWidget * MainWindow::CreateAppAvalibleTableItem(Application * app)
         comboBox->view()->setTextElideMode(Qt::ElideLeft);
         comboBox->setFont(tableFont);
         comboBox->setFocusPolicy(Qt::NoFocus);
+        comboBox->model()->sort(0, Qt::DescendingOrder);
+        comboBox->setCurrentIndex(0);
 
         return comboBox;
     }

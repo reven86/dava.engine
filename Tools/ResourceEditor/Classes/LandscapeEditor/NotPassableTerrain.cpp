@@ -63,7 +63,6 @@ void NotPassableTerrain::HeihghtmapUpdated(const DAVA::Rect &forRect)
     Texture *notPassableMap = notPassableMapSprite->GetTexture();
     float32 dx = (float32)notPassableMap->GetWidth() / (float32)(heightmap->Size() - 1);
     
-    RenderManager::Instance()->LockNonMain();
     RenderManager::Instance()->SetRenderTarget(notPassableMapSprite);
 
     Rect drawRect(forRect.x * dx, forRect.y * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
@@ -117,7 +116,6 @@ void NotPassableTerrain::HeihghtmapUpdated(const DAVA::Rect &forRect)
     RenderManager::Instance()->ClipPop();
     
     RenderManager::Instance()->RestoreRenderTarget();
-    RenderManager::Instance()->UnlockNonMain();
 }
 
 

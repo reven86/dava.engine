@@ -33,6 +33,7 @@
 #include "PasteCommand.h"
 #include "CommandsController.h"
 #include "HierarchyTreeAggregatorControlNode.h"
+#include "SubcontrolsHelper.h"
 
 using namespace DAVA;
 
@@ -107,6 +108,13 @@ void CopyPasteController::CopyControls(const HierarchyTreeController::SELECTEDCO
 		return;
 	
 	Clear();
+
+    // If at least one subcontrol is selected - block copy, see pls DF-2684.
+    if (SubcontrolsSelected(items))
+    {
+        return;
+    }
+
 	for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = items.begin();
 		 iter != items.end();
 		 ++iter)
@@ -173,4 +181,18 @@ void CopyPasteController::Paste(HierarchyTreeNode* parentNode)
 	PasteCommand* cmd = new PasteCommand(parentNode, copyType, &items);
 	CommandsController::Instance()->ExecuteCommand(cmd);
 	SafeRelease(cmd);
+}
+
+bool CopyPasteController::SubcontrolsSelected(const HierarchyTreeController::SELECTEDCONTROLNODES& items)
+{
+    for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = items.begin(); iter != items.end(); ++iter)
+    {
+        HierarchyTreeControlNode* control = (*iter);
+        if (control && SubcontrolsHelper::ControlIsSubcontrol(control->GetUIObject()))
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

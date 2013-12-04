@@ -51,9 +51,10 @@ class Animation;
  */
 class AnimatedObject : public BaseObject
 {
+protected:
+	virtual ~AnimatedObject();
 public:
 	AnimatedObject();
-	virtual ~AnimatedObject();
 
 	/**
 		\brief stop animations for this given AnimatedObject

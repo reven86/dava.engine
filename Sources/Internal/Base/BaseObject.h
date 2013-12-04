@@ -61,8 +61,18 @@ namespace DAVA
 class InspInfo;
 class KeyedArchive;
 	
-class BaseObject
+class BaseObject: public InspBase
 {
+protected:
+	//! Destructor
+	virtual ~BaseObject()
+	{
+		DVASSERT( referenceCount == 0 );
+#ifdef ENABLE_BASE_OBJECT_CHECKS
+		BaseObjectChecker::UnregisterBaseObject(this);
+#endif 
+	}
+
 public:
 	
 	//! Constructor
@@ -71,14 +81,6 @@ public:
 	{
 #ifdef ENABLE_BASE_OBJECT_CHECKS
 		BaseObjectChecker::RegisterBaseObject(this);
-#endif 
-	}
-
-	//! Destructor
-	virtual ~BaseObject()
-	{
-#ifdef ENABLE_BASE_OBJECT_CHECKS
-		BaseObjectChecker::UnregisterBaseObject(this);
 #endif 
 	}
 
@@ -127,7 +129,7 @@ public:
         \returns name of the class you've passed to REGISTER_CLASS function. For example if you register class UIButton with the following line:
         REGISTER_CLASS(UIButton); you'll get "UIButton" as result.
      */
-    const String & GetClassName();
+    const String & GetClassName() const;
     
     virtual void Save(KeyedArchive * archive);
 	virtual void Load(KeyedArchive * archive);
@@ -158,8 +160,9 @@ protected:
 	int32 referenceCount;
 
 public:
-		INTROSPECTION(BaseObject,
-		MEMBER(referenceCount, "referenceCount", I_SAVE))
+	INTROSPECTION(BaseObject,
+		MEMBER(referenceCount, "referenceCount", I_SAVE)
+	);
 };
 
 

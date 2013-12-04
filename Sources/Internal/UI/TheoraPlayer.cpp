@@ -37,7 +37,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(TheoraPlayer);
 struct TheoraData
 {
     th_info             thInfo;

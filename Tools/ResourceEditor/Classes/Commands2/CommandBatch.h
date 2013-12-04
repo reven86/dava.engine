@@ -46,9 +46,12 @@ public:
 
 	void AddAndExec(Command2 *command);
 	int Size() const;
+	Command2 *GetCommand(int index) const;
+
+	void Clear(int commandId);
 
 protected:
-	std::list<Command2 *> commandList;
+	std::vector<Command2 *> commandList;
 };
 
 #endif // __COMMAND_BATCH_H__

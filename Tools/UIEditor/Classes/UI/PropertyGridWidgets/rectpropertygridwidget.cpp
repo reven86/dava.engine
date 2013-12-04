@@ -32,6 +32,9 @@
 #include "PropertiesGridController.h"
 #include "PropertyNames.h"
 
+#include "CommandsController.h"
+#include "CenterPivotPointCommand.h"
+
 static const QString RECT_PROPERTY_BLOCK_NAME = "Rect";
 
 RectPropertyGridWidget::RectPropertyGridWidget(QWidget *parent) :
@@ -70,7 +73,9 @@ void RectPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     RegisterSpinBoxWidgetForProperty(propertiesMap, "PivotY", ui->pivotYSpinBox);
 
     RegisterSpinBoxWidgetForProperty(propertiesMap, "Angle", ui->angleSpinBox);
-	
+
+    connect(ui->centerPivotPointButton, SIGNAL(clicked()), this, SLOT(OnCenterPivotPointButtonClicked()));
+
 	UpdateHorizontalWidgetsState();
 	UpdateVerticalWidgetsState();
 }
@@ -78,6 +83,7 @@ void RectPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 void RectPropertyGridWidget::Cleanup()
 {
     BasePropertyGridWidget::Cleanup();
+    disconnect(ui->centerPivotPointButton, SIGNAL(clicked()), this, SLOT(OnCenterPivotPointButtonClicked()));
 
     UnregisterSpinBoxWidget(ui->relativeXSpinBox);
     UnregisterSpinBoxWidget(ui->relativeYSpinBox);
@@ -157,4 +163,21 @@ void RectPropertyGridWidget::UpdateVerticalWidgetsState()
 bool RectPropertyGridWidget::IsTwoAlignsEnabled(bool first, bool center, bool second)
 {
 	return ((first && center) || (center && second) || (first && second));
+}
+
+void RectPropertyGridWidget::OnCenterPivotPointButtonClicked()
+{
+	PROPERTIESMAP propertiesMap = BuildMetadataPropertiesMap();
+	PROPERTIESMAPITER pivotPointPropertyIter = propertiesMap.find("Pivot");
+	if (pivotPointPropertyIter == propertiesMap.end())
+	{
+		DVASSERT(false);
+		return;
+	}
+
+	BaseCommand* command = new CenterPivotPointCommand(activeMetadata, pivotPointPropertyIter->second);
+	CommandsController::Instance()->ExecuteCommand(command);
+	SafeRelease(command);
+
+	CommandsController::Instance()->EmitUpdatePropertyValues();
 }

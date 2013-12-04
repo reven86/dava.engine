@@ -42,9 +42,10 @@ class Entity;
 
 class TransformComponent : public Component
 {
+protected:
+    virtual ~TransformComponent();
 public:
     TransformComponent();
-    virtual ~TransformComponent();
 
     IMPLEMENT_COMPONENT_TYPE(TRANSFORM_COMPONENT);
 

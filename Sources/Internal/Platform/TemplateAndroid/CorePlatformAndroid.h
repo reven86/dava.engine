@@ -123,7 +123,6 @@ private:
 	UIEvent CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source);
 
 	Vector<DAVA::UIEvent> totalTouches;
-	int32 touchPhase;
 
 	AndroidSystemDelegate *androidDelegate;
 	AAssetManager * assetMngr;

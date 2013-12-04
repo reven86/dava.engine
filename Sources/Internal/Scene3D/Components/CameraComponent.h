@@ -41,9 +41,10 @@ class Camera;
 
 class CameraComponent : public Component
 {
+protected:
+    virtual ~CameraComponent();
 public:
     CameraComponent(Camera * _camera = 0);
-    virtual ~CameraComponent();
 
 	Camera* GetCamera();
 	void SetCamera(Camera * _camera);

@@ -39,9 +39,10 @@ namespace DAVA
 {
 	class CustomPropertiesComponent : public Component
 	{
+	protected:
+		virtual ~CustomPropertiesComponent();
 	public:
 		CustomPropertiesComponent();
-		virtual ~CustomPropertiesComponent();
 		
 		IMPLEMENT_COMPONENT_TYPE(CUSTOM_PROPERTIES_COMPONENT);
 				

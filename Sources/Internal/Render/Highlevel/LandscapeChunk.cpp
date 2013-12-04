@@ -34,7 +34,6 @@
 
 namespace DAVA
 {
-REGISTER_CLASS(LandscapeChunk);
 
 LandscapeChunk::LandscapeChunk(Landscape * _landscape)
     : landscape(_landscape)

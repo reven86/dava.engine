@@ -466,8 +466,6 @@ void SceneGraph::DragAndDrop(void *who, void *target, int32 mode)
 void SceneGraph::RefreshGraph()
 {
     GraphBase::RefreshGraph();
-    
-    SceneValidator::Instance()->EnumerateNodes(workingScene);
 }
 
 void SceneGraph::SetSize(const Vector2 &newSize)

@@ -32,10 +32,11 @@
 #include "Scene3D/SceneFileV2.h"
 
 #include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/StringConstants.h"
 
 
 SaveEntityAsAction::SaveEntityAsAction(const EntityGroup *_entities, const DAVA::FilePath &_path)
-	: CommandAction(CMDID_SAVE_ENTITY_AS, "Save Entities As")
+	: CommandAction(CMDID_ENTITY_SAVE_AS, "Save Entities As")
 	, entities(_entities)
 	, sc2Path(_path)
 { }
@@ -54,10 +55,13 @@ void SaveEntityAsAction::Redo()
 			DAVA::Entity *entity = entities->GetEntity(i);
 			DAVA::Entity *clone = entity->Clone();
 
+            DAVA::KeyedArchive *props = clone->GetCustomProperties();
+            props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+            
 			scene->AddNode(clone);
 		}
 
-		SceneHelper::SaveScene(scene, sc2Path);
+        scene->Save(sc2Path);
 
 		scene->Release();
 	}

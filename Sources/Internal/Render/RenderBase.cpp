@@ -1,9 +1,9 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+	Copyright (c) 2008, binaryzebra
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
     * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
@@ -33,6 +33,178 @@
 
 namespace DAVA
 {
+const String BLEND_MODE_NAMES[BLEND_MODE_COUNT] =
+{
+	"BLEND_NONE",
+	"BLEND_ZERO",
+	"BLEND_ONE",
+	"BLEND_DST_COLOR",
+	"BLEND_ONE_MINUS_DST_COLOR",
+	"BLEND_SRC_ALPHA",
+	"BLEND_ONE_MINUS_SRC_ALPHA",
+	"BLEND_DST_ALPHA",
+	"BLEND_ONE_MINUS_DST_ALPHA",
+	"BLEND_SRC_ALPHA_SATURATE",
+	"BLEND_SRC_COLOR",
+	"BLEND_ONE_MINUS_SRC_COLOR"
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT] =
+{
+	0,	// not a valid blend mode
+	GL_ZERO,
+	GL_ONE,
+	GL_DST_COLOR,
+	GL_ONE_MINUS_DST_COLOR,
+	GL_SRC_ALPHA,
+	GL_ONE_MINUS_SRC_ALPHA,
+	GL_DST_ALPHA,
+	GL_ONE_MINUS_DST_ALPHA,
+	GL_SRC_ALPHA_SATURATE,
+	GL_SRC_COLOR,
+	GL_ONE_MINUS_SRC_COLOR,
+};
+#elif defined(__DAVAENGINE_DIRECTX9__)
+const GLint BLEND_MODE_MAP[BLEND_MODE_COUNT] =
+{
+	0,	// not a valid blend mode
+	D3DBLEND_ZERO,
+	D3DBLEND_ONE,
+	D3DBLEND_DESTCOLOR,
+	D3DBLEND_INVDESTCOLOR,
+	D3DBLEND_SRCALPHA,
+	D3DBLEND_INVSRCALPHA,
+	D3DBLEND_DESTALPHA,
+	D3DBLEND_INVDESTALPHA,
+	D3DBLEND_SRCALPHASAT,
+	D3DBLEND_SRCCOLOR,
+	D3DBLEND_INVSRCCOLOR,
+};
+#endif
+
+const String CMP_FUNC_NAMES[CMP_TEST_MODE_COUNT] =
+{
+	"CMP_NEVER",
+	"CMP_LESS",
+	"CMP_EQUAL",
+	"CMP_LEQUAL",
+	"CMP_GREATER",
+	"CMP_NOTEQUAL",
+	"CMP_GEQUAL",
+	"CMP_ALWAYS"
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+const GLint COMPARE_FUNCTION_MAP[CMP_TEST_MODE_COUNT] =
+{
+	GL_NEVER,
+	GL_LESS,
+	GL_EQUAL,
+	GL_LEQUAL,
+	GL_GREATER,
+	GL_NOTEQUAL,
+	GL_GEQUAL,
+	GL_ALWAYS,
+};
+#elif defined(__DAVAENGINE_DIRECTX9__)
+const GLint COMPARE_FUNCTION_MAP[CMP_TEST_MODE_COUNT] =
+{
+	D3DCMP_NEVER,
+	D3DCMP_LESS,
+	D3DCMP_EQUAL,
+	D3DCMP_LESSEQUAL,
+	D3DCMP_GREATER,
+	D3DCMP_NOTEQUAL,
+	D3DCMP_GREATEREQUAL,
+	D3DCMP_ALWAYS,
+};
+#endif
+
+const String FACE_NAMES[FACE_COUNT] =
+{
+	"FACE_FRONT",
+	"FACE_BACK",
+	"FACE_FRONT_AND_BACK"
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+const GLint CULL_FACE_MAP[FACE_COUNT] =
+{
+	GL_FRONT,
+	GL_BACK,
+	GL_FRONT_AND_BACK,
+};
+#elif defined(__DAVAENGINE_DIRECTX9__)
+const int32 CULL_FACE_MAP[FACE_COUNT] =
+{
+	D3DCULL_CCW,
+	D3DCULL_CW,
+	D3DCULL_NONE,
+};
+#endif
+
+const String STENCIL_OP_NAMES[STENCILOP_COUNT] =
+{
+	"STENCILOP_KEEP",
+	"STENCILOP_ZERO",
+	"STENCILOP_REPLACE",
+	"STENCILOP_INCR",
+	"STENCILOP_INCR_WRAP",
+	"STENCILOP_DECR",
+	"STENCILOP_DECR_WRAP",
+	"STENCILOP_INVERT"
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+const GLint STENCIL_OP_MAP[STENCILOP_COUNT] =
+{
+	GL_KEEP,
+	GL_ZERO,
+	GL_REPLACE,
+	GL_INCR,
+	GL_INCR_WRAP,
+	GL_DECR,
+	GL_DECR_WRAP,
+	GL_INVERT
+};
+#elif defined(__DAVAENGINE_DIRECTX9__)
+const int32 STENCIL_OP_MAP[STENCILOP_COUNT] =
+{
+	D3DSTENCILOP_KEEP,
+	D3DSTENCILOP_ZERO,
+	D3DSTENCILOP_REPLACE,
+	D3DSTENCILOP_INCRSAT,
+	D3DSTENCILOP_INCR,
+	D3DSTENCILOP_DECRSAT,
+	D3DSTENCILOP_DECR,
+	D3DSTENCILOP_INVERT
+};
+#endif
+
+const String FILL_MODE_NAMES[FILLMODE_COUNT] =
+{
+	"FILLMODE_POINT",
+	"FILLMODE_WIREFRAME",
+	"FILLMODE_SOLID"
+};
+
+#if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__))
+const GLint FILLMODE_MAP[FILLMODE_COUNT] =
+{
+	GL_POINT,
+	GL_LINE,
+	GL_FILL
+};
+#elif defined(__DAVAENGINE_DIRECTX9__)
+const int32 FILLMODE_MAP[FILLMODE_COUNT] =
+{
+	D3DFILL_POINT,
+	D3DFILL_WIREFRAME,
+	D3DFILL_SOLID
+};
+#endif
+
 	RenderGuard::RenderGuard()
 	{
 		wrongCall = false;
@@ -40,12 +212,12 @@ namespace DAVA
 
 	RenderGuard::~RenderGuard()
 	{
-			
+
 	}
-	
+
 	void RenderGuard::LowLevelRenderCall()
 	{
-		if((!Thread::IsMainThread()) && RenderManager::Instance()->GetNonMainLockCount() == 0)
+		if(!Thread::IsMainThread())
 		{
 			DVASSERT(0 && "Application tried to call GL or DX in separate thread without lock");
 		}

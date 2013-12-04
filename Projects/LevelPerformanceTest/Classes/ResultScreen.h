@@ -42,9 +42,10 @@ enum eResultScreenState
 
 class ResultScreen: public DAVA::UIScreen
 {
+protected:
+	~ResultScreen();
 public:
 	ResultScreen(const LandscapeTestData& testData, const DAVA::FilePath& filename, DAVA::Texture* landscapeTexture);
-	~ResultScreen();
 	
 	virtual void LoadResources();
 	virtual void UnloadResources();

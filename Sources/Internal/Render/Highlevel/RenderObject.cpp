@@ -35,7 +35,6 @@
 namespace DAVA
 {
 
-REGISTER_CLASS(RenderObject)
 
 static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_LOD | RenderObject::VISIBLE_SWITCH;
 
@@ -43,6 +42,8 @@ RenderObject::RenderObject()
     :   type(TYPE_RENDEROBJECT)
     ,   flags(DEFAULT_FLAGS)
     ,   removeIndex(-1)
+	,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
+	,   startClippingPlane(0)
     ,   debugFlags(0)
     ,   worldTransform(0)
 	,	renderSystem(0)
@@ -124,9 +125,13 @@ RenderObject * RenderObject::Clone(RenderObject *newObject)
 
 	newObject->type = type;
 	newObject->flags = flags;
+	newObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
 	newObject->debugFlags = debugFlags;
 	//ro->bbox = bbox;
 	//ro->worldBBox = worldBBox;
+
+	//TODO:VK: Do we need remove all renderbatches from newObject?
+	DVASSERT(newObject->GetRenderBatchCount() == 0);
 
 	uint32 size = GetRenderBatchCount();
 	for(uint32 i = 0; i < size; ++i)
@@ -214,6 +219,12 @@ RenderSystem * RenderObject::GetRenderSystem()
 
 void RenderObject::BakeTransform(const Matrix4 & /*transform*/)
 {
+}
+
+void RenderObject::RecalculateWorldBoundingBox()
+{
+	DVASSERT(!bbox.IsEmpty());
+	bbox.GetTransformedBox(*worldTransform, worldBBox);
 }
 
 };

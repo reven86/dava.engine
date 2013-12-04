@@ -36,6 +36,8 @@
 #include "FileSystem/File.h"
 #include "Render/2D/TextBlock.h"
 #include "Core/Core.h"
+#include "Job/JobManager.h"
+#include "Job/JobWaiter.h"
 
 namespace DAVA 
 {
@@ -231,10 +233,17 @@ bool TextBlock::IsSpriteReady()
 
 void TextBlock::Prepare()
 {
+	Retain();
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
+}
+
+void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
+{
 #if 1
 	if(!font || text == L"")
 	{
 		SafeRelease(sprite);
+        Release();
 		return;
 	}
 	if(needRedraw)
@@ -635,7 +644,6 @@ void TextBlock::Prepare()
 		else 
 		{
 			//omg 8888!
-			RenderManager::Instance()->LockNonMain();
 			sprite = Sprite::CreateAsRenderTarget(finalW, finalH, FORMAT_RGBA8888);
 			if (sprite && sprite->GetTexture())
 			{
@@ -647,7 +655,6 @@ void TextBlock::Prepare()
 						sprite->GetTexture()->SetDebugInfo(WStringToString(multilineStrings[0]));
 				}
 			}				
-			RenderManager::Instance()->UnlockNonMain();
 		}
 		
 
@@ -682,6 +689,8 @@ void TextBlock::Prepare()
 		
 	}
 #endif 
+
+	Release();
 }
 
 void TextBlock::DrawToBuffer(int16 *buf)
@@ -790,13 +799,11 @@ void TextBlock::PreDraw()
 	
 	if (!font->IsTextSupportsSoftwareRendering())
 	{
-		RenderManager::Instance()->LockNonMain();
 		RenderManager::Instance()->SetRenderTarget(sprite);
 
 		DrawToBuffer(NULL);
 		
 		RenderManager::Instance()->RestoreRenderTarget();
-		RenderManager::Instance()->UnlockNonMain();
 	}
 }
     

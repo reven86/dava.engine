@@ -48,55 +48,6 @@ protected:
 };
 
 
-class CommandAddScene: public LibraryCommand
-{
-public:	
-	DAVA_DEPRECATED(CommandAddScene(const DAVA::FilePath &pathname));// DEPRECATED: using of SceneDataManager
-	~CommandAddScene();
-
-protected:	
-	DAVA::Entity *entity;
-    
-    virtual void Execute();
-    virtual void Cancel();
-};
-
-
-class CommandEditScene: public LibraryCommand
-{
-public:
-	DAVA_DEPRECATED(CommandEditScene(const DAVA::FilePath &pathname)); // DEPRECATED : using SceneDataManager(QOBJECT)
-    
-protected:
-    
-    virtual void Execute();
-};
-
-class CommandReloadScene: public LibraryCommand
-{
-public:
-	DAVA_DEPRECATED(CommandReloadScene(const DAVA::FilePath &pathname)); // DEPRECATED : using SceneDataManager(QOBJECT)
-    
-protected:
-    
-    virtual void Execute();
-    virtual void Cancel();
-};
-
-class CommandReloadEntityFrom: public LibraryCommand
-{
-public:
-	DAVA_DEPRECATED(CommandReloadEntityFrom(const DAVA::FilePath &pathname)); // DEPRECATED : using SceneDataManager(QOBJECT)
-    
-protected:
-    
-    virtual void Execute();
-    virtual void Cancel();
-    
-protected:
-    
-    DAVA::FilePath fromPathname;
-};
 
 class CommandConvertScene: public LibraryCommand
 {

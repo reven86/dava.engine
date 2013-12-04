@@ -48,6 +48,8 @@ ComboBox::ComboBox(const Rect &rect, ComboBoxDelegate *comboDelegate, const Vect
 
 ComboBox::~ComboBox()
 {
+	SafeRelease(comboButton);
+
     SafeRelease(list);
 }
 

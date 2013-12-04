@@ -45,10 +45,10 @@ public:
 
 class LandscapeToolsSelection: public UIControl, public UIListDelegate
 {
-    
+protected:
+    virtual ~LandscapeToolsSelection();
 public:
     LandscapeToolsSelection(LandscapeToolsSelectionDelegate *newDelegate, const Rect & rect);
-    virtual ~LandscapeToolsSelection();
 
     virtual void WillAppear();
     

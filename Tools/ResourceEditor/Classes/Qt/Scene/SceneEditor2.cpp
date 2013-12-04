@@ -30,27 +30,36 @@
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
-#include "CommandLine/SceneExporter/SceneExporter.h"
+#include "Scene/SceneHelper.h"
+
 #include "SceneEditor/EditorSettings.h"
+#include "SceneEditor/SceneValidator.h"
+#include "Commands2/VisibilityToolActions.h"
+#include "Commands2/CustomColorsCommands2.h"
+#include "Commands2/HeightmapEditorCommands2.h"
+#include "Commands2/TilemaskEditorCommands.h"
+#include "Commands2/RulerToolActions.h"
+#include "Commands2/LandscapeEditorDrawSystemActions.h"
 
-#include "Render/Highlevel/ShadowVolumeRenderPass.h"
-
-#include "Classes/SceneEditor/SceneValidator.h"
-#include "Classes/Qt/Scene/SceneHelper.h"
+#include "CommandLine/SceneExporter/SceneExporter.h"
 
 // framework
 #include "Scene3D/SceneFileV2.h"
+#include "Render/Highlevel/ShadowVolumeRenderPass.h"
 
 SceneEditor2::SceneEditor2()
 	: Scene()
 	, isLoaded(false)
+	, isHUDVisible(true)
 {
+	renderStats.Clear();
+
 	EditorCommandNotify *notify = new EditorCommandNotify(this);
 	commandStack.SetNotify(notify);
 	SafeRelease(notify);
 
 	cameraSystem = new SceneCameraSystem(this);
-	AddSystem(cameraSystem, 0);
+	AddSystem(cameraSystem, (1 << DAVA::Component::CAMERA_COMPONENT));
 
 	gridSystem = new SceneGridSystem(this);
 	AddSystem(gridSystem, 0);
@@ -97,122 +106,107 @@ SceneEditor2::SceneEditor2()
 	textDrawSystem = new TextDrawSystem(this, cameraSystem);
 	AddSystem(textDrawSystem, 0);
 
+	debugDrawSystem = new DebugDrawSystem(this);
+	AddSystem(debugDrawSystem, 0);
+	
+	beastSystem = new BeastSystem(this);
+	AddSystem(beastSystem, 0);
+	
+	ownersSignatureSystem = new OwnersSignatureSystem(this);
+	AddSystem(ownersSignatureSystem, 0);
+
 	SetShadowBlendMode(ShadowVolumeRenderPass::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);
+
+	wasChanged = false;
 }
 
 SceneEditor2::~SceneEditor2()
 {
-    RemoveSystem(editorLightSystem);
-    SafeDelete(editorLightSystem);
-
-    RemoveSystem(structureSystem);
-    SafeDelete(structureSystem);
+	RemoveSystems();
     
 	SceneSignals::Instance()->EmitClosed(this);
 }
 
 bool SceneEditor2::Load(const DAVA::FilePath &path)
 {
-	bool ret = false;
-
-	structureSystem->LockSignals();
-
-	Entity * rootNode = GetRootNode(path);
-	if(rootNode)
-	{
-		ret = true;
-
-		DAVA::Vector<DAVA::Entity*> tmpEntities;
-		int entitiesCount = rootNode->GetChildrenCount();
-
-		// optimize scene
-		SceneFileV2 *sceneFile = new SceneFileV2();
-		sceneFile->OptimizeScene(rootNode);
-		sceneFile->Release();
-
-		// remember all child pointers, but don't add them to scene in this cycle
-		// because when entity is adding it is automatically removing from its old hierarchy
-		tmpEntities.reserve(entitiesCount);
-		for (DAVA::int32 i = 0; i < entitiesCount; ++i)
-		{
-			tmpEntities.push_back(rootNode->GetChild(i));
-		}
-
-		// now we can safely add entities into our hierarchy
-		for (DAVA::int32 i = 0; i < (DAVA::int32) tmpEntities.size(); ++i)
-		{
-			AddNode(tmpEntities[i]);
-		}
-
-		curScenePath = path;
+	bool ret = structureSystem->Init(path);
+    
+    if(ret)
+    {
+        curScenePath = path;
 		isLoaded = true;
-
+        
 		commandStack.SetClean(true);
-	}
-
-	structureSystem->Init();
-	structureSystem->UnlockSignals();
+    }
 
 	UpdateShadowColorFromLandscape();
 
-    SceneValidator::Instance()->ValidateSceneAndShowErrors(this);
+    SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
     
 	SceneSignals::Instance()->EmitLoaded(this);
 	return ret;
 }
 
-bool SceneEditor2::Save(const DAVA::FilePath &path)
+SceneFileV2::eError SceneEditor2::Save(const DAVA::FilePath & path, bool saveForGame /*= false*/)
 {
-	bool ret = false;
+	ExtractEditorEntities();
 
-	DAVA::Vector<DAVA::Entity *> allEntities;
-	DAVA::Vector<DAVA::Entity *> editorEntities;
-
-	// remember and remove all nodes, with name editor.*
-	{
-		GetChildNodes(allEntities);
-
-		DAVA::uint32 count = allEntities.size();
-		for(DAVA::uint32 i = 0; i < count; ++i)
-		{
-			if(allEntities[i]->GetName().find("editor.") != String::npos)
-			{
-				allEntities[i]->Retain();
-				editorEntities.push_back(allEntities[i]);
-
-				allEntities[i]->GetParent()->RemoveNode(allEntities[i]);
-			}
-		}
-	}
-
-	DAVA::SceneFileV2::eError err = SceneHelper::SaveScene(this, path);
-	ret = (DAVA::SceneFileV2::ERROR_NO_ERROR == err);
-
-	if(ret)
+	DAVA::SceneFileV2::eError err = Scene::Save(path, saveForGame);
+	if(DAVA::SceneFileV2::ERROR_NO_ERROR == err)
 	{
 		curScenePath = path;
 		isLoaded = true;
 
 		// mark current position in command stack as clean
+		wasChanged = false;
 		commandStack.SetClean(true);
 	}
 
-	// restore editor nodes
-	{
-		for(DAVA::uint32 i = 0; i < editorEntities.size(); ++i)
-		{
-			AddEditorEntity(editorEntities[i]);
-			editorEntities[i]->Release();
-		}
-	}
+	if(landscapeEditorDrawSystem)
+		landscapeEditorDrawSystem->SaveTileMaskTexture();
+
+	InjectEditorEntities();
 
 	SceneSignals::Instance()->EmitSaved(this);
-	return ret;
+
+	return err;
 }
 
-bool SceneEditor2::Save()
+void SceneEditor2::ExtractEditorEntities()
+{
+	DVASSERT(editorEntities.size() == 0);
+
+	DAVA::Vector<DAVA::Entity *> allEntities;
+	GetChildNodes(allEntities);
+
+	DAVA::uint32 count = allEntities.size();
+	for(DAVA::uint32 i = 0; i < count; ++i)
+	{
+		if(allEntities[i]->GetName().find("editor.") != String::npos)
+		{
+			allEntities[i]->Retain();
+			editorEntities.push_back(allEntities[i]);
+
+			allEntities[i]->GetParent()->RemoveNode(allEntities[i]);
+		}
+	}
+}
+
+void SceneEditor2::InjectEditorEntities()
+{
+	for(DAVA::int32 i = editorEntities.size() - 1; i >= 0; i--)
+	{
+		AddEditorEntity(editorEntities[i]);
+		editorEntities[i]->Release();
+	}
+
+	editorEntities.clear();
+}
+
+
+SceneFileV2::eError SceneEditor2::Save()
 {
 	return Save(curScenePath);
 }
@@ -228,11 +222,15 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
     exporter.SetOutFolder(projectPath + String("Data/3d/"));
 	exporter.SetGPUForExporting(newGPU);
 	Set<String> errorLog;
-	exporter.ExportScene(this, GetScenePath(), errorLog);
+
+	SceneEditor2 *clonedScene = CreateCopyForExport();
+	exporter.ExportScene(clonedScene, GetScenePath(), errorLog);
 	for (Set<String>::iterator iter = errorLog.begin(); iter != errorLog.end(); ++iter)
 	{
 		Logger::Error("Export error: %s", iter->c_str());
 	}
+
+	clonedScene->Release();
 	return (errorLog.size() == 0);
 }
 
@@ -281,14 +279,35 @@ void SceneEditor2::Exec(Command2 *command)
 	commandStack.Exec(command);
 }
 
+void SceneEditor2::ClearCommands(int commandId)
+{
+	commandStack.Clear(commandId);
+}
+
+const CommandStack* SceneEditor2::GetCommandStack() const
+{
+	return (&commandStack);
+}
+
 bool SceneEditor2::IsLoaded() const
 {
 	return isLoaded;
 }
 
+void SceneEditor2::SetHUDVisible(bool visible)
+{
+	isHUDVisible = visible;
+	hoodSystem->LockAxis(!visible);
+}
+
+bool SceneEditor2::IsHUDVisible() const
+{
+	return isHUDVisible;
+}
+
 bool SceneEditor2::IsChanged() const
 {
-	return (!commandStack.IsClean());
+	return ((!commandStack.IsClean()) || wasChanged);
 }
 
 void SceneEditor2::SetChanged(bool changed)
@@ -301,27 +320,39 @@ void SceneEditor2::Update(float timeElapsed)
 	Scene::Update(timeElapsed);
 	gridSystem->Update(timeElapsed);
 	cameraSystem->Update(timeElapsed);
-	collisionSystem->Update(timeElapsed);
+	
+	if(collisionSystem)
+		collisionSystem->Update(timeElapsed);
+
 	hoodSystem->Update(timeElapsed);
 	selectionSystem->Update(timeElapsed);
 	modifSystem->Update(timeElapsed);
-	landscapeEditorDrawSystem->Update(timeElapsed);
+
+	if(landscapeEditorDrawSystem)
+		landscapeEditorDrawSystem->Update(timeElapsed);
+
 	heightmapEditorSystem->Update(timeElapsed);
 	tilemaskEditorSystem->Update(timeElapsed);
 	customColorsSystem->Update(timeElapsed);
 	visibilityToolSystem->Update(timeElapsed);
 	rulerToolSystem->Update(timeElapsed);
-	structureSystem->Update(timeElapsed);
+	
+	if(structureSystem)
+		structureSystem->Update(timeElapsed);
+	
 	particlesSystem->Update(timeElapsed);
 	textDrawSystem->Update(timeElapsed);
-	editorLightSystem->Process();
+	
+	if(editorLightSystem)
+		editorLightSystem->Process();
 }
 
 void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
 {
 	gridSystem->ProcessUIEvent(event);
 	cameraSystem->ProcessUIEvent(event);
-	collisionSystem->ProcessUIEvent(event);
+	if(collisionSystem)
+		collisionSystem->ProcessUIEvent(event);
 	hoodSystem->ProcessUIEvent(event);
 	selectionSystem->ProcessUIEvent(event);
 	modifSystem->ProcessUIEvent(event);
@@ -330,7 +361,10 @@ void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
 	customColorsSystem->ProcessUIEvent(event);
 	visibilityToolSystem->ProcessUIEvent(event);
 	rulerToolSystem->ProcessUIEvent(event);
-	structureSystem->ProcessUIEvent(event);
+
+	if(structureSystem)
+		structureSystem->ProcessUIEvent(event);
+
 	particlesSystem->ProcessUIEvent(event);
 }
 
@@ -345,31 +379,56 @@ void SceneEditor2::Draw()
 	Scene::Draw();
     renderStats = RenderManager::Instance()->GetStats();
 
-	gridSystem->Draw();
-	cameraSystem->Draw();
-	collisionSystem->Draw();
-	selectionSystem->Draw();
-	modifSystem->Draw();
-	structureSystem->Draw();
-	tilemaskEditorSystem->Draw();
-	particlesSystem->Draw();
+	if(isHUDVisible)
+	{
+		gridSystem->Draw();
+		cameraSystem->Draw();
 
-	// should be last
-	hoodSystem->Draw();
-	textDrawSystem->Draw();
+		if(collisionSystem)
+			collisionSystem->Draw();
+
+		modifSystem->Draw();
+
+		if(structureSystem)
+			structureSystem->Draw();
+	}
+
+	tilemaskEditorSystem->Draw();
+
+	if(isHUDVisible)
+	{
+		particlesSystem->Draw();
+		debugDrawSystem->Draw();
+
+		// should be last
+		selectionSystem->Draw();
+		hoodSystem->Draw();
+		textDrawSystem->Draw();
+	}
 }
 
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 {
 	gridSystem->ProcessCommand(command, redo);
 	cameraSystem->ProcessCommand(command, redo);
-	collisionSystem->ProcessCommand(command, redo);
+
+	if(collisionSystem)
+		collisionSystem->ProcessCommand(command, redo);
+
 	selectionSystem->ProcessCommand(command, redo);
 	hoodSystem->ProcessCommand(command, redo);
 	modifSystem->ProcessCommand(command, redo);
-	structureSystem->ProcessCommand(command, redo);
+	
+	if(structureSystem)
+		structureSystem->ProcessCommand(command, redo);
+
 	particlesSystem->ProcessCommand(command, redo);
-	editorLightSystem->ProcessCommand(command, redo);
+
+	if(editorLightSystem)
+		editorLightSystem->ProcessCommand(command, redo);
+	
+	if(ownersSignatureSystem)
+		ownersSignatureSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )
@@ -408,7 +467,7 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 void SceneEditor2::UpdateShadowColorFromLandscape()
 {
 	// try to get shadow color for landscape
-	Entity *land = structureSystem->FindLandscapeEntity();
+	Entity *land = FindLandscapeEntity(this);
 	if(!land || !GetRenderSystem()) return;
 
 	KeyedArchive * props = land->GetCustomProperties();
@@ -420,7 +479,7 @@ void SceneEditor2::UpdateShadowColorFromLandscape()
 
 void SceneEditor2::SetShadowColor( const Color &color )
 {
-	Entity *land = structureSystem->FindLandscapeEntity();
+	Entity *land = FindLandscapeEntity(this);
 	if(!land) return;
 
 	KeyedArchive * props = land->GetCustomProperties();
@@ -464,3 +523,165 @@ const RenderManager::Stats & SceneEditor2::GetRenderStats() const
     return renderStats;
 }
 
+void SceneEditor2::DisableTools(int32 toolFlags)
+{
+	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+	{
+		Exec(new ActionDisableCustomColors(this));
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_VISIBILITY)
+	{
+		Exec(new ActionDisableVisibilityTool(this));
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+	{
+		Exec(new ActionDisableHeightmapEditor(this));
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+	{
+		Exec(new ActionDisableTilemaskEditor(this));
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_RULER)
+	{
+		Exec(new ActionDisableRulerTool(this));
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+	{
+		Exec(new ActionDisableNotPassable(this));
+	}
+}
+
+bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
+{
+	bool res = false;
+
+	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+	{
+		res |= customColorsSystem->IsLandscapeEditingEnabled();
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_VISIBILITY)
+	{
+		res |= visibilityToolSystem->IsLandscapeEditingEnabled();
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_HEIGHTMAP_EDITOR)
+	{
+		res |= heightmapEditorSystem->IsLandscapeEditingEnabled();
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_TILEMAP_EDITOR)
+	{
+		res |= tilemaskEditorSystem->IsLandscapeEditingEnabled();
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_RULER)
+	{
+		res |= rulerToolSystem->IsLandscapeEditingEnabled();
+	}
+	
+	if (toolFlags & LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN)
+	{
+		res |= landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
+	}
+
+	return res;
+}
+
+int32 SceneEditor2::GetEnabledTools()
+{
+	int32 toolFlags = 0;
+	
+	if (customColorsSystem->IsLandscapeEditingEnabled())
+	{
+		toolFlags |= LANDSCAPE_TOOL_CUSTOM_COLOR;
+	}
+	
+	if (visibilityToolSystem->IsLandscapeEditingEnabled())
+	{
+		toolFlags |= LANDSCAPE_TOOL_VISIBILITY;
+	}
+	
+	if (heightmapEditorSystem->IsLandscapeEditingEnabled())
+	{
+		toolFlags |= LANDSCAPE_TOOL_HEIGHTMAP_EDITOR;
+	}
+	
+	if (tilemaskEditorSystem->IsLandscapeEditingEnabled())
+	{
+		toolFlags |= LANDSCAPE_TOOL_TILEMAP_EDITOR;
+	}
+	
+	if (rulerToolSystem->IsLandscapeEditingEnabled())
+	{
+		toolFlags |= LANDSCAPE_TOOL_RULER;
+	}
+	
+	if (landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
+	{
+		toolFlags |= LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN;
+	}
+	
+	return toolFlags;
+}
+
+Entity* SceneEditor2::Clone( Entity *dstNode /*= NULL*/ )
+{
+	if(!dstNode)
+	{
+		DVASSERT_MSG(IsPointerToExactClass<SceneEditor2>(this), "Can clone only SceneEditor2");
+		dstNode = new SceneEditor2();
+	}
+	
+	return Scene::Clone(dstNode);
+}
+
+SceneEditor2 * SceneEditor2::CreateCopyForExport()
+{
+	SceneEditor2 *clonedScene = new SceneEditor2();
+	clonedScene->RemoveSystems();
+
+	return (SceneEditor2 *)Clone(clonedScene);
+}
+
+void SceneEditor2::RemoveSystems()
+{
+	if(editorLightSystem)
+	{
+		RemoveSystem(editorLightSystem);
+		SafeDelete(editorLightSystem);
+	}
+
+	if(structureSystem)
+	{
+		RemoveSystem(structureSystem);
+		SafeDelete(structureSystem);
+	}
+
+	if(landscapeEditorDrawSystem)
+	{
+		RemoveSystem(landscapeEditorDrawSystem);
+		SafeDelete(landscapeEditorDrawSystem);
+	}
+
+	if(collisionSystem)
+	{
+		RemoveSystem(collisionSystem);
+		SafeDelete(collisionSystem);
+	}
+	
+}
+
+void SceneEditor2::MarkAsChanged()
+{
+	if(!wasChanged)
+	{
+		wasChanged = true;
+		SceneSignals::Instance()->EmitModifyStatusChanged(this, wasChanged);
+	}
+}

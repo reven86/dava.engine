@@ -48,7 +48,6 @@
 #include "CommandLine/SceneExporter/SceneExporter.h"
 #include "CommandLine/SceneSaver/SceneSaver.h"
 #include "CommandLine/CommandLineManager.h"
-#include "CommandLine/Beast/BeastCommandLineTool.h"
 
 #include "../Qt/Scene/SceneData.h"
 #include "../Qt/Scene/SceneDataManager.h"
@@ -59,9 +58,7 @@
 #include "../Commands/SceneEditorScreenMainCommands.h"
 #include "../Commands/CommandsManager.h"
 #include "../Commands/FileCommands.h"
-#include "../Commands/ToolsCommands.h"
 
-#include "../Deprecated/ScenePreviewDialog.h"
 
 SceneEditorScreenMain::SceneEditorScreenMain()
 	:	UIScreen()
@@ -71,8 +68,6 @@ SceneEditorScreenMain::SceneEditorScreenMain()
 
 SceneEditorScreenMain::~SceneEditorScreenMain()
 {
-    SafeRelease(scenePreviewDialog);
-    
     SafeRelease(textureTrianglesDialog);
     SafeRelease(settingsDialog);
 
@@ -119,8 +114,6 @@ void SceneEditorScreenMain::InitControls()
     // add line after menu
     Rect fullRect = GetRect();
     AddLineControl(Rect(0, ControlsFactory::BUTTON_HEIGHT, fullRect.dx, LINE_HEIGHT));
-    
-    scenePreviewDialog = new ScenePreviewDialog();
 }
 
 void SceneEditorScreenMain::UnloadResources()
@@ -129,43 +122,10 @@ void SceneEditorScreenMain::UnloadResources()
 
 void SceneEditorScreenMain::WillAppear()
 {
-#if defined (__DAVAENGINE_WIN32__)
-    BeastCommandLineTool *beastTool = dynamic_cast<BeastCommandLineTool *>(CommandLineManager::Instance()->GetActiveCommandLineTool());
-    if(beastTool && (0 == CommandLineManager::Instance()->GetErrorsCount()))
-    {
-		FilePath scenePathname = beastTool->GetScenePathname();
-
-		String path = scenePathname.GetAbsolutePathname();
-		String dataSourceFolder = "/DataSource/3d/";
-		String::size_type pos = path.find(dataSourceFolder);
-		if(pos != String::npos)
-		{
-			EditorSettings::Instance()->SetProjectPath(path.substr(0, pos + 1));
-			EditorSettings::Instance()->SetDataSourcePath(path.substr(0, pos + dataSourceFolder.length()));
-		}
-
-		SceneData *levelScene = SceneDataManager::Instance()->SceneGetLevel();
-		DVASSERT(levelScene);
-
-        CommandsManager::Instance()->ExecuteAndRelease(new CommandOpenScene(scenePathname), levelScene->GetScene());
-    }
-#endif //#if defined (__DAVAENGINE_WIN32__)
 }
 
 void SceneEditorScreenMain::DidAppear()
 {
-#if defined (__DAVAENGINE_WIN32__)
-	BeastCommandLineTool *beastTool = dynamic_cast<BeastCommandLineTool *>(CommandLineManager::Instance()->GetActiveCommandLineTool());
-	if(beastTool && (0 == CommandLineManager::Instance()->GetErrorsCount()))
-    {
-        Update(0.1f);
-
-		SceneData *levelScene = SceneDataManager::Instance()->SceneGetLevel();
-		DVASSERT(levelScene);
-
-        CommandsManager::Instance()->ExecuteAndRelease(new CommandBeast(), levelScene->GetScene());
-    }
-#endif //#if defined (__DAVAENGINE_WIN32__)
 }
 
 
@@ -218,8 +178,6 @@ void SceneEditorScreenMain::ReleaseBodyList()
 
 void SceneEditorScreenMain::AddBodyItem(const WideString &text, bool isCloseable)
 {
-    HideScenePreview();
-    
     EditorScene *scene = SceneDataManager::Instance()->RegisterNewScene();
     SceneDataManager::Instance()->SetActiveScene(scene);
     
@@ -475,18 +433,6 @@ void SceneEditorScreenMain::Input(DAVA::UIEvent *event)
     }
 }
 
-void SceneEditorScreenMain::OpenFileAtScene(const FilePath &pathToFile)
-{
-	// In case the current scene isn't the "level" one, switch to it firstly.
-	if (SceneDataManager::Instance()->SceneGetActive() != SceneDataManager::Instance()->SceneGetLevel())
-	{
-		ActivateLevelBodyItem();
-	}
-
-    //опен всегда загружает только уровень, но не отдельные части сцены
-    SceneDataManager::Instance()->EditLevelScene(pathToFile);
-}
-
 void SceneEditorScreenMain::ShowTextureTriangles(PolygonGroup *polygonGroup)
 {
     ReleaseResizedControl(textureTrianglesDialog);
@@ -536,62 +482,6 @@ void SceneEditorScreenMain::UpdateModificationPanel(void)
 	{
 		bodies[i]->bodyControl->UpdateModificationPanel();
 	}
-}
-
-void SceneEditorScreenMain::SaveToFolder(const FilePath & folder)
-{
-    BodyItem *iBody = FindCurrentBody();
-	iBody->bodyControl->PushEditorEntities();
-    
-	// Get project path
-//     KeyedArchive *keyedArchieve = EditorSettings::Instance()->GetSettings();
-//     FilePath dataSourcePath = EditorSettings::Instance()->GetDataSourcePath();
-	SceneData *sceneData = SceneDataManager::Instance()->SceneGetActive();
-
-
-    SceneSaver sceneSaver;
-//    sceneSaver.SetInFolder(dataSourcePath);
-	sceneSaver.SetInFolder(sceneData->GetScenePathname().GetDirectory());
-    sceneSaver.SetOutFolder(folder);
-    
-    Set<String> errorsLog;
-    sceneSaver.SaveScene(iBody->bodyControl->GetScene(), sceneData->GetScenePathname(), errorsLog);
-    
-	iBody->bodyControl->PopEditorEntities();
-    
-    ShowErrorDialog(errorsLog);
-}
-
-void SceneEditorScreenMain::ExportAs(eGPUFamily forGPU)
-{
-	SceneData *sceneData = SceneDataManager::Instance()->SceneGetActive();
-	if(sceneData->GetScenePathname().IsEmpty())
-	{
-		ShowErrorDialog("Can't export not saved scene.");
-		return;
-	}
-
-	BodyItem *iBody = FindCurrentBody();
-	iBody->bodyControl->PushEditorEntities();
-    
-    // Get project path
-    KeyedArchive *keyedArchieve = EditorSettings::Instance()->GetSettings();
-    FilePath projectPath(keyedArchieve->GetString(String("ProjectPath")));
-    
-    SceneExporter exporter;
-    
-    exporter.SetInFolder(projectPath + String("DataSource/3d/"));
-    exporter.SetOutFolder(projectPath + String("Data/3d/"));
-    
-    exporter.SetGPUForExporting(forGPU);
-    
-    //TODO: how to be with removed nodes?
-    Set<String> errorsLog;
-    exporter.ExportScene(iBody->bodyControl->GetScene(), sceneData->GetScenePathname(), errorsLog);
-    
-	iBody->bodyControl->PopEditorEntities();
-    
-    ShowErrorDialog(errorsLog);
 }
 
 
@@ -831,18 +721,3 @@ void SceneEditorScreenMain::ActivateBodyItem(BodyItem* activeItem, bool forceRes
 	SceneDataManager::Instance()->SetActiveScene(activeItem->bodyControl->GetScene());
 }
 
-void SceneEditorScreenMain::ShowScenePreview(const FilePath & scenePathname)
-{
-    if(scenePreviewDialog)
-    {
-        scenePreviewDialog->Show(scenePathname);
-    }
-}
-
-void SceneEditorScreenMain::HideScenePreview()
-{
-    if(scenePreviewDialog)
-    {
-        scenePreviewDialog->Close();
-    }
-}

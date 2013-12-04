@@ -36,7 +36,7 @@
 
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Tools/QtPropertyEditor/QtPropertyData.h"
-#include "Tools/QtPropertyEditor/QtProperyData/QtPropertyDataMetaObject.h"
+#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 
 class TextureProperties : public QtPropertyEditor
 {
@@ -100,19 +100,18 @@ protected:
 	void ReloadEnumFilters();
 	void ReloadProperties();
 
-	QtPropertyItem *AddHeader(const char* text);
-	QtPropertyDataMetaObject* AddPropertyItem(const char *name, DAVA::BaseObject *object, QtPropertyItem *parent);
+	QtPropertyDataMetaObject* AddPropertyItem(const char *name, DAVA::InspBase *object, QtPropertyItem *parent);
 	void SetPropertyItemValidValues(QtPropertyDataMetaObject* item, EnumMap *validValues);
 
 	void LoadCurSizeToProp();
 	void SaveCurSizeFromProp();
 
 protected slots:
-	void PropMipMapChanged();
-	void PropFormatChanged();
-	void PropFilterChanged();
-	void PropWrapChanged();
-	void PropSizeChanged();
+	void PropMipMapChanged(QtPropertyData::ValueChangeReason reason);
+	void PropFormatChanged(QtPropertyData::ValueChangeReason reason);
+	void PropFilterChanged(QtPropertyData::ValueChangeReason reason);
+	void PropWrapChanged(QtPropertyData::ValueChangeReason reason);
+	void PropSizeChanged(QtPropertyData::ValueChangeReason reason);
 };
 
 #endif // __TEXTURE_PROPERTIES_H__

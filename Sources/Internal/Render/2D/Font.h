@@ -59,9 +59,10 @@ public:
 			TYPE_FT = 0	//!< freetype-based
 		,	TYPE_GRAPHICAL //!< sprite-based
 	};
-	
-	Font();
+protected:
 	virtual ~Font();
+public:
+	Font();
 
 	/**
 		\brief Set global DPI(dots per inch).

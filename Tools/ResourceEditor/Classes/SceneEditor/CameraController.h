@@ -38,9 +38,10 @@ namespace DAVA
 {
 class CameraController : public BaseObject
 {
+protected:
+    ~CameraController();
 public:
     CameraController(float32 newSpeed);
-    ~CameraController();
     
     virtual void SetScene(Scene *scene);
     virtual void Input(UIEvent * event);
@@ -63,9 +64,10 @@ protected:
     
 class WASDCameraController : public CameraController
 {
+protected:
+    ~WASDCameraController();
 public:
     WASDCameraController(float32 newSpeed);
-    ~WASDCameraController();
     
     virtual void Input(UIEvent * event);
     

@@ -71,7 +71,7 @@ MaterialCompiler::eCompileResult MaterialCompiler::Compile(MaterialGraph * _mate
     
     Shader * shader = new Shader();
     shader->Load(materialCompiledVshName, materialCompiledFshName);
-    shader->Recompile();
+    shader->RecompileAsync();
     
     currentMaterial->SetShader(0, shader);
     

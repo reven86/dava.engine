@@ -88,6 +88,8 @@
 
 KeyedArchiveTest::KeyedArchiveTest()
 : TestTemplate<KeyedArchiveTest>("KeyedArchiveTest")
+, archiveToSave( new KeyedArchive() )
+, loadedArchive( new KeyedArchive() )
 {
 	//RegisterFunction(this, &KeyedArchiveTest::WriteArchive, "WriteArchive", NULL);
 	RegisterFunction(this, &KeyedArchiveTest::LoadOldArchive, "LoadOldArchive", NULL);
@@ -98,7 +100,7 @@ KeyedArchiveTest::KeyedArchiveTest()
 
 void KeyedArchiveTest::LoadResources()
 {
-    FillArchive(&archiveToSave);
+    FillArchive(archiveToSave.Get());
 }
 
 
@@ -110,7 +112,7 @@ void KeyedArchiveTest::WriteArchive(PerfFuncData * data)
 {
     bool written = false;
 
-    written = archiveToSave.Save(FILEPATHNEWFORMAT);
+    written = archiveToSave->Save(FILEPATHNEWFORMAT);
 
     TEST_VERIFY(false != written);
 }
@@ -119,9 +121,9 @@ void KeyedArchiveTest::LoadOldArchive(PerfFuncData * data)
 {
     bool loaded = false;
     
-    loadedArchive.DeleteAllKeys();
+    loadedArchive->DeleteAllKeys();
 
-    loaded = loadedArchive.Load(FILEPATHOLDFORMAT);
+    loaded = loadedArchive->Load(FILEPATHOLDFORMAT);
     
     TEST_VERIFY(false != loaded);
 }
@@ -130,16 +132,16 @@ void KeyedArchiveTest::LoadNewArchive(PerfFuncData * data)
 {
     bool loaded = false;
     
-    loadedArchive.DeleteAllKeys();
+    loadedArchive->DeleteAllKeys();
        
-    loaded = loadedArchive.Load(FILEPATHNEWFORMAT);
+    loaded = loadedArchive->Load(FILEPATHNEWFORMAT);
     
     TEST_VERIFY(false != loaded);
 }
 
 void KeyedArchiveTest::TestArchiveAccordingDefines(PerfFuncData * data)
 {
-    KeyedArchive* pWorkingKA = &loadedArchive;
+    KeyedArchive* pWorkingKA = loadedArchive.Get();
     
     TEST_VERIFY(pWorkingKA->GetBool (BOOLMAPID)==BOOLVALUE);
     TEST_VERIFY(pWorkingKA->GetInt32(INT32MAPID)==INT32VALUE);

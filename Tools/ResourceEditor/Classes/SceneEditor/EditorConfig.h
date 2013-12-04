@@ -39,6 +39,8 @@ class PropertyList;
 
 class PropertyDescription : public BaseObject
 {
+protected:
+	~PropertyDescription(){}
 public:
 	PropertyDescription() : BaseObject(), type(0) {};
 

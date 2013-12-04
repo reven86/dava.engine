@@ -57,6 +57,13 @@ public:
 		DropingForce
 	};
 
+	enum CustomFlags
+	{
+		CF_None			= 0x0000,
+		CF_Disabled		= 0x0001,
+		CF_Invisible	= 0x0002,
+	};
+
 	static const char* mimeFormatEntity;
 	static const char* mimeFormatLayer;
 	static const char* mimeFormatForce;
@@ -78,6 +85,9 @@ public:
 
 	void SetLocked(const QModelIndex &index, bool locked);
 	bool GetLocked(const QModelIndex &index) const;
+
+	QVector<QIcon> GetCustomIcons(const QModelIndex &index) const;
+	int GetCustomFlags(const QModelIndex &index) const;
 
 	// drag and drop support
 	Qt::DropActions supportedDropActions() const;
@@ -108,7 +118,6 @@ protected:
 
 protected slots:
 	void ItemChanged(QStandardItem * item);
-	void StructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
 };
 
 class SceneTreeFilteringModel : public QSortFilterProxyModel

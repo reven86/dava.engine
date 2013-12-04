@@ -32,16 +32,16 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Platform/Mutex.h"
+#endif //#if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA 
 {
-#if defined(__DAVAENGINE_ANDROID__)
-class Mutex;
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+
 class SystemTimer : public Singleton<SystemTimer> 
 {
     friend class Core;
-    
     
 #if defined(__DAVAENGINE_WIN32__)
 	LARGE_INTEGER	liFrequency;
@@ -91,7 +91,7 @@ public:
     
     
 #if defined(__DAVAENGINE_ANDROID__)
-	Mutex  *tickMutex;
+	Mutex  tickMutex;
 	uint64 GetTickCount();
 	void InitTickCount();
 #endif //#if defined(__DAVAENGINE_ANDROID__)

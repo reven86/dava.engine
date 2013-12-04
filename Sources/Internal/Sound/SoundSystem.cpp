@@ -46,7 +46,7 @@ SoundSystem::SoundSystem(int32 maxChannels)
 	FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
 	FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
 	FMOD_VERIFY(fmodEventSystem->init(maxChannels, FMOD_INIT_NORMAL, 0));
-    FMOD_VERIFY(fmodSystem->set3DSettings(1.f, 1.f, 0.4f));
+    FMOD_VERIFY(fmodSystem->set3DSettings(1.f, 1.f, 1.0f));
 }
 
 SoundSystem::~SoundSystem()
@@ -58,7 +58,7 @@ SoundSystem::~SoundSystem()
 	}
     soundGroups.Clear();
 
-	FMOD_VERIFY(fmodSystem->release());
+	FMOD_VERIFY(fmodEventSystem->release());
 }
 
 void SoundSystem::LoadFEV(const FilePath & filePath)

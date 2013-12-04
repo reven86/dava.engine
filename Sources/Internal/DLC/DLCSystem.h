@@ -143,6 +143,8 @@ private:
 // 
 class DLCSource: public BaseObject
 {
+protected:
+    ~DLCSource(){}
 public:
     DLCSource(const YamlNode* node);
     DLCSource(File * file);

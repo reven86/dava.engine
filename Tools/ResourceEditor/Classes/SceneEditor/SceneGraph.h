@@ -38,10 +38,10 @@ using namespace DAVA;
 
 class SceneGraph: public GraphBase
 {
-    
+protected:
+    virtual ~SceneGraph();
 public:
     SceneGraph(GraphBaseDelegate *newDelegate, const Rect &rect);
-    virtual ~SceneGraph();
     
     virtual void SelectNode(BaseObject *node);
     virtual void RemoveWorkingNode();

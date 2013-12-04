@@ -59,21 +59,28 @@ SceneValidator::~SceneValidator()
 {
 }
 
-bool SceneValidator::ValidateSceneAndShowErrors(Scene *scene)
+bool SceneValidator::ValidateSceneAndShowErrors(Scene *scene, const DAVA::FilePath &scenePath)
 {
     errorMessages.clear();
 
-    ValidateScene(scene, errorMessages);
+    ValidateScene(scene, scenePath, errorMessages);
 
     ShowErrorDialog(errorMessages);
     return (!errorMessages.empty());
 }
 
 
-void SceneValidator::ValidateScene(Scene *scene, Set<String> &errorsLog)
+void SceneValidator::ValidateScene(Scene *scene, const DAVA::FilePath &scenePath, Set<String> &errorsLog)
 {
     if(scene) 
     {
+		DAVA::String tmp = scenePath.GetAbsolutePathname();
+		size_t pos = tmp.find("/Data");
+		if(pos != String::npos)
+		{
+			SetPathForChecking(tmp.substr(0, pos + 1));
+		}
+
         ValidateSceneNode(scene, errorsLog);
 
         for (Set<Entity*>::iterator it = emptyNodesForDeletion.begin(); it != emptyNodesForDeletion.end(); ++it)
@@ -182,10 +189,12 @@ void SceneValidator::ValidateRenderComponent(Entity *ownerNode, Set<String> &err
         ValidateRenderBatch(ownerNode, renderBatch, errorsLog);
     }
     
-    Landscape *landscape = dynamic_cast<Landscape *>(ro);
-    if(landscape)
+	if(ro->GetType() == RenderObject::TYPE_LANDSCAPE)
     {
+		Landscape *landscape = static_cast<Landscape *>(ro);
         ValidateLandscape(landscape, errorsLog);
+
+		ValidateCustomColorsTexture(ownerNode, errorsLog);
     }
 }
 
@@ -240,39 +249,54 @@ void SceneValidator::ValidateParticleEmitterComponent(DAVA::Entity *ownerNode, S
 		return;
 	}
 
-	LodComponent * lodComponent = GetLodComponent(ownerNode);
-	if (!lodComponent)
+	if (GetLodComponent(ownerNode) == NULL)
 	{
-		lodComponent = new LodComponent();
-		ownerNode->AddComponent(lodComponent);		
+		ownerNode->AddComponent(ScopedPtr<LodComponent> (new LodComponent()));		
 	}
 
 	ValidateParticleEmitter(emitter, errorsLog);
+	
 }
 
 bool SceneValidator::ValidateParticleEmitter(ParticleEmitter* emitter, Set<String> &errorsLog)
 {
+	
+
 	if (!emitter)
 	{
 		return true;
 	}
-	
-	if (emitter->Is3DFlagCorrect())
+
+	//validate layers
+	bool validationResult = true;
+	for (int32 i = 0; i<emitter->GetLayers().size(); ++i)
 	{
-		return true;
+		if (emitter->GetLayers()[i]->IsFrameBlendEnabled()&&(emitter->GetLayers()[i]->GetSprite()->GetFrameCount()==1))
+		{
+			String validationMsg = emitter->GetConfigPath().GetAbsolutePathname().c_str();			
+			validationMsg += " - layer ";
+			validationMsg += emitter->GetLayers()[i]->layerName;
+			validationMsg += " have \"Enable frame blending\" checked while sprite have only 1 frame. Frame blending would just waste time";
+			errorsLog.insert(validationMsg);
+			validationResult = false;
+		}
 	}
 	
-	// Don't use Format() helper here - the string with path might be too long for Format().
-	String validationMsg = ("\"3d\" flag value is wrong for Particle Emitter Configuration file ");
-	validationMsg += emitter->GetConfigPath().GetAbsolutePathname().c_str();
-	validationMsg += ". Please verify whether you are using the correct configuration file.\n\"3d\" flag for this Particle Emitter will be reset to TRUE.";
-	errorsLog.insert(validationMsg);
-	
-	// Yuri Coder, 2013/05/08. Since Particle Editor works with 3D Particles only - have to set this flag
-	// manually.
-	emitter->Set3D(true);
-	
-	return false;
+	if (!emitter->Is3DFlagCorrect())
+	{
+		// Don't use Format() helper here - the string with path might be too long for Format().
+		String validationMsg = ("\"3d\" flag value is wrong for Particle Emitter Configuration file ");
+		validationMsg += emitter->GetConfigPath().GetAbsolutePathname().c_str();
+		validationMsg += ". Please verify whether you are using the correct configuration file.\n\"3d\" flag for this Particle Emitter will be reset to TRUE.";
+		errorsLog.insert(validationMsg);
+
+		// Yuri Coder, 2013/05/08. Since Particle Editor works with 3D Particles only - have to set this flag
+		// manually.
+		emitter->Set3D(true);
+		validationResult = false;
+	}
+			
+	return validationResult;
 }
 
 void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog)
@@ -319,7 +343,7 @@ void SceneValidator::ValidateMaterial(Material *material, Set<String> &errorsLog
             ValidateTexture(texture, material->GetTextureName((Material::eTextureLevel)iTex), Format("Material: %s. TextureLevel %d.", material->GetName().c_str(), iTex), errorsLog);
             
             FilePath matTexName = material->GetTextureName((Material::eTextureLevel)iTex);
-            if(!IsTextureDescriptorPath(matTexName))
+            if(!matTexName.IsEmpty() && !IsTextureDescriptorPath(matTexName))
             {
                 material->SetTexture((Material::eTextureLevel)iTex, TextureDescriptor::GetDescriptorPathname(matTexName));
             }
@@ -370,6 +394,12 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
 			{
 				ValidateLandscapeTexture(landscape, texLevel, errorsLog);
 			}
+
+			Color color = landscape->GetTileColor(texLevel);
+			if (!ValidateColor(color))
+			{
+				landscape->SetTileColor(texLevel, color);
+			}
 		}
 	}
 	else
@@ -388,7 +418,7 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
 			ValidateLandscapeTexture(landscape, texLevel, errorsLog);
 		}
 	}
-
+    
 
 	//validate heightmap
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), String("Landscape. Heightmap."));
@@ -447,7 +477,7 @@ void SceneValidator::ValidateTexture(Texture *texture, const FilePath &texturePa
 {
 	if(!texture) return;
 	
-	String path = texturePathname.GetRelativePathname(EditorSettings::Instance()->GetProjectPath());
+	String path = texturePathname.GetRelativePathname(pathForChecking);
 	String textureInfo = path + " for object: " + validatedObjectName;
 
 	if(texture->IsPinkPlaceholder())
@@ -716,7 +746,39 @@ bool SceneValidator::IsTextureDescriptorPath(const FilePath &path)
 	return path.IsEqualToExtension(TextureDescriptor::GetDescriptorExtension());
 }
 
+void SceneValidator::ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog)
+{
+	KeyedArchive* customProps = landscapeEntity->GetCustomProperties();
+	if(customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP))
+	{
+		String currentSaveName = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
+		FilePath path = "/" + currentSaveName;
+		if(!path.IsEqualToExtension(".png"))
+		{
+			errorsLog.insert("Custom colors texture has to have .png extension.");
+		}
+        
+        String::size_type foundPos = currentSaveName.find("DataSource/3d/");
+        if(String::npos == foundPos)
+        {
+			errorsLog.insert("Custom colors texture has to begin from DataSource/3d/.");
+        }
+	}
+}
 
+bool SceneValidator::ValidateColor(Color& color)
+{
+	bool ok = true;
+	for(int32 i = 0; i < 4; ++i)
+	{
+		if (color.color[i] < 0.f || color.color[i] > 1.f)
+		{
+			color.color[i] = Clamp(color.color[i], 0.f, 1.f);
+			ok = false;
+		}
+	}
+	return ok;
+}
 
 
 

@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class HashMapTest : public TestTemplate<HashMapTest>
 {
+protected:
+    ~HashMapTest(){}
 public:
 	HashMapTest();
 

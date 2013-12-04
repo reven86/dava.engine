@@ -42,11 +42,11 @@ public:
 	void SetInputDir(const FilePath & inputDir);
 	void SetOutputDir(const FilePath & outputDir);
 
-	void PackLightmaps();
-	void PackTextures();
+	void PackLightmaps(DAVA::eGPUFamily gpu);
+	void PackTextures(DAVA::eGPUFamily gpu);
 
 protected:
-	void PerformPack(bool isLightmapPacking);
+	void PerformPack(bool isLightmapPacking, DAVA::eGPUFamily gpu);
 
 	FilePath inputDir;
 	FilePath outputDir;

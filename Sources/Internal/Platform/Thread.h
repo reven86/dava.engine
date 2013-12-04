@@ -40,11 +40,6 @@
 #include <pthread.h>
 #endif
 
-#if defined (__DAVAENGINE_ANDROID__)
-	#include <EGL/eglplatform.h>
-	#include <EGL/egl.h>
-#endif //#if defined (__DAVAENGINE_ANDROID__)
-
 namespace DAVA
 {
 /**
@@ -78,6 +73,46 @@ public:
 		STATE_RUNNING,
 		STATE_ENDED
 	};
+
+	class ThreadId
+	{
+#if defined (__DAVAENGINE_WIN32__)
+	public:
+		bool operator<(const ThreadId & otherThread) const 
+		{ 
+			return internalTid < otherThread.internalTid; 
+		}
+
+	private:
+		ThreadId(DWORD _internalTid = 0) 
+		{ 
+			internalTid = _internalTid; 
+		}
+		bool operator==(const ThreadId & otherThread) const
+		{ 
+			return internalTid == otherThread.internalTid; 
+		}
+		DWORD internalTid;
+#else
+    public:
+		bool operator<(const ThreadId & otherThread) const
+		{
+			return internalTid < otherThread.internalTid;
+		}
+        
+    private:
+        ThreadId(pthread_t _internalTid = 0)
+		{
+			internalTid = _internalTid;
+		}
+		bool operator==(const ThreadId & otherThread) const
+		{
+			return internalTid == otherThread.internalTid;
+		}
+		pthread_t internalTid;
+#endif
+		friend class Thread;
+	};
 	
 	/**
 		\brief static function to detect if current thread is main thread of application
@@ -105,13 +140,6 @@ public:
 	*/
 	eThreadState	GetState();
 
-	/**
-		\brief this function is needed to copy gl context from calling thread to this thread
-		If you call it before thread start it will copy OpenGL context to this thread
-		It will do the same thing with DirectX device, so main purpose of the function is to make GL / DX objects
-	*/
-	void			EnableCopyContext() { needCopyContext = true; }//setting current context in new thread
-
     /**
         Wrapp pthread wait, signal and broadcast
 	*/
@@ -131,18 +159,24 @@ public:
      */
     static void SleepThread(uint32 timeMS);
 
+	static ThreadId GetCurrentThreadId();
+
+	void SetThreadId(const ThreadId & threadId);
+	ThreadId GetThreadId();
+
 private:
+    ~Thread() {};
 	Thread() {};
 	Thread(const Thread& t);
 	Thread(const Message& msg);
 	
-	Message			msg;
-	eThreadState		state;
-	bool				needCopyContext;
+	Message	msg;
+	eThreadState state;
+
+	ThreadId threadId;
+	static ThreadId mainThreadId;
 	
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	void		* glContext;
-
 	#if defined (__DAVAENGINE_NPAPI__)
 		CGLContextObj npAPIGLContext;
 	#endif // #if defined (__DAVAENGINE_NPAPI__)
@@ -151,43 +185,22 @@ private:
 	void		StartMacOS();
 	static void	InitMacOS();
 #elif defined (__DAVAENGINE_WIN32__)
-
-	static DWORD	mainThreadId;
-
 public:
 	static HDC		currentDC;
 	static HGLRC	secondaryContext;
 
 private:
 	void		StartWin32();
-	HANDLE		handle;
-	DWORD		tid;
 	friend DWORD WINAPI ThreadFunc(void* param);
 public:
-	/* 
-		Note: This function called from Core::Create. Core::Create must be always called from main thread.
-	*/
-	static void		InitMainThread();
-
+	static void	InitMainThread();
 
 #elif defined(__DAVAENGINE_ANDROID__)
 private:
 	friend void	* PthreadMain(void * param);
-	void		StartAndroid();
-    
-    static pid_t mainThreadId;
-    
-	static EGLContext currentContext;
-	static EGLDisplay currentDisplay;
-	static EGLSurface currentDrawSurface;
-	static EGLSurface currentReadSurface;
-
-	EGLContext localContext;
-
+	void StartAndroid();
 public:
-
-	static void		InitMainThread();
-
+	static void	InitMainThread();
 	#else //PLATFORMS
 	// other platforms
 #endif //PLATFORMS	

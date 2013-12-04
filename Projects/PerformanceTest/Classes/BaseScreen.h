@@ -61,6 +61,8 @@ public:
 
 class BaseScreen: public UIScreen
 {
+protected:
+	~BaseScreen(){}
 public:
 
 	BaseScreen();

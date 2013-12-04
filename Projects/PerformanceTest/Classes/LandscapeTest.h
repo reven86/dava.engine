@@ -42,7 +42,8 @@ class LandscapeTest: public TestTemplate<LandscapeTest>
     {
         TEST_FRAMES_COUNT = 100
     };
-    
+protected:
+    ~LandscapeTest(){}
 public:
 	LandscapeTest(const String &testName, Landscape::eTiledShaderMode mode);
 

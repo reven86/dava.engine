@@ -32,7 +32,6 @@
 #include "CollisionSystem.h"
 #include "SelectionSystem.h"
 #include "ModifSystem.h"
-#include "LandscapeEditorDrawSystem.h"
 #include "../SceneEditor2.h"
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
@@ -50,11 +49,12 @@ VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
 ,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	originalImage(NULL)
 ,	state(VT_STATE_NORMAL)
+,	textureLevel(Landscape::TEXTURE_TILE_FULL)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.png");
+	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
 	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
 
-	crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.png");
+	crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
 	crossTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
 
 	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
@@ -74,37 +74,28 @@ bool VisibilityToolSystem::IsLandscapeEditingEnabled() const
 	return enabled;
 }
 
-bool VisibilityToolSystem::IsCanBeEnabled()
+LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::IsCanBeEnabled()
 {
-	SceneEditor2* scene = dynamic_cast<SceneEditor2*>(GetScene());
-	DVASSERT(scene);
-	
-	bool canBeEnabled = true;
-//	canBeEnabled &= !(scene->visibilityToolSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->heightmapEditorSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->tilemaskEditorSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->rulerToolSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->customColorsSystem->IsLandscapeEditingEnabled());
-	canBeEnabled &= !(scene->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled());
-
-	return canBeEnabled;
+	return drawSystem->VerifyLandscape();
 }
 
-bool VisibilityToolSystem::EnableLandscapeEditing()
+LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditing()
 {
 	if (enabled)
 	{
-		return true;
+		return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 	}
-
-	if (!IsCanBeEnabled())
+	
+	LandscapeEditorDrawSystem::eErrorType canBeEnabledError = IsCanBeEnabled();
+	if ( canBeEnabledError!= LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
-		return false;
+		return canBeEnabledError;
 	}
-
-	if (!drawSystem->EnableCustomDraw())
+	
+	LandscapeEditorDrawSystem::eErrorType enableCustomDrawError = drawSystem->EnableCustomDraw();
+	if (enableCustomDrawError != LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS)
 	{
-		return false;
+		return enableCustomDrawError;
 	}
 
 	SetState(VT_STATE_NORMAL);
@@ -123,7 +114,7 @@ bool VisibilityToolSystem::EnableLandscapeEditing()
 	PrepareConfig();
 
 	enabled = true;
-	return enabled;
+	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 bool VisibilityToolSystem::DisableLandscapeEdititing()
@@ -159,7 +150,6 @@ void VisibilityToolSystem::Update(DAVA::float32 timeElapsed)
 	{
 		if (prevCursorPos != cursorPosition)
 		{
-			UpdateBrushTool(timeElapsed);
 			prevCursorPos = cursorPosition;
 		}
 	}
@@ -179,7 +169,14 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		return;
 	}
 
-	if (event->tid == UIEvent::BUTTON_1)
+	if (UIEvent::PHASE_KEYCHAR == event->phase)
+	{
+		if (event->tid == DVKEY_ESCAPE)
+		{
+			SetState(VT_STATE_NORMAL);
+		}
+	}
+	else if (event->tid == UIEvent::BUTTON_1)
 	{
 		Vector3 point;
 
@@ -188,7 +185,6 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 			case UIEvent::PHASE_BEGAN:
 				if (isIntersectsLandscape)
 				{
-					UpdateToolImage();
 					StoreOriginalState();
 					editingIsEnabled = true;
 				}
@@ -238,31 +234,11 @@ void VisibilityToolSystem::UpdateCursorPosition(int32 landscapeSize)
 
 		drawSystem->SetCursorPosition(cursorPosition);
 	}
-}
-
-void VisibilityToolSystem::UpdateToolImage(bool force)
-{
-}
-
-Image* VisibilityToolSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
-{
-	Texture* toolTexture = Texture::CreateFromFile(filePath);
-	if (!toolTexture)
+	else
 	{
-		return NULL;
+		// hide cursor
+		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
 	}
-
-	SafeRelease(toolImageSprite);
-	toolImageSprite = Sprite::CreateFromTexture(toolTexture, 0.f, 0.f, sideSize, sideSize);
-	toolImageSprite->GetTexture()->GeneratePixelesation();
-
-	SafeRelease(toolTexture);
-
-	return NULL;
-}
-
-void VisibilityToolSystem::UpdateBrushTool(float32 timeElapsed)
-{
 }
 
 void VisibilityToolSystem::ResetAccumulatorRect()
@@ -278,15 +254,8 @@ void VisibilityToolSystem::AddRectToAccumulator(const Rect &rect)
 
 Rect VisibilityToolSystem::GetUpdatedRect()
 {
-	int32 textureSize = drawSystem->GetVisibilityToolProxy()->GetSprite()->GetSize().x;
 	Rect r = updatedRectAccumulator;
-
-	r.x = (float32)Clamp((int32)updatedRectAccumulator.x, 0, textureSize - 1);
-	r.y = (float32)Clamp((int32)updatedRectAccumulator.y, 0, textureSize - 1);
-	r.dx = Clamp((updatedRectAccumulator.x + updatedRectAccumulator.dx),
-				 0.f, (float32)textureSize - 1.f) - updatedRectAccumulator.x;
-	r.dy = Clamp((updatedRectAccumulator.y + updatedRectAccumulator.dy),
-				 0.f, (float32)textureSize - 1.f) - updatedRectAccumulator.y;
+	drawSystem->ClampToTexture(textureLevel, r);
 
 	return r;
 }
@@ -428,7 +397,7 @@ void VisibilityToolSystem::SetVisibilityAreaInternal()
 		Vector2 visibilityPoint = drawSystem->GetVisibilityToolProxy()->GetVisibilityPoint();
 
 		Vector3 point(visibilityPoint);
-		point.z = drawSystem->GetHeightAtPoint(drawSystem->TexturePointToHeightmapPoint(visibilityPoint));
+		point.z = drawSystem->GetHeightAtPoint(drawSystem->TexturePointToHeightmapPoint(textureLevel, visibilityPoint));
 		point.z += visibilityPointHeight;
 
 		Vector<Vector3> resP;
@@ -464,7 +433,7 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 	Vector2 SpectatorCoords2D(spectatorCoords.x, spectatorCoords.y);
 
 	// get source point in propper coords system
-	Vector3 sourcePoint(drawSystem->TexturePointToLandscapePoint(SpectatorCoords2D));
+	Vector3 sourcePoint(drawSystem->TexturePointToLandscapePoint(textureLevel, SpectatorCoords2D));
 
 	sourcePoint.z = spectatorCoords.z;
 
@@ -483,7 +452,7 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 			for(uint32 y = 0; y < sideLength; ++y)
 			{
 				float yOfPoint = startOfCounting.y + density * y;
-				float32 zOfPoint = drawSystem->GetHeightAtTexturePoint(Vector2(xOfPoint, yOfPoint));
+				float32 zOfPoint = drawSystem->GetHeightAtTexturePoint(textureLevel, Vector2(xOfPoint, yOfPoint));
 				zOfPoint += heightValues[layerIndex];
 				Vector3 pointToInsert(xOfPoint, yOfPoint, zOfPoint);
 				yLine.push_back(pointToInsert);
@@ -495,13 +464,13 @@ void VisibilityToolSystem::PerformHeightTest(Vector3 spectatorCoords,
 
 	colorizedPoints->clear();
 
-	float32 textureSize = drawSystem->GetTextureSize();
+	float32 textureSize = drawSystem->GetTextureSize(textureLevel);
 	Rect textureRect(Vector2(0.f, 0.f), Vector2(textureSize, textureSize));
 	for(uint32 x = 0; x < sideLength; ++x)
 	{
 		for(uint32 y = 0; y < sideLength; ++y)
 		{
-			Vector3 target(drawSystem->TexturePointToLandscapePoint(Vector2(points[0][x][y].x, points[0][x][y].y)));
+			Vector3 target(drawSystem->TexturePointToLandscapePoint(textureLevel, Vector2(points[0][x][y].x, points[0][x][y].y)));
 
 			bool prevWasIntersection = true;
 			for(int32 layerIndex = hight - 1; layerIndex >= 0; --layerIndex)

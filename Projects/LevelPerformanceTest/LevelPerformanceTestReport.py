@@ -144,7 +144,9 @@ if None != connection:
 				reportValues = level.keys()
 				reportValues.sort()
 				for reportValue in reportValues:
-					if 'SceneFilePath' == reportValue:
+					if 'FPS average value' == reportValue:
+						report.write('<b><i>' + reportValue + '</i>: ' + level[reportValue] + '</b><br/>\n')
+					elif 'SceneFilePath' == reportValue:
 						sceneFilePath = level[reportValue];
 						pervDir = os.getcwd();
 						os.chdir("../../../wot.blitz/");

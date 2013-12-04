@@ -37,6 +37,8 @@ using namespace DAVA;
 
 class FileListTest: public TestTemplate<FileListTest>
 {
+protected:
+    ~FileListTest(){}
 public:
 	FileListTest();
 

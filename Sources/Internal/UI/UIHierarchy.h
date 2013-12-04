@@ -172,11 +172,11 @@ class UIHierarchyDelegate
     
 class UIHierarchy : public UIControl, public UIScrollBarDelegate
 {
-    
+protected:
+    ~UIHierarchy();
 public:
 
     UIHierarchy(const Rect &rect, bool rectInAbsoluteCoordinates = false);
-    ~UIHierarchy();
 
     void SetDelegate(UIHierarchyDelegate *newDelegate);
 

@@ -35,20 +35,6 @@
 #include "../Constants.h"
 #include "EditorScene.h"
 
-class CommandOpenScene: public Command
-{
-public:	
-	DAVA_DEPRECATED(CommandOpenScene(const DAVA::FilePath &scenePathname = DAVA::FilePath())); // DEPRECATED: using QFileDialog
-    
-protected:	
-    
-    virtual void Execute();
-    
-protected:
-    
-    DAVA::FilePath selectedScenePathname;
-};
-
 
 class CommandSaveSpecifiedScene: public Command
 {
@@ -61,29 +47,6 @@ protected:
 
 	Entity*		activeScene;
 	FilePath	filePath;
-};
-
-class CommandExport: public Command
-{
-    
-public:	
-	DAVA_DEPRECATED(CommandExport(DAVA::eGPUFamily gpu)); // DEPRECATED: using of SceneEditorScreenMain, Cancel absent
-    
-protected:	
-    
-    virtual void Execute();
-    
-protected:
-    DAVA::eGPUFamily gpuFamily;
-    
-};
-
-class CommandSaveToFolderWithChilds: public Command
-{
-public:
-	DAVA_DEPRECATED(CommandSaveToFolderWithChilds()); // DEPRECATED: using QFileDialog
-protected:
-        virtual void Execute();
 };
 
 

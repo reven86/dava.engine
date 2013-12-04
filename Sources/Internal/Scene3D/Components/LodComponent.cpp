@@ -318,10 +318,13 @@ void LodComponent::SetLayerVisibility(int32 layerNum, bool visible)
 {
 	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
 
-	int32 size = lodLayers[layerNum].nodes.size();
-	for (int32 i = 0; i < size; i++) 
+	if(lodLayers.size() > layerNum)
 	{
-		lodLayers[layerNum].nodes[i]->SetLodVisible(visible);
+		int32 size = lodLayers[layerNum].nodes.size();
+		for (int32 i = 0; i < size; i++) 
+		{
+			lodLayers[layerNum].nodes[i]->SetLodVisible(visible);
+		}
 	}
 }
 
@@ -332,25 +335,6 @@ void LodComponent::CopyLODSettings(const LodComponent * fromLOD)
     forceDistance = fromLOD->forceDistance;
     forceDistanceSq = fromLOD->forceDistanceSq;
     forceLodLayer = fromLOD->forceLodLayer;
-}
-
-void LodComponent::SetForceLayerAsCurrent()
-{
-	if(lodLayers.size())
-	{
-		if((int32)lodLayers.size() <= forceLodLayer)
-		{
-			currentLod = lodLayers.size() - 1;
-		}
-		else
-		{
-			currentLod = forceLodLayer;
-		}
-	}
-	else
-	{
-		currentLod = INVALID_LOD_LAYER;
-	}
 }
 
 

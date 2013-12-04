@@ -390,11 +390,9 @@ void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat
 	this->type = SPRITE_RENDER_TARGET;
 
 	// Clear created render target first 
-	RenderManager::Instance()->LockNonMain();
 	RenderManager::Instance()->SetRenderTarget(this);
 	RenderManager::Instance()->ClearWithColor(0, 0, 0, 0);
 	RenderManager::Instance()->RestoreRenderTarget();
-	RenderManager::Instance()->UnlockNonMain();
 }
 	
 Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded)
@@ -1411,6 +1409,18 @@ float32 Sprite::GetRectOffsetValueForFrame(int32 frame, eRectsAndOffsets valueTy
 {
 	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
 	return rectsAndOffsets[clampedFrame][valueType];
+}
+
+const float32 * Sprite::GetFrameVerticesForFrame( int32 frame ) const
+{
+	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
+	return frameVertices[clampedFrame];
+}
+
+const float32 * Sprite::GetTextureCoordsForFrame( int32 frame ) const
+{
+	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
+	return texCoords[clampedFrame];
 }
 
 void Sprite::PrepareForNewSize()

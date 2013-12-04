@@ -38,6 +38,8 @@ using namespace DAVA;
 
 class ThreadSyncTest : public TestTemplate<ThreadSyncTest>
 {
+protected:
+    ~ThreadSyncTest(){}
 public:
 	ThreadSyncTest();
 

@@ -39,6 +39,8 @@
 namespace DAVA
 {
 
+Vector<uint16> ParticleLayer3D::indices;
+
 ParticleLayer3D::ParticleLayer3D(ParticleEmitter* parent)
 {
 	isLong = false;
@@ -47,15 +49,24 @@ ParticleLayer3D::ParticleLayer3D(ParticleEmitter* parent)
 
 	//TODO: set material from outside
 	
-	Material * material = new Material();
-	material->SetType(Material::MATERIAL_VERTEX_COLOR_ALPHABLENDED);
+	
+	Material *material = new Material();
+	material->SetType(Material::MATERIAL_VERTEX_COLOR_ALPHABLENDED);	
 	material->SetAlphablend(true);
 	material->SetBlendSrc(BLEND_SRC_ALPHA);
 	material->SetBlendDest(BLEND_ONE);
 	material->SetName("ParticleLayer3D_material");
 	material->SetFog(true);
+	material->SetTwoSided(true); //as particles can now be not camera facing
+	
+	
 
 	renderBatch->SetMaterial(material);
+	
+	renderBatch->SetIndices(&indices);
+	
+	renderBatch->SetRenderDataObject(renderData);
+
 	SafeRelease(material);
 }
 
@@ -78,6 +89,7 @@ void ParticleLayer3D::PrepareRenderData(Camera* camera)
 		Vector3 emmiterPos = emitter->GetWorldTransformPtr()->GetTranslationVector();
 		bbox = AABBox3(emmiterPos, emmiterPos);
 	}	
+
 	// Yuri Coder, 2013/06/07. Don't draw SuperEmitter layers - see pls DF-1251 for details.
 	if (!sprite || type == TYPE_SUPEREMITTER_PARTICLES)
 	{		
@@ -97,36 +109,89 @@ void ParticleLayer3D::PrepareRenderData(Camera* camera)
 		return;
 	}
 
-    Matrix4 rotationMatrix = Matrix4::IDENTITY;
-    switch(RenderManager::Instance()->GetRenderOrientation())
-    {
-        case Core::SCREEN_ORIENTATION_LANDSCAPE_LEFT:
-            //glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-            rotationMatrix.CreateRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(90.0f));
-            break;
-        case Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT:
-            //glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-            rotationMatrix.CreateRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(-90.0f));
-            break;
-    }
 
-    Matrix4 mv = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW)*rotationMatrix;
-    
-	_up = Vector3(mv._01, mv._11, mv._21);
-	_left = Vector3(mv._00, mv._10, mv._20);
+	Matrix4 mv;
+	Matrix3 rotation;
+	bool worldAlign = particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
+	if (!worldAlign)
+	{
+		rotation = emitter->GetRotationMatrix();
+	}
+	Vector<std::pair<Vector3, Vector3> > basises;
+	if (particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING)
+	{
+		mv = camera->GetMatrix();
+		basises.push_back(std::pair<Vector3, Vector3>(Vector3(mv._01, mv._11, mv._21), Vector3(mv._00, mv._10, mv._20)));
+	}
+	if (particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_X_FACING)
+	{
+		Vector3 up(0,1,0);
+		Vector3 left(0,0,1);
+		if (!worldAlign)
+		{
+			up = up*rotation;
+			up.Normalize();
+			left = left*rotation;
+			left.Normalize();
+		}
+		basises.push_back(std::pair<Vector3, Vector3>(up, left));
+	}
+	if (particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Y_FACING)
+	{
+		Vector3 up(0,0,1);
+		Vector3 left(1,0,0);
+		if (!worldAlign)
+		{
+			up = up*rotation;
+			up.Normalize();
+			left = left*rotation;
+			left.Normalize();
+		}
+		basises.push_back(std::pair<Vector3, Vector3>(up, left));
+	}
+	if (particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Z_FACING)
+	{
+		Vector3 up(0,1,0);
+		Vector3 left(1,0,0);
+		if (!worldAlign)
+		{
+			up = up*rotation;
+			up.Normalize();
+			left = left*rotation;
+			left.Normalize();
+		}
+		basises.push_back(std::pair<Vector3, Vector3>(up, left));
+	}
+	
+	int32 planesCount =  basises.size();
+
 	direction = camera->GetDirection();
 
 	verts.clear();
 	textures.clear();
 	colors.clear();
+
+	if (enableFrameBlend)
+	{
+		textures2.clear();
+		times.clear();
+	}
 	int32 totalCount = 0;
 
 	// Reserve the memory for vectors to avoid the resize operations. Actually there can be less than count
 	// particles (for Single Particle or Superemitter one), but never more than count.
-	static const int32 POINTS_PER_PARTICLE = 6;
-	verts.resize(count * POINTS_PER_PARTICLE * 3); // 6 vertices per each particle, 3 coords per vertex.
-	textures.resize(count * POINTS_PER_PARTICLE * 2); // 6 texture coords per particle, 2 values per texture coord.
-	colors.resize(count * POINTS_PER_PARTICLE);
+	static const int32 POINTS_PER_PARTICLE = 4;
+	static const int32 INDICES_PER_PARTICLE = 6;
+	verts.resize(count * POINTS_PER_PARTICLE * 3 * planesCount); // 4 vertices per each particle, 3 coords per vertex.
+	textures.resize(count * POINTS_PER_PARTICLE * 2 * planesCount); // 4 texture coords per particle, 2 values per texture coord.
+	colors.resize(count * POINTS_PER_PARTICLE*planesCount);	
+	
+	//frame blending
+	if (enableFrameBlend)
+	{
+		textures2.resize(count * POINTS_PER_PARTICLE * 2 * planesCount);
+		times.resize(count * POINTS_PER_PARTICLE * planesCount); //single time value per vertex
+	}
 
 	Particle * current = head;
 	if(current)
@@ -136,115 +201,156 @@ void ParticleLayer3D::PrepareRenderData(Camera* camera)
 
 	int32 verticesCount = 0;
 	int32 texturesCount = 0;
+	int32 texturesCount2 = 0;
+	int32 timesCount = 0;
 	int32 colorsCount = 0;	
 	while(current != 0)
 	{		
+		for (int32 i=0; i<planesCount; ++i)
+		{		
+			_up = basises[i].first;
+			_left = basises[i].second;
+			Vector3 topRight;
+			Vector3 topLeft;
+			Vector3 botRight;
+			Vector3 botLeft;
 
-		Vector3 topRight;
-		Vector3 topLeft;
-		Vector3 botRight;
-		Vector3 botLeft;
+			if (IsLong())
+			{
+				CalcLong(current, topLeft, topRight, botLeft, botRight);
+			}
+			else
+			{
+				CalcNonLong(current, topLeft, topRight, botLeft, botRight);
+			}
 
-		if (IsLong())
-		{
-			CalcLong(current, topLeft, topRight, botLeft, botRight);
+			verts[verticesCount] = topLeft.x;//0
+			verticesCount ++;
+			verts[verticesCount] = topLeft.y;
+			verticesCount ++;
+			verts[verticesCount] = topLeft.z;
+			verticesCount ++;
+
+			verts[verticesCount] = topRight.x;//1
+			verticesCount ++;
+			verts[verticesCount] = topRight.y;
+			verticesCount ++;
+			verts[verticesCount] = topRight.z;
+			verticesCount ++;
+
+			verts[verticesCount] = botLeft.x;//2
+			verticesCount ++;
+			verts[verticesCount] = botLeft.y;
+			verticesCount ++;
+			verts[verticesCount] = botLeft.z;
+			verticesCount ++;
+
+			verts[verticesCount] = botRight.x;//3
+			verticesCount ++;
+			verts[verticesCount] = botRight.y;
+			verticesCount ++;
+			verts[verticesCount] = botRight.z;
+			verticesCount ++;
+
+			bbox.AddPoint(topLeft);
+			bbox.AddPoint(topRight);
+			bbox.AddPoint(botLeft);
+			bbox.AddPoint(botRight);
+
+			float32 *pT = sprite->GetTextureVerts(current->frame);
+
+			textures[texturesCount] = pT[0];
+			texturesCount ++;
+			textures[texturesCount] = pT[1];
+			texturesCount ++;
+
+			textures[texturesCount] = pT[2];
+			texturesCount ++;
+			textures[texturesCount] = pT[3];
+			texturesCount ++;
+
+			textures[texturesCount] = pT[4];
+			texturesCount ++;
+			textures[texturesCount] = pT[5];
+			texturesCount ++;
+
+			textures[texturesCount] = pT[6];
+			texturesCount ++;
+			textures[texturesCount] = pT[7];
+			texturesCount ++;
+
+			//frame blending
+			if (enableFrameBlend)
+			{
+				int32 nextFrame = current->frame+1;
+				if (nextFrame >= sprite->GetFrameCount())
+				{
+					if (loopSpriteAnimation)
+						nextFrame = 0;
+					else
+						nextFrame = sprite->GetFrameCount()-1;
+					
+				}
+				pT = sprite->GetTextureVerts(nextFrame);
+				textures2[texturesCount2] = pT[0];
+				texturesCount2 ++;
+				textures2[texturesCount2] = pT[1];
+				texturesCount2 ++;
+
+				textures2[texturesCount2] = pT[2];
+				texturesCount2 ++;
+				textures2[texturesCount2] = pT[3];
+				texturesCount2 ++;
+
+				textures2[texturesCount2] = pT[4];
+				texturesCount2 ++;
+				textures2[texturesCount2] = pT[5];
+				texturesCount2 ++;
+
+				textures2[texturesCount2] = pT[6];
+				texturesCount2 ++;
+				textures2[texturesCount2] = pT[7];
+				texturesCount2 ++;
+				
+
+				times[timesCount] = current->animTime;
+				timesCount++;
+				times[timesCount] = current->animTime;
+				timesCount++;
+				times[timesCount] = current->animTime;
+				timesCount++;
+				times[timesCount] = current->animTime;
+				timesCount++;
+			}
+			
+
+			// Yuri Coder, 2013/04/03. Need to use drawColor here instead of just colot
+			// to take colorOverlife property into account.
+			uint32 color = (((uint32)(current->drawColor.a*255.f))<<24) |  (((uint32)(current->drawColor.b*255.f))<<16) |
+				(((uint32)(current->drawColor.g*255.f))<<8) | ((uint32)(current->drawColor.r*255.f));
+			for(int32 i = 0; i < POINTS_PER_PARTICLE; ++i)
+			{
+				colors[i + colorsCount] = color;
+			}
+			colorsCount += POINTS_PER_PARTICLE;
+
+			totalCount++;
 		}
-		else
-		{
-			CalcNonLong(current, topLeft, topRight, botLeft, botRight);
-		}
-
-		verts[verticesCount] = topLeft.x;//0
-		verticesCount ++;
-		verts[verticesCount] = topLeft.y;
-		verticesCount ++;
-		verts[verticesCount] = topLeft.z;
-		verticesCount ++;
-
-		verts[verticesCount] = topRight.x;//1
-		verticesCount ++;
-		verts[verticesCount] = topRight.y;
-		verticesCount ++;
-		verts[verticesCount] = topRight.z;
-		verticesCount ++;
-
-		verts[verticesCount] = botLeft.x;//2
-		verticesCount ++;
-		verts[verticesCount] = botLeft.y;
-		verticesCount ++;
-		verts[verticesCount] = botLeft.z;
-		verticesCount ++;
-
-		verts[verticesCount] = botLeft.x;//2
-		verticesCount ++;
-		verts[verticesCount] = botLeft.y;
-		verticesCount ++;
-		verts[verticesCount] = botLeft.z;
-		verticesCount ++;
-
-		verts[verticesCount] = topRight.x;//1
-		verticesCount ++;
-		verts[verticesCount] = topRight.y;
-		verticesCount ++;
-		verts[verticesCount] = topRight.z;
-		verticesCount ++;
-
-		verts[verticesCount] = botRight.x;//3
-		verticesCount ++;
-		verts[verticesCount] = botRight.y;
-		verticesCount ++;
-		verts[verticesCount] = botRight.z;
-		verticesCount ++;
-
-		bbox.AddPoint(topLeft);
-		bbox.AddPoint(topRight);
-		bbox.AddPoint(botLeft);
-		bbox.AddPoint(botRight);
-
-		float32 *pT = sprite->GetTextureVerts(current->frame);
-
-		textures[texturesCount] = pT[0];
-		texturesCount ++;
-		textures[texturesCount] = pT[1];
-		texturesCount ++;
-
-		textures[texturesCount] = pT[2];
-		texturesCount ++;
-		textures[texturesCount] = pT[3];
-		texturesCount ++;
-
-		textures[texturesCount] = pT[4];
-		texturesCount ++;
-		textures[texturesCount] = pT[5];
-		texturesCount ++;
-
-		textures[texturesCount] = pT[4];
-		texturesCount ++;
-		textures[texturesCount] = pT[5];
-		texturesCount ++;
-
-		textures[texturesCount] = pT[2];
-		texturesCount ++;
-		textures[texturesCount] = pT[3];
-		texturesCount ++;
-
-		textures[texturesCount] = pT[6];
-		texturesCount ++;
-		textures[texturesCount] = pT[7];
-		texturesCount ++;
-
-		// Yuri Coder, 2013/04/03. Need to use drawColor here instead of just colot
-		// to take colorOverlife property into account.
-		uint32 color = (((uint32)(current->drawColor.a*255.f))<<24) |  (((uint32)(current->drawColor.b*255.f))<<16) |
-			(((uint32)(current->drawColor.g*255.f))<<8) | ((uint32)(current->drawColor.r*255.f));
-		for(int32 i = 0; i < POINTS_PER_PARTICLE; ++i)
-		{
-			colors[i + colorsCount] = color;
-		}
-		colorsCount += POINTS_PER_PARTICLE;
-
-		totalCount++;
 		current = TYPE_PARTICLES == type ? current->next : 0;
+	}	
+	int indexCount = indices.size()/INDICES_PER_PARTICLE;
+	if (totalCount>indexCount)
+	{
+		indices.resize(totalCount*INDICES_PER_PARTICLE);
+		for (;indexCount<totalCount; ++indexCount)
+		{
+			indices[indexCount*INDICES_PER_PARTICLE+0] = indexCount*POINTS_PER_PARTICLE+0;
+			indices[indexCount*INDICES_PER_PARTICLE+1] = indexCount*POINTS_PER_PARTICLE+1;
+			indices[indexCount*INDICES_PER_PARTICLE+2] = indexCount*POINTS_PER_PARTICLE+2;
+			indices[indexCount*INDICES_PER_PARTICLE+3] = indexCount*POINTS_PER_PARTICLE+2;
+			indices[indexCount*INDICES_PER_PARTICLE+4] = indexCount*POINTS_PER_PARTICLE+1;
+			indices[indexCount*INDICES_PER_PARTICLE+5] = indexCount*POINTS_PER_PARTICLE+3; //preserve order
+		}
 	}
 
 	renderBatch->SetTotalCount(totalCount);	
@@ -253,14 +359,12 @@ void ParticleLayer3D::PrepareRenderData(Camera* camera)
 	{					
 		renderData->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, &verts.front());
 		renderData->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &textures.front());
-		renderData->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, 0, &colors.front());
-
-		if (IsLong())
+		renderData->SetStream(EVF_COLOR, TYPE_UNSIGNED_BYTE, 4, 0, &colors.front());				
+		if (enableFrameBlend)
 		{
-			RenderManager::Instance()->SetRenderData(renderData);
-			renderBatch->GetMaterial()->PrepareRenderState();
-		}
-		renderBatch->SetRenderDataObject(renderData);
+			renderData->SetStream(EVF_TEXCOORD1, TYPE_FLOAT, 2, 0, &textures2.front());
+			renderData->SetStream(EVF_TIME, TYPE_FLOAT, 1, 0, &times.front());
+		}				
 	}
 	
 }
@@ -311,36 +415,31 @@ void ParticleLayer3D::CalcLong(Particle* current,
 	Particle* parent = emitter->GetParentParticle();		
 	if ((NULL != parent)&&inheritPosition)
 	{		
-		currDirection = current->direction*current->speed*current->velocityOverLife + parent->direction*parent->speed*parent->velocityOverLife;
-		currDirection.Normalize();
+		currDirection = current->speed*current->velocityOverLife + parent->speed*parent->velocityOverLife;		
 	}else
 	{
-		currDirection = current->direction;
+		currDirection = current->speed;
 	}
+	currDirection.Normalize();
 
 	Vector3 vecShort = currDirection.CrossProduct(direction);
-	vecShort /= 2.f;
-		
-	Vector3 vecLong = -currDirection;
+	vecShort.Normalize();			
+	//Vector3 vecLong = vecShort.CrossProduct(direction);
+	Vector3 vecLong = -currDirection*(scaleVelocityBase+scaleVelocityFactor*current->speed);
+	vecShort /= 2.f;	
 
-	float32 widthDiv2 = sprite->GetWidth()*current->size.x*current->sizeOverLife.x;
-	float32 heightDiv2 = sprite->GetHeight()*current->size.y*current->sizeOverLife.y;
+	float32 widthDiv2 = sprite->GetWidth()*current->size.x*current->sizeOverLife.x/2;
+	float32 heightDiv2 = sprite->GetHeight()*current->size.y*current->sizeOverLife.y/2;
 
 	// Apply offset to the current position according to the emitter position.
 	UpdateCurrentParticlePosition(current);
 
-	topRight = currentParticlePosition + widthDiv2*vecShort;
-	topLeft = currentParticlePosition - widthDiv2*vecShort;
+	topRight = currentParticlePosition + widthDiv2*vecShort - heightDiv2/2*vecLong;
+	topLeft = currentParticlePosition - widthDiv2*vecShort - heightDiv2/2*vecLong;
 	botRight = topRight + heightDiv2*vecLong;
 	botLeft = topLeft + heightDiv2*vecLong;
 }
 
-
-void ParticleLayer3D::LoadFromYaml(const FilePath & configPath, const YamlNode * node)
-{
-	ParticleLayer::LoadFromYaml(configPath, node);
-	SetAdditive(additive);
-}
 
 ParticleLayer * ParticleLayer3D::Clone(ParticleLayer * dstLayer /*= 0*/)
 {
@@ -354,7 +453,9 @@ ParticleLayer * ParticleLayer3D::Clone(ParticleLayer * dstLayer /*= 0*/)
 			parentFor3DLayer = (dynamic_cast<ParticleLayer3D*>(dstLayer))->GetParent();
 		}
 
-		dstLayer = new ParticleLayer3D(parentFor3DLayer);
+		ParticleLayer3D *dst = new ParticleLayer3D(parentFor3DLayer);		
+		GetMaterial()->Clone(dst->GetMaterial());
+		dstLayer = dst; 
 		dstLayer->SetLong(this->isLong);
 	}
 
@@ -367,21 +468,38 @@ Material * ParticleLayer3D::GetMaterial()
 {
 	return renderBatch->GetMaterial();
 }
-	
-void ParticleLayer3D::SetAdditive(bool additive)
+
+void ParticleLayer3D::SetBlendMode(eBlendMode sFactor, eBlendMode dFactor)
 {
-	ParticleLayer::SetAdditive(additive);
-	if(additive)
+	ParticleLayer::SetBlendMode(sFactor, dFactor);
+	renderBatch->GetMaterial()->SetBlendSrc(srcBlendFactor);
+	renderBatch->GetMaterial()->SetBlendDest(dstBlendFactor);
+}
+
+void ParticleLayer3D::SetFog(bool enable)
+{
+	ParticleLayer::SetFog(enable);
+	renderBatch->GetMaterial()->SetFog(enableFog);
+}
+
+void ParticleLayer3D::SetFrameBlend(bool enable)
+{
+	if (enableFrameBlend==enable) return; 
+	ParticleLayer::SetFrameBlend(enable);
+	if (enableFrameBlend)
 	{
-		renderBatch->GetMaterial()->SetBlendSrc(BLEND_SRC_ALPHA);
-		renderBatch->GetMaterial()->SetBlendDest(BLEND_ONE);
+		renderBatch->GetMaterial()->SetType(Material::MATERIAL_VERTEX_COLOR_ALPHABLENDED_FRAME_BLEND);			
 	}
 	else
 	{
-		renderBatch->GetMaterial()->SetBlendSrc(BLEND_SRC_ALPHA);
-		renderBatch->GetMaterial()->SetBlendDest(BLEND_ONE_MINUS_SRC_ALPHA);
+		renderBatch->GetMaterial()->SetType(Material::MATERIAL_VERTEX_COLOR_ALPHABLENDED);	
+		renderData->RemoveStream(EVF_TEXCOORD1);
+		renderData->RemoveStream(EVF_TIME);
+		textures2.resize(0);
+		times.resize(0);		
 	}
 }
+
 
 bool ParticleLayer3D::IsLong()
 {
@@ -391,7 +509,7 @@ bool ParticleLayer3D::IsLong()
 void ParticleLayer3D::SetLong(bool value)
 {
 	isLong = value;
-	renderBatch->GetMaterial()->SetTwoSided(isLong);
+	//renderBatch->GetMaterial()->SetTwoSided(isLong); now materials for particles are always to_sided
 	if(innerEmitter)
 	{
 		innerEmitter->SetLongToAllLayers(value);

@@ -37,6 +37,8 @@ using namespace DAVA;
 
 class LandscapeEditorSettings: public BaseObject
 {
+protected:
+    ~LandscapeEditorSettings(){}
 public:
     
     LandscapeEditorSettings(); 

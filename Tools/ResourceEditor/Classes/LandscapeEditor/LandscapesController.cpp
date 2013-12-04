@@ -72,7 +72,7 @@ void LandscapesController::SetScene(DAVA::Scene *scene)
         EditorScene *editorScene = dynamic_cast<EditorScene *>(scene);
         if(editorScene)
         {
-           Landscape *landscape = editorScene->GetLandscape(editorScene);
+           Landscape *landscape = FindLandscape(editorScene);
             if(landscape)
             {
                 SaveLandscape(landscape);
@@ -167,7 +167,7 @@ void LandscapesController::ToggleNotPassableLandscape()
 
 bool LandscapesController::ShowEditorLandscape(EditorLandscape *displayingLandscape)
 {
-	Landscape *landscape = EditorScene::GetLandscape(scene);
+	Landscape *landscape = FindLandscape(scene);
 	if (!landscape)
     {
         Logger::Error("[LandscapesController::ShowEditorLandscape] Can be only one landscape");
@@ -187,11 +187,10 @@ bool LandscapesController::ShowEditorLandscape(EditorLandscape *displayingLandsc
 	
 	//TODO: remove SetWorldTransformPtr
 	displayingLandscape->SetWorldTransformPtr(landscape->GetWorldTransformPtr());
-	Entity* lanscapeNode = EditorScene::GetLandscapeNode(scene);
+	Entity* lanscapeNode = FindLandscapeEntity(scene);
 	
 	lanscapeNode->RemoveComponent(Component::RENDER_COMPONENT);
-	RenderComponent* component = new RenderComponent(displayingLandscape);
-	lanscapeNode->AddComponent(component);
+	lanscapeNode->AddComponent(ScopedPtr<RenderComponent> (new RenderComponent(displayingLandscape)));
 
     currentLandscape = displayingLandscape;
     return true;
@@ -221,9 +220,9 @@ bool LandscapesController::HideEditorLandscape(EditorLandscape *hiddingLandscape
             editorLandscape->SetParentLandscape(NULL);
         }
 		
-		Entity* lanscapeNode = EditorScene::GetLandscapeNode(scene);
+		Entity* lanscapeNode = FindLandscapeEntity(scene);
 		lanscapeNode->RemoveComponent(Component::RENDER_COMPONENT);
-		lanscapeNode->AddComponent(new RenderComponent(nestedLandscape));
+		lanscapeNode->AddComponent(ScopedPtr<RenderComponent> (new RenderComponent(nestedLandscape)));
         
         if(NeedToKillRenderer(nestedLandscape))
         {

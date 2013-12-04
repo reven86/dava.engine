@@ -54,7 +54,7 @@ CONFIG += x86 x86_64
 
 QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.7.sdk
 
-LIBS += -framework Cocoa -framework OpenAL -lz
+LIBS += -framework Cocoa -framework -lz
 
 LIBS += -L../dava.framework/Libs/libs/ -lmongodb_macos
 LIBS += -L../dava.framework/Libs/libs/ -lpng_macos

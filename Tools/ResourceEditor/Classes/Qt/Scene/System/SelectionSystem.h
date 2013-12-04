@@ -55,8 +55,12 @@ public:
 	void SetSelection(DAVA::Entity *entity);
 	void AddSelection(DAVA::Entity *entity);
 	void RemSelection(DAVA::Entity *entity);
+	void Clear();
 
-	const EntityGroup* GetSelection() const;
+	EntityGroup GetSelection() const;
+
+	size_t GetSelectionCount() const;
+	DAVA::Entity* GetSelectionEntity(int index) const;
 
 	void SetDrawMode(int mode);
 	int GetDrawMode() const;
@@ -64,12 +68,16 @@ public:
 	void SetPivotPoint(ST_PivotPoint pp);
 	ST_PivotPoint GetPivotPoint() const;
 
-	void LockSelection(bool lock);
+	void SetSelectionAllowed(bool allowed);
+	bool IsSelectionAllowed() const;
 
+	virtual void SetLocked(bool lock);
+
+	DAVA::AABBox3 GetSelectionAABox(int index) const;
 	DAVA::AABBox3 GetSelectionAABox(DAVA::Entity *entity) const;
 	DAVA::AABBox3 GetSelectionAABox(DAVA::Entity *entity, const DAVA::Matrix4 &transform) const;
-    
-    DAVA::float32 GetDistanceToCamera() const;
+
+	void ForceEmitSignals();
 
 protected:
 	void Update(DAVA::float32 timeElapsed);
@@ -84,22 +92,22 @@ protected:
 	EntityGroup GetSelecetableFromCollision(const EntityGroup *collisionEntities);
 	DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
     
-    void UpdateDistanceToCamera();
 
 private:
 	int drawMode;
+	bool selectionAllowed;
 	bool applyOnPhaseEnd;
-	bool selectionLocked;
 
 	SceneCollisionSystem *collisionSystem;
 	HoodSystem* hoodSystem;
 
+	bool selectionHasChanges;
 	EntityGroup curSelections;
+	EntityGroup curDeselections;
+
 	DAVA::Entity *lastSelection;
 
 	ST_PivotPoint curPivotPoint;
-    
-    DAVA::float32 distanceToCamera;
 };
 
 #endif //__SCENE_SELECTION_SYSTEM_H__

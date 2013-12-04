@@ -50,7 +50,7 @@ void CommandLineManager::PrintUsage()
 {
     printf("\nUsage:\n");
     
-    printf("\t-usage or --help to display this help\n");
+    printf("\t-h or --help to display this help\n");
     printf("\t-exo - extended output\n");
     printf("\t-v or --verbose - detailed output\n");
     printf("\t-forceclose - close editor after job would be finished\n");
@@ -68,7 +68,7 @@ void CommandLineManager::PrintUsageForActiveTool()
 {
     printf("\nUsage:\n");
     
-    printf("\t-usage or --help to display this help\n");
+    printf("\t-h or --help to display this help\n");
     printf("\t-exo - extended output\n");
     printf("\t-v or --verbose - detailed output\n");
     printf("\t-forceclose - close editor after job would be finished\n");
@@ -80,15 +80,18 @@ void CommandLineManager::PrintUsageForActiveTool()
 }
 
 CommandLineManager::CommandLineManager()
+	: isEnabled(false)
+	, isToolInitialized(false)
+	, activeTool(NULL)
 {
     AddCommandLineTool(new CleanFolderTool());
     AddCommandLineTool(new ImageSplitterTool());
     AddCommandLineTool(new SceneExporterTool());
     AddCommandLineTool(new SceneSaverTool());
 
-#if defined (__DAVAENGINE_WIN32__)
+#if defined (__DAVAENGINE_BEAST__)
 	AddCommandLineTool(new BeastCommandLineTool());
-#endif //#if defined (__DAVAENGINE_WIN32__)
+#endif //#if defined (__DAVAENGINE_BEAST__)
     
     AddCommandLineTool(new TextureDescriptorTool());
     
@@ -97,15 +100,13 @@ CommandLineManager::CommandLineManager()
     
     DetectCommandLineMode();
     
-    if(isCommandLineModeEnabled)
+    if(isEnabled)
     {
         Logger::Instance()->EnableConsoleMode();
     }
-    
 
     FindActiveTool();
     
-    isToolInitialized = false;
     if(activeTool)
     {
         isToolInitialized = activeTool->InitializeFromCommandLine();
@@ -136,13 +137,15 @@ void CommandLineManager::AddCommandLineTool(CommandLineTool *tool)
 
 void CommandLineManager::ParseCommandLine()
 {
-    if(CommandLineParser::CommandIsFound(String("-usage")) || CommandLineParser::CommandIsFound(String("-help")))
+    if(CommandLineParser::CommandIsFound(String("-h")) || CommandLineParser::CommandIsFound(String("--help")))
     {
         PrintUsage();
+
+		isEnabled = true;
         return;
     }
     
-    if(CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("-verbose")))
+    if(CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("--verbose")))
     {
         CommandLineParser::Instance()->SetVerbose(true);
     }
@@ -155,14 +158,14 @@ void CommandLineManager::ParseCommandLine()
 
 void CommandLineManager::DetectCommandLineMode()
 {
-    isCommandLineModeEnabled = Core::Instance()->IsConsoleMode();
+    isEnabled |= Core::Instance()->IsConsoleMode();
     
     Map<String, CommandLineTool *>::const_iterator endIT = commandLineTools.end();
     for(auto it = commandLineTools.begin(); it != endIT; ++it)
     {
         if(CommandLineParser::CommandIsFound(it->first))
         {
-            isCommandLineModeEnabled = true;
+            isEnabled = true;
             break;
         }
     }
@@ -172,7 +175,7 @@ void CommandLineManager::DetectCommandLineMode()
 void CommandLineManager::FindActiveTool()
 {
     activeTool = NULL;
-    if(isCommandLineModeEnabled)
+    if(isEnabled)
     {
         Map<String, CommandLineTool *>::const_iterator endIT = commandLineTools.end();
         for(auto it = commandLineTools.begin(); it != endIT; ++it)
@@ -214,28 +217,4 @@ void CommandLineManager::PrintResults()
         if(isToolInitialized)
             ShowErrorDialog(errors);
     }
-}
-
-DAVA::uint32 CommandLineManager::GetErrorsCount() const
-{
-	if(activeTool) 
-		return activeTool->GetErrorList().size();
-
-	return 0;
-}
-
-bool CommandLineManager::NeedCloseApplication()
-{
-	if(!activeTool) return true;
-
-
-	bool forceClose =	CommandLineParser::CommandIsFound(String("-force"))
-					||  CommandLineParser::CommandIsFound(String("-forceclose"));
-
-	uint32 errorsCount = GetErrorsCount();
-
-	if(activeTool->IsOneFrameCommand())
-		return (forceClose || 0 == errorsCount);
-
-	return (forceClose && errorsCount);
 }

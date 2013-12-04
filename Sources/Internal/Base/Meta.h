@@ -113,7 +113,7 @@ namespace DAVA
 		{
 			const InspInfo* intro = NULL;
 
-			if(NULL != object)
+			if(NULL != object && NULL != introspectionFnPtr)
 			{
 				intro = introspectionFnPtr(object);
 			}

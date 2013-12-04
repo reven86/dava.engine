@@ -43,6 +43,26 @@ class SceneGridSystem : public DAVA::SceneSystem
 public:
 	SceneGridSystem(DAVA::Scene * scene);
 	~SceneGridSystem();
+	
+	float GetGridMax()
+	{
+		return gridMax;
+	}
+	
+	void SetGridMax(float value)
+	{
+		gridMax = value;
+	}
+	
+	float GetGridStep()
+	{
+		return gridStep;
+	}
+	
+	void SetGridStep(float value)
+	{
+		gridStep = value;
+	}
 
 protected:
 	virtual void Update(float timeElapsed);
@@ -50,6 +70,9 @@ protected:
 
 	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
+	
+	float gridMax;
+	float gridStep;
 };
 
 #endif

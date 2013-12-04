@@ -15,7 +15,6 @@
 		C73925C3159F1CE1005BC9F4 /* PreviewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C73925BF159F1CE1005BC9F4 /* PreviewControl.cpp */; };
 		C73925C4159F1D86005BC9F4 /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C73925BA159F1CCC005BC9F4 /* libFramework.a */; };
 		C73925C8159F1DE0005BC9F4 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C73925C7159F1DE0005BC9F4 /* libz.dylib */; };
-		FE76D9EE1163F2F0009E83B6 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9EC1163F2F0009E83B6 /* OpenAL.framework */; };
 		FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9ED1163F2F0009E83B6 /* OpenGLES.framework */; };
 		FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F51163F304009E83B6 /* AVFoundation.framework */; };
 		FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE76D9F61163F304009E83B6 /* CoreAudio.framework */; };
@@ -91,7 +90,6 @@
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
-				FE76D9EE1163F2F0009E83B6 /* OpenAL.framework in Frameworks */,
 				FE76D9EF1163F2F0009E83B6 /* OpenGLES.framework in Frameworks */,
 				FE76D9F71163F304009E83B6 /* AVFoundation.framework in Frameworks */,
 				FE76D9F81163F304009E83B6 /* CoreAudio.framework in Frameworks */,

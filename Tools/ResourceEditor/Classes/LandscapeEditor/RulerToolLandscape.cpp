@@ -61,7 +61,6 @@ void RulerToolLandscape::SetPoints(const DAVA::List<DAVA::Vector3> &points)
     
     Texture *targetTexture = rulerSprite->GetTexture();
     
-    RenderManager::Instance()->LockNonMain();
     RenderManager::Instance()->SetRenderTarget(rulerSprite);
 
     Rect drawRect(0, 0, (float32)targetTexture->GetWidth(), (float32)targetTexture->GetHeight());
@@ -106,7 +105,6 @@ void RulerToolLandscape::SetPoints(const DAVA::List<DAVA::Vector3> &points)
     RenderManager::Instance()->ClipPop();
     
     RenderManager::Instance()->RestoreRenderTarget();
-    RenderManager::Instance()->UnlockNonMain();
     
     if(parentLandscape)
     {

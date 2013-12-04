@@ -41,6 +41,8 @@ namespace DAVA
 	
 class CollisionObject2 : public BaseObject 
 {
+protected:
+	virtual ~CollisionObject2();
 public:
 	enum eType
 	{
@@ -49,7 +51,6 @@ public:
 	};
 	
 	CollisionObject2(eType type);
-	virtual ~CollisionObject2();
 	
 	/*
 		Collision object do not hold polygon inside his body

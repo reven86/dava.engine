@@ -47,11 +47,11 @@ class GameCore : public ApplicationCore
         String testName;
         String testMessage;
     };
-    
-    
+
+protected:
+	virtual ~GameCore();
 public:	
 	GameCore();
-	virtual ~GameCore();
 
 	static GameCore * Instance() 
 	{ 

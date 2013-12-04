@@ -44,9 +44,7 @@ class SpritePackerHelper : public QObject, public DAVA::StaticSingleton<SpritePa
 
 public:
 	SpritePackerHelper();
-
-	void UpdateParticleSprites();
-	void UpdateParticleSpritesAsync();
+	void UpdateParticleSprites(DAVA::eGPUFamily gpu);
 
 signals:
 	void readyAll();
@@ -58,8 +56,7 @@ protected:
 
     void FindAllParticleEffectsRecursive(DAVA::Entity *entity , DAVA::List<DAVA::Entity*> & particleEffects);
 
-    
-	void Pack();
+	void Pack(DAVA::eGPUFamily gpu);
 	void Reload();
 
 	QFuture<void> *future;

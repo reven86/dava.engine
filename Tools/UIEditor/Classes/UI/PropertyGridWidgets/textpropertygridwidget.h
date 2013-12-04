@@ -61,13 +61,16 @@ protected:
 	// Handle UI Control State is changed - needed for updating Localization Text.
     virtual void HandleSelectedUIControlStatesChanged(const Vector<UIControl::eControlState>& newStates);
 
-private:
+    // Handle dependent checkboxes.
+    virtual void UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty);
 
+private:
 	QLineEdit *localizationKeyNameLineEdit;
     QLineEdit *localizationKeyTextLineEdit;
 	QLabel	*localizationKeyNameLabel;
 	QLabel	*localizationKeyTextLabel;
 	QCheckBox *multilineCheckBox;
+	QCheckBox *multilineBySymbolCheckBox;
 };
 
 #endif // TEXTPROPERTYGRIDWIDGET_H

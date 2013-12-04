@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class FontUsageScreen : public UIScreen
 {
+protected:
+	~FontUsageScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

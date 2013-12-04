@@ -92,7 +92,7 @@ void FixedSizePoolAllocator::Reset()
 void FixedSizePoolAllocator::DeallocateMemory()
 {
 #ifdef __DAVAENGINE_DEBUG__
-	DVASSERT(freeItemCount == (totalBlockCount*blockArraySize));
+//	DVASSERT(freeItemCount == (totalBlockCount*blockArraySize));
 #endif
 
     while(allocatedBlockArrays)

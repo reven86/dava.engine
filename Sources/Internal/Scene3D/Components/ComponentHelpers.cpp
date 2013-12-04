@@ -39,6 +39,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Render/Highlevel/SkyboxRenderObject.h"
 
 
 namespace DAVA
@@ -60,6 +61,18 @@ RenderObject * GetRenderObject(const Entity * fromEntity)
 	return object;
 }
 
+SkyboxRenderObject * GetSkybox(const Entity * fromEntity)
+{
+    RenderObject *ro = GetRenderObject(fromEntity);
+    if(ro && ro->GetType() == RenderObject::TYPE_SKYBOX)
+    {
+        return (static_cast<SkyboxRenderObject *>(ro));
+    }
+    
+    return NULL;
+}
+
+    
 ParticleEmitter * GetEmitter(Entity * fromEntity)
 {
 	ParticleEmitter * emitter = 0;
@@ -139,6 +152,15 @@ LodComponent * GetLodComponent(Entity *fromEntity)
     return NULL;
 }
 
+SwitchComponent * GetSwitchComponent(Entity *fromEntity)
+{
+	if(fromEntity)
+	{
+		return (SwitchComponent*) fromEntity->GetComponent(Component::SWITCH_COMPONENT);
+	}
+
+	return NULL;
+}
 
 void RecursiveProcessMeshNode(Entity * curr, void * userData, void(*process)(Entity*, void *))
 {
@@ -187,5 +209,32 @@ void RecursiveProcessLodNode(Entity * curr, int32 lod, void * userData, void(*pr
 	}
 }
 
+
+
+Entity * FindLandscapeEntity(Entity * rootEntity)
+{
+	if(GetLandscape(rootEntity))
+	{
+		return rootEntity;
+	}
+
+	DAVA::int32 count = rootEntity->GetChildrenCount();
+	for(DAVA::int32 i = 0; i < count; ++i)
+	{
+		Entity *landscapeEntity = FindLandscapeEntity(rootEntity->GetChild(i));
+		if(landscapeEntity)
+		{
+			return landscapeEntity;
+		}
+	}
+
+	return NULL;
+}
+
+Landscape * FindLandscape(Entity * rootEntity)
+{
+	Entity *entity = FindLandscapeEntity(rootEntity);
+	return GetLandscape(entity);
+}
 
 }

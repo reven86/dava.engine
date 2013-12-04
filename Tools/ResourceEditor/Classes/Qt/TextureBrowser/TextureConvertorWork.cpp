@@ -48,9 +48,13 @@ JobStack::~JobStack()
 	}
 }
 
-void JobStack::push(const JobItem &item)
+bool JobStack::push(const JobItem &item)
 {
+	bool ret = true;
 	JobItemWrapper *i = head;
+
+	// remember force value
+	bool force = item.force;
 
 	// search for the same works in list and remove it
 	while(NULL != i)
@@ -72,9 +76,16 @@ void JobStack::push(const JobItem &item)
 				head = i->next;
 			}
 
+			// if this job has force flag, we should move it to the new job
+			if(i->force)
+			{
+				force = i->force;
+			}
+
 			delete i;
 			itemsCount--;
 
+			ret = false;
 			break;
 		}
 
@@ -83,6 +94,10 @@ void JobStack::push(const JobItem &item)
 
 	// add new work
 	i = new JobItemWrapper(item);
+
+	// restore force value
+	i->force = force;
+
 	if(NULL != head)
 	{
 		head->prev = i;
@@ -91,6 +106,8 @@ void JobStack::push(const JobItem &item)
 
 	head = i;
 	itemsCount++;
+
+	return ret;
 }
 
 JobItem* JobStack::pop()

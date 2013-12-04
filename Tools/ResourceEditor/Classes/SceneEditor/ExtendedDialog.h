@@ -38,10 +38,11 @@ using namespace DAVA;
 
 class ExtendedDialog : public UIControl
 {
+protected:
+    virtual ~ExtendedDialog();
 public:
     
     ExtendedDialog();
-    virtual ~ExtendedDialog();
     
     virtual void Close();
     

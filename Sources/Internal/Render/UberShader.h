@@ -43,9 +43,10 @@ namespace DAVA
 class Shader;
 class UberShader : public BaseObject
 {
+protected:
+    ~UberShader();
 public:
     UberShader();
-    ~UberShader();
     
     bool LoadShader(const FilePath & shaderFileName);
     int32 CompileShaderCombination(const String & combination);
@@ -54,6 +55,9 @@ public:
 private:
     struct CompiledShader : public BaseObject
     {
+    protected:
+        ~CompiledShader(){}
+    public:
         CompiledShader();
         
         int32 index;

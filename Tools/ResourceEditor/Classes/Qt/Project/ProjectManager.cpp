@@ -28,9 +28,9 @@
 
 
 
-#include <QFileDialog>
 #include "Project/ProjectManager.h"
 #include "Main/QtUtils.h"
+#include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Classes/SceneEditor/EditorSettings.h"
 #include "Classes/SceneEditor/SceneValidator.h"
 #include "Classes/SceneEditor/EditorConfig.h"
@@ -68,7 +68,7 @@ QString ProjectManager::CurProjectDataSourcePath()
 
 QString ProjectManager::ProjectOpenDialog()
 {
-	return QFileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
+	return QtFileDialog::getExistingDirectory(NULL, QString("Open Project Folder"), QString("/"));
 }
 
 void ProjectManager::ProjectOpen(const QString &path)
@@ -91,23 +91,17 @@ void ProjectManager::ProjectOpen(const QString &path)
 			EditorSettings::Instance()->SetDataSourcePath(dataSource3Dpathname);
 			EditorSettings::Instance()->Save();
 
-			SceneValidator::Instance()->SetPathForChecking(projectPath);
-            
-            SpritePackerHelper::Instance()->UpdateParticleSprites();
-
 			EditorConfig::Instance()->ParseConfig(projectPath + "EditorConfig.yaml");
+
+			SceneValidator::Instance()->SetPathForChecking(projectPath);
+            SpritePackerHelper::Instance()->UpdateParticleSprites(EditorSettings::Instance()->GetTextureViewGPU());
+
+            LoadProjectSettings();
+            
+            emit ProjectOpened(curProjectPath);
+            
+            DAVA::FilePath::AddTopResourcesFolder(projectPath);
 		}
-
-		SceneEditorScreenMain *screen = dynamic_cast<SceneEditorScreenMain *>(UIScreenManager::Instance()->GetScreen());
-		if(screen)
-		{
-			screen->UpdateModificationPanel();
-		}
-
-		emit ProjectOpened(curProjectPath);
-
-		// TODO: 
-		// DAVA::FilePath::SetProjectPathname(curProjectPath.toStdString());
 	}
 }
 
@@ -125,10 +119,19 @@ void ProjectManager::ProjectClose()
 {
 	if("" != curProjectPath)
 	{
+		FilePath path = curProjectPath.toStdString();
+		path.MakeDirectoryPathname();
+
+		DAVA::FilePath::RemoveResourcesFolder(path);
+
 		curProjectPath = "";
 		emit ProjectClosed();
-		
-		// TODO:
-		// DAVA::FilePath::SetProjectPathname(curProjectPath.toStdString());
 	}
+}
+
+void ProjectManager::LoadProjectSettings()
+{
+	DAVA::FilePath prjPath = DAVA::FilePath(curProjectPath.toStdString());
+	prjPath.MakeDirectoryPathname();
+	EditorConfig::Instance()->ParseConfig(prjPath + "EditorConfig.yaml");
 }

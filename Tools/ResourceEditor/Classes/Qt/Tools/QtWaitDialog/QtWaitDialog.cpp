@@ -34,6 +34,7 @@
 QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
 	: QDialog(parent, Qt::Dialog | Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint)
 	, ui(new Ui::QtWaitDialog)
+	, wasCanceled(false)
 {
 	ui->setupUi(this);
 
@@ -50,38 +51,34 @@ QtWaitDialog::QtWaitDialog(QWidget *parent /*= 0*/)
 }
 
 QtWaitDialog::~QtWaitDialog()
-{
-
-}
+{ }
 
 void QtWaitDialog::Exec(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel)
 {
-	setWindowTitle(title);
-	SetMessage(message);
+	Setup(title, message, hasWaitbar, hasCancel);
 
-	ui->waitButton->setEnabled(hasCancel);
-	ui->waitBar->setVisible(hasWaitbar);
-
+	setCursor(Qt::BusyCursor);
 	exec();
 }
 
 void QtWaitDialog::Show(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel)
 {
-	setWindowTitle(title);
-	SetMessage(message);
-
-	ui->waitButton->setEnabled(hasCancel);
-	ui->waitBar->setVisible(hasWaitbar);
-
+	Setup(title, message, hasWaitbar, hasCancel);
+	
+	setCursor(Qt::BusyCursor);
 	show();
+
 
 	QApplication::processEvents();
 }
 
 void QtWaitDialog::Reset()
 {
+	wasCanceled = false;
 	emit canceled();
+
 	close();
+	setCursor(Qt::ArrowCursor);
 
 	QApplication::processEvents();
 }
@@ -119,6 +116,7 @@ void QtWaitDialog::SetValue(int value)
 
 void QtWaitDialog::CancelPressed()
 {
+	wasCanceled = true;
 	emit canceled();
 }
 
@@ -126,4 +124,37 @@ void QtWaitDialog::WaitCanceled()
 {
 	ui->waitButton->setEnabled(false);
 	QApplication::processEvents();
+}
+
+void QtWaitDialog::EnableCancel(bool enable)
+{
+	if(!wasCanceled)
+	{
+		ui->waitButton->setEnabled(enable);
+	}
+}
+
+void QtWaitDialog::Setup(const QString &title, const QString &message, bool hasWaitbar, bool hasCancel)
+{
+	setWindowTitle(title);
+	SetMessage(message);
+
+	ui->waitButton->setEnabled(hasCancel);
+	ui->waitBar->setVisible(hasWaitbar);
+
+	if(hasCancel)
+	{
+		setWindowFlags(Qt::Dialog | Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
+	}
+	else
+	{
+		setWindowFlags(Qt::Dialog | Qt::Tool | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+	}
+
+	wasCanceled = false;
+}
+
+bool QtWaitDialog::WasCanceled() const
+{
+	return wasCanceled;
 }

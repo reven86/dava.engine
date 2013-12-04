@@ -52,7 +52,8 @@ NodesPropertyControl::NodesPropertyControl(const Rect & rect, bool _createNodePr
     listHolder = NULL;
     btnCancel = NULL;
     
-    
+    propertyList = NULL;
+
     nodesDelegate = NULL;
     currentSceneNode = NULL;
     currentDataNode = NULL;
@@ -94,7 +95,6 @@ NodesPropertyControl::NodesPropertyControl(const Rect & rect, bool _createNodePr
     
     propertyList = new PropertyList(propertyRect, this);
     AddControl(propertyList);
-    
 }
     
 NodesPropertyControl::~NodesPropertyControl()

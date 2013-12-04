@@ -102,6 +102,9 @@ private:
     
     bool CheckFrameSize(const Size2i &spriteSize, const Size2i &frameSize);
     
+	void WriteDefinitionString(FILE *fp, const Rect2i & writeRect, const Rect2i &originRect, int textureIndex);
+	void DrawToFinalImage(PngImageExt & finalImage, PngImageExt & drawedImage, const Rect2i & drawRect, const Rect2i &frameRect);
+
     
 	ImagePacker *			lastPackedPacker;
 	Vector<ImagePacker*> usedPackers;

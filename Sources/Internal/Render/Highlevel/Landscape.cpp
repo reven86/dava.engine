@@ -48,7 +48,6 @@
 
 namespace DAVA
 {
-REGISTER_CLASS(Landscape);
 
 //#define DRAW_OLD_STYLE
 // const float32 LandscapeNode::TEXTURE_TILE_FULL_SIZE = 2048;
@@ -72,7 +71,8 @@ Landscape::Landscape()
     
 	cursor = 0;
     uniformCameraPosition = -1;
-    
+	textureTiling.resize(TEXTURE_COUNT);
+	tileColor.resize(TEXTURE_COUNT);
     for (int32 k = 0; k < TEXTURE_COUNT; ++k)
     {
         uniformTextures[k] = -1;
@@ -266,7 +266,7 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
     ReleaseShaders(); // release previous shaders
     ReleaseAllRDOQuads();
     SafeDeleteArray(indices); //TODO: need here or no?
-    
+
 	heightmapPath = heightmapPathname;
 	bbox = _box;
 
@@ -301,9 +301,13 @@ bool Landscape::BuildHeightmap()
     {
         retValue = heightmap->Load(heightmapPath);
     }
-	else if(!heightmapPath.IsEmpty())
+	else
 	{
-		DVASSERT(false && "wrong extension");
+		// SZ: don't assert here, and it will be possible to load landscape in editor and
+		// fix wrong path to heightmap
+		// 
+		//DVASSERT(false && "wrong extension");
+        heightmap->ReleaseData();
 	}
 
     return retValue;
@@ -313,7 +317,6 @@ void Landscape::BuildLandscape()
 {
     quadTreeHead.data.x = quadTreeHead.data.y = quadTreeHead.data.lod = 0;
     //quadTreeHead.data.xbuf = quadTreeHead.data.ybuf = 0;
-    quadTreeHead.data.size = heightmap->Size() - 1;
     quadTreeHead.data.rdoQuad = -1;
     
     SetLods(Vector4(60.0f, 120.0f, 240.0f, 480.0f));
@@ -322,10 +325,17 @@ void Landscape::BuildLandscape()
 
     if(heightmap->Size())
     {
+        quadTreeHead.data.size = heightmap->Size() - 1;
+        
         RecursiveBuild(&quadTreeHead, 0, lodLevelsCount);
         FindNeighbours(&quadTreeHead);
         
         indices = new uint16[INDEX_ARRAY_COUNT];
+    }
+    else
+    {
+        quadTreeHead.ReleaseChildren();
+        quadTreeHead.data.size = 0;
     }
     
 //    Logger::FrameworkDebug("Allocated indices: %d KB", RENDER_QUAD_WIDTH * RENDER_QUAD_WIDTH * 6 * 2 / 1024);
@@ -464,7 +474,7 @@ void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, in
     }
     
     // alloc and process childs
-    currentNode->AllocChilds();
+    currentNode->AllocChildren();
     
     int16 minIndexX = currentNode->data.x;
     int16 minIndexY = currentNode->data.y;
@@ -477,28 +487,28 @@ void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, in
     // We should be able to divide landscape by 2 here
     DVASSERT((size & 1) == 0);
 
-    LandQuadTreeNode<LandscapeQuad> * child0 = &currentNode->childs[0];
+    LandQuadTreeNode<LandscapeQuad> * child0 = &currentNode->children[0];
     child0->data.x = minIndexX;
     child0->data.y = minIndexY;
     //child0->data.xbuf = bufMinIndexX;
     //child0->data.ybuf = bufMinIndexY;
     child0->data.size = size / 2;
     
-    LandQuadTreeNode<LandscapeQuad> * child1 = &currentNode->childs[1];
+    LandQuadTreeNode<LandscapeQuad> * child1 = &currentNode->children[1];
     child1->data.x = minIndexX + size / 2;
     child1->data.y = minIndexY;
     //child1->data.xbuf = bufMinIndexX + size / 2;
     //child1->data.ybuf = bufMinIndexY;
     child1->data.size = size / 2;
 
-    LandQuadTreeNode<LandscapeQuad> * child2 = &currentNode->childs[2];
+    LandQuadTreeNode<LandscapeQuad> * child2 = &currentNode->children[2];
     child2->data.x = minIndexX;
     child2->data.y = minIndexY + size / 2;
     //child2->data.xbuf = bufMinIndexX;
     //child2->data.ybuf = bufMinIndexY + size / 2;
     child2->data.size = size / 2;
 
-    LandQuadTreeNode<LandscapeQuad> * child3 = &currentNode->childs[3];
+    LandQuadTreeNode<LandscapeQuad> * child3 = &currentNode->children[3];
     child3->data.x = minIndexX + size / 2;
     child3->data.y = minIndexY + size / 2;
     //child3->data.xbuf = bufMinIndexX + size / 2;
@@ -507,7 +517,7 @@ void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, in
     
     for (int32 index = 0; index < 4; ++index)
     {
-        LandQuadTreeNode<LandscapeQuad> * child = &currentNode->childs[index];
+        LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
         child->parent = currentNode;
         RecursiveBuild(child, level + 1, maxLevels);
         
@@ -544,11 +554,11 @@ LandQuadTreeNode<Landscape::LandscapeQuad> * Landscape::FindNodeWithXY(LandQuadT
         if ((currentNode->data.y <= quadY) && (quadY < currentNode->data.y + currentNode->data.size))
     {
         if (currentNode->data.size == quadSize)return currentNode;
-        if (currentNode->childs)
+        if (currentNode->children)
         {
             for (int32 index = 0; index < 4; ++index)
             {
-                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->childs[index];
+                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
                 LandQuadTreeNode<LandscapeQuad> * result = FindNodeWithXY(child, quadX, quadY, quadSize);
                 if (result)
                     return result;
@@ -566,11 +576,11 @@ void Landscape::FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode)
     currentNode->neighbours[TOP] = FindNodeWithXY(&quadTreeHead, currentNode->data.x, currentNode->data.y - 1, currentNode->data.size);
     currentNode->neighbours[BOTTOM] = FindNodeWithXY(&quadTreeHead, currentNode->data.x, currentNode->data.y + currentNode->data.size, currentNode->data.size);
     
-    if (currentNode->childs)
+    if (currentNode->children)
     {
         for (int32 index = 0; index < 4; ++index)
         {
-            LandQuadTreeNode<LandscapeQuad> * child = &currentNode->childs[index];
+            LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
             FindNeighbours(child);
         }
     }
@@ -584,11 +594,11 @@ void Landscape::MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 
         depth++;
         return;
     }
-    if (currentNode->childs)
+    if (currentNode->children)
     {
         for (int32 index = 0; index < 4; ++index)
         {
-            LandQuadTreeNode<LandscapeQuad> * child = &currentNode->childs[index];
+            LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
             MarkFrames(child, depth);
         }
     }
@@ -618,9 +628,12 @@ const Color & Landscape::GetTileColor(eTextureLevel level)
     
 void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
 {
-    SafeRelease(textures[level]);
-    textureNames[level] = String("");
-    
+	SafeRelease(textures[level]);
+	textureNames[level] = String("");
+
+	if((TILED_MODE_TILEMASK == tiledShaderMode || TILED_MODE_TILE_DETAIL_MASK == tiledShaderMode) && TEXTURE_TILE_FULL == level)
+		return;
+
     Texture * texture = CreateTexture(level, textureName);
     if (texture)
     {
@@ -628,7 +641,7 @@ void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
     }
     textures[level] = texture;
     
-    if(TEXTURE_TILE_FULL == level)
+    if((TEXTURE_TILE_FULL == level) && ((tiledShaderMode == TILED_MODE_MIXED) || (tiledShaderMode == TILED_MODE_TEXTURE)))
     {
         UpdateFullTiledTexture();
     }
@@ -900,14 +913,15 @@ float32 Landscape::GetQuadToCameraDistance(const Vector3& camPos, const Landscap
 	return dist0;
 }
 	
-void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode)
+void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags)
 {
     //Frustum * frustum = scene->GetClipCamera()->GetFrustum();
     // if (!frustum->IsInside(currentNode->data.bbox))return;
     Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE; 
     
     if (currentNode->data.size >= 2)
-        frustumRes = frustum->Classify(currentNode->data.bbox);
+		if (clippingFlags)
+			frustumRes = frustum->Classify(currentNode->data.bbox, clippingFlags, currentNode->data.startClipPlane);		
     
     if (frustumRes == Frustum::EFR_OUTSIDE)return;
     
@@ -917,12 +931,12 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode)
      */
     if (currentNode->data.rdoQuad == -1)
     {
-        if (currentNode->childs)
+        if (currentNode->children)
         {
             for (int32 index = 0; index < 4; ++index)
             {
-                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->childs[index];
-                Draw(child); 
+                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
+                Draw(child, clippingFlags); 
             }
         }
         return;
@@ -1071,12 +1085,12 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode)
     //
     
     {
-        if (currentNode->childs)
+        if (currentNode->children)
         {
             for (int32 index = 0; index < 4; ++index)
             {
-                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->childs[index];
-                Draw(child); 
+                LandQuadTreeNode<LandscapeQuad> * child = &currentNode->children[index];
+                Draw(child, clippingFlags); 
             }
         }
         /* EXPERIMENTAL => reduce level of quadtree, results was not successfull 
@@ -1292,7 +1306,7 @@ void Landscape::Draw(Camera * camera)
 		lod0quads.clear();
 		lodNot0quads.clear();
 
-		Draw(&quadTreeHead);
+		Draw(&quadTreeHead, 0x3f);
 	}
     
     BindMaterial(nearLodIndex);
@@ -1333,19 +1347,14 @@ void Landscape::Draw(Camera * camera)
 		eBlendMode src = RenderManager::Instance()->GetSrcBlend();
 		eBlendMode dst = RenderManager::Instance()->GetDestBlend();
 		RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-		RenderManager::Instance()->SetDepthFunc(CMP_LEQUAL);
-		fans.clear();
+		RenderManager::Instance()->SetDepthFunc(CMP_LEQUAL);		
 		cursor->Prepare();
 		ClearQueue();
 
         
 #if defined (DRAW_OLD_STYLE)    
         Draw(&quadTreeHead);
-#else //#if defined (DRAW_OLD_STYLE)    
-        lod0quads.clear();
-        lodNot0quads.clear();
-        
-        Draw(&quadTreeHead);
+#else //#if defined (DRAW_OLD_STYLE)            
         
         if(nearLodIndex != farLodIndex)     
 		{
@@ -1470,10 +1479,11 @@ void Landscape::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
     if(!heightmapPath.IsEqualToExtension(Heightmap::FileExtension()))
     {
         heightmapPath.ReplaceExtension(Heightmap::FileExtension());
-        heightmap->Save(heightmapPath);
     }
     //
-    
+
+	heightmap->Save(heightmapPath);
+
     archive->SetString("hmap", heightmapPath.GetRelativePathname(sceneFile->GetScenePath()));
     archive->SetInt32("tiledShaderMode", tiledShaderMode);
     
@@ -1520,36 +1530,46 @@ void Landscape::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
     {
         if(TEXTURE_DETAIL == k) continue;
         
-        String textureName = archive->GetString(Format("tex_%d", k));
-        
-        FilePath absPath;
-        if(!textureName.empty())
+        if(TEXTURE_TILE_FULL == k && tiledShaderMode != TILED_MODE_TEXTURE && tiledShaderMode != TILED_MODE_MIXED)
+            continue;
+
+        // load textures
+        if(!(tiledShaderMode == TILED_MODE_TILE_DETAIL_MASK && (TEXTURE_TILE1 == k || TEXTURE_TILE2 == k || TEXTURE_TILE3 == k)))
         {
-            FilePath path(sceneFile->GetScenePath());
-            path += archive->GetString("hmap");
+            String textureName = archive->GetString(Format("tex_%d", k));
 
-            absPath = sceneFile->GetScenePath();
-            absPath += textureName;
+            FilePath absPath;
+            if(!textureName.empty())
+            {
+                absPath = sceneFile->GetScenePath();
+                absPath += textureName;
+            }
+
+            if(sceneFile->DebugLogEnabled())
+                Logger::FrameworkDebug("landscape tex %d load: %s abs:%s", k, textureName.c_str(), absPath.GetAbsolutePathname().c_str());
+            
+            if (sceneFile->GetVersion() >= 4)
+            {
+                SetTexture((eTextureLevel)k, absPath);
+            }
+            else
+            {
+                if ((k == 0) || (k == 1)) // if texture 0 or texture 1, move them to TILE0, TILE1
+                    SetTexture((eTextureLevel)(k + 2), absPath);
+                
+                if (k == 3)
+                    SetTexture(TEXTURE_COLOR, absPath);
+            }
         }
-
-        if(sceneFile->DebugLogEnabled())
-            Logger::FrameworkDebug("landscape tex %d load: %s abs:%s", k, textureName.c_str(), absPath.GetAbsolutePathname().c_str());
-
+        
+        //load tiles
         if (sceneFile->GetVersion() >= 4)
         {
-            SetTexture((eTextureLevel)k, absPath);
             textureTiling[k] = archive->GetByteArrayAsType(Format("tiling_%d", k), textureTiling[k]);
-
 			tileColor[k] = archive->GetByteArrayAsType(Format("tilecolor_%d", k), tileColor[k]);
         }
         else
         {
-            if ((k == 0) || (k == 1)) // if texture 0 or texture 1, move them to TILE0, TILE1
-                SetTexture((eTextureLevel)(k + 2), absPath);
-                
-            if (k == 3)
-                SetTexture(TEXTURE_COLOR, absPath);
-
             if ((k == 0) || (k == 1))
                 textureTiling[k] = archive->GetByteArrayAsType(Format("tiling_%d", k), textureTiling[k]);
         }
@@ -1725,7 +1745,7 @@ FilePath Landscape::SaveFullTiledTexture()
                 SafeRelease(image);
             }
         }
-        else 
+        else
         {
             pathToSave = textureNames[TEXTURE_TILE_FULL];
         }
@@ -1739,12 +1759,10 @@ void Landscape::UpdateFullTiledTexture()
 {
     if(textureNames[TEXTURE_TILE_FULL].IsEmpty())
     {
-		RenderManager::Instance()->LockNonMain();
         Texture *t = CreateFullTiledTexture();
         t->GenerateMipmaps();
         SetTexture(TEXTURE_TILE_FULL, t);
         SafeRelease(t);
-		RenderManager::Instance()->UnlockNonMain();
     }
 }
     
@@ -1777,7 +1795,6 @@ void Landscape::SetTiledShaderMode(DAVA::Landscape::eTiledShaderMode _tiledShade
             break;
     }
     // Reload shaders to
-    ReleaseShaders();
     InitShaders();
 }
     
@@ -1842,6 +1859,7 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
     for (int32 k = 0; k < TEXTURE_COUNT; ++k)
     {
         newLandscape->textureNames[k] = textureNames[k];
+		SafeRelease(newLandscape->textures[k]);
         newLandscape->textures[k] = SafeRetain(textures[k]);
         newLandscape->textureTiling[k] = textureTiling[k];
         newLandscape->tileColor[k] = tileColor[k];

@@ -30,9 +30,9 @@
 
 #include "SettingsDialogQt.h"
 #include "../QtPropertyEditor/QtPropertyEditor.h"
-#include "GeneralSettingsEditor.h"
+#include "Main/mainwindow.h"
 
-#define TAB_CONTENT_WIDTH 400
+#define TAB_CONTENT_WIDTH 500
 #define TAB_CONTENT_HEIGHT 400
 
 
@@ -43,16 +43,46 @@ SettingsDialogQt::SettingsDialogQt( QWidget* parent)
 	tabWidget = new QTabWidget;
 	
 	
-	GeneralSettingsEditor* generalSettingsTab = new GeneralSettingsEditor(this);
+	generalSettingsTab = new GeneralSettingsEditor(this);
 	generalSettingsTab->setMinimumSize(QSize(TAB_CONTENT_WIDTH,TAB_CONTENT_HEIGHT));
 	tabWidget->addTab(generalSettingsTab, "General");
 	
+	btnBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);;
+	connect(btnBox, SIGNAL(accepted()), this, SLOT(accept()));
+	connect(btnBox, SIGNAL(rejected()), this, SLOT(reject()));
+		
 	mainLayout = new QVBoxLayout;
 	mainLayout->addWidget(tabWidget);
+
+	systemsSettingsTab = NULL;
+	SceneEditor2* sceneEditor = QtMainWindow::Instance()->GetCurrentScene();
+	if (NULL !=sceneEditor)
+	{
+		systemsSettingsTab = new SystemsSettingsEditor(this);
+		tabWidget->addTab(systemsSettingsTab, "Systems");
+	}
+	mainLayout->addWidget(btnBox);
 	setLayout(mainLayout);
 }
 
 SettingsDialogQt::~SettingsDialogQt()
 {
+	if(systemsSettingsTab)
+	{
+		delete systemsSettingsTab;
+	}
+	delete generalSettingsTab;
+	delete btnBox;
 	delete tabWidget;
+}
+
+
+void SettingsDialogQt::reject()
+{
+	generalSettingsTab->RestoreInitialSettings();
+	if(systemsSettingsTab)
+	{
+		systemsSettingsTab->RestoreInitialSettings();
+	}
+	QDialog::reject();
 }

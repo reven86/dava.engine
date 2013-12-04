@@ -46,9 +46,10 @@ using namespace DAVA;
 
 class PreviewControl : public UIControl
 {
+protected:
+    virtual ~PreviewControl();
 public:
     PreviewControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
-    virtual ~PreviewControl();
     
     virtual void Load(const String &yamlPath);
     virtual void Unload();

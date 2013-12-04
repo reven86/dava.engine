@@ -117,6 +117,8 @@ public:
 		,	SCREEN_ORIENTATION_LANDSCAPE_LEFT
 		,	SCREEN_ORIENTATION_PORTRAIT
 		,	SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN
+        ,   SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE
+        ,   SCREEN_ORIENTATION_PORTRAIT_AUTOROTATE
 	};
     
     enum eRenderer
@@ -332,10 +334,7 @@ protected:
 
 private:
 	float32 screenWidth;
-	float32 screenHeight;
-	
-	float32 rotatedScreenWidth;
-	float32 rotatedScreenHeight;
+	float32 screenHeight;	
 	
 	int desirableIndex;
 	

@@ -244,7 +244,7 @@ void MaterialPropertyControl::OnComboIndexChanged(PropertyList *forList, const S
         
         ReadFrom(currentDataNode);
         
-        SceneValidator::Instance()->ValidateSceneAndShowErrors(material->GetScene());
+        SceneValidator::Instance()->ValidateSceneAndShowErrors(material->GetScene(), EditorSettings::Instance()->GetDataSourcePath());
     }
 	else if ("property.material.blendSrc" == forKey) 
 	{

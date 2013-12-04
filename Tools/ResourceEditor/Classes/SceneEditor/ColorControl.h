@@ -44,10 +44,10 @@ public:
 
 class ColorControl: public UIControl
 {
-    
+protected:
+    virtual ~ColorControl();
 public:
     ColorControl(const Rect & rect, ColorControlDelegate *newDelegate);
-    virtual ~ColorControl();
     
     virtual void WillAppear();
     

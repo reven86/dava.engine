@@ -48,6 +48,9 @@ Image::Image()
 Image::~Image()
 {
 	SafeDeleteArray(data);
+	
+	width = 0;
+	height = 0;
 }
 
 Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
@@ -246,7 +249,7 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 							  uint32 newWidth, uint32 newHeight,
 							  uint32 xOffset, uint32 yOffset)
 {
-	DVASSERT(newWidth > 0 && newHeight > 0 && xOffset >= 0 && yOffset >= 0);
+	DVASSERT(newWidth >= 0 && newHeight >= 0 && xOffset >= 0 && yOffset >= 0);
 
 	uint32 oldWidth = imageToCopy->GetWidth();
 	uint32 oldHeight = imageToCopy->GetHeight();
@@ -275,5 +278,60 @@ Image* Image::CopyImageRegion(const Image* imageToCopy, const Rect& rect)
 	return CopyImageRegion(imageToCopy, (uint32)rect.dx, (uint32)rect.dy, (uint32)rect.x, (uint32)rect.y);
 }
 
+void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
+						uint32 srcX /* = 0 */, uint32 srcY /* = 0 */,
+						uint32 srcWidth /* = -1 */, uint32 srcHeight /* = -1 */)
+{
+	if (GetPixelFormat() != image->GetPixelFormat())
+	{
+		return;
+	}
+
+	if (image == NULL || dstX >= width || dstY >= height ||
+		srcX >= image->GetWidth() || srcY >= image->GetHeight())
+	{
+		return;
+	}
+
+	uint32 insertWidth = (srcWidth == (uint32)-1) ? image->GetWidth() : srcWidth;
+	uint32 insertHeight = (srcHeight == (uint32)-1) ? image->GetHeight() : srcHeight;
+
+	if (srcX + insertWidth > image->GetWidth())
+	{
+		insertWidth = image->GetWidth() - srcX;
+	}
+	if (dstX + insertWidth > width)
+	{
+		insertWidth = width - dstX;
+	}
+
+	if (srcY + insertHeight > image->GetHeight())
+	{
+		insertHeight = image->GetHeight() - srcY;
+	}
+	if (dstY + insertHeight > height)
+	{
+		insertHeight = height - dstY;
+	}
+
+	PixelFormat format = GetPixelFormat();
+	int32 formatSize = Texture::GetPixelFormatSizeInBytes(format);
+
+	uint8* srcData = image->GetData();
+	uint8* dstData = data;
+
+	for (uint32 i = 0; i < insertHeight; ++i)
+	{
+		memcpy(dstData + (width * (dstY + i) + dstX) * formatSize,
+			   srcData + (image->GetWidth() * (srcY + i) + srcX) * formatSize,
+			   formatSize * insertWidth);
+	}
+}
+
+void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& srcRect)
+{
+	InsertImage(image, (uint32)dstPos.x, (uint32)dstPos.y,
+				(uint32)srcRect.x, (uint32)srcRect.y, (uint32)srcRect.dx, (uint32)srcRect.dy);
+}
 
 };

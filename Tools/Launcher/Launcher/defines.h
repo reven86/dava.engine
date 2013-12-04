@@ -34,7 +34,7 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 2"
+#define LAUNCHER_VER "0.9 build 6"
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 #ifdef Q_OS_DARWIN
@@ -53,6 +53,7 @@
 #define CONFIG_LAUNCHER_WEBPAGE_KEY "webpage"
 #define CONFIG_LAUNCHER_NEWSID_KEY "newsID"
 #define CONFIG_LAUNCHER_REMOTE_URL_KEY "remoteConfigUrl"
+#define CONFIG_LAUNCHER_FAVORITES_KEY "favorites"
 
 #define CONFIG_APPVERSION_RUNPATH_KEY "runpath"
 #define CONFIG_APPVERSION_CMD_KEY "cmd"

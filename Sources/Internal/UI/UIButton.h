@@ -254,9 +254,9 @@ public:
 	 */
 	virtual void SetStateTextControl(int32 state, UIStaticText *textControl);
 
-	
-
 	virtual void SetVisible(bool isVisible, bool hierarchic = true);
+	virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
+
 	virtual void SetInputEnabled(bool isEnabled, bool hierarchic = true);
 	virtual void SetDisabled(bool isDisabled, bool hierarchic = true);
 	virtual void SetSelected(bool isSelected, bool hierarchic = true);

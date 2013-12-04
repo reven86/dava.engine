@@ -34,7 +34,6 @@
 #include "Render/RenderHelper.h"
 
 using namespace DAVA;
-REGISTER_CLASS(ParticleEffectNode);
 
 ParticleEffectNode::ParticleEffectNode() : Entity()
 {

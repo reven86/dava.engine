@@ -53,8 +53,12 @@ struct HoodObject
 	virtual void Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem) = 0;
 
 	HoodCollObject* CreateLine(const DAVA::Vector3 &from, const DAVA::Vector3 &to);
+	DAVA::Rect DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObject *x, HoodCollObject *y, HoodCollObject *z);
 
 	DAVA::Vector<HoodCollObject*> collObjects;
+
+protected:
+	DAVA::Vector3 GetAxisTextPos(HoodCollObject *axis);
 };
 
 #endif

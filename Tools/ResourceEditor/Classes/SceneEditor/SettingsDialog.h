@@ -46,10 +46,10 @@ public:
 
 class SettingsDialog: public UIControl, public PropertyListDelegate
 {
-    
+protected:
+    virtual ~SettingsDialog();
 public:
     SettingsDialog(const Rect & rect, SettingsDialogDelegate *newDelegate);
-    virtual ~SettingsDialog();
     
     virtual void WillAppear();
     

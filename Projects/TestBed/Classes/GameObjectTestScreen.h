@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class GameObjectTestScreen : public UIScreen
 {
+protected:
+	~GameObjectTestScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

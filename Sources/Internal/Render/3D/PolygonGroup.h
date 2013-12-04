@@ -60,9 +60,10 @@ public:
         PACKING_DEFAULT,
     };
     
-    
-	PolygonGroup();
+protected:
 	virtual ~PolygonGroup();
+public:
+	PolygonGroup();
 	
 	//! Getters
     inline int32 GetFormat(); 
@@ -72,7 +73,7 @@ public:
 	inline void	GetTangent(int32 i, Vector3 & v);
 	inline void	GetBinormal(int32 i, Vector3 & v);
 	
-	inline void	GetColor(int32 i, RGBColor & v);
+	inline void	GetColor(int32 i, uint32 & v);
 	inline void	GetTexcoord(int32 ti, int32 i, Vector2 & v);
 	inline void	GetCubeTexcoord(int32 ti, int32 i, Vector3 & v);
 	inline void	GetIndex(int32 i, int32 & index);
@@ -85,7 +86,7 @@ public:
 	inline void	SetTangent(int32 i, const Vector3 & v);
 	inline void	SetBinormal(int32 i, const Vector3 & v);
 	
-	inline void	SetColor(int32 i, const RGBColor & v);
+	inline void	SetColor(int32 i, const uint32 & c);
 	inline void	SetTexcoord(int32 ti, int32 i, const Vector2 & v);
 	inline void	SetCubeTexcoord(int32 ti, int32 i, const Vector3 & v);
 	inline void	SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue);
@@ -124,7 +125,7 @@ public:
 
 	int32		*jointCountArray;
 	
-	RGBColor	*colorArray;
+	uint32	*colorArray;
 	int16		*indexArray; // Boroda: why int16? should be uint16? 
 	uint8		*meshData;
 	
@@ -237,9 +238,9 @@ inline void	PolygonGroup::SetBinormal(int32 i, const Vector3 & _v)
 	*v = _v;
 }
 
-inline void	PolygonGroup::SetColor(int32 i, const RGBColor & _c)
+inline void	PolygonGroup::SetColor(int32 i, const uint32 & _c)
 {
-	RGBColor * c = (RGBColor *)((uint8 *)colorArray + i * vertexStride);  
+	uint32 * c = (uint32 *)((uint8 *)colorArray + i * vertexStride);  
 	*c = _c;
 }
 
@@ -312,9 +313,9 @@ inline void	PolygonGroup::GetBinormal(int32 i, Vector3 & _v)
 	_v = *v;
 }
 
-inline void	PolygonGroup::GetColor(int32 i, RGBColor & _c)
+inline void	PolygonGroup::GetColor(int32 i, uint32 & _c)
 {
-	RGBColor * c = (RGBColor *)((uint8 *)colorArray + i * vertexStride);  
+	uint32 * c = (uint32 *)((uint8 *)colorArray + i * vertexStride);  
 	_c = *c;
 }
 

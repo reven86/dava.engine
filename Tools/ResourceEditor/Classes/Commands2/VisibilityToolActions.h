@@ -37,6 +37,30 @@
 using namespace DAVA;
 
 class VisibilityToolProxy;
+class SceneEditor2;
+
+class ActionEnableVisibilityTool: public CommandAction
+{
+public:
+	ActionEnableVisibilityTool(SceneEditor2* forSceneEditor);
+
+protected:
+	SceneEditor2* sceneEditor;
+
+	virtual void Redo();
+};
+
+class ActionDisableVisibilityTool: public CommandAction
+{
+public:
+	ActionDisableVisibilityTool(SceneEditor2* forSceneEditor);
+
+protected:
+	SceneEditor2* sceneEditor;
+
+	virtual void Redo();
+};
+
 
 class ActionSetVisibilityPoint: public CommandAction
 {

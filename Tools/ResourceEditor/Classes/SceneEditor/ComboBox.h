@@ -47,10 +47,12 @@ public:
 
 class ComboBox : public UIControl, public UIListDelegate
 {
+protected:
+    ~ComboBox();
 public:
     
     ComboBox(const Rect &rect, ComboBoxDelegate *comboDelegate, const Vector<String> &listItems);
-    ~ComboBox();
+
     
     void SetNewItemsSet(const Vector<String> &listItems);
     void SetMaxVisibleItemsCount(int32 itemsCount);

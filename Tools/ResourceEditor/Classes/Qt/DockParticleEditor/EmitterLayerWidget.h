@@ -76,6 +76,7 @@ signals:
 protected slots:
 	void OnLodsChanged();
 	void OnValueChanged();
+	void OnPresetChanged();
 	void OnSpriteBtn();
 	void OnSpritePathChanged(const QString& text);
 	
@@ -88,16 +89,23 @@ private:
 	void FillLayerTypes();
 	int32 LayerTypeToIndex(ParticleLayer::eType layerType);
 
+	void FillBlendCombos();
+
 private:
 	ParticleLayer* layer;
 	QVBoxLayout* mainBox;
 	
 	QLineEdit* layerNameLineEdit;
-	QCheckBox* enableCheckBox;
-	QCheckBox* additiveCheckBox;
+	QCheckBox* enableCheckBox;	
+	
 	QCheckBox* isLongCheckBox;
+	EventFilterDoubleSpinBox *scaleVelocityBaseSpinBox;
+	EventFilterDoubleSpinBox *scaleVelocityFactorSpinBox;
+	QLabel *scaleVelocityBaseLabel, *scaleVelocityFactorLabel;
+
 	QCheckBox* isLoopedCheckBox;
 	QCheckBox* inheritPostionCheckBox;
+
 
 	QCheckBox* layerLodsCheckBox[LodComponent::MAX_LOD_LAYERS];
 
@@ -120,6 +128,24 @@ private:
 	QLabel* pivotPointYSpinBoxLabel;
 	QPushButton* pivotPointResetButton;
 
+	QCheckBox *frameBlendingCheckBox;
+
+	QLabel *particleOrientationLabel;
+	QCheckBox *cameraFacingCheckBox;
+	QCheckBox *xFacingCheckBox;
+	QCheckBox *yFacingCheckBox;
+	QCheckBox *zFacingCheckBox;
+	QCheckBox *worldAlignCheckBox;
+
+	QLabel *blendOptionsLabel;
+	QLabel *presetLabel;
+	QComboBox *presetComboBox;
+	QLabel *srcFactorLabel;
+	QComboBox *srcFactorComboBox;
+	QLabel *dstFactorLabel;
+	QComboBox *dstFactorComboBox;
+	QCheckBox *fogCheckBox;	
+
 	TimeLineWidget* lifeTimeLine;
 	TimeLineWidget* numberTimeLine;
 	TimeLineWidget* sizeTimeLine;
@@ -129,12 +155,17 @@ private:
 	TimeLineWidget* velocityOverLifeTimeLine;
 	TimeLineWidget* spinTimeLine;
 	TimeLineWidget* spinOverLifeTimeLine;
+	
 
 	TimeLineWidget* alphaOverLifeTimeLine;
 	QCheckBox* frameOverlifeCheckBox;
 	QSpinBox* frameOverlifeFPSSpin;
 	QLabel* frameOverlifeFPSLabel;
 	QCheckBox* randomFrameOnStartCheckBox;
+	QCheckBox* loopSpriteAnimationCheckBox;
+	TimeLineWidget* animSpeedOverLifeTimeLine;
+
+	QCheckBox* randomSpinDirectionCheckBox;
 
 	TimeLineWidget* angleTimeLine;
 	GradientPickerWidget* colorRandomGradient;
@@ -161,6 +192,15 @@ private:
 	};
 
 	static const LayerTypeMap layerTypeMap[];
+
+	struct BlendPreset
+	{
+		eBlendMode srcFactor;
+		eBlendMode dstFactor;
+		QString presetName;
+	};
+
+	static const BlendPreset blendPresetsMap[];
 };
 
 #endif /* defined(__ResourceEditorQt__EmitterLayerWidget__) */

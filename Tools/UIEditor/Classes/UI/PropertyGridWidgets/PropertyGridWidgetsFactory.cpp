@@ -174,7 +174,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
-        resultList.push_back(stateWidget);
         resultList.push_back(uiTextFieldWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
@@ -189,7 +188,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
 	    resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);		
-      	resultList.push_back(stateWidget);
 		resultList.push_back(sliderWidget);
 	 	resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
@@ -204,7 +202,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
-        resultList.push_back(stateWidget);
 		resultList.push_back(listWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
@@ -220,7 +217,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
-        resultList.push_back(stateWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
         
@@ -234,7 +230,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
 		resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
-        resultList.push_back(stateWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
         
@@ -248,7 +243,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
 		resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
-        resultList.push_back(stateWidget);
 		resultList.push_back(scrollViewWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
@@ -263,7 +257,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
 		resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
-        resultList.push_back(stateWidget);
 		resultList.push_back(scrollWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
@@ -280,7 +273,6 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         resultList.push_back(controlWidget);
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
-        resultList.push_back(stateWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
         

@@ -38,7 +38,6 @@
 namespace DAVA 
 {
     
-REGISTER_CLASS(Light);
 
 Light::Light()
 :	BaseObject(),
@@ -203,12 +202,12 @@ void Light::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
 //    SceneNode::Draw();
 //}
 
-bool Light::IsDynamic()
+const bool Light::IsDynamic()
 {
 	return (flags & IS_DYNAMIC) != 0;
 }
 
-void Light::SetDynamic(bool _isDynamic)
+void Light::SetDynamic(const bool & _isDynamic)
 {
 	if(_isDynamic)
 	{

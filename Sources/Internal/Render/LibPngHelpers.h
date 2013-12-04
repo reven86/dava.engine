@@ -59,9 +59,10 @@ public:
 
 class PngImage : public BaseObject
 {
+protected:
+	~PngImage();
 public:
 	PngImage();
-	~PngImage();
 	
 	bool Create(int32 _width, int32 _height);
 	bool CreateFromFBOSprite(Sprite * fboSprite);

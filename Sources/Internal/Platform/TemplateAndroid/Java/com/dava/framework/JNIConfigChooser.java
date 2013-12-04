@@ -27,6 +27,11 @@ public class JNIConfigChooser implements GLSurfaceView.EGLConfigChooser {
     /** The number of bits requested for the depth component */
     protected int depthSize = 24;
 	
+    private static int curDepthBufferSize = 0;
+    public static int GetDepthBufferSize() {
+    	return curDepthBufferSize;
+    }
+    
 	public JNIConfigChooser() {
 	}
 	
@@ -71,9 +76,11 @@ public class JNIConfigChooser implements GLSurfaceView.EGLConfigChooser {
 		
 		if (eglConfig == null) {
 			Log.e(JNIConst.LOG_TAG, "Error initialize gl");
+			curDepthBufferSize = 0;
 			return null;
 		}
 		
+		curDepthBufferSize = depthSize;
 		printConfig(egl, display, eglConfig);
 		return eglConfig;
 	}

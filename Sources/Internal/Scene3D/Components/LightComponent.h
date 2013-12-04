@@ -41,9 +41,10 @@ namespace DAVA
 
 class LightComponent : public Component
 {
+protected:
+    ~LightComponent();
 public:
     LightComponent(Light * _light = 0);
-    ~LightComponent();
     
     IMPLEMENT_COMPONENT_TYPE(LIGHT_COMPONENT);
     virtual Component * Clone(Entity * toEntity);

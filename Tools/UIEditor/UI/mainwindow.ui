@@ -580,6 +580,11 @@
    </property>
   </action>
   <action name="actionEqualBetweenLeftEdges">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/distribute_horizontal_left.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq Left</string>
    </property>
@@ -588,36 +593,71 @@
    </property>
   </action>
   <action name="actionEqualBetweenXCenters">
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/Icons/distribute_horizontal_center.png</disabledoff>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq X Centers</string>
    </property>
   </action>
   <action name="actionEqualBetweenRightEdges">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/distribute_horizontal_right.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq Right</string>
    </property>
   </action>
   <action name="actionEqualBetweenXObjects">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/distribute_horizontal_gaps.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq X</string>
    </property>
   </action>
   <action name="actionEqualBetweenTopEdges">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/distribute_vertical_top.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq Top</string>
    </property>
   </action>
   <action name="actionEqualBetweenYCenters">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/distribute_vertical_center.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq Y Centers</string>
    </property>
   </action>
   <action name="actionEqualBetweenBottomEdges">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/distribute_vertical_bottom.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq Bottom</string>
    </property>
   </action>
   <action name="actionEqualBetweenYObjects">
+   <property name="icon">
+    <iconset>
+     <normalon>:/Icons/distribute_vertical_gaps.png</normalon>
+    </iconset>
+   </property>
    <property name="text">
     <string>Eq Y</string>
    </property>

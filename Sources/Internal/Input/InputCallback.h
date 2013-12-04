@@ -40,8 +40,9 @@ class UIEvent;
 class InputSystem;
 class InputCallbackBase : public BaseObject
 {
-public:
+protected:
 	virtual ~InputCallbackBase() {};
+public:
 	virtual void operator () (UIEvent *) = 0;
 	virtual InputCallbackBase * Clone() const = 0;
 	virtual bool IsEqual(const InputCallbackBase * event) const = 0;

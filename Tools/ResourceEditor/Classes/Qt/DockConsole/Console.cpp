@@ -31,12 +31,15 @@
 
 Console::Console()
 {
-	DAVA::Logger::AddCustomOutput(new LoggerToConsole());
+	output = new LoggerToConsole();
+	DAVA::Logger::AddCustomOutput(output);
 	log.reserve(5000);
 }
 
 Console::~Console()
-{ }
+{
+	DAVA::Logger::RemoveCustomOutput(output);
+}
 
 void Console::Clear()
 {

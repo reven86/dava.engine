@@ -66,7 +66,6 @@ public:
 class XMLParser : public BaseObject 
 {
 public:
-	
 	XMLParser();
 	
 	static bool ParseFile(const FilePath &fileName, XMLParserDelegate *delegate);

@@ -34,8 +34,6 @@
 namespace DAVA 
 {
 
-REGISTER_CLASS(UISwitch);
-
 //use these names for children controls to define UISwitch in .yaml
 static const String UISWITCH_BUTTON_LEFT_NAME = "buttonLeft";
 static const String UISWITCH_BUTTON_RIGHT_NAME = "buttonRight";
@@ -44,6 +42,11 @@ static const float32 SWITCH_ANIMATION_TIME = 0.1f;
 
 class TogglePositionAnimation : public LinearAnimation<float32>
 {
+protected:
+    virtual ~TogglePositionAnimation()
+    {
+        SafeRelease(uiSwitch);
+    }
 public:
     TogglePositionAnimation(bool _isCausedByTap, UISwitch * _uiSwitch, float32 * _var, float32 _endValue, float32 _animationTimeLength, Interpolation::FuncType _iType)
         : LinearAnimation(_uiSwitch->GetToggle(), _var, _endValue, _animationTimeLength, _iType)
@@ -59,11 +62,6 @@ public:
         }
     }
     
-    virtual ~TogglePositionAnimation()
-    {
-        SafeRelease(uiSwitch);
-    }
-
     virtual void Update(float32 timeElapsed)
     {
         LinearAnimation::Update(timeElapsed);

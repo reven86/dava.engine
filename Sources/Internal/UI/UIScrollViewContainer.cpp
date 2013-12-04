@@ -33,8 +33,6 @@
 namespace DAVA 
 {
 	
-REGISTER_CLASS(UIScrollViewContainer);
-
 const int32 DEFAULT_TOUCH_TRESHOLD = 15;  // Default value for finger touch tresshold
 
 UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)

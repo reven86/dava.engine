@@ -44,9 +44,10 @@ namespace DAVA
 class Scene;
 class UI3DView : public UIControl 
 {
+protected:
+    virtual ~UI3DView();
 public:
 	UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates = FALSE);
-    virtual ~UI3DView();
     
     void SetScene(Scene * scene);
     Scene * GetScene() const;

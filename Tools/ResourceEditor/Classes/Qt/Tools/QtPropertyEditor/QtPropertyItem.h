@@ -32,8 +32,7 @@
 #define __QT_PROPERTY_ITEM_H__
 
 #include <QStandardItem>
-
-class QtPropertyData;
+#include "QtPropertyData.h"
 
 Q_DECLARE_METATYPE(QtPropertyData *);
 
@@ -53,10 +52,13 @@ public:
 	~QtPropertyItem();
 
 	QtPropertyData* GetPropertyData() const;
+	QtPropertyItem* GetParentNameItem() const;
 
 	int	type() const;
 	QVariant data(int role) const;
 	void setData(const QVariant & value, int role);
+
+	bool Update();
 	
 protected:
 	QtPropertyData* itemData;
@@ -73,7 +75,7 @@ protected:
 protected slots:
 	void DataChildAdded(const QString &key, QtPropertyData *data);
 	void DataChildRemoving(const QString &key, QtPropertyData *data);
-	void DataValueChanged();
+	void DataValueChanged(QtPropertyData::ValueChangeReason reason);
 	void DataFlagsChanged();
 };
 

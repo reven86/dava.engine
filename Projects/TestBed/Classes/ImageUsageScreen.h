@@ -33,6 +33,8 @@ using namespace DAVA;
 
 class ImageUsageScreen : public UIScreen
 {
+protected:
+	~ImageUsageScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

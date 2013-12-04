@@ -36,9 +36,10 @@ namespace DAVA {
 	
 class GameCore : public DAVA::ApplicationCore
 {
+protected:
+	virtual ~GameCore();
 public:	
 	GameCore();
-	virtual ~GameCore();
 	
 	virtual void OnAppStarted();
 	virtual void OnAppFinished();

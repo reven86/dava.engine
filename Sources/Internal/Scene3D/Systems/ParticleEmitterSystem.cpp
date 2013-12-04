@@ -81,28 +81,38 @@ void ParticleEmitterSystem::Update(float32 timeElapsed, Camera * camera)
 
 	for(uint32 i = 0; i < size; ++i)
 	{
-		// Yuri Coder, 2013/05/15. Visible emitters are always updated, "deferred" update
-		// is called for invisible ones. See pls issue #DF-1140.
+		if (emitters[i]->IsStopped()) //prevent any calculations for emitters that are completely stopped
+			continue; 
+
 		uint32 flags = emitters[i]->GetFlags();
-		bool requireUpdate = false;
-
-		float32 effectTime = emitters[i]->IsShortEffect()?timeElapsed*speedMult:timeElapsed;
-
-        if ((flags & RenderObject::VISIBILITY_CRITERIA) == RenderObject::VISIBILITY_CRITERIA)
-        {
-            emitters[i]->Update(effectTime);
-			requireUpdate = true;
-        }
-		else
+		
+		if (!emitters[i]->IsPaused()) // do not update paused emmiters
 		{
-			requireUpdate = emitters[i]->DeferredUpdate(effectTime);
+			float32 effectTime = timeElapsed; //temporary suppressed acceleration of short effects - will be restored in new particles
+			//float32 effectTime = emitters[i]->IsShortEffect()?timeElapsed*speedMult:timeElapsed;
+			//now only invisible lod is subject for deferred update, as invisible switch should be stopped (start with action) as well as manually invisible.
+			//and clipping is anyway required
+			if (flags & RenderObject::VISIBLE_LOD) 
+			{
+				emitters[i]->Update(effectTime);
+
+			}
+			else
+			{
+				emitters[i]->DeferredUpdate(effectTime);
+			}		
+
+			
 		}		
 
+		//note that even if objects geometry was not changed - it still requires rebuild due to possible camera changes
+		//if render object is invisible - do not rebuild it, though still need rebuild if it is invisible due to clipping, as clipping comes after
 		if (emitters[i]->IsToBeDeleted())
 		{
 			emittersToBeDeleted.push_back(emitters[i]);
-		}
-		else if (requireUpdate)
+		}		
+		else if (((flags&RenderObject::CLIPPING_VISIBILITY_CRITERIA) == RenderObject::CLIPPING_VISIBILITY_CRITERIA) ||
+			(emitters[i]->IsStopped())) //emitter became stopped after update - we need to clear it's render data and mark it for update system to rebuild tree if needed
 		{
 			emitters[i]->PrepareRenderData(camera);			
 			emitters[i]->GetRenderSystem()->MarkForUpdate(emitters[i]);

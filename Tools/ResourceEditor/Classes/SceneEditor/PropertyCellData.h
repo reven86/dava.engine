@@ -58,9 +58,10 @@ public:
         
         PROP_VALUE_COUNT
     };
-    
-    PropertyCellData(int _valueType);
+protected:
     virtual ~PropertyCellData();
+public:
+    PropertyCellData(int _valueType);
 
     int32 GetValueType();
 

@@ -84,6 +84,23 @@ void FilePath::AddResourcesFolder(const FilePath & folder)
     resPath.pathType = PATH_IN_RESOURCES;
     resourceFolders.push_back(resPath);
 }
+
+void FilePath::AddTopResourcesFolder(const FilePath & folder)
+{
+	DVASSERT(!folder.IsEmpty());
+
+	for(List<FilePath>::iterator it = resourceFolders.begin(); it != resourceFolders.end(); ++it)
+	{
+		if(folder == *it)
+		{
+			DVASSERT(false);
+		}
+	}
+
+	FilePath resPath = folder;
+	resPath.pathType = PATH_IN_RESOURCES;
+	resourceFolders.push_front(resPath);
+}
     
 void FilePath::RemoveResourcesFolder(const FilePath & folder)
 {
@@ -143,6 +160,10 @@ FilePath FilePath::FilepathInDocuments(const String & relativePathname)
     return FilepathInDocuments(relativePathname.c_str());
 }
 
+bool FilePath::ContainPath(const FilePath& basePath, const FilePath& partPath)
+{
+	return basePath.GetAbsolutePathname().find(partPath.GetAbsolutePathname()) != std::string::npos;
+}
 
 FilePath::FilePath()
 {
@@ -258,7 +279,6 @@ String FilePath::ResolveResourcesPath() const
         String relativePathname = "Data" + absolutePathname.substr(5);
         FilePath path;
         
-		bool isResolved = false;
         List<FilePath>::reverse_iterator endIt = resourceFolders.rend();
         for(List<FilePath>::reverse_iterator it = resourceFolders.rbegin(); it != endIt; ++it)
         {
@@ -269,7 +289,6 @@ String FilePath::ResolveResourcesPath() const
             {
                 if(FileSystem::Instance()->IsDirectory(path))
                 {
-					isResolved = true;
                     break;
                 }
             }
@@ -277,18 +296,9 @@ String FilePath::ResolveResourcesPath() const
             {
                 if(FileSystem::Instance()->IsFile(path))
                 {
-					isResolved = true;
                     break;
                 }
             }
-        }
-		
-		if (!isResolved)
-		{
-			String warningMsg = "Unable to resolve relative path " + absolutePathname + "\n";
-			warningMsg += "Returning default absolute path found ";
-			warningMsg += path.absolutePathname;
-			Logger::Warning(warningMsg.c_str());
         }
         
         return path.absolutePathname;
@@ -498,11 +508,13 @@ void FilePath::ReplaceDirectory(const FilePath &directory)
     pathType = directory.pathType;
 }
     
-void FilePath::MakeDirectoryPathname()
+FilePath & FilePath::MakeDirectoryPathname()
 {
     DVASSERT(!IsEmpty());
     
     absolutePathname = MakeDirectory(absolutePathname);
+    
+    return *this;
 }
     
 void FilePath::TruncateExtension()

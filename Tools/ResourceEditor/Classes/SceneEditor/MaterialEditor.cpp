@@ -39,6 +39,7 @@
 #include "../EditorScene.h"
 
 #include "../Qt/CubemapEditor/MaterialHelper.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
 
 static const float32 materialListPart = 0.33f;
 static const float32 previewHeightPart = 0.5f;
@@ -117,7 +118,7 @@ MaterialEditor::MaterialEditor(const Rect &rect)
     {
         v.push_back(Material::GetTypeName((Material::eType)i));
     }
-    
+
     materialProps = new MaterialPropertyControl(Rect(size.x * materialListPart, 
                                                       size.y * previewHeightPart, 
                                                       size.x - size.x * materialListPart, 
@@ -129,26 +130,26 @@ MaterialEditor::MaterialEditor(const Rect &rect)
 
 MaterialEditor::~MaterialEditor()
 {
-    SafeRelease(btnSetupFog);
-	SafeRelease(btnSetupColor);
-    SafeRelease(line);
-
 	for_each(materials.begin(), materials.end(),  SafeRelease<Material>);
-    materials.clear();
+	materials.clear();
 
 	for_each(workingNodeMaterials.begin(), workingNodeMaterials.end(),  SafeRelease<Material>);
-    workingNodeMaterials.clear();
+	workingNodeMaterials.clear();
 
-    SafeRelease(workingMaterial);
-    SafeRelease(workingSceneNode);
-    SafeRelease(workingScene);
-    
-    SafeRelease(noMaterials);
-    SafeRelease(btnSelected);
-    SafeRelease(btnAll);
-    SafeRelease(materialsList);
-    
-    SafeRelease(materialProps);
+	SafeRelease(workingMaterial);
+	SafeRelease(workingSceneNode);
+	SafeRelease(workingScene);
+
+	SafeRelease(btnAll);
+	SafeRelease(btnSelected);
+	SafeRelease(btnSetupFog);
+	SafeRelease(btnSetupColor);
+	SafeRelease(line);
+	SafeRelease(fogControl);
+	SafeRelease(colorControl);
+	SafeRelease(materialsList);
+	SafeRelease(noMaterials);
+	SafeRelease(materialProps);
 }
 
 void MaterialEditor::UpdateInternalMaterialsVector()
@@ -529,6 +530,15 @@ void MaterialEditor::OnSetupColor(BaseObject * object, void * userData, void * c
 
 void MaterialEditor::NodesPropertyChanged(const String &)
 {
+	if(workingScene)
+	{
+		SceneEditor2 *sc = dynamic_cast<SceneEditor2 *>(workingScene);
+		if(sc)
+		{
+			sc->MarkAsChanged();
+		}
+	}
+
     RefreshList();
 }
 
@@ -543,16 +553,12 @@ void MaterialEditor::SetupFog(bool enabled, float32 dencity, const DAVA::Color &
     
     if(workingScene)
     {
-        EditorScene *editorScene = dynamic_cast<EditorScene *>(workingScene);
-        if(editorScene)
+        Landscape *landscape = FindLandscape(workingScene);
+        if (landscape)
         {
-            Landscape *landscape = editorScene->GetLandscape(editorScene);
-            if (landscape)
-            {
-                landscape->SetFog(enabled);
-                landscape->SetFogDensity(dencity);
-                landscape->SetFogColor(newColor);
-            }
+            landscape->SetFog(enabled);
+            landscape->SetFogDensity(dencity);
+            landscape->SetFogColor(newColor);
         }
     }
 }

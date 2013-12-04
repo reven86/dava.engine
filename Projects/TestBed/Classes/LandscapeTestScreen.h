@@ -36,6 +36,8 @@ using namespace DAVA;
 
 class LandscapeTestScreen : public UIScreen
 {
+protected:
+	~LandscapeTestScreen(){}
 public:
 	virtual void LoadResources();
 	virtual void UnloadResources();

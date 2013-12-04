@@ -32,12 +32,18 @@
 
 #include "TexturePacker/CommandLineParser.h"
 
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Commands2/BeastAction.h"
+#include "Classes/SceneEditor/EditorSettings.h"
+
 using namespace DAVA;
+
+#if defined (__DAVAENGINE_BEAST__)
 
 BeastCommandLineTool::BeastCommandLineTool()
 	:	CommandLineTool()
 {
-	oneFrameCommand = false;
 }
 
 void BeastCommandLineTool::PrintUsage()
@@ -46,7 +52,6 @@ void BeastCommandLineTool::PrintUsage()
     printf("-beast [-file [file]]\n");
     printf("\twill beast scene file\n");
     printf("\t-file - full pathname of scene for beasting \n");
-    printf("\t-format - png, pvr, dxt\n");
     
     printf("\n");
     printf("Samples:\n");
@@ -79,7 +84,16 @@ bool BeastCommandLineTool::InitializeFromCommandLine()
 
 void BeastCommandLineTool::Process()
 {
-    //Do nothing
+	SceneEditor2 *scene = new SceneEditor2();
+	if(scene->Load(scenePathname))
+	{
+		scene->Update(0.1f);
+
+		scene->Exec(new BeastAction(scene, NULL));
+
+		scene->Save();
+	}
+	SafeRelease(scene);
 }
 
 const DAVA::FilePath & BeastCommandLineTool::GetScenePathname() const
@@ -87,4 +101,5 @@ const DAVA::FilePath & BeastCommandLineTool::GetScenePathname() const
     return scenePathname;
 }
 
+#endif //#if defined (__DAVAENGINE_BEAST__)
 

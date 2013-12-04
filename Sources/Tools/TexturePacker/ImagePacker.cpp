@@ -117,10 +117,7 @@ bool ImagePacker::AddImage(const Size2i & imageSize, void * searchPtr)
 	if (node)
 	{
 		node->searchPtr = searchPtr;
-		if (CommandLineParser::Instance()->GetVerbose())
-        {
-            Logger::FrameworkDebug("set search ptr to rect:(%d, %d) ims: (%d, %d)\n", node->rect.dx, node->rect.dy, imageSize.dx, imageSize.dy);
-        }
+        Logger::FrameworkDebug("set search ptr to rect:(%d, %d) ims: (%d, %d)", node->rect.dx, node->rect.dy, imageSize.dx, imageSize.dy);
 	}
 	return (node != 0);
 }
