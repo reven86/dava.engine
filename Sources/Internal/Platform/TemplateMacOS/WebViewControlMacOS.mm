@@ -193,9 +193,11 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	[(WebView*)webViewPtr setMainFrameURL:nsURLPathToOpen];
 }
 
-void WebViewControl::LoadHtmlString(const String& htlmString)
+void WebViewControl::LoadHtmlString(const WideString& htlmString)
 {
-	NSString *htmlPageToLoad = [NSString stringWithUTF8String:htlmString.c_str()];
+	NSString* htmlPageToLoad = [[[NSString alloc] initWithBytes: htlmString.data()
+													   length: htlmString.size() * sizeof(wchar_t)
+													 encoding:NSUTF32LittleEndianStringEncoding] autorelease];
     [[(WebView*)webViewPtr mainFrame] loadHTMLString:htmlPageToLoad baseURL:nil];
 }
 

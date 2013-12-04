@@ -30,6 +30,7 @@
 
 #include "WebViewControl.h"
 #include "FileSystem/Logger.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -180,10 +181,10 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	jniWebView.OpenURL(webViewId, urlToOpen);
 }
 
-void WebViewControl::LoadHtmlString(const String& urlToOpen)
+void WebViewControl::LoadHtmlString(const WideString& urlToOpen)
 {
 	JniWebView jniWebView;
-	jniWebView.LoadHtmlString(webViewId, urlToOpen);
+	jniWebView.LoadHtmlString(webViewId, UTF8Utils::EncodeToUTF8(urlToOpen));
 }
 
 void WebViewControl::SetRect(const Rect& rect)
