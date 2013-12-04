@@ -54,6 +54,8 @@ public:
 	// Open the URL.
 	bool OpenUrl(const WCHAR* urlToOpen);
 
+	bool LoadHtmlString(LPCTSTR pszHTMLContent);
+
 	// COM stuff;
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject);
 
@@ -111,7 +113,7 @@ public:
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
 	// Load html page from stringss
-	virtual void LoadHtmlString(const String& htmlString);
+	virtual void LoadHtmlString(const WideString& htmlString);
 	
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);

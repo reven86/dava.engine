@@ -47,7 +47,7 @@ public:
 	// Open the URL.
 	void OpenURL(const String& urlToOpen);
 	// Load html page
-	void LoadHtmlString(const String& htmlString);
+	void LoadHtmlString(const WideString& htmlString);
 
 	// Overloaded virtual methods.
 	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);

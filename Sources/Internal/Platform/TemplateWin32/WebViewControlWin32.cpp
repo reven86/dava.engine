@@ -271,6 +271,76 @@ bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 	return true;
 }
 
+bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
+{
+	if (!this->webBrowser || !pszHTMLContent)
+	{
+		return false;
+	}
+	// Initialize html document
+	this->webBrowser->Navigate( L"about:blank", NULL, NULL, NULL, NULL); 
+
+	IDispatch * m_pDoc;
+	IStream * pStream = NULL;
+	IPersistStreamInit * pPSI = NULL;
+	HGLOBAL hHTMLContent;
+	HRESULT hr;
+	bool bResult = false;
+
+	// allocate global memory to copy the HTML content to
+	hHTMLContent = ::GlobalAlloc( GPTR, ( ::_tcslen( pszHTMLContent ) + 1 ) * sizeof(TCHAR) );
+	if (!hHTMLContent)
+		return false;
+
+	::_tcscpy( (TCHAR *) hHTMLContent, pszHTMLContent );
+
+	// create a stream object based on the HTML content
+	hr = ::CreateStreamOnHGlobal( hHTMLContent, TRUE, &pStream );
+	if (SUCCEEDED(hr))
+	{
+
+		IDispatch * pDisp = NULL;
+
+		// get the document's IDispatch*
+		hr = this->webBrowser->get_Document( &pDisp );
+		if (SUCCEEDED(hr))
+		{
+			m_pDoc = pDisp;
+		}
+		else
+		{
+			return false;
+		}
+
+		// request the IPersistStreamInit interface
+		hr = m_pDoc->QueryInterface( IID_IPersistStreamInit, (void **) &pPSI );
+
+		if (SUCCEEDED(hr))
+		{
+			// initialize the persist stream object
+			hr = pPSI->InitNew();
+
+			if (SUCCEEDED(hr))
+			{
+				// load the data into it
+				hr = pPSI->Load( pStream );
+
+				if (SUCCEEDED(hr))
+				{
+					bResult = true;
+				}
+			}
+
+			pPSI->Release();
+		}
+
+		// implicitly calls ::GlobalFree to free the global memory
+		pStream->Release();
+	}
+
+	return bResult;
+}
+
 void WebBrowserContainer::UpdateRect()
 {
 	IOleInPlaceObject* oleInPlaceObject = NULL;
@@ -354,15 +424,11 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	}
 }
 
-void WebViewControl::LoadHtmlString(const String& htmlString)
+void WebViewControl::LoadHtmlString(const WideString& htmlString)
 {
 	if (this->browserContainer)
 	{
-        String htmlStringToOpen = htmlString;
-        // For string with html inside - use protocol "about"
-        htmlStringToOpen.insert(0, "about:"); 
-      
-        this->browserContainer->OpenUrl(StringToWString(htmlStringToOpen.c_str()).c_str());
+		this->browserContainer->LoadHtmlString(htmlString.c_str());
 	}
 }
 

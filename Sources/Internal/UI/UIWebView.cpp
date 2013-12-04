@@ -74,7 +74,7 @@ void UIWebView::OpenURL(const String& urlToOpen)
 	this->webViewControl->OpenURL(urlToOpen);
 }
 
-void UIWebView::LoadHtmlString(const String& htmlString)
+void UIWebView::LoadHtmlString(const WideString& htmlString)
 {
 	this->webViewControl->LoadHtmlString(htmlString);
 }
