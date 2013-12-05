@@ -175,6 +175,22 @@ void WebViewControl::LoadHtmlString(const WideString& htlmString)
     [(UIWebView*)webViewPtr loadHTMLString:htmlPageToLoad baseURL:nil];
 }
 
+void WebViewControl::DeleteApplicationCookies(const String& targetUrl)
+{
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+	NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+	// Delete all cookies for specified URL
+	for(NSHTTPCookie *cookie in [cookies cookies])
+	{
+		if([[cookie domain] rangeOfString:targetUrlString].location != NSNotFound)
+	  	{
+       		[cookies deleteCookie:cookie];
+   	 	}
+	}
+	// Syncronized all changes with file system
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];

@@ -49,6 +49,8 @@ public:
 	virtual void OpenURL(const String& urlToOpen);
 	// Load html page from string
 	virtual void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies associated with target URL
+	virtual void DeleteApplicationCookies(const String& targetUrl);
 
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);

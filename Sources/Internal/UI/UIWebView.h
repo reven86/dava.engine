@@ -49,6 +49,8 @@ public:
 	void OpenURL(const String& urlToOpen);
 	// Load html page
 	void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies for target URL
+	void DeleteApplicationCookies(const String& targetUrl);
 
 	// Overloaded virtual methods.
 	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);

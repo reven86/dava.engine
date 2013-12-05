@@ -79,6 +79,11 @@ void UIWebView::LoadHtmlString(const WideString& htmlString)
 	this->webViewControl->LoadHtmlString(htmlString);
 }
 
+void UIWebView::DeleteApplicationCookies(const String& targetUrl)
+{
+	this->webViewControl->DeleteApplicationCookies(targetUrl);
+}
+
 void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
 {
 	UIControl::SetPosition(position, positionInAbsoluteCoordinates);
