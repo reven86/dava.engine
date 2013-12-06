@@ -581,6 +581,7 @@ void Texture::SetParamsFromImages()
 
 void Texture::FlushDataToRenderer()
 {
+	Retain();
 	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::FlushDataToRendererInternal));
 }
 
@@ -665,6 +666,7 @@ void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, voi
 	state = STATE_VALID;
 
 	ReleaseImages();
+	Release();
 }
 
 bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
