@@ -51,8 +51,8 @@ public:
 
 	virtual void SetCamera(Camera * camera);
 
+	void UpdateEntitiesAfterLoad();
 	static void UpdateEntityAfterLoad(Entity * entity);
-
 	static void MergeChildLods(Entity * toEntity);
 
 	class LodMerger

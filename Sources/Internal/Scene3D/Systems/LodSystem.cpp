@@ -81,6 +81,20 @@ void LodSystem::Process()
 	currentPartialUpdateIndex = currentPartialUpdateIndex < UPDATE_PART_PER_FRAME-1 ? currentPartialUpdateIndex+1 : 0;
 }
 
+void LodSystem::UpdateEntitiesAfterLoad()
+{
+	for(int32 i = 0; i < entities.size(); ++i)
+	{
+		Entity * entity = entities[i];
+		LodComponent * lod = static_cast<LodComponent*>(entity->GetComponent(Component::LOD_COMPONENT));
+		if(lod->flags & LodComponent::NEED_UPDATE_AFTER_LOAD)
+		{
+			UpdateEntityAfterLoad(entity);
+			lod->flags &= ~LodComponent::NEED_UPDATE_AFTER_LOAD;
+		}
+	}
+}
+
 void LodSystem::AddEntity(Entity * entity)
 {
 	entities.push_back(entity);

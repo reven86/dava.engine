@@ -57,12 +57,43 @@ bool SceneValidator::ValidateSceneAndShowErrors(Scene *scene, const DAVA::FilePa
 {
     errorMessages.clear();
 
+	ConvertLodToV2(scene);
     ValidateScene(scene, scenePath, errorMessages);
 
     ShowErrorDialog(errorMessages);
     return (!errorMessages.empty());
 }
 
+void SceneValidator::ConvertLodToV2(Scene * scene)
+{
+	scene->lodSystem->UpdateEntitiesAfterLoad();
+	SerachForLod(scene);
+}
+
+void SceneValidator::SerachForLod(Entity * currentNode)
+{
+	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
+	{
+		Entity * childNode = currentNode->GetChild(c);
+		SerachForLod(childNode);
+		bool wasReplace = MergeLod(childNode);
+		if(wasReplace)
+		{
+			c--;
+		}
+	}
+}
+
+bool SceneValidator::MergeLod(Entity * entity)
+{
+	LodComponent * lod = GetLodComponent(entity);
+	if(lod)
+	{
+		int i = 0;
+	}
+
+	return false;
+}
 
 void SceneValidator::ValidateScene(Scene *scene, const DAVA::FilePath &scenePath, Set<String> &errorsLog)
 {

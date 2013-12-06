@@ -170,7 +170,6 @@ private:
     void LoadHierarchy(Scene * scene, Entity * node, File * file, int32 level);
 
     bool ReplaceNodeAfterLoad(Entity * node);
-
 	void ReplaceOldNodes(Entity * currentNode);
 	
 	void SaveMaterialSystem(File * file, SerializationContext* serializationContext);

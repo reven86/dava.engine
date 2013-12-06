@@ -157,6 +157,10 @@ protected:
 	bool IsTextureDescriptorPath(const FilePath &path);
     
     bool IsFBOTexture(Texture *texture);
+
+	void ConvertLodToV2(Scene *scene);
+	void SerachForLod(Entity * rootNode);
+	bool MergeLod(Entity * entity);
     
 	DAVA_DEPRECATED(void ConvertLightmapSizeFromProperty(Entity *ownerNode, InstanceMaterialState *materialState));
 
