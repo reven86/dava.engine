@@ -37,20 +37,34 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	unsigned int height = [mainScreen bounds].size.height;
     eScreenOrientation orientation = Instance()->GetScreenOrientation();
     //if (UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation]))
+    
+    //@NOTE: this changes for WOTG project
+    /*
     if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
 		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
 		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
+     */
 	{
 		width = [mainScreen bounds].size.height;
         height = [mainScreen bounds].size.width;
 	}
 	unsigned int scale = 1;
+    
+    //@NOTE: this changes for WOTG project
+    //if (DAVA::Core::IsAutodetectContentScaleFactor())
+	{
+		if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+			&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+		{
+			scale = (unsigned int)[[::UIScreen mainScreen] scale];
+		}
+	}
 		
 	// DF-2274 - Setup screen info - actual width and height
 	DeviceInfo::SetScreenInfo(width, height, scale);
 
 	FrameworkDidLaunched();
-	
+	/*
 	if (DAVA::Core::IsAutodetectContentScaleFactor())
 	{
 		if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
@@ -59,9 +73,10 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 			scale = (unsigned int)[[::UIScreen mainScreen] scale];
 		}
 	}
+     */
 	
 	// DF-2274 - Setup screen info - actual scale
-	DeviceInfo::SetScreenInfo(width, height, scale);
+	//DeviceInfo::SetScreenInfo(width, height, scale);
 	
 	DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 	DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
