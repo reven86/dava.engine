@@ -71,8 +71,10 @@
 #include "Render/Material/MaterialSystem.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
-
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
+#include "Scene3D/Systems/LodSystem.h"
+
 
 
 namespace DAVA
@@ -1056,7 +1058,7 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 	ReplaceOldNodes(rootNode);
 	RemoveEmptyHierarchy(rootNode);
 	
-    
+ 
 //    for (int32 k = 0; k < rootNode->GetChildrenCount(); ++k)
 //    {
 //        Entity * node = rootNode->GetChild(k);
@@ -1066,7 +1068,6 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
     int32 nowCount = rootNode->GetChildrenCountRecursive();
     Logger::FrameworkDebug("nodes removed: %d before: %d, now: %d, diff: %d", removedNodeCount, beforeCount, nowCount, beforeCount - nowCount);
 }
-
 	
 void SceneFileV2::SaveMaterialSystem(File * file, SerializationContext* serializationContext)
 {
@@ -1131,5 +1132,8 @@ void SceneFileV2::LoadMaterialSystem(File * file, SerializationContext* serializ
 	
 	SafeRelease(matSystemArchive);
 }
-			
+
+
+
+
 };

@@ -45,13 +45,18 @@
 namespace DAVA
 {
 
+RenderComponent * GetRenderComponent(Entity *fromEntity)
+{
+	return static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
+}
+
 RenderObject * GetRenderObject(const Entity * fromEntity)
 {
 	RenderObject * object = 0;
 
 	if(NULL != fromEntity)
 	{
-		RenderComponent * component = static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
+		RenderComponent * component = GetRenderComponent(fromEntity);
 		if(component)
 		{
 			object = component->GetRenderObject();

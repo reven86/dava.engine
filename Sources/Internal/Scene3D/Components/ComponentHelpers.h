@@ -46,10 +46,12 @@ class Camera;
 class LodComponent;
 class SkyboxRenderObject;
 class SwitchComponent;
+class RenderComponent;
 
 ParticleEmitter * GetEmitter(Entity * fromEntity);
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
 
+RenderComponent * GetRenderComponent(Entity *fromEntity);
 RenderObject * GetRenderObject(const Entity * fromEntity);
 SkyboxRenderObject * GetSkybox(const Entity * fromEntity);
 
