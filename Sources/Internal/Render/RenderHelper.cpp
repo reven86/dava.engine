@@ -192,28 +192,36 @@ void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 
 void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize)
 {
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(ptSize);
+#endif
 #endif 
     vertexStream->Set(TYPE_FLOAT, 2, 0, (void*)&pt);
     RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(1.0f);
+#endif
 #endif
 }
 	
 void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize)
 {
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(ptSize);
+#endif
 #endif 
     vertexStream->Set(TYPE_FLOAT, 3, 0, (void*)&pt);
     RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(renderDataObject);
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, 1);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
     glPointSize(1.0f);
+#endif
 #endif		
 }
 	
@@ -349,14 +357,18 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon)
 	if (ptCount >= 1)
 	{
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
         glPointSize(3.0f);
+#endif
 #endif 
 		vertexStream->Set(TYPE_FLOAT, 2, 0, polygon.GetPoints());
 		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
 		glPointSize(1.0f);
+#endif
 #endif		
 	}
 }
@@ -367,14 +379,18 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon)
 	if (ptCount >= 1)
 	{
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
         glPointSize(3.0f);
+#endif
 #endif 
 		vertexStream->Set(TYPE_FLOAT, 3, 0, polygon.GetPoints());
 		RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
 		RenderManager::Instance()->SetRenderData(renderDataObject);
 		RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_POINTLIST, 0, ptCount);
 #if defined (__DAVAENGINE_OPENGL__)
+#if !defined(__DAVAENGINE_HTML5__)
 		glPointSize(1.0f);
+#endif
 #endif		
 	}
 	

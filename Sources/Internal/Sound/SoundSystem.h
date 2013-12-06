@@ -44,6 +44,11 @@ class EventSystem;
 
 namespace DAVA
 {
+    
+#if defined(__DAVAENGINE_HTML5__)
+    void SoundChannelFinishedPlaying(int nChannelID);
+#endif
+    
 class SoundGroup;
 class SoundEvent;
 class Animation;

@@ -38,6 +38,8 @@
 #include "../Platform/TemplateWin32/WebViewControlWin32.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "../Platform/TemplateAndroid/WebViewControl.h"
+#elif defined(__DAVAENGINE_HTML5__)
+#include "../Platform/TemplateHtml5/WebViewControlHtml5.h"
 #else
 #pragma error UIWEbView control is not implemented for this platform yet!
 #endif

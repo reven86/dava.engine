@@ -121,9 +121,16 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateDirectory(const FilePath & 
 	
 	for (size_t k = 0; k < tokens.size(); ++k)
 	{
+#if defined(__DAVAENGINE_HTML5__)
+        dir += tokens[k];
+#else
 		dir += tokens[k] + "/";
+#endif
         
         eCreateDirectoryResult ret = CreateExactDirectory(dir);
+#if defined(__DAVAENGINE_HTML5__)
+        dir += "/";
+#endif
 		if (k == tokens.size() - 1)
         {
             return ret;
@@ -142,7 +149,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 #ifdef __DAVAENGINE_WIN32__
     BOOL res = ::CreateDirectoryA(filePath.GetAbsolutePathname().c_str(), 0);
     return (res == 0) ? DIRECTORY_CANT_CREATE : DIRECTORY_CREATED;
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     int res = mkdir(filePath.GetAbsolutePathname().c_str(), 0777);
     return (res == 0) ? (DIRECTORY_CREATED) : (DIRECTORY_CANT_CREATE);
 #endif //PLATFORMS
@@ -156,7 +163,7 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 #ifdef __DAVAENGINE_WIN32__
 	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), true);
 	return ret != 0;
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 
 	bool copied = false;
 
@@ -213,7 +220,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 	DWORD flags = (overwriteExisting) ? MOVEFILE_REPLACE_EXISTING : 0;
 	BOOL ret = ::MoveFileExA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), flags);
 	return ret != 0;
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 	if (!overwriteExisting && access(newFile.GetAbsolutePathname().c_str(), 0) != -1)
 	{
 		return false;
@@ -307,7 +314,7 @@ bool FileSystem::DeleteDirectory(const FilePath & path, bool isRecursive)
 		Logger::Warning("Failed to delete directory: %s error: 0x%x", path.c_str(), GetLastError());
 	}
 	return (res != 0);*/
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 	int32 res = rmdir(path.GetAbsolutePathname().c_str());
 	return (res == 0);
 #endif //PLATFORMS
@@ -376,7 +383,7 @@ const FilePath & FileSystem::GetCurrentWorkingDirectory()
 	currentWorkingDirectory = FilePath(tempDir);
 	currentWorkingDirectory.MakeDirectoryPathname();
 	return currentWorkingDirectory;
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 	getcwd(tempDir, 2048);
 	currentWorkingDirectory = FilePath(tempDir);
 	currentWorkingDirectory.MakeDirectoryPathname();
@@ -502,6 +509,17 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 }
 #endif //#if defined(__DAVAENGINE_WIN32__)
 
+#if defined(__DAVAENGINE_HTML5__)
+const FilePath FileSystem::GetUserDocumentsPath()
+{
+    return FilePath("/");
+}
+
+const FilePath FileSystem::GetPublicDocumentsPath()
+{
+    return FilePath("/");
+}
+#endif //#if defined(__DAVAENGINE_HTML5__)
     
 #if defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()

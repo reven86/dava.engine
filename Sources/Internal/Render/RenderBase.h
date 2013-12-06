@@ -80,7 +80,7 @@
 		#include <d3d9.h>
 		#include <dxerr.h>
 #endif 
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
 	#define __DAVAENGINE_OPENGL__
 	#include <GLES/gl.h>
 	#include <GLES/glext.h>

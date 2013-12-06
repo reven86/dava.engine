@@ -1,0 +1,35 @@
+cd libpng/html5/
+rm -rf *.o *.a
+make -j6
+cd ../..
+
+cd freetype_and/html5/
+rm -rf *.o *.a
+make -j6
+cd ../..
+
+cd mongodb/html5/
+rm -rf *.o *.a
+make -j6
+cd ../..
+
+cd yaml/html5/
+rm -rf *.o *.a
+make -j6
+cd ../..
+
+cd ImageMagick-6.7.4-Windows/zlib/html5/
+rm -rf *.o *.a
+make -j6
+cd ../../..
+
+cd xmllib/html5/
+rm -rf *.o *.a
+make -j6
+cd ../..
+
+cd Html5Socket/
+rm -rf *.o *.a
+make -j6
+cd ..
+

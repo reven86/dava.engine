@@ -400,7 +400,9 @@ inline void RenderState::SetColorInHW() const
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::color = (%f, %f, %f, %f)", color.r, color.g, color.b, color.a);
 #endif
+#if !defined(__DAVAENGINE_HTML5__)
         RENDER_VERIFY(glColor4f(color.r, color.g, color.b, color.a));
+#endif
     }
 }
     
@@ -575,13 +577,17 @@ inline void RenderState::SetAlphaTestFuncInHW() const
         Logger::FrameworkDebug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
 #endif    
 
+#if !defined(__DAVAENGINE_HTML5__)
         RENDER_VERIFY(glAlphaFunc(COMPARE_FUNCTION_MAP[alphaFunc], (float32)alphaFuncCmpValue / 255.0f) );
+#endif
     }else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
 #endif    
+#if !defined(__DAVAENGINE_HTML5__)
         RENDER_VERIFY(glAlphaFunc(COMPARE_FUNCTION_MAP[alphaFunc], alphaFuncCmpValue) );
+#endif
     }
 }
 

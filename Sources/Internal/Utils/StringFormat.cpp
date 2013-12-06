@@ -96,7 +96,7 @@ const char8* GetIndentString(char8 indentChar, int32 level)
 
     
     
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
     
 #define ZEROPAD	1		/* pad with zero */
 #define SIGN	2		/* unsigned/signed long */
@@ -765,7 +765,7 @@ const char16* Format(const char16 * text, ...)
 
 #if defined(_WIN32)
 	int32 len = vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
-#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
+#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
     int32 len = Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
 #else
     // MAC_OS & other nix systems

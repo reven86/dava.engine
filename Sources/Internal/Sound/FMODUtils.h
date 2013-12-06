@@ -37,15 +37,24 @@
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_HTML5__)
+    
 #define FMOD_VERIFY(command) \
-	{ \
-	FMOD_RESULT result = command; \
-	if(result != FMOD_OK) \
-	{ \
-		Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(result)); \
-	} \
+{\
+/*Logger::Error("FMODis not avaliable on html5 platform");*/ \
+}\
+
+#else
+#define FMOD_VERIFY(command) \
+{ \
+FMOD_RESULT result = command; \
+if(result != FMOD_OK) \
+{ \
+Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(result)); \
+} \
 } \
 
+#endif
 }
 
 #endif //__DAVAENGINE_FMODUTILS_H__

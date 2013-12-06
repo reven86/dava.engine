@@ -38,19 +38,37 @@
 #include "fmodiphone.h"
 #endif
 
+#if defined (__DAVAENGINE_HTML5__)
+#include <SDL/SDL_Mixer.h>
+#endif
+
 namespace DAVA
 {
 
 SoundSystem::SoundSystem(int32 maxChannels)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    Mix_Init(MIX_INIT_OGG);
+    Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, maxChannels, 1024);
+    Mix_ChannelFinished(SoundChannelFinishedPlaying);
+#endif
+    
+#if !defined(__DAVAENGINE_HTML5__)
 	FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
 	FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
 	FMOD_VERIFY(fmodEventSystem->init(maxChannels, FMOD_INIT_NORMAL, 0));
     FMOD_VERIFY(fmodSystem->set3DSettings(1.f, 1.f, 1.0f));
+#endif
 }
 
 SoundSystem::~SoundSystem()
 {
+#if defined(__DAVAENGINE_HTML5__)
+    Mix_CloseAudio();
+    Mix_Quit();
+#endif
+    
+#if !defined(__DAVAENGINE_HTML5__)
 	for(FastNameMap<SoundGroup*>::Iterator it = soundGroups.Begin(); it != soundGroups.End(); ++it)
 	{
         SoundGroup * soundGroup = it.GetValue();
@@ -59,20 +77,25 @@ SoundSystem::~SoundSystem()
     soundGroups.Clear();
 
 	FMOD_VERIFY(fmodEventSystem->release());
+#endif
 }
 
 void SoundSystem::LoadFEV(const FilePath & filePath)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	FMOD_VERIFY(fmodEventSystem->load(filePath.GetAbsolutePathname().c_str(), 0, 0));
+#endif
 }
 
 SoundEvent * SoundSystem::CreateSoundEvent(const String & eventPath)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	FMOD::Event * fmodEvent = 0;
 	FMOD_VERIFY(fmodEventSystem->getEvent(eventPath.c_str(), FMOD_EVENT_DEFAULT, &fmodEvent));
 	if(fmodEvent)
 		return new SoundEvent(fmodEvent);
 	else
+#endif
 		return 0;
 }
 
@@ -82,7 +105,9 @@ void SoundSystem::Update()
     for(int32 i = 0; i < size; i++)
         animatedObjects[i]->Update();
 
+#if !defined(__DAVAENGINE_HTML5__)
 	fmodEventSystem->update();
+#endif
 
     size = soundsToReleaseOnUpdate.size();
     for(int32 i = 0; i < size; i++)
@@ -110,12 +135,15 @@ void SoundSystem::Resume()
 
 void SoundSystem::SetListenerPosition(const Vector3 & position)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	FMOD_VECTOR pos = {position.x, position.y, position.z};
 	FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, &pos, 0, 0, 0));
+#endif
 }
 
 void SoundSystem::SetListenerOrientation(const Vector3 & at, const Vector3 & left)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	Vector3 atNorm = at;
 	atNorm.Normalize();
 	Vector3 upNorm = at.CrossProduct(left);
@@ -124,6 +152,7 @@ void SoundSystem::SetListenerOrientation(const Vector3 & at, const Vector3 & lef
 	FMOD_VECTOR fmodAt = {atNorm.x, atNorm.y, atNorm.z};
 	FMOD_VECTOR fmodUp = {upNorm.x, upNorm.y, upNorm.z};
 	FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, &fmodAt, &fmodUp));
+#endif
 }
 
 SoundGroup * SoundSystem::GetSoundGroup(const FastName & groupName)
@@ -152,12 +181,14 @@ SoundGroup * SoundSystem::CreateSoundGroup(const FastName & groupName)
 
 ScopedPtr<SoundEventCategory> SoundSystem::GetSoundEventCategory(const String & category)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	FMOD::EventCategory * fmodCategory = 0;
 	FMOD_VERIFY(fmodEventSystem->getCategory(category.c_str(), &fmodCategory));
 
 	if(fmodCategory)
 		return ScopedPtr<SoundEventCategory>(new SoundEventCategory(fmodCategory));
 	else
+#endif
 		return ScopedPtr<SoundEventCategory>(0);
 }
 

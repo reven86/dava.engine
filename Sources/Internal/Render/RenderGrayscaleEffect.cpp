@@ -38,6 +38,8 @@ namespace DAVA
 void RenderGrayscaleEffect::StartEffect()
 {
 
+    
+#if !defined(__DAVAENGINE_HTML5__)
 	RENDER_VERIFY(glColor4f(0.5f + 0.3f * RenderManager::Instance()->GetColorR(), 0.5f + 59.0f  * RenderManager::Instance()->GetColorG(), 0.5f + 0.11f  * RenderManager::Instance()->GetColorB(), RenderManager::Instance()->GetColorA()));
 	
 	float constColor[] = {0.67f, 0.67f, 0.67f, 0.25f};
@@ -65,16 +67,18 @@ void RenderGrayscaleEffect::StartEffect()
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE1));
 	RENDER_VERIFY(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0));
+#endif
 	
 }
 
 void RenderGrayscaleEffect::StopEffect()
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE1));
 	RENDER_VERIFY(glDisable(GL_TEXTURE_2D));
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE1));
 	RENDER_VERIFY(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
-
+    
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0));
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE0));
 	RenderManager::Instance()->HWglBindTexture(RenderManager::Instance()->GetTexture()->id, RenderManager::Instance()->GetTexture()->textureType);
@@ -83,11 +87,14 @@ void RenderGrayscaleEffect::StopEffect()
 	float constColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 	RENDER_VERIFY(glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, constColor));
 	RENDER_VERIFY(glColor4f(1.0f, 1.0f, 1.0f, 1.0f));
+#endif
 }
 
 void RenderGrayscaleEffect::SetColor(float r, float g, float b, float a)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	RENDER_VERIFY(glColor4f(0.5f + 0.3f * r, 0.5f + 59.0f  * g, 0.5f + 0.11f  * b, a));
+#endif
 }
 
 void RenderGrayscaleEffect::SetTexture(Texture *texture)
@@ -101,16 +108,20 @@ void RenderGrayscaleEffect::SetTexture(Texture *texture)
 	
 void RenderGrayscaleEffect::SetVertexPointer(int size, int type, int stride, const void *pointer)
 {
+#if !defined(__DAVAENGINE_HTML5__)
     RENDER_VERIFY(glVertexPointer(size, type, stride, pointer));
+#endif
 }
 	
 
 void RenderGrayscaleEffect::SetTexCoordPointer(int size, int type, int stride, const void *pointer)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE1));
 	RENDER_VERIFY(glTexCoordPointer(size, type, stride, pointer));
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0));
 	RENDER_VERIFY(glTexCoordPointer(size, type, stride, pointer));
+#endif
 }
 #elif defined(__DAVAENGINE_DIRECTX9__)
 

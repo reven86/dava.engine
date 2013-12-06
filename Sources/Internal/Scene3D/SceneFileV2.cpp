@@ -225,7 +225,9 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
+#if !defined(__DAVAENGINE_HTML5__)
         Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
+#endif
         SetError(ERROR_FAILED_TO_CREATE_FILE);
         return GetError();
     }   

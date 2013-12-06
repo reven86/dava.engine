@@ -204,6 +204,12 @@ private:
 public:
 	static void	InitMainThread();
 	static void	InitGLThread();
+            
+#elif defined(__DAVAENGINE_HTML5__)
+private:
+    friend void	* PthreadMain(void * param);
+    void StartHtml5();
+            
 #else //PLATFORMS
 	// other platforms
 #endif //PLATFORMS	

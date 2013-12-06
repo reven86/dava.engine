@@ -31,6 +31,7 @@
 #ifndef __DAVAENGINE_LIBPVRHELPER_H__
 #define __DAVAENGINE_LIBPVRHELPER_H__
 
+#if !defined(__DAVAENGINE_HTML5__)
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
@@ -164,6 +165,7 @@ protected:
 };
 
 
+#endif //!__DAVAENGINE_HTML5__
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__
 
 

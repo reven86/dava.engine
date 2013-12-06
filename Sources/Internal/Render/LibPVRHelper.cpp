@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#if !defined(__DAVAENGINE_HTML5__)
 #include "Render/LibPVRHelper.h"
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
@@ -2541,4 +2541,5 @@ const char* LibPVRHelper::GetCubemapMetadata(PVRHeaderV3* pvrHeader, const char*
 }
     
 };
+#endif
 

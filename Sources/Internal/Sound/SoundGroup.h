@@ -44,6 +44,9 @@ namespace DAVA
 {
 
 class Animation;
+#if defined(__DAVAENGINE_HTML5__)
+class Sound;
+#endif
 class SoundGroup : public VolumeAnimatedObject
 {
 protected:
@@ -57,6 +60,12 @@ public:
 	void Stop();
 
 private:
+#if defined(__DAVAENGINE_HTML5__)
+    static int nFreeGroupID;
+    int nGroupID;
+    Set<Sound*> sounds;
+    float32 fVolume;
+#endif
 	FMOD::SoundGroup * fmodSoundGroup;
 
 friend class Sound;

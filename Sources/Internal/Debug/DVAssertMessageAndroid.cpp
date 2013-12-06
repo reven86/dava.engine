@@ -29,6 +29,7 @@
 
 
 #include "DVAssertMessage.h"
+#if defined(__DAVAENGINE_ANDROID__)
 #include "DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "ExternC/AndroidLayer.h"
@@ -66,3 +67,4 @@ void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 	JniDVAssertMessage msg;
 	msg.ShowMessage(message);
 }
+#endif

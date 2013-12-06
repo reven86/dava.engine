@@ -81,6 +81,16 @@
 // Default headers per platform:
 
 
+#if defined(__DAVAENGINE_HTML5__)
+#include <cstdarg>
+#include <cstdlib>
+#include <cstdio>
+#include <cwchar>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <pthread.h>
+#endif
+
 #if defined(__DAVAENGINE_WIN32__)
 #define __DAVASOUND_AL__
 #define WIN32_LEAN_AND_MEAN

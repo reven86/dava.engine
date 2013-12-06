@@ -36,32 +36,65 @@
 
 namespace DAVA
 {
+    
+#if defined(__DAVAENGINE_HTML5__)
+    int SoundGroup::nFreeGroupID = 1;
+#endif
 
 SoundGroup::SoundGroup()
 {
+#if defined(__DAVAENGINE_HTML5__)
+    nGroupID = nFreeGroupID++;
+#else
 	FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createSoundGroup(0, &fmodSoundGroup));
+#endif
 }
 
 SoundGroup::~SoundGroup()
 {
+#if defined(__DAVAENGINE_HTML5__)
+    sounds.clear();
+#else
 	FMOD_VERIFY(fmodSoundGroup->release());
+#endif
 }
 
 void SoundGroup::SetVolume(float32 volume)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    fVolume = volume;
+    Set<Sound*>::iterator it = sounds.begin();
+    for(Set<Sound*>::iterator it = sounds.begin(); it != sounds.end(); ++it)
+    {
+        (*it)->SetVolume(volume);
+    }
+#else
 	FMOD_VERIFY(fmodSoundGroup->setVolume(volume));
+#endif
 }
 
 float32 SoundGroup::GetVolume()
 {
 	float32 volume;
+#if defined(__DAVAENGINE_HTML5__)
+    volume = fVolume;
+#else
 	FMOD_VERIFY(fmodSoundGroup->getVolume(&volume));
+#endif
 	return volume;
 }
 
 void SoundGroup::Stop()
 {
+#if defined(__DAVAENGINE_HTML5__)
+    Set<Sound*>::iterator it = sounds.begin();
+    for(Set<Sound*>::iterator it = sounds.begin(); it != sounds.end(); ++it)
+    {
+        (*it)->Stop();
+    }
+#else
 	FMOD_VERIFY(fmodSoundGroup->stop());
+#endif
 }
 
 };

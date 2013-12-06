@@ -127,7 +127,11 @@ void UILoadingTransition::DidAppear()
 
 void UILoadingTransition::Update(float32 timeElapsed)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    if((thread) && (thread->GetState() == Thread::STATE_ENDED) && nextScreen->IsAllResourcesLoaded())
+#else
 	if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
+#endif
 	{
 		ThreadIdJobWaiter waiter(thread->GetThreadId());
 		waiter.Wait();

@@ -55,7 +55,7 @@ void Mutex::Unlock()
 	LeaveCriticalSection(&criticalSection);
 }
 
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 
 Mutex::Mutex()
 {

@@ -86,16 +86,24 @@ bool ImageLoader::IsPNGFile(DAVA::File *file)
     
 bool ImageLoader::IsPVRFile(DAVA::File *file)
 {
+#if defined(__DAVAENGINE_HTML5__)
+	return false;
+#else
     bool isPvr = LibPVRHelper::IsPvrFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isPvr;
+#endif
 }
 
 bool ImageLoader::IsDXTFile(DAVA::File *file)
 {
+#if defined(__DAVAENGINE_HTML5__)
+	return false;
+#else
     bool isDXT = LibDxtHelper::IsDxtFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isDXT;
+#endif
 }
     
     
@@ -121,20 +129,24 @@ Vector<Image *> ImageLoader::CreateFromPNG(DAVA::File *file)
 Vector<Image *> ImageLoader::CreateFromDXT(DAVA::File *file)
 {
     Vector<Image *> retObj;
-
+    
+#if !defined(__DAVAENGINE_HTML5__)
 	bool res = LibDxtHelper::ReadDxtFile(file, retObj);
 	if(false == res)
 	{
 		for_each(retObj.begin(), retObj.end(),SafeRelease<Image>);
 		retObj.clear();
 	}
+#endif
+    
 	return retObj;
 }
 
 Vector<Image *> ImageLoader::CreateFromPVR(DAVA::File *file)
 {
     uint64 loadTime = SystemTimer::Instance()->AbsoluteMS();
-
+    
+#if !defined(__DAVAENGINE_HTML5__)
     int32 mipMapLevelsCount = LibPVRHelper::GetMipMapLevelsCount(file);
 	int32 faceCount = LibPVRHelper::GetCubemapFaceCount(file);
 	int32 totalImageCount = mipMapLevelsCount * faceCount;
@@ -154,7 +166,7 @@ Vector<Image *> ImageLoader::CreateFromPVR(DAVA::File *file)
             
             imageSet.push_back(image);
         }
-
+        
         file->Seek(0, File::SEEK_FROM_START);
         bool read = LibPVRHelper::ReadFile(file, imageSet);
         if(!read)
@@ -164,9 +176,10 @@ Vector<Image *> ImageLoader::CreateFromPVR(DAVA::File *file)
             return Vector<Image *>();
         }
         loadTime = SystemTimer::Instance()->AbsoluteMS() - loadTime;
-//        Logger::Info("Unpack PVR(%s) for %ldms", file->GetFilename().c_str(), loadTime);
+        //        Logger::Info("Unpack PVR(%s) for %ldms", file->GetFilename().c_str(), loadTime);
         return imageSet;
     }
+#endif
     return Vector<Image *>();
 }
 

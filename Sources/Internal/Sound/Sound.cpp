@@ -35,8 +35,15 @@ namespace DAVA
 {
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2);
 
+#if defined(__DAVAENGINE_HTML5__)
+std::map<int, Sound*> Sound::channelsUserData;
+int s_nFreeSoundID = 1;
+#endif
+    
+#if !defined(__DAVAENGINE_HTML5__)
 Map<String, FMOD::Sound*> soundMap;
 Map<FMOD::Sound*, int32> soundRefsMap;
+#endif
 
 Sound * Sound::Create(const FilePath & fileName, eType type, const FastName & groupName, int32 priority /* = 128 */)
 {
@@ -55,6 +62,7 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
     if(flags & FMOD_3D)
         sound->is3d = true;
 
+#if !defined(__DAVAENGINE_HTML5__)
     Map<String, FMOD::Sound*>::iterator it;
     it = soundMap.find(fileName.GetAbsolutePathname());
     if (it != soundMap.end())
@@ -62,8 +70,13 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
         sound->fmodSound = it->second;
         soundRefsMap[sound->fmodSound]++;
     }
+#endif
 
+#if defined(__DAVAENGINE_HTML5__)
+    if(!sound->soundChunk)
+#else
     if(!sound->fmodSound)
+#endif
     {
         File * file = File::Create(fileName, File::OPEN | File::READ);
         if(!file)
@@ -83,6 +96,15 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
         file->Read(sound->soundData, fileSize);
         SafeRelease(file);
 
+#if defined(__DAVAENGINE_HTML5__)
+        SDL_RWops * ops = SDL_RWFromConstMem(sound->soundData, fileSize);
+        sound->soundChunk = Mix_LoadWAV_RW(ops, 0);
+        SDL_FreeRW(ops);
+        sound->nSoundID = s_nFreeSoundID++;
+        sound->SetSoundGroup(groupName);
+        sound->SetLoopCount(0);
+        
+#else
         FMOD_CREATESOUNDEXINFO exInfo;
         memset(&exInfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
         exInfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
@@ -109,9 +131,12 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
 
         soundMap[sound->fileName.GetAbsolutePathname()] = sound->fmodSound;
         soundRefsMap[sound->fmodSound] = 1;
+#endif
     }
 
+#if !defined(__DAVAENGINE_HTML5__)
 	FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createChannelGroup(0, &sound->fmodInstanceGroup));
+#endif
 
 	return sound;
 }
@@ -120,6 +145,14 @@ Sound::Sound(const FilePath & _fileName, eType _type, int32 _priority)
 	type(_type),
 	priority(_priority),
 	is3d(false),
+#if defined(__DAVAENGINE_HTML5__)
+    nLoopCount(0),
+    fVolume(0.0),
+    nChannelID(0),
+    soundChunk(NULL),
+    nSoundID(-1),
+    soundGroup(NULL),
+#endif
     soundData(0),
     fmodSound(0),
     fmodInstanceGroup(0)
@@ -130,14 +163,21 @@ Sound::~Sound()
 {
     SafeDeleteArray(soundData);
 
+#if defined(__DAVAENGINE_HTML5__)
+    soundGroup->sounds.erase(this);
+#endif
+    
+#if !defined(__DAVAENGINE_HTML5__)
     if(fmodInstanceGroup)
         FMOD_VERIFY(fmodInstanceGroup->release());
+#endif
 }
 
 int32 Sound::Release()
 {
     if(GetRetainCount() == 1)
     {
+#if !defined(__DAVAENGINE_HTML5__)
         soundRefsMap[fmodSound]--;
         if(soundRefsMap[fmodSound] == 0)
         {
@@ -145,6 +185,7 @@ int32 Sound::Release()
             soundRefsMap.erase(fmodSound);
             FMOD_VERIFY(fmodSound->release());
         }
+#endif
     }
 
     return BaseObject::Release();
@@ -154,12 +195,29 @@ void Sound::SetSoundGroup(const FastName & groupName)
 	SoundGroup * soundGroup = SoundSystem::Instance()->CreateSoundGroup(groupName);
 	if(soundGroup)
 	{
+#if defined(__DAVAENGINE_HTML5__)
+        soundGroup->sounds.insert(this);
+        this->soundGroup = soundGroup;
+#else
 		FMOD_VERIFY(fmodSound->setSoundGroup(soundGroup->fmodSoundGroup));
+#endif
 	}
 }
 
 void Sound::Play(const Message & msg)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    nChannelID = Mix_PlayChannel(-1, soundChunk, nLoopCount);
+    std::map<int, Sound*>::iterator it = Sound::channelsUserData.find(nChannelID);
+    if(it != channelsUserData.end())
+    {
+        it->second = this;
+    }
+    else
+    {
+        Sound::channelsUserData.insert(std::pair<int, Sound*>(nChannelID, this));
+    }
+#else
 	FMOD::Channel * fmodInstance = 0;
 	FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodInstance)); //start sound paused
 	FMOD_VECTOR pos = {position.x, position.y, position.z};
@@ -177,6 +235,7 @@ void Sound::Play(const Message & msg)
 	FMOD_VERIFY(fmodInstance->setPaused(false));
 
     Retain();
+#endif
 }
 
 void Sound::SetPosition(const Vector3 & _position)
@@ -186,6 +245,8 @@ void Sound::SetPosition(const Vector3 & _position)
 
 void Sound::UpdateInstancesPosition()
 {
+#if defined(__DAVAENGINE_HTML5__)
+#else
 	if(is3d)
 	{
 		FMOD_VECTOR pos = {position.x, position.y, position.z};
@@ -198,6 +259,7 @@ void Sound::UpdateInstancesPosition()
 			FMOD_VERIFY(inst->set3DAttributes(&pos, 0));
 		}
 	}
+#endif
 }
 
 Sound::eType Sound::GetType() const
@@ -207,43 +269,72 @@ Sound::eType Sound::GetType() const
 
 void Sound::SetVolume(float32 volume)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    Mix_Volume(nChannelID, (int)(volume*MIX_MAX_VOLUME));
+    fVolume = volume;
+#else
 	FMOD_VERIFY(fmodInstanceGroup->setVolume(volume));
+#endif
 }
 
 float32	Sound::GetVolume()
 {
 	float32 volume = 0;
+#if defined(__DAVAENGINE_HTML5__)
+    volume = fVolume;
+#else
 	FMOD_VERIFY(fmodInstanceGroup->getVolume(&volume));
+#endif
 	return volume;
 }
 
 void Sound::Pause(bool isPaused)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    Mix_Pause(nChannelID);
+#else
     FMOD_VERIFY(fmodInstanceGroup->setPaused(isPaused));
+#endif
 }
 
 bool Sound::IsPaused()
 {
 	bool isPaused = false;
+#if defined(__DAVAENGINE_HTML5__)
+    isPaused = (Mix_Paused(nChannelID) != 0);
+#else
 	FMOD_VERIFY(fmodInstanceGroup->getPaused(&isPaused));
+#endif
 	return isPaused;
 }
 
 void Sound::Stop()
 {
+#if defined(__DAVAENGINE_HTML5__)
+    Mix_HaltChannel(nChannelID);
+#else
     FMOD_VERIFY(fmodInstanceGroup->stop());
+#endif
 }
 
 int32 Sound::GetLoopCount() const
 {
 	int32 loopCount;
+#if defined(__DAVAENGINE_HTML5__)
+    loopCount = nLoopCount;
+#else
 	FMOD_VERIFY(fmodSound->getLoopCount(&loopCount));
+#endif
 	return loopCount;
 }
 
 void Sound::SetLoopCount(int32 loopCount)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    nLoopCount = loopCount;
+#else
 	FMOD_VERIFY(fmodSound->setLoopCount(loopCount));
+#endif
 }
 
 void Sound::PerformCallback(FMOD::Channel * instance)
@@ -258,6 +349,24 @@ void Sound::PerformCallback(FMOD::Channel * instance)
     SoundSystem::Instance()->ReleaseOnUpdate(this);
 }
 
+#if defined(__DAVAENGINE_HTML5__)
+void SoundChannelFinishedPlaying(int nChannelID)
+{
+    Sound *sound = 0;
+    std::map<int, Sound*>::iterator it = Sound::channelsUserData.find(nChannelID);
+    if(it != Sound::channelsUserData.end())
+    {
+        sound = it->second;
+        it->second = NULL;
+        if(sound)
+        {
+            //TODO: fix this
+            //sound->PerformPlaybackComplete();
+        }
+    }
+}
+#endif
+    
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2)
 {
 	if(type == FMOD_CHANNEL_CALLBACKTYPE_END)

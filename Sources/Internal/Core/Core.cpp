@@ -49,6 +49,14 @@
 #include "Base/AllocatorFactory.h"
 #include "Render/2D/FTFont.h"
 
+#if defined(__DAVAENGINE_HTML5__)
+#include "FileSystem/LocalizationSystem.h"
+#include "Animation/AnimationManager.h"
+#include "Utils/Random.h"
+#include "Render/2D/FontManager.h"
+#include <Platform/TemplateHtml5/ScriptLoadHelper.h>
+#endif
+
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -150,6 +158,10 @@ void Core::CreateSingletons()
     new AutotestingSystem();
 #endif
 
+#if defined(__DAVAENGINE_HTML5__)
+    new ScriptLoadHelper();
+#endif
+    
 #if defined(__DAVAENGINE_WIN32__)
 	Thread::InitMainThread();
 #endif

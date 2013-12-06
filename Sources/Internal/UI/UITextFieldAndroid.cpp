@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 
-
+#if defined(__DAVAENGINE_ANDROID__)
 #include "UITextFieldAndroid.h"
 
 using namespace DAVA;
@@ -522,3 +522,4 @@ UITextFieldAndroid* UITextFieldAndroid::GetUITextFieldAndroid(uint32_t id)
 
 	return NULL;
 }
+#endif

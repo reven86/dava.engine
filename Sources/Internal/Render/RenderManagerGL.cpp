@@ -477,6 +477,7 @@ void RenderManager::EnableDepthWrite(bool isEnabled)
 
 void RenderManager::EnableVertexArray(bool isEnabled)
 {
+#if !defined(__DAVAENGINE_HTML5__)
     if(isEnabled != (oldVertexArrayEnabled != 0))
     {
         if(isEnabled)
@@ -489,10 +490,12 @@ void RenderManager::EnableVertexArray(bool isEnabled)
         }
         oldVertexArrayEnabled = isEnabled;
     }
+#endif
 }
 
 void RenderManager::EnableNormalArray(bool isEnabled)
 {
+#if !defined(__DAVAENGINE_HTML5__)
     if(isEnabled != (oldNormalArrayEnabled != 0))
     {
         if(isEnabled)
@@ -505,10 +508,12 @@ void RenderManager::EnableNormalArray(bool isEnabled)
         }
         oldNormalArrayEnabled = isEnabled;
     }
+#endif
 }
 
 void RenderManager::EnableTextureCoordArray(bool isEnabled, int32 textureLevel)
 {
+#if !defined(__DAVAENGINE_HTML5__)
     if(isEnabled != (oldTextureCoordArrayEnabled[textureLevel] != 0))
     {
         glClientActiveTexture(GL_TEXTURE0 + textureLevel);
@@ -523,10 +528,12 @@ void RenderManager::EnableTextureCoordArray(bool isEnabled, int32 textureLevel)
         }
         oldTextureCoordArrayEnabled[textureLevel] = isEnabled;
     }
+#endif
 }
 
 void RenderManager::EnableColorArray(bool isEnabled)
 {
+#if !defined(__DAVAENGINE_HTML5__)
     if(isEnabled != (oldColorArrayEnabled != 0))
     {
         if(isEnabled)
@@ -539,6 +546,7 @@ void RenderManager::EnableColorArray(bool isEnabled)
         }
         oldColorArrayEnabled = isEnabled;
     }
+#endif
 }
 
     
@@ -558,20 +566,26 @@ void RenderManager::FlushState(RenderState * stateBlock)
 
 void RenderManager::SetTexCoordPointer(int size, eVertexDataType _typeIndex, int stride, const void *pointer)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	GLint type = VERTEX_DATA_TYPE_TO_GL[_typeIndex];
     RENDER_VERIFY(glTexCoordPointer(size, type, stride, pointer));
+#endif
 }
 
 void RenderManager::SetVertexPointer(int size, eVertexDataType _typeIndex, int stride, const void *pointer)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	GLint type = VERTEX_DATA_TYPE_TO_GL[_typeIndex];
     RENDER_VERIFY(glVertexPointer(size, type, stride, pointer));
+#endif
 }
 
 void RenderManager::SetNormalPointer(eVertexDataType _typeIndex, int stride, const void *pointer)
 {
+#if !defined(__DAVAENGINE_HTML5__)
 	GLint type = VERTEX_DATA_TYPE_TO_GL[_typeIndex];
     RENDER_VERIFY(glNormalPointer(type, stride, pointer));
+#endif
 }
 
 void RenderManager::SetColorPointer(int size, eVertexDataType _typeIndex, int stride, const void *pointer)
@@ -687,7 +701,7 @@ void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)
 
 void RenderManager::ClearDepthBuffer(float32 depth)
 {
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));
@@ -704,7 +718,7 @@ void RenderManager::ClearStencilBuffer(int32 stencil)
 void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 {
     RENDER_VERIFY(glClearColor(color.r, color.g, color.b, color.a));
-#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepth(depth));
@@ -820,13 +834,15 @@ void RenderManager::SetMatrix(eMatrixType type, const Matrix4 & matrix)
     uniformMatrixFlags[UNIFORM_MATRIX_MODELVIEWPROJECTION] = 0; // require update
     uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] = 0; // require update
     
+#if !defined(__DAVAENGINE_HTML5__)
     if (renderer != Core::RENDERER_OPENGL_ES_2_0)
     {
         RENDER_VERIFY(glMatrixMode(matrixMode[type]));
         RENDER_VERIFY(glLoadMatrixf(matrix.data));
     }
+#endif
 }
-        
+    
 void RenderManager::HWglBindBuffer(GLenum target, GLuint buffer)
 {
     DVASSERT(target - GL_ARRAY_BUFFER <= 1);
@@ -887,14 +903,18 @@ void RenderManager::AttachRenderData()
                 case EVF_TEXCOORD0:
                     if (DEBUG)Logger::FrameworkDebug("!shader SetTexCoordPointer 0");
 
+#if !defined(__DAVAENGINE_HTML5__)
                     glClientActiveTexture(GL_TEXTURE0);
+#endif
                     SetTexCoordPointer(stream->size, stream->type, stream->stride, stream->pointer);
                     pointerArraysCurrentState |= EVF_TEXCOORD0;
                     break;
                 case EVF_TEXCOORD1:
                     if (DEBUG)Logger::FrameworkDebug("!shader SetTexCoordPointer 1");
 
+#if !defined(__DAVAENGINE_HTML5__)
                     glClientActiveTexture(GL_TEXTURE1);
+#endif
                     SetTexCoordPointer(stream->size, stream->type, stream->stride, stream->pointer);
                     pointerArraysCurrentState |= EVF_TEXCOORD1;
                     break;

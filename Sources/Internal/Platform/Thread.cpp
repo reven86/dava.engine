@@ -87,6 +87,8 @@ void Thread::Start()
 	StartWin32();
 #elif defined(__DAVAENGINE_ANDROID__)
 	StartAndroid();
+#elif defined(__DAVAENGINE_HTML5__)
+	StartHtml5();
 #else //PLATFORMS
 	//other platforms
 #endif //PLATFORMS

@@ -35,6 +35,10 @@
 #include "Base/EventDispatcher.h"
 #include "Sound/VolumeAnimatedObject.h"
 
+#if defined(__DAVAENGINE_HTML5__)
+#include <SDL/SDL_Mixer.h>
+#endif
+
 namespace FMOD
 {
 class Sound;
@@ -45,6 +49,10 @@ class Channel;
 namespace DAVA
 {
 
+#if defined(__DAVAENGINE_HTML5__)
+class SoundGroup;
+#endif
+    
 class Sound : public VolumeAnimatedObject
 {
 public:
@@ -76,6 +84,11 @@ public:
 	int32 GetLoopCount() const;
 
 	eType GetType() const;
+    
+#if defined(__DAVAENGINE_HTML5__)
+    static std::map<int, Sound*> channelsUserData;
+    static int s_nFreeSoundID;
+#endif
 
 private:
 	Sound(const FilePath & fileName, eType type, int32 priority);
@@ -91,6 +104,15 @@ private:
 	FilePath fileName;
 	eType type;
 	int32 priority;
+    
+#if defined(__DAVAENGINE_HTML5__)
+    Mix_Chunk *soundChunk;
+    int nChannelID;
+    float fVolume;
+    int nLoopCount;
+    int nSoundID;
+    SoundGroup *soundGroup;
+#endif
 
 	FMOD::Sound * fmodSound;
 	FMOD::ChannelGroup * fmodInstanceGroup;
