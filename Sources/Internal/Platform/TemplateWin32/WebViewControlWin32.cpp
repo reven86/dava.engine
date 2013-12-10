@@ -37,6 +37,9 @@ using namespace DAVA;
 #include <ExDisp.h>
 #include <ExDispid.h>
 
+#include "shlobj.h" // for function to get path to cookies folder
+#include "Wininet.h" //for functions to delete cache entry and to end session
+
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
 _ATL_FUNC_INFO BeforeNavigate2Info = {CC_STDCALL, VT_EMPTY, 7, {VT_DISPATCH,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_BOOL}};
 
@@ -341,6 +344,150 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 	return bResult;
 }
 
+
+bool WebBrowserContainer::DeleteApplicationCookies(const WCHAR* targetUrl)
+{
+	if (!this->webBrowser)
+	{
+		return false;
+	}
+
+	LPTSTR url = SysAllocString(targetUrl);
+
+    HANDLE hCacheEnumHandle  = NULL;
+    LPINTERNET_CACHE_ENTRY_INFO lpCacheEntry = NULL;
+    DWORD dwSize = 4096; // initial buffer size
+
+    // Enable initial buffer size for cache entry structure. 
+    lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
+    lpCacheEntry->dwStructSize = dwSize;
+    
+    hCacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", lpCacheEntry, &dwSize);
+    
+    // First, obtain handle to internet cache with FindFirstUrlCacheEntry 
+    // for later use with FindNextUrlCacheEntry. 
+    if (hCacheEnumHandle != NULL) 
+    {
+        // Delete only cookies for specific site
+        if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+        {
+			LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
+			// If cach entry url is not equat to target - do not remove that cookie
+			if (searchStr != NULL)
+			{
+				DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+			}
+        }
+    }
+    else
+    {
+        switch (GetLastError())
+        {
+            case ERROR_INSUFFICIENT_BUFFER:
+			{
+				lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
+				lpCacheEntry->dwStructSize = dwSize;
+
+				// Repeat first step search with adjusted buffer, exit if not
+				// found again.
+				hCacheEnumHandle = FindFirstUrlCacheEntry(NULL, lpCacheEntry, 
+												  &dwSize);
+				if (hCacheEnumHandle != NULL) 
+				{
+					// Delete only cookies for specific site
+					if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+					{            
+						LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
+						// If cach entry url is not equat to target - do not remove that cookie
+						if (searchStr != NULL)
+						{
+							DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+						}
+					}
+				}
+				else
+				{
+					// FindFirstUrlCacheEntry fails again, return.
+					SysFreeString(url);
+					return false; 
+				}
+			}
+			default:
+				FindCloseUrlCache(hCacheEnumHandle);
+				SysFreeString(url);
+				return false;
+		}
+    }
+    
+    // Next, use hCacheEnumHandle obtained from the previous step to delete 
+    // subsequent items of cache.
+    do 
+    {
+         // Notice that return values of FindNextUrlCacheEntry (BOOL) and 
+         // FindFirstUrlCacheEntry (HANDLE) are different.
+		 if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry, &dwSize))
+         {
+			// Delete only cookies for specific site
+            if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+            {            
+				LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
+				// If cach entry url is not equat to target - do not remove that cookie
+				if (searchStr != NULL)
+				{
+					DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+				}
+            }
+         }
+         else
+         {
+            switch(GetLastError())
+            {
+                case ERROR_INSUFFICIENT_BUFFER:
+				{
+					lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
+					lpCacheEntry->dwStructSize = dwSize;
+
+					// Repeat next step search with adjusted buffer, exit if 
+					// error comes up again ((in practice one buffer's size 
+					// adustment is always OK).
+					if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry, &dwSize)) 
+					{
+						// Delete only cookies for specific site
+						if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+						{            
+							LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
+							// If cach entry url is not equat to target - do not remove that cookie
+							if (searchStr != NULL)
+							{
+								DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+							}
+						}
+						break;
+					}
+					else
+					{
+						// FindFirstUrlCacheEntry fails again, return.
+						FindCloseUrlCache(hCacheEnumHandle);
+						SysFreeString(url);
+						return false; 
+					}
+				}
+                break;
+
+                case ERROR_NO_MORE_ITEMS:
+					FindCloseUrlCache(hCacheEnumHandle);
+					SysFreeString(url);
+					return true; 
+
+                default:
+					FindCloseUrlCache(hCacheEnumHandle);
+					SysFreeString(url);
+					return false;
+            }
+        }
+    } while (true);
+}
+
 void WebBrowserContainer::UpdateRect()
 {
 	IOleInPlaceObject* oleInPlaceObject = NULL;
@@ -429,6 +576,14 @@ void WebViewControl::LoadHtmlString(const WideString& htmlString)
 	if (this->browserContainer)
 	{
 		this->browserContainer->LoadHtmlString(htmlString.c_str());
+	}
+}
+
+void WebViewControl::DeleteApplicationCookies(const String& targetUrl)
+{
+	if (this->browserContainer)
+	{
+		this->browserContainer->DeleteApplicationCookies(StringToWString(targetUrl.c_str()).c_str());
 	}
 }
 

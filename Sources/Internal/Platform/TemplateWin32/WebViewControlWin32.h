@@ -56,6 +56,8 @@ public:
 
 	bool LoadHtmlString(LPCTSTR pszHTMLContent);
 
+	bool DeleteApplicationCookies(const WCHAR* targetUrl);
+
 	// COM stuff;
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject);
 
@@ -114,6 +116,8 @@ public:
 	virtual void OpenURL(const String& urlToOpen);
 	// Load html page from stringss
 	virtual void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies associated with target URL
+	virtual void DeleteApplicationCookies(const String& targetUrl);
 	
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
