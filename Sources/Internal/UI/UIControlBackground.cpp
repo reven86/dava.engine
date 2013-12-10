@@ -37,6 +37,10 @@
 
 namespace DAVA
 {
+//Shared render data
+RenderDataObject* UIControlBackground::rdoObject = NULL;
+RenderDataStream* UIControlBackground::vertexStream = NULL;
+RenderDataStream* UIControlBackground::texCoordStream = NULL;
 
 UIControlBackground::UIControlBackground()
 :	spr(NULL)
@@ -53,9 +57,12 @@ UIControlBackground::UIControlBackground()
 ,	lastDrawPos(0, 0)
 ,	tiledDrawData(NULL)
 {
-	rdoObject = new RenderDataObject();
-    vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-    texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	if(rdoObject == NULL)
+	{
+		rdoObject = new RenderDataObject();
+		vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+		texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	}
 	//rdoObject->SetStream()
 }
 	

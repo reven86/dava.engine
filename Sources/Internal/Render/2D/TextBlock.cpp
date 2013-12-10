@@ -41,30 +41,24 @@
 
 namespace DAVA 
 {
-//TODO: использовать мапу	
-static	Vector<TextBlock *> registredBlocks;
+//TODO: использовать мапу(reev4eg - done)	
+typedef Set<TextBlock *> RegistredBlocks;
+static	RegistredBlocks registredBlocks;
 	
 void RegisterTextBlock(TextBlock *tbl)
 {
-	registredBlocks.push_back(tbl);
+	registredBlocks.insert(tbl);
 }
 	
 void UnregisterTextBlock(TextBlock *tbl)
 {
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
-	{
-		if (tbl == *it) 
-		{
-			registredBlocks.erase(it);
-			return;
-		}
-	}
+	registredBlocks.erase(tbl);
 }
 
 void TextBlock::ScreenResolutionChanged()
 {
 	Logger::FrameworkDebug("Regenerate text blocks");
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
+	for(RegistredBlocks::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
 	{
 		(*it)->needRedraw = true;
 		(*it)->Prepare();
@@ -232,6 +226,12 @@ bool TextBlock::IsSpriteReady()
 
 
 void TextBlock::Prepare()
+{
+	//Retain();
+	//ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
+}
+
+void TextBlock::Prepare2()
 {
 	Retain();
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
@@ -790,6 +790,9 @@ void TextBlock::DrawToBuffer(int16 *buf)
 	
 void TextBlock::PreDraw()
 {
+
+	Prepare2();
+
 	if (isPredrawed) 
 	{
 		return;
