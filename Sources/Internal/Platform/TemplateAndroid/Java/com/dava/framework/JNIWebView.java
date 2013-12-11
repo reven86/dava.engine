@@ -12,8 +12,10 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
 import android.view.ViewGroup;
+import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.CookieManager;
 import android.widget.FrameLayout;
 
 @SuppressLint("UseSparseArrays")
@@ -168,6 +170,45 @@ public class JNIWebView {
 			}
 		});
 	}
+	
+	public static void DeleteApplicationCookies(final int id, final String targetURL)
+	{
+		final JNIActivity activity = JNIActivity.GetActivity();
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!views.containsKey(id))
+				{
+					Log.d(TAG, String.format("Unknown view id %d", id));
+					return;
+				}
+				// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
+				CookieSyncManager.createInstance(activity.getApplicationContext()); 
+			    CookieManager cookieManager = CookieManager.getInstance();
+			    // Get cookies for specific URL and change their expiration date
+			    // This should force android system to remove these cookies
+			    String cookiestring = cookieManager.getCookie(targetURL);
+			    String[] cookies =  cookiestring.split(";");
+			    
+			    for (int i=0; i<cookies.length; i++) {
+			        String[] cookieparts = cookies[i].split("=");
+			        cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
+			    }
+			    // Synchronize cookies storage
+			    CookieSyncManager.getInstance().sync();
+			    
+			    // Check if cookies were removed - if not - delete all cookies
+			    cookiestring = cookieManager.getCookie(targetURL);
+			    cookies =  cookiestring.split(";");
+			    if (cookies.length > 0)
+			    {
+			    	cookieManager.removeAllCookie();
+			    	// Synchronize cookies storage
+				    CookieSyncManager.getInstance().sync();
+			    }			    
+			}
+		});
+	}	
 	
 	public static void SetRect(final int id, final float x, final float y, final float dx, final float dy)
 	{
