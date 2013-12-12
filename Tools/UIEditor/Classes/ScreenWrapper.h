@@ -72,8 +72,10 @@ public:
 	
 	void RequestUpdateCursor();
 	void SetCursor(const Vector2& position, Qt::CursorShape cursor);
-
 	Vector2 GetCursorPosition();
+
+   	void SetApplicationCursor(Qt::CursorShape cursor);
+    void RestoreApplicationCursor();
 
 signals:
 	void UpdateScaleRequest(float scaleDelta);

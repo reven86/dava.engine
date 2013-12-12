@@ -125,6 +125,9 @@ public:
 	// Adjust control size logic
 	void AdjustSelectedControlsSize();
 
+    // Repack and reload sprites.
+    void RepackAndReloadSprites();
+
 private:
 	void DeleteNodesInternal(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes);
 	String GetNewControlName(const String& baseName);

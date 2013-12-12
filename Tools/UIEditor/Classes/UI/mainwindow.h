@@ -122,6 +122,9 @@ private slots:
 	void OnDistributeEqualDistanceBetweenBottomEdges();
 	void OnDistributeEqualDistanceBetweenY();
 
+    // Repack and Reload.
+    void OnRepackAndReloadSprites();
+
 private:
 	bool CloseProject();
 

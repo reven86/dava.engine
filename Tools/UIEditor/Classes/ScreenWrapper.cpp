@@ -192,3 +192,13 @@ Vector2 ScreenWrapper::GetCursorPosition()
 {
 	return cursorPosition;
 }
+
+void ScreenWrapper::SetApplicationCursor(Qt::CursorShape cursor)
+{
+    QApplication::setOverrideCursor(cursor);
+}
+
+void ScreenWrapper::RestoreApplicationCursor()
+{
+    QApplication::restoreOverrideCursor();
+}

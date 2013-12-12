@@ -105,6 +105,7 @@
 		171FA7F817C4A7F400C7F7F2 /* ControlsPositionData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 171FA7F617C4A7F400C7F7F2 /* ControlsPositionData.cpp */; };
 		171FA7FB17C4AE5E00C7F7F2 /* AlignHandlers.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 171FA7F917C4AE5D00C7F7F2 /* AlignHandlers.cpp */; };
 		173339E71694472600E98820 /* UndoRedoController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173339E51694472600E98820 /* UndoRedoController.cpp */; };
+		173A4C661855C60E008A1B97 /* ReloadSpritesCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173A4C641855C60E008A1B97 /* ReloadSpritesCommand.cpp */; };
 		173AC331162FFFC300A773F5 /* PropertiesGridController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC32F162FFFC300A773F5 /* PropertiesGridController.cpp */; };
 		173AC33A1630137400A773F5 /* controlpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC3381630137400A773F5 /* controlpropertygridwidget.cpp */; };
 		173AC33B1630137400A773F5 /* flagspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC3391630137400A773F5 /* flagspropertygridwidget.cpp */; };
@@ -440,6 +441,8 @@
 		171FA7FA17C4AE5D00C7F7F2 /* AlignHandlers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignHandlers.h; path = AlignDistribute/AlignHandlers.h; sourceTree = "<group>"; };
 		173339E51694472600E98820 /* UndoRedoController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UndoRedoController.cpp; path = Controllers/UndoRedoController.cpp; sourceTree = "<group>"; };
 		173339E61694472600E98820 /* UndoRedoController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UndoRedoController.h; path = Controllers/UndoRedoController.h; sourceTree = "<group>"; };
+		173A4C641855C60E008A1B97 /* ReloadSpritesCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReloadSpritesCommand.cpp; path = Commands/ReloadSpritesCommand.cpp; sourceTree = "<group>"; };
+		173A4C651855C60E008A1B97 /* ReloadSpritesCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReloadSpritesCommand.h; path = Commands/ReloadSpritesCommand.h; sourceTree = "<group>"; };
 		173AC32F162FFFC300A773F5 /* PropertiesGridController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertiesGridController.cpp; path = Controllers/PropertiesGridController.cpp; sourceTree = "<group>"; };
 		173AC330162FFFC300A773F5 /* PropertiesGridController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PropertiesGridController.h; path = Controllers/PropertiesGridController.h; sourceTree = "<group>"; };
 		173AC3381630137400A773F5 /* controlpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = controlpropertygridwidget.cpp; path = PropertyGridWidgets/controlpropertygridwidget.cpp; sourceTree = "<group>"; };
@@ -1074,6 +1077,8 @@
 				C1BBE3551647DAC300EF3CA9 /* PasteCommand.h */,
 				49FD832D170B24E800F3B650 /* ImportCommands.cpp */,
 				49FD832E170B24E800F3B650 /* ImportCommands.h */,
+				173A4C641855C60E008A1B97 /* ReloadSpritesCommand.cpp */,
+				173A4C651855C60E008A1B97 /* ReloadSpritesCommand.h */,
 			);
 			name = Commands;
 			sourceTree = "<group>";
@@ -1665,6 +1670,7 @@
 				02D69CD316F08CEE00F3803F /* controllist_moc.cpp in Build Sources */,
 				02D69CD416F08CEE00F3803F /* createplatformdlg_moc.cpp in Build Sources */,
 				02D69CD516F08CEE00F3803F /* createscreendlg_moc.cpp in Build Sources */,
+				173A4C661855C60E008A1B97 /* ReloadSpritesCommand.cpp in Build Sources */,
 				02D69CD616F08CEE00F3803F /* davaglwidget_moc.cpp in Build Sources */,
 				02D69CD716F08CEE00F3803F /* localizationeditordialog_moc.cpp in Build Sources */,
 				02D69CD816F08CEE00F3803F /* fontmanagerdialog_moc.cpp in Build Sources */,

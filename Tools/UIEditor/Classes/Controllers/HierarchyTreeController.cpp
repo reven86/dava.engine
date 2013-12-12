@@ -37,6 +37,7 @@
 #include "LibraryController.h"
 #include "CommandsController.h"
 #include "ControlCommands.h"
+#include "ReloadSpritesCommand.h"
 
 #include "AlignDistribute/AlignDistributeManager.h"
 
@@ -686,4 +687,11 @@ bool HierarchyTreeController::CanPerformDistribute(eDistributeControlsType /*dis
 {
 	// Distribute is not possible if less than three controls selected.
 	return activeControlNodes.size() >= 3;
+}
+
+void HierarchyTreeController::RepackAndReloadSprites()
+{
+    ReloadSpritesCommand* cmd = new ReloadSpritesCommand(hierarchyTree.GetRootNode());
+    CommandsController::Instance()->ExecuteCommand(cmd);
+    SafeRelease(cmd);
 }

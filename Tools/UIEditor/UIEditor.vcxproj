@@ -22,6 +22,7 @@
     <ClCompile Include="Classes\Commands\ImportCommands.cpp" />
     <ClCompile Include="Classes\Commands\ItemsCommand.cpp" />
     <ClCompile Include="Classes\Commands\PasteCommand.cpp" />
+    <ClCompile Include="Classes\Commands\ReloadSpritesCommand.cpp" />
     <ClCompile Include="Classes\Controllers\CommandsController.cpp" />
     <ClCompile Include="Classes\Controllers\CopyPasteController.cpp" />
     <ClCompile Include="Classes\Controllers\HierarchyTreeController.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="Classes\Commands\ImportCommands.h" />
     <ClInclude Include="Classes\Commands\ItemsCommand.h" />
     <ClInclude Include="Classes\Commands\PasteCommand.h" />
+    <ClInclude Include="Classes\Commands\ReloadSpritesCommand.h" />
     <ClInclude Include="Classes\Controllers\CommandsController.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">$(QT_HOME)\Desktop\Qt\4.8.1\msvc2010\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">Moc%27ing CommandsController.h...</Message>
