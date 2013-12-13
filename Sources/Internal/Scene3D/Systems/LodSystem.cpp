@@ -49,9 +49,8 @@ LodSystem::LodSystem(Scene * scene)
 	UpdatePartialUpdateIndices();
 }
 
-void LodSystem::Process()
+void LodSystem::Process(float32 timeElapsed)
 {
-	float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
 	float32 currFps = 1.0f/timeElapsed;
 
 	float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS())/(PerformanceSettings::Instance()->GetPsPerformanceMaxFPS()-PerformanceSettings::Instance()->GetPsPerformanceMinFPS());

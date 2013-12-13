@@ -42,10 +42,8 @@ ParticleEffectSystem::ParticleEffectSystem(Scene * scene)
 
 }
 
-void ParticleEffectSystem::Process()
+void ParticleEffectSystem::Process(float32 timeElapsed)
 {
-	float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
-
 	size = components.size();
 	for(index = 0; index < size; ++index)
 	{

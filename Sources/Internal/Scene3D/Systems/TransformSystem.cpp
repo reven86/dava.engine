@@ -59,7 +59,7 @@ void TransformSystem::UnlinkTransform(int32 childIndex)
 {
 }
 
-void TransformSystem::Process()
+void TransformSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("TransformSystem::Process");
     

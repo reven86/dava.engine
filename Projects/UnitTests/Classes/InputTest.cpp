@@ -123,7 +123,10 @@ InputTest::InputTest() :
 	
 	onScreenTime = 0.0f;
 	testFinished = false;
-	
+
+    cursorUpdateTime = 0.0f;
+    cursorMoveForward = false;
+
 	RegisterFunction(this, &InputTest::TestFunction, Format("InputTest"), NULL);
 }
 
@@ -212,6 +215,14 @@ void InputTest::LoadResources()
 	staticText->SetDebugDraw(true);
 	AddControl(staticText);
 
+    cursorPositionStaticText = new UIStaticText(Rect(0, 82, 100, 20));
+	font->SetSize(10);
+	cursorPositionStaticText->SetFont(font);
+    cursorPositionStaticText->SetTextColor(Color::White());
+	cursorPositionStaticText->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+	cursorPositionStaticText->SetDebugDraw(true);
+	AddControl(cursorPositionStaticText);
+
 	webView1 = new UIWebView(Rect(5, 105, 500, 190));
 	webView1->SetVisible(false);
 	delegate = new UIWebViewDelegate();
@@ -270,7 +281,9 @@ void InputTest::UnloadResources()
 	SafeRelease(textField);
 	SafeRelease(passwordTextField);
 	SafeRelease(staticText);
-	
+
+    SafeRelease(cursorPositionStaticText);
+
 	SafeRelease(webView1);
 	SafeRelease(webView2);
 	SafeRelease(webView3);
@@ -291,6 +304,41 @@ void InputTest::DidAppear()
 
 void InputTest::Update(float32 timeElapsed)
 {
+    std::wstringstream cursorPosStream;
+    cursorPosStream << "Cursor Position: " << passwordTextField->GetCursorPos();
+    cursorPositionStaticText->SetText(cursorPosStream.str());
+
+    cursorUpdateTime += timeElapsed;
+    if (cursorUpdateTime > 0.5f)
+    {
+        int32 cursorPos = passwordTextField->GetCursorPos();
+        if (cursorMoveForward)
+        {
+            if (cursorPos < passwordTextField->GetText().length())
+            {
+                cursorPos ++;
+            }
+            else
+            {
+                cursorMoveForward = !cursorMoveForward;
+            }
+        }
+        else
+        {
+            if (cursorPos > 0)
+            {
+                cursorPos --;
+            }
+            else
+            {
+                cursorMoveForward = !cursorMoveForward;
+            }
+        }
+
+        passwordTextField->SetCursorPos(cursorPos);
+        cursorUpdateTime = 0.0f;
+    }
+
     onScreenTime += timeElapsed;
     if(onScreenTime > INPUT_TEST_AUTO_CLOSE_TIME)
     {

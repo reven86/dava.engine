@@ -53,8 +53,7 @@ namespace DAVA
 	public:
 		SkyboxSystem(Scene* scene);
 		~SkyboxSystem();
-		virtual void Process();
-		
+
 		virtual void AddEntity(Entity * entity);
 		virtual void RemoveEntity(Entity * entity);
 		

@@ -59,7 +59,7 @@ public:
     void LinkTransform(int32 parentIndex, int32 childIndex);
 	void UnlinkTransform(int32 childIndex);
     
-    virtual void Process();
+    virtual void Process(float32 timeElapsed);
 
 private:
     void SortAndThreadSplit();

@@ -182,7 +182,9 @@ public:
 			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
 		}else
 		{
-			DVASSERT(0 && "Convert function not implemented");
+            Logger::Debug("Convert function not implemented for %s or %s",
+                          Texture::GetPixelFormatDescriptor(inFormat).name.c_str(),
+                          Texture::GetPixelFormatDescriptor(outFormat).name.c_str());
 		}
 	}
 

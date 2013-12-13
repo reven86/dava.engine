@@ -42,6 +42,7 @@
     <ClCompile Include="Classes\Helpers\ResourcesManageHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ScrollPropertyGridWidgetHelper.cpp" />
     <ClCompile Include="Classes\Helpers\SubcontrolsHelper.cpp" />
+    <ClCompile Include="Classes\Helpers\UIControlResizeHelper.cpp" />
     <ClCompile Include="Classes\Helpers\UIControlStateHelper.cpp" />
     <ClCompile Include="Classes\Helpers\WidgetSignalsBlocker.cpp" />
     <ClCompile Include="Classes\main.cpp" />
@@ -280,6 +281,7 @@
     <ClInclude Include="Classes\Helpers\ResourcesManageHelper.h" />
     <ClInclude Include="Classes\Helpers\ScrollPropertyGridWidgetHelper.h" />
     <ClInclude Include="Classes\Helpers\SubcontrolsHelper.h" />
+    <ClInclude Include="Classes\Helpers\UIControlResizeHelper.h" />
     <ClInclude Include="Classes\Helpers\UIControlStateHelper.h" />
     <ClInclude Include="Classes\Helpers\WidgetSignalsBlocker.h" />
     <ClInclude Include="Classes\Metadata\AggregatorMetadata.h" />

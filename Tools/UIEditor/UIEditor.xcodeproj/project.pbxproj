@@ -111,6 +111,7 @@
 		173AC33B1630137400A773F5 /* flagspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC3391630137400A773F5 /* flagspropertygridwidget.cpp */; };
 		173AC3441630285B00A773F5 /* PropertyGridWidgetsFactory.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC3421630285A00A773F5 /* PropertyGridWidgetsFactory.cpp */; };
 		173AC3471631458000A773F5 /* PropertyGridWidgetData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC3451631457F00A773F5 /* PropertyGridWidgetData.cpp */; };
+		174D916E184E15EC00A30453 /* UIControlResizeHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 174D916C184E15EC00A30453 /* UIControlResizeHelper.cpp */; };
 		174E1FBF17F3483600C7EC10 /* regexpinputdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 174E1FBD17F3483600C7EC10 /* regexpinputdialog.cpp */; };
 		174E1FC617F3485A00C7EC10 /* regexpinputdialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 174E1FC517F3485A00C7EC10 /* regexpinputdialog_moc.cpp */; };
 		17607FC2164121FB004E36DE /* LocalizationSystemHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17607FC0164121FB004E36DE /* LocalizationSystemHelper.cpp */; };
@@ -453,6 +454,8 @@
 		173AC3431630285A00A773F5 /* PropertyGridWidgetsFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PropertyGridWidgetsFactory.h; path = PropertyGridWidgets/PropertyGridWidgetsFactory.h; sourceTree = "<group>"; };
 		173AC3451631457F00A773F5 /* PropertyGridWidgetData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertyGridWidgetData.cpp; path = PropertyGridWidgets/PropertyGridWidgetData.cpp; sourceTree = "<group>"; };
 		173AC3461631458000A773F5 /* PropertyGridWidgetData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PropertyGridWidgetData.h; path = PropertyGridWidgets/PropertyGridWidgetData.h; sourceTree = "<group>"; };
+		174D916C184E15EC00A30453 /* UIControlResizeHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIControlResizeHelper.cpp; path = Helpers/UIControlResizeHelper.cpp; sourceTree = "<group>"; };
+		174D916D184E15EC00A30453 /* UIControlResizeHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIControlResizeHelper.h; path = Helpers/UIControlResizeHelper.h; sourceTree = "<group>"; };
 		174E1FBD17F3483600C7EC10 /* regexpinputdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = regexpinputdialog.cpp; path = Dialogs/regexpinputdialog.cpp; sourceTree = "<group>"; };
 		174E1FBE17F3483600C7EC10 /* regexpinputdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = regexpinputdialog.h; path = Dialogs/regexpinputdialog.h; sourceTree = "<group>"; };
 		174E1FC517F3485A00C7EC10 /* regexpinputdialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = regexpinputdialog_moc.cpp; sourceTree = "<group>"; };
@@ -950,6 +953,8 @@
 				7487A43D170ADBED005EA703 /* StringConstants.h */,
 				178F303C165677BF008678AD /* StringUtils.cpp */,
 				178F303D165677BF008678AD /* StringUtils.h */,
+				174D916C184E15EC00A30453 /* UIControlResizeHelper.cpp */,
+				174D916D184E15EC00A30453 /* UIControlResizeHelper.h */,
 			);
 			name = Helpers;
 			sourceTree = "<group>";
@@ -1568,6 +1573,7 @@
 				C1C62A3C162D371E000C1B32 /* DefaultScreen.cpp in Build Sources */,
 				C1C62A41162D4991000C1B32 /* hierarchytreewidget.cpp in Build Sources */,
 				1700E418162EB2C20069650D /* basepropertygridwidget.cpp in Build Sources */,
+				174D916E184E15EC00A30453 /* UIControlResizeHelper.cpp in Build Sources */,
 				1700E41D162EB8C60069650D /* rectpropertygridwidget.cpp in Build Sources */,
 				C1C62A73162EC809000C1B32 /* librarywidget.cpp in Build Sources */,
 				C14FF9C2162EE4DF00F77F70 /* controllist.cpp in Build Sources */,

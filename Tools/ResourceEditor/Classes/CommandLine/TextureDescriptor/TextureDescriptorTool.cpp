@@ -46,6 +46,7 @@ void TextureDescriptorTool::PrintUsage()
     printf("\t-copycompression - copy compressionParams parameters from PowerVR_iOS to other gpus\n");
     printf("\t-create - create *.tex for *.png if need\n");
 	printf("\t-setcompression - set compressionParams parameters for *tex or for all *text in folder. -f enables force mode. -convert runs convertation to selected format\n");
+
     
     printf("\n");
     printf("Samples:\n");

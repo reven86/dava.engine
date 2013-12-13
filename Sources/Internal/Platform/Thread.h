@@ -197,11 +197,14 @@ public:
 
 #elif defined(__DAVAENGINE_ANDROID__)
 private:
+	static ThreadId glThreadId;
+private:
 	friend void	* PthreadMain(void * param);
 	void StartAndroid();
 public:
 	static void	InitMainThread();
-	#else //PLATFORMS
+	static void	InitGLThread();
+#else //PLATFORMS
 	// other platforms
 #endif //PLATFORMS	
 };

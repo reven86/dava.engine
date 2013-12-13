@@ -597,8 +597,7 @@
   <action name="actionEqualBetweenXCenters">
    <property name="icon">
     <iconset resource="../Data/icons.qrc">
-     <normaloff>:/Icons/distribute_horizontal_center.png</normaloff>
-    </iconset>
+     <normaloff>:/Icons/distribute_horizontal_center.png</normaloff>:/Icons/distribute_horizontal_center.png</iconset>
    </property>
    <property name="text">
     <string>Eq X Centers</string>

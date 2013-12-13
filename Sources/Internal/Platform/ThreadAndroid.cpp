@@ -41,7 +41,9 @@ namespace DAVA
 #include <pthread.h>
 
 
-Thread::ThreadId Thread::mainThreadId;
+Thread::ThreadId Thread::mainThreadId = 0;
+Thread::ThreadId Thread::glThreadId = 0;
+
 void * PthreadMain (void * param)
 {
 	Thread * t = (Thread*)param;
@@ -64,12 +66,18 @@ void Thread::StartAndroid()
 
 bool Thread::IsMainThread()
 {
-    return (mainThreadId == pthread_self());
+	ThreadId threadId = pthread_self();
+	return (mainThreadId == threadId || glThreadId == threadId);
 }
 
 void Thread::InitMainThread()
 {
-    mainThreadId = GetCurrentThreadId();
+	mainThreadId = GetCurrentThreadId();
+}
+
+void Thread::InitGLThread()
+{
+	glThreadId = GetCurrentThreadId();
 }
 
 void Thread::YieldThread()

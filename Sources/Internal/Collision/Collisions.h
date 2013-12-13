@@ -118,6 +118,9 @@ public:
 	// The distance will be negative if the intervals overlapstatic float32 IntervalDistance(float32 minA, float32 maxA, float32 minB, float32 maxB);
 	float32 IntervalDistance(float32 minA, float32 maxA, float32 minB, float32 maxB);
 	
+    // Calculate the distance between 2D point and 2D line.
+    float32 CalculateDistanceFrom2DPointTo2DLine(const Vector2& lineStart, const Vector2& lineEnd, const Vector2& point);
+
 	/*
 		TODO: 
 		Pass transforms to avoid transformating of the polygons for the objects and just use their transforms

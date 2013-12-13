@@ -106,11 +106,6 @@ CommandLineManager::CommandLineManager()
     }
 
     FindActiveTool();
-    
-    if(activeTool)
-    {
-        isToolInitialized = activeTool->InitializeFromCommandLine();
-    }
 }
 
 CommandLineManager::~CommandLineManager()
@@ -217,4 +212,12 @@ void CommandLineManager::PrintResults()
         if(isToolInitialized)
             ShowErrorDialog(errors);
     }
+}
+
+void CommandLineManager::InitalizeTool()
+{
+	if(activeTool)
+	{
+		isToolInitialized = activeTool->InitializeFromCommandLine();
+	}
 }

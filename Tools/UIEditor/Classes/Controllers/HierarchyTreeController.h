@@ -128,6 +128,9 @@ public:
     // Repack and reload sprites.
     void RepackAndReloadSprites();
 
+    // Repack and reload sprites.
+    void RepackAndReloadSprites();
+
 private:
 	void DeleteNodesInternal(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes);
 	String GetNewControlName(const String& baseName);

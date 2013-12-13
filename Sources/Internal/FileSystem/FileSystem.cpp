@@ -58,6 +58,7 @@
 #include <tchar.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Utils/UtilsAndroid.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -418,13 +419,18 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
   
 bool FileSystem::IsFile(const FilePath & pathToCheck)
 {
+#if defined(__DAVAENGINE_ANDROID__)
+	JniUtils utils;
+	return utils.IsFile(pathToCheck.GetAbsolutePathname());
+#else
 	struct stat s;
- 	if(stat(pathToCheck.GetAbsolutePathname().c_str(),&s) == 0)
+	if(stat(pathToCheck.GetAbsolutePathname().c_str(),&s) == 0)
 	{
 		return (0 != (s.st_mode & S_IFREG));
 	}
+#endif
 
-    return false;
+ 	return false;
 }
 
 bool FileSystem::IsDirectory(const FilePath & pathToCheck)
@@ -433,6 +439,9 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 #if defined (__DAVAENGINE_WIN32__)
 	DWORD stats = GetFileAttributesA(pathToCheck.GetAbsolutePathname().c_str());
 	return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
+#elif defined(__DAVAENGINE_ANDROID__)
+	JniUtils utils;
+	return utils.IsDirectory(pathToCheck.GetAbsolutePathname());
 #else //#if defined (__DAVAENGINE_WIN32__)
 
 	struct stat s;

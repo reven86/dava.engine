@@ -243,6 +243,9 @@ protected:
 	// Refresh the align params.
 	void RefreshAlign();
 
+    // Refresh the thumb size for UISlider.
+    void UpdateThumbSizeForUIControlThumb();
+
 private:
 	void ResizeScrollViewContent(UIControl *control);
 

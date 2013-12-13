@@ -33,6 +33,8 @@
 #include "HierarchyTreeNode.h"
 #include "HierarchyTreeController.h"
 
+#include "Helpers/UIControlResizeHelper.h"
+
 using namespace DAVA;
 
 class QAction;
@@ -75,20 +77,6 @@ private:
 		InputStateSize,
 		InputStateSelectorControl,
 		InputStateScreenMove
-	};
-	
-	enum ResizeType
-	{
-		ResizeTypeNoResize,
-		ResizeTypeLeft,
-		ResizeTypeRight,
-		ResizeTypeTop,
-		ResizeTypeBottom,
-		ResizeTypeLeftTop,
-		ResizeTypeLeftBottom,
-		ResizeTypeRigthTop,
-		ResizeTypeRightBottom,
-		ResizeTypeMove,
 	};
 	
 	HierarchyTreeControlNode* GetSelectedControl(const Vector2& point, const HierarchyTreeNode* parent) const;
@@ -134,8 +122,7 @@ private:
 	void ResetSizeDelta();
 	void ResizeControl();
 	ResizeType GetResizeType(const HierarchyTreeControlNode* selectedControlNode, const Vector2& point) const;
-	Qt::CursorShape ResizeTypeToQt(ResizeType);
-
+    Qt::CursorShape ResizeTypeToQt(ResizeType resize, const HierarchyTreeControlNode* selectedNode);
 	void ApplyMouseSelection(const Vector2& rectSize);
 	
 	void MouseInputBegin(const DAVA::UIEvent* event);
@@ -165,8 +152,11 @@ private:
 	
 	UIControl* selectorControl;
 	
-	// Verify if the point is iside control's rect. Extend control's rect with delta.
-	bool IsPointInsideRectWithDelta(const Rect& rect, const Vector2& point, int32 pointDelta = 0) const;
+    // Verify whether the point is inside control, taking its angle into account.
+    bool IsPointInsideControlWithDelta(UIControl* uiControl, const Vector2& point, int32 pointDelta) const;
+
+    // Calculate the distance between control's rect (including rotated one) and point.
+    Vector4 CalculateDistancesToControlBounds(UIControl* uiControl, const Vector2& point) const;
 
 	// Whether the Mouse Begin event happened?
 	bool mouseAlreadyPressed;

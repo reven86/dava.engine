@@ -194,7 +194,7 @@ void LandscapePropertyControl::OnFloatPropertyChanged(PropertyList *forList, con
 			// let transform system recalc worldtranform for landscape entity
 			if(NULL != currentSceneNode->GetScene())
 			{
-				currentSceneNode->GetScene()->transformSystem->Process();
+				currentSceneNode->GetScene()->transformSystem->Process(.001f);
 			}
         }
     }

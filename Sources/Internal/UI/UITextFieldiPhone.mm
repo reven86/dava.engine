@@ -694,6 +694,44 @@ namespace DAVA
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		textFieldHolder->textField.enablesReturnKeyAutomatically = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
 	}
+
+    uint32 UITextFieldiPhone::GetCursorPos()
+    {
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        if (!textFieldHolder)
+        {
+            return 0;
+        }
+
+        ::UITextField* textField = textFieldHolder->textField;
+        int pos = [textField offsetFromPosition: textField.beginningOfDocument
+                                     toPosition: textField.selectedTextRange.start];
+        return pos;
+    }
+
+    void UITextFieldiPhone::SetCursorPos(uint32 pos)
+    {
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        if (!textFieldHolder)
+        {
+            return;
+        }
+
+        ::UITextField* textField = textFieldHolder->textField;
+        NSUInteger textLength = [textField.text length];
+        if (textLength == 0)
+        {
+            return;
+        }
+        if (pos > textLength)
+        {
+            pos = textLength - 1;
+        }
+
+        UITextPosition *start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];
+        UITextPosition *end = [textField positionFromPosition:start offset:0];
+        [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
+    }
 }
 
 #endif

@@ -270,6 +270,9 @@ void CustomColorsPanel::ConnectToShortcuts()
 			this, SLOT(NextTexture()));
 	connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_TEXTURE_PREV), SIGNAL(activated()),
 			this, SLOT(PrevTexture()));
+	
+	shortcutManager->SetBrushSizeShortcutsEnabled(true);
+	shortcutManager->SetTextureSwitchingShortcutsEnabled(true);
 }
 
 void CustomColorsPanel::DisconnectFromShortcuts()
@@ -289,6 +292,9 @@ void CustomColorsPanel::DisconnectFromShortcuts()
 			   this, SLOT(NextTexture()));
 	disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_TEXTURE_PREV), SIGNAL(activated()),
 			   this, SLOT(PrevTexture()));
+	
+	shortcutManager->SetBrushSizeShortcutsEnabled(false);
+	shortcutManager->SetTextureSwitchingShortcutsEnabled(false);
 }
 
 void CustomColorsPanel::IncreaseBrushSize()

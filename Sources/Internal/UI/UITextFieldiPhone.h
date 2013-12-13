@@ -70,6 +70,10 @@ public:
 	void SetReturnKeyType(DAVA::int32 value);
 	void SetEnableReturnKeyAutomatically(bool value);
 
+    // Cursor pos.
+    uint32 GetCursorPos();
+    void SetCursorPos(uint32 pos);
+
 private:
 	void * objcClassPtr;
 };

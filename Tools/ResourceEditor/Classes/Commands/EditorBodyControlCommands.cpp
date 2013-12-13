@@ -268,7 +268,7 @@ void CommandTransformObject::UpdateCollision()
 	if(NULL != sep && NULL != sep->collisionSystem)
 	{
 		// make sure that worldtransform is up to date
-		sep->transformSystem->Process();
+		sep->transformSystem->Process(.001f);
 
 		// update bullet object
 		sep->collisionSystem->UpdateCollisionObject(node);

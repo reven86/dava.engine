@@ -174,7 +174,7 @@ namespace DAVA
 
 		renderIsActive = true;
 
-		Thread::InitMainThread();
+		Thread::InitGLThread();
 
 		if(wasCreated)
 		{

@@ -43,6 +43,7 @@ public:
     bool IsEnabled() { return isEnabled; };
     bool IsToolInitialized() { return isToolInitialized; };
     
+	void InitalizeTool();
     void Process();
     void PrintResults();
 	void PrintUsage();

@@ -239,13 +239,13 @@ void ParticleEmitter3D::PrepareEmitterParametersShockwave(Particle * particle, f
 			directionVector.z = -zValue / 2 + (float32)Random::Instance()->RandFloat() * zValue;
 		}
 	}
-	
-	particle->speed = directionVector;
+		
 	float32 dvl = directionVector.Length();
 	if (dvl>EPSILON)
 	{
 		directionVector*=velocity/dvl;
 	}	
+	particle->speed = directionVector;
 
 }
 

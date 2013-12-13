@@ -35,7 +35,9 @@ QShortcut* LandscapeEditorShortcutManager::CreateOrUpdateShortcut(const String& 
 	shortcut->setEnabled(true);
 	shortcut->setAutoRepeat(autoRepeat);
 	shortcut->setWhatsThis(description.c_str());
-
+	//shortcut disabled by default, will be changed during turning on/off of editors
+	shortcut->setEnabled(false);
+	
 	return shortcut;
 }
 
@@ -74,4 +76,62 @@ void LandscapeEditorShortcutManager::InitDefaultShortcuts()
 
 	CreateOrUpdateShortcut(ResourceEditor::SHORTCUT_NORMAL_DRAW_TILEMASK,	Qt::CTRL | Qt::Key_1, false);
 	CreateOrUpdateShortcut(ResourceEditor::SHORTCUT_COPY_PASTE_TILEMASK,	Qt::CTRL | Qt::Key_2, false);
+}
+
+void LandscapeEditorShortcutManager::SetHeightMapEditorShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_SET_ABSOLUTE]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_SET_RELATIVE]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_SET_AVERAGE]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_SET_ABS_DROP]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_SET_DROPPER]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_SET_COPY_PASTE]->setEnabled(enabled);
+}
+
+void LandscapeEditorShortcutManager::SetTileMaskEditorShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_NORMAL_DRAW_TILEMASK]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_COPY_PASTE_TILEMASK]->setEnabled(enabled);
+}
+
+void LandscapeEditorShortcutManager::SetBrushSizeShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_BRUSH_SIZE_INCREASE_SMALL]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_BRUSH_SIZE_DECREASE_SMALL]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_BRUSH_SIZE_INCREASE_LARGE]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_BRUSH_SIZE_DECREASE_LARGE]->setEnabled(enabled);
+}
+
+void LandscapeEditorShortcutManager::SetBrushImageSwitchingShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_BRUSH_IMAGE_NEXT]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_BRUSH_IMAGE_PREV]->setEnabled(enabled);
+}
+
+void LandscapeEditorShortcutManager::SetTextureSwitchingShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_TEXTURE_NEXT]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_TEXTURE_PREV]->setEnabled(enabled);
+}
+
+void LandscapeEditorShortcutManager::SetStrengthShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_STRENGTH_INCREASE_SMALL]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_STRENGTH_DECREASE_SMALL]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_STRENGTH_INCREASE_LARGE]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_STRENGTH_DECREASE_LARGE]->setEnabled(enabled);
+}
+
+void LandscapeEditorShortcutManager::SetAvgStrengthShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_AVG_STRENGTH_INCREASE_SMALL]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_AVG_STRENGTH_DECREASE_SMALL]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_AVG_STRENGTH_INCREASE_LARGE]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_AVG_STRENGTH_DECREASE_LARGE]->setEnabled(enabled);
+}
+
+void LandscapeEditorShortcutManager::SetVisibilityToolShortcutsEnabled(bool enabled)
+{
+	shortcutsMap[ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_POINT]->setEnabled(enabled);
+	shortcutsMap[ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA]->setEnabled(enabled);
 }

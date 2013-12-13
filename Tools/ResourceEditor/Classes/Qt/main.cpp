@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
 		//DAVA::TeamcityOutput *out = new DAVA::TeamcityOutput();
 		//DAVA::Logger::AddCustomOutput(out);
 
+		cmdLine.InitalizeTool();
 		if(!cmdLine.IsToolInitialized())
 		{
 			cmdLine.PrintUsageForActiveTool();

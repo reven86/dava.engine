@@ -42,34 +42,59 @@ using namespace DAVA;
 
 uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, const eGPUFamily forGPU)
 {
-    FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
-    
-    File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);
-    if(!imageFile)
-    {
-        Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't open file %s", imagePathname.GetAbsolutePathname().c_str());
-        return 0;
-    }
-    
-    uint32 size = 0;
-    if(ImageLoader::IsPNGFile(imageFile))
-    {
-        size += LibPngWrapper::GetDataSize(imagePathname);
-    }
-    else if(ImageLoader::IsDXTFile(imageFile))
-    {
-        size += LibDxtHelper::GetDataSize(imagePathname);
-    }
-    else if(ImageLoader::IsPVRFile(imageFile))
-    {
-        size += LibPVRHelper::GetDataSize(imagePathname);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-
-    SafeRelease(imageFile);
+	uint32 size = 0;
+	
+	Vector<FilePath> files;
+	
+	if(descriptor->IsCubeMap() &&
+	   GPU_UNKNOWN == forGPU)
+	{
+		Vector<String> faceNames;
+		Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
+		for(size_t i = 0 ; i < faceNames.size(); ++i)
+		{
+			files.push_back(FilePath(faceNames[i]));
+		}
+	}
+	else
+	{
+		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
+		files.push_back(imagePathname);
+	}
+	
+	for(size_t i = 0; i < files.size(); ++i)
+	{
+		//FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, forGPU);
+		const FilePath& imagePathname = files[i];
+		
+		File *imageFile = File::Create(imagePathname, File::OPEN | File::READ);
+		if(!imageFile)
+		{
+			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't open file %s", imagePathname.GetAbsolutePathname().c_str());
+			return 0;
+		}
+		
+		
+		if(ImageLoader::IsPNGFile(imageFile))
+		{
+			size += LibPngWrapper::GetDataSize(imagePathname);
+		}
+		else if(ImageLoader::IsDXTFile(imageFile))
+		{
+			size += LibDxtHelper::GetDataSize(imagePathname);
+		}
+		else if(ImageLoader::IsPVRFile(imageFile))
+		{
+			size += LibPVRHelper::GetDataSize(imagePathname);
+		}
+		else
+		{
+			DVASSERT(false);
+		}
+		
+		SafeRelease(imageFile);
+	}
+	
     return size;
 }
 

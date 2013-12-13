@@ -53,11 +53,6 @@ namespace DAVA
 		SafeRelease(skyboxEntity);
 	}
 	
-	void SkyboxSystem::Process()
-	{
-		//do nothing here for now
-	}
-	
 	void SkyboxSystem::AddEntity(Entity * entity)
 	{
 		if((NULL == skyboxEntity) && GetSkybox(entity))

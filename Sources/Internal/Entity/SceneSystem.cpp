@@ -69,7 +69,7 @@ void SceneSystem::ImmediateEvent(Entity * entity, uint32 event)
     
 }
 
-void SceneSystem::Process()
+void SceneSystem::Process(float32 timeElapsed)
 {
     
 }

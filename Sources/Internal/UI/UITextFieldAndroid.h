@@ -65,6 +65,8 @@ public:
 	void HideField();
 	void OpenKeyboard();
 	void CloseKeyboard();
+	uint32 GetCursorPos();
+	void SetCursorPos(uint32 pos);
 
 protected:
 	virtual jclass GetJavaClass() const;
@@ -111,6 +113,9 @@ public:
 	void SetKeyboardType(DAVA::int32 value);
 	void SetReturnKeyType(DAVA::int32 value);
 	void SetEnableReturnKeyAutomatically(bool value);
+
+	uint32 GetCursorPos();
+	void SetCursorPos(uint32 pos);
 
 	bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
 	void TextFieldShouldReturn();

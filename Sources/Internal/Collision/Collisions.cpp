@@ -67,6 +67,21 @@ bool Collisions::Is2DLineIntersects2DLine
 	return true;
 }
 
+float32 Collisions::CalculateDistanceFrom2DPointTo2DLine(const Vector2& lineStart, const Vector2& lineEnd, const Vector2& point)
+{
+    float32 lineLengthSquared = (lineEnd.x - lineStart.x) * (lineEnd.x - lineStart.x) + (lineEnd.y - lineStart.y) * (lineEnd.y - lineStart.y);
+    if (FLOAT_EQUAL(lineLengthSquared, 0.0f))
+    {
+        // Just a distance between two points.
+        return sqrt((point.x - lineStart.x) * (point.x - lineStart.x) + ((point.y - lineStart.y) * (point.y - lineStart.y)));
+    }
+
+    float32 numerator = (lineStart.y - lineEnd.y) * point.x + (lineEnd.x - lineStart.x) * point.y +
+    (lineStart.x * lineEnd.y - lineEnd.x * lineStart.y);
+
+    // lineLengthSquared == 0 case is handled above.
+    return numerator / sqrt(lineLengthSquared);
+}
 
 bool Collisions::IsSegmentIntersectsSegment(	
 									   const Vector2 & p1, const Vector2 & p2, 

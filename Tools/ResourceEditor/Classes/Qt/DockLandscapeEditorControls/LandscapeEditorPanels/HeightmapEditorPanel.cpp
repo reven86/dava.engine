@@ -11,7 +11,7 @@
 #include <QComboBox>
 #include <QRadioButton>
 #include <QCheckBox>
-#include <QLineEdit>
+#include <QDoubleSpinBox>
 
 HeightmapEditorPanel::HeightmapEditorPanel(QWidget* parent)
 :	LandscapeEditorBasePanel(parent)
@@ -84,7 +84,7 @@ void HeightmapEditorPanel::InitUI()
 	radioAverage = new QRadioButton(this);
 	radioDropper = new QRadioButton(this);
 	radioRelative = new QRadioButton(this);
-	editHeight = new QLineEdit(this);
+	editHeight = new QDoubleSpinBox(this);
 
 	QHBoxLayout* layoutBrushImage = new QHBoxLayout();
 	QLabel* labelBrushImageDesc = new QLabel(this);
@@ -120,6 +120,9 @@ void HeightmapEditorPanel::InitUI()
 	QHBoxLayout* layoutHeight = new QHBoxLayout();
 	QLabel* labelHeightDesc = new QLabel(this);
 	QSpacerItem* spacerHeight = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
+	editHeight->setMinimum(0);
+	editHeight->setMaximum(9999);
+	
 	layoutHeight->addWidget(labelHeightDesc);
 	layoutHeight->addWidget(editHeight);
 	layoutHeight->addSpacerItem(spacerHeight);
@@ -251,7 +254,11 @@ void HeightmapEditorPanel::RestoreState()
 	sliderWidgetAverageStrength->SetRangeMax(avStrRangeMax);
 	sliderWidgetAverageStrength->SetValue(averageStrength);
 	comboBrushImage->setCurrentIndex(toolImage);
-	editHeight->setText(QString::number(height));
+	editHeight->setValue(height);
+	if(NULL != sceneEditor && NULL != sceneEditor->landscapeEditorDrawSystem)
+	{
+		editHeight->setMaximum(sceneEditor->landscapeEditorDrawSystem->GetLandscapeMaxHeight());
+	}
 	UpdateRadioState(drawingType);
 	BlockAllSignals(!enabled);
 }
@@ -452,24 +459,14 @@ void HeightmapEditorPanel::SetDropperHeight(SceneEditor2* scene, double height)
 {
 	if (scene == GetActiveScene())
 	{
-		editHeight->setText(QString::number(height));
+		editHeight->setValue(height);
 	}
 }
 
 void HeightmapEditorPanel::HeightUpdatedManually()
 {
 	SceneEditor2* sceneEditor = GetActiveScene();
-
-	bool ok;
-	float32 height = (float32)editHeight->text().toFloat(&ok);
-	if (ok)
-	{
-		sceneEditor->heightmapEditorSystem->SetDropperHeight(height);
-	}
-	else
-	{
-		editHeight->setText(QString::number(sceneEditor->heightmapEditorSystem->GetDropperHeight()));
-	}
+	sceneEditor->heightmapEditorSystem->SetDropperHeight(editHeight->value());
 }
 
 void HeightmapEditorPanel::OnEditorEnabled()
@@ -525,6 +522,13 @@ void HeightmapEditorPanel::ConnectToShortcuts()
 			this, SLOT(SetAbsDropDrawing()));
 	connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_SET_DROPPER), SIGNAL(activated()),
 			this, SLOT(SetDropper()));
+	
+	shortcutManager->SetHeightMapEditorShortcutsEnabled(true);
+	
+	shortcutManager->SetBrushSizeShortcutsEnabled(true);
+	shortcutManager->SetStrengthShortcutsEnabled(true);
+	shortcutManager->SetAvgStrengthShortcutsEnabled(true);
+	shortcutManager->SetBrushImageSwitchingShortcutsEnabled(true);
 }
 
 void HeightmapEditorPanel::DisconnectFromShortcuts()
@@ -575,6 +579,12 @@ void HeightmapEditorPanel::DisconnectFromShortcuts()
 			   this, SLOT(SetAbsDropDrawing()));
 	disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_SET_DROPPER), SIGNAL(activated()),
 			   this, SLOT(SetDropper()));
+	
+	shortcutManager->SetHeightMapEditorShortcutsEnabled(false);
+	shortcutManager->SetBrushSizeShortcutsEnabled(false);
+	shortcutManager->SetStrengthShortcutsEnabled(false);
+	shortcutManager->SetAvgStrengthShortcutsEnabled(false);
+	shortcutManager->SetBrushImageSwitchingShortcutsEnabled(false);
 }
 
 void HeightmapEditorPanel::IncreaseBrushSize()

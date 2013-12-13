@@ -81,7 +81,12 @@ private:
 	typedef Map<int, QTreeWidgetItem*> TREEITEMS;
 	TREEITEMS GetAllItems();
 	void GetChildItems(const QTreeWidgetItem* parent, Map<int, QTreeWidgetItem*> &items);
+
+    // Select multiple items in the Hierarchy Tree which belong to the same screen.
+    void SelectMultipleTreeWidgetItems(const QList<QTreeWidgetItem*>& selectedItems);
+
 	void ResetSelection();
+
 	// Get hierarchy tree node from selected tree item
 	HierarchyTreeNode* GetNodeFromTreeItem(QTreeWidgetItem* item);
 

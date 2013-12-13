@@ -335,9 +335,74 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
 			// Only one control is selected, reset the previous selection and continue.
 			HierarchyTreeController::Instance()->ResetSelectedControl();
 		}
-
-		HierarchyTreeController::Instance()->SelectControl(selectedControl);
+        
+        if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+        {
+            // Yuri Coder, 2013/12/05. See please DF-2839 to get the details of this method.
+            SelectMultipleTreeWidgetItems(ui->treeWidget->selectedItems());
+        }
+        else
+        {
+            // Switch the selection state of the control instead of just selecting it (see DF-2838).
+            HierarchyTreeController::Instance()->ChangeItemSelection(selectedControl);
+        }
 	}
+}
+
+void HierarchyTreeWidget::SelectMultipleTreeWidgetItems(const QList<QTreeWidgetItem*>& selectedItems)
+{
+    HierarchyTreeControlNode* firstNode = NULL;
+    bool needReselectScreen = false;
+    QList<HierarchyTreeControlNode*> nodesToBeSelected;
+    
+    // There can be situation where first and last items selected belong to the different screens.
+    // So have to implement two-pass approach here - firstly determine the nodes to be selected,
+    // then re-activate the screen from the first node and apply the selection.
+    foreach (QTreeWidgetItem* multiSelectItem, selectedItems)
+    {
+        QVariant data = multiSelectItem->data(ITEM_ID);
+        HierarchyTreeControlNode* multiSelectControlNode = dynamic_cast<HierarchyTreeControlNode* >(HierarchyTreeController::Instance()->GetTree().GetNode(data.toInt()));
+        if (!multiSelectControlNode)
+        {
+            continue;
+        }
+        
+        if (!firstNode)
+        {
+            firstNode = multiSelectControlNode;
+            nodesToBeSelected.append(multiSelectControlNode);
+            continue;
+        }
+        
+        // Select only the nodes which belong to the same screen as first node.
+        if (multiSelectControlNode->GetScreenNode() == firstNode->GetScreenNode())
+        {
+            nodesToBeSelected.append(multiSelectControlNode);
+        }
+        else
+        {
+            // There are selected controls belong to different screens. Need to unselect them in a tree
+            // and re-activate the screen first node belongs to prior to apply actual selection.
+            needReselectScreen = true;
+            multiSelectItem->setSelected(false);
+        }
+    }
+    
+    if (!firstNode || !firstNode->GetScreenNode() || !firstNode->GetScreenNode()->GetPlatform())
+    {
+        return;
+    }
+    
+    if (needReselectScreen)
+    {
+        HierarchyTreeController::Instance()->UpdateSelection(firstNode->GetScreenNode()->GetPlatform(), firstNode->GetScreenNode());
+    }
+    
+    // Second pass - select the controls remembered before.
+    foreach(HierarchyTreeControlNode* nodeToBeSelected, nodesToBeSelected)
+    {
+        HierarchyTreeController::Instance()->SelectControl(nodeToBeSelected);
+    }
 }
 
 void HierarchyTreeWidget::ResetSelection()

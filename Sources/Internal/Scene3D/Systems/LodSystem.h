@@ -45,7 +45,7 @@ class LodSystem : public SceneSystem
 public:
 	LodSystem(Scene * scene);
 
-	virtual void Process();
+	virtual void Process(float32 timeElapsed);
 	virtual void AddEntity(Entity * entity);
 	virtual void RemoveEntity(Entity * entity);
 

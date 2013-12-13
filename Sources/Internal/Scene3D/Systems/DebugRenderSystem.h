@@ -45,7 +45,7 @@ public:
 	DebugRenderSystem(Scene * scene);
     ~DebugRenderSystem();
 
-	virtual void Process();
+	virtual void Process(float32 timeElapsed);
 	virtual void AddEntity(Entity * entity);
 	virtual void RemoveEntity(Entity * entity);
     

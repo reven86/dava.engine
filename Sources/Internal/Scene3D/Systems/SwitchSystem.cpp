@@ -46,7 +46,7 @@ SwitchSystem::SwitchSystem(Scene * scene)
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
-void SwitchSystem::Process()
+void SwitchSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("SwitchSystem::Process");
 	Set<Entity*>::iterator it;

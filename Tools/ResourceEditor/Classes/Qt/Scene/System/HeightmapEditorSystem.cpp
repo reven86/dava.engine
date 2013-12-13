@@ -331,7 +331,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 	{
 		switch (activeDrawingType)
 		{
-			case HEIGHTMAP_DRAW_ABSOLUTE:
+			case HEIGHTMAP_DRAW_RELATIVE:
 			{
 				float32 koef = (strength * timeElapsed);
 				if(inverseDrawingEnabled)
@@ -355,7 +355,7 @@ void HeightmapEditorSystem::UpdateBrushTool(float32 timeElapsed)
 				break;
 			}
 
-			case HEIGHTMAP_DRAW_RELATIVE:
+			case HEIGHTMAP_DRAW_ABSOLUTE:
 			case HEIGHTMAP_DRAW_ABSOLUTE_DROPPER:
 			{
 				float32 maxHeight = drawSystem->GetLandscapeMaxHeight();

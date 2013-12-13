@@ -624,6 +624,30 @@ public class JNITextField {
 		if (text == null)
 			return;
 	}
+	
+	public static int GetCursorPos(int id) {
+		final EditText text = GetEditText(id);
+		if (text == null)
+			return 0;
+		
+		int pos = text.getSelectionStart();
+		return pos;
+	}
+	
+	public static void SetCursorPos(int id, final int pos) {
+		final EditText text = GetEditText(id);
+		if (text == null)
+			return;
+		
+		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				text.setSelection(pos);
+				return null;
+			}
+		});
+		task.AsyncRun();
+	}
 
 	public static native void TextFieldShouldReturn(int id);
 	public static native boolean TextFieldKeyPressed(

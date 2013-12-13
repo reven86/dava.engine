@@ -16,6 +16,22 @@ public:
 
 	QShortcut* GetShortcutByName(const String& name);
 	QShortcut* CreateOrUpdateShortcut(const String& name, QKeySequence keySequence, bool autoRepeat = true, const String& description = "");
+	
+	void SetHeightMapEditorShortcutsEnabled(bool enabled);
+	
+	void SetTileMaskEditorShortcutsEnabled(bool enabled);
+	
+	void SetBrushSizeShortcutsEnabled(bool enabled);
+	
+	void SetBrushImageSwitchingShortcutsEnabled(bool enabled);
+	
+	void SetTextureSwitchingShortcutsEnabled(bool enabled);
+	
+	void SetStrengthShortcutsEnabled(bool enabled);
+	
+	void SetAvgStrengthShortcutsEnabled(bool enabled);
+	
+	void SetVisibilityToolShortcutsEnabled(bool enabled);
 
 private:
 	Map<String, QShortcut*> shortcutsMap;

@@ -563,6 +563,22 @@ void UIControlMetadata::SetSprite(const QString& value)
         {
             GetActiveUIControl()->GetBackground()->SetSprite(sprite, 0);
             SafeRelease(sprite);
+
+            // Specific case if the sprite is set to UISlider thumbSprite (see please DF-2834).
+            UpdateThumbSizeForUIControlThumb();
+        }
+    }
+}
+
+void UIControlMetadata::UpdateThumbSizeForUIControlThumb()
+{
+    UIControl* activeUIControl = GetActiveUIControl();
+    if (activeUIControl && activeUIControl->GetParent())
+    {
+        UISlider* parentIsSlider = dynamic_cast<UISlider*>(activeUIControl->GetParent());
+        if (parentIsSlider && parentIsSlider->GetThumb() == activeUIControl)
+        {
+            parentIsSlider->SyncThumbWithSprite();
         }
     }
 }

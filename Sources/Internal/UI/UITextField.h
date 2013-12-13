@@ -325,6 +325,10 @@ public:
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 
+    // Cursor control.
+    uint32 GetCursorPos();
+    void SetCursorPos(uint32 pos);
+
 protected:
 	WideString text;
 	UITextFieldDelegate * delegate;

@@ -452,6 +452,12 @@ void TilemaskEditorPanel::ConnectToShortcuts()
 			this, SLOT(SetNormalDrawing()));
 	connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_COPY_PASTE_TILEMASK), SIGNAL(activated()),
 			this, SLOT(SetCopyPaste()));
+	
+	shortcutManager->SetTileMaskEditorShortcutsEnabled(true);
+	shortcutManager->SetBrushSizeShortcutsEnabled(true);
+	shortcutManager->SetStrengthShortcutsEnabled(true);
+	shortcutManager->SetTextureSwitchingShortcutsEnabled(true);
+	shortcutManager->SetBrushImageSwitchingShortcutsEnabled(true);
 }
 
 void TilemaskEditorPanel::DisconnectFromShortcuts()
@@ -490,6 +496,12 @@ void TilemaskEditorPanel::DisconnectFromShortcuts()
 			   this, SLOT(SetNormalDrawing()));
 	disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_COPY_PASTE_TILEMASK), SIGNAL(activated()),
 			   this, SLOT(SetCopyPaste()));
+	
+	shortcutManager->SetTileMaskEditorShortcutsEnabled(false);
+	shortcutManager->SetBrushSizeShortcutsEnabled(false);
+	shortcutManager->SetStrengthShortcutsEnabled(false);
+	shortcutManager->SetTextureSwitchingShortcutsEnabled(false);
+	shortcutManager->SetBrushImageSwitchingShortcutsEnabled(false);
 }
 
 void TilemaskEditorPanel::IncreaseBrushSize()

@@ -11,6 +11,7 @@ class QComboBox;
 class QRadioButton;
 class QLineEdit;
 class SliderWidget;
+class QDoubleSpinBox;
 
 class HeightmapEditorPanel: public LandscapeEditorBasePanel
 {
@@ -91,7 +92,7 @@ private:
 	QRadioButton* radioAverage;
 	QRadioButton* radioDropper;
 	QRadioButton* radioRelative;
-	QLineEdit* editHeight;
+	QDoubleSpinBox* editHeight;
 
 	void InitBrushImages();
 	void UpdateRadioState(HeightmapEditorSystem::eHeightmapDrawType type);

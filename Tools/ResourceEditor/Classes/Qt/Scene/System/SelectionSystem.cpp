@@ -366,13 +366,15 @@ void SceneSelectionSystem::UpdateHoodPos() const
 		switch (curPivotPoint)
 		{
 		case ST_PIVOT_ENTITY_CENTER:
-			p = curSelections.GetBbox(0).GetCenter();
+			p = curSelections.GetZeroPos(0);
 			break;
 		default:
-			p = curSelections.GetCommonBbox().GetCenter();
+			p = curSelections.GetCommonZeroPos();
 			break;
 		}
 
+		// check if we have locked entities in selection group
+		// if so - lock modification hood
 		for(size_t i = 0; i < curSelections.Size(); ++i)
 		{
 			if(curSelections.GetEntity(i)->GetLocked())

@@ -67,6 +67,32 @@ bool JniUtils::EnableSleepTimer()
 	return true;
 }
 
+bool JniUtils::IsFile(const String& absolutePath)
+{
+	jmethodID mid = GetMethodID("IsFile", "(Ljava/lang/String;)Z");
+	if (!mid)
+		return false;
+
+	jstring jAbsolutePath = GetEnvironment()->NewStringUTF(absolutePath.c_str());
+	bool res = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, jAbsolutePath);
+	GetEnvironment()->DeleteLocalRef(jAbsolutePath);
+	return res;
+}
+
+bool JniUtils::IsDirectory(const String& absolutePath)
+{
+	jmethodID mid = GetMethodID("IsDirectory", "(Ljava/lang/String;)Z");
+	if (!mid)
+		return false;
+
+	jstring jAbsolutePath = GetEnvironment()->NewStringUTF(absolutePath.c_str());
+	bool res = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, jAbsolutePath);
+	GetEnvironment()->DeleteLocalRef(jAbsolutePath);
+	return res;
+}
+
+
+
 void DAVA::DisableSleepTimer()
 {
 	JniUtils jniUtils;
