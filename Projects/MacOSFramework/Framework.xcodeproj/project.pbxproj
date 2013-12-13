@@ -3175,7 +3175,8 @@
 				E8989B3916BD24E400732C04 /* SceneSystem.cpp */,
 				E8989B3A16BD24E400732C04 /* SceneSystem.h */,
 			);
-			path = Entity;
+			name = Entity;
+			path = ../../Entity;
 			sourceTree = "<group>";
 		};
 		E8989B5816BD24E400732C04 /* FileSystem */ = {
@@ -3495,6 +3496,7 @@
 				E8989C1C16BD24E400732C04 /* FTFont.h */,
 				E8989C1D16BD24E400732C04 /* GraphicsFont.cpp */,
 				E8989C1E16BD24E400732C04 /* GraphicsFont.h */,
+				E8989B3616BD24E400732C04 /* Entity */,
 				E8989C1F16BD24E400732C04 /* GridSprite.h */,
 				E8989C2016BD24E400732C04 /* Sprite.cpp */,
 				E8989C2116BD24E400732C04 /* Sprite.h */,
@@ -3920,7 +3922,6 @@
 				E8989B2016BD24E400732C04 /* Debug */,
 				E8989B2C16BD24E400732C04 /* DLC */,
 				E8989B3516BD24E400732C04 /* DoxygenDocumenation.h */,
-				E8989B3616BD24E400732C04 /* Entity */,
 				E8989B5816BD24E400732C04 /* FileSystem */,
 				E8989B8316BD24E400732C04 /* Input */,
 				CC84B00D18211A5600934482 /* Job */,
