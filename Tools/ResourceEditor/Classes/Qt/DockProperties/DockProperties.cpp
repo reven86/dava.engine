@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "DockProperties.h"
 #include "Main/mainwindow.h"
+#include <QComboBox>
 
 DockProperties::DockProperties(QWidget *parent /* = NULL */)
 	: QDockWidget(parent)
@@ -35,3 +36,49 @@ DockProperties::DockProperties(QWidget *parent /* = NULL */)
 
 DockProperties::~DockProperties()
 { }
+
+void DockProperties::Init()
+{
+	Ui::MainWindow* ui = QtMainWindow::Instance()->GetUI();
+
+	// toggle propertyEditor view mode
+	QComboBox *viewModes = new QComboBox();
+	viewModes->addItem("Basic", (int) PropertyEditor::VIEW_NORMAL);
+	viewModes->addItem("Advanced", (int) PropertyEditor::VIEW_ADVANCED);
+	viewModes->addItem("Favorites only", (int) PropertyEditor::VIEW_FAVORITES_ONLY);
+
+	ui->propertiesToolBar->addSeparator();
+	ui->propertiesToolBar->addWidget(viewModes);
+	QObject::connect(viewModes, SIGNAL(activated(int)), this, SLOT(ViewModeSelected(int)));
+
+	ui->propertyEditor->SetViewMode(PropertyEditor::VIEW_ADVANCED);
+	viewModes->setCurrentIndex(1);
+
+	// toggle favorites edit mode
+	QObject::connect(ui->actionFavoritesEdit, SIGNAL(triggered()), this, SLOT(ActionFavoritesEdit()));
+	ui->propertyEditor->SetFavoritesEditMode(ui->actionFavoritesEdit->isChecked());
+
+	// filter
+	QObject::connect(ui->propertiesFilterClear, SIGNAL(pressed()), ui->propertiesFilterEdit, SLOT(clear()));
+	QObject::connect(ui->propertiesFilterEdit, SIGNAL(textChanged(const QString &)), ui->propertyEditor, SLOT(SetFilter(const QString &)));
+}
+
+void DockProperties::ActionFavoritesEdit()
+{
+	QAction *favoritesEditAction = dynamic_cast<QAction *>(QObject::sender());
+	if(NULL != favoritesEditAction)
+	{
+		QtMainWindow::Instance()->GetUI()->propertyEditor->SetFavoritesEditMode(favoritesEditAction->isChecked());
+	}
+}
+
+void DockProperties::ViewModeSelected(int index)
+{
+	QComboBox *viewModes = dynamic_cast<QComboBox*>(QObject::sender());
+
+	if(NULL != viewModes)
+	{
+		PropertyEditor::eViewMode mode = (PropertyEditor::eViewMode) viewModes->itemData(index).toInt();
+		QtMainWindow::Instance()->GetUI()->propertyEditor->SetViewMode(mode);
+	}
+}

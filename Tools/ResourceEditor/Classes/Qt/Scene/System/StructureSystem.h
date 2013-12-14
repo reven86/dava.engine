@@ -90,6 +90,8 @@ protected:
 	void CheckAndMarkLocked(DAVA::Entity *entity);
 	void MarkLocked(DAVA::Entity *entity);
 
+    void CreateIlluminationParams(DAVA::Entity *entity);
+
 	void SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePath &refToOwner, DAVA::Set<DAVA::Entity *> &result);
 };
 

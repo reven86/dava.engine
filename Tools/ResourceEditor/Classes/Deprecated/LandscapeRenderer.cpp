@@ -162,9 +162,9 @@ void LandscapeRenderer::DrawLandscape()
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, (heightmap->Size() - 1) * (heightmap->Size() - 1) * 6, EIF_32, &indices.front());
 }
     
-void LandscapeRenderer::BindMaterial(DAVA::Texture *materialTexture)
+void LandscapeRenderer::BindMaterial(DAVA::UniqueHandle textureStateHandle)
 {
-    RenderManager::Instance()->SetTexture(materialTexture, 0);
+    RenderManager::Instance()->SetTextureState(textureStateHandle);
     
     RenderManager::Instance()->SetShader(shader);
     RenderManager::Instance()->FlushState();
@@ -181,7 +181,7 @@ void LandscapeRenderer::BindMaterial(DAVA::Texture *materialTexture)
 
 void LandscapeRenderer::UnbindMaterial()
 {
-    RenderManager::Instance()->SetTexture(0, 0);
+   // RenderManager::Instance()->SetTexture(0, 0);
     
     RenderManager::Instance()->SetShader(NULL);
     RenderManager::Instance()->FlushState();

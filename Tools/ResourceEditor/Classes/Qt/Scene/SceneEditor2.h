@@ -59,6 +59,8 @@
 #include "Scene/System/BeastSystem.h"
 #include "Scene/System/OwnersSignatureSystem.h"
 
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
+
 class SceneEditor2 : public DAVA::Scene
 {
 public:
@@ -97,6 +99,7 @@ public:
 	DebugDrawSystem *debugDrawSystem;
 	BeastSystem	*beastSystem;
 	OwnersSignatureSystem *ownersSignatureSystem;
+    StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);

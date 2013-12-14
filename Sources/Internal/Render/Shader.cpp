@@ -81,10 +81,10 @@ namespace DAVA
 		vertexShaderData = 0;
 		fragmentShaderData = 0;
         
-        lastPorectionMatrixCache = 0;
+        lastProjectionMatrixCache = 0;
         lastModelViewMatrixCache = 0;
-        lastModelViewProjectionMatricCache1 = 0;
-        lastModelViewProjectionMatricCache2 = 0;
+        lastMVPMatrixModelViewCache = 0;
+        lastMVPMatrixProjectionCache = 0;
 		
 		//#if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
 		//    relativeFileName = "";
@@ -384,9 +384,11 @@ namespace DAVA
 	{
 		return (vertexShader != 0 && fragmentShader != 0 && program != 0);
 	}
-    
-	bool Shader::Recompile(bool silentDelete)
+	
+	void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerData)
 	{
+		bool silentDelete = (param != NULL);
+		
 		if(silentDelete &&
 		   ((vertexShader != 0) || (fragmentShader != 0) || (program != 0)))
 		{
@@ -402,13 +404,13 @@ namespace DAVA
 		if (!CompileShader(&vertexShader, GL_VERTEX_SHADER, vertexShaderData->GetSize(), (GLchar*)vertexShaderData->GetPtr(), vertexShaderDefines))
 		{
 			Logger::Error("Failed to compile vertex shader: %s", vertexShaderPath.GetAbsolutePathname().c_str());
-			return false;
+			return;
 		}
 		
 		if (!CompileShader(&fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderData->GetSize(), (GLchar*)fragmentShaderData->GetPtr(), fragmentShaderDefines))
 		{
 			Logger::Error("Failed to compile fragment shader: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
-			return false;
+			return ;
 		}
 		
 		program = glCreateProgram();
@@ -420,7 +422,7 @@ namespace DAVA
 			Logger::Error("Failed to Link program for shader: %s", fragmentShaderPath.GetAbsolutePathname().c_str());
 			
 			DeleteShaders();
-			return false;
+			return;
 		}
 		
 		RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes));
@@ -476,10 +478,14 @@ namespace DAVA
 			uniformStruct->id = uniform;
 			uniformStruct->type = (eUniformType)type;
 			uniformStruct->size = size;
-			uniformStruct->cacheValueSize = GetUniformTypeSize((eUniformType)type) * size;
-			uniformStruct->cacheValue = uniformData + uniformOffsets[k] + sizeof(Uniform);
+
+            void* value = uniformData + uniformOffsets[k] + sizeof(Uniform);
+            uint16 valueSize = GetUniformTypeSize((eUniformType)type) * size;
 #ifdef USE_CRC_COMPARE
-            uniformStruct->crc = CRC32::ForBuffer(uniformStruct->cacheValue, uniformStruct->cacheValueSize);
+            uniformStruct->crc = CRC32::ForBuffer((const char*)(value), valueSize);
+#else
+            uniformStruct->cacheValueSize = valueSize;
+			uniformStruct->cacheValue = value;
 #endif
 #ifdef USE_NEON_MATRIX_COMPARE
             uniformStruct->matrixCRC = vmovq_n_u32(0);
@@ -495,81 +501,81 @@ namespace DAVA
 			{
 				case UT_FLOAT:
 				{
-					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
 					break;
 				}
 					
 				case UT_FLOAT_VEC2:
 				{
-					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
 					break;
 				}
 					
 				case UT_FLOAT_VEC3:
 				{
-					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
 					break;
 				}
 					
 				case UT_FLOAT_VEC4:
 				{
-					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
 					break;
 				}
 					
 				case UT_INT:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_INT_VEC2:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_INT_VEC3:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_INT_VEC4:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_BOOL:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_BOOL_VEC2:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_BOOL_VEC3:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_BOOL_VEC4:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 					//VI: Matrices are returned from the shader in column-major order so need to transpose the matrix.
 				case UT_FLOAT_MAT2:
 				{
-					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)uniformStruct->cacheValue));
-					Matrix2* m = (Matrix2*)uniformStruct->cacheValue;
+					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+					Matrix2* m = (Matrix2*)value;
 					Matrix2 t;
 					for (int i = 0; i < 2; ++i)
 						for (int j = 0; j < 2; ++j)
@@ -581,8 +587,8 @@ namespace DAVA
 					
 				case UT_FLOAT_MAT3:
 				{
-					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)uniformStruct->cacheValue));
-					Matrix3* m = (Matrix3*)uniformStruct->cacheValue;
+					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+					Matrix3* m = (Matrix3*)value;
 					Matrix3 t;
 					for (int i = 0; i < 3; ++i)
 						for (int j = 0; j < 3; ++j)
@@ -594,8 +600,8 @@ namespace DAVA
 					
 				case UT_FLOAT_MAT4:
 				{
-					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)uniformStruct->cacheValue));
-					Matrix4* m = (Matrix4*)uniformStruct->cacheValue;
+					RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
+					Matrix4* m = (Matrix4*)value;
 					m->Transpose();
 					
 					break;
@@ -603,13 +609,13 @@ namespace DAVA
 					
 				case UT_SAMPLER_2D:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 					
 				case UT_SAMPLER_CUBE:
 				{
-					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)uniformStruct->cacheValue));
+					RENDER_VERIFY(glGetUniformiv(program, uniformStruct->location, (int32*)value));
 					break;
 				}
 			}
@@ -628,8 +634,16 @@ namespace DAVA
 					autobindUniformIndex++;
 				}
 			}
-		}
-
+		}		
+	}
+    
+	bool Shader::Recompile(bool silentDelete)
+	{
+		ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
+															   Message(this, &Shader::RecompileInternal, (silentDelete) ? this : NULL));
+        JobInstanceWaiter waiter(job);
+        waiter.Wait();
+		
 		return true;
 	}
 	
@@ -727,7 +741,12 @@ namespace DAVA
 	{
 		DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
 		Uniform* currentUniform = GET_UNIFORM(uniformIndex);
+#ifdef USE_CRC_COMPARE
+        int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
+        if(currentUniform->ValidateCache(data, size) == false)
+#else
 		if(currentUniform->ValidateCache(data, currentUniform->cacheValueSize) == false)
+#endif
 		{
 			switch(uniformType)
 			{
@@ -861,7 +880,12 @@ namespace DAVA
 	
 	void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType uniformType, uint32 arraySize, void * data)
 	{
+#ifdef USE_CRC_COMPARE
+        int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
+        if(currentUniform->ValidateCache(data, size) == false)
+#else
 		if(currentUniform->ValidateCache(data, currentUniform->cacheValueSize) == false)
+#endif
 		{
 			switch(uniformType)
 			{
@@ -1004,7 +1028,19 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
 		}
 		
 		RENDER_VERIFY(glCompileShader(*shader));					// compile shader
-		
+
+#ifdef __DAVAENGINE_DEBUG__
+        {
+            GLchar log[4096] = {0};
+            GLsizei logLength = 0;
+            RENDER_VERIFY(glGetShaderInfoLog(*shader, 4096, &logLength, log));
+            if (logLength)
+            {
+                Logger::FrameworkDebug("Shader compile log:\n%s", log);
+            }
+        }
+#endif
+
 		RENDER_VERIFY(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
 		if (status == GL_FALSE)
 		{
@@ -1046,13 +1082,13 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
                     uint32 projectionMatrixCache = RenderManager::Instance()->GetProjectionMatrixCache();
                     uint32 modelViewMatrixCache = RenderManager::Instance()->GetModelViewMatrixCache();
                     if (modelViewMatrixCache == 0   ||
-                        lastModelViewProjectionMatricCache1 != modelViewMatrixCache    ||
-                        lastModelViewProjectionMatricCache2 != projectionMatrixCache)
+                        lastMVPMatrixModelViewCache != modelViewMatrixCache    ||
+                        lastMVPMatrixProjectionCache != projectionMatrixCache)
                     {
                         const Matrix4 & modelViewProj = RenderManager::Instance()->GetUniformMatrix(RenderManager::UNIFORM_MATRIX_MODELVIEWPROJECTION);
-                        SetUniformValueByUniform(currentUniform, modelViewProj);
-                        lastModelViewProjectionMatricCache1 = modelViewMatrixCache;
-                        lastModelViewProjectionMatricCache2 = projectionMatrixCache;
+                        RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, modelViewProj.data));
+                        lastMVPMatrixModelViewCache = modelViewMatrixCache;
+                        lastMVPMatrixProjectionCache = projectionMatrixCache;
                     }
 					break;
 				}
@@ -1063,7 +1099,7 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
                         lastModelViewMatrixCache != modelViewMatrixCache)
                     {
                         const Matrix4 & modelView = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-                        SetUniformValueByUniform(currentUniform, modelView);
+                        RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, modelView.data));
                         lastModelViewMatrixCache = modelViewMatrixCache;
                     }
 					break;
@@ -1071,11 +1107,11 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
 				case UNIFORM_PROJECTION_MATRIX:
 				{
                     uint32 projectionMatrixCache = RenderManager::Instance()->GetProjectionMatrixCache();
-                    if (lastPorectionMatrixCache != projectionMatrixCache)
+                    if (lastProjectionMatrixCache != projectionMatrixCache)
                     {
                         const Matrix4 & proj = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-                        SetUniformValueByUniform(currentUniform, proj);
-                        lastPorectionMatrixCache = projectionMatrixCache;
+                        RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, proj.data));
+                        lastProjectionMatrixCache = projectionMatrixCache;
                     }
 					break;
 				}
@@ -1195,6 +1231,9 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 	
 	bool Shader::Uniform::ValidateCache(int32 value)
 	{
+#ifdef USE_CRC_COMPARE
+        return ValidateCache(&value, sizeof(int32));
+#else
 		bool result = (*(int32*)cacheValue) == value;
 		
 		if(!result)
@@ -1204,10 +1243,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 		}
 		
 		return result;
+#endif
 	}
 	
 	bool Shader::Uniform::ValidateCache(float32 value)
 	{
+#ifdef USE_CRC_COMPARE
+        return ValidateCache(&value, sizeof(float32));
+#else
 		bool result = FLOAT_EQUAL(*((float32*)cacheValue), value);
 		
 		if(!result)
@@ -1217,10 +1260,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 		}
 		
 		return result;
+#endif
 	}
 	
 	bool Shader::Uniform::ValidateCache(const Vector2 & value)
 	{
+#ifdef USE_CRC_COMPARE
+        return ValidateCache(&value.data, sizeof(float32) * 2);
+#else
 		Vector2& cachedVector = *(Vector2*)cacheValue;
 		bool result = (value == cachedVector);
 		
@@ -1231,10 +1278,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 		}
 		
 		return result;
+#endif
 	}
 	
 	bool Shader::Uniform::ValidateCache(const Vector3 & value)
 	{
+#ifdef USE_CRC_COMPARE
+        return ValidateCache(&value.data, sizeof(float32) * 3);
+#else
 		Vector3& cachedVector = *(Vector3*)cacheValue;
 		bool result = (value == cachedVector);
 		
@@ -1245,10 +1296,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 		}
 		
 		return result;
+#endif
 	}
 	
 	bool Shader::Uniform::ValidateCacheColor3(const Color & value)
 	{
+#ifdef USE_CRC_COMPARE
+        return ValidateCache(&value.color, sizeof(float32) * 3);
+#else
 		Color& cachedColor = *(Color*)cacheValue;
 		bool result = (FLOAT_EQUAL(cachedColor.r, value.r) &&
 					   FLOAT_EQUAL(cachedColor.g, value.g) &&
@@ -1261,10 +1316,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 		}
 		
 		return result;
+#endif
 	}
 	
 	bool Shader::Uniform::ValidateCacheColor4(const Color & value)
 	{
+#ifdef USE_CRC_COMPARE
+        return ValidateCache(&value.color, sizeof(float32) * 4);
+#else
 		Color& cachedColor = *(Color*)cacheValue;
 		bool result = (FLOAT_EQUAL(cachedColor.r, value.r) &&
 					   FLOAT_EQUAL(cachedColor.g, value.g) &&
@@ -1278,10 +1337,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 		}
 		
 		return result;
+#endif
 	}
 	
 	bool Shader::Uniform::ValidateCache(const Vector4 & value)
 	{
+#ifdef USE_CRC_COMPARE
+        return ValidateCache(&value.data, sizeof(float32) * 4);
+#else
 		Vector4& cachedVector = *(Vector4*)cacheValue;
 		bool result = (value == cachedVector);
 		
@@ -1292,10 +1355,12 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 		}
 		
 		return result;
+#endif
 	}
 	
 	bool Shader::Uniform::ValidateCache(const Matrix4 & value)
 	{
+#ifdef USE_CRC_COMPARE
 #ifdef USE_NEON_MATRIX_COMPARE
         uint64 a0;// = (uint32)value._00 << 32 | (uint32)value._11;
         memcpy(&a0, &value._00, sizeof(float32));
@@ -1359,7 +1424,11 @@ Shader * Shader::RecompileNewInstance(const String & combination)
         }
         
         return true;
-#else
+#else   //#ifdef USE_NEON_MATRIX_COMPARE
+        return ValidateCache(&value.data, sizeof(float32) * 16);
+#endif  //#ifdef USE_NEON_MATRIX_COMPARE
+        
+#else   //#ifdef USE_CRC_COMPARE
         Matrix4& cachedVector = *(Matrix4*)cacheValue;
         bool result = (value == cachedVector);
 
@@ -1375,6 +1444,14 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 	
 	bool Shader::Uniform::ValidateCache(const Matrix3 & value)
 	{
+#ifdef USE_CRC_COMPARE
+        uint32 crc32 = CRC32::ForBuffer((const char*)value.data, sizeof(float32) * 9);
+        bool result = crc == crc32;
+        if (!result)
+        {
+            crc = crc32;
+        }
+#else
 		Matrix3& cachedVector = *(Matrix3*)cacheValue;
 		bool result = (value == cachedVector);
 		
@@ -1383,15 +1460,15 @@ Shader * Shader::RecompileNewInstance(const String & combination)
 			DVASSERT(sizeof(value) == cacheValueSize);
 			memcpy(cacheValue, value.data, cacheValueSize);
 		}
-		
+#endif
 		return result;
 	}
 	
 	bool Shader::Uniform::ValidateCache(const void* value, uint16 valueSize)
 	{
 #ifdef USE_CRC_COMPARE
-        uint32 crc32 = CRC32::ForBuffer(value, valueSize);
-        result = crc == crc32;
+        uint32 crc32 = CRC32::ForBuffer((const char*)value, valueSize);
+        bool result = crc == crc32;
         if (!result)
         {
             crc = crc32;

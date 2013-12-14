@@ -1,0 +1,13 @@
+Material:
+    MaterialState:
+        Name: "Low"
+        Parent: "Global.Fog.Textured.Detail.AlphatestNoCull"
+        MaterialDefines: ["LOD_LOW"]
+    MaterialState:
+        Name: "Normal"
+        Parent: "Global.Fog.Textured.Detail.AlphatestNoCull"
+        MaterialDefines: ["LOD_NORMAL"]
+    MaterialState:
+        Name: "High"
+        Parent: "Global.Fog.Textured.Detail.AlphatestNoCull"
+        MaterialDefines: ["LOD_HIGH"]

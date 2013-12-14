@@ -464,6 +464,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 		case DRAW_FILL:
 		{
 		    RenderManager::Instance()->SetDefault2DNoTextureState();
+			RenderManager::Instance()->SetDefaultTextureState();
 			DrawFilled( geometricData );
 		}	
 		break;
@@ -488,7 +489,8 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 void UIControlBackground::DrawStretched(const Rect &drawRect)
 {
 	if (!spr)return;
-	Texture *texture = spr->GetTexture(frame);
+	UniqueHandle textureHandle = spr->GetTextureHandle(frame);
+	Texture* texture = spr->GetTexture(frame);
 	
 	float32 texX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
 	float32 texY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
@@ -650,7 +652,7 @@ void UIControlBackground::DrawStretched(const Rect &drawRect)
 	vertexStream->Set(TYPE_FLOAT, 2, 0, vertices);
 	texCoordStream->Set(TYPE_FLOAT, 2, 0, texCoords);
 
-	RenderManager::Instance()->SetTexture(texture);
+	RenderManager::Instance()->SetTextureState(textureHandle);
 	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
     RenderManager::Instance()->SetRenderData(rdoObject);
 	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, vertInTriCount, EIF_16, indeces);
@@ -685,6 +687,7 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd)
 	stretchCap.y = Min( stretchCap.y, size.y * 0.5f );
 
 	Texture *texture = spr->GetTexture(frame);
+	UniqueHandle textureHandle = spr->GetTextureHandle(frame);
 
 	bool needGenerateTileData = false;
 	if( !tiledDrawData )
@@ -852,7 +855,7 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd)
 	vertexStream->Set(TYPE_FLOAT, 2, 0, &td.transformedVerList[0]);
 	texCoordStream->Set(TYPE_FLOAT, 2, 0, &td.tilesTexCoordsList[0]);
 
-	RenderManager::Instance()->SetTexture( texture );
+	RenderManager::Instance()->SetTextureState(textureHandle);
 	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 	RenderManager::Instance()->SetRenderData(rdoObject);
 	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.tilesIndecesList.size(), EIF_32, &td.tilesIndecesList[0]);

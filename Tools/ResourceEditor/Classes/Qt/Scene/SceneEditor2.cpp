@@ -113,6 +113,9 @@ SceneEditor2::SceneEditor2()
 	
 	ownersSignatureSystem = new OwnersSignatureSystem(this);
 	AddSystem(ownersSignatureSystem, 0);
+    
+    staticOcclusionBuildSystem = new StaticOcclusionBuildSystem(this);
+    AddSystem(staticOcclusionBuildSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT) | (1 << Component::TRANSFORM_COMPONENT));
 
 	SetShadowBlendMode(ShadowVolumeRenderPass::MODE_BLEND_MULTIPLY);
 
@@ -344,6 +347,7 @@ void SceneEditor2::Update(float timeElapsed)
 	
 	if(editorLightSystem)
 		editorLightSystem->Process();
+    
 }
 
 void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
@@ -365,6 +369,9 @@ void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
 		structureSystem->ProcessUIEvent(event);
 
 	particlesSystem->ProcessUIEvent(event);
+    
+    staticOcclusionBuildSystem->SetCamera(GetClipCamera());
+    staticOcclusionBuildSystem->Process();
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
@@ -374,8 +381,10 @@ void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 
 void SceneEditor2::Draw()
 {
+
     RenderManager::Instance()->ClearStats();
 	Scene::Draw();
+    
     renderStats = RenderManager::Instance()->GetStats();
 
 	if(isHUDVisible)
@@ -404,6 +413,7 @@ void SceneEditor2::Draw()
 		hoodSystem->Draw();
 		textDrawSystem->Draw();
 	}
+    
 }
 
 void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)

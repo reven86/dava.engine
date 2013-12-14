@@ -34,7 +34,7 @@ namespace DAVA
 {
     
 RenderPassBatchArray::RenderPassBatchArray()
-    : layerBatchArrayMap(8)
+    :	layerBatchArrayMap(8)
 {
 }
     
@@ -62,12 +62,16 @@ RenderLayerBatchArray * RenderPassBatchArray::Get(const FastName & name)
     return layerBatchArrayMap.at(name);
 }
 
-    
-    
-RenderLayerBatchArray::RenderLayerBatchArray()
-    : flags(0)
+void RenderPassBatchArray::InitLayer(const FastName& layerName, uint32 sortingFlags)
 {
-    flags = SORT_ENABLED | SORT_BY_MATERIAL;
+	RenderLayerBatchArray* batchArray = new RenderLayerBatchArray(sortingFlags);
+	layerBatchArrayMap.insert(layerName, batchArray);
+}
+    
+RenderLayerBatchArray::RenderLayerBatchArray(uint32 sortingFlags)
+    : flags(sortingFlags)
+{
+    //flags = SORT_ENABLED | SORT_BY_MATERIAL | SORT_BY_DISTANCE;
 	//renderBatchArray.reserve(4096);
 }
     
@@ -114,8 +118,7 @@ void RenderLayerBatchArray::Sort(Camera * camera)
             
             flags &= ~SORT_REQUIRED;
         }
-        
-        if (flags & SORT_BY_DISTANCE)
+        else if (flags & SORT_BY_DISTANCE)
         {
             Vector3 cameraPosition = camera->GetPosition();
             

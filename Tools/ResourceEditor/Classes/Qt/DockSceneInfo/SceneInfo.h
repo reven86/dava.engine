@@ -66,7 +66,10 @@ public:
 	~SceneInfo();
 
 public slots:
-		void UpdateInfoByTimer();
+    void UpdateInfoByTimer();
+    void TexturesReloaded();
+    void SpritesReloaded();
+
 
 protected slots:
     void SceneActivated(SceneEditor2 *scene);
@@ -83,14 +86,12 @@ protected:
     void InitializeInfo();
     void InitializeGeneralSection();
     void Initialize3DDrawSection();
-    void InitializeMaterialsSection();
     void InitializeLODSectionInFrame();
     void InitializeLODSectionForSelection();
     void InitializeParticlesSection();
 
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();
-    void RefreshMaterialsInfo();
     void RefreshLODInfoInFrame();
     void RefreshLODInfoForSelection();
     void RefreshParticlesInfo();
@@ -113,16 +114,15 @@ protected:
     
     
     void CollectSceneData(SceneEditor2 *scene);
-    void CollectSceneTextures();
     void CollectParticlesData();
     void CollectLODDataInFrame();
     void CollectLODDataInFrameRecursive(DAVA::Entity *entity);
     void CollectLODDataForSelection();
     static void CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lods, LODInfo &info);
     
-    void CollectTexture(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, const DAVA::FilePath &pathname, DAVA::Texture *tex);
+    void CollectTexture(DAVA::TexturesMap &textures, const DAVA::FilePath &pathname, DAVA::Texture *tex);
     
-    static DAVA::uint32 CalculateTextureSize(const DAVA::Map<DAVA::String, DAVA::Texture *> &textures);
+    static DAVA::uint32 CalculateTextureSize(const DAVA::TexturesMap &textures);
 
     static DAVA::uint32 GetTrianglesForNotLODEntityRecursive(DAVA::Entity *entity, bool checkVisibility);
     
@@ -135,12 +135,8 @@ protected:
     DAVA::Vector<DAVA::Entity *> nodesAtScene;
     DAVA::Landscape *landscape;
     
-    DAVA::Vector<DAVA::Material *>materialsAtScene;
-    DAVA::Vector<DAVA::DataNode *>dataNodesAtScene;
-
-    DAVA::Map<DAVA::String, DAVA::Texture *>sceneTextures;
-    DAVA::Map<DAVA::String, DAVA::Texture *>particleTextures;
-    
+	DAVA::TexturesMap sceneTextures;
+	DAVA::TexturesMap particleTextures;
     
     DAVA::uint32 sceneTexturesSize;
     DAVA::uint32 particleTexturesSize;
@@ -150,6 +146,8 @@ protected:
     
     LODInfo lodInfoSelection;
     LODInfo lodInfoInFrame;
+
+	bool isUpToDate;
 };
 
 #endif // __SCENE_INFO_H__

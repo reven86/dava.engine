@@ -57,6 +57,8 @@ public:
 	bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
 	Qt::ItemFlags flags(const QModelIndex & index) const;
 
+	QtPropertyData* rootItem() const;
+
 	QtPropertyData* itemFromIndex(const QModelIndex & index) const;
 	QModelIndex indexFromItem(QtPropertyData *data) const;
 

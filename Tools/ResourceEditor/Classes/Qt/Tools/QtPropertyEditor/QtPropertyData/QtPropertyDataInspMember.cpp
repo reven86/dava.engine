@@ -33,6 +33,16 @@ QtPropertyDataInspMember::~QtPropertyDataInspMember()
 	DAVA::SafeDelete(lastCommand);
 }
 
+const DAVA::MetaInfo * QtPropertyDataInspMember::MetaInfo() const
+{
+	if(NULL != member)
+	{
+		return member->Type();
+	}
+
+	return NULL;
+}
+
 void QtPropertyDataInspMember::SetValueInternal(const QVariant &value)
 {
 	QtPropertyDataDavaVariant::SetValueInternal(value);

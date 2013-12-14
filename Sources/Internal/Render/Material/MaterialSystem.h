@@ -56,7 +56,8 @@ public:
 	
 	bool LoadMaterialConfig(const FilePath& filePath);
 	
-    NMaterial* GetMaterial(const FastName & name);
+    NMaterial* GetMaterial(const FastName & name); //returns substitute material if there were no requested one
+	NMaterial* GetSpecificMaterial(const FastName & name); //returns NULL if there were no requested one
 
 	//MaterialSystem will take ownership on the added material so release it after adding
 	void AddMaterial(NMaterial* material);
@@ -74,8 +75,14 @@ public:
 	const FastName& GetCurrentMaterialQuality() const;
 	void SwitchMaterialQuality(const FastName& qualityLevelName, bool forceSwitch = false);
 	
-	NMaterial* CreateChild(NMaterial* parent);
-	NMaterial* CreateChild(const FastName& parentName);
+	NMaterial* CreateInstanceChild(NMaterial* parent);
+	NMaterial* CreateInstanceChild(const FastName& parentName);
+	
+	NMaterial* CreateSwitchableChild(NMaterial* parent);
+	NMaterial* CreateSwitchableChild(const FastName& parentName);
+	
+	//NMaterial* CreateChild(NMaterial* parent);
+	//NMaterial* CreateChild(const FastName& parentName);
 	
 	bool Contains(NMaterial* material);
 	
@@ -102,6 +109,8 @@ private:
 							NMaterial* parentMaterial,
 							bool isLod,
 							Map<String, Vector<MaterialData> >& nodes);
+	
+	void BuildAndBindOnMainThread(BaseObject * caller, void * param, void *callerData);
 	
 private:
 	

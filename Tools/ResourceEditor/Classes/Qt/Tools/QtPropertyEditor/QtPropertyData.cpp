@@ -35,7 +35,6 @@ QtPropertyData::QtPropertyData()
 	: curFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable)
 	, parent(NULL)
 	, updatingValue(false)
-	, isProxy(false)
 	, model(NULL)
 	, userData(NULL)
 	, optionalButtonsViewport(NULL)
@@ -46,7 +45,6 @@ QtPropertyData::QtPropertyData(const QVariant &value, Qt::ItemFlags flags)
 	, curFlags(flags)
 	, parent(NULL)
 	, updatingValue(false)
-	, isProxy(false)
 	, model(NULL)
 	, userData(NULL)
 	, optionalButtonsViewport(NULL)
@@ -56,13 +54,7 @@ QtPropertyData::~QtPropertyData()
 {
 	for(int i = 0; i < childrenData.size(); ++i)
 	{
-		QtPropertyData *data = childrenData.at(i);
-		if(NULL != data)
-		{
-			data->parent = NULL;
-			data->model = NULL;
-			data->deleteLater();
-		}
+		delete childrenData.at(i);
 	}
 
 	childrenData.clear();
@@ -347,6 +339,16 @@ QtPropertyData::UserData* QtPropertyData::GetUserData() const
 	return userData;
 }
 
+const DAVA::MetaInfo* QtPropertyData::MetaInfo() const
+{
+	return NULL;
+}
+
+QtPropertyData* QtPropertyData::GetProxyOriginal()
+{
+	return this;
+}
+
 bool QtPropertyData::IsEnabled() const
 {
 	return (curFlags & Qt::ItemIsEnabled);
@@ -355,6 +357,20 @@ bool QtPropertyData::IsEnabled() const
 QtPropertyModel* QtPropertyData::GetModel() const
 {
 	return model;
+}
+
+void QtPropertyData::SetModel(QtPropertyModel *_model)
+{
+	model = _model;
+
+	for(int i = 0; i < childrenData.size(); ++i)
+	{
+		QtPropertyData *child = childrenData.at(i);
+		if(NULL != child)
+		{
+			child->SetModel(model);
+		}
+	}
 }
 
 QWidget* QtPropertyData::CreateEditor(QWidget *parent, const QStyleOptionViewItem& option) const
@@ -439,7 +455,7 @@ void QtPropertyData::ChildInsert(const QString &key, QtPropertyData *data, int p
 
 		data->curName = key;
 		data->parent = this;
-		data->model = model;
+		data->SetModel(model);
 		data->SetOWViewport(optionalButtonsViewport);
 
 		if(NULL != model)
@@ -489,19 +505,30 @@ int QtPropertyData::ChildIndex(QtPropertyData *data) const
 	return childrenData.indexOf(data);
 }
 
+void QtPropertyData::ChildExtract(QtPropertyData *data)
+{
+	int index = childrenData.indexOf(data);
+	ChildRemoveInternal(index, false);
+}
+
 void QtPropertyData::ChildRemove(QtPropertyData *data)
 {
 	int index = childrenData.indexOf(data);
-	ChildRemove(index);
+	ChildRemoveInternal(index, true);
 }
 
 void QtPropertyData::ChildRemove(const QString &key)
 {
 	int index = childrenNames.indexOf(key);
-	ChildRemove(index);
+	ChildRemoveInternal(index, true);
 }
 
 void QtPropertyData::ChildRemove(int index)
+{
+	ChildRemoveInternal(index, true);
+}
+
+void QtPropertyData::ChildRemoveInternal(int index, bool del)
 {
 	if(index >= 0 && index < childrenData.size())
 	{
@@ -515,9 +542,10 @@ void QtPropertyData::ChildRemove(int index)
 		childrenData.removeAt(index);
 		childrenNames.removeAt(index);
 
-		data->parent = NULL;
-		data->model = NULL;
-		delete data;
+		if(del)
+		{
+			delete data;
+		}
 
 		if(NULL != model)
 		{
@@ -537,10 +565,7 @@ void QtPropertyData::ChildRemoveAll()
 
 		for(int i = 0; i < childrenData.size(); ++i)
 		{
-			QtPropertyData *data = childrenData.at(i);
-			data->parent = NULL;
-			data->model = NULL;
-			delete data;
+			delete childrenData.at(i);
 		}
 
 		childrenData.clear();
@@ -575,7 +600,8 @@ QtPropertyToolButton* QtPropertyData::AddButton()
 	QtPropertyToolButton *button = new QtPropertyToolButton(optionalButtonsViewport);
 
 	optionalButtons.append(button);
-	button->setGeometry(0, 0, 16, 16);
+	button->setGeometry(0, 0, 18, 18);
+	button->setAttribute(Qt::WA_NoSystemBackground, true);
 	button->hide();
 
 	return button;

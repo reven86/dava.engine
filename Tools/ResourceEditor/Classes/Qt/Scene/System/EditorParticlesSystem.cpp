@@ -123,46 +123,41 @@ void EditorParticlesSystem::Draw()
 		{
 			DAVA::Entity *entity = selectionSystem->GetSelectionEntity(i);
 			
-			DAVA::RenderComponent *renderComponent = static_cast<DAVA::RenderComponent*>(entity->GetComponent(DAVA::Component::RENDER_COMPONENT));
-		
-			if (renderComponent)
-			{		
-				DAVA::ParticleEmitter *emitter = dynamic_cast<DAVA::ParticleEmitter*>(renderComponent->GetRenderObject());
-				// Draw additional effects according to emitter type
-				if (emitter)
+			DAVA::ParticleEmitter *emitter = GetEmitter(entity);
+			// Draw additional effects according to emitter type
+			if (emitter)
+			{
+				// Get center of entity object
+				DAVA::AABBox3 selectionBox = selectionSystem->GetSelectionAABox(i);
+				DAVA::Vector3 center = selectionBox.GetCenter();
+				// Always draw emission vector arrow for emitter
+				DrawVectorArrow(entity, emitter, center);
+
+				switch (emitter->emitterType)
 				{
-					// Get center of entity object
-					DAVA::AABBox3 selectionBox = selectionSystem->GetSelectionAABox(i);
-					DAVA::Vector3 center = selectionBox.GetCenter();
-					// Always draw emission vector arrow for emitter
-					DrawVectorArrow(entity, emitter, center);
-					
-					switch (emitter->emitterType)
+				case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
+				case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
 					{
-						case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_VOLUME:
-						case DAVA::ParticleEmitter::EMITTER_ONCIRCLE_EDGES:
-						{
-							DrawSizeCircle(entity, emitter, center);
-						}
-						break;
-						case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
-						{
-							DrawSizeCircleShockWave(emitter, center);
-						}
-						break;
-					
-						case DAVA::ParticleEmitter::EMITTER_RECT:
-						{
-							DrawSizeBox(entity, emitter, center);
-						}
-						break;
-					
-						case DAVA::ParticleEmitter::EMITTER_POINT:
-						{
-							DAVA::RenderHelper::Instance()->FillDodecahedron(center, 0.05f);
-						}
-						break;
+						DrawSizeCircle(entity, emitter, center);
 					}
+					break;
+				case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
+					{
+						DrawSizeCircleShockWave(emitter, center);
+					}
+					break;
+
+				case DAVA::ParticleEmitter::EMITTER_RECT:
+					{
+						DrawSizeBox(entity, emitter, center);
+					}
+					break;
+
+				case DAVA::ParticleEmitter::EMITTER_POINT:
+					{
+						DAVA::RenderHelper::Instance()->FillDodecahedron(center, 0.05f);
+					}
+					break;
 				}
 			}
 		}

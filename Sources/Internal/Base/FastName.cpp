@@ -61,12 +61,18 @@ FastName::FastName(const FastName &_name)
     debug_str_ptr = _name.debug_str_ptr;
 #endif
     
-    AddRef(index);
+	if(-1 != index)
+	{
+		AddRef(index);
+	}
 }
 
 FastName::~FastName()
 {
-    RemRef(index);
+	if(-1 != index)
+	{
+		RemRef(index);
+	}
 }
 
 void FastName::Init(const char * name)

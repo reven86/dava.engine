@@ -1,0 +1,4 @@
+Material:
+    MaterialState:
+        Name: "Default"
+        MaterialDefines: ["SPEED_TREE_LEAF"]

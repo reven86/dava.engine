@@ -960,14 +960,17 @@ void TextureBrowser::setScene(DAVA::Scene *scene)
 
 void TextureBrowser::sceneActivated(SceneEditor2 *scene)
 {
-	// set new scene
-	if(curScene != scene)
+	if(isVisible())
 	{
-		setScene(scene);
-	}
-	else
-	{
-		Update();
+		// set new scene
+		if(curScene != scene)
+		{
+			setScene(scene);
+		}
+		else
+		{
+			Update();
+		}
 	}
 }
 

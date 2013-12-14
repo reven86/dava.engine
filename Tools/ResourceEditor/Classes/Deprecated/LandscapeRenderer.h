@@ -41,7 +41,7 @@ public:
 
     void RebuildVertexes(const DAVA::Rect &rebuildForRect);
     
-    void BindMaterial(DAVA::Texture *materialTexture);
+    void BindMaterial(DAVA::UniqueHandle textureStateHandle);
     void UnbindMaterial();
     
     void DrawLandscape();

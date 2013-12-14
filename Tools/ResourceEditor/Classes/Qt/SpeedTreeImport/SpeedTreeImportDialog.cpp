@@ -74,9 +74,6 @@ void SpeedTreeImportDialog::OnCancel()
 
 void SpeedTreeImportDialog::OnOk()
 {
-	DVASSERT(0 && "Need reimplement for new materials");
-
-/*
 	QtMainWindow::Instance()->WaitStart("Importing tree", "Please wait...");
     SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFilePath, sc2FilePath, texturesDirPath);
     QtMainWindow::Instance()->WaitStop();
@@ -85,7 +82,6 @@ void SpeedTreeImportDialog::OnOk()
 
     if(ui->checkBox->isChecked())
         QtMainWindow::Instance()->OpenScene(sc2FilePath.GetAbsolutePathname().c_str());
-*/
 }
 
 void SpeedTreeImportDialog::OnXMLSelect()

@@ -31,15 +31,19 @@
 #ifndef __SCENE_HELPER_H__
 #define __SCENE_HELPER_H__
 
-#include "DAVAEngine.h"
+#include "Scene3D/Entity.h"
+#include "Scene3D/Scene.h"
+#include "Render/Texture.h"
+#include "FileSystem/FilePath.h"
 
 class SceneHelper
 {
 public:
-	static void EnumerateTextures(DAVA::Entity *forNode, DAVA::Map<DAVA::String, DAVA::Texture *> &textures);
+	static void EnumerateTextures(DAVA::Entity *forNode, DAVA::TexturesMap &textures);
+	static void EnumerateTextures(DAVA::Scene *forScene, DAVA::TexturesMap &textures);
 
 protected:
-	static void CollectTexture(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, const DAVA::String &name, DAVA::Texture *tex);
+	static void CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures);
 };
 
 #endif // __SCENE_HELPER_H__

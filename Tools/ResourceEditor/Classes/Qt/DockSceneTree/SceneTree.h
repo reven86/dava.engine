@@ -74,7 +74,6 @@ public slots:
 	void LockEntities();
 	void UnlockEntities();
 
-	void SetCurrentCamera();
 	void CollapseSwitch();
 	
 	void SetEntityNameAsFilter();
@@ -106,6 +105,10 @@ public slots:
 	void SaveEntityAs();
 	
 	void CollapseAll();
+    
+	void SetCurrentCamera();
+    void SetViewCamera();
+    void SetClipCamera();
 
 protected slots:
 	void SceneActivated(SceneEditor2 *scene);
@@ -143,6 +146,8 @@ protected:
 	void CleanupParticleEditorSelectedItems();
 
 	void ExpandUntilFilterAccepted(const QModelIndex &index);
+    
+    void AddCameraActions(QMenu &menu);
 
 private:
 	// Selected Particle Layer.

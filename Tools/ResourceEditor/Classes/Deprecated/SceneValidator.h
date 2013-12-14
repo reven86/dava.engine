@@ -162,7 +162,7 @@ protected:
 	void SerachForLod(Entity * rootNode);
 	bool MergeLod(Entity * entity);
     
-	DAVA_DEPRECATED(void ConvertLightmapSizeFromProperty(Entity *ownerNode, InstanceMaterialState *materialState));
+    void ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material);
 
     Set<Entity *> emptyNodesForDeletion;
     Set<String> errorMessages;

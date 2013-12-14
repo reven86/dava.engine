@@ -80,9 +80,10 @@ public:
     /**
         \brief Set main camera
      */
-    void SetCamera(Camera * camera);
-
-	Camera * GetCamera();
+    inline void SetCamera(Camera * camera);
+	inline Camera * GetCamera() const;
+    inline void SetClipCamera(Camera * camera);
+	inline Camera * GetClipCamera() const;
     
     
     void Update(float32 timeElapsed);
@@ -104,7 +105,7 @@ public:
     void RemoveLight(Light * light);
     Vector<Light*> & GetLights();
 
-	RenderLayer * AddRenderLayer(const FastName & layerName, const FastName & passName, const FastName & afterLayer);
+	RenderLayer * AddRenderLayer(const FastName & layerName, uint32 sortingFlags, const FastName & passName, const FastName & afterLayer);
     
 	RenderPass * GetRenderPass(const FastName & passName);
     
@@ -115,6 +116,8 @@ public:
 
 	void DebugDrawHierarchy(const Matrix4& cameraMatrix);
     
+    RenderHierarchy * GetRenderHierarchy() const {return renderHierarchy; }
+
 private:
 	void CreateSpatialTree();
     void ProcessClipping();
@@ -149,6 +152,7 @@ private:
     
     //HashMap<Entity*, RenderObject *> entityObjectMap;
     Camera * camera;
+    Camera * clipCamera;
     //Vector<RenderObject*> forRemove;
     
 	ParticleEmitterSystem * particleEmitterSystem;
@@ -157,6 +161,28 @@ private:
     
     friend class RenderPass;
 };
+    
+    
+    
+inline void RenderSystem::SetCamera(Camera * _camera)
+{
+    camera = _camera;
+}
+
+inline void RenderSystem::SetClipCamera(Camera * _camera)
+{
+    clipCamera = _camera;
+}
+
+inline Camera * RenderSystem::GetCamera() const
+{
+    return camera;
+}
+
+inline Camera * RenderSystem::GetClipCamera() const
+{
+    return clipCamera;
+}
     
 } // ns
 

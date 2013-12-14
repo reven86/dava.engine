@@ -37,11 +37,10 @@
 #include <QTextStream>
 
 #include "DockProperties/PropertyEditor.h"
-#include "Tools/QtPropertyEditor/QtPropertyItem.h"
+#include "Tools/QtPropertyEditor/QtPropertyDataProxy.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataDavaVariant.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataDavaKeyedArchive.h"
-#include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataProxy.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 
@@ -51,7 +50,7 @@
 
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
-	, editorMode(EM_NORMAL)
+	, viewMode(VIEW_NORMAL)
 	, curNode(NULL)
 	, treeStateHelper(this, curModel)
 	, favoriteGroup(NULL)
@@ -62,10 +61,6 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 		QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(sceneDeactivated(SceneEditor2 *)));
 		QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool )));
 		QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
-
-		// MainWindow actions
-		QObject::connect(QtMainWindow::Instance()->GetUI()->actionShowAdvancedProp, SIGNAL(triggered()), this, SLOT(ActionToggleAdvanced()));
-		//advancedMode = QtMainWindow::Instance()->GetUI()->actionShowAdvancedProp->isChecked();
 	}
 	posSaver.Attach(this, "DocPropetyEditor");
 
@@ -75,7 +70,6 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 	SetUpdateTimeout(5000);
 	SetEditTracking(true);
 	setMouseTracking(true);
-	SetEditorMode(EM_FAVORITE_EDIT);
 
 	LoadScheme("~doc:/PropEditorDefault.scheme");
 }
@@ -104,19 +98,42 @@ void PropertyEditor::SetEntities(const EntityGroup *selected)
     if(NULL != selected && selected->Size() == 1)
  	{
          curNode = SafeRetain(selected->GetEntity(0));
+
+		 // ensure that custom properties exist
+		 // this call will create them if they are not created yet
+		 curNode->GetCustomProperties();
  	}
 
     ResetProperties();
 	SaveScheme("~doc:/PropEditorDefault.scheme");
 }
 
-void PropertyEditor::SetEditorMode(eEditoMode mode)
+void PropertyEditor::SetViewMode(eViewMode mode)
 {
-	if(editorMode != mode)
+	if(viewMode != mode)
 	{
-		editorMode = mode;
+		viewMode = mode;
         ResetProperties();
 	}
+}
+
+PropertyEditor::eViewMode PropertyEditor::GetViewMode() const
+{
+	return viewMode;
+}
+
+void PropertyEditor::SetFavoritesEditMode(bool set)
+{
+	if(favoritesEditMode != set)
+	{
+		favoritesEditMode = set;
+		ResetProperties();
+	}
+}
+
+bool PropertyEditor::GetFavoritesEditMode() const
+{
+	return favoritesEditMode;
 }
 
 void PropertyEditor::ResetProperties()
@@ -127,27 +144,46 @@ void PropertyEditor::ResetProperties()
 	treeStateHelper.SaveTreeViewState(false);
 
 	RemovePropertyAll();
+	favoriteGroup = NULL;
+
 	if(NULL != curNode)
 	{
-		QModelIndex index = AppendHeader("Favorites");
-		favoriteGroup = GetProperty(index);
+		// create data tree, but don't add it to the property editor
+		QtPropertyData *root = new QtPropertyData();
 
-		// ensure that custom properties exist
-		// this call will create them if they are not created yet
-		curNode->GetCustomProperties();
-        
-		// add self introspection info
-        AddInsp(QModelIndex(), curNode, curNode->GetTypeInfo());
-        
-		// add components for this entity
+		// add info about current entity
+		QtPropertyData *curEntityData = CreateInsp(curNode, curNode->GetTypeInfo());
+		root->ChildAdd(curNode->GetTypeInfo()->Name(), curEntityData);
+
+		// add info about components
 		for(int32 i = 0; i < Component::COMPONENT_COUNT; ++i)
 		{
 			Component *component = curNode->GetComponent(i);
 			if(component)
 			{
-				AddInsp(QModelIndex(), component, component->GetTypeInfo());
+				QtPropertyData *componentData = CreateInsp(component, component->GetTypeInfo());
+				root->ChildAdd(component->GetTypeInfo()->Name(), componentData);
 			}
 		}
+
+		ApplyModeFilter(root);
+		ApplyFavorite(root);
+		ApplyCustomButtons(root);
+
+		// add not empty rows from root
+		while(0 != root->ChildCount())
+		{
+			QtPropertyData *row = root->ChildGet(0);
+			root->ChildExtract(row);
+
+			if(row->ChildCount() > 0)
+			{
+				AppendProperty(row->GetName(), row);
+				ApplyStyle(row, QtPropertyEditor::HEADER_STYLE);
+			}
+		}
+
+		delete root;
 	}
     
 	// Restore back the tree view state from the shared storage.
@@ -162,10 +198,115 @@ void PropertyEditor::ResetProperties()
 	}
 }
 
-QModelIndex PropertyEditor::AddInsp(const QModelIndex &parent, void *object, const DAVA::InspInfo *info)
+void PropertyEditor::ApplyModeFilter(QtPropertyData *parent)
 {
-	QModelIndex ret;
-	QtPropertyData *propData = NULL;
+	if(NULL != parent)
+	{
+		for(int i = 0; i < parent->ChildCount(); ++i)
+		{
+			bool toBeRemove = false;
+			QtPropertyData *data = parent->ChildGet(i);
+
+			// show only editable items and favorites
+			if(viewMode == VIEW_NORMAL)
+			{
+				if(!data->IsEditable())
+				{
+					toBeRemove = true;
+				}
+			}
+			// show all editable/viewable items
+			else if(viewMode == VIEW_ADVANCED)
+			{
+
+			}
+			// show only favorite items
+			else if(viewMode == VIEW_FAVORITES_ONLY)
+			{
+				toBeRemove = true;
+			}
+
+			// apply mode to data childs
+			ApplyModeFilter(data);
+
+			if(toBeRemove)
+			{
+				if(scheme.contains(data->GetPath()))
+				{
+					parent->ChildExtract(data);
+
+					GetUserData(data)->isOriginalFavorite = true;
+					SetFavorite(data, true);
+				}
+				else
+				{
+					parent->ChildRemove(data);
+				}
+
+				i--;
+			}
+		}
+	}
+}
+
+void PropertyEditor::ApplyFavorite(QtPropertyData *data)
+{
+	if(NULL != data)
+	{
+		if(scheme.contains(data->GetPath()))
+		{
+			SetFavorite(data, true);
+		}
+
+		// go through childs
+		for(int i = 0; i < data->ChildCount(); ++i)
+		{
+			ApplyFavorite(data->ChildGet(i));
+		}
+	}
+}
+
+void PropertyEditor::ApplyCustomButtons(QtPropertyData *data)
+{
+	if(NULL != data)
+	{
+		const DAVA::MetaInfo *meta = data->MetaInfo();
+
+		if(NULL != meta)
+		{
+			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
+			{
+				// Add optional button to edit action component
+				QToolButton *editActions = data->AddButton();
+				editActions->setIcon(QIcon(":/QtIcons/settings.png"));
+				editActions->setAutoRaise(true);
+
+				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
+			}
+			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
+			{
+				// Add optional button to bake transform render object
+				QToolButton *bakeButton = data->AddButton();
+				bakeButton->setToolTip("Bake Transform");
+				bakeButton->setIcon(QIcon(":/QtIcons/transform_bake.png"));
+				bakeButton->setIconSize(QSize(12, 12));
+				bakeButton->setAutoRaise(true);
+
+				QObject::connect(bakeButton, SIGNAL(pressed()), this, SLOT(ActionBakeTransform()));
+			}
+		}
+
+		// go through childs
+		for(int i = 0; i < data->ChildCount(); ++i)
+		{
+			ApplyCustomButtons(data->ChildGet(i));
+		}
+	}
+}
+
+QtPropertyData* PropertyEditor::CreateInsp(void *object, const DAVA::InspInfo *info)
+{
+	QtPropertyData *ret = NULL;
 
 	if(NULL != info)
 	{
@@ -186,38 +327,32 @@ QModelIndex PropertyEditor::AddInsp(const QModelIndex &parent, void *object, con
 		// add them
         if(hasMembers)
         {
-			propData = new QtPropertyData();
-			propData->SetEnabled(false);
-			ret = AppendProperty(info->Name(), propData, parent);
-			
-			OnItemAdded(ret, info->Type());
+			ret = new QtPropertyData();
+			ret->SetEnabled(false);
 
 			while(NULL != baseInfo)
 			{
 				for(int i = 0; i < baseInfo->MembersCount(); ++i)
 				{
 					const DAVA::InspMember *member = baseInfo->Member(i);
-					AddInspMember(ret, object, member);
+					QtPropertyData *memberData = CreateInspMember(object, member);
+
+					ret->ChildAdd(member->Name(), memberData);
 				}
+
 				baseInfo = baseInfo->BaseInfo();
 			}
 		}
     }
 
-	// if this root item was added - colorize it
-	if(!parent.isValid() && NULL != propData)
-	{
-		ApplyStyle(propData, QtPropertyEditor::HEADER_STYLE);
-	}
-
 	return ret;
 }
 
-QModelIndex PropertyEditor::AddInspMember(const QModelIndex &parent, void *object, const DAVA::InspMember *member)
+QtPropertyData* PropertyEditor::CreateInspMember(void *object, const DAVA::InspMember *member)
 {
-	QModelIndex ret;
+	QtPropertyData* ret = NULL;
 
-	if(NULL != member)
+	if(NULL != member && (member->Flags() & DAVA::I_VIEW))
 	{
 		void *momberObject = member->Data(object);
 		const DAVA::InspInfo *memberIntrospection = member->Type()->GetIntrospection(momberObject);
@@ -225,30 +360,11 @@ QModelIndex PropertyEditor::AddInspMember(const QModelIndex &parent, void *objec
 		if(NULL != memberIntrospection && 
 			member->Type() != DAVA::MetaInfo::Instance<DAVA::KeyedArchive*>())
 		{
-			ret = AddInsp(parent, momberObject, memberIntrospection);
+			ret = CreateInsp(momberObject, memberIntrospection);
 		}
 		else
 		{
-			int flags;
-
-			switch(editorMode)
-			{
-			case EM_NORMAL:
-				flags = DAVA::I_EDIT | DAVA::I_VIEW;
-				break;
-			case EM_ADVANCED:
-			case EM_FAVORITE_EDIT:
-			case EM_FAVORITE:
-				flags = DAVA::I_VIEW;
-				break;
-			default:
-				break;
-			}
-
-			QtPropertyData *data = QtPropertyDataIntrospection::CreateMemberData(object, member, flags);
-			ret = AppendProperty(member->Name(), data, parent);
-
-			OnItemAdded(ret, member->Type());
+			ret = QtPropertyDataIntrospection::CreateMemberData(object, member);
 		}
 	}
 
@@ -312,46 +428,13 @@ void PropertyEditor::OnItemEdited(const QModelIndex &index)
 	}
 }
 
-void PropertyEditor::OnItemAdded(const QModelIndex &index, const DAVA::MetaInfo *itemMeta)
-{
-	if(index.isValid() && NULL != itemMeta)
-	{
-		QtPropertyData *propData = GetProperty(index);
-
-		if(NULL != propData)
-		{
-			FindAndCheckFavorite(propData);
-
-			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == itemMeta)
-			{
-				// Add optional button to edit action component
-				QToolButton *editActions = propData->AddButton();
-				editActions->setIcon(QIcon(":/QtIcons/settings.png"));
-				editActions->setAutoRaise(true);
-				
-				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
-			}
-			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == itemMeta)
-			{
-				// Add optional button to bake transform render object
-				QToolButton *bakeButton = propData->AddButton();
-				bakeButton->setToolTip("Bake Transform");
-				bakeButton->setIcon(QIcon(":/QtIcons/transform_bake.png"));
-				bakeButton->setIconSize(QSize(12, 12));
-				bakeButton->setAutoRaise(true);
-
-				QObject::connect(bakeButton, SIGNAL(pressed()), this, SLOT(ActionBakeTransform()));
-			}
-		}
-	}
-}
-
 void PropertyEditor::mouseReleaseEvent(QMouseEvent *event)
 {
 	bool skipEvent = false;
 	QModelIndex index = indexAt(event->pos());
 
-	if(index.parent().isValid() && index.column() == 0)
+	// handle favorite state toggle for item under mouse
+	if(favoritesEditMode && index.parent().isValid() && index.column() == 0)
 	{
 		QRect rect = visualRect(index);
 		rect.setX(0);
@@ -379,8 +462,9 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 	static QIcon favIcon = QIcon(":/QtIcons/star.png");
 	static QIcon nfavIcon = QIcon(":/QtIcons/star_empty.png");
 
+	// custom draw for favorites edit mode
 	QStyleOptionViewItemV4 opt = option;
-	if(index.parent().isValid() && editorMode == EM_FAVORITE_EDIT)
+	if(index.parent().isValid() && favoritesEditMode)
 	{
 		QtPropertyData *data = GetProperty(index);
 		if(NULL != data)
@@ -400,19 +484,6 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 	}
 
 	QtPropertyEditor::drawRow(painter, opt, index);
-}
-
-void PropertyEditor::ActionToggleAdvanced()
-{
-	QAction *showAdvancedAction = dynamic_cast<QAction *>(QObject::sender());
-	if(NULL != showAdvancedAction)
-	{
-		// TODO:
-		// toggle
-
-		//SetEditorMode(EM_ADVANCED);
-		//SetAdvancedMode(showAdvancedAction->isChecked());
-	}
 }
 
 void PropertyEditor::ActionEditComponent()
@@ -467,7 +538,7 @@ bool PropertyEditor::IsFavorite(QtPropertyData *data) const
 	if(NULL != data)
 	{
 		PropEditorUserData *userData = GetUserData(data);
-		ret = (userData->link != NULL);
+		ret = userData->isFavorite;
 	}
 
 	return ret;
@@ -475,45 +546,79 @@ bool PropertyEditor::IsFavorite(QtPropertyData *data) const
 
 void PropertyEditor::SetFavorite(QtPropertyData *data, bool favorite)
 {
-	if(NULL != data && NULL != favoriteGroup)
+	if(NULL == favoriteGroup)
 	{
-		PropEditorUserData *userData = GetUserData(data);
+		favoriteGroup = GetProperty(InsertHeader("Favorites", 0));
+	}
 
-		// deal with real property data
-		if(userData->type == PropEditorUserData::NORMAL)
+	if(NULL != data)
+	{
+		QtPropertyData *original = data->GetProxyOriginal();
+		PropEditorUserData *originalUserData = GetUserData(original);
+
+		// original data
+		if(data == original)
 		{
-			if(favorite)
-			{
-				QtPropertyData* proxy = new QtPropertyDataProxy(data);
-				PropEditorUserData *proxyUserData = GetUserData(proxy);
-				proxyUserData->type = PropEditorUserData::PROXY;
-				proxyUserData->link = data;
+			originalUserData->isFavorite = favorite;
 
-				favoriteGroup->ChildAdd(data->GetName(), proxy);
-				userData->link = proxy;
-				scheme.insert(data->GetPath());
+			// this original data is already in favorite group or should be added there
+			// (happens, when data is marked as favorite, but it shouldn't be displayed due
+			// to current view mode filtering)
+			if(originalUserData->isOriginalFavorite)
+			{
+				if(favorite)
+				{
+					favoriteGroup->ChildAdd(original->GetName(), original);
+				}
+				else
+				{
+					favoriteGroup->ChildRemove(original);
+				}
 			}
+			// original data should have proxy to be displayed in favorites
 			else
 			{
-				favoriteGroup->ChildRemove(userData->link);
-				userData->link = NULL;
-				scheme.remove(data->GetPath());
-			}
+				if(favorite)
+				{
+					QtPropertyData* proxy = new QtPropertyDataProxy(original);
+					PropEditorUserData *proxyUserData = GetUserData(proxy);
 
-			data->EmitDataChanged(QtPropertyData::VALUE_SET);
+					proxyUserData->isFavorite = true;
+					originalUserData->favoriteProxy = proxy;
+
+					favoriteGroup->ChildAdd(original->GetName(), proxy);
+					scheme.insert(original->GetPath());
+				}
+				else
+				{
+					favoriteGroup->ChildRemove(originalUserData->favoriteProxy);
+					scheme.remove(original->GetPath());
+				}
+
+				original->EmitDataChanged(QtPropertyData::VALUE_SET);
+			}
 		}
-		// deal with data proxy item
-		else if(userData->type == PropEditorUserData::PROXY)
+		// proxy data (can only be removed)
+		else
 		{
+			originalUserData->isFavorite = false;
+
 			favoriteGroup->ChildRemove(data);
-			scheme.remove(userData->link->GetPath());
+			scheme.remove(original->GetPath());
 		}
+	}
+
+	// if there is no favorite items - remove favorite group
+	if(favoriteGroup->ChildCount() == 0)
+	{
+		RemoveProperty(favoriteGroup);
+		favoriteGroup = NULL;
 	}
 }
 
 PropEditorUserData* PropertyEditor::GetUserData(QtPropertyData *data) const
 {
-	PropEditorUserData *userData = (PropEditorUserData*)data->GetUserData();
+	PropEditorUserData *userData = (PropEditorUserData*) data->GetUserData();
 	if(NULL == userData)
 	{
 		userData = new PropEditorUserData();
@@ -521,22 +626,6 @@ PropEditorUserData* PropertyEditor::GetUserData(QtPropertyData *data) const
 	}
 
 	return userData;
-}
-
-void PropertyEditor::FindAndCheckFavorite(QtPropertyData *data)
-{
-	if(NULL != data)
-	{
-		if(scheme.contains(data->GetPath()))
-		{
-			SetFavorite(data, true);
-		}
-
-		for(int i = 0; i < data->ChildCount(); ++i)
-		{
-			FindAndCheckFavorite(data->ChildGet(i));
-		}
-	}
 }
 
 void PropertyEditor::LoadScheme(const DAVA::FilePath &path)

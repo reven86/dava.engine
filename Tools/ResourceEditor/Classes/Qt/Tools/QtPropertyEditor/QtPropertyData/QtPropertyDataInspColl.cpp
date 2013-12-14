@@ -32,7 +32,7 @@
 #include "QtPropertyDataIntrospection.h"
 #include "QtPropertyDataMetaObject.h"
 
-QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspColl *_collection, int hasAllFlags)
+QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspColl *_collection)
 	: object(_object)
 	, collection(_collection)
 {
@@ -50,7 +50,7 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspCo
 
 				if(NULL != itemInfo && NULL != itemObject)
 				{
-					QtPropertyData *childData = new QtPropertyDataIntrospection(itemObject, itemInfo, hasAllFlags);
+					QtPropertyData *childData = new QtPropertyDataIntrospection(itemObject, itemInfo);
 					ChildAdd(QString::number(index), childData);
 				}
 				else
@@ -73,7 +73,16 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspCo
 					QString s;
 					QtPropertyData* childData = new QtPropertyData(s.sprintf("[%p] Pointer", collection->ItemData(i)));
 					childData->SetEnabled(false);
-					ChildAdd(QString::number(index), childData);
+
+					if(collection->ItemKeyType() == DAVA::MetaInfo::Instance<DAVA::FastName>())
+					{
+						const DAVA::FastName *fname = (const DAVA::FastName *) collection->ItemKeyData(i);
+						ChildAdd(fname->operator*(), childData);
+					}
+					else
+					{
+						ChildAdd(QString::number(index), childData);
+					}
 				}
 			}
 
@@ -87,6 +96,16 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspCo
 
 QtPropertyDataInspColl::~QtPropertyDataInspColl()
 { }
+
+const DAVA::MetaInfo * QtPropertyDataInspColl::MetaInfo() const
+{
+	if(NULL != collection)
+	{
+		return collection->Type();
+	}
+
+	return NULL;
+}
 
 QVariant QtPropertyDataInspColl::GetValueInternal() const
 {

@@ -60,7 +60,10 @@ SceneInfo::SceneInfo(QWidget *parent /* = 0 */)
     , activeScene(NULL)
 	, landscape(NULL)
     , treeStateHelper(this, curModel)
+	, isUpToDate(false)
 {
+    SetEditTracking(true);
+    
 	// global scene manager signals
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), SLOT(SceneActivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), SLOT(SceneDeactivated(SceneEditor2 *)));
@@ -92,7 +95,6 @@ void SceneInfo::InitializeInfo()
     
     InitializeGeneralSection();
     Initialize3DDrawSection();
-    InitializeMaterialsSection();
     InitializeLODSectionInFrame();
     InitializeLODSectionForSelection();
     InitializeParticlesSection();
@@ -103,8 +105,8 @@ void SceneInfo::InitializeGeneralSection()
     QtPropertyData* header = CreateInfoHeader("General Scene Info");
   
     AddChild("Entities Count", header);
-    AddChild("DataNodes Count", header);
     AddChild("All Textures Size", header);
+	AddChild("Material Textures Size", header);
 }
 
 void SceneInfo::RefreshSceneGeneralInfo()
@@ -112,8 +114,8 @@ void SceneInfo::RefreshSceneGeneralInfo()
     QtPropertyData* header = GetInfoHeader("General Scene Info");
 
     SetChild("Entities Count", (uint32)nodesAtScene.size(), header);
-    SetChild("DataNodes Count", (uint32)dataNodesAtScene.size(), header);
     SetChild("All Textures Size", QString::fromStdString(SizeInBytesToString((float32)(sceneTexturesSize + particleTexturesSize))), header);
+	SetChild("Material Textures Size", QString::fromStdString(SizeInBytesToString((float32)sceneTexturesSize)), header);
 }
 
 void SceneInfo::Initialize3DDrawSection()
@@ -148,22 +150,6 @@ void SceneInfo::Refresh3DDrawInfo()
     SetChild("TriangleFan", renderStats.primitiveCount[PRIMITIVETYPE_TRIANGLEFAN], header);
 }
 
-void SceneInfo::InitializeMaterialsSection()
-{
-    QtPropertyData* header = CreateInfoHeader("Materials");
-    
-    AddChild("Materials Count", header);
-    AddChild("Textures Count", header);
-    AddChild("Textures Size", header);
-}
-
-void SceneInfo::RefreshMaterialsInfo()
-{
-    QtPropertyData* header = GetInfoHeader("Materials");
-    SetChild("Materials Count", (uint32)materialsAtScene.size(), header);
-    SetChild("Textures Count", (uint32)sceneTextures.size(), header);
-    SetChild("Textures Size", QString::fromStdString(SizeInBytesToString((float32)sceneTexturesSize)), header);
-}
 
 void SceneInfo::InitializeLODSectionInFrame()
 {
@@ -254,15 +240,15 @@ void SceneInfo::RefreshParticlesInfo()
     SetChild("Textures Size", QString::fromStdString(SizeInBytesToString((float32)particleTexturesSize)), header);
 }
 
-uint32 SceneInfo::CalculateTextureSize(const Map<String, Texture *> &textures)
+uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
 {
     KeyedArchive *settings = EditorSettings::Instance()->GetSettings();
     String projectPath = settings->GetString("ProjectPath");
 
     uint32 textureSize = 0;
     
-    Map<String, Texture *>::const_iterator endIt = textures.end();
-    for(Map<String, Texture *>::const_iterator it = textures.begin(); it != endIt; ++it)
+    TexturesMap::const_iterator endIt = textures.end();
+    for(TexturesMap::const_iterator it = textures.begin(); it != endIt; ++it)
     {
         FilePath pathname = it->first;
         Texture *tex = it->second;
@@ -298,28 +284,24 @@ void SceneInfo::CollectSceneData(SceneEditor2 *scene)
     if(scene)
     {
         scene->GetChildNodes(nodesAtScene);
-        scene->GetDataNodes(materialsAtScene);
 		//VI: remove skybox materials so they not to appear in the lists
 		//MaterialHelper::FilterMaterialsByType(materialsAtScene, DAVA::Material::MATERIAL_SKYBOX);
 
-        scene->GetDataNodes(dataNodesAtScene);
-        
-        CollectSceneTextures();
+        SceneHelper::EnumerateTextures(activeScene, sceneTextures);
+        sceneTexturesSize = CalculateTextureSize(sceneTextures);
+
         CollectParticlesData();
+        particleTexturesSize = CalculateTextureSize(particleTextures);
         
         CollectLODDataInFrame();
         CollectLODDataForSelection();
         
-        sceneTexturesSize = CalculateTextureSize(sceneTextures);
-        particleTexturesSize = CalculateTextureSize(particleTextures);
     }
 }
 
 void SceneInfo::ClearData()
 {
     nodesAtScene.clear();
-    materialsAtScene.clear();
-    dataNodesAtScene.clear();
     sceneTextures.clear();
     particleTextures.clear();
     
@@ -336,14 +318,6 @@ void SceneInfo::ClearData()
 void SceneInfo::ClearSelectionData()
 {
     lodInfoSelection.Clear();
-}
-
-void SceneInfo::CollectSceneTextures()
-{
-    for(int32 n = 0; n < (int32)nodesAtScene.size(); ++n)
-    {
-		SceneHelper::EnumerateTextures(nodesAtScene[n], sceneTextures);
-    }
 }
 
 void SceneInfo::CollectParticlesData()
@@ -461,11 +435,11 @@ DAVA::uint32 SceneInfo::GetTrianglesForNotLODEntityRecursive(DAVA::Entity *entit
     return triangles;
 }
 
-void SceneInfo::CollectTexture(Map<String, Texture *> &textures, const FilePath &name, Texture *tex)
+void SceneInfo::CollectTexture(TexturesMap &textures, const FilePath &name, Texture *tex)
 {
     if(!name.IsEmpty() && tex)
 	{
-		textures[name.GetAbsolutePathname()] = tex;
+		textures[FILEPATH_MAP_KEY(name)] = tex;
 	}
 }
 
@@ -482,7 +456,7 @@ QtPropertyData * SceneInfo::CreateInfoHeader(const QString &key)
 QtPropertyData * SceneInfo::GetInfoHeader(const QString &key)
 {
 	QtPropertyData *header = NULL;
-    QtPropertyData *root = GetProperty(QModelIndex());
+    QtPropertyData *root = GetRootProperty();
 	if(NULL != root)
 	{
 		header = root->ChildGet(key);
@@ -533,6 +507,12 @@ void SceneInfo::RestoreTreeState()
 
 void SceneInfo::showEvent ( QShowEvent * event )
 {
+	if(!isUpToDate)
+	{
+		isUpToDate = true;
+		RefreshAllData(activeScene);
+	}
+
     QtPropertyEditor::showEvent(event);
 }
 
@@ -554,7 +534,6 @@ void SceneInfo::RefreshAllData(SceneEditor2 *scene)
 
 	RefreshSceneGeneralInfo();
 	Refresh3DDrawInfo();
-	RefreshMaterialsInfo();
 	RefreshLODInfoInFrame();
     RefreshLODInfoForSelection();
 	RefreshParticlesInfo();
@@ -566,7 +545,12 @@ void SceneInfo::SceneActivated(SceneEditor2 *scene)
 {
     activeScene = scene;
     landscape = FindLandscape(activeScene);
-    RefreshAllData(scene);
+	
+	isUpToDate = isVisible();
+	if(isUpToDate)
+	{
+		RefreshAllData(scene);
+	}
 }
 
 void SceneInfo::SceneDeactivated(SceneEditor2 *scene)
@@ -584,7 +568,12 @@ void SceneInfo::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
     if(activeScene == scene)
     {
         landscape = FindLandscape(activeScene);
-        RefreshAllData(scene);
+
+		isUpToDate = !isVisible();
+		if(isUpToDate)
+		{
+			RefreshAllData(scene);
+		}
     }
 }
 
@@ -594,4 +583,24 @@ void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
     ClearSelectionData();
     CollectLODDataForSelection();
     RefreshLODInfoForSelection();
+}
+
+void SceneInfo::TexturesReloaded()
+{
+    sceneTextures.clear();
+    SceneHelper::EnumerateTextures(activeScene, sceneTextures);
+    sceneTexturesSize = CalculateTextureSize(sceneTextures);
+    
+    RefreshSceneGeneralInfo();
+}
+
+void SceneInfo::SpritesReloaded()
+{
+    particleTextures.clear();
+
+    CollectParticlesData();
+    particleTexturesSize = CalculateTextureSize(particleTextures);
+    
+    RefreshSceneGeneralInfo();
+    RefreshParticlesInfo();
 }

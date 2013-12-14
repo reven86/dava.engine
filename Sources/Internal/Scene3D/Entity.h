@@ -342,7 +342,10 @@ public:
      */
     template<template <typename> class Container, class T>
 	void GetChildNodes(Container<T> & container);
-        
+    
+    template<template <typename> class Container>
+    void GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type);
+
     /**
         \brief This function is called after scene is loaded from file.
         You can perform additional initialization here.
@@ -524,6 +527,24 @@ void Entity::GetChildNodes(Container<T> & container)
             container.push_back(res);
         
         obj->GetChildNodes(container);
+    }	
+}
+    
+template<template <typename> class Container>
+void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type)
+{
+    Vector<Entity*>::const_iterator end = children.end();
+    for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
+    {
+        Entity* entity = *t;
+        if (entity)
+        {
+            Component * component = entity->GetComponent(type);
+            if (component)
+                container.push_back(entity);
+        }
+        
+        entity->GetChildEntitiesWithComponent(container, type);
     }	
 }
 

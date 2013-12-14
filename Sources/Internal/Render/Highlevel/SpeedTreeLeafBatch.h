@@ -42,19 +42,10 @@ class SpeedTreeLeafBatch : public RenderBatch
 protected:
     virtual ~SpeedTreeLeafBatch();
 public:
-    SpeedTreeLeafBatch(DAVA::Texture * tex = 0);
+    SpeedTreeLeafBatch();
 
-    void SetTexture(Texture * texture);
-
-    virtual void Draw(DAVA::Camera * camera);
-
+    virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
     virtual RenderBatch * Clone(RenderBatch * dstNode = 0);
-    virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
-    virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
-
-private:
-    Shader * shader;
-    Texture * texture;
 
 public:
     INTROSPECTION_EXTEND(SpeedTreeLeafBatch, RenderBatch, NULL);

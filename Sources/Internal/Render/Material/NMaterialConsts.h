@@ -34,7 +34,6 @@
 #include "Base/BaseMath.h"
 #include "Scene3D/DataNode.h"
 #include "Render/RenderState.h"
-#include "Render/ShaderUniformArray.h"
 
 namespace DAVA
 {

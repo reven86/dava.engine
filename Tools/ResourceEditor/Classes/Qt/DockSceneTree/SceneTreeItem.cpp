@@ -91,7 +91,18 @@ QIcon SceneTreeItem::ItemIcon() const
 
 QVariant SceneTreeItem::ItemBackgroundColor() const
 {
-	return QStandardItem::data(Qt::BackgroundColorRole);
+	QVariant ret;
+
+	if(IsAcceptedByFilter())
+	{
+		ret.setValue(QColor(0, 255, 0, 20));
+	}
+	else
+	{
+		ret = QStandardItem::data(Qt::BackgroundColorRole);
+	}
+
+	return ret;
 }
 
 bool SceneTreeItem::IsAcceptedByFilter() const

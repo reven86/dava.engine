@@ -54,18 +54,20 @@ namespace DAVA
 
 RenderSystem::RenderSystem()
 {
+    camera = 0;
+    clipCamera = 0;
     // Register available passes & layers
     renderPassesMap.Insert(PASS_FORWARD, new RenderPass(PASS_FORWARD));
     renderPassesMap.Insert(PASS_SHADOW_VOLUME, new ShadowVolumeRenderPass(PASS_SHADOW_VOLUME));
 	
-    renderLayersMap.Insert(LAYER_OPAQUE, new RenderLayer(LAYER_OPAQUE));
-	renderLayersMap.Insert(LAYER_AFTER_OPAQUE, new RenderLayer(LAYER_AFTER_OPAQUE));
-    renderLayersMap.Insert(LAYER_ALPHA_TEST_LAYER, new RenderLayer(LAYER_ALPHA_TEST_LAYER));
+    renderLayersMap.Insert(LAYER_OPAQUE, new RenderLayer(LAYER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL));
+	renderLayersMap.Insert(LAYER_AFTER_OPAQUE, new RenderLayer(LAYER_AFTER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL));
+    renderLayersMap.Insert(LAYER_ALPHA_TEST_LAYER, new RenderLayer(LAYER_ALPHA_TEST_LAYER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE));
     
-    renderLayersMap.Insert(LAYER_TRANSLUCENT, new RenderLayer(LAYER_TRANSLUCENT));
-    renderLayersMap.Insert(LAYER_AFTER_TRANSLUCENT, new RenderLayer(LAYER_AFTER_TRANSLUCENT));
+    renderLayersMap.Insert(LAYER_TRANSLUCENT, new RenderLayer(LAYER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE));
+    renderLayersMap.Insert(LAYER_AFTER_TRANSLUCENT, new RenderLayer(LAYER_AFTER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE));
     
-    renderLayersMap.Insert(LAYER_SHADOW_VOLUME, new RenderLayer(LAYER_SHADOW_VOLUME));
+    renderLayersMap.Insert(LAYER_SHADOW_VOLUME, new RenderLayer(LAYER_SHADOW_VOLUME, 0));
     
     RenderPass * forwardPass = renderPassesMap[PASS_FORWARD];
     forwardPass->AddRenderLayer(renderLayersMap[LAYER_OPAQUE], LAST_LAYER);
@@ -84,6 +86,14 @@ RenderSystem::RenderSystem()
     renderHierarchy = new QuadTree(10);
 	hierarchyInitialized = false;
     globalBatchArray = new RenderPassBatchArray();
+	
+	for(FastNameMap<RenderLayer*>::iterator it = renderLayersMap.begin();
+		it != renderLayersMap.end();
+		++it)
+	{
+		globalBatchArray->InitLayer(it->first, it->second->GetFlags());
+	}
+	
 	materialSystem = new MaterialSystem();
 	materialSystem->SetDefaultMaterialQuality(FastName("Normal")); //TODO: add code setting material quality based on device specs
 	materialSystem->LoadMaterialConfig("~res:/Materials/MaterialTree.config");
@@ -178,17 +188,6 @@ RenderPass * RenderSystem::GetRenderPass(const FastName & passName)
 {
 	return renderPassesMap[passName];
 }
-    
-void RenderSystem::SetCamera(Camera * _camera)
-{
-    camera = _camera;
-}
-
-Camera * RenderSystem::GetCamera()
-{
-	return camera;
-}
-
     
 void RenderSystem::MarkForUpdate(RenderObject * renderObject)
 {
@@ -328,7 +327,7 @@ void RenderSystem::Update(float32 timeElapsed)
 	}
 	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS))
 	{
-		particleEmitterSystem->Update(timeElapsed, camera);
+		particleEmitterSystem->Update(timeElapsed, clipCamera);
 	}
 	
     int32 objectBoxesUpdated = 0;
@@ -357,12 +356,12 @@ void RenderSystem::Update(float32 timeElapsed)
     movedLights.clear();
     
     globalBatchArray->Clear();
-    renderHierarchy->Clip(camera, globalBatchArray);
+    renderHierarchy->Clip(clipCamera, globalBatchArray);
 	
 	uint32 size = objectsForUpdate.size();
 	for(uint32 i = 0; i < size; ++i)
 	{
-        objectsForUpdate[i]->RenderUpdate(camera, timeElapsed);
+        objectsForUpdate[i]->RenderUpdate(clipCamera, timeElapsed);
     }
 }
 
@@ -384,11 +383,11 @@ void RenderSystem::Render()
     //Logger::FrameworkDebug("OccludedRenderBatchCount: %d", RenderManager::Instance()->GetStats().occludedRenderBatchCount);
 }
 
-RenderLayer * RenderSystem::AddRenderLayer(const FastName & layerName, const FastName & passName, const FastName & afterLayer)
+RenderLayer * RenderSystem::AddRenderLayer(const FastName & layerName, uint32 sortingFlags, const FastName & passName, const FastName & afterLayer)
 {
 	DVASSERT(false == renderLayersMap.count(layerName));
 
-	RenderLayer * newLayer = new RenderLayer(layerName);
+	RenderLayer * newLayer = new RenderLayer(layerName, sortingFlags);
 	renderLayersMap.Insert(layerName, newLayer);
 
 	RenderPass * inPass = renderPassesMap[passName];

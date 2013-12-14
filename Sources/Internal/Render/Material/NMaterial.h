@@ -35,7 +35,6 @@
 #include "Base/FastNameMap.h"
 #include "Scene3D/DataNode.h"
 #include "Render/RenderState.h"
-#include "Render/ShaderUniformArray.h"
 #include "Render/Material/NMaterialConsts.h"
 #include "Render/Shader.h"
 #include "Render/RenderState.h"
@@ -62,7 +61,30 @@ public:
 	virtual void ParentChanged(NMaterial* material) = 0;
 	virtual void SystemChanged(NMaterial* material) = 0;
 };
-	
+
+struct IlluminationParams : public InspBase
+{
+    static const int32 LIGHTMAP_SIZE_DEFAULT = 128;
+    
+    bool isUsed;
+    bool castShadow;
+    bool receiveShadow;
+    int32 lightmapSize;
+
+    void SetDefaultParams() 
+    {
+        isUsed = castShadow = receiveShadow = true;
+        lightmapSize = LIGHTMAP_SIZE_DEFAULT;
+    }
+
+    INTROSPECTION(IlluminationParams, 
+        MEMBER(isUsed, "Use Illumination", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(castShadow, "Cast Shadow", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(receiveShadow, "Receive Shadow", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(lightmapSize, "Lightmap Size", I_SAVE | I_VIEW | I_EDIT)
+        );
+};
+
 class NMaterialProperty
 {
 public:
@@ -126,9 +148,11 @@ protected:
 	};
 
 class NMaterial;
-class NMaterialState
+class NMaterialState : public BaseObject
 {
 	friend class NMaterial;
+	friend class NMaterialStateDynamicPropertiesInsp;
+	friend class NMaterialStateDynamicTexturesInsp;
 	
 public:
 			
@@ -138,15 +162,16 @@ public:
 	// Work with textures and properties
     void SetTexture(const FastName & textureFastName, Texture * texture);
     Texture * GetTexture(const FastName & textureFastName) const;
-    Texture * GetTexture(uint32 index);
-	const FastName& GetTextureName(uint32 index);
-    uint32 GetTextureCount();
+    Texture * GetTexture(uint32 index) const;
+	const FastName& GetTextureName(uint32 index) const;
+    uint32 GetTextureCount() const;
     
     void SetPropertyValue(const FastName & propertyFastName, Shader::eUniformType type, uint32 size, const void * data);
 	NMaterialProperty* GetMaterialProperty(const FastName & keyName);
 	
 	virtual void SetMaterialName(const String& name);
 	const FastName& GetMaterialName() const;
+	virtual void SetParentName(const String& name);
 	const FastName& GetParentName() const;
 	
 	void AddMaterialTechnique(const FastName & techniqueName, MaterialTechnique * materialTechnique);
@@ -158,6 +183,10 @@ public:
 	
 	inline uint32 GetRequiredVertexFormat() {return requiredVertexFormat;}
 	inline NMaterial* GetParent() {return parent;}
+	
+	NMaterialState* CreateTemplate(NMaterial* templateParent);
+	
+	void SetParentToState(NMaterial* material);
 			
 protected:
 	
@@ -201,6 +230,7 @@ protected:
 	HashMap<FastName, TextureBucket*> textures;
 	Vector<Texture*> texturesArray;
     Vector<FastName> textureNamesArray;
+	UniqueHandle textureStateHandle;
 	//Vector<int32> textureSlotArray;
 	
 	NMaterial* parent;
@@ -218,7 +248,6 @@ protected:
 	void AddMaterialDefineToState(const FastName& defineName);
 	void RemoveMaterialDefineFromState(const FastName& defineName);
 	
-	void SetParentToState(NMaterial* material);
 	void AddChildToState(NMaterial* material);
 	void RemoveChildFromState(NMaterial* material);
 	
@@ -229,18 +258,40 @@ protected:
 	
 	void CopyTechniquesTo(NMaterialState* targetState);
 
+protected:
+	
+	class NMaterialStateDynamicTexturesInsp : public InspInfoDynamic
+	{
+	public:
+		int MembersCount(void *object) const;
+		InspDesc MemberDesc(void *object, int index) const;
+		const char* MemberName(void *object, int index) const;
+		VariantType MemberValueGet(void *object, int index) const;
+		void MemberValueSet(void *object, int index, const VariantType &value);
+	};
+	
+	class NMaterialStateDynamicPropertiesInsp : public InspInfoDynamic
+	{
+	public:
+		int MembersCount(void *object) const;
+		InspDesc MemberDesc(void *object, int index) const;
+		const char* MemberName(void *object, int index) const;
+		VariantType MemberValueGet(void *object, int index) const;
+		void MemberValueSet(void *object, int index, const VariantType &value);
+	};
+
+
 public:
 	INTROSPECTION(NMaterialState,
-		COLLECTION(materialProperties, "Material properties", I_SAVE | I_EDIT | I_VIEW)
-		COLLECTION(textures, "Material textures", I_SAVE | I_EDIT | I_VIEW)
+		DYNAMIC(textures, "Material textures", new NMaterialStateDynamicTexturesInsp(), I_SAVE | I_EDIT | I_VIEW)
+		DYNAMIC(materialProperties, "Material properties", new NMaterialStateDynamicPropertiesInsp(), I_SAVE | I_EDIT | I_VIEW)
 		);
 };
-
 
 class Camera;
 class SerializationContext;
 class MaterialSystem;
-class NMaterial : public BaseObject, public NMaterialState
+class NMaterial : public NMaterialState
 {
 	friend class MaterialSystem;
 
@@ -315,6 +366,7 @@ public:
 	bool IsSwitchable() const;
 	
 	NMaterial* Clone();
+	NMaterial* Clone(const String& newName);
     
     virtual void SetMaterialName(const String& name);
 	
@@ -337,10 +389,14 @@ public:
 	inline bool HasDefine(const FastName& defineName) const {return (inheritedDefines.count(defineName) > 0);}
 		
 	void SwitchParent(const FastName& newParent);
+	void SwitchParentForAllStates(const FastName& newParent);
 	
 	inline MaterialChangeListener* GetChangeListener() {return stateListener;}
 	inline void SetChangeListener(MaterialChangeListener* listener) {stateListener = listener;}
 	
+    IlluminationParams * GetIlluminationParams();
+    void ReleaseIlluminationParams();
+
 protected:
 	
 	struct TextureParamCacheEntry
@@ -394,6 +450,8 @@ protected:
 	
 	MaterialChangeListener* stateListener;
 	
+    IlluminationParams * illuminationParams;
+
 protected:
 	
 	void ResetParent();
@@ -420,20 +478,21 @@ protected:
 	void BuildActiveUniformsCache(const MaterialTechnique& technique);
 	void BindMaterialTextures(RenderState* renderState);
 	void BindMaterialProperties(Shader * shader);
+	
+	void OnDirtyTextures();
 
 public:
     INTROSPECTION_EXTEND(NMaterial, NMaterialState,
-		COLLECTION(states, "Material states", I_SAVE | I_VIEW)
+        MEMBER(illuminationParams, "Illumination Parameters", I_SAVE | I_VIEW | I_EDIT)
 	);
 
 };
 
-	inline const FastNameSet& NMaterial::GetRenderLayers()
-	{
-		return effectiveLayers;
-	}
+inline const FastNameSet& NMaterial::GetRenderLayers()
+{
+	return effectiveLayers;
+}
 
-	
 };
 
 #endif // __DAVAENGINE_MATERIAL_H__

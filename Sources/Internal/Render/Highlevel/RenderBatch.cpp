@@ -117,8 +117,32 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     DVASSERT(renderObject != 0);
     Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
     DVASSERT(worldTransformPtr != 0);
+    
 #if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
     uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+    
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
+    {
+        if ((queryRequested >= 0) && occlusionQuery->IsResultAvailable())
+        {
+            uint32 result = 0;
+            occlusionQuery->GetQuery(&result);
+            if (result == 0 && ((globalFrameIndex - queryRequestFrame) < 3) && (lastFraemDrawn == globalFrameIndex - 1))
+            {
+                //RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
+                occlusionQuery->ResetResult();
+                queryRequested = -2;
+            }
+            else queryRequested = -1;
+        }
+    }
+    
+    if (queryRequested < -1)
+    {
+        queryRequested++;
+        RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
+        return;
+    }
 #endif
 //    if (!worldTransformPtr)
 //    {

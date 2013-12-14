@@ -50,13 +50,13 @@ public:
 	void Prepare();
 	void SetPosition(const Vector2 & posistion);
 	void SetScale(float32 scale);
-	void SetCursorTexture(Texture * texture);
+	void SetCursorTexture(UniqueHandle texture);
 	void SetEditedTexture(Texture * texture);
 	void SetBigTextureSize(float32 bigSize);
 
 	UniqueHandle GetRenderState() {return renderState;}
     
-    Texture * GetCursorTexture();
+    UniqueHandle GetCursorTexture();
     float32 GetBigTextureSize();
     Vector2 GetCursorPosition();
     float32 GetCursorScale();
@@ -64,7 +64,8 @@ public:
 private:
 
 	Shader * shader;
-	Texture * cursorTexture;
+	//Texture * cursorTexture;
+	UniqueHandle textureHandle;
 	Vector2 position;
 	float32 bigSize;
 	float32 scale;

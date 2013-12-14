@@ -190,12 +190,22 @@ void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOption
 			QtPropertyToolButton *btn = data->GetButton(i);
 			if((type == NORMAL && !btn->overlayed) || (type == OVERLAYED && btn->overlayed))
 			{
+				// update widget height
+				if(btn->height() != opt.rect.height())
+				{
+					QRect geom = btn->geometry();
+					geom.setHeight(opt.rect.height());
+					btn->setGeometry(geom);
+				}
+
 				owXPos -= btn->width();
 				owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
 
 				if(index != btn->activeIndex)
 				{
-					painter->drawPixmap(owXPos, owYPos, QPixmap::grabWidget(btn));
+					QPixmap pix = QPixmap::grabWidget(btn);
+					//pix.save(QString().sprintf("D:/btn_pix_%p.png", btn));
+					painter->drawPixmap(owXPos, owYPos, pix);
 				}
 				else
 				{

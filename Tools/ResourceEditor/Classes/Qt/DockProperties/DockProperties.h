@@ -38,6 +38,12 @@ class DockProperties : public QDockWidget
 public:
 	DockProperties(QWidget *parent = NULL);
 	~DockProperties();
+
+	void Init();
+
+protected slots:
+	void ActionFavoritesEdit();
+	void ViewModeSelected(int index);
 };
 
 #endif // __RESOURCEEDITORQT__DOCKPROPERTIES__

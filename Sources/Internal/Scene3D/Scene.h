@@ -260,11 +260,14 @@ public:
 	RenderSystem * GetRenderSystem() const;
 	virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
 
+    void RemoveModelsByType(const FastName & modelType);
+    Vector<Entity *> FindModelsByType(const FastName & modelType);
     
 protected:	
     
     void UpdateLights();
     
+    void FindModelsByTypeRecursive(const FastName & modelType, Entity * entity, Vector<Entity *> & models);
     
     uint64 updateTime;
     uint64 drawTime;
@@ -277,10 +280,12 @@ protected:
 	Vector<SceneNodeAnimationList*> animations;
     
 #if defined (USE_FILEPATH_IN_MAP)
-    Map<FilePath, ProxyNode*> rootNodes;
+    typedef Map<FilePath, ProxyNode*> ProxyNodeMap;
 #else //#if defined (USE_FILEPATH_IN_MAP)
-	Map<String, ProxyNode*> rootNodes;
+	typedef Map<String, ProxyNode*> ProxyNodeMap;
 #endif //#if defined (USE_FILEPATH_IN_MAP)
+
+	ProxyNodeMap rootNodes;
 
 //    // TODO: move to nodes
 //    Vector<LodLayer> lodLayers;

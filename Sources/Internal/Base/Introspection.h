@@ -39,6 +39,8 @@
 #include "Base/IntrospectionProperty.h"
 #include "Base/IntrospectionCollection.h"
 #include "Base/IntrospectionFlags.h"
+#include "Base/IntrospectionDynamic.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
@@ -194,6 +196,9 @@ namespace DAVA
 					MembersRelease();
 					break;
 				}
+
+				// обратная связь члена интроспекции непостредственно к интроспекции
+				members[i]->ApplyParentInsp(this);
 			}
 		}
 
@@ -210,6 +215,26 @@ namespace DAVA
 			}
 			members_count = 0;
 		}
+	};
+
+	class InspInfoDynamic
+	{
+		friend class InspMemberDynamic;
+
+	public:
+		InspInfoDynamic() : memberDynamic(NULL) {};
+		virtual ~InspInfoDynamic() {};
+
+		virtual int MembersCount(void *object) const = 0;
+		virtual InspDesc MemberDesc(void *object, int index) const = 0;
+		virtual const char* MemberName(void *object, int index) const = 0;
+		virtual VariantType MemberValueGet(void *object, int index) const = 0;
+		virtual void MemberValueSet(void *object, int index, const VariantType &value) = 0;
+
+		const InspMemberDynamic* GetMember() const { return memberDynamic; };
+
+	protected:
+		const InspMemberDynamic* memberDynamic;
 	};
 };
 
@@ -254,5 +279,9 @@ namespace DAVA
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \
 	DAVA::CreateInspColl(&((ObjectT *) 0)->_name, #_name, _desc, (int) ((long int) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),
+
+// Определение члена интроспекции с динамической структурой. Структуру определяет _dynamic, импементирующая интерфейс InspDynamicInfo
+#define DYNAMIC(_name, _desc, _dynamic, _flags) \
+	new DAVA::InspMemberDynamic(#_name, _desc, (int)((long int)&((ObjectT *)0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags, _dynamic),
 
 #endif // __DAVAENGINE_INTROSPECTION_H__

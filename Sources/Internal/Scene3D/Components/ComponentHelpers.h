@@ -46,6 +46,7 @@ class Camera;
 class LodComponent;
 class SkyboxRenderObject;
 class SwitchComponent;
+class ModelTypeComponent;
 class RenderComponent;
 
 ParticleEmitter * GetEmitter(Entity * fromEntity);
@@ -68,6 +69,8 @@ void RecursiveProcessLodNode(Entity * curr, int32 lod, void * userData, void(*pr
 Entity * FindLandscapeEntity(Entity * rootEntity);
 Landscape * FindLandscape(Entity * rootEntity);
 
+ModelTypeComponent * GetModelTypeComponent(Entity *fromEntity);
+    
 }
 
 #endif //__DAVAENGINE_COMPONENT_HELPERS_H__

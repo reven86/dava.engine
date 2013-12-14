@@ -48,18 +48,75 @@ public:
         WAIT = 0,
         RESULT = 1,
     };
-    
+    void Init();
+    void Release();
     void BeginQuery();
     void EndQuery();
 
     bool IsResultAvailable();
     void GetQuery(uint32 * resultValue);
-    void ResetResult();
 
 private:
     GLuint id;
-    bool queryActive;
 };
+
+template<uint32 N, uint32 M>
+class SmartHandle
+{
+public:
+    inline SmartHandle() {}
+    inline SmartHandle(uint32 _index, uint32 _salt)
+    : index(_index)
+    , salt(_salt)
+    {
+    }
+    uint32 index: N;
+    uint32 salt: M;
+};
+    
+typedef SmartHandle<16, 16> OcclusionQueryManagerHandle;
+    
+class OcclusionQueryManager
+{
+public:
+    static const uint32 INVALID_INDEX = 0xFFFF;
+    
+    OcclusionQueryManager(uint32 occlusionQueryCount);
+    ~OcclusionQueryManager();
+    
+    OcclusionQueryManagerHandle CreateQueryObject();
+    OcclusionQuery & Get(OcclusionQueryManagerHandle handle);
+    void ReleaseQueryObject(OcclusionQueryManagerHandle handle);
+    
+private:
+    uint32 occlusionQueryCount;
+    uint32 nextFree;
+    struct OcclusionQueryItem
+    {
+        OcclusionQuery query;
+        uint32 next;
+        uint32 salt;
+    };
+    Vector<OcclusionQueryItem> queries;
+};
+    
+inline OcclusionQuery & OcclusionQueryManager::Get(OcclusionQueryManagerHandle handle)
+{
+    return queries[handle.index].query;
+}
+
+    
+/*
+    id queryId = occlusionQuery->CreateQueryObject();
+    occlusionQuery->BeginQuery(queryID);
+    
+    occlusionQuery->EndQuery(queryID);
+ 
+    occlusionQuery->GetQuery(
+ 
+ */
+    
+
 
 };
 

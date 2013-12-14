@@ -34,6 +34,7 @@
 #include <QStyledItemDelegate>
 #include <QHash>
 #include <QIcon>
+#include <QEvent>
 #include <QToolButton>
 #include "QtPropertyModel.h"
 
@@ -48,7 +49,6 @@ class QtPropertyData : public QObject
 
 	friend class QtPropertyModel;
 	friend class QtPropertyItemDelegate;
-	friend class QtPropertyDataProxy;
 
 public:
 	enum ValueChangeReason
@@ -97,6 +97,10 @@ public:
 	virtual UserData* GetUserData() const;
 	virtual void SetUserData(UserData* userdata);
 
+	virtual const DAVA::MetaInfo* MetaInfo() const;
+
+	virtual QtPropertyData* GetProxyOriginal();
+
 	// reset background/foreground/font settings
 	void ResetStyle();
 
@@ -128,6 +132,7 @@ public:
 	QtPropertyData* ChildGet(int i) const;
 	QtPropertyData* ChildGet(const QString &key) const;
 	int ChildIndex(QtPropertyData *data) const;
+	void ChildExtract(QtPropertyData *data);
 	void ChildRemove(QtPropertyData *data);
 	void ChildRemove(const QString &key);
 	void ChildRemove(int i);
@@ -153,7 +158,6 @@ protected:
 
 	QMap<int, QVariant> style;
 	bool updatingValue;
-	bool isProxy;
 
 	QtPropertyModel *model;
 	QtPropertyData *parent;
@@ -164,6 +168,8 @@ protected:
 	
 	QWidget *optionalButtonsViewport;
 	QVector<QtPropertyToolButton*> optionalButtons;
+
+	void SetModel(QtPropertyModel *model);
 
 	virtual void UpdateUp();
 	virtual void UpdateDown();
@@ -180,6 +186,8 @@ protected:
 	// viewport, where optional toolbuttons should be drawn
 	QWidget* GetOWViewport() const;
 	void SetOWViewport(QWidget *viewport);
+
+	void ChildRemoveInternal(int i, bool del);
 };
 
 class QtPropertyToolButton : public QToolButton
@@ -200,7 +208,15 @@ public:
 	{
 		if(eventsPassThrought)
 		{
-			QToolButton::event(event);
+			int type = event->type();
+
+			if( type != QEvent::Enter &&
+				type != QEvent::Leave &&
+				type != QEvent::MouseMove)
+			{
+				QToolButton::event(event);
+			}
+
 			return false;
 		}
 		
@@ -210,19 +226,6 @@ public:
 	QModelIndex activeIndex;
 	bool eventsPassThrought;
 	bool overlayed;
-};
-
-class QtPropertyDataProxy : public QtPropertyData
-{
-public:
-	QtPropertyDataProxy(QtPropertyData *_original) : original(_original) { isProxy = true; }
-	virtual ~QtPropertyDataProxy() { }
-	QtPropertyData* GetOriginal() {	return original; }
-
-protected:
-	QtPropertyData *original;
-	virtual QVariant GetValueInternal() const { return QString("Proxy"); }
-
 };
 
 #endif // __QT_PROPERTY_DATA_H__

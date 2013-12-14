@@ -41,6 +41,8 @@
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
 
+//#define USE_CRC_COMPARE
+
 #ifdef __DAVAENGINE_ARM_7__
 #define USE_NEON_MATRIX_COMPARE
 #include <arm_neon.h>
@@ -109,17 +111,17 @@ public:
         GLint           location;
         GLint           size;
         eUniformType    type;
-		void*			cacheValue;
+#ifdef USE_CRC_COMPARE
+        uint32          crc;
+#else
+        void*			cacheValue;
 		uint16			cacheValueSize;
+#endif
         
 #ifdef USE_NEON_MATRIX_COMPARE
         uint32x4_t      matrixCRC;
 #endif
         
-#ifdef USE_CRC_COMPARE
-        uint32          crc;
-#endif
-		
 		bool ValidateCache(int32 value);
 		bool ValidateCache(float32 value);
 		bool ValidateCache(const Vector2 & value);
@@ -264,6 +266,8 @@ private:
     
     GLint CompileShader(GLuint *shader, GLenum type, GLint count, const GLchar * sources, const String & defines);
     GLint LinkProgram(GLuint prog);
+	
+	void RecompileInternal(BaseObject * caller, void * param, void *callerData);
     
 	void DeleteShaders();
 	struct DeleteShaderContainer
@@ -290,10 +294,10 @@ private:
     uint32 fragmentShaderSize;*/
 #endif
     
-    uint32 lastPorectionMatrixCache;
+    uint32 lastProjectionMatrixCache;
     uint32 lastModelViewMatrixCache;
-    uint32 lastModelViewProjectionMatricCache1;
-    uint32 lastModelViewProjectionMatricCache2;
+    uint32 lastMVPMatrixModelViewCache;
+    uint32 lastMVPMatrixProjectionCache;
 };
 
 //

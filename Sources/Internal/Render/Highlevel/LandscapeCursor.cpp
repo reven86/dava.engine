@@ -37,7 +37,7 @@ namespace DAVA
 
 LandscapeCursor::LandscapeCursor()
 {
-	cursorTexture = 0;
+	textureHandle = InvalidUniqueHandle;
 
 	shader = new Shader();
 	shader->LoadFromYaml("~res:/Shaders/Landscape/cursor.shader");
@@ -59,12 +59,12 @@ LandscapeCursor::LandscapeCursor()
 
 void LandscapeCursor::Prepare()
 {
-	if(!cursorTexture)
+	if(InvalidUniqueHandle == textureHandle)
 	{
 		return;
 	}
 
-	RenderManager::Instance()->SetTexture(cursorTexture, 0);
+	RenderManager::Instance()->SetTextureState(textureHandle);
 	RenderManager::Instance()->SetShader(shader);
 	RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->AttachRenderData();
@@ -90,9 +90,9 @@ void LandscapeCursor::SetScale(float32 _scale)
 	scale = _scale;
 }
 
-void LandscapeCursor::SetCursorTexture(Texture * _texture)
+void LandscapeCursor::SetCursorTexture(UniqueHandle _texture)
 {
-	cursorTexture = _texture;
+	textureHandle = _texture;
 }
 
 void LandscapeCursor::SetBigTextureSize(float32 _bigSize)
@@ -101,9 +101,9 @@ void LandscapeCursor::SetBigTextureSize(float32 _bigSize)
 }
     
     
-Texture * LandscapeCursor::GetCursorTexture()
+UniqueHandle LandscapeCursor::GetCursorTexture()
 {
-    return cursorTexture;
+    return textureHandle;
 }
 
 float32 LandscapeCursor::GetBigTextureSize()

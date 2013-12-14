@@ -47,6 +47,8 @@
 #include "Render/UniqueStateSet.h"
 #include "Render/RenderStateData.h"
 #include "Render/RenderStateDataUniqueHandler.h"
+#include "Render/TextureStateData.h"
+#include "Render/TextureStateDataUniqueHandler.h"
 
 namespace DAVA
 {
@@ -107,6 +109,7 @@ public:
 		
 		uint32 renderStateSwitches;
 		uint32 renderStateFullSwitches;
+		uint32 textureStateFullSwitches;
     };
     
     static void Create(Core::eRenderer renderer);
@@ -210,7 +213,19 @@ public:
 	 \brief 
 	 */
 	void Unlock();
+	/** 
+	 \brief 
+	 */
+	void LockNonMain();
+	/** 
+	 \brief 
+	 */
+	void UnlockNonMain();
 	
+	
+	int32 GetNonMainLockCount();
+	
+    
     /**
      === Viewport and orientation 
      */
@@ -270,8 +285,8 @@ public:
 	void ResetColor();
 
 	// 
-	void SetTexture(Texture *texture, uint32 textureLevel = 0);
-	Texture * GetTexture(uint32 textureLevel = 0);
+	//void SetTexture(Texture *texture, uint32 textureLevel = 0);
+	//Texture * GetTexture(uint32 textureLevel = 0);
     void SetShader(Shader * shader);
     Shader * GetShader();
     
@@ -590,6 +605,37 @@ public:
 		currentState.stateHandle = requestedState;
 	}
 	
+	inline UniqueHandle AddTextureStateData(const TextureStateData* data)
+	{
+		return uniqueTextureStates.MakeUnique(data);
+	}
+	
+	inline const TextureStateData* GetTextureStateData(UniqueHandle handle)
+	{
+		return uniqueTextureStates.GetUnique(handle);
+	}
+	
+	inline void ReleaseTextureStateData(UniqueHandle handle)
+	{
+		//Logger::FrameworkDebug("[ReleaseTextureStateData] handle %d", handle);
+		uniqueTextureStates.ReleaseUnique(handle);
+	}
+
+	inline void SetTextureState(UniqueHandle requestedState)
+	{
+		currentState.textureState = requestedState;
+	}
+	
+	inline void SetDefaultTextureState()
+	{
+		SetTextureState(defaultTextureState);
+	}
+	
+	inline UniqueHandle GetDefaultTextureState()
+	{
+		return defaultTextureState;
+	}
+	
 protected:
     //
     // general matrices for rendermanager 
@@ -670,7 +716,11 @@ protected:
 	UniqueHandle default3DRenderStateHandle;
 	UniqueHandle defaultHardwareState;
 	
+	UniqueStateSet<TextureStateData, TextureStateDataUniqueHandler> uniqueTextureStates;
+	UniqueHandle defaultTextureState;
+	
 	void InitDefaultRenderStates();
+	void InitDefaultTextureStates();
     
     RenderState currentState;
     RenderState hardwareState;

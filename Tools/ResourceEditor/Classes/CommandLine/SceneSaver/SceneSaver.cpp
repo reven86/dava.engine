@@ -177,8 +177,8 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
 
 void SceneSaver::CopyTextures(DAVA::Scene *scene, Set<String> &errorLog)
 {
-    Map<String, Texture *>::const_iterator endIt = texturesForSave.end();
-    Map<String, Texture *>::iterator it = texturesForSave.begin();
+    TexturesMap::const_iterator endIt = texturesForSave.end();
+    TexturesMap::iterator it = texturesForSave.begin();
     for( ; it != endIt; ++it)
     {
         CopyTexture(it->first, errorLog);

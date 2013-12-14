@@ -166,6 +166,7 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     modelViewMatrixCache = 0;
 
 	InitDefaultRenderStates();
+	InitDefaultTextureStates();
 }
 	
 RenderManager::~RenderManager()
@@ -230,7 +231,13 @@ void RenderManager::InitDefaultRenderStates()
 	defaultHardwareState = AddRenderStateData(&defaultStateData);
 	hardwareState.stateHandle = defaultHardwareState;
 }
-
+	
+void RenderManager::InitDefaultTextureStates()
+{
+	TextureStateData textureData;
+	defaultTextureState = AddTextureStateData(&textureData);
+}
+	
 void RenderManager::SetDebug(bool isDebugEnabled)
 {
 	debugEnabled = isDebugEnabled;
@@ -389,56 +396,16 @@ void RenderManager::ResetColor()
 	currentState.ResetColor();
 }
 	
-	
-void RenderManager::SetTexture(Texture *texture, uint32 textureLevel)
+/*void RenderManager::SetTexture(Texture *texture, uint32 textureLevel)
 {	
     currentState.SetTexture(texture, textureLevel);
-	
-/*  DVASSERT(textureLevel < MAX_TEXTURE_LEVELS);
-	if(texture != currentTexture[textureLevel])
-	{
-		currentTexture[textureLevel] = texture;
-		if(currentTexture[textureLevel])
-		{
-			if(debugEnabled)
-			{
-				Logger::FrameworkDebug("Bind texture: id %d", texture->id);
-			}
-            
-#if defined(__DAVAENGINE_OPENGL__)
-            RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
-            if (textureLevel != 0)
-            {
-                // todo: boroda: fix that for OpenGL ES because glDisable / glEnable is deprecated
-                // fix it pizdato
-                if (GetRenderer() != Core::RENDERER_OPENGL_ES_2_0)
-                    RENDER_VERIFY(glEnable(GL_TEXTURE_2D));
-            }
-            RENDER_VERIFY(glBindTexture(GL_TEXTURE_2D, texture->id));
-#elif defined(__DAVAENGINE_DIRECTX9__)
-			RENDER_VERIFY(GetD3DDevice()->SetTexture(textureLevel, texture->id));
-#endif
-		}else
-        {
-#if defined(__DAVAENGINE_OPENGL__)
-            RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
-            if (textureLevel != 0)
-            {
-                // todo: boroda: fix that for OpenGL ES because glDisable / glEnable is deprecated
-                // fix it pizdato
-                if (GetRenderer() != Core::RENDERER_OPENGL_ES_2_0)
-                    RENDER_VERIFY(glDisable(GL_TEXTURE_2D));
-            }
-#endif
-        }
-	}*/
 }
 	
 Texture *RenderManager::GetTexture(uint32 textureLevel)
 {
     DVASSERT(textureLevel < RenderState::MAX_TEXTURE_LEVELS);
 	return currentState.currentTexture[textureLevel];	
-}
+}*/
     
 void RenderManager::SetShader(Shader * _shader)
 {
@@ -792,6 +759,7 @@ void RenderManager::Stats::Clear()
     occludedRenderBatchCount = 0;
 	renderStateSwitches = 0;
 	renderStateFullSwitches = 0;
+	textureStateFullSwitches = 0;
     for (int32 k = 0; k < PRIMITIVETYPE_COUNT; ++k)
         primitiveCount[k] = 0;
 }

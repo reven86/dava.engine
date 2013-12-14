@@ -225,6 +225,7 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Introspection.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionCollection.h" />
+    <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionDynamic.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionFlags.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionProperty.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\Mallocator.h" />
@@ -655,6 +656,7 @@
     <ClCompile Include="..\..\Sources\Internal\Base\FixedSizePoolAllocator.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\GlobalEnum.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionBase.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Observable.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Base\Radix\Radix.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Core\PerformanceSettings.cpp" />

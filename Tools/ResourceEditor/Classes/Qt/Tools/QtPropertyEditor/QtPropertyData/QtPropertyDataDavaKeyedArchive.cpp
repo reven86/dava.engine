@@ -78,6 +78,11 @@ QtPropertyDataDavaKeyedArcive::~QtPropertyDataDavaKeyedArcive()
 	}
 }
 
+const DAVA::MetaInfo * QtPropertyDataDavaKeyedArcive::MetaInfo() const
+{
+	return DAVA::MetaInfo::Instance<DAVA::KeyedArchive *>();
+}
+
 QVariant QtPropertyDataDavaKeyedArcive::GetValueInternal() const
 {
 	QVariant v;

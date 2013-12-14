@@ -45,6 +45,7 @@
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Base/ObjectFactory.h"
 
 namespace DAVA
@@ -87,9 +88,13 @@ Component * Component::CreateByType(uint32 componentType)
 		return new CustomPropertiesComponent();
 	case ACTION_COMPONENT:
 		return new ActionComponent();
+    case STATIC_OCCLUSION_COMPONENT:
+        return new StaticOcclusionComponent();
+
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:
+        
 	default:
 		DVASSERT(0);
 		return 0;

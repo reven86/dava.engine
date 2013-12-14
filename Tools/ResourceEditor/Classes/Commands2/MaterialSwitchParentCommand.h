@@ -33,12 +33,13 @@
 
 #include "Commands2/Command2.h"
 #include "Render/Material/NMaterial.h"
+#include "Base/FastName.h"
 
 class EntityGroup;
 class MaterialSwitchParentCommand: public Command2
 {
 public:
-	MaterialSwitchParentCommand(DAVA::NMaterial *oldMaterial, DAVA::NMaterial *newMaterial);
+	MaterialSwitchParentCommand(DAVA::NMaterial *oldMaterial, const DAVA::NMaterial *newMaterial);
 	~MaterialSwitchParentCommand();
 
 	virtual void Undo();
@@ -48,8 +49,8 @@ public:
     
 protected:
     
-    DAVA::NMaterial *newMaterialParent;
-    DAVA::NMaterial *oldMaterialParent;
+    const DAVA::FastName newMaterialParent;
+    const DAVA::FastName oldMaterialParent;
     DAVA::NMaterial *currentMaterial;
 };
 

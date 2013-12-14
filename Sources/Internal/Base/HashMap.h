@@ -72,6 +72,12 @@ public:
 
 	inline iterator begin() const;
 	inline iterator end() const;
+	
+	V& valueByIndex(int32 index);
+	const V& valueByIndex(int32 index) const;
+	
+	const K& keyByIndex(int32 index);
+	const K& keyByIndex(int32 index) const;
     
 public:
 	struct HashMapItem
@@ -127,6 +133,7 @@ protected:
 	Hash<K> hashFn;
 
 	V defaultV;
+	K defaultK;
 
 	inline size_t GetIndex(const K &key) const;
 	inline HashMapItem* GetItem(const K &key) const;
@@ -414,6 +421,95 @@ inline size_t HashMap<K, V>::InsertItem(typename HashMap<K, V>::HashMapItem* ite
 
 	return index;
 }
+template <typename K, typename V>
+V& HashMap<K, V>::valueByIndex(int32 index)
+{
+	DVASSERT(index >= 0 && index < size());
+	
+	int32 curIndex = 0;
+	HashMap<K, V>::iterator stateIter;
+	if(index >= 0 && index < size())
+	{
+		stateIter = begin();
+		//HashMap<K, V>::iterator itEnd = end();
+		while(stateIter != end() &&
+			  curIndex < index)
+		{
+			++curIndex;
+			++stateIter;
+		}
+	}
+	
+	return (curIndex == index) ? stateIter->second : defaultV;
+}
+	
+template <typename K, typename V>
+const V& HashMap<K, V>::valueByIndex(int32 index) const
+{
+	DVASSERT(index >= 0 && index < size());
+	
+	int32 curIndex = 0;
+	HashMap<K, V>::iterator stateIter;
+	if(index >= 0 && index < size())
+	{
+		stateIter = begin();
+		HashMap<K, V>::iterator itEnd = end();
+		while(stateIter != itEnd &&
+			  curIndex < index)
+		{
+			++curIndex;
+			++stateIter;
+		}
+	}
+	
+	return (curIndex == index) ? stateIter->second : defaultV;
+}
+
+template <typename K, typename V>
+const K& HashMap<K, V>::keyByIndex(int32 index)
+{
+	DVASSERT(index >= 0 && index < size());
+	
+	int32 curIndex = 0;
+	HashMap<K, V>::iterator stateIter;
+	if(index >= 0 && index < size())
+	{
+		stateIter = begin();
+		HashMap<K, V>::iterator itEnd = end();
+		while(stateIter != itEnd &&
+			  curIndex < index)
+		{
+			++curIndex;
+			++stateIter;
+		}
+	}
+	
+	return (curIndex == index) ? stateIter->first : defaultK;
+}
+
+template <typename K, typename V>
+const K& HashMap<K, V>::keyByIndex(int32 index) const
+{
+	DVASSERT(index >= 0 && index < size());
+	
+	int32 curIndex = 0;
+	HashMap<K, V>::iterator stateIter;
+	if(index >= 0 && index < size())
+	{
+		stateIter = begin();
+		HashMap<K, V>::iterator itEnd = end();
+		while(stateIter != itEnd &&
+			  curIndex < index)
+		{
+			++curIndex;
+			++stateIter;
+		}
+	}
+	
+	return (curIndex == index) ? stateIter->first : defaultK;
+	
+}
+
 
 // 
 // HashMap implementation

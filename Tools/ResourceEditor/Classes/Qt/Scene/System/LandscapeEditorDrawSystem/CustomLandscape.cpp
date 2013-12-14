@@ -61,7 +61,8 @@ void CustomLandscape::Draw(DAVA::Camera *camera)
 	
 	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, camera->GetMatrix());
 	
-	landscapeRenderer->BindMaterial(GetTexture(Landscape::TEXTURE_TILE_FULL));
+	//VI: texture state
+	//landscapeRenderer->BindMaterial(GetTexture(Landscape::TEXTURE_TILE_FULL));
 	landscapeRenderer->DrawLandscape();
 	
 	if (cursor)

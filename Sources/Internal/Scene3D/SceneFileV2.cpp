@@ -309,8 +309,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 		    
     OptimizeScene(rootNode);	
     
-	const FastName& qualityLod = serializationContext.GetScene()->renderSystem->GetMaterialSystem()->GetCurrentMaterialQuality();
-	serializationContext.GetScene()->renderSystem->GetMaterialSystem()->SwitchMaterialQuality(qualityLod, true);
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
+														   Message(this, &SceneFileV2::SwitchMaterialQualityOnMainThread));
+	JobInstanceWaiter waiter(job);
+	waiter.Wait();
 	
 	rootNode->SceneDidLoaded();
     
@@ -329,6 +331,15 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     SafeRelease(file);
     return GetError();
 }
+	
+void SceneFileV2::SwitchMaterialQualityOnMainThread(BaseObject * caller,
+														void * param,
+														void *callerData)
+{
+	const FastName& qualityLod = serializationContext.GetScene()->renderSystem->GetMaterialSystem()->GetCurrentMaterialQuality();
+	MaterialSystem* matSystem = serializationContext.GetScene()->renderSystem->GetMaterialSystem();
+	matSystem->SwitchMaterialQuality(qualityLod, true);
+}	
 	
 void SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor) const
 {
@@ -809,9 +820,9 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
             {
                 RenderBatch * batch = mesh->GetRenderBatch(k);
                 NMaterial * material = batch->GetMaterial();
-                MaterialTechnique * tech = material->GetTechnique(PASS_FORWARD);
+                //MaterialTechnique * tech = material->GetTechnique(PASS_FORWARD);
 
-                tech->GetRenderState()->SetTexture(oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap, 1);
+                //tech->GetRenderState()->SetTexture(oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap, 1);
                 batch->GetMaterial()->SetTexture(NMaterial::TEXTURE_LIGHTMAP, oldMeshInstanceNode->GetLightmapDataForIndex(k)->lightmap);
 
                 
@@ -1083,6 +1094,9 @@ void SceneFileV2::SaveMaterialSystem(File * file, SerializationContext* serializ
 	{
 		NMaterial* mat = materials[i];
 		
+        if(isSaveForGame)
+            mat->ReleaseIlluminationParams();
+
 		if(!mat->IsConfigMaterial())
 		{
 			KeyedArchive* materialArchive = new KeyedArchive();

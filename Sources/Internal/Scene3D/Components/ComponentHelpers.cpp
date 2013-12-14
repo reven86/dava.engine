@@ -36,6 +36,7 @@
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/ModelTypeComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -242,4 +243,14 @@ Landscape * FindLandscape(Entity * rootEntity)
 	return GetLandscape(entity);
 }
 
+ModelTypeComponent * GetModelTypeComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+    {
+		return (static_cast<ModelTypeComponent *>(fromEntity->GetComponent(Component::MODEL_TYPE_COMPONENT)));
+    }
+    
+    return NULL;
+}
+    
 }

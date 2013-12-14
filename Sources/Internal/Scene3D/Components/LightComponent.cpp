@@ -51,7 +51,7 @@ void LightComponent::SetLightObject(Light * _light)
     light = SafeRetain(_light);
 }
     
-Light * LightComponent::GetLightObject()
+Light * LightComponent::GetLightObject() const
 {
     return light;
 }

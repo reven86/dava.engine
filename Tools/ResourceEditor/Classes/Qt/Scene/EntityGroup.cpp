@@ -141,6 +141,41 @@ DAVA::AABBox3 EntityGroup::GetCommonBbox() const
 	return ret;
 }
 
+DAVA::Vector3 EntityGroup::GetZeroPos(size_t i) const
+{
+	DAVA::Vector3 ret;
+
+	if(i >= 0 && i < entities.size())
+	{
+		ret = entities[i].entity->GetWorldTransform().GetTranslationVector();
+	}
+
+	return ret;
+}
+
+DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
+{
+	DAVA::Vector3 ret;
+
+	if(entities.size() == 1)
+	{
+		ret = GetZeroPos(0);
+	}
+	else if(entities.size() > 0)
+	{
+		DAVA::AABBox3 tmp;
+
+		for(size_t i = 0; i < entities.size(); ++i)
+		{
+			tmp.AddPoint(entities[i].entity->GetWorldTransform().GetTranslationVector());
+		}
+
+		ret = tmp.GetCenter();
+	}
+
+	return ret;
+}
+
 bool EntityGroup::HasEntity(DAVA::Entity *entity) const
 {
 	size_t i;

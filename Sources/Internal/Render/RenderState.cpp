@@ -72,21 +72,22 @@ IDirect3DDevice9 * RenderState::direct3DDevice = 0;
 RenderState::RenderState()
 {
     renderer = RenderManager::Instance()->GetRenderer();
-	for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
+	/*for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
 	{
 		currentTexture[idx] = 0;
-	}
+	}*/
 	Reset(false);
 	
 	stateHandle = InvalidUniqueHandle;
+	textureState = InvalidUniqueHandle;
 }
 
 RenderState::~RenderState()
 {
-	for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
+	/*for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
 	{
 		SafeRelease(currentTexture[idx]);
-	}
+	}*/
 }
     
 //#define LOG_FINAL_RENDER_STATE
@@ -100,50 +101,65 @@ void RenderState::Reset(bool doHardwareReset)
     color.g = 1.0f;
     color.b = 1.0f;
     color.a = 1.0f;
-    for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
+   /* for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
 	{
         SafeRelease(currentTexture[idx]);
 	}
+	*/
     shader = 0;
 	scissorRect = Rect(0, 0, 0, 0);
     
     if (doHardwareReset)
     {
+		RenderManager* rm = RenderManager::Instance();
+       // RenderManager::Instance()->LockNonMain();
+		
+		const RenderStateData* renderStateData =
+				rm->GetRenderStateData(rm->GetDefault2DStateHandle());
 //        Logger::FrameworkDebug("Do hardware reset");
         // PrintBackTraceToLog();
         SetColorInHW();
-        SetEnableBlendingInHW(DEFAULT_2D_STATE);
-        SetBlendModeInHW(BLEND_ONE, BLEND_ZERO);
-        SetDepthTestInHW(DEFAULT_2D_STATE);
-        SetDepthWriteInHW(DEFAULT_2D_STATE);
-        SetColorMaskInHW(DEFAULT_2D_STATE);
+        SetEnableBlendingInHW(renderStateData->state);
+        SetBlendModeInHW(renderStateData->sourceFactor, renderStateData->destFactor);
+        SetDepthTestInHW(renderStateData->state);
+        SetDepthWriteInHW(renderStateData->state);
+        SetColorMaskInHW(renderStateData->state);
         
         if (renderer != Core::RENDERER_OPENGL_ES_2_0)
         {
             SetAlphaTestInHW(DEFAULT_2D_STATE);
             SetAlphaTestFuncInHW(CMP_ALWAYS, 0);
         }
-        
+             
         for (uint32 textureLevel = 0; textureLevel < MAX_TEXTURE_LEVELS; ++textureLevel)
         {
-            SetTextureLevelInHW(textureLevel);
+            SetTextureLevelInHW(textureLevel, NULL);
         }
+		
+		textureState = RenderManager::Instance()->GetDefaultTextureState();
+		stateHandle = RenderManager::Instance()->GetDefault2DStateHandle();
+		
     }
 }
 bool RenderState::IsEqual(RenderState * anotherState)
 {
     if (stateHandle != anotherState->stateHandle)
         return false;
+	
+	if(textureState != anotherState->textureState)
+	{
+		return false;
+	}
     
     // check texture first for early rejection 
-    if (currentTexture[0] != anotherState->currentTexture[0])return false;
+    //if (currentTexture[0] != anotherState->currentTexture[0])return false;
 
     
     if (color != anotherState->color)return false;
     
-    if (currentTexture[1] != anotherState->currentTexture[1])return false;
-    if (currentTexture[2] != anotherState->currentTexture[2])return false;
-    if (currentTexture[3] != anotherState->currentTexture[3])return false;
+    //if (currentTexture[1] != anotherState->currentTexture[1])return false;
+   // if (currentTexture[2] != anotherState->currentTexture[2])return false;
+    //if (currentTexture[3] != anotherState->currentTexture[3])return false;
     
     return true;
 }
@@ -270,55 +286,79 @@ void RenderState::Flush(RenderState * hardwareState) const
             SetScissorRectInHW();
             hardwareState->scissorRect = scissorRect;
         }
-        
+	
+		if(textureState != hardwareState->textureState &&
+		   textureState != InvalidUniqueHandle)
+		{
+			const TextureStateData* currentTextureData = RenderManager::Instance()->GetTextureStateData(textureState);
+			const TextureStateData* hardwareTextureData = RenderManager::Instance()->GetTextureStateData(hardwareState->textureState);
+			
+			//VI: TODO: oprimize this after ensuring all textures are localted sequentially:
+			//break once NULL texture in current state were found
+			for(size_t i = 0; (i < MAX_TEXTURE_COUNT) && (currentTextureData->textures[i] != NULL); ++i)
+			{
+				if(currentTextureData->textures[i] != hardwareTextureData->textures[i])
+				{
+					SetTextureLevelInHW(i, currentTextureData->textures[i]);
+				}
+			}
+			
+			hardwareState->textureState = textureState;
+			
+			RenderManager::Instance()->GetStats().textureStateFullSwitches++;
+		}
+    
+	
+	
+	/*
 		if (currentTexture[0] != hardwareState->currentTexture[0])
 		{
-            SetTextureLevelInHW(0);
+            SetTextureLevelInHW(0, currentTexture[0]);
 			hardwareState->SetTexture(currentTexture[0], 0);
         }
 
 		if (currentTexture[1] != hardwareState->currentTexture[1])
         {
-            SetTextureLevelInHW(1);
+            SetTextureLevelInHW(1, currentTexture[1]);
             hardwareState->SetTexture(currentTexture[1], 1);
         }
 
 		if (currentTexture[2] != hardwareState->currentTexture[2])
         {
-            SetTextureLevelInHW(2);
+            SetTextureLevelInHW(2, currentTexture[2]);
             hardwareState->SetTexture(currentTexture[2], 2);
         }
     
 		if (currentTexture[3] != hardwareState->currentTexture[3])
 		{
-            SetTextureLevelInHW(3);
+            SetTextureLevelInHW(3, currentTexture[3]);
             hardwareState->SetTexture(currentTexture[3], 3);
         }
 		
 	   if (currentTexture[4] != hardwareState->currentTexture[4])
 		{
-			SetTextureLevelInHW(4);
+			SetTextureLevelInHW(4, currentTexture[4]);
 			hardwareState->SetTexture(currentTexture[4], 4);
 		}
 			
 		if (currentTexture[5] != hardwareState->currentTexture[5])
 		{
-			SetTextureLevelInHW(5);
+			SetTextureLevelInHW(5, currentTexture[5]);
 			hardwareState->SetTexture(currentTexture[5], 5);
 		}
 		
 	    if (currentTexture[6] != hardwareState->currentTexture[6])
 		{
-			SetTextureLevelInHW(6);
+			SetTextureLevelInHW(6, currentTexture[6]);
 			hardwareState->SetTexture(currentTexture[6], 6);
 		}
 		
 	    if (currentTexture[7] != hardwareState->currentTexture[7])
 		{
-			SetTextureLevelInHW(7);
+			SetTextureLevelInHW(7, currentTexture[7]);
 			hardwareState->SetTexture(currentTexture[7], 7);
 		}
-
+*/
 
 #if defined(__DAVAENGINE_OPENGL__)
         RENDER_VERIFY(glActiveTexture(GL_TEXTURE0));
@@ -444,15 +484,15 @@ inline void RenderState::SetBlendModeInHW(eBlendMode  sourceFactor,
     RENDER_VERIFY(glBlendFunc(BLEND_MODE_MAP[sourceFactor], BLEND_MODE_MAP[destFactor]));
 }
 
-inline void RenderState::SetTextureLevelInHW(uint32 textureLevel) const
+inline void RenderState::SetTextureLevelInHW(uint32 textureLevel, Texture* texture) const
 {
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
-    if(currentTexture[textureLevel])
+    if(texture)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
-        Logger::FrameworkDebug("RenderState::bind_texture %d = (%d)", textureLevel, currentTexture[textureLevel]->id);
+        Logger::FrameworkDebug("RenderState::bind_texture %d = (%d)", textureLevel, texture->id);
 #endif    
-        RenderManager::Instance()->HWglBindTexture(currentTexture[textureLevel]->id, currentTexture[textureLevel]->textureType);
+        RenderManager::Instance()->HWglBindTexture(texture->id, texture->textureType);
     }else
     {
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -1043,11 +1083,12 @@ void RenderState::CopyTo(RenderState* target) const
 	target->scissorRect = scissorRect;
 
 	target->stateHandle = stateHandle;
+	target->textureState = textureState;
 	
-	for(int i = 0; i < MAX_TEXTURE_LEVELS; ++i)
+	/*for(int i = 0; i < MAX_TEXTURE_LEVELS; ++i)
 	{
 		target->currentTexture[i] = SafeRetain(currentTexture[i]);
-	}	
+	}*/	
 }
 	
 void RenderState::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)

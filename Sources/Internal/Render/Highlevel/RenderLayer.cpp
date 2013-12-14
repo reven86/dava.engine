@@ -36,9 +36,9 @@
 
 namespace DAVA
 {
-RenderLayer::RenderLayer(const FastName & _name)
-    : name(_name)
-
+RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags)
+    :	name(_name),
+		flags(sortingFlags)
 {
 }
     
@@ -99,6 +99,11 @@ void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, Render
 const FastName & RenderLayer::GetName()
 {
 	return name;
+}
+	
+uint32 RenderLayer::GetFlags()
+{
+	return flags;
 }
 
 };

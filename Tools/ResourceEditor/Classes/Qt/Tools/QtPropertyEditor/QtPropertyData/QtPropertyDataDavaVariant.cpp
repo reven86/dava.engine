@@ -152,7 +152,7 @@ void QtPropertyDataDavaVariant::AddAllowedValue(const DAVA::VariantType& realVal
 		allowedButton = AddButton();
 		allowedButton->setArrowType(Qt::DownArrow);
 		allowedButton->setAutoRaise(true);
-		allowedButton->setEnabled(false);
+		//allowedButton->setEnabled(false);
 		allowedButton->eventsPassThrought = true;
 		allowedButton->overlayed = true;
 

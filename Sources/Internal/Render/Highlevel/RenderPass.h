@@ -46,15 +46,15 @@ public:
     
     const FastName & GetName();
     
+	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
+	void RemoveRenderLayer(RenderLayer * layer);
+
     virtual void Draw(Camera * camera, RenderPassBatchArray * renderBatchArray);
     
 protected:
     Vector<RenderLayer*> renderLayers;
     FastName name;
 
-private:
-	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
-	void RemoveRenderLayer(RenderLayer * layer);
 	
 
 public:

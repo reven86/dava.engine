@@ -81,6 +81,8 @@ public:
 
 	void ForceEmitSignals();
 
+    DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
+
 protected:
 	void Update(DAVA::float32 timeElapsed);
 	void Draw();
@@ -92,7 +94,6 @@ protected:
 	void SelectedItemsWereModified();
 
 	EntityGroup GetSelecetableFromCollision(const EntityGroup *collisionEntities);
-	DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
     
 
 private:

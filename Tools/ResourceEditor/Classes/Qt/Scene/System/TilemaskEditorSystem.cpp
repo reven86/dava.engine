@@ -412,12 +412,15 @@ void TilemaskEditorSystem::UpdateBrushTool()
 
 	srcSprite->PrepareSpriteRenderData(0);
 	RenderManager::Instance()->SetRenderData(srcSprite->spriteRenderObject);
-	RenderManager::Instance()->SetTexture(srcSprite->GetTexture(), 0);
-	RenderManager::Instance()->SetTexture(toolSprite->GetTexture(), 1);
-	if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
-	{
-		RenderManager::Instance()->SetTexture(stencilSprite->GetTexture(), 2);
-	}
+	
+	//VI: texture state
+	//RenderManager::Instance()->SetTexture(srcSprite->GetTexture(), 0);
+	//RenderManager::Instance()->SetTexture(toolSprite->GetTexture(), 1);
+	//if (activeDrawingType == TILEMASK_DRAW_COPY_PASTE)
+	//{
+	//	RenderManager::Instance()->SetTexture(stencilSprite->GetTexture(), 2);
+	//}
+	
 	RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->AttachRenderData();
 	

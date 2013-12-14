@@ -36,10 +36,11 @@ namespace DAVA
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2);
 
 #if defined (USE_FILEPATH_IN_MAP)
-Map<FilePath, FMOD::Sound*> soundMap;
+	typedef Map<FilePath, FMOD::Sound*> SoundMap;
 #else //#if defined (USE_FILEPATH_IN_MAP)
-Map<String, FMOD::Sound*> soundMap;
+	typedef Map<String, FMOD::Sound*> SoundMap;
 #endif //#if defined (USE_FILEPATH_IN_MAP)
+SoundMap soundMap;
 
 Map<FMOD::Sound*, int32> soundRefsMap;
 
@@ -60,13 +61,7 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
     if(flags & FMOD_3D)
         sound->is3d = true;
 
-#if defined (USE_FILEPATH_IN_MAP)
-	Map<FilePath, FMOD::Sound*>::iterator it;
-	it = soundMap.find(fileName);
-#else //#if defined (USE_FILEPATH_IN_MAP)
-    Map<String, FMOD::Sound*>::iterator it;
-    it = soundMap.find(fileName.GetAbsolutePathname());
-#endif //#if defined (USE_FILEPATH_IN_MAP)
+	SoundMap::iterator it = soundMap.find(FILEPATH_MAP_KEY(fileName));
     if (it != soundMap.end())
     {
         sound->fmodSound = it->second;
@@ -117,11 +112,7 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
             FMOD_VERIFY( sound->fmodSound->set3DMinMaxDistance(12.0f, 1000.0f) );
 #endif
 
-#if defined (USE_FILEPATH_IN_MAP)
-		soundMap[sound->fileName] = sound->fmodSound;
-#else //#if defined (USE_FILEPATH_IN_MAP)
-		soundMap[sound->fileName.GetAbsolutePathname()] = sound->fmodSound;
-#endif //#if defined (USE_FILEPATH_IN_MAP)
+		soundMap[FILEPATH_MAP_KEY(sound->fileName)] = sound->fmodSound;
         soundRefsMap[sound->fmodSound] = 1;
     }
 
@@ -155,11 +146,7 @@ int32 Sound::Release()
         soundRefsMap[fmodSound]--;
         if(soundRefsMap[fmodSound] == 0)
         {
-#if defined (USE_FILEPATH_IN_MAP)
-			soundMap.erase(fileName);
-#else //#if defined (USE_FILEPATH_IN_MAP)
-            soundMap.erase(fileName.GetAbsolutePathname());
-#endif //#if defined (USE_FILEPATH_IN_MAP)
+			soundMap.erase(FILEPATH_MAP_KEY(fileName));
             soundRefsMap.erase(fmodSound);
             FMOD_VERIFY(fmodSound->release());
         }

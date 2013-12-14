@@ -347,15 +347,8 @@ void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderB
     if(material)
     {
         ValidateMaterial(material, errorsLog);
+        ConvertIlluminationParamsFromProperty(ownerNode, material);
     }
-    
-//     InstanceMaterialState *materialState = renderBatch->GetMaterialInstance();
-//     if(materialState)
-//     {
-//         ValidateInstanceMaterialState(materialState, errorsLog);
-// 		ConvertLightmapSizeFromProperty(ownerNode, materialState);
-//     }
-    
     
     PolygonGroup *polygonGroup = renderBatch->GetPolygonGroup();
     if(polygonGroup)
@@ -481,20 +474,19 @@ void SceneValidator::ValidateLandscapeTexture(Landscape *landscape, Landscape::e
 }
 
 
-void SceneValidator::ConvertLightmapSizeFromProperty(Entity *ownerNode, InstanceMaterialState *materialState)
+void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material)
 {
 	KeyedArchive * props = ownerNode->GetCustomProperties();
-	Map<String, VariantType*> map = props->GetArchieveData();
-	for(Map<String, VariantType*>::iterator it = map.begin(); it != map.end(); it++)
-	{
-		String key = it->first;
-		if(key.find("lightmap.size") != String::npos && ((RenderComponent*)ownerNode->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject()->GetType() != RenderObject::TYPE_LANDSCAPE)
-		{
-			materialState->SetLightmapSize(props->GetInt32(key, 128));
-			props->DeleteKey(key);
-			break;
-		}
-	}
+
+    if(props->IsKeyExists("editor.staticlight.enable"))
+    {
+        IlluminationParams * params = material->GetIlluminationParams();
+
+        params->isUsed = props->GetBool("editor.staticlight.enable", params->isUsed);
+        params->castShadow = props->GetBool("editor.staticlight.castshadows", params->castShadow);
+        params->receiveShadow = props->GetBool("editor.staticlight.receiveshadows", params->receiveShadow);
+        params->lightmapSize = props->GetInt32("lightmap.size", params->lightmapSize);
+    }
 }
 
 bool SceneValidator::NodeRemovingDisabled(Entity *node)

@@ -70,6 +70,7 @@ protected:
 	void DrawSoundNode(DAVA::Entity *entity);
 	void DrawHangingObjects(DAVA::Entity *entity);
 	void DrawEntityBox(DAVA::Entity *entity, const DAVA::Color &color);
+	void DrawStaticOcclusionComponent(DAVA::Entity *entity);
 
 	//hanging objects 
 	bool IsObjectHanging(DAVA::Entity * entity);

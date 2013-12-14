@@ -126,14 +126,14 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, bool forceConvert)
 	if(NULL != scene)
 	{
 		// get list of all scenes textures
-		DAVA::Map<DAVA::String, DAVA::Texture *> allTextures;
+		DAVA::TexturesMap allTextures;
 		SceneHelper::EnumerateTextures(scene, allTextures);
 
 		// add jobs to convert every texture
 		if(allTextures.size() > 0)
 		{
-			DAVA::Map<DAVA::String, DAVA::Texture *>::iterator begin = allTextures.begin();
-			DAVA::Map<DAVA::String, DAVA::Texture *>::iterator end = allTextures.end();
+			DAVA::TexturesMap::iterator begin = allTextures.begin();
+			DAVA::TexturesMap::iterator end = allTextures.end();
 
 			for(; begin != end; begin++)
 			{

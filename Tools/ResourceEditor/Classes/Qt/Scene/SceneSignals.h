@@ -124,6 +124,7 @@ public:
 
 	void EmitSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected) { emit SelectionChanged(scene, selected, deselected); }
 
+
 	void EmitVisibilityToolToggled(SceneEditor2* scene) { emit VisibilityToolToggled(scene); }
 	void EmitCustomColorsToggled(SceneEditor2* scene) { emit CustomColorsToggled(scene); }
 	void EmitHeightmapEditorToggled(SceneEditor2* scene) { emit HeightmapEditorToggled(scene); }

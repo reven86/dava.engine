@@ -151,6 +151,7 @@ namespace DAVA
 		
 		if(0 == refCounters[handle])
 		{
+			handler.Clear(&values[handle]);
 			freeSlotCount++;
 		}
 	}

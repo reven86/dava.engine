@@ -360,8 +360,12 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 			}
 		}
 
+		// remember current selection pivot point
+		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *)GetScene())->selectionSystem;
+		modifPivotPoint = selectionSystem->GetPivotPoint();
+
 		// center of this bbox will modification center, common for all entities
-		modifEntitiesCenter = entities.GetCommonBbox().GetCenter();
+		modifEntitiesCenter = entities.GetCommonZeroPos();
 
 		// prepare translation matrix's, used before and after rotation
 		moveToZeroPosRelativeCenter.CreateTranslation(-modifEntitiesCenter);
@@ -407,10 +411,6 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 		// so calculate this normal
 		rotateNormal = DAVA::Vector2(-rotateAxis.y, rotateAxis.x);
 		rotateNormal.Normalize();
-
-		// remember current selection pivot point
-		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-		modifPivotPoint = selectionSystem->GetPivotPoint();
 	}
 }
 

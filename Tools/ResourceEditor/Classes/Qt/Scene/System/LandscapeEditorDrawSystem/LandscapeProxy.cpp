@@ -308,8 +308,9 @@ void LandscapeProxy::CursorDisable()
 
 void LandscapeProxy::SetCursorTexture(Texture* texture)
 {
-	customLandscape->SetCursorTexture(texture);
-	baseLandscape->SetCursorTexture(texture);
+	//VI: texture state
+	//customLandscape->SetCursorTexture(texture);
+	//baseLandscape->SetCursorTexture(texture);
 }
 
 void LandscapeProxy::SetBigTextureSize(float32 size)

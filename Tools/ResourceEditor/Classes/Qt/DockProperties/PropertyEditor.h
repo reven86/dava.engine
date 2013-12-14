@@ -38,17 +38,13 @@
 
 class DAVA::Entity;
 
-struct PropEditorUserData : public QtPropertyData::UserData {
-	PropEditorUserData() : type(NORMAL), link(NULL) {}
+struct PropEditorUserData : public QtPropertyData::UserData 
+{
+	PropEditorUserData() : isFavorite(false), isOriginalFavorite(false), favoriteProxy(NULL) {}
 
-	enum Type
-	{
-		NORMAL,
-		PROXY
-	};
-
-	Type type;
-	QtPropertyData *link;
+	bool isFavorite;
+	bool isOriginalFavorite;
+	QtPropertyData *favoriteProxy;
 };
 
 class PropertyEditor : public QtPropertyEditor
@@ -56,19 +52,23 @@ class PropertyEditor : public QtPropertyEditor
 	Q_OBJECT
 
 public:
-	enum eEditoMode
+	enum eViewMode
 	{
-		EM_NORMAL,
-		EM_ADVANCED,
-		EM_FAVORITE,
-		EM_FAVORITE_EDIT
+		VIEW_NORMAL,
+		VIEW_ADVANCED,
+		VIEW_FAVORITES_ONLY
 	};
 
 	PropertyEditor(QWidget *parent = 0, bool connectToSceneSignals = true);
 	~PropertyEditor();
 
 	virtual void SetEntities(const EntityGroup *selected);
-	void SetEditorMode(eEditoMode mode);
+	
+	void SetViewMode(eViewMode mode);
+	eViewMode GetViewMode() const;
+
+	void SetFavoritesEditMode(bool set);
+	bool GetFavoritesEditMode() const;
 
 	bool IsFavorite(QtPropertyData *data) const;
 	void SetFavorite(QtPropertyData *data, bool favorite);
@@ -82,12 +82,13 @@ public slots:
 	void sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
-	void ActionToggleAdvanced();
 	void ActionEditComponent();
 	void ActionBakeTransform();
 
 protected:
-	eEditoMode editorMode;
+	eViewMode viewMode;
+	bool favoritesEditMode;
+
 	QtPosSaver posSaver;
 	QSet<QString> scheme;
 
@@ -97,12 +98,14 @@ protected:
 	DAVA::Entity *curNode;
 	PropertyEditorStateHelper treeStateHelper;
 
-	QModelIndex AddInsp(const QModelIndex &parent, void *object, const DAVA::InspInfo *info);
-	QModelIndex AddInspMember(const QModelIndex &parent, void *object, const DAVA::InspMember *member);
+	QtPropertyData* CreateInsp(void *object, const DAVA::InspInfo *info);
+	QtPropertyData* CreateInspMember(void *object, const DAVA::InspMember *member);
 
 	void ResetProperties();
+	void ApplyModeFilter(QtPropertyData *parent);
+	void ApplyFavorite(QtPropertyData *data);
+	void ApplyCustomButtons(QtPropertyData *data);
 
-	virtual void OnItemAdded(const QModelIndex &index, const DAVA::MetaInfo *itemMeta);
 	virtual void OnItemEdited(const QModelIndex &index);
 	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
 	virtual void mouseReleaseEvent(QMouseEvent *event);

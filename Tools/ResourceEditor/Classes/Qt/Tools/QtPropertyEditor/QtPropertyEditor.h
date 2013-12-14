@@ -60,7 +60,8 @@ public:
 	QModelIndex InsertHeader(const QString &text, int row);
 
 	QtPropertyData * GetProperty(const QModelIndex &index) const;
-
+	QtPropertyData * GetRootProperty() const;
+	
 	bool GetEditTracking() const;
 	void SetEditTracking(bool enabled);
 

@@ -35,8 +35,7 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "Scene/SceneSignals.h"
 
-#include "Commands2/MaterialSwitchParentCommand.h"
-#include "MaterialEditor/MaterialsDropSystem.h"
+#include "MaterialEditor/MaterialAssignSystem.h"
 
 
 // framework
@@ -47,8 +46,6 @@
 
 //mime data
 #include "Tools/MimeData/MimeDataHelper2.h"
-
-#include <QMessageBox>
 
 SceneTreeModel::SceneTreeModel(QObject* parent /*= 0*/ )
 	: QStandardItemModel(parent)
@@ -562,7 +559,7 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData * data, Qt::DropAction ac
             DAVA::Entity *targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
             if(targetEntity)
             {
-                MaterialsDropSystem::DropTestResult result = MaterialsDropSystem::TestEntity(targetEntity, true);
+                MaterialAssignSystem::DropTestResult result = MaterialAssignSystem::TestEntity(targetEntity, true);
                 ret = (result.hasEntitiesAvailableToDrop || result.hasEntityUnavailableToDrop);
             }
             break;
@@ -728,39 +725,10 @@ int SceneTreeModel::GetDropType(const QtMimeData *data) const
 void SceneTreeModel::DropMaterial(SceneTreeItem *parentItem, const QtMimeData *mimeData) const
 {
     DAVA::Entity *targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
-    if(targetEntity)
+    QVector<DAVA::NMaterial*> *materials = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(mimeData);
+    if(curScene && targetEntity && (materials->size() == 1))
     {
-        QVector<DAVA::NMaterial*> *materials = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(mimeData);
-        DVASSERT(materials->size() == 1);
-
-        curScene->BeginBatch("Set Material");
-        for(int im = 0; im < materials->size(); ++im)
-        {
-            DAVA::Set<DAVA::NMaterial *> oldMaterials = MaterialsDropSystem::GetAvailableMaterials(targetEntity, true);
-            auto endIt = oldMaterials.end();
-            for(auto it = oldMaterials.begin(); it != endIt; ++it)
-            {
-                curScene->Exec(new MaterialSwitchParentCommand(*it, materials->at(im)));
-            }
-        }
-        curScene->EndBatch();
-        
-        MaterialsDropSystem::DropTestResult result = MaterialsDropSystem::TestEntity(targetEntity, true);
-        if(result.hasEntityUnavailableToDrop)
-        {
-            DAVA::Vector<const DAVA::Entity *> rejectedEntities = MaterialsDropSystem::GetDropRejectedEntities(targetEntity, true);
-            
-            DAVA::String names;
-            for (DAVA::uint32 ie = 0; ie < (DAVA::uint32)rejectedEntities.size(); ++ie)
-            {
-                if(ie != 0) names += ",";
-                
-                names += rejectedEntities[ie]->GetName();
-            }
-            
-            String errorString = Format("Cannot drop material to %s", names.c_str());
-            QMessageBox::warning(NULL, QString("Drop error"), QString::fromStdString(errorString), QMessageBox::Ok);
-        }
+        MaterialAssignSystem::AssignMaterialToEntity(curScene, targetEntity, materials->at(0));
     }
 }
 

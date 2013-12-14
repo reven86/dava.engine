@@ -36,19 +36,19 @@ namespace DAVA
 {
 
 
-static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_LOD | RenderObject::VISIBLE_SWITCH;
+static const int32 DEFAULT_FLAGS = RenderObject::VISIBLE | RenderObject::VISIBLE_LOD | RenderObject::VISIBLE_SWITCH | RenderObject::VISIBLE_STATIC_OCCLUSION;
 
 RenderObject::RenderObject()
     :   type(TYPE_RENDEROBJECT)
     ,   flags(DEFAULT_FLAGS)
     ,   removeIndex(-1)
 	,   treeNodeIndex(INVALID_TREE_NODE_INDEX)
+    ,   staticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX)
 	,   startClippingPlane(0)
     ,   debugFlags(0)
     ,   worldTransform(0)
 	,	renderSystem(0)
 {
-    
 }
     
 RenderObject::~RenderObject()
@@ -133,9 +133,10 @@ void RenderObject::Save(KeyedArchive * archive, SerializationContext* serializat
 	if(NULL != archive)
 	{
 		archive->SetUInt32("ro.type", type);
-		archive->SetUInt32("ro.flags", flags);
+		//archive->SetUInt32("ro.flags", flags);
 		archive->SetUInt32("ro.debugflags", debugFlags);
 		archive->SetUInt32("ro.batchCount", GetRenderBatchCount());
+        archive->SetUInt32("ro.sOclIndex", staticOcclusionIndex);
 
 		KeyedArchive *batchesArch = new KeyedArchive();
 		for(uint32 i = 0; i < GetRenderBatchCount(); ++i)
@@ -164,11 +165,12 @@ void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializat
 	if(NULL != archive)
 	{
 		type = archive->GetUInt32("ro.type", TYPE_RENDEROBJECT);
-		flags = archive->GetUInt32("ro.flags", DEFAULT_FLAGS);
+		flags = DEFAULT_FLAGS;
 		debugFlags = archive->GetUInt32("ro.debugflags", 0);
+        staticOcclusionIndex = (uint16)archive->GetUInt32("ro.sOclIndex", INVALID_STATIC_OCCLUSION_INDEX);
 
 		uint32 roBatchCount = archive->GetUInt32("ro.batchCount");
-			KeyedArchive *batchesArch = archive->GetArchive("ro.batches");
+        KeyedArchive *batchesArch = archive->GetArchive("ro.batches");
         for(uint32 i = 0; i < roBatchCount; ++i)
 			{
 				KeyedArchive *batchArch = batchesArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));

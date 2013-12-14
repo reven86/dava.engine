@@ -219,7 +219,7 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
 
 void SceneExporter::ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog)
 {
-    DAVA::Map<DAVA::String, DAVA::Texture *> textures;
+    DAVA::TexturesMap textures;
     SceneHelper::EnumerateTextures(scene, textures);
 
     auto endIt = textures.end();

@@ -313,6 +313,7 @@ public:
 	Rect		scissorRect;
 
 	UniqueHandle stateHandle;
+	UniqueHandle textureState;
     //eBlendMode	sourceFactor, destFactor;
     //eFace		cullMode;
     //eCmpFunc	alphaFunc;
@@ -370,7 +371,7 @@ public:
 	StencilState stencilState;*/
     
     static const uint32 MAX_TEXTURE_LEVELS = 8;
-    Texture * currentTexture[MAX_TEXTURE_LEVELS];
+    //Texture * currentTexture[MAX_TEXTURE_LEVELS];
     Shader * shader;
     
     //void AppendState(uint32 state);
@@ -390,8 +391,8 @@ public:
 	//inline eBlendMode GetDestBlend();
     
     // STATE_TEXTURE
-    inline void SetTexture(Texture *texture, uint32 textureLevel = 0);
-	inline Texture * GetTexture(uint32 textureLevel = 0);
+    //inline void SetTexture(Texture *texture, uint32 textureLevel = 0);
+	//inline Texture * GetTexture(uint32 textureLevel = 0);
     
     // SHADER
     inline void SetShader(Shader * shader);
@@ -421,7 +422,7 @@ public:
 	inline void SetFillMode(eFillMode fillMode);
 
 	inline void SetEnableBlendingInHW(uint32 state) const;
-	inline void SetTextureLevelInHW(uint32 textureLevel) const;
+	inline void SetTextureLevelInHW(uint32 textureLevel, Texture* texture) const;
 	inline void SetBlendModeInHW(eBlendMode	sourceFactor,
 								 eBlendMode  destFactor) const;
 	inline void SetDepthTestInHW(uint32 state) const;
@@ -666,7 +667,7 @@ inline void RenderState::SetShader(Shader * _shader)
 //}
 
 // STATE_TEXTURE
-inline void RenderState::SetTexture(Texture *texture, uint32 textureLevel)
+/*inline void RenderState::SetTexture(Texture *texture, uint32 textureLevel)
 {
 	if(texture != currentTexture[textureLevel])
 	{
@@ -678,7 +679,7 @@ inline void RenderState::SetTexture(Texture *texture, uint32 textureLevel)
 inline Texture * RenderState::GetTexture(uint32 textureLevel)
 {
     return currentTexture[textureLevel];
-}
+}*/
 
 //inline void RenderState::SetStencilRef(int32 ref)
 //{

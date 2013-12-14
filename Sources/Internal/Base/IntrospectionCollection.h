@@ -153,11 +153,6 @@ namespace DAVA
 			return p;
 		}
 
-		const char* ItemName(Iterator i) const
-		{
-			return NULL;
-		}
-
 		void* ItemData(Iterator i) const
 		{
 			if(ItemType()->IsPointer())
@@ -168,6 +163,21 @@ namespace DAVA
 			{
 				return ItemPointer(i);
 			}
+		}
+
+		MetaInfo* ItemKeyType() const
+		{
+			return NULL;
+		}
+
+		const void* ItemKeyPointer(Iterator i) const
+		{
+			return NULL;
+		}
+
+		const void* ItemKeyData(Iterator i) const
+		{
+			return NULL;
 		}
 
 		const InspColl* Collection() const
@@ -293,7 +303,7 @@ namespace DAVA
 
 			if(NULL != pos)
 			{
-				p = &(*(pos->curPos));
+				p = &pos->curPos->second;
 			}
 
 			return p;
@@ -313,6 +323,36 @@ namespace DAVA
 			else
 			{
 				return ItemPointer(i);
+			}
+		}
+
+		MetaInfo* ItemKeyType() const
+		{
+			return DAVA::MetaInfo::Instance<K>();
+		}
+
+		const void* ItemKeyPointer(Iterator i) const
+		{
+			const void *p = NULL;
+			CollectionPos* pos = (CollectionPos *)i;
+
+			if(NULL != pos)
+			{
+				p = &(pos->curPos->first);
+			}
+
+			return p;
+		}
+
+		const void* ItemKeyData(Iterator i) const
+		{
+			if(ItemKeyType()->IsPointer())
+			{
+				return *((const void **)ItemKeyPointer(i));
+			}
+			else
+			{
+				return ItemKeyPointer(i);
 			}
 		}
 

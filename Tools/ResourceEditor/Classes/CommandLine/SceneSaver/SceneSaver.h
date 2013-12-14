@@ -68,7 +68,7 @@ protected:
     
     SceneUtils sceneUtils;
     
-    Map<String, Texture *> texturesForSave;
+    TexturesMap texturesForSave;
 };
 
 

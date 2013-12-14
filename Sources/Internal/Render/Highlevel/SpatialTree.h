@@ -10,6 +10,7 @@ namespace DAVA
 {
 
 const static uint16 INVALID_TREE_NODE_INDEX = (uint16)(-1);
+    
 class RenderObject;
 class Frustum;
 

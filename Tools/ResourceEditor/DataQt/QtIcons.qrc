@@ -1,8 +1,8 @@
 <RCC>
   <qresource prefix="/">
+    <file>QtIcons/all.png</file>
     <file>QtIcons/star.png</file>
     <file>QtIcons/star_empty.png</file>
-    <file>QtIcons/star_gray.png</file>
     <file>QtIcons/gizmo.png</file>
     <file>QtIcons/object_select.png</file>
     <file>QtIcons/switch.png</file>
@@ -127,12 +127,6 @@
     <file>QtImages/sky_example5.png</file>
     <file>QtImages/sky_example6.png</file>
     <file>QtImages/sky_example7.png</file>
-    <file>QtLibraryIcons/sc2Icon.png</file>
-    <file>QtLibraryIcons/daeIcon.png</file>
-    <file>QtLibraryIcons/texIcon.png</file>
-    <file>QtLibraryIcons/pngIcon.png</file>
-    <file>QtLibraryIcons/pvrIcon.png</file>
-    <file>QtLibraryIcons/ddsIcon.png</file>
     <file>QtLibraryIcons/orientation.png</file>
     <file>QtLibraryIcons/lodmaterial.png</file>
   </qresource>

@@ -287,7 +287,7 @@ void SpriteNode::Draw()
     
     //RenderManager::Instance()->SetState(RenderStateBlock::STATE_BLEND | RenderStateBlock::STATE_TEXTURE0 | RenderStateBlock::STATE_CULL);
     
-    RenderManager::Instance()->SetTexture(sprite->GetTexture(frame));
+    RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(frame));
 //	RenderManager::Instance()->FlushState();
     
     RenderManager::Instance()->SetRenderData(renderData);

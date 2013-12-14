@@ -399,7 +399,7 @@ void ImposterNode::DrawImposter()
 	//RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
 
 	SharedFBO * fbo = manager->GetFBO();
-	RenderManager::Instance()->SetTexture(fbo->GetTexture());
+	RenderManager::Instance()->SetTextureState(fbo->GetTextureHandle());
 
 	RenderManager::Instance()->SetRenderData(renderData);
 

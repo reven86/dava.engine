@@ -578,7 +578,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 
 	if(debugEnabled)
 	{
-		Logger::FrameworkDebug("Draw arrays texture: id %d", currentState.currentTexture[0]->id);
+		Logger::FrameworkDebug("Draw arrays texture stated: id %d", currentState.textureState);
 	}
 
     RENDER_VERIFY(glDrawArrays(mode, first, count));
@@ -622,7 +622,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 	
 	if(debugEnabled)
 	{
-		Logger::FrameworkDebug("Draw arrays texture: id %d", currentState.currentTexture[0]->id);
+		Logger::FrameworkDebug("Draw arrays texture state: id %d", currentState.textureState);
 	}
 #if defined(__DAVAENGINE_IPHONE__)
 #if not defined(GL_UNSIGNED_INT)

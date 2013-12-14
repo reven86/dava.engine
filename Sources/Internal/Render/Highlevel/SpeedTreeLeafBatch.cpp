@@ -37,82 +37,30 @@ REGISTER_CLASS(SpeedTreeLeafBatch);
 	
 static const FastName PARAM_WORLD_TRANSLATE("worldTranslate");
 static const FastName PARAM_WORLD_SCALE("worldScale");
-static const FastName PARAM_TEXTURE0("texture0");
 
-SpeedTreeLeafBatch::SpeedTreeLeafBatch(DAVA::Texture * tex)
-{	
-    shader = new Shader();
-    shader->LoadFromYaml("~res:/Shaders/SpeedTree/SpeedTreeBillLeaf.shader");
-    shader->Recompile();
-
-    SetTexture(tex);
+SpeedTreeLeafBatch::SpeedTreeLeafBatch()
+{
 }
 
 SpeedTreeLeafBatch::~SpeedTreeLeafBatch()
 {
-    SafeRelease(shader);
-    SafeRelease(texture);
+
 }
 
-void SpeedTreeLeafBatch::SetTexture(Texture * _texture)
+void SpeedTreeLeafBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
-    texture = SafeRetain(_texture);
-}
-
-void SpeedTreeLeafBatch::Draw(Camera * camera)
-{
-    if(!renderObject)
-        return;
-
-    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPEEDTREE_LEAFS_DRAW))
-        return;
-
     Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
     if (!worldTransformPtr)
-    {
-        return;
-    }
-
-    if(!GetVisible())
         return;
 
     Matrix4 finalMatrix = (*worldTransformPtr) * camera->GetMatrix();
-    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, finalMatrix);
-
-	//TODO: fix speed tree rendering
-    //RenderManager::State()->SetTexture(texture);
-
-    RenderManager::Instance()->SetShader(shader);
-    RenderManager::Instance()->SetRenderData(dataSource->renderDataObject);
-    RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->AttachRenderData();
-
-    int32 uniformWorldTranslate = shader->FindUniformIndexByName(PARAM_WORLD_TRANSLATE);
-    if(uniformWorldTranslate != -1)
-    {
-        shader->SetUniformValueByIndex(uniformWorldTranslate, finalMatrix.GetTranslationVector());
-    }
-
-    int32 uniformTexture0 = shader->FindUniformIndexByName(PARAM_TEXTURE0);
-    if(uniformTexture0 != -1)
-    {
-        shader->SetUniformValueByIndex(uniformTexture0, 0);
-    }
+    Vector3 translationVerctor = finalMatrix.GetTranslationVector();
+    Vector3 scaleVector = worldTransformPtr->GetScaleVector();
     
-    int32 uniformWorldScale = shader->FindUniformIndexByName(PARAM_WORLD_SCALE);
-    if(uniformWorldScale != -1)
-    {
-        shader->SetUniformValueByIndex(uniformWorldScale, worldTransformPtr->GetScaleVector());
-    }
+    material->SetPropertyValue(PARAM_WORLD_TRANSLATE, Shader::UT_FLOAT_VEC3, 1, &translationVerctor);
+    material->SetPropertyValue(PARAM_WORLD_SCALE, Shader::UT_FLOAT_VEC3, 1, &scaleVector);
 
-    if (dataSource->renderDataObject->GetIndexBufferID() != 0)
-    {
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, dataSource->indexCount, EIF_16, 0);
-    }
-    else
-    {
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, dataSource->indexCount, EIF_16, dataSource->indexArray);
-    }
+    RenderBatch::Draw(ownerRenderPass, camera);
 }
 
 RenderBatch * SpeedTreeLeafBatch::Clone(RenderBatch * dstNode)
@@ -125,50 +73,8 @@ RenderBatch * SpeedTreeLeafBatch::Clone(RenderBatch * dstNode)
     
     RenderBatch::Clone(dstNode);
     SpeedTreeLeafBatch *nd = (SpeedTreeLeafBatch *)dstNode;
-    
-    SafeRelease(nd->texture);
-    SafeRelease(nd->shader);
-    
-    nd->shader = SafeRetain(shader);
-    nd->texture = SafeRetain(texture);
 
     return nd;
-}
-
-void SpeedTreeLeafBatch::Save(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-    RenderBatch::Save(archive, serializationContext);
-
-    if(NULL != archive)
-    {
-        FilePath path = texture->GetPathname();
-        if(!path.IsEmpty())
-        {
-            String filename = path.GetRelativePathname(serializationContext->GetScenePath());
-            archive->SetString("speedtree.leaftexture", filename);
-        }
-    }
-}
-
-void SpeedTreeLeafBatch::Load(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-    RenderBatch::Load(archive, serializationContext);
-
-    if(NULL != archive && NULL != serializationContext)
-    {
-        String relativePathname = archive->GetString("speedtree.leaftexture");
-        if (!relativePathname.empty())
-        {
-            FilePath texPath;
-
-            if(relativePathname[0] == '~') //path like ~res:/Gfx...
-                texPath = FilePath(relativePathname);
-            else
-                texPath = serializationContext->GetScenePath() + relativePathname;
-
-            texture = Texture::CreateFromFile(texPath);
-        }
-    }
 }
 
 };

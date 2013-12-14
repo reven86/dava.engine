@@ -81,6 +81,9 @@ public:
 
 signals:
     void GlobalInvalidateTimeout();
+
+    void TexturesReloaded();
+    void SpritesReloaded();
     
 // qt actions slots
 public slots:
@@ -150,6 +153,8 @@ public slots:
 
 	void OnBeast();
 	void OnBeastAndSave();
+    
+    void OnBuildStaticOcclusion();
 
 	void OnConvertToShadow();
 
@@ -168,6 +173,8 @@ public slots:
 	void OnNotPassableTerrain();
 	
 	void OnAddActionComponent();
+    void OnAddStaticOcclusionComponent();
+    void OnAddModelTypeComponent();
 
 	void OnObjectsTypeMenuWillShow();
 	void OnObjectsTypeChanged(QAction *action);
@@ -175,7 +182,7 @@ public slots:
 
 	void OnHangingObjects();
 	void OnHangingObjectsHeight(double value);
-
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);

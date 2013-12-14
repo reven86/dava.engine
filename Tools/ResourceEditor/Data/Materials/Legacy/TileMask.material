@@ -4,12 +4,12 @@ Material:
         Layers: ["OpaqueRenderLayer"]
         MaterialDefines: ["DETAILMASK"]
         Uniforms:
-            tileTexture0: 0
-            tileTexture1: 1
-            tileTexture2: 2
-            tileTexture3: 3
-            tileMask: 4
-            colorTexture: 5
+            tileTexture0: 2
+            tileTexture1: 3
+            tileTexture2: 4
+            tileTexture3: 5
+            tileMask: 1
+            colorTexture: 0
             specularMap: 6
 
         RenderPass:

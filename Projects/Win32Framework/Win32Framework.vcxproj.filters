@@ -1371,6 +1371,9 @@
     <ClInclude Include="..\..\Sources\Internal\Job\JobQueue.h">
       <Filter>Internal\Job</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\IntrospectionDynamic.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2440,6 +2443,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Job\JobWaiter.cpp">
       <Filter>Internal\Job</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Base\IntrospectionDynamic.cpp">
+      <Filter>Internal\Base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -62,6 +62,7 @@ public:
     - Mesh(Skinned)
  
  */
+const static uint16 INVALID_STATIC_OCCLUSION_INDEX = (uint16)(-1);
 
 class RenderBatch;
 class ShadowVolume;
@@ -87,14 +88,16 @@ public:
 		VISIBLE_LOD = 1 << 2,
 		VISIBLE_SWITCH = 1 << 3,
 		ALWAYS_CLIPPING_VISIBLE = 1 << 4,
-		TREE_NODE_NEED_UPDATE = 1 << 5,
-		NEED_UPDATE = 1 << 6,
-		MARKED_FOR_UPDATE = 1 << 7,
+        VISIBLE_STATIC_OCCLUSION = 1 << 5,
+		TREE_NODE_NEED_UPDATE = 1 << 6,
+		NEED_UPDATE = 1 << 7,
+		MARKED_FOR_UPDATE = 1 << 8,
+
         TRANSFORM_UPDATED = 1 << 15,
 	};
 
-	static const uint32 VISIBILITY_CRITERIA = VISIBLE | VISIBLE_AFTER_CLIPPING_THIS_FRAME | VISIBLE_LOD | VISIBLE_SWITCH;
-	const static uint32 CLIPPING_VISIBILITY_CRITERIA = RenderObject::VISIBLE | RenderObject::VISIBLE_LOD | RenderObject::VISIBLE_SWITCH;
+	static const uint32 VISIBILITY_CRITERIA = VISIBLE | VISIBLE_AFTER_CLIPPING_THIS_FRAME | VISIBLE_LOD | VISIBLE_SWITCH | VISIBLE_STATIC_OCCLUSION;
+	const static uint32 CLIPPING_VISIBILITY_CRITERIA = RenderObject::VISIBLE | RenderObject::VISIBLE_LOD | RenderObject::VISIBLE_SWITCH | VISIBLE_STATIC_OCCLUSION;
 protected:
     virtual ~RenderObject();
 public:
@@ -144,6 +147,9 @@ public:
 	virtual ShadowVolume * CreateShadow() {return 0;}
 
 	virtual void RecalculateWorldBoundingBox();
+    
+    inline uint16 GetStaticOcclusionIndex() const;
+    inline void SetStaticOcclusionIndex(uint16 index);
 
 	uint8 startClippingPlane;
     
@@ -156,6 +162,7 @@ protected:
     uint32 debugFlags;
     uint32 removeIndex;
 	uint16 treeNodeIndex;
+    uint16 staticOcclusionIndex;    
     AABBox3 bbox;
     AABBox3 worldBBox;
     Matrix4 * worldTransform;                    // temporary - this should me moved directly to matrix uniforms
@@ -244,15 +251,27 @@ inline Matrix4 * RenderObject::GetWorldTransformPtr() const
     return worldTransform;
 }
 
-	inline uint32 RenderObject::GetRenderBatchCount()
-	{
-		return (uint32)renderBatchArray.size();
-	}
-	
-	inline RenderBatch * RenderObject::GetRenderBatch(uint32 batchIndex)
-	{
-		return renderBatchArray[batchIndex];
-	}
+inline uint32 RenderObject::GetRenderBatchCount()
+{
+    return (uint32)renderBatchArray.size();
+}
+
+inline RenderBatch * RenderObject::GetRenderBatch(uint32 batchIndex)
+{
+    return renderBatchArray[batchIndex];
+}
+    
+inline uint16 RenderObject::GetStaticOcclusionIndex() const
+{
+    return staticOcclusionIndex;
+}
+inline void RenderObject::SetStaticOcclusionIndex(uint16 _index)
+{
+    staticOcclusionIndex = _index;
+}
+
+    
+    
 } // ns
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDEROBJECT_H__ */

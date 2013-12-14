@@ -83,6 +83,8 @@ class Particle;
 	emitAtPoints - this number means that particles will be generated evenly on circle. If it's not defined particles will be generated randomly.
 	life - emitter life in seconds. When accumulated time in ParticleEmitter::Update exceeds this value, emitter restarts and delete all previous particles. 
  */
+
+
 class MaterialSystem;
 class ParticleEmitter : public RenderObject, public IRenderUpdatable
 {
@@ -493,27 +495,22 @@ private:
 		int refCount;
 	};
 
+
 #if defined (USE_FILEPATH_IN_MAP)
-	static Map<FilePath, EmitterYamlCacheEntry> emitterYamlCache;
+	typedef Map<FilePath, EmitterYamlCacheEntry> YamlCacheMap;
 #else //#if defined (USE_FILEPATH_IN_MAP)
-	static Map<String, EmitterYamlCacheEntry> emitterYamlCache;
+	typedef Map<String, EmitterYamlCacheEntry> YamlCacheMap;
 #endif //#if defined (USE_FILEPATH_IN_MAP)
+	static YamlCacheMap emitterYamlCache;
 	
 protected:
 
 	friend class ParticleEmitter3D;
 	YamlParser* GetParser(const FilePath &filename);
 
-#if defined (USE_FILEPATH_IN_MAP)
 	void RetainInCache(const FilePath & name);
 	void ReleaseFromCache(const FilePath & name);	
 	FilePath emitterFileName;
-#else //#if defined (USE_FILEPATH_IN_MAP)
-	void RetainInCache(const String& name);
-	void ReleaseFromCache(const String& name);	
-	String emitterFileName;
-#endif //#if defined (USE_FILEPATH_IN_MAP)
-
 
 public:
     

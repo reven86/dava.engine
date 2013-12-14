@@ -53,7 +53,7 @@ public:
 	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
     void SetLightObject(Light * _light);
-    Light * GetLightObject();
+    Light * GetLightObject() const;
     
 private:
     Light * light;

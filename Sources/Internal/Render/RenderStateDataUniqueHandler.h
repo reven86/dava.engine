@@ -46,6 +46,11 @@ namespace DAVA
 			//do nothing here for RenderStateDatas
 		}
 		
+		void Clear(RenderStateData* data)
+		{
+			memset(data, 0, sizeof(RenderStateData));
+		}
+		
 		bool Equals(const RenderStateData* a, const RenderStateData* b)
 		{
 			bool equals = (a == b);
