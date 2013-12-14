@@ -37,6 +37,7 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/ModelTypeComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -49,6 +50,11 @@ namespace DAVA
 RenderComponent * GetRenderComponent(const Entity *fromEntity)
 {
 	return static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
+}
+
+TransformComponent * GetTransformComponent(Entity * fromEntity)
+{
+	return static_cast<TransformComponent*>(fromEntity->GetComponent(Component::TRANSFORM_COMPONENT));
 }
 
 RenderObject * GetRenderObject(const Entity * fromEntity)
@@ -252,5 +258,8 @@ ModelTypeComponent * GetModelTypeComponent(Entity * fromEntity)
     
     return NULL;
 }
-    
+
+
+
+
 }

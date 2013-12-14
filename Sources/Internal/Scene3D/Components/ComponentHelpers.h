@@ -48,10 +48,11 @@ class SkyboxRenderObject;
 class SwitchComponent;
 class ModelTypeComponent;
 class RenderComponent;
+class TransformComponent;
 
 ParticleEmitter * GetEmitter(Entity * fromEntity);
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
-
+TransformComponent * GetTransformComponent(Entity * fromEntity);
 RenderComponent * GetRenderComponent(const Entity *fromEntity);
 RenderObject * GetRenderObject(const Entity * fromEntity);
 SkyboxRenderObject * GetSkybox(const Entity * fromEntity);
