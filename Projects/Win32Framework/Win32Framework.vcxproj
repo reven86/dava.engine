@@ -421,6 +421,8 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeLeafBatch.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusion.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusionRenderPass.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\ImageConvert.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\ImageLoader.h" />
@@ -493,9 +495,11 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\DebugRenderComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\LightComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\LodComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\ModelTypeComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\RenderComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SwitchComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\TransformComponent.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\UpdatableComponent.h" />
@@ -535,6 +539,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\StaticOcclusionSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SwitchSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\TransformSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.h" />
@@ -804,6 +809,8 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeLeafBatch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusion.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusionRenderPass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\ImageLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\LibDxtHelper.cpp" />
@@ -870,9 +877,11 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\DebugRenderComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\LightComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\LodComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ModelTypeComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ParticleEffectComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\RenderComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SwitchComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\TransformComponent.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\UpdatableComponent.cpp" />
@@ -912,6 +921,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\RenderUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SkyboxSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\StaticOcclusionSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SwitchSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\TransformSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.cpp" />
