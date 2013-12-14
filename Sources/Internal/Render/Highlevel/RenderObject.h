@@ -161,8 +161,22 @@ protected:
     Matrix4 * worldTransform;                    // temporary - this should me moved directly to matrix uniforms
     String ownerDebugInfo;
 //    Sphere bsphere;
+
+	struct IndexedRenderBatch
+	{
+		IndexedRenderBatch()
+		:	renderBatch(0),
+			lodIndex(-1),
+			switchIndex(-1)
+		{}
+
+		RenderBatch * renderBatch;
+		int32 lodIndex;
+		int32 switchIndex;
+	};
     
     Vector<RenderBatch*> renderBatchArray;
+	Vector<RenderBatch*> activeRenderBatchArray;
 
 public:
 	INTROSPECTION_EXTEND(RenderObject, AnimatedObject,

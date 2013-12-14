@@ -45,7 +45,7 @@
 namespace DAVA
 {
 
-RenderComponent * GetRenderComponent(Entity *fromEntity)
+RenderComponent * GetRenderComponent(const Entity *fromEntity)
 {
 	return static_cast<RenderComponent*>(fromEntity->GetComponent(Component::RENDER_COMPONENT));
 }

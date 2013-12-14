@@ -89,7 +89,23 @@ bool SceneValidator::MergeLod(Entity * entity)
 	LodComponent * lod = GetLodComponent(entity);
 	if(lod)
 	{
-		RenderComponent * rc = GetRenderC
+		RenderComponent * rc = GetRenderComponent(entity);
+		RenderObject * ro = 0;
+		if(!rc)
+		{
+			ro = ScopedPtr<RenderObject>(new RenderObject());
+			rc = new RenderComponent(ro);
+
+			entity->AddComponent(rc);
+		}
+		else
+		{
+			ro = rc->GetRenderObject();
+		}
+
+		DVASSERT(ro);
+
+
 	}
 
 	return false;

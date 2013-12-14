@@ -51,7 +51,7 @@ class RenderComponent;
 ParticleEmitter * GetEmitter(Entity * fromEntity);
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
 
-RenderComponent * GetRenderComponent(Entity *fromEntity);
+RenderComponent * GetRenderComponent(const Entity *fromEntity);
 RenderObject * GetRenderObject(const Entity * fromEntity);
 SkyboxRenderObject * GetSkybox(const Entity * fromEntity);
 
