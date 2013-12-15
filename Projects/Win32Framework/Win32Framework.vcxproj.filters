@@ -130,6 +130,9 @@
     <Filter Include="Internal\Job">
       <UniqueIdentifier>{94116b3a-757d-4e56-95a2-a621c48f12e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Scene3D\Converters">
+      <UniqueIdentifier>{cae1c1b2-35d0-4856-87fb-4a86431cbece}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1389,6 +1392,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Converters\LodToLod2Converter.h">
+      <Filter>Internal\Scene3D\Converters</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2476,6 +2482,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\StaticOcclusionComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Converters\LodToLod2Converter.cpp">
+      <Filter>Internal\Scene3D\Converters</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

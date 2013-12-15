@@ -30,16 +30,13 @@
 
 #include "SceneValidator.h"
 #include "EditorSettings.h"
-
 #include "Render/LibPVRHelper.h"
 #include "Render/TextureDescriptor.h"
-
 #include "Qt/Main/QtUtils.h"
 #include "StringConstants.h"
-
 #include "Scene3D/Components/ComponentHelpers.h"
-
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Scene3D/Converters/LodToLod2Converter.h"
 
 SceneValidator::SceneValidator()
 {
@@ -53,126 +50,16 @@ SceneValidator::~SceneValidator()
 {
 }
 
-#pragma message("remove static int32 emptyEntities = 0;")
-static int32 emptyEntities = 0;
-
 bool SceneValidator::ValidateSceneAndShowErrors(Scene *scene, const DAVA::FilePath &scenePath)
 {
     errorMessages.clear();
 
-	emptyEntities = 0;
-	ConvertLodToV2(scene);
+	LodToLod2Converter converter;
+	converter.ConvertLodToV2(scene);
     ValidateScene(scene, scenePath, errorMessages);
 
     ShowErrorDialog(errorMessages);
     return (!errorMessages.empty());
-}
-
-void SceneValidator::ConvertLodToV2(Scene * scene)
-{
-	scene->lodSystem->UpdateEntitiesAfterLoad();
-	SerachForLod(scene);
-}
-
-void SceneValidator::SerachForLod(Entity * currentNode)
-{
-	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
-	{
-		Entity * childNode = currentNode->GetChild(c);
-		SerachForLod(childNode);
-		bool wasReplace = MergeLod(childNode);
-		if(wasReplace)
-		{
-			c--;
-		}
-	}
-}
-
-bool SceneValidator::MergeLod(Entity * entity)
-{
-	bool res = false;
-
-	Vector<Entity*> entitiesToRemove;
-
-	LodComponent * lod = GetLodComponent(entity);
-	if(lod)
-	{
-		RenderComponent * rc = GetRenderComponent(entity);
-		RenderObject * ro = 0;
-		if(!rc)
-		{
-			ro = new RenderObject();
-			rc = new RenderComponent(ro);
-			ro->Release();
-
-			ro->SetAABBox(AABBox3(Vector3(0, 0, 0), Vector3(0, 0, 0)));
-			entity->AddComponent(rc);
-		}
-		else
-		{
-			ro = rc->GetRenderObject();
-		}
-
-		DVASSERT(ro);
-
-		Vector<LodComponent::LodData*> lodData;
-		lod->GetLodData(lodData);
-		uint32 size = lodData.size();
-		for(uint32 i = 0; i < size; ++i)
-		{
-			LodComponent::LodData * data = lodData[i];
-			uint32 entitiesCount = data->nodes.size();
-			for(uint32 j = 0; j < entitiesCount; ++j)
-			{
-				emptyEntities++;
-				Entity * sourceEntity = data->nodes[j];
-				TransformComponent * sourceTransform = GetTransformComponent(sourceEntity);
-				RenderObject * sourceRenderObject = GetRenderObject(sourceEntity);
-				if(sourceRenderObject)
-				{
-					sourceRenderObject->BakeTransform(sourceTransform->GetLocalTransform());
-					uint32 sourceRenderBatchCount = sourceRenderObject->GetRenderBatchCount();
-					for(uint32 k = 0; k < sourceRenderBatchCount; ++k)
-					{
-						RenderBatch * sourceRenderBatch = sourceRenderObject->GetRenderBatch(k);
-						ro->AddRenderBatch(sourceRenderBatch);
-					}
-				}
-
-				if(sourceEntity->GetChildrenCount() == 0)
-				{
-#pragma message("SceneValidator::MergeLod maybe merge other components")
-					entitiesToRemove.push_back(sourceEntity);
-				}
-				else
-				{
-					RenderComponent * sourceRenderComponent = GetRenderComponent(sourceEntity);
-					sourceEntity->RemoveComponent(Component::RENDER_COMPONENT);
-				}
-
-				//remove!!!
-				data->nodes.clear();
-			}
-		}
-
-		ro->RecalcBoundingBox();
-	}
-
-#pragma message("SceneValidator::MergeLod removing VisualSceneNode")
-	if(entity->GetName() == "VisualSceneNode")
-	{
-		entitiesToRemove.push_back(entity);
-		res = true;
-	}
-
-
-	uint32 entitiesToRemoveCount = entitiesToRemove.size();
-	for(uint32 i = 0; i < entitiesToRemoveCount; ++i)
-	{
-		entitiesToRemove[i]->GetParent()->RemoveNode(entitiesToRemove[i]);
-	}
-
-	return res;
 }
 
 void SceneValidator::ValidateScene(Scene *scene, const DAVA::FilePath &scenePath, Set<String> &errorsLog)

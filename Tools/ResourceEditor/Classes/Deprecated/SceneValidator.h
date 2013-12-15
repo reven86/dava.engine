@@ -158,9 +158,7 @@ protected:
     
     bool IsFBOTexture(Texture *texture);
 
-	void ConvertLodToV2(Scene *scene);
-	void SerachForLod(Entity * rootNode);
-	bool MergeLod(Entity * entity);
+
     
     void ConvertIlluminationParamsFromProperty(Entity *ownerNode, NMaterial *material);
 
