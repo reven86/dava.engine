@@ -68,7 +68,7 @@ uint32 Mesh::GetPolygonGroupCount()
 
 PolygonGroup * Mesh::GetPolygonGroup(uint32 index)
 {
-    return renderBatchArray[index]->GetPolygonGroup();
+    return renderBatchArray[index].renderBatch->GetPolygonGroup();
 }
 
 RenderObject * Mesh::Clone( RenderObject *newObject )
@@ -97,12 +97,12 @@ void Mesh::BakeTransform(const Matrix4 & transform)
 	uint32 size = renderBatchArray.size();
 	for(uint32 i = 0; i < size; ++i)
 	{
-		PolygonGroup * pg = renderBatchArray[i]->GetPolygonGroup();
+		PolygonGroup * pg = renderBatchArray[i].renderBatch->GetPolygonGroup();
 		DVASSERT(pg);
 		pg->ApplyMatrix(transform);
 		pg->BuildBuffers();
 
-		renderBatchArray[i]->UpdateAABBoxFromSource();
+		renderBatchArray[i].renderBatch->UpdateAABBoxFromSource();
 	}
 
 	RecalcBoundingBox();

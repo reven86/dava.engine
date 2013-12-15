@@ -26,19 +26,19 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_LODTOLOD2CONVERTER_H__
-#define __DAVAENGINE_LODTOLOD2CONVERTER_H__
+#ifndef __DAVAENGINE_SWITCHTORENDEROBJECTCONVERTER_H__
+#define __DAVAENGINE_SWITCHTORENDEROBJECTCONVERTER_H__
 
 #include "DAVAEngine.h"
 using namespace DAVA;
 
-class LodToLod2Converter
+
+class SwitchToRenerObjectConverter
 {
 public:
-	void ConvertLodToV2(Scene *scene);
-	void SerachForLod(Entity * currentNode);
-	bool MergeLod(Entity * entity);
+	void ConsumeSwitchedRenderObjects(Scene * scene);
+	void SerachForSwitch(Entity * currentNode);
+	bool MergeSwitch(Entity * entity);
 };
 
-#endif //__DAVAENGINE_LODTOLOD2CONVERTER_H__
-
+#endif //__DAVAENGINE_SWITCHTORENDEROBJECTCONVERTER_H__

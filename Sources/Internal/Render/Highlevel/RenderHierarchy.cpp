@@ -34,74 +34,74 @@
 
 namespace DAVA
 {
-		
-	void RenderHierarchy::AddToRender(RenderObject * renderObject)
+
+void RenderHierarchy::AddToRender(RenderObject * renderObject)
+{
+	uint32 batchCount = renderObject->GetRenderBatchCount();
+	for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
 	{
-		uint32 batchCount = renderObject->GetRenderBatchCount();
-		for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
+		RenderBatch * batch = renderObject->GetRenderBatch(batchIndex);
+		NMaterial * material = batch->GetMaterial();
+		if (material)
 		{
-			RenderBatch * batch = renderObject->GetRenderBatch(batchIndex);
-			NMaterial * material = batch->GetMaterial();
-			if (material)
+			const FastNameSet & layers = material->GetRenderLayers();
+			FastNameSet::iterator layerEnd = layers.end();
+			for (FastNameSet::iterator layerIt = layers.begin(); layerIt != layerEnd; ++layerIt)
 			{
-				const FastNameSet & layers = material->GetRenderLayers();
-				FastNameSet::iterator layerEnd = layers.end();
-				for (FastNameSet::iterator layerIt = layers.begin(); layerIt != layerEnd; ++layerIt)
-				{
-					currRenderPassBatchArray->AddRenderBatch(layerIt->first, batch);
-				}
+				currRenderPassBatchArray->AddRenderBatch(layerIt->first, batch);
 			}
 		}
 	}
-    
-	void LinearRenderHierarchy::AddRenderObject(RenderObject * object)
-	{		
-		renderObjectArray.push_back(object);
-	}
-	
-	void LinearRenderHierarchy::RemoveRenderObject(RenderObject *renderObject)
-	{				
-		uint32 size = renderObjectArray.size();
-		for (uint32 k = 0; k < size; ++k)
+}
+
+void LinearRenderHierarchy::AddRenderObject(RenderObject * object)
+{		
+	renderObjectArray.push_back(object);
+}
+
+void LinearRenderHierarchy::RemoveRenderObject(RenderObject *renderObject)
+{				
+	uint32 size = renderObjectArray.size();
+	for (uint32 k = 0; k < size; ++k)
+	{
+		if (renderObjectArray[k] == renderObject)
 		{
-			if (renderObjectArray[k] == renderObject)
-			{
-				renderObjectArray[k] = renderObjectArray[size - 1];
-				renderObjectArray.pop_back();
-				return;
-			}
+			renderObjectArray[k] = renderObjectArray[size - 1];
+			renderObjectArray.pop_back();
+			return;
 		}
-		DVASSERT(0 && "Failed to find object");
 	}
-	
-	void LinearRenderHierarchy::ObjectUpdated(RenderObject * renderObject)
-	{		
-	}		
-    
-	void LinearRenderHierarchy::Clip(Camera * camera, RenderPassBatchArray * renderPassBatchArray)
-	{				
-		currRenderPassBatchArray = renderPassBatchArray;
-		Frustum * frustum = camera->GetFrustum();
-		int32 objectsToClip = 0;
-		uint32 size = renderObjectArray.size();
-		for (uint32 pos = 0; pos < size; ++pos)
+	DVASSERT(0 && "Failed to find object");
+}
+
+void LinearRenderHierarchy::ObjectUpdated(RenderObject * renderObject)
+{		
+}		
+
+void LinearRenderHierarchy::Clip(Camera * camera, RenderPassBatchArray * renderPassBatchArray)
+{				
+	currRenderPassBatchArray = renderPassBatchArray;
+	Frustum * frustum = camera->GetFrustum();
+	int32 objectsToClip = 0;
+	uint32 size = renderObjectArray.size();
+	for (uint32 pos = 0; pos < size; ++pos)
+	{
+		RenderObject * node = renderObjectArray[pos];						
+		if ((node->GetFlags() & RenderObject::CLIPPING_VISIBILITY_CRITERIA) != RenderObject::CLIPPING_VISIBILITY_CRITERIA)
+			continue;					
+		//still need to add flags for particles to dicede if to use DefferedUpdate
+		if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))
 		{
-			RenderObject * node = renderObjectArray[pos];						
-			if ((node->GetFlags() & RenderObject::CLIPPING_VISIBILITY_CRITERIA) != RenderObject::CLIPPING_VISIBILITY_CRITERIA)
-				continue;					
-			//still need to add flags for particles to dicede if to use DefferedUpdate
-			if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))
-			{
-				node->AddFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
-				AddToRender(node);
-			}
-			else
-			{
-				node->RemoveFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
-			}			
-			
+			node->AddFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
+			AddToRender(node);
 		}
-		       
+		else
+		{
+			node->RemoveFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
+		}			
+
 	}
-    
+
+}
+
 };

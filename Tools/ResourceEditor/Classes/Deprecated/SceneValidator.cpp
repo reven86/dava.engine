@@ -37,6 +37,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "Scene3D/Converters/LodToLod2Converter.h"
+#include "Scene3D/Converters/SwitchToRenerObjectConverter.h"
 
 SceneValidator::SceneValidator()
 {
@@ -54,8 +55,12 @@ bool SceneValidator::ValidateSceneAndShowErrors(Scene *scene, const DAVA::FilePa
 {
     errorMessages.clear();
 
-	LodToLod2Converter converter;
-	converter.ConvertLodToV2(scene);
+	LodToLod2Converter lodConverter;
+	lodConverter.ConvertLodToV2(scene);
+
+	SwitchToRenerObjectConverter switchConverter;
+	//switchConverter.ConsumeSwitchedRenderObjects(scene);
+
     ValidateScene(scene, scenePath, errorMessages);
 
     ShowErrorDialog(errorMessages);

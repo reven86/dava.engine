@@ -26,25 +26,22 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "LodToLod2Converter.h"
+#include "SwitchToRenerObjectConverter.h"
 
-#pragma message("LodToLod2Converter remove static int32 emptyEntities = 0;")
-static int32 emptyEntities = 0;
 
-void LodToLod2Converter::ConvertLodToV2(Scene * scene)
+
+void SwitchToRenerObjectConverter::ConsumeSwitchedRenderObjects(Scene * scene)
 {
-	emptyEntities = 0;
-	scene->lodSystem->UpdateEntitiesAfterLoad();
-	SerachForLod(scene);
+	SerachForSwitch(scene);
 }
 
-void LodToLod2Converter::SerachForLod(Entity * currentNode)
+void SwitchToRenerObjectConverter::SerachForSwitch(Entity * currentNode)
 {
 	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
 	{
 		Entity * childNode = currentNode->GetChild(c);
-		SerachForLod(childNode);
-		bool wasReplace = MergeLod(childNode);
+		SerachForSwitch(childNode);
+		bool wasReplace = MergeSwitch(childNode);
 		if(wasReplace)
 		{
 			c--;
@@ -52,14 +49,12 @@ void LodToLod2Converter::SerachForLod(Entity * currentNode)
 	}
 }
 
-bool LodToLod2Converter::MergeLod(Entity * entity)
+bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
 {
-	bool res = false;
-
 	Vector<Entity*> entitiesToRemove;
 
-	LodComponent * lod = GetLodComponent(entity);
-	if(lod)
+	SwitchComponent * sw = GetSwitchComponent(entity);
+	if(sw)
 	{
 		RenderComponent * rc = GetRenderComponent(entity);
 		RenderObject * ro = 0;
@@ -79,56 +74,28 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
 
 		DVASSERT(ro);
 
-		Vector<LodComponent::LodData*> lodData;
-		lod->GetLodData(lodData);
-		uint32 size = lodData.size();
-		for(uint32 i = 0; i < size; ++i)
+		int32 size = entity->GetChildrenCount();
+		for(int32 i = 0; i < size; ++i)
 		{
-			LodComponent::LodData * data = lodData[i];
-			uint32 entitiesCount = data->nodes.size();
-			for(uint32 j = 0; j < entitiesCount; ++j)
+			Entity * child = entity->GetChild(i);
+			RenderObject * sourceRenderObject = GetRenderObject(child);
+			if(sourceRenderObject)
 			{
-				emptyEntities++;
-				Entity * sourceEntity = data->nodes[j];
-				TransformComponent * sourceTransform = GetTransformComponent(sourceEntity);
-				RenderObject * sourceRenderObject = GetRenderObject(sourceEntity);
-				if(sourceRenderObject)
+				sourceRenderObject->BakeTransform(GetTransformComponent(child)->GetLocalTransform());
+				uint32 sourceSize = sourceRenderObject->GetRenderBatchCount();
+				for(uint32 j = 0; j < sourceSize; ++j)
 				{
-					sourceRenderObject->BakeTransform(sourceTransform->GetLocalTransform());
-					uint32 sourceRenderBatchCount = sourceRenderObject->GetRenderBatchCount();
-					for(uint32 k = 0; k < sourceRenderBatchCount; ++k)
-					{
-						RenderBatch * sourceRenderBatch = sourceRenderObject->GetRenderBatch(k);
-						ro->AddRenderBatch(sourceRenderBatch, data->layer, -1);
-					}
+					int32 lodIndex, switchIndex;
+					RenderBatch * sourceRenderBatch = sourceRenderObject->GetRenderBatch(j, lodIndex, switchIndex);
+					ro->AddRenderBatch(sourceRenderBatch, lodIndex, i);
 				}
-
-				if(sourceEntity->GetChildrenCount() == 0)
-				{
-#pragma message("LodToLod2Converter::MergeLod maybe merge other components")
-					entitiesToRemove.push_back(sourceEntity);
-				}
-				else
-				{
-					RenderComponent * sourceRenderComponent = GetRenderComponent(sourceEntity);
-					sourceEntity->RemoveComponent(Component::RENDER_COMPONENT);
-				}
-
-				//remove!!!
-				data->nodes.clear();
 			}
+
+			entitiesToRemove.push_back(child);
 		}
 
 		ro->RecalcBoundingBox();
 	}
-
-#pragma message("LodToLod2Converter::MergeLod removing VisualSceneNode")
-	if(entity->GetName() == "VisualSceneNode")
-	{
-		entitiesToRemove.push_back(entity);
-		res = true;
-	}
-
 
 	uint32 entitiesToRemoveCount = entitiesToRemove.size();
 	for(uint32 i = 0; i < entitiesToRemoveCount; ++i)
@@ -136,5 +103,5 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
 		entitiesToRemove[i]->GetParent()->RemoveNode(entitiesToRemove[i]);
 	}
 
-	return res;
+	return false;
 }
