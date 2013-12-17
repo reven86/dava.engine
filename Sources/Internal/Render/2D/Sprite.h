@@ -367,6 +367,9 @@ protected:
 
 	//static bool batchingEnabled;
 	//static Vector<Vector2>
+	
+private:
+	bool NeedClipSprite(DrawState * state);
 };
 
 

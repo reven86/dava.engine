@@ -1155,7 +1155,8 @@ void Sprite::Draw()
 
 void Sprite::Draw(DrawState * state)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	// DF-2897 - Do not draw sprite if its position is beyond screen
+	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW) || NeedClipSprite(state))
 	{
 		return;
 	}
@@ -1635,6 +1636,28 @@ void Sprite::ReloadExistingTextures()
 			Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
 		}
 	}
+}
+
+bool Sprite::NeedClipSprite(DrawState * state)
+{
+	// DF-2897 - Calculate real size of texture and it's position
+	float32 realWidth = this->GetWidth() * state->scale.x;
+	float32 realHeight = this->GetHeight() * state->scale.y;
+	float32 xPosition = state->position.x - (state->pivotPoint.x * state->scale.x);
+	float32 yPosition = state->position.y - (state->pivotPoint.y * state->scale.y);
+
+	float32 screenWidth = Core::Instance()->GetVirtualScreenWidth();
+ 	float32 screenHeight = Core::Instance()->GetVirtualScreenHeight();
+
+	// If texuture has negative coordinates - do not draw it
+	// If texture is out from the screen - do not draw it
+	if ((xPosition + realWidth) < 0 || (yPosition + realHeight) < 0 ||
+			xPosition >  screenWidth || yPosition > screenHeight)
+	{
+		return true;
+	}
+	
+	return false;
 }
 
 };
