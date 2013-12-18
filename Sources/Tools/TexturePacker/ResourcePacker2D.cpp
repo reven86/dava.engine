@@ -48,6 +48,8 @@
 namespace DAVA
 {
 
+static const String FLAG_RECURSIVE = "--recursive";
+
 ResourcePacker2D::ResourcePacker2D()
 {
 	isLightmapsPacking = false;
@@ -310,13 +312,13 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	return 0;
 }
 
-void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
+Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 {
 	File * file = File::Create(flagsPathname, File::READ | File::OPEN);
 	if (!file)
 	{
 		Logger::Error("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str());
-        return;
+        return Vector<String>();
 	}
     
 	char flagsTmpBuffer[4096] = {0};
@@ -368,11 +370,16 @@ void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 	CommandLineParser::Instance()->SetArguments(tokens);
 	
 	SafeRelease(file);
+	
+	return tokens;
 }
 
 
-void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath)
+void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags)
 {
+	// DF-2961 - Local list for flags command arguments
+	Vector<String> currentCommandFlags = flags;
+
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
     
 	uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
@@ -400,6 +407,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	CommandLineParser::Instance()->Clear();
 	List<DefinitionFile *> definitionFileList;
 
+	// DF-2961 - Reset processed flag
+	bool flagsProcessed = false;
 	// Find flags and setup them
 	FileList * fileList = new FileList(inputPath);
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
@@ -408,7 +417,22 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		{
 			if (fileList->GetFilename(fi) == "flags.txt")
 			{
-				ProcessFlags(fileList->GetPathname(fi));
+				currentCommandFlags = ProcessFlags(fileList->GetPathname(fi));
+				flagsProcessed = true;
+				break;
+			}
+		}
+	}
+	
+	// DF-2961 - If "flags.txt" do not exist - try to use previous flags command string
+	if (!flagsProcessed)
+	{
+		// Set command line flags only if flag "--recursive" is set
+		for (uint32 k = 0; k < currentCommandFlags.size(); ++k)
+		{
+			if (currentCommandFlags[k] == FLAG_RECURSIVE)
+			{
+				CommandLineParser::Instance()->SetArguments(currentCommandFlags);
 				break;
 			}
 		}
@@ -534,7 +558,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
-					RecursiveTreeWalk(input, output);
+					RecursiveTreeWalk(input, output, currentCommandFlags);
                 }
 			}
 		}

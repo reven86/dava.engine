@@ -50,13 +50,13 @@ public:
 	void InitFolders(const FilePath & inputPath,const FilePath & outputPath);
 	void PackResources(eGPUFamily forGPU);
     
-	void RecursiveTreeWalk(const FilePath & inputPath,const FilePath & outputPath);
+	void RecursiveTreeWalk(const FilePath & inputPath,const FilePath & outputPath, const Vector<String> & flags = Vector<String>());
 	bool IsModifyDateChagedDir(const FilePath & processDirectoryPath, const FilePath & pathname);
 	bool IsMD5ChangedDir(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName, bool isRecursive);
 	bool IsMD5ChangedFile(const FilePath & processDirectoryPath, const FilePath & pathname, const String & psdName);
 	
     DefinitionFile * ProcessPSD(const FilePath & processDirectoryPath, const FilePath & psdPathname, const String & psdName);
-	void ProcessFlags(const FilePath & flagsPathname);
+	Vector<String> ProcessFlags(const FilePath & flagsPathname);
 
 	static String GetProcessFolderName();
 	bool SaveFileListToYaml(const FilePath & yamlFilePath);
