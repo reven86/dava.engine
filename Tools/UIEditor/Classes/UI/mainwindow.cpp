@@ -623,7 +623,6 @@ void MainWindow::InitMenu()
 	connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(OnRedoRequested()));
 	
 	// Adjust controls size
-	
 	connect(ui->actionAdjustControlSize, SIGNAL(triggered()), this, SLOT(OnAdjustSize()));
 
 	// Align.
@@ -674,6 +673,8 @@ void MainWindow::UpdateMenu()
 	ui->actionAlign_Top->setEnabled(projectNotEmpty);
     ui->actionAlign_Vert_Center->setEnabled(projectNotEmpty);
 	ui->actionAlign_Bottom->setEnabled(projectNotEmpty);
+	
+	ui->actionAdjustControlSize->setEnabled(projectNotEmpty);
 
 	// Distribute.
 	ui->actionEqualBetweenLeftEdges->setEnabled(projectNotEmpty);
