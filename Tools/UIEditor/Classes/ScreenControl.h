@@ -45,6 +45,7 @@ protected:
 public:
 	ScreenControl();
 	
+	virtual void SystemDraw(const UIGeometricData &geometricData);
 	virtual bool IsPointInside(const Vector2& point, bool expandWithFocus);
 };
 
