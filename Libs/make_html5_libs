@@ -28,7 +28,7 @@ rm -rf *.o *.a
 make -j6
 cd ../..
 
-cd Html5Socket/
+cd NVTT/html5/
 rm -rf *.o *.a
 make -j6
 cd ..

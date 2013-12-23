@@ -119,6 +119,8 @@ inline bool isFinite(const float f)
 	return isfinite(f);
 #elif NV_OS_LINUX
 	return finitef(f);
+#elif NV_OS_UNIX
+	return isfinite(f);
 #else
 #	error "isFinite not supported"
 #endif
@@ -134,6 +136,8 @@ inline bool isNan(const float f)
 	return isnan(f);
 #elif NV_OS_LINUX
 	return isnanf(f);
+#elif NV_OS_UNIX
+	return isnan(f);
 #else
 #	error "isNan not supported"
 #endif

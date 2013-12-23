@@ -163,6 +163,8 @@
 #		include "DefsGnucDarwin.h"
 #	elif NV_OS_MINGW
 #		include "DefsGnucWin32.h"
+#	elif NV_OS_UNIX
+#		include "DefsGnucLinux.h"
 #	elif NV_OS_CYGWIN
 #		error "GCC: Cygwin not supported"
 #	else
