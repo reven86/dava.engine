@@ -32,6 +32,7 @@
 #define __WEBVIEWCONTROL_WIN32_H__
 
 #include <MsHTML.h>
+#include "Wininet.h" //for functions to delete cache entry and to end session
 
 #include "../../UI/IWebViewControl.h"
 using namespace DAVA;
@@ -56,7 +57,7 @@ public:
 
 	bool LoadHtmlString(LPCTSTR pszHTMLContent);
 
-	bool DeleteApplicationCookies(const WCHAR* targetUrl);
+	bool DeleteCookies(const String& targetUrl);
 
 	// COM stuff;
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject);
@@ -100,6 +101,9 @@ protected:
 	IWebBrowser2* webBrowser;
 
 	void* sink;
+
+	HANDLE GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
+	bool GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
 };
 
 // Web View Control for Win32.
@@ -117,7 +121,7 @@ public:
 	// Load html page from stringss
 	virtual void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies associated with target URL
-	virtual void DeleteApplicationCookies(const String& targetUrl);
+	virtual void DeleteCookies(const String& targetUrl);
 	
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);

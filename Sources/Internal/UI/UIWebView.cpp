@@ -61,7 +61,7 @@ UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates) :
 	webViewControl(new WebViewControl()),
 	UIControl(rect, rectInAbsoluteCoordinates)
 {
-	this->webViewControl->Initialize(rect);
+	webViewControl->Initialize(rect);
 }
 
 void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
@@ -71,17 +71,17 @@ void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 
 void UIWebView::OpenURL(const String& urlToOpen)
 {
-	this->webViewControl->OpenURL(urlToOpen);
+	webViewControl->OpenURL(urlToOpen);
 }
 
 void UIWebView::LoadHtmlString(const WideString& htmlString)
 {
-	this->webViewControl->LoadHtmlString(htmlString);
+	webViewControl->LoadHtmlString(htmlString);
 }
 
-void UIWebView::DeleteApplicationCookies(const String& targetUrl)
+void UIWebView::DeleteCookies(const String& targetUrl)
 {
-	this->webViewControl->DeleteApplicationCookies(targetUrl);
+	webViewControl->DeleteCookies(targetUrl);
 }
 
 void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
@@ -90,7 +90,7 @@ void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoor
 
 	// Update the inner control.
 	Rect newRect = GetRect();
-	this->webViewControl->SetRect(newRect);
+	webViewControl->SetRect(newRect);
 }
 
 void UIWebView::SetSize(const Vector2 &newSize)
@@ -99,32 +99,32 @@ void UIWebView::SetSize(const Vector2 &newSize)
 
 	// Update the inner control.
 	Rect newRect = GetRect();
-	this->webViewControl->SetRect(newRect);
+	webViewControl->SetRect(newRect);
 }
 
 void UIWebView::SetVisible(bool isVisible, bool hierarchic)
 {
 	UIControl::SetVisible(isVisible, hierarchic);
-	this->webViewControl->SetVisible(isVisible, hierarchic);
+	webViewControl->SetVisible(isVisible, hierarchic);
 }
 
 void UIWebView::SetScalesPageToFit(bool isScalesToFit)
 {
-	this->webViewControl->SetScalesPageToFit(isScalesToFit);
+	webViewControl->SetScalesPageToFit(isScalesToFit);
 }
 
 void UIWebView::SetBackgroundTransparency(bool enabled)
 {
-	this->webViewControl->SetBackgroundTransparency(enabled);
+	webViewControl->SetBackgroundTransparency(enabled);
 }
 
 // Enable/disable bounces.
 void UIWebView::SetBounces(bool value)
 {
-	this->webViewControl->SetBounces(value);
+	webViewControl->SetBounces(value);
 }
 
 bool UIWebView::GetBounces() const
 {
-	return this->webViewControl->GetBounces();
+	return webViewControl->GetBounces();
 }

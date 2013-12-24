@@ -37,9 +37,6 @@ using namespace DAVA;
 #include <ExDisp.h>
 #include <ExDispid.h>
 
-#include "shlobj.h" // for function to get path to cookies folder
-#include "Wininet.h" //for functions to delete cache entry and to end session
-
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
 _ATL_FUNC_INFO BeforeNavigate2Info = {CC_STDCALL, VT_EMPTY, 7, {VT_DISPATCH,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_BOOL}};
 
@@ -259,7 +256,7 @@ HRESULT __stdcall WebBrowserContainer::GetWindowContext( IOleInPlaceFrame **ppFr
 
 bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 {
-	if (!this->webBrowser)
+	if (!webBrowser)
 	{
 		return false;
 	}
@@ -268,7 +265,7 @@ bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 	VARIANT empty = {0};
 	VariantInit(&empty);
 
-	this->webBrowser->Navigate(url, &empty, &empty, &empty, &empty);
+	webBrowser->Navigate(url, &empty, &empty, &empty, &empty);
 	SysFreeString(url);
 
 	return true;
@@ -276,12 +273,12 @@ bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 
 bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 {
-	if (!this->webBrowser || !pszHTMLContent)
+	if (!webBrowser || !pszHTMLContent)
 	{
 		return false;
 	}
 	// Initialize html document
-	this->webBrowser->Navigate( L"about:blank", NULL, NULL, NULL, NULL); 
+	webBrowser->Navigate( L"about:blank", NULL, NULL, NULL, NULL); 
 
 	IDispatch * m_pDoc;
 	IStream * pStream = NULL;
@@ -345,153 +342,98 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 }
 
 
-bool WebBrowserContainer::DeleteApplicationCookies(const WCHAR* targetUrl)
+bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 {
-	if (!this->webBrowser)
+	if (!webBrowser)
 	{
 		return false;
 	}
 
-	LPTSTR url = SysAllocString(targetUrl);
+	WideString url = StringToWString(targetUrl);
+	LPINTERNET_CACHE_ENTRY_INFO cacheEntry = NULL;  
+ 	// Initial buffer size
+    DWORD  entrySize = 4096;     
+	HANDLE cacheEnumHandle = NULL; 
 
-    HANDLE hCacheEnumHandle  = NULL;
-    LPINTERNET_CACHE_ENTRY_INFO lpCacheEntry = NULL;
-    DWORD dwSize = 4096; // initial buffer size
+	// Get first entry and enum handle
+	cacheEnumHandle = GetFirstCacheEntry(cacheEntry, entrySize);
+	if (!cacheEnumHandle)
+	{	
+		delete [] cacheEntry; 
+		return false;
+	}
 
-    // Enable initial buffer size for cache entry structure. 
-    lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
-    lpCacheEntry->dwStructSize = dwSize;
-    
-    hCacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", lpCacheEntry, &dwSize);
-    
-    // First, obtain handle to internet cache with FindFirstUrlCacheEntry 
-    // for later use with FindNextUrlCacheEntry. 
-    if (hCacheEnumHandle != NULL) 
-    {
-        // Delete only cookies for specific site
-        if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-        {
-			LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
-			// If cach entry url is not equat to target - do not remove that cookie
-			if (searchStr != NULL)
+	BOOL bResult = false;
+    BOOL bDone = false;
+
+	do
+	{
+		// Delete only cookies for specific site
+		if ((cacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+		{            
+			// If cache entry url do have target URL - do not remove that cookie
+			if (StrStr(cacheEntry->lpszSourceUrlName, url.c_str()))
 			{
-				DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+				DeleteUrlCacheEntry(cacheEntry->lpszSourceUrlName);
 			}
-        }
-    }
-    else
-    {
-        switch (GetLastError())
-        {
-            case ERROR_INSUFFICIENT_BUFFER:
-			{
-				lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
-				lpCacheEntry->dwStructSize = dwSize;
-
-				// Repeat first step search with adjusted buffer, exit if not
-				// found again.
-				hCacheEnumHandle = FindFirstUrlCacheEntry(NULL, lpCacheEntry, 
-												  &dwSize);
-				if (hCacheEnumHandle != NULL) 
-				{
-					// Delete only cookies for specific site
-					if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-					{            
-						LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
-						// If cach entry url is not equat to target - do not remove that cookie
-						if (searchStr != NULL)
-						{
-							DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
-						}
-					}
-				}
-				else
-				{
-					// FindFirstUrlCacheEntry fails again, return.
-					SysFreeString(url);
-					return false; 
-				}
-			}
-			default:
-				FindCloseUrlCache(hCacheEnumHandle);
-				SysFreeString(url);
-				return false;
 		}
-    }
-    
-    // Next, use hCacheEnumHandle obtained from the previous step to delete 
-    // subsequent items of cache.
-    do 
-    {
-         // Notice that return values of FindNextUrlCacheEntry (BOOL) and 
-         // FindFirstUrlCacheEntry (HANDLE) are different.
-		 if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry, &dwSize))
-         {
-			// Delete only cookies for specific site
-            if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-            {            
-				LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
-				// If cach entry url is not equat to target - do not remove that cookie
-				if (searchStr != NULL)
-				{
-					DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
-				}
-            }
-         }
-         else
-         {
-            switch(GetLastError())
-            {
-                case ERROR_INSUFFICIENT_BUFFER:
-				{
-					lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwSize];
-					lpCacheEntry->dwStructSize = dwSize;
+		// Try to get next cache entry - in case when we can't do it - exit the cycle
+		if (!GetNextCacheEntry(cacheEnumHandle, cacheEntry, entrySize))
+		{
+			// ERROR_NO_MORE_FILES means search is finished successfully.
+			bResult = (GetLastError() == ERROR_NO_MORE_ITEMS);
+			bDone = true;            
+		}
+	} while (!bDone);
 
-					// Repeat next step search with adjusted buffer, exit if 
-					// error comes up again ((in practice one buffer's size 
-					// adustment is always OK).
-					if (FindNextUrlCacheEntry(hCacheEnumHandle, lpCacheEntry, &dwSize)) 
-					{
-						// Delete only cookies for specific site
-						if ((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
-						{            
-							LPTSTR searchStr = StrStr(lpCacheEntry->lpszSourceUrlName, url);
-							// If cach entry url is not equat to target - do not remove that cookie
-							if (searchStr != NULL)
-							{
-								DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
-							}
-						}
-						break;
-					}
-					else
-					{
-						// FindFirstUrlCacheEntry fails again, return.
-						FindCloseUrlCache(hCacheEnumHandle);
-						SysFreeString(url);
-						return false; 
-					}
-				}
-                break;
+	// clean up		
+	delete [] cacheEntry; 
+	FindCloseUrlCache(cacheEnumHandle);  
 
-                case ERROR_NO_MORE_ITEMS:
-					FindCloseUrlCache(hCacheEnumHandle);
-					SysFreeString(url);
-					return true; 
+    return bResult;
+}
 
-                default:
-					FindCloseUrlCache(hCacheEnumHandle);
-					SysFreeString(url);
-					return false;
-            }
-        }
-    } while (true);
+HANDLE WebBrowserContainer::GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size)
+{
+	// Setup initial cache entry size
+	cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
+    cacheEntry->dwStructSize = size;
+
+	// Create handle for cache entries with tag "Cookie:"
+	HANDLE cacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", cacheEntry, &size);
+	// If handle was not created with error - ERROR_INSUFFICIENT_BUFFER - enlarge cacheEntry size and try again
+	if ((cacheEnumHandle == NULL) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
+	{
+		delete [] cacheEntry;            
+        cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
+		cacheEntry->dwStructSize = size;
+
+		cacheEnumHandle = FindFirstUrlCacheEntry(NULL, cacheEntry, &size);
+	}
+
+	return cacheEnumHandle;
+}
+
+bool  WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size)
+{
+	bool bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
+	// If buffer size was not enough - give more memory for cacheEntry
+	if ((!bResult) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
+	{
+		delete [] cacheEntry;            
+        cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
+		cacheEntry->dwStructSize = size;
+
+		bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
+	}
+
+	return bResult;
 }
 
 void WebBrowserContainer::UpdateRect()
 {
 	IOleInPlaceObject* oleInPlaceObject = NULL;
-	HRESULT hRes = this->webBrowser->QueryInterface(IID_IOleInPlaceObject, (void**)&oleInPlaceObject);
+	HRESULT hRes = webBrowser->QueryInterface(IID_IOleInPlaceObject, (void**)&oleInPlaceObject);
 	if (FAILED(hRes))
 	{
 		Logger::Error("WebBrowserContainer::SetSize(), IOleObject::QueryInterface(IID_IOleInPlaceObject) failed!, error code %i", hRes);
@@ -559,51 +501,51 @@ bool WebViewControl::InititalizeBrowserContainer()
 		return false;
 	}
 
-	this->browserContainer= new WebBrowserContainer();
+	browserContainer= new WebBrowserContainer();
 	return browserContainer->Initialize(this->browserWindow);
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
 {
-	if (this->browserContainer)
+	if (browserContainer)
 	{
-		this->browserContainer->OpenUrl(StringToWString(urlToOpen.c_str()).c_str());
+		browserContainer->OpenUrl(StringToWString(urlToOpen.c_str()).c_str());
 	}
 }
 
 void WebViewControl::LoadHtmlString(const WideString& htmlString)
 {
-	if (this->browserContainer)
+	if (browserContainer)
 	{
-		this->browserContainer->LoadHtmlString(htmlString.c_str());
+		browserContainer->LoadHtmlString(htmlString.c_str());
 	}
 }
 
-void WebViewControl::DeleteApplicationCookies(const String& targetUrl)
+void WebViewControl::DeleteCookies(const String& targetUrl)
 {
-	if (this->browserContainer)
+	if (browserContainer)
 	{
-		this->browserContainer->DeleteApplicationCookies(StringToWString(targetUrl.c_str()).c_str());
+		browserContainer->DeleteCookies(targetUrl);
 	}
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
-	if (this->browserWindow != 0)
+	if (browserWindow != 0)
 	{
-		::ShowWindow(this->browserWindow, isVisible);
+		::ShowWindow(browserWindow, isVisible);
 	}
 }
 
 void WebViewControl::SetRect(const Rect& rect)
 {
-	if (this->browserWindow == 0)
+	if (browserWindow == 0)
 	{
 		return;
 	}
 
 	RECT browserRect = {0};
-	::GetWindowRect(this->browserWindow, &browserRect);
+	::GetWindowRect(browserWindow, &browserRect);
 
 	browserRect.left = (LONG)(rect.x * DAVA::Core::GetVirtualToPhysicalFactor());
 	browserRect.top  = (LONG)(rect.y * DAVA::Core::GetVirtualToPhysicalFactor());
@@ -616,8 +558,8 @@ void WebViewControl::SetRect(const Rect& rect)
 	::SetWindowPos(browserWindow, NULL, browserRect.left, browserRect.top,
 		browserRect.right - browserRect.left, browserRect.bottom - browserRect.top, SWP_NOZORDER );
 
-	if (this->browserContainer)
+	if (browserContainer)
 	{
-		this->browserContainer->UpdateRect();
+		browserContainer->UpdateRect();
 	}
 }
