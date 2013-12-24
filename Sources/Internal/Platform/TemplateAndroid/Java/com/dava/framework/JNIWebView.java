@@ -171,7 +171,7 @@ public class JNIWebView {
 		});
 	}
 	
-	public static void DeleteApplicationCookies(final int id, final String targetURL)
+	public static void DeleteCookies(final int id, final String targetURL)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
 		activity.runOnUiThread(new Runnable() {
@@ -190,7 +190,8 @@ public class JNIWebView {
 			    String cookiestring = cookieManager.getCookie(targetURL);
 			    String[] cookies =  cookiestring.split(";");
 			    
-			    for (int i=0; i<cookies.length; i++) {
+			    for (int i=0; i<cookies.length; i++) 
+			    {
 			        String[] cookieparts = cookies[i].split("=");
 			        cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
 			    }

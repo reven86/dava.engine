@@ -92,7 +92,7 @@ void JniWebView::LoadHtmlString(int id, const String& htmlString)
 	}
 }
 
-void JniWebView::DeleteApplicationCookies(int id, const String& targetURL)
+void JniWebView::DeleteCookies(int id, const String& targetURL)
 {
 	jmethodID mid = GetMethodID("DeleteApplicationCookies", "(ILjava/lang/String;)V");
 	if (mid)
@@ -197,10 +197,10 @@ void WebViewControl::LoadHtmlString(const WideString& urlToOpen)
 	jniWebView.LoadHtmlString(webViewId, UTF8Utils::EncodeToUTF8(urlToOpen));
 }
 
-void WebViewControl::DeleteApplicationCookies(const String& targetUrl)
+void WebViewControl::DeleteCookies(const String& targetUrl)
 {
 	JniWebView jniWebView;
-	jniWebView.DeleteApplicationCookies(webViewId, targetUrl);
+	jniWebView.DeleteCookies(webViewId, targetUrl);
 }
 
 void WebViewControl::SetRect(const Rect& rect)

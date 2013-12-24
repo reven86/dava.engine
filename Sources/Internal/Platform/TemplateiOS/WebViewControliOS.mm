@@ -175,7 +175,7 @@ void WebViewControl::LoadHtmlString(const WideString& htlmString)
     [(UIWebView*)webViewPtr loadHTMLString:htmlPageToLoad baseURL:nil];
 }
 
-void WebViewControl::DeleteApplicationCookies(const String& targetUrl)
+void WebViewControl::DeleteCookies(const String& targetUrl)
 {
 	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
 	NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];

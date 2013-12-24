@@ -57,7 +57,7 @@ public:
 	// Load html page from string
 	virtual void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies associated with target URL
-	virtual void DeleteApplicationCookies(const String& targetUrl);
+	virtual void DeleteCookies(const String& targetUrl);
 
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
@@ -81,7 +81,7 @@ public:
 
 	void OpenURL(int id, const String& urlToOpen);
 	void LoadHtmlString(int id, const String& htmlString);
-	void DeleteApplicationCookies(int id, const String& targetUrl);
+	void DeleteCookies(int id, const String& targetUrl);
 
 	void SetRect(int id, const Rect& rect);
 	void SetVisible(int id, bool isVisible);
