@@ -43,6 +43,9 @@ namespace DAVA {
 				case SDL_MOUSEMOTION:
 					CorePlatformHtml5::MouseMoveEvent(event.motion);
 					break;
+				case SDL_VIDEORESIZE:
+					CorePlatformHtml5::ResizeEvent(event.resize);
+					break;					
 				case SDL_QUIT:
 					CorePlatformHtml5::AppQuit();
 					return;
@@ -53,6 +56,18 @@ namespace DAVA {
 		RenderManager::Instance()->Unlock();
 	}   
 
+	void CorePlatformHtml5::ResizeEvent(SDL_ResizeEvent ev)
+	{
+		((CorePlatformHtml5*)Core::Instance())->Resize((int32)ev.w, (int32)ev.h);
+	}
+	
+	void CorePlatformHtml5::Resize(int32 nWidth, int32 nHeight)
+	{
+		RenderManager::Instance()->Init(nWidth, nHeight);
+		UIControlSystem::Instance()->SetInputScreenAreaSize(nWidth, nHeight);
+		Core::Instance()->SetPhysicalScreenSize(nWidth, nHeight);
+	}
+	
 	void CorePlatformHtml5::AppQuit()
 	{
 		Core::Instance()->SystemAppFinished();
@@ -73,19 +88,16 @@ namespace DAVA {
 	
 	void CorePlatformHtml5::MouseMoveEvent(SDL_MouseMotionEvent ev)
 	{
-      	//printf("Mouse move %d %d %d\n", ev.x, ev.y, ev.state);
        	CorePlatformHtml5::ProcessMouseEvent(MOUSE_MOVE, ev.x, ev.y, ev.state);
     }
     
 	void CorePlatformHtml5::MouseUpEvent(SDL_MouseButtonEvent ev)
 	{
-		//printf("Mouse up %d %d\n", ev.x, ev.y);
        	CorePlatformHtml5::ProcessMouseEvent(MOUSE_UP, ev.x, ev.y);
     }
     
 	void CorePlatformHtml5::MouseDownEvent(SDL_MouseButtonEvent ev)
 	{
-		//printf("Mouse down %d %d\n", ev.x, ev.y);
 		CorePlatformHtml5::ProcessMouseEvent(MOUSE_DOWN, ev.x, ev.y);
     }
     
@@ -179,7 +191,6 @@ namespace DAVA {
 			touches.push_back(*it);
 		}
 
-		//printf("Key down %d %d %d\n", keyEv.keysym.unicode, keyEv.keysym.sym, keyEv.keysym.sym & ~SDLK_SCANCODE_MASK);
 		DAVA::UIEvent ev;
 		ev.keyChar = (keyEv.keysym.sym & SDLK_SCANCODE_MASK || (keyEv.keysym.sym < 32 || keyEv.keysym.sym > 126)) ? 0 : (char16)keyEv.keysym.unicode;//ke->charCode;
 		ev.phase = DAVA::UIEvent::PHASE_KEYCHAR;
@@ -199,80 +210,6 @@ namespace DAVA {
        	InputSystem::Instance()->GetKeyboard()->OnSystemKeyUnpressed((int32)(keyEv.keysym.sym & ~SDLK_SCANCODE_MASK));//ke->keyCode);
     }
     
-    /*EGLBoolean CreateEGLContext( EGLDisplay &eglDisplay,
-								EGLContext &eglContext, EGLSurface &eglSurface )
-	{
-	   EGLint numConfigs;
-	   EGLint majorVersion;
-	   EGLint minorVersion;
-	   EGLDisplay display;
-	   EGLContext context;
-	   EGLSurface surface;
-	   EGLConfig config;
-	   EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
-	   
-	   EGLint attribList[] =
-	   {
-		   EGL_RED_SIZE,       8,
-		   EGL_GREEN_SIZE,     8,
-		   EGL_BLUE_SIZE,      8,
-		   EGL_ALPHA_SIZE,     8,
-   		   EGL_STENCIL_SIZE,   8,
-		   EGL_DEPTH_SIZE,     24,
-		   EGL_NONE
-	   };
-
-	   // Get Display
-	   display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	   if ( display == EGL_NO_DISPLAY )
-	   {
-		  return EGL_FALSE;
-	   }
-
-	   // Initialize EGL
-	   if ( !eglInitialize(display, &majorVersion, &minorVersion) )
-	   {
-		  return EGL_FALSE;
-	   }
-
-	   // Get configs
-	   if ( !eglGetConfigs(display, NULL, 0, &numConfigs) )
-	   {
-		  return EGL_FALSE;
-	   }
-
-	   // Choose config
-	   if ( !eglChooseConfig(display, attribList, &config, 1, &numConfigs) )
-	   {
-		  return EGL_FALSE;
-	   }
-
-	   // Create a surface
-	   surface = eglCreateWindowSurface(display, config, NULL, NULL);
-	   if ( surface == EGL_NO_SURFACE )
-	   {
-		  return EGL_FALSE;
-	   }
-
-	   // Create a GL context
-	   context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs );
-	   if ( context == EGL_NO_CONTEXT )
-	   {
-		  return EGL_FALSE;
-	   }
-	   
-	   // Make the context current
-	   if ( !eglMakeCurrent(display, surface, surface, context) )
-	   {
-		  return EGL_FALSE;
-	   }
-   
-	   //eglDisplay = display;
-	   //eglSurface = surface;
-	   //eglContext = context;
-	   return EGL_TRUE;
-	}*/ 
-        
     void CorePlatformHtml5::Init()
     {
     	SDL_Init(SDL_INIT_EVERYTHING);
@@ -280,7 +217,6 @@ namespace DAVA {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 3);		
     	SDL_Surface *surf = SDL_SetVideoMode(0, 0, 32, SDL_OPENGL);
-    	//EGLBoolean res = CreateEGLContext( m_eglDisplay, m_eglContext, m_eglSurface );
     	if(surf != NULL)
     	{
     		printf("GLES2 context created successfully\n");
@@ -296,9 +232,7 @@ namespace DAVA {
 		FrameworkDidLaunched();
 		
 		emscripten_set_canvas_size(1024, 768);
-		RenderManager::Instance()->Init(1024, 768);
-		UIControlSystem::Instance()->SetInputScreenAreaSize(1024, 768);
-		Core::Instance()->SetPhysicalScreenSize(1024, 768);
+		Resize(1024, 768);
     }
     
     int Core::Run(int argc, char * argv[], AppHandle handle)
