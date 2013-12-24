@@ -369,7 +369,7 @@ protected:
 	//static Vector<Vector2>
 	
 private:
-	bool NeedClipSprite(DrawState * state);
+	bool IsSpriteOnScreen(DrawState * state);
 };
 
 
