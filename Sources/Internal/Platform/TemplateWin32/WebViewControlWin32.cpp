@@ -408,7 +408,7 @@ HANDLE WebBrowserContainer::GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cach
         cacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[size];
 		cacheEntry->dwStructSize = size;
 
-		cacheEnumHandle = FindFirstUrlCacheEntry(NULL, cacheEntry, &size);
+		cacheEnumHandle = FindFirstUrlCacheEntry(L"cookie:", cacheEntry, &size);
 	}
 
 	return cacheEnumHandle;
