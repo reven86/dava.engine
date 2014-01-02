@@ -375,10 +375,23 @@ Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 }
 
 
+bool ResourcePacker2D::isRecursiveFlagSet(const Vector<String> & flags)
+{
+	for (uint32 k = 0; k < flags.size(); ++k)
+	{
+		if (flags[k] == FLAG_RECURSIVE)
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
 void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags)
 {
 	// DF-2961 - Local list for flags command arguments
-	Vector<String> currentCommandFlags = flags;
+	Vector<String> currentCommandFlags = Vector<String>();
 
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
     
@@ -424,18 +437,14 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		}
 	}
 	
-	// DF-2961 - If "flags.txt" do not exist - try to use previous flags command string
+	// DF-2961 - If "flags.txt" do not exist - try to use previous flags command line
 	if (!flagsProcessed)
 	{
-		// Set command line flags only if flag "--recursive" is set
-		for (uint32 k = 0; k < currentCommandFlags.size(); ++k)
+		if (flags.size() > 0)
 		{
-			if (currentCommandFlags[k] == FLAG_RECURSIVE)
-			{
-				CommandLineParser::Instance()->SetArguments(currentCommandFlags);
-				break;
-			}
+			CommandLineParser::Instance()->SetArguments(flags);
 		}
+		currentCommandFlags = flags;
 	}
 	
 	bool modified = isGfxModified;
@@ -558,7 +567,15 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
-					RecursiveTreeWalk(input, output, currentCommandFlags);
+					
+					if (isRecursiveFlagSet(currentCommandFlags))
+					{
+						RecursiveTreeWalk(input, output, currentCommandFlags);
+					}
+					else
+					{
+						RecursiveTreeWalk(input, output);
+					}
                 }
 			}
 		}

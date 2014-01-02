@@ -76,6 +76,9 @@ public:
 	bool clearProcessDirectory;
     eGPUFamily requestedGPUFamily;
  	FILESMAP spriteFiles;
+	
+protected:
+	bool isRecursiveFlagSet(const Vector<String> & flags);
 };
 };
 
