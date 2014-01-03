@@ -443,8 +443,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		if (flags.size() > 0)
 		{
 			CommandLineParser::Instance()->SetArguments(flags);
+			currentCommandFlags = flags;
 		}
-		currentCommandFlags = flags;
 	}
 	
 	bool modified = isGfxModified;
