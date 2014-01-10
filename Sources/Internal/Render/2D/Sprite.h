@@ -279,6 +279,8 @@ public:
 	RenderDataObject * spriteRenderObject;
 
 	void Reload();
+	
+	static void SetSpriteClipping(bool clipping);
 
 protected:
 	Sprite();
@@ -363,7 +365,7 @@ protected:
 	// For rendering of clipped objects
 	static Vector<Vector2> clippedTexCoords;
 	static Vector<Vector2> clippedVertices;
-
+	static bool spriteClipping;
 
 	//static bool batchingEnabled;
 	//static Vector<Vector2>

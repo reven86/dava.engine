@@ -48,6 +48,7 @@ Map<String, Sprite*> spriteMap;
 static int32 fboCounter = 0;
 Vector<Vector2> Sprite::clippedTexCoords;
 Vector<Vector2> Sprite::clippedVertices;
+bool Sprite::spriteClipping = true;
 
 Sprite::Sprite()
 {
@@ -1156,7 +1157,8 @@ void Sprite::Draw()
 void Sprite::Draw(DrawState * state)
 {
 	// DF-2897 - Do not draw sprite if its position is beyond screen
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW) || !IsSpriteOnScreen(state))
+	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW) ||
+		(!IsSpriteOnScreen(state) && spriteClipping))
 	{
 		return;
 	}
@@ -1636,6 +1638,11 @@ void Sprite::ReloadExistingTextures()
 			Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
 		}
 	}
+}
+
+void Sprite::SetSpriteClipping(bool clipping)
+{
+	spriteClipping = clipping;
 }
 
 bool Sprite::IsSpriteOnScreen(DrawState * state)

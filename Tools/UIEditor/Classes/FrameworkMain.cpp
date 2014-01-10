@@ -62,6 +62,9 @@ void FrameworkDidLaunched()
 	Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
 //#endif
 
+	// Disable sprite clipping in UIEditor
+	Sprite::SetSpriteClipping(false);
+
 	Core::Instance()->SetOptions(appOptions);
 
 	GameCore * core = new GameCore();
