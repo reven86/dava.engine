@@ -182,13 +182,40 @@ void SceneValidator::ValidateRenderComponent(Entity *ownerNode, Set<String> &err
     RenderObject *ro = rc->GetRenderObject();
     if(!ro) return;
     
+    bool isSpeedTree = false;
+
     uint32 count = ro->GetRenderBatchCount();
     for(uint32 b = 0; b < count; ++b)
     {
         RenderBatch *renderBatch = ro->GetRenderBatch(b);
         ValidateRenderBatch(ownerNode, renderBatch, errorsLog);
+
+        isSpeedTree |= (renderBatch->GetMaterial() && renderBatch->GetMaterial()->type == Material::MATERIAL_SPEED_TREE_LEAF);
     }
     
+    if(isSpeedTree && !IsPointerToExactClass<SpeedTreeObject>(ro))
+    {
+        Entity * parent = ownerNode->GetParent();
+        DVASSERT(parent);
+        Entity * nextEntity = parent->GetNextChild(ownerNode);
+
+        ownerNode->Retain();
+        parent->RemoveNode(ownerNode);
+
+        SpeedTreeObject * treeObject = new SpeedTreeObject();
+        ro->Clone(treeObject);
+        rc->SetRenderObject(treeObject);
+        treeObject->Release();
+
+        treeObject->RecalcBoundingBox();
+
+        if(nextEntity)
+            parent->InsertBeforeNode(ownerNode, nextEntity);
+        else
+            parent->AddNode(ownerNode);
+        ownerNode->Release();
+    }
+
 	if(ro->GetType() == RenderObject::TYPE_LANDSCAPE)
     {
 		Landscape *landscape = static_cast<Landscape *>(ro);

@@ -61,6 +61,10 @@ public:
 	void SetUIEditorVersion(const String& editorVersion);
 	String GetUIEditorVersion();
 
+    // Whether "Pixelized" or "Smooth" images representation is used.
+    void SetPixelized(bool value);
+    bool IsPixelized();
+
 protected:
 	KeyedArchive *settings;
 	

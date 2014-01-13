@@ -76,6 +76,8 @@ void FlagsPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 
 void FlagsPropertyGridWidget::Cleanup()
 {
+    BasePropertyGridWidget::Cleanup();
+
     UnregisterCheckBoxWidget(ui->visibleCheckBox);
     UnregisterCheckBoxWidget(ui->inputCheckBox);
     UnregisterCheckBoxWidget(ui->clipContentsCheckbox);

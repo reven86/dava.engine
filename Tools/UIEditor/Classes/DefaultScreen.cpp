@@ -35,13 +35,19 @@
 #include "CopyPasteController.h"
 #include "HierarchyTreeAggregatorControlNode.h"
 
+#include "Grid/GridController.h"
+#include "Ruler/RulerController.h"
+
 #include <QMenu>
 #include <QAction>
 #include <QApplication>
 
 #define SIZE_CURSOR_DELTA 5
 #define MIN_DRAG_DELTA 3
-#define KEY_MOVE_DELTA 5
+
+// Coarse/Fine Control Move delta.
+#define COARSE_CONTROL_MOVE_DELTA 10
+#define FINE_CONTROL_MOVE_DELTA 1
 
 #define MOVE_SCREEN_KEY DVKEY_SPACE
 
@@ -143,6 +149,7 @@ void DefaultScreen::Input(DAVA::UIEvent* event)
 		case UIEvent::PHASE_MOVE:
 		{
 			ScreenWrapper::Instance()->SetCursor(event->point, GetCursor(event->point));
+            RulerController::Instance()->UpdateRulerMarkers(event->point);
 		}break;
 		case UIEvent::PHASE_ENDED:
 		{
@@ -1075,19 +1082,19 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		}break;
 		case DVKEY_UP:
 		{
-			MoveControl(Vector2(0, -KEY_MOVE_DELTA));
+			MoveControl(Vector2(0, -GetControlMoveDelta()));
 		}break;
 		case DVKEY_DOWN:
 		{
-			MoveControl(Vector2(0, KEY_MOVE_DELTA));
+			MoveControl(Vector2(0, GetControlMoveDelta()));
 		}break;
 		case DVKEY_LEFT:
 		{
-			MoveControl(Vector2(-KEY_MOVE_DELTA, 0));
+			MoveControl(Vector2(-GetControlMoveDelta(), 0));
 		}break;
 		case DVKEY_RIGHT:
 		{
-			MoveControl(Vector2(KEY_MOVE_DELTA, 0));
+			MoveControl(Vector2(GetControlMoveDelta(), 0));
 		}break;
 		case DVKEY_DELETE:
 		case DVKEY_BACKSPACE:
@@ -1140,7 +1147,7 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 
 Vector2 DefaultScreen::GetInputDelta(const Vector2& point, bool applyScale) const
 {
-	Vector2 delta = point - inputPos;
+	Vector2 delta = GridController::Instance()->RecalculateMousePos(point - inputPos);
 
 	if (applyScale)
 	{
@@ -1237,6 +1244,12 @@ bool DefaultScreen::IsMoveScreenKeyPressed()
 	//return InputSystem::Instance()->GetKeyboard()->IsKeyPressed(MOVE_SCREEN_KEY);
 	Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
 	return (modifiers & Qt::AltModifier);
+}
+
+int32 DefaultScreen::GetControlMoveDelta()
+{
+	Qt::KeyboardModifiers modifiers = QApplication::queryKeyboardModifiers();
+	return (modifiers & Qt::ShiftModifier) ? COARSE_CONTROL_MOVE_DELTA : FINE_CONTROL_MOVE_DELTA;
 }
 
 void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)

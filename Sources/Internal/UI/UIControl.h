@@ -1203,8 +1203,6 @@ public:
 	float32	angle;//!<control rotation angle. Rotation around pivot point.
 	
 protected:
-	// Save the control to YAML including all the child controls and return it.
-	virtual YamlNode* SaveToYamlNodeRecursive(UIYamlLoader* loader, UIControl* control,  YamlNode* rootNode = NULL);
 
 //	void SystemClearHoverState();//<! Internal method used by ControlSystem
 

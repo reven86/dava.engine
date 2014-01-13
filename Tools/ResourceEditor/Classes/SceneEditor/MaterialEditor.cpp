@@ -81,7 +81,7 @@ MaterialEditor::MaterialEditor(const Rect &rect)
 
 
     line = ControlsFactory::CreateLine(Rect(GetRect().dx - ControlsFactory::BUTTON_WIDTH*3, ControlsFactory::BUTTON_HEIGHT * 2, ControlsFactory::BUTTON_WIDTH*3, 1),
-                                                  Color::White());
+                                                  Color::White);
     AddControl(line);
     
     Rect fogRect(setupFogRect.x - ControlsFactory::BUTTON_WIDTH, setupFogRect.dy + setupFogRect.y, ControlsFactory::BUTTON_WIDTH * 2, ControlsFactory::BUTTON_HEIGHT * 5);

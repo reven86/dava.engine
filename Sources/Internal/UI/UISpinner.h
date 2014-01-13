@@ -147,7 +147,6 @@ public:
      */
     void ContentChanged();
     
-    virtual List<UIControl* >& GetRealChildren();
     virtual List<UIControl* > GetSubcontrols();
 
     virtual UIControl *Clone();

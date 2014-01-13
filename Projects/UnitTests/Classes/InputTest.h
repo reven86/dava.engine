@@ -73,8 +73,10 @@ private:
 	UITextField* passwordTextField;
 
 	UIStaticText* staticText;
+    
 	UIButton* testButton;
 	UIButton* removeFromParentButton;
+    UIButton* disableInEventButton;
 	
 	UIWebView* webView1;
 	UIWebView* webView2;

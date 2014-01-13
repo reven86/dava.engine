@@ -66,6 +66,7 @@ UIListCell *UIListTestDelegate::CellAtIndex(UIList *list, int32 index)
 		/*Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     	DVASSERT(font);
 		font->SetSize(20);
+    	font->SetColor(Color::White);
 		
 		cell->SetStateFont(UIControl::STATE_NORMAL, font);
 		cell->SetStateText(UIControl::STATE_NORMAL, StringToWString(Format("Cell %d",index)));*/
@@ -146,7 +147,7 @@ void UIListTest::LoadResources()
 
 	finishTestBtn = new UIButton(Rect(10, 250, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);
-    finishTestBtn->SetStateFontColor(0xFF, Color::White());
+    finishTestBtn->SetStateFontColor(0xFF, Color::White);
 	finishTestBtn->SetStateText(0xFF, L"Finish test");
 
 	finishTestBtn->SetDebugDraw(true);

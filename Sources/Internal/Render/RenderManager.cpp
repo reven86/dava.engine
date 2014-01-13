@@ -63,8 +63,8 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     GPUFamilyDescriptor::SetupGPUParameters();
     
 //  RENDERSTATE
-//	oldColor = Color::Clear();
-//    newColor = Color::Clear();
+//	oldColor = Color::Clear;
+//    newColor = Color::Clear;
 //
 //	oldSFactor = BLEND_NONE;
 //	oldDFactor = BLEND_NONE;
@@ -632,6 +632,7 @@ void RenderManager::PopDrawMatrix()
 	matrixStack.pop();
 	userDrawOffset = dm.userDrawOffset;
 	userDrawScale = dm.userDrawScale;
+	PrepareRealMatrix();
 }
 	
 void RenderManager::PushMappingMatrix()
@@ -649,6 +650,7 @@ void RenderManager::PopMappingMatrix()
 	mappingMatrixStack.pop();
 	viewMappingDrawOffset = dm.userDrawOffset;
 	viewMappingDrawScale = dm.userDrawScale;
+	PrepareRealMatrix();
 }
 
 void RenderManager::SetCursor(Cursor * _cursor)

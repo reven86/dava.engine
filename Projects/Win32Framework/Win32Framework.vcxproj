@@ -303,6 +303,8 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlParser.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h" />
+    <ClInclude Include="..\..\Sources\Internal\Input\GamepadDevice.h" />
+    <ClInclude Include="..\..\Sources\Internal\Input\GamepadManager.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputCallback.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\InputSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\KeyboardDevice.h" />
@@ -415,6 +417,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpatialTree.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image.h" />
@@ -702,6 +705,8 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlArchive.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\Accelerometer.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Input\GamepadManager.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\InputSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\KeyboardDevice.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Job\Job.cpp" />
@@ -711,6 +716,7 @@
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox2.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\AABBox3.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\BezierSpline.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Math\Color.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Math2D.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Matrix4.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Math\Polygon2.cpp" />
@@ -787,6 +793,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\ShadowVolumeRenderPass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SkyboxRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpatialTree.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpeedTreeObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image.cpp" />
@@ -944,6 +951,7 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\TeamcityOutput.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

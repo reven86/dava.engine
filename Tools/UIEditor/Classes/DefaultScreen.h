@@ -58,6 +58,7 @@ public:
 
 	void SetScale(const Vector2& scale);
 	void SetPos(const Vector2& pos);
+    Vector2 GetPos() const {return pos;};
 
 	Vector2 LocalToInternal(const Vector2& localPoint) const;
 	
@@ -174,6 +175,9 @@ private:
 
 	// Get the state of the "Move Screen" key.
 	bool IsMoveScreenKeyPressed();
+
+	// Get the control move delta (coarse/fine, depending on whether Shift key is pressed).
+	int32 GetControlMoveDelta();
 
 	// Check control's visibility in a recursive way.
 	bool IsControlVisible(UIControl* uiControl);

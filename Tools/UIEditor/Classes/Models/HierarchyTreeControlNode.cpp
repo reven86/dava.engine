@@ -32,12 +32,12 @@
 #include "HierarchyTreeControlNode.h"
 #include "UI/UIList.h"
 #include "UI/UIScrollViewContainer.h"
-#include "EditorListDelegate.h"
 
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   UIControl* uiObject,
 												   const QString& name) :
-	HierarchyTreeNode(name)
+	HierarchyTreeNode(name),
+    listDelegate(NULL)
 {
 	this->parent = parent;
 	
@@ -50,7 +50,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *list = dynamic_cast<UIList*>(uiObject);
 	if (list)
 	{
-		EditorListDelegate *listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
 		list->SetDelegate(listDelegate);
 	}
 
@@ -59,7 +59,8 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 
 HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 												   const HierarchyTreeControlNode* node):
-	HierarchyTreeNode(node)
+	HierarchyTreeNode(node),
+    listDelegate(NULL)
 {
 	this->parent = parent;
 	this->uiObject = node->GetUIObject()->Clone();
@@ -71,7 +72,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	UIList *srcList = dynamic_cast<UIList*>(node->GetUIObject());
 	if (list)
 	{
-		EditorListDelegate *listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
 		EditorListDelegate *srcListDelegate = dynamic_cast<EditorListDelegate*>(srcList->GetDelegate());
 		if (srcListDelegate)
 		{
@@ -145,6 +146,8 @@ HierarchyTreeControlNode::~HierarchyTreeControlNode()
 		SafeRelease(uiObject);
 		SafeRelease(parentUIObject);
 	}
+
+    SafeRelease(listDelegate);
 }
 
 HierarchyTreeScreenNode* HierarchyTreeControlNode::GetScreenNode() const

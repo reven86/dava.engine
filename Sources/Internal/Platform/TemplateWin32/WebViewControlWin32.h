@@ -34,11 +34,11 @@
 #include <MsHTML.h>
 #include "Wininet.h" //for functions to delete cache entry and to end session
 
-#include "../../UI/IWebViewControl.h"
-using namespace DAVA;
+#include "UI/IWebViewControl.h"
 
 // Helper class to contain Web Browser.
 interface IWebBrowser2;
+namespace DAVA {
 class WebBrowserContainer : IOleClientSite, IOleInPlaceSite
 {
 public:
@@ -140,4 +140,5 @@ protected:
 	WebBrowserContainer* browserContainer;
 };
 
+};
 #endif //__WEBVIEWCONTROL_WIN32_H__

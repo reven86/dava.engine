@@ -63,7 +63,7 @@ void DPITest::LoadResources()
 	font->SetSize(20);
 	
 	staticText = new UIStaticText(Rect(0, 0, 512, 100));
-	staticText->SetTextColor(Color::White());
+	staticText->SetTextColor(Color::White);
     staticText->SetFont(font);
 	staticText->SetText(L"textField");
 	staticText->SetDebugDraw(true);
@@ -75,7 +75,7 @@ void DPITest::LoadResources()
 
 	testButton = new UIButton(Rect(0, 300, 300, 30));
 	testButton->SetStateFont(0xFF, font);
-	testButton->SetStateFontColor(0xFF, Color::White());
+	testButton->SetStateFontColor(0xFF, Color::White);
 	testButton->SetStateText(0xFF, L"Finish Test");
 	testButton->SetDebugDraw(true);
 	testButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DPITest::ButtonPressed));

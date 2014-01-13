@@ -46,6 +46,8 @@ float GetUITextViewSizeDivider()
 	UITextField * textField;
 	DAVA::UITextField * cppTextField;
 	BOOL textInputAllowed;
+    
+    CGRect lastKeyboardFrame;
 }
 - (id) init : (DAVA::UITextField  *) tf;
 - (void) dealloc;
@@ -102,6 +104,9 @@ float GetUITextViewSizeDivider()
 					   name:UIKeyboardDidShowNotification object:nil];
 		[center addObserver:self selector:@selector(keyboardWillHide:)
 					   name:UIKeyboardWillHideNotification object:nil];
+
+		[center addObserver:self selector:@selector(keyboardFrameDidChange:)
+					   name:UIKeyboardDidChangeFrameNotification object:nil];
 
 		// Done!
 		[self addSubview:textField];
@@ -416,6 +421,14 @@ float GetUITextViewSizeDivider()
 	}
 }
 
+- (void)keyboardFrameDidChange:(NSNotification *)notification
+{
+    NSDictionary* userInfo = notification.userInfo;
+
+    // Remember the last keyboard frame here, since it might be incorrect in keyboardDidShow.
+    lastKeyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+}
+
 - (void)keyboardWillHide:(NSNotification *)notification
 {
 	if (cppTextField && cppTextField->GetDelegate())
@@ -431,15 +444,11 @@ float GetUITextViewSizeDivider()
 		return;
 	}
 
-	// keyboard frame is in window coordinates
-	NSDictionary *userInfo = [notification userInfo];
-	CGRect rawKeyboardFrame = [[userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-
 	// convert own frame to window coordinates, frame is in superview's coordinates
 	CGRect ownFrame = [textField.window convertRect:self.frame fromView:textField.superview];
 
 	// calculate the area of own frame that is covered by keyboard
-	CGRect keyboardFrame = CGRectIntersection(ownFrame, rawKeyboardFrame);
+	CGRect keyboardFrame = CGRectIntersection(ownFrame, lastKeyboardFrame);
 
 	// now this might be rotated, so convert it back
 	keyboardFrame = [textField.window convertRect:keyboardFrame toView:textField.superview];
@@ -731,6 +740,16 @@ namespace DAVA
         UITextPosition *start = [textField positionFromPosition:[textField beginningOfDocument] offset:pos];
         UITextPosition *end = [textField positionFromPosition:start offset:0];
         [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
+    }
+    
+    void UITextFieldiPhone::SetVisible(bool value)
+    {
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        if (textFieldHolder)
+        {
+            ::UITextField* textField = textFieldHolder->textField;
+            [textField setHidden: value == false];
+        }
     }
 }
 

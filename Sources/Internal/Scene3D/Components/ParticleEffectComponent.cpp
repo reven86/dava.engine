@@ -43,6 +43,7 @@ ParticleEffectComponent::ParticleEffectComponent()
 	stopWhenEmpty = false;
 	effectDuration = 0.0f;
 	emittersCurrentlyStopped = 0;
+    isStopped = false;
 	requireRebuildEffectModifiables = true;
 
 }
@@ -58,6 +59,7 @@ Component * ParticleEffectComponent::Clone(Entity * toEntity)
 	newComponent->playbackComplete = playbackComplete;
 	newComponent->effectDuration = effectDuration;
 	newComponent->emittersCurrentlyStopped = emittersCurrentlyStopped;	
+    newComponent->isStopped = isStopped;
 
 	return newComponent;
 }
@@ -81,6 +83,7 @@ void ParticleEffectComponent::Start()
 	}
 
 	this->emittersCurrentlyStopped = 0;
+    isStopped = false;
 }
 
 void ParticleEffectComponent::Stop(bool isDeleteAllParticles)
@@ -114,6 +117,8 @@ void ParticleEffectComponent::Pause(bool isPaused /*= true*/)
 
 bool ParticleEffectComponent::IsStopped()
 {
+    return isStopped;
+    /* old non working code
 	// Effect is stopped if all its emitters are stopped.
 	int32 childrenCount = entity->GetChildrenCount();
 	for (int32 i = 0; i < childrenCount; i ++)
@@ -130,6 +135,7 @@ bool ParticleEffectComponent::IsStopped()
 	}
 	
 	return true;
+    */
 }
 
 bool ParticleEffectComponent::IsPaused()
@@ -267,6 +273,7 @@ void ParticleEffectComponent::CheckPlaybackComplete()
 	{
 		// Playback is finished!
 		emittersCurrentlyStopped = 0;
+        isStopped = true;
 		playbackComplete(entity, 0);
 	}
 }

@@ -171,7 +171,7 @@ void LandscapeRenderer::BindMaterial(DAVA::Texture *materialTexture)
     
     // TODO: Check what does it mean? 
     float32 fogDensity = 0.006f;
-    Color fogColor(Color::White());
+    Color fogColor(Color::White);
 
     if (uniformFogColor != -1)
         shader->SetUniformColor3ByIndex(uniformFogColor, fogColor);

@@ -290,13 +290,13 @@ void ControlsFactory::CustomizeListCell(UIListCell *c, const WideString &text, b
 
     if(setLightFont)
     {
-        c->GetStateTextControl(UIControl::STATE_NORMAL)->SetTextColor(Color::White());
-        c->GetStateTextControl(UIControl::STATE_SELECTED)->SetTextColor(Color::White());
+        c->GetStateTextControl(UIControl::STATE_NORMAL)->SetTextColor(Color::White);
+        c->GetStateTextControl(UIControl::STATE_SELECTED)->SetTextColor(Color::White);
     }
     else
     {
-        c->GetStateTextControl(UIControl::STATE_NORMAL)->SetTextColor(Color::Black());
-        c->GetStateTextControl(UIControl::STATE_SELECTED)->SetTextColor(Color::Black());
+        c->GetStateTextControl(UIControl::STATE_NORMAL)->SetTextColor(Color::Black);
+        c->GetStateTextControl(UIControl::STATE_SELECTED)->SetTextColor(Color::Black);
     }
 }
 

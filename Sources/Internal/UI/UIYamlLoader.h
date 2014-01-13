@@ -81,6 +81,8 @@ public:
 	static bool Save(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode);
 	
     YamlNode* SaveToNode(UIControl * parentControl, YamlNode * rootNode, int relativeDepth = 0);
+    void SaveChildren(UIControl* parentControl, YamlNode * parentNode, int relativeDepth = 0);
+
 	bool ProcessSave(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode);
 
 	Font * GetFontByName(const String & fontName);

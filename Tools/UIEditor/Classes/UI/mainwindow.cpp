@@ -47,6 +47,12 @@
 #include "Dialogs/importdialog.h"
 #include "ImportCommands.h"
 #include "AlignDistribute/AlignDistributeEnums.h"
+#include "DefaultScreen.h"
+
+#include "Grid/GridController.h"
+#include "Grid/GridVisualizer.h"
+
+#include "Ruler/RulerController.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -98,6 +104,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	{
 		ui->scaleCombo->addItem(QString(PERCENTAGE_FORMAT).arg(SCALE_PERCENTAGES[i]));
 	}
+
 	ui->scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
 	ui->scaleCombo->lineEdit()->setMaxLength(6);
 	ui->scaleCombo->setInsertPolicy(QComboBox::NoInsert);
@@ -110,6 +117,30 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->menuView->addAction(ui->hierarchyDockWidget->toggleViewAction());
 	ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());
 	ui->menuView->addAction(ui->propertiesDockWidget->toggleViewAction());
+
+    // Setup rulers.
+    ui->horizontalRuler->SetOrientation(RulerWidget::Horizontal);
+    ui->verticalRuler->SetOrientation(RulerWidget::Vertical);
+
+    connect(RulerController::Instance(),
+            SIGNAL(HorisontalRulerSettingsChanged(const RulerSettings &)),
+            ui->horizontalRuler,
+            SLOT(OnRulerSettingsChanged(const RulerSettings &)));
+    connect(RulerController::Instance(),
+            SIGNAL(VerticalRulerSettingsChanged(const RulerSettings &)),
+            ui->verticalRuler,
+            SLOT(OnRulerSettingsChanged(const RulerSettings &)));
+    
+    connect(RulerController::Instance(),
+            SIGNAL(HorisontalRulerMarkPositionChanged(int)),
+            ui->horizontalRuler,
+            SLOT(OnMarkerPositionChanged(int)));
+    connect(RulerController::Instance(),
+            SIGNAL(VerticalRulerMarkPositionChanged(int)),
+            ui->verticalRuler,
+            SLOT(OnMarkerPositionChanged(int)));
+    
+    RulerController::Instance()->UpdateRulers();
 
     connect(ui->actionFontManager, SIGNAL(triggered()), this, SLOT(OnOpenFontManager()));
     connect(ui->actionLocalizationManager, SIGNAL(triggered()), this, SLOT(OnOpenLocalizationManager()));
@@ -276,8 +307,8 @@ void MainWindow::UpdateScaleControls()
 		this->ui->scaleCombo->setEditText(QString("%1 %").arg(scaleInPercents));
 	}
 
-	// Re-update the scale on the Screen Wrapper level to sync everything.
-	ScreenWrapper::Instance()->SetScale(newScale);
+    // Re-update the scale on the Screen Wrapper level to sync everything.
+    NotifyScaleUpdated(newScale);
 }
 
 void MainWindow::OnUpdateScaleRequest(float scaleDelta)
@@ -391,7 +422,7 @@ void MainWindow::UpdateScale(int32 newScalePercents)
 	Vector2 cursorPos = ScreenWrapper::Instance()->GetCursorPosition();
 	Vector2 scenePosition = CalculateScenePositionForPoint(ui->davaGlWidget->rect(), cursorPos, prevScale);
 
-	ScreenWrapper::Instance()->SetScale(newScale);
+    NotifyScaleUpdated(newScale);
 
 	UpdateSliders();
 	UpdateScreenPosition();
@@ -457,6 +488,9 @@ void MainWindow::resizeEvent(QResizeEvent * event)
 	Vector2 newViewPortCenter = Vector2(widgetSize.width() / 2, widgetSize.height() / 2);
 
 	ScrollToScenePositionAndPoint(viewPortSceneCenter, newViewPortCenter, curScale);
+
+	// Update the rulers to take new window size int account.
+	RulerController::Instance()->UpdateRulers();
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -541,6 +575,14 @@ void MainWindow::UpdateScreenPosition()
 	int valueV = ui->verticalScrollBar->value();
 	int valueH = ui->horizontalScrollBar->value();
 	ScreenWrapper::Instance()->SetViewPos(valueH, valueV, ui->davaGlWidget->rect());
+
+    DefaultScreen* currentScreen = ScreenWrapper::Instance()->GetActiveScreen();
+    if (currentScreen)
+    {
+        Vector2 viewPos = -currentScreen->GetPos();
+        viewPos *= ScreenWrapper::Instance()->GetScale();
+        RulerController::Instance()->SetViewPos(viewPos);
+    }
 }
 
 void MainWindow::OnUpdateScreenPositionRequest(const QPoint& posDelta)
@@ -648,6 +690,9 @@ void MainWindow::InitMenu()
     // Reload.
     connect(ui->actionRepack_And_Reload, SIGNAL(triggered()), this, SLOT(OnRepackAndReloadSprites()));
 
+    // Pixelization.
+    ui->actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
+    connect(ui->actionPixelized, SIGNAL(triggered()), this, SLOT(OnPixelizationStateChanged()));
 	UpdateMenu();
 }
 
@@ -991,6 +1036,12 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
 
 	// Update window title
 	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+    
+    // Apply the pixelization, if needed.
+    if (EditorSettings::Instance()->IsPixelized())
+    {
+        HierarchyTreeController::Instance()->ApplyPixelizationForAllSprites();
+    }
 }
 
 void MainWindow::OnUndoRequested()
@@ -1165,7 +1216,32 @@ void MainWindow::OnDistributeEqualDistanceBetweenY()
 
 void MainWindow::OnRepackAndReloadSprites()
 {
+    // Force repack and reload here.
+    RepackAndReloadSprites(true);
+}
+
+void MainWindow::NotifyScaleUpdated(float32 newScale)
+{
+    ScreenWrapper::Instance()->SetScale(newScale);
+    GridVisualizer::Instance()->SetScale(newScale);
+
+    GridController::Instance()->SetScale(newScale);
+    RulerController::Instance()->SetScale(newScale);
+}
+
+void MainWindow::OnPixelizationStateChanged()
+{
+    bool isPixelized = ui->actionPixelized->isChecked();
+    EditorSettings::Instance()->SetPixelized(isPixelized);
+
+    // No repack is needed here - reload only.
+    RepackAndReloadSprites(false);
+}
+
+void MainWindow::RepackAndReloadSprites(bool needRepack)
+{
     ScreenWrapper::Instance()->SetApplicationCursor(Qt::WaitCursor);
-    HierarchyTreeController::Instance()->RepackAndReloadSprites();
+
+    HierarchyTreeController::Instance()->RepackAndReloadSprites(needRepack, EditorSettings::Instance()->IsPixelized());
     ScreenWrapper::Instance()->RestoreApplicationCursor();
 }

@@ -32,14 +32,22 @@
 #include "ResourcesManageHelper.h"
 #include "UIControlStateHelper.h"
 
-ReloadSpritesCommand::ReloadSpritesCommand(const HierarchyTreeNode* node)
+#include "Helpers/SpritesHelper.h"
+
+ReloadSpritesCommand::ReloadSpritesCommand(const HierarchyTreeNode* node, bool needRepack, bool pixelized)
 {
     this->rootNode = node;
+    this->isNeedRepack = needRepack;
+    this->isPixelized = pixelized;
 }
 
 void ReloadSpritesCommand::Execute()
 {
-    RepackSprites();
+    if (isNeedRepack)
+    {
+        RepackSprites();
+    }
+
     ReloadSprites();
 }
 
@@ -56,69 +64,16 @@ void ReloadSpritesCommand::RepackSprites()
 
 void ReloadSpritesCommand::ReloadSprites()
 {
-    Set<Sprite*> spritesToReload;
-    for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator platformIter = rootNode->GetChildNodes().begin(); platformIter != rootNode->GetChildNodes().end(); ++platformIter)
-    {
-        const HierarchyTreePlatformNode* platformNode = dynamic_cast<HierarchyTreePlatformNode*>(*platformIter);
-        if (!platformNode)
-        {
-            continue;
-        }
-        
-        for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator screenIter = platformNode->GetChildNodes().begin(); screenIter != platformNode->GetChildNodes().end(); ++screenIter)
-        {
-            const HierarchyTreeScreenNode* screenNode = dynamic_cast<HierarchyTreeScreenNode*>(*screenIter);
-            if (!screenNode)
-            {
-                continue;
-            }
-            
-            for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator controlIter = screenNode->GetChildNodes().begin(); controlIter != screenNode->GetChildNodes().end(); ++controlIter)
-            {
-                const HierarchyTreeControlNode* controlNode = dynamic_cast<HierarchyTreeControlNode*>(*controlIter);
-                BuildSpritesListRecursive(controlNode, spritesToReload);
-            }
-        }
-    }
-
+    Set<Sprite*> spritesToReload = SpritesHelper::EnumerateSprites(rootNode);
     for (Set<Sprite*>::iterator iter = spritesToReload.begin(); iter != spritesToReload.end(); iter ++)
     {
-        (*iter)->Reload();
-    }
-}
-
-void ReloadSpritesCommand::BuildSpritesListRecursive(const HierarchyTreeControlNode* controlNode, Set<Sprite*>& spritesToReload)
-{
-    if (!controlNode)
-    {
-        return;
-    }
-    
-    // Specific check for UIButton - it has more than one sprite to reload.
-    UIButton* buttonControl = dynamic_cast<UIButton*>(controlNode->GetUIObject());
-    if (buttonControl)
-    {
-        //States cycle for values
-        int32 statesCount = UIControlStateHelper::GetUIControlStatesCount();
-		for (int32 i = 0; i < statesCount; ++i)
-		{
-            Sprite* buttonSprite = buttonControl->GetStateSprite(UIControlStateHelper::GetUIControlState(i));
-            if (buttonSprite)
-            {
-                spritesToReload.insert(buttonSprite);
-            }
+        if (isPixelized)
+        {
+            SpritesHelper::ApplyPixelization(*iter);
         }
-    }
-    else if (controlNode->GetUIObject() && controlNode->GetUIObject()->GetSprite())
-    {
-        spritesToReload.insert(controlNode->GetUIObject()->GetSprite());
-    }
-
-    // Repeat for all children.
-    const HierarchyTreeNode::HIERARCHYTREENODESLIST& childNodes = controlNode->GetChildNodes();
-    for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = childNodes.begin(); iter != childNodes.end(); iter ++)
-    {
-        const HierarchyTreeControlNode* childNode = dynamic_cast<const HierarchyTreeControlNode*>(*iter);
-        BuildSpritesListRecursive(childNode, spritesToReload);
+        else
+        {
+            (*iter)->Reload();
+        }
     }
 }

@@ -127,7 +127,13 @@ public:
     // Fill ExtraData from attached Control values. Specific for each classes.
     virtual void UpdateExtraData(HierarchyTreeNodeExtraData& /*extraData*/, eExtraDataUpdateStyle /*updateStyle*/) {};
 
+    // Set the "Pixelization Needed" flag.
+    void SetPixelizationNeeded(bool value);
+
 protected:
+    // Default Flags.
+    virtual bool GetInitialInputEnabled() const = 0;
+
     // Initialization constants.
     static const Vector2 INITIAL_CONTROL_SIZE;
 
@@ -162,6 +168,9 @@ protected:
 
     // UI Control State.
     Vector<UIControl::eControlState> uiControlStates;
+    
+    // Pixelization flag.
+    bool pixelizationNeeded;
 };
 
 }

@@ -310,7 +310,7 @@ Vector4 YamlNode::AsVector4() const
 
 Color YamlNode::AsColor() const
 {
-    Color result = Color::White();
+    Color result = Color::White;
     if (type == TYPE_ARRAY)
     {
         const YamlNode * r = Get(0);
@@ -1013,27 +1013,45 @@ void YamlNode::InitFromKeyedArchive(KeyedArchive* archive)
     
 /*******************************************************/
 	
-YamlParser * YamlParser::Create(const FilePath & fileName)
-{
-	YamlParser * parser = new YamlParser();
-	if (parser)
-	{
-		bool parseResult = parser->Parse(fileName);
-		if(!parseResult)
-		{
-			SafeRelease(parser);
-			return 0;
-		}
-	}
-	return parser;
-}
 	
 YamlParser * YamlParser::Create()
 {
     return new YamlParser();
 }
     
+
+bool YamlParser::Parse(const String& data)
+{
+    YamlDataHolder dataHolder;
+    dataHolder.fileSize = data.size();
+    dataHolder.data = (uint8 *)data.c_str();
+    dataHolder.dataOffset = 0;    
+
+    return Parse(&dataHolder);
+}
+
 bool YamlParser::Parse(const FilePath & pathName)
+{
+    File * yamlFile = File::Create(pathName, File::OPEN | File::READ);
+    if (!yamlFile)
+    {
+        Logger::Error("[YamlParser::Parse] Can't create file: %s", pathName.GetAbsolutePathname().c_str());
+        return false;
+    }
+
+    YamlDataHolder dataHolder;
+    dataHolder.fileSize = yamlFile->GetSize();
+    dataHolder.data = new uint8[dataHolder.fileSize];
+    dataHolder.dataOffset = 0;
+    yamlFile->Read(dataHolder.data, dataHolder.fileSize);
+    SafeRelease(yamlFile);
+
+    bool result = Parse(&dataHolder);
+    SafeDeleteArray(dataHolder.data);
+    return result;
+}
+
+bool YamlParser::Parse(YamlDataHolder * dataHolder)
 {
 	yaml_parser_t parser;
 	yaml_event_t event;
@@ -1047,22 +1065,8 @@ bool YamlParser::Parse(const FilePath & pathName)
 	
 	/* Set a string input. */
 	//yaml_parser_set_input_string(&parser, (const unsigned char*)pathName.c_str(), pathName.length());
-	
-
-	File * yamlFile = File::Create(pathName, File::OPEN | File::READ);
-    if (!yamlFile)
-    {
-        Logger::Error("[YamlParser::Parse] Can't create file: %s", pathName.GetAbsolutePathname().c_str());
-        return false;
-    }
-    
-	dataHolder.fileSize = yamlFile->GetSize();
-	dataHolder.data = new uint8[dataHolder.fileSize];
-	dataHolder.dataOffset = 0;
-	yamlFile->Read(dataHolder.data, dataHolder.fileSize);
-	SafeRelease(yamlFile);
-	
-	yaml_parser_set_input(&parser, read_handler, &dataHolder);
+		
+	yaml_parser_set_input(&parser, read_handler, dataHolder);
 
 	YamlNode * mapKey = 0;
 //	YamlNode * mapValue = 0;
@@ -1266,8 +1270,6 @@ bool YamlParser::Parse(const FilePath & pathName)
 	/* Destroy the Parser object. */
 	yaml_parser_delete(&parser);
 //	fclose(input);
-
-	SafeDeleteArray(dataHolder.data);
     
     DVASSERT(objectStack.size() == 0);
 	
@@ -1700,13 +1702,11 @@ bool YamlParser::SaveNodeRecursive(File* fileToSave, const String& nodeName,
 YamlParser::YamlParser()
 {
 	rootObject = 0;
-	dataHolder.data = 0;
 }
 
 YamlParser::~YamlParser()
 {
 	SafeRelease(rootObject);
-	SafeDeleteArray(dataHolder.data);
 }
 
 std::vector<String> split(const String& s, const String& delim, const bool keep_empty = true) 

@@ -160,25 +160,32 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_OES_texture_float");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
-#elif defined(__DAVAENGINE_MACOS__)
-    caps.isPVRTCSupported = false;
-	caps.isDXTSupported = IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");
-    caps.isETCSupported = IsGLExtensionSupported("GL_OES_compressed_ETC1_RGB8_texture");
-    caps.isBGRA8888Supported = IsGLExtensionSupported("GL_IMG_texture_format_BGRA8888");
-    caps.isFloat16Supported = IsGLExtensionSupported("GL_ARB_half_float_pixel");
-    caps.isFloat32Supported = IsGLExtensionSupported("GL_ARB_texture_float");
-	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
-#elif defined(__DAVAENGINE_WIN32__)
-    caps.isPVRTCSupported = false;
-    caps.isETCSupported = IsGLExtensionSupported("GL_OES_compressed_ETC1_RGB8_texture");
-    caps.isBGRA8888Supported = IsGLExtensionSupported("GL_IMG_texture_format_BGRA8888");
-    caps.isFloat16Supported = IsGLExtensionSupported("GL_ARB_half_float_pixel");
-    caps.isFloat32Supported = IsGLExtensionSupported("GL_ARB_texture_float");
-	caps.isDXTSupported = IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");
-	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
-#endif
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
-//	caps.isDXTSupported = IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");
+	caps.isPVRTCSupported = false;
+
+#if defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT) || defined(GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) || defined(GL_COMPRESSED_RGBA_S3TC_DXT3_EXT) || defined(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+	caps.isDXTSupported = IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");
+#else //DXT
+	caps.isDXTSupported = false;
+#endif //DXT
+
+#if defined(GL_ETC1_RGB8_OES)
+	caps.isETCSupported = IsGLExtensionSupported("GL_OES_compressed_ETC1_RGB8_texture");
+#else //ETC1
+	caps.isETCSupported = false;
+#endif //ETC1
+
+#if defined(GL_ATC_RGB_AMD) || defined(GL_ATC_RGBA_EXPLICIT_ALPHA_AMD) || defined(GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD)
+	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
+#else //ATC
+	caps.isATCSupported = false;
+#endif //ATC
+
+	caps.isBGRA8888Supported = IsGLExtensionSupported("GL_IMG_texture_format_BGRA8888");
+    caps.isFloat16Supported = IsGLExtensionSupported("GL_ARB_half_float_pixel");
+    caps.isFloat32Supported = IsGLExtensionSupported("GL_ARB_texture_float");
+#endif
 }
 
 bool RenderManager::IsDeviceLost()

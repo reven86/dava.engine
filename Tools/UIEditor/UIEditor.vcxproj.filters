@@ -61,6 +61,12 @@
     <Filter Include="Sources\AlignDistribute">
       <UniqueIdentifier>{09fe1967-6c8b-4f88-b2e3-9c0c5ca249a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Grid">
+      <UniqueIdentifier>{97539f91-1d0b-4e18-adfb-90a38d2d3563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Ruler">
+      <UniqueIdentifier>{30f28ebe-e4d0-4052-b5d1-5c47b9fde58f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\DefaultScreen.cpp">
@@ -648,6 +654,36 @@
     <ClCompile Include="Classes\Commands\ReloadSpritesCommand.cpp">
       <Filter>Sources\Commands</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Grid\GridController.cpp">
+      <Filter>Sources\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Helpers\SpritesHelper.cpp">
+      <Filter>Sources\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Ruler\RulerController.cpp">
+      <Filter>Sources\Ruler</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Ruler\RulerWidget.cpp">
+      <Filter>Sources\Ruler</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Grid\GridVisualizer.cpp">
+      <Filter>Sources\Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Ruler\RulerController_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Ruler\RulerSettings_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Ruler\RulerWidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Grid\GridController_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Grid\GridVisualizer_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\DefaultScreen.h">
@@ -1039,6 +1075,24 @@
     </ClInclude>
     <ClInclude Include="Classes\Commands\ReloadSpritesCommand.h">
       <Filter>Sources\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Grid\GridController.h">
+      <Filter>Sources\Grid</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Helpers\SpritesHelper.h">
+      <Filter>Sources\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Ruler\RulerController.h">
+      <Filter>Sources\Ruler</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Ruler\RulerSettings.h">
+      <Filter>Sources\Ruler</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Ruler\RulerWidget.h">
+      <Filter>Sources\Ruler</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Grid\GridVisualizer.h">
+      <Filter>Sources\Grid</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

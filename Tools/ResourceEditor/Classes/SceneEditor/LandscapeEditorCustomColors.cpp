@@ -128,7 +128,7 @@ void LandscapeEditorCustomColors::PerformLandscapeDraw()
 	sprLandscape->Draw();
 	RenderManager::Instance()->SetColor(1.f, 1.f, 1.f, .5f);
     colorSprite->Draw();
-	RenderManager::Instance()->SetColor(Color::White());
+	RenderManager::Instance()->SetColor(Color::White);
     texSurf->GenerateMipmaps();
     RenderManager::Instance()->RestoreRenderTarget();
 

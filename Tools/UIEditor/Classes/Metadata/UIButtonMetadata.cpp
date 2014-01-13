@@ -389,6 +389,8 @@ void UIButtonMetadata::SetSprite(const QString& value)
 		else
 		{
 			GetActiveUIButton()->SetStateSprite(this->uiControlStates[i], value.toStdString());
+            Sprite* newSprite = GetActiveUIButton()->GetStateSprite(this->uiControlStates[i]);
+            ApplyPixelization(newSprite);
 		}
 	}
 

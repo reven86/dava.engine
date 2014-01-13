@@ -87,7 +87,7 @@ void Cursor::HardwareSet()
     
 DAVA::Vector2 Cursor::GetPosition()
 {
-    return dynamic_cast<CoreMacOSPlatform *>(CoreMacOSPlatform::Instance())->GetMousePosition();
+    return static_cast<CoreMacOSPlatform *>(CoreMacOSPlatform::Instance())->GetMousePosition();
 }
     
 void Cursor::MoveToCenterOfWindow()

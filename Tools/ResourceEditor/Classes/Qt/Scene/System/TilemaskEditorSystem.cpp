@@ -437,7 +437,7 @@ void TilemaskEditorSystem::UpdateBrushTool()
 	
 	RenderManager::Instance()->SetBlendMode(srcBlendMode, dstBlendMode);
 	RenderManager::Instance()->RestoreRenderTarget();
-	RenderManager::Instance()->SetColor(Color::White());
+	RenderManager::Instance()->SetColor(Color::White);
 	
 	srcSprite->GetTexture()->GenerateMipmaps();
 	dstSprite->GetTexture()->GenerateMipmaps();
@@ -467,7 +467,7 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 	
 	RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-	RenderManager::Instance()->SetColor(Color::White());
+	RenderManager::Instance()->SetColor(Color::White);
 	
 	srcSprite->SetScaleSize((float32)sideSize, (float32)sideSize);
 	srcSprite->SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
@@ -527,7 +527,7 @@ Color TilemaskEditorSystem::GetTileColor(int32 index)
 {
 	if (index < 0 || index >= (int32)GetTileTextureCount())
 	{
-		return Color::Black();
+		return Color::Black;
 	}
 
 	Landscape::eTextureLevel level = (Landscape::eTextureLevel)(Landscape::TEXTURE_TILE0 + index);

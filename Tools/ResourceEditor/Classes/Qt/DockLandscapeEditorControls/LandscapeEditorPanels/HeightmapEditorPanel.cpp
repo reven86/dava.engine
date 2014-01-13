@@ -12,6 +12,7 @@
 #include <QRadioButton>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
+#include <QEvent.h>
 
 HeightmapEditorPanel::HeightmapEditorPanel(QWidget* parent)
 :	LandscapeEditorBasePanel(parent)
@@ -122,6 +123,7 @@ void HeightmapEditorPanel::InitUI()
 	QSpacerItem* spacerHeight = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Maximum);
 	editHeight->setMinimum(0);
 	editHeight->setMaximum(9999);
+	editHeight->installEventFilter(this);
 	
 	layoutHeight->addWidget(labelHeightDesc);
 	layoutHeight->addWidget(editHeight);
@@ -585,6 +587,20 @@ void HeightmapEditorPanel::DisconnectFromShortcuts()
 	shortcutManager->SetStrengthShortcutsEnabled(false);
 	shortcutManager->SetAvgStrengthShortcutsEnabled(false);
 	shortcutManager->SetBrushImageSwitchingShortcutsEnabled(false);
+}
+
+bool HeightmapEditorPanel::eventFilter(QObject *o, QEvent *e)
+{
+	if (o == editHeight && e->type() == QEvent::KeyPress)
+	{
+		QKeyEvent *keyEvent = static_cast<QKeyEvent*>(e);
+		if(keyEvent->key() == Qt::Key_Plus || keyEvent->key() == Qt::Key_Minus)
+		{
+			e->ignore();
+			return true;
+		}
+	}
+	return LandscapeEditorBasePanel::eventFilter(o, e);
 }
 
 void HeightmapEditorPanel::IncreaseBrushSize()

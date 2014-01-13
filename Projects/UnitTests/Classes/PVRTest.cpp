@@ -90,7 +90,7 @@ void PVRTest::LoadResources()
     compareResultText->SetAlign(ALIGN_LEFT | ALIGN_VCENTER);
     compareResultText->SetMultiline(true);
     compareResultText->SetFont(font);
-    compareResultText->SetTextColor(Color::White());
+    compareResultText->SetTextColor(Color::White);
     AddControl(compareResultText);
 
     SafeRelease(font);

@@ -65,7 +65,9 @@ void ListPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 }
 
 void ListPropertyGridWidget::Cleanup()
-{	
+{
+	BasePropertyGridWidget::Cleanup();
+
 	UnregisterComboBoxWidget(ui->aggregatorsComboBox);
 	UnregisterComboBoxWidget(ui->orientationComboBox);
 }

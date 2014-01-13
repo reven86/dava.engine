@@ -39,7 +39,8 @@ const Vector2 BaseMetadata::INITIAL_CONTROL_SIZE = Vector2(100, 30);
 BaseMetadata::BaseMetadata(QObject *parent) :
     QObject(parent),
     activeParamID(BaseMetadataParams::BaseMetadataID_UNKNOWN),
-	activeStateIndex(STATE_INDEX_DEFAULT)
+	activeStateIndex(STATE_INDEX_DEFAULT),
+    pixelizationNeeded(false)
 {
 }
 
@@ -123,7 +124,10 @@ void BaseMetadata::InitializeControl(const String& controlName, const Vector2& p
         control->SetName(controlName);
         control->SetSize(INITIAL_CONTROL_SIZE);
         control->SetPosition(position);
-        
+
+        // Default Flags.
+        control->SetInputEnabled(GetInitialInputEnabled());
+
         control->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     }
 }
@@ -310,4 +314,9 @@ void BaseMetadata::ResetActiveStateIndex()
 uint32 BaseMetadata::GetStatesCount() const
 {
 	return uiControlStates.size();
+}
+
+void BaseMetadata::SetPixelizationNeeded(bool value)
+{
+    pixelizationNeeded = value;
 }

@@ -205,29 +205,6 @@ void KeyboardDevice::PrepareKeyTranslator()
     
 #endif
 
-#if defined(__DAVAENGINE_ANDROID__)
-
-    keyTranslator[0x60] = DVKEY_BUTTON_A;
-    keyTranslator[0x61] = DVKEY_BUTTON_B;
-    keyTranslator[0x62] = DVKEY_BUTTON_C;
-    keyTranslator[0x63] = DVKEY_BUTTON_X;
-    keyTranslator[0x64] = DVKEY_BUTTON_Y;
-    keyTranslator[0x65] = DVKEY_BUTTON_Z;
-    keyTranslator[0x66] = DVKEY_BUTTON_L1;
-    keyTranslator[0x68] = DVKEY_BUTTON_L2;
-    keyTranslator[0x67] = DVKEY_BUTTON_R1;
-    keyTranslator[0x69] = DVKEY_BUTTON_R2;
-    keyTranslator[0x15] = DVKEY_DPAD_LEFT;
-    keyTranslator[0x16] = DVKEY_DPAD_RIGHT;
-    keyTranslator[0x13] = DVKEY_DPAD_UP;
-    keyTranslator[0x14] = DVKEY_DPAD_DOWN;
-    keyTranslator[0x17] = DVKEY_DPAD_CENTER;
-    keyTranslator[0x6e] = DVKEY_BUTTON_MODE;
-    keyTranslator[0x6d] = DVKEY_BUTTON_SELECT;
-    keyTranslator[0x6c] = DVKEY_BUTTON_START;
-	keyTranslator[0x04] = DVKEY_BUTTON_BACK;
-
-#endif
 }
 
 void KeyboardDevice::ClearAllKeys()

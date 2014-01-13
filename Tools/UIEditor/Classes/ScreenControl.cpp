@@ -33,10 +33,10 @@
 #include "HierarchyTreeNode.h"
 #include "Render/RenderHelper.h"
 #include "Render/RenderManager.h"
+#include "Grid/GridVisualizer.h"
 
 ScreenControl::ScreenControl()
 {
-
 }
 
 ScreenControl::~ScreenControl()
@@ -54,6 +54,7 @@ void ScreenControl::SystemDraw(const UIGeometricData &geometricData)
 	RenderManager::Instance()->ResetColor();
 	
 	UIControl::SystemDraw(geometricData);
+	GridVisualizer::Instance()->DrawGridIfNeeded(GetRect());
 }
 
 bool ScreenControl::IsPointInside(const Vector2& /*point*/, bool/* expandWithFocus*/)

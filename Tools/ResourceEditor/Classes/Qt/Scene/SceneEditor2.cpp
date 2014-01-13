@@ -495,7 +495,7 @@ const Color SceneEditor2::GetShadowColor() const
 	if(GetRenderSystem())
 		return GetRenderSystem()->GetShadowRectColor();
 
-	return Color::White();
+	return Color::White;
 }
 
 void SceneEditor2::SetShadowBlendMode( ShadowVolumeRenderPass::eBlend blend )

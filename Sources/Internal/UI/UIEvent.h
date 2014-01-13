@@ -47,6 +47,16 @@ class UIControl;
 class UIEvent
 {
 public:
+
+    enum eInputSource
+    {
+        INPUT_UNDEFINED,
+        INPUT_SOURCE_TOUCHSCREEN,
+        INPUT_SOURCE_MOUSE,
+        INPUT_SOURCE_KEYBOARD,
+        INPUT_SOURCE_GAMEPAD
+    };
+
 	/**
 	 \enum Control state bits.
 	 */
@@ -61,7 +71,7 @@ public:
 #endif //#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__) 
 		,	PHASE_CANCELLED	//!<Event was cancelled by the platform or by the control system for the some reason.  
 
-		,	PHASE_KEYCHAR	//!<Event is a keyboard key pressing event.                                     
+		,	PHASE_KEYCHAR	//!<Event is a keyboard key pressing event.
 		,	PHASE_JOYSTICK
 	};
 	
@@ -119,6 +129,7 @@ public:
 		,	JOYSTICK_AXIS_HAT_Y
 	};
 
+
 	int32 tid;//!< event id, for the platforms with mouse this id means mouse button id, key codes for keys, axis id for joystick
 	Vector2 point;//!< point of pressure in virtual coordinates
 	Vector2 physPoint;//!< point of pressure in physical coordinates
@@ -153,6 +164,29 @@ public:
         keyChar(0),
         inputHandledType(INPUT_NOT_HANDLED)
 	{ }
+
+    eInputSource GetInputSource()
+    {
+        switch (phase)
+        {
+            case PHASE_BEGAN:
+            case PHASE_DRAG:
+            case PHASE_ENDED:
+            case PHASE_CANCELLED:
+                return INPUT_SOURCE_TOUCHSCREEN;
+            case PHASE_KEYCHAR:
+                return INPUT_SOURCE_KEYBOARD;
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
+			case PHASE_MOVE:
+            case PHASE_WHEEL:
+                return INPUT_SOURCE_MOUSE;
+#endif
+            case PHASE_JOYSTICK:
+                return INPUT_SOURCE_GAMEPAD;
+            default:
+                return INPUT_UNDEFINED;
+        }
+    }
 
 protected:
 	eInputHandledType inputHandledType;//!< input handled type, INPUT_NOT_HANDLED by default. 

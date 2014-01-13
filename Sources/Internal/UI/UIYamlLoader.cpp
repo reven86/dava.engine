@@ -534,22 +534,25 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
         parentNode->AddNodeToMap(parentControl->GetName(), childNode);
     }
 
+    SaveChildren(parentControl, childNode, relativeDepth);
+
+    return childNode;
+}
+
+void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode, int relativeDepth)
+{
     // "Relative Depth" is needed to save the order of the nodes - it is important!
-    childNode->Set(YamlNode::YAML_NODE_RELATIVE_DEPTH_NAME, relativeDepth);
-
+    parentNode->Set(YamlNode::YAML_NODE_RELATIVE_DEPTH_NAME, relativeDepth);
+    
     int currentDepth = 0;
-//  const List<UIControl*>& children = parentControl->GetChildren();
-//  for (List<UIControl*>::const_iterator childIter = children.begin(); childIter != children.end(); childIter ++)
-
+    
 	const List<UIControl*>& children = parentControl->GetRealChildren();
 	for (List<UIControl*>::const_iterator childIter = children.begin(); childIter != children.end(); childIter ++)
     {
         UIControl* childControl = (*childIter);
-        SaveToNode(childControl, childNode, currentDepth);
+        SaveToNode(childControl, parentNode, currentDepth);
         currentDepth ++;
     }
-
-    return childNode;
 }
 
 void UIYamlLoader::SetAssertIfCustomControlNotFound(bool value)

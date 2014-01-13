@@ -79,7 +79,7 @@ Landscape::Landscape()
         uniformTextureTiling[k] = -1;
         textureTiling[k] = Vector2(1.0f, 1.0f);
         uniformTileColor[k] = -1;
-        tileColor[k] = Color::White();
+        tileColor[k] = Color::White;
     }
     uniformFogDensity = -1;
     uniformFogColor = -1;
@@ -92,7 +92,7 @@ Landscape::Landscape()
     
     isFogEnabled = false;
     fogDensity = 0.006f;
-    fogColor = Color::White();
+    fogColor = Color::White;
 	
 	//VI: init shaders AFTER all member variables were initialized
 	SetTiledShaderMode(TILED_MODE_MIXED);

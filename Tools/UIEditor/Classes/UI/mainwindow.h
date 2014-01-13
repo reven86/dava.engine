@@ -124,6 +124,9 @@ private slots:
 
     // Repack and Reload.
     void OnRepackAndReloadSprites();
+    
+    // Pixelization.
+    void OnPixelizationStateChanged();
 
 private:
 	bool CloseProject();
@@ -156,6 +159,11 @@ private:
 	void ScrollToScenePositionAndPoint(const Vector2& scenePosition, const Vector2& point,
 									   float newScale);
 
+    // Notify external systems that the scale is updated.
+    void NotifyScaleUpdated(float32 newScale);
+
+    // Repack (if needed) and reload sprites.
+    void RepackAndReloadSprites(bool needRepack);
 private:
     Ui::MainWindow *ui;
 	QAction *recentPojectActions[EditorSettings::RECENT_FILES_COUNT];

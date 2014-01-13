@@ -59,6 +59,7 @@ REGISTER_CLASS(Landscape);
 REGISTER_CLASS(UIAggregatorControl);
 REGISTER_CLASS(Light);
 REGISTER_CLASS(Mesh);
+REGISTER_CLASS(SpeedTreeObject);
 REGISTER_CLASS(RenderBatch);
 REGISTER_CLASS(RenderObject);
 REGISTER_CLASS(ShadowVolume);

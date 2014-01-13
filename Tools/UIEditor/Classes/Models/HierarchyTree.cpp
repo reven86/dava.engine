@@ -513,6 +513,7 @@ void HierarchyTree::UpdateExtraDataRecursive(HierarchyTreeControlNode* node, Bas
         metadata->SetActiveParamID(0);
 
         metadata->UpdateExtraData(node->GetExtraData(), updateStyle);
+        delete metadata;
     }
 
     // Repeat the same for all inner children.

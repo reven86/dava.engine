@@ -48,7 +48,7 @@ void TileTexturePreviewWidget::Clear()
 	labels.clear();
 }
 
-void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& color /*  = Color::White() */)
+void TileTexturePreviewWidget::AddTexture(Image* previewTexture, const Color& color /*  = Color::White */)
 {
 	bool blocked = signalsBlocked();
 	blockSignals(true);

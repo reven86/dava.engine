@@ -12,6 +12,9 @@
 		02714763176B50420011B24C /* TextureSquarenessChecker.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 02714761176B50420011B24C /* TextureSquarenessChecker.cpp */; };
 		0297F311170B403100627F78 /* MaterialViewOptions.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 0297F30F170B403100627F78 /* MaterialViewOptions.cpp */; };
 		0297F317170B404100627F78 /* MaterialViewOptionsCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 0297F315170B404100627F78 /* MaterialViewOptionsCommands.cpp */; };
+		02A03D52186C1A5100FA72CE /* CreatePlaneLODCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 02A03D50186C1A5100FA72CE /* CreatePlaneLODCommand.cpp */; };
+		02A03D5D186C1B5D00FA72CE /* PlaneLODDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 02A03D5B186C1B5D00FA72CE /* PlaneLODDialog_moc.cpp */; };
+		02A03D61186C1B7500FA72CE /* PlaneLODDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 02A03D5F186C1B7500FA72CE /* PlaneLODDialog.cpp */; };
 		02E9E4101739612300C501BC /* libfmodevent.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E40E1739612300C501BC /* libfmodevent.dylib */; };
 		02E9E4111739612300C501BC /* libfmodex.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E40F1739612300C501BC /* libfmodex.dylib */; };
 		02E9E442173965B800C501BC /* SceneTree.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 02E9E43C173965B800C501BC /* SceneTree.cpp */; };
@@ -694,6 +697,12 @@
 		0297F310170B403100627F78 /* MaterialViewOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialViewOptions.h; sourceTree = "<group>"; };
 		0297F315170B404100627F78 /* MaterialViewOptionsCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaterialViewOptionsCommands.cpp; path = Classes/Commands/MaterialViewOptionsCommands.cpp; sourceTree = "<group>"; };
 		0297F316170B404100627F78 /* MaterialViewOptionsCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaterialViewOptionsCommands.h; path = Classes/Commands/MaterialViewOptionsCommands.h; sourceTree = "<group>"; };
+		02A03D50186C1A5100FA72CE /* CreatePlaneLODCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CreatePlaneLODCommand.cpp; sourceTree = "<group>"; };
+		02A03D51186C1A5100FA72CE /* CreatePlaneLODCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreatePlaneLODCommand.h; sourceTree = "<group>"; };
+		02A03D5B186C1B5D00FA72CE /* PlaneLODDialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlaneLODDialog_moc.cpp; sourceTree = "<group>"; };
+		02A03D5C186C1B5D00FA72CE /* ui_planeloddialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_planeloddialog.h; path = _GeneratedQt/ui_planeloddialog.h; sourceTree = "<group>"; };
+		02A03D5F186C1B7500FA72CE /* PlaneLODDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PlaneLODDialog.cpp; sourceTree = "<group>"; };
+		02A03D60186C1B7500FA72CE /* PlaneLODDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PlaneLODDialog.h; sourceTree = "<group>"; };
 		02E9E40E1739612300C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		02E9E40F1739612300C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		02E9E43C173965B800C501BC /* SceneTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneTree.cpp; sourceTree = "<group>"; };
@@ -1896,6 +1905,25 @@
 			path = Classes/Qt/DockMaterialViewOptions;
 			sourceTree = "<group>";
 		};
+		02A03D5A186C1B5D00FA72CE /* PlaneLODDialog */ = {
+			isa = PBXGroup;
+			children = (
+				02A03D5B186C1B5D00FA72CE /* PlaneLODDialog_moc.cpp */,
+			);
+			name = PlaneLODDialog;
+			path = _GeneratedQt/PlaneLODDialog;
+			sourceTree = "<group>";
+		};
+		02A03D5E186C1B7500FA72CE /* PlaneLODDialog */ = {
+			isa = PBXGroup;
+			children = (
+				02A03D5F186C1B7500FA72CE /* PlaneLODDialog.cpp */,
+				02A03D60186C1B7500FA72CE /* PlaneLODDialog.h */,
+			);
+			name = PlaneLODDialog;
+			path = Classes/Qt/PlaneLODDialog;
+			sourceTree = "<group>";
+		};
 		02E9E43B173965B800C501BC /* DockSceneTree */ = {
 			isa = PBXGroup;
 			children = (
@@ -2577,6 +2605,8 @@
 		4FFE5C76176B37B600728624 /* Commands2 */ = {
 			isa = PBXGroup;
 			children = (
+				02A03D50186C1A5100FA72CE /* CreatePlaneLODCommand.cpp */,
+				02A03D51186C1A5100FA72CE /* CreatePlaneLODCommand.h */,
 				62A7AD24180BDD2100282F2E /* LandscapeSetTexturesCommands.cpp */,
 				62A7AD25180BDD2100282F2E /* LandscapeSetTexturesCommands.h */,
 				E8DADC2B17E9ED3C00561D52 /* AddComponentCommand.cpp */,
@@ -2660,6 +2690,7 @@
 		5C2763A415B82BDF0030A8FD /* Qt */ = {
 			isa = PBXGroup;
 			children = (
+				02A03D5E186C1B7500FA72CE /* PlaneLODDialog */,
 				02F8B05817E32B7300D5A334 /* SpeedTree */,
 				49FE771217E349850010B8E1 /* DockLandscapeEditorControls */,
 				62A43E0417BCFCAF0003287B /* Settings */,
@@ -3887,6 +3918,8 @@
 		E89DFBE4163ECBB800B51706 /* GeneratedQt */ = {
 			isa = PBXGroup;
 			children = (
+				02A03D5A186C1B5D00FA72CE /* PlaneLODDialog */,
+				02A03D5C186C1B5D00FA72CE /* ui_planeloddialog.h */,
 				021413F7181970C400925E51 /* SpeedTreeImport */,
 				021413F6181970B700925E51 /* ui_treeimportdialog.h */,
 				495A602517E6F8E000039A43 /* DockLandscapeEditorControls */,
@@ -4493,6 +4526,7 @@
 				5C574E5315C9463C0015537A /* btManifoldResult.cpp in Build Sources */,
 				5C574E5415C9463C0015537A /* btSimulationIslandManager.cpp in Build Sources */,
 				5C574E5515C9463C0015537A /* btSphereBoxCollisionAlgorithm.cpp in Build Sources */,
+				02A03D5D186C1B5D00FA72CE /* PlaneLODDialog_moc.cpp in Build Sources */,
 				5C574E5615C9463C0015537A /* btSphereSphereCollisionAlgorithm.cpp in Build Sources */,
 				5C574E5715C9463C0015537A /* btSphereTriangleCollisionAlgorithm.cpp in Build Sources */,
 				5C574E5815C9463C0015537A /* btUnionFind.cpp in Build Sources */,
@@ -4535,6 +4569,7 @@
 				5C574E7B15C9463C0015537A /* btTriangleMesh.cpp in Build Sources */,
 				E846D4B717F32B4D007383E3 /* QtLabelWithActions.cpp in Build Sources */,
 				5C574E7C15C9463C0015537A /* btTriangleMeshShape.cpp in Build Sources */,
+				02A03D52186C1A5100FA72CE /* CreatePlaneLODCommand.cpp in Build Sources */,
 				5C574E7D15C9463C0015537A /* btUniformScalingShape.cpp in Build Sources */,
 				5C574E7E15C9463C0015537A /* btContactProcessing.cpp in Build Sources */,
 				5C574E7F15C9463C0015537A /* btGenericPoolAllocator.cpp in Build Sources */,
@@ -4841,6 +4876,7 @@
 				4FAD0D391785EC6E00B05A35 /* QtPropertyItem_moc.cpp in Build Sources */,
 				E835202518103BB30056D14D /* QtFileDialog_moc.cpp in Build Sources */,
 				4FAD0D3A1785EC6E00B05A35 /* QtPropertyItemDelegate_moc.cpp in Build Sources */,
+				02A03D61186C1B7500FA72CE /* PlaneLODDialog.cpp in Build Sources */,
 				4FAD0D3B1785EC6E00B05A35 /* QtPropertyModel_moc.cpp in Build Sources */,
 				4FAD0D3C1785EC6E00B05A35 /* QtColorLineEdit_moc.cpp in Build Sources */,
 				74FE1CE5178B117500693D15 /* EditorParticlesSystem.cpp in Build Sources */,

@@ -83,7 +83,7 @@ private:
 	void GetChildItems(const QTreeWidgetItem* parent, Map<int, QTreeWidgetItem*> &items);
 
     // Select multiple items in the Hierarchy Tree which belong to the same screen.
-    void SelectMultipleTreeWidgetItems(const QList<QTreeWidgetItem*>& selectedItems);
+    void Select(const QList<QTreeWidgetItem*>& selectedItems);
 
 	void ResetSelection();
 

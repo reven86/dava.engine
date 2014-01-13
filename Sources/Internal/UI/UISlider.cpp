@@ -436,16 +436,6 @@ void UISlider::SystemDraw(const UIGeometricData &geometricData)
 	}
 }
 
-List<UIControl* >& UISlider::GetRealChildren()
-{
-	List<UIControl* >& realChildren = UIControl::GetRealChildren();
-	realChildren.remove(FindByName(UISLIDER_THUMB_SPRITE_CONTROL_NAME));
-	realChildren.remove(FindByName(UISLIDER_MIN_SPRITE_CONTROL_NAME));
-	realChildren.remove(FindByName(UISLIDER_MAX_SPRITE_CONTROL_NAME));
-
-	return realChildren;
-}
-	
 void UISlider::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
 	UIControl::LoadFromYamlNode(node, loader);
@@ -558,6 +548,10 @@ void UISlider::LoadFromYamlNodeCompleted()
 	
 YamlNode * UISlider::SaveToYamlNode(UIYamlLoader * loader)
 {
+    thumbButton->SetName(UISLIDER_THUMB_SPRITE_CONTROL_NAME);
+    bgMin->SetName(UISLIDER_MIN_SPRITE_CONTROL_NAME);
+    bgMax->SetName(UISLIDER_MAX_SPRITE_CONTROL_NAME);
+
     YamlNode *node = UIControl::SaveToYamlNode(loader);
     
     // Control Type
@@ -574,17 +568,6 @@ YamlNode * UISlider::SaveToYamlNode(UIYamlLoader * loader)
 	// Sprite max value
 	value = this->GetMaxValue();
 	node->Set("maxValue", value);
-
-	// Yuri Coder, 2013/04/24. Thumb Button and all the backgrounds are child controls now
-	// so save them under appropriate names.
-	YamlNode* thumbButtonNode = SaveToYamlNodeRecursive(loader, this->thumbButton);
-	node->AddNodeToMap(UISLIDER_THUMB_SPRITE_CONTROL_NAME, thumbButtonNode);
-
-	YamlNode* minBackgroundNode = SaveToYamlNodeRecursive(loader, this->bgMin);
-	node->AddNodeToMap(UISLIDER_MIN_SPRITE_CONTROL_NAME, minBackgroundNode);
-
-	YamlNode* maxBackgroundNode = SaveToYamlNodeRecursive(loader, this->bgMax);
-	node->AddNodeToMap(UISLIDER_MAX_SPRITE_CONTROL_NAME, maxBackgroundNode);
 
     return node;
 }

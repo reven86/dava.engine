@@ -37,7 +37,7 @@ class ReloadSpritesCommand: public BaseCommand
 {
 public:
 public:
-	ReloadSpritesCommand(const HierarchyTreeNode* node);
+	ReloadSpritesCommand(const HierarchyTreeNode* node, bool needRepack, bool pixelized);
 
 	virtual void Execute();
 	virtual bool IsUndoRedoSupported() {return false;};
@@ -46,12 +46,11 @@ protected:
     // Repack/reload sprites.
     void RepackSprites();
     void ReloadSprites();
-    
-    // Build the sprites list to be reloaded in a recursive way.
-    void BuildSpritesListRecursive(const HierarchyTreeControlNode* controlNode, Set<Sprite*>& spritesToReload);
 
 private:
     const HierarchyTreeNode* rootNode;
+    bool isNeedRepack;
+    bool isPixelized;
 };
 
 #endif /* defined(__RELOADSPRITESCOMMAND__H__) */

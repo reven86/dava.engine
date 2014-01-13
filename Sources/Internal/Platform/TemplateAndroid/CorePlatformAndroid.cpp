@@ -39,6 +39,7 @@ extern void FrameworkWillTerminate();
 #include "Platform/Thread.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
@@ -193,6 +194,7 @@ namespace DAVA
 
 			Logger::Debug("[CorePlatformAndroid::] before create renderer");
 			RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+			FileSystem::Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");
@@ -359,6 +361,12 @@ namespace DAVA
 	{
 		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source);
 
+		if(touchEvent.phase == DAVA::UIEvent::PHASE_JOYSTICK)
+		{
+			InputSystem::Instance()->ProcessInputEvent(&touchEvent);
+			return;
+		}
+		
 		bool isFound = false;
 		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); ++it)
 		{

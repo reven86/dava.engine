@@ -118,8 +118,10 @@ InputTest::InputTest() :
 	textField = NULL;
 	passwordTextField = NULL;
 	staticText = NULL;
+    
 	testButton = NULL;
 	removeFromParentButton = NULL;
+    disableInEventButton = NULL;
 	
 	onScreenTime = 0.0f;
 	testFinished = false;
@@ -146,7 +148,7 @@ void InputTest::LoadResources()
 #else
 	passwordTextField->SetFont(font);
 #endif
-    passwordTextField->SetTextColor(Color::White());
+    passwordTextField->SetTextColor(Color::White);
 
 	passwordTextField->SetSprite(spr,0);
     passwordTextField->SetSpriteAlign(ALIGN_RIGHT);
@@ -164,7 +166,7 @@ void InputTest::LoadResources()
 #else
 	textField->SetFont(font);
 #endif
-    textField->SetTextColor(Color::White());
+    textField->SetTextColor(Color::White);
 
 	textField->SetText(L"This field will auto-move over the keyboard.");
 	textField->SetDebugDraw(true);
@@ -185,7 +187,7 @@ void InputTest::LoadResources()
 	textField->SetFont(font);
 #endif
     
-    textField->SetTextColor(Color::White());
+    textField->SetTextColor(Color::White);
 
 	textField->SetText(L"textField");
 	textField->SetDebugDraw(true);
@@ -194,22 +196,29 @@ void InputTest::LoadResources()
 
 	removeFromParentButton = new UIButton(Rect(320, 300, 300, 30));
 	removeFromParentButton->SetStateFont(0xFF, font);
-	removeFromParentButton->SetStateFontColor(0xFF, Color::White());
+	removeFromParentButton->SetStateFontColor(0xFF, Color::White);
 	removeFromParentButton->SetStateText(0xFF, L"Remove From Parent Test");
 	removeFromParentButton->SetDebugDraw(true);
 	removeFromParentButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &InputTest::ButtonPressed));
 
 	testButton = new UIButton(Rect(0, 300, 300, 30));
 	testButton->SetStateFont(0xFF, font);
-	testButton->SetStateFontColor(0xFF, Color::White());
+	testButton->SetStateFontColor(0xFF, Color::White);
 	testButton->SetStateText(0xFF, L"Finish Test");
 	testButton->SetDebugDraw(true);
 	testButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &InputTest::ButtonPressed));
 
+    disableInEventButton = new UIButton(Rect(0, 340, 300, 30));
+	disableInEventButton->SetStateFont(0xFF, font);
+	disableInEventButton->SetStateFontColor(0xFF, Color::White);
+	disableInEventButton->SetStateText(0xFF, L"Disable and check input");
+	disableInEventButton->SetDebugDraw(true);
+	disableInEventButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &InputTest::ButtonPressed));
+
 	staticText = new UIStaticText(Rect(0, 0, 512, 20));
 	font->SetSize(10);
 	staticText->SetFont(font);
-    staticText->SetTextColor(Color::White());
+    staticText->SetTextColor(Color::White);
 	staticText->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);// 12 - Rtop
 	staticText->SetText(L"Type password in the field below");
 	staticText->SetDebugDraw(true);
@@ -218,7 +227,7 @@ void InputTest::LoadResources()
     cursorPositionStaticText = new UIStaticText(Rect(0, 82, 100, 20));
 	font->SetSize(10);
 	cursorPositionStaticText->SetFont(font);
-    cursorPositionStaticText->SetTextColor(Color::White());
+    cursorPositionStaticText->SetTextColor(Color::White);
 	cursorPositionStaticText->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 	cursorPositionStaticText->SetDebugDraw(true);
 	AddControl(cursorPositionStaticText);
@@ -255,6 +264,7 @@ void InputTest::LoadResources()
 
 	AddControl(testButton);
 	AddControl(removeFromParentButton);
+    AddControl(disableInEventButton);
 
     SafeRelease(spr);
     SafeRelease(texture);
@@ -278,6 +288,8 @@ void InputTest::UnloadResources()
 
 	SafeRelease(testButton);
 	SafeRelease(removeFromParentButton);
+	SafeRelease(disableInEventButton);
+    
 	SafeRelease(textField);
 	SafeRelease(passwordTextField);
 	SafeRelease(staticText);
@@ -365,6 +377,12 @@ void InputTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
 	{
 		removeFromParentButton->RemoveFromParent();
 	}
+    else if (obj == disableInEventButton)
+    {
+        DVASSERT(!disableInEventButton->GetDisabled());
+        disableInEventButton->SetStateText(0xFF, L"Disabled");
+        disableInEventButton->SetDisabled(true);
+    }
 }
 
 bool InputTest::TextFieldKeyPressed(UITextField * textField, int32 replacementLocation, int32 replacementLength, const WideString & replacementString)

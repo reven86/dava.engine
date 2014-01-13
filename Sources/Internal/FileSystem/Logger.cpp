@@ -290,6 +290,12 @@ void Logger::SetLogFilename(const String & filename)
 	}
 }
 
+void Logger::SetLogPathname(const FilePath & filepath)
+{
+	logFilename = filepath;
+}
+
+
 void Logger::FileLog(eLogLevel ll, const char8* text)
 {
 	if(FileSystem::Instance())

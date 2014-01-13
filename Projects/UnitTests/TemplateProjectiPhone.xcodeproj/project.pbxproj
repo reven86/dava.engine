@@ -31,6 +31,7 @@
 		74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7433863E179D18CE0014FBD3 /* UIScrollViewTest.cpp */; };
 		7497447517B3D61800282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497447317B3D61800282DAA /* AlignTest.cpp */; };
 		74ABFA4B185084E30017683C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74ABFA4A185084E30017683C /* Security.framework */; };
+		74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74BF98191876B3A7001D4CFE /* GameController.framework */; };
 		84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84C8F71316D3D16000FAC7DF /* DPITest.cpp */; };
 		C19E4FAA16C5488C00D0AC28 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C19E4FA816C5488C00D0AC28 /* DLCSystemTests.cpp */; };
 		CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24802416DF6CE000183D40 /* InputTest.cpp */; };
@@ -121,6 +122,7 @@
 		7497447417B3D61800282DAA /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlignTest.h; sourceTree = "<group>"; };
 		74ABFA48185084520017683C /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
 		74ABFA4A185084E30017683C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		74BF98191876B3A7001D4CFE /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		84C8F71316D3D16000FAC7DF /* DPITest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DPITest.cpp; sourceTree = "<group>"; };
 		84C8F71416D3D16000FAC7DF /* DPITest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPITest.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* TemplateProjectiPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TemplateProjectiPhone-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				74ABFA4B185084E30017683C /* Security.framework in Frameworks */,
+				74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */,
 				1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */,
 				496ABE8D179E6FEB00BCA6E9 /* AdSupport.framework in Frameworks */,
 				49A0DB291796F8050000970C /* MessageUI.framework in Frameworks */,
@@ -269,6 +272,7 @@
 			children = (
 				74ABFA4A185084E30017683C /* Security.framework */,
 				74ABFA48185084520017683C /* libcurl_ios.a */,
+				74BF98191876B3A7001D4CFE /* GameController.framework */,
 				496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */,
 				49A0DB281796F8050000970C /* MessageUI.framework */,
 				FEFB01D211C8F28A00B65B8B /* GameKit.framework */,

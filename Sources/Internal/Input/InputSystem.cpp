@@ -29,6 +29,7 @@
 
 #include "InputSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "Input/GamepadManager.h"
 #include "UI/UIControlSystem.h"
 #include "Render/RenderManager.h"
 
@@ -38,13 +39,15 @@ namespace DAVA
 InputSystem::InputSystem()
 {
     keyboard = new KeyboardDevice();
-    AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD | INPUT_DEVICE_JOYSTICK));
+    gamepadManager = new GamepadManager();
+    AddInputCallback(InputCallback(UIControlSystem::Instance(), &UIControlSystem::OnInput, INPUT_DEVICE_KEYBOARD));
     pinCursor = false;
 }
     
 InputSystem::~InputSystem()
 {
     SafeRelease(keyboard);
+    SafeRelease(gamepadManager);
 }
 
 void InputSystem::ProcessInputEvent(UIEvent * event)
@@ -111,5 +114,11 @@ KeyboardDevice *InputSystem::GetKeyboard()
 {
     return keyboard;
 }
+
+GamepadManager *InputSystem::GetGamepadManager()
+{
+    return gamepadManager;
+}
+
 
 };

@@ -102,7 +102,7 @@ public:
         \brief Set camera aspect ratio
         \param[in] aspectYdivX Aspect ratio is viewport height / viewport width
      */
-	void SetAspect(const float32 &aspectYdivX);
+	virtual void SetAspect(const float32 &aspectYdivX);
 
 
     /**

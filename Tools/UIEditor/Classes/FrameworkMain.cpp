@@ -74,5 +74,6 @@ void FrameworkDidLaunched()
 
 void FrameworkWillTerminate() 
 {
-
+    ApplicationCore* core = Core::GetApplicationCore();
+    SafeRelease(core);
 }

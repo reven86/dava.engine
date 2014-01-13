@@ -40,7 +40,7 @@ MemoryAllocatorsTest::MemoryAllocatorsTest()
 
 void MemoryAllocatorsTest::LoadResources()
 {
-    GetBackground()->SetColor(Color::White());
+    GetBackground()->SetColor(Color::White);
 }
 
 void MemoryAllocatorsTest::UnloadResources()

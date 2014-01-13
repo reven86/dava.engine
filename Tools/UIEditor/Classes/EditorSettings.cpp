@@ -118,3 +118,14 @@ String EditorSettings::GetUIEditorVersion()
 {
 	return settings->GetString("editor.version");
 }
+
+void EditorSettings::SetPixelized(bool value)
+{
+    settings->SetBool("editor.pixelized", value);
+	Save();
+}
+
+bool EditorSettings::IsPixelized()
+{
+    return settings->GetBool("editor.pixelized");
+}

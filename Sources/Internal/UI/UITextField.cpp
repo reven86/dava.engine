@@ -940,6 +940,23 @@ void UITextField::SetCursorPos(uint32 pos)
     // TODO! implement for other OS!
 }
 
+void UITextField::SetVisible(bool isVisible, bool hierarchic)
+{
+    UIControl::SetVisible(isVisible, hierarchic);
+
+#ifdef __DAVAENGINE_IPHONE__
+	textFieldiPhone->SetVisible(isVisible);
+#elif defined(__DAVAENGINE_ANDROID__)
+    // TODO! Yaroslav - implement for Android!
+	//textFieldAndroid->SetVisible(isVisible);
+#else
+    if (staticText)
+    {
+        staticText->SetVisible(isVisible, hierarchic);
+    }
+#endif
+}
+
 }; // namespace
 
 

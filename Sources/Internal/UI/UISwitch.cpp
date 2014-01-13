@@ -140,19 +140,12 @@ void UISwitch::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
 YamlNode * UISwitch::SaveToYamlNode(UIYamlLoader * loader)
 {
+    buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
+	toggle->SetName(UISWITCH_BUTTON_TOGGLE_NAME);
+	buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
+
 	YamlNode *node = UIControl::SaveToYamlNode(loader);
-
-	//Control Type
 	SetPreferredNodeType(node, "UISwitch");
-		
-	// All the buttons have to be saved too.
-	YamlNode* leftButtonNode = SaveToYamlNodeRecursive(loader, buttonLeft);
-	YamlNode* toggleButtonNode = SaveToYamlNodeRecursive(loader, toggle);
-	YamlNode* rightButtonNode = SaveToYamlNodeRecursive(loader, buttonRight);
-
-	node->AddNodeToMap(UISWITCH_BUTTON_LEFT_NAME, leftButtonNode);
-	node->AddNodeToMap(UISWITCH_BUTTON_TOGGLE_NAME, toggleButtonNode);
-	node->AddNodeToMap(UISWITCH_BUTTON_RIGHT_NAME, rightButtonNode);
 
 	return node;
 }
@@ -198,17 +191,6 @@ void UISwitch::CopyDataFrom(UIControl *srcControl)
 	AddControl(toggle);
 
     InitControls();
-}
-
-List<UIControl* >& UISwitch::GetRealChildren()
-{
-	List<UIControl* >& realChildren = UIControl::GetRealChildren();
-	
-	realChildren.remove(FindByName(UISWITCH_BUTTON_LEFT_NAME));
-	realChildren.remove(FindByName(UISWITCH_BUTTON_TOGGLE_NAME));
-	realChildren.remove(FindByName(UISWITCH_BUTTON_RIGHT_NAME));
-
-	return realChildren;
 }
 
 List<UIControl* > UISwitch::GetSubcontrols()

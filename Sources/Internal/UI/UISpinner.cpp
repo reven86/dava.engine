@@ -363,31 +363,14 @@ void UISpinner::LoadFromYamlNodeCompleted()
 
 YamlNode * UISpinner::SaveToYamlNode(UIYamlLoader * loader)
 {
-	YamlNode *node = UIControl::SaveToYamlNode(loader);
+    buttonPrevious->SetName(UISPINNER_BUTTON_PREVIOUS_NAME);
+	buttonNext->SetName(UISPINNER_BUTTON_NEXT_NAME);
+	content->SetName(UISPINNER_CONTENT_NAME);
 
-	//Control Type
+	YamlNode *node = UIControl::SaveToYamlNode(loader);
 	SetPreferredNodeType(node, "UISpinner");
 
-	// "Prev/Next" buttons have to be saved too.
-	YamlNode* prevButtonNode = SaveToYamlNodeRecursive(loader, buttonPrevious);
-	YamlNode* nextButtonNode = SaveToYamlNodeRecursive(loader, buttonNext);
-	YamlNode* contentNode = SaveToYamlNodeRecursive(loader, content);
-
-	node->AddNodeToMap(UISPINNER_BUTTON_PREVIOUS_NAME, prevButtonNode);
-	node->AddNodeToMap(UISPINNER_BUTTON_NEXT_NAME, nextButtonNode);
-	node->AddNodeToMap(UISPINNER_CONTENT_NAME, contentNode);
-
 	return node;
-}
-
-List<UIControl* >& UISpinner::GetRealChildren()
-{
-	List<UIControl* >& realChildren = UIControl::GetRealChildren();
-	realChildren.remove(FindByName(UISPINNER_BUTTON_PREVIOUS_NAME));
-	realChildren.remove(FindByName(UISPINNER_BUTTON_NEXT_NAME));
-	realChildren.remove(FindByName(UISPINNER_CONTENT_NAME));
-
-	return realChildren;
 }
 	
 List<UIControl* > UISpinner::GetSubcontrols()

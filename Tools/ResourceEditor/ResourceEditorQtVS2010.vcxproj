@@ -349,6 +349,7 @@
     <ClCompile Include="Classes\Commands2\CommandNotify.cpp" />
     <ClCompile Include="Classes\Commands2\CommandStack.cpp" />
     <ClCompile Include="Classes\Commands2\ConvertToShadowCommand.cpp" />
+    <ClCompile Include="Classes\Commands2\CreatePlaneLODCommand.cpp" />
     <ClCompile Include="Classes\Commands2\CustomColorsCommands2.cpp" />
     <ClCompile Include="Classes\Commands2\DAEConvertAction.cpp" />
     <ClCompile Include="Classes\Commands2\DynamicShadowCommands.cpp" />
@@ -474,6 +475,7 @@
     <ClCompile Include="Classes\Qt\MaterialBrowser\MaterialTreeModel.cpp" />
     <ClCompile Include="Classes\Qt\MaterialBrowser\MaterialView.cpp" />
     <ClCompile Include="Classes\Qt\MaterialBrowser\MaterialViewModel.cpp" />
+    <ClCompile Include="Classes\Qt\PlaneLODDialog\PlaneLODDialog.cpp" />
     <ClCompile Include="Classes\Qt\Project\ProjectManager.cpp" />
     <ClCompile Include="Classes\Qt\Scene\EntityGroup.cpp" />
     <ClCompile Include="Classes\Qt\Scene\SceneData.cpp" />
@@ -703,6 +705,7 @@
     <ClCompile Include="_GeneratedQt\MaterialBrowser\MaterialViewModel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\MaterialBrowser\MaterialView_moc.cpp" />
     <ClCompile Include="_GeneratedQt\MaterialEditor\MaterialEditor_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\PlaneLODDialog\PlaneLODDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Project\ProjectManager_moc.cpp" />
     <ClCompile Include="_GeneratedQt\QtIcons_qrc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\EntityGroup_moc.cpp" />
@@ -1041,6 +1044,7 @@
     <ClInclude Include="Classes\Commands2\CommandNotify.h" />
     <ClInclude Include="Classes\Commands2\CommandStack.h" />
     <ClInclude Include="Classes\Commands2\ConvertToShadowCommand.h" />
+    <ClInclude Include="Classes\Commands2\CreatePlaneLODCommand.h" />
     <ClInclude Include="Classes\Commands2\CustomColorsCommands2.h" />
     <ClInclude Include="Classes\Commands2\DAEConvertAction.h" />
     <ClInclude Include="Classes\Commands2\DynamicShadowCommands.h" />
@@ -1171,6 +1175,7 @@
     <ClInclude Include="Classes\Qt\MaterialBrowser\MaterialTreeModel.h" />
     <ClInclude Include="Classes\Qt\MaterialBrowser\MaterialView.h" />
     <ClInclude Include="Classes\Qt\MaterialBrowser\MaterialViewModel.h" />
+    <ClInclude Include="Classes\Qt\PlaneLODDialog\PlaneLODDialog.h" />
     <ClInclude Include="Classes\Qt\Project\ProjectManager.h" />
     <ClInclude Include="Classes\Qt\Scene\EntityGroup.h" />
     <ClInclude Include="Classes\Qt\Scene\SceneData.h" />
@@ -1352,6 +1357,7 @@
     <ClInclude Include="_GeneratedQt\ui_MaterialViewOptions.h" />
     <ClInclude Include="_GeneratedQt\ui_ModificationWidget.h" />
     <ClInclude Include="_GeneratedQt\ui_ParticleProperty.h" />
+    <ClInclude Include="_GeneratedQt\ui_planeloddialog.h" />
     <ClInclude Include="_GeneratedQt\ui_SetSwitchIndexView.h" />
     <ClInclude Include="_GeneratedQt\ui_texturebrowser.h" />
     <ClInclude Include="_GeneratedQt\ui_treeimportdialog.h" />

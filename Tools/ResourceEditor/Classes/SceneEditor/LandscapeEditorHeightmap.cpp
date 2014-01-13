@@ -153,11 +153,11 @@ Image *LandscapeEditorHeightmap::CreateToolImage(int32 sideSize)
     
     RenderManager::Instance()->SetRenderTarget(dstSprite);
     
-    RenderManager::Instance()->SetColor(Color::Black());
+    RenderManager::Instance()->SetColor(Color::Black);
     RenderHelper::Instance()->FillRect(Rect(0, 0, (float32)dstSprite->GetTexture()->GetWidth(), (float32)dstSprite->GetTexture()->GetHeight()));
     
     RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-    RenderManager::Instance()->SetColor(Color::White());
+    RenderManager::Instance()->SetColor(Color::White);
     
     srcSprite->SetScaleSize((float32)sideSize, (float32)sideSize);
     srcSprite->SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f, 

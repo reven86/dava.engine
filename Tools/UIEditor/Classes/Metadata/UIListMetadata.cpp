@@ -203,4 +203,10 @@ void UIListMetadata::UpdateListCellSize()
 	GetActiveUIList()->Refresh();
 }
 
+void UIListMetadata::SetVisible(const bool value)
+{
+    // UIList must update its children hierarchically.
+    SetUIControlVisible(value, true);
+}
+
 };

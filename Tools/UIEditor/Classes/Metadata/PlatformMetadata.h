@@ -51,6 +51,9 @@ class PlatformMetadata : public BaseMetadata
     Q_PROPERTY(float Height READ GetHeight WRITE SetHeight);
     
 protected:
+    // Default Flags.
+    virtual bool GetInitialInputEnabled() const {return true;};
+
     // Accessors to the Tree Node.
     HierarchyTreePlatformNode* GetPlatformNode() const;
 

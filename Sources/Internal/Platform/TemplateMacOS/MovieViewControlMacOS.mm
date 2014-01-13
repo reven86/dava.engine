@@ -298,7 +298,6 @@ enum MoviePlayerHelperPlaybackState
         return false;
     }
     
-    NSLog(@"Video player rate: %f", [videoPlayer rate]);
     return ([videoPlayer rate] != 0.0f);
 }
 

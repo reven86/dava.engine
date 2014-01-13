@@ -4,11 +4,9 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import android.app.Activity;
 import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 
 public class LocalFileDescriptor {
 
@@ -43,56 +41,6 @@ public class LocalFileDescriptor {
 	
 	public long GetLength() {
 		return length;
-	}
-	
-	public static boolean IsFile(String path) {
-		/*if (IsLocal(path)) {
-			File file = new File(path);
-			return file.isFile();
-		} else {
-			AssetManager assetManager = JNIApplication.GetApplication().getAssets();
-			try {
-				InputStream inputStream = assetManager.open(path);
-				if (inputStream != null)
-					return true;
-			} catch (IOException e) {
-				return false;
-			}
-		}*/
-		return false;
-	}
-	
-	public static boolean IsDirectory(String path) {
-		/*if (path.isEmpty())
-			return false;
-		
-		if (IsLocal(path)) {
-			File file = new File(path);
-			return file.isDirectory();
-		} else {
-			if (IsFile(path))
-				return false;
-			
-			if (path.charAt(path.length() - 1) == '/')
-				path = path.substring(0, path.length() - 1);
-			
-			int pos = path.lastIndexOf("/");
-			if (pos < 0)
-				pos = 0;
-			String folderName = path.substring(pos);
-			String parentFolder = path.substring(0, pos);
-			
-			AssetManager assetManager = JNIApplication.GetApplication().getAssets();
-			try {
-				String[] list = assetManager.list(parentFolder);
-				for (String string : list) {
-					if (string.compareToIgnoreCase(folderName) == 0)
-						return true;
-				}
-			} catch (IOException e) {
-			}
-		}*/
-		return false;
 	}
 	
 	private static boolean IsLocal(String path) {

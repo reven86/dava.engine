@@ -43,7 +43,7 @@ FogControl::FogControl(const Rect & rect, FogControlDelegate *newDelegate)
     fogProperties = new PropertyList(propertyRect, NULL);
     AddControl(fogProperties);
     
-    ControlsFactory::AddFogSubsection(fogProperties, true, 0.006f, Color::White());
+    ControlsFactory::AddFogSubsection(fogProperties, true, 0.006f, Color::White);
     
     Rect buttonRect(0, rect.dy - ControlsFactory::BUTTON_HEIGHT, rect.dx / 2, ControlsFactory::BUTTON_HEIGHT);
     UIButton *btnCancel = ControlsFactory::CreateButton(buttonRect, LocalizedString(L"dialog.cancel"));

@@ -69,7 +69,7 @@ void TransparentWebViewTest::LoadResources()
 	testButton = new UIButton(Rect(0, 510, 300, 30));
 	testButton->SetStateFont(0xFF, font);
 	testButton->SetStateText(0xFF, L"Finish Test");
-	testButton->SetStateFontColor(0xFF, Color::White());
+	testButton->SetStateFontColor(0xFF, Color::White);
 	testButton->SetDebugDraw(true);
 	testButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &TransparentWebViewTest::ButtonPressed));
 	AddControl(testButton);

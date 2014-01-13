@@ -40,7 +40,7 @@ float32 DebugDrawSystem::HANGING_OBJECTS_HEIGHT = 0.2f;
 DebugDrawSystem::DebugDrawSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
 	, objectType(ResourceEditor::ESOT_NONE)
-    , objectTypeColor(Color::White())
+    , objectTypeColor(Color::White)
 	, hangingObjectsModeEnabled(false)
 {
 	SceneEditor2 *sc = (SceneEditor2 *)GetScene();

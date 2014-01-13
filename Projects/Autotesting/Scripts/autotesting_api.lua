@@ -371,6 +371,19 @@ function IsOnScreen(control)
 	end
 end
 
+function IsCenterOnScreen(control)
+	local screen = autotestingSystem:GetScreen()
+    local center = GetCenter(control)
+	local geomData = screen:GetGeometricData()
+	local backRect = geomData:GetUnrotatedRect()
+			
+	if (center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y) and (center.y <= backRect.y + backRect.dy) then
+		return true
+	else
+		return false
+	end
+end
+
 function Wait(waitTime)
     waitTime =  waitTime or DELAY
     local count = 0
@@ -512,7 +525,8 @@ function ClickControl(name, time, touchId)
         
         local control = autotestingSystem:FindControl(name)
         local screen = autotestingSystem:GetScreen()
-        if control and IsVisible(name) and IsOnScreen(control) then     
+		
+        if control and IsVisible(name) and IsCenterOnScreen(control) then     
             -- local position = control:GetPosition(true)
             local position = GetCenter(name)
 --            print(position)
@@ -526,7 +540,17 @@ function ClickControl(name, time, touchId)
         end
     end
     
-    Log("ClickControl not found "..name)
+	local control = autotestingSystem:FindControl(name)
+	if  control then
+		if not IsVisible(name) then
+			Log(name .. " is not visible")
+		end
+		if not IsCenterOnScreen(control) then
+			Log(name .. " is not on the Screen")
+		end
+	else
+		Log("ClickControl not found "..name)
+	end
     return false
 end
 

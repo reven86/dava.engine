@@ -285,7 +285,7 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 	
 	RenderManager::Instance()->RestoreRenderTarget();
 	RenderManager::Instance()->SetBlendMode(srcBlend, dstBlend);
-	RenderManager::Instance()->SetColor(Color::White());
+	RenderManager::Instance()->SetColor(Color::White);
 	
 	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(colorSprite->GetTexture());
 	

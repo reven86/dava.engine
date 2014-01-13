@@ -181,7 +181,7 @@ void TextureTrianglesDialog::FillRenderTarget(int32 textureIndex)
             previewSprite = Sprite::CreateAsRenderTarget(usedSize.x, usedSize.y, FORMAT_RGBA8888);
             
             RenderManager::Instance()->SetRenderTarget(previewSprite);
-            RenderManager::Instance()->SetColor(Color::Black());
+            RenderManager::Instance()->SetColor(Color::Black);
             RenderHelper::Instance()->FillRect(Rect(0, 0, usedSize.x, usedSize.y));
             
             usedSize.x = Min(usedSize.x, usedSize.y);

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
@@ -268,6 +267,14 @@ public class JNIWebView {
 				view.setBackgroundColor((enabled ? Color.TRANSPARENT : Color.WHITE));
 			}
 		});
+	}
+	
+	static protected void RelinkNativeControls() {
+		for (WebView view: views.values()) {
+			ViewGroup viewGroup = (ViewGroup) view.getParent();
+			viewGroup.removeView(view);
+			JNIActivity.GetActivity().addContentView(view, view.getLayoutParams());
+		}
 	}
 	
 	private static native int OnUrlChange(int id, String url);

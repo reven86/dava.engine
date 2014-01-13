@@ -50,6 +50,10 @@ class ScreenMetadata : public BaseMetadata
     // Getters/setters.
     QString GetName() const;
     void SetName(const QString& name);
+    
+protected:
+    // Default Flags.
+    virtual bool GetInitialInputEnabled() const {return true;};
 };
     
 }

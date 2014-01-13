@@ -36,6 +36,11 @@
 #include "CopyPasteController.h"
 #include "UndoRedoController.h"
 
+#include "Grid/GridController.h"
+#include "Grid/GridVisualizer.h"
+
+#include "Ruler/RulerController.h"
+
 #include "ScreenWrapper.h"
 #include "MetadataFactory.h"
 #include "EditorFontManager.h"
@@ -63,8 +68,11 @@ GameCore::GameCore()
 	new EditorFontManager();
 	new ScreenManager();
 	new EditorSettings();
-	new UndoRedoController();
 	new LibraryController();
+
+    new GridController();
+    new GridVisualizer();
+    new RulerController();
 
 	// Unpack the help data, if needed.
 	UnpackHelp();
@@ -75,6 +83,23 @@ GameCore::GameCore()
 
 GameCore::~GameCore()
 {
+    RulerController::Instance()->Release();
+    GridVisualizer::Instance()->Release();
+    GridController::Instance()->Release();
+
+    LibraryController::Instance()->Release();
+    EditorSettings::Instance()->Release();
+    ScreenManager::Instance()->Release();
+    EditorFontManager::Instance()->Release();
+    MetadataFactory::Instance()->Release();
+    ScreenWrapper::Instance()->Release();
+
+    CopyPasteController::Instance()->Release();
+    CommandsController::Instance()->Release();
+    PropertiesGridController::Instance()->Release();
+    
+    HierarchyTreeController::Instance()->DisconnectFromSignals();
+    HierarchyTreeController::Instance()->Release();
 }
 
 void GameCore::OnAppStarted()

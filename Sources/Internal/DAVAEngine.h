@@ -77,6 +77,8 @@
 
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "Input/GamepadManager.h"
+#include "Input/GamepadDevice.h"
 
 // Localization
 #include "FileSystem/LocalizationSystem.h"
@@ -234,6 +236,7 @@
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Render/Highlevel/LandscapeChunk.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
+#include "Render/Highlevel/SpeedTreeObject.h"
 
 #include "Scene3D/ShadowVolumeNode.h"
 #include "Scene3D/LodNode.h"

@@ -55,11 +55,11 @@ void ColorDetailControl::DrawAfterChilds(const DAVA::UIGeometricData &geometricD
 {
     Vector2 pos = geometricData.position + markerPoint;
     
-    RenderManager::Instance()->SetColor(Color::White());
+    RenderManager::Instance()->SetColor(Color::White);
     RenderHelper::Instance()->DrawLine(pos - Vector2(5.0f, 0.0f), pos + Vector2(5.0f, 0.0f));
     RenderHelper::Instance()->DrawLine(pos - Vector2(0.0f, 5.0f), pos + Vector2(0.0f, 5.0f));
 
-    RenderManager::Instance()->SetColor(Color::Black());
+    RenderManager::Instance()->SetColor(Color::Black);
     RenderHelper::Instance()->DrawLine(pos - Vector2(5.0f, -1.0f), pos + Vector2(5.0f, 1.0f));
     RenderHelper::Instance()->DrawLine(pos - Vector2(-1.0f, 5.0f), pos + Vector2(1.0f, 5.0f));
 }

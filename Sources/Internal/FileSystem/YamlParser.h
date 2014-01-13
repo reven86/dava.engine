@@ -216,15 +216,22 @@ protected:
 	YamlParser();
 	virtual ~YamlParser();
 
-	bool Parse(const FilePath & fileName);
-	
 public:
     // This method just creates the YAML parser.
     static YamlParser   * Create();
-    
+
     // This method creates the parser and parses the input file.
-	static YamlParser	* Create(const FilePath & fileName);
-	
+    static YamlParser * Create(const FilePath & fileName)
+    {
+        return YamlParser::CreateAndParse(fileName);
+    }
+
+    // This method creates the parser and parses the data string.
+    static YamlParser * CreateAndParseString(const String & data)
+    {
+        return YamlParser::CreateAndParse(data);
+    }
+
     // Save to YAML file.
 	bool SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool skipRootNode, uint32 attr = File::CREATE | File::WRITE);
     
@@ -240,6 +247,26 @@ public:
 		uint32 dataOffset;
 		uint8 * data;
 	};
+
+protected:
+    template<typename T> static YamlParser * CreateAndParse(const T & data)
+    {
+        YamlParser * parser = new YamlParser();
+        if (parser)
+        {
+            bool parseResult = parser->Parse(data);
+            if(!parseResult)
+            {
+                SafeRelease(parser);
+                return 0;
+            }
+        }
+        return parser;
+    }
+
+    bool Parse(const String & fileName);
+    bool Parse(const FilePath & fileName);
+    bool Parse(YamlDataHolder * dataHolder);
 
 private:
 	YamlNode			* GetNodeByPath(const String & path);
@@ -273,8 +300,6 @@ private:
 	String				lastMapKey;
 	
 	Stack<YamlNode *> objectStack;
-
-	YamlDataHolder dataHolder;
 };
 
 };

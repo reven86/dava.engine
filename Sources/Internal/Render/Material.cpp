@@ -153,7 +153,7 @@ void InstanceMaterialState::Save(KeyedArchive * archive, SceneFileV2 *sceneFile)
 			archive->SetInt32("ims.lightmapsize", lightmapSize);
 		}
 
-		if(flatColor != Color::White())
+		if(flatColor != Color::White)
 		{
 			archive->SetByteArrayAsType("ims.flatColor", flatColor);
 		}
@@ -186,7 +186,7 @@ void InstanceMaterialState::Load(KeyedArchive * archive, SceneFileV2 *sceneFile)
 			SetLightmap(NULL, String(""));
         }
 
-		flatColor = archive->GetByteArrayAsType("ims.flatColor", Color::White());
+		flatColor = archive->GetByteArrayAsType("ims.flatColor", Color::White);
 		texture0Shift = archive->GetVector2("ims.texture0Shift");
 		lightmapSize = archive->GetInt32("ims.lightmapsize", LIGHTMAP_SIZE_DEFAULT);
 	}

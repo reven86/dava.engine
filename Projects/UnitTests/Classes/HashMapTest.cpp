@@ -41,7 +41,7 @@ HashMapTest::HashMapTest()
 
 void HashMapTest::LoadResources()
 {
-    GetBackground()->SetColor(Color::White());
+    GetBackground()->SetColor(Color::White);
 }
 
 void HashMapTest::UnloadResources()

@@ -31,6 +31,7 @@
 #include "ui_propertygridcontainerwidget.h"
 
 #include "MetadataFactory.h"
+#include "EditorSettings.h"
 
 PropertyGridContainerWidget::PropertyGridContainerWidget(QWidget *parent) :
     QWidget(parent),
@@ -148,6 +149,7 @@ void PropertyGridContainerWidget::BuildPropertiesGrid(BaseMetadata* metaData,
     // Metadata is state-aware.
 	Vector<UIControl::eControlState> activeStates = PropertiesGridController::Instance()->GetActiveUIControlStates();
     metaData->SetUIControlStates(activeStates);
+    metaData->SetPixelizationNeeded(EditorSettings::Instance()->IsPixelized());
 
     this->activeWidgetsList = widgetsFactory.GetWidgets(metaData);
     for (PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSITER iter = activeWidgetsList.begin();

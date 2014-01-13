@@ -53,14 +53,15 @@ public:
     
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
-    
+
+    void SetVisible(bool value);
 	void ShowField();
 	void HideField();
 	
 	void SetIsPassword(bool isPassword);
 
 	void SetInputEnabled(bool value);
-
+    
 	// Keyboard traits.
 	void SetAutoCapitalizationType(DAVA::int32 value);
 	void SetAutoCorrectionType(DAVA::int32 value);

@@ -41,7 +41,7 @@ TestTemplate<SplitTest>("SplitTest")
 
 void SplitTest::LoadResources()
 {
-    GetBackground()->SetColor(Color::White());
+    GetBackground()->SetColor(Color::White);
     
     staticText = new UIStaticText();
     staticText->SetRect(Rect(10.f, 10.f, 400.f, 200.f));

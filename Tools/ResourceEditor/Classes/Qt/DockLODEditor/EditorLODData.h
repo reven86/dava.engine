@@ -67,10 +67,17 @@ public:
 
     void GetDataFromSelection();
 
+    void CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
+    bool CanCreatePlaneLOD();
+    DAVA::FilePath GetDefaultTexturePathForPlaneEntity();
+
     static void EnumerateLODsRecursive(DAVA::Entity *entity, DAVA::Vector<DAVA::LodComponent *> & lods);
     static DAVA::uint32 GetTrianglesForLodLayer(DAVA::LodComponent::LodData *lodData, bool checkVisibility);
     static DAVA::uint32 GetTrianglesForEntity(DAVA::Entity *entity, bool checkVisibility);
-    
+
+    //TODO: remove after lod editing implementation
+    DAVA_DEPRECATED(void CopyLastLodToLod0());
+
 signals:
     
     void DataChanged();

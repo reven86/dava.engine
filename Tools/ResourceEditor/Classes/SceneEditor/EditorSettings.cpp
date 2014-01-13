@@ -275,18 +275,18 @@ void EditorSettings::SetMaterialsColor(const Color &ambient, const Color &diffus
 
 Color EditorSettings::GetMaterialAmbientColor()
 {
-	Vector4 colorVect = settings->GetVector4(String("materials.ambient"), ToVector4(Color::White()));
+	Vector4 colorVect = settings->GetVector4(String("materials.ambient"), ToVector4(Color::White));
 	return ToColor(colorVect);
 }
 Color EditorSettings::GetMaterialDiffuseColor()
 {
-	Vector4 colorVect = settings->GetVector4(String("materials.diffuse"), ToVector4(Color::White()));
+	Vector4 colorVect = settings->GetVector4(String("materials.diffuse"), ToVector4(Color::White));
 	return ToColor(colorVect);
 }
 
 Color EditorSettings::GetMaterialSpecularColor()
 {
-	Vector4 colorVect = settings->GetVector4(String("materials.specular"), ToVector4(Color::White()));
+	Vector4 colorVect = settings->GetVector4(String("materials.specular"), ToVector4(Color::White));
 	return ToColor(colorVect);
 }
 

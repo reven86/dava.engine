@@ -53,8 +53,21 @@ int main(int argc, char *argv[])
 	DVASSERT(false && "Wrong platform")
 #endif
 
-    MainWindow w;
-    w.show();
+    int result = 0;
+    // MainWindow have to be released prior to the framework, so use separate scope for it.
+    {
+        MainWindow w;
+        w.show();
+        result = a.exec();
+    }
 
-    return a.exec();
+#if defined (__DAVAENGINE_MACOS__)
+    DAVA::QtLayerMacOS::Instance()->Release();
+#elif defined (__DAVAENGINE_WIN32__)
+    DAVA::QtLayerWin32::Instance()->Release();
+#else
+	DVASSERT(false && "Wrong platform")
+#endif
+
+    return result;
 }

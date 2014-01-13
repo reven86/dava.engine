@@ -79,6 +79,11 @@ public:
 	//! \param[in] filename: name of log file. Empty string disables logging to file, 
 	//! non-empty creates log file in working directory.
 	virtual void SetLogFilename(const String & filename);
+
+	//! Enables/disables logging to file. Disabled by default.
+	//! \param[in] filepath: path to log file. Empty string disables logging to file, 
+	//! non-empty creates log file described by filepath.
+	virtual void SetLogPathname(const FilePath & filepath);
 	
 	//! Returns the current set log level.
 	virtual eLogLevel GetLogLevel();

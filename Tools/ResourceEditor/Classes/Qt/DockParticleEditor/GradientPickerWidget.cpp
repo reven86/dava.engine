@@ -35,12 +35,12 @@
 #include "Main/QtUtils.h"
 
 #define BACKGROUND_COLOR (Color(0x80, 0x80, 0x80, 0xff) / 255.f)
-#define BORDER_COLOR Color::Black()
-#define EMPTY_WIDGET_COLOR Color::Black()
-#define DEFAULT_GRADIENT_COLOR Color::White()
-#define UNSELECTED_MARKER_COLOR Color::White()
+#define BORDER_COLOR Color::Black
+#define EMPTY_WIDGET_COLOR Color::Black
+#define DEFAULT_GRADIENT_COLOR Color::White
+#define UNSELECTED_MARKER_COLOR Color::White
 #define SELECTED_MARKER_COLOR Color(0.f, 1.f, 0.f, 1.f)
-#define TEXT_COLOR Color::White()
+#define TEXT_COLOR Color::White
 
 #define MARKER_SIZE 4
 #define TILED_RECT_SIZE 20

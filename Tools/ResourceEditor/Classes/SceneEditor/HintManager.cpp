@@ -109,7 +109,7 @@ void HintManager::ShowHint(const WideString &hintMessage, const DAVA::Rect &cont
         ControlsFactory::AddBorder(hintControl);
         UIScreenManager::Instance()->GetScreen()->AddControl(hintControl);
         
-        Animation *hintAlphaAnimation = hintControl->ColorAnimation( Color::Transparent(), NOTIFICATION_TIME, 
+        Animation *hintAlphaAnimation = hintControl->ColorAnimation( Color::Transparent, NOTIFICATION_TIME, 
                                                                      Interpolation::EASY_IN, 2);
         hintAlphaAnimation->AddEvent(Animation::EVENT_ANIMATION_END, 
                                     Message(this, &HintManager::OnAlphaAnimationDone, hintControl));

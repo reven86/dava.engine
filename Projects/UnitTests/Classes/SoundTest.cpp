@@ -48,7 +48,7 @@ effectPlayTest(false)
 
 void SoundTest::LoadResources()
 {
-    GetBackground()->SetColor(Color::White());
+    GetBackground()->SetColor(Color::White);
     
     sndClick = Sound::CreateFX("~res:/Sounds/click.wav", Sound::TYPE_STATIC);
 #ifdef __DAVAENGINE_IPHONE__

@@ -214,7 +214,8 @@ bool LodSystem::RecheckLod(Entity * entity, float32 psLodOffsetSq, float32 psLod
 	if (usePsSettings)
 	{
 		layersCount = LodComponent::MAX_LOD_LAYERS;
-		dst = dst*psLodMultSq+psLodOffsetSq;
+		if (dst>lodComponent->GetLodLayerFarSquare(0)) //preserv lod 0 from degrade
+			dst = dst*psLodMultSq+psLodOffsetSq;
 	}
 
 	int32 layer = FindProperLayer(dst, lodComponent, layersCount);

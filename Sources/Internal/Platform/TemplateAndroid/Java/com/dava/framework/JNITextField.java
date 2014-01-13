@@ -648,6 +648,15 @@ public class JNITextField {
 		});
 		task.AsyncRun();
 	}
+	
+	static protected void RelinkNativeControls() {
+		for (NativeEditText control: controls.values()) {
+			View view = control.editText;
+			ViewGroup viewGroup = (ViewGroup) view.getParent();
+			viewGroup.removeView(view);
+			JNIActivity.GetActivity().addContentView(view, view.getLayoutParams());
+		}
+	}
 
 	public static native void TextFieldShouldReturn(int id);
 	public static native boolean TextFieldKeyPressed(

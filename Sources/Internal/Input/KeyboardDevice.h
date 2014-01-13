@@ -161,26 +161,6 @@ const static int MAX_KEYS = 256;
         DVKEY_F10			,
         DVKEY_F11			,
         DVKEY_F12			,
-        
-        DVKEY_BUTTON_A		,
-        DVKEY_BUTTON_B		,
-        DVKEY_BUTTON_C		,
-        DVKEY_BUTTON_X		,
-        DVKEY_BUTTON_Y		,
-        DVKEY_BUTTON_Z		,
-        DVKEY_BUTTON_L1		,
-        DVKEY_BUTTON_L2		,
-        DVKEY_BUTTON_R1		,
-        DVKEY_BUTTON_R2		,
-        DVKEY_DPAD_LEFT		,
-        DVKEY_DPAD_RIGHT	,
-        DVKEY_DPAD_UP		,
-        DVKEY_DPAD_DOWN		,
-        DVKEY_DPAD_CENTER	,
-        DVKEY_BUTTON_MODE	,
-        DVKEY_BUTTON_SELECT	,
-        DVKEY_BUTTON_START	,
-		DVKEY_BUTTON_BACK	,
 
         DVKEY_COUNT
         

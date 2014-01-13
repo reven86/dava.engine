@@ -40,6 +40,7 @@ namespace DAVA
 	static mach_timebase_info_data_t timebase;
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 
+float SystemTimer::realFrameDelta = 0;
 float SystemTimer::delta = 0;
 uint64 SystemTimer::stampTime = 0;
 
@@ -113,18 +114,19 @@ SystemTimer::~SystemTimer()
 
 void SystemTimer::Start()
 {
+    realFrameDelta = ElapsedSec();
+    delta = realFrameDelta;
+
+    if(delta < 0.001f)
+    {
+        delta = 0.001f;
+    }
+    else if(delta > 0.1f)
+    {
+        delta = 0.1f;
+    }
+
 #if defined(__DAVAENGINE_WIN32__)
-
-	delta = ElapsedSec();
-
-	if(delta < 0.001f)
-	{
-		delta = 0.001f;
-	}
-	else if(delta > 0.1f)
-	{
-		delta = 0.1f;
-	}
 
 	if (bHighTimerSupport)
 	{
@@ -136,47 +138,22 @@ void SystemTimer::Start()
 	{
 		t0 = (float32)(GetTickCount() / 1000.0f);
 	}
+
 #elif defined (__DAVAENGINE_ANDROID__)
-	delta = ElapsedSec();
-
-#ifdef SHOW_FRAME_TIME
-	curTime = AbsoluteMS();
-	frameCount++;
-	if(frameCount > 60)
-	{
-		startTime = curTime;
-		frameCount = 0;
-	}
-#endif //#ifdef SHOW_FRAME_TIME
-
-	if(delta < 0.001f)
-	{
-		delta = 0.001f;
-	}
-	else if(delta > 0.1f)
-	{
-		delta = 0.1f;
-	}
 
  	t0 = (float32)(GetTickCount() / 1000.0f);
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-	delta = ElapsedSec();
-	if(delta < 0.001f)
-	{
-		delta = 0.001f;
-	}
-	else if(delta > 0.1f)
-	{
-		delta = 0.1f;
-	}
+
 	t0 = mach_absolute_time();	
+
 #else //PLATFORMS
 	//other platforms
 #endif //PLATFORMS
 
+    stampTime = AbsoluteMS();
 #ifdef SHOW_FRAME_TIME
-	curTime = AbsoluteMS();
+	curTime = stampTime;
 	frameCount++;
 	if(frameCount > 60)
 	{
@@ -185,8 +162,6 @@ void SystemTimer::Start()
 		frameCount = 0;
 	}
 #endif //#ifdef SHOW_FRAME_TIME
-	
-	stampTime = AbsoluteMS();
 }
 
 float32 SystemTimer::ElapsedSec()

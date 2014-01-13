@@ -589,6 +589,10 @@ void UIList::AddCellAtPos(UIListCell *cell, int32 pos, int32 size, int32 index)
 		r.y = (float32)pos;
 	}
 	cell->SetRect(r);
+    
+    // Full refresh removes the cells and adds them again, losing the IsVisibleForUIEditor flag
+    // (see please DF-2860). So need to recover it basing on what is set on parent's level.
+    cell->SetVisibleForUIEditor(GetVisibleForUIEditor());
 	scrollContainer->AddControl(cell);
 	
 }

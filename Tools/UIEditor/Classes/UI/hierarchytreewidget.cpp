@@ -335,11 +335,13 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
 			// Only one control is selected, reset the previous selection and continue.
 			HierarchyTreeController::Instance()->ResetSelectedControl();
 		}
-        
-        if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_SHIFT))
+
+		// Yuri Coder, 2012/12/19. The focus is on Hierarchy Tree here, so can't ask InputSystem
+		// whether Shift is pressed. Use Qt functions instead. If Shift is pressed - select multiple
+        // items in the tree, from the one previously selected to the current selection.
+		if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
         {
-            // Yuri Coder, 2013/12/05. See please DF-2839 to get the details of this method.
-            SelectMultipleTreeWidgetItems(ui->treeWidget->selectedItems());
+            Select(ui->treeWidget->selectedItems());
         }
         else
         {
@@ -349,7 +351,7 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
 	}
 }
 
-void HierarchyTreeWidget::SelectMultipleTreeWidgetItems(const QList<QTreeWidgetItem*>& selectedItems)
+void HierarchyTreeWidget::Select(const QList<QTreeWidgetItem*>& selectedItems)
 {
     HierarchyTreeControlNode* firstNode = NULL;
     bool needReselectScreen = false;
@@ -535,7 +537,9 @@ void HierarchyTreeWidget::OnShowCustomMenu(const QPoint& pos)
 	}
 	else if (selectedScreen || selectedControl)
 	{
-		if (CopyPasteController::Instance()->GetCopyType() == CopyPasteController::CopyTypeControl)
+        // Currently don't allow to paste anything to Aggregators.
+		if ((dynamic_cast<HierarchyTreeAggregatorControlNode*>(selectedControl) == NULL) &&
+             CopyPasteController::Instance()->GetCopyType() == CopyPasteController::CopyTypeControl)
 		{
 			QAction* pasteScreenAction = new QAction(MENU_ITEM_PASTE, &menu);
 			connect(pasteScreenAction, SIGNAL(triggered()), this, SLOT(OnPasteAction()));

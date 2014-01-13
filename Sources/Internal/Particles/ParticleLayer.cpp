@@ -690,8 +690,19 @@ void ParticleLayer::GenerateNewParticle(int32 emitIndex)
 	// SuperEmitter particles contains the emitter inside.
 	if (type == TYPE_SUPEREMITTER_PARTICLES)
 	{
-		innerEmitter->SetLongToAllLayers(IsLong());
-		particle->InitializeInnerEmitter(this->emitter, innerEmitter);
+		//as fog kostyl is not applied to parent emitter
+		//add another fog kostyl here		
+		Vector<ParticleLayer *>& innerLayers = innerEmitter->GetLayers();
+		Color fogColor = renderBatch->GetMaterial()->GetFogColor();
+		float32 fogDensity = renderBatch->GetMaterial()->GetFogDensity();
+		for (int32 i = 0, sz = innerLayers.size(); i<sz; ++i)
+		{
+			innerLayers[i]->renderBatch->GetMaterial()->SetFogColor(fogColor);
+			innerLayers[i]->renderBatch->GetMaterial()->SetFogDensity(fogDensity);
+		}
+
+		innerEmitter->SetLongToAllLayers(IsLong());		
+		particle->InitializeInnerEmitter(this->emitter, innerEmitter);				
 	}
 
 	particle->CleanupForces();

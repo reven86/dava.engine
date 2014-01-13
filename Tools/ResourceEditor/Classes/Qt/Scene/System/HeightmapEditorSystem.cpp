@@ -235,7 +235,10 @@ void HeightmapEditorSystem::FinishEditing()
 {
 	if (editingIsEnabled)
 	{
-		CreateHeightmapUndo();
+		if (drawingType != HEIGHTMAP_DROPPER)
+		{
+			CreateHeightmapUndo();
+		}
 		editingIsEnabled = false;
 	}
 }
@@ -299,7 +302,7 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 	
 	RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-	RenderManager::Instance()->SetColor(Color::White());
+	RenderManager::Instance()->SetColor(Color::White);
 	
 	srcSprite->SetScaleSize((float32)sideSize, (float32)sideSize);
 	srcSprite->SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,

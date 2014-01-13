@@ -184,7 +184,7 @@
 	DAVA::Core::Instance()->SystemProcessFrame();
 
 	
-    DAVA::RenderManager::Instance()->SetColor(Color::White());
+    DAVA::RenderManager::Instance()->SetColor(Color::White);
     
     
     if(DAVA::Core::Instance()->IsActive())

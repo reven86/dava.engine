@@ -34,6 +34,9 @@
 #include "StringUtils.h"
 #include "StringConstants.h"
 
+#include "EditorSettings.h"
+#include "Helpers/SpritesHelper.h"
+
 #include <QtGlobal>
 
 namespace DAVA {
@@ -341,14 +344,8 @@ bool UIControlMetadata::GetVisible() const
 
 void UIControlMetadata::SetVisible(const bool value)
 {
-    
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-    
-	// Yuri Coder, 2013/09/30. Don't update the hierarchy (see please DF-2147 for details).
-    GetActiveUIControl()->SetVisible(value, false);
+    // Don't set Visible flag hierarchically for common UI Controls.
+    SetUIControlVisible(value, false);
 }
 
 bool UIControlMetadata::GetInput() const
@@ -562,6 +559,7 @@ void UIControlMetadata::SetSprite(const QString& value)
         if (sprite)
         {
             GetActiveUIControl()->GetBackground()->SetSprite(sprite, 0);
+            ApplyPixelization(sprite);
             SafeRelease(sprite);
 
             // Specific case if the sprite is set to UISlider thumbSprite (see please DF-2834).
@@ -998,5 +996,27 @@ void UIControlMetadata::ResizeScrollViewContent(UIControl * control)
 	}
 }
 
+void UIControlMetadata::ApplyPixelization(Sprite* sprite)
+{
+    if (!sprite)
+    {
+        return;
+    }
+    
+    if (pixelizationNeeded)
+    {
+        SpritesHelper::ApplyPixelization(sprite);
+    }
+}
+
+void UIControlMetadata::SetUIControlVisible(const bool value, bool hierarchic)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUIControl()->SetVisible(value, hierarchic);
+}
 
 };

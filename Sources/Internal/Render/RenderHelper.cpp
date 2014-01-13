@@ -166,6 +166,49 @@ void RenderHelper::DrawRect(const Rect & rect)
     RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINESTRIP, 0, 5);
 }
 
+void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color)
+{
+    // TODO! review with Ivan/Victor whether it is not performance problem!
+    Vector<float32> gridVertices;
+    int32 verLinesCount = (int32)ceilf(rect.dx / gridSize.x);
+    int32 horLinesCount = (int32)ceilf(rect.dy / gridSize.y);
+    gridVertices.resize((horLinesCount + verLinesCount) * 4);
+    
+    float32 curPos = 0;
+    int32 curVertexIndex = 0;
+    for (int i = 0; i < horLinesCount; i ++)
+    {
+        gridVertices[curVertexIndex ++] = rect.x;
+        gridVertices[curVertexIndex ++] = rect.y + curPos;
+        gridVertices[curVertexIndex ++] = rect.x + rect.dx;
+        gridVertices[curVertexIndex ++] = rect.y + curPos;
+        
+        curPos += gridSize.x;
+    }
+
+    curPos = 0.0f;
+    for (int i = 0; i < verLinesCount; i ++)
+    {
+        gridVertices[curVertexIndex ++] = rect.x + curPos;
+        gridVertices[curVertexIndex ++] = rect.y;
+        gridVertices[curVertexIndex ++] = rect.x + curPos;
+        gridVertices[curVertexIndex ++] = rect.y + rect.dy;
+
+        curPos += gridSize.y;
+    }
+
+    vertexStream->Set(TYPE_FLOAT, 2, 0, gridVertices.data());
+
+    Color oldColor = RenderManager::Instance()->GetColor();
+    RenderManager::Instance()->SetColor(color);
+    
+    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderData(renderDataObject);
+    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, curVertexIndex / 2);
+    
+    RenderManager::Instance()->SetColor(oldColor);
+}
+
 void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end)
 {
     vertices[0] = start.x;						

@@ -252,6 +252,13 @@ private:
 	friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
 	friend class APKFile;
+public:
+	static void Init();
+
+private:
+	bool IsAPKPath(const String& path) const;
+	static Set<String> dirSet;
+	static Set<String> fileSet;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 };
 	

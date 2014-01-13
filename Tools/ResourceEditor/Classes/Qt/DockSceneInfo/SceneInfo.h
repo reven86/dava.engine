@@ -61,6 +61,19 @@ protected:
         }
     };
     
+    struct SpeedTreeInfo
+    {
+        SpeedTreeInfo() :
+        leafsSquare(0.f),
+        leafsSquareDivX(0.f),
+        leafsSquareDivY(0.f)
+        {}
+        
+        DAVA::float32 leafsSquare;
+        DAVA::float32 leafsSquareDivX;
+        DAVA::float32 leafsSquareDivY;
+    };
+
 public:
 	SceneInfo(QWidget *parent = 0);
 	~SceneInfo();
@@ -87,6 +100,7 @@ protected:
     void InitializeLODSectionInFrame();
     void InitializeLODSectionForSelection();
     void InitializeParticlesSection();
+    void InitializeSpeedTreeInfoSelection();
 
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();
@@ -94,7 +108,7 @@ protected:
     void RefreshLODInfoInFrame();
     void RefreshLODInfoForSelection();
     void RefreshParticlesInfo();
-
+    void RefreshSpeedTreeInfoSelection();
     
 	void RefreshAllData(SceneEditor2 *scene);
 
@@ -118,6 +132,7 @@ protected:
     void CollectLODDataInFrame();
     void CollectLODDataInFrameRecursive(DAVA::Entity *entity);
     void CollectLODDataForSelection();
+    void CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup);
     static void CollectLODTriangles(const DAVA::Vector<DAVA::LodComponent *> &lods, LODInfo &info);
     
     void CollectTexture(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, const DAVA::FilePath &pathname, DAVA::Texture *tex);
@@ -125,6 +140,8 @@ protected:
     static DAVA::uint32 CalculateTextureSize(const DAVA::Map<DAVA::String, DAVA::Texture *> &textures);
 
     static DAVA::uint32 GetTrianglesForNotLODEntityRecursive(DAVA::Entity *entity, bool checkVisibility);
+    
+    static SpeedTreeInfo GetSpeedTreeLeafsSquare(DAVA::RenderObject *forEntity);
     
 protected:
     
@@ -141,6 +158,7 @@ protected:
     DAVA::Map<DAVA::String, DAVA::Texture *>sceneTextures;
     DAVA::Map<DAVA::String, DAVA::Texture *>particleTextures;
     
+    DAVA::Vector<SpeedTreeInfo> speedTreeLeafInfo;
     
     DAVA::uint32 sceneTexturesSize;
     DAVA::uint32 particleTexturesSize;
