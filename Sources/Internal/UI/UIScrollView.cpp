@@ -191,10 +191,13 @@ UIControl* UIScrollView::Clone()
 	
 void UIScrollView::CopyDataFrom(UIControl *srcControl)
 {
-	UIControl::CopyDataFrom(srcControl);
-	
+	// Release and remove scrollContainer here - it has to be copied from srcControl
+	// We have to finish this before call UIControl::CopyDataFrom() to avoid release
+	// of unavailable object
 	RemoveControl(scrollContainer);
   	SafeRelease(scrollContainer);
+	
+	UIControl::CopyDataFrom(srcControl);
 	
 	UIScrollView* t = (UIScrollView*) srcControl;
 		
