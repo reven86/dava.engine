@@ -151,4 +151,18 @@ int32 CompareCaseInsensitive(const String &str1, const String &str2)
     return 1;
 }
 
+#ifndef __DAVAENGINE_IPHONE__
+#ifndef __DAVAENGINE_ANDROID__
+    
+void DisableSleepTimer()
+{
+}
+ 
+void EnableSleepTimer()
+{
+}
+    
+#endif
+#endif
+
 }; // end of namespace DAVA
