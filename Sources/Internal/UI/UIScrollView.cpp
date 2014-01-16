@@ -199,9 +199,9 @@ void UIScrollView::CopyDataFrom(UIControl *srcControl)
 	
 	UIControl::CopyDataFrom(srcControl);
 	
-	UIScrollView* t = (UIScrollView*) srcControl;
+	UIScrollView* t = static_cast<UIScrollView*>(srcControl);
 		
-	this->scrollContainer = static_cast<UIScrollViewContainer*>(t->scrollContainer->Clone());
+	scrollContainer = static_cast<UIScrollViewContainer*>(t->scrollContainer->Clone());
 		
 	AddControl(scrollContainer);
 }
@@ -221,7 +221,7 @@ void UIScrollView::SetPadding(const Vector2 & padding)
 		return;
 	}
 	
-	Rect parentRect = this->GetRect();
+	Rect parentRect = GetRect();
 	Rect contentRect = scrollContainer->GetRect();
 	
 	// Apply scroll offset only if it value don't exceed content size
@@ -287,7 +287,7 @@ void UIScrollView::RecalculateContentSize()
 	}
 	
 	Rect contentRect = scrollContainer->GetRect();
-	Rect parentRect = this->GetRect();
+	Rect parentRect = GetRect();
 	
 	// Move all scrollContainer content with negative positions iside its rect
 	PushContentToBounds(scrollContainer);
