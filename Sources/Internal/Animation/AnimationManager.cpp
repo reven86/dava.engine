@@ -180,6 +180,20 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
 	return 0;
 }
 
+bool AnimationManager::HasActiveAnimations(AnimatedObject * owner)
+{
+	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	{
+		Animation * animation = *t;
+
+		if ((animation->owner == owner) && !(animation->state & Animation::STATE_FINISHED))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void AnimationManager::Update(float timeElapsed)
 {
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATIONS))
@@ -213,7 +227,11 @@ void AnimationManager::Update(float timeElapsed)
 			//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Finishing index %d", k);
 			//			}
 			//#endif
-			animation->Stop(); 
+			animation->Stop();
+			if ((animation->owner) && (!HasActiveAnimations(animation->owner)))
+			{
+				animation->owner->OnAllAnimationsFinished();
+			}
 		}
 	}
 

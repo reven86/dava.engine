@@ -31,6 +31,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "Animation/LinearAnimation.h"
+#include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Render/RenderManager.h"
 #include "Base/ObjectFactory.h"
@@ -2550,6 +2551,11 @@ namespace DAVA
 		LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &background->color, finalColor, time, interpolationFunc);
 		animation->Start(track);
 		return animation;
+	}
+
+	void UIControl::OnAllAnimationsFinished()
+	{
+		PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
 	}
 	
 	void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)

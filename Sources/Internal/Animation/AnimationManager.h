@@ -88,6 +88,7 @@ private:
 	void AddAnimation(Animation * _animation);
 	void RemoveAnimation(Animation * _animation);
 	
+	bool HasActiveAnimations(AnimatedObject * owner);
 	/*
 	 Function remove all animations for given object from update and delete objects and their references
 	 */

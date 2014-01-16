@@ -230,6 +230,7 @@ public:
 		EVENT_FOCUS_SET             = 6,//!<Trigger when control becomes focused
 		EVENT_FOCUS_LOST            = 7,//!<Trigger when control losts focus
 		EVENT_TOUCH_UP_OUTSIDE		= 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
+		EVENT_ALL_ANIMATIONS_FINISHED	= 9,//!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
 	};	
 
@@ -1168,6 +1169,8 @@ public:
     
     virtual void OnFocused();
     
+	virtual void OnAllAnimationsFinished();
+	
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
 
