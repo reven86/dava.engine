@@ -155,7 +155,7 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
             currentLineDx = 0;
         }
 		
-		// DF-2983 - Use additional condition to prevent endless loop, when target size is less than
+		// Use additional condition to prevent endless loop, when target size is less than
 		// size of one symbol (sizes[pos] > targetWidth)
 		// To keep initial index logic we should always perform action currentLineDx += sizes[pos]
 		// before entering this condition, so currentLineDx > 0.
