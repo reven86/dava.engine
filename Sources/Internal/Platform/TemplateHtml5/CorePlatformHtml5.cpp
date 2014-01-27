@@ -65,7 +65,12 @@ namespace DAVA {
 	{
 		RenderManager::Instance()->Init(nWidth, nHeight);
 		UIControlSystem::Instance()->SetInputScreenAreaSize(nWidth, nHeight);
-		Core::Instance()->SetPhysicalScreenSize(nWidth, nHeight);
+		
+		Core::Instance()->UnregisterAllAvailableResourceSizes();
+ 		Core::Instance()->RegisterAvailableResourceSize(nWidth, nHeight, "Gfx");
+
+ 		Core::Instance()->SetPhysicalScreenSize(nWidth, nHeight);
+		Core::Instance()->SetVirtualScreenSize(nWidth, nHeight);
 	}
 	
 	void CorePlatformHtml5::AppQuit()
@@ -228,11 +233,12 @@ namespace DAVA {
                               
 	    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
 		RenderManager::Instance()->Create();
-		
+
 		FrameworkDidLaunched();
+		emscripten_set_canvas_size(960, 640);
 		
-		emscripten_set_canvas_size(1024, 768);
-		Resize(1024, 768);
+		// Shouldn't be here, but won't work properly without this. Bug in EMSCRIPTEN?
+		Resize(960,640);
     }
     
     int Core::Run(int argc, char * argv[], AppHandle handle)

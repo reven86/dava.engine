@@ -45,6 +45,10 @@ public:
 	static void SetCompressionParamsForFolder(const DAVA::FilePath &folderPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force);
 
 	static void SetCompressionParams(const DAVA::FilePath &descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force);
+    static void ChangeCompressionParams(const DAVA::FilePath &descriptorPathname,
+                                        const DAVA::Map<DAVA::eGPUFamily,
+                                        std::pair<DAVA::TextureDescriptor::Compression, DAVA::TextureDescriptor::Compression> > & compressionChangeParams,
+                                        bool convertionEnabled, bool force);
     static void CreateDescriptorIfNeed(const DAVA::FilePath &pngPathname);
     
 private:

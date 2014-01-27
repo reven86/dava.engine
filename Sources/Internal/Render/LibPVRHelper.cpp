@@ -26,7 +26,6 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#if !defined(__DAVAENGINE_HTML5__)
 #include "Render/LibPVRHelper.h"
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
@@ -54,7 +53,7 @@ const uint32 PVRTEX3_METADATAIDENT	= 0x03525650;
     
 uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     if((pixelFormat & PVRTEX_PFHIGHMASK) != 0)
     {
         uint8 *pixelFormatChar = (uint8 *)&pixelFormat;
@@ -100,15 +99,15 @@ uint32 LibPVRHelper::GetBitsPerPixel(uint64 pixelFormat)
         }
     }
     return 0;
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     return PVRTGetBitsPerPixel(pixelFormat);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 }
 
     
 void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &minY, uint32 &minZ)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     switch(pixelFormat)
     {
         case ePVRTPF_DXT1:
@@ -169,15 +168,15 @@ void LibPVRHelper::GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &mi
             minZ = 1;
             break;
     }
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     PVRTGetFormatMinDims(pixelFormat, minX, minY, minZ);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 }
 
     
 uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLevel, bool allSurfaces, bool allFaces)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     //The smallest divisible sizes for a pixel format
     uint32 uiSmallestWidth = 1;
     uint32 uiSmallestHeight = 1;
@@ -240,15 +239,15 @@ uint32 LibPVRHelper::GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLeve
     //Multiply the data size by number of faces and surfaces specified, and return.
     return (uint32)(uiDataSize/8)*numsurfs*numfaces;
 
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     PVRTextureHeaderV3 *header = (PVRTextureHeaderV3 *)&textureHeader;
     return PVRTGetTextureDataSize(*header, mipLevel, allSurfaces, allFaces);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 }
  
 void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint64& newType, EPVRTColourSpace& newCSpace, EPVRTVariableType& newChanType, bool& isPreMult)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     //Default value.
     isPreMult=false;
     
@@ -1508,14 +1507,14 @@ void LibPVRHelper::MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint
         }
     }
     
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     PVRTMapLegacyTextureEnumToNewFormat(OldFormat, newType, newCSpace, newChanType, isPreMult);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 }
 
 void LibPVRHelper::ConvertOldTextureHeaderToV3(const PVRHeaderV2* LegacyHeader, PVRHeaderV3& NewHeader)
 {
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     //Setup variables
     bool isPreMult;
     uint64 ptNew;
@@ -1605,9 +1604,9 @@ void LibPVRHelper::ConvertOldTextureHeaderToV3(const PVRHeaderV2* LegacyHeader, 
 //        NewHeader.u32MetaDataSize+=(12+mbTexOrientation.u32DataSize);
 //    }
 
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
     PVRTConvertOldTextureHeaderToV3((const PVR_Texture_Header *)LegacyHeader, (PVRTextureHeaderV3&)NewHeader, NULL);
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 }
 
     
@@ -1855,10 +1854,10 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 			}
 			else
 			{
-#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
 				DVASSERT(false && "Must be hardware supported");
 				return false;
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 				//Create a near-identical texture header for the decompressed header.
 				PVRHeaderV3 decompressedHeader = CreateDecompressedHeader(compressedHeader);
 				if(!AllocateImageData(image, mipMapLevel, decompressedHeader))
@@ -1882,7 +1881,7 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 				pTempCompData+=compressedFaceOffset;
 				//}
 				image->format = FORMAT_RGBA8888;
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 			}
 		}
 #if !defined(__DAVAENGINE_IPHONE__)
@@ -1900,7 +1899,7 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 			else
 			{
 				//Create a near-identical texture header for the decompressed header.
-#if defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 				DVASSERT(!"Must be hardware supported");
 				return false;
 #else
@@ -1927,7 +1926,7 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 				pTempCompData += compressedFaceOffset;
 				//}
 				image->format = FORMAT_RGBA8888;
-#endif //defined (__DAVAENGINE_ANDROID__)
+#endif //defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 			}
 		}
 #endif //#if !defined(__DAVAENGINE_IPHONE__)
@@ -2541,5 +2540,4 @@ const char* LibPVRHelper::GetCubemapMetadata(PVRHeaderV3* pvrHeader, const char*
 }
     
 };
-#endif
 

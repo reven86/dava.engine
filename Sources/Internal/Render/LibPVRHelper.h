@@ -31,22 +31,21 @@
 #ifndef __DAVAENGINE_LIBPVRHELPER_H__
 #define __DAVAENGINE_LIBPVRHELPER_H__
 
-#if !defined(__DAVAENGINE_HTML5__)
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
 #include "FileSystem/FilePath.h"
 
 
-#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
     #include "PVRDefines.h"
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#else //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
 //    #include "libpvr/PVRTError.h"
 //    #include "libpvr/PVRTDecompress.h"
 //    #include "libpvr/PVRTMap.h"
     #include "libpvr/PVRTextureHeader.h"
 //    #include "libpvr/PVRTexture.h"
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_HTML5__)
 
 namespace DAVA
 {
@@ -165,7 +164,6 @@ protected:
 };
 
 
-#endif //!__DAVAENGINE_HTML5__
 #endif //#ifndef __DAVAENGINE_LIBPVRHELPER_H__
 
 

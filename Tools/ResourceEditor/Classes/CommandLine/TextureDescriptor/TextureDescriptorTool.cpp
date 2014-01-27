@@ -46,6 +46,7 @@ void TextureDescriptorTool::PrintUsage()
     printf("\t-copycompression - copy compressionParams parameters from PowerVR_iOS to other gpus\n");
     printf("\t-create - create *.tex for *.png if need\n");
 	printf("\t-setcompression - set compressionParams parameters for *tex or for all *text in folder. -f enables force mode. -convert runs convertation to selected format\n");
+    printf("\t-changecompression - change compressionParams parameters for *tex. -convert runs convertation to selected format\n");
 
     
     printf("\n");
@@ -55,6 +56,7 @@ void TextureDescriptorTool::PrintUsage()
     printf("-texdescriptor -create -folder /Users/User/Project/DataSource/3d/\n");
 	printf("-texdescriptor -setcompression -file /Users/User/Project/DataSource/3d/Tanks/images/a-20.tex -PowerVR_iOS PVR4 -tegra DXT1 -mali ETC1 -adreno RGBA4444\n");
 	printf("-texdescriptor -setcompression -folder /Users/User/Project/DataSource/3d/Tanks/images/ -PowerVR_iOS PVR4 -tegra DXT1 -mali ETC1 -adreno RGBA4444 -f -convert\n");
+    printf("-texdescriptor -changecompression -file /Users/User/Project/DataSource/3d/Tanks/images/1.tex -tegra -sf ETC1 -tf DXT1 -f -convert\n");
 }
 
 DAVA::String TextureDescriptorTool::GetCommandLineKey()
@@ -80,6 +82,24 @@ bool TextureDescriptorTool::InitializeFromCommandLine()
     {
         commandAction = ACTION_CREATE_DESCRIPTORS;
 		folderPathname = ReadFolderPathname();
+    }
+    else if(CommandLineParser::CommandIsFound("-changecompression"))
+    {
+		filePathname = ReadFilePathname();
+        if(!filePathname.IsEmpty())
+		{
+			commandAction = ACTION_CHANGE_COMPRESSION_FOR_DESCRIPTOR;
+		}
+		else
+		{
+			errors.insert("[TextureDescriptorTool]: path not set");
+			return false;
+		}
+        
+        forceModeEnabled = CommandLineParser::CommandIsFound("-f");
+		convertEnabled = CommandLineParser::CommandIsFound("-convert");
+        
+        ReadCompressionChangeParams();
     }
 	else if(CommandLineParser::CommandIsFound("-setcompression"))
 	{
@@ -112,6 +132,34 @@ bool TextureDescriptorTool::InitializeFromCommandLine()
     }
     
     return true;
+}
+
+void TextureDescriptorTool::ReadCompressionChangeParams()
+{
+    for(int32 i = GPU_POWERVR_IOS; i < GPU_FAMILY_COUNT; ++i)
+	{
+		eGPUFamily gpu = (eGPUFamily)i;
+		String gpuFlag = "-" + GPUFamilyDescriptor::GetGPUName(gpu);
+		if(CommandLineParser::CommandIsFound(gpuFlag))
+		{
+            TextureDescriptor::Compression sourceCompression, textureCompression;
+            if(CommandLineParser::CommandIsFound("-sf"))
+            {
+                String sourceFormatName = CommandLineParser::GetCommandParam(String("-sf"));
+                sourceCompression.format = Texture::GetPixelFormatByName(sourceFormatName);
+                sourceCompression.compressToWidth = sourceCompression.compressToHeight = 0;
+            }
+            if(CommandLineParser::CommandIsFound("-tf"))
+            {
+                String textureFormatName = CommandLineParser::GetCommandParam(String("-tf"));
+                textureCompression.format = Texture::GetPixelFormatByName(textureFormatName);
+                textureCompression.compressToWidth = textureCompression.compressToHeight = 0;
+            }
+            
+            compressionChangeParams[gpu] = std::pair<DAVA::TextureDescriptor::Compression,
+                                            DAVA::TextureDescriptor::Compression>(sourceCompression, textureCompression);
+		}
+	}
 }
 
 void TextureDescriptorTool::ReadCompressionParams()
@@ -174,6 +222,9 @@ void TextureDescriptorTool::Process()
 		case ACTION_SET_COMPRESSION_FOR_DESCRIPTOR:
 			TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled);
 			break;
+        case ACTION_CHANGE_COMPRESSION_FOR_DESCRIPTOR:
+            TextureDescriptorUtils::ChangeCompressionParams(filePathname, compressionChangeParams, convertEnabled, forceModeEnabled);
+            break;
 
         default:
             Logger::Error("[TextureDescriptorTool::Process] Unhandled action!");

@@ -171,6 +171,33 @@ void TextureDescriptorUtils::SetCompressionParamsForFolder( const FilePath &fold
 	SafeRelease(fileList);
 }
 
+void TextureDescriptorUtils::ChangeCompressionParams(const DAVA::FilePath &descriptorPathname,
+                                             const DAVA::Map<DAVA::eGPUFamily, std::pair<DAVA::TextureDescriptor::Compression, DAVA::TextureDescriptor::Compression> > & compressionChangeParams,
+                                             bool convertionEnabled, bool force)
+{
+    TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPathname);
+	if(!descriptor) return;
+    
+	auto endIt = compressionChangeParams.end();
+	for(auto it = compressionChangeParams.begin(); it != endIt; ++it)
+	{
+		eGPUFamily gpu = it->first;
+        
+        if(it->second.first.format == descriptor->compression[gpu].format)
+        {
+            descriptor->compression[gpu] = it->second.second;
+            
+            if(convertionEnabled)
+            {
+                ImageTools::ConvertImage(descriptor, gpu, (PixelFormat)descriptor->compression[gpu].format);
+            }
+        }
+	}
+    
+	descriptor->Save();
+	SafeRelease(descriptor);
+}
+
 
 void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force)
 {

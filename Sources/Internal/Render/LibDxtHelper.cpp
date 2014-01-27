@@ -413,10 +413,10 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
 	}
 	else
 	{
-#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
         Logger::Error("[NvttHelper::ReadDxtFile] Android should have hardware decoding of DDS. iPhone should have no support of DDS.");
 		return false;
-#else //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+#else //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
         
 		if (IsAtcFormat(format))
 		{
@@ -427,7 +427,7 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
 			return DecompressDxt(dec, info, imageSet);
 		}
 		
-#endif //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
+#endif //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
 
 	}
 
@@ -644,6 +644,9 @@ bool LibDxtHelper::WriteDxtFile(const FilePath & fileNameOriginal, int32 width, 
 
 bool LibDxtHelper::WriteAtcFile(const FilePath & fileNameOriginal, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps)
 {
+#if defined(__DAVAENGINE_HTML5__)
+    return false;
+#else
 	const int32 minSize = 0;
 	
 	if (compressionFormat != FORMAT_ATC_RGB &&
@@ -775,6 +778,7 @@ bool LibDxtHelper::WriteAtcFile(const FilePath & fileNameOriginal, int32 width, 
 	SafeDeleteArray(mipSize);
 	SafeDeleteArray(buffer);
 	return res;
+#endif //(__DAVAENGINE_HTML5__)
 }
 	
 bool LibDxtHelper::IsDxtFile(const FilePath & filePathname)

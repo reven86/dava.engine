@@ -176,6 +176,14 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat32Supported = IsGLExtensionSupported("GL_ARB_texture_float");
 	caps.isDXTSupported = IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
+#elif defined(__DAVAENGINE_HTML5__)
+    caps.isPVRTCSupported = false;
+	caps.isDXTSupported = true;
+    caps.isETCSupported = false;
+    caps.isBGRA8888Supported = false;
+    caps.isFloat16Supported = false;
+    caps.isFloat32Supported = false;
+	caps.isATCSupported = false;
 #endif
 
 //	caps.isDXTSupported = IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");

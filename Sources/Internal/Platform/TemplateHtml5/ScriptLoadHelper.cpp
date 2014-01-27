@@ -4,7 +4,7 @@
 #include <Logger.h>
 
 
-void ScriptLoadHelper::EnqueScript(const String& script, void (*onload)(), void (*onerror)())
+void ScriptLoadHelper::EnqueScript(const String& script, void (*onload)(void*), void (*onerror)(void*), void *pData)
 {
 	DAVA::List<ScriptLoadingInfo>::iterator it = std::find(resourceQueue.begin(), resourceQueue.end(), script);
 	if(it != resourceQueue.end())
@@ -12,6 +12,7 @@ void ScriptLoadHelper::EnqueScript(const String& script, void (*onload)(), void 
 		// Already in list, just add listeners
 		(*it).loadListeners.push_back(onload);
 		(*it).errorListeners.push_back(onerror);
+		(*it).dataList.push_back(pData);
 	}
 	else
 	{
@@ -19,6 +20,7 @@ void ScriptLoadHelper::EnqueScript(const String& script, void (*onload)(), void 
 		newItem.scriptPath = script;
 		newItem.loadListeners.push_back(onload);
 		newItem.errorListeners.push_back(onerror);
+		newItem.dataList.push_back(pData);
 		resourceQueue.push_back(newItem);
 		
 		if(resourceQueue.size() == 1)
@@ -34,10 +36,11 @@ void ScriptLoadHelper::OnScriptLoaded()
 	ScriptLoadHelper::Instance()->resourceQueue.pop_front();
 	Logger::Debug("Succefull loading script %s", loadedItem.scriptPath.c_str());
 	
-	DAVA::List<void (*)()>::iterator it = loadedItem.loadListeners.begin();
-	for( ; it != loadedItem.loadListeners.end(); ++it )
+	DAVA::List<void (*)(void*)>::iterator it = loadedItem.loadListeners.begin();
+	DAVA::List<void*>::iterator itData = loadedItem.dataList.begin();
+	for( ; it != loadedItem.loadListeners.end(); ++it, ++itData )
 	{
-		(*it)();
+		(*it)(*itData);
 	}
 	
 	if(ScriptLoadHelper::Instance()->resourceQueue.size() > 0)
@@ -54,10 +57,11 @@ void ScriptLoadHelper::OnErrorLoadingScript()
 	ScriptLoadHelper::Instance()->resourceQueue.pop_front();
 	Logger::Debug("Error loading script %s", loadedItem.scriptPath.c_str());
 	
-	DAVA::List<void (*)()>::iterator it = loadedItem.errorListeners.begin();
-	for( ; it != loadedItem.errorListeners.end(); ++it )
+	DAVA::List<void (*)(void*)>::iterator it = loadedItem.errorListeners.begin();
+	DAVA::List<void*>::iterator itData = loadedItem.dataList.begin();
+	for( ; it != loadedItem.errorListeners.end(); ++it, ++itData )
 	{
-		(*it)();
+		(*it)(*itData);
 	}
 	
 	if(ScriptLoadHelper::Instance()->resourceQueue.size() > 0)

@@ -11,8 +11,9 @@ using namespace DAVA;
 struct ScriptLoadingInfo
 {
 	String scriptPath;
-	DAVA::List<void (*)()> loadListeners;
-	DAVA::List<void (*)()> errorListeners;
+	DAVA::List<void (*)(void*)> loadListeners;
+	DAVA::List<void (*)(void*)> errorListeners;
+	DAVA::List<void*> dataList;
 	
 	bool operator==(String rhs) { return scriptPath == rhs; }
 };
@@ -20,7 +21,7 @@ struct ScriptLoadingInfo
 class ScriptLoadHelper : public DAVA::Singleton<ScriptLoadHelper>
 {
 public:
-	void EnqueScript(const String& script, void (*onload)(), void (*onerror)());
+	void EnqueScript(const String& script, void (*onload)(void*), void (*onerror)(void*), void *pData);
 	
 private:
 	static void OnScriptLoaded();
