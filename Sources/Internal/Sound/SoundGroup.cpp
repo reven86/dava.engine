@@ -45,6 +45,7 @@ SoundGroup::SoundGroup()
 {
 #if defined(__DAVAENGINE_HTML5__)
     nGroupID = nFreeGroupID++;
+    fVolume = 1.0;
 #else
 	FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createSoundGroup(0, &fmodSoundGroup));
 #endif
@@ -63,11 +64,11 @@ void SoundGroup::SetVolume(float32 volume)
 {
 #if defined(__DAVAENGINE_HTML5__)
     fVolume = volume;
-    Set<Sound*>::iterator it = sounds.begin();
+/*    Set<Sound*>::iterator it = sounds.begin();
     for(Set<Sound*>::iterator it = sounds.begin(); it != sounds.end(); ++it)
     {
         (*it)->SetVolume(volume);
-    }
+    }*/
 #else
 	FMOD_VERIFY(fmodSoundGroup->setVolume(volume));
 #endif

@@ -75,7 +75,11 @@ public:
 	void Pause(bool isPaused);
 	bool IsPaused();
 	void Stop();
+#if defined(__DAVAENGINE_HTML5__)
+    void PerformCallback();
+#else
     void PerformCallback(FMOD::Channel * instance);
+#endif
 
 	void SetPosition(const Vector3 & position);
 	void UpdateInstancesPosition();
@@ -86,7 +90,8 @@ public:
 	eType GetType() const;
     
 #if defined(__DAVAENGINE_HTML5__)
-    static std::map<int, Sound*> channelsUserData;
+    static Map<int, Sound*> channelsUserData;
+    static Map<int, Message> callbacksMap;
     static int s_nFreeSoundID;
 #endif
 
@@ -110,6 +115,7 @@ private:
     int nChannelID;
     float fVolume;
     int nLoopCount;
+    int nPlayedCallbacks;
     int nSoundID;
     SoundGroup *soundGroup;
 #endif

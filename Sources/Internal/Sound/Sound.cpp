@@ -33,10 +33,13 @@
 
 namespace DAVA
 {
+#if !defined(__DAVAENGINE_HTML5__)
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2);
+#endif
 
 #if defined(__DAVAENGINE_HTML5__)
-std::map<int, Sound*> Sound::channelsUserData;
+Map<int, Sound*> Sound::channelsUserData;
+Map<int, Message> callbacksMap;
 int s_nFreeSoundID = 1;
 #endif
     
@@ -147,11 +150,12 @@ Sound::Sound(const FilePath & _fileName, eType _type, int32 _priority)
 	is3d(false),
 #if defined(__DAVAENGINE_HTML5__)
     nLoopCount(0),
-    fVolume(0.0),
-    nChannelID(0),
+    fVolume(1.0),
+    nChannelID(-1),
     soundChunk(NULL),
     nSoundID(-1),
     soundGroup(NULL),
+    nPlayedCallbacks(-1),
 #endif
     soundData(0),
     fmodSound(0),
@@ -208,14 +212,37 @@ void Sound::Play(const Message & msg)
 {
 #if defined(__DAVAENGINE_HTML5__)
     nChannelID = Mix_PlayChannel(-1, soundChunk, nLoopCount);
-    std::map<int, Sound*>::iterator it = Sound::channelsUserData.find(nChannelID);
-    if(it != channelsUserData.end())
+    if(nChannelID != -1)
     {
-        it->second = this;
-    }
-    else
-    {
-        Sound::channelsUserData.insert(std::pair<int, Sound*>(nChannelID, this));
+        if(soundGroup)
+        {
+            Mix_Volume(nChannelID, (int)(soundGroup->GetVolume()*fVolume*MIX_MAX_VOLUME));
+        }
+        else
+        {
+            Mix_Volume(nChannelID, (int)(fVolume*MIX_MAX_VOLUME));
+        }
+        std::map<int, Sound*>::iterator it = Sound::channelsUserData.find(nChannelID);
+        if(it != channelsUserData.end())
+        {
+            it->second = this;
+        }
+        else
+        {
+            Sound::channelsUserData.insert(std::pair<int, Sound*>(nChannelID, this));
+        }
+        if(!msg.IsEmpty())
+        {
+            Map<int, Message>::iterator it = callbacksMap.find(nChannelID);
+            if(it != callbacksMap.end())
+            {
+                it->second = msg;
+            }
+            else
+            {
+                callbacksMap.insert(std::pair<int, Message>(nChannelID, msg));
+            }
+        }
     }
 #else
 	FMOD::Channel * fmodInstance = 0;
@@ -270,8 +297,18 @@ Sound::eType Sound::GetType() const
 void Sound::SetVolume(float32 volume)
 {
 #if defined(__DAVAENGINE_HTML5__)
-    Mix_Volume(nChannelID, (int)(volume*MIX_MAX_VOLUME));
     fVolume = volume;
+    if(nChannelID != -1)
+    {
+        if(soundGroup)
+        {
+            Mix_Volume(nChannelID, (int)(soundGroup->GetVolume()*fVolume*MIX_MAX_VOLUME));
+        }
+        else
+        {
+            Mix_Volume(nChannelID, (int)(fVolume*MIX_MAX_VOLUME));
+        }
+    }
 #else
 	FMOD_VERIFY(fmodInstanceGroup->setVolume(volume));
 #endif
@@ -337,19 +374,22 @@ void Sound::SetLoopCount(int32 loopCount)
 #endif
 }
 
-void Sound::PerformCallback(FMOD::Channel * instance)
-{
-    Map<FMOD::Channel *, Message>::iterator it = callbacks.find(instance);
-    if(it != callbacks.end())
-    {
-        it->second(this);
-        callbacks.erase(it);
-    }
-
-    SoundSystem::Instance()->ReleaseOnUpdate(this);
-}
-
 #if defined(__DAVAENGINE_HTML5__)
+void Sound::PerformCallback()
+{
+    nPlayedCallbacks++;
+    if(nPlayedCallbacks == nLoopCount)
+    {
+        Map<int, Message>::iterator it = callbacksMap.find(nChannelID);
+        if(it != callbacksMap.end())
+        {
+            it->second(this);
+            callbacksMap.erase(it);
+        }
+        //SoundSystem::Instance()->ReleaseOnUpdate(this);
+    }
+}
+    
 void SoundChannelFinishedPlaying(int nChannelID)
 {
     Sound *sound = 0;
@@ -360,12 +400,23 @@ void SoundChannelFinishedPlaying(int nChannelID)
         it->second = NULL;
         if(sound)
         {
-            //TODO: fix this
-            //sound->PerformPlaybackComplete();
+            sound->PerformCallback();
         }
     }
 }
-#endif
+    
+#else
+void Sound::PerformCallback(FMOD::Channel * instance)
+{
+    Map<FMOD::Channel *, Message>::iterator it = callbacks.find(instance);
+    if(it != callbacks.end())
+    {
+        it->second(this);
+        callbacks.erase(it);
+    }
+    
+    SoundSystem::Instance()->ReleaseOnUpdate(this);
+}
     
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2)
 {
@@ -383,5 +434,6 @@ FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANN
 
 	return FMOD_OK;
 }
+#endif
 
 };
