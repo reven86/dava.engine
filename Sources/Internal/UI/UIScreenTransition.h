@@ -51,7 +51,8 @@ public:
 	virtual void Update(float32 timeElapsed);
 	virtual void Draw(const UIGeometricData &geometricData);
 	virtual void SetDuration(float32 timeInSeconds);
-	virtual bool IsLoadingTransition(); 
+	virtual bool IsLoadingTransition();
+	virtual bool IsTransitionInProcess();
 protected:
 	static Sprite * renderTargetPrevScreen;
 	static Sprite * renderTargetNextScreen;

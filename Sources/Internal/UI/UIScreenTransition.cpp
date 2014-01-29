@@ -171,6 +171,11 @@ bool UIScreenTransition::IsLoadingTransition()
 {
 	return false;
 }
+
+bool UIScreenTransition::IsTransitionInProcess()
+{
+	return false;
+}
 	
 };
 
