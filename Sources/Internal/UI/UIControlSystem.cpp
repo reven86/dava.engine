@@ -81,10 +81,15 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
 
     if (transition)
     {
-       	if (transition->IsLoadingTransition() && transition->IsTransitionInProcess())
-       	{
-			UnlockInput();
-		}
+       if (transition->IsLoadingTransition())
+        {
+            UILoadingTransition * loadingTransition = static_cast<UILoadingTransition*> (transition);
+			// DF-2672 - Unlock input for current running transition
+            if(loadingTransition->IsTransitionInProcess())
+            {
+                UnlockInput();
+            }
+        }
     }
 
 	LockInput();

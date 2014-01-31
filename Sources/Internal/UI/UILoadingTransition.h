@@ -59,10 +59,11 @@ public:
 	virtual int32 GetGroupId();
 	virtual void WillAppear();
 	virtual void WillDisappear();
-	virtual bool IsLoadingTransition();
-	virtual bool IsTransitionInProcess();
 	
 	inline UIScreenTransition * GetInTransition();	
+	
+	bool IsLoadingTransition();
+	bool IsTransitionInProcess();
 	
 protected:
 	Sprite * backgroundSprite;
