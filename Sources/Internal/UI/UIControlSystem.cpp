@@ -88,10 +88,6 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
     }
 
 	LockInput();
-	if (transition != _transition)
-	{
-    	SafeRelease(transition);
-	}
 	transition = SafeRetain(_transition);
 	
 	if (_nextScreen == 0)
