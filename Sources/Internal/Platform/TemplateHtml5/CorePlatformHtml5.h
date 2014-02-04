@@ -19,6 +19,9 @@ namespace DAVA
         EGLDisplay m_eglDisplay;
         EGLContext m_eglContext;
         EGLSurface m_eglSurface;
+        static bool s_bMouseDown;
+        static int s_xPos;
+		static int s_yPos;
         void EnterFrameRoutineInternal();
         static void EnterFrameRoutine();
         

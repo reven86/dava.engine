@@ -151,6 +151,18 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x51] = DVKEY_DOWN;
     keyTranslator[0x7F] = DVKEY_DELETE;
     keyTranslator[0x0D] = DVKEY_ENTER;
+    
+
+    keyTranslator[0x61] = DVKEY_A;
+    keyTranslator[0x64] = DVKEY_D;
+    keyTranslator[0x65] = DVKEY_E;
+    keyTranslator[0x71] = DVKEY_Q;
+    keyTranslator[0x72] = DVKEY_R;
+    keyTranslator[0x73] = DVKEY_S;
+    keyTranslator[0x74] = DVKEY_T;
+    keyTranslator[0x75] = DVKEY_U;
+    keyTranslator[0x76] = DVKEY_V;
+    keyTranslator[0x77] = DVKEY_W;
 #endif
     
 #if defined(__DAVAENGINE_MACOS__)

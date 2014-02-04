@@ -6,8 +6,15 @@
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
 
+#define HTML5_WIDTH 960
+#define HTML5_HEIGHT 640
+
 namespace DAVA {
     static Vector<DAVA::UIEvent> activeTouches;
+	bool CorePlatformHtml5::s_bMouseDown = false;
+	int CorePlatformHtml5::s_xPos = 0;
+	int CorePlatformHtml5::s_yPos = 0;
+
 
     void CorePlatformHtml5::Run()
     {
@@ -93,17 +100,54 @@ namespace DAVA {
 	
 	void CorePlatformHtml5::MouseMoveEvent(SDL_MouseMotionEvent ev)
 	{
-       	CorePlatformHtml5::ProcessMouseEvent(MOUSE_MOVE, ev.x, ev.y, ev.state);
+       	if(ev.x == 0 && ev.y == 0)
+       	{
+       		if(s_bMouseDown == false)
+       		{
+       			s_xPos = 480;
+       			s_yPos = 320;
+				CorePlatformHtml5::ProcessMouseEvent(MOUSE_MOVE, s_xPos, s_yPos);
+				CorePlatformHtml5::ProcessMouseEvent(MOUSE_DOWN, s_xPos, s_yPos);
+				s_bMouseDown = true;
+			}
+			if( (s_xPos + ev.xrel) < 0 || (s_xPos + ev.xrel) > HTML5_WIDTH ||
+				(s_yPos + ev.yrel) < 0 || (s_yPos + ev.yrel) > HTML5_HEIGHT )
+			{
+				CorePlatformHtml5::ProcessMouseEvent(MOUSE_UP, s_xPos, s_yPos);
+       			s_xPos = 480;
+       			s_yPos = 320;
+       			CorePlatformHtml5::ProcessMouseEvent(MOUSE_MOVE, s_xPos, s_yPos);
+				CorePlatformHtml5::ProcessMouseEvent(MOUSE_DOWN, s_xPos, s_yPos);
+			}			
+			s_xPos += ev.xrel;
+			s_yPos += ev.yrel;
+			CorePlatformHtml5::ProcessMouseEvent(MOUSE_MOVE, s_xPos, s_yPos, SDL_BUTTON_LMASK);
+       	}
+       	else
+       	{
+       		if(s_bMouseDown == true)
+       		{
+       			CorePlatformHtml5::ProcessMouseEvent(MOUSE_UP, s_xPos, s_yPos);
+       			s_bMouseDown = false;
+       		}
+       		CorePlatformHtml5::ProcessMouseEvent(MOUSE_MOVE, ev.x, ev.y, ev.state);
+       	}
     }
     
 	void CorePlatformHtml5::MouseUpEvent(SDL_MouseButtonEvent ev)
 	{
-       	CorePlatformHtml5::ProcessMouseEvent(MOUSE_UP, ev.x, ev.y);
+		if(s_bMouseDown == false )
+		{
+       		CorePlatformHtml5::ProcessMouseEvent(MOUSE_UP, ev.x, ev.y);
+       	}
     }
     
 	void CorePlatformHtml5::MouseDownEvent(SDL_MouseButtonEvent ev)
 	{
-		CorePlatformHtml5::ProcessMouseEvent(MOUSE_DOWN, ev.x, ev.y);
+		if(s_bMouseDown == false )
+		{
+			CorePlatformHtml5::ProcessMouseEvent(MOUSE_DOWN, ev.x, ev.y);
+		}
     }
     
     void CorePlatformHtml5::ProcessMouseEvent(MouseMessage message, int x, int y, unsigned int state/*0*/)
@@ -235,10 +279,10 @@ namespace DAVA {
 		RenderManager::Instance()->Create();
 
 		FrameworkDidLaunched();
-		emscripten_set_canvas_size(960, 640);
+		emscripten_set_canvas_size(HTML5_WIDTH, HTML5_HEIGHT);
 		
 		// Shouldn't be here, but won't work properly without this. Bug in EMSCRIPTEN?
-		Resize(960,640);
+		Resize(HTML5_WIDTH, HTML5_HEIGHT);
     }
     
     int Core::Run(int argc, char * argv[], AppHandle handle)
