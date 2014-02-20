@@ -95,84 +95,94 @@ public:
 	eStencilOp stencilFail[2];
 	eStencilOp stencilZFail[2];
 	
-	RenderStateData() :
-	state(0),
-	sourceFactor(BLEND_ONE),
-	destFactor(BLEND_ONE),
-	cullMode(FACE_COUNT),
-	depthFunc(CMP_NEVER),
-	fillMode(FILLMODE_COUNT),
-	stencilRef(0),
-	stencilMask(0)
-	{
-		memset(stencilFunc, 0, sizeof(stencilFunc));
-		memset(stencilPass, 0, sizeof(stencilPass));
-		memset(stencilFail, 0, sizeof(stencilFail));
-		memset(stencilZFail, 0, sizeof(stencilZFail));
-	}
+	inline RenderStateData();
+	inline RenderStateData(const RenderStateData& data);
 	
-	RenderStateData(const RenderStateData& data)
-	{
-		state = data.state;
-		
-		sourceFactor = data.sourceFactor;
-		destFactor = data.destFactor;
-		
-		//cull mode
-		cullMode = data.cullMode;
-		
-		//depth function
-		depthFunc = data.depthFunc;
-		
-		//fill mode
-		fillMode = data.fillMode;
-		
-		//stencil state
-		stencilRef = data.stencilRef;
-		stencilMask = data.stencilMask;
-		memcpy(stencilFunc, data.stencilFunc, sizeof(stencilFunc));
-		memcpy(stencilPass, data.stencilPass, sizeof(stencilPass));
-		memcpy(stencilFail, data.stencilFail, sizeof(stencilFail));
-		memcpy(stencilZFail, data.stencilZFail, sizeof(stencilZFail));
-	}
-	
-	RenderStateData& operator=(const RenderStateData& data)
-	{
-		state = data.state;
-		
-		sourceFactor = data.sourceFactor;
-		destFactor = data.destFactor;
-		
-		//cull mode
-		cullMode = data.cullMode;
-		
-		//depth function
-		depthFunc = data.depthFunc;
-		
-		//fill mode
-		fillMode = data.fillMode;
-		
-		//stencil state
-		stencilRef = data.stencilRef;
-		stencilMask = data.stencilMask;
-		memcpy(stencilFunc, data.stencilFunc, sizeof(stencilFunc));
-		memcpy(stencilPass, data.stencilPass, sizeof(stencilPass));
-		memcpy(stencilFail, data.stencilFail, sizeof(stencilFail));
-		memcpy(stencilZFail, data.stencilZFail, sizeof(stencilZFail));
-
-		return *this;
-	}
-	
-	void Clear()
-	{
-		//do nothing here for now. No resources to release.
-	}
-	
-	bool Equals(const RenderStateData& data) const
-	{
-		return (0 == memcmp(this, &data, sizeof(RenderStateData)));
-	}
+	inline RenderStateData& operator=(const RenderStateData& data);
+    
+	inline void Clear();
+    
+	inline bool Equals(const RenderStateData& data) const;
 };
+    
+inline RenderStateData::RenderStateData() :
+    state(0),
+    sourceFactor(BLEND_ONE),
+    destFactor(BLEND_ONE),
+    cullMode(FACE_COUNT),
+    depthFunc(CMP_NEVER),
+    fillMode(FILLMODE_COUNT),
+    stencilRef(0),
+    stencilMask(0)
+{
+	memset(stencilFunc, 0, sizeof(stencilFunc));
+	memset(stencilPass, 0, sizeof(stencilPass));
+	memset(stencilFail, 0, sizeof(stencilFail));
+	memset(stencilZFail, 0, sizeof(stencilZFail));
+}
+
+inline RenderStateData::RenderStateData(const RenderStateData& data)
+{
+	state = data.state;
+	
+	sourceFactor = data.sourceFactor;
+	destFactor = data.destFactor;
+	
+	//cull mode
+	cullMode = data.cullMode;
+	
+	//depth function
+	depthFunc = data.depthFunc;
+	
+	//fill mode
+	fillMode = data.fillMode;
+	
+	//stencil state
+	stencilRef = data.stencilRef;
+	stencilMask = data.stencilMask;
+	memcpy(stencilFunc, data.stencilFunc, sizeof(stencilFunc));
+	memcpy(stencilPass, data.stencilPass, sizeof(stencilPass));
+	memcpy(stencilFail, data.stencilFail, sizeof(stencilFail));
+	memcpy(stencilZFail, data.stencilZFail, sizeof(stencilZFail));
+}
+
+inline RenderStateData& RenderStateData::operator=(const RenderStateData& data)
+{
+	state = data.state;
+	
+	sourceFactor = data.sourceFactor;
+	destFactor = data.destFactor;
+	
+	//cull mode
+	cullMode = data.cullMode;
+	
+	//depth function
+	depthFunc = data.depthFunc;
+	
+	//fill mode
+	fillMode = data.fillMode;
+	
+	//stencil state
+	stencilRef = data.stencilRef;
+	stencilMask = data.stencilMask;
+	memcpy(stencilFunc, data.stencilFunc, sizeof(stencilFunc));
+	memcpy(stencilPass, data.stencilPass, sizeof(stencilPass));
+	memcpy(stencilFail, data.stencilFail, sizeof(stencilFail));
+	memcpy(stencilZFail, data.stencilZFail, sizeof(stencilZFail));
+	
+	return *this;
+}
+
+inline void RenderStateData::Clear()
+{
+	//do nothing here for now. No resources to release.
+}
+
+inline bool RenderStateData::Equals(const RenderStateData& data) const
+{
+	return (0 == memcmp(this, &data, sizeof(RenderStateData)));
+}
+
 };
 
 #endif
