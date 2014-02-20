@@ -580,7 +580,7 @@ public:
 	{
 		LockRenderState();
 		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(handle);
-		memcpy(&target, &parentState, sizeof(target));
+		target = parentState;
         UnlockRenderState();
 	}
 	
@@ -595,8 +595,7 @@ public:
 	{
         LockRenderState();
 		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
-		RenderStateData derivedState;
-		memcpy(&derivedState, &parentState, sizeof(derivedState));
+		RenderStateData derivedState(parentState);
         UnlockRenderState();
 		
 		derivedState.state = renderStateFlags;
@@ -609,8 +608,7 @@ public:
 	{
         LockRenderState();
 		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
-		RenderStateData derivedState;
-		memcpy(&derivedState, &parentState, sizeof(derivedState));
+		RenderStateData derivedState(parentState);
         UnlockRenderState();
 		
 		derivedState.sourceFactor = srcBlend;

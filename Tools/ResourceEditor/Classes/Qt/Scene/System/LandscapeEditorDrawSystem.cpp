@@ -55,9 +55,8 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	visibilityToolProxy(NULL)
 ,	rulerToolProxy(NULL)
 {
-	const DAVA::RenderStateData default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
-	DAVA::RenderStateData noBlendStateData;
-	memcpy(&noBlendStateData, &default3dState, sizeof(noBlendStateData));
+    DAVA::RenderStateData noBlendStateData;
+	DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, noBlendStateData);
 	
 	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
 	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
