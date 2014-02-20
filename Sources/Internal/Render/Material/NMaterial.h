@@ -45,6 +45,12 @@
 #include "Render/Material/RenderTechnique.h"
 #include "Render/Highlevel/RenderFastNames.h"
 
+#include "Render/Material/NMaterialHelper.h"
+
+#include "Render/Material/NMaterialStateDynamicPropertiesInsp.h"
+#include "Render/Material/NMaterialStateDynamicTexturesInsp.h"
+#include "Render/Material/NMaterialStateDynamicFlagsInsp.h"
+
 namespace DAVA
 {
 
@@ -72,23 +78,9 @@ struct IlluminationParams : public InspBase
     //this is a weak property since IlluminationParams exists only as a part of parent material
     NMaterial* parent;
 
-    IlluminationParams(NMaterial* parentMaterial = NULL) :
-    isUsed(true),
-    castShadow(true),
-    receiveShadow(true),
-    lightmapSize(LIGHTMAP_SIZE_DEFAULT),
-    parent(parentMaterial)
-    {
-    }
+    inline IlluminationParams(NMaterial* parentMaterial = NULL);
 
-    IlluminationParams(const IlluminationParams & params)
-    {
-        isUsed = params.isUsed;
-        castShadow = params.castShadow;
-        receiveShadow = params.receiveShadow;
-        lightmapSize = params.lightmapSize;
-        parent = NULL;
-    }
+    inline IlluminationParams(const IlluminationParams & params);
     
     int32 GetLightmapSize() const;
     void SetLightmapSize(const int32 &size);
@@ -110,34 +102,11 @@ public:
     uint8 size;
     uint8* data;
 	
-	NMaterialProperty()
-	{
-		type = Shader::UT_INT;
-		size = 0;
-		data = NULL;
-	}
+	inline NMaterialProperty();
 	
-	~NMaterialProperty()
-	{
-		SafeDeleteArray(data);
-	}
+	inline ~NMaterialProperty();
 	
-	NMaterialProperty* Clone()
-	{
-		NMaterialProperty* cloneProp = new NMaterialProperty();
-		
-		cloneProp->size = size;
-		cloneProp->type = type;
-		
-		if(data)
-		{
-			size_t dataSize = Shader::GetUniformTypeSize(type) * size;
-			cloneProp->data = new uint8[dataSize];
-			memcpy(cloneProp->data, data, dataSize);
-		}
-		
-		return cloneProp;
-	}
+	inline NMaterialProperty* Clone();
 };
 
 class Camera;
@@ -147,6 +116,10 @@ class NMaterial : public DataNode
 	friend class MaterialSystem;
 	friend class MaterialCompiler;
 	friend class NMaterialHelper;
+    
+    friend class NMaterialStateDynamicPropertiesInsp;
+    friend class NMaterialStateDynamicTexturesInsp;
+    friend class NMaterialStateDynamicFlagsInsp;
 	
 public:
 	
@@ -220,19 +193,9 @@ public:
 	
 	inline NMaterial* GetParent() const {return parent;}
 	
-	//void AddChild(NMaterial* material, bool inheritTemlate = true);
-	//void RemoveChild(NMaterial* material);
 	void SetParent(NMaterial* newParent, bool inheritTemplate = true);
-	inline uint32 GetChildrenCount() const
-	{
-		return children.size();
-	}
-
-	NMaterial* GetChild(uint32 index) const
-	{
-		DVASSERT(index >= 0 && index < children.size());
-		return children[index];
-	}
+	inline uint32 GetChildrenCount() const;
+	NMaterial* GetChild(uint32 index) const;
 		
 	//{TODO: these should be removed and changed to a generic system
 	//setting properties via special setters
@@ -353,37 +316,14 @@ protected:
 	{
     public:
     
-		TextureBucket() : texture(NULL)
-		{ }
+		inline TextureBucket();
+        inline ~TextureBucket();
         
-        ~TextureBucket()
-        {
-            SafeRelease(texture);
-        }
+        inline void SetTexture(Texture* tx);
+        inline Texture* GetTexture() const;
         
-        inline void SetTexture(Texture* tx)
-        {
-            if(tx != texture)
-            {
-                SafeRelease(texture);
-                texture = SafeRetain(tx);
-            }
-        }
-        
-        inline Texture* GetTexture() const
-        {
-            return texture;
-        }
-        
-        inline void SetPath(const FilePath& filePath)
-        {
-            path = filePath;
-        }
-        
-        inline const FilePath& GetPath() const
-        {
-            return path;
-        }
+        inline void SetPath(const FilePath& filePath);
+        inline const FilePath& GetPath() const;
 
     private:
 		Texture* texture; //VI: can be NULL
@@ -392,11 +332,7 @@ protected:
 		
 	struct UniformCacheEntry
 	{
-		UniformCacheEntry() :
-			uniform(NULL),
-			prop(NULL),
-			index(-1)
-		{ }
+		inline UniformCacheEntry();
 
 		Shader::Uniform* uniform;
 		int32 index;
@@ -407,23 +343,9 @@ protected:
 	{
     public:
 		
-		RenderPassInstance() :
-			textureIndexMap(8),
-			dirtyState(false),
-			texturesDirty(true),
-			activeUniformsCachePtr(NULL),
-			activeUniformsCacheSize(0),
-            propsDirty(true)
-		{
-			renderState.shader = NULL;
-		}
+		inline RenderPassInstance();
         
-        ~RenderPassInstance()
-        {
-            SetRenderStateHandle(InvalidUniqueHandle);
-            SetTextureStateHandle(InvalidUniqueHandle);
-            SafeRelease(renderState.shader);
-        }
+        inline ~RenderPassInstance();
         
         inline void SetShader(Shader* curShader);
         inline Shader* GetShader() const;
@@ -501,9 +423,6 @@ protected:
 	
     uint32                  renderLayerIDsBitmask;
 	
-	//static Texture* stubCubemapTexture;
-	//static Texture* stub2dTexture;
-    
     static NMaterial* GLOBAL_MATERIAL;
 	
 protected:
@@ -563,84 +482,6 @@ protected:
 	
 public:
 	
-	class NMaterialStateDynamicTexturesInsp : public InspInfoDynamic
-	{
-	public:
-		Vector<FastName> MembersList(void *object) const;
-		InspDesc MemberDesc(void *object, const FastName &member) const;
-		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberAliasGet(void *object, const FastName &member) const;
-		VariantType MemberValueGet(void *object, const FastName &member) const;
-		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-
-	protected:
-		struct PropData
-		{
-			enum PropSource
-			{
-				SOURCE_UNKNOWN = 0x0,
-				SOURCE_SELF = 0x1,
-				SOURCE_PARENT = 0x2,
-				SOURCE_SHADER = 0x4
-			};
-
-			PropData() : source(SOURCE_UNKNOWN)
-			{ }
-
-			int source;
-			FilePath path;
-		};
-
-		const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state) const;
-	};
-
-	class NMaterialStateDynamicFlagsInsp : public InspInfoDynamic
-	{
-	public:
-		Vector<FastName> MembersList(void *object) const;
-		InspDesc MemberDesc(void *object, const FastName &member) const;
-		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberValueGet(void *object, const FastName &member) const;
-		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-	};
-
-	class NMaterialStateDynamicPropertiesInsp : public InspInfoDynamic
-	{
-	public:
-		Vector<FastName> MembersList(void *object) const;
-		InspDesc MemberDesc(void *object, const FastName &member) const;
-		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberAliasGet(void *object, const FastName &member) const;
-		VariantType MemberValueGet(void *object, const FastName &member) const;
-		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-		
-	protected:
-		struct PropData
-		{
-			enum PropSource
-			{
-				SOURCE_UNKNOWN = 0x0,
-				SOURCE_SELF = 0x1,
-				SOURCE_PARENT = 0x2,
-				SOURCE_SHADER = 0x4
-			};
-			
-			PropData() : source(SOURCE_UNKNOWN)
-			{ }
-			
-			int source;
-			Shader::eUniformType type;
-			uint8 size;
-			uint8* data;
-		};
-		
-		bool isColor(const FastName &propName) const;
-		VariantType getVariant(const FastName &propName, const PropData &propData) const;
-		const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state) const;
-	};
-	
-public:
-	
 	INTROSPECTION_EXTEND(NMaterial, DataNode,
 				  //(DAVA::CreateIspProp("materialName", "Material name", &NMaterial::GetMaterialName, &NMaterial::SetMaterialName, I_SAVE | I_EDIT | I_VIEW),
 				  MEMBER(materialName, "Material name", I_SAVE | I_EDIT | I_VIEW)
@@ -653,24 +494,114 @@ public:
 				  );
 
 };
-	
-	class NMaterialHelper
-	{
-	public:
-		
-		static void EnableStateFlags(const FastName& passName, NMaterial* target, uint32 stateFlags);
-		static void DisableStateFlags(const FastName& passName, NMaterial* target, uint32 stateFlags);
-		static void SetBlendMode(const FastName& passName, NMaterial* target, eBlendMode src, eBlendMode dst);
-		static void SwitchTemplate(NMaterial* material, const FastName& templateName);
-		static Texture* GetEffectiveTexture(const FastName& textureName, NMaterial* mat);
-        static void SetFillMode(const FastName& passName, NMaterial* mat, eFillMode fillMode);
-		
-		static bool IsAlphatest(const FastName& passName, NMaterial* mat);
-        static bool IsAlphablend(const FastName& passName, NMaterial* mat);
-		static bool IsTwoSided(const FastName& passName, NMaterial* mat);
-        static eFillMode GetFillMode(const FastName& passName, NMaterial* mat);
-	};
     
+    /////////////////////////////////////////////////////////////////////////////
+    
+    inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial /*= NULL*/) :
+    isUsed(true),
+    castShadow(true),
+    receiveShadow(true),
+    lightmapSize(LIGHTMAP_SIZE_DEFAULT),
+    parent(parentMaterial)
+    {
+    }
+    
+    inline IlluminationParams::IlluminationParams(const IlluminationParams & params)
+    {
+        isUsed = params.isUsed;
+        castShadow = params.castShadow;
+        receiveShadow = params.receiveShadow;
+        lightmapSize = params.lightmapSize;
+        parent = NULL;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    inline NMaterialProperty::NMaterialProperty()
+	{
+		type = Shader::UT_INT;
+		size = 0;
+		data = NULL;
+	}
+	
+    inline NMaterialProperty::~NMaterialProperty()
+	{
+		SafeDeleteArray(data);
+	}
+	
+	inline NMaterialProperty* NMaterialProperty::Clone()
+	{
+		NMaterialProperty* cloneProp = new NMaterialProperty();
+		
+		cloneProp->size = size;
+		cloneProp->type = type;
+		
+		if(data)
+		{
+			size_t dataSize = Shader::GetUniformTypeSize(type) * size;
+			cloneProp->data = new uint8[dataSize];
+			memcpy(cloneProp->data, data, dataSize);
+		}
+		
+		return cloneProp;
+	}
+    
+    
+    ////////////////////////////////////////////////////////////////////////////
+    inline NMaterial::TextureBucket::TextureBucket() :
+        texture(NULL)
+    {
+    }
+    
+    inline NMaterial::TextureBucket::~TextureBucket()
+    {
+        SafeRelease(texture);
+    }
+    
+    inline void NMaterial::TextureBucket::SetTexture(Texture* tx)
+    {
+        if(tx != texture)
+        {
+            SafeRelease(texture);
+            texture = SafeRetain(tx);
+        }
+    }
+    
+    inline Texture* NMaterial::TextureBucket::GetTexture() const
+    {
+        return texture;
+    }
+    
+    inline void NMaterial::TextureBucket::SetPath(const FilePath& filePath)
+    {
+        path = filePath;
+    }
+    
+    inline const FilePath& NMaterial::TextureBucket::GetPath() const
+    {
+        return path;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    inline NMaterial::UniformCacheEntry::UniformCacheEntry() :
+        uniform(NULL),
+        prop(NULL),
+        index(-1)
+    {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    inline uint32 NMaterial::GetChildrenCount() const
+	{
+		return children.size();
+	}
+    
+	inline NMaterial* NMaterial::GetChild(uint32 index) const
+	{
+		DVASSERT(index >= 0 && index < children.size());
+		return children[index];
+	}
+
+	
     inline void NMaterial::SetGlobalMaterial(NMaterial* globalMaterial)
     {
         NMaterial::GLOBAL_MATERIAL = globalMaterial;
@@ -687,7 +618,7 @@ public:
     }
     
     
-    void NMaterial::SetRenderLayers(uint32 bitmask)
+    inline void NMaterial::SetRenderLayers(uint32 bitmask)
     {
         renderLayerIDsBitmask = bitmask;
         RenderLayerID minLayerID = RENDER_LAYER_ID_BITMASK_MAX_MASK;
@@ -710,6 +641,27 @@ public:
             renderLayerIDsBitmask |= (maxLayerID << RENDER_LAYER_ID_BITMASK_MAX_POS);
         }
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    
+    inline NMaterial::RenderPassInstance::RenderPassInstance() :
+        textureIndexMap(8),
+        dirtyState(false),
+        texturesDirty(true),
+        activeUniformsCachePtr(NULL),
+        activeUniformsCacheSize(0),
+        propsDirty(true)
+    {
+        renderState.shader = NULL;
+    }
+    
+    inline NMaterial::RenderPassInstance::~RenderPassInstance()
+    {
+        SetRenderStateHandle(InvalidUniqueHandle);
+        SetTextureStateHandle(InvalidUniqueHandle);
+        SafeRelease(renderState.shader);
+    }
+
     
     inline void NMaterial::RenderPassInstance::SetShader(Shader* curShader)
     {

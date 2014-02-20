@@ -26,8 +26,8 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __DAVAENGINE_NMATERIAL_DYNAMIC_PROPS_INSP_H__
-#define __DAVAENGINE_NMATERIAL_DYNAMIC_PROPS_INSP_H__
+#ifndef __DAVAENGINE_NMATERIAL_DYNAMIC_FLAGS_INSP_H__
+#define __DAVAENGINE_NMATERIAL_DYNAMIC_FLAGS_INSP_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
@@ -48,39 +48,14 @@
 namespace DAVA
 {
 
-class NMaterialStateDynamicPropertiesInsp : public InspInfoDynamic
+class NMaterialStateDynamicFlagsInsp : public InspInfoDynamic
 {
 public:
     Vector<FastName> MembersList(void *object) const;
     InspDesc MemberDesc(void *object, const FastName &member) const;
     int MemberFlags(void *object, const FastName &member) const;
-    VariantType MemberAliasGet(void *object, const FastName &member) const;
     VariantType MemberValueGet(void *object, const FastName &member) const;
     void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-    
-protected:
-    struct PropData
-    {
-        enum PropSource
-        {
-            SOURCE_UNKNOWN = 0x0,
-            SOURCE_SELF = 0x1,
-            SOURCE_PARENT = 0x2,
-            SOURCE_SHADER = 0x4
-        };
-        
-        PropData() : source(SOURCE_UNKNOWN)
-        { }
-        
-        int source;
-        Shader::eUniformType type;
-        uint8 size;
-        uint8* data;
-    };
-    
-    bool isColor(const FastName &propName) const;
-    VariantType getVariant(const FastName &propName, const PropData &propData) const;
-    const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state) const;
 };
 
 };
