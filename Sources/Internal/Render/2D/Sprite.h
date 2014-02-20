@@ -96,23 +96,15 @@ public:
 		inline void SetFrame(uint32 frame);
 		inline void SetFlags(uint32 flags);
 		inline void SetPerPixelAccuracyUsage(bool needToUse);
-		void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
+		inline void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
         
         //NOTE: be careful: this method doesn't retain shader.
-        void SetShader(Shader* _shader);
-        
-        inline Shader* GetShader() const
-        {
-            return shader;
-        }
+        inline void SetShader(Shader* _shader);
+        inline Shader* GetShader() const;
         
         //NOTE: be careful: this method doesn't retain render state.
-        void SetRenderState(UniqueHandle _renderState);
-        
-        inline UniqueHandle GetRenderState()
-        {
-            return renderState;
-        }
+        inline void SetRenderState(UniqueHandle _renderState);
+        inline UniqueHandle GetRenderState() const;
         
     private:
     
@@ -480,6 +472,26 @@ inline void Sprite::DrawState::SetFlags(uint32 _flags)
 inline void Sprite::DrawState::SetPerPixelAccuracyUsage(bool needToUse)
 {
 	usePerPixelAccuracy = needToUse;
+}
+    
+inline Shader* Sprite::DrawState::GetShader() const
+{
+    return shader;
+}
+    
+inline UniqueHandle Sprite::DrawState::GetRenderState() const
+{
+    return renderState;
+}
+
+inline void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
+{
+    renderState = _renderState;
+}
+    
+inline void Sprite::DrawState::SetShader(Shader* _shader)
+{
+    shader = _shader;
 }
 
 inline int32 Sprite::GetResourceSizeIndex() const
