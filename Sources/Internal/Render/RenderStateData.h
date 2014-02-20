@@ -102,7 +102,7 @@ public:
     
 	inline void Clear();
     
-	inline bool Equals(const RenderStateData& data) const;
+	inline bool operator==(const RenderStateData& data) const;
 };
     
 inline RenderStateData::RenderStateData() :
@@ -178,7 +178,7 @@ inline void RenderStateData::Clear()
 	//do nothing here for now. No resources to release.
 }
 
-inline bool RenderStateData::Equals(const RenderStateData& data) const
+inline bool RenderStateData::operator==(const RenderStateData& data) const
 {
 	return (0 == memcmp(this, &data, sizeof(RenderStateData)));
 }
