@@ -191,7 +191,7 @@ public:
 	
 	NMaterial();
 	
-	inline NMaterial* GetParent() const {return parent;}
+	inline NMaterial* GetParent() const;
 	
 	void SetParent(NMaterial* newParent, bool inheritTemplate = true);
 	inline uint32 GetChildrenCount() const;
@@ -640,6 +640,11 @@ public:
             renderLayerIDsBitmask |= (minLayerID << RENDER_LAYER_ID_BITMASK_MIN_POS);
             renderLayerIDsBitmask |= (maxLayerID << RENDER_LAYER_ID_BITMASK_MAX_POS);
         }
+    }
+    
+    inline NMaterial* NMaterial::GetParent() const
+    {
+        return parent;
     }
     
     ////////////////////////////////////////////////////////////////////////////
