@@ -65,6 +65,14 @@
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
 		62BAA48F178EF915003DE32C /* MailComposeDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BAA48D178EF915003DE32C /* MailComposeDelegate.h */; };
 		62BAA492178EF952003DE32C /* MailComposeDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 62BAA491178EF952003DE32C /* MailComposeDelegate.mm */; };
+		64472D7B18B7AAF100BF623D /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64472D7318B7AAF100BF623D /* NMaterialHelper.cpp */; };
+		64472D7C18B7AAF100BF623D /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 64472D7418B7AAF100BF623D /* NMaterialHelper.h */; };
+		64472D7D18B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64472D7518B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.cpp */; };
+		64472D7E18B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 64472D7618B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.h */; };
+		64472D7F18B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64472D7718B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.cpp */; };
+		64472D8018B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 64472D7818B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.h */; };
+		64472D8118B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64472D7918B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.cpp */; };
+		64472D8218B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 64472D7A18B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.h */; };
 		7A8F772917E73E720048A43D /* AutotestingDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8F772517E73E720048A43D /* AutotestingDB.cpp */; };
 		7A8F772A17E73E720048A43D /* AutotestingDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A8F772617E73E720048A43D /* AutotestingDB.h */; };
 		7A8F772B17E73E720048A43D /* GameAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8F772717E73E720048A43D /* GameAPI.cpp */; };
@@ -836,6 +844,14 @@
 		5C97964614E3E75000FFFA14 /* libyaml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_ios.a; path = ../../Libs/libs/libyaml_ios.a; sourceTree = "<group>"; };
 		62BAA48D178EF915003DE32C /* MailComposeDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailComposeDelegate.h; sourceTree = "<group>"; };
 		62BAA491178EF952003DE32C /* MailComposeDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MailComposeDelegate.mm; sourceTree = "<group>"; };
+		64472D7318B7AAF100BF623D /* NMaterialHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialHelper.cpp; sourceTree = "<group>"; };
+		64472D7418B7AAF100BF623D /* NMaterialHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialHelper.h; sourceTree = "<group>"; };
+		64472D7518B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicFlagsInsp.cpp; sourceTree = "<group>"; };
+		64472D7618B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicFlagsInsp.h; sourceTree = "<group>"; };
+		64472D7718B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicPropertiesInsp.cpp; sourceTree = "<group>"; };
+		64472D7818B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicPropertiesInsp.h; sourceTree = "<group>"; };
+		64472D7918B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicTexturesInsp.cpp; sourceTree = "<group>"; };
+		64472D7A18B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
 		7A8F772517E73E720048A43D /* AutotestingDB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingDB.cpp; sourceTree = "<group>"; };
 		7A8F772617E73E720048A43D /* AutotestingDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingDB.h; sourceTree = "<group>"; };
 		7A8F772717E73E720048A43D /* GameAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameAPI.cpp; sourceTree = "<group>"; };
@@ -2268,6 +2284,14 @@
 		E8B3C95716B9326E002BD35F /* Material */ = {
 			isa = PBXGroup;
 			children = (
+				64472D7318B7AAF100BF623D /* NMaterialHelper.cpp */,
+				64472D7418B7AAF100BF623D /* NMaterialHelper.h */,
+				64472D7518B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.cpp */,
+				64472D7618B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.h */,
+				64472D7718B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.cpp */,
+				64472D7818B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.h */,
+				64472D7918B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.cpp */,
+				64472D7A18B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.h */,
 				A6DBFA7C1887E3D5006BE11C /* NMaterialNames.cpp */,
 				A6DBFA7D1887E3D5006BE11C /* NMaterialNames.h */,
 				A69C9393186C377C00EAC8BC /* NMaterialTemplate.cpp */,
@@ -2667,6 +2691,7 @@
 				50C7D5FD186082B100D8936D /* StaticOcclusionComponent.h in Headers */,
 				E8B3CA9316B9326E002BD35F /* Config.h in Headers */,
 				E8B3CA9516B9326E002BD35F /* MongodbUpdateObject.h in Headers */,
+				64472D8018B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				E8B3CA9916B9326E002BD35F /* BaseMath.h in Headers */,
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
 				E8B3CA9D16B9326E002BD35F /* BaseObjectChecker.h in Headers */,
@@ -2699,6 +2724,7 @@
 				E8B3CAC116B9326E002BD35F /* StaticSingleton.h in Headers */,
 				E8B3CAC216B9326E002BD35F /* TemplateHelpers.h in Headers */,
 				E8B3CAC416B9326E002BD35F /* CollisionObject2.h in Headers */,
+				64472D7E18B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				E8B3CAC616B9326E002BD35F /* CollisionPolygons.h in Headers */,
 				E8B3CAC816B9326E002BD35F /* Collisions.h in Headers */,
 				E8B3CACA16B9326E002BD35F /* ApplicationCore.h in Headers */,
@@ -2742,6 +2768,7 @@
 				E8B3CB3516B9326E002BD35F /* YamlArchive.h in Headers */,
 				E8B3CB3716B9326E002BD35F /* YamlParser.h in Headers */,
 				E8B3CB3916B9326E002BD35F /* Accelerometer.h in Headers */,
+				64472D7C18B7AAF100BF623D /* NMaterialHelper.h in Headers */,
 				E8B3CB3C16B9326E002BD35F /* AccelerometeriPhone.h in Headers */,
 				E8B3CB3F16B9326E002BD35F /* InputSystem.h in Headers */,
 				E8B3CB4116B9326E002BD35F /* KeyboardDevice.h in Headers */,
@@ -2982,6 +3009,7 @@
 				17F53E3116D36FF3004D5099 /* UIWebView.h in Headers */,
 				17F53E3416D3705E004D5099 /* WebViewControliOS.h in Headers */,
 				840ED3CB16D5070400D2BA6C /* DPIHelper.h in Headers */,
+				64472D8218B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				CC247FF216D69F1700183D40 /* DVAssertMessage.h in Headers */,
 				CC247FF416D69F1700183D40 /* UIAlertView_Modal.h in Headers */,
 				CC24801616DD17F300183D40 /* UserComponent.h in Headers */,
@@ -3190,6 +3218,7 @@
 				E8B3CB5416B9326E002BD35F /* NeonMath.cpp in Sources */,
 				E8B3CB5816B9326E002BD35F /* Polygon2.cpp in Sources */,
 				E8B3CB5A16B9326E002BD35F /* Polygon3.cpp in Sources */,
+				64472D7F18B7AAF100BF623D /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				E8B3CB5F16B9326E002BD35F /* RectPacker.cpp in Sources */,
 				E8B3CB6216B9326E002BD35F /* Spline.cpp in Sources */,
 				E8B3CB6616B9326E002BD35F /* BaseNetworkConnection.mm in Sources */,
@@ -3325,6 +3354,7 @@
 				E8B3CCA516B9326E002BD35F /* SceneManager.cpp in Sources */,
 				E8B3CCA916B9326E002BD35F /* SceneNodeAnimation.cpp in Sources */,
 				E8B3CCAB16B9326E002BD35F /* SceneNodeAnimationKey.cpp in Sources */,
+				64472D7B18B7AAF100BF623D /* NMaterialHelper.cpp in Sources */,
 				E8B3CCAD16B9326E002BD35F /* SceneNodeAnimationList.cpp in Sources */,
 				E8B3CCAF16B9326E002BD35F /* ShadowVolumeNode.cpp in Sources */,
 				E8B3CCB116B9326E002BD35F /* SkeletonNode.cpp in Sources */,
@@ -3445,10 +3475,12 @@
 				EA56555317CE00E100426EB8 /* PerformanceSettings.cpp in Sources */,
 				E8C0A6FA17D5D8B300F8F93C /* UIScrollView.cpp in Sources */,
 				E8C0A6FE17D5D8EC00F8F93C /* UIScrollViewContainer.cpp in Sources */,
+				64472D8118B7AAF100BF623D /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
 				1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */,
 				17DC600B17DE16D40075813E /* UIMovieView.cpp in Sources */,
 				17DC600F17DE18460075813E /* MovieViewControliOS.mm in Sources */,
 				EA84E17517FAC20100304C3C /* SpatialTree.cpp in Sources */,
+				64472D7D18B7AAF100BF623D /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				7A8F772917E73E720048A43D /* AutotestingDB.cpp in Sources */,
 				7A8F772B17E73E720048A43D /* GameAPI.cpp in Sources */,
 				A695E5221811317E008A0F20 /* NMaterialConsts.cpp in Sources */,

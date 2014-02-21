@@ -108,6 +108,46 @@ public:
 	
 	inline NMaterialProperty* Clone();
 };
+    
+    /**
+	 \ingroup materials
+	 \brief This class represents render material. Relation between render batches
+     and materials is 1-to-1.
+     
+     Each material consists of:
+
+     -  render technique. Render technique contains of set of passes. Each pass
+        represents shader used for rendering, render state for the shader, 
+        set of render layers where render batch with the given material will be rendered
+        when the pass is active. Techniques are loaded from a persistent
+        description stored on the file system.
+        Material render state loaded with the technique may be modified at runtime. 
+        This process is called subclassing.
+     
+     -  set of flags. Flags alter shader of the technique and allow to add or 
+        remove shader functionality at runtime (for example, turn fog on/off).
+     
+     -  set of properties. Each property corresponds to the uniform required by the shader.
+        Material may contain properties that has no direct mapping to uniforms.
+     
+     -  set of textures. Each texture corresponds to sampler required by the shader.
+        Material may contain textures that has no direct mapping to samplers.
+     
+     Each material obeys to settings of quality system and uses technique depending
+     of the rules described for different levels of the quality. Material loads textures
+     for the given quality level but doesn't unload them when quality level were downgraded.
+     Set of flags and properties is shared between all quality levels.
+     
+     Materials may be organized in hierarchical tree structure. Each node of hierarchy
+     may contain own set of flags, properties, textures and have its own technique.
+     All these parameters are inherited by subnodes so material at the tree leaf
+     will inherit and provide to its shader all properties, textures and flags 
+     from its predecessors even if they were not specified in the subnode directly.
+     Subnode at any level of tree hierarchy may override parent value.
+     Material searches values for textures, properties, flags in the following order:
+     self -> parent -> parent of parent -> etc...
+    
+	 */
 
 class Camera;
 class SerializationContext;
