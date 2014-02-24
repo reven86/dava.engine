@@ -553,6 +553,10 @@ public:
     void LockTextureState();
 	void UnlockTexturerState();
 	
+    /**
+	 \brief Increments reference count for the state.
+     \param[in] handle state unique handle
+	 */
 	inline void RetainRenderState(UniqueHandle handle)
 	{
         LockRenderState();
@@ -560,6 +564,12 @@ public:
         UnlockRenderState();
 	}
 	
+    /**
+	 \brief Creates entry for unique state or returns handle to existing. 
+            Increments reference count.
+     \param[in] data renser state data
+	 \returns unique state hanlde.
+	 */
 	inline UniqueHandle CreateRenderState(const RenderStateData& data)
 	{
         LockRenderState();
@@ -569,13 +579,23 @@ public:
         return renderStateHandle;
 	}
 
-    //this method is not thread safe since array element could be modified in background
+    /**
+	 \brief Returns render state data by unique handle.
+            This method is NOT thread safe.
+     \param[in] handle render state handle
+	 \returns render state data.
+	 */
 	inline const RenderStateData& GetRenderStateData(UniqueHandle handle)
 	{
 		return uniqueRenderStates.GetUnique(handle);
 	}
     
-    //this method is thread safe
+    /**
+	 \brief Returns render state data by unique handle.
+     This method IS thread safe.
+     \param[in] handle render state handle
+	 \param[out] target output renser state data
+	 */
     inline const void GetRenderStateData(UniqueHandle handle, RenderStateData& target)
 	{
 		LockRenderState();
@@ -584,13 +604,23 @@ public:
         UnlockRenderState();
 	}
 	
+    /**
+	 \brief Decrements reference count for the handle and marks entry as empty if it became 0.
+     \param[in] handle renser state handle
+	 */
 	inline void ReleaseRenderState(UniqueHandle handle)
 	{
         LockRenderState();
 		uniqueRenderStates.ReleaseUnique(handle);
         UnlockRenderState();
 	}
-				
+	
+    /**
+	 \brief Modifies render state for the given handle and creates new unique entry.
+     \param[in] parentStateHandle renser state handle
+	 \param[in] renderStateFlags new render state flags
+     \returns unique state hanlde.
+	 */
 	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle, uint32 renderStateFlags)
 	{
         LockRenderState();
@@ -602,6 +632,13 @@ public:
 		return CreateRenderState(derivedState);
 	}
 	
+    /**
+	 \brief Modifies render state for the given handle and creates new unique entry.
+     \param[in] parentStateHandle renser state handle
+	 \param[in] srcBlend new source blend factor
+     \param[in] dstBlend new dst blend factor
+     \returns unique state hanlde.
+	 */
 	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle,
 										  eBlendMode srcBlend,
 										  eBlendMode dstBlend)
@@ -616,27 +653,58 @@ public:
 		return CreateRenderState(derivedState);
 	}
 
+    /**
+	 \brief Modifies 3D render state for the given handle and creates new unique entry.
+     \param[in] parentStateHandle renser state handle
+	 \param[in] srcBlend new source blend factor
+     \param[in] dstBlend new dst blend factor
+     \returns unique state hanlde.
+	 */
 	inline UniqueHandle Subclass3DRenderState(eBlendMode srcBlend,
 										  eBlendMode dstBlend)
 	{
 		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, srcBlend, dstBlend);
 	}
 	
+    /**
+	 \brief Modifies 3D render state for the given handle and creates new unique entry.
+     \param[in] parentStateHandle renser state handle
+	 \param[in] renderStateFlags new render state flags
+     \returns unique state hanlde.
+	 */
 	inline UniqueHandle Subclass3DRenderState(uint32 renderStateFlags)
 	{
 		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, renderStateFlags);
 	}
 	
+    /**
+	 \brief Modifies 2D render state for the given handle and creates new unique entry.
+     \param[in] parentStateHandle renser state handle
+	 \param[in] renderStateFlags new render state flags
+     \returns unique state hanlde.
+	 */
 	inline UniqueHandle Subclass2DRenderState(uint32 renderStateFlags)
 	{
 		return SubclassRenderState(RenderState::RENDERSTATE_2D_BLEND, renderStateFlags);
 	}
 	
+    
+    /**
+	 \brief Sets requested state as active. It will be applied after FlushState.
+            Setting state handle is very cheap operation.
+     \param[in] requestedState renser state handle
+	 */
 	inline void SetRenderState(UniqueHandle requestedState)
 	{
 		currentState.stateHandle = requestedState;
 	}
 	
+    /**
+	 \brief Creates entry for unique state or returns handle to existing.
+            Increments reference count.
+     \param[in] data texture state data
+	 \returns unique state hanlde.
+	 */
 	inline UniqueHandle CreateTextureState(const TextureStateData& data)
 	{
         LockTextureState();
@@ -646,12 +714,21 @@ public:
         return textureStateHandle;
 	}
 	
-    //this method is not thread safe since array element could be modified in background
+    /**
+	 \brief Returns texture state data by unique handle.
+     This method is NOT thread safe.
+     \param[in] handle texture state handle
+	 \returns texture state data.
+	 */
 	inline const TextureStateData& GetTextureState(UniqueHandle handle)
 	{
 		return uniqueTextureStates.GetUnique(handle);
 	}
 
+    /**
+	 \brief Increments reference count for the state.
+     \param[in] handle state unique handle
+	 */
     inline void RetainTextureState(UniqueHandle handle)
 	{
         LockTextureState();
@@ -659,6 +736,11 @@ public:
         UnlockTexturerState();
 	}
 	
+    /**
+	 \brief Decrements reference count for the state.
+            Releases all associated resources when reference count == 0.
+     \param[in] handle state unique handle
+	 */
 	inline void ReleaseTextureState(UniqueHandle handle)
 	{
         LockTextureState();
@@ -666,6 +748,11 @@ public:
         UnlockTexturerState();
 	}
 
+    /**
+	 \brief Sets requested state as active. It will be applied after FlushState.
+            Setting state handle is very cheap operation.
+     \param[in] requestedState texture state handle
+	 */
 	inline void SetTextureState(UniqueHandle requestedState)
 	{
 		currentState.textureState = requestedState;

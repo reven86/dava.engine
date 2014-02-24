@@ -38,6 +38,15 @@
 namespace DAVA
 {
 typedef uint32 UniqueHandle;
+    
+/**
+	 \ingroup materials
+	 \brief This class is a collection allowing to store unqiue instances of data.
+            When adding data to the collection it will seek for the equal entry and return  
+            handle to it.
+            Entries have internal reference counter.
+*/
+    
 //T is element type
 template<typename T>
 class UniqueStateSet
