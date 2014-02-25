@@ -498,14 +498,15 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 	
 void UIControlBackground::DrawStretched(const Rect &drawRect, UniqueHandle renderState)
 {
-	if (!spr)return;
-	UniqueHandle textureHandle = spr->GetTextureHandle(frame);
-	Texture* texture = spr->GetTexture(frame);
+    DVASSERT(rdoObject);
+    if (!spr)return;
+    UniqueHandle textureHandle = spr->GetTextureHandle(frame);
+    Texture* texture = spr->GetTexture(frame);
 	
-	float32 texX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
-	float32 texY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
-	float32 texDx = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
-	float32 texDy = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
+    float32 texX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
+    float32 texY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
+    float32 texDx = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
+    float32 texDy = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
     float32 texOffX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE);
     float32 texOffY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE);
 
@@ -680,6 +681,7 @@ void UIControlBackground::ReleaseDrawData()
 
 void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle renderState)
 {
+    DVASSERT(rdoObject);
 	if (!spr)return;
 
 	const Vector2 &size = gd.size;
