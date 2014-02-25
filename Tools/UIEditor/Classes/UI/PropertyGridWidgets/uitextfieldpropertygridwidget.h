@@ -63,6 +63,7 @@ protected:
     virtual void FillComboboxes();
 
     virtual void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
+	virtual void OnPropertiesChangedFromExternalSource() {};	
 
     Ui::UITextFieldPropertyGridWidget *ui;
 };

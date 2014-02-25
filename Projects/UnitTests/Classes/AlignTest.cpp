@@ -190,7 +190,7 @@ void AlignTest::VerifyTestImage(Image *testImage)
 {
 	// Loade reference image for current test
 	Image *referenceImage = NULL;
-	Vector<Image *> imageSet = ImageLoader::CreateFromFile(Format(REFERENCE_IMAGE_PATH, currenTestIndex));
+	Vector<Image *> imageSet = ImageLoader::CreateFromFileByContent(Format(REFERENCE_IMAGE_PATH, currenTestIndex));
 	
 	if(imageSet.size() != 0)
     {

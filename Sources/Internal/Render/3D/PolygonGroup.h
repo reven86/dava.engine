@@ -35,6 +35,7 @@
 #include "Render/VertexBuffer.h"
 #include "Render/RenderDataObject.h"
 #include "Scene3D/DataNode.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {	
@@ -184,14 +185,18 @@ public:
     
     RenderDataObject * renderDataObject;
     
-    void Save(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile);
-    void Load(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile);
+    void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);
+    void Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext);
 
-private:	
+private:
     void    UpdateDataPointersAndStreams();
 	void	CopyData(uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
 	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
  	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
+
+    void BuildBuffersInternal(BaseObject * caller, void * param, void *callerData);
+
+    
     
 public:
     

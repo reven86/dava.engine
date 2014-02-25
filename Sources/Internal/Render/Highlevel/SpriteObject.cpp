@@ -29,7 +29,10 @@
 
 #include "Render/Highlevel/SpriteObject.h"
 #include "Render/Highlevel/SpriteRenderBatch.h"
+#include "Render/Highlevel/RenderFastNames.h"
+#include "Scene3D/Systems/MaterialSystem.h"
 
+#include "Render/Material/NMaterialNames.h"
 
 namespace DAVA 
 {
@@ -84,18 +87,24 @@ void SpriteObject::SetupRenderBatch()
 	renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, &verts.front());
 	renderDataObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, &textures.front());
 
-	Material * material = new Material();
-	material->SetType(Material::MATERIAL_UNLIT_TEXTURE);
-	material->SetAlphablend(true);
-	material->SetBlendSrc(BLEND_SRC_ALPHA);
-	material->SetBlendDest(BLEND_ONE_MINUS_SRC_ALPHA);
-	material->SetName("SpriteObject_material");
+//	Material * material = new Material();
+//	material->SetType(Material::MATERIAL_UNLIT_TEXTURE);
+//	material->SetAlphablend(true);
+//	material->SetBlendSrc(BLEND_SRC_ALPHA);
+//	material->SetBlendDest(BLEND_ONE_MINUS_SRC_ALPHA);
+//	material->SetName("SpriteObject_material");
+//	material->GetRenderState()->SetTexture(sprite->GetTexture(frame));
 
-	material->GetRenderState()->SetTexture(sprite->GetTexture(frame));
-
+	NMaterial* material = NMaterial::CreateMaterialInstance(FastName("SpriteObject_material"),
+															NMaterialName::TEXTURED_ALPHABLEND,
+															NMaterial::DEFAULT_QUALITY_NAME);
+	material->GetParent()->AddNodeFlags(DataNode::NodeRuntimeFlag);
+	material->AddNodeFlags(DataNode::NodeRuntimeFlag);
+	material->SetTexture(NMaterial::TEXTURE_ALBEDO, sprite->GetTexture(frame));
+        
 	SpriteRenderBatch *batch = new SpriteRenderBatch();
 	batch->SetMaterial(material);
-	batch->SetRenderDataObject(renderDataObject);
+    batch->SetRenderDataObject(renderDataObject);
 	AddRenderBatch(batch);
 
 	SafeRelease(material);
@@ -110,9 +119,10 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<SpriteObject>(this), "Can clone only SpriteObject");
 
-		SpriteObject *newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
-		newObject->spriteType = spriteType;
+		newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
 	}
+	SpriteObject *o = static_cast<SpriteObject *>(newObject);
+	o->spriteType = spriteType;
 
 	return RenderObject::Clone(newObject);
 }
@@ -125,7 +135,7 @@ void SpriteObject::SetFrame(int32 newFrame)
 	int32 count = GetRenderBatchCount();
 	if(count)
 	{
-		GetRenderBatch(0)->GetMaterial()->GetRenderState()->SetTexture(sprite->GetTexture(frame));
+		GetRenderBatch(0)->GetMaterial()->SetTexture(NMaterial::TEXTURE_ALBEDO, sprite->GetTexture(frame));
 	}
 }
 
@@ -176,6 +186,8 @@ void SpriteObject::CreateMeshFromSprite(int32 frameToGen)
 	//0, 0
 	float32 *pT = sprite->GetTextureVerts(frameToGen);
 
+    verts.reserve(3 * 4);
+
 	verts.push_back(x0);
 	verts.push_back(y0);
 	verts.push_back(0);
@@ -205,13 +217,12 @@ void SpriteObject::CreateMeshFromSprite(int32 frameToGen)
 	//textures.push_back(pT[1 * 2 + 0]);
 	//textures.push_back(pT[1 * 2 + 1]);
 
-
+    textures.reserve(2*4);
 	for (int32 i = 0; i < 2*4; i++) 
 	{
 		textures.push_back(*pT);
 		pT++;
 	}
 }
-
-
+	
 };

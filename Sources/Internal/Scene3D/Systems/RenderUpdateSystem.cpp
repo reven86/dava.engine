@@ -81,13 +81,13 @@ void RenderUpdateSystem::AddEntity(Entity * entity)
     if (!renderObject)return;
 	Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
     renderObject->SetWorldTransformPtr(worldTransformPointer);
-    entityObjectMap.Insert(entity, renderObject);
+    entityObjectMap.insert(entity, renderObject);
 	GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
 }
 
 void RenderUpdateSystem::RemoveEntity(Entity * entity)
 {
-    RenderObject * renderObject = entityObjectMap.GetValue(entity);
+    RenderObject * renderObject = entityObjectMap.at(entity);
     if (!renderObject)
 	{
 		return;
@@ -95,7 +95,7 @@ void RenderUpdateSystem::RemoveEntity(Entity * entity)
     
     GetScene()->GetRenderSystem()->RemoveFromRender(renderObject);
 
-	entityObjectMap.Remove(entity);
+	entityObjectMap.erase(entity);
 }
     
 void RenderUpdateSystem::Process(float32 timeElapsed)

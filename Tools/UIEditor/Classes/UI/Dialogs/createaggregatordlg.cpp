@@ -38,7 +38,8 @@ CreateAggregatorDlg::CreateAggregatorDlg(QWidget *parent) :
     ui(new Ui::CreateAggregatorDlg)
 {
     ui->setupUi(this);
-	
+	ui->lineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp()));
+
 	const HierarchyTreeNode::HIERARCHYTREENODESLIST& platforms = HierarchyTreeController::Instance()->GetTree().GetPlatforms();
 	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = platforms.begin();
 		 iter != platforms.end();

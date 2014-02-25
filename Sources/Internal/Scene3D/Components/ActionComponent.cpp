@@ -38,6 +38,7 @@
 
 namespace DAVA
 {
+	REGISTER_CLASS(ActionComponent)
 
 	ActionComponent::ActionComponent() : started(false), allActionsActive(false)
 	{
@@ -53,7 +54,7 @@ namespace DAVA
 		}
 	}
 	
-	ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, String targetName, float32 delay)
+	ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay)
 	{
 		Action action;
 		
@@ -64,7 +65,7 @@ namespace DAVA
 		return action;
 	}
 
-	ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, String targetName, float32 delay, int32 switchIndex)
+	ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay, int32 switchIndex)
 	{
 		Action action;
 		
@@ -193,7 +194,7 @@ namespace DAVA
 		allActionsActive = false;
 	}
 	
-	void ActionComponent::Remove(const ActionComponent::Action::eType type, const String& entityName, const int switchIndex)
+	void ActionComponent::Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex)
 	{
 		Vector<ActionComponent::ActionContainer>::iterator i = actions.begin();
 		for(; i < actions.end(); ++i)
@@ -301,9 +302,9 @@ namespace DAVA
 		return actionComponent;
 	}
 	
-	void ActionComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+	void ActionComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
-		Component::Serialize(archive, sceneFile);
+		Component::Serialize(archive, serializationContext);
 		
 		if(NULL != archive)
 		{
@@ -317,7 +318,7 @@ namespace DAVA
 				actionArchive->SetUInt32("act.event", actions[i].action.eventType);
 				actionArchive->SetFloat("act.delay", actions[i].action.delay);
 				actionArchive->SetUInt32("act.type", actions[i].action.type);
-				actionArchive->SetString("act.entityName", actions[i].action.entityName);
+				actionArchive->SetString("act.entityName", String(actions[i].action.entityName.c_str() ? actions[i].action.entityName.c_str() : ""));
 				actionArchive->SetInt32("act.switchIndex", actions[i].action.switchIndex);
 				actionArchive->SetInt32("act.stopAfterNRepeats", actions[i].action.stopAfterNRepeats);
 				actionArchive->SetBool("act.stopWhenEmpty", actions[i].action.stopWhenEmpty);
@@ -328,7 +329,7 @@ namespace DAVA
 		}
 	}
 	
-	void ActionComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+	void ActionComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
 		actions.clear();
 		
@@ -343,7 +344,7 @@ namespace DAVA
 				action.eventType = (Action::eEvent)actionArchive->GetUInt32("act.event");
 				action.type = (Action::eType)actionArchive->GetUInt32("act.type");
 				action.delay = actionArchive->GetFloat("act.delay");
-				action.entityName = actionArchive->GetString("act.entityName");
+				action.entityName = FastName(actionArchive->GetString("act.entityName").c_str());
 				action.switchIndex = actionArchive->GetInt32("act.switchIndex", -1);
 				action.stopAfterNRepeats = actionArchive->GetInt32("act.stopAfterNRepeats", -1);
 				action.stopWhenEmpty = actionArchive->GetBool("act.stopWhenEmpty", false);
@@ -352,7 +353,7 @@ namespace DAVA
 			}
 		}
 		
-		Component::Deserialize(archive, sceneFile);
+		Component::Deserialize(archive, serializationContext);
 	}
 		
 	void ActionComponent::EvaluateAction(const Action& action)
@@ -403,7 +404,7 @@ namespace DAVA
 		}
 	}
 	
-	Entity* ActionComponent::GetTargetEntity(const String& name, Entity* parent)
+	Entity* ActionComponent::GetTargetEntity(const FastName& name, Entity* parent)
 	{
 		if(parent->GetName() == name)
 		{

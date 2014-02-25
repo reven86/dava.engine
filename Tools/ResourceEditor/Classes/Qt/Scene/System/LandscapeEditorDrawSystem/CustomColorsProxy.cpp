@@ -29,7 +29,7 @@
 
 
 #include "CustomColorsProxy.h"
-#include "../SceneEditor/EditorConfig.h"
+#include "Deprecated/EditorConfig.h"
 
 CustomColorsProxy::CustomColorsProxy(int32 size)
 :	changedRect(Rect())
@@ -38,14 +38,7 @@ CustomColorsProxy::CustomColorsProxy(int32 size)
 ,	changes(0)
 {
 	customColorsSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888);
-	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
-	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
-	if (customColors.size())
-	{
-		Color color = customColors.front();
-		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
-	}
-	RenderManager::Instance()->RestoreRenderTarget();
+	UpdateSpriteFromConfig();
 }
 
 CustomColorsProxy::~CustomColorsProxy()
@@ -80,7 +73,7 @@ Rect CustomColorsProxy::GetChangedRect()
 
 void CustomColorsProxy::UpdateRect(const DAVA::Rect &rect)
 {
-	Rect bounds(0.f, 0.f, size, size);
+	DAVA::Rect bounds(0.f, 0.f, size, size);
 	changedRect = rect;
 	bounds.ClampToRect(changedRect);
 
@@ -105,4 +98,21 @@ void CustomColorsProxy::IncrementChanges()
 void CustomColorsProxy::DecrementChanges()
 {
 	--changes;
+}
+
+void CustomColorsProxy::UpdateSpriteFromConfig()
+{
+	if(NULL == customColorsSprite)
+	{
+		return;
+	}
+		
+	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
+	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
+	if (customColors.size())
+	{
+		Color color = customColors.front();
+		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
+	}
+	RenderManager::Instance()->RestoreRenderTarget();
 }

@@ -38,8 +38,8 @@ void FrameworkDidLaunched()
 
 	appOptions->SetString("title", DAVA::Format("DAVA Framework - ResourceEditor | %s-%s", DAVAENGINE_VERSION, RESOURCE_EDITOR_VERSION));
 	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32); 
-
+	appOptions->SetInt32("bpp", 32);
+	
 	GameCore * core = new GameCore();
 	DAVA::Core::SetApplicationCore(core);
 	DAVA::Core::Instance()->SetOptions(appOptions);

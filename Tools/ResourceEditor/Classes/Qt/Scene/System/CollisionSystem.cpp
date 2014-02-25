@@ -71,6 +71,13 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
 	landDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	landCollWorld = new btCollisionWorld(landCollDisp, landBroadphase, landCollConf);
 	landCollWorld->setDebugDrawer(landDebugDrawer);
+
+	renderState = DAVA::RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL |
+												   RenderStateData::STATE_DEPTH_WRITE |
+												   RenderStateData::STATE_DEPTH_TEST);
+    
+    objectsDebugDrawer->SetRenderState(renderState);
+    landDebugDrawer->SetRenderState(renderState);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
@@ -86,10 +93,12 @@ SceneCollisionSystem::~SceneCollisionSystem()
 
 	DAVA::SafeDelete(objectsCollWorld);
 	DAVA::SafeDelete(objectsBroadphase);
+    DAVA::SafeDelete(objectsDebugDrawer);
 	DAVA::SafeDelete(objectsCollDisp);
 	DAVA::SafeDelete(objectsCollConf);
 
 	DAVA::SafeDelete(landCollWorld); 
+	DAVA::SafeDelete(landDebugDrawer);
 	DAVA::SafeDelete(landBroadphase);
 	DAVA::SafeDelete(landCollDisp);
 	DAVA::SafeDelete(landCollConf);
@@ -323,9 +332,6 @@ void SceneCollisionSystem::ProcessUIEvent(DAVA::UIEvent *event)
 
 void SceneCollisionSystem::Draw()
 {
-	int oldState = DAVA::RenderManager::Instance()->GetState();
-	DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::STATE_COLORMASK_ALL | DAVA::RenderState::STATE_DEPTH_WRITE | DAVA::RenderState::STATE_DEPTH_TEST);
-
 	if(drawMode & ST_COLL_DRAW_LAND)
 	{
 		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 0.5f, 0, 1.0f));
@@ -335,13 +341,13 @@ void SceneCollisionSystem::Draw()
 	if(drawMode & ST_COLL_DRAW_LAND_RAYTEST)
 	{
 		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(lastLandRayFrom, lastLandRayTo);
+		DAVA::RenderHelper::Instance()->DrawLine(lastLandRayFrom, lastLandRayTo, 1.0f, renderState);
 	}
 
 	if(drawMode & ST_COLL_DRAW_LAND_COLLISION)
 	{
 		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0, 1.0f, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawPoint(lastLandCollision, 7.0f);
+		DAVA::RenderHelper::Instance()->DrawPoint(lastLandCollision, 7.0f, renderState);
 	}
 
 	if(drawMode & ST_COLL_DRAW_OBJECTS)
@@ -352,7 +358,7 @@ void SceneCollisionSystem::Draw()
 	if(drawMode & ST_COLL_DRAW_OBJECTS_RAYTEST)
 	{
 		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0, 0, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawLine(lastRayFrom, lastRayTo);
+		DAVA::RenderHelper::Instance()->DrawLine(lastRayFrom, lastRayTo, 1.0f, renderState);
 	}
 
 	if(drawMode & ST_COLL_DRAW_OBJECTS_SELECTED)
@@ -380,8 +386,6 @@ void SceneCollisionSystem::Draw()
 			}
 		}
 	}
-
-	DAVA::RenderManager::Instance()->SetState(oldState);
 }
 
 void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -421,6 +425,13 @@ void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
 		case CMDID_HEIGHTMAP_MODIFY:
 			UpdateCollisionObject(curLandscapeEntity);
 			break;
+
+        case CMDID_LOD_CREATE_PLANE:
+        case CMDID_LOD_DELETE:
+            {
+                UpdateCollisionObject(command->GetEntity());
+                break;
+            }
 		default:
 			break;
 		}
@@ -471,12 +482,14 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 		isLandscape = true;
 	}
 
-	DAVA::ParticleEmitter* particleEmitter = DAVA::GetEmitter(entity);
+	
+	DAVA::ParticleEffectComponent* particleEffect = DAVA::GetEffectComponent(entity);
 	if( NULL == cObj &&
-		NULL != particleEmitter)
+		NULL != particleEffect)
 	{
-		cObj = new CollisionParticleEmitter(entity, objectsCollWorld, particleEmitter);
+		cObj = new CollisionParticleEffect(entity, objectsCollWorld);
 	}
+
 
 	DAVA::RenderObject *renderObject = DAVA::GetRenderObject(entity);
 	if( NULL == cObj &&
@@ -549,7 +562,36 @@ SceneCollisionDebugDrawer::SceneCollisionDebugDrawer()
 	: manager(DAVA::RenderManager::Instance())
 	, helper(DAVA::RenderHelper::Instance())
 	, dbgMode(0)
-{ }
+{
+    renderState = DAVA::RenderState::RENDERSTATE_2D_BLEND;
+    manager->RetainRenderState(renderState);
+}
+
+SceneCollisionDebugDrawer::~SceneCollisionDebugDrawer()
+{
+    if(InvalidUniqueHandle != renderState)
+    {
+        manager->ReleaseRenderState(renderState);
+    }
+}
+
+void SceneCollisionDebugDrawer::SetRenderState(UniqueHandle _renderState)
+{
+    if(_renderState != renderState)
+    {
+        if(InvalidUniqueHandle != renderState)
+        {
+            manager->ReleaseRenderState(renderState);
+        }
+
+        renderState = _renderState;
+        
+        if(InvalidUniqueHandle != renderState)
+        {
+            manager->RetainRenderState(renderState);
+        }
+    }
+}
 
 void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
 {
@@ -558,7 +600,7 @@ void SceneCollisionDebugDrawer::drawLine(const btVector3& from, const btVector3&
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
 
 	manager->SetColor(davaColor);
-	helper->DrawLine(davaFrom, davaTo);
+	helper->DrawLine(davaFrom, davaTo, 1.0f, renderState);
 }
 
 void SceneCollisionDebugDrawer::drawContactPoint( const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color )
@@ -566,7 +608,7 @@ void SceneCollisionDebugDrawer::drawContactPoint( const btVector3& PointOnB,cons
 	DAVA::Color davaColor(color.x(), color.y(), color.z(), 1.0f);
 
 	manager->SetColor(davaColor);
-	helper->DrawPoint(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()));
+	helper->DrawPoint(DAVA::Vector3(PointOnB.x(), PointOnB.y(), PointOnB.z()), 1.0f, renderState);
 }
 
 void SceneCollisionDebugDrawer::reportErrorWarning( const char* warningString )

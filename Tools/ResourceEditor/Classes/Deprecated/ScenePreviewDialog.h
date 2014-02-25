@@ -31,8 +31,7 @@
 #define __SCENE_PREVIEW_DIALOG_H__
 
 #include "DAVAEngine.h"
-#include "../EditorScene.h"
-#include "../SceneEditor/ExtendedDialog.h"
+#include "Deprecated/ExtendedDialog.h"
 
 using namespace DAVA;
 

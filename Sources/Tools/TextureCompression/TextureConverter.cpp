@@ -43,15 +43,15 @@ namespace DAVA
 		const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpuFamily, (DAVA::PixelFormat)descriptor.compression[gpuFamily].format);
 		if(outExtension == ".pvr")
 		{
-			Logger::FrameworkDebug("Starting PVR conversion (%s)...",
-							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor.compression[gpuFamily].format));
+			Logger::FrameworkDebug("Starting PVR (%s) conversion (%s)...",
+							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor.compression[gpuFamily].format), descriptor.pathname.GetAbsolutePathname().c_str());
 			
 			outputPath = PVRConverter::Instance()->ConvertPngToPvr(descriptor, gpuFamily);
 		}
 		else if(outExtension == ".dds")
 		{
-			DAVA::Logger::FrameworkDebug("Starting DXT conversion (%s)...",
-							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor.compression[gpuFamily].format));
+			DAVA::Logger::FrameworkDebug("Starting DXT(%s) conversion (%s)...",
+							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor.compression[gpuFamily].format), descriptor.pathname.GetAbsolutePathname().c_str());
 			
 			
 			if(descriptor.IsCubeMap())

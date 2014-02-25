@@ -37,36 +37,46 @@
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Debug/DVAssert.h"
-
+#include "Scene3D/Systems/MaterialSystem.h"
+#include "Render/OcclusionQuery.h"
+#include "Debug/Stats.h"
+#include "Render/Highlevel/ShadowVolume.h"
 
 namespace DAVA
 {
 
     
 RenderBatch::RenderBatch()
-    :   ownerLayer(0)
-    ,   removeIndex(-1)
-    ,   sortingKey(8)
+    :   sortingKey(0xF8)
+    ,   dataSource(0)
+    ,   renderDataObject(0)
+    ,   material(0)
+    ,   startIndex(0)
+    ,   indexCount(0)
+    ,   type(PRIMITIVETYPE_TRIANGLELIST)
+    ,   renderObject(0)
+    ,	visiblityCriteria(RenderObject::VISIBILITY_CRITERIA)
+    ,   aabbox(Vector3(), Vector3())
+    ,   sortingTransformPtr(NULL)
 {
-    dataSource = 0;
-    renderDataObject = 0;
-    material = 0;
-    startIndex = 0;
-    indexCount = 0;
-    type = PRIMITIVETYPE_TRIANGLELIST;
-	renderObject = 0;
-    materialInstance = new InstanceMaterialState();
-    ownerLayerName = INHERIT_FROM_MATERIAL;
-	visiblityCriteria = RenderObject::VISIBILITY_CRITERIA;
-	aabbox = AABBox3(Vector3(), Vector3());
+	
+#if defined(__DAVA_USE_OCCLUSION_QUERY__)
+    occlusionQuery = new OcclusionQuery();
+    queryRequested = -1;
+    queryRequestFrame = 0;
+    lastFraemDrawn = -10;
+#endif
 }
     
 RenderBatch::~RenderBatch()
 {
+#if defined(__DAVA_USE_OCCLUSION_QUERY__)
+    SafeDelete(occlusionQuery);
+#endif
 	SafeRelease(dataSource);
 	SafeRelease(renderDataObject);
+		
 	SafeRelease(material);
-    SafeRelease(materialInstance);
 }
     
 void RenderBatch::SetPolygonGroup(PolygonGroup * _polygonGroup)
@@ -82,72 +92,102 @@ void RenderBatch::SetRenderDataObject(RenderDataObject * _renderDataObject)
     renderDataObject = SafeRetain(_renderDataObject);
 }
 
-void RenderBatch::SetMaterial(Material * _material)
+void RenderBatch::SetMaterial(NMaterial * _material)
 {
-	SafeRelease(material);
+	NMaterial* oldMat = material;
     material = SafeRetain(_material);
-}
-
+	SafeRelease(oldMat);
     
-void RenderBatch::Draw(Camera * camera)
+    renderLayerIDsBitmaskFromMaterial = material->GetRenderLayerIDsBitmask();
+}
+    
+void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
-	if(!renderObject)return;
+//  TIME_PROFILE("RenderBatch::Draw");
+//	if(!renderObject)return;
+    DVASSERT(renderObject != 0);
     Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
-    if (!worldTransformPtr)
+    DVASSERT(worldTransformPtr != 0);
+    
+#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
+    uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+    
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
     {
-        return;
+        if ((queryRequested >= 0) && occlusionQuery->IsResultAvailable())
+        {
+            uint32 result = 0;
+            occlusionQuery->GetQuery(&result);
+            if (result == 0 && ((globalFrameIndex - queryRequestFrame) < 3) && (lastFraemDrawn == globalFrameIndex - 1))
+            {
+                //RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
+                occlusionQuery->ResetResult();
+                queryRequested = -2;
+            }
+            else queryRequested = -1;
+        }
     }
     
+    if (queryRequested < -1)
+    {
+        queryRequested++;
+        RenderManager::Instance()->GetStats().occludedRenderBatchCount++;
+        return;
+    }
+#endif
+//    if (!worldTransformPtr)
+//    {
+//        return;
+//    }
 //    uint32 flags = renderObject->GetFlags();
 //    if ((flags & visiblityCriteria) != visiblityCriteria)
 //        return;
-    
-    if(!GetVisible())
-        return;
+//    if(!GetVisible())
+//        return;
 	
-    Matrix4 finalMatrix = (*worldTransformPtr) * camera->GetMatrix();
-    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, finalMatrix);
-    material->Draw(dataSource,  materialInstance, worldTransformPtr);
-}
-    
-    
-const FastName & RenderBatch::GetOwnerLayerName()
-{
-    if (ownerLayerName == INHERIT_FROM_MATERIAL)
-    {
-        DVASSERT(material != 0);
-        return material->GetOwnerLayerName();
-    }
-    else
-    {
-        return ownerLayerName;
-    }
-}
-    
-void RenderBatch::SetOwnerLayerName(const FastName & fastname)
-{
-    ownerLayerName = fastname;
-}
-    
-//const FastName & RenderBatch::GetOwnerLayerName()
-//{
-//    static FastName opaqueLayer("OpaqueRenderLayer");
-//    static FastName translucentLayer("TransclucentRenderLayer");
-//    
-//    if (material)
-//    {
-//        if(material->GetOpaque() || material->GetAlphablend())
-//		{
-//			return translucentLayer;
-//		}
-//    }
-//    
-//    return opaqueLayer;
-//}
+    RenderManager::SetDynamicParam(PARAM_WORLD, worldTransformPtr, (pointer_size)worldTransformPtr);
 
+    material->BindMaterialTechnique(ownerRenderPass, camera);
+
+#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
+    {
+        if (queryRequested == -1)
+        {
+            queryRequestFrame = globalFrameIndex;
+            occlusionQuery->BeginQuery();
+            queryRequested = 0;
+        }
+        else queryRequested++;
+    }
+#endif
+
+	if (dataSource)
+		material->Draw(dataSource);
+	else
+		material->Draw(renderDataObject);
+    
+#if defined(DYNAMIC_OCCLUSION_CULLING_ENABLED)
+    lastFraemDrawn = globalFrameIndex;
+    
+    if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DYNAMIC_OCCLUSION_ENABLE))
+    {
+        if (queryRequested == 0)
+        {
+            occlusionQuery->EndQuery();
+        }
+    }
+#endif
+}
+    
 void RenderBatch::SetRenderObject(RenderObject * _renderObject)
 {
 	renderObject = _renderObject;
+}
+
+void RenderBatch::SetSortingTransformPtr(Matrix4 * _worldTransformPtr)
+{
+    sortingTransformPtr = _worldTransformPtr;
 }
 
 const AABBox3 & RenderBatch::GetBoundingBox() const
@@ -158,18 +198,26 @@ const AABBox3 & RenderBatch::GetBoundingBox() const
     
 void RenderBatch::SetSortingKey(uint32 _key)
 {
-    sortingKey = _key;
-    if (ownerLayer)ownerLayer->ForceLayerSort();
+    DVASSERT(_key<16);
+    sortingKey = (sortingKey&~0x0f)+_key;
+}
+
+void RenderBatch::SetSortingOffset(uint32 offset)
+{
+    DVASSERT(offset<32);    
+    sortingKey=(sortingKey&~0x1F0)+(offset<<4);
 }
 
 
 void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 {
-	if(material)
+	NMaterial* curNode = material;
+	while(curNode != NULL)
 	{
-		InsertDataNode(material, dataNodes);
+		dataNodes.insert(curNode);
+		curNode = curNode->GetParent();
 	}
-
+	
 	if(dataSource)
 	{
 		InsertDataNode(dataSource, dataNodes);
@@ -180,9 +228,9 @@ void RenderBatch::InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes)
 {
 	dataNodes.insert(node);
 
-	for(int32 i = 0; i < node->GetChildrenCount(); ++i)
+	for(int32 i = 0; i < node->GetChildrenNodeCount(); ++i)
 	{
-		InsertDataNode(node->GetChild(i), dataNodes);
+		InsertDataNode(node->GetChildNode(i), dataNodes);
 	}
 }
 
@@ -192,25 +240,30 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     if (!rb)
         rb = new RenderBatch();
 
+    SafeRelease(rb->dataSource);
 	rb->dataSource = SafeRetain(dataSource);
+    
+    SafeRelease(rb->renderDataObject);
 	rb->renderDataObject = SafeRetain(renderDataObject);
-	rb->material = SafeRetain(material);
-	SafeRelease(rb->materialInstance);
-    rb->materialInstance = materialInstance->Clone();
+	
+    SafeRelease(rb->material);
+	if(material)
+	{
+		rb->material = material->Clone();
+		//rb->material->SetMaterialSystem(NULL);
+	}
 
 	rb->startIndex = startIndex;
 	rb->indexCount = indexCount;
 	rb->type = type;
 
 	rb->aabbox = aabbox;
-
-	rb->ownerLayerName = ownerLayerName;
 	rb->sortingKey = sortingKey;
 
 	return rb;
 }
 
-void RenderBatch::Save(KeyedArchive * archive, SceneFileV2* sceneFile)
+void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializationContext)
 {
 	BaseObject::Save(archive);
 
@@ -221,28 +274,23 @@ void RenderBatch::Save(KeyedArchive * archive, SceneFileV2* sceneFile)
 		archive->SetUInt32("rb.startIndex", startIndex);
 		archive->SetVariant("rb.aabbox", VariantType(aabbox));
 		archive->SetVariant("rb.datasource", VariantType((uint64)dataSource));
-		archive->SetVariant("rb.material", VariantType((uint64)GetMaterial()));
 		
-		if(material &&
-		   materialInstance &&
-		   Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP != material->type &&
-		   Material::MATERIAL_VERTEX_LIT_LIGHTMAP != material->type &&
-		   materialInstance->GetLightmap() != NULL)
+		NMaterial* material = GetMaterial();
+		if(material)
 		{
-			materialInstance->ClearLightmap();
-			Logger::Warning("[RenderBatch::Save] Material %s is not a lightmap but has lightmap texture set to %s. Clearing lightmap to avoid future problems.",
-							material->GetName().c_str(),
-							materialInstance->GetLightmapName().GetAbsolutePathname().c_str());
+			uint64 matKey = material->GetMaterialKey();
+			archive->SetUInt64("rb.nmatname", matKey);
 		}
 		
-		KeyedArchive *mia = new KeyedArchive();
-		materialInstance->Save(mia, sceneFile);
-		archive->SetArchive("rb.matinst", mia);
-		mia->Release();
+		//archive->SetVariant("rb.material", VariantType((uint64)GetMaterial()));
+		
+		//KeyedArchive *mia = new KeyedArchive();
+		//archive->SetArchive("rb.matinst", mia);
+		//mia->Release();
 	}
 }
 
-void RenderBatch::Load(KeyedArchive * archive, SceneFileV2 *sceneFile)
+void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializationContext)
 {
 	if(NULL != archive)
 	{
@@ -250,29 +298,52 @@ void RenderBatch::Load(KeyedArchive * archive, SceneFileV2 *sceneFile)
 		indexCount = archive->GetUInt32("rb.indexCount", indexCount);
 		startIndex = archive->GetUInt32("rb.startIndex", startIndex);
 		aabbox = archive->GetVariant("rb.aabbox")->AsAABBox3();
-
-		PolygonGroup *pg = dynamic_cast<PolygonGroup*>(sceneFile->GetNodeByPointer(archive->GetVariant("rb.datasource")->AsUInt64()));
-		Material *mat = dynamic_cast<Material*>(sceneFile->GetNodeByPointer(archive->GetVariant("rb.material")->AsUInt64()));
-
-		SetPolygonGroup(pg);
-		SetMaterial(mat);
-
-		KeyedArchive *mia = archive->GetArchive("rb.matinst");
-		if(NULL != mia)
+		PolygonGroup *pg = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(archive->GetVariant("rb.datasource")->AsUInt64()));
+		
+		NMaterial * newMaterial = NULL;
+		bool shouldConvertMaterial = archive->IsKeyExists("rb.material");
+		if(shouldConvertMaterial)
 		{
-			if(material &&
-			   Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP != material->type &&
-			   Material::MATERIAL_VERTEX_LIT_LIGHTMAP != material->type &&
-			   mia->GetString("ims.lightmapname").size() > 0)
+			uint64 materialId = archive->GetVariant("rb.material")->AsUInt64();
+			Material *mat = static_cast<Material*>(serializationContext->GetDataBlock(materialId));
+			
+			InstanceMaterialState * oldMaterialInstance = new InstanceMaterialState();
+			KeyedArchive *mia = archive->GetArchive("rb.matinst");
+			if(NULL != mia)
 			{
-				Logger::Warning("[RenderBatch::Load] Material %s is not a lightmap but has lightmap texture set to %s. Clearing lightmap to avoid future problems.",
-								material->GetName().c_str(),
-								mia->GetString("ims.lightmapname").c_str());
-				
-				mia->SetString("ims.lightmapname", "");
+				oldMaterialInstance->Load(mia, serializationContext);
 			}
 			
-			materialInstance->Load(mia, sceneFile);
+			if(mat)
+			{
+				newMaterial = serializationContext->ConvertOldMaterialToNewMaterial(mat, oldMaterialInstance, materialId);
+			}
+			
+			SafeRelease(oldMaterialInstance);
+		}
+		else
+		{
+			int64 matKey = archive->GetUInt64("rb.nmatname");
+			
+			newMaterial = static_cast<NMaterial*>(serializationContext->GetDataBlock(matKey));
+		
+#if defined(__DAVAENGINE_DEBUG__)
+			if(NULL == GetMaterial())
+			{
+				DVASSERT(newMaterial);
+			}
+#endif
+			SafeRetain(newMaterial); //VI: material refCount should be >1 at this point
+		}
+
+		SetPolygonGroup(pg);
+        
+		if(newMaterial)
+		{
+			SetMaterial(newMaterial);
+			DVASSERT(material->GetRetainCount() > 1);
+
+			SafeRelease(newMaterial);
 		}
 	}
 
@@ -300,7 +371,14 @@ bool RenderBatch::GetVisible() const
     uint32 flags = renderObject->GetFlags();
     return ((flags & visiblityCriteria) == visiblityCriteria);
 }
-    
+
+ShadowVolume * RenderBatch::CreateShadow()
+{
+	ShadowVolume * newShadowVolume = new ShadowVolume();
+	newShadowVolume->MakeShadowVolumeFromPolygonGroup(dataSource);
+
+	return newShadowVolume;
+}
 
 
 };

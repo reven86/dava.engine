@@ -35,7 +35,7 @@
 
 using namespace DAVA;
 
-PlaneLODDialog::PlaneLODDialog(DAVA::int32 layersCount, const DAVA::FilePath & defaultTexturePath, QWidget *parent /*= 0*/)
+PlaneLODDialog::PlaneLODDialog(DAVA::uint32 layersCount, const DAVA::FilePath & defaultTexturePath, QWidget *parent /*= 0*/)
 	: QDialog(parent)
 	, ui(new Ui::QtPlaneLODDialog)
     , selectedLayer(-1)
@@ -50,7 +50,7 @@ PlaneLODDialog::PlaneLODDialog(DAVA::int32 layersCount, const DAVA::FilePath & d
 
     connect(ui->textureButton, SIGNAL(clicked()), this, SLOT(OnTextureSelect()));
 
-    for(int32 i = 0; i < layersCount; i++)
+    for(uint32 i = 0; i < layersCount; i++)
         ui->lodLevelBox->addItem(QString("LOD %1").arg(i));
     ui->lodLevelBox->setCurrentIndex(layersCount-1);
 

@@ -48,7 +48,7 @@ public:
 private:
 	Set<Entity*> updatableEntities;
 
-	void SetVisibleHierarchy(Entity * entity, bool visible);
+    void SetSwitchHierarchy(Entity * entity, int32 switchIndex);
 };
 
 }

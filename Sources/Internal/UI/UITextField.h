@@ -188,8 +188,8 @@ public:
 	
 	virtual void SetSpriteAlign(int32 align);
     
-	const WideString & GetText();
-	void SetText(const WideString & text);
+	virtual const WideString & GetText();
+	virtual void SetText(const WideString & text);
     
     virtual WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
 
@@ -212,19 +212,19 @@ public:
 	 \brief Returns the text color of control.
 	 \returns Color color of control's text
 	 */
-	Color GetTextColor();
+	virtual const Color &GetTextColor() const;
 	/**
 	 \brief Returns text shadow offset relative to base text.
 	 \returns Vector2 with shadow offset for X and Y axis
 	 */
-	Vector2 GetShadowOffset();
+	Vector2 GetShadowOffset() const;
 	/**
 	 \brief Returns color of text shadow.
 	 \returns Color of text shadow.
 	 */
-	Color GetShadowColor();
+	virtual const Color &GetShadowColor() const;
 
-	int32 GetTextAlign();
+	int32 GetTextAlign() const;
 
     void SetFocused()
     {
@@ -244,7 +244,7 @@ public:
 	 \brief Sets the color of the text.
 	 \param[in] fontColor font used for text draw of the states.
 	 */
-    void SetTextColor(const Color& fontColor);
+    virtual void SetTextColor(const Color& fontColor);
 	/**
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
@@ -259,7 +259,7 @@ public:
 	 \brief Sets shadow color of text control.
 	 \param[in] color color of text shadow.
 	 */
-	void SetShadowColor(const Color& color);
+	virtual void SetShadowColor(const Color& color);
 
 	void SetTextAlign(int32 align);
 
@@ -271,7 +271,7 @@ public:
 	 \brief Set control text style hide.
 	 \param[in] isPassword draw text with hide char.
 	 */
-    void SetIsPassword(bool isPassword);
+    virtual void SetIsPassword(bool isPassword);
     /**
 	 \brief Return is text style is hide.
 	 */
@@ -280,43 +280,43 @@ public:
 	/**
  	 \brief Auto-capitalization type.
 	 */
-	eAutoCapitalizationType GetAutoCapitalizationType();
+	eAutoCapitalizationType GetAutoCapitalizationType() const;
 	void SetAutoCapitalizationType(eAutoCapitalizationType value);
 
 	/**
  	 \brief Auto-correction type.
 	 */
-	eAutoCorrectionType GetAutoCorrectionType();
+	eAutoCorrectionType GetAutoCorrectionType() const;
 	void SetAutoCorrectionType(eAutoCorrectionType value);
 
 	/**
  	 \brief Spell checking type.
 	 */
-	eSpellCheckingType GetSpellCheckingType();
+	eSpellCheckingType GetSpellCheckingType() const;
 	void SetSpellCheckingType(eSpellCheckingType value);
 
 	/**
  	 \brief Keyboard appearance type.
 	 */
-	eKeyboardAppearanceType GetKeyboardAppearanceType();
+	eKeyboardAppearanceType GetKeyboardAppearanceType() const;
 	void SetKeyboardAppearanceType(eKeyboardAppearanceType value);
 
 	/**
  	 \brief Keyboard type.
 	 */
-	eKeyboardType GetKeyboardType();
+	eKeyboardType GetKeyboardType() const;
 	void SetKeyboardType(eKeyboardType value);
 	
 	/**
  	 \brief Return key type.
 	 */
-	eReturnKeyType GetReturnKeyType();
+	eReturnKeyType GetReturnKeyType() const;
 	void SetReturnKeyType(eReturnKeyType value);
 
 	/**
  	 \brief Enable return key automatically.
 	 */
-	bool IsEnableReturnKeyAutomatically();
+	bool IsEnableReturnKeyAutomatically() const;
 	void SetEnableReturnKeyAutomatically(bool value);
 	
 	/**

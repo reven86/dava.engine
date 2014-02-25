@@ -36,7 +36,7 @@
 class RemoveComponentCommand : public Command2
 {
 public:
-	RemoveComponentCommand(DAVA::Entity* entity, DAVA::int32 componentType);
+	RemoveComponentCommand(DAVA::Entity * entity, DAVA::Component * component);
 	~RemoveComponentCommand();
 
 	virtual void Undo();
@@ -47,7 +47,8 @@ public:
 private:
 
 	DAVA::Entity* entity;
-	DAVA::Component *oldComponent;
+	DAVA::Component *savedComponent;
+	DAVA::Component *currentComponent;
 };
 
 #endif // __REMOVE_COMPONENT_COMMAND_H__

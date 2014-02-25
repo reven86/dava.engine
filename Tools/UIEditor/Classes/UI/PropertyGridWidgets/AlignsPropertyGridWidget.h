@@ -58,7 +58,6 @@ protected:
                                            bool needUpdateTree = false, bool stateAware = false);
 	void UnregisterAlignCheckBoxWidget(QCheckBox* checkBoxWidget);
 				
-	virtual void OnPropertiesChangedFromExternalSource();
 	virtual void UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty);
 	virtual void HandleChangePropertySucceeded(const QString& propertyName);
 

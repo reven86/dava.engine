@@ -64,7 +64,7 @@ void ResourceArchive::StartResource(const FilePath & _archiveName, bool _withPat
 //! \param resourceFile name of resourceFile to save
 void ResourceArchive::AddFile(const FilePath & resourceFile)
 {
-	fileArray.push_back(resourceFile.GetAbsolutePathname());
+	fileArray.push_back(resourceFile);
 }
 
 //! \brief function to finish resource archive and prepare it to saving to disk
@@ -74,7 +74,7 @@ void ResourceArchive::FinishResource()
 
 	for (int32 res = 0; res < (int32)fileArray.size(); ++res)
 	{
-		const String & fileName = fileArray[res];
+		const FilePath & fileName = fileArray[res];
 		
 		File * testOpen = File::Create(fileName, File::OPEN | File::READ);
 		if(testOpen)
@@ -229,7 +229,7 @@ bool ResourceArchive::WriteDictionary()
 
 	for (uint32 node = 0; node < header.fileCount; ++node)
 	{
-		nodeArray[node].pathName = fileArray[node];
+		nodeArray[node].pathName = fileArray[node].GetAbsolutePathname();
 		String::size_type pos = nodeArray[node].pathName.find(extrudePart);
 		if (pos != String::npos)
 		{

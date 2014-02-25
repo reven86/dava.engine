@@ -1047,6 +1047,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/FileSystem/KeyedUnarchiver.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/FileSystem/LocalizationAndriod.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/FileSystem/LocalizationAndriod.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/FileSystem/LocalizationAndroid.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/FileSystem/LocalizationAndroid.h</locationURI>
+		</link>
+		<link>
 			<name>Internal/FileSystem/LocalizationIPhone.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/FileSystem/LocalizationIPhone.h</locationURI>
@@ -1825,6 +1835,16 @@
 			<name>Internal/Render/OGLHelpers.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Render/OGLHelpers.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Render/OcclusionQuery.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Render/OcclusionQuery.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Render/OcclusionQuery.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Render/OcclusionQuery.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Render/PVRDefines.h</name>
@@ -3042,11 +3062,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/AndroidCrashReport.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/Platform/TemplateAndroid/AndroidSpecifics.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/AndroidSpecifics.h</locationURI>
-		</link>
-		<link>
 			<name>Internal/Platform/TemplateAndroid/CorePlatformAndroid.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/CorePlatformAndroid.cpp</locationURI>
@@ -3080,6 +3095,26 @@
 			<name>Internal/Platform/TemplateAndroid/ExternC</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/FakeOcclusionQuery.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/FakeOcclusionQuery.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/FakeOcclusionQuery.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/FakeOcclusionQuery.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/FileListAndroid.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/FileListAndroid.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/FileListAndroid.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/FileListAndroid.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/TemplateAndroid/JniExtensions.cpp</name>

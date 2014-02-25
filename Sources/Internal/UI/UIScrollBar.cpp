@@ -73,15 +73,6 @@ void UIScrollBar::AddControl(UIControl *control)
 	}
 }
 
-List<UIControl* >& UIScrollBar::GetRealChildren()
-{
-	List<UIControl* >& realChildren = UIControl::GetRealChildren();
-	
-	realChildren.remove(FindByName(UISCROLLBAR_SLIDER_NAME));
-
-	return realChildren;
-}
-
 List<UIControl* > UIScrollBar::GetSubcontrols()
 {
 	List<UIControl* > subControls;
@@ -155,6 +146,8 @@ void UIScrollBar::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
 YamlNode * UIScrollBar::SaveToYamlNode(UIYamlLoader * loader)
 {
+	slider->SetName(UISCROLLBAR_SLIDER_NAME);
+
 	YamlNode *node = UIControl::SaveToYamlNode(loader);
 	//Temp variables
 	String stringValue;
@@ -177,11 +170,7 @@ YamlNode * UIScrollBar::SaveToYamlNode(UIYamlLoader * loader)
 			break;
 	}
 	node->Set("orientation", stringValue);
-	
-	// Slider have to be saved too.
-	YamlNode* sliderNode = slider->SaveToYamlNode(loader);
-	node->AddNodeToMap(UISCROLLBAR_SLIDER_NAME, sliderNode);
-    
+
 	return node;
 }
     

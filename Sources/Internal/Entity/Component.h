@@ -31,25 +31,25 @@
 #define __DAVAENGINE_SCENE3D_COMPONENT_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
 #include "Base/Serializable.h"
 #include "Base/Introspection.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA 
 {
     
 class DataNode;
 class Entity;
-class Component : public Serializable, public BaseObject
+class Component : public Serializable, public InspBase
 {
 public:
     enum eType
     {
         TRANSFORM_COMPONENT = 0,
         RENDER_COMPONENT,
-        DEBUG_RENDER_COMPONENT, 
-		LOD_COMPONENT,
-		SWITCH_COMPONENT,
+        LOD_COMPONENT,
+        DEBUG_RENDER_COMPONENT,
+        SWITCH_COMPONENT,
         CAMERA_COMPONENT,
         LIGHT_COMPONENT,
 		PARTICLE_EFFECT_COMPONENT,
@@ -63,21 +63,23 @@ public:
 		USER_COMPONENT,
 		SOUND_COMPONENT,
 		CUSTOM_PROPERTIES_COMPONENT,
+        STATIC_OCCLUSION_COMPONENT,
+        STATIC_OCCLUSION_DATA_COMPONENT, 
+        QUALITY_SETTINGS_COMPONENT,   // type as fastname for detecting type of model
 
         COMPONENT_COUNT
     };
 
-protected:
-    virtual ~Component();
 public:
 	static Component * CreateByType(uint32 componentType);
 
 	Component();
+	virtual ~Component();
 
     virtual uint32 GetType() = 0;
     virtual Component* Clone(Entity * toEntity) = 0;
-	virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
-	virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
+	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
+	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 
 	Entity* GetEntity();
 	virtual void SetEntity(Entity * entity);
@@ -111,8 +113,6 @@ public:
 template<template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T> & container)
 {
-    container.clear();
-    
     Set<DataNode*> objects;
     GetDataNodes(objects);
     

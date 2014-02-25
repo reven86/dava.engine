@@ -31,51 +31,85 @@
 #include <QMouseEvent>
 #include <QHeaderView>
 #include <QPainter>
-#include <QWindowsStyle>
+#include <QCoreApplication>
 
 #include "QtPropertyEditor.h"
 #include "QtPropertyModel.h"
 #include "QtPropertyItemDelegate.h"
 
 QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
-	: QTreeView(parent)
-	, updateTimeout(0)
-	, doUpdateOnPaintEvent(false)
+: QTreeView(parent)
+, updateTimeout(0)
+, doUpdateOnPaintEvent(false)
 {
-	curModel = new QtPropertyModel();
+	curModel = new QtPropertyModel(viewport());
 	setModel(curModel);
 
-	curItemDelegate = new QtPropertyItemDelegate();
+	curItemDelegate = new QtPropertyItemDelegate(curModel);
 	setItemDelegate(curItemDelegate);
 
 	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnItemClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), curItemDelegate, SLOT(expand(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), curItemDelegate, SLOT(collapse(const QModelIndex &)));
-	QObject::connect(curModel, SIGNAL(ItemEdited(const QString &, QtPropertyData *)), this, SLOT(OnItemEdited(const QString &, QtPropertyData *)));
+	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), this, SLOT(OnExpanded(const QModelIndex &)));
+	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), this, SLOT(OnCollapsed(const QModelIndex &)));
+	QObject::connect(curModel, SIGNAL(PropertyEdited(const QModelIndex &)), this, SLOT(OnItemEdited(const QModelIndex &)));
+	QObject::connect(curModel, SIGNAL(rowsAboutToBeInserted(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeOp(const QModelIndex &, int, int)));
+	QObject::connect(curModel, SIGNAL(rowsAboutToBeRemoved(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeOp(const QModelIndex &, int, int)));
+	QObject::connect(curModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)), this, SLOT(rowsOp(const QModelIndex &, int, int)));
+	QObject::connect(curModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this, SLOT(rowsOp(const QModelIndex &, int, int)));
 	QObject::connect(&updateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeout()));
+
+	setMouseTracking(true);
+
+	//new QtPropertyToolButton(NULL, viewport());
 }
 
 QtPropertyEditor::~QtPropertyEditor()
 { }
 
-QPair<QtPropertyItem*, QtPropertyItem*> QtPropertyEditor::AppendProperty(const QString &name, QtPropertyData* data, QtPropertyItem* parent /*= NULL*/)
+QModelIndex QtPropertyEditor::AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent)
 {
-	if(NULL != data)
-	{
-		data->SetOWViewport(viewport());
-	}
-
 	return curModel->AppendProperty(name, data, parent);
 }
 
-QPair<QtPropertyItem*, QtPropertyItem*> QtPropertyEditor::GetProperty(const QString &name, QtPropertyItem* parent) const
+QModelIndex QtPropertyEditor::InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent)
 {
-	return curModel->GetProperty(name, parent);
+	return curModel->InsertProperty(name, data, row, parent);
 }
 
-void QtPropertyEditor::RemoveProperty(QtPropertyItem* item)
+QModelIndex QtPropertyEditor::AppendHeader(const QString &text)
 {
-	curModel->RemoveProperty(item);
+	QModelIndex propHeader = AppendProperty(text, new QtPropertyData(""));
+
+	ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
+	return propHeader;
+}
+
+QModelIndex QtPropertyEditor::InsertHeader(const QString &text, int row)
+{
+	QModelIndex propHeader = InsertProperty(text, new QtPropertyData(""), row);
+
+	ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
+	return propHeader;
+}
+
+QtPropertyData* QtPropertyEditor::GetProperty(const QModelIndex &index) const
+{
+	return curModel->itemFromIndex(index);
+}
+
+QtPropertyData * QtPropertyEditor::GetRootProperty() const
+{
+	return curModel->rootItem();
+}
+
+void QtPropertyEditor::RemoveProperty(const QModelIndex &index)
+{
+	curModel->RemoveProperty(index);
+}
+
+void QtPropertyEditor::RemoveProperty(QtPropertyData *data)
+{
+	curModel->RemoveProperty(curModel->indexFromItem(data));
 }
 
 void QtPropertyEditor::RemovePropertyAll()
@@ -83,17 +117,9 @@ void QtPropertyEditor::RemovePropertyAll()
 	curModel->RemovePropertyAll();
 }
 
-QtPropertyData *QtPropertyEditor::GetPropertyData(const QString &key, QtPropertyItem *parent) const
+void QtPropertyEditor::SetFilter(const QString &regex)
 {
-	QtPropertyData *ret = NULL;
-
-	QPair<QtPropertyItem*, QtPropertyItem*> pair = GetProperty(key, parent);
-	if(NULL != pair.second)
-	{
-		ret = pair.second->GetPropertyData();
-	}
-
-	return ret;
+	//curFilteringModel->setFilterRegExp(regex);
 }
 
 void QtPropertyEditor::SetEditTracking(bool enabled)
@@ -101,14 +127,9 @@ void QtPropertyEditor::SetEditTracking(bool enabled)
 	curModel->SetEditTracking(enabled);
 }
 
-bool QtPropertyEditor::GetEditTracking()
+bool QtPropertyEditor::GetEditTracking() const
 {
 	return curModel->GetEditTracking();
-}
-
-void QtPropertyEditor::Expand(QtPropertyItem *item)
-{
-	expand(curModel->indexFromItem(item));
 }
 
 void QtPropertyEditor::SetUpdateTimeout(int ms)
@@ -146,20 +167,14 @@ void QtPropertyEditor::OnUpdateTimeout()
 	SetUpdateTimeout(updateTimeout);
 }
 
-QtPropertyItem* QtPropertyEditor::AddHeader(const char *text)
+void QtPropertyEditor::OnExpanded(const QModelIndex & index)
 {
-	QPair<QtPropertyItem*, QtPropertyItem*> propHeader;
-	
-	propHeader = AppendProperty(text, NULL);
-	
-	QFont boldFont = propHeader.first->font();
-	boldFont.setBold(true);
-	
-	propHeader.first->setFont(boldFont);
-	propHeader.first->setBackground(QBrush(QColor(Qt::lightGray)));
-	propHeader.second->setBackground(QBrush(QColor(Qt::lightGray)));
-	
-	return propHeader.first;
+	ShowButtonsUnderCursor();
+}
+
+void QtPropertyEditor::OnCollapsed(const QModelIndex & index)
+{
+	ShowButtonsUnderCursor();
 }
 
 void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &option, const QModelIndex & index) const
@@ -197,21 +212,82 @@ void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &o
 	}
 }
 
-void QtPropertyEditor::paintEvent(QPaintEvent * event)
+void QtPropertyEditor::ApplyStyle(QtPropertyData *data, int style)
 {
-	QTreeView::paintEvent(event);
+	if(NULL != data)
+	{
+		switch(style)
+		{
+		case DEFAULT_STYLE:
+			data->ResetStyle();
+			break;
+
+		case HEADER_STYLE:
+			{
+				QFont boldFont = data->GetFont();
+				boldFont.setBold(true);
+				data->SetFont(boldFont);
+
+				data->SetBackground(QBrush(QColor(Qt::lightGray)));
+				data->SetBackground(QBrush(QColor(Qt::lightGray)));
+			}
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+// QtPropertyToolButton* QtPropertyEditor::GetButton(QMouseEvent * event)
+// {
+// 	QtPropertyToolButton *ret = NULL;
+// 	QtPropertyData *data = GetProperty(indexAt(event->pos()));
+// 
+// 	if(NULL != data)
+// 	{
+// 		for(int i = 0; i < data->GetButtonsCount(); ++i)
+// 		{
+// 			QtPropertyToolButton *btn = data->GetButton(i);
+// 			QPoint p = event->pos() - btn->pos();
+// 
+// 			if(p.x() >= 0 && p.y() >= 0 && p.x() < btn->width() && p.y() < btn->height())
+// 			{
+// 				ret = btn;
+// 			}
+// 		}
+// 	}
+// 
+// 	return ret;
+// }
+
+void QtPropertyEditor::leaveEvent(QEvent * event)
+{
+	curItemDelegate->invalidateButtons();
 }
 
 void QtPropertyEditor::OnItemClicked(const QModelIndex &index)
 {
-	QStandardItem *item = curModel->itemFromIndex(index);
-	if(NULL != item && item->isEditable() && item->isEnabled())
-	{
-		edit(index, QAbstractItemView::DoubleClicked, NULL);
-	}
+	edit(index, QAbstractItemView::DoubleClicked, NULL);
 }
 
-void QtPropertyEditor::OnItemEdited(const QString &name, QtPropertyData *data)
+void QtPropertyEditor::OnItemEdited(const QModelIndex &index)
 {
-	emit PropertyEdited(name, data);
+	emit PropertyEdited(index);
+}
+
+void QtPropertyEditor::rowsAboutToBeOp(const QModelIndex & parent, int start, int end)
+{
+	curItemDelegate->invalidateButtons();
+}
+
+void QtPropertyEditor::rowsOp(const QModelIndex & parent, int start, int end)
+{
+	ShowButtonsUnderCursor();
+}
+
+void QtPropertyEditor::ShowButtonsUnderCursor()
+{
+	QPoint pos = viewport()->mapFromGlobal(QCursor::pos());
+	curItemDelegate->showButtons(GetProperty(indexAt(pos)));
 }

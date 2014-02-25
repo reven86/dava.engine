@@ -542,7 +542,7 @@ void UIHierarchy::Input(UIEvent *currentInput)
 
 bool UIHierarchy::SystemInput(UIEvent *currentInput)
 {
-    if(!inputEnabled || !visible || controlState & STATE_DISABLED)
+    if(!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
     {
         return false;
     }

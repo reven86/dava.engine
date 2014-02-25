@@ -37,7 +37,9 @@ namespace DAVA
 #if defined(__DAVAENGINE_OPENGL__)
 void RenderGrayscaleEffect::StartEffect()
 {
-
+	//VI: seems this code never used
+	DVASSERT(false);
+/*
 	RENDER_VERIFY(glColor4f(0.5f + 0.3f * RenderManager::Instance()->GetColorR(), 0.5f + 59.0f  * RenderManager::Instance()->GetColorG(), 0.5f + 0.11f  * RenderManager::Instance()->GetColorB(), RenderManager::Instance()->GetColorA()));
 	
 	float constColor[] = {0.67f, 0.67f, 0.67f, 0.25f};
@@ -65,11 +67,14 @@ void RenderGrayscaleEffect::StartEffect()
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE1));
 	RENDER_VERIFY(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0));
-	
+	*/
 }
 
 void RenderGrayscaleEffect::StopEffect()
 {
+	//VI: seems this code never used
+	DVASSERT(false);
+/*
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE1));
 	RENDER_VERIFY(glDisable(GL_TEXTURE_2D));
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE1));
@@ -83,34 +88,50 @@ void RenderGrayscaleEffect::StopEffect()
 	float constColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 	RENDER_VERIFY(glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, constColor));
 	RENDER_VERIFY(glColor4f(1.0f, 1.0f, 1.0f, 1.0f));
+*/
 }
 
 void RenderGrayscaleEffect::SetColor(float r, float g, float b, float a)
 {
+	//VI: seems this code never used
+	DVASSERT(false);
+/*
 	RENDER_VERIFY(glColor4f(0.5f + 0.3f * r, 0.5f + 59.0f  * g, 0.5f + 0.11f  * b, a));
+ */
 }
 
 void RenderGrayscaleEffect::SetTexture(Texture *texture)
 {
+	//VI: seems this code never used
+	DVASSERT(false);
+/*
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE1));
 	RenderManager::Instance()->HWglBindTexture(texture->id, texture->textureType);
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE0));
 	RenderManager::Instance()->HWglBindTexture(texture->id, texture->textureType);
-
+*/
 }
 	
 void RenderGrayscaleEffect::SetVertexPointer(int size, int type, int stride, const void *pointer)
 {
+	//VI: seems this code never used
+	DVASSERT(false);
+/*
     RENDER_VERIFY(glVertexPointer(size, type, stride, pointer));
+ */
 }
 	
 
 void RenderGrayscaleEffect::SetTexCoordPointer(int size, int type, int stride, const void *pointer)
 {
+	//VI: seems this code never used
+	DVASSERT(false);
+/*
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE1));
 	RENDER_VERIFY(glTexCoordPointer(size, type, stride, pointer));
 	RENDER_VERIFY(glClientActiveTexture(GL_TEXTURE0));
 	RENDER_VERIFY(glTexCoordPointer(size, type, stride, pointer));
+ */
 }
 #elif defined(__DAVAENGINE_DIRECTX9__)
 

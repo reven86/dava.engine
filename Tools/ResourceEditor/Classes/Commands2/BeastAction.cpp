@@ -31,9 +31,9 @@
 #include "BeastAction.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
-#include "Classes/BeastProxy.h"
-#include "Classes/LightmapsPacker.h"
-#include "Classes/SceneEditor/EditorSettings.h"
+#include "Beast/BeastProxy.h"
+#include "Beast/LightmapsPacker.h"
+#include "Qt/Settings/SettingsManager.h"
 
 #include "DAVAEngine.h"
 

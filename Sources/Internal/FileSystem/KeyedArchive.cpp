@@ -437,9 +437,12 @@ KeyedArchive * KeyedArchive::GetArchive(const String & key, KeyedArchive * defau
 }
 
 
-VariantType *KeyedArchive::GetVariant(const String & key)
+VariantType * KeyedArchive::GetVariant(const String & key)
 {
-	return objectMap[key];
+	if(IsKeyExists(key))
+		return objectMap[key];
+
+	return NULL;
 }
     
 int64 KeyedArchive::GetInt64(const String & key, int64 defaultValue)

@@ -7,7 +7,7 @@
 
 set -e
 
-export SDK=10.7
+export SDK=10.9
 
 checkExists() {
 
@@ -49,11 +49,11 @@ buildit() {
         exit 1
     fi
 
-    export CC="${root}/../../../usr/bin/gcc"
+    export CC="/usr/bin/clang"
     export CFLAGS="-arch ${target} -isysroot ${root}/SDKs/${platform}${SDK}.sdk"
-    export CPP="${root}/../../../usr/bin/llvm-cpp-4.2"
-    export AR="${root}/../../../usr/bin/ar"
-    export RANLIB="${root}/../../../usr/bin/ranlib"
+    export CXX="/usr/bin/clang"
+    export AR="/usr/bin/ar"
+    export RANLIB="/usr/bin/ranlib"
 
     checkExists ${CC}
     checkExists ${root}/SDKs/${platform}${SDK}.sdk
@@ -61,7 +61,7 @@ buildit() {
     checkExists ${AR}
     checkExists ${RANLIB}
 
-    ./configure --disable-shared --without-libidn --without-ssl --without-libssh2 --without-ca-bundle --without-ldap --disable-ldap --host=${target}-apple-darwin10
+    ./configure --disable-shared --enable-static --without-libidn --with-darwinssl --without-libssh2 --without-ca-bundle --without-ldap --disable-ldap --host=${target}-apple-darwin10 --enable-threaded-resolver
 
     make clean
     make

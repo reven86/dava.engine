@@ -41,8 +41,12 @@
 #include "FileSystem/FileSystem.h"
 
 #include "Utils/Utils.h"
+#include "Utils/CRC32.h"
 
 #include <libatc/TextureConverter.h>
+
+#define DDS_HEADER_CRC_OFFSET		60			//offset  to 9th element of dwReserved1 array(dds header)
+#define METADATA_CRC_TAG			0x5f435243  // equivalent of 'C''R''C''_'
 
 using namespace nvtt;
 
@@ -95,7 +99,7 @@ public:
 	static bool InitDecompressor(nvtt::Decompressor & dec, File * file);
 	static bool InitDecompressor(nvtt::Decompressor & dec, const uint8 * mem, uint32 size);
 	
-	static bool ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, bool forseSoftwareConvertation);
+	static bool ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, bool forceSoftwareConvertation);
 	
 	static PixelFormat GetPixelFormat(nvtt::Decompressor & dec);
 	
@@ -240,7 +244,7 @@ PixelFormat QualcommHeler::GetDavaFormat(int32 format)
 }
 
 	
-bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSet)
+bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSet, bool forceSoftwareConvertation /*=false*/)
 {
 	nvtt::Decompressor dec;
 
@@ -249,10 +253,10 @@ bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSe
 		return false;
 	}
 	
-	return NvttHelper::ReadDxtFile(dec, imageSet, false);
+	return NvttHelper::ReadDxtFile(dec, imageSet, forceSoftwareConvertation);
 }
 
-bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet)
+bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet, bool forceSoftwareConvertation /*=false*/)
 {
 	nvtt::Decompressor dec;
 
@@ -260,10 +264,10 @@ bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet)
 	{
 		return false;
 	}
-	return NvttHelper::ReadDxtFile(dec, imageSet, false);
+	return NvttHelper::ReadDxtFile(dec, imageSet, forceSoftwareConvertation);
 }
 
-bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forseSoftwareConvertation)
+bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
 {
 	if(!(image.format >= FORMAT_DXT1 && image.format <= FORMAT_DXT5NM) )
 	{
@@ -308,7 +312,7 @@ bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &im
 	bool retValue = NvttHelper::InitDecompressor(dec, compressedImageBuffer, realHeaderSize + image.dataSize);
 	if(retValue)
 	{
-		retValue = NvttHelper::ReadDxtFile(dec, imageSet, forseSoftwareConvertation);
+		retValue = NvttHelper::ReadDxtFile(dec, imageSet, forceSoftwareConvertation);
 	}
 
     SafeDeleteArray(compressedImageBuffer);
@@ -320,7 +324,7 @@ bool NvttHelper::IsAtcFormat(nvtt::Format format)
 	return (format == Format_ATC_RGB || format == Format_ATC_RGBA_EXPLICIT_ALPHA || format == Format_ATC_RGBA_INTERPOLATED_ALPHA);
 }
 	
-bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, bool forseSoftwareConvertation)
+bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
 {
     for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
 	imageSet.clear();
@@ -354,7 +358,7 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
 	else
 		isHardwareSupport = RenderManager::Instance()->GetCaps().isDXTSupported;
 	
-	if (!forseSoftwareConvertation && isHardwareSupport)
+	if (!forceSoftwareConvertation && isHardwareSupport)
 	{
 		uint8* compressedImges = new uint8[info.dataSize];
 	
@@ -534,9 +538,7 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 				break;
 			}
 			
-			Image* innerImage = Image::Create(faceWidth, faceHeight, FORMAT_RGBA8888);
-			innerImage->data = dstImg.pData;
-			innerImage->dataSize = dstImg.nDataSize;
+			Image* innerImage = Image::CreateFromData(faceWidth, faceHeight, FORMAT_RGBA8888, dstImg.pData);
 			innerImage->mipmapLevel = i;
 			
 			if(info.faceCount > 1)
@@ -544,13 +546,13 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 				innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
 			}
 
-			//SafeDeleteArray(dstImg.pData);
-			
 			//SwapBRChannels(innerImage->data, innerImage->dataSize);
 			imageSet.push_back(innerImage);
 			
 			faceWidth = Max((uint32)1, faceWidth / 2);
 			faceHeight = Max((uint32)1, faceHeight / 2);
+
+			SafeDeleteArray(dstImg.pData);
 		}
 	}
 	
@@ -886,6 +888,131 @@ bool LibDxtHelper::GetTextureSize(File * file, uint32 & width, uint32 & height)
 	return NvttHelper::GetTextureSize(dec, width, height);
 }
     
+
+bool LibDxtHelper::AddCRCIntoMetaData(const FilePath &filePathname)
+{
+	String fileNameStr = filePathname.GetAbsolutePathname();
+
+	uint32 tag = 0, crc = 0;
+    bool haveCRCTag = GetCRCFromDDSHeader(filePathname, &tag, &crc);
+	if(haveCRCTag)
+	{
+		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData] CRC is already added into %s", fileNameStr.c_str());
+		return false;
+	}
+	else if(crc != 0 || tag != 0)
+	{
+		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData] reserved for CRC place is used in %s", fileNameStr.c_str());
+		return false;
+	}
+
+	File *fileRead = File::Create(filePathname, File::READ | File::OPEN);
+	if(!fileRead)
+	{
+		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData] cannot open file %s", fileNameStr.c_str());
+		return false;
+	}
+    uint32 fileSize = fileRead->GetSize();
+    char *fileBuffer = new char[fileSize];
+	if(!fileBuffer)
+	{
+		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot allocate buffer for file data");
+		SafeRelease(fileRead);
+		return false;
+	}
+    if(fileRead->Read(fileBuffer, fileSize) != fileSize)
+	{
+		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot read from file %s", fileNameStr.c_str());
+		SafeDeleteArray(fileBuffer);
+		SafeRelease(fileRead);
+		return false;
+	}
+    
+    SafeRelease(fileRead);
+    
+    crc = CRC32::ForBuffer(fileBuffer, fileSize);
+    uint32* modificationMetaDataPointer = (uint32*)(fileBuffer + DDS_HEADER_CRC_OFFSET);
+    *modificationMetaDataPointer = METADATA_CRC_TAG;
+    modificationMetaDataPointer++;
+    *modificationMetaDataPointer = crc;
+	
+    FilePath tempFile(filePathname.GetAbsolutePathname() + "_");
+	
+	File *fileWrite = File::Create(tempFile, File::WRITE | File::CREATE);
+	if(!fileWrite)
+	{
+		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot create file %s",
+					  tempFile.GetAbsolutePathname().c_str());
+		return false;
+	}
+	
+    bool writeSucces = fileWrite->Write(fileBuffer, fileSize) == fileSize;
+    SafeDeleteArray(fileBuffer);
+    SafeRelease(fileWrite);
+	if(writeSucces)
+	{
+		FileSystem::Instance()->DeleteFile(filePathname);
+		FileSystem::Instance()->MoveFile(tempFile, filePathname, true);
+		return true;
+	}
+    else
+    {
+        Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot write to file %s",
+                      tempFile.GetAbsolutePathname().c_str());
+        FileSystem::Instance()->DeleteFile(tempFile);
+        return false;
+    }
+}
+
+bool LibDxtHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* outputTag, uint32* outputCRC)
+{
+	String fileNameStr = filePathname.GetAbsolutePathname();
+	
+	File *fileRead = File::Create(filePathname, File::READ | File::OPEN);
+	if(!fileRead)
+	{
+		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader] cannot open file %s", fileNameStr.c_str());
+		return false;
+	}
+
+	if(!IsDxtFile(fileRead))
+	{
+		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader] file %s isn't a dds one", fileNameStr.c_str());
+		SafeRelease(fileRead);
+		return false;
+	}
+
+	fileRead->Seek(DDS_HEADER_CRC_OFFSET, File::SEEK_FROM_START);
+	uint32 tag = 0;
+	if(fileRead->Read(&tag,sizeof(tag)) != sizeof(tag))
+	{
+		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
+		SafeRelease(fileRead);
+		return false;
+	}
+
+	uint32 crc = 0;
+	if(fileRead->Read(&crc,sizeof(crc)) != sizeof(crc))
+	{
+		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
+		SafeRelease(fileRead);
+		return false;
+	}
+	
+	*outputCRC = crc;
+	*outputTag = tag;
+	
+	SafeRelease(fileRead);
+	return tag == METADATA_CRC_TAG;
+}
+
+uint32 LibDxtHelper::GetCRCFromFile(const FilePath &filePathname)
+{
+	uint32 tag = 0, crc = 0;
+	bool success = GetCRCFromDDSHeader(filePathname, &tag, &crc);
+	return success ? crc : CRC32::ForFile(filePathname);
+}
+
 PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor & dec)
 {
     nvtt::Format innerFormat;

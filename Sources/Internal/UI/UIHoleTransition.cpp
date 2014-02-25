@@ -93,19 +93,26 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
 	 FROM_BOTTOM,
 	 */
 	
+    Sprite::DrawState drawState;
+    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    
 	RenderManager::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f, (float32)GetScreenWidth(), (float32)GetScreenHeight()));
+	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f, (float32)GetScreenWidth(), (float32)GetScreenHeight()), drawState.GetRenderState());
 	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
+    drawState.SetPosition(geometricData.position);
+    
     if (normalizedTime < 0.5f)
     {
         renderTargetPrevScreen->SetClipPolygon(&realPoly);
-        renderTargetPrevScreen->Draw();
+        
+        renderTargetPrevScreen->Draw(&drawState);
     }
     else
     {
         renderTargetNextScreen->SetClipPolygon(&realPoly);
-        renderTargetNextScreen->Draw();
+        
+        renderTargetNextScreen->Draw(&drawState);
     }
     
 	/*Texture * tx = renderTargetPrevScreen->GetTexture();

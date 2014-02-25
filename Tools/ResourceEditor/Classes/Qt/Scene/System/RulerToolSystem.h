@@ -31,13 +31,14 @@
 #ifndef __RESOURCEEDITORQT__RULERTOOLSYSTEM__
 #define __RESOURCEEDITORQT__RULERTOOLSYSTEM__
 
-#include "Entity/SceneSystem.h"
-#include "EditorScene.h"
+#include "DAVAEngine.h"
 #include "LandscapeEditorDrawSystem.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
+
+using namespace DAVA;
 
 class RulerToolSystem: public DAVA::SceneSystem
 {

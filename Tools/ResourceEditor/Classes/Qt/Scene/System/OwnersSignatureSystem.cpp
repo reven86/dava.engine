@@ -29,7 +29,7 @@
 
 #include "OwnersSignatureSystem.h"
 #include "Classes/StringConstants.h"
-#include "SceneEditor/EditorSettings.h"
+#include "Qt/Settings/SettingsManager.h"
 #include "Scene/SceneSignals.h"
 
 const DAVA::int32 OwnersSignatureSystem::validIDs[] =
@@ -83,6 +83,7 @@ DAVA::String OwnersSignatureSystem::GetCurrentTime()
 
 void OwnersSignatureSystem::UpdateEntityOwner(DAVA::KeyedArchive *customProperties)
 {
-	customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, EditorSettings::Instance()->GetDesignerName());
+	customProperties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, 
+		SettingsManager::Instance()->GetValue("DesignerName",SettingsManager::GENERAL).AsString());
 	customProperties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, GetCurrentTime());
 }

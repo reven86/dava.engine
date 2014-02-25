@@ -27,7 +27,7 @@
 =====================================================================================*/
 
 #include "SelectEntityPathWidget.h"
-#include "./../Qt/Tools/MimeDataHelper/MimeDataHelper.h"
+#include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Scene/SceneEditor2.h"
 #include <QFileInfo>
 #include <QKeyEvent>
@@ -40,7 +40,7 @@
 #define MIME_URI_LIST_NAME "text/uri-list"
 
 SelectEntityPathWidget::SelectEntityPathWidget(QWidget* _parent, DAVA::String _openDialogDefualtPath, DAVA::String _relativPath)
-:	SelectPathWidgetBase(_parent, _openDialogDefualtPath, _relativPath, "Open Scene File", "Scene File (*.sc2)")
+:	SelectPathWidgetBase(_parent, false,_openDialogDefualtPath, _relativPath, "Open Scene File", "Scene File (*.sc2)")
 {
 	allowedFormatsList.push_back(".sc2");
 }
@@ -104,7 +104,7 @@ void SelectEntityPathWidget::ConvertFromMimeData(const QMimeData* mimeData, DAVA
 void SelectEntityPathWidget::ConvertQMimeDataFromSceneTree(const QMimeData* mimeData,
 														   DAVA::List<DAVA::Entity*>& retList)
 {
-	retList  = MimeDataHelper::GetPointersFromSceneTreeMime(mimeData);
+	retList = MimeDataHelper::GetPointersFromSceneTreeMime(mimeData);
 	SetEntities(retList, true);
 }
 

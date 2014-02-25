@@ -96,16 +96,6 @@ void RectPropertyGridWidget::Cleanup()
     UnregisterSpinBoxWidget(ui->angleSpinBox);
 }
 
-void RectPropertyGridWidget::OnPropertiesChangedFromExternalSource()
-{
-    // Re-read all the properties related to this grid.
-    for (PROPERTYGRIDWIDGETSITER iter = this->propertyGridWidgetsMap.begin();
-         iter != this->propertyGridWidgetsMap.end(); iter ++)
-    {
-        UpdateWidgetWithPropertyValue(iter);
-    }
-}
-
 void RectPropertyGridWidget::HandleChangePropertySucceeded(const QString& propertyName)
 {
 	//If one of the align option state is changed we should check it and disable/enable appropriate Relative postion or size spinbox(es)

@@ -36,6 +36,7 @@
 #include <QFont>
 #include <QFontMetrics>
 
+#include "TextureInfo.h"
 #include "DAVAEngine.h"
 
 class QPainter;
@@ -45,7 +46,7 @@ class TextureListDelegate : public QAbstractItemDelegate
 	Q_OBJECT
 
 public:
-	enum DrawRure
+	enum DrawRule
 	{
 		DRAW_PREVIEW_BIG,
 		DRAW_PREVIEW_SMALL
@@ -56,17 +57,17 @@ public:
 	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-	void setDrawRule(DrawRure rule);
+	void setDrawRule(DrawRule rule);
 
 private slots:
-	void textureReadyOriginal(const DAVA::TextureDescriptor *descriptor,  DAVA::Vector<QImage>& images);
+	void textureReadyThumbnail(const DAVA::TextureDescriptor *descriptor,  const TextureInfo & images);
 
 private:
 	QFont nameFont;
 	QFontMetrics nameFontMetrics;
-	mutable QMap<const DAVA::TextureDescriptor *, QModelIndex> descriptorIndexes;
-
-	DrawRure drawRule;
+	mutable QMap<DAVA::FilePath, QModelIndex> descriptorIndexes;
+    
+	DrawRule drawRule;
 
 	void drawPreviewBig(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 	void drawPreviewSmall(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;

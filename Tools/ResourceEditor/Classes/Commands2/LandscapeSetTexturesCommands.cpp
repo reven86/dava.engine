@@ -32,38 +32,6 @@
 #include "../Qt/Scene/SceneEditor2.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-LandscapeSetTexturesCommand::LandscapeSetTexturesCommand( Entity* _landscapeEntity,
-								Landscape::eTextureLevel _textureID,
-								const FilePath& _texturePath)
-								: Command2(CMDID_LANDSCAPE_SET_TEXTURE, "Set Landscape texture")
-{
-	landscape = FindLandscape(_landscapeEntity);
-	if(NULL == landscape)
-	{
-		return;
-	}
-	landscapeEntity = SafeRetain(_landscapeEntity);
-
-	textureID = _textureID;
-	originalTexturePath = landscape->GetTextureName(textureID);
-	newTexturePath = _texturePath;
-}
-
-LandscapeSetTexturesCommand::~LandscapeSetTexturesCommand()
-{
-	SafeRelease(landscapeEntity);
-}
-
-void LandscapeSetTexturesCommand::Undo()
-{
-	landscape->SetTexture(textureID, originalTexturePath);
-}
-
-void LandscapeSetTexturesCommand::Redo()
-{
-	landscape->SetTexture(textureID, newTexturePath);
-}
-
 LandscapeSetHeightMapCommand::LandscapeSetHeightMapCommand( Entity* _landscapeEntity,
 														   const FilePath& _heightMapPath,
 														   const AABBox3& _newLandscapeBox)

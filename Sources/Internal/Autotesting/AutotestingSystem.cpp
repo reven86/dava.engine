@@ -118,22 +118,14 @@ void AutotestingSystem::OnInit()
 
 String AutotestingSystem::GetDeviceName()
 { 
-	/*
-	if (AUTOTESTING_PLATFORM_NAME == "Windows")
+	if (AUTOTESTING_PLATFORM_NAME == "Android")
 	{
-		return "pc";
-	}
-	else if (AUTOTESTING_PLATFORM_NAME == "MacOS")
-	{
-		return "macbook";
+		return DeviceInfo::GetModel();
 	}
 	else
 	{
-		return Format("%s", DeviceInfo::GetName());
-	}
-	*/
-	
-	return WStringToString(DeviceInfo::GetName());
+		return WStringToString(DeviceInfo::GetName());
+	}	
 }
 // Get test parameters from id.tx
 void AutotestingSystem::FetchParametersFromIdTxt()
@@ -391,10 +383,10 @@ void AutotestingSystem::Draw()
         for(Map<int32, UIEvent>::iterator it = touches.begin(); it != touches.end(); ++it)
         {
             Vector2 point = it->second.point;
-            RenderHelper::Instance()->DrawCircle(point, 25.0f);
+            RenderHelper::Instance()->DrawCircle(point, 25.0f, RenderState::RENDERSTATE_2D_BLEND);
         }
     }
-    RenderHelper::Instance()->DrawCircle(GetMousePosition(), 15.0f);
+    RenderHelper::Instance()->DrawCircle(GetMousePosition(), 15.0f, RenderState::RENDERSTATE_2D_BLEND);
 }
 
 void AutotestingSystem::OnTestsSatrted()

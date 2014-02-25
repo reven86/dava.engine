@@ -51,24 +51,4 @@ protected:
 	DAVA::FilePath daePath;
 };
 
-
-class DAEConvertWithSettingsAction: public DAEConvertAction
-{
-public:
-	DAEConvertWithSettingsAction(const DAVA::FilePath &path);
-    
-protected:
-
-    virtual void ConvertFromSceToSc2() const;
-
-    static DAVA::Scene * CreateSceneFromSc2(const DAVA::FilePath &scenePathname);
-
-    static void TryToMergeScenes(const DAVA::FilePath &originalPath, const DAVA::FilePath &newPath);
-    
-	static void CopyGeometryRecursive(DAVA::Entity *srcEntity, DAVA::Entity *dstEntity);
-	static void CopyGeometry(DAVA::Entity *srcEntity, DAVA::Entity *dstEntity);
-
-	static bool CopyRenderObjects(DAVA::RenderObject *srcRo, DAVA::RenderObject *dstRo);
-};
-
 #endif // __RESOURCEEDITORQT__DAECONVERTACTION__

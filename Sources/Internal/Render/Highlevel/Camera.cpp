@@ -227,7 +227,7 @@ Vector2 Camera::GetOnScreenPosition(const Vector3 &forPoint, const Rect & viewpo
 Vector3 Camera::GetOnScreenPositionAndDepth(const Vector3 & forPoint, const Rect & viewport)
 {
 	Vector4 pv(forPoint);
-	pv = pv * GetUniformProjModelMatrix();
+	pv = pv * GetViewProjMatrix();
 	//    return Vector2((viewport.dx * 0.5f) * (1.f + pv.x/pv.w) + viewport.x
 	//                   , (viewport.dy * 0.5f) * (1.f + pv.y/pv.w) + viewport.y);
 
@@ -236,7 +236,7 @@ Vector3 Camera::GetOnScreenPositionAndDepth(const Vector3 & forPoint, const Rect
 
 }
 
-const Matrix4 &Camera::GetUniformProjModelMatrix()
+const Matrix4 &Camera::GetViewProjMatrix()
 {
     if (flags & REQUIRE_REBUILD)
     {
@@ -244,122 +244,73 @@ const Matrix4 &Camera::GetUniformProjModelMatrix()
     }
     if (flags & REQUIRE_REBUILD_PROJECTION)
     {
-        RecalcFrustum();
+        RebuildProjectionMatrix();
     }
     if (flags & REQUIRE_REBUILD_MODEL)
     {
-        RecalcTransform();
+        RebuildViewMatrix();
     }
     if (flags & REQUIRE_REBUILD_UNIFORM_PROJ_MODEL)
     {
-        uniformProjModelMatrix = modelMatrix * projMatrix;
+        viewProjMatrix = viewMatrix * projMatrix;
         flags &= ~REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
     }
     
-    return uniformProjModelMatrix;
+    return viewProjMatrix;
 }
 
-void Camera::RecalcFrustum()
+void Camera::RebuildProjectionMatrix()
 {
     flags &= ~REQUIRE_REBUILD_PROJECTION;
     flags |= REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
+    
+    float32 xMinOrientation = xmin;
+    float32 xMaxOrientation = xmax;
+    float32 yMinOrientation = ymin;
+    float32 yMaxOrientation = ymax;
+    
+    uint32 cullInvert = 0;
+    
+    if (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_TEXTURE)
+    {
+        yMinOrientation = ymax;
+        yMaxOrientation = ymin;
+        cullInvert = 1 - cullInvert; // Invert once if we render to FBO
+    }
+    if (flags & INVERT_CULL)
+        cullInvert = 1 - cullInvert;    // Invert twice if we want to invert the faces for rendering purpose (for example shadow maps, or water reflection)
+    
+    // Set correct drawing order according to FBO config + camera requirements
+    if (cullInvert == 0)
+        RenderManager::Instance()->SetCullOrder(ORDER_CCW);
+    else
+        RenderManager::Instance()->SetCullOrder(ORDER_CW);
+    
     if (!ortho) 
     {
-        projMatrix.glFrustum(xmin, xmax, ymin, ymax, znear, zfar);
+        projMatrix.glFrustum(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar);
     }
     else
     {
-        projMatrix.glOrtho(xmin, xmax, ymin, ymax, znear, zfar);
+        projMatrix.glOrtho(xMinOrientation, xMaxOrientation, yMinOrientation, yMaxOrientation, znear, zfar);
     }
 }
 
-void Camera::RecalcTransform()
+void Camera::RebuildViewMatrix()
 {
     flags &= ~REQUIRE_REBUILD_MODEL;
     flags |= REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
     
-	if (RenderManager::Instance()->GetRenderOrientation()==Core::SCREEN_ORIENTATION_TEXTURE)
-	{
-        modelMatrix = Matrix4::IDENTITY;
-        modelMatrix.CreateRotation(Vector3(0.0f, 0.0f, 1.0f), DegToRad(180.0f));
-        modelMatrix = cameraTransform * modelMatrix;
-        
-    }
-    else
-    {
-        modelMatrix = cameraTransform;   
-    }
-}
-
-    
-void Camera::ApplyFrustum()
-{
-    if (flags & REQUIRE_REBUILD_PROJECTION)
-    {
-        RecalcFrustum();
-    }
-
-    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_PROJECTION, projMatrix);
-    
-    /*  Boroda: Matrix Extract Snippet
-     
-     float32 proj[16];
-     glGetFloatv(GL_PROJECTION_MATRIX, proj);
-     
-     Matrix4 frustumMatrix;
-     frustumMatrix.glFrustum(xmin, xmax, ymin, ymax, znear, zfar);
-     glLoadMatrixf(frustumMatrix.data);
-     
-     for (int32 k = 0; k < 16; ++k)
-     {
-        printf("k:%d - %0.3f = %0.3f\n", k, proj[k], frustumMatrix.data[k]);
-     }
-
-     */
-//	glMatrixMode(GL_PROJECTION);
-//	glLoadIdentity();
-//#ifdef __DAVAENGINE_IPHONE__
-//	if (!ortho)
+//	if (RenderManager::Instance()->GetRenderOrientation()==Core::SCREEN_ORIENTATION_TEXTURE)
 //	{
-//		glFrustumf(xmin, xmax, ymin, ymax, znear, zfar);
-//	}
-//	else 
-//	{
-//		glOrthof(xmin, xmax, ymin, ymax, znear, zfar);
-//	}
-//#else
-//	if (!ortho)
-//	{
-//		glFrustum(xmin, xmax, ymin, ymax, znear, zfar);        
+//        viewMatrix = Matrix4::IDENTITY;
+//        viewMatrix.CreateScale(Vector3(1.0f, -1.0f, 1.0f));
+//        viewMatrix = viewMatrix * cameraTransform;
 //    }
-//	else 
-//	{
-//		glOrtho(xmin, xmax, ymin, ymax, znear, zfar);
-//	}
-//#endif
-}
-
-void Camera::ApplyTransform()
-{
-    if (flags & REQUIRE_REBUILD_MODEL)
-    {
-        RecalcTransform();
-    }
-        //glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
-    
-    //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, Matrix4::IDENTITY);
-
-	
-	// Xpen poymesh chto eto napisano
-	//glLoadMatrixf(localTransform.data);
-	// Matrix4 m = worldTransform;
-	// m.Inverse();
-	// cameraTransform =
-	
-    // Correct code from boroda // commented during refactoring
-    //glMultMatrixf(cameraTransform.data);
-	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, modelMatrix);
+//    else
+//    {
+    viewMatrix = cameraTransform;
+//    }
 }
 
 void Camera::SetPosition(const Vector3 & _position)
@@ -422,7 +373,7 @@ const Vector3 & Camera::GetLeft() const
     
 const Matrix4 & Camera::GetMatrix() const 
 {
-    return modelMatrix;
+    return viewMatrix;
 }
 
 void Camera::RebuildCameraFromValues()
@@ -465,19 +416,43 @@ void Camera::LookAt(Vector3	position, Vector3 view, Vector3 up)
 }
  */
 
-void Camera::Set()
+void Camera::SetupDynamicParameters()
 {
 	flags = REQUIRE_REBUILD | REQUIRE_REBUILD_MODEL | REQUIRE_REBUILD_PROJECTION;
     if (flags & REQUIRE_REBUILD)
     {
         RebuildCameraFromValues();
     }
-	ApplyFrustum();
-	ApplyTransform();
+	// ApplyFrustum();
+    if (flags & REQUIRE_REBUILD_PROJECTION)
+    {
+        RebuildProjectionMatrix();
+    }
+
+    if (flags & REQUIRE_REBUILD_MODEL)
+    {
+        RebuildViewMatrix();
+    }
     
+    viewProjMatrix = viewMatrix * projMatrix;
+    flags &= ~REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
+
+    viewMatrix.GetInverse(invViewMatrix);
+    viewProjMatrix.GetInverse(invViewProjMatrix);
+    
+	RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_VIEW_PROJ, &viewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_INV_VIEW, &invViewMatrix, UPDATE_SEMANTIC_ALWAYS);
+	RenderManager::SetDynamicParam(PARAM_INV_VIEW_PROJ, &invViewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
+
+    RenderManager::SetDynamicParam(PARAM_CAMERA_POS, &position, UPDATE_SEMANTIC_ALWAYS);
+	RenderManager::SetDynamicParam(PARAM_CAMERA_DIR, &direction, UPDATE_SEMANTIC_ALWAYS);
+	RenderManager::SetDynamicParam(PARAM_CAMERA_UP, &up, UPDATE_SEMANTIC_ALWAYS);
+
     if (currentFrustum)
     {
-        currentFrustum->Build();
+        currentFrustum->Build(viewProjMatrix);
     }
 }
 
@@ -527,6 +502,13 @@ float32 Camera::GetZoomFactor() const
     return zoomFactor;
 }
 
+void Camera::SetCullInvert(bool enabled)
+{
+    if (enabled)
+        flags |= INVERT_CULL;
+    else
+        flags &= ~INVERT_CULL;
+}
 
     
 void Camera::Draw()
@@ -538,7 +520,7 @@ Vector3 Camera::UnProject(float32 winx, float32 winy, float32 winz, const Rect &
 {
 //	Matrix4 finalMatrix = modelMatrix * projMatrix;//RenderManager::Instance()->GetUniformMatrix(RenderManager::UNIFORM_MATRIX_MODELVIEWPROJECTION);
     
-    Matrix4 finalMatrix = GetUniformProjModelMatrix();
+    Matrix4 finalMatrix = GetViewProjMatrix();
 	finalMatrix.Inverse();		
 
 	Vector4 in(winx, winy, winz, 1.0f);
@@ -610,7 +592,7 @@ void Camera::Save(KeyedArchive * archive)
 
     archive->SetByteArrayAsType("cam.cameraTransform", cameraTransform);
 
-    archive->SetByteArrayAsType("cam.modelMatrix", modelMatrix);
+    archive->SetByteArrayAsType("cam.modelMatrix", viewMatrix);
     archive->SetByteArrayAsType("cam.projMatrix", projMatrix);
 }
 
@@ -637,7 +619,7 @@ void Camera::Load(KeyedArchive * archive)
     direction = archive->GetByteArrayAsType("cam.direction", direction);
 
     cameraTransform = archive->GetByteArrayAsType("cam.cameraTransform", cameraTransform);
-    modelMatrix = archive->GetByteArrayAsType("cam.modelMatrix", modelMatrix);
+    viewMatrix = archive->GetByteArrayAsType("cam.modelMatrix", viewMatrix);
     projMatrix = archive->GetByteArrayAsType("cam.projMatrix", projMatrix);
 }
 
@@ -693,9 +675,9 @@ void Camera::CopyMathOnly(const Camera & c)
     direction = c.direction;
     
     cameraTransform = c.cameraTransform;
-    modelMatrix = c.modelMatrix;
+    viewMatrix = c.viewMatrix;
     projMatrix = c.projMatrix;
-    uniformProjModelMatrix = c.uniformProjModelMatrix;
+    viewProjMatrix = c.viewProjMatrix;
     flags = c.flags;
 }
 

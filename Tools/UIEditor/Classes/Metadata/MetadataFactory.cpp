@@ -45,6 +45,7 @@
 #include "UIAggregatorMetadata.h"
 #include "UISwitchMetadata.h"
 #include "UIScrollBarMetadata.h"
+#include "UIParticlesMetadata.h"
 
 #include "HierarchyTreePlatformNode.h"
 #include "HierarchyTreeScreenNode.h"
@@ -127,6 +128,12 @@ BaseMetadata* MetadataFactory::GetMetadataForUIControl(const UIControl* uiContro
 	{
 		return new UIAggregatorMetadata();
 	}
+
+    if (dynamic_cast<const UIParticles*>(uiControl))
+	{
+		return new UIParticlesMetadata();
+	}
+
     // Add metadata for other Controls here.
 
     return new UIControlMetadata();

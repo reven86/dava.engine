@@ -331,6 +331,12 @@ namespace DAVA
 	{
 		return new InspPropParamSimple<TT, DAVA::uint32>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::uint32>(), _g, _s, _flags);
 	}
+    
+//  template<typename TT>
+//	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::uint32 (TT::*_g)() const, void (TT::*_s)(DAVA::uint32), int _flags)
+//	{
+//		return new InspPropParamSimple<TT, DAVA::uint32>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::uint32>(), _g, _s, _flags);
+//	}
 
 	template<typename TT>
 	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::int64 (TT::*_g)(), void (TT::*_s)(DAVA::int64), int _flags)

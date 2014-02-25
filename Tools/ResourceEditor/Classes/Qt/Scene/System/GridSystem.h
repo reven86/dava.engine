@@ -35,6 +35,9 @@
 
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
+#include "Base/Introspection.h"
+
+#include "Render/RenderManager.h"
 
 class SceneGridSystem : public DAVA::SceneSystem
 {
@@ -64,6 +67,10 @@ public:
 		gridStep = value;
 	}
 
+	INTROSPECTION(SceneGridSystem,
+		PROPERTY("gridStep", "gridStep", GetGridStep, SetGridStep, DAVA::I_VIEW | DAVA::I_EDIT)
+		)
+
 protected:
 	virtual void Update(float timeElapsed);
 	void Draw();
@@ -73,6 +80,8 @@ protected:
 	
 	float gridMax;
 	float gridStep;
+	
+	DAVA::UniqueHandle renderState;
 };
 
 #endif

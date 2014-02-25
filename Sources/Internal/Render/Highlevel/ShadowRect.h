@@ -33,42 +33,45 @@
 
 #include "Base/StaticSingleton.h"
 #include "Render/Shader.h"
+#include "Base/FastName.h"
 
 namespace DAVA
 {
-
-class RenderDataObject;
-class RenderDataStream;
-class Scene;
-class ShadowRect : public BaseObject
-{
-protected:
-	virtual ~ShadowRect();
-public:
-	static ShadowRect * Create();
-
-	void Draw();
-    
-    void SetColor(const Color &color);
-    const Color & GetColor() const;
-
-private:
-	ShadowRect();
-
-	RenderDataObject * rdo;
-	RenderDataStream * vertexStream;
-
-	Shader * shader;
-
-	float32 vertices[12];
-
-	static ShadowRect * instance;
-    
-    Color shadowColor;
-    int32 uniformShadowColor;
-
-};
-
+	
+	class RenderDataObject;
+	class RenderDataStream;
+	class Scene;
+	class ShadowRect : public BaseObject
+	{
+        static FastName SHADOW_RECT_SHADER;
+	protected:
+		virtual ~ShadowRect();
+		
+	public:
+		static ShadowRect * Create();
+		
+		void Draw();
+		
+		void SetColor(const Color &color);
+		const Color & GetColor() const;
+		
+	private:
+		
+		ShadowRect();
+		
+		RenderDataObject * rdo;
+		RenderDataStream * vertexStream;
+		
+		Shader * shader;
+		
+		float32 vertices[12];
+		
+		static ShadowRect * instance;
+		
+		Color shadowColor;
+		int32 uniformShadowColor;
+	};
+	
 };
 
 #endif //__DAVAENGINE_SHADOW_RECT_H__

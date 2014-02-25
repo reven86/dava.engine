@@ -45,6 +45,7 @@
 #include "UIStaticTextMetadata.h"
 #include "UISwitchMetadata.h"
 #include "UITextFieldMetadata.h"
+#include "UIParticlesMetadata.h"
 
 using namespace DAVA;
 
@@ -97,6 +98,9 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
 	
 	scrollViewWidget = new ScrollViewPropertyGridWidget();
 	registeredWidgets.push_back(scrollViewWidget);
+    
+    particleWidget = new ParticleEffectPropertyGridWidget();
+    registeredWidgets.push_back(particleWidget);
 }
 
 PropertyGridWidgetsFactory::~PropertyGridWidgetsFactory()
@@ -258,6 +262,20 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         resultList.push_back(rectWidget);
 		resultList.push_back(alignWidget);
 		resultList.push_back(scrollWidget);
+        resultList.push_back(backgroundWidget);
+        resultList.push_back(flagsWidget);
+        
+        return resultList;
+	}
+
+    // UIParticles
+	const UIParticlesMetadata* uiParticlesMetadata = dynamic_cast<const UIParticlesMetadata*>(metaData);
+	if (uiParticlesMetadata)
+	{
+		resultList.push_back(controlWidget);
+        resultList.push_back(rectWidget);
+		resultList.push_back(alignWidget);
+		resultList.push_back(particleWidget);
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
         

@@ -296,7 +296,7 @@
 		A698542117CE38BF001E9FDE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0500;
 			};
 			buildConfigurationList = A698542417CE38C0001E9FDE /* Build configuration list for PBXProject "FrameworkTools" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -376,7 +376,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
@@ -425,7 +424,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++98";
 				CLANG_CXX_LIBRARY = "libstdc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;

@@ -45,7 +45,8 @@ UIScrollView::UIScrollView(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 	scrollHorizontal(new ScrollHelper()),
 	scrollVertical(new ScrollHelper())
 {
-	inputEnabled = true;
+    SetInputEnabled(false, false);
+    SetFocusEnabled(false);
 	multiInput = true;
 	SetClipContents(true);
 	

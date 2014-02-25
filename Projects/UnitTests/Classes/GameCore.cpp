@@ -61,6 +61,8 @@
 #include "UIScrollViewTest.h"
 #include "ThreadSyncTest.h"
 #include "UIMovieTest.h"
+#include "ComponentsTest.h"
+#include "RectSpriteTest.h"
 
 using namespace DAVA;
 
@@ -86,40 +88,42 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
-	new UIMovieTest();
-	
-	new InputTest();
-	
-    new FormatsTest();
-	new DeviceInfoTest();
-	new TransparentWebViewTest();
+    new RectSpriteTest();
+
+	new ComponentsTest();
     new FilePathTest();
     new FileListTest();
     new FileSystemTest();
-    new LocalizationTest();
-
-	new SampleTest();
-	new EntityTest(); 
-	new MemoryAllocatorsTest();
-	new HashMapTest();
-//	new SoundTest();
-	new SplitTest();
-	new AlignTest();
-	new EMailTest();
-	new DPITest();
-	new MaterialCompilerTest();
-	new CloneTest();
-	new PVRTest();
-	new DXTTest();
-	new EntityTest();	
-	new MemoryAllocatorsTest();
-	new HashMapTest();
-	new KeyedArchiveYamlTest();
-	new DLCTest();
-	new UIListTest();
-	new UIScrollViewTest();
-
-    new ThreadSyncTest();
+    
+ 	new UIMovieTest();
+ 	new InputTest();
+     new FormatsTest();
+ 	new DeviceInfoTest();
+ 	new TransparentWebViewTest();
+     new LocalizationTest();
+ 
+ 	new SampleTest();
+ 	new EntityTest(); 
+ 	new MemoryAllocatorsTest();
+ 	new HashMapTest();
+ //	new SoundTest();
+ 	new SplitTest();
+ 	new AlignTest();
+ 	new EMailTest();
+ 	new DPITest();
+ 	new MaterialCompilerTest();
+ 	new CloneTest();
+ 	new PVRTest();
+ 	new DXTTest();
+ 	new EntityTest();	
+ 	new MemoryAllocatorsTest();
+ 	new HashMapTest();
+ 	new KeyedArchiveYamlTest();
+ 	new DLCTest();
+ 	new UIListTest();
+ 	new UIScrollViewTest();
+ 
+     new ThreadSyncTest();
     
     errors.reserve(TestCount());
 

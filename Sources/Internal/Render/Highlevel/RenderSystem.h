@@ -36,6 +36,9 @@
 #include "Entity/SceneSystem.h"
 #include "Render/Highlevel/IRenderUpdatable.h"
 #include "Render/Highlevel/SpatialTree.h"
+#include "Render/Highlevel/RenderLayerManager.h"
+#include "Render/Highlevel/RenderPassManager.h"
+#include "Render/Highlevel/ShadowBlendMode.h"
 
 namespace DAVA
 {
@@ -47,15 +50,26 @@ class Entity;
 class Camera;
 class Light;
 class ParticleEmitterSystem;
-    
+class RenderHierarchy;
+class RenderPassBatchArray;
+class NMaterial;
+class NMaterialProperty;
 
-    
 class RenderSystem
 {
 public:
     RenderSystem();
     virtual ~RenderSystem();
     
+    /**
+        \brief Get Render Pass Manager to have ability to get all render passes from RenderSystem.
+     */
+    const RenderPassManager * GetRenderPassManager() const { return &renderPassManager; };
+    /**
+        \brief Get Render Hierarchy. It allow you to work with current render hierarchy and perform all main tasks with geometry on the level.
+     */
+    RenderHierarchy * GetRenderHierarchy() const {return renderHierarchy; }
+
     /**
         \brief Register render objects for permanent rendering
      */
@@ -75,13 +89,27 @@ public:
         \brief Render this batch only on this frame.
      */
     void RenderOnce(RenderBatch * renderBatch);
+    
+    /**
+        \brief Register batch
+     */
+    void RegisterBatch(RenderBatch * batch);
+    /**
+        \brief Unregister batch
+     */
+    void UnregisterBatch(RenderBatch * batch);
+    
+    void RegisterMaterial(NMaterial * material);
+    void UnregisterMaterial(NMaterial * material);
+    
 
     /**
         \brief Set main camera
      */
-    void SetCamera(Camera * camera);
-
-	Camera * GetCamera();
+    inline void SetCamera(Camera * camera);
+	inline Camera * GetCamera() const;
+    inline void SetClipCamera(Camera * camera);
+	inline Camera * GetClipCamera() const;
     
     
     void Update(float32 timeElapsed);
@@ -102,25 +130,20 @@ public:
     void AddLight(Light * light);
     void RemoveLight(Light * light);
     Vector<Light*> & GetLights();
+    void SetForceUpdateLights();
 
-	RenderLayer * AddRenderLayer(const FastName & layerName, const FastName & passName, const FastName & afterLayer);
-
-	void AddRenderBatch(RenderBatch * renderBatch);
-	void RemoveRenderBatch(RenderBatch * renderBatch);
-    
-	RenderPass * GetRenderPass(const FastName & passName);
+	//RenderLayer * AddRenderLayer(const FastName & layerName, uint32 sortingFlags, const FastName & passName, const FastName & afterLayer);
+	//RenderPass * GetRenderPass(const FastName & passName);
     
     void SetShadowRectColor(const Color &color);
-    const Color & GetShadowRectColor();
-
-	void DebugDrawSpatialTree();
-    
-	void CreateSpatialTree(const AABBox3 &worldBox, int32 maxTreeDepth);
-	void CreateSpatialTree();
-	void RemoveSpatialTree();
-
-private:
+    const Color & GetShadowRectColor() const;
+	void SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode);
+	ShadowPassBlendMode::eBlend GetShadowBlendMode();
 	
+	void DebugDrawHierarchy(const Matrix4& cameraMatrix);
+    
+private:
+	void CreateSpatialTree();
     void ProcessClipping();
     void FindNearestLights();
     void FindNearestLights(RenderObject * renderObject);
@@ -128,35 +151,54 @@ private:
     
     void RemoveRenderObject(RenderObject * renderObject);
     
-    void ImmediateUpdateRenderBatch(RenderBatch * renderBatch);
-    
-    
     Vector<IRenderUpdatable*> objectsForUpdate;
     Vector<RenderObject*> objectsForPermanentUpdate;
     Vector<RenderObject*> markedObjects;
-    List<Light*> movedLights;
+    Vector<Light*> movedLights;
     Vector<RenderPass*> renderPassOrder;
-    //Vector<RenderLayer*> renderLayers;
     
-    FastNameMap<RenderPass*> renderPassesMap;
-    FastNameMap<RenderLayer*> renderLayersMap;
+    RenderPassManager renderPassManager;
     
-    Vector<RenderObject*> renderObjectArray;
-	Vector<RenderObject*> particleEmitterArray;
+    
+    Vector<RenderObject*> renderObjectArray;	
     Vector<Light*> lights;
-    //Vector<AABBox> transformedBBox;
-    //Vector<BSphere> transformedBSphere;
+    bool forceUpdateLights;
     
-    //HashMap<Entity*, RenderObject *> entityObjectMap;
-    Camera * camera;
-    //Vector<RenderObject*> forRemove;
-    
-	ParticleEmitterSystem * particleEmitterSystem;
+    RenderHierarchy * renderHierarchy;
+	bool hierarchyInitialized;
 
-	AbstractSpatialTree *spatialTree;
+    RenderPassBatchArray * globalBatchArray;
+    VisibilityArray visibilityArray;
     
+    Camera * camera;
+    Camera * clipCamera;
+
     friend class RenderPass;
 };
+    
+    
+    
+inline void RenderSystem::SetCamera(Camera * _camera)
+{
+    SafeRelease(camera);
+    camera = SafeRetain(_camera);
+}
+
+inline void RenderSystem::SetClipCamera(Camera * _camera)
+{
+    SafeRelease(clipCamera);
+    clipCamera = SafeRetain(_camera);
+}
+
+inline Camera * RenderSystem::GetCamera() const
+{
+    return camera;
+}
+
+inline Camera * RenderSystem::GetClipCamera() const
+{
+    return clipCamera;
+}
     
 } // ns
 

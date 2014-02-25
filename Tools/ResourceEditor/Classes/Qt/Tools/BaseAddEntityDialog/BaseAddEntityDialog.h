@@ -34,9 +34,10 @@
 #include <QDialog.h>
 #include "DAVAEngine.h"
 #include "Scene3D/Entity.h"
-#include "DockProperties/PropertyEditorDialog.h"
 #include <QDialogButtonBox>
 
+#include "Scene/SceneEditor2.h"
+#include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 
 class DAVA::Entity;
@@ -67,9 +68,10 @@ public:
 	void virtual SetEntity(DAVA::Entity* );
 	
 	void AddButton( QWidget* widget, eButtonAlign orientation = BUTTON_ALIGN_LEFT);
+	void AddButton( QWidget* widget, int32 position);
 
 protected slots:
-	virtual void OnItemEdited(const QString &name, QtPropertyData *data);
+	virtual void OnItemEdited(const QModelIndex &);
     virtual void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
     
 

@@ -44,7 +44,7 @@ UIJoypad::UIJoypad(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 ,	mainTouch(TOUCH_INVALID_ID)
 ,   stick(NULL)
 {
-	inputEnabled = true;
+    SetInputEnabled(true, false);
 }
     
 UIJoypad::~UIJoypad()

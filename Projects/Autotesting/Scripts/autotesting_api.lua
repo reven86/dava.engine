@@ -4,11 +4,11 @@ DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT = 300 -- Multiplayer timeout
 
+
+
 -- API setup
 function SetPackagePath(path)
 	package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;"
-	
-	--require "logger"
 	require "coxpcall"
 end
 
@@ -100,20 +100,26 @@ function ResumeTest()
     end
 end
 
-function CreateTest(test)
+function CreateTest()
     --print("CreateTest")
-    co = coroutine.create(test) -- create a coroutine with foo as the entry
+    co = coroutine.create(function (func)
+			local status, err = copcall(func)
+			--print(status, err)
+			if not status then
+				OnError(err)
+			end
+		end) -- create a coroutine with foo as the entry
     autotestingSystem = AutotestingSystem.Singleton_Autotesting_Instance()
     
     --print(autotestingSystem:GetTimeElapsed())	
 end
 
 function StartTest(name, test)      
-    CreateTest(test)
+    CreateTest()
 	--print('StartTest')
 	--Yield()
 	autotestingSystem:OnTestStart(name)
-    Yield()
+    coroutine.resume(co, test)
 end
 
 function OnError(text)

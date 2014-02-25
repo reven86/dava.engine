@@ -40,6 +40,7 @@
 
 #include "CommandsController.h"
 #include "ChangePropertyCommand.h"
+#include "InvokeMethodCommand.h"
 
 BasePropertyGridWidget::BasePropertyGridWidget(QWidget *parent) :
     QWidget(parent),
@@ -259,8 +260,8 @@ void BasePropertyGridWidget::RegisterPushButtonWidgetForProperty(const PROPERTIE
     connect(pushButtonWidget, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
 }
 
-void BasePropertyGridWidget::RegisterColorButtonWidgetForProperty(const PROPERTIESMAP &propertiesMap, const char *propertyName,
-                                                                  QColorButton *colorButtonWidget,
+void BasePropertyGridWidget::RegisterColorWidgetForProperty(const PROPERTIESMAP &propertiesMap, const char *propertyName,
+                                                                  QColorWidget *colorWidget,
                                                                   bool needUpdateTree, bool stateAware)
 {
     PROPERTIESMAPCONSTITER iter = propertiesMap.find(propertyName);
@@ -271,13 +272,19 @@ void BasePropertyGridWidget::RegisterColorButtonWidgetForProperty(const PROPERTI
     }
     
     const QMetaProperty& curProperty = iter->second;
-    propertyGridWidgetsMap.insert(std::make_pair(colorButtonWidget, PropertyGridWidgetData(curProperty,
+    propertyGridWidgetsMap.insert(std::make_pair(colorWidget, PropertyGridWidgetData(curProperty,
                                                                                            needUpdateTree, stateAware)));
     
-    UpdateColorButtonWidgetWithPropertyValue(colorButtonWidget, curProperty);
+    UpdateColorWidgetWithPropertyValue(colorWidget, curProperty);
     
     // Register the signal for this widget.
-    connect(colorButtonWidget, SIGNAL(clicked()), this, SLOT(OnColorButtonClicked()));
+    connect(colorWidget, SIGNAL(colorChanged(const QColor&)), this, SLOT(OnColorChanged(const QColor&)));
+}
+
+void BasePropertyGridWidget::RegisterPushButtonWidgetForInvokeMethod(QPushButton *pushButton, const String& methodName)
+{
+    invokableMethodsMap.insert(std::make_pair(pushButton, methodName));
+    connect(pushButton, SIGNAL(clicked()), this, SLOT(OnInvokeMethodRequested()));
 }
 
 void BasePropertyGridWidget::UnregisterLineEditWidget(QLineEdit* lineEdit)
@@ -310,9 +317,14 @@ void BasePropertyGridWidget::UnregisterPushButtonWidget(QPushButton *pushButtonW
     disconnect(pushButtonWidget, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
 }
 
-void BasePropertyGridWidget::UnregisterColorButtonWidget(QColorButton* colorButtonWidget)
+void BasePropertyGridWidget::UnregisterPushButtonWidgetForInvokeMethod(QPushButton *pushButton)
 {
-    disconnect(colorButtonWidget, SIGNAL(clicked()), this, SLOT(OnColorButtonClicked()));
+    disconnect(pushButton, SIGNAL(clicked()), this, SLOT(OnInvokeMethodRequested()));
+}
+
+void BasePropertyGridWidget::UnregisterColorWidget(QColorWidget* colorWidget)
+{
+    disconnect(colorWidget, SIGNAL(colorChanged(const QColor&)), this, SLOT(OnColorChanged(const QColor&)));
 }
 
 void BasePropertyGridWidget::OnLineEditEditingFinished()
@@ -485,7 +497,7 @@ void BasePropertyGridWidget::OnComboBoxValueChanged(QString value)
     ProcessComboboxValueChanged(senderWidget, iter, value);
 }
 
-void BasePropertyGridWidget::OnColorButtonClicked()
+void BasePropertyGridWidget::OnColorChanged(const QColor& color)
 {
     if (activeMetadata == NULL)
     {
@@ -493,10 +505,10 @@ void BasePropertyGridWidget::OnColorButtonClicked()
         return;
     }
 
-    QColorButton* senderWidget = dynamic_cast<QColorButton*>(QObject::sender());
+    QColorWidget* senderWidget = dynamic_cast<QColorWidget*>(QObject::sender());
     if (senderWidget == NULL)
     {
-        Logger::Error("OnSelectColorButtonClicked - sender is NULL!");
+        Logger::Error("OnColorChanged - sender is NULL!");
         return;
     }
 
@@ -504,18 +516,10 @@ void BasePropertyGridWidget::OnColorButtonClicked()
 
 	if (iter == propertyGridWidgetsMap.end())
     {
-        Logger::Error("OpenSelectColorDialog - unable to find attached property in the propertyGridWidgetsMap!");
+        Logger::Error("OnColorChanged - unable to find attached property in the propertyGridWidgetsMap!");
         return;
     }
 
-	QColor propertyValue = PropertiesHelper::GetPropertyValue<QColor>(this->activeMetadata, iter->second.getProperty().name(), false);
-
-    QColor color = QColorDialog::getColor(propertyValue, this, "Select a color",  QColorDialog::DontUseNativeDialog | QColorDialog::ShowAlphaChannel);
-    if (color.isValid() == false)
-    {
-        return;
-    }
-        
     BaseCommand* command = new ChangePropertyCommand<QColor>(activeMetadata, iter->second, color);
     CommandsController::Instance()->ExecuteCommand(command);
     SafeRelease(command);
@@ -531,6 +535,38 @@ void BasePropertyGridWidget::OnPushButtonClicked()
     }
     
     ProcessPushButtonClicked(senderWidget);
+}
+
+void BasePropertyGridWidget::OnInvokeMethodRequested()
+{
+    QPushButton* senderWidget = dynamic_cast<QPushButton*>(QObject::sender());
+    if (senderWidget == NULL)
+    {
+        Logger::Error("OnInvokeMethodRequested - sender is NULL!");
+        return;
+    }
+
+    Map<QWidget*, String>::iterator iter = invokableMethodsMap.find(senderWidget);
+    if (iter == invokableMethodsMap.end())
+    {
+        Logger::Error("OnInvokeMethodRequested - no method registered for this control!");
+        return;
+    }
+
+    ProcessInvokeMethodRequested(senderWidget, iter->second);
+}
+
+void BasePropertyGridWidget::ProcessInvokeMethodRequested(QWidget* /*widget*/, const String& methodName)
+{
+    if (!activeMetadata)
+    {
+        Logger::Error("ProcessInvokeMethodRequested - active metadata is not set!");
+        return;
+    }
+    
+    InvokeMethodCommand* command = new InvokeMethodCommand(activeMetadata, methodName);
+    CommandsController::Instance()->ExecuteCommand(command);
+    SafeRelease(command);
 }
 
 void BasePropertyGridWidget::ProcessAttachedData(const PropertyGridWidgetData& attachedData)
@@ -604,10 +640,10 @@ void BasePropertyGridWidget::UpdateWidgetWithPropertyValue(const PROPERTYGRIDWID
         return;
     }
 
-    QColorButton* colorButtonWidget = dynamic_cast<QColorButton*>(widget);
-    if (colorButtonWidget)
+    QColorWidget* colorWidget = dynamic_cast<QColorWidget*>(widget);
+    if (colorWidget)
     {
-        UpdateColorButtonWidgetWithPropertyValue(colorButtonWidget, iter->second.getProperty());
+        UpdateColorWidgetWithPropertyValue(colorWidget, iter->second.getProperty());
         return;
     }
 
@@ -705,7 +741,7 @@ void BasePropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox *, 
     Logger::Error("BasePropertyGridWidget::ProcessComboboxValueChanged is called - you've forgot to create custom handler for some combo!!!");
 }
 
-void BasePropertyGridWidget::UpdateColorButtonWidgetWithPropertyValue(QColorButton *colorButtonWidget, const QMetaProperty &curProperty)
+void BasePropertyGridWidget::UpdateColorWidgetWithPropertyValue(QColorWidget *colorWidget, const QMetaProperty &curProperty)
 {
     // Get the current value.
     bool isPropertyValueDiffers = false;
@@ -713,11 +749,11 @@ void BasePropertyGridWidget::UpdateColorButtonWidgetWithPropertyValue(QColorButt
                                                           curProperty.name(), isPropertyValueDiffers);
     {
         //Set background color
-        WidgetSignalsBlocker blocker(colorButtonWidget);
-        colorButtonWidget->SetBackgroundColor(propertyValue);
+        WidgetSignalsBlocker blocker(colorWidget);
+        colorWidget->SetBackgroundColor(propertyValue);
 
         //Set background image if property is not equal to property for normal state
-        colorButtonWidget->SetDisplayMultipleColors(IsActiveStatePropertyDirty(curProperty.name()));
+        colorWidget->SetDisplayMultipleColors(IsActiveStatePropertyDirty(curProperty.name()));
     }
 }
 
@@ -751,6 +787,16 @@ void BasePropertyGridWidget::SetComboboxSelectedItem(QComboBox* comboBoxWidget, 
     if ( index != -1 )
     {
         comboBoxWidget->setCurrentIndex(index);
+    }
+}
+
+void BasePropertyGridWidget::OnPropertiesChangedFromExternalSource()
+{
+    // Re-read all the properties related to this grid.
+    for (PROPERTYGRIDWIDGETSITER iter = this->propertyGridWidgetsMap.begin();
+         iter != this->propertyGridWidgetsMap.end(); iter ++)
+    {
+        UpdateWidgetWithPropertyValue(iter);
     }
 }
 

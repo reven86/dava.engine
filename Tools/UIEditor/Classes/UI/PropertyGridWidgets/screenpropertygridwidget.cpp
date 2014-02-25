@@ -38,6 +38,8 @@ ScreenPropertyGridWidget::ScreenPropertyGridWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     SetPropertyBlockName(RECT_PROPERTY_BLOCK_NAME);
+
+    ui->screenNameLineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
 }
 
 ScreenPropertyGridWidget::~ScreenPropertyGridWidget()

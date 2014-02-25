@@ -36,98 +36,35 @@
 
 namespace DAVA 
 {
-// Hepler class to store Force-specific data.
-class ForceData
-{
-public:
-	ForceData(float32 forceValue, const Vector3& forceDirection, float32 forceOverlife,
-			  bool forceOverlifeEnabled);
-
-	float32 value;
-	Vector3 direction;
-	float32 overlife;
-	bool overlifeEnabled;
-};
-
-class Sprite;
-class ParticleEmitter;
 	
-class Particle
+struct Particle
 {
-public:
-	IMPLEMENT_POOL_ALLOCATOR(Particle, 1000);
-
-	Particle();
-	virtual ~Particle();
-	
-	inline bool	IsDead();
-	bool	Update(float32 timeElapsed);
-	void	Draw();
-
-	Sprite * sprite;
+	IMPLEMENT_POOL_ALLOCATOR(Particle, 1000);	
+		
 	Particle * next;
 
-	Color color;
-	Color drawColor;
-	Vector3 position;
-	Vector2 size;
+	float32 life;
+	float32 lifeTime;
 
-	//Vector3 direction;
+	Vector3 position;
 	Vector3 speed;
 
 	float32 angle;
 	float32 spin;
 
-	float32 life;			// in seconds
-	float32 lifeTime;		// in seconds
-
-	Vector2 sizeOverLife;
-	float32 velocityOverLife;
-	float32 spinOverLife;
-
-	// Add the new force,
-	void AddForce(float32 value, const Vector3& direction, float32 overlife, bool overlifeEnabled);
-	
-	// Update the Force Overlife value.
-	void UpdateForceOverlife(int32 index, float32 overlife);
-
-	// Cleanup the existing forces.
-	void CleanupForces();
-
-	// Get the area currently occupied by particle.
-	float32 GetArea();
-
-	// YuriCoder, 2013/04/25. SuperEmitter functionality.
-	// Initialize/cleanup the inner emitter for Particle.
-	void InitializeInnerEmitter(ParticleEmitter* parentEmitter, ParticleEmitter* referenceEmitter);
-	void CleanupInnerEmitter();
-	ParticleEmitter* GetInnerEmitter();
-
 	int32	frame;
-	float32 animTime;
-	
-	friend class ParticleEmitter;
-	
-protected:
-	// Register/unregister Inner Emitter in Render Systtem.
-	void RegisterInnerEmitterInRenderSystem(bool isRegister);
+	float32 animTime;	
 
-	// Update the position of Inner Emitter.
-	void UpdateInnerEmitter(float32 timeElapsed);
+	float currRadius; //for bbox computation
+	Vector2 baseSize, currSize;
 
-	// Forces attached to Particle.
-	Vector<ForceData> forces;
-	
-	// Inner Particle Emitter.
-	ParticleEmitter* innerParticleEmitter;
+
+	Color color;	
+
+	int32 positionTarget; //superemitter particles only
 };
 
-// Implementation
-inline bool Particle::IsDead()
-{
-	return (life > lifeTime);
+
 }
-
-};
 
 #endif // __DAVAENGINE_PARTICLE_H__

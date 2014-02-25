@@ -1,1 +1,1 @@
---add4pixel --PowerVR_iOS PVR2 --adreno RGB565 --mali RGB565 --tegra RGB565 --PowerVR_Android RGB565
+--add4pixel --adreno RGB565 --mali RGB565 --tegra RGB565 --PowerVR_Android RGB565 --PowerVR_iOS PVR2

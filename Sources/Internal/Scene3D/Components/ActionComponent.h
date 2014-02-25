@@ -32,6 +32,7 @@
 #define __DAVAENGINE_ACTION_COMPONENT_H__
 
 #include "Entity/Component.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -63,7 +64,7 @@ namespace DAVA
 			eEvent eventType;
 			int32 switchIndex;
 			float32 delay;
-			String entityName;
+			FastName entityName;
 			//VI: properties needed to control particle effect
 			int32 stopAfterNRepeats;
 			bool stopWhenEmpty;
@@ -104,18 +105,18 @@ namespace DAVA
 		
 		void Add(ActionComponent::Action action);
 		void Remove(const ActionComponent::Action& action);
-		void Remove(const ActionComponent::Action::eType type, const String& entityName, const int switchIndex);
+		void Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex);
 		uint32 GetCount();
 		ActionComponent::Action& Get(uint32 index);
 		
 		void Update(float32 timeElapsed);
 		
 		virtual Component * Clone(Entity * toEntity);
-		virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
-		virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
+		virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
+		virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
 		
-		static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, String targetName, float32 delay);
-		static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, String targetName, float32 delay, int32 switchIndex);
+		static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay);
+		static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay, int32 switchIndex);
 		
 		IMPLEMENT_COMPONENT_TYPE(ACTION_COMPONENT);
 		
@@ -126,7 +127,7 @@ namespace DAVA
 		void OnActionParticleEffect(const Action& action);
 		void OnActionSound(const Action& action);
 		
-		Entity* GetTargetEntity(const String& name, Entity* parent);
+		Entity* GetTargetEntity(const FastName& name, Entity* parent);
 		
 	private:
 		

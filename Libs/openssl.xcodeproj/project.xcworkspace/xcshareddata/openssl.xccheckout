@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>256C618C-C41F-4D93-AE9B-2F238A8A2623</string>
+	<key>IDESourceControlProjectName</key>
+	<string>openssl</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>D4E5971E-37CA-4332-8538-C3C38A7831B9</key>
+		<string>https://github.com/dava/dava.framework</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Libs/openssl.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>D4E5971E-37CA-4332-8538-C3C38A7831B9</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/dava/dava.framework</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>D4E5971E-37CA-4332-8538-C3C38A7831B9</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D4E5971E-37CA-4332-8538-C3C38A7831B9</string>
+			<key>IDESourceControlWCCName</key>
+			<string>dava</string>
+		</dict>
+	</array>
+</dict>
+</plist>

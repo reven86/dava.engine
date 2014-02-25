@@ -31,6 +31,7 @@
 #ifndef __QT_PROPERTY_ITEM_H__
 #define __QT_PROPERTY_ITEM_H__
 
+/*
 #include <QStandardItem>
 #include "QtPropertyData.h"
 
@@ -78,5 +79,11 @@ protected slots:
 	void DataValueChanged(QtPropertyData::ValueChangeReason reason);
 	void DataFlagsChanged();
 };
+
+class QtPropertyItem : public QObject, public QStandardItem
+{
+
+};
+*/
 
 #endif // __QT_PROPERTY_ITEM_H__

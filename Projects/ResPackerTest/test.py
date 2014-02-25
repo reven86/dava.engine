@@ -1,6 +1,7 @@
 import os;
 import os.path;
 import report_utils;
+import platform;
 import utils;
 import shutil;
 import subprocess;
@@ -20,7 +21,10 @@ input = os.path.realpath(currentDir + "/DataSource/TestData/")
 output =  os.path.realpath(currentDir + "/Data/TestData")
 data_folder =  os.path.realpath(currentDir + "/Data")
 process = os.path.realpath(currentDir + "/DataSource/$process/")
-results = os.path.realpath(currentDir + "/Results/" + gpu)
+if (platform.system() == "Darwin"):
+    results = os.path.realpath(currentDir + "/Results_mac/" + gpu)
+else:
+    results = os.path.realpath(currentDir + "/Results/" + gpu)
 
 tests_results = {"Tests" : {}}
 
@@ -29,7 +33,7 @@ print "*** DAVA AUTOTEST Cleen up working dirctories ***"
 if os.path.exists(currentDir + "/Artifacts/" + gpu):
     print "Remove folder " + currentDir + "/Artifacts/" + gpu
     shutil.rmtree(currentDir + "/Artifacts/" + gpu)
-	
+    
 if os.path.exists(output):
     print "Remove folder " + output
     shutil.rmtree(output)
@@ -55,93 +59,94 @@ subprocess.call(params)
 print "*** DAVA AUTOTEST Check result for %s ***" % gpu
 i = 0
 for test in os.listdir(results):
-    i = i + 1
-    result = {}
-    print "*** Test#%d %s:" % (i, test)
-    
-    result['Name'] = test
-    result['Number'] = i
-    result['Success'] = True
-    result['Error_msg'] = ""
-    result['txt_Success'] = True
-    result['tex_Success'] = True
-    result['img_Success'] = True
-    
-    expected = os.path.realpath(results + "/" + test)
-    actual = os.path.realpath(output + "/" + test)
-    
-    # Check TEXT files
-    print "Check TXT files"
-    files = filter(lambda x: x[-3:] == "txt", os.listdir(expected))
-    if len(files) != 0:
-        print files
-    
-    for file in files:
-        res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
-        if res != None:
-            result['txt_Success'] = False
-            result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
-            print res
+    if(os.path.isdir(os.path.realpath(results + "/" + test))):
+        i = i + 1
+        result = {}
+        print "*** Test#%d %s:" % (i, test)
         
-    #Check TEX files
-    print "Check TEX files"
-    files = filter(lambda x: x[-3:] == "tex", os.listdir(expected))
-    if len(files) != 0:
-        print files
-    
-    for file in files:
-        res = utils.compare_tex(expected + "/" + file, actual + "/" + file)
-        if res != None:
-            result['tex_Success'] = False
-            result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
-            print res
-    
-    # Check IMAGE files
-    print "Check IMAGE files"
-    files = filter(lambda x: x[-3:] == "png", os.listdir(expected))
-    if len(files) != 0:
-        print files
-    
-    for file in files:
-        res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
-        if res != None:
-            result['img_Success'] = False
-            result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
-            print res
-    
-    files = filter(lambda x: x[-3:] == "pvr", os.listdir(expected))
-    if len(files) != 0:
-        print files
-    
-    for file in files:
-        res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
-        if res != None:
-            result['img_Success'] = False
-            result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
-            print res
+        result['Name'] = test
+        result['Number'] = i
+        result['Success'] = True
+        result['Error_msg'] = ""
+        result['txt_Success'] = True
+        result['tex_Success'] = True
+        result['img_Success'] = True
+        
+        expected = os.path.realpath(results + "/" + test)
+        actual = os.path.realpath(output + "/" + test)
+        
+        # Check TEXT files
+        print "Check TXT files"
+        files = filter(lambda x: x[-3:] == "txt", os.listdir(expected))
+        if len(files) != 0:
+            print files
+        
+        for file in files:
+            res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
+            if res != None:
+                result['txt_Success'] = False
+                result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
+                print res
+            
+        #Check TEX files
+        print "Check TEX files"
+        files = filter(lambda x: x[-3:] == "tex", os.listdir(expected))
+        if len(files) != 0:
+            print files
+        
+        for file in files:
+            res = utils.compare_tex(expected + "/" + file, actual + "/" + file)
+            if res != None:
+                result['tex_Success'] = False
+                result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
+                print res
+        
+        # Check IMAGE files
+        print "Check IMAGE files"
+        files = filter(lambda x: x[-3:] == "png", os.listdir(expected))
+        if len(files) != 0:
+            print files
+        
+        for file in files:
+            res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
+            if res != None:
+                result['img_Success'] = False
+                result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
+                print res
+        
+        files = filter(lambda x: x[-3:] == "pvr", os.listdir(expected))
+        if len(files) != 0:
+            print files
+        
+        for file in files:
+            res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
+            if res != None:
+                result['img_Success'] = False
+                result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
+                print res
 
-    files = filter(lambda x: x[-3:] == "dds", os.listdir(expected))
-    if len(files) != 0:
-        print files
-    
-    for file in files:
-        res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
-        if res != None:
-            result['img_Success'] = False
-            result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
-            print res
-    
-    
-    
-    result['Success'] = result['tex_Success'] and result['txt_Success'] and result['img_Success']
-    
-    if result['Success']:
-        print "Test passed!"
-    tests_results["Tests"][test] = result
-    
-    #Check graphics files
-    print
-    print
+        files = filter(lambda x: x[-3:] == "dds", os.listdir(expected))
+        if len(files) != 0:
+            print files
+        
+        for file in files:
+            res = utils.compare_txt(expected + "/" + file, actual + "/" + file)
+            if res != None:
+                result['img_Success'] = False
+                result['Error_msg'] = result['Error_msg'] + str(res) + "\n"
+                print res
+        
+        
+        
+        result['Success'] = result['tex_Success'] and result['txt_Success'] and result['img_Success']
+        
+        if result['Success']:
+            print "Test passed!"
+        tests_results["Tests"][test] = result
+        
+        #Check graphics files
+        print
+        print
 
 # Make final results
 test_num = 0

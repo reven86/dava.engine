@@ -33,6 +33,7 @@
 #include "Scene/EntityGroup.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/System/SelectionSystem.h"
+#include "Commands2/Command2.h"
 
 #include <QLabel>
 #include <QLayout>
@@ -51,6 +52,11 @@ StatusBar::StatusBar(QWidget *parent)
 	distanceToCamera->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 	addPermanentWidget(distanceToCamera);
 
+	selectionBoxSize = new QLabel(this);
+	selectionBoxSize->setToolTip("Selection box size");
+	selectionBoxSize->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	addPermanentWidget(selectionBoxSize);
+    
 	layout()->setContentsMargins(0, 0, 0, 0);
 	layout()->setMargin(0);
 	layout()->setSpacing(1);
@@ -95,11 +101,37 @@ void StatusBar::UpdateDistanceToCamera()
 void StatusBar::SceneActivated( SceneEditor2 *scene )
 {
 	UpdateDistanceToCamera();
+    
+    UpdateSelectionBoxSize(scene);
 }
 
 void StatusBar::SceneSelectionChanged( SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected )
 {
 	UpdateDistanceToCamera();
+    UpdateSelectionBoxSize(scene);
+}
+
+void StatusBar::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
+{
+    int id = command->GetId();
+    if(id == CMDID_BATCH)
+    {
+		CommandBatch *batch = (CommandBatch *)command;
+		Command2 *firstCommand = batch->GetCommand(0);
+		if(firstCommand && (firstCommand->GetId() == CMDID_TRANSFORM))
+		{
+            UpdateSelectionBoxSize(scene);
+		}
+    }
+    else if(id == CMDID_TRANSFORM)
+    {
+        UpdateSelectionBoxSize(scene);
+    }
+}
+
+void StatusBar::StructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
+{
+    UpdateSelectionBoxSize(scene);
 }
 
 void StatusBar::UpdateByTimer()
@@ -110,6 +142,28 @@ void StatusBar::UpdateByTimer()
 void StatusBar::OnSceneGeometryChaged( int width, int height )
 {
 	sceneGeometry->setText(QString::fromStdString(DAVA::Format("%d x %d", width, height)));
+}
+
+void StatusBar::UpdateSelectionBoxSize(SceneEditor2 *scene)
+{
+    EntityGroup selection;
+    if(scene)
+    {
+        selection = scene->selectionSystem->GetSelection();
+    }
+
+    if(selection.Size())
+    {
+        DAVA::Vector3 size = selection.GetCommonBbox().GetSize();
+        selectionBoxSize->setText(QString::fromStdString(DAVA::Format("x:%0.2f, y: %0.2f, z: %0.2f", size.x, size.y, size.z)));
+
+        selectionBoxSize->setVisible(true);
+    }
+    else
+    {
+        selectionBoxSize->setText("");
+        selectionBoxSize->setVisible(false);
+    }
 }
 
 

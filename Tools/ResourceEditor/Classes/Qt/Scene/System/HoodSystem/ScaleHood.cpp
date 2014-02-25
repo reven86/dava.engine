@@ -59,6 +59,17 @@ ScaleHood::ScaleHood() : HoodObject(4.0f)
 
 	axisYZ = CreateLine(DAVA::Vector3(0, c, 0), DAVA::Vector3(0, 0, c));
 	axisYZ->axis = ST_AXIS_YZ;
+	
+	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
+	DAVA::RenderStateData hoodStateData;
+	memcpy(&hoodStateData, &default3dState, sizeof(hoodStateData));
+	
+	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
+							DAVA::RenderStateData::STATE_COLORMASK_ALL |
+							DAVA::RenderStateData::STATE_DEPTH_WRITE;
+	hoodStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
+	hoodStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
+	hoodDrawState = DAVA::RenderManager::Instance()->CreateRenderState(hoodStateData);
 }
 
 ScaleHood::~ScaleHood()
@@ -68,20 +79,13 @@ ScaleHood::~ScaleHood()
 
 void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
 {
-	int oldState = DAVA::RenderManager::Instance()->GetState();
-	DAVA::eBlendMode oldBlendSrc = DAVA::RenderManager::Instance()->GetSrcBlend();
-	DAVA::eBlendMode oldBlendDst = DAVA::RenderManager::Instance()->GetDestBlend();
-
-	DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::STATE_BLEND | DAVA::RenderState::STATE_COLORMASK_ALL | DAVA::RenderState::STATE_DEPTH_WRITE);
-	DAVA::RenderManager::Instance()->SetBlendMode(DAVA::BLEND_SRC_ALPHA, DAVA::BLEND_ONE_MINUS_SRC_ALPHA);
-
 	// x
 	if(mouseOverAxis) 
 		DAVA::RenderManager::Instance()->SetColor(colorS);
 	else 
 		DAVA::RenderManager::Instance()->SetColor(colorX);
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo);
+	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo, 1.0f, hoodDrawState);
 
 	// y
 	if(mouseOverAxis) 
@@ -89,7 +93,7 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem
 	else 
 		DAVA::RenderManager::Instance()->SetColor(colorY);
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisY->curFrom, axisY->curTo);
+	DAVA::RenderHelper::Instance()->DrawLine(axisY->curFrom, axisY->curTo, 1.0f, hoodDrawState);
 
 	// z
 	if(mouseOverAxis) 
@@ -97,13 +101,13 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem
 	else 
 		DAVA::RenderManager::Instance()->SetColor(colorZ);
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo);
+	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo, 1.0f, hoodDrawState);
 
 	// xy xz yz axis
 	DAVA::RenderManager::Instance()->SetColor(colorS);
-	DAVA::RenderHelper::Instance()->DrawLine(axisXY->curFrom, axisXY->curTo);
-	DAVA::RenderHelper::Instance()->DrawLine(axisXZ->curFrom, axisXZ->curTo);
-	DAVA::RenderHelper::Instance()->DrawLine(axisYZ->curFrom, axisYZ->curTo);
+	DAVA::RenderHelper::Instance()->DrawLine(axisXY->curFrom, axisXY->curTo, 1.0f, hoodDrawState);
+	DAVA::RenderHelper::Instance()->DrawLine(axisXZ->curFrom, axisXZ->curTo, 1.0f, hoodDrawState);
+	DAVA::RenderHelper::Instance()->DrawLine(axisYZ->curFrom, axisYZ->curTo, 1.0f, hoodDrawState);
 
 	// xy xz yz plane
 	if(mouseOverAxis)
@@ -115,20 +119,20 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem
 		poly.AddPoint(axisXY->curFrom);
 		poly.AddPoint(axisXY->curTo);
 		poly.AddPoint(axisYZ->curTo);
-		DAVA::RenderHelper::Instance()->FillPolygon(poly);
+		DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
 	}
 
 	// draw axis spheres
 	DAVA::float32 boxSize = axisX->curScale * baseSize / 12;
 
 	DAVA::RenderManager::Instance()->SetColor(colorX);
-	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisX->curTo, boxSize));
+	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisX->curTo, boxSize), hoodDrawState);
 
 	DAVA::RenderManager::Instance()->SetColor(colorY);
-	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisY->curTo, boxSize));
+	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisY->curTo, boxSize), hoodDrawState);
 
 	DAVA::RenderManager::Instance()->SetColor(colorZ);
-	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisZ->curTo, boxSize));
+	DAVA::RenderHelper::Instance()->FillBox(DAVA::AABBox3(axisZ->curTo, boxSize), hoodDrawState);
 
 	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
 
@@ -140,7 +144,4 @@ void ScaleHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem
 		sprintf(tmp, "[%.2f, %.2f, %.2f]", modifScale, modifScale, modifScale);
 		textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
 	}
-
-	DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
-	DAVA::RenderManager::Instance()->SetState(oldState);
 }

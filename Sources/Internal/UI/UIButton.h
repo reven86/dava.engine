@@ -161,7 +161,12 @@ public:
 	 \param[in] newBackground control background you want to use for draw of the states.
 	 */
 	virtual void SetStateBackground(int32 state, UIControlBackground *newBackground);
-
+	/**
+	 \brief Sets the fitting option for the text background of the requested states.
+	 \param[in] state state bit mask to set value for.
+	 \param[in] Fitting option.
+	 */
+    virtual void SetStateFittingOption(int32 state, int32 fittingOption);
 	/**
 	 \brief This method is invalid for the UIButton. Don't try to call this method.
 	 */
@@ -246,6 +251,12 @@ public:
 	 \param[in] requestedTextRectSize rect size to fit text in.
 	 */
 	virtual void SetStateText(int32 state, const WideString &text, const Vector2 &requestedTextRectSize = Vector2(0,0));
+	/**
+	 \brief Sets text align what will be shown for the requested states.
+	 \param[in] state state text bit mask to set value for.
+	 \param[in] align the align .
+	 */
+    virtual void SetStateTextAlign(int32 state, int32 align);
 	/**
 	 \brief Sets text control what will be used for the requested states. 
 		UIStaticText is cloned inside button.

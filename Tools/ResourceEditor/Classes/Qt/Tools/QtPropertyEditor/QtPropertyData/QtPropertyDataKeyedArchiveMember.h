@@ -28,10 +28,10 @@ public:
 	QtPropertyKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key);
 	virtual ~QtPropertyKeyedArchiveMember();
 
-protected:
 	DAVA::KeyedArchive* archive;
 	DAVA::String key;
 
+protected:
 	KeyeadArchiveSetValueCommand* lastCommand;
 
 	virtual void SetValueInternal(const QVariant &value);

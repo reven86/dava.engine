@@ -29,54 +29,58 @@
 
 
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
 #include "Entity/Component.h"
 
 namespace DAVA
 {
     
+void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, uint32 event)
+{
+    scene->GetEventSystem()->GroupNotifyAllSystems(entities, event);
+}
 
-void GlobalEventSystem::Event(Entity * entity, Component * component, uint32 event)
+void GlobalEventSystem::Event(Entity * entity, uint32 event)
 {
     if (entity)
     {
         Scene * scene = entity->GetScene();
         if (scene)
         {
-            scene->ImmediateEvent(entity, component->GetType(), event);
+            scene->GetEventSystem()->NotifyAllSystems(entity, event);
             return;
         }
+        
+        List<uint32> & events = eventsCache[entity];
+        events.push_back(event);
     }
     
-	List<uint32> & list = eventsCache[component];
-	list.push_back(event);
 }
-    
+
 void GlobalEventSystem::PerformAllEventsFromCache(Entity * entity)
 {
-    for (uint32 k = 0; k < Component::COMPONENT_COUNT; ++k)
-    {
-        Component * component = entity->GetComponent(k);
-        if (component)
-            PerformAllEventsFromCache(component);
-    }
-}
-    
-void GlobalEventSystem::PerformAllEventsFromCache(Component * component)
-{
-    Map<Component*, List<uint32> >::iterator it = eventsCache.find(component);
+    Map<Entity*, List<uint32> >::iterator it = eventsCache.find(entity);
     if (it != eventsCache.end())
     {
         List<uint32> & list = it->second;
         
         for (List<uint32>::iterator listIt = list.begin(); listIt != list.end();  ++listIt)
         {
-            component->GetEntity()->GetScene()->ImmediateEvent(component->GetEntity(), component->GetType(), *listIt);
+            entity->GetScene()->GetEventSystem()->NotifyAllSystems(entity, *listIt);
         }
         
         eventsCache.erase(it);
     }
 }
 
-
+void GlobalEventSystem::RemoveAllEvents(Entity * entity)
+{
+    Map<Entity*, List<uint32> >::iterator it = eventsCache.find(entity);
+    if (it != eventsCache.end())
+    {
+        eventsCache.erase(it);
+    }
+}
+    
 }

@@ -30,11 +30,8 @@
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleEmitter.h"
 #include "Utils/StringFormat.h"
-#include "Render/RenderManager.h"
 #include "Render/Image.h"
-#include "Utils/Random.h"
 #include "FileSystem/FileSystem.h"
-#include "Scene3D/Components/LodComponent.h"
 
 namespace DAVA
 {
@@ -46,17 +43,10 @@ const ParticleLayer::LayerTypeNamesInfo ParticleLayer::layerTypeNamesInfoMap[] =
 	{ TYPE_SUPEREMITTER_PARTICLES, "superEmitter" }
 };
 
-ParticleLayer::ParticleLayer()
-	: head(0)
-	, count(0)
-	, limit(1000)
-	, emitter(0)
-	, sprite(0)
+ParticleLayer::ParticleLayer() 	
+	: sprite(0)
 	, innerEmitter(NULL)
-{
-	renderBatch = new ParticleLayerBatch();
-	renderBatch->SetParticleLayer(this);
-
+{	
 	life = 0;
 	lifeVariation = 0;
 
@@ -78,30 +68,23 @@ ParticleLayer::ParticleLayer()
 	
 	colorOverLife = 0;
 	colorRandom = 0;
-	alphaOverLife = 0;
-
-	particlesToGenerate = 0.0f;
-	alignToMotion = 0.0f;
+	alphaOverLife = 0;	
 	
 	angle = 0;
 	angleVariation = 0;
-
-	layerTime = 0.0f;
-	loopLayerTime = 0.0f;
+	
 	srcBlendFactor = BLEND_SRC_ALPHA;
 	dstBlendFactor = BLEND_ONE;
 	enableFog = true;
 	enableFrameBlend = false;
-	inheritPosition = true;
+	inheritPosition = false;
 	type = TYPE_PARTICLES;
     
-    endTime = 100000000.0f;
+    endTime = 100.0f;
 	deltaTime = 0.0f;
 	deltaVariation = 0.0f;
 	loopVariation = 0.0f;
-	loopEndTime = 0.0f;
-	currentLoopVariation = 0.0f;
-	currentDeltaVariation = 0.0f;	
+	loopEndTime = 0.0f;	
 
 	frameOverLifeEnabled = false;
 	frameOverLifeFPS = 0;
@@ -112,35 +95,31 @@ ParticleLayer::ParticleLayer()
 	scaleVelocityFactor = 0;
 
 	particleOrientation = PARTICLE_ORIENTATION_CAMERA_FACING;
+    
+	isLooped = false;	
 
-    isDisabled = false;
-	isLooped = false;
+	isLong = false;
+	
+	isDisabled = false;
 
-	playbackSpeed = 1.0f;
-
-	activeLODS.resize(LodComponent::MAX_LOD_LAYERS, true);
+	activeLODS.resize(4, true);
 }
 
 ParticleLayer::~ParticleLayer()
 {
-	DeleteAllParticles();
-
-	SafeRelease(renderBatch);
+	
 	SafeRelease(sprite);
 	SafeRelease(innerEmitter);
-
-	head = 0;
+	
 	CleanupForces();
 	// dynamic cache automatically delete all particles
 }
 
-ParticleLayer * ParticleLayer::Clone(ParticleLayer * dstLayer)
+ParticleLayer * ParticleLayer::Clone()
 {
-	if(!dstLayer)
-	{
-		DVASSERT_MSG(IsPointerToExactClass<ParticleLayer>(this), "Can clone only ParticleLayer");
-		dstLayer = new ParticleLayer();
-	}
+	
+	ParticleLayer *	dstLayer = new ParticleLayer();
+	
 
 	if (life)
 		dstLayer->life.Set(life->Clone());
@@ -174,9 +153,10 @@ ParticleLayer * ParticleLayer::Clone(ParticleLayer * dstLayer)
 
 	// Copy the forces.
 	dstLayer->CleanupForces();
+    dstLayer->forces.reserve(forces.size());
 	for (int32 f = 0; f < (int32)forces.size(); ++ f)
 	{
-		ParticleForce* clonedForce = new ParticleForce(this->forces[f]);
+		ParticleForce* clonedForce = this->forces[f]->Clone();
 		dstLayer->AddForce(clonedForce);
 		clonedForce->Release();
 	}
@@ -211,14 +191,15 @@ ParticleLayer * ParticleLayer::Clone(ParticleLayer * dstLayer)
 
 	SafeRelease(dstLayer->innerEmitter);
 	if (innerEmitter)
-		dstLayer->innerEmitter = static_cast<ParticleEmitter*>(innerEmitter->Clone(NULL));
-
+		dstLayer->innerEmitter = static_cast<ParticleEmitter*>(innerEmitter->Clone());
+	
 	dstLayer->layerName = layerName;
-	dstLayer->alignToMotion = alignToMotion;
-	dstLayer->SetBlendMode(srcBlendFactor, dstBlendFactor);
-	dstLayer->SetFog(enableFog);
-	dstLayer->SetFrameBlend(enableFrameBlend);
-	dstLayer->SetInheritPosition(inheritPosition);
+	
+	dstLayer->srcBlendFactor = srcBlendFactor;
+	dstLayer->dstBlendFactor = dstBlendFactor;
+	dstLayer->enableFog=enableFog;
+	dstLayer->enableFrameBlend = enableFrameBlend;
+	dstLayer->inheritPosition = inheritPosition;
 	dstLayer->startTime = startTime;
 	dstLayer->endTime = endTime;
 	
@@ -229,10 +210,13 @@ ParticleLayer * ParticleLayer::Clone(ParticleLayer * dstLayer)
 	dstLayer->loopVariation = loopVariation;
 	dstLayer->loopEndTime = loopEndTime;
 	
+	dstLayer->isDisabled = isDisabled;
+
 	dstLayer->type = type;
 	SafeRelease(dstLayer->sprite);
 	dstLayer->sprite = SafeRetain(sprite);
 	dstLayer->layerPivotPoint = layerPivotPoint;	
+	dstLayer->layerPivotSizeOffsets = layerPivotSizeOffsets;
 
 	dstLayer->frameOverLifeEnabled = frameOverLifeEnabled;
 	dstLayer->frameOverLifeFPS = frameOverLifeFPS;
@@ -242,17 +226,17 @@ ParticleLayer * ParticleLayer::Clone(ParticleLayer * dstLayer)
 
 	dstLayer->scaleVelocityBase = scaleVelocityBase;
 	dstLayer->scaleVelocityFactor = scaleVelocityFactor;
-
-    dstLayer->isDisabled = isDisabled;
+    
 	dstLayer->spritePath = spritePath;
 	dstLayer->activeLODS = activeLODS;
+	dstLayer->isLong = isLong;
 
 	return dstLayer;
 }
 
 bool ParticleLayer::IsLodActive(int32 lod)
 {
-	if ((lod>=0)&&(lod<activeLODS.size()))
+	if ((lod>=0)&&(lod<(int32)activeLODS.size()))
 		return activeLODS[lod];
 	
 	return false;
@@ -260,7 +244,7 @@ bool ParticleLayer::IsLodActive(int32 lod)
 
 void ParticleLayer::SetLodActive(int32 lod, bool active)
 {
-	if ((lod>=0)&&(lod<activeLODS.size()))
+	if ((lod>=0)&&(lod<(int32)activeLODS.size()))
 		activeLODS[lod] = active;
 }
 
@@ -348,638 +332,37 @@ void ParticleLayer::UpdateLayerTime(float32 startTime, float32 endTime)
 	UpdatePropertyLineKeys(PropertyLineHelper::GetValueLine(angleVariation).Get(), startTime, translateTime, endTime);
 }
 
-ParticleEmitter* ParticleLayer::GetEmitter() const
-{
-	return emitter;
-}
 
-void ParticleLayer::SetEmitter(ParticleEmitter * _emitter)
-{
-	emitter = _emitter;
-}
 
 void ParticleLayer::SetSprite(Sprite * _sprite)
-{
-    DeleteAllParticles();
+{    
 	SafeRelease(sprite);
 	sprite = SafeRetain(_sprite);
-	UpdateFrameTimeline();
 
 	if(sprite)
 	{
 		spritePath = sprite->GetRelativePathname();
 	}
 }
-	
-Sprite * ParticleLayer::GetSprite()
+
+void ParticleLayer::SetPivotPoint(Vector2 pivot)
 {
-	return sprite;
+	layerPivotPoint = pivot;
+	layerPivotSizeOffsets = Vector2(1+fabs(layerPivotPoint.x), 1+fabs(layerPivotPoint.y));
+	layerPivotSizeOffsets*=0.5f;
 }
 
-float32 ParticleLayer::GetLayerTime()
-{
-    return layerTime;
-}
-    
-void ParticleLayer::DeleteAllParticles()
-{
-	if(TYPE_SINGLE_PARTICLE == type)
+
+void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * node, bool preserveInheritPosition)
+{		
+	// format processing
+	int32 format = 0;
+	const YamlNode * formatNode = node->Get("effectFormat");
+	if (formatNode)
 	{
-
-	}
-	Particle * current = head;
-	while(current)
-	{
-		if (current->GetInnerEmitter())
-			current->GetInnerEmitter()->DoRestart(true);
-		Particle * next = current->next;
-		delete(current);
-		count--;
-		current = next;
-	}
-	head = 0;
-	
-	DVASSERT(count == 0);
-}
-
-void ParticleLayer::RunParticle(Particle * particle)
-{
-	particle->next = head;
-	head = particle;
-	count++;
-}
-
-
-/*void ParticleLayer::SetLimit(int32 _limit)
-{
-	limit = _limit;
-}
-
-void ParticleLayer::SetPosition(Vector3 _position)
-{
-	position = _position;
-}*/
-
-void ParticleLayer::Restart(bool isDeleteAllParticles)
-{
-	if (isDeleteAllParticles)
-		DeleteAllParticles();
-
-	layerTime = 0.0f;
-	particlesToGenerate = 0.0f;
-	loopLayerTime = 0.0f;
-
-	RecalculateVariation();
-	
-	if (innerEmitter)
-	{
-		innerEmitter->Restart(isDeleteAllParticles);
-	}
-}
-
-void ParticleLayer::RestartLoop(bool isDeleteAllParticles)
-{
-	if (isDeleteAllParticles)
-		DeleteAllParticles();
-
-	layerTime = startTime;
-	particlesToGenerate = 0.0f;
-	
-	RecalculateVariation();
-	
-	if (innerEmitter)
-	{
-		innerEmitter->Restart(isDeleteAllParticles);
-	}
-}
-
-void ParticleLayer::SetLooped(bool _isLooped)
-{
-	isLooped = _isLooped;
-	// Reset loop values if isLooped flag is changed
-	loopVariation = 0.0f;
-	deltaTime = 0.0f;
-	deltaVariation = 0.0f;
-	/*if (isLooped)
-	{
-		if (emitter)
-		{
-			loopEndTime = emitter->GetLifeTime();
-		}
-	}*/
-}
-
-bool ParticleLayer::GetLooped()
-{
-	return isLooped;
-}
-
-void ParticleLayer::SetDeltaTime(float32 _deltaTime)
-{
-	deltaTime = _deltaTime;
-}
-	
-float32 ParticleLayer::GetDeltaTime()
-{
-	return deltaTime;
-}
-
-void ParticleLayer::SetDeltaVariation(float32 _deltaVariation)
-{
-	deltaVariation = _deltaVariation;
-	RecalculateVariation();
-}
-	
-float32 ParticleLayer::GetDeltaVariation()
-{
-	return deltaVariation;
-}
-
-void ParticleLayer::SetLoopEndTime(float32 endTime)
-{
-	loopEndTime = endTime;
-}
-
-float32 ParticleLayer::GetLoopEndTime()
-{
-	return loopEndTime;
-}
-
-void ParticleLayer::SetLoopVariation(float32 _loopVariation)
-{
-	loopVariation = _loopVariation;
-	RecalculateVariation();
-}
-
-float32 ParticleLayer::GetLoopVariation()
-{
-	return loopVariation;
-}
-
-float32 ParticleLayer::GetRandomFactor()
-{
-	return (float32)(Rand() & 255) / 255.0f;
-}
-
-void ParticleLayer::RecalculateVariation()
-{
-	currentLoopVariation = (loopVariation * GetRandomFactor());
-	
-	if (deltaTime > 0)
-	{
-		currentDeltaVariation = (deltaVariation * GetRandomFactor());
-	}	
-}
-
-void ParticleLayer::RestartLayerIfNeed()
-{
-	float32 layerRestartTime = (endTime + currentLoopVariation) + (deltaTime + currentDeltaVariation);
-	// Restart layer effect if auto restart option is on and layer time exceeds its endtime
-	// Endtime can be increased by DeltaTime
-	if(isLooped && (layerTime > layerRestartTime) && (emitter->GetState()==ParticleEmitter::STATE_PLAYING))
-	{
-		RestartLoop(false);
-	}
-}
-
-void ParticleLayer::Update(float32 timeElapsed, bool generateNewParticles)
-{
-	// it is already multiplied by playbackSpeed in Emitter
-	//timeElapsed *= playbackSpeed;
-
-	layerTime += timeElapsed;
-	loopLayerTime += timeElapsed;
-	
-	RestartLayerIfNeed();
-	// Don't emit particles when lood end is reached
-	bool useLoopStop = false;
-	if (isLooped)
-	{
-		useLoopStop = (loopLayerTime >= loopEndTime);
-	}
-	else
-	{
-		currentLoopVariation = 0.0f;
+		format = formatNode->AsInt32();
 	}
 
-	switch(type)
-	{
-		case TYPE_PARTICLES:
-		case TYPE_SUPEREMITTER_PARTICLES:
-		{
-			Particle * prev = 0;
-			Particle * current = head;
-			while(current)
-			{
-				Particle * next = current->next;
-				if (!current->Update(timeElapsed))
-				{
-					if (prev == 0)head = next;
-					else prev->next = next;
-					delete(current);
-					count--;
-				}else
-				{
-					ProcessParticle(current, timeElapsed);
-					prev = current;
-				}
-
-				current = next;
-			}
-			
-			if (count == 0)
-			{
-				DVASSERT(head == 0);
-			}
-			
-			if ((layerTime >= startTime) && (layerTime < (endTime + currentLoopVariation)) &&
-				(emitter->GetState()==ParticleEmitter::STATE_PLAYING) && !useLoopStop)
-			{
-				float32 newParticles = 0.0f;
-				if (generateNewParticles)
-				{
-					if (number)
-						newParticles += timeElapsed * number->GetValue(layerTime);
-					if (numberVariation)
-						newParticles += GetRandomFactor() * timeElapsed * numberVariation->GetValue(layerTime);
-					//newParticles *= emitter->GetCurrentNumberScale();
-				}				
-				
-				particlesToGenerate += newParticles;
-
-				while(particlesToGenerate >= 1.0f)
-				{
-					particlesToGenerate -= 1.0f;
-					
-					int32 emitPointsCount = emitter->GetEmitPointsCount();
-					
-					if (emitPointsCount == -1)
-						GenerateNewParticle(-1);
-					else {
-						for (int k = 0; k < emitPointsCount; ++k)
-							 GenerateNewParticle(k);
-					}
-
-				}
-			}
-			break;
-		}
-
-		case TYPE_SINGLE_PARTICLE:
-		{
-			bool needUpdate = true;
-			if ((layerTime >= startTime) && (layerTime < (endTime + currentLoopVariation)) &&
-				(emitter->GetState()==ParticleEmitter::STATE_PLAYING) && !useLoopStop)
-			{
-				if(!head)
-				{
-					if (generateNewParticles)
-					{
-						GenerateSingleParticle();
-						needUpdate = false;
-					}
-					
-				}
-			}
-            if(head && needUpdate)
-            {
-				if (!head->Update(timeElapsed))
-				{
-					delete(head);
-					count--;
-					DVASSERT(0 == count);
-					head = 0;
-					if ((layerTime >= startTime) && (layerTime < (endTime + currentLoopVariation)) &&
-						(emitter->GetState()==ParticleEmitter::STATE_PLAYING) && !useLoopStop)
-					{
-						if (generateNewParticles)
-							GenerateSingleParticle();
-					}
-				}
-				else
-				{
-					ProcessParticle(head, timeElapsed);
-				}
-            }
-			
-			break;		
-		}
-	}
-}
-	
-void ParticleLayer::GenerateSingleParticle()
-{
-	GenerateNewParticle(-1);
-	
-	// Yuri Coder, 2013/03/26. head->angle = 0.0f commented out because of DF-877.
-	//head->angle = 0.0f;
-
-	//particle->velocity.x = 0.0f;
-	//particle->velocity.y = 0.0f;
-}
-
-void ParticleLayer::GenerateNewParticle(int32 emitIndex)
-{
-	if (count >= limit)
-	{
-		return;
-	}
-	
-	Particle * particle = new Particle();
-
-	// SuperEmitter particles contains the emitter inside.
-	if (type == TYPE_SUPEREMITTER_PARTICLES)
-	{
-		//as fog kostyl is not applied to parent emitter
-		//add another fog kostyl here		
-		Vector<ParticleLayer *>& innerLayers = innerEmitter->GetLayers();
-		Color fogColor = renderBatch->GetMaterial()->GetFogColor();
-		float32 fogDensity = renderBatch->GetMaterial()->GetFogDensity();
-		for (int32 i = 0, sz = innerLayers.size(); i<sz; ++i)
-		{
-			innerLayers[i]->renderBatch->GetMaterial()->SetFogColor(fogColor);
-			innerLayers[i]->renderBatch->GetMaterial()->SetFogDensity(fogDensity);
-		}
-
-		innerEmitter->SetLongToAllLayers(IsLong());		
-		particle->InitializeInnerEmitter(this->emitter, innerEmitter);				
-	}
-
-	particle->CleanupForces();
-
-	particle->next = 0;
-	particle->sprite = sprite;
-	particle->life = 0.0f;
-
-	float32 randCoeff = GetRandomFactor();	
-	
-	particle->color = Color();
-	if (colorRandom)
-	{
-		particle->color = colorRandom->GetValue(randCoeff);
-	}
-
-	particle->lifeTime = 0.0f;
-	if (life)
-		particle->lifeTime += life->GetValue(layerTime);
-	if (lifeVariation)
-		particle->lifeTime += (lifeVariation->GetValue(layerTime) * randCoeff);
-	
-	// size 
-	particle->size = Vector2(1.0f, 1.0f); 
-	if (size)
-		particle->size = size->GetValue(layerTime);
-	if (sizeVariation)
-		particle->size +=(sizeVariation->GetValue(layerTime) * randCoeff);
-	
-	if(sprite && (type!=TYPE_SUPEREMITTER_PARTICLES)) //don't update for super emitter particle even if they have old sprite
-	{
-		particle->size.x /= (float32)sprite->GetWidth();
-		particle->size.y /= (float32)sprite->GetHeight();
-	}	
-
-	if (emitter->parentParticle){
-		particle->size.x*=emitter->parentParticle->size.x;
-		particle->size.y*=emitter->parentParticle->size.y;
-	}
-
-	float32 vel = 0.0f;
-	if (velocity)
-		vel += velocity->GetValue(layerTime);
-	if (velocityVariation)
-		vel += (velocityVariation->GetValue(layerTime) * randCoeff);
-	
-	particle->angle = 0.0f;
-	particle->spin = 0.0f;
-	if (spin)
-		particle->spin = DegToRad(spin->GetValue(layerTime));
-	if (spinVariation)
-		particle->spin += DegToRad(spinVariation->GetValue(layerTime) * randCoeff);
-
-	if (randomSpinDirection)
-	{
-		int32 dir = Rand()&1;
-		particle->spin *= (dir)*2-1;
-	}
-	//particle->position = emitter->GetPosition();	
-	// parameters should be prepared inside prepare emitter parameters
-	emitter->PrepareEmitterParameters(particle, vel, emitIndex);
-	if (this->emitter&&!inheritPosition) //just generate at correct position
-	{		
-		particle->position += emitter->GetPosition()-emitter->GetInitialTranslationVector();
-	}
-
-	//particle->angle += alignToMotion;
-	if (angle)
-		particle->angle += DegToRad(angle->GetValue(layerTime));
-	if (angleVariation)
-		particle->angle += DegToRad(angleVariation->GetValue(layerTime) * randCoeff);
-
-	particle->sizeOverLife.x = 1.0f;
-	particle->sizeOverLife.y = 1.0f;
-	particle->velocityOverLife = 1.0f;
-	particle->spinOverLife = 1.0f;
-//	particle->forceOverLife0 = 1.0f;
-//		
-//	particle->force0.x = 0.0f;
-//	particle->force0.y = 0.0f;
-//
-//	if ((forces.size() == 1) && (forces[0]))
-//	{
-//		particle->force0 = forces[0]->GetValue(layerTime);
-//	}
-//	if ((forcesVariation.size() == 1) && (forcesVariation[0]))
-//	{
-//		particle->force0 += forcesVariation[0]->GetValue(layerTime) * randCoeff;
-//	}
-
-	// Add the forces.
-    int32 forcesCount = (int32)forces.size();
-    for(int i = 0; i < forcesCount; i++)
-	{
-		Vector3 toAddForceDirection;
-		float32 toAddForceValue = 0;
-		float32 toAddForceOverlife = 0;
-		bool toAddForceOvelifeEnabled = false;
-
-		RefPtr<PropertyLine<Vector3> > currentForce = forces[i]->GetForce();
-        if(currentForce && currentForce.Get())
-		{
-			const Vector3 & force = currentForce->GetValue(layerTime);
-			float32 forceValue = force.Length();
-			Vector3 forceDirection;
-			if(forceValue)
-			{
-				forceDirection = force/forceValue;
-			}
-
-			toAddForceDirection = forceDirection;
-			toAddForceValue = forceValue;
-		}
-		
-		// Check the forces variations.
-		RefPtr<PropertyLine<Vector3> > currentForceVariation = forces[i]->GetForceVariation();
-        if(currentForceVariation && currentForceVariation.Get())
-		{
-			const Vector3 & force = currentForceVariation->GetValue(layerTime) * randCoeff;
-			float32 forceValue = force.Length();
-			Vector3 forceDirection = force/forceValue;
-
-			toAddForceDirection += forceDirection;
-			toAddForceValue += forceValue;
-		}
-		
-		// Now check the overlife flag.
-		RefPtr<PropertyLine<float32> > currentForceOverlife = forces[i]->GetForceOverlife();
-		if(currentForceOverlife && currentForceOverlife.Get())
-		{
-			toAddForceOverlife = currentForceOverlife->GetValue(layerTime);
-			toAddForceOvelifeEnabled = true;
-		}
-		
-		// All the data is calculated - can add the force data to particle.
-		particle->AddForce(toAddForceValue, toAddForceDirection, toAddForceOverlife, toAddForceOvelifeEnabled);
-	}
-    
-	particle->frame = 0;
-	particle->animTime = 0;
-	if (randomFrameOnStart&&sprite)
-	{
-		particle->frame =  (int32)(randCoeff * (float32)(this->sprite->GetFrameCount()));
-	}	
-	
-	// process it to fill first life values
-	ProcessParticle(particle, 0);
-
-	// go to life
-	RunParticle(particle);
-}
-
-
-
-void ParticleLayer::ProcessParticle(Particle * particle, float32 timeElapsed)
-{
-	float32 t = particle->life / particle->lifeTime;
-	if (sizeOverLifeXY)
-		particle->sizeOverLife = sizeOverLifeXY->GetValue(t);
-	if (spinOverLife)
-		particle->spinOverLife = spinOverLife->GetValue(t);
-	if (velocityOverLife)
-		particle->velocityOverLife = velocityOverLife->GetValue(t);
-	if (colorOverLife)
-		particle->color = colorOverLife->GetValue(t);
-	if (alphaOverLife)
-		particle->color.a = alphaOverLife->GetValue(t);
-
-	Color emitterColor;
-	if(emitter->GetCurrentColor(&emitterColor))
-	{
-		particle->drawColor = particle->color*emitterColor*emitter->ambientColor;
-	}
-	else
-	{
-		particle->drawColor = particle->color*emitter->ambientColor;
-	}
-
-	// Frame Overlife FPS defines how many frames should be displayed in a second.	
-	if (frameOverLifeEnabled)
-	{
-		float32 animDelta = timeElapsed*frameOverLifeFPS;
-		if (animSpeedOverLife)
-			animDelta*=animSpeedOverLife->GetValue(t);
-		particle->animTime+=animDelta;
-
-		while (particle->animTime>1.0f)
-		{
-			particle->frame ++;
-			// Spright might not be loaded (see please DF-1661).
-			if (!this->sprite || particle->frame >= this->sprite->GetFrameCount())
-			{
-				if (loopSpriteAnimation)
-					particle->frame = 0;					
-				else
-					particle->frame = this->sprite->GetFrameCount()-1;
-					
-			}
-
-			particle->animTime -= 1.0f;
-		}
-	}
-    
-	int32 forcesCount = (int32)forces.size();
-    for(int i = 0; i < forcesCount; i++)
-	{
-        if (forces[i]->GetForceOverlife() && forces[i]->GetForceOverlife().Get())
-		{
-			particle->UpdateForceOverlife(i, forces[i]->GetForceOverlife()->GetValue(t));
-		}
-	}
-}
-
-void ParticleLayer::PrepareRenderData(Camera * camera)
-{
-
-}
-
-void ParticleLayer::Draw(Camera * camera)
-{	
-
-	RenderManager::Instance()->SetBlendMode(srcBlendFactor, dstBlendFactor);
-
-	const Vector2& drawPivotPoint = GetDrawPivotPoint();
-	switch(type)
-	{
-		case TYPE_PARTICLES:
-		case TYPE_SUPEREMITTER_PARTICLES:
-		{
-			Particle * current = head;
-			while(current)
-			{
-				sprite->SetPivotPoint(drawPivotPoint);
-				current->Draw();
-				current = current->next;
-			}
-			break;
-		}
-		case TYPE_SINGLE_PARTICLE:
-		{
-			if(head)
-			{	
-				sprite->SetPivotPoint(drawPivotPoint);
-				head->Draw();
-			}
-			break;
-		}
-	}
-}
-
-
-void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * node)
-{
-// 	PropertyLine<float32> * life;				// in seconds
-// 	PropertyLine<float32> * lifeVariation;		// variation part of life that added to particle life during generation of the particle
-// 
-// 	PropertyLine<float32> * number;				// number of particles per second
-// 	PropertyLine<float32> * numberVariation;		// variation part of number that added to particle count during generation of the particle
-// 
-// 	PropertyLine<Vector2> * size;				// size of particles in pixels 
-// 	PropertyLine<Vector2> * sizeVariation;		// size variation in pixels
-// 	PropertyLine<float32> * sizeOverLife;
-// 
-// 	PropertyLine<float32> * velocity;			// velocity in pixels
-// 	PropertyLine<float32> * velocityVariation;	
-// 	PropertyLine<float32> * velocityOverLife;
-// 
-// 	PropertyLine<Vector2> * weight;				// weight property from 
-// 	PropertyLine<Vector2> * weightVariation;
-// 	PropertyLine<float32> * weightOverLife;
-// 
-// 	PropertyLine<float32> * spin;				// spin of angle / second
-// 	PropertyLine<float32> * spinVariation;
-// 	PropertyLine<float32> * spinOverLife;
-
-	
-	
 	type = TYPE_PARTICLES;
 	const YamlNode * typeNode = node->Get("layerType");
 	if (typeNode)
@@ -993,11 +376,14 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		layerName = nameNode->AsString();
 	}
 
-	const YamlNode * pivotPointNode = node->Get("pivotPoint");
-	if(pivotPointNode)
+	const YamlNode * longNode = node->Get("isLong");
+	if (longNode)
 	{
-		layerPivotPoint = pivotPointNode->AsPoint();
+		isLong = longNode->AsBool();
 	}
+
+	const YamlNode * pivotPointNode = node->Get("pivotPoint");
+	
 
 	const YamlNode * spriteNode = node->Get("sprite");
 	if (spriteNode && !spriteNode->AsString().empty())
@@ -1009,12 +395,30 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		SetSprite(_sprite);
         SafeRelease(_sprite);
 	}
+	else
+	{
+		SetSprite(NULL);
+	}
+	if(pivotPointNode)
+	{
+		Vector2 _pivot = pivotPointNode->AsPoint();
+		if ((format == 0)&&sprite)
+		{
+			
+			float32 ny=-_pivot.x/sprite->GetWidth()*2;
+			float32 nx=-_pivot.y/sprite->GetHeight()*2;
+			_pivot.Set(nx, ny);
+		}
+
+		SetPivotPoint(_pivot);
+	}
+
 	const YamlNode *lodsNode = node->Get("activeLODS");
 	if (lodsNode)
 	{
 		const Vector<YamlNode*> & vec = lodsNode->AsVector();
 		for (uint32 i=0; i<(uint32)vec.size(); ++i)
-			SetLodActive(i, (bool)vec[i]->AsInt()); //as AddToArray has no override for bool, flags are stored as int
+			SetLodActive(i, (bool)(vec[i]->AsInt())); //as AddToArray has no override for bool, flags are stored as int
 	}
 
 
@@ -1111,11 +515,25 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	for (int k = 0; k < forceCount; ++k)
 	{
         // Any of the Force Parameters might be NULL, and this is acceptable.
-		RefPtr< PropertyLine<Vector3> > force = PropertyLineYamlReader::CreatePropertyLine<Vector3>(node->Get(Format("force%d", k) ));
-		RefPtr< PropertyLine<Vector3> > forceVariation = PropertyLineYamlReader::CreatePropertyLine<Vector3>(node->Get(Format("forceVariation%d", k)));
+		RefPtr< PropertyLine<Vector3> > force = PropertyLineYamlReader::CreatePropertyLine<Vector3>(node->Get(Format("force%d", k) ));		
 		RefPtr< PropertyLine<float32> > forceOverLife = PropertyLineYamlReader::CreatePropertyLine<float32>(node->Get(Format("forceOverLife%d", k)));
+        
+        if (force&&(!format)) //as no forceVariation anymore - add it directly to force
+        {
+             RefPtr< PropertyLine<Vector3> > forceVariation = PropertyLineYamlReader::CreatePropertyLine<Vector3>(node->Get(Format("forceVariation%d", k)));
+             if (forceVariation)
+             {
+                 Vector3 varriationToAdd = forceVariation->GetValue(0);
+                 Vector<typename PropertyLine<Vector3>::PropertyKey> &keys = force->GetValues();		                 
+                 for (int i=0, sz = keys.size(); i<sz; ++i)
+                 {			
+                     keys[i].value+=varriationToAdd;
+                 }
+             }
+             
+        }
 
-		ParticleForce* particleForce = new ParticleForce(force, forceVariation, forceOverLife);
+		ParticleForce* particleForce = new ParticleForce(force, forceOverLife);
 		AddForce(particleForce);
         particleForce->Release();
 	}
@@ -1135,9 +553,15 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	if (blend)
 	{
 		if (blend->AsString() == "alpha")
-			SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
+		{
+			srcBlendFactor = BLEND_SRC_ALPHA;
+			dstBlendFactor = BLEND_ONE_MINUS_SRC_ALPHA;
+		}
 		if (blend->AsString() == "add")
-			SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE);
+		{
+			srcBlendFactor = BLEND_SRC_ALPHA;
+			dstBlendFactor = BLEND_ONE;
+		}			
 	}
 	
 	//or set blending factors directly
@@ -1145,27 +569,21 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	const YamlNode * blendDestNode = node->Get("dstBlendFactor");
 	if(blendSrcNode && blendDestNode)
 	{
-		eBlendMode newBlendScr = GetBlendModeByName(blendSrcNode->AsString());
-		eBlendMode newBlendDest = GetBlendModeByName(blendDestNode->AsString());
-		SetBlendMode(newBlendScr, newBlendDest);
+		srcBlendFactor = GetBlendModeByName(blendSrcNode->AsString());
+		dstBlendFactor = GetBlendModeByName(blendDestNode->AsString());	
 	}
 
 	const YamlNode * fogNode = node->Get("enableFog");
 	if (fogNode)
 	{
-		SetFog(fogNode->AsBool());
+		enableFog = fogNode->AsBool();
 	}
 
 	const YamlNode * frameBlendNode = node->Get("enableFrameBlend");	
 	if (frameBlendNode)
 	{
-		SetFrameBlend(frameBlendNode->AsBool());
-	}
-	
-
-	const YamlNode * alignToMotionNode = node->Get("alignToMotion");
-	if (alignToMotionNode)
-		alignToMotion = DegToRad(alignToMotionNode->AsFloat());
+		enableFrameBlend = frameBlendNode->AsBool();
+	}		
 
 	startTime = 0.0f;
 	endTime = 100000000.0f;
@@ -1200,13 +618,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 		
 	const YamlNode * loopEndTimeNode = node->Get("loopEndTime");
 	if (loopEndTimeNode)
-		loopEndTime = loopEndTimeNode->AsFloat();			
-
-	const YamlNode * isDisabledNode = node->Get("isDisabled");
-	if (isDisabledNode)
-	{
-		isDisabled = isDisabledNode->AsBool();
-	}
+		loopEndTime = loopEndTimeNode->AsFloat();				
 
 	/*validate all time depended property lines*/	
 	UpdatePropertyLineOnLoad(life.Get(), startTime, endTime);
@@ -1232,19 +644,45 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	const YamlNode * innerEmitterPathNode = node->Get("innerEmitterPath");
 	if (innerEmitterPathNode)
 	{
-		CreateInnerEmitter();
-
+		SafeRelease(innerEmitter);
+		innerEmitter = new ParticleEmitter();       
 		// Since Inner Emitter path is stored as Relative, convert it to absolute when loading.
 		innerEmitterPath = FilePath(configPath.GetDirectory(), innerEmitterPathNode->AsString());
-		innerEmitter->LoadFromYaml(this->innerEmitterPath);
+		innerEmitter->LoadFromYaml(this->innerEmitterPath, true);
+	}		
+	if (format == 0) //update old stuff
+	{
+		UpdateSizeLine(size.Get(), true, !isLong);
+		UpdateSizeLine(sizeVariation.Get(), true, !isLong);
+		UpdateSizeLine(sizeOverLifeXY.Get(), false, !isLong);
+		inheritPosition &= preserveInheritPosition;
 	}
-
-	// Yuri Coder, 2013/01/31. After all the data is loaded, check the Frame Overlife timelines and
-	// synchronize them with the maximum available frames in the sprite. See also DF-573.
-	UpdateFrameTimeline();
 }
 
-void ParticleLayer::SaveToYamlNode(YamlNode* parentNode, int32 layerIndex)
+void ParticleLayer::UpdateSizeLine(PropertyLine<Vector2> *line, bool rescaleSize, bool swapXY)
+{
+	//conversion from old format
+	if (!line) return;
+	if ((!rescaleSize)&&(!swapXY)) return; //nothing to update
+    
+	Vector<typename PropertyLine<Vector2>::PropertyKey> &keys = PropertyLineHelper::GetValueLine(line)->GetValues();		
+	for (int i=0, sz = keys.size(); i<sz; ++i)
+	{			
+		if (rescaleSize)
+		{
+			keys[i].value.x*=0.5f;
+			keys[i].value.y*=0.5f;
+		}
+		if (swapXY)
+		{
+			float x = keys[i].value.x;
+			keys[i].value.x=keys[i].value.y;
+			keys[i].value.y=x;
+		}		
+	}
+}
+
+void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parentNode, int32 layerIndex)
 {
     YamlNode* layerNode = new YamlNode(YamlNode::TYPE_MAP);
     String layerNodeName = Format("layer%d", layerIndex);
@@ -1254,15 +692,14 @@ void ParticleLayer::SaveToYamlNode(YamlNode* parentNode, int32 layerIndex)
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "type", "layer");
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "layerType",
 																 LayerTypeToString(type, "particles"));
-    if (this->IsLong())
-    {
-        PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "isLong", true);
-    }
+    
+    PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "isLong", isLong);
+    
 
 	PropertyLineYamlWriter::WritePropertyValueToYamlNode<Vector2>(layerNode, "pivotPoint", layerPivotPoint);
 
     // Truncate an extension of the sprite file.
-	String relativePath = spritePath.GetRelativePathname(emitter->GetConfigPath().GetDirectory());
+	String relativePath = spritePath.GetRelativePathname(configPath.GetDirectory());
 	PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite",
         relativePath.substr(0, relativePath.size()-4));
 
@@ -1306,8 +743,7 @@ void ParticleLayer::SaveToYamlNode(YamlNode* parentNode, int32 layerIndex)
 	PropertyLineYamlWriter::WritePropertyValueToYamlNode<float32>(layerNode, "frameOverLifeFPS", this->frameOverLifeFPS);
 	PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "randomFrameOnStart", this->randomFrameOnStart);
 	PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "loopSpriteAnimation", this->loopSpriteAnimation);
-
-    PropertyLineYamlWriter::WritePropertyValueToYamlNode<float32>(layerNode, "alignToMotion", this->alignToMotion);    
+    
 
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<float32>(layerNode, "startTime", this->startTime);
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<float32>(layerNode, "endTime", this->endTime);
@@ -1318,22 +754,22 @@ void ParticleLayer::SaveToYamlNode(YamlNode* parentNode, int32 layerIndex)
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<float32>(layerNode, "loopVariation", this->loopVariation);
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<float32>(layerNode, "loopEndTime", this->loopEndTime);
 
-	PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "isDisabled", this->isDisabled);
-
 	layerNode->Set("inheritPosition", inheritPosition);	
 
 	layerNode->Set("particleOrientation", particleOrientation);
 
 	YamlNode *lodsNode = new YamlNode(YamlNode::TYPE_ARRAY);
-	for (int32 i =0; i<LodComponent::MAX_LOD_LAYERS; i++)
+	for (int32 i =0; i<4; i++)
 		lodsNode->AddValueToArray((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
 	layerNode->SetNodeToMap("activeLODS", lodsNode);
 
 	if (innerEmitter)
 	{
-		String innerRelativePath = innerEmitterPath.GetRelativePathname(emitter->GetConfigPath().GetDirectory());
+		String innerRelativePath = innerEmitterPath.GetRelativePathname(configPath.GetDirectory());
 		PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "innerEmitterPath", innerRelativePath);
 	}
+
+	PropertyLineYamlWriter::WritePropertyValueToYamlNode<int32>(layerNode, "effectFormat", 1);
 
     // Now write the forces.
     SaveForcesToYamlNode(layerNode);
@@ -1352,17 +788,12 @@ void ParticleLayer::SaveForcesToYamlNode(YamlNode* layerNode)
     for (int32 i = 0; i < forceCount; i ++)
     {
 		ParticleForce* currentForce = this->forces[i];
-        String forceDataName = Format("force%d", i);
+        
+		String forceDataName = Format("force%d", i);		
+        PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(layerNode, forceDataName, currentForce->force);
 		
-        PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(layerNode, forceDataName, currentForce->GetForce());
-
-		// Force Variation and Force Overlife might be empty, so will not be stored in Yaml. This is handled
-		// by PropertyLineYamlWriter, no further changes should be done.
-        forceDataName = Format("forceVariation%d", i);
-        PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(layerNode, forceDataName, currentForce->GetForceVariation());
-
         forceDataName = Format("forceOverLife%d", i);
-        PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(layerNode, forceDataName, currentForce->GetForceOverlife());
+        PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(layerNode, forceDataName, currentForce->forceOverLife);
     }
 }
 
@@ -1395,95 +826,18 @@ void ParticleLayer::GetModifableLines(List<ModifiablePropertyLineBase *> &modifi
 		forces[i]->GetModifableLines(modifiables);
 	}
 
-}
-
-Particle * ParticleLayer::GetHeadParticle()
-{
-	return head;
-}
-
-RenderBatch * ParticleLayer::GetRenderBatch()
-{
-	return renderBatch;
-}
-
-void ParticleLayer::UpdateFrameTimeline()
-{
-	if (!this->frameOverLifeEnabled)
+	if ((type == TYPE_SUPEREMITTER_PARTICLES)&&innerEmitter)
 	{
-		return;
+		innerEmitter->GetModifableLines(modifiables);
 	}
 
-	if (!this->sprite)
-	{
-		this->frameOverLifeEnabled = false;
-		return;
-	}
-}
-	
-void ParticleLayer::SetAdditive(bool additive)
-{
-	if (additive)
-		SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE);
-	else
-		SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-}
-bool ParticleLayer::GetAdditive() const
-{
-	return  (srcBlendFactor == BLEND_SRC_ALPHA) && (dstBlendFactor == BLEND_ONE);
 }
 
-void ParticleLayer::SetBlendMode(eBlendMode sFactor, eBlendMode dFactor)
-{
-	srcBlendFactor = sFactor;
-	dstBlendFactor = dFactor;
-}
-eBlendMode ParticleLayer::GetBlendSrcFactor()
-{
-	return srcBlendFactor;
-}
-eBlendMode ParticleLayer::GetBlendDstFactor()
-{
-	return dstBlendFactor;
-}
-
-void ParticleLayer::SetFog(bool enable)
-{
-	enableFog = enable;
-}
-bool ParticleLayer::IsFogEnabled()
-{
-	return enableFog;
-}
-
-void ParticleLayer::SetFrameBlend(bool enable)
-{
-	enableFrameBlend = enable;
-}
-bool ParticleLayer::IsFrameBlendEnabled()
-{
-	return enableFrameBlend;
-}
-
-void ParticleLayer::SetInheritPosition(bool inherit)
-{
-	inheritPosition = inherit;
-}
 
 void ParticleLayer::AddForce(ParticleForce* force)
 {
 	SafeRetain(force);
 	this->forces.push_back(force);
-}
-
-void ParticleLayer::UpdateForce(int32 forceIndex, RefPtr< PropertyLine<Vector3> > force,
-										RefPtr< PropertyLine<Vector3> > forceVariation,
-										RefPtr< PropertyLine<float32> > forceOverLife)
-{
-	if (forceIndex <= (int32)this->forces.size())
-	{
-		this->forces[forceIndex]->Update(force, forceVariation, forceOverLife);
-	}
 }
 
 void ParticleLayer::RemoveForce(ParticleForce* force)
@@ -1545,63 +899,6 @@ void ParticleLayer::FillSizeOverlifeXY(RefPtr< PropertyLine<float32> > sizeOverL
 	this->sizeOverLifeXY = sizeOverLifeXYKeyframes;
 }
 
-void ParticleLayer::SetPlaybackSpeed(float32 value)
-{
-	this->playbackSpeed = Clamp(value, PARTICLE_EMITTER_MIN_PLAYBACK_SPEED,
-								PARTICLE_EMITTER_MAX_PLAYBACK_SPEED);
-	
-	// Lookup through the active particles to update playback speed for the
-	// inner emitters.
-	UpdatePlaybackSpeedForInnerEmitters(value);
-}
-
-float32 ParticleLayer::GetPlaybackSpeed()
-{
-	return this->playbackSpeed;
-}
-
-int32 ParticleLayer::GetActiveParticlesCount()
-{
-	if (!innerEmitter)
-	{
-		return count;
-	}
-
-	// Ask each end every active particle's inner emitter regarding the total.
-	int32 totalCount = count;
-	Particle* current = head;
-	while (current)
-	{
-		if (current->GetInnerEmitter())
-		{
-			ParticleEmitter* currentInnerEmitter = current->GetInnerEmitter();
-			for (Vector<ParticleLayer*>::iterator iter = currentInnerEmitter->GetLayers().begin();
-				 iter != currentInnerEmitter->GetLayers().end(); iter ++)
-			{
-				totalCount += (*iter)->GetActiveParticlesCount();
-			}
-		}
-		
-		current = current->next;
-	}
-
-	return totalCount;
-}
-
-float32 ParticleLayer::GetActiveParticlesArea()
-{
-	// Yuri Coder, 2013/04/16. Since the particles size are updated in runtime,
-	// we have to recalculate their area each time this method is called.
-	float32 activeArea = 0;
-	Particle * current = head;
-	while(current)
-	{
-		activeArea += current->GetArea();
-		current = current->next;
-	}
-
-	return activeArea;
-}
 
 ParticleLayer::eType ParticleLayer::StringToLayerType(const String& layerTypeName, eType defaultLayerType)
 {
@@ -1630,92 +927,4 @@ String ParticleLayer::LayerTypeToString(eType layerType, const String& defaultLa
 	
 	return defaultLayerTypeName;
 }
-
-void ParticleLayer::UpdatePlaybackSpeedForInnerEmitters(float value)
-{
-	Particle* current = this->head;
-	while (current)
-	{
-		if (current->GetInnerEmitter())
-		{
-			current->GetInnerEmitter()->SetPlaybackSpeed(value);
-		}
-		
-		current = current->next;
-	}
-	if (innerEmitter)
-		innerEmitter->SetPlaybackSpeed(value);
-}
-
-void ParticleLayer::CreateInnerEmitter()
-{
-	SafeRelease(innerEmitter);
-	innerEmitter = new ParticleEmitter();	
-}
-
-ParticleEmitter* ParticleLayer::GetInnerEmitter()
-{
-	return innerEmitter;
-}
-
-void ParticleLayer::RemoveInnerEmitter()
-{
-	DeleteAllParticles();
-	if (innerEmitter)
-	{
-		innerEmitter->Stop();
-	}
-
-	SafeRelease(innerEmitter);
-}
-
-void ParticleLayer::PauseInnerEmitter(bool _isPaused)
-{
-	/*if (innerEmitter)
-	{
-		innerEmitter->Pause(_isPaused);
-	}*/
-
-	//guess pause inner emitter means pausing all particles emitters instead
-	Particle * current = head;
-	while(current)
-	{
-		if (current->GetInnerEmitter())
-			current->GetInnerEmitter()->Pause(_isPaused);		
-		current = current->next;
-	}
-}
-
-void ParticleLayer::SetDisabled(bool value)
-{
-	this->isDisabled = value;
-	
-	// Update all the inner layers.
-	Particle* current = this->head;
-	while (current)
-	{
-		if (current->GetInnerEmitter())
-		{
-			current->GetInnerEmitter()->SetDisabledForAllLayers(value);
-		}
-
-		current = current->next;
-	}
-}
-
-Vector2 ParticleLayer::GetPivotPoint() const
-{
-	return layerPivotPoint;
-}
-
-void ParticleLayer::SetPivotPoint(const Vector2& value)
-{
-	this->layerPivotPoint = value;
-}
-
-void ParticleLayer::HandleRemoveFromSystem()
-{
-	DeleteAllParticles();
-}
-	
 };

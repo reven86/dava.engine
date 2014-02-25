@@ -31,6 +31,7 @@
 #include "ImposterManager.h"
 #include "Render/SharedFBO.h"
 #include "Utils/Utils.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
@@ -103,6 +104,7 @@ void ImposterManager::Update(float32 frameTime)
 
 void ImposterManager::Draw()
 {
+    TIME_PROFILE("ImposterManager::Draw");
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
 	{
 		return;
@@ -135,7 +137,7 @@ void ImposterManager::ProcessQueue()
 #if defined(__DAVAENGINE_OPENGL__)
 		RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
 #endif //#if defined(__DAVAENGINE_OPENGL__)
-		camera->Set();
+		camera->SetupDynamicParameters();
 	}
 }
 

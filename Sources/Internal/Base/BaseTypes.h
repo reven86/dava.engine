@@ -198,8 +198,15 @@ typedef std::string		String;
 
 //#define List std::list
 //#define Vector std::vector
-template < class E > class List : public std::list< E > {};
-template < class E > class Vector : public std::vector< E > {};
+template < typename E > class List : public std::list< E > {};
+template < typename E > class Vector : public std::vector< E >
+{
+public:
+    typedef E	   value_type;
+    typedef size_t size_type;
+    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E >(n, value) {}
+    Vector() : std::vector< E >() {}
+};
 template < class E > class Set : public std::set< E > {};
 template < class E > class Deque : public std::deque< E > {};
 
@@ -314,6 +321,14 @@ enum eAlign
 
 #ifndef COUNT_OF
 #define COUNT_OF(x) (sizeof(x)/sizeof(*x))
+#endif
+    
+#ifndef REMOVE_IN_RELEASE
+    #if defined(__DAVAENGINE_DEBUG__)
+        #define REMOVE_IN_RELEASE (x) x
+    #else
+        #define REMOVE_IN_RELEASE (x) 
+    #endif
 #endif
 
     

@@ -50,7 +50,7 @@ MaterialCompiler::eCompileResult MaterialCompiler::Compile(MaterialGraph * _mate
         return COMPILATION_FAILED;
     }
 
-    currentMaterial = new NMaterial(maxLights);
+    currentMaterial = new NMaterial();
 
     RecursiveSetDepthMarker(rootResultNode, 0);
     materialGraph->SortByDepthMarkerAndRemoveUnused();
@@ -68,17 +68,20 @@ MaterialCompiler::eCompileResult MaterialCompiler::Compile(MaterialGraph * _mate
 #endif
     
     GenerateCode(materialGraph);
-    
-    Shader * shader = new Shader();
-    shader->Load(materialCompiledVshName, materialCompiledFshName);
-    shader->RecompileAsync();
-    
-    currentMaterial->SetShader(0, shader);
-    
-    *resultMaterial = currentMaterial;
-    
+
     return COMPILATION_SUCCESS;
 };
+    
+String MaterialCompiler::GetCompiledVertexShaderPathname() const
+{	//VK: why we return string instead of FilePath
+    return materialCompiledVshName.GetAbsolutePathname();
+}
+
+String MaterialCompiler::GetCompiledFragmentShaderPathname() const
+{	//VK: why we return string instead of FilePath
+    return materialCompiledFshName.GetAbsolutePathname();
+}
+
     
 void MaterialCompiler::RecursiveSetDepthMarker(MaterialGraphNode * node, uint32 depthMarker)
 {
@@ -138,7 +141,7 @@ void MaterialCompiler::FixNodesWithoutProperInputs()
 
 MaterialCompiler::eCompileError MaterialCompiler::GenerateCodeForNode(MaterialGraphNode * node, String & vertexShader, String & pixelShader)
 {
-    Logger::FrameworkDebug("Generate Code: %s %d", node->GetName().c_str(), node->GetType());
+    Logger::Debug("Generate Code: %s %d", node->GetName().c_str(), node->GetType());
     
     
     //uint32 usedByOthersCount = usedByOthersModifier.length();
@@ -168,9 +171,9 @@ MaterialCompiler::eCompileError MaterialCompiler::GenerateCodeForNode(MaterialGr
     if (type == MaterialGraphNode::TYPE_SHIFTER)
     {
         MaterialGraphNodeConnector * connectorTexCoord = node->GetInputConnector("texCoord");
-        int32 texCoordIndex = 0;
-        if (connectorTexCoord)
-            texCoordIndex = connectorTexCoord->GetNode()->textureInputIndex;
+//        int32 texCoordIndex = 0;
+//        if (connectorTexCoord)
+//            texCoordIndex = connectorTexCoord->GetNode()->textureInputIndex;
         
         // Add uniform
         vertexShaderAdditionaUniforms[NMaterialConsts::UNIFORM_GLOBAL_TIME] = Shader::UT_FLOAT;
@@ -208,11 +211,11 @@ MaterialCompiler::eCompileError MaterialCompiler::GenerateCodeForNode(MaterialGr
                           node->textureChannelIndex,
                           inputVarName.c_str(),
                           node->RGBAModifierToString(node->usedByOthersModifier).c_str());
-        Logger::FrameworkDebug("%s", node->nodeCode.c_str());
+        Logger::Debug("%s", node->nodeCode.c_str());
         *destinationCode += node->nodeCode;
         
-        NMaterialDescriptor * descriptor = currentMaterial->GetDescriptor();
-        descriptor->SetNameForTextureSlot(node->textureChannelIndex, node->name);
+        //NMaterialDescriptor * descriptor = currentMaterial->GetDescriptor();
+        //descriptor->SetNameForTextureSlot(node->textureChannelIndex, node->name);
     }
     
     if (type == MaterialGraphNode::TYPE_CONST)
@@ -249,7 +252,7 @@ MaterialCompiler::eCompileError MaterialCompiler::GenerateCodeForNode(MaterialGr
                           node->name.c_str(),
                           op1.c_str(),
                           op2.c_str());
-        Logger::FrameworkDebug("%s", node->nodeCode.c_str());
+        Logger::Debug("%s", node->nodeCode.c_str());
         *destinationCode += node->nodeCode;
     }
     if (type == MaterialGraphNode::TYPE_ADD)
@@ -268,7 +271,7 @@ MaterialCompiler::eCompileError MaterialCompiler::GenerateCodeForNode(MaterialGr
                           connectorB->node->GetName().c_str(),
                           connectorB->modifier.c_str());
         
-        Logger::FrameworkDebug("%s", node->nodeCode.c_str());
+        Logger::Debug("%s", node->nodeCode.c_str());
         *destinationCode += node->nodeCode;
     }
     

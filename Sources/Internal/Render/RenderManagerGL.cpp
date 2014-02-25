@@ -90,11 +90,11 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 void RenderManager::Release()
 {
+	Singleton<RenderManager>::Release();
+
 	wglMakeCurrent(0, 0);
 	wglDeleteContext(hRC);
 	ReleaseDC(hWnd, hDC);	
-	
-	Singleton<RenderManager>::Release();
 }
 
 bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
@@ -160,6 +160,11 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_OES_texture_float");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
+    
+#   if (__ANDROID_API__ < 18)
+    InitFakeOcclusion();
+#   endif
+
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
 	caps.isPVRTCSupported = false;
@@ -203,10 +208,10 @@ void RenderManager::BeginFrame()
 	//DVASSERT(!currentRenderEffect);
 	DVASSERT(clipStack.empty());
 	DVASSERT(renderTargetStack.empty());
-	DVASSERT(renderEffectStack.empty());
 	Reset();
 	isInsideDraw = true;
-    ClearUniformMatrices();
+    
+    //ClearUniformMatrices();
 }
 	
 //void RenderManager::SetDrawOffset(const Vector2 &offset)
@@ -218,34 +223,49 @@ void RenderManager::BeginFrame()
 
 void RenderManager::PrepareRealMatrix()
 {
+    bool isMappingMatrixChanged = mappingMatrixChanged;
     if (mappingMatrixChanged)
     {
         mappingMatrixChanged = false;
         Vector2 realDrawScale(viewMappingDrawScale.x * userDrawScale.x, viewMappingDrawScale.y * userDrawScale.y);
         Vector2 realDrawOffset(viewMappingDrawOffset.x + userDrawOffset.x * viewMappingDrawScale.x, viewMappingDrawOffset.y + userDrawOffset.y * viewMappingDrawScale.y);
 	
-	if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset) 
-	{
+        if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
+        {
+            Vector2 oldCurrentDrawScale = currentDrawScale;
+            Vector2 oldCurrentDrawOffset = currentDrawOffset;
 
-		currentDrawScale = realDrawScale;
-		currentDrawOffset = realDrawOffset;
+            currentDrawScale = realDrawScale;
+            currentDrawOffset = realDrawOffset;
 
-        
-        Matrix4 glTranslate, glScale;
-        glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-        glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-        
-        glTranslate = glScale * glTranslate;
-        SetMatrix(MATRIX_MODELVIEW, glTranslate);
-//        Logger::FrameworkDebug("2D matricies recalculated");
-//        Matrix4 modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-//        Logger::FrameworkDebug("Model matrix");
-//        modelViewSave.Dump();
-//        Matrix4 projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-//        Logger::FrameworkDebug("Proj matrix");
-//        projectionSave.Dump();
+            
+            Matrix4 glTranslate, glScale;
+            glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
+            glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
+            
+            
+            //Matrix4 oldMatrix = renderer2d.viewMatrix;
+            
+            renderer2d.viewMatrix = glScale * glTranslate;
+            SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
+            
+            //DVASSERT(oldMatrix != renderer2d.viewMatrix);
+    //        Logger::FrameworkDebug("2D matricies recalculated");
+    //        Matrix4 modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
+    //        Logger::FrameworkDebug("Model matrix");
+    //        modelViewSave.Dump();
+    //        Matrix4 projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
+    //        Logger::FrameworkDebug("Proj matrix");
+    //        projectionSave.Dump();
+        }
     }
-}
+    
+    Matrix4 glTranslate, glScale;
+    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
+    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
+    
+    Matrix4 check = glScale * glTranslate;
+    DVASSERT(check == renderer2d.viewMatrix);
 }
 	
 
@@ -336,7 +356,14 @@ void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates
     if ((rect.dx < 0.0f) && (rect.dy < 0.0f))
     {
         viewport = rect;
-        RENDER_VERIFY(glViewport(0, 0, frameBufferWidth, frameBufferHeight));
+        if (currentRenderTarget)
+        {
+            RENDER_VERIFY(glViewport(0, 0, currentRenderTarget->GetTexture()->GetWidth(), currentRenderTarget->GetTexture()->GetHeight()));
+        }
+        else
+        {
+            RENDER_VERIFY(glViewport(0, 0, frameBufferWidth, frameBufferHeight));
+        }
         return;
     }
     if (precaleulatedCoordinates) 
@@ -374,35 +401,18 @@ void RenderManager::SetRenderOrientation(int32 orientation)
 {
 	renderOrientation = orientation;
 	
-//	glMatrixMode(GL_PROJECTION);
-//	glLoadIdentity();
-//#if defined(__DAVAENGINE_IPHONE__)
-//	RENDER_VERIFY(glOrthof(0.0f, frameBufferWidth, frameBufferHeight, 0.0f, -1.0f, 1.0f));
-//#else // for NON ES platforms
-//	RENDER_VERIFY(glOrtho(0.0f, frameBufferWidth, frameBufferHeight, 0.0f, -1.0f, 1.0f));
-//#endif
-    
-    Matrix4 orthoMatrix; 
-    Matrix4 glTranslate;
-    Matrix4 glRotate;
-
-    orthoMatrix.glOrtho(0.0f, (float32)frameBufferWidth, (float32)frameBufferHeight, 0.0f, -1.0f, 1.0f);
-	
-    
+    if (orientation != Core::SCREEN_ORIENTATION_TEXTURE)
+    {
+        renderer2d.projMatrix.glOrtho(0.0f, (float32)frameBufferWidth, (float32)frameBufferHeight, 0.0f, -1.0f, 1.0f);
+    }else{
+        renderer2d.projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
+                                      0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(), -1.0f, 1.0f);
+    }
     retScreenWidth = frameBufferWidth;
     retScreenHeight = frameBufferHeight;
 	
     
-    SetMatrix(MATRIX_PROJECTION, orthoMatrix);
-
-//	if (orientation != Core::SCREEN_ORIENTATION_TEXTURE) 
-//	{
-//		glTranslatef(Core::Instance()->GetPhysicalDrawOffset().x, Core::Instance()->GetPhysicalDrawOffset().y, 0.0f);
-//	}
-	
-    //glMatrixMode(GL_MODELVIEW);
-	//glLoadIdentity();
-	
+    SetDynamicParam(PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
 
     IdentityModelMatrix();
     
@@ -414,140 +424,10 @@ void RenderManager::SetRenderOrientation(int32 orientation)
 
 }
 
-
-
-void RenderManager::SetBlendMode(eBlendMode sfactor, eBlendMode dfactor)
+void RenderManager::SetCullOrder(eCullOrder cullOrder)
 {
-	currentState.SetBlendMode(sfactor, dfactor);
+    glFrontFace(cullOrder);
 }
-	
-eBlendMode RenderManager::GetSrcBlend()
-{
-	return currentState.sourceFactor;
-}
-
-eBlendMode RenderManager::GetDestBlend()
-{
-	return currentState.destFactor;
-}
-
-
-/*
- void RenderManager::EnableBlending(bool isEnabled)
-{
-	if((int32)isEnabled != oldBlendingEnabled)
-	{
-		if(isEnabled)
-		{
-			RENDER_VERIFY(glEnable(GL_BLEND));
-		}
-		else
-		{
-			RENDER_VERIFY(glDisable(GL_BLEND));
-		}
-		oldBlendingEnabled = isEnabled;
-	}
-}
-    
-void RenderManager::EnableDepthTest(bool isEnabled)
-{
-	if((int32)isEnabled != depthTestEnabled)
-	{
-		if(isEnabled)
-		{
-            RENDER_VERIFY(glEnable(GL_DEPTH_TEST));
-		}
-		else
-		{
-            RENDER_VERIFY(glDisable(GL_DEPTH_TEST));
-		}
-		depthTestEnabled = isEnabled;
-	}
-}
-
-void RenderManager::EnableDepthWrite(bool isEnabled)
-{
-	if((int32)isEnabled != depthWriteEnabled)
-	{
-		if(isEnabled)
-		{
-            RENDER_VERIFY(glDepthMask(GL_TRUE));
-		}
-		else
-		{
-            RENDER_VERIFY(glDepthMask(GL_TRUE));
-		}
-		depthWriteEnabled = isEnabled;
-	}
-}
-*/
-
-void RenderManager::EnableVertexArray(bool isEnabled)
-{
-    if(isEnabled != (oldVertexArrayEnabled != 0))
-    {
-        if(isEnabled)
-        {
-            RENDER_VERIFY(glEnableClientState(GL_VERTEX_ARRAY));
-        }
-        else
-        {
-            RENDER_VERIFY(glDisableClientState(GL_VERTEX_ARRAY));
-        }
-        oldVertexArrayEnabled = isEnabled;
-    }
-}
-
-void RenderManager::EnableNormalArray(bool isEnabled)
-{
-    if(isEnabled != (oldNormalArrayEnabled != 0))
-    {
-        if(isEnabled)
-        {
-            RENDER_VERIFY(glEnableClientState(GL_NORMAL_ARRAY));
-        }
-        else
-        {
-            RENDER_VERIFY(glDisableClientState(GL_NORMAL_ARRAY));
-        }
-        oldNormalArrayEnabled = isEnabled;
-    }
-}
-
-void RenderManager::EnableTextureCoordArray(bool isEnabled, int32 textureLevel)
-{
-    if(isEnabled != (oldTextureCoordArrayEnabled[textureLevel] != 0))
-    {
-        glClientActiveTexture(GL_TEXTURE0 + textureLevel);
-
-        if(isEnabled)
-        {
-            RENDER_VERIFY(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
-        }
-        else
-        {
-            RENDER_VERIFY(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
-        }
-        oldTextureCoordArrayEnabled[textureLevel] = isEnabled;
-    }
-}
-
-void RenderManager::EnableColorArray(bool isEnabled)
-{
-    if(isEnabled != (oldColorArrayEnabled != 0))
-    {
-        if(isEnabled)
-        {
-            RENDER_VERIFY(glEnableClientState(GL_COLOR_ARRAY));
-        }
-        else
-        {
-            RENDER_VERIFY(glDisableClientState(GL_COLOR_ARRAY));
-        }
-        oldColorArrayEnabled = isEnabled;
-    }
-}
-
     
 void RenderManager::FlushState()
 {
@@ -561,30 +441,6 @@ void RenderManager::FlushState(RenderState * stateBlock)
 	PrepareRealMatrix();
 	
 	stateBlock->Flush(&hardwareState);
-}
-
-void RenderManager::SetTexCoordPointer(int size, eVertexDataType _typeIndex, int stride, const void *pointer)
-{
-	GLint type = VERTEX_DATA_TYPE_TO_GL[_typeIndex];
-    RENDER_VERIFY(glTexCoordPointer(size, type, stride, pointer));
-}
-
-void RenderManager::SetVertexPointer(int size, eVertexDataType _typeIndex, int stride, const void *pointer)
-{
-	GLint type = VERTEX_DATA_TYPE_TO_GL[_typeIndex];
-    RENDER_VERIFY(glVertexPointer(size, type, stride, pointer));
-}
-
-void RenderManager::SetNormalPointer(eVertexDataType _typeIndex, int stride, const void *pointer)
-{
-	GLint type = VERTEX_DATA_TYPE_TO_GL[_typeIndex];
-    RENDER_VERIFY(glNormalPointer(type, stride, pointer));
-}
-
-void RenderManager::SetColorPointer(int size, eVertexDataType _typeIndex, int stride, const void *pointer)
-{
-	GLint type = VERTEX_DATA_TYPE_TO_GL[_typeIndex];
-    RENDER_VERIFY(glColorPointer(size, type, stride, pointer));
 }
 
 void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
@@ -603,7 +459,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 
 	if(debugEnabled)
 	{
-		Logger::FrameworkDebug("Draw arrays texture: id %d", currentState.currentTexture[0]->id);
+		Logger::FrameworkDebug("Draw arrays texture stated: id %d", currentState.textureState);
 	}
 
     RENDER_VERIFY(glDrawArrays(mode, first, count));
@@ -630,7 +486,7 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
             break;
     };
 }
-    
+
 void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices)
 {
 	static const int32 types[PRIMITIVETYPE_COUNT] = 
@@ -647,7 +503,7 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 	
 	if(debugEnabled)
 	{
-		Logger::FrameworkDebug("Draw arrays texture: id %d", currentState.currentTexture[0]->id);
+		Logger::FrameworkDebug("Draw arrays texture state: id %d", currentState.textureState);
 	}
 #if defined(__DAVAENGINE_IPHONE__)
 #if not defined(GL_UNSIGNED_INT)
@@ -792,17 +648,17 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 //		RENDER_VERIFY(glOrtho(0.0f, renderTarget->GetTexture()->width, 0.0f, renderTarget->GetTexture()->height, -1.0f, 1.0f));
 //#endif
 
-        Matrix4 orthoMatrix; 
-        orthoMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
-        SetMatrix(MATRIX_PROJECTION, orthoMatrix);
+        renderer2d.projMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
+        SetDynamicParam (PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
         
 		//RENDER_VERIFY(glMatrixMode(GL_MODELVIEW));
 		//RENDER_VERIFY(glLoadIdentity());
         IdentityModelMatrix();
-		IdentityMappingMatrix();
+		IdentityMappingMatrix(); 
 
 		viewMappingDrawScale.x = renderTarget->GetResourceToPhysicalFactor();
 		viewMappingDrawScale.y = renderTarget->GetResourceToPhysicalFactor();
+        mappingMatrixChanged = true;
 //		Logger::FrameworkDebug("Sets with render target: Scale %.4f,    Offset: %.4f, %.4f", viewMappingDrawScale.x, viewMappingDrawOffset.x, viewMappingDrawOffset.y);
 		RemoveClip();
 	}
@@ -818,14 +674,33 @@ void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 	HWglBindFBO(renderTarget->fboID);
 	RemoveClip();
 }
-
-    
+#if 0
 void RenderManager::SetMatrix(eMatrixType type, const Matrix4 & matrix)
 {
+    SetMatrix(type, matrix, 0);
+}
+    
+void RenderManager::SetMatrix(eMatrixType type, const Matrix4 & matrix, uint32 cacheValue)
+{
     GLint matrixMode[2] = {GL_MODELVIEW, GL_PROJECTION};
-    matrices[type] = matrix;
-    uniformMatrixFlags[UNIFORM_MATRIX_MODELVIEWPROJECTION] = 0; // require update
-    uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] = 0; // require update
+    if (type == MATRIX_PROJECTION)
+    {
+        matrices[type] = matrix;
+        uniformMatrixFlags[UNIFORM_MATRIX_MODELVIEWPROJECTION] = 0; // require update
+        uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] = 0; // require update
+        projectionMatrixCache++;
+    }
+    else if (type == MATRIX_MODELVIEW)
+    {
+        if (cacheValue == 0 ||
+            modelViewMatrixCache != cacheValue)
+        {
+            matrices[type] = matrix;
+            uniformMatrixFlags[UNIFORM_MATRIX_MODELVIEWPROJECTION] = 0; // require update
+            uniformMatrixFlags[UNIFORM_MATRIX_NORMAL] = 0; // require update
+            modelViewMatrixCache = cacheValue;
+        }
+    }
     
     if (renderer != Core::RENDERER_OPENGL_ES_2_0)
     {
@@ -833,7 +708,8 @@ void RenderManager::SetMatrix(eMatrixType type, const Matrix4 & matrix)
         RENDER_VERIFY(glLoadMatrixf(matrix.data));
     }
 }
-        
+#endif 
+    
 void RenderManager::HWglBindBuffer(GLenum target, GLuint buffer)
 {
     DVASSERT(target - GL_ARRAY_BUFFER <= 1);
@@ -850,122 +726,11 @@ void RenderManager::AttachRenderData()
 
     const int DEBUG = 0;
 	Shader * shader = hardwareState.shader;
+	
+	GetStats().attachRenderDataCount++;
     
-    if (!shader)
     {
-        // TODO: should be moved to RenderManagerGL
-        HWglBindBuffer(GL_ARRAY_BUFFER, currentRenderData->vboBuffer);
-        HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentRenderData->indexBuffer);
-        
-        
-#if defined(__DAVAENGINE_DIRECTX9__)
-        DVASSERT(currentRenderData->vboBuffer == 0);
-#endif
-        if (enabledAttribCount != 0)
-        {
-            for (int32 p = 0; p < enabledAttribCount; ++p)
-            {
-                if (DEBUG)Logger::FrameworkDebug("!shader glDisableVertexAttribArray: %d", p);
-                RENDER_VERIFY(glDisableVertexAttribArray(p));
-            }
-            enabledAttribCount = 0;
-            pointerArraysRendererState = 0;
-        }
-        
-        pointerArraysCurrentState = 0;
-        int32 size = (int32)currentRenderData->streamArray.size();
-        for (int32 k = 0; k < size; ++k)
-        {
-            RenderDataStream * stream = currentRenderData->streamArray[k];
-            switch(stream->formatMark)
-            {
-                case EVF_VERTEX:
-                    if (DEBUG)Logger::FrameworkDebug("!shader SetVertexPointer");
-
-                    SetVertexPointer(stream->size, stream->type, stream->stride, stream->pointer);
-                    pointerArraysCurrentState |= EVF_VERTEX;
-                    break;
-                case EVF_NORMAL:
-                    if (DEBUG)Logger::FrameworkDebug("!shader SetNormalPointer");
-
-                    SetNormalPointer(stream->type, stream->stride, stream->pointer);
-                    pointerArraysCurrentState |= EVF_NORMAL;
-                    break;
-                case EVF_TEXCOORD0:
-                    if (DEBUG)Logger::FrameworkDebug("!shader SetTexCoordPointer 0");
-
-                    glClientActiveTexture(GL_TEXTURE0);
-                    SetTexCoordPointer(stream->size, stream->type, stream->stride, stream->pointer);
-                    pointerArraysCurrentState |= EVF_TEXCOORD0;
-                    break;
-                case EVF_TEXCOORD1:
-                    if (DEBUG)Logger::FrameworkDebug("!shader SetTexCoordPointer 1");
-
-                    glClientActiveTexture(GL_TEXTURE1);
-                    SetTexCoordPointer(stream->size, stream->type, stream->stride, stream->pointer);
-                    pointerArraysCurrentState |= EVF_TEXCOORD1;
-                    break;
-                default:
-                    break;
-            };
-        };
-        
-        uint32 difference = pointerArraysCurrentState ^ pointerArraysRendererState;
-        
-        if (difference & EVF_VERTEX)
-        {
-            if (DEBUG)Logger::FrameworkDebug("!shader EnableVertexArray: %d", (pointerArraysCurrentState & EVF_VERTEX) != 0);
-
-            EnableVertexArray((pointerArraysCurrentState & EVF_VERTEX) != 0);
-        }
-        if (difference & EVF_NORMAL)
-        {
-            if (DEBUG)Logger::FrameworkDebug("!shader EnableNormalArray: %d", (pointerArraysCurrentState & EVF_NORMAL) != 0);
-
-            EnableNormalArray((pointerArraysCurrentState & EVF_NORMAL) != 0);
-        }
-        if (difference & EVF_TEXCOORD0)
-        {
-            if (DEBUG)Logger::FrameworkDebug("!shader EnableTextureCoordArray-0: %d", (pointerArraysCurrentState & EVF_TEXCOORD0) != 0);
-
-            EnableTextureCoordArray((pointerArraysCurrentState & EVF_TEXCOORD0) != 0, 0);
-        }
-        if (difference & EVF_TEXCOORD1)
-        {
-            if (DEBUG)Logger::FrameworkDebug("!shader EnableTextureCoordArray-1: %d", (pointerArraysCurrentState & EVF_TEXCOORD1) != 0);
-
-            EnableTextureCoordArray((pointerArraysCurrentState & EVF_TEXCOORD1) != 0, 1);
-        }
-        pointerArraysRendererState = pointerArraysCurrentState;
-        
-    }
-    else
-    {
-        if (GetRenderer() == Core::RENDERER_OPENGL)
-        {
-            if (oldVertexArrayEnabled)
-            {
-                EnableVertexArray(false);
-            }
-            if (oldNormalArrayEnabled)
-            {
-                EnableNormalArray(false);
-            }
-            if (oldTextureCoordArrayEnabled[0])
-            {
-                EnableTextureCoordArray(false, 0);
-            }
-            if (oldTextureCoordArrayEnabled[1])
-            {
-                EnableTextureCoordArray(false, 1);
-            }
-            pointerArraysRendererState = 0;
-        }
-
         int32 currentEnabledAttribCount = 0;
-        //glDisableVertexAttribArray(0);
-        //glDisableVertexAttribArray(1);
-        //pointerArraysCurrentState = 0;
         
         HWglBindBuffer(GL_ARRAY_BUFFER, currentRenderData->vboBuffer);
         HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentRenderData->indexBuffer);
@@ -1062,7 +827,7 @@ void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
     if(0 != tId)
     {
-        glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId);
+        RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
         
         		//GLenum err = glGetError();
         		//if (err != GL_NO_ERROR)

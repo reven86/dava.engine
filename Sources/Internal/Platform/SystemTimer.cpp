@@ -97,6 +97,13 @@ SystemTimer::SystemTimer()
  	//t0 = (float32)(GetTickCount() / 1000.0f);
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	(void) mach_timebase_info(&timebase);
+    
+	while(((timebase.numer % 10) == 0) && ((timebase.denom % 10) == 0))
+	{
+		timebase.numer /= 10;
+		timebase.denom /= 10;
+	}
+
 	t0 = mach_absolute_time();
 #else //PLATFORMS
 	//other platorfms
@@ -230,12 +237,6 @@ uint64 SystemTimer::GetAbsoluteNano()
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	uint64_t numer = timebase.numer;
 	uint64_t denom = timebase.denom;
-    
-	while(((numer % 10) == 0) && ((denom % 10) == 0))
-	{
-		numer /= 10;
-		denom /= 10;
-	}
 	uint64_t elapsed = mach_absolute_time();
 	elapsed *= numer;
 	elapsed /= denom;
@@ -266,12 +267,6 @@ uint64 SystemTimer::AbsoluteMS()
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	uint64_t numer = timebase.numer;
 	uint64_t denom = timebase.denom;
-
-	while(((numer % 10) == 0) && ((denom % 10) == 0))
-	{
-		numer /= 10;
-		denom /= 10;
-	}
 	uint64_t elapsed = mach_absolute_time();
 	elapsed *= numer;
 	elapsed /= denom;

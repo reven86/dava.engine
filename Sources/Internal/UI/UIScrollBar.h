@@ -74,7 +74,6 @@ public:
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 	
-	virtual List<UIControl* >& GetRealChildren();
 	virtual List<UIControl* > GetSubcontrols();
 	
 	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);

@@ -71,10 +71,12 @@ void MipMapReplacer::EnumerateTexturesRecursive(Entity * entity, Set<Texture *> 
             RenderBatch * rb = ro->GetRenderBatch(i);
             if(rb)
             {
-                Material * material = rb->GetMaterial();
+                DVASSERT(0 && "Vitaliy Borodovsky: Temporarly disabled. Need to rewrite for new materials");
+                
+                NMaterial * material = rb->GetMaterial();
                 if(material)
                 {
-                    Texture * texture = material->GetTexture(Material::TEXTURE_DIFFUSE);
+                    Texture * texture = material->GetTexture(NMaterial::TEXTURE_ALBEDO);
                     if(texture)
                         textures.insert(texture);
                 }
@@ -94,7 +96,7 @@ void MipMapReplacer::ReplaceMipMap(Texture * texture, int32 level)
     FilePath textureFilePath = GetDummyTextureFilePath(texture);
     if(!textureFilePath.IsEmpty())
     {
-        Vector<Image*> mipImg = ImageLoader::CreateFromFile(textureFilePath);
+        Vector<Image*> mipImg = ImageLoader::CreateFromFileByContent(textureFilePath);
         if(mipImg.size())
         {
             uint32 mipMapSize = texture->width / (1 << level);
@@ -127,7 +129,8 @@ void MipMapReplacer::ReplaceMipMapFromMemory(Texture * texture, int32 level)
     uint32 dataSize = 0;
     uint8 * data = 0;
 
-    if(texture->format == FORMAT_RGB888)
+	PixelFormat format = texture->GetFormat();
+    if(format == FORMAT_RGB888)
     {
         uint32 pixelsCount = mipMapSize * mipMapSize;
         dataSize = pixelsCount * 3;
@@ -142,8 +145,8 @@ void MipMapReplacer::ReplaceMipMapFromMemory(Texture * texture, int32 level)
     }
     else
     {
-        int32 elementBytesCount = Texture::GetPixelFormatSizeInBytes(texture->format);
-        uint32 elementValue = GetReplaceValue(texture->format);
+        int32 elementBytesCount = Texture::GetPixelFormatSizeInBytes(format);
+        uint32 elementValue = GetReplaceValue(format);
 
         uint32 pixelsCount = mipMapSize * mipMapSize;
         dataSize = pixelsCount * elementBytesCount;
@@ -193,7 +196,7 @@ uint32 MipMapReplacer::GetReplaceValue(PixelFormat format)
 FilePath MipMapReplacer::GetDummyTextureFilePath(Texture * texture)
 {
     String formatFile;
-    switch (texture->format)
+    switch (texture->GetFormat())
     {
     case FORMAT_ATC_RGB:
         formatFile = "atc.dds";

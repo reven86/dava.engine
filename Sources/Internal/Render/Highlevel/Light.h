@@ -34,6 +34,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 //default direction (with identity matrix) is -y
 namespace DAVA 
@@ -80,13 +81,16 @@ public:
     const Vector3 & GetPosition() const;
     const Vector3 & GetDirection() const;
     
+    void SetPosition(const Vector3 & position);
+    void SetDirection(const Vector3 & direction);
+    
     void SetPositionDirectionFromMatrix(const Matrix4 & worldTransform);
 
     //virtual void Update(float32 timeElapsed);
     //virtual void Draw();
     
-	virtual void Save(KeyedArchive * archive, SceneFileV2 * sceneFile);
-	virtual void Load(KeyedArchive * archive, SceneFileV2 * sceneFile);
+	virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
+	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
 
 	const bool IsDynamic();
 	void SetDynamic(const bool & isDynamic);

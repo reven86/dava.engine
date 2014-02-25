@@ -59,7 +59,7 @@ Entity* ChangeDynamicShadowColorCommand::GetEntity() const
 
 
 
-ChangeDynamicShadowModeCommand::ChangeDynamicShadowModeCommand(SceneEditor2 *_scene, DAVA::ShadowVolumeRenderPass::eBlend mode)
+ChangeDynamicShadowModeCommand::ChangeDynamicShadowModeCommand(SceneEditor2 *_scene, DAVA::ShadowPassBlendMode::eBlend mode)
 	: Command2(CMDID_DYNAMIC_SHADOW_CHANGE_MODE, "Change Dynamic Shadow Mode")
 	, scene(_scene)
 	, newMode(mode)

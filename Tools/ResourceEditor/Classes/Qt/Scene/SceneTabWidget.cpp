@@ -26,27 +26,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#include "SceneEditor/SceneEditorScreenMain.h"
-
 #include "Main/mainwindow.h"
 #include "Scene/SceneTabWidget.h"
 #include "Scene/SceneEditor2.h"
-#include "AppScreens.h"
 #include "Tools/QtLabelWithActions/QtLabelWithActions.h"
+#include "Tools/MimeData/MimeDataHelper2.h"
+#include "Deprecated/ScenePreviewDialog.h"
+#include "MaterialEditor/MaterialAssignSystem.h"
 
-#include "Classes/Deprecated/ScenePreviewDialog.h"
-#include "Classes/Qt/Main/Request.h"
+#include "Platform/SystemTimer.h"
 
 #include <QVBoxLayout>
 #include <QResizeEvent>
-#include <QMessageBox>
 #include <QFileInfo>
 
 SceneTabWidget::SceneTabWidget(QWidget *parent)
 	: QWidget(parent)
-	, davaUIScreenID(SCREEN_MAIN)
+	, davaUIScreenID(0)
 	, dava3DViewMargin(3)
 	, newSceneCounter(0)
 	, curScene(NULL)
@@ -153,6 +149,7 @@ void SceneTabWidget::ReleaseDAVAUI()
 
 int SceneTabWidget::OpenTab()
 {
+	QtMainWindow::Instance()->WaitStart("Opening scene...", "Creating new scene.");
 	SceneEditor2 *scene = new SceneEditor2();
 
 	DAVA::FilePath newScenePath = (QString("newscene") + QString::number(++newSceneCounter)).toStdString();
@@ -164,12 +161,16 @@ int SceneTabWidget::OpenTab()
 	SetTabScene(tabIndex, scene);
 
 	SetCurrentTab(tabIndex);
+
+	QtMainWindow::Instance()->WaitStop();
 	return tabIndex;
 }
 
 int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePapth)
 {
 	HideScenePreview();
+
+    DAVA::int64 openStartTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
 
 	int tabIndex = FindTab(scenePapth);
 	if(tabIndex != -1)
@@ -179,43 +180,33 @@ int SceneTabWidget::OpenTab(const DAVA::FilePath &scenePapth)
 	}
 
 	SceneEditor2 *scene = new SceneEditor2();
-
-	QtMainWindow::Instance()->WaitStart("Opening scene...", scenePapth.GetAbsolutePathname().c_str());
-
 	if(scene->Load(scenePapth))
 	{
 		tabIndex = tabBar->addTab(scenePapth.GetFilename().c_str());
 		SetTabScene(tabIndex, scene);
 
 		tabBar->setTabToolTip(tabIndex, scenePapth.GetAbsolutePathname().c_str());
-	}
+
+        SetCurrentTab(tabIndex);
+    }
 	else
 	{
-		// TODO:
-		// message box about can't load scene
-		// ...
-		
         SafeRelease(scene);
 	}
 
-	if(tabBar->count() == 1)
-	{
-		SetCurrentTab(tabIndex);
-	}
-
-	QtMainWindow::Instance()->WaitStop();
+    DAVA::Logger::Instance()->Info("SceneEditor tab opened in %llu\n", DAVA::SystemTimer::Instance()->AbsoluteMS() - openStartTime);
 
 	return tabIndex;
 }
 
-void SceneTabWidget::CloseTab(int index)
+bool SceneTabWidget::CloseTab(int index)
 {
     Request request;
     
     emit CloseTabRequest(index, &request);
     
     if(!request.IsAccepted())
-        return;
+        return false;
     
     
 	SceneEditor2 *scene = GetTabScene(index);
@@ -228,6 +219,7 @@ void SceneTabWidget::CloseTab(int index)
     
     tabBar->removeTab(index);
     SafeRelease(scene);
+    return true;
 }
 
 int SceneTabWidget::GetCurrentTab() const
@@ -237,12 +229,12 @@ int SceneTabWidget::GetCurrentTab() const
 
 void SceneTabWidget::SetCurrentTab(int index)
 {
-	davaWidget->setEnabled(false);
- 	toolWidgetContainer->setVisible(false);
+    davaWidget->setEnabled(false);
+    toolWidgetContainer->setVisible(false);
 
-	if(index >= 0 && index < tabBar->count())
+    if(index >= 0 && index < tabBar->count())
 	{
-		SceneEditor2 *oldScene = curScene;
+        SceneEditor2 *oldScene = curScene;
 		curScene = GetTabScene(index);
 
 		if(NULL != oldScene)
@@ -251,7 +243,9 @@ void SceneTabWidget::SetCurrentTab(int index)
 			SceneSignals::Instance()->EmitDeactivated(oldScene);
 		}
 
+		tabBar->blockSignals(true);
 		tabBar->setCurrentIndex(index);
+		tabBar->blockSignals(false);
 
 		if(NULL != curScene)
 		{
@@ -322,13 +316,14 @@ void SceneTabWidget::TabBarCloseCurrentRequest()
 
 void SceneTabWidget::TabBarDataDropped(const QMimeData *data)
 {
-	if(data->hasUrls())
+	QList<QUrl> urls = data->urls();
+	for(int i = 0; i < urls.size(); ++i)
 	{
-		QList<QUrl> urls = data->urls();
-		for(int i = 0; i < urls.size(); ++i)
-		{
-            QtMainWindow::Instance()->OpenScene(urls[i].toLocalFile());
-		}
+		QString path = urls[i].toLocalFile();
+        if(QFileInfo(path).suffix() == "sc2")
+        {
+            QtMainWindow::Instance()->OpenScene(path);
+        }
 	}
 }
 
@@ -336,26 +331,48 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
 {
 	if(NULL != curScene)
 	{
-		if(data->hasUrls())
-		{
-			DAVA::Vector3 pos;
+        if(MimeDataHelper2<DAVA::NMaterial>::IsValid(data))
+        {
+			QVector<DAVA::NMaterial*> materials = MimeDataHelper2<DAVA::NMaterial>::DecodeMimeData(data);
 
-			if(!curScene->collisionSystem->LandRayTestFromCamera(pos))
+			// assing only when single material is dropped
+			if(materials.size() == 1)
 			{
-				DAVA::Landscape *landscape = curScene->collisionSystem->GetLandscape();
-				if( NULL != landscape && 
-					NULL != landscape->GetHeightmap() &&
-					landscape->GetHeightmap()->Size() > 0)
+				const EntityGroup* group = curScene->collisionSystem->ObjectsRayTestFromCamera();
+
+				if(NULL != group && group->Size() > 0)
 				{
-					curScene->collisionSystem->GetLandscape()->PlacePoint(DAVA::Vector3(), pos);
+                    DAVA::Entity *targetEntity = curScene->selectionSystem->GetSelectableEntity(group->GetEntity(0));
+					MaterialAssignSystem::AssignMaterialToEntity(curScene, targetEntity, materials[0]);
 				}
 			}
-
-			QString sc2path = data->urls().at(0).toLocalFile();
-			
-			QtMainWindow::Instance()->WaitStart("Adding object to scene", sc2path);
-			curScene->structureSystem->Add(sc2path.toStdString(), pos);
-			QtMainWindow::Instance()->WaitStop();
+		}
+        else
+		{
+            QList<QUrl> urls = data->urls();
+            for(int i = 0; i < urls.size(); ++i)
+            {
+				QString path = urls[i].toLocalFile();
+				if(QFileInfo(path).suffix() == "sc2")
+                {
+                    DAVA::Vector3 pos;
+                    
+                    if(!curScene->collisionSystem->LandRayTestFromCamera(pos))
+                    {
+                        DAVA::Landscape *landscape = curScene->collisionSystem->GetLandscape();
+                        if( NULL != landscape &&
+                           NULL != landscape->GetHeightmap() &&
+                           landscape->GetHeightmap()->Size() > 0)
+                        {
+                            curScene->collisionSystem->GetLandscape()->PlacePoint(DAVA::Vector3(), pos);
+                        }
+                    }
+                    
+                    QtMainWindow::Instance()->WaitStart("Adding object to scene", path);
+					curScene->structureSystem->Add(path.toStdString(), pos);
+                    QtMainWindow::Instance()->WaitStop();
+                }
+            }
 		}
 	}
 	else
@@ -447,8 +464,8 @@ bool SceneTabWidget::eventFilter(QObject *object, QEvent *event)
 
 void SceneTabWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-	const QMimeData *mimeData = event->mimeData();
-	if(mimeData->hasUrls()) 
+	if(MimeDataHelper2<DAVA::NMaterial>::IsValid(event->mimeData()) ||
+		event->mimeData()->hasUrls())
 	{
 		event->acceptProposedAction();
 	}
@@ -461,11 +478,7 @@ void SceneTabWidget::dragEnterEvent(QDragEnterEvent *event)
 
 void SceneTabWidget::dropEvent(QDropEvent *event)
 {
-	const QMimeData *mimeData = event->mimeData();
-	if(mimeData->hasUrls())
-	{
-		TabBarDataDropped(mimeData);
-	}
+	TabBarDataDropped(event->mimeData());
 }
 
 void SceneTabWidget::keyReleaseEvent(QKeyEvent * event)
@@ -565,6 +578,20 @@ int SceneTabWidget::FindTab( const DAVA::FilePath & scenePath )
 	return -1;
 }
 
+bool SceneTabWidget::CloseAllTabs()
+{
+    uint32 count = GetTabCount();
+    while(count)
+    {
+        if(!CloseTab(GetCurrentTab()))
+        {
+            return false;
+        }
+        count--;
+    }
+    return true;
+}
+
 
 MainTabBar::MainTabBar(QWidget* parent /* = 0 */)
 	: QTabBar(parent)
@@ -574,8 +601,7 @@ MainTabBar::MainTabBar(QWidget* parent /* = 0 */)
 
 void MainTabBar::dragEnterEvent(QDragEnterEvent *event)
 {
-	const QMimeData *mimeData = event->mimeData();
-	if(mimeData->hasUrls()) 
+	if(event->mimeData()->hasUrls())
 	{
 		event->acceptProposedAction();
 	}
@@ -588,11 +614,8 @@ void MainTabBar::dragEnterEvent(QDragEnterEvent *event)
 
 void MainTabBar::dropEvent(QDropEvent *event)
 {
-	const QMimeData *mimeData = event->mimeData();
-	if(mimeData->hasUrls())
+	if(event->mimeData()->hasUrls())
 	{
-		emit OnDrop(mimeData);
+		emit OnDrop(event->mimeData());
 	}
 }
-
-

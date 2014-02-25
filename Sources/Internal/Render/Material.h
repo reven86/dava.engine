@@ -37,6 +37,7 @@
 
 #include "FileSystem/FilePath.h"
 #include "Base/FastName.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -72,14 +73,16 @@ protected:
 public:
     InstanceMaterialState();
 
-	virtual void Save(KeyedArchive * archive, SceneFileV2 *sceneFile);
-	virtual void Load(KeyedArchive * archive, SceneFileV2 *sceneFile);
+	virtual void Save(KeyedArchive * archive, SerializationContext *serializationContext);
+	virtual void Load(KeyedArchive * archive, SerializationContext *serializationContext);
     
     void SetLight(int32 lightIndex, Light * lightNode);
     Light * GetLight(int32 lightIndex);
     
     void SetLightmap(Texture * texture, const FilePath & lightmapName);
     void SetUVOffsetScale(const Vector2 & uvOffset, const Vector2 uvScale);
+    const Vector2 & GetUVScale() const { return uvScale; };
+    const Vector2 & GetUVOffset() const { return uvOffset; };
 
 	int32 GetLightmapSize();
 	void SetLightmapSize(int32 size);
@@ -129,6 +132,8 @@ public:
     
 class Material : public DataNode
 {
+	friend class SerializationContext;
+	
 public:
     enum eType
     {
@@ -215,8 +220,8 @@ public:
     
     void SetType(eType _type);
     
-    void SetOpaque(bool _isOpaque);
-    bool GetOpaque();
+    void SetAlphatest(bool alphatest);
+    bool GetAlphatest();
 
 	void SetAlphablend(bool isAlphablend);
 	bool GetAlphablend();
@@ -301,8 +306,8 @@ public:
         TEXTURE_COUNT, 
     };    
 
-    void Save(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile);
-    void Load(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile);
+    void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);
+    void Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext);
     
     
     //void SetTextureSlotName(uint32 index, const String & string);

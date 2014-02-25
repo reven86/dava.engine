@@ -123,11 +123,6 @@ bool CoreWin32Platform::SetupWindow(HINSTANCE hInstance, HWND hWindow)
 			fileName[i] = ' ';
 		}
 	}
-	hMutex = CreateMutex(NULL, FALSE, fileName);
-	if(ERROR_ALREADY_EXISTS == GetLastError())
-	{
-		return false;
-	}
 
 	return true;
 }
@@ -145,11 +140,11 @@ int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEv
 {
 		
 	int button = 0;
-	if(message == WM_LBUTTONDOWN || message == WM_LBUTTONUP || message == WM_MOUSEMOVE)
+	if(message == WM_LBUTTONDOWN || message == WM_LBUTTONUP || message == WM_MOUSEMOVE || message == WM_LBUTTONDBLCLK)
 	{
 		button = 1;
 	}
-	else if(message == WM_RBUTTONDOWN || message == WM_RBUTTONUP)
+	else if(message == WM_RBUTTONDOWN || message == WM_RBUTTONUP || message == WM_RBUTTONDBLCLK)
 	{
 		button = 2;
 	}
@@ -159,7 +154,7 @@ int32 MoveTouchsToVector(UINT message, WPARAM wParam, LPARAM lParam, Vector<UIEv
 	}
 
 	int phase = UIEvent::PHASE_MOVE;
-	if(message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN || message == WM_MBUTTONDOWN /*|| message == WM_XBUTTONDOWN*/)
+	if(message == WM_LBUTTONDOWN || message == WM_RBUTTONDOWN || message == WM_MBUTTONDOWN || message == WM_RBUTTONDBLCLK || message == WM_LBUTTONDBLCLK /*|| message == WM_XBUTTONDOWN*/)
 	{
 		phase = UIEvent::PHASE_BEGAN;
 		//		NSLog(@"Event phase PHASE_BEGAN");
@@ -323,6 +318,8 @@ bool CoreWin32Platform::WinEvent(MSG *message, long *result)
 		}
 		break;
 
+	case WM_LBUTTONDBLCLK:
+	case WM_RBUTTONDBLCLK:
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:

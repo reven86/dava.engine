@@ -45,8 +45,12 @@
 
 namespace DAVA
 {
-
-Map<String,FTInternalFont*> fontMap;
+#ifdef USE_FILEPATH_IN_MAP
+	typedef Map<FilePath, FTInternalFont *> FontMap;
+#else //#ifdef USE_FILEPATH_IN_MAP
+	typedef Map<String, FTInternalFont *> FontMap;
+#endif //#ifdef USE_FILEPATH_IN_MAP
+	FontMap fontMap;
 
 class FTInternalFont : public BaseObject
 {
@@ -71,15 +75,20 @@ public:
 
 	bool IsCharAvaliable(char16 ch) const;
 
-	void SetFTCharSize(float32 size) const;
-
 	virtual int32 Release();
 
 private:
+	void SetFTCharSize(float32 size) const;
+
 	static Mutex drawStringMutex;
 
 	struct Glyph
 	{
+        Glyph(): index(0), image(0), delta(0) {};
+        
+        bool operator < (const Glyph& right) const { return image < right.image; };
+
+        
 		FT_UInt		index;
 		FT_Glyph	image;    /* the glyph image */
 
@@ -109,7 +118,8 @@ FTFont::~FTFont()
 FTFont * FTFont::Create(const FilePath& path)
 {
 	FTInternalFont * iFont = 0;
-	Map<String,FTInternalFont*>::iterator it = fontMap.find(path.GetAbsolutePathname());
+
+	FontMap::iterator it = fontMap.find(path);
 	if (it != fontMap.end())
 	{
 		iFont = it->second;
@@ -124,7 +134,7 @@ FTFont * FTFont::Create(const FilePath& path)
             return NULL;
         }
 
-		fontMap[path.GetAbsolutePathname()] = iFont;
+		fontMap[FILEPATH_MAP_KEY(path)] = iFont;
 	}
 	
 	FTFont * font = new FTFont(iFont);
@@ -287,6 +297,8 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 {
 	drawStringMutex.Lock();
 
+    SetFTCharSize(size);
+    
 	FT_Error error;
 
 	float32 virtualToPhysicalFactor = Core::GetVirtualToPhysicalFactor();
@@ -313,7 +325,6 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 		offsetX = (int32)(virtualToPhysicalFactor * offsetX);
 	}
 
-	SetFTCharSize(size);
 
 	FT_Vector pen;
 	pen.x = offsetX<<6;
@@ -459,8 +470,14 @@ bool FTInternalFont::IsCharAvaliable(char16 ch) const
 
 uint32 FTInternalFont::GetFontHeight(float32 size) const
 {
+    drawStringMutex.Lock();
+
 	SetFTCharSize(size);
-	return (uint32)ceilf((float32)((FT_MulFix(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale)))/64.f);
+	uint32 height = (uint32)ceilf((float32)((FT_MulFix(face->bbox.yMax-face->bbox.yMin, face->size->metrics.y_scale)))/64.f);
+    
+    drawStringMutex.Unlock();
+
+    return height;
 }
 	
 void FTInternalFont::SetFTCharSize(float32 size) const
@@ -540,14 +557,26 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 
 void FTInternalFont::ClearString()
 {
-	int32 size = glyphs.size();
-	for(int32 i = 0; i < size; ++i)
+    //TODO: temporary fix for
+    Set<Glyph> clearedGlyphs;
+    clearedGlyphs.insert(glyphs.begin(), glyphs.end());
+	for(Set<Glyph>::iterator it = clearedGlyphs.begin(), endIt = clearedGlyphs.end(); it != endIt; ++it)
 	{
-		if(glyphs[i].image)
+		if(it->image)
 		{
-			FT_Done_Glyph(glyphs[i].image);
+			FT_Done_Glyph(it->image);
 		}
 	}
+    clearedGlyphs.clear();
+    
+//	int32 size = glyphs.size();
+//	for(int32 i = 0; i < size; ++i)
+//	{
+//		if(glyphs[i].image)
+//		{
+//			FT_Done_Glyph(glyphs[i].image);
+//		}
+//	}
 
 	glyphs.clear();
 }
@@ -568,8 +597,11 @@ int32 FTInternalFont::LoadString(const WideString& str)
 
 		Glyph glyph;
 		glyph.index = FT_Get_Char_Index(face, str[i]);
-		if (!FT_Load_Glyph( face, glyph.index, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING)  &&
-			!FT_Get_Glyph(face->glyph, &glyph.image))
+        
+        FT_Error loadGlyphError = 0;
+        FT_Error getGlyphError = 0;
+		if (!(loadGlyphError = FT_Load_Glyph( face, glyph.index, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING))  &&
+			!(getGlyphError = FT_Get_Glyph(face->glyph, &glyph.image)))
 		{
 			//FT_Glyph_Metrics*  metrics = &face->glyph->metrics;
 
@@ -580,10 +612,24 @@ int32 FTInternalFont::LoadString(const WideString& str)
 			else
 				glyph.delta = 0;
 		}
+        else
+        {
+#if defined(__DAVAENGINE_DEBUG__)
+//            DVASSERT(false); //This situation can be unnormal. Check it
+            Logger::Warning("[FTInternalFont::LoadString] loadError = %d, getGlyphError = %d, str = %s", loadGlyphError, getGlyphError, WStringToString(str).c_str());
+#endif //__DAVAENGINE_DEBUG__
+        }
 
 		glyphs.push_back(glyph);
 	}
 
+#if defined(__DAVAENGINE_DEBUG__)
+//    Set<Glyph> tmp;
+//    tmp.insert(glyphs.begin(), glyphs.end());
+//    DVASSERT(tmp.size() == glyphs.size()); //This situation can be unnormal. Check it
+#endif //__DAVAENGINE_DEBUG__
+    
+    
 	return spacesCount;
 }
 

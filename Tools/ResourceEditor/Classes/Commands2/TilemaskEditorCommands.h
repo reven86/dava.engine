@@ -35,6 +35,8 @@
 #include "Commands2/CommandAction.h"
 #include "DAVAEngine.h"
 
+#include "Render/UniqueStateSet.h"
+
 using namespace DAVA;
 
 class LandscapeProxy;
@@ -82,6 +84,27 @@ protected:
 
 	Sprite* ApplyImageToTexture(Image* image, Texture* texture);
 	void ApplyImageToSprite(Image* image, Sprite* dstSprite);
+	
+	UniqueHandle noBlendDrawState;
+};
+
+class SetTileColorCommand: public Command2
+{
+public:
+	SetTileColorCommand(LandscapeProxy* landscapeProxy,
+						Landscape::eTextureLevel level,
+						const Color& color);
+	~SetTileColorCommand();
+
+	virtual void Undo();
+	virtual void Redo();
+	virtual Entity* GetEntity() const;
+
+protected:
+	Landscape::eTextureLevel level;
+	Color redoColor;
+	Color undoColor;
+	LandscapeProxy* landscapeProxy;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORCOMMANDS__) */

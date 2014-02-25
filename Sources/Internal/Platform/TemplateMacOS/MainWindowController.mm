@@ -156,7 +156,7 @@ namespace DAVA
 	// launch framework and setup all preferences
     //TODO: maybe we need reorder calls 
 	FrameworkDidLaunched();
-    RenderManager::Create(Core::RENDERER_OPENGL);
+    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
     
 	
 	//Core::Instance()->Creat();

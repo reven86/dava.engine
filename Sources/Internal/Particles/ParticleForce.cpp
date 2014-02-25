@@ -32,54 +32,22 @@
 using namespace DAVA;
 
 // Particle Force class is needed to store Particle Force data.
-ParticleForce::ParticleForce(RefPtr<PropertyLine<Vector3> > force,
-							 RefPtr<PropertyLine<Vector3> > forceVariation,
-							  RefPtr<PropertyLine<float32> > forceOverLife)
-{
-	Update(force, forceVariation, forceOverLife);
-}
-	
-ParticleForce::ParticleForce(ParticleForce* forceToCopy)
-{
-	if (forceToCopy)
-	{
-		this->force = forceToCopy->force;
-		this->forceVariation = forceToCopy->forceVariation;
-		this->forceOverLife = forceToCopy->forceOverLife;
-	}
-	else
-	{
-		this->force = NULL;
-		this->forceVariation = NULL;
-		this->forceOverLife = NULL;
-	}
-}
-	
-void ParticleForce::Update(RefPtr<PropertyLine<Vector3> > force,
-						   RefPtr<PropertyLine<Vector3> > forceVariation,
-						   RefPtr<PropertyLine<float32> > forceOverLife)
-{
-	this->force = force;
-	this->forceVariation = forceVariation;
-	this->forceOverLife = forceOverLife;
+ParticleForce::ParticleForce(RefPtr<PropertyLine<Vector3> > force_, RefPtr<PropertyLine<float32> > forceOverLife_) : force(force_), forceOverLife(forceOverLife_)
+{	
 }
 
-void ParticleForce::SetForce(const RefPtr<PropertyLine<Vector3> > &force)
+ParticleForce* ParticleForce::Clone()
 {
-	this->force = force;	
-}
-void ParticleForce::SetForceVariation(const RefPtr<PropertyLine<Vector3> > &forceVariation)
-{
-	this->forceVariation = forceVariation;	
-}
-void ParticleForce::SetForceOverLife(const RefPtr<PropertyLine<float32> > &forceOverLife)
-{
-	this->forceOverLife = forceOverLife;
+	ParticleForce *dst = new ParticleForce();
+	if (force)
+		dst->force = force->Clone();
+	if (forceOverLife)
+		dst->forceOverLife = forceOverLife->Clone();
+	return dst;
 }
 
 void ParticleForce::GetModifableLines(List<ModifiablePropertyLineBase *> &modifiables)
 {
 	PropertyLineHelper::AddIfModifiable(force.Get(), modifiables);
-	PropertyLineHelper::AddIfModifiable(forceVariation.Get(), modifiables);
 	PropertyLineHelper::AddIfModifiable(forceOverLife.Get(), modifiables);
 }

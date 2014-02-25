@@ -47,9 +47,12 @@ public:
     static ResizeType GetRotatedResizeType(ResizeType unrotatedResizeType, UIControl* uiControl);
 
     // Perform the actual resize.
-    static Rect ResizeControl(ResizeType unrotatedResizeType, UIControl* uiControl, const Rect& resizeRect, const Vector2& delta);
+    static void ResizeControl(ResizeType unrotatedResizeType, UIControl* uiControl, const Rect& resizeRect, const Vector2& delta);
     
 protected:
+    // Get the "final" resize rect, taking rotation into account.
+    static Rect GetResizeRect(ResizeType unrotatedResizeType, UIControl* uiControl, const Rect& resizeRect, const Vector2& delta);
+    
     // Clamp the size.
     static float32 ClampDX(float32 rawDX);
     static float32 ClampDY(float32 rawDY);

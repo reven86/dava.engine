@@ -47,7 +47,8 @@ public:
     virtual void RecalcBoundingBox();
     virtual RenderObject * Clone(RenderObject *newObject);
 
-    static AABBox3 CalcBBoxForSpeedTreeBatch(RenderBatch * rb);
+private:
+    AABBox3 CalcBBoxForSpeedTreeLeafGeometry(PolygonGroup * rb);
 
 public:
 

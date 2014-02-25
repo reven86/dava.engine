@@ -30,10 +30,14 @@
 
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Entity.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
 {
 
+	REGISTER_CLASS(LodComponent)
+	
 const float32 LodComponent::INVALID_DISTANCE = -1.f;
 const float32 LodComponent::MIN_LOD_DISTANCE = 0.f;
 const float32 LodComponent::MAX_LOD_DISTANCE = 1000.f;
@@ -89,9 +93,9 @@ Component * LodComponent::Clone(Entity * toEntity)
 	return newLod;
 }
 
-void LodComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void LodComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Serialize(archive, sceneFile);
+	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive)
 	{
@@ -112,38 +116,10 @@ void LodComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 		}
 		archive->SetArchive("lc.loddist", lodDistArch);
 		lodDistArch->Release();
-
-		i = 0;
-		KeyedArchive *lodDataArch = new KeyedArchive();
-		Vector<LodData>::iterator it = lodLayers.begin();
-		for(; it != lodLayers.end(); ++it)
-		{
-			KeyedArchive *lodDataValuesArch = new KeyedArchive();
-			KeyedArchive *lodDataIndexesArch = new KeyedArchive();
-
-			for(uint32 j = 0; j < it->indexes.size(); ++j)
-			{
-				lodDataIndexesArch->SetInt32(KeyedArchive::GenKeyFromIndex(j), it->indexes[j]);
-			}
-
-			lodDataValuesArch->SetArchive("indexes", lodDataIndexesArch);
-			lodDataValuesArch->SetInt32("layer", it->layer);
-			lodDataValuesArch->SetBool("isdummy", it->isDummy);
-			lodDataValuesArch->SetUInt32("indexescount", it->indexes.size());
-
-			lodDataArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), lodDataValuesArch);
-
-			lodDataIndexesArch->Release();
-			lodDataValuesArch->Release();
-			++i;
-		}
-		archive->SetUInt32("lc.loddatacount", lodLayers.size());
-		archive->SetArchive("lc.loddata", lodDataArch);
-		lodDataArch->Release();
 	}
 }
 
-void LodComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void LodComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	if(NULL != archive)
 	{
@@ -168,36 +144,43 @@ void LodComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 			}
 		}
 
-		KeyedArchive *lodDataArch = archive->GetArchive("lc.loddata");
-		if(NULL != lodDataArch)
-		{
-			for(uint32 i = 0; i < archive->GetUInt32("lc.loddatacount"); ++i)
-			{
-				KeyedArchive *lodDataValuesArch = lodDataArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-				if(NULL != lodDataValuesArch)
-				{
-					LodData data;
+        if(serializationContext->GetVersion() < 11)
+        {
+            KeyedArchive *lodDataArch = archive->GetArchive("lc.loddata");
+            if(NULL != lodDataArch)
+            {
+                uint32 lodDataCount = archive->GetUInt32("lc.loddatacount");
+                lodLayers.reserve(lodDataCount);
+                for(uint32 i = 0; i < lodDataCount; ++i)
+                {
+                    KeyedArchive *lodDataValuesArch = lodDataArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+                    if(NULL != lodDataValuesArch)
+                    {
+                        LodData data;
 
-					if(lodDataValuesArch->IsKeyExists("layer")) data.layer = lodDataValuesArch->GetInt32("layer");
-					if(lodDataValuesArch->IsKeyExists("isdummy")) data.isDummy = lodDataValuesArch->GetBool("isdummy");
+                        if(lodDataValuesArch->IsKeyExists("layer")) data.layer = lodDataValuesArch->GetInt32("layer");
+                        if(lodDataValuesArch->IsKeyExists("isdummy")) data.isDummy = lodDataValuesArch->GetBool("isdummy");
 
-					KeyedArchive *lodDataIndexesArch = lodDataValuesArch->GetArchive("indexes");
-					if(NULL != lodDataIndexesArch)
-					{
-						for(uint32 j = 0; j < lodDataValuesArch->GetUInt32("indexescount"); ++j)
-						{
-							data.indexes.push_back(lodDataIndexesArch->GetInt32(KeyedArchive::GenKeyFromIndex(j)));
-						}
-					}
+                        KeyedArchive *lodDataIndexesArch = lodDataValuesArch->GetArchive("indexes");
+                        if(NULL != lodDataIndexesArch)
+                        {
+                            uint32 indexesCount = lodDataValuesArch->GetUInt32("indexescount");
+                            data.indexes.reserve(indexesCount);
+                            for(uint32 j = 0; j < indexesCount; ++j)
+                            {
+                                data.indexes.push_back(lodDataIndexesArch->GetInt32(KeyedArchive::GenKeyFromIndex(j)));
+                            }
+                        }
 
-					lodLayers.push_back(data);
-				}
-			}
-		}
+                        lodLayers.push_back(data);
+                    }
+                }
+            }
+        }
 	}
 
 	flags |= NEED_UPDATE_AFTER_LOAD;
-	Component::Deserialize(archive, sceneFile);
+	Component::Deserialize(archive, serializationContext);
 }
 
 LodComponent::LodComponent()
@@ -225,19 +208,6 @@ float32 LodComponent::GetDefaultDistance(int32 layer)
 	return distance;
 }
 
-void LodComponent::SetCurrentLod(int32 newLod)
-{
-	if (newLod != currentLod) 
-	{
-		if (currentLod!=INVALID_LOD_LAYER) 
-		{
-			SetLayerVisibility(currentLod, false);
-		}
-		currentLod = newLod;		
-		SetLayerVisibility(currentLod, true);
-	}
-}
-
 void LodComponent::SetForceDistance(const float32 &newDistance)
 {
     forceDistance = newDistance;
@@ -252,6 +222,7 @@ float32 LodComponent::GetForceDistance() const
 void LodComponent::GetLodData(Vector<LodData*> &retLodLayers)
 {
 	retLodLayers.clear();
+    retLodLayers.reserve(lodLayers.size());
 
 	Vector<LodData>::const_iterator endIt = lodLayers.end();
 	for(Vector<LodData>::iterator it = lodLayers.begin(); it != endIt; ++it)
@@ -312,20 +283,6 @@ int32 LodComponent::GetMaxLodLayer() const
 	}
 
 	return ret;
-}
-
-void LodComponent::SetLayerVisibility(int32 layerNum, bool visible)
-{
-	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
-
-	if(lodLayers.size() > layerNum)
-	{
-		int32 size = lodLayers[layerNum].nodes.size();
-		for (int32 i = 0; i < size; i++) 
-		{
-			lodLayers[layerNum].nodes[i]->SetLodVisible(visible);
-		}
-	}
 }
 
 void LodComponent::CopyLODSettings(const LodComponent * fromLOD)

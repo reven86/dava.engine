@@ -189,7 +189,7 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 		EXIT,
 	};
 
-    // Yuri Coder, 2013/12/10. Replace "\n" occurences (two chars) to '\n' (one char) is done by Yaml parser,
+    // Yuri Coder, 2013/12/10. Replace "\n" occurrences (two chars) to '\n' (one char) is done by Yaml parser,
     // so appropriate code (state NEXTLINE)is removed from here. See please MOBWOT-6499.
 
 	resultVector.clear();
@@ -228,7 +228,7 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 						//Logger::FrameworkDebug(L"after=%S", currentLineWithoutLastWord.c_str());
 						resultVector.push_back(currentLineWithoutLastWord);
 						
-						currentLineStart = -1;	// start seach of characters for the new line
+						currentLineStart = -1;	// start search of characters for the new line
 					}else
 					{
 						resultVector.push_back(L""); // here we add empty line if there was no characters in current line
@@ -256,7 +256,7 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 					{
 						currentLineDx += sizes[i];
 					}
-					if (currentLineDx < targetWidth) // if current line size < rect size set line end to current word end
+					if ((currentLineDx < targetWidth) || (currentLineEnd <= currentLineStart)) // if current line size < rect size set line end to current word end
 					{
 						currentLineEnd = lastWordEnd;
 					}else // here we add current line to results because current word is too big for current line
@@ -272,7 +272,7 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 						currentLineEnd = lastWordEnd;   
 					}
 				}
-				if (t == ' ')state = SKIP; // if cur char is space go to ski[
+				if (t == ' ')state = SKIP; // if cur char is space go to skip
 				else if(t == '\n')
 				{
 					// this block is copied from case NEXTLINE: if(t == 'n')
@@ -285,7 +285,7 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 						//Logger::FrameworkDebug(L"after=%S", currentLineWithoutLastWord.c_str());
 						resultVector.push_back(currentLineWithoutLastWord);
 						
-						currentLineStart = -1;	// start seach of characters for the new line
+						currentLineStart = -1;	// start search of characters for the new line
 					}else
 					{
 						resultVector.push_back(L""); // here we add empty line if there was no characters in current line

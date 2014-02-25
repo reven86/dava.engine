@@ -67,7 +67,7 @@ namespace DAVA
 			return DavaHashString(str);
 		}
 
-		bool Compare(const char *str1, const char *str2)
+		bool Compare(const char *str1, const char *str2) const
 		{
 			return (str1 == str2) || (0 == strcmp(str1, str2));
 		}
@@ -81,7 +81,7 @@ namespace DAVA
 			return DavaHashString(str);
 		}
 
-		bool Compare(const char *str1, const char *str2)
+		bool Compare(const char *str1, const char *str2) const
 		{
 			return (str1 == str2) || (0 == strcmp(str1, str2));
 		}
@@ -95,7 +95,7 @@ namespace DAVA
 			return DavaHashString(str.c_str());
 		}
 
-		bool Compare(const DAVA::String &str1, const DAVA::String &str2)
+		bool Compare(const DAVA::String &str1, const DAVA::String &str2) const
 		{
 			return (str1 == str2);
 		}
@@ -109,7 +109,7 @@ namespace DAVA
 			return DavaHashString(str->c_str());
 		}
 
-		bool Compare(const DAVA::String *str1, const DAVA::String *str2)
+		bool Compare(const DAVA::String *str1, const DAVA::String *str2) const
 		{
 			return (str1 == str2) || 0 == str1->compare(str2->c_str());
 		}
@@ -123,7 +123,7 @@ namespace DAVA
 			return DavaHashString(str->c_str());
 		}
 
-		bool Compare(const DAVA::String *str1, const DAVA::String *str2)
+		bool Compare(const DAVA::String *str1, const DAVA::String *str2) const
 		{
 			return (str1 == str2) || 0 == str1->compare(str2->c_str());
 		}
@@ -137,7 +137,7 @@ namespace DAVA
 			return (size_t)pointer;
 		}
         
-		bool Compare(T *ptr1, T *ptr2)
+		bool Compare(T *ptr1, T *ptr2) const
 		{
 			return (ptr1 == ptr2);
 		}
@@ -150,7 +150,7 @@ namespace DAVA
 			return i;
 		}
 
-		bool Compare(const DAVA::int32 i1, const DAVA::int32 i2)
+		bool Compare(const DAVA::int32 i1, const DAVA::int32 i2) const
 		{
 			return (i1 == i2);
 		}
@@ -163,7 +163,7 @@ namespace DAVA
 			return i;
 		}
 
-		bool Compare(const DAVA::uint32 i1, const DAVA::uint32 i2)
+		bool Compare(const DAVA::uint32 i1, const DAVA::uint32 i2) const
 		{
 			return (i1 == i2);
 		}

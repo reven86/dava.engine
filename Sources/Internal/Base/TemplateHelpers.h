@@ -171,6 +171,8 @@ public:
     C DynamicTypeCheck(O* pObject)
     {
 #ifdef DAVA_DEBUG
+        if(!pObject) return static_cast<C>(pObject);
+        
         C c = dynamic_cast<C>(pObject);
         if (!c)
         {//assert emulation )

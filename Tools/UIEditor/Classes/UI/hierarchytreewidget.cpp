@@ -35,6 +35,7 @@
 #include "HierarchyTreePlatformNode.h"
 #include "HierarchyTreeAggregatorControlNode.h"
 #include "ItemsCommand.h"
+#include "ControlCommands.h"
 #include "CommandsController.h"
 #include "CopyPasteController.h"
 #include "IconHelper.h"
@@ -42,15 +43,19 @@
 #include "ResourcesManageHelper.h"
 #include "WidgetSignalsBlocker.h"
 
+#include "regexpinputdialog.h"
+
 #include <QVariant>
 #include <QMenu>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QInputDialog>
 
 #define ITEM_ID 0, Qt::UserRole
 
 #define MENU_ITEM_DELETE tr("Delete")
 #define MENU_ITEM_COPY tr("Copy")
+#define MENU_ITEM_RENAME tr("Rename")
 #define MENU_ITEM_PASTE tr("Paste")
 #define MENU_ITEM_CREATE_SCREEN tr("Create screen")
 #define MENU_ITEM_CREATE_AGGREGATOR tr("Create aggregator")
@@ -73,6 +78,8 @@ HierarchyTreeWidget::HierarchyTreeWidget(QWidget *parent) :
 	
 	connect(ui->treeWidget, SIGNAL(ShowCustomMenu(const QPoint&)), this, SLOT(OnShowCustomMenu(const QPoint&)));
 	connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(OnTreeItemChanged(QTreeWidgetItem*, int)));
+	
+	InitializeTreeWidgetActions();
 
 	internalSelectionChanged = false;
 }
@@ -80,6 +87,24 @@ HierarchyTreeWidget::HierarchyTreeWidget(QWidget *parent) :
 HierarchyTreeWidget::~HierarchyTreeWidget()
 {
     delete ui;
+}
+
+void HierarchyTreeWidget::InitializeTreeWidgetActions()
+{
+	QAction* deleteNodeAction = new QAction(MENU_ITEM_DELETE, ui->treeWidget);
+	connect(deleteNodeAction, SIGNAL(triggered()), this, SLOT(OnDeleteControlAction()));
+	deleteNodeAction->setShortcut(Qt::Key_Delete);
+	ui->treeWidget->addAction(deleteNodeAction);
+	
+	QAction* copyNodeAction = new QAction(MENU_ITEM_COPY, ui->treeWidget);
+	connect(copyNodeAction, SIGNAL(triggered()), this, SLOT(OnCopyAction()));
+	copyNodeAction->setShortcut(Qt::CTRL + Qt::Key_C);
+	ui->treeWidget->addAction(copyNodeAction);
+	
+	QAction* pasteNodeAction = new QAction(MENU_ITEM_PASTE, ui->treeWidget);
+	connect(pasteNodeAction, SIGNAL(triggered()), this, SLOT(OnPasteAction()));
+	pasteNodeAction->setShortcut(Qt::CTRL + Qt::Key_V);
+	ui->treeWidget->addAction(pasteNodeAction);
 }
 
 void HierarchyTreeWidget::OnTreeUpdated(bool needRestoreSelection)
@@ -105,8 +130,11 @@ void HierarchyTreeWidget::OnTreeUpdated(bool needRestoreSelection)
 			QVariant data = item->data(ITEM_ID);
 			selectedItems.insert(data.toInt());
 			HierarchyTreeNode* baseNode = HierarchyTreeController::Instance()->GetTree().GetNode(data.toInt());
+			HierarchyTreeScreenNode* selectedScreen =  dynamic_cast<HierarchyTreeScreenNode* >(baseNode);
+			HierarchyTreePlatformNode* selectedPlatform = dynamic_cast<HierarchyTreePlatformNode* >(baseNode);
 			HierarchyTreeControlNode* selectedControl = dynamic_cast<HierarchyTreeControlNode* >(baseNode);
-			if(NULL != selectedControl)
+
+			if(selectedPlatform || selectedScreen || selectedControl)
 			{
 				internalSelectionChanged = true;
 			}
@@ -356,6 +384,11 @@ void HierarchyTreeWidget::Select(const QList<QTreeWidgetItem*>& selectedItems)
     HierarchyTreeControlNode* firstNode = NULL;
     bool needReselectScreen = false;
     QList<HierarchyTreeControlNode*> nodesToBeSelected;
+    QList<QTreeWidgetItem*> itemsToBeSelected;
+    
+    // Selection is changed programmatically in this method, so block the signals to avoid
+    // recursive calls.
+    WidgetSignalsBlocker blocker(ui->treeWidget);
     
     // There can be situation where first and last items selected belong to the different screens.
     // So have to implement two-pass approach here - firstly determine the nodes to be selected,
@@ -366,6 +399,8 @@ void HierarchyTreeWidget::Select(const QList<QTreeWidgetItem*>& selectedItems)
         HierarchyTreeControlNode* multiSelectControlNode = dynamic_cast<HierarchyTreeControlNode* >(HierarchyTreeController::Instance()->GetTree().GetNode(data.toInt()));
         if (!multiSelectControlNode)
         {
+            // For sure don't allow to multiselect anything but controls
+            multiSelectItem->setSelected(false);
             continue;
         }
         
@@ -373,6 +408,7 @@ void HierarchyTreeWidget::Select(const QList<QTreeWidgetItem*>& selectedItems)
         {
             firstNode = multiSelectControlNode;
             nodesToBeSelected.append(multiSelectControlNode);
+            itemsToBeSelected.append(multiSelectItem);
             continue;
         }
         
@@ -380,6 +416,7 @@ void HierarchyTreeWidget::Select(const QList<QTreeWidgetItem*>& selectedItems)
         if (multiSelectControlNode->GetScreenNode() == firstNode->GetScreenNode())
         {
             nodesToBeSelected.append(multiSelectControlNode);
+            itemsToBeSelected.append(multiSelectItem);
         }
         else
         {
@@ -398,13 +435,19 @@ void HierarchyTreeWidget::Select(const QList<QTreeWidgetItem*>& selectedItems)
     if (needReselectScreen)
     {
         HierarchyTreeController::Instance()->UpdateSelection(firstNode->GetScreenNode()->GetPlatform(), firstNode->GetScreenNode());
+
+        // Screen selection changed the tree selected item, so reselect all the tree items to be selected.
+        foreach(QTreeWidgetItem* reselectedItem, itemsToBeSelected)
+        {
+            reselectedItem->setSelected(true);
+        }
     }
     
-    // Second pass - select the controls remembered before.
-    foreach(HierarchyTreeControlNode* nodeToBeSelected, nodesToBeSelected)
-    {
-        HierarchyTreeController::Instance()->SelectControl(nodeToBeSelected);
-    }
+    // Second pass - select the controls remembered before. Note - selected controls
+    // are already handled by the tree, so block OnSelectedControlNodesChanged.
+    internalSelectionChanged = true;
+    HierarchyTreeController::Instance()->SynchronizeSelection(nodesToBeSelected);
+    internalSelectionChanged = false;
 }
 
 void HierarchyTreeWidget::ResetSelection()
@@ -512,6 +555,13 @@ void HierarchyTreeWidget::OnShowCustomMenu(const QPoint& pos)
 		QAction* copyControlAction = new QAction(MENU_ITEM_COPY, &menu);
 		connect(copyControlAction, SIGNAL(triggered()), this, SLOT(OnCopyAction()));
 		menu.addAction(copyControlAction);
+		// Show rename option only if one item is selected
+		if (items.size() == 1)
+		{
+			QAction* renameControlAction = new QAction(MENU_ITEM_RENAME, &menu);
+			connect(renameControlAction, SIGNAL(triggered()), this, SLOT(OnRenameControlAction()));
+			menu.addAction(renameControlAction);
+		}
 	}
 	if (selectedPlatform)
 	{
@@ -549,8 +599,39 @@ void HierarchyTreeWidget::OnShowCustomMenu(const QPoint& pos)
 	menu.exec(pos);
 }
 
+void HierarchyTreeWidget::OnRenameControlAction()
+{
+	QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
+	if (!items.size() || (items.size() > 1))
+		return;
+		
+	// We are sure that we have only one selected item
+	QTreeWidgetItem* item = items.at(0);	
+	HierarchyTreeNode* node = GetNodeFromTreeItem(item);
+	QString itemName = node->GetName();
+
+    bool isAccepted = false;
+    QString newName = RegExpInputDialog::getText(this, tr("Rename control"),
+                                              "Enter new control name",
+                                              itemName, HierarchyTreeNode::GetNameRegExp(),
+                                              &isAccepted);
+
+	if (isAccepted && !newName.isEmpty() && (newName != itemName))
+	{
+		ControlRenameCommand* cmd = new ControlRenameCommand(node->GetId(), itemName, newName);
+		CommandsController::Instance()->ExecuteCommand(cmd);
+		SafeRelease(cmd);
+	}
+}
+
 void HierarchyTreeWidget::OnDeleteControlAction()
 {
+	// Do not handle to avoid double delete action
+	if (!ui->treeWidget->hasFocus())
+	{
+		return;
+	}
+	
 	QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
 	if (!items.size())
 		return;
@@ -661,6 +742,12 @@ void HierarchyTreeWidget::OnCreateAggregatorAction()
 
 void HierarchyTreeWidget::OnCopyAction()
 {
+	// Do not handle to avoid double copy action
+	if (!ui->treeWidget->hasFocus())
+	{
+		return;
+	}
+
 	QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
 	if (!items.size())
 		return;
@@ -695,6 +782,12 @@ void HierarchyTreeWidget::OnCopyAction()
 
 void HierarchyTreeWidget::OnPasteAction()
 {
+	// Do not handle to avoid double paste action
+	if (!ui->treeWidget->hasFocus())
+	{
+		return;
+	}
+	
 	QList<QTreeWidgetItem*> items = ui->treeWidget->selectedItems();
 	if (!items.size())
 		return;

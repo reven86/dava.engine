@@ -29,14 +29,12 @@
 
 
 #include "SceneExporter.h"
-#include "SceneEditor/SceneValidator.h"
+#include "Deprecated/SceneValidator.h"
 
 #include "TextureCompression/TextureConverter.h"
 
 #include "Render/TextureDescriptor.h"
 #include "Qt/Scene/SceneHelper.h"
-#include "EditorScene.h"
-
 #include "Render/GPUFamilyDescriptor.h"
 
 #include "../StringConstants.h"
@@ -127,11 +125,11 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
         RemoveEditorCustomProperties(scene);
     }
 
+    ExportDescriptors(scene, errorLog);
+
     FilePath oldPath = SceneValidator::Instance()->SetPathForChecking(sceneUtils.dataSourceFolder);
     SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
 	//SceneValidator::Instance()->ValidateScales(scene, errorLog);
-
-    ExportDescriptors(scene, errorLog);
 
     ExportLandscape(scene, errorLog);
 
@@ -164,25 +162,6 @@ void SceneExporter::RemoveEditorNodes(DAVA::Entity *rootNode)
         {
             node->GetParent()->RemoveNode(node);
         }
-		else
-		{
-			DAVA::RenderComponent *renderComponent = static_cast<DAVA::RenderComponent *>(node->GetComponent(DAVA::Component::RENDER_COMPONENT));
-			if(renderComponent)
-			{
-				DAVA::RenderObject *ro = renderComponent->GetRenderObject();
-				if(ro && ro->GetType() != RenderObject::TYPE_LANDSCAPE)
-				{
-					DAVA::uint32 count = ro->GetRenderBatchCount();
-					for(DAVA::uint32 ri = 0; ri < count; ++ri)
-					{
-						DAVA::Material *material = ro->GetRenderBatch(ri)->GetMaterial();
-						if(material)
-							material->SetStaticLightingParams(0);
-					}
-				}
-
-			}
-		}
     }
 }
 
@@ -240,17 +219,22 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
 
 void SceneExporter::ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog)
 {
-    Set<FilePath> descriptorsForExport;
-    SceneHelper::EnumerateDescriptors(scene, descriptorsForExport);
+    DAVA::TexturesMap textures;
+    SceneHelper::EnumerateSceneTextures(scene, textures);
 
-    Set<FilePath>::const_iterator endIt = descriptorsForExport.end();
-    Set<FilePath>::iterator it = descriptorsForExport.begin();
-    for(; it != endIt; ++it)
+    auto endIt = textures.end();
+    for(auto it = textures.begin(); it != endIt; ++it)
     {
-        ExportTextureDescriptor(*it, errorLog);
+        DAVA::FilePath pathname = it->first;
+        if((pathname.GetType() == DAVA::FilePath::PATH_IN_MEMORY) || pathname.IsEmpty())
+        {
+            continue;
+        }
+        
+        ExportTextureDescriptor(it->first, errorLog);
     }
-    
-    descriptorsForExport.clear();
+
+    textures.clear();
 }
 
 
@@ -270,7 +254,7 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
         
-        SafeRelease(descriptor);
+		delete descriptor;
         return false;
     }
     
@@ -284,8 +268,7 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
         descriptor->Export(sceneUtils.dataFolder + workingPathname);
     }
     
-    SafeRelease(descriptor);
-    
+	delete descriptor;
     return isExported;
 }
 
@@ -299,9 +282,9 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
 		
 		if(descriptor->IsCubeMap())
 		{
-			Vector<String> faceNames;
+			Vector<FilePath> faceNames;
 			Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
-			for(Vector<String>::iterator it = faceNames.begin();
+			for(Vector<FilePath>::iterator it = faceNames.begin();
 				it != faceNames.end();
 				++it)
 			{
@@ -371,72 +354,8 @@ void SceneExporter::ExportLandscape(Scene *scene, Set<String> &errorLog)
     if (landscape)
     {
         sceneUtils.CopyFile(landscape->GetHeightmapPathname(), errorLog);
-        
-        Landscape::eTiledShaderMode mode = landscape->GetTiledShaderMode();
-        if(mode == Landscape::TILED_MODE_MIXED || mode == Landscape::TILED_MODE_TEXTURE)
-        {
-            ExportLandscapeFullTiledTexture(landscape, errorLog);
-        }
     }
 }
-
-void SceneExporter::ExportLandscapeFullTiledTexture(Landscape *landscape, Set<String> &errorLog)
-{
-    if(landscape->GetTiledShaderMode() == Landscape::TILED_MODE_TILEMASK)
-    {
-        return;
-    }
-    
-    FilePath textureName = landscape->GetTextureName(Landscape::TEXTURE_TILE_FULL);
-    if(textureName.IsEmpty())
-    {
-        FilePath fullTiledPathname = landscape->GetTextureName(Landscape::TEXTURE_COLOR);
-        fullTiledPathname.ReplaceExtension(".thumbnail_exported.png");
-        
-        String workingPathname = fullTiledPathname.GetRelativePathname(sceneUtils.dataSourceFolder);
-        sceneUtils.PrepareFolderForCopyFile(workingPathname, errorLog);
-
-        Texture *fullTiledTexture = Texture::CreatePink();
-        Image *image = fullTiledTexture->CreateImageFromMemory();
-        if(image)
-        {
-            ImageLoader::Save(image, sceneUtils.dataFolder + workingPathname);
-            ImageLoader::Save(image, sceneUtils.dataSourceFolder + workingPathname);
-            SafeRelease(image);
-            
-            TextureDescriptor *descriptor = new TextureDescriptor();
-            
-            FilePath descriptorPathnameInData = TextureDescriptor::GetDescriptorPathname(sceneUtils.dataFolder + workingPathname);
-            descriptor->Save(descriptorPathnameInData);
-            
-            FilePath descriptorPathnameInDataSource = TextureDescriptor::GetDescriptorPathname(sceneUtils.dataSourceFolder + workingPathname);
-            bool needToDeleteDescriptorFile = !FileSystem::Instance()->IsFile(descriptorPathnameInDataSource);
-
-            descriptor->Save(descriptorPathnameInDataSource);
-            SafeRelease(descriptor);
-            
-            landscape->SetTexture(Landscape::TEXTURE_TILE_FULL, sceneUtils.dataSourceFolder + workingPathname);
-            
-            if(needToDeleteDescriptorFile)
-            {
-                FileSystem::Instance()->DeleteFile(descriptorPathnameInDataSource);
-            }
-            FileSystem::Instance()->DeleteFile(sceneUtils.dataSourceFolder + workingPathname);
-
-            errorLog.insert(String(Format("Full tiled texture is autogenerated png-image.", workingPathname.c_str())));
-        }
-        else
-        {
-            errorLog.insert(String(Format("Can't create image for fullTiled Texture for file %s", workingPathname.c_str())));
-            landscape->SetTextureName(Landscape::TEXTURE_TILE_FULL, String(""));
-        }
-
-		fullTiledTexture->Release();
-        landscape->SetTextureName(Landscape::TEXTURE_TILE_FULL, sceneUtils.dataSourceFolder + workingPathname);
-    }
-}
-
-
 
 void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog)
 {
@@ -458,6 +377,10 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
 		eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
 		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, (PixelFormat)descriptor->exportedAsPixelFormat);
 		TextureConverter::ConvertTexture(*descriptor, gpuFamily, true);
+        
+        DAVA::TexturesMap texturesMap = Texture::GetTextureMap();
+        DAVA::Texture *tex = texturesMap[FILEPATH_MAP_KEY(descriptor->pathname)];
+        tex->Reload();
     }
 }
 
