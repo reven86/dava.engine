@@ -215,6 +215,7 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	}
 	// Syncronized all changes with file system
 	[[NSUserDefaults standardUserDefaults] synchronize];
+}
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
