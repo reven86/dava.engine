@@ -50,11 +50,11 @@ void ScreenControl::SystemDraw(const UIGeometricData &geometricData)
 	Rect rect = this->GetRect();
 	
 	RenderManager::Instance()->SetColor(Color(0.2f, 0.2f, 0.2f, 1.0f));
-	RenderHelper::Instance()->FillRect(rect);
+	RenderHelper::Instance()->FillRect(rect, RenderState::RENDERSTATE_2D_BLEND);
 	RenderManager::Instance()->ResetColor();
 	
 	UIControl::SystemDraw(geometricData);
-	GridVisualizer::Instance()->DrawGridIfNeeded(GetRect());
+	GridVisualizer::Instance()->DrawGridIfNeeded(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
 }
 
 bool ScreenControl::IsPointInside(const Vector2& /*point*/, bool/* expandWithFocus*/)

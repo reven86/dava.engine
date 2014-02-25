@@ -56,9 +56,6 @@ UIControlBackground::UIControlBackground()
 ,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
 ,	lastDrawPos(0, 0)
 ,	tiledData(NULL)
-,   rdoObject(NULL)
-,   vertexStream(NULL)
-,   texCoordStream(NULL)
 {
 	if(rdoObject == NULL)
 	{
