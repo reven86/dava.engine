@@ -420,8 +420,7 @@ void Sprite::InitFromFile(File *file, const FilePath &pathName)
 	defaultPivotPoint.y = 0;
 
 	uint64 timeSpriteRead2 = SystemTimer::Instance()->AbsoluteMS();
-    Logger::FrameworkDebug("Sprite: %s time:%lld", relativePathname.GetAbsolutePathname().c_str(), timeSpriteRead2 - timeSpriteRead);
-
+ //   Logger::FrameworkDebug("Sprite: %s time:%lld", relativePathname.GetAbsolutePathname().c_str(), timeSpriteRead2 - timeSpriteRead);
 }
 
 
