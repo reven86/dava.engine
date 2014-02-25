@@ -113,29 +113,33 @@ bool RectSpriteTest::RunTest(int32 testNum)
 void RectSpriteTest::Draw(const DAVA::UIGeometricData &geometricData)
 {
     RenderManager::Instance()->ClearWithColor(0.3f, 0.0f, 0.f, 1.f);
-
+	
     if (sprites[1])
     {
-        sprites[1]->SetAngle(0.1f);
-        sprites[1]->SetPosition(70.f, 40.f);
-        sprites[1]->Draw();
+		Sprite::DrawState drawState;
+		drawState.SetAngle(0.1f);
+		drawState.SetPosition(70.f, 40.f);
+        sprites[1]->Draw(&drawState);
     }
     if (sprites[2])
     {
-        sprites[2]->SetAngle(0.785398f);
-        sprites[2]->SetPosition(200.f, 50.f);
-        sprites[2]->Draw();
+		Sprite::DrawState drawState;
+		drawState.SetAngle(0.785398f);
+		drawState.SetPosition(200.f, 50.f);
+        sprites[2]->Draw(&drawState);
     }
     if (sprites[3])
     {
-        sprites[3]->SetPosition(110.f, 60.f);
-        sprites[3]->Draw();
+		Sprite::DrawState drawState;
+        drawState.SetPosition(110.f, 60.f);
+        sprites[3]->Draw(&drawState);
     }
     if (sprites[0])
     {
-        sprites[0]->SetAngle(-0.2f);
-        sprites[0]->SetPosition(300.f, 200.f);
-        sprites[0]->Draw();
+		Sprite::DrawState drawState;
+        drawState.SetAngle(-0.2f);		
+		drawState.SetPosition(300.f, 200.f);
+        sprites[0]->Draw(&drawState);
     }
 
     TestTemplate<RectSpriteTest>::Draw(geometricData);
