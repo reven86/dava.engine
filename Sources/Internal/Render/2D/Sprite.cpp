@@ -40,9 +40,6 @@
 #include "Render/RenderManagerGL20.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "Render/Image.h"
-#include "Render/ImageLoader.h"
-#include "FileSystem/DynamicMemoryFile.h"
 
 #define NEW_PPA
 
@@ -67,16 +64,19 @@ Sprite::DrawState::DrawState()
     Reset();
     
     renderState = RenderState::RENDERSTATE_2D_BLEND;
-    shader = RenderManager::TEXTURE_MUL_FLAT_COLOR;
-    //RenderManager::Instance()->RetainRenderState(renderState);
-    //shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+    RenderManager::Instance()->RetainRenderState(renderState);
+    shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+}
+
+Sprite::DrawState::~DrawState()
+{
+    RenderManager::Instance()->ReleaseRenderState(renderState);
+    SafeRelease(shader);
 }
 
 void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
 {
-    renderState = _renderState;
-    
-    /*if(_renderState != renderState)
+    if(_renderState != renderState)
     {
         if(renderState != InvalidUniqueHandle)
         {
@@ -89,19 +89,22 @@ void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
         {
             RenderManager::Instance()->RetainRenderState(renderState);
         }
-    }*/
+    }
 }
 
 void Sprite::DrawState::SetShader(Shader* _shader)
 {
-    shader = _shader;
-    /*if(_shader != shader)
+    if(_shader != shader)
     {
         SafeRelease(shader);
         shader = SafeRetain(_shader);
-    }*/
+    }
 }
 
+
+RenderDataObject* Sprite::spriteRenderObject = NULL;
+RenderDataStream* Sprite::vertexStream = NULL;
+RenderDataStream* Sprite::texCoordStream = NULL;
 
 Sprite::Sprite()
 {
@@ -132,9 +135,17 @@ Sprite::Sprite()
 	resourceToVirtualFactor = 1.0f;
 	resourceToPhysicalFactor = 1.0f;
 
+	if(spriteRenderObject == NULL)
+	{
 	spriteRenderObject = new RenderDataObject();
 	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
 	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	}
+	else
+	{
+		spriteRenderObject->Retain();
+	}
+
 
 	//pivotPoint = Vector2(0.0f, 0.0f);
 	defaultPivotPoint = Vector2(0.0f, 0.0f);
@@ -274,7 +285,7 @@ void Sprite::InitFromFile(File *file, const FilePath &pathName)
 {
 	bool usedForScale = false;//Думаю, после исправлений в конвертере, эта магия больше не нужна. Но переменную пока оставлю.
 
-//	uint64 timeSpriteRead = SystemTimer::Instance()->AbsoluteMS();
+	uint64 timeSpriteRead = SystemTimer::Instance()->AbsoluteMS();
 
 	type = SPRITE_FROM_FILE;
 	relativePathname = pathName;
@@ -407,8 +418,8 @@ void Sprite::InitFromFile(File *file, const FilePath &pathName)
 	defaultPivotPoint.x = 0;
 	defaultPivotPoint.y = 0;
 
-//	timeSpriteRead2 = SystemTimer::Instance()->AbsoluteMS() - timeSpriteRead2;
-//  Logger::FrameworkDebug("Sprite: %s time:%lld", relativePathname.c_str(), timeSpriteRead2 + timeSpriteRead);
+	uint64 timeSpriteRead2 = SystemTimer::Instance()->AbsoluteMS();
+    Logger::FrameworkDebug("Sprite: %s time:%lld", relativePathname.GetAbsolutePathname().c_str(), timeSpriteRead2 - timeSpriteRead);
 
 }
 
@@ -473,79 +484,6 @@ Sprite * Sprite::CreateFromTexture(const Vector2 & spriteSize, Texture * fromTex
 	DVASSERT_MSG(spr, "Render Target Sprite Creation failed");
 	spr->InitFromTexture(fromTexture, (int32)textureRegionOffset.x, (int32)textureRegionOffset.y, textureRegionSize.x, textureRegionSize.y, (int32)spriteSize.x, (int32)spriteSize.y, false, spriteName);
 	return spr;
-}
-
-Sprite* Sprite::CreateFromImage(const Image* image, bool contentScaleIncluded /* = false*/)
-{
-    uint32 width = image->GetWidth();
-    uint32 height = image->GetHeight();
-
-    int32 size = (int32)Max(width, height);
-    EnsurePowerOf2(size);
-
-    Image* img = Image::Create((uint32)size, (uint32)size, image->GetPixelFormat());
-
-    img->InsertImage(image, 0, 0);
-
-    Texture* texture = Texture::CreateFromData(img->GetPixelFormat(), img->GetData(), size, size, false);
-
-    Sprite* sprite = NULL;
-    if (texture)
-    {
-        sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)width, (float32)height, contentScaleIncluded);
-    }
-
-    SafeRelease(texture);
-    SafeRelease(img);
-
-    return sprite;
-}
-
-Sprite* Sprite::CreateFromPNG(const uint8* data, uint32 size, bool contentScaleIncluded /* = false*/)
-{
-    if (data == NULL || size == 0)
-    {
-        return NULL;
-    }
-
-    DynamicMemoryFile* file = DynamicMemoryFile::Create(data, size, File::OPEN | File::READ);
-    if (!file)
-    {
-        return NULL;
-    }
-
-    Vector<Image*> images = ImageLoader::CreateFromFileByContent(file);
-    if (images.size() == 0)
-    {
-        return NULL;
-    }
-
-    Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded);
-    
-    for_each(images.begin(), images.end(), SafeRelease<Image>);
-    SafeRelease(file);
-
-    return sprite;
-}
-
-Sprite* Sprite::CreateFromPNG(const FilePath& path, bool contentScaleIncluded /* = false*/)
-{
-    if (path.GetExtension() != ".png")
-    {
-        return NULL;
-    }
-
-    Vector<Image*> images = ImageLoader::CreateFromFileByExtension(path);
-    if (images.size() == 0)
-    {
-        return NULL;
-    }
-
-    Sprite* sprite = CreateFromImage(images[0], contentScaleIncluded);
-
-    for_each(images.begin(), images.end(), SafeRelease<Image>);
-
-    return sprite;
 }
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
@@ -704,7 +642,7 @@ int32 Sprite::Release()
 {
 	if(GetRetainCount() == 1)
 	{
-		SafeRelease(spriteRenderObject);
+		//SafeRelease(spriteRenderObject);
 
         spriteMapMutex.Lock();
 		spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
@@ -755,6 +693,10 @@ Sprite::~Sprite()
 //	Logger::FrameworkDebug("Removing sprite");
 	Clear();
 
+	if(spriteRenderObject)
+	{
+		spriteRenderObject->Release();
+	}
 }
 
 Texture* Sprite::GetTexture()

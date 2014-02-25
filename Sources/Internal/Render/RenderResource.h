@@ -83,7 +83,8 @@ public:
 	virtual void Invalidate();
 
 
-	static List<RenderResource*> resourceList;
+	typedef Set<RenderResource*> ResourceList;
+	static ResourceList resourceList;
     static Mutex resourceListMutex;
 	static void LostAllResources();
 	static void InvalidateAllResources();

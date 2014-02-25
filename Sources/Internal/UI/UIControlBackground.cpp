@@ -63,6 +63,10 @@ UIControlBackground::UIControlBackground()
 		vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
 		texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
 	}
+	else
+	{
+		rdoObject->Retain();
+	}
 	//rdoObject->SetStream()
 }
 	
@@ -91,7 +95,11 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 
 UIControlBackground::~UIControlBackground()
 {
-	SafeRelease(rdoObject);
+	//SafeRelease(rdoObject);
+	if(rdoObject)
+	{
+		rdoObject->Release();
+	}
 	SafeRelease(spr);
 	ReleaseDrawData();
 }
@@ -490,7 +498,6 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 	
 void UIControlBackground::DrawStretched(const Rect &drawRect, UniqueHandle renderState)
 {
-    DVASSERT(rdoObject);
 	if (!spr)return;
 	UniqueHandle textureHandle = spr->GetTextureHandle(frame);
 	Texture* texture = spr->GetTexture(frame);
@@ -673,7 +680,6 @@ void UIControlBackground::ReleaseDrawData()
 
 void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle renderState)
 {
-    DVASSERT(rdoObject);
 	if (!spr)return;
 
 	const Vector2 &size = gd.size;

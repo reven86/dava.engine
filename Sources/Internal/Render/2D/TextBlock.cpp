@@ -54,29 +54,23 @@ struct TextBlockData
     
     
 //TODO: использовать мапу	
-static	Vector<TextBlock *> registredBlocks;
+typedef Set<TextBlock*> TextBlockSet;
+static	TextBlockSet registredBlocks;
 	
 void RegisterTextBlock(TextBlock *tbl)
 {
-	registredBlocks.push_back(tbl);
+	registredBlocks.insert(tbl);
 }
 	
 void UnregisterTextBlock(TextBlock *tbl)
 {
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
-	{
-		if (tbl == *it) 
-		{
-			registredBlocks.erase(it);
-			return;
-		}
-	}
+	registredBlocks.erase(tbl);
 }
 
 void TextBlock::ScreenResolutionChanged()
 {
 	Logger::FrameworkDebug("Regenerate text blocks");
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
+	for(TextBlockSet::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
 	{
 		(*it)->Prepare();
 	}
@@ -105,6 +99,7 @@ TextBlock::TextBlock()
 	align = ALIGN_HCENTER|ALIGN_VCENTER;
 	RegisterTextBlock(this);
 	isPredrawed = true;
+	needDrawText = false;
     isMultilineBySymbolEnabled = false;
     
     pointsStr = L"";
@@ -678,13 +673,15 @@ void TextBlock::Prepare()
         cacheFinalSize.y = (float32)dy / Core::GetVirtualToPhysicalFactor();
     }
 
-    TextBlockData *jobData = new TextBlockData();
-    jobData->font = SafeRetain(font);
+   // TextBlockData *jobData = new TextBlockData();
+    // jobData->font = SafeRetain(font);
     
     mutex.Unlock();
 
-	Retain();
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
+
+	needDrawText = true;
+	//Retain();
+	//ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
 }
 
 void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
@@ -759,6 +756,17 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
     SafeDelete(jobData);
     mutex.Unlock();
 	Release();
+}
+
+void TextBlock::Prepare2()
+{
+	Retain();
+
+    TextBlockData *jobData = new TextBlockData();
+    jobData->font = SafeRetain(font);
+
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
+	//ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
 }
 
 void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
@@ -854,6 +862,12 @@ void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
 	
 void TextBlock::PreDraw()
 {
+	if(needDrawText)
+	{
+		Prepare2();
+		needDrawText = false;
+	}
+
 	if (isPredrawed)
 	{
 		return;
