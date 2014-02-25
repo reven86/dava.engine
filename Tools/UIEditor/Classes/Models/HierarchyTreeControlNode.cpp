@@ -83,7 +83,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 	
 	// Remove real children & subcontrols - each control is responsible for its
 	// subcontrols by itself.
-	const List<UIControl* > &realChildren = GetUIObject()->GetRealChildrenAndSubcontrols();
+	const List<UIControl* > &realChildren = GetUIObject()->GetRealChildren();
 	for (List<UIControl* >::const_iterator iter = realChildren.begin();
 		 iter != realChildren.end();
 		 ++iter)

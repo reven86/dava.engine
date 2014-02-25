@@ -30,12 +30,12 @@
 
 #include "Scene/System/CollisionSystem/CollisionParticleEmitter.h"
 
-const DAVA::float32 CollisionParticleEmitter::boxHalfSize = 0.15f;
+const DAVA::float32 CollisionParticleEffect::boxHalfSize = 0.10f;
 
-CollisionParticleEmitter::CollisionParticleEmitter(DAVA::Entity *entity, btCollisionWorld *word, DAVA::ParticleEmitter *emitter)
-	: CollisionBaseObject(entity, word)
+CollisionParticleEffect::CollisionParticleEffect(DAVA::Entity *entity, btCollisionWorld *world)
+	: CollisionBaseObject(entity, world)
 {
-	if(NULL != emitter && NULL != word)
+	if(NULL != entity && NULL != world)
 	{
 		DAVA::Matrix4 curEntityTransform = entity->GetWorldTransform();
 		DAVA::Vector3 pos = curEntityTransform.GetTranslationVector();
@@ -56,7 +56,7 @@ CollisionParticleEmitter::CollisionParticleEmitter(DAVA::Entity *entity, btColli
 	}
 }
 
-CollisionParticleEmitter::~CollisionParticleEmitter()
+CollisionParticleEffect::~CollisionParticleEffect()
 {
 	if(NULL != btObject)
 	{

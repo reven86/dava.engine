@@ -31,14 +31,18 @@
 #include "SelectPathWidgetBase.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
+#include "Qt/Settings/SettingsManager.h"
+#include "Project/ProjectManager.h"
 
 #include <QFileInfo>
 #include <QKeyEvent>
 #include <QUrl>
 #include <QStyle>
+#include <QMessageBox>
 
-SelectPathWidgetBase::SelectPathWidgetBase(QWidget* _parent, DAVA::String _openDialogDefualtPath, DAVA::String _relativPath, DAVA::String _openFileDialogTitle, DAVA::String _fileFormatDescriotion)
-:	QLineEdit(_parent)
+SelectPathWidgetBase::SelectPathWidgetBase(QWidget* _parent, bool _checkForProjectPath, DAVA::String _openDialogDefualtPath, DAVA::String _relativPath, DAVA::String _openFileDialogTitle, DAVA::String _fileFormatDescriotion)
+:	QLineEdit(_parent),
+    checkForProjectPath(_checkForProjectPath)
 {
 	Init(_openDialogDefualtPath, _relativPath, _openFileDialogTitle, _fileFormatDescriotion);
 }
@@ -122,11 +126,21 @@ void SelectPathWidgetBase::OpenClicked()
 	this->blockSignals(true);
 	DAVA::String retString = QtFileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
 	this->blockSignals(false);
-	
-	if(!retString.empty())
-	{
-		HandlePathSelected(retString);
-	}
+
+    if(retString.empty())
+    {
+        return;
+    }
+    
+    DAVA::String projectPath = ProjectManager::Instance()->CurProjectPath().toStdString();
+
+    if(checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
+    {
+        QMessageBox::warning(NULL, "Wrong file selected", QString( Format("Path %s doesn't belong to project.", retString.c_str()).c_str() ), QMessageBox::Ok);
+        return;
+    }
+    
+	HandlePathSelected(retString);
 }
 
 void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
@@ -159,15 +173,6 @@ DAVA::String SelectPathWidgetBase::getText()
 	return text().toStdString();
 }
 
-void SelectPathWidgetBase::SetRelativePath(const DAVA::String& newRelativPath)
-{
-	relativePath = DAVA::FilePath(newRelativPath);
-	DAVA::String existingPath = text().toStdString();
-	if(!existingPath.empty())
-	{
-		setText(QString(ConvertToRelativPath(existingPath).c_str()));
-	}
-}
 
 DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path)
 {

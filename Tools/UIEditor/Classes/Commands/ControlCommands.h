@@ -131,4 +131,24 @@ protected:
 	ControlsPositionData prevPositionData;
 };
 
+class ControlRenameCommand : public BaseCommand
+{
+public:
+	ControlRenameCommand(HierarchyTreeNode::HIERARCHYTREENODEID nodeId, const QString& originalName, const QString& newName);
+	
+	virtual void Execute();
+	virtual void Rollback();
+	
+	virtual bool IsUndoRedoSupported() {return true;};
+
+protected:
+	// Apply the rename of control
+	void ApplyRename(const QString& prevName, const QString& updatedName);
+
+private:
+	HierarchyTreeNode::HIERARCHYTREENODEID nodeId;
+	QString originalName;
+	QString newName;
+};
+
 #endif /* defined(__UIEditor__ControlsMoveCommand__) */

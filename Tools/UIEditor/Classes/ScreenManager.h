@@ -41,6 +41,7 @@ using namespace DAVA;
 
 #define DEFAULT_SCREEN 0
 
+class DefaultScreen;
 class ScreenManager: public QObject, public Singleton<ScreenManager>
 {
 	Q_OBJECT
@@ -49,13 +50,13 @@ public:
 	ScreenManager();
 	~ScreenManager();
 	
-	UIScreen* GetScreen() const {return defaultScreen;};
+	DefaultScreen* GetScreen() const {return defaultScreen;};
 	
 protected slots:
 	void OnSelectedScreenChanged(const HierarchyTreeScreenNode*);
 	
 private:
-	UIScreen* defaultScreen;
+	DefaultScreen* defaultScreen;
 	ScreenControl* activeScreenControl;
 };
 

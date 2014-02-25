@@ -34,97 +34,60 @@
 #include <QObject>
 #include "DAVAEngine.h"
 #include "FileSystem/VariantType.h"
+#include "../StringConstants.h"
 
-class SettingsManager: public QObject, public DAVA::Singleton<SettingsManager>
+struct SettingRow
 {
-	Q_OBJECT
-	
-public:
-	
-	enum eDefaultSettings
+	DAVA::String key;
+	DAVA::VariantType defValue;
+
+	SettingRow(const char* _key,const DAVA::VariantType& _defaultValue)
 	{
-		LOD_LEVELS_COUNT = 8,
-		RESENT_FILES_COUNT = 5,
+		key = _key;
+		defValue  = _defaultValue;
+	}
+};
+
+extern const SettingRow SETTINGS_GROUP_GENERAL_MAP[];
+
+extern const SettingRow SETTINGS_GROUP_DEFAULT_MAP[];
+
+extern const SettingRow SETTINGS_GROUP_INTERNAL_MAP[];
+
+class SettingsManager: public DAVA::Singleton<SettingsManager>
+{
+public:
+
+	enum eSettingsGroups
+	{
+		GENERAL = 0,
+		DEFAULT,
+		INTERNAL,
+
+		GROUPS_COUNT
 	};
 	
 	SettingsManager();
-	
+
 	~SettingsManager();
-	
-	void SetValue(const DAVA::String& _name, const DAVA::VariantType& _value, DAVA::List<DAVA::VariantType>& additionalArguments);
-	
-	void SetValue(const DAVA::String& _name, const DAVA::VariantType& _value);
 
-	DAVA::VariantType GetValue(const DAVA::String& _name, const DAVA::List<DAVA::VariantType>& additionalArguments);
-	
-	DAVA::VariantType GetValue(const DAVA::String& _name);
+	DAVA::KeyedArchive* GetSettingsGroup(eSettingsGroups group);
 
-	DAVA::KeyedArchive* GetSettings();
-	
-	DAVA::FilePath GetParticlesConfigsPath();
-	
-	float GetCameraSpeed();
-	
-	void SetMaterialsColor(const DAVA::Color &ambient, const DAVA::Color &diffuse, const DAVA::Color &specular);
+	DAVA::VariantType GetValue(const DAVA::String& _name, eSettingsGroups group) const;
+
+	void SetValue(const DAVA::String& _name, const DAVA::VariantType& _value, eSettingsGroups group);
+
+	DAVA::String GetNameOfGroup(eSettingsGroups group) const;
+
+private:
 
 	void Save();
-		
-signals:
-	
-	void ConfigurationChanged(const DAVA::String& key);
 
-protected:
+	void Load();
 
-	void ApplyOptions();
+	void InitSettingsGroup(eSettingsGroups groupID, const SettingRow* groupMap, DAVA::uint32 mapSize);
 	
-	/* For Getters  */
-
-	void ResolveCameraSpeedValueKeyDefault(const DAVA::List<DAVA::VariantType>& additionalArguments, DAVA::VariantType& newDefValue, DAVA::String& newKey);
-	
-	void ResolveLastOpenedFileKeyDefault(const DAVA::List<DAVA::VariantType>& additionalArguments, DAVA::VariantType& newDefValue, DAVA::String& newKey);
-	
-	void ResolveLodLevelKeyDefault(const DAVA::List<DAVA::VariantType>& additionalArguments, DAVA::VariantType& newDefValue, DAVA::String& newKey);
-	
-	/* For Setters  */
-	void ResolveCameraSpeedValueKey(const DAVA::List<DAVA::VariantType>& additionalArguments, const DAVA::VariantType& newConfigurationValue, DAVA::String& newKey);
-	
-	void ResolveLastOpenedFileKey(const DAVA::List<DAVA::VariantType>& additionalArguments, const DAVA::VariantType& newConfigurationValue, DAVA::String& newKey);
-	
-	void AddLastOpenedFile(const DAVA::List<DAVA::VariantType>& additionalArguments, const DAVA::VariantType& newConfigurationValue, DAVA::String& newKey);
-	
-	void CameraSpeedIndexCheck(const DAVA::List<DAVA::VariantType>& additionalArguments, const DAVA::VariantType& newConfigurationValue, DAVA::String& newKey);
-	
-	void ResolveLodLevelKey(const DAVA::List<DAVA::VariantType>& additionalArguments, const DAVA::VariantType& newConfigurationValue, DAVA::String& newKey);
-	
-	void SetImposterOption(const DAVA::List<DAVA::VariantType>& additionalArguments, const DAVA::VariantType& newConfigurationValue, DAVA::String& newKey);
-	
-	
-	DAVA::KeyedArchive *settings;
+	DAVA::KeyedArchive* settings;
 };
-
-/*
-class SettingsManager2: public QObject, public DAVA::Singleton<SettingsManager2>
-{
-	Q_OBJECT
-
-public:
-	SettingsManager2();
-	virtual ~SettingsManager2();
-
-	const DAVA::VariantType& GetValue(DAVA::FastName key);
-	void SetValue(DAVA::FastName key, const DAVA::VariantType& value);
-
-	void TrackSettings(DAVA::InspInfo *insp, void *object);
-
-protected:
-	struct SettingRow
-	{
-		void *object;
-		DAVA::InspMember *member;
-	};
-
-	DAVA::FastNameMap<SettingRow> settings;
-};
-*/
 
 #endif /* defined(__RESOURCEEDITORQT__SETTINGS_MANAGER__) */

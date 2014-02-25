@@ -32,6 +32,9 @@
 - (BOOL)webView: (UIWebView*)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType;
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView;
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
+- (void)leftGesture;
+- (void)rightGesture;
 
 @end
 
@@ -46,6 +49,22 @@
 		webView = NULL;
 	}
 	return self;
+}
+
+- (void)leftGesture
+{
+    if (delegate)
+    {
+        delegate->SwipeGesture(true);
+    }
+}
+
+- (void)rightGesture
+{
+    if (delegate)
+    {
+        delegate->SwipeGesture(false);
+    }
 }
 
 - (void)setDelegate:(DAVA::IUIWebViewDelegate *)d andWebView:(DAVA::UIWebView *)w
@@ -72,18 +91,18 @@
 			
 			switch (action) {
 				case DAVA::IUIWebViewDelegate::PROCESS_IN_WEBVIEW:
-					DAVA::Logger::Debug("PROCESS_IN_WEBVIEW");
+					DAVA::Logger::FrameworkDebug("PROCESS_IN_WEBVIEW");
 					process = YES;
 					break;
 					
 				case DAVA::IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
-					DAVA::Logger::Debug("PROCESS_IN_SYSTEM_BROWSER");
+					DAVA::Logger::FrameworkDebug("PROCESS_IN_SYSTEM_BROWSER");
 					[[UIApplication sharedApplication] openURL:[request URL]];
 					process = NO;
 					break;
 					
 				case DAVA::IUIWebViewDelegate::NO_PROCESS:
-					DAVA::Logger::Debug("NO_PROCESS");
+					DAVA::Logger::FrameworkDebug("NO_PROCESS");
 					
 				default:
 					process = NO;
@@ -103,8 +122,16 @@
         delegate->PageLoaded(self->webView);
     }
 }
-@end
 
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+{
+    if (delegate && self->webView)
+	{
+        delegate->PageLoaded(self->webView);
+    }
+}
+
+@end
 
 namespace DAVA
 {
@@ -116,6 +143,7 @@ namespace DAVA
 
 WebViewControl::WebViewControl()
 {
+    gesturesEnabled = false;
 	CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
 	webViewPtr = [[UIWebView alloc] initWithFrame:emptyRect];
 	SetBounces(false);
@@ -132,8 +160,12 @@ WebViewControl::WebViewControl()
 
 WebViewControl::~WebViewControl()
 {
+    SetGestures(NO);
 	UIWebView* innerWebView = (UIWebView*)webViewPtr;
 
+    [innerWebView setDelegate:nil];
+    [innerWebView stopLoading];
+    [innerWebView loadHTMLString:@"" baseURL:nil];
 	[innerWebView removeFromSuperview];
 	[innerWebView release];
 	webViewPtr = nil;
@@ -163,7 +195,20 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	NSURL* url = [NSURL URLWithString:[nsURLPathToOpen stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding]];
 	
 	NSURLRequest* requestObj = [NSURLRequest requestWithURL:url];
-	[(UIWebView*)webViewPtr loadRequest:requestObj];
+    UIWebView* innerWebView = (UIWebView*)webViewPtr;
+    [innerWebView stopLoading];
+    [innerWebView loadRequest:requestObj];
+}
+    
+void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
+{
+	NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
+    NSString* baseUrl = [NSString stringWithUTF8String:basePath.GetAbsolutePathname().c_str()];
+    
+    UIWebView* innerWebView = (UIWebView*)webViewPtr;
+    [innerWebView stopLoading];
+    
+    [innerWebView loadHTMLString:dataToOpen baseURL:[NSURL fileURLWithPath:baseUrl]];
 }
 
 void WebViewControl::LoadHtmlString(const WideString& htlmString)
@@ -305,6 +350,45 @@ void WebViewControl::SetBounces(bool value)
 {
 	UIWebView* localWebView = (UIWebView*)webViewPtr;
 	localWebView.scrollView.bounces = (value == true);
+}
+
+//for android we need use techique like http://stackoverflow.com/questions/12578895/how-to-detect-a-swipe-gesture-on-webview
+void WebViewControl::SetGestures(bool value)
+{
+    HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
+    UIView * backView = appDelegate.glController.backgroundView;
+
+    if (value && !gesturesEnabled)
+    {
+        WebViewURLDelegate * urlDelegate = (WebViewURLDelegate *)webViewURLDelegatePtr;
+        
+        UISwipeGestureRecognizer * rightSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:urlDelegate action:@selector(rightGesture)];
+        UISwipeGestureRecognizer * leftSwipeGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:urlDelegate action:@selector(leftGesture)];
+        rightSwipeGesture.direction = UISwipeGestureRecognizerDirectionRight;
+        leftSwipeGesture.direction = UISwipeGestureRecognizerDirectionLeft;
+        
+        [backView addGestureRecognizer:rightSwipeGesture];
+        [backView addGestureRecognizer:leftSwipeGesture];
+        
+        UIWebView* localWebView = (UIWebView*)webViewPtr;
+        [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:rightSwipeGesture];
+        [localWebView.scrollView.panGestureRecognizer requireGestureRecognizerToFail:leftSwipeGesture];
+        rightSwipeGesturePtr = rightSwipeGesture;
+        leftSwipeGesturePtr = leftSwipeGesture;
+    }
+    else if (!value && gesturesEnabled)
+    {
+        UISwipeGestureRecognizer *rightSwipeGesture = (UISwipeGestureRecognizer *)rightSwipeGesturePtr;
+        UISwipeGestureRecognizer *leftSwipeGesture = (UISwipeGestureRecognizer *)leftSwipeGesturePtr;
+        
+        [backView removeGestureRecognizer:rightSwipeGesture];
+        [backView removeGestureRecognizer:leftSwipeGesture];
+        [rightSwipeGesture release];
+        [leftSwipeGesture release];
+        rightSwipeGesturePtr = nil;
+        leftSwipeGesturePtr = nil;
+    }
+    gesturesEnabled = value;
 }
     
 };

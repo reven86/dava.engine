@@ -2,6 +2,8 @@ package com.dava.framework;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -656,6 +658,30 @@ public class JNITextField {
 			viewGroup.removeView(view);
 			JNIActivity.GetActivity().addContentView(view, view.getLayoutParams());
 		}
+	}
+	
+	static protected void Invalidate() {
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				JNIActivity.GetActivity().runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+						for (NativeEditText control: controls.values()) {
+							if (control.editText.isShown())
+							{
+								control.editText.bringToFront();
+								control.editText.setVisibility(View.VISIBLE);
+								control.editText.invalidate();
+							}
+						}
+					}
+				});
+			}
+		}, 200);
 	}
 
 	public static native void TextFieldShouldReturn(int id);

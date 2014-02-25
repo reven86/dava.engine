@@ -135,6 +135,8 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 	Core::Instance()->UnregisterAllAvailableResourceSizes();
 	Core::Instance()->RegisterAvailableResourceSize(size().width(), size().height(), "Gfx");
 	Core::Instance()->CalculateScaleMultipliers();
+    
+    emit DavaGLWidgetResized();
 }
 
 void DavaGLWidget::showEvent(QShowEvent *e)

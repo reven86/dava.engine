@@ -414,16 +414,16 @@ Font* UITextField::GetFont()
     
 }
 
-Color UITextField::GetTextColor()
+const Color &UITextField::GetTextColor() const
 {
 #if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
-    return Color(1,1,1,1);
+    return Color::White;
 #else
-    return staticText ? staticText->GetTextColor() : Color(1,1,1,1);
+    return staticText ? staticText->GetTextColor() : Color::White;
 #endif
 }
 
-Vector2 UITextField::GetShadowOffset()
+Vector2 UITextField::GetShadowOffset() const
 {
 #if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
     return Vector2(0, 0);
@@ -432,16 +432,16 @@ Vector2 UITextField::GetShadowOffset()
 #endif
 }
 
-Color UITextField::GetShadowColor()
+const Color &UITextField::GetShadowColor() const
 {
 #if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
-    return Color(1,1,1,1);
+    return Color::White;
 #else
-    return staticText ? staticText->GetShadowColor() : Color(1,1,1,1);
+    return staticText ? staticText->GetShadowColor() : Color::White;
 #endif
 }
 
-int32 UITextField::GetTextAlign()
+int32 UITextField::GetTextAlign() const
 {
 #ifdef __DAVAENGINE_IPHONE__
     return textFieldiPhone ? textFieldiPhone->GetTextAlign() : ALIGN_HCENTER|ALIGN_VCENTER;
@@ -463,6 +463,11 @@ void UITextField::Input(UIEvent *currentInput)
 //	{
 //        UIControlSystem::Instance()->SetFocusedControl(this, true);
 //	}
+
+    if (NULL == delegate)
+    {
+        return;
+    }
 
 	if(this != UIControlSystem::Instance()->GetFocusedControl())
 		return;
@@ -568,7 +573,10 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
     {
         Font * font = loader->GetFontByName(fontNode->AsString());
         if (font)
+        {
             SetFont(font);
+            SetFontSize((float32)font->GetFontHeight());
+        }
     }
     
     const YamlNode * passwordNode = node->Get("isPassword");
@@ -581,43 +589,43 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 	const YamlNode* autoCapitalizationTypeNode = node->Get("autoCapitalizationType");
 	if (autoCapitalizationTypeNode)
 	{
-		autoCapitalizationType = (eAutoCapitalizationType)autoCapitalizationTypeNode->AsInt32();
+        SetAutoCapitalizationType((eAutoCapitalizationType)autoCapitalizationTypeNode->AsInt32());
 	}
 
 	const YamlNode* autoCorrectionTypeNode = node->Get("autoCorrectionType");
 	if (autoCorrectionTypeNode)
 	{
-		autoCorrectionType = (eAutoCorrectionType)autoCorrectionTypeNode->AsInt32();
+        SetAutoCorrectionType((eAutoCorrectionType)autoCorrectionTypeNode->AsInt32());
 	}
 
 	const YamlNode* spellCheckingTypeNode = node->Get("spellCheckingType");
 	if (spellCheckingTypeNode)
 	{
-		spellCheckingType = (eSpellCheckingType)spellCheckingTypeNode->AsInt32();
+        SetSpellCheckingType((eSpellCheckingType)spellCheckingTypeNode->AsInt32());
 	}
 
 	const YamlNode* keyboardAppearanceTypeNode = node->Get("keyboardAppearanceType");
 	if (keyboardAppearanceTypeNode)
 	{
-		keyboardAppearanceType = (eKeyboardAppearanceType)keyboardAppearanceTypeNode->AsInt32();
+        SetKeyboardAppearanceType((eKeyboardAppearanceType)keyboardAppearanceTypeNode->AsInt32());
 	}
 
 	const YamlNode* keyboardTypeNode = node->Get("keyboardType");
 	if (keyboardTypeNode)
 	{
-		keyboardType = (eKeyboardType)keyboardTypeNode->AsInt32();
+        SetKeyboardType((eKeyboardType)keyboardTypeNode->AsInt32());
 	}
 
 	const YamlNode* returnKeyTypeNode = node->Get("returnKeyType");
 	if (returnKeyTypeNode)
 	{
-		returnKeyType = (eReturnKeyType)returnKeyTypeNode->AsInt32();
+        SetReturnKeyType((eReturnKeyType)returnKeyTypeNode->AsInt32());
 	}
 
 	const YamlNode* enableReturnKeyAutomaticallyNode = node->Get("enableReturnKeyAutomatically");
 	if (enableReturnKeyAutomaticallyNode)
 	{
-		enableReturnKeyAutomatically = enableReturnKeyAutomaticallyNode->AsBool();
+        SetEnableReturnKeyAutomatically(enableReturnKeyAutomaticallyNode->AsBool());
 	}
 
 #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
@@ -630,8 +638,7 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
 		if(shadowColorNode)
 		{
-			Vector4 c = shadowColorNode->AsVector4();
-			SetShadowColor(Color(c.x, c.y, c.z, c.w));
+			SetShadowColor(shadowColorNode->AsColor());
 		}
 
 		if(shadowOffsetNode)
@@ -646,8 +653,7 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 
 	if(textColorNode)
 	{
-		Vector4 c = textColorNode->AsVector4();
-		SetTextColor(Color(c.x, c.y, c.z, c.w));
+		SetTextColor(textColorNode->AsColor());
 	}
 
 	if(textAlignNode)
@@ -693,13 +699,13 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     node->Set("font", nodeValue);
 	
 	//TextColor
-	Color textColor = GetTextColor();
-	nodeValue->SetVector4(Vector4(textColor.r, textColor.g, textColor.b, textColor.a));
+	const Color &textColor = GetTextColor();
+	nodeValue->SetColor(textColor);
 	node->Set("textcolor", nodeValue);
 
 	// ShadowColor
-	Color shadowColor = GetShadowColor();
-	nodeValue->SetVector4(Vector4(shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a));
+	const Color &shadowColor = GetShadowColor();
+	nodeValue->SetColor(shadowColor);
 	node->Set("shadowcolor", nodeValue);
 
 	// ShadowOffset
@@ -804,7 +810,7 @@ WideString UITextField::GetVisibleText() const
     return text;
 }
 	
-UITextField::eAutoCapitalizationType UITextField::GetAutoCapitalizationType()
+UITextField::eAutoCapitalizationType UITextField::GetAutoCapitalizationType() const
 {
 	return autoCapitalizationType;
 }
@@ -819,7 +825,7 @@ void UITextField::SetAutoCapitalizationType(eAutoCapitalizationType value)
 #endif
 }
 
-UITextField::eAutoCorrectionType UITextField::GetAutoCorrectionType()
+UITextField::eAutoCorrectionType UITextField::GetAutoCorrectionType() const
 {
 	return autoCorrectionType;
 }
@@ -834,7 +840,7 @@ void UITextField::SetAutoCorrectionType(eAutoCorrectionType value)
 #endif
 }
 
-UITextField::eSpellCheckingType UITextField::GetSpellCheckingType()
+UITextField::eSpellCheckingType UITextField::GetSpellCheckingType() const
 {
 	return spellCheckingType;
 }
@@ -849,7 +855,7 @@ void UITextField::SetSpellCheckingType(eSpellCheckingType value)
 #endif
 }
 
-UITextField::eKeyboardAppearanceType UITextField::GetKeyboardAppearanceType()
+UITextField::eKeyboardAppearanceType UITextField::GetKeyboardAppearanceType() const
 {
 	return keyboardAppearanceType;
 }
@@ -864,7 +870,7 @@ void UITextField::SetKeyboardAppearanceType(eKeyboardAppearanceType value)
 #endif
 }
 
-UITextField::eKeyboardType UITextField::GetKeyboardType()
+UITextField::eKeyboardType UITextField::GetKeyboardType() const
 {
 	return keyboardType;
 }
@@ -879,7 +885,7 @@ void UITextField::SetKeyboardType(eKeyboardType value)
 #endif
 }
 
-UITextField::eReturnKeyType UITextField::GetReturnKeyType()
+UITextField::eReturnKeyType UITextField::GetReturnKeyType() const
 {
 	return returnKeyType;
 }
@@ -894,7 +900,7 @@ void UITextField::SetReturnKeyType(eReturnKeyType value)
 #endif
 }
 
-bool UITextField::IsEnableReturnKeyAutomatically()
+bool UITextField::IsEnableReturnKeyAutomatically() const
 {
 	return enableReturnKeyAutomatically;
 }
@@ -947,8 +953,7 @@ void UITextField::SetVisible(bool isVisible, bool hierarchic)
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetVisible(isVisible);
 #elif defined(__DAVAENGINE_ANDROID__)
-    // TODO! Yaroslav - implement for Android!
-	//textFieldAndroid->SetVisible(isVisible);
+	textFieldAndroid->SetVisible(isVisible);
 #else
     if (staticText)
     {

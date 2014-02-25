@@ -1,1 +1,1 @@
---add2sidepixel --PowerVR_iOS PVR2 --adreno RGB888 --mali RGB888 --tegra RGB888 --PowerVR_Android RGB888
+--add2sidepixel --adreno RGB888 --mali RGB888 --tegra RGB888 --PowerVR_Android RGB888 --PowerVR_iOS PVR4

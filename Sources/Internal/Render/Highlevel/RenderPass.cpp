@@ -30,26 +30,25 @@
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Render/Highlevel/RenderLayer.h"
+#include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/Camera.h"
 
 namespace DAVA
 {
     
-RenderPass::RenderPass(const FastName & _name)
-    : name(_name)
+RenderPass::RenderPass(RenderSystem * _renderSystem, const FastName & _name, RenderPassID _id)
+    :   renderSystem(_renderSystem)
+    ,   name(_name)
+    ,   id(_id)
 {
-    
+    renderLayers.reserve(RENDER_LAYER_ID_COUNT);
 }
 
 RenderPass::~RenderPass()
 {
     
 }
-const FastName & RenderPass::GetName()
-{
-    return name;
-}
-
+    
 void RenderPass::AddRenderLayer(RenderLayer * layer, const FastName & afterLayer)
 {
 	if(LAST_LAYER != afterLayer)
@@ -80,7 +79,7 @@ void RenderPass::RemoveRenderLayer(RenderLayer * layer)
 	renderLayers.erase(it);
 }
 
-void RenderPass::Draw(Camera * camera)
+void RenderPass::Draw(Camera * camera, RenderPassBatchArray * renderPassBatchArray)
 {
     // Set Render Target
     
@@ -88,7 +87,12 @@ void RenderPass::Draw(Camera * camera)
     uint32 size = (uint32)renderLayers.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        renderLayers[k]->Draw(camera);
+        RenderLayer * layer = renderLayers[k];
+        RenderLayerBatchArray * renderLayerBatchArray = renderPassBatchArray->Get(layer->GetRenderLayerID());
+        if (renderLayerBatchArray)
+        {
+            layer->Draw(name, camera, renderLayerBatchArray);
+        }
     }
 }
 

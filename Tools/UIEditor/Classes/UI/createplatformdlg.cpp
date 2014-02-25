@@ -38,6 +38,7 @@ CreatePlatformDlg::CreatePlatformDlg(QWidget *parent) :
     ui(new Ui::CreatePlatformDlg)
 {
     ui->setupUi(this);
+    ui->lineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp()));
 }
 
 CreatePlatformDlg::~CreatePlatformDlg()

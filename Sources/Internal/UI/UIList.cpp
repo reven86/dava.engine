@@ -37,14 +37,14 @@
 namespace DAVA 
 {
 	
-int32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
+float32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
 {
-	return 20;
+	return 20.0f;
 };
 
-int32 UIListDelegate::CellHeight(UIList* /*list*/, int32 /*index*/)
+float32 UIListDelegate::CellHeight(UIList* /*list*/, int32 /*index*/)
 {
-	return 20;
+	return 20.0f;
 };
 
 void UIListDelegate::OnCellSelected(UIList* /*forList*/, UIListCell* /*selectedCell*/)
@@ -73,7 +73,7 @@ UIList::UIList() : delegate(NULL), orientation(ORIENTATION_VERTICAL), scrollCont
 		
 void UIList::InitAfterYaml()
 {
-	inputEnabled = TRUE;
+    SetInputEnabled(true, false);
 	clipContents = TRUE;
 	Rect r = GetRect();
 	r.x = 0;
@@ -226,29 +226,29 @@ void UIList::FullRefresh()
 	
 	needRefresh = FALSE;
 	
-	addPos = 0;
-	int32 scrollAdd;
-	int32 maxSize;
+	addPos = 0.0f;
+	float32 scrollAdd;
+	float32 maxSize;
 	if(orientation == ORIENTATION_HORIZONTAL)
 	{
-		scrollAdd = (int32)scrollContainer->GetRect().x;
-		maxSize = (int32)GetRect().dx;
+		scrollAdd = scrollContainer->GetRect().x;
+		maxSize = GetRect().dx;
 	}
 	else 
 	{
-		scrollAdd = (int32)scrollContainer->GetRect().y;
-		maxSize = (int32)GetRect().dy;
+		scrollAdd = scrollContainer->GetRect().y;
+		maxSize = GetRect().dy;
 	}
 	
-	scroll->SetViewSize((float32)maxSize);
+	scroll->SetViewSize(maxSize);
 	
-	int sz = 0;
+	float32 sz = 0.0f;
     int32 elCnt = delegate->ElementsCount(this);
     int32 index = 0;
 	for (; index < elCnt; index++) 
 	{
-		int32 curPos = addPos + scrollAdd;
-		int size = 0;
+		float32 curPos = addPos + scrollAdd;
+		float32 size = 0.0f;
 		if(orientation == ORIENTATION_HORIZONTAL)
 		{
 			size = delegate->CellWidth(this, index);
@@ -265,7 +265,7 @@ void UIList::FullRefresh()
 		}
 		
 		addPos += size;
-		if(addPos + scrollAdd > maxSize * 2)
+		if(addPos + scrollAdd > maxSize * 2.0f)
 		{
 			break;
 		}
@@ -284,7 +284,7 @@ void UIList::FullRefresh()
 		}
 	}
     
-	scroll->SetElementSize((float32)sz);
+	scroll->SetElementSize(sz);
 }
 
 void UIList::Refresh()
@@ -363,21 +363,21 @@ void UIList::Update(float32 timeElapsed)
         }
         if(fc)
         {
-            int32 borderPos;
-            int32 rPos;
-            int size = 0;
-            int32 off;
+            float32 borderPos;
+            float32 rPos;
+            float32 size = 0.0f;
+            float32 off;
             if(orientation == ORIENTATION_HORIZONTAL)
             {
-                borderPos = (int32)(viewRect.dx + viewRect.dx / 2.0f);
-                off = (int32)scrollContainer->GetRect().x;
-                rPos = (int32)(fc->GetRect().x + fc->GetRect().dx + off);
+                borderPos = viewRect.dx + viewRect.dx / 2.0f;
+                off = scrollContainer->GetRect().x;
+                rPos = fc->GetRect().x + fc->GetRect().dx + off;
             }
             else 
             {
-                borderPos = (int32)(viewRect.dy + viewRect.dy / 2.0f);
-                off = (int32)scrollContainer->GetRect().y;
-                rPos = (int32)(fc->GetRect().y + fc->GetRect().dy + off);
+                borderPos = viewRect.dy + viewRect.dy / 2.0f;
+                off = scrollContainer->GetRect().y;
+                rPos = fc->GetRect().y + fc->GetRect().dy + off;
             }
 
 			int32 elementsCount = delegate->ElementsCount(this);
@@ -414,21 +414,21 @@ void UIList::Update(float32 timeElapsed)
         }
         if(fc)
         {
-            int32 borderPos;
-            int32 rPos;
-            int size = 0;
-            int32 off;
+            float32 borderPos;
+            float32 rPos;
+            float32 size = 0.0f;
+            float32 off;
             if(orientation == ORIENTATION_HORIZONTAL)
             {
-                borderPos = (int32)(-viewRect.dx/2.0f);
-                off = (int32)scrollContainer->GetRect().x;
-                rPos = (int32)(fc->GetRect().x + off);
+                borderPos = -viewRect.dx/2.0f;
+                off = scrollContainer->GetRect().x;
+                rPos = fc->GetRect().x + off;
             }
             else 
             {
-                borderPos = (int32)(-viewRect.dy/2.0f);
-                off = (int32)scrollContainer->GetRect().y;
-                rPos = (int32)(fc->GetRect().y + off);
+                borderPos = -viewRect.dy/2.0f;
+                off = scrollContainer->GetRect().y;
+                rPos = fc->GetRect().y + off;
             }
             while(rPos > borderPos && fc->GetIndex() > 0)
             {
@@ -502,7 +502,7 @@ void UIList::Input(UIEvent *currentInput)
 
 bool UIList::SystemInput(UIEvent *currentInput)
 {
-	if(!inputEnabled || !visible || controlState & STATE_DISABLED)
+	if(!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
 	{
 		return false;
 	}
@@ -559,7 +559,7 @@ void UIList::OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerDat
 	}
 }
 
-void UIList::AddCellAtPos(UIListCell *cell, int32 pos, int32 size, int32 index)
+void UIList::AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 index)
 {
 	DVASSERT(cell);
 	DVASSERT(cell->cellStore == NULL || cell->cellStore == this);
@@ -580,13 +580,13 @@ void UIList::AddCellAtPos(UIListCell *cell, int32 pos, int32 size, int32 index)
 	Rect r = cell->GetRect();
 	if(orientation == ORIENTATION_HORIZONTAL)
 	{
-		r.dx = (float32)size;
-		r.x = (float32)pos;
+		r.dx = size;
+		r.x = pos;
 	}
 	else 
 	{
-		r.dy = (float32)size;
-		r.y = (float32)pos;
+		r.dy = size;
+		r.y = pos;
 	}
 	cell->SetRect(r);
     

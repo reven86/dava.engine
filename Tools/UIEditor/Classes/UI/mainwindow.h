@@ -35,6 +35,8 @@
 #include "ScreenWrapper.h"
 #include "EditorSettings.h"
 
+#include "PreviewController.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -89,6 +91,8 @@ private slots:
 	void FileMenuTriggered(QAction *resentScene);
 	void MenuFileWillShow();
 
+    void SetBackgroundColorMenuTriggered(QAction* action);
+
 	void OnUndoRequested();
 	void OnRedoRequested();
 	
@@ -99,7 +103,9 @@ private slots:
 	void OnChangePropertySucceeded();
 
 	void OnUnsavedChangesNumberChanged();
-	
+
+    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
+
 	// Adjust size
 	void OnAdjustSize();
 	
@@ -128,6 +134,15 @@ private slots:
     // Pixelization.
     void OnPixelizationStateChanged();
 
+    // Editing mode (Edit/Preview)
+    void OnPreviewTriggered();
+    
+    // Edit Preview Settings..
+    void OnEditPreviewSettings();
+    
+    // Notification from GL widget its resize is done.
+    void OnGLWidgetResized();
+
 private:
 	bool CloseProject();
 
@@ -136,8 +151,10 @@ private:
 	void UpdateScreenPosition();
 	
 	void InitMenu();
+    void SetupViewMenu();
 	void UpdateMenu();
 	void UpdateProjectSettings(const QString& filename);
+
 	// Save/restore positions of DockWidgets and main window geometry
 	void SaveMainWindowState();
 	void RestoreMainWindowState();
@@ -162,12 +179,30 @@ private:
     // Notify external systems that the scale is updated.
     void NotifyScaleUpdated(float32 newScale);
 
-    // Repack (if needed) and reload sprites.
-    void RepackAndReloadSprites(bool needRepack);
+    // Repack and reload sprites.
+    void RepackAndReloadSprites();
+
+    // Control Align/Distribute actions.
+    void SetAlignEnabled(bool value);
+    void SetDistributeEnabled(bool value);
+
+    // Preview handling.
+    void EnablePreview(const PreviewSettingsData& data);
+    void DisablePreview();
+    void UpdatePreviewButton();
+
+    // Enable/disable editing controls for Preview mode.
+    void EnableEditing(bool value);
+
 private:
     Ui::MainWindow *ui;
 	QAction *recentPojectActions[EditorSettings::RECENT_FILES_COUNT];
-	
+
+    // Background Frame Color menu actions.
+    QList<QAction*> backgroundFramePredefinedColorActions;
+    QAction* backgroundFrameUseCustomColorAction;
+    QAction* backgroundFrameSelectCustomColorAction;
+
 	bool screenChangeUpdate;
 };
 

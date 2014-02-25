@@ -56,7 +56,7 @@ UISlider::UISlider(const Rect & rect)
 ,   needSetMinDrawType(false)
 ,   needSetMaxDrawType(false)
 {
-	inputEnabled = true;
+    SetInputEnabled(true, false);
 	isEventsContinuos = true;
 	
 	leftInactivePart = 0;
@@ -78,7 +78,7 @@ UISlider::UISlider() :
     needSetMinDrawType(false),
     needSetMaxDrawType(false)
 {
-	inputEnabled = true;
+    SetInputEnabled(true, false);
 	isEventsContinuos = true;
 	
 	InitSubcontrols();
@@ -431,7 +431,8 @@ void UISlider::SystemDraw(const UIGeometricData &geometricData)
 	{
 		Color oldColor = RenderManager::Instance()->GetColor();
 		RenderManager::Instance()->SetColor(debugDrawColor);
-		RenderHelper::Instance()->DrawRect(drawData.GetUnrotatedRect());
+		DrawDebugRect(drawData, false);
+        DrawPivotPoint(drawData.GetUnrotatedRect());
 		RenderManager::Instance()->SetColor(oldColor);
 	}
 }

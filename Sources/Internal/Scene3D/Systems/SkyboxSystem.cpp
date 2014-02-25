@@ -43,7 +43,7 @@ const int SKYBOX_VERTEX_COUNT = (5 * 6);
 namespace DAVA
 {
 	SkyboxSystem::SkyboxSystem(Scene * scene)
-	:	BaseProcessSystem(Component::RENDER_COMPONENT, scene)
+	:	SceneSystem(scene)
 	{
 		skyboxEntity = NULL;
 	}
@@ -81,22 +81,18 @@ namespace DAVA
 		if(NULL == skyboxEntity)
 		{
 			SkyboxRenderObject* skyboxRenderObject = new SkyboxRenderObject();
-			
-			AABBox3 box = AABBox3(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f));
-			skyboxRenderObject->Initialize(box); //first time initialization
-			
+						
 			RenderComponent* renderComponent = new RenderComponent();
 			renderComponent->SetRenderObject(skyboxRenderObject);
-			
 			
 			result = new Entity();
 			result->SetName("Skybox");
 
-			result->RemoveComponent(Component::RENDER_COMPONENT);
 			result->AddComponent(renderComponent);
-			renderComponent->Release();
+			AABBox3 box = AABBox3(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f));
+			skyboxRenderObject->Initialize(box); //first time initialization
 
-			GetScene()->AddNode(result);
+			GetScene()->AddNode(result);			
 			
 			Matrix4 * worldTransformPointer = ((TransformComponent*)result->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
 			skyboxRenderObject->SetWorldTransformPtr(worldTransformPointer);
@@ -126,11 +122,11 @@ namespace DAVA
 			   renderObj->GetRenderBatchCount() > 0)
 			{
 				RenderBatch* renderBatch = renderObj->GetRenderBatch(0);
-				Material* material = renderBatch->GetMaterial();
+				NMaterial* material = renderBatch->GetMaterial();
 				
 				if(material)
 				{
-					Texture* texture = material->GetTexture(Material::TEXTURE_DIFFUSE);
+					Texture* texture = material->GetTexture(NMaterial::TEXTURE_CUBEMAP);
 					if(texture)
 					{
 						texture->Reload();

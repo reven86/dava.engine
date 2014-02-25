@@ -32,6 +32,7 @@
 #define __PROJECT_MANAGER_H__
 
 #include <QObject>
+#include <QVector>
 #include "DAVAEngine.h"
 
 class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
@@ -39,6 +40,19 @@ class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
 	Q_OBJECT
 
 public:
+    struct AvailableMaterialTemplate
+    {
+        QString name;
+        QString path;
+    };
+
+    struct AvailableMaterialQuality
+    {
+        QString name;
+        QString prefix;
+        QVector<QString> values;
+    };
+
 	ProjectManager();
 	~ProjectManager();
 
@@ -46,6 +60,9 @@ public:
 
 	QString CurProjectPath();
 	QString CurProjectDataSourcePath();
+    
+    const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
+    const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
 
 public slots:
 	QString ProjectOpenDialog();
@@ -56,12 +73,16 @@ public slots:
 signals:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
-
+    
 private:
-	QString curProjectPath;
+    QString curProjectPath;
 	QString curProjectPathDataSource;
 
 	void LoadProjectSettings();
+    void LoadMaterialsSettings();
+
+    QVector<AvailableMaterialTemplate> templates;
+    QVector<AvailableMaterialQuality> qualities;
 };
 
 #endif // __PROJECT_MANAGER_H__ 

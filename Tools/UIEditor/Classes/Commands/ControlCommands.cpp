@@ -226,7 +226,7 @@ void ControlsAlignDistributeCommand::Execute()
 			
 		default:
 		{
-			DVASSERT_MSG(Format("Unknown Command Mode %i", this->commandMode), false);
+			DVASSERT_MSG(Format("Unknown Command Mode %i", this->commandMode).c_str(), false);
 			break;
 		}
 	}
@@ -236,3 +236,40 @@ void ControlsAlignDistributeCommand::Rollback()
 {
 	AlignDistributeManager::UndoAlignDistribute(prevPositionData);
 }
+
+ControlRenameCommand::ControlRenameCommand(HierarchyTreeNode::HIERARCHYTREENODEID nodeId, const QString& originalName, const QString& newName)
+{
+	this->nodeId = nodeId;
+	this->originalName = originalName;
+	this->newName = newName;
+}
+
+void ControlRenameCommand::Execute()
+{
+	ApplyRename(originalName, newName);
+	
+	// Notify the Grid some properties were changed.
+    CommandsController::Instance()->EmitUpdatePropertyValues();
+}
+
+void ControlRenameCommand::Rollback()
+{
+	// Return the controls to the previous size.
+	ApplyRename(newName, originalName);
+	
+    // Notify the Grid some properties were changed.
+    CommandsController::Instance()->EmitUpdatePropertyValues();
+}
+
+void ControlRenameCommand::ApplyRename(const QString& prevName, const QString& updatedName)
+{
+	
+    BaseMetadata* baseMetadata = GetMetadataForTreeNode(nodeId);
+
+    // This command is NOT state-aware and contains one and only param.
+    baseMetadata->SetActiveParamID(0);
+    baseMetadata->ApplyRename(prevName, updatedName);
+    
+    SAFE_DELETE(baseMetadata);
+}
+

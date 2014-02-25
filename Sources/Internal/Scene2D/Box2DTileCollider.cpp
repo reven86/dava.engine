@@ -127,7 +127,7 @@ namespace DAVA
 		reg.to = idTo;
 		reg.fixtureDef = fixtureDef;
 			//this fucking code here is because of the box2d author hands
-		b2Shape *sh;
+		b2Shape *sh = NULL;
 		switch (fixtureDef.shape->GetType())
 		{
 			case b2Shape::e_circle:

@@ -142,6 +142,7 @@ namespace DAVA
 				fileName[i] = ' ';
 			}
 		}
+        SetLastError(0);
 		hMutex = CreateMutex(NULL, FALSE, fileName);
 		if(ERROR_ALREADY_EXISTS == GetLastError())
 		{

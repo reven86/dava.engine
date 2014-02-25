@@ -26,48 +26,68 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #ifndef __QT_PROPERTY_MODEL_H__
 #define __QT_PROPERTY_MODEL_H__
 
 #include <QPair>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
+
 #include "Base/Introspection.h"
 
-#include "QtPropertyItem.h"
-#include "QtPropertyData.h"
-
-class QtPropertyModel : public QStandardItemModel
+class QtPropertyData;
+class QtPropertyModel : public QAbstractItemModel
 {
 	Q_OBJECT
 
-	friend class QtPropertyItem;
+	friend class QtPropertyData;
 
 public:
-	QtPropertyModel(QObject* parent = 0);
+	QtPropertyModel(QWidget *_viewport, QObject* parent = 0);
 	~QtPropertyModel();
 
-	QPair<QtPropertyItem*, QtPropertyItem*> AppendProperty(const QString &name, QtPropertyData* data, QtPropertyItem* parent = NULL);
-	QPair<QtPropertyItem*, QtPropertyItem*> GetProperty(const QString &name, QtPropertyItem* parent = NULL);
+	QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
+	QModelIndex parent(const QModelIndex & index) const;
+	int rowCount(const QModelIndex & parent = QModelIndex()) const;
+	int columnCount(const QModelIndex & parent = QModelIndex()) const;
+	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+	QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+	bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+	Qt::ItemFlags flags(const QModelIndex & index) const;
+
+	QtPropertyData* rootItem() const;
+
+	QtPropertyData* itemFromIndex(const QModelIndex & index) const;
+	QModelIndex indexFromItem(QtPropertyData *data) const;
+
+	QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex());
+	QModelIndex InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent = QModelIndex());
 
 	bool GetEditTracking();
 	void SetEditTracking(bool enabled);
 
-	void RemoveProperty(QtPropertyItem* item);
+	void RemoveProperty(const QModelIndex &index);
 	void RemovePropertyAll();
 
 	void UpdateStructure(const QModelIndex &parent = QModelIndex());
 
 signals:
-	void ItemEdited(const QString &name, QtPropertyData *data);
-	void ItemChanged(const QString &name, QtPropertyData *data);
+	void PropertyEdited(const QModelIndex &index);
+	void PropertyChanged(const QModelIndex &index);
 
 protected:
+	QtPropertyData *root;
 	bool trackEdit;
 
-	void EmitDataEdited(QtPropertyItem *item);
-	void UpdateStructureInternal(const QModelIndex &i);
+	QtPropertyData *itemFromIndexInternal(const QModelIndex & index) const;
+
+	void DataChanged(QtPropertyData *data, int reason);
+	void DataAboutToBeAdded(QtPropertyData *parent, int first, int last);
+	void DataAdded();
+	void DataAboutToBeRemoved(QtPropertyData *parent, int first, int last);
+	void DataRemoved();
+
+	void UpdateStructureInternal(const QModelIndex &index);
 };
 
 #endif // __QT_PROPERTY_MODEL_H__

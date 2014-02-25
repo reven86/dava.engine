@@ -634,7 +634,7 @@ public:
 		if (m_floats[3] > maxVal)
 		{
 			maxIndex = 3;
-			maxVal = m_floats[3];
+//			maxVal = m_floats[3];
 		}
 		
 		
@@ -667,7 +667,7 @@ public:
 		if (m_floats[3] < minVal)
 		{
 			minIndex = 3;
-			minVal = m_floats[3];
+//			minVal = m_floats[3];
 		}
 		
 		return minIndex;

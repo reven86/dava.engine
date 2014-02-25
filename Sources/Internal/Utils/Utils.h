@@ -152,7 +152,7 @@ uint64 EglGetCurrentContext();
 
 // Open the URL in external browser.
 void OpenURL(const String& url);
-    
+
 };
 
 #endif // __DAVAENGINE_UTILS_H__

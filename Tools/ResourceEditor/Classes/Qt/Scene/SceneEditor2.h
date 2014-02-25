@@ -34,6 +34,7 @@
 #include <QObject>
 #include "UI/UIEvent.h"
 #include "Scene3D/Scene.h"
+#include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Base/StaticSingleton.h"
 
 #include "Commands2/CommandStack.h"
@@ -57,6 +58,12 @@
 #include "Scene/System/DebugDrawSystem.h"
 #include "Scene/System/BeastSystem.h"
 #include "Scene/System/OwnersSignatureSystem.h"
+#include "Main/Request.h"
+#include "Scene/System/EditorMaterialSystem.h"
+
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
+
+class FogSettingsChangedReceiver;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -96,6 +103,8 @@ public:
 	DebugDrawSystem *debugDrawSystem;
 	BeastSystem	*beastSystem;
 	OwnersSignatureSystem *ownersSignatureSystem;
+    StaticOcclusionBuildSystem * staticOcclusionBuildSystem;
+	EditorMaterialSystem *materialSystem;
 
 	// save/load
 	bool Load(const DAVA::FilePath &path);
@@ -118,6 +127,7 @@ public:
 
 	void Exec(Command2 *command);
 	void ClearCommands(int commandId);
+    void ClearAllCommands();
 	const CommandStack* GetCommandStack() const;
 
 	// checks whether the scene changed since the last save
@@ -144,12 +154,12 @@ public:
 	const Color GetShadowColor() const;
 	void UpdateShadowColorFromLandscape();
 
-	void SetShadowBlendMode(ShadowVolumeRenderPass::eBlend blend);
-	ShadowVolumeRenderPass::eBlend GetShadowBlendMode() const;
+	void SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend);
+	DAVA::ShadowPassBlendMode::eBlend GetShadowBlendMode() const;
 
     const RenderManager::Stats & GetRenderStats() const;
 
-	void DisableTools(int32 toolFlags);
+	void DisableTools(int32 toolFlags, bool saveChanges = true);
 	bool IsToolsEnabled(int32 toolFlags);
 	int32 GetEnabledTools();
 
@@ -157,6 +167,12 @@ public:
 	virtual Entity* Clone(Entity *dstNode = NULL);
 
 	DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
+	
+	INTROSPECTION(SceneEditor2, 
+		MEMBER(cameraSystem, "CameraSystem", I_VIEW | I_EDIT)
+		MEMBER(gridSystem, "GridSystem", I_VIEW | I_EDIT)
+        MEMBER(materialSystem, "Material System", I_VIEW | I_EDIT)
+		)
 
 protected:
 	bool isLoaded;
@@ -178,6 +194,9 @@ protected:
 	void RemoveSystems();
 
 	bool wasChanged; //deprecated
+    
+    void Setup2DDrawing();
+    void Setup3DDrawing();
 
 private:
 	friend struct EditorCommandNotify;

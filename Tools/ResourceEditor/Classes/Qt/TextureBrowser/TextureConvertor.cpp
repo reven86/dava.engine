@@ -34,11 +34,12 @@
 #include <QTextOption>
 #include <QPushButton>
 #include <QLabel>
+#include <QFileInfo>
 
 #include "Main/mainwindow.h"
 #include "TextureBrowser/TextureConvertor.h"
 #include "TextureCompression/TextureConverter.h"
-#include "SceneEditor/SceneValidator.h"
+#include "Deprecated/SceneValidator.h"
 #include "Render/LibDxtHelper.h"
 
 #include "FileSystem/FileSystem.h"
@@ -46,14 +47,19 @@
 #include "Platform/Qt/QtLayer.h"
 #include "Main/QtUtils.h"
 #include "Scene/SceneHelper.h"
+#include "ImageTools/ImageTools.h"
 
 TextureConvertor::TextureConvertor()
 	: curJobOriginal(NULL)
+	, curJobThumbnail(NULL)
+	, curJobConverted(NULL)
 	, jobIdCounter(1)
 	, convertJobQueueSize(0)
 	, waitingComletion(0)
+    , waitDialog(NULL)
 {
 	// slots will be called in connector(this) thread
+	QObject::connect(&thumbnailWatcher, SIGNAL(finished()), this, SLOT(threadThumbnailFinished()), Qt::QueuedConnection);
 	QObject::connect(&originalWatcher, SIGNAL(finished()), this, SLOT(threadOriginalFinished()), Qt::QueuedConnection);
 	QObject::connect(&convertedWatcher, SIGNAL(finished()), this, SLOT(threadConvertedFinished()), Qt::QueuedConnection);
 }
@@ -61,9 +67,33 @@ TextureConvertor::TextureConvertor()
 TextureConvertor::~TextureConvertor()
 {
 	CancelConvert();
-
+	thumbnailWatcher.waitForFinished();
 	originalWatcher.waitForFinished();
 	convertedWatcher.waitForFinished();
+}
+
+int TextureConvertor::GetThumbnail(const DAVA::TextureDescriptor *descriptor)
+{
+	int ret = 0;
+
+	if(NULL != descriptor)
+	{
+		// check if requested texture isn't the same that is loading now
+		if(NULL == curJobThumbnail || curJobThumbnail->identity != descriptor)
+		{
+			JobItem newJob;
+			newJob.id = jobIdCounter++;
+			newJob.data = new TextureDescriptor(*descriptor);
+			newJob.identity = descriptor;
+
+			jobStackThumbnail.push(newJob);
+			jobRunNextThumbnail();
+
+			ret = newJob.id;
+		}
+	}
+
+	return ret;
 }
 
 int TextureConvertor::GetOriginal(const DAVA::TextureDescriptor *descriptor)
@@ -75,9 +105,6 @@ int TextureConvertor::GetOriginal(const DAVA::TextureDescriptor *descriptor)
 		// check if requested texture isn't the same that is loading now
 		if(NULL == curJobOriginal || curJobOriginal->identity != descriptor)
 		{
-// 			DAVA::Vector<DAVA::TextureDescriptor> *textures = new DAVA::Vector<DAVA::TextureDescriptor>(); TODO: WTF? unusable code?
-// 			textures->push_back(*descriptor);
-
 			JobItem newJob;
 			newJob.id = jobIdCounter++;
 			newJob.data = new TextureDescriptor(*descriptor);
@@ -126,14 +153,14 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, bool forceConvert)
 	if(NULL != scene)
 	{
 		// get list of all scenes textures
-		DAVA::Map<DAVA::String, DAVA::Texture *> allTextures;
-		SceneHelper::EnumerateTextures(scene, allTextures);
+		DAVA::TexturesMap allTextures;
+		SceneHelper::EnumerateSceneTextures(scene, allTextures);
 
 		// add jobs to convert every texture
 		if(allTextures.size() > 0)
 		{
-			DAVA::Map<DAVA::String, DAVA::Texture *>::iterator begin = allTextures.begin();
-			DAVA::Map<DAVA::String, DAVA::Texture *>::iterator end = allTextures.end();
+			DAVA::TexturesMap::iterator begin = allTextures.begin();
+			DAVA::TexturesMap::iterator end = allTextures.end();
 
 			for(; begin != end; begin++)
 			{
@@ -205,15 +232,29 @@ void TextureConvertor::CancelConvert()
 	while (NULL != item)
 	{
 		TextureDescriptor* desc = (TextureDescriptor*) item->data;
-		if(NULL != desc)
-		{
-			SafeRelease(desc);
-		}
+		SafeDelete(desc);
 
 		delete item;
 		item = jobStackConverted.pop();
 	}
 }
+
+void TextureConvertor::jobRunNextThumbnail()
+{
+	// if there is no already running work
+	if((thumbnailWatcher.isFinished() || thumbnailWatcher.isCanceled()) && NULL == curJobThumbnail)
+	{
+		// get the new work
+		curJobThumbnail = jobStackThumbnail.pop();
+		if(NULL != curJobThumbnail)
+		{
+			// copy descriptor
+			QFuture< TextureInfo > f = QtConcurrent::run(this, &TextureConvertor::GetThumbnailThread, curJobThumbnail);
+			thumbnailWatcher.setFuture(f);
+		}
+	}
+}
+
 
 void TextureConvertor::jobRunNextOriginal()
 {
@@ -225,7 +266,7 @@ void TextureConvertor::jobRunNextOriginal()
 		if(NULL != curJobOriginal)
 		{
 			// copy descriptor
-			QFuture< DAVA::Vector<QImage> > f = QtConcurrent::run(this, &TextureConvertor::GetOriginalThread, curJobOriginal);
+			QFuture< TextureInfo > f = QtConcurrent::run(this, &TextureConvertor::GetOriginalThread, curJobOriginal);
 			originalWatcher.setFuture(f);
 		}
 	}
@@ -242,7 +283,7 @@ void TextureConvertor::jobRunNextConvert()
 		{
 			TextureDescriptor *desc = (TextureDescriptor *) curJobConverted->data;
 
-			QFuture< DAVA::Vector<QImage> > f = QtConcurrent::run(this, &TextureConvertor::GetConvertedThread, curJobConverted);
+			QFuture< TextureInfo > f = QtConcurrent::run(this, &TextureConvertor::GetConvertedThread, curJobConverted);
 			convertedWatcher.setFuture(f);
 
 			emit ConvertStatusImg(desc->pathname.GetAbsolutePathname().c_str(), curJobConverted->type);
@@ -293,6 +334,25 @@ void TextureConvertor::jobRunNextConvert()
 	}
 }
 
+void TextureConvertor::threadThumbnailFinished()
+{
+	if(thumbnailWatcher.isFinished() && NULL != curJobThumbnail)
+	{
+		const DAVA::TextureDescriptor *thumbnailDescriptor = (DAVA::TextureDescriptor *) curJobThumbnail->identity;
+		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor *) curJobThumbnail->data;
+
+		TextureInfo watcherResult = thumbnailWatcher.result();
+		emit ReadyThumbnail(thumbnailDescriptor, watcherResult);
+
+		SafeDelete(descriptor);
+		delete curJobThumbnail;
+		curJobThumbnail = NULL;
+	}
+
+	jobRunNextThumbnail();
+}
+
+
 void TextureConvertor::threadOriginalFinished()
 {
 	if(originalWatcher.isFinished() && NULL != curJobOriginal)
@@ -300,10 +360,10 @@ void TextureConvertor::threadOriginalFinished()
 		const DAVA::TextureDescriptor *originalDescriptor = (DAVA::TextureDescriptor *) curJobOriginal->identity;
 		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor *) curJobOriginal->data;
 
-		DAVA::Vector<QImage> watcherResult = originalWatcher.result();
+		TextureInfo watcherResult = originalWatcher.result();
 		emit ReadyOriginal(originalDescriptor, watcherResult);
 
-		SafeRelease(descriptor);
+		SafeDelete(descriptor);
 		delete curJobOriginal;
 		curJobOriginal = NULL;
 	}
@@ -318,10 +378,10 @@ void TextureConvertor::threadConvertedFinished()
 		const DAVA::TextureDescriptor *convertedDescriptor = (DAVA::TextureDescriptor *) curJobConverted->identity;
 		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor *) curJobConverted->data;
 
-		DAVA::Vector<QImage> watcherResult = convertedWatcher.result();
+		TextureInfo watcherResult = convertedWatcher.result();
 		emit ReadyConverted(convertedDescriptor, (DAVA::eGPUFamily) curJobConverted->type, watcherResult);
 
-		SafeRelease(descriptor);
+		SafeDelete(descriptor);
 		delete curJobConverted;
 		curJobConverted = NULL;
 	}
@@ -334,48 +394,102 @@ void TextureConvertor::waitCanceled()
 	CancelConvert();
 }
 
-DAVA::Vector<QImage> TextureConvertor::GetOriginalThread(JobItem *item)
+TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 {
-	DAVA::Vector<QImage> resultArray;
-    void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
-    
+	TextureInfo result;
+
+	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
+
 	if(NULL != item && NULL != item->data)
 	{
 		TextureDescriptor *descriptor = (TextureDescriptor *) item->data;
-		
+
+		DAVA::uint32 fileSize = 0;
 		if(descriptor->IsCubeMap())
 		{
-			DAVA::Vector<DAVA::String> cubeFaceNames;
-			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str(), cubeFaceNames);
-			
+			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
+			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+
 			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
 			{
 				if((descriptor->faceDescription & (1 << i)) != 0)
 				{
 					QImage img;
-					img = QImage(cubeFaceNames[i].c_str());
-					resultArray.push_back(img);
+					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
+					result.images.push_back(img);
 				}
+
+				fileSize += QFileInfo(cubeFaceNames[i].GetAbsolutePathname().c_str()).size();
 			}
 		}
 		else
 		{
 			QImage img;
 			img = QImage(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str());
-			resultArray.push_back(img);
+			result.images.push_back(img);
+			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
+
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_UNKNOWN);
+		result.fileSize = fileSize;
+	}
+
+	DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
+
+	return result;
+}
+
+TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
+{
+	TextureInfo result;
+
+	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
+    
+	if(NULL != item && NULL != item->data)
+	{
+		TextureDescriptor *descriptor = (TextureDescriptor *) item->data;
+		
+		DAVA::uint32 fileSize = 0;
+		if(descriptor->IsCubeMap())
+		{
+			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
+			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+			
+			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+			{
+				if((descriptor->faceDescription & (1 << i)) != 0)
+				{
+					QImage img;
+					img = QImage(cubeFaceNames[i].GetAbsolutePathname().c_str());
+					result.images.push_back(img);
+				}
+
+				fileSize += QFileInfo(cubeFaceNames[i].GetAbsolutePathname().c_str()).size();
+			}
+		}
+		else
+		{
+			QImage img;
+			img = QImage(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str());
+			result.images.push_back(img);
+			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
+		}
+
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_UNKNOWN);
+		result.fileSize = fileSize;
 	}
 
     DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 	
-	return resultArray;
+	return result;
 }
 
-DAVA::Vector<QImage> TextureConvertor::GetConvertedThread(JobItem *item)
+TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 {
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
 
-	DAVA::Vector<QImage> ret;
+	TextureInfo result;
+
 	DAVA::Vector<DAVA::Image*> convertedImages;
 	DAVA::Image* davaImg = NULL;
 
@@ -391,15 +505,15 @@ DAVA::Vector<QImage> TextureConvertor::GetConvertedThread(JobItem *item)
 			const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpu, (DAVA::PixelFormat) descriptor->compression[gpu].format);
 			if(outExtension == ".pvr")
 			{
-				DAVA::Logger::FrameworkDebug("Starting PVR conversion (%s), id %d...",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id);
+				DAVA::Logger::FrameworkDebug("Starting PVR conversion (%s), id %d..., (%s)",
+					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
 				convertedImages = ConvertFormat(descriptor, gpu, item->force);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}
 			else if(outExtension == ".dds")
 			{
-				DAVA::Logger::FrameworkDebug("Starting DXT conversion (%s), id %d...",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id);
+				DAVA::Logger::FrameworkDebug("Starting DXT conversion (%s), id %d..., (%s)",
+					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
 				convertedImages = ConvertFormat(descriptor, gpu, item->force);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}
@@ -407,11 +521,18 @@ DAVA::Vector<QImage> TextureConvertor::GetConvertedThread(JobItem *item)
 			{
 				DVASSERT(false);
 			}
+
+
+			result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
+
+			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
+			result.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
 		}
 		else
 		{
 			DAVA::Logger::Error("NULL descriptor or wrong GPU type", item->id);
 		}
+
 	}
 
 	if(convertedImages.size() > 0)
@@ -421,14 +542,14 @@ DAVA::Vector<QImage> TextureConvertor::GetConvertedThread(JobItem *item)
 			if(convertedImages[i] != NULL)
 			{
 				QImage img = FromDavaImage(convertedImages[i]);
-				ret.push_back(img);
+				result.images.push_back(img);
 			
 				convertedImages[i]->Release();
 			}
 			else
 			{
 				QImage img;
-				ret.push_back(img);
+				result.images.push_back(img);
 			}
 		}
 	}
@@ -448,13 +569,14 @@ DAVA::Vector<QImage> TextureConvertor::GetConvertedThread(JobItem *item)
 		for(int i = 0; i < stubImageCount; ++i)
 		{
 			QImage img;
-			ret.push_back(img);
+			result.images.push_back(img);
 		}
 	}
 
+
 	DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 	
-	return ret;
+	return result;
 }
 
 DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, bool forceConvert)
@@ -469,7 +591,7 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 			outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true);
         }
 		
-		Vector<DAVA::Image *> davaImages = DAVA::ImageLoader::CreateFromFile(outputPath);
+		Vector<DAVA::Image *> davaImages = DAVA::ImageLoader::CreateFromFileByContent(outputPath);
 		
 		if(davaImages.size() > 0)
 		{
@@ -517,171 +639,6 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 	
 	return resultImages;
 }
-
-/*DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertPVR(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, bool forceConvert)
- {
- DAVA::Vector<DAVA::Image*> resultImages;
- DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
- DAVA::FilePath outputPath = PVRConverter::Instance()->GetPVRToolOutput(*descriptor, gpu);
- if(!outputPath.IsEmpty())
- {
- if(forceConvert || !DAVA::FileSystem::Instance()->IsFile(outputPath))
- {
- DeleteOldPVRTextureIfPowerVr_IOS(descriptor, gpu);
- 
- DAVA::FilePath pathToConvert = (descriptor->IsCubeMap()) ? PrepareCubeMapForConvert(*descriptor) : FilePath::CreateWithNewExtension(descriptor->pathname, ".png");
- 
- QString command = PVRConverter::Instance()->GetCommandLinePVR(*descriptor, pathToConvert, gpu).c_str();
- DAVA::Logger::FrameworkDebug("%s", command.toStdString().c_str());
- 
- QProcess p;
- p.start(command);
- p.waitForFinished(-1);
- 
- if(QProcess::NormalExit != p.exitStatus())
- {
- DAVA::Logger::Error("Converter process crushed");
- }
- if(0 != p.exitCode())
- {
- DAVA::Logger::Error("Converter exit with error %d", p.exitCode());
- DAVA::Logger::Error("Stderror:\n%s", p.readAllStandardError().constData());
- DAVA::Logger::Error("Stdout:\n%s", p.readAllStandardOutput().constData());
- DAVA::Logger::Error("---");
- }
- 
- bool wasUpdated = descriptor->UpdateCrcForFormat(gpu);
- if(wasUpdated)
- {
- descriptor->Save();
- }
- 
- CleanupCubemapAfterConversion(*descriptor);
- }
- 
- Vector<DAVA::Image *> davaImages = DAVA::ImageLoader::CreateFromFile(outputPath);
- 
- if(davaImages.size() > 0)
- {
- if(!descriptor->IsCubeMap())
- {
- DAVA::Image* image = davaImages[0];
- image->Retain();
- 
- resultImages.push_back(image);
- }
- else
- {
- //select images with mipmap level = 0 for cube map display
- for(size_t i = 0; i < davaImages.size(); ++i)
- {
- DAVA::Image* image = davaImages[i];
- if(0 == image->mipmapLevel)
- {
- image->Retain();
- resultImages.push_back(image);
- }
- }
- 
- if(resultImages.size() < Texture::CUBE_FACE_MAX_COUNT)
- {
- int imagesToAdd = Texture::CUBE_FACE_MAX_COUNT - resultImages.size();
- for(int i = 0; i < imagesToAdd; ++i)
- {
- resultImages.push_back(NULL);
- }
- }
- }
- 
- for_each(davaImages.begin(), davaImages.end(),  DAVA::SafeRelease<DAVA::Image>);
- }
- else
- {
- int stubImageCount = (descriptor->IsCubeMap()) ? Texture::CUBE_FACE_MAX_COUNT : 1;
- for(int i = 0; i < stubImageCount; ++i)
- {
- resultImages.push_back(NULL);
- }
- }
- }
- 
- return resultImages;
- }
- 
- DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertDXT(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, bool forceConvert)
- {
- DAVA::Vector<DAVA::Image*> images;
- DAVA::FilePath outputPath = DXTConverter::GetDXTOutput(*descriptor, gpu);
- if(!outputPath.IsEmpty())
- {
- if(forceConvert || !DAVA::FileSystem::Instance()->IsFile(outputPath))
- {
- DeleteOldDXTTextureIfTegra(descriptor, gpu);
- 
- if(descriptor->IsCubeMap())
- {
- outputPath = DXTConverter::ConvertCubemapPngToDxt(*descriptor, gpu);
- }
- else
- {
- outputPath = DXTConverter::ConvertPngToDxt(*descriptor, gpu);
- }
- 
- bool wasUpdated = descriptor->UpdateCrcForFormat(gpu);
- if(wasUpdated)
- {
- descriptor->Save();
- }
- }
- 
- Vector<DAVA::Image *> davaImages = DAVA::ImageLoader::CreateFromFile(outputPath);
- 
- if(davaImages.size() > 0)
- {
- for(size_t i = 0; i < davaImages.size(); ++i)
- {
- Image* image = davaImages[i];
- 
- if(0 == image->mipmapLevel)
- {
- image->Retain();
- images.push_back(image);
- }
- }
- 
- if(descriptor->IsCubeMap() &&
- images.size() < Texture::CUBE_FACE_MAX_COUNT)
- {
- int imagesToAdd = Texture::CUBE_FACE_MAX_COUNT - images.size();
- for(int i = 0; i < imagesToAdd; ++i)
- {
- images.push_back(NULL);
- }
- }
- 
- for_each(davaImages.begin(), davaImages.end(),  DAVA::SafeRelease< DAVA::Image>);
- }
- else
- {
- int stubImageCount = (descriptor->IsCubeMap()) ? Texture::CUBE_FACE_MAX_COUNT : 1;
- for(int i = 0; i < stubImageCount; ++i)
- {
- images.push_back(NULL);
- }
- }
- }
- else
- {
- int stubImageCount = (descriptor->IsCubeMap()) ? Texture::CUBE_FACE_MAX_COUNT : 1;
- for(int i = 0; i < stubImageCount; ++i)
- {
- images.push_back(NULL);
- }
- }
- 
- return images;
- }
-*/
 
 QImage TextureConvertor::FromDavaImage(DAVA::Image *image)
 {

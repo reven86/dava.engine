@@ -44,7 +44,7 @@ public:
     void SetScale(float32 scale);
     
     // Draw the grid, if needed. Call this method from the Screen Control.
-    void DrawGridIfNeeded(const Rect& rect);
+    void DrawGridIfNeeded(const Rect& rect, UniqueHandle renderState);
     
 protected:
     // Current screen scale.

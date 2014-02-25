@@ -37,21 +37,18 @@
 class ConvertToShadowCommand : public Command2
 {
 public:
-	ConvertToShadowCommand(DAVA::Entity * entity);
+	ConvertToShadowCommand(DAVA::RenderBatch *batch);
     ~ConvertToShadowCommand();
 
     virtual void Undo();
 	virtual void Redo();
 	virtual DAVA::Entity* GetEntity() const;
 
-	static bool IsEntityWithShadowVolume(const DAVA::Entity *entity);
-	static bool IsAvailableForConvertionToShadowVolume(const DAVA::Entity *entity);
-	static DAVA::RenderBatch * ConvertToShadowVolume(DAVA::Entity *entity);
+	static bool CanConvertBatchToShadow(DAVA::RenderBatch *renderBatch);
 
-protected:
-
-	DAVA::Entity * affectedEntity;
-    DAVA::RenderBatch * changedRenderBatch;
+    DAVA::RenderObject *renderObject;
+    DAVA::RenderBatch * oldBatch;
+    DAVA::ShadowVolume * shadowVolume;
 };
 
 

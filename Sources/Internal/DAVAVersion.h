@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_VERION_H__
 #define __DAVAENGINE_VERION_H__
 
-#define DAVAENGINE_VERSION "0.5.4"
+#define DAVAENGINE_VERSION "0.5.5"
 
 
 #endif //__DAVAENGINE_VERION_H__

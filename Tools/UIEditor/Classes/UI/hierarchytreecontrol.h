@@ -78,17 +78,17 @@ signals:
     
 private:
 	bool GetMoveItemID(QDropEvent *event, HierarchyTreeNode::HIERARCHYTREENODEID &insertInTo, HierarchyTreeNode::HIERARCHYTREENODEID &insertAfter);
-	
-	uint32 GetInternalIndex(QTreeWidgetItem* item) const;
-	uint32 GetInternalIndex(QTreeWidgetItem* item, int& factor) const;
+
+	Vector<int32> GetPositionKey(QTreeWidgetItem* item) const;
 	
 	struct SortedItems {
 		QTreeWidgetItem* item;
-		uint32 internalIndex;
-		SortedItems(QTreeWidgetItem* item, uint32 internalIndex)
+		Vector<int32> positionKey;
+        
+		SortedItems(QTreeWidgetItem* item, const Vector<int32>& positionKey)
 		{
 			this->item = item;
-			this->internalIndex = internalIndex;
+			this->positionKey = positionKey;
 		}
 	};
 	static bool SortByInternalIndex(const SortedItems &first, const SortedItems &second);

@@ -71,6 +71,7 @@ private slots:
 	void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
 	void OnShowCustomMenu(const QPoint& pos);
 	void OnDeleteControlAction();
+	void OnRenameControlAction();
 	void OnCreateScreenAction();
 	void OnCreateAggregatorAction();
 	void OnCopyAction();
@@ -86,6 +87,9 @@ private:
     void Select(const QList<QTreeWidgetItem*>& selectedItems);
 
 	void ResetSelection();
+	
+	// Initialize and setup copy/paste/delete actions for tree widget
+	void InitializeTreeWidgetActions();
 
 	// Get hierarchy tree node from selected tree item
 	HierarchyTreeNode* GetNodeFromTreeItem(QTreeWidgetItem* item);

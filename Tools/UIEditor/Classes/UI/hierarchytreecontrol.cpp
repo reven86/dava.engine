@@ -122,52 +122,57 @@ void HierarchyTreeControl::contextMenuEvent(QContextMenuEvent * event)
 	emit ShowCustomMenu(event->globalPos());
 }
 
-uint32 HierarchyTreeControl::GetInternalIndex(QTreeWidgetItem* item, int& factor) const
+Vector<int32> HierarchyTreeControl::GetPositionKey(QTreeWidgetItem* item) const
 {
-	int idx = 0;
-	QTreeWidgetItem* parent = item->parent();
-	if (parent)
+    Vector<int32> positionKey;
+
+    for(int i = 0; i < topLevelItemCount(); ++i)
 	{
-		idx = parent->indexOfChild(item) + 1;
-		int a = GetInternalIndex(parent, factor);
-		factor *= 10;
-		idx = idx * factor + a;
-	}
-	else
-	{
-		for(int i = 0; i < topLevelItemCount(); ++i)
+		if (item == topLevelItem(i))
 		{
-			if (item == topLevelItem(i))
-			{
-				return i + 1;
-			}
+	        positionKey.push_back(i + 1);
+            break;
 		}
 	}
 
-	return idx;
-}
+    QTreeWidgetItem* curItem = item;
+    QTreeWidgetItem* curItemParent = item->parent();
+    while (curItemParent)
+    {
+        int idx = curItemParent->indexOfChild(curItem) + 1;
+        positionKey.push_back(idx);
+        
+        curItem = curItemParent;
+        curItemParent = curItemParent->parent();
+    }
 
-uint32 HierarchyTreeControl::GetInternalIndex(QTreeWidgetItem* item) const
-{
-	int factor = 1;
-	return GetInternalIndex(item, factor);
+	return positionKey;
 }
 
 bool HierarchyTreeControl::SortByInternalIndex(const SortedItems &first, const SortedItems &second)
 {
-	int firstIdx = first.internalIndex;
-	int secondIdx = second.internalIndex;
-	while (firstIdx)
-	{
-		int firstId = firstIdx % 10;
-		int secondId = secondIdx % 10;
-		firstIdx /= 10;
-		secondIdx /= 10;
-		if (firstId > secondId)
-			return true;
-		if (firstId < secondId)
-			return false;
-	}
+    const Vector<int32>& firstKey = first.positionKey;
+    const Vector<int32>& secondKey = second.positionKey;
+
+    if (firstKey.size() != secondKey.size())
+    {
+        return firstKey.size() < secondKey.size();
+    }
+
+    // Both items are on the same level of hierarchy, so compare pos-by-pos.
+    // Note - The array was built in the "child-to-parent position" way, compare from the end.
+    uint32 levelsCount = firstKey.size();
+    for (uint32 i = 0; i < levelsCount; i ++)
+    {
+        if (firstKey[i] == secondKey[i])
+        {
+            // Compare the next hierarchy level.
+            continue;
+        }
+
+        return (firstKey[i] < secondKey[i]);
+    }
+
 	return false;
 }
 
@@ -178,7 +183,7 @@ QMimeData* HierarchyTreeControl::mimeData(const QList<QTreeWidgetItem*> items) c
 	for (QList<QTreeWidgetItem*>::const_iterator iter = items.begin(); iter != items.end(); ++iter)
 	{
 		QTreeWidgetItem* item = (*iter);
-		sortedItems.push_back(SortedItems(item, GetInternalIndex(item)));
+		sortedItems.push_back(SortedItems(item, GetPositionKey(item)));
 	}
 	
 	sortedItems.sort(SortByInternalIndex);

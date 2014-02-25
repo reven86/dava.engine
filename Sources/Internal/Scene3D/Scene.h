@@ -36,6 +36,7 @@
 #include "Scene3D/Entity.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Light.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFileV2.h"
 
 namespace DAVA
@@ -51,7 +52,6 @@ class StaticMesh;
 class AnimatedMesh;
 class SceneNodeAnimationList;
 class DataNode;
-class SceneFileV2;
 class ShadowVolumeNode;
 class ProxyNode;
 class Light;
@@ -76,6 +76,8 @@ class SwitchSystem;
 class SoundUpdateSystem;
 class ActionUpdateSystem;
 class SkyboxSystem;
+class MaterialSystem;
+class StaticOcclusionSystem;
     
 /**
     \ingroup scene3d
@@ -105,9 +107,10 @@ public:
     virtual void    AddSystem(SceneSystem * sceneSystem, uint32 componentFlags);
     virtual void    RemoveSystem(SceneSystem * sceneSystem);
     
-	virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
+	//virtual void ImmediateEvent(Entity * entity, uint32 componentType, uint32 event);
 
     Vector<SceneSystem*> systems;
+    //HashMap<uint32, Set<SceneSystem*> > componentTypeMapping;
     TransformSystem * transformSystem;
     RenderUpdateSystem * renderUpdateSystem;
 	LodSystem * lodSystem;
@@ -121,7 +124,9 @@ public:
 	SoundUpdateSystem * soundSystem;
 	ActionUpdateSystem* actionSystem;
 	SkyboxSystem* skyboxSystem;
-	
+	StaticOcclusionSystem * staticOcclusionSystem;
+    MaterialSystem *materialSystem;
+    
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
      */
@@ -134,13 +139,13 @@ public:
 	
 	void AddAnimation(SceneNodeAnimationList * animation);
 	SceneNodeAnimationList * GetAnimation(int32 index);
-	SceneNodeAnimationList * GetAnimation(const String & name);
+	SceneNodeAnimationList * GetAnimation(const FastName & name);
 	inline int32 GetAnimationCount();
     
     
     /**
         \brief Function to add root node.
-        \param[in] node node you want to add
+        \param[in] node node you want to addstop
         \param[in] rootNodePath path of this root node
      */
 
@@ -170,7 +175,7 @@ public:
     void ReleaseRootNode(Entity *nodeToRelease);
 
 	
-	virtual void StopAllAnimations(bool recursive = true);
+	//virtual void StopAllAnimations(bool recursive = true);
 	
 	virtual void	Update(float timeElapsed);
 	virtual void	Draw();
@@ -203,16 +208,21 @@ public:
 	void CreateComponents();
 	void CreateSystems();
 
-	EventSystem * GetEventSystem();
+	EventSystem * GetEventSystem() const;
 	RenderSystem * GetRenderSystem() const;
+    MaterialSystem * GetMaterialSystem() const;
     
-    virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
+	virtual SceneFileV2::eError Save(const DAVA::FilePath & pathname, bool saveForGame = false);
 
-    
+    virtual void OptimizeBeforeExport();
+
+	inline NMaterial * GetGlobalMaterial() const;
 protected:	
     
     void UpdateLights();
-    
+
+	uint64 updateTime;
+
     uint64 drawTime;
     uint32 nodeCounter;
 
@@ -220,7 +230,20 @@ protected:
 	Vector<Camera*> cameras;
 	Vector<SceneNodeAnimationList*> animations;
     
-    Map<String, ProxyNode*> rootNodes;
+    static Texture* stubTexture2d;
+    static Texture* stubTextureCube;
+    static Texture* stubTexture2dLightmap; //this texture should be all-pink without checkers
+    NMaterial* sceneGlobalMaterial;
+    //TODO: think about data-driven initialization. Need to set default properties from outside and save/load per scene
+    void InitGlobalMaterial();
+    
+#if defined (USE_FILEPATH_IN_MAP)
+    typedef Map<FilePath, ProxyNode*> ProxyNodeMap;
+#else //#if defined (USE_FILEPATH_IN_MAP)
+	typedef Map<String, ProxyNode*> ProxyNodeMap;
+#endif //#if defined (USE_FILEPATH_IN_MAP)
+
+	ProxyNodeMap rootNodes;
 
     Camera * currentCamera;
     Camera * clipCamera;
@@ -248,6 +271,13 @@ int32 Scene::GetCameraCount()
 {
     return (int32)cameras.size();
 }  
+
+inline NMaterial * Scene::GetGlobalMaterial() const
+{
+	return sceneGlobalMaterial; 
+}
+
+
 
 };
 

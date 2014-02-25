@@ -1,5 +1,13 @@
 <RCC>
   <qresource prefix="/">
+    <file>QtIcons/light_settings.png</file>
+    <file>QtIcons/sphere_add.png</file>
+    <file>QtIcons/sphere-clone.png</file>
+    <file>QtIcons/3d.png</file>
+    <file>QtIcons/sphere.png</file>
+    <file>QtIcons/all.png</file>
+    <file>QtIcons/star.png</file>
+    <file>QtIcons/star_empty.png</file>
     <file>QtIcons/gizmo.png</file>
     <file>QtIcons/object_select.png</file>
     <file>QtIcons/switch.png</file>
@@ -31,13 +39,13 @@
     <file>QtIcons/play.png</file>
     <file>QtIcons/restart.png</file>
     <file>QtIcons/stop.png</file>
-	<file>QtIcons/stop_clear.png</file>
-	<file>QtIcons/pause.png</file>
-	<file>QtIcons/step_forward.png</file>
+    <file>QtIcons/stop_clear.png</file>
+    <file>QtIcons/pause.png</file>
+    <file>QtIcons/step_forward.png</file>
     <file>QtIcons/effect.png</file>
     <file>QtIcons/emitter_particle.png</file>
     <file>QtIcons/force.png</file>
-	<file>QtIcons/external.png</file>
+    <file>QtIcons/external.png</file>
     <file>QtIcons/layer_particle.png</file>
     <file>QtIcons/node.png</file>
     <file>QtIcons/error.png</file>
@@ -75,7 +83,7 @@
     <file>QtIcons/modify_rotate.png</file>
     <file>QtIcons/modify_placeonland.png</file>
     <file>QtIcons/modify_snaptoland.png</file>
-    <file>QtIcons/modify_scale.png</file>    
+    <file>QtIcons/modify_scale.png</file>
     <file>QtIcons/expand_all.png</file>
     <file>QtIcons/collapse_all.png</file>
     <file>QtImages/tree-closed.png</file>
@@ -110,6 +118,7 @@
     <file>QtIcons/clone.png</file>
     <file>QtIcons/remove_layer.png</file>
     <file>QtIcons/remove_force.png</file>
+    <file>QtIcons/reset.png</file>
     <file>QtIcons/btn_rotate_ccw.png</file>
     <file>QtIcons/btn_rotate_cw.png</file>
     <file>QtIcons/skybox.png</file>
@@ -123,5 +132,7 @@
     <file>QtImages/sky_example5.png</file>
     <file>QtImages/sky_example6.png</file>
     <file>QtImages/sky_example7.png</file>
+    <file>QtLibraryIcons/orientation.png</file>
+    <file>QtLibraryIcons/lodmaterial.png</file>
   </qresource>
 </RCC>

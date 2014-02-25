@@ -54,6 +54,7 @@ protected:
     virtual void ProcessComboboxValueChanged(QComboBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter,
                                              const QString& value);
     virtual void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
+	virtual void OnPropertiesChangedFromExternalSource() {};
 
 private:
     Ui::FlagsPropertyGridWidget *ui;

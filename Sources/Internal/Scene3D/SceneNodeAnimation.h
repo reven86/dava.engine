@@ -58,7 +58,7 @@ public:
 	void SetDuration(float32 _duration);
 	inline float32 GetDuration(); 
 		
-	void SetBindName(const String & bindName); 
+	void SetBindName(const FastName & bindName); 
 	void SetBindNode(Entity * bindNode);
 	
 	virtual void Update(float32 timeElapsed);
@@ -73,7 +73,7 @@ public:
 	
 	// this is node of animation this animation is supposed for
 	Entity * bindNode;
-	String bindName;
+	FastName bindName;
 	bool apply;
 	float32 weight;
 

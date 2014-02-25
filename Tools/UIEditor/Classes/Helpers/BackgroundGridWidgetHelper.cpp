@@ -136,6 +136,15 @@ const BackgroundGridWidgetHelper::AutoCapitalizationTypesData BackgroundGridWidg
 	{UITextField::AUTO_CAPITALIZATION_TYPE_ALL_CHARS,	"All chars"}
 };
 
+const BackgroundGridWidgetHelper::FittingTypesData BackgroundGridWidgetHelper::fittingTypesData[] =
+{
+	{TextBlock::FITTING_DISABLED,   "Disabled"},
+	{TextBlock::FITTING_ENLARGE,    "Enlarge"},
+   	{TextBlock::FITTING_REDUCE,     "Reduce"},
+   	{TextBlock::FITTING_POINTS,     "Add Points"},
+    {TextBlock::FITTING_ENLARGE | TextBlock::FITTING_REDUCE,   "Enlarge & Reduce"}
+};
+
 int BackgroundGridWidgetHelper::GetDrawTypesCount()
 {
     return sizeof(drawTypesData)/sizeof(*drawTypesData);
@@ -546,6 +555,47 @@ QString BackgroundGridWidgetHelper::GetModificationTypeDescByType(int modifType)
     Logger::Error("Unknown/unsupported Modification Type %i!", modifType);
     return QString();
 }
+
+int BackgroundGridWidgetHelper::GetFittingTypesCount()
+{
+    return sizeof(fittingTypesData)/sizeof(*fittingTypesData);
+}
+
+int BackgroundGridWidgetHelper::GetFittingType(int index)
+{
+    if (!ValidateFittingTypeIndex(index))
+    {
+        return TextBlock::FITTING_DISABLED;
+    }
+
+    return fittingTypesData[index].fittingType;
+}
+
+QString BackgroundGridWidgetHelper::GetFittingTypeDesc(int index)
+{
+    if (!ValidateFittingTypeIndex(index))
+    {
+        return QString();
+    }
+    
+    return fittingTypesData[index].fittingTypeDescription;
+}
+
+QString BackgroundGridWidgetHelper::GetFittingTypeDescByType(int fittingType)
+{
+	int count = GetFittingTypesCount();
+    for (int i = 0; i < count; i ++)
+    {
+		if (fittingTypesData[i].fittingType == fittingType)
+        {
+			return fittingTypesData[i].fittingTypeDescription;
+        }
+    }
+    
+    Logger::Error("Unknown/unsupported Fitting Type %i!", fittingType);
+    return QString();
+}
+
 bool BackgroundGridWidgetHelper::ValidateDrawTypeIndex(int index)
 {
     if (index < 0 || index >= GetDrawTypesCount())
@@ -650,6 +700,17 @@ bool BackgroundGridWidgetHelper::ValidateAutoCapitalizationIndex(int index)
 	if (index < 0 || index >= GetAutoCapitalizationTypesCount())
 	{
 		Logger::Error("Autocapitalization index %i is out of bounds!", index);
+		return false;
+	}
+	
+	return true;
+}
+
+bool BackgroundGridWidgetHelper::ValidateFittingTypeIndex(int index)
+{
+	if (index < 0 || index >= GetFittingTypesCount())
+	{
+		Logger::Error("Fitting type index %i is out of bounds!", index);
 		return false;
 	}
 	

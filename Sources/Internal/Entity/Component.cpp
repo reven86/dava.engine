@@ -45,6 +45,8 @@
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Base/ObjectFactory.h"
 
 namespace DAVA
 {
@@ -86,9 +88,14 @@ Component * Component::CreateByType(uint32 componentType)
 		return new CustomPropertiesComponent();
 	case ACTION_COMPONENT:
 		return new ActionComponent();
+    case STATIC_OCCLUSION_COMPONENT:
+        return new StaticOcclusionComponent();
+    case STATIC_OCCLUSION_DATA_COMPONENT:
+        return new StaticOcclusionDataComponent();
 	case ANIMATION_COMPONENT:
 	case COLLISION_COMPONENT:
 	case SCRIPT_COMPONENT:
+        
 	default:
 		DVASSERT(0);
 		return 0;
@@ -120,12 +127,16 @@ void Component::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
     //Empty as default
 }
 
-void Component::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void Component::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	if(NULL != archive) archive->SetUInt32("comp.type", GetType());
+	if(NULL != archive)
+	{
+		archive->SetUInt32("comp.type", GetType());
+		archive->SetString("comp.typename", ObjectFactory::Instance()->GetName(this));
+	}
 }
 
-void Component::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void Component::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	if(NULL != archive)
 	{

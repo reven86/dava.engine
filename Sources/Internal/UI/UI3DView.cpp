@@ -86,20 +86,14 @@ void UI3DView::Update(float32 timeElapsed)
 
 void UI3DView::Draw(const UIGeometricData & geometricData)
 {
-
-    
+#if 1
+	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = viewportRect;
     
-        //glViewport(viewportRect.x, viewportRect.y, viewportRect.dx, viewportRect.dy);
     RenderManager::Instance()->PushDrawMatrix();
 	RenderManager::Instance()->PushMappingMatrix();
-    Matrix4 modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-        //    Logger::Info("Model matrix");
-        //    modelViewSave.Dump();
-    Matrix4 projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-        //    Logger::Info("Proj matrix");
-        //    projectionSave.Dump();
     int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
     
     Rect viewportSave = RenderManager::Instance()->GetViewport();
@@ -107,45 +101,28 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     RenderManager::Instance()->ClearDepthBuffer();
 	RenderManager::Instance()->ClearStencilBuffer(0);
     
-        //    glEnable(GL_DEPTH_TEST);
-    
-        //  glMatrixMode(GL_MODELVIEW);
-        //	glPushMatrix();
-        //	glMatrixMode(GL_PROJECTION);
-        //	glPushMatrix();
-    
-        //  Not required because Scene should setup it state before draw
-        //    RenderManager::Instance()->EnableDepthWrite(true);
-        //    RenderManager::Instance()->EnableDepthTest(true);
-        //    RenderManager::Instance()->EnableBlending(false);
-    
     
     if (scene)
         scene->Draw();
 
         
-    //    RenderManager::Instance()->EnableDepthTest(false);
-    //    RenderManager::Instance()->EnableDepthWrite(false);
-    //    RenderManager::Instance()->EnableBlending(true);
-    
-    /*
-     Restore render orientation
-     */
     RenderManager::Instance()->SetViewport(viewportSave, true);
     RenderManager::Instance()->SetRenderOrientation(renderOrientation);
     
-        //RenderManager::Instance()->SetState(RenderStateBlock::DEFAULT_2D_STATE_BLEND);
-    
-    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, modelViewSave);
-    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_PROJECTION, projectionSave);
+
 	RenderManager::Instance()->PopDrawMatrix();
 	RenderManager::Instance()->PopMappingMatrix();
+	
+	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
+    RenderManager::Instance()->Setup2DMatrices();
+	
         //    modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
         //    Logger::Info("Model matrix");
         //    modelViewSave.Dump();
         //    projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
         //    Logger::Info("Proj matrix");
         //    projectionSave.Dump();
+#endif
 }
     
 void UI3DView::SetSize(const DAVA::Vector2 &newSize)

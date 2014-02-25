@@ -31,6 +31,8 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/ShadowVolume.h"
+#include "Render/Material/NMaterial.h"
+
 namespace DAVA
 {
 
@@ -45,7 +47,7 @@ Mesh::~Mesh()
     
 }
 
-void Mesh::AddPolygonGroup(PolygonGroup * polygonGroup, Material * material)
+void Mesh::AddPolygonGroup(PolygonGroup * polygonGroup, NMaterial * material)
 {
     RenderBatch * batch = new RenderBatch();
     batch->SetPolygonGroup(polygonGroup);
@@ -66,7 +68,7 @@ uint32 Mesh::GetPolygonGroupCount()
 
 PolygonGroup * Mesh::GetPolygonGroup(uint32 index)
 {
-    return renderBatchArray[index]->GetPolygonGroup();
+    return renderBatchArray[index].renderBatch->GetPolygonGroup();
 }
 
 RenderObject * Mesh::Clone( RenderObject *newObject )
@@ -80,14 +82,14 @@ RenderObject * Mesh::Clone( RenderObject *newObject )
 	return RenderObject::Clone(newObject);
 }
 
-void Mesh::Save(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void Mesh::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	RenderObject::Save(archive, sceneFile);
+	RenderObject::Save(archive, serializationContext);
 }
 
-void Mesh::Load(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void Mesh::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	RenderObject::Load(archive, sceneFile);
+	RenderObject::Load(archive, serializationContext);
 }
 
 void Mesh::BakeTransform(const Matrix4 & transform)
@@ -95,25 +97,15 @@ void Mesh::BakeTransform(const Matrix4 & transform)
 	uint32 size = renderBatchArray.size();
 	for(uint32 i = 0; i < size; ++i)
 	{
-		PolygonGroup * pg = renderBatchArray[i]->GetPolygonGroup();
+		PolygonGroup * pg = renderBatchArray[i].renderBatch->GetPolygonGroup();
 		DVASSERT(pg);
 		pg->ApplyMatrix(transform);
 		pg->BuildBuffers();
 
-		renderBatchArray[i]->UpdateAABBoxFromSource();
+		renderBatchArray[i].renderBatch->UpdateAABBoxFromSource();
 	}
 
 	RecalcBoundingBox();
-}
-
-ShadowVolume * Mesh::CreateShadow()
-{
-	DVASSERT(renderBatchArray.size() == 1);
-
-	ShadowVolume * newShadowVolume = new ShadowVolume();
-	newShadowVolume->MakeShadowVolumeFromPolygonGroup(GetRenderBatch(0)->GetPolygonGroup());
-
-	return newShadowVolume;
 }
 
 };

@@ -36,6 +36,8 @@
 
 namespace DAVA
 {
+
+REGISTER_CLASS(TransformComponent)
     
 TransformComponent::TransformComponent()
 {
@@ -43,8 +45,6 @@ TransformComponent::TransformComponent()
 	worldMatrix = Matrix4::IDENTITY;
 	parentMatrix = 0;
 	parent = 0;
-
-	GlobalEventSystem::Instance()->Event(0, this, EventSystem::LOCAL_TRANSFORM_CHANGED);
 }
     
 TransformComponent::~TransformComponent()
@@ -72,7 +72,7 @@ void TransformComponent::SetLocalTransform(const Matrix4 * transform)
 		worldMatrix = *transform;
 	}
 
-	GlobalEventSystem::Instance()->Event(entity, this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+	GlobalEventSystem::Instance()->Event(entity, EventSystem::LOCAL_TRANSFORM_CHANGED);
 }
 
 void TransformComponent::SetParent(Entity * node)
@@ -88,18 +88,18 @@ void TransformComponent::SetParent(Entity * node)
 		parentMatrix = 0;
 	}
 
-	GlobalEventSystem::Instance()->Event(entity, this, EventSystem::TRANSFORM_PARENT_CHANGED);
+	GlobalEventSystem::Instance()->Event(entity, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 Matrix4 & TransformComponent::ModifyLocalTransform()
 {
-	GlobalEventSystem::Instance()->Event(entity, this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+	GlobalEventSystem::Instance()->Event(entity, EventSystem::LOCAL_TRANSFORM_CHANGED);
 	return localMatrix;
 }
 
-void TransformComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void TransformComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Serialize(archive, sceneFile);
+	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive)
 	{
@@ -108,7 +108,7 @@ void TransformComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile
 	}
 }
 
-void TransformComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void TransformComponent::Deserialize(KeyedArchive *archive, SerializationContext *sceneFile)
 {
 	if(NULL != archive)
 	{

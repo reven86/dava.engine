@@ -306,7 +306,7 @@ MaterialGraphNode::eNodeUsage MaterialGraphNode::RecursiveSetRealUsageBack(Mater
 {
     
     // DEBUG
-    //Logger::FrameworkDebug("eval node: %s", node->GetName().c_str());
+    //Logger::Debug("eval node: %s", node->GetName().c_str());
 
     //Map<String, eNodeUsage> resultUsage;
     Map<String, MaterialGraphNodeConnector*> & inputConnectors = node->GetInputConnectors();

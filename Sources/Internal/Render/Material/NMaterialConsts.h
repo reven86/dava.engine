@@ -34,25 +34,32 @@
 #include "Base/BaseMath.h"
 #include "Scene3D/DataNode.h"
 #include "Render/RenderState.h"
-#include "Render/ShaderUniformArray.h"
 
 namespace DAVA
 {
-// Should be convertex to FNAMEs
-class NMaterialConsts
+    // Should be convertex to FNAMEs
+namespace NMaterialConsts
 {
-public:
-	static const char * TEXTURE_MAP_BASE_TEXTURE;
-	static const char * TEXTURE_MAP_NORMAL;
-	static const char * TEXTURE_MAP_LIGHTMAP;
-	static const char * TEXTURE_MAP_TILE0;
-	static const char * TEXTURE_MAP_TILE1;
-	static const char * TEXTURE_MAP_TILE2;
-	static const char * TEXTURE_MAP_TILE3;
-
-	static const char * UNIFORM_GLOBAL_TIME;
+//	static const char * TEXTURE_MAP_BASE_TEXTURE;
+//	static const char * TEXTURE_MAP_NORMAL;
+//	static const char * TEXTURE_MAP_LIGHTMAP;
+//	static const char * TEXTURE_MAP_TILE0;
+//	static const char * TEXTURE_MAP_TILE1;
+//	static const char * TEXTURE_MAP_TILE2;
+//	static const char * TEXTURE_MAP_TILE3;
+//
+//    static const char * TEXTURE_MAP_BASE_TEXTURE = "baseTextureMap";
+//    static const char * TEXTURE_MAP_NORMAL = "normalMap";
+//    static const char * TEXTURE_MAP_LIGHTMAP = "lightMap";
+//    static const char * TEXTURE_MAP_TILE0 = "tile0Map";
+//    static const char * TEXTURE_MAP_TILE1 = "tile1Map";
+//    static const char * TEXTURE_MAP_TILE2 = "tile2Map";
+//    static const char * TEXTURE_MAP_TILE3 = "tile3Map";
+//
+//    
+    static const char * UNIFORM_GLOBAL_TIME = "globalTime";
+    
 };
-
 };
 
 #endif // __DAVAENGINE_NMATERIAL_CONSTS_H__

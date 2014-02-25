@@ -195,7 +195,7 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 				if (debugLogEnabled)Logger::Error("*** ERROR: animation: %d can't find anim: %s\n", animationIndex, aList->GetName().c_str());
 				continue;
 			}
-			String & name = anim->bindName;
+			FastName & name = anim->bindName;
 			Entity * bindNode = rootNode->FindByName(name);
 			anim->SetBindNode(bindNode);
 			if (!bindNode)
@@ -245,7 +245,7 @@ bool SceneFile::ReadTexture()
     sceneFP->Read(&hasOpacity, sizeof(hasOpacity));
 	
 	DAVA::Texture * texture = DAVA::Texture::CreateFromFile(tname);//textureDef.name);//0;
-	if (debugLogEnabled)Logger::FrameworkDebug("- Texture: %s hasOpacity: %s %s\n", textureDef.name, (hasOpacity) ? ("yes") : ("no"), Texture::GetPixelFormatString(texture->format));
+	if (debugLogEnabled)Logger::FrameworkDebug("- Texture: %s hasOpacity: %s %s\n", textureDef.name, (hasOpacity) ? ("yes") : ("no"), Texture::GetPixelFormatString(texture->texDescriptor->format));
     
     SafeRelease(texture);
 	return true;
@@ -329,7 +329,7 @@ bool SceneFile::ReadMaterial()
 	mat->reflectivity = materialDef.reflectivity;
 	mat->transparency = materialDef.transparency;
 	mat->transparent = materialDef.transparent;
-    mat->SetOpaque(materialDef.hasOpacity != 0);
+    mat->SetAlphatest(materialDef.hasOpacity != 0);
 	
     // retain object when we put it to array
     materials.push_back(SafeRetain(mat));
@@ -494,7 +494,7 @@ bool SceneFile::ReadAnimatedMesh()
 	{
 		char8 boneNodeName[512];
 		sceneFP->ReadString(boneNodeName, 512);
-		mesh->boneNames.push_back(boneNodeName);
+		mesh->boneNames.push_back(FastName(boneNodeName));
 	}
 	
 	SafeRelease(mesh);
@@ -607,7 +607,7 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
             
             DVASSERT(materialIndex < (int)materials.size());
 
-			if (debugLogEnabled)Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1), meshIndex, polyGroupIndex, materialIndex); 
+			if (debugLogEnabled)Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
 		
 			if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
 			{
@@ -625,7 +625,7 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
             parentNode->AddNode(node);
         }
 	}
-	if (debugLogEnabled)Logger::FrameworkDebug("%s node: %s typeId: %d childCount: %d type: %s\n", GetIndentString('-', level), name, def.nodeType, def.childCount, nodeType); 
+	if (debugLogEnabled)Logger::FrameworkDebug("%s node: %s typeId: %d childCount: %d type: %s\n", GetIndentString('-', level).c_str(), name, def.nodeType, def.childCount, nodeType);
 	
     if (parentNode == scene) 
     {
@@ -698,7 +698,7 @@ bool SceneFile::ReadAnimation()
 		sceneFP->Read(&keyCount, sizeof(int32));
 
 		SceneNodeAnimation * anim = new SceneNodeAnimation(keyCount);
-		anim->SetBindName(name);	
+		anim->SetBindName(FastName(name));	
 		anim->SetDuration(duration); 
 		if (debugLogEnabled)Logger::FrameworkDebug("-- scene node %d anim: %s keyCount: %d duration: %f seconds\n", nodeIndex, name, keyCount, duration); 
 
@@ -749,7 +749,7 @@ void SceneFile::ProcessLOD(Entity *forRootNode)
     }
     for (List<Entity*>::iterator it = lodNodes.begin(); it != lodNodes.end(); it++)
     {
-        String nodeName((*it)->GetName(), 0, (*it)->GetName().find("_lod0"));
+        String nodeName(String((*it)->GetName().c_str()), 0, (*it)->GetName().find("_lod0"));
         if (debugLogEnabled) 
         {
             Logger::FrameworkDebug("Processing LODs for %s", nodeName.c_str());
@@ -757,10 +757,10 @@ void SceneFile::ProcessLOD(Entity *forRootNode)
 
         Entity *oldParent = (*it)->GetParent();
         LodNode *lodNode = new LodNode();
-        lodNode->SetName(nodeName);
+        lodNode->SetName(nodeName.c_str());
         for (int i = maxLodCount; i >= 0; i--) 
         {
-            Entity *ln = (*it)->GetParent()->FindByName(Format("%s_lod%d", nodeName.c_str(), i));
+            Entity *ln = (*it)->GetParent()->FindByName(Format("%s_lod%d", nodeName.c_str(), i).c_str());
             if (ln) 
             {//if layer is not a dummy
                 if (debugLogEnabled) 
@@ -775,7 +775,7 @@ void SceneFile::ProcessLOD(Entity *forRootNode)
             }
             else 
             {//if layer is dummy
-                Entity *ln = (*it)->GetParent()->FindByName(Format("%s_lod%ddummy", nodeName.c_str(), i));
+                Entity *ln = (*it)->GetParent()->FindByName(Format("%s_lod%ddummy", nodeName.c_str(), i).c_str());
                 if (ln) 
                 {
                     if (debugLogEnabled) 

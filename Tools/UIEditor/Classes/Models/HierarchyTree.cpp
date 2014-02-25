@@ -45,6 +45,10 @@
 #include <QFile>
 #include <QDir>
 
+#if defined (__DAVAENGINE_MACOS__)
+#include <utime.h>
+#endif
+
 #define PLATFORMS_NODE "platforms"
 #define LOCALIZATION_NODE "localization"
 #define LOCALIZATION_PATH_NODE "LocalizationPath"
@@ -138,7 +142,10 @@ bool HierarchyTree::Load(const QString& projectPath)
     {
         iter->first->LoadLocalization(iter->second);
     }
-    
+
+    // Preview Modes are also stored in the project file - update them too.
+    PreviewController::Instance()->LoadPreviewSettings(projectRoot);
+
     // All the data needed is loaded.
     SafeRelease(project);
 
@@ -439,9 +446,13 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 		result &= res;
 	}
 
+    PreviewController::Instance()->SavePreviewSettings(root);
+
 	YamlParser* parser = YamlParser::Create();
 	// Create project sub-directories
 	QDir().mkpath(ResourcesManageHelper::GetPlatformRootPath(projectPath));
+	// Update Data directory last modified datetime - set currrent time
+	UpdateModificationDate(ResourcesManageHelper::GetDataPath(projectPath));
 
 	// Save project file
 	result &= parser->SaveToYamlFile(projectFile.toStdString(), root, true);
@@ -459,6 +470,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 		rootNode.ResetUnsavedChanges();
 	}
 
+    SafeRelease(parser);
 	return result;
 }
 
@@ -531,6 +543,11 @@ void HierarchyTree::UpdateExtraDataRecursive(HierarchyTreeControlNode* node, Bas
     }
 }
 
+void HierarchyTree::UpdateControlsData()
+{
+	UpdateExtraData(BaseMetadata::UPDATE_EXTRADATA_FROM_CONTROL);
+}
+
 void HierarchyTree::UpdateLocalization()
 {
     UpdateExtraData(BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);
@@ -591,4 +608,13 @@ bool HierarchyTree::IsPlatformNamePresent(const QString& name) const
 	}
 
 	return false;
+}
+
+void HierarchyTree::UpdateModificationDate(const QString &path)
+{
+#if defined (__DAVAENGINE_MACOS__)
+	// Update last modification datetime of file or folder with current time
+	// 02/05/2014 - Request only for MACOS
+	utime(path.toStdString().c_str(), NULL);
+#endif
 }

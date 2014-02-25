@@ -30,6 +30,7 @@
 #include "ImportCommands.h"
 #include "ScreenWrapper.h"
 #include "HierarchyTreeAggregatorControlNode.h"
+#include "HierarchyTreeController.h"
 #include <QMessageBox>
 #include <QSpacerItem>
 #include <QGridLayout>
@@ -443,6 +444,9 @@ void ImportPlatformCommand::Execute()
 		{
 			redoNode->AddTreeNode(*it);
 		}
+		
+		// After project loaded - update all controls properties data
+		HierarchyTreeController::Instance()->UpdateControlsData();
 
 		ReplaceAggregatorControls();
 

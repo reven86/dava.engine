@@ -33,6 +33,7 @@
 
 #include "Main/QTreeViewStateHelper.h"
 #include "Tools/QtPropertyEditor/QtPropertyModel.h"
+#include "Tools/QtPropertyEditor/QtPropertyData.h"
 
 class PropertyEditorStateHelper : public DAVA::QTreeViewStateHelper<QString>
 {
@@ -45,9 +46,6 @@ protected:
 	
 private:
 	QtPropertyModel* model;
-
-	// Auxiliary map to store Full Paths to the items were already calculated.
-	DAVA::Map<QStandardItem*, QString> fullPathsCache;
 };
 
 #endif /* defined(__PROPERTY_EDITOR_STATE_HELPER__H__) */

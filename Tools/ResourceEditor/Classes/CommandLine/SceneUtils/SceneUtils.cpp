@@ -105,3 +105,56 @@ DAVA::FilePath SceneUtils::GetNewFilePath(const DAVA::FilePath &oldPathname) con
 	String workingPathname = oldPathname.GetRelativePathname(dataSourceFolder);
     return dataFolder + workingPathname;
 }
+
+void SceneUtils::AddFile(const DAVA::FilePath &sourcePath)
+{
+    String workingPathname = sourcePath.GetRelativePathname(dataSourceFolder);
+    FilePath destinationPath = dataFolder + workingPathname;
+
+    if(sourcePath != destinationPath)
+    {
+        filesForCopy[sourcePath] = destinationPath;
+    }
+}
+
+void SceneUtils::CopyFiles(Set<String> &errorLog)
+{
+    PrepareDestination(errorLog);
+    
+    auto endIt = filesForCopy.end();
+    for(auto it = filesForCopy.begin(); it != endIt; ++it)
+    {
+        FileSystem::Instance()->DeleteFile(it->second);
+        bool retCopy = FileSystem::Instance()->CopyFile(it->first, it->second);
+        if(!retCopy)
+        {
+            errorLog.insert(String(Format("Can't copy %s to %s",
+                                          it->first.GetAbsolutePathname().c_str(),
+                                          it->second.GetAbsolutePathname().c_str())));
+        }
+    }
+}
+
+void SceneUtils::PrepareDestination(DAVA::Set<DAVA::String> &errorLog)
+{
+    DAVA::Set<DAVA::FilePath> folders;
+
+    DAVA::Map<DAVA::FilePath, DAVA::FilePath>::const_iterator endMapIt = filesForCopy.end();
+    for(DAVA::Map<DAVA::FilePath, DAVA::FilePath>::const_iterator it = filesForCopy.begin(); it != endMapIt; ++it)
+    {
+        folders.insert(it->second.GetDirectory());
+    }
+    
+    DAVA::Set<DAVA::FilePath>::const_iterator endSetIt = folders.end();
+    for(DAVA::Set<DAVA::FilePath>::const_iterator it = folders.begin(); it != endSetIt; ++it)
+    {
+        if(!(*it).Exists())
+        {
+            FileSystem::eCreateDirectoryResult retCreate = FileSystem::Instance()->CreateDirectory((*it), true);
+            if(FileSystem::DIRECTORY_CANT_CREATE == retCreate)
+            {
+                errorLog.insert(String(Format("Can't create folder %s", (*it).GetAbsolutePathname().c_str())));
+            }
+        }
+    }
+}

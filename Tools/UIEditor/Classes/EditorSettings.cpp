@@ -32,6 +32,8 @@
 #include "ResourcesManageHelper.h"
 #include <QString>
 
+static const Color DEFAULT_BACKGROUND_FRAME_COLOR(0.2f, 0.2f, 0.2f, 1.0f);
+
 EditorSettings::EditorSettings()
 {
     settings = new KeyedArchive();    
@@ -127,5 +129,39 @@ void EditorSettings::SetPixelized(bool value)
 
 bool EditorSettings::IsPixelized()
 {
-    return settings->GetBool("editor.pixelized");
+    return settings->GetBool("editor.pixelized", true);
+}
+
+Color EditorSettings::GetCurrentBackgroundFrameColor() const
+{
+    return GetColor("editor.currentBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
+}
+
+void EditorSettings::SetCurrentBackgroundFrameColor(const Color& color)
+{
+    SetColor("editor.currentBackgroundFrameColor", color);
+}
+
+Color EditorSettings::GetCustomBackgroundFrameColor() const
+{
+    return GetColor("editor.customBackgroundFrameColor", DEFAULT_BACKGROUND_FRAME_COLOR);
+}
+
+void EditorSettings::SetCustomBackgroundFrameColor(const Color& color)
+{
+    SetColor("editor.customBackgroundFrameColor", color);
+}
+
+Color EditorSettings::GetColor(const String& colorName, const Color& defaultColor) const
+{
+    Vector4 defaultValue(defaultColor.r, defaultColor.g, defaultColor.b, defaultColor.a);
+    Vector4 colorValues = settings->GetVector4(colorName, defaultValue);
+    return Color(colorValues.x, colorValues.y, colorValues.z, colorValues.w);
+}
+
+void EditorSettings::SetColor(const String& colorName, const Color& color)
+{
+    Vector4 colorValues(color.r, color.g, color.b, color.a);
+    settings->SetVector4(colorName, colorValues);
+    Save();
 }

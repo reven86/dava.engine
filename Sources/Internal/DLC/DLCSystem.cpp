@@ -300,6 +300,7 @@ void DLCSystem::LoadOldDlcs()
 
     file->Read( size, sizeof( uint16 ) );
     
+    oldDlcs.reserve(size[0]);
     for ( uint16 dlcInd = 0; dlcInd < size[0]; ++dlcInd )
     {
         DLCSource * dlc = new DLCSource( file );

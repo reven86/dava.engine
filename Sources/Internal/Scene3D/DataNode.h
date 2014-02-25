@@ -35,6 +35,7 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/Entity.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -42,11 +43,15 @@ namespace DAVA
 /**
     
  */
-class SceneFileV2;
 class DataNode : public BaseObject
 {
 protected:
 	virtual ~DataNode();
+	
+public:
+	
+	static const uint16 NodeRuntimeFlag;
+	
 public:	
 	DataNode();
     virtual int32 Release();
@@ -70,32 +75,48 @@ public:
     const String & GetName() const;
     
     DataNode *	FindByName(const String & searchName);
-    virtual void	AddNode(DataNode * node);
+	virtual void	AddNode(DataNode * node);
 	virtual void	RemoveNode(DataNode * node);
-	virtual DataNode * GetChild(int32 index);
-	virtual int32   GetChildrenCount();
-	virtual void	RemoveAllChildren();
+	virtual DataNode * GetChildNode(int32 index);
+	virtual int32   GetChildrenNodeCount();
+	virtual void	RemoveAllChildrenNodes();
 
     //DataNode * FindByAddress();
     int32  GetNodeIndex();
-    uint64 GetPreviousPointer(); 
+    uint64 GetPreviousPointer();
+	
+	inline uint16 GetNodeGlags() const
+	{
+		return nodeFlags;
+	}
+	
+	inline void AddNodeFlags(uint16 flags)
+	{
+		nodeFlags = nodeFlags | flags;
+	}
+	
+	inline void RemoveNodeFlags(uint16 flags)
+	{
+		nodeFlags = nodeFlags & ~flags;
+	}
     
     /**
         \brief virtual function to save node to KeyedArchive
      */
-    virtual void Save(KeyedArchive * archive, SceneFileV2 * sceneFile);
+    virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     
     /**
         \brief virtual function to load node to KeyedArchive
      */
-	virtual void Load(KeyedArchive * archive, SceneFileV2 * sceneFile);
+	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
     
 protected:
     uint64 pointer;
     Scene * scene;
     String name;
-    Vector<DataNode*> children;
+  Vector<DataNode*> children;
     int32 index;
+	uint16 nodeFlags;
     
 public:
     

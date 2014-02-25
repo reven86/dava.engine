@@ -50,7 +50,6 @@ public:
 
 	
 	HWND hWindow;
-	HANDLE hMutex;
 
 #if defined(__DAVAENGINE_DIRECTX9__)
 	LPDIRECT3D9 d3d9;

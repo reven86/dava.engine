@@ -32,7 +32,7 @@
 #define __RESOURCEEDITORQT__HEIGHTMAPPROXY__
 
 #include "DAVAEngine.h"
-#include "LandscapeEditor/EditorHeightmap.h"
+#include "Deprecated/EditorHeightmap.h"
 
 using namespace DAVA;
 

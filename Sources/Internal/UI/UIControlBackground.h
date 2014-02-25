@@ -258,9 +258,9 @@ public:
 	Color color;//!<Control color. By default is Color(1,1,1,1).
     
 protected:
-	void DrawStretched(const Rect &drawRect);
-	void DrawTiled(const UIGeometricData &geometricData);
-	void DrawFilled(const UIGeometricData &geometricData);
+	void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
+	void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
+	void DrawFilled(const UIGeometricData &geometricData, UniqueHandle renderState);
 
 	Sprite *spr;
 	int32 align;

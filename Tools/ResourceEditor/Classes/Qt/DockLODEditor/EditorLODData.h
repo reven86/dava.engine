@@ -48,13 +48,13 @@ public:
     virtual ~EditorLODData();
 
     
-    DAVA::int32 GetLayersCount() const;
-    DAVA::float32 GetLayerDistance(DAVA::int32 layerNum) const;
-    void SetLayerDistance(DAVA::int32 layerNum, DAVA::float32 distance);
+    DAVA::uint32 GetLayersCount() const;
+    DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
+    void SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance);
 
-	void UpdateDistances(const DAVA::Map<DAVA::int32, DAVA::float32> & lodDistances);
+	void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
 
-    DAVA::uint32 GetLayerTriangles(DAVA::int32 layerNum) const;
+    DAVA::uint32 GetLayerTriangles(DAVA::uint32 layerNum) const;
 
     void EnableForceDistance(bool enable);
     bool GetForceDistanceEnabled() const;
@@ -72,15 +72,17 @@ public:
     DAVA::FilePath GetDefaultTexturePathForPlaneEntity();
 
     static void EnumerateLODsRecursive(DAVA::Entity *entity, DAVA::Vector<DAVA::LodComponent *> & lods);
-    static DAVA::uint32 GetTrianglesForLodLayer(DAVA::LodComponent::LodData *lodData, bool checkVisibility);
-    static DAVA::uint32 GetTrianglesForEntity(DAVA::Entity *entity, bool checkVisibility);
+    static void AddTrianglesInfo(DAVA::uint32 triangles[], DAVA::LodComponent *lod, bool onlyVisibleBatches);
 
-    //TODO: remove after lod editing implementation
-    DAVA_DEPRECATED(void CopyLastLodToLod0());
+    bool CanDeleteLod();
 
 signals:
     
     void DataChanged();
+    
+public slots:
+    void DeleteFirstLOD();
+    void DeleteLastLOD();
     
 protected slots:
     void SceneActivated(SceneEditor2 *scene);
@@ -102,12 +104,10 @@ protected:
 
     void ResetForceState(DAVA::Entity *entity);
     
-    DAVA::int32 GetLayersCount(DAVA::LodComponent *lod) const;
-    
     
 protected:
 
-    DAVA::int32 lodLayersCount;
+    DAVA::uint32 lodLayersCount;
     DAVA::float32 lodDistances[DAVA::LodComponent::MAX_LOD_LAYERS];
     DAVA::uint32 lodTriangles[DAVA::LodComponent::MAX_LOD_LAYERS];
 

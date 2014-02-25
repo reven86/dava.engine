@@ -531,6 +531,11 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	}
 }
 
+void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
+{
+    // TODO
+}
+
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
 {
 	if (browserWindow != 0)

@@ -43,20 +43,25 @@ class ImageLoader
 {
 public:
 
-	static Vector<Image *> CreateFromFile(const FilePath & pathname);
-	static Vector<Image *> CreateFromFile(File *file);
-    
+	static Vector<Image *> CreateFromFileByExtension(const FilePath & pathname);
+
+	static Vector<Image *> CreateFromFileByContent(const FilePath & pathname);
+	static Vector<Image *> CreateFromFileByContent(File *file);
+
     static void Save(Image *image, const FilePath & pathname);
     
 protected:
 
+    static Vector<Image *> CreateFromPNGFile(const FilePath & pathname);
+	static Vector<Image *> CreateFromPVRFile(const FilePath & pathname);
+	static Vector<Image *> CreateFromDDSFile(const FilePath & pathname);
 	static Vector<Image *> CreateFromPNG(File *file);
 	static Vector<Image *> CreateFromPVR(File *file);
-	static Vector<Image *> CreateFromDXT(File *file);
+	static Vector<Image *> CreateFromDDS(File *file);
     
     static bool IsPVRFile(File *file);
     static bool IsPNGFile(File *file);
-	static bool IsDXTFile(File *file);
+	static bool IsDDSFile(File *file);
 };
 	
 };

@@ -35,6 +35,7 @@
 #include "Base/BaseMath.h"
 #include <stack>
 #include "FileSystem/File.h"
+#include "Base/FastName.h"
 
 namespace DAVA 
 {
@@ -73,7 +74,7 @@ public:
 	};
 
     // Predefined node name to store Relative Depth.
-    static const char8* YAML_NODE_RELATIVE_DEPTH_NAME;
+    static const char8* SAVE_INDEX_NAME;
 
 protected:
 	virtual ~YamlNode();
@@ -95,6 +96,7 @@ public:
 	const WideString & AsWString() const;
 	const Vector<YamlNode*> & AsVector() const;
     const MultiMap<String, YamlNode*> & AsMap() const;
+    FastName AsFastName() const;
 	
 	/*
 		These functions work only if type of node is array

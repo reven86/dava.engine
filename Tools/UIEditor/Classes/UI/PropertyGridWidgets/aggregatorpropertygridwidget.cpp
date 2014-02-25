@@ -38,6 +38,7 @@ AggregatorPropertyGridWidget::AggregatorPropertyGridWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     SetPropertyBlockName(RECT_PROPERTY_BLOCK_NAME);
+    ui->platformNameLineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
 }
 
 AggregatorPropertyGridWidget::~AggregatorPropertyGridWidget()

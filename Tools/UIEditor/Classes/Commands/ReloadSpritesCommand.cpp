@@ -31,23 +31,17 @@
 #include "TexturePacker/ResourcePacker2D.h"
 #include "ResourcesManageHelper.h"
 #include "UIControlStateHelper.h"
+#include "SpritesHelper.h"
+#include <QMessageBox>
 
-#include "Helpers/SpritesHelper.h"
-
-ReloadSpritesCommand::ReloadSpritesCommand(const HierarchyTreeNode* node, bool needRepack, bool pixelized)
+ReloadSpritesCommand::ReloadSpritesCommand(const HierarchyTreeNode* node) :
+    rootNode(node)
 {
-    this->rootNode = node;
-    this->isNeedRepack = needRepack;
-    this->isPixelized = pixelized;
 }
 
 void ReloadSpritesCommand::Execute()
 {
-    if (isNeedRepack)
-    {
-        RepackSprites();
-    }
-
+    RepackSprites();
     ReloadSprites();
 }
 
@@ -58,6 +52,7 @@ void ReloadSpritesCommand::RepackSprites()
                            ResourcesManageHelper::GetSpritesDirectory().toStdString());
     
     resPacker->PackResources(GPU_UNKNOWN);
+	ShowErrorMessage(resPacker->GetErrors());
     
 	SafeDelete(resPacker);
 }
@@ -67,13 +62,22 @@ void ReloadSpritesCommand::ReloadSprites()
     Set<Sprite*> spritesToReload = SpritesHelper::EnumerateSprites(rootNode);
     for (Set<Sprite*>::iterator iter = spritesToReload.begin(); iter != spritesToReload.end(); iter ++)
     {
-        if (isPixelized)
-        {
-            SpritesHelper::ApplyPixelization(*iter);
-        }
-        else
-        {
-            (*iter)->Reload();
-        }
+        (*iter)->Reload();
     }
+}
+
+void ReloadSpritesCommand::ShowErrorMessage(Set<String> errorsSet)
+{
+	if (!errorsSet.empty())
+	{
+		QMessageBox msgBox;
+		QString msg;
+		for (Set<String>::const_iterator p = errorsSet.begin( );p != errorsSet.end( ); ++p)
+		{
+			msg.append((*p).c_str());
+			msg.append("\n");
+		}
+		msgBox.setText(msg);
+		msgBox.exec();
+	}
 }

@@ -36,6 +36,8 @@
 
 #include "FileSystem/FilePath.h"
 
+#include "Render/RenderBase.h"
+
 
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     #include "PVRDefines.h"
@@ -80,6 +82,10 @@ struct PVRHeaderV3{
 #define PVRTEX3_HEADERSIZE 52
     
     
+// V2 Header Identifiers.
+const uint32 PVRTEX2_IDENT			= 0x21525650;	// 'P''V''R'!
+const uint32 PVRTEX2_IDENT_REV		= 0x50565221;
+    
 /*!***************************************************************************
  Describes the Version 2 header of a PVR texture header.
  *****************************************************************************/
@@ -118,8 +124,15 @@ public:
     
     static PixelFormat GetPixelFormat(const FilePath &filePathname);
     static uint32 GetDataSize(const FilePath &filePathname);
+	
+	static bool AddCRCIntoMetaData(const FilePath &filePathname);
+	static uint32 GetCRCFromFile(const FilePath &filePathname);
     
 protected:
+		
+	static uint32 ReadNextMetadata(DAVA::File* file, uint32* crc);
+	
+	static bool GetCRCFromMetaData(const FilePath &filePathname, uint32* outputCRC);
 
     static bool PreparePVRData(const char* pvrData, const int32 pvrDataSize);
 

@@ -38,7 +38,7 @@
 class ParticleLayerMoveCommand : public Command2
 {
 public:
-	ParticleLayerMoveCommand(DAVA::ParticleLayer* layer, DAVA::ParticleEmitter *newEmitter, DAVA::ParticleLayer *newBefore = NULL);
+	ParticleLayerMoveCommand(DAVA::ParticleEmitter *oldEmitter, DAVA::ParticleLayer* layer, DAVA::ParticleEmitter *newEmitter, DAVA::ParticleLayer *newBefore = NULL);
 	~ParticleLayerMoveCommand();
 
 	virtual void Undo();

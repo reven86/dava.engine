@@ -49,16 +49,18 @@ public:
 	void ResaveFile(const String &fileName, Set<String> &errorLog);
     void SaveScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
     
+    void EnableCopyConverted(bool enabled);
+    
 protected:
     
     void ReleaseTextures();
 
-    void CopyTextures(Scene *scene, Set<String> &errorLog);
-    void CopyTexture(const FilePath &texturePathname, Set<String> &errorLog);
+    void CopyTextures(Scene *scene);
+    void CopyTexture(const FilePath &texturePathname);
 
-	void CopyReferencedObject(Entity *node, Set<String> &errorLog);
-	void CopyEffects(Entity *node, Set<String> &errorLog);
-	void CopyEmitter(ParticleEmitter *emitter, Set<String> &errorLog);
+	void CopyReferencedObject(Entity *node);
+	void CopyEffects(Entity *node);
+	void CopyEmitter(ParticleEmitter *emitter);
 
 	void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
 
@@ -68,7 +70,8 @@ protected:
     
     SceneUtils sceneUtils;
     
-    Map<String, Texture *> texturesForSave;
+    TexturesMap texturesForSave;
+    bool copyConverted;
 };
 
 

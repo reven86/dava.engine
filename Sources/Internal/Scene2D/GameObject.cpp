@@ -310,7 +310,7 @@ void GameObject::Draw()
 	if (sprite)
 	{
 		RenderManager::Instance()->SetColor(color.r, color.g, color.b, color.a);
-		RenderManager::Instance()->SetBlendMode(srcOp, destOp);
+		
 		sprite->Draw(&globalDrawState);
 
 //		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
@@ -325,7 +325,7 @@ void GameObject::Draw()
 	
 	if (isDebugDraw && collision)
 	{
-		collision->DebugDraw();
+		collision->DebugDraw(RenderState::RENDERSTATE_2D_BLEND);
 	}
 //	if (align == ALIGN_LEFTTOP)
 //	{

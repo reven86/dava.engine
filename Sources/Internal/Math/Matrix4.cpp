@@ -34,10 +34,12 @@
 
 namespace DAVA 
 {
-const Matrix4 Matrix4::IDENTITY(1.0f, 0.0f, 0.0f, 0.0f, 
+Matrix4 Matrix4::IDENTITY(1.0f, 0.0f, 0.0f, 0.0f, 
                           0.0f, 1.0f, 0.0f, 0.0f,
                           0.0f, 0.0f, 1.0f, 0.0f,
                           0.0f, 0.0f, 0.0f, 1.0f);
+	
+//uint32 Matrix4::matrixMultiplicationCounter = 0;
 
 //inline void Matrix4::glOrthof
 void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, float32 n, float32 f)

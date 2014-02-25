@@ -422,7 +422,7 @@ void MongodbClient::DumpDB()
     {
         const bson *currentObject = mongo_cursor_bson(cursor);
         
-        Logger::FrameworkDebug(Format("BSON[%d]:", count));
+        Logger::FrameworkDebug(Format("BSON[%d]:", count).c_str());
         bson_print(currentObject);
         
         ++count;

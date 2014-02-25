@@ -300,7 +300,7 @@ namespace DAVA
 		SafeDelete(keyEvent);
 	}
 
-	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source)
+	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
 	{
 		int32 phase = DAVA::UIEvent::PHASE_DRAG;
 		switch(action)
@@ -341,7 +341,7 @@ namespace DAVA
 		newEvent.point.x = x;
 		newEvent.point.y = y;
 		newEvent.phase = phase;
-		newEvent.tapCount = 1;
+		newEvent.tapCount = tapCount;
 		newEvent.timestamp = time;
 
 		return newEvent;
@@ -357,9 +357,9 @@ namespace DAVA
 		assetMngr = mngr;
 	}
 
-	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source)
+	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
 	{
-		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source);
+		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source, tapCount);
 
 		if(touchEvent.phase == DAVA::UIEvent::PHASE_JOYSTICK)
 		{

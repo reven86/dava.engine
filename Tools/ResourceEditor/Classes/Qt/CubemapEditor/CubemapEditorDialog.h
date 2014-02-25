@@ -51,7 +51,11 @@ public:
 	
 	void InitForEditing(DAVA::FilePath& textureDescriptorPath, DAVA::FilePath& rootPath);
 	void InitForCreating(DAVA::FilePath& textureDescriptorPath, DAVA::FilePath& rootPath);
-	
+
+public slots:
+    
+    virtual void done(int);
+    
 protected:
 	
 	typedef enum{
@@ -104,7 +108,6 @@ protected slots:
 	
 	void OnLoadTexture();
 	void OnSave();
-	void OnClose();
     
 private:
     Ui::CubemapEditorDialog *ui;

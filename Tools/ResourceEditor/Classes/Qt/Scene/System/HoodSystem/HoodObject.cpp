@@ -145,7 +145,7 @@ DAVA::Rect HoodObject::DrawAxisText(TextDrawSystem *textDrawSystem, HoodCollObje
 	if(pos2d.y > maxY) maxY = pos2d.y;
 	if(pos2d.y < minY) minY = pos2d.y;
 
-	return DAVA::Rect(minX, minY, maxX, maxX);
+	return DAVA::Rect(minX, minY, maxX, maxY);
 }
 
 DAVA::Vector3 HoodObject::GetAxisTextPos(HoodCollObject *axis)

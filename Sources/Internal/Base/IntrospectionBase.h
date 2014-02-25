@@ -32,12 +32,13 @@
 #define __DAVAENGINE_INTROSPECTION_BASE_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/GlobalEnum.h"
 #include "FileSystem/VariantType.h"
+#include "Base/GlobalEnum.h"
 
 namespace DAVA
 {
 	class InspInfo;
+	class InspMemberDynamic;
 	class InspColl;
 	class KeyedArchive;
 	struct MetaInfo;
@@ -55,11 +56,18 @@ namespace DAVA
 
 	struct InspDesc
 	{
-		InspDesc(const char *text);
-		InspDesc(const char *text, const EnumMap* enumMap);
-	
 		const char *text;
 		const EnumMap *enumMap;
+
+		InspDesc(const char *_text) 
+			: text(_text)
+			, enumMap(NULL)
+		{ }
+
+		explicit InspDesc(const char *_text, const EnumMap *_enumMap)
+			: text(_text)
+			, enumMap(_enumMap)
+		{}
 	};
 
 	// Базовое представление члена интроспекции
@@ -117,14 +125,19 @@ namespace DAVA
 		// Возвращает данные члена интроспекции в виде коллекции
 		virtual const InspColl* Collection() const;
 
+		virtual const InspMemberDynamic* Dynamic() const;
+
 		int Flags() const;
 
 	protected:
+		void ApplyParentInsp(const InspInfo *parentInsp) const;
+
 		const char* name;
 		InspDesc desc;
 		const long int offset;
 		const MetaInfo* type;
 		const int flags;
+		mutable const InspInfo *parentInsp;
 	};
 
 	// Базовое представление члена интроспекции, являющегося коллекцией
@@ -140,7 +153,6 @@ namespace DAVA
 		virtual MetaInfo* CollectionType() const = 0;
 		virtual MetaInfo* ItemType() const = 0;
 		virtual int Size(void *object) const = 0;
-		virtual void Resize(void *object, int newSize) const = 0;
 		virtual Iterator Begin(void *object) const = 0;
 		virtual Iterator Next(Iterator i) const = 0;
 		virtual void Finish(Iterator i) const = 0;
@@ -148,8 +160,9 @@ namespace DAVA
 		virtual void ItemValueSet(Iterator i, void *itemSrc) = 0;
 		virtual void* ItemPointer(Iterator i) const = 0;
 		virtual void* ItemData(Iterator i) const = 0;
-		//virtual Iterator ItemAdd(void *object) = 0;
-		//virtual void ItemRem(Iterator i) = 0;
+		virtual MetaInfo* ItemKeyType() const = 0;
+		virtual const void* ItemKeyPointer(Iterator i) const = 0;
+		virtual const void* ItemKeyData(Iterator i) const = 0;
 	};
 
 	// Вспомогательный класс для определения содержит ли указанный шаблонный тип интроспекцию

@@ -28,61 +28,49 @@
 
 
 #include "SceneHelper.h"
-#include "SceneEditor/SceneValidator.h"
+#include "Deprecated/SceneValidator.h"
 #include "CubemapEditor/MaterialHelper.h"
 
-using namespace DAVA;
+#include "Scene3D/Systems/MaterialSystem.h"
 
-void SceneHelper::EnumerateTextures(Entity *forNode, Map<String, Texture *> &textures)
+void SceneHelper::EnumerateSceneTextures(DAVA::Scene *forScene, DAVA::TexturesMap &textureCollection)
 {
-	if(!forNode) return;
-
-	Vector<Entity *> nodes;
-	forNode->GetChildNodes(nodes);
-
-	nodes.push_back(forNode);
-
-	for(int32 n = 0; n < (int32)nodes.size(); ++n)
-	{
-		RenderObject *ro = GetRenderObject(nodes[n]);
-		if(!ro) continue;
-
-		uint32 count = ro->GetRenderBatchCount();
-		for(uint32 b = 0; b < count; ++b)
-		{
-			RenderBatch *renderBatch = ro->GetRenderBatch(b);
-
-			Material *material = renderBatch->GetMaterial();
-			if(material)
-			{
-				for(int32 t = 0; t < Material::TEXTURE_COUNT; ++t)
-				{
-					CollectTexture(textures, material->GetTextureName((DAVA::Material::eTextureLevel)t).GetAbsolutePathname(), material->GetTexture((DAVA::Material::eTextureLevel)t));
-				}
-			}
-
-			InstanceMaterialState *instanceMaterial = renderBatch->GetMaterialInstance();
-			if(instanceMaterial)
-			{
-				CollectTexture(textures, instanceMaterial->GetLightmapName().GetAbsolutePathname(), instanceMaterial->GetLightmap());
-			}
-		}
-
-		Landscape *land = dynamic_cast<Landscape *>(ro);
-		if(land)
-		{
-			CollectLandscapeTextures(textures, land);
-		}
-	}
+    EnumerateEntityTextures(forScene, forScene, textureCollection);
 }
 
-int32 SceneHelper::EnumerateModifiedTextures(DAVA::Entity *forNode, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures)
+void SceneHelper::EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection)
+{
+    if(!forNode || !forScene) return;
+    
+    DAVA::MaterialSystem *matSystem = forScene->GetMaterialSystem();
+    
+    DAVA::Set<DAVA::NMaterial *> materials;
+    matSystem->BuildMaterialList(forNode, materials);
+    
+    Set<NMaterial *>::const_iterator endIt = materials.end();
+    for(Set<NMaterial *>::const_iterator it = materials.begin(); it != endIt; ++it)
+    {
+        DAVA::NMaterial *mat = *it;
+        
+        String materialName = mat->GetMaterialName().c_str();
+        String parentName = mat->GetParent() ? mat->GetParent()->GetMaterialName().c_str() : String() ;
+        
+        if((parentName.find("Particle") != String::npos) || (materialName.find("Particle") != String::npos))
+        {   //because particle materials has textures only after first start, so we have different result during scene life.
+            continue;
+        }
+        
+        CollectTextures(*it, textureCollection);
+    }
+}
+
+int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures)
 {
 	int32 retValue = 0;
 	textures.clear();
-	Map<String, Texture *> allTextures;
-	EnumerateTextures(forNode, allTextures);
-	for(DAVA::Map<DAVA::String, DAVA::Texture *>::iterator it = allTextures.begin(); it != allTextures.end(); ++it)
+	TexturesMap allTextures;
+	EnumerateSceneTextures(forScene, allTextures);
+	for(TexturesMap::iterator it = allTextures.begin(); it != allTextures.end(); ++it)
 	{
 		DAVA::Texture * texture = it->second;
 		if(NULL == texture)
@@ -118,99 +106,20 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Entity *forNode, DAVA::Map<DA
 	return retValue;
 }
 
-void SceneHelper::CollectLandscapeTextures(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, Landscape *forNode)
+
+void SceneHelper::CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures)
 {
-	for(int32 t = 0; t < Landscape::TEXTURE_COUNT; t++)
-	{
-		CollectTexture(textures, 
-			forNode->GetTextureName((Landscape::eTextureLevel)t).GetAbsolutePathname(), 
-			forNode->GetTexture((Landscape::eTextureLevel)t));
-	}
-}
-
-
-
-void SceneHelper::CollectTexture(Map<String, Texture *> &textures, const String &name, Texture *tex)
-{
-	if(!name.empty() && SceneValidator::Instance()->IsPathCorrectForProject(name))
-	{
-		textures[name] = tex;
-	}
-}
-
-void SceneHelper::EnumerateDescriptors(DAVA::Entity *forNode, DAVA::Set<DAVA::FilePath> &descriptors)
-{
-	if(!forNode)  return;
-
-	Vector<Entity *> nodes;
-	forNode->GetChildNodes(nodes);
-
-	nodes.push_back(forNode);
-
-	for(int32 n = 0; n < (int32)nodes.size(); ++n)
-	{
-		RenderComponent *rc = static_cast<RenderComponent *>(nodes[n]->GetComponent(Component::RENDER_COMPONENT));
-		if(!rc) continue;
-
-		RenderObject *ro = rc->GetRenderObject();
-		if(!ro) continue;
-
-		uint32 count = ro->GetRenderBatchCount();
-		for(uint32 b = 0; b < count; ++b)
-		{
-			RenderBatch *renderBatch = ro->GetRenderBatch(b);
-
-			Material *material = renderBatch->GetMaterial();
-			if(material)
-			{
-				for(int32 t = 0; t < Material::TEXTURE_COUNT; ++t)
-				{
-					CollectDescriptors(descriptors, material->GetTextureName((DAVA::Material::eTextureLevel)t));
-				}
-			}
-
-			InstanceMaterialState *instanceMaterial = renderBatch->GetMaterialInstance();
-			if(instanceMaterial)
-			{
-				CollectDescriptors(descriptors, instanceMaterial->GetLightmapName());
-			}
-		}
-
-		Landscape *land = dynamic_cast<Landscape *>(ro);
-		if(land)
-		{
-			CollectLandscapeDescriptors(descriptors, land);
-		}
-	}
-}
-
-void SceneHelper::CollectLandscapeDescriptors(DAVA::Set<DAVA::FilePath> &descriptors, DAVA::Landscape *forNode)
-{
-	for(int32 t = 0; t < Landscape::TEXTURE_COUNT; t++)
-	{
-		CollectDescriptors(descriptors, forNode->GetTextureName((Landscape::eTextureLevel)t));
-	}
-}
-
-void SceneHelper::CollectDescriptors(DAVA::Set<DAVA::FilePath> &descriptors, const DAVA::FilePath &pathname)
-{
-	if(pathname.GetType() == FilePath::PATH_EMPTY)
-		return;
-
-	DVASSERT(pathname.IsEqualToExtension(TextureDescriptor::GetDescriptorExtension()));
-
-	if(!pathname.IsEmpty() && SceneValidator::Instance()->IsPathCorrectForProject(pathname))
-	{
-		descriptors.insert(pathname);
-	}
-}
-
-void SceneHelper::EnumerateMaterials(DAVA::Entity *forNode, Vector<Material *> &materials)
-{
-	if(forNode)
-	{
-		forNode->GetDataNodes(materials);
-		//VI: remove skybox materials so they not to appear in the lists
-		MaterialHelper::FilterMaterialsByType(materials, DAVA::Material::MATERIAL_SKYBOX);
-	}
+    DAVA::uint32 texCount = material->GetTextureCount();
+    for(DAVA::uint32 t = 0; t < texCount; ++t)
+    {
+        DAVA::Texture *texture = material->GetTexture(t);
+        if(texture)
+        {
+            const DAVA::FilePath & path = texture->texDescriptor->pathname;
+            if(!path.IsEmpty() && SceneValidator::Instance()->IsPathCorrectForProject(path))
+            {
+                textures[FILEPATH_MAP_KEY(path)] = texture;
+            }
+        }
+    }
 }

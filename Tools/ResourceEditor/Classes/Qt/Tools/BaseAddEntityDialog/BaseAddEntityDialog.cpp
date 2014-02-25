@@ -53,7 +53,6 @@ BaseAddEntityDialog::BaseAddEntityDialog(QWidget* parent, QDialogButtonBox::Stan
 	setAttribute( Qt::WA_MacAlwaysShowToolWindow); // on top of all applications
 
 	propEditor = ui->propertyEditor;
-	propEditor->setMouseTracking(false);
 	propEditor->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	propEditor->setTabKeyNavigation(false);
 	propEditor->setAlternatingRowColors(true);
@@ -61,7 +60,7 @@ BaseAddEntityDialog::BaseAddEntityDialog(QWidget* parent, QDialogButtonBox::Stan
 	propEditor->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 	propEditor->setIndentation(16);
 	propEditor->SetEditTracking(true);
-	connect(propEditor, SIGNAL(PropertyEdited(const QString &, QtPropertyData *)), this, SLOT(OnItemEdited(const QString &, QtPropertyData *)));
+	connect(propEditor, SIGNAL(PropertyEdited(const QModelIndex &)), this, SLOT(OnItemEdited(const QModelIndex &)));
 
 	ui->buttonBox->setStandardButtons(buttons);
     
@@ -100,7 +99,7 @@ void BaseAddEntityDialog::PerformResize()
 QtPropertyData* BaseAddEntityDialog::AddInspMemberToEditor(void *object, const DAVA::InspMember * member)
 {
 	int flags = DAVA::I_VIEW | DAVA::I_EDIT;
-	QtPropertyData* propData = QtPropertyDataIntrospection::CreateMemberData(object, member, flags);
+	QtPropertyData* propData = QtPropertyDataIntrospection::CreateMemberData(object, member);
 	propEditor->AppendProperty(member->Name(), propData);
 	return propData;
 }
@@ -138,6 +137,11 @@ void BaseAddEntityDialog::AddButton( QWidget* widget, eButtonAlign orientation)
 		default:
 			break;
 	}
+}
+
+void BaseAddEntityDialog::AddButton( QWidget* widget, int32 position)
+{
+	ui->lowerLayOut->insertWidget(position, widget);
 }
 
 DAVA::Entity* BaseAddEntityDialog::GetEntity()
@@ -202,8 +206,9 @@ void BaseAddEntityDialog::GetIncludedControls(QList<QWidget*>& includedWidgets)
 	}
 }
 
-void BaseAddEntityDialog::OnItemEdited(const QString &name, QtPropertyData *data)
+void BaseAddEntityDialog::OnItemEdited(const QModelIndex &index)
 {
+	QtPropertyData *data = propEditor->GetProperty(index);
 	Command2 *command = (Command2 *) data->CreateLastCommand();
 	if(NULL != command)
 	{
