@@ -217,6 +217,13 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
+{
+    NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
+    NSString* baseUrl = [NSString stringWithUTF8String:basePath.GetAbsolutePathname().c_str()];
+    [[(WebView*)webViewPtr mainFrame] loadHTMLString:dataToOpen baseURL:[NSURL fileURLWithPath:baseUrl]];
+}
+
 void WebViewControl::SetRect(const Rect& rect)
 {
 	NSRect webViewRect = [(WebView*)webViewPtr frame];

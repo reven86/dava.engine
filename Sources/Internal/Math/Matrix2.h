@@ -56,7 +56,7 @@ struct Matrix2
 		};
 	};
 	
-	inline Matrix2() {};
+	inline Matrix2();
 	inline Matrix2(float32 m00, float32 m01, float32 m10, float32 m11);
 	inline Matrix2(const Matrix2 & m);
 
@@ -83,6 +83,11 @@ struct Matrix2
 
 
 
+inline Matrix2::Matrix2()
+{
+    _00 = 1.0f; _01 = 0.0f;
+    _10 = 0.0f; _11 = 1.0f;
+}
 
 
 inline Matrix2::Matrix2(float32 m00, float32 m01, float32 m10, float32 m11)
@@ -105,8 +110,8 @@ inline float32 Matrix2::Det() const
 
 inline void Matrix2::SetIdentity()
 {
-	data[0] = 1; data[1] = 0;
-	data[2] = 0; data[3] = 1;
+    _00 = 1.0f; _01 = 0.0f;
+    _10 = 0.0f; _11 = 1.0f;
 }
 
 inline void Matrix2::BuildRotation(float32 angle)

@@ -105,7 +105,7 @@ public:
     
     
 	void Init ();
-	void Update (uint8 *inBuf, uint32 inLen);
+	void Update (const uint8 *inBuf, uint32 inLen);
 	void Final ();
 
 	uint8 * GetDigest() { return digest; };

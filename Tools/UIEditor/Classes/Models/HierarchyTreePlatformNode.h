@@ -48,6 +48,7 @@ public:
 	void SetSize(int width, int height);
 	int GetWidth() const;
 	int GetHeight() const;
+    Vector2 GetSize() const;
 
 	virtual HierarchyTreeNode* GetParent();
 
@@ -80,6 +81,10 @@ public:
 
 	bool IsAggregatorOrScreenNamePresent(const QString& candidatName);
 
+    // Enable/disable Preview Mode. In Preview Mode different (preview) platform size is returned.
+    void EnablePreview(int width, int height);
+    void DisablePreview();
+
 private:
 	int width;
 	int height;
@@ -88,6 +93,10 @@ private:
     String locale;
 
 	HierarchyTreeRootNode* rootNode;
+    
+    bool isPreview;
+    int previewWidth;
+    int previewHeight;
 };
 
 #endif /* defined(__UIEditor__HierarchyTreePlatformNode__) */

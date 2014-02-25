@@ -271,8 +271,8 @@ void GameObjectManager::ProcessChangesStack()
 
 void GameObjectManager::Draw()
 {
-	eBlendMode srcMode = RenderManager::Instance()->GetSrcBlend();
-	eBlendMode destMode = RenderManager::Instance()->GetDestBlend();
+	//eBlendMode srcMode = RenderManager::Instance()->GetSrcBlend();
+	//eBlendMode destMode = RenderManager::Instance()->GetDestBlend();
 	
         RenderManager::Instance()->PushDrawMatrix();
         RenderManager::Instance()->SetDrawTranslate(cameraPosition);
@@ -290,7 +290,7 @@ void GameObjectManager::Draw()
 	
         RenderManager::Instance()->PopDrawMatrix();
 
-	RenderManager::Instance()->SetBlendMode(srcMode, destMode);
+	//RenderManager::Instance()->SetBlendMode(srcMode, destMode);
     RenderManager::Instance()->ResetColor();
 }
 

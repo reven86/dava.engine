@@ -76,8 +76,8 @@ String TeamcityOutput::NormalizeString(const char8 *text) const
     StringReplace(str, "\r", "|r");
 
 //    StringReplace(str, "\u0085", "|x");
-    StringReplace(str, "\u2028", "|l");
-    StringReplace(str, "\u2029", "|p");
+//     StringReplace(str, "\u2028", "|l");
+//     StringReplace(str, "\u2029", "|p");
 
     StringReplace(str, "[", "|[");
     StringReplace(str, "]", "|]");

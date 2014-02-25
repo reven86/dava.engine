@@ -30,28 +30,24 @@
 #include <QLabel>
 #include <QMessageBox>
 #include "ui_BaseAddEntityDialog.h"
-#include "SceneEditor/EditorSettings.h"
+#include "Qt/Settings/SettingsManager.h"
+#include "Project/ProjectManager.h"
 #include "Main/mainwindow.h"
-#include "Classes/Commands2/EntityAddCommand.h"
-#include "Classes/Commands2/EntityRemoveCommand.h"
-#include "Classes/Commands2/LandscapeSetTexturesCommands.h"
+#include "Commands2/EntityAddCommand.h"
+#include "Commands2/EntityRemoveCommand.h"
+#include "Commands2/LandscapeSetTexturesCommands.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataDavaVariant.h"
-#include "Tools/SelectPathWidget/SelectPathWidgetBase.h"
-#include "../Qt/Main/QtUtils.h"
-#include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Main/QtUtils.h"
+#include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "MaterialEditor/MaterialEditor.h"
 
-#define TEXTURE_TITLE "Open texture"
 #define HEIGHTMAP_TITLE "Open height map"
-#define TEXTURE_FILTER "PNG (*.png);;TEX (*.tex);;All (*.png *.tex)"
 #define HEIGHTMAP_FILTER "All (*.heightmap *.png);;PNG (*.png);;Height map (*.heightmap) "
 #define HEIGHT_MAP_ID 0xABCD
 
-#define TAB_CONTENT_WIDTH 450
-#define TAB_CONTENT_HEIGHT 300
-
 #define CREATE_TITLE "Create"
 #define DELETE_TITLE "Delete"
-
+#define OPEN_MAT_EDITOR_TITLE "Edit material"
 
 #define DEFAULT_LANDSCAPE_SIDE_LENGTH	600.0f
 #define DEFAULT_LANDSCAPE_HEIGHT		50.0f
@@ -59,7 +55,6 @@
 const int32 LandscapeDialog::landscapeRelatedCommandIDs[] = {
 	CMDID_ENTITY_ADD,
 	CMDID_ENTITY_REMOVE,
-	CMDID_LANDSCAPE_SET_TEXTURE,
 	CMDID_LANDSCAPE_SET_HEIGHTMAP
 };
 
@@ -74,39 +69,28 @@ LandscapeDialog::LandscapeDialog(Entity* _landscapeEntity,  QWidget* parent)
 	innerLandscape = DAVA::GetLandscape(entity);
 	connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
 
-	DAVA::List<DAVA::String> textureFormats;
-	textureFormats.push_back(".tex");
-	textureFormats.push_back(".png");
-	
 	DAVA::List<DAVA::String> heightMapFormats;
 	heightMapFormats.push_back(".heightmap");
 	
-	SelectPathWidgetBase* colorTexutureWidget = InitPathWidget(parent, Landscape::TEXTURE_COLOR, textureFormats);
-	SelectPathWidgetBase* tileTexuture0Widget = InitPathWidget(parent, Landscape::TEXTURE_TILE0, textureFormats);
-	SelectPathWidgetBase* tileTexuture1Widget = InitPathWidget(parent, Landscape::TEXTURE_TILE1, textureFormats);
-	SelectPathWidgetBase* tileTexuture2Widget = InitPathWidget(parent, Landscape::TEXTURE_TILE2, textureFormats);
-	SelectPathWidgetBase* tileTexuture3Widget = InitPathWidget(parent, Landscape::TEXTURE_TILE3, textureFormats);
-	SelectPathWidgetBase* tileMaskWidget  = InitPathWidget(parent, Landscape::TEXTURE_TILE_MASK, textureFormats);
 	SelectPathWidgetBase* heightMapWidget = InitPathWidget(parent, HEIGHT_MAP_ID, heightMapFormats);
 	
 	AddControlToUserContainer(heightMapWidget, "Height map:");
-	AddControlToUserContainer(colorTexutureWidget, "Color texture:");
-	AddControlToUserContainer(tileTexuture0Widget, "Tile texture 0:");
-	AddControlToUserContainer(tileTexuture1Widget, "Tile texture 1:");
-	AddControlToUserContainer(tileTexuture2Widget, "Tile texture 2:");
-	AddControlToUserContainer(tileTexuture3Widget, "Tile texture 3:");
-	AddControlToUserContainer(tileMaskWidget, "Tile mask:");
 	
 	QString btnTitle = CREATE_TITLE;
-	if(innerLandscape != NULL)
+	bool isLandscapePresent = innerLandscape != NULL;
+	if(isLandscapePresent)
 	{
-		TileModeChanged((int)innerLandscape->GetTiledShaderMode());
 		btnTitle = DELETE_TITLE;
 	}
 	actionButton = new QPushButton(btnTitle, this);
 	connect(actionButton, SIGNAL(clicked()), this, SLOT(ActionButtonClicked()));
 	AddButton(actionButton);
-	
+
+	openMaterEditorBtn = new QPushButton(OPEN_MAT_EDITOR_TITLE, this);
+	connect(openMaterEditorBtn, SIGNAL(clicked()), this, SLOT(MaterialEditorButtonClicked()));
+	AddButton(openMaterEditorBtn, 1);
+	openMaterEditorBtn->setVisible(isLandscapePresent);
+
 	landscapeSize = Vector3(DEFAULT_LANDSCAPE_SIDE_LENGTH, DEFAULT_LANDSCAPE_SIDE_LENGTH, DEFAULT_LANDSCAPE_HEIGHT);
 }
 
@@ -118,23 +102,18 @@ LandscapeDialog::~LandscapeDialog()
 	{
 		delete it->first;
 	}
-
+	delete openMaterEditorBtn;
 	delete actionButton;
 }
 
 SelectPathWidgetBase* LandscapeDialog::InitPathWidget(QWidget* parent, int32 widgetNum, const DAVA::List<DAVA::String>& formats)
 {
 	bool isHeightMap = widgetNum == HEIGHT_MAP_ID;
-	String widgetTitle = TEXTURE_TITLE;
-	String fileFilter = TEXTURE_FILTER;
-	if(isHeightMap)
-	{
-		widgetTitle = HEIGHTMAP_TITLE;
-		fileFilter = HEIGHTMAP_FILTER;
-	}
+	String widgetTitle = HEIGHTMAP_TITLE;
+	String fileFilter = HEIGHTMAP_FILTER;
 
-	DAVA::String resFolder = EditorSettings::Instance()->GetDataSourcePath().GetAbsolutePathname();
-	SelectPathWidgetBase* widget = new SelectPathWidgetBase(parent,resFolder,"", widgetTitle, fileFilter);
+	DAVA::String resFolder = FilePath(ProjectManager::Instance()->CurProjectDataSourcePath().toStdString()).GetAbsolutePathname();
+	SelectPathWidgetBase* widget = new SelectPathWidgetBase(parent, true, resFolder,"", widgetTitle, fileFilter);
 
 	if(innerLandscape)
 	{
@@ -160,51 +139,6 @@ void LandscapeDialog::FillPropertyEditorWithContent()
 	landscapeSize = GetSizeOfCurrentLandscape();
 	AddMetaObject(&landscapeSize.x, DAVA::MetaInfo::Instance<float>(), "Size");
 	AddMetaObject(&landscapeSize.z, DAVA::MetaInfo::Instance<float>(), "Height");
-
-	DAVA::KeyedArchive* propertyList = entity->GetCustomProperties();
-	if(!propertyList->IsKeyExists("lightmap.size"))
-	{
-		propertyList->SetInt32("lightmap.size", 1024);
-	}
-	if(!propertyList->IsKeyExists("editor.staticlight.enable"))
-	{
-		propertyList->SetBool("editor.staticlight.enable", false);
-	}
-	if(!propertyList->IsKeyExists("editor.staticlight.castshadows"))
-	{
-		propertyList->SetBool("editor.staticlight.castshadows", false);
-	}
-	if(!propertyList->IsKeyExists("editor.staticlight.receiveshadows"))
-	{
-		propertyList->SetBool("editor.staticlight.receiveshadows", false);
-	}
-
-	AddKeyedArchiveMember(propertyList, "lightmap.size", "Lightmap size");
-	AddKeyedArchiveMember(propertyList, "editor.staticlight.enable", "Staticlight enable");
-	AddKeyedArchiveMember(propertyList, "editor.staticlight.castshadows", "Cast shadows"); 
-	AddKeyedArchiveMember(propertyList, "editor.staticlight.receiveshadows", "Receive shadows");
-
-	AddInspMemberToEditor( innerLandscape, innerLandscape->GetTypeInfo()->Member("isFogEnabled"));
-	AddInspMemberToEditor( innerLandscape, innerLandscape->GetTypeInfo()->Member("fogDensity"));
-	AddInspMemberToEditor( innerLandscape, innerLandscape->GetTypeInfo()->Member("fogColor"));
-	QtPropertyData* tileMode = AddInspMemberToEditor( innerLandscape, innerLandscape->GetTypeInfo()->Member("tiledShaderMode"));
-	QtPropertyDataDavaVariant* tileModeVariant = dynamic_cast<QtPropertyDataDavaVariant*>(tileMode);
-
-	Vector<String> tiledModes;
-	tiledModes.push_back("Tile mask mode");
-	tiledModes.push_back("Texture mode");
-	tiledModes.push_back("Mixed mode");
-	tiledModes.push_back("Detail mask mode");
-	uint32 shaderMode = innerLandscape->GetTiledShaderMode();
-	String sMode =  tiledModes[shaderMode];
-	tileModeVariant->AddAllowedValue(DAVA::VariantType(shaderMode), sMode.c_str());
-	if(shaderMode != Landscape::TILED_MODE_TILE_DETAIL_MASK)
-	{
-		tileModeVariant->AddAllowedValue(DAVA::VariantType((uint32)Landscape::TILED_MODE_TILE_DETAIL_MASK), "Detail mask mode");
-	}
-
-	AddInspMemberToEditor( innerLandscape, innerLandscape->GetTypeInfo()->Member("tileColor"));
-	AddInspMemberToEditor( innerLandscape, innerLandscape->GetTypeInfo()->Member("textureTiling"));
 }
 
 void LandscapeDialog::FillWidgetsWithContent()
@@ -235,12 +169,13 @@ void LandscapeDialog::FillWidgetsWithContent()
 	if(landscapeToProcess != NULL)
 	{
 		actionButton->setText(DELETE_TITLE);
-		TileModeChanged((int)landscapeToProcess->GetTiledShaderMode());
 	}
 	else
 	{
 		actionButton->setText(CREATE_TITLE);
 	}
+	
+	openMaterEditorBtn->setVisible( innerLandscape != NULL);
 }
 
 void LandscapeDialog::showEvent ( QShowEvent * event )
@@ -274,7 +209,7 @@ void LandscapeDialog::CommandExecuted(SceneEditor2 *scene, const Command2* comma
 			SetLandscapeEntity(commandEntity);
 		}
 	}
-	else if(id == CMDID_LANDSCAPE_SET_TEXTURE || id == CMDID_LANDSCAPE_SET_HEIGHTMAP )
+	else if(id == CMDID_LANDSCAPE_SET_HEIGHTMAP )
 	{
 		FillWidgetsWithContent();
 	}
@@ -309,18 +244,17 @@ void LandscapeDialog::ActionButtonClicked()
 		
 		Entity* entityToProcess = new Entity();
 		entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
+        entityToProcess->SetLocked(true);
 		Landscape* newLandscape = new Landscape();
 		
-		for(uint32 i = Landscape::TEXTURE_COLOR; i < Landscape::TEXTURE_COUNT; ++i)
-		{
-			Texture* pinkTexture = Texture::CreatePink();
-			newLandscape->SetTexture((Landscape::eTextureLevel)i, pinkTexture);
-			SafeRelease(pinkTexture);
-		}
-		newLandscape->SetTiledShaderMode(Landscape::TILED_MODE_TILE_DETAIL_MASK);
+		//for(uint32 i = Landscape::TEXTURE_COLOR; i < Landscape::TEXTURE_COUNT; ++i)
+		//{
+		//	Texture* pinkTexture = Texture::CreatePink();
+		//	newLandscape->SetTexture((Landscape::eTextureLevel)i, pinkTexture);
+		//	SafeRelease(pinkTexture);
+		//}
 		RenderComponent* component = new RenderComponent(ScopedPtr<Landscape>(newLandscape));
 		entityToProcess->AddComponent(component);
-		SafeRelease(component);
 
 		AABBox3 bboxForLandscape;
 		bboxForLandscape.AddPoint(Vector3(-landscapeSize.x/2.f, -landscapeSize.y/2.f, 0.f));
@@ -348,8 +282,16 @@ void LandscapeDialog::ActionButtonClicked()
 	}
 }
 
-void LandscapeDialog::OnItemEdited(const QString &name, QtPropertyData *data)
+void LandscapeDialog::MaterialEditorButtonClicked()
 {
+	MaterialEditor::Instance()->show();
+}
+
+void LandscapeDialog::OnItemEdited(const QModelIndex &index)
+{
+	QtPropertyData *data = propEditor->GetProperty(index);
+	QString name = data->GetName();
+
 	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
 	if(NULL == curScene)
 	{
@@ -360,6 +302,8 @@ void LandscapeDialog::OnItemEdited(const QString &name, QtPropertyData *data)
 	
 	if(isMultiple)
 	{
+        float val = Max(0.f, data->GetValue().toFloat());
+        data->SetValue(QVariant(val));
 		curScene->BeginBatch("Landscape resizing");
 	}
 	
@@ -379,12 +323,6 @@ void LandscapeDialog::OnItemEdited(const QString &name, QtPropertyData *data)
 		curScene->Exec(command);
 		
 		curScene->EndBatch();
-	}
-	
-	if( "tiledShaderMode" == name )
-	{
-		int newTileMode = data->GetValue().toInt();
-		TileModeChanged(newTileMode);
 	}
 }
 
@@ -423,50 +361,6 @@ void LandscapeDialog::FillUIbyLandscapeEntity()
 	PerformResize();
 }
 
-void LandscapeDialog::TileModeChanged(int newValue)
-{
-	bool shouldEnableControls = (Landscape::eTiledShaderMode )newValue != Landscape::TILED_MODE_TILE_DETAIL_MASK;
-
-	SelectPathWidgetBase* tileTexuture0Widget = FindWidgetBySpecInfo(Landscape::TEXTURE_TILE0);
-	SelectPathWidgetBase* tileTexuture1Widget = FindWidgetBySpecInfo(Landscape::TEXTURE_TILE1);
-	SelectPathWidgetBase* tileTexuture2Widget = FindWidgetBySpecInfo(Landscape::TEXTURE_TILE2);
-	SelectPathWidgetBase* tileTexuture3Widget = FindWidgetBySpecInfo(Landscape::TEXTURE_TILE3);
-	
-	tileTexuture1Widget->setEnabled(shouldEnableControls);
-	tileTexuture2Widget->setEnabled(shouldEnableControls);
-	tileTexuture3Widget->setEnabled(shouldEnableControls);
-		
-	if(!shouldEnableControls)
-	{
-		tileTexuture1Widget->blockSignals(true);
-		tileTexuture2Widget->blockSignals(true);
-		tileTexuture3Widget->blockSignals(true);
-		
-		DAVA::String path = tileTexuture0Widget->getText();
-		tileTexuture1Widget->setText(path);
-		tileTexuture2Widget->setText(path);
-		tileTexuture3Widget->setText(path);
-		
-		tileTexuture1Widget->blockSignals(false);
-		tileTexuture2Widget->blockSignals(false);
-		tileTexuture3Widget->blockSignals(false);
-	}
-}
-
-SelectPathWidgetBase* LandscapeDialog::FindWidgetBySpecInfo(int value)
-{
-	SelectPathWidgetBase* retValue = NULL;
-	for(DAVA::Map<SelectPathWidgetBase*,int32>::iterator it = widgetMap.begin(); it != widgetMap.end();++it)
-	{
-		if(it->second == value)
-		{
-			retValue = it->first;
-			break;
-		}
-	}
-	return retValue;
-}
-
 void LandscapeDialog::CleanupPathWidgets()
 {
 	for (DAVA::Map<SelectPathWidgetBase*,int32>::iterator it = widgetMap.begin(); it != widgetMap.end(); ++it)
@@ -493,7 +387,7 @@ void LandscapeDialog::PathWidgetValueChanged(String fileName)
 		{
 			if(filePath.IsEqualToExtension(".png"))
 			{
-				Vector<Image *> imageVector = ImageLoader::CreateFromFile(filePath);
+				Vector<Image *> imageVector = ImageLoader::CreateFromFileByExtension(filePath);
 				DVASSERT(imageVector.size());
 			
 				PixelFormat format = imageVector[0]->GetPixelFormat();
@@ -513,25 +407,6 @@ void LandscapeDialog::PathWidgetValueChanged(String fileName)
 			LandscapeSetHeightMapCommand* command = new LandscapeSetHeightMapCommand(entity, filePath,
 																					 innerLandscape->GetBoundingBox());
 			sceneEditor->Exec(command);
-		}
-	}
-	else
-	{
-		int id = widgetMap[sender];
-		FilePath presentName = innerLandscape->GetTextureName((Landscape::eTextureLevel)id);
-		if(filePath != presentName)
-		{
-			if(filePath.Exists())
-			{
-				TextureDescriptorUtils::CreateDescriptorIfNeed(filePath);
-			}
-			LandscapeSetTexturesCommand* command = new LandscapeSetTexturesCommand(entity, (Landscape::eTextureLevel)id, filePath);
-			sceneEditor->Exec(command);
-
-			if(innerLandscape->GetTiledShaderMode() == Landscape::TILED_MODE_TILE_DETAIL_MASK)
-			{
-				TileModeChanged(Landscape::TILED_MODE_TILE_DETAIL_MASK);
-			}
 		}
 	}
 }

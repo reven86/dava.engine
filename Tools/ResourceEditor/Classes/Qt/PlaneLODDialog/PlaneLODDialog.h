@@ -43,7 +43,7 @@ class PlaneLODDialog: public QDialog
 	Q_OBJECT
 
 public:
-	PlaneLODDialog(DAVA::int32 layersCount, const DAVA::FilePath & defaultTexturePath, QWidget *parent = 0);
+	PlaneLODDialog(DAVA::uint32 layersCount, const DAVA::FilePath & defaultTexturePath, QWidget *parent = 0);
 	~PlaneLODDialog();
 
     DAVA::int32 GetSelectedLayer();

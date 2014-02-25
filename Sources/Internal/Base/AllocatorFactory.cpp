@@ -67,4 +67,16 @@ void AllocatorFactory::Dump()
 #endif //__DAVAENGINE_DEBUG__
 }
 
+FixedSizePoolAllocator * AllocatorFactory::GetAllocator(const DAVA::String& className, DAVA::uint32 classSize, int32 poolLength)
+{
+    FixedSizePoolAllocator * alloc = allocators[className];
+    if(0 == alloc)
+    {
+        alloc = new FixedSizePoolAllocator(classSize, poolLength);
+        allocators[className] = alloc;
+    }
+
+    return alloc;
+}
+
 }

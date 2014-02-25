@@ -57,6 +57,7 @@ const char* PropertyNames::TEXT_PROPERTY_MULTILINE = "Multiline";
 const char* PropertyNames::TEXT_PROPERTY_MULTILINE_BY_SYMBOL = "MultilineBySymbol";
 const char* PropertyNames::TEXT_COLOR_PROPERTY_NAME = "TextColor";
 const char* PropertyNames::TEXT_ALIGN_PROPERTY_NAME = "TextAlign";
+const char* PropertyNames::TEXT_FITTING_TYPE_PROPERTY_NAME = "FittingType";
 
 const char* PropertyNames::IS_PASSWORD_PROPERTY_NAME = "IsPassword";
 	
@@ -108,6 +109,14 @@ const char* PropertyNames::SCROLL_CONTENT_SIZE_Y = "ContentSizeY";
 // UI Spinner properties.
 const char* PropertyNames::UISPINNER_PREV_BUTTON_TEXT = "PrevButtonText";
 const char* PropertyNames::UISPINNER_NEXT_BUTTON_TEXT = "NextButtonText";
+
+// UI Partice effect properties and invokable methods.
+const char* PropertyNames::UIPARTICLES_AUTOSTART_PROPERTY = "Autostart";
+const char* PropertyNames::UIPARTICLES_EFFECT_PATH_PROPERTY = "EffectPath";
+
+const char* PropertyNames::UIPARTICLES_START_METHOD_NAME = "Start";
+const char* PropertyNames::UIPARTICLES_STOP_METHOD_NAME = "Stop";
+const char* PropertyNames::UIPARTICLES_RELOAD_METHOD_NAME = "Reload";
 
 // Custom Control properties.
 const char* PropertyNames::CUSTOM_CONTROL_NAME = "CustomControlName";

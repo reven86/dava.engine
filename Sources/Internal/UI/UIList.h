@@ -88,7 +88,7 @@ class UIListDelegate
         \param[in] index index of the list item
         \returns width in pixels of the cell with given index. Default value is 20px.
      */
-	virtual int32 CellWidth(UIList * list, int32 index);   //! control calls this method only when it's in horizontal orientation
+	virtual float32 CellWidth(UIList * list, int32 index);   //! control calls this method only when it's in horizontal orientation
 
     /**
         \brief This method is called by UIList when it need to know what is the height of the cell. It called only for vertical lists. 
@@ -96,7 +96,7 @@ class UIListDelegate
         \param[in] index index of the list item
         \returns height in pixels of the cell with given index. Default value is 20px.
      */
-	virtual int32 CellHeight(UIList * list, int32 index);  //control calls this method only when it's in vertical orientation
+	virtual float32 CellHeight(UIList * list, int32 index);  //control calls this method only when it's in vertical orientation
     
     /**
         \brief This method is called by UIList when cell was selected by user.  
@@ -243,13 +243,8 @@ protected:
 
 	virtual void Draw(const UIGeometricData &geometricData);
 
-	
-    
-
-	int32 addPos;
-	
 	Vector<UIListCell*> *GetStoreVector(const String &cellIdentifier);
-	void AddCellAtPos(UIListCell *cell, int32 pos, int32 size, int32 index);
+	void AddCellAtPos(UIListCell *cell, float32 pos, float32 size, int32 index);
 	
 	void OnSelectEvent(BaseObject *pCaller, void *pUserData, void *callerData);
 
@@ -259,12 +254,12 @@ protected:
 	
 	UIControl *scrollContainer;
 	
-	int mainTouch;
+	int32 mainTouch;
 	
 	ScrollHelper *scroll;
-	
-	float oldPos;
-	float newPos;
+	float32 addPos;
+	float32 oldPos;
+	float32 newPos;
 	
 	int32 touchHoldSize;
 	

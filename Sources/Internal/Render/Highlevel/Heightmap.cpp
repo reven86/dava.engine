@@ -154,7 +154,7 @@ void Heightmap::Save(const FilePath &filePathname)
     }
 
     
-    File * file = File::Create(filePathname.GetAbsolutePathname(), File::CREATE | File::WRITE);
+    File * file = File::Create(filePathname, File::CREATE | File::WRITE);
     if (!file)
     {
         Logger::Error("Heightmap::Save failed to create file: %s", filePathname.GetAbsolutePathname().c_str());

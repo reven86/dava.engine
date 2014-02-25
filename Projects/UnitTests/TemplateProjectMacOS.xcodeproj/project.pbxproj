@@ -10,13 +10,14 @@
 		020AB209174639C60082F336 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; };
 		020AB20A174639C60082F336 /* libfmodex.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; };
 		029E4D8A15D403BA004A4167 /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029E4D8915D403BA004A4167 /* SplitTest.cpp */; };
-		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; };
-		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; };
+		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
+		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01217CF994300D5A334 /* ThreadSyncTest.cpp */; };
 		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
 		1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A19A183D227A000DE581 /* CoreMedia.framework */; };
 		1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF5717DF6CC200000391 /* UIMovieTest.cpp */; };
 		495B67091797DCA30017D8DD /* TransparentWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 495B67071797DCA30017D8DD /* TransparentWebViewTest.cpp */; };
+		49637DFA18B20D79008A3398 /* RectSpriteTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49637DF818B20D79008A3398 /* RectSpriteTest.cpp */; };
 		49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */; };
 		49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */; };
 		49C432081675E370000EA877 /* DXTTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C432061675E370000EA877 /* DXTTest.cpp */; };
@@ -29,7 +30,7 @@
 		7410E83117146D5B0028AAAA /* UIListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7410E82F17146D5B0028AAAA /* UIListTest.cpp */; };
 		7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497446617B3C38D00282DAA /* AlignTest.cpp */; };
 		749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */; };
-		74ABFA4F185086250017683C /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74ABFA4E185086250017683C /* Security.framework */; };
+		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
 		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
@@ -38,6 +39,7 @@
 		E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */; };
 		E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */; };
 		E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */; };
+		E8583EE0183E41B9009DEEB6 /* ComponentsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */; };
 		E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679172175F407200C5A6A2 /* FormatsTest.cpp */; };
 		E87402D7172582DB00A4A75A /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87402D1172582DB00A4A75A /* FileListTest.cpp */; };
 		E87402D8172582DB00A4A75A /* FilePathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87402D3172582DB00A4A75A /* FilePathTest.cpp */; };
@@ -124,6 +126,8 @@
 		32CA4F630368D1EE00C91783 /* TemplateProjectMacOS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TemplateProjectMacOS_Prefix.pch; sourceTree = "<group>"; };
 		495B67071797DCA30017D8DD /* TransparentWebViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TransparentWebViewTest.cpp; path = Classes/TransparentWebViewTest.cpp; sourceTree = "<group>"; };
 		495B67081797DCA30017D8DD /* TransparentWebViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TransparentWebViewTest.h; path = Classes/TransparentWebViewTest.h; sourceTree = "<group>"; };
+		49637DF818B20D79008A3398 /* RectSpriteTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RectSpriteTest.cpp; path = Classes/RectSpriteTest.cpp; sourceTree = "<group>"; };
+		49637DF918B20D79008A3398 /* RectSpriteTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RectSpriteTest.h; path = Classes/RectSpriteTest.h; sourceTree = "<group>"; };
 		49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DLCSystemTests.cpp; path = Classes/DLCSystemTests.cpp; sourceTree = "<group>"; };
 		49B774CC16B188A900A80FA3 /* DLCSystemTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DLCSystemTests.h; path = Classes/DLCSystemTests.h; sourceTree = "<group>"; };
 		49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DeviceInfoTest.cpp; path = Classes/DeviceInfoTest.cpp; sourceTree = "<group>"; };
@@ -153,7 +157,7 @@
 		749A1B4E174A73130082B080 /* UIScrollViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIScrollViewTest.h; path = Classes/UIScrollViewTest.h; sourceTree = "<group>"; };
 		749A3DCC17B8CF400008EC12 /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
 		749A3DCD17B8CF400008EC12 /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignTest.h; path = Classes/AlignTest.h; sourceTree = "<group>"; };
-		74ABFA4E185086250017683C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		74AF6340188530CD00070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		8D1107320486CEB800E47090 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eMailTest.cpp; path = Classes/eMailTest.cpp; sourceTree = "<group>"; };
@@ -168,6 +172,8 @@
 		E83604EE163FEB4C0061A636 /* KeyedArchiveTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveTest.h; path = Classes/KeyedArchiveTest.h; sourceTree = "<group>"; };
 		E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyedArchiveYamlTest.cpp; path = Classes/KeyedArchiveYamlTest.cpp; sourceTree = "<group>"; };
 		E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveYamlTest.h; path = Classes/KeyedArchiveYamlTest.h; sourceTree = "<group>"; };
+		E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComponentsTest.cpp; path = Classes/ComponentsTest.cpp; sourceTree = "<group>"; };
+		E8583EDF183E41B9009DEEB6 /* ComponentsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ComponentsTest.h; path = Classes/ComponentsTest.h; sourceTree = "<group>"; };
 		E8679172175F407200C5A6A2 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Classes/FormatsTest.cpp; sourceTree = "<group>"; };
 		E8679173175F407200C5A6A2 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FormatsTest.h; path = Classes/FormatsTest.h; sourceTree = "<group>"; };
 		E87402D1172582DB00A4A75A /* FileListTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FileListTest.cpp; path = Classes/FileListTest.cpp; sourceTree = "<group>"; };
@@ -208,7 +214,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				74ABFA4F185086250017683C /* Security.framework in Frameworks */,
+				74AF6341188530CD00070C35 /* Security.framework in Frameworks */,
 				1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */,
 				1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */,
 				02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */,
@@ -319,7 +325,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				74ABFA4E185086250017683C /* Security.framework */,
+				74AF6340188530CD00070C35 /* Security.framework */,
 				1767A19A183D227A000DE581 /* CoreMedia.framework */,
 				1767A198183D1E7F000DE581 /* AVKit.framework */,
 				1767A194183D1B4A000DE581 /* AVFoundation.framework */,
@@ -339,6 +345,15 @@
 				495B67081797DCA30017D8DD /* TransparentWebViewTest.h */,
 			);
 			name = TransparentWebViewTest;
+			sourceTree = "<group>";
+		};
+		49637DF518B20D4A008A3398 /* RectSpriteTest */ = {
+			isa = PBXGroup;
+			children = (
+				49637DF818B20D79008A3398 /* RectSpriteTest.cpp */,
+				49637DF918B20D79008A3398 /* RectSpriteTest.h */,
+			);
+			name = RectSpriteTest;
 			sourceTree = "<group>";
 		};
 		49B774CA16B1889A00A80FA3 /* DLCTest */ = {
@@ -371,6 +386,8 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				49637DF518B20D4A008A3398 /* RectSpriteTest */,
+				E8583EDB183E41B2009DEEB6 /* ComponentsTest */,
 				1770DF5217DF6CAD00000391 /* UIMovieTest */,
 				02F8B01717CF994900D5A334 /* ThreadSyncTest */,
 				749A3DC917B8CF330008EC12 /* AlignTest */,
@@ -512,6 +529,15 @@
 				E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */,
 			);
 			name = KeyedArchiveTest;
+			sourceTree = "<group>";
+		};
+		E8583EDB183E41B2009DEEB6 /* ComponentsTest */ = {
+			isa = PBXGroup;
+			children = (
+				E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */,
+				E8583EDF183E41B9009DEEB6 /* ComponentsTest.h */,
+			);
+			name = ComponentsTest;
 			sourceTree = "<group>";
 		};
 		E8679170175F405F00C5A6A2 /* FormatsTest */ = {
@@ -742,12 +768,14 @@
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,
+				49637DFA18B20D79008A3398 /* RectSpriteTest.cpp in Sources */,
 				FEA8F70915A0A55600EED3DC /* HashMapTest.cpp in Sources */,
 				5C44737715B5A0FD00028948 /* SoundTest.cpp in Sources */,
 				029E4D8A15D403BA004A4167 /* SplitTest.cpp in Sources */,
 				E87E23B7161334E5005DB5A8 /* PVRTest.cpp in Sources */,
 				E87BB1E4162D5CCB001A5448 /* TextureUtils.cpp in Sources */,
 				E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */,
+				E8583EE0183E41B9009DEEB6 /* ComponentsTest.cpp in Sources */,
 				E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */,
 				E8EF78011669249000DA7BD2 /* CloneTest.cpp in Sources */,
 				49C432081675E370000EA877 /* DXTTest.cpp in Sources */,
@@ -823,6 +851,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = UnitTests;
 			};
 			name = Debug;
@@ -847,6 +876,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = UnitTests;
 			};
 			name = Release;

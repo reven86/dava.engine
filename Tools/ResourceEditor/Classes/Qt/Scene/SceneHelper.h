@@ -31,21 +31,23 @@
 #ifndef __SCENE_HELPER_H__
 #define __SCENE_HELPER_H__
 
-#include "DAVAEngine.h"
+#include "Scene3D/Entity.h"
+#include "Scene3D/Scene.h"
+#include "Render/Texture.h"
+#include "FileSystem/FilePath.h"
 
 class SceneHelper
 {
 public:
-	static void EnumerateTextures(DAVA::Entity *forNode, DAVA::Map<DAVA::String, DAVA::Texture *> &textures);
+    static void EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection);
+	static void EnumerateSceneTextures(DAVA::Scene *forScene, DAVA::TexturesMap &textures);
+
 	static void EnumerateDescriptors(DAVA::Entity *forNode, DAVA::Set<DAVA::FilePath> &descriptors);
 	static void EnumerateMaterials(DAVA::Entity *forNode, DAVA::Vector<DAVA::Material *> &materials);
-	static DAVA::int32 EnumerateModifiedTextures(DAVA::Entity *forNode, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures);
-	
+	static DAVA::int32 EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures);
+
 protected:
-	static void CollectLandscapeTextures(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, DAVA::Landscape *forNode);
-	static void CollectTexture(DAVA::Map<DAVA::String, DAVA::Texture *> &textures, const DAVA::String &name, DAVA::Texture *tex);
-	static void CollectLandscapeDescriptors(DAVA::Set<DAVA::FilePath> &descriptors, DAVA::Landscape *forNode);
-	static void CollectDescriptors(DAVA::Set<DAVA::FilePath> &descriptors, const DAVA::FilePath &pathname);
+	static void CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures);
 };
 
 #endif // __SCENE_HELPER_H__

@@ -34,6 +34,7 @@
 #include "Platform/Process.h"
 
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/LibPVRHelper.h"
 
 namespace DAVA
 {
@@ -111,56 +112,11 @@ FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPU
 		CleanupCubemapAfterConversion(descriptor);
 	}
 		
+	LibPVRHelper::AddCRCIntoMetaData(outputName);
 	return outputName;
 }
 
-String PVRConverter::GetCommandLinePVR(const TextureDescriptor &descriptor, FilePath fileToConvert, eGPUFamily gpuFamily)
-{
-	String command = "\"" + pvrTexToolPathname.GetAbsolutePathname() + "\"";
-	String format = pixelFormatToPVRFormat[(PixelFormat) descriptor.compression[gpuFamily].format];
 
-	if(command != "" && format != "")
-	{
-		FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
-
-		// assemble command
-		command += Format(" -i \"%s\"", fileToConvert.GetAbsolutePathname().c_str());
-
-		if(descriptor.IsCubeMap())
-		{
-			command += " -s";
-		}
-
-		// output format
-		command += Format(" -f%s", format.c_str());
-
-		// pvr should be always flipped-y
-		command += " -yflip0";
-
-		// mipmaps
-		if(descriptor.settings.generateMipMaps)
-		{
-			command += " -m";
-		}
-
-		// base mipmap level (base resize)
-		if(0 != descriptor.compression[gpuFamily].compressToWidth && descriptor.compression[gpuFamily].compressToHeight != 0)
-		{
-			command += Format(" -x %d -y %d", descriptor.compression[gpuFamily].compressToWidth, descriptor.compression[gpuFamily].compressToHeight);
-		}
-
-		// output file
-		command += Format(" -o \"%s\"", outputFile.GetAbsolutePathname().c_str());
-	}
-    else
-    {
-        Logger::Error("[PVRConverter::GetCommandLinePVR] Can't create command line for file with descriptor (%s)", descriptor.pathname.GetAbsolutePathname().c_str());
-        command = "";
-    }
-
-	return command;
-}
-	
 void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
 										FilePath fileToConvert,
 										eGPUFamily gpuFamily,
@@ -171,8 +127,15 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
 		
 	// assemble command
 	args.push_back("-i");
+    
+#if defined (__DAVAENGINE_MACOS__)
 	args.push_back(fileToConvert.GetAbsolutePathname());
-		
+#else //defined (__DAVAENGINE_WIN32__)
+	args.push_back(String("\"") + fileToConvert.GetAbsolutePathname() + String("\""));
+#endif //MAC-WIN
+
+	args.push_back("-pvrtcbest");
+
 	if(descriptor.IsCubeMap())
 	{
 		args.push_back("-s");
@@ -201,7 +164,11 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
 		
 	// output file
 	args.push_back("-o");
+#if defined (__DAVAENGINE_MACOS__)
 	args.push_back(outputFile.GetAbsolutePathname());
+#else //defined (__DAVAENGINE_WIN32__)
+	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
+#endif //MAC-WIN
 }
 
 FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
@@ -222,10 +189,10 @@ void PVRConverter::SetPVRTexTool(const FilePath &textToolPathname)
 
 FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& descriptor)
 {
-	DAVA::Vector<DAVA::String> pvrToolFaceNames;
-	DAVA::Vector<DAVA::String> cubemapFaceNames;
+	DAVA::Vector<DAVA::FilePath> pvrToolFaceNames;
+	DAVA::Vector<DAVA::FilePath> cubemapFaceNames;
 	DAVA::Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
-	DAVA::Texture::GenerateCubeFaceNames(descriptor.pathname.GetAbsolutePathname(), cubemapSuffixes, cubemapFaceNames);
+	DAVA::Texture::GenerateCubeFaceNames(descriptor.pathname, cubemapSuffixes, cubemapFaceNames);
 		
 	DVASSERT(pvrToolSuffixes.size() == cubemapSuffixes.size());
 		
@@ -260,7 +227,7 @@ FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& desc
 
 void PVRConverter::CleanupCubemapAfterConversion(const TextureDescriptor& descriptor)
 {
-	Vector<String> pvrToolFaceNames;
+	Vector<FilePath> pvrToolFaceNames;
 	Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
 		
 	for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)

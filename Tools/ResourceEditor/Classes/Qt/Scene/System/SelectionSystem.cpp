@@ -48,7 +48,22 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, selectionAllowed(true)
 	, selectionHasChanges(false)
 {
+	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
+	DAVA::RenderStateData selectionStateData;
+	memcpy(&selectionStateData, &default3dState, sizeof(selectionStateData));
+	
+	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
+								DAVA::RenderStateData::STATE_COLORMASK_ALL;
+	selectionStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
+	selectionStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
+	
+	selectionNormalDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
 
+	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
+								DAVA::RenderStateData::STATE_COLORMASK_ALL |
+								DAVA::RenderStateData::STATE_DEPTH_TEST;
+	
+	selectionDepthDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
@@ -90,7 +105,11 @@ void SceneSelectionSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	if(DAVA::UIEvent::PHASE_BEGAN == event->phase)
 	{
 		// we can select only if mouse isn't over hood axis
-		if(ST_AXIS_NONE == hoodSystem->GetPassingAxis())
+		// or if hood is invisible now
+		// or if current mode is NORMAL (no modification)
+		if(!hoodSystem->IsVisible() ||
+			ST_MODIF_OFF == hoodSystem->GetModifMode() ||
+			ST_AXIS_NONE == hoodSystem->GetPassingAxis())
 		{
 			if(event->tid == DAVA::UIEvent::BUTTON_1)
 			{
@@ -166,19 +185,8 @@ void SceneSelectionSystem::Draw()
 
 	if(curSelections.Size() > 0)
 	{
-		int oldState = DAVA::RenderManager::Instance()->GetState();
-		DAVA::eBlendMode oldBlendSrc = DAVA::RenderManager::Instance()->GetSrcBlend();
-		DAVA::eBlendMode oldBlendDst = DAVA::RenderManager::Instance()->GetDestBlend();
-
-		int newState = DAVA::RenderState::STATE_BLEND | DAVA::RenderState::STATE_COLORMASK_ALL;
-
-		if(!(drawMode & ST_SELDRAW_NO_DEEP_TEST))
-		{
-			newState |= DAVA::RenderState::STATE_DEPTH_TEST;
-		}
-
-		DAVA::RenderManager::Instance()->SetState(newState);
-		DAVA::RenderManager::Instance()->SetBlendMode(DAVA::BLEND_SRC_ALPHA, DAVA::BLEND_ONE_MINUS_SRC_ALPHA);
+        DAVA::RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+        UniqueHandle renderState = (!(drawMode & ST_SELDRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
 
 		for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
 		{
@@ -188,25 +196,22 @@ void SceneSelectionSystem::Draw()
 			if(drawMode & ST_SELDRAW_DRAW_SHAPE)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawBox(selectionBox);
+				DAVA::RenderHelper::Instance()->DrawBox(selectionBox, 1.0f, renderState);
 			}
 			// draw selection share
 			else if(drawMode & ST_SELDRAW_DRAW_CORNERS)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox);
+				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox, 1.0f, renderState);
 			}
 
 			// fill selection shape
 			if(drawMode & ST_SELDRAW_FILL_SHAPE)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f));
-				DAVA::RenderHelper::Instance()->FillBox(selectionBox);
+				DAVA::RenderHelper::Instance()->FillBox(selectionBox, renderState);
 			}
 		}
-
-		DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
-		DAVA::RenderManager::Instance()->SetState(oldState);
 	}
 }
 

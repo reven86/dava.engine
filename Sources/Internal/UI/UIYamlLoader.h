@@ -80,8 +80,8 @@ public:
 	 */
 	static bool Save(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode);
 	
-    YamlNode* SaveToNode(UIControl * parentControl, YamlNode * rootNode, int relativeDepth = 0);
-    void SaveChildren(UIControl* parentControl, YamlNode * parentNode, int relativeDepth = 0);
+    YamlNode* SaveToNode(UIControl * parentControl, YamlNode * rootNode, int saveIndex = 0);
+    void SaveChildren(UIControl* parentControl, YamlNode * parentNode, int saveIndex = 0);
 
 	bool ProcessSave(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode);
 
@@ -90,12 +90,14 @@ public:
     int32 GetDrawTypeFromNode(const YamlNode * drawTypeNode);
 	int32 GetColorInheritTypeFromNode(const YamlNode * colorInheritNode);
 	int32 GetAlignFromYamlNode(const YamlNode * align);
+    int32 GetFittingOptionFromYamlNode(const YamlNode * fittingNode) const;
 	bool GetBoolFromYamlNode(const YamlNode * node, bool defaultValue);
 	Color GetColorFromYamlNode(const YamlNode * node);
 	
     String GetColorInheritTypeNodeValue(int32 colorInheritType);
     String GetDrawTypeNodeValue(int32 drawType);
 	YamlNode * GetAlignNodeValue(int32 align);
+    YamlNode * GetFittingOptionNodeValue(int32 fitting) const;
 	
 	Map<String, Font*> fontMap;
 

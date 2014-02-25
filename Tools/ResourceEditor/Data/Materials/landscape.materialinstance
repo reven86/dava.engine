@@ -1,8 +1,0 @@
-textures:
-    tile1: "~res:/Texture/Scenes/level1/tr2_1.png"
-    tile2: "~res:/Texture/Scenes/level1/tr2_2.png"
-    tile3: "~res:/Texture/Scenes/level1/tr2_3.png"    
-    tile4: "~res:/Texture/Scenes/level1/WillowBark.png"
-    tilemask: "~res:/Texture/Scenes/level1/WillowBark.png"
-    colormap: "~res:/Texture/Scenes/level1/WillowBark.png"
-    

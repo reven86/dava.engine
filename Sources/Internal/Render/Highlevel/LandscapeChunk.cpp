@@ -38,7 +38,7 @@ namespace DAVA
 LandscapeChunk::LandscapeChunk(Landscape * _landscape)
     : landscape(_landscape)
 {
-    SetOwnerLayerName(LAYER_OPAQUE);
+    //SetOwnerLayerName(LAYER_OPAQUE);
 }
     
 LandscapeChunk::~LandscapeChunk()
@@ -46,7 +46,7 @@ LandscapeChunk::~LandscapeChunk()
     
 }
     
-void LandscapeChunk::Draw(Camera * camera)
+void LandscapeChunk::Draw(const FastName & ownerPassName, Camera * camera)
 {
 	if(NULL != landscape)
 	{
@@ -54,14 +54,20 @@ void LandscapeChunk::Draw(Camera * camera)
 	}
 }
 
-void LandscapeChunk::Save(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void LandscapeChunk::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	// Don't need to save this batch
 }
 
-void LandscapeChunk::Load(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void LandscapeChunk::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	// Don't need to load this batch
 }
-    
+
+ShadowVolume * LandscapeChunk::CreateShadow()
+{
+	return NULL;
+}
+
+
 };

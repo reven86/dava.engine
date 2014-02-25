@@ -40,11 +40,15 @@ void SpeedTreeObject::RecalcBoundingBox()
     uint32 size = (uint32)renderBatchArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        RenderBatch * rb = renderBatchArray[k];
-        if(rb->GetMaterial() && rb->GetMaterial()->type == Material::MATERIAL_SPEED_TREE_LEAF)
-            bbox.AddAABBox(CalcBBoxForSpeedTreeBatch(rb));
-        else
-            bbox.AddAABBox(rb->GetBoundingBox());
+        RenderBatch * rb = renderBatchArray[k].renderBatch;
+        PolygonGroup * pg = rb->GetPolygonGroup();
+        if(pg)
+        {
+            if((pg->GetFormat() & EVF_TANGENT) > 0) //speedtree leaf batch
+                bbox.AddAABBox(CalcBBoxForSpeedTreeLeafGeometry(pg));
+            else
+                bbox.AddAABBox(rb->GetBoundingBox());
+        }   
     }
 }
 
@@ -59,14 +63,13 @@ RenderObject * SpeedTreeObject::Clone(RenderObject *newObject)
     return Mesh::Clone(newObject);
 }
 
-AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeBatch(RenderBatch * rb)
+AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeLeafGeometry(PolygonGroup * pg)
 {
-    DVASSERT(rb->GetMaterial()->type == Material::MATERIAL_SPEED_TREE_LEAF);
-
     AABBox3 pgBbox;
-    PolygonGroup * pg = rb->GetPolygonGroup();
     if(pg)
     {
+        DVASSERT((pg->GetFormat() & EVF_TANGENT) > 0); //non speedtree leaf batch
+
         int32 vertexCount = pg->GetVertexCount();
         for(int32 vi = 0; vi < vertexCount; vi++)
         {

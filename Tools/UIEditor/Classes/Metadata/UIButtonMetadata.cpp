@@ -32,6 +32,7 @@
 #include "UIButtonMetadata.h"
 #include "EditorFontManager.h"
 #include "UIControlStateHelper.h"
+#include "ColorHelper.h"
 
 #include "PropertyNames.h"
 #include "StringUtils.h"
@@ -224,8 +225,9 @@ void UIButtonMetadata::SetFontColor(const QColor& value)
 
 	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
 	{
-		GetActiveUIButton()->SetStateFontColor(this->uiControlStates[i], QTColorToDAVAColor(value));
+		GetActiveUIButton()->SetStateFontColor(this->uiControlStates[i], ColorHelper::QTColorToDAVAColor(value));
 	}
+
     UpdatePropertyDirtyFlagForFontColor();
 }
 
@@ -300,7 +302,7 @@ QColor UIButtonMetadata::GetShadowColor() const
 		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[GetActiveStateIndex()]);
     	if (referenceButtonText)
     	{
-			return DAVAColorToQTColor(referenceButtonText->GetShadowColor());
+			return ColorHelper::DAVAColorToQTColor(referenceButtonText->GetShadowColor());
     	}
 	}
     
@@ -319,7 +321,7 @@ void UIButtonMetadata::SetShadowColor(const QColor& value)
 		UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[i]);
 		if (referenceButtonText)
 		{
-			referenceButtonText->SetShadowColor(QTColorToDAVAColor(value));
+			referenceButtonText->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 		}
 	}
 }
@@ -342,7 +344,7 @@ QColor UIButtonMetadata::GetFontColorForState(UIControl::eControlState state) co
     UIStaticText* referenceButtonText = GetActiveUIButton()->GetStateTextControl(state);
     if (referenceButtonText)
     {
-		return DAVAColorToQTColor(referenceButtonText->GetTextColor());
+		return ColorHelper::DAVAColorToQTColor(referenceButtonText->GetTextColor());
     }
     
     return QColor();
@@ -389,8 +391,6 @@ void UIButtonMetadata::SetSprite(const QString& value)
 		else
 		{
 			GetActiveUIButton()->SetStateSprite(this->uiControlStates[i], value.toStdString());
-            Sprite* newSprite = GetActiveUIButton()->GetStateSprite(this->uiControlStates[i]);
-            ApplyPixelization(newSprite);
 		}
 	}
 
@@ -512,8 +512,9 @@ void UIButtonMetadata::SetColor(const QColor& value)
 
 	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
 	{
-		GetActiveUIButton()->SetStateColor(this->uiControlStates[i],QTColorToDAVAColor(value));
+		GetActiveUIButton()->SetStateColor(this->uiControlStates[i], ColorHelper::QTColorToDAVAColor(value));
 	}
+    
     UpdatePropertyDirtyFlagForColor();
 }
 
@@ -535,7 +536,7 @@ QColor UIButtonMetadata::GetColorForState(UIControl::eControlState state) const
     UIControlBackground* background = GetActiveUIButton()->GetStateBackground(state);
     if (background)
     {
-        return DAVAColorToQTColor(background->color);
+        return ColorHelper::DAVAColorToQTColor(background->color);
     }
     
     return QColor();
@@ -647,6 +648,7 @@ void UIButtonMetadata::SetAlign(int value)
 	{
 		GetActiveUIButton()->SetStateAlign(this->uiControlStates[i], value);
 	}
+
     UpdatePropertyDirtyFlagForAlign();
 }
 
@@ -696,7 +698,11 @@ void UIButtonMetadata::SetTextAlign(int align)
         return;
     }
 	
-	GetActiveUIButton()->GetStateTextControl(GetActiveStateIndex())->SetTextAlign(align);
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+		GetActiveUIButton()->SetStateTextAlign(this->uiControlStates[i], align);
+	}
+
 	UpdatePropertyDirtyFlagForTextAlign();
 }
 
@@ -711,6 +717,7 @@ void UIButtonMetadata::SetSpriteModification(int value)
 	{
 		GetActiveUIButton()->SetStateModification(this->uiControlStates[i],(UIControlBackground::eColorInheritType)value);
 	}
+
 	UpdatePropertyDirtyFlagForSpriteModification();
 }
 
@@ -760,6 +767,7 @@ void UIButtonMetadata::InitializeControl(const String& controlName, const Vector
             UIControl::eControlState state = UIControlStateHelper::GetUIControlState(stateID);
             button->SetStateFont(state, EditorFontManager::Instance()->GetDefaultFont());
             button->SetStateText(state, controlText);
+            button->SetStateTextAlign(state, ALIGN_HCENTER | ALIGN_VCENTER);
 
             // Button is state-aware.
             activeNode->GetExtraData().SetLocalizationKey(controlText, state);
@@ -800,6 +808,161 @@ void UIButtonMetadata::UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eE
     }
 }
 
+int UIButtonMetadata::GetFittingType() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return TextBlock::FITTING_DISABLED;
+    }
+
+    return GetFittingTypeForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetFittingType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    UIStaticText* buttonText = GetActiveUIButton()->GetStateTextControl(uiControlStates[GetActiveStateIndex()]);
+    if (buttonText)
+    {
+        buttonText->SetFittingOption(value);
+    }
+    
+    UpdatePropertyDirtyFlagForFittingType();
+}
+
+int UIButtonMetadata::GetFittingTypeForState(UIControl::eControlState state) const
+{
+    UIStaticText* buttonText = GetActiveUIButton()->GetStateTextControl(state);
+    if (buttonText)
+    {
+        return buttonText->GetFittingOption();
+    }
+    
+    return TextBlock::FITTING_DISABLED;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForFittingType()
+{
+	int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+	for (int i = 0; i < statesCount; i ++)
+	{
+		UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+		bool curStateDirty = (GetFittingTypeForState(curState) !=
+							  GetFittingTypeForState(GetReferenceState()));
+		SetStateDirtyForProperty(curState, PropertyNames::TEXT_FITTING_TYPE_PROPERTY_NAME, curStateDirty);
+	}
+}
+
+float UIButtonMetadata::GetLeftRightStretchCap()
+{
+    if (!VerifyActiveParamID())
+    {
+        return 0.0f;
+    }
+
+    return GetLeftRightStretchCapForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetLeftRightStretchCap(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControlBackground* background = GetActiveUIButton()->GetStateBackground(uiControlStates[i]);
+        if (background)
+        {
+            background->SetLeftRightStretchCap(value);
+        }
+	}
+
+    UpdatePropertyDirtyFlagForLeftRightStretchCap();
+}
+
+float UIButtonMetadata::GetTopBottomStretchCap()
+{
+    if (!VerifyActiveParamID())
+    {
+        return 0.0f;
+    }
+    
+    return GetTopBottomStretchCapForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetTopBottomStretchCap(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControlBackground* background = GetActiveUIButton()->GetStateBackground(uiControlStates[i]);
+        if (background)
+        {
+            background->SetTopBottomStretchCap(value);
+        }
+	}
+    
+    UpdatePropertyDirtyFlagForTopBottomStretchCap();
+}
+
+float UIButtonMetadata::GetLeftRightStretchCapForState(UIControl::eControlState state) const
+{
+	UIControlBackground* background = GetActiveUIButton()->GetStateBackground(state);
+	if (!background)
+	{
+		return 0.0f;
+	}
+    
+	return background->GetLeftRightStretchCap();
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForLeftRightStretchCap()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetLeftRightStretchCapForState(curState) !=
+                              GetLeftRightStretchCapForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::STRETCH_HORIZONTAL_PROPERTY_NAME, curStateDirty);
+    }
+}
+
+float UIButtonMetadata::GetTopBottomStretchCapForState(UIControl::eControlState state) const
+{
+	UIControlBackground* background = GetActiveUIButton()->GetStateBackground(state);
+	if (!background)
+	{
+		return 0.0f;
+	}
+    
+	return background->GetTopBottomStretchCap();
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForTopBottomStretchCap()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetTopBottomStretchCapForState(curState) !=
+                              GetTopBottomStretchCapForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::STRETCH_VERTICAL_PROPERTY_NAME, curStateDirty);
+    }
+}
+
 void UIButtonMetadata::RecoverPropertyDirtyFlags()
 {
     UpdatePropertyDirtyFlagForLocalizedText();
@@ -813,4 +976,9 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     UpdatePropertyDirtyFlagForDrawType();
     UpdatePropertyDirtyFlagForColorInheritType();
     UpdatePropertyDirtyFlagForAlign();
+    
+    UpdatePropertyDirtyFlagForFittingType();
+    
+    UpdatePropertyDirtyFlagForLeftRightStretchCap();
+    UpdatePropertyDirtyFlagForTopBottomStretchCap();
 }

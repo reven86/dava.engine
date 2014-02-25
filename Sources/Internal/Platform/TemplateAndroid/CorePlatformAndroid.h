@@ -89,7 +89,7 @@ public:
 	void KeyUp(int32 keyCode);
 	void KeyDown(int32 keyCode);
 
-	void OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source);
+	void OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount);
 
 	bool DownloadHttpFile(const String & url, const String & documentsPathname);
 
@@ -120,7 +120,7 @@ private:
 
 	bool foreground;
 
-	UIEvent CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source);
+	UIEvent CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount);
 
 	Vector<DAVA::UIEvent> totalTouches;
 

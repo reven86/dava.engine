@@ -43,7 +43,7 @@ FilePath DXTConverter::ConvertPngToDxt(const TextureDescriptor &descriptor, eGPU
 {
     FilePath fileToConvert = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
     
-    Vector<Image*> inputImages = ImageLoader::CreateFromFile(fileToConvert);
+    Vector<Image*> inputImages = ImageLoader::CreateFromFileByExtension(fileToConvert);
     if(inputImages.size() == 1)
     {
         Image* image = inputImages[0];
@@ -62,6 +62,7 @@ FilePath DXTConverter::ConvertPngToDxt(const TextureDescriptor &descriptor, eGPU
                                       (descriptor.settings.generateMipMaps == TextureDescriptor::OPTION_ENABLED)))
         {
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
+			LibDxtHelper::AddCRCIntoMetaData(outputName);
             return outputName;
         }
     }
@@ -77,11 +78,11 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
 	FilePath fileToConvert = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
 	
 	Vector<Image*> inputImages;
-	Vector<String> faceNames;
-	Texture::GenerateCubeFaceNames(descriptor.pathname.GetAbsolutePathname().c_str(), faceNames);
+	Vector<FilePath> faceNames;
+	Texture::GenerateCubeFaceNames(descriptor.pathname, faceNames);
 	for(size_t i = 0; i < faceNames.size(); ++i)
 	{
-		Vector<Image*> tempImages = ImageLoader::CreateFromFile(faceNames[i]);
+		Vector<Image*> tempImages = ImageLoader::CreateFromFileByExtension(faceNames[i]);
 		if(tempImages.size() == 1)
 		{
 			inputImages.push_back(tempImages[0]);
@@ -121,12 +122,13 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
 		}
         
         if(LibDxtHelper::WriteDdsFile(outputName,
-                                      inputImages[0]->width, inputImages[0]->height, faceData, inputImages.size(),
+                                      inputImages[0]->width, inputImages[0]->height, faceData, (uint32)inputImages.size(),
                                       (PixelFormat) descriptor.compression[gpuFamily].format,
                                       (descriptor.settings.generateMipMaps == TextureDescriptor::OPTION_ENABLED)))
         {
 			SafeDeleteArray(faceData);
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
+            LibDxtHelper::AddCRCIntoMetaData(outputName);
             return outputName;
         }
 		

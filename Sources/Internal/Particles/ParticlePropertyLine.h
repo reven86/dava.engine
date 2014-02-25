@@ -479,6 +479,15 @@ public:
 			return src;
 	}
 
+    template <class T> static PropertyLine<T>*  GetValueLine(PropertyLine<T>  *src)
+    {
+        ModifiablePropertyLine<T> *modifiable = dynamic_cast<ModifiablePropertyLine<T> *> (src);
+        if (modifiable) 
+            return modifiable->GetValueLine().Get();
+        else
+            return src;
+    }
+
 	template <class T> static void SetValueLine(RefPtr<PropertyLine<T> > &dst, RefPtr<PropertyLine<T> > &src)
 	{
 		ModifiablePropertyLine<T> *modifiable = dynamic_cast<ModifiablePropertyLine<T> *> (dst.Get());

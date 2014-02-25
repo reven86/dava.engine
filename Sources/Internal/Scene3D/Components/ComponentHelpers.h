@@ -41,31 +41,44 @@ class ParticleEffectComponent;
 class Entity;
 class RenderObject;
 class Light;
+class LightComponent;
 class Landscape;
 class Camera;
 class LodComponent;
 class SkyboxRenderObject;
 class SwitchComponent;
+class QualitySettingsComponent;
+class RenderComponent;
+class TransformComponent;
 
-ParticleEmitter * GetEmitter(Entity * fromEntity);
+
 ParticleEffectComponent * GetEffectComponent(Entity * fromEntity);
-
+TransformComponent * GetTransformComponent(Entity * fromEntity);
+RenderComponent * GetRenderComponent(const Entity *fromEntity);
 RenderObject * GetRenderObject(const Entity * fromEntity);
 SkyboxRenderObject * GetSkybox(const Entity * fromEntity);
 
 Light *GetLight(Entity * fromEntity);
+LightComponent *GetLightComponent(Entity * fromEntity);
 Landscape *GetLandscape(Entity * fromEntity);
 
 Camera * GetCamera(Entity * fromEntity);
 
 LodComponent * GetLodComponent(Entity *fromEntity);
 SwitchComponent* GetSwitchComponent(Entity *fromEntity);
+    
+uint32 GetLodLayersCount(Entity *fromEntity);
+uint32 GetLodLayersCount(LodComponent *fromComponent);
+    
+    
 void RecursiveProcessMeshNode(Entity * curr, void * userData, void(*process)(Entity*, void *));
 void RecursiveProcessLodNode(Entity * curr, int32 lod, void * userData, void(*process)(Entity*, void*));
 
 Entity * FindLandscapeEntity(Entity * rootEntity);
 Landscape * FindLandscape(Entity * rootEntity);
 
+QualitySettingsComponent * GetQualitySettingsComponent(const Entity *fromEntity);
+    
 }
 
 #endif //__DAVAENGINE_COMPONENT_HELPERS_H__

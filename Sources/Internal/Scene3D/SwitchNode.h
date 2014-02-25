@@ -32,6 +32,7 @@
 #define __DAVAENGINE_SWITCH_NODE_H__
 
 #include "Scene3D/Entity.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -46,8 +47,8 @@ public:
 	virtual Entity* Clone(Entity *dstNode = NULL);
 	virtual void Update(float32 timeElapsed);
 	virtual void AddNode(Entity * node);
-	virtual void Save(KeyedArchive * archive, SceneFileV2 * sceneFileV2);
-	virtual void Load(KeyedArchive * archive, SceneFileV2 * sceneFileV2);
+	virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
+	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
 
 	void SetSwitchIndex(int32 switchIndex);
 	int32 GetSwitchIndex();

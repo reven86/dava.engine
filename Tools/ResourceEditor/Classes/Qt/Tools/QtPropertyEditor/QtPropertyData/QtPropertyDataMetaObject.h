@@ -42,12 +42,13 @@ public:
 	QtPropertyDataMetaObject(void *_object, const DAVA::MetaInfo *_meta);
 	virtual ~QtPropertyDataMetaObject();
 
+	virtual const DAVA::MetaInfo* MetaInfo() const;
 	virtual void* CreateLastCommand() const;
 
-protected:
 	void *object;
 	const DAVA::MetaInfo *meta;
 
+protected:
 	MetaObjModifyCommand* lastCommand;
 
 	virtual void SetValueInternal(const QVariant &value);

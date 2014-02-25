@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "DAVAConfig.h"
+#include "Base/FastName.h"
 
 /**
 	\defgroup render Rendering abstraction
@@ -82,10 +83,16 @@
 #endif 
 #elif defined(__DAVAENGINE_ANDROID__)
 	#define __DAVAENGINE_OPENGL__
+    #include <android/api-level.h>
 	#include <GLES/gl.h>
 	#include <GLES/glext.h>
- 	#include <GLES2/gl2.h>
- 	#include <GLES2/gl2ext.h>
+#if (__ANDROID_API__ < 18)
+    #include <GLES2/gl2.h>
+    #include <GLES2/gl2ext.h>
+#else
+    #include <GLES3/gl3.h>
+    #include <GLES3/gl3ext.h>
+#endif
 
 #else //PLATFORMS
 	//other platforms
@@ -282,6 +289,43 @@ extern const GLint STENCIL_OP_MAP[STENCILOP_COUNT];
 extern const int32 STENCIL_OP_MAP[STENCILOP_COUNT];
 #endif
 
+    
+enum TextureWrap
+{
+    WRAP_CLAMP_TO_EDGE = 0,
+    WRAP_REPEAT,
+    
+    WRAP_COUNT
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+    extern const GLint TEXTURE_WRAP_MAP[WRAP_COUNT];
+#elif defined(__DAVAENGINE_DIRECTX9__)
+    extern const int32 TEXTURE_WRAP_MAP[WRAP_COUNT];
+#endif
+
+    
+enum TextureFilter
+{
+    FILTER_NEAREST  = 0,
+    FILTER_LINEAR,
+    
+    FILTER_NEAREST_MIPMAP_NEAREST,
+    FILTER_LINEAR_MIPMAP_NEAREST,
+    FILTER_NEAREST_MIPMAP_LINEAR,
+    FILTER_LINEAR_MIPMAP_LINEAR,
+    
+    FILTER_COUNT
+};
+
+#if defined(__DAVAENGINE_OPENGL__)
+    extern const GLint TEXTURE_FILTER_MAP[FILTER_COUNT];
+#elif defined(__DAVAENGINE_DIRECTX9__)
+    extern const int32 TEXTURE_FILTER_MAP[FILTER_COUNT];
+#endif
+    
+    
+    
 enum eFillMode
 {
 	FILLMODE_POINT,
@@ -401,6 +445,77 @@ eCmpFunc GetCmpFuncByName(const String & cmpFuncStr);
 eFace GetFaceByName(const String & faceStr);
 eStencilOp GetStencilOpByName(const String & stencilOpStr);
 eFillMode GetFillModeByName(const String & fillModeStr);
+    
+enum eShaderSemantic
+{
+    UNKNOWN_SEMANTIC = 0,
+    
+    AUTOBIND_UNIFORMS_START = 0,
+    
+    PARAM_WORLD,
+    PARAM_INV_WORLD,
+    PARAM_WORLD_INV_TRANSPOSE,
+    PARAM_VIEW,
+    PARAM_INV_VIEW,
+    PARAM_PROJ,
+    PARAM_INV_PROJ,
+    
+    PARAM_WORLD_VIEW,
+    PARAM_INV_WORLD_VIEW,
+    PARAM_WORLD_VIEW_INV_TRANSPOSE, //NORMAL, // NORMAL MATRIX
+    
+    PARAM_VIEW_PROJ,
+    PARAM_INV_VIEW_PROJ,
+    
+    PARAM_WORLD_VIEW_PROJ,
+    PARAM_INV_WORLD_VIEW_PROJ,
+    
+    PARAM_COLOR,
+    PARAM_GLOBAL_TIME,
+    PARAM_WORLD_VIEW_TRANSLATE, // NEED TO RENAME TO objectPositionInCameraSpace
+    PARAM_WORLD_SCALE,          
+    
+    PARAM_CAMERA_POS,
+    PARAM_CAMERA_DIR,
+    PARAM_CAMERA_UP,
+    
+    PARAM_RT_SIZE,
+    PARAM_RT_PIXEL_SIZE,
+    PARAM_RT_HALF_PIXEL_SIZE,
+    PARAM_RT_ASPECT_RATIO,
+
+    AUTOBIND_UNIFORMS_END,
+    
+    PARAM_OBJECT_POS,
+    PARAM_OBJECT_SCALE,
+    
+    PARAM_LIGHT0_POSITION,
+    
+    
+    DYNAMIC_PARAMETERS_COUNT,
+};
+    
+extern const FastName DYNAMIC_PARAM_NAMES[DYNAMIC_PARAMETERS_COUNT];
+
+enum
+{
+    UPDATE_SEMANTIC_ALWAYS = 0,
+};
+    
+    
+enum eCullOrder
+{
+#if defined(__DAVAENGINE_OPENGL__)
+    ORDER_CCW = GL_CCW,
+    ORDER_CW = GL_CW,
+#elif defined(__DAVAENGINE_DIRECTX__)
+    ORDER_CCW = 0,
+    ORDER_CW = 0,
+#error "Need to define this"
+#endif
+};
+    
+    
 
 class RenderGuard
 {

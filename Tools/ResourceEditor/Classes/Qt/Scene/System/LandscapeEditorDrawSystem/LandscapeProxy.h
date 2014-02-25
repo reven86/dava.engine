@@ -32,7 +32,9 @@
 #define __RESOURCEEDITORQT__LANDSCAPEPROXY__
 
 #include "DAVAEngine.h"
-#include "LandscapeEditor/EditorLandscape.h"
+#include "Deprecated/LandscapeRenderer.h"
+
+#include "Render/UniqueStateSet.h"
 
 using namespace DAVA;
 
@@ -59,7 +61,7 @@ public:
 protected:
 	virtual ~LandscapeProxy();
 public:
-	LandscapeProxy(Landscape* landscape);
+	LandscapeProxy(Landscape* landscape, Entity* node);
 
 	void SetMode(LandscapeProxy::eLandscapeMode mode);
 	void SetDisplayingTexture(Texture* texture);
@@ -135,14 +137,20 @@ protected:
 	Sprite* tilemaskSprites[TILEMASK_SPRITES_COUNT];
 
 	int32 tilemaskWasChanged;
-	
+
+	Texture* fullTiledTexture;
 	Texture* displayingTexture;
 	Landscape* baseLandscape;
 	CustomLandscape* customLandscape;
+	Entity* landscapeNode;
 
 	eLandscapeMode mode;
 	
 	void UpdateDisplayedTexture();
+	
+	UniqueHandle noBlendDrawState;
+	UniqueHandle fullTiledTextureState;
+	Texture* cursorTexture;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEPROXY__) */

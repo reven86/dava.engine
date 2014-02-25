@@ -198,15 +198,16 @@ void SceneNodeAnimationList::Update(float32 timeElapsed)
 // stop animation at the current moment
 void SceneNodeAnimationList::StopAnimation()
 {
-	if (!active)return;
-	int32 size = (int32)animations.size();
-	for (int32 k = 0; k < size; ++k)
-	{
-		SceneNodeAnimation * anim = animations[k];
-		anim->bindNode->DetachAnimation(anim);
-	}
-	active = false;
-	Logger::FrameworkDebug("[SceneNodeAnimationList] Finished: %s\n", name.c_str());
+    DVASSERT(0);
+// 	if (!active)return;
+// 	int32 size = (int32)animations.size();
+// 	for (int32 k = 0; k < size; ++k)
+// 	{
+// 		SceneNodeAnimation * anim = animations[k];
+// 		anim->bindNode->DetachAnimation(anim);
+// 	}
+// 	active = false;
+// 	Logger::FrameworkDebug("[SceneNodeAnimationList] Finished: %s\n", name.c_str());
 }
 
 void SceneNodeAnimationList::SetWeight(float32 weight)
@@ -219,7 +220,7 @@ void SceneNodeAnimationList::SetWeight(float32 weight)
 	}
 }
 
-SceneNodeAnimation * SceneNodeAnimationList::GetNode(const String & name)
+SceneNodeAnimation * SceneNodeAnimationList::GetNode(const FastName & name)
 {
 	int32 size = (int32)animations.size();
 	for (int32 k = 0; k < size; ++k)

@@ -246,9 +246,6 @@
     <ClCompile Include="Classes\UI\mainwindow.cpp">
       <Filter>Sources\UI</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\UI\QColorButton.cpp">
-      <Filter>Sources\UI</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\UI\StateComboBoxItemDelegate.cpp">
       <Filter>Sources\UI</Filter>
     </ClCompile>
@@ -486,9 +483,6 @@
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\uitextfieldpropertygridwidget_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\UI\QColorButton_moc.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\UI\StateComboBoxItemDelegate_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -684,6 +678,54 @@
     <ClCompile Include="GeneratedFiles\Grid\GridVisualizer_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\UI\QColorWidget.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\QtColorLineEdit.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\QColorWidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\QtColorLineEdit_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Helpers\ColorHelper.cpp">
+      <Filter>Sources\Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\Dialogs\editpreviewsettingsdialog_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\Dialogs\previewsettingsdialog_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\editpreviewsettingsdialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\previewsettingsdialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Controllers\PreviewController.cpp">
+      <Filter>Sources\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Metadata\UIParticlesMetadata.cpp">
+      <Filter>Sources\Metadata</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands\InvokeMethodCommand.cpp">
+      <Filter>Sources\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\particleeffectpropertygridwidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Commands\InvokeMethodCommand_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\UIParticlesMetadata_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\particleeffectpropertygridwidget.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\DefaultScreen.h">
@@ -790,9 +832,6 @@
     </ClInclude>
     <ClInclude Include="Classes\EditorFontManager.h">
       <Filter>Sources</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\UI\QColorButton.h">
-      <Filter>Sources\UI</Filter>
     </ClInclude>
     <ClInclude Include="Classes\UI\StateComboBoxItemDelegate.h">
       <Filter>Sources\UI</Filter>
@@ -1094,6 +1133,33 @@
     <ClInclude Include="Classes\Grid\GridVisualizer.h">
       <Filter>Sources\Grid</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\UI\QColorWidget.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\QtColorLineEdit.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Helpers\ColorHelper.h">
+      <Filter>Sources\Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\editpreviewsettingsdialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\previewsettingsdialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Controllers\PreviewController.h">
+      <Filter>Sources\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Metadata\UIParticlesMetadata.h">
+      <Filter>Sources\Metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands\InvokeMethodCommand.h">
+      <Filter>Sources\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\particleeffectpropertygridwidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="UI\createplatformdlg.ui">
@@ -1172,6 +1238,15 @@
       <Filter>Form Files\Dialogs</Filter>
     </None>
     <None Include="UI\scrollcontrolpropertygridwidget.ui">
+      <Filter>Form Files\PropertyGridWidgets</Filter>
+    </None>
+    <None Include="UI\editpreviewsettingsdialog.ui">
+      <Filter>Form Files\Dialogs</Filter>
+    </None>
+    <None Include="UI\previewsettingsdialog.ui">
+      <Filter>Form Files\Dialogs</Filter>
+    </None>
+    <None Include="UI\particleeffectpropertygridwidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
   </ItemGroup>

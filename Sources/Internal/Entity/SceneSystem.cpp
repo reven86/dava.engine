@@ -64,19 +64,19 @@ void SceneSystem::RemoveEntity(Entity * entity)
     
 }
     
-void SceneSystem::ImmediateEvent(Entity * entity, uint32 event)
+void SceneSystem::SetParent(Entity *entity, Entity *parent)
 {
     
+}
+
+void SceneSystem::ImmediateEvent(Entity * entity, uint32 event)
+{
+
 }
 
 void SceneSystem::Process(float32 timeElapsed)
 {
     
-}
-
-Scene * SceneSystem::GetScene() const
-{
-	return scene;
 }
 
 void SceneSystem::SetLocked(bool locked)
@@ -87,6 +87,16 @@ void SceneSystem::SetLocked(bool locked)
 bool SceneSystem::IsLocked()
 {
 	return locked;
+}
+
+void SceneSystem::AddComponent( Entity * entity, Component * component )
+{
+
+}
+
+void SceneSystem::RemoveComponent( Entity * entity, Component * component )
+{
+
 }
 
 };

@@ -68,10 +68,6 @@ uint32 MaterialOptimizer::GetOptimizedVertexFormat(Material::eType type)
 		{
 			optimazedFormat = EVF_VERTEX | EVF_TEXCOORD0 | EVF_COLOR;
 		}break;
-		case Material::MATERIAL_VERTEX_COLOR_ALPHABLENDED_FRAME_BLEND:
-		{
-			optimazedFormat = EVF_VERTEX | EVF_TEXCOORD0 | EVF_TEXCOORD1 | EVF_COLOR | EVF_TIME;
-		}break;
 		case Material::MATERIAL_FLAT_COLOR:
 		{
 			optimazedFormat = EVF_VERTEX | EVF_TEXCOORD0;

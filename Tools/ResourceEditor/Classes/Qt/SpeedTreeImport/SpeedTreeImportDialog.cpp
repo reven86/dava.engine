@@ -50,7 +50,6 @@ SpeedTreeImportDialog::SpeedTreeImportDialog(QWidget *parent /*= 0*/)
 
     connect(ui->xmlButton, SIGNAL(clicked()), this, SLOT(OnXMLSelect()));
     connect(ui->sc2Button, SIGNAL(clicked()), this, SLOT(OnSc2Select()));
-    connect(ui->imagesButton, SIGNAL(clicked()), this, SLOT(OnImagesSelect()));
 
 	setWindowModality(Qt::WindowModal);
 }
@@ -62,7 +61,7 @@ SpeedTreeImportDialog::~SpeedTreeImportDialog()
 int SpeedTreeImportDialog::exec()
 {
     OnXMLSelect();
-    if(xmlFilePath.IsEmpty())
+    if(!xmlFiles.size())
         return 0;
 
     return QDialog::exec();
@@ -74,76 +73,81 @@ void SpeedTreeImportDialog::OnCancel()
 
 void SpeedTreeImportDialog::OnOk()
 {
-    QtMainWindow::Instance()->WaitStart("Importing tree", "Please wait..."); 
-    SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFilePath, sc2FilePath, texturesDirPath);
+    FilePath texturesDirPath = sc2FolderPath + "images/";
+
+    //make out files
+    Vector<FilePath> outFiles = xmlFiles;
+    for(size_t i = 0; i < outFiles.size(); ++i)
+    {
+        outFiles[i].ReplaceDirectory(sc2FolderPath);
+        outFiles[i].ReplaceExtension(".sc2");
+    }
+
+    //import all trees
+	QtMainWindow::Instance()->WaitStart("Importing tree", "Please wait...");
+
+    for(size_t i = 0; i < xmlFiles.size(); ++i)
+    {
+        SpeedTreeImporter::ImportSpeedTreeFromXML(xmlFiles[i], outFiles[i], texturesDirPath);
+    }
+    
     QtMainWindow::Instance()->WaitStop();
 
-    QMessageBox::information(this, "SpeedTree Import", QString(("SpeedTree model was imported to " + sc2FilePath.GetAbsolutePathname()).c_str()), QMessageBox::Ok);
+    //make info message
+    QString message("SpeedTree models: \n");
+    for(size_t i = 0; i < outFiles.size(); ++i)
+        message += (outFiles[i].GetFilename() + "\n").c_str();
+    message += "\nwas imported to:\n" + QString(sc2FolderPath.GetAbsolutePathname().c_str());
 
+    QMessageBox::information(this, "SpeedTree Import", message, QMessageBox::Ok);
+
+    //open importet trees
     if(ui->checkBox->isChecked())
-        QtMainWindow::Instance()->OpenScene(sc2FilePath.GetAbsolutePathname().c_str());
+    {
+        for(size_t i = 0; i < outFiles.size(); ++i)
+        {
+            QtMainWindow::Instance()->OpenScene(outFiles[i].GetAbsolutePathname().c_str());
+        }
+    }
 }
 
 void SpeedTreeImportDialog::OnXMLSelect()
 {
-    QString selectedPath = QtFileDialog::getOpenFileName(QtMainWindow::Instance(), "Import SpeedTree", GetDefaultDialogPath(xmlFilePath), "SpeedTree RAW File (*.xml)");
-    if(selectedPath.isEmpty())
+    QString dialogPath;
+    if(xmlFiles.size())
+        dialogPath = QString(xmlFiles[0].GetDirectory().GetAbsolutePathname().c_str());
+
+    QStringList selectedFiles = QtFileDialog::getOpenFileNames(QtMainWindow::Instance(), "Import SpeedTree", dialogPath, "SpeedTree RAW File (*.xml)");
+    if(!selectedFiles.size())
         return;
 
-    xmlFilePath = selectedPath.toStdString();
+    xmlFiles.clear();
+    for(int32 i = 0; i < selectedFiles.size(); ++i)
+        xmlFiles.push_back(FilePath(selectedFiles.at(i).toStdString()));
 
-    UpdateEditLines();
+    if(sc2FolderPath.IsEmpty())
+        SetSC2FolderValue(ProjectManager::Instance()->CurProjectDataSourcePath());
+
+    ui->xmlListWidget->clear();
+    ui->xmlListWidget->addItems(selectedFiles);
 }
 
 void SpeedTreeImportDialog::OnSc2Select()
 {
-    QString selectedPath = QtFileDialog::getSaveFileName(QtMainWindow::Instance(), "Select .sc2 file", GetDefaultDialogPath(sc2FilePath), "SC2 File (*.sc2)");
+    QString dialogPath = ProjectManager::Instance()->CurProjectPath();
+    if(!sc2FolderPath.IsEmpty())
+        dialogPath = QString(sc2FolderPath.GetAbsolutePathname().c_str());
+
+    QString selectedPath = QtFileDialog::getExistingDirectory(QtMainWindow::Instance(), "Select .sc2 file", dialogPath);
     if(selectedPath.isEmpty())
         return;
 
-    sc2FilePath = selectedPath.toStdString();
-
-    UpdateEditLines(false);
+    SetSC2FolderValue(selectedPath);
 }
 
-void SpeedTreeImportDialog::OnImagesSelect()
+void SpeedTreeImportDialog::SetSC2FolderValue(const QString & path)
 {
-    QString selectedPath = QtFileDialog::getExistingDirectory(QtMainWindow::Instance(), "Select textures directory", GetDefaultDialogPath(texturesDirPath));
-    if(selectedPath.isEmpty())
-        return;
-
-    texturesDirPath = selectedPath.toStdString();
-
-    UpdateEditLines(false, false);
-}
-
-void SpeedTreeImportDialog::UpdateEditLines(bool makeSc2PathDefault /* = true */, bool makeTexturesDirDefault /* = true */)
-{
-    if(makeSc2PathDefault)
-    {
-        QString dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-        sc2FilePath = FilePath(dataSourcePath.toStdString() + FilePath::CreateWithNewExtension(xmlFilePath, ".sc2").GetFilename().c_str());
-    }
-
-    if(makeTexturesDirDefault)
-    {
-        texturesDirPath = sc2FilePath.GetDirectory() + "images/";
-    }
-
-    ui->xmlLineEdit->setText(QString(xmlFilePath.GetAbsolutePathname().c_str()));
-    ui->sc2EditLine->setText(QString(sc2FilePath.GetAbsolutePathname().c_str()));
-    ui->imagesLineEdit->setText(QString(texturesDirPath.GetAbsolutePathname().c_str()));
-
-    ui->okButton->setDisabled(false);
-    ui->sc2Button->setDisabled(false);
-    ui->imagesButton->setDisabled(false);
-}
-
-QString SpeedTreeImportDialog::GetDefaultDialogPath(const FilePath & forPath)
-{
-    QString curDir = ProjectManager::Instance()->CurProjectPath();
-    if(!forPath.IsEmpty())
-        curDir = QString(forPath.GetAbsolutePathname().c_str());
-
-    return curDir;
+    sc2FolderPath = path.toStdString();
+    sc2FolderPath.MakeDirectoryPathname();
+    ui->sc2EditLine->setText(QString(sc2FolderPath.GetAbsolutePathname().c_str()));
 }

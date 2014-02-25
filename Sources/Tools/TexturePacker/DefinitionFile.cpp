@@ -144,7 +144,13 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 		{
 			frameRects[k].dx+=4;
 			frameRects[k].dy+=4;
-		}else 
+		}
+		else if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+		{
+			frameRects[k].dx+=2;
+			frameRects[k].dy+=2;
+		}
+		else 
 		{
 			frameRects[k].dx++;
 			frameRects[k].dy++;	
@@ -192,7 +198,13 @@ bool DefinitionFile::Load(const FilePath & _filename)
 		{
 			frameRects[i].dx+=4;
 			frameRects[i].dy+=4;
-		}else 
+		}
+		else if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel"))
+		{
+			frameRects[i].dx+=2;
+			frameRects[i].dy+=2;
+		}
+		else 
 		{
 			frameRects[i].dx++;
 			frameRects[i].dy++;	

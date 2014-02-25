@@ -51,6 +51,7 @@ public:
 	virtual void LoadHtmlString(const WideString& htlmString);
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
+    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
 
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);

@@ -38,6 +38,7 @@
 class QLabel;
 class SceneEditor2;
 class EntityGroup;
+class Command2;
 class StatusBar : public QStatusBar
 {
 	Q_OBJECT
@@ -50,7 +51,9 @@ public:
 public slots:
 	void SceneActivated(SceneEditor2 *scene);
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
-
+	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
+	void StructureChanged(SceneEditor2 *scene, DAVA::Entity *parent);
+    
 	void UpdateByTimer();
 
 	void OnSceneGeometryChaged(int width, int height);
@@ -59,11 +62,11 @@ protected:
 	void UpdateDistanceToCamera();
 	void SetDistanceToCamera(DAVA::float32 distance);
 	void ResetDistanceToCamera();
-
-
+	void UpdateSelectionBoxSize(SceneEditor2 *scene);
 
     QLabel * distanceToCamera;
 	QLabel * sceneGeometry;
+    QLabel * selectionBoxSize;
 };
 
 #endif // __STATUS_BAR_H__

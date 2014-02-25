@@ -31,6 +31,8 @@
 #include "BaseParticleEditorContentWidget.h"
 
 const QChar BaseParticleEditorContentWidget::DEGREE_MARK_CHARACTER = QChar(0x00B0);
+#define PARTICLE_EMITTER_MIN_PLAYBACK_SPEED 0.25f
+#define PARTICLE_EMITTER_MAX_PLAYBACK_SPEED 4.0f
 
 BaseParticleEditorContentWidget::BaseParticleEditorContentWidget()
 {

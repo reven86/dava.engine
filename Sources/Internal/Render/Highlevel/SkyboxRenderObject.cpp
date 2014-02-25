@@ -27,15 +27,19 @@
 =====================================================================================*/
 
 
-
+#include "Render/Material/NMaterial.h"
+#include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
 #include <Render/TextureDescriptor.h>
+
+#include "Render/Material/NMaterialNames.h"
 
 namespace DAVA
 {
 
 	//do not create lower cube face
-	const int SKYBOX_VERTEX_COUNT = (5 * 6);
+	const int32 SKYBOX_VERTEX_COUNT = (8);
+    const int32 SKYBOX_INDEX_COUNT = (6 * 2 * 3);
 
 	SkyboxRenderObject::SkyboxRenderObject()
 	:
@@ -43,6 +47,9 @@ namespace DAVA
 	rotationZ(0.0f),
 	nonClippingDistance(0.0f)
 	{
+		bbox.AddPoint(Vector3(0, 0, 0));
+		bbox.AddPoint(Vector3(1, 1, 1));
+		
 		type = RenderObject::TYPE_SKYBOX;
 		AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
 	}
@@ -53,18 +60,14 @@ namespace DAVA
 		
 	void SkyboxRenderObject::SetRenderSystem(RenderSystem * renderSystem)
 	{
-		bool adding = (GetRenderSystem() == NULL && renderSystem != NULL);
-		bool removing = (GetRenderSystem() != NULL && renderSystem == NULL);
-		bool switching = (GetRenderSystem() != NULL && renderSystem != NULL);
-		
-		if(removing || switching)
+		if(GetRenderSystem())
 		{
 			GetRenderSystem()->UnregisterFromUpdate(this);
 		}
 		
 		RenderObject::SetRenderSystem(renderSystem);
 		
-		if(adding || switching)
+		if(GetRenderSystem())
 		{
 			GetRenderSystem()->RegisterForUpdate(this);
 		}
@@ -76,7 +79,6 @@ namespace DAVA
 		
 		CreateRenderData();
 		BuildSkybox();
-		UpdateMaterial();
 	}
 	
 	void SkyboxRenderObject::CreateRenderData()
@@ -84,23 +86,20 @@ namespace DAVA
 		if(renderBatchArray.size() == 0)
 		{
 			RenderDataObject* renderDataObj = new RenderDataObject();
-			
-			Material* skyboxMaterial = new Material();
-			skyboxMaterial->SetType(Material::MATERIAL_SKYBOX);
-			skyboxMaterial->SetAlphablend(false);
-			skyboxMaterial->SetName("SkyBox_material");
-			skyboxMaterial->GetRenderState()->SetDepthFunc(CMP_LEQUAL);
-			skyboxMaterial->GetRenderState()->state |= RenderState::STATE_DEPTH_TEST;
-			skyboxMaterial->GetRenderState()->state &= ~RenderState::STATE_DEPTH_WRITE;
+							
+			NMaterial* skyboxMaterial = NMaterial::CreateMaterialInstance(FastName("Skybox_material"),
+																		  NMaterialName::SKYBOX,
+																		  NMaterial::DEFAULT_QUALITY_NAME);
 			
 			RenderBatch* skyboxRenderBatch = new RenderBatch();
 			skyboxRenderBatch->SetRenderDataObject(renderDataObj);
 			skyboxRenderBatch->SetMaterial(skyboxMaterial);
-			SafeRelease(renderDataObj);
-			SafeRelease(skyboxMaterial);
 			
 			RenderObject::AddRenderBatch(skyboxRenderBatch);
-			SafeRelease(skyboxRenderBatch);			
+			
+			SafeRelease(renderDataObj);
+			SafeRelease(skyboxMaterial);
+			SafeRelease(skyboxRenderBatch);
 		}
 	}
 	
@@ -113,104 +112,55 @@ namespace DAVA
 			return;
 		}
 		
-		Vector3 cubeTexCoords[SKYBOX_VERTEX_COUNT] = {
-			Vector3(1, 1, -1), Vector3(-1, 1, -1), Vector3(1, 1, 1), Vector3(1, 1, 1), Vector3(-1, 1, -1), Vector3(-1, 1, 1),
-			Vector3(1, -1, -1), Vector3(1, 1, -1), Vector3(1, -1, 1), Vector3(1, -1, 1), Vector3(1, 1, -1), Vector3(1, 1, 1),
-			Vector3(-1, -1, -1), Vector3(1, -1, -1), Vector3(-1, -1, 1), Vector3(-1, -1, 1), Vector3(1, -1, -1), Vector3(1, -1, 1),
-			Vector3(-1, 1, -1), Vector3(-1, -1, -1), Vector3(-1, 1, 1), Vector3(-1, 1, 1), Vector3(-1, -1, -1), Vector3(-1, -1, 1),
-			Vector3(1, 1, 1), Vector3(-1, 1, 1), Vector3(1, -1, 1), Vector3(1, -1, 1), Vector3(-1, 1, 1), Vector3(-1, -1, 1)
+		Vector3 cubeCoords[SKYBOX_VERTEX_COUNT] = {
+			Vector3(-1, -1, -1), Vector3(1, -1, -1), Vector3(1, 1, -1), Vector3(-1, 1, -1), // 0, 1, 2, 3
+			Vector3(-1, -1, 1), Vector3(1, -1, 1), Vector3(1, 1, 1), Vector3(-1, 1, 1),     // 4, 5, 6, 7
 		};
+        
+        uint32 cubeIndices[SKYBOX_INDEX_COUNT] =
+        {
+            //0, 1, 2,
+            //0, 2, 3,
+            0, 1, 5,
+            0, 5, 4,
+            0, 4, 7,
+            0, 7, 3,
+            2, 6, 7,
+            2, 7, 3,
+            1, 5, 6,
+            1, 6, 2,
+            4, 5, 6,
+            4, 6, 7,
+        };
 		
 		PolygonGroup* polygonGroup = new PolygonGroup();
-		polygonGroup->AllocateData(EVF_VERTEX | EVF_CUBETEXCOORD0, SKYBOX_VERTEX_COUNT, SKYBOX_VERTEX_COUNT);
-		
-		//face 0 (right)+
-		polygonGroup->SetCoord(0, Vector3(bbox.min.x, bbox.min.y, bbox.min.z));
-		polygonGroup->SetCoord(1, Vector3(bbox.min.x, bbox.min.y, bbox.max.z));
-		polygonGroup->SetCoord(2, Vector3(bbox.max.x, bbox.min.y, bbox.min.z));
-		polygonGroup->SetCoord(3, Vector3(bbox.max.x, bbox.min.y, bbox.min.z));
-		polygonGroup->SetCoord(4, Vector3(bbox.min.x, bbox.min.y, bbox.max.z));
-		polygonGroup->SetCoord(5, Vector3(bbox.max.x, bbox.min.y, bbox.max.z));
-		
-		//face 1 (front)+
-		polygonGroup->SetCoord(6, Vector3(bbox.max.x, bbox.min.y, bbox.min.z));
-		polygonGroup->SetCoord(7, Vector3(bbox.max.x, bbox.min.y, bbox.max.z));
-		polygonGroup->SetCoord(8, Vector3(bbox.max.x, bbox.max.y, bbox.min.z));
-		polygonGroup->SetCoord(9, Vector3(bbox.max.x, bbox.max.y, bbox.min.z));
-		polygonGroup->SetCoord(10, Vector3(bbox.max.x, bbox.min.y, bbox.max.z));
-		polygonGroup->SetCoord(11, Vector3(bbox.max.x, bbox.max.y, bbox.max.z));
-
-		//face 2 (left)
-		polygonGroup->SetCoord(12, Vector3(bbox.max.x, bbox.max.y, bbox.min.z));
-		polygonGroup->SetCoord(13, Vector3(bbox.max.x, bbox.max.y, bbox.max.z));
-		polygonGroup->SetCoord(14, Vector3(bbox.min.x, bbox.max.y, bbox.min.z));
-		polygonGroup->SetCoord(15, Vector3(bbox.min.x, bbox.max.y, bbox.min.z));
-		polygonGroup->SetCoord(16, Vector3(bbox.max.x, bbox.max.y, bbox.max.z));
-		polygonGroup->SetCoord(17, Vector3(bbox.min.x, bbox.max.y, bbox.max.z));
-				
-		//face 3 (back)
-		polygonGroup->SetCoord(18, Vector3(bbox.min.x, bbox.max.y, bbox.min.z));
-		polygonGroup->SetCoord(19, Vector3(bbox.min.x, bbox.max.y, bbox.max.z));
-		polygonGroup->SetCoord(20, Vector3(bbox.min.x, bbox.min.y, bbox.min.z));
-		polygonGroup->SetCoord(21, Vector3(bbox.min.x, bbox.min.y, bbox.min.z));
-		polygonGroup->SetCoord(22, Vector3(bbox.min.x, bbox.max.y, bbox.max.z));
-		polygonGroup->SetCoord(23, Vector3(bbox.min.x, bbox.min.y, bbox.max.z));
-		
-		//face 4 (top)
-		polygonGroup->SetCoord(24, Vector3(bbox.min.x, bbox.min.y, bbox.max.z));
-		polygonGroup->SetCoord(25, Vector3(bbox.min.x, bbox.max.y, bbox.max.z));
-		polygonGroup->SetCoord(26, Vector3(bbox.max.x, bbox.min.y, bbox.max.z));
-		polygonGroup->SetCoord(27, Vector3(bbox.max.x, bbox.min.y, bbox.max.z));
-		polygonGroup->SetCoord(28, Vector3(bbox.min.x, bbox.max.y, bbox.max.z));
-		polygonGroup->SetCoord(29, Vector3(bbox.max.x, bbox.max.y, bbox.max.z));
-		
-		for(int i = 0; i < SKYBOX_VERTEX_COUNT; ++i)
+		polygonGroup->AllocateData(EVF_VERTEX | EVF_CUBETEXCOORD0, SKYBOX_VERTEX_COUNT, SKYBOX_INDEX_COUNT);
+    
+        for (int32 i = 0; i < SKYBOX_VERTEX_COUNT; ++i)
+        {
+            polygonGroup->SetCoord(i, cubeCoords[i]);
+            polygonGroup->SetCubeTexcoord(0, i, cubeCoords[i]);
+        }
+        
+		for(int32 i = 0; i < SKYBOX_INDEX_COUNT; ++i)
 		{
-			polygonGroup->SetIndex(i, i);
-			polygonGroup->SetCubeTexcoord(0, i, cubeTexCoords[i]);
+			polygonGroup->SetIndex(i, cubeIndices[i]);
 		}
 				
 		//could be any pair of opposite diagonal vertices
 		Vector3 coord0;
 		Vector3 coord1;
-		polygonGroup->GetCoord(24, coord0);
-		polygonGroup->GetCoord(29, coord1);
+		polygonGroup->GetCoord(0, coord0);
+		polygonGroup->GetCoord(6, coord1);
 		Vector3 maxDistanceBetweenVertices = coord1 - coord0;
 		nonClippingDistance = 0.5f * maxDistanceBetweenVertices.Length();
 		
 		polygonGroup->BuildBuffers();
-		renderBatchArray[0]->SetPolygonGroup(polygonGroup);
+        polygonGroup->AddNodeFlags(DataNode::NodeRuntimeFlag); //VI: do not save geometry for the skybox. It will be build on load or create
+		renderBatchArray[0].renderBatch->SetPolygonGroup(polygonGroup);
 		SafeRelease(polygonGroup);
 	}
-	
-	void SkyboxRenderObject::UpdateMaterial()
-	{
-		if(renderBatchArray.size() > 0)
-		{
-			Material* skyboxMaterial = renderBatchArray[0]->GetMaterial();
-			
-			//since the renderBatchArray is entirely controlled by SkyboxRenderObject
-			//we can safely assume that objects in render batch array are properly initialized
-			//and have material in place (no need to check for NULL)
-			
-            DAVA::Texture* tx = NULL;
-            TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(texturePath);
-            if(descriptor && descriptor->IsCubeMap())
-            {
-                tx = DAVA::Texture::CreateFromFile(texturePath, Texture::TEXTURE_CUBE);
-            }
-            else
-            {
-				tx = Texture::CreatePink(Texture::TEXTURE_CUBE);
-            }
-            
-            skyboxMaterial->SetTexture(Material::TEXTURE_DIFFUSE, tx);
-
-            SafeRelease(descriptor);
-            tx->Release();
-		}
-	}
-	
+		
 	void SkyboxRenderObject::RenderUpdate(Camera *camera, float32 timeElapsed)
 	{
 		Vector3 camPos = camera->GetPosition();
@@ -222,7 +172,7 @@ namespace DAVA
 		camPos.z += offsetZ;
 		
 		Matrix4& finalMatrix = *worldTransform;
-		finalMatrix = Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), rotationZ) *
+		finalMatrix = /*Matrix4::MakeRotation(Vector3(0.0f, 0.0f, 1.0f), rotationZ) * */
 			Matrix4::MakeScale(Vector3(scale, scale, scale)) *
 			Matrix4::MakeTranslation(camPos);
 	}
@@ -239,17 +189,17 @@ namespace DAVA
 		
 		skyboxRenderObject->type = type;
 		skyboxRenderObject->flags = flags;
-		skyboxRenderObject->RemoveFlag(RenderObject::TREE_NODE_NEED_UPDATE);
+		skyboxRenderObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
 		skyboxRenderObject->debugFlags = debugFlags;
 		skyboxRenderObject->ownerDebugInfo = ownerDebugInfo;
 		
 		skyboxRenderObject->bbox = bbox;
-		skyboxRenderObject->texturePath = texturePath;
 		skyboxRenderObject->offsetZ = offsetZ;
 		skyboxRenderObject->rotationZ = rotationZ;
 		skyboxRenderObject->nonClippingDistance = nonClippingDistance;
 		
 		uint32 size = GetRenderBatchCount();
+        skyboxRenderObject->renderBatchArray.reserve(size);
 		for(uint32 i = 0; i < size; ++i)
 		{
 			RenderBatch *batch = GetRenderBatch(i)->Clone();
@@ -258,48 +208,102 @@ namespace DAVA
 		}
 		
 		skyboxRenderObject->BuildSkybox();
-		skyboxRenderObject->UpdateMaterial();
 		
 		return newObject;
 	}
 	
-	void SkyboxRenderObject::Save(KeyedArchive *archive, SceneFileV2 *sceneFile)
+	void SkyboxRenderObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
-		RenderObject::Save(archive, sceneFile);
+		RenderObject::Save(archive, serializationContext);
 		
 		if(archive != NULL)
 		{
-			archive->SetString("skbxro.texture", texturePath.GetRelativePathname(sceneFile->GetScenePath()));
 			archive->SetFloat("skbxro.verticalOffset", offsetZ);
 			archive->SetFloat("skbxro.rotation", rotationZ);
 			archive->SetFloat("skbxro.noclipdist", nonClippingDistance);
 		}
 	}
 	
-	void SkyboxRenderObject::Load(KeyedArchive *archive, SceneFileV2 *sceneFile)
+	void SkyboxRenderObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
-		RenderObject::Load(archive, sceneFile);
+		RenderObject::Load(archive, serializationContext);
 		
 		if(archive != NULL)
 		{
-			texturePath = sceneFile->GetScenePath() + archive->GetString("skbxro.texture");
 			offsetZ = archive->GetFloat("skbxro.verticalOffset");
 			rotationZ = archive->GetFloat("skbxro.rotation");
 			nonClippingDistance = archive->GetFloat("skbxro.noclipdist");
 		}
+        
+        //VI: need to rebuild skybox
+        BuildSkybox();
 				
-		bbox = renderBatchArray[0]->GetBoundingBox();
+		bbox = renderBatchArray[0].renderBatch->GetBoundingBox();
 	}
 
 	void SkyboxRenderObject::SetTexture(const FilePath& texPath)
 	{
-		texturePath = texPath;
-		UpdateMaterial();
+        DVASSERT(renderBatchArray.size() > 0);
+        
+        NMaterial* skyboxMaterial = renderBatchArray[0].renderBatch->GetMaterial();
+        
+        //since the renderBatchArray is entirely controlled by SkyboxRenderObject
+        //we can safely assume that objects in render batch array are properly initialized
+        //and have material in place (no need to check for NULL)
+        
+        NMaterial* topParent = NULL;
+        bool textureSet = false;
+        while(skyboxMaterial)
+        {
+            Texture* tx = skyboxMaterial->GetTexture(NMaterial::TEXTURE_CUBEMAP);
+            if(NULL != tx)
+            {
+                DAVA::Texture* tx = DAVA::Texture::CreateFromFile(texPath, FastName(), Texture::TEXTURE_CUBE);
+                skyboxMaterial->SetTexture(NMaterial::TEXTURE_CUBEMAP, tx);
+                SafeRelease(tx);
+                
+                textureSet = true;
+                
+                break;
+            }
+            
+            if(NULL == skyboxMaterial->GetParent())
+            {
+                topParent = skyboxMaterial;
+            }
+            
+            skyboxMaterial = skyboxMaterial->GetParent();
+        }
+        
+        if(!textureSet)
+        {
+            DAVA::Texture* tx = DAVA::Texture::CreateFromFile(texPath, FastName(), Texture::TEXTURE_CUBE);
+            topParent->SetTexture(NMaterial::TEXTURE_CUBEMAP, tx);
+            SafeRelease(tx);
+        }
 	}
 	
 	FilePath SkyboxRenderObject::GetTexture()
 	{
-		return texturePath;
+        DVASSERT(renderBatchArray.size() > 0);
+        
+        FilePath path;
+        
+        NMaterial* skyboxMaterial = renderBatchArray[0].renderBatch->GetMaterial();
+        
+        while(skyboxMaterial)
+        {
+            Texture* tx = skyboxMaterial->GetTexture(NMaterial::TEXTURE_CUBEMAP);
+            if(NULL != tx)
+            {
+                path = skyboxMaterial->GetTexturePath(NMaterial::TEXTURE_CUBEMAP);
+                break;
+            }
+            
+            skyboxMaterial = skyboxMaterial->GetParent();
+        }
+        
+        return path;
 	}
 	
 	void SkyboxRenderObject::SetOffsetZ(const float32& offset)

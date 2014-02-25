@@ -153,7 +153,8 @@ struct Matrix4
 	inline bool operator != (const Matrix4 & _m) const;	
     
     
-    static const Matrix4 IDENTITY;
+    static Matrix4 IDENTITY;
+	//static uint32 matrixMultiplicationCounter;
 };
 
 inline Vector3 operator * (const Vector3 & _v, const Matrix4 & _m);
@@ -168,7 +169,7 @@ inline Matrix4::Matrix4()
 // 	_10 = 0; _11 = 0; _12 = 0; _13 = 0;
 // 	_20 = 0; _21 = 0; _22 = 0; _23 = 0;
 // 	_30 = 0; _31 = 0; _32 = 0; _33 = 0;
-    Zero();
+    Identity();
 }
 
 inline Matrix4::Matrix4(	float32 _D00, float32 _D01, float32 _D02, float32 _D03,
@@ -434,10 +435,10 @@ inline Vector4 operator * (const Vector4 & _v, const Matrix4 & _m)
 {
 	Vector4 res;
 	
-	res.x = _v.x * _m._00 + _v.y * _m._10 + _v.z * _m._20 + _m._30;
-	res.y = _v.x * _m._01 + _v.y * _m._11 + _v.z * _m._21 + _m._31;
-	res.z = _v.x * _m._02 + _v.y * _m._12 + _v.z * _m._22 + _m._32;
-	res.w = _v.x * _m._03 + _v.y * _m._13 + _v.z * _m._23 + _m._33;
+	res.x = _v.x * _m._00 + _v.y * _m._10 + _v.z * _m._20 + _v.w * _m._30;
+	res.y = _v.x * _m._01 + _v.y * _m._11 + _v.z * _m._21 + _v.w * _m._31;
+	res.z = _v.x * _m._02 + _v.y * _m._12 + _v.z * _m._22 + _v.w * _m._32;
+	res.w = _v.x * _m._03 + _v.y * _m._13 + _v.z * _m._23 + _v.w * _m._33;
 	
 	return res;
 }
@@ -547,6 +548,8 @@ inline bool Matrix4::Decomposition(Vector3& position, Vector3& scale, Vector3& o
     
 inline Matrix4 Matrix4::operator *(const Matrix4 & m) const
 {
+	//matrixMultiplicationCounter++;
+	
 #ifdef __DAVAENGINE_ARM_7__
     Matrix4 res;
     NEON_Matrix4Mul(this->data, m.data, res.data);
@@ -659,9 +662,36 @@ inline Matrix4 Matrix4::MakeScale(const Vector3 & scaleVector)
 //! Comparison operators
 inline bool Matrix4::operator == (const Matrix4 & _m) const
 {
-	for (int k = 0; k < 16; ++k)
-		if (!FLOAT_EQUAL(data[k], _m.data[k]))return false;
-	return true;
+    // Check translation first
+    if (!FLOAT_EQUAL(_30, _m._30))return false;
+    if (!FLOAT_EQUAL(_31, _m._31))return false;
+    if (!FLOAT_EQUAL(_32, _m._32))return false;
+    
+    if (!FLOAT_EQUAL(_00, _m._00))return false;
+    if (!FLOAT_EQUAL(_11, _m._11))return false;
+    if (!FLOAT_EQUAL(_22, _m._22))return false;
+    
+//    if (!FLOAT_EQUAL(_00, _m._00))return false;
+    if (!FLOAT_EQUAL(_01, _m._01))return false;
+    if (!FLOAT_EQUAL(_02, _m._02))return false;
+    if (!FLOAT_EQUAL(_03, _m._03))return false;
+    
+    if (!FLOAT_EQUAL(_10, _m._10))return false;
+//    if (!FLOAT_EQUAL(_11, _m._11))return false;
+    if (!FLOAT_EQUAL(_12, _m._12))return false;
+    if (!FLOAT_EQUAL(_13, _m._13))return false;
+
+    if (!FLOAT_EQUAL(_20, _m._20))return false;
+    if (!FLOAT_EQUAL(_21, _m._21))return false;
+//    if (!FLOAT_EQUAL(_22, _m._22))return false;
+    if (!FLOAT_EQUAL(_23, _m._23))return false;
+    
+//    if (!FLOAT_EQUAL(_30, _m._30))return false;
+//    if (!FLOAT_EQUAL(_31, _m._31))return false;
+//    if (!FLOAT_EQUAL(_32, _m._32))return false;
+    if (!FLOAT_EQUAL(_33, _m._33))return false;
+
+    return true;
 }
 
 inline bool Matrix4::operator != (const Matrix4 & _m) const

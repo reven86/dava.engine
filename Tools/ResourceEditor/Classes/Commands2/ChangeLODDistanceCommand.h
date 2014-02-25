@@ -51,18 +51,4 @@ protected:
 	DAVA::float32 oldDistance;
 };
 
-class CopyLastLODToLod0Command: public Command2
-{
-public:
-    //TODO: remove after lod editing implementation
-    DAVA_DEPRECATED(CopyLastLODToLod0Command(DAVA::LodComponent *lod));
-
-    virtual void Undo();
-    virtual void Redo();
-    virtual DAVA::Entity* GetEntity() const;
-
-protected:
-    DAVA::LodComponent *lodComponent;
-};
-
 #endif // __CHANGE_LOD_DISTANCE_COMMAND_H__

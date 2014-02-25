@@ -181,6 +181,46 @@ const int32 STENCIL_OP_MAP[STENCILOP_COUNT] =
 	D3DSTENCILOP_INVERT
 };
 #endif
+    
+    
+#if defined(__DAVAENGINE_OPENGL__)
+    const GLint TEXTURE_WRAP_MAP[WRAP_COUNT] =
+    {
+        GL_CLAMP_TO_EDGE,
+        GL_REPEAT
+    };
+#elif defined(__DAVAENGINE_DIRECTX9__)
+    const int32 TEXTURE_WRAP_MAP[WRAP_COUNT] =
+    {
+        D3DTADDRESS_CLAMP,
+        D3DTADDRESS_WRAP
+    };
+#endif
+    
+    
+#if defined(__DAVAENGINE_OPENGL__)
+    const GLint TEXTURE_FILTER_MAP[FILTER_COUNT] =
+    {
+        GL_NEAREST,
+        GL_LINEAR,
+        GL_NEAREST_MIPMAP_NEAREST,
+        GL_LINEAR_MIPMAP_NEAREST,
+        GL_NEAREST_MIPMAP_LINEAR,
+        GL_LINEAR_MIPMAP_LINEAR
+    };
+#elif defined(__DAVAENGINE_DIRECTX9__)
+    const int32 TEXTURE_FILTER_MAP[FILTER_COUNT] =
+    {
+        D3DTEXF_POINT,
+        D3DTEXF_LINEAR,
+        
+        D3DTEXF_ANISOTROPIC,
+        D3DTEXF_PYRAMIDALQUAD,
+        D3DTEXF_GAUSSIANQUAD,
+        D3DTEXF_CONVOLUTIONMONO
+    };
+#endif
+
 
 const String FILL_MODE_NAMES[FILLMODE_COUNT] =
 {
@@ -204,72 +244,125 @@ const int32 FILLMODE_MAP[FILLMODE_COUNT] =
 	D3DFILL_SOLID
 };
 #endif
+    
+/*
+ FastName("modelViewProjectionMatrix"),
+ FastName("modelViewMatrix"),
+ FastName("projectionMatrix"),
+ FastName("normalMatrix"),
+ FastName("flatColor"),
+ FastName("globalTime"),
+ FastName("worldTranslate"),
+ FastName("worldScale"),
+ */
 
-	RenderGuard::RenderGuard()
-	{
-		wrongCall = false;
-	}
+const FastName DYNAMIC_PARAM_NAMES[] =
+    {
+        FastName("unknownSemantic"),
+        FastName("worldMatrix"),//PARAM_WORLD,
+        FastName("invWorldMatrix"), //PARAM_INV_WORLD,
+        FastName("worldInvTransposeMatrix"), //PARAM_WORLD_INV_TRANSPOSE,
+        
+        FastName("viewMatrix"), //PARAM_VIEW,
+        FastName("invViewMatrix"), //PARAM_INV_VIEW,
+        FastName("projMatrix"), //PARAM_PROJ,
+        FastName("invProjMatrix"), //PARAM_INV_PROJ,
+        
+        FastName("worldViewMatrix"), //PARAM_WORLD_VIEW,
+        FastName("invWorldViewMatrix"), //PARAM_INV_WORLD_VIEW,
+        FastName("worldViewInvTransposeMatrix"), //PARAM_NORMAL, // NORMAL MATRIX
+        
+        FastName("viewProjMatrix"), //PARAM_VIEW_PROJ,
+        FastName("invViewProjMatrix"), //PARAM_INV_VIEW_PROJ,
+        
+        FastName("worldViewProjMatrix"), //PARAM_WORLD_VIEW_PROJ,
+        FastName("invWorldViewProjMatrix"), //PARAM_INV_WORLD_VIEW_PROJ,
+        
+        FastName("flatColor"),
+        FastName("globalTime"),
+        FastName("worldViewTranslate"),
+        FastName("worldScale"),
 
-	RenderGuard::~RenderGuard()
-	{
+        FastName("cameraPosition"), // PARAM_CAMERA_POS,
+        FastName("cameraDirection"), // PARAM_CAMERA_DIR,
+        FastName("cameraUp"), // PARAM_CAMERA_UP,
+        
+        FastName("objectPosition"),
+        FastName("objectScale"),
+        
+        FastName("light0Position"),
+        
+        FastName("rtSize"),
+        FastName("rtPixelSize"),
+        FastName("rtHalfPixelSize"),
+        FastName("rtAspectRatio")
+    };
 
-	}
+RenderGuard::RenderGuard()
+{
+    wrongCall = false;
+}
 
-	void RenderGuard::LowLevelRenderCall()
-	{
-		if(!Thread::IsMainThread())
-		{
-			DVASSERT(0 && "Application tried to call GL or DX in separate thread without lock");
-		}
-		if (!RenderManager::Instance()->IsInsideDraw())
-		{
-			DVASSERT(0 && "Application tried to call GL or DX not between BeginFrame / EndFrame.");
-		}
-	}
+RenderGuard::~RenderGuard()
+{
 
-	eBlendMode GetBlendModeByName(const String & blendStr)
-	{
-		for(uint32 i = 0; i < BLEND_MODE_COUNT; i++)
-			if(blendStr == BLEND_MODE_NAMES[i])
-				return (eBlendMode)i;
+}
 
-		return BLEND_MODE_COUNT;
-	}
+void RenderGuard::LowLevelRenderCall()
+{
+    if(!Thread::IsMainThread())
+    {
+        DVASSERT(0 && "Application tried to call GL or DX in separate thread without lock");
+    }
+    if (!RenderManager::Instance()->IsInsideDraw())
+    {
+        DVASSERT(0 && "Application tried to call GL or DX not between BeginFrame / EndFrame.");
+    }
+}
 
-	eCmpFunc GetCmpFuncByName(const String & cmpFuncStr)
-	{
-		for(uint32 i = 0; i < CMP_TEST_MODE_COUNT; i++)
-			if(cmpFuncStr == CMP_FUNC_NAMES[i])
-				return (eCmpFunc)i;
+eBlendMode GetBlendModeByName(const String & blendStr)
+{
+    for(uint32 i = 0; i < BLEND_MODE_COUNT; i++)
+        if(blendStr == BLEND_MODE_NAMES[i])
+            return (eBlendMode)i;
 
-		return CMP_TEST_MODE_COUNT;
-	}
+    return BLEND_MODE_COUNT;
+}
 
-	eFace GetFaceByName(const String & faceStr)
-	{
-		for(uint32 i = 0; i < FACE_COUNT; i++)
-			if(faceStr == FACE_NAMES[i])
-				return (eFace)i;
+eCmpFunc GetCmpFuncByName(const String & cmpFuncStr)
+{
+    for(uint32 i = 0; i < CMP_TEST_MODE_COUNT; i++)
+        if(cmpFuncStr == CMP_FUNC_NAMES[i])
+            return (eCmpFunc)i;
 
-		return FACE_COUNT;
-	}
+    return CMP_TEST_MODE_COUNT;
+}
 
-	eStencilOp GetStencilOpByName(const String & stencilOpStr)
-	{
-		for(uint32 i = 0; i < STENCILOP_COUNT; i++)
-			if(stencilOpStr == STENCIL_OP_NAMES[i])
-				return (eStencilOp)i;
+eFace GetFaceByName(const String & faceStr)
+{
+    for(uint32 i = 0; i < FACE_COUNT; i++)
+        if(faceStr == FACE_NAMES[i])
+            return (eFace)i;
 
-		return STENCILOP_COUNT;
-	}
+    return FACE_COUNT;
+}
 
-	eFillMode GetFillModeByName(const String & fillModeStr)
-	{
-		for(uint32 i = 0; i < FILLMODE_COUNT; i++)
-			if(fillModeStr == FILL_MODE_NAMES[i])
-				return (eFillMode)i;
+eStencilOp GetStencilOpByName(const String & stencilOpStr)
+{
+    for(uint32 i = 0; i < STENCILOP_COUNT; i++)
+        if(stencilOpStr == STENCIL_OP_NAMES[i])
+            return (eStencilOp)i;
 
-		return FILLMODE_COUNT;
-	}
+    return STENCILOP_COUNT;
+}
+
+eFillMode GetFillModeByName(const String & fillModeStr)
+{
+    for(uint32 i = 0; i < FILLMODE_COUNT; i++)
+        if(fillModeStr == FILL_MODE_NAMES[i])
+            return (eFillMode)i;
+
+    return FILLMODE_COUNT;
+}
 
 };

@@ -365,8 +365,8 @@ bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 		return false;
 	}
 
-	BOOL bResult = false;
-    BOOL bDone = false;
+	bool bResult = false;
+    bool bDone = false;
 
 	do
 	{
@@ -529,6 +529,11 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	{
 		browserContainer->DeleteCookies(targetUrl);
 	}
+}
+
+void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
+{
+    // TODO
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)

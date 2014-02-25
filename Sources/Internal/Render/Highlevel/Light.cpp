@@ -122,7 +122,17 @@ const Vector3 & Light::GetDirection() const
 {
     return direction;
 }
-   
+
+void Light::SetPosition(const Vector3 & _position)
+{
+    position = _position;
+}
+
+void Light::SetDirection(const Vector3 & _direction)
+{
+    direction = _direction;
+}
+
 const Color & Light::GetAmbientColor() const
 {
     return ambientColor;
@@ -143,7 +153,7 @@ float32 Light::GetIntensity() const
     return intensity;
 }
 
-void Light::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
+void Light::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
 	BaseObject::Save(archive);
 	
@@ -168,7 +178,7 @@ void Light::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
 	archive->SetUInt32("flags", flags);
 }
 
-void Light::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
+void Light::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     BaseObject::Load(archive);
 

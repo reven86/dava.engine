@@ -29,8 +29,14 @@
 
 
 #include "Platform/DeviceInfo.h"
+#include "Utils/StringFormat.h"
+#include "Utils/MD5.h"
+#include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+
+#include "winsock2.h"
+#include "Iphlpapi.h"
 
 namespace DAVA
 {
@@ -67,7 +73,63 @@ String DeviceInfo::GetTimeZone()
 
 String DeviceInfo::GetUDID()
 {
-	return "Not yet implemented";
+    ULONG family = AF_INET;
+    ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_UNICAST;
+
+    PIP_ADAPTER_ADDRESSES buf;
+    ULONG bufLength = 15000;
+
+    DWORD retVal;
+
+    do
+    {
+        buf = (PIP_ADAPTER_ADDRESSES)malloc(bufLength);
+        retVal = GetAdaptersAddresses(family, flags, 0, buf, &bufLength);
+
+        if (retVal == ERROR_BUFFER_OVERFLOW)
+        {
+            free(buf);
+            bufLength *= 2;
+        }
+    } while (retVal == ERROR_BUFFER_OVERFLOW);
+
+    String res = "";
+    if (retVal == NO_ERROR)
+    {
+        PIP_ADAPTER_ADDRESSES curAddress = buf;
+
+        if(curAddress)
+        {
+            if (curAddress->PhysicalAddressLength)
+            {
+                for (int32 i = 0; i < (int32)curAddress->PhysicalAddressLength; ++i)
+                {
+                    res += String(Format("%.2x", curAddress->PhysicalAddress[i]));
+                }
+            }
+        }
+    }
+
+    if (buf)
+    {
+        free(buf);
+    }
+
+    if (res == "")
+    {
+        DVASSERT(false && "Invalid UDID");
+        res = "Invalid UDID";
+    }
+
+    MD5 md5;
+    md5.Init();
+    md5.Update((uint8*)res.c_str(), (uint32)res.size());
+    md5.Final();
+
+    char8 digest[MD5::DIGEST_SIZE * 2 + 1];
+    MD5::HashToChar(md5.GetDigest(), digest, MD5::DIGEST_SIZE * 2 + 1);
+
+    return String(digest);
 }
 
 WideString DeviceInfo::GetName()

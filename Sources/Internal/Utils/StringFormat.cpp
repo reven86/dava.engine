@@ -38,55 +38,32 @@ namespace DAVA
 static const int32 FORMAT_STRING_SIZE = 2048;
 static const int32 FORMAT_STRING_MAX_LEN = 256;
 
-static char8 formatString8[FORMAT_STRING_SIZE];
-static char16 formatString16[FORMAT_STRING_SIZE];
-static int32 formatString8Position = 0;
-static int32 formatString16Position = 0;
+//static char8 formatString8[FORMAT_STRING_SIZE];
+//static char16 formatString16[FORMAT_STRING_SIZE];
+//static int32 formatString8Position = 0;
+//static int32 formatString16Position = 0;
 
 //! formatting function (use printf syntax)
-const char8* Format(const char8 * text, ...)
+String Format(const char8 * text, ...)
 {
-	if (formatString8Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString8Position = 0;
-	}
-
-	char8 *buffer = &formatString8[formatString8Position];
+	String str;
+	char8 buffer[FORMAT_STRING_MAX_LEN];
 
 	va_list ll;
 	va_start(ll, text);
-	int32 len = vsnprintf(buffer,  FORMAT_STRING_MAX_LEN, text, ll);
+	vsnprintf(buffer,  FORMAT_STRING_MAX_LEN, text, ll);
 	va_end(ll);
 
-	if(len < 0 || len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[Format8] len = %d, str = %s", len, buffer);
-
-		formatString8Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString8Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 
-const char8* GetIndentString(char8 indentChar, int32 level)
+String GetIndentString(char8 indentChar, int32 level)
 {
-	if (formatString8Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString8Position = 0;
-	}
-	if (level > FORMAT_STRING_MAX_LEN)level = FORMAT_STRING_MAX_LEN - 1;
+	String str;
+	str.resize(level, indentChar);
 	
-	for (int k = 0; k < level; k++)
-	{
-		formatString8[formatString8Position + k] = indentChar;
-	}
-	formatString8[formatString8Position + level] = 0;
-	formatString8Position += (level + 1);
-	return &formatString8[formatString8Position  - (level + 1)];
+	return str;
 }
 
 //  Format(L"") use case with WideString parameter:
@@ -751,98 +728,51 @@ __res; })
     
 
 //! formatting function (use printf syntax (%ls for WideString))
-const char16* Format(const char16 * text, ...)
+WideString Format(const char16 * text, ...)
 {
-	if (formatString16Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString16Position = 0;
-	}
-
-	char16 *buffer = formatString16 + formatString16Position;
+	WideString str;
+	char16 buffer[FORMAT_STRING_MAX_LEN];
 
     va_list ll;
 	va_start(ll, text);
 
 #if defined(_WIN32)
-	int32 len = vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
 #elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
-    int32 len = Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
+    Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
 #else
     // MAC_OS & other nix systems
-	int32 len = vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
 #endif
 	va_end(ll);
 
-	if(len < 0)
-    {
-        Logger::Error("[Format16] len = %d", len);
-    }
-    else if(len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[Format16] len = %d, str = %s", len,  WStringToString(WideString(buffer, len)).c_str());
-
-		formatString16Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString16Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 
-const char8* FormatVL(const char8 * text, va_list ll)
+String FormatVL(const char8 * text, va_list ll)
 {
-	if (formatString8Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString8Position = 0;
-	}
+	String str;
+	char8 buffer[FORMAT_STRING_MAX_LEN];
 
-	char8 *buffer = formatString8 + formatString8Position;
+	vsprintf(buffer,  text, ll);
 
-	int32 len = vsprintf(buffer,  text, ll);
-    DVASSERT_MSG(0 < len && len < FORMAT_STRING_MAX_LEN, buffer);
-
-	if(len < 0 || len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[FormatVL8] len = %d, str = %s", len, buffer);
-
-		formatString8Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString8Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 
-const char16* FormatVL(const char16 * text, va_list ll)
+WideString FormatVL(const char16 * text, va_list ll)
 {
-	if (formatString16Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString16Position = 0;
-	}
-
-	char16 *buffer = formatString16 + formatString16Position;
+	WideString str;
+	char16 buffer[FORMAT_STRING_MAX_LEN];
 
 #if defined(_WIN32)
-	int32 len = vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
 #else // MAC_OS & other nix systems
-	int32 len = vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
 #endif
 
-	if(len < 0 || len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[FormatVL16] len = %d, str = %s", len,  WStringToString(WideString(buffer, len)).c_str());
-
-		formatString16Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString16Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 }; // end of namespace Log

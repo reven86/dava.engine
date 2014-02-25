@@ -70,6 +70,11 @@ public:
     eCompileResult Compile(MaterialGraph * materialGraph, PolygonGroup * polygonGroup, uint32 maxLights, NMaterial ** resultMaterial);
     eCompileError GenerateCodeForNode(MaterialGraphNode * node, String & vertexShader, String & pixelShader);
 
+    String GetCompiledVertexShaderPathname() const;
+    String GetCompiledFragmentShaderPathname() const;
+    
+    
+    
 private:
     /**
         Plan: 

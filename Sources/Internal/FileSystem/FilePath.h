@@ -80,9 +80,6 @@ public:
 
     bool operator==(const FilePath & path) const;
 	bool operator!=(const FilePath & path) const;
-
-    bool operator < (const FilePath& right) const;
-
     
 	/*
         \brief Function to check is filepath empty or no
@@ -243,7 +240,10 @@ public:
     inline ePathType GetType() const;
     
 	static bool ContainPath(const FilePath& basePath, const FilePath& partPath);
-    static void AddResourcesFolder(const FilePath & folder);
+	static bool ContainPath(const FilePath& basePath, const String & partPath);
+	static bool ContainPath(const FilePath& basePath, const char * partPath);
+
+	static void AddResourcesFolder(const FilePath & folder);
 	static void AddTopResourcesFolder(const FilePath & folder);
     static void RemoveResourcesFolder(const FilePath & folder);
     static const List<FilePath> GetResourcesFolders();
@@ -251,6 +251,8 @@ public:
     
     bool Exists() const;
     
+	int32 Compare(const FilePath &right) const;
+
 protected:
     
     void Initialize(const String &pathname);
@@ -258,7 +260,6 @@ protected:
     String ResolveResourcesPath() const;
     
 
-    static String NormalizePathname(const FilePath &pathname);
     static String NormalizePathname(const String &pathname);
     
     static String MakeDirectory(const String &pathname);
@@ -266,7 +267,6 @@ protected:
     static String AbsoluteToRelative(const FilePath &directoryPathname, const FilePath &absolutePathname);
 
     static String GetFilename(const String &pathname);
-    static FilePath GetDirectory(const String &pathname, const ePathType pType);
 
     static String GetSystemPathname(const String &pathname, const ePathType pType);
 	String GetFrameworkPathForPrefix(const String &typePrefix, const ePathType pType) const;
@@ -285,7 +285,9 @@ protected:
 
     static List<FilePath> resourceFolders;
 };
-    
+
+bool operator < (const FilePath& left, const FilePath& right);
+
     
 inline bool FilePath::IsEmpty() const
 {
@@ -296,8 +298,6 @@ inline FilePath::ePathType FilePath::GetType() const
 {
     return pathType;
 }
-
-
     
 };
 

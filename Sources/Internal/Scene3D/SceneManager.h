@@ -52,7 +52,7 @@ public:
     void ReleaseAllScenes();
     
 private:
-    Map<String, Scene*> sceneList;
+    Map<String, Scene*> sceneList; //need FilePath instead of String
 };
 
 };

@@ -33,12 +33,13 @@
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
 	
 ActionUpdateSystem::ActionUpdateSystem(Scene * scene)
-:	BaseProcessSystem(Component::ACTION_COMPONENT, scene)
+:	SceneSystem(scene)
 {
 	UnblockAllEvents();
 }
@@ -61,7 +62,7 @@ void ActionUpdateSystem::UnblockAllEvents()
 
 void ActionUpdateSystem::AddEntity(Entity * entity)
 {
-	BaseProcessSystem::AddEntity(entity);
+	SceneSystem::AddEntity(entity);
 	ActionComponent* actionComponent = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
 	actionComponent->StartAdd();
 }
@@ -71,11 +72,13 @@ void ActionUpdateSystem::RemoveEntity(Entity * entity)
 	ActionComponent* actionComponent = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));	
 	if (actionComponent->IsStarted())
 		UnWatch(actionComponent);	
-	BaseProcessSystem::RemoveEntity(entity);
+	SceneSystem::RemoveEntity(entity);
 }
 		
 void ActionUpdateSystem::Process(float32 timeElapsed)
 {
+    TIME_PROFILE("ActionUpdateSystem::Process");
+
 	DelayedDeleteActions();
 	
 	uint32 size = activeActions.size();

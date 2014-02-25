@@ -32,14 +32,13 @@
 #define __DAVAENGINE_SCENE3D_ACTIONUPDATESYSTEM_H__
 
 #include "Base/BaseTypes.h"
-#include "Scene3D/Systems/BaseProcessSystem.h"
+#include "Entity/SceneSystem.h"
 #include "Scene3D/Components/ActionComponent.h"
-
 
 namespace DAVA
 {
 	class ActionComponent;
-	class ActionUpdateSystem : public BaseProcessSystem
+	class ActionUpdateSystem : public SceneSystem
 	{
 	public:
 		ActionUpdateSystem(Scene * scene);

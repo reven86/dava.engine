@@ -55,7 +55,7 @@ struct Matrix3
 		};
 	};
 	
-	inline Matrix3() {};
+	inline Matrix3();
 
 	inline Matrix3(	float32 __00, float32 __01, float32 __02,
 					float32 __10, float32 __11, float32 __12,
@@ -75,6 +75,7 @@ struct Matrix3
 	inline void	BuildTranslation(const Vector2 & vec);
 	inline void	BuildScale(const Vector2 & vec);
 	inline bool GetInverse(Matrix3 & out, float32 fTolerance = 1e-06) const;
+    inline void Transpose();
 	inline void Decomposition(Matrix3 &kQ, Vector3 &kD, Vector3 &kU) const;
 
 	inline Matrix3& operator *= (const Matrix3 & arg);
@@ -113,6 +114,13 @@ inline float32 Matrix3::Det() const
 {
 	return _00 * _11 * _22 + _01 * _12 * _20 + _02 * _10 * _21 
 		- _02 * _11 * _20 - _01 * _10 * _22 - _00 * _12 * _21;
+}
+
+inline Matrix3::Matrix3()
+{
+	_00 = 1.0f; _01 = 0.0f; _02 = 0.0f;
+	_10 = 0.0f; _11 = 1.0f; _12 = 0.0f;
+	_20 = 0.0f; _21 = 0.0f; _22 = 1.0f;
 }
 
 inline void Matrix3::Identity()
@@ -308,6 +316,15 @@ inline bool Matrix3::GetInverse(Matrix3 & out, float32 fTolerance) const
 	}
 	
 	return true;
+}
+
+inline void Matrix3::Transpose()
+{
+    Matrix3 t;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            t._data[i][j] = _data[j][i];
+    *this = t;
 }
 
 inline void Matrix3::Decomposition(Matrix3 &kQ, Vector3 &kD, Vector3 &kU) const

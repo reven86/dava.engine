@@ -366,6 +366,7 @@
     </property>
     <addaction name="actionFontManager"/>
     <addaction name="actionLocalizationManager"/>
+    <addaction name="actionEditPreviewSettings"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="contextMenuPolicy">
@@ -380,8 +381,35 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <widget class="QMenu" name="menuAlign">
+     <property name="title">
+      <string>Align</string>
+     </property>
+     <addaction name="actionAlign_Left"/>
+     <addaction name="actionAlign_Horz_Center"/>
+     <addaction name="actionAlign_Right"/>
+     <addaction name="actionAlign_Top"/>
+     <addaction name="actionAlign_Vert_Center"/>
+     <addaction name="actionAlign_Bottom"/>
+    </widget>
+    <widget class="QMenu" name="menuDistribute">
+     <property name="title">
+      <string>Distribute</string>
+     </property>
+     <addaction name="actionEqualBetweenLeftEdges"/>
+     <addaction name="actionEqualBetweenXCenters"/>
+     <addaction name="actionEqualBetweenRightEdges"/>
+     <addaction name="actionEqualBetweenXObjects"/>
+     <addaction name="actionEqualBetweenTopEdges"/>
+     <addaction name="actionEqualBetweenYCenters"/>
+     <addaction name="actionEqualBetweenBottomEdges"/>
+     <addaction name="actionEqualBetweenYObjects"/>
+    </widget>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="menuAlign"/>
+    <addaction name="menuDistribute"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu"/>
@@ -389,9 +417,9 @@
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="mainToolbar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Edit Toolbar</string>
    </property>
    <property name="movable">
     <bool>false</bool>
@@ -456,6 +484,18 @@
     <number>2</number>
    </attribute>
    <widget class="PropertyGridContainerWidget" name="propertiesDockWidgetContents"/>
+  </widget>
+  <widget class="QToolBar" name="previewToolBar">
+   <property name="windowTitle">
+    <string>Preview Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionPreview"/>
   </widget>
   <action name="actionOpen_project">
    <property name="enabled">
@@ -768,10 +808,10 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Eq Left</string>
+    <string>Equal Distance Left Edges</string>
    </property>
    <property name="toolTip">
-    <string>Equal Distance between Left Edges</string>
+    <string>Equal Distance Left Edges</string>
    </property>
   </action>
   <action name="actionEqualBetweenXCenters">
@@ -780,7 +820,7 @@
      <normaloff>:/Icons/distribute_horizontal_center.png</normaloff>:/Icons/distribute_horizontal_center.png</iconset>
    </property>
    <property name="text">
-    <string>Eq X Centers</string>
+    <string>Equal Distance X Centers</string>
    </property>
   </action>
   <action name="actionEqualBetweenRightEdges">
@@ -790,7 +830,7 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Eq Right</string>
+    <string>Equal Distance Right</string>
    </property>
   </action>
   <action name="actionEqualBetweenXObjects">
@@ -800,7 +840,10 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Eq X</string>
+    <string>Equal Distance Objects X</string>
+   </property>
+   <property name="toolTip">
+    <string>Equal Distance Objects X</string>
    </property>
   </action>
   <action name="actionEqualBetweenTopEdges">
@@ -810,7 +853,10 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Eq Top</string>
+    <string>Equal Distance Tops</string>
+   </property>
+   <property name="toolTip">
+    <string>Equal Distance Tops</string>
    </property>
   </action>
   <action name="actionEqualBetweenYCenters">
@@ -820,7 +866,10 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Eq Y Centers</string>
+    <string>Equal Distance Y Centers</string>
+   </property>
+   <property name="toolTip">
+    <string>Equal Distance Y Centers</string>
    </property>
   </action>
   <action name="actionEqualBetweenBottomEdges">
@@ -830,7 +879,10 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Eq Bottom</string>
+    <string>Equal Distance Bottoms</string>
+   </property>
+   <property name="toolTip">
+    <string>Equal Distance Bottoms</string>
    </property>
   </action>
   <action name="actionEqualBetweenYObjects">
@@ -840,7 +892,10 @@
     </iconset>
    </property>
    <property name="text">
-    <string>Eq Y</string>
+    <string>Equal Distance Objects Y</string>
+   </property>
+   <property name="toolTip">
+    <string>Equal Distance Objects Y</string>
    </property>
   </action>
   <action name="actionAdjustControlSize">
@@ -892,6 +947,32 @@
    </property>
    <property name="toolTip">
     <string>Pixelized/Smooth Graphics</string>
+   </property>
+  </action>
+  <action name="actionAlign_Left_2">
+   <property name="text">
+    <string>Align Left</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>test</string>
+   </property>
+  </action>
+  <action name="actionPreview">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Editing Mode</string>
+   </property>
+   <property name="toolTip">
+    <string>Editing Mode</string>
+   </property>
+  </action>
+  <action name="actionEditPreviewSettings">
+   <property name="text">
+    <string>Preview Settings</string>
    </property>
   </action>
  </widget>

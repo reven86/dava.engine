@@ -35,6 +35,7 @@
 #include "Render/Shader.h"
 #include "Render/3D/EdgeAdjacency.h"
 #include "Render/Highlevel/RenderBatch.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -46,10 +47,13 @@ class ShadowVolume : public RenderBatch
 {
 protected:
 	virtual ~ShadowVolume();
+
 public:
 	ShadowVolume();
+	static const FastName MATERIAL_NAME;
 
-    virtual void Draw(Camera * camera);
+    //virtual void Draw(Camera * camera);
+	virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
 
 	void MakeShadowVolumeFromPolygonGroup(PolygonGroup * polygonGroup);
     void SetPolygonGroup(PolygonGroup * polygonGroup);
@@ -57,24 +61,21 @@ public:
     
 	virtual void GetDataNodes(Set<DataNode*> & dataNodes);
 	virtual RenderBatch * Clone(RenderBatch * dstNode = NULL);
-	virtual void Save(KeyedArchive *archive, SceneFileV2 *sceneFile);
-	virtual void Load(KeyedArchive *archive, SceneFileV2 *sceneFile);
+	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
+	virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
 
 	virtual void UpdateAABBoxFromSource();
 
+	virtual ShadowVolume * CreateShadow();
+
+
 private:
-	static Shader * shader;
-	static int32 uniformLightPosition0;
-
-	//shadow mesh generation
-	PolygonGroup * shadowPolygonGroup;
-
 	struct EdgeMapping
 	{
 		int32 oldEdge[2];
 		int32 newEdge[2][2];
 
-	public:
+    public:
 		EdgeMapping()
 		{
 			Memset(oldEdge, -1, sizeof(oldEdge));
@@ -85,10 +86,8 @@ private:
 	int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count);
     
 public:
-    
     INTROSPECTION_EXTEND(ShadowVolume, RenderBatch,
-        MEMBER(shadowPolygonGroup, "Shadow Polygon Group", I_VIEW | I_EDIT | I_SAVE )
-    );
+                         0);
 };
 
 }

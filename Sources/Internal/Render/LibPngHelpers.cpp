@@ -379,6 +379,7 @@ void LibPngWrapper::WritePngFile(const FilePath & file_name, int32 width, int32 
 	{
 		Logger::Error("[LibPngWrapper::WritePngFile] File %s could not be opened for writing", file_name.GetAbsolutePathname().c_str());
 		//abort_("[write_png_file] File %s could not be opened for writing", file_name);
+        free(row_pointers);
 		return;
 	}
 	
@@ -395,6 +396,8 @@ void LibPngWrapper::WritePngFile(const FilePath & file_name, int32 width, int32 
 		Logger::Error("[LibPngWrapper::WritePngFile] png_create_info_struct failed");
 
 		//abort_("[write_png_file] png_create_info_struct failed");
+        free(row_pointers);
+        fclose(fp);
 		return;
 	}
 	
@@ -402,6 +405,8 @@ void LibPngWrapper::WritePngFile(const FilePath & file_name, int32 width, int32 
 	{
 		Logger::Error("[LibPngWrapper::WritePngFile] Error during init_io");
 		//abort_("[write_png_file] Error during init_io");
+        free(row_pointers);
+        fclose(fp);
 		return;
 	}
 	
@@ -413,6 +418,8 @@ void LibPngWrapper::WritePngFile(const FilePath & file_name, int32 width, int32 
 	{
 		Logger::Error("[LibPngWrapper::WritePngFile] Error during writing header");
 		//abort_("[write_png_file] Error during writing header");
+        free(row_pointers);
+        fclose(fp);
 		return;
 	}
     
@@ -460,6 +467,8 @@ void LibPngWrapper::WritePngFile(const FilePath & file_name, int32 width, int32 
 	{
 		Logger::Error("[LibPngWrapper::WritePngFile] Error during writing bytes");
 		//abort_("[write_png_file] Error during writing bytes");
+        free(row_pointers);
+        fclose(fp);
 		return;
 	}
 	
@@ -471,13 +480,14 @@ void LibPngWrapper::WritePngFile(const FilePath & file_name, int32 width, int32 
 	{
 		Logger::Error("[LibPngWrapper::WritePngFile] Error during end of write");
 		//abort_("[write_png_file] Error during end of write");
+        free(row_pointers);
+        fclose(fp);
 		return;
 	}
 	
 	png_write_end(png_ptr, NULL);
 	
 	free(row_pointers);
-	
 	fclose(fp);
 }
 
@@ -558,10 +568,11 @@ bool PngImage::CreateFromFBOSprite(Sprite * fboSprite)
 	width = fboSprite->GetTexture()->GetWidth();
 	height = fboSprite->GetTexture()->GetHeight();
 	data = new uint8[width * 4 * height];
-    format = fboSprite->GetTexture()->format;    
-    
+
 	Texture * texture = fboSprite->GetTexture();
-	if (texture->format == FORMAT_RGBA8888)
+
+	format = texture->GetFormat();    
+	if (format == FORMAT_RGBA8888)
 	{
 		RenderManager::Instance()->SetRenderTarget(fboSprite);
 		glReadPixels(0, 0, texture->width, texture->height, GL_RGBA, GL_UNSIGNED_BYTE, data);

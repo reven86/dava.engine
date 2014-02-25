@@ -63,6 +63,7 @@ public:
     static const char* TEXT_PROPERTY_MULTILINE_BY_SYMBOL;
     static const char* TEXT_COLOR_PROPERTY_NAME;
 	static const char* TEXT_ALIGN_PROPERTY_NAME;
+	static const char* TEXT_FITTING_TYPE_PROPERTY_NAME;
 
 	static const char* IS_PASSWORD_PROPERTY_NAME;
 	
@@ -115,6 +116,14 @@ public:
 	static const char* UISPINNER_PREV_BUTTON_TEXT;
 	static const char* UISPINNER_NEXT_BUTTON_TEXT;
 
+    // UI Partice effect properties and invokable methods.
+    static const char* UIPARTICLES_AUTOSTART_PROPERTY;
+    static const char* UIPARTICLES_EFFECT_PATH_PROPERTY;
+
+	static const char* UIPARTICLES_START_METHOD_NAME;
+    static const char* UIPARTICLES_STOP_METHOD_NAME;
+    static const char* UIPARTICLES_RELOAD_METHOD_NAME;
+    
 	// Custom Control properties.
 	static const char* CUSTOM_CONTROL_NAME;
 };

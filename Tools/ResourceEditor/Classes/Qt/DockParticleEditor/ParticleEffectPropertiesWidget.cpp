@@ -30,7 +30,6 @@
 
 #include "ParticleEffectPropertiesWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
-#include "../Scene/SceneDataManager.h"
 
 #include <QLineEdit>
 #include <QEvent>
@@ -357,6 +356,10 @@ void ParticleEffectPropertiesWidget::OnContextMenuCommand(QAction *action)
 	{	
 		EffectTreeData data = currSelectedTreeItem->data(0, Qt::UserRole).value<EffectTreeData>();
 		SetForceLineModifiable(data.force, ForceExternals(commandId));		
+
+		particleEffect->RegisterModifiable(GetForceLine(data.force, ForceExternals(commandId)));
+		UpdateVaribleTables();
+
 		if (EditForceModifiable(data.force, ForceExternals(commandId), true))
 		{			
 			data.externalParamId = commandId;
@@ -454,6 +457,8 @@ ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetEmitterLine(Parti
 		return dynamic_cast<ModifiablePropertyLineBase*>(emitter->size.Get());
 	case EE_COLOR_OVER_LIFE:
 		return dynamic_cast<ModifiablePropertyLineBase*>(emitter->colorOverLife.Get());
+            
+    default: break;
 	}
 	return NULL;
 }
@@ -499,6 +504,8 @@ ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetLayerLine(Particl
 		return dynamic_cast<ModifiablePropertyLineBase*>(layer->angleVariation.Get());
 	case EL_ANIM_SPEED_OVERLIFE:
 		return dynamic_cast<ModifiablePropertyLineBase*>(layer->animSpeedOverLife.Get());
+
+    default: break;
 	}
 	return NULL;
 }
@@ -508,10 +515,9 @@ ModifiablePropertyLineBase* ParticleEffectPropertiesWidget::GetForceLine(Particl
 	{
 	case EF_FORCE:
 		return dynamic_cast<ModifiablePropertyLineBase*>(force->force.Get());
-	case EF_FORCE_VARIATION:
-		return dynamic_cast<ModifiablePropertyLineBase*>(force->forceVariation.Get());
 	case EF_FORCE_OVERLIFE:
 		return dynamic_cast<ModifiablePropertyLineBase*>(force->forceOverLife.Get());
+        default: break;
 	}
 	return NULL;
 }
@@ -530,6 +536,8 @@ void ParticleEffectPropertiesWidget::SetEmitterLineModifiable(ParticleEmitter *e
 		PropertyLineHelper::MakeModifiable(emitter->size); break;
 	case EE_COLOR_OVER_LIFE:
 		PropertyLineHelper::MakeModifiable(emitter->colorOverLife); break;
+
+        default: break;
 	}
 }
 void ParticleEffectPropertiesWidget::SetLayerLineModifiable(ParticleLayer *layer, LayerExternals lineId)
@@ -574,6 +582,8 @@ void ParticleEffectPropertiesWidget::SetLayerLineModifiable(ParticleLayer *layer
 		PropertyLineHelper::MakeModifiable(layer->angleVariation); break;
 	case EL_ANIM_SPEED_OVERLIFE:
 		PropertyLineHelper::MakeModifiable(layer->animSpeedOverLife); break;
+
+        default: break;
 	}
 }
 void ParticleEffectPropertiesWidget::SetForceLineModifiable(ParticleForce *force, ForceExternals lineId)
@@ -582,10 +592,10 @@ void ParticleEffectPropertiesWidget::SetForceLineModifiable(ParticleForce *force
 	{
 	case EF_FORCE:
 		PropertyLineHelper::MakeModifiable(force->force); break;
-	case EF_FORCE_VARIATION:
-		PropertyLineHelper::MakeModifiable(force->forceVariation); break;
 	case EF_FORCE_OVERLIFE:
 		PropertyLineHelper::MakeModifiable(force->forceOverLife); break;
+            
+        default: break;
 	}
 }
 
@@ -603,6 +613,8 @@ void ParticleEffectPropertiesWidget::RemoveEmitterLineModifiable(ParticleEmitter
 		PropertyLineHelper::RemoveModifiable(emitter->size); break;
 	case EE_COLOR_OVER_LIFE:
 		PropertyLineHelper::RemoveModifiable(emitter->colorOverLife); break;
+            
+        default: break;
 	}
 }
 void ParticleEffectPropertiesWidget::RemoveLayerLineModifiable(ParticleLayer *layer, LayerExternals lineId)
@@ -647,6 +659,8 @@ void ParticleEffectPropertiesWidget::RemoveLayerLineModifiable(ParticleLayer *la
 		PropertyLineHelper::RemoveModifiable(layer->angleVariation); break;
 	case EL_ANIM_SPEED_OVERLIFE:
 		PropertyLineHelper::RemoveModifiable(layer->animSpeedOverLife); break;
+            
+        default: break;
 	}
 }
 void ParticleEffectPropertiesWidget::RemoveForceLineModifiable(ParticleForce *force, ForceExternals lineId)
@@ -655,10 +669,10 @@ void ParticleEffectPropertiesWidget::RemoveForceLineModifiable(ParticleForce *fo
 	{
 	case EF_FORCE:
 		PropertyLineHelper::RemoveModifiable(force->force); break;
-	case EF_FORCE_VARIATION:
-		PropertyLineHelper::RemoveModifiable(force->forceVariation); break;
 	case EF_FORCE_OVERLIFE:
 		PropertyLineHelper::RemoveModifiable(force->forceOverLife); break;
+            
+        default: break;
 	}
 }
 
@@ -677,6 +691,7 @@ bool ParticleEffectPropertiesWidget::EditEmitterModifiable(ParticleEmitter *emit
 		return EditModificationLine(emitter->size, onAdd); break;
 	case EE_COLOR_OVER_LIFE:
 		return EditModificationLine(emitter->colorOverLife, onAdd); break;
+    default: break;
 	}
 	return false;
 }
@@ -722,6 +737,7 @@ bool ParticleEffectPropertiesWidget::EditLayerModifiable(ParticleLayer *layer, L
 		return EditModificationLine(layer->angleVariation, onAdd); break;
 	case EL_ANIM_SPEED_OVERLIFE:
 		return EditModificationLine(layer->animSpeedOverLife, onAdd); break;
+    default: break;
 	}
 	return false;
 }
@@ -731,10 +747,9 @@ bool ParticleEffectPropertiesWidget::EditForceModifiable(ParticleForce *force, F
 	{
 	case EF_FORCE:
 		return EditModificationLine(force->force, onAdd); break;
-	case EF_FORCE_VARIATION:
-		return EditModificationLine(force->forceVariation, onAdd); break;
 	case EF_FORCE_OVERLIFE:
 		return EditModificationLine(force->forceOverLife, onAdd); break;
+    default: break;
 	}
 	return false;
 }
@@ -747,83 +762,79 @@ void ParticleEffectPropertiesWidget::BuildEffectTree()
 	effectTree->setHeaderLabel(QString(particleEffect->GetEntity()->GetName().c_str()));
 	QTreeWidgetItem *root = effectTree->invisibleRootItem();
 	EffectTreeData data;
-	int32 childrenCount = particleEffect->GetEntity()->GetChildrenCount();
+	int32 childrenCount = particleEffect->GetEmittersCount();
 	for (int32 emitterId = 0; emitterId < childrenCount; emitterId++)
 	{
-		Entity *currEntity = particleEffect->GetEntity()->GetChild(emitterId);
-		RenderObject * ro = GetRenderObject(currEntity);
-		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
-		{			
-			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
-			data.emmiter = emitter;
-			QTreeWidgetItem *emitterItem = new QTreeWidgetItem(root, TreeItemTypeEmitter);
-			emitterItem->setText(0, QString(currEntity->GetName().c_str()));
-			emitterItem->setIcon(0, iconEmitter);						
-			emitterItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
-			//externals
-			for (int32 externalId = 0; externalId<EE_TOTAL; ++externalId)
+		
+		ParticleEmitter * emitter = particleEffect->GetEmitter(emitterId);
+		data.emmiter = emitter;
+		QTreeWidgetItem *emitterItem = new QTreeWidgetItem(root, TreeItemTypeEmitter);
+		emitterItem->setText(0, QString(emitter->name.c_str()));
+		emitterItem->setIcon(0, iconEmitter);						
+		emitterItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
+		//externals
+		for (int32 externalId = 0; externalId<EE_TOTAL; ++externalId)
+		{
+			if (GetEmitterLine(emitter, EmitterExternals(externalId)))
 			{
-				if (GetEmitterLine(emitter, EmitterExternals(externalId)))
+				data.externalParamId = externalId;
+				QTreeWidgetItem *externalItem = new QTreeWidgetItem(emitterItem, TreeItemTypeExternal);
+				externalItem->setText(0, QString("External ")+QString(EXTERNAL_NAMES[externalId].c_str()));
+				externalItem->setIcon(0, iconExternal);
+				externalItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
+			}
+		}
+		data.externalParamId=0;
+		//layers
+		int32 numLayers = emitter->layers.size();
+		for (int32 layerId = 0; layerId<numLayers; ++layerId)
+		{
+			ParticleLayer* layer = emitter->layers[layerId];
+			QTreeWidgetItem *layerItem = new QTreeWidgetItem(emitterItem, TreeItemTypeLayer);
+			data.layer = layer;
+			layerItem->setText(0, QString(layer->layerName.c_str()));
+			layerItem->setIcon(0, iconLayer);
+			layerItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
+			//externals
+			for (int32 externalId = EE_TOTAL; externalId<EL_TOTAL; ++externalId)
+			{
+				if (GetLayerLine(layer, LayerExternals(externalId)))
 				{
 					data.externalParamId = externalId;
-					QTreeWidgetItem *externalItem = new QTreeWidgetItem(emitterItem, TreeItemTypeExternal);
+					QTreeWidgetItem *externalItem = new QTreeWidgetItem(layerItem, TreeItemTypeExternal);
 					externalItem->setText(0, QString("External ")+QString(EXTERNAL_NAMES[externalId].c_str()));
 					externalItem->setIcon(0, iconExternal);
 					externalItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
 				}
 			}
 			data.externalParamId=0;
-			//layers
-			int32 numLayers = emitter->GetLayers().size();
-			for (int32 layerId = 0; layerId<numLayers; ++layerId)
+			//forces
+			int32 numForces = layer->forces.size();
+			for (int32 forceId=0; forceId<numForces; ++forceId)
 			{
-				ParticleLayer* layer = emitter->GetLayers()[layerId];
-				QTreeWidgetItem *layerItem = new QTreeWidgetItem(emitterItem, TreeItemTypeLayer);
-				data.layer = layer;
-				layerItem->setText(0, QString(layer->layerName.c_str()));
-				layerItem->setIcon(0, iconLayer);
-				layerItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
+				ParticleForce* force = layer->forces[forceId];
+				data.force = force;
+				QTreeWidgetItem *forceItem = new QTreeWidgetItem(layerItem, TreeItemTypeForce);
+				forceItem->setText(0, QString("force"));
+				forceItem->setIcon(0, iconForce);
+				forceItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
 				//externals
-				for (int32 externalId = EE_TOTAL; externalId<EL_TOTAL; ++externalId)
+				for (int32 externalId = EL_TOTAL; externalId<EF_TOTAL; ++externalId)
 				{
-					if (GetLayerLine(layer, LayerExternals(externalId)))
+					if (GetForceLine(force, ForceExternals(externalId)))
 					{
 						data.externalParamId = externalId;
-						QTreeWidgetItem *externalItem = new QTreeWidgetItem(layerItem, TreeItemTypeExternal);
+						QTreeWidgetItem *externalItem = new QTreeWidgetItem(forceItem, TreeItemTypeExternal);
 						externalItem->setText(0, QString("External ")+QString(EXTERNAL_NAMES[externalId].c_str()));
 						externalItem->setIcon(0, iconExternal);
 						externalItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
 					}
 				}
 				data.externalParamId=0;
-				//forces
-				int32 numForces = layer->forces.size();
-				for (int32 forceId=0; forceId<numForces; ++forceId)
-				{
-					ParticleForce* force = layer->forces[forceId];
-					data.force = force;
-					QTreeWidgetItem *forceItem = new QTreeWidgetItem(layerItem, TreeItemTypeForce);
-					forceItem->setText(0, QString("force"));
-					forceItem->setIcon(0, iconForce);
-					forceItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
-					//externals
-					for (int32 externalId = EL_TOTAL; externalId<EF_TOTAL; ++externalId)
-					{
-						if (GetForceLine(force, ForceExternals(externalId)))
-						{
-							data.externalParamId = externalId;
-							QTreeWidgetItem *externalItem = new QTreeWidgetItem(forceItem, TreeItemTypeExternal);
-							externalItem->setText(0, QString("External ")+QString(EXTERNAL_NAMES[externalId].c_str()));
-							externalItem->setIcon(0, iconExternal);
-							externalItem->setData(0, Qt::UserRole, QVariant::fromValue(data));
-						}
-					}
-					data.externalParamId=0;
-				}				
-				data.force = NULL;
-			}			
-			data.layer = NULL;
-		}
+			}				
+			data.force = NULL;
+		}			
+		data.layer = NULL;		
 	}
 	particleEffect->RebuildEffectModifiables();
 }

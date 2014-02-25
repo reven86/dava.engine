@@ -81,6 +81,7 @@ class RenderEffect : public BaseObject
 {
 protected:
     virtual ~RenderEffect();
+
 public:
     RenderEffect();
     

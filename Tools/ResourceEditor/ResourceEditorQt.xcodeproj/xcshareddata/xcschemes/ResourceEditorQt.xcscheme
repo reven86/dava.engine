@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0450"
+   LastUpgradeVersion = "0500"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -60,6 +60,10 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-sceneexporter -export -indir /Users/victorkleschenko/Work/WoT/wot.blitz_054/DataSource/3d/ -outdir /Users/victorkleschenko/Work/WoT/wot.blitz_054/Data/3d -processdir Tanks"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-extract -path /Users/user/Documents/work/test/extractor_test  -mipmap 2 -forceclose"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -38,6 +38,8 @@
 #include "Grid/GridController.h"
 #include "Ruler/RulerController.h"
 
+#include "PreviewController.h"
+
 #include <QMenu>
 #include <QAction>
 #include <QApplication>
@@ -63,7 +65,7 @@ public:
 	
 	void SystemDraw(const UIGeometricData &/*geometricData*/)
 	{
-		RenderHelper::Instance()->DrawRect(GetRect());
+		RenderHelper::Instance()->DrawRect(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
 	}
 };
 
@@ -76,6 +78,7 @@ DefaultScreen::DefaultScreen()
 	lastSelectedControl = NULL;
 	
 	selectorControl = new UISelectorControl();
+    screenControl = NULL;
 	
 	copyControlsInProcess = false;
 	mouseAlreadyPressed = false;
@@ -102,10 +105,33 @@ void DefaultScreen::Draw(const UIGeometricData &geometricData)
 
 void DefaultScreen::SystemDraw(const UIGeometricData &geometricData)
 {
+    bool previewEnabled = PreviewController::Instance()->IsPreviewEnabled();
+    Color oldColor = RenderManager::Instance()->GetColor();
+
+    RenderManager::Instance()->SetColor(ScreenWrapper::Instance()->GetBackgroundFrameColor());
+    RenderHelper::Instance()->FillRect(ScreenWrapper::Instance()->GetBackgroundFrameRect(), RenderState::RENDERSTATE_2D_BLEND);
+    RenderManager::Instance()->SetColor(oldColor);
+
+   // For Preview mode display only what is inside the preview rectangle.
+    if (previewEnabled)
+    {
+        RenderManager::Instance()->ClipPush();
+        
+        Rect previewClipRect;
+        previewClipRect.SetSize(PreviewController::Instance()->GetTransformData().screenSize);
+        RenderManager::Instance()->ClipRect(previewClipRect);
+    }
+
 	UIScreen::SystemDraw(geometricData);
-	
-	if (inputState == InputStateSelectorControl)
+
+    if (previewEnabled)
+    {
+        RenderManager::Instance()->ClipPop();
+    }
+    else if (inputState == InputStateSelectorControl)
+    {
 		selectorControl->SystemDraw(geometricData);
+    }
 }
 
 bool DefaultScreen::IsPointInside(const Vector2& /*point*/, bool /*expandWithFocus*/)
@@ -127,15 +153,29 @@ Vector2 DefaultScreen::LocalToInternal(const Vector2& localPoint) const
 void DefaultScreen::SetScale(const Vector2& scale)
 {
 	this->scale = scale;
+    if (screenControl)
+    {
+        screenControl->SetScale(scale);
+    }
 }
 
 void DefaultScreen::SetPos(const Vector2& pos)
 {
 	this->pos = pos;
+    if (screenControl)
+    {
+        screenControl->SetPos(pos);
+    }
 }
 
 void DefaultScreen::Input(DAVA::UIEvent* event)
 {
+    if (PreviewController::Instance()->IsPreviewEnabled())
+    {
+        UIScreen::Input(PreprocessEventForPreview(event));
+        return;
+    }
+
 	switch (event->phase)
 	{
 		case UIEvent::PHASE_BEGAN:
@@ -164,6 +204,11 @@ void DefaultScreen::Input(DAVA::UIEvent* event)
 
 bool DefaultScreen::SystemInput(UIEvent *currentInput)
 {
+    if (PreviewController::Instance()->IsPreviewEnabled())
+    {
+        return UIScreen::SystemInput(PreprocessEventForPreview(currentInput));
+    }
+
 	Input(currentInput);
 	return true;
 }
@@ -313,7 +358,7 @@ HierarchyTreeNode::HIERARCHYTREENODEID DefaultScreen::SmartSelection::GetNext(Hi
 	return HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
 }
 
-void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const HierarchyTreeNode* parent, const Vector2& point)
+void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const HierarchyTreeNode* parent, const Vector2& point) const
 {
 	if (!parent)
 		return;
@@ -377,7 +422,7 @@ HierarchyTreeControlNode* DefaultScreen::GetSelectedControl(const Vector2& point
 	return NULL;
 }
 
-HierarchyTreeControlNode* DefaultScreen::SmartGetSelectedControl(const Vector2& point)
+HierarchyTreeControlNode* DefaultScreen::SmartGetSelectedControl(const Vector2& point) const
 {
 	SmartSelection root(HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY);
 	SmartGetSelectedControl(&root, HierarchyTreeController::Instance()->GetActiveScreen(), point);
@@ -596,7 +641,14 @@ ResizeType DefaultScreen::GetResizeType(const HierarchyTreeControlNode* selected
     {
         horLeft = true;
     }
-    
+
+    // If at least one coord is less than zero and more than SIZE_CURSOR_DELTA - we are outside the control.
+    if ((distancesToBounds.x < 0 || distancesToBounds.y < 0 || distancesToBounds.z < 0 || distancesToBounds.w < 0) &&
+        (verTop || verBottom || horLeft || horRight))
+    {
+        return ResizeTypeNoResize;
+    }
+
 	if (horLeft && verTop)
 		return ResizeTypeLeftTop;
 	if (horRight && verBottom)
@@ -683,9 +735,7 @@ void DefaultScreen::ApplySizeDelta(const Vector2& delta)
 	}
 
 	// The helper will calculate both resize (taking rotation into account) and clamp.
-    Rect rect = UIControlResizeHelper::ResizeControl(resizeType, lastSelectedControl->GetUIObject(), resizeRect,  delta);
-	
-	lastSelectedControl->GetUIObject()->SetRect(rect);
+    UIControlResizeHelper::ResizeControl(resizeType, lastSelectedControl->GetUIObject(), resizeRect,  delta);
 }
 
 void DefaultScreen::ResetSizeDelta()
@@ -1180,9 +1230,13 @@ void DefaultScreen::BacklightControl(const Vector2& position)
 bool DefaultScreen::IsDropEnable(const DAVA::Vector2 &position) const
 {
 	Vector2 pos = LocalToInternal(position);
-	HierarchyTreeAggregatorControlNode* newSelectedNode = dynamic_cast<HierarchyTreeAggregatorControlNode*>(GetSelectedControl(pos, HierarchyTreeController::Instance()->GetActiveScreen()));
+	HierarchyTreeAggregatorControlNode* newSelectedNode = dynamic_cast<HierarchyTreeAggregatorControlNode*>(SmartGetSelectedControl(pos));
 	if (newSelectedNode)
+	{
+		// Don't allow to drop anything to Aggregators.
 		return false;
+	}
+
 	return true;
 }
 
@@ -1269,7 +1323,7 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 	}
 }
 
-bool DefaultScreen::IsControlVisible(UIControl* uiControl)
+bool DefaultScreen::IsControlVisible(UIControl* uiControl) const
 {
 	bool isVisible = false;
 	IsControlVisibleRecursive(uiControl, isVisible);
@@ -1277,7 +1331,7 @@ bool DefaultScreen::IsControlVisible(UIControl* uiControl)
 	return isVisible;
 }
 
-void DefaultScreen::IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible)
+void DefaultScreen::IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible) const
 {
 	if (!uiControl)
 	{
@@ -1294,3 +1348,29 @@ void DefaultScreen::IsControlVisibleRecursive(const UIControl* uiControl, bool& 
 	}
 }
 
+void DefaultScreen::SetScreenControl(ScreenControl* control)
+{
+    screenControl = control;
+}
+
+UIEvent* DefaultScreen::PreprocessEventForPreview(UIEvent* event)
+{
+    switch (event->phase)
+    {
+        case UIEvent::PHASE_BEGAN:
+        case UIEvent::PHASE_DRAG:
+        case UIEvent::PHASE_MOVE:
+        case UIEvent::PHASE_ENDED:
+        {
+            event->point = LocalToInternal(event->point);
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+
+    return event;
+}

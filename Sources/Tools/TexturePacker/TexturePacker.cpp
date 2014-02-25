@@ -37,6 +37,7 @@
 #include "TextureCompression/TextureConverter.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "FramePathHelper.h"
+#include "Utils/StringFormat.h"
 
 #ifdef WIN32
 #define snprintf _snprintf
@@ -49,6 +50,7 @@ TexturePacker::TexturePacker()
 {
 	maxTextureSize = TEXTURE_SIZE;
 	onlySquareTextures = false;
+	errors.clear();
 }
 
 bool TexturePacker::TryToPack(const Rect2i & textureRect, List<DefinitionFile*> & /*defsList*/)
@@ -175,11 +177,18 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			PngImageExt finalImage;
 			finalImage.Create(bestXResolution, bestYResolution);
 			
+			String fileName = defFile->filename.GetFilename();
+			
 			// Writing 
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
 				Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
-				if (!destRect)Logger::Error("*** ERROR Can't find rect for frame");
+				if (!destRect)
+				{
+					AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s.",
+									frame,
+									fileName.c_str()));
+				}
 				
 				FilePath withoutExt(defFile->filename);
                 withoutExt.TruncateExtension();
@@ -191,7 +200,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 			
 			if (!WriteDefinition(excludeFolder, outputPath, textureNameWithIndex, defFile))
 			{
-				Logger::Error("* ERROR: failed to write definition");
+				AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
 			}
 
             textureName.ReplaceExtension(".png");
@@ -254,10 +263,18 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 		for (List<DefinitionFile*>::iterator dfi = defsList.begin(); dfi != defsList.end(); ++dfi)
 		{
 			DefinitionFile * defFile = *dfi;
+			String fileName = defFile->filename.GetFilename();
+			
 			for (int frame = 0; frame < defFile->frameCount; ++frame)
 			{
 				Rect2i *destRect = lastPackedPacker->SearchRectForPtr(&defFile->frameRects[frame]);
-				if (!destRect)Logger::Error("*** ERROR Can't find rect for frame");
+				if (!destRect)
+				{
+					AddError(Format("*** ERROR: Can't find rect for frame - %d. Definition - %s. ",
+									frame,
+									fileName.c_str()));
+				}
+				
 				
                 FilePath withoutExt(defFile->filename);
                 withoutExt.TruncateExtension();
@@ -269,7 +286,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 			
 			if (!WriteDefinition(excludeFolder, outputPath, "texture", defFile))
 			{
-				Logger::Error("* ERROR: failed to write definition");
+				AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
 			}
 		}
 
@@ -285,7 +302,9 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defList, eGPUFamily forGPU)
 {
 	if (defList.size() != 1)
-        Logger::Error("* ERROR: failed to pack to multiple textures");
+	{
+		AddError(Format("* ERROR: Failed to pack to multiple textures for path - %s.", outputPath.GetAbsolutePathname().c_str()));
+	}
 
 	for (int i = 0; i < (int)sortVector.size(); ++i)
 	{
@@ -338,7 +357,8 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
     Logger::FrameworkDebug("* Writing %d final textures", (int)packers.size());
 
 	Vector<PngImageExt*> finalImages;
-	
+	finalImages.reserve(packers.size());
+    
 	for (int imageIndex = 0; imageIndex < (int)packers.size(); ++imageIndex)
 	{
 		PngImageExt * image = new PngImageExt();
@@ -395,11 +415,12 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 	for (List<DefinitionFile*>::iterator defi = defList.begin(); defi != defList.end(); ++defi)
 	{
 		DefinitionFile * defFile = *defi;
-		
+		String fileName = defFile->filename.GetFilename();
 		FilePath textureName = outputPath + "texture";
+		
 		if (!WriteMultipleDefinition(excludeFolder, outputPath, "texture", defFile))
 		{
-			Logger::Error("* ERROR: failed to write definition");
+			AddError(Format("* ERROR: Failed to write definition - %s.", fileName.c_str()));
 		}
 	}	
 }
@@ -466,7 +487,9 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 
 		if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
         {
-            Logger::Error("In sprite %s.psd frame %d has size bigger than sprite size!", defFile->filename.GetBasename().c_str(), frame);
+			AddError(Format("In sprite %s.psd frame %d has size bigger than sprite size!",
+								defFile->filename.GetBasename().c_str(),
+								frame));
         }
 	}
 	
@@ -548,11 +571,13 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 
             if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
             {
-                Logger::Error("In sprite %s.psd frame %d has size bigger than sprite size!", defFile->filename.GetBasename().c_str(), frame);
+                Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
             }
 		}else
 		{
-			Logger::Error("*** FATAL ERROR: can't find rect in all of packers");
+			AddError(Format("*** FATAL ERROR: Can't find rect in all of packers for frame - %d. Definition file - %s.",
+								frame,
+								fileName.c_str()));
 		}
 	}
 	
@@ -593,7 +618,7 @@ void TexturePacker::ExportImage(PngImageExt *image, const FilePath &exportedPath
         FileSystem::Instance()->DeleteFile(exportedPathname);
     }
 
-    SafeRelease(descriptor);
+	delete descriptor;
 }
 
 
@@ -604,7 +629,7 @@ TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
     descriptor->settings.wrapModeS = descriptor->settings.wrapModeT = GetDescriptorWrapMode();
     descriptor->settings.generateMipMaps = CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps"));
 	
-	TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->settings.generateMipMaps);
+	TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->settings.generateMipMaps == TextureDescriptor::OPTION_ENABLED);
 	descriptor->settings.minFilter = ftItem.minFilter;
 	descriptor->settings.magFilter = ftItem.magFilter;
 	
@@ -627,9 +652,10 @@ TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
 		}
 		else
 		{
-			Logger::Error("Compression format '%s' is not supported for GPU '%s'",
-				formatName.c_str(),
-				GPUFamilyDescriptor::GetGPUName(forGPU).c_str());
+			AddError(Format("Compression format '%s' is not supported for GPU '%s'",
+									formatName.c_str(),
+									GPUFamilyDescriptor::GetGPUName(forGPU).c_str()));
+			
 			descriptor->exportedAsGpuFamily = GPU_UNKNOWN;
 		}
     }
@@ -759,5 +785,15 @@ void TexturePacker::WriteDefinitionString(FILE *fp, const Rect2i & writeRect, co
 	}
 }
 
+const Set<String>& TexturePacker::GetErrors() const
+{
+	return errors;
+}
+
+void TexturePacker::AddError(const String& errorMsg)
+{
+	Logger::Error(errorMsg.c_str());
+	errors.insert(errorMsg);
+}
 
 };

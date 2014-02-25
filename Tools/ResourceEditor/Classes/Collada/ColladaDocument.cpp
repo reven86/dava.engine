@@ -663,7 +663,7 @@ void ColladaDocument::WriteSceneNode(ColladaSceneNode * node, int &globalNodeId,
 		}		
 	}
 
-	DAVA::Logger::FrameworkDebug("%s Write scene node: %s childCount: %d isJoint: %d\n", GetIndentString('-', level + 1), name.c_str(), def.childCount, (int)node->isJoint);
+	DAVA::Logger::FrameworkDebug("%s Write scene node: %s childCount: %d isJoint: %d\n", GetIndentString('-', level + 1).c_str(), name.c_str(), def.childCount, (int)node->isJoint);
 	
 	fwrite(&def, sizeof(def), 1, sceneFP);
 	
@@ -697,13 +697,13 @@ void ColladaDocument::WriteMeshNode(ColladaMeshInstance * node, int32 & globalNo
 {
 	int nodeId = globalNodeId;
 	char name[512];
-	strcpy(name, Format("instance_%d", instanceIdx));
+	strcpy(name, Format("instance_%d", instanceIdx).c_str());
 	
 	fwrite(&nodeId, sizeof(int), 1, sceneFP);
 	fwrite(name, strlen(name) + 1, 1, sceneFP);
 	
 	
-	DAVA::Logger::FrameworkDebug("%s Write mesh instance node: %s\n", GetIndentString('-', level + 1),  name);
+	DAVA::Logger::FrameworkDebug("%s Write mesh instance node: %s\n", GetIndentString('-', level + 1).c_str(),  name);
 	
 	// write node information
 	SceneFile::SceneNodeDef def;
@@ -740,7 +740,7 @@ void ColladaDocument::WriteMeshNode(ColladaMeshInstance * node, int32 & globalNo
 		}
 		
 				
-		DAVA::Logger::FrameworkDebug("%s Write poly instance node: %d materialIdx: %d meshIndex: %d polygroupIndex: %d\n",GetIndentString('-', level + 1), pgi, materialIndex, meshIndex, polyGroupIndex);
+		DAVA::Logger::FrameworkDebug("%s Write poly instance node: %d materialIdx: %d meshIndex: %d polygroupIndex: %d\n",GetIndentString('-', level + 1).c_str(), pgi, materialIndex, meshIndex, polyGroupIndex);
 		fwrite(&meshIndex, sizeof(int32), 1, sceneFP);
 		fwrite(&polyGroupIndex, sizeof(int32), 1, sceneFP);
 		fwrite(&materialIndex, sizeof(int32), 1, sceneFP);
@@ -763,7 +763,7 @@ void ColladaDocument::WriteCameraNode(ColladaCamera * node, int32 & globalNodeId
 	fwrite(&nodeId, sizeof(int), 1, sceneFP);
 	fwrite(name, strlen(name) + 1, 1, sceneFP);
 		
-	DAVA::Logger::FrameworkDebug("%s Write camera node: %s\n", GetIndentString('-', level + 1), name);
+	DAVA::Logger::FrameworkDebug("%s Write camera node: %s\n", GetIndentString('-', level + 1).c_str(), name);
 	
 	// write node information
 	SceneFile::SceneNodeDef def;

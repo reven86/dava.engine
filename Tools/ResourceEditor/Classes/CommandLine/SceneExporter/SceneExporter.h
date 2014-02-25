@@ -67,8 +67,6 @@ protected:
     void CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog);
 
     void ExportLandscape(Scene *scene, Set<String> &errorLog);
-    void ExportLandscapeFullTiledTexture(Landscape *landscape, Set<String> &errorLog);
-    
     
     
     

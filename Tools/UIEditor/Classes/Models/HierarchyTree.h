@@ -78,6 +78,9 @@ public:
 
 	// Returns the list of screens currently unsaved. Might be empty.
 	List<HierarchyTreeScreenNode*> GetUnsavedScreens();
+	
+	// Update properties for all controls
+	void UpdateControlsData();
 
     // Update the localization for all controls.
     void UpdateLocalization();
@@ -97,6 +100,9 @@ private:
     // Update Extra Data from/to the control's data.
     void UpdateExtraData(BaseMetadata::eExtraDataUpdateStyle updateStyle);
     void UpdateExtraDataRecursive(HierarchyTreeControlNode* node, BaseMetadata::eExtraDataUpdateStyle updateStyle);
+	
+	// Update file/folder last modified date
+	void UpdateModificationDate(const QString &path);
 
 private:
 	HierarchyTreeNode* FindNode(const HierarchyTreeNode* parent, HierarchyTreeNode::HIERARCHYTREENODEID id) const;

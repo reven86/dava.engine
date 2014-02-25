@@ -51,8 +51,8 @@ public:
 	// UIListDelegate
     virtual int32 ElementsCount(UIList *forList);
 	virtual UIListCell *CellAtIndex(UIList *forList, int32 index);
-	virtual int32 CellHeight(UIList *forList, int32 index);
-	virtual int32 CellWidth(UIList *forList, int32 index);
+	virtual float32 CellHeight(UIList *forList, int32 index);
+	virtual float32 CellWidth(UIList *forList, int32 index);
 	virtual void SaveToYaml(UIList *forList, YamlNode *node);
 	
 	void SetAggregatorID(int32 agId);

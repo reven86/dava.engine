@@ -90,7 +90,38 @@ namespace DAVA
     /**
         \brief Fast function to compute index of bit that is set in a value. Only one bit should be set to make it work correctly.
      */
-    uint32 CountLeadingZeros(uint32 value);
+    
+    
+    #ifdef __GNUC__
+//     #define CountLeadingZeros(x) __builtin_clz(x)
+//     #define CountTrailingZeros(x) __builtin_ctz(x)
+    #define FastLog2(x) __builtin_ctz(x)
+    #else
+//     inline uint32 popcnt( uint32 x )
+//     {
+//         x -= ((x >> 1) & 0x55555555);
+//         x = (((x >> 2) & 0x33333333) + (x & 0x33333333));
+//         x = (((x >> 4) + x) & 0x0f0f0f0f);
+//         x += (x >> 8);
+//         x += (x >> 16);
+//         return x & 0x0000003f;
+//     }
+//     inline uint32 CountLeadingZeros( uint32 x )
+//     {
+//         x |= (x >> 1);
+//         x |= (x >> 2);
+//         x |= (x >> 4);
+//         x |= (x >> 8);
+//         x |= (x >> 16);
+//         return 32 - popcnt(x);
+//     }
+//     inline uint32 CountTrailingZeros( uint32 x )
+//     {
+//         return popcnt((x & -x) - 1);
+//     }
+    extern const int MultiplyDeBruijnBitPosition2[32];
+    #define FastLog2(value) MultiplyDeBruijnBitPosition2[(uint32)(value * 0x077CB531U) >> 27]
+    #endif
 
 
 };

@@ -49,7 +49,6 @@ public:
     virtual void Cleanup();
 
 protected:
-    virtual void OnPropertiesChangedFromExternalSource();
 	virtual void HandleChangePropertySucceeded(const QString& propertyName);
 
 protected slots:

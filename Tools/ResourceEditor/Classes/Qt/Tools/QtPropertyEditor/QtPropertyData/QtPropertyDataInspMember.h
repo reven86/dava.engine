@@ -28,12 +28,14 @@ public:
 	QtPropertyDataInspMember(void *_object, const DAVA::InspMember *_member);
 	virtual ~QtPropertyDataInspMember();
 
+	virtual const DAVA::MetaInfo * MetaInfo() const;
+
 	virtual void* CreateLastCommand() const;
 
-protected:
 	void *object;
 	const DAVA::InspMember *member;
 
+protected:
 	InspMemberModifyCommand* lastCommand;
 
 	virtual void SetValueInternal(const QVariant &value);

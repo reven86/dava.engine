@@ -59,7 +59,7 @@ public:
 	~TextureScrollArea();
 
 	void setImage(const QImage &image);
-	void setImage(const DAVA::Vector<QImage>& images, int flags = 0x000000FF); //this method sets cubemap faces
+	void setImage(const QList<QImage>& images, int flags = 0x000000FF); //this method sets cubemap faces
 	QImage getImage();
 	void setColorChannel(int mask);
 

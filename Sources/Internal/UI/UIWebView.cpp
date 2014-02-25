@@ -44,25 +44,18 @@
 
 using namespace DAVA;
 
-UIWebView::UIWebView()
+UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates) :
+    webViewControl(new WebViewControl()),
+    UIControl(rect, rectInAbsoluteCoordinates)
 {
-	webViewControl = new WebViewControl();
-	// Initialize web view with empty rect
-	// This will allow to avoid crash after calling SetDelegate
-	webViewControl->Initialize(Rect());
+    Rect newRect = GetRect(true);
+    webViewControl->Initialize(newRect);
 }
 
 UIWebView::~UIWebView()
 {
 	SafeDelete(webViewControl);
 };
-
-UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates) :
-	webViewControl(new WebViewControl()),
-	UIControl(rect, rectInAbsoluteCoordinates)
-{
-	webViewControl->Initialize(rect);
-}
 
 void UIWebView::SetDelegate(IUIWebViewDelegate* delegate)
 {
@@ -84,12 +77,29 @@ void UIWebView::DeleteCookies(const String& targetUrl)
 	webViewControl->DeleteCookies(targetUrl);
 }
 
+void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
+{
+    this->webViewControl->OpenFromBuffer(string, basePath);
+}
+
+void UIWebView::WillAppear()
+{
+    UIControl::WillAppear();
+    webViewControl->SetVisible(GetVisible(), true);
+}
+
+void UIWebView::WillDisappear()
+{
+    UIControl::WillDisappear();
+    webViewControl->SetVisible(false, true);
+}
+
 void UIWebView::SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates)
 {
 	UIControl::SetPosition(position, positionInAbsoluteCoordinates);
 
 	// Update the inner control.
-	Rect newRect = GetRect();
+	Rect newRect = GetRect(true);
 	webViewControl->SetRect(newRect);
 }
 
@@ -98,14 +108,15 @@ void UIWebView::SetSize(const Vector2 &newSize)
 	UIControl::SetSize(newSize);
 
 	// Update the inner control.
-	Rect newRect = GetRect();
+	Rect newRect = GetRect(true);
 	webViewControl->SetRect(newRect);
 }
 
 void UIWebView::SetVisible(bool isVisible, bool hierarchic)
 {
 	UIControl::SetVisible(isVisible, hierarchic);
-	webViewControl->SetVisible(isVisible, hierarchic);
+    if (IsOnScreen())
+        webViewControl->SetVisible(isVisible, hierarchic);
 }
 
 void UIWebView::SetScalesPageToFit(bool isScalesToFit)
@@ -127,4 +138,9 @@ void UIWebView::SetBounces(bool value)
 bool UIWebView::GetBounces() const
 {
 	return webViewControl->GetBounces();
+}
+
+void UIWebView::SetGestures(bool value)
+{
+	webViewControl->SetGestures(value);    
 }

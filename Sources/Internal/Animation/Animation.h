@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/EventDispatcher.h"
+#include "Base/AllocatorFactory.h"
 #include "Animation/Interpolation.h"
 #include "Animation/AnimatedObject.h"
 
@@ -80,6 +81,8 @@ protected:
 	virtual ~Animation();
 
 public:
+    IMPLEMENT_POOL_ALLOCATOR_FOR_SIZE("Animation", sizeof(void*) * 48, 25);
+
 	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0); 
 	
 	virtual void	Reset();				

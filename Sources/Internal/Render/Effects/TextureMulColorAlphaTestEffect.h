@@ -57,11 +57,13 @@ class TextureMulColorAlphaTestEffectGL20 : public TextureMulColorAlphaTestEffect
 {
 public:
     TextureMulColorAlphaTestEffectGL20();
-    ~TextureMulColorAlphaTestEffectGL20();
-    virtual void DrawArrays(ePrimitiveType mode, int32 first, int32 count);
+	~TextureMulColorAlphaTestEffectGL20();
+	
+	virtual void DrawArrays(ePrimitiveType mode, int32 first, int32 count);
     virtual void DrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices); 
+
 protected:
-    Shader * shader;
+	Shader * shader;
 };
 #elif defined(__DAVAENGINE_DIRECTX9__)
 

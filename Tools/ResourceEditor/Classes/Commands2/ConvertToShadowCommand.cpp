@@ -28,86 +28,72 @@
 
 #include "ConvertToShadowCommand.h"
 
-using namespace DAVA;
-
-
-ConvertToShadowCommand::ConvertToShadowCommand(DAVA::Entity * entity)
+ConvertToShadowCommand::ConvertToShadowCommand(DAVA::RenderBatch *batch)
     : Command2(CMDID_CONVERT_TO_SHADOW, "Convert To Shadow")
+	, oldBatch(batch)
+	, shadowVolume(NULL)
 {
-	affectedEntity = entity;
-    changedRenderBatch = 0;
+	DVASSERT(oldBatch);
+
+	renderObject = DAVA::SafeRetain(oldBatch->GetRenderObject());
+	DVASSERT(renderObject);
+
+	renderObject->Retain();
+	oldBatch->Retain();
+
+	shadowVolume = oldBatch->CreateShadow();
 }
 
 ConvertToShadowCommand::~ConvertToShadowCommand()
 {
-    SafeRelease(changedRenderBatch);
-    affectedEntity = NULL;
+	DAVA::SafeRelease(oldBatch);
+	DAVA::SafeRelease(shadowVolume);
+    DAVA::SafeRelease(renderObject);
 }
 
 void ConvertToShadowCommand::Redo()
 {
-    DVASSERT(affectedEntity);
-
-	changedRenderBatch = ConvertToShadowVolume(affectedEntity);
+	DAVA::int32 count = (DAVA::int32)renderObject->GetRenderBatchCount();
+	for(DAVA::int32 i = count-1; i >= 0; --i)
+	{
+		DAVA::int32 lodIndex, switchIndex;
+		DAVA::RenderBatch *b = renderObject->GetRenderBatch(i, lodIndex, switchIndex);
+		if(b == oldBatch)
+		{
+			renderObject->RemoveRenderBatch(i);
+			renderObject->AddRenderBatch(shadowVolume, lodIndex, switchIndex);
+			break;
+		}
+	}
 }
 
 void ConvertToShadowCommand::Undo()
 {
-    if(changedRenderBatch && affectedEntity)
-    {
-		if(IsEntityWithShadowVolume(affectedEntity))
+	DAVA::int32 count = (DAVA::int32)renderObject->GetRenderBatchCount();
+	for(DAVA::int32 i = count-1; i >= 0; --i)
+	{
+		DAVA::int32 lodIndex, switchIndex;
+		DAVA::RenderBatch *b = renderObject->GetRenderBatch(i, lodIndex, switchIndex);
+		if(b == shadowVolume)
 		{
-			RenderObject * ro = GetRenderObject(affectedEntity);
-
-			RenderBatch * shadowVolume = ro->GetRenderBatch(0);
-			ro->RemoveRenderBatch(shadowVolume);
-
-			ro->AddRenderBatch(changedRenderBatch);
-			SafeRelease(changedRenderBatch);
-
-			affectedEntity->SetLocalTransform(affectedEntity->GetLocalTransform());
+			renderObject->RemoveRenderBatch(i);
+			renderObject->AddRenderBatch(oldBatch, lodIndex, switchIndex);
+			break;
 		}
-    }
+	}
 }
 
 DAVA::Entity* ConvertToShadowCommand::GetEntity() const
 {
-    return affectedEntity;
+    return NULL;
 }
 
-bool ConvertToShadowCommand::IsEntityWithShadowVolume(const DAVA::Entity *entity)
+bool ConvertToShadowCommand::CanConvertBatchToShadow(DAVA::RenderBatch *renderBatch)
 {
-	RenderObject * ro = GetRenderObject(entity);
-	return (ro && ro->GetRenderBatchCount() == 1 && typeid(*(ro->GetRenderBatch(0))) == typeid(DAVA::ShadowVolume));
-}
-
-bool ConvertToShadowCommand::IsAvailableForConvertionToShadowVolume(const DAVA::Entity *entity)
-{
-    RenderObject * ro = GetRenderObject(entity);
-    return (    (!ro || (ro->GetRenderBatchCount() != 1) ||
-                 (typeid(*(ro->GetRenderBatch(0))) != typeid(DAVA::RenderBatch)) ||
-                 (ro->GetType() == RenderObject::TYPE_SKYBOX)) == false);
-}
-
-
-DAVA::RenderBatch * ConvertToShadowCommand::ConvertToShadowVolume( DAVA::Entity *entity )
-{
-	RenderObject * ro = GetRenderObject(entity);
-	if(ro && (ro->GetRenderBatchCount() == 1) && (typeid(*(ro->GetRenderBatch(0))) == typeid(DAVA::RenderBatch)))
+	if(renderBatch && (typeid(*renderBatch) == typeid(DAVA::RenderBatch)))
 	{
-		ShadowVolume * shadowVolume = ro->CreateShadow();
-
-		RenderBatch * oldBatch = ro->GetRenderBatch(0);
-		oldBatch->Retain();
-
-		ro->RemoveRenderBatch(oldBatch);
-		ro->AddRenderBatch(shadowVolume);
-		shadowVolume->Release();
-
-		entity->SetLocalTransform(entity->GetLocalTransform());//just forced update of worldTransform
-
-		return oldBatch;
+		return true;
 	}
 
-	return NULL;
+	return false;
 }

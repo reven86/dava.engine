@@ -109,7 +109,7 @@ Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, c
 	return image;
 }
 
-Image * Image::CreatePinkPlaceholder()
+Image * Image::CreatePinkPlaceholder(bool checkers)
 {
     Image * image = new Image();
 	image->width = 16;
@@ -120,7 +120,7 @@ Image * Image::CreatePinkPlaceholder()
 
     
     uint32 pink = 0xffff00ff;
-    uint32 gray = 0xff7f7f7f;
+    uint32 gray = (checkers) ? 0xff7f7f7f : 0xffff00ff;
     bool pinkOrGray = false;
     
     uint32 * writeData = (uint32*) image->data;

@@ -29,8 +29,9 @@
 
 
 #include "Commands2/EntityAddCommand.h"
-#include "../Qt/Scene/SceneDataManager.h"
 #include "Scene3D/Entity.h"
+#include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 
 EntityAddCommand::EntityAddCommand(DAVA::Entity* _entityToAdd, DAVA::Entity* toParent)
@@ -57,10 +58,19 @@ void EntityAddCommand::Undo()
 void EntityAddCommand::Redo()
 {
     if(parentToAdd)
+	{
         parentToAdd->AddNode(entityToAdd);
+
+		//Workaround for correctly adding of switch
+		DAVA::SwitchComponent *sw = GetSwitchComponent(entityToAdd);
+		if(sw)
+		{
+			sw->SetSwitchIndex(sw->GetSwitchIndex());
+		}
+	}
 }
 
-Entity* EntityAddCommand::GetEntity() const
+DAVA::Entity* EntityAddCommand::GetEntity() const
 {
 	return entityToAdd;
 }

@@ -39,15 +39,14 @@
 namespace DAVA
 {
 
+	
+	static const FastName LIGHT_POSITION0("lightPosition0");
 
 ShadowVolumeNode::ShadowVolumeNode()
 : shadowPolygonGroup(0)
 {
-	shader = new Shader();
-	shader->LoadFromYaml("~res:/Shaders/ShadowVolume/shadowvolume.shader");
-	shader->Recompile();
-
-    uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
+	shader = 0; //ShaderCache::Instance->Get("~res:/Shaders/ShadowVolume/shadowvolume.shader");
+    uniformLightPosition0 = -1; //shader->FindUniformIndexByName(FastName("lightPosition0"));
 }
 
 DAVA::ShadowVolumeNode::~ShadowVolumeNode()
@@ -63,7 +62,8 @@ void DAVA::ShadowVolumeNode::Draw()
 
 void DAVA::ShadowVolumeNode::DrawShadow()
 {
-	Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW); 
+#if 0
+	Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
 	Matrix4 meshFinalMatrix = GetWorldTransform() * prevMatrix;
 	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
 
@@ -95,6 +95,7 @@ void DAVA::ShadowVolumeNode::DrawShadow()
 	}
 
 	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
+#endif
 }
 
 int32 ShadowVolumeNode::FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count)
@@ -448,19 +449,19 @@ void ShadowVolumeNode::CopyGeometryFrom(MeshInstanceNode * meshInstance)
 	SafeRelease(newPolygonGroup);
 }
 
-void ShadowVolumeNode::Save(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
+void ShadowVolumeNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-	Entity::Save(archive, sceneFileV2);
+	Entity::Save(archive, serializationContext);
 
 	archive->SetByteArrayAsType("pg", (uint64)shadowPolygonGroup);
 }
 
-void ShadowVolumeNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
+void ShadowVolumeNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
-	Entity::Load(archive, sceneFileV2);
+	Entity::Load(archive, serializationContext);
 
 	uint64 ptr = archive->GetByteArrayAsType("pg", (uint64)0);
-	shadowPolygonGroup = dynamic_cast<PolygonGroup*>(sceneFileV2->GetNodeByPointer(ptr));
+	shadowPolygonGroup = static_cast<PolygonGroup*>(serializationContext->GetDataBlock(ptr));
 	SafeRetain(shadowPolygonGroup);
 }
 

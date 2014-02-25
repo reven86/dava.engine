@@ -194,11 +194,8 @@ void HierarchyTreeScreenNode::BuildHierarchyTree(HierarchyTreeNode* parent, List
 			node = new HierarchyTreeAggregatorControlNode(NULL, parent, uiControl, QString::fromStdString(uiControl->GetName()));
 		else
 			node = new HierarchyTreeControlNode(parent, uiControl, QString::fromStdString(uiControl->GetName()));
-
-		// Yuri Coder, 2013/03/28. For some controls (like UISpinner) we have to load info not only about the control
-		// itself, but also for its "subcontrols". Actually subcontrols are the same as "real chidren", but may also
-		// include some extra items. GetSubcontrols() method is virtual and redefined on each UIControl's level.
-		BuildHierarchyTree(node, uiControl->GetRealChildrenAndSubcontrols());
+		// Build hierarchy tree for all control's children. Subcontrols are loaded separately
+		BuildHierarchyTree(node, uiControl->GetRealChildren());
 		parent->AddTreeNode(node);
 	}
 }

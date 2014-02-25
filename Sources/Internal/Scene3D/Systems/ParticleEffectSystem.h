@@ -33,29 +33,55 @@
 
 #include "Base/BaseTypes.h"
 #include "Scene3D/Systems/BaseProcessSystem.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
 
 namespace DAVA
 {
 
 class Component;
-class ParticleEffectSystem : public BaseProcessSystem
+class ParticleEffectSystem : public SceneSystem
 {
+	friend class ParticleEffectComponent;
+    friend class UIParticles;    
 public:
-	ParticleEffectSystem(Scene * scene);
-	virtual void Process(float32 timeElapsed);
+	ParticleEffectSystem(Scene * scene, bool forceDisableDepthTest = false);
 
-	virtual void AddEntity(Entity * entity);
-	virtual void RemoveEntity(Entity * entity);
+	~ParticleEffectSystem();
+	virtual void Process(float32 timeElapsed);		
+	virtual void ImmediateEvent(Entity * entity, uint32 event);
+    
+	virtual void RemoveEntity(Entity * entity);	
+	virtual void RemoveComponent(Entity * entity, Component * component);
 
 	void SetGlobalExtertnalValue(const String& name, float32 value);
 	float32 GetGlobalExternalValue(const String& name);
 	Map<String, float32> GetGlobalExternals();
+	
+protected:
+	void RunEffect(ParticleEffectComponent *effect);	
+    void AddToActive(ParticleEffectComponent *effect);
+	void RemoveFromActive(ParticleEffectComponent *effect);
 
-	uint32 index;
-	uint32 size;
+	void UpdateEffect(ParticleEffectComponent *effect, float32 time, float32 shortEffectTime);
+	Particle* GenerateNewParticle(ParticleEffectComponent *effect, ParticleGroup& group, float32 currLoopTime, const Matrix4 &worldTransform);
+	
+	void PrepareEmitterParameters(Particle * particle, ParticleGroup &group, const Matrix4 &worldTransform);
+	void AddParticleToBBox(const Vector3& position, float radius, AABBox3& bbox);
+
+	void RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, int32 positionSource = 0);
+	
 
 private:
 	Map<String, float32> globalExternalValues;
+	
+	Vector<ParticleEffectComponent *> activeComponents;
+
+
+private: //materials stuff
+	NMaterial *particleRegularMaterial, *particleFrameBlendMaterial;
+	Map<uint32, NMaterial *> materialMap;
+	NMaterial *GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor);
+    bool forceDisableDepthTest;
 };
 
 }

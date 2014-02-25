@@ -196,23 +196,23 @@ void CollisionObject2::Update(const Sprite::DrawState & state/*const Vector2 & _
     }
 }
 
-void CollisionObject2::DebugDraw()
+void CollisionObject2::DebugDraw(UniqueHandle renderState)
 {
 	if (!basePolygon)return;
 	
 	RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-	RenderHelper::Instance()->DrawPoint(circle.center, 3);
+	RenderHelper::Instance()->DrawPoint(circle.center, 3, renderState);
 	
-	RenderHelper::Instance()->DrawCircle(circle.center, circle.radius);
+	RenderHelper::Instance()->DrawCircle(circle.center, circle.radius, renderState);
 
 	if (type == TYPE_POLYGON)
 	{
-		RenderHelper::Instance()->DrawPolygon(polygon, true);
+		RenderHelper::Instance()->DrawPolygon(polygon, true, renderState);
 	}
 	
 	RenderManager::Instance()->SetColor(0.0f, 0.0f, 1.0f, 1.0f);
 	for (int32 k = 0; k < manifold.count; ++k)
-		RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3);
+		RenderHelper::Instance()->DrawPoint(manifold.contactPoints[k], 3, renderState);
 	
 	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 }

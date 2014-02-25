@@ -30,7 +30,6 @@
 
 #include "ParticleEmitterPropertiesWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
-#include "../Scene/SceneDataManager.h"
 
 #include <QLineEdit>
 #include <QEvent>
@@ -44,6 +43,10 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 {
 	mainLayout = new QVBoxLayout();
 	this->setLayout(mainLayout);
+
+	emitterNameLineEdit = new QLineEdit();
+	mainLayout->addWidget(emitterNameLineEdit);
+	connect(emitterNameLineEdit, SIGNAL(editingFinished()),this, SLOT(OnValueChanged()));
 
 	emitterYamlPath = new QLineEdit(this);
 	emitterYamlPath->setReadOnly(true);
@@ -65,6 +68,43 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	emitterTypeHBox->addWidget(emitterType);
 	mainLayout->addLayout(emitterTypeHBox);
 	connect(emitterType, SIGNAL(currentIndexChanged(int)), this, SLOT(OnValueChanged()));
+
+
+
+	QHBoxLayout *positionLayout = new QHBoxLayout();
+	
+	positionLayout->addWidget(new QLabel("Position"));
+	positionLayout->addStretch();
+	positionLayout->addWidget(new QLabel("X:"));
+	positionXSpinBox = new EventFilterDoubleSpinBox();
+	positionXSpinBox->setMinimum(-100);
+	positionXSpinBox->setMaximum(100);	
+	positionXSpinBox->setSingleStep(0.1);
+	positionXSpinBox->setDecimals(3);
+	positionLayout->addWidget(positionXSpinBox);
+	connect(positionXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+
+	positionLayout->addStretch();
+	positionLayout->addWidget(new QLabel("Y:"));
+	positionYSpinBox = new EventFilterDoubleSpinBox();
+	positionYSpinBox->setMinimum(-100);
+	positionYSpinBox->setMaximum(100);	
+	positionYSpinBox->setSingleStep(0.1);
+	positionYSpinBox->setDecimals(3);
+	positionLayout->addWidget(positionYSpinBox);
+	connect(positionYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+
+	positionLayout->addStretch();
+	positionLayout->addWidget(new QLabel("Z:"));
+	positionZSpinBox = new EventFilterDoubleSpinBox();
+	positionZSpinBox->setMinimum(-100);
+	positionZSpinBox->setMaximum(100);	
+	positionZSpinBox->setSingleStep(0.1);
+	positionZSpinBox->setDecimals(3);
+	positionLayout->addWidget(positionZSpinBox);
+	connect(positionZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+			
+	mainLayout->addLayout(positionLayout);	
 
 	emitterEmissionRange = new TimeLineWidget(this);
 	InitWidget(emitterEmissionRange);
@@ -89,20 +129,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	emitterLifeHBox->addWidget(emitterLife);
 	mainLayout->addLayout(emitterLifeHBox);
 	connect(emitterLife, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
-	
-	QVBoxLayout* playbackSpeedHBox = new QVBoxLayout;
-	emitterPlaybackSpeedLabel = new QLabel("playback speed");
-	playbackSpeedHBox->addWidget(emitterPlaybackSpeedLabel);
-
-	emitterPlaybackSpeed = new QSlider(Qt::Horizontal, this);
-	emitterPlaybackSpeed->setTracking(true);
-	emitterPlaybackSpeed->setRange(0, 4); // 25%, 50%, 100%, 200%, 400% - 5 values total.
-	emitterPlaybackSpeed->setTickPosition(QSlider::TicksBelow);
-	emitterPlaybackSpeed->setTickInterval(1);
-	emitterPlaybackSpeed->setSingleStep(1);
-	playbackSpeedHBox->addWidget(emitterPlaybackSpeed);
-	mainLayout->addLayout(playbackSpeedHBox);
-	connect(emitterPlaybackSpeed, SIGNAL(valueChanged(int)), this, SLOT(OnValueChanged()));
+		
 
 	Q_FOREACH( QAbstractSpinBox * sp, findChildren<QAbstractSpinBox*>() ) {
         sp->installEventFilter( this );
@@ -154,22 +181,25 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 		return;
 
 	float32 life = emitterLife->value();
-	float32 currentLifeTime = emitter->GetLifeTime();
-	bool initEmittersByDef = FLOAT_EQUAL(life,currentLifeTime) ? false : true;
-
-	float playbackSpeed = ConvertFromSliderValueToPlaybackSpeed(emitterPlaybackSpeed->value());
+	float32 currentLifeTime = emitter->lifeTime;
+	bool initEmittersByDef = FLOAT_EQUAL(life,currentLifeTime) ? false : true;	
 
 	bool isShortEffect = shortEffectCheckBox->isChecked();
+	Vector3 position;
+	position.x = positionXSpinBox->value();
+	position.y = positionYSpinBox->value();
+	position.z = positionZSpinBox->value();
 
 	CommandUpdateEmitter* commandUpdateEmitter = new CommandUpdateEmitter(emitter);
-	commandUpdateEmitter->Init(type,
+	commandUpdateEmitter->Init(FastName(emitterNameLineEdit->text().toStdString().c_str()),
+							   position,
+							   type,
 							   emissionRange.GetPropLine(),
 							   emissionVector.GetPropLine(),
 							   radius.GetPropLine(),
 							   colorOverLife.GetPropLine(),
 							   size.GetPropLine(),
 							   life,
-							   playbackSpeed,
 							   isShortEffect);
 
 	DVASSERT(activeScene != 0);
@@ -187,9 +217,10 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEm
 
 	blockSignals = true;
 
-	shortEffectCheckBox->setChecked(emitter->IsShortEffect());
+	emitterNameLineEdit->setText(QString::fromStdString(emitter->name.c_str()));
+	shortEffectCheckBox->setChecked(emitter->shortEffect);
 
-	float32 emitterLifeTime = emitter->GetLifeTime();
+	float32 emitterLifeTime = emitter->lifeTime;
 
     
 	float minTime		= 0.f;
@@ -197,8 +228,12 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEm
     
 	float maxTime		= emitterLifeTime;
 	float maxTimeLimit	= emitterLifeTime;
-	emitterYamlPath->setText(QString::fromStdString(emitter->GetConfigPath().GetAbsolutePathname()));
+	emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
 	emitterType->setCurrentIndex(emitter->emitterType);
+
+	positionXSpinBox->setValue((double)emitter->position.x);
+	positionYSpinBox->setValue((double)emitter->position.y);
+	positionZSpinBox->setValue((double)emitter->position.z);
 
 	if(!needUpdateTimeLimits)
 	{
@@ -250,12 +285,7 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEm
 	emitterSize->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(emitter->size)).GetProps(), sizeColors, sizeLegends);
 	emitterSize->EnableLock(true);
 	
-	emitterLife->setValue(emitterLifeTime);
-
-	// Normalize Playback Speed to the UISlider range.
-	float32 playbackSpeed = emitter->GetPlaybackSpeed();
-	emitterPlaybackSpeed->setValue(ConvertFromPlaybackSpeedToSliderValue(playbackSpeed));
-	UpdatePlaybackSpeedLabel();
+	emitterLife->setValue(emitterLifeTime);	
 
 	blockSignals = false;
 }
@@ -335,15 +365,4 @@ void ParticleEmitterPropertiesWidget::UpdateTooltip()
 	{
 		emitterYamlPath->setToolTip("");
 	}
-}
-
-void ParticleEmitterPropertiesWidget::UpdatePlaybackSpeedLabel()
-{
-	if (!emitter)
-	{
-		return;
-	}
-
-	float32 playbackSpeedValue = emitter->GetPlaybackSpeed();
-	emitterPlaybackSpeedLabel->setText(QString("playback speed: %1x").arg(playbackSpeedValue));
 }

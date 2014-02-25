@@ -36,136 +36,126 @@
 #include "Scene3D/Entity.h"
 #include "Base/BaseObject.h"
 #include "Base/Message.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
+#include "Particles/ParticleGroup.h"
+#include "Particles/ParticleRenderObject.h"
 
 namespace DAVA
 {
 
 class ParticleEmitter;
 class ModifiablePropertyLineBase;
+
+
 class ParticleEffectComponent : public Component
 {
-protected:
-    ~ParticleEffectComponent(){};
+	friend class ParticleEffectSystem;
+    friend class UIParticles;
+
+    
 public:
 	IMPLEMENT_COMPONENT_TYPE(PARTICLE_EFFECT_COMPONENT);
 
+	enum eState
+	{
+		STATE_PLAYING,  //effect is playing
+        STATE_STARTING, //effect is starting - on next system update it would be moved to playing state (RunEffect called)
+		STATE_STOPPING, //effect is stopping - no new particle generation, still need to update and recalculate
+		STATE_STOPPED   //effect is completely stopped and removed from active lists
+	};
+
 	ParticleEffectComponent();
+    ~ParticleEffectComponent();
 
 	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
-	virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
+	virtual void Serialize(KeyedArchive *archive, SerializationContext *sceneFile);
+	virtual void Deserialize(KeyedArchive *archive, SerializationContext *sceneFile);
 
 	void Start();
-
 	void Stop(bool isDeleteAllParticles = true);
-
-	void Restart();
-
-	/**
-     \brief Returns true if all the emitters in the Particle Effect are stopped.    
-	 */
-	bool IsStopped();
-
-	/**
-		\brief Function to pause generation from this effect
-		\param[in] isPaused true if you want to pause the generation, false if you want to resume it
-	 */
+	void Restart(bool isDeleteAllParticles = true);
+	bool IsStopped();	
 	void Pause(bool isPaused = true);
-
-
 	bool IsPaused();
-
-
 	void Step(float32 delta);
 
-    /**
-     \brief Function marks that all the emitters must be stopped after N repeats of emitter animation.
-     \param[in] numberOfRepeats number of times we need to repeat emitter animation before stop.
-     */
-    void StopAfterNRepeats(int32 numberOfRepeats);
 
-    /**
-     \brief Function marks that this object must be stopped when number of particles will be equal to 0
-     */
+    void StopAfterNRepeats(int32 numberOfRepeats);    
     void StopWhenEmpty(bool value = true);
-
-    /**
-     \brief Per-frame update
-     \param[in] timeElapsed time in seconds
-	 */
-	virtual void EffectUpdate(float32 timeElapsed);
-
-    /**
-     \brief Set the message to be called when Playback is complete.
-     */
-    void SetPlaybackCompleteMessage(const Message & msg);
-
-	/**
-     \brief Access to playback speed for the particle emitters. Returns
-	 the playback speed for first emitter, sets for all ones.
-     */
 	float32 GetPlaybackSpeed();
 	void SetPlaybackSpeed(float32 value);
+    
+	void SetDesiredLodLevel(int32 level);
+    
+    void SetPlaybackCompleteMessage(const Message & msg);		
 
-
+	/*externals stuff*/
 	void SetExtertnalValue(const String& name, float32 value);
-	float32 GetExternalValue(const String& name);
-	
+	float32 GetExternalValue(const String& name);	
 	Set<String> EnumerateVariables();
-
 	void RebuildEffectModifiables();
 	void RegisterModifiable(ModifiablePropertyLineBase *propertyLine);
 	void UnRegisterModifiable(ModifiablePropertyLineBase *propertyLine);
 
-	/**
-     \brief Returns the total active particles count for the whole effect.
-     */
-	int32 GetActiveParticlesCount();
 	
+	int32 GetActiveParticlesCount();
 
-protected:
-	// Update the duration for all the child nodes.
-	void UpdateDurationForChildNodes(float32 newEmitterLifeTime);
+    void SetRenderObjectVisible(bool visible);
 
-	// Do we need to stop emitter?
-	bool IsStopEmitter(ParticleEmitter * emitter) const;
-
-	// Check the "Playback Complete", emit a message, if needed.
-	void CheckPlaybackComplete();	
+     /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
+    void SetSortingOffset(uint32 offset);
 
 private:
-	// "Stop after N repeats" value.
-	int32 stopAfterNRepeats;
+	void ClearCurrentGroups();
+    void SetGroupsFinishing();
+	
+	/*effect playback setup       i bit changed logic*/	
+	bool stopWhenEmpty;			  //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
+	float32 effectDuration;       //duration for effect
+	uint32 repeatsCount;			  // note that now it's really count - not depending if effect is stop when empty or by duration - it would be restarted if currRepeatsCount<repetsCount
+	bool clearOnRestart;		  // when effect is restarted repeatsCount
+	
+	float32 playbackSpeed;
+	
+	/*state*/
+	float32 time;
+	uint32 currRepeatsCont;	
+	bool isPaused;	
+	eState state;	
+	
+	
+	/*completion message stuff*/	
+	Message playbackComplete;		
 
-	// "Stop if the emitter is empty" value.
-	bool stopWhenEmpty;
-
-	// Whether we need to emit "Playback Complete" event?
-	bool needEmitPlaybackComplete;
-
-	// Playback complete message.
-	Message playbackComplete;
-
-    // Playback complete message.
-    bool isStopped;
-
-	// Effect duration - common for all emitters.
-	float32 effectDuration;
-
-	// Count of emitters currently stopped.
-	int32 emittersCurrentlyStopped;		
-
-	 bool requireRebuildEffectModifiables;
+	/*externals setup*/	
 	MultiMap<String, ModifiablePropertyLineBase *> externalModifiables;	
 	Map<String, float32> externalValues;
 
-public:
-	INTROSPECTION_EXTEND(ParticleEffectComponent, Component,
-		MEMBER(stopAfterNRepeats, "stopAfterNRepeats", I_VIEW | I_EDIT | I_SAVE)
-        MEMBER(stopWhenEmpty, "stopWhenEmpty",  I_VIEW | I_EDIT | I_SAVE)
-//        MEMBER(needEmitPlaybackComplete, "needEmitPlaybackComplete", INTROSPECTION_SERIALIZABLE)
-        MEMBER(effectDuration, "effectDuration",  I_VIEW | I_SAVE)		
+	/*Emitters setup*/
+	Vector<ParticleEmitter*> emitters;
+		
+	ParticleEffectData effectData;
+	ParticleRenderObject *effectRenderObject;
+	int32 desiredLodLevel;
 
+public: //mostly editor commands
+	int32 GetEmittersCount();
+	ParticleEmitter* GetEmitter(int32 id);
+	void AddEmitter(ParticleEmitter *emitter);
+    int32 GetEmitterId(ParticleEmitter *emitter);
+    void InsertEmitterAt(ParticleEmitter *emitter, int32 position);
+	void RemoveEmitter(ParticleEmitter *emitter);
+    float32 GetCurrTime();
+
+public:
+	uint32 loadedVersion;
+	void CollapseOldEffect(SerializationContext *serializationContext);
+
+	INTROSPECTION_EXTEND(ParticleEffectComponent, Component,
+		MEMBER(repeatsCount, "repeatsCount", I_VIEW | I_EDIT | I_SAVE)
+        MEMBER(stopWhenEmpty, "stopWhenEmpty",  I_VIEW | I_EDIT | I_SAVE)
+        MEMBER(effectDuration, "effectDuration",  I_VIEW | I_EDIT |I_SAVE)	
+		MEMBER(clearOnRestart, "clearOnRestart",  I_VIEW | I_EDIT |I_SAVE)	
     );
 };
 

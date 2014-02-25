@@ -51,7 +51,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.fullBuildTarget</key>
-					<value> -j 4 NDK_DEBUG=1</value>
+					<value> -j 8</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.stopOnError</key>
@@ -375,6 +375,36 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/TransparentWebViewTest.h</locationURI>
 		</link>
 		<link>
+			<name>src/Classes/UIListTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIListTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/UIListTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIListTest.h</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/UIMovieTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIMovieTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/UIMovieTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIMovieTest.h</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/UIScrollViewTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIScrollViewTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/UIScrollViewTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIScrollViewTest.h</locationURI>
+		</link>
+		<link>
 			<name>src/Classes/eMailTest.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/eMailTest.cpp</locationURI>
@@ -638,6 +668,36 @@
 			<name>bin/classes/Classes/TransparentWebViewTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/TransparentWebViewTest.h</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/UIListTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIListTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/UIListTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIListTest.h</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/UIMovieTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIMovieTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/UIMovieTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIMovieTest.h</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/UIScrollViewTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIScrollViewTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/UIScrollViewTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/UIScrollViewTest.h</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/eMailTest.cpp</name>

@@ -30,23 +30,19 @@
 
 #include "Commands2/ParticleLayerRemoveCommand.h"
 
-ParticleLayerRemoveCommand::ParticleLayerRemoveCommand(DAVA::ParticleLayer* _layer)
+ParticleLayerRemoveCommand::ParticleLayerRemoveCommand(DAVA::ParticleEmitter *_emitter, DAVA::ParticleLayer* _layer)
 	: Command2(CMDID_PARTICLE_LAYER_REMOVE, "Remove particle layer")
 	, layer(_layer)
-	, emitter(NULL)
+	, emitter(_emitter)
 	, before(NULL)
 {
 	SafeRetain(layer);
-
-	if(NULL != layer)
+	
+	if((NULL != layer)&&(NULL != emitter))
 	{
-		emitter = layer->GetEmitter();
-
-		if(NULL != emitter)
-		{
-			before = emitter->GetNextLayer(layer);
-		}
+		before = emitter->GetNextLayer(layer);
 	}
+	
 }
 
 ParticleLayerRemoveCommand::~ParticleLayerRemoveCommand()

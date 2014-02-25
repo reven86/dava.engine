@@ -272,7 +272,7 @@ void FileDownloader::Stop()
     state = FD_STOP;
 }
 
-CURL * FileDownloader::GetCurlHandler() const
+DCURL * FileDownloader::GetCurlHandler() const
 {
     return curl_handle;
 }
