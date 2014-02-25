@@ -35,13 +35,7 @@ namespace DAVA
 {
 FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2);
 
-#if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<FilePath, FMOD::Sound*> SoundMap;
-#else //#if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<String, FMOD::Sound*> SoundMap;
-#endif //#if defined (USE_FILEPATH_IN_MAP)
-SoundMap soundMap;
-
+Map<String, FMOD::Sound*> soundMap;
 Map<FMOD::Sound*, int32> soundRefsMap;
 
 Sound * Sound::Create(const FilePath & fileName, eType type, const FastName & groupName, int32 priority /* = 128 */)
@@ -61,7 +55,8 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
     if(flags & FMOD_3D)
         sound->is3d = true;
 
-	SoundMap::iterator it = soundMap.find(FILEPATH_MAP_KEY(fileName));
+    Map<String, FMOD::Sound*>::iterator it;
+    it = soundMap.find(fileName.GetAbsolutePathname());
     if (it != soundMap.end())
     {
         sound->fmodSound = it->second;
@@ -112,7 +107,7 @@ Sound * Sound::CreateWithFlags(const FilePath & fileName, eType type, const Fast
             FMOD_VERIFY( sound->fmodSound->set3DMinMaxDistance(12.0f, 1000.0f) );
 #endif
 
-		soundMap[FILEPATH_MAP_KEY(sound->fileName)] = sound->fmodSound;
+        soundMap[sound->fileName.GetAbsolutePathname()] = sound->fmodSound;
         soundRefsMap[sound->fmodSound] = 1;
     }
 
@@ -146,7 +141,7 @@ int32 Sound::Release()
         soundRefsMap[fmodSound]--;
         if(soundRefsMap[fmodSound] == 0)
         {
-			soundMap.erase(FILEPATH_MAP_KEY(fileName));
+            soundMap.erase(fileName.GetAbsolutePathname());
             soundRefsMap.erase(fmodSound);
             FMOD_VERIFY(fmodSound->release());
         }
@@ -212,8 +207,6 @@ Sound::eType Sound::GetType() const
 
 void Sound::SetVolume(float32 volume)
 {
-    DVASSERT(volume >= 0.f && volume <= 1.f);
-
 	FMOD_VERIFY(fmodInstanceGroup->setVolume(volume));
 }
 

@@ -39,7 +39,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QPushButton>
-#include "QColorWidget.h"
+#include "QColorButton.h"
 
 #include "HierarchyTreeNode.h"
 #include "BaseMetadata.h"
@@ -81,12 +81,11 @@ protected:
 
     // Map of the widget and properties added to them.
     PROPERTYGRIDWIDGETSMAP propertyGridWidgetsMap;
-    Map<QWidget*, String> invokableMethodsMap;
     
     typedef Map<String, QMetaProperty> PROPERTIESMAP;
     typedef PROPERTIESMAP::iterator PROPERTIESMAPITER;
     typedef PROPERTIESMAP::const_iterator PROPERTIESMAPCONSTITER;
-
+    
     // Build the properties map in the "name - value" way to make the search faster.
     BasePropertyGridWidget::PROPERTIESMAP BuildMetadataPropertiesMap();
 
@@ -111,15 +110,12 @@ protected:
     void RegisterComboBoxWidgetForProperty(const PROPERTIESMAP& propertiesMap, const char* propertyName,
                                            QComboBox* comboBoxWidget,
                                            bool needUpdateTree = false, bool stateAware = false);
-    void RegisterColorWidgetForProperty(const PROPERTIESMAP& propertiesMap, const char* propertyName,
-                                            QColorWidget* colorWidget,
+    void RegisterColorButtonWidgetForProperty(const PROPERTIESMAP& propertiesMap, const char* propertyName,
+                                            QColorButton* colorButtonWidget,
                                             bool needUpdateTree = false, bool stateAware = false);
     void RegisterPushButtonWidgetForProperty(const PROPERTIESMAP& propertiesMap, const char* propertyName,
                                              QPushButton* pushButtonWidget,
                                              bool needUpdateTree = false, bool stateAware = false);
-
-    // We can also attach push buttons to the methods from metadata.
-    void RegisterPushButtonWidgetForInvokeMethod(QPushButton *pushButton, const String& methodName);
 
     // Unregister the widgets.
     void UnregisterLineEditWidget(QLineEdit* lineEdit);
@@ -127,9 +123,8 @@ protected:
 	void UnregisterDoubleSpinBoxWidget(QDoubleSpinBox* spinBoxWidget);
     void UnregisterCheckBoxWidget(QCheckBox* checkBoxWidget);
     void UnregisterComboBoxWidget(QComboBox* comboBoxWidget);
-    void UnregisterColorWidget(QColorWidget* colorWidget);
+    void UnregisterColorButtonWidget(QColorButton* colorButtonWidget);
     void UnregisterPushButtonWidget(QPushButton* pushButtonWidget);
-    void UnregisterPushButtonWidgetForInvokeMethod(QPushButton* pushButtonWidget);
 
     // Process the data attached to each property when it is changed.
     void ProcessAttachedData(const PropertyGridWidgetData& attachedData);
@@ -141,10 +136,10 @@ protected:
     virtual void UpdateLineEditWidgetWithPropertyValue(QLineEdit* lineEditWidget, const QMetaProperty& curProperty);
     //void UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty);
     virtual void UpdateSpinBoxWidgetWithPropertyValue(QSpinBox* spinBoxWidget, const QMetaProperty& curProperty);
-    virtual void UpdateColorWidgetWithPropertyValue(QColorWidget* colorWidget, const QMetaProperty& curProperty);
+    virtual void UpdateColorButtonWidgetWithPropertyValue(QColorButton* colorButtonWidget, const QMetaProperty& curProperty);
 
     // Override this method to get a notification about properties changed from external source.
-    virtual void OnPropertiesChangedFromExternalSource();
+    virtual void OnPropertiesChangedFromExternalSource() {};
 	
 	// For aligns property widget we need it's own update method
 	virtual void UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty);
@@ -174,9 +169,6 @@ protected:
     
     //Handle Push Button Clicked.
     virtual void ProcessPushButtonClicked(QPushButton* senderWidget);
-
-    // Handle Invoke Method is requested.
-    void ProcessInvokeMethodRequested(QWidget* /*widget*/, const String& methodName);
 
     // Handle UI Control State is changed.
     virtual void HandleSelectedUIControlStatesChanged(const Vector<UIControl::eControlState>& newStates);
@@ -230,13 +222,10 @@ protected slots:
     void OnLineEditEditingFinished();
     void OnCheckBoxStateChanged(int state);
     void OnComboBoxValueChanged(QString value);
-
-    void OnColorChanged(const QColor& color);
+    
+    void OnColorButtonClicked();
     void OnPushButtonClicked();
-
-    // Invoke method is requested
-    void OnInvokeMethodRequested();
-
+    
     // These methods are called when property change is succeeded/failed.
     void OnChangePropertySucceeded(const QString& propertyName);
     void OnChangePropertyFailed(const QString& propertyName);

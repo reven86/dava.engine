@@ -60,11 +60,11 @@ TimeMeasure::TimeMeasure(const FastName & blockName)
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
     if (!Thread::IsMainThread())return;
     
-    function = mainThread.functions.at(blockName);
+    function = mainThread.functions.GetValue(blockName);
     if (!function)
     {
         FunctionMeasure * newFunctionMeasure = new FunctionMeasure();
-        mainThread.functions.insert(blockName, newFunctionMeasure);
+        mainThread.functions.Insert(blockName, newFunctionMeasure);
         function = newFunctionMeasure;
         function->name = blockName;
     }
@@ -75,7 +75,7 @@ TimeMeasure::TimeMeasure(const FastName & blockName)
     
     if (parent &&  function->parent == 0)
     {
-        parent->function->children.insert(function, function);
+        parent->function->children.Insert(function, function);
         function->parent = parent->function;
     }
     
@@ -129,11 +129,11 @@ void TimeMeasure::Dump(FunctionMeasure * function, uint32 level)
         }
     }else
     {
-        Logger::FrameworkDebug("%s %s %0.9llf seconds", GetIndentString('-', level + 1).c_str(), function->name.c_str(), (double)function->timeSpent / 1e+9);
-        for (HashMap<FunctionMeasure *, FunctionMeasure *>::iterator it = function->children.begin();
-             it != function->children.end(); ++it)
+        Logger::FrameworkDebug("%s %s %0.9llf seconds", GetIndentString('-', level + 1), function->name.c_str(), (double)function->timeSpent / 1e+9);
+        for (HashMap<FunctionMeasure *, FunctionMeasure *>::Iterator it = function->children.Begin();
+             it != function->children.End(); ++it)
         {
-            FunctionMeasure * childFunction = it->second;
+            FunctionMeasure * childFunction = it.GetValue();
             if (childFunction->frameCounter == Core::Instance()->GetGlobalFrameIndex())
                 Dump(childFunction, level + 1);
         }

@@ -193,7 +193,7 @@ private:
 
 	// save information
 	int32					saveResourceCounter;
-	Vector<FilePath>			fileArray;
+	Vector<String>			fileArray;
 	FilePath					archiveFileName;
 	FilePath					packedCacheDir;
 	String					extrudePart;

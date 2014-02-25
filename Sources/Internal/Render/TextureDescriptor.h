@@ -40,7 +40,7 @@ namespace DAVA
 {
 
 class File;
-class TextureDescriptor 
+class TextureDescriptor: public BaseObject
 {
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
@@ -102,27 +102,24 @@ public:
 			MEMBER(magFilter, InspDesc("magFilter", GlobalEnumMap<Texture::TextureFilter>::Instance()), I_VIEW | I_EDIT | I_SAVE)
 		)
     };
-
+protected:
+    virtual ~TextureDescriptor();
 public:
     TextureDescriptor();
-	virtual ~TextureDescriptor();
 
-	static TextureDescriptor * CreateFromFile(const FilePath &filePathname);
-	static TextureDescriptor * CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps);
+    void SetDefaultValues();
 
-	void Initialize(Texture::TextureWrap wrap, bool generateMipmaps);
-	void Initialize(const TextureDescriptor *descriptor);
-	bool Initialize(const FilePath &filePathname);
-
-	void SetDefaultValues();
-
-    void SetQualityGroup(const FastName &group);
-    FastName GetQualityGroup() const;
     
-    bool Load(const FilePath &filePathname); //may be protected?
+    static TextureDescriptor * CreateFromFile(const FilePath &filePathname);
+    
+    static TextureDescriptor * CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps);
+    
+    
+    bool Load(const FilePath &filePathname);
 
     void Save() const;
     void Save(const FilePath &filePathname) const;
+
     void Export(const FilePath &filePathname);
 
     bool IsCompressedTextureActual(eGPUFamily forGPU) const;
@@ -130,7 +127,9 @@ public:
     
     
     bool IsCompressedFile() const;
+    
     bool GetGenerateMipMaps() const;
+	
 	bool IsCubeMap() const;
 
     FilePath GetSourceTexturePathname() const; 
@@ -143,13 +142,14 @@ public:
     
     PixelFormat GetPixelFormatForCompression(eGPUFamily forGPU);
     
-
 protected:
     
     const Compression * GetCompressionParams(eGPUFamily forGPU) const;
     
     void LoadNotCompressed(File *file);
     void LoadCompressed(File *file);
+    
+    void InitializeValues();
     
     void ReadGeneralSettings(File *file);
     void WriteGeneralSettings(File *file) const;
@@ -183,11 +183,6 @@ public:
 	uint8 faceDescription;
     
     bool isCompressedFile;
-
-	//moved from Texture
-	PixelFormat format:8;			// texture format
-
-    FastName qualityGroup;
 };
     
 };

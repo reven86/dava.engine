@@ -36,11 +36,12 @@
 #include "MetadataFactory.h"
 #include "LibraryController.h"
 #include "CommandsController.h"
-#include "PreviewController.h"
 #include "ControlCommands.h"
 #include "ReloadSpritesCommand.h"
 
 #include "AlignDistribute/AlignDistributeManager.h"
+
+#include "Helpers/SpritesHelper.h"
 
 HierarchyTreeController::HierarchyTreeController(QObject* parent) :
 	QObject(parent)
@@ -402,11 +403,6 @@ bool HierarchyTreeController::NewProject(const QString& projectPath)
 HierarchyTreePlatformNode* HierarchyTreeController::AddPlatform(const QString& name, const Vector2& size)
 {
 	HierarchyTreePlatformNode* platformNode = hierarchyTree.AddPlatform(name, size);
-	if (platformNode)
-	{
-		UpdateSelection(platformNode, NULL);
-	}
-
 	EmitHierarchyTreeUpdated();
 	
 	return platformNode;
@@ -545,29 +541,6 @@ void HierarchyTreeController::DeleteNodesInternal(const HierarchyTreeNode::HIERA
 			DeleteNodesInternal(controlNode->GetChildNodes());
 		}
 	}
-}
-
-void HierarchyTreeController::SynchronizeSelection(const QList<HierarchyTreeControlNode*>& selectedNodes)
-{
-    SELECTEDCONTROLNODES nodesToDeselect = activeControlNodes;
-
-    foreach(HierarchyTreeControlNode* selectedNode, selectedNodes)
-    {
-        SelectControl(selectedNode);
-        nodesToDeselect.remove(selectedNode);
-    }
-
-    // In case some nodes remain in the deselected list - unselect them.
-    for (SELECTEDCONTROLNODES::iterator iter = nodesToDeselect.begin(); iter != nodesToDeselect.end();
-         iter ++)
-    {
-        UnselectControl(*iter, false);
-    }
-}
-
-void HierarchyTreeController::UpdateControlsData()
-{
-	 hierarchyTree.UpdateControlsData();
 }
 
 void HierarchyTreeController::UpdateLocalization(bool takePathFromLocalizationSystem)
@@ -718,43 +691,14 @@ bool HierarchyTreeController::CanPerformDistribute(eDistributeControlsType /*dis
 	return activeControlNodes.size() >= 3;
 }
 
-void HierarchyTreeController::RepackAndReloadSprites()
+void HierarchyTreeController::RepackAndReloadSprites(bool needRepack, bool pixelized)
 {
-    ReloadSpritesCommand* cmd = new ReloadSpritesCommand(hierarchyTree.GetRootNode());
+    ReloadSpritesCommand* cmd = new ReloadSpritesCommand(hierarchyTree.GetRootNode(), needRepack, pixelized);
     CommandsController::Instance()->ExecuteCommand(cmd);
     SafeRelease(cmd);
 }
 
-void HierarchyTreeController::EnablePreview(const PreviewSettingsData& data)
+void HierarchyTreeController::ApplyPixelizationForAllSprites()
 {
-    if (PreviewController::Instance()->IsPreviewEnabled() || !activePlatform ||
-        !activeScreen || !activeScreen->GetScreen())
-    {
-        return;
-    }
-
-    // We are entering Preview Mode - nothing should be selected.
-    ResetSelectedControl();
-
-    uint32 screenDPI = Core::Instance()->GetScreenDPI();
-    const PreviewTransformData& transformData = PreviewController::Instance()->EnablePreview(data, activePlatform->GetSize(), screenDPI);
-    activePlatform->EnablePreview(transformData.screenSize.x, transformData.screenSize.y);
-    activeScreen->GetScreen()->SetSize(transformData.screenSize);
-
-    emit SelectedScreenChanged(activeScreen);
-}
-
-void HierarchyTreeController::DisablePreview()
-{
-    if (!PreviewController::Instance()->IsPreviewEnabled() || !activePlatform ||
-        !activeScreen || !activeScreen->GetScreen())
-    {
-        return;
-    }
-
-    PreviewController::Instance()->DisablePreview();
-    activePlatform->DisablePreview();
-    activeScreen->GetScreen()->SetSize(activePlatform->GetSize());
-    
-    emit SelectedScreenChanged(activeScreen);
+    SpritesHelper::ApplyPixelizationForAllSprites(hierarchyTree.GetRootNode());
 }

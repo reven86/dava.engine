@@ -45,7 +45,7 @@ protected:
 public:
 	SpriteRenderBatch();
 
-	virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
+	virtual void Draw(Camera * camera);
 
 protected:
     

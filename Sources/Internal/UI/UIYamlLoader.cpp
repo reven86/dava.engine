@@ -35,7 +35,6 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/2D/GraphicsFont.h"
 #include "Render/2D/FontManager.h"
-#include "Render/2D/TextBlock.h"
 
 namespace DAVA 
 {
@@ -159,8 +158,6 @@ int32 UIYamlLoader::GetAlignFromYamlNode(const YamlNode * alignNode)
 	if (!alignNode)return ALIGN_HCENTER | ALIGN_VCENTER;
 	
 	const Vector<YamlNode*> & vec = alignNode->AsVector();
-    
-    if (vec.size() == 1 && vec[0]->AsString() == "HJUSTIFY") return ALIGN_HJUSTIFY;
 	if (vec.size() != 2)return ALIGN_HCENTER | ALIGN_VCENTER;
 	
 	const String & horzAlign = vec[0]->AsString();
@@ -178,50 +175,13 @@ int32 UIYamlLoader::GetAlignFromYamlNode(const YamlNode * alignNode)
 	return align;
 }
 
-int32 UIYamlLoader::GetFittingOptionFromYamlNode( const YamlNode * fittingNode ) const
-{
-    int32 fitting = TextBlock::FITTING_DISABLED;
-
-    const Vector<YamlNode*> & vec = fittingNode->AsVector();
-
-    for( uint32 index = 0; index < vec.size(); ++index )
-    {
-        const String &value = vec[index]->AsString();
-        if( value == "DISABLED" )
-        {
-            fitting = TextBlock::FITTING_DISABLED;
-            break;
-        }
-        else if( value == "ENLARGE" )
-        {
-            fitting |= TextBlock::FITTING_ENLARGE;
-        }
-        else if( value == "REDUCE" )
-        {
-            fitting |= TextBlock::FITTING_REDUCE;
-        }
-        else if( value == "POINTS" )
-        {
-            fitting |= TextBlock::FITTING_POINTS;
-        }
-    }
-
-    return fitting;
-}
-
 //Vector<String> UIYamlLoader::GetAlignNodeValue(int32 align)
 YamlNode * UIYamlLoader::GetAlignNodeValue(int32 align)
 {
 	YamlNode *alignNode = new YamlNode(YamlNode::TYPE_ARRAY);
 	String horzAlign = "HCENTER";
 	String vertAlign = "VCENTER";
-
-    if (align == ALIGN_HJUSTIFY)
-    {
-        alignNode->AddValueToArray("HJUSTIFY");
-        return alignNode;
-    }
-
+	
 	if (align & ALIGN_LEFT)
 	{
 		horzAlign = "LEFT";
@@ -253,33 +213,7 @@ YamlNode * UIYamlLoader::GetAlignNodeValue(int32 align)
 	
 	return alignNode;
 }
-
-YamlNode * UIYamlLoader::GetFittingOptionNodeValue( int32 fitting ) const
-{
-    YamlNode *fittingNode = new YamlNode(YamlNode::TYPE_ARRAY);
-
-    if( fitting == TextBlock::FITTING_DISABLED )
-    {
-        fittingNode->AddValueToArray("DISABLED");
-    }
-    else
-    {
-        if( fitting & TextBlock::FITTING_ENLARGE )
-        {
-            fittingNode->AddValueToArray("ENLARGE");
-        }
-        if( fitting & TextBlock::FITTING_REDUCE )
-        {
-            fittingNode->AddValueToArray("REDUCE");
-        }
-        if( fitting & TextBlock::FITTING_POINTS )
-        {
-            fittingNode->AddValueToArray("POINTS");
-        }
-    }
-    return fittingNode;
-}
-
+	
 bool UIYamlLoader::GetBoolFromYamlNode(const YamlNode * node, bool defaultValue)
 {
 	if (!node)return defaultValue;
@@ -306,7 +240,7 @@ Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node)
 	{
 		if (node->GetCount() == 4)
 			return node->AsColor();
-		else return Color::White;
+		else return Color(1.0f, 1.0f, 1.0f, 1.0f);
 	}else
 	{
 		const String & color = node->AsString();
@@ -554,7 +488,7 @@ void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * root
 UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseType)
 {
 	// Firstly try Type (Custom Control).
-	UIControl * control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(type));
+	UIControl * control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New(type));
 	if (control)
 	{
 		// Everything is OK. Just update the custom control type for the control, if any.
@@ -578,7 +512,7 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
 	// Retry with base type, if any.
 	if (!baseType.empty())
 	{
-		control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New<UIControl>(baseType));
+		control = dynamic_cast<UIControl*> (ObjectFactory::Instance()->New(baseType));
 		if (control)
 		{
 			// Even if the control of the base type was created, we have to store its custom type.
@@ -591,7 +525,7 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
 }
 
 YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentNode,
-                                   int saveIndex)
+                                   int relativeDepth)
 {
     // Save ourselves and all children.
     YamlNode* childNode = parentControl->SaveToYamlNode(this);
@@ -600,24 +534,24 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
         parentNode->AddNodeToMap(parentControl->GetName(), childNode);
     }
 
-    SaveChildren(parentControl, childNode, saveIndex);
+    SaveChildren(parentControl, childNode, relativeDepth);
 
     return childNode;
 }
 
-void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode, int saveIndex)
+void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode, int relativeDepth)
 {
     // "Relative Depth" is needed to save the order of the nodes - it is important!
-    parentNode->Set(YamlNode::SAVE_INDEX_NAME, saveIndex);
+    parentNode->Set(YamlNode::YAML_NODE_RELATIVE_DEPTH_NAME, relativeDepth);
     
-    int currentSaveIndex = 0;
+    int currentDepth = 0;
     
 	const List<UIControl*>& children = parentControl->GetRealChildren();
 	for (List<UIControl*>::const_iterator childIter = children.begin(); childIter != children.end(); childIter ++)
     {
         UIControl* childControl = (*childIter);
-        SaveToNode(childControl, parentNode, currentSaveIndex);
-        currentSaveIndex ++;
+        SaveToNode(childControl, parentNode, currentDepth);
+        currentDepth ++;
     }
 }
 

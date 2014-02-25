@@ -62,7 +62,7 @@ public:
         \param pt1 starting point 
         \param pt2 ending point
 	 */
-    void DrawLine(const Vector2 & pt1, const Vector2 & pt2, UniqueHandle renderState);
+    void DrawLine(const Vector2 & pt1, const Vector2 & pt2);
 	
 	
     /**
@@ -70,14 +70,14 @@ public:
 	 \param pt1 starting point
 	 \param pt2 ending point
 	 */
-	void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, UniqueHandle renderState);
+	void DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth);
     
 	/**
         \brief Draws line in 3D from pt1 to pt2
         \param pt1 starting point 
         \param pt2 ending point
 	 */
-	void DrawLine(const Vector3 & pt1, const Vector3 & pt2, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+	void DrawLine(const Vector3 & pt1, const Vector3 & pt2, float32 lineWidth = 1.f); 
     
     
     
@@ -86,14 +86,22 @@ public:
         \param pt1 starting point 
         \param pt2 ending point
 	 */    
-    void DrawRect(const Rect & rect, UniqueHandle renderState);
+    void DrawRect(const Rect & rect);
     
     /**
         \brief Fills given rect in 2D space
         \param pt1 starting point 
         \param pt2 ending point
 	 */ 
-    void FillRect(const Rect & rect, UniqueHandle renderState);
+    void FillRect(const Rect & rect);
+	
+    /**
+        \brief Fills given rect in 2D space and rotates it to specefied angle around pivotpoint
+        \param pivotPoint rotation point 
+        \param angle rotation angle in radians
+	 */ 	
+	void FillRotatedRect(const Rect & rect, const Vector2& pivotPoint, float32 angle);
+    
 
     /**
      \brief Draws grid in the given rect
@@ -101,7 +109,7 @@ public:
      \param gridSize distance between grid lines
      \param color grid color
 	 */
-    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, UniqueHandle renderState);
+    void DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color);
 
 	// point helpers
     
@@ -109,20 +117,20 @@ public:
         \brief Draws given point in 2D space
         \param pt given point 
 	 */
-	void DrawPoint(const Vector2 & pt, float32 ptSize /*= 1.0f*/, UniqueHandle renderState);
+	void DrawPoint(const Vector2 & pt, float32 ptSize = 1.0f);
     
     /**
         \brief Draws given point in 3D space
         \param pt given point 
 	 */
-	void DrawPoint(const Vector3 & pt, float32 ptSize /*= 1.0f*/, UniqueHandle renderState);
+	void DrawPoint(const Vector3 & pt, float32 ptSize = 1.0f);
     
     /**
         \brief Draws circle in 2D space
         \param center center of the circle
         \param radius radius of the circle
      */
-	void DrawCircle(const Vector2 & center, float32 radius, UniqueHandle renderState);
+	void DrawCircle(const Vector2 & center, float32 radius);
     
     
     /**
@@ -130,7 +138,7 @@ public:
         \param center center of the circle
         \param radius radius of the circle
      */
-	void DrawCircle(const Vector3 & center, float32 radius, UniqueHandle renderState);
+	void DrawCircle(const Vector3 & center, float32 radius);
 	
 	/**
         \brief Draws circle in 3D space on XYZ plane
@@ -140,7 +148,7 @@ public:
 		\param useFilling flag that indicates if figure have to be filled with current color
 		
      */	 
-	void DrawCircle3D(const Vector3 & center, const Vector3 &directionVector, float32 radius, bool useFilling /*= false*/, UniqueHandle renderState);
+	void DrawCircle3D(const Vector3 & center, const Vector3 &directionVector, float32 radius, bool useFilling = false);
 
 	/**
         \brief Draws cylinder in 3D space on XY plane
@@ -148,7 +156,7 @@ public:
         \param radius radius of the cylinder
 		\param useFilling flag that indicates if figure have to be filled with current color
      */
-	void DrawCylinder(const Vector3 & center, float32 radius, bool useFilling /*= false*/, UniqueHandle renderState);
+	void DrawCylinder(const Vector3 & center, float32 radius, bool useFilling = false);
 	
 	// polygon & line helper functions
 	
@@ -157,25 +165,25 @@ public:
         \param polygon the polygon we want to draw
         \param closed you should set this flag to true if you want to connect last point of polygon with first point
      */
-    void DrawPolygon(const Polygon2 & polygon, bool closed, UniqueHandle renderState);
+    void DrawPolygon(const Polygon2 & polygon, bool closed);
     /**
         \brief Draws all concecutive lines from given polygon
         \param polygon the polygon we want to draw
         \param closed you should set this flag to true if you want to connect last point of polygon with first point
      */
-    void DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHandle renderState);
+    void DrawPolygon(const Polygon3 & polygon, bool closed);
 
     /**
         \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderManager::Instance()->SetColor function. 
         \param polygon the polygon we want to draw
      */
-    void FillPolygon(const Polygon2 & polygon, UniqueHandle renderState);
+    void FillPolygon(const Polygon2 & polygon);
     
     /**
         \brief Fill convex polygon with color. As all other draw functions this function use global color that can be set with RenderManager::Instance()->SetColor function. 
         \param polygon the polygon we want to draw
      */
-    void FillPolygon(const Polygon3 & polygon, UniqueHandle renderState);
+    void FillPolygon(const Polygon3 & polygon);
     
     /**
         \brief Draws all concecutive lines from given polygon after transformation
@@ -183,56 +191,56 @@ public:
         \param closed you should set this flag to true if you want to connect last point of polygon with first point
         \param transform transform that will be applied to polygon before it will be drawn
      */
-	void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, UniqueHandle renderState);
+	void DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform);
     
     /**
         \brief Draws all points from given polygon
         \param polygon the polygon we want to draw
      */
-    void DrawPolygonPoints( const Polygon2 & polygon, UniqueHandle renderState);
+    void DrawPolygonPoints( const Polygon2 & polygon);
 
     /**
         \brief Draws all points from given polygon
         \param polygon the polygon we want to draw
      */
-    void DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle renderState);
+    void DrawPolygonPoints(const Polygon3 & polygon);
     
     /**
         \brief Draws 2D bounding box
         \param box given bounding box
      */
-	void DrawBox(const AABBox2 & box, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+	void DrawBox(const AABBox2 & box, float32 lineWidth = 1.f);
 
     /**
         \brief Draws 3D bounding box
         \param box given bounding box
      */
-	void DrawBox(const AABBox3 & box, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+	void DrawBox(const AABBox3 & box, float32 lineWidth = 1.f);
 
     /**
         \brief Fills 3D bounding box
         \param box given bounding box
      */
-	void FillBox(const AABBox3 & box, UniqueHandle renderState);
+	void FillBox(const AABBox3 & box);
 
     /**
 	 \brief Draws 3D bounding box with corners
 	 \param box given bounding box
      */
-	void DrawCornerBox(const AABBox3 & bbox, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+	void DrawCornerBox(const AABBox3 & bbox, float32 lineWidth = 1.f);
 	
-	void DrawSphere(const Vector3 &center, float32 radius, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-	void FillSphere(const Vector3 &center, float32 radius, UniqueHandle renderState);
+	void DrawSphere(const Vector3 &center, float32 radius, float32 lineWidth = 1.f);
+	void FillSphere(const Vector3 &center, float32 radius);
 
-	void DrawArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-	void FillArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
+	void DrawArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth = 1.f);
+	void FillArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth = 1.f);
 
-	void DrawDodecahedron(const Vector3 &center, float32 radius, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-	void FillDodecahedron(const Vector3 &center, float32 radius, UniqueHandle renderState);
+	void DrawDodecahedron(const Vector3 &center, float32 radius, float32 lineWidth = 1.f);
+	void FillDodecahedron(const Vector3 &center, float32 radius);
 	
     // Other debug functions  
-	void DrawBSpline(BezierSpline3 * bSpline, int segments /*= 20*/, float ts /*= 0.0f*/, float te /*= 1.0f*/, UniqueHandle renderState);
-	void DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect, UniqueHandle renderState);
+	void DrawBSpline(BezierSpline3 * bSpline, int segments = 20, float ts = 0.0f, float te = 1.0f);
+	void DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect);
     //static void DrawLineWithEndPoints(const Vector3 & pt1, const Vector3 & pt2); 
 	//static void DrawStrippedLine(Polygon2 & polygon, float lineLen, float spaceLen, float halfWidth, Texture * texture, float initialPos);
 

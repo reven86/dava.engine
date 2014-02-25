@@ -31,7 +31,6 @@
 #define __DAVAENGINE_MESH_INSTANCE_2_H__
 
 #include "Scene3D/SceneNode.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -59,12 +58,12 @@ public:
     /**
         \brief virtual function to save node to KeyedArchive
      */
-    virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
+    virtual void Save(KeyedArchive * archive, SceneFileV2 * sceneFile);
     
     /**
         \brief virtual function to load node to KeyedArchive
      */
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+	virtual void Load(KeyedArchive * archive, SceneFileV2 * sceneFile);
 
 
 	void CreateShadowVolume(PolygonGroupInstance * polygonGroupInstance);

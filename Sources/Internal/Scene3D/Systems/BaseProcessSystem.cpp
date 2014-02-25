@@ -42,17 +42,18 @@ BaseProcessSystem::BaseProcessSystem(uint32 componentId, Scene * scene)
 
 }
 
-void BaseProcessSystem::AddComponent( Entity * entity, Component * component )
+void BaseProcessSystem::AddEntity(Entity * entity)
 {
-	components.push_back(component);
+	components.push_back(entity->GetComponent(processingComponentId));
 }
 
-void BaseProcessSystem::RemoveComponent( Entity * entity, Component * component )
+void BaseProcessSystem::RemoveEntity(Entity * entity)
 {
 	uint32 size = components.size();
+	Component * deletingComponent = entity->GetComponent(processingComponentId);
 	for(uint32 i = 0; i < size; ++i)
 	{
-		if(components[i] == component)
+		if(components[i] == deletingComponent)
 		{
 			components[i] = components[size-1];
 			components.pop_back();
@@ -62,24 +63,5 @@ void BaseProcessSystem::RemoveComponent( Entity * entity, Component * component 
 
 	DVASSERT(0);
 }
-
-void BaseProcessSystem::AddEntity( Entity * entity )
-{
-	uint32 size = entity->GetComponentCount(processingComponentId);
-	for(uint32 i = 0; i < size; ++i)
-	{
-		AddComponent(entity, entity->GetComponent(processingComponentId, i));
-	}
-}
-
-void BaseProcessSystem::RemoveEntity( Entity * entity )
-{
-	uint32 size = entity->GetComponentCount(processingComponentId);
-	for(uint32 i = 0; i < size; ++i)
-	{
-		RemoveComponent(entity, entity->GetComponent(processingComponentId, i));
-	}
-}
-
 
 }

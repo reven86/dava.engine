@@ -26,116 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+
+
+#include <QPushButton>
 #include "QtPropertyData.h"
-#include "QtPropertyDataValidator.h"
 
 QtPropertyData::QtPropertyData()
-	: curFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable)
+	: curFlags(0)
 	, parent(NULL)
+	, optionalWidgetViewport(NULL)
 	, updatingValue(false)
-	, model(NULL)
-	, userData(NULL)
-	, optionalButtonsViewport(NULL)
-    , validator(NULL)
 { }
 
-QtPropertyData::QtPropertyData(const QVariant &value, Qt::ItemFlags flags)
+QtPropertyData::QtPropertyData(const QVariant &value)
 	: curValue(value)
-	, curFlags(flags)
+	, curFlags(0)
 	, parent(NULL)
+	, optionalWidgetViewport(NULL)
 	, updatingValue(false)
-	, model(NULL)
-	, userData(NULL)
-	, optionalButtonsViewport(NULL)
-    , validator(NULL)
 { }
 
-QtPropertyData::~QtPropertyData()
+QtPropertyData::~QtPropertyData() 
 {
-	DVASSERT(!updatingValue && "Property can't be removed during it update process");
-
 	for(int i = 0; i < childrenData.size(); ++i)
 	{
-		delete childrenData.at(i);
-	}
-	childrenData.clear();
-
-	for (int i = 0; i < optionalButtons.size(); i++)
-	{
-		optionalButtons.at(i)->setParent(NULL);
-		optionalButtons.at(i)->deleteLater();
-	}
-
-	if(NULL != userData)
-	{
-		delete userData;
-	}
-    
-    DAVA::SafeDelete(validator);
-}
-
-QVariant QtPropertyData::data(int role) const
-{
-	QVariant ret;
-
-	switch(role)
-	{
-	case Qt::EditRole:
-	case Qt::DisplayRole:
-		ret = GetAlias();
-		if(!ret.isValid())
+		QtPropertyData *data = childrenData.at(i);
+		if(NULL != data)
 		{
-			ret = GetValue();
+			delete data;
 		}
-		break;
-	case Qt::CheckStateRole:
-		if(GetFlags() & Qt::ItemIsUserCheckable)
-		{
-			ret = GetValue().toBool() ? Qt::Checked : Qt::Unchecked;
-		}
-		break;
-	case Qt::FontRole:
-	case Qt::DecorationRole:
-	case Qt::BackgroundRole:
-	case Qt::ForegroundRole:
-		ret = style.value(role);
-		break;
-	default:
-		break;
 	}
 
-	return ret;
-}
-
-bool QtPropertyData::setData(const QVariant & value, int role)
-{
-	bool ret = false;
-
-	switch(role)
+	for (int i = 0; i < optionalWidgets.size(); i++)
 	{
-	case Qt::EditRole:
-		SetValue(value, QtPropertyData::VALUE_EDITED);
-		ret = true;
-		break;
-	case Qt::CheckStateRole:
-		(value.toInt() == Qt::Unchecked) ? SetValue(false, QtPropertyData::VALUE_EDITED) : SetValue(true, QtPropertyData::VALUE_EDITED);
-		ret = true;
-		break;
-	case Qt::FontRole:
-	case Qt::DecorationRole:
-	case Qt::BackgroundRole:
-	case Qt::ForegroundRole:
-		style.insert(role, value);
-		ret = true;
-		break;
-	default:
-		break;
+		if(NULL != optionalWidgets.at(i).widget)
+		{
+			delete optionalWidgets.at(i).widget;
+		}
 	}
-
-	return ret;
 }
 
-QVariant QtPropertyData::GetValue() const
+QVariant QtPropertyData::GetValue()
 {
 	if(curValue.isNull() || !curValue.isValid())
 	{
@@ -143,7 +74,7 @@ QVariant QtPropertyData::GetValue() const
 	}
 	else
 	{
-		const_cast<QtPropertyData*>(this)->UpdateValue();
+		UpdateValue();
 	}
 
 	return curValue;
@@ -153,28 +84,8 @@ void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
 {
 	QVariant oldValue = curValue;
 
-    updatingValue = true;
-
-    // set value
-    if(reason == VALUE_EDITED && NULL != validator)
-    {
-        QVariant valueToValidate = value;
-
-        if(validator->Validate(valueToValidate))
-        {
-            SetValueInternal(valueToValidate);
-        }
-        else
-        {
-            return;
-        }
-    }
-    else
-    {
-        SetValueInternal(value);
-    }
-
-    updatingValue = false;
+	// set value
+	SetValueInternal(value);
 
 	// and get what was really set
 	// it can differ from input "value"
@@ -185,18 +96,14 @@ void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
 
 	if(curValue != oldValue)
 	{
-		updatingValue = true;
-
 		UpdateDown();
 		UpdateUp();
 
-		EmitDataChanged(reason);
-
-		updatingValue = false;
+		emit ValueChanged(reason);
 	}
 }
 
-bool QtPropertyData::UpdateValue(bool force)
+bool QtPropertyData::UpdateValue()
 {
 	bool ret = false;
 
@@ -204,10 +111,10 @@ bool QtPropertyData::UpdateValue(bool force)
 	{
 		updatingValue = true;
 
-		if(UpdateValueInternal() || force)
+		if(UpdateValueInternal())
 		{
 			curValue = GetValueInternal();
-			EmitDataChanged(VALUE_SOURCE_CHANGED);
+			emit ValueChanged(VALUE_SOURCE_CHANGED);
 
 			ret = true;
 		}
@@ -218,7 +125,7 @@ bool QtPropertyData::UpdateValue(bool force)
 	return ret;
 }
 
-QVariant QtPropertyData::GetAlias() const
+QVariant QtPropertyData::GetAlias()
 {
 	// this will force update internalValue if 
 	// it source was changed 
@@ -227,199 +134,31 @@ QVariant QtPropertyData::GetAlias() const
 	return GetValueAlias();
 }
 
-void QtPropertyData::SetName(const QString &name)
-{
-	if(NULL != parent)
-	{
-		int i = parent->ChildIndex(this);
-		if(i >= 0)
-		{
-			// update name in parent list
-			parent->childrenNames[i] = name;
-		}
-	}
-
-	curName = name;
-}
-
-QString QtPropertyData::GetName() const
-{
-	return curName;
-}
-
-QString QtPropertyData::GetPath() const
-{
-	QString path = curName;
-
-	// search top level parent
-	const QtPropertyData *parent = this;
-	while(NULL != parent->Parent())
-	{
-		parent = parent->Parent();
-		path = parent->curName + "/" + path;
-	}
-
-	return path;
-}
-
 void QtPropertyData::SetIcon(const QIcon &icon)
 {
-	setData(QVariant(icon), Qt::DecorationRole);
+	curIcon = icon;
 }
 
-QIcon QtPropertyData::GetIcon() const
+QIcon QtPropertyData::GetIcon()
 {
-	return qvariant_cast<QIcon>(data(Qt::DecorationRole));
+	return curIcon;
 }
 
-QFont QtPropertyData::GetFont() const
-{
-	return qvariant_cast<QFont>(data(Qt::FontRole));
-}
-
-void QtPropertyData::SetFont(const QFont &font)
-{
-	setData(QVariant(font), Qt::FontRole);
-}
-
-QBrush QtPropertyData::GetBackground() const
-{
-	return qvariant_cast<QBrush>(data(Qt::BackgroundRole));
-}
-
-void QtPropertyData::SetBackground(const QBrush &brush)
-{
-	setData(QVariant(brush), Qt::BackgroundRole);
-}
-
-QBrush QtPropertyData::GetForeground() const
-{
-	return qvariant_cast<QBrush>(data(Qt::ForegroundRole));
-}
-
-void QtPropertyData::SetForeground(const QBrush &brush)
-{
-	setData(QVariant(brush), Qt::ForegroundRole);
-}
-
-void QtPropertyData::ResetStyle()
-{
-	style.remove(Qt::ForegroundRole);
-	style.remove(Qt::BackgroundRole);
-	style.remove(Qt::FontRole);
-}
-
-Qt::ItemFlags QtPropertyData::GetFlags() const
+int QtPropertyData::GetFlags()
 {
 	return curFlags;
 }
 
-void QtPropertyData::SetFlags(Qt::ItemFlags flags)
+void QtPropertyData::SetFlags(int flags)
 {
-	curFlags = flags;
-}
-
-void QtPropertyData::SetCheckable(bool checkable)
-{
-	(checkable) ? (curFlags |= Qt::ItemIsUserCheckable) : (curFlags &= ~Qt::ItemIsUserCheckable);
-}
-
-bool QtPropertyData::IsCheckable() const
-{
-	return (curFlags & Qt::ItemIsUserCheckable);
-}
-
-void QtPropertyData::SetChecked(bool checked)
-{
-	setData(QVariant(checked), Qt::CheckStateRole);
-}
-
-bool QtPropertyData::IsChecked() const
-{
-	return data(Qt::CheckStateRole).toBool();
-}
-
-void QtPropertyData::SetEditable(bool editable)
-{
-	(editable) ? (curFlags |= Qt::ItemIsEditable) : (curFlags &= ~Qt::ItemIsEditable);
-}
-
-bool QtPropertyData::IsEditable() const
-{
-	return (curFlags & Qt::ItemIsEditable);
-}
-
-void QtPropertyData::SetEnabled(bool enabled)
-{
-	(enabled) ? (curFlags |= Qt::ItemIsEnabled) : (curFlags &= ~Qt::ItemIsEnabled);
-
-	for(int i = 0; i < optionalButtons.size(); ++i)
+	if(curFlags != flags)
 	{
-		optionalButtons[i]->setEnabled(enabled);
+		curFlags = flags;
+		emit FlagsChanged();
 	}
 }
 
-void QtPropertyData::SetUserData(UserData *data)
-{
-	if(NULL != userData)
-	{
-		delete userData;
-	}
-
-	userData = data;
-
-	if(NULL != model)
-	{
-		model->DataChanged(this, VALUE_SET);
-	}
-}
-
-QtPropertyData::UserData* QtPropertyData::GetUserData() const
-{
-	return userData;
-}
-
-const DAVA::MetaInfo* QtPropertyData::MetaInfo() const
-{
-	return NULL;
-}
-
-bool QtPropertyData::IsEnabled() const
-{
-	return (curFlags & Qt::ItemIsEnabled);
-}
-
-QtPropertyModel* QtPropertyData::GetModel() const
-{
-	return model;
-}
-
-void QtPropertyData::SetModel(QtPropertyModel *_model)
-{
-	model = _model;
-
-	for(int i = 0; i < childrenData.size(); ++i)
-	{
-		QtPropertyData *child = childrenData.at(i);
-		if(NULL != child)
-		{
-			child->SetModel(model);
-		}
-	}
-}
-
-void QtPropertyData::SetValidator(QtPropertyDataValidator* value)
-{
-    DAVA::SafeDelete(validator);
-    validator = value;
-}
-
-QtPropertyDataValidator* QtPropertyData::GetValidator() const
-{
-    return validator;
-}
-
-QWidget* QtPropertyData::CreateEditor(QWidget *parent, const QStyleOptionViewItem& option) const
+QWidget* QtPropertyData::CreateEditor(QWidget *parent, const QStyleOptionViewItem& option) 
 { 
 	return CreateEditorInternal(parent, option);
 }
@@ -432,14 +171,6 @@ bool QtPropertyData::EditorDone(QWidget *editor)
 bool QtPropertyData::SetEditorData(QWidget *editor)
 {
     return SetEditorDataInternal(editor);
-}
-
-void QtPropertyData::EmitDataChanged(ValueChangeReason reason)
-{
-	if(NULL != model)
-	{
-		model->DataChanged(this, reason);
-	}
 }
 
 void QtPropertyData::UpdateUp()
@@ -464,76 +195,43 @@ void QtPropertyData::UpdateDown()
 	}
 }
 
-QtPropertyData* QtPropertyData::Parent() const
-{
-	return parent;
-}
-
 void QtPropertyData::ChildAdd(const QString &key, QtPropertyData *data)
 {
-	ChildInsert(key, data, ChildCount());
+	if(NULL != data && !key.isEmpty())
+	{
+		childrenNames.append(key);
+		childrenData.append(data);
+	    
+		data->parent = this;
+
+		emit ChildAdded(key, data);
+	}
 }
 
 void QtPropertyData::ChildAdd(const QString &key, const QVariant &value)
 {
-	ChildInsert(key, new QtPropertyData(value), ChildCount());
+	ChildAdd(key, new QtPropertyData(value));
 }
 
-void QtPropertyData::ChildInsert(const QString &key, QtPropertyData *data, int pos)
-{
-	if(NULL != data && !key.isEmpty())
-	{
-		if(NULL != model)
-		{
-			model->DataAboutToBeAdded(this, childrenData.size(), childrenData.size());
-		}
-
-		if(pos >= 0 && pos < childrenData.size())
-		{
-			childrenData.insert(pos, data);
-			childrenNames.insert(pos, key);
-		}
-		else
-		{
-			childrenData.append(data);
-			childrenNames.append(key);
-		}
-
-		data->curName = key;
-		data->parent = this;
-		data->SetModel(model);
-		data->SetOWViewport(optionalButtonsViewport);
-
-		if(NULL != model)
-		{
-			model->DataAdded();
-		}
-	}
-}
-
-void QtPropertyData::ChildInsert(const QString &key, const QVariant &value, int pos)
-{
-	ChildInsert(key, new QtPropertyData(value), pos);
-}
-
-int QtPropertyData::ChildCount() const
+int QtPropertyData::ChildCount()
 {
 	return childrenData.size();
 }
 
-QtPropertyData* QtPropertyData::ChildGet(int i) const
+QPair<QString, QtPropertyData*> QtPropertyData::ChildGet(int i)
 {
-	QtPropertyData *ret = NULL;
+	QPair<QString, QtPropertyData*> p("", NULL);
 
 	if(i >= 0 && i < childrenData.size())
 	{
-		ret = childrenData.at(i);
+		p.first = childrenNames.at(i);
+		p.second = childrenData.at(i);
 	}
 
-	return ret;
+	return p;
 }
 
-QtPropertyData* QtPropertyData::ChildGet(const QString &key) const
+QtPropertyData * QtPropertyData::ChildGet(const QString &key)
 {
 	QtPropertyData *data = NULL;
 
@@ -546,156 +244,106 @@ QtPropertyData* QtPropertyData::ChildGet(const QString &key) const
 	return data;
 }
 
-int QtPropertyData::ChildIndex(QtPropertyData *data) const
+void QtPropertyData::ChildRemove(const QString &key)
 {
-	return childrenData.indexOf(data);
-}
-
-void QtPropertyData::ChildExtract(QtPropertyData *data)
-{
-	int index = childrenData.indexOf(data);
-	ChildRemoveInternal(index, false);
+	int index = childrenNames.indexOf(key);
+	ChildRemove(index);
 }
 
 void QtPropertyData::ChildRemove(QtPropertyData *data)
 {
 	int index = childrenData.indexOf(data);
-	ChildRemoveInternal(index, true);
-}
-
-void QtPropertyData::ChildRemove(const QString &key)
-{
-	int index = childrenNames.indexOf(key);
-	ChildRemoveInternal(index, true);
+	ChildRemove(index);
 }
 
 void QtPropertyData::ChildRemove(int index)
 {
-	ChildRemoveInternal(index, true);
-}
-
-void QtPropertyData::ChildRemoveInternal(int index, bool del)
-{
 	if(index >= 0 && index < childrenData.size())
 	{
-		if(NULL != model)
-		{
-			model->DataAboutToBeRemoved(this, index, index);
-		}
-
 		QtPropertyData *data = childrenData.at(index);
+
+		emit ChildRemoving(childrenNames.at(index), data);
 
 		childrenData.removeAt(index);
 		childrenNames.removeAt(index);
 
-		if(del)
-		{
-			delete data;
-		}
-
-		if(NULL != model)
-		{
-			model->DataRemoved();
-		}
+		delete data;
+		data = NULL;
 	}
 }
 
-void QtPropertyData::ChildRemoveAll()
+int QtPropertyData::GetOWCount()
 {
-	if(childrenData.size() > 0)
-	{
-		if(NULL != model)
-		{
-			model->DataAboutToBeRemoved(this, 0, childrenData.size() - 1);
-		}
-
-		for(int i = 0; i < childrenData.size(); ++i)
-		{
-			delete childrenData.at(i);
-		}
-
-		childrenData.clear();
-		childrenNames.clear();
-
-		if(NULL != model)
-		{
-			model->DataRemoved();
-		}
-	}
+	return optionalWidgets.size();
 }
 
-int QtPropertyData::GetButtonsCount() const
+const QtPropertyOW* QtPropertyData::GetOW(int index)
 {
-	return optionalButtons.size();
-}
+	const QtPropertyOW *ret = NULL;
 
-QtPropertyToolButton* QtPropertyData::GetButton(int index)
-{
-	QtPropertyToolButton *ret = NULL;
-
-	if(index >= 0 && index < optionalButtons.size())
+	if(index >= 0 && index < optionalWidgets.size())
 	{
-		ret = optionalButtons.at(index);
+		ret = &optionalWidgets.at(index);
 	}
 
 	return ret;
 }
 
-QtPropertyToolButton* QtPropertyData::AddButton()
+void QtPropertyData::AddOW(const QtPropertyOW &ow)
 {
-	QtPropertyToolButton *button = new QtPropertyToolButton(this, optionalButtonsViewport);
+	optionalWidgets.append(ow);
 
-	optionalButtons.append(button);
-	button->setGeometry(0, 0, 18, 18);
-	button->setAttribute(Qt::WA_NoSystemBackground, true);
-	button->hide();
-
-	return button;
-}
-
-void QtPropertyData::RemButton(int index)
-{
-	if(index >= 0 && index < optionalButtons.size())
+	if(NULL != ow.widget)
 	{
-		if(NULL != optionalButtons.at(index))
-		{
-			delete optionalButtons.at(index);
-		}
-
-		optionalButtons.remove(index);
+		ow.widget->setParent(optionalWidgetViewport);
+		ow.widget->hide();
 	}
 }
 
-void QtPropertyData::RemButton(QtPropertyToolButton *button)
+void QtPropertyData::RemOW(int index)
 {
-	for(int i = 0; i < optionalButtons.size(); ++i)
+	if(index >= 0 && index < optionalWidgets.size())
 	{
-		if(optionalButtons[i] == button)
+		if(NULL != optionalWidgets.at(index).widget)
 		{
-			RemButton(i);
+			delete optionalWidgets.at(index).widget;
+		}
+
+		optionalWidgets.remove(index);
+	}
+}
+
+void QtPropertyData::RemOW(QWidget *widget)
+{
+	for(int i = 0; i < optionalWidgets.size(); ++i)
+	{
+		if(optionalWidgets[i].widget == widget)
+		{
+			RemOW(i);
 			break;
 		}
 	}
 }
 
-QWidget* QtPropertyData::GetOWViewport() const
+QWidget* QtPropertyData::GetOWViewport()
 {
-	return optionalButtonsViewport;
+	return optionalWidgetViewport;
 }
 
 void QtPropertyData::SetOWViewport(QWidget *viewport)
- {
-	optionalButtonsViewport = viewport;
+{
+	optionalWidgetViewport = viewport;
 
-	for(int i = 0; i < optionalButtons.size(); ++i)
+	for(int i = 0; i < optionalWidgets.size(); ++i)
 	{
-		if(NULL != optionalButtons[i])
+		if(NULL != optionalWidgets.at(i).widget)
 		{
-			optionalButtons[i]->setParent(viewport);
+			optionalWidgets.at(i).widget->setParent(viewport);
 		}
 	}
 
-	for(int i = 0; i < childrenData.size(); i++)
+	
+	for (int i = 0; i < childrenData.size(); i++)
 	{
 		childrenData.at(i)->SetOWViewport(viewport);
 	}
@@ -708,7 +356,7 @@ void* QtPropertyData::CreateLastCommand() const
 	return NULL;
 }
 
-QVariant QtPropertyData::GetValueInternal() const
+QVariant QtPropertyData::GetValueInternal()
 {
 	// should be re-implemented by sub-class
 
@@ -720,7 +368,7 @@ bool QtPropertyData::UpdateValueInternal()
 	return false;
 }
 
-QVariant QtPropertyData::GetValueAlias() const
+QVariant QtPropertyData::GetValueAlias()
 {
 	// should be re-implemented by sub-class
 
@@ -734,7 +382,7 @@ void QtPropertyData::SetValueInternal(const QVariant &value)
 	curValue = value;
 }
 
-QWidget* QtPropertyData::CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const
+QWidget* QtPropertyData::CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option)
 {
 	// should be re-implemented by sub-class
 
@@ -753,27 +401,14 @@ bool QtPropertyData::SetEditorDataInternal(QWidget *editor)
 	return false;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// QtPropertyToolButton
-//
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool QtPropertyToolButton::event(QEvent * event)
+/*
+void QtPropertyData::ChildChanged(const QString &key, QtPropertyData *data, ValueChangeReason reason)
 {
-	int type = event->type();
-
-	if(eventsPassThrought)
-	{
-		if(type != QEvent::Enter &&
-			type != QEvent::Leave &&
-			type != QEvent::MouseMove)
-		{
-			QToolButton::event(event);
-		}
-
-		return false;
-	}
-
-	return QToolButton::event(event);
+	// should be re-implemented by sub-class
 }
+
+void QtPropertyData::ChildNeedUpdate(ValueChangeReason reason)
+{
+	// should be re-implemented by sub-class
+}
+*/

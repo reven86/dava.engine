@@ -69,6 +69,7 @@ enum eMessageBoxFlags
 };
 
 int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int buttons, int defaultButton);
+int ShowSaveSceneQuestion(DAVA::Scene *scene);
 
 #ifdef __DAVAENGINE_WIN32__
 	const Qt::WindowFlags WINDOWFLAG_ON_TOP_OF_APPLICATION = Qt::Window;
@@ -77,5 +78,6 @@ int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int b
 #endif
 
 DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::String & what, const DAVA::String & on);
+
 
 #endif // __QT_UTILS_H__

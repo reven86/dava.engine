@@ -56,7 +56,6 @@ void NotPassableTerrainProxy::LoadColorsArray()
 		YamlNode* rootNode = parser->GetRootNode();
 		int32 anglesCount = rootNode->GetCount();
 		
-        angleColor.reserve(anglesCount);
 		for (int32 i = 0; i < anglesCount; ++i)
 		{
 			const YamlNode* node = rootNode->Get(i);
@@ -167,7 +166,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	renderManager->SetClip(drawRect);
 	
 	renderManager->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-
+	
 	int32 lastY = (int32)(forRect.y + forRect.dy);
 	int32 lastX = (int32)(forRect.x + forRect.dx);
 	for (int32 y = (int32)forRect.y; y < lastY; ++y)
@@ -189,17 +188,17 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 			float32 xdx = x * dx;
 			
 			Color color;
-
+			
 			if(PickColor(tanRight, color))
 			{
 				renderManager->SetColor(color);
-				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx), DAVA::RenderState::RENDERSTATE_2D_BLEND);
+				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx));
 			}
 			
 			if(PickColor(tanBottom, color))
 			{
 				renderManager->SetColor(color);
-				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx + dx)), DAVA::RenderState::RENDERSTATE_2D_BLEND);
+				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx + dx)));
 			}
 			
 		}

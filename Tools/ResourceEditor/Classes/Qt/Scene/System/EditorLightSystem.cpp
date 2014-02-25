@@ -44,9 +44,8 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
 	light->SetType(Light::TYPE_DIRECTIONAL);
 		
 	cameraLight = new DAVA::Entity();
-	cameraLight->SetLocked(true);
 	cameraLight->SetName(ResourceEditor::EDITOR_CAMERA_LIGHT);
-	cameraLight->AddComponent(new LightComponent(light));
+	cameraLight->AddComponent(ScopedPtr<LightComponent> (new LightComponent(light)));
 	light->Release();
 
 	lightCountOnScene = 0;

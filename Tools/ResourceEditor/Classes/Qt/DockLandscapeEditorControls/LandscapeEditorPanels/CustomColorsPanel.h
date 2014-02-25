@@ -3,7 +3,6 @@
 
 #include "LandscapeEditorBasePanel.h"
 #include "DAVAEngine.h"
-#include "Main/Request.h"
 
 using namespace DAVA;
 
@@ -27,9 +26,10 @@ private slots:
 
 	void SetBrushSize(int brushSize);
 	void SetColor(int color);
-	bool SaveTexture();
+	void SaveTexture();
 	void LoadTexture();
-	void SaveTextureIfNeeded(SceneEditor2* scene);
+
+	void NeedSaveTexture(SceneEditor2* scene);
 
 	void IncreaseBrushSize();
 	void DecreaseBrushSize();

@@ -36,8 +36,6 @@
 #include "Entity/SceneSystem.h"
 #include "UI/UIEvent.h"
 
-#include "Render/RenderManager.h"
-
 class EditorParticlesSystem : public DAVA::SceneSystem
 {
 	friend class SceneEditor2;
@@ -45,8 +43,6 @@ class EditorParticlesSystem : public DAVA::SceneSystem
 public:
 	EditorParticlesSystem(DAVA::Scene * scene);
 	~EditorParticlesSystem();
-
-    void SetEmitterSelected(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter);
 
 protected:
 	void Update(DAVA::float32 timeElapsed);
@@ -61,17 +57,13 @@ protected:
 private:
 	DAVA::Vector<DAVA::Entity*> entities;
 	
-	void DrawDebugInfoForEffect(DAVA::Entity* effectEntity);
+	void DrawDebugInfoForEmitter(DAVA::Entity* parentEntity);
 	
-	void DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
-	void DrawSizeCircleShockWave(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter,DAVA::Vector3 center);
-	void DrawSizeBox(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
-	void DrawVectorArrow(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
+	void DrawSizeCircle(DAVA::Entity *entity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
+	void DrawSizeCircleShockWave(DAVA::ParticleEmitter *emitter,DAVA::Vector3 center);
+	void DrawSizeBox(DAVA::Entity *entity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
+	void DrawVectorArrow(DAVA::Entity *entity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center);
 	
-	DAVA::UniqueHandle renderState;
-
-	DAVA::Entity *selectedEffectEntity;
-    DAVA::ParticleEmitter *selectedEmitter;
 };
 
 

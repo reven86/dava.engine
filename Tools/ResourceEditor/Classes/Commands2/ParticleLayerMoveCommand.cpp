@@ -30,17 +30,20 @@
 
 #include "Commands2/ParticleLayerMoveCommand.h"
 
-ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleEmitter *_oldEmitter, DAVA::ParticleLayer* _layer, DAVA::ParticleEmitter *_newEmitter, DAVA::ParticleLayer *_newBefore /* = NULL */)
+ParticleLayerMoveCommand::ParticleLayerMoveCommand(DAVA::ParticleLayer* _layer, DAVA::ParticleEmitter *_newEmitter, DAVA::ParticleLayer *_newBefore /* = NULL */)
 	: Command2(CMDID_PARTICLE_LAYER_MOVE, "Move particle layer")
 	, layer(_layer)
-	, oldEmitter(_oldEmitter)
+	, oldEmitter(NULL)
 	, oldBefore(NULL)
 	, newEmitter(_newEmitter)
 	, newBefore(_newBefore)
 {
 	SafeRetain(layer);
 
-	
+	if(NULL != layer)
+	{
+		oldEmitter = layer->GetEmitter();
+	}
 
 	if(NULL != layer && NULL != oldEmitter)
 	{

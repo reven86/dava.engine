@@ -110,25 +110,25 @@ inherit:</string>
      <string>Align:</string>
     </property>
    </widget>
-   <widget class="QColorWidget" name="selectColorWidget" native="true">
+   <widget class="QColorButton" name="selectColorButton">
     <property name="geometry">
      <rect>
       <x>81</x>
       <y>25</y>
       <width>206</width>
-      <height>22</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>206</width>
-      <height>22</height>
+      <width>0</width>
+      <height>0</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
       <width>206</width>
-      <height>22</height>
+      <height>21</height>
      </size>
     </property>
    </widget>
@@ -299,12 +299,13 @@ inherit:</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QColorWidget</class>
-   <extends>QWidget</extends>
-   <header>qcolorwidget.h</header>
+   <class>QColorButton</class>
+   <extends>QPushButton</extends>
+   <header>qcolorbutton.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>selectColorButton</tabstop>
   <tabstop>spriteLineEdit</tabstop>
   <tabstop>openSpriteButton</tabstop>
   <tabstop>removeSpriteButton</tabstop>

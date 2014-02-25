@@ -3,19 +3,28 @@
 
 #include "Base/BaseObject.h"
 #include "Math/AABBox3.h"
-#include "Render/Highlevel/RenderHierarchy.h"
-#include "Render/UniqueStateSet.h"
+//#include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
 {
 
 const static uint16 INVALID_TREE_NODE_INDEX = (uint16)(-1);
-    
 class RenderObject;
 class Frustum;
+class AbstractSpatialTree : public BaseObject
+{
+protected:
+	~AbstractSpatialTree(){}
+public:	
+	virtual void AddObject(RenderObject *object) = 0;
+	virtual void RemoveObject(RenderObject *object) = 0;	
+	virtual void ObjectUpdated(RenderObject *object) = 0;  
+	virtual void ProcessClipping(Frustum *frustum) = 0;
+	virtual void UpdateTree() = 0; //theoretically for some trees that require re balance notify it's good time to do it
+	virtual void DebugDraw() = 0;
+};
 
-
-class QuadTree : public RenderHierarchy
+class QuadTree : public AbstractSpatialTree
 {	
 	struct QuadTreeNode //still basic implementation - later move it to more compact
 	{
@@ -34,7 +43,7 @@ class QuadTree : public RenderHierarchy
 		const static uint16 NODE_DEPTH_OFFSET = 8;	
 		const static uint16 START_CLIP_PLANE_MASK = 0xF0;				
 		const static uint16 START_CLIP_PLANE_OFFSET = 4;	
-		uint16 nodeInfo; // format : ddddddddddzccÃ± where c - numChildNodes, z - dirtyZ, d - depth
+		uint16 nodeInfo; // format : ddddddddddzccñ where c - numChildNodes, z - dirtyZ, d - depth
 		//uint8 startClipPlane;
 		Vector<RenderObject *>  objects;
 		QuadTreeNode();
@@ -48,7 +57,6 @@ class QuadTree : public RenderHierarchy
 	AABBox3 worldBox;
 	int32 maxTreeDepth;
 	Frustum *currFrustum;
-	Camera *currCamera;
 
 	List<int32> dirtyZNodes;    
 	List<RenderObject *> dirtyObjects;    	
@@ -59,11 +67,9 @@ class QuadTree : public RenderHierarchy
 	void UpdateChildBox(AABBox3 &parentBox, QuadTreeNode::eNodeType childType);
 	void UpdateParentBox(AABBox3 &childBox, QuadTreeNode::eNodeType childType);	
 	
-	
+	void DebugDrawNode(uint16 nodeId);
 	void ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags);	
-    void GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, VisibilityArray * visibilityArray);
-    
-    
+
 	uint16 FindObjectAddNode(uint16 startNodeId, const AABBox3& objBox);
 	
 	static const int32 RECALCULATE_Z_PER_FRAME = 10;
@@ -71,31 +77,18 @@ class QuadTree : public RenderHierarchy
 	void RecalculateNodeZLimits(uint16 nodeId);
 	void MarkNodeDirty(uint16 nodeId);
 	void MarkObjectDirty(RenderObject *object);
-
-	bool worldInitialized;
-	List<RenderObject *> worldInitObjects;	
-
-
-	void DebugDrawNode(uint16 nodeId);
-	UniqueHandle debugDrawStateHandle;
-
 protected:
-	~QuadTree()
-	{}
-	
+	~QuadTree(){}
 public:
-	QuadTree(int32 maxTreeDepth);
+	QuadTree(const AABBox3 &worldBox, int32 maxTreeDepth);
 	
-	virtual void AddRenderObject(RenderObject * renderObject);
-	virtual void RemoveRenderObject(RenderObject * renderObject);
-	virtual void ObjectUpdated(RenderObject * renderObject);
-	virtual void Clip(Camera * camera, VisibilityArray * visibilityArray);
-    virtual void GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray);
+	virtual void AddObject(RenderObject *object);
+	virtual void RemoveObject(RenderObject *object);	
+	virtual void ObjectUpdated(RenderObject *object);  
 
-	virtual void Initialize();
-
-	virtual void Update();
-	virtual void DebugDraw(const Matrix4& cameraMatrix);
+	virtual void ProcessClipping(Frustum *frustum);
+	virtual void UpdateTree();
+	virtual void DebugDraw();
 };
 
 } //namespace DAVA

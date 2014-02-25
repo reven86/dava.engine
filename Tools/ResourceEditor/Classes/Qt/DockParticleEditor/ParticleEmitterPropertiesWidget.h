@@ -72,16 +72,14 @@ public slots:
 	void OnEmitterYamlPathChanged(const QString& newPath);
 
 protected:
-	void UpdateTooltip();	
+	void UpdateTooltip();
+	void UpdatePlaybackSpeedLabel();
 
 private:
 	QVBoxLayout* mainLayout;
-	QLineEdit* emitterNameLineEdit;
 
 	QLineEdit* emitterYamlPath;
 	QComboBox* emitterType;
-
-	EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
 
 	QCheckBox* shortEffectCheckBox;
 
@@ -90,7 +88,10 @@ private:
 	TimeLineWidget* emitterRadius;
 	TimeLineWidget* emitterSize;
 	EventFilterDoubleSpinBox* emitterLife;
-	GradientPickerWidget* emitterColorWidget;		
+	GradientPickerWidget* emitterColorWidget;
+	
+	QLabel* emitterPlaybackSpeedLabel;
+	QSlider* emitterPlaybackSpeed;
 
 	bool blockSignals;
 	

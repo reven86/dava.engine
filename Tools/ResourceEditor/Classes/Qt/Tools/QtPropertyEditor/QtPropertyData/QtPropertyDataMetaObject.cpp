@@ -42,11 +42,6 @@ QtPropertyDataMetaObject::~QtPropertyDataMetaObject()
 	DAVA::SafeDelete(lastCommand);
 }
 
-const DAVA::MetaInfo* QtPropertyDataMetaObject::MetaInfo() const
-{
-	return meta;
-}
-
 void QtPropertyDataMetaObject::SetValueInternal(const QVariant &value)
 {
 	QtPropertyDataDavaVariant::SetValueInternal(value);

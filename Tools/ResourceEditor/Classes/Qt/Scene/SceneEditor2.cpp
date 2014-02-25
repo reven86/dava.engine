@@ -30,25 +30,22 @@
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
+#include "Scene/SceneHelper.h"
 
-#include "Qt/Settings/SettingsManager.h"
-#include "Deprecated/SceneValidator.h"
+#include "SceneEditor/EditorSettings.h"
+#include "SceneEditor/SceneValidator.h"
 #include "Commands2/VisibilityToolActions.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/RulerToolActions.h"
 #include "Commands2/LandscapeEditorDrawSystemActions.h"
-#include "Project/ProjectManager.h"
-#include "CommandLine/SceneExporter/SceneExporter.h"
 
-#include "Scene/FogSettingsChangedReceiver.h"
+#include "CommandLine/SceneExporter/SceneExporter.h"
 
 // framework
 #include "Scene3D/SceneFileV2.h"
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
-
-const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
 	: Scene()
@@ -117,47 +114,18 @@ SceneEditor2::SceneEditor2()
 	
 	ownersSignatureSystem = new OwnersSignatureSystem(this);
 	AddSystem(ownersSignatureSystem, 0);
-    
-    staticOcclusionBuildSystem = new StaticOcclusionBuildSystem(this);
-    AddSystem(staticOcclusionBuildSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT) | (1 << Component::TRANSFORM_COMPONENT));
 
-	materialSystem = new EditorMaterialSystem(this);
-	AddSystem(materialSystem, 1 << Component::RENDER_COMPONENT);
-
-	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
-
-	//setup fog for scene
-	DAVA::Color fogColor = SettingsManager::Instance()->GetValue("DefaultFogColor", SettingsManager::DEFAULT).AsColor();
-	DAVA::float32 fogDensity = SettingsManager::Instance()->GetValue("DefaultFogDensity", SettingsManager::DEFAULT).AsFloat();
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensity);
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &fogColor);
-
+	SetShadowBlendMode(ShadowVolumeRenderPass::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);
 
 	wasChanged = false;
-    
-    //RenderTechnique * technique1 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/PixelLit.Opaque.material"));
-    //FastNameSet set;
-    //technique1->GetPassByIndex(technique1->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-
-    //RenderTechnique * technique2 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/PixelLit.Alphatest.material"));
-    //technique2->GetPassByIndex(technique2->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-
-    //RenderTechnique * technique3 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Opaque.material"));
-    //technique3->GetPassByIndex(technique3->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-    
-    //RenderTechnique * technique4 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Alphatest.material"));
-    //technique4->GetPassByIndex(technique4->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
-
-    //RenderTechnique * technique5 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Alphablend.material"));
-    //technique5->GetPassByIndex(technique5->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
 }
 
 SceneEditor2::~SceneEditor2()
 {
 	RemoveSystems();
-
+    
 	SceneSignals::Instance()->EmitClosed(this);
 }
 
@@ -178,7 +146,6 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
     
 	SceneSignals::Instance()->EmitLoaded(this);
-
 	return ret;
 }
 
@@ -248,7 +215,8 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
 	SceneExporter exporter;
 	
-	FilePath projectPath(ProjectManager::Instance()->CurProjectPath().toStdString());
+	KeyedArchive *keyedArchieve = EditorSettings::Instance()->GetSettings();
+    FilePath projectPath(keyedArchieve->GetString(String("ProjectPath")));
 	
 	exporter.SetInFolder(projectPath + String("DataSource/3d/"));
     exporter.SetOutFolder(projectPath + String("Data/3d/"));
@@ -316,11 +284,6 @@ void SceneEditor2::ClearCommands(int commandId)
 	commandStack.Clear(commandId);
 }
 
-void SceneEditor2::ClearAllCommands()
-{
-    commandStack.Clear();
-}
-
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
 	return (&commandStack);
@@ -382,11 +345,6 @@ void SceneEditor2::Update(float timeElapsed)
 	
 	if(editorLightSystem)
 		editorLightSystem->Process();
-
-    staticOcclusionBuildSystem->SetCamera(GetClipCamera());
-    staticOcclusionBuildSystem->Process(timeElapsed);
-
-	materialSystem->Update(timeElapsed);
 }
 
 void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
@@ -408,7 +366,6 @@ void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
 		structureSystem->ProcessUIEvent(event);
 
 	particlesSystem->ProcessUIEvent(event);
-	materialSystem->ProcessUIEvent(event);
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
@@ -418,19 +375,8 @@ void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 
 void SceneEditor2::Draw()
 {
-
     RenderManager::Instance()->ClearStats();
-	
-//	NMaterial* global = renderSystem->GetMaterialSystem()->GetMaterial(MATERIAL_FOR_REBIND);
-//	DVASSERT(global);
-//	
-//	if(global)
-//	{
-//		global->Rebind();
-//	}
-	
 	Scene::Draw();
-    
     renderStats = RenderManager::Instance()->GetStats();
 
 	if(isHUDVisible)
@@ -445,15 +391,9 @@ void SceneEditor2::Draw()
 
 		if(structureSystem)
 			structureSystem->Draw();
-
-		materialSystem->Draw();
 	}
- 
-    //VI: need to call Setup2DDrawing in order to draw 2d to render targets correctly
-    Setup2DDrawing();
+
 	tilemaskEditorSystem->Draw();
-    //VI: restore 3d camera state
-    Setup3DDrawing();
 
 	if(isHUDVisible)
 	{
@@ -489,8 +429,6 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 	
 	if(ownersSignatureSystem)
 		ownersSignatureSystem->ProcessCommand(command, redo);
-
-	materialSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )
@@ -560,22 +498,24 @@ const Color SceneEditor2::GetShadowColor() const
 	return Color::White;
 }
 
-void SceneEditor2::SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend)
+void SceneEditor2::SetShadowBlendMode( ShadowVolumeRenderPass::eBlend blend )
 {
 	if(GetRenderSystem())
 	{
-		GetRenderSystem()->SetShadowBlendMode(blend);
+		ShadowVolumeRenderPass *shadowPass = DynamicTypeCheck<ShadowVolumeRenderPass*>( GetRenderSystem()->GetRenderPass(PASS_SHADOW_VOLUME) );
+		shadowPass->SetBlendMode(blend);
 	}
 }
 
-DAVA::ShadowPassBlendMode::eBlend SceneEditor2::GetShadowBlendMode() const
+ShadowVolumeRenderPass::eBlend SceneEditor2::GetShadowBlendMode() const
 {
 	if(GetRenderSystem())
 	{
-		return GetRenderSystem()->GetShadowBlendMode();
+		ShadowVolumeRenderPass *shadowPass = DynamicTypeCheck<ShadowVolumeRenderPass*>( GetRenderSystem()->GetRenderPass(PASS_SHADOW_VOLUME) );
+		return shadowPass->GetBlendMode();
 	}
 
-	return DAVA::ShadowPassBlendMode::MODE_BLEND_COUNT;
+	return ShadowVolumeRenderPass::MODE_BLEND_COUNT;
 }
 
 const RenderManager::Stats & SceneEditor2::GetRenderStats() const
@@ -583,11 +523,11 @@ const RenderManager::Stats & SceneEditor2::GetRenderStats() const
     return renderStats;
 }
 
-void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
+void SceneEditor2::DisableTools(int32 toolFlags)
 {
-	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR )
+	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
 	{
-		Exec(new ActionDisableCustomColors(this, saveChanges));
+		Exec(new ActionDisableCustomColors(this));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_VISIBILITY)
@@ -734,12 +674,6 @@ void SceneEditor2::RemoveSystems()
 		RemoveSystem(collisionSystem);
 		SafeDelete(collisionSystem);
 	}
-
-    if(materialSystem)
-    {
-        RemoveSystem(materialSystem);
-        SafeDelete(materialSystem);
-    }
 	
 }
 
@@ -751,18 +685,3 @@ void SceneEditor2::MarkAsChanged()
 		SceneSignals::Instance()->EmitModifyStatusChanged(this, wasChanged);
 	}
 }
-
-void SceneEditor2::Setup2DDrawing()
-{
-    RenderManager::Instance()->Setup2DMatrices();
-}
-
-void SceneEditor2::Setup3DDrawing()
-{
-    if (currentCamera)
-    {
-        currentCamera->SetupDynamicParameters();
-    }
-}
-
-

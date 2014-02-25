@@ -31,17 +31,14 @@
 #ifndef __RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__
 #define __RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__
 
-#include "DAVAEngine.h"
+#include "Entity/SceneSystem.h"
+#include "EditorScene.h"
 #include "LandscapeEditorDrawSystem.h"
-
-#include "Render/UniqueStateSet.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
 class HoodSystem;
-
-using namespace DAVA;
 
 class HeightmapEditorSystem: public DAVA::SceneSystem
 {
@@ -136,8 +133,6 @@ protected:
 	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
 
 	void FinishEditing();
-	
-	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORSYSTEM__) */

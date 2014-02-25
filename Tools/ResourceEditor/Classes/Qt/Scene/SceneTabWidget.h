@@ -57,6 +57,7 @@ class ScenePreviewDialog;
 
 Q_DECLARE_METATYPE(SceneEditor2 *);
 
+class Request;
 class SceneTabWidget : public QWidget
 {
 	Q_OBJECT
@@ -67,9 +68,8 @@ public:
 
 	int OpenTab();
 	int OpenTab(const DAVA::FilePath &scenePapth);
-	bool CloseTab(int index);
-    bool CloseAllTabs();
-    
+	void CloseTab(int index);
+
 	int GetCurrentTab() const;
 	void SetCurrentTab(int index);
 
@@ -83,7 +83,7 @@ public:
     void AddToolWidget(QWidget *widget);
 
 	DavaGLWidget * GetDavaWidget() const;
-   
+
 signals:
     
     void CloseTabRequest(int index, Request *closeRequest);

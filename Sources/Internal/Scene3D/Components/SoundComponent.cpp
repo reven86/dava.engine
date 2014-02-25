@@ -36,7 +36,6 @@
 
 namespace DAVA 
 {
-	REGISTER_CLASS(SoundComponent)
 
 SoundComponent::SoundComponent()
 {
@@ -69,7 +68,7 @@ void SoundComponent::SetEventName(const String & _eventName)
 	DVASSERT(_eventName != "");
 
 	eventName = _eventName;
-	GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_CHANGED);
+	GlobalEventSystem::Instance()->Event(entity, this, EventSystem::SOUND_CHANGED);
 }
 
 Component * SoundComponent::Clone(Entity * toEntity)
@@ -83,9 +82,9 @@ Component * SoundComponent::Clone(Entity * toEntity)
     return component;
 }
 
-void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SoundComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 {
-	Component::Serialize(archive, serializationContext);
+	Component::Serialize(archive, sceneFile);
 
 	if(archive != 0 && soundEvent != 0)
 	{
@@ -93,14 +92,14 @@ void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *seri
 	}
 }
 
-void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void SoundComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 {
 	if(archive)
 	{
 		SetEventName(archive->GetString("sc.eventName"));
 	}
 
-	Component::Deserialize(archive, serializationContext);
+	Component::Deserialize(archive, sceneFile);
 }
 
 };

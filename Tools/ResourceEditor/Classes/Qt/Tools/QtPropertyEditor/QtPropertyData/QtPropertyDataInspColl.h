@@ -37,16 +37,14 @@
 class QtPropertyDataInspColl : public QtPropertyData
 {
 public:
-	QtPropertyDataInspColl(void *_object, const DAVA::InspColl *_collection, bool autoAddChilds = true);
+	QtPropertyDataInspColl(void *_object, const DAVA::InspColl *_collection, int hasAllFlags = DAVA::I_NONE);
 	virtual ~QtPropertyDataInspColl();
 
-	virtual const DAVA::MetaInfo * MetaInfo() const;
-
+protected:
 	void *object;
 	const DAVA::InspColl *collection;
 
-protected:
-	virtual QVariant GetValueInternal() const;
+	virtual QVariant GetValueInternal();
 };
 
 #endif // __QT_PROPERTY_DATA_INTRO_COLLECTION_H__

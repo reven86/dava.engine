@@ -40,13 +40,16 @@ namespace DAVA {
 class ScreenMetadata : public BaseMetadata
 {
     Q_OBJECT
-   
+    
+    // Properties which are specific for Platform Node..
+    Q_PROPERTY(QString Name READ GetName WRITE SetName);
+    
     // Accessor to the Tree Node.
     HierarchyTreeScreenNode* GetScreenNode() const;
     
     // Getters/setters.
-    virtual QString GetName() const;
-    virtual void SetName(const QString& name);
+    QString GetName() const;
+    void SetName(const QString& name);
     
 protected:
     // Default Flags.

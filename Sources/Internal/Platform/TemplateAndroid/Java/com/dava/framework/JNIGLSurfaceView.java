@@ -1,8 +1,6 @@
 package com.dava.framework;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.bda.controller.ControllerListener;
 import com.bda.controller.StateEvent;
@@ -10,7 +8,6 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -20,33 +17,13 @@ public class JNIGLSurfaceView extends GLSurfaceView
 {
 	private JNIRenderer mRenderer = null;
 
-	private native void nativeOnInput(int action, int id, float x, float y, double time, int source, int tapCount);
+	private native void nativeOnInput(int action, int id, float x, float y, double time, int source);
 	private native void nativeOnKeyDown(int keyCode);
 	private native void nativeOnKeyUp(int keyCode);
 	
 	MOGAListener mogaListener = null;
 
 	boolean[] pressedKeys = new boolean[KeyEvent.getMaxKeyCode()];
-
-	public int lastDoubleActionIdx = -1;
-	
-	class DoubleTapListener extends GestureDetector.SimpleOnGestureListener{
-		JNIGLSurfaceView view;
-		
-		DoubleTapListener(JNIGLSurfaceView view) {
-			this.view = view;
-		}
-		
-		@Override
-		public boolean onDoubleTap(MotionEvent e) {
-			lastDoubleActionIdx = e.getActionIndex();
-			
-			view.queueEvent(new InputRunnable(e, 2));
-			return true;
-		}
-	}
-	
-	GestureDetector doubleTapDetector = null;
 
 	public JNIGLSurfaceView(Context context) 
 	{
@@ -78,8 +55,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		{
 			setPreserveEGLContextOnPause(true);
 		}
-		
-		doubleTapDetector = new GestureDetector(JNIActivity.GetActivity(), new DoubleTapListener(this));
 	}
 	
 	@Override
@@ -117,9 +92,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		setRenderMode(RENDERMODE_CONTINUOUSLY);
 	};
 
-	Map<Integer, Integer> tIdMap = new HashMap<Integer, Integer>();
-	int nexttId = 1;
-	
 	class InputRunnable implements Runnable
 	{
 		class InputEvent
@@ -128,7 +100,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 			float x;
 			float y;
 			int source;
-			int tapCount;
 			
 			InputEvent(int id, float x, float y, int source)
 			{
@@ -136,16 +107,6 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				this.x = x;
 				this.y = y;
 				this.source = source;
-				this.tapCount = 1;
-			}
-			
-			InputEvent(int id, float x, float y, int source, int tapCount)
-			{
-				this.id = id;
-				this.x = x;
-				this.y = y;
-				this.source = source;
-				this.tapCount = tapCount;
 			}
 		}
 
@@ -153,7 +114,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
 		double time;
 		int action;
 
-		public InputRunnable(final android.view.MotionEvent event, int tapCount)
+		public InputRunnable(final android.view.MotionEvent event)
 		{
 			events = new ArrayList<InputEvent>();
 			action = event.getActionMasked();
@@ -164,21 +125,21 @@ public class JNIGLSurfaceView extends GLSurfaceView
 				{
 					if((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) > 0)
 					{
-						events.add(new InputEvent(event.getPointerId(i), event.getX(i), event.getY(i), event.getSource(), tapCount));
+						events.add(new InputEvent(event.getPointerId(i), event.getX(i), event.getY(i), event.getSource()));
 					}
 					if((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) > 0)
 					{
 						//InputEvent::id corresponds to axis id from UIEvent::eJoystickAxisID
-						events.add(new InputEvent(0, event.getAxisValue(MotionEvent.AXIS_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(1, event.getAxisValue(MotionEvent.AXIS_Y, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(2, event.getAxisValue(MotionEvent.AXIS_Z, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(3, event.getAxisValue(MotionEvent.AXIS_RX, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(4, event.getAxisValue(MotionEvent.AXIS_RY, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(5, event.getAxisValue(MotionEvent.AXIS_RZ, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(6, event.getAxisValue(MotionEvent.AXIS_LTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(7, event.getAxisValue(MotionEvent.AXIS_RTRIGGER, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(8, event.getAxisValue(MotionEvent.AXIS_HAT_X, i), 0, event.getSource(), tapCount));
-						events.add(new InputEvent(9, event.getAxisValue(MotionEvent.AXIS_HAT_Y, i), 0, event.getSource(), tapCount));
+						events.add(new InputEvent(0, event.getAxisValue(MotionEvent.AXIS_X, i), 0, event.getSource()));
+						events.add(new InputEvent(1, event.getAxisValue(MotionEvent.AXIS_Y, i), 0, event.getSource()));
+						events.add(new InputEvent(2, event.getAxisValue(MotionEvent.AXIS_Z, i), 0, event.getSource()));
+						events.add(new InputEvent(3, event.getAxisValue(MotionEvent.AXIS_RX, i), 0, event.getSource()));
+						events.add(new InputEvent(4, event.getAxisValue(MotionEvent.AXIS_RY, i), 0, event.getSource()));
+						events.add(new InputEvent(5, event.getAxisValue(MotionEvent.AXIS_RZ, i), 0, event.getSource()));
+						events.add(new InputEvent(6, event.getAxisValue(MotionEvent.AXIS_LTRIGGER, i), 0, event.getSource()));
+						events.add(new InputEvent(7, event.getAxisValue(MotionEvent.AXIS_RTRIGGER, i), 0, event.getSource()));
+						events.add(new InputEvent(8, event.getAxisValue(MotionEvent.AXIS_HAT_X, i), 0, event.getSource()));
+						events.add(new InputEvent(9, event.getAxisValue(MotionEvent.AXIS_HAT_Y, i), 0, event.getSource()));
 	    			}
 	    		}
     		}
@@ -186,7 +147,7 @@ public class JNIGLSurfaceView extends GLSurfaceView
     		{
     			int actionIdx = event.getActionIndex();
     			assert(actionIdx <= event.getPointerCount());
-    			events.add(new InputEvent(event.getPointerId(actionIdx), event.getX(actionIdx), event.getY(actionIdx), event.getSource(), tapCount));
+    			events.add(new InputEvent(event.getPointerId(actionIdx), event.getX(actionIdx), event.getY(actionIdx), event.getSource()));
     		}
     	}
     	public InputRunnable(final com.bda.controller.MotionEvent event)
@@ -205,45 +166,22 @@ public class JNIGLSurfaceView extends GLSurfaceView
 	        	events.add(new InputEvent(7, event.getAxisValue(com.bda.controller.MotionEvent.AXIS_RTRIGGER, i), 0, InputDevice.SOURCE_CLASS_JOYSTICK));
     		}
     	}
-    	
-    	int GetTId(int id) {
-    		if (tIdMap.containsKey(id))
-    			return tIdMap.get(id);
-    		
-    		int tId = nexttId++;
-    		tIdMap.put(id, tId);
-    		return tId;
-    	}
-    	
-    	void RemoveTId(int id) {
-    		tIdMap.remove(id);
-    	}
 
 		@Override
-		public void run() {
-			for (int i = 0; i < events.size(); ++i) {
-				InputEvent event = events.get(i);
-				
-				if (event.source == InputDevice.SOURCE_CLASS_JOYSTICK) {
-					nativeOnInput(action, event.id + 1, event.x, event.y, time, event.source, event.tapCount);
-				} else {
-					nativeOnInput(action, GetTId(event.id), event.x, event.y, time, event.source, event.tapCount);
-					
-					if (action == MotionEvent.ACTION_CANCEL ||
-						action == MotionEvent.ACTION_UP ||
-						action == MotionEvent.ACTION_POINTER_1_UP ||
-						action == MotionEvent.ACTION_POINTER_2_UP ||
-						action == MotionEvent.ACTION_POINTER_3_UP) {
-						RemoveTId(event.id);
-					}
-				}
+		public void run()
+		{
+			for (int i = 0; i < events.size(); ++i)
+			{
+				nativeOnInput(action, events.get(i).id + 1, events.get(i).x, events.get(i).y, time, events.get(i).source);
 			}
 		}
     }
 
-    class KeyInputRunnable implements Runnable {
+    class KeyInputRunnable implements Runnable
+    {
     	int keyCode;
-    	public KeyInputRunnable(int keyCode) {
+    	public KeyInputRunnable(int keyCode)
+    	{
     		this.keyCode = keyCode;
     	}
     	
@@ -275,23 +213,14 @@ public class JNIGLSurfaceView extends GLSurfaceView
     @Override
     public boolean onTouchEvent(MotionEvent event) 
     {
-        boolean isDoubleTap = doubleTapDetector.onTouchEvent(event);
-        if (lastDoubleActionIdx >= 0 &&
-        	lastDoubleActionIdx == event.getActionIndex() &&
-        	event.getAction() == MotionEvent.ACTION_UP) {
-        	lastDoubleActionIdx = -1;
-        	queueEvent(new InputRunnable(event, 2));
-        	isDoubleTap = true;
-        }
-        if (!isDoubleTap)
-            queueEvent(new InputRunnable(event, 1));
+    	queueEvent(new InputRunnable(event));
         return true;
     }
     
     @Override
     public boolean onGenericMotionEvent(MotionEvent event)
     {
-    	queueEvent(new InputRunnable(event, 1));
+    	queueEvent(new InputRunnable(event));
     	return true;
     }
     

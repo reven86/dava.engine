@@ -155,7 +155,6 @@ SpriteNode::eType SpriteNode::GetType()
 
 void SpriteNode::Draw()
 {
-#if 0
 	if (!(flags&Entity::NODE_VISIBLE))return;
 
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
@@ -164,8 +163,7 @@ void SpriteNode::Draw()
 	}
     
     // Get current modelview matrix, and in this case it's always a camera matrix
-	Matrix4 modelViewMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-    uint32 matrixCache = RenderManager::Instance()->GetModelViewMatrixCache();
+	Matrix4 modelViewMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW); 
     const Matrix4 & cameraMatrix = scene->GetCurrentCamera()->GetMatrix();
     Matrix4 meshFinalMatrix;
     
@@ -272,14 +270,13 @@ void SpriteNode::Draw()
     RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, meshFinalMatrix);
     RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 
-	//eBlendMode sblend = RenderManager::Instance()->GetSrcBlend();
-	//eBlendMode dblend = RenderManager::Instance()->GetDestBlend();
+	eBlendMode sblend = RenderManager::Instance()->GetSrcBlend();
+	eBlendMode dblend = RenderManager::Instance()->GetDestBlend();
     
     RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-	RenderManager::Instance()->SetDefault2DState();
-	//RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-	//RenderManager::Instance()->AppendState(RenderState::STATE_BLEND);
-	//RenderManager::Instance()->RemoveState(RenderState::STATE_DEPTH_WRITE);
+	RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
+	RenderManager::Instance()->AppendState(RenderState::STATE_BLEND);
+	RenderManager::Instance()->RemoveState(RenderState::STATE_DEPTH_WRITE);
 //    RenderManager::Instance()->EnableBlending(true);
 //    RenderManager::Instance()->EnableTexturing(true);//TODO: Move all this code to the RenderState node
 //    RenderManager::Instance()->EnableDepthTest(false);
@@ -288,7 +285,7 @@ void SpriteNode::Draw()
     
     //RenderManager::Instance()->SetState(RenderStateBlock::STATE_BLEND | RenderStateBlock::STATE_TEXTURE0 | RenderStateBlock::STATE_CULL);
     
-    RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(frame));
+    RenderManager::Instance()->SetTexture(sprite->GetTexture(frame));
 //	RenderManager::Instance()->FlushState();
     
     RenderManager::Instance()->SetRenderData(renderData);
@@ -297,13 +294,13 @@ void SpriteNode::Draw()
 
     
 //    glDisableClientState(GL_COLOR_ARRAY);
-    //RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
+    RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
 //    RenderManager::Instance()->EnableTexturing(true);
 //    RenderManager::Instance()->EnableBlending(false);
 //    RenderManager::Instance()->EnableDepthTest(true);
 //    RenderManager::Instance()->EnableDepthWrite(true);
     
-	//RenderManager::Instance()->SetBlendMode(sblend, dblend);
+	RenderManager::Instance()->SetBlendMode(sblend, dblend);
 
 //    if (debugFlags & DEBUG_DRAW_ALL)
 //    {
@@ -311,8 +308,7 @@ void SpriteNode::Draw()
 //        RenderHelper::Instance()->DrawBox(box);
 //    }
     
-    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, modelViewMatrix, matrixCache);
-#endif
+    RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, modelViewMatrix);
 }
 
 Sprite * SpriteNode::GetSprite() const

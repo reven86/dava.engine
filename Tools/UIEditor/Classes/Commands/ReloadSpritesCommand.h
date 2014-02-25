@@ -37,7 +37,7 @@ class ReloadSpritesCommand: public BaseCommand
 {
 public:
 public:
-	ReloadSpritesCommand(const HierarchyTreeNode* node);
+	ReloadSpritesCommand(const HierarchyTreeNode* node, bool needRepack, bool pixelized);
 
 	virtual void Execute();
 	virtual bool IsUndoRedoSupported() {return false;};
@@ -49,8 +49,8 @@ protected:
 
 private:
     const HierarchyTreeNode* rootNode;
-	
-	void ShowErrorMessage(Set<String> errorsSet);
+    bool isNeedRepack;
+    bool isPixelized;
 };
 
 #endif /* defined(__RELOADSPRITESCOMMAND__H__) */

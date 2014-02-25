@@ -151,12 +151,7 @@ void UISpinner::ContentChanged()
 }
     
 void UISpinner::Input(UIEvent *currentInput)
-{
-    if (NULL == adapter)
-    {
-        return;
-    }
-
+{        
     if (content->IsAnimating(MOVE_ANIMATION_TRACK))
     {
         return;

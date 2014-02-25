@@ -29,9 +29,12 @@
 
 
 #include "SpritePackerHelper.h"
-#include "SpritesPacker.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Project/ProjectManager.h"
+#include "DockParticleEditor/ParticlesEditorController.h"
+
+#include "../SpritesPacker.h"
+#include "../SceneEditor/EditorSettings.h"
+#include "./Scene/SceneDataManager.h"
+
 #include <QtConcurrentRun>
 
 #include "TexturePacker/ResourcePacker2D.h"
@@ -49,7 +52,7 @@ SpritePackerHelper::SpritePackerHelper()
 
 void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 {
-	FilePath projectPath = FilePath(ProjectManager::Instance()->CurProjectPath().toStdString());
+	FilePath projectPath = EditorSettings::Instance()->GetProjectPath();
     if(projectPath.IsEmpty())
     {
         Logger::Warning("[ParticlesEditorSpritePackerHelper::UpdateParticleSprites] Project path not set.");
@@ -64,14 +67,13 @@ void SpritePackerHelper::UpdateParticleSprites(DAVA::eGPUFamily gpu)
 void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 {
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
-	FilePath projectPath = FilePath(ProjectManager::Instance()->CurProjectPath().toStdString());
+	FilePath projectPath = EditorSettings::Instance()->GetProjectPath();
 	FilePath inputDir = projectPath + "DataSource/Gfx/Particles/";
 	FilePath outputDir = projectPath + "Data/Gfx/Particles/";
 
 	if(!FileSystem::Instance()->IsDirectory(inputDir))
 	{
 		Logger::Error("[SpritePackerHelper::Pack] inputDir is not directory (%s)", inputDir.GetAbsolutePathname().c_str());
-        DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 		return;
 	}
 
@@ -82,7 +84,6 @@ void SpritePackerHelper::Pack(DAVA::eGPUFamily gpu)
 	SafeDelete(resourcePacker);
 	if(!isChanged)
 	{
-        DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
 		return;
 	}
 	
@@ -111,6 +112,9 @@ void SpritePackerHelper::Reload()
     {
         it->second->Reload();
     }
+    
+    if(ParticlesEditorController::Instance())
+        ParticlesEditorController::Instance()->RefreshSelectedNode();
 }
 
 void SpritePackerHelper::EnumerateSpritesForReloading(Scene * scene, Map<String, Sprite *> &sprites)
@@ -135,10 +139,12 @@ void SpritePackerHelper::EnumerateSpritesForReloading(Scene * scene, Map<String,
 		}
         
 		// All the children of this Scene Node must have Emitter components.
-		int32 emittersCount = effectComponent->GetEmittersCount();
+		int32 emittersCount = curNode->GetChildrenCount();
 		for (int32 i = 0; i < emittersCount; i ++)
 		{
-			ParticleEmitter * emitter = effectComponent->GetEmitter(i);			
+			Entity* childNode = curNode->GetChild(i);
+			ParticleEmitter * emitter = GetEmitter(childNode);
+			
 			EnumerateSpritesForParticleEmitter(emitter, sprites);
 		}
         
@@ -172,20 +178,21 @@ void SpritePackerHelper::EnumerateSpritesForParticleEmitter(ParticleEmitter* emi
 		return;
 	}
 	
-	int32 layersCount = emitter->layers.size();
+	Vector<ParticleLayer*> & layers = emitter->GetLayers();
+	int32 layersCount = layers.size();
 	for (int il = 0; il < layersCount; ++il)
 	{
-		ParticleLayer* curLayer = emitter->layers[il];
-		Sprite *sprite = curLayer->sprite;
+		ParticleLayer* curLayer = layers[il];
+		Sprite *sprite = curLayer->GetSprite();
 		if (sprite)
 		{
 			sprites[sprite->GetRelativePathname().GetAbsolutePathname()] = sprite;
 		}
 		
 		// Superemitter layers might have inner emitter with its own sprites.
-		if (curLayer->innerEmitter)
+		if (curLayer->GetInnerEmitter())
 		{
-			EnumerateSpritesForParticleEmitter(curLayer->innerEmitter, sprites);
+			EnumerateSpritesForParticleEmitter(curLayer->GetInnerEmitter(), sprites);
 		}
 	}
 }

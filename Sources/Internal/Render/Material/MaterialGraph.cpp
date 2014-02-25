@@ -130,7 +130,7 @@ bool MaterialGraph::LoadNode(const YamlNode * graphNode)
     //YamlNode *
     const YamlNode * nameNode = graphNode->Get("name");
     const YamlNode * typeNode = graphNode->Get("node");
-    Logger::Debug("- Read Node %s %s", typeNode->AsString().c_str(), nameNode->AsString().c_str());
+    Logger::FrameworkDebug("- Read Node %s %s", typeNode->AsString().c_str(), nameNode->AsString().c_str());
 
     // Parse inputs
     const MultiMap<String, YamlNode*> & map = graphNode->AsMap();
@@ -147,7 +147,7 @@ bool MaterialGraph::LoadNode(const YamlNode * graphNode)
         MaterialGraphNode * connectNode = GetNodeByName(nodeName);
         if (connectNode)
         {
-            Logger::Debug("- Read Input: %s connected:%s filter:%s",
+            Logger::FrameworkDebug("- Read Input: %s connected:%s filter:%s",
                           inputNode->Get(0)->AsString().c_str(),
                           inputNode->Get(1)->AsString().c_str(),
                           inputNode->Get(2)->AsString().c_str());
@@ -191,7 +191,7 @@ void MaterialGraph::SortByDepthMarkerAndRemoveUnused()
         MaterialGraphNode * node = *it;
         if (node->GetDepthMarker() == -1)
         {
-            Logger::Debug("- remove empty node: %s", node->GetName().c_str());
+            Logger::FrameworkDebug("- remove empty node: %s", node->GetName().c_str());
             RemoveNodeRecursive(node);
             it = allNodes.begin();
             continue;

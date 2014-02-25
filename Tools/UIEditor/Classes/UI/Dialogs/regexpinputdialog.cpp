@@ -29,14 +29,14 @@
 #include <QtGui>
 #include "regexpinputdialog.h"
 
-RegExpInputDialog::RegExpInputDialog(QWidget *parent, int flags) :
+RegExpInputDialog::RegExpInputDialog(QWidget *parent, Qt::WindowFlags flags) :
     QDialog(parent)
 {
     if(flags!=0)
-    {
-        setWindowFlags(windowFlags() & (Qt::WindowFlags)flags);
-    }
-
+	{
+		setWindowFlags(flags);
+	}
+     
     QVBoxLayout *l=new QVBoxLayout(this);
      
     label=new QLabel(this);
@@ -98,7 +98,7 @@ void RegExpInputDialog::checkValid(const QString &text)
 }
 
 QString RegExpInputDialog::getText(QWidget *parent, const QString &title, const QString &label, const QString &text,
-	const QRegExp &regExp, bool* ok, int flags)
+	const QRegExp &regExp, bool* ok, Qt::WindowFlags flags)
 {
     RegExpInputDialog *r = new RegExpInputDialog(parent, flags);
     r->setTitle(title);

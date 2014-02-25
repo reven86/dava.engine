@@ -39,7 +39,9 @@
 #include <DAVAEngine.h>
 #include "ScrollZoomWidget.h"
 #include "Tools/EventFilterDoubleSpinBox/EventFilterDoubleSpinBox.h"
+
 #include "Scene/SceneEditor2.h"
+#include "Commands/CommandList.h"
 
 using namespace DAVA;
 
@@ -84,13 +86,16 @@ public:
 signals:
 	void ChangeVisible(bool visible);
 	
-protected slots:		
+protected slots:
+	void OnNodeSelected(Entity* node);
+	void OnEffectNodeSelected(Entity* node);
+	void OnLayerSelected(Entity* node, ParticleLayer* layer);
 	
 	// Scene Tree signals - Particles are selected.
-	void OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect);
-	void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-	void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-	void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh);
+	void OnEffectSelectedFromSceneTree(SceneEditor2* scene, DAVA::Entity* effectNode);
+	void OnEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::Entity* emitterNode);
+	void OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
+	void OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, bool forceRefresh);
     void OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
 	// Scene Tree signals - values are changed for Particles.
@@ -102,7 +107,7 @@ protected slots:
 	void OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
 
 	// Scene Tree signals - structure changes.
-	void OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
+	void OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleLayer* layer);
 	void OnParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
 
 	void OnUpdate();
@@ -110,8 +115,6 @@ protected slots:
 	void OnUpdateLayersExtraInfoNeeded();
 
 protected:
-	void OnParticleEffectSelected(DAVA::ParticleEffectComponent* effect);	
-
 	virtual void paintEvent(QPaintEvent *);
 	virtual void mouseMoveEvent(QMouseEvent *);
 	virtual void mousePressEvent(QMouseEvent *);
@@ -161,7 +164,7 @@ private:
 	
 	QPoint selectedPoint;
 
-	ParticleEffectComponent* selectedEffect;
+	Entity* selectedEffect;
 	ParticleEmitter* selectedEmitter;
 
 	int32 selectedLine;

@@ -43,10 +43,6 @@ public:
 	
 	void SetRotation(int rotation);
 	int GetRotation();
-    
-    void SetVisualRotation(int rotation);
-    int GetVisualRotation();
-    
 	void SetFaceLoaded(bool loaded);
 	bool GetFaceLoaded();
 
@@ -87,7 +83,6 @@ private:
 	bool mouseEntered;
 	int buttonDrawFlags;
 	int currentRotation;
-    int visualRotation;
 	
 	static QImage rotateClockwiseImage;
 	static QImage rotateCounterclockwiseImage;

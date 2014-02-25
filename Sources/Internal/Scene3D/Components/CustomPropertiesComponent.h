@@ -34,7 +34,6 @@
 
 #include "Entity/Component.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -48,13 +47,13 @@ namespace DAVA
 		IMPLEMENT_COMPONENT_TYPE(CUSTOM_PROPERTIES_COMPONENT);
 				
 		virtual Component * Clone(Entity * toEntity);
-		virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-		virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+		virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
+		virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
 		
 		KeyedArchive* GetArchive();
 				
 		//this method helps to load data for older scene file version
-		void LoadFromArchive(const KeyedArchive& srcProperties, SerializationContext *serializationContext);
+		void LoadFromArchive(const KeyedArchive& srcProperties, SceneFileV2 *sceneFile);
 		
 	public:
 		

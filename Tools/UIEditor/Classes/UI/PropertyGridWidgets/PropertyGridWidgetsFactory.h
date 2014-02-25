@@ -54,7 +54,6 @@
 #include "statepropertygridwidget.h"
 #include "textpropertygridwidget.h"
 #include "uitextfieldpropertygridwidget.h"
-#include "particleeffectpropertygridwidget.h"
 
 namespace DAVA {
     
@@ -94,7 +93,6 @@ private:
 	ListPropertyGridWidget* listWidget;
 	ScrollControlPropertyGridWidget* scrollWidget;
 	ScrollViewPropertyGridWidget* scrollViewWidget;
-    ParticleEffectPropertyGridWidget* particleWidget;
 	
     // The same widgets in the list manner - for easier handling of group operations.
     PROPERTYGRIDWIDGETSLIST registeredWidgets;

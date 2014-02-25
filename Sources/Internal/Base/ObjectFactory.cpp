@@ -56,9 +56,20 @@ void ObjectFactory::RegisterObjectCreator(const String & name, CreateObjectFunc 
 
 void ObjectFactory::RegisterObjectCreator(const String & name, CreateObjectFunc func, const std::type_info & info, uint32 size, const String & alias)
 {
-    creatorMap[alias] = func;
+    creatorMap[name] = func;
     nameMap[info.name()] = alias;
-    sizeMap[alias] = size;
+    sizeMap[name] = size;
+}
+	
+BaseObject * ObjectFactory::New(const String & name)
+{
+	Map<String, CreateObjectFunc>::iterator it = creatorMap.find(name);
+	if (it != creatorMap.end())
+	{
+		CreateObjectFunc newFunc = it->second;
+		return (newFunc)();
+	}
+	return 0;
 }
     
 void ObjectFactory::Dump()

@@ -106,7 +106,7 @@ void SceneNodeAnimation::SetBindNode(Entity * _bindNode)
 	bindNode = _bindNode;
 }
 	
-void SceneNodeAnimation::SetBindName(const FastName & _bindName)
+void SceneNodeAnimation::SetBindName(const String & _bindName)
 {
 	bindName = _bindName;
 }
@@ -128,10 +128,9 @@ void SceneNodeAnimation::Update(float32 timeElapsed)
 	
 void SceneNodeAnimation::Execute()
 {
-    DVASSERT(0);
-// 	startIdx = 0;
-// 	currentTime = 0;
-// 	bindNode->ExecuteAnimation(this);
+	startIdx = 0;
+	currentTime = 0;
+	bindNode->ExecuteAnimation(this);
 }
 	
 Vector3 SceneNodeAnimation::SetStartPosition(const Vector3 & position)

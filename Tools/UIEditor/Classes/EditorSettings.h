@@ -65,18 +65,7 @@ public:
     void SetPixelized(bool value);
     bool IsPixelized();
 
-    // Background Frame colors.
-    Color GetCurrentBackgroundFrameColor() const;
-    void SetCurrentBackgroundFrameColor(const Color& color);
-    
-    Color GetCustomBackgroundFrameColor() const;
-    void SetCustomBackgroundFrameColor(const Color& color);
-
 protected:
-    Color GetColor(const String& colorName, const Color& defaultColor) const;
-    void SetColor(const String& colorName, const Color& color);
-
-private:
 	KeyedArchive *settings;
 	
 };

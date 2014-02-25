@@ -57,7 +57,6 @@ protected:
     DAVA::FilePath inFolder;
     DAVA::FilePath outFolder;
     
-    bool copyConverted;
 };
 
 

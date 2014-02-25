@@ -36,7 +36,6 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
-#include "Render/UniqueStateSet.h"
 	
 namespace DAVA
 {
@@ -67,7 +66,6 @@ public:
 	Block * AcquireBlock(const Vector2 & size);
 	void ReleaseBlock(Block * block);
 	Texture * GetTexture();
-	UniqueHandle GetTextureHandle();
 
 private:
 	SharedFBO();
@@ -77,8 +75,6 @@ private:
 	Vector<Vector2> sizes;
 	Vector<Deque<Block*> > queues;
 	Vector<int32> frees;
-	
-	UniqueHandle fboTextureState;
 
 	int32 FindIndexForSize(const Vector2 & size);
 	Block * GetBlock(int32 poolIndex);

@@ -34,7 +34,6 @@
 #include "MeshInstanceNode.h"
 #include "Render/Shader.h"
 #include "Render/3D/EdgeAdjacency.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -54,8 +53,8 @@ public:
 
 	void CopyGeometryFrom(MeshInstanceNode * meshInstance);
 
-	virtual void Save(KeyedArchive * archive, SerializationContext * sceneFileV2);
-	virtual void Load(KeyedArchive * archive, SerializationContext * sceneFileV2);
+	virtual void Save(KeyedArchive * archive, SceneFileV2 * sceneFileV2);
+	virtual void Load(KeyedArchive * archive, SceneFileV2 * sceneFileV2);
 	virtual void GetDataNodes(Set<DataNode*> & dataNodes);
 
 	virtual Entity* Clone(Entity *dstNode = NULL);

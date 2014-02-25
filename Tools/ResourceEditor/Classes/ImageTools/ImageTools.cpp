@@ -36,7 +36,7 @@
 
 #include "Render/GPUFamilyDescriptor.h"
 
-#include "Main/QtUtils.h"
+#include "../Qt/Main/QtUtils.h"
 
 using namespace DAVA;
 
@@ -49,10 +49,8 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	if(descriptor->IsCubeMap() &&
 	   GPU_UNKNOWN == forGPU)
 	{
-		Vector<FilePath> faceNames;
+		Vector<String> faceNames;
 		Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
-        
-        files.reserve(faceNames.size());
 		for(size_t i = 0 ; i < faceNames.size(); ++i)
 		{
 			files.push_back(FilePath(faceNames[i]));
@@ -81,7 +79,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		{
 			size += LibPngWrapper::GetDataSize(imagePathname);
 		}
-		else if(ImageLoader::IsDDSFile(imageFile))
+		else if(ImageLoader::IsDXTFile(imageFile))
 		{
 			size += LibDxtHelper::GetDataSize(imagePathname);
 		}
@@ -99,7 +97,6 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	
     return size;
 }
-
 
 void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format)
 {

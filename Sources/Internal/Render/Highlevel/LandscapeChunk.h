@@ -34,7 +34,6 @@
 #include "Base/BaseTypes.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/Landscape.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -48,11 +47,9 @@ protected:
 public:
     LandscapeChunk(Landscape * node = 0);
     
-	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
-    virtual void Draw(const FastName & ownerPassName, Camera * camera);
-
-	virtual ShadowVolume * CreateShadow();
+	virtual void Save(KeyedArchive *archive, SceneFileV2 *sceneFile);
+	virtual void Load(KeyedArchive *archive, SceneFileV2 *sceneFile);
+    virtual void Draw(Camera * camera);
 
 private:
     Landscape * landscape;

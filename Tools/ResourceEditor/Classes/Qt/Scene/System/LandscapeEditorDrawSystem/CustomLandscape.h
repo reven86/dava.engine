@@ -32,7 +32,7 @@
 #define __RESOURCEEDITORQT__CUSTOMLANDSCAPE__
 
 #include "DAVAEngine.h"
-#include "Deprecated/LandscapeRenderer.h"
+#include "LandscapeEditor/EditorLandscape.h"
 
 using namespace DAVA;
 
@@ -46,12 +46,9 @@ public:
 	LandscapeRenderer* GetRenderer();
 	
 	virtual void Draw(Camera* camera);
-
-	void UpdateTextureState();
 	
 protected:
 	LandscapeRenderer* landscapeRenderer;
-	UniqueHandle textureState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMLANDSCAPE__) */

@@ -7,7 +7,7 @@
 
 set -e
 
-export SDK=7.0
+export SDK=6.0
 
 checkExists() {
 
@@ -49,11 +49,11 @@ buildit() {
         exit 1
     fi
 
-    export CC="/usr/bin/clang"
-    export CFLAGS="-arch ${target} -isysroot ${root}/SDKs/${platform}${SDK}.sdk -miphoneos-version-min=6.0"
-    export CXX="/usr/bin/clang"
-    export AR="/usr/bin/ar"
-    export RANLIB="/usr/bin/ranlib"
+    export CC="${root}/usr/bin/gcc"
+    export CFLAGS="-arch ${target} -isysroot ${root}/SDKs/${platform}${SDK}.sdk"
+    export CPP="${root}/usr/bin/llvm-cpp-4.2"
+    export AR="${root}/usr/bin/ar"
+    export RANLIB="${root}/usr/bin/ranlib"
 
     checkExists ${CC}
     checkExists ${root}/SDKs/${platform}${SDK}.sdk
@@ -61,7 +61,7 @@ buildit() {
     checkExists ${AR}
     checkExists ${RANLIB}
 
-    ./configure --disable-shared --enable-static --with-darwinssl --without-libssh2 --without-ca-bundle --without-ldap --disable-ldap --host=${target}-apple-darwin10 --enable-threaded-resolver
+    ./configure --disable-shared --without-ssl --without-libssh2 --without-ca-bundle --without-ldap --disable-ldap --host=${target}-apple-darwin10
 
     make clean
     make

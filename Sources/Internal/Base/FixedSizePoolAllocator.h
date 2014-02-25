@@ -91,7 +91,6 @@ public:
 	uint32 freeItemCount;
 	uint32 maxItemCount;
 };
-    
 		
 };
 

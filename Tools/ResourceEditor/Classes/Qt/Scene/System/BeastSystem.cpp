@@ -37,12 +37,23 @@ BeastSystem::~BeastSystem(){}
 
 void BeastSystem::AddEntity(Entity * entity)
 {
-    SetDefaultPropertyValues(entity);
+    if(GetSkybox(entity))
+    {
+        RemoveBeastSettings(entity);
+    }
+    else
+    {
+        SetDefaultPropertyValues(entity);
+    }
 }
 
 void BeastSystem::SetDefaultPropertyValues(Entity * entity)
 {
 	DAVA::KeyedArchive* propertyList = entity->GetCustomProperties();
+    
+	SetBool(propertyList, "editor.staticlight.used", true);
+	SetBool(propertyList, "editor.staticlight.castshadows", true);
+	SetBool(propertyList, "editor.staticlight.receiveshadows", true);
 
 	if(GetLight(entity))
 	{
@@ -81,6 +92,16 @@ void BeastSystem::SetInt32( KeyedArchive* propertyList, const String & key, int3
 		propertyList->SetInt32(key, value);
 	}
 }
+
+void BeastSystem::RemoveBeastSettings(DAVA::Entity *entity) const
+{
+	DAVA::KeyedArchive* propertyList = entity->GetCustomProperties();
+    
+    propertyList->DeleteKey("editor.staticlight.used");
+    propertyList->DeleteKey("editor.staticlight.castshadows");
+    propertyList->DeleteKey("editor.staticlight.receiveshadows");
+}
+
 
 
 

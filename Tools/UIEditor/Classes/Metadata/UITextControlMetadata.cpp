@@ -124,12 +124,3 @@ Vector2 UITextControlMetadata::GetOffsetY(const Vector2& currentOffset, float of
 	offset.y = offsetY;
 	return offset;
 }
-
-int UITextControlMetadata::GetFittingType() const
-{
-    return TextBlock::FITTING_DISABLED;
-}
-
-void UITextControlMetadata::SetFittingType(int /*value*/)
-{
-}

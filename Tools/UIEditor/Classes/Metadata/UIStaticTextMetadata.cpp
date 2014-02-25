@@ -33,7 +33,6 @@
 #include "EditorFontManager.h"
 
 #include "StringUtils.h"
-#include "ColorHelper.h"
 
 using namespace DAVA;
 
@@ -120,8 +119,7 @@ void UIStaticTextMetadata::InitializeControl(const String& controlName, const Ve
 
         staticText->SetFont(EditorFontManager::Instance()->GetDefaultFont());
         staticText->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);
-        staticText->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-
+    
         // Initialize both control text and localization key.
         WideString controlText = StringToWString(staticText->GetName());
 
@@ -152,7 +150,7 @@ QColor UIStaticTextMetadata::GetFontColor() const
         return QColor();
     }
 
-	return ColorHelper::DAVAColorToQTColor(GetActiveStaticText()->GetTextColor());
+	return DAVAColorToQTColor(GetActiveStaticText()->GetTextColor());
 }
 
 void UIStaticTextMetadata::SetFontColor(const QColor& value)
@@ -162,7 +160,7 @@ void UIStaticTextMetadata::SetFontColor(const QColor& value)
         return;
     }
 
-	GetActiveStaticText()->SetTextColor(ColorHelper::QTColorToDAVAColor(value));
+	GetActiveStaticText()->SetTextColor(QTColorToDAVAColor(value));
 }
 
 float UIStaticTextMetadata::GetShadowOffsetX() const
@@ -212,7 +210,7 @@ QColor UIStaticTextMetadata::GetShadowColor() const
     	return QColor();
     }
 	
-	return ColorHelper::DAVAColorToQTColor(GetActiveStaticText()->GetShadowColor());
+	return DAVAColorToQTColor(GetActiveStaticText()->GetShadowColor());
 }
 
 void UIStaticTextMetadata::SetShadowColor(const QColor& value)
@@ -222,7 +220,7 @@ void UIStaticTextMetadata::SetShadowColor(const QColor& value)
         return;
     }
 	
-	GetActiveStaticText()->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
+	GetActiveStaticText()->SetShadowColor(QTColorToDAVAColor(value));
 }
 
 int UIStaticTextMetadata::GetAlign()
@@ -307,24 +305,4 @@ void UIStaticTextMetadata::SetMultilineBySymbol(const bool value)
     // Have to keep current Multiline value.
     bool curMultilineValue = GetActiveStaticText()->GetMultiline();
     GetActiveStaticText()->SetMultiline(curMultilineValue, value);
-}
-
-void UIStaticTextMetadata::SetFittingType(int value)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-
-    GetActiveStaticText()->SetFittingOption(value);
-}
-
-int UIStaticTextMetadata::GetFittingType() const
-{
-    if (!VerifyActiveParamID())
-    {
-        return TextBlock::FITTING_DISABLED;
-    }
-    
-    return GetActiveStaticText()->GetFittingOption();
 }

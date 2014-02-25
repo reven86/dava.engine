@@ -34,11 +34,11 @@
 #include "Scene/System/CollisionSystem/CollisionBaseObject.h"
 #include "Particles/ParticleEmitter.h"
 
-class CollisionParticleEffect : public CollisionBaseObject
+class CollisionParticleEmitter : public CollisionBaseObject
 {
 public:
-	CollisionParticleEffect(DAVA::Entity *entity, btCollisionWorld *world);
-	virtual ~CollisionParticleEffect();
+	CollisionParticleEmitter(DAVA::Entity *entity, btCollisionWorld *word, DAVA::ParticleEmitter *emitter);
+	virtual ~CollisionParticleEmitter();
 
 protected:
 	btCollisionShape* btShape;

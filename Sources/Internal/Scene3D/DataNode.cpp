@@ -34,21 +34,19 @@
 namespace DAVA 
 {
 
-const uint16 DataNode::NodeRuntimeFlag = 1;
     
     
 DataNode::DataNode()
 :   scene(0)
 ,   index(-1)
 ,   pointer(0)
-,	nodeFlags(0)
 {
     
 }
 
 DataNode::~DataNode()
 {
-    //RemoveAllChildren();
+    RemoveAllChildren();
 }
     
 int32 DataNode::Release()
@@ -132,17 +130,17 @@ void DataNode::RemoveNode(DataNode * node)
     }
 }
 
-DataNode * DataNode::GetChildNode(int32 index)
+DataNode * DataNode::GetChild(int32 index)
 {
     return children[index];
 }
 
-int32 DataNode::GetChildrenNodeCount()
+int32 DataNode::GetChildrenCount()
 {
     return (int32)children.size();
 }
 
-void DataNode::RemoveAllChildrenNodes()
+void DataNode::RemoveAllChildren()
 {
     for (Vector<DataNode*>::iterator t = children.begin(); t != children.end(); ++t)
     {
@@ -165,7 +163,7 @@ uint64 DataNode::GetPreviousPointer()
 }
 
     
-void DataNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void DataNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
     BaseObject::Load(archive);
     name = archive->GetString("name");
@@ -173,7 +171,7 @@ void DataNode::Load(KeyedArchive * archive, SerializationContext * serialization
     pointer = archive->GetByteArrayAsType("#id", (uint64)0);
 }
 
-void DataNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void DataNode::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
     BaseObject::Save(archive);
     archive->SetInt32("#index", index);

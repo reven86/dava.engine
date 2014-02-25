@@ -39,7 +39,8 @@ const Vector2 BaseMetadata::INITIAL_CONTROL_SIZE = Vector2(100, 30);
 BaseMetadata::BaseMetadata(QObject *parent) :
     QObject(parent),
     activeParamID(BaseMetadataParams::BaseMetadataID_UNKNOWN),
-	activeStateIndex(STATE_INDEX_DEFAULT)
+	activeStateIndex(STATE_INDEX_DEFAULT),
+    pixelizationNeeded(false)
 {
 }
 
@@ -268,6 +269,16 @@ UIControl::eControlState BaseMetadata::GetReferenceState()
     return UIControl::STATE_NORMAL;
 }
 
+Color BaseMetadata::QTColorToDAVAColor(const QColor& qtColor) const
+{
+    return Color(qtColor.redF(), qtColor.greenF(), qtColor.blueF(), qtColor.alphaF());
+}
+
+QColor BaseMetadata::DAVAColorToQTColor(const Color& davaColor) const
+{
+    return QColor(davaColor.r * 0xFF, davaColor.g * 0xFF, davaColor.b * 0xFF, davaColor.a * 0xFF);
+}
+
 void BaseMetadata::SetActiveStateIndex(int32 index)
 {
 	if (index >= STATE_INDEX_DEFAULT && index < (int32)GetStatesCount())
@@ -305,7 +316,7 @@ uint32 BaseMetadata::GetStatesCount() const
 	return uiControlStates.size();
 }
 
-void BaseMetadata::ApplyRename(const QString& /*originalName*/, const QString& newName)
+void BaseMetadata::SetPixelizationNeeded(bool value)
 {
-	SetName(newName);
+    pixelizationNeeded = value;
 }

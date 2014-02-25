@@ -38,12 +38,10 @@
 #include "SpritesPacker/SpritePackerHelper.h"
 
 #include "TextureBrowser/TextureBrowser.h"
-#include "TextureBrowser/TextureCache.h"
-#include "MaterialEditor/MaterialEditor.h"
-#include "QualitySwitcher/QualitySwitcher.h"
+#include "MaterialBrowser/MaterialBrowser.h"
 
-#include "Qt/Settings/SettingsManager.h"
-#include "Deprecated/EditorConfig.h"
+#include "Classes/SceneEditor/EditorSettings.h"
+#include "Classes/SceneEditor/EditorConfig.h"
 
 #include "../CubemapEditor/CubemapUtils.h"
 #include "../CubemapEditor/CubemapTextureBrowser.h"
@@ -56,10 +54,15 @@
 #include "Classes/Qt/SpeedTreeImport/SpeedTreeImportDialog.h"
 #endif
 
+#include "Tools/SelectPathWidget/SelectEntityPathWidget.h"
+
 #include "../Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
+#include "../Tools/LandscapeDialog/LandscapeDialog.h"
 
 #include "Classes/Commands2/EntityAddCommand.h"
 #include "StringConstants.h"
+#include "SceneEditor/HintManager.h"
+#include "../Tools/SettingsDialog/SettingsDialogQt.h"
 #include "../Settings/SettingsManager.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
@@ -71,7 +74,15 @@
 
 #include "Classes/CommandLine/SceneSaver/SceneSaver.h"
 #include "Classes/Qt/Main/Request.h"
+#include "Classes/Commands2/GroupEntitiesForMultiselectCommand.h"
+#include "Classes/Commands2/ConvertToShadowCommand.h"
 #include "Classes/Commands2/BeastAction.h"
+
+#include "../DockLandscapeEditorControls/LandscapeEditorPanels/CustomColorsPanel.h"
+#include "../DockLandscapeEditorControls/LandscapeEditorPanels/RulerToolPanel.h"
+#include "../DockLandscapeEditorControls/LandscapeEditorPanels/VisibilityToolPanel.h"
+#include "../DockLandscapeEditorControls/LandscapeEditorPanels/TilemaskEditorPanel.h"
+#include "../DockLandscapeEditorControls/LandscapeEditorPanels/HeightmapEditorPanel.h"
 
 #include "Classes/Commands2/CustomColorsCommands2.h"
 #include "Classes/Commands2/HeightmapEditorCommands2.h"
@@ -88,8 +99,6 @@
 
 #include "Tools/HangingObjectsHeight/HangingObjectsHeight.h"
 #include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
-#include "Tools/SettingsDialog/GeneralSettingsDialog.h"
-#include "Tools/SettingsDialog/SceneSettingsDialog.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -99,19 +108,19 @@
 #include <QKeySequence>
 
 #include "Scene3D/Components/ActionComponent.h"
-#include "Scene3D/Systems/SkyboxSystem.h"
 
 #include "Classes/Constants.h"
 
 #include "TextureCompression/TextureConverter.h"
-#include "RecentFilesManager.h"
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
 	, waitDialog(NULL)
 	, beastWaitDialog(NULL)
+	, materialEditor(NULL)
 	, objectTypesLabel(NULL)
+	, landscapeDialog(NULL)
 	, addSwitchEntityDialog(NULL)
 	, hangingObjectsWidget(NULL)
 	, globalInvalidate(false)
@@ -119,14 +128,13 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 {
 	new Console();
 	new ProjectManager();
-	new RecentFilesManager();
+	new SettingsManager();
 	ui->setupUi(this);
     
     SetupTitle();
 
 	qApp->installEventFilter(this);
-	EditorConfig::Instance()->ParseConfig(SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_PROJECT_PATH, SettingsManager::INTERNAL).AsString()
-		+ "EditorConfig.yaml");
+	EditorConfig::Instance()->ParseConfig(EditorSettings::Instance()->GetProjectPath() + "EditorConfig.yaml");
 
 	SetupMainMenu();
 	SetupToolBars();
@@ -137,7 +145,6 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 
 	// create tool windows
 	new TextureBrowser(this);
-	new MaterialEditor(this);
 	waitDialog = new QtWaitDialog(this);
 	beastWaitDialog = new QtWaitDialog(this);
 
@@ -153,11 +160,12 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 
 	QObject::connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
 
-    QObject::connect(this, SIGNAL(TexturesReloaded()), TextureCache::Instance(), SLOT(ClearCache()));
+    QObject::connect(ui->sceneTabWidget, SIGNAL(CloseTabRequest(int , Request *)), this, SLOT(OnCloseTabRequest(int, Request *)));
 
-    
+	QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->sceneInfo , SLOT(UpdateInfoByTimer()));
+
+
 	LoadGPUFormat();
-    LoadMaterialLightViewMode();
 
     EnableGlobalTimeout(globalInvalidate);
 
@@ -169,19 +177,23 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 
 QtMainWindow::~QtMainWindow()
 {
+	SafeRelease(materialEditor);
+	SafeDelete(landscapeDialog);
 	SafeDelete(addSwitchEntityDialog);
     
+    if(HintManager::Instance())
+        HintManager::Instance()->Release();
+	
     TextureBrowser::Instance()->Release();
-	MaterialEditor::Instance()->Release();
 
 	posSaver.SaveState(this);
 
 	delete ui;
 	ui = NULL;
 
+	SettingsManager::Instance()->Release();
 	ProjectManager::Instance()->Release();
 	Console::Instance()->Release();
-	RecentFilesManager::Instance()->Release();
 }
 
 Ui::MainWindow* QtMainWindow::GetUI()
@@ -271,8 +283,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 {
-	
-	return (eGPUFamily)SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_TEXTURE_VIEW_GPU, SettingsManager::INTERNAL).AsInt32();
+	return EditorSettings::Instance()->GetTextureViewGPU();
 }
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
@@ -280,14 +291,14 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 	// before reloading textures we should save tilemask texture for all opened scenes
 	if(SaveTilemask())
 	{
-		SettingsManager::Instance()->SetValue(ResourceEditor::SETTINGS_TEXTURE_VIEW_GPU, VariantType(gpu), SettingsManager::INTERNAL);
+		EditorSettings::Instance()->SetTextureViewGPU(gpu);
 		DAVA::Texture::SetDefaultGPU(gpu);
 
-		DAVA::TexturesMap allScenesTextures;
+		DAVA::Map<DAVA::String, DAVA::Texture *> allScenesTextures;
 		for(int tab = 0; tab < GetSceneWidget()->GetTabCount(); ++tab)
 		{
 			SceneEditor2 *scene = GetSceneWidget()->GetTabScene(tab);
-			SceneHelper::EnumerateSceneTextures(scene, allScenesTextures);
+			SceneHelper::EnumerateTextures(scene, allScenesTextures);
 		}
 
 		if(allScenesTextures.size() > 0)
@@ -295,23 +306,17 @@ void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
 			int progress = 0;
 			WaitStart("Reloading textures...", "", 0, allScenesTextures.size());
 
-			DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
-			DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
+			DAVA::Map<DAVA::String, DAVA::Texture *>::const_iterator it = allScenesTextures.begin();
+			DAVA::Map<DAVA::String, DAVA::Texture *>::const_iterator end = allScenesTextures.end();
 
 			for(; it != end; ++it)
 			{
 				it->second->ReloadAs(gpu);
 
-#if defined(USE_FILEPATH_IN_MAP)
-				WaitSetMessage(it->first.GetAbsolutePathname().c_str());
-#else //#if defined(USE_FILEPATH_IN_MAP)
 				WaitSetMessage(it->first.c_str());
-#endif //#if defined(USE_FILEPATH_IN_MAP)
 				WaitSetValue(progress++);
 			}
 
-            emit TexturesReloaded();
-            
 			WaitStop();
 		}
 	}
@@ -370,26 +375,7 @@ bool QtMainWindow::eventFilter(QObject *obj, QEvent *event)
 			ui->sceneTabWidget->setFocus(Qt::ActiveWindowFocusReason);
 		}
 	}
-    
-    if(obj == this && QEvent::KeyPress == eventType)
-    {
-        QKeyEvent *keyEvent = (QKeyEvent *)event;
-        int32 keyValue = keyEvent->key();
-        // check chars of russian alphabet(unicode table)
-        if(keyValue >= 0x410 && keyValue <=0x44F)
-        {
-            // according to reference of QKeyEvent, it's impossible to get scanCode on mac os
-            // so we use platform depending nativeVirtualKey()
-            int32 systemKeyCode = keyEvent->nativeVirtualKey();
-            int32 davaKey = DAVA::InputSystem::Instance()->GetKeyboard()->GetDavaKeyForSystemKey(systemKeyCode);
-            // translate davaKey to ascii to find out real key pressed
-            // offset between ascii and letters in davakey table - 29 positions
-            int32 qtKey = davaKey + 29;
-            QKeyEvent eventNew = QKeyEvent(QEvent::KeyPress, qtKey, keyEvent->modifiers());
-            QApplication::sendEvent(obj, &eventNew);
-        }
-    }
-    
+
 	return QMainWindow::eventFilter(obj, event);
 }
 
@@ -409,15 +395,24 @@ void QtMainWindow::SetupTitle()
 
 void QtMainWindow::SetupMainMenu()
 {
-	ui->menuView->addAction(ui->dockSceneInfo->toggleViewAction());
-	ui->menuView->addAction(ui->dockLibrary->toggleViewAction());
-	ui->menuView->addAction(ui->dockProperties->toggleViewAction());
-	ui->menuView->addAction(ui->dockParticleEditor->toggleViewAction());
-	ui->menuView->addAction(ui->dockParticleEditorTimeLine->toggleViewAction());
-	ui->menuView->addAction(ui->dockSceneTree->toggleViewAction());
-	ui->menuView->addAction(ui->dockConsole->toggleViewAction());
+	QAction *actionProperties = ui->dockProperties->toggleViewAction();
+	QAction *actionLibrary = ui->dockLibrary->toggleViewAction();
+	QAction *actionParticleEditor = ui->dockParticleEditor->toggleViewAction();
+	QAction *actionParticleEditorTimeLine = ui->dockParticleEditorTimeLine->toggleViewAction();
+	QAction *actionSceneInfo = ui->dockSceneInfo->toggleViewAction();
+	QAction *actionSceneTree = ui->dockSceneTree->toggleViewAction();
+	QAction *actionConsole = ui->dockConsole->toggleViewAction();
+	QAction *actionLandscapeEditorControls = ui->dockLandscapeEditorControls->toggleViewAction();
+
+	ui->menuView->addAction(actionSceneInfo);
+	ui->menuView->addAction(actionLibrary);
+	ui->menuView->addAction(actionProperties);
+	ui->menuView->addAction(actionParticleEditor);
+	ui->menuView->addAction(actionParticleEditorTimeLine);
+	ui->menuView->addAction(actionSceneTree);
+	ui->menuView->addAction(actionConsole);
 	ui->menuView->addAction(ui->dockLODEditor->toggleViewAction());
-	ui->menuView->addAction(ui->dockLandscapeEditorControls->toggleViewAction());
+	ui->menuView->addAction(actionLandscapeEditorControls);
 
 	InitRecent();
 }
@@ -459,17 +454,6 @@ void QtMainWindow::SetupToolBars()
 		reloadTexturesBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 		reloadTexturesBtn->setAutoRaise(false);
 	}
-
-    // adding menu for material light view mode
-    {
-        QToolButton *setLightViewMode = new QToolButton();
-        setLightViewMode->setMenu(ui->menuLightView);
-        setLightViewMode->setPopupMode(QToolButton::InstantPopup);
-        setLightViewMode->setDefaultAction(ui->actionSetLightViewMode);
-        ui->mainToolBar->addWidget(setLightViewMode);
-        setLightViewMode->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        setLightViewMode->setAutoRaise(false);
-    }
 
 	//hanging objects	
 	{
@@ -514,9 +498,6 @@ void QtMainWindow::SetupStatusBar()
 {
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), ui->statusBar, SLOT(SceneActivated(SceneEditor2 *)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), ui->statusBar, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
-    QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), ui->statusBar, SLOT(CommandExecuted(SceneEditor2 *, const Command2*, bool)));
-	QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), ui->statusBar, SLOT(StructureChanged(SceneEditor2 *, DAVA::Entity *)));
-
 	QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->statusBar, SLOT(UpdateByTimer()));
 
 	QToolButton *gizmoStatusBtn = new QToolButton();
@@ -524,12 +505,6 @@ void QtMainWindow::SetupStatusBar()
 	gizmoStatusBtn->setAutoRaise(true);
 	gizmoStatusBtn->setMaximumSize(QSize(16, 16));
 	ui->statusBar->insertPermanentWidget(0, gizmoStatusBtn);
-
-    QToolButton *lighmapCanvasStatusBtn = new QToolButton();
-    lighmapCanvasStatusBtn->setDefaultAction(ui->actionLightmapCanvas);
-    lighmapCanvasStatusBtn->setAutoRaise(true);
-    lighmapCanvasStatusBtn->setMaximumSize(QSize(16, 16));
-    ui->statusBar->insertPermanentWidget(0, lighmapCanvasStatusBtn);
 
 	QToolButton *onSceneSelectStatusBtn = new QToolButton();
 	onSceneSelectStatusBtn->setDefaultAction(ui->actionOnSceneSelection);
@@ -545,24 +520,12 @@ void QtMainWindow::SetupDocks()
 {
 	QObject::connect(ui->sceneTreeFilterClear, SIGNAL(pressed()), ui->sceneTreeFilterEdit, SLOT(clear()));
 	QObject::connect(ui->sceneTreeFilterEdit, SIGNAL(textChanged(const QString &)), ui->sceneTree, SLOT(SetFilter(const QString &)));
-
-    QObject::connect(ui->sceneTabWidget, SIGNAL(CloseTabRequest(int , Request *)), this, SLOT(OnCloseTabRequest(int, Request *)));
-    
-	QObject::connect(this, SIGNAL(GlobalInvalidateTimeout()), ui->sceneInfo , SLOT(UpdateInfoByTimer()));
-	QObject::connect(this, SIGNAL(TexturesReloaded()), ui->sceneInfo , SLOT(TexturesReloaded()));
-	QObject::connect(this, SIGNAL(SpritesReloaded()), ui->sceneInfo , SLOT(SpritesReloaded()));
-    
-
-    ui->libraryWidget->SetupSignals();
-    
-	ui->dockProperties->Init();
 }
 
 void QtMainWindow::SetupActions()
 {
 	// scene file actions
 	QObject::connect(ui->actionOpenProject, SIGNAL(triggered()), this, SLOT(OnProjectOpen()));
-    QObject::connect(ui->actionCloseProject, SIGNAL(triggered()), this, SLOT(OnProjectClose()));
 	QObject::connect(ui->actionOpenScene, SIGNAL(triggered()), this, SLOT(OnSceneOpen()));
 	QObject::connect(ui->actionNewScene, SIGNAL(triggered()), this, SLOT(OnSceneNew()));
 	QObject::connect(ui->actionSaveScene, SIGNAL(triggered()), this, SLOT(OnSceneSave()));
@@ -571,6 +534,9 @@ void QtMainWindow::SetupActions()
 
 	QObject::connect(ui->menuFile, SIGNAL(triggered(QAction *)), this, SLOT(OnRecentTriggered(QAction *)));
 
+	//edit
+	QObject::connect(ui->actionConvertToShadow, SIGNAL(triggered()), this, SLOT(OnConvertToShadow()));
+    
 	// export
 	QObject::connect(ui->menuExport, SIGNAL(triggered(QAction *)), this, SLOT(ExportMenuTriggered(QAction *)));
     ui->actionExportPVRIOS->setData(GPU_POWERVR_IOS);
@@ -596,21 +562,13 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionReloadTextures, SIGNAL(triggered()), this, SLOT(OnReloadTextures()));
 	QObject::connect(ui->actionReloadSprites, SIGNAL(triggered()), this, SLOT(OnReloadSprites()));
 
-    QObject::connect(ui->actionAlbedo, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
-    QObject::connect(ui->actionAmbient, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
-    QObject::connect(ui->actionDiffuse, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
-    QObject::connect(ui->actionSpecular, SIGNAL(toggled(bool)), this, SLOT(OnMaterialLightViewChanged(bool)));
 	
 	QObject::connect(ui->actionShowEditorGizmo, SIGNAL(toggled(bool)), this, SLOT(OnEditorGizmoToggle(bool)));
-    QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
 	QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
 
 	// scene undo/redo
 	QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
 	QObject::connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(OnRedo()));
-
-    // quality
-    QObject::connect(ui->actionCustomQuality, SIGNAL(triggered()), this, SLOT(OnCustomQuality()));
 
 	// scene modifications
 	QObject::connect(ui->actionModifySelect, SIGNAL(triggered()), this, SLOT(OnSelectMode()));
@@ -637,23 +595,23 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionVisibilityCheckTool, SIGNAL(triggered()), this, SLOT(OnVisibilityTool()));
 	QObject::connect(ui->actionRulerTool, SIGNAL(triggered()), this, SLOT(OnRulerTool()));
 
+	QObject::connect(ui->actionSkyboxEditor, SIGNAL(triggered()), this, SLOT(OnSetSkyboxNode()));
+
+	QObject::connect(ui->actionLandscape, SIGNAL(triggered()), this, SLOT(OnLandscapeDialog()));
 	QObject::connect(ui->actionLight, SIGNAL(triggered()), this, SLOT(OnLightDialog()));
 	QObject::connect(ui->actionCamera, SIGNAL(triggered()), this, SLOT(OnCameraDialog()));
 	QObject::connect(ui->actionAddEmptyEntity, SIGNAL(triggered()), this, SLOT(OnEmptyEntity()));
 	QObject::connect(ui->actionUserNode, SIGNAL(triggered()), this, SLOT(OnUserNodeDialog()));
 	QObject::connect(ui->actionSwitchNode, SIGNAL(triggered()), this, SLOT(OnSwitchEntityDialog()));
 	QObject::connect(ui->actionParticleEffectNode, SIGNAL(triggered()), this, SLOT(OnParticleEffectDialog()));
-    QObject::connect(ui->actionEditor_2D_Camera, SIGNAL(triggered()), this, SLOT(OnEditor2DCameraDialog()));
-    QObject::connect(ui->actionEditor_Sprite, SIGNAL(triggered()), this, SLOT(OnEditorSpriteDialog()));
+	QObject::connect(ui->actionUniteEntitiesWithLODs, SIGNAL(triggered()), this, SLOT(OnUniteEntitiesWithLODs()));
+	QObject::connect(ui->menuCreateNode, SIGNAL(aboutToShow()), this, SLOT(OnAddEntityMenuAboutToShow()));
 	QObject::connect(ui->actionAddNewEntity, SIGNAL(triggered()), this, SLOT(OnAddEntityFromSceneTree()));
 	QObject::connect(ui->actionRemoveEntity, SIGNAL(triggered()), ui->sceneTree, SLOT(RemoveSelection()));
 	QObject::connect(ui->actionExpandSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(expandAll()));
 	QObject::connect(ui->actionCollapseSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(CollapseAll()));
-    QObject::connect(ui->actionAddLandscape, SIGNAL(triggered()), this, SLOT(OnAddLandscape()));
-    QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
 			
-	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowGeneralSettings()));
-	QObject::connect(ui->actionCurrentSceneSettings, SIGNAL(triggered()), this, SLOT(OnShowCurrentSceneSettings()));
+	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
 	QObject::connect(ui->actionSetShadowColor, SIGNAL(triggered()), this, SLOT(OnSetShadowColor()));
 	QObject::connect(ui->actionDynamicBlendModeAlpha, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeAlpha()));
@@ -667,15 +625,12 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionConvertModifiedTextures, SIGNAL(triggered()), this, SLOT(OnConvertModifiedTextures()));
     
 #if defined(__DAVAENGINE_BEAST__)
+	QObject::connect(ui->actionBeast, SIGNAL(triggered()), this, SLOT(OnBeast()));
 	QObject::connect(ui->actionBeastAndSave, SIGNAL(triggered()), this, SLOT(OnBeastAndSave()));
 #else
-	//ui->menuScene->removeAction(ui->menuBeast->menuAction());
+	ui->menuScene->removeAction(ui->menuBeast->menuAction());
 #endif //#if defined(__DAVAENGINE_BEAST__)
 
-    
-    QObject::connect(ui->actionBuildStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnBuildStaticOcclusion()));
-
-    
 	//Help
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
 
@@ -691,8 +646,7 @@ void QtMainWindow::SetupActions()
 					 this, SLOT(OnSnapToLandscapeChanged(SceneEditor2*, bool)));
 
 	QObject::connect(ui->actionAddActionComponent, SIGNAL(triggered()), this, SLOT(OnAddActionComponent()));
-	QObject::connect(ui->actionAddStaticOcclusionComponent, SIGNAL(triggered()), this, SLOT(OnAddStaticOcclusionComponent()));
-	QObject::connect(ui->actionAddQualitySettingsComponent, SIGNAL(triggered()), this, SLOT(OnAddModelTypeComponent()));
+	QObject::connect(ui->actionRemoveActionComponent, SIGNAL(triggered()), this, SLOT(OnRemoveActionComponent()));
 
  	//Collision Box Types
     objectTypesLabel = new QtLabelWithActions();
@@ -710,7 +664,6 @@ void QtMainWindow::SetupActions()
 	ui->actionFalling->setData(ResourceEditor::ESOT_FALLING);
 	ui->actionBuilding->setData(ResourceEditor::ESOT_BUILDING);
 	ui->actionInvisibleWall->setData(ResourceEditor::ESOT_INVISIBLE_WALL);
-    ui->actionSpeedTree->setData(ResourceEditor::ESOT_SPEED_TREE);
 	QObject::connect(ui->menuObjectTypes, SIGNAL(triggered(QAction *)), this, SLOT(OnObjectsTypeChanged(QAction *)));
 	QObject::connect(ui->menuObjectTypes, SIGNAL(aboutToShow()), this, SLOT(OnObjectsTypeMenuWillShow()));
 
@@ -748,14 +701,9 @@ void QtMainWindow::SetupShortCuts()
 
 void QtMainWindow::InitRecent()
 {
-	Vector<String> filesList = RecentFilesManager::Instance()->GetRecentFiles();
-
-	foreach(String path, filesList)
+	for(int i = 0; i < EditorSettings::Instance()->GetLastOpenedCount(); ++i)
 	{
-		if (path.empty())
-		{
-			continue;
-		}
+		DAVA::String path = EditorSettings::Instance()->GetLastOpenedFile(i);
 		QAction *action = ui->menuFile->addAction(path.c_str());
 
 		action->setData(QString(path.c_str()));
@@ -763,7 +711,7 @@ void QtMainWindow::InitRecent()
 	}
 }
 
-void QtMainWindow::AddRecent(const QString &pathString)
+void QtMainWindow::AddRecent(const QString &path)
 {
     while(recentScenes.size())
     {
@@ -771,8 +719,9 @@ void QtMainWindow::AddRecent(const QString &pathString)
         recentScenes.removeAt(0);
     }
     
-	RecentFilesManager::Instance()->SetFileToRecent(pathString.toStdString());
-	InitRecent();
+    EditorSettings::Instance()->AddLastOpenedFile(DAVA::FilePath(path.toStdString()));
+
+    InitRecent();
 }
 
 // ###################################################################################################
@@ -804,11 +753,22 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 	LoadObjectTypes(scene);
 	LoadHangingObjects(scene);
 
-    OnMaterialLightViewChanged(true);
-    OnViewLightmapCanvas(true);
-
 	int32 tools = scene->GetEnabledTools();
+	SetLandscapeSettingsEnabled(tools == 0);
 	UpdateConflictingActionsState(tools == 0);
+	// TODO: remove this code. it is for old material editor -->
+    CreateMaterialEditorIfNeed();
+    if(materialEditor)
+    {
+        DAVA::UIControl* parent = materialEditor->GetParent();
+        if(NULL != parent && NULL != scene)
+        {
+            parent->RemoveControl(materialEditor);
+            materialEditor->SetWorkingScene(scene, scene->selectionSystem->GetSelectionEntity(0));
+            parent->AddControl(materialEditor);
+        }
+    }
+	// <---
 }
 
 void QtMainWindow::SceneDeactivated(SceneEditor2 *scene)
@@ -825,7 +785,6 @@ void QtMainWindow::EnableProjectActions(bool enable)
 	ui->actionSaveToFolder->setEnabled(enable);
 	ui->actionCubemapEditor->setEnabled(enable);
 	ui->dockLibrary->setEnabled(enable);
-    ui->actionCloseProject->setEnabled(enable);
     
     auto endIt = recentScenes.end();
     for(auto it = recentScenes.begin(); it != endIt; ++it)
@@ -865,6 +824,7 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 	ui->actionTextureConverter->setEnabled(enable);
 	ui->actionMaterialEditor->setEnabled(enable);
+	ui->actionSkyboxEditor->setEnabled(enable);
 	ui->actionHeightMapEditor->setEnabled(enable);
 	ui->actionTileMapEditor->setEnabled(enable);
 	ui->actionShowNotPassableLandscape->setEnabled(enable);
@@ -875,11 +835,12 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionEnableCameraLight->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
 	ui->actionReloadSprites->setEnabled(enable);
-    ui->actionSetLightViewMode->setEnabled(enable);
 
+	ui->actionLandscape->setEnabled(enable);
 	ui->actionSaveHeightmapToPNG->setEnabled(enable);
 	ui->actionSaveTiledTexture->setEnabled(enable);
 
+	ui->actionBeast->setEnabled(enable);
 	ui->actionBeastAndSave->setEnabled(enable);
 
 	ui->actionDynamicBlendModeAlpha->setEnabled(enable);
@@ -893,11 +854,22 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->menuCreateNode->setEnabled(enable);
 	ui->menuComponent->setEnabled(enable);
 	ui->menuScene->setEnabled(enable);
-    ui->menuLightView->setEnabled(enable);
-    ui->menuTexturesForGPU->setEnabled(enable);
     
     ui->sceneToolBar->setEnabled(enable);
 	ui->actionConvertModifiedTextures->setEnabled(enable);
+}
+
+void QtMainWindow::CreateMaterialEditorIfNeed()
+{
+	if(!materialEditor)
+	{
+		if(HintManager::Instance() == NULL)
+		{
+			new HintManager();//needed for hints in MaterialEditor
+		}
+
+		materialEditor = new MaterialEditor(DAVA::Rect(20, 20, 500, 600));
+	}
 }
 
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
@@ -914,24 +886,24 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* com
 
 void QtMainWindow::OnProjectOpen()
 {
-    QString newPath = ProjectManager::Instance()->ProjectOpenDialog();
-    if(!newPath.isEmpty() && ui->sceneTabWidget->CloseAllTabs())
-    {
-        ProjectManager::Instance()->ProjectOpen(newPath);
-    }
+	QString newPath = ProjectManager::Instance()->ProjectOpenDialog();
+	ProjectManager::Instance()->ProjectOpen(newPath);
 }
 
 void QtMainWindow::OnProjectClose()
 {
-    if(ui->sceneTabWidget->CloseAllTabs())
-    {
-        ProjectManager::Instance()->ProjectClose();
-    }
+	// TODO:
+	// Close all scenes
+	// ...
+	// 
+
+	ProjectManager::Instance()->ProjectClose();
 }
 
 void QtMainWindow::OnSceneNew()
 {
-	ui->sceneTabWidget->OpenTab();
+	int index = ui->sceneTabWidget->OpenTab();
+	ui->sceneTabWidget->SetCurrentTab(index);
 }
 
 void QtMainWindow::OnSceneOpen()
@@ -979,7 +951,7 @@ void QtMainWindow::OnSceneSaveToFolder()
 	if(!scene) return;
 
 	FilePath scenePathname = scene->GetScenePath();
-	if(scenePathname.IsEmpty() || scenePathname.GetType() == FilePath::PATH_IN_MEMORY || !scene->IsLoaded())
+	if(scenePathname.IsEmpty() && scenePathname.GetType() == FilePath::PATH_IN_MEMORY)
 	{
 		ShowErrorDialog("Can't save not saved scene.");
 		return;
@@ -1020,10 +992,9 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         return;
     }
 
-	int32 toolsFlags = scene->GetEnabledTools();
 	if (!scene->IsChanged())
 	{
-		if (toolsFlags)
+		if (scene->GetEnabledTools() != 0)
 		{
 			scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
 		}
@@ -1038,37 +1009,26 @@ void QtMainWindow::OnCloseTabRequest(int tabIndex, Request *closeRequest)
         return;
     }
 
+	if (scene->GetEnabledTools() != 0)
+	{
+		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL);
+	}
+
 	if(answer == QMessageBox::No)
 	{
-		if (toolsFlags)
-		{
-			scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, false);
-		}
 		closeRequest->Accept();
 		return;
 	}
-	
-	if (toolsFlags)
-	{
-		FilePath colorSystemTexturePath = scene->customColorsSystem->GetCurrentSaveFileName();
-		if( (toolsFlags & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR) &&
-		    (colorSystemTexturePath.IsEmpty() || !colorSystemTexturePath.Exists()) &&
-		    !SelectCustomColorsTexturePath())
-		{
-			closeRequest->Cancel();
-			return;
-		}
-		
-		scene->DisableTools(SceneEditor2::LANDSCAPE_TOOLS_ALL, true);
-	}
 
-    if(!SaveScene(scene))
+	bool sceneWasSaved = SaveScene(scene);
+    if(sceneWasSaved)
     {
-        closeRequest->Cancel();
-        return;
+		closeRequest->Accept();
     }
-	
-    closeRequest->Accept();
+	else
+	{
+		closeRequest->Cancel();
+	}
 }
 
 
@@ -1137,20 +1097,6 @@ void QtMainWindow::OnEditorGizmoToggle(bool show)
 	}
 }
 
-void QtMainWindow::OnViewLightmapCanvas(bool show)
-{
-    bool showCanvas = ui->actionLightmapCanvas->isChecked();
-    if(showCanvas != SettingsManager::Instance()->GetValue("materialsShowLightmapCanvas", SettingsManager::INTERNAL).AsBool())
-    {
-        SettingsManager::Instance()->SetValue("materialsShowLightmapCanvas", DAVA::VariantType(showCanvas), SettingsManager::INTERNAL);
-    }
-
-    if(NULL != GetCurrentScene())
-    {
-        GetCurrentScene()->materialSystem->SetLightmapCanvasVisible(showCanvas);
-    }
-}
-
 void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 {
 	SceneEditor2* scene = GetCurrentScene();
@@ -1176,9 +1122,7 @@ void QtMainWindow::OnReloadTexturesTriggered(QAction *reloadAction)
 
 void QtMainWindow::OnReloadSprites()
 {
-    SpritePackerHelper::Instance()->UpdateParticleSprites((eGPUFamily)SettingsManager::Instance()->
-		GetValue(ResourceEditor::SETTINGS_TEXTURE_VIEW_GPU, SettingsManager::INTERNAL).AsInt32());
-	emit SpritesReloaded();
+    SpritePackerHelper::Instance()->UpdateParticleSprites(EditorSettings::Instance()->GetTextureViewGPU());
 }
 
 void QtMainWindow::OnSelectMode()
@@ -1299,8 +1243,25 @@ void QtMainWindow::OnResetTransform()
 }
 
 void QtMainWindow::OnMaterialEditor()
-{ 
-	MaterialEditor::Instance()->show();
+{
+    if(!materialEditor) return;
+    
+	if(NULL == materialEditor->GetParent())
+	{
+		SceneEditor2* sceneEditor = GetCurrentScene();
+		if(NULL != sceneEditor)
+		{
+			materialEditor->SetWorkingScene(sceneEditor, sceneEditor->selectionSystem->GetSelectionEntity(0));
+			
+			DAVA::UIScreen *curScreen = DAVA::UIScreenManager::Instance()->GetScreen();
+			curScreen->AddControl(materialEditor);
+		}
+	}
+	else
+	{
+		materialEditor->GetParent()->RemoveControl(materialEditor);
+		materialEditor->SetWorkingScene(NULL, NULL);
+	}
 }
 
 void QtMainWindow::OnTextureBrowser()
@@ -1313,9 +1274,9 @@ void QtMainWindow::OnTextureBrowser()
 		selectedEntities = sceneEditor->selectionSystem->GetSelection();
 	}
 
-	TextureBrowser::Instance()->show();
 	TextureBrowser::Instance()->sceneActivated(sceneEditor);
 	TextureBrowser::Instance()->sceneSelectionChanged(sceneEditor, &selectedEntities, NULL); 
+	TextureBrowser::Instance()->show();
 }
 
 void QtMainWindow::OnSceneLightMode()
@@ -1344,6 +1305,17 @@ void QtMainWindow::OnCubemapEditor()
 	dlg.exec();
 }
 
+void QtMainWindow::OnSetSkyboxNode()
+{
+	SceneEditor2* scene = GetCurrentScene();
+	if (!scene)
+	{
+		return;
+	}
+	
+	AddSkyboxDialog::Show(this, scene);
+}
+
 void QtMainWindow::OnSwitchEntityDialog()
 {
 	if(NULL != addSwitchEntityDialog)
@@ -1364,55 +1336,28 @@ void QtMainWindow::UnmodalDialogFinished(int)
 	{
 		addSwitchEntityDialog = NULL;
 	}
+	else if(sender == landscapeDialog)
+	{
+		landscapeDialog = NULL;
+	}
 }
 
-void QtMainWindow::OnAddLandscape()
+void QtMainWindow::OnLandscapeDialog()
 {
-    Entity* entityToProcess = new Entity();
-    entityToProcess->SetName(ResourceEditor::LANDSCAPE_NODE_NAME);
-    entityToProcess->SetLocked(true);
-    Landscape* newLandscape = new Landscape();
-    RenderComponent* component = new RenderComponent();
-    component->SetRenderObject(newLandscape);
-	newLandscape->Release();
-    entityToProcess->AddComponent(component);
-
-    AABBox3 bboxForLandscape;
-    float32 defaultLandscapeSize = SettingsManager::Instance()->GetValue("DefaultLandscapeSize", SettingsManager::DEFAULT).AsFloat();
-    float32 defaultLandscapeHeight = SettingsManager::Instance()->GetValue("DefaultLandscapeHeight", SettingsManager::DEFAULT).AsFloat();
-    
-    bboxForLandscape.AddPoint(Vector3(-defaultLandscapeSize/2.f, -defaultLandscapeSize/2.f, 0.f));
-    bboxForLandscape.AddPoint(Vector3(defaultLandscapeSize/2.f, defaultLandscapeSize/2.f, defaultLandscapeHeight));
-    newLandscape->BuildLandscapeFromHeightmapImage("", bboxForLandscape);
-
-    SceneEditor2* sceneEditor = GetCurrentScene();
-    if(sceneEditor)
-    {
-        sceneEditor->Exec(new EntityAddCommand(entityToProcess, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(entityToProcess);
-    }
-    SafeRelease(entityToProcess);
-}
-
-void QtMainWindow::OnAddSkybox()
-{
-    SceneEditor2* sceneEditor = GetCurrentScene();
-    if(!sceneEditor)
-    {
-        return;
-    }
-    Entity* skyboxEntity = sceneEditor->skyboxSystem->AddSkybox();
-    skyboxEntity->Retain();
-    
-    skyboxEntity->GetParent()->RemoveNode(skyboxEntity);
-    sceneEditor->Exec(new EntityAddCommand(skyboxEntity, sceneEditor));
-    skyboxEntity->Release();
+	SceneEditor2* sceneEditor = GetCurrentScene();
+	if(!sceneEditor || NULL != landscapeDialog)
+	{
+		return;
+	}
+	landscapeDialog = new LandscapeDialog(FindLandscapeEntity(sceneEditor), this);
+	landscapeDialog->show();
+	connect(landscapeDialog, SIGNAL(finished(int)), this, SLOT(UnmodalDialogFinished(int)));
 }
 
 void QtMainWindow::OnLightDialog()
 {
 	Entity* sceneNode = new Entity();
-	sceneNode->AddComponent(new LightComponent(ScopedPtr<Light>(new Light)));
+	sceneNode->AddComponent(ScopedPtr<LightComponent> (new LightComponent(ScopedPtr<Light>(new Light))));
 	sceneNode->SetName(ResourceEditor::LIGHT_NODE_NAME);
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(sceneEditor)
@@ -1434,7 +1379,7 @@ void QtMainWindow::OnCameraDialog()
 	camera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
 	camera->SetAspect(1.0f);
 
-	sceneNode->AddComponent(new CameraComponent(camera));
+	sceneNode->AddComponent(ScopedPtr<CameraComponent> (new CameraComponent(camera)));
 	sceneNode->SetName(ResourceEditor::CAMERA_NODE_NAME);
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(sceneEditor)
@@ -1449,7 +1394,7 @@ void QtMainWindow::OnCameraDialog()
 void QtMainWindow::OnUserNodeDialog()
 {
 	Entity* sceneNode = new Entity();
-	sceneNode->AddComponent(new UserComponent());
+	sceneNode->AddComponent(ScopedPtr<UserComponent> (new UserComponent()));
 	sceneNode->SetName(ResourceEditor::USER_NODE_NAME);
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(sceneEditor)
@@ -1463,7 +1408,7 @@ void QtMainWindow::OnUserNodeDialog()
 void QtMainWindow::OnParticleEffectDialog()
 {
 	Entity* sceneNode = new Entity();
-	sceneNode->AddComponent(new ParticleEffectComponent());
+	sceneNode->AddComponent(ScopedPtr<ParticleEffectComponent> (new ParticleEffectComponent()));
 	sceneNode->SetName(ResourceEditor::PARTICLE_EFFECT_NODE_NAME);
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(sceneEditor)
@@ -1474,63 +1419,31 @@ void QtMainWindow::OnParticleEffectDialog()
 	SafeRelease(sceneNode);
 }
 
-void QtMainWindow::OnEditor2DCameraDialog()
+void QtMainWindow::OnUniteEntitiesWithLODs()
 {
-    Entity* sceneNode = new Entity();
-    Camera * camera = new Camera();
-    
-    float32 w = Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin();
-    float32 h = Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin();
-    float32 aspect = w / h;
-    camera->SetupOrtho(w, aspect, 1, 1000);        
-    camera->SetPosition(Vector3(0,0, -500));
-    camera->SetTarget(Vector3(0, 0, 0));  
-    camera->SetUp(Vector3(0, -1, 0));
-    camera->RebuildCameraFromValues();        
+	SceneEditor2* sceneEditor = GetCurrentScene();
+	if(NULL == sceneEditor)
+	{
+		return;
+	}
 
-    sceneNode->AddComponent(new CameraComponent(camera));
-    sceneNode->SetName(ResourceEditor::EDITOR_2D_CAMERA);
-    SceneEditor2* sceneEditor = GetCurrentScene();
-    if(sceneEditor)
-    {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(sceneNode);
-    }
-    SafeRelease(sceneNode);
-    SafeRelease(camera);
+	GroupEntitiesForMultiselectCommand* command = new GroupEntitiesForMultiselectCommand(sceneEditor->selectionSystem->GetSelection());
+	sceneEditor->Exec(command);
+	sceneEditor->selectionSystem->SetSelection(command->GetEntity());
 }
-void QtMainWindow::OnEditorSpriteDialog()
+
+
+void QtMainWindow::OnAddEntityMenuAboutToShow()
 {
-    FilePath projectPath = FilePath(ProjectManager::Instance()->CurProjectPath().toStdString());
-    projectPath += "Data/Gfx/";
+	SceneEditor2* sceneEditor = GetCurrentScene();
+	if(NULL == sceneEditor)
+	{
+		ui->actionUniteEntitiesWithLODs->setEnabled(false);
+		return;
+	}
 
-    QString filePath = QtFileDialog::getOpenFileName(NULL, QString("Open sprite"), QString::fromStdString(projectPath.GetAbsolutePathname()), QString("Sprite File (*.txt)"));
-    if (filePath.isEmpty())
-        return;        
-    filePath.remove(filePath.size() - 4, 4);
-    Sprite* sprite = Sprite::Create(filePath.toStdString());
-    if (!sprite)
-        return;
-
-    Entity *sceneNode = new Entity();
-    sceneNode->SetName(ResourceEditor::EDITOR_SPRITE);
-    SpriteObject *spriteObject = new SpriteObject(sprite, 0, Vector2(1,1), Vector2(0.5f*sprite->GetWidth(), 0.5f*sprite->GetHeight()));
-    spriteObject->AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
-    sceneNode->AddComponent(new RenderComponent(spriteObject));    
-    Matrix4 m = Matrix4(1,0,0,0,
-                        0,1,0,0,
-                        0,0,-1,0,                        
-                        0,0,0,1);
-    sceneNode->SetLocalTransform(m);
-    SceneEditor2* sceneEditor = GetCurrentScene();
-    if(sceneEditor)
-    {
-        sceneEditor->Exec(new EntityAddCommand(sceneNode, sceneEditor));
-        sceneEditor->selectionSystem->SetSelection(sceneNode);
-    }
-    SafeRelease(sceneNode);
-    SafeRelease(spriteObject);
-    SafeRelease(sprite);
+	size_t selectedItemsNumber =	sceneEditor->selectionSystem->GetSelectionCount();
+	ui->actionUniteEntitiesWithLODs->setEnabled(selectedItemsNumber > 1);
 }
 
 void QtMainWindow::OnAddEntityFromSceneTree()
@@ -1538,16 +1451,10 @@ void QtMainWindow::OnAddEntityFromSceneTree()
 	ui->menuAdd->exec(QCursor::pos());
 }
 
-void QtMainWindow::OnShowGeneralSettings()
+void QtMainWindow::OnShowSettings()
 {
-	GeneralSettingsDialog t(this);
+	SettingsDialogQt t(this);
 	t.exec();
-}
-
-void QtMainWindow::OnShowCurrentSceneSettings()
-{
-	SceneSettingsDialog currentSceneSettings(this);
-	currentSceneSettings.exec();
 }
 
 void QtMainWindow::OnOpenHelp()
@@ -1567,9 +1474,6 @@ void QtMainWindow::LoadViewState(SceneEditor2 *scene)
 	{
 		ui->actionShowEditorGizmo->setChecked(scene->IsHUDVisible());
 		ui->actionOnSceneSelection->setChecked(scene->selectionSystem->IsSelectionAllowed());
-     
-        bool viewLMCanvas = SettingsManager::Instance()->GetValue("materialsShowLightmapCanvas", SettingsManager::INTERNAL).AsBool();
-        ui->actionLightmapCanvas->setChecked(viewLMCanvas);
 	}
 }
 
@@ -1642,10 +1546,10 @@ void QtMainWindow::LoadShadowBlendModeState(SceneEditor2* scene)
 {
 	if(NULL != scene)
 	{
-		const ShadowPassBlendMode::eBlend blend = scene->GetShadowBlendMode();
+		const ShadowVolumeRenderPass::eBlend blend = scene->GetShadowBlendMode();
 
-		ui->actionDynamicBlendModeAlpha->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_ALPHA);
-		ui->actionDynamicBlendModeMultiply->setChecked(blend == ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
+		ui->actionDynamicBlendModeAlpha->setChecked(blend == ShadowVolumeRenderPass::MODE_BLEND_ALPHA);
+		ui->actionDynamicBlendModeMultiply->setChecked(blend == ShadowVolumeRenderPass::MODE_BLEND_MULTIPLY);
 	}
 }
 
@@ -1670,16 +1574,6 @@ void QtMainWindow::LoadGPUFormat()
 			actionN->setChecked(false);
 		}
 	}
-}
-
-void QtMainWindow::LoadMaterialLightViewMode()
-{
-    int curViewMode = SettingsManager::Instance()->GetValue("materialsLightViewMode", SettingsManager::INTERNAL).AsInt32();
-
-    ui->actionAlbedo->setChecked((bool) (curViewMode & EditorMaterialSystem::LIGHTVIEW_ALBEDO));
-    ui->actionAmbient->setChecked((bool) (curViewMode & EditorMaterialSystem::LIGHTVIEW_AMBIENT));
-    ui->actionSpecular->setChecked((bool) (curViewMode & EditorMaterialSystem::LIGHTVIEW_SPECULAR));
-    ui->actionDiffuse->setChecked((bool) (curViewMode & EditorMaterialSystem::LIGHTVIEW_DIFFUSE));
 }
 
 void QtMainWindow::LoadLandscapeEditorState(SceneEditor2* scene)
@@ -1721,7 +1615,7 @@ void QtMainWindow::OnShadowBlendModeAlpha()
 		return;
 	}
 	
-	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowPassBlendMode::MODE_BLEND_ALPHA));
+	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowVolumeRenderPass::MODE_BLEND_ALPHA));
 }
 
 void QtMainWindow::OnShadowBlendModeMultiply()
@@ -1734,7 +1628,7 @@ void QtMainWindow::OnShadowBlendModeMultiply()
 		return;
 	}
 	
-	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowPassBlendMode::MODE_BLEND_MULTIPLY));
+	scene->Exec(new ChangeDynamicShadowModeCommand(scene, ShadowVolumeRenderPass::MODE_BLEND_MULTIPLY));
 }
 
 void QtMainWindow::OnSaveHeightmapToPNG()
@@ -1790,40 +1684,20 @@ void QtMainWindow::OnSaveTiledTexture()
 
     Landscape *landscape = FindLandscape(scene);
     if(!landscape) return;
-
-	Texture* landscapeTexture = landscape->CreateLandscapeTexture();
-	if (landscapeTexture)
-	{
-		FilePath pathToSave;
-		pathToSave = landscape->GetTextureName(Landscape::TEXTURE_COLOR);
-		if (pathToSave.IsEmpty())
-		{
-			FilePath scenePath = scene->GetScenePath().GetDirectory();
-			QString selectedPath = QtFileDialog::getSaveFileName(this, "Save landscape texture as",
-														 scenePath.GetAbsolutePathname().c_str(),
-														 "PGN Image (*.png)");
-			if (selectedPath.isEmpty())
-			{
-				SafeRelease(landscapeTexture);
-				return;
-			}
-
-			pathToSave = FilePath(selectedPath.toStdString());
-		}
-		else
-		{
-			pathToSave.ReplaceExtension(".thumbnail.png");
-		}
-
-		Image *image = landscapeTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
-		if(image)
-		{
-			ImageLoader::Save(image, pathToSave);
-			SafeRelease(image);
-		}
-
-		SafeRelease(landscapeTexture);
-	}
+	landscape->UpdateFullTiledTexture();
+    
+    FilePath texPathname = landscape->SaveFullTiledTexture();
+    FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texPathname);
+    
+    TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPathname);
+    if(!descriptor)
+    {
+        descriptor = new TextureDescriptor();
+        descriptor->pathname = descriptorPathname;
+        descriptor->Save();
+    }
+    
+    SafeRelease(descriptor);
 }
 
 void QtMainWindow::OnConvertModifiedTextures()
@@ -1895,18 +1769,76 @@ void QtMainWindow::StartGlobalInvalidateTimer()
     QTimer::singleShot(GLOBAL_INVALIDATE_TIMER_DELTA, this, SLOT(OnGlobalInvalidateTimeout()));
 }
 
+void QtMainWindow::OnConvertToShadow()
+{
+	SceneEditor2* scene = GetCurrentScene();
+    if(!scene) return;
+    
+	SceneSelectionSystem *ss = scene->selectionSystem;
+    if(ss->GetSelectionCount() > 0)
+    {
+        bool isRenderBatchFound = false;
+        for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
+        {
+            if(ConvertToShadowCommand::IsAvailableForConvertionToShadowVolume(ss->GetSelectionEntity(i)))
+            {
+                isRenderBatchFound = true;
+                break;
+            }
+        }
+        
+        if(!isRenderBatchFound)
+        {
+            ShowErrorDialog("Entities must have RenderObject and with only one RenderBatch (Material)");
+            return;
+        }
+        
+        
+        bool errorHappend = false;
+        scene->BeginBatch("Convert To Shadow");
+        
+        for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
+        {
+            Entity *entity = ss->GetSelectionEntity(i);
+            if(ConvertToShadowCommand::IsAvailableForConvertionToShadowVolume(entity))
+            {
+                scene->Exec(new ConvertToShadowCommand(entity));
+            }
+            else
+            {
+                errorHappend = true;
+                Logger::Error("Cannot convert %s to shadow", entity->GetName().c_str());
+            }
+        }
+        
+        scene->EndBatch();
+        
+        if(errorHappend)
+        {
+            ShowErrorDialog("Not all entities were converted. See details at console output");
+        }
+    }
+}
+
 void QtMainWindow::EditorLightEnabled( bool enabled )
 {
 	ui->actionEnableCameraLight->setChecked(enabled);
 }
 
+
+void QtMainWindow::OnBeast()
+{
+	if (!SaveTilemask(false))
+	{
+		return;
+	}
+	RunBeast();
+}
+ 
 void QtMainWindow::OnBeastAndSave()
 {
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
-
-    int32 ret = ShowQuestion("Beast", "The operation will take a lot of time. After lightmaps are generated, scene will be saved. Do you want to proceed?", MB_FLAG_YES | MB_FLAG_NO, MB_FLAG_NO);
-    if(ret == MB_FLAG_NO) return;
 
 	if (!SaveTilemask(false))
 	{
@@ -1915,9 +1847,6 @@ void QtMainWindow::OnBeastAndSave()
 
 	RunBeast();
 	SaveScene(scene);
-
-    scene->ClearAllCommands();
-    LoadUndoRedoState(scene);
 }
 
 void QtMainWindow::OnCameraSpeed0()
@@ -1925,7 +1854,7 @@ void QtMainWindow::OnCameraSpeed0()
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(NULL != sceneEditor)
 	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(0);
+		sceneEditor->cameraSystem->SetMoveSpeed(EditorSettings::Instance()->GetCameraSpeed(0));
 	}
 }
 
@@ -1934,7 +1863,7 @@ void QtMainWindow::OnCameraSpeed1()
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(NULL != sceneEditor)
 	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(1);
+		sceneEditor->cameraSystem->SetMoveSpeed(EditorSettings::Instance()->GetCameraSpeed(1));
 	}
 }
 
@@ -1943,7 +1872,7 @@ void QtMainWindow::OnCameraSpeed2()
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(NULL != sceneEditor)
 	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(2);
+		sceneEditor->cameraSystem->SetMoveSpeed(EditorSettings::Instance()->GetCameraSpeed(2));
 	}
 }
 
@@ -1952,7 +1881,7 @@ void QtMainWindow::OnCameraSpeed3()
 	SceneEditor2* sceneEditor = GetCurrentScene();
 	if(NULL != sceneEditor)
 	{
-		sceneEditor->cameraSystem->SetMoveSpeedArrayIndex(3);
+		sceneEditor->cameraSystem->SetMoveSpeed(EditorSettings::Instance()->GetCameraSpeed(3));
 	}
 }
 
@@ -1971,6 +1900,9 @@ void QtMainWindow::RunBeast()
 
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
+
+	int32 ret = ShowQuestion("Beast", "This operation will take a lot of time. Do you agree to wait?", MB_FLAG_YES | MB_FLAG_NO, MB_FLAG_NO);		
+	if(ret == MB_FLAG_NO) return;
 
 	scene->Exec(new BeastAction(scene, beastWaitDialog));
 
@@ -2006,6 +1938,7 @@ void QtMainWindow::OnLandscapeEditorToggled(SceneEditor2* scene)
 	
 	int32 tools = scene->GetEnabledTools();
 
+	SetLandscapeSettingsEnabled(tools == 0);
 	UpdateConflictingActionsState(tools == 0);
 
 	if (tools & SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR)
@@ -2042,7 +1975,11 @@ void QtMainWindow::OnCustomColorsEditor()
 		return;
 	}
 	
-	if(!sceneEditor->customColorsSystem->IsLandscapeEditingEnabled())
+	if (sceneEditor->customColorsSystem->IsLandscapeEditingEnabled())
+	{
+		sceneEditor->Exec(new ActionDisableCustomColors(sceneEditor));
+	}
+	else
 	{
 		if (LoadAppropriateTextureFormat())
 		{
@@ -2052,53 +1989,7 @@ void QtMainWindow::OnCustomColorsEditor()
 		{
 			OnLandscapeEditorToggled(sceneEditor);
 		}
-		return;
 	}
-
-    if (sceneEditor->customColorsSystem->ChangesPresent())
-    {
-        FilePath currentTexturePath = sceneEditor->customColorsSystem->GetCurrentSaveFileName();
-	
-        if ((currentTexturePath.IsEmpty() || !currentTexturePath.Exists()) &&
-            !SelectCustomColorsTexturePath())
-        {
-            ui->actionCustomColorsEditor->setChecked(true);
-            return;
-        }
-	}
-	
-	sceneEditor->DisableTools(SceneEditor2::LANDSCAPE_TOOL_CUSTOM_COLOR, true);
-	ui->actionCustomColorsEditor->setChecked(false);
-}
-
-bool QtMainWindow::SelectCustomColorsTexturePath()
-{
-	SceneEditor2* sceneEditor = GetCurrentScene();
-	if(!sceneEditor)
-	{
-		return false;
-	}
-	FilePath scenePath = sceneEditor->GetScenePath().GetDirectory();
-	
-	QString filePath = QtFileDialog::getSaveFileName(NULL,
-													 QString(ResourceEditor::CUSTOM_COLORS_SAVE_CAPTION.c_str()),
-													 QString(scenePath.GetAbsolutePathname().c_str()),
-													 QString(ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str()));
-	FilePath selectedPathname = PathnameToDAVAStyle(filePath);
-	Entity* landscape = FindLandscapeEntity(sceneEditor);
-	if (selectedPathname.IsEmpty() || NULL == landscape)
-	{
-		return false;
-	}
-	KeyedArchive* customProps = landscape->GetCustomProperties();
-	if(NULL == customProps)
-	{
-		return false;
-	}
-	
-	String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->CurProjectPath().toStdString());
-	customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,pathToSave);
-	return true;
 }
 
 void QtMainWindow::OnHeightmapEditor()
@@ -2238,59 +2129,31 @@ void QtMainWindow::OnAddActionComponent()
 
 		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
 		{
-			scene->Exec(new AddComponentCommand(ss->GetSelectionEntity(i), Component::CreateByType(Component::ACTION_COMPONENT)));
+			scene->Exec(new AddComponentCommand(ss->GetSelectionEntity(i), ScopedPtr<ActionComponent> (new ActionComponent())));
 		}
 
 		scene->EndBatch();
 	}
 }
 
-void QtMainWindow::OnAddStaticOcclusionComponent()
+void QtMainWindow::OnRemoveActionComponent()
 {
 	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-	
+	if(!scene) return;
+
 	SceneSelectionSystem *ss = scene->selectionSystem;
 	if(ss->GetSelectionCount() > 0)
 	{
-		scene->BeginBatch("Add Static Occlusion Component");
-        
+		scene->BeginBatch("Remove Action Component");
+
 		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
 		{
-			scene->Exec(new AddComponentCommand(ss->GetSelectionEntity(i), Component::CreateByType(Component::STATIC_OCCLUSION_COMPONENT)));
+			scene->Exec(new RemoveComponentCommand(ss->GetSelectionEntity(i), Component::ACTION_COMPONENT));
 		}
-        
+
 		scene->EndBatch();
 	}
 }
-
-void QtMainWindow::OnAddModelTypeComponent()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-	
-	SceneSelectionSystem *ss = scene->selectionSystem;
-	if(ss->GetSelectionCount() > 0)
-	{
-		scene->BeginBatch("Add Model Type Component");
-        
-		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-		{
-			scene->Exec(new AddComponentCommand(ss->GetSelectionEntity(i), new QualitySettingsComponent()));
-		}
-        
-		scene->EndBatch();
-	}
-}
-
-void QtMainWindow::OnBuildStaticOcclusion()
-{
-    SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-    
-    scene->staticOcclusionBuildSystem->BuildOcclusionInformation();
-}
-
 
 bool QtMainWindow::IsSavingAllowed()
 {
@@ -2350,7 +2213,6 @@ void QtMainWindow::OnObjectsTypeMenuWillShow()
 	ui->actionFalling->setChecked(ResourceEditor::ESOT_FALLING == objectType);
 	ui->actionBuilding->setChecked(ResourceEditor::ESOT_BUILDING == objectType);
 	ui->actionInvisibleWall->setChecked(ResourceEditor::ESOT_INVISIBLE_WALL == objectType);
-	ui->actionSpeedTree->setChecked(ResourceEditor::ESOT_SPEED_TREE == objectType);
 }
 
 void QtMainWindow::LoadObjectTypes( SceneEditor2 *scene )
@@ -2376,61 +2238,36 @@ void QtMainWindow::LoadObjectTypes( SceneEditor2 *scene )
 
 bool QtMainWindow::OpenScene( const QString & path )
 {
-	bool ret = false;
-
-	if(!path.isEmpty())
+    if(path.isEmpty())
+        return false;
+	
+	FilePath projectPath(ProjectManager::Instance()->CurProjectPath().toStdString());
+	FilePath argumentPath(path.toStdString());
+	if(!FilePath::ContainPath(argumentPath, projectPath))
 	{
-		FilePath projectPath(ProjectManager::Instance()->CurProjectPath().toStdString());
-		FilePath argumentPath(path.toStdString());
-
-		if(!FilePath::ContainPath(argumentPath, projectPath))
-		{
-			QMessageBox::warning(this, "Open scene error.", QString().sprintf("Can't open scene file outside project path.\n\nScene:\n%s\n\nProject:\n%s", 
-				projectPath.GetAbsolutePathname().c_str(),
-				argumentPath.GetAbsolutePathname().c_str()));
-		}
-		else
-		{
-            int needCloseIndex = -1;
-			SceneEditor2 *scene = ui->sceneTabWidget->GetCurrentScene();
-			if(scene && (ui->sceneTabWidget->GetTabCount() == 1))
-			{
-				FilePath path = scene->GetScenePath();
-				if(path.GetFilename() == "newscene1.sc2" && !scene->CanUndo())
-				{
-					needCloseIndex = 0;
-				}
-			}
-
-			DAVA::FilePath scenePath = DAVA::FilePath(path.toStdString());
-
-			WaitStart("Opening scene...", scenePath.GetAbsolutePathname().c_str());
-
-			int index = ui->sceneTabWidget->OpenTab(scenePath);
-
-            WaitStop();
-
-            if(index != -1)
-			{
-				ui->sceneTabWidget->SetCurrentTab(index);
-				AddRecent(path);
-
-                // close empty default scene
-                if(-1 != needCloseIndex)
-                {
-                    ui->sceneTabWidget->CloseTab(needCloseIndex);
-                }
-
-				ret = true;
-			}
-            else
-            {
-                QMessageBox::critical(this, "Open scene error.", "Unexpected opening error. See logs for more info.");
-            }
-		}
+		QMessageBox::warning(this, "Open scene error.", "Selected scene file doesn't belogn to project.");
+		return false;
 	}
+	
+    SceneEditor2 *scene = ui->sceneTabWidget->GetCurrentScene();
+    if(scene && (ui->sceneTabWidget->GetTabCount() == 1))
+    {
+        FilePath path = scene->GetScenePath();
+        if(path.GetFilename() == "newscene1.sc2" && !scene->CanUndo())
+        {
+            ui->sceneTabWidget->CloseTab(0);
+        }
+    }
+    
+    int index = ui->sceneTabWidget->OpenTab(DAVA::FilePath(path.toStdString()));
+    if(index != -1)
+    {
+        ui->sceneTabWidget->SetCurrentTab(index);
+        AddRecent(path);
+        return true;
+    }
 
-    return ret;
+    return false;
 }
 
 void QtMainWindow::OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape)
@@ -2477,6 +2314,15 @@ bool QtMainWindow::IsAnySceneChanged()
 	return false;
 }
 
+void QtMainWindow::SetLandscapeSettingsEnabled(bool enable)
+{
+	ui->actionLandscape->setEnabled(enable);
+	if(NULL != landscapeDialog && !enable)
+	{
+		landscapeDialog->close();
+	}
+}
+
 void QtMainWindow::OnHangingObjects()
 {
 	SceneEditor2* scene = GetCurrentScene();
@@ -2499,36 +2345,12 @@ void QtMainWindow::OnHangingObjectsHeight( double value)
 	DebugDrawSystem::HANGING_OBJECTS_HEIGHT = (DAVA::float32) value;
 }
 
-void QtMainWindow::OnMaterialLightViewChanged(bool)
-{
-    int newMode = EditorMaterialSystem::LIGHTVIEW_NOTHING;
-
-    if(ui->actionAlbedo->isChecked()) newMode |= EditorMaterialSystem::LIGHTVIEW_ALBEDO;
-    if(ui->actionDiffuse->isChecked()) newMode |= EditorMaterialSystem::LIGHTVIEW_DIFFUSE;
-    if(ui->actionAmbient->isChecked()) newMode |= EditorMaterialSystem::LIGHTVIEW_AMBIENT;
-    if(ui->actionSpecular->isChecked()) newMode |= EditorMaterialSystem::LIGHTVIEW_SPECULAR;
-
-    if(newMode != SettingsManager::Instance()->GetValue("materialsLightViewMode", SettingsManager::INTERNAL).AsInt32())
-    {
-        SettingsManager::Instance()->SetValue("materialsLightViewMode", DAVA::VariantType(newMode), SettingsManager::INTERNAL);
-    }
-
-    if(NULL != GetCurrentScene())
-    {
-        GetCurrentScene()->materialSystem->SetLightViewMode(newMode);
-    }
-}
-
-void QtMainWindow::OnCustomQuality()
-{
-    QualitySwitcher::Show();
-}
-
 void QtMainWindow::UpdateConflictingActionsState(bool enable)
 {
 	ui->menuTexturesForGPU->setEnabled(enable);
 	ui->actionReloadTextures->setEnabled(enable);
 	ui->menuExport->setEnabled(enable);
+	ui->menuBeast->setEnabled(enable);
     ui->actionSaveToFolder->setEnabled(enable);
 }
 
@@ -2538,6 +2360,9 @@ void QtMainWindow::DiableUIForFutureUsing()
 	//-->
 	ui->actionAddNewComponent->setVisible(false);
 	ui->actionRemoveComponent->setVisible(false);
+	ui->actionUniteEntitiesWithLODs->setVisible(false);
+	
+	ui->actionSaveTiledTexture->setVisible(false);
 	//<--
 }
 
@@ -2687,4 +2512,3 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 	return true;
 }
-

@@ -30,10 +30,24 @@
 
 #include "ParticleEditorCommands.h"
 #include "DAVAEngine.h"
-#include "Qt/Settings/SettingsManager.h"
-#include "Deprecated/ParticlesEditorNodeNameHelper.h"
+#include "../SceneEditor/SceneEditorScreenMain.h"
+#include "../SceneEditor/EditorSettings.h"
+#include "../SceneEditor/EditorBodyControl.h"
+#include "../SceneEditor/SceneGraph.h"
 
-#include "Main/QtUtils.h"
+#include "DockParticleEditor/ParticlesEditorController.h"
+#include "ParticlesEditorQT/Nodes/BaseParticleEditorNode.h"
+#include "ParticlesEditorQT/Nodes/EmitterParticleEditorNode.h"
+#include "ParticlesEditorQT/Nodes/LayerParticleEditorNode.h"
+#include "ParticlesEditorQT/Nodes/InnerEmitterParticleEditorNode.h"
+
+#include "ParticlesEditorQT/Helpers/ParticlesEditorNodeNameHelper.h"
+
+#include "../Qt/Main/QtUtils.h"
+#include "../Qt/Main/QtMainWindowHandler.h"
+#include "../Qt/Scene/SceneData.h"
+#include "../Qt/Scene/SceneDataManager.h"
+#include "SceneEditor/EditorSettings.h"
 #include "StringConstants.h"
 
 #include <QFileDialog>
@@ -69,41 +83,40 @@ CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitter* emitter):
 	this->emitter = emitter;
 }
 
-	void CommandUpdateEmitter::Init(const FastName& name,
-								const Vector3& position,
-								ParticleEmitter::eType emitterType,
+void CommandUpdateEmitter::Init(ParticleEmitter::eType emitterType,
 								RefPtr<PropertyLine<float32> > emissionRange,
 								RefPtr<PropertyLine<Vector3> > emissionVector,
 								RefPtr<PropertyLine<float32> > radius,
 								RefPtr<PropertyLine<Color> > colorOverLife,
 								RefPtr<PropertyLine<Vector3> > size,
 								float32 life,
+								float32 playbackSpeed,
 								bool isShortEffect)
 {
-	this->name = name;
-	this->position = position;
 	this->emitterType = emitterType;
 	this->emissionRange = emissionRange;
 	this->emissionVector = emissionVector;
 	this->radius = radius;
 	this->colorOverLife = colorOverLife;
 	this->size = size;
-	this->life = life;	
+	this->life = life;
+	this->playbackSpeed = playbackSpeed;
 	this->isShortEffect = isShortEffect;
 }
 
 void CommandUpdateEmitter::Redo()
 {
 	DVASSERT(emitter);
-	emitter->name = name;
-	emitter->position = position;
+
 	emitter->emitterType = emitterType;
 	PropertyLineHelper::SetValueLine(emitter->emissionRange, emissionRange);
 	PropertyLineHelper::SetValueLine(emitter->emissionVector, emissionVector);
 	PropertyLineHelper::SetValueLine(emitter->radius, radius);
 	PropertyLineHelper::SetValueLine(emitter->colorOverLife, colorOverLife);
-	PropertyLineHelper::SetValueLine(emitter->size, size);	
-	emitter->shortEffect = isShortEffect;
+	PropertyLineHelper::SetValueLine(emitter->size, size);
+	emitter->SetLifeTime(life);
+	emitter->SetPlaybackSpeed(playbackSpeed);
+	emitter->SetShortEffect(isShortEffect);
 }
 
 CommandUpdateParticleLayer::CommandUpdateParticleLayer(ParticleEmitter* emitter, ParticleLayer* layer) :
@@ -218,16 +231,15 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 void CommandUpdateParticleLayer::Redo()
 {
 	layer->layerName = layerName;
-	layer->isDisabled = isDisabled;	
-	layer->inheritPosition = inheritPosition;
-	layer->isLong = isLong;
+	layer->SetDisabled(isDisabled);	
+	layer->SetInheritPosition(inheritPosition);
+	layer->SetLong(isLong);
 	layer->scaleVelocityBase = scaleVelocityBase;
 	layer->scaleVelocityFactor = scaleVelocityFactor;
-	layer->isLooped = isLooped;
-	layer->srcBlendFactor = srcFactor;
-	layer->dstBlendFactor = dstFactor;
-	layer->enableFog = enableFog;
-	layer->enableFrameBlend = enableFrameBlending;
+	layer->SetLooped(isLooped);
+	layer->SetBlendMode(srcFactor, dstFactor);
+	layer->SetFog(enableFog);
+	layer->SetFrameBlend(enableFrameBlending);
 	PropertyLineHelper::SetValueLine(layer->life , life);
 	PropertyLineHelper::SetValueLine(layer->lifeVariation, lifeVariation);
 	PropertyLineHelper::SetValueLine(layer->number, number);
@@ -267,32 +279,52 @@ void CommandUpdateParticleLayer::Redo()
 
 	// This code must be after layer->frameOverlife set call, since setSprite
 	// may change the frames.
-	if (layer->sprite != sprite)
-	{		
+	if (layer->GetSprite() != sprite)
+	{
+		emitter->Stop();
 		layer->SetSprite(sprite);
-		//TODO: restart effect
+		emitter->Play();
 	}
 	
 	// The same is for emitter type.
 	if (layer->type != layerType)
-	{		
+	{
+		emitter->Stop();
 		if (layerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
 		{
-			SafeRelease(layer->innerEmitter);
+			layer->RemoveInnerEmitter();
 		}
 		layer->type = layerType;		
 		if (layerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
 		{
-			SafeRelease(layer->innerEmitter);
-			layer->innerEmitter = new ParticleEmitter();
+			layer->CreateInnerEmitter();
 			if (!layer->innerEmitterPath.IsEmpty())
 			{
-				layer->innerEmitter->LoadFromYaml(layer->innerEmitterPath);				
-			}			
+				layer->GetInnerEmitter()->LoadFromYaml(layer->innerEmitterPath);				
+			}
+			layer->GetInnerEmitter()->SetPlaybackSpeed(layer->GetPlaybackSpeed());
 		}
-		//TODO: restart in effect
-	}		
-	layer->isLong = isLong;		
+		emitter->Play();
+	}
+	
+	// "IsLong" flag.
+	if (layer->IsLong() != isLong)
+	{
+		emitter->Stop();
+		layer->SetLong(isLong);
+		emitter->Play();
+	}
+
+	// In case we are switching to "SuperEmitter" type - need to create Inner Emitter
+	// for the layer.
+	if (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES && !layer->GetInnerEmitter())
+	{
+		layer->CreateInnerEmitter();
+	}
+
+	// TODO: Yuri Coder, 2013/07/23. Refresh Particle Layer is needed for Superemitter.
+	// Currently it is temporarily commented out but have to be recovered soon.
+	// SceneDataManager::Instance()->RefreshParticlesLayer(layer);
 }
 
 CommandUpdateParticleLayerTime::CommandUpdateParticleLayerTime(ParticleLayer* layer) :
@@ -321,9 +353,10 @@ CommandUpdateParticleLayerEnabled::CommandUpdateParticleLayerEnabled(ParticleLay
 
 void CommandUpdateParticleLayerEnabled::Redo()
 {
-	if (layer)
+	if (this->layer)
 	{
-		layer->isDisabled = !isEnabled;		
+		this->layer->SetDisabled(!isEnabled);
+		//ParticlesEditorController::Instance()->RefreshSelectedNode(true); //looks like depricated
 	}
 }
 
@@ -353,17 +386,18 @@ CommandUpdateParticleForce::CommandUpdateParticleForce(ParticleLayer* layer, uin
 	this->forceId = forceId;
 }
 
-void CommandUpdateParticleForce::Init(RefPtr< PropertyLine<Vector3> > force,									  
+void CommandUpdateParticleForce::Init(RefPtr< PropertyLine<Vector3> > force,
+									  RefPtr< PropertyLine<Vector3> > forcesVariation,
 									RefPtr< PropertyLine<float32> > forcesOverLife)
 {
-	PropertyLineHelper::SetValueLine(this->force,force);	
+	PropertyLineHelper::SetValueLine(this->force,force);
+	PropertyLineHelper::SetValueLine(this->forcesVariation, forcesVariation);
 	PropertyLineHelper::SetValueLine(this->forcesOverLife, forcesOverLife);
 }
 
 void CommandUpdateParticleForce::Redo()
 {
-	layer->forces[forceId]->force = force;
-	layer->forces[forceId]->forceOverLife = forcesOverLife;	
+	layer->UpdateForce(forceId, force, forcesVariation, forcesOverLife);
 }
 
 
@@ -386,7 +420,18 @@ void CommandAddParticleEmitter::Redo()
 	ParticleEffectComponent * effectComponent = cast_if_equal<ParticleEffectComponent*>(effectEntity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
 	DVASSERT(effectComponent);
 
-	effectComponent->AddEmitter(new ParticleEmitter());	
+	ParticleEmitter3D* newEmitter = new ParticleEmitter3D();
+	RenderComponent * renderComponent = new RenderComponent();
+	renderComponent->SetRenderObject(newEmitter);
+	newEmitter->Release();
+
+	Entity* emitterEntity = new Entity();
+	emitterEntity->SetName("Particle Emitter");
+	emitterEntity->AddComponent(renderComponent);
+	renderComponent->Release();
+
+	emitterEntity->AddComponent(ScopedPtr<LodComponent> (new LodComponent()));
+	effectEntity->AddNode(emitterEntity);
 }
 
 CommandStartStopParticleEffect::CommandStartStopParticleEffect(DAVA::Entity* effect, bool isStart) :
@@ -459,49 +504,67 @@ void CommandAddParticleEmitterLayer::Redo()
 		return;
 	}
 
+	bool isStopped = selectedEmitter->IsStopped();
+	if (!isStopped)
+	{
+		selectedEmitter->Stop();
+	}
 
-    createdLayer = new ParticleLayer();
+    // Create the new layer. NOTE: only 3D layers are supported!
+	DVASSERT(selectedEmitter->GetIs3D());
+    createdLayer = new ParticleLayer3D(selectedEmitter);
 
 	createdLayer->startTime = 0;
     createdLayer->endTime = LIFETIME_FOR_NEW_PARTICLE_EMITTER;
-	createdLayer->life = new PropertyLineValue<float32>(1.0f);
-    createdLayer->layerName = ParticlesEditorNodeNameHelper::GetNewLayerName(ResourceEditor::LAYER_NODE_NAME.c_str(), selectedEmitter);
+	createdLayer->life = new PropertyLineValue<float32>(selectedEmitter->GetLifeTime());
+    createdLayer->layerName = ParticlesEditorNodeNameHelper::GetNewLayerName(ResourceEditor::LAYER_NODE_NAME, selectedEmitter);
 
-	createdLayer->loopEndTime = selectedEmitter->lifeTime;	
-    selectedEmitter->AddLayer(createdLayer);	
+	createdLayer->SetLoopEndTime(selectedEmitter->GetLifeTime());	
+    selectedEmitter->AddLayer(createdLayer);
+
+	if (!isStopped)
+	{
+		selectedEmitter->Restart();
+	}
 }
 
-CommandRemoveParticleEmitterLayer::CommandRemoveParticleEmitterLayer(ParticleEmitter* emitter, ParticleLayer* layer) :
-    CommandAction(CMDID_PARTICLE_EMITTER_LAYER_REMOVE), selectedEmitter(emitter), selectedLayer(layer)
+CommandRemoveParticleEmitterLayer::CommandRemoveParticleEmitterLayer(ParticleLayer* layer) :
+    CommandAction(CMDID_PARTICLE_EMITTER_LAYER_REMOVE)
 {
-	
+	this->selectedLayer = layer;
 }
 
 void CommandRemoveParticleEmitterLayer::Redo()
 {
-	if (selectedEmitter&&selectedLayer)
+	if (!selectedLayer)
 	{
-		selectedEmitter->RemoveLayer(selectedLayer);	
-	}			    	
-}
+		return;
+	}
+	
+	ParticleEmitter* emitter = selectedLayer->GetEmitter();
+    if (!emitter)
+    {
+        return;
+    }
 
-CommandRemoveParticleEmitter::CommandRemoveParticleEmitter(ParticleEffectComponent *effect, ParticleEmitter* emitter) :
-CommandAction(CMDID_PARTICLE_EFFECT_EMITTER_REMOVE), selectedEffect(effect), selectedEmitter(emitter)
-{
-
-}
-
-void CommandRemoveParticleEmitter::Redo()
-{
-	if (selectedEmitter&&selectedEffect)
+	bool isStopped = emitter->IsStopped();
+	if (!isStopped)
 	{
-		selectedEffect->RemoveEmitter(selectedEmitter);
-	}			    	
+		emitter->Stop();
+	}
+
+	emitter->RemoveLayer(selectedLayer);
+    
+	if (!isStopped)
+	{
+		emitter->Restart();
+	}
 }
 
-CommandCloneParticleEmitterLayer::CommandCloneParticleEmitterLayer(ParticleEmitter *emitter, ParticleLayer* layer) :
-	CommandAction(CMDID_PARTICLE_EMITTER_LAYER_CLONE), selectedEmitter(emitter), selectedLayer(layer)
-{	
+CommandCloneParticleEmitterLayer::CommandCloneParticleEmitterLayer(ParticleLayer* layer) :
+	CommandAction(CMDID_PARTICLE_EMITTER_LAYER_CLONE)
+{
+	this->selectedLayer = layer;
 }
 
 void CommandCloneParticleEmitterLayer::Redo()
@@ -509,15 +572,17 @@ void CommandCloneParticleEmitterLayer::Redo()
 	if (!selectedLayer)
 	{
 		return;
-	}	
-    if (!selectedEmitter)
+	}
+
+	ParticleEmitter* emitter = selectedLayer->GetEmitter();
+    if (!emitter)
     {
         return;
     }
 
     ParticleLayer* clonedLayer = selectedLayer->Clone();
 	clonedLayer->layerName = selectedLayer->layerName + " Clone";
-    selectedEmitter->AddLayer(clonedLayer);
+    emitter->AddLayer(clonedLayer);
 }
 
 CommandAddParticleEmitterForce::CommandAddParticleEmitterForce(ParticleLayer* layer) :
@@ -533,12 +598,28 @@ void CommandAddParticleEmitterForce::Redo()
 		return;
 	}
 
+	ParticleEmitter* emitter = selectedLayer->GetEmitter();
+    if (!emitter)
+    {
+        return;
+    }
 	
+	bool isStopped = emitter->IsStopped();
+	if (!isStopped)
+	{
+		emitter->Stop();
+	}
 	
     // Add the new Force to the Layer.
-	ParticleForce* newForce = new ParticleForce(RefPtr<PropertyLine<Vector3> >(new PropertyLineValue<Vector3>(Vector3(0, 0, 0))), RefPtr<PropertyLine<float32> >(NULL));
+	ParticleForce* newForce = new ParticleForce(RefPtr<PropertyLine<Vector3> >(new PropertyLineValue<Vector3>(Vector3(0, 0, 0))),
+												RefPtr<PropertyLine<Vector3> >(NULL), RefPtr<PropertyLine<float32> >(NULL));
 	selectedLayer->AddForce(newForce);
-	newForce->Release();	
+	newForce->Release();
+
+	if (!isStopped)
+	{
+		emitter->Restart();
+	}
 }
 
 CommandRemoveParticleEmitterForce::CommandRemoveParticleEmitterForce(ParticleLayer* layer, ParticleForce* force) :
@@ -553,8 +634,26 @@ void CommandRemoveParticleEmitterForce::Redo()
 	if (!selectedLayer || !selectedForce)
 	{
 		return;
-	}		
-	selectedLayer->RemoveForce(selectedForce);		
+	}
+	
+	ParticleEmitter* emitter = selectedLayer->GetEmitter();
+    if (!emitter)
+    {
+        return;
+    }
+
+	bool isStopped = emitter->IsStopped();
+	if (!isStopped)
+	{
+		emitter->Stop();
+	}
+	
+	selectedLayer->RemoveForce(selectedForce);
+	
+	if (!isStopped)
+	{
+		emitter->Restart();
+	}
 }
 
 CommandLoadParticleEmitterFromYaml::CommandLoadParticleEmitterFromYaml(ParticleEmitter* emitter, const FilePath& path) :
@@ -569,10 +668,20 @@ void CommandLoadParticleEmitterFromYaml::Redo()
     if(!selectedEmitter)
     {
     	return;
-    }	
+    }
 
-	//TODO: restart effect
-    selectedEmitter->LoadFromYaml(filePath);	
+	bool isStopped = selectedEmitter->IsStopped();
+	if (!isStopped)
+	{
+		selectedEmitter->Stop();
+	}
+
+    selectedEmitter->LoadFromYaml(filePath);
+
+	if (!isStopped)
+	{
+		selectedEmitter->Restart();
+	}
 }
 
 CommandSaveParticleEmitterToYaml::CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path) :

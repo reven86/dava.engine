@@ -32,12 +32,14 @@
 #include "CollisionSystem.h"
 #include "SelectionSystem.h"
 #include "ModifSystem.h"
-#include "Scene/SceneEditor2.h"
-#include "Scene/SceneSignals.h"
+#include "../SceneEditor2.h"
+#include "../SceneSignals.h"
 #include "LandscapeEditorDrawSystem/HeightmapProxy.h"
 #include "LandscapeEditorDrawSystem/LandscapeProxy.h"
-#include "Commands2/HeightmapEditorCommands2.h"
-#include "Main/QtUtils.h"
+#include "../../../Commands2/HeightmapEditorCommands2.h"
+#include "../../../Commands2/TilemaskEditorCommands.h"
+#include "../../Main/QtUtils.h"
+#include "../../../SceneEditor/EditorSettings.h"
 #include "HoodSystem.h"
 
 #include <QApplication>
@@ -71,8 +73,6 @@ HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
 	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
 	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
 	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
-	
-	noBlendDrawState = DAVA::RenderManager::Instance()->Subclass3DRenderState(DAVA::BLEND_ONE, DAVA::BLEND_ZERO);
 }
 
 HeightmapEditorSystem::~HeightmapEditorSystem()
@@ -120,6 +120,9 @@ LandscapeEditorDrawSystem::eErrorType HeightmapEditorSystem::EnableLandscapeEdit
 	drawSystem->EnableCursor(landscapeSize);
 	drawSystem->SetCursorTexture(cursorTexture);
 	drawSystem->SetCursorSize(cursorSize);
+
+	drawSystem->GetLandscapeProxy()->InitTilemaskImageCopy();
+	drawSystem->GetLandscapeProxy()->InitTilemaskSprites();
 
 	enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
@@ -297,18 +300,17 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
 	
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-		
+	
+	RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
 	RenderManager::Instance()->SetColor(Color::White);
 	
-    Sprite::DrawState drawState;
-    drawState.SetScaleSize((float32)sideSize, (float32)sideSize,
-                           srcSprite->GetWidth(), srcSprite->GetHeight());
-    drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-                                  (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f));
-	srcSprite->Draw(&drawState);
+	srcSprite->SetScaleSize((float32)sideSize, (float32)sideSize);
+	srcSprite->SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
+								   (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f));
+	srcSprite->Draw();
 	RenderManager::Instance()->RestoreRenderTarget();
 	
-	Image *retImage = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image *retImage = dstSprite->GetTexture()->CreateImageFromMemory();
 	
 	SafeRelease(srcSprite);
 	SafeRelease(srcTex);

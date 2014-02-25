@@ -383,7 +383,7 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
     normalMatrix4.Transpose();
     Matrix3 normalMatrix3;
     normalMatrix3 = normalMatrix4;
-    
+
     for (int32 vi = 0; vi < vertexCount; ++vi)
     {
         Vector3 vertex;
@@ -395,9 +395,9 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
         GetNormal(vi, normal);
         normal = normal * normalMatrix3;
         SetNormal(vi, normal);
-    }
+    }    
 }
-	    
+	
 void PolygonGroup::ReleaseData()
 {
     SafeRelease(renderDataObject);
@@ -411,25 +411,18 @@ void PolygonGroup::ReleaseData()
 	
 void PolygonGroup::BuildBuffers()
 {
-    JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &PolygonGroup::BuildBuffersInternal));
-};
-    
-void PolygonGroup::BuildBuffersInternal(BaseObject * caller, void * param, void *callerData)
-{
-    DVASSERT(Thread::IsMainThread());
-
+    // Added to rebuild vertex buffer pointers 
     UpdateDataPointersAndStreams();
-    
+
     renderDataObject->BuildVertexBuffer(vertexCount);
     renderDataObject->SetIndices((eIndexFormat)indexFormat, (uint8*)indexArray, indexCount);
     renderDataObject->BuildIndexBuffer();
-}
-
+};
 
     
-void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
+void PolygonGroup::Save(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
 {
-    DataNode::Save(keyedArchive, serializationContext);
+    DataNode::Save(keyedArchive, sceneFile);
     
     keyedArchive->SetInt32("vertexFormat", vertexFormat);
     keyedArchive->SetInt32("vertexCount", vertexCount); 
@@ -453,9 +446,9 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
 
 }
 
-void PolygonGroup::Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
+void PolygonGroup::Load(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
 {
-    DataNode::Load(keyedArchive, serializationContext);
+    DataNode::Load(keyedArchive, sceneFile);
     
     vertexFormat = keyedArchive->GetInt32("vertexFormat");
     vertexStride = GetVertexSize(vertexFormat);
@@ -514,8 +507,6 @@ void PolygonGroup::Load(KeyedArchive * keyedArchive, SerializationContext * seri
     
 void PolygonGroup::RecalcAABBox()
 {
-    aabbox = AABBox3(); // reset bbox
-
     // recalc aabbox
     for (int vi = 0; vi < vertexCount; ++vi)
     {
@@ -534,9 +525,9 @@ void PolygonGroup::DebugDraw()
         GetCoord(indexArray[k * 3 + 0], v0);
         GetCoord(indexArray[k * 3 + 1], v1);
         GetCoord(indexArray[k * 3 + 2], v2);
-        RenderHelper::Instance()->DrawLine(v0, v1, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-        RenderHelper::Instance()->DrawLine(v1, v2, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-        RenderHelper::Instance()->DrawLine(v0, v2, 1.0f, RenderState::RENDERSTATE_2D_BLEND);
+        RenderHelper::Instance()->DrawLine(v0, v1);
+        RenderHelper::Instance()->DrawLine(v1, v2);
+        RenderHelper::Instance()->DrawLine(v0, v2);
     }
 }
 

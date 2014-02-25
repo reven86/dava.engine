@@ -34,7 +34,6 @@
 #include "Commands2/Command2.h"
 #include "CommandAction.h"
 #include "DAVAEngine.h"
-#include "Main/Request.h"
 
 class CustomColorsProxy;
 class SceneEditor2;
@@ -55,11 +54,11 @@ protected:
 class ActionDisableCustomColors: public CommandAction
 {
 public:
-	ActionDisableCustomColors(SceneEditor2* forSceneEditor,  bool textureSavingNeeded);
+	ActionDisableCustomColors(SceneEditor2* forSceneEditor);
 	
 protected:
-	SceneEditor2*	sceneEditor;
-	bool			textureSavingNeeded;
+	SceneEditor2* sceneEditor;
+	
 	virtual void Redo();
 };
 

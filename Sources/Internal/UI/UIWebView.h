@@ -42,7 +42,8 @@ class UIWebView : public UIControl
 protected:
 	virtual ~UIWebView();
 public:
-	UIWebView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+	UIWebView();
+	UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates = false);
 		
 	// Open the URL.
 	void OpenURL(const String& urlToOpen);
@@ -50,12 +51,8 @@ public:
 	void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies for target URL
 	void DeleteCookies(const String& targetUrl);
-    void OpenFromBuffer(const String& string, const FilePath& basePath);
-    
-	// Overloaded virtual methods.
-	virtual void WillAppear();
-	virtual void WillDisappear();
 
+	// Overloaded virtual methods.
 	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
 	virtual void SetSize(const Vector2 &newSize);
 	virtual void SetVisible(bool isVisible, bool hierarchic = true);
@@ -69,7 +66,6 @@ public:
 	// Enable/disable bounces.
 	void SetBounces(bool value);
 	bool GetBounces() const;
-	void SetGestures(bool value);
 
 protected:
 

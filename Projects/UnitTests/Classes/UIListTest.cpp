@@ -76,14 +76,14 @@ UIListCell *UIListTestDelegate::CellAtIndex(UIList *list, int32 index)
     return cell;
 }
 
-float32 UIListTestDelegate::CellWidth(UIList*, int32)
+int32 UIListTestDelegate::CellWidth(UIList*, int32)
 {
-   	return cellSize.x;
+   	return (int32)cellSize.x;
 }
 
-float32 UIListTestDelegate::CellHeight(UIList*, int32)
+int32 UIListTestDelegate::CellHeight(UIList*, int32)
 {
-   	return cellSize.y;
+   	return (int32)cellSize.y;
 }
 
 UIListTest::UIListTest() :

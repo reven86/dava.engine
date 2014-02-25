@@ -31,40 +31,31 @@
 #include "LandscapeCursor.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/FilePath.h"
-#include "Render/ShaderCache.h"
 
 namespace DAVA
 {
 
 LandscapeCursor::LandscapeCursor()
 {
-	textureHandle = InvalidUniqueHandle;
-    cursorTexture = NULL;
+	cursorTexture = 0;
 
-	shader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/cursor"), FastNameSet()));
+	shader = new Shader();
+	shader->LoadFromYaml("~res:/Shaders/Landscape/cursor.shader");
+	shader->Recompile();
 
-	uniformTexture = shader->FindUniformIndexByName(FastName("texture0"));
-	uniformPosition = shader->FindUniformIndexByName(FastName("position"));
-	uniformScale = shader->FindUniformIndexByName(FastName("scale"));
-	
-	RenderManager* rm = RenderManager::Instance();
-	const RenderStateData& default3dState = rm->GetRenderStateData(RenderState::RENDERSTATE_3D_BLEND);
-	
-	RenderStateData renderStateData;
-	memcpy(&renderStateData, &default3dState, sizeof(renderStateData));
-	
-	renderStateData.depthFunc = CMP_LEQUAL;
-	renderState = rm->CreateRenderState(renderStateData);
+	uniformTexture = shader->FindUniformIndexByName("texture0");
+	uniformPosition = shader->FindUniformIndexByName("position");
+	uniformScale = shader->FindUniformIndexByName("scale");
 }
 
 void LandscapeCursor::Prepare()
 {
-	if(InvalidUniqueHandle == textureHandle)
+	if(!cursorTexture)
 	{
 		return;
 	}
 
-	RenderManager::Instance()->SetTextureState(textureHandle);
+	RenderManager::Instance()->SetTexture(cursorTexture, 0);
 	RenderManager::Instance()->SetShader(shader);
 	RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->AttachRenderData();
@@ -78,17 +69,6 @@ void LandscapeCursor::Prepare()
 LandscapeCursor::~LandscapeCursor()
 {
 	SafeRelease(shader);
-    SafeRelease(cursorTexture);
-    
-    if(InvalidUniqueHandle != textureHandle)
-    {
-        RenderManager::Instance()->ReleaseTextureState(textureHandle);
-    }
-    
-    if(InvalidUniqueHandle != renderState)
-    {
-        RenderManager::Instance()->ReleaseRenderState(renderState);
-    }
 }
 
 void LandscapeCursor::SetPosition(const Vector2 & _posistion)
@@ -101,23 +81,9 @@ void LandscapeCursor::SetScale(float32 _scale)
 	scale = _scale;
 }
 
-void LandscapeCursor::SetCursorTexture(Texture* _texture)
+void LandscapeCursor::SetCursorTexture(Texture * _texture)
 {
-    if(_texture != cursorTexture)
-    {
-        SafeRelease(cursorTexture);
-        cursorTexture = SafeRetain(_texture);
-        
-        if(InvalidUniqueHandle != textureHandle)
-        {
-            RenderManager::Instance()->ReleaseTextureState(textureHandle);
-        }
-        
-        TextureStateData stateData;
-        stateData.SetTexture(0, cursorTexture);
-        
-        textureHandle = RenderManager::Instance()->CreateTextureState(stateData);
-    }
+	cursorTexture = _texture;
 }
 
 void LandscapeCursor::SetBigTextureSize(float32 _bigSize)
@@ -126,7 +92,7 @@ void LandscapeCursor::SetBigTextureSize(float32 _bigSize)
 }
     
     
-Texture* LandscapeCursor::GetCursorTexture()
+Texture * LandscapeCursor::GetCursorTexture()
 {
     return cursorTexture;
 }

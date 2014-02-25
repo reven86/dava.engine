@@ -33,7 +33,7 @@
 #include "Main/QtUtils.h"
 #include "QtPropertyDataDavaKeyedArchive.h"
 #include "QtPropertyDataKeyedArchiveMember.h"
-#include "Deprecated/EditorConfig.h"
+#include "SceneEditor/EditorConfig.h"
 
 #include <QSet>
 #include <QMenu>
@@ -43,33 +43,32 @@
 #include <QMessageBox>
 #include <QKeyEvent>
 
-QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive *_archive)
-	: archive(_archive)
+QtPropertyDataDavaKeyedArcive::QtPropertyDataDavaKeyedArcive(DAVA::KeyedArchive *archive)
+	: curArchive(archive)
 	, lastAddedType(DAVA::VariantType::TYPE_STRING)
 	, lastCommand(NULL)
 {
-	if(NULL != archive)
+	if(NULL != curArchive)
 	{
-		archive->Retain();
+		curArchive->Retain();
 	}
 
-	SetEnabled(false);
+	SetFlags(FLAG_IS_DISABLED);
 
 	// add optional widget (button) to add new key
-	QToolButton *addButton = AddButton();
-	addButton->setIcon(QIcon(":/QtIcons/keyplus.png"));
+	QPushButton *addButton = new QPushButton(QIcon(":/QtIcons/keyplus.png"), "");
 	addButton->setIconSize(QSize(12, 12));
-	//addButton->setAutoRaise(true);
-	QObject::connect(addButton, SIGNAL(released()), this, SLOT(AddKeyedArchiveField()));
+	AddOW(QtPropertyOW(addButton));
+	QObject::connect(addButton, SIGNAL(pressed()), this, SLOT(AddKeyedArchiveField()));
 
 	UpdateValue();
 }
 
 QtPropertyDataDavaKeyedArcive::~QtPropertyDataDavaKeyedArcive()
 {
-	if(NULL != archive)
+	if(NULL != curArchive)
 	{
-		archive->Release();
+		curArchive->Release();
 	}
 
 	if(NULL != lastCommand)
@@ -78,16 +77,11 @@ QtPropertyDataDavaKeyedArcive::~QtPropertyDataDavaKeyedArcive()
 	}
 }
 
-const DAVA::MetaInfo * QtPropertyDataDavaKeyedArcive::MetaInfo() const
-{
-	return DAVA::MetaInfo::Instance<DAVA::KeyedArchive *>();
-}
-
-QVariant QtPropertyDataDavaKeyedArcive::GetValueInternal() const
+QVariant QtPropertyDataDavaKeyedArcive::GetValueInternal()
 {
 	QVariant v;
 
-	if(NULL != archive)
+	if(NULL != curArchive)
 	{
 		v = QString("KeyedArchive");
 	}
@@ -108,18 +102,18 @@ bool QtPropertyDataDavaKeyedArcive::UpdateValueInternal()
 		// at first step of sync we mark (placing to vector) items to remove
 		for(int i = 0; i < ChildCount(); ++i)
 		{
-			QtPropertyData *child = ChildGet(i);
-			if(NULL != child)
+			QPair<QString, QtPropertyData *> pair = ChildGet(i);
+			if(NULL != pair.second)
 			{
-				dataToRemove.insert(child);
+				dataToRemove.insert(pair.second);
 			}
 		}
 
-		// as second step we go through keyed archive and add new data items,
+		// as second step we go throught keyed archive and add new data items,
 		// and remove deleting mark from items that are still in archive
-		if(NULL != archive)
+		if(NULL != curArchive)
 		{
-			DAVA::Map<DAVA::String, DAVA::VariantType*> data = archive->GetArchieveData();
+			DAVA::Map<DAVA::String, DAVA::VariantType*> data = curArchive->GetArchieveData();
 			DAVA::Map<DAVA::String, DAVA::VariantType*>::iterator i = data.begin();
 
 			for(; i != data.end(); ++i)
@@ -161,7 +155,7 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const QString &key, DAVA::Varian
 	}
 	else
 	{
-		childData = new QtPropertyKeyedArchiveMember(archive, key.toStdString());
+		childData = new QtPropertyKeyedArchiveMember(curArchive, key.toStdString());
 
 		int presetValueType = EditorConfig::Instance()->GetPropertyValueType(key.toStdString());
 		if(presetValueType != DAVA::VariantType::TYPE_NONE)
@@ -169,20 +163,9 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const QString &key, DAVA::Varian
 			if(value->type == presetValueType)
 			{
 				const DAVA::Vector<DAVA::String>& allowedValues = EditorConfig::Instance()->GetComboPropertyValues(key.toStdString());
-				if(allowedValues.size() > 0)
+				for(size_t i = 0; i < allowedValues.size(); ++i)
 				{
-					for(size_t i = 0; i < allowedValues.size(); ++i)
-					{
-						((QtPropertyKeyedArchiveMember *) childData)->AddAllowedValue(DAVA::VariantType((int) i), allowedValues[i].c_str());
-					}
-				}
-				else
-				{
-					const DAVA::Vector<Color> & allowedColors = EditorConfig::Instance()->GetColorPropertyValues(key.toStdString());
-					for(size_t i = 0; i < allowedColors.size(); ++i)
-					{
-						((QtPropertyKeyedArchiveMember *) childData)->AddAllowedValue(DAVA::VariantType((int) i), ColorToQColor(allowedColors[i]));
-					}
+					((QtPropertyKeyedArchiveMember *) childData)->AddAllowedValue(DAVA::VariantType((int) i), allowedValues[i].c_str());
 				}
 			}
 		}
@@ -191,20 +174,20 @@ void QtPropertyDataDavaKeyedArcive::ChildCreate(const QString &key, DAVA::Varian
 	ChildAdd(key, childData);
 
 	// add optional widget (button) to remove this key
-	QToolButton *remButton = childData->AddButton();
-	remButton->setIcon(QIcon(":/QtIcons/keyminus.png"));
+	QPushButton *remButton = new QPushButton(QIcon(":/QtIcons/keyminus.png"), "");
 	remButton->setIconSize(QSize(12, 12));
-	//remButton->setAutoRaise(true);
+	childData->AddOW(QtPropertyOW(remButton));
+	childData->SetOWViewport(GetOWViewport());
 
-	QObject::connect(remButton, SIGNAL(released()), this, SLOT(RemKeyedArchiveField()));
+	QObject::connect(remButton, SIGNAL(pressed()), this, SLOT(RemKeyedArchiveField()));
 }
 
 void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField()
 {
-	QToolButton* btn = dynamic_cast<QToolButton*>(QObject::sender());
-	if(NULL != archive && NULL != btn)
+	QPushButton* btn = dynamic_cast<QPushButton*>(QObject::sender());
+	if(NULL != curArchive && NULL != btn)
 	{
-		KeyedArchiveItemWidget *w = new KeyedArchiveItemWidget(archive, lastAddedType, GetOWViewport());
+		KeyedArchiveItemWidget *w = new KeyedArchiveItemWidget(curArchive, lastAddedType);
 		QObject::connect(w, SIGNAL(ValueReady(const DAVA::String&, const DAVA::VariantType&)), this, SLOT(NewKeyedArchiveFieldReady(const DAVA::String&, const DAVA::VariantType&)));
 
 		w->show();
@@ -221,30 +204,34 @@ void QtPropertyDataDavaKeyedArcive::AddKeyedArchiveField()
 
 void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField()
 {
-	QToolButton* btn = dynamic_cast<QToolButton*>(QObject::sender());
-	if(NULL != btn && NULL != archive)
+	QPushButton* btn = dynamic_cast<QPushButton*>(QObject::sender());
+	if(NULL != btn && NULL != curArchive)
 	{
 		// search for child data with such button
 		for(int i = 0; i < ChildCount(); ++i)
 		{
-			QtPropertyData *childData = ChildGet(i);
+			QPair<QString, QtPropertyData *> child = ChildGet(i);
+			QtPropertyData *childData = child.second;
+
 			if(NULL != childData)
 			{
 				// search btn thought this child optional widgets
-				for (int j = 0; j < childData->GetButtonsCount(); j++)
+				for (int j = 0; j < childData->GetOWCount(); j++)
 				{
-					if(btn == childData->GetButton(j))
+					const QtPropertyOW *ow = childData->GetOW(j);
+					if(NULL != ow && ow->widget == btn)
 					{
 						if(NULL != lastCommand)
 						{
 							delete lastCommand;
 						}
 
-						lastCommand = new KeyeadArchiveRemValueCommand(archive, childData->GetName().toStdString());
-						archive->DeleteKey(childData->GetName().toStdString());
+						lastCommand = new KeyeadArchiveRemValueCommand(curArchive, child.first.toStdString());
 
-						ChildRemove(childData);
-						EmitDataChanged(QtPropertyData::VALUE_EDITED);
+						curArchive->DeleteKey(child.first.toStdString());
+						//ChildsSync();
+
+						emit ValueChanged(QtPropertyData::VALUE_EDITED);
 						break;
 					}
 				}
@@ -257,19 +244,20 @@ void QtPropertyDataDavaKeyedArcive::RemKeyedArchiveField()
 void QtPropertyDataDavaKeyedArcive::NewKeyedArchiveFieldReady(const DAVA::String &key, const DAVA::VariantType &value)
 {
 	DVASSERT(value.type != DAVA::VariantType::TYPE_NONE && value.type < DAVA::VariantType::TYPES_COUNT);
-	if(NULL != archive)
+	if(NULL != curArchive)
 	{
-		archive->SetVariant(key, value);
+		curArchive->SetVariant(key, value);
 		lastAddedType = value.type;
+		//ChildsSync();
 
 		if(NULL != lastCommand)
 		{
 			delete lastCommand;
 		}
 
-		lastCommand = new KeyedArchiveAddValueCommand(archive, key, value);
-		ChildCreate(key.c_str(), archive->GetVariant(key));
-		EmitDataChanged(QtPropertyData::VALUE_EDITED);
+		lastCommand = new KeyedArchiveAddValueCommand(curArchive, key, value);
+
+		emit ValueChanged(QtPropertyData::VALUE_EDITED);
 	}
 }
 

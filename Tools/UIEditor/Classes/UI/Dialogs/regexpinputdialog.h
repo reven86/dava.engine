@@ -40,7 +40,7 @@ class RegExpInputDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit RegExpInputDialog(QWidget *parent = 0,int flags = ~Qt::WindowMinimizeButtonHint & ~Qt::WindowMaximizeButtonHint);
+    explicit RegExpInputDialog(QWidget *parent = 0, Qt::WindowFlags=0);
      
     void setTitle(const QString &title);
     void setLabelText(const QString &label);
@@ -51,9 +51,8 @@ public:
     QString getText();
      
     static QString getText(QWidget *parent, const QString &title, const QString &label, 
-                           const QString &text, const QRegExp &regExp, bool* ok,
-                           int flags = ~Qt::WindowMinimizeButtonHint & ~Qt::WindowMaximizeButtonHint);
-
+		const QString &text, const QRegExp &regExp, bool* ok, Qt::WindowFlags flags=0);
+     
 private slots:
     void checkValid(const QString &text);
      

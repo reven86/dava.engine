@@ -418,13 +418,10 @@ void TheoraPlayer::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 
 void TheoraPlayer::Draw(const UIGeometricData &geometricData)
 {
-    Sprite* sprite = GetSprite();
-    if(sprite)
+    if(GetSprite())
     {
-        Sprite::DrawState drawState;
-        drawState.SetPosition(geometricData.position);
-        
-        sprite->Draw(&drawState);
+        GetSprite()->SetPosition(geometricData.position);
+        GetSprite()->Draw();
     }
 }
     

@@ -78,20 +78,20 @@ void LightUpdateSystem::AddEntity(Entity * entity)
     Light * lightObject = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
     if (!lightObject)return;
 
-    entityObjectMap.insert(entity, lightObject);
+    entityObjectMap.Insert(entity, lightObject);
     GetScene()->GetRenderSystem()->AddLight(lightObject);
 }
 
 void LightUpdateSystem::RemoveEntity(Entity * entity)
 {
-    Light * lightObject = entityObjectMap.at(entity);
+    Light * lightObject = entityObjectMap.GetValue(entity);
     if (!lightObject)
 	{
 		return;
 	}
     
     GetScene()->GetRenderSystem()->RemoveLight(lightObject);
-	entityObjectMap.erase(entity);
+	entityObjectMap.Remove(entity);
 }
        
 };

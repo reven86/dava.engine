@@ -39,7 +39,6 @@
 #include "Render/RenderHelper.h"
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"
-#include "Utils/StringFormat.h"
 
 namespace DAVA 
 {
@@ -56,7 +55,6 @@ namespace DAVA
 			for particular controls it can be changed, but no make sense to make that for all controls.
 		 */
 		inputEnabled = true; 
-        focusEnabled = true;
 		
 		background = new UIControlBackground();
 		needToRecalcFromAbsoluteCoordinates = false;
@@ -125,7 +123,7 @@ namespace DAVA
 	
 	void UIControl::SetParent(UIControl *newParent)
 	{
-		if (!newParent)
+		if (!newParent) 
 		{
 			if(totalTouches > 0)
 			{
@@ -137,7 +135,8 @@ namespace DAVA
 		{
 			relativePosition = absolutePosition - parent->GetGeometricData().position;
 			needToRecalcFromAbsoluteCoordinates = false;
-		}		
+		}
+		
 	}
 	UIControl *UIControl::GetParent()
 	{
@@ -273,6 +272,13 @@ namespace DAVA
 		}
 		
 		return false;
+	}
+
+	List<UIControl* > UIControl::GetRealChildrenAndSubcontrols()
+	{
+        // Yuri Coder, 2013/12/16. Return all children, keep their order (see please DF-2817). In case
+        // some specific hanldling is needed for some control, reimplement this function on its level.
+        return this->childs;
 	}
 
 	String UIControl::GetSpriteFrameworkPath( const Sprite* sprite)
@@ -978,17 +984,6 @@ namespace DAVA
 			}
 		}
 	}
-    
-    bool UIControl::GetFocusEnabled() const
-    {
-        return focusEnabled;
-    }
-    
-	void UIControl::SetFocusEnabled(bool isEnabled)
-    {
-        focusEnabled = isEnabled;
-    }
-
 	
 	bool UIControl::GetDisabled() const
 	{
@@ -1584,7 +1579,7 @@ namespace DAVA
 	
 		if (debugDrawEnabled && !clipContents)
 		{	//TODO: Add debug draw for rotated controls
-			DrawDebugRect(drawData, false);
+			DrawDebugRect(drawData);
 		}
 		DrawPivotPoint(unrotatedRect);
 		
@@ -1612,7 +1607,7 @@ namespace DAVA
 			
 			if(debugDrawEnabled)
 			{ //TODO: Add debug draw for rotated controls
-				DrawDebugRect(drawData, false);
+				DrawDebugRect(drawData);
 			}
 		}
 		
@@ -1648,11 +1643,11 @@ namespace DAVA
 			Polygon2 poly;
 			gd.GetPolygon( poly );
 
-			RenderHelper::Instance()->DrawPolygon( poly, true, RenderState::RENDERSTATE_2D_BLEND );
+			RenderHelper::Instance()->DrawPolygon( poly, true );
 		}
 		else
 		{
-			RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND );
+			RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect() );
 		}
 
 		RenderManager::Instance()->ClipPop();
@@ -1679,20 +1674,20 @@ namespace DAVA
 		RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
 
 		Vector2 pivotPointCenter = drawRect.GetPosition() + pivotPoint;
-		RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderState::RENDERSTATE_2D_BLEND);
+		RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS);
 
 		// Draw the cross mark.
 		Vector2 lineStartPoint = pivotPointCenter;
 		Vector2 lineEndPoint = pivotPointCenter;
 		lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
 		lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
+		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint);
 		
 		lineStartPoint = pivotPointCenter;
 		lineEndPoint = pivotPointCenter;
 		lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
 		lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
+		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint);
 
 		RenderManager::Instance()->ClipPop();
 		RenderManager::Instance()->SetColor(oldColor);
@@ -1787,7 +1782,7 @@ namespace DAVA
 						currentInput->touchLocker = this;
 						if(exclusiveInput)
 						{
-							UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->tid);
+							UIControlSystem::Instance()->SetExclusiveInputLocker(this);
 						}
 
    						PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
@@ -1893,7 +1888,7 @@ namespace DAVA
 #endif
 								if (IsPointInside(currentInput->point, true))
 								{
-                                    if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
+                                    if (UIControlSystem::Instance()->GetFocusedControl() != this) 
                                     {
                                         UIControlSystem::Instance()->SetFocusedControl(this, false);
                                     }
@@ -1908,7 +1903,7 @@ namespace DAVA
 								controlState |= STATE_NORMAL;
 								if(UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
 								{
-									UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
+									UIControlSystem::Instance()->SetExclusiveInputLocker(NULL);
 								}
 							}
 							else if(touchesInside <= 0)
@@ -2008,7 +2003,7 @@ namespace DAVA
 			controlState |= STATE_NORMAL;
 			if(UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
 			{
-				UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
+				UIControlSystem::Instance()->SetExclusiveInputLocker(NULL);
 			}
 		}
 		
@@ -2110,10 +2105,11 @@ namespace DAVA
 		}
 
 		// Color
-		const Color &color =  this->GetBackground()->GetColor();
+		Color color =  this->GetBackground()->GetColor();
 		if (baseControl->GetBackground()->color != color)
 		{		
-			nodeValue->SetColor(color);
+			Vector4 colorVector4(color.r, color.g, color.b, color.a);
+			nodeValue->SetVector4(colorVector4);
 			node->Set("color", nodeValue);
 		}
 		// Frame

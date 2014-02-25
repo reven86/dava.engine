@@ -41,13 +41,10 @@ class Component;
 class BaseProcessSystem : public SceneSystem
 {
 public:
-	BaseProcessSystem(uint32 componentId, Scene * scene);
+	BaseProcessSystem(uint32 componentId, Scene * scene);	
 
 	virtual void AddEntity(Entity * entity);
 	virtual void RemoveEntity(Entity * entity);
-
-	virtual void AddComponent(Entity * entity, Component * component);
-	virtual void RemoveComponent(Entity * entity, Component * component);
 
 protected:
 	Vector<Component*> components;

@@ -35,82 +35,83 @@
 #include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"
 #include "FileSystem/FilePath.h"
-#include "Render/ShaderCache.h"
 
 namespace DAVA
 {
-	
-	ShadowRect * ShadowRect::instance = 0;
-	FastName ShadowRect::SHADOW_RECT_SHADER("~res:/Materials/Shaders/ShadowVolume/shadowrect");
-	
-	ShadowRect * ShadowRect::Create()
+
+ShadowRect * ShadowRect::instance = 0;
+
+
+ShadowRect * ShadowRect::Create()
+{
+	if(instance)
 	{
-		if(instance)
-		{
-			instance->Retain();
-		}
-		else
-		{
-			instance = new ShadowRect();
-		}
-		
-		return instance;
+		instance->Retain();
 	}
-	
-	ShadowRect::ShadowRect()
+	else
 	{
-		rdo = new RenderDataObject();
-		
-		Vector3 vert3[4] = {Vector3(-100.f, 100.f, -50), Vector3(100.f, 100.f, -50), Vector3(-100.f, -100.f, -50), Vector3(100.f, -100.f, -50)};
-		
-		for(int32 i = 0; i < 4; ++i)
-		{
-			vertices[i*3] = vert3[i].x;
-			vertices[i*3+1] = vert3[i].y;
-			vertices[i*3+2] = vert3[i].z;
-		}
-		
-		rdo->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, vertices);
-		
-		
-		shadowColor = Color(0, 0, 0, 0.5f);
-		
-		shader = SafeRetain(ShaderCache::Instance()->Get(SHADOW_RECT_SHADER, FastNameSet()));
-		
-		uniformShadowColor = shader->FindUniformIndexByName(FastName("shadowColor"));
-		DVASSERT(uniformShadowColor != -1);
+		instance = new ShadowRect();
 	}
-	
-	ShadowRect::~ShadowRect()
+
+	return instance;
+}
+
+ShadowRect::ShadowRect()
+{
+	rdo = new RenderDataObject();
+
+	Vector3 vert3[4] = {Vector3(-100.f, 100.f, -50), Vector3(100.f, 100.f, -50), Vector3(-100.f, -100.f, -50), Vector3(100.f, -100.f, -50)};
+
+	for(int32 i = 0; i < 4; ++i)
 	{
-		uniformShadowColor = -1;
-		SafeRelease(shader);
-		SafeRelease(rdo);
-		
-		instance = 0;
+		vertices[i*3] = vert3[i].x;
+		vertices[i*3+1] = vert3[i].y;
+		vertices[i*3+2] = vert3[i].z;
 	}
-	
-	void ShadowRect::Draw()
-	{
-		RenderManager::Instance()->SetShader(shader);
-		RenderManager::Instance()->SetRenderData(rdo);
-		RenderManager::Instance()->FlushState();
-		
-		shader->SetUniformColor4ByIndex(uniformShadowColor, shadowColor);
-		
-		RenderManager::Instance()->AttachRenderData();
-		RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
-	}
+
+	rdo->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, vertices);
+
     
-	void ShadowRect::SetColor(const Color &color)
-	{
-		shadowColor = color;
-	}
-	
-	const Color & ShadowRect::GetColor() const
-	{
-		return shadowColor;
-	}
-	
-	
+    shadowColor = Color(0, 0, 0, 0.5f);
+    
+	shader = new Shader();
+	shader->LoadFromYaml("~res:/Shaders/ShadowVolume/shadowrect.shader");
+	shader->Recompile();
+    
+    uniformShadowColor = shader->FindUniformIndexByName("shadowColor");
+    DVASSERT(uniformShadowColor != -1);
+}
+
+ShadowRect::~ShadowRect()
+{
+    uniformShadowColor = -1;
+	SafeRelease(shader);
+	SafeRelease(rdo);
+
+	instance = 0;
+}
+
+void ShadowRect::Draw()
+{
+	RenderManager::Instance()->SetShader(shader);
+	RenderManager::Instance()->SetRenderData(rdo);
+	RenderManager::Instance()->FlushState();
+    
+    shader->SetUniformColor4ByIndex(uniformShadowColor, shadowColor);
+    
+	RenderManager::Instance()->AttachRenderData();
+	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
+}
+    
+void ShadowRect::SetColor(const Color &color)
+{
+    shadowColor = color;
+}
+
+const Color & ShadowRect::GetColor() const
+{
+    return shadowColor;
+}
+
+
 };

@@ -33,8 +33,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
-#include "Render/RenderBase.h"
-
 
 namespace DAVA 
 {
@@ -73,7 +71,7 @@ public:
 	static Image * Create(uint32 width, uint32 height, PixelFormat format);
 	static Image * CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data);
     
-    static Image * CreatePinkPlaceholder(bool checkers = true);
+    static Image * CreatePinkPlaceholder();
     
     // \todo Change function name to Image::Create for consistency
 	static Vector2 GetImageSize(const FilePath & pathName);
@@ -125,16 +123,14 @@ public:
         
      */
 
-    uint32 dataSize;
-	uint32	width:16;
-	uint32	height:16;
-
 	uint8 * data;
-
-    uint32 mipmapLevel;
-    PixelFormat format:8;
+    uint32 dataSize;
+	uint32	width;
+	uint32	height;
+	PixelFormat format;
 	
 	uint32 cubeFaceID;
+	uint32 mipmapLevel;
 };
 	
 // Implementation of inline functions

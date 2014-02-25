@@ -63,8 +63,6 @@ protected:
     // Update of internal propeperties
     virtual void UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubleSpinBox *doubleSpinBoxWidget,
                                                                 const QMetaProperty& curProperty);
-	virtual void OnPropertiesChangedFromExternalSource() {};
-
 private slots:
     // Use this slot to update value on Value Spin according to slider position
     void OnSliderValueChanged(int);

@@ -369,7 +369,7 @@ void UITextFieldAndroid::CloseKeyboard()
 	jniTextField.CloseKeyboard();
 }
 
-void UITextFieldAndroid::GetText(WideString & string) const
+void UITextFieldAndroid::GetText(WideString & string)
 {
 	string = text;
 }
@@ -429,14 +429,6 @@ void UITextFieldAndroid::HideField()
 {
 	JniTextField jniTextField(id);
 	jniTextField.HideField();
-}
-
-void UITextFieldAndroid::SetVisible(bool isVisible)
-{
-	if (isVisible)
-		ShowField();
-	else
-		HideField();
 }
 
 void UITextFieldAndroid::SetIsPassword(bool isPassword)

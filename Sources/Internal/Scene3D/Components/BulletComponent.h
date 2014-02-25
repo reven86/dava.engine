@@ -34,7 +34,6 @@
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -53,8 +52,8 @@ public:
 	BaseObject * GetBulletObject();
 
 	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+	virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
+	virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
 
 private:
 	BaseObject * bulletObject;

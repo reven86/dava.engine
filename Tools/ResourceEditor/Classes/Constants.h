@@ -102,7 +102,7 @@ enum eEditActions
 	EDIT_COUNT
 };
 
-// list: ["No Collision", "Tree", "Bush", "Fragile Proj", "Fragile ^Proj", "Falling", "Building", "Invisible Wall", "Speed Tree"]
+// list: ["No Collision", "Tree", "Bush", "Fragile Proj", "Fragile ^Proj", "Falling", "Building", "Invisible Wall"]
 enum eSceneObjectType
 {
 	ESOT_NONE = -1,
@@ -114,7 +114,6 @@ enum eSceneObjectType
 	ESOT_FALLING,
 	ESOT_BUILDING,
 	ESOT_INVISIBLE_WALL,
-    ESOT_SPEED_TREE,
 
 	ESOT_COUNT
 };

@@ -32,35 +32,33 @@
 
 #include "QtPropertyItemDelegate.h"
 #include "QtPropertyModel.h"
-#include "QtPropertyData.h"
+#include "QtPropertyItem.h"
+#include "QtPropertyWidgets/QtColorLineEdit.h"
 
-QtPropertyItemDelegate::QtPropertyItemDelegate(QtPropertyModel *_model, QWidget *parent /* = 0 */)
+QtPropertyItemDelegate::QtPropertyItemDelegate(QWidget *parent /* = 0 */)
 	: QStyledItemDelegate(parent)
-	, model(_model)
-	, lastHoverData(NULL)
-{ }
+{
+	childWidgetsStyle = new QWindowsStyle();
+}
 
 QtPropertyItemDelegate::~QtPropertyItemDelegate()
-{ }
+{
+	delete childWidgetsStyle;
+}
 
 void QtPropertyItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	QStyleOptionViewItemV4 opt = option;
 	initStyleOption(&opt, index);
 
-	// data
 	if(index.column() == 1)
 	{
 		opt.textElideMode = Qt::ElideLeft;
-		drawOptionalButtons(painter, opt, index, NORMAL);
 	}
+
+	recalcOptionalWidgets(index, &opt);
 
 	QStyledItemDelegate::paint(painter, opt, index);
-
-	if(index.column() == 1)
-	{
-		drawOptionalButtons(painter, opt, index, OVERLAYED);
-	}
 }
 
 QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -72,34 +70,51 @@ QSize QtPropertyItemDelegate::sizeHint(const QStyleOptionViewItem &option, const
 QWidget* QtPropertyItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
 	QWidget* editWidget = NULL;
+	QtPropertyData* data = index.data(QtPropertyItem::PropertyDataRole).value<QtPropertyData*>();
+	
+	recalcOptionalWidgets(index, (QStyleOptionViewItem *) &option);
 
-	if(model == index.model())
+	if(NULL != data)
 	{
-		QtPropertyData* data = model->itemFromIndex(index);
+		editWidget = data->CreateEditor(parent, option);
+	}
 
-		if(NULL != data)
-		{
-			editWidget = data->CreateEditor(parent, option);
-		}
-
-        // if widget wasn't created and it isn't checkable
-        // let base class create editor
-		if(NULL == editWidget && !data->IsCheckable())
-		{
-			editWidget = QStyledItemDelegate::createEditor(parent, option, index);
-		}
+	if(NULL == editWidget)
+	{
+		editWidget = QStyledItemDelegate::createEditor(parent, option, index);
 	}
 
     return editWidget;
+}
+
+bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
+{
+	bool ret = QStyledItemDelegate::editorEvent(event, model, option, index);
+
+	const QtPropertyModel *propertyModel = dynamic_cast<const QtPropertyModel *>(index.model());
+	if(NULL != propertyModel)
+	{
+		QtPropertyItem* item = (QtPropertyItem*) propertyModel->itemFromIndex(index);
+		QtPropertyData* data = item->GetPropertyData();
+
+		if(NULL != data && NULL != item && item->isCheckable())
+		{
+			data->SetValue((item->checkState() == Qt::Checked), QtPropertyData::VALUE_EDITED);
+		}
+	}
+
+	return ret;
 }
 
 void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
 	bool doneByInternalEditor = false;
 
-	if(model == index.model())
+    const QtPropertyModel *propertyModel = dynamic_cast<const QtPropertyModel *>(index.model());
+	if(NULL != propertyModel)
 	{
-		QtPropertyData* data = model->itemFromIndex(index);
+		QtPropertyItem* item = (QtPropertyItem*) propertyModel->itemFromIndex(index);
+		QtPropertyData* data = item->GetPropertyData();
 		if(NULL != data)
 		{
             doneByInternalEditor = data->SetEditorData(editor);
@@ -112,36 +127,24 @@ void QtPropertyItemDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 	}
 }
 
-bool QtPropertyItemDelegate::editorEvent(QEvent * event, QAbstractItemModel * _model, const QStyleOptionViewItem & option, const QModelIndex & index)
-{
-	if(event->type() == QEvent::MouseMove)
-	{
-		QtPropertyData* data = model->itemFromIndex(index);
-		if(data != lastHoverData)
-		{
-			showButtons(data);
-		}
-	}
-
-	return QStyledItemDelegate::editorEvent(event, model, option, index);
-}
-
-void QtPropertyItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *_model, const QModelIndex &index) const
+void QtPropertyItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
 	bool doneByInternalEditor = false;
 
-	if(model == _model)
+    const QtPropertyModel *propertyModel = dynamic_cast<const QtPropertyModel *>(index.model());
+	if(NULL != propertyModel)
 	{
-		QtPropertyData* data = model->itemFromIndex(index);
+		QtPropertyItem* item = (QtPropertyItem*) propertyModel->itemFromIndex(index);
+		QtPropertyData* data = item->GetPropertyData();
 		if(NULL != data)
 		{
-			doneByInternalEditor = data->EditorDone(editor);
+            doneByInternalEditor = data->EditorDone(editor);
 		}
 	}
 
 	if(!doneByInternalEditor)
 	{
-	    QStyledItemDelegate::setModelData(editor, _model, index);
+	    QStyledItemDelegate::setModelData(editor, model, index);
 	}
 }
 
@@ -155,6 +158,7 @@ void QtPropertyItemDelegate::updateEditorGeometry(QWidget * editor, const QStyle
 		editor->setObjectName("customPropertyEditor");
 		editor->setStyleSheet("#customPropertyEditor{ border: 1px solid gray; }");
 		QRect r = option.rect;
+		//r.adjust(2, -1, 0, 1);
 
 		if(!index.model()->data(index, Qt::DecorationRole).isNull())
 		{
@@ -191,84 +195,97 @@ bool QtPropertyItemDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * v
 	return false;
 }
 
-void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index, OptionalButtonsType type) const
+void QtPropertyItemDelegate::recalcOptionalWidgets(const QModelIndex &index, QStyleOptionViewItem *option) const
 {
-	QtPropertyData* data = model->itemFromIndex(index);
-	if(index.column() == 1 && NULL != data && data->GetButtonsCount() > 0)
+	QtPropertyData* data = index.data(QtPropertyItem::PropertyDataRole).value<QtPropertyData*>();
+
+	if(NULL != data)
 	{
+		QWidget *owViewport = data->GetOWViewport();
+
+		int prevOWSpace = 0;
 		int owSpacing = 1;
-		int owXPos = opt.rect.right() - owSpacing;
-		int owYPos;
+		int optionRectRight = option->rect.right();
 
-		// draw not overlaid widgets
-		for(int i = data->GetButtonsCount() - 1; i >= 0; --i)
+		int owCount = data->GetOWCount();
+		for (int i = (owCount - 1); i >= 0; --i)
 		{
-			QtPropertyToolButton *btn = data->GetButton(i);
-			if((type == NORMAL && !btn->overlayed) || (type == OVERLAYED && btn->overlayed))
+			const QtPropertyOW *ow = data->GetOW(i);
+			if(NULL != ow && NULL != owViewport && NULL != ow->widget)
 			{
-				// update widget height
-				if(btn->height() != opt.rect.height())
-				{
-					QRect geom = btn->geometry();
-					geom.setHeight(opt.rect.height());
-					btn->setGeometry(geom);
-				}
+				QWidget *owWidget = ow->widget;
+				int owWidth = ow->size.width();
 
-				owXPos -= btn->width();
-				owYPos = opt.rect.y() + (opt.rect.height() - btn->height()) / 2;
-
-				if(btn->isVisible())
+				if(0 != owWidth)
 				{
-					btn->move(owXPos, owYPos);
+					QRect owRect = option->rect;
+					owRect.setLeft(optionRectRight - owWidth - prevOWSpace);
+					owRect.setRight(owRect.left() + owWidth);
+
+					if(owWidget->style() != childWidgetsStyle)
+					{
+						owWidget->setStyle(childWidgetsStyle);
+					}
+
+					owWidget->setGeometry(owRect);
+					owWidget->show();
+
+					// if this widget isn't overlayed we should modify rect for tree view cell to be drawn in.
+					if(!ow->overlay)
+					{
+						option->rect.setRight(owRect.left());
+					}
+
+					prevOWSpace += (owWidth + owSpacing);
 				}
 				else
 				{
-					QPixmap pix = QPixmap::grabWidget(btn);
-					painter->drawPixmap(owXPos, owYPos, pix);
+					owWidget->hide();
 				}
-
-				owXPos -= owSpacing;
-			}
-		}
-
-		if(type == NORMAL)
-		{
-			opt.rect.setRight(owXPos);
-		}
-	}
-}
-
-void QtPropertyItemDelegate::showButtons(QtPropertyData *data)
-{
-	showOptionalButtons(lastHoverData, false);
-	showOptionalButtons(data, true);
-
-	lastHoverData = data;
-}
-
-void QtPropertyItemDelegate::showOptionalButtons(QtPropertyData *data, bool show)
-{
-	if(NULL != data)
-	{
-		for(int i = 0; i < data->GetButtonsCount(); ++i)
-		{
-			if(show)
-			{
-				data->GetButton(i)->show();
-			}
-			else
-			{
-				data->GetButton(i)->hide();
 			}
 		}
 	}
 }
 
-void QtPropertyItemDelegate::invalidateButtons()
+void QtPropertyItemDelegate::collapse(const QModelIndex & collapse_index)
 {
-	if(NULL != lastHoverData)
+	// hide all optional widgets from child
+	// they will be shown after expanding them and on first paint call
+	if(collapse_index.isValid())
 	{
-		showOptionalButtons(lastHoverData, false);
-		lastHoverData = NULL;
+		const QAbstractItemModel *model = collapse_index.model();
+
+		if(NULL != model)
+		{
+			// go thought columns and hide OW in each cell PropertyData
+			for (int c = 0; c < model->columnCount(); c++)
+			{
+				QModelIndex cellIndex = model->index(collapse_index.row(), c, collapse_index.parent());
+				QtPropertyData* cellData = cellIndex.data(QtPropertyItem::PropertyDataRole).value<QtPropertyData*>();
+				if(NULL != cellData)
+				{
+					hideAllChildOptionalWidgets(cellData);
+				}
+			}
+		}
+	}
+}
+
+void QtPropertyItemDelegate::expand(const QModelIndex & index)
+{ }
+
+void QtPropertyItemDelegate::hideAllChildOptionalWidgets(QtPropertyData* data)
+{
+	for(int i = 0; i < data->ChildCount(); i++)
+	{
+		QPair<QString, QtPropertyData *> childPair = data->ChildGet(i);
+		QtPropertyData *childData = childPair.second;
+
+		for (int j = 0; j < childData->GetOWCount(); j++)
+		{
+			childData->GetOW(j)->widget->hide();
+		}
+
+		hideAllChildOptionalWidgets(childData);
 	}
 }

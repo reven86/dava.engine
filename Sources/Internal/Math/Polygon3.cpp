@@ -73,7 +73,6 @@ void Polygon3::ClipByPlane(const Plane & plane)
 		}
 	}
 	points.clear();
-    points.reserve(count);
 	for (int32 i = 0; i < count; ++i)
 		points.push_back(resultVector[i]);
 }

@@ -26,7 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-/*
+
+
 #include "QtPropertyItem.h"
 #include "QtPropertyData.h"
 #include "QtPropertyModel.h"
@@ -274,11 +275,10 @@ void QtPropertyItem::DataValueChanged(QtPropertyData::ValueChangeReason reason)
 	if(reason == QtPropertyData::VALUE_EDITED)
 	{
 		QtPropertyModel *propModel = (QtPropertyModel *) model();
-		propModel->EmitDataEdited(QtPropertyRow(this->parentName, this));
+		propModel->EmitDataEdited(this);
 	}
 	else
 	{
 		emitDataChanged();
 	}
 }
-*/

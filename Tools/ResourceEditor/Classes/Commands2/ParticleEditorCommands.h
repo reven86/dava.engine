@@ -86,7 +86,6 @@ public:
 	virtual void Redo();
 
 	ParticleLayer* GetCreatedLayer() const {return createdLayer;};
-	ParticleEmitter *GetParentEmitter() const {return selectedEmitter;}
 
 protected:
 	ParticleEmitter* selectedEmitter;
@@ -97,35 +96,21 @@ protected:
 class CommandRemoveParticleEmitterLayer: public CommandAction
 {
 public:
-	CommandRemoveParticleEmitterLayer(ParticleEmitter *emitter, ParticleLayer* layer);
+	CommandRemoveParticleEmitterLayer(ParticleLayer* layer);
 	virtual void Redo();
 
 protected:
-	ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
-};
-
-class CommandRemoveParticleEmitter: public CommandAction
-{
-public:
-	CommandRemoveParticleEmitter(ParticleEffectComponent *effect, ParticleEmitter* emitter);
-	virtual void Redo();
-
-protected:
-	ParticleEffectComponent* selectedEffect;
-	ParticleEmitter *selectedEmitter;
-	
 };
 
 // Clone a layer inside Particle Emitter.
 class CommandCloneParticleEmitterLayer: public CommandAction
 {
 public:
-	CommandCloneParticleEmitterLayer(ParticleEmitter *emitter, ParticleLayer* layer);
+	CommandCloneParticleEmitterLayer(ParticleLayer* layer);
 	virtual void Redo();
 	
 protected:
-	ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
 };
 
@@ -169,15 +154,14 @@ class CommandUpdateEmitter: public CommandAction
 {
 public:
 	CommandUpdateEmitter(ParticleEmitter* emitter);
-	void Init(const FastName& name,
-			  const Vector3& position,
-			  ParticleEmitter::eType emitterType,
+	void Init(ParticleEmitter::eType emitterType,
 			  RefPtr<PropertyLine<float32> > emissionRange,
 			  RefPtr<PropertyLine<Vector3> > emissionVector,
 			  RefPtr<PropertyLine<float32> > radius,
 			  RefPtr<PropertyLine<Color> > colorOverLife,
 			  RefPtr<PropertyLine<Vector3> > size,
-			  float32 life,			  
+			  float32 life,
+			  float32 playbackSpeed,
 			  bool isShortEffect);
 
 	ParticleEmitter* GetEmitter() const {return emitter;};
@@ -185,8 +169,6 @@ public:
 	virtual void Redo();
 
 protected:
-	FastName name;
-	Vector3 position;
 	ParticleEmitter* emitter;
 
 	ParticleEmitter::eType emitterType;
@@ -195,7 +177,8 @@ protected:
 	RefPtr<PropertyLine<float32> > radius;
 	RefPtr<PropertyLine<Color> > colorOverLife;
 	RefPtr<PropertyLine<Vector3> > size;
-	float32 life;	
+	float32 life;
+	float32 playbackSpeed;
 	bool isShortEffect;
 };
 
@@ -360,7 +343,8 @@ class CommandUpdateParticleForce: public CommandAction
 public:
 	CommandUpdateParticleForce(ParticleLayer* layer, uint32 forceId);
 	
-	void Init(RefPtr< PropertyLine<Vector3> > force,			  
+	void Init(RefPtr< PropertyLine<Vector3> > force,
+			  RefPtr< PropertyLine<Vector3> > forcesVariation,
 			  RefPtr< PropertyLine<float32> > forcesOverLife);
 	
 	virtual void Redo();
@@ -372,7 +356,8 @@ protected:
 	ParticleLayer* layer;
 	uint32 forceId;
 	
-	RefPtr< PropertyLine<Vector3> > force;	
+	RefPtr< PropertyLine<Vector3> > force;
+	RefPtr< PropertyLine<Vector3> > forcesVariation;
 	RefPtr< PropertyLine<float32> > forcesOverLife;
 };
 

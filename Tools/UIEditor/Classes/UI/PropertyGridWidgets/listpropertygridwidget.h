@@ -60,7 +60,6 @@ protected:
     virtual void ProcessComboboxValueChanged(QComboBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter,
                                              const QString& value);
     virtual void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
-	virtual void OnPropertiesChangedFromExternalSource() {};
 
     // Handler for the custom combobox values.
     void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);

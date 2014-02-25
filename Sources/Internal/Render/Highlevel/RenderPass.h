@@ -33,39 +33,29 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/RenderFastNames.h"
 
 namespace DAVA
 {
-class RenderPassBatchArray;
+//class RenderLayer;
 class Camera;
-
 class RenderPass
 {
 public:
-    RenderPass(RenderSystem * renderSystem, const FastName & name, RenderPassID id);
+    RenderPass(const FastName & name);
     virtual ~RenderPass();
     
-    void InitDefaultLayers();
+    const FastName & GetName();
     
-    inline RenderPassID GetRenderPassID() const;
-    inline const FastName & GetName() const;
-    
-	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
-	void RemoveRenderLayer(RenderLayer * layer);
-
-    virtual void Draw(Camera * camera, RenderPassBatchArray * renderBatchArray);
-    
-    inline uint32 GetRenderLayerCount() const;
-    inline RenderLayer * GetRenderLayer(uint32 index) const;
-    
+    virtual void Draw(Camera * camera);
     
 protected:
-    // TODO: add StaticVector container
     Vector<RenderLayer*> renderLayers;
-    RenderSystem * renderSystem;
     FastName name;
-    RenderPassID id;
+
+private:
+	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
+	void RemoveRenderLayer(RenderLayer * layer);
+	
 
 public:
     
@@ -76,28 +66,7 @@ public:
 
 	friend class RenderSystem;
 };
-
-inline RenderPassID RenderPass::GetRenderPassID() const
-{
-    return id;
-}
-
-inline const FastName & RenderPass::GetName() const
-{
-    return name;
-}
-
-inline uint32 RenderPass::GetRenderLayerCount() const
-{
-    return (uint32)renderLayers.size();
-}
     
-inline RenderLayer * RenderPass::GetRenderLayer(uint32 index) const
-{
-    return renderLayers[index];
-}
-
-
 } // ns
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */

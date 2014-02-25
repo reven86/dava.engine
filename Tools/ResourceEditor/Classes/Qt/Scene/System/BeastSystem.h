@@ -31,10 +31,9 @@
 #ifndef __BEASTSYSTEM_H__
 #define __BEASTSYSTEM_H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
-
-using namespace DAVA;
+#include "EditorScene.h"
 
 class BeastSystem: public DAVA::SceneSystem
 {
@@ -44,7 +43,7 @@ public:
 	BeastSystem(Scene* scene);
 	~BeastSystem();
 
-    void static SetDefaultPropertyValues(Entity * entity);
+	void static SetDefaultPropertyValues(Entity * entity);
 	
 	void AddEntity(Entity * entity);
 
@@ -53,6 +52,9 @@ private:
 	static void SetBool(KeyedArchive* propertyList, const String & key, bool value);
 	static void SetFloat(KeyedArchive* propertyList, const String & key, float32 value);
 	static void SetInt32(KeyedArchive* propertyList, const String & key, int32 value);
+    
+    void RemoveBeastSettings(DAVA::Entity *entity) const;
+    
 };
 
 

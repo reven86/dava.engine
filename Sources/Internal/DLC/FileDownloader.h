@@ -39,7 +39,7 @@ namespace DAVA
 {
 
 class File;
-typedef void DCURL;
+typedef void CURL;
 
 
 class FileDownloaderDelegate
@@ -111,7 +111,7 @@ protected:
     
     static bool isCURLInit;
 
-    virtual DCURL * GetCurlHandler() const;
+    virtual CURL * GetCurlHandler() const;
 
     enum FdState
     {
@@ -132,7 +132,7 @@ private:
     
     FdState state;
     bool isPauseChangeApplied;
-    DCURL *curl_handle;
+    CURL *curl_handle;
 };
 
 }

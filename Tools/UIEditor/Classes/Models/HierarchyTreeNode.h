@@ -35,7 +35,6 @@
 #include <set>
 #include "DAVAEngine.h"
 #include <QString>
-#include <QRegExp>
 #include "HierarchyTreeNodeExtraData.h"
 
 using namespace DAVA;
@@ -126,9 +125,6 @@ public:
 	static AlignData SaveAlignData(UIControl* uiControl);
 	static void RestoreAlignData(UIControl* uiControl, const AlignData& alignData);
 
-    // Get a regexp for name
-    static const QRegExp& GetNameRegExp();
-
 protected:
 	HIERARCHYTREENODEID id;
 	
@@ -151,8 +147,6 @@ protected:
 
 	bool marked;
 	int32 unsavedChangesCounter;
-    
-    static const QRegExp nameRegExp;
 };
 
 

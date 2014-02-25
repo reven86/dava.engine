@@ -67,17 +67,6 @@ MoveHood::MoveHood() : HoodObject(4.0f)
 	
 	axisYZ2 = CreateLine(DAVA::Vector3(0, 0, c), DAVA::Vector3(0, c, c));
 	axisYZ2->axis = ST_AXIS_YZ;
-	
-	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
-	DAVA::RenderStateData hoodStateData;
-	memcpy(&hoodStateData, &default3dState, sizeof(hoodStateData));
-	
-	hoodStateData.state =	DAVA::RenderStateData::STATE_BLEND |
-							DAVA::RenderStateData::STATE_COLORMASK_ALL |
-							DAVA::RenderStateData::STATE_DEPTH_WRITE;
-	hoodStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
-	hoodStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
-	hoodDrawState = DAVA::RenderManager::Instance()->CreateRenderState(hoodStateData);
 }
 
 MoveHood::~MoveHood()
@@ -87,6 +76,13 @@ MoveHood::~MoveHood()
 
 void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem *textDrawSystem)
 {
+	int oldState = DAVA::RenderManager::Instance()->GetState();
+	DAVA::eBlendMode oldBlendSrc = DAVA::RenderManager::Instance()->GetSrcBlend();
+	DAVA::eBlendMode oldBlendDst = DAVA::RenderManager::Instance()->GetDestBlend();
+
+	DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::STATE_BLEND | DAVA::RenderState::STATE_COLORMASK_ALL | DAVA::RenderState::STATE_DEPTH_WRITE);
+	DAVA::RenderManager::Instance()->SetBlendMode(DAVA::BLEND_SRC_ALPHA, DAVA::BLEND_ONE_MINUS_SRC_ALPHA);
+
 	DAVA::Color colorSBlend(colorS.r, colorS.g, colorS.b, 0.3f);
 	DAVA::Vector3 curPos = axisX->curPos;
 
@@ -96,7 +92,7 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 	else 
 		DAVA::RenderManager::Instance()->SetColor(colorX);
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo, 1.0f, hoodDrawState);
+	DAVA::RenderHelper::Instance()->DrawLine(axisX->curFrom, axisX->curTo);
 	
 	// y
 	if(selectedAxis & ST_AXIS_Y) 
@@ -104,7 +100,7 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 	else 
 		DAVA::RenderManager::Instance()->SetColor(colorY);
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisY->curFrom, axisY->curTo, 1.0f, hoodDrawState);
+	DAVA::RenderHelper::Instance()->DrawLine(axisY->curFrom, axisY->curTo);
 
 	// z
 	if(selectedAxis & ST_AXIS_Z) 
@@ -112,30 +108,30 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 	else 
 		DAVA::RenderManager::Instance()->SetColor(colorZ);
 
-	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo, 1.0f, hoodDrawState);
+	DAVA::RenderHelper::Instance()->DrawLine(axisZ->curFrom, axisZ->curTo);
 
 	// arrow length
 	DAVA::float32 arrowLen = axisX->curScale * baseSize / 4;
 
 	// arrow x
 	DAVA::RenderManager::Instance()->SetColor(colorX);
-	DAVA::RenderHelper::Instance()->FillArrow(axisX->curFrom, axisX->curTo, arrowLen, 0, hoodDrawState);
+	DAVA::RenderHelper::Instance()->FillArrow(axisX->curFrom, axisX->curTo, arrowLen, 0);
 
 	// arrow y
 	DAVA::RenderManager::Instance()->SetColor(colorY);
-	DAVA::RenderHelper::Instance()->FillArrow(axisY->curFrom, axisY->curTo, arrowLen, 0, hoodDrawState);
+	DAVA::RenderHelper::Instance()->FillArrow(axisY->curFrom, axisY->curTo, arrowLen, 0);
 
 	// arrow z
 	DAVA::RenderManager::Instance()->SetColor(colorZ);
-	DAVA::RenderHelper::Instance()->FillArrow(axisZ->curFrom, axisZ->curTo, arrowLen, 0, hoodDrawState);
+	DAVA::RenderHelper::Instance()->FillArrow(axisZ->curFrom, axisZ->curTo, arrowLen, 0);
 
 
 	// xy
 	if(selectedAxis == ST_AXIS_XY) 
 	{
 		DAVA::RenderManager::Instance()->SetColor(colorS);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXY1->curFrom, axisXY1->curTo, 1.0f, hoodDrawState);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXY2->curFrom, axisXY2->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXY1->curFrom, axisXY1->curTo);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXY2->curFrom, axisXY2->curTo);
 
 		DAVA::Polygon3 poly;
 		poly.AddPoint(curPos);
@@ -143,22 +139,22 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 		poly.AddPoint(axisXY1->curTo);
 		poly.AddPoint(axisXY2->curFrom);
 		DAVA::RenderManager::Instance()->SetColor(colorSBlend);
-		DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
+		DAVA::RenderHelper::Instance()->FillPolygon(poly);
 	}
 	else 
 	{
 		DAVA::RenderManager::Instance()->SetColor(colorX);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXY1->curFrom, axisXY1->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXY1->curFrom, axisXY1->curTo);
 		DAVA::RenderManager::Instance()->SetColor(colorY);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXY2->curFrom, axisXY2->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXY2->curFrom, axisXY2->curTo);
 	}
 
 	// xz
 	if(selectedAxis == ST_AXIS_XZ) 
 	{
 		DAVA::RenderManager::Instance()->SetColor(colorS);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXZ1->curFrom, axisXZ1->curTo, 1.0f, hoodDrawState);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXZ2->curFrom, axisXZ2->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXZ1->curFrom, axisXZ1->curTo);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXZ2->curFrom, axisXZ2->curTo);
 
 		DAVA::Polygon3 poly;
 		poly.AddPoint(curPos);
@@ -166,22 +162,22 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 		poly.AddPoint(axisXZ1->curTo);
 		poly.AddPoint(axisXZ2->curFrom);
 		DAVA::RenderManager::Instance()->SetColor(colorSBlend);
-		DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
+		DAVA::RenderHelper::Instance()->FillPolygon(poly);
 	}
 	else 
 	{
 		DAVA::RenderManager::Instance()->SetColor(colorX);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXZ1->curFrom, axisXZ1->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXZ1->curFrom, axisXZ1->curTo);
 		DAVA::RenderManager::Instance()->SetColor(colorZ);
-		DAVA::RenderHelper::Instance()->DrawLine(axisXZ2->curFrom, axisXZ2->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisXZ2->curFrom, axisXZ2->curTo);
 	}
 
 	// yz
 	if(selectedAxis == ST_AXIS_YZ) 
 	{
 		DAVA::RenderManager::Instance()->SetColor(colorS);
-		DAVA::RenderHelper::Instance()->DrawLine(axisYZ1->curFrom, axisYZ1->curTo, 1.0f, hoodDrawState);
-		DAVA::RenderHelper::Instance()->DrawLine(axisYZ2->curFrom, axisYZ2->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisYZ1->curFrom, axisYZ1->curTo);
+		DAVA::RenderHelper::Instance()->DrawLine(axisYZ2->curFrom, axisYZ2->curTo);
 
 		DAVA::Polygon3 poly;
 		poly.AddPoint(curPos);
@@ -189,14 +185,14 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 		poly.AddPoint(axisYZ1->curTo);
 		poly.AddPoint(axisYZ2->curFrom);
 		DAVA::RenderManager::Instance()->SetColor(colorSBlend);
-		DAVA::RenderHelper::Instance()->FillPolygon(poly, hoodDrawState);
+		DAVA::RenderHelper::Instance()->FillPolygon(poly);
 	}
 	else 
 	{
 		DAVA::RenderManager::Instance()->SetColor(colorY);
-		DAVA::RenderHelper::Instance()->DrawLine(axisYZ1->curFrom, axisYZ1->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisYZ1->curFrom, axisYZ1->curTo);
 		DAVA::RenderManager::Instance()->SetColor(colorZ);
-		DAVA::RenderHelper::Instance()->DrawLine(axisYZ2->curFrom, axisYZ2->curTo, 1.0f, hoodDrawState);
+		DAVA::RenderHelper::Instance()->DrawLine(axisYZ2->curFrom, axisYZ2->curTo);
 	}
 
 	DAVA::Rect r = DrawAxisText(textDrawSystem, axisX, axisY, axisZ);
@@ -210,6 +206,6 @@ void MoveHood::Draw(ST_Axis selectedAxis, ST_Axis mouseOverAxis, TextDrawSystem 
 		textDrawSystem->DrawText(topPos, tmp, DAVA::Color(255, 255, 0, 255));
 	}
 
-	//DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
-	//DAVA::RenderManager::Instance()->SetState(oldState);
+	DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
+	DAVA::RenderManager::Instance()->SetState(oldState);
 }

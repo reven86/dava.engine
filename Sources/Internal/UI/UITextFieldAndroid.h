@@ -88,7 +88,7 @@ public:
 
 	void OpenKeyboard();
 	void CloseKeyboard();
-	void GetText(WideString & string) const;
+	void GetText(WideString & string);
 	void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect);
 
@@ -100,7 +100,6 @@ public:
 
 	void ShowField();
 	void HideField();
-	void SetVisible(bool isVisible);
 
 	void SetIsPassword(bool isPassword);
 

@@ -40,8 +40,6 @@
 
 namespace DAVA
 {
-	
-const FastName SoundSystem::SOUND_GROUP_FX = FastName("FX");
 
 SoundSystem::SoundSystem(int32 maxChannels)
 {
@@ -53,12 +51,12 @@ SoundSystem::SoundSystem(int32 maxChannels)
 
 SoundSystem::~SoundSystem()
 {
-	for(FastNameMap<SoundGroup*>::iterator it = soundGroups.begin(); it != soundGroups.end(); ++it)
+	for(FastNameMap<SoundGroup*>::Iterator it = soundGroups.Begin(); it != soundGroups.End(); ++it)
 	{
-		SoundGroup * soundGroup = it->second;
+        SoundGroup * soundGroup = it.GetValue();
 		SafeRelease(soundGroup);
 	}
-    soundGroups.clear();
+    soundGroups.Clear();
 
 	FMOD_VERIFY(fmodEventSystem->release());
 }
@@ -94,15 +92,13 @@ void SoundSystem::Update()
 
 void SoundSystem::Suspend()
 {
-	/*
 #ifdef __DAVAENGINE_ANDROID__
-	for(FastNameMap<SoundGroup*>::iterator it = soundGroups.begin(); it != soundGroups.end(); ++it)
+	for(FastNameMap<SoundGroup*>::Iterator it = soundGroups.Begin(); it != soundGroups.End(); ++it)
 	{
 		SoundGroup * soundGroup = it.GetValue();
 		soundGroup->Stop();
 	}
 #endif
-*/
 }
 
 void SoundSystem::Resume()
@@ -132,7 +128,7 @@ void SoundSystem::SetListenerOrientation(const Vector3 & at, const Vector3 & lef
 
 SoundGroup * SoundSystem::GetSoundGroup(const FastName & groupName)
 {
-	if(soundGroups.count(groupName))
+	if(soundGroups.IsKey(groupName))
 		return soundGroups[groupName];
     else
         return 0;
@@ -141,7 +137,7 @@ SoundGroup * SoundSystem::GetSoundGroup(const FastName & groupName)
 SoundGroup * SoundSystem::CreateSoundGroup(const FastName & groupName)
 {
 	SoundGroup * group = 0;
-	if(soundGroups.count(groupName))
+	if(soundGroups.IsKey(groupName))
 	{
 		group = soundGroups[groupName];
 	}

@@ -1,6 +1,5 @@
 /*==================================================================================
-
-Copyright (c) 2008, binaryzebra
+    Copyright (c) 2008, binaryzebra
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -45,26 +44,13 @@ public:
 	virtual void Redo();
 	virtual DAVA::Entity* GetEntity() const;
     
-    static void DrawToTexture(DAVA::Entity * entity, DAVA::Camera * camera, DAVA::Texture * toTexture, DAVA::int32 fromLodLayer = -1, const DAVA::Rect & viewport = DAVA::Rect(0, 0, -1, -1), bool clearTarget = true);
+    DAVA::Entity * CreatePlaneEntity(DAVA::Entity * fromEntity);
 
-    DAVA::RenderBatch * GetRenderBatch() const;
-    
+    static void DrawToTexture(DAVA::Entity * entity, DAVA::Camera * camera, DAVA::Texture * toTexture, const DAVA::Rect & viewport = DAVA::Rect(0, 0, -1, -1), bool clearTarget = true);
+
 protected:
-
-    void CreatePlaneImage();
-    void CreatePlaneBatch();
-
-    void CreateTextureFiles();
-    void DeleteTextureFiles();
-    
     DAVA::LodComponent * lodComponent;
-    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
-    
-    DAVA::RenderBatch * planeBatch;
-    DAVA::Image *planeImage;
-    
-    DAVA::int32 newLodIndex;
-    DAVA::int32 newSwitchIndex;
+    DAVA::LodComponent::LodData * lodData;
 
     DAVA::int32 fromLodLayer;
     DAVA::uint32 textureSize;

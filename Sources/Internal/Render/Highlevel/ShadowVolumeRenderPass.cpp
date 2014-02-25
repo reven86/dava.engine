@@ -31,40 +31,15 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/ShadowRect.h"
-#include "Render/Highlevel/RenderBatchArray.h"
 
 namespace DAVA
 {
     
-ShadowVolumeRenderPass::ShadowVolumeRenderPass(RenderSystem * rs, const FastName & _name, RenderPassID id)
-    :   RenderPass(rs, _name, id)
+ShadowVolumeRenderPass::ShadowVolumeRenderPass(const FastName & _name)
+    :   RenderPass(_name)
 {
     shadowRect = ShadowRect::Create();
-	blendMode = ShadowPassBlendMode::MODE_BLEND_ALPHA;
-	
-	RenderStateData stateData;
-	
-	stateData.state =	RenderStateData::STATE_BLEND |
-						RenderStateData::STATE_STENCIL_TEST |
-						RenderStateData::STATE_COLORMASK_ALL;
-	stateData.sourceFactor = BLEND_DST_COLOR;
-	stateData.destFactor = BLEND_ZERO;
-	stateData.depthFunc = CMP_LEQUAL;
-	stateData.cullMode = FACE_BACK;
-	stateData.fillMode = FILLMODE_SOLID;
-	stateData.stencilFail[0] = stateData.stencilFail[1] = STENCILOP_KEEP;
-	stateData.stencilPass[0] = stateData.stencilPass[1] = STENCILOP_KEEP;
-	stateData.stencilZFail[0] = stateData.stencilZFail[1] = STENCILOP_KEEP;
-	stateData.stencilFunc[0] = stateData.stencilFunc[1] = CMP_NOTEQUAL;
-	stateData.stencilMask = 15;
-	stateData.stencilRef = 0;
-	
-	blendMultiplyState = RenderManager::Instance()->CreateRenderState(stateData);
-	
-	stateData.sourceFactor = BLEND_SRC_ALPHA;
-	stateData.destFactor = BLEND_ONE_MINUS_SRC_ALPHA;
-
-	blendAlphaState = RenderManager::Instance()->CreateRenderState(stateData);
+	blendMode = MODE_BLEND_ALPHA;
 }
 
 ShadowVolumeRenderPass::~ShadowVolumeRenderPass()
@@ -72,63 +47,13 @@ ShadowVolumeRenderPass::~ShadowVolumeRenderPass()
     SafeRelease(shadowRect);
 }
 
-void ShadowVolumeRenderPass::SetBlendMode(ShadowPassBlendMode::eBlend _blendMode)
+void ShadowVolumeRenderPass::SetBlendMode(eBlend _blendMode)
 {
 	blendMode = _blendMode;
 }
 
-void ShadowVolumeRenderPass::Draw(Camera * camera, RenderPassBatchArray * renderPassBatchArray)
+void ShadowVolumeRenderPass::Draw(Camera * camera)
 {
-	RenderLayer * shadowVolumesLayer = renderLayers[0];
-    
-    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SHADOWVOLUME_DRAW))
-	{
-		RenderLayerBatchArray * renderLayerBatchArray = renderPassBatchArray->Get(shadowVolumesLayer->GetRenderLayerID());
-        if (renderLayerBatchArray)
-        {
-			//draw shadowvolumes here. Each shadow volume has special shadow material
-            shadowVolumesLayer->Draw(name, camera, renderLayerBatchArray);
-			
-			//3rd pass - draw full screen shadow rect
-			//eBlendMode sFactor = RenderManager::Instance()->GetSrcBlend();
-			//eBlendMode dFactor = RenderManager::Instance()->GetDestBlend();
-			
-			//RenderManager::Instance()->RemoveState(RenderState::STATE_CULL);
-			//RenderManager::Instance()->RemoveState(RenderState::STATE_DEPTH_TEST);
-			//RenderManager::Instance()->RemoveState(RenderState::STATE_DEPTH_WRITE);
-			
-			//RenderManager::Instance()->AppendState(RenderState::STATE_BLEND);
-			//RenderManager::Instance()->AppendState(RenderState::STATE_STENCIL_TEST);
-			
-			//RenderManager::State()->SetStencilRef(0);
-			//RenderManager::State()->SetStencilMask(0x0000000F);
-			//RenderManager::State()->SetStencilFunc(FACE_FRONT_AND_BACK, CMP_NOTEQUAL);
-			//RenderManager::State()->SetStencilPass(FACE_FRONT_AND_BACK, STENCILOP_KEEP);
-			//RenderManager::State()->SetStencilFail(FACE_FRONT_AND_BACK, STENCILOP_KEEP);
-			//RenderManager::State()->SetStencilZFail(FACE_FRONT_AND_BACK, STENCILOP_KEEP);
-			
-			RenderManager::Instance()->SetRenderState((ShadowPassBlendMode::MODE_BLEND_ALPHA == blendMode) ? blendAlphaState : blendMultiplyState);
-			
-			/*switch(blendMode)
-			{
-				case MODE_BLEND_ALPHA:
-					RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-					break;
-				case MODE_BLEND_MULTIPLY:
-					RenderManager::Instance()->SetBlendMode(BLEND_DST_COLOR, BLEND_ZERO);
-					break;
-				default:
-					break;
-			}*/
-			
-			shadowRect->Draw();
-			
-			//RenderManager::Instance()->SetBlendMode(sFactor, dFactor);
-
-        }
-	}
-	
-#if 0
     // Draw all layers with their materials
     uint32 size = (uint32)renderLayers.size();
     DVASSERT(size == 1);
@@ -194,7 +119,6 @@ void ShadowVolumeRenderPass::Draw(Camera * camera, RenderPassBatchArray * render
 
 		RenderManager::Instance()->SetBlendMode(sFactor, dFactor);
 	}
-#endif
 }
     
 ShadowRect * ShadowVolumeRenderPass::GetShadowRect() const
@@ -202,7 +126,7 @@ ShadowRect * ShadowVolumeRenderPass::GetShadowRect() const
     return shadowRect;
 }
 
-ShadowPassBlendMode::eBlend ShadowVolumeRenderPass::GetBlendMode() const
+ShadowVolumeRenderPass::eBlend ShadowVolumeRenderPass::GetBlendMode() const
 {
 	return blendMode;
 }

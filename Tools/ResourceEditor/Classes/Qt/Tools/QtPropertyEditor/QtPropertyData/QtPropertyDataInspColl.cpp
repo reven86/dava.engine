@@ -32,11 +32,11 @@
 #include "QtPropertyDataIntrospection.h"
 #include "QtPropertyDataMetaObject.h"
 
-QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspColl *_collection, bool autoAddChilds)
+QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspColl *_collection, int hasAllFlags)
 	: object(_object)
 	, collection(_collection)
 {
-	if(NULL != collection && collection->Size(object) > 0 && autoAddChilds)
+	if(NULL != collection && collection->Size(object) > 0)
 	{
 		int index = 0;
 		DAVA::MetaInfo *valueType = collection->ItemType();
@@ -50,14 +50,14 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspCo
 
 				if(NULL != itemInfo && NULL != itemObject)
 				{
-					QtPropertyData *childData = new QtPropertyDataIntrospection(itemObject, itemInfo);
+					QtPropertyData *childData = new QtPropertyDataIntrospection(itemObject, itemInfo, hasAllFlags);
 					ChildAdd(QString::number(index), childData);
 				}
 				else
 				{
 					QString s;
 					QtPropertyData* childData = new QtPropertyData(s.sprintf("[%p] Pointer", itemObject));
-					childData->SetEnabled(false);
+					childData->SetFlags(FLAG_IS_DISABLED);
 					ChildAdd(QString::number(index), childData);
 				}
 			}
@@ -72,17 +72,8 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspCo
 				{
 					QString s;
 					QtPropertyData* childData = new QtPropertyData(s.sprintf("[%p] Pointer", collection->ItemData(i)));
-					childData->SetEnabled(false);
-
-					if(collection->ItemKeyType() == DAVA::MetaInfo::Instance<DAVA::FastName>())
-					{
-						const DAVA::FastName *fname = (const DAVA::FastName *) collection->ItemKeyData(i);
-						ChildAdd(fname->operator*(), childData);
-					}
-					else
-					{
-						ChildAdd(QString::number(index), childData);
-					}
+					childData->SetFlags(FLAG_IS_DISABLED);
+					ChildAdd(QString::number(index), childData);
 				}
 			}
 
@@ -91,23 +82,13 @@ QtPropertyDataInspColl::QtPropertyDataInspColl(void *_object, const DAVA::InspCo
 		}
 	}
 
-	SetEnabled(false);
+	SetFlags(FLAG_IS_DISABLED);
 }
 
 QtPropertyDataInspColl::~QtPropertyDataInspColl()
 { }
 
-const DAVA::MetaInfo * QtPropertyDataInspColl::MetaInfo() const
-{
-	if(NULL != collection)
-	{
-		return collection->Type();
-	}
-
-	return NULL;
-}
-
-QVariant QtPropertyDataInspColl::GetValueInternal() const
+QVariant QtPropertyDataInspColl::GetValueInternal()
 {
 	return QString().sprintf("Collection, size %d", collection->Size(object));
 }

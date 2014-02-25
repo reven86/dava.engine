@@ -97,8 +97,6 @@ float GetUITextViewSizeDivider()
 		textField.delegate = self;
 		
 		[self setupTraits];
-        
-        textField.userInteractionEnabled = NO;
 		
 		// Attach to "keyboard shown/keyboard hidden" notifications.
 		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
@@ -588,14 +586,12 @@ namespace DAVA
     void UITextFieldiPhone::OpenKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder->textField.userInteractionEnabled = YES;
         [textFieldHolder->textField becomeFirstResponder];
     }
     
     void UITextFieldiPhone::CloseKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
     }
     
@@ -633,7 +629,7 @@ namespace DAVA
                                             encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease]; 
     }
 	
-    void UITextFieldiPhone::GetText(std::wstring & string) const
+    void UITextFieldiPhone::GetText(std::wstring & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         int length = [textFieldHolder->textField.text length];

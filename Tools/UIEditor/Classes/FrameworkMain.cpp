@@ -30,35 +30,49 @@
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
-#include "version.h"
-
+ 
 using namespace DAVA;
+
 
 void FrameworkDidLaunched()
 {
-    KeyedArchive * appOptions = new KeyedArchive();
+/*#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+	KeyedArchive * appOptions = new KeyedArchive();
+	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
+    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
+	
+	DAVA::Core::Instance()->SetVirtualScreenSize(960, 480);
+	DAVA::Core::Instance()->RegisterAvailableResourceSize(960, 480, "Gfx");
 
-    appOptions->SetInt32("width", 700);
-    appOptions->SetInt32("height", 500);
+#else*/
+	KeyedArchive * appOptions = new KeyedArchive();
+	
+	appOptions->SetInt32("width", 700);
+	appOptions->SetInt32("height", 500);
 
-    appOptions->SetInt32("fullscreen", 0);
-    appOptions->SetInt32("bpp", 32);
-    appOptions->SetBool("trackFont", true);
+// 	appOptions->SetInt("fullscreen.width",	1280);
+// 	appOptions->SetInt("fullscreen.height", 800);
+	
+	appOptions->SetInt32("fullscreen", 0);
+	appOptions->SetInt32("bpp", 32);
+	appOptions->SetBool("trackFont", true);
 
-    appOptions->SetString("title", DAVA::Format("DAVA Framework - UIEditor | %s-%s", DAVAENGINE_VERSION, UI_EDITOR_VERSION));
+//	DAVA::Core::Instance()->SetVirtualScreenSize(700, 500);
+//	DAVA::Core::Instance()->RegisterAvailableResourceSize(700, 500, "Gfx");
+	Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
+//#endif
 
 	// Disable sprite clipping in UIEditor
 	Sprite::SetSpriteClipping(false);
 
-    Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
-    Core::Instance()->SetOptions(appOptions);
-    Core::Instance()->EnableReloadResourceOnResize(false);
+	Core::Instance()->SetOptions(appOptions);
 
-    GameCore * core = new GameCore();
-    Core::SetApplicationCore(core);
+	GameCore * core = new GameCore();
+	Core::SetApplicationCore(core);
 }
 
-void FrameworkWillTerminate()
+
+void FrameworkWillTerminate() 
 {
     ApplicationCore* core = Core::GetApplicationCore();
     SafeRelease(core);

@@ -155,12 +155,12 @@ namespace DAVA
     	return cell;
 	}
 
-	float32 EditorListDelegate::CellHeight(UIList *, int32)
+	int32 EditorListDelegate::CellHeight(UIList *, int32)
 	{
     	return cellSize.y;
 	}
 	
-	float32 EditorListDelegate::CellWidth(UIList *, int32)
+	int32 EditorListDelegate::CellWidth(UIList *, int32)
 	{
 		return cellSize.x;
 	}

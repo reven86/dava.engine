@@ -44,7 +44,7 @@ void GridVisualizer::SetScale(float32 scale)
     curScale = scale;
 }
 
-void GridVisualizer::DrawGridIfNeeded(const Rect& rect, UniqueHandle renderState)
+void GridVisualizer::DrawGridIfNeeded(const Rect& rect)
 {
     // Grid constants.
     static const Color gridColor = Color(0.5f, 0.5f, 0.5f, 0.5f); // TODO: customize with designers.
@@ -56,5 +56,5 @@ void GridVisualizer::DrawGridIfNeeded(const Rect& rect, UniqueHandle renderState
         return;
     }
     
-    RenderHelper::Instance()->DrawGrid(rect, gridSize, gridColor, renderState);
+    RenderHelper::Instance()->DrawGrid(rect, gridSize, gridColor);
 }

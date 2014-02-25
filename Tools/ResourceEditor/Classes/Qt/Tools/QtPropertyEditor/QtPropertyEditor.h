@@ -33,9 +33,10 @@
 
 #include <QTreeView>
 #include <QTimer>
-#include "QtPropertyData.h"
-#include "QtPropertyModel.h"
 
+class QtPropertyItem;
+class QtPropertyData;
+class QtPropertyModel;
 class QtPropertyItemDelegate;
 
 class QtPropertyEditor : public QTreeView
@@ -43,47 +44,31 @@ class QtPropertyEditor : public QTreeView
 	Q_OBJECT
 
 public:
-	enum Style
-	{
-		DEFAULT_STYLE = 0,
-		HEADER_STYLE,
-
-		USER_STYLE
-	};
-
 	QtPropertyEditor(QWidget *parent = 0);
 	~QtPropertyEditor();
 
-	QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex());
-	QModelIndex InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent = QModelIndex());
-	QModelIndex AppendHeader(const QString &text);
-	QModelIndex InsertHeader(const QString &text, int row);
+	QPair<QtPropertyItem*, QtPropertyItem*> AppendProperty(const QString &name, QtPropertyData* data, QtPropertyItem* parent = NULL);
+	QPair<QtPropertyItem*, QtPropertyItem*> GetProperty(const QString &name, QtPropertyItem* parent = NULL) const;
+	QtPropertyData * GetPropertyData(const QString &key, QtPropertyItem *parent = NULL) const;
 
-	QtPropertyData * GetProperty(const QModelIndex &index) const;
-	QtPropertyData * GetRootProperty() const;
-	
-	bool GetEditTracking() const;
+	bool GetEditTracking();
 	void SetEditTracking(bool enabled);
 
-	void RemoveProperty(const QModelIndex &index);
-	void RemoveProperty(QtPropertyData* data);
+	void RemoveProperty(QtPropertyItem* item);
 	void RemovePropertyAll();
+
+	void Expand(QtPropertyItem *);
+
+	void Update();
 
 	void SetUpdateTimeout(int ms);
 	int GetUpdateTimeout();
 
-	virtual void ApplyStyle(QtPropertyData *data, int style);
-
-public slots:
-	void SetFilter(const QString &regex);
-	void Update();
-
-	void OnExpanded(const QModelIndex & index);
-	void OnCollapsed(const QModelIndex & index);
+	QtPropertyItem* AddHeader(const char *text);
 
 signals:
-	// void PropertyChanged(const QModelIndex &index); // SZ: not implemented because is never used. will be implemented on request
-	void PropertyEdited(const QModelIndex &index);
+	void PropertyChanged(const QString &name, QtPropertyData *data);
+	void PropertyEdited(const QString &name, QtPropertyData *data);
 
 protected:
 	QtPropertyModel *curModel;
@@ -93,21 +78,13 @@ protected:
 	QTimer updateTimer;
 	bool doUpdateOnPaintEvent;
 
-	virtual void leaveEvent(QEvent * event);
+	virtual void paintEvent(QPaintEvent * event);
 	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
-	
-	//virtual QtPropertyToolButton* GetButton(QMouseEvent * event);
 
 protected slots:
 	virtual void OnItemClicked(const QModelIndex &);
-	virtual void OnItemEdited(const QModelIndex &);
 	virtual void OnUpdateTimeout();
-
-	virtual void rowsAboutToBeOp(const QModelIndex & parent, int start, int end);
-	virtual void rowsOp(const QModelIndex & parent, int start, int end);
-
-private:
-	void ShowButtonsUnderCursor();
+	virtual void OnItemEdited(const QString &name, QtPropertyData *data);
 };
 
 #endif // __QT_PROPERTY_VIEW_H__

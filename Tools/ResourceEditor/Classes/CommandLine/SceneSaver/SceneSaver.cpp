@@ -29,9 +29,10 @@
 
 
 #include "SceneSaver.h"
-#include "Deprecated/SceneValidator.h"
+#include "SceneEditor/SceneValidator.h"
 
 #include "Qt/Scene/SceneHelper.h"
+#include "EditorScene.h"
 
 #include "Classes/StringConstants.h"
 #include "Classes/Qt/Main/QtUtils.h"
@@ -41,7 +42,6 @@
 using namespace DAVA;
 
 SceneSaver::SceneSaver()
-    : copyConverted(false)
 {
 }
 
@@ -61,10 +61,6 @@ void SceneSaver::SetOutFolder(const FilePath &folderPathname)
     sceneUtils.SetOutFolder(folderPathname);
 }
 
-void SceneSaver::EnableCopyConverted(bool enabled)
-{
-    copyConverted = enabled;
-}
 
 void SceneSaver::SaveFile(const String &fileName, Set<String> &errorLog)
 {
@@ -149,26 +145,25 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     SceneValidator::Instance()->ValidateScene(scene, fileName, errorLog);
 
     texturesForSave.clear();
-    SceneHelper::EnumerateSceneTextures(scene, texturesForSave);
+    SceneHelper::EnumerateTextures(scene, texturesForSave);
 
-    CopyTextures(scene);
+    CopyTextures(scene, errorLog);
 	ReleaseTextures();
 
 	Landscape *landscape = FindLandscape(scene);
     if (landscape)
     {
-        sceneUtils.AddFile(landscape->GetHeightmapPathname());
+        sceneUtils.CopyFile(landscape->GetHeightmapPathname(), errorLog);
     }
 
-	CopyReferencedObject(scene);
-	CopyEffects(scene);
+	CopyReferencedObject(scene, errorLog);
+	CopyEffects(scene, errorLog);
 	CopyCustomColorTexture(scene, fileName.GetDirectory(), errorLog);
 
     //save scene to new place
     FilePath tempSceneName = sceneUtils.dataSourceFolder + relativeFilename;
     tempSceneName.ReplaceExtension(".saved.sc2");
     
-    sceneUtils.CopyFiles(errorLog);
     scene->Save(tempSceneName, true);
 
     bool moved = FileSystem::Instance()->MoveFile(tempSceneName, sceneUtils.dataFolder + relativeFilename, true);
@@ -181,13 +176,13 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
 }
 
 
-void SceneSaver::CopyTextures(DAVA::Scene *scene)
+void SceneSaver::CopyTextures(DAVA::Scene *scene, Set<String> &errorLog)
 {
-    TexturesMap::const_iterator endIt = texturesForSave.end();
-    TexturesMap::iterator it = texturesForSave.begin();
+    Map<String, Texture *>::const_iterator endIt = texturesForSave.end();
+    Map<String, Texture *>::iterator it = texturesForSave.begin();
     for( ; it != endIt; ++it)
     {
-        CopyTexture(it->first);
+        CopyTexture(it->first, errorLog);
     }
 }
 
@@ -196,112 +191,84 @@ void SceneSaver::ReleaseTextures()
     texturesForSave.clear();
 }
 
-void SceneSaver::CopyTexture(const FilePath &texturePathname)
+void SceneSaver::CopyTexture(const FilePath &texturePathname, Set<String> &errorLog)
 {
     FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(texturePathname);
 	
 	TextureDescriptor* desc = TextureDescriptor::CreateFromFile(descriptorPathname);
-	if(!desc)
-	{
-		//errorLog.insert(Format("Can't open file %s", descriptorPathname.GetAbsolutePathname().c_str()));
-        Logger::Error("Can't open file %s", descriptorPathname.GetAbsolutePathname().c_str());
-		return;
-	}
-
-    //copy descriptor
-    sceneUtils.AddFile(descriptorPathname);
-
-    //copy source textures
 	if(desc->IsCubeMap())
 	{
-		Vector<FilePath> faceNames;
-
+		sceneUtils.CopyFile(descriptorPathname, errorLog);
+		
+		Vector<String> faceNames;
 		Texture::GenerateCubeFaceNames(descriptorPathname.GetAbsolutePathname().c_str(), faceNames);
-		for(Vector<FilePath>::iterator it = faceNames.begin();
+		for(Vector<String>::iterator it = faceNames.begin();
 			it != faceNames.end();
 			++it)
 		{
-			sceneUtils.AddFile(*it);
+			sceneUtils.CopyFile(*it, errorLog);
 		}
 	}
 	else
 	{
 		FilePath pngPathname = GPUFamilyDescriptor::CreatePathnameForGPU(texturePathname, GPU_UNKNOWN, FORMAT_RGBA8888);
-		sceneUtils.AddFile(pngPathname);
+
+		sceneUtils.CopyFile(descriptorPathname, errorLog);
+		sceneUtils.CopyFile(pngPathname, errorLog);
 	}
 	
-
-	//copy converted textures (*.pvr and *.dds)
-    if(copyConverted)
-    {
-        for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
-        {
-            eGPUFamily gpu = (eGPUFamily)i;
-            
-            PixelFormat format = desc->GetPixelFormatForCompression(gpu);
-            if(format == FORMAT_INVALID)
-            {
-                continue;
-            }
-            
-            FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(desc, gpu);
-            sceneUtils.AddFile(imagePathname);
-        }
-    }
-    
-	delete desc;
+	SafeRelease(desc);
 }
 
-void SceneSaver::CopyReferencedObject( Entity *node)
+void SceneSaver::CopyReferencedObject( Entity *node, Set<String> &errorLog )
 {
 	KeyedArchive *customProperties = node->GetCustomProperties();
 	if(customProperties && customProperties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
 	{
 		String path = customProperties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
-		sceneUtils.AddFile(path);
+		sceneUtils.CopyFile(path, errorLog);
 	}
 	for (int i = 0; i < node->GetChildrenCount(); i++)
 	{
-		CopyReferencedObject(node->GetChild(i));
+		CopyReferencedObject(node->GetChild(i), errorLog);
 	}
 }
 
-void SceneSaver::CopyEffects(Entity *node)
+void SceneSaver::CopyEffects(Entity *node, Set<String> &errorLog)
 {
-	ParticleEffectComponent *effect = GetEffectComponent(node);
-	if(effect)
+	ParticleEmitter *emitter = GetEmitter(node);
+	if(emitter)
 	{
-		for (int32 i=0, sz=effect->GetEmittersCount(); i<sz; ++i)
-			CopyEmitter(effect->GetEmitter(i));
+		CopyEmitter(emitter, errorLog);
 	}
 
 	for (int i = 0; i < node->GetChildrenCount(); ++i)
 	{
-		CopyEffects(node->GetChild(i));
+		CopyEffects(node->GetChild(i), errorLog);
 	}
 }
 
-void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
+void SceneSaver::CopyEmitter( ParticleEmitter *emitter, Set<String> &errorLog )
 {
-	sceneUtils.AddFile(emitter->configPath);
+	sceneUtils.CopyFile(emitter->GetConfigPath(), errorLog);
 
-	const Vector<ParticleLayer*> &layers = emitter->layers;
+	const Vector<ParticleLayer*> &layers = emitter->GetLayers();
 
 	uint32 count = (uint32)layers.size();
 	for(uint32 i = 0; i < count; ++i)
 	{
 		if(layers[i]->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
 		{
-			CopyEmitter(layers[i]->innerEmitter);
+			CopyEmitter(layers[i]->GetInnerEmitter(), errorLog);
 		}
 		else
 		{
-			Sprite *sprite = layers[i]->sprite;
+			Sprite *sprite = layers[i]->GetSprite();
 			if(!sprite) continue;
 
 			FilePath psdPath = ReplaceInString(sprite->GetRelativePathname().GetAbsolutePathname(), "/Data/", "/DataSource/");
 			psdPath.ReplaceExtension(".psd");
-			sceneUtils.AddFile(psdPath);
+			sceneUtils.CopyFile(psdPath, errorLog);
 		}
 	}
 }
@@ -320,18 +287,18 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
     FilePath projectPath = CreateProjectPathFromPath(sceneFolder);
     if(projectPath.IsEmpty())
     {
-        errorLog.insert(Format("Can't copy custom colors texture (%s)", pathname.c_str()));
+		Logger::Error("[SceneSaver::CopyCustomColorTexture] Can't copy custom colors texture (%s)", pathname.c_str());
         return;
     }
 
     FilePath texPathname = projectPath + pathname;
-    sceneUtils.AddFile(texPathname);
+    sceneUtils.CopyFile(texPathname, errorLog);
     
     FilePath newTexPathname = sceneUtils.GetNewFilePath(texPathname);
     FilePath newProjectPathname = CreateProjectPathFromPath(sceneUtils.dataFolder);
     if(newProjectPathname.IsEmpty())
     {
-        errorLog.insert(Format("Can't save custom colors texture (%s)", pathname.c_str()));
+		Logger::Error("[SceneSaver::CopyCustomColorTexture] Can't save custom colors texture (%s)", pathname.c_str());
         return;
     }
     
@@ -350,3 +317,4 @@ FilePath SceneSaver::CreateProjectPathFromPath(const FilePath & pathname)
     
     return FilePath();
 }
+

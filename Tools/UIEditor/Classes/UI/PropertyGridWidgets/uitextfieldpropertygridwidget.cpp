@@ -64,11 +64,11 @@ void UITextFieldPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::FONT_SIZE_PROPERTY_NAME, ui->fontSizeSpinBox);
     
     RegisterLineEditWidgetForProperty(propertiesMap, PropertyNames::TEXT_PROPERTY_NAME, ui->textLineEdit);
-    RegisterColorWidgetForProperty(propertiesMap, PropertyNames::TEXT_COLOR_PROPERTY_NAME, ui->textColorWidget);
+    RegisterColorButtonWidgetForProperty(propertiesMap, PropertyNames::TEXT_COLOR_PROPERTY_NAME, ui->textColorPushButton);
 
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::SHADOW_OFFSET_X, ui->shadowOffsetXSpinBox);
     RegisterSpinBoxWidgetForProperty(propertiesMap, PropertyNames::SHADOW_OFFSET_Y, ui->shadowOffsetYSpinBox);
-    RegisterColorWidgetForProperty(propertiesMap, PropertyNames::SHADOW_COLOR, ui->shadowColorWidget);
+    RegisterColorButtonWidgetForProperty(propertiesMap, PropertyNames::SHADOW_COLOR, ui->shadowColorButton);
 
 	RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::TEXT_ALIGN_PROPERTY_NAME, ui->alignComboBox, false, true);
 
@@ -81,21 +81,17 @@ void UITextFieldPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 	RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::KEYBOARD_TYPE_PROPERTY_NAME, ui->keyboardTypeComboBox);
 	RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::RETURN_KEY_TYPE_PROPERTY_NAME, ui->returnKeyTypeComboBox);
 	RegisterCheckBoxWidgetForProperty(propertiesMap, PropertyNames::IS_RETURN_KEY_PROPERTY_NAME, ui->isReturnKeyAutomatically);
-    
-    // Fitting is not needed for UITextField.
-    ui->fittingTypeComboBox->setVisible(false);
-    ui->fittingLabel->setVisible(false);
 }
 
 void UITextFieldPropertyGridWidget::Cleanup()
 {
     UnregisterPushButtonWidget(ui->fontSelectButton);
     UnregisterSpinBoxWidget(ui->fontSizeSpinBox);
-    UnregisterColorWidget(ui->textColorWidget);
+    UnregisterColorButtonWidget(ui->textColorPushButton);
 
     UnregisterSpinBoxWidget(ui->shadowOffsetXSpinBox);
     UnregisterSpinBoxWidget(ui->shadowOffsetYSpinBox);
-    UnregisterColorWidget(ui->shadowColorWidget);
+    UnregisterColorButtonWidget(ui->shadowColorButton);
 
 	UnregisterComboBoxWidget(ui->alignComboBox);
 

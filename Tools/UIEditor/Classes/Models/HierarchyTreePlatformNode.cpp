@@ -45,16 +45,14 @@
 #define SCREEN_PATH "%1/%2.yaml"
 
 HierarchyTreePlatformNode::HierarchyTreePlatformNode(HierarchyTreeRootNode* rootNode, const QString& name) :
-	HierarchyTreeNode(name),
-    isPreview(false)
+	HierarchyTreeNode(name)
 {
 	this->rootNode = rootNode;
 	width = height = 0;
 }
 
 HierarchyTreePlatformNode::HierarchyTreePlatformNode(HierarchyTreeRootNode* rootNode, const HierarchyTreePlatformNode* base) :
-	HierarchyTreeNode(base),
-    isPreview(false)
+	HierarchyTreeNode(base)
 {
 	this->rootNode = rootNode;
 	this->width = base->GetWidth();
@@ -125,17 +123,12 @@ void HierarchyTreePlatformNode::SetSize(int width, int height)
 	
 int HierarchyTreePlatformNode::GetWidth() const
 {
-    return isPreview ? previewWidth : width;
+	return width;
 }
 
 int HierarchyTreePlatformNode::GetHeight() const
 {
-    return isPreview ? previewHeight : height;
-}
-
-Vector2 HierarchyTreePlatformNode::GetSize() const
-{
-    return Vector2(GetWidth(), GetHeight());
+	return height;
 }
 
 HierarchyTreeNode* HierarchyTreePlatformNode::GetParent()
@@ -295,7 +288,7 @@ bool HierarchyTreePlatformNode::Save(YamlNode* node, bool saveAll)
 	dir.mkpath(QString::fromStdString(platformFolder.GetAbsolutePathname()));
 	
 	bool result = true;
-	int saveIndex = 0;
+	
 	//save aggregators node before save screens
 	for (HIERARCHYTREENODESCONSTITER iter = GetChildNodes().begin();
 		 iter != GetChildNodes().end();
@@ -309,11 +302,10 @@ bool HierarchyTreePlatformNode::Save(YamlNode* node, bool saveAll)
 		
 		YamlNode* aggregator = new YamlNode(YamlNode::TYPE_MAP);
 		result &= node->Save(aggregator, path, saveAll);
-		// Set additional index node for aggregator to keep its order after save
-		aggregator->Set(YamlNode::SAVE_INDEX_NAME, saveIndex);
-		aggregators->SetNodeToMap(node->GetName().toStdString(), aggregator);
-		saveIndex++;
+
+		aggregators->SetNodeToMap( node->GetName().toStdString(), aggregator );
 	}
+		
 	
 	for (HIERARCHYTREENODESCONSTITER iter = GetChildNodes().begin();
 		 iter != GetChildNodes().end();
@@ -408,14 +400,3 @@ bool HierarchyTreePlatformNode::IsAggregatorOrScreenNamePresent(const QString& c
 	return false;
 }
 
-void HierarchyTreePlatformNode::EnablePreview(int width, int height)
-{
-    previewWidth = width;
-    previewHeight = height;
-    isPreview = true;
-}
-
-void HierarchyTreePlatformNode::DisablePreview()
-{
-    isPreview = false;
-}

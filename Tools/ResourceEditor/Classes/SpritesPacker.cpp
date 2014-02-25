@@ -32,6 +32,8 @@
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TexturePacker/CommandLineParser.h"
 
+#include "SceneEditor/EditorSettings.h"
+
 SpritesPacker::~SpritesPacker()
 {
 

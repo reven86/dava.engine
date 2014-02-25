@@ -88,16 +88,16 @@ void SwitchNode::ReapplySwitch()
 	oldSwitchIndex = -1;
 }
 
-void SwitchNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void SwitchNode::Save(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
 {
-	Entity::Save(archive, serializationContext);
+	Entity::Save(archive, sceneFileV2);
 
 	archive->SetInt32("switchIndex", newSwitchIndex);
 }
 
-void SwitchNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void SwitchNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFileV2)
 {
-	Entity::Load(archive, serializationContext);
+	Entity::Load(archive, sceneFileV2);
 
 	int32 loadedSwitchIndex = archive->GetInt32("switchIndex");
 	SetSwitchIndex(loadedSwitchIndex);

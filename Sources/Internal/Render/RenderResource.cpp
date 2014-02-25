@@ -35,29 +35,16 @@
 namespace DAVA
 {
 
-List<RenderResource*> RenderResource::resourceList;
-Mutex RenderResource::resourceListMutex;
+RenderResource::ResourceList RenderResource::resourceList;
 
 RenderResource::RenderResource()
 {
-    resourceListMutex.Lock();
-	resourceList.push_back(this);
-    resourceListMutex.Unlock();
+	resourceList.insert(this);
 }
 
 RenderResource::~RenderResource()
 {
-    resourceListMutex.Lock();
-	List<RenderResource*>::iterator it = resourceList.begin();
-	for(; it != resourceList.end(); it++)
-	{
-		if(*it == this)
-		{
-			resourceList.erase(it);
-			break;
-		}
-	}
-    resourceListMutex.Unlock();
+	resourceList.erase(this);
 }
 
 void RenderResource::SaveToSystemMemory()
@@ -77,36 +64,31 @@ void RenderResource::LostAllResources()
 {
     Logger::FrameworkDebug("[RenderResource::LostAllResources]");
     
-    resourceListMutex.Lock();
-	List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+	RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
 	for(; it != itEnd; ++it)
 	{
 		(*it)->Lost();
 	}
-    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllResources()
 {
     Logger::FrameworkDebug("[RenderResource::InvalidateAllResources]");
 
-    resourceListMutex.Lock();
-	List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+	RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
 	for(; it != itEnd; ++it)
 	{
 		(*it)->Invalidate();
 	}
-    resourceListMutex.Unlock();
 }
 
 void RenderResource::SaveAllResourcesToSystemMem()
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)  ||  defined(__DAVAENGINE_DIRECTX9__)
-    resourceListMutex.Lock();
-	List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+	RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
 	for(; it != itEnd; ++it)
 	{
 		(*it)->SaveToSystemMemory();
@@ -114,15 +96,13 @@ void RenderResource::SaveAllResourcesToSystemMem()
 // 		if (t)
 // 			Logger::FrameworkDebug("%s", t->relativePathname.c_str());
 	}
-    resourceListMutex.Unlock();
 #endif
 }
     
 void RenderResource::LostAllShaders()
 {
-    resourceListMutex.Lock();
-    List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+    RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
     {
         Shader *s = dynamic_cast<Shader *>(*it);
@@ -131,14 +111,12 @@ void RenderResource::LostAllShaders()
             s->Lost();
         }
     }
-    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllShaders()
 {
-    resourceListMutex.Lock();
-    List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+    RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
     {
         Shader *s = dynamic_cast<Shader *>(*it);
@@ -147,14 +125,12 @@ void RenderResource::InvalidateAllShaders()
             s->Invalidate();
         }
     }
-    resourceListMutex.Unlock();
 }
     
 void RenderResource::LostAllTextures()
 {
-    resourceListMutex.Lock();
-    List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+    RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
     {
         Texture *s = dynamic_cast<Texture *>(*it);
@@ -163,14 +139,12 @@ void RenderResource::LostAllTextures()
             s->Lost();
         }
     }
-    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllTextures()
 {
-    resourceListMutex.Lock();
-    List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+    RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
     {
         Texture *s = dynamic_cast<Texture *>(*it);
@@ -179,15 +153,13 @@ void RenderResource::InvalidateAllTextures()
             s->Invalidate();
         }
     }
-    resourceListMutex.Unlock();
 }
 
 
 void RenderResource::LostAllRDO()
 {
-    resourceListMutex.Lock();
-    List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+    RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
     {
         RenderDataObject *s = dynamic_cast<RenderDataObject *>(*it);
@@ -196,14 +168,12 @@ void RenderResource::LostAllRDO()
             s->Lost();
         }
     }
-    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllRDO()
 {
-    resourceListMutex.Lock();
-    List<RenderResource*>::iterator it = resourceList.begin();
-    List<RenderResource*>::const_iterator itEnd = resourceList.end();
+    RenderResource::ResourceList::iterator it = resourceList.begin();
+    RenderResource::ResourceList::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
     {
         RenderDataObject *s = dynamic_cast<RenderDataObject *>(*it);
@@ -212,7 +182,6 @@ void RenderResource::InvalidateAllRDO()
             s->Invalidate();
         }
     }
-    resourceListMutex.Unlock();
 }
     
 };

@@ -32,7 +32,6 @@
 #include "Render/Highlevel/SkyboxRenderObject.h"
 #include "CubemapEditor/CubemapUtils.h"
 #include "AddSkyboxDialog.h"
-#include "Scene/SceneSignals.h"
 #include "Classes/Commands2/EntityAddCommand.h"
 #include "Classes/Commands2/EntityRemoveCommand.h"
 

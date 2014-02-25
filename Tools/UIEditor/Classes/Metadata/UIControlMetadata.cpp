@@ -34,7 +34,8 @@
 #include "StringUtils.h"
 #include "StringConstants.h"
 
-#include "Helpers/ColorHelper.h"
+#include "EditorSettings.h"
+#include "Helpers/SpritesHelper.h"
 
 #include <QtGlobal>
 
@@ -427,7 +428,7 @@ QColor UIControlMetadata::GetColor()
         return QColor();
     }
 
-    return ColorHelper::DAVAColorToQTColor(GetActiveUIControl()->GetBackground()->color);
+    return DAVAColorToQTColor(GetActiveUIControl()->GetBackground()->color);
 }
     
 void UIControlMetadata::SetColor(const QColor& value)
@@ -437,7 +438,7 @@ void UIControlMetadata::SetColor(const QColor& value)
         return;
     }
 
-    GetActiveUIControl()->GetBackground()->SetColor(ColorHelper::QTColorToDAVAColor(value));
+    GetActiveUIControl()->GetBackground()->SetColor(QTColorToDAVAColor(value));
 }
     
 int UIControlMetadata::GetDrawType()
@@ -558,6 +559,7 @@ void UIControlMetadata::SetSprite(const QString& value)
         if (sprite)
         {
             GetActiveUIControl()->GetBackground()->SetSprite(sprite, 0);
+            ApplyPixelization(sprite);
             SafeRelease(sprite);
 
             // Specific case if the sprite is set to UISlider thumbSprite (see please DF-2834).
@@ -841,7 +843,7 @@ void UIControlMetadata::SetRightAlignEnabled(const bool value)
         return;
     }
 	
-	GetActiveUIControl()->SetRightAlignEnabled(value);
+	GetActiveUIControl()->SetRightAlignEnabled(value);	
 }
 	
 bool UIControlMetadata::GetTopAlignEnabled() const
@@ -992,6 +994,19 @@ void UIControlMetadata::ResizeScrollViewContent(UIControl * control)
 	{
 		ResizeScrollViewContent(parentControl);
 	}
+}
+
+void UIControlMetadata::ApplyPixelization(Sprite* sprite)
+{
+    if (!sprite)
+    {
+        return;
+    }
+    
+    if (pixelizationNeeded)
+    {
+        SpritesHelper::ApplyPixelization(sprite);
+    }
 }
 
 void UIControlMetadata::SetUIControlVisible(const bool value, bool hierarchic)

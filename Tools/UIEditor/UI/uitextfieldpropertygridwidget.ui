@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>480</height>
+    <height>450</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>300</width>
-    <height>480</height>
+    <height>450</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
      <x>0</x>
      <y>0</y>
      <width>299</width>
-     <height>479</height>
+     <height>451</height>
     </rect>
    </property>
    <property name="title">
@@ -77,28 +77,16 @@
      <string>Font:</string>
     </property>
    </widget>
-   <widget class="QColorWidget" name="textColorWidget" native="true">
+   <widget class="QColorButton" name="textColorPushButton">
     <property name="geometry">
      <rect>
-      <x>105</x>
+      <x>90</x>
       <y>100</y>
-      <width>184</width>
+      <width>200</width>
       <height>21</height>
      </rect>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>184</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>184</width>
-      <height>21</height>
-     </size>
-    </property>
-    <property name="text" stdset="0">
+    <property name="text">
      <string/>
     </property>
    </widget>
@@ -132,28 +120,16 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
      <string>default font</string>
     </property>
    </widget>
-   <widget class="QColorWidget" name="shadowColorWidget" native="true">
+   <widget class="QColorButton" name="shadowColorButton">
     <property name="geometry">
      <rect>
       <x>105</x>
       <y>158</y>
-      <width>184</width>
-      <height>22</height>
+      <width>185</width>
+      <height>21</height>
      </rect>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>184</width>
-      <height>22</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>184</width>
-      <height>22</height>
-     </size>
-    </property>
-    <property name="text" stdset="0">
+    <property name="text">
      <string/>
     </property>
    </widget>
@@ -240,7 +216,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
      <rect>
       <x>80</x>
       <y>184</y>
-      <width>211</width>
+      <width>209</width>
       <height>26</height>
      </rect>
     </property>
@@ -262,7 +238,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>250</y>
+      <y>220</y>
       <width>271</width>
       <height>20</height>
      </rect>
@@ -275,7 +251,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>168</x>
-      <y>270</y>
+      <y>240</y>
       <width>121</width>
       <height>26</height>
      </rect>
@@ -285,7 +261,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>168</x>
-      <y>300</y>
+      <y>270</y>
       <width>121</width>
       <height>26</height>
      </rect>
@@ -295,7 +271,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>168</x>
-      <y>330</y>
+      <y>300</y>
       <width>121</width>
       <height>26</height>
      </rect>
@@ -305,7 +281,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>168</x>
-      <y>362</y>
+      <y>332</y>
       <width>121</width>
       <height>26</height>
      </rect>
@@ -315,7 +291,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>168</x>
-      <y>392</y>
+      <y>362</y>
       <width>121</width>
       <height>26</height>
      </rect>
@@ -325,7 +301,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>167</x>
-      <y>423</y>
+      <y>393</y>
       <width>121</width>
       <height>26</height>
      </rect>
@@ -335,7 +311,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>450</y>
+      <y>420</y>
       <width>271</width>
       <height>20</height>
      </rect>
@@ -348,7 +324,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>427</y>
+      <y>397</y>
       <width>101</width>
       <height>16</height>
      </rect>
@@ -361,7 +337,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>397</y>
+      <y>367</y>
       <width>101</width>
       <height>16</height>
      </rect>
@@ -374,7 +350,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>368</y>
+      <y>338</y>
       <width>161</width>
       <height>16</height>
      </rect>
@@ -387,7 +363,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>337</y>
+      <y>307</y>
       <width>121</width>
       <height>16</height>
      </rect>
@@ -400,7 +376,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>306</y>
+      <y>276</y>
       <width>151</width>
       <height>16</height>
      </rect>
@@ -413,7 +389,7 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>276</y>
+      <y>246</y>
       <width>171</width>
       <height>16</height>
      </rect>
@@ -422,54 +398,20 @@ QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 
      <string>Auto Capitalization Type:</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="fittingTypeComboBox">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>213</y>
-      <width>211</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="fittingLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>219</y>
-      <width>51</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Fitting:</string>
-    </property>
-   </widget>
   </widget>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QColorWidget</class>
-   <extends>QWidget</extends>
-   <header>qcolorwidget.h</header>
+   <class>QColorButton</class>
+   <extends>QPushButton</extends>
+   <header>qcolorbutton.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
   <tabstop>textLineEdit</tabstop>
   <tabstop>fontSelectButton</tabstop>
   <tabstop>fontSizeSpinBox</tabstop>
-  <tabstop>shadowOffsetXSpinBox</tabstop>
-  <tabstop>shadowOffsetYSpinBox</tabstop>
-  <tabstop>alignComboBox</tabstop>
-  <tabstop>fittingTypeComboBox</tabstop>
-  <tabstop>isPasswordCheckbox</tabstop>
-  <tabstop>autoCapitalizationTypeComboBox</tabstop>
-  <tabstop>autoCorrectionTypeComboBox</tabstop>
-  <tabstop>spellCheckingTypeComboBox</tabstop>
-  <tabstop>keyboardAppearanceTypeComboBox</tabstop>
-  <tabstop>keyboardTypeComboBox</tabstop>
-  <tabstop>returnKeyTypeComboBox</tabstop>
-  <tabstop>isReturnKeyAutomatically</tabstop>
+  <tabstop>textColorPushButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

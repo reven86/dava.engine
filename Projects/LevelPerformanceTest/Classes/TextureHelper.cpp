@@ -132,21 +132,20 @@ void TextureHelper::EnumerateTextures(DAVA::Entity *forNode, Map<String, Texture
 		{
 			RenderBatch *renderBatch = ro->GetRenderBatch(b);
 
-			NMaterial *material = renderBatch->GetMaterial();
+			Material *material = renderBatch->GetMaterial();
 			if(material)
 			{
-				for(int32 t = 0; t < material->GetTextureCount(); ++t)
+				for(int32 t = 0; t < Material::TEXTURE_COUNT; ++t)
 				{
-					Texture* tx = material->GetTexture(t);
-					CollectTexture(textures, tx->relativePathname, tx);
+					CollectTexture(textures, material->GetTextureName((DAVA::Material::eTextureLevel)t), material->GetTexture((DAVA::Material::eTextureLevel)t));
 				}
 			}
 
-			/*InstanceMaterialState *instanceMaterial = renderBatch->GetMaterialInstance();
+			InstanceMaterialState *instanceMaterial = renderBatch->GetMaterialInstance();
 			if(instanceMaterial)
 			{
 				CollectTexture(textures, instanceMaterial->GetLightmapName(), instanceMaterial->GetLightmap());
-			}*/
+			}
 		}
 
 		Landscape *land = dynamic_cast<Landscape *>(ro);

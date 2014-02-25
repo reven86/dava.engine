@@ -109,8 +109,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 		}
 		if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
 		{
-			AddError(Format("[ERROR: Can't delete directory %s]",
-									outputGfxDirectory.GetAbsolutePathname().c_str()));
+			Logger::Error("[ERROR: Can't delete directory %s]", outputGfxDirectory.GetAbsolutePathname().c_str());
 		}
 	}
 
@@ -218,8 +217,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		
 		if (layers.size() == 0)
 		{
-			AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
-			
+			Logger::Error("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str());
 			return 0;
 		}
 		
@@ -308,8 +306,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	}
 	catch( Magick::Exception &error_ )
     {
-		AddError(Format("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str()));
-
+        Logger::Error("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str());
 		return 0;
     }
 	return 0;
@@ -320,12 +317,12 @@ Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 	File * file = File::Create(flagsPathname, File::READ | File::OPEN);
 	if (!file)
 	{
-		AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
+		Logger::Error("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str());
         return Vector<String>();
 	}
-
-	Vector<char> flagsTmpVector;
-	flagsTmpVector.reserve(file->GetSize() + 1);
+    
+	char flagsTmpBuffer[4096] = {0};
+	int flagsSize = 0;
 	while(!file->IsEof())
 	{
 		char c = 0x00;
@@ -338,13 +335,13 @@ Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 				break;
 			}
 
-			flagsTmpVector.push_back(c);
+			flagsTmpBuffer[flagsSize++] = c;
 		}	
 	}
-	flagsTmpVector.push_back(0);
-
-	currentFlags = flagsTmpVector.data();
-	String flags = flagsTmpVector.data();
+	flagsTmpBuffer[flagsSize++] = 0;
+	
+	currentFlags = flagsTmpBuffer;
+	String flags = flagsTmpBuffer;
 	
 	const String & delims=" ";
 	
@@ -393,8 +390,8 @@ bool ResourcePacker2D::isRecursiveFlagSet(const Vector<String> & flags)
 
 void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags)
 {
-	// Local list for flags command arguments
-	Vector<String> currentCommandFlags = flags;
+	// DF-2961 - Local list for flags command arguments
+	Vector<String> currentCommandFlags = Vector<String>();
 
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
     
@@ -423,7 +420,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	CommandLineParser::Instance()->Clear();
 	List<DefinitionFile *> definitionFileList;
 
-	// Reset processed flag
+	// DF-2961 - Reset processed flag
 	bool flagsProcessed = false;
 	// Find flags and setup them
 	FileList * fileList = new FileList(inputPath);
@@ -440,21 +437,13 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		}
 	}
 	
-	// If "flags.txt" do not exist - try to use previous flags command line
+	// DF-2961 - If "flags.txt" do not exist - try to use previous flags command line
 	if (!flagsProcessed)
 	{
-		currentFlags = "";
-		if (currentCommandFlags.size() > 0)
+		if (flags.size() > 0)
 		{
-			CommandLineParser::Instance()->SetArguments(currentCommandFlags);
-			for (uint32 k = 0; k < currentCommandFlags.size(); ++k)
-			{
-				currentFlags += currentCommandFlags[k];
-				if (k != (currentCommandFlags.size() - 1))
-				{
-					 currentFlags += " ";
-				}
-			}
+			CommandLineParser::Instance()->SetArguments(flags);
+			currentCommandFlags = flags;
 		}
 	}
 	
@@ -540,12 +529,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 			{
 				packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
 			}
-			
-			Set<String> currentErrors = packer.GetErrors();
-			if (!currentErrors.empty())
-			{
-				errors.insert(currentErrors.begin(), currentErrors.end());
-			}
 		}
 	}	
 
@@ -599,17 +582,6 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	}
 	
 	SafeRelease(fileList);
-}
-
-const Set<String>& ResourcePacker2D::GetErrors() const
-{
-	return errors;
-}
-
-void ResourcePacker2D::AddError(const String& errorMsg)
-{
-	Logger::Error(errorMsg.c_str());
-	errors.insert(errorMsg);
 }
 
 

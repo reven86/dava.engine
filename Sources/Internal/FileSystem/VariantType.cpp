@@ -264,14 +264,7 @@ void VariantType::SetKeyedArchive(KeyedArchive *archive)
 {
     ReleasePointer();
     type = TYPE_KEYED_ARCHIVE;
-    if(archive)
-    {
-        pointerValue = new KeyedArchive(*archive);
-    }
-    else
-    {
-        pointerValue = new KeyedArchive();
-    }
+    pointerValue = new KeyedArchive(*archive);
 }
     
 void VariantType::SetInt64(const int64 & value)
@@ -1574,7 +1567,7 @@ VariantType VariantType::FromType(int type)
 		v.SetColor(Color());
 		break;
 	case TYPE_FASTNAME:
-		v.SetFastName(FastName(""));
+		v.SetFastName("");
 		break;
 	case TYPE_AABBOX3:
 		v.SetAABBox3(AABBox3());

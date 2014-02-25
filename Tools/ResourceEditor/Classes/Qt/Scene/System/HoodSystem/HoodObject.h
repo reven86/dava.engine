@@ -34,8 +34,6 @@
 #include "Scene/System/HoodSystem/HoodCollObject.h"
 #include "Scene/SceneTypes.h"
 
-#include "Render/UniqueStateSet.h"
-
 class TextDrawSystem;
 
 struct HoodObject 
@@ -61,8 +59,6 @@ struct HoodObject
 
 protected:
 	DAVA::Vector3 GetAxisTextPos(HoodCollObject *axis);
-	
-	DAVA::UniqueHandle hoodDrawState;
 };
 
 #endif

@@ -54,9 +54,7 @@ public:
 
 		DropingEntity,
 		DropingLayer,
-        DropingEmitter,
-		DropingForce,
-        DropingMaterial
+		DropingForce
 	};
 
 	enum CustomFlags
@@ -66,6 +64,10 @@ public:
 		CF_Invisible	= 0x0002,
 	};
 
+	static const char* mimeFormatEntity;
+	static const char* mimeFormatLayer;
+	static const char* mimeFormatForce;
+
 	SceneTreeModel(QObject* parent = 0);
 	~SceneTreeModel();
 
@@ -73,7 +75,6 @@ public:
 	SceneEditor2* GetScene() const;
 
 	QModelIndex GetIndex(DAVA::Entity *entity) const;
-    QModelIndex GetIndex(DAVA::ParticleEmitter *emitter) const;
 	QModelIndex GetIndex(DAVA::ParticleLayer *layer) const;
 	QModelIndex GetIndex(DAVA::ParticleForce *force) const;
 
@@ -98,24 +99,22 @@ public:
 	int GetDropType(const QMimeData *data) const;
 
 	void ResyncStructure(QStandardItem *item, DAVA::Entity *entity);
-	void ResetFilterAcceptFlag();
 
 protected:
 	SceneEditor2 * curScene;
 	bool dropAccepted;
 
 	QMap<DAVA::Entity*, QModelIndex> indexesCacheEntities;
-    QMap<DAVA::ParticleEmitter*, QModelIndex> indexesCacheEmitters;
 	QMap<DAVA::ParticleLayer*, QModelIndex> indexesCacheLayers;
 	QMap<DAVA::ParticleForce*, QModelIndex> indexesCacheForces;
 
 	void RebuildIndexesCache();
 	void AddIndexesCache(SceneTreeItem *item);
-	void ResetFilterAcceptFlagInternal(SceneTreeItem *item);
 
 	bool AreSameType(const QModelIndexList & indexes) const;
-    
-    void DropMaterial(SceneTreeItem *parentItem, const QMimeData *mimeData) const;
+
+	QMimeData* EncodeMimeData(const QVector<void*> &data, const QString &format) const;
+	QVector<void*>* DecodeMimeData(const QMimeData* data, const QString &format) const;
 
 protected slots:
 	void ItemChanged(QStandardItem * item);

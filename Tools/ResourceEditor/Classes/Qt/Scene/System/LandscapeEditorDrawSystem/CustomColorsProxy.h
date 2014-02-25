@@ -54,9 +54,7 @@ public:
 	void ResetChanges();
 	void IncrementChanges();
 	void DecrementChanges();
-	
-	void UpdateSpriteFromConfig();
-	
+
 protected:
 	Sprite* customColorsSprite;
 	Rect changedRect;

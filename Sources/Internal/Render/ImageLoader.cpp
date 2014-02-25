@@ -40,23 +40,7 @@
 namespace DAVA 
 {
 
-Vector<Image *> ImageLoader::CreateFromFileByExtension(const FilePath &pathname)
-{
-    if(pathname.IsEqualToExtension("*.pvr"))
-    {
-        return ImageLoader::CreateFromPVRFile(pathname);
-    }
-    else if(pathname.IsEqualToExtension("*.dds"))
-    {
-        return ImageLoader::CreateFromDDSFile(pathname);
-    }
-    
-    return ImageLoader::CreateFromFileByContent(pathname);
-}
-
-    
-    
-Vector<Image *> ImageLoader::CreateFromFileByContent(const FilePath & pathname)
+Vector<Image *> ImageLoader::CreateFromFile(const FilePath & pathname)
 {
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
@@ -66,79 +50,33 @@ Vector<Image *> ImageLoader::CreateFromFileByContent(const FilePath & pathname)
         return Vector<Image *>();
     }
     
-    Vector<Image *>imageSet = CreateFromFileByContent(file);
+    Vector<Image *>imageSet = CreateFromFile(file);
     SafeRelease(file);
 	return imageSet;
 };
-    
-    
-Vector<Image *> ImageLoader::CreateFromFileByContent(File *file)
-{
-    if(IsPVRFile(file))
-    {
-        return CreateFromPVR(file);
-    }
 
+    
+Vector<Image *> ImageLoader::CreateFromFile(File *file)
+{
     if(IsPNGFile(file))
     {
         return CreateFromPNG(file);
     }
-
-    if(IsDDSFile(file))
-    {
-        return CreateFromDDS(file);
-    }
     
-    return Vector<Image *>();
+	if(IsDXTFile(file))
+    {
+        return CreateFromDXT(file);
+    }
+
+    if(IsPVRFile(file))
+    {
+        return CreateFromPVR(file);
+    }
+	
+	return Vector<Image *>();
 }
 
     
-Vector<Image *> ImageLoader::CreateFromPNGFile(const FilePath & pathname)
-{
-    File *file = File::Create(pathname, File::OPEN | File::READ);
-    
-    if(!file)
-    {
-        Logger::Error("[ImageLoader::CreateFromPNGFile] Cannot open file %s", pathname.GetAbsolutePathname().c_str());
-        return Vector<Image *>();
-    }
-    
-    Vector<Image *>imageSet = CreateFromPNG(file);
-    SafeRelease(file);
-	return imageSet;
-}
-    
-Vector<Image *> ImageLoader::CreateFromPVRFile(const FilePath & pathname)
-{
-    File *file = File::Create(pathname, File::OPEN | File::READ);
-    
-    if(!file)
-    {
-        Logger::Error("[ImageLoader::CreateFromPVRFile] Cannot open file %s", pathname.GetAbsolutePathname().c_str());
-        return Vector<Image *>();
-    }
-    
-    Vector<Image *>imageSet = CreateFromPVR(file);
-    SafeRelease(file);
-	return imageSet;
-}
-    
-Vector<Image *> ImageLoader::CreateFromDDSFile(const FilePath & pathname)
-{
-    File *file = File::Create(pathname, File::OPEN | File::READ);
-    
-    if(!file)
-    {
-        Logger::Error("[ImageLoader::CreateFromDDSFile] Cannot open file %s", pathname.GetAbsolutePathname().c_str());
-        return Vector<Image *>();
-    }
-    
-    Vector<Image *>imageSet = CreateFromDDS(file);
-    SafeRelease(file);
-	return imageSet;
-}
-
-
 bool ImageLoader::IsPNGFile(DAVA::File *file)
 {
     bool isPng = LibPngWrapper::IsPngFile(file);
@@ -153,7 +91,7 @@ bool ImageLoader::IsPVRFile(DAVA::File *file)
     return isPvr;
 }
 
-bool ImageLoader::IsDDSFile(DAVA::File *file)
+bool ImageLoader::IsDXTFile(DAVA::File *file)
 {
     bool isDXT = LibDxtHelper::IsDxtFile(file);
     file->Seek(0, File::SEEK_FROM_START);
@@ -180,7 +118,7 @@ Vector<Image *> ImageLoader::CreateFromPNG(DAVA::File *file)
     return Vector<Image *>();
 }
 
-Vector<Image *> ImageLoader::CreateFromDDS(DAVA::File *file)
+Vector<Image *> ImageLoader::CreateFromDXT(DAVA::File *file)
 {
     Vector<Image *> retObj;
 
@@ -195,7 +133,7 @@ Vector<Image *> ImageLoader::CreateFromDDS(DAVA::File *file)
 
 Vector<Image *> ImageLoader::CreateFromPVR(DAVA::File *file)
 {
-//    uint64 loadTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 loadTime = SystemTimer::Instance()->AbsoluteMS();
 
     int32 mipMapLevelsCount = LibPVRHelper::GetMipMapLevelsCount(file);
 	int32 faceCount = LibPVRHelper::GetCubemapFaceCount(file);
@@ -225,7 +163,7 @@ Vector<Image *> ImageLoader::CreateFromPVR(DAVA::File *file)
 			for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
             return Vector<Image *>();
         }
-//        loadTime = SystemTimer::Instance()->AbsoluteMS() - loadTime;
+        loadTime = SystemTimer::Instance()->AbsoluteMS() - loadTime;
 //        Logger::Info("Unpack PVR(%s) for %ldms", file->GetFilename().c_str(), loadTime);
         return imageSet;
     }

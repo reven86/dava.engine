@@ -32,12 +32,10 @@
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Tools/SelectPathWidget/SelectEntityPathWidget.h"
 #include "Main/mainwindow.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "SceneEditor/EditorSettings.h"
 #include "Classes/Commands2/EntityAddCommand.h"
 #include "Qt/Main/QtUtils.h"
-#include "Commands2/EntityRemoveCommand.h"
-#include "SwitchEntityCreator.h"
-#include "Project/ProjectManager.h"
+#include "Commands2/EntityParentChangeCommand.h"
 
 #include "ui_BaseAddEntityDialog.h"
 
@@ -46,7 +44,7 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
 {
 	setAcceptDrops(true);
 	setAttribute( Qt::WA_DeleteOnClose, true );
-	FilePath defaultPath(ProjectManager::Instance()->CurProjectDataSourcePath().toStdString());
+	FilePath defaultPath(EditorSettings::Instance()->GetProjectPath().GetAbsolutePathname() + "/DataSource/3d");
 	
 	SceneEditor2 *scene = QtMainWindow::Instance()->GetCurrentScene();
 	if(scene)
@@ -73,6 +71,8 @@ AddSwitchEntityDialog::AddSwitchEntityDialog( QWidget* parent)
 	propEditor->setVisible(false);
 	propEditor->setMinimumHeight(0);
 	propEditor->setMaximumSize(propEditor->maximumWidth(), 0);
+
+	
 }
 
 AddSwitchEntityDialog::~AddSwitchEntityDialog()
@@ -124,47 +124,31 @@ void AddSwitchEntityDialog::accept()
 	
 	CleanupPathWidgets();
 
-	SwitchEntityCreator creator;
-
-	bool canCreateSwitch = true;
-
-	DAVA::uint32 switchCount = (DAVA::uint32)vector.size(); 
-	for(DAVA::uint32 i = 0; i < switchCount; ++i)
+	scene->BeginBatch("Unite entities into switch entity.");
+	
+	Entity* switchEntity = new Entity();
+	switchEntity->SetName(ResourceEditor::SWITCH_NODE_NAME);
+	scene->Exec(new EntityAddCommand(switchEntity, scene));
+	
+	SwitchComponent* component = new SwitchComponent();
+	switchEntity->AddComponent(component);
+	SafeRelease(component);
+	KeyedArchive *customProperties = switchEntity->GetCustomProperties();
+	customProperties->SetBool(Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
+	
+	Q_FOREACH(Entity* item, vector)
 	{
-		if(creator.CountSwitchComponentsRecursive(vector[i]) > 0)
+		if(item)
 		{
-			canCreateSwitch = false;
-			Logger::Error("Can't create switch in switch: %s", vector[i]->GetName().c_str());
-			break;
+			scene->Exec(new EntityParentChangeCommand(item, switchEntity));
 		}
 	}
+		
+	scene->ImmediateEvent(switchEntity, Component::SWITCH_COMPONENT, EventSystem::SWITCH_CHANGED);
+	scene->EndBatch();
 
-	if(canCreateSwitch)
-	{
-		scene->BeginBatch("Unite entities into switch entity.");
-
-		for(DAVA::uint32 i = 0; i < switchCount; ++i)
-		{
-			vector[i]->Retain();
-			scene->Exec(new EntityRemoveCommand(vector[i]));
-		}
-
-		Entity* switchEntity = creator.CreateSwitchEntity(vector);
-
-		scene->Exec(new EntityAddCommand(switchEntity, scene));
-
-		for(DAVA::uint32 i = 0; i < switchCount; ++i)
-		{
-			vector[i]->Release();
-		}
-
-		scene->selectionSystem->SetSelection(switchEntity);
-
-		scene->EndBatch();
-
-		scene->selectionSystem->SetSelection(switchEntity);
-		SafeRelease(switchEntity);
-	}
+	scene->selectionSystem->SetSelection(switchEntity);
+	SafeRelease(switchEntity);
 	
 	BaseAddEntityDialog::accept();
 }
@@ -174,4 +158,3 @@ void AddSwitchEntityDialog::reject()
 	CleanupPathWidgets();
 	BaseAddEntityDialog::reject();
 }
-

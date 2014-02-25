@@ -746,7 +746,6 @@ float32 GetScreenHeight()
 	
 void Core::SetCommandLine(int argc, char *argv[])
 {
-    commandLine.reserve(argc);
 	for (int k = 0; k < argc; ++k)
 		commandLine.push_back(argv[k]);
 }

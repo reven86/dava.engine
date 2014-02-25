@@ -43,7 +43,7 @@ TextDrawSystem::TextDrawSystem(DAVA::Scene * scene, SceneCameraSystem *_cameraSy
 	DAVA::FilePath defPath = DAVA::FilePath("~res:/Fonts/terminus.def");
 	DAVA::FilePath txtPath = DAVA::FilePath("~res:/Gfx/Fonts/terminus.txt");
 
-	font = DAVA::GraphicsFont::Create(defPath, txtPath);
+	font = DAVA::GraphicsFont::Create(defPath.GetAbsolutePathname(), txtPath.GetAbsolutePathname());
 }
 
 TextDrawSystem::~TextDrawSystem()
@@ -73,9 +73,8 @@ void TextDrawSystem::Draw()
 		if(NULL != font)
 		{
 			DAVA::RenderManager::Instance()->SetRenderOrientation(DAVA::Core::SCREEN_ORIENTATION_PORTRAIT);
-            DAVA::RenderManager::Instance()->SetRenderState(DAVA::RenderState::RENDERSTATE_2D_BLEND);
-            DAVA::RenderManager::Instance()->FlushState();
-            
+			DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::DEFAULT_2D_STATE_BLEND);
+
 			DAVA::List<TextToDraw>::iterator i  = listToDraw.begin();
 			DAVA::List<TextToDraw>::iterator end  = listToDraw.end();
 

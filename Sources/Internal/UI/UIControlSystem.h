@@ -60,7 +60,6 @@ class UIControlSystem : public Singleton<UIControlSystem>
 	
 	int frameSkip;
 	int transitionType;
-
 	
 	Vector<UIEvent> totalInputs;
 
@@ -73,19 +72,6 @@ protected:
 	UIControlSystem();
 			
 public:
-    /* 
-       Player + 6 ally bots. All visible on the screen
-    Old measures:
-    UIControlSystem::inputs: 309
-    UIControlSystem::updates: 310
-    UIControlSystem::draws: 310
-
-    New measures:
-    UIControlSystem::inputs: 42
-    */
-    int32 updateCounter;
-    int32 drawCounter;
-    int32 inputCounter;
 
 	/**
 	 \brief Sets the requested screen as current.
@@ -209,9 +195,8 @@ public:
 	 \brief Sets requested control as a exclusive input locker.
 	 All inputs goes only to the exclusive input locker if input locker is present.
 	 \param[in] control to set the input locker.
-	 \param[in] event id to cause a lock. All other events will be cancelled(excepts the locker == NULL situation).
 	 */
-	void SetExclusiveInputLocker(UIControl *locker, int32 lockEventId);
+	void SetExclusiveInputLocker(UIControl *locker);
 
 	/**
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.

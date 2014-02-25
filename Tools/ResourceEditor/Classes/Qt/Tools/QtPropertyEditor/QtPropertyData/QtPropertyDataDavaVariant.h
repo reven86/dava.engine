@@ -36,7 +36,8 @@
 
 #include "../QtPropertyData.h"
 
-class QtComboFake;
+class QToolButton;
+
 class QtPropertyDataDavaVariant : public QtPropertyData
 {
 	Q_OBJECT
@@ -53,22 +54,19 @@ public:
 	void AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue = QVariant());
 	void ClearAllowedValues();
 
-	QVariant FromDavaVariant(const DAVA::VariantType &variant) const;
-    
-    void SetOpenDialogFilter(const QString&);
-    QString GetOpenDialogFilter();
-    
-    void SetDefaultOpenDialogPath(const QString&);
-    QString GetDefaultOpenDialogPath();
+	virtual void SetIcon(const QIcon &icon);
+	virtual QIcon GetIcon();
+
+	QVariant FromDavaVariant(const DAVA::VariantType &variant);
 
 protected:
 	DAVA::VariantType curVariantValue;
 
-	virtual QVariant GetValueInternal() const;
-	virtual QVariant GetValueAlias() const;
+	virtual QVariant GetValueInternal();
+	virtual QVariant GetValueAlias();
 	virtual void SetValueInternal(const QVariant &value);
 
-	virtual QWidget* CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const;
+	virtual QWidget* CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option);
 	virtual bool SetEditorDataInternal(QWidget *editor);
 	virtual bool EditorDoneInternal(QWidget *editor);
 
@@ -78,7 +76,7 @@ protected slots:
 	void AllowedOWPressed();
 	void AllowedSelected(int index);
 
-protected:
+private:
 	struct AllowedValue
 	{
 		DAVA::VariantType realValue;
@@ -86,33 +84,28 @@ protected:
 	};
 
 	QVector<AllowedValue> allowedValues;
-	mutable bool allowedValuesLocked;
-	QtPropertyToolButton *allowedButton;
-    
-    QString openDialogFilter;
-    QString defaultOpenDialogPath;
-    bool isSettingMeFromChilds;
+	bool allowedValuesLocked;
+	QToolButton *allowedButton;
+
+	bool iconCacheIsValid;
+	QIcon iconCache;
 
 	void InitFlags();
 	void ChildsCreate();
 	void ChildsSetFromMe();
 	void MeSetFromChilds();
 
-	void SetColorIcon();
-
-	QVariant FromKeyedArchive(DAVA::KeyedArchive *archive) const;
-    QVariant FromFloat(DAVA::float32 value) const;
-	QVariant FromVector4(const DAVA::Vector4 &vector) const;
-	QVariant FromVector3(const DAVA::Vector3 &vector) const;
-	QVariant FromVector2(const DAVA::Vector2 &vector) const;
-	QVariant FromMatrix4(const DAVA::Matrix4 &matrix) const;
-	QVariant FromMatrix3(const DAVA::Matrix3 &matrix) const;
-	QVariant FromMatrix2(const DAVA::Matrix2 &matrix) const;
-	QVariant FromColor(const DAVA::Color &color) const;
-	QVariant FromAABBox3(const DAVA::AABBox3 &aabbox) const;
+	QVariant FromKeyedArchive(DAVA::KeyedArchive *archive);
+	QVariant FromVector4(const DAVA::Vector4 &vector);
+	QVariant FromVector3(const DAVA::Vector3 &vector);
+	QVariant FromVector2(const DAVA::Vector2 &vector);
+	QVariant FromMatrix4(const DAVA::Matrix4 &matrix);
+	QVariant FromMatrix3(const DAVA::Matrix3 &matrix);
+	QVariant FromMatrix2(const DAVA::Matrix2 &matrix);
+	QVariant FromColor(const DAVA::Color &color);
+	QVariant FromAABBox3(const DAVA::AABBox3 &aabbox);
 
 	void ToKeyedArchive(const QVariant &value);
-    void ToFloat(const QVariant &value);
 	void ToVector4(const QVariant &value);
 	void ToVector3(const QVariant &value);
 	void ToVector2(const QVariant &value);
@@ -121,22 +114,21 @@ protected:
 	void ToMatrix2(const QVariant &value);
 	void ToColor(const QVariant &value);
 	void ToAABBox3(const QVariant &value);
-	int ParseFloatList(const QString &str, int maxCount, DAVA::float32 *dest);
 
-	void SubValueAdd(const QString &key, const DAVA::VariantType &subvalue);
-	void SubValueSet(const QString &key, const QVariant &subvalue);
+	void SubValueAdd(const QString &key, const QVariant &value);
+	void SubValueSet(const QString &key, const QVariant &value);
 	QVariant SubValueGet(const QString &key);
 
-	QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
+	QWidget* CreateAllowedValuesEditor(QWidget *parent);
 	void SetAllowedValueEditorData(QWidget *editorWidget);
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);
 };
 
-class QtPropertyDataDavaVariantSubValue : public QtPropertyDataDavaVariant
+class QtPropertyDataDavaVariantSubValue : public QtPropertyData
 {
 public:
-	QtPropertyDataDavaVariantSubValue(QtPropertyDataDavaVariant *_parentVariant, const DAVA::VariantType &subvalue)
-		: QtPropertyDataDavaVariant(subvalue)
+	QtPropertyDataDavaVariantSubValue(QtPropertyDataDavaVariant *_parentVariant, const QVariant &value)
+		: QtPropertyData(value)
 		, parentVariant(_parentVariant)
 		, trackParent(true)
 	{ }
@@ -146,7 +138,7 @@ public:
 
 	virtual void SetValueInternal(const QVariant &value)
 	{
-		QtPropertyDataDavaVariant::SetValueInternal(value);
+		QtPropertyData::SetValueInternal(value);
 		if(NULL != parentVariant && trackParent)
 		{
 			parentVariant->MeSetFromChilds();

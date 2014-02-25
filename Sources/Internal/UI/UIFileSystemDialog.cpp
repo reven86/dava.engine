@@ -53,11 +53,10 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     extensionFilter.push_back(".*");
     
     
-    cellH = float32((int32)GetScreenHeight()/20.0f);
-    cellH = Max(cellH, 32.0f);
-    float32 border = float32((int32)GetScreenHeight()/64.0f);
-    float32 halfBorder = float32(int32(border/2.0f));
-    fileListView = new UIList(Rect(border, border + cellH, size.x - border*2.0f, size.y - cellH*3.0f - border*3.0f), UIList::ORIENTATION_VERTICAL);
+    cellH = (int32)GetScreenHeight()/20;
+    cellH = Max(cellH, 32);
+    int32 border = (int32)GetScreenHeight()/64;
+    fileListView = new UIList(Rect((float32)border, (float32)(border + cellH), (float32)(size.x - border*2), (float32)(size.y - cellH*3 - border*3)), UIList::ORIENTATION_VERTICAL);
     fileListView->SetDelegate(this);
     fileListView->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     fileListView->GetBackground()->SetColor(Color(0.25, 0.25, 0.25, 0.25));
@@ -66,16 +65,16 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     lastSelectionTime = 0;
     
     Font *f = FTFont::Create(fontPath);
-    f->SetSize((float32)(int32(cellH * 2.0f) / 3));
+    f->SetSize((float32)cellH * 2 / 3);
     
-    title = new UIStaticText(Rect(border, halfBorder, size.x - border*2.0f, cellH));
+    title = new UIStaticText(Rect((float32)border, (float32)border/2, (float32)size.x - border*2, (float32)cellH));
     title->SetFont(f);
 	title->SetTextColor(Color(1.f, 1.f, 1.f, 1.f));
     title->SetFittingOption(TextBlock::FITTING_REDUCE);
     title->SetText(L"Select file:");
     AddControl(title);
 
-    workingPath = new UIStaticText(Rect(border, halfBorder + fileListView->size.y + fileListView->relativePosition.y, size.x - border*2.0f, cellH));
+    workingPath = new UIStaticText(Rect((float32)border, (float32)border/2 + fileListView->size.y + fileListView->relativePosition.y, (float32)size.x - border*2, (float32)cellH));
     workingPath->SetFont(f);
     workingPath->SetAlign(ALIGN_LEFT|ALIGN_VCENTER);
     workingPath->SetFittingOption(TextBlock::FITTING_REDUCE);
@@ -83,8 +82,8 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     AddControl(workingPath);
     
     
-    float32 buttonW = cellH * 3.0f;
-    positiveButton = new UIButton(Rect(size.x - border - buttonW, workingPath->relativePosition.y + halfBorder + cellH, buttonW, cellH));
+    int32 buttonW = cellH * 3;
+    positiveButton = new UIButton(Rect((float32)size.x - border - buttonW, (float32)workingPath->relativePosition.y + border/2 + cellH, (float32)buttonW, (float32)cellH));
     positiveButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     positiveButton->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.5f, 0.6f, 0.5f, 0.5f));
     positiveButton->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -96,7 +95,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
 	positiveButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::ButtonPressed));
     AddControl(positiveButton);
 
-    negativeButton = new UIButton(Rect((float32)positiveButton->relativePosition.x - buttonW - border, positiveButton->relativePosition.y, buttonW, cellH));
+    negativeButton = new UIButton(Rect((float32)positiveButton->relativePosition.x - buttonW - border, (float32)positiveButton->relativePosition.y, (float32)buttonW, (float32)cellH));
     negativeButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     negativeButton->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.6f, 0.5f, 0.5f, 0.5f));
     negativeButton->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -110,7 +109,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     
     
     historyPosition = 0;
-    historyBackwardButton = new UIButton(Rect(border, positiveButton->relativePosition.y, cellH, cellH));
+    historyBackwardButton = new UIButton(Rect((float32)border, (float32)positiveButton->relativePosition.y, (float32)cellH, (float32)cellH));
     historyBackwardButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     historyBackwardButton->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.5f, 0.6f, 0.5f, 0.5f));
     historyBackwardButton->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -122,10 +121,10 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
 	historyBackwardButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::HistoryButtonPressed));
     AddControl(historyBackwardButton);
     
-    historyForwardButton = new UIButton(Rect(historyBackwardButton->relativePosition.x + 
+    historyForwardButton = new UIButton(Rect((float32)historyBackwardButton->relativePosition.x + 
                                              historyBackwardButton->size.x + border,
-                                             historyBackwardButton->relativePosition.y, 
-                                             cellH, cellH));
+                                             (float32)historyBackwardButton->relativePosition.y, 
+                                             (float32)cellH, (float32)cellH));
     historyForwardButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     historyForwardButton->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.5f, 0.6f, 0.5f, 0.5f));
     historyForwardButton->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -141,8 +140,8 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
 //    textField = new UITextField(Rect((float32)border, (float32)positiveButton->relativePosition.y, (float32)negativeButton->relativePosition.x - border*2, (float32)cellH));
     float32 textFieldOffset = historyForwardButton->relativePosition.x + historyForwardButton->size.x + border;
     textField = new UITextField(Rect(textFieldOffset,
-                                     positiveButton->relativePosition.y, 
-                                     negativeButton->relativePosition.x - border - textFieldOffset, cellH));
+                                     (float32)positiveButton->relativePosition.y, 
+                                     (float32)(negativeButton->relativePosition.x - border - textFieldOffset), (float32)cellH));
     textField->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     textField->GetBackground()->SetColor(Color(0.25f, 0.25f, 0.25f, 0.25f));
     textField->SetFont(f);
@@ -502,14 +501,14 @@ UIListCell *UIFileSystemDialog::CellAtIndex(UIList *forList, int32 index)
     return c;//returns cell
 }
 
-float32 UIFileSystemDialog::CellHeight(UIList * /*forList*/, int32 /*index*/)
+int32 UIFileSystemDialog::CellHeight(UIList * /*forList*/, int32 /*index*/)
 {
     return cellH;
 }
 
-float32 UIFileSystemDialog::CellWidth(UIList* /*forList*/, int32 /*index*/)
+int32 UIFileSystemDialog::CellWidth(UIList* /*forList*/, int32 /*index*/)
 {
-	return 20.0f;
+	return 20;
 }
 
 void UIFileSystemDialog::OnCellSelected(UIList *forList, UIListCell *selectedCell)

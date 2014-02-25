@@ -31,7 +31,6 @@
 #define __DAVAENGINE_POLYGON_GROUP_INSTANCE_H__
 
 #include "Scene3D/SceneNode.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA 
 {

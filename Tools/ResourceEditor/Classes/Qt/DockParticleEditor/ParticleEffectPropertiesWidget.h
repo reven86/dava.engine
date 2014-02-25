@@ -162,7 +162,8 @@ public:
 	};	
 	enum ForceExternals
 	{
-		EF_FORCE = EL_TOTAL,		
+		EF_FORCE = EL_TOTAL,
+		EF_FORCE_VARIATION,
 		EF_FORCE_OVERLIFE,
 		EF_TOTAL
 	};

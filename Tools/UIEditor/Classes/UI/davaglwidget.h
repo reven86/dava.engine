@@ -84,9 +84,6 @@ public:
 	protected slots:
 		void Render();
 
-signals:
-    void DavaGLWidgetResized();
-
 private:
 	Ui::DavaGLWidget *ui;
 

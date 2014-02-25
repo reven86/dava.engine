@@ -32,12 +32,9 @@
 #include "TextureListDelegate.h"
 #include "TextureListModel.h"
 #include "TextureCache.h"
-#include "TextureConvertor.h"
 #include "TextureBrowser.h"
 #include <QPainter>
 #include <QFileInfo>
-
-#include "Main/QtUtils.h"
 
 #define TEXTURE_PREVIEW_SIZE 80
 #define TEXTURE_PREVIEW_SIZE_SMALL 24
@@ -55,7 +52,7 @@ TextureListDelegate::TextureListDelegate(QObject *parent /* = 0 */)
 	, nameFontMetrics(nameFont)
 	, drawRule(DRAW_PREVIEW_BIG)
 {
-	QObject::connect(TextureCache::Instance(), SIGNAL(ThumbnailLoaded(const DAVA::TextureDescriptor *, const TextureInfo &)), this, SLOT(textureReadyThumbnail(const DAVA::TextureDescriptor *, const TextureInfo &)));
+	QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor *, DAVA::Vector<QImage>&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor *, DAVA::Vector<QImage>&)));
 };
 
 void TextureListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -88,22 +85,23 @@ QSize TextureListDelegate::sizeHint(const QStyleOptionViewItem &option, const QM
 	}
 }
 
-void TextureListDelegate::textureReadyThumbnail(const DAVA::TextureDescriptor *descriptor, const TextureInfo & images)
+void TextureListDelegate::textureReadyOriginal(const DAVA::TextureDescriptor *descriptor, DAVA::Vector<QImage>& images)
 {
 	if(NULL != descriptor)
 	{
-		if(descriptorIndexes.contains(descriptor->pathname))
+		TextureCache::Instance()->setOriginal(descriptor, images);
+		if(descriptorIndexes.contains(descriptor))
 		{
-			QModelIndex index = descriptorIndexes[descriptor->pathname];
-			descriptorIndexes.remove(descriptor->pathname);
-            
+			QModelIndex index = descriptorIndexes[descriptor];
+			descriptorIndexes.remove(descriptor);
+
 			// this will force item with given index to redraw
 			emit sizeHintChanged(index);
 		}
 	}
 }
 
-void TextureListDelegate::setDrawRule(DrawRule rule)
+void TextureListDelegate::setDrawRule(DrawRure rule)
 {
 	drawRule = rule;
 }
@@ -120,12 +118,12 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 		QString texturePath = curTextureDescriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str();
 		QString textureName = QFileInfo(texturePath).fileName();
 		QSize textureDimension = QSize();
-		QString textureDataSize = 0;
+		QVariant textureDataSize = 0;
 
 		if(NULL != curTexture)
 		{
 			textureDimension = QSize(curTexture->width, curTexture->height);
-            textureDataSize = QString::fromStdString(SizeInBytesToString(TextureCache::Instance()->getThumbnailSize(curTextureDescriptor)));
+			textureDataSize = curTexture->GetDataSize();
 		}
 
 		painter->save();
@@ -142,11 +140,14 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 		painter->setPen(BORDER_COLOR);
 		painter->drawRect(borderRect);
 
-		const QList<QImage>& images = TextureCache::Instance()->getThumbnail(curTextureDescriptor);
+		const DAVA::Vector<QImage>& images = TextureCache::Instance()->getOriginal(curTextureDescriptor);
+
+		// draw image preview
 		if(images.size() > 0 &&
 		   !images[0].isNull())
 		{
 			QSize imageSize = images[0].rect().size();
+			imageSize.scale(QSize(TEXTURE_PREVIEW_SIZE - option.decorationSize.width(), TEXTURE_PREVIEW_SIZE - option.decorationSize.height()), Qt::KeepAspectRatio);
 			int imageX =  option.rect.x() + (TEXTURE_PREVIEW_SIZE - imageSize.width())/2;
 			int imageY =  option.rect.y() + (TEXTURE_PREVIEW_SIZE - imageSize.height())/2;
 			painter->drawImage(QRect(QPoint(imageX, imageY), imageSize), images[0]);
@@ -155,8 +156,8 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 		{
 			// there is no image for this texture in cache
 			// so load it async
-            TextureConvertor::Instance()->GetThumbnail(curTextureDescriptor);
-			descriptorIndexes.insert(curTextureDescriptor->pathname, index);
+			TextureConvertor::Instance()->GetOriginal(curTextureDescriptor);
+			descriptorIndexes.insert(curTextureDescriptor, index);
 		}
 
 		// draw formats info
@@ -183,7 +184,7 @@ void TextureListDelegate::drawPreviewBig(QPainter *painter, const QStyleOptionVi
 			//infoText += "Dimension: ";
 			infoText += dimen;
 			infoText += "\nData size: ";
-			infoText += textureDataSize;
+			infoText += textureDataSize.toString();
 
 			painter->drawText(textRect, infoText);
 		}

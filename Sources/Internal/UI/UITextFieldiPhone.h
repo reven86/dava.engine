@@ -44,7 +44,7 @@ public:
 	void OpenKeyboard();
 	void CloseKeyboard();
 	void SetText(WideString & string);
-	void GetText(WideString & string) const;
+	void GetText(WideString & string);
 	void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect);
 

@@ -158,7 +158,7 @@ void * BaseObject::GetMemberObject(const IntrospectionMember *member, void * obj
 BaseObject * BaseObject::LoadFromArchive(KeyedArchive * archive)
 {
     String name = archive->GetString("##name");
-    BaseObject * object = ObjectFactory::Instance()->New<BaseObject>(name);
+    BaseObject * object = ObjectFactory::Instance()->New(name);
     if (object)
     {
         object->Load(archive);

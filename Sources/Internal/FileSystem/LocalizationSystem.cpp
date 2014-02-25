@@ -34,10 +34,8 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
-#if defined(__DAVAENGINE_IPHONE__)
+#ifdef __DAVAENGINE_IPHONE__
 #include "FileSystem/LocalizationIPhone.h"
-#elif defined(__DAVAENGINE_ANDROID__)
-#include "FileSystem/LocalizationAndroid.h"
 #endif
 
 
@@ -63,10 +61,8 @@ void LocalizationSystem::InitWithDirectory(const FilePath &directoryPath)
     DVASSERT(directoryPath.IsDirectoryPathname());
     
     this->directoryPath = directoryPath;
-#if defined(__DAVAENGINE_IPHONE__)
+#ifdef __DAVAENGINE_IPHONE__
 	LocalizationIPhone::SelecePreferedLocalizationForPath(directoryPath);
-#elif defined(__DAVAENGINE_ANDROID__)
-    LocalizationAndroid::SelecePreferedLocalization();
 #endif
 	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
 }

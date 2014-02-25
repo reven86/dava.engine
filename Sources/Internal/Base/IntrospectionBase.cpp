@@ -34,8 +34,18 @@
 namespace DAVA
 {
 
+InspDesc::InspDesc(const char *_text)
+	: text(_text)
+	, enumMap(NULL)
+{}
+
+InspDesc::InspDesc(const char *_text, const EnumMap* _enumMap)
+	: text(_text)
+	, enumMap(_enumMap)
+{ }
+
 InspMember::InspMember(const char *_name, const InspDesc &_desc, const long int _offset, const MetaInfo *_type, int _flags /* = 0 */)
-: name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags), parentInsp(NULL)
+	: name(_name), desc(_desc), offset(_offset), type(_type), flags(_flags)
 { }
 
 const char* InspMember::Name() const
@@ -85,19 +95,9 @@ const InspColl* InspMember::Collection() const
 	return NULL;
 }
 
-const InspMemberDynamic* InspMember::Dynamic() const
-{
-	return NULL;
-}
-
 int InspMember::Flags() const
 {
 	return flags;
-}
-
-void InspMember::ApplyParentInsp(const InspInfo *_parentInsp) const
-{
-	parentInsp = _parentInsp;
 }
 
 };

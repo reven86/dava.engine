@@ -5,8 +5,6 @@
 #include "DAVAEngine.h"
 #include "Commands2/Command2.h"
 
-#include "Render/UniqueStateSet.h"
-
 using namespace DAVA;
 
 class QComboBox;
@@ -95,8 +93,6 @@ private:
 	int32 StrengthSystemToUI(float32 systemValue);
 
 	void SplitImageToChannels(Image* image, Image*& r, Image*& g, Image*& b, Image*& a);
-	
-	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORPANEL__) */

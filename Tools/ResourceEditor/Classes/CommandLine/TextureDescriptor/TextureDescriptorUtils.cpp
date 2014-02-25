@@ -57,7 +57,7 @@ void TextureDescriptorUtils::ResaveDescriptor(const FilePath & descriptorPathnam
 {
 	TextureDescriptor *descriptor = TextureDescriptor::CreateFromFile(descriptorPathname);
 	descriptor->Save();
-	delete descriptor;
+	SafeRelease(descriptor);
 }
 
 
@@ -89,7 +89,7 @@ void TextureDescriptorUtils::CopyCompressionParams(const FilePath &descriptorPat
     const TextureDescriptor::Compression &srcCompression = descriptor->compression[GPU_POWERVR_IOS];
     if(srcCompression.format == FORMAT_INVALID)
     {   //source format not set
-        delete descriptor;
+        SafeRelease(descriptor);
         return;
     }
     
@@ -113,7 +113,7 @@ void TextureDescriptorUtils::CopyCompressionParams(const FilePath &descriptorPat
     }
     
     descriptor->Save();
-	delete descriptor;
+    SafeRelease(descriptor);
 }
 
 
@@ -146,7 +146,7 @@ void TextureDescriptorUtils::CreateDescriptorIfNeed(const FilePath &pngPathname)
     {
         TextureDescriptor *descriptor = new TextureDescriptor();
         descriptor->Save(descriptorPathname);
-		delete descriptor;
+        SafeRelease(descriptor);
     }
 }
 
@@ -194,7 +194,7 @@ void TextureDescriptorUtils::SetCompressionParams( const FilePath &descriptorPat
 	}
 
 	descriptor->Save();
-	delete descriptor;
+	SafeRelease(descriptor);
 }
 
 bool TextureDescriptorUtils::IsCorrectDirectory( FileList *fileList, const int32 fileIndex )

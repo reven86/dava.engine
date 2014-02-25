@@ -122,9 +122,9 @@ private:
 
 	QVBoxLayout* pivotPointLayout;
 	QLabel* pivotPointLabel;
-	EventFilterDoubleSpinBox* pivotPointXSpinBox;
+	QSpinBox* pivotPointXSpinBox;
 	QLabel* pivotPointXSpinBoxLabel;
-	EventFilterDoubleSpinBox* pivotPointYSpinBox;
+	QSpinBox* pivotPointYSpinBox;
 	QLabel* pivotPointYSpinBoxLabel;
 	QPushButton* pivotPointResetButton;
 

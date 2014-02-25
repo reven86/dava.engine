@@ -32,7 +32,6 @@
 
 #ifdef __DAVAENGINE_ANDROID__
 #include "Debug/DVAssert.h"
-#include "Platform/TemplateAndroid/FakeOcclusionQuery.h"
 #endif
 
 #define __ENABLE_OGL_DEBUG_BREAK__
@@ -58,6 +57,7 @@
 #if defined(__DAVAENGINE_OPENGL__)
 namespace DAVA
 {
+
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || (defined(__DAVAENGINE_IPHONE__) && defined (__DAVAENGINE_DEBUG__))
 #define RENDER_VERIFY(command) \
 { \
@@ -89,19 +89,9 @@ namespace DAVA
 		OGLDebugBreak(); \
     }\
 }
-#else // RELEASE VERSION
-/* 
-    If you want to have ability to disable all rendering functions in release build you should uncomment the line below.
- */
- //#define CAN_DISABLE_ALL_RENDERING_IN_BUILD
-    
-#if defined(CAN_DISABLE_ALL_RENDERING_IN_BUILD)
-    #define RENDER_VERIFY(command) if (RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::ALL_RENDER_FUNCTIONS_ENABLED)) command;
 #else
-    #define RENDER_VERIFY(command) command;
-#endif 
-    
-#endif
+#define RENDER_VERIFY(command) command;  
+#endif //#if defined(__DAVAENGINE_WIN32__)
     
 
     
@@ -130,23 +120,12 @@ namespace DAVA
 	#define glBindFramebuffer glBindFramebufferOES
     #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
 	#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
-
     
 #elif defined(__DAVAENGINE_ANDROID__)
     
-    #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
-    #ifndef GL_HALF_FLOAT
-        #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
-    #endif
-    #ifndef GL_DEPTH24_STENCIL8
-        #define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
-    #endif
-    #ifndef GL_SAMPLES_PASSED
-        #define GL_SAMPLES_PASSED GL_ANY_SAMPLES_PASSED
-    #endif
-    #ifndef GL_QUERY_RESULT_ARB
-        #define GL_QUERY_RESULT_ARB GL_QUERY_RESULT
-    #endif
+    #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
+	#define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
+	#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
     
 #elif defined(__DAVAENGINE_MACOS__)
 	

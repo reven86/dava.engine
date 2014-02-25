@@ -33,7 +33,8 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Render/Material.h"
-
+#include "Particles/ParticleEmitter3D.h"
+#include "Particles/ParticleLayer3D.h"
 
 namespace DAVA
 {
@@ -64,7 +65,7 @@ void ParticleEmitterNode::LoadFromYaml(const FilePath& _yamlPath)
 {
 	yamlPath = _yamlPath;
 	SafeRelease(emitter);
-	emitter = new ParticleEmitter();
+	emitter = new ParticleEmitter3D();
 	emitter->LoadFromYaml(yamlPath);
 }
 
@@ -90,26 +91,25 @@ Entity* ParticleEmitterNode::Clone(Entity *dstNode /*= NULL*/)
 	return dstNode;
 }
 
-void ParticleEmitterNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void ParticleEmitterNode::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
-	Entity::Save(archive, serializationContext);
+	Entity::Save(archive, sceneFile);
 
-	archive->SetString("yamlPath", yamlPath.GetRelativePathname(serializationContext->GetScenePath()));
+	archive->SetString("yamlPath", yamlPath.GetRelativePathname(sceneFile->GetScenePath()));
 }
 
-void ParticleEmitterNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void ParticleEmitterNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
-	Entity::Load(archive, serializationContext);
+	Entity::Load(archive, sceneFile);
 	
 	String path = archive->GetString("yamlPath");
-	yamlPath = serializationContext->GetScenePath() + path;
+	yamlPath = sceneFile->GetScenePath() + path;
 	LoadFromYaml(yamlPath);
 }
 
 void ParticleEmitterNode::GetDataNodes(Set<DataNode*> & dataNodes)
 {
-	//VI: NMaterial is not a DataNode anymore
-	/*if(emitter)
+	if(emitter)
 	{
 		int32 layersCount = emitter->GetLayers().size();
 		for(int32 i = 0; i < layersCount; ++i)
@@ -117,7 +117,7 @@ void ParticleEmitterNode::GetDataNodes(Set<DataNode*> & dataNodes)
 			ParticleLayer3D * layer = dynamic_cast<ParticleLayer3D*>(emitter->GetLayers()[i]);
 			dataNodes.insert(layer->GetMaterial());
 		}
-	}*/
+	}
 	
 
 	Entity::GetDataNodes(dataNodes);

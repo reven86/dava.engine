@@ -66,7 +66,6 @@ void LibraryController::Init(LibraryWidget* widget)
 	AddControl("UIScrollView", new UIScrollView());
 	AddControl("UISpinner", new UISpinner());
 	AddControl("UISwitch", new UISwitch());
-    AddControl("UIParticles", new UIParticles());
 }
 
 void LibraryController::AddControl(HierarchyTreeAggregatorNode* node)
@@ -120,7 +119,7 @@ HierarchyTreeControlNode* LibraryController::CreateNewControl(HierarchyTreeNode*
 		dynamic_cast<HierarchyTreeControlNode*>(iter->first))
 	{
 		//create standart control
-		BaseObject* object = ObjectFactory::Instance()->New<BaseObject>(type);
+		BaseObject* object = ObjectFactory::Instance()->New(type);
 		control = dynamic_cast<UIControl*>(object);
 		if (!control)
 		{

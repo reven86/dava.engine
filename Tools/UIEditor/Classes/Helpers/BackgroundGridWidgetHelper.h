@@ -116,12 +116,6 @@ public:
 
 	static QString GetModificationTypeDescByType(int modificationType);
 
-    // Fitting Type.
-    static int GetFittingType(int index);
-    static QString GetFittingTypeDesc(int index);
-    static QString GetFittingTypeDescByType(int fittingType);
-    static int GetFittingTypesCount();
-
 protected:
     // Validate the indexes.
     static bool ValidateDrawTypeIndex(int index);
@@ -135,9 +129,7 @@ protected:
 	static bool ValidateSpellCheckingIndex(int index);
 	static bool ValidateAutoCorrectionIndex(int index);
 	static bool ValidateAutoCapitalizationIndex(int index);
-
-    static bool ValidateFittingTypeIndex(int index);
-
+    
     // Maps.
     struct DrawTypesData
     {
@@ -199,12 +191,6 @@ protected:
 		const char* autoCapitalizationTypeDescription;
 	};
 
-    struct FittingTypesData
-    {
-        int fittingType; // int because combinations are possible.
-        const char* fittingTypeDescription;
-    };
-
     static const DrawTypesData drawTypesData[];
     static const ColorInheritTypesData colorInheritTypesData[];
     static const AlignTypesData alignTypesData[];
@@ -216,8 +202,6 @@ protected:
 	static const SpellCheckingTypesData spellCheckingTypesData[];
 	static const AutoCorrectionTypesData autoCorrectionTypesData[];
 	static const AutoCapitalizationTypesData autoCapitalizationTypesData[];
-    
-    static const FittingTypesData fittingTypesData[];
 };
 
 };

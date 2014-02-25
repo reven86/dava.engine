@@ -43,7 +43,7 @@ public class LocalFileDescriptor {
 		return length;
 	}
 	
-	public static boolean IsLocal(String path) {
+	private static boolean IsLocal(String path) {
 		return path.startsWith("/");
 	}
 }

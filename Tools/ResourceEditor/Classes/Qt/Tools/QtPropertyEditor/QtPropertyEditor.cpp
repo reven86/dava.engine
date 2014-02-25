@@ -31,85 +31,51 @@
 #include <QMouseEvent>
 #include <QHeaderView>
 #include <QPainter>
-#include <QCoreApplication>
+#include <QWindowsStyle>
 
 #include "QtPropertyEditor.h"
 #include "QtPropertyModel.h"
 #include "QtPropertyItemDelegate.h"
 
 QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
-: QTreeView(parent)
-, updateTimeout(0)
-, doUpdateOnPaintEvent(false)
+	: QTreeView(parent)
+	, updateTimeout(0)
+	, doUpdateOnPaintEvent(false)
 {
-	curModel = new QtPropertyModel(viewport());
+	curModel = new QtPropertyModel();
 	setModel(curModel);
 
-	curItemDelegate = new QtPropertyItemDelegate(curModel);
+	curItemDelegate = new QtPropertyItemDelegate();
 	setItemDelegate(curItemDelegate);
 
 	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnItemClicked(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), this, SLOT(OnExpanded(const QModelIndex &)));
-	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), this, SLOT(OnCollapsed(const QModelIndex &)));
-	QObject::connect(curModel, SIGNAL(PropertyEdited(const QModelIndex &)), this, SLOT(OnItemEdited(const QModelIndex &)));
-	QObject::connect(curModel, SIGNAL(rowsAboutToBeInserted(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeOp(const QModelIndex &, int, int)));
-	QObject::connect(curModel, SIGNAL(rowsAboutToBeRemoved(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeOp(const QModelIndex &, int, int)));
-	QObject::connect(curModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)), this, SLOT(rowsOp(const QModelIndex &, int, int)));
-	QObject::connect(curModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this, SLOT(rowsOp(const QModelIndex &, int, int)));
+	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), curItemDelegate, SLOT(expand(const QModelIndex &)));
+	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), curItemDelegate, SLOT(collapse(const QModelIndex &)));
+	QObject::connect(curModel, SIGNAL(ItemEdited(const QString &, QtPropertyData *)), this, SLOT(OnItemEdited(const QString &, QtPropertyData *)));
 	QObject::connect(&updateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeout()));
-
-	setMouseTracking(true);
-
-	//new QtPropertyToolButton(NULL, viewport());
 }
 
 QtPropertyEditor::~QtPropertyEditor()
 { }
 
-QModelIndex QtPropertyEditor::AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent)
+QPair<QtPropertyItem*, QtPropertyItem*> QtPropertyEditor::AppendProperty(const QString &name, QtPropertyData* data, QtPropertyItem* parent /*= NULL*/)
 {
+	if(NULL != data)
+	{
+		data->SetOWViewport(viewport());
+	}
+
 	return curModel->AppendProperty(name, data, parent);
 }
 
-QModelIndex QtPropertyEditor::InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent)
+QPair<QtPropertyItem*, QtPropertyItem*> QtPropertyEditor::GetProperty(const QString &name, QtPropertyItem* parent) const
 {
-	return curModel->InsertProperty(name, data, row, parent);
+	return curModel->GetProperty(name, parent);
 }
 
-QModelIndex QtPropertyEditor::AppendHeader(const QString &text)
+void QtPropertyEditor::RemoveProperty(QtPropertyItem* item)
 {
-	QModelIndex propHeader = AppendProperty(text, new QtPropertyData(""));
-
-	ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
-	return propHeader;
-}
-
-QModelIndex QtPropertyEditor::InsertHeader(const QString &text, int row)
-{
-	QModelIndex propHeader = InsertProperty(text, new QtPropertyData(""), row);
-
-	ApplyStyle(GetProperty(propHeader), HEADER_STYLE);
-	return propHeader;
-}
-
-QtPropertyData* QtPropertyEditor::GetProperty(const QModelIndex &index) const
-{
-	return curModel->itemFromIndex(index);
-}
-
-QtPropertyData * QtPropertyEditor::GetRootProperty() const
-{
-	return curModel->rootItem();
-}
-
-void QtPropertyEditor::RemoveProperty(const QModelIndex &index)
-{
-	curModel->RemoveProperty(index);
-}
-
-void QtPropertyEditor::RemoveProperty(QtPropertyData *data)
-{
-	curModel->RemoveProperty(curModel->indexFromItem(data));
+	curModel->RemoveProperty(item);
 }
 
 void QtPropertyEditor::RemovePropertyAll()
@@ -117,9 +83,17 @@ void QtPropertyEditor::RemovePropertyAll()
 	curModel->RemovePropertyAll();
 }
 
-void QtPropertyEditor::SetFilter(const QString &regex)
+QtPropertyData *QtPropertyEditor::GetPropertyData(const QString &key, QtPropertyItem *parent) const
 {
-	//curFilteringModel->setFilterRegExp(regex);
+	QtPropertyData *ret = NULL;
+
+	QPair<QtPropertyItem*, QtPropertyItem*> pair = GetProperty(key, parent);
+	if(NULL != pair.second)
+	{
+		ret = pair.second->GetPropertyData();
+	}
+
+	return ret;
 }
 
 void QtPropertyEditor::SetEditTracking(bool enabled)
@@ -127,9 +101,14 @@ void QtPropertyEditor::SetEditTracking(bool enabled)
 	curModel->SetEditTracking(enabled);
 }
 
-bool QtPropertyEditor::GetEditTracking() const
+bool QtPropertyEditor::GetEditTracking()
 {
 	return curModel->GetEditTracking();
+}
+
+void QtPropertyEditor::Expand(QtPropertyItem *item)
+{
+	expand(curModel->indexFromItem(item));
 }
 
 void QtPropertyEditor::SetUpdateTimeout(int ms)
@@ -167,14 +146,20 @@ void QtPropertyEditor::OnUpdateTimeout()
 	SetUpdateTimeout(updateTimeout);
 }
 
-void QtPropertyEditor::OnExpanded(const QModelIndex & index)
+QtPropertyItem* QtPropertyEditor::AddHeader(const char *text)
 {
-	ShowButtonsUnderCursor();
-}
-
-void QtPropertyEditor::OnCollapsed(const QModelIndex & index)
-{
-	ShowButtonsUnderCursor();
+	QPair<QtPropertyItem*, QtPropertyItem*> propHeader;
+	
+	propHeader = AppendProperty(text, NULL);
+	
+	QFont boldFont = propHeader.first->font();
+	boldFont.setBold(true);
+	
+	propHeader.first->setFont(boldFont);
+	propHeader.first->setBackground(QBrush(QColor(Qt::lightGray)));
+	propHeader.second->setBackground(QBrush(QColor(Qt::lightGray)));
+	
+	return propHeader.first;
 }
 
 void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &option, const QModelIndex & index) const
@@ -212,82 +197,21 @@ void QtPropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem &o
 	}
 }
 
-void QtPropertyEditor::ApplyStyle(QtPropertyData *data, int style)
+void QtPropertyEditor::paintEvent(QPaintEvent * event)
 {
-	if(NULL != data)
-	{
-		switch(style)
-		{
-		case DEFAULT_STYLE:
-			data->ResetStyle();
-			break;
-
-		case HEADER_STYLE:
-			{
-				QFont boldFont = data->GetFont();
-				boldFont.setBold(true);
-				data->SetFont(boldFont);
-
-				data->SetBackground(QBrush(QColor(Qt::lightGray)));
-				data->SetBackground(QBrush(QColor(Qt::lightGray)));
-			}
-			break;
-
-		default:
-			break;
-		}
-	}
-}
-
-// QtPropertyToolButton* QtPropertyEditor::GetButton(QMouseEvent * event)
-// {
-// 	QtPropertyToolButton *ret = NULL;
-// 	QtPropertyData *data = GetProperty(indexAt(event->pos()));
-// 
-// 	if(NULL != data)
-// 	{
-// 		for(int i = 0; i < data->GetButtonsCount(); ++i)
-// 		{
-// 			QtPropertyToolButton *btn = data->GetButton(i);
-// 			QPoint p = event->pos() - btn->pos();
-// 
-// 			if(p.x() >= 0 && p.y() >= 0 && p.x() < btn->width() && p.y() < btn->height())
-// 			{
-// 				ret = btn;
-// 			}
-// 		}
-// 	}
-// 
-// 	return ret;
-// }
-
-void QtPropertyEditor::leaveEvent(QEvent * event)
-{
-	curItemDelegate->invalidateButtons();
+	QTreeView::paintEvent(event);
 }
 
 void QtPropertyEditor::OnItemClicked(const QModelIndex &index)
 {
-	edit(index, QAbstractItemView::DoubleClicked, NULL);
+	QStandardItem *item = curModel->itemFromIndex(index);
+	if(NULL != item && item->isEditable() && item->isEnabled())
+	{
+		edit(index, QAbstractItemView::DoubleClicked, NULL);
+	}
 }
 
-void QtPropertyEditor::OnItemEdited(const QModelIndex &index)
+void QtPropertyEditor::OnItemEdited(const QString &name, QtPropertyData *data)
 {
-	emit PropertyEdited(index);
-}
-
-void QtPropertyEditor::rowsAboutToBeOp(const QModelIndex & parent, int start, int end)
-{
-	curItemDelegate->invalidateButtons();
-}
-
-void QtPropertyEditor::rowsOp(const QModelIndex & parent, int start, int end)
-{
-	ShowButtonsUnderCursor();
-}
-
-void QtPropertyEditor::ShowButtonsUnderCursor()
-{
-	QPoint pos = viewport()->mapFromGlobal(QCursor::pos());
-	curItemDelegate->showButtons(GetProperty(indexAt(pos)));
+	emit PropertyEdited(name, data);
 }

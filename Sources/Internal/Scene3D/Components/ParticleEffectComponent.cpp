@@ -31,122 +31,166 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Entity.h"
+#include "Particles/ParticleEmitter.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/LodComponent.h"
-#include "Scene3D/Systems/LodSystem.h"
-#include "Scene3D/Systems/ParticleEffectSystem.h"
-#include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/Systems/GlobalEventSystem.h"
-
 
 namespace DAVA
 {
-    
-REGISTER_CLASS(ParticleEffectComponent)
 
 ParticleEffectComponent::ParticleEffectComponent()
 {
-	repeatsCount = -1;
+	stopAfterNRepeats = -1;
 	stopWhenEmpty = false;
-	clearOnRestart = true;
-	effectDuration = 100.0f;
-	playbackSpeed = 1.0f;
-	isPaused = false;
-	state = STATE_STOPPED;
-	effectData.infoSources.resize(1);
-	effectData.infoSources[0].size=Vector2(1,1);
-	effectRenderObject = new ParticleRenderObject(&effectData);
-    effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY); //world transform doesn't effect particle render object drawing - instead particles are generated in corresponding world position
-	time = 0;
-	desiredLodLevel = 1;
-}
+	effectDuration = 0.0f;
+	emittersCurrentlyStopped = 0;
+    isStopped = false;
+	requireRebuildEffectModifiables = true;
 
-ParticleEffectComponent::~ParticleEffectComponent()
-{
-	ClearCurrentGroups();
-	if (state!=STATE_STOPPED)
-		GetEntity()->GetScene()->particleEffectSystem->RemoveFromActive(this);
-	SafeRelease(effectRenderObject);
-	for (int32 i=0, sz = emitters.size(); i<sz; ++i)
-		SafeRelease(emitters[i]);
-	
 }
 
 Component * ParticleEffectComponent::Clone(Entity * toEntity)
-{	
+{
 	ParticleEffectComponent * newComponent = new ParticleEffectComponent();
 	newComponent->SetEntity(toEntity);
-	newComponent->repeatsCount = repeatsCount;
-	newComponent->stopWhenEmpty = stopWhenEmpty;	
+
+	newComponent->stopAfterNRepeats = stopAfterNRepeats;
+	newComponent->stopWhenEmpty = stopWhenEmpty;
+	newComponent->needEmitPlaybackComplete = needEmitPlaybackComplete;
 	newComponent->playbackComplete = playbackComplete;
 	newComponent->effectDuration = effectDuration;
-	int emittersCount = emitters.size();
-	newComponent->emitters.resize(emittersCount);
-	for (int32 i=0; i<emittersCount; ++i)
-		newComponent->emitters[i] = emitters[i]->Clone();
-    newComponent->RebuildEffectModifiables();
-	return newComponent;
-}
+	newComponent->emittersCurrentlyStopped = emittersCurrentlyStopped;	
+    newComponent->isStopped = isStopped;
 
-void ParticleEffectComponent::SetSortingOffset(uint32 offset)
-{
-    effectRenderObject->SetSortingOffset(offset);
+	return newComponent;
 }
 
 void ParticleEffectComponent::Start()
 {
-	isPaused = false;
-	GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::START_PARTICLE_EFFECT);	
+	if (requireRebuildEffectModifiables)
+	{
+		RebuildEffectModifiables();
+		requireRebuildEffectModifiables = false;
+	}
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderComponent * component = static_cast<RenderComponent*>(entity->GetChild(i)->GetComponent(Component::RENDER_COMPONENT));
+		if(component && component->GetRenderObject() && component->GetRenderObject()->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(component->GetRenderObject());
+			emitter->Play();
+		}
+	}
+
+	this->emittersCurrentlyStopped = 0;
+    isStopped = false;
 }
 
 void ParticleEffectComponent::Stop(bool isDeleteAllParticles)
 {
-	if (state == STATE_STOPPED) return;
-	if (isDeleteAllParticles)
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
 	{
-		ClearCurrentGroups();		
-		effectData.infoSources.resize(1);
-		GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::STOP_PARTICLE_EFFECT);		
-	}
-	else
-	{
-		state = STATE_STOPPING;
-        SetGroupsFinishing();
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			emitter->Stop(isDeleteAllParticles);
+		}
+		emittersCurrentlyStopped++;
 	}
 }
 
 void ParticleEffectComponent::Pause(bool isPaused /*= true*/)
 {	
-	this->isPaused = isPaused;
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			emitter->Pause(isPaused);
+		}
+	}
 }
 
 bool ParticleEffectComponent::IsStopped()
 {
-	return state == STATE_STOPPED;
+    return isStopped;
+    /* old non working code
+	// Effect is stopped if all its emitters are stopped.
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			if (!emitter->IsStopped())
+			{
+				return false;
+			}
+		}
+	}
+	
+	return true;
+    */
 }
 
 bool ParticleEffectComponent::IsPaused()
 {
-	return isPaused;
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			if (!emitter->IsPaused())
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 void ParticleEffectComponent::Step(float32 delta)
 {
-	GetEntity()->GetScene()->particleEffectSystem->UpdateEffect(this, delta, delta);
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			emitter->Update(delta);			
+		}				
+		
+		
+	}
 }
 	
-void ParticleEffectComponent::Restart(bool isDeleteAllParticles)
+void ParticleEffectComponent::Restart()
 {
-	isPaused = false;
-	if (isDeleteAllParticles)
-		ClearCurrentGroups();
-	currRepeatsCont = 0;
-	GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::START_PARTICLE_EFFECT);		
+	
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			emitter->Restart();
+		}
+	}
 }
 
 void ParticleEffectComponent::StopAfterNRepeats(int32 numberOfRepeats)
 {
-    repeatsCount = numberOfRepeats;
+    stopAfterNRepeats = numberOfRepeats;
 }
 
 void ParticleEffectComponent::StopWhenEmpty(bool value /*= true*/)
@@ -154,38 +198,25 @@ void ParticleEffectComponent::StopWhenEmpty(bool value /*= true*/)
 	stopWhenEmpty = value;
 }
 
-void ParticleEffectComponent::ClearCurrentGroups()
-{
-	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
+void ParticleEffectComponent::EffectUpdate(float32 timeElapsed)
+{		
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
 	{
-		Particle * current = (*it).head;
-		while (current)
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
 		{
-			Particle *next = current->next;
-			delete current;
-			current = next;
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			if (IsStopEmitter(emitter))
+			{
+				emitter->Stop();
+				this->emittersCurrentlyStopped++;
+
+				// Are all the emitters finished playback? Notify user if yes.
+				CheckPlaybackComplete();
+			}
 		}
-		it->layer->Release();
-		it->emitter->Release();		
 	}
-	effectData.groups.clear();
-}
-
-void ParticleEffectComponent::SetRenderObjectVisible(bool visible)
-{
-    if (visible) 
-        effectRenderObject->AddFlag(RenderObject::VISIBLE);
-    else
-        effectRenderObject->RemoveFlag(RenderObject::VISIBLE);
-
-}
-
-void ParticleEffectComponent::SetGroupsFinishing()
-{
-    for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
-    {
-        (*it).finishingGroup = true;
-    }
 }
 
 void ParticleEffectComponent::SetPlaybackCompleteMessage(const Message & msg)
@@ -193,29 +224,91 @@ void ParticleEffectComponent::SetPlaybackCompleteMessage(const Message & msg)
 	playbackComplete = msg;
 }
 
+void ParticleEffectComponent::UpdateDurationForChildNodes(float32 newEmitterLifeTime)
+{
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			emitter->SetLifeTime(newEmitterLifeTime);
+		}
+	}
+}
+
+bool ParticleEffectComponent::IsStopEmitter(ParticleEmitter * emitter) const
+{
+	if (!emitter)
+	{
+		return true;
+	}
+
+	if (emitter->IsStopped())
+	{
+		// Already stopped - no need to stop again.
+		return false;
+	}
+
+	// Check whether emitter is about to be stopped because of repeats count.
+	if ((stopAfterNRepeats > 0) && (emitter->GetRepeatCount() >= stopAfterNRepeats))
+	{
+		return true;
+	}
+
+	// Check whether emitter is about to be stopped because of it is empty.
+	if (stopWhenEmpty && emitter->GetParticleCount() == 0)
+	{
+		return true;
+	}
+
+	// No rules to stop emitter - continue its playback.
+	return false;
+}
+
+void ParticleEffectComponent::CheckPlaybackComplete()
+{
+	if(entity->GetChildrenCount() == this->emittersCurrentlyStopped)
+	{
+		// Playback is finished!
+		emittersCurrentlyStopped = 0;
+        isStopped = true;
+		playbackComplete(entity, 0);
+	}
+}
 
 float32 ParticleEffectComponent::GetPlaybackSpeed()
 {
-	return playbackSpeed;
+	// Ask the first emitter available.
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			return emitter->GetPlaybackSpeed();
+		}
+	}
+
+	return 1.0f;
 }
 
 void ParticleEffectComponent::SetPlaybackSpeed(float32 value)
 {
-	playbackSpeed = value;
-}
-
-
-void ParticleEffectComponent::SetDesiredLodLevel(int32 level)
-{
-	desiredLodLevel = level;
-	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e=effectData.groups.end(); it!=e;++it)
+	// Update all emitters.
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
 	{
-		ParticleGroup& group = *it;
-		if (!group.emitter->shortEffect)
-			group.visibleLod = group.layer->IsLodActive(level);
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			emitter->SetPlaybackSpeed(value);
+		}
 	}
 }
-
 
 void ParticleEffectComponent::SetExtertnalValue(const String& name, float32 value)
 {
@@ -264,10 +357,15 @@ void ParticleEffectComponent::RebuildEffectModifiables()
 {
 	externalModifiables.clear();
 	List<ModifiablePropertyLineBase *> modifiables;
-	
-	for (int32 i = 0, sz = emitters.size(); i < sz; i ++)
-	{		
-		emitters[i]->GetModifableLines(modifiables);					
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			emitter->GetModifableLines(modifiables);			
+		}
 	}
 
 	for (List<ModifiablePropertyLineBase *>::iterator it = modifiables.begin(), e=modifiables.end(); it!=e; ++it)
@@ -283,153 +381,30 @@ void ParticleEffectComponent::RebuildEffectModifiables()
 int32 ParticleEffectComponent::GetActiveParticlesCount()
 {
 	int32 totalActiveParticles = 0;
-	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e=effectData.groups.end(); it!=e; ++it)
-		totalActiveParticles+=(*it).activeParticleCount;
-	
+	int32 childrenCount = entity->GetChildrenCount();
+	for (int32 i = 0; i < childrenCount; i ++)
+	{
+		RenderObject * ro = GetRenderObject(entity->GetChild(i));
+		if(ro && ro->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER)
+		{
+			ParticleEmitter * emitter = static_cast<ParticleEmitter*>(ro);
+			totalActiveParticles += emitter->GetActiveParticlesCount();
+		}
+	}
 
 	return totalActiveParticles;
 }
 
-void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void ParticleEffectComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 {
-	Component::Serialize(archive, serializationContext);
-	archive->SetUInt32("pe.version", 1);
-	archive->SetBool("pe.stopWhenEmpty", stopWhenEmpty);
-	archive->SetFloat("pe.effectDuration", effectDuration);
-	archive->SetUInt32("pe.repeatsCount", repeatsCount);
-	archive->SetBool("pe.clearOnRestart", clearOnRestart);
-	archive->SetUInt32("pe.emittersCount", emitters.size());
-	KeyedArchive *emittersArch = new KeyedArchive();	
-	for (uint32 i=0; i<emitters.size(); ++i)
-	{		
-		KeyedArchive *emitterArch = new KeyedArchive();
-		String filename = emitters[i]->configPath.GetRelativePathname(serializationContext->GetScenePath());
-		emitterArch->SetString("emitter.filename", filename);
-        emitterArch->SetVector3("emitter.position", emitters[i]->position);
-		emittersArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), emitterArch);
-		emitterArch->Release();
-	} 
-	archive->SetArchive("pe.emitters", emittersArch);
-	emittersArch->Release();
+	Component::Serialize(archive, sceneFile);
 }
 	
-
-void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
-{
-	Component::Deserialize(archive, serializationContext);
-	loadedVersion = archive->GetUInt32("pe.version", 0);
-	
-	if (loadedVersion==1) //new effect - load everything here
-	{
-		stopWhenEmpty = archive->GetBool("pe.stopWhenEmpty");
-		effectDuration = archive->GetFloat("pe.effectDuration");
-		repeatsCount = archive->GetUInt32("pe.repeatsCount");
-		clearOnRestart = archive->GetBool("pe.clearOnRestart");
-		uint32 emittersCount = archive->GetUInt32("pe.emittersCount");		
-		KeyedArchive *emittersArch = archive->GetArchive("pe.emitters");
-		emitters.resize(emittersCount);
-		for (uint32 i=0; i<emittersCount; ++i)
-		{		
-			emitters[i]=new ParticleEmitter();
-            KeyedArchive *emitterArch = emittersArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-			String filename = emitterArch->GetString("emitter.filename");
-			if (!filename.empty())
-				emitters[i]->LoadFromYaml(serializationContext->GetScenePath()+filename);			
-            emitters[i]->position = emitterArch->GetVector3("emitter.position");
-		} 	
-        RebuildEffectModifiables();
-	}
-}
-
-void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializationContext)
-{
-	Entity *entity = GetEntity();
-	bool lodDefined = false;
-	effectDuration = 0;
-    Vector3 effectScale = Vector3(1,1,1);
-    Entity *currEntity = entity;
-    while (currEntity)
-    {
-        effectScale*=currEntity->GetLocalTransform().GetScaleVector();
-        currEntity = currEntity->GetParent();
-    }
-	for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
-	{
-		Entity *child = entity->GetChild(i);
-		PartilceEmitterLoadProxy *emitterProxy = NULL;
-		RenderComponent *renderComponent = static_cast<RenderComponent*>(child->GetComponent(Component::RENDER_COMPONENT));
-		if (renderComponent)
-			emitterProxy = static_cast<PartilceEmitterLoadProxy *>(renderComponent->GetRenderObject());
-		if (!emitterProxy) continue;
-		ParticleEmitter *emitter = new ParticleEmitter();
-		emitter->position = (child->GetLocalTransform().GetTranslationVector())*effectScale;
-		if (!emitterProxy->emitterFilename.empty())
-		{			
-			emitter->LoadFromYaml(serializationContext->GetScenePath()+emitterProxy->emitterFilename);
-			if (effectDuration<emitter->lifeTime)
-				effectDuration = emitter->lifeTime;
-		}
-		emitter->name = child->GetName();
-		emitters.push_back(emitter);
-		if (!lodDefined)
-		{
-			LodComponent *lodComponent = static_cast<LodComponent *>(child->GetComponent(Component::LOD_COMPONENT));
-			if (lodComponent)
-			{
-				entity->AddComponent(lodComponent->Clone(entity));
-				lodDefined = true;
-			}
-		}
-	}
-
-	entity->RemoveAllChildren();	
-    RebuildEffectModifiables();
-}
-
-int32 ParticleEffectComponent::GetEmittersCount()
-{
-	return (int32)emitters.size();
-}
-ParticleEmitter* ParticleEffectComponent::GetEmitter(int32 id)
-{
-	DVASSERT((id>=0)&&(id<(int32)emitters.size()));
-	return emitters[id];
-}
-
-void ParticleEffectComponent::AddEmitter(ParticleEmitter *emitter)
-{
-    SafeRetain(emitter);
-	emitters.push_back(emitter);
+void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+{			
+	Component::Deserialize(archive, sceneFile);
 }
 
 
-int32 ParticleEffectComponent::GetEmitterId(ParticleEmitter *emitter)
-{
-    for (int32 i=0, sz=emitters.size(); i<sz; ++i)
-        if (emitters[i]==emitter)
-            return i;
-    return -1;
-}
-
-void ParticleEffectComponent::InsertEmitterAt(ParticleEmitter *emitter, int32 position)
-{
-    Vector<ParticleEmitter*>::iterator it = emitters.begin();
-    std::advance(it, Min(position, GetEmittersCount()));
-    SafeRetain(emitter);
-    emitters.insert(it, emitter);
-}
-
-void ParticleEffectComponent::RemoveEmitter(ParticleEmitter *emitter)
-{
-	Vector<ParticleEmitter *>::iterator it = std::find(emitters.begin(), emitters.end(), emitter);
-	DVASSERT(it!=emitters.end());
-	emitter->Release();
-	emitters.erase(it);	
-}
-
-float32 ParticleEffectComponent::GetCurrTime()
-{
-    return time;
-}
 
 }

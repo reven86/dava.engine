@@ -86,6 +86,7 @@ public:
 	const Vector2& GetScale() const;
 	const Vector2& GetPivot() const;
 
+
 	virtual RenderObject * Clone(RenderObject *newObject);
 
 protected:

@@ -128,7 +128,7 @@ const Vector2 & InstanceMaterialState::GetTextureShift()
     return texture0Shift;
 }
 
-void InstanceMaterialState::Save(KeyedArchive * archive, SerializationContext *serializationContext)
+void InstanceMaterialState::Save(KeyedArchive * archive, SceneFileV2 *sceneFile)
 {
 	if(NULL != archive)
 	{
@@ -144,7 +144,7 @@ void InstanceMaterialState::Save(KeyedArchive * archive, SerializationContext *s
 		
 		if(!lightmapName.IsEmpty())
 		{
-            String filename = lightmapName.GetRelativePathname(serializationContext->GetScenePath());
+            String filename = lightmapName.GetRelativePathname(sceneFile->GetScenePath());
             archive->SetString("ims.lightmapname", filename);
 		}
 		
@@ -165,7 +165,7 @@ void InstanceMaterialState::Save(KeyedArchive * archive, SerializationContext *s
 	}
 }
 
-void InstanceMaterialState::Load(KeyedArchive * archive, SerializationContext *serializationContext)
+void InstanceMaterialState::Load(KeyedArchive * archive, SceneFileV2 *sceneFile)
 {
 	if(NULL != archive)
 	{
@@ -175,9 +175,9 @@ void InstanceMaterialState::Load(KeyedArchive * archive, SerializationContext *s
 		String filename = archive->GetString("ims.lightmapname");
 		if(!filename.empty())
 		{
-            FilePath lName = serializationContext->GetScenePath() + filename;
+            FilePath lName = sceneFile->GetScenePath() + filename;
 
-			Texture* lTexture = Texture::CreateFromFile(lName, FastName("albedo"));
+			Texture* lTexture = Texture::CreateFromFile(lName);
 			SetLightmap(lTexture, lName);
 			lTexture->Release();
 		}
@@ -210,7 +210,6 @@ void InstanceMaterialState::InitFromState(const InstanceMaterialState * state)
 	flatColor = state->flatColor;
 	texture0Shift = state->texture0Shift;
 }
-
 
 
 
@@ -291,13 +290,32 @@ Material::Material()
     //Reserve memory for Collection
     names.resize(TEXTURE_COUNT);
     
+	renderStateBlock.state = RenderState::DEFAULT_3D_STATE;
+
 //    if (scene)
 //    {
 //        DataNode * materialsNode = scene->GetMaterials();
 //        materialsNode->AddNode(this);
 //    }
     
-
+    if (!uberShader)
+    {
+        uberShader = new UberShader();
+        uberShader->LoadShader("~res:/Shaders/Default/materials.shader");
+        
+        
+        //uberShader->CompileShaderCombination("MATERIAL_TEXTURE");
+        //uberShader->CompileShaderCombination("MATERIAL_DECAL");
+        //uberShader->CompileShaderCombination("MATERIAL_DETAIL");
+        //
+        //uberShader->CompileShaderCombination("MATERIAL_TEXTURE;VERTEX_LIT");
+        //uberShader->CompileShaderCombination("MATERIAL_DECAL;VERTEX_LIT");
+        //uberShader->CompileShaderCombination("MATERIAL_DETAIL;VERTEX_LIT");
+        //
+        //uberShader->CompileShaderCombination("MATERIAL_TEXTURE;PIXEL_LIT;DIFFUSE;");
+        //uberShader->CompileShaderCombination("MATERIAL_TEXTURE;PIXEL_LIT;DIFFUSE;SPECULAR;");
+        //uberShader->CompileShaderCombination("MATERIAL_TEXTURE;PIXEL_LIT;DIFFUSE;SPECULAR;GLOSS;");
+    }
     
 //    type = MATERIAL_UNLIT_TEXTURE;
 //    shader = uberShader->GetShader("MATERIAL_TEXTURE");
@@ -324,8 +342,6 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
 
 	newMaterial->CopySettings(this);
 
-    newMaterial->reflective = reflective;
-    newMaterial->reflectivity =	reflectivity;
 
 	newMaterial->shader = shader;
 
@@ -349,7 +365,7 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
     newMaterial->uniformTreeLeafColorMul = uniformTreeLeafColorMul;
     newMaterial->uniformTreeLeafOcclusionOffset = uniformTreeLeafOcclusionOffset;
 
-	renderStateBlock.CopyTo(&newMaterial->renderStateBlock);
+	newMaterial->renderStateBlock = renderStateBlock;
     
 
     newMaterial->isExportOwnerLayerEnabled = isExportOwnerLayerEnabled;
@@ -509,9 +525,6 @@ void Material::RebuildShader()
     uniformTreeLeafColorMul = -1;
     uniformTreeLeafOcclusionOffset = -1;
     
-    //VI: don't build old shader for new materials
-    
-    /*
     String shaderCombileCombo = "";
     
     switch (type)
@@ -585,7 +598,7 @@ void Material::RebuildShader()
     if (isTranslucent)
     {
         if (shaderCombileCombo.size() > 0)shaderCombileCombo += ";";
-        shaderCombileCombo = shaderCombileCombo + "ALPHATEST";
+        shaderCombileCombo = shaderCombileCombo + "OPAQUE";
     }
 
 	if(isAlphablend)
@@ -614,8 +627,6 @@ void Material::RebuildShader()
         shaderCombileCombo = shaderCombileCombo + ";VERTEX_FOG";
 
     // Get shader if combo unavailable compile it
-    
-    
     shader = uberShader->GetShader(shaderCombileCombo);
     
     switch (type) {
@@ -624,43 +635,43 @@ void Material::RebuildShader()
         case MATERIAL_UNLIT_TEXTURE_LIGHTMAP:
         case MATERIAL_UNLIT_TEXTURE_DECAL:
         case MATERIAL_UNLIT_TEXTURE_DETAIL:
-            uniformTexture0 = shader->FindUniformIndexByName(FastName("texture0"));
-            uniformTexture1 = shader->FindUniformIndexByName(FastName("texture1"));
-            uniformUvOffset = shader->FindUniformIndexByName(FastName("uvOffset"));
-            uniformUvScale = shader->FindUniformIndexByName(FastName("uvScale"));
+            uniformTexture0 = shader->FindUniformIndexByName("texture0");
+            uniformTexture1 = shader->FindUniformIndexByName("texture1");
+            uniformUvOffset = shader->FindUniformIndexByName("uvOffset");
+            uniformUvScale = shader->FindUniformIndexByName("uvScale");
             
             break;
         case MATERIAL_VERTEX_LIT_TEXTURE:
             //
-            uniformLightPosition0 = shader->FindUniformIndexByName(FastName("lightPosition0"));
-            uniformMaterialLightAmbientColor = shader->FindUniformIndexByName(FastName("materialLightAmbientColor"));
-            uniformMaterialLightDiffuseColor = shader->FindUniformIndexByName(FastName("materialLightDiffuseColor"));
-            uniformMaterialLightSpecularColor = shader->FindUniformIndexByName(FastName("materialLightSpecularColor"));
-            uniformMaterialSpecularShininess = shader->FindUniformIndexByName(FastName("materialSpecularShininess"));
-            uniformLightIntensity0 = shader->FindUniformIndexByName(FastName("lightIntensity0"));
-            uniformLightAttenuationQ = shader->FindUniformIndexByName(FastName("uniformLightAttenuationQ"));
+            uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
+            uniformMaterialLightAmbientColor = shader->FindUniformIndexByName("materialLightAmbientColor");
+            uniformMaterialLightDiffuseColor = shader->FindUniformIndexByName("materialLightDiffuseColor");
+            uniformMaterialLightSpecularColor = shader->FindUniformIndexByName("materialLightSpecularColor");
+            uniformMaterialSpecularShininess = shader->FindUniformIndexByName("materialSpecularShininess");
+            uniformLightIntensity0 = shader->FindUniformIndexByName("lightIntensity0");
+            uniformLightAttenuationQ = shader->FindUniformIndexByName("uniformLightAttenuationQ");
             
             break;
         case MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE:
         case MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR:
         case MATERIAL_PIXEL_LIT_NORMAL_DIFFUSE_SPECULAR_MAP:
-            uniformTexture0 = shader->FindUniformIndexByName(FastName("texture0"));
-            uniformTexture1 = shader->FindUniformIndexByName(FastName("normalMapTexture"));
+            uniformTexture0 = shader->FindUniformIndexByName("texture0");
+            uniformTexture1 = shader->FindUniformIndexByName("normalMapTexture");
 
-            uniformLightPosition0 = shader->FindUniformIndexByName(FastName("lightPosition0"));
-            uniformMaterialLightAmbientColor = shader->FindUniformIndexByName(FastName("materialLightAmbientColor"));
-            uniformMaterialLightDiffuseColor = shader->FindUniformIndexByName(FastName("materialLightDiffuseColor"));
-            uniformMaterialLightSpecularColor = shader->FindUniformIndexByName(FastName("materialLightSpecularColor"));
-            uniformMaterialSpecularShininess = shader->FindUniformIndexByName(FastName("materialSpecularShininess"));
-            uniformLightIntensity0 = shader->FindUniformIndexByName(FastName("lightIntensity0"));
-            uniformLightAttenuationQ = shader->FindUniformIndexByName(FastName("uniformLightAttenuationQ"));
+            uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
+            uniformMaterialLightAmbientColor = shader->FindUniformIndexByName("materialLightAmbientColor");
+            uniformMaterialLightDiffuseColor = shader->FindUniformIndexByName("materialLightDiffuseColor");
+            uniformMaterialLightSpecularColor = shader->FindUniformIndexByName("materialLightSpecularColor");
+            uniformMaterialSpecularShininess = shader->FindUniformIndexByName("materialSpecularShininess");
+            uniformLightIntensity0 = shader->FindUniformIndexByName("lightIntensity0");
+            uniformLightAttenuationQ = shader->FindUniformIndexByName("uniformLightAttenuationQ");
             break;
         case MATERIAL_SPEED_TREE_LEAF:
-            uniformWorldTranslate = shader->FindUniformIndexByName(FastName("worldTranslate"));
-            uniformTexture0 = shader->FindUniformIndexByName(FastName("texture0"));
-            uniformWorldScale = shader->FindUniformIndexByName(FastName("worldScale"));
-            uniformTreeLeafColorMul = shader->FindUniformIndexByName(FastName("treeLeafColorMul"));
-            uniformTreeLeafOcclusionOffset = shader->FindUniformIndexByName(FastName("treeLeafOcclusionOffset"));
+            uniformWorldTranslate = shader->FindUniformIndexByName("worldTranslate");
+            uniformTexture0 = shader->FindUniformIndexByName("texture0");
+            uniformWorldScale = shader->FindUniformIndexByName("worldScale");
+            uniformTreeLeafColorMul = shader->FindUniformIndexByName("treeLeafColorMul");
+            uniformTreeLeafOcclusionOffset = shader->FindUniformIndexByName("treeLeafOcclusionOffset");
             break;
         default:
             break;
@@ -668,21 +679,21 @@ void Material::RebuildShader()
     
     if (isFogEnabled)
     {
-        uniformFogDensity = shader->FindUniformIndexByName(FastName("fogDensity"));
-        uniformFogColor = shader->FindUniformIndexByName(FastName("fogColor"));
+        uniformFogDensity = shader->FindUniformIndexByName("fogDensity");
+        uniformFogColor = shader->FindUniformIndexByName("fogColor");
         DVASSERT(uniformFogDensity != -1);
         DVASSERT(uniformFogColor != -1);
     }
     
     if (isFlatColorEnabled)
     {
-        uniformFlatColor = shader->FindUniformIndexByName(FastName("flatColor"));
+        uniformFlatColor = shader->FindUniformIndexByName("flatColor");
         DVASSERT(uniformFlatColor != -1);
     }
     
     if (isTexture0ShiftEnabled)
     {
-        uniformTexture0Shift = shader->FindUniformIndexByName(FastName("texture0Shift"));
+        uniformTexture0Shift = shader->FindUniformIndexByName("texture0Shift");
         DVASSERT(uniformTexture0Shift != -1);
     }
     
@@ -690,7 +701,6 @@ void Material::RebuildShader()
 
 
     //RetrieveTextureSlotNames();
-    */
 }
 
 void Material::RetrieveTextureSlotNames()
@@ -729,19 +739,19 @@ void Material::SetType(eType _type)
     RebuildShader();
 }
     
-void Material::Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
+void Material::Save(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
 {
-    DataNode::Save(keyedArchive, serializationContext);
+    DataNode::Save(keyedArchive, sceneFile);
     
     keyedArchive->SetInt32("mat.texCount", TEXTURE_COUNT);
     for (int32 k = 0; k < TEXTURE_COUNT; ++k)
     {
         if (!names[k].IsEmpty())
         {
-            String filename = names[k].GetRelativePathname(serializationContext->GetScenePath());
+            String filename = names[k].GetRelativePathname(sceneFile->GetScenePath());
             keyedArchive->SetString(Format("mat.tex%d", k), filename);
             
-            if(serializationContext->IsDebugLogEnabled())
+            if(sceneFile->DebugLogEnabled())
                 Logger::FrameworkDebug("--- save material texture: %s", filename.c_str());
         }
     }
@@ -778,9 +788,9 @@ void Material::Save(KeyedArchive * keyedArchive, SerializationContext * serializ
 	}
 }
 
-void Material::Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
+void Material::Load(KeyedArchive * keyedArchive, SceneFileV2 * sceneFile)
 {
-    DataNode::Load(keyedArchive, serializationContext);
+    DataNode::Load(keyedArchive, sceneFile);
 
 	eType mtype = (eType)keyedArchive->GetInt32("mat.type", type);
 
@@ -801,14 +811,14 @@ void Material::Load(KeyedArchive * keyedArchive, SerializationContext * serializ
             }
             else
             {
-                names[k] = serializationContext->GetScenePath() + relativePathname;
+                names[k] = sceneFile->GetScenePath() + relativePathname;
             }
             
-            if(serializationContext->IsDebugLogEnabled())
+            if(sceneFile->DebugLogEnabled())
             	Logger::FrameworkDebug("--- load material texture: %s src:%s", relativePathname.c_str(), names[k].GetAbsolutePathname().c_str());
             
             //textures[k] = Texture::CreateFromFile(names[k].GetAbsolutePath());
-            textures[k] = Texture::CreateFromFile(names[k], FastName("albedo"));
+            textures[k] = Texture::CreateFromFile(names[k]);
         }
     }
     
@@ -848,13 +858,13 @@ void Material::Load(KeyedArchive * keyedArchive, SerializationContext * serializ
 	}
 }
 
-void Material::SetAlphatest(bool alphatest)
+void Material::SetOpaque(bool _isOpaque)
 {
-    isTranslucent = alphatest;
+    isTranslucent = _isOpaque;
     RebuildShader();
 }
 
-bool Material::GetAlphatest()
+bool Material::GetOpaque()
 {
     return isTranslucent;
 }
@@ -961,7 +971,6 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 {
     ///float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
 
-	/*
     if(MATERIAL_UNLIT_TEXTURE_LIGHTMAP == type)
 	{
         if (NULL == instanceMaterialState->lightmapTexture)
@@ -1053,7 +1062,7 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 
 	if(isSetupLightmap)
 	{
-		int32 lightmapSizePosition = shader->FindUniformIndexByName(FastName("lightmapSize"));
+		int32 lightmapSizePosition = shader->FindUniformIndexByName("lightmapSize");
 		if (lightmapSizePosition != -1)
 		{
 			shader->SetUniformValueByIndex(lightmapSizePosition, (float32)instanceMaterialState->GetLightmapSize()); 
@@ -1153,7 +1162,7 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 			}
 		}
     }
-	 */
+
 }
 
 void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
@@ -1191,12 +1200,12 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 
 	RenderManager::Instance()->SetRenderData(group->renderDataObject);
 
-// 	eBlendMode oldSrc;
-// 	eBlendMode oldDst;
+	eBlendMode oldSrc;
+	eBlendMode oldDst;
 	if(isAlphablend)
 	{
-		//oldSrc = RenderManager::Instance()->GetSrcBlend();
-		//oldDst = RenderManager::Instance()->GetDestBlend();
+		oldSrc = RenderManager::Instance()->GetSrcBlend();
+		oldDst = RenderManager::Instance()->GetDestBlend();
 	}
 
 	PrepareRenderState(instanceMaterialState, worldMxPtr);
@@ -1218,7 +1227,6 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 	//{
 	//	RenderManager::Instance()->SetBlendMode(oldSrc, oldDst);
 	//}
-	 
 }
 
 
@@ -1260,7 +1268,7 @@ void Material::SetTexture(eTextureLevel level, const FilePath & textureName)
     SafeRelease(textures[level]);
     names[level] = FilePath();
  
-    Texture *t = Texture::CreateFromFile(textureName, FastName("albedo"));
+    Texture *t = Texture::CreateFromFile(textureName);
     if(t)
     {
         textures[level] = t;

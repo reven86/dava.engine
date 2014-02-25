@@ -122,15 +122,18 @@ LodNode::LodData	*LodNode::CreateNewLayer(int32 layer)
     }
     else 
     {
+        bool isFind = false;
         for (List<LodData>::iterator it = lodLayers.begin(); it != lodLayers.end(); it++)
         {
             if (it->layer == layer) 
             {
                 ld = &(*it);
+                isFind = true;
                 return ld;
             }
             if (layer < it->layer)
             {
+                isFind = true;
                 LodData d;
                 d.layer = layer;
                 List<LodData>::iterator newIt = lodLayers.insert(it, d);
@@ -138,11 +141,13 @@ LodNode::LodData	*LodNode::CreateNewLayer(int32 layer)
                 return ld;
             }
         }
-
-        LodData d;
-        d.layer = layer;
-        lodLayers.push_back(d);
-        ld = &(*lodLayers.rbegin());
+        if (!isFind) 
+        {
+            LodData d;
+            d.layer = layer;
+            lodLayers.push_back(d);
+            ld = &(*lodLayers.rbegin());
+        }
     }
     
     return ld;
@@ -428,9 +433,9 @@ Entity* LodNode::Clone(Entity *dstNode)
     /**
      \brief virtual function to save node to KeyedArchive
      */
-void LodNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void LodNode::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
-    Entity::Save(archive, serializationContext);
+    Entity::Save(archive, sceneFile);
     archive->SetInt32("lodCount", (int32)lodLayers.size());
     
     int32 lodIdx = 0;
@@ -461,9 +466,9 @@ void LodNode::Save(KeyedArchive * archive, SerializationContext * serializationC
     /**
      \brief virtual function to load node to KeyedArchive
      */
-void LodNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void LodNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
-    Entity::Load(archive, serializationContext);
+    Entity::Load(archive, sceneFile);
 
     int32 lodCount = archive->GetInt32("lodCount", 0);
     

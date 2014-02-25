@@ -38,26 +38,33 @@ AddComponentCommand::AddComponentCommand(DAVA::Entity* entity, DAVA::Component *
 	DVASSERT(entityToAdd);
 	DVASSERT(component);
 
-	savedComponent = component;
-	currentComponent = NULL;
+	newComponent = SafeRetain(component);
+	oldComponent = SafeRetain(entity->GetComponent(component->GetType()));
 }
 
 AddComponentCommand::~AddComponentCommand()
 {
- 	SafeDelete(savedComponent);
-	currentComponent = NULL;
+	SafeRelease(oldComponent);
+	SafeRelease(newComponent);
 }
 
 void AddComponentCommand::Redo()
 {
-	currentComponent = savedComponent->Clone(entityToAdd);
-	entityToAdd->AddComponent(currentComponent);
+	if(oldComponent)
+	{
+		entityToAdd->RemoveComponent(oldComponent);
+	}
+
+	entityToAdd->AddComponent(newComponent);
 }
 
 void AddComponentCommand::Undo()
 {
- 	entityToAdd->RemoveComponent(currentComponent);
-	currentComponent = NULL;
+	entityToAdd->RemoveComponent(newComponent);
+	if(oldComponent)
+	{
+		entityToAdd->AddComponent(oldComponent);
+	}
 }
 
 DAVA::Entity* AddComponentCommand::GetEntity() const

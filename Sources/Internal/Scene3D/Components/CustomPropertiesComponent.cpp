@@ -39,8 +39,6 @@
 
 namespace DAVA
 {
-	REGISTER_CLASS(CustomPropertiesComponent)
-	
 	CustomPropertiesComponent::CustomPropertiesComponent()
 	{
 		properties = new KeyedArchive();
@@ -64,9 +62,9 @@ namespace DAVA
 		return newProperties;
 	}
 	
-	void CustomPropertiesComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+	void CustomPropertiesComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 	{
-		Component::Serialize(archive, serializationContext);
+		Component::Serialize(archive, sceneFile);
 		
 		if(NULL != archive && properties->Count() > 0)
 		{
@@ -74,7 +72,7 @@ namespace DAVA
 			if(properties->IsKeyExists("editor.referenceToOwner"))
 			{
 				savedPath = properties->GetString("editor.referenceToOwner");
-				String newPath = FilePath(savedPath).GetRelativePathname(serializationContext->GetScenePath());
+				String newPath = FilePath(savedPath).GetRelativePathname(sceneFile->GetScenePath());
 				properties->SetString("editor.referenceToOwner", newPath);
 			}
 			
@@ -87,18 +85,18 @@ namespace DAVA
 		}
 	}
 	
-	void CustomPropertiesComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+	void CustomPropertiesComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 	{
 		properties->DeleteAllKeys();
 		
 		if(NULL != archive && archive->IsKeyExists("cpc.properties"))
 		{
             KeyedArchive *props = archive->GetArchiveFromByteArray("cpc.properties");
-			LoadFromArchive(*props, serializationContext);
+			LoadFromArchive(*props, sceneFile);
             props->Release();
 		}
 		
-		Component::Deserialize(archive, serializationContext);
+		Component::Deserialize(archive, sceneFile);
 	}
 
 	KeyedArchive* CustomPropertiesComponent::GetArchive()
@@ -106,14 +104,14 @@ namespace DAVA
 		return properties;
 	}
 	
-	void CustomPropertiesComponent::LoadFromArchive(const KeyedArchive& srcProperties, SerializationContext *serializationContext)
+	void CustomPropertiesComponent::LoadFromArchive(const KeyedArchive& srcProperties, SceneFileV2 *sceneFile)
 	{
 		SafeRelease(properties);
 		properties = new KeyedArchive(srcProperties);
 		
 		if(properties && properties->IsKeyExists("editor.referenceToOwner"))
 		{
-			FilePath newPath(serializationContext->GetScenePath());
+			FilePath newPath(sceneFile->GetScenePath());
 			newPath += properties->GetString("editor.referenceToOwner");
 			
 			//TODO: why we use absolute pathname instead of relative?

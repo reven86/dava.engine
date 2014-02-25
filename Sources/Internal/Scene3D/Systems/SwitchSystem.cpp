@@ -36,8 +36,6 @@
 #include "Scene3D/Scene.h"
 #include "Debug/Stats.h"
 #include "Scene3D/Components/ActionComponent.h"
-#include "Scene3D/Components/ComponentHelpers.h"
-#include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
 {
@@ -60,8 +58,14 @@ void SwitchSystem::Process(float32 timeElapsed)
 
 		if(sw->oldSwitchIndex != sw->newSwitchIndex)
 		{
-            SetSwitchHierarchy(entity, sw->newSwitchIndex);
+			int32 childrenCount = entity->GetChildrenCount();
 
+			sw->newSwitchIndex = Clamp(sw->newSwitchIndex, 0, (childrenCount - 1));//start counting from zero
+
+			for(int32 i = 0; i < childrenCount; ++i)
+			{
+				SetVisibleHierarchy(entity->GetChild(i), (sw->newSwitchIndex == i));
+			}
 			sw->oldSwitchIndex = sw->newSwitchIndex;
 			
 			ActionComponent* actionComponent = cast_if_equal<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
@@ -83,18 +87,13 @@ void SwitchSystem::ImmediateEvent(Entity * entity, uint32 event)
 	}
 }
 
-void SwitchSystem::SetSwitchHierarchy(Entity * entity, int32 switchIndex)
+void SwitchSystem::SetVisibleHierarchy(Entity * entity, bool visible)
 {
-    RenderObject * ro = GetRenderObject(entity);
-	if(ro)
-    {
-        ro->SetSwitchIndex(switchIndex);
-    }
-
+	entity->SetSwitchVisible(visible);
 	uint32 size = entity->GetChildrenCount();
 	for(uint32 i = 0; i < size; ++i)
 	{
-		SetSwitchHierarchy(entity->GetChild(i), switchIndex);
+		SetVisibleHierarchy(entity->GetChild(i), visible);
 	}
 }
 

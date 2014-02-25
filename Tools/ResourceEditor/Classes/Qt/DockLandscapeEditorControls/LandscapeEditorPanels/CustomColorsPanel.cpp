@@ -1,8 +1,8 @@
 #include "CustomColorsPanel.h"
-#include "Scene/SceneSignals.h"
-#include "Scene/SceneEditor2.h"
-#include "Tools/SliderWidget/SliderWidget.h"
-#include "Deprecated/EditorConfig.h"
+#include "../../Scene/SceneSignals.h"
+#include "../../Scene/SceneEditor2.h"
+#include "../../Tools/SliderWidget/SliderWidget.h"
+#include "../../../SceneEditor/EditorConfig.h"
 #include "Project/ProjectManager.h"
 #include "Constants.h"
 #include "Main/QtUtils.h"
@@ -127,7 +127,7 @@ void CustomColorsPanel::ConnectToSignals()
 	connect(ProjectManager::Instance(), SIGNAL(ProjectOpened(const QString &)), this, SLOT(ProjectOpened(const QString &)));
 
 	connect(SceneSignals::Instance(), SIGNAL(CustomColorsTextureShouldBeSaved(SceneEditor2*)),
-			this, SLOT(SaveTextureIfNeeded(SceneEditor2*)));
+			this, SLOT(NeedSaveTexture(SceneEditor2*)));
 	connect(SceneSignals::Instance(), SIGNAL(CustomColorsToggled(SceneEditor2*)),
 			this, SLOT(EditorToggled(SceneEditor2*)));
 
@@ -193,7 +193,7 @@ void CustomColorsPanel::SetColor(int color)
 	GetActiveScene()->customColorsSystem->SetColor(color);
 }
 
-bool CustomColorsPanel::SaveTexture()
+void CustomColorsPanel::SaveTexture()
 {
 	SceneEditor2* sceneEditor = GetActiveScene();
 	
@@ -209,13 +209,10 @@ bool CustomColorsPanel::SaveTexture()
 													QString(ResourceEditor::CUSTOM_COLORS_FILE_FILTER.c_str()));
 	selectedPathname = PathnameToDAVAStyle(filePath);
 	
-	if (selectedPathname.IsEmpty())
+	if (!selectedPathname.IsEmpty())
 	{
-		return false;
+		sceneEditor->customColorsSystem->SaveTexture(selectedPathname);
 	}
-	
-	sceneEditor->customColorsSystem->SaveTexture(selectedPathname);
-	return true;
 }
 
 void CustomColorsPanel::LoadTexture()
@@ -238,7 +235,7 @@ void CustomColorsPanel::LoadTexture()
 	}
 }
 
-void CustomColorsPanel::SaveTextureIfNeeded(SceneEditor2* scene)
+void CustomColorsPanel::NeedSaveTexture(SceneEditor2* scene)
 {
 	if (scene != GetActiveScene())
 	{

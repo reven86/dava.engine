@@ -56,7 +56,7 @@ private:
 class ChangeDynamicShadowModeCommand : public Command2
 {
 public:
-	ChangeDynamicShadowModeCommand(SceneEditor2 *scene, DAVA::ShadowPassBlendMode::eBlend mode);
+	ChangeDynamicShadowModeCommand(SceneEditor2 *scene, DAVA::ShadowVolumeRenderPass::eBlend mode);
 
 	virtual void Undo();
 	virtual void Redo();
@@ -65,8 +65,8 @@ public:
 
 private:
 
-	DAVA::ShadowPassBlendMode::eBlend oldMode;
-	DAVA::ShadowPassBlendMode::eBlend newMode;
+	DAVA::ShadowVolumeRenderPass::eBlend oldMode;
+	DAVA::ShadowVolumeRenderPass::eBlend newMode;
 	SceneEditor2 *scene;
 };
 

@@ -33,8 +33,6 @@
 
 #include "Scene/System/HoodSystem/HoodObject.h"
 
-#
-
 #define ROTATE_HOOD_CIRCLE_PARTS_COUNT 5
 
 struct RotateHood : public HoodObject

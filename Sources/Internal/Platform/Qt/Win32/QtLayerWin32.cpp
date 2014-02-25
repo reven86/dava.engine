@@ -90,6 +90,12 @@ void QtLayerWin32::AppFinished()
         DAVA::MemoryManager::Instance()->FinalLog();
     }
 #endif
+
+	CoreWin32Platform *core = dynamic_cast<CoreWin32Platform *>(CoreWin32Platform::Instance());
+	if (NULL != core)
+	{
+		CloseHandle(core->hMutex);
+	}
 }
 
 

@@ -75,9 +75,6 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 	 FROM_BOTTOM,
 	 */
 	
-    Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-    
 	if(type <= FROM_BOTTOM)
 	{
 		float32 endXPos[4] = {(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), -(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), 0.0f, 0.0f};
@@ -89,18 +86,19 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 		
 		if(!isOver)
 		{
-            drawState.SetPosition(xPrevPosition, yPrevPosition);
+			renderTargetPrevScreen->SetPosition(xPrevPosition, yPrevPosition);
 		}
 		else 
 		{
-			drawState.SetPosition(0, 0);
+			renderTargetPrevScreen->SetPosition(0, 0);
 		}
-        
-		renderTargetPrevScreen->Draw(&drawState);
+		renderTargetPrevScreen->Draw();
 		
 		
-		drawState.SetPosition(xNextPosition, yNextPosition);
-		renderTargetNextScreen->Draw(&drawState);
+		
+		
+		renderTargetNextScreen->SetPosition(xNextPosition, yNextPosition);
+		renderTargetNextScreen->Draw(); 
 	}
 	else 
 	{
@@ -113,18 +111,21 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 		
 		if(!isOver)
 		{
-			drawState.SetPosition(xNextPosition, yNextPosition);
+			renderTargetNextScreen->SetPosition(xNextPosition, yNextPosition);
 		}
 		else 
 		{
-			drawState.SetPosition(0, 0);
+			renderTargetNextScreen->SetPosition(0, 0);
 		}
-        
-		renderTargetNextScreen->Draw(&drawState);
+
+		renderTargetNextScreen->Draw(); 
 
 		
-		drawState.SetPosition(xPrevPosition, yPrevPosition);
-		renderTargetPrevScreen->Draw(&drawState);
+		renderTargetPrevScreen->SetPosition(xPrevPosition, yPrevPosition);
+		renderTargetPrevScreen->Draw();
+		
+		
+		
 		
 	}
 

@@ -244,6 +244,7 @@ void ScrollZoomWidget::wheelEvent(QWheelEvent* event)
 		numSteps = abs(numSteps);
 		if (event->orientation() == Qt::Vertical ) 
 		{
+			float interval = maxTime - minTime;	
 			for(int i = 0; i < numSteps; ++i)
 			{
 				float newZoom = zoomDirection ? scale + ZOOM_STEP : scale - ZOOM_STEP;

@@ -129,7 +129,7 @@ public:
         \brief Function applies camera transformations (projection, model-view matrices) to RenderManager
         This function normally is called internally from Scene class. In most cases you'll not need it. 
      */
-	void SetupDynamicParameters();
+	void Set();
 	
 	/**     
         \brief Restore camera transform to original camera transform that was set using 
@@ -287,10 +287,6 @@ public:
      */
 	void ExtractCameraToValues();
 	
-
-    void RebuildProjectionMatrix();
-	void RebuildViewMatrix();
-
     /**
         \brief Clone current camera
         TODO: remove, make adjustments in copy constructor instead. Clone() is evil, see Effective Java for details.
@@ -301,7 +297,7 @@ public:
         \brief Get project * camera matrix
         \returns matrix 
      */
-    const Matrix4 &GetViewProjMatrix();
+    const Matrix4 &GetUniformProjModelMatrix();
     
     /**
         \brief Function to return 2D position of 3D point that is transformed to screen. 
@@ -333,11 +329,6 @@ public:
         \returns tanf(fov / 2). 
      */
     float32 GetZoomFactor() const;
-    
-    /**
-        \brief Request camera to invert cull order direction.
-     */
-    void SetCullInvert(bool enabled);
 
     
     /**
@@ -357,10 +348,9 @@ public:
     enum
     {
         REQUIRE_REBUILD = 1,
-        REQUIRE_REBUILD_MODEL = 1 << 1,
-        REQUIRE_REBUILD_PROJECTION = 1 << 2,
-        REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3,
-        INVERT_CULL = 1 << 4,
+        REQUIRE_REBUILD_MODEL = 1<<1,
+        REQUIRE_REBUILD_PROJECTION = 1<<2,
+        REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1<<3
     };
     
     
@@ -381,11 +371,9 @@ public:
 	//Quaternion rotation;	// 
 	Matrix4 cameraTransform;
 
-    Matrix4 viewMatrix;
+    Matrix4 modelMatrix;
 	Matrix4 projMatrix;
-    Matrix4 viewProjMatrix;
-    Matrix4 invViewMatrix;
-    Matrix4 invViewProjMatrix;
+    Matrix4 uniformProjModelMatrix;
 
     uint32 flags;
 
@@ -394,7 +382,10 @@ public:
 	
 	void ExtractValuesFromMatrix();
 	void ConstructMatrixFromValues();
-	void Recalc();	
+	void Recalc();
+
+	void RecalcFrustum();
+	void RecalcTransform();
     
 	
 	/** calls glFrustum for projection matrix */
@@ -429,7 +420,7 @@ public:
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
                          
         MEMBER(cameraTransform, "Camera Transform", I_SAVE | I_VIEW)
-        MEMBER(viewMatrix, "View Matrix", I_SAVE | I_VIEW)
+        MEMBER(modelMatrix, "Model Matrix", I_SAVE | I_VIEW)
         MEMBER(projMatrix, "Proj Matrix", I_SAVE | I_VIEW)
     );
 };

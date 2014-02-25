@@ -77,12 +77,6 @@ public:
    	void SetApplicationCursor(Qt::CursorShape cursor);
     void RestoreApplicationCursor();
 
-    void SetBackgroundFrameRect(const Rect& rect);
-    Rect GetBackgroundFrameRect() const;
-
-    void SetBackgroundFrameColor(const Color& color);
-    Color GetBackgroundFrameColor() const {return backgroundFrameColor;};
-
 signals:
 	void UpdateScaleRequest(float scaleDelta);
 	void UpdateScreenPositionRequest(const QPoint& posDelta);
@@ -95,10 +89,6 @@ private:
 	QWidget* mainWindow;
 	
 	Vector2 cursorPosition;
-    
-    // The rect and color of background frame (around the screen control).
-    Rect backgroundFrameRect;
-    Color backgroundFrameColor;
 };
 
 #endif /* defined(__UIEditor__ScreenWrapper__) */

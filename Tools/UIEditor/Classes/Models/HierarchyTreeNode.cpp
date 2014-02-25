@@ -32,7 +32,6 @@
 #include <algorithm>
 
 HierarchyTreeNode::HIERARCHYTREENODEID HierarchyTreeNode::nextId = 0;
-const QRegExp HierarchyTreeNode::nameRegExp = QRegExp("^[a-zA-Z_][a-zA-Z0-9_]*$");
 
 HierarchyTreeNode::HierarchyTreeNode(const QString& name)
 {
@@ -298,9 +297,4 @@ void HierarchyTreeNode::RestoreAlignData(UIControl* uiControl, const HierarchyTr
 	uiControl->SetTopAlign(alignData.topAlign);
 	uiControl->SetVCenterAlign(alignData.vcenterAlign);
 	uiControl->SetBottomAlign(alignData.bottomAlign);
-}
-
-const QRegExp& HierarchyTreeNode::GetNameRegExp()
-{
-    return nameRegExp;
 }

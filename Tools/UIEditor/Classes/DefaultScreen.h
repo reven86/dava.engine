@@ -57,10 +57,8 @@ public:
 	virtual bool IsPointInside(const Vector2& point, bool expandWithFocus);
 
 	void SetScale(const Vector2& scale);
-    Vector2 GetScale() const {return scale;};
-
 	void SetPos(const Vector2& pos);
-    const Vector2& GetPos() const {return pos;};
+    Vector2 GetPos() const {return pos;};
 
 	Vector2 LocalToInternal(const Vector2& localPoint) const;
 	
@@ -72,8 +70,6 @@ public:
 	void BacklightControl(const Vector2& pos);
 	bool IsDropEnable(const Vector2& pos)const;
 	
-    void SetScreenControl(ScreenControl* control);
-
 private:
 	enum InputState
 	{
@@ -110,8 +106,8 @@ private:
 		childsSet childs;
 		HierarchyTreeNode::HIERARCHYTREENODEID id;
 	};
-	HierarchyTreeControlNode* SmartGetSelectedControl(const Vector2& point) const;
-	void SmartGetSelectedControl(SmartSelection* list, const HierarchyTreeNode* parent, const Vector2& point) const;
+	HierarchyTreeControlNode* SmartGetSelectedControl(const Vector2& point);
+	void SmartGetSelectedControl(SmartSelection* list, const HierarchyTreeNode* parent, const Vector2& point);
 	HierarchyTreeControlNode* GetSelectedControl(const Vector2& point);
 	
 	void ApplyMoveDelta(const Vector2& delta);
@@ -139,14 +135,10 @@ private:
 	
 	Rect GetControlRect(const HierarchyTreeControlNode* control) const;
 	void CopySelectedControls();
-
-    // In case Preview mode is enabled, translate mouse UI events directly to the preview screen.
-    UIEvent* PreprocessEventForPreview(UIEvent* event);
-
+	
 private:
 	Vector2 scale;
 	Vector2 pos;
-    Vector2 viewSize;
 	
 	InputState inputState;
 	ResizeType resizeType;
@@ -160,9 +152,6 @@ private:
 	bool useMouseUpSelection;
 	
 	UIControl* selectorControl;
-
-    // Screen currently displayed in UIEditor (might be NULL).
-    ScreenControl* screenControl;
 	
     // Verify whether the point is inside control, taking its angle into account.
     bool IsPointInsideControlWithDelta(UIControl* uiControl, const Vector2& point, int32 pointDelta) const;
@@ -191,8 +180,8 @@ private:
 	int32 GetControlMoveDelta();
 
 	// Check control's visibility in a recursive way.
-	bool IsControlVisible(UIControl* uiControl) const;
-	void IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible) const;
+	bool IsControlVisible(UIControl* uiControl);
+	void IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible);
 
 private slots:
 	void ControlContextMenuTriggered(QAction* action);

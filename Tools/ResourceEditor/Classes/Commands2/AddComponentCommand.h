@@ -47,8 +47,9 @@ public:
 private:
 
 	DAVA::Entity* entityToAdd;
-	DAVA::Component *savedComponent;
-	DAVA::Component *currentComponent;
+
+	DAVA::Component *newComponent;
+	DAVA::Component *oldComponent;
 };
 
 #endif // __ADD_COMPONENT_COMMAND_H__

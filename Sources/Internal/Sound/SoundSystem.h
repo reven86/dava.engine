@@ -52,11 +52,6 @@ class VolumeAnimatedObject;
 class SoundSystem : public Singleton<SoundSystem>
 {
 public:
-	
-	static const FastName SOUND_GROUP_FX;
-	
-public:
-	
 	SoundSystem(int32 maxChannels);
 	virtual ~SoundSystem();
 

@@ -37,9 +37,11 @@
 #include "Main/mainwindow.h"
 #include "Render/LibPVRHelper.h"
 #include "Render/LibDxtHelper.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "SceneEditor/EditorSettings.h"
 #include "Scene/SceneHelper.h"
+#include "ImageTools/ImageTools.h"
 #include "CubemapEditor/CubemapUtils.h"
+#include "ImageTools/ImageTools.h"
 
 #include "Classes/Constants.h"
 
@@ -86,8 +88,8 @@ TextureBrowser::TextureBrowser(QWidget *parent)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(sceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
 
 	// convertor signals
-	QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor *, const TextureInfo &)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor *, const TextureInfo &)));
-	QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor *, const DAVA::eGPUFamily, const TextureInfo &)));
+	QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyOriginal(const DAVA::TextureDescriptor *, DAVA::Vector<QImage>&)), this, SLOT(textureReadyOriginal(const DAVA::TextureDescriptor *, DAVA::Vector<QImage>&)));
+	QObject::connect(TextureConvertor::Instance(), SIGNAL(ReadyConverted(const DAVA::TextureDescriptor *, DAVA::eGPUFamily, DAVA::Vector<QImage>&)), this, SLOT(textureReadyConverted(const DAVA::TextureDescriptor *, DAVA::eGPUFamily, DAVA::Vector<QImage>&)));
 
 	setupStatusBar();
 	setupTexturesList();
@@ -137,7 +139,7 @@ void TextureBrowser::Close()
 	DAVA::SafeRelease(curScene);
 
 	// clear cache
-	TextureCache::Instance()->clearInsteadThumbnails();
+	TextureCache::Instance()->clearAll();
 }
 
 void TextureBrowser::Update()
@@ -188,18 +190,17 @@ void TextureBrowser::setTexture(DAVA::Texture *texture, DAVA::TextureDescriptor 
 
 		// load original image
 		// check if image is in cache
-		TextureInfo info;
-		info.images = TextureCache::Instance()->getOriginal(curDescriptor);
-		if(info.images.size() > 0 &&
-		   !info.images[0].isNull())
+		DAVA::Vector<QImage> images = TextureCache::Instance()->getOriginal(curDescriptor);
+		if(images.size() > 0 &&
+		   !images[0].isNull())
 		{
 			// image is in cache, so set it immediately (by calling image-ready slot)
-			textureReadyOriginal(curDescriptor, info);
+			textureReadyOriginal(curDescriptor, images);
 		}
 		else
 		{
 			// set empty info
-			QList<QImage> emptyImages;
+			DAVA::Vector<QImage> emptyImages;
 			emptyImages.push_back(QImage());
 			updateInfoOriginal(emptyImages);
 
@@ -227,6 +228,7 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, bool forceConvert /* 
 	if(forceConvert)
 	{
 		TextureCache::Instance()->clearConverted(curDescriptor, view);
+		TextureCache::Instance()->clearConverted(curDescriptor, view);
 	}
 
 	curTextureView = view;
@@ -248,15 +250,15 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, bool forceConvert /* 
 		if(!forceConvert)
 		{
 			// try to find image in cache
-			const QList<QImage>& images = TextureCache::Instance()->getConverted(curDescriptor, view);
+			const DAVA::Vector<QImage>& images = TextureCache::Instance()->getConverted(curDescriptor, view);
 
 			if(images.size() > 0 &&
 			   !images[0].isNull())
 			{
 				// image already in cache, just draw it
 				updateConvertedImageAndInfo(images, *curDescriptor);
-
-                needConvert = false;
+				
+				needConvert = false;
 				infoConvertedIsUpToDate = true;
 			}
 		}
@@ -289,7 +291,7 @@ void TextureBrowser::updatePropertiesWarning()
 	}
 }
 
-void TextureBrowser::updateConvertedImageAndInfo(const QList<QImage> &images, DAVA::TextureDescriptor& descriptor)
+void TextureBrowser::updateConvertedImageAndInfo(const DAVA::Vector<QImage> &images, DAVA::TextureDescriptor& descriptor)
 {
 	if(!descriptor.IsCubeMap())
 	{
@@ -333,7 +335,7 @@ void TextureBrowser::updateInfoPos(QLabel *label, const QPoint &pos /* = QPoint(
 	}
 }
 
-void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
+void TextureBrowser::updateInfoOriginal(const DAVA::Vector<QImage> &images)
 {
 	if(NULL != curTexture && NULL != curDescriptor)
 	{
@@ -341,10 +343,28 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 
 		const char *formatStr = DAVA::Texture::GetPixelFormatString(DAVA::FORMAT_RGBA8888);
 
-		int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
-		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
-
-		sprintf(tmp, "Format: %s\nSize: %dx%d\nData size: %s\nFile size: %s", formatStr, images[0].width(), images[0].height(),
+		int datasize = 0;
+		int filesize = 0;
+		for(size_t i = 0; i < images.size(); ++i)
+		{
+			datasize += images[i].width() * images[i].height() * DAVA::Texture::GetPixelFormatSizeInBytes(DAVA::FORMAT_RGBA8888);
+		}
+		
+		if(!curDescriptor->IsCubeMap())
+		{
+			filesize = QFileInfo(curDescriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
+		}
+		else
+		{
+			DAVA::Vector<DAVA::String> faceNames;
+			CubemapUtils::GenerateFaceNames(curDescriptor->pathname.GetAbsolutePathname(), faceNames);
+			for(size_t i = 0; i < faceNames.size(); ++i)
+			{
+				filesize += QFileInfo(faceNames[i].c_str()).size();
+			}
+		}
+		
+		sprintf(tmp, "Format\t: %s\nSize\t: %dx%d\nData size\t: %s\nFile size\t: %s", formatStr, images[0].width(), images[0].height(),
 			 SizeInBytesToString(datasize).c_str(),
 			 SizeInBytesToString(filesize).c_str());
 
@@ -363,17 +383,19 @@ void TextureBrowser::updateInfoConverted()
 		char tmp[1024];
 		const char *formatStr = "Unknown";
 
-		int datasize = TextureCache::Instance()->getConvertedSize(curDescriptor, curTextureView);
-		int filesize = TextureCache::Instance()->getConvertedFileSize(curDescriptor, curTextureView);
+		int datasize = 0;
+		int filesize = 0;
 		QSize imgSize(0, 0);
-        
-        bool isFormatValid = curDescriptor->compression[curTextureView].format != DAVA::FORMAT_INVALID;
-		if(isFormatValid)
+
+		if(curDescriptor->compression[curTextureView].format != DAVA::FORMAT_INVALID)
 		{
+			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(curDescriptor, curTextureView);
+			filesize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
 			formatStr = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(curDescriptor->compression[curTextureView].format);
 			
 			int w = curDescriptor->compression[curTextureView].compressToWidth;
 			int h = curDescriptor->compression[curTextureView].compressToHeight;
+
 			if(0 != w && 0 != h)
 			{
 				imgSize = QSize(w, h);
@@ -382,10 +404,12 @@ void TextureBrowser::updateInfoConverted()
 			{
 				imgSize = QSize(curTexture->width, curTexture->height);
 			}
+
+			// get data size
+			datasize = ImageTools::GetTexturePhysicalSize(curDescriptor, curTextureView);
 		}
-        ui->convertToolButton->setEnabled(isFormatValid);
-        
-		sprintf(tmp, "Format: %s\nSize: %dx%d\nData size: %s\nFile size: %s", formatStr, imgSize.width(), imgSize.height(),
+
+		sprintf(tmp, "Format\t: %s\nSize\t: %dx%d\nData size\t: %s\nFile size\t: %s", formatStr, imgSize.width(), imgSize.height(),
 			SizeInBytesToString(datasize).c_str(),
 			SizeInBytesToString(filesize).c_str());
 
@@ -414,7 +438,7 @@ void TextureBrowser::setupStatusBar()
 	statusBar->layout()->setMargin(0);
 	statusBar->layout()->setSpacing(1);
 	statusBar->layout()->setContentsMargins(0, 0, 0, 0);
-	statusBar->setMaximumHeight(20);
+	statusBar->setMaximumHeight(16);
 
 	ui->mainLayout->addWidget(statusBar);
 
@@ -590,7 +614,7 @@ void TextureBrowser::resetTextureInfo()
 	updateInfoColor(ui->labelConvertedRGBA);
 	updateInfoPos(ui->labelConvertedXY);
 
-	QList<QImage> emptyImages;
+	DAVA::Vector<QImage> emptyImages;
 	emptyImages.push_back(QImage());
 	updateInfoOriginal(emptyImages);
 	updateInfoConverted();
@@ -600,14 +624,13 @@ void TextureBrowser::reloadTextureToScene(DAVA::Texture *texture, const DAVA::Te
 {
 	if(NULL != descriptor && NULL != texture)
 	{
-		DAVA::eGPUFamily curEditorImageGPUForTextures = (eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32();
+		DAVA::eGPUFamily curEditorImageGPUForTextures = EditorSettings::Instance()->GetTextureViewGPU();
 
 		// reload only when editor view format is the same as given texture format
 		// or if given texture format if not a file (will happened if some common texture params changed - mipmap/filtering etc.)
 		if(DAVA::GPU_UNKNOWN == gpu || gpu == curEditorImageGPUForTextures)
 		{
-			descriptor->Save(); //TODO: it's kostil for broken logic. We need to remove this code during refactoring of texture browser
-			texture->ReloadAs(curEditorImageGPUForTextures);
+			texture->ReloadAs(gpu);
 		}
 	}
 }
@@ -701,39 +724,44 @@ void TextureBrowser::texturePropertyChanged(int type)
 	updatePropertiesWarning();
 }
 
-void TextureBrowser::textureReadyOriginal(const DAVA::TextureDescriptor *descriptor, const TextureInfo & images)
+void TextureBrowser::textureReadyOriginal(const DAVA::TextureDescriptor *descriptor, DAVA::Vector<QImage>& images)
 {
 	if(NULL != descriptor)
 	{
+		// put this image into cache
+		TextureCache::Instance()->setOriginal(descriptor, images);
+
 		if(curDescriptor == descriptor)
 		{
 			if(descriptor->IsCubeMap())
 			{
-				ui->textureAreaOriginal->setImage(images.images, descriptor->faceDescription);
+				ui->textureAreaOriginal->setImage(images, descriptor->faceDescription);
 			}
 			else
 			{
-				ui->textureAreaOriginal->setImage(images.images[0]);
+				ui->textureAreaOriginal->setImage(images[0]);
 			}
 			ui->textureAreaOriginal->setEnabled(true);
 			ui->textureAreaOriginal->waitbarShow(false);
 
 			// set info about original image size info texture properties
-			ui->textureProperties->setOriginalImageSize(images.images[0].size());
+			ui->textureProperties->setOriginalImageSize(images[0].size());
 
 			// set info about loaded image
-			updateInfoOriginal(images.images);
+			updateInfoOriginal(images);
 		}
 	}
 }
 
-void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu, const TextureInfo & images)
+void TextureBrowser::textureReadyConverted(const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, DAVA::Vector<QImage>& images)
 {
 	if(NULL != descriptor)
 	{
+		// put this image into cache
+		TextureCache::Instance()->setConverted(descriptor, gpu, images);
 		if(curDescriptor == descriptor && curTextureView == gpu)
 		{
-			updateConvertedImageAndInfo(images.images, *curDescriptor);
+			updateConvertedImageAndInfo(images, *curDescriptor);
 		}
 
 		DAVA::Texture *texture = textureListModel->getTexture(descriptor);
@@ -932,17 +960,14 @@ void TextureBrowser::setScene(DAVA::Scene *scene)
 
 void TextureBrowser::sceneActivated(SceneEditor2 *scene)
 {
-	if(isVisible())
+	// set new scene
+	if(curScene != scene)
 	{
-		// set new scene
-		if(curScene != scene)
-		{
-			setScene(scene);
-		}
-		else
-		{
-			Update();
-		}
+		setScene(scene);
+	}
+	else
+	{
+		Update();
 	}
 }
 

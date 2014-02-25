@@ -37,8 +37,6 @@
 namespace DAVA
 {
     
-REGISTER_CLASS(CameraComponent)
-    
 CameraComponent::CameraComponent(Camera * _camera)
 {
     camera = SafeRetain(_camera);
@@ -69,9 +67,9 @@ Component* CameraComponent::Clone(Entity * toEntity)
     return newComponent;
 }
 
-void CameraComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void CameraComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 {
-	Component::Serialize(archive, serializationContext);
+	Component::Serialize(archive, sceneFile);
 
 	if(NULL != archive && NULL != camera)
 	{
@@ -84,7 +82,7 @@ void CameraComponent::Serialize(KeyedArchive *archive, SerializationContext *ser
 	}
 }
 
-void CameraComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+void CameraComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 {
 	if(NULL != archive)
 	{
@@ -98,7 +96,7 @@ void CameraComponent::Deserialize(KeyedArchive *archive, SerializationContext *s
 		}
 	}
 
-	Component::Deserialize(archive, serializationContext);
+	Component::Deserialize(archive, sceneFile);
 }
     
 };

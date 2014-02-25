@@ -34,7 +34,6 @@
 #include "Base/BaseObject.h"
 #include "Core/Core.h"
 #include "Render/RenderEffect.h"
-#include "Render/UniqueStateSet.h"
 
 namespace DAVA
 {

@@ -29,8 +29,8 @@
 
 #include "ScenePreviewDialog.h"
 
-#include "Deprecated/ControlsFactory.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "../SceneEditor/ControlsFactory.h"
+#include "../SceneEditor/EditorSettings.h"
 #include "ScenePreviewControl.h"
 
 ScenePreviewDialog::ScenePreviewDialog()
@@ -67,7 +67,7 @@ ScenePreviewDialog::~ScenePreviewDialog()
 
 void ScenePreviewDialog::Show(const FilePath &scenePathname)
 {
-    bool enabled = SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_PREVIEW_DIALOG_ENABLED, SettingsManager::GENERAL).AsBool();
+    bool enabled = EditorSettings::Instance()->GetPreviewDialogEnabled();
     if(!enabled)
         return;
     

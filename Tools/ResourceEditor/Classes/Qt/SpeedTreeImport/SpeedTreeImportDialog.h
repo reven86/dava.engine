@@ -55,14 +55,17 @@ private slots:
 
     void OnXMLSelect();
     void OnSc2Select();
+    void OnImagesSelect();
 
 private:
-    void SetSC2FolderValue(const QString & path);
+    void UpdateEditLines(bool makeSc2PathDefault = true, bool makeTexturesDirDefault = true);
+    QString GetDefaultDialogPath(const DAVA::FilePath & forPath);
 
 	Ui::QtTreeImportDialog *ui;
 
-    DAVA::Vector<DAVA::FilePath> xmlFiles;
-    DAVA::FilePath sc2FolderPath;
+    DAVA::FilePath xmlFilePath;
+    DAVA::FilePath sc2FilePath;
+    DAVA::FilePath texturesDirPath;
 };
 
 #endif // __RESOURCEEDITORQT__SPEEDTREEIMPORTDIALOG__

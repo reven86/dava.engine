@@ -142,13 +142,13 @@ void LabeledSlider::setValue(int val)
 
 void LabeledSlider::ValueChanged(int value)
 {
-    valueText->setText(QString::fromAscii(DAVA::Format("%d", value).c_str()));
+    valueText->setText(QString::fromAscii(DAVA::Format("%d", value)));
     
     emit valueChanged(value);
 }
 
 void LabeledSlider::RangeChanged(int min, int max)
 {
-    minText->setText(QString::fromAscii(DAVA::Format("%d", min).c_str()));
-    maxText->setText(QString::fromAscii(DAVA::Format("%d", max).c_str()));
+    minText->setText(QString::fromAscii(DAVA::Format("%d", min)));
+    maxText->setText(QString::fromAscii(DAVA::Format("%d", max)));
 }

@@ -183,8 +183,7 @@ QString ParticlesCountColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWid
 		return QString();
 	}
 	
-	//int32 particlesNumber = line.layer->GetActiveParticlesCount();
-	int32 particlesNumber = 0; //TODO: later think how to restore functionality
+	int32 particlesNumber = line.layer->GetActiveParticlesCount();
 	this->totalParticlesCount += particlesNumber;
 	
 	return QString::number(particlesNumber);
@@ -222,8 +221,7 @@ QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(const ParticleTime
 	// Calculate the cumulative info.
 	this->totalUpdatesCount ++;
 
-	//int32 particlesNumber = line.layer->GetActiveParticlesCount();
-	int32 particlesNumber = 0; //TODO: later think how to restore functionality
+	int32 particlesNumber = line.layer->GetActiveParticlesCount();
 	UpdateCumulativeData(line.layer, particlesNumber);
 	this->totalParticlesCount += particlesNumber;
 
@@ -282,10 +280,9 @@ QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(const ParticleTimeLine
 	}
 
 	// Calculate the cumulative info.
-	//int32 particlesCount = line.layer->GetActiveParticlesCount();
-	int32 particlesNumber = 0; //TODO: later think how to restore functionality
-	UpdateCumulativeDataIfMaximum(line.layer, particlesNumber);
-	totalParticlesCountOnThisLoop += particlesNumber;
+	int32 particlesCount = line.layer->GetActiveParticlesCount();
+	UpdateCumulativeDataIfMaximum(line.layer, particlesCount);
+	totalParticlesCountOnThisLoop += particlesCount;
 	
 	return QString::number((int)cumulativeData[line.layer]);
 }
@@ -329,8 +326,7 @@ QString ParticlesAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWidg
 		return QString();
 	}
 	
-	//float32 area = line.layer->GetActiveParticlesArea();
-	float32 area = 0; //TODO: later think how to restore functionality
+	float32 area = line.layer->GetActiveParticlesArea();
 	this->totalParticlesArea += area;
 	
 	return FormatFloat(area);
@@ -369,8 +365,7 @@ QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeL
 	// Calculate the cumulative info.
 	this->totalUpdatesCount ++;
 
-	//float32 area = line.layer->GetActiveParticlesArea();
-	float32 area = 0; //TODO: later think how to restore functionality
+	float32 area = line.layer->GetActiveParticlesArea();
 	UpdateCumulativeData(line.layer, area);
 	this->totalParticlesArea += area;
 
@@ -429,10 +424,9 @@ QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeLineW
 	}
 	
 	// Calculate the cumulative info.
-	//float32 particlesArea = line.layer->GetActiveParticlesArea();
-	float32 area = 0; //TODO: later think how to restore functionality
-	UpdateCumulativeDataIfMaximum(line.layer, area);
-	totalParticlesAreaOnThisLoop += area;
+	float32 particlesArea = line.layer->GetActiveParticlesArea();
+	UpdateCumulativeDataIfMaximum(line.layer, particlesArea);
+	totalParticlesAreaOnThisLoop += particlesArea;
 	
 	return FormatFloat((float)cumulativeData[line.layer]);
 }

@@ -34,7 +34,6 @@
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Render/Highlevel/RenderObject.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA 
 {
@@ -52,8 +51,8 @@ public:
     RenderObject * GetRenderObject();
     
 	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
-	virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+	virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
+	virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
     virtual void GetDataNodes(Set<DataNode*> & dataNodes);
 	virtual void OptimizeBeforeExport();
     

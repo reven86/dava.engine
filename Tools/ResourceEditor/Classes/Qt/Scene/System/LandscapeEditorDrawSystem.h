@@ -32,9 +32,7 @@
 #define __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__
 
 #include "Entity/SceneSystem.h"
-#include "Scene3D/Scene.h"
-#include "Render/Highlevel/Landscape.h"
-#include "Render/UniqueStateSet.h"
+#include "EditorScene.h"
 
 class LandscapeProxy;
 class HeightmapProxy;
@@ -42,8 +40,6 @@ class NotPassableTerrainProxy;
 class CustomColorsProxy;
 class VisibilityToolProxy;
 class RulerToolProxy;
-
-using namespace DAVA;
 
 class LandscapeEditorDrawSystem: public DAVA::SceneSystem
 {
@@ -116,6 +112,8 @@ public:
 	void SaveTileMaskTexture();
 	void ResetTileMaskTexture();
 
+	Landscape::eTiledShaderMode GetLandscapeTiledShaderMode();
+
 	eErrorType VerifyLandscape();
 
 	Landscape * GetBaseLandscape() const;
@@ -147,8 +145,6 @@ private:
 	void DeinitLandscape();
 
 	eErrorType IsNotPassableTerrainCanBeEnabled();
-	
-	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

@@ -99,7 +99,7 @@ public:
 	//! \brief check if bounding box intersect other bounding box
 	//! \param box another bounding box
 	//! \return true if intersect, false otherwise
-	inline bool IntersectsWithBox(const AABBox3 & box) const;
+	inline bool IsIntersect(const AABBox3 & box);
 
 	//! \brief make bounding box empty
 	inline void Empty();
@@ -210,11 +210,12 @@ inline void AABBox3::AddAABBox(const AABBox3 & bbox)
 //! \brief check if bounding box intersect other bounding box
 //! \param box another bounding box
 //! \return true if intersect, false otherwise
-inline bool AABBox3::IntersectsWithBox(const AABBox3 & other) const
+inline bool AABBox3::IsIntersect(const AABBox3 & /*box*/)
 {
-	return (min.x <= other.max.x && min.y <= other.max.y && min.z <= other.max.z &&
-            max.x >= other.min.x && max.y >= other.min.y && max.z >= other.min.z);
-};
+	DVASSERT(0);
+	// TODO: implement this function
+	return false;
+};	
 
 //! \brief make bounding box empty
 inline void AABBox3::Empty()

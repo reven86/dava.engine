@@ -31,7 +31,6 @@
 #define __DAVAENGINE_SKYBOXRENDEROBJECT_H__
 
 #include "Render/Highlevel/RenderObject.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -49,8 +48,8 @@ namespace DAVA
 		virtual void RenderUpdate(Camera *camera, float32 timeElapsed);
 		
 		RenderObject * Clone(RenderObject *newObject);
-		virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
-		virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
+		virtual void Save(KeyedArchive *archive, SceneFileV2 *sceneFile);
+		virtual void Load(KeyedArchive *archive, SceneFileV2 *sceneFile);
 		virtual void SetRenderSystem(RenderSystem * renderSystem);
 		
 		void SetTexture(const FilePath& texPath);
@@ -64,7 +63,7 @@ namespace DAVA
 		//INTROSPECTION used intentionally instead of INTROSPECTION_EXTEND in order to hide underlying details of SkyboxRenderObject implementation
 		INTROSPECTION(SkyboxRenderObject,
 					  PROPERTY("texture", "Texture Path", GetTexture, SetTexture, I_SAVE | I_VIEW | I_EDIT)
-					  PROPERTY("verticalOffset", "Vertical Offset", GetOffsetZ, SetOffsetZ, I_SAVE | I_VIEW)
+					  PROPERTY("verticalOffset", "Vertical Offset", GetOffsetZ, SetOffsetZ, I_SAVE | I_VIEW | I_EDIT)
 					  PROPERTY("rotationAngle", "Rotation", GetRotationZ, SetRotationZ, I_SAVE)
 					  );
 
@@ -73,9 +72,11 @@ namespace DAVA
 		
 		void CreateRenderData();
 		void BuildSkybox();
+		void UpdateMaterial();
 
 	private:
 		
+		FilePath texturePath;
 		float32 offsetZ;
 		float32 rotationZ;
 		float32 nonClippingDistance;

@@ -145,7 +145,7 @@ DAVA::Vector3 EntityGroup::GetZeroPos(size_t i) const
 {
 	DAVA::Vector3 ret;
 
-	if(i < entities.size())
+	if(i >= 0 && i < entities.size())
 	{
 		ret = entities[i].entity->GetWorldTransform().GetTranslationVector();
 	}
@@ -195,7 +195,6 @@ bool EntityGroup::operator==( const EntityGroup &ss ) const
 	if(entities.size() == ss.entities.size())
 	{
 		ret = true;
-
 		for(size_t i = 0; i < entities.size(); ++i)
 		{
 			if(!ss.HasEntity(entities[i].entity))
@@ -206,7 +205,7 @@ bool EntityGroup::operator==( const EntityGroup &ss ) const
 		}
 	}
 
-	return ret;
+	return ret = true;
 }
 
 bool EntityGroup::Index(DAVA::Entity *entity, size_t &index) const

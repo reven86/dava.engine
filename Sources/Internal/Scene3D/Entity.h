@@ -37,10 +37,6 @@
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Entity/Component.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Base/HashMap.h"
-#include "Scene3D/SceneFile/SerializationContext.h"
-
-//#define COMPONENT_STORAGE_STDMAP 1
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 
 namespace DAVA
@@ -80,12 +76,10 @@ public:
     
     void AddComponent(Component * component);
     void RemoveComponent(Component * component);
-    void RemoveComponent(uint32 componentType, uint32 index = 0);
-
-    Component * GetComponent(uint32 componentType, uint32 index = 0) const;
-    Component * GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+    void RemoveComponent(uint32 componentType);
+    Component * GetComponent(uint32 componentType) const;
+	Component * GetOrCreateComponent(uint32 componentType);
     uint32 GetComponentCount();
-    uint32 GetComponentCount(uint32 componentType);
     
     inline uint32 GetAvailableComponentFlags();
 
@@ -96,14 +90,12 @@ public:
     virtual void    InsertBeforeNode(Entity *newNode, Entity *beforeNode);
     
 	virtual void	RemoveNode(Entity * node);
+	virtual Entity* GetChild(int32 index) const;
+	virtual int32   GetChildrenCount() const;
     virtual int32   GetChildrenCountRecursive() const;
 	virtual void	RemoveAllChildren();
 	virtual Entity*	GetNextChild(Entity *child);
-
-    inline  Entity* GetChild(int32 index) const;
-	inline  int32   GetChildrenCount() const;
-
-    
+        
 	virtual bool FindNodesByNamePart(const String & namePart, List<Entity *> &outNodeList);
     
 	/**
@@ -123,31 +115,18 @@ public:
         \param[in] name name of object you want to find. 
         \returns pointer to the object if object with such name available, 0 in case if it's not exists.
      */
-	virtual Entity *	FindByName(const FastName & name);
-
-    /**
-        \brief Find node by it's name inside this scene node.
-        \param[in] name name of object you want to find. 
-        \returns pointer to the object if object with such name available, 0 in case if it's not exists.
-     */
-	virtual Entity *	FindByName(const char * name);
+	virtual Entity *	FindByName(const String & name);
     /**
         \brief Set name of this particular node.
         \param[in] new name for this node
      */
-    virtual void SetName(const FastName & name);
-
-    /**
-        \brief Set name of this particular node.
-        \param[in] new name for this node
-     */
-    virtual void SetName(const char * name);
+    virtual void SetName(const String & name);
 
     /**
         \brief Get name of this particular node.
         \returns name of this node
      */
-    inline const FastName & GetName() const;
+    inline const String & GetName() const;
 
     /**
         \brief Get full name of this node from root. This function is slow because it go up by hierarchy and make full node name.
@@ -175,6 +154,8 @@ public:
 	// properties
 	void SetVisible(const bool & isVisible);
 	inline const bool GetVisible();
+	void SetLodVisible(bool isLodVisible);
+	void SetSwitchVisible(bool isSwitchVisible);
 	inline Entity * GetParent();
 	DAVA_DEPRECATED(void SetUpdatable(bool isUpdatable));
 	DAVA_DEPRECATED(inline bool GetUpdatable(void));
@@ -199,7 +180,6 @@ public:
     inline void SetDefaultLocalTransform(const Matrix4 & newMatrix);
     //inline void InvalidateLocalTransform();
 	Matrix4 AccamulateLocalTransform(Entity * fromParent);
-    Matrix4 AccamulateTransformUptoFarParent(Entity * farParent);
     
     /*
         \brief Go down by hierarchy and bake all transforms.
@@ -236,10 +216,7 @@ public:
 		NODE_DELETED = 1 << 13,
         
         // I decided to put scene flags here to avoid 2 variables. But probably we can create additional variable later if it'll be required.
-        SCENE_LIGHTS_MODIFIED = 1 << 14,
-        
-        ENTITY_INDEX_POSITION = 16,
-        ENTITY_INDEX_MASK = 0xffff,
+        SCENE_LIGHTS_MODIFIED = 1 << 31,
     };
 	
     inline void AddFlag(int32 flagToAdd);
@@ -247,21 +224,18 @@ public:
     inline uint32 GetFlags() const;
     void AddFlagRecursive(int32 flagToAdd);
     void RemoveFlagRecursive(int32 flagToRemove);
-    inline uint32 GetIndexInParent() { return (flags >> ENTITY_INDEX_POSITION) & ENTITY_INDEX_MASK; };
-    inline void SetIndexInParent(uint32 index) { flags |= (index & ENTITY_INDEX_MASK) << ENTITY_INDEX_POSITION; };
     
 	// animations 
-// 	void ExecuteAnimation(SceneNodeAnimation * animation);	
-// 	void DetachAnimation(SceneNodeAnimation * animation);
-// 	virtual void StopAllAnimations(bool recursive = true);
-
+	void ExecuteAnimation(SceneNodeAnimation * animation);	
+	void DetachAnimation(SceneNodeAnimation * animation);
+	virtual void StopAllAnimations(bool recursive = true);
 	void RestoreOriginalTransforms();
 
 	
     virtual Entity* Clone(Entity *dstNode = NULL);
 	
     // Do not use variables 
-    //std::deque<SceneNodeAnimation *> nodeAnimations;
+    std::deque<SceneNodeAnimation *> nodeAnimations;
 
     // Do we need enum, or we can use virtual functions? 
     enum
@@ -307,12 +281,12 @@ public:
     /**
         \brief virtual function to save node to KeyedArchive
      */
-    virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
+    virtual void Save(KeyedArchive * archive, SceneFileV2 * sceneFileV2);
     
     /**
         \brief virtual function to load node to KeyedArchive
      */
-	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+	virtual void Load(KeyedArchive * archive, SceneFileV2 * sceneFileV2);
     
     /**
         \brief Function to get node description for debug printing
@@ -355,16 +329,16 @@ public:
      */
     template<template <typename> class Container, class T>
 	void GetChildNodes(Container<T> & container);
-    
-    template<template <typename> class Container>
-    void GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type);
-
+        
     /**
         \brief This function is called after scene is loaded from file.
         You can perform additional initialization here.
      */
     virtual void SceneDidLoaded();
 
+	//temporary solution
+	Entity * entity;
+    
     
     void SetFog_Kostil(float32 density, const Color &color);
     
@@ -373,15 +347,6 @@ public:
 	static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
 
 	void FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components);
-    
-    Vector<Entity*> children;
-    
-protected:
-    
-    inline void CleanupComponent(Component* component, uint32 componentCount);
-    void RemoveAllComponents();
-    void LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext);
-    void LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext);
    
 protected:
 
@@ -393,30 +358,18 @@ protected:
 
 	Scene * scene;
 	Entity * parent;
-	
+	Vector<Entity*> children;
 
-	FastName	name;
+	String	name;
 	int32	tag;
 
     uint32 flags;
     
 private:
-        
 	Vector<Component *> components;
     uint32 componentFlags;
     uint32 componentUpdateMarks;
     
-#if defined(COMPONENT_STORAGE_STDMAP)
-
-    typedef Map<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-
-#else
-    
-    typedef HashMap<uint32, Vector<Component*>* > ComponentsMap;
-    ComponentsMap componentsMap;
-    
-#endif
 
     Matrix4 defaultLocalTransform;
    	friend class Scene;
@@ -470,7 +423,7 @@ inline Entity * Entity::GetParent()
 	return parent;
 }
     
-inline const FastName & Entity::GetName() const
+inline const String & Entity::GetName() const
 {
     return name;
 }
@@ -507,11 +460,12 @@ inline void Entity::SetTag(int32 _tag)
 {
     tag = _tag;
 }
-
     
 template<template <typename> class Container, class T>
 void Entity::GetDataNodes(Container<T> & container)
 {
+    container.clear();
+    
     Set<DataNode*> objects;
     GetDataNodes(objects);
     
@@ -541,40 +495,11 @@ void Entity::GetChildNodes(Container<T> & container)
         obj->GetChildNodes(container);
     }	
 }
-    
-template<template <typename> class Container>
-void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type)
-{
-    Vector<Entity*>::const_iterator end = children.end();
-    for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
-    {
-        Entity* entity = *t;
-        if (entity)
-        {
-            Component * component = entity->GetComponent(type);
-            if (component)
-                container.push_back(entity);
-        }
-        
-        entity->GetChildEntitiesWithComponent(container, type);
-    }	
-}
 
 uint32 Entity::GetAvailableComponentFlags()
 {
     return componentFlags;
 }
-    
-Entity * Entity::GetChild(int32 index) const
-{
-    return children[index];
-}
-
-int32 Entity::GetChildrenCount() const
-{
-    return (int32)children.size();
-}
-
 
 };
 

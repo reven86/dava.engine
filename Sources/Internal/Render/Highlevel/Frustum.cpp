@@ -45,6 +45,8 @@ Frustum::~Frustum()
 //! \param viewProjection view * projection matrix
 void Frustum::Build(const Matrix4 & viewProjection)
 {
+	planeArray.resize(6);
+	planeAccesArray.resize(6);
 	
 #define SETUP_PLANE(plane, x1, x2, x3, x4) \
 	planeArray[plane].n.x = -(x1); planeArray[plane].n.y = -(x2); \
@@ -105,19 +107,24 @@ void Frustum::Build(const Matrix4 & viewProjection)
 
 #undef SETUP_PLANE 
 
-	//build plane min/max access array 
-	planeAccesBits = 0;
-
+	//build plane min/max acces array
 	for (int32 i=0; i<planeCount; i++)
 	{
-		if (planeArray[i].n.x<0)
-			planeAccesBits |= ((uint32)1)<<(i*3+0);
-		if (planeArray[i].n.y<0)
-			planeAccesBits |= ((uint32)1)<<(i*3+1);
-		if (planeArray[i].n.z<0)
-			planeAccesBits |= ((uint32)1)<<(i*3+2);		
+		planeAccesArray[i].minx = ((planeArray[i].n.x>=0)?0:1);
+		planeAccesArray[i].maxx = 1 - planeAccesArray[i].minx;
+		planeAccesArray[i].miny = ((planeArray[i].n.y>=0)?0:1);
+		planeAccesArray[i].maxy = 1 - planeAccesArray[i].miny;
+		planeAccesArray[i].minz = ((planeArray[i].n.z>=0)?0:1);
+		planeAccesArray[i].maxz = 1 - planeAccesArray[i].minz;
 	}
 }
+
+void Frustum::Build()
+{
+    const Matrix4 & viewProjection = RenderManager::Instance()->GetUniformMatrix(RenderManager::UNIFORM_MATRIX_MODELVIEWPROJECTION);
+    Build(viewProjection);
+}
+
 
 //! \brief Check axial aligned bounding box visibility
 //! \param min bounding box minimum point
@@ -290,33 +297,28 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask,
 {
 	const float32* verts[2] = {box.min.data, box.max.data};
 	Frustum::eFrustumResult result = EFR_INSIDE;	
-	uint8 k;
-	const Plane *plane, *startPlane;
-	startPlane = planeArray+startId;
+	uint8 plane, k;
+	plane = startId;
 	k=1<<startId;
-	uint32 currPlaneAccess = planeAccesBits>>(startId*3);
-	uint32 invPlaneAccess;
 	if (k&planeMask)
 	{		
-		if (startPlane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)				
+		if (planeArray[plane].DistanceToPoint(verts[planeAccesArray[plane].minx][0], verts[planeAccesArray[plane].miny][1], verts[planeAccesArray[plane].minz][2]) > 0.0f)				
 			return EFR_OUTSIDE;		
-		invPlaneAccess=~currPlaneAccess;
-		if (startPlane->DistanceToPoint(verts[invPlaneAccess&1][0], verts[(invPlaneAccess>>1)&1][1], verts[(invPlaneAccess>>2)&1][2]) >= 0.0f)		
+		if (planeArray[plane].DistanceToPoint(verts[planeAccesArray[plane].maxx][0], verts[planeAccesArray[plane].maxy][1], verts[planeAccesArray[plane].maxz][2]) >= 0.0f)		
 			result = EFR_INTERSECT;
 		else
 			planeMask^=k; //plane is inside
 	}
-	for (plane = planeArray, k=1, currPlaneAccess = planeAccesBits, invPlaneAccess = ~planeAccesBits; k<=planeMask; ++plane, k+=k, currPlaneAccess>>=3)
+	for (plane = 0, k=1; k<=planeMask; ++plane, k+=k)
 	{		
-		if ((k&planeMask)&&(plane!=startPlane))
-		{	
-			if (plane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)
+		if ((k&planeMask)&&(plane!=startId))
+		{			
+			if (planeArray[plane].DistanceToPoint(verts[planeAccesArray[plane].minx][0], verts[planeAccesArray[plane].miny][1], verts[planeAccesArray[plane].minz][2]) > 0.0f)			
 			{
-				startId = plane-planeArray;
+				startId = plane;
 				return EFR_OUTSIDE;
 			}
-			invPlaneAccess=~currPlaneAccess;
-			if (plane->DistanceToPoint(verts[invPlaneAccess&1][0], verts[((invPlaneAccess)>>1)&1][1], verts[((invPlaneAccess)>>2)&1][2]) >= 0.0f)
+			if (planeArray[plane].DistanceToPoint(verts[planeAccesArray[plane].maxx][0], verts[planeAccesArray[plane].maxy][1], verts[planeAccesArray[plane].maxz][2]) >= 0.0f)			
 				result = EFR_INTERSECT;
 			else
 				planeMask^=k; //plane is inside
@@ -329,23 +331,21 @@ Frustum::eFrustumResult Frustum::Classify(const AABBox3 & box, uint8 &planeMask,
 bool Frustum::IsInside(const AABBox3 & box, uint8 planeMask, uint8& startClippingPlane)const
 {
 	const float32* verts[2] = {box.min.data, box.max.data};
-	uint8 k;
-	const Plane *plane, *startPlane;
-	startPlane = planeArray+startClippingPlane;
-	k=1<<startClippingPlane;
-	uint32 currPlaneAccess = planeAccesBits>>(startClippingPlane*3);
+	uint8 plane, k;
+	plane = startClippingPlane;
+	k=1<<plane;
 	if (k&planeMask)
 	{		
-		if (startPlane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)		
+		if (planeArray[plane].DistanceToPoint(verts[planeAccesArray[plane].minx][0], verts[planeAccesArray[plane].miny][1], verts[planeAccesArray[plane].minz][2]) > 0.0f)		
 			return false;
 	}
-	for (plane = planeArray, k=1, currPlaneAccess = planeAccesBits; k<=planeMask; ++plane, k+=k, currPlaneAccess>>=3)
+	for (plane = 0, k=1; k<=planeMask; ++plane, k+=k)
 	{		
-		if ((k&planeMask)&&(plane!=startPlane))
+		if ((k&planeMask)&&(plane!=startClippingPlane))
 		{			
-			if (plane->DistanceToPoint(verts[currPlaneAccess&1][0], verts[(currPlaneAccess>>1)&1][1], verts[(currPlaneAccess>>2)&1][2]) > 0.0f)			
+			if (planeArray[plane].DistanceToPoint(verts[planeAccesArray[plane].minx][0], verts[planeAccesArray[plane].miny][1], verts[planeAccesArray[plane].minz][2]) > 0.0f)			
 			{
-				startClippingPlane = plane-planeArray;
+				startClippingPlane = plane;
 				return false;
 			}
 		}
@@ -371,7 +371,7 @@ void Frustum::DebugDraw()
 {
 	Vector3 p[50];
 
-	if (planeCount < 6)
+	if (planeArray.size() < 6)
 	{
 		return;
 	}
@@ -411,20 +411,20 @@ void Frustum::DebugDraw()
 								planeArray[EFP_TOP]);
 
 
-    RenderHelper::Instance()->DrawLine(	p[0], p[1], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[1], p[2], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[2], p[3], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[3], p[0], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
+    RenderHelper::Instance()->DrawLine(	p[0], p[1]);
+	RenderHelper::Instance()->DrawLine(	p[1], p[2]);
+	RenderHelper::Instance()->DrawLine(	p[2], p[3]);
+	RenderHelper::Instance()->DrawLine(	p[3], p[0]);
 	
-	RenderHelper::Instance()->DrawLine(	p[4], p[5], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[5], p[6], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine( p[6], p[7], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[7], p[4], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
+	RenderHelper::Instance()->DrawLine(	p[4], p[5]);
+	RenderHelper::Instance()->DrawLine(	p[5], p[6]);
+	RenderHelper::Instance()->DrawLine( p[6], p[7]);
+	RenderHelper::Instance()->DrawLine(	p[7], p[4]);
 
-	RenderHelper::Instance()->DrawLine(	p[0], p[4], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[1], p[5], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[2], p[6], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawLine(	p[3], p[7], 1.0f, RenderState::RENDERSTATE_2D_BLEND);
+	RenderHelper::Instance()->DrawLine(	p[0], p[4]);
+	RenderHelper::Instance()->DrawLine(	p[1], p[5]);
+	RenderHelper::Instance()->DrawLine(	p[2], p[6]);
+	RenderHelper::Instance()->DrawLine(	p[3], p[7]);
 }
 
 }; 

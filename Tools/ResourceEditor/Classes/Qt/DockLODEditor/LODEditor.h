@@ -72,6 +72,9 @@ protected slots:
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
     
+    //TODO: remove after lod editing implementation
+    void CopyLODToLod0Clicked();
+
     void CreatePlaneLODClicked();
 
     void ForceLayerActivated(int index);
@@ -101,6 +104,8 @@ private:
     QtPosSaver posSaver;
     
     EditorLODData *editedLODData;
+    
+    
 };
 
 #endif //#ifndef __LOD_EDITOR_H__

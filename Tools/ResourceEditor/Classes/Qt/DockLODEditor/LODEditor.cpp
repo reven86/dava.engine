@@ -34,7 +34,7 @@
 #include "EditorLODData.h"
 #include "DistanceSlider.h"
 
-#include "Scene/SceneSignals.h"
+#include "Classes/Qt/Main/QtMainWindowHandler.h"
 #include "Classes/Qt/Scene/SceneSignals.h"
 #include "Classes/Qt/PlaneLODDialog/PlaneLODDialog.h"
 #include "Classes/Qt/Main/mainwindow.h"
@@ -123,8 +123,9 @@ void LODEditor::SetupInternalUI()
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
     connect(ui->createPlaneLodButton, SIGNAL(clicked()), this, SLOT(CreatePlaneLODClicked()));
-    connect(ui->buttonDeleteFirstLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteFirstLOD()));
-    connect(ui->buttonDeleteLastLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteLastLOD()));
+
+    //TODO: remove after lod editing implementation
+    connect(ui->lastLodToFrontButton, SIGNAL(clicked()), this, SLOT(CopyLODToLod0Clicked()));
 }
 
 void LODEditor::SetupSceneSignals()
@@ -140,7 +141,7 @@ void LODEditor::LODCorrectionChanged(double value)
     if(spinBox)
     {
         //TODO set new value to scene
-//        int lodLevel = spinBox->property("tag").toInt();
+        int lodLevel = spinBox->property("tag").toInt();
         
         UpdateSpinboxColor(spinBox);
     }
@@ -220,12 +221,12 @@ void LODEditor::SceneDeactivated(SceneEditor2 *scene)
 
 void LODEditor::LODDataChanged()
 {
-    DAVA::uint32 lodLayersCount = editedLODData->GetLayersCount();
+    DAVA::int32 lodLayersCount = editedLODData->GetLayersCount();
     
     ui->distanceSlider->SetLayersCount(lodLayersCount);
     SetForceLayerValues(lodLayersCount);
     
-    for (DAVA::uint32 i = 0; i < lodLayersCount; ++i)
+    for (DAVA::int32 i = 0; i < lodLayersCount; ++i)
     {
         distanceWidgets[i].SetVisible(true);
         
@@ -234,7 +235,7 @@ void LODEditor::LODDataChanged()
         SetSpinboxValue(distanceWidgets[i].distance, distance);
         ui->distanceSlider->SetDistance(i, distance);
         
-        distanceWidgets[i].name->setText(Format("%d. (%d):", i, editedLODData->GetLayerTriangles(i)).c_str());
+        distanceWidgets[i].name->setText(Format("%d. (%d):", i, editedLODData->GetLayerTriangles(i)));
     }
     for (DAVA::int32 i = lodLayersCount; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
     {
@@ -244,8 +245,7 @@ void LODEditor::LODDataChanged()
     UpdateWidgetVisibility();
 
     ui->createPlaneLodButton->setEnabled(editedLODData->CanCreatePlaneLOD());
-    ui->buttonDeleteFirstLOD->setEnabled(editedLODData->CanDeleteLod());
-    ui->buttonDeleteLastLOD->setEnabled(editedLODData->CanDeleteLod());
+    ui->lastLodToFrontButton->setEnabled(editedLODData->CanCreatePlaneLOD());
 }
 
 void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous)
@@ -254,7 +254,7 @@ void LODEditor::LODDistanceChangedBySlider(const QVector<int> &changedLayers, bo
 
 	if(changedLayers.size() != 0)
 	{
-		DAVA::Map<DAVA::uint32, DAVA::float32> lodDistances;
+		DAVA::Map<DAVA::int32, DAVA::float32> lodDistances;
 		for (int i = 0; i < changedLayers.size(); i++)
 		{
 			int layer = changedLayers[i];
@@ -305,15 +305,16 @@ void LODEditor::SetForceLayerValues(int layersCount)
     ui->forceLayer->clear();
     
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
-
-	int requestedIndex = editedLODData->GetForceLayer() + 1;
-	int itemsCount = Max(requestedIndex, layersCount);
-	for(DAVA::int32 i = 0; i < itemsCount; ++i)
+    for(DAVA::int32 i = 0; i < layersCount; ++i)
     {
-        ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
+        ui->forceLayer->addItem(Format("%d", i), QVariant(i));
     }
     
-	ui->forceLayer->setCurrentIndex(requestedIndex);
+    int requestedIndex = editedLODData->GetForceLayer() + 1;
+    if(requestedIndex <= layersCount)
+    {
+        ui->forceLayer->setCurrentIndex(requestedIndex);
+    }
 }
 
 void LODEditor::GlobalSettingsButtonReleased()
@@ -384,3 +385,8 @@ void LODEditor::CreatePlaneLODClicked()
     }
 }
 
+void LODEditor::CopyLODToLod0Clicked()
+{
+    if(editedLODData->CanCreatePlaneLOD())
+        editedLODData->CopyLastLodToLod0();
+}

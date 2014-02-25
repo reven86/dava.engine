@@ -38,7 +38,7 @@
 class ParticleLayerRemoveCommand : public Command2
 {
 public:
-	ParticleLayerRemoveCommand(DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer* layer);
+	ParticleLayerRemoveCommand(DAVA::ParticleLayer* layer);
 	~ParticleLayerRemoveCommand();
 
 	virtual void Undo();

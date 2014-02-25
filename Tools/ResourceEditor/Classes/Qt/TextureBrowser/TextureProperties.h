@@ -76,7 +76,7 @@ protected:
 	QtPropertyDataMetaObject *propMagFilter;
 	QtPropertyDataMetaObject *propFormat;
 	QtPropertyDataMetaObject *propSizes;
-
+	
 	bool skipPropSizeChanged;
 
 	QSize origImageSize;
@@ -100,14 +100,18 @@ protected:
 	void ReloadEnumFilters();
 	void ReloadProperties();
 
-	QtPropertyDataMetaObject* AddPropertyItem(const char *name, DAVA::InspBase *object, const QModelIndex &parent);
+	QtPropertyDataMetaObject* AddPropertyItem(const char *name, DAVA::InspBase *object, QtPropertyItem *parent);
 	void SetPropertyItemValidValues(QtPropertyDataMetaObject* item, EnumMap *validValues);
 
 	void LoadCurSizeToProp();
 	void SaveCurSizeFromProp();
 
-protected:
-	virtual void OnItemEdited(const QModelIndex &);
+protected slots:
+	void PropMipMapChanged(QtPropertyData::ValueChangeReason reason);
+	void PropFormatChanged(QtPropertyData::ValueChangeReason reason);
+	void PropFilterChanged(QtPropertyData::ValueChangeReason reason);
+	void PropWrapChanged(QtPropertyData::ValueChangeReason reason);
+	void PropSizeChanged(QtPropertyData::ValueChangeReason reason);
 };
 
 #endif // __TEXTURE_PROPERTIES_H__

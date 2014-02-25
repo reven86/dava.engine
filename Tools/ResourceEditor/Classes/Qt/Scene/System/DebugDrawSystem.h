@@ -37,8 +37,6 @@
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/SelectionSystem.h"
 
-#include "Render/UniqueStateSet.h"
-
 class Command2;
 class DebugDrawSystem : public DAVA::SceneSystem
 {
@@ -70,7 +68,6 @@ protected:
 	void DrawSoundNode(DAVA::Entity *entity);
 	void DrawHangingObjects(DAVA::Entity *entity);
 	void DrawEntityBox(DAVA::Entity *entity, const DAVA::Color &color);
-	void DrawStaticOcclusionComponent(DAVA::Entity *entity);
 
 	//hanging objects 
 	bool IsObjectHanging(DAVA::Entity * entity);
@@ -84,8 +81,6 @@ private:
     DAVA::Color objectTypeColor;
 
 	bool hangingObjectsModeEnabled;
-	
-	DAVA::UniqueHandle debugDrawState;
 };
 
 

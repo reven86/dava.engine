@@ -176,11 +176,6 @@ void PolygonGroupWithMaterial::Draw()
     
 }
 
-ShadowVolume * PolygonGroupWithMaterial::CreateShadow()
-{
-	return NULL;
-}
-
 
 
 MeshInstanceNode::MeshInstanceNode()
@@ -497,9 +492,9 @@ AABBox3 MeshInstanceNode::GetWTMaximumBoundingBoxSlow()
     return retBBox;
 }
     
-void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+void MeshInstanceNode::Save(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
-    Entity::Save(archive, serializationContext);
+    Entity::Save(archive, sceneFile);
 //    archive->SetInt32("lodCount", (int32)lodLayers.size());
 //    
 //    int32 lodIdx = 0;
@@ -546,7 +541,7 @@ void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * seria
 	for(Vector<LightmapData>::iterator lightmapsIterator = lightmaps.begin(); lightmapsIterator != lighmapsEnd; ++lightmapsIterator)
 	{
 		LightmapData & data = *lightmapsIterator;
-		String filename = data.lightmapName.GetRelativePathname(serializationContext->GetScenePath());
+		String filename = data.lightmapName.GetRelativePathname(sceneFile->GetScenePath());
 
 		archive->SetString(Format("lightmap%d", lightmapIndex), filename.c_str());
 		archive->SetFloat(Format("lightmap%duvoX", lightmapIndex), data.uvOffset.x);
@@ -557,29 +552,29 @@ void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * seria
 	}
 }
 
-void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+void MeshInstanceNode::Load(KeyedArchive * archive, SceneFileV2 * sceneFile)
 {
-    Entity::Load(archive, serializationContext);
+    Entity::Load(archive, sceneFile);
 
     static const int32 errorIdx = -1;
 
-    if(serializationContext->GetVersion() >= 3)
+    if(sceneFile->GetVersion() >= 3)
     {
         int32 polygroupCount = archive->GetInt32("pgcnt", 0);
         
         for(int idx = 0; idx < polygroupCount; ++idx)
         {
             uint64 matPtr = archive->GetByteArrayAsType(Format("pg%d_matptr", idx), (uint64)0);
-            Material * material = static_cast<Material*>(serializationContext->GetDataBlock(matPtr));
+            Material * material = dynamic_cast<Material*>(sceneFile->GetNodeByPointer(matPtr));
             uint64 meshPtr = archive->GetByteArrayAsType(Format("pg%d_meshptr", idx), (uint64)0);
-            StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
+            StaticMesh * mesh = dynamic_cast<StaticMesh*>(sceneFile->GetNodeByPointer(meshPtr));
             const int32 pgIndex = archive->GetInt32(Format("pg%d_pg", idx), errorIdx);
 
             if(material && mesh)
             {
                 DVASSERT(pgIndex != errorIdx);
 
-                if(serializationContext->IsDebugLogEnabled())
+                if(sceneFile->DebugLogEnabled())
                     Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
                 
                 AddPolygonGroup(mesh, pgIndex, material);
@@ -596,28 +591,28 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
             size_t size = archive->GetInt32(Format("lod%d_cnt", lodIdx), 0);
             for(size_t idx = 0; idx < size; ++idx)
             {
-                if(serializationContext->GetVersion() == 2)
+                if(sceneFile->GetVersion() == 2)
                 {
                     uint64 matPtr = archive->GetByteArrayAsType(Format("l%d_%d_matptr", lodIdx, idx), (uint64)0);
-                    Material * material = static_cast<Material*>(serializationContext->GetDataBlock(matPtr));
+                    Material * material = dynamic_cast<Material*>(sceneFile->GetNodeByPointer(matPtr));
                     uint64 meshPtr = archive->GetByteArrayAsType(Format("l%d_%d_meshptr", lodIdx, idx), (uint64)0);
-                    StaticMesh * mesh = static_cast<StaticMesh*>(serializationContext->GetDataBlock(meshPtr));
+                    StaticMesh * mesh = dynamic_cast<StaticMesh*>(sceneFile->GetNodeByPointer(meshPtr));
                     const int32 pgIndex = archive->GetInt32(Format("l%d_%d_pg", lodIdx, idx), errorIdx);
 
                     if(material && mesh)
                     {
                         DVASSERT(pgIndex != errorIdx);
 
-                        if(serializationContext->IsDebugLogEnabled())
+                        if(sceneFile->DebugLogEnabled())
                             Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
                         
                         AddPolygonGroup(mesh, pgIndex, material);
                     }
                 }
 
-                if(serializationContext->GetVersion() == 1)
+                if(sceneFile->GetVersion() == 1)
                 {
-                    serializationContext->SetLastError(SceneFileV2::ERROR_VERSION_IS_TOO_OLD);
+                    sceneFile->SetError(SceneFileV2::ERROR_VERSION_IS_TOO_OLD);
     //                int32 materialIndex = archive->GetInt32(Format("l%d_%d_mat", lodIdx, idx), -1);
     //                int32 meshIndex = archive->GetInt32(Format("l%d_%d_ms", lodIdx, idx), -1);
     //                int32 pgIndex = archive->GetInt32(Format("l%d_%d_pg", lodIdx, idx), -1);
@@ -650,7 +645,7 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
 			LightmapData data;
 
             String pathname = archive->GetString(Format("lightmap%d", i), "");
-            data.lightmapName = serializationContext->GetScenePath() + pathname;
+            data.lightmapName = sceneFile->GetScenePath() + pathname;
 			data.uvOffset.x = archive->GetFloat(Format("lightmap%duvoX", i));
 			data.uvOffset.y = archive->GetFloat(Format("lightmap%duvoY", i));
 			data.uvScale.x = archive->GetFloat(Format("lightmap%duvsX", i));
@@ -732,7 +727,7 @@ void MeshInstanceNode::CreateDynamicShadowNode()
 
 void MeshInstanceNode::DeleteDynamicShadowNode()
 {
-	ShadowVolumeNode * shadowVolume = (ShadowVolumeNode*)FindByName(FastName("dynamicshadow.shadowvolume"));
+	ShadowVolumeNode * shadowVolume = (ShadowVolumeNode*)FindByName("dynamicshadow.shadowvolume");
 	RemoveNode(shadowVolume);
 }
 

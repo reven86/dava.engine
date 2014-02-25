@@ -31,14 +31,13 @@
 #ifndef __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 #define __RESOURCEEDITORQT__VISIBILITYTOOLSYSTEM__
 
-#include "DAVAEngine.h"
+#include "Entity/SceneSystem.h"
+#include "EditorScene.h"
 #include "LandscapeEditorDrawSystem.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
-
-using namespace DAVA;
 
 class VisibilityToolSystem: public DAVA::SceneSystem
 {

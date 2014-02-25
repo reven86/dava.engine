@@ -1,0 +1,41 @@
+#
+# Nodes:
+# TextureFetch inputs(texcoord)
+# Mul inputs(a, b)
+# Lerp inputs(a, b, t)
+#
+
+material:
+    numberOfTextureCoordInputs: 1
+    vertexShader: forward.vsh
+    pixelShader: forward.fsh
+
+# material properties
+nodes:
+    -   node: TYPE_TEX_COORD_INPUT
+        index: 0
+        name: inTexCoord0
+    -   node: TYPE_TEX_COORD_INPUT
+        index: 1
+        name: inTexCoord1
+    -   node: TYPE_CONST
+        exportToUniform: true
+        name: detail-scaling
+        value: 1.0
+    -   node: TYPE_MUL
+        name: mulCoord
+        input: [a, inTexCoord1, ""]
+        input: [b, inTexCoord
+    -   node: TYPE_SAMPLE_2D
+        channel: 0
+        name: ALBEDO
+        input: [texCoord, inTexCoord0, xy]
+    -   node: TYPE_SAMPLE_2D
+        channel: 1
+        name: DETAIL
+        input: [texCoord, inTexCoord1, xy]
+    -   node: TYPE_FORWARD_MATERIAL
+        name: material
+        isPixelLightingEnabled: false
+        input: [diffuse, mul1, rgb]
+
