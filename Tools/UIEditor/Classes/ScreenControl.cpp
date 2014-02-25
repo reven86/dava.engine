@@ -63,3 +63,13 @@ bool ScreenControl::IsPointInside(const Vector2& /*point*/, bool/* expandWithFoc
 	//input must be handled by screen
 	return false;
 }
+
+void ScreenControl::SetScale(const Vector2& value)
+{
+    this->scale = value;
+}
+
+void ScreenControl::SetPos(const Vector2& value)
+{
+    this->pos = value;
+}

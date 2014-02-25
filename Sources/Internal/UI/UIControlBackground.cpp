@@ -79,10 +79,7 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 	spr = SafeRetain(srcBackground->spr);
 	frame = srcBackground->frame;
 	align = srcBackground->align;
-    
-    SafeRelease(rdoObject);
-    SetDrawType((eDrawType)srcBackground->type);
-    
+	type = srcBackground->type;
 	color = srcBackground->color;
 	spriteModification = srcBackground->spriteModification;
 	colorInheritType = srcBackground->colorInheritType;
@@ -162,22 +159,6 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
 	type = drawType;
-    switch(type)
-    {
-    case DRAW_STRETCH_BOTH:
-    case DRAW_STRETCH_HORIZONTAL:
-    case DRAW_STRETCH_VERTICAL:
-    case DRAW_TILED:
-        {
-            if (!rdoObject)
-            {
-                rdoObject = new RenderDataObject();
-                vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-                texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-                //rdoObject->SetStream()
-            }
-        }
-    }
 	ReleaseDrawData();
 }
 
@@ -270,7 +251,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 	RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 	
 	Sprite::DrawState drawState;
-    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND); // set state explicitly
+        drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND); // set state explicitly
 	if (spr)
 	{
 		drawState.frame = frame;

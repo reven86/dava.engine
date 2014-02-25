@@ -365,8 +365,8 @@ bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 		return false;
 	}
 
-	BOOL bResult = false;
-    BOOL bDone = false;
+	bool bResult = false;
+    bool bDone = false;
 
 	do
 	{
