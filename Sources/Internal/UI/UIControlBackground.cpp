@@ -96,10 +96,16 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 UIControlBackground::~UIControlBackground()
 {
 	//SafeRelease(rdoObject);
-	if(rdoObject)
+
+	if(rdoObject->GetRetainCount() == 1)
+	{
+		SafeRelease(rdoObject);
+	}
+	else
 	{
 		rdoObject->Release();
 	}
+
 	SafeRelease(spr);
 	ReleaseDrawData();
 }

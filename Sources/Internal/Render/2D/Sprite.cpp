@@ -768,8 +768,15 @@ Sprite::~Sprite()
 
 	if(spriteRenderObject)
 	{
-		spriteRenderObject->Release();
-	}
+		if(spriteRenderObject->GetRetainCount() == 1)
+		{
+		    SafeRelease(spriteRenderObject);
+		}
+		else
+		{
+		    spriteRenderObject->Release();
+	        }
+        }
 }
 
 Texture* Sprite::GetTexture()
