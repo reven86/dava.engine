@@ -37,7 +37,6 @@
 #include "Render/Texture.h"
 #include "Render/2D/Sprite.h"
 #include "Render/2D/Font.h"
-#include "Platform/Mutex.h"
 
 namespace DAVA
 {
@@ -84,57 +83,52 @@ public:
 	
 	Sprite * GetSprite();
 	bool IsSpriteReady();
-    
-    const Vector2 & GetTextSize();
 
 	void PreDraw();
 
     TextBlock * Clone();
-
-	const Vector<int32> & GetStringSizes() const;
     
 protected:
 	TextBlock();
 	~TextBlock();
 	
 	void Prepare();
+	void Prepare2();
 	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
 	
-	void DrawToBuffer(Font *font, int16 *buf);
+	void DrawToBuffer(int16 *buf);
+
+
 
 	void ProcessAlign();
 	
-
-	Vector2 rectSize;
-	Vector2 requestedSize;
-
-    Vector2 cacheFinalSize;
-
-	float32 originalFontSize;
-    
+	
+	bool isPredrawed;
+	
+	
+	bool cacheUseJustify;
 	int32 cacheDx;
 	int32 cacheDy;
 	int32 cacheW;
-
-    int32 fittingType;
-	int32 align;
-
+	float32 cacheFinalW;
+	
+	Font * font;
+	Font * constFont;
 	WideString text;
     WideString pointsStr;
+	bool isMultilineEnabled;
+    bool isMultilineBySymbolEnabled;
+	int32 fittingType;
+	Vector2 rectSize;
+	int32 align;
+	
+	float32 originalFontSize;
+	bool needRedraw;
+	Vector2 requestedSize;
+	
+	Sprite * sprite;
 	Vector<WideString> multilineStrings;
 	Vector<int32> stringSizes;
-    
-    Mutex mutex;
-
-    Font * font;
-	Font * constFont;
-	Sprite * sprite;
-
-    
-	bool isMultilineEnabled:1;
-    bool isMultilineBySymbolEnabled:1;
-	bool isPredrawed:1;
-	bool cacheUseJustify:1;
 };
 
 }; //end of namespace
