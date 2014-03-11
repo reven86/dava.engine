@@ -28,13 +28,13 @@
 
 
 #include "Base/FixedSizePoolAllocator.h"
-
+#include <stdlib.h>
 
 namespace DAVA 
 {
 FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockArraySize)
 {
-    DVASSERT(_blockSize >= sizeof(uint8*));
+   // DVASSERT(_blockSize >= sizeof(uint8*));
     
     blockSize = _blockSize;
     blockArraySize = _blockArraySize;
@@ -50,7 +50,7 @@ FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockA
 
 void FixedSizePoolAllocator::CreateNewDataBlock()
 {
-    DVASSERT(blockSize >= sizeof(uint8*));
+   // DVASSERT(blockSize >= sizeof(uint8*));
     void * block = ::malloc(blockArraySize * blockSize + sizeof(uint8*));
     //Logger::FrameworkDebug("Allocated new data block: %p pointer size: %d", block, sizeof(uint8*));
     // insert to list

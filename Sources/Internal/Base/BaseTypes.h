@@ -31,7 +31,7 @@
 #define __DAVAENGINE_TYPES_H__
 
 #include "Base/TemplateHelpers.h"
-
+#include "Base/STLAllocator.h"
 // debug definition
 #if defined(DAVA_DEBUG)
 #define __DAVAENGINE_DEBUG__
@@ -198,7 +198,9 @@ typedef std::string		String;
 
 //#define List std::list
 //#define Vector std::vector
-template < typename E > class List : public std::list< E > {};
+    
+template < typename E > class List : public std::list< E, STLAllocator<E> > {};
+
 template < typename E > class Vector : public std::vector< E >
 {
 public:
