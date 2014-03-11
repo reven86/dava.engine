@@ -58,12 +58,10 @@ RenderSystem::RenderSystem()
     ,   clipCamera(0)
     ,   forceUpdateLights(false)
 {
-    renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_FORWARD));
-    renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
+    mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_POST_EFFECT);
 
     renderHierarchy = new QuadTree(10);
 	hierarchyInitialized = false;
-    globalBatchArray = new RenderPassBatchArray(this);
 	markedObjects.reserve(100);
 }
 
@@ -71,8 +69,6 @@ RenderSystem::~RenderSystem()
 {
     SafeRelease(camera);
     SafeRelease(clipCamera);
-    
-    SafeDelete(globalBatchArray);
     SafeDelete(renderHierarchy);	
 }
     
@@ -358,12 +354,6 @@ void RenderSystem::Update(float32 timeElapsed)
 	{
         objectsForUpdate[i]->RenderUpdate(clipCamera, timeElapsed);
     }
-	
-    visibilityArray.Clear();
-    renderHierarchy->Clip(clipCamera, &visibilityArray);
-
-    globalBatchArray->Clear();
-	globalBatchArray->PrepareVisibilityArray(&visibilityArray, clipCamera); 
 
     ShaderCache::Instance()->ClearAllLastBindedCaches();
 }
@@ -378,13 +368,7 @@ void RenderSystem::Render()
 {
     TIME_PROFILE("RenderSystem::Render");
 
-    uint32 size = (uint32)renderPassOrder.size();
-    for (uint32 k = 0; k < size; ++k)
-    {
-        renderPassOrder[k]->Draw(camera, globalBatchArray);
-    }
-    
-    //Logger::FrameworkDebug("OccludedRenderBatchCount: %d", RenderManager::Instance()->GetStats().occludedRenderBatchCount);
+    mainRenderPass->Draw(camera, this);
 }
 
 //RenderLayer * RenderSystem::AddRenderLayer(const FastName & layerName, uint32 sortingFlags, const FastName & passName, const FastName & afterLayer)

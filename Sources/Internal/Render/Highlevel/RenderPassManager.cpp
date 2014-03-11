@@ -29,6 +29,7 @@
 #include "Render/Highlevel/RenderFastNames.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/RenderPass.h"
+#include "Render/Highlevel/PostEffectRenderPass.h"
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Render/Highlevel/RenderLayerManager.h"
 #include "Render/Highlevel/RenderSystem.h"
@@ -71,7 +72,10 @@ RenderPassManager::RenderPassManager(RenderSystem * renderSystem)
     ShadowVolumeRenderPass * shadowVolumePass = new ShadowVolumeRenderPass(renderSystem, PASS_SHADOW_VOLUME, RENDER_PASS_SHADOW_VOLUME_ID);
     InsertPass(shadowVolumePass);
     shadowVolumePass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_SHADOW_VOLUME), LAST_LAYER);
-    
+
+    PostEffectRenderPass * postEffectPass = new PostEffectRenderPass(renderSystem, PASS_POST_EFFECT, RENDER_PASS_POST_EFFECT_ID);
+    InsertPass(postEffectPass);
+
     //StaticOcclusionRenderPass * staticOcclusionRenderPass = new StaticOcclusionRenderPass(renderSystem, PASS_STATIC_OCCLUSION, RENDER_PASS_STATIC_OCCLUSION_ID);
     //InsertPass(staticOcclusionRenderPass);
     

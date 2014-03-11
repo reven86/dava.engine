@@ -406,6 +406,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Landscape.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Light.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Mesh.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\PostEffectRenderPass.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderBatch.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderBatchArray.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderDataSource.h" />
@@ -803,6 +804,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Landscape.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Light.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Mesh.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\PostEffectRenderPass.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderBatch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderBatchArray.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\RenderHierarchy.cpp" />

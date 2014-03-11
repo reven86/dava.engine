@@ -264,6 +264,8 @@ public:
 
     static void SetPixelization(bool value);
 
+    Image * ReadDataToImage();
+
 protected:
     
     void ReleaseTextureData();
@@ -294,7 +296,7 @@ protected:
 	Texture();
 	virtual ~Texture();
     
-    Image * ReadDataToImage();
+    
     
     static PixelFormatDescriptor pixelDescriptors[FORMAT_COUNT];
     static void SetPixelDescription(PixelFormat index, const String &name, int32 size, GLenum type, GLenum format, GLenum internalFormat);
@@ -331,7 +333,7 @@ public:							// properties for fast access
     eGPUFamily loadedAsFile:3;
 	TextureState state:2;
 	uint32		textureType:2;
-	DepthFormat depthFormat:1;
+	DepthFormat depthFormat:2;
 	bool		isRenderTarget:1;
 	bool		isPink:1;
 

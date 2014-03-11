@@ -26,81 +26,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __DAVAENGINE_POST_EFFECT_RENDER_PASS_H__
+#define __DAVAENGINE_POST_EFFECT_RENDER_PASS_H__
 
-#ifndef __DAVAENGINE_SCENE3D_RENDER_PASS_H__
-#define	__DAVAENGINE_SCENE3D_RENDER_PASS_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/FastName.h"
-#include "Render/Highlevel/RenderLayer.h"
-#include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/RenderPass.h"
 
 namespace DAVA
 {
-class RenderPassBatchArray;
-class Camera;
-class RenderSystem;
 
-class RenderPass
+class PostEffectRenderPass : public RenderPass
 {
 public:
-    RenderPass(RenderSystem * renderSystem, const FastName & name, RenderPassID id);
-    virtual ~RenderPass();
-    
-    void InitDefaultLayers();
-    
-    inline RenderPassID GetRenderPassID() const;
-    inline const FastName & GetName() const;
-    
-	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
-	void RemoveRenderLayer(RenderLayer * layer);
+    PostEffectRenderPass(RenderSystem * renderSystem, const FastName & name, RenderPassID id);
+    virtual ~PostEffectRenderPass();
 
     virtual void Draw(Camera * camera, RenderSystem * renderSystem);
-    
-    inline uint32 GetRenderLayerCount() const;
-    inline RenderLayer * GetRenderLayer(uint32 index) const;
-    
-    
+
+    void Init();
+
 protected:
-    // TODO: add StaticVector container
-    Vector<RenderLayer*> renderLayers;
-    RenderSystem * renderSystem;
-    FastName name;
-    RenderPassID id;
-    RenderPassBatchArray * globalBatchArray;
+    Sprite * renderTarget;
+    Texture * renderTexture;
+    UniqueHandle textureState;
 
-public:
-    
-    INTROSPECTION(RenderPass,
-        COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)
-        MEMBER(name, "Name", I_VIEW)
-    );
+    RenderDataObject * rdo;
+    RenderDataStream * vertexStream;
+    RenderDataStream * texCoordStream;
+    Shader * shader;
+    float32 vertices[12];
+    float32 texCoords0[8];
+    Rect currentViewport;
 
-	friend class RenderSystem;
+    static FastName SHADER_NAME;
 };
 
-inline RenderPassID RenderPass::GetRenderPassID() const
-{
-    return id;
 }
 
-inline const FastName & RenderPass::GetName() const
-{
-    return name;
-}
-
-inline uint32 RenderPass::GetRenderLayerCount() const
-{
-    return (uint32)renderLayers.size();
-}
-    
-inline RenderLayer * RenderPass::GetRenderLayer(uint32 index) const
-{
-    return renderLayers[index];
-}
-
-
-} // ns
-
-#endif	/* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */
-
+#endif //__DAVAENGINE_POST_EFFECT_RENDER_PASS_H__

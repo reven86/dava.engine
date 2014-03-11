@@ -32,6 +32,7 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/Camera.h"
+#include "Render/Highlevel/RenderSystem.h"
 
 namespace DAVA
 {
@@ -42,11 +43,12 @@ RenderPass::RenderPass(RenderSystem * _renderSystem, const FastName & _name, Ren
     ,   id(_id)
 {
     renderLayers.reserve(RENDER_LAYER_ID_COUNT);
+    globalBatchArray = new RenderPassBatchArray(renderSystem);
 }
 
 RenderPass::~RenderPass()
 {
-    
+    SafeDelete(globalBatchArray);
 }
     
 void RenderPass::AddRenderLayer(RenderLayer * layer, const FastName & afterLayer)
@@ -79,16 +81,20 @@ void RenderPass::RemoveRenderLayer(RenderLayer * layer)
 	renderLayers.erase(it);
 }
 
-void RenderPass::Draw(Camera * camera, RenderPassBatchArray * renderPassBatchArray)
+void RenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
 {
-    // Set Render Target
+    VisibilityArray visibilityArray;
+    renderSystem->renderHierarchy->Clip(renderSystem->clipCamera, &visibilityArray);
+
+    globalBatchArray->Clear();
+    globalBatchArray->PrepareVisibilityArray(&visibilityArray, renderSystem->clipCamera); 
     
     // Draw all layers with their materials
     uint32 size = (uint32)renderLayers.size();
     for (uint32 k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
-        RenderLayerBatchArray * renderLayerBatchArray = renderPassBatchArray->Get(layer->GetRenderLayerID());
+        RenderLayerBatchArray * renderLayerBatchArray = globalBatchArray->Get(layer->GetRenderLayerID());
         if (renderLayerBatchArray)
         {
             layer->Draw(name, camera, renderLayerBatchArray);

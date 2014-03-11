@@ -46,6 +46,7 @@ static const FastName PASS_FORWARD("ForwardPass");
 static const FastName PASS_SHADOW_VOLUME("ShadowVolumePass");
 static const FastName PASS_DEFERRED("DeferredPass");
 static const FastName PASS_STATIC_OCCLUSION("StaticOcclusionPass");
+static const FastName PASS_POST_EFFECT("PostEffectPass");
     
 enum eRenderPassID
 {
@@ -54,6 +55,7 @@ enum eRenderPassID
     RENDER_PASS_SHADOW_MAP_ID,
     RENDER_PASS_DEFERRED_ID,
     RENDER_PASS_STATIC_OCCLUSION_ID,
+    RENDER_PASS_POST_EFFECT_ID,
     RENDER_PASS_ID_COUNT,
 };
 

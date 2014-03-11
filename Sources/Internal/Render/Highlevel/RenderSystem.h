@@ -155,7 +155,7 @@ private:
     Vector<RenderObject*> objectsForPermanentUpdate;
     Vector<RenderObject*> markedObjects;
     Vector<Light*> movedLights;
-    Vector<RenderPass*> renderPassOrder;
+    RenderPass * mainRenderPass;
     
     RenderPassManager renderPassManager;
     
@@ -166,9 +166,6 @@ private:
     
     RenderHierarchy * renderHierarchy;
 	bool hierarchyInitialized;
-
-    RenderPassBatchArray * globalBatchArray;
-    VisibilityArray visibilityArray;
     
     Camera * camera;
     Camera * clipCamera;
