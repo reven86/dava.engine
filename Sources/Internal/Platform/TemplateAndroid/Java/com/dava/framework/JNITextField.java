@@ -265,7 +265,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetFontSize(int id, final float size) {

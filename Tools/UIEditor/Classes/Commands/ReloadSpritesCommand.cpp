@@ -32,7 +32,7 @@
 #include "ResourcesManageHelper.h"
 #include "UIControlStateHelper.h"
 #include "SpritesHelper.h"
-#include <QMessageBox>
+#include "errorsListDialog.h"
 
 ReloadSpritesCommand::ReloadSpritesCommand(const HierarchyTreeNode* node) :
     rootNode(node)
@@ -66,18 +66,12 @@ void ReloadSpritesCommand::ReloadSprites()
     }
 }
 
-void ReloadSpritesCommand::ShowErrorMessage(Set<String> errorsSet)
+void ReloadSpritesCommand::ShowErrorMessage(const Set<String>& errorsSet)
 {
 	if (!errorsSet.empty())
 	{
-		QMessageBox msgBox;
-		QString msg;
-		for (Set<String>::const_iterator p = errorsSet.begin( );p != errorsSet.end( ); ++p)
-		{
-			msg.append((*p).c_str());
-			msg.append("\n");
-		}
-		msgBox.setText(msg);
-		msgBox.exec();
+		ErrorsListDialog errorsDialog;
+		errorsDialog.InitializeErrorsList(errorsSet);
+		errorsDialog.exec();
 	}
 }

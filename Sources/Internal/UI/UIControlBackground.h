@@ -283,7 +283,7 @@ private:
 	{
 		Vector< Vector2 > vertices;
 		Vector< Vector2 > texCoords;
-		Vector< uint32  > indeces;
+		Vector< uint16  > indeces;
 		void GenerateTileData();
 		void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
 

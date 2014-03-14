@@ -547,7 +547,7 @@ bool NMaterial::ReloadQuality(bool force)
 	DVASSERT(materialTemplate);
 	
 	FastName effectiveQuality = GetEffectiveQuality();
-	FastName curGroupQuality = QualitySettingsSystem::Instance()->GetCurMaQuality(GetMaterialGroup());
+	FastName curGroupQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(GetMaterialGroup());
 	if(curGroupQuality != currentQuality)
 	{
 		effectiveQuality = curGroupQuality;
@@ -943,7 +943,7 @@ void NMaterial::SetMaterialGroup(const FastName &group)
 	if(group.IsValid())
 	{
 		materialGroup = group;
-		const MaterialQuality* curQuality = QualitySettingsSystem::Instance()->GetMaQuality(group, QualitySettingsSystem::Instance()->GetCurMaQuality(group));
+		const MaterialQuality* curQuality = QualitySettingsSystem::Instance()->GetMaterialQuality(group, QualitySettingsSystem::Instance()->GetCurMaterialQuality(group));
 		
 		if(NULL != curQuality)
 		{
@@ -962,24 +962,7 @@ void NMaterial::SetMaterialTemplate(const NMaterialTemplate* matTemplate,
 	
 	LoadActiveTextures();
 	
-	this->Retain();
-	
-	//{VI: temporray code should be removed once lighting system is up
-	materialDynamicLit = (baseTechnique->GetLayersSet().count(LAYER_SHADOW_VOLUME) != 0);
-	
-	if(!materialDynamicLit)
-	{
-		uint32 passCount = baseTechnique->GetPassCount();
-		for(uint32 i = 0; i < passCount; ++i)
-		{
-			RenderTechniquePass* pass = baseTechnique->GetPassByIndex(i);
-			const FastNameSet& defines = pass->GetUniqueDefineSet();
-			materialDynamicLit = materialDynamicLit ||
-			defines.count(DEFINE_VERTEX_LIT) ||
-			defines.count(DEFINE_PIXEL_LIT);
-		}
-	}
-	//}
+	this->Retain();		
 	
 	size_t childrenCount = children.size();
 	for(size_t i = 0; i < childrenCount; ++i)
@@ -1127,6 +1110,22 @@ void NMaterial::UpdateMaterialTemplate()
 	SetTexturesDirty();
 	
 	SetRenderLayers(RenderLayerManager::Instance()->GetLayerIDMaskBySet(baseTechnique->GetLayersSet()));
+
+    //{VI: temporray code should be removed once lighting system is up
+    materialDynamicLit = (baseTechnique->GetLayersSet().count(LAYER_SHADOW_VOLUME) != 0);
+
+    if(!materialDynamicLit)
+    {
+        uint32 passCount = baseTechnique->GetPassCount();
+        for(uint32 i = 0; i < passCount; ++i)
+        {
+            RenderTechniquePass* pass = baseTechnique->GetPassByIndex(i);
+            const FastNameSet& defines = pass->GetUniqueDefineSet();
+            materialDynamicLit = materialDynamicLit ||
+                defines.count(DEFINE_VERTEX_LIT) ||
+                defines.count(DEFINE_PIXEL_LIT);
+        }
+    }
 }
 
 void NMaterial::UpdateRenderPass(const FastName& passName,

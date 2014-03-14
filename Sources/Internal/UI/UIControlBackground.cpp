@@ -742,7 +742,7 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
     RenderManager::Instance()->SetRenderState(renderState);
 	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 	RenderManager::Instance()->SetRenderData(rdoObject);
-	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_32, &td.indeces[0]);
+	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 }
 
 void UIControlBackground::DrawFilled( const UIGeometricData &gd, UniqueHandle renderState )

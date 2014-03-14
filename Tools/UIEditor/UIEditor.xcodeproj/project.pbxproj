@@ -221,6 +221,9 @@
 		74AD4BCD1727DB880082EFB3 /* scrollviewpropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74AD4BCC1727DB880082EFB3 /* scrollviewpropertygridwidget.ui */; };
 		74AD4BD11727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74AD4BCF1727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp */; };
 		74AD4BD41727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74AD4BD31727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp */; };
+		74BCC56E18D05F3600C98406 /* errorslistdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */; };
+		74BCC57518D0671E00C98406 /* errorslistdialog.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74BCC57418D0671E00C98406 /* errorslistdialog.ui */; };
+		74BCC57718D0673100C98406 /* errorslistdialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */; };
 		74EED62F16B187CF00262D63 /* alignspropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */; };
 		74EED63216B18C7600262D63 /* alignspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74EED63016B18C7600262D63 /* alignspropertygridwidget.cpp */; };
 		77BDEC8E56A833D3814BC614 /* QtNetwork.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 82153068A36B6EA46DD82A06 /* QtNetwork.framework */; };
@@ -561,7 +564,6 @@
 		17A4F58318A3E1C000182E44 /* particleeffectpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particleeffectpropertygridwidget.h; path = PropertyGridWidgets/particleeffectpropertygridwidget.h; sourceTree = "<group>"; };
 		17A4F58518A3E1ED00182E44 /* particleeffectpropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = particleeffectpropertygridwidget.ui; sourceTree = "<group>"; };
 		17A4F58718A3E23F00182E44 /* ui_particleeffectpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_particleeffectpropertygridwidget.h; sourceTree = "<group>"; };
-		17C5B5D818A4DB0100415933 /* UIParticlesMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticlesMetadata_moc.cpp; sourceTree = "<group>"; };
 		17A6305118AA2B3500957C77 /* GuidesManager_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuidesManager_moc.cpp; path = Guides/GuidesManager_moc.cpp; sourceTree = "<group>"; };
 		17A6305818AA2BDD00957C77 /* GuideMimeData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideMimeData.cpp; path = Guides/GuideMimeData.cpp; sourceTree = "<group>"; };
 		17A6305918AA2BDD00957C77 /* GuideMimeData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuideMimeData.h; path = Guides/GuideMimeData.h; sourceTree = "<group>"; };
@@ -570,6 +572,7 @@
 		17AB665216EDF86B00634657 /* UIListMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIListMetadata.h; path = Metadata/UIListMetadata.h; sourceTree = "<group>"; };
 		17B0617418892C1500FD8007 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		17C0678918ABC909000A1CE0 /* GuidesEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GuidesEnums.h; path = Guides/GuidesEnums.h; sourceTree = "<group>"; };
+		17C5B5D818A4DB0100415933 /* UIParticlesMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticlesMetadata_moc.cpp; sourceTree = "<group>"; };
 		17C5CCD416F31E5300FB90B4 /* spinnerpropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = spinnerpropertygridwidget.ui; sourceTree = "<group>"; };
 		17C5CCD816F323B700FB90B4 /* spinnerpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = spinnerpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
 		17C5CCDA16F323E900FB90B4 /* spinnerpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = spinnerpropertygridwidget.cpp; path = PropertyGridWidgets/spinnerpropertygridwidget.cpp; sourceTree = "<group>"; };
@@ -691,6 +694,11 @@
 		74AD4BD01727DBA50082EFB3 /* scrollviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scrollviewpropertygridwidget.h; path = PropertyGridWidgets/scrollviewpropertygridwidget.h; sourceTree = "<group>"; };
 		74AD4BD21727DD940082EFB3 /* ui_scrollviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_scrollviewpropertygridwidget.h; sourceTree = "<group>"; };
 		74AD4BD31727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scrollviewpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
+		74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = errorslistdialog.cpp; path = Dialogs/errorslistdialog.cpp; sourceTree = "<group>"; };
+		74BCC56D18D05F3600C98406 /* errorslistdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = errorslistdialog.h; path = Dialogs/errorslistdialog.h; sourceTree = "<group>"; };
+		74BCC57418D0671E00C98406 /* errorslistdialog.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = errorslistdialog.ui; sourceTree = "<group>"; };
+		74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errorslistdialog_moc.cpp; sourceTree = "<group>"; };
+		74BCC57818D0675A00C98406 /* ui_errorslistdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_errorslistdialog.h; sourceTree = "<group>"; };
 		74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = alignspropertygridwidget.ui; sourceTree = "<group>"; };
 		74EED63016B18C7600262D63 /* alignspropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = alignspropertygridwidget.cpp; path = PropertyGridWidgets/alignspropertygridwidget.cpp; sourceTree = "<group>"; };
 		74EED63116B18C7600262D63 /* alignspropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = alignspropertygridwidget.h; path = PropertyGridWidgets/alignspropertygridwidget.h; sourceTree = "<group>"; };
@@ -911,6 +919,7 @@
 		02D69C6F16F08CED00F3803F /* Dialogs */ = {
 			isa = PBXGroup;
 			children = (
+				74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */,
 				1742272918A277B3003D53F4 /* editpreviewsettingsdialog_moc.cpp */,
 				17FC1338189F90ED009D83A8 /* previewsettingsdialog_moc.cpp */,
 				174E1FC517F3485A00C7EC10 /* regexpinputdialog_moc.cpp */,
@@ -1247,6 +1256,7 @@
 		17FF15DC16400155001B130F /* Dialogs */ = {
 			isa = PBXGroup;
 			children = (
+				74BCC57418D0671E00C98406 /* errorslistdialog.ui */,
 				174226C918A27628003D53F4 /* editpreviewsettingsdialog.ui */,
 				17FC132D189F8F45009D83A8 /* previewsettingsdialog.ui */,
 				49B0263E1709D6B5001E28CC /* importdialog.ui */,
@@ -1301,6 +1311,8 @@
 				7492E0E81639445D00DF883A /* fontmanagerdialog.cpp */,
 				17FF15FE16400A75001B130F /* localizationeditordialog.cpp */,
 				17FF15FF16400A75001B130F /* localizationeditordialog.h */,
+				74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */,
+				74BCC56D18D05F3600C98406 /* errorslistdialog.h */,
 			);
 			name = Dialogs;
 			sourceTree = "<group>";
@@ -1385,6 +1397,7 @@
 				02D69C8816F08CED00F3803F /* ui_alignspropertygridwidget.h */,
 				74AD4BD21727DD940082EFB3 /* ui_scrollviewpropertygridwidget.h */,
 				1742272B18A27B14003D53F4 /* ui_editpreviewsettingsdialog.h */,
+				74BCC57818D0675A00C98406 /* ui_errorslistdialog.h */,
 				497774BD170DB7F2004CE2FB /* ui_importdialog.h */,
 				497774BE170DB7F2004CE2FB /* ui_importdialogfilewidget.h */,
 				E8FFFF9D16FB17A500E315AE /* ui_spinnerpropertygridwidget.h */,
@@ -1648,6 +1661,7 @@
 				C15C2FF6162AD71C00818631 /* davaglwidget.ui in Bundle Resources */,
 				C15C2FF7162AD71C00818631 /* mainwindow.ui in Bundle Resources */,
 				C1C62A54162D7455000C1B32 /* hierarchytreewidget.ui in Bundle Resources */,
+				74BCC57518D0671E00C98406 /* errorslistdialog.ui in Bundle Resources */,
 				C1C62A70162EC800000C1B32 /* librarywidget.ui in Bundle Resources */,
 				17FF15E016400160001B130F /* createplatformdlg.ui in Bundle Resources */,
 				17FC132E189F8F45009D83A8 /* previewsettingsdialog.ui in Bundle Resources */,
@@ -1768,6 +1782,7 @@
 				17DF04EC1636850C001F7ED2 /* screenpropertygridwidget.cpp in Build Sources */,
 				747FA19C1636DBED000CEEDA /* UITextControlMetadata.cpp in Build Sources */,
 				1767C4301636C8F5008D25BD /* UIStaticTextMetadata.cpp in Build Sources */,
+				74BCC56E18D05F3600C98406 /* errorslistdialog.cpp in Build Sources */,
 				747FA17C1636A7CF000CEEDA /* backgroundpropertygridwidget.cpp in Build Sources */,
 				C17246121637E18900709AAF /* EditorFontManager.cpp in Build Sources */,
 				7492E0EA1639445D00DF883A /* fontmanagerdialog.cpp in Build Sources */,
@@ -1929,6 +1944,7 @@
 				748A997F1726DAB300C6411B /* UIScrollViewMetadata_moc.cpp in Build Sources */,
 				74AD4BD11727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp in Build Sources */,
 				74AD4BD41727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp in Build Sources */,
+				74BCC57718D0673100C98406 /* errorslistdialog_moc.cpp in Build Sources */,
 				84B61F7B1727CF560011E66D /* textpropertygridwidget_moc.cpp in Build Sources */,
 				1712331E1741118F0051D960 /* PropertyNames.cpp in Build Sources */,
 				749EBEF4178D9C3000D0699F /* ListPropertyGridWidgetHelper.cpp in Build Sources */,

@@ -747,6 +747,12 @@
     <ClCompile Include="GeneratedFiles\Guides\GuidesManager_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\errorslistdialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\Dialogs\errorslistdialog_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\DefaultScreen.h">
@@ -1193,6 +1199,12 @@
     <ClInclude Include="Classes\Guides\GuidesManager.h">
       <Filter>Sources\Guides</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\errorslistdialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_errorslistdialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="UI\createplatformdlg.ui">
@@ -1281,6 +1293,9 @@
     </None>
     <None Include="UI\particleeffectpropertygridwidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>
+    </None>
+    <None Include="UI\errorslistdialog.ui">
+      <Filter>Form Files\Dialogs</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -105,9 +105,6 @@ void EditorLODData::SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distan
         
         for(DAVA::uint32 i = 0; i < componentsCount; ++i)
         {
-            if(layerNum >= GetLodLayersCount(lodData[i]))
-                continue;
-           
 			activeScene->Exec(new ChangeLODDistanceCommand(lodData[i], layerNum, distance));
         }
         
@@ -133,10 +130,7 @@ void EditorLODData::UpdateDistances( const DAVA::Map<DAVA::uint32, DAVA::float32
 
 			for(DAVA::uint32 i = 0; i < componentsCount; ++i)
 			{
-				if(layerNum < GetLodLayersCount(lodData[i]))
-				{
-					activeScene->Exec(new ChangeLODDistanceCommand(lodData[i], layerNum, distance));
-				}
+                activeScene->Exec(new ChangeLODDistanceCommand(lodData[i], layerNum, distance));
 			}
 		}
 

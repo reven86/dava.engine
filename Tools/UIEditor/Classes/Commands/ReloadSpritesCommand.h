@@ -50,7 +50,7 @@ protected:
 private:
     const HierarchyTreeNode* rootNode;
 	
-	void ShowErrorMessage(Set<String> errorsSet);
+	void ShowErrorMessage(const Set<String>& errorsSet);
 };
 
 #endif /* defined(__RELOADSPRITESCOMMAND__H__) */

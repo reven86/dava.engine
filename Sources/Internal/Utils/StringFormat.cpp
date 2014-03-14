@@ -235,8 +235,13 @@ __res; })
         int32 tail = (int32)num;
         
         num -= tail;
-        if (precision > 0 && num >= 0.5f)
-            tail++;
+        if (num >= 0.5f)
+        {
+            if (precision > 0)
+                tail++;
+            else if (precision == 0)
+                whole++;
+        }
         
         type = SIGN | LEFT;
         char16 *firstStr = Number(str, whole, 10, -1, -1, type);
@@ -250,7 +255,6 @@ __res; })
         
         return firstStr;
     }
-    
     
     
     int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list args)

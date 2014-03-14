@@ -67,11 +67,11 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
         texturesLayout->addWidget(labTx, 0, 0);
         texturesLayout->addWidget(comboTx, 0, 1);
 
-        DAVA::FastName curTxQuality = DAVA::QualitySettingsSystem::Instance()->GetCurTxQuality();
+        DAVA::FastName curTxQuality = DAVA::QualitySettingsSystem::Instance()->GetCurTextureQuality();
 
-        for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetTxQualityCount(); ++i)
+        for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetTextureQualityCount(); ++i)
         {
-            DAVA::FastName txQualityName = DAVA::QualitySettingsSystem::Instance()->GetTxQualityName(i);
+            DAVA::FastName txQualityName = DAVA::QualitySettingsSystem::Instance()->GetTextureQualityName(i);
             comboTx->addItem(txQualityName.c_str());
 
             if(txQualityName == curTxQuality)
@@ -91,10 +91,10 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
         materialsGroup->setTitle("Materials");
         materialsGroup->setLayout(materialsLayout);
 
-        for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaQualityGroupCount(); ++i)
+        for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
         {
-            DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaQualityGroupName(i);
-            DAVA::FastName curGroupQuality = DAVA::QualitySettingsSystem::Instance()->GetCurMaQuality(groupName);
+            DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
+            DAVA::FastName curGroupQuality = DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(groupName);
             
             QLabel *labMa = new QLabel(QString(groupName.c_str()) + ":", materialsGroup);
             QComboBox *comboMa = new QComboBox(materialsGroup);
@@ -104,9 +104,9 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
             materialsLayout->addWidget(labMa, i, 0);
             materialsLayout->addWidget(comboMa, i, 1);
 
-            for(size_t j = 0; j < DAVA::QualitySettingsSystem::Instance()->GetMaQualityCount(groupName); ++j)
+            for(size_t j = 0; j < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityCount(groupName); ++j)
             {
-                DAVA::FastName maQualityName = DAVA::QualitySettingsSystem::Instance()->GetMaQualityName(groupName, j);
+                DAVA::FastName maQualityName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(groupName, j);
                 comboMa->addItem(maQualityName.c_str(), QString(groupName.c_str()));
 
                 if(curGroupQuality == maQualityName)
@@ -156,10 +156,19 @@ void QualitySwitcher::ApplyMa()
                 material->ReloadQuality();
             }
         }
+
+        sceneEditor->renderSystem->SetForceUpdateLights();
     }
 }
 
 void QualitySwitcher::Show()
+{
+    QualitySwitcher *sw = new QualitySwitcher(QtMainWindow::Instance());
+    sw->setAttribute(Qt::WA_DeleteOnClose, true);
+    sw->show();
+}
+
+void QualitySwitcher::ShowModal()
 {
     QualitySwitcher sw(QtMainWindow::Instance());
     sw.exec();
@@ -171,9 +180,9 @@ void QualitySwitcher::OnTxQualitySelect(int index)
     if(NULL != combo)
     {
         DAVA::FastName newTxQuality(combo->itemText(index).toAscii());
-        if(newTxQuality != DAVA::QualitySettingsSystem::Instance()->GetCurTxQuality())
+        if(newTxQuality != DAVA::QualitySettingsSystem::Instance()->GetCurTextureQuality())
         {
-            DAVA::QualitySettingsSystem::Instance()->SetCurTxQuality(newTxQuality);
+            DAVA::QualitySettingsSystem::Instance()->SetCurTextureQuality(newTxQuality);
             ApplyTx();
         }
     }
@@ -187,9 +196,9 @@ void QualitySwitcher::OnMaQualitySelect(int index)
         DAVA::FastName newMaQuality(combo->itemText(index).toAscii());
         DAVA::FastName group(combo->itemData(index).toString().toAscii());
 
-        if(newMaQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMaQuality(group))
+        if(newMaQuality != DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(group))
         {
-            DAVA::QualitySettingsSystem::Instance()->SetCurMaQuality(group, newMaQuality);
+            DAVA::QualitySettingsSystem::Instance()->SetCurMaterialQuality(group, newMaQuality);
             ApplyMa();
         }
     }

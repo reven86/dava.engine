@@ -40,8 +40,6 @@
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 
-class DAVA::Entity;
-
 namespace Ui
 {
 	class BaseAddEntityDialog;

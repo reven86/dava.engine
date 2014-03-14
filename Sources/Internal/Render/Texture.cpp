@@ -221,6 +221,10 @@ Texture::Texture()
 #ifdef __DAVAENGINE_OPENGL__
 	fboID = -1;
 	rboID = -1;
+#if defined(__DAVAENGINE_ANDROID__)
+    stencil_rboID = -1;
+#endif
+
 #endif
 
 	texDescriptor = new TextureDescriptor();
@@ -241,6 +245,9 @@ void Texture::ReleaseTextureData()
 	container->id = id;
 	container->fboID = fboID;
 	container->rboID = rboID;
+#if defined(__DAVAENGINE_ANDROID__)
+    container->stencil_rboID = stencil_rboID;
+#endif
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::ReleaseTextureDataInternal, container));
 }
 
@@ -266,8 +273,15 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 	{
 		RENDER_VERIFY(glDeleteFramebuffers(1, &container->fboID));
 	}
+    
+#if defined(__DAVAENGINE_ANDROID__)
+    if (container->stencil_rboID != (uint32)-1)
+    {
+        RENDER_VERIFY(glDeleteRenderbuffers(1, &container->stencil_rboID));
+    }
+#endif
 
-	if(container->rboID != (uint32)-1)
+	if (container->rboID != (uint32)-1)
 	{
 		RENDER_VERIFY(glDeleteRenderbuffers(1, &container->rboID));
 	}
@@ -598,7 +612,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 
         if(texDescriptor->GetQualityGroup().IsValid() && images->size() > 1)
         {
-            const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTxQuality());
+            const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
             if(NULL != curTxQuality)
             {
                 // TODO:
@@ -623,7 +637,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
                     // release all images, except last one
                     for(int i = 0; i < leaveOffset; ++i)
                     {
-                        SafeRelease(images->operator[](i));
+                        SafeRelease(images->at(i));
                     }
                     
                     // move last items to the beginning of the vector vector
@@ -934,12 +948,38 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 
 	RENDER_VERIFY(glGenFramebuffers(1, &fboID));
 	RenderManager::Instance()->HWglBindFBO(fboID);
-
+    
 	if(DEPTH_RENDERBUFFER == depthFormat)
 	{
 		RENDER_VERIFY(glGenRenderbuffers(1, &rboID));
 		RENDER_VERIFY(glBindRenderbuffer(GL_RENDERBUFFER, rboID));
-		RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+        
+#if defined(__DAVAENGINE_ANDROID__)
+        if (RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
+#endif
+        {
+            RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+        }
+#if defined(__DAVAENGINE_ANDROID__)
+        else
+        {
+            if (RenderManager::Instance()->GetCaps().isGlDepthNvNonLinearSupported)
+            {
+                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, width, height));
+            }
+            else
+            {
+                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height));
+            }
+
+            if (!RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
+            {
+                glGenRenderbuffers(1, &stencil_rboID);
+                glBindRenderbuffer(GL_RENDERBUFFER, stencil_rboID);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
+            }
+        }
+#endif
 	}
 
 	RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
@@ -947,7 +987,18 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 	if(DEPTH_RENDERBUFFER == depthFormat)
 	{
 		RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboID));
-		RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboID));
+#if defined(__DAVAENGINE_ANDROID__)
+        if (RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
+#endif
+        {
+            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboID));
+        }
+#if defined(__DAVAENGINE_ANDROID__)
+        else
+        {
+            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencil_rboID));
+        }
+#endif
 	}
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
