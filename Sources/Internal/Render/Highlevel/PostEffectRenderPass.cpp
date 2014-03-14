@@ -66,7 +66,7 @@ void PostEffectRenderPass::Init()
         RenderManager::Instance()->ReleaseTextureState(textureState);
     }
 
-    renderTexture = (Texture::CreateFBO((int32)ceilf(currentViewport.dx), (int32)ceilf(currentViewport.dy), FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER));
+    renderTexture = (Texture::CreateFBO((int32)ceilf(currentViewport.dx), (int32)ceilf(currentViewport.dy), FORMAT_FLOAT, Texture::DEPTH_RENDERBUFFER));
     renderTexture->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_LINEAR);
     renderTarget->InitFromTexture(renderTexture, 0, 0, currentViewport.dx, currentViewport.dy, -1, -1, true);
     TextureStateData textureStateData;

@@ -1205,7 +1205,7 @@ void Texture::InitializePixelFormatDescriptors()
     SetPixelDescription(FORMAT_RGB565, String("RGB565"), 16, GL_UNSIGNED_SHORT_5_6_5, GL_RGB, GL_RGB);
     SetPixelDescription(FORMAT_A8, String("A8"), 8, GL_UNSIGNED_BYTE, GL_ALPHA, GL_ALPHA);
     SetPixelDescription(FORMAT_A16, String("A16"), 16, GL_UNSIGNED_SHORT, GL_ALPHA, GL_ALPHA);
-    SetPixelDescription(FORMAT_FLOAT, String("FLOAT"), 32, GL_FLOAT, GL_RGBA, GL_RGBA);
+    SetPixelDescription(FORMAT_FLOAT, String("FLOAT"), 128, GL_FLOAT, GL_RGBA, GL_RGBA);
     
 #if defined (GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
     SetPixelDescription(FORMAT_PVR4, String("PVR4"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);

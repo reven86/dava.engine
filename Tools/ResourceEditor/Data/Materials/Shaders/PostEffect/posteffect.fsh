@@ -21,8 +21,15 @@ uniform sampler2D albedo;
 
 varying vec2 varTexCoord0;
 
+const float exposure = 1.5;
+const float brightMax = 2.0;
+
 void main()
 {
-	lowp vec4 textureColor0 = texture2D(albedo, varTexCoord0);
-	gl_FragColor = textureColor0*2.0;
+	vec4 textureColor0 = texture2D(albedo, varTexCoord0);
+
+	float Y = dot(vec4(0.30, 0.59, 0.11, 0.0), textureColor0);
+	float YD = exposure * (exposure/brightMax + 1.0) / (exposure + 1.0);
+
+	gl_FragColor = textureColor0*Y*YD;
 }
