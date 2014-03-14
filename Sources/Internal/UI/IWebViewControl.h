@@ -73,6 +73,10 @@ public:
 	virtual void LoadHtmlString(const WideString& htmlString) = 0;
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl) { };
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& url, const String& name) { return String(); };
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& url) { return Map<String, String>(); };
 	
     virtual void OpenFromBuffer(const String& string, const DAVA::FilePath& basePath) = 0;
     

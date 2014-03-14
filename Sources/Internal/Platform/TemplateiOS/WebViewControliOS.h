@@ -53,6 +53,10 @@ public:
 	virtual void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& targetUrl, const String& name);
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& targetUrl);
 
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
     

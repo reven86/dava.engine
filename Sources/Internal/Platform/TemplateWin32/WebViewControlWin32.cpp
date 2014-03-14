@@ -36,6 +36,7 @@ using namespace DAVA;
 #include <atlcom.h>
 #include <ExDisp.h>
 #include <ExDispid.h>
+#include "Utils/Utils.h"
 
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
 _ATL_FUNC_INFO BeforeNavigate2Info = {CC_STDCALL, VT_EMPTY, 7, {VT_DISPATCH,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_BOOL}};
@@ -343,6 +344,104 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 	return bResult;
 }
 
+String WebBrowserContainer::GetCookie(const String& targetUrl, const String& name)
+{
+	if (!webBrowser)
+	{
+		return String();
+	}
+
+	LPTSTR lpszData = NULL;   // buffer to hold the cookie data
+	DWORD dwSize = 4096; // Initial size of buffer		
+	String retCookie;
+
+	if (GetInternetCookies(targetUrl, name, lpszData, dwSize))
+	{
+		retCookie = WStringToString(lpszData);
+
+		Vector<String> cookie;
+		Split(retCookie, "=", cookie);
+		// Get only cookie value
+		if (cookie.size() == 2)
+		{
+			retCookie = cookie[1];
+		}
+	}
+	else
+	{
+		delete [] lpszData;
+	}
+
+	return retCookie;
+}
+
+Map<String, String> WebBrowserContainer::GetCookies(const String& targetUrl)
+{
+	if (!webBrowser)
+	{
+		return Map<String, String>();
+	}
+
+	LPTSTR lpszData = NULL;   // buffer to hold the cookie data
+	DWORD dwSize = 4096; // Initial size of buffer
+	Map<String, String> cookiesMap;
+
+	if (GetInternetCookies(targetUrl, "", lpszData, dwSize))
+	{
+		String cookiesString = WStringToString(lpszData);
+		// Split cookies string into vector - each value corresponds to one cookie name-value pair
+		Vector<String> cookiesVector;
+		Split(cookiesString, ";", cookiesVector);
+
+		for (uint32 i = 0; i < (int32)cookiesVector.size(); ++i)
+		{
+			Vector<String> cookie;
+			Split(cookiesVector[i], "=", cookie);
+			// Add cookie to resulting map
+			if (cookie.size() == 2)
+			{
+				String cookieName = cookie[0];
+				// Remove all spaces in cookie name
+				cookieName.erase(std::remove(cookieName.begin(), cookieName.end(), ' '), cookieName.end());
+				cookiesMap[cookieName] = cookie[1];
+			}
+		}
+	}
+	else
+	{
+		delete [] lpszData;
+	}
+
+	return cookiesMap;
+}
+
+bool WebBrowserContainer::GetInternetCookies(const String& targetUrl, const String& name, LPTSTR &lpszData, DWORD &dwSize)
+{
+	// Setup initial cache entry size
+	lpszData = new TCHAR[dwSize];
+
+	BOOL bResult = InternetGetCookieEx(StringToWString(targetUrl).c_str(), 
+											name.empty() ? NULL : StringToWString(name).c_str(),
+											lpszData,
+											&dwSize,
+											INTERNET_COOKIE_HTTPONLY,
+											NULL);
+	// Encrease buffer if its size is not enough
+	if (!bResult && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
+	{
+		delete [] lpszData;
+		lpszData = new TCHAR[dwSize];
+
+		bResult = InternetGetCookieEx(StringToWString(targetUrl).c_str(), 
+											name.empty() ? NULL : StringToWString(name).c_str(),
+											lpszData,
+											&dwSize,
+											INTERNET_COOKIE_HTTPONLY,
+											NULL);
+	}
+
+	return bResult ? true : false;
+}
 
 bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 {
@@ -416,9 +515,9 @@ HANDLE WebBrowserContainer::GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cach
 	return cacheEnumHandle;
 }
 
-bool  WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size)
+bool WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size)
 {
-	bool bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
+	BOOL bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
 	// If buffer size was not enough - give more memory for cacheEntry
 	if ((!bResult) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
 	{
@@ -429,7 +528,7 @@ bool  WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_
 		bResult = FindNextUrlCacheEntry(cacheEnumHandle, cacheEntry, &size);
 	}
 
-	return bResult;
+	return bResult ? true : false;
 }
 
 void WebBrowserContainer::UpdateRect()
@@ -529,6 +628,26 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	{
 		browserContainer->DeleteCookies(targetUrl);
 	}
+}
+
+String WebViewControl::GetCookie(const String& targetUrl, const String& name)
+{
+	if (browserContainer)
+	{
+		return browserContainer->GetCookie(targetUrl, name);
+	}
+
+	return String();
+}
+
+Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
+{
+	if (browserContainer)
+	{
+		return browserContainer->GetCookies(targetUrl);
+	}
+
+	return Map<String, String>();
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)

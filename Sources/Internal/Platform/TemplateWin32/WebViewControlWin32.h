@@ -59,6 +59,9 @@ public:
 
 	bool DeleteCookies(const String& targetUrl);
 
+	String GetCookie(const String& url, const String& name);
+	Map<String, String> GetCookies(const String& url);
+
 	// COM stuff;
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject);
 
@@ -104,6 +107,7 @@ protected:
 
 	HANDLE GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
 	bool GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
+	bool GetInternetCookies(const String& targetUrl, const String& name, LPTSTR &lpszData, DWORD &dwSize);
 };
 
 // Web View Control for Win32.
@@ -122,6 +126,10 @@ public:
 	virtual void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& url, const String& name);
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& url);
 	
     void OpenFromBuffer(const String& string, const FilePath& basePath);
 

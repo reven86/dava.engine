@@ -84,11 +84,11 @@ void FormatsTest::LoadResources()
         SafeRelease(c);
     }
 
-	finishTestBtn = new UIButton(Rect(10, 700, 300, 30));
+	Rect parentSize = this->GetRect();
+	finishTestBtn = new UIButton(Rect(parentSize.dx - 325, parentSize.dy - 55, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);
     finishTestBtn->SetStateFontColor(0xFF, Color::White);
 	finishTestBtn->SetStateText(0xFF, L"Finish test");
-
 	finishTestBtn->SetDebugDraw(true);
 	finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &FormatsTest::ButtonPressed));
 	AddControl(finishTestBtn);

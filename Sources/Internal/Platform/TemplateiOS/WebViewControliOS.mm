@@ -236,6 +236,46 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
 
+String WebViewControl::GetCookie(const String& targetUrl, const String& name)
+{
+/*	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+	NSString *cookieName = [NSString stringWithUTF8String:name.c_str()];
+    NSArray  *cookiesArray = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL: [NSURL URLWithString:targetUrlString]];
+	// Search for specific cookie and return its value
+	for(NSHTTPCookie * cookie in cookiesArray)
+	{
+        if ([[cookie name] isEqualToString: cookieName])
+        {
+            return [[cookie value] UTF8String];
+        }
+    }*/
+	Map<String, String> cookiesMap = GetCookies(targetUrl);
+	Map<String, String>::iterator cIter = cookiesMap.find(name);
+	
+	if (cIter != cookiesMap.end())
+	{
+		return cIter->second;
+	}
+
+	return String();
+}
+
+Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
+{
+	Map<String, String> resultMap;
+	
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+    NSArray  *cookiesArray = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL: [NSURL URLWithString:targetUrlString]];
+
+	for(NSHTTPCookie * cookie in cookiesArray)
+	{
+		String cookieName = [[cookie name] UTF8String];
+		resultMap[cookieName] = [[cookie value] UTF8String];
+    }
+	
+	return resultMap;
+}
+
 void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
