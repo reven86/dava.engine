@@ -32,9 +32,18 @@ namespace DAVA
     
     void STLAllocatorFactory::Dump()
     {
-#ifdef __DAVAENGINE_DEBUG__
-
-#endif //__DAVAENGINE_DEBUG__
+//#ifdef __DAVAENGINE_DEBUG__
+        printf("\nSTLAllocatorFactory::Dump (Max item count) ================");
+        std::map<unsigned int, FixedSizePoolAllocator*>::iterator itEnd = allocators.end();
+        uint32 allover = 0;
+        for(std::map<unsigned int, FixedSizePoolAllocator*>::iterator it = allocators.begin(); it != itEnd; ++it)
+        {
+            FixedSizePoolAllocator * alloc = (*it).second;
+            printf("\n  maxItemCount=%u blockSize=%u blockArraySize=%u over=%u freeItemCount=%u", alloc->maxItemCount, alloc->blockSize, alloc->blockArraySize, alloc->freeItemCount*alloc->blockSize, alloc->freeItemCount);
+            allover+=alloc->freeItemCount*alloc->blockSize;
+        }
+       printf("\nEnd of STLAllocatorFactory::Dump ========================== allover= %ubyte",allover);
+//#endif //__DAVAENGINE_DEBUG__
     }
     
     DAVA::FixedSizePoolAllocator * STLAllocatorFactory::GetAllocator(unsigned int classSize)
@@ -52,6 +61,7 @@ namespace DAVA
         {
             alloc = new FixedSizePoolAllocator(classSize, 128);
             allocators[classSize] = alloc;
+            LastAlloc = alloc;
         }
         return alloc;
     }

@@ -199,7 +199,8 @@ typedef std::string		String;
 //#define List std::list
 //#define Vector std::vector
     
-template < typename E > class List : public std::list< E, STLAllocator<E> > {};
+template < typename E > class List : public std::list< E > {};
+template < typename E > class ListAlloc : public std::list< E, STLAllocator<E> > {};
 
 template < typename E > class Vector : public std::vector< E >
 {
@@ -209,8 +210,21 @@ public:
     explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E >(n, value) {}
     Vector() : std::vector< E >() {}
 };
+    
+template < typename E > class VectorAlloc : public std::vector< E, STLAllocator<E> >
+{
+public:
+    typedef E	   value_type;
+    typedef size_t size_type;
+    explicit VectorAlloc(size_type n, const value_type & value = value_type()) : std::vector< E, STLAllocator<E> >(n, value) {}
+    VectorAlloc() : std::vector< E, STLAllocator<E> >() {}
+};
+    
 template < class E > class Set : public std::set< E > {};
+template < typename E > class SetAlloc : public std::set< E, std::less<E>, STLAllocator<E> > {};
+    
 template < class E > class Deque : public std::deque< E > {};
+template < class E > class DequeAlloc : public std::deque< E, STLAllocator<E> > {};
 
 template<	class _Kty,
 			class _Ty,
@@ -221,8 +235,19 @@ class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
 template<	class _Kty,
 			class _Ty,
 			class _Pr = std::less<_Kty>,
+            class _Alloc = STLAllocator<std::pair<const _Kty, _Ty> > >
+class MapAlloc : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+    
+template<	class _Kty,
+			class _Ty,
+			class _Pr = std::less<_Kty>,
 			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
 class MultiMap : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
+template<	class _Kty,
+            class _Ty,
+            class _Pr = std::less<_Kty>,
+            class _Alloc = STLAllocator<std::pair<const _Kty, _Ty> > >
+class MultiMapAlloc : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
 
 template < class T, class Container = std::deque<T> > class Stack : public std::stack< T, Container > {};
 

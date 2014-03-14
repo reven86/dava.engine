@@ -56,19 +56,46 @@ public:
     
     pointer allocate(size_type n, const_pointer = 0)
     {
-        static DAVA::FixedSizePoolAllocator * alloc = DAVA::STLAllocatorFactory::Instance()->GetAllocator(sizeof(T));
-        /*void* p = std::malloc(n * sizeof(T));
+        
+        if (DAVA::STLAllocatorFactory::Instance() )
+        {
+            if ((sizeof(T) >= sizeof(unsigned char*)))
+            {
+                DAVA::FixedSizePoolAllocator * alloc = DAVA::STLAllocatorFactory::Instance()->GetAllocator(n*sizeof(T));
+                return (pointer)alloc->New();
+            } else
+            {
+                DAVA::FixedSizePoolAllocator * alloc = DAVA::STLAllocatorFactory::Instance()->GetAllocator(n*sizeof(unsigned char*));
+                return (pointer)alloc->New();
+            }
+        }
+        
+        void* p = std::malloc(n * sizeof(T));
         if (!p)
+        {
             throw std::bad_alloc();
-        return static_cast<pointer>(p);*/
-        return (pointer)alloc->New();
+        }
+        return static_cast<pointer>(p);
     }
     
     void deallocate(pointer p, size_type size)
     {
-        static DAVA::FixedSizePoolAllocator * alloc = DAVA::STLAllocatorFactory::Instance()->GetAllocator(size);
+        
+        if(DAVA::STLAllocatorFactory::Instance() )
+        {
+            if ( (sizeof(T) >= sizeof(unsigned char*)))
+            {
+                static DAVA::FixedSizePoolAllocator * alloc = DAVA::STLAllocatorFactory::Instance()->GetAllocator(size*sizeof(T));
         alloc->Delete(p);
-        //std::free(p);
+            }else
+            {
+                static DAVA::FixedSizePoolAllocator * alloc = DAVA::STLAllocatorFactory::Instance()->GetAllocator(size*sizeof(unsigned char*));
+                alloc->Delete(p);
+            }
+            return;
+        }
+        std::free(p);
+        
     }
     
     size_type max_size() const
