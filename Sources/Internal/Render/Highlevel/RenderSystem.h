@@ -54,7 +54,8 @@ class RenderHierarchy;
 class RenderPassBatchArray;
 class NMaterial;
 class NMaterialProperty;
-
+class Texture;
+    
 class RenderSystem
 {
 public:
@@ -141,6 +142,9 @@ public:
 	ShadowPassBlendMode::eBlend GetShadowBlendMode();
 	
 	void DebugDrawHierarchy(const Matrix4& cameraMatrix);
+    
+    
+    void RenderToCubemap(Texture * cubemap, Scene *scene);
     
 private:
 	void CreateSpatialTree();

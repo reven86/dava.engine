@@ -43,6 +43,7 @@
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Highlevel/SpatialTree.h"
 #include "Render/ShaderCache.h"
+#include "Render/Texture.h"
 
 // TODO: Move class to other place
 #include "Render/Highlevel/RenderFastNames.h"
@@ -437,5 +438,106 @@ ShadowPassBlendMode::eBlend RenderSystem::GetShadowBlendMode()
 
 	return shadowVolume->GetBlendMode();
 }
+    
+    
+void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
+{
+    DVASSERT(cubemap && cubemap->textureType == Texture::TEXTURE_CUBE);
+    
+    Rect oldViewport = RenderManager::Instance()->GetViewport();
+    
+    RenderManager::Instance()->SetRenderTarget(cubemap);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)cubemap->GetWidth(), (float32)cubemap->GetHeight()), true);
+    
+	RenderManager::Instance()->ClearWithColor(1.f, 1.f, 1.f, 1.f);
+    
+    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+    Matrix4 projection;
+    projection.glOrtho(0, (float32)cubemap->GetWidth(), 0, (float32)cubemap->GetHeight(), 0, 1);
+    
+    Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
+    RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);
+    
+    Camera * camera = scene->GetCurrentCamera();
+    Vector3 oldTarget = camera->GetTarget();
+    Vector3 oldUp = camera->GetUp();
+    Vector3 oldLeft = camera->GetLeft();
+    float32 oldFov = camera->GetFOV();
+    
+    camera->SetFOV(90);
+
+    static const Vector3 directions[Texture::CUBE_FACE_MAX_COUNT] =
+    {
+        Vector3(1.0f, 0.f, 0.f),
+        Vector3(-1.0f, 0.f, 0.f),
+        Vector3(0.0f, 1.f, 0.f),
+        Vector3(0.0f, -1.f, 0.f),
+        Vector3(0.0f, 0.f, 1.f),
+        Vector3(0.0f, 0.f, -1.f)
+    };
+    
+//    up = Vector3(0.0f, 1.0f, 0.0f);
+//	left = Vector3(1.0f, 0.0f, 0.0f);
+
+    static const Vector3 upForFace[Texture::CUBE_FACE_MAX_COUNT] =
+    {
+        Vector3(0.f, -1.f, 0.f),
+        Vector3(0.f, -1.f, 0.f),
+        Vector3(0.f, 0.f, 1.f),
+        Vector3(0.f, 0.f, -1.f),
+        Vector3(0.f, -1.f, 0.f),
+
+        Vector3(0.f, 1.f, 0.f)
+    };
+
+    static const Vector3 leftForFace[Texture::CUBE_FACE_MAX_COUNT] =
+    {
+        Vector3(1.f, 0.f, 0.f),
+        Vector3(0.f, 1.f, 0.f),
+        Vector3(1.f, 0.f, 0.f),
+        Vector3(-1.f, 0.f, 0.f),
+        Vector3(0.f, -1.f, 0.f),
+
+        Vector3(0.f, 0.f, -1.f)
+    };
+
+    
+    for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+    {
+//        uint32 i = 5;
+        
+        cubemap->BindFace(i);
+        camera->SetDirection(directions[i]);
+
+        camera->SetUp(upForFace[i]);
+        camera->SetLeft(leftForFace[i]);
+        
+        scene->Draw();
+    }
+
+//    static int32 counter = 0;
+//    int32 face = (counter / Texture::CUBE_FACE_MAX_COUNT) % Texture::CUBE_FACE_MAX_COUNT;
+//    cubemap->BindFace(face);
+//    camera->SetDirection(directions[face]);
+//    camera->SetUp(upForFace[counter % Texture::CUBE_FACE_MAX_COUNT]);
+//    camera->SetLeft(leftForFace[counter % Texture::CUBE_FACE_MAX_COUNT]);
+//    scene->Draw();
+//    ++counter;
+    
+    camera->SetFOV(oldFov);
+    camera->SetUp(oldUp);
+    camera->SetLeft(oldLeft);
+    camera->SetTarget(oldTarget);
+
+    
+#ifdef __DAVAENGINE_OPENGL__
+	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());
+#endif //#ifdef __DAVAENGINE_OPENGL__
+    
+    RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
+	RenderManager::Instance()->SetViewport(oldViewport, true);
+//==========
+}
+
 
 };

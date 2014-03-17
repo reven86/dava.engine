@@ -185,6 +185,7 @@ public:
         \todo reorder variables in function, and make format variable first to make it similar to CreateFromData function.
      */
 	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat);
+	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat, TextureType typeHint);
 	
 	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
 
@@ -263,6 +264,8 @@ public:
 	PixelFormat GetFormat() const;
 
     static void SetPixelization(bool value);
+    
+    void BindFace(int32 face);
 
 protected:
     

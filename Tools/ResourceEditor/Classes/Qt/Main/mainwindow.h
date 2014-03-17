@@ -187,6 +187,8 @@ public slots:
 
     void OnMaterialLightViewChanged(bool);
     void OnCustomQuality();
+    
+    void OnRenderToCubemap();
 
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);

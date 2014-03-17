@@ -241,6 +241,42 @@ namespace DAVA
 		bbox = renderBatchArray[0].renderBatch->GetBoundingBox();
 	}
 
+    void SkyboxRenderObject::SetTexture(Texture * tex)
+    {
+        DVASSERT(renderBatchArray.size() > 0);
+        
+        NMaterial* skyboxMaterial = renderBatchArray[0].renderBatch->GetMaterial();
+        
+        //since the renderBatchArray is entirely controlled by SkyboxRenderObject
+        //we can safely assume that objects in render batch array are properly initialized
+        //and have material in place (no need to check for NULL)
+        
+        NMaterial* topParent = NULL;
+        bool textureSet = false;
+        while(skyboxMaterial)
+        {
+            Texture* tx = skyboxMaterial->GetTexture(NMaterial::TEXTURE_CUBEMAP);
+            if(NULL != tx)
+            {
+                skyboxMaterial->SetTexture(NMaterial::TEXTURE_CUBEMAP, tex);
+                textureSet = true;
+                break;
+            }
+            
+            if(NULL == skyboxMaterial->GetParent())
+            {
+                topParent = skyboxMaterial;
+            }
+            
+            skyboxMaterial = skyboxMaterial->GetParent();
+        }
+        
+        if(!textureSet)
+        {
+            topParent->SetTexture(NMaterial::TEXTURE_CUBEMAP, tex);
+        }
+    }
+
 	void SkyboxRenderObject::SetTexture(const FilePath& texPath)
 	{
         DVASSERT(renderBatchArray.size() > 0);

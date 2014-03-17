@@ -54,6 +54,7 @@ namespace DAVA
 		virtual void SetRenderSystem(RenderSystem * renderSystem);
 		
 		void SetTexture(const FilePath& texPath);
+		DAVA_DEPRECATED(void SetTexture(Texture * tx));
 		FilePath GetTexture();
 		void SetOffsetZ(const float32& offset);
 		void ForceSetOffsetZ(float32 offset);

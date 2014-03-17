@@ -719,6 +719,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->menuObjectTypes, SIGNAL(aboutToShow()), this, SLOT(OnObjectsTypeMenuWillShow()));
 
 	QObject::connect(ui->actionHangingObjects, SIGNAL(triggered()), this, SLOT(OnHangingObjects()));
+	QObject::connect(ui->actionRenderToCubemap, SIGNAL(triggered()), this, SLOT(OnRenderToCubemap()));
 }
 
 void QtMainWindow::SetupShortCuts()
@@ -903,6 +904,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
     
     ui->sceneToolBar->setEnabled(enable);
 	ui->actionConvertModifiedTextures->setEnabled(enable);
+    
+    ui->actionRenderToCubemap->setEnabled(enable);
 }
 
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
@@ -2701,5 +2704,24 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 	sceneWidget->SetCurrentTab(lastSceneTab);
 
 	return true;
+}
+
+void QtMainWindow::OnRenderToCubemap()
+{
+    DAVA::Texture *cubemap = DAVA::Texture::CreateFBO(1024, 1024, DAVA::FORMAT_RGBA8888, DAVA::Texture::DEPTH_RENDERBUFFER, DAVA::Texture::TEXTURE_CUBE);
+    
+    SceneEditor2 *scene = GetCurrentScene();
+    if(scene && scene->skyboxSystem->IsSkyboxPresent())
+    {
+        
+        scene->renderSystem->RenderToCubemap(cubemap, scene);
+        
+        
+        DAVA::Entity * skyEntity = scene->skyboxSystem->GetSkyboxEntity();
+        DAVA::SkyboxRenderObject *skyBox = GetSkybox(skyEntity);
+        skyBox->SetTexture(cubemap);
+    }
+    
+    SafeRelease(cubemap);
 }
 

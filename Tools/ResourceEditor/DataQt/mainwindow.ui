@@ -405,6 +405,8 @@
     <addaction name="actionHangingObjects"/>
     <addaction name="separator"/>
     <addaction name="actionCurrentSceneSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionRenderToCubemap"/>
    </widget>
    <widget class="QMenu" name="menuQuality">
     <property name="title">
@@ -713,6 +715,7 @@
    <addaction name="actionReloadSprites"/>
    <addaction name="actionSetShadowColor"/>
    <addaction name="actionConvertModifiedTextures"/>
+   <addaction name="actionRenderToCubemap"/>
    <addaction name="actionCurrentSceneSettings"/>
   </widget>
   <widget class="QDockWidget" name="dockLibrary">
@@ -1789,6 +1792,15 @@
    </property>
    <property name="text">
     <string>ImageSplitter</string>
+   </property>
+  </action>
+  <action name="actionRenderToCubemap">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/render_to_cubemap.png</normaloff>:/QtIcons/render_to_cubemap.png</iconset>
+   </property>
+   <property name="text">
+    <string>Render to Cubemap</string>
    </property>
   </action>
  </widget>

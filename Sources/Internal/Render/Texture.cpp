@@ -620,8 +620,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
                 // to use texture group qualities
                 // -->
                 
-                int baselevel = curTxQuality->albedoBaseMipMapLevel;
-                
+                int32 baselevel = curTxQuality->albedoBaseMipMapLevel;
                 if(baselevel > 0)
                 {
                     int leaveCount = images->size() - baselevel;
@@ -932,6 +931,73 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
 	
 	return tx;
 }
+    
+Texture * Texture::CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat, TextureType typeHint)
+{
+    if(typeHint == Texture::TEXTURE_CUBE)
+    {
+        int32 dx = Max((int32)width, 8);
+        EnsurePowerOf2(dx);
+        
+        int32 dy = Max((int32)height, 8);
+        EnsurePowerOf2(dy);
+
+        
+#if defined(__DAVAENGINE_OPENGL__)
+        
+        Texture * tx = new Texture();
+        tx->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, false);
+        tx->depthFormat = depthFormat;
+        
+        Vector<Image *> *images = new Vector<Image *>();
+
+        for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+        {
+            Image * image = Image::Create(dx, dy, format);
+            image->cubeFaceID = i;
+			image->mipmapLevel = 0;
+            images->push_back(image);
+            
+            Memset(image->data, 0, image->dataSize);
+        }
+        
+        tx->SetParamsFromImages(images);
+        tx->FlushDataToRenderer(images);
+
+//        tx->ReleaseImages(images);
+//        SafeDelete(images);
+
+        tx->HWglCreateFBOBuffers();
+        
+#elif defined(__DAVAENGINE_DIRECTX9__)
+        
+        // TODO: Create FBO
+        Texture * tx = new Texture();
+        
+        tx->width = dx;
+        tx->height = dy;
+        tx->format = format;
+        
+        RenderManager::Instance()->LockNonMain();
+        tx->id = CreateTextureNative(Vector2((float32)tx->width, (float32)tx->height), tx->format, true, 0);
+        RenderManager::Instance()->UnlockNonMain();
+        
+        tx->state = STATE_VALID;
+#endif
+        
+        
+        tx->isRenderTarget = true;
+        tx->texDescriptor->pathname = Format("FBO cube texture %d", textureFboCounter);
+        AddToMap(tx);
+        
+        textureFboCounter++;
+        
+        return tx;
+    }
+    
+    return CreateFBO(width, height, format, depthFormat);
+}
+
 
 #if defined(__DAVAENGINE_OPENGL__)
 void Texture::HWglCreateFBOBuffers()
@@ -982,7 +1048,18 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 #endif
 	}
 
-	RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
+    
+    if(textureType == Texture::TEXTURE_CUBE)
+    {
+        for(uint32 i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
+        {
+            RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, CUBE_FACE_GL_NAMES[i], id, 0));
+        }
+    }
+    else
+    {
+        RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
+    }
 
 	if(DEPTH_RENDERBUFFER == depthFormat)
 	{
@@ -1481,5 +1558,11 @@ void Texture::SetPixelization(bool value)
     }
     textureMapMutex.Unlock();
 }
+    
+void Texture::BindFace(int32 face)
+{
+    RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, CUBE_FACE_GL_NAMES[face], id, 0));
+}
+
 
 };
