@@ -384,6 +384,7 @@
     </widget>
     <addaction name="actionEnableCameraLight"/>
     <addaction name="actionReloadSprites"/>
+    <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
     <addaction name="separator"/>
     <addaction name="actionSetShadowColor"/>
@@ -405,6 +406,7 @@
     <addaction name="actionHangingObjects"/>
     <addaction name="separator"/>
     <addaction name="actionCurrentSceneSettings"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuQuality">
     <property name="title">
@@ -711,6 +713,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionReloadSprites"/>
+   <addaction name="actionReloadShader"/>
    <addaction name="actionSetShadowColor"/>
    <addaction name="actionConvertModifiedTextures"/>
    <addaction name="actionCurrentSceneSettings"/>
@@ -1789,6 +1792,15 @@
    </property>
    <property name="text">
     <string>ImageSplitter</string>
+   </property>
+  </action>
+  <action name="actionReloadShader">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/reload_shaders.png</normaloff>:/QtIcons/reload_shaders.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload Shaders</string>
    </property>
   </action>
  </widget>

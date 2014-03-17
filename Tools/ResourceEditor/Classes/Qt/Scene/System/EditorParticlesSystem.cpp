@@ -145,8 +145,10 @@ void EditorParticlesSystem::Draw()
 			{
 				DrawSizeBox(selectedEffectEntity, selectedEmitter, center);
 			}
-			break;			
-		}					
+			break;
+                
+        default: break;
+		}
 		
 		DAVA::RenderManager::Instance()->ResetColor();
 	}

@@ -388,7 +388,8 @@ void CustomColorsSystem::LoadTexture(const DAVA::FilePath &filePath, bool create
 	if(filePath.IsEmpty())
 		return;
 
-	Vector<Image*> images = ImageLoader::CreateFromFileByContent(filePath);
+    Vector<Image*> images;
+	ImageLoader::CreateFromFileByContent(filePath, images);
 	if(images.empty())
 		return;
 

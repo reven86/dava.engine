@@ -188,6 +188,8 @@ public slots:
     void OnMaterialLightViewChanged(bool);
     void OnCustomQuality();
 
+    void OnReloadShaders();
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);

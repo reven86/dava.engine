@@ -101,6 +101,7 @@
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
+#include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Classes/Constants.h"
 
@@ -719,6 +720,8 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->menuObjectTypes, SIGNAL(aboutToShow()), this, SLOT(OnObjectsTypeMenuWillShow()));
 
 	QObject::connect(ui->actionHangingObjects, SIGNAL(triggered()), this, SLOT(OnHangingObjects()));
+
+	QObject::connect(ui->actionReloadShader, SIGNAL(triggered()), this, SLOT(OnReloadShaders()));
 }
 
 void QtMainWindow::SetupShortCuts()
@@ -903,6 +906,9 @@ void QtMainWindow::EnableSceneActions(bool enable)
     
     ui->sceneToolBar->setEnabled(enable);
 	ui->actionConvertModifiedTextures->setEnabled(enable);
+    
+    ui->actionReloadShader->setEnabled(enable);
+
 }
 
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
@@ -2702,4 +2708,33 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 	return true;
 }
+
+void QtMainWindow::OnReloadShaders()
+{
+    ShaderCache::Instance()->Reload();
+    
+    DAVA::uint32 count = ui->sceneTabWidget->GetTabCount();
+    for(DAVA::uint32 i = 0; i < count; ++i)
+    {
+        SceneEditor2 * scene = ui->sceneTabWidget->GetTabScene(i);
+        if(!scene) continue;
+        
+        DAVA::Set<DAVA::NMaterial *> materialList;
+        DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
+        matSystem->BuildMaterialList(scene, materialList);
+        
+        
+        DAVA::Set<DAVA::NMaterial *>::iterator it = materialList.begin();
+        DAVA::Set<DAVA::NMaterial *>::iterator endIt = materialList.end();
+        while (it != endIt)
+        {
+            DAVA::NMaterial * material = *it;
+            
+            material->BuildActiveUniformsCacheParamsCache();
+            
+            ++it;
+        }
+    }
+}
+
 

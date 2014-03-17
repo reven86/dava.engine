@@ -269,6 +269,11 @@ void Shader::SetDefines(const String & _defines)
    
 Shader::~Shader()
 {
+    ReleaseShaderData();
+}
+
+void Shader::ReleaseShaderData()
+{
     SafeDeleteArray(attributeNames);
     //SafeDeleteArray(uniforms);
     SafeDeleteArray(uniformOffsets);
@@ -278,6 +283,15 @@ Shader::~Shader()
     SafeRelease(fragmentShaderData);
     
     DeleteShaders();
+
+    activeAttributes = 0;
+    activeUniforms = 0;
+    
+    SafeDeleteArray(autobindUniforms);
+    autobindUniformCount = 0;
+    
+    for (int32 ki = 0; ki < VERTEX_FORMAT_STREAM_MAX_COUNT; ++ki)
+        vertexFormatAttribIndeces[ki] = -1;
 }
 
 bool Shader::IsReady()
@@ -328,6 +342,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes));
     
     char attributeName[512];
+    DVASSERT(attributeNames == NULL);
     attributeNames = new FastName[activeAttributes];
     for (int32 k = 0; k < activeAttributes; ++k)
     {
@@ -1232,6 +1247,26 @@ Shader * Shader::CompileShader(const FastName & assetName,
     return shader;
 }
 
+void Shader::Reload(DAVA::Data *vertexShaderData,
+                    DAVA::Data *fragmentShaderData,
+                    uint8 *vertexShaderDataStart,
+                    uint32 vertexShaderDataSize,
+                    uint8 *fragmentShaderDataStart,
+                    uint32 fragmentShaderDataSize)
+{
+    ReleaseShaderData();
+    
+    this->vertexShaderData = SafeRetain(vertexShaderData);
+    this->fragmentShaderData = SafeRetain(fragmentShaderData);
+    this->vertexShaderDataStart = vertexShaderDataStart;
+    this->vertexShaderDataSize = vertexShaderDataSize;
+    this->fragmentShaderDataStart = fragmentShaderDataStart;
+    this->fragmentShaderDataSize = fragmentShaderDataSize;
+
+    Recompile();
+}
+
+    
 //void Shader::RequestAsset()
 //{
 //    //ShaderCache *
