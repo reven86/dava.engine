@@ -18,11 +18,10 @@ precision highp float;
 #endif
 
 uniform sampler2D albedo;
+uniform float exposure;
+uniform float brightMax;
 
 varying vec2 varTexCoord0;
-
-const float exposure = 1.5;
-const float brightMax = 2.0;
 
 void main()
 {

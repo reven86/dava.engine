@@ -117,6 +117,37 @@ QualitySwitcher::QualitySwitcher(QWidget *parent /* = NULL */)
         }
     }
 
+    // posteffects quality
+//     {
+//         QGridLayout * posteffectsLayout = new QGridLayout(texturesGroup);
+//         texturesLayout->setColumnMinimumWidth(0, minColumnW);
+//         texturesLayout->setColumnMinimumWidth(1, minColumnW);
+// 
+//         texturesGroup->setTitle("Textures");
+//         texturesGroup->setLayout(texturesLayout);
+// 
+//         QLabel *labTx = new QLabel("Textures:", texturesGroup);
+//         QComboBox *comboTx = new QComboBox(texturesGroup);
+// 
+//         QObject::connect(comboTx, SIGNAL(activated(int)), this, SLOT(OnTxQualitySelect(int)));
+// 
+//         texturesLayout->addWidget(labTx, 0, 0);
+//         texturesLayout->addWidget(comboTx, 0, 1);
+// 
+//         DAVA::FastName curTxQuality = DAVA::QualitySettingsSystem::Instance()->GetCurTxQuality();
+// 
+//         for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetTxQualityCount(); ++i)
+//         {
+//             DAVA::FastName txQualityName = DAVA::QualitySettingsSystem::Instance()->GetTxQualityName(i);
+//             comboTx->addItem(txQualityName.c_str());
+// 
+//             if(txQualityName == curTxQuality)
+//             {
+//                 comboTx->setCurrentIndex(comboTx->count() - 1);
+//             }
+//         }
+//     }
+
     mainLayout->addWidget(texturesGroup);
     mainLayout->addWidget(materialsGroup);
     mainLayout->addStretch();

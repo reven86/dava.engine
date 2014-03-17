@@ -81,6 +81,13 @@ public:
 
     const MaterialQuality* GetMaQuality(const FastName &group, const FastName &quality) const;
 
+
+    // posteffects
+    size_t GetPosteffectsQualityCount() const;
+    FastName GetCurrentPosteffectQuality() const;
+    FastName GetPosteffectQualityName() const;
+    void SetCurrentPosteffectQuality(const FastName & name);
+
     // ------------------------------------------
 
 	void EnableOption(const FastName & option, bool enabled);
@@ -110,11 +117,15 @@ protected:
     };
 
     // textures
-    int curTextureQuality;
+    int32 curTextureQuality;
     Vector<TXQ> textureQualities;
 
     // materials
     FastNameMap<MAGrQ> materialGroups;
+
+    // qualities
+    Vector<FastName> posteffectsQualities;
+    int32 currectPosteffectQuality;
 
 	FastNameMap<bool> qualityOptions;
 };

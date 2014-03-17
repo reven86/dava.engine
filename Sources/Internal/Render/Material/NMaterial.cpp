@@ -1552,6 +1552,7 @@ void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 index
 		}
 		else
 		{
+            DVASSERT(indices);
 			RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, indexCount, EIF_16, indices);
 		}
 	}

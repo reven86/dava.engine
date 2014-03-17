@@ -44,21 +44,30 @@ public:
 
     void Init();
 
+    NMaterial * GetMaterial();
+
 protected:
     Sprite * renderTarget;
     Texture * renderTexture;
-    UniqueHandle textureState;
 
     RenderDataObject * rdo;
     RenderDataStream * vertexStream;
     RenderDataStream * texCoordStream;
-    Shader * shader;
     float32 vertices[12];
     float32 texCoords0[8];
+    static uint16 indices[6];
     Rect currentViewport;
 
-    static FastName SHADER_NAME;
+    NMaterial * material;
+    NMaterial * instanceMaterial;
+    float32 exposure;
+    float32 brightMax;
 };
+
+inline NMaterial * PostEffectRenderPass::GetMaterial()
+{
+    return material;
+}
 
 }
 

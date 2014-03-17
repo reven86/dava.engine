@@ -36,7 +36,8 @@ namespace DAVA
 {
 
 QualitySettingsSystem::QualitySettingsSystem()
-    : curTextureQuality(0)
+:   curTextureQuality(0),
+    currectPosteffectQuality(0)
 {
 
 }
@@ -148,7 +149,65 @@ void QualitySettingsSystem::Load(const FilePath &path)
                         }
                     }
 
-                }
+                }  
+            }
+
+            //posteffects
+            const YamlNode * posteffectsNode = rootNode->Get("posteffects");
+            if(NULL != posteffectsNode)
+            {
+                const YamlNode * defaultQuality = posteffectsNode->Get("default");
+                const YamlNode * qualitiesNode = posteffectsNode->Get("qualities");
+
+                if(NULL != qualitiesNode)
+                {
+                    FastName defultQualityName;
+                    if(NULL != defaultQuality && defaultQuality->GetType() == YamlNode::TYPE_STRING)
+                    {
+                        defultQualityName = FastName(defaultQuality->AsString().c_str());
+                    }
+
+                     posteffectsQualities.reserve(qualitiesNode->GetCount());
+                     for(int32 i = 0; i < qualitiesNode->GetCount(); ++i)
+                     {
+                         const YamlNode *qualityNode = qualitiesNode->Get(i);
+                         const YamlNode *name = qualityNode->Get("quality");
+                         if(NULL != name && name->GetType() == YamlNode::TYPE_STRING)
+                         {
+                             FastName qualityName = FastName(name->AsString().c_str());
+                             posteffectsQualities.push_back(qualityName);
+
+                             if(qualityName == defultQualityName)
+                             {
+                                currectPosteffectQuality = i;
+                             }
+                         }
+//                         const YamlNode *albedoNode = qualityNode->Get("albedo");
+//                         const YamlNode *normalNode = qualityNode->Get("normalmap");
+//                         const YamlNode *sizeNode = qualityNode->Get("minsize");
+// 
+//                         if(NULL != name && name->GetType() == YamlNode::TYPE_STRING &&
+//                             NULL != albedoNode && albedoNode->GetType() == YamlNode::TYPE_STRING &&
+//                             NULL != normalNode && normalNode->GetType() == YamlNode::TYPE_STRING &&
+//                             NULL != sizeNode && sizeNode->GetType() == YamlNode::TYPE_STRING)
+//                         {
+//                             TXQ txq;
+// 
+//                             txq.name = FastName(name->AsString().c_str());
+//                             txq.quality.weight = i;
+//                             txq.quality.albedoBaseMipMapLevel = albedoNode->AsUInt32();
+//                             txq.quality.normalBaseMipMapLevel = normalNode->AsUInt32();
+//                             txq.quality.minSize = Vector2(sizeNode->AsFloat(), sizeNode->AsFloat());
+// 
+//                             textureQualities.push_back(txq);
+// 
+//                             if(txq.name == defTxQualityName)
+//                             {
+//                                 curTextureQuality = i;
+//                             }
+//                         }
+                    }
+                }  
             }
         }
 

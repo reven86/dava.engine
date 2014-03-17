@@ -35,25 +35,40 @@
 namespace DAVA
 {
 
-FastName PostEffectRenderPass::SHADER_NAME("~res:/Materials/Shaders/PostEffect/posteffect");
+static const FastName EXPOSURE_NAME("exposure");
+static const FastName BRIGHTMAX_NAME("brightMax");
+
+uint16 PostEffectRenderPass::indices[] = {0, 2, 1, 1, 2, 3};
 
 PostEffectRenderPass::PostEffectRenderPass(RenderSystem * renderSystem, const FastName & name, RenderPassID id)
 :   RenderPass(renderSystem, name, id),
     currentViewport(Rect(-1.f, -1.f, -1.f, -1.f)),
     renderTexture(0),
-    rdo(0),
-    textureState(InvalidUniqueHandle)
+    rdo(0)
 {
     renderTarget = Sprite::Create("");
 
-    shader = SafeRetain(ShaderCache::Instance()->Get(SHADER_NAME, FastNameSet()));
+    material = NMaterial::CreateMaterial(FastName("Posteffect_Material"),
+        FastName("~res:/Materials/PostEffect.material"),
+        NMaterial::DEFAULT_QUALITY_NAME);
+    instanceMaterial = 	NMaterial::CreateMaterialInstance();
+    instanceMaterial->SetParent(material);
+
+    Vector3 vert3[4] = {Vector3(-1.f, 1.f, 1.f), Vector3(1.f, 1.f, 1.f), Vector3(-1.f, -1.f, 1.f), Vector3(1.f, -1.f, 1.f)};
+    for(int32 i = 0; i < 4; ++i)
+    {
+        vertices[i*3] = vert3[i].x;
+        vertices[i*3+1] = vert3[i].y;
+        vertices[i*3+2] = vert3[i].z;
+    }
 }
 
 PostEffectRenderPass::~PostEffectRenderPass()
 {
+    SafeRelease(instanceMaterial);
+    SafeRelease(material);
     SafeRelease(renderTarget);
     SafeRelease(renderTexture);
-    SafeRelease(shader);
     SafeRelease(rdo);
 }
 
@@ -61,37 +76,27 @@ void PostEffectRenderPass::Init()
 {
     SafeRelease(rdo);
     SafeRelease(renderTexture);
-    if(textureState != InvalidUniqueHandle)
-    {
-        RenderManager::Instance()->ReleaseTextureState(textureState);
-    }
 
     renderTexture = (Texture::CreateFBO((int32)ceilf(currentViewport.dx), (int32)ceilf(currentViewport.dy), FORMAT_FLOAT, Texture::DEPTH_RENDERBUFFER));
     renderTexture->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_LINEAR);
     renderTarget->InitFromTexture(renderTexture, 0, 0, currentViewport.dx, currentViewport.dy, -1, -1, true);
-    TextureStateData textureStateData;
-    textureStateData.SetTexture(0, renderTexture);
-
-    textureState = RenderManager::Instance()->CreateTextureState(textureStateData);
+    material->SetTexture(NMaterial::TEXTURE_ALBEDO, renderTexture);
 
     rdo = new RenderDataObject();
-    Vector3 vert3[4] = {Vector3(-1.f, 1.f, 1.f), Vector3(1.f, 1.f, 1.f), Vector3(-1.f, -1.f, 1.f), Vector3(1.f, -1.f, 1.f)};
+
 
     float32 texCoordW = currentViewport.dx/renderTexture->GetWidth();
     float32 texCoordH = currentViewport.dy/renderTexture->GetHeight();
     Vector2 texc0[4] = {Vector2(0.f, 0.f), Vector2(texCoordW, 0.f), Vector2(0.f, texCoordH), Vector2(texCoordW, texCoordH) };
-
     for(int32 i = 0; i < 4; ++i)
     {
-        vertices[i*3] = vert3[i].x;
-        vertices[i*3+1] = vert3[i].y;
-        vertices[i*3+2] = vert3[i].z;
         texCoords0[i*2] = texc0[i].x;
         texCoords0[i*2+1] = texc0[i].y;
     }
 
     rdo->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, vertices);
     rdo->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, texCoords0);
+    rdo->SetIndices(EIF_16, (uint8*)indices, 6);
 }
 
 void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
@@ -117,14 +122,12 @@ void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
     RenderManager::Instance()->RestoreRenderTarget();
     RenderManager::Instance()->SetViewport(currentViewport, true);
 
-    RenderManager::Instance()->SetTextureState(textureState);
-    RenderManager::Instance()->SetShader(shader);
-    RenderManager::Instance()->SetRenderData(rdo);
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_OPAQUE);
-    RenderManager::Instance()->FlushState();
-
-    RenderManager::Instance()->AttachRenderData();
-    RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
+//     exposure = 1.5f;
+//     brightMax = 2.f;
+//     material->SetPropertyValue(EXPOSURE_NAME, Shader::UT_FLOAT, 1, &exposure);
+//     material->SetPropertyValue(BRIGHTMAX_NAME, Shader::UT_FLOAT, 1, &brightMax);
+    material->BindMaterialTechnique(PASS_POST_EFFECT, 0);
+    material->Draw(rdo);
 }
 
 

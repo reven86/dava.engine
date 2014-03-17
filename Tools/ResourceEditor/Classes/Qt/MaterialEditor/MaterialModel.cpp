@@ -47,6 +47,8 @@
 
 #include "Settings/SettingsManager.h"
 
+#include "Render/Highlevel/PostEffectRenderPass.h"
+
 #include <QPainter>
 
 
@@ -227,6 +229,10 @@ void MaterialModel::Sync()
 	{
 		DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> > materialsTree;
 		curScene->materialSystem->BuildMaterialsTree(materialsTree);
+
+        //
+        DAVA::PostEffectRenderPass * postEffectPass = (DAVA::PostEffectRenderPass*)curScene->renderSystem->GetRenderPassManager()->GetRenderPass(PASS_POST_EFFECT);
+        materialsTree[postEffectPass->GetMaterial()] = DAVA::Set<DAVA::NMaterial *>();
 
 		// remove items, that are not in set
 		QStandardItem *root = invisibleRootItem();
