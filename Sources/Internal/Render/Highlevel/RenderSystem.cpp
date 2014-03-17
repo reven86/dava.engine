@@ -444,6 +444,37 @@ void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
 {
     DVASSERT(cubemap && cubemap->textureType == Texture::TEXTURE_CUBE);
     
+    static const Vector3 directions[Texture::CUBE_FACE_MAX_COUNT] =
+    {
+        Vector3(1.0f, 0.f, 0.f),
+        Vector3(-1.0f, 0.f, 0.f),
+        Vector3(0.0f, 1.f, 0.f),
+        Vector3(0.0f, -1.f, 0.f),
+        Vector3(0.0f, 0.f, 1.f),
+        Vector3(0.0f, 0.f, -1.f)
+    };
+    
+    static const Vector3 upForFace[Texture::CUBE_FACE_MAX_COUNT] =
+    {
+        Vector3(0.f, -1.f, 0.f),
+        Vector3(0.f, -1.f, 0.f),
+        Vector3(0.f, 0.f, 1.f),
+        Vector3(0.f, 0.f, -1.f),
+        Vector3(0.f, -1.f, 0.f),
+        Vector3(0.f, -1.f, 0.f)
+    };
+    
+    static const Vector3 leftForFace[Texture::CUBE_FACE_MAX_COUNT] =
+    {
+        Vector3(1.f, 0.f, 0.f),
+        Vector3(0.f, 1.f, 0.f),
+        Vector3(1.f, 0.f, 0.f),
+        Vector3(-1.f, 0.f, 0.f),
+        Vector3(0.f, -1.f, 0.f),
+        Vector3(0.f, 0.f, -1.f)
+    };
+
+    
     Rect oldViewport = RenderManager::Instance()->GetViewport();
     
     RenderManager::Instance()->SetRenderTarget(cubemap);
@@ -463,67 +494,23 @@ void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
     Vector3 oldUp = camera->GetUp();
     Vector3 oldLeft = camera->GetLeft();
     float32 oldFov = camera->GetFOV();
+    float32 oldAspect = camera->GetAspect();
     
     camera->SetFOV(90);
+    camera->SetAspect(1);
 
-    static const Vector3 directions[Texture::CUBE_FACE_MAX_COUNT] =
-    {
-        Vector3(1.0f, 0.f, 0.f),
-        Vector3(-1.0f, 0.f, 0.f),
-        Vector3(0.0f, 1.f, 0.f),
-        Vector3(0.0f, -1.f, 0.f),
-        Vector3(0.0f, 0.f, 1.f),
-        Vector3(0.0f, 0.f, -1.f)
-    };
-    
-//    up = Vector3(0.0f, 1.0f, 0.0f);
-//	left = Vector3(1.0f, 0.0f, 0.0f);
-
-    static const Vector3 upForFace[Texture::CUBE_FACE_MAX_COUNT] =
-    {
-        Vector3(0.f, -1.f, 0.f),
-        Vector3(0.f, -1.f, 0.f),
-        Vector3(0.f, 0.f, 1.f),
-        Vector3(0.f, 0.f, -1.f),
-        Vector3(0.f, -1.f, 0.f),
-
-        Vector3(0.f, 1.f, 0.f)
-    };
-
-    static const Vector3 leftForFace[Texture::CUBE_FACE_MAX_COUNT] =
-    {
-        Vector3(1.f, 0.f, 0.f),
-        Vector3(0.f, 1.f, 0.f),
-        Vector3(1.f, 0.f, 0.f),
-        Vector3(-1.f, 0.f, 0.f),
-        Vector3(0.f, -1.f, 0.f),
-
-        Vector3(0.f, 0.f, -1.f)
-    };
-
-    
     for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
     {
-//        uint32 i = 5;
-        
         cubemap->BindFace(i);
-        camera->SetDirection(directions[i]);
 
+        camera->SetDirection(directions[i]);
         camera->SetUp(upForFace[i]);
         camera->SetLeft(leftForFace[i]);
         
         scene->Draw();
     }
 
-//    static int32 counter = 0;
-//    int32 face = (counter / Texture::CUBE_FACE_MAX_COUNT) % Texture::CUBE_FACE_MAX_COUNT;
-//    cubemap->BindFace(face);
-//    camera->SetDirection(directions[face]);
-//    camera->SetUp(upForFace[counter % Texture::CUBE_FACE_MAX_COUNT]);
-//    camera->SetLeft(leftForFace[counter % Texture::CUBE_FACE_MAX_COUNT]);
-//    scene->Draw();
-//    ++counter;
-    
+    camera->SetAspect(oldAspect);
     camera->SetFOV(oldFov);
     camera->SetUp(oldUp);
     camera->SetLeft(oldLeft);
@@ -536,7 +523,6 @@ void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
     
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::Instance()->SetViewport(oldViewport, true);
-//==========
 }
 
 

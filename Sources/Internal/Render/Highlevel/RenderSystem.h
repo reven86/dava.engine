@@ -143,7 +143,6 @@ public:
 	
 	void DebugDrawHierarchy(const Matrix4& cameraMatrix);
     
-    
     void RenderToCubemap(Texture * cubemap, Scene *scene);
     
 private:
