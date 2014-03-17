@@ -10,6 +10,7 @@
 		029E4D8A15D403BA004A4167 /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 029E4D8915D403BA004A4167 /* SplitTest.cpp */; };
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; };
+		15CBB0C018D30BF70038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0BE18D30BF70038ABA3 /* StringFormatTest.cpp */; };
 		174A8D55174BB597004CE8AB /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 174A8D54174BB597004CE8AB /* QuartzCore.framework */; };
 		17F687E0174B612D000783FD /* libFrameworkNPAPI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17373726174B596100974815 /* libFrameworkNPAPI.a */; };
 		49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */; };
@@ -87,6 +88,8 @@
 		02E9E45D173A43A900C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		15CBB0BE18D30BF70038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringFormatTest.cpp; path = Classes/StringFormatTest.cpp; sourceTree = "<group>"; };
+		15CBB0BF18D30BF70038ABA3 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringFormatTest.h; path = Classes/StringFormatTest.h; sourceTree = "<group>"; };
 		174A8D54174BB597004CE8AB /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
@@ -208,6 +211,15 @@
 			name = "Other Frameworks";
 			sourceTree = "<group>";
 		};
+		15CBB0BB18D30BDB0038ABA3 /* StringFormatTest */ = {
+			isa = PBXGroup;
+			children = (
+				15CBB0BE18D30BF70038ABA3 /* StringFormatTest.cpp */,
+				15CBB0BF18D30BF70038ABA3 /* StringFormatTest.h */,
+			);
+			name = StringFormatTest;
+			sourceTree = "<group>";
+		};
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -296,6 +308,7 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				15CBB0BB18D30BDB0038ABA3 /* StringFormatTest */,
 				E87402CF172582C900A4A75A /* FileSystemTests */,
 				7410E82E17146CB70028AAAA /* UIListTest */,
 				E8B6B3BD1705DD80004F665E /* LocaliztionTests */,
@@ -627,6 +640,7 @@
 				E87E23B7161334E5005DB5A8 /* PVRTest.cpp in Sources */,
 				E87BB1E4162D5CCB001A5448 /* TextureUtils.cpp in Sources */,
 				E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */,
+				15CBB0C018D30BF70038ABA3 /* StringFormatTest.cpp in Sources */,
 				E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */,
 				E8EF78011669249000DA7BD2 /* CloneTest.cpp in Sources */,
 				49C432081675E370000EA877 /* DXTTest.cpp in Sources */,

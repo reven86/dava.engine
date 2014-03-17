@@ -157,6 +157,7 @@ FTFont *	FTFont::Clone() const
 {
 	FTFont *retFont = new FTFont(internalFont);
 	retFont->size =	size;
+    retFont->renderSize = renderSize;
 
 	retFont->verticalSpacing =	verticalSpacing;
 
@@ -188,17 +189,17 @@ String FTFont::GetRawHashString()
 
 Size2i FTFont::DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded )
 {
-	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, 255, 255, 255, 255, size, true, offsetX, offsetY, justifyWidth, spaceAddon, NULL, contentScaleIncluded );
+	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, 255, 255, 255, 255, renderSize, true, offsetX, offsetY, justifyWidth, spaceAddon, NULL, contentScaleIncluded );
 }
 
 Size2i FTFont::GetStringSize(const WideString& str, Vector<int32> *charSizes) const
 {
-	return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, size, false, 0, 0, 0, 0, charSizes);
+	return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, renderSize, false, 0, 0, 0, 0, charSizes);
 }
 
 uint32 FTFont::GetFontHeight() const
 {
-	return internalFont->GetFontHeight(size);
+	return internalFont->GetFontHeight(renderSize);
 }
 
 

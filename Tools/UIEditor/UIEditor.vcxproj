@@ -97,6 +97,7 @@
     <ClCompile Include="Classes\UI\davaglwidget.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\createaggregatordlg.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\editpreviewsettingsdialog.cpp" />
+    <ClCompile Include="Classes\UI\Dialogs\errorslistdialog.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\importdialog.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\localizationeditordialog.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\previewsettingsdialog.cpp" />
@@ -202,6 +203,7 @@
     <ClCompile Include="GeneratedFiles\UI\davaglwidget_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\createaggregatordlg_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\editpreviewsettingsdialog_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\UI\Dialogs\errorslistdialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\importdialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\localizationeditordialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\previewsettingsdialog_moc.cpp" />
@@ -500,6 +502,7 @@
     </ClInclude>
     <ClInclude Include="Classes\UI\Dialogs\createaggregatordlg.h" />
     <ClInclude Include="Classes\UI\Dialogs\editpreviewsettingsdialog.h" />
+    <ClInclude Include="Classes\UI\Dialogs\errorslistdialog.h" />
     <ClInclude Include="Classes\UI\Dialogs\importdialog.h" />
     <ClInclude Include="Classes\UI\Dialogs\previewsettingsdialog.h" />
     <ClInclude Include="Classes\UI\Dialogs\regexpinputdialog.h" />
@@ -704,6 +707,7 @@
     <ClInclude Include="GeneratedFiles\ui_createplatformdlg.h" />
     <ClInclude Include="GeneratedFiles\ui_createscreendlg.h" />
     <ClInclude Include="GeneratedFiles\ui_davaglwidget.h" />
+    <ClInclude Include="GeneratedFiles\ui_errorslistdialog.h" />
     <ClInclude Include="GeneratedFiles\ui_flagspropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_fontmanagerdialog.h" />
     <ClInclude Include="GeneratedFiles\ui_hierarchytreewidget.h" />
@@ -742,6 +746,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="UI\editpreviewsettingsdialog.ui" />
+    <None Include="UI\errorslistdialog.ui" />
     <None Include="UI\hierarchytreewidget.ui">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
       </AdditionalInputs>

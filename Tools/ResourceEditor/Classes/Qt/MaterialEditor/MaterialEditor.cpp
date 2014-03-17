@@ -290,9 +290,9 @@ void MaterialEditor::FillMaterialProperties(DAVA::NMaterial *material)
                 QtPropertyDataInspMember *group = new QtPropertyDataInspMember(material, groupMember);
                 ui->materialProperty->AppendProperty("Group", group);
 
-                for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaQualityGroupCount(); ++i)
+                for(size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
                 {
-                    DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaQualityGroupName(i);
+                    DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
                     group->AddAllowedValue(DAVA::VariantType(groupName), groupName.c_str());
                 }
             }

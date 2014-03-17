@@ -229,7 +229,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 
 	// try to pack for each resolution
 	uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
-	uint32 bestXResolution, bestYResolution;
+	uint32 bestXResolution = 0, bestYResolution = 0;
 	
     Logger::FrameworkDebug("* Packing tries started: ");
 	

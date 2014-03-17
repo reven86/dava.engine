@@ -30,16 +30,21 @@
 
 #include "UI/ScrollHelper.h"
 #include "FileSystem/Logger.h"
+#include <math.h>
+
 
 namespace DAVA 
 {
 	ScrollHelper::ScrollHelper()
 	:	BaseObject()
-	,	position(0)
+	,	position(0.f)
 	,	elementSize(0)
-	,	totalDeltaTime(0)
-	,	totalDeltaMove(0)
-	,   speed(0)
+	,	totalDeltaTime(0.f)
+	,	totalDeltaMove(0.f)
+	,   speed(0.f)
+    ,   scrollToPos(0.f)
+    ,   scrollToAcc(0.f)
+    ,   scrollToTopSpeed(0.f)
 	{
 		slowDown = 0.25f;
 		backward = 0.3f;
@@ -125,14 +130,15 @@ namespace DAVA
 				positionDelta *= (1.0f - (virtualViewSize - (position + elementSize)) / virtualViewSize) * backward;
 			}
 			position += positionDelta;
-			speed = 0;
+			speed = 0.f;
+            scrollToTopSpeed = 0.f;
 			MovesDelta m;
 			m.deltaMove = positionDelta;
 			m.deltaTime = timeDelta;
 			moves.push_back(m);
 			totalDeltaTime += timeDelta;
 			totalDeltaMove += positionDelta;
-			if(totalDeltaTime >= 0.4)
+			if(totalDeltaTime >= 0.4f)
 			{
 				List<MovesDelta>::iterator it = moves.begin();
 				totalDeltaTime -= it->deltaTime;
@@ -142,14 +148,39 @@ namespace DAVA
 		}
 		else
 		{
-			if(totalDeltaMove != 0)
+			if(totalDeltaMove != 0.f)
 			{
 				speed = totalDeltaMove / totalDeltaTime;
 				speed = Min(speed, virtualViewSize * 2);
 				speed = Max(speed, -virtualViewSize * 2);
 			}
-			
-			if(position > 0)
+			if (scrollToTopSpeed != 0.f)
+            {
+                if (scrollToTopSpeed < 0.f)
+                {
+                    if (speed <= scrollToTopSpeed)
+                    {
+                        scrollToAcc = -scrollToAcc;
+                    }
+                }
+                else
+                {
+                    if (speed >= scrollToTopSpeed)
+                    {
+                        scrollToAcc = -scrollToAcc;
+                    }
+                }
+                speed = speed + scrollToAcc * timeDelta;
+                float32 oldPos = position;
+                position += speed * timeDelta;
+                if ((oldPos <= scrollToPos && position >= scrollToPos)
+                    || (oldPos >= scrollToPos && position <= scrollToPos))
+                {
+                    position = scrollToPos;
+                    scrollToTopSpeed = 0.f;
+                }
+            }
+			else if(position > 0)
 			{
 				if(backward != 0 && slowDown != 0)
 				{
@@ -224,7 +255,18 @@ namespace DAVA
 		
 		return position;
 	}
+    
+    void ScrollHelper::ScrollToPosition(float32 newPos, float32 scrollTimeSec/* = 0.3f*/)
+    {
+        scrollToPos = newPos;
+        float32 halfTime = scrollTimeSec * 0.5f;
+        float32 dist = (newPos - position) * 0.5f;
+        speed = 0.f;
+        scrollToAcc = (dist * 2) / (halfTime * halfTime);
+        scrollToTopSpeed = sqrtf(2 * scrollToAcc * dist);
+    }
 }
+
 
 
 

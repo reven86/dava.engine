@@ -37,6 +37,7 @@ class QualitySwitcher : public QDialog
 
 public:
     static void Show();
+    static void ShowModal();
 
 protected:
     QualitySwitcher(QWidget *parent = NULL);

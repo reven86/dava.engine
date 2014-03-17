@@ -215,12 +215,12 @@ void QualitySettingsSystem::Load(const FilePath &path)
     }
 }
 
-size_t QualitySettingsSystem::GetTxQualityCount() const
+size_t QualitySettingsSystem::GetTextureQualityCount() const
 {
     return textureQualities.size();
 }
 
-FastName QualitySettingsSystem::GetTxQualityName(size_t index) const
+FastName QualitySettingsSystem::GetTextureQualityName(size_t index) const
 {
     FastName ret;
 
@@ -232,12 +232,12 @@ FastName QualitySettingsSystem::GetTxQualityName(size_t index) const
     return ret;
 }
 
-FastName QualitySettingsSystem::GetCurTxQuality() const
+FastName QualitySettingsSystem::GetCurTextureQuality() const
 {
-    return GetTxQualityName(curTextureQuality);
+    return GetTextureQualityName(curTextureQuality);
 }
 
-void QualitySettingsSystem::SetCurTxQuality(const FastName &name)
+void QualitySettingsSystem::SetCurTextureQuality(const FastName &name)
 {
     for(size_t i = 0; i < textureQualities.size(); ++i)
     {
@@ -248,7 +248,7 @@ void QualitySettingsSystem::SetCurTxQuality(const FastName &name)
         }
     }
 
-    DVASSERT(0 && "Not such quality");
+    DVASSERT(0 && "No such quality");
 }
 
 const TextureQuality* QualitySettingsSystem::GetTxQuality(const FastName &name) const
@@ -264,17 +264,17 @@ const TextureQuality* QualitySettingsSystem::GetTxQuality(const FastName &name) 
         }
     }
 
-    DVASSERT(NULL != ret && "No such quality");
+    //DVASSERT(NULL != ret && "No such quality");
 
     return ret;
 }
 
-size_t QualitySettingsSystem::GetMaQualityGroupCount() const
+size_t QualitySettingsSystem::GetMaterialQualityGroupCount() const
 {
     return materialGroups.size();
 }
 
-FastName QualitySettingsSystem::GetMaQualityGroupName(size_t index) const
+FastName QualitySettingsSystem::GetMaterialQualityGroupName(size_t index) const
 {
     FastName ret;
 
@@ -286,7 +286,7 @@ FastName QualitySettingsSystem::GetMaQualityGroupName(size_t index) const
     return ret;
 }
 
-size_t QualitySettingsSystem::GetMaQualityCount(const FastName &group) const
+size_t QualitySettingsSystem::GetMaterialQualityCount(const FastName &group) const
 {
     size_t ret = 0;
 
@@ -298,7 +298,7 @@ size_t QualitySettingsSystem::GetMaQualityCount(const FastName &group) const
     return ret;
 }
 
-FastName QualitySettingsSystem::GetMaQualityName(const FastName &group, size_t index) const
+FastName QualitySettingsSystem::GetMaterialQualityName(const FastName &group, size_t index) const
 {
     FastName ret;
 
@@ -310,19 +310,19 @@ FastName QualitySettingsSystem::GetMaQualityName(const FastName &group, size_t i
     return ret;
 }
 
-FastName QualitySettingsSystem::GetCurMaQuality(const FastName &group) const
+FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName &group) const
 {
     FastName ret;
 
     if(materialGroups.count(group) > 0)
     {
-        ret = GetMaQualityName(group, materialGroups[group].curQuality);
+        ret = GetMaterialQualityName(group, materialGroups[group].curQuality);
     }
 
     return ret;
 }
 
-void QualitySettingsSystem::SetCurMaQuality(const FastName &group, const FastName &quality)
+void QualitySettingsSystem::SetCurMaterialQuality(const FastName &group, const FastName &quality)
 {
     if(materialGroups.count(group) > 0)
     {
@@ -339,7 +339,7 @@ void QualitySettingsSystem::SetCurMaQuality(const FastName &group, const FastNam
     DVASSERT(0 && "Not such quality");
 }
 
-const MaterialQuality* QualitySettingsSystem::GetMaQuality(const FastName &group, const FastName &quality) const
+const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName &group, const FastName &quality) const
 {
     const MaterialQuality *ret = NULL;
 
@@ -355,7 +355,7 @@ const MaterialQuality* QualitySettingsSystem::GetMaQuality(const FastName &group
         }
     }
 
-    DVASSERT(NULL != ret && "No such quality");
+    //DVASSERT(NULL != ret && "No such quality");
 
     return ret;
 }

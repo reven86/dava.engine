@@ -200,7 +200,7 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
             AddToActive(effect);            
         effect->state = ParticleEffectComponent::STATE_STARTING;                    
     }
-	else if (event = EventSystem::STOP_PARTICLE_EFFECT)
+	else if (event == EventSystem::STOP_PARTICLE_EFFECT)
 		RemoveFromActive(effect);
 
 }

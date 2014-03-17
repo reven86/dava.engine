@@ -65,6 +65,8 @@ public:
 	 \param[in] pos new scrolling position.
 	 */
 	void SetPosition(float32 pos);
+    
+    void ScrollToPosition(float32 newPos, float32 scrollTimeSec = 0.3f);
 	/**
 	 \brief Sets scrollable element size.
 	 \param[in] newSize scrollable element size.
@@ -131,6 +133,10 @@ private:
 	float backward;
 	
 	float speed;
+    
+    float scrollToPos;
+    float scrollToAcc;
+    float scrollToTopSpeed;
 	
 	List<MovesDelta> moves;
 };
