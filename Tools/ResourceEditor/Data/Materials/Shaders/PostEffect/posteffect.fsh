@@ -1,10 +1,5 @@
 <CONFIG>
 albedo = 0
-cubemap = 2
-decal = 1
-detail = 1
-lightmap = 1
-normalmap = 1
 <FRAGMENT_SHADER>
 
 

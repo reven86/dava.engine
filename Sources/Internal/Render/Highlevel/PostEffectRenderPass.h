@@ -60,8 +60,6 @@ protected:
 
     NMaterial * material;
     NMaterial * instanceMaterial;
-    float32 exposure;
-    float32 brightMax;
 };
 
 inline NMaterial * PostEffectRenderPass::GetMaterial()

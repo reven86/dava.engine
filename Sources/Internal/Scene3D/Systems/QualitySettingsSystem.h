@@ -85,7 +85,7 @@ public:
     // posteffects
     size_t GetPosteffectsQualityCount() const;
     FastName GetCurrentPosteffectQuality() const;
-    FastName GetPosteffectQualityName() const;
+    FastName GetPosteffectQualityName(size_t index) const;
     void SetCurrentPosteffectQuality(const FastName & name);
 
     // ------------------------------------------
@@ -123,12 +123,41 @@ protected:
     // materials
     FastNameMap<MAGrQ> materialGroups;
 
-    // qualities
+    // posteffects
     Vector<FastName> posteffectsQualities;
     int32 currectPosteffectQuality;
 
 	FastNameMap<bool> qualityOptions;
 };
+
+inline size_t QualitySettingsSystem::GetPosteffectsQualityCount() const
+{
+    return posteffectsQualities.size();
+}
+
+inline FastName QualitySettingsSystem::GetCurrentPosteffectQuality() const
+{
+    return posteffectsQualities[currectPosteffectQuality];
+}
+
+inline FastName QualitySettingsSystem::GetPosteffectQualityName(size_t index) const
+{
+    return posteffectsQualities[index];
+}
+
+inline void QualitySettingsSystem::SetCurrentPosteffectQuality(const FastName & name)
+{
+    for(size_t i = 0; i < posteffectsQualities.size(); ++i)
+    {
+        if(posteffectsQualities[i] == name)
+        {
+            currectPosteffectQuality = i;
+            return;
+        }
+    }
+
+    DVASSERT(0 && "No such quality");
+}
 	
 }
 

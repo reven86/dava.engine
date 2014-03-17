@@ -31,12 +31,14 @@
 #include "Render/ShaderCache.h"
 #include "Render/Image.h"
 #include "Render/LibPngHelpers.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
 
 static const FastName EXPOSURE_NAME("exposure");
 static const FastName BRIGHTMAX_NAME("brightMax");
+static const FastName NO_POST_EFFECT("OFF");
 
 uint16 PostEffectRenderPass::indices[] = {0, 2, 1, 1, 2, 3};
 
@@ -51,6 +53,11 @@ PostEffectRenderPass::PostEffectRenderPass(RenderSystem * renderSystem, const Fa
     material = NMaterial::CreateMaterial(FastName("Posteffect_Material"),
         FastName("~res:/Materials/PostEffect.material"),
         NMaterial::DEFAULT_QUALITY_NAME);
+
+    float32 defaultValue = 1.f;
+    material->SetPropertyValue(EXPOSURE_NAME, Shader::UT_FLOAT, 1, &defaultValue);
+    material->SetPropertyValue(BRIGHTMAX_NAME, Shader::UT_FLOAT, 1, &defaultValue);
+
     instanceMaterial = 	NMaterial::CreateMaterialInstance();
     instanceMaterial->SetParent(material);
 
@@ -101,35 +108,37 @@ void PostEffectRenderPass::Init()
 
 void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
 {
-    RenderManager * rm = RenderManager::Instance();
-    const Rect & newViewport = rm->GetViewport();
-    if(currentViewport != newViewport)
+    if(NO_POST_EFFECT == QualitySettingsSystem::Instance()->GetCurrentPosteffectQuality())
     {
-        currentViewport = newViewport;
-        Init();
+        RenderPass * forwardPass = renderSystem->GetRenderPassManager()->GetRenderPass(RENDER_PASS_FORWARD_ID);
+        forwardPass->Draw(camera, renderSystem);
     }
+    else
+    {
+        RenderManager * rm = RenderManager::Instance();
+        const Rect & newViewport = rm->GetViewport();
+        if(currentViewport != newViewport)
+        {
+            currentViewport = newViewport;
+            Init();
+        }
 
-    RenderManager::Instance()->SetRenderTarget(renderTarget);
-    RenderManager::Instance()->SetViewport(currentViewport, true);
-    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-    RenderManager::Instance()->FlushState();
-    RenderManager::Instance()->Clear(Color(0.f, 0.f, 1.f, 1.f), 1.f, 0);
-    camera->SetupDynamicParameters();
+        rm->SetRenderTarget(renderTarget);
+        rm->SetViewport(currentViewport, true);
+        rm->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+        rm->FlushState();
+        rm->Clear(Color(0.f, 0.f, 1.f, 1.f), 1.f, 0);
+        camera->SetupDynamicParameters();
 
-    RenderPass * forwardPass = renderSystem->GetRenderPassManager()->GetRenderPass(RENDER_PASS_FORWARD_ID);
-    forwardPass->Draw(camera, renderSystem);
+        RenderPass * forwardPass = renderSystem->GetRenderPassManager()->GetRenderPass(RENDER_PASS_FORWARD_ID);
+        forwardPass->Draw(camera, renderSystem);
 
-    RenderManager::Instance()->RestoreRenderTarget();
-    RenderManager::Instance()->SetViewport(currentViewport, true);
+        rm->RestoreRenderTarget();
+        rm->SetViewport(currentViewport, true);
 
-//     exposure = 1.5f;
-//     brightMax = 2.f;
-//     material->SetPropertyValue(EXPOSURE_NAME, Shader::UT_FLOAT, 1, &exposure);
-//     material->SetPropertyValue(BRIGHTMAX_NAME, Shader::UT_FLOAT, 1, &brightMax);
-    material->BindMaterialTechnique(PASS_POST_EFFECT, 0);
-    material->Draw(rdo);
+        material->BindMaterialTechnique(PASS_POST_EFFECT, 0);
+        material->Draw(rdo);
+    }
 }
-
-
 
 }
