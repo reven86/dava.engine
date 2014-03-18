@@ -59,6 +59,10 @@ public:
     virtual void Update(float32 timeElapsed);
     virtual void Draw(const UIGeometricData &geometricData);
 
+    // Cloning.
+    virtual UIControl* Clone();
+    virtual void CopyDataFrom(UIControl *srcControl);
+
     // Load/save functionality.
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);

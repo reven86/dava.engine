@@ -238,6 +238,25 @@ YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
     return node;
 }
 
+UIControl* UIParticles::Clone()
+{
+    UIParticles *particles = new UIParticles(GetRect());
+    particles->CopyDataFrom(this);
+    return particles;
+}
+    
+void UIParticles::CopyDataFrom(UIControl *srcControl)
+{
+    UIControl::CopyDataFrom(srcControl);
+    UIParticles* particles = (UIParticles*) srcControl;
+
+    SetAutostart(particles->IsAutostart());
+    if (!particles->effectPath.IsEmpty())
+    {
+        Load(particles->effectPath);
+    }
+}
+
 void UIParticles::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
 	UIControl::LoadFromYamlNode(node, loader);
