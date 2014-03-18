@@ -99,7 +99,7 @@ public:
 	static bool InitDecompressor(nvtt::Decompressor & dec, File * file);
 	static bool InitDecompressor(nvtt::Decompressor & dec, const uint8 * mem, uint32 size);
 	
-	static bool ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, bool forceSoftwareConvertation);
+	static bool ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation);
 	
 	static PixelFormat GetPixelFormat(nvtt::Decompressor & dec);
 	
@@ -122,8 +122,8 @@ public:
 	static uint32 GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex);
 	
 private:
-	static bool DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet);
-	static bool DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vector<Image*> &imageSet);
+	static bool DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap);
+	static bool DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vector<Image*> &imageSet, int32 baseMipMap);
 };
 
 const NvttHelper::PairNvttPixelGLFormat NvttHelper::formatNamesMap[] =
@@ -244,7 +244,7 @@ PixelFormat QualcommHeler::GetDavaFormat(int32 format)
 }
 
 	
-bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSet, bool forceSoftwareConvertation /*=false*/)
+bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSet, int32 baseMipMap /*= 0*/, bool forceSoftwareConvertation /*=false*/)
 {
 	nvtt::Decompressor dec;
 
@@ -253,10 +253,10 @@ bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSe
 		return false;
 	}
 	
-	return NvttHelper::ReadDxtFile(dec, imageSet, forceSoftwareConvertation);
+	return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap, forceSoftwareConvertation);
 }
 
-bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet, bool forceSoftwareConvertation /*=false*/)
+bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap /*= 0*/, bool forceSoftwareConvertation /*=false*/)
 {
 	nvtt::Decompressor dec;
 
@@ -264,7 +264,7 @@ bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet, bool force
 	{
 		return false;
 	}
-	return NvttHelper::ReadDxtFile(dec, imageSet, forceSoftwareConvertation);
+	return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap,forceSoftwareConvertation);
 }
 
 bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
@@ -280,7 +280,6 @@ bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &im
 		Logger::Error("[LibDxtHelper::DecompressImageToRGBA] Can't work with nvtt::Format_BC5.");
 		return false;
 	}
-	
 		
 	InputOptions inputOptions;
 	inputOptions.setTextureLayout(TextureType_2D, image.width, image.height);
@@ -312,7 +311,7 @@ bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &im
 	bool retValue = NvttHelper::InitDecompressor(dec, compressedImageBuffer, realHeaderSize + image.dataSize);
 	if(retValue)
 	{
-		retValue = NvttHelper::ReadDxtFile(dec, imageSet, forceSoftwareConvertation);
+		retValue = NvttHelper::ReadDxtFile(dec, imageSet, 0, forceSoftwareConvertation);
 	}
 
     SafeDeleteArray(compressedImageBuffer);
@@ -324,12 +323,8 @@ bool NvttHelper::IsAtcFormat(nvtt::Format format)
 	return (format == Format_ATC_RGB || format == Format_ATC_RGBA_EXPLICIT_ALPHA || format == Format_ATC_RGBA_INTERPOLATED_ALPHA);
 }
 	
-bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
+bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation)
 {
-    for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
-	imageSet.clear();
-	
-	
     DDSInfo info;
     if(!GetInfo(dec, info))
     {
@@ -342,7 +337,8 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
 		Logger::Error("[NvttHelper::ReadDxtFile] Wrong mipmapsCount/width/height value in dds header.");
 		return false;
 	}
-	
+
+    baseMipMap = Min(baseMipMap, (int32)(info.mipmapsCount - 1));
 
 	nvtt::Format format;
 	if(!dec.getCompressionFormat(format))
@@ -382,34 +378,36 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
         uint32 offset = 0;
 		for(uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
 		{
-			uint32 faceWidth = info.width;
-			uint32 faceHeight = info.height;
-			
-			for(uint32 i = 0; i < info.mipmapsCount; ++i)
-			{
-				uint32 mipSize = 0;
+            uint32 faceWidth = info.width;
+            uint32 faceHeight = info.height;
+            
+            for(uint32 i = 0; i < info.mipmapsCount; ++i)
+            {
+                uint32 mipSize = 0;
 				if(!dec.getMipmapSize(i, mipSize))
 				{
 					retValue = false;
 					break;
 				}
-				
-				Image* innerImage = Image::Create(faceWidth, faceHeight, pixFormat);
-				innerImage->mipmapLevel = i;
-				
-				if(info.faceCount > 1)
-				{
-					innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
-				}
-				
-				memcpy(innerImage->data, compressedImges + offset, mipSize);
-				imageSet.push_back(innerImage);
-				
-				faceWidth = Max((uint32)1, faceWidth / 2);
-				faceHeight = Max((uint32)1, faceHeight / 2);
-				
-				offset += mipSize;
-			}
+
+                if(i >= baseMipMap)
+                {   // load only actual image data
+                    Image* innerImage = Image::Create(faceWidth, faceHeight, pixFormat);
+                    innerImage->mipmapLevel = i - baseMipMap;
+                    
+                    if(info.faceCount > 1)
+                    {
+                        innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
+                    }
+                    
+                    memcpy(innerImage->data, compressedImges + offset, mipSize);
+                    imageSet.push_back(innerImage);
+                }
+                
+                offset += mipSize;
+                faceWidth = Max((uint32)1, faceWidth / 2);
+                faceHeight = Max((uint32)1, faceHeight / 2);
+            }
 		}
 
         SafeDeleteArray(compressedImges);
@@ -424,11 +422,11 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
         
 		if (IsAtcFormat(format))
 		{
-			return DecompressAtc(dec, info, GetPixelFormatByNVTTFormat(format), imageSet);
+			return DecompressAtc(dec, info, GetPixelFormatByNVTTFormat(format), imageSet, baseMipMap);
 		}
 		else
 		{
-			return DecompressDxt(dec, info, imageSet);
+			return DecompressDxt(dec, info, imageSet, baseMipMap);
 		}
 		
 #endif //#if defined (__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__)
@@ -438,35 +436,41 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
 	return false;
 }
 	
-bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vector<Image*> &imageSet)
+bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vector<Image*> &imageSet, int32 baseMipMap)
 {
 	for(uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
 	{
 		uint32 faceWidth = info.width;
 		uint32 faceHeight = info.height;
+        
+        for(uint32 i = 0; i < baseMipMap; ++i)
+        {
+            faceWidth = Max((uint32)1, faceWidth / 2);
+			faceHeight = Max((uint32)1, faceHeight / 2);
+        }
 
-		for(uint32 i = 0; i < info.mipmapsCount; ++i)
-		{
-			Image* innerImage = Image::Create(faceWidth, faceHeight, FORMAT_RGBA8888);
-			if(dec.process(innerImage->data, innerImage->dataSize, i, faceIndex))
-			{
-				SwapBRChannels(innerImage->data, innerImage->dataSize);
-				
-				innerImage->mipmapLevel = i;
-				
-				if(info.faceCount > 1)
-				{
-					innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
-				}
-				
-				imageSet.push_back(innerImage);
-			}
-			else
-			{
-				Logger::Error("nvtt lib compression fail.");
-				SafeRelease(innerImage);
-				return false;
-			}
+		for(uint32 i = baseMipMap; i < info.mipmapsCount; ++i)
+		{   // load only actual image data
+            Image* innerImage = Image::Create(faceWidth, faceHeight, FORMAT_RGBA8888);
+            if(dec.process(innerImage->data, innerImage->dataSize, i, faceIndex))
+            {
+                SwapBRChannels(innerImage->data, innerImage->dataSize);
+                
+                innerImage->mipmapLevel = i - baseMipMap;
+                
+                if(info.faceCount > 1)
+                {
+                    innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
+                }
+                
+                imageSet.push_back(innerImage);
+            }
+            else
+            {
+                Logger::Error("nvtt lib compression fail.");
+                SafeRelease(innerImage);
+                return false;
+            }
 			
 			faceWidth = Max((uint32)1, faceWidth / 2);
 			faceHeight = Max((uint32)1, faceHeight / 2);
@@ -475,7 +479,7 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vec
 	return true;
 }
 
-bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet)
+bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap)
 {
 #if defined(__DAVAENGINE_MACOS__)
 	if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
@@ -496,20 +500,31 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 
 	bool res = true;
 	unsigned char* buffer = compressedImges;
-	
+    const int32 qualcommFormat = QualcommHeler::GetQualcommFormat(format);
+    
 	for(uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
 	{
 		uint32 faceWidth = info.width;
 		uint32 faceHeight = info.height;
 
-		for(uint32 i = 0; i < info.mipmapsCount; ++i)
+        for(uint32 i = 0; i < baseMipMap; ++i)
+        {
+            unsigned int mipMapSize = 0;
+			dec.getMipmapSize(i, mipMapSize);
+			buffer += mipMapSize;
+
+			faceWidth = Max((uint32)1, faceWidth / 2);
+			faceHeight = Max((uint32)1, faceHeight / 2);
+        }
+        
+		for(uint32 i = baseMipMap; i < info.mipmapsCount; ++i)
 		{
 			TQonvertImage srcImg = {0};
 			TQonvertImage dstImg = {0};
 			
 			srcImg.nWidth = faceWidth;
 			srcImg.nHeight = faceHeight;
-			srcImg.nFormat = QualcommHeler::GetQualcommFormat(format);
+			srcImg.nFormat = qualcommFormat;
 			dec.getMipmapSize(i, srcImg.nDataSize);
 			srcImg.pData = buffer;
 			buffer += srcImg.nDataSize;
@@ -537,17 +552,18 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 				res = false;
 				break;
 			}
-			
-			Image* innerImage = Image::CreateFromData(faceWidth, faceHeight, FORMAT_RGBA8888, dstImg.pData);
-			innerImage->mipmapLevel = i;
-			
-			if(info.faceCount > 1)
-			{
-				innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
-			}
-
-			//SwapBRChannels(innerImage->data, innerImage->dataSize);
-			imageSet.push_back(innerImage);
+            
+            
+            Image* innerImage = Image::CreateFromData(faceWidth, faceHeight, FORMAT_RGBA8888, dstImg.pData);
+            innerImage->mipmapLevel = i - baseMipMap;
+            
+            if(info.faceCount > 1)
+            {
+                innerImage->cubeFaceID = NvttHelper::GetCubeFaceId(info.faceFlags, faceIndex);
+            }
+            
+            //SwapBRChannels(innerImage->data, innerImage->dataSize);
+            imageSet.push_back(innerImage);
 			
 			faceWidth = Max((uint32)1, faceWidth / 2);
 			faceHeight = Max((uint32)1, faceHeight / 2);

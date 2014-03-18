@@ -427,7 +427,7 @@ void MaterialEditor::FillMaterialProperties(DAVA::NMaterial *material)
                     dynamicMember->SetDefaultOpenDialogPath(defaultPath);
                     dynamicMember->SetOpenDialogFilter("All (*.tex *.png);;PNG (*.png);;TEX (*.tex)");
                     QStringList path;
-					path.append(defaultPath);
+					path.append(dataSourcePath.GetAbsolutePathname().c_str());
                     dynamicMember->SetValidator(new TexturePathValidator(path));
                     // self property
                     if(memberFlags & DAVA::I_EDIT)

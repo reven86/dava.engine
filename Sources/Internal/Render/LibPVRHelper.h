@@ -120,7 +120,7 @@ public:
     static uint32 GetMipMapLevelsCount(File *file);
 	static uint32 GetCubemapFaceCount(File* file);
     
-    static bool ReadFile(File *file, const Vector<Image *> &imageSet);
+    static bool ReadFile(File *file, const Vector<Image *> &imageSet, int32 baseMipMap);
     
     static PixelFormat GetPixelFormat(const FilePath &filePathname);
     static uint32 GetDataSize(const FilePath &filePathname);
@@ -163,7 +163,7 @@ protected:
     //static bool ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, Image *image, uint32 mipMapLevel);
     
 	//load cubemap
-	static bool ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel);
+	static bool ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap);
     
     static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
     

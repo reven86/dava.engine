@@ -1102,6 +1102,10 @@ void MainWindow::DoSaveProject(bool changesOnly)
 
 void MainWindow::OnOpenProject()
 {
+	// Close and save current project if any
+	if (!CloseProject())
+		return;
+
 	QString projectPath = QFileDialog::getOpenFileName(this, tr("Select a project file"),
 														ResourcesManageHelper::GetDefaultDirectory(),
 														tr( "Project (*.uieditor)"));

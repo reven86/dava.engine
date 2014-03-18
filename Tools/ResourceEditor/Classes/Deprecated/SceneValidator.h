@@ -125,6 +125,10 @@ public:
     bool IsPathCorrectForProject(const FilePath &pathname);
     
     
+    DAVA_DEPRECATED(static void FindSwitchesWithDifferentLODs(DAVA::Entity *entity, Set<FastName> & names));
+    DAVA_DEPRECATED(static bool IsEntityHasDifferentLODsCount(DAVA::Entity *entity));
+
+
 protected:
 
     void ValidateRenderComponent(Entity *ownerNode, Set<String> &errorsLog);

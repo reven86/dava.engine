@@ -526,7 +526,8 @@ Sprite* Sprite::CreateFromPNG(const uint8* data, uint32 size, bool contentScaleI
         return NULL;
     }
 
-    Vector<Image*> images = ImageLoader::CreateFromFileByContent(file);
+    Vector<Image*> images;
+    ImageLoader::CreateFromFileByContent(file, images);
     if (images.size() == 0)
     {
         return NULL;
@@ -547,7 +548,8 @@ Sprite* Sprite::CreateFromPNG(const FilePath& path, bool contentScaleIncluded /*
         return NULL;
     }
 
-    Vector<Image*> images = ImageLoader::CreateFromFileByExtension(path);
+    Vector<Image*> images;
+    ImageLoader::CreateFromFileByExtension(path, images);
     if (images.size() == 0)
     {
         return NULL;

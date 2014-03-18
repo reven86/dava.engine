@@ -347,6 +347,8 @@ public:
     inline static void SetGlobalMaterial(NMaterial* globalMaterial);
     inline static NMaterial* GetGlobalMaterial();
 
+    void BuildActiveUniformsCacheParamsCache();
+    
 protected:
 	
 	class TextureBucket

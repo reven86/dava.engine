@@ -618,6 +618,22 @@ void HierarchyTreeWidget::OnRenameControlAction()
 
 	if (isAccepted && !newName.isEmpty() && (newName != itemName))
 	{
+		HierarchyTreeScreenNode* screenNode = dynamic_cast<HierarchyTreeScreenNode*>(node);
+		HierarchyTreePlatformNode* platformNode = dynamic_cast<HierarchyTreePlatformNode*>(node);
+		// Check item name for uniqueness only for screens or platfroms
+		if (screenNode || platformNode)
+		{
+			// Do not allow to rename to existing name
+			if (HierarchyTreeController::Instance()->GetActivePlatform()->IsAggregatorOrScreenNamePresent(newName) ||
+				HierarchyTreeController::Instance()->GetTree().IsPlatformNamePresent(newName))
+			{
+				QMessageBox msgBox;
+				msgBox.setText("Agreggator, screen or platform with the same name already exist. Please fill the name field with unique value.");
+				msgBox.exec();
+				return;
+			}
+		}
+		
 		ControlRenameCommand* cmd = new ControlRenameCommand(node->GetId(), itemName, newName);
 		CommandsController::Instance()->ExecuteCommand(cmd);
 		SafeRelease(cmd);

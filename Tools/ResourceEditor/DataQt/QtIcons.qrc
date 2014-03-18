@@ -126,6 +126,8 @@
     <file>QtIcons/hangingobjects.png</file>
     <file>QtIcons/map.png</file>
     <file>QtIcons/image_splitter.png</file>
+    <file>QtIcons/reload_shaders.png</file>
+    <file>QtIcons/switches_with_different_lods.png</file>
     <file>QtImages/sky_example0.png</file>
     <file>QtImages/sky_example1.png</file>
     <file>QtImages/sky_example2.png</file>

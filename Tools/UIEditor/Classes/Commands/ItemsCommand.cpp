@@ -30,6 +30,7 @@
 #include "ItemsCommand.h"
 #include "HierarchyTreeController.h"
 #include "ScreenWrapper.h"
+#include "SubcontrolsHelper.h"
 
 UndoableHierarchyTreeNodeCommand::UndoableHierarchyTreeNodeCommand()
 {
@@ -491,7 +492,7 @@ void ChangeNodeHeirarchy::StorePreviousParents()
 		}
 		
 		// The Previous Parents are stored in the "item ID - parent ID" map.
-		this->previousParents.insert(std::make_pair(*iter, PreviousState(parentNode->GetId(), addAfter)));
+		this->previousParents.insert(std::make_pair(*iter, PreviousState(parentNode->GetId(), addAfter, node->GetName())));
 	}
 }
 
@@ -522,6 +523,18 @@ void ChangeNodeHeirarchy::Execute()
 					HierarchyTreeNode::HIERARCHYTREENODESLIST screens;
 					screens.push_back(node);
 					HierarchyTreeController::Instance()->DeleteNodesFiles(screens);
+					
+					// If we insert aggregators or screens into platform - check inserted items name. We should not
+					// insert items with existing names.
+					HierarchyTreePlatformNode* targetPlatform = dynamic_cast<HierarchyTreePlatformNode*>(targetNode);
+					if (targetPlatform)
+					{
+						if (targetPlatform->IsAggregatorOrScreenNamePresent(node->GetName()))
+						{
+							QString newName = SubcontrolsHelper::FormatCopyName(node->GetName(), sourceNode);
+							node->SetName(newName);
+						}
+					}
 				}
 			}
 
@@ -555,12 +568,14 @@ void ChangeNodeHeirarchy::Rollback()
 		HierarchyTreeNode* currentNode = HierarchyTreeController::Instance()->GetTree().GetNode(iter->first);
 		HierarchyTreeNode* prevParentNode = HierarchyTreeController::Instance()->GetTree().GetNode(iter->second.parent);
 		HierarchyTreeNode* prevAddedAfter = HierarchyTreeController::Instance()->GetTree().GetNode(iter->second.addedAfter);
+		QString prevName = iter->second.baseName;
 		
 		if (!currentNode || !prevParentNode)
 		{
 			continue;
 		}
 		
+		currentNode->SetName(prevName);
 		currentNode->SetParent(prevParentNode, prevAddedAfter);
 	}
 	

@@ -156,7 +156,8 @@ public class JNITextField {
 						FutureTask<Boolean> t = new FutureTask<Boolean>(new Callable<Boolean>() {
 							@Override
 							public Boolean call() throws Exception {
-								return TextFieldKeyPressed(_id, dstart, dend - dstart, source.toString());
+								byte []bytes = source.toString().getBytes("UTF-8");
+								return TextFieldKeyPressed(_id, dstart, dend - dstart, bytes);
 							}
 						});
 						JNIActivity.GetActivity().PostEventToGL(t);
@@ -689,5 +690,5 @@ public class JNITextField {
 			int id,
 			int replacementLocation,
 			int replacementLength,
-			String replacementString);
+			byte[] byteArray);
 }

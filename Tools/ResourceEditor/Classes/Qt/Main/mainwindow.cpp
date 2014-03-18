@@ -101,11 +101,13 @@
 
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
+#include "Scene3D/Systems/MaterialSystem.h"
 
 #include "Classes/Constants.h"
 
 #include "TextureCompression/TextureConverter.h"
 #include "RecentFilesManager.h"
+#include "Deprecated/SceneValidator.h"
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -438,6 +440,7 @@ void QtMainWindow::SetupToolBars()
 	ui->menuToolbars->addAction(actionViewModeToolBar);
 	ui->menuToolbars->addAction(actionLandscapeToolbar);
 	ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
+    ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
 
 	// undo/redo
 	QToolButton *undoBtn = (QToolButton *) ui->mainToolBar->widgetForAction(ui->actionUndo);
@@ -484,8 +487,7 @@ void QtMainWindow::SetupToolBars()
 		hangingBtn->SetWidget(hangingObjectsWidget);
 		hangingBtn->setMaximumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_ICON);
 		hangingBtn->setMinimumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_ICON);
-		ui->sceneToolBar->addSeparator();
-		ui->sceneToolBar->addWidget(hangingBtn);
+        ui->testingToolBar->addWidget(hangingBtn);
 		hangingBtn->setAutoRaise(false);
 	}
 
@@ -719,6 +721,10 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->menuObjectTypes, SIGNAL(aboutToShow()), this, SLOT(OnObjectsTypeMenuWillShow()));
 
 	QObject::connect(ui->actionHangingObjects, SIGNAL(triggered()), this, SLOT(OnHangingObjects()));
+
+	QObject::connect(ui->actionReloadShader, SIGNAL(triggered()), this, SLOT(OnReloadShaders()));
+
+    QObject::connect(ui->actionSwitchesWithDifferentLODs, SIGNAL(triggered(bool)), this, SLOT(OnSwitchWithDifferentLODs(bool)));
 }
 
 void QtMainWindow::SetupShortCuts()
@@ -813,6 +819,8 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 
 	int32 tools = scene->GetEnabledTools();
 	UpdateConflictingActionsState(tools == 0);
+
+    ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
 }
 
 void QtMainWindow::SceneDeactivated(SceneEditor2 *scene)
@@ -903,6 +911,9 @@ void QtMainWindow::EnableSceneActions(bool enable)
     
     ui->sceneToolBar->setEnabled(enable);
 	ui->actionConvertModifiedTextures->setEnabled(enable);
+    
+    ui->actionReloadShader->setEnabled(enable);
+    ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
 }
 
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
@@ -2702,4 +2713,55 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 	return true;
 }
+
+void QtMainWindow::OnReloadShaders()
+{
+    ShaderCache::Instance()->Reload();
+    
+    DAVA::uint32 count = ui->sceneTabWidget->GetTabCount();
+    for(DAVA::uint32 i = 0; i < count; ++i)
+    {
+        SceneEditor2 * scene = ui->sceneTabWidget->GetTabScene(i);
+        if(!scene) continue;
+        
+        DAVA::Set<DAVA::NMaterial *> materialList;
+        DAVA::MaterialSystem *matSystem = scene->GetMaterialSystem();
+        matSystem->BuildMaterialList(scene, materialList);
+        
+        
+        DAVA::Set<DAVA::NMaterial *>::iterator it = materialList.begin();
+        DAVA::Set<DAVA::NMaterial *>::iterator endIt = materialList.end();
+        while (it != endIt)
+        {
+            DAVA::NMaterial * material = *it;
+            
+            material->BuildActiveUniformsCacheParamsCache();
+            
+            ++it;
+        }
+    }
+}
+
+void QtMainWindow::OnSwitchWithDifferentLODs(bool checked)
+{
+    SceneEditor2 *scene = GetCurrentScene();
+    if(!scene) return;
+
+    scene->debugDrawSystem->EnableSwithcesWithDifferentLODsMode(checked);
+
+    if(checked)
+    {
+        Set<FastName> entitiNames;
+        SceneValidator::FindSwitchesWithDifferentLODs(scene, entitiNames);
+
+        DAVA::Set<FastName>::iterator it = entitiNames.begin();
+        DAVA::Set<FastName>::iterator endIt = entitiNames.end();
+        while (it != endIt)
+        {
+            Logger::Info("Entity %s has different lods count.", it->c_str());
+            ++it;
+        }
+    }
+}
+
 

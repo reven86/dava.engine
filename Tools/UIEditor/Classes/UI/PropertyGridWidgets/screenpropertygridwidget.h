@@ -31,13 +31,13 @@
 #define SCREENPROPERTYGRIDWIDGET_H
 
 #include <QWidget>
-#include "basepropertygridwidget.h"
+#include "rootpropertygridwidget.h"
 
 namespace Ui {
 class ScreenPropertyGridWidget;
 }
 
-class ScreenPropertyGridWidget : public BasePropertyGridWidget
+class ScreenPropertyGridWidget : public RootPropertyGridWidget
 {
     Q_OBJECT
     

@@ -532,8 +532,11 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                 DefinitionFile * def = definitionFileList.front();
                 if(def->frameCount == 1)
                 {
-                    def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
-                    CommandLineParser::Instance()->AddArgument("--add0pixel");
+                    if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel") == false)
+                    {
+                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
+                        CommandLineParser::Instance()->AddArgument("--add0pixel");
+                    }
                 }
             }
 
