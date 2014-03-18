@@ -726,6 +726,42 @@
     <ClCompile Include="Classes\UI\PropertyGridWidgets\particleeffectpropertygridwidget.cpp">
       <Filter>Sources\UI\PropertyGridWidgets</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Commands\GuideCommands.cpp">
+      <Filter>Sources\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Guides\GuideData.cpp">
+      <Filter>Sources\Guides</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Guides\GuideMimeData.cpp">
+      <Filter>Sources\Guides</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Guides\GuidesManager.cpp">
+      <Filter>Sources\Guides</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Guides\GuideData_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Guides\GuideMimeData_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Guides\GuidesEnums_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Guides\GuidesManager_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\Dialogs\errorslistdialog.cpp">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\Dialogs\errorslistdialog_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\rootpropertygridwidget.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\rootpropertygridwidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\DefaultScreen.h">
@@ -1158,6 +1194,30 @@
       <Filter>Sources\Commands</Filter>
     </ClInclude>
     <ClInclude Include="Classes\UI\PropertyGridWidgets\particleeffectpropertygridwidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands\GuideCommands.h">
+      <Filter>Sources\Commands</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Guides\GuideData.h">
+      <Filter>Sources\Guides</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Guides\GuideMimeData.h">
+      <Filter>Sources\Guides</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Guides\GuidesEnums.h">
+      <Filter>Sources\Guides</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Guides\GuidesManager.h">
+      <Filter>Sources\Guides</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\Dialogs\errorslistdialog.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_errorslistdialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\rootpropertygridwidget.h">
       <Filter>Sources\UI\PropertyGridWidgets</Filter>
     </ClInclude>
   </ItemGroup>

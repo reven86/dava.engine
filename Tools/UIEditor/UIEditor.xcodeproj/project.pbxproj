@@ -185,6 +185,7 @@
 		5CCC10E915B460C900DA83EB /* libbz2.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 5CCC10E815B460C900DA83EB /* libbz2.dylib */; };
 		740F353416832022003B35E7 /* EditorSettings.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 740F353316832022003B35E7 /* EditorSettings.cpp */; };
 		7410E82A171462C70028AAAA /* EditorListDelegate.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 7410E828171462C70028AAAA /* EditorListDelegate.cpp */; };
+		7426F56518D85918003D3D25 /* rootpropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 7426F56418D85918003D3D25 /* rootpropertygridwidget_moc.cpp */; };
 		747FA17C1636A7CF000CEEDA /* backgroundpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 747FA17A1636A7CF000CEEDA /* backgroundpropertygridwidget.cpp */; };
 		747FA19C1636DBED000CEEDA /* UITextControlMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 747FA19A1636DBED000CEEDA /* UITextControlMetadata.cpp */; };
 		7482C8C71688AA9100435155 /* UISliderMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 7482C8C51688AA9100435155 /* UISliderMetadata.cpp */; };
@@ -215,6 +216,10 @@
 		74AD4BCD1727DB880082EFB3 /* scrollviewpropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74AD4BCC1727DB880082EFB3 /* scrollviewpropertygridwidget.ui */; };
 		74AD4BD11727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74AD4BCF1727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp */; };
 		74AD4BD41727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74AD4BD31727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp */; };
+		74BCC56E18D05F3600C98406 /* errorslistdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */; };
+		74BCC57518D0671E00C98406 /* errorslistdialog.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74BCC57418D0671E00C98406 /* errorslistdialog.ui */; };
+		74BCC57718D0673100C98406 /* errorslistdialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */; };
+		74CD181C18D84AE3004615A5 /* rootpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74CD181A18D84AE3004615A5 /* rootpropertygridwidget.cpp */; };
 		74EED62F16B187CF00262D63 /* alignspropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */; };
 		74EED63216B18C7600262D63 /* alignspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74EED63016B18C7600262D63 /* alignspropertygridwidget.cpp */; };
 		77BDEC8E56A833D3814BC614 /* QtNetwork.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 82153068A36B6EA46DD82A06 /* QtNetwork.framework */; };
@@ -622,6 +627,7 @@
 		740F353316832022003B35E7 /* EditorSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditorSettings.cpp; sourceTree = "<group>"; };
 		7410E828171462C70028AAAA /* EditorListDelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EditorListDelegate.cpp; sourceTree = "<group>"; };
 		7410E829171462C70028AAAA /* EditorListDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EditorListDelegate.h; sourceTree = "<group>"; };
+		7426F56418D85918003D3D25 /* rootpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rootpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
 		747FA17A1636A7CF000CEEDA /* backgroundpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = backgroundpropertygridwidget.cpp; path = PropertyGridWidgets/backgroundpropertygridwidget.cpp; sourceTree = "<group>"; };
 		747FA17B1636A7CF000CEEDA /* backgroundpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = backgroundpropertygridwidget.h; path = PropertyGridWidgets/backgroundpropertygridwidget.h; sourceTree = "<group>"; };
 		747FA19A1636DBED000CEEDA /* UITextControlMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UITextControlMetadata.cpp; path = Metadata/UITextControlMetadata.cpp; sourceTree = "<group>"; };
@@ -675,6 +681,13 @@
 		74AD4BD01727DBA50082EFB3 /* scrollviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scrollviewpropertygridwidget.h; path = PropertyGridWidgets/scrollviewpropertygridwidget.h; sourceTree = "<group>"; };
 		74AD4BD21727DD940082EFB3 /* ui_scrollviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_scrollviewpropertygridwidget.h; sourceTree = "<group>"; };
 		74AD4BD31727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scrollviewpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
+		74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = errorslistdialog.cpp; path = Dialogs/errorslistdialog.cpp; sourceTree = "<group>"; };
+		74BCC56D18D05F3600C98406 /* errorslistdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = errorslistdialog.h; path = Dialogs/errorslistdialog.h; sourceTree = "<group>"; };
+		74BCC57418D0671E00C98406 /* errorslistdialog.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = errorslistdialog.ui; sourceTree = "<group>"; };
+		74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errorslistdialog_moc.cpp; sourceTree = "<group>"; };
+		74BCC57818D0675A00C98406 /* ui_errorslistdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_errorslistdialog.h; sourceTree = "<group>"; };
+		74CD181A18D84AE3004615A5 /* rootpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rootpropertygridwidget.cpp; path = PropertyGridWidgets/rootpropertygridwidget.cpp; sourceTree = "<group>"; };
+		74CD181B18D84AE3004615A5 /* rootpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rootpropertygridwidget.h; path = PropertyGridWidgets/rootpropertygridwidget.h; sourceTree = "<group>"; };
 		74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = alignspropertygridwidget.ui; sourceTree = "<group>"; };
 		74EED63016B18C7600262D63 /* alignspropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = alignspropertygridwidget.cpp; path = PropertyGridWidgets/alignspropertygridwidget.cpp; sourceTree = "<group>"; };
 		74EED63116B18C7600262D63 /* alignspropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = alignspropertygridwidget.h; path = PropertyGridWidgets/alignspropertygridwidget.h; sourceTree = "<group>"; };
@@ -908,6 +921,7 @@
 		02D69C7616F08CED00F3803F /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
+				7426F56418D85918003D3D25 /* rootpropertygridwidget_moc.cpp */,
 				1746932718A3E99D0089EFF5 /* particleeffectpropertygridwidget_moc.cpp */,
 				749B306117E0B9FD00900A2E /* scrollcontrolpropertygridwidget_moc.cpp */,
 				74AD4BD31727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp */,
@@ -970,6 +984,8 @@
 				747FA17B1636A7CF000CEEDA /* backgroundpropertygridwidget.h */,
 				1700E416162EB2C20069650D /* basepropertygridwidget.cpp */,
 				1700E417162EB2C20069650D /* basepropertygridwidget.h */,
+				74CD181A18D84AE3004615A5 /* rootpropertygridwidget.cpp */,
+				74CD181B18D84AE3004615A5 /* rootpropertygridwidget.h */,
 				173AC3381630137400A773F5 /* controlpropertygridwidget.cpp */,
 				173AC33C1630137C00A773F5 /* controlpropertygridwidget.h */,
 				173AC3391630137400A773F5 /* flagspropertygridwidget.cpp */,
@@ -1712,6 +1728,7 @@
 				17FC1339189F90ED009D83A8 /* previewsettingsdialog_moc.cpp in Build Sources */,
 				C1C62A73162EC809000C1B32 /* librarywidget.cpp in Build Sources */,
 				C14FF9C2162EE4DF00F77F70 /* controllist.cpp in Build Sources */,
+				7426F56518D85918003D3D25 /* rootpropertygridwidget_moc.cpp in Build Sources */,
 				17E897F3162FEB3600A2A946 /* MetadataFactory.cpp in Build Sources */,
 				173AC331162FFFC300A773F5 /* PropertiesGridController.cpp in Build Sources */,
 				173AC33A1630137400A773F5 /* controlpropertygridwidget.cpp in Build Sources */,
@@ -1818,6 +1835,7 @@
 				02D69CD016F08CEE00F3803F /* ScreenManager_moc.cpp in Build Sources */,
 				02D69CD116F08CEE00F3803F /* ScreenWrapper_moc.cpp in Build Sources */,
 				02D69CD216F08CEE00F3803F /* StringUtils_moc.cpp in Build Sources */,
+				74CD181C18D84AE3004615A5 /* rootpropertygridwidget.cpp in Build Sources */,
 				02D69CD316F08CEE00F3803F /* controllist_moc.cpp in Build Sources */,
 				02D69CD416F08CEE00F3803F /* createplatformdlg_moc.cpp in Build Sources */,
 				1746932B18A3ED9D0089EFF5 /* UIParticlesMetadata.cpp in Build Sources */,

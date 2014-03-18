@@ -31,13 +31,13 @@
 #define PLATFORMPROPERTYGRIDWIDGET_H
 
 #include <QWidget>
-#include "basepropertygridwidget.h"
+#include "rootpropertygridwidget.h"
 
 namespace Ui {
 class PlatformPropertyGridWidget;
 }
 
-class PlatformPropertyGridWidget : public BasePropertyGridWidget
+class PlatformPropertyGridWidget : public RootPropertyGridWidget
 {
     Q_OBJECT
     

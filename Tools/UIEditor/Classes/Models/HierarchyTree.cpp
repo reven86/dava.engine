@@ -601,7 +601,7 @@ bool HierarchyTree::IsPlatformNamePresent(const QString& name) const
 		{
 			continue;
 		}
-		if(name.compare(platformNode->GetName()) == 0)
+		if(name.compare(platformNode->GetName(), Qt::CaseInsensitive) == 0)
 		{
 			return true;
 		}

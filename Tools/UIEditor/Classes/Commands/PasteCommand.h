@@ -52,7 +52,6 @@ namespace DAVA
 		int PastePlatforms(HierarchyTreeNode::HIERARCHYTREENODESLIST*, HierarchyTreeRootNode* parent);
 		
 		bool IsParentContainsCopyItemName(HierarchyTreeNode* parentNode, HierarchyTreeNode* copyNode);
-		QString FormatCopyName(QString baseName, const HierarchyTreeNode* parent) const;
 		
 		void UpdateControlName(const HierarchyTreeNode* parent, HierarchyTreeNode* node, bool needCreateNewName) const;
 		
