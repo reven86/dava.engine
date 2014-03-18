@@ -964,9 +964,6 @@ Texture * Texture::CreateFBO(uint32 width, uint32 height, PixelFormat format, De
         tx->SetParamsFromImages(images);
         tx->FlushDataToRenderer(images);
 
-//        tx->ReleaseImages(images);
-//        SafeDelete(images);
-
         tx->HWglCreateFBOBuffers();
         
 #elif defined(__DAVAENGINE_DIRECTX9__)
