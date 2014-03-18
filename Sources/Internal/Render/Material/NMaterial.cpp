@@ -87,6 +87,7 @@ const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED")
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
+const FastName NMaterial::FLAG_POSTEFFECT_DARKEN = FastName("POSTEFFECT_DARKEN");
 
 const FastName NMaterial::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterial::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
@@ -2682,11 +2683,12 @@ Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *ob
 	
 	if(0 == ret.size())
 	{
-		ret.reserve(3);
+		ret.reserve(5);
 		ret.push_back(FLAG_VERTEXFOG);
 		ret.push_back(FLAG_FLATCOLOR);
 		ret.push_back(FLAG_TEXTURESHIFT);
 		ret.push_back(FLAG_TEXTURE0_ANIMATION_SHIFT);
+        ret.push_back(FLAG_POSTEFFECT_DARKEN);
 	}
 	return ret;
 }

@@ -84,13 +84,14 @@ void PostEffectRenderPass::Init()
     SafeRelease(rdo);
     SafeRelease(renderTexture);
 
-    renderTexture = (Texture::CreateFBO((int32)ceilf(currentViewport.dx), (int32)ceilf(currentViewport.dy), FORMAT_FLOAT, Texture::DEPTH_RENDERBUFFER));
+    float32 textureWidth = currentViewport.dx-currentViewport.x;
+    float32 textureHeight = currentViewport.dy-currentViewport.y;
+    renderTexture = (Texture::CreateFBO((int32)ceilf(textureWidth), (int32)ceilf(textureHeight), FORMAT_FLOAT, Texture::DEPTH_RENDERBUFFER));
     renderTexture->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_LINEAR);
-    renderTarget->InitFromTexture(renderTexture, 0, 0, currentViewport.dx, currentViewport.dy, -1, -1, true);
+    renderTarget->InitFromTexture(renderTexture, 0, 0, textureWidth, textureHeight, -1, -1, true);
     material->SetTexture(NMaterial::TEXTURE_ALBEDO, renderTexture);
 
     rdo = new RenderDataObject();
-
 
     float32 texCoordW = currentViewport.dx/renderTexture->GetWidth();
     float32 texCoordH = currentViewport.dy/renderTexture->GetHeight();
@@ -124,7 +125,7 @@ void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
         }
 
         rm->SetRenderTarget(renderTarget);
-        rm->SetViewport(currentViewport, true);
+        rm->SetViewport(Rect(0, 0, currentViewport.dx, currentViewport.dy), true);
         rm->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
         rm->FlushState();
         rm->Clear(Color(0.f, 0.f, 1.f, 1.f), 1.f, 0);
