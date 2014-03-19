@@ -36,8 +36,9 @@
 namespace DAVA
 {
 
-static const FastName EXPOSURE_NAME("exposure");
-static const FastName BRIGHTMAX_NAME("brightMax");
+static const FastName EXPOSURE_PROPERTY("exposure");
+static const FastName BRIGHTMAX_PROPERTY("brightMax");
+static const FastName DARKEN_FLAG("POSTEFFECT_DARKEN");
 static const FastName NO_POST_EFFECT("OFF");
 static const FastName MEDIUM_POST_EFFECT("MEDIUM");
 
@@ -57,8 +58,9 @@ PostEffectRenderPass::PostEffectRenderPass(RenderSystem * renderSystem, const Fa
         NMaterial::DEFAULT_QUALITY_NAME);
 
     float32 defaultValue = 1.f;
-    material->SetPropertyValue(EXPOSURE_NAME, Shader::UT_FLOAT, 1, &defaultValue);
-    material->SetPropertyValue(BRIGHTMAX_NAME, Shader::UT_FLOAT, 1, &defaultValue);
+    material->SetPropertyValue(EXPOSURE_PROPERTY, Shader::UT_FLOAT, 1, &defaultValue);
+    material->SetPropertyValue(BRIGHTMAX_PROPERTY, Shader::UT_FLOAT, 1, &defaultValue);
+    material->SetFlag(DARKEN_FLAG, NMaterial::FlagOn);
 
     instanceMaterial = 	NMaterial::CreateMaterialInstance();
     instanceMaterial->SetParent(material);
