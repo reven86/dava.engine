@@ -271,6 +271,7 @@
 // Application core 
 #include "Core/Core.h"
 #include "Core/ApplicationCore.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 // Networking
 #include "Network/NetworkConnection.h"
