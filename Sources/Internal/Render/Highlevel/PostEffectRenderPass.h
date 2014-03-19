@@ -43,10 +43,13 @@ public:
     virtual void Draw(Camera * camera, RenderSystem * renderSystem);
 
     void Init();
+    void Shutdown();
 
     NMaterial * GetMaterial();
 
 protected:
+    FastName quality;
+
     Sprite * renderTarget;
     Texture * renderTexture;
 

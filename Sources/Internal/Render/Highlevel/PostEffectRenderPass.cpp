@@ -39,6 +39,7 @@ namespace DAVA
 static const FastName EXPOSURE_NAME("exposure");
 static const FastName BRIGHTMAX_NAME("brightMax");
 static const FastName NO_POST_EFFECT("OFF");
+static const FastName MEDIUM_POST_EFFECT("MEDIUM");
 
 uint16 PostEffectRenderPass::indices[] = {0, 2, 1, 1, 2, 3};
 
@@ -46,7 +47,8 @@ PostEffectRenderPass::PostEffectRenderPass(RenderSystem * renderSystem, const Fa
 :   RenderPass(renderSystem, name, id),
     currentViewport(Rect(-1.f, -1.f, -1.f, -1.f)),
     renderTexture(0),
-    rdo(0)
+    rdo(0),
+    quality(NO_POST_EFFECT)
 {
     renderTarget = Sprite::Create("");
 
@@ -72,44 +74,61 @@ PostEffectRenderPass::PostEffectRenderPass(RenderSystem * renderSystem, const Fa
 
 PostEffectRenderPass::~PostEffectRenderPass()
 {
+    Shutdown();
     SafeRelease(instanceMaterial);
     SafeRelease(material);
     SafeRelease(renderTarget);
-    SafeRelease(renderTexture);
-    SafeRelease(rdo);
 }
 
 void PostEffectRenderPass::Init()
 {
+    if(quality != NO_POST_EFFECT)
+    {
+        if(!renderTexture && !rdo)
+        {
+            float32 textureWidth = currentViewport.dx-currentViewport.x;
+            float32 textureHeight = currentViewport.dy-currentViewport.y;
+            renderTexture = (Texture::CreateFBO((int32)ceilf(textureWidth), (int32)ceilf(textureHeight), FORMAT_HALF_FLOAT, Texture::DEPTH_RENDERBUFFER));
+            renderTexture->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_LINEAR);
+            renderTarget->InitFromTexture(renderTexture, 0, 0, textureWidth, textureHeight, -1, -1, true);
+            material->SetTexture(NMaterial::TEXTURE_ALBEDO, renderTexture);
+
+            rdo = new RenderDataObject();
+
+            float32 texCoordW = currentViewport.dx/renderTexture->GetWidth();
+            float32 texCoordH = currentViewport.dy/renderTexture->GetHeight();
+            Vector2 texc0[4] = {Vector2(0.f, 0.f), Vector2(texCoordW, 0.f), Vector2(0.f, texCoordH), Vector2(texCoordW, texCoordH) };
+            for(int32 i = 0; i < 4; ++i)
+            {
+                texCoords0[i*2] = texc0[i].x;
+                texCoords0[i*2+1] = texc0[i].y;
+            }
+
+            rdo->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, vertices);
+            rdo->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, texCoords0);
+            rdo->SetIndices(EIF_16, (uint8*)indices, 6);
+        }
+    }
+}
+
+
+void PostEffectRenderPass::Shutdown()
+{
     SafeRelease(rdo);
     SafeRelease(renderTexture);
-
-    float32 textureWidth = currentViewport.dx-currentViewport.x;
-    float32 textureHeight = currentViewport.dy-currentViewport.y;
-    renderTexture = (Texture::CreateFBO((int32)ceilf(textureWidth), (int32)ceilf(textureHeight), FORMAT_FLOAT, Texture::DEPTH_RENDERBUFFER));
-    renderTexture->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_LINEAR);
-    renderTarget->InitFromTexture(renderTexture, 0, 0, textureWidth, textureHeight, -1, -1, true);
-    material->SetTexture(NMaterial::TEXTURE_ALBEDO, renderTexture);
-
-    rdo = new RenderDataObject();
-
-    float32 texCoordW = currentViewport.dx/renderTexture->GetWidth();
-    float32 texCoordH = currentViewport.dy/renderTexture->GetHeight();
-    Vector2 texc0[4] = {Vector2(0.f, 0.f), Vector2(texCoordW, 0.f), Vector2(0.f, texCoordH), Vector2(texCoordW, texCoordH) };
-    for(int32 i = 0; i < 4; ++i)
-    {
-        texCoords0[i*2] = texc0[i].x;
-        texCoords0[i*2+1] = texc0[i].y;
-    }
-
-    rdo->SetStream(EVF_VERTEX, TYPE_FLOAT, 3, 0, vertices);
-    rdo->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, texCoords0);
-    rdo->SetIndices(EIF_16, (uint8*)indices, 6);
 }
+
 
 void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
 {
-    if(NO_POST_EFFECT == QualitySettingsSystem::Instance()->GetCurrentPosteffectQuality())
+    if(quality != QualitySettingsSystem::Instance()->GetCurrentPosteffectQuality())
+    {
+        quality = QualitySettingsSystem::Instance()->GetCurrentPosteffectQuality();
+        Shutdown();
+        Init();
+    }
+
+    if(NO_POST_EFFECT == quality)
     {
         RenderPass * forwardPass = renderSystem->GetRenderPassManager()->GetRenderPass(RENDER_PASS_FORWARD_ID);
         forwardPass->Draw(camera, renderSystem);
@@ -121,6 +140,7 @@ void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
         if(currentViewport != newViewport)
         {
             currentViewport = newViewport;
+            Shutdown();
             Init();
         }
 

@@ -621,16 +621,16 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
                 // to use texture group qualities
                 // -->
                 
-                int32 baselevel = curTxQuality->albedoBaseMipMapLevel;
+                uint32 baselevel = curTxQuality->albedoBaseMipMapLevel;
                 if(baselevel > 0)
                 {
-                    int32 faceCount = (TEXTURE_CUBE == textureType) ? CUBE_FACE_MAX_COUNT : 1;
+                    uint32 faceCount = (TEXTURE_CUBE == textureType) ? CUBE_FACE_MAX_COUNT : 1;
                     
                     uint32 count = images->size();
-                    baselevel = Min(baselevel, (int32)(count / faceCount) - 1);
+                    baselevel = Min(baselevel, (count / faceCount) - 1);
                     if(baselevel > 0)
                     {
-                        for(int32 i = 0; i < count; ++i)
+                        for(uint32 i = 0; i < count; ++i)
                         {
                             if(images->operator[](i)->mipmapLevel < baselevel)
                             {
@@ -1256,6 +1256,7 @@ void Texture::InitializePixelFormatDescriptors()
     SetPixelDescription(FORMAT_A8, String("A8"), 8, GL_UNSIGNED_BYTE, GL_ALPHA, GL_ALPHA);
     SetPixelDescription(FORMAT_A16, String("A16"), 16, GL_UNSIGNED_SHORT, GL_ALPHA, GL_ALPHA);
     SetPixelDescription(FORMAT_FLOAT, String("FLOAT"), 128, GL_FLOAT, GL_RGBA, GL_RGBA);
+    SetPixelDescription(FORMAT_HALF_FLOAT, String("HALF_FLOAT"), 64, GL_HALF_FLOAT, GL_RGBA, GL_RGBA);
     
 #if defined (GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
     SetPixelDescription(FORMAT_PVR4, String("PVR4"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);
