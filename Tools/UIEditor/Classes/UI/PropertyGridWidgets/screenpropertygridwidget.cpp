@@ -33,13 +33,14 @@
 static const QString RECT_PROPERTY_BLOCK_NAME = "Screen";
 
 ScreenPropertyGridWidget::ScreenPropertyGridWidget(QWidget *parent) :
-    BasePropertyGridWidget(parent),
+    RootPropertyGridWidget(parent),
     ui(new Ui::ScreenPropertyGridWidget)
 {
     ui->setupUi(this);
     SetPropertyBlockName(RECT_PROPERTY_BLOCK_NAME);
 
     ui->screenNameLineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
+ 	ui->screenNameLineEdit->installEventFilter(this);
 }
 
 ScreenPropertyGridWidget::~ScreenPropertyGridWidget()

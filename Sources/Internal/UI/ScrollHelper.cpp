@@ -30,6 +30,7 @@
 
 #include "UI/ScrollHelper.h"
 #include "FileSystem/Logger.h"
+#include "Math/Math2D.h"
 #include <math.h>
 
 
@@ -38,7 +39,7 @@ namespace DAVA
 	ScrollHelper::ScrollHelper()
 	:	BaseObject()
 	,	position(0.f)
-	,	elementSize(0)
+	,	elementSize(0.f)
 	,	totalDeltaTime(0.f)
 	,	totalDeltaMove(0.f)
 	,   speed(0.f)
@@ -55,6 +56,7 @@ namespace DAVA
 		position = pos;
         position = Min(position, 0.f);
         position = Max(position, -elementSize);
+        scrollToTopSpeed = 0.f;
 	}
 	void ScrollHelper::SetElementSize(float32 newSize)
 	{
@@ -108,7 +110,7 @@ namespace DAVA
 
 	void ScrollHelper::Impulse(float impulseSpeed)
 	{
-		if((position > 0 && impulseSpeed > 0) || (position + elementSize < virtualViewSize && impulseSpeed < 0))
+		if((position > 0.f && impulseSpeed > 0.f) || (position + elementSize < virtualViewSize && impulseSpeed < 0.f))
 		{
 			return;
 		}
@@ -151,8 +153,8 @@ namespace DAVA
 			if(totalDeltaMove != 0.f)
 			{
 				speed = totalDeltaMove / totalDeltaTime;
-				speed = Min(speed, virtualViewSize * 2);
-				speed = Max(speed, -virtualViewSize * 2);
+				speed = Min(speed, virtualViewSize * 2.f);
+				speed = Max(speed, -virtualViewSize * 2.f);
 			}
 			if (scrollToTopSpeed != 0.f)
             {
@@ -160,14 +162,16 @@ namespace DAVA
                 {
                     if (speed <= scrollToTopSpeed)
                     {
-                        scrollToAcc = -scrollToAcc;
+                        float32 dist = (scrollToPos - position);
+                        scrollToAcc = (speed * speed) / (2.f * dist);
                     }
                 }
                 else
                 {
                     if (speed >= scrollToTopSpeed)
                     {
-                        scrollToAcc = -scrollToAcc;
+                        float32 dist = (scrollToPos - position);
+                        scrollToAcc = (speed * speed) / (2.f * dist);
                     }
                 }
                 speed = speed + scrollToAcc * timeDelta;
@@ -178,13 +182,14 @@ namespace DAVA
                 {
                     position = scrollToPos;
                     scrollToTopSpeed = 0.f;
+                    speed = 0.f;
                 }
             }
-			else if(position > 0)
+			else if(position > 0.f)
 			{
-				if(backward != 0 && slowDown != 0)
+				if(backward != 0.f && slowDown != 0.f)
 				{
-					if(slowDown != 0)
+					if(slowDown != 0.f)
 					{
 						speed -= virtualViewSize * timeDelta / slowDown / backward;
 					}
@@ -193,64 +198,64 @@ namespace DAVA
 						speed -= virtualViewSize * timeDelta * 4 / backward;
 					}
 					position += speed * timeDelta;
-					if(position < 0)
+					if(position < 0.f)
 					{
-						position = 0;
-						speed = 0;
+						position = 0.f;
+						speed = 0.f;
 					}
 				}
 				else
 				{
-					position = 0;
-					speed = 0;
+					position = 0.f;
+					speed = 0.f;
 				}
 			}
 			else if(position + elementSize < virtualViewSize)
 			{
-				if(backward != 0)
+				if(backward != 0.f)
 				{
-					if(slowDown != 0)
+					if(slowDown != 0.f)
 					{
 						speed += virtualViewSize * timeDelta / slowDown / backward;
 					}
 					else
 					{
-						speed += virtualViewSize * timeDelta * 4 / backward;
+						speed += virtualViewSize * timeDelta * 4.f / backward;
 					}
 					position += speed * timeDelta;
 					if(position + elementSize > virtualViewSize)
 					{
 						position = virtualViewSize - elementSize;
-						speed = 0;
+						speed = 0.f;
 					}
 				}
 				else
 				{
 					position = virtualViewSize - elementSize;
-					speed = 0;
+					speed = 0.f;
 				}
 			}
-			else if(speed != 0)
+			else if(speed != 0.f)
 			{
-				if(slowDown != 0)
+				if(slowDown != 0.f)
 				{
 					float oldSpd = speed;
 					speed = speed - speed / slowDown * timeDelta;
-					if((oldSpd > 0 && speed < 1.0) || (oldSpd < 0 && speed > -1.0))
+					if((oldSpd > 0.f && speed < 1.0f) || (oldSpd < 0.f && speed > -1.0f))
 					{
-						speed = 0;
+						speed = 0.f;
 					}
 					position += speed * timeDelta;
 				}
 				else
 				{
-					speed = 0;
+					speed = 0.f;
 				}
 			}
 			
 			moves.clear();
-			totalDeltaTime = 0;
-			totalDeltaMove = 0;
+			totalDeltaTime = 0.f;
+			totalDeltaMove = 0.f;
 		}
 		
 		return position;
@@ -258,12 +263,21 @@ namespace DAVA
     
     void ScrollHelper::ScrollToPosition(float32 newPos, float32 scrollTimeSec/* = 0.3f*/)
     {
+        if (FLOAT_EQUAL_EPS(newPos, position, 1.f))
+        {
+            return;
+        }
         scrollToPos = newPos;
         float32 halfTime = scrollTimeSec * 0.5f;
         float32 dist = (newPos - position) * 0.5f;
         speed = 0.f;
-        scrollToAcc = (dist * 2) / (halfTime * halfTime);
-        scrollToTopSpeed = sqrtf(2 * scrollToAcc * dist);
+        totalDeltaMove = 0.f;
+        scrollToAcc = (dist * 2.f) / (halfTime * halfTime);
+        scrollToTopSpeed = sqrtf(2.f * scrollToAcc * dist);
+        if (scrollToAcc < 0.f)
+        {
+            scrollToTopSpeed = -scrollToTopSpeed;
+        }
     }
 }
 

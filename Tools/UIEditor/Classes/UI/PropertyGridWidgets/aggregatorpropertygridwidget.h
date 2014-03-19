@@ -31,13 +31,13 @@
 #define AGGREGATORPROPERTYGRIDWIDGET_H
 
 #include <QWidget>
-#include "basepropertygridwidget.h"
+#include "rootpropertygridwidget.h"
 
 namespace Ui {
 class AggregatorPropertyGridWidget;
 }
 
-class AggregatorPropertyGridWidget : public BasePropertyGridWidget
+class AggregatorPropertyGridWidget : public RootPropertyGridWidget
 {
     Q_OBJECT
     

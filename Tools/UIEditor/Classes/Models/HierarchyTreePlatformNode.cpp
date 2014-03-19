@@ -400,7 +400,7 @@ bool HierarchyTreePlatformNode::IsAggregatorOrScreenNamePresent(const QString& c
 		{
 			continue;
 		}
-		if(node->GetName().compare(candidatName) == 0)
+		if(node->GetName().compare(candidatName, Qt::CaseInsensitive) == 0)
 		{
 			return true;
 		}

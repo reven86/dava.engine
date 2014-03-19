@@ -888,33 +888,37 @@ GLint Shader::LinkProgram(GLuint prog)
 
 void Shader::DeleteShaders()
 {
-DVASSERT(vertexShader != 0);  
-DVASSERT(fragmentShader != 0);
-DVASSERT(program != 0);
+    DVASSERT(vertexShader != 0);
+    DVASSERT(fragmentShader != 0);
+    //DVASSERT(program != 0);
 
-DeleteShaderContainer * container = new DeleteShaderContainer();
-container->program = program;
-container->vertexShader = vertexShader;
-container->fragmentShader = fragmentShader;
-ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::DeleteShadersInternal, container));
+    DeleteShaderContainer * container = new DeleteShaderContainer();
+    container->program = program;
+    container->vertexShader = vertexShader;
+    container->fragmentShader = fragmentShader;
+    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::DeleteShadersInternal, container));
 
-vertexShader = 0;
-fragmentShader = 0;
-program = 0;
+    vertexShader = 0;
+    fragmentShader = 0;
+    program = 0;
 }
 
 void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *callerData)
 {
-DeleteShaderContainer * container = (DeleteShaderContainer*) param;
-DVASSERT(container);
+    DeleteShaderContainer * container = (DeleteShaderContainer*) param;
+    DVASSERT(container);
 
-RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
-RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
-RENDER_VERIFY(glDeleteShader(container->vertexShader));
-RENDER_VERIFY(glDeleteShader(container->fragmentShader));
-RENDER_VERIFY(glDeleteProgram(container->program));
+    if (container->program)
+    {
+        RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
+        RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
+        RENDER_VERIFY(glDeleteProgram(container->program));
+    }
+    
+    RENDER_VERIFY(glDeleteShader(container->vertexShader));
+    RENDER_VERIFY(glDeleteShader(container->fragmentShader));
 
-SafeDelete(container);
+    SafeDelete(container);
 }
 
 /* Create and compile a shader from the provided source(s) */

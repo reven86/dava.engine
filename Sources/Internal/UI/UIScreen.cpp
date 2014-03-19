@@ -194,10 +194,11 @@ void UIScreen::UnloadGroup()
 		isLoaded = false;
 	}else
 	{
+        int32 screenGroupId = groupId;
 		for (List<UIScreen*>::iterator t = appScreens.begin(); t != appScreens.end(); ++t)
 		{
 			UIScreen * screen = *t;
-			if ((screen->groupId == groupId) && (screen->isLoaded))
+			if ((screen->groupId == screenGroupId) && (screen->isLoaded))
 			{
 				screen->UnloadResources();
 				screen->isLoaded = false;

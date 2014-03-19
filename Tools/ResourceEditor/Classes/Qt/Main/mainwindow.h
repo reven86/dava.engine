@@ -189,6 +189,8 @@ public slots:
     void OnCustomQuality();
 
     void OnReloadShaders();
+
+    void OnSwitchWithDifferentLODs(bool checked);
     
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);

@@ -33,12 +33,13 @@
 static const QString RECT_PROPERTY_BLOCK_NAME = "Aggregator";
 
 AggregatorPropertyGridWidget::AggregatorPropertyGridWidget(QWidget *parent) :
-    BasePropertyGridWidget(parent),
+    RootPropertyGridWidget(parent),
     ui(new Ui::AggregatorPropertyGridWidget)
 {
     ui->setupUi(this);
     SetPropertyBlockName(RECT_PROPERTY_BLOCK_NAME);
     ui->platformNameLineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
+ 	ui->platformNameLineEdit->installEventFilter(this);
 }
 
 AggregatorPropertyGridWidget::~AggregatorPropertyGridWidget()

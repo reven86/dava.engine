@@ -27,29 +27,24 @@
 =====================================================================================*/
 
 
-#ifndef SCREENPROPERTYGRIDWIDGET_H
-#define SCREENPROPERTYGRIDWIDGET_H
+#ifndef ROOTPROPERTYGRIDWIDGET_H
+#define ROOTPROPERTYGRIDWIDGET_H
 
 #include <QWidget>
-#include "rootpropertygridwidget.h"
+#include "basepropertygridwidget.h"
 
-namespace Ui {
-class ScreenPropertyGridWidget;
-}
-
-class ScreenPropertyGridWidget : public RootPropertyGridWidget
+class RootPropertyGridWidget : public BasePropertyGridWidget
 {
-    Q_OBJECT
-    
+  
 public:
-    explicit ScreenPropertyGridWidget(QWidget *parent = 0);
-    ~ScreenPropertyGridWidget();
-
-    virtual void Initialize(BaseMetadata* activeMetadata);
-    virtual void Cleanup();
-
-private:
-    Ui::ScreenPropertyGridWidget *ui;
+    explicit RootPropertyGridWidget(QWidget *parent = 0);
+    ~RootPropertyGridWidget();
+	
+	virtual bool eventFilter(QObject *obj, QEvent *event);
+	
+    // Handle Line Edit Editing finished.
+    virtual void HandleLineEditEditingFinished(QLineEdit* senderWidget);
 };
 
-#endif // SCREENPROPERTYGRIDWIDGET_H
+#endif // ROOTPROPERTYGRIDWIDGET_H
+

@@ -38,12 +38,22 @@ void StringFormatTest::IntegerTestFunction( PerfFuncData * data )
     WideString formatStr1 = L"%i%%"  ;
     WideString formatStr2 = L"%d%%"  ;
     WideString formatStr3 = L"%lld%%";
+
     int32 value = 1234567890;
     int64 value64 = 1234567890123456789;
+    
+    TEST_VERIFY( Format(formatStr1.c_str(), value) == StringToWString( Format( WStringToString(formatStr1).c_str(), value ) ) );
+    TEST_VERIFY( Format(formatStr2.c_str(), value) == StringToWString( Format( WStringToString(formatStr2).c_str(), value ) ) );
+    TEST_VERIFY( Format(formatStr3.c_str(), value64) == StringToWString( Format( WStringToString(formatStr3).c_str(), value64 ) ) );
+    
+    value *= -1;
+    value64 *= -1;
+
     TEST_VERIFY( Format(formatStr1.c_str(), value) == StringToWString( Format( WStringToString(formatStr1).c_str(), value ) ) );
     TEST_VERIFY( Format(formatStr2.c_str(), value) == StringToWString( Format( WStringToString(formatStr2).c_str(), value ) ) );
     TEST_VERIFY( Format(formatStr3.c_str(), value64) == StringToWString( Format( WStringToString(formatStr3).c_str(), value64 ) ) );
 }
+
 inline void checkFloatFormat( const WideString &formatStr, float32 value, TestTemplate<StringFormatTest>::PerfFuncData * data )
 {
     WideString testStr = Format(formatStr.c_str() , value);
@@ -54,6 +64,7 @@ inline void checkFloatFormat( const WideString &formatStr, float32 value, TestTe
     if( data )
         data->testData.message.clear();
 }
+
 void StringFormatTest::FloatTestFunction( PerfFuncData * data )
 {
     WideString formatStr1 = L"%f"   ;
@@ -79,62 +90,123 @@ void StringFormatTest::FloatTestFunction( PerfFuncData * data )
     WideString formatStr21= L"%1.1f";
     WideString formatStr22= L"%0.0f";
 
-    float32 value1 = 1234.1234f;
-    checkFloatFormat( formatStr1 , value1, data );
-    checkFloatFormat( formatStr2 , value1, data );
-    checkFloatFormat( formatStr3 , value1, data );
-    checkFloatFormat( formatStr4 , value1, data );
-    checkFloatFormat( formatStr5 , value1, data );
-    checkFloatFormat( formatStr6 , value1, data );
-    checkFloatFormat( formatStr7 , value1, data );
-    checkFloatFormat( formatStr8 , value1, data );
-    checkFloatFormat( formatStr9 , value1, data );
-    checkFloatFormat( formatStr10, value1, data );
-    checkFloatFormat( formatStr11, value1, data );
-    checkFloatFormat( formatStr12, value1, data );
-    checkFloatFormat( formatStr13, value1, data );
-    checkFloatFormat( formatStr14, value1, data );
-    checkFloatFormat( formatStr15, value1, data );
-    checkFloatFormat( formatStr16, value1, data );
-    checkFloatFormat( formatStr17, value1, data );
-    checkFloatFormat( formatStr18, value1, data );
-    checkFloatFormat( formatStr19, value1, data );
-    checkFloatFormat( formatStr20, value1, data );
-    checkFloatFormat( formatStr21, value1, data );
-    checkFloatFormat( formatStr22, value1, data );
+    {
+        float32 value1 = 1234.1234f;
+        checkFloatFormat( formatStr1 , value1, data );
+        checkFloatFormat( formatStr2 , value1, data );
+        checkFloatFormat( formatStr3 , value1, data );
+        checkFloatFormat( formatStr4 , value1, data );
+        checkFloatFormat( formatStr5 , value1, data );
+        checkFloatFormat( formatStr6 , value1, data );
+        checkFloatFormat( formatStr7 , value1, data );
+        checkFloatFormat( formatStr8 , value1, data );
+        checkFloatFormat( formatStr9 , value1, data );
+        checkFloatFormat( formatStr10, value1, data );
+        checkFloatFormat( formatStr11, value1, data );
+        checkFloatFormat( formatStr12, value1, data );
+        checkFloatFormat( formatStr13, value1, data );
+        checkFloatFormat( formatStr14, value1, data );
+        checkFloatFormat( formatStr15, value1, data );
+        checkFloatFormat( formatStr16, value1, data );
+        checkFloatFormat( formatStr17, value1, data );
+        checkFloatFormat( formatStr18, value1, data );
+        checkFloatFormat( formatStr19, value1, data );
+        checkFloatFormat( formatStr20, value1, data );
+        checkFloatFormat( formatStr21, value1, data );
+        checkFloatFormat( formatStr22, value1, data );
 
-    float32 value2 = 876.876f;
-    checkFloatFormat( formatStr1 , value2, data );
-    checkFloatFormat( formatStr2 , value2, data );
-    checkFloatFormat( formatStr3 , value2, data );
-    checkFloatFormat( formatStr4 , value2, data );
-    checkFloatFormat( formatStr5 , value2, data );
-    checkFloatFormat( formatStr6 , value2, data );
-    checkFloatFormat( formatStr7 , value2, data );
-    checkFloatFormat( formatStr8 , value2, data );
-    checkFloatFormat( formatStr9 , value2, data );
-    checkFloatFormat( formatStr10, value2, data );
-    checkFloatFormat( formatStr11, value2, data );
-    checkFloatFormat( formatStr12, value2, data );
-    checkFloatFormat( formatStr13, value2, data );
-    checkFloatFormat( formatStr14, value2, data );
-    checkFloatFormat( formatStr15, value2, data );
-    checkFloatFormat( formatStr16, value2, data );
-    checkFloatFormat( formatStr17, value2, data );
-    checkFloatFormat( formatStr18, value2, data );
-    checkFloatFormat( formatStr19, value2, data );
-    checkFloatFormat( formatStr20, value2, data );
-    checkFloatFormat( formatStr21, value2, data );
-    checkFloatFormat( formatStr22, value2, data );
+        float32 value2 = 876.876f;
+        checkFloatFormat( formatStr1 , value2, data );
+        checkFloatFormat( formatStr2 , value2, data );
+        checkFloatFormat( formatStr3 , value2, data );
+        checkFloatFormat( formatStr4 , value2, data );
+        checkFloatFormat( formatStr5 , value2, data );
+        checkFloatFormat( formatStr6 , value2, data );
+        checkFloatFormat( formatStr7 , value2, data );
+        checkFloatFormat( formatStr8 , value2, data );
+        checkFloatFormat( formatStr9 , value2, data );
+        checkFloatFormat( formatStr10, value2, data );
+        checkFloatFormat( formatStr11, value2, data );
+        checkFloatFormat( formatStr12, value2, data );
+        checkFloatFormat( formatStr13, value2, data );
+        checkFloatFormat( formatStr14, value2, data );
+        checkFloatFormat( formatStr15, value2, data );
+        checkFloatFormat( formatStr16, value2, data );
+        checkFloatFormat( formatStr17, value2, data );
+        checkFloatFormat( formatStr18, value2, data );
+        checkFloatFormat( formatStr19, value2, data );
+        checkFloatFormat( formatStr20, value2, data );
+        checkFloatFormat( formatStr21, value2, data );
+        checkFloatFormat( formatStr22, value2, data );
 
-    float32 value3 = 0.1234f;
-    float32 value4 = 0.2567f;
-    float32 value5 = 0.5f;
-    float32 value6 = 0.7543f;
+        float32 value3 = 0.1234f;
+        float32 value4 = 0.2567f;
+        float32 value5 = 0.5f;
+        float32 value6 = 0.7543f;
 
-    checkFloatFormat( formatStr15, value3, data );
-    checkFloatFormat( formatStr15, value4, data );
-    checkFloatFormat( formatStr15, value5, data );
-    checkFloatFormat( formatStr15, value6, data );
+        checkFloatFormat( formatStr15, value3, data );
+        checkFloatFormat( formatStr15, value4, data );
+        checkFloatFormat( formatStr15, value5, data );
+        checkFloatFormat( formatStr15, value6, data );
+    }
+    {
+        float32 value1 = -1234.1234f;
+        checkFloatFormat( formatStr1 , value1, data );
+        checkFloatFormat( formatStr2 , value1, data );
+        checkFloatFormat( formatStr3 , value1, data );
+        checkFloatFormat( formatStr4 , value1, data );
+        checkFloatFormat( formatStr5 , value1, data );
+        checkFloatFormat( formatStr6 , value1, data );
+        checkFloatFormat( formatStr7 , value1, data );
+        checkFloatFormat( formatStr8 , value1, data );
+        checkFloatFormat( formatStr9 , value1, data );
+        checkFloatFormat( formatStr10, value1, data );
+        checkFloatFormat( formatStr11, value1, data );
+        checkFloatFormat( formatStr12, value1, data );
+        checkFloatFormat( formatStr13, value1, data );
+        checkFloatFormat( formatStr14, value1, data );
+        checkFloatFormat( formatStr15, value1, data );
+        checkFloatFormat( formatStr16, value1, data );
+        checkFloatFormat( formatStr17, value1, data );
+        checkFloatFormat( formatStr18, value1, data );
+        checkFloatFormat( formatStr19, value1, data );
+        checkFloatFormat( formatStr20, value1, data );
+        checkFloatFormat( formatStr21, value1, data );
+        checkFloatFormat( formatStr22, value1, data );
+        
+        float32 value2 = -876.876f;
+        checkFloatFormat( formatStr1 , value2, data );
+        checkFloatFormat( formatStr2 , value2, data );
+        checkFloatFormat( formatStr3 , value2, data );
+        checkFloatFormat( formatStr4 , value2, data );
+        checkFloatFormat( formatStr5 , value2, data );
+        checkFloatFormat( formatStr6 , value2, data );
+        checkFloatFormat( formatStr7 , value2, data );
+        checkFloatFormat( formatStr8 , value2, data );
+        checkFloatFormat( formatStr9 , value2, data );
+        checkFloatFormat( formatStr10, value2, data );
+        checkFloatFormat( formatStr11, value2, data );
+        checkFloatFormat( formatStr12, value2, data );
+        checkFloatFormat( formatStr13, value2, data );
+        checkFloatFormat( formatStr14, value2, data );
+        checkFloatFormat( formatStr15, value2, data );
+        checkFloatFormat( formatStr16, value2, data );
+        checkFloatFormat( formatStr17, value2, data );
+        checkFloatFormat( formatStr18, value2, data );
+        checkFloatFormat( formatStr19, value2, data );
+        checkFloatFormat( formatStr20, value2, data );
+        checkFloatFormat( formatStr21, value2, data );
+        checkFloatFormat( formatStr22, value2, data );
+        
+        float32 value3 = -0.1234f;
+        float32 value4 = -0.2567f;
+        float32 value5 = -0.5f;
+        float32 value6 = -0.7543f;
+        
+        checkFloatFormat( formatStr15, value3, data );
+        checkFloatFormat( formatStr15, value4, data );
+        checkFloatFormat( formatStr15, value5, data );
+        checkFloatFormat( formatStr15, value6, data );
+    }
 
 }

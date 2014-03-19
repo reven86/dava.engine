@@ -200,16 +200,11 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 
 void UIScrollViewContainer::Update(float32 timeElapsed)
 {
-	if (state == STATE_NONE)
-	{
-		return;
-	}
 
 	
 	UIScrollView *scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
 	if (scrollView)
 	{
-		Rect contentRect = this->GetRect();
 	
 		Vector2 posDelta = newPos - oldPos;
 		oldPos = newPos;
@@ -219,28 +214,27 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
         {
             if (scrollView->GetHorizontalScroll() == currentScroll)
             {
-                contentRect.x = currentScroll->GetPosition(posDelta.x, timeElapsed, lockTouch);
+                relativePosition.x = currentScroll->GetPosition(posDelta.x, timeElapsed, lockTouch);
             }
             else
             {
-                contentRect.x = scrollView->GetHorizontalScroll()->GetPosition(0, timeElapsed, false);
+                relativePosition.x = scrollView->GetHorizontalScroll()->GetPosition(0, timeElapsed, false);
             }
         }
         if (enableVerticalScroll)
         {
             if (scrollView->GetVerticalScroll() == currentScroll)
             {
-                contentRect.y = currentScroll->GetPosition(posDelta.y, timeElapsed, lockTouch);
+                relativePosition.y = currentScroll->GetPosition(posDelta.y, timeElapsed, lockTouch);
             }
             else
             {
-                contentRect.y = scrollView->GetVerticalScroll()->GetPosition(0, timeElapsed, false);
+                relativePosition.y = scrollView->GetVerticalScroll()->GetPosition(0, timeElapsed, false);
             }
         }
 
-		this->SetRect(contentRect);
 		// Change state when scrolling is not active
-		if (!lockTouch && (scrollView->GetHorizontalScroll()->GetCurrentSpeed() == 0) && (scrollView->GetVerticalScroll()->GetCurrentSpeed() == 0))
+		if (state != STATE_NONE && !lockTouch && (scrollView->GetHorizontalScroll()->GetCurrentSpeed() == 0) && (scrollView->GetVerticalScroll()->GetCurrentSpeed() == 0))
 		{
 			state = STATE_NONE;
 		}
