@@ -145,6 +145,8 @@
 		CC24801516DD17F300183D40 /* UserComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24801316DD17F300183D40 /* UserComponent.cpp */; };
 		CC24801616DD17F300183D40 /* UserComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24801416DD17F300183D40 /* UserComponent.h */; };
 		CC24804616E0E34300183D40 /* VectorSpinnerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24804516E0E34300183D40 /* VectorSpinnerAdapter.h */; };
+		CC6E70AF18DA0BDD008A9E15 /* PostEffectRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC6E70AD18DA0BDD008A9E15 /* PostEffectRenderPass.cpp */; };
+		CC6E70B018DA0BDD008A9E15 /* PostEffectRenderPass.h in Headers */ = {isa = PBXBuildFile; fileRef = CC6E70AE18DA0BDD008A9E15 /* PostEffectRenderPass.h */; };
 		CC84B03E18211BCE00934482 /* Job.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B03618211BCE00934482 /* Job.cpp */; };
 		CC84B03F18211BCE00934482 /* Job.h in Headers */ = {isa = PBXBuildFile; fileRef = CC84B03718211BCE00934482 /* Job.h */; };
 		CC84B04018211BCE00934482 /* JobManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B03818211BCE00934482 /* JobManager.cpp */; };
@@ -918,6 +920,8 @@
 		CC24801316DD17F300183D40 /* UserComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UserComponent.cpp; sourceTree = "<group>"; };
 		CC24801416DD17F300183D40 /* UserComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserComponent.h; sourceTree = "<group>"; };
 		CC24804516E0E34300183D40 /* VectorSpinnerAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VectorSpinnerAdapter.h; sourceTree = "<group>"; };
+		CC6E70AD18DA0BDD008A9E15 /* PostEffectRenderPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PostEffectRenderPass.cpp; sourceTree = "<group>"; };
+		CC6E70AE18DA0BDD008A9E15 /* PostEffectRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostEffectRenderPass.h; sourceTree = "<group>"; };
 		CC84B03618211BCE00934482 /* Job.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Job.cpp; path = Job/Job.cpp; sourceTree = "<group>"; };
 		CC84B03718211BCE00934482 /* Job.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Job.h; path = Job/Job.h; sourceTree = "<group>"; };
 		CC84B03818211BCE00934482 /* JobManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobManager.cpp; path = Job/JobManager.cpp; sourceTree = "<group>"; };
@@ -2202,6 +2206,8 @@
 		E8B3C92316B9326D002BD35F /* Highlevel */ = {
 			isa = PBXGroup;
 			children = (
+				CC6E70AD18DA0BDD008A9E15 /* PostEffectRenderPass.cpp */,
+				CC6E70AE18DA0BDD008A9E15 /* PostEffectRenderPass.h */,
 				A6AFDEFA1871C3D1006E43A1 /* SpeedTreeObject.cpp */,
 				A6AFDEFB1871C3D1006E43A1 /* SpeedTreeObject.h */,
 				A6AFDED3187187D3006E43A1 /* RenderLayerManager.cpp */,
@@ -2872,6 +2878,7 @@
 				E8B3CC4316B9326E002BD35F /* StaticIndexBuffer.h in Headers */,
 				E8B3CC4516B9326E002BD35F /* StaticVertexBuffer.h in Headers */,
 				E8B3CC4716B9326E002BD35F /* Texture.h in Headers */,
+				CC6E70B018DA0BDD008A9E15 /* PostEffectRenderPass.h in Headers */,
 				A6AFDEDB187187D3006E43A1 /* RenderPassManager.h in Headers */,
 				E8B3CC4916B9326E002BD35F /* TextureDescriptor.h in Headers */,
 				E8B3CC4C16B9326E002BD35F /* UberShader.h in Headers */,
@@ -3418,6 +3425,7 @@
 				E95B4C5C16DF78EE00880713 /* UISpinner.cpp in Sources */,
 				A6AFDEFC1871C3D1006E43A1 /* SpeedTreeObject.cpp in Sources */,
 				A6DBFA7E1887E3D5006BE11C /* NMaterialNames.cpp in Sources */,
+				CC6E70AF18DA0BDD008A9E15 /* PostEffectRenderPass.cpp in Sources */,
 				E8CBDFC716EE10EE00F70C8F /* UTF8UtilsMac.mm in Sources */,
 				E9E7982F16F0B45100745AF5 /* UISwitch.cpp in Sources */,
 				CCC7A49F16F1D80C0061EA5D /* Frustum.cpp in Sources */,
