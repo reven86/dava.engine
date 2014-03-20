@@ -61,7 +61,7 @@ buildit() {
     checkExists ${AR}
     checkExists ${RANLIB}
 
-    ./configure --disable-shared --enable-static --with-darwinssl --without-libssh2 --without-ca-bundle --without-ldap --disable-ldap --host=${target}-apple-darwin10 --enable-threaded-resolver
+    ./configure --disable-shared --enable-static --with-darwinssl --without-libssh2 --without-ca-bundle --without-ldap --disable-ldap --host=${target}-apple-darwin10 --enable-threaded-resolver --enable-ipv6
 
     make clean
     make

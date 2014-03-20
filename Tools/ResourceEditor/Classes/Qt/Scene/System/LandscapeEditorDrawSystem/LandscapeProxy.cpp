@@ -65,6 +65,7 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 	customLandscape = new CustomLandscape();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
+    customLandscape->SetFogDensity(0.f);
 }
 
 LandscapeProxy::~LandscapeProxy()

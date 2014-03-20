@@ -219,14 +219,17 @@ void TextureBrowser::setTexture(DAVA::Texture *texture, DAVA::TextureDescriptor 
 	}
 }
 
-void TextureBrowser::setTextureView(DAVA::eGPUFamily view, bool forceConvert /* = false */)
+void TextureBrowser::setTextureView(DAVA::eGPUFamily view, eTextureConvertMode convertMode /* = CONVERT_NOT_EXISTENT */)
 {
 	bool infoConvertedIsUpToDate = false;
+    bool cacheCleared = false;
 
-	// if force convert - clear cached images
-	if(forceConvert)
+	// if force convert or modified - clear cached images
+	if(convertMode == CONVERT_FORCE ||
+       (convertMode == CONVERT_MODIFIED && curDescriptor && !curDescriptor->IsCompressedTextureActual(view)))
 	{
 		TextureCache::Instance()->clearConverted(curDescriptor, view);
+        cacheCleared = true;
 	}
 
 	curTextureView = view;
@@ -245,7 +248,7 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, bool forceConvert /* 
 		ui->viewTabBar->setCurrentIndex(curTextureView);
 		ui->textureProperties->setTextureGPU(curTextureView);
 
-		if(!forceConvert)
+		if(!cacheCleared)
 		{
 			// try to find image in cache
 			const QList<QImage>& images = TextureCache::Instance()->getConverted(curDescriptor, view);
@@ -264,7 +267,7 @@ void TextureBrowser::setTextureView(DAVA::eGPUFamily view, bool forceConvert /* 
 		if(needConvert)
 		{
 			// Start convert. Signal will be emited when conversion done
-			TextureConvertor::Instance()->GetConverted(curDescriptor, view, forceConvert);
+			TextureConvertor::Instance()->GetConverted(curDescriptor, view, convertMode);
 		}
 	}
 
@@ -480,6 +483,7 @@ void TextureBrowser::setupTextureToolbar()
 
 	QObject::connect(ui->actionConvert, SIGNAL(triggered(bool)), this, SLOT(textureConver(bool)));
 	QObject::connect(ui->actionConvertAll, SIGNAL(triggered(bool)), this, SLOT(textureConverAll(bool)));
+    QObject::connect(ui->actionConvertModified, SIGNAL(triggered(bool)), this, SLOT(ConvertModifiedTextures(bool)));
 }
 
 void TextureBrowser::setupTextureListToolbar()
@@ -514,6 +518,9 @@ void TextureBrowser::setupTextureListToolbar()
 	QObject::connect(ui->actionViewTextList, SIGNAL(triggered(bool)), this, SLOT(textureListViewText(bool)));
 	QObject::connect(ui->actionViewImagesList, SIGNAL(triggered(bool)), this, SLOT(textureListViewImages(bool)));
 	QObject::connect(ui->actionFilterSelectedNode, SIGNAL(triggered(bool)), this, SLOT(textureListFilterSelectedNodeChanged(bool)));
+
+    // set sorting type appropriate to current value in combobox
+    textureListSortChanged(texturesSortCombo->itemText(texturesSortCombo->currentIndex()));
 }
 
 void TextureBrowser::setupTextureListFilter()
@@ -616,9 +623,6 @@ void TextureBrowser::texturePressed(const QModelIndex & index)
 {
 	setTexture(textureListModel->getTexture(index), textureListModel->getDescriptor(index));
 	setTextureView(curTextureView);
-
-	// zoom fit selected texture
-	textureZoomFit(true);
 }
 
 void TextureBrowser::textureListViewText(bool checked)
@@ -688,7 +692,7 @@ void TextureBrowser::texturePropertyChanged(int type)
 	{
 		// set current Texture view and force texture convertion
 		// new texture will be applyed to scene after conversion (by signal)
-		setTextureView(curTextureView, true);
+		setTextureView(curTextureView, CONVERT_FORCE);
 	}
 	// other settings don't need texture to reconvert
 	else
@@ -723,6 +727,9 @@ void TextureBrowser::textureReadyOriginal(const DAVA::TextureDescriptor *descrip
 
 			// set info about loaded image
 			updateInfoOriginal(images.images);
+
+            // zoom fit selected texture
+            textureZoomFit(true);
 		}
 	}
 }
@@ -860,16 +867,49 @@ void TextureBrowser::textureAreaWheel(int delta)
 void TextureBrowser::textureConver(bool checked)
 {
 	// re-set current texture view and force conversion
-	setTextureView(curTextureView, true);
+	setTextureView(curTextureView, CONVERT_FORCE);
 }
 
 void TextureBrowser::textureConverAll(bool checked)
 {
+    ConvertMultipleTextures(CONVERT_FORCE);
+}
+
+void TextureBrowser::ConvertModifiedTextures(bool)
+{
+    ConvertMultipleTextures(CONVERT_MODIFIED);
+}
+
+void TextureBrowser::ConvertMultipleTextures(eTextureConvertMode convertMode)
+{
+    if (convertMode != CONVERT_FORCE && convertMode != CONVERT_MODIFIED)
+    {
+        return;
+    }
+
 	DAVA::Scene* activeScene = QtMainWindow::Instance()->GetCurrentScene();
 	if(NULL != activeScene)
 	{
 		QMessageBox msgBox(this);
-		msgBox.setText("You are going to convert all textures.");
+
+        QString str = "";
+        switch (convertMode)
+        {
+            case CONVERT_FORCE:
+                str = "all";
+                break;
+
+            case CONVERT_MODIFIED:
+                str = "modified";
+                break;
+
+            default:
+                DVASSERT(false && "Invalid case");
+                break;
+        }
+
+        QString msg = QString("You are going to convert %1 textures.").arg(str);
+		msgBox.setText(msg);
 		msgBox.setInformativeText("This could take a long time. Would you like to continue?");
 		msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
 		msgBox.setDefaultButton(QMessageBox::Cancel);
@@ -878,7 +918,7 @@ void TextureBrowser::textureConverAll(bool checked)
 
 		if(ret == QMessageBox::Ok)
 		{
-			TextureConvertor::Instance()->Reconvert(activeScene, true);
+			TextureConvertor::Instance()->Reconvert(activeScene, convertMode);
 			TextureConvertor::Instance()->WaitConvertedAll(this);
 		}
 	}

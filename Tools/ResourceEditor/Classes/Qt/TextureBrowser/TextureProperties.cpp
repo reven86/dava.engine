@@ -352,6 +352,7 @@ void TextureProperties::LoadCurSizeToProp()
 		{
 			skipPropSizeChanged = true;
 			propSizes->SetValue(level);
+            propSizes->UpdateValue(true);
 			skipPropSizeChanged = false;
 		}
 	}

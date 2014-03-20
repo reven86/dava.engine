@@ -29,8 +29,7 @@
 
 
 #include "ImageSplitterTool.h"
-#include "ImageSplitter.h"
-
+#include "ImageTools/ImageTools.h"
 #include "TexturePacker/CommandLineParser.h"
 
 using namespace DAVA;
@@ -95,11 +94,11 @@ void ImageSplitterTool::Process()
 {
     if(commandAction == ACTION_SPLIT)
     {
-        ImageSplitter::SplitImage(filename, errors);
+        ImageTools::SplitImage(filename, errors);
     }
     else if(commandAction == ACTION_MERGE)
     {
-        ImageSplitter::MergeImages(foldername, errors);
+        ImageTools::MergeImages(foldername, errors);
     }
 }
 

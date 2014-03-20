@@ -57,6 +57,8 @@ struct ParticleGroup
 
 	int32 positionSource;
 
+    Vector3 spawnPosition;
+
   	ParticleGroup() : emitter(0), layer(0), material(0), head(0), activeParticleCount(0), finishingGroup(false), visibleLod(true), time(0), particlesToGenerate(0), positionSource(0){}
 };
 

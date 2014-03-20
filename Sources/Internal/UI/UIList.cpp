@@ -63,7 +63,7 @@ UIList::UIList(const Rect &rect, eListOrientation requiredOrientation, bool rect
 	,	scroll(NULL)
 	, 	aggregatorPath(FilePath())
 {
-		InitAfterYaml();
+    InitAfterYaml();
 }
 		
 UIList::UIList() : delegate(NULL), orientation(ORIENTATION_VERTICAL), scrollContainer(NULL), scroll(NULL)
@@ -74,6 +74,7 @@ UIList::UIList() : delegate(NULL), orientation(ORIENTATION_VERTICAL), scrollCont
 void UIList::InitAfterYaml()
 {
     SetInputEnabled(true, false);
+    SetFocusEnabled(false);
 	clipContents = TRUE;
 	Rect r = GetRect();
 	r.x = 0;
@@ -88,6 +89,7 @@ void UIList::InitAfterYaml()
 
 	scrollContainer = new UIControl(r);
 	AddControl(scrollContainer);
+    scrollContainer->SetFocusEnabled(false);
 	
 	oldPos = 0;
 	newPos = 0;
@@ -542,6 +544,12 @@ bool UIList::SystemInput(UIEvent *currentInput)
 		{
 			mainTouch = -1;
 			lockTouch = false;
+            SetFocusEnabled(true);
+            scrollContainer->SetFocusEnabled(true);
+            bool retVal = UIControl::SystemInput(currentInput);
+            SetFocusEnabled(false);
+            scrollContainer->SetFocusEnabled(false);
+            return retVal;
 		}
 
 		
@@ -777,6 +785,11 @@ List<UIControl* >& UIList::GetRealChildren()
 	List<UIControl* >& realChildren = UIControl::GetRealChildren();
 	realChildren.remove(scrollContainer);
 	return realChildren;
+}
+
+void UIList::ScrollToPosition( float32 position, float32 timeSec /*= 0.3f*/ )
+{
+    scroll->ScrollToPosition(-position);
 }
 
 };

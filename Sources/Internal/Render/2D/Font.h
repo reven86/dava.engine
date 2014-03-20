@@ -88,7 +88,19 @@ public:
 		\returns size in pixels
 	*/
 	virtual float32	GetSize() const;
-	
+
+	/**
+		\brief Get the render size.
+		\returns size in pixels
+	*/
+	virtual float32	GetRenderSize() const;
+
+    /**
+     \brief Set the render size.
+     \param[in] size in points
+     */
+	virtual void SetRenderSize(float32 renderSize);
+
 	/**
 	 \brief Set vertical spacing.
 	 Spacing value is added to vertical range between lines in multiline text.
@@ -199,6 +211,8 @@ protected:
 	static int32 globalFontDPI;
 	
 	float32	size;
+    float32 renderSize;
+
 	int32 verticalSpacing;
 	
 	eFontType fontType;

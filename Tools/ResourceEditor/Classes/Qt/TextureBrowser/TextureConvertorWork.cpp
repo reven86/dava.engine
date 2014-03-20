@@ -54,12 +54,12 @@ bool JobStack::push(const JobItem &item)
 	JobItemWrapper *i = head;
 
 	// remember force value
-	bool force = item.force;
+    eTextureConvertMode convertMode = item.convertMode;
 
 	// search for the same works in list and remove it
 	while(NULL != i)
 	{
-		if(i->type == item.type && NULL != i->identity && i->identity == item.identity)
+		if(i->type == item.type && NULL != i->descriptor && i->descriptor == item.descriptor)
 		{
 			if(NULL != i->prev)
 			{
@@ -76,10 +76,10 @@ bool JobStack::push(const JobItem &item)
 				head = i->next;
 			}
 
-			// if this job has force flag, we should move it to the new job
-			if(i->force)
+            // if this job has more strict convert mode, we should move it to the new job
+			if(i->convertMode < convertMode)
 			{
-				force = i->force;
+                convertMode = i->convertMode;
 			}
 
 			delete i;
@@ -95,8 +95,8 @@ bool JobStack::push(const JobItem &item)
 	// add new work
 	i = new JobItemWrapper(item);
 
-	// restore force value
-	i->force = force;
+	// restore convert mode value
+    i->convertMode = convertMode;
 
 	if(NULL != head)
 	{

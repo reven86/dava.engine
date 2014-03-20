@@ -534,6 +534,22 @@ public:
 	 */
 	virtual void SetVisible(bool isVisible, bool hierarchic = true);
 
+    /**
+     \brief Returns control visibility.
+        Invisible controls don't process any inputs.
+        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods. 
+     \returns control visibility.
+     */
+    virtual bool GetRecursiveVisible() const;
+
+    /**
+     \brief Sets contol recursive visibility.
+        Invisible controls don't process any inputs.
+        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
+     \param[in] isVisible new control visibility.
+     */
+    virtual void SetRecursiveVisible(bool isVisible);
+
 	/**
 	 \brief Returns control input processing ability.
 		Be ware! Base control processing inputs by default.
@@ -1231,6 +1247,7 @@ protected:
 	bool inputEnabled : 1;
 	bool focusEnabled : 1;
 	bool exclusiveInput : 1;
+    bool recursiveVisible : 1;
 	bool visible : 1;
 	bool clipContents : 1;
 	bool debugDrawEnabled : 1;
@@ -1311,7 +1328,6 @@ private:
 	float32 GetRelativeX(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
 	float32 GetRelativeY(UIControl *parent, int32 align);
 	float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
-	float32 Round(float32 value);
 };
 };
 

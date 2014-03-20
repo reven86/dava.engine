@@ -682,7 +682,7 @@ SceneTreeItemParticleInnerEmitter::SceneTreeItemParticleInnerEmitter(DAVA::Parti
 	: SceneTreeItemParticleEmitter(_effect, _emitter)
 	, parent(_parentLayer)	
 {
-	DoSync(this, emitter);
+	type = SceneTreeItem::EIT_InnerEmitter;
 }
 
 

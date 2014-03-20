@@ -40,9 +40,15 @@ ParticleForce* ParticleForce::Clone()
 {
 	ParticleForce *dst = new ParticleForce();
 	if (force)
+    {
 		dst->force = force->Clone();
+        dst->force->Release();
+    }
 	if (forceOverLife)
+    {
 		dst->forceOverLife = forceOverLife->Clone();
+        dst->forceOverLife->Release();
+    }
 	return dst;
 }
 

@@ -44,6 +44,7 @@
 
 #include "TextureInfo.h"
 #include "TextureConvertorWork.h"
+#include "TextureConvertMode.h"
 
 #include "Tools/QtWaitDialog/QtWaitDialog.h"
 
@@ -59,12 +60,14 @@ public:
 
 	static QImage FromDavaImage(DAVA::Image *image);
 
-	static DAVA::Vector<DAVA::Image*> ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, bool forceConvert);
+	static DAVA::Vector<DAVA::Image*> ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
+                                                    eTextureConvertMode convertMode);
 	
 	int GetThumbnail(const DAVA::TextureDescriptor *descriptor);
 	int GetOriginal(const DAVA::TextureDescriptor *descriptor);
-	int GetConverted(const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, bool forceConver = false);
-	int Reconvert(DAVA::Scene *scene, bool forceConvert);
+	int GetConverted(const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
+                     eTextureConvertMode convertMode = CONVERT_NOT_EXISTENT);
+	int Reconvert(DAVA::Scene *scene, eTextureConvertMode convertMode);
 	
 	void WaitConvertedAll(QWidget *parent = NULL);
 	void CancelConvert();

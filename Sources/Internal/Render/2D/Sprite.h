@@ -188,9 +188,9 @@ public:
 
 	void InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded = false, const FilePath &spriteName = FilePath());
 
-        static Sprite* CreateFromImage(const Image* image, bool contentScaleIncluded = false);
-        static Sprite* CreateFromPNG(const FilePath& path, bool contentScaleIncluded = false);
-        static Sprite* CreateFromPNG(const uint8* data, uint32 size, bool contentScaleIncluded = false);
+    static Sprite* CreateFromImage(const Image* image, bool contentScaleIncluded = false, bool inVirtualSpace = false);
+    static Sprite* CreateFromPNG(const FilePath& path, bool contentScaleIncluded = false, bool inVirtualSpace = false);
+    static Sprite* CreateFromPNG(const uint8* data, uint32 size, bool contentScaleIncluded = false, bool inVirtualSpace = false);
 
 	/*
 	 \brief Function to prepare sprite tiling. Shifts texture coordinates by approximately 1 pixel to the center. Tiled sprites can be drawn using scale and there will be no empty pixels between them.
@@ -293,6 +293,11 @@ public:
 	 \brief Returns multiplyer to convert sprite to the physical coordinates.
 	 */
 	inline float32 GetResourceToPhysicalFactor() const;
+
+	/**
+	 \brief Returns multiplyer to convert sprite to the virtual coordinates.
+	 */
+    inline float32 GetResourceToVirtualFactor() const;
 
 	/**
 	 \brief Returns texture coordinates for the requested frame.
@@ -493,6 +498,11 @@ inline int32 Sprite::GetResourceSizeIndex() const
 inline float32 Sprite::GetResourceToPhysicalFactor() const
 {
 	return resourceToPhysicalFactor;
+}
+
+inline float32 Sprite::GetResourceToVirtualFactor() const
+{
+    return resourceToVirtualFactor;
 }
 
 };//end of namespace

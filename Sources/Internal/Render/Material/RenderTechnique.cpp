@@ -200,7 +200,7 @@ RenderTechnique * RenderTechniqueSingleton::CreateTechniqueByName(const FastName
 			Logger::Error("Can't load requested material: %s", renderTechniquePathname.GetRelativePathname().c_str());
 			return 0;
 		}
-        Logger::Debug("Load render technique: %s", renderTechniquePathname.GetRelativePathname().c_str());
+        Logger::FrameworkDebug("Load render technique: %s", renderTechniquePathname.GetRelativePathname().c_str());
 		YamlNode * rootNode = parser->GetRootNode();
 		if (!rootNode)
 		{

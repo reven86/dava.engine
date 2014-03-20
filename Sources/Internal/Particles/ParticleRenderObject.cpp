@@ -90,7 +90,11 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
 
 ParticleRenderObject::~ParticleRenderObject()
 {
-
+    for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+    {
+        SafeRelease(renderGroupCache[i]->renderBatch);
+        SafeDelete(renderGroupCache[i]);
+    }
 }
 
 

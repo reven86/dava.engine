@@ -345,20 +345,24 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                 if(dataName == "heightmapPath" || dataName == "texture")
                 {
                     QtPropertyDataDavaVariant* variantData = static_cast<QtPropertyDataDavaVariant*>(data);
-                    QString dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-                    QString defaultPath = dataSourcePath;
+					QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
+                    FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+					if (dataSourcePath.Exists())
+					{
+						defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
+					}
                     SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-                    if(NULL != editor)
+					if (NULL != editor && editor->GetScenePath().Exists())
                     {
                         DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
-                        if(String::npos != scenePath.find(dataSourcePath.toStdString()))
+                        if(String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
                         {
                             defaultPath = scenePath.c_str();
                         }
                     }
                     variantData->SetDefaultOpenDialogPath(defaultPath);
                     QStringList pathList;
-                    pathList.append(dataSourcePath);
+					pathList.append(defaultPath);
                     QString fileFilter = "All (*.*)";
                     if(dataName == "heightmapPath")
                     {
@@ -745,6 +749,7 @@ void PropertyEditor::DeleteRenderBatch()
 					if(b == batch)
 					{
 						curScene->Exec(new DeleteRenderBatchCommand(curNode, batch->GetRenderObject(), i));
+                        break;
 					}
 				}
 			}

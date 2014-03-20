@@ -26,35 +26,27 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "GridController.h"
+#ifndef __GUIDESENUMS__H__
+#define __GUIDESENUMS__H__
 
-// Construction/destruction.
-GridController::GridController() :
-    gridSpacing(1.0f, 1.0f),
-    screenScale(1.0f)
+namespace DAVA {
+
+// Stick mode.
+enum eStickMode
 {
-}
+    StickDisabled    = 0x00,  // Disable sticking.
+    StickToSides     = 0x01,  // Stick controls' sides to the guides.
+    StickToCenters   = 0x02   // Stick controls' centers to the guides.
+};
 
-GridController::~GridController()
+// On which axes guide stick needs to be performed? May be a combination.
+enum eGuideStickResult
 {
-}
+    NotSticked = 0x00,
+    StickedToX = 0x01,
+    StickedToY = 0x02,
+};
+    
+};
 
-void GridController::SetGridSpacing(const Vector2& spacing)
-{
-    gridSpacing = spacing;
-}
-
-void GridController::SetScale(float32 scale)
-{
-    screenScale = scale;
-}
-
-Vector2 GridController::RecalculateMousePos(const Vector2& mousePos)
-{
-    float32 stepX = (screenScale * gridSpacing.x);
-    float32 stepY = (screenScale * gridSpacing.y);
-
-    return Vector2(CalculateDiscreteStep(mousePos.x, stepX),
-                   CalculateDiscreteStep(mousePos.y, stepY));
-}
-
+#endif //__GUIDESENUMS__H__

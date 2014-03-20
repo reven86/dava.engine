@@ -213,6 +213,7 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
     
     RenderManager::Instance()->SetColor(Color::White);
     RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+    RenderManager::Instance()->FlushState();
 
 	Texture* t = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 										 image->GetWidth(), image->GetHeight(), false);

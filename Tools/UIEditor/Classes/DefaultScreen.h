@@ -81,7 +81,8 @@ private:
 		InputStateDrag,
 		InputStateSize,
 		InputStateSelectorControl,
-		InputStateScreenMove
+		InputStateScreenMove,
+        InputStateGuideMove
 	};
 	
 	HierarchyTreeControlNode* GetSelectedControl(const Vector2& point, const HierarchyTreeNode* parent) const;
@@ -118,9 +119,12 @@ private:
 	HierarchyTreeController::SELECTEDCONTROLNODES GetActiveMoveControls() const;
 	void ResetMoveDelta();
 	void SaveControlsPostion();
+
 	void MoveControl(const Vector2& delta);
+    void MoveGuide(HierarchyTreeScreenNode* screenNode);
 
 	void DeleteSelectedControls();
+    void DeleteSelectedGuides(HierarchyTreeScreenNode* screenNode);
 	
 	void ApplySizeDelta(const Vector2& delta);
 	bool IsNeedApplyResize() const;
@@ -135,7 +139,7 @@ private:
 	void MouseInputDrag(const DAVA::UIEvent* event);
 	void KeyboardInput(const DAVA::UIEvent* event);
 	
-	Vector2 GetInputDelta(const Vector2& point, bool applyScale = true) const;
+	Vector2 GetInputDelta(const Vector2& point, bool applyScale = true);
 	
 	Rect GetControlRect(const HierarchyTreeControlNode* control) const;
 	void CopySelectedControls();
@@ -147,7 +151,12 @@ private:
 	Vector2 scale;
 	Vector2 pos;
     Vector2 viewSize;
-	
+
+    bool isStickedToX;
+    bool isStickedToY;
+    Vector2 stickDelta;
+    Vector2 prevDragPoint;
+
 	InputState inputState;
 	ResizeType resizeType;
 	Rect resizeRect;
@@ -193,6 +202,18 @@ private:
 	// Check control's visibility in a recursive way.
 	bool IsControlVisible(UIControl* uiControl) const;
 	void IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible) const;
+
+    // Calculate the stick to guides for different input modes.
+    int32 CalculateStickToGuidesDrag(Vector2& offset) const;
+
+    // Get the stick treshold.
+    int32 GetGuideStickTreshold() const;
+
+    // Draw the guides.
+    void DrawGuides();
+    
+    // Align the vector to the nearest scale value.
+    Vector2 AlignToNearestScale(const Vector2& value) const;
 
 private slots:
 	void ControlContextMenuTriggered(QAction* action);

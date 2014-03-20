@@ -48,7 +48,7 @@ namespace DAVA
 
 TexturePacker::TexturePacker()
 {
-	maxTextureSize = TEXTURE_SIZE;
+	maxTextureSize = DEFAULT_TEXTURE_SIZE;
 	onlySquareTextures = false;
 	errors.clear();
 }
@@ -146,13 +146,13 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 
 		
 		// try to pack for each resolution
-		int bestResolution = (maxTextureSize + 1) * (maxTextureSize + 1);
-		int bestXResolution, bestYResolution;
+		uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
+		uint32 bestXResolution, bestYResolution;
 		
         Logger::FrameworkDebug("* Packing tries started: ");
 		
-		for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
-			for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
+		for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
+			for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
 			{
 				Rect2i textureRect = Rect2i(0, 0, xResolution, yResolution);
 				
@@ -167,7 +167,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 
         Logger::FrameworkDebug("");
         
-		if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
+		if (bestResolution != (maxTextureSize) * (maxTextureSize))
 		{
 			char textureNameWithIndex[50];
 			sprintf(textureNameWithIndex, "texture%d", textureIndex++);
@@ -228,14 +228,14 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 	std::sort(sortVector.begin(), sortVector.end(), sortFn);
 
 	// try to pack for each resolution
-	int bestResolution = (maxTextureSize + 1) * (maxTextureSize + 1);
-	int bestXResolution, bestYResolution;
+	uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
+	uint32 bestXResolution = 0, bestYResolution = 0;
 	
     Logger::FrameworkDebug("* Packing tries started: ");
 	
     bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
-	for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
-		 for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
+	for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
+		 for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
 		 {
 			 if (needOnlySquareTexture && (xResolution != yResolution))continue;
 			 
@@ -251,7 +251,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 		 }
     Logger::FrameworkDebug("\n");
 
-	if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
+	if (bestResolution != (maxTextureSize) * (maxTextureSize))
 	{
 		FilePath textureName = outputPath + "texture";
         Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
@@ -301,7 +301,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 
 void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defList, eGPUFamily forGPU)
 {
-	if (defList.size() != 1)
+	if (defList.size() == 1)
 	{
 		AddError(Format("* ERROR: Failed to pack to multiple textures for path - %s.", outputPath.GetAbsolutePathname().c_str()));
 	}
@@ -330,8 +330,8 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		Vector<SizeSortItem> newWorkVector;
 		
         bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
-		for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
-			for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
+		for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
+			for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
 			{
 				if (needOnlySquareTexture && (xResolution != yResolution))continue;
 				
@@ -566,7 +566,6 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 		{
 			Rect2i origRect = defFile->frameRects[frame];
 			Rect2i writeRect = ReduceRectToOriginalSize(*destRect);
-			fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, origRect.x, origRect.y, packerIndex);
 			WriteDefinitionString(fp, writeRect, origRect, packerIndex);
 
             if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
@@ -596,7 +595,7 @@ void TexturePacker::UseOnlySquareTextures()
 	onlySquareTextures = true;
 }
 
-void TexturePacker::SetMaxTextureSize(int32 _maxTextureSize)
+void TexturePacker::SetMaxTextureSize(uint32 _maxTextureSize)
 {
 	maxTextureSize = _maxTextureSize;
 }

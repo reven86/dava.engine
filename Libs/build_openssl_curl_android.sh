@@ -25,7 +25,7 @@ pushd $CURL
 	export CFLAGS="-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16"
 	export CPPFLAGS=-DANDROID
 	export LDFLAGS="-march=armv7-a -Wl,--fix-cortex-a8 -L$OPENSSL"
-	./configure --disable-shared --enable-static --host=arm-linux-androideabi --with-random=/dev/urandom --with-ssl=$OPENSSL --without-ca-bundle --without-ca-path --with-zlib $CURL_EXTRA || exit 1
+	./configure --disable-shared --enable-static --host=arm-linux-androideabi --with-random=/dev/urandom --with-ssl=$OPENSSL --without-ca-bundle --without-ca-path --with-zlib --enable-threaded-resolver --enable-ipv6 $CURL_EXTRA || exit 1
 	make clean && make -j $CPU_COUNT || exit 1
 popd
 popd

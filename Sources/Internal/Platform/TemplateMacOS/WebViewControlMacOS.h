@@ -63,6 +63,7 @@ public:
 protected:
 	//A pointer to MacOS WebView.
 	void* webViewPtr;
+    bool isWebViewVisible;
 	
 	// A pointer to the WebView delegate.
 	void* webViewDelegatePtr;

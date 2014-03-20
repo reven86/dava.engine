@@ -78,8 +78,11 @@ public:
         \param pt2 ending point
 	 */
 	void DrawLine(const Vector3 & pt1, const Vector3 & pt2, float32 lineWidth /*= 1.f*/, UniqueHandle renderState);
-    
-    
+    /**
+	 \brief Draws multiple lines.
+	 \param linePoints list of points in the format (startX, startY, endX, endY), (startX, startY, endX, endY)...
+	 */
+    void DrawLines(const Vector<float32>& linePoints, UniqueHandle renderState);
     
     /**
         \brief Draws given rect in 2D space

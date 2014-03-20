@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QImage>
 #include <QDebug>
+#include <QApplication>
 
 #include "MaterialItem.h"
 #include "MaterialModel.h"
@@ -70,6 +71,7 @@ MaterialItem::MaterialItem(DAVA::NMaterial * _material)
 
 		case DAVA::NMaterial::MATERIALTYPE_INSTANCE:
 			setData( instanceIcon, Qt::DecorationRole );
+            setData(qApp->palette().midlight().color(), Qt::TextColorRole);
 			setDragEnabled(true);
 			setDropEnabled(false);
 			break;
@@ -116,7 +118,7 @@ void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 {
 	if((set && !(curFlag & flag)) || (!set && (curFlag & flag)))
 	{
-		bool ok = true;
+        bool ok = true;
 
 		switch(flag)
 		{
@@ -124,7 +126,8 @@ void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 				set ? setBackground(QBrush(QColor(255, 0, 0, 15))) : setBackground(QBrush());
 				break;
 
-			case IS_PART_OF_SELECTION:
+            case IS_PART_OF_SELECTION:
+                if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
                 {
 					QFont curFont = font();
 					curFont.setBold(set);
@@ -137,19 +140,19 @@ void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 				break;
 		}
 
-		if(ok)
-		{
-			if(set)
-			{
-				curFlag |= (int) flag;
-			}
-			else
-			{
-				curFlag &= ~ (int) flag;
-			}
+        if(ok)
+        {
+            if(set)
+            {
+                curFlag |= (int) flag;
+            }
+            else
+            {
+                curFlag &= ~(int) flag;
+            }
 
             emitDataChanged();
-		}
+        }
 	}
 
 }

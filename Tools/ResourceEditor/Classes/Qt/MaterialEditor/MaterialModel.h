@@ -73,7 +73,14 @@ public:
 protected:
 	SceneEditor2 *curScene;
 
+    static const int supportedLodColorsCount = 4;
+    static const int supportedSwColorsCount = 2;
+
+    QColor lodColors[supportedLodColorsCount];
+    QColor switchColors[supportedSwColorsCount];
+
 private:
+    void ReloadLodSwColors();
     bool SetItemSelection( MaterialItem *item, const EntityGroup *group );
 };
 

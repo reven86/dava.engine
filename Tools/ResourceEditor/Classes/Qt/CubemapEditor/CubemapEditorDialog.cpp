@@ -100,8 +100,7 @@ void CubemapEditorDialog::ConnectSignals()
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 {
 	FilePath projectPath = CubemapUtils::GetDialogSavedPath(ResourceEditor::SETTINGS_CUBEMAP_LAST_FACE_DIR,
-															rootPath.toStdString(),
-															FilePath(ProjectManager::Instance()->CurProjectDataSourcePath().toStdString()).GetAbsolutePathname());
+															ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
 		
 	QString fileName = QtFileDialog::getOpenFileName(this,
 													tr("Open Cubemap Face Image"),

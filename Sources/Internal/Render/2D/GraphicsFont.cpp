@@ -116,6 +116,8 @@ Font * GraphicsFont::Clone() const
 	cloneFont->SetVerticalSpacing(this->GetVerticalSpacing());
     cloneFont->SetHorizontalSpacing(this->GetHorizontalSpacing());
 	cloneFont->SetSize(this->GetSize());
+    cloneFont->SetRenderSize(this->GetRenderSize());
+
     cloneFont->fontDefinitionName = this->GetFontDefinitionName();
 	
 	return cloneFont;
@@ -203,8 +205,8 @@ void GraphicsFont::SetHorizontalSpacing(int32 _horizontalSpacing)
 
 void GraphicsFont::SetSize(float32 _size)
 {
-	size = _size;
-	fontScaleCoeff = size / (fdef->fontAscent + fdef->fontDescent);	
+    Font::SetSize(_size);
+	fontScaleCoeff = size / (fdef->fontAscent + fdef->fontDescent);
 }
 
 YamlNode * GraphicsFont::SaveToYamlNode() const
@@ -385,7 +387,7 @@ GraphicsFont * GraphicsFont::Create(const FilePath & fontDefName, const FilePath
 		SafeRelease(font);
 		return 0;
 	}
-	font->size = font->fdef->fontAscent + font->fdef->fontDescent;
+    font->SetSize(font->fdef->fontAscent + font->fdef->fontDescent);
 	font->fontSprite = Sprite::Create(spriteName);
 	if (!font->fontSprite)
 	{

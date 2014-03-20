@@ -125,6 +125,7 @@ public slots:
 	void OnSceneLightMode();
 
 	void OnCubemapEditor();
+    void OnImageSplitter();
 	
 	void OnAddLandscape();
     void OnAddSkybox();
@@ -187,6 +188,10 @@ public slots:
     void OnMaterialLightViewChanged(bool);
     void OnCustomQuality();
 
+    void OnReloadShaders();
+
+    void OnSwitchWithDifferentLODs(bool checked);
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);

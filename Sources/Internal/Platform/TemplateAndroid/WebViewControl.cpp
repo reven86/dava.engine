@@ -201,6 +201,11 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 {
 	JniWebView jniWebView;
 	jniWebView.DeleteCookies(webViewId, targetUrl);
+
+void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
+{
+	// TODO
+
 }
 
 void WebViewControl::SetRect(const Rect& rect)

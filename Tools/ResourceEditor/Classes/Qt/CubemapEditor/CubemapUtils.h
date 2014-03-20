@@ -52,7 +52,7 @@ public:
 	static int MapFrameworkToUIFace(int frameworkFace);
 	static const DAVA::String& GetFaceNameSuffix(int faceId);
 	static const DAVA::String& GetDefaultFaceExtension();
-	static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& initialValue, const DAVA::String& defaultValue);
+	static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue);
 };
 
 #endif /* defined(__CUBEMAP_UTILS_H__) */

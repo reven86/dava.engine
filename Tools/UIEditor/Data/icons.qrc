@@ -44,5 +44,7 @@
         <file>Icons/reloadtextures.png</file>
         <file>Icons/adjust_size.png</file>
         <file>Icons/pixelated.png</file>
+        <file>Icons/stickmode.png</file>
+        <file>Icons/enableguides.png</file>
     </qresource>
 </RCC>

@@ -128,6 +128,12 @@ void HierarchyTreeController::UpdateSelection(const HierarchyTreePlatformNode* a
 		
 		ResetSelectedControl();
 		this->activeScreen = (HierarchyTreeScreenNode*)activeScreen;
+
+        if (this->activeScreen)
+        {
+            this->activeScreen->SetStickMode(stickMode);
+        }
+
 		emit SelectedScreenChanged(this->activeScreen);
 	}
 	if (updateLibrary)
@@ -261,7 +267,8 @@ void HierarchyTreeController::Clear()
 {
 	activePlatform = NULL;
     activeScreen = NULL;
-	
+    stickMode = (int32)NotSticked;
+
 	ResetSelectedControl();
 	CleanupNodesDeletedFromScene();
 }
@@ -757,4 +764,13 @@ void HierarchyTreeController::DisablePreview()
     activeScreen->GetScreen()->SetSize(activePlatform->GetSize());
     
     emit SelectedScreenChanged(activeScreen);
+}
+
+void HierarchyTreeController::SetStickMode(int32 mode)
+{
+    stickMode = mode;
+    if (activeScreen)
+    {
+        activeScreen->SetStickMode(mode);
+    }
 }

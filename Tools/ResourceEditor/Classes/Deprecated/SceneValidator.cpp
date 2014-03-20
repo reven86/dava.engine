@@ -332,7 +332,7 @@ void SceneValidator::ValidateLandscape(Landscape *landscape, Set<String> &errors
     bool pathIsCorrect = ValidatePathname(landscape->GetHeightmapPathname(), String("Landscape. Heightmap."));
     if(!pathIsCorrect)
     {
-        String path = landscape->GetHeightmapPathname().GetRelativePathname(FilePath(ProjectManager::Instance()->CurProjectDataSourcePath().toStdString()));
+        String path = landscape->GetHeightmapPathname().GetRelativePathname(ProjectManager::Instance()->CurProjectDataSourcePath());
         errorsLog.insert("Wrong path of Heightmap: " + path);
     }
 }
@@ -365,8 +365,6 @@ void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NM
     variant = GetCustomPropertyFromParentsTree(ownerNode, "lightmap.size");
     if(variant)
         params->lightmapSize = variant->AsInt32();
-    else if(IsPointerToExactClass<Landscape>(GetRenderObject(ownerNode)))
-        params->lightmapSize = 1024;
 }
 
 VariantType* SceneValidator::GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key)
@@ -671,5 +669,42 @@ bool SceneValidator::ValidateColor(Color& color)
 }
 
 
+void SceneValidator::FindSwitchesWithDifferentLODs( DAVA::Entity *entity, Set<FastName> & names )
+{
+    if(IsEntityHasDifferentLODsCount(entity))
+    {
+        names.insert(entity->GetName());
+    }
+    else
+    {
+        const uint32 count = entity->GetChildrenCount();
+        for(uint32 i = 0; i < count; ++i)
+        {
+            FindSwitchesWithDifferentLODs(entity->GetChild(i), names);
+        }
+    }
+}
 
+bool SceneValidator::IsEntityHasDifferentLODsCount( DAVA::Entity *entity )
+{
+    if((GetSwitchComponent(entity) == NULL) || (GetLodComponent(entity) == NULL)) return false;
+
+    RenderObject *ro = GetRenderObject(entity);
+    int32 maxLod[2] = { -1, -1};
+
+    const uint32 count = ro->GetRenderBatchCount(); 
+    for(uint32 i = 0; i < count; ++i) 
+    {
+        int32 lod, sw;
+        ro->GetRenderBatch(i, lod, sw);
+
+        DVASSERT(sw < 2);
+        if((lod > maxLod[sw]) && (sw < 2))
+        {
+            maxLod[sw] = lod;
+        }
+    }
+
+    return maxLod[0] != maxLod[1];
+}
 

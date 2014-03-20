@@ -126,7 +126,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
         xmlFiles.push_back(FilePath(selectedFiles.at(i).toStdString()));
 
     if(sc2FolderPath.IsEmpty())
-        SetSC2FolderValue(ProjectManager::Instance()->CurProjectDataSourcePath());
+        SetSC2FolderValue(ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname().c_str());
 
     ui->xmlListWidget->clear();
     ui->xmlListWidget->addItems(selectedFiles);
@@ -134,7 +134,7 @@ void SpeedTreeImportDialog::OnXMLSelect()
 
 void SpeedTreeImportDialog::OnSc2Select()
 {
-    QString dialogPath = ProjectManager::Instance()->CurProjectPath();
+    QString dialogPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
     if(!sc2FolderPath.IsEmpty())
         dialogPath = QString(sc2FolderPath.GetAbsolutePathname().c_str());
 

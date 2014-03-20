@@ -329,7 +329,6 @@
     <ClCompile Include="Classes\CommandLine\CommandLineManager.cpp" />
     <ClCompile Include="Classes\CommandLine\CommandLineTool.cpp" />
     <ClCompile Include="Classes\CommandLine\DDSExtractor\DDSExtractorTool.cpp" />
-    <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitter.cpp" />
     <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.cpp" />
     <ClCompile Include="Classes\CommandLine\SceneExporter\SceneExporter.cpp" />
     <ClCompile Include="Classes\CommandLine\SceneExporter\SceneExporterTool.cpp" />
@@ -435,6 +434,9 @@
     <ClCompile Include="Classes\Qt\DockSceneTree\SceneTreeDelegate.cpp" />
     <ClCompile Include="Classes\Qt\DockSceneTree\SceneTreeItem.cpp" />
     <ClCompile Include="Classes\Qt\DockSceneTree\SceneTreeModel.cpp" />
+    <ClCompile Include="Classes\Qt\ImageSplitterDialog\ImageArea.cpp" />
+    <ClCompile Include="Classes\Qt\ImageSplitterDialog\ImageSplitterDialog.cpp" />
+    <ClCompile Include="Classes\Qt\ImageSplitterDialog\SizeDialog.cpp" />
     <ClCompile Include="Classes\Qt\main.cpp" />
     <ClCompile Include="Classes\Qt\Main\davaglwidget.cpp" />
     <ClCompile Include="Classes\Qt\Main\mainwindow.cpp" />
@@ -603,6 +605,9 @@
     <ClCompile Include="_GeneratedQt\DockSceneTree\SceneTreeItem_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockSceneTree\SceneTreeModel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockSceneTree\SceneTree_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\ImageArea_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\ImageSplitterDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\SizeDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Main\davaglwidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Main\mainwindow_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Main\ModificationWidget_moc.cpp" />
@@ -946,7 +951,6 @@
     <ClInclude Include="Classes\CommandLine\CommandLineManager.h" />
     <ClInclude Include="Classes\CommandLine\CommandLineTool.h" />
     <ClInclude Include="Classes\CommandLine\DDSExtractor\DDSExtractorTool.h" />
-    <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitter.h" />
     <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.h" />
     <ClInclude Include="Classes\CommandLine\SceneExporter\SceneExporter.h" />
     <ClInclude Include="Classes\CommandLine\SceneExporter\SceneExporterTool.h" />
@@ -1055,6 +1059,9 @@
     <ClInclude Include="Classes\Qt\DockSceneTree\SceneTreeDelegate.h" />
     <ClInclude Include="Classes\Qt\DockSceneTree\SceneTreeItem.h" />
     <ClInclude Include="Classes\Qt\DockSceneTree\SceneTreeModel.h" />
+    <ClInclude Include="Classes\Qt\ImageSplitterDialog\ImageArea.h" />
+    <ClInclude Include="Classes\Qt\ImageSplitterDialog\ImageSplitterDialog.h" />
+    <ClInclude Include="Classes\Qt\ImageSplitterDialog\SizeDialog.h" />
     <ClInclude Include="Classes\Qt\Main\davaglwidget.h" />
     <ClInclude Include="Classes\Qt\Main\mainwindow.h" />
     <ClInclude Include="Classes\Qt\Main\ModificationWidget.h" />
@@ -1123,6 +1130,7 @@
     <ClInclude Include="Classes\Qt\TextureBrowser\CacheRequest.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureBrowser.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureCache.h" />
+    <ClInclude Include="Classes\Qt\TextureBrowser\TextureConvertMode.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureConvertor.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureConvertorWork.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureInfo.h" />
@@ -1201,6 +1209,7 @@
     <None Include="DataQt\BaseAddEntityDialog.ui" />
     <None Include="DataQt\CubemapEditorDialog.ui" />
     <None Include="DataQt\CubeMapTextureBrowser.ui" />
+    <None Include="DataQt\ImageSplitter.ui" />
     <None Include="DataQt\mainwindow.ui">
       <SubType>Designer</SubType>
     </None>

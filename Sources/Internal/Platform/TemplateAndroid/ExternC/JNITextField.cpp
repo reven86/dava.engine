@@ -31,6 +31,7 @@
 #include "AndroidLayer.h"
 #include "UI/UITextFieldAndroid.h"
 #include "Base/BaseTypes.h"
+#include "Utils/UTF8Utils.h"
 
 extern "C"
 {
@@ -39,10 +40,18 @@ extern "C"
 		DAVA::UITextFieldAndroid::TextFieldShouldReturn(id);
 	}
 
-	bool Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jstring replacementString)
+	bool Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
 	{
 		DAVA::WideString string;
-		CreateWStringFromJni(env, replacementString, string);
+
+		jbyte* bufferPtr = env->GetByteArrayElements(replacementString, NULL);
+		jsize lengthOfArray = env->GetArrayLength(replacementString);
+
+		DAVA::UTF8Utils::EncodeToWideString((uint8_t*)bufferPtr, lengthOfArray, string);
+
+		env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
+
 		return DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
 	}
+
 };

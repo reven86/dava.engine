@@ -26,28 +26,43 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "errorslistdialog.h"
+#include "ui_errorslistdialog.h"
+#include "ScreenWrapper.h"
 
-
-#ifndef __IMAGE_SPLITTER_H__
-#define __IMAGE_SPLITTER_H__
-
-#include "DAVAEngine.h"
-
-class ImageSplitter
+ErrorsListDialog::ErrorsListDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::ErrorsListDialog)
 {
-public:
+    ui->setupUi(this);
+	
+    listModel = new QStringListModel(this);
 
-    static bool SplitImage(const DAVA::FilePath &pathname, DAVA::Set<DAVA::String> &errorLog);
-    static bool MergeImages(const DAVA::FilePath &folder, DAVA::Set<DAVA::String> &errorLog);
-    
-private:
-    
-    static void SaveImage(DAVA::Image *image, const DAVA::FilePath &pathname);
-    static DAVA::Image * LoadImage(const DAVA::FilePath &pathname);
-    
-    static void ReleaseImages(DAVA::Image *r, DAVA::Image *g, DAVA::Image *b, DAVA::Image *a);
-};
+    ui->errorsListView->setModel(listModel);
+    ui->errorsListView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	
+    connect(ui->closeButton, SIGNAL(clicked()), this, SLOT(close()));
+}
 
+ErrorsListDialog::~ErrorsListDialog()
+{
+    delete ui;
+}
 
-
-#endif // __IMAGE_SPLITTER_H__
+void ErrorsListDialog::InitializeErrorsList(const Set<String>& errorsSet)
+{
+	QStringList list;
+	for (Set<String>::const_iterator p = errorsSet.begin( );p != errorsSet.end( ); ++p)
+	{
+		list.append(QString::fromStdString(*p));
+	}
+	
+	// Clean up errors list before adding new rows
+    if (listModel->rowCount() > 0)
+    {
+        listModel->removeRows(0, listModel->rowCount());
+    }
+    listModel->setStringList(list);
+	
+	ScreenWrapper::Instance()->RestoreApplicationCursor();
+}

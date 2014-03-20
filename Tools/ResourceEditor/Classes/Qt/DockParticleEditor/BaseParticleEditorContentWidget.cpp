@@ -36,6 +36,7 @@ const QChar BaseParticleEditorContentWidget::DEGREE_MARK_CHARACTER = QChar(0x00B
 
 BaseParticleEditorContentWidget::BaseParticleEditorContentWidget()
 {
+    effect = NULL;
 	emitter = NULL;
 	activeScene = NULL;
 }

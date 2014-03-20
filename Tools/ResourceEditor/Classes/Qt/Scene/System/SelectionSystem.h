@@ -84,7 +84,9 @@ public:
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
 protected:
-	void Update(DAVA::float32 timeElapsed);
+    void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
+
+    void Update(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);
@@ -100,6 +102,7 @@ private:
 	int drawMode;
 	bool selectionAllowed;
 	bool applyOnPhaseEnd;
+    bool invalidSelectionBoxes;
 
 	SceneCollisionSystem *collisionSystem;
 	HoodSystem* hoodSystem;

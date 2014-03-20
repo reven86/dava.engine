@@ -357,17 +357,17 @@ void SceneTabWidget::DAVAWidgetDataDropped(const QMimeData *data)
                 {
                     DAVA::Vector3 pos;
                     
+                    // check if there is intersection with landscape. ray from camera to mouse pointer
+                    // if there is - we should move opening scene to that point
                     if(!curScene->collisionSystem->LandRayTestFromCamera(pos))
                     {
                         DAVA::Landscape *landscape = curScene->collisionSystem->GetLandscape();
-                        if( NULL != landscape &&
-                           NULL != landscape->GetHeightmap() &&
-                           landscape->GetHeightmap()->Size() > 0)
+                        if( NULL != landscape && NULL != landscape->GetHeightmap() && landscape->GetHeightmap()->Size() > 0)
                         {
                             curScene->collisionSystem->GetLandscape()->PlacePoint(DAVA::Vector3(), pos);
                         }
                     }
-                    
+
                     QtMainWindow::Instance()->WaitStart("Adding object to scene", path);
 					curScene->structureSystem->Add(path.toStdString(), pos);
                     QtMainWindow::Instance()->WaitStop();

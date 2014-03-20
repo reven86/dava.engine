@@ -69,8 +69,8 @@ CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitter* emitter):
 	this->emitter = emitter;
 }
 
+
 	void CommandUpdateEmitter::Init(const FastName& name,
-								const Vector3& position,
 								ParticleEmitter::eType emitterType,
 								RefPtr<PropertyLine<float32> > emissionRange,
 								RefPtr<PropertyLine<Vector3> > emissionVector,
@@ -80,8 +80,7 @@ CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitter* emitter):
 								float32 life,
 								bool isShortEffect)
 {
-	this->name = name;
-	this->position = position;
+	this->name = name;	
 	this->emitterType = emitterType;
 	this->emissionRange = emissionRange;
 	this->emissionVector = emissionVector;
@@ -95,8 +94,7 @@ CommandUpdateEmitter::CommandUpdateEmitter(ParticleEmitter* emitter):
 void CommandUpdateEmitter::Redo()
 {
 	DVASSERT(emitter);
-	emitter->name = name;
-	emitter->position = position;
+	emitter->name = name;	
 	emitter->emitterType = emitterType;
 	PropertyLineHelper::SetValueLine(emitter->emissionRange, emissionRange);
 	PropertyLineHelper::SetValueLine(emitter->emissionVector, emissionVector);
@@ -104,6 +102,23 @@ void CommandUpdateEmitter::Redo()
 	PropertyLineHelper::SetValueLine(emitter->colorOverLife, colorOverLife);
 	PropertyLineHelper::SetValueLine(emitter->size, size);	
 	emitter->shortEffect = isShortEffect;
+}
+
+CommandUpdateEmitterPosition::CommandUpdateEmitterPosition(ParticleEffectComponent* _effect, ParticleEmitter* _emitter):
+CommandAction(CMDID_PARTICLE_EMITTER_POSITION_UPDATE), effect(_effect), emitter(_emitter)
+{
+}
+
+void CommandUpdateEmitterPosition::Init(const Vector3& position)
+{
+    this->position = position;
+}
+
+void CommandUpdateEmitterPosition::Redo()
+{
+    int32 id = effect->GetEmitterId(emitter);
+    if (id>=0)
+        effect->SetSpawnPosition(id, position);
 }
 
 CommandUpdateParticleLayer::CommandUpdateParticleLayer(ParticleEmitter* emitter, ParticleLayer* layer) :

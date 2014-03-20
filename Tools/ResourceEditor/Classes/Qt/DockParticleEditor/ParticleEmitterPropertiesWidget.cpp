@@ -82,7 +82,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	positionXSpinBox->setSingleStep(0.1);
 	positionXSpinBox->setDecimals(3);
 	positionLayout->addWidget(positionXSpinBox);
-	connect(positionXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+	connect(positionXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnEmitterPositionChanged()));
 
 	positionLayout->addStretch();
 	positionLayout->addWidget(new QLabel("Y:"));
@@ -92,7 +92,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	positionYSpinBox->setSingleStep(0.1);
 	positionYSpinBox->setDecimals(3);
 	positionLayout->addWidget(positionYSpinBox);
-	connect(positionYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+	connect(positionYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnEmitterPositionChanged()));
 
 	positionLayout->addStretch();
 	positionLayout->addWidget(new QLabel("Z:"));
@@ -102,7 +102,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	positionZSpinBox->setSingleStep(0.1);
 	positionZSpinBox->setDecimals(3);
 	positionLayout->addWidget(positionZSpinBox);
-	connect(positionZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+	connect(positionZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnEmitterPositionChanged()));
 			
 	mainLayout->addLayout(positionLayout);	
 
@@ -150,6 +150,29 @@ void ParticleEmitterPropertiesWidget::InitWidget(QWidget *widget, bool connectWi
 		connect(widget, SIGNAL(ValueChanged()), this, SLOT(OnValueChanged()));
 }
 
+void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
+{
+    if(blockSignals)
+        return;
+
+    DVASSERT(emitter != 0);
+    DVASSERT(effect != 0);
+
+    Vector3 position;
+    position.x = positionXSpinBox->value();
+    position.y = positionYSpinBox->value();
+    position.z = positionZSpinBox->value();
+
+    CommandUpdateEmitterPosition* commandUpdateEmitter = new CommandUpdateEmitterPosition(effect, emitter);
+    commandUpdateEmitter->Init(position);        
+
+    DVASSERT(activeScene != 0);
+    activeScene->Exec(commandUpdateEmitter);
+
+    Init(activeScene, effect, emitter, false, false);
+    emit ValueChanged();
+}
+
 void ParticleEmitterPropertiesWidget::OnValueChanged()
 {
 	if(blockSignals)
@@ -185,14 +208,11 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 	bool initEmittersByDef = FLOAT_EQUAL(life,currentLifeTime) ? false : true;	
 
 	bool isShortEffect = shortEffectCheckBox->isChecked();
-	Vector3 position;
-	position.x = positionXSpinBox->value();
-	position.y = positionYSpinBox->value();
-	position.z = positionZSpinBox->value();
+	
 
 	CommandUpdateEmitter* commandUpdateEmitter = new CommandUpdateEmitter(emitter);
+
 	commandUpdateEmitter->Init(FastName(emitterNameLineEdit->text().toStdString().c_str()),
-							   position,
 							   type,
 							   emissionRange.GetPropLine(),
 							   emissionVector.GetPropLine(),
@@ -205,14 +225,15 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 	DVASSERT(activeScene != 0);
 	activeScene->Exec(commandUpdateEmitter);
 
-	Init(activeScene, emitter, false, initEmittersByDef);
+	Init(activeScene, effect, emitter, false, initEmittersByDef);
 	emit ValueChanged();
 }
 
-void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEmitter *emitter, bool updateMinimize, bool needUpdateTimeLimits)
+void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, bool updateMinimize, bool needUpdateTimeLimits)
 {
 	DVASSERT(emitter != 0);
 	this->emitter = emitter;
+    this->effect = effect;
 	SetActiveScene(scene);
 
 	blockSignals = true;
@@ -231,9 +252,11 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEm
 	emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
 	emitterType->setCurrentIndex(emitter->emitterType);
 
-	positionXSpinBox->setValue((double)emitter->position.x);
-	positionYSpinBox->setValue((double)emitter->position.y);
-	positionZSpinBox->setValue((double)emitter->position.z);
+    int32 emitterId = effect->GetEmitterId(emitter);    
+    Vector3 position = (emitterId==-1)?Vector3(0,0,0):effect->GetSpawnPosition(emitterId);
+	positionXSpinBox->setValue((double)position.x);
+	positionYSpinBox->setValue((double)position.y);
+	positionZSpinBox->setValue((double)position.z);
 
 	if(!needUpdateTimeLimits)
 	{
@@ -334,7 +357,7 @@ void ParticleEmitterPropertiesWidget::StoreVisualState(KeyedArchive* visualState
 
 void ParticleEmitterPropertiesWidget::Update()
 {
-	Init(activeScene, emitter, false);
+	Init(activeScene, effect, emitter, false);
 }
 
 bool ParticleEmitterPropertiesWidget::eventFilter(QObject * o, QEvent * e)

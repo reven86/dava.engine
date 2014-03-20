@@ -38,6 +38,7 @@
 #include "Scene/SceneSignals.h"
 
 #include "TextureInfo.h"
+#include "TextureConvertMode.h"
 
 class QModelIndex;
 class TextureListDelegate;
@@ -117,7 +118,7 @@ private:
 	void resetTextureInfo();
 
 	void setTexture(DAVA::Texture *texture, DAVA::TextureDescriptor *descriptor);
-	void setTextureView(DAVA::eGPUFamily view, bool forceConvert = false);
+	void setTextureView(DAVA::eGPUFamily view, eTextureConvertMode convertMode = CONVERT_NOT_EXISTENT);
 
 	void updateConvertedImageAndInfo(const QList<QImage> &images, DAVA::TextureDescriptor& descriptor);
 	void updateInfoColor(QLabel *label, const QColor &color = QColor());
@@ -128,6 +129,8 @@ private:
 
 	void reloadTextureProperties();
 	void reloadTextureToScene(DAVA::Texture *texture, const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu);
+
+    void ConvertMultipleTextures(eTextureConvertMode convertMode);
 
 private slots:
 	void textureListViewImages(bool checked);
@@ -150,6 +153,7 @@ private slots:
 	void textureConver(bool checked);
 	void textureConverAll(bool checked);
 	void textureViewChanged(int index);
+    void ConvertModifiedTextures(bool);
 
 	void convertStatusImg(const QString &curPath, int curGpu);
 	void convertStatusQueue(int curJob, int jobCount);

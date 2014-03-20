@@ -69,10 +69,11 @@ Font* EditorFontManager::LoadFont(const String& fontPath, const String& fontName
 	if (font)
 		return font;
 	
+    static const float defaultFontSize = 12.0f;
 	font = FTFont::Create(fontPath);
 	if (font)
 	{
-		font->SetSize(12.f);
+		font->SetSize(defaultFontSize);
 		
 		fonts[fontName] = font;
         //If font was successfully loaded - emit the signal 

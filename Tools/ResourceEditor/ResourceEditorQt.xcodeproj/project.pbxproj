@@ -29,12 +29,17 @@
 		62B36CD61876B72100F7F030 /* RecentFilesManager.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62B36CD41876B72100F7F030 /* RecentFilesManager.cpp */; };
 		62C1B999188E913300CD3005 /* MaterialFilterModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C1B997188E913300CD3005 /* MaterialFilterModel.cpp */; };
 		62C1B9A2188E947200CD3005 /* MaterialFilterModel_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C1B9A1188E947200CD3005 /* MaterialFilterModel_moc.cpp */; };
+		62C29DB818BF94BD0019EA6C /* SizeDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C29DB618BF94BD0019EA6C /* SizeDialog.cpp */; };
 		62C47F75189A9CBC008996F1 /* QtPropertyDataValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C47F73189A9CBB008996F1 /* QtPropertyDataValidator.cpp */; };
 		62C8751B189698E5000E398E /* RegExpValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C87519189698E5000E398E /* RegExpValidator.cpp */; };
 		76741C8818A3BDE20044A0BF /* CacheRequest.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76741C8618A3BDE20044A0BF /* CacheRequest.cpp */; };
 		76741C9118A3BE650044A0BF /* CacheRequest_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76741C9018A3BE650044A0BF /* CacheRequest_moc.cpp */; };
 		77BDEC8E56A833D3814BC614 /* QtNetwork.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 82153068A36B6EA46DD82A06 /* QtNetwork.framework */; };
 		77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 336CB11D929F5E35FA69020F /* Cocoa.framework */; };
+		8406D38718BA583100AFF8E3 /* ImageArea.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 8406D38518BA583100AFF8E3 /* ImageArea.cpp */; };
+		8406D39018BA5A4500AFF8E3 /* ImageArea_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 8406D38F18BA5A4500AFF8E3 /* ImageArea_moc.cpp */; };
+		8464251E18B16B2800A2BE35 /* ImageSplitterDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 8464251C18B16B2800A2BE35 /* ImageSplitterDialog.cpp */; };
+		8464252018B16B8B00A2BE35 /* ImageSplitterDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 8464251F18B16B8B00A2BE35 /* ImageSplitterDialog_moc.cpp */; };
 		84A6B1FB18972F64002FD263 /* FloatRangeValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 84A6B1F918972F64002FD263 /* FloatRangeValidator.cpp */; };
 		84A6B1FE189735AB002FD263 /* IntRangeValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 84A6B1FC189735AB002FD263 /* IntRangeValidator.cpp */; };
 		84B3D11F18985EF20039A9C0 /* PathValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 84B3D11D18985EF20039A9C0 /* PathValidator.cpp */; };
@@ -355,7 +360,6 @@
 		E8C99271184CD0EC00AFBF3F /* BeastCommandLineTool.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C98FE9184CD0EB00AFBF3F /* BeastCommandLineTool.cpp */; };
 		E8C99272184CD0EC00AFBF3F /* CommandLineManager.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C98FEB184CD0EB00AFBF3F /* CommandLineManager.cpp */; };
 		E8C99273184CD0EC00AFBF3F /* CommandLineTool.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C98FED184CD0EB00AFBF3F /* CommandLineTool.cpp */; };
-		E8C99274184CD0EC00AFBF3F /* ImageSplitter.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C98FF0184CD0EB00AFBF3F /* ImageSplitter.cpp */; };
 		E8C99275184CD0EC00AFBF3F /* ImageSplitterTool.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C98FF2184CD0EB00AFBF3F /* ImageSplitterTool.cpp */; };
 		E8C99276184CD0EC00AFBF3F /* SceneExporter.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C98FF5184CD0EB00AFBF3F /* SceneExporter.cpp */; };
 		E8C99277184CD0EC00AFBF3F /* SceneExporterTool.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8C98FF7184CD0EB00AFBF3F /* SceneExporterTool.cpp */; };
@@ -632,6 +636,7 @@
 		2A689518AF9C22C7AA97C9EF /* ogg_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ogg_macos; path = ../../Libs/libs/libogg_macos.a; sourceTree = "<group>"; };
 		336CB11D929F5E35FA69020F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		419FFB6CDDEB353FF0A4F469 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtCore.framework"; sourceTree = "<absolute>"; };
+		4911729918C629B200D5F948 /* TextureConvertMode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextureConvertMode.h; sourceTree = "<group>"; };
 		491BC46A18A393A4001CE353 /* TexturePathValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TexturePathValidator.cpp; path = QtPropertyDataValidator/TexturePathValidator.cpp; sourceTree = "<group>"; };
 		491BC46B18A393A4001CE353 /* TexturePathValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexturePathValidator.h; path = QtPropertyDataValidator/TexturePathValidator.h; sourceTree = "<group>"; };
 		49DB9A47187D69F000D6E87A /* FogSettingsChangedReceiver.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FogSettingsChangedReceiver.cpp; sourceTree = "<group>"; };
@@ -662,6 +667,8 @@
 		62C1B997188E913300CD3005 /* MaterialFilterModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialFilterModel.cpp; sourceTree = "<group>"; };
 		62C1B998188E913300CD3005 /* MaterialFilterModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialFilterModel.h; sourceTree = "<group>"; };
 		62C1B9A1188E947200CD3005 /* MaterialFilterModel_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialFilterModel_moc.cpp; sourceTree = "<group>"; };
+		62C29DB618BF94BD0019EA6C /* SizeDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SizeDialog.cpp; path = ImageSplitterDialog/SizeDialog.cpp; sourceTree = "<group>"; };
+		62C29DB718BF94BD0019EA6C /* SizeDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SizeDialog.h; path = ImageSplitterDialog/SizeDialog.h; sourceTree = "<group>"; };
 		62C47F73189A9CBB008996F1 /* QtPropertyDataValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QtPropertyDataValidator.cpp; sourceTree = "<group>"; };
 		62C47F74189A9CBB008996F1 /* QtPropertyDataValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtPropertyDataValidator.h; sourceTree = "<group>"; };
 		62C87519189698E5000E398E /* RegExpValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExpValidator.cpp; path = QtPropertyDataValidator/RegExpValidator.cpp; sourceTree = "<group>"; };
@@ -675,6 +682,13 @@
 		8159B90213E2E13CB65C75B4 /* vorbis_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = vorbis_macos; path = ../../Libs/oggvorbis/lib/libvorbis_macos.a; sourceTree = "<group>"; };
 		81BBDA0F1849B4A35FAB7D00 /* freetype_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = freetype_macos; path = ../../Libs/freetype/lib/libfreetype_macos.a; sourceTree = "<group>"; };
 		82153068A36B6EA46DD82A06 /* QtNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtNetwork.framework; path = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtNetwork.framework"; sourceTree = "<absolute>"; };
+		8406D38518BA583100AFF8E3 /* ImageArea.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageArea.cpp; path = ImageSplitterDialog/ImageArea.cpp; sourceTree = "<group>"; };
+		8406D38618BA583100AFF8E3 /* ImageArea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageArea.h; path = ImageSplitterDialog/ImageArea.h; sourceTree = "<group>"; };
+		8406D38F18BA5A4500AFF8E3 /* ImageArea_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageArea_moc.cpp; path = _GeneratedQt/ImageSplitterDialog/ImageArea_moc.cpp; sourceTree = "<group>"; };
+		8464251A18B16A2500A2BE35 /* ui_ImageSplitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_ImageSplitter.h; path = _GeneratedQt/ui_ImageSplitter.h; sourceTree = "<group>"; };
+		8464251C18B16B2800A2BE35 /* ImageSplitterDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageSplitterDialog.cpp; path = ImageSplitterDialog/ImageSplitterDialog.cpp; sourceTree = "<group>"; };
+		8464251D18B16B2800A2BE35 /* ImageSplitterDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageSplitterDialog.h; path = ImageSplitterDialog/ImageSplitterDialog.h; sourceTree = "<group>"; };
+		8464251F18B16B8B00A2BE35 /* ImageSplitterDialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageSplitterDialog_moc.cpp; path = _GeneratedQt/ImageSplitterDialog/ImageSplitterDialog_moc.cpp; sourceTree = "<group>"; };
 		84A6B1F918972F64002FD263 /* FloatRangeValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FloatRangeValidator.cpp; path = QtPropertyDataValidator/FloatRangeValidator.cpp; sourceTree = "<group>"; };
 		84A6B1FA18972F64002FD263 /* FloatRangeValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FloatRangeValidator.h; path = QtPropertyDataValidator/FloatRangeValidator.h; sourceTree = "<group>"; };
 		84A6B1FC189735AB002FD263 /* IntRangeValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = IntRangeValidator.cpp; path = QtPropertyDataValidator/IntRangeValidator.cpp; sourceTree = "<group>"; };
@@ -1243,8 +1257,6 @@
 		E8C98FEC184CD0EB00AFBF3F /* CommandLineManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandLineManager.h; sourceTree = "<group>"; };
 		E8C98FED184CD0EB00AFBF3F /* CommandLineTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommandLineTool.cpp; sourceTree = "<group>"; };
 		E8C98FEE184CD0EB00AFBF3F /* CommandLineTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommandLineTool.h; sourceTree = "<group>"; };
-		E8C98FF0184CD0EB00AFBF3F /* ImageSplitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageSplitter.cpp; sourceTree = "<group>"; };
-		E8C98FF1184CD0EB00AFBF3F /* ImageSplitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageSplitter.h; sourceTree = "<group>"; };
 		E8C98FF2184CD0EB00AFBF3F /* ImageSplitterTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageSplitterTool.cpp; sourceTree = "<group>"; };
 		E8C98FF3184CD0EB00AFBF3F /* ImageSplitterTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageSplitterTool.h; sourceTree = "<group>"; };
 		E8C98FF5184CD0EB00AFBF3F /* SceneExporter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneExporter.cpp; sourceTree = "<group>"; };
@@ -1750,6 +1762,28 @@
 			name = QtPropertyDataValidator;
 			sourceTree = "<group>";
 		};
+		84EB52BB18B15E720094DAD9 /* ImageSplitterDialog */ = {
+			isa = PBXGroup;
+			children = (
+				62C29DB618BF94BD0019EA6C /* SizeDialog.cpp */,
+				62C29DB718BF94BD0019EA6C /* SizeDialog.h */,
+				8406D38518BA583100AFF8E3 /* ImageArea.cpp */,
+				8406D38618BA583100AFF8E3 /* ImageArea.h */,
+				8464251C18B16B2800A2BE35 /* ImageSplitterDialog.cpp */,
+				8464251D18B16B2800A2BE35 /* ImageSplitterDialog.h */,
+			);
+			name = ImageSplitterDialog;
+			sourceTree = "<group>";
+		};
+		84EB52C818B1625B0094DAD9 /* ImageSplitterDialog */ = {
+			isa = PBXGroup;
+			children = (
+				8406D38F18BA5A4500AFF8E3 /* ImageArea_moc.cpp */,
+				8464251F18B16B8B00A2BE35 /* ImageSplitterDialog_moc.cpp */,
+			);
+			name = ImageSplitterDialog;
+			sourceTree = "<group>";
+		};
 		A6796CD71885702800EB254C /* DDSExtractor */ = {
 			isa = PBXGroup;
 			children = (
@@ -1808,6 +1842,8 @@
 		E89DFBE4163ECBB800B51706 /* GeneratedQt */ = {
 			isa = PBXGroup;
 			children = (
+				8464251A18B16A2500A2BE35 /* ui_ImageSplitter.h */,
+				84EB52C818B1625B0094DAD9 /* ImageSplitterDialog */,
 				A6CCB65218990C5500F5DA38 /* QualitySwitcher */,
 				A6D827A6187717A60006A5DD /* PlaneLODDialog */,
 				E8BAD5D71859F50200C98C8D /* CubemapEditor */,
@@ -2921,8 +2957,6 @@
 		E8C98FEF184CD0EB00AFBF3F /* ImageSplitter */ = {
 			isa = PBXGroup;
 			children = (
-				E8C98FF0184CD0EB00AFBF3F /* ImageSplitter.cpp */,
-				E8C98FF1184CD0EB00AFBF3F /* ImageSplitter.h */,
 				E8C98FF2184CD0EB00AFBF3F /* ImageSplitterTool.cpp */,
 				E8C98FF3184CD0EB00AFBF3F /* ImageSplitterTool.h */,
 			);
@@ -3103,6 +3137,7 @@
 		E8C99074184CD0EB00AFBF3F /* Qt */ = {
 			isa = PBXGroup;
 			children = (
+				84EB52BB18B15E720094DAD9 /* ImageSplitterDialog */,
 				A6CCB64718990C3000F5DA38 /* QualitySwitcher */,
 				A6D8279B1877175E0006A5DD /* PlaneLODDialog */,
 				E8BAD5CA1859F48600C98C8D /* MaterialEditor */,
@@ -3528,6 +3563,7 @@
 				E8C9917C184CD0EB00AFBF3F /* TextureProperties.h */,
 				E8C9917D184CD0EB00AFBF3F /* TextureScrollArea.cpp */,
 				E8C9917E184CD0EB00AFBF3F /* TextureScrollArea.h */,
+				4911729918C629B200D5F948 /* TextureConvertMode.h */,
 			);
 			path = TextureBrowser;
 			sourceTree = "<group>";
@@ -4073,6 +4109,7 @@
 				E8C99308184CD0EC00AFBF3F /* ScaleHood.cpp in Build Sources */,
 				E8C99295184CD0EC00AFBF3F /* MetaObjModifyCommand.cpp in Build Sources */,
 				E8C9930C184CD0EC00AFBF3F /* HeightmapProxy.cpp in Build Sources */,
+				8406D39018BA5A4500AFF8E3 /* ImageArea_moc.cpp in Build Sources */,
 				E8C992E8184CD0EC00AFBF3F /* davaglwidget.cpp in Build Sources */,
 				E8C992D7184CD0EC00AFBF3F /* ParticleEmitterPropertiesWidget.cpp in Build Sources */,
 				E8BAD5D51859F48600C98C8D /* MaterialItem.cpp in Build Sources */,
@@ -4294,6 +4331,7 @@
 				E8BAD7171859F50300C98C8D /* TextureConvertor_moc.cpp in Build Sources */,
 				E8C9934E184CD0EC00AFBF3F /* SpritesPacker.cpp in Build Sources */,
 				E8C99249184CD0EC00AFBF3F /* btConeTwistConstraint.cpp in Build Sources */,
+				62C29DB818BF94BD0019EA6C /* SizeDialog.cpp in Build Sources */,
 				E8C992E0184CD0EC00AFBF3F /* SceneInfo.cpp in Build Sources */,
 				E8C9929F184CD0EC00AFBF3F /* TransformCommand.cpp in Build Sources */,
 				E8BAD7221859F50300C98C8D /* EventFilterDoubleSpinBox_moc.cpp in Build Sources */,
@@ -4303,6 +4341,7 @@
 				E8C99240184CD0EC00AFBF3F /* btGjkEpaPenetrationDepthSolver.cpp in Build Sources */,
 				E8BAD7461859F50300C98C8D /* ToolButtonWithWidget_moc.cpp in Build Sources */,
 				E8C992A3184CD0EC00AFBF3F /* DraggableDialog.cpp in Build Sources */,
+				8464252018B16B8B00A2BE35 /* ImageSplitterDialog_moc.cpp in Build Sources */,
 				E8C99209184CD0EC00AFBF3F /* btSphereSphereCollisionAlgorithm.cpp in Build Sources */,
 				E8C9934D184CD0EC00AFBF3F /* ToolButtonWithWidget.cpp in Build Sources */,
 				E8C992A9184CD0EC00AFBF3F /* ParticlesEditorNodeNameHelper.cpp in Build Sources */,
@@ -4356,7 +4395,6 @@
 				E8C992B9184CD0EC00AFBF3F /* LandscapeEditorControlsPlaceholder.cpp in Build Sources */,
 				E8BAD6B51859F50300C98C8D /* CustomColorsPanel_moc.cpp in Build Sources */,
 				E8C992E3184CD0EC00AFBF3F /* SceneTreeItem.cpp in Build Sources */,
-				E8C99274184CD0EC00AFBF3F /* ImageSplitter.cpp in Build Sources */,
 				E8C9931E184CD0EC00AFBF3F /* TextureBrowser.cpp in Build Sources */,
 				E8BAD70F1859F50300C98C8D /* TilemaskEditorSystem_moc.cpp in Build Sources */,
 				E8C99275184CD0EC00AFBF3F /* ImageSplitterTool.cpp in Build Sources */,
@@ -4483,6 +4521,7 @@
 				E8C992FF184CD0EC00AFBF3F /* EditorLightSystem.cpp in Build Sources */,
 				E8C99232184CD0EC00AFBF3F /* btGenericPoolAllocator.cpp in Build Sources */,
 				E8C99282184CD0EC00AFBF3F /* Command2.cpp in Build Sources */,
+				8406D38718BA583100AFF8E3 /* ImageArea.cpp in Build Sources */,
 				E8C99309184CD0EC00AFBF3F /* HoodSystem.cpp in Build Sources */,
 				E8C992F8184CD0EC00AFBF3F /* CollisionBox.cpp in Build Sources */,
 				E8BAD6DC1859F50300C98C8D /* QTreeViewStateHelper_moc.cpp in Build Sources */,
@@ -4556,6 +4595,7 @@
 				E8C99330184CD0EC00AFBF3F /* MimeDataHelper.cpp in Build Sources */,
 				E8C991ED184CD0EC00AFBF3F /* btBroadphaseProxy.cpp in Build Sources */,
 				E8C99213184CD0EC00AFBF3F /* btConcaveShape.cpp in Build Sources */,
+				8464251E18B16B2800A2BE35 /* ImageSplitterDialog.cpp in Build Sources */,
 				E8C99271184CD0EC00AFBF3F /* BeastCommandLineTool.cpp in Build Sources */,
 				E8C9924B184CD0EC00AFBF3F /* btGeneric6DofConstraint.cpp in Build Sources */,
 				E8C992CE184CD0EC00AFBF3F /* DistanceSlider.cpp in Build Sources */,

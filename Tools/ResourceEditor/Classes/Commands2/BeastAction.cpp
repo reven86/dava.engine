@@ -140,10 +140,11 @@ void BeastAction::Finish()
 
 void BeastAction::PackLightmaps()
 {
+    FilePath scenePath = workingScene->GetScenePath();
 	FilePath inputDir = GetLightmapDirectoryPath();
-	FilePath outputDir = FilePath::CreateWithNewExtension(workingScene->GetScenePath(),  ".sc2_lightmaps/");
+	FilePath outputDir = FilePath::CreateWithNewExtension(scenePath,  ".sc2_lightmaps/");
 
-	FileSystem::Instance()->MoveFile(inputDir+"landscape.png", "test_landscape.png", true);
+	FileSystem::Instance()->MoveFile(inputDir + "landscape.png", scenePath.GetDirectory() + "temp_landscape_lightmap.png", true);
 
 	LightmapsPacker packer;
 	packer.SetInputDir(inputDir);
@@ -155,8 +156,8 @@ void BeastAction::PackLightmaps()
 
 	BeastProxy::Instance()->UpdateAtlas(beastManager, packer.GetAtlasingData());
 
-	FileSystem::Instance()->MoveFile("test_landscape.png", outputDir+"landscape.png", true);
-	FileSystem::Instance()->DeleteDirectory(workingScene->GetScenePath().GetDirectory() + "$process/");
+	FileSystem::Instance()->MoveFile(scenePath.GetDirectory() + "temp_landscape_lightmap.png", outputDir + "landscape.png", true);
+	FileSystem::Instance()->DeleteDirectory(scenePath.GetDirectory() + "$process/");
 }
 
 DAVA::FilePath BeastAction::GetLightmapDirectoryPath()

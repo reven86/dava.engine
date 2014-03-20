@@ -50,6 +50,7 @@ UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates) :
 {
     Rect newRect = GetRect(true);
     webViewControl->Initialize(newRect);
+    webViewControl->SetVisible(false, true); // will be displayed in WillAppear.
 }
 
 UIWebView::~UIWebView()

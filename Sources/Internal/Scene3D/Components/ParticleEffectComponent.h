@@ -50,9 +50,8 @@ class ModifiablePropertyLineBase;
 class ParticleEffectComponent : public Component
 {
 	friend class ParticleEffectSystem;
-    friend class UIParticles;
+    friend class UIParticles;            
 
-    
 public:
 	IMPLEMENT_COMPONENT_TYPE(PARTICLE_EFFECT_COMPONENT);
 
@@ -130,9 +129,10 @@ private:
 	/*externals setup*/	
 	MultiMap<String, ModifiablePropertyLineBase *> externalModifiables;	
 	Map<String, float32> externalValues;
-
+    
 	/*Emitters setup*/
 	Vector<ParticleEmitter*> emitters;
+    Vector<Vector3> spawnPositions;
 		
 	ParticleEffectData effectData;
 	ParticleRenderObject *effectRenderObject;
@@ -141,6 +141,8 @@ private:
 public: //mostly editor commands
 	int32 GetEmittersCount();
 	ParticleEmitter* GetEmitter(int32 id);
+    Vector3 GetSpawnPosition(int id);
+    void SetSpawnPosition(int id, Vector3 position);
 	void AddEmitter(ParticleEmitter *emitter);
     int32 GetEmitterId(ParticleEmitter *emitter);
     void InsertEmitterAt(ParticleEmitter *emitter, int32 position);

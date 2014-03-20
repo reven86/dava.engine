@@ -83,6 +83,7 @@
          <addaction name="separator"/>
          <addaction name="actionFilterSelectedNode"/>
          <addaction name="actionConvertAll"/>
+         <addaction name="actionConvertModified"/>
         </widget>
        </item>
        <item>
@@ -792,6 +793,18 @@
    </property>
    <property name="toolTip">
     <string>Force convert all textures</string>
+   </property>
+  </action>
+  <action name="actionConvertModified">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIconsTextureDialog/convertModified.png</normaloff>:/QtIconsTextureDialog/convertModified.png</iconset>
+   </property>
+   <property name="text">
+    <string>Convert modified</string>
+   </property>
+   <property name="toolTip">
+    <string>Convert modified textures</string>
    </property>
   </action>
  </widget>

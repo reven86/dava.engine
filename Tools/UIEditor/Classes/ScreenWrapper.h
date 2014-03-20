@@ -83,6 +83,8 @@ public:
     void SetBackgroundFrameColor(const Color& color);
     Color GetBackgroundFrameColor() const {return backgroundFrameColor;};
 
+    Vector2 LocalToInternal(const Vector2& point);
+
 signals:
 	void UpdateScaleRequest(float scaleDelta);
 	void UpdateScreenPositionRequest(const QPoint& posDelta);
