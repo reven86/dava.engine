@@ -41,15 +41,18 @@ static const FastName BRIGHTMAX_PROPERTY("brightMax");
 static const FastName DARKEN_FLAG("POSTEFFECT_DARKEN");
 static const FastName NO_POST_EFFECT("OFF");
 static const FastName MEDIUM_POST_EFFECT("MEDIUM");
+static const Vector2 RESOLUTION_ORIGINAL(-1.f, -1.f);
 
 uint16 PostEffectRenderPass::indices[] = {0, 2, 1, 1, 2, 3};
 
 PostEffectRenderPass::PostEffectRenderPass(RenderSystem * renderSystem, const FastName & name, RenderPassID id)
 :   RenderPass(renderSystem, name, id),
     currentViewport(Rect(-1.f, -1.f, -1.f, -1.f)),
+    fboViewport(Rect(-1.f, -1.f, -1.f, -1.f)),
     renderTexture(0),
     rdo(0),
-    quality(NO_POST_EFFECT)
+    quality(NO_POST_EFFECT),
+    resolution(RESOLUTION_ORIGINAL)
 {
     renderTarget = Sprite::Create("");
 
@@ -90,15 +93,23 @@ void PostEffectRenderPass::Init()
         {
             float32 textureWidth = currentViewport.dx-currentViewport.x;
             float32 textureHeight = currentViewport.dy-currentViewport.y;
+
+            if(resolution != RESOLUTION_ORIGINAL)
+            {
+                textureWidth = resolution.x;
+                textureHeight = resolution.y;  
+            }
+            fboViewport = Rect(0, 0, textureWidth, textureHeight);
+
             renderTexture = (Texture::CreateFBO((int32)ceilf(textureWidth), (int32)ceilf(textureHeight), FORMAT_HALF_FLOAT, Texture::DEPTH_RENDERBUFFER));
-            renderTexture->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_LINEAR);
+            renderTexture->SetMinMagFilter(Texture::FILTER_LINEAR, Texture::FILTER_LINEAR);
             renderTarget->InitFromTexture(renderTexture, 0, 0, textureWidth, textureHeight, -1, -1, true);
             material->SetTexture(NMaterial::TEXTURE_ALBEDO, renderTexture);
 
             rdo = new RenderDataObject();
 
-            float32 texCoordW = currentViewport.dx/renderTexture->GetWidth();
-            float32 texCoordH = currentViewport.dy/renderTexture->GetHeight();
+            float32 texCoordW = fboViewport.dx/renderTexture->GetWidth();
+            float32 texCoordH = fboViewport.dy/renderTexture->GetHeight();
             Vector2 texc0[4] = {Vector2(0.f, 0.f), Vector2(texCoordW, 0.f), Vector2(0.f, texCoordH), Vector2(texCoordW, texCoordH) };
             for(int32 i = 0; i < 4; ++i)
             {
@@ -147,7 +158,7 @@ void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
         }
 
         rm->SetRenderTarget(renderTarget);
-        rm->SetViewport(Rect(0, 0, currentViewport.dx, currentViewport.dy), true);
+        rm->SetViewport(Rect(0, 0, fboViewport.dx, fboViewport.dy), true);
         rm->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
         rm->FlushState();
         rm->Clear(Color(0.f, 0.f, 1.f, 1.f), 1.f, 0);

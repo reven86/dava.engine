@@ -40,6 +40,7 @@ public:
     PostEffectRenderPass(RenderSystem * renderSystem, const FastName & name, RenderPassID id);
     virtual ~PostEffectRenderPass();
 
+    void SetResolution(int32 width, int32 height);
     virtual void Draw(Camera * camera, RenderSystem * renderSystem);
 
     void Init();
@@ -60,6 +61,8 @@ protected:
     float32 texCoords0[8];
     static uint16 indices[6];
     Rect currentViewport;
+    Rect fboViewport;
+    Vector2 resolution;
 
     NMaterial * material;
     NMaterial * instanceMaterial;
@@ -68,6 +71,11 @@ protected:
 inline NMaterial * PostEffectRenderPass::GetMaterial()
 {
     return material;
+}
+
+inline void PostEffectRenderPass::SetResolution(int32 width, int32 height)
+{
+    resolution = Vector2((float32)width, (float32)height);
 }
 
 }
