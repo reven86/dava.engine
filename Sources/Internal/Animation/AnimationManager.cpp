@@ -172,7 +172,7 @@ Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _
 bool AnimationManager::IsAnimating(const AnimatedObject * owner, int32 track) const
 {
 	animationMutex.Lock();
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	for (Vector<Animation*>::const_iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
         animationMutex.Unlock();
@@ -219,6 +219,20 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
 
 	animationMutex.Unlock();
 	return 0;
+}
+
+bool AnimationManager::HasActiveAnimations(AnimatedObject * owner)
+{
+	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	{
+		Animation * animation = *t;
+
+		if ((animation->owner == owner) && !(animation->state & Animation::STATE_FINISHED))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void AnimationManager::Update(float32 timeElapsed)

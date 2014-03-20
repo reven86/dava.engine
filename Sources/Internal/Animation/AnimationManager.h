@@ -95,7 +95,7 @@ private:
 	void DeleteAnimations(AnimatedObject * _owner, int32 track = -1);
 	
 	Vector<Animation*> animations;
-	Mutex animationMutex;
+	mutable Mutex animationMutex;
 	
 	friend class Animation;
 	friend class AnimatedObject;
