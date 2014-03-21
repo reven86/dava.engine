@@ -892,6 +892,14 @@ void RenderManager::HWglBindFBO(const int32 fbo)
         lastBindedFBO = fbo;
     }
 }
+    
+void RenderManager::DiscardDepth()
+{
+#ifdef __DAVAENGINE_IPHONE__
+    static const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+    RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
+#endif
+}
 
 #if defined(__DAVAENGINE_ANDROID__)
 void RenderManager::Lost()

@@ -554,6 +554,8 @@ public:
     int32 lastBindedFBO;
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
+    void DiscardDepth();
+    
     void RequestGLScreenShot(ScreenShotCallbackDelegate *screenShotCallback);
     
     void LockRenderState();

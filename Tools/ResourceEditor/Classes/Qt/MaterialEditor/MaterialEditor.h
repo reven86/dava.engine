@@ -31,8 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QDialog>
 #include <QtGui>
+#include <QPointer>
+#include <QStandardItemModel>
+
 #include "DAVAEngine.h"
 
+#include "MaterialTemplateModel.h"
 #include "Scene/SceneSignals.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "DockProperties/PropertyEditorStateHelper.h"
@@ -75,9 +79,9 @@ protected slots:
 protected:
 	virtual void showEvent(QShowEvent * event);
 
-	void SetCurMaterial(DAVA::NMaterial *material);
-	void FillMaterialProperties(DAVA::NMaterial *material);
-    void FillMaterialTemplates(DAVA::NMaterial *material);
+	void SetCurMaterial(const QList< DAVA::NMaterial *>& materials);
+	void FillMaterialProperties(const QList<DAVA::NMaterial *>& materials);
+    void FillMaterialTemplates(const QList<DAVA::NMaterial *>& materials);
 
     QVariant CheckForTextureDescriptor(const QVariant& value);
 
@@ -88,14 +92,18 @@ private slots:
 
 private:
     void initActions();
+    void initTemplates();
+
+    void setTemplatePlaceholder( const QString& text );
 
 	Ui::MaterialEditor *ui;
 	QtPosSaver posSaver;
 
-	DAVA::NMaterial *curMaterial;
+	QList< DAVA::NMaterial *> curMaterials;
 
 	PropertyEditorStateHelper *treeStateHelper;
     ExpandMap expandMap;
+    QPointer< MaterialTemplateModel > templatesFilterModel;
 };
 
 class MaterialEditorFogDialog : public QDialog

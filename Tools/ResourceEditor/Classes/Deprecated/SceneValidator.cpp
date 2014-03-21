@@ -690,21 +690,32 @@ bool SceneValidator::IsEntityHasDifferentLODsCount( DAVA::Entity *entity )
     if((GetSwitchComponent(entity) == NULL) || (GetLodComponent(entity) == NULL)) return false;
 
     RenderObject *ro = GetRenderObject(entity);
+    if(ro)
+    {
+        return IsObjectHasDifferentLODsCount(ro);
+    }
+
+    return false;
+}
+
+bool SceneValidator::IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObject)
+{
+    DVASSERT(renderObject);
+
     int32 maxLod[2] = { -1, -1};
 
-    const uint32 count = ro->GetRenderBatchCount(); 
+    const uint32 count = renderObject->GetRenderBatchCount(); 
     for(uint32 i = 0; i < count; ++i) 
     {
         int32 lod, sw;
-        ro->GetRenderBatch(i, lod, sw);
+        renderObject->GetRenderBatch(i, lod, sw);
 
         DVASSERT(sw < 2);
-        if((lod > maxLod[sw]) && (sw < 2))
+        if((lod > maxLod[sw]) && (sw >= 0 && sw < 2))
         {
             maxLod[sw] = lod;
         }
     }
 
-    return maxLod[0] != maxLod[1];
+    return ((maxLod[0] != maxLod[1]) && (maxLod[0] != -1 && maxLod[1] != -1));
 }
-

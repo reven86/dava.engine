@@ -37,6 +37,7 @@
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
+#include "Commands2/CloneLastBatchCommand.h"
 
 EditorMaterialSystem::EditorMaterialSystem(DAVA::Scene * scene)
 : DAVA::SceneSystem(scene)
@@ -308,7 +309,6 @@ void EditorMaterialSystem::ProcessCommand(const Command2 *command, bool redo)
         {
             AddMaterial(swCommand->oldBatch->GetMaterial(), swCommand->GetEntity(), swCommand->oldBatch);
         }
-
     }
 }
 
