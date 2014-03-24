@@ -1952,36 +1952,39 @@ namespace DAVA
 					return false;
 				}
 			}
-			
-			List<UIControl*>::reverse_iterator it = childs.rbegin();
-			List<UIControl*>::reverse_iterator itEnd = childs.rend();
-			for(; it != itEnd; ++it)
+			// Do not handle input for child controls which are insibible from parent
+			if (visible)
 			{
-				(*it)->isUpdated = false;
-			}
-			
-			it = childs.rbegin();
-			itEnd = childs.rend();
-			while(it != itEnd)
-			{
-				isIteratorCorrupted = false;
-				UIControl *current = *it;
-				if(!current->isUpdated)
+				List<UIControl*>::reverse_iterator it = childs.rbegin();
+				List<UIControl*>::reverse_iterator itEnd = childs.rend();
+				for(; it != itEnd; ++it)
 				{
-					current->Retain();
-					if(current->SystemInput(currentInput))
-					{
-						current->Release();
-						return true;
-					}
-					current->Release();
-					if(isIteratorCorrupted)
-					{
-						it = childs.rbegin();
-						continue;
-					}
+					(*it)->isUpdated = false;
 				}
-				++it;
+			
+				it = childs.rbegin();
+				itEnd = childs.rend();
+				while(it != itEnd)
+				{
+					isIteratorCorrupted = false;
+					UIControl *current = *it;
+					if(!current->isUpdated)
+					{
+						current->Retain();
+						if(current->SystemInput(currentInput))
+						{
+							current->Release();
+							return true;
+						}
+						current->Release();
+						if(isIteratorCorrupted)
+						{
+							it = childs.rbegin();
+							continue;
+						}
+					}
+					++it;
+				}
 			}
 		}
 		return SystemProcessInput(currentInput);
