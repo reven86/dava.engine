@@ -1245,6 +1245,7 @@ protected:
 	// boolean flags are grouped here to pack them together (see please DF-2149).
 	bool exclusiveInput : 1;
     bool recursiveVisible : 1;
+    bool internalVisible : 1;
 	bool visible : 1;
 	bool clipContents : 1;
 	bool debugDrawEnabled : 1;
@@ -1314,6 +1315,8 @@ protected:
 
     void DrawDebugRect(const UIGeometricData &geometricData, bool useAlpha = false);
 	void DrawPivotPoint(const Rect &drawRect);
+
+    virtual void SetInternalVisible(bool isVisible);
 
 private:
 	String	name;

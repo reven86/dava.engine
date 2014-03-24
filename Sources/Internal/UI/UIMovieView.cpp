@@ -81,6 +81,12 @@ void UIMovieView::SetVisible(bool isVisible, bool hierarchic)
 	movieViewControl->SetVisible(isVisible);
 }
 
+void UIMovieView::SetInternalVisible(bool isVisible)
+{
+    UIControl::SetInternalVisible(isVisible);
+    movieViewControl->SetVisible(internalVisible);
+}
+
 void UIMovieView::Play()
 {
 	movieViewControl->Play();

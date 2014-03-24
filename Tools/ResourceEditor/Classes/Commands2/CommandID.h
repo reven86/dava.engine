@@ -123,6 +123,8 @@ enum CommandID
     
     CMDID_DELETE_RENDER_BATCH,
 
+    CMDID_CLONE_LAST_BATCH,
+
 	CMDID_USER		= 0xF000
 };
 

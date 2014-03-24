@@ -66,7 +66,7 @@ public:
 	void SetGestures(bool value);
 
 protected:
-
+    virtual void SetInternalVisible(bool isVisible);
 	// Platform-specific implementation of the Web View Control.
 	IWebViewControl* webViewControl;
 };

@@ -72,25 +72,26 @@ void StaticOcclusion::BuildOcclusionInParallel(Vector<RenderObject*> & renderObj
                                                                              RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
                                                                              this,
                                                                              RENDER_LAYER_OPAQUE_ID), LAST_LAYER);
-	staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_AFTER_OPAQUE,
-                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                                             this,
-                                                                             RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
-	staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_ALPHA_TEST_LAYER,
-                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                                             this,
-                                                                             RENDER_LAYER_ALPHA_TEST_LAYER_ID), LAST_LAYER);
-    staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_TRANSLUCENT,
-                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                                             this,
-                                                                             RENDER_LAYER_TRANSLUCENT_ID), LAST_LAYER);
-	staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_AFTER_TRANSLUCENT,
-                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                                             this,
-                                                                             RENDER_LAYER_AFTER_TRANSLUCENT_ID), LAST_LAYER);
+//	staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_AFTER_OPAQUE,
+//                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
+//                                                                             this,
+//                                                                             RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
+//	staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_ALPHA_TEST_LAYER,
+//                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
+//                                                                             this,
+//                                                                             RENDER_LAYER_ALPHA_TEST_LAYER_ID), LAST_LAYER);
+//    staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_TRANSLUCENT,
+//                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
+//                                                                             this,
+//                                                                             RENDER_LAYER_TRANSLUCENT_ID), LAST_LAYER);
+//	staticOcclusionRenderPass->AddRenderLayer(new StaticOcclusionRenderLayer(LAYER_AFTER_TRANSLUCENT,
+//                                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
+//                                                                             this,
+//                                                                             RENDER_LAYER_AFTER_TRANSLUCENT_ID), LAST_LAYER);
 
     renderPassBatchArray = new RenderPassBatchArray(renderSystem);
-    renderPassBatchArray->InitPassLayers(staticOcclusionRenderPass);
+    RenderLayerBatchArray * singleLayer = new RenderLayerBatchArray(RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK);
+    renderPassBatchArray->InitPassLayersWithSingleLayer(staticOcclusionRenderPass, singleLayer);
     
     
     currentData = _currentData;
@@ -298,7 +299,7 @@ uint32 StaticOcclusion::RenderFrame()
                     RenderManager::Instance()->RestoreRenderTarget();
 
                     size_t size = recordedBatches.size();
-                    if (size > 8000)
+                    //if (size > 8000)
                     {
                         for (size_t k = 0; k < size; ++k)
                         {
@@ -334,28 +335,28 @@ uint32 StaticOcclusion::RenderFrame()
         
     }
 
-    size_t size = recordedBatches.size();
-    for (size_t k = 0; k < size; ++k)
-    {
-        std::pair<RenderBatch*, OcclusionQueryManagerHandle> & batchInfo = recordedBatches[k];
-        OcclusionQuery & query = manager.Get(batchInfo.second);
-        
-        uint64 timeWaiting = SystemTimer::Instance()->GetAbsoluteNano();
-        while (!query.IsResultAvailable())
-        {
-        }
-        timeWaiting = SystemTimer::Instance()->GetAbsoluteNano() - timeWaiting;
-        timeTotalWaiting += timeWaiting;
-        
-        uint32 result;
-        query.GetQuery(&result);
-        if (result != 0)
-        {
-            frameGlobalVisibleInfo.insert(batchInfo.first->GetRenderObject());
-        }
-        manager.ReleaseQueryObject(batchInfo.second);
-    }
-    recordedBatches.clear();
+//    size_t size = recordedBatches.size();
+//    for (size_t k = 0; k < size; ++k)
+//    {
+//        std::pair<RenderBatch*, OcclusionQueryManagerHandle> & batchInfo = recordedBatches[k];
+//        OcclusionQuery & query = manager.Get(batchInfo.second);
+//        
+//        uint64 timeWaiting = SystemTimer::Instance()->GetAbsoluteNano();
+//        while (!query.IsResultAvailable())
+//        {
+//        }
+//        timeWaiting = SystemTimer::Instance()->GetAbsoluteNano() - timeWaiting;
+//        timeTotalWaiting += timeWaiting;
+//        
+//        uint32 result;
+//        query.GetQuery(&result);
+//        if (result != 0)
+//        {
+//            frameGlobalVisibleInfo.insert(batchInfo.first->GetRenderObject());
+//        }
+//        manager.ReleaseQueryObject(batchInfo.second);
+//    }
+//    recordedBatches.clear();
 
     
     // Invisible on every frame

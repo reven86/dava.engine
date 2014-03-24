@@ -1792,8 +1792,10 @@ const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeade
     return FORMAT_INVALID;
 }
 	
-bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel)
+bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap)
 {
+    DVASSERT(mipMapLevel >= baseMipMap);
+    
     //Texture setup
     PVRHeaderV3 compressedHeader;
     uint8* pTextureData=NULL;
@@ -1829,12 +1831,12 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 	bool result = true;
 	for(uint32 faceIndex = 0; faceIndex < compressedHeader.u32NumFaces; ++faceIndex)
     {
-		Image* image = images[mipMapLevel * compressedHeader.u32NumFaces + faceIndex];
+		Image* image = images[(mipMapLevel - baseMipMap) * compressedHeader.u32NumFaces + faceIndex];
 		
 		image->width = PVRT_MAX(1, compressedHeader.u32Width >> mipMapLevel);
 		image->height = PVRT_MAX(1, compressedHeader.u32Height >> mipMapLevel);
 		image->format = formatDescriptor.formatID;
-		image->mipmapLevel = mipMapLevel;
+		image->mipmapLevel = mipMapLevel - baseMipMap;
 		
 		if(cubemapLayout != 0)
 		{
@@ -2530,7 +2532,7 @@ uint32 LibPVRHelper::GetCubemapFaceCount(File* file)
 	return header.u32NumFaces;
 }
     
-bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet)
+bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet, int32 baseMipMap)
 {
     uint32 fileSize = file->GetSize();
     uint8 *fileData = new uint8[fileSize];
@@ -2560,9 +2562,9 @@ bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet)
 
     bool read = true;
 	uint32 mipmapLevelCount = LibPVRHelper::GetMipMapLevelsCount(file);
-    for (uint32 i = 0; i < mipmapLevelCount; ++i)
+    for (uint32 i = baseMipMap; i < mipmapLevelCount; ++i)
     {
-        read &= ReadMipMapLevel((const char *)fileData, fileSize, imageSet, i);
+        read &= ReadMipMapLevel((const char *)fileData, fileSize, imageSet, i, baseMipMap);
     }
     
     SafeDeleteArray(fileData);
@@ -2656,7 +2658,8 @@ bool LibPVRHelper::IsCubemap(PVRHeaderV3* pvrHeader, const char* pvrData, const 
 	
 	return (metadata != NULL);
 }
-	
+
+
 const char* LibPVRHelper::GetCubemapMetadata(PVRHeaderV3* pvrHeader, const char* pvrData, const int32 pvrDataSize, uint32* outDataSize)
 {
 	const char* metadata = NULL;
@@ -2669,8 +2672,8 @@ const char* LibPVRHelper::GetCubemapMetadata(PVRHeaderV3* pvrHeader, const char*
 	if(pvrHeader->u32MetaDataSize > (sizeof(fourCC) + sizeof(dataKey) + sizeof(dataSize)))
 	{
 		uint32 index = 0;
-		
-		while(index < pvrHeader->u32MetaDataSize)
+
+        while(index < pvrHeader->u32MetaDataSize)
 		{
 			fourCC = *(uint32*)pvrData;
 			pvrData += sizeof(fourCC);

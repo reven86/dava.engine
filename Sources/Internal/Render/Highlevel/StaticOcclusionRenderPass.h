@@ -57,6 +57,7 @@ public:
     ~StaticOcclusionRenderPass();
 
     void Draw(Camera * camera, RenderPassBatchArray * renderPassBatchArray);
+    static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
 
     StaticOcclusion * occlusion;
     Set<RenderObject*> visibleObjectSet;

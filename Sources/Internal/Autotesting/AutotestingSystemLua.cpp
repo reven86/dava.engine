@@ -338,7 +338,7 @@ UIControl *AutotestingSystemLua::GetScreen()
 
 UIControl *AutotestingSystemLua::FindControl(const String &path)
 {
-    Logger::Debug("AutotestingSystemLua::FindControl %s", path.c_str());
+    //Logger::Debug("AutotestingSystemLua::FindControl %s", path.c_str());
     
     Vector<String> controlPath;
     ParsePath(path, controlPath);
@@ -635,7 +635,7 @@ void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 
 void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
 {
-    Logger::Debug("AutotestingSystemLua::ParsePath path=%s", path.c_str());
+    //Logger::Debug("AutotestingSystemLua::ParsePath path=%s", path.c_str());
     Split(path, "/", parsedPath);
 }
     

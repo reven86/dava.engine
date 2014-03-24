@@ -255,6 +255,18 @@ QModelIndex QtPropertyModel::AppendProperty(const QString &name, QtPropertyData*
 	return indexFromItem(data);
 }
 
+void QtPropertyModel::MergeProperty(QtPropertyData* data, QModelIndex const& parent)
+{
+	if(NULL != data)
+	{
+		QtPropertyData *parentData = itemFromIndexInternal(parent);
+		if(NULL != parentData)
+		{
+            parentData->MergeChild(data);
+		}
+	}
+}
+
 QModelIndex QtPropertyModel::InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent /* = QModelIndex() */)
 {
 	if(NULL != data)

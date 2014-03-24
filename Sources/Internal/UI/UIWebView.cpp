@@ -107,7 +107,14 @@ void UIWebView::SetVisible(bool isVisible, bool hierarchic)
 {
 	UIControl::SetVisible(isVisible, hierarchic);
     if (IsOnScreen())
-        this->webViewControl->SetVisible(isVisible, hierarchic);
+        webViewControl->SetVisible(isVisible, hierarchic);
+}
+
+void DAVA::UIWebView::SetInternalVisible(bool isVisible)
+{
+    UIControl::SetInternalVisible(isVisible);
+    if (IsOnScreen())
+        webViewControl->SetVisible(internalVisible, true);
 }
 
 void UIWebView::SetBackgroundTransparency(bool enabled)

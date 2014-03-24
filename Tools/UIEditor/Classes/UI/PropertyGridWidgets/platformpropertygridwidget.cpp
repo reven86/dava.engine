@@ -33,13 +33,14 @@
 static const QString RECT_PROPERTY_BLOCK_NAME = "Platform";
 
 PlatformPropertyGridWidget::PlatformPropertyGridWidget(QWidget *parent) :
-    BasePropertyGridWidget(parent),
+    RootPropertyGridWidget(parent),
     ui(new Ui::PlatformPropertyGridWidget)
 {
     ui->setupUi(this);
     SetPropertyBlockName(RECT_PROPERTY_BLOCK_NAME);
 
     ui->platformNameLineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
+ 	ui->platformNameLineEdit->installEventFilter(this);
 }
 
 PlatformPropertyGridWidget::~PlatformPropertyGridWidget()

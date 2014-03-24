@@ -62,7 +62,8 @@ public:
 	
 	// Whether the movie is being played?
 	bool IsPlaying();
-
+protected:
+    virtual void SetInternalVisible(bool isVisible);
 protected:
 	// Platform-specific implementation of the Movie Control.
 	IMovieViewControl* movieViewControl;

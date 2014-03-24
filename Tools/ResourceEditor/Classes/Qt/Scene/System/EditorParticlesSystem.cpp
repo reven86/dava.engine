@@ -145,8 +145,10 @@ void EditorParticlesSystem::Draw()
 			{
 				DrawSizeBox(selectedEffectEntity, selectedEmitter, center);
 			}
-			break;			
-		}					
+			break;
+                
+        default: break;
+		}
 		
 		DAVA::RenderManager::Instance()->ResetColor();
 	}
@@ -162,7 +164,7 @@ void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, 
 	float32 emitterRadius = (emitter->radius) ? emitter->radius->GetValue(time) : 0.0f;
 
     RenderManager::Instance()->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
-	DAVA::RenderHelper::Instance()->DrawCircle3D(center, DAVA::Vector3(0.0f, 0.0f, 1.0f), emitterRadius, true, renderState);
+	DAVA::RenderHelper::Instance()->DrawCircle3D(center, emitter->emissionVector->GetValue(time), emitterRadius, true, renderState);
 }
 
 void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)

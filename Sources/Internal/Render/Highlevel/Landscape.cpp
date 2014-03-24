@@ -276,7 +276,8 @@ bool Landscape::BuildHeightmap()
     bool retValue = false;
     if(heightmapPath.IsEqualToExtension(".png"))
     {
-        Vector<Image *> imageSet = ImageLoader::CreateFromFileByExtension(heightmapPath);
+        Vector<Image *> imageSet;
+        ImageLoader::CreateFromFileByExtension(heightmapPath, imageSet);
         if(0 != imageSet.size())
         {
             if ((imageSet[0]->GetPixelFormat() != FORMAT_A8) && (imageSet[0]->GetPixelFormat() != FORMAT_A16))

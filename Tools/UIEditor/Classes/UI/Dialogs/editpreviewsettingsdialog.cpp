@@ -29,7 +29,7 @@ EditPreviewSettingsDialog::EditPreviewSettingsDialog(QWidget *parent) :
     OnReferenceValueSetToDPI();
 }
 
-EditPreviewSettingsDialog::EditPreviewSettingsDialog()
+EditPreviewSettingsDialog::~EditPreviewSettingsDialog()
 {
     delete ui;
 }

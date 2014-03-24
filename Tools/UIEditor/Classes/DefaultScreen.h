@@ -85,7 +85,6 @@ private:
         InputStateGuideMove
 	};
 	
-	HierarchyTreeControlNode* GetSelectedControl(const Vector2& point, const HierarchyTreeNode* parent) const;
 	void GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST& list, const Rect& rect, const HierarchyTreeNode* parent) const;
 	
 	class SmartSelection
@@ -199,9 +198,10 @@ private:
 	// Get the control move delta (coarse/fine, depending on whether Shift key is pressed).
 	int32 GetControlMoveDelta();
 
-	// Check control's visibility in a recursive way.
-	bool IsControlVisible(UIControl* uiControl) const;
-	void IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible) const;
+	// Check control's visibility.
+	bool IsControlVisible(const UIControl* uiControl) const;
+
+    bool IsControlContentVisible( const UIControl *control ) const;
 
     // Calculate the stick to guides for different input modes.
     int32 CalculateStickToGuidesDrag(Vector2& offset) const;

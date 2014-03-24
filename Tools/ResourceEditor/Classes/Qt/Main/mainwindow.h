@@ -190,6 +190,10 @@ public slots:
     
     void OnRenderToCubemap();
 
+    void OnReloadShaders();
+
+    void OnSwitchWithDifferentLODs(bool checked);
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);

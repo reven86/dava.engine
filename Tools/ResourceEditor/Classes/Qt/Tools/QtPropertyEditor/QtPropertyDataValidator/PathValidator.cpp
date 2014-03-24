@@ -53,6 +53,5 @@ DAVA::String PathValidator::PrepareErrorMessage(const QVariant &v) const
     {
         referencePaths += path + " ";
     }
-	return DAVA::Format("\"%s\" is wrong. It's allowed to select only from %s", v.toString().toStdString().c_str(),
-                                        referencePaths.toStdString().c_str());
+	return DAVA::Format("\"%s\" is wrong. It's allowed to select only from %s", v.toString().toStdString().c_str(), referencePaths.toStdString().c_str());
 }

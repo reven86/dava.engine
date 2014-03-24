@@ -52,6 +52,7 @@
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/ConvertToShadowCommand.h"
 #include "Commands2/DeleteRenderBatchCommand.h"
+#include "Commands2/CloneLastBatchCommand.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
@@ -59,10 +60,11 @@
 
 #include "ActionComponentEditor.h"
 
+#include "Deprecated/SceneValidator.h"
+
 PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSignals /*= true*/)
 	: QtPropertyEditor(parent)
 	, viewMode(VIEW_NORMAL)
-	, curNode(NULL)
 	, treeStateHelper(this, curModel)
 	, favoriteGroup(NULL)
 {
@@ -90,33 +92,28 @@ PropertyEditor::~PropertyEditor()
 	DAVA::VariantType v(header()->sectionSize(0));
 	posSaver.SaveValue("splitPos", v);
 
-	SafeRelease(curNode);
+    ClearCurrentNodes();
 }
 
 void PropertyEditor::SetEntities(const EntityGroup *selected)
 {
-/*
-	DAVA::KeyedArchive *ka = new DAVA::KeyedArchive();
-	ResetProperties();
-	AppendProperty("test", new QtPropertyDataDavaKeyedArcive(ka));
-
-	return;
-*/
-
-    //TODO: support multiselected editing
-
-	SafeRelease(curNode);
-    if(NULL != selected && selected->Size() == 1)
- 	{
-         curNode = SafeRetain(selected->GetEntity(0));
-
-		 // ensure that custom properties exist
-		 // this call will create them if they are not created yet
-		 curNode->GetCustomProperties();
- 	}
+    ClearCurrentNodes();
+    if(NULL != selected && selected->Size() > 0)
+    {
+        const int nSelected = selected->Size();
+        curNodes.reserve( nSelected );
+        for ( size_t i = 0; i < selected->Size(); i++ )
+        {
+            DAVA::Entity * node = SafeRetain(selected->GetEntity(i));
+            curNodes << node;
+            // ensure that custom properties exist
+            // this call will create them if they are not created yet
+            node->GetCustomProperties();
+        }
+    }
 
     ResetProperties();
-	SaveScheme("~doc:/PropEditorDefault.scheme");
+    SaveScheme("~doc:/PropEditorDefault.scheme");
 }
 
 void PropertyEditor::SetViewMode(eViewMode mode)
@@ -147,6 +144,13 @@ bool PropertyEditor::GetFavoritesEditMode() const
 	return favoritesEditMode;
 }
 
+void PropertyEditor::ClearCurrentNodes()
+{
+    for ( int i = 0; i < curNodes.size(); i++ )
+	    SafeRelease(curNodes[i]);
+    curNodes.clear();
+}
+
 void PropertyEditor::ResetProperties()
 {
     // Store the current Property Editor Tree state before switching to the new node.
@@ -157,25 +161,34 @@ void PropertyEditor::ResetProperties()
 	RemovePropertyAll();
 	favoriteGroup = NULL;
 
-	if(NULL != curNode)
+    const int nNodes = curNodes.size();
+    if(nNodes > 0)
 	{
 		// create data tree, but don't add it to the property editor
 		QtPropertyData *root = new QtPropertyData();
 
-		// add info about current entity
-		QtPropertyData *curEntityData = CreateInsp(curNode, curNode->GetTypeInfo());
-		root->ChildAdd(curNode->GetTypeInfo()->Name(), curEntityData);
+		// add info about current entities
+        for (int i = 0; i < nNodes; i++)
+        {
+            DAVA::Entity *node = curNodes.at(i);
+            QtPropertyData *curEntityData = CreateInsp(node, node->GetTypeInfo());
 
-		// add info about components
-		for(int32 i = 0; i < Component::COMPONENT_COUNT; ++i)
-		{
-			Component *component = curNode->GetComponent(i);
-			if(component)
-			{
-				QtPropertyData *componentData = CreateInsp(component, component->GetTypeInfo());
-				root->ChildAdd(component->GetTypeInfo()->Name(), componentData);
-			}
-		}
+            PropEditorUserData* userData = GetUserData(root);
+            userData->entity = node;
+
+            root->MergeChild( curEntityData, node->GetTypeInfo()->Name());
+
+		    // add info about components
+            for (int ic = 0; ic < Component::COMPONENT_COUNT; ic++)
+            {
+                Component *component = node->GetComponent(ic);
+			    if (component)
+			    {
+				    QtPropertyData *componentData = CreateInsp(component, component->GetTypeInfo());
+				    root->MergeChild(componentData, component->GetTypeInfo()->Name());
+			    }
+            }
+        }
 
 		ApplyFavorite(root);
 		ApplyModeFilter(root);
@@ -294,25 +307,41 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 	if(NULL != data)
 	{
 		const DAVA::MetaInfo *meta = data->MetaInfo();
+        const bool isSingleSelection = (data->GetMergedCount() == 0);
 
-		if(NULL != meta)
+        if(NULL != meta)
 		{
 			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
 			{
 				// Add optional button to edit action component
 				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "");
+                editActions->setEnabled(isSingleSelection);
 				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
 			{
 				// Add optional button to bake transform render object
 				QtPropertyToolButton * bakeButton = CreateButton(data, QIcon(":/QtIcons/transform_bake.png"), "Bake Transform");
+                bakeButton->setEnabled(true);   // enabled for multiselect
 				QObject::connect(bakeButton, SIGNAL(pressed()), this, SLOT(ActionBakeTransform()));
+
+                QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
+                if(NULL != introData)
+                {
+                    DAVA::RenderObject *renderObject = (DAVA::RenderObject *) introData->object;
+                    if(SceneValidator::IsObjectHasDifferentLODsCount(renderObject))
+                    {
+                        QtPropertyToolButton * cloneBatches = CreateButton(data, QIcon(":/QtIcons/clone_batches.png"), "Clone batches for LODs correction");
+                        cloneBatches->setEnabled(isSingleSelection);
+                        QObject::connect(cloneBatches, SIGNAL(pressed()), this, SLOT(CloneRenderBatchesToFixSwitchLODs()));
+                    }
+                }
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
 			{
 				// Add optional button to bake transform render object
 				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
+                deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 
 				QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
@@ -323,6 +352,7 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 					if(ConvertToShadowCommand::CanConvertBatchToShadow(batch) && (ro->GetType() == RenderObject::TYPE_MESH))
 					{
 						QtPropertyToolButton * convertButton = CreateButton(data, QIcon(":/QtIcons/shadow.png"), "Convert To ShadowVolume");
+                        convertButton->setEnabled(isSingleSelection);
 						QObject::connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
 					}
 				}
@@ -331,12 +361,14 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			{
 				// Add optional button to bake transform render object
 				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
+                deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
 				// Add optional button to bake transform render object
 				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
+                goToMaterialButton->setEnabled(isSingleSelection);
 				QObject::connect(goToMaterialButton, SIGNAL(pressed()), this, SLOT(ActionEditMaterial()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
@@ -591,34 +623,65 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
 	case CMDID_CONVERT_TO_SHADOW:
 	case CMDID_PARTICLE_EMITTER_LOAD_FROM_YAML:
 	case CMDID_DELETE_RENDER_BATCH:
-		if((command->GetEntity() == curNode) || (command->GetEntity() == NULL))
-		{
-			ResetProperties();
-		}
-		break;
+	case CMDID_CLONE_LAST_BATCH:
+        {
+            bool doReset = (command->GetEntity() == NULL);
+            for ( int i = 0; !doReset && i < curNodes.size(); i++ )
+            {
+                if (command->GetEntity() == curNodes.at(i))
+                {
+                    doReset = true;
+                }
+            }
+            if (doReset)
+            {
+                ResetProperties();
+            }
+            break;
+        }
 	default:
 		OnUpdateTimeout();
 		break;
 	}
 }
 
-void PropertyEditor::OnItemEdited(const QModelIndex &index)
+void PropertyEditor::OnItemEdited(const QModelIndex &index) // TODO: fix undo/redo
 {
 	QtPropertyEditor::OnItemEdited(index);
 
+	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+    if (curScene == NULL)
+        return ;
 	QtPropertyData *propData = GetProperty(index);
 
 	if(NULL != propData)
 	{
-		Command2 *command = (Command2 *) propData->CreateLastCommand();
-		if(NULL != command)
-		{
-			SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-			if(NULL != curScene)
-			{
-				curScene->Exec(command);
-			}
-		}
+        const int nMerged = propData->GetMergedCount();
+        QList<QtPropertyData *> dataList;
+        dataList.reserve(nMerged + 1);
+        dataList << propData;
+        for ( int i = 0; i < nMerged; i++ )
+        {
+            dataList << propData->GetMergedData(i);
+        }
+
+        const bool useBatch = dataList.size() > 1;
+
+        if (useBatch)
+        {
+            curScene->BeginBatch("");
+        }
+
+        for (int i = 0; i < dataList.size(); i++)
+        {
+            Command2 *command = (Command2 *)dataList.at(i)->CreateLastCommand();
+            curScene->Exec(command);
+        }
+
+        if (useBatch)
+        {
+            curScene->EndBatch();
+        }
 	}
 }
 
@@ -682,11 +745,12 @@ void PropertyEditor::drawRow(QPainter * painter, const QStyleOptionViewItem & op
 
 void PropertyEditor::ActionEditComponent()
 {
-	if(NULL != curNode)
+	if(curNodes.size() == 1)
 	{
+        Entity *node = curNodes.at(0);
 		ActionComponentEditor editor;
 
-		editor.SetComponent((DAVA::ActionComponent*)curNode->GetComponent(DAVA::Component::ACTION_COMPONENT));
+		editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
 		editor.exec();
 
 		ResetProperties();
@@ -695,15 +759,17 @@ void PropertyEditor::ActionEditComponent()
 
 void PropertyEditor::ActionBakeTransform()
 {
-	if(NULL != curNode)
-	{
-		DAVA::RenderObject * ro = GetRenderObject(curNode);
+    const int n = curNodes.size();
+    for (int i = 0; i < n; i++)
+    {
+        Entity *node = curNodes.at(i);
+		DAVA::RenderObject * ro = GetRenderObject(node);
 		if(NULL != ro)
 		{
-			ro->BakeTransform(curNode->GetLocalTransform());
-			curNode->SetLocalTransform(DAVA::Matrix4::IDENTITY);
+			ro->BakeTransform(node->GetLocalTransform());
+			node->SetLocalTransform(DAVA::Matrix4::IDENTITY);
 		}
-	}
+    }
 }
 
 void PropertyEditor::ConvertToShadow()
@@ -713,50 +779,103 @@ void PropertyEditor::ConvertToShadow()
 	if(NULL != btn)
 	{
 		QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-		if(NULL != data)
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+
+		if(NULL != data && NULL != curScene)
 		{
-			SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-			if(curScene)
-			{
-				DAVA::RenderBatch *batch = (DAVA::RenderBatch *)data->object;
-				curScene->Exec(new ConvertToShadowCommand(batch));
-			}
+            QList< QtPropertyDataIntrospection * > dataList;
+            const int nMerged = data->GetMergedCount();
+            dataList.reserve( nMerged + 1 );
+            dataList << data;
+            for (int i = 0; i < nMerged; i++)
+            {
+                QtPropertyDataIntrospection *dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(data->GetMergedData(i));
+                if (dynamicData != NULL)
+                    dataList << dynamicData;
+            }
+
+            const bool usebatch = (dataList.size() > 1);
+            if (usebatch)
+            {
+                curScene->BeginBatch("ConvertToShadow batch");
+            }
+
+            for ( int i = 0; i < dataList.size(); i++ )
+            {
+		        DAVA::RenderBatch *batch = (DAVA::RenderBatch *)dataList.at(i)->object;
+		        curScene->Exec(new ConvertToShadowCommand(batch));
+            }
+
+            if (usebatch)
+            {
+                curScene->EndBatch();
+            }
 		}
 	}
 }
 
 void PropertyEditor::DeleteRenderBatch()
 {
+    // Code for removing several render batches
 	QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
 
 	if(NULL != btn)
 	{
 		QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-		if(NULL != data)
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+
+		if(NULL != data && NULL != curScene)
 		{
-			DAVA::RenderBatch *batch = (DAVA::RenderBatch *)data->object;
+            QList< QtPropertyDataIntrospection * > dataList;
+            const int nMerged = data->GetMergedCount();
+            dataList.reserve( nMerged + 1 );
+            dataList << data;
+            for (int i = 0; i < nMerged; i++)
+            {
+                QtPropertyDataIntrospection *dynamicData = dynamic_cast<QtPropertyDataIntrospection *>(data->GetMergedData(i));
+                if (dynamicData != NULL)
+                    dataList << dynamicData;
+            }
 
-			SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-			if(curScene)
-			{
-				DAVA::RenderObject *ro = batch->GetRenderObject();
-				DVASSERT(ro);
+            const bool usebatch = (dataList.size() > 1);
+            if (usebatch)
+            {
+                curScene->BeginBatch("DeleteRenderBatch");
+            }
 
-				DAVA::uint32 count = ro->GetRenderBatchCount();
-				for(DAVA::uint32 i = 0; i < count; ++i)
-				{
-					DAVA::RenderBatch *b = ro->GetRenderBatch(i);
-					if(b == batch)
-					{
-						curScene->Exec(new DeleteRenderBatchCommand(curNode, batch->GetRenderObject(), i));
-                        break;
-					}
-				}
-			}
+            for ( int j = 0; j < dataList.size(); j++ )
+            {
+                QtPropertyDataIntrospection *item = dataList.at(j);
+
+                QtPropertyData *pItem = item;
+                Entity *node = curNodes.at(0);
+
+                if (node)
+                {
+		            DAVA::RenderBatch *batch = (DAVA::RenderBatch *)item->object;
+				    DAVA::RenderObject *ro = batch->GetRenderObject();
+				    DVASSERT(ro);
+
+				    DAVA::uint32 count = ro->GetRenderBatchCount();
+				    for(DAVA::uint32 i = 0; i < count; ++i)
+				    {
+					    DAVA::RenderBatch *b = ro->GetRenderBatch(i);
+					    if(b == batch)
+					    {
+						    curScene->Exec(new DeleteRenderBatchCommand(node, batch->GetRenderObject(), i));
+                            break;
+					    }
+				    }
+                }
+            }
+
+            if (usebatch)
+            {
+                curScene->EndBatch();
+            }
 		}
 	}
 }
-
 
 void PropertyEditor::ActionEditMaterial()
 {
@@ -857,10 +976,25 @@ void PropertyEditor::SetFavorite(QtPropertyData *data, bool favorite)
 
 						if(canBeAdded)
 						{
-							QtPropertyData *favorite = CreateClone(data);
+                            QtPropertyData *favorite = CreateClone(data);
+
+                            QList< QtPropertyData * > mergedData;
+                            const int nMerged = data->GetMergedCount();
+                            mergedData.reserve( nMerged );
+                            for (int i = 0; i < nMerged; i++)
+                            {
+                                QtPropertyData *mergedItem = data->GetMergedData(i);
+                                mergedData << CreateClone(mergedItem);
+                            }
+                            
+                            favoriteGroup->MergeChild( favorite, data->GetName() );
+                            for (int i = 0; i < nMerged; i++)
+                            {
+                                favoriteGroup->MergeChild( mergedData.at(i), data->GetName() );
+                            }
+
 							ApplyCustomExtensions(favorite);
 
-							favoriteGroup->ChildAdd(data->GetName(), favorite);
 							userData->associatedData = favorite;
 							userData->isFavorite = true;
 
@@ -1032,4 +1166,24 @@ QtPropertyToolButton * PropertyEditor::CreateButton( QtPropertyData *data, const
 	button->setAutoRaise(true);
 
 	return button;
+}
+
+void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
+{
+    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+
+    if(NULL != btn)
+    {
+        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
+        if(NULL != data)
+        {
+            DAVA::RenderObject *renderObject = (DAVA::RenderObject *)data->object;
+
+            SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+            if(curScene && renderObject)
+            {
+                curScene->Exec(new CloneLastBatchCommand(renderObject));
+            }
+        }
+    }
 }

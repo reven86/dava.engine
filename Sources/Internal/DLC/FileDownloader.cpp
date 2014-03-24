@@ -96,14 +96,17 @@ FileDownloader::~FileDownloader()
     
 }
 
-uint32 FileDownloader::SynchDownload()
+uint32 FileDownloader::SynchDownload(const FilePath & downloadedFilePath)
 {
-    return DownloadFile();
+    return DownloadFile(downloadedFilePath);
 }
 
-void FileDownloader::AsynchDownload()
+void FileDownloader::AsynchDownload(const FilePath & downloadedFilePath)
 {
-    Thread * downloadThread = Thread::Create( Message( this, &FileDownloader::DownloadFile ) );
+    FileDownloader::ThreadFileData *threadData = new FileDownloader::ThreadFileData();
+    threadData->downloadedFilePath = downloadedFilePath;
+
+    Thread * downloadThread = Thread::Create( Message( this, &FileDownloader::DownloadFile, threadData) );
     downloadThread->Start();
     downloadThread->Release();
 }
@@ -140,23 +143,29 @@ size_t FileDownloader::write_data(void *ptr, size_t size, size_t nmemb, void *fi
     
 void FileDownloader::DownloadFile(BaseObject* bo, void* v1, void* v2)
 {
-    DownloadFile();
+    FileDownloader::ThreadFileData * threadData = (FileDownloader::ThreadFileData *)v1;
+    DownloadFile((threadData) ? threadData->downloadedFilePath : FilePath());
+    SafeDelete(threadData);
 }
     
-uint32 FileDownloader::DownloadFile()
+uint32 FileDownloader::DownloadFile( const FilePath & downloadedFilePath )
 {
     Logger::Instance()->FrameworkDebug("Start download");
 
+    FilePath fullSavePath = downloadedFilePath;
+    if(fullSavePath.IsEmpty())
+    {
+        fullSavePath = GetSourceUrl();
+        fullSavePath.ReplaceDirectory(GetSavePath());
+    }
+
     fileForWrite = NULL;
-    
-    FilePath fullSavePath(GetSourceUrl());
-    fullSavePath.ReplaceDirectory(GetSavePath());
-    
+
     // Check file exist
     fileForWrite = File::Create(fullSavePath, File::OPEN | File::READ);
     if (fileForWrite == NULL)
     {
-        // If fole not exist create new file
+        // If file not exist create new file
         fileForWrite = File::Create(fullSavePath, File::CREATE | File::WRITE);
     }
     else if (reloadFile == false)
@@ -171,14 +180,17 @@ uint32 FileDownloader::DownloadFile()
         SafeRelease(fileForWrite);
         fileForWrite = File::Create(fullSavePath, File::CREATE | File::WRITE);
     }
-    
+
     // Error read, write or create file
-    if ( fileForWrite == NULL && delegate != NULL)
+    if (fileForWrite == NULL)
     {
-        delegate->DownloadComplete(FileDownloaderDelegate::DL_ERROR_FILE_SYSTEM);
+        if(delegate)
+        {
+            delegate->DownloadComplete(FileDownloaderDelegate::DL_ERROR_FILE_SYSTEM);
+        }
         return CURL_LAST;
     }
-    
+
     uint32 status;
     do
     {
@@ -191,7 +203,7 @@ uint32 FileDownloader::DownloadFile()
     }
     while ( status != CURLE_OK && ( reconnectCnt < reconnectMax || reconnectMax == -1 ) );
     SafeRelease(fileForWrite);
-    
+
     //
     if ( status == CURLE_OK && delegate != NULL )
     {
@@ -203,7 +215,7 @@ uint32 FileDownloader::DownloadFile()
     }
 
     Logger::Instance()->FrameworkDebug("End download");
-    
+
     return status;
 }
 

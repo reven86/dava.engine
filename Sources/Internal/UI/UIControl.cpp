@@ -48,6 +48,7 @@ namespace DAVA
 		parent = NULL;
 		controlState = STATE_NORMAL;
         recursiveVisible = true;
+        internalVisible = true;
 		visible = true;
 		visibleForUIEditor = true;
 		/* 
@@ -140,6 +141,7 @@ namespace DAVA
         if (parent)
         {
             parent->RegisterInputProcessors(inputProcessorsCount);
+            SetInternalVisible(parent->internalVisible);
         }
 	}
 	UIControl *UIControl::GetParent()
@@ -961,6 +963,7 @@ namespace DAVA
         }
 
         recursiveVisible = isVisible;
+        SetInternalVisible( isVisible );
     }
 
 	void UIControl::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
@@ -1358,6 +1361,7 @@ namespace DAVA
 
 		controlState = srcControl->controlState;
         recursiveVisible = srcControl->recursiveVisible;
+        internalVisible = srcControl->internalVisible;
 		visible = srcControl->visible;
 		visibleForUIEditor = srcControl->visibleForUIEditor;
 		inputEnabled = srcControl->inputEnabled;
@@ -2981,6 +2985,26 @@ namespace DAVA
         for(; it != childs.end(); ++it)
         {
             (*it)->DumpInputs(depthLevel + 1);
+        }
+    }
+
+    void UIControl::SetInternalVisible( bool isVisible )
+    {
+        if( internalVisible == isVisible )
+            return;
+
+        if( isVisible && !recursiveVisible )
+            return;
+
+        if( isVisible && parent && !parent->internalVisible )
+            return;
+
+        internalVisible = isVisible;
+
+        List<UIControl*>::iterator it = childs.begin();
+        for(; it != childs.end(); ++it)
+        {
+            (*it)->SetInternalVisible(isVisible);
         }
     }
 

@@ -56,7 +56,8 @@ bool HeightMapValidator::ValidateInternal(QVariant &v)
     }
     else if(path.IsEqualToExtension(".png"))
     {
-        DAVA::Vector<DAVA::Image *> imageVector = DAVA::ImageLoader::CreateFromFileByExtension(path);
+        DAVA::Vector<DAVA::Image *> imageVector;
+        DAVA::ImageLoader::CreateFromFileByExtension(path, imageVector);
         DVASSERT(imageVector.size());
         
         DAVA::PixelFormat format = imageVector[0]->GetPixelFormat();

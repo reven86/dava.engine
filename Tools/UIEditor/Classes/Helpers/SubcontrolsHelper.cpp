@@ -62,4 +62,68 @@ bool SubcontrolsHelper::ControlIsSubcontrol(UIControl* uiControl)
 	return false;
 }
 
+QString SubcontrolsHelper::FormatCopyName(QString baseName, const HierarchyTreeNode* parent)
+{
+	QString name = baseName;
+	QString numberName;
+	const char* cName = name.toStdString().c_str();
+	for (int i = name.length() - 1; i >= 0; --i)
+	{
+		char a = cName[i];
+		if (a >= '0' && a <= '9')
+			numberName = a + numberName;
+		else
+			break;
+	}
+	int id = numberName.toInt();
+	baseName = name.left(name.length() - numberName.length());
+	Logger::Debug(baseName.toStdString().c_str());
+	
+	const HierarchyTreeRootNode* parentRoot = dynamic_cast<const HierarchyTreeRootNode*>(parent);
+	const HierarchyTreePlatformNode* parentPlatform = dynamic_cast<const HierarchyTreePlatformNode*>(parent);
+	const HierarchyTreeScreenNode* parentScreen = dynamic_cast<const HierarchyTreeScreenNode*>(parent);
+	if (!parentScreen)
+	{
+		const HierarchyTreeControlNode* parentControl = dynamic_cast<const HierarchyTreeControlNode*>(parent);
+		if (parentControl)
+		{
+			parentScreen = parentControl->GetScreenNode();
+		}
+	}
+	
+	for (int i = 0; i < 1000; i++)
+	{
+		name = QString("%1%2").arg(baseName).arg(++id);
+		Logger::Debug(name.toStdString().c_str());
+
+		bool bFind = false;
+		
+		if (parentPlatform || parentRoot)
+		{
+			// check name only for one child level for screen and platform copy
+			const HierarchyTreeNode::HIERARCHYTREENODESLIST& child = parent->GetChildNodes();
+			for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = child.begin();
+				 iter != child.end();
+				 ++iter)
+			{
+				const HierarchyTreeNode* node = (*iter);
+				if (node->GetName().compare(name) == 0)
+					bFind = true;
+			}
+			if (!bFind)
+				return name;
+		}
+		else
+		{
+			// copy control
+			if (parentScreen)
+			{
+				if (!parentScreen->IsNameExist(name, parentScreen))
+					return name;
+			}
+		}
+	}
+	return baseName;
+}
+
 };
