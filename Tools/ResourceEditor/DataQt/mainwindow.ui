@@ -1809,7 +1809,6 @@
     <string>ImageSplitter</string>
    </property>
   </action>
-<<<<<<< HEAD
   <action name="actionRenderToCubemap">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1817,7 +1816,8 @@
    </property>
    <property name="text">
     <string>Render to Cubemap</string>
-=======
+   </property>
+  </action>
   <action name="actionReloadShader">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1837,7 +1837,6 @@
    </property>
    <property name="text">
     <string>Switches with Different LODs</string>
->>>>>>> development
    </property>
   </action>
  </widget>
