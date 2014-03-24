@@ -116,7 +116,11 @@ using namespace DAVA;
 		defaultFramebuffer = 0;
 	}
     
-    // \todo Delete Depth Buffer Correctly
+    if(depthRenderbuffer)
+    {
+        glDeleteRenderbuffers(1, &depthRenderbuffer);
+		depthRenderbuffer = 0;
+    }
 
 	if (colorRenderbuffer)
 	{

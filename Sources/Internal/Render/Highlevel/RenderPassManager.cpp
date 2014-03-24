@@ -75,7 +75,7 @@ RenderPassManager::RenderPassManager(RenderSystem * renderSystem)
 
     PostEffectRenderPass * postEffectPass = new PostEffectRenderPass(renderSystem, PASS_POST_EFFECT, RENDER_PASS_POST_EFFECT_ID);
     InsertPass(postEffectPass);
-    postEffectPass->SetResolution(800, 600);
+    postEffectPass->SetResolution(1365, 1024);
 
     //StaticOcclusionRenderPass * staticOcclusionRenderPass = new StaticOcclusionRenderPass(renderSystem, PASS_STATIC_OCCLUSION, RENDER_PASS_STATIC_OCCLUSION_ID);
     //InsertPass(staticOcclusionRenderPass);
