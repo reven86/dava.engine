@@ -156,8 +156,7 @@ public class JNITextField {
 						FutureTask<Boolean> t = new FutureTask<Boolean>(new Callable<Boolean>() {
 							@Override
 							public Boolean call() throws Exception {
-								byte []bytes = source.toString().getBytes("UTF-8");
-								return TextFieldKeyPressed(_id, dstart, dend - dstart, bytes);
+								return TextFieldKeyPressed(_id, dstart, dend - dstart, source.toString());
 							}
 						});
 						JNIActivity.GetActivity().PostEventToGL(t);
@@ -266,7 +265,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.AsyncRun();
+		task.Run();
 	}
 
 	public static void SetFontSize(int id, final float size) {
@@ -690,5 +689,5 @@ public class JNITextField {
 			int id,
 			int replacementLocation,
 			int replacementLength,
-			byte[] byteArray);
+			String replacementString);
 }

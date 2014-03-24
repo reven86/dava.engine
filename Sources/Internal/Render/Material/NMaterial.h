@@ -269,7 +269,7 @@ public:
 	NMaterial* Clone();
 	NMaterial* Clone(const String& newName);
 		
-    IlluminationParams * GetIlluminationParams(bool createIfNeeded = true);
+    IlluminationParams * GetIlluminationParams();
     void ReleaseIlluminationParams();
 	
 	// Work with textures and properties
@@ -347,8 +347,6 @@ public:
     inline static void SetGlobalMaterial(NMaterial* globalMaterial);
     inline static NMaterial* GetGlobalMaterial();
 
-    void BuildActiveUniformsCacheParamsCache();
-    
 protected:
 	
 	class TextureBucket

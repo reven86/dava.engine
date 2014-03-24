@@ -36,6 +36,8 @@
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Scene/SceneSignals.h"
 
+class DAVA::Entity;
+
 struct PropEditorUserData : public QtPropertyData::UserData 
 {
 	enum PropertyType

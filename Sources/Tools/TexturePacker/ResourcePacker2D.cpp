@@ -204,7 +204,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
-	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
+	int32 maxTextureSize = TexturePacker::TEXTURE_SIZE;
 	
 	// TODO: Check CRC32
 	Vector<Magick::Image> layers;
@@ -265,7 +265,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			
 			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
 			
-			if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
+			if ((defFile->frameRects[k - 1].dx >= maxTextureSize) || (defFile->frameRects[k - 1].dy >= maxTextureSize))
 			{
 				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
 					   , defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
@@ -521,21 +521,14 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				packer.UseOnlySquareTextures();
 				packer.SetMaxTextureSize(2048);
 			}
-            else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
-            {
-                packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
-            }
 
             if(definitionFileList.size() == 1)
             {
                 DefinitionFile * def = definitionFileList.front();
                 if(def->frameCount == 1)
                 {
-                    if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel") == false)
-                    {
-                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
-                        CommandLineParser::Instance()->AddArgument("--add0pixel");
-                    }
+                    def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
+                    CommandLineParser::Instance()->AddArgument("--add0pixel");
                 }
             }
 

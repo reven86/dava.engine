@@ -19,7 +19,6 @@
     <ClCompile Include="Classes\Commands\CenterPivotPointCommand.cpp" />
     <ClCompile Include="Classes\Commands\ChangeAlignPropertyCommand.cpp" />
     <ClCompile Include="Classes\Commands\ControlCommands.cpp" />
-    <ClCompile Include="Classes\Commands\GuideCommands.cpp" />
     <ClCompile Include="Classes\Commands\ImportCommands.cpp" />
     <ClCompile Include="Classes\Commands\InvokeMethodCommand.cpp" />
     <ClCompile Include="Classes\Commands\ItemsCommand.cpp" />
@@ -38,10 +37,8 @@
     <ClCompile Include="Classes\EditorSettings.cpp" />
     <ClCompile Include="Classes\FrameworkMain.cpp" />
     <ClCompile Include="Classes\GameCore.cpp" />
+    <ClCompile Include="Classes\Grid\GridController.cpp" />
     <ClCompile Include="Classes\Grid\GridVisualizer.cpp" />
-    <ClCompile Include="Classes\Guides\GuideData.cpp" />
-    <ClCompile Include="Classes\Guides\GuideMimeData.cpp" />
-    <ClCompile Include="Classes\Guides\GuidesManager.cpp" />
     <ClCompile Include="Classes\Helpers\BackgroundGridWidgetHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ColorHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ListPropertyGridWidgetHelper.cpp" />
@@ -97,7 +94,6 @@
     <ClCompile Include="Classes\UI\davaglwidget.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\createaggregatordlg.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\editpreviewsettingsdialog.cpp" />
-    <ClCompile Include="Classes\UI\Dialogs\errorslistdialog.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\importdialog.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\localizationeditordialog.cpp" />
     <ClCompile Include="Classes\UI\Dialogs\previewsettingsdialog.cpp" />
@@ -150,11 +146,8 @@
     <ClCompile Include="GeneratedFiles\EditorSettings_moc.cpp" />
     <ClCompile Include="GeneratedFiles\FrameworkMain_moc.cpp" />
     <ClCompile Include="GeneratedFiles\GameCore_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\Grid\GridController_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Grid\GridVisualizer_moc.cpp" />
-    <ClCompile Include="GeneratedFiles\Guides\GuideData_moc.cpp" />
-    <ClCompile Include="GeneratedFiles\Guides\GuideMimeData_moc.cpp" />
-    <ClCompile Include="GeneratedFiles\Guides\GuidesEnums_moc.cpp" />
-    <ClCompile Include="GeneratedFiles\Guides\GuidesManager_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Helpers\BackgroundGridWidgetHelper_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Helpers\LocalizationSystemHelper_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Helpers\PropertiesHelper_moc.cpp" />
@@ -204,7 +197,6 @@
     <ClCompile Include="GeneratedFiles\UI\davaglwidget_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\createaggregatordlg_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\editpreviewsettingsdialog_moc.cpp" />
-    <ClCompile Include="GeneratedFiles\UI\Dialogs\errorslistdialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\importdialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\localizationeditordialog_moc.cpp" />
     <ClCompile Include="GeneratedFiles\UI\Dialogs\previewsettingsdialog_moc.cpp" />
@@ -252,7 +244,6 @@
     <ClInclude Include="Classes\Commands\ChangeAlignPropertyCommand.h" />
     <ClInclude Include="Classes\Commands\ChangePropertyCommand.h" />
     <ClInclude Include="Classes\Commands\ControlCommands.h" />
-    <ClInclude Include="Classes\Commands\GuideCommands.h" />
     <ClInclude Include="Classes\Commands\ImportCommands.h" />
     <ClInclude Include="Classes\Commands\InvokeMethodCommand.h" />
     <ClInclude Include="Classes\Commands\ItemsCommand.h" />
@@ -311,11 +302,8 @@
     <ClInclude Include="Classes\EditorSettings.h" />
     <ClInclude Include="Classes\FrameworkMain.h" />
     <ClInclude Include="Classes\GameCore.h" />
+    <ClInclude Include="Classes\Grid\GridController.h" />
     <ClInclude Include="Classes\Grid\GridVisualizer.h" />
-    <ClInclude Include="Classes\Guides\GuideData.h" />
-    <ClInclude Include="Classes\Guides\GuideMimeData.h" />
-    <ClInclude Include="Classes\Guides\GuidesEnums.h" />
-    <ClInclude Include="Classes\Guides\GuidesManager.h" />
     <ClInclude Include="Classes\Helpers\BackgroundGridWidgetHelper.h" />
     <ClInclude Include="Classes\Helpers\ColorHelper.h" />
     <ClInclude Include="Classes\Helpers\ListPropertyGridWidgetHelper.h" />
@@ -504,7 +492,6 @@
     </ClInclude>
     <ClInclude Include="Classes\UI\Dialogs\createaggregatordlg.h" />
     <ClInclude Include="Classes\UI\Dialogs\editpreviewsettingsdialog.h" />
-    <ClInclude Include="Classes\UI\Dialogs\errorslistdialog.h" />
     <ClInclude Include="Classes\UI\Dialogs\importdialog.h" />
     <ClInclude Include="Classes\UI\Dialogs\previewsettingsdialog.h" />
     <ClInclude Include="Classes\UI\Dialogs\regexpinputdialog.h" />
@@ -710,7 +697,6 @@
     <ClInclude Include="GeneratedFiles\ui_createplatformdlg.h" />
     <ClInclude Include="GeneratedFiles\ui_createscreendlg.h" />
     <ClInclude Include="GeneratedFiles\ui_davaglwidget.h" />
-    <ClInclude Include="GeneratedFiles\ui_errorslistdialog.h" />
     <ClInclude Include="GeneratedFiles\ui_flagspropertygridwidget.h" />
     <ClInclude Include="GeneratedFiles\ui_fontmanagerdialog.h" />
     <ClInclude Include="GeneratedFiles\ui_hierarchytreewidget.h" />
@@ -749,7 +735,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="UI\editpreviewsettingsdialog.ui" />
-    <None Include="UI\errorslistdialog.ui" />
     <None Include="UI\hierarchytreewidget.ui">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">
       </AdditionalInputs>

@@ -58,8 +58,6 @@ public:
 class ParticleEmitter : public BaseObject
 {
 public:
-    static ParticleEmitter *LoadEmitter(const FilePath & filename);
-
 	enum eType
 	{
 		EMITTER_POINT,
@@ -107,7 +105,8 @@ public:
 	FilePath configPath;	
 	eType	emitterType;	    	
 
-	Vector<ParticleLayer*> layers;	
+	Vector<ParticleLayer*> layers;
+	Vector3 position;			
 	bool shortEffect;	
 	
 	float32 lifeTime;
@@ -119,25 +118,34 @@ public:
 	RefPtr< PropertyLine<float32> > emissionRange;
 	RefPtr< PropertyLine<float32> > radius;
 	RefPtr< PropertyLine<Color> > colorOverLife;
-	RefPtr< PropertyLine<Vector3> > size;	    
+	RefPtr< PropertyLine<Vector3> > size;	
 
 protected:
     virtual ~ParticleEmitter();
 
 private:
-	bool requireDeepClone;
+	struct EmitterYamlCacheEntry
+	{
+		YamlParser *parser;
+		int refCount;
+	};
 
 
 #if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<FilePath, ParticleEmitter*> EmitterCacheMap;
+	typedef Map<FilePath, EmitterYamlCacheEntry> YamlCacheMap;
 #else //#if defined (USE_FILEPATH_IN_MAP)
-	typedef Map<String, ParticleEmitter*> EmitterCacheMap;
-#endif //#if defined (USE_FILEPATH_IN_MAP)		    
-    void ReleaseFromCache(const FilePath& name);
+	typedef Map<String, EmitterYamlCacheEntry> YamlCacheMap;
+#endif //#if defined (USE_FILEPATH_IN_MAP)
+	static YamlCacheMap emitterYamlCache;
+	
+protected:
+	
+	YamlParser* GetParser(const FilePath &filename);
 
-    static EmitterCacheMap emitterCache;
-public:
-    static bool FORCE_DEEP_CLONE;
+	void RetainInCache(const FilePath & name);
+	void ReleaseFromCache(const FilePath & name);	
+	FilePath emitterFileName;
+ 
 };
 
 }

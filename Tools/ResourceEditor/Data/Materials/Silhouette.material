@@ -1,5 +1,5 @@
 RenderTechnique:
-    Layers: ["AfterTransclucentRenderLayer"]
+    Layers: ["TransclucentRenderLayer"]
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/Materials/Shaders/Silhouette/silhouette"

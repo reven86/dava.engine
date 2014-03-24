@@ -47,7 +47,6 @@ public:
 	virtual void RestoreVisualState(KeyedArchive* visualStateProps) = 0;
 	
 	ParticleEmitter* GetEmitter() const {return emitter;};
-    ParticleEffectComponent *GetEffect() const {return effect;};
 
 	// Get/set the active scene.
 	void SetActiveScene(SceneEditor2* scene) {activeScene = scene;};
@@ -62,7 +61,6 @@ protected:
 	float ConvertFromSliderValueToPlaybackSpeed(int sliderValue);
 
 	ParticleEmitter* emitter;
-    ParticleEffectComponent *effect;
 
 	SceneEditor2* activeScene;
 };

@@ -78,17 +78,10 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene * scene)
     
     objectsDebugDrawer->SetRenderState(renderState);
     landDebugDrawer->SetRenderState(renderState);
-
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
 {
-	if(GetScene())
-	{
-		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
-	}
-
 	QMapIterator<DAVA::Entity*, CollisionBaseObject*> i(entityToCollision);
 	while(i.hasNext())
 	{
@@ -116,7 +109,7 @@ void SceneCollisionSystem::SetDrawMode(int mode)
 	drawMode = mode;
 }
 
-int SceneCollisionSystem::GetDrawMode()
+int SceneCollisionSystem::GetDebugDrawFlags()
 {
 	return drawMode;
 }
@@ -259,6 +252,15 @@ DAVA::Landscape* SceneCollisionSystem::GetLandscape() const
 
 void SceneCollisionSystem::UpdateCollisionObject(DAVA::Entity *entity)
 {
+	if(NULL != entity)
+	{
+		// make sure that WorldTransform is up to date
+		if(NULL != entity->GetScene())
+		{
+			entity->GetScene()->transformSystem->Process(.001f);
+		}
+	}
+
 	RemoveEntity(entity);
 	AddEntity(entity);
 }
@@ -436,14 +438,6 @@ void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
 	}
 }
 
-void SceneCollisionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
-{
-    if(EventSystem::SWITCH_CHANGED == event)
-    {
-        UpdateCollisionObject(entity);
-    }
-}
-
 void SceneCollisionSystem::AddEntity(DAVA::Entity * entity)
 {
 	if(NULL != entity)
@@ -501,9 +495,7 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 	if( NULL == cObj &&
 		NULL != renderObject && entity->IsLodMain(0))
 	{
-        RenderObject::eType objType = renderObject->GetType();
-        if (objType!=RenderObject::TYPE_SPRITE) 
-		    cObj = new CollisionRenderObject(entity, objectsCollWorld, renderObject);
+		cObj = new CollisionRenderObject(entity, objectsCollWorld, renderObject);
 	}
 
 	DAVA::Camera *camera = DAVA::GetCamera(entity);

@@ -272,7 +272,7 @@ void SceneInfo::RefreshLODInfoForSelection()
 
 uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
 {
-	String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+	String projectPath = ProjectManager::Instance()->CurProjectPath().toStdString();
     uint32 textureSize = 0;
     
     TexturesMap::const_iterator endIt = textures.end();

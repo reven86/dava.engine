@@ -45,8 +45,6 @@
 #include "TextureBrowser/TextureConvertor.h"
 #include "TextureBrowser/TextureInfo.h"
 
-#include "Settings/SettingsManager.h"
-
 #include <QPainter>
 
 
@@ -88,18 +86,17 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
         MaterialItem *item = itemFromIndex(index.sibling(index.row(), 0));
         if(NULL != item)
         {
-            int lodIndex = item->GetLodIndex();
-            int switchIndex = item->GetSwitchIndex();
-
             if(index.column() == 1)
             {
                 switch(role)
                 {
                     case Qt::DisplayRole:
                         {
-                            if(-1 != lodIndex)
+                            int index = item->GetLodIndex();
+
+                            if(-1 != index)
                             {
-                                ret = lodIndex;
+                                ret = index;
                             }
                         }
                         break;
@@ -108,12 +105,6 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
                         ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
                         break;
 
-                    case Qt::BackgroundColorRole:
-                        if(lodIndex >= 0 && lodIndex < supportedLodColorsCount)
-                        {
-                            ret = lodColors[lodIndex];
-                        }
-                        break;
                     default:
                         break;
                 }
@@ -125,22 +116,17 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
                 {
                     case Qt::DisplayRole:
                         {
-                            if(-1 != switchIndex)
+                            int index = item->GetSwitchIndex();
+
+                            if(-1 != index)
                             {
-                                ret = switchIndex;
+                                ret = index;
                             }
                         }
                         break;
 
                     case Qt::TextAlignmentRole:
                         ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
-                        break;
-
-                    case Qt::BackgroundColorRole:
-                        if(switchIndex >= 0 && switchIndex < supportedSwColorsCount)
-                        {
-                            ret = switchColors[switchIndex];
-                        }
                         break;
 
                     default:
@@ -171,8 +157,6 @@ void MaterialModel::SetScene(SceneEditor2 *scene)
 {
 	removeRows(0, rowCount());
 	curScene = scene;
-
-    ReloadLodSwColors();
 
 	if(NULL != scene)
 	{
@@ -467,39 +451,4 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction acti
 	}
 
     return true;
-}
-
-void MaterialModel::ReloadLodSwColors()
-{
-    QString key;
-
-    for(int i = 0; i < supportedLodColorsCount; ++i)
-    {
-        key.sprintf("LodColor%d", i);
-
-        DAVA::VariantType val = SettingsManager::Instance()->GetValue(key.toStdString(), SettingsManager::GENERAL);
-        if(val.type == DAVA::VariantType::TYPE_COLOR)
-        {
-            lodColors[i] = ColorToQColor(val.AsColor());
-        }
-        else
-        {
-            lodColors[i] = QColor();
-        }
-    }
-
-    for(int i = 0; i < supportedSwColorsCount; ++i)
-    {
-        key.sprintf("SwitchColor%d", i);
-
-        DAVA::VariantType val = SettingsManager::Instance()->GetValue(key.toStdString(), SettingsManager::GENERAL);
-        if(val.type == DAVA::VariantType::TYPE_COLOR)
-        {
-            switchColors[i] = ColorToQColor(val.AsColor());
-        }
-        else
-        {
-            switchColors[i] = QColor();
-        }
-    }
 }

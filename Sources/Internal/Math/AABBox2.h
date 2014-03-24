@@ -79,21 +79,21 @@ public:
 	inline void Empty();
 
 	//! \brief check if bounding box intersect line
-	inline bool IsIntersectLine(const Vector2 & l1, const Vector2 &l2) const;
+	inline bool IsIntersectLine(const Vector2 & l1, const Vector2 &l2);
 	
 	//! \brief check if bounding box intersect ray
-	bool IsIntersectsWithRay(Ray2 & r, float32 & tmin, float32 & tmax, float32 t0 = 0.0f, float32 t1 = 1.0f) const;
+	bool IsIntersectsWithRay(Ray2 & r, float32 & tmin, float32 & tmax, float32 t0 = 0.0f, float32 t1 = 1.0f);
 
 	//! \brief check if bounding box intersect other bounding box. SAT.
 	//! \param box another bounding box
 	//! \return true if intersect, false otherwise
-	bool IsIntersectsWithBox(const AABBox2 & box) const;
+	bool IsIntersectsWithBox(const AABBox2 & box);
 	
 	//! \brief check if point inside bbox
 	inline bool IsInside(const Vector2 & pt) const;
 	
 	//! \brief get center
-	inline Vector2 GetCenter() const;
+	inline Vector2 GetCenter();
 
 
 	//! \brief copy operator of bounding box class
@@ -101,7 +101,7 @@ public:
 
         
         
-        inline bool IntersectsSegment(const Vector2 & l1, const Vector2 &l2) const;
+        inline bool IntersectsSegment(const Vector2 & l1, const Vector2 &l2);
 };
 
 //! \brief construct empty bounding box
@@ -159,7 +159,7 @@ inline void AABBox2::Empty()
 
 
 //! \brief check if bounding box intersect line
-inline bool AABBox2::IsIntersectLine(const Vector2 & /*l1*/, const Vector2 & /*l2*/) const
+inline bool IsIntersectLine(const Vector2 & /*l1*/, const Vector2 & /*l2*/)
 {
 	//float32 tmin[3];
 	//float32 tmax[3];
@@ -196,13 +196,13 @@ inline AABBox2 & AABBox2::operator =(const AABBox2 & _bbox)
 }
 
 //! \brief get center
-inline Vector2 AABBox2::GetCenter() const
+inline Vector2 AABBox2::GetCenter()
 {
 	return (min + max) / 2.0f;
 }
 
 
-    inline bool AABBox2::IntersectsSegment(const Vector2 & l1, const Vector2 &l2) const
+    inline bool AABBox2::IntersectsSegment(const Vector2 & l1, const Vector2 &l2)
     {
         float xmin, xmax, ymin, ymax;
         

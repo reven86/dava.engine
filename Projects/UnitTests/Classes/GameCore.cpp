@@ -63,7 +63,6 @@
 #include "UIMovieTest.h"
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
-#include "StringFormatTest.h"
 
 using namespace DAVA;
 
@@ -89,7 +88,6 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
-    new StringFormatTest();
     new RectSpriteTest();
 
 	new ComponentsTest();

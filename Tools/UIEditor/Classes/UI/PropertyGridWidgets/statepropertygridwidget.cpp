@@ -206,9 +206,6 @@ void StatePropertyGridWidget::OnListItemChanged(QListWidgetItem* /*item*/)
 			ui->selectAllCheckbox->setCheckState(Qt::Unchecked);
 			ui->stateSelectListWidget->item(0)->setCheckState(Qt::Checked);
 			break;
-		case STATE_PARTIALLY_CHECKED:
-			ui->selectAllCheckbox->setCheckState(Qt::Unchecked);
-			break;
 
 		default:
 			break;
@@ -269,7 +266,6 @@ void StatePropertyGridWidget::Initialize(BaseMetadata* metaData)
     // Select the first state, emit the signal to update controller.
     int selectedStateIndex = UIControlStateHelper::GetDefaultControlStateIndex();
     ui->stateSelectComboBox->setCurrentIndex(selectedStateIndex);
-	ui->selectAllCheckbox->setCheckState(Qt::Unchecked);
     emit SelectedStateChanged(UIControlStateHelper::GetDefaultControlState());
 }
 

@@ -384,12 +384,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 				DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
 
 				DAVA::AABBox3 commonBBox = loadedEntity->GetWTMaximumBoundingBoxSlow();
-				DAVA::float32 bboxSize = 5.0f;
-                
-                if(!commonBBox.IsEmpty())
-                {
-                    bboxSize += (commonBBox.max - commonBBox.min).Length();
-                }
+				DAVA::float32 bboxSize = (commonBBox.max - commonBBox.min).Length();
 
 				camDirection.Normalize();
 				
@@ -399,6 +394,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 			DAVA::Matrix4 transform = loadedEntity->GetLocalTransform();
 			transform.SetTranslationVector(entityPos);
 			loadedEntity->SetLocalTransform(transform);
+
             
 			sceneEditor->Exec(new EntityAddCommand(loadedEntity, sceneEditor));
 
@@ -548,16 +544,14 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMaterial *toState) const
 {
 	Texture* lightmap = fromState->GetTexture(NMaterial::TEXTURE_LIGHTMAP);
-	bool needReleaseTexture = false;
 	if(!lightmap)
 	{
 		lightmap = Texture::CreatePink();
-		needReleaseTexture = true;
 	}
 	
 	toState->SetTexture(NMaterial::TEXTURE_LIGHTMAP, lightmap);
 	
-	if(needReleaseTexture)
+	if(lightmap->isPink)
 	{
 		SafeRelease(lightmap);
 	}
@@ -575,44 +569,6 @@ void StructureSystem::CopyLightmapSettings(DAVA::NMaterial *fromState, DAVA::NMa
 	}
 }
 
-struct BatchInfo
-{
-	BatchInfo() : switchIndex(-1), lodIndex(-1), batch(NULL) {}
-
-	DAVA::int32 switchIndex;
-	DAVA::int32 lodIndex;
-
-	DAVA::RenderBatch *batch;
-};
-
-struct SortBatches
-{
-	bool operator()(const BatchInfo & b1, const BatchInfo & b2)
-	{
-		if(b1.switchIndex == b2.switchIndex)
-		{
-			return b1.lodIndex < b2.lodIndex;
-		}
-
-		return b1.switchIndex < b2.switchIndex;
-	}
-};
-
-void CreateBatchesInfo(DAVA::RenderObject *object, DAVA::Vector<BatchInfo> & batches)
-{
-	if(!object) return;
-
-	DAVA::uint32 batchesCount = object->GetRenderBatchCount();
-	for(DAVA::uint32 i = 0; i < batchesCount; ++i)
-	{
-		BatchInfo info;
-		info.batch = object->GetRenderBatch(i, info.lodIndex, info.switchIndex);
-		batches.push_back(info);
-	}
-
-	std::sort(batches.begin(), batches.end(), SortBatches());
-}
-
 bool StructureSystem::CopyLightmapSettings(DAVA::Entity *fromEntity, DAVA::Entity *toEntity) const
 {
     DAVA::Vector<DAVA::RenderObject *> fromMeshes;
@@ -620,70 +576,28 @@ bool StructureSystem::CopyLightmapSettings(DAVA::Entity *fromEntity, DAVA::Entit
 
     DAVA::Vector<DAVA::RenderObject *> toMeshes;
     FindMeshesRecursive(toEntity, toMeshes);
-
+    
     if(fromMeshes.size() == toMeshes.size())
     {
         DAVA::uint32 meshCount = (DAVA::uint32)fromMeshes.size();
         for(DAVA::uint32 m = 0; m < meshCount; ++m)
         {
-			DAVA::Vector<BatchInfo> fromBatches;
-			CreateBatchesInfo(fromMeshes[m], fromBatches);
+            DAVA::uint32 rbFromCount = fromMeshes[m]->GetRenderBatchCount();
+            DAVA::uint32 rbToCount = toMeshes[m]->GetRenderBatchCount();
+            
+            if(rbFromCount != rbToCount)
+                return false;
+            
+            for(DAVA::uint32 rb = 0; rb < rbFromCount; ++rb)
+            {
+                DAVA::RenderBatch *fromBatch = fromMeshes[m]->GetRenderBatch(rb);
+                DAVA::RenderBatch *toBatch = toMeshes[m]->GetRenderBatch(rb);
 
-			DAVA::Vector<BatchInfo> toBatches;
-			CreateBatchesInfo(toMeshes[m], toBatches);
-
-			DAVA::uint32 rbFromCount = fromMeshes[m]->GetRenderBatchCount();
-			DAVA::uint32 rbToCount = toMeshes[m]->GetRenderBatchCount();
-
-			for(DAVA::uint32 from = 0, to = 0; from < rbFromCount && to < rbToCount; )
-			{
-				BatchInfo fromBatch = fromBatches[from];
-				BatchInfo toBatch = toBatches[to];
-
-				if(fromBatch.switchIndex == toBatch.switchIndex)
-				{
-					if(fromBatch.lodIndex == toBatch.lodIndex)
-					{
-						for(DAVA::uint32 usedToIndex = to; usedToIndex < rbToCount; ++usedToIndex)
-						{
-							BatchInfo usedToBatch = toBatches[usedToIndex];
-							
-							if((fromBatch.switchIndex != usedToBatch.switchIndex) || (fromBatch.lodIndex != usedToBatch.lodIndex)) 
-								break;
-
-							DAVA::PolygonGroup *fromPG = fromBatch.batch->GetPolygonGroup();
-							DAVA::PolygonGroup *toPG = usedToBatch.batch->GetPolygonGroup();
-
-							DAVA::uint32 fromSize = fromPG->GetVertexCount() * fromPG->vertexStride;
-							DAVA::uint32 toSize = toPG->GetVertexCount() * toPG->vertexStride;
-
-							if((fromSize == toSize) && (0 == Memcmp(fromPG->meshData, toPG->meshData, fromSize)))
-							{
-								CopyLightmapSettings(fromBatch.batch->GetMaterial(), toBatch.batch->GetMaterial());
-								break;
-							}
-						}
-
-						++from;
-					}
-					else if(fromBatch.lodIndex < toBatch.lodIndex)
-					{
-						++from;
-					}
-					else
-					{
-						++to;
-					}
-				}
-				else if(fromBatch.switchIndex < toBatch.switchIndex)
-				{
-					++from;
-				}
-				else
-				{
-					++to;
-				}
-			}
+				NMaterial* fromMat = fromBatch->GetMaterial();
+				NMaterial* toMat = toBatch->GetMaterial();
+				
+				CopyLightmapSettings(fromMat, toMat);
+            }
         }
         
         return true;

@@ -53,7 +53,6 @@ int main(int argc, char *argv[])
 	DVASSERT(false && "Wrong platform")
 #endif
 
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
     int result = 0;
     // MainWindow have to be released prior to the framework, so use separate scope for it.
     {

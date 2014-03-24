@@ -211,9 +211,6 @@
     <Filter Include="Classes\Qt\QualitySwitcher">
       <UniqueIdentifier>{78cae0e6-5732-4a8b-a860-f44cd544a7df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Qt\ImageSplitterDialog">
-      <UniqueIdentifier>{4be62135-b0d0-44b6-bc2f-9a5d42461a85}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\Collada\ColladaAnimatedMesh.cpp">
@@ -785,6 +782,9 @@
     </ClCompile>
     <ClCompile Include="Classes\CommandLine\CommandLineTool.cpp">
       <Filter>Classes\CommandLine</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitter.cpp">
+      <Filter>Classes\CommandLine\ImageSplitter</Filter>
     </ClCompile>
     <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.cpp">
       <Filter>Classes\CommandLine\ImageSplitter</Filter>
@@ -1896,24 +1896,6 @@
     <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\HeightmapValidator.cpp">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\ImageSplitterDialog\ImageArea.cpp">
-      <Filter>Classes\Qt\ImageSplitterDialog</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\ImageSplitterDialog\ImageSplitterDialog.cpp">
-      <Filter>Classes\Qt\ImageSplitterDialog</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\ImageArea_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\ImageSplitterDialog_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
-    <ClCompile Include="Classes\Qt\ImageSplitterDialog\SizeDialog.cpp">
-      <Filter>Classes\Qt\ImageSplitterDialog</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\SizeDialog_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">
@@ -2711,6 +2693,9 @@
     <ClInclude Include="Classes\CommandLine\CommandLineTool.h">
       <Filter>Classes\CommandLine</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitter.h">
+      <Filter>Classes\CommandLine\ImageSplitter</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.h">
       <Filter>Classes\CommandLine\ImageSplitter</Filter>
     </ClInclude>
@@ -3365,18 +3350,6 @@
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\HeightmapValidator.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\TextureBrowser\TextureConvertMode.h">
-      <Filter>Classes\Qt\TextureBrowser</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\ImageSplitterDialog\ImageArea.h">
-      <Filter>Classes\Qt\ImageSplitterDialog</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\ImageSplitterDialog\ImageSplitterDialog.h">
-      <Filter>Classes\Qt\ImageSplitterDialog</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\ImageSplitterDialog\SizeDialog.h">
-      <Filter>Classes\Qt\ImageSplitterDialog</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DataQt\mainwindow.ui">
@@ -3416,9 +3389,6 @@
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\materialeditor.ui">
-      <Filter>QtData</Filter>
-    </None>
-    <None Include="DataQt\ImageSplitter.ui">
       <Filter>QtData</Filter>
     </None>
   </ItemGroup>

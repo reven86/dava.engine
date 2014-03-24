@@ -80,11 +80,10 @@ Component * ParticleEffectComponent::Clone(Entity * toEntity)
 	newComponent->stopWhenEmpty = stopWhenEmpty;	
 	newComponent->playbackComplete = playbackComplete;
 	newComponent->effectDuration = effectDuration;
-	uint32 emittersCount = emitters.size();
+	int emittersCount = emitters.size();
 	newComponent->emitters.resize(emittersCount);
-	for (uint32 i=0; i<emittersCount; ++i)
+	for (int32 i=0; i<emittersCount; ++i)
 		newComponent->emitters[i] = emitters[i]->Clone();
-    newComponent->spawnPositions = spawnPositions;
     newComponent->RebuildEffectModifiables();
 	return newComponent;
 }
@@ -306,7 +305,7 @@ void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationCont
 		KeyedArchive *emitterArch = new KeyedArchive();
 		String filename = emitters[i]->configPath.GetRelativePathname(serializationContext->GetScenePath());
 		emitterArch->SetString("emitter.filename", filename);
-        emitterArch->SetVector3("emitter.position", spawnPositions[i]);
+        emitterArch->SetVector3("emitter.position", emitters[i]->position);
 		emittersArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), emitterArch);
 		emitterArch->Release();
 	} 
@@ -329,17 +328,14 @@ void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SerializationCo
 		uint32 emittersCount = archive->GetUInt32("pe.emittersCount");		
 		KeyedArchive *emittersArch = archive->GetArchive("pe.emitters");
 		emitters.resize(emittersCount);
-        spawnPositions.resize(emittersCount);
 		for (uint32 i=0; i<emittersCount; ++i)
 		{		
-			
+			emitters[i]=new ParticleEmitter();
             KeyedArchive *emitterArch = emittersArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
 			String filename = emitterArch->GetString("emitter.filename");
 			if (!filename.empty())
-				emitters[i] = ParticleEmitter::LoadEmitter(serializationContext->GetScenePath()+filename);
-            else
-                emitters[i]=new ParticleEmitter();
-            spawnPositions[i] = emitterArch->GetVector3("emitter.position");
+				emitters[i]->LoadFromYaml(serializationContext->GetScenePath()+filename);			
+            emitters[i]->position = emitterArch->GetVector3("emitter.position");
 		} 	
         RebuildEffectModifiables();
 	}
@@ -365,21 +361,16 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializat
 		if (renderComponent)
 			emitterProxy = static_cast<PartilceEmitterLoadProxy *>(renderComponent->GetRenderObject());
 		if (!emitterProxy) continue;
-		
-        ParticleEmitter *emitter;		
+		ParticleEmitter *emitter = new ParticleEmitter();
+		emitter->position = (child->GetLocalTransform().GetTranslationVector())*effectScale;
 		if (!emitterProxy->emitterFilename.empty())
 		{			
-            emitter = ParticleEmitter::LoadEmitter(serializationContext->GetScenePath()+emitterProxy->emitterFilename);			
+			emitter->LoadFromYaml(serializationContext->GetScenePath()+emitterProxy->emitterFilename);
 			if (effectDuration<emitter->lifeTime)
 				effectDuration = emitter->lifeTime;
 		}
-        else
-        {
-            emitter = new ParticleEmitter();
-        }        
 		emitter->name = child->GetName();
 		emitters.push_back(emitter);
-        spawnPositions.push_back(child->GetLocalTransform().GetTranslationVector()*effectScale);
 		if (!lodDefined)
 		{
 			LodComponent *lodComponent = static_cast<LodComponent *>(child->GetComponent(Component::LOD_COMPONENT));
@@ -405,24 +396,10 @@ ParticleEmitter* ParticleEffectComponent::GetEmitter(int32 id)
 	return emitters[id];
 }
 
-Vector3 ParticleEffectComponent::GetSpawnPosition(int id)
-{
-    DVASSERT((id>=0)&&(id<(int32)spawnPositions.size()));
-    return spawnPositions[id];
-}
-
-void ParticleEffectComponent::SetSpawnPosition(int id, Vector3 position)
-{
-    DVASSERT((id>=0)&&(id<(int32)spawnPositions.size()));
-    spawnPositions[id] = position;
-}
-
 void ParticleEffectComponent::AddEmitter(ParticleEmitter *emitter)
 {
     SafeRetain(emitter);
-
 	emitters.push_back(emitter);
-    spawnPositions.push_back(Vector3(0,0,0));
 }
 
 
@@ -440,24 +417,14 @@ void ParticleEffectComponent::InsertEmitterAt(ParticleEmitter *emitter, int32 po
     std::advance(it, Min(position, GetEmittersCount()));
     SafeRetain(emitter);
     emitters.insert(it, emitter);
-
-    Vector<Vector3>::iterator itSpawn = spawnPositions.begin();
-    std::advance(itSpawn, Min(position, (int32)spawnPositions.size()));    
-    spawnPositions.insert(itSpawn, Vector3(0,0,0));
 }
 
 void ParticleEffectComponent::RemoveEmitter(ParticleEmitter *emitter)
 {
 	Vector<ParticleEmitter *>::iterator it = std::find(emitters.begin(), emitters.end(), emitter);
 	DVASSERT(it!=emitters.end());
-    int32 id = GetEmitterId(emitter);
 	emitter->Release();
 	emitters.erase(it);	
-
-    Vector<Vector3>::iterator itSpawn = spawnPositions.begin();
-    std::advance(itSpawn, Min(id, (int32)spawnPositions.size()));    
-    spawnPositions.erase(itSpawn);
-    
 }
 
 float32 ParticleEffectComponent::GetCurrTime()

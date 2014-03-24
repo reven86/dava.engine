@@ -29,4 +29,4 @@
 
 
 
-#define EDITOR_VERSION L"1"
+#define EDITOR_VERSION L"0.0.2"

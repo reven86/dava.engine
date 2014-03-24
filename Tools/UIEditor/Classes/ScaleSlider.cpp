@@ -34,8 +34,7 @@
 #include <QStyle>
 #include <QStyleOption>
 
-#include "Math/MathHelpers.h"
-
+#include <cmath>
 ScaleSlider::ScaleSlider(QWidget *parent) :
 	QSlider(parent)
 {
@@ -57,7 +56,7 @@ void ScaleSlider::mousePressEvent (QMouseEvent* event)
 	{
 		// Calculate in float to allow clicking between the ticks.
 		float newValueRelative = minimum() + (float)((maximum()-minimum()) * event->x()) / (float)width();
-		int newVal = DAVA::Round(newValueRelative);
+		int newVal = RoundToNearestInteger(newValueRelative);
 
 		if (invertedAppearance() == true)
 		{
@@ -77,3 +76,7 @@ void ScaleSlider::mousePressEvent (QMouseEvent* event)
 	}
 }
 
+int ScaleSlider::RoundToNearestInteger(float value)
+{
+	return (int)((value > 0.0) ? floor(value+ 0.5) : ceil(value - 0.5));
+}

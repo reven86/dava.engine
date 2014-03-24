@@ -187,22 +187,20 @@ void DXTTest::Draw(const DAVA::UIGeometricData &geometricData)
     RenderManager::Instance()->ClearWithColor(0.f, 0.0f, 0.f, 1.f);
     
 //    RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-
-    Sprite::DrawState state;
-    state.SetFrame(0);
-
+	
+	Sprite::DrawState drawState;
     if(pngSprite)
     {
-        state.SetPosition(0.f, 0.f);
-        state.SetScaleSize(256.f, 256.f, pngSprite->GetWidth(), pngSprite->GetHeight());
-        pngSprite->Draw(&state);
+		drawState.SetPosition(0,0);
+		drawState.SetScaleSize(1.f, 1.f, 256.f, 256.f);
+        pngSprite->Draw(&drawState);
     }
 
     if(dxtSprite)
     {
-        state.SetPosition(260.f, 0.f);
-        state.SetScaleSize(256.f, 256.f, dxtSprite->GetWidth(), dxtSprite->GetHeight());
-        dxtSprite->Draw(&state);
+		drawState.SetPosition(260.f,0);
+		drawState.SetScaleSize(1.f, 1.f, 256.f, 256.f);
+        dxtSprite->Draw(&drawState);
     }
 
     TestTemplate<DXTTest>::Draw(geometricData);

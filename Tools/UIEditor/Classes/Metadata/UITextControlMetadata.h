@@ -99,9 +99,6 @@ protected:
     void UpdateStaticTextExtraData(UIStaticText* staticText, UIControl::eControlState state,
                                    HierarchyTreeNodeExtraData& extraData,
                                    eExtraDataUpdateStyle updateStyle);
-    
-    // Clone the font of the Static Text.
-    void CloneFont(UIStaticText* staticText);
 };
 
 };

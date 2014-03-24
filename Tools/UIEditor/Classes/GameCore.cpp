@@ -37,7 +37,9 @@
 #include "UndoRedoController.h"
 #include "PreviewController.h"
 
+#include "Grid/GridController.h"
 #include "Grid/GridVisualizer.h"
+
 #include "Ruler/RulerController.h"
 
 #include "ScreenWrapper.h"
@@ -73,6 +75,7 @@ GameCore::GameCore()
 	new ScreenManager();
 	new LibraryController();
 
+    new GridController();
     new GridVisualizer();
     new RulerController();
 
@@ -87,6 +90,7 @@ GameCore::~GameCore()
 {
     RulerController::Instance()->Release();
     GridVisualizer::Instance()->Release();
+    GridController::Instance()->Release();
 
     LibraryController::Instance()->Release();
     EditorSettings::Instance()->Release();

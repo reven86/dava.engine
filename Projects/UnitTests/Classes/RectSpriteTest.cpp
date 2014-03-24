@@ -65,16 +65,15 @@ void RectSpriteTest::LoadResources()
 
 void RectSpriteTest::AddImage(const FilePath& filePath)
 {
-	Vector<Image *> imageSet;
-    ImageLoader::CreateFromFileByExtension(filePath, imageSet);
+    Vector<Image*> img = ImageLoader::CreateFromFileByExtension(filePath);
 
-    if (imageSet.size() == 0)
+    if (img.size() == 0)
     {
         images.push_back(NULL);
     }
     else
     {
-        images.push_back(imageSet[0]);
+        images.push_back(img[0]);
     }
 }
 
@@ -114,32 +113,33 @@ bool RectSpriteTest::RunTest(int32 testNum)
 void RectSpriteTest::Draw(const DAVA::UIGeometricData &geometricData)
 {
     RenderManager::Instance()->ClearWithColor(0.3f, 0.0f, 0.f, 1.f);
-    Sprite::DrawState state;
-    state.SetFrame(0);
-
+	
     if (sprites[1])
     {
-        state.SetPosition(70.f, 40.f);
-        state.SetAngle(0.1f);
-        sprites[1]->Draw(&state);
+		Sprite::DrawState drawState;
+		drawState.SetAngle(0.1f);
+		drawState.SetPosition(70.f, 40.f);
+        sprites[1]->Draw(&drawState);
     }
     if (sprites[2])
     {
-        state.SetPosition(200.f, 50.f);
-        state.SetAngle(0.785398f);
-        sprites[2]->Draw(&state);
+		Sprite::DrawState drawState;
+		drawState.SetAngle(0.785398f);
+		drawState.SetPosition(200.f, 50.f);
+        sprites[2]->Draw(&drawState);
     }
     if (sprites[3])
     {
-        state.SetPosition(110.f, 60.f);
-        state.SetAngle(0.f);
-        sprites[3]->Draw(&state);
+		Sprite::DrawState drawState;
+        drawState.SetPosition(110.f, 60.f);
+        sprites[3]->Draw(&drawState);
     }
     if (sprites[0])
     {
-        state.SetPosition(300.f, 200.f);
-        state.SetAngle(-0.2f);
-        sprites[0]->Draw(&state);
+		Sprite::DrawState drawState;
+        drawState.SetAngle(-0.2f);		
+		drawState.SetPosition(300.f, 200.f);
+        sprites[0]->Draw(&drawState);
     }
 
     TestTemplate<RectSpriteTest>::Draw(geometricData);

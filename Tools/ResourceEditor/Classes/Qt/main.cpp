@@ -89,21 +89,14 @@ int main(int argc, char *argv[])
 	DVASSERT(false && "Wrong platform")
 #endif
 
-	DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
-
 // GUI instance is already started
+        
 
 #ifdef __DAVAENGINE_BEAST__
 	new BeastProxyImpl();
 #else 
 	new BeastProxy();
 #endif //__DAVAENGINE_BEAST__
-
-
-	new SettingsManager();
-	new EditorConfig();
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
-
 
     const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
     const QString appUidPath = QCryptographicHash::hash( (appUid + a.applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
@@ -140,12 +133,16 @@ int main(int argc, char *argv[])
 	}
 	else if ( runGuard.tryToRun() )
 	{
+		new SettingsManager();
+		new EditorConfig();
 		new SceneValidator();
         new TextureCache();
 		new FogSettingsChangedReceiver();
 
 		LocalizationSystem::Instance()->SetCurrentLocale("en");
 		LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
+
+		DAVA::Logger::Instance()->SetLogFilename("ResEditor.txt");
 
 		DAVA::Texture::SetDefaultGPU((eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32());
 
@@ -167,12 +164,12 @@ int main(int argc, char *argv[])
 		ControlsFactory::ReleaseFonts();
 
 		SceneValidator::Instance()->Release();
+		EditorConfig::Instance()->Release();
+		SettingsManager::Instance()->Release();
         TextureCache::Instance()->Release();
 		FogSettingsChangedReceiver::Instance()->Release();
 	}
 
-	EditorConfig::Instance()->Release();
-	SettingsManager::Instance()->Release();
 	BeastProxy::Instance()->Release();
 	DAVA::QtLayer::Instance()->Release();
 	DAVA::Core::Instance()->ReleaseSingletons();

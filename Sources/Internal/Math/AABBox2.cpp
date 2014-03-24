@@ -33,7 +33,7 @@ namespace DAVA
 {
 	
 //! \brief check if bounding box intersect ray
-bool AABBox2::IsIntersectsWithRay(Ray2 & r, float32 & tmin, float32 & tmax, float32 t0, float32 t1) const
+bool AABBox2::IsIntersectsWithRay(Ray2 & r, float32 & tmin, float32 & tmax, float32 t0, float32 t1)
 {
 	float32 tymin, tymax; 
 	
@@ -89,7 +89,7 @@ bool AABBox2::IsIntersectsWithRay(Ray2 & r, float32 & tmin, float32 & tmax, floa
 	return ( (tmin < t1) && (tmax > t0) ); 
 } 
 	
-bool AABBox2::IsIntersectsWithBox(const AABBox2 & box) const
+bool AABBox2::IsIntersectsWithBox(const AABBox2 & box)
 {
 	if ((box.min.x > this->max.x) || (this->min.x > box.max.x))return false;
 	if ((box.min.y > this->max.y) || (this->min.y > box.max.y))return false;

@@ -59,7 +59,7 @@ public:
 	~SceneCollisionSystem();
 
 	void SetDrawMode(int mode);
-	int GetDrawMode();
+	int GetDebugDrawFlags();
 
 	DAVA::AABBox3 GetBoundingBox(DAVA::Entity *entity);
 
@@ -81,7 +81,6 @@ protected:
 	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
-    virtual void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);
 
@@ -125,11 +124,6 @@ protected:
 
 	CollisionBaseObject* BuildFromEntity(DAVA::Entity * entity);
 	void DestroyFromEntity(DAVA::Entity * entity);
-
-public:
-    INTROSPECTION(SceneCollisionSystem,
-        PROPERTY("collisionDrawMode", "Debug Draw mode for CollisionSystem", GetDrawMode, SetDrawMode, DAVA::I_VIEW | DAVA::I_EDIT)
-        )
 };
 
 class SceneCollisionDebugDrawer : public btIDebugDraw

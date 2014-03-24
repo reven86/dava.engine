@@ -77,8 +77,7 @@ void SelectPathWidgetBase::resizeEvent(QResizeEvent *)
 	clearButton->move(rect().right() - frameWidth - sz.width(),(rect().bottom() + 1 - sz.height())/2);
 	
 	QSize szOpenBtn = openButton->sizeHint();
-    int offsetFromRight = clearButton->isVisible() ? sz.width() : 0;
-	openButton->move(rect().right() - offsetFromRight - frameWidth - szOpenBtn.width(),(rect().bottom() + 1 - szOpenBtn.height())/2);
+	openButton->move(rect().right() - sz.width() - frameWidth - szOpenBtn.width(),(rect().bottom() + 1 - szOpenBtn.height())/2);
 }
 
 QToolButton* SelectPathWidgetBase::CreateToolButton(const DAVA::String& iconPath)
@@ -116,12 +115,6 @@ void SelectPathWidgetBase::acceptEditing()
 	this->setText(getText());
 }
 
-void SelectPathWidgetBase::setVisible(bool value)
-{
-    QLineEdit::setVisible(value);
-    SelectPathWidgetBase::resizeEvent(NULL);
-}
-
 void SelectPathWidgetBase::OpenClicked()
 {
 	DAVA::FilePath presentPath(text().toStdString());
@@ -139,7 +132,7 @@ void SelectPathWidgetBase::OpenClicked()
         return;
     }
     
-    DAVA::String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+    DAVA::String projectPath = ProjectManager::Instance()->CurProjectPath().toStdString();
 
     if(checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
     {
@@ -165,17 +158,14 @@ void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
 
 void SelectPathWidgetBase::setText(const QString& filePath)
 {
-    if(filePath != text())
-    {
-        QLineEdit::setText(filePath);
-        setToolTip(filePath);
-        emit PathSelected(filePath.toStdString());
-    }
+	QLineEdit::setText(filePath);
+	setToolTip(filePath);
+	emit PathSelected(filePath.toStdString());
 }
 
 void SelectPathWidgetBase::setText(const DAVA::String &filePath)
 {
-    SelectPathWidgetBase::setText(QString(filePath.c_str()));
+	setText(QString(filePath.c_str()));
 }
 
 DAVA::String SelectPathWidgetBase::getText()
@@ -239,45 +229,4 @@ void SelectPathWidgetBase::dragEnterEvent(QDragEnterEvent* event)
 	{
 		event->acceptProposedAction();
 	}
-}
-
-
-bool SelectPathWidgetBase::IsOpenButtonVisible() const
-{
-    return openButton->isVisible();
-}
-
-void SelectPathWidgetBase::SetOpenButtonVisible(bool value)
-{
-    openButton->setVisible(value);
-}
-
-bool SelectPathWidgetBase::IsClearButtonVisible() const
-{
-    return clearButton->isVisible();
-}
-
-void SelectPathWidgetBase::SetClearButtonVisible(bool value)
-{
-    clearButton->setVisible(value);
-}
-
-DAVA::String SelectPathWidgetBase::GetOpenDialogDefaultPath() const
-{
-    return openDialogDefaultPath;
-}
-
-void SelectPathWidgetBase::SetOpenDialogDefaultPath(const DAVA::FilePath& path)
-{
-    openDialogDefaultPath = path.GetAbsolutePathname();
-}
-
-DAVA::String SelectPathWidgetBase::GetFileFormatFilter() const
-{
-    return fileFormatFilter;
-}
-
-void SelectPathWidgetBase::SetFileFormatFilter(const DAVA::String& filter)
-{
-    fileFormatFilter = filter;
 }

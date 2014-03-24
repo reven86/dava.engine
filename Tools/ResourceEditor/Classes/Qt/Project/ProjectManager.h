@@ -56,19 +56,17 @@ public:
 	ProjectManager();
 	~ProjectManager();
 
-	bool IsOpened() const;
+	bool IsOpened();
 
-	DAVA::FilePath CurProjectPath() const;
-	DAVA::FilePath CurProjectDataSourcePath() const;
-    DAVA::FilePath CurProjectDataParticles() const;
+	QString CurProjectPath();
+	QString CurProjectDataSourcePath();
     
     const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
     const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
 
 public slots:
-    DAVA::FilePath ProjectOpenDialog();
+	QString ProjectOpenDialog();
 	void ProjectOpen(const QString &path);
-    void ProjectOpen(const DAVA::FilePath &path);
 	void ProjectOpenLast();
 	void ProjectClose();
 
@@ -77,9 +75,8 @@ signals:
 	void ProjectClosed();
     
 private:
-    DAVA::FilePath curProjectPath;
-	DAVA::FilePath curProjectPathDataSource;
-    DAVA::FilePath curProjectPathParticles;
+    QString curProjectPath;
+	QString curProjectPathDataSource;
 
 	void LoadProjectSettings();
     void LoadMaterialsSettings();

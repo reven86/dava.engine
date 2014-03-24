@@ -79,11 +79,12 @@ int TextureConvertor::GetThumbnail(const DAVA::TextureDescriptor *descriptor)
 	if(NULL != descriptor)
 	{
 		// check if requested texture isn't the same that is loading now
-		if(NULL == curJobThumbnail || curJobThumbnail->descriptor != descriptor)
+		if(NULL == curJobThumbnail || curJobThumbnail->identity != descriptor)
 		{
 			JobItem newJob;
 			newJob.id = jobIdCounter++;
-			newJob.descriptor = descriptor;
+			newJob.data = new TextureDescriptor(*descriptor);
+			newJob.identity = descriptor;
 
 			jobStackThumbnail.push(newJob);
 			jobRunNextThumbnail();
@@ -102,11 +103,12 @@ int TextureConvertor::GetOriginal(const DAVA::TextureDescriptor *descriptor)
 	if(NULL != descriptor)
 	{
 		// check if requested texture isn't the same that is loading now
-		if(NULL == curJobOriginal || curJobOriginal->descriptor != descriptor)
+		if(NULL == curJobOriginal || curJobOriginal->identity != descriptor)
 		{
 			JobItem newJob;
 			newJob.id = jobIdCounter++;
-			newJob.descriptor = descriptor;
+			newJob.data = new TextureDescriptor(*descriptor);
+			newJob.identity = descriptor;
 
 			jobStackOriginal.push(newJob);
 			jobRunNextOriginal();
@@ -118,8 +120,7 @@ int TextureConvertor::GetOriginal(const DAVA::TextureDescriptor *descriptor)
 	return ret;
 }
 
-int TextureConvertor::GetConverted(const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
-                                   eTextureConvertMode convertMode /* = CONVERT_NOT_EXISTENT */)
+int TextureConvertor::GetConverted(const DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, bool forceConver /*= false*/ )
 {
 	int ret = 0;
 
@@ -127,9 +128,10 @@ int TextureConvertor::GetConverted(const DAVA::TextureDescriptor *descriptor, DA
 	{
 		JobItem newJob;
 		newJob.id = jobIdCounter++;
-		newJob.convertMode = convertMode;
+		newJob.force = forceConver;
 		newJob.type = gpu;
-		newJob.descriptor = descriptor;
+		newJob.data = new TextureDescriptor(*descriptor);
+		newJob.identity = descriptor;
 
 		if(jobStackConverted.push(newJob))
 		{
@@ -144,7 +146,7 @@ int TextureConvertor::GetConverted(const DAVA::TextureDescriptor *descriptor, DA
 	return ret;
 }
 
-int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertMode)
+int TextureConvertor::Reconvert(DAVA::Scene *scene, bool forceConvert)
 {
 	int ret = 0;
 
@@ -175,8 +177,8 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
 
 						JobItem newJob;
 						newJob.id = jobIdCounter++;
-						newJob.descriptor = descriptor;
-						newJob.convertMode = convertMode;
+						newJob.data = new DAVA::TextureDescriptor(*descriptor);
+						newJob.force = forceConvert;
 						newJob.type = gpu;
 
 						if(jobStackConverted.push(newJob))
@@ -201,11 +203,6 @@ void TextureConvertor::WaitConvertedAll(QWidget *parent)
 {
 	if(convertJobQueueSize > 0)
 	{
-        if(NULL == parent)
-        {
-            parent = QtMainWindow::Instance();
-        }
-
 		waitDialog = new QtWaitDialog(parent);
 		bool hasCancel = false;
 		
@@ -234,6 +231,9 @@ void TextureConvertor::CancelConvert()
 
 	while (NULL != item)
 	{
+		TextureDescriptor* desc = (TextureDescriptor*) item->data;
+		SafeDelete(desc);
+
 		delete item;
 		item = jobStackConverted.pop();
 	}
@@ -281,7 +281,7 @@ void TextureConvertor::jobRunNextConvert()
 		curJobConverted = jobStackConverted.pop();
 		if(NULL != curJobConverted)
 		{
-			TextureDescriptor *desc = (TextureDescriptor *) curJobConverted->descriptor;
+			TextureDescriptor *desc = (TextureDescriptor *) curJobConverted->data;
 
 			QFuture< TextureInfo > f = QtConcurrent::run(this, &TextureConvertor::GetConvertedThread, curJobConverted);
 			convertedWatcher.setFuture(f);
@@ -338,11 +338,13 @@ void TextureConvertor::threadThumbnailFinished()
 {
 	if(thumbnailWatcher.isFinished() && NULL != curJobThumbnail)
 	{
-		const DAVA::TextureDescriptor *thumbnailDescriptor = (DAVA::TextureDescriptor *) curJobThumbnail->descriptor;
+		const DAVA::TextureDescriptor *thumbnailDescriptor = (DAVA::TextureDescriptor *) curJobThumbnail->identity;
+		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor *) curJobThumbnail->data;
 
 		TextureInfo watcherResult = thumbnailWatcher.result();
 		emit ReadyThumbnail(thumbnailDescriptor, watcherResult);
 
+		SafeDelete(descriptor);
 		delete curJobThumbnail;
 		curJobThumbnail = NULL;
 	}
@@ -355,11 +357,13 @@ void TextureConvertor::threadOriginalFinished()
 {
 	if(originalWatcher.isFinished() && NULL != curJobOriginal)
 	{
-		const DAVA::TextureDescriptor *originalDescriptor = (DAVA::TextureDescriptor *) curJobOriginal->descriptor;
+		const DAVA::TextureDescriptor *originalDescriptor = (DAVA::TextureDescriptor *) curJobOriginal->identity;
+		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor *) curJobOriginal->data;
 
 		TextureInfo watcherResult = originalWatcher.result();
 		emit ReadyOriginal(originalDescriptor, watcherResult);
 
+		SafeDelete(descriptor);
 		delete curJobOriginal;
 		curJobOriginal = NULL;
 	}
@@ -371,11 +375,13 @@ void TextureConvertor::threadConvertedFinished()
 {
 	if(convertedWatcher.isFinished() && NULL != curJobConverted)
 	{
-		const DAVA::TextureDescriptor *convertedDescriptor = (DAVA::TextureDescriptor *) curJobConverted->descriptor;
+		const DAVA::TextureDescriptor *convertedDescriptor = (DAVA::TextureDescriptor *) curJobConverted->identity;
+		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor *) curJobConverted->data;
 
 		TextureInfo watcherResult = convertedWatcher.result();
 		emit ReadyConverted(convertedDescriptor, (DAVA::eGPUFamily) curJobConverted->type, watcherResult);
 
+		SafeDelete(descriptor);
 		delete curJobConverted;
 		curJobConverted = NULL;
 	}
@@ -394,9 +400,9 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
 
-	if(NULL != item && NULL != item->descriptor)
+	if(NULL != item && NULL != item->data)
 	{
-		TextureDescriptor *descriptor = (TextureDescriptor *) item->descriptor;
+		TextureDescriptor *descriptor = (TextureDescriptor *) item->data;
 
 		DAVA::uint32 fileSize = 0;
 		if(descriptor->IsCubeMap())
@@ -439,9 +445,9 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 
 	void *pool = DAVA::QtLayer::Instance()->CreateAutoreleasePool();
     
-	if(NULL != item && NULL != item->descriptor)
+	if(NULL != item && NULL != item->data)
 	{
-		TextureDescriptor *descriptor = (TextureDescriptor *) item->descriptor;
+		TextureDescriptor *descriptor = (TextureDescriptor *) item->data;
 		
 		DAVA::uint32 fileSize = 0;
 		if(descriptor->IsCubeMap())
@@ -489,7 +495,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 
 	if(NULL != item)
 	{
-		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor*) item->descriptor;
+		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor*) item->data;
 		DAVA::eGPUFamily gpu = (DAVA::eGPUFamily) item->type;
 
 		if( NULL != descriptor &&
@@ -501,14 +507,14 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 			{
 				DAVA::Logger::FrameworkDebug("Starting PVR conversion (%s), id %d..., (%s)",
 					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
-				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
+				convertedImages = ConvertFormat(descriptor, gpu, item->force);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}
 			else if(outExtension == ".dds")
 			{
 				DAVA::Logger::FrameworkDebug("Starting DXT conversion (%s), id %d..., (%s)",
 					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
-				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
+				convertedImages = ConvertFormat(descriptor, gpu, item->force);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}
 			else
@@ -552,7 +558,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 		int stubImageCount = Texture::CUBE_FACE_MAX_COUNT;
 		if(NULL != item)
 		{
-			DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor*) item->descriptor;
+			DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor*) item->data;
 			if(NULL != descriptor &&
 			   !descriptor->IsCubeMap())
 			{
@@ -573,42 +579,19 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 	return result;
 }
 
-DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu,
-                                                           eTextureConvertMode convertMode)
+DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescriptor *descriptor, DAVA::eGPUFamily gpu, bool forceConvert)
 {
 	DAVA::Vector<DAVA::Image*> resultImages;
 	DAVA::FilePath outputPath = TextureConverter::GetOutputPath(*descriptor, gpu);
 	if(!outputPath.IsEmpty())
 	{
-        bool convert = false;
-
-        switch (convertMode)
-        {
-            case CONVERT_FORCE:
-                convert = true;
-                break;
-
-            case CONVERT_MODIFIED:
-                convert = !descriptor->IsCompressedTextureActual(gpu);
-                break;
-
-            case CONVERT_NOT_EXISTENT:
-                convert = !DAVA::FileSystem::Instance()->IsFile(outputPath);
-                break;
-
-            default:
-                DVASSERT(false && "Invalid case");
-                break;
-        }
-
-		if(convert)
+		if(forceConvert || !DAVA::FileSystem::Instance()->IsFile(outputPath))
 		{
 			TextureConverter::CleanupOldTextures(descriptor, gpu, (DAVA::PixelFormat)descriptor->compression[gpu].format);
 			outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true);
         }
 		
-        Vector<DAVA::Image *> davaImages;
-		DAVA::ImageLoader::CreateFromFileByContent(outputPath, davaImages);
+		Vector<DAVA::Image *> davaImages = DAVA::ImageLoader::CreateFromFileByContent(outputPath);
 		
 		if(davaImages.size() > 0)
 		{

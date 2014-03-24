@@ -48,7 +48,7 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 {
     SetInputEnabled(false, false);
 	textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
-	background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+	background->SetAlign(ALIGN_TOP|ALIGN_LEFT);
 	background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
 	shadowBg = new UIControlBackground();
@@ -354,7 +354,7 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
         node->SetNodeToMap("fitting", loader->GetFittingOptionNodeValue(textBlock->GetFittingOption()));
 	}
 
-	// Text Align
+	// Align
     if (baseControl->GetTextAlign() != this->GetTextAlign())
     {
         node->SetNodeToMap("textalign", loader->GetAlignNodeValue(this->GetTextAlign()));
@@ -372,7 +372,7 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
     return node;
 }
 
-Animation * UIStaticText::TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 0*/)
+Animation * UIStaticText::ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 0*/)
 {
 	LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &textColor, finalColor, time, interpolationFunc);
 	animation->Start(track);

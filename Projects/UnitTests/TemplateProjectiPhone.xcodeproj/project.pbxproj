@@ -10,7 +10,6 @@
 		02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B3D3DD159C8D360082111B /* SoundTest.cpp */; };
 		02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC3C0515E6399C0047F67F /* SplitTest.cpp */; };
 		02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */; };
-		15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */; };
 		1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4317DF446600000391 /* UIMovieTest.cpp */; };
 		1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF4617DF497600000391 /* MediaPlayer.framework */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
@@ -90,8 +89,6 @@
 		02BC3C0615E6399C0047F67F /* SplitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SplitTest.h; sourceTree = "<group>"; };
 		02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ThreadSyncTest.cpp; sourceTree = "<group>"; };
 		02F8B01B17CF996C00D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadSyncTest.h; sourceTree = "<group>"; };
-		15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFormatTest.cpp; sourceTree = "<group>"; };
-		15CBB0AF18D300310038ABA3 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringFormatTest.h; sourceTree = "<group>"; };
 		1770DF4317DF446600000391 /* UIMovieTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIMovieTest.cpp; sourceTree = "<group>"; };
 		1770DF4417DF446600000391 /* UIMovieTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIMovieTest.h; sourceTree = "<group>"; };
 		1770DF4617DF497600000391 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
@@ -299,8 +296,6 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */,
-				15CBB0AF18D300310038ABA3 /* StringFormatTest.h */,
 				4998996918B238F7007A8DF2 /* RectSpriteTest.cpp */,
 				4998996A18B238F7007A8DF2 /* RectSpriteTest.h */,
 				E801A586183FAB8E00D5B770 /* ComponentsTest.cpp */,
@@ -493,7 +488,6 @@
 				FEC3CBD91284374A00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CBDA1284374A00541220 /* GameCore.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
-				15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				5CDC2521156CD48700742348 /* TestTemplate.cpp in Sources */,
 				5C8D42441580E4D700441032 /* BaseScreen.cpp in Sources */,

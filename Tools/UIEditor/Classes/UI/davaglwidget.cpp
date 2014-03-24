@@ -47,8 +47,6 @@
 #include "ItemsCommand.h"
 #include "CommandsController.h"
 
-#include "Guides/GuideMimeData.h"
-
 #if defined (__DAVAENGINE_MACOS__)
 #include "Platform/Qt/MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
@@ -232,47 +230,22 @@ void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
 {
 	const QMimeData* data = event->mimeData();
 	const ControlMimeData* controlData = dynamic_cast<const ControlMimeData*>(data);
-    const GuideMimeData* guideData = dynamic_cast<const GuideMimeData*>(data);
-    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
-    
 	if (controlData && ScreenWrapper::Instance()->IsDropEnable(event->pos()))
 	{
 		event->accept();
 	}
-	else if (activeScreen && activeScreen->AreGuidesEnabled() && guideData)
-    {
-        Vector2 curPos = GuideToInternal(event->pos());
-        activeScreen->MoveNewGuide(curPos);
-        event->accept();
-    }
-    else
-    {
+	else
+	{
 		event->ignore();
 	}
 }
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
-    if (!activeScreen)
-    {
-        return;
-    }
-
 	const QMimeData* data = event->mimeData();
 	const ControlMimeData* controlData = dynamic_cast<const ControlMimeData*>(data);
-	if (controlData)
-    {
+	if (controlData && HierarchyTreeController::Instance()->GetActiveScreen())
 		event->acceptProposedAction();
-        return;
-    }
-
-    const GuideMimeData* guideData = dynamic_cast<const GuideMimeData*>(data);
-    if (guideData && activeScreen->AreGuidesEnabled())
-    {
-        activeScreen->StartNewGuide(guideData->GetGuideType());
-        event->acceptProposedAction();
-    }
 }
 
 void DavaGLWidget::keyPressEvent(QKeyEvent *)
@@ -320,16 +293,4 @@ void DavaGLWidget::Quit()
 {
 	DAVA::Logger::Info("[QUIT]");
 	exit(0);
-}
-
-Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
-{
-    Vector2 curPos = Vector2(pos.x(), pos.y());
-    Vector2 internalPos = ScreenWrapper::Instance()->LocalToInternal(curPos);
-    
-    // Allow moving per-pixel only.
-    internalPos.x =  Round(internalPos.x);
-    internalPos.y = Round(internalPos.y);
-    
-    return internalPos;
 }

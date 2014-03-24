@@ -80,7 +80,6 @@ class UIControlMetadata : public BaseMetadata
 
     // Flag Properties
     Q_PROPERTY(bool Visible READ GetVisible WRITE SetVisible);
-    Q_PROPERTY(bool RecursiveVisible READ GetRecursiveVisible WRITE SetRecursiveVisible);
     Q_PROPERTY(bool Input READ GetInput WRITE SetInput);
     Q_PROPERTY(bool ClipContents READ GetClipContents WRITE SetClipContents);
 	
@@ -189,9 +188,6 @@ protected:
     //Boolean gettes/setters
     bool GetVisible() const;
     virtual void SetVisible(const bool value);
-
-    bool GetRecursiveVisible() const;
-    virtual void SetRecursiveVisible(const bool value);
 
     bool GetInput() const;
     void SetInput(const bool value);

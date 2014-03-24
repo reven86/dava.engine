@@ -43,24 +43,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 
 		DAVA::AABBox3 commonBox;
 
-        int maxVertexCount = 0;
-        int bestLodIndex = 0;
-        int curSwitchIndex = renderObject->GetSwitchIndex();
-
-        // search for best lod index
-        for(DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
-        {
-            int batchLodIndex;
-            int batchSwitchIndex;
-
-            DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
-            int vertexCount = batch->GetPolygonGroup()->GetVertexCount();
-            if(vertexCount > maxVertexCount && curSwitchIndex == batchSwitchIndex)
-            {
-                bestLodIndex = batchLodIndex;
-                maxVertexCount = vertexCount;
-            }
-        }
+        int maxLodIndex = renderObject->GetMaxLodIndex();
 
 		for(DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
 		{
@@ -68,7 +51,7 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
             int batchSwitchIndex;
 
             DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
-            if(batchLodIndex == bestLodIndex && batchSwitchIndex == curSwitchIndex)
+            if(batchLodIndex == maxLodIndex)
             {
 			    DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
 

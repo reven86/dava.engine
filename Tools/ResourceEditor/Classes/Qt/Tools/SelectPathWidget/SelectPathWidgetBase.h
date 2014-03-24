@@ -59,22 +59,6 @@ public:
 	{
 		allowedFormatsList = _allowedFormatsList;
 	}
-    
-    bool IsOpenButtonVisible() const;
-    
-    void SetOpenButtonVisible(bool value);
-    
-    bool IsClearButtonVisible() const;
-    
-    void SetClearButtonVisible(bool value);
-    
-    DAVA::String GetOpenDialogDefaultPath() const;
-    
-    void SetOpenDialogDefaultPath(const DAVA::FilePath& path);
-    
-    DAVA::String GetFileFormatFilter() const;
-    
-    void SetFileFormatFilter(const DAVA::String& filter);
 	
 public slots:
 
@@ -82,8 +66,6 @@ public slots:
 		
 	void acceptEditing();
 
-    void setVisible(bool);
-    
 signals:
 	
 	void PathSelected(DAVA::String selectedFile);

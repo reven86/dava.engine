@@ -67,9 +67,6 @@
     <Filter Include="Sources\Ruler">
       <UniqueIdentifier>{30f28ebe-e4d0-4052-b5d1-5c47b9fde58f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Sources\Guides">
-      <UniqueIdentifier>{a20bf5fc-1a1f-410a-bd4c-5cae96eb7906}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\DefaultScreen.cpp">
@@ -651,6 +648,9 @@
     <ClCompile Include="Classes\Commands\ReloadSpritesCommand.cpp">
       <Filter>Sources\Commands</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Grid\GridController.cpp">
+      <Filter>Sources\Grid</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\Helpers\SpritesHelper.cpp">
       <Filter>Sources\Helpers</Filter>
     </ClCompile>
@@ -670,6 +670,9 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Ruler\RulerWidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Grid\GridController_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Grid\GridVisualizer_moc.cpp">
@@ -1148,6 +1151,9 @@
     <ClInclude Include="Classes\Commands\ReloadSpritesCommand.h">
       <Filter>Sources\Commands</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Grid\GridController.h">
+      <Filter>Sources\Grid</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\Helpers\SpritesHelper.h">
       <Filter>Sources\Helpers</Filter>
     </ClInclude>
@@ -1302,9 +1308,6 @@
     </None>
     <None Include="UI\particleeffectpropertygridwidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>
-    </None>
-    <None Include="UI\errorslistdialog.ui">
-      <Filter>Form Files\Dialogs</Filter>
     </None>
   </ItemGroup>
 </Project>

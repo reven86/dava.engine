@@ -388,8 +388,7 @@ void CustomColorsSystem::LoadTexture(const DAVA::FilePath &filePath, bool create
 	if(filePath.IsEmpty())
 		return;
 
-    Vector<Image*> images;
-	ImageLoader::CreateFromFileByContent(filePath, images);
+	Vector<Image*> images = ImageLoader::CreateFromFileByContent(filePath);
 	if(images.empty())
 		return;
 
@@ -501,7 +500,7 @@ String CustomColorsSystem::GetRelativePathToProjectPath(const FilePath& absolute
 	if(absolutePath.IsEmpty())
 		return String();
 
-	return absolutePath.GetRelativePathname(ProjectManager::Instance()->CurProjectPath());
+	return absolutePath.GetRelativePathname(FilePath(ProjectManager::Instance()->CurProjectPath().toStdString()));
 }
 
 FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relativePath)
@@ -509,7 +508,7 @@ FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relati
 	if(relativePath.empty())
 		return FilePath();
 	
-	return ProjectManager::Instance()->CurProjectPath() + relativePath;
+	return (FilePath(ProjectManager::Instance()->CurProjectPath().toStdString()) + relativePath);
 }
 
 int32 CustomColorsSystem::GetBrushSize()

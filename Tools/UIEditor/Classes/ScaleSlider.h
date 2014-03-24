@@ -42,6 +42,7 @@ public:
 
 protected:
 	void mousePressEvent (QMouseEvent* event);
+	int RoundToNearestInteger(float value);
 };
 
 #endif //__UIEDITOR__SCALESLIDER__H__

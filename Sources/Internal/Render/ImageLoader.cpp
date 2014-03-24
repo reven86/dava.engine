@@ -40,102 +40,102 @@
 namespace DAVA 
 {
 
-bool ImageLoader::CreateFromFileByExtension(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
+Vector<Image *> ImageLoader::CreateFromFileByExtension(const FilePath &pathname)
 {
     if(pathname.IsEqualToExtension("*.pvr"))
     {
-        return ImageLoader::CreateFromPVRFile(pathname, imageSet, baseMipmap);
+        return ImageLoader::CreateFromPVRFile(pathname);
     }
     else if(pathname.IsEqualToExtension("*.dds"))
     {
-        return ImageLoader::CreateFromDDSFile(pathname, imageSet, baseMipmap);
+        return ImageLoader::CreateFromDDSFile(pathname);
     }
     
-    return ImageLoader::CreateFromFileByContent(pathname, imageSet, baseMipmap);
+    return ImageLoader::CreateFromFileByContent(pathname);
 }
 
     
     
-bool ImageLoader::CreateFromFileByContent(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
+Vector<Image *> ImageLoader::CreateFromFileByContent(const FilePath & pathname)
 {
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
     {
         Logger::Error("[ImageLoader::CreateFromFile] Cannot open file %s", pathname.GetAbsolutePathname().c_str());
-        return false;
+        return Vector<Image *>();
     }
     
-    bool created = CreateFromFileByContent(file, imageSet, baseMipmap);
+    Vector<Image *>imageSet = CreateFromFileByContent(file);
     SafeRelease(file);
-	return created;
+	return imageSet;
 };
     
     
-bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
+Vector<Image *> ImageLoader::CreateFromFileByContent(File *file)
 {
     if(IsPVRFile(file))
     {
-        return CreateFromPVR(file, imageSet, baseMipmap);
+        return CreateFromPVR(file);
     }
 
     if(IsPNGFile(file))
     {
-        return CreateFromPNG(file, imageSet);
+        return CreateFromPNG(file);
     }
 
     if(IsDDSFile(file))
     {
-        return CreateFromDDS(file, imageSet, baseMipmap);
+        return CreateFromDDS(file);
     }
     
-    return false;
+    return Vector<Image *>();
 }
 
     
-bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet)
+Vector<Image *> ImageLoader::CreateFromPNGFile(const FilePath & pathname)
 {
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
     {
         Logger::Error("[ImageLoader::CreateFromPNGFile] Cannot open file %s", pathname.GetAbsolutePathname().c_str());
-        return false;
+        return Vector<Image *>();
     }
     
-    bool created = CreateFromPNG(file, imageSet);
+    Vector<Image *>imageSet = CreateFromPNG(file);
     SafeRelease(file);
-	return created;
+	return imageSet;
 }
     
-bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
+Vector<Image *> ImageLoader::CreateFromPVRFile(const FilePath & pathname)
 {
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
     {
         Logger::Error("[ImageLoader::CreateFromPVRFile] Cannot open file %s", pathname.GetAbsolutePathname().c_str());
-        return false;
+        return Vector<Image *>();
     }
     
-    bool created = CreateFromPVR(file, imageSet, baseMipmap);
+    Vector<Image *>imageSet = CreateFromPVR(file);
     SafeRelease(file);
-	return created;
+	return imageSet;
 }
     
-bool ImageLoader::CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
+Vector<Image *> ImageLoader::CreateFromDDSFile(const FilePath & pathname)
 {
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
     {
         Logger::Error("[ImageLoader::CreateFromDDSFile] Cannot open file %s", pathname.GetAbsolutePathname().c_str());
-        return false;
+        return Vector<Image *>();
     }
     
-    bool created = CreateFromDDS(file, imageSet, baseMipmap);
+    Vector<Image *>imageSet = CreateFromDDS(file);
     SafeRelease(file);
-	return created;
+	return imageSet;
 }
 
 
@@ -161,7 +161,7 @@ bool ImageLoader::IsDDSFile(DAVA::File *file)
 }
     
     
-bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
+Vector<Image *> ImageLoader::CreateFromPNG(DAVA::File *file)
 {
     Image *pngImage = new Image();
     if(pngImage)
@@ -169,52 +169,67 @@ bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
         int32 retCode = LibPngWrapper::ReadPngFile(file, pngImage);
         if(1 == retCode)
         {
+            Vector<Image *>imageSet;
             imageSet.push_back(pngImage);
-            return true;
+            return imageSet;
         }
         
         SafeRelease(pngImage);
     }
     
-    return false;
+    return Vector<Image *>();
 }
 
-bool ImageLoader::CreateFromDDS(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
+Vector<Image *> ImageLoader::CreateFromDDS(DAVA::File *file)
 {
-	return LibDxtHelper::ReadDxtFile(file, imageSet, baseMipmap);
+    Vector<Image *> retObj;
+
+	bool res = LibDxtHelper::ReadDxtFile(file, retObj);
+	if(false == res)
+	{
+		for_each(retObj.begin(), retObj.end(),SafeRelease<Image>);
+		retObj.clear();
+	}
+	return retObj;
 }
 
-bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
+Vector<Image *> ImageLoader::CreateFromPVR(DAVA::File *file)
 {
 //    uint64 loadTime = SystemTimer::Instance()->AbsoluteMS();
 
     int32 mipMapLevelsCount = LibPVRHelper::GetMipMapLevelsCount(file);
-    baseMipmap = Min(baseMipmap, mipMapLevelsCount - 1);
-
 	int32 faceCount = LibPVRHelper::GetCubemapFaceCount(file);
-	int32 totalImageCount = (mipMapLevelsCount - baseMipmap) * faceCount;
+	int32 totalImageCount = mipMapLevelsCount * faceCount;
     if(totalImageCount)
     {
+        Vector<Image *> imageSet;
         imageSet.reserve(totalImageCount);
         for(int32 i = 0; i < totalImageCount; ++i)
         {
             Image *image = new Image();
+            if(!image)
+            {
+                Logger::Error("[ImageLoader::CreateFromPVR] Cannot allocate memory");
+				for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
+                return Vector<Image *>();
+            }
+            
             imageSet.push_back(image);
         }
 
         file->Seek(0, File::SEEK_FROM_START);
-        bool read = LibPVRHelper::ReadFile(file, imageSet, baseMipmap);
+        bool read = LibPVRHelper::ReadFile(file, imageSet);
         if(!read)
         {
             Logger::Error("[ImageLoader::CreateFromPVR] Cannot read images from PVR file (%s)", file->GetFilename().GetAbsolutePathname().c_str());
 			for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
-            return false;
+            return Vector<Image *>();
         }
 //        loadTime = SystemTimer::Instance()->AbsoluteMS() - loadTime;
 //        Logger::Info("Unpack PVR(%s) for %ldms", file->GetFilename().c_str(), loadTime);
-        return true;
+        return imageSet;
     }
-    return false;
+    return Vector<Image *>();
 }
 
 void ImageLoader::Save(DAVA::Image *image, const FilePath &pathname)

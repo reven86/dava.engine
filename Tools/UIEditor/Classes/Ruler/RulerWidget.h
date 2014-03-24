@@ -33,7 +33,6 @@
 
 #include <QWidget>
 #include <QPixmap>
-#include <QMouseEvent>
 
 class RulerWidget : public QWidget
 {
@@ -59,13 +58,6 @@ public:
     void UpdateRulers();
 
     virtual void paintEvent(QPaintEvent *event);
-
-    virtual void mousePressEvent(QMouseEvent *event);
-    virtual void mouseMoveEvent(QMouseEvent *event);
-
-signals:
-    // Guide drag is completed.
-    void GuideDropped(Qt::DropAction dropAction);
     
 public slots:
     // Ruler Settings are changed.
@@ -94,9 +86,6 @@ private:
     
     // Marker position.
     int markerPosition;
-    
-    // Drag start position (for Guides).
-    QPoint dragStartPos;
 };
 
 #endif /* defined(__RULER_WIDGET__H__) */

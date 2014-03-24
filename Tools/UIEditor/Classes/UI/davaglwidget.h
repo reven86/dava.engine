@@ -53,7 +53,6 @@ public:
 
 	QSize GetPrevSize() const { return prevSize;};
 
-protected:
 	virtual QPaintEngine *paintEngine() const;
 	virtual void paintEvent(QPaintEvent *);
 
@@ -65,6 +64,7 @@ protected:
 
 	virtual void focusInEvent(QFocusEvent *);
 	virtual void focusOutEvent(QFocusEvent *);
+
 
 	void dropEvent(QDropEvent *event);
 	void dragMoveEvent(QDragMoveEvent *event);
@@ -86,11 +86,6 @@ protected:
 
 signals:
     void DavaGLWidgetResized();
-
-protected:
-    // Recalculate "raw" guide coord to internal.
-    DAVA::Vector2 GuideToInternal(const QPoint& pos);
-    DAVA::float32 ToNearestInteger(DAVA::float32 value);
 
 private:
 	Ui::DavaGLWidget *ui;
