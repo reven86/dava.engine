@@ -1199,7 +1199,7 @@ void Texture::MakePink(TextureType requestedType, bool checkers)
 	if(Texture::TEXTURE_CUBE == requestedType)
 	{
 		texDescriptor->Initialize(WRAP_REPEAT, true);
-		for(uint32 i = 0; i < Cubemap::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
+		for(uint32 i = 0; i < Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 		{
             Image *img = Image::CreatePinkPlaceholder(checkers);
 			img->cubeFaceID = i;

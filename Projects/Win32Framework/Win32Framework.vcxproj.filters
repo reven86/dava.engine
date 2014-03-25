@@ -1416,6 +1416,9 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h">
       <Filter>Internal\Base\Radix</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Cubemap.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2533,6 +2536,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp">
       <Filter>Internal\Base\Radix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Cubemap.cpp">
+      <Filter>Internal\Render</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

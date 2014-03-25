@@ -387,6 +387,7 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Cubemap.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\D3D9Helpers.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\DynamicIndexBuffer.h" />
@@ -785,6 +786,7 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Cubemap.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\D3D9Helpers.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\DynamicIndexBuffer.cpp" />
