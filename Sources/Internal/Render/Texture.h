@@ -184,8 +184,7 @@ public:
 		\param[in] useDepthbuffer if set to true, addition depthbuffer will be created for this fbo
         \todo reorder variables in function, and make format variable first to make it similar to CreateFromData function.
      */
-	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat);
-	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat, TextureType typeHint);
+	static Texture * CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat, TextureType typeHint = Texture::TEXTURE_2D);
 	
 	static Texture * CreatePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
 

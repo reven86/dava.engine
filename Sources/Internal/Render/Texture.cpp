@@ -848,111 +848,58 @@ int32 Texture::Release()
 	return BaseObject::Release();
 }
 	
-Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat _depthFormat)
+    
+Texture * Texture::CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat, TextureType typeHint)
 {
-	int32 dx = Max((int32)w, 8);
+    bool isCubemapTexture = (typeHint == Texture::TEXTURE_CUBE);
+
+    int32 dx = Max((int32)width, 8);
     EnsurePowerOf2(dx);
     
-	int32 dy = Max((int32)h, 8);
+    int32 dy = Max((int32)height, 8);
     EnsurePowerOf2(dy);
-    
 
 #if defined(__DAVAENGINE_OPENGL__)
-
-	Texture *tx = Texture::CreateFromData(format, NULL, dx, dy, false);
-	DVASSERT(tx);
-
-	tx->depthFormat = _depthFormat;
-
-	tx->HWglCreateFBOBuffers();	
-
+    Texture *tx = new Texture();
+    tx->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, false);
+    tx->depthFormat = depthFormat;
+    
+    Vector<Image *> *images = new Vector<Image *>();
+    uint32 count = (isCubemapTexture) ? Texture::CUBE_FACE_MAX_COUNT : 1;
+    for(uint32 i = 0; i < count; ++i)
+    {
+        Image * image = Image::Create(dx, dy, format);
+        image->cubeFaceID = (isCubemapTexture) ? i : CUBE_FACE_INVALID;
+        image->mipmapLevel = 0;
+        images->push_back(image);
+    }
+    
+    tx->SetParamsFromImages(images);
+    tx->FlushDataToRenderer(images);
+    
+    tx->texDescriptor->faceDescription = (isCubemapTexture) ? 0x000000FF : 0;
+    tx->HWglCreateFBOBuffers();
 #elif defined(__DAVAENGINE_DIRECTX9__)
-
-	// TODO: Create FBO
+    // TODO: Create FBO
 	Texture * tx = new Texture();
+    tx->width = dx;
+    tx->height = dy;
+    tx->format = format;
+    
+    RenderManager::Instance()->LockNonMain();
+    tx->id = CreateTextureNative(Vector2((float32)tx->width, (float32)tx->height), tx->format, true, 0);
+    RenderManager::Instance()->UnlockNonMain();
+    
+    tx->state = STATE_VALID;
+#endif
 
-	tx->width = dx;
-	tx->height = dy;
-	tx->format = format;
-
-	RenderManager::Instance()->LockNonMain();
-	tx->id = CreateTextureNative(Vector2((float32)tx->width, (float32)tx->height), tx->format, true, 0);
-	RenderManager::Instance()->UnlockNonMain();
-
-	tx->state = STATE_VALID;
-#endif 
-
-
+    
     tx->isRenderTarget = true;
     tx->texDescriptor->pathname = Format("FBO texture %d", textureFboCounter);
 	AddToMap(tx);
 	
 	textureFboCounter++;
-	
-	return tx;
-}
-    
-Texture * Texture::CreateFBO(uint32 width, uint32 height, PixelFormat format, DepthFormat depthFormat, TextureType typeHint)
-{
-    if(typeHint == Texture::TEXTURE_CUBE)
-    {
-        int32 dx = Max((int32)width, 8);
-        EnsurePowerOf2(dx);
-        
-        int32 dy = Max((int32)height, 8);
-        EnsurePowerOf2(dy);
-
-        
-#if defined(__DAVAENGINE_OPENGL__)
-        
-        Texture * tx = new Texture();
-        tx->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, false);
-        tx->depthFormat = depthFormat;
-        
-        Vector<Image *> *images = new Vector<Image *>();
-
-        for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
-        {
-            Image * image = Image::Create(dx, dy, format);
-            image->cubeFaceID = i;
-			image->mipmapLevel = 0;
-            images->push_back(image);
-            
-            Memset(image->data, 0, image->dataSize);
-        }
-        
-        tx->SetParamsFromImages(images);
-        tx->FlushDataToRenderer(images);
-
-        tx->HWglCreateFBOBuffers();
-        
-#elif defined(__DAVAENGINE_DIRECTX9__)
-        
-        // TODO: Create FBO
-        Texture * tx = new Texture();
-        
-        tx->width = dx;
-        tx->height = dy;
-        tx->format = format;
-        
-        RenderManager::Instance()->LockNonMain();
-        tx->id = CreateTextureNative(Vector2((float32)tx->width, (float32)tx->height), tx->format, true, 0);
-        RenderManager::Instance()->UnlockNonMain();
-        
-        tx->state = STATE_VALID;
-#endif
-        
-        tx->isRenderTarget = true;
-        tx->texDescriptor->pathname = Format("FBO cube texture %d", textureFboCounter);
-        tx->texDescriptor->faceDescription = 0x000000FF;
-        AddToMap(tx);
-        
-        textureFboCounter++;
-        
-        return tx;
-    }
-    
-    return CreateFBO(width, height, format, depthFormat);
+    return tx;
 }
 
 
