@@ -220,7 +220,8 @@ public:
     const FilePath & GetPathname() const;
     
     Image * CreateImageFromMemory(UniqueHandle renderState);
-
+    void CreateCubemapImages(UniqueHandle renderState, Vector<Image *> & images);
+    
 	bool IsPinkPlaceholder();
     
     static PixelFormatDescriptor GetPixelFormatDescriptor(PixelFormat formatID);

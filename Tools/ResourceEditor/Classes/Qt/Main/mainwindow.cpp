@@ -2721,13 +2721,16 @@ void QtMainWindow::OnRenderToCubemap()
     SceneEditor2 *scene = GetCurrentScene();
     if(scene && scene->skyboxSystem->IsSkyboxPresent())
     {
-        
         scene->renderSystem->RenderToCubemap(cubemap, scene);
-        
         
         DAVA::Entity * skyEntity = scene->skyboxSystem->GetSkyboxEntity();
         DAVA::SkyboxRenderObject *skyBox = GetSkybox(skyEntity);
         skyBox->SetTexture(cubemap);
+        
+        Vector<Image *> images;
+        cubemap->CreateCubemapImages(RenderState::RENDERSTATE_2D_OPAQUE, images);
+
+        ImageLoader::SaveCubemap(images, "/Users/victorkleschenko/Downloads/Cubemap/cumebap.png");
     }
     
     SafeRelease(cubemap);

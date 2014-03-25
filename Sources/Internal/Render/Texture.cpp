@@ -942,9 +942,9 @@ Texture * Texture::CreateFBO(uint32 width, uint32 height, PixelFormat format, De
         tx->state = STATE_VALID;
 #endif
         
-        
         tx->isRenderTarget = true;
         tx->texDescriptor->pathname = Format("FBO cube texture %d", textureFboCounter);
+        tx->texDescriptor->faceDescription = 0x000000FF;
         AddToMap(tx);
         
         textureFboCounter++;
@@ -1215,6 +1215,29 @@ Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
         
     return image;
 }
+    
+void Texture::CreateCubemapImages(UniqueHandle renderState, Vector<Image *> & images)
+{
+    DVASSERT(texDescriptor->IsCubeMap());
+    
+    if(isRenderTarget)
+    {
+        Sprite *renderTarget = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height);
+        RenderManager::Instance()->SetRenderTarget(renderTarget);
+        
+        for(uint32 i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
+        {
+            BindFace(i);
+            Image *image = ReadDataToImage();
+            images.push_back(image);
+        }
+        
+        RenderManager::Instance()->RestoreRenderTarget();
+        
+        SafeRelease(renderTarget);
+    }
+}
+
 	
 const TexturesMap & Texture::GetTextureMap()
 {

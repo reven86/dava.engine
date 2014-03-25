@@ -36,6 +36,7 @@
 #include "Render/LibDxtHelper.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
+#include "Render/Texture.h"
 
 namespace DAVA 
 {
@@ -224,6 +225,36 @@ void ImageLoader::Save(DAVA::Image *image, const FilePath &pathname)
     DVASSERT((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format));
     LibPngWrapper::WritePngFile(pathname, image->width, image->height, image->data, image->format);
 }
+    
+static DAVA::String FACE_NAME_SUFFIX[] =
+{
+    DAVA::String("_px"),
+    DAVA::String("_nx"),
+    DAVA::String("_py"),
+    DAVA::String("_ny"),
+    DAVA::String("_pz"),
+    DAVA::String("_nz")
+};
+
+    
+void ImageLoader::SaveCubemap(const Vector<Image *> & images, const FilePath & pathname)
+{
+    DVASSERT(pathname.IsEqualToExtension(".png"));
+    DVASSERT(images.size() == Texture::CUBE_FACE_MAX_COUNT)
+
+    String basename = pathname.GetBasename();
+
+    for(uint32 i = 0 ; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+    {
+        DVASSERT((FORMAT_RGBA8888 == images[i]->format) || (FORMAT_A8 == images[i]->format) || (FORMAT_A16 == images[i]->format));
+
+        FilePath imagePathname = pathname;
+        imagePathname.ReplaceBasename(basename + FACE_NAME_SUFFIX[i]);
+
+        LibPngWrapper::WritePngFile(imagePathname, images[i]->width, images[i]->height, images[i]->data, images[i]->format);
+    }
+}
+
     
     
 };

@@ -49,6 +49,8 @@ public:
 	static bool CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
 
     static void Save(Image *image, const FilePath & pathname);
+    static void SaveCubemap(const Vector<Image *> & images, const FilePath & pathname);
+    
     
 protected:
 
