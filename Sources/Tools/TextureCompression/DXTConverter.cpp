@@ -35,6 +35,7 @@
 #include "Render/ImageLoader.h"
 #include "Render/LibDxtHelper.h"
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/Cubemap.h"
 
 namespace DAVA
 {
@@ -80,7 +81,7 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
 	
 	Vector<Image*> inputImages;
 	Vector<FilePath> faceNames;
-	Texture::GenerateCubeFaceNames(descriptor.pathname, faceNames);
+	Cubemap::GenerateCubeFaceNames(descriptor.pathname, faceNames);
 	for(size_t i = 0; i < faceNames.size(); ++i)
 	{
         Vector<Image*> tempImages;
@@ -103,7 +104,7 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
 	}
     
     
-    if(inputImages.size() == DAVA::Texture::CUBE_FACE_MAX_COUNT)
+    if(inputImages.size() == DAVA::Cubemap::CUBE_FACE_MAX_COUNT)
     {
         FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
         

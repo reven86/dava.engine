@@ -94,19 +94,6 @@ public:
 		DEPTH_RENDERBUFFER
 	};
 	
-	//VI: each face is optional
-	enum CubemapFace
-	{
-		CUBE_FACE_POSITIVE_X = 0,
-		CUBE_FACE_NEGATIVE_X = 1,
-		CUBE_FACE_POSITIVE_Y = 2,
-		CUBE_FACE_NEGATIVE_Y = 3,
-		CUBE_FACE_POSITIVE_Z = 4,
-		CUBE_FACE_NEGATIVE_Z = 5,
-		CUBE_FACE_MAX_COUNT = 6,
-		CUBE_FACE_INVALID = 0xFFFFFFFF
-	};
-	
 	enum TextureType
 	{
 		TEXTURE_2D = 0,
@@ -225,9 +212,6 @@ public:
     
     static PixelFormatDescriptor GetPixelFormatDescriptor(PixelFormat formatID);
 	
-	static void GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames);
-	static void GenerateCubeFaceNames(const FilePath & baseName, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames);
-
     void Reload();
     void ReloadAs(eGPUFamily gpuFamily);
 	void SetInvalidater(TextureInvalidater* invalidater);

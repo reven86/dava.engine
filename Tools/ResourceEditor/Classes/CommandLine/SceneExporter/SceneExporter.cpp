@@ -34,6 +34,7 @@
 #include "TextureCompression/TextureConverter.h"
 
 #include "Render/TextureDescriptor.h"
+#include "Render/Cubemap.h"
 #include "Qt/Scene/SceneHelper.h"
 #include "Render/GPUFamilyDescriptor.h"
 
@@ -283,7 +284,7 @@ bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<Stri
 		if(descriptor->IsCubeMap())
 		{
 			Vector<FilePath> faceNames;
-			Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
+			Cubemap::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
 			for(Vector<FilePath>::iterator it = faceNames.begin();
 				it != faceNames.end();
 				++it)

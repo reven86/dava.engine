@@ -37,6 +37,8 @@
 #include "Tools/QtFileDialog/QtFileDialog.h"
 #include "Project/ProjectManager.h"
 
+#include "Render/Cubemap.h"
+
 #include <QFileDialog>
 #include <QScrollBar>
 
@@ -313,18 +315,19 @@ void CubeMapTextureBrowser::OnDeleteSelectedItemsClicked()
 				FilePath fp = item->data(CUBELIST_DELEGATE_ITEMFULLPATH).toString().toStdString();
 				if(fp.Exists())
 				{
-					DAVA::Vector<DAVA::String> faceNames;
-					CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
+					DAVA::Vector<DAVA::FilePath> faceNames;
+                    DAVA::Cubemap::GenerateCubeFaceNames(fp, faceNames);
+                    
 					for(size_t faceIndex = 0; faceIndex < faceNames.size(); ++faceIndex)
 					{
 						FilePath hackTex = faceNames[faceIndex];
 						hackTex.ReplaceExtension(".tex");
 						
 						QFile::remove(hackTex.GetAbsolutePathname().c_str());
-						bool removeResult = QFile::remove(faceNames[faceIndex].c_str());
+						bool removeResult = QFile::remove(faceNames[faceIndex].GetAbsolutePathname().c_str());
 						if(!removeResult)
 						{
-							failedToRemove.push_back(faceNames[faceIndex]);
+							failedToRemove.push_back(faceNames[faceIndex].GetAbsolutePathname());
 						}
 					}
 					
@@ -367,12 +370,12 @@ bool CubeMapTextureBrowser::ValidateTextureAndFillThumbnails(DAVA::FilePath& fp,
 	
 	int width = 0;
 	int height = 0;
-	DAVA::Vector<DAVA::String> faceNames;
-	CubemapUtils::GenerateFaceNames(fp.GetAbsolutePathname(), faceNames);
+	DAVA::Vector<DAVA::FilePath> faceNames;
+    DAVA::Cubemap::GenerateCubeFaceNames(fp, faceNames);
 	for(size_t i = 0; i < faceNames.size(); ++i)
 	{
 		QImage faceImage;
-		if(!faceImage.load(faceNames[i].c_str())) //file must be present
+		if(!faceImage.load(faceNames[i].GetAbsolutePathname().c_str())) //file must be present
 		{
 			result = false;
 		}

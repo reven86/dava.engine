@@ -35,6 +35,7 @@
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/LibPVRHelper.h"
+#include "Render/Cubemap.h"
 
 namespace DAVA
 {
@@ -191,8 +192,8 @@ FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& desc
 {
 	DAVA::Vector<DAVA::FilePath> pvrToolFaceNames;
 	DAVA::Vector<DAVA::FilePath> cubemapFaceNames;
-	DAVA::Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
-	DAVA::Texture::GenerateCubeFaceNames(descriptor.pathname, cubemapSuffixes, cubemapFaceNames);
+	DAVA::Cubemap::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
+	DAVA::Cubemap::GenerateCubeFaceNames(descriptor.pathname, cubemapSuffixes, cubemapFaceNames);
 		
 	DVASSERT(pvrToolSuffixes.size() == cubemapSuffixes.size());
 		
@@ -228,7 +229,7 @@ FilePath PVRConverter::PrepareCubeMapForPvrConvert(const TextureDescriptor& desc
 void PVRConverter::CleanupCubemapAfterConversion(const TextureDescriptor& descriptor)
 {
 	Vector<FilePath> pvrToolFaceNames;
-	Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
+	Cubemap::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
 		
 	for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)
 	{
@@ -243,7 +244,7 @@ void PVRConverter::InitFileSuffixes()
 {
 	if(pvrToolSuffixes.empty())
 	{
-		for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+		for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 		{
 			pvrToolSuffixes.push_back(PVRTOOL_INPUT_NAMES[i]);
 			cubemapSuffixes.push_back(PVRTOOL_MAP_NAMES[i]);

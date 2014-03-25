@@ -30,6 +30,7 @@
 #include "Render/Image.h"
 #include "Render/Texture.h"
 #include "Render/ImageConvert.h"
+#include "Render/Cubemap.h"
 
 namespace DAVA 
 {
@@ -41,7 +42,7 @@ Image::Image()
 ,	width(0)
 ,	height(0)
 ,	format(FORMAT_RGB565)
-,	cubeFaceID(Texture::CUBE_FACE_INVALID)
+,	cubeFaceID(Cubemap::CUBE_FACE_INVALID)
 ,	mipmapLevel(-1)
 {
 }

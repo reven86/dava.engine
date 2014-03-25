@@ -1081,6 +1081,12 @@
 		E843505B17FA0D3B00A25F04 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = E843505517FA0D3B00A25F04 /* TeamcityOutput.h */; };
 		E845D4E11732B5DF000DA8E7 /* FilePathObjective.mm in Sources */ = {isa = PBXBuildFile; fileRef = E845D4E01732B5DF000DA8E7 /* FilePathObjective.mm */; };
 		E845D4E21732B5DF000DA8E7 /* FilePathObjective.mm in Sources */ = {isa = PBXBuildFile; fileRef = E845D4E01732B5DF000DA8E7 /* FilePathObjective.mm */; };
+		E8792C6D18E180600077F74A /* Cubemap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8792C6B18E180600077F74A /* Cubemap.cpp */; };
+		E8792C6E18E180600077F74A /* Cubemap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8792C6B18E180600077F74A /* Cubemap.cpp */; };
+		E8792C6F18E180600077F74A /* Cubemap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8792C6B18E180600077F74A /* Cubemap.cpp */; };
+		E8792C7018E180600077F74A /* Cubemap.h in Headers */ = {isa = PBXBuildFile; fileRef = E8792C6C18E180600077F74A /* Cubemap.h */; };
+		E8792C7118E180600077F74A /* Cubemap.h in Headers */ = {isa = PBXBuildFile; fileRef = E8792C6C18E180600077F74A /* Cubemap.h */; };
+		E8792C7218E180600077F74A /* Cubemap.h in Headers */ = {isa = PBXBuildFile; fileRef = E8792C6C18E180600077F74A /* Cubemap.h */; };
 		E8951B741738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951B721738FEEC00755339 /* GPUFamilyDescriptor.cpp */; };
 		E8951B751738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8951B721738FEEC00755339 /* GPUFamilyDescriptor.cpp */; };
 		E8951B761738FEEC00755339 /* GPUFamilyDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8951B731738FEEC00755339 /* GPUFamilyDescriptor.h */; };
@@ -2452,6 +2458,8 @@
 		E843505417FA0D3B00A25F04 /* TeamcityOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TeamcityOutput.cpp; sourceTree = "<group>"; };
 		E843505517FA0D3B00A25F04 /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TeamcityOutput.h; sourceTree = "<group>"; };
 		E845D4E01732B5DF000DA8E7 /* FilePathObjective.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FilePathObjective.mm; sourceTree = "<group>"; };
+		E8792C6B18E180600077F74A /* Cubemap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cubemap.cpp; sourceTree = "<group>"; };
+		E8792C6C18E180600077F74A /* Cubemap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Cubemap.h; sourceTree = "<group>"; };
 		E8951B721738FEEC00755339 /* GPUFamilyDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GPUFamilyDescriptor.cpp; sourceTree = "<group>"; };
 		E8951B731738FEEC00755339 /* GPUFamilyDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPUFamilyDescriptor.h; sourceTree = "<group>"; };
 		E8989ABE16BD24E400732C04 /* AnimatedObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimatedObject.cpp; sourceTree = "<group>"; };
@@ -3627,6 +3635,8 @@
 			isa = PBXGroup;
 			children = (
 				A670F2EF1847A99E0030E075 /* TextureStateData.h */,
+				E8792C6B18E180600077F74A /* Cubemap.cpp */,
+				E8792C6C18E180600077F74A /* Cubemap.h */,
 				A69B7A461834CD640093AF7F /* RenderStateData.h */,
 				A69B7A471834CD640093AF7F /* UniqueStateSet.h */,
 				50A5186E17B256250022E8FA /* ShaderCache.cpp */,
@@ -4313,6 +4323,7 @@
 				176DE966174B5561007A983B /* Rect.h in Headers */,
 				176DE967174B5561007A983B /* RectPacker.h in Headers */,
 				176DE968174B5561007A983B /* Sphere.h in Headers */,
+				E8792C7218E180600077F74A /* Cubemap.h in Headers */,
 				176DE969174B5561007A983B /* Spline.h in Headers */,
 				176DE96A174B5561007A983B /* Vector.h in Headers */,
 				176DE96B174B5561007A983B /* BaseNetworkConnection.h in Headers */,
@@ -4749,6 +4760,7 @@
 				E8989F4216BD24E500732C04 /* RenderDataObject.h in Headers */,
 				E8989F4416BD24E500732C04 /* RenderEffect.h in Headers */,
 				E8989F4616BD24E500732C04 /* RenderGrayscaleEffect.h in Headers */,
+				E8792C7018E180600077F74A /* Cubemap.h in Headers */,
 				E8989F4816BD24E500732C04 /* RenderHelper.h in Headers */,
 				E8989F4A16BD24E500732C04 /* RenderManager.h in Headers */,
 				E8989F4F16BD24E500732C04 /* RenderManagerGL20.h in Headers */,
@@ -5009,6 +5021,7 @@
 				E898A08316BD265400732C04 /* CollisionPolygons.h in Headers */,
 				E898A08416BD265400732C04 /* Collisions.h in Headers */,
 				E898A08516BD265400732C04 /* ApplicationCore.h in Headers */,
+				E8792C7118E180600077F74A /* Cubemap.h in Headers */,
 				E898A08616BD265400732C04 /* Core.h in Headers */,
 				E898A08716BD265400732C04 /* CoreMacOS_CarbonWindow.h in Headers */,
 				E898A08816BD265400732C04 /* CoreMacOS_OpenGL.h in Headers */,
@@ -5749,6 +5762,7 @@
 				1795E4C4174CC24D00050F64 /* NPAPICorePlatformMacOS.cpp in Sources */,
 				A6E4FE0C1761D9C600B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FE101761D9D200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
+				E8792C6F18E180600077F74A /* Cubemap.cpp in Sources */,
 				A6E4FE141761D9E100B48E41 /* ActionUpdateSystem.cpp in Sources */,
 				4FFE5CB41779E0B400728624 /* MipmapReplacer.cpp in Sources */,
 				0211D551177C26D600EB7011 /* OpenUDIDApple.mm in Sources */,
@@ -5795,6 +5809,7 @@
 				E8989DD316BD24E500732C04 /* ObjectFactory.cpp in Sources */,
 				E8989DD516BD24E500732C04 /* Observable.cpp in Sources */,
 				E8989DD816BD24E500732C04 /* Radix.cpp in Sources */,
+				E8792C6D18E180600077F74A /* Cubemap.cpp in Sources */,
 				E8989DDF16BD24E500732C04 /* CollisionObject2.cpp in Sources */,
 				E8989DE116BD24E500732C04 /* CollisionPolygons.cpp in Sources */,
 				E8989DE316BD24E500732C04 /* Collisions.cpp in Sources */,
@@ -6122,6 +6137,7 @@
 				02E9E425173961DE00C501BC /* SoundEvent.cpp in Sources */,
 				02E9E427173961DE00C501BC /* SoundEventCategory.cpp in Sources */,
 				02E9E429173961DE00C501BC /* VolumeAnimatedObject.cpp in Sources */,
+				E8792C6E18E180600077F74A /* Cubemap.cpp in Sources */,
 				E898A19B16BD265400732C04 /* AnimatedObject.cpp in Sources */,
 				E898A19C16BD265400732C04 /* Animation.cpp in Sources */,
 				17B0616F1889264B00FD8007 /* UIWebView.cpp in Sources */,

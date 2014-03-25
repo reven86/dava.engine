@@ -37,6 +37,7 @@
 #include "Classes/Qt/Main/QtUtils.h"
 
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Render/Cubemap.h"
 
 using namespace DAVA;
 
@@ -216,7 +217,7 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	{
 		Vector<FilePath> faceNames;
 
-		Texture::GenerateCubeFaceNames(descriptorPathname.GetAbsolutePathname().c_str(), faceNames);
+		Cubemap::GenerateCubeFaceNames(descriptorPathname.GetAbsolutePathname().c_str(), faceNames);
 		for(Vector<FilePath>::iterator it = faceNames.begin();
 			it != faceNames.end();
 			++it)

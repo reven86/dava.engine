@@ -33,6 +33,7 @@
 #include "Render/Image.h"
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
+#include "Render/Cubemap.h"
 
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
@@ -1147,22 +1148,13 @@ bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, const uint8 * mem, u
 	
 uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 {
-	uint32 faceId = Texture::CUBE_FACE_INVALID;
+	uint32 faceId = Cubemap::CUBE_FACE_INVALID;
 	
-	if(faceIndex >= 0 && faceIndex < 6)
+	if(faceIndex >= 0 && faceIndex < Cubemap::CUBE_FACE_MAX_COUNT)
 	{
-		/*uint32 preparedMask = nvttFaceDesc >> faceIndex;
-		for(int i = 0; i < 6; ++i)
-		{
-			if(0 == (preparedMask & 1))
-			{
-				faceIndex++;
-				preparedMask = preparedMask >> 1;
-			}
-		}*/
 		int bitIndex = 0;
 		int faceIdIndex = 0;
-		for(int i = 0; i < 6; ++i)
+		for(int i = 0; i < Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 		{
 			if((nvttFaceDesc >> i) & 1)
 			{
@@ -1176,16 +1168,7 @@ uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 			}
 		}
 
-		static uint32 faceIndexMap[] = {
-			Texture::CUBE_FACE_POSITIVE_X,
-			Texture::CUBE_FACE_NEGATIVE_X,
-			Texture::CUBE_FACE_POSITIVE_Y,
-			Texture::CUBE_FACE_NEGATIVE_Y,
-			Texture::CUBE_FACE_POSITIVE_Z,
-			Texture::CUBE_FACE_NEGATIVE_Z
-		};
-		
-		faceId = faceIndexMap[faceIdIndex];
+		faceId = Cubemap::CUBE_FACE_MAPPING[faceIdIndex];
 	}
 	
 	return faceId;

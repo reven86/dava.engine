@@ -49,6 +49,8 @@
 #include "Scene/SceneHelper.h"
 #include "ImageTools/ImageTools.h"
 
+#include "Render/Cubemap.h"
+
 TextureConvertor::TextureConvertor()
 	: curJobOriginal(NULL)
 	, curJobThumbnail(NULL)
@@ -402,9 +404,9 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 		if(descriptor->IsCubeMap())
 		{
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
-			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+			DAVA::Cubemap::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
 
-			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+			for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 			{
 				if((descriptor->faceDescription & (1 << i)) != 0)
 				{
@@ -447,9 +449,9 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 		if(descriptor->IsCubeMap())
 		{
 			DAVA::Vector<DAVA::FilePath> cubeFaceNames;
-			DAVA::Texture::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
+			DAVA::Cubemap::GenerateCubeFaceNames(descriptor->GetSourceTexturePathname(), cubeFaceNames);
 			
-			for(int i = 0; i < DAVA::Texture::CUBE_FACE_MAX_COUNT; ++i)
+			for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 			{
 				if((descriptor->faceDescription & (1 << i)) != 0)
 				{
@@ -549,7 +551,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 	}
 	else
 	{
-		int stubImageCount = Texture::CUBE_FACE_MAX_COUNT;
+		int stubImageCount = Cubemap::CUBE_FACE_MAX_COUNT;
 		if(NULL != item)
 		{
 			DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor*) item->descriptor;
@@ -632,9 +634,9 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 					}
 				}
 				
-				if(resultImages.size() < Texture::CUBE_FACE_MAX_COUNT)
+				if(resultImages.size() < Cubemap::CUBE_FACE_MAX_COUNT)
 				{
-					int imagesToAdd = Texture::CUBE_FACE_MAX_COUNT - resultImages.size();
+					int imagesToAdd = Cubemap::CUBE_FACE_MAX_COUNT - resultImages.size();
 					for(int i = 0; i < imagesToAdd; ++i)
 					{
 						resultImages.push_back(NULL);
@@ -646,7 +648,7 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 		}
 		else
 		{
-			int stubImageCount = (descriptor->IsCubeMap()) ? Texture::CUBE_FACE_MAX_COUNT : 1;
+			int stubImageCount = (descriptor->IsCubeMap()) ? Cubemap::CUBE_FACE_MAX_COUNT : 1;
 			for(int i = 0; i < stubImageCount; ++i)
 			{
 				resultImages.push_back(NULL);

@@ -37,6 +37,7 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/Landscape.h"
+#include "Render/Cubemap.h"
 
 #define DUMMY_TEXTURES_DIR "~res:/TexDum/"
 
@@ -108,7 +109,7 @@ void MipMapReplacer::ReplaceMipMap(Texture * texture, int32 level)
                 Image * dummyImg = mipImg[i];
                 if(dummyImg->width == mipMapSize)
                 {
-                    texture->TexImage(level, dummyImg->width, dummyImg->height, dummyImg->data, dummyImg->dataSize, Texture::CUBE_FACE_INVALID);
+                    texture->TexImage(level, dummyImg->width, dummyImg->height, dummyImg->data, dummyImg->dataSize, Cubemap::CUBE_FACE_INVALID);
                 }
 
                 SafeRelease(dummyImg);
@@ -163,7 +164,7 @@ void MipMapReplacer::ReplaceMipMapFromMemory(Texture * texture, int32 level)
         }
     }
 
-    texture->TexImage(level, mipMapSize, mipMapSize, data, dataSize, Texture::CUBE_FACE_INVALID);
+    texture->TexImage(level, mipMapSize, mipMapSize, data, dataSize, Cubemap::CUBE_FACE_INVALID);
 
     SafeDeleteArray(data);
 }

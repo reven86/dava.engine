@@ -27,19 +27,60 @@
 =====================================================================================*/
 
 
-#ifndef __CUBEMAP_UTILS_H__
-#define __CUBEMAP_UTILS_H__
+#include "Render/Cubemap.h"
+#include "Render/GPUFamilyDescriptor.h"
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "Render/Highlevel/SkyboxRenderObject.h"
-
-class CubemapUtils
+namespace DAVA
 {
-public:
-	
-	static const DAVA::String& GetDefaultFaceExtension();
-	static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue);
+    
+int32 Cubemap::CUBE_FACE_MAPPING[CUBE_FACE_MAX_COUNT] =
+{
+	Cubemap::CUBE_FACE_POSITIVE_X,
+	Cubemap::CUBE_FACE_NEGATIVE_X,
+	Cubemap::CUBE_FACE_POSITIVE_Y,
+	Cubemap::CUBE_FACE_NEGATIVE_Y,
+	Cubemap::CUBE_FACE_POSITIVE_Z,
+	Cubemap::CUBE_FACE_NEGATIVE_Z
 };
 
-#endif /* defined(__CUBEMAP_UTILS_H__) */
+DAVA::String Cubemap::FACE_NAME_SUFFIX[CUBE_FACE_MAX_COUNT] =
+{
+    DAVA::String("_px"),
+    DAVA::String("_nx"),
+    DAVA::String("_py"),
+    DAVA::String("_ny"),
+    DAVA::String("_pz"),
+    DAVA::String("_nz")
+};
+	
+
+void Cubemap::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames)
+{
+	static Vector<String> defaultSuffixes;
+	if(defaultSuffixes.empty())
+	{
+		for(int i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
+		{
+			defaultSuffixes.push_back(FACE_NAME_SUFFIX[i]);
+		}
+	}
+	
+	GenerateCubeFaceNames(baseName, defaultSuffixes, faceNames);
+}
+
+void Cubemap::GenerateCubeFaceNames(const FilePath & filePath, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames)
+{
+	faceNames.clear();
+	
+	String basename = filePath.GetBasename();
+		
+	for(size_t i = 0; i < faceNameSuffixes.size(); ++i)
+	{
+		DAVA::FilePath faceFilePath = filePath;
+		faceFilePath.ReplaceFilename(basename + faceNameSuffixes[i] + GPUFamilyDescriptor::GetFilenamePostfix(GPU_UNKNOWN, FORMAT_INVALID));
+			
+		faceNames.push_back(faceFilePath);
+	}
+}
+
+};

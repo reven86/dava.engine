@@ -36,6 +36,8 @@
 #include "ui_cubemapeditordialog.h"
 #include "Project/ProjectManager.h"
 
+#include "Render/Cubemap.h"
+
 #include <QMouseEvent>
 
 const String CUBEMAP_LAST_FACE_DIR_KEY = "cubemap_last_face_dir";
@@ -50,8 +52,8 @@ CubemapEditorDialog::CubemapEditorDialog(QWidget *parent) :
 	
 	faceHeight = -1.0f;
 	faceWidth = -1.0f;
-	facePath = new QString[CubemapUtils::GetMaxFaces()];
-	for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+	facePath = new QString[DAVA::Cubemap::CUBE_FACE_MAX_COUNT];
+	for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		facePath[i] = QString::null;
 	}
@@ -225,7 +227,7 @@ void CubemapEditorDialog::UpdateButtonState()
 bool CubemapEditorDialog::AnyFaceLoaded()
 {
 	bool faceLoaded = false;
-	for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+	for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		if(QString::null != facePath[i])
 		{
@@ -240,7 +242,7 @@ bool CubemapEditorDialog::AnyFaceLoaded()
 bool CubemapEditorDialog::AllFacesLoaded()
 {
 	bool faceLoaded = true;
-	for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+	for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		if(QString::null == facePath[i])
 		{
@@ -255,7 +257,7 @@ bool CubemapEditorDialog::AllFacesLoaded()
 int CubemapEditorDialog::GetLoadedFaceCount()
 {
 	int faceLoaded = 0;
-	for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+	for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		if(QString::null != facePath[i])
 		{
@@ -274,19 +276,15 @@ void CubemapEditorDialog::LoadCubemap(const QString& path)
 	if(NULL != texDescriptor &&
 	   texDescriptor->IsCubeMap())
 	{
-		String fileNameWithoutExtension = filePath.GetFilename();
-		String extension = filePath.GetExtension();
-		fileNameWithoutExtension.replace(fileNameWithoutExtension.find(extension), extension.size(), "");
+		String basename = filePath.GetBasename();
 
 		bool cubemapLoadResult = true;
-		for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+		for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 		{
-			if(texDescriptor->faceDescription & (1 << CubemapUtils::MapUIToFrameworkFace(i)))
+			if(texDescriptor->faceDescription & (1 << DAVA::Cubemap::CUBE_FACE_MAPPING[i]))
 			{
 				FilePath faceFilePath = filePath;
-				faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-											 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) + "." +
-											 CubemapUtils::GetDefaultFaceExtension());
+				faceFilePath.ReplaceFilename(basename + DAVA::Cubemap::FACE_NAME_SUFFIX[i] + CubemapUtils::GetDefaultFaceExtension());
 
 				bool faceLoadResult = LoadImageTo(faceFilePath.GetAbsolutePathname(), i, true);
 				cubemapLoadResult = cubemapLoadResult && faceLoadResult;
@@ -319,17 +317,13 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 	DAVA::uint8 faceMask = GetFaceMask();
 		
 	//copy file to the location where .tex will be put. Add suffixes to file names to distinguish faces
-	String fileNameWithoutExtension = filePath.GetFilename();
-	String extension = filePath.GetExtension();
-	fileNameWithoutExtension.replace(fileNameWithoutExtension.find(extension), extension.size(), "");
-	for(int i = 0 ; i < CubemapUtils::GetMaxFaces(); ++i)
+	String basename = filePath.GetBasename();
+	for(int i = 0 ; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		if(!facePath[i].isNull())
 		{
 			FilePath faceFilePath = filePath;
-			faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-										 CubemapUtils::GetFaceNameSuffix(CubemapUtils::MapUIToFrameworkFace(i)) + "." +
-										 CubemapUtils::GetDefaultFaceExtension());
+			faceFilePath.ReplaceFilename(basename + DAVA::Cubemap::FACE_NAME_SUFFIX[i] + CubemapUtils::GetDefaultFaceExtension());
 
 			DAVA::String targetFullPath = faceFilePath.GetAbsolutePathname().c_str();
 			if(facePath[i] != targetFullPath.c_str())
@@ -397,11 +391,11 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 DAVA::uint8 CubemapEditorDialog::GetFaceMask()
 {
 	DAVA::uint8 mask = 0;
-	for(int i = 0 ; i < CubemapUtils::GetMaxFaces(); ++i)
+	for(int i = 0 ; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		if(!facePath[i].isNull())
 		{
-			mask |= 1 << CubemapUtils::MapUIToFrameworkFace(i);
+			mask |= 1 << DAVA::Cubemap::CUBE_FACE_MAPPING[i];
 		}
 	}
 	
@@ -436,32 +430,32 @@ void CubemapEditorDialog::InitForCreating(DAVA::FilePath& textureDescriptorPath,
 
 void CubemapEditorDialog::OnPXClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_PX);
+	LoadImageFromUserFile(0, DAVA::Cubemap::CUBE_FACE_POSITIVE_X);
 }
 
 void CubemapEditorDialog::OnNXClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_NX);
+	LoadImageFromUserFile(0, DAVA::Cubemap::CUBE_FACE_NEGATIVE_X);
 }
 
 void CubemapEditorDialog::OnPYClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_PY);
+	LoadImageFromUserFile(0, DAVA::Cubemap::CUBE_FACE_POSITIVE_Y);
 }
 
 void CubemapEditorDialog::OnNYClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_NY);
+	LoadImageFromUserFile(0, DAVA::Cubemap::CUBE_FACE_NEGATIVE_Y);
 }
 
 void CubemapEditorDialog::OnPZClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_PZ);
+	LoadImageFromUserFile(0, DAVA::Cubemap::CUBE_FACE_POSITIVE_Z);
 }
 
 void CubemapEditorDialog::OnNZClicked()
 {
-	LoadImageFromUserFile(0, CUBEMAPEDITOR_FACE_NZ);
+	LoadImageFromUserFile(0, DAVA::Cubemap::CUBE_FACE_NEGATIVE_Z);
 }
 
 void CubemapEditorDialog::OnLoadTexture()
@@ -550,7 +544,7 @@ bool CubemapEditorDialog::IsCubemapEdited()
 			ui->labelNZ
 		};
 
-		for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+		for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 		{
 			if(labels[i]->GetRotation() != 0)
 			{
@@ -580,7 +574,7 @@ void CubemapEditorDialog::mouseMoveEvent(QMouseEvent *ev)
 		ui->labelNZ
 	};
 
-	for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
+	for(int i = 0; i < DAVA::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 	{
 		labels[i]->OnParentMouseMove(ev);
 	}

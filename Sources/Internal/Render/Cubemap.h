@@ -27,19 +27,43 @@
 =====================================================================================*/
 
 
-#ifndef __CUBEMAP_UTILS_H__
-#define __CUBEMAP_UTILS_H__
+#ifndef __DAVAENGINE_CUBEMAP_H__
+#define __DAVAENGINE_CUBEMAP_H__
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
-#include "Render/Highlevel/SkyboxRenderObject.h"
 
-class CubemapUtils
+namespace DAVA
+{
+
+    
+class Cubemap
 {
 public:
+    
+	//VI: each face is optional
+	enum CubemapFace
+	{
+		CUBE_FACE_POSITIVE_X = 0,
+		CUBE_FACE_NEGATIVE_X = 1,
+		CUBE_FACE_POSITIVE_Y = 2,
+		CUBE_FACE_NEGATIVE_Y = 3,
+		CUBE_FACE_POSITIVE_Z = 4,
+		CUBE_FACE_NEGATIVE_Z = 5,
+		CUBE_FACE_MAX_COUNT = 6,
+		CUBE_FACE_INVALID = 0xFFFFFFFF
+	};
 	
-	static const DAVA::String& GetDefaultFaceExtension();
-	static DAVA::FilePath GetDialogSavedPath(const DAVA::String& key, const DAVA::String& defaultValue);
-};
+	static void GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames);
+	static void GenerateCubeFaceNames(const FilePath & baseName, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames);
 
-#endif /* defined(__CUBEMAP_UTILS_H__) */
+public:
+    
+    static int32 CUBE_FACE_MAPPING[CUBE_FACE_MAX_COUNT];
+    static DAVA::String FACE_NAME_SUFFIX[CUBE_FACE_MAX_COUNT];
+
+};
+    
+
+};
+#endif // __DAVAENGINE_CUBEMAP_H__

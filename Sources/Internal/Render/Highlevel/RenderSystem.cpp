@@ -44,6 +44,7 @@
 #include "Render/Highlevel/SpatialTree.h"
 #include "Render/ShaderCache.h"
 #include "Render/Texture.h"
+#include "Render/Cubemap.h"
 
 // TODO: Move class to other place
 #include "Render/Highlevel/RenderFastNames.h"
@@ -444,7 +445,7 @@ void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
 {
     DVASSERT(cubemap && cubemap->textureType == Texture::TEXTURE_CUBE);
     
-    static const Vector3 directions[Texture::CUBE_FACE_MAX_COUNT] =
+    static const Vector3 directions[Cubemap::CUBE_FACE_MAX_COUNT] =
     {
         Vector3(1.0f, 0.f, 0.f),
         Vector3(-1.0f, 0.f, 0.f),
@@ -454,7 +455,7 @@ void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
         Vector3(0.0f, 0.f, -1.f)
     };
     
-    static const Vector3 upForFace[Texture::CUBE_FACE_MAX_COUNT] =
+    static const Vector3 upForFace[Cubemap::CUBE_FACE_MAX_COUNT] =
     {
         Vector3(0.f, -1.f, 0.f),
         Vector3(0.f, -1.f, 0.f),
@@ -464,7 +465,7 @@ void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
         Vector3(0.f, -1.f, 0.f)
     };
     
-    static const Vector3 leftForFace[Texture::CUBE_FACE_MAX_COUNT] =
+    static const Vector3 leftForFace[Cubemap::CUBE_FACE_MAX_COUNT] =
     {
         Vector3(1.f, 0.f, 0.f),
         Vector3(0.f, 1.f, 0.f),
@@ -499,7 +500,7 @@ void RenderSystem::RenderToCubemap(Texture * cubemap, Scene *scene)
     camera->SetFOV(90);
     camera->SetAspect(1);
 
-    for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+    for(uint32 i = 0; i < Cubemap::CUBE_FACE_MAX_COUNT; ++i)
     {
         cubemap->BindFace(i);
 

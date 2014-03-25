@@ -57,6 +57,7 @@
 #include "Render/ImageLoader.h"
 
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/Cubemap.h"
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
 #include "Math/MathHelpers.h"
@@ -88,25 +89,6 @@ static GLuint CUBE_FACE_GL_NAMES[] =
 #define SELECT_GL_TEXTURE_TYPE(__engineTextureType__) ((Texture::TEXTURE_CUBE == __engineTextureType__) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D)
 #endif //#if defined __DAVAENGINE_OPENGL__
 	
-static int32 CUBE_FACE_MAPPING[] =
-{
-	Texture::CUBE_FACE_POSITIVE_X,
-	Texture::CUBE_FACE_NEGATIVE_X,
-	Texture::CUBE_FACE_POSITIVE_Y,
-	Texture::CUBE_FACE_NEGATIVE_Y,
-	Texture::CUBE_FACE_POSITIVE_Z,
-	Texture::CUBE_FACE_NEGATIVE_Z
-};
-
-static DAVA::String FACE_NAME_SUFFIX[] =
-{
-    DAVA::String("_px"),
-    DAVA::String("_nx"),
-    DAVA::String("_py"),
-    DAVA::String("_ny"),
-    DAVA::String("_pz"),
-    DAVA::String("_nz")
-};
 	
 class TextureMemoryUsageInfo
 {
@@ -335,7 +317,7 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
     {
 		GLuint textureMode = GL_TEXTURE_2D;
 		
-		if(cubeFaceId != Texture::CUBE_FACE_INVALID)
+		if(cubeFaceId != Cubemap::CUBE_FACE_INVALID)
 		{
 			textureMode = CUBE_FACE_GL_NAMES[cubeFaceId];
 		}
@@ -570,7 +552,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	if(texDescriptor->IsCubeMap() && (GPU_UNKNOWN == gpu))
 	{
 		Vector<FilePath> faceNames;
-		GenerateCubeFaceNames(texDescriptor->GetSourceTexturePathname(), faceNames);
+        Cubemap::GenerateCubeFaceNames(texDescriptor->GetSourceTexturePathname(), faceNames);
 
 		for(size_t i = 0; i < faceNames.size(); ++i)
 		{
@@ -586,7 +568,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 
 			DVASSERT(imageFace.size() == 1);
 
-			imageFace[0]->cubeFaceID = CUBE_FACE_MAPPING[i];
+			imageFace[0]->cubeFaceID = Cubemap::CUBE_FACE_MAPPING[i];
 			imageFace[0]->mipmapLevel = 0;
 
             if(texDescriptor->GetGenerateMipMaps())
@@ -646,7 +628,7 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 	height = img->height;
 	texDescriptor->format = img->format;
 
-	textureType = (img->cubeFaceID != Texture::CUBE_FACE_INVALID) ? Texture::TEXTURE_CUBE : Texture::TEXTURE_2D;
+	textureType = (img->cubeFaceID != Cubemap::CUBE_FACE_INVALID) ? Texture::TEXTURE_CUBE : Texture::TEXTURE_2D;
     
     state = STATE_DATA_LOADED;
 }
@@ -865,11 +847,11 @@ Texture * Texture::CreateFBO(uint32 width, uint32 height, PixelFormat format, De
     tx->depthFormat = depthFormat;
     
     Vector<Image *> *images = new Vector<Image *>();
-    uint32 count = (isCubemapTexture) ? Texture::CUBE_FACE_MAX_COUNT : 1;
+    uint32 count = (isCubemapTexture) ? Cubemap::CUBE_FACE_MAX_COUNT : 1;
     for(uint32 i = 0; i < count; ++i)
     {
         Image * image = Image::Create(dx, dy, format);
-        image->cubeFaceID = (isCubemapTexture) ? i : CUBE_FACE_INVALID;
+        image->cubeFaceID = (isCubemapTexture) ? i : Cubemap::CUBE_FACE_INVALID;
         image->mipmapLevel = 0;
         images->push_back(image);
     }
@@ -955,7 +937,7 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
     
     if(textureType == Texture::TEXTURE_CUBE)
     {
-        for(uint32 i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
+        for(uint32 i = 0; i < Cubemap::CUBE_FACE_MAX_COUNT; ++i)
         {
             RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, CUBE_FACE_GL_NAMES[i], id, 0));
         }
@@ -1172,7 +1154,7 @@ void Texture::CreateCubemapImages(UniqueHandle renderState, Vector<Image *> & im
         Sprite *renderTarget = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height);
         RenderManager::Instance()->SetRenderTarget(renderTarget);
         
-        for(uint32 i = 0; i < CUBE_FACE_MAX_COUNT; ++i)
+        for(uint32 i = 0; i < Cubemap::CUBE_FACE_MAX_COUNT; ++i)
         {
             BindFace(i);
             Image *image = ReadDataToImage();
@@ -1217,7 +1199,7 @@ void Texture::MakePink(TextureType requestedType, bool checkers)
 	if(Texture::TEXTURE_CUBE == requestedType)
 	{
 		texDescriptor->Initialize(WRAP_REPEAT, true);
-		for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+		for(uint32 i = 0; i < Cubemap::Cubemap::CUBE_FACE_MAX_COUNT; ++i)
 		{
             Image *img = Image::CreatePinkPlaceholder(checkers);
 			img->cubeFaceID = i;
@@ -1421,38 +1403,6 @@ eGPUFamily Texture::GetGPUForLoading(const eGPUFamily requestedGPU, const Textur
 void Texture::SetInvalidater(TextureInvalidater* invalidater)
 {
 	this->invalidater = invalidater;
-}
-
-void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames)
-{
-	static Vector<String> defaultSuffixes;
-	if(defaultSuffixes.empty())
-	{
-		for(int i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
-		{
-			defaultSuffixes.push_back(FACE_NAME_SUFFIX[i]);
-		}
-	}
-	
-	GenerateCubeFaceNames(baseName, defaultSuffixes, faceNames);
-}
-
-void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames)
-{
-	faceNames.clear();
-	
-	String fileNameWithoutExtension = filePath.GetBasename();
-	String extension = filePath.GetExtension();
-		
-	for(size_t i = 0; i < faceNameSuffixes.size(); ++i)
-	{
-		DAVA::FilePath faceFilePath = filePath;
-		faceFilePath.ReplaceFilename(fileNameWithoutExtension +
-									 faceNameSuffixes[i] +
-									 GPUFamilyDescriptor::GetFilenamePostfix(GPU_UNKNOWN, FORMAT_INVALID));
-			
-		faceNames.push_back(faceFilePath);
-	}
 }
 
 const FilePath & Texture::GetPathname() const

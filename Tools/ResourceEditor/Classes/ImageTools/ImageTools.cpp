@@ -31,6 +31,7 @@
 #include "Render/LibPngHelpers.h"
 #include "Render/LibPVRHelper.h"
 #include "Render/LibDxtHelper.h"
+#include "Render/Cubemap.h"
 
 #include "TextureCompression/TextureConverter.h"
 
@@ -50,7 +51,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 	   GPU_UNKNOWN == forGPU)
 	{
 		Vector<FilePath> faceNames;
-		Texture::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
+		Cubemap::GenerateCubeFaceNames(descriptor->pathname.GetAbsolutePathname().c_str(), faceNames);
         
         files.reserve(faceNames.size());
 		for(size_t i = 0 ; i < faceNames.size(); ++i)

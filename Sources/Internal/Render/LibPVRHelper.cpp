@@ -31,6 +31,7 @@
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
 #include "Render/OGLHelpers.h"
+#include "Render/Cubemap.h"
 #include "FileSystem/Logger.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
@@ -2593,37 +2594,37 @@ uint32 LibPVRHelper::GetCubemapLayout(PVRHeaderV3* pvrHeader, const char* pvrDat
 			{
 				case 'X':
 				{
-					layout = layout | (Texture::CUBE_FACE_POSITIVE_X << (index * 4));
+					layout = layout | (Cubemap::CUBE_FACE_POSITIVE_X << (index * 4));
 				}
 					break;
 					
 				case 'x':
 				{
-					layout = layout | (Texture::CUBE_FACE_NEGATIVE_X << (index * 4));
+					layout = layout | (Cubemap::CUBE_FACE_NEGATIVE_X << (index * 4));
 				}
 					break;
 
 				case 'Y':
 				{
-					layout = layout | (Texture::CUBE_FACE_POSITIVE_Y << (index * 4));
+					layout = layout | (Cubemap::CUBE_FACE_POSITIVE_Y << (index * 4));
 				}
 					break;
 					
 				case 'y':
 				{
-					layout = layout | (Texture::CUBE_FACE_NEGATIVE_Y << (index * 4));
+					layout = layout | (Cubemap::CUBE_FACE_NEGATIVE_Y << (index * 4));
 				}
 					break;
 
 				case 'Z':
 				{
-					layout = layout | (Texture::CUBE_FACE_POSITIVE_Z << (index * 4));
+					layout = layout | (Cubemap::CUBE_FACE_POSITIVE_Z << (index * 4));
 				}
 					break;
 					
 				case 'z':
 				{
-					layout = layout | (Texture::CUBE_FACE_NEGATIVE_Z << (index * 4));
+					layout = layout | (Cubemap::CUBE_FACE_NEGATIVE_Z << (index * 4));
 				}
 					break;
 
@@ -2634,17 +2635,9 @@ uint32 LibPVRHelper::GetCubemapLayout(PVRHeaderV3* pvrHeader, const char* pvrDat
 	}
 	else if(pvrHeader->u32NumFaces > 1)
 	{
-		static uint32 faces[] = {
-			Texture::CUBE_FACE_POSITIVE_X,
-			Texture::CUBE_FACE_NEGATIVE_X,
-			Texture::CUBE_FACE_POSITIVE_Y,
-			Texture::CUBE_FACE_NEGATIVE_Y,
-			Texture::CUBE_FACE_POSITIVE_Z,
-			Texture::CUBE_FACE_NEGATIVE_Z
-		};
 		for(uint32 i = 0; i < pvrHeader->u32NumFaces; ++i)
 		{
-			layout = layout | (faces[i] << (i * 4));
+			layout = layout | (Cubemap::CUBE_FACE_MAPPING[i] << (i * 4));
 		}
 	}
 	

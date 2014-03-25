@@ -31,6 +31,7 @@
 #include "CubemapEditor/CubemapUtils.h"
 #include "Render/Texture.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/Cubemap.h"
 
 #include <QApplication>
 #include <QMouseEvent>
@@ -124,7 +125,7 @@ void CubeListItemDelegate::UpdateCache(DAVA::Vector<CubeListItemDelegate::ListIt
 void CubeListItemDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
 	int y = option.rect.y();
-	int totalImageStripWidth = (thumbnailSize.width() + FACE_IMAGE_BORDER) * CubemapUtils::GetMaxFaces();
+	int totalImageStripWidth = (thumbnailSize.width() + FACE_IMAGE_BORDER) * DAVA::Cubemap::CUBE_FACE_MAX_COUNT;
 	int faceStartX = option.rect.width() - totalImageStripWidth - FACE_IMAGE_BORDER;
 
 	QRect r = option.rect;
