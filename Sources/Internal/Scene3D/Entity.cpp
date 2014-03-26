@@ -1147,7 +1147,7 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 void Entity::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
 	BaseObject::Load(archive);
-        
+    
 	name = FastName(archive->GetString("name", "").c_str());
 	tag = archive->GetInt32("tag", 0);
 		

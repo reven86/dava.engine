@@ -40,6 +40,10 @@
 #include <pthread.h>
 #endif
 
+#if defined(__USE_FIXED_STRING_ALLOCATOR__)
+#include "Base/FixedString.h"
+#endif
+
 namespace DAVA
 {
 /**
@@ -165,7 +169,20 @@ public:
 	ThreadId GetThreadId();
 
 private:
-    ~Thread() {};
+    ~Thread()
+    {
+#if defined(__USE_FIXED_STRING_ALLOCATOR__)
+        pthread_t threadID = pthread_self();
+        AllocatorBuffer *bufferAlloc = fixedAllocatorBuffers[threadID];
+        if(bufferAlloc)
+        {
+            SafeDeleteArray(bufferAlloc->pBuffer);
+            SafeDelete(bufferAlloc);
+            fixedAllocatorBuffers[threadID] = NULL;
+        }
+#endif
+    };
+    
 	Thread() {};
 	Thread(const Thread& t);
 	Thread(const Message& msg);

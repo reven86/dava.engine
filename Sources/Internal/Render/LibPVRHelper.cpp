@@ -1792,9 +1792,17 @@ const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeade
     return FORMAT_INVALID;
 }
 	
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+bool LibPVRHelper::ReadMipMapLevel(MemoryMappedFile *mmFile, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap)
+#else
 bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap)
+#endif
 {
     DVASSERT(mipMapLevel >= baseMipMap);
+
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    const char* pvrData = (char*)mmFile->GetPointer();
+#endif
     
     //Texture setup
     PVRHeaderV3 compressedHeader;
@@ -1849,7 +1857,11 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 			//Check for PVRTCI support.
 			if(deviceCaps.isPVRTCSupported)
 			{
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+                bool copied = CopyToImage(image, mipMapLevel, faceIndex, compressedHeader, mmFile, pTextureData - mmFile->GetPointer());
+#else
 				bool copied = CopyToImage(image, mipMapLevel, faceIndex, compressedHeader, pTextureData);
+#endif
 				if(!copied)
 				{
 					result = false;
@@ -1936,7 +1948,11 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 #endif //#if !defined(__DAVAENGINE_IPHONE__)
 		else
 		{
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+            bool copied = CopyToImage(image, mipMapLevel, faceIndex, compressedHeader, mmFile, pTextureData - mmFile->GetPointer());
+#else
 			bool copied = CopyToImage(image, mipMapLevel, faceIndex, compressedHeader, pTextureData);
+#endif
 			if(!copied)
 			{
 				result = false;
@@ -2087,13 +2103,26 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 }
 */
 
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header,
+                                   MemoryMappedFile *mmFile, uint32 offset)
+#else
 bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData)
+#endif
 {
     if(AllocateImageData(image, mipMapLevel, header))
     {
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        offset += GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
+        image->mmFile = mmFile;
+        image->offset = offset;
+        image->mmFile->Retain();
+        image->data = mmFile->GetPointer(offset);
+#else
         //Setup temporary variables.
         uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
         Memcpy(image->data, data, image->dataSize * sizeof(uint8));
+#endif
 
         return true;
     }
@@ -2104,12 +2133,14 @@ bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceInde
 bool LibPVRHelper::AllocateImageData(DAVA::Image *image, uint32 mipMapLevel, const DAVA::PVRHeaderV3 &header)
 {
     image->dataSize = GetTextureDataSize(header, mipMapLevel, false, (header.u32NumFaces == 1));
+#if !defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
     image->data = new uint8[image->dataSize];
     if(!image->data)
     {
         Logger::Error("[LibPVRHelper::AllocateImageData] Unable to allocate memory to compressed texture.\n");
         return false;
     }
+#endif
     
     return true;
 }
@@ -2535,13 +2566,20 @@ uint32 LibPVRHelper::GetCubemapFaceCount(File* file)
 bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet, int32 baseMipMap)
 {
     uint32 fileSize = file->GetSize();
+    
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    MemoryMappedFile *mmFile = new MemoryMappedFile(file->GetFilename(), fileSize);
+    uint8 *fileData = mmFile->GetPointer();
+#else
     uint8 *fileData = new uint8[fileSize];
+#endif
     if(!fileData)
     {
         Logger::Error("[LibPVRHelper::ReadFile]: cannot allocate buffer for file data");
         return false;
     }
     
+#if !defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
     uint32 readSize = file->Read(fileData, fileSize);
     if(readSize != fileSize)
     {
@@ -2550,13 +2588,18 @@ bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet, int32 b
         SafeDeleteArray(fileData);
         return false;
     }
+#endif
     
     
     bool preloaded = LibPVRHelper::PreparePVRData((const char *)fileData, fileSize);
     if(!preloaded)
     {
         Logger::Error("[LibPVRHelper::ReadFile]: cannot prepare pvr data for parsing");
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        SafeRelease(mmFile);
+#else
         SafeDeleteArray(fileData);
+#endif
         return false;
     }
 
@@ -2564,10 +2607,18 @@ bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet, int32 b
 	uint32 mipmapLevelCount = LibPVRHelper::GetMipMapLevelsCount(file);
     for (uint32 i = baseMipMap; i < mipmapLevelCount; ++i)
     {
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        read &= ReadMipMapLevel(mmFile, fileSize, imageSet, i, baseMipMap);
+#else
         read &= ReadMipMapLevel((const char *)fileData, fileSize, imageSet, i, baseMipMap);
+#endif
     }
     
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    SafeRelease(mmFile);
+#else
     SafeDeleteArray(fileData);
+#endif
     return read;
 }
 

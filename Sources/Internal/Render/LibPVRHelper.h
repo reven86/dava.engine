@@ -38,6 +38,9 @@
 
 #include "Render/RenderBase.h"
 
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+#include "FileSystem/MemoryMappedFile.h"
+#endif
 
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     #include "PVRDefines.h"
@@ -163,9 +166,15 @@ protected:
     //static bool ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, Image *image, uint32 mipMapLevel);
     
 	//load cubemap
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    static bool ReadMipMapLevel(MemoryMappedFile *mmFile, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap);
+    static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header,
+                            MemoryMappedFile *mmFile, uint32 offset);
+#else
 	static bool ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap);
     
     static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
+#endif
     
     static PVRHeaderV3 CreateDecompressedHeader(const PVRHeaderV3 &compressedHeader);
     static bool AllocateImageData(Image *image, uint32 mipMapLevel, const PVRHeaderV3 &header);

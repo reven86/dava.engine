@@ -106,6 +106,10 @@ void Core::CreateSingletons()
 //	}
 #endif
     
+#if defined(__USE_OWN_ALLOCATORS__)
+    new AllocatorsStack();
+    AllocatorsStack::Instance()->SetInitialized(TRUE);
+#endif
     
     // check types size
 	new Logger();
@@ -192,7 +196,7 @@ void Core::ReleaseSingletons()
 
 	InputSystem::Instance()->Release();
 	JobManager::Instance()->Release();
-	AllocatorFactory::Instance()->Release();
+	//AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
 }
 

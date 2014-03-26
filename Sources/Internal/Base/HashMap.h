@@ -32,6 +32,7 @@
 #define __DAVAENGINE_HASH_MAP__
 
 #include "Base/BaseTypes.h"
+#include "Base/AllocatorFactory.h"
 #include "Base/Hash.h"
 #include "Base/TemplateHelpers.h"
 #include "Debug/DVAssert.h"
@@ -84,6 +85,7 @@ public:
 public:
 	struct HashMapItem
 	{
+        IMPLEMENT_POOL_ALLOCATOR(HashMapItem, 100);
 		friend class HashMap;
 
 		const K first;

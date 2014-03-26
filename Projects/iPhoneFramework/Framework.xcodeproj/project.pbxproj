@@ -128,6 +128,12 @@
 		A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E4FDF91761D83100B48E41 /* ActionUpdateSystem.cpp */; };
 		A6E4FDFC1761D83100B48E41 /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FDFA1761D83100B48E41 /* ActionUpdateSystem.h */; };
 		AA747D9F0F9514B9006C5449 /* Framework_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */; };
+		B411E0C918B7885000A58B99 /* MemoryMappedFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B411E0C718B7885000A58B99 /* MemoryMappedFile.cpp */; };
+		B411E0CA18B7885000A58B99 /* MemoryMappedFile.h in Headers */ = {isa = PBXBuildFile; fileRef = B411E0C818B7885000A58B99 /* MemoryMappedFile.h */; };
+		B460964018BE1EA90002C050 /* MemoryRoutines.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B460963E18BE1EA90002C050 /* MemoryRoutines.cpp */; };
+		B460964118BE1EA90002C050 /* MemoryRoutines.h in Headers */ = {isa = PBXBuildFile; fileRef = B460963F18BE1EA90002C050 /* MemoryRoutines.h */; };
+		B460964418BE2E9C0002C050 /* StackAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B460964218BE2E9C0002C050 /* StackAllocator.cpp */; };
+		B460964518BE2E9C0002C050 /* StackAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = B460964318BE2E9C0002C050 /* StackAllocator.h */; };
 		C1DC1F081717FD3C001C5EC3 /* libTextureConverter_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */; };
 		C70B565B1753CB5E008966FA /* KeyedArchiveSwig.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C70B56591753CB5E008966FA /* KeyedArchiveSwig.cpp */; };
 		C7E76D3116DF69370041ED9A /* AutotestingSystemLua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C7E76D2116DF69370041ED9A /* AutotestingSystemLua.cpp */; };
@@ -901,6 +907,13 @@
 		A6E4FDF91761D83100B48E41 /* ActionUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActionUpdateSystem.cpp; sourceTree = "<group>"; };
 		A6E4FDFA1761D83100B48E41 /* ActionUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionUpdateSystem.h; sourceTree = "<group>"; };
 		AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Framework_Prefix.pch; sourceTree = SOURCE_ROOT; };
+		B411E0C718B7885000A58B99 /* MemoryMappedFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryMappedFile.cpp; sourceTree = "<group>"; };
+		B411E0C818B7885000A58B99 /* MemoryMappedFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryMappedFile.h; sourceTree = "<group>"; };
+		B443DF6618C9BC2800DC2F56 /* FixedString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FixedString.h; sourceTree = "<group>"; };
+		B460963E18BE1EA90002C050 /* MemoryRoutines.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemoryRoutines.cpp; sourceTree = "<group>"; };
+		B460963F18BE1EA90002C050 /* MemoryRoutines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemoryRoutines.h; sourceTree = "<group>"; };
+		B460964218BE2E9C0002C050 /* StackAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StackAllocator.cpp; sourceTree = "<group>"; };
+		B460964318BE2E9C0002C050 /* StackAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StackAllocator.h; sourceTree = "<group>"; };
 		C1DC1F071717FD3C001C5EC3 /* libTextureConverter_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libTextureConverter_macos.a; path = ../../Libs/libs/libTextureConverter_macos.a; sourceTree = "<group>"; };
 		C70B56591753CB5E008966FA /* KeyedArchiveSwig.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedArchiveSwig.cpp; sourceTree = "<group>"; };
 		C7E76D2116DF69370041ED9A /* AutotestingSystemLua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingSystemLua.cpp; sourceTree = "<group>"; };
@@ -1760,6 +1773,11 @@
 				E8B3C7E716B9326D002BD35F /* Singleton.h */,
 				E8B3C7E816B9326D002BD35F /* StaticSingleton.h */,
 				E8B3C7E916B9326D002BD35F /* TemplateHelpers.h */,
+				B460963E18BE1EA90002C050 /* MemoryRoutines.cpp */,
+				B460963F18BE1EA90002C050 /* MemoryRoutines.h */,
+				B460964218BE2E9C0002C050 /* StackAllocator.cpp */,
+				B460964318BE2E9C0002C050 /* StackAllocator.h */,
+				B443DF6618C9BC2800DC2F56 /* FixedString.h */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -1863,6 +1881,8 @@
 		E8B3C83C16B9326D002BD35F /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				B411E0C718B7885000A58B99 /* MemoryMappedFile.cpp */,
+				B411E0C818B7885000A58B99 /* MemoryMappedFile.h */,
 				E8B3C83F16B9326D002BD35F /* Bitstream.cpp */,
 				E8B3C84016B9326D002BD35F /* Bitstream.h */,
 				E8B3C84116B9326D002BD35F /* DynamicMemoryFile.cpp */,
@@ -2915,8 +2935,10 @@
 				E8B3CCA016B9326E002BD35F /* SceneAnimationMixer.h in Headers */,
 				E8B3CCA216B9326E002BD35F /* SceneFile.h in Headers */,
 				E8B3CCA416B9326E002BD35F /* SceneFileV2.h in Headers */,
+				B411E0CA18B7885000A58B99 /* MemoryMappedFile.h in Headers */,
 				E8B3CCA616B9326E002BD35F /* SceneManager.h in Headers */,
 				E8B3CCAA16B9326E002BD35F /* SceneNodeAnimation.h in Headers */,
+				B460964118BE1EA90002C050 /* MemoryRoutines.h in Headers */,
 				E8B3CCAC16B9326E002BD35F /* SceneNodeAnimationKey.h in Headers */,
 				E8B3CCAE16B9326E002BD35F /* SceneNodeAnimationList.h in Headers */,
 				E8B3CCB016B9326E002BD35F /* ShadowVolumeNode.h in Headers */,
@@ -3047,6 +3069,7 @@
 				A6919536183A6E9B00D598AE /* RenderStateData.h in Headers */,
 				EAADA0061892A48E001E1AA2 /* UIParticles.h in Headers */,
 				A6919538183A6E9B00D598AE /* UniqueStateSet.h in Headers */,
+				B460964518BE2E9C0002C050 /* StackAllocator.h in Headers */,
 				A670F2E818479DD20030E075 /* TextureStateData.h in Headers */,
 				9A011FF039AF222095F1FFD4 /* GamepadDevice.h in Headers */,
 				9A011EB2802FEC4E0A4AA289 /* GamepadManager.h in Headers */,
@@ -3179,6 +3202,7 @@
 				E843505F17FA12BE00A25F04 /* TeamcityOutput.cpp in Sources */,
 				A6B5D95F185600050011D172 /* IntrospectionDynamic.cpp in Sources */,
 				E8B3CB2A16B9326E002BD35F /* LoggerMacOS.mm in Sources */,
+				B411E0C918B7885000A58B99 /* MemoryMappedFile.cpp in Sources */,
 				E8B3CB2D16B9326E002BD35F /* ResourceArchive.cpp in Sources */,
 				E8B3CB2F16B9326E002BD35F /* VariantType.cpp in Sources */,
 				E8B3CB3116B9326E002BD35F /* XMLParser.cpp in Sources */,
@@ -3326,6 +3350,7 @@
 				E8B3CC9316B9326E002BD35F /* PolygonGroupInstance.cpp in Sources */,
 				E8B3CC9516B9326E002BD35F /* ProxyNode.cpp in Sources */,
 				E8B3CC9D16B9326E002BD35F /* Scene.cpp in Sources */,
+				B460964418BE2E9C0002C050 /* StackAllocator.cpp in Sources */,
 				E8B3CC9F16B9326E002BD35F /* SceneAnimationMixer.cpp in Sources */,
 				E8B3CCA116B9326E002BD35F /* SceneFile.cpp in Sources */,
 				A69C9397186C377C00EAC8BC /* NMaterialTemplate.cpp in Sources */,
@@ -3364,6 +3389,7 @@
 				E8B3CCF516B9326E002BD35F /* UIEvent.cpp in Sources */,
 				E8B3CCF716B9326E002BD35F /* UIFadeTransition.cpp in Sources */,
 				E8B3CCF916B9326E002BD35F /* UIFileSystemDialog.cpp in Sources */,
+				B460964018BE1EA90002C050 /* MemoryRoutines.cpp in Sources */,
 				E8B3CCFB16B9326E002BD35F /* UIHierarchy.cpp in Sources */,
 				E8B3CCFD16B9326E002BD35F /* UIHierarchyCell.cpp in Sources */,
 				E8B3CCFF16B9326E002BD35F /* UIHierarchyNode.cpp in Sources */,

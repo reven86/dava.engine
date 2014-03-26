@@ -260,6 +260,10 @@ uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
     
 SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _scene)
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    StackAllocator *allocator = AllocatorFactory::Instance()->CreateStackAllocator(0);
+#endif
+    
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
     {
@@ -337,6 +341,9 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     
     SafeRelease(rootNode);
     SafeRelease(file);
+#if defined(__USE_OWN_ALLOCATORS__)
+    AllocatorFactory::Instance()->FreeAllocator(allocator);
+#endif
     return GetError();
 }
 

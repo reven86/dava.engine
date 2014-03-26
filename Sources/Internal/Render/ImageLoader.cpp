@@ -74,6 +74,7 @@ bool ImageLoader::CreateFromFileByContent(const FilePath & pathname, Vector<Imag
     
 bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+#if 1
     if(IsPVRFile(file))
     {
         return CreateFromPVR(file, imageSet, baseMipmap);
@@ -88,6 +89,7 @@ bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet
     {
         return CreateFromDDS(file, imageSet, baseMipmap);
     }
+#endif
     
     return false;
 }

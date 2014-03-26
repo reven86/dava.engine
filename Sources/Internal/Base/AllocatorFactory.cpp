@@ -69,6 +69,38 @@ void AllocatorFactory::Dump()
 #endif //__DAVAENGINE_DEBUG__
 }
 
+#if defined(__USE_OWN_ALLOCATORS__)
+void AllocatorFactory::FreeAllocator(StackAllocator *)
+{
+    pthread_t threadID = pthread_self();
+    StackAllocator* allocator = stackAllocators[threadID];
+    if(allocator != 0)
+    {
+        delete allocator;
+        stackAllocators[threadID] = NULL;
+    }
+}
+
+StackAllocator *AllocatorFactory::CreateStackAllocator(uint32 size)
+{
+    // TODO: use size?
+    pthread_t threadID = pthread_self();
+    StackAllocator* allocator = stackAllocators[threadID];
+    if(allocator == 0)
+    {
+        allocator = new StackAllocator(1024*512);
+        stackAllocators[threadID] = allocator;
+    }
+    return allocator;
+}
+
+StackAllocator * AllocatorFactory::GetAllocator()
+{
+    pthread_t threadID = pthread_self();
+    return stackAllocators[threadID];
+}
+#endif
+    
 FixedSizePoolAllocator * AllocatorFactory::GetAllocator(const DAVA::String& className, DAVA::uint32 classSize, int32 poolLength)
 {
     FixedSizePoolAllocator * alloc = allocators[className];

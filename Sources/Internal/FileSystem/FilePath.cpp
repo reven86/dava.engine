@@ -616,6 +616,59 @@ String FilePath::GetFrameworkPathForPrefix( const String &typePrefix, const ePat
 
 String FilePath::NormalizePathname(const String &pathname)
 {
+#if defined (__USE_FIXED_STRING_ALLOCATOR__)
+    if(pathname.empty())
+		return String();
+	
+    FixedString path = pathname.c_str();
+    std::replace(path.begin(), path.end(),'\\','/');
+    
+    Vector<FixedString> tokens;
+    Split(path, "/", tokens);
+    
+    //TODO: correctly process situation ../../folders/filename
+    for (int32 i = 0; i < (int32)tokens.size(); ++i)
+    {
+        if (FixedString(".") == tokens[i])
+        {
+            for (int32 k = i + 1; k < (int32)tokens.size(); ++k)
+            {
+                tokens[k - 1] = tokens[k];
+            }
+            --i;
+            tokens.pop_back();
+        }
+        else if ((1 <= i) && (FixedString("..") == tokens[i] && FixedString("..") != tokens[i-1]))
+        {
+            for (int32 k = i + 1; k < (int32)tokens.size(); ++k)
+            {
+                tokens[k - 2] = tokens[k];
+            }
+            i-=2;
+            tokens.pop_back();
+            tokens.pop_back();
+        }
+    }
+    
+    FixedString result = "";
+    if('/' == path[0])
+		result = "/";
+    
+    for (int32 k = 0; k < (int32)tokens.size(); ++k)
+    {
+        result += tokens[k];
+        if (k + 1 != (int32)tokens.size())
+            result += FixedString("/");
+    }
+    
+	//process last /
+	if(('/' == path[path.length() - 1]) && (path.length() != 1))
+		result += FixedString("/");
+    
+    return result.c_str();
+
+#else
+    
 	if(pathname.empty())
 		return String();
 	
@@ -665,6 +718,8 @@ String FilePath::NormalizePathname(const String &pathname)
 		result += String("/");
     
     return result;
+    
+#endif
 }
 
 String FilePath::MakeDirectory(const String &pathname)
