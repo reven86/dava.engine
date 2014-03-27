@@ -113,7 +113,7 @@ void Core::CreateSingletons()
     
     // check types size
 	new Logger();
-	new AllocatorFactory();
+	//new AllocatorFactory();
 	new JobManager();
 	new FileSystem();
     FilePath::InitializeBundleName();
