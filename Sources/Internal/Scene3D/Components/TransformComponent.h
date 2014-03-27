@@ -49,7 +49,7 @@ public:
     TransformComponent();
 
     IMPLEMENT_COMPONENT_TYPE(TRANSFORM_COMPONENT);
-
+    IMPLEMENT_POOL_ALLOCATOR(TransformComponent,134);
 	inline Matrix4 * GetWorldTransformPtr();
     inline const Matrix4 & GetWorldTransform();
 	inline const Matrix4 & GetLocalTransform();

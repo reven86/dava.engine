@@ -31,7 +31,7 @@
 #define __DAVAENGINE_TYPES_H__
 
 #include "Base/TemplateHelpers.h"
-#include "Base/STLAllocator.h"
+#include "Base/STLPoolAllocator.h"
 // debug definition
 #if defined(DAVA_DEBUG)
 #define __DAVAENGINE_DEBUG__
@@ -52,6 +52,7 @@
         #define __USE_MEMORY_MAP_FOR_TEXTURE__
         #define __USE_OWN_ALLOCATORS__
         #define __USE_FIXED_STRING_ALLOCATOR__
+        #define __USE_STL_POOL_ALLOCATOR__
 	#endif
 #endif
 #endif
@@ -201,10 +202,23 @@ typedef std::string		String;
 
 //#define List std::list
 //#define Vector std::vector
-    
+ 
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+template < typename E > class List : public std::list< E, STLPoolAllocator<E> > {};
+#else
 template < typename E > class List : public std::list< E > {};
-template < typename E > class ListAlloc : public std::list< E, STLAllocator<E> > {};
+#endif
 
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+template < typename E > class Vector : public std::vector< E, STLPoolAllocator<E> >
+{
+public:
+    typedef E	   value_type;
+    typedef size_t size_type;
+    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E, STLPoolAllocator<E> >(n, value) {}
+    Vector() : std::vector< E, STLPoolAllocator<E> >() {}
+};
+#else
 template < typename E > class Vector : public std::vector< E >
 {
 public:
@@ -213,44 +227,35 @@ public:
     explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E >(n, value) {}
     Vector() : std::vector< E >() {}
 };
-    
-template < typename E > class VectorAlloc : public std::vector< E, STLAllocator<E> >
-{
-public:
-    typedef E	   value_type;
-    typedef size_t size_type;
-    explicit VectorAlloc(size_type n, const value_type & value = value_type()) : std::vector< E, STLAllocator<E> >(n, value) {}
-    VectorAlloc() : std::vector< E, STLAllocator<E> >() {}
-};
+#endif
+
     
 template < class E > class Set : public std::set< E > {};
-template < typename E > class SetAlloc : public std::set< E, std::less<E>, STLAllocator<E> > {};
+
     
 template < class E > class Deque : public std::deque< E > {};
-template < class E > class DequeAlloc : public std::deque< E, STLAllocator<E> > {};
 
+#if defined (__USE_STL_POOL_ALLOCATOR__)
 template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
+    class _Ty,
+    class _Pr = std::less<_Kty>,
+    class _Alloc = STLPoolAllocator<std::pair<const _Kty, _Ty> > >
 class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
-
+#else
 template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-            class _Alloc = STLAllocator<std::pair<const _Kty, _Ty> > >
-class MapAlloc : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+	class _Ty,
+	class _Pr = std::less<_Kty>,
+	class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
+class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+#endif
+
     
 template<	class _Kty,
 			class _Ty,
 			class _Pr = std::less<_Kty>,
 			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
 class MultiMap : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
-template<	class _Kty,
-            class _Ty,
-            class _Pr = std::less<_Kty>,
-            class _Alloc = STLAllocator<std::pair<const _Kty, _Ty> > >
-class MultiMapAlloc : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
+
 
 template < class T, class Container = std::deque<T> > class Stack : public std::stack< T, Container > {};
 

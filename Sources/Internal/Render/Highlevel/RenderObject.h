@@ -102,7 +102,7 @@ protected:
     virtual ~RenderObject();
 public:
     RenderObject();
-    
+    IMPLEMENT_POOL_ALLOCATOR(RenderObject, 127);
     
     inline void SetRemoveIndex(uint32 removeIndex);
     inline uint32 GetRemoveIndex();

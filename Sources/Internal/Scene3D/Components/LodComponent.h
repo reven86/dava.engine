@@ -43,6 +43,7 @@ class Entity;
 class LodComponent : public Component
 {
 public:
+    IMPLEMENT_POOL_ALLOCATOR(LodComponent,100);
 	IMPLEMENT_COMPONENT_TYPE(LOD_COMPONENT);
 
 	static const int32 MAX_LOD_LAYERS = 4;

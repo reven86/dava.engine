@@ -38,7 +38,7 @@ namespace DAVA
 	class SkyboxRenderObject : public RenderObject, public IRenderUpdatable
 	{
 	public:
-		
+		IMPLEMENT_NATIVE_ALLOCATOR;
 		SkyboxRenderObject();
 		virtual ~SkyboxRenderObject();
 		

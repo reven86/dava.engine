@@ -45,7 +45,7 @@ protected:
     virtual ~RenderComponent();
 public:
     RenderComponent(RenderObject * _object = 0);
-    
+    IMPLEMENT_POOL_ALLOCATOR(RenderComponent, 255);
     IMPLEMENT_COMPONENT_TYPE(RENDER_COMPONENT);
 
     void SetRenderObject(RenderObject * object);

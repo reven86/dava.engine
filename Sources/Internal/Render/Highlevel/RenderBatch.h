@@ -87,7 +87,7 @@ protected:
     virtual ~RenderBatch();
 public:
     RenderBatch();
-    
+    //IMPLEMENT_POOL_ALLOCATOR(RenderBatch,100);
     void SetPolygonGroup(PolygonGroup * _polygonGroup);
     inline PolygonGroup * GetPolygonGroup();
     

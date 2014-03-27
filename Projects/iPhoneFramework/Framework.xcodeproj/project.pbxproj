@@ -176,6 +176,10 @@
 		CCEB543D1886FF0C0018491F /* LodToLod2Converter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB54391886FF0C0018491F /* LodToLod2Converter.h */; };
 		CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */; };
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
+		E55431A318E4644600E20E51 /* Pool.h in Headers */ = {isa = PBXBuildFile; fileRef = E554319F18E4644600E20E51 /* Pool.h */; };
+		E55431A418E4644600E20E51 /* STLPoolAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = E55431A018E4644600E20E51 /* STLPoolAllocator.h */; };
+		E55431A518E4644600E20E51 /* STLPoolAllocatorFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E55431A118E4644600E20E51 /* STLPoolAllocatorFactory.cpp */; };
+		E55431A618E4644600E20E51 /* STLPoolAllocatorFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = E55431A218E4644600E20E51 /* STLPoolAllocatorFactory.h */; };
 		E81F2B0516BFF65700C4545E /* libcurl_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E81F2B0416BFF65700C4545E /* libcurl_ios.a */; };
 		E8373BD817268CD9001A9770 /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */; };
 		E8373BD917268CD9001A9770 /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E8373BD717268CD9001A9770 /* UIAggregatorControl.h */; };
@@ -957,6 +961,10 @@
 		CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwitchToRenerObjectConverter.cpp; sourceTree = "<group>"; };
 		CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchToRenerObjectConverter.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		E554319F18E4644600E20E51 /* Pool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Pool.h; sourceTree = "<group>"; };
+		E55431A018E4644600E20E51 /* STLPoolAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STLPoolAllocator.h; sourceTree = "<group>"; };
+		E55431A118E4644600E20E51 /* STLPoolAllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STLPoolAllocatorFactory.cpp; sourceTree = "<group>"; };
+		E55431A218E4644600E20E51 /* STLPoolAllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STLPoolAllocatorFactory.h; sourceTree = "<group>"; };
 		E80D2FB2164D51A100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81F2B0416BFF65700C4545E /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
 		E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
@@ -1737,6 +1745,10 @@
 				E8B3C7C216B9326D002BD35F /* BaseObjectChecker.cpp */,
 				E8B3C7C316B9326D002BD35F /* BaseObjectChecker.h */,
 				E8B3C7C416B9326D002BD35F /* BaseTypes.h */,
+				E554319F18E4644600E20E51 /* Pool.h */,
+				E55431A018E4644600E20E51 /* STLPoolAllocator.h */,
+				E55431A118E4644600E20E51 /* STLPoolAllocatorFactory.cpp */,
+				E55431A218E4644600E20E51 /* STLPoolAllocatorFactory.h */,
 				E8B3C7C516B9326D002BD35F /* Data.cpp */,
 				E8B3C7C616B9326D002BD35F /* Data.h */,
 				E8B3C7C716B9326D002BD35F /* DynamicObjectCache.cpp */,
@@ -2759,6 +2771,7 @@
 				E8B3CB1E16B9326E002BD35F /* KeyedArchive.h in Headers */,
 				E8B3CB2016B9326E002BD35F /* KeyedArchiver.h in Headers */,
 				E8B3CB2216B9326E002BD35F /* KeyedUnarchiver.h in Headers */,
+				E55431A418E4644600E20E51 /* STLPoolAllocator.h in Headers */,
 				E8B3CB2316B9326E002BD35F /* LocalizationIPhone.h in Headers */,
 				E8B3CB2616B9326E002BD35F /* LocalizationSystem.h in Headers */,
 				E8B3CB2816B9326E002BD35F /* Logger.h in Headers */,
@@ -2992,6 +3005,7 @@
 				E8B3CD2116B9326E002BD35F /* UIStaticText.h in Headers */,
 				E8B3CD2316B9326E002BD35F /* UITextField.h in Headers */,
 				E843506017FA12BE00A25F04 /* TeamcityOutput.h in Headers */,
+				E55431A318E4644600E20E51 /* Pool.h in Headers */,
 				E8B3CD2416B9326E002BD35F /* UITextFieldiPhone.h in Headers */,
 				E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */,
 				CC84B03F18211BCE00934482 /* Job.h in Headers */,
@@ -3007,6 +3021,7 @@
 				CCB4C44716CBC65D00F2B085 /* ComponentHelpers.h in Headers */,
 				1799E51B16CCEBDA0058061F /* ParticleForce.h in Headers */,
 				C7E76D3216DF69370041ED9A /* AutotestingSystemLua.h in Headers */,
+				E55431A618E4644600E20E51 /* STLPoolAllocatorFactory.h in Headers */,
 				17F53E2F16D36FF3004D5099 /* IWebViewControl.h in Headers */,
 				17F53E3116D36FF3004D5099 /* UIWebView.h in Headers */,
 				17F53E3416D3705E004D5099 /* WebViewControliOS.h in Headers */,
@@ -3336,6 +3351,7 @@
 				E8B3CC7A16B9326E002BD35F /* TransformComponent.cpp in Sources */,
 				E8B3CC7C16B9326E002BD35F /* UpdatableComponent.cpp in Sources */,
 				E8B3CC7E16B9326E002BD35F /* DataNode.cpp in Sources */,
+				E55431A518E4644600E20E51 /* STLPoolAllocatorFactory.cpp in Sources */,
 				E8B3CC8316B9326E002BD35F /* ImposterManager.cpp in Sources */,
 				E8B3CC8516B9326E002BD35F /* ImposterNode.cpp in Sources */,
 				E8B3CC8716B9326E002BD35F /* LodNode.cpp in Sources */,

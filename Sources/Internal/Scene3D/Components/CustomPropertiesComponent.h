@@ -44,7 +44,7 @@ namespace DAVA
 		virtual ~CustomPropertiesComponent();
 	public:
 		CustomPropertiesComponent();
-		
+		IMPLEMENT_POOL_ALLOCATOR(CustomPropertiesComponent,100);
 		IMPLEMENT_COMPONENT_TYPE(CUSTOM_PROPERTIES_COMPONENT);
 				
 		virtual Component * Clone(Entity * toEntity);

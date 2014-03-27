@@ -217,7 +217,7 @@ public:
 public:
 	
 	NMaterial();
-	
+	IMPLEMENT_POOL_ALLOCATOR(NMaterial, 1200);
 	inline NMaterial* GetParent() const {return parent;}
 	
 	//void AddChild(NMaterial* material, bool inheritTemlate = true);
@@ -408,7 +408,7 @@ protected:
 	class RenderPassInstance
 	{
     public:
-		
+		IMPLEMENT_POOL_ALLOCATOR(RenderPassInstance,84);
 		RenderPassInstance() :
 			textureIndexMap(8),
 			dirtyState(false),
