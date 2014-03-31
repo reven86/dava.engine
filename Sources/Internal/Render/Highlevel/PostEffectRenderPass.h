@@ -53,6 +53,10 @@ protected:
 
     Sprite * renderTarget;
     Texture * renderTexture;
+    Sprite * bloomTarget;
+    Texture * bloomTexture;
+    UniqueHandle bloomSourceHandle;
+    Shader * bloomSourceShader;
 
     RenderDataObject * rdo;
     RenderDataStream * vertexStream;

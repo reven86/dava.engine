@@ -36,12 +36,14 @@
 namespace DAVA
 {
 
+static const FastName BLOOM_SOURCE_SHADER("~res:/Materials/Shaders/PostEffect/bloomSource");
 static const FastName EXPOSURE_PROPERTY("exposure");
 static const FastName BRIGHTMAX_PROPERTY("brightMax");
 static const FastName DARKEN_FLAG("POSTEFFECT_DARKEN");
 static const FastName NO_POST_EFFECT("OFF");
 static const FastName MEDIUM_POST_EFFECT("MEDIUM");
 static const Vector2 RESOLUTION_ORIGINAL(-1.f, -1.f);
+static const int32 bloomTextureSize = 512;
 
 uint16 PostEffectRenderPass::indices[] = {0, 2, 1, 1, 2, 3};
 
@@ -50,11 +52,17 @@ PostEffectRenderPass::PostEffectRenderPass(RenderSystem * renderSystem, const Fa
     currentViewport(Rect(-1.f, -1.f, -1.f, -1.f)),
     fboViewport(Rect(-1.f, -1.f, -1.f, -1.f)),
     renderTexture(0),
+    bloomTexture(0),
     rdo(0),
     quality(NO_POST_EFFECT),
-    resolution(RESOLUTION_ORIGINAL)
+    resolution(RESOLUTION_ORIGINAL),
+    bloomSourceHandle(-1),
+    bloomSourceShader(0)
 {
     renderTarget = Sprite::Create("");
+    bloomTarget = Sprite::Create("");
+
+    bloomSourceShader = ShaderCache::Instance()->Get(BLOOM_SOURCE_SHADER, FastNameSet());
 
     material = NMaterial::CreateMaterial(FastName("Posteffect_Material"),
         FastName("~res:/Materials/PostEffect.material"),
@@ -83,6 +91,7 @@ PostEffectRenderPass::~PostEffectRenderPass()
     SafeRelease(instanceMaterial);
     SafeRelease(material);
     SafeRelease(renderTarget);
+    SafeRelease(bloomTarget);
 }
 
 void PostEffectRenderPass::Init()
@@ -101,10 +110,18 @@ void PostEffectRenderPass::Init()
             }
             fboViewport = Rect(0, 0, textureWidth, textureHeight);
 
-            renderTexture = (Texture::CreateFBO((int32)ceilf(textureWidth), (int32)ceilf(textureHeight), FORMAT_HALF_FLOAT, Texture::DEPTH_RENDERBUFFER));
+            renderTexture = Texture::CreateFBO((int32)ceilf(textureWidth), (int32)ceilf(textureHeight), FORMAT_HALF_FLOAT, Texture::DEPTH_RENDERBUFFER);
             renderTexture->SetMinMagFilter(Texture::FILTER_LINEAR, Texture::FILTER_LINEAR);
             renderTarget->InitFromTexture(renderTexture, 0, 0, textureWidth, textureHeight, -1, -1, true);
-            material->SetTexture(NMaterial::TEXTURE_ALBEDO, renderTexture);
+
+            TextureStateData bloomSourceData;
+            bloomSourceData.SetTexture(0, renderTexture);
+            bloomSourceHandle = RenderManager::Instance()->CreateTextureState(bloomSourceData); 
+
+            bloomTexture = Texture::CreateFBO(bloomTextureSize, bloomTextureSize, FORMAT_HALF_FLOAT, Texture::DEPTH_NONE);
+            bloomTarget->InitFromTexture(bloomTexture, 0, 0, (float32)bloomTextureSize, (float32)bloomTextureSize, -1, -1, true);
+
+            material->SetTexture(NMaterial::TEXTURE_ALBEDO, bloomTexture);
 
             rdo = new RenderDataObject();
 
@@ -129,6 +146,7 @@ void PostEffectRenderPass::Shutdown()
 {
     SafeRelease(rdo);
     SafeRelease(renderTexture);
+    SafeRelease(bloomTexture);
 }
 
 
@@ -157,19 +175,41 @@ void PostEffectRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
             Init();
         }
 
-        rm->SetRenderTarget(renderTarget);
-        rm->SetViewport(Rect(0, 0, fboViewport.dx, fboViewport.dy), true);
-        rm->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-        rm->FlushState();
-        rm->Clear(Color(0.f, 0.f, 1.f, 1.f), 1.f, 0);
-        camera->SetupDynamicParameters();
+        //posteffect
+        {
+            rm->SetRenderTarget(renderTarget);
+            rm->SetViewport(Rect(0, 0, fboViewport.dx, fboViewport.dy), true);
+            rm->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+            rm->FlushState();
+            rm->Clear(Color(0.f, 0.f, 1.f, 1.f), 1.f, 0);
+            camera->SetupDynamicParameters();
 
-        RenderPass * forwardPass = renderSystem->GetRenderPassManager()->GetRenderPass(RENDER_PASS_FORWARD_ID);
-        forwardPass->Draw(camera, renderSystem);
+            RenderPass * forwardPass = renderSystem->GetRenderPassManager()->GetRenderPass(RENDER_PASS_FORWARD_ID);
+            forwardPass->Draw(camera, renderSystem);
 
-        rm->RestoreRenderTarget();
+            //bloom
+            {
+                rm->SetRenderTarget(bloomTarget);
+                rm->SetViewport(Rect(0, 0, (float32)bloomTextureSize, (float32)bloomTextureSize), true);
+                rm->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+                rm->FlushState();
+                rm->Clear(Color(0.f, 0.f, 1.f, 1.f), 1.f, 0);
+
+                rm->SetTextureState(bloomSourceHandle);
+                rm->SetShader(bloomSourceShader);
+                rm->SetRenderData(rdo);
+                rm->AttachRenderData();
+                rm->FlushState();
+
+                rm->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, 6, EIF_16, indices);
+
+                rm->RestoreRenderTarget();
+            }
+
+            rm->RestoreRenderTarget();
+        }
+
         rm->SetViewport(currentViewport, true);
-
         material->BindMaterialTechnique(PASS_POST_EFFECT, 0);
         material->Draw(rdo);
     }
