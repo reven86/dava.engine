@@ -1,5 +1,20 @@
 <RCC>
   <qresource prefix="/">
+    <file>QtIcons/global_add.png</file>
+    <file>QtIcons/global.png</file>
+    <file>QtIcons/global_delete.png</file>
+    <file>QtIcons/tree_view_sel_childs.png</file>
+    <file>QtIcons/tree_view_all.png</file>
+    <file>QtIcons/tree_view_sel.png</file>
+    <file>QtIcons/tree_view_top.png</file>
+    <file>QtIcons/attach.png</file>
+    <file>QtIcons/pencil_add.png</file>
+    <file>QtIcons/pencil.png</file>
+    <file>QtIcons/brush.png</file>
+    <file>QtIcons/grass.png</file>
+    <file>QtIcons/layer_invisible.png</file>
+    <file>QtIcons/layer_visible.png</file>
+    <file>QtIcons/land_gras.png</file>
     <file>QtIconsTextureDialog/convertModified.png</file>
     <file>QtIcons/light_settings.png</file>
     <file>QtIcons/sphere_add.png</file>
@@ -123,11 +138,15 @@
     <file>QtIcons/btn_rotate_ccw.png</file>
     <file>QtIcons/btn_rotate_cw.png</file>
     <file>QtIcons/skybox.png</file>
+    <file>QtIcons/landscapesettings.png</file>
+    <file>QtIcons/sound.png</file>
+    <file>QtIcons/sound_group.png</file>
     <file>QtIcons/hangingobjects.png</file>
     <file>QtIcons/map.png</file>
     <file>QtIcons/image_splitter.png</file>
     <file>QtIcons/reload_shaders.png</file>
     <file>QtIcons/switches_with_different_lods.png</file>
+    <file>QtIcons/clone_batches.png</file>
     <file>QtImages/sky_example0.png</file>
     <file>QtImages/sky_example1.png</file>
     <file>QtImages/sky_example2.png</file>

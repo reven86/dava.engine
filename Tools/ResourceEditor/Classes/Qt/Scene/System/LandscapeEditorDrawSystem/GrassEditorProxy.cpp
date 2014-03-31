@@ -28,49 +28,16 @@
 
 
 
-#include "Sound/SoundEventCategory.h"
-#include "Animation/LinearAnimation.h"
-#include "Sound/FMODUtils.h"
+#include "GrassEditorProxy.h"
 
-namespace DAVA
+GrassEditorProxy::GrassEditorProxy(GrassMap *map)
+:	grassMap(map)
 {
-
-SoundEventCategory::SoundEventCategory(FMOD::EventCategory * category) :
-	fmodEventCategory(category) 
-{
+    SafeRetain(grassMap);
 }
 
-SoundEventCategory::~SoundEventCategory()
+GrassEditorProxy::~GrassEditorProxy()
 {
+	SafeRelease(grassMap);
 }
 
-void SoundEventCategory::SetVolume(float32 volume)
-{
-	FMOD_VERIFY(fmodEventCategory->setVolume(volume));
-}
-
-float32 SoundEventCategory::GetVolume()
-{
-	float32 volume;
-	FMOD_VERIFY(fmodEventCategory->getVolume(&volume));
-	return volume;
-}
-
-void SoundEventCategory::Stop()
-{
-	FMOD_VERIFY(fmodEventCategory->stopAllEvents());
-}
-
-void SoundEventCategory::Pause(bool isPaused)
-{
-	FMOD_VERIFY(fmodEventCategory->setPaused(isPaused));
-}
-
-bool SoundEventCategory::GetPaused()
-{
-	bool isPaused = false;
-	FMOD_VERIFY(fmodEventCategory->getPaused(&isPaused));
-	return isPaused;
-}
-
-};

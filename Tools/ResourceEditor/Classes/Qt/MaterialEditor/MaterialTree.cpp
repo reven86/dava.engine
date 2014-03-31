@@ -44,6 +44,7 @@ MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
 	setModel(treeModel);
 	setContextMenuPolicy(Qt::CustomContextMenu);
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    setIconSize(QSize(24, 24));
 
 	QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(ShowContextMenu(const QPoint&)));
 
@@ -51,7 +52,7 @@ MaterialTree::MaterialTree(QWidget *parent /* = 0 */)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(StructureChanged(SceneEditor2 *, DAVA::Entity *)), this, SLOT(OnStructureChanged(SceneEditor2 *, DAVA::Entity *)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(OnSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
 
-    header()->setSortIndicator( 0, Qt::AscendingOrder );
+    header()->setSortIndicator(0, Qt::AscendingOrder);
     header()->setStretchLastSection(false);
     header()->setResizeMode(0, QHeaderView::Stretch);
     header()->resizeSection(1, 25);
@@ -63,6 +64,7 @@ MaterialTree::~MaterialTree()
 
 void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
 {
+    setSortingEnabled(false);
 	treeModel->SetScene(sceneEditor);
 
 	if(NULL != sceneEditor)
@@ -77,6 +79,7 @@ void MaterialTree::SetScene(SceneEditor2 *sceneEditor)
 	}
 
     sortByColumn(0);
+    setSortingEnabled(true);
 }
 
 void MaterialTree::AssignMaterialToSelection( DAVA::NMaterial *material )
@@ -106,35 +109,41 @@ void MaterialTree::SelectMaterial(DAVA::NMaterial *material)
 	}
 }
 
-void MaterialTree::SelectEntities(DAVA::NMaterial *material)
+void MaterialTree::SelectEntities(const QList<DAVA::NMaterial *>& materials)
 {
 	SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
-	if(NULL != curScene && NULL != material)
-	{
-		curScene->selectionSystem->Clear();
 
-		if(material->GetMaterialType() == NMaterial::MATERIALTYPE_INSTANCE)
-		{
-			DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
-			curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
-		}
-		else
-		{
-			DAVA::Set<DAVA::NMaterial *> instances;
-			curScene->materialSystem->BuildInstancesList(material, instances);
+    if (NULL != curScene && materials.size() > 0)
+    {
+        curScene->selectionSystem->Clear();
 
-			auto it = instances.begin();
-			auto end = instances.end();
+        for (int i = 0; i < materials.size(); i++)
+        {
+            DAVA::NMaterial * material = materials.at(i);
+            
+		    if(material->GetMaterialType() == NMaterial::MATERIALTYPE_INSTANCE)
+		    {
+			    DAVA::Entity *entity = curScene->materialSystem->GetEntity(material);
+			    curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+		    }
+		    else
+		    {
+			    DAVA::Set<DAVA::NMaterial *> instances;
+			    curScene->materialSystem->BuildInstancesList(material, instances);
 
-			for(; it != end; ++it)
-			{
-				DAVA::Entity *entity = curScene->materialSystem->GetEntity(*it);
-				curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
-			}
-		}
+			    auto it = instances.begin();
+			    auto end = instances.end();
+
+			    for(; it != end; ++it)
+			    {
+				    DAVA::Entity *entity = curScene->materialSystem->GetEntity(*it);
+				    curScene->selectionSystem->AddSelection(curScene->selectionSystem->GetSelectableEntity(entity));
+			    }
+		    }
+        }
 
         QtMainWindow::Instance()->GetUI()->sceneTree->LookAtSelection();
-	}
+    }
 }
 
 void MaterialTree::Update()
@@ -303,7 +312,8 @@ void MaterialTree::OnCommandExecuted(SceneEditor2 *scene, const Command2 *comman
 	{
 		int commandID = command->GetId();
 		if(		(commandID == CMDID_DELETE_RENDER_BATCH) 
-			||	(commandID == CMDID_CONVERT_TO_SHADOW) 
+			||	(commandID == CMDID_CLONE_LAST_BATCH) 
+            ||	(commandID == CMDID_CONVERT_TO_SHADOW) 
 			||	(commandID == CMDID_MATERIAL_SWITCH_PARENT))
 		{
 			Update();
@@ -327,6 +337,16 @@ void MaterialTree::OnSelectionChanged(SceneEditor2 *scene, const EntityGroup *se
 
 void MaterialTree::OnSelectEntities()
 {
-	DAVA::NMaterial *currentMaterial = treeModel->GetMaterial(currentIndex());
-	SelectEntities(currentMaterial);
+    const QModelIndexList selection = selectionModel()->selectedRows();
+    QList<DAVA::NMaterial *> materials;
+
+    materials.reserve( selection.size() );
+    for (int i = 0; i < selection.size(); i++)
+    {
+        DAVA::NMaterial * material = treeModel->GetMaterial(selection.at(i));
+        if ( material != NULL )
+            materials << material;
+    }
+
+	SelectEntities(materials);
 }

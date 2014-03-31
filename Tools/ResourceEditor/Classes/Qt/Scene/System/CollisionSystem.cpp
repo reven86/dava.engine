@@ -181,13 +181,11 @@ const EntityGroup* SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3 &fro
 
 const EntityGroup* SceneCollisionSystem::ObjectsRayTestFromCamera()
 {
-	SceneCameraSystem *cameraSystem	= ((SceneEditor2 *) GetScene())->cameraSystem;
+    DAVA::Vector3 traceFrom;
+    DAVA::Vector3 traceTo;
 
-	DAVA::Vector3 camPos = cameraSystem->GetCameraPosition();
-	DAVA::Vector3 camDir = cameraSystem->GetPointDirection(lastMousePos);
-
-	DAVA::Vector3 traceFrom = camPos;
-	DAVA::Vector3 traceTo = traceFrom + camDir * 1000.0f;
+    SceneCameraSystem *cameraSystem = ((SceneEditor2 *) GetScene())->cameraSystem;
+    cameraSystem->GetRayTo2dPoint(lastMousePos, 1000.0f, traceFrom, traceTo);
 
 	return ObjectsRayTest(traceFrom, traceTo);
 }
@@ -284,7 +282,7 @@ DAVA::AABBox3 SceneCollisionSystem::GetBoundingBox(DAVA::Entity *entity)
 	return aabox;
 }
 
-void SceneCollisionSystem::Update(DAVA::float32 timeElapsed)
+void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
 {
 	// check in there are entities that should be added or removed
 	if(entitiesToAdd.size() > 0 || entitiesToRemove.size() > 0)

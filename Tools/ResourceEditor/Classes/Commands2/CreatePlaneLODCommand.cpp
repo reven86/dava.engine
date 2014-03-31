@@ -111,7 +111,7 @@ DAVA::Entity* CreatePlaneLODCommand::GetEntity() const
 void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camera * camera, DAVA::Texture * toTexture, DAVA::int32 fromLodLayer, const DAVA::Rect & viewport /* = DAVA::Rect(0, 0, -1, -1) */, bool clearTarget /* = true */)
 {
     DAVA::TexturesMap textures;
-    SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures);
+    SceneHelper::EnumerateEntityTextures(fromEntity->GetScene(), fromEntity, textures, SceneHelper::EXCLUDE_NULL);
     DAVA::eGPUFamily currentGPU = (DAVA::eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32();
 
     DAVA::TexturesMap::const_iterator it = textures.begin();
@@ -147,7 +147,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
 	DAVA::LodComponent *lodComponent = GetLodComponent(entity);
 	lodComponent->SetForceLodLayer(fromLodLayer);
 	entity->SetVisible(true);
-	tempScene->Update(0.1f);
+	//tempScene->Update(0.1f);
     tempScene->Draw();
 
     SafeRelease(entity);

@@ -222,7 +222,7 @@ Texture::Texture()
 	fboID = -1;
 	rboID = -1;
 #if defined(__DAVAENGINE_ANDROID__)
-    stencil_rboID = -1;
+    stencilRboID = -1;
 #endif
 
 #endif
@@ -246,7 +246,7 @@ void Texture::ReleaseTextureData()
 	container->fboID = fboID;
 	container->rboID = rboID;
 #if defined(__DAVAENGINE_ANDROID__)
-    container->stencil_rboID = stencil_rboID;
+    container->stencilRboID = stencilRboID;
 #endif
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::ReleaseTextureDataInternal, container));
 }
@@ -275,9 +275,9 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 	}
     
 #if defined(__DAVAENGINE_ANDROID__)
-    if (container->stencil_rboID != (uint32)-1)
+    if (container->stencilRboID != (uint32)-1)
     {
-        RENDER_VERIFY(glDeleteRenderbuffers(1, &container->stencil_rboID));
+        RENDER_VERIFY(glDeleteRenderbuffers(1, &container->stencilRboID));
     }
 #endif
 
@@ -933,8 +933,8 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 
             if (!RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
             {
-                glGenRenderbuffers(1, &stencil_rboID);
-                glBindRenderbuffer(GL_RENDERBUFFER, stencil_rboID);
+                glGenRenderbuffers(1, &stencilRboID);
+                glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID);
                 glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
             }
         }
@@ -955,7 +955,7 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 #if defined(__DAVAENGINE_ANDROID__)
         else
         {
-            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencil_rboID));
+            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRboID));
         }
 #endif
 	}

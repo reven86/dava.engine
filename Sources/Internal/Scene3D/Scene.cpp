@@ -67,7 +67,11 @@
 #include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
+
+#include "Sound/SoundSystem.h"
+
 #include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene3D/Systems/FoliageSystem.h"
 
 #include "Scene3D/Systems/MaterialSystem.h"
 
@@ -89,180 +93,207 @@ Texture* Scene::stubTextureCube = NULL;
 Texture* Scene::stubTexture2dLightmap = NULL; //this texture should be all-pink without checkers
     
     
-Scene::Scene()
-	:   Entity()
-    ,   currentCamera(0)
-    ,   clipCamera(0)
-//    ,   forceLodLayer(-1)
-	,	imposterManager(0)
+Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
+	: Entity()
+    , currentCamera(0)
+    , clipCamera(0)
+	, imposterManager(0)
+    ,   systemsMask(_systemsMask)
+    ,   transformSystem(0)
+    ,   renderUpdateSystem(0)
+    ,   lodSystem(0)
+    ,   debugRenderSystem(0)
+    ,   particleEffectSystem(0)
+    ,   updatableSystem(0)
+    ,   lightUpdateSystem(0)
+    ,   switchSystem(0)
+    ,   soundSystem(0)
+    ,   actionSystem(0)
+    ,   skyboxSystem(0)
+    ,   staticOcclusionSystem(0)
+	,   materialSystem(0)
+    ,   foliageSystem(0)
+	,   sceneGlobalMaterial(0)
 {   
-
-//	entityManager = new EntityManager();
-
 	CreateComponents();
 	CreateSystems();
-    
-    InitGlobalMaterial();
 }
 
 void Scene::CreateComponents()
+{ }
+
+NMaterial* Scene::GetGlobalMaterial() const
 {
-    
+    return sceneGlobalMaterial;
+}
+
+void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
+{
+    SafeRelease(sceneGlobalMaterial);
+
+    if(NULL != globalMaterial)
+    {
+        DVASSERT(globalMaterial->GetMaterialType() == NMaterial::MATERIALTYPE_GLOBAL);
+        sceneGlobalMaterial = SafeRetain(globalMaterial);
+        InitGlobalMaterial();
+    }
+
+    renderSystem->SetGlobalMaterial(sceneGlobalMaterial);
+    particleEffectSystem->SetGlobalMaterial(sceneGlobalMaterial);
+}
+
+void Scene::CreateGlobalMaterial()
+{
+    NMaterial *globalMaterial = NMaterial::CreateGlobalMaterial(FastName("Scene_Global_Material"));
+    SetGlobalMaterial(globalMaterial);
+    SafeRelease(globalMaterial);
 }
 
 void Scene::InitGlobalMaterial()
 {
-    sceneGlobalMaterial = NMaterial::CreateGlobalMaterial(FastName("Scene_Global_Material"));
-    
     if(NULL == stubTexture2d)
     {
         stubTexture2d = Texture::CreatePink(Texture::TEXTURE_2D);
     }
-    
+
     if(NULL == stubTextureCube)
     {
         stubTextureCube = Texture::CreatePink(Texture::TEXTURE_CUBE);
     }
-    
+
     if(NULL == stubTexture2dLightmap)
     {
         stubTexture2dLightmap = Texture::CreatePink(Texture::TEXTURE_2D, false);
     }
-    
-    sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_ALBEDO, stubTexture2d);
-    sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_NORMAL, stubTexture2d);
-    sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DETAIL, stubTexture2d);
-    sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_LIGHTMAP, stubTexture2dLightmap);
-    sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DECAL, stubTexture2d);
-    sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_CUBEMAP, stubTextureCube);
-    
+
     Vector3 defaultVec3;
     Color defaultColor(1.0f, 0.0f, 0.0f, 1.0f);
-    float32 defaultFloatValue = 0.5f;
+    float32 defaultFloat05 = 0.5f;
+    float32 defaultFloat10 = 1.0f;
     Vector2 defaultVec2;
     float32 defaultLightmapSize = 16.0f;
-    
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0,
-                                          Shader::UT_FLOAT_VEC3,
-                                          1,
-                                          defaultVec3.data);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_PROP_AMBIENT_COLOR,
-                                          Shader::UT_FLOAT_VEC4,
-                                          1,
-                                          &defaultColor);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_PROP_DIFFUSE_COLOR,
-                                          Shader::UT_FLOAT_VEC4,
-                                          1,
-                                          &defaultColor);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_PROP_SPECULAR_COLOR,
-                                          Shader::UT_FLOAT_VEC4,
-                                          1,
-                                          &defaultColor);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_AMBIENT_COLOR,
-                                          Shader::UT_FLOAT_VEC3,
-                                          1,
-                                          &defaultColor);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_DIFFUSE_COLOR,
-                                          Shader::UT_FLOAT_VEC3,
-                                          1,
-                                          &defaultColor);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR,
-                                          Shader::UT_FLOAT_VEC3,
-                                          1,
-                                          &defaultColor);
- 	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0,
-                                          Shader::UT_FLOAT,
-                                          1,
-                                          &defaultFloatValue);
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS,
-                                          Shader::UT_FLOAT,
-                                          1,
-                                          &defaultFloatValue);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_COLOR,
-                                          Shader::UT_FLOAT_VEC4,
-                                          1,
-                                          &defaultColor);
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY,
-                                          Shader::UT_FLOAT,
-                                          1,
-                                          &defaultFloatValue);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR,
-                                          Shader::UT_FLOAT_VEC4,
-                                          1,
-                                          &defaultColor);
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_TEXTURE0_SHIFT,
-                                          Shader::UT_FLOAT_VEC2,
-                                          1,
-                                          defaultVec2.data);
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_OFFSET,
-                                          Shader::UT_FLOAT_VEC2,
-                                          1,
-                                          defaultVec2.data);
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_SCALE,
-                                          Shader::UT_FLOAT_VEC2,
-                                          1,
-                                          defaultVec2.data);
-	sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_COLOR_MUL,
-                                          Shader::UT_FLOAT_VEC4,
-                                          1,
-                                          &defaultColor);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_MUL,
-                                          Shader::UT_FLOAT,
-                                          1,
-                                          &defaultFloatValue);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_OFFSET,
-                                          Shader::UT_FLOAT,
-                                          1,
-                                          &defaultFloatValue);
-    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE,
-                                          Shader::UT_FLOAT,
-                                          1,
-                                          &defaultLightmapSize);
+    float32 defaultFogStart = 0.0f;
+    float32 defaultFogEnd = 500.0f;
+
+    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_ALBEDO)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_ALBEDO, stubTexture2d);
+    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_NORMAL)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_NORMAL, stubTexture2d);
+    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_DETAIL)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DETAIL, stubTexture2d);
+    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_LIGHTMAP)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_LIGHTMAP, stubTexture2dLightmap);
+    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_DECAL)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_DECAL, stubTexture2d);
+    if(NULL == sceneGlobalMaterial->GetTexture(NMaterial::TEXTURE_CUBEMAP)) sceneGlobalMaterial->SetTexture(NMaterial::TEXTURE_CUBEMAP, stubTextureCube);
+
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC3, 1, defaultVec3.data);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_PROP_AMBIENT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_PROP_AMBIENT_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_PROP_DIFFUSE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_PROP_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_PROP_SPECULAR_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_PROP_SPECULAR_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_AMBIENT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_AMBIENT_COLOR, Shader::UT_FLOAT_VEC3, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_DIFFUSE_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC3, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &defaultFloat05);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_MATERIAL_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &defaultFloat05);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_LIMIT)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_LIMIT, Shader::UT_FLOAT, 1, &defaultFloat10);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_DENSITY)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &defaultFloat05);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_START)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_START, Shader::UT_FLOAT, 1, &defaultFogStart);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FOG_END)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_END, Shader::UT_FLOAT, 1, &defaultFogEnd);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_FLAT_COLOR)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_TEXTURE0_SHIFT)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_TEXTURE0_SHIFT, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_OFFSET)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_OFFSET, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_UV_SCALE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_UV_SCALE, Shader::UT_FLOAT_VEC2, 1, defaultVec2.data);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_COLOR_MUL)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_COLOR_MUL, Shader::UT_FLOAT_VEC4, 1, &defaultColor);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_MUL)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_MUL, Shader::UT_FLOAT, 1, &defaultFloat05);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_OFFSET)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_OFFSET, Shader::UT_FLOAT, 1, &defaultFloat05);
+    if(NULL == sceneGlobalMaterial->GetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE)) sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_LIGHTMAP_SIZE, Shader::UT_FLOAT, 1, &defaultLightmapSize);
 }
 
 void Scene::CreateSystems()
 {
 	renderSystem = new RenderSystem();
-	eventSystem = new EventSystem();
+    eventSystem = new EventSystem();
 
-    transformSystem = new TransformSystem(this);
-    AddSystem(transformSystem, (1 << Component::TRANSFORM_COMPONENT));
+    if(SCENE_SYSTEM_STATIC_OCCLUSION_FLAG & systemsMask)
+    {
+        staticOcclusionSystem = new StaticOcclusionSystem(this);
+        AddSystem(staticOcclusionSystem, (1 << Component::STATIC_OCCLUSION_DATA_COMPONENT), true);
+    }
 
-    renderUpdateSystem = new RenderUpdateSystem(this);
-    AddSystem(renderUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT));
+    if(SCENE_SYSTEM_TRANSFORM_FLAG & systemsMask)
+    {
+        transformSystem = new TransformSystem(this);
+        AddSystem(transformSystem, (1 << Component::TRANSFORM_COMPONENT), true);
+    }
 
-	lodSystem = new LodSystem(this);
-	AddSystem(lodSystem, (1 << Component::LOD_COMPONENT));
+    if(SCENE_SYSTEM_LOD_FLAG & systemsMask)
+    {
+        lodSystem = new LodSystem(this);
+        AddSystem(lodSystem, (1 << Component::LOD_COMPONENT), true);
+    }
 
-    debugRenderSystem = new DebugRenderSystem(this);
-    AddSystem(debugRenderSystem, (1 << Component::DEBUG_RENDER_COMPONENT));
+    if(SCENE_SYSTEM_SWITCH_FLAG & systemsMask)
+    {
+        switchSystem = new SwitchSystem(this);
+        AddSystem(switchSystem, (1 << Component::SWITCH_COMPONENT), true);
+    }
 
-	particleEffectSystem = new ParticleEffectSystem(this);
-	AddSystem(particleEffectSystem, (1 << Component::PARTICLE_EFFECT_COMPONENT));
+    if(SCENE_SYSTEM_PARTICLE_EFFECT_FLAG & systemsMask)
+    {
+        particleEffectSystem = new ParticleEffectSystem(this);
+        AddSystem(particleEffectSystem, (1 << Component::PARTICLE_EFFECT_COMPONENT), true);
+    }
 
-	updatableSystem = new UpdateSystem(this);
-	AddSystem(updatableSystem, (1 << Component::UPDATABLE_COMPONENT));
+    if(SCENE_SYSTEM_SOUND_UPDATE_FLAG & systemsMask)
+    {
+        soundSystem = new SoundUpdateSystem(this);
+        AddSystem(soundSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::SOUND_COMPONENT), true);
+    }
+
+    if(SCENE_SYSTEM_RENDER_UPDATE_FLAG & systemsMask)
+    {
+        renderUpdateSystem = new RenderUpdateSystem(this);
+        AddSystem(renderUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::RENDER_COMPONENT), true);
+    }
+
+    if(SCENE_SYSTEM_UPDATEBLE_FLAG & systemsMask)
+    {
+        updatableSystem = new UpdateSystem(this);
+        AddSystem(updatableSystem, (1 << Component::UPDATABLE_COMPONENT));
+    }
+
+    if(SCENE_SYSTEM_LIGHT_UPDATE_FLAG & systemsMask)
+    {
+        lightUpdateSystem = new LightUpdateSystem(this);
+        AddSystem(lightUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::LIGHT_COMPONENT));
+    }
+
+    if(SCENE_SYSTEM_ACTION_UPDATE_FLAG & systemsMask)
+    {
+        actionSystem = new ActionUpdateSystem(this);
+        AddSystem(actionSystem, (1 << Component::ACTION_COMPONENT), true);
+    }
+
+    if(SCENE_SYSTEM_SKYBOX_FLAG & systemsMask)
+    {
+        skyboxSystem = new SkyboxSystem(this);
+        AddSystem(skyboxSystem, (1 << Component::RENDER_COMPONENT), true);
+    }
+
+    if(SCENE_SYSTEM_MATERIAL_FLAG & systemsMask)
+    {
+        materialSystem = new MaterialSystem(this);
+        AddSystem(materialSystem, (1 << Component::RENDER_COMPONENT));
+    }
+
+    if(SCENE_SYSTEM_DEBUG_RENDER_FLAG & systemsMask)
+    {
+        debugRenderSystem = new DebugRenderSystem(this);
+        AddSystem(debugRenderSystem, (1 << Component::DEBUG_RENDER_COMPONENT), true);
+    }
     
-    lightUpdateSystem = new LightUpdateSystem(this);
-    AddSystem(lightUpdateSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::LIGHT_COMPONENT));
-
-	switchSystem = new SwitchSystem(this);
-	AddSystem(switchSystem, (1 << Component::SWITCH_COMPONENT));
-
-	soundSystem = new SoundUpdateSystem(this);
-	AddSystem(soundSystem, (1 << Component::TRANSFORM_COMPONENT) | (1 << Component::SOUND_COMPONENT));
-	
-	actionSystem = new ActionUpdateSystem(this);
-	AddSystem(actionSystem, (1 << Component::ACTION_COMPONENT));
-	
-	skyboxSystem = new SkyboxSystem(this);
-	AddSystem(skyboxSystem, (1 << Component::RENDER_COMPONENT));
-    
-    staticOcclusionSystem = new StaticOcclusionSystem(this);
-	AddSystem(staticOcclusionSystem, (1 << Component::STATIC_OCCLUSION_DATA_COMPONENT));
-    
-    materialSystem = new MaterialSystem(this);
-    AddSystem(materialSystem, (1 << Component::RENDER_COMPONENT));
+    if(SCENE_SYSTEM_FOLIAGE_FLAG & systemsMask)
+    {
+        foliageSystem = new FoliageSystem(this);
+        AddSystem(foliageSystem, (1 << Component::RENDER_COMPONENT));
+    }
 }
 
 Scene::~Scene()
@@ -316,6 +347,8 @@ Scene::~Scene()
     for (uint32 k = 0; k < size; ++k)
         SafeDelete(systems[k]);
     systems.clear();
+
+    systemsToProcess.clear();
 
 	SafeDelete(eventSystem);
 	SafeDelete(renderSystem);
@@ -433,17 +466,51 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 }
 #endif
     
-void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags)
+void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool needProcess /* = false */, SceneSystem * insertBeforeSceneForProcess /* = NULL */)
 {
     sceneSystem->SetRequiredComponents(componentFlags);
     //Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentFlags);
     //systemSetForType.insert(sceneSystem);
     systems.push_back(sceneSystem);
+
+    bool wasInsertedForUpdate = false;
+    if(needProcess)
+    {
+        if(insertBeforeSceneForProcess)
+        {
+            Vector<SceneSystem*>::iterator itEnd = systemsToProcess.end();
+            for (Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != itEnd; ++it)
+            {
+                if(insertBeforeSceneForProcess == (*it))
+                {
+                    systemsToProcess.insert(it, sceneSystem);
+                    wasInsertedForUpdate = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            systemsToProcess.push_back(sceneSystem);
+            wasInsertedForUpdate = true;
+        }
+    }
+    DVASSERT(needProcess == wasInsertedForUpdate);
 }
     
 void Scene::RemoveSystem(SceneSystem * sceneSystem)
 {
-    Vector<SceneSystem*>::const_iterator endIt = systems.end();
+    Vector<SceneSystem*>::iterator endIt = systemsToProcess.end();
+    for(Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != endIt; ++it)
+    {
+        if(*it == sceneSystem)
+        {
+            systemsToProcess.erase(it);
+            break;;
+        }
+    }
+
+    endIt = systems.end();
     for(Vector<SceneSystem*>::iterator it = systems.begin(); it != endIt; ++it)
     {
         if(*it == sceneSystem)
@@ -533,7 +600,7 @@ void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
     
 	rootNodes[FILEPATH_MAP_KEY(rootNodePath)] = proxyNode;
 
-	proxyNode->SetName(rootNodePath.GetAbsolutePathname());
+	//proxyNode->SetName(rootNodePath.GetAbsolutePathname());
 }
 
 Entity *Scene::GetRootNode(const FilePath &rootNodePath)
@@ -654,23 +721,30 @@ void Scene::Update(float timeElapsed)
     TIME_PROFILE("Scene::Update");
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
-    
-    staticOcclusionSystem->SetCamera(clipCamera);
-    staticOcclusionSystem->Process(timeElapsed);
 
-	updatableSystem->UpdatePreTransform(timeElapsed);
-    transformSystem->Process(timeElapsed);
-	updatableSystem->UpdatePostTransform(timeElapsed);
+    uint32 size = (uint32)systemsToProcess.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        SceneSystem * system = systemsToProcess[k];
+        if((systemsMask & SCENE_SYSTEM_UPDATEBLE_FLAG) && system == transformSystem)
+        {
+            updatableSystem->UpdatePreTransform(timeElapsed);
+            transformSystem->Process(timeElapsed);
+            updatableSystem->UpdatePostTransform(timeElapsed);
+        }
+        else if(system == lodSystem)
+        {
+            if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
+            {
+                lodSystem->Process(timeElapsed);
+            }
+        }
+        else
+        {
+            system->Process(timeElapsed);
+        }
+    }
 
-	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_LODS))
-	{
-		lodSystem->SetCamera(currentCamera);
-		lodSystem->Process(timeElapsed);
-	}
-	
-	switchSystem->Process(timeElapsed);
-    particleEffectSystem->Process(timeElapsed);
-    
 // 	int32 size;
 // 	
 // 	size = (int32)animations.size();
@@ -707,11 +781,6 @@ void Scene::Draw()
 	shadowVolumes.clear();
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
-
-    //const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_COLOR_ATTACHMENT0};
-    //RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
-    //glDepthMask(GL_TRUE);
-    //RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
     
     if(imposterManager)
 	{
@@ -724,48 +793,27 @@ void Scene::Draw()
     RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->ClearDepthBuffer();
     
-	
     if (currentCamera)
     {
         currentCamera->SetupDynamicParameters();
     }
     
-    //Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
     
-    NMaterial::SetGlobalMaterial(sceneGlobalMaterial);
-    
-    renderSystem->SetCamera(currentCamera);
-    renderSystem->SetClipCamera(clipCamera);
-    renderUpdateSystem->Process(timeElapsed);
-	actionSystem->Process(timeElapsed); //update action system before particles and render	
-	skyboxSystem->Process(timeElapsed);
     renderSystem->Render();
-	//renderSystem->DebugDrawHierarchy(currentCamera->GetMatrix());
-    debugRenderSystem->SetCamera(currentCamera);
-    debugRenderSystem->Process(timeElapsed);
-	
-    //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, currentCamera->GetMatrix());
-    //RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
-    //RenderManager::Instance()->SetMatrix(RenderManager::PARAM_VIEW, renderer2d.)
-    
-    //    RenderManager::Instance()->GetRenderer2D()->Setup2DMatrices();
-    
-    //     if(imposterManager)
-    // 	{
-    // 		imposterManager->Draw();
-    // 	}
 
-	//RenderManager::Instance()->SetState(RenderState::DEFAULT_2D_STATE_BLEND);
-    
-    NMaterial::SetGlobalMaterial(NULL);
     
 	drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
-
-	//Image * image = Image::Create(512, 512, FORMAT_RGBA8888);
-	//RENDER_VERIFY(glReadPixels(0, 0, 512, 512, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)image->data));
-	//image->Save("img.png");
-	//RenderManager::Instance()->RestoreRenderTarget();
 }
+    
+void Scene::SceneDidLoaded()
+{
+    uint32 systemsCount = systems.size();
+    for (uint32 k = 0; k < systemsCount; ++k)
+    {
+        systems[k]->SceneDidLoaded();
+    }
+}
+
 
 	
 // void Scene::StopAllAnimations(bool recursive )

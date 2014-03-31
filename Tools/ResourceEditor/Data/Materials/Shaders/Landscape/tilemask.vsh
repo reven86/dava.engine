@@ -20,6 +20,7 @@ uniform mat4 worldViewMatrix;
 #endif
 
 #if defined(VERTEX_FOG)
+    uniform float fogLimit;
     #if !defined(FOG_LINEAR)
     uniform float fogDensity;
     #else
@@ -76,9 +77,9 @@ void main()
     #if !defined(FOG_LINEAR)
         const float LOG2 = 1.442695;
         varFogFactor = exp2( -fogDensity * fogDensity * fogFragCoord * fogFragCoord *  LOG2);
-        varFogFactor = clamp(varFogFactor, 0.0, 1.0);
+        varFogFactor = clamp(varFogFactor, 1.0 - fogLimit, 1.0);
     #else
-        varFogFactor = 1.0 - clamp((fogFragCoord - fogStart) / (fogEnd - fogStart), 0.0, 1.0);
+        varFogFactor = 1.0 - clamp((fogFragCoord - fogStart) / (fogEnd - fogStart), 0.0, fogLimit);
     #endif
 #endif
 	

@@ -42,11 +42,11 @@ namespace DAVA
 
 bool ImageLoader::CreateFromFileByExtension(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
-    if(pathname.IsEqualToExtension("*.pvr"))
+    if(pathname.IsEqualToExtension(".pvr"))
     {
         return ImageLoader::CreateFromPVRFile(pathname, imageSet, baseMipmap);
     }
-    else if(pathname.IsEqualToExtension("*.dds"))
+    else if(pathname.IsEqualToExtension(".dds"))
     {
         return ImageLoader::CreateFromDDSFile(pathname, imageSet, baseMipmap);
     }

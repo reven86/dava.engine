@@ -28,39 +28,42 @@
 
 
 
-#ifndef __DAVAENGINE_SOUND_EVENT_CATEGORY_H__
-#define __DAVAENGINE_SOUND_EVENT_CATEGORY_H__
+#ifndef __CLONE_LAST_BATCH_COMMAND_H__
+#define __CLONE_LAST_BATCH_COMMAND_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Sound/VolumeAnimatedObject.h"
+#include "Command2.h"
 
-namespace FMOD
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/Highlevel/RenderObject.h"
+
+class CloneLastBatchCommand: public Command2
 {
-class EventCategory;
-};
-
-namespace DAVA
-{
-
-class SoundEventCategory : public VolumeAnimatedObject
-{
-protected:
-	~SoundEventCategory();
 public:
-	SoundEventCategory(FMOD::EventCategory * category);
+	CloneLastBatchCommand(DAVA::RenderObject *renderObject);
+    virtual ~CloneLastBatchCommand();
 
-	void SetVolume(float32 volume);
-	float32	GetVolume();
+	virtual void Undo();
+	virtual void Redo();
+    
+	virtual DAVA::Entity* GetEntity() const;
+    
+    inline const DAVA::Vector<DAVA::RenderBatch *> & GetNewBatches() const;
 
-	void Stop();
-	void Pause(bool isPaused);
-	bool GetPaused();
+protected:
 
-private:
-	FMOD::EventCategory * fmodEventCategory;
+    DAVA::RenderObject *renderObject;
+    DAVA::int32 maxLodIndexes[2];
+
+    DAVA::int32 requestedSwitchIndex;
+    DAVA::Vector<DAVA::RenderBatch *> newBatches;
 };
 
-};
 
-#endif //__DAVAENGINE_SOUND_EVENT_CATEGORY_H__
+inline const DAVA::Vector<DAVA::RenderBatch *> & CloneLastBatchCommand::GetNewBatches() const
+{
+    return newBatches;
+}
+
+
+
+#endif // __CLONE_LAST_BATCH_COMMAND_H__

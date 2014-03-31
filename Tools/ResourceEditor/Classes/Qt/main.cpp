@@ -45,6 +45,7 @@
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 #include "FileSystem/ResourceArchive.h"
 #include "TextureBrowser/TextureCache.h"
+#include "LicenceDialog/LicenceDialog.h"
 
 #include "Qt/Settings/SettingsManager.h"
 #include "Qt/Tools/RunGuard/RunGuard.h"
@@ -52,8 +53,6 @@
 #include "Deprecated/EditorConfig.h"
 #include "Deprecated/SceneValidator.h"
 #include "Deprecated/ControlsFactory.h"
-
-#include "Scene/FogSettingsChangedReceiver.h"
 
 #if defined (__DAVAENGINE_MACOS__)
 	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
@@ -140,35 +139,37 @@ int main(int argc, char *argv[])
 	}
 	else if ( runGuard.tryToRun() )
 	{
-		new SceneValidator();
-        new TextureCache();
-		new FogSettingsChangedReceiver();
+        LicenceDialog licenceDlg;
+        if ( licenceDlg.process() )
+        {
+            new SceneValidator();
+            new TextureCache();
 
-		LocalizationSystem::Instance()->SetCurrentLocale("en");
-		LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
+		    LocalizationSystem::Instance()->SetCurrentLocale("en");
+		    LocalizationSystem::Instance()->InitWithDirectory("~res:/Strings/");
 
-		DAVA::Texture::SetDefaultGPU((eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32());
+		    DAVA::Texture::SetDefaultGPU((eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32());
 
-		// check and unpack help documents
-		UnpackHelpDoc();
+		    // check and unpack help documents
+		    UnpackHelpDoc();
 
-		// create and init UI
-		new QtMainWindow();
-		QtMainWindow::Instance()->EnableGlobalTimeout(true);
-		QtMainWindow::Instance()->show();
-		ProjectManager::Instance()->ProjectOpenLast();
-        if(ProjectManager::Instance()->IsOpened())
-            QtMainWindow::Instance()->OnSceneNew();
+		    // create and init UI
+		    new QtMainWindow();
+		    QtMainWindow::Instance()->EnableGlobalTimeout(true);
+		    QtMainWindow::Instance()->show();
+		    ProjectManager::Instance()->ProjectOpenLast();
+            if(ProjectManager::Instance()->IsOpened())
+                QtMainWindow::Instance()->OnSceneNew();
 
-		// start app
-		ret = a.exec();
+		    // start app
+		    ret = a.exec();
 
-		QtMainWindow::Instance()->Release();
-		ControlsFactory::ReleaseFonts();
+		    QtMainWindow::Instance()->Release();
+		    ControlsFactory::ReleaseFonts();
 
-		SceneValidator::Instance()->Release();
-        TextureCache::Instance()->Release();
-		FogSettingsChangedReceiver::Instance()->Release();
+		    SceneValidator::Instance()->Release();
+            TextureCache::Instance()->Release();
+        }
 	}
 
 	EditorConfig::Instance()->Release();

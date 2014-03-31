@@ -105,6 +105,7 @@ signals:
 	void TilemaskEditorToggled(SceneEditor2* scene);
 	void RulerToolToggled(SceneEditor2* scene);
 	void NotPassableTerrainToggled(SceneEditor2* scene);
+    void GrassEditorToggled(SceneEditor2* scene);
 
 	void EditorLightEnabled(bool enabled);
 
@@ -130,6 +131,7 @@ public:
 	void EmitTilemaskEditorToggled(SceneEditor2* scene) { emit TilemaskEditorToggled(scene); }
 	void EmitRulerToolToggled(SceneEditor2* scene) { emit RulerToolToggled(scene); }
 	void EmitNotPassableTerrainToggled(SceneEditor2* scene) { emit NotPassableTerrainToggled(scene); }
+    void EmitGrassEditorToggled(SceneEditor2* scene) { emit GrassEditorToggled(scene); }
 
 	void EmitDropperHeightChanged(SceneEditor2* scene, DAVA::float32 height) { emit DropperHeightChanged(scene, (double)height); };
 	void EmitVisibilityToolStateChanged(SceneEditor2* scene, VisibilityToolSystem::eVisibilityToolState state)

@@ -113,6 +113,9 @@ void SceneUtils::AddFile(const DAVA::FilePath &sourcePath)
 
     if(sourcePath != destinationPath)
     {
+        DVASSERT(!sourcePath.IsEmpty());
+        DVASSERT(!destinationPath.IsEmpty());
+
         filesForCopy[sourcePath] = destinationPath;
     }
 }

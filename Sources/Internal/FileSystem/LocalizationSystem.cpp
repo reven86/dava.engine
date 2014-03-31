@@ -34,6 +34,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
+#include "Sound/SoundSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 #include "FileSystem/LocalizationIPhone.h"
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -84,6 +85,8 @@ const FilePath &LocalizationSystem::GetDirectoryPath() const
 void LocalizationSystem::SetCurrentLocale(const String &newLangId)
 {//TODO: add reloading strings data on langId changing
 	langId = newLangId;
+
+    SoundSystem::Instance()->SetCurrentLocale(langId);
 }
 	
 LocalizationSystem::StringFile * LocalizationSystem::LoadFromYamlFile(const String & langID, const FilePath & pathName)

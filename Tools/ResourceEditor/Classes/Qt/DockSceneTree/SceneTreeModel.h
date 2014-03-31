@@ -115,7 +115,7 @@ protected:
 
 	bool AreSameType(const QModelIndexList & indexes) const;
     
-    void DropMaterial(SceneTreeItem *parentItem, const QMimeData *mimeData) const;
+    //void DropMaterial(SceneTreeItem *parentItem, const QMimeData *mimeData) const;
 
 protected slots:
 	void ItemChanged(QStandardItem * item);

@@ -69,11 +69,12 @@ public:
     void SetLightmapCanvasVisible(bool enable);
     bool IsLightmapCanvasVisible() const;
 
+	virtual void Process(DAVA::float32 timeElapsed);
+
 protected:
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);
 
-	void Update(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);

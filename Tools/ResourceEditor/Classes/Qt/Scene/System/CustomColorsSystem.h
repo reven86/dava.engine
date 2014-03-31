@@ -50,7 +50,7 @@ public:
 	bool DisableLandscapeEdititing(bool saveNeeded = true);
 	bool IsLandscapeEditingEnabled() const;
 	
-	void Update(DAVA::float32 timeElapsed);
+	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
 	
 	void SetBrushSize(int32 brushSize, bool updateDrawSystem = true);

@@ -28,40 +28,65 @@
 
 
 
-#include "Sound/SoundGroup.h"
-#include "Sound/Sound.h"
-#include "Animation/LinearAnimation.h"
-#include "Sound/FMODUtils.h"
-#include "Sound/SoundSystem.h"
+#include "Commands2/ImageRegionCopyCommand.h"
+#include "Render/Image.h"
+#include "Render/ImageLoader.h"
 
-namespace DAVA
+ImageRegionCopyCommand::ImageRegionCopyCommand(DAVA::Image* _dst, const DAVA::Vector2& dstPos, DAVA::Image* src, const DAVA::Rect &srcRect, DAVA::FilePath _savePath, DAVA::Image* _orig)
+	: Command2(CMDID_IMAGE_REGION_COPY, "Remove entity")
+	, dst(_dst)
+    , pos(dstPos)
+    , copy(NULL)
+    , orig(NULL)
+    , savePath(_savePath)
 {
+	SafeRetain(dst);
 
-SoundGroup::SoundGroup()
-{
-	FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->createSoundGroup(0, &fmodSoundGroup));
+    if(NULL != src && NULL != dst)
+    {
+        if(NULL != _orig)
+        {
+            DVASSERT(_orig->width == srcRect.dx);
+            DVASSERT(_orig->height == srcRect.dy);
+
+            orig = _orig;
+        }
+        else
+        {
+            orig = DAVA::Image::CopyImageRegion((const DAVA::Image *) dst, DAVA::Rect(dstPos.x, dstPos.y, srcRect.dx, srcRect.dy));
+        }
+
+        copy = DAVA::Image::CopyImageRegion((const DAVA::Image *) src, srcRect);
+    }
 }
 
-SoundGroup::~SoundGroup()
+ImageRegionCopyCommand::~ImageRegionCopyCommand()
 {
-	FMOD_VERIFY(fmodSoundGroup->release());
+	SafeRelease(dst);
+    SafeRelease(copy);
+    SafeRelease(orig);
 }
 
-void SoundGroup::SetVolume(float32 volume)
+void ImageRegionCopyCommand::Undo()
 {
-	FMOD_VERIFY(fmodSoundGroup->setVolume(volume));
+    if(NULL != dst && NULL != orig)
+    {
+        dst->InsertImage(orig, pos, DAVA::Rect(0, 0, orig->width, orig->height));
+        if(!savePath.IsEmpty())
+        {
+            DAVA::ImageLoader::Save(dst, savePath);
+        }
+    }
 }
 
-float32 SoundGroup::GetVolume()
+void ImageRegionCopyCommand::Redo()
 {
-	float32 volume;
-	FMOD_VERIFY(fmodSoundGroup->getVolume(&volume));
-	return volume;
+    if(NULL != dst && NULL != copy)
+    {
+        dst->InsertImage(copy, pos, DAVA::Rect(0, 0, copy->width, copy->height));
+        if(!savePath.IsEmpty())
+        {
+            DAVA::ImageLoader::Save(dst, savePath);
+        }
+    }
 }
-
-void SoundGroup::Stop()
-{
-	FMOD_VERIFY(fmodSoundGroup->stop());
-}
-
-};

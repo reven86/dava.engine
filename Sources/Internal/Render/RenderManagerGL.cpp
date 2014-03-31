@@ -193,6 +193,11 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_ARB_half_float_pixel");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_ARB_texture_float");
 #endif
+
+    int maxVertexTextureUnits = 0;
+    glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &maxVertexTextureUnits);
+    caps.isVertexTextureUnitsSupported = (maxVertexTextureUnits > 0);
+    caps.isFramebufferFetchSupported = IsGLExtensionSupported("GL_EXT_shader_framebuffer_fetch");
 }
 
 bool RenderManager::IsDeviceLost()

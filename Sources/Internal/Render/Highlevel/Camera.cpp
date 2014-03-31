@@ -86,10 +86,15 @@ void Camera::SetIsOrtho(const bool &_ortho)
 }
  
 
-void Camera::SetWidth(const float32 &width)
+void Camera::SetOrthoWidth(const float32 &width)
 {
 	orthoWidth = width;
 	Recalc();
+}
+
+float32 Camera::GetOrthoWidth() const
+{
+    return orthoWidth;
 }
     
 void Camera::SetXMin(const float32 &_xmin)
@@ -465,15 +470,12 @@ BaseObject * Camera::Clone(BaseObject * dstNode)
     }
     // SceneNode::Clone(dstNode);
     Camera *cnd = (Camera*)dstNode;
-    cnd->xmin = xmin;
-    cnd->xmax = xmax;
-    cnd->ymin = ymin;
-    cnd->ymax = ymax;
     cnd->znear = znear;
     cnd->zfar = zfar;
     cnd->aspect = aspect;
     cnd->fovX = fovX;
     cnd->ortho = ortho;
+    cnd->orthoWidth = orthoWidth;
     
     cnd->position = position;
     cnd->target = target;
@@ -482,8 +484,9 @@ BaseObject * Camera::Clone(BaseObject * dstNode)
     //cnd->rotation = rotation;
     cnd->cameraTransform = cameraTransform;
     cnd->flags = flags;
-    
     cnd->zoomFactor = zoomFactor;
+
+    cnd->Recalc();
     return dstNode;
 }
     
@@ -573,10 +576,7 @@ void Camera::Save(KeyedArchive * archive)
 {
     BaseObject::Save(archive);
     
-    archive->SetFloat("cam.xmin", xmin);
-    archive->SetFloat("cam.xmax", xmax);
-    archive->SetFloat("cam.ymin", ymin);
-    archive->SetFloat("cam.ymax", ymax);
+    archive->SetFloat("cam.orthoWidth", orthoWidth);
     archive->SetFloat("cam.znear", znear);
     archive->SetFloat("cam.zfar", zfar);
     archive->SetFloat("cam.aspect", aspect);
@@ -601,10 +601,7 @@ void Camera::Load(KeyedArchive * archive)
     BaseObject::Load(archive);
     
     // todo add default values
-    xmin = archive->GetFloat("cam.xmin");
-    xmax = archive->GetFloat("cam.xmax");
-    ymin = archive->GetFloat("cam.ymin");
-    ymax = archive->GetFloat("cam.ymax");
+    orthoWidth = archive->GetFloat("cam.orthoWidth");
     znear = archive->GetFloat("cam.znear");
     zfar = archive->GetFloat("cam.zfar");
     aspect = archive->GetFloat("cam.aspect");
@@ -621,6 +618,8 @@ void Camera::Load(KeyedArchive * archive)
     cameraTransform = archive->GetByteArrayAsType("cam.cameraTransform", cameraTransform);
     viewMatrix = archive->GetByteArrayAsType("cam.modelMatrix", viewMatrix);
     projMatrix = archive->GetByteArrayAsType("cam.projMatrix", projMatrix);
+
+    Recalc();
 }
 
 	

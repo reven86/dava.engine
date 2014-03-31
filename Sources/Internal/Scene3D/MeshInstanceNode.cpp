@@ -579,8 +579,8 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
             {
                 DVASSERT(pgIndex != errorIdx);
 
-                if(serializationContext->IsDebugLogEnabled())
-                    Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
+                //if(serializationContext->IsDebugLogEnabled())
+                //    Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
                 
                 AddPolygonGroup(mesh, pgIndex, material);
             }
@@ -608,8 +608,8 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
                     {
                         DVASSERT(pgIndex != errorIdx);
 
-                        if(serializationContext->IsDebugLogEnabled())
-                            Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
+                        //if(serializationContext->IsDebugLogEnabled())
+                        //    Logger::FrameworkDebug("+ assign material: %s", material->GetName().c_str());
                         
                         AddPolygonGroup(mesh, pgIndex, material);
                     }

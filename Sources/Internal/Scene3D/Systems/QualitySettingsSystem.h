@@ -81,6 +81,16 @@ public:
 
     const MaterialQuality* GetMaterialQuality(const FastName &group, const FastName &quality) const;
 
+    // sound quality
+    size_t GetSFXQualityCount() const;
+    FastName GetSFXQualityName(size_t index) const;
+
+    FastName GetCurSFXQuality() const;
+    void SetCurSFXQuality(const FastName &name);
+
+    FilePath GetSFXQualityConfigPath(const FastName &name) const;
+    FilePath GetSFXQualityConfigPath(size_t index) const;
+
     // ------------------------------------------
 
 	void EnableOption(const FastName & option, bool enabled);
@@ -95,7 +105,6 @@ protected:
 
 	void RemoveModelsByType(const Vector<Entity *> & models);
 
-
 protected:
     struct TXQ
     {
@@ -109,12 +118,22 @@ protected:
         Vector<MaterialQuality> qualities;
     };
 
+    struct SFXQ
+    {
+        FastName name;
+        FilePath configPath;
+    };
+
     // textures
-    int curTextureQuality;
+    int32 curTextureQuality;
     Vector<TXQ> textureQualities;
 
     // materials
     FastNameMap<MAGrQ> materialGroups;
+
+    //sounds
+    int32 curSoundQuality;
+    Vector<SFXQ> soundQualities;
 
 	FastNameMap<bool> qualityOptions;
 };

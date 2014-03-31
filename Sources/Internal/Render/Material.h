@@ -331,6 +331,9 @@ public:
     inline eBlendMode GetBlendDest() const;
 	inline StaticLightingParams * GetStaticLightingParams() const;
     
+    const String& GetName() const;
+    void SetName(const String& materialName);
+    
 private:
     void RetrieveTextureSlotNames();
     
@@ -402,6 +405,7 @@ private:
 
 	RenderState renderStateBlock;
     
+    String name;
     
     /*
         TODO: Uniform array, with set of all uniforms, with one set.

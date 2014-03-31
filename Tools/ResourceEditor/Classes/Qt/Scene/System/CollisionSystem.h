@@ -74,8 +74,9 @@ public:
 	void UpdateCollisionObject(DAVA::Entity *entity);
 	void RemoveCollisionObject(DAVA::Entity *entity);
 
+	virtual void Process(DAVA::float32 timeElapsed);
+
 protected:
-	void Update(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);

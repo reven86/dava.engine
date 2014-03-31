@@ -26,50 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __SOUND_BROWSER_H__
+#define __SOUND_BROWSER_H__
 
+#include <QDialog>
+#include <QTreeWidgetItem>
+#include "DAVAEngine.h"
 
-#include "Sound/VolumeAnimatedObject.h"
-#include "Animation/Animation.h"
-#include "Animation/LinearAnimation.h"
-#include "Sound/SoundSystem.h"
-
-namespace DAVA
-{
-
-VolumeAnimatedObject::VolumeAnimatedObject() :
-	animatedVolume(-1)
-{
-
+namespace Ui {
+class FMODSoundBrowser;
 }
 
-Animation * VolumeAnimatedObject::VolumeAnimation(float32 newVolume, float32 time, int32 track)
+class SceneEditor2;
+
+class FMODSoundBrowser : public QDialog, public DAVA::Singleton<FMODSoundBrowser>
 {
-	animatedVolume = GetVolume();
+    Q_OBJECT
+    
+public:
+    explicit FMODSoundBrowser(QWidget *parent = 0);
+    virtual ~FMODSoundBrowser();
 
-	Animation * a = new LinearAnimation<float32>(this, &animatedVolume, newVolume, time, Interpolation::LINEAR);
-	a->AddEvent(Animation::EVENT_ANIMATION_END, Message(this, &VolumeAnimatedObject::OnVolumeAnimationEnded));
-	a->AddEvent(Animation::EVENT_ANIMATION_CANCELLED, Message(this, &VolumeAnimatedObject::OnVolumeAnimationEnded));
-	Retain();
-	a->Start(track);
+    DAVA::String GetSelectSoundEvent();
 
-	SoundSystem::Instance()->AddVolumeAnimatedObject(this);
+#ifdef DAVA_FMOD
+    static DAVA::FilePath MakeFEVPathFromScenePath(const DAVA::FilePath & scenePath);
+#endif
 
-	return a;
-}
+private slots:
+    void OnEventSelected(QTreeWidgetItem * item, int column);
+    void OnEventDoubleClicked(QTreeWidgetItem * item, int column);
 
-void VolumeAnimatedObject::Update()
-{
-	if(animatedVolume != -1.f)
-		SetVolume(animatedVolume);
-}
+    void OnSceneLoaded(SceneEditor2 * scene);
+    void OnSceneClosed(SceneEditor2 * scene);
 
-void VolumeAnimatedObject::OnVolumeAnimationEnded(BaseObject * caller, void * userData, void * callerData)
-{
-	SetVolume(animatedVolume);
-	animatedVolume = -1.f;
-	Release();
+    void OnAccepted();
+    void OnRejected();
 
-	SoundSystem::Instance()->RemoveVolumeAnimatedObject(this);
-}
+private:
+    void UpdateEventTree();
 
+    void FillEventsTree(const DAVA::Vector<DAVA::String> & names);
+    void SelectItemAndExpandTreeByEventName(const DAVA::String & eventName);
+    
+    void SetSelectedItem(QTreeWidgetItem * item);
+
+    DAVA::Map<DAVA::Scene *, DAVA::FilePath> projectsMap;
+    QTreeWidgetItem * selectedItem;
+    Ui::FMODSoundBrowser *ui;
 };
+
+#endif // SOUNDBROWSER_H

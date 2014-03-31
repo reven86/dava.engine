@@ -77,6 +77,7 @@ public:
 	
 	//! \brief make bounding box empty
 	inline void Empty();
+    inline bool IsEmpty() const;
 
 	//! \brief check if bounding box intersect line
 	inline bool IsIntersectLine(const Vector2 & l1, const Vector2 &l2) const;
@@ -94,7 +95,6 @@ public:
 	
 	//! \brief get center
 	inline Vector2 GetCenter() const;
-
 
 	//! \brief copy operator of bounding box class
 	inline AABBox2 & operator =(const AABBox2 & _bbox);
@@ -157,6 +157,10 @@ inline void AABBox2::Empty()
 	max = Vector2(-AABBOX_INFINITY, -AABBOX_INFINITY);
 }
 
+inline bool AABBox2::IsEmpty() const
+{
+    return (min.x > max.x || min.y > max.y);
+}
 
 //! \brief check if bounding box intersect line
 inline bool AABBox2::IsIntersectLine(const Vector2 & /*l1*/, const Vector2 & /*l2*/) const

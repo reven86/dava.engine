@@ -127,6 +127,7 @@ public:
     
     DAVA_DEPRECATED(static void FindSwitchesWithDifferentLODs(DAVA::Entity *entity, Set<FastName> & names));
     DAVA_DEPRECATED(static bool IsEntityHasDifferentLODsCount(DAVA::Entity *entity));
+    DAVA_DEPRECATED(static bool IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObject));
 
 
 protected:

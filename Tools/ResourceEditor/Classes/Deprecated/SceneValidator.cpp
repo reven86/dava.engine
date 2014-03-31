@@ -282,22 +282,25 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
 	auto endItMaterials = materials.end();
 	for(auto it = materials.begin(); it != endItMaterials; ++it)
 	{
-		DAVA::uint32 count = (*it)->GetTextureCount();
-		for(DAVA::uint32 t = 0; t < count; ++t)
-		{
-			Texture *tex = (*it)->GetTexture(t);
-			if(tex)
-			{
-				if(((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_INSTANCE) && (*it)->GetParent())
-				{
-					texturesMap[tex] = Format("Material: %s (%s). Texture %s.", (*it)->GetName().c_str(), (*it)->GetParent()->GetName().c_str(), (*it)->GetTextureName(t).c_str());
-				}
-				else
-				{
-					texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetName().c_str(), (*it)->GetTextureName(t).c_str());
-				}
-			}
-		}
+        if(((*it)->GetNodeGlags() & DataNode::NodeRuntimeFlag) == 0) //VI: don't validate runtime materials
+        {
+            DAVA::uint32 count = (*it)->GetTextureCount();
+            for(DAVA::uint32 t = 0; t < count; ++t)
+            {
+                Texture *tex = (*it)->GetTexture(t);
+                if(tex)
+                {
+                    if(((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_INSTANCE) && (*it)->GetParent())
+                    {
+                        texturesMap[tex] = Format("Material: %s (%s). Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetParent()->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
+                    }
+                    else
+                    {
+                        texturesMap[tex] = Format("Material: %s. Texture %s.", (*it)->GetMaterialName().c_str(), (*it)->GetTextureName(t).c_str());
+                    }
+                }
+            }
+        }
 	}
 
 	auto endItTextures = texturesMap.end();
@@ -690,21 +693,32 @@ bool SceneValidator::IsEntityHasDifferentLODsCount( DAVA::Entity *entity )
     if((GetSwitchComponent(entity) == NULL) || (GetLodComponent(entity) == NULL)) return false;
 
     RenderObject *ro = GetRenderObject(entity);
+    if(ro)
+    {
+        return IsObjectHasDifferentLODsCount(ro);
+    }
+
+    return false;
+}
+
+bool SceneValidator::IsObjectHasDifferentLODsCount(DAVA::RenderObject *renderObject)
+{
+    DVASSERT(renderObject);
+
     int32 maxLod[2] = { -1, -1};
 
-    const uint32 count = ro->GetRenderBatchCount(); 
+    const uint32 count = renderObject->GetRenderBatchCount(); 
     for(uint32 i = 0; i < count; ++i) 
     {
         int32 lod, sw;
-        ro->GetRenderBatch(i, lod, sw);
+        renderObject->GetRenderBatch(i, lod, sw);
 
         DVASSERT(sw < 2);
-        if((lod > maxLod[sw]) && (sw < 2))
+        if((lod > maxLod[sw]) && (sw >= 0 && sw < 2))
         {
             maxLod[sw] = lod;
         }
     }
 
-    return maxLod[0] != maxLod[1];
+    return ((maxLod[0] != maxLod[1]) && (maxLod[0] != -1 && maxLod[1] != -1));
 }
-

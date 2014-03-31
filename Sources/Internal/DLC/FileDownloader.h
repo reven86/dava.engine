@@ -62,6 +62,12 @@ public:
 
 class FileDownloader: public BaseObject
 {
+    struct ThreadFileData
+    {
+        ThreadFileData() {}; 
+        FilePath downloadedFilePath;
+    };
+
 protected:
     virtual ~FileDownloader();
 public:
@@ -71,8 +77,8 @@ public:
     
     // Start download file & save with same name
     // return type CURLcode
-    virtual uint32 SynchDownload();
-    virtual void AsynchDownload();
+    virtual uint32 SynchDownload(const FilePath & downloadedFilePath = FilePath());
+    virtual void AsynchDownload(const FilePath & downloadedFilePath = FilePath());
     
     virtual void Pause();
     virtual void Resume();
@@ -103,7 +109,7 @@ protected:
 
     // Main download func 
     // return type CURLcode
-    uint32 DownloadFile();
+    uint32 DownloadFile(const FilePath & downloadedFilePath = FilePath());
     
     // CURL download to tile
     // return type CURLcode

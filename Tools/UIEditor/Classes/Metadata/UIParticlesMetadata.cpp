@@ -63,6 +63,26 @@ void UIParticlesMetadata::Stop()
     GetActiveUIParticles()->Stop();
 }
 
+void UIParticlesMetadata::Pause()
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUIParticles()->Pause();
+}
+
+void UIParticlesMetadata::Restart()
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUIParticles()->Restart();
+}
+
 void UIParticlesMetadata::Reload()
 {
     if (!VerifyActiveParamID())
@@ -111,5 +131,25 @@ void UIParticlesMetadata::SetAutostart(bool value)
     }
     
     GetActiveUIParticles()->SetAutostart(value);
+}
+
+float UIParticlesMetadata::GetStartDelay() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return 0.0f;
+    }
+    
+    return GetActiveUIParticles()->GetStartDelay();
+}
+
+void UIParticlesMetadata::SetStartDelay(float value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+    
+    GetActiveUIParticles()->SetStartDelay(value);
 }
 

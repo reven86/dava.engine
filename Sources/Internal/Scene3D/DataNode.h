@@ -62,26 +62,9 @@ public:
     void SetScene(Scene * _scene);
     inline Scene * GetScene() { return scene; };
     
-    /**
-        \brief Set name of this particular node.
-        \param[in] new name for this node
-     */
-    void SetName(const String & name);
-
-    /**
-        \brief Get name of this particular node.
-        \returns name of this node
-     */
-    const String & GetName() const;
-    
     DataNode *	FindByName(const String & searchName);
 	virtual void	AddNode(DataNode * node);
-	virtual void	RemoveNode(DataNode * node);
-	virtual DataNode * GetChildNode(int32 index);
-	virtual int32   GetChildrenNodeCount();
-	virtual void	RemoveAllChildrenNodes();
 
-    //DataNode * FindByAddress();
     int32  GetNodeIndex();
     uint64 GetPreviousPointer();
 	
@@ -110,44 +93,34 @@ public:
      */
 	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
     
+    virtual void UpdateUniqueKey(uint64 newKeyValue) {};
+    
+    inline void SetDataIndex(int32 idx);
+    
 protected:
     uint64 pointer;
     Scene * scene;
-    String name;
-  Vector<DataNode*> children;
+
     int32 index;
 	uint16 nodeFlags;
     
 public:
     
     INTROSPECTION_EXTEND(DataNode, BaseObject,
-        MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(index, "Index", I_SAVE)
         MEMBER(pointer, "Pointer", I_SAVE)
-        COLLECTION(children, "Children", I_SAVE | I_VIEW | I_EDIT)
     );
 };
-    
-/*class DataNodeArray : public BaseObject
+
+inline void DataNode::SetDataIndex(int32 idx)
 {
-public:
-    DataNodeArray(Scene * _scene);
-    
-    virtual void	AddNode(DataNode * node);
-	virtual void	RemoveNode(DataNode * node);
-	virtual DataNode * GetChild(int32 index);
-	virtual int32   GetChildrenCount();
-	virtual void	RemoveAllChildren();
+    index = idx;
+}
 
-protected:
     
-    Scene * scene;
-};*/
-    
-
 };
 
-#endif // __DAVAENGINE_SCENENODE_H__
+#endif // __DAVAENGINE_DATANODE_H__
 
 
 

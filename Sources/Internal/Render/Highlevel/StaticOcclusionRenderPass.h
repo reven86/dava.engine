@@ -39,17 +39,6 @@ namespace DAVA
 {
 
 class StaticOcclusion;
-class StaticOcclusionRenderLayer : public RenderLayer
-{
-public:
-    StaticOcclusionRenderLayer(const FastName & name, uint32 sortingFlags, StaticOcclusion * occlusion, RenderLayerID id);
-    ~StaticOcclusionRenderLayer();
-    
-    virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
-
-    StaticOcclusion * occlusion;
-};
-
 class StaticOcclusionRenderPass : public RenderPass
 {
 public:
@@ -57,7 +46,9 @@ public:
     ~StaticOcclusionRenderPass();
 
     void Draw(Camera * camera, RenderPassBatchArray * renderPassBatchArray);
-
+    static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
+    
+private:
     StaticOcclusion * occlusion;
     Set<RenderObject*> visibleObjectSet;
 };

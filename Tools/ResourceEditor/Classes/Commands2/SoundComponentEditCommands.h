@@ -28,35 +28,43 @@
 
 
 
-#ifndef __DAVAENGINE_VOLUME_ANIMATED_OBJECT_H__
-#define __DAVAENGINE_VOLUME_ANIMATED_OBJECT_H__
+#ifndef __SOUND_COMPONENT_COMMANDS_H__
+#define __SOUND_COMPONENT_COMMANDS_H__
 
-#include "Base/BaseTypes.h"
-#include "Animation/AnimatedObject.h"
+#include "DAVAEngine.h"
+#include "Commands2/Command2.h"
 
-namespace DAVA
+class AddSoundEventCommand : public Command2
 {
-
-class Animation;
-class VolumeAnimatedObject : public AnimatedObject
-{
-protected:
-    ~VolumeAnimatedObject(){}
 public:
-	VolumeAnimatedObject();
+	AddSoundEventCommand(DAVA::Entity *entity, DAVA::SoundEvent * sEvent);
+	~AddSoundEventCommand();
 
-	virtual void SetVolume(float32 volume) = 0;
-	virtual float32 GetVolume() = 0;
+	virtual void Undo();
+	virtual void Redo();
 
-	Animation * VolumeAnimation(float32 newVolume, float32 time, int32 track = 0);
-	void Update();
+	virtual DAVA::Entity* GetEntity() const;
 
 private:
-	float32 animatedVolume;
 
-	void OnVolumeAnimationEnded(BaseObject * caller, void * userData, void * callerData);
+    DAVA::Entity *entity;
+	DAVA::SoundEvent *savedEvent;
 };
 
-};
+class RemoveSoundEventCommand : public Command2
+{
+public:
+    RemoveSoundEventCommand(DAVA::Entity *entity, DAVA::SoundEvent * sEvent);
+    ~RemoveSoundEventCommand();
 
-#endif
+    virtual void Undo();
+    virtual void Redo();
+
+    virtual DAVA::Entity* GetEntity() const;
+
+private:
+
+    DAVA::Entity *entity;
+    DAVA::SoundEvent *savedEvent;
+};
+#endif // __SOUND_COMPONENT_COMMANDS_H__

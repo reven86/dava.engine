@@ -51,7 +51,7 @@ TextDrawSystem::~TextDrawSystem()
 	SafeRelease(font);
 }
 
-void TextDrawSystem::Update(float timeElapsed)
+void TextDrawSystem::Process(float timeElapsed)
 { }
 
 DAVA::Vector2 TextDrawSystem::ToPos2d(const DAVA::Vector3 &pos3d) const

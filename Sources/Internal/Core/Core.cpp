@@ -43,7 +43,7 @@
 #include "Render/2D/TextBlock.h"
 #include "Debug/Replay.h"
 #include "Sound/SoundSystem.h"
-#include "Sound/Sound.h"
+#include "Sound/SoundEvent.h"
 #include "Input/InputSystem.h"
 #include "Platform/DPIHelper.h"
 #include "Base/AllocatorFactory.h"
@@ -121,6 +121,8 @@ void Core::CreateSingletons()
 	FileSystem::Instance()->SetDefaultDocumentsDirectory();
     FileSystem::Instance()->CreateDirectory(FileSystem::Instance()->GetCurrentDocumentsDirectory(), true);
 	
+    new SoundSystem();
+
 	if (isConsoleMode)
 	{
 		/*
@@ -137,7 +139,6 @@ void Core::CreateSingletons()
 	new AnimationManager();
 	new FontManager();
 	new UIControlSystem();
-	new SoundSystem(64);
 	new InputSystem();
 	new RenderHelper();
 	new PerformanceSettings();
@@ -177,7 +178,6 @@ void Core::ReleaseSingletons()
 	RenderHelper::Instance()->Release();
 	UIScreenManager::Instance()->Release();
 	UIControlSystem::Instance()->Release();
-	SoundSystem::Instance()->Release();
 	FontManager::Instance()->Release();
 	AnimationManager::Instance()->Release();
 	SystemTimer::Instance()->Release();
@@ -187,7 +187,8 @@ void Core::ReleaseSingletons()
 #endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 	LocalizationSystem::Instance()->Release();
 //	Logger::FrameworkDebug("[Core::Release] successfull");
-	FileSystem::Instance()->Release();
+    FileSystem::Instance()->Release();
+    SoundSystem::Instance()->Release();
 	Random::Instance()->Release();
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__

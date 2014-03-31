@@ -168,8 +168,11 @@ public:
 	static const FastName PARAM_LIGHT_SPECULAR_COLOR;
 	static const FastName PARAM_LIGHT_INTENSITY0;
 	static const FastName PARAM_MATERIAL_SPECULAR_SHININESS;
+    static const FastName PARAM_FOG_LIMIT;
 	static const FastName PARAM_FOG_COLOR;
 	static const FastName PARAM_FOG_DENSITY;
+    static const FastName PARAM_FOG_START;
+    static const FastName PARAM_FOG_END;
 	static const FastName PARAM_FLAT_COLOR;
 	static const FastName PARAM_TEXTURE0_SHIFT;
 	static const FastName PARAM_UV_OFFSET;
@@ -340,14 +343,12 @@ public:
 
     FastName GetMaterialGroup() const;
     void SetMaterialGroup(const FastName &group);
-    
-    //Stores WEAK reference (actually it's valid during render pass only)
-    //These methods are not thread-safe and used in the Scene::Draw to
-    //provide default values for materials.
-    inline static void SetGlobalMaterial(NMaterial* globalMaterial);
-    inline static NMaterial* GetGlobalMaterial();
 
     void BuildActiveUniformsCacheParamsCache();
+    void InvalidateProperties();
+    
+    // set new materialKey and pointer to properly save all materials
+    virtual void UpdateUniqueKey(uint64 newKeyValue);
     
 protected:
 	
@@ -505,8 +506,6 @@ protected:
 	
 	//static Texture* stubCubemapTexture;
 	//static Texture* stub2dTexture;
-    
-    static NMaterial* GLOBAL_MATERIAL;
 	
 protected:
 	
@@ -535,7 +534,7 @@ protected:
 	bool IsTextureActive(const FastName& textureName) const;
 	void SetTexturesDirty();
 	void PrepareTextureState(RenderPassInstance* passInstance);
-	void UpdateShaderWithFlags(bool updateChildren = false);
+	void UpdateShaderWithFlags();
 	//static Texture* GetStubTexture(const FastName& uniformName);
 	
 	void SetupPerFrameProperties(Camera* camera);
@@ -546,6 +545,7 @@ protected:
 	void UpdateLightingProperties(Light* light);
 	bool IsLightingProperty(const FastName& propName) const;
 	void SetLightInternal(int index, Light* light, bool forceUpdate);
+    void SetParentInternal(NMaterial *material);
 
     FastName GetEffectiveQuality() const;
 	
@@ -557,7 +557,6 @@ protected:
 	
 	void OnParentChanged(NMaterial* newParent, bool inheritTemplate);
 	void OnMaterialTemplateChanged();
-	void OnParentFlagsChanged();
 	void OnInstanceQualityChanged();
 	
 	void OnMaterialPropertyAdded(const FastName& propName);
@@ -593,7 +592,7 @@ public:
 			FilePath path;
 		};
 
-		const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state) const;
+		const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state, bool global) const;
 	};
 
 	class NMaterialStateDynamicFlagsInsp : public InspInfoDynamic
@@ -638,7 +637,7 @@ public:
 		
 		bool isColor(const FastName &propName) const;
 		VariantType getVariant(const FastName &propName, const PropData &propData) const;
-		const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state) const;
+		const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state, bool global) const;
 	};
 	
 public:
@@ -673,16 +672,6 @@ public:
         static bool IsOpaque(const FastName& passName, NMaterial* mat);
         static eFillMode GetFillMode(const FastName& passName, NMaterial* mat);
 	};
-    
-    inline void NMaterial::SetGlobalMaterial(NMaterial* globalMaterial)
-    {
-        NMaterial::GLOBAL_MATERIAL = globalMaterial;
-    }
-    
-    inline NMaterial* NMaterial::GetGlobalMaterial()
-    {
-        return NMaterial::GLOBAL_MATERIAL;
-    }
     
     inline uint32 NMaterial::GetRenderLayers() const
     {

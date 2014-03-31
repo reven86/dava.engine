@@ -42,6 +42,7 @@ public:
     virtual ~SoundUpdateSystem();
 
     virtual void ImmediateEvent(Entity * entity, uint32 event);
+    virtual void Process(float32 timeElapsed);
 };
     
 } // ns

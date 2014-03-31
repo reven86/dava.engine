@@ -80,7 +80,34 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
 
     if(index.column() == 0)
     {
-        ret = QStandardItemModel::data(index, role);
+        MaterialItem* item = itemFromIndex(index);
+        DVASSERT(item);
+
+        switch (role)
+        {
+        case Qt::BackgroundRole:
+            {
+                const bool toDel = item->GetFlag(MaterialItem::IS_MARK_FOR_DELETE);
+                if (toDel)
+                    ret = QBrush(QColor(255, 0, 0, 20));
+            }
+            break;
+        case Qt::FontRole:
+            {
+                const bool isSelection = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
+                ret = QStandardItemModel::data(index, role);
+                if (isSelection)
+                {
+                    QFont font = ret.value<QFont>();
+                    font.setBold(true);
+                    ret = font;
+                }
+            }
+            break;
+        default:
+            ret = QStandardItemModel::data(index, role);
+            break;
+        }
     }
     // LOD
     else if(index.isValid() && index.column() < columnCount())
@@ -108,7 +135,7 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
                         ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
                         break;
 
-                    case Qt::BackgroundColorRole:
+                    case Qt::BackgroundRole:
                         if(lodIndex >= 0 && lodIndex < supportedLodColorsCount)
                         {
                             ret = lodColors[lodIndex];
@@ -136,7 +163,7 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
                         ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
                         break;
 
-                    case Qt::BackgroundColorRole:
+                    case Qt::BackgroundRole:
                         if(switchIndex >= 0 && switchIndex < supportedSwColorsCount)
                         {
                             ret = switchColors[switchIndex];
@@ -228,6 +255,11 @@ void MaterialModel::Sync()
 		DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> > materialsTree;
 		curScene->materialSystem->BuildMaterialsTree(materialsTree);
 
+        if(NULL != curScene->GetGlobalMaterial())
+        {
+            materialsTree[curScene->GetGlobalMaterial()];
+        }
+
 		// remove items, that are not in set
 		QStandardItem *root = invisibleRootItem();
 		for(int i = 0; i < root->rowCount(); ++i)
@@ -307,26 +339,31 @@ void MaterialModel::Sync()
 		for(int i = 0; i < root->rowCount(); ++i)
 		{
 			MaterialItem *item = (MaterialItem *) root->child(i);
-			item->SetFlag(MaterialItem::IS_MARK_FOR_DELETE, item->rowCount() == 0);
+            const bool toDel = (item->rowCount() == 0);
+			item->SetFlag(MaterialItem::IS_MARK_FOR_DELETE, toDel);
 
             for(int j = 0; j < item->rowCount(); ++j)
             {
                 MaterialItem *instanceItem = (MaterialItem *) item->child(j);
+                
                 const DAVA::RenderBatch *rb = curScene->materialSystem->GetRenderBatch(instanceItem->GetMaterial());
-                const DAVA::RenderObject *ro = rb->GetRenderObject();
-
-                for(DAVA::uint32 k = 0; k < ro->GetRenderBatchCount(); ++k)
+                
+                if(rb)
                 {
-                    int lodIndex, swIndex;
-                    DAVA::RenderBatch *batch = ro->GetRenderBatch(k, lodIndex, swIndex);
-                    if(rb == batch)
+                    const DAVA::RenderObject *ro = rb->GetRenderObject();
+                    
+                    for(DAVA::uint32 k = 0; k < ro->GetRenderBatchCount(); ++k)
                     {
-                        instanceItem->SetLodIndex(lodIndex);
-                        instanceItem->SetSwitchIndex(swIndex);
-                        break;
+                        int lodIndex, swIndex;
+                        DAVA::RenderBatch *batch = ro->GetRenderBatch(k, lodIndex, swIndex);
+                        if(rb == batch)
+                        {
+                            instanceItem->SetLodIndex(lodIndex);
+                            instanceItem->SetSwitchIndex(swIndex);
+                            break;
+                        }
                     }
                 }
-                
             }
 		}
 

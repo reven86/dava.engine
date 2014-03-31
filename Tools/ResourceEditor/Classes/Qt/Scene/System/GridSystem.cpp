@@ -51,7 +51,7 @@ SceneGridSystem::~SceneGridSystem()
 
 }
 
-void SceneGridSystem::Update(float timeElapsed)
+void SceneGridSystem::Process(float timeElapsed)
 {
 
 }

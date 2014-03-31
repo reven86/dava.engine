@@ -96,7 +96,9 @@ public:
         
         \param[in] width new width for the camera
      */ 
-	void SetWidth(const float32 &width);
+	void SetOrthoWidth(const float32 &width);
+
+    float32 GetOrthoWidth() const;
 
     /**
         \brief Set camera aspect ratio
@@ -410,17 +412,18 @@ public:
 
 public:
     INTROSPECTION_EXTEND(Camera, BaseObject,
-        PROPERTY("xmin", "xmin", GetXMin, SetXMin, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("xmax", "xmax", GetXMax, SetXMax, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("ymin", "ymin", GetYMin, SetYMin, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("ymax", "ymax", GetYMax, SetYMax, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("xmin", "xmin", GetXMin, SetXMin, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("xmax", "xmax", GetXMax, SetXMax, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("ymin", "ymin", GetYMin, SetYMin, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("ymax", "ymax", GetYMax, SetYMax, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("aspect", "aspect", GetAspect, SetAspect, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("znear", "znear", GetZNear, SetZNear, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("zfar", "zfar", GetZFar, SetZFar, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("aspect", "aspect", GetAspect, SetAspect, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("fovx", "fovx", GetFOV, SetFOV, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("ortho", "Is Ortho", GetIsOrtho, SetIsOrtho, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("orthoWidth", "orthoWidth", GetOrthoWidth, SetOrthoWidth, I_SAVE | I_VIEW | I_EDIT)
                          
-//        PROPERTY(zoomFactor, "Zoom factor", GetFOV, SetFOV, INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
+        //PROPERTY(zoomFactor, "Zoom factor", GetFOV, SetFOV, INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
 		PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("target", "Target", GetTarget, SetTarget, I_SAVE | I_VIEW | I_EDIT)
 		PROPERTY("up", "Up", GetUp, SetUp, I_SAVE | I_VIEW | I_EDIT)

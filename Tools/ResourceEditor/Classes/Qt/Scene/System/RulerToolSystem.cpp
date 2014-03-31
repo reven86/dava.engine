@@ -135,7 +135,7 @@ bool RulerToolSystem::IsLandscapeEditingEnabled() const
 	return enabled;
 }
 
-void RulerToolSystem::Update(DAVA::float32 timeElapsed)
+void RulerToolSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

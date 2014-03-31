@@ -492,14 +492,8 @@ void UIScrollView::ScrollToVerticalPosition( float32 vertPos, float32 timeSec )
 
 void UIScrollView::ScrollToPosition( const Vector2& pos, float32 timeSec )
 {
-    if (pos.x != 0.f)
-    {
-        scrollHorizontal->ScrollToPosition(pos.x, timeSec);
-    }
-    if (pos.y != 0.f)
-    {
-        scrollVertical->ScrollToPosition(pos.y, timeSec);
-    }
+    scrollHorizontal->ScrollToPosition(pos.x, timeSec);
+    scrollVertical->ScrollToPosition(pos.y, timeSec);
 }
 
 };

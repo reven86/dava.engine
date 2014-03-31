@@ -35,6 +35,8 @@
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
 		74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74BF98191876B3A7001D4CFE /* GameController.framework */; };
 		84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84C8F71316D3D16000FAC7DF /* DPITest.cpp */; };
+		C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */; };
+		C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */; };
 		C19E4FAA16C5488C00D0AC28 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C19E4FA816C5488C00D0AC28 /* DLCSystemTests.cpp */; };
 		CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24802416DF6CE000183D40 /* InputTest.cpp */; };
 		CE1AA0781625B8D40005BE5E /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE1AA0771625B8D40005BE5E /* KeyedArchiveTest.cpp */; };
@@ -132,6 +134,9 @@
 		84C8F71316D3D16000FAC7DF /* DPITest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DPITest.cpp; sourceTree = "<group>"; };
 		84C8F71416D3D16000FAC7DF /* DPITest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPITest.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* TemplateProjectiPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TemplateProjectiPhone-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
+		C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
+		C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SaveImageTest.cpp; sourceTree = "<group>"; };
+		C166A6F018E31B4700007C2D /* SaveImageTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveImageTest.h; sourceTree = "<group>"; };
 		C19E4FA816C5488C00D0AC28 /* DLCSystemTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLCSystemTests.cpp; sourceTree = "<group>"; };
 		C19E4FA916C5488C00D0AC28 /* DLCSystemTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLCSystemTests.h; sourceTree = "<group>"; };
 		CC24802416DF6CE000183D40 /* InputTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InputTest.cpp; sourceTree = "<group>"; };
@@ -191,6 +196,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */,
 				74AF633D18852FE100070C35 /* Security.framework in Frameworks */,
 				74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */,
 				1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */,
@@ -278,6 +284,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */,
 				74AF633C18852FE100070C35 /* Security.framework */,
 				74BF98191876B3A7001D4CFE /* GameController.framework */,
 				496ABE8C179E6FEB00BCA6E9 /* AdSupport.framework */,
@@ -361,6 +368,8 @@
 				495B66FE1796FA7F0017D8DD /* TransparentWebViewTest.h */,
 				1770DF4317DF446600000391 /* UIMovieTest.cpp */,
 				1770DF4417DF446600000391 /* UIMovieTest.h */,
+				C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */,
+				C166A6F018E31B4700007C2D /* SaveImageTest.h */,
 			);
 			name = Tests;
 			sourceTree = "<group>";
@@ -511,6 +520,7 @@
 				E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */,
 				49C4331F1675F1A6000EA877 /* DXTTest.cpp in Sources */,
 				E81F2AF516BFA4E600C4545E /* MaterialCompilerTest.cpp in Sources */,
+				C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */,
 				84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */,
 				C19E4FAA16C5488C00D0AC28 /* DLCSystemTests.cpp in Sources */,
 				E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */,

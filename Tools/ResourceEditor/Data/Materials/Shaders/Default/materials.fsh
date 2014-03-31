@@ -4,8 +4,13 @@ cubemap = 2
 decal = 1
 detail = 1
 lightmap = 1
-normalmap = 1
+normalmap = 1,
+vegetationmap = 2
 <FRAGMENT_SHADER>
+
+#if defined(FRAMEBUFFER_FETCH)
+#extension GL_EXT_shader_framebuffer_fetch : require
+#endif
 
 #ifdef GL_ES
 // define default precision for float, vec, mat.
@@ -46,7 +51,7 @@ varying mediump mat3 tbnToWorldMatrix;
 uniform sampler2D decal;
 #endif
 
-#if defined(MATERIAL_DETAIL)
+#if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS)
 uniform sampler2D detail;
 #endif
 
@@ -56,7 +61,7 @@ uniform sampler2D lightmap; //[1]:ONCE
 #endif
 
 //#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY) || defined(FRAME_BLEND)
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(MATERIAL_GRASS)
 varying highp vec2 varTexCoord1;
 #endif
 
@@ -109,6 +114,11 @@ varying lowp float varTime;
 
 #if defined(FLATCOLOR)
 uniform lowp vec4 flatColor;
+#endif
+
+#if defined(MATERIAL_GRASS)
+uniform sampler2D vegetationmap;
+varying vec2 varTexCoord2;
 #endif
 
 void main()
@@ -350,6 +360,18 @@ void main()
     lowp vec4 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace); //vec3(reflectedDirection.x, reflectedDirection.y, reflectedDirection.z));
     gl_FragColor = reflectionColor;
 #endif
+#endif
+    
+#if defined(MATERIAL_GRASS)
+
+    gl_FragColor.a = gl_FragColor.a * varTexCoord2.x;
+    
+#if defined(FRAMEBUFFER_FETCH)
+    gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, gl_FragColor.a);
+#else
+    gl_FragColor.rgb = gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0;
+#endif
+
 #endif
     
     

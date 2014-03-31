@@ -51,7 +51,6 @@ class SceneNodeAnimation;
 class SceneNodeAnimationKey;
 class SceneFileV2;
 class DataNode;
-class Entity;
 class RenderComponent;
 class TransformComponent;
 
@@ -365,9 +364,6 @@ public:
      */
     virtual void SceneDidLoaded();
 
-    
-    void SetFog_Kostil(float32 density, const Color &color);
-    
 	// Property names.
 	static const char* SCENE_NODE_IS_SOLID_PROPERTY_NAME;
 	static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
@@ -478,7 +474,7 @@ inline const FastName & Entity::GetName() const
 inline int32 Entity::GetTag() 
 { 
     return tag; 
-};;
+}
     
 inline const Matrix4 & Entity::GetDefaultLocalTransform()
 {

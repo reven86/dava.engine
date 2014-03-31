@@ -257,16 +257,51 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 
 void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
 {
-	if(NULL != entity->GetComponent(DAVA::Component::SOUND_COMPONENT))
+    bool isSelected = false;
+    EntityGroup group = selSystem->GetSelection();
+    int32 itemsCount = group.Size();
+    for(int32 i = 0; i < itemsCount; ++i)
+        isSelected |= (group.GetEntity(i) == entity);
+   
+    if(!isSelected) return;
+
+    DAVA::SoundComponent * sc = GetSoundComponent(entity);
+	if(sc)
 	{
         RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size) &Matrix4::IDENTITY);
+        const Matrix4 & worldMx = entity->GetWorldTransform();
+        Vector3 worldPosition = worldMx.GetTranslationVector();
 
-        AABBox3 worldBox = selSystem->GetSelectionAABox(entity, entity->GetWorldTransform());
+        bool hasDirectionSound = false;
+        uint32 eventsCount = sc->GetEventsCount();
+        for(uint32 i = 0; i < eventsCount; ++i)
+        {
+            float32 distance = 0.f;
+            SoundEvent * sEvent = sc->GetSoundEvent(i);
+            DAVA::Vector<DAVA::SoundEvent::SoundEventParameterInfo> params;
+            sEvent->GetEventParametersInfo(params);
+            DAVA::int32 paramsCount = params.size();
+            for(DAVA::int32 p = 0; p < paramsCount; p++)
+            {
+                DAVA::SoundEvent::SoundEventParameterInfo & param = params[p];
+                if(param.name == "(distance)")
+                {
+                    distance = param.maxValue;
+                    break;
+                }
+            }
 
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.3f, 0.8f, 0.3f));
-		DAVA::RenderHelper::Instance()->FillBox(worldBox, debugDrawState);
-		DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.3f, 0.8f, 1.0f));
-		DAVA::RenderHelper::Instance()->DrawBox(worldBox, 1.0f, debugDrawState);
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.3f, 0.8f, 0.2f));
+            DAVA::RenderHelper::Instance()->FillSphere(worldPosition, distance, debugDrawState);
+
+            hasDirectionSound |= sEvent->IsDirectional();
+        }
+
+        if(hasDirectionSound)
+        {
+            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 0.3f, 0.0f, 1.0f));
+            DAVA::RenderHelper::Instance()->DrawArrow(worldPosition, sc->GetLocalDirection() * worldMx, 10.f, 1.f, debugDrawState);
+        }
 	}
 }
 

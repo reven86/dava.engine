@@ -384,14 +384,15 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 		QMenu contextMenu;
 		if(entityCustomFlags & SceneTreeModel::CF_Disabled)
 		{
-			// disabled entities can only be removed
-			contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
-            
             if(selectionSize == 1 && GetCamera(entity))
             {
                 AddCameraActions(contextMenu);
+                contextMenu.addSeparator();
             }
-		}
+
+            // disabled entities can only be removed
+            contextMenu.addAction(QIcon(":/QtIcons/remove.png"), "Remove entity", this, SLOT(RemoveSelection()));
+        }
 		else
 		{
 			// look at

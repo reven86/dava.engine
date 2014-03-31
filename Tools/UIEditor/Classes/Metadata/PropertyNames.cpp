@@ -113,9 +113,12 @@ const char* PropertyNames::UISPINNER_NEXT_BUTTON_TEXT = "NextButtonText";
 // UI Partice effect properties and invokable methods.
 const char* PropertyNames::UIPARTICLES_AUTOSTART_PROPERTY = "Autostart";
 const char* PropertyNames::UIPARTICLES_EFFECT_PATH_PROPERTY = "EffectPath";
+const char* PropertyNames::UIPARTICLES_START_DELAY_PROPERTY = "StartDelay";
 
 const char* PropertyNames::UIPARTICLES_START_METHOD_NAME = "Start";
 const char* PropertyNames::UIPARTICLES_STOP_METHOD_NAME = "Stop";
+const char* PropertyNames::UIPARTICLES_PAUSE_METHOD_NAME = "Pause";
+const char* PropertyNames::UIPARTICLES_RESTART_METHOD_NAME = "Restart";
 const char* PropertyNames::UIPARTICLES_RELOAD_METHOD_NAME = "Reload";
 
 // Custom Control properties.

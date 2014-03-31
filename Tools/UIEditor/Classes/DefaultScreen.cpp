@@ -224,38 +224,6 @@ bool DefaultScreen::SystemInput(UIEvent *currentInput)
 	return true;
 }
 
-HierarchyTreeControlNode* DefaultScreen::GetSelectedControl(const Vector2& point, const HierarchyTreeNode* parent) const
-{
-	if (!parent)
-		return NULL;
-	
-	HierarchyTreeControlNode* selectedNode = NULL;
-	
-	const HierarchyTreeNode::HIERARCHYTREENODESLIST& items = parent->GetChildNodes();
-	for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = items.begin();
-		 iter != items.end();
-		 ++iter)
-	{
-		HierarchyTreeNode* node = (*iter);
-		HierarchyTreeControlNode* controlNode = dynamic_cast<HierarchyTreeControlNode*>(node);
-		if (controlNode)
-		{
-			UIControl* control = controlNode->GetUIObject();
-			if (control &&  control->IsPointInside(point))
-				selectedNode = controlNode;
-		}
-		
-		HierarchyTreeControlNode* childSelectNode = GetSelectedControl(point, node);
-		if (childSelectNode)
-			selectedNode = childSelectNode;
-		
-		if (selectedNode)
-			return selectedNode;
-	}
-	
-	return NULL;
-}
-
 DefaultScreen::SmartSelection::childsSet::~childsSet()
 {
 	for (std::vector<SmartSelection *>::iterator iter = begin();
@@ -309,23 +277,18 @@ bool DefaultScreen::SmartSelection::IsEqual(const SmartSelection* item) const
 
 HierarchyTreeNode::HIERARCHYTREENODEID DefaultScreen::SmartSelection::GetFirst() const
 {
-	if (childs.size())
-		return (*childs.begin())->GetFirst();
+	if (!childs.empty())
+		return childs.front()->GetFirst();
 
-	return this->id;
+	return id;
 }
 
 HierarchyTreeNode::HIERARCHYTREENODEID DefaultScreen::SmartSelection::GetLast() const
 {
-	SelectionVector selection;
-	FormatSelectionVector(selection);
-	// The last element in selection array is on the top - so we should get it
-	if (selection.size() > 0)
-	{
-		return selection[selection.size() - 1];
-	}
+    if (!childs.empty())
+        return childs.back()->GetLast();
 
-	return this->id;
+    return id;
 }
 
 DefaultScreen::SmartSelection::SelectionVector DefaultScreen::SmartSelection::GetAll() const
@@ -388,27 +351,23 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
 		if (!control)
 			continue;
 
-		// Control can be selected if at least its subcontrol is visible (see pls DF-2420).
-		if (!IsControlVisible(control))
-		{
+		if (!control->GetRecursiveVisible())
 			continue;
-		}
 
-		if (!control->GetVisibleForUIEditor())
-		{
-			continue;
-		}
+        SmartSelection* currList = list;
+        bool controlVisible = IsControlVisible(control);
 
-		if (control->IsPointInside(point))
-		{
-			SmartSelection* newList = new SmartSelection(node->GetId());
-			list->childs.push_back(newList);
-			SmartGetSelectedControl(newList, node, point);
-		}
-		else
-		{
-			SmartGetSelectedControl(list, node, point);
-		}
+        if (controlVisible && control->IsPointInside(point))
+        {
+            SmartSelection* newList = new SmartSelection(node->GetId());
+            list->childs.push_back(newList);
+            currList = newList;
+        }
+
+        if (controlVisible || IsControlContentVisible(control))
+        {
+            SmartGetSelectedControl(currList, node, point);
+        }
 	}
 }
 
@@ -457,17 +416,25 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
 			continue;
 		
 		UIControl* control = controlNode->GetUIObject();
-		if (!control->GetVisible())
-			continue;
-        
-        if (!control->GetVisibleForUIEditor())
-			continue;
-		
-		Rect controlRect = GetControlRect(controlNode);
-		if (controlRect.RectIntersects(rect))
-			list.push_back(node);
-		
-		GetSelectedControl(list, rect, node);
+        if (!control)
+            continue;
+
+        if (!control->GetRecursiveVisible())
+            continue;
+
+        bool controlVisible = IsControlVisible(control);
+
+        if (controlVisible)
+        {
+            Rect controlRect = GetControlRect(controlNode);
+            if (controlRect.RectIntersects(rect))
+                list.push_back(node);
+        }
+
+        if (controlVisible || IsControlContentVisible(control))
+        {
+            GetSelectedControl(list, rect, node);
+        }
 	}
 }
 
@@ -1467,29 +1434,34 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 	}
 }
 
-bool DefaultScreen::IsControlVisible(UIControl* uiControl) const
+bool DefaultScreen::IsControlVisible(const UIControl* uiControl) const
 {
-	bool isVisible = false;
-	IsControlVisibleRecursive(uiControl, isVisible);
-
-	return isVisible;
+    return (uiControl->GetVisibleForUIEditor() && uiControl->GetVisible());
 }
 
-void DefaultScreen::IsControlVisibleRecursive(const UIControl* uiControl, bool& isVisible) const
+bool DefaultScreen::IsControlContentVisible( const UIControl *control ) const
 {
-	if (!uiControl)
-	{
-		isVisible = false;
-		return;
-	}
+    const List<UIControl*>& children = control->GetChildren();
+    if( children.empty() )
+        return false;
 
-	isVisible |= uiControl->GetVisible();
+    List<UIControl*>::const_iterator iter = children.begin();
+    List<UIControl*>::const_iterator end = children.end();
+    for(; iter != end; ++iter)
+    {
+        if (!control->GetRecursiveVisible())
+        {
+            continue;
+        }
 
-	const List<UIControl*>& children = uiControl->GetChildren();
-	for(List<UIControl*>::const_iterator iter = children.begin(); iter != children.end(); iter ++)
-	{
-		IsControlVisibleRecursive(*iter, isVisible);
-	}
+        if (IsControlVisible(*iter))
+            return true;
+
+        if (IsControlContentVisible(*iter))
+            return true;
+    }
+
+    return false;
 }
 
 void DefaultScreen::SetScreenControl(ScreenControl* control)

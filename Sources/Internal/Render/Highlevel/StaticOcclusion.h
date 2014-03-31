@@ -75,8 +75,8 @@ public:
     StaticOcclusion();
     ~StaticOcclusion();
     
-    void SetScene(Scene * _scene) { scene = _scene; };
-    void SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
+    inline void SetScene(Scene * _scene);
+    inline void SetRenderSystem(RenderSystem * _renderSystem);
     void BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
                                   StaticOcclusionData * currentData,
                                   RenderHierarchy * renderHierarchy);
@@ -131,7 +131,10 @@ inline OcclusionQueryManager & StaticOcclusion::GetOcclusionQueryManager()
 {
     return manager;
 }
-    
+
+inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };
+inline void StaticOcclusion::SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
+
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION__

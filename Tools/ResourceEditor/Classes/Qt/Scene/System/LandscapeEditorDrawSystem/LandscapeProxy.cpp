@@ -65,7 +65,6 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 	customLandscape = new CustomLandscape();
 	customLandscape->SetTexture(Landscape::TEXTURE_TILE_FULL, baseLandscape->GetTexture(Landscape::TEXTURE_TILE_FULL));
 	customLandscape->SetAABBox(baseLandscape->GetBoundingBox());
-    customLandscape->SetFogDensity(0.f);
 }
 
 LandscapeProxy::~LandscapeProxy()
@@ -461,14 +460,4 @@ void LandscapeProxy::SwapTilemaskSprites()
 	Sprite* temp = tilemaskSprites[TILEMASK_SPRITE_SOURCE];
 	tilemaskSprites[TILEMASK_SPRITE_SOURCE] = tilemaskSprites[TILEMASK_SPRITE_DESTINATION];
 	tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = temp;
-}
-
-bool LandscapeProxy::IsFogEnabled()
-{
-	return baseLandscape->IsFogEnabled();
-}
-
-void LandscapeProxy::SetFogEnabled(bool enabled)
-{
-	baseLandscape->SetFog(enabled);
 }

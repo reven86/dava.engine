@@ -26,81 +26,115 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#include "Scene3D/Components/SoundComponent.h"
+#include "SoundComponent.h"
+#include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
-#include "FileSystem/KeyedArchive.h"
-#include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Base/FastName.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	REGISTER_CLASS(SoundComponent)
 
-SoundComponent::SoundComponent()
-{
-    soundEvent = 0;
-}
+REGISTER_CLASS(SoundComponent)
+
+SoundComponent::SoundComponent() :
+    localDirection(1.f, 0.f, 0.f)
+{}
 
 SoundComponent::~SoundComponent()
 {
-    SafeRelease(soundEvent);
-}
-    
-void SoundComponent::SetSoundEvent(SoundEvent * sEvent)
-{
-	SafeRelease(soundEvent);
-    soundEvent = SafeRetain(sEvent);
-}
-    
-SoundEvent * SoundComponent::GetSoundEvent()
-{
-    return soundEvent;
+    RemoveAllEvents();
 }
 
-const String & SoundComponent::GetEventName()
+void SoundComponent::AddSoundEvent(SoundEvent * _event)
 {
-	return eventName;
+    DVASSERT(_event);
+
+    SafeRetain(_event);
+    events.push_back(_event);
 }
 
-void SoundComponent::SetEventName(const String & _eventName)
+void SoundComponent::RemoveSoundEvent(SoundEvent * event)
 {
-	DVASSERT(_eventName != "");
+    Vector<SoundEvent *>::iterator it = events.begin();
+    Vector<SoundEvent *>::iterator itEnd = events.end();
+    for(; it != itEnd; ++it)
+    {
+        if((*it) == event)
+        {
+            events.erase(it);
+            SafeRelease(event);
+            return;
+        }
+    }
+}
 
-	eventName = _eventName;
-	GlobalEventSystem::Instance()->Event(entity, EventSystem::SOUND_CHANGED);
+void SoundComponent::RemoveAllEvents()
+{
+    uint32 eventsCount = events.size();
+    for(uint32 i = 0; i < eventsCount; ++i)
+        SafeRelease(events[i]);
+
+    events.clear();
+}
+
+void SoundComponent::SetLocalDirection(const Vector3 & direction)
+{
+    localDirection = direction;
 }
 
 Component * SoundComponent::Clone(Entity * toEntity)
 {
-    SoundComponent * component = new SoundComponent();
-	component->SetEntity(toEntity);
+    SoundComponent * soundComponent = new SoundComponent();
+    soundComponent->SetEntity(toEntity);
+    
+    int32 eventCount = events.size();
+    for(int32 i = 0; i < eventCount; ++i)
+        soundComponent->AddSoundEvent(events[i]);
+    
+    soundComponent->localDirection = localDirection;
 
-    //TODO: Do not forget ot check what does it means.
-    component->soundEvent->fmodEvent = soundEvent->fmodEvent;
-	component->eventName = eventName;
-    return component;
+    return soundComponent;
 }
 
 void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Serialize(archive, serializationContext);
+    Component::Serialize(archive, serializationContext);
 
-	if(archive != 0 && soundEvent != 0)
-	{
-		archive->SetString("sc.eventName", eventName);
-	}
+    if(archive)
+    {
+        uint32 eventsCount = events.size();
+        archive->SetUInt32("sc.eventCount", eventsCount);
+        for(uint32 i = 0; i < eventsCount; ++i)
+        {
+            KeyedArchive* eventArchive = new KeyedArchive();
+            SoundSystem::Instance()->SerializeEvent(events[i], eventArchive);
+            archive->SetArchive(KeyedArchive::GenKeyFromIndex(i), eventArchive);
+            SafeRelease(eventArchive);
+        }
+
+        archive->SetVector3("sc.localDirection", localDirection);
+    }
 }
 
 void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	if(archive)
-	{
-		SetEventName(archive->GetString("sc.eventName"));
-	}
+    events.clear();
 
-	Component::Deserialize(archive, serializationContext);
+    if(archive)
+    {
+        uint32 eventsCount = archive->GetUInt32("sc.eventCount");
+        for(uint32 i = 0; i < eventsCount; ++i)
+        {
+            KeyedArchive* eventArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+            SoundEvent * sEvent = SoundSystem::Instance()->DeserializeEvent(eventArchive);
+            AddSoundEvent(sEvent);
+            SafeRelease(sEvent);
+        }
+
+        localDirection = archive->GetVector3("sc.localDirection", Vector3(1.f, 0.f, 0.f));
+    }
+
+    Component::Deserialize(archive, serializationContext);
 }
 
 };

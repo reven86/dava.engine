@@ -166,7 +166,7 @@ void TextureListModel::setScene(DAVA::Scene *scene)
     activeScene = scene;
     
 	DAVA::TexturesMap texturesInNode;
-	SceneHelper::EnumerateSceneTextures(scene, texturesInNode);
+	SceneHelper::EnumerateSceneTextures(scene, texturesInNode, SceneHelper::EXCLUDE_NULL);
 
 	for(DAVA::TexturesMap::iterator t = texturesInNode.begin(); t != texturesInNode.end(); ++t)
 	{
@@ -201,7 +201,7 @@ void TextureListModel::setHighlight(const EntityGroup *nodes)
         DAVA::TexturesMap texturesInGroup;
 		for(int i = 0; i < (int)nodes->Size(); ++i)
 		{
-			SceneHelper::EnumerateEntityTextures(activeScene, nodes->GetEntity(i), texturesInGroup);
+			SceneHelper::EnumerateEntityTextures(activeScene, nodes->GetEntity(i), texturesInGroup, SceneHelper::EXCLUDE_NULL);
 		}
         
         for(DAVA::TexturesMap::iterator t = texturesInGroup.begin(); t != texturesInGroup.end(); ++t)

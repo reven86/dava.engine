@@ -954,14 +954,8 @@ void UITextField::SetVisible(bool isVisible, bool hierarchic)
 	textFieldiPhone->SetVisible(isVisible);
 #elif defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid->SetVisible(isVisible);
-#else
-    if (staticText)
-    {
-        staticText->SetVisible(isVisible, hierarchic);
-    }
 #endif
 }
-
 }; // namespace
 
 

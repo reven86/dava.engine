@@ -64,6 +64,7 @@
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
 #include "StringFormatTest.h"
+#include "SaveImageTest.h"
 
 using namespace DAVA;
 
@@ -89,6 +90,8 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+    new SaveImageTest();
+    
     new StringFormatTest();
     new RectSpriteTest();
 

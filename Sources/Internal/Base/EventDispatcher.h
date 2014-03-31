@@ -107,6 +107,8 @@ public:
 	 */
 	void CopyDataFrom(EventDispatcher *srcDispatcher);
 
+    int32 GetEventsCount();
+
 protected:
 
 	class Event 
@@ -136,6 +138,7 @@ public:\
 	void AddEvent(int32 eventType, const Message &msg){eventDispatcherName->AddEvent(eventType, msg); }; \
 	bool RemoveEvent(int32 eventType, const Message &msg){return eventDispatcherName->RemoveEvent(eventType, msg); };\
 	bool RemoveAllEvents(){return eventDispatcherName->RemoveAllEvents(); };\
+    int32 GetEventsCount(){return eventDispatcherName->GetEventsCount(); };\
 protected:\
 	RefPtr<EventDispatcher> eventDispatcherName;
 	

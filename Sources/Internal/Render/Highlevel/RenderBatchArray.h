@@ -48,6 +48,7 @@ public:
     ~RenderPassBatchArray();
     
     void InitPassLayers(RenderPass * pass);
+    void InitPassLayersWithSingleLayer(RenderPass * renderPass, RenderLayerBatchArray * singleLayer);
     void Clear();
 
     void PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera);

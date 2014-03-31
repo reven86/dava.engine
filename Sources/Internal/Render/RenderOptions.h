@@ -65,6 +65,8 @@ public:
         SPEEDTREE_LEAFS_DRAW,
         
         DYNAMIC_OCCLUSION_ENABLE,
+        
+        VEGETATION_DRAW,
 
 		ALL_RENDER_FUNCTIONS_ENABLED,
 

@@ -83,10 +83,11 @@ public:
 
     DAVA::Entity* GetSelectableEntity(DAVA::Entity* entity);
 
+	virtual void Process(DAVA::float32 timeElapsed);
+
 protected:
     void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
 
-    void Update(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);

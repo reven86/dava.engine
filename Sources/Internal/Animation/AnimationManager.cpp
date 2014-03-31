@@ -125,7 +125,11 @@ void AnimationManager::DeleteAnimations(AnimatedObject * _owner, int32 track)
 		Animation * animation = *t;
         animationMutex.Unlock();
 
-		if ((track != -1) && (animation->groupId != track))continue;
+		if ((track != -1) && (animation->groupId != track))
+        {
+            animationMutex.Lock();
+            continue;
+        }
 		
 		if (animation->owner == _owner)
 		{

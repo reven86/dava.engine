@@ -47,9 +47,12 @@ public:
 	SceneCameraSystem(DAVA::Scene * scene);
 	~SceneCameraSystem();
 
-	DAVA::Vector3 GetPointDirection(const DAVA::Vector2 &point) const;
+    DAVA::Camera* GetCurCamera() const;
+
+    DAVA::Vector3 GetPointDirection(const DAVA::Vector2 &point) const;
 	DAVA::Vector3 GetCameraPosition() const;
 	DAVA::Vector3 GetCameraDirection() const;
+    void GetRayTo2dPoint(const DAVA::Vector2 &point, DAVA::float32 maxRayLen, DAVA::Vector3 &outPointFrom, DAVA::Vector3 &outPointTo) const;
 
 	DAVA::float32 GetMoveSpeed();
 
@@ -77,8 +80,9 @@ public:
 		COLLECTION(cameraSpeedArray, "Camera speed array", DAVA::I_VIEW | DAVA::I_EDIT)
 		)
 
+    virtual void Process(DAVA::float32 timeElapsed);
+
 protected:
-	void Update(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);

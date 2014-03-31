@@ -54,7 +54,9 @@ public:
 	uint32			GetPolygonGroupCount();
 	PolygonGroup *	GetPolygonGroup(uint32 index);
 	
-protected:	
+protected:
+    
+    Vector<DataNode*> children;
 };
 
 };

@@ -148,12 +148,12 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 }
 
 
-bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFile)
+bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting /* = false */)
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
 #ifdef __DAVAENGINE_WIN32__
-	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), true);
+	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), !overwriteExisting);
 	return ret != 0;
 #elif defined(__DAVAENGINE_ANDROID__)
 
@@ -199,7 +199,7 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 	return copied;
 
 #else //iphone & macos
-    int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, COPYFILE_ALL | COPYFILE_EXCL);
+    int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, overwriteExisting ? COPYFILE_ALL : COPYFILE_ALL | COPYFILE_EXCL);
     return ret==0;
 #endif //PLATFORMS
 }
@@ -231,7 +231,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 }
 
 
-bool FileSystem::CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory)
+bool FileSystem::CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory, bool overwriteExisting /* = false */)
 {
     DVASSERT(destinationDirectory.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
@@ -247,7 +247,7 @@ bool FileSystem::CopyDirectory(const FilePath & sourceDirectory, const FilePath 
 		if(!fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
 		{
             const FilePath destinationPath = destinationDirectory + fileList->GetFilename(i);
-			if(!CopyFile(fileList->GetPathname(i), destinationPath))
+			if(!CopyFile(fileList->GetPathname(i), destinationPath, overwriteExisting))
 			{
 				ret = false;
 			}

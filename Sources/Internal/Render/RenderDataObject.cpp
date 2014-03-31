@@ -71,6 +71,7 @@ RenderDataObject::RenderDataObject()
 {
     resultVertexFormat = 0;
     vboBuffer = 0;
+    vertexAttachmentActive = false;
     
 //#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
 //    savedVertexCount = 0;
@@ -87,10 +88,17 @@ RenderDataObject::RenderDataObject()
 
 RenderDataObject::~RenderDataObject()
 {
-    uint32 size = (uint32)streamArray.size();
-    for (uint32 k = 0; k < size; ++k)
+    if(vertexAttachmentActive)
     {
-        SafeRelease(streamArray[k]);
+        DetachVertices();
+    }
+    else
+    {
+        uint32 size = (uint32)streamArray.size();
+        for (uint32 k = 0; k < size; ++k)
+        {
+            SafeRelease(streamArray[k]);
+        }
     }
     //streamArray.clear();
     //streamMap.clear();
@@ -123,6 +131,8 @@ void RenderDataObject::DeleteBuffersInternal(BaseObject * caller, void * param, 
 
 RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer)
 {
+    DVASSERT(!vertexAttachmentActive);
+    
     Map<eVertexFormat, RenderDataStream *>::iterator iter = streamMap.find(formatMark);
     RenderDataStream * stream = 0;
     if (iter == streamMap.end())
@@ -146,6 +156,8 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
 
 void RenderDataObject::RemoveStream(eVertexFormat formatMark)
 {
+    DVASSERT(!vertexAttachmentActive);
+    
 	Map<eVertexFormat, RenderDataStream*>::iterator it = streamMap.find(formatMark);
 	if (it!=streamMap.end())
 	{
@@ -161,7 +173,8 @@ void RenderDataObject::RemoveStream(eVertexFormat formatMark)
 				break;
 			}
 		}
-		SafeRelease(stream);
+        
+        SafeRelease(stream);
 	}
 	
 	
@@ -172,9 +185,17 @@ uint32 RenderDataObject::GetResultFormat() const
     return resultVertexFormat;
 }
     
-void RenderDataObject::BuildVertexBuffer(int32 vertexCount)
+void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 {
-	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildVertexBufferInternal, (void*)vertexCount));
+    DVASSERT(!vertexAttachmentActive);
+    
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildVertexBufferInternal, (void*)vertexCount));
+    
+    if(synchronously)
+    {
+        JobInstanceWaiter waiter(job);
+        waiter.Wait();
+    }
 }
 
 void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData)
@@ -232,9 +253,15 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 //#endif //#if defined (__DAVAENGINE_ANDROID__)
 }
 
-void RenderDataObject::BuildIndexBuffer()
+void RenderDataObject::BuildIndexBuffer(bool synchronously)
 {
-	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildIndexBufferInternal));
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildIndexBufferInternal));
+    
+    if(synchronously)
+    {
+        JobInstanceWaiter waiter(job);
+        waiter.Wait();
+    }
 }
 
 void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * param, void *callerData)
@@ -274,6 +301,49 @@ void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * para
     
 #endif // #if defined (__DAVAENGINE_OPENGL__)
 }
+
+void RenderDataObject::AttachVertices(RenderDataObject* vertexSource)
+{
+    DVASSERT(vertexSource);
+    DVASSERT(0 == vboBuffer);
+    DVASSERT(streamArray.size() == 0);
+    DVASSERT(streamMap.size() == 0);
+    
+    vboBuffer = vertexSource->vboBuffer;
+    for(Map<eVertexFormat, RenderDataStream *>::iterator it = vertexSource->streamMap.begin();
+        it != vertexSource->streamMap.end();
+        ++it)
+    {
+        streamMap[it->first] = it->second;
+    }
+    
+    for(Vector<RenderDataStream *>::iterator it = vertexSource->streamArray.begin();
+        it != vertexSource->streamArray.end();
+        ++it)
+    {
+        streamArray.push_back(SafeRetain(*it));
+    }
+    
+    vertexAttachmentActive = true;
+}
+    
+void RenderDataObject::DetachVertices()
+{
+    vboBuffer = 0;
+    
+    for(Vector<RenderDataStream *>::iterator it = streamArray.begin();
+        it != streamArray.end();
+        ++it)
+    {
+        SafeRelease(*it);
+    }
+
+    streamArray.clear();
+    streamMap.clear();
+    
+    vertexAttachmentActive = false;
+}
+
 
 //#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)
 //void RenderDataObject::SaveToSystemMemory()

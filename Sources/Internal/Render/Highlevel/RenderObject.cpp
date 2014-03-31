@@ -372,6 +372,9 @@ int32 RenderObject::GetMaxSwitchIndex() const
     return ret;
 }
 
-
+void RenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
+{
+    //empty by default
+}
 
 };

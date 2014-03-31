@@ -1438,20 +1438,6 @@ Entity * Entity::GetNodeByPathID(Entity * root, String pathID)
 	}
 	return result;
 }
-    
-void Entity::SetFog_Kostil(float32 density, const Color &color)
-{
-    //DVASSERT(false && "Should be removed, because fog settings are applied at MaterialSystem");
-        
-	Vector<Material *> materials;
-	GetDataNodes(materials);
-		
-	for(int32 i = 0; i < (int32)materials.size(); ++i)
-	{
-		materials[i]->SetFogDensity(density);
-		materials[i]->SetFogColor(color);
-	}
-}
 	
 Matrix4 & Entity::ModifyLocalTransform()
 {

@@ -18,8 +18,8 @@ import filecmp;
 
 arguments = sys.argv[1:]
 
-if len(arguments) != 3:
-    print 'Usage: ./autotesting_init.py PlatformName ProjectName ProjectFolder'
+if len(arguments) != 2:
+    print 'Usage: ./autotesting_init.py PlatformName ProjectFolder'
     exit(1)
 
 def copy_file(srcFolder, destFolder, fileName):
@@ -33,8 +33,7 @@ def copy_file(srcFolder, destFolder, fileName):
     
 print "*** DAVA Initializing autotesting"
 platformName = arguments[0]
-projectName = arguments[1]
-projectFolder = arguments[2]
+projectFolder = arguments[1]
 
 print "platform.system: " + platform.system()
 
@@ -62,9 +61,10 @@ if 2 <= len(arguments):
         shutil.copy(autotestingConfigSrcPath, autotestingConfigDestPath)
 
 autotestingSrcFolder = os.path.realpath(projectDir + "/Autotesting")
+scriptsSrcFolder = os.path.realpath(projectDir + "/Scripts")
 autotestingDestFolder = os.path.realpath(projectDir + "/Data/Autotesting")
     
-scripts = ["/generate_id.py", "/copy_tests.py"]
+scripts = ["/copy_tests.py"]
 
 if (platform.system() == "Darwin"):
     if (platformName == "iOS"):
@@ -102,7 +102,9 @@ os.mkdir(luaScriptDestFolder)
 
 copy_file(currentDir, luaScriptDestFolder, "autotesting_api.lua")
 copy_file(currentDir, luaScriptDestFolder, "coxpcall.lua")
+
 copy_file(autotestingSrcFolder, autotestingDestFolder, "dbConfig.yaml")
+copy_file(".", autotestingDestFolder, "id.yaml")
 
 os.chdir(projectDir)
 
@@ -110,11 +112,11 @@ os.chdir(projectDir)
 params = ["python", "./Autotesting/copy_tests.py"]
 print "subprocess.call " + "[%s]" % ", ".join(map(str, params))
 subprocess.call(params)
-
+'''
 params = ["python", "./Autotesting/generate_id.py", projectName]
 print "subprocess.call " + "[%s]" % ", ".join(map(str, params))
 subprocess.call(params)
-
+'''
 os.chdir(currentDir)
    
 print "*** DAVA Initialized autotesting"

@@ -119,9 +119,12 @@ public:
     // UI Partice effect properties and invokable methods.
     static const char* UIPARTICLES_AUTOSTART_PROPERTY;
     static const char* UIPARTICLES_EFFECT_PATH_PROPERTY;
+    static const char* UIPARTICLES_START_DELAY_PROPERTY;
 
 	static const char* UIPARTICLES_START_METHOD_NAME;
     static const char* UIPARTICLES_STOP_METHOD_NAME;
+    static const char* UIPARTICLES_PAUSE_METHOD_NAME;
+    static const char* UIPARTICLES_RESTART_METHOD_NAME;
     static const char* UIPARTICLES_RELOAD_METHOD_NAME;
     
 	// Custom Control properties.

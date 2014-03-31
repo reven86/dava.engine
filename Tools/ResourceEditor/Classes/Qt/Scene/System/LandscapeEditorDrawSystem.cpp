@@ -36,6 +36,7 @@
 #include "LandscapeEditorDrawSystem/VisibilityToolProxy.h"
 #include "LandscapeEditorDrawSystem/NotPassableTerrainProxy.h"
 #include "LandscapeEditorDrawSystem/RulerToolProxy.h"
+#include "LandscapeEditorDrawSystem/GrassEditorProxy.h"
 #include "Deprecated/LandscapeRenderer.h"
 
 #include "Scene3D/Systems/RenderUpdateSystem.h"
@@ -54,6 +55,7 @@ LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(Scene* scene)
 ,	customColorsProxy(NULL)
 ,	visibilityToolProxy(NULL)
 ,	rulerToolProxy(NULL)
+,   grassEditorProxy(NULL)
 {
 	const DAVA::RenderStateData default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
 	DAVA::RenderStateData noBlendStateData;
@@ -73,6 +75,7 @@ LandscapeEditorDrawSystem::~LandscapeEditorDrawSystem()
 	SafeRelease(customColorsProxy);
 	SafeRelease(visibilityToolProxy);
 	SafeRelease(rulerToolProxy);
+    SafeRelease(grassEditorProxy);
 	SafeRelease(cursorTexture);
 
 	SafeDelete(notPassableTerrainProxy);
@@ -88,6 +91,11 @@ LandscapeProxy* LandscapeEditorDrawSystem::GetLandscapeProxy()
 HeightmapProxy* LandscapeEditorDrawSystem::GetHeightmapProxy()
 {
 	return heightmapProxy;
+}
+
+GrassEditorProxy* LandscapeEditorDrawSystem::GetGrassEditorProxy()
+{
+    return grassEditorProxy;
 }
 
 CustomColorsProxy* LandscapeEditorDrawSystem::GetCustomColorsProxy()
@@ -250,11 +258,20 @@ void LandscapeEditorDrawSystem::SetCursorPosition(const Vector2& cursorPos)
 
 void LandscapeEditorDrawSystem::UpdateCursorPosition()
 {
-	Vector2 p = cursorPosition - Vector2(cursorSize / 2.f, cursorSize / 2.f);
+    Vector2 p = cursorPosition;
+    if(cursorSize & 0x1)
+    {
+        p = p - Vector2((cursorSize - 1) / 2.f, (cursorSize - 1) / 2.f);
+    }
+    else
+    {
+        p = p - Vector2(cursorSize / 2.f, cursorSize / 2.f);
+    }
+	 
 	landscapeProxy->SetCursorPosition(p);
 }
 
-void LandscapeEditorDrawSystem::Update(DAVA::float32 timeElapsed)
+void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (heightmapProxy && heightmapProxy->IsHeightmapChanged())
 	{
@@ -455,16 +472,11 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableTilemaskE
 	}
 
 	landscapeProxy->SetMode(LandscapeProxy::MODE_ORIGINAL_LANDSCAPE);
-
-	fogWasEnabled = landscapeProxy->IsFogEnabled();
-	landscapeProxy->SetFogEnabled(false);
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }
 
 void LandscapeEditorDrawSystem::DisableTilemaskEditing()
-{
-	landscapeProxy->SetFogEnabled(fogWasEnabled);
-}
+{}
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 {
@@ -489,6 +501,10 @@ LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::Init()
 	{
 		rulerToolProxy = new RulerToolProxy((int32)GetTextureSize(Landscape::TEXTURE_TILE_FULL));
 	}
+    if(!grassEditorProxy)
+    {
+        grassEditorProxy = new GrassEditorProxy(NULL);
+    }
 
 	return LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;
 }

@@ -57,6 +57,7 @@ RenderSystem::RenderSystem()
     ,   camera(0)
     ,   clipCamera(0)
     ,   forceUpdateLights(false)
+    ,   globalMaterial(NULL)
 {
     renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_FORWARD));
     renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
@@ -71,6 +72,7 @@ RenderSystem::~RenderSystem()
 {
     SafeRelease(camera);
     SafeRelease(clipCamera);
+    SafeRelease(globalMaterial);
     
     SafeDelete(globalBatchArray);
     SafeDelete(renderHierarchy);	
@@ -151,36 +153,59 @@ void RenderSystem::RemoveRenderObject(RenderObject * renderObject)
     
 void RenderSystem::RegisterBatch(RenderBatch * batch)
 {
-    NMaterial * material = batch->GetMaterial();
-    while(material)
-    {
-        RegisterMaterial(material);
-        
-        material = material->GetParent();
-    }
+    RegisterMaterial(batch->GetMaterial());
 }
     
 void RenderSystem::UnregisterBatch(RenderBatch * batch)
 {
-    //UnregisterMaterial(batch->GetMaterial());
+    UnregisterMaterial(batch->GetMaterial());
 }
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
 {
-    //material->AssignRenderLayerIDs(GetRenderLayerManager());
+    NMaterial * topParent = NULL;
+
+    // search for top material that isn't global
+    while(NULL != material && material->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
+    {
+        topParent = material;
+        material = material->GetParent();
+    }
+
+    // set globalMaterial to be parent for top material
+    if(NULL != topParent)
+    {
+        topParent->SetParent(globalMaterial, false);
+    }
 }
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)
 {
     
 }
-
-//
-//RenderPass * RenderSystem::GetRenderPass(const FastName & passName)
-//{
-//	return renderPassesMap[passName];
-//}
     
+void RenderSystem::SetGlobalMaterial(NMaterial *material)
+{
+    SafeRelease(globalMaterial);
+    globalMaterial = SafeRetain(material);
+
+    uint32 count = renderObjectArray.size();
+    for(uint32 i = 0; i < count; ++i)
+    {
+        RenderObject *obj = renderObjectArray[i];
+        uint32 countBatch = obj->GetRenderBatchCount();
+        for(uint32 j = 0; j < countBatch; ++j)
+        {
+            RegisterMaterial(obj->GetRenderBatch(j)->GetMaterial());
+        }
+    }
+}
+
+NMaterial* RenderSystem::GetGlobalMaterial() const
+{
+    return globalMaterial;
+}
+
 void RenderSystem::MarkForUpdate(RenderObject * renderObject)
 {
 	uint32 flags = renderObject->GetFlags();

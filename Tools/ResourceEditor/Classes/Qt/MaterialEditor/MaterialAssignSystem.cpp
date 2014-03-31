@@ -125,7 +125,7 @@ DAVA::NMaterial * MaterialAssignSystem::SelectMaterial(const DAVA::Set<DAVA::NMa
         {
             QVariant materialAsVariant = QVariant::fromValue<DAVA::NMaterial *>(*it);
             
-            QString text = QString((*it)->GetName().c_str());
+            QString text = QString((*it)->GetMaterialName().c_str());
             QAction *action = selectMaterialMenu.addAction(text);
             action->setData(materialAsVariant);
         }

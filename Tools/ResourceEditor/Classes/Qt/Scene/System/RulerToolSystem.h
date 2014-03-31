@@ -52,7 +52,7 @@ public:
 	bool DisableLandscapeEdititing();
 	bool IsLandscapeEditingEnabled() const;
 
-	void Update(DAVA::float32 timeElapsed);
+	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
 
 	void SetLineWidth(int32 width);

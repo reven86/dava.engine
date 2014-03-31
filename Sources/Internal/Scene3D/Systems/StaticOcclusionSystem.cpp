@@ -81,6 +81,8 @@ void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
     
     if (activeIndex == -1)return; // System inactive
     
+    SetCamera(GetScene()->GetClipCamera());
+
     Entity * entity = entities[activeIndex];
     StaticOcclusionComponent * occlusionComponent = (StaticOcclusionComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT);
     TransformComponent * transformComponent = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
@@ -97,9 +99,17 @@ void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
         GetScene()->GetChildEntitiesWithComponent(entities, Component::RENDER_COMPONENT);
         
         uint32 size = (uint32)entities.size();
-        renderObjectsArray.resize(size);
+        renderObjectsArray.reserve(size);
+        DVASSERT(renderObjectsArray.size() == 0);
         for(uint32 k = 0; k < size; ++k)
-            renderObjectsArray[k] = GetRenderObject(entities[k]);
+        {
+            RenderObject * renderObject = GetRenderObject(entities[k]);
+            if (   (RenderObject::TYPE_MESH == renderObject->GetType())
+                || (RenderObject::TYPE_LANDSCAPE == renderObject->GetType()))
+            {
+                renderObjectsArray.push_back(renderObject);
+            }
+        }
         
         // Prepare occlusion
         componentInProgress = (StaticOcclusionDataComponent*)Component::CreateByType(Component::STATIC_OCCLUSION_DATA_COMPONENT);
@@ -232,8 +242,8 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
     uint32 size = (uint32)indexedRenderObjects.size();
     for (uint32 k = 0; k < size; ++k)
     {
-        uint32 index = k / 32;
-        uint32 shift = k & 31;
+        uint32 index = k / 32; // number of bits in uint32
+        uint32 shift = k & 31; // bitmask for uint32
         RenderObject * ro = indexedRenderObjects[k];
         if (!ro)continue;
         if (bitdata[index] & (1 << shift))
@@ -264,6 +274,8 @@ StaticOcclusionSystem::~StaticOcclusionSystem()
 
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
+    SetCamera(GetScene()->GetClipCamera());
+
     // Verify that system is initialized
     if (!camera)return;
 
@@ -274,12 +286,13 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     bool notInPVS = true;
     bool needUpdatePVS = false;
     
+    const Vector3 & position = camera->GetPosition();
+
     for (uint32 k = 0; k < size; ++k)
     {
         StaticOcclusionData * data = &staticOcclusionComponents[k]->GetData();
         if (!data)return;
         
-        const Vector3 & position = camera->GetPosition();
         if (data->bbox.IsInside(position))
         {
             uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
@@ -317,7 +330,11 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
 void StaticOcclusionSystem::AddEntity(Entity * entity)
 {
     staticOcclusionComponents.push_back((StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT));
-
+    SceneDidLoaded();
+}
+    
+void StaticOcclusionSystem::SceneDidLoaded()
+{
     // Recalc indices
     Vector<Entity*> entities;
     Vector<RenderObject*> renderObjectsArray;
@@ -336,12 +353,20 @@ void StaticOcclusionSystem::AddEntity(Entity * entity)
             indexedRenderObjects[renderObjectsArray[k]->GetStaticOcclusionIndex()] = renderObjectsArray[k];
         }
     }
-
 }
     
 void StaticOcclusionSystem::RemoveEntity(Entity * entity)
 {
-    
+    for (uint32 k = 0; k < (uint32)staticOcclusionComponents.size(); ++k)
+    {
+        StaticOcclusionDataComponent * component = staticOcclusionComponents[k];
+        if (component == entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT))
+        {
+            staticOcclusionComponents[k] = staticOcclusionComponents[(uint32)staticOcclusionComponents.size() - 1];
+            staticOcclusionComponents.pop_back();
+            break;
+        }
+    }
 }
 
     

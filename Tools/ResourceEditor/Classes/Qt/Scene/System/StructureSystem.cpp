@@ -422,7 +422,7 @@ void StructureSystem::EmitChanged()
 	structureChanged = true;
 }
 
-void StructureSystem::Update(DAVA::float32 timeElapsed)
+void StructureSystem::Process(DAVA::float32 timeElapsed)
 {
 	if(structureChanged)
 	{
@@ -637,30 +637,28 @@ bool StructureSystem::CopyLightmapSettings(DAVA::Entity *fromEntity, DAVA::Entit
 
 			for(DAVA::uint32 from = 0, to = 0; from < rbFromCount && to < rbToCount; )
 			{
-				BatchInfo fromBatch = fromBatches[from];
-				BatchInfo toBatch = toBatches[to];
+				BatchInfo & fromBatch = fromBatches[from];
+				BatchInfo & toBatch = toBatches[to];
 
 				if(fromBatch.switchIndex == toBatch.switchIndex)
 				{
-					if(fromBatch.lodIndex == toBatch.lodIndex)
+					if(fromBatch.lodIndex <= toBatch.lodIndex)
 					{
 						for(DAVA::uint32 usedToIndex = to; usedToIndex < rbToCount; ++usedToIndex)
 						{
-							BatchInfo usedToBatch = toBatches[usedToIndex];
-							
-							if((fromBatch.switchIndex != usedToBatch.switchIndex) || (fromBatch.lodIndex != usedToBatch.lodIndex)) 
-								break;
+							BatchInfo & usedToBatch = toBatches[usedToIndex];
+
+                            if((fromBatch.switchIndex != usedToBatch.switchIndex))
+                                break;
 
 							DAVA::PolygonGroup *fromPG = fromBatch.batch->GetPolygonGroup();
 							DAVA::PolygonGroup *toPG = usedToBatch.batch->GetPolygonGroup();
 
 							DAVA::uint32 fromSize = fromPG->GetVertexCount() * fromPG->vertexStride;
 							DAVA::uint32 toSize = toPG->GetVertexCount() * toPG->vertexStride;
-
 							if((fromSize == toSize) && (0 == Memcmp(fromPG->meshData, toPG->meshData, fromSize)))
 							{
-								CopyLightmapSettings(fromBatch.batch->GetMaterial(), toBatch.batch->GetMaterial());
-								break;
+								CopyLightmapSettings(fromBatch.batch->GetMaterial(), usedToBatch.batch->GetMaterial());
 							}
 						}
 

@@ -114,5 +114,9 @@ void EventDispatcher::CopyDataFrom(EventDispatcher *srcDispatcher)
 	}
 }
 
+int32 EventDispatcher::GetEventsCount()
+{
+    return events.size();
+}
 
 }

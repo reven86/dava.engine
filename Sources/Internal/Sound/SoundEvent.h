@@ -32,52 +32,75 @@
 #define __DAVAENGINE_SOUND_EVENT_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
 #include "Base/EventDispatcher.h"
-#include "Sound/VolumeAnimatedObject.h"
 
-namespace FMOD
+namespace DAVA 
 {
-	class Event;
-};
 
-namespace DAVA
-{
-class SoundComponent;
-class SoundEvent : public VolumeAnimatedObject
+class SoundEvent : public EventDispatcher
 {
 public:
-	enum eEvent
-	{
-		EVENT_STARTED = 0,	//Called when an event is started. FMOD_EVENT_CALLBACKTYPE_EVENTSTARTED
-		EVENT_FINISHED,		//Called when an event is stopped for any reason. FMOD_EVENT_CALLBACKTYPE_EVENTFINISHED
-		EVENT_SYNCPOINT,	//Called when a syncpoint is encountered. Can be from wav file markers. FMOD_EVENT_CALLBACKTYPE_SYNCPOINT
+    struct SoundEventParameterInfo
+    {
+        String name;
+        float32 maxValue;
+        float32 minValue;
+        float32 currentValue;
+    };
 
-		EVENT_COUNT
-	};
+    enum eSoundEventCallbackType
+    {
+        EVENT_END,     /* Called when an event is stopped for any reason. */
 
-	void SetVolume(float32 volume);
-	float32	GetVolume();
+        EVENT_COUNT
+    };
+    
+    enum SoundEventCreateFlags
+    {
+        SOUND_EVENT_CREATE_DEFAULT = 0, //2D; static; no loop
+        SOUND_EVENT_CREATE_STREAM = (1 << 0),
+        SOUND_EVENT_CREATE_3D = (1 << 1),
+        SOUND_EVENT_CREATE_LOOP = (1 << 2)
+    };
+    
+    SoundEvent() : volume(1.f), isDirectional(false) {};
 
-	void Play();
-	void Pause(bool isPaused);
-	bool IsPaused();
-	void Stop();
-	void PerformCallback(eEvent eventType);
+    virtual bool IsActive() const = 0;
+    virtual bool Trigger() = 0;
+    virtual void Stop() = 0;
+    virtual void Pause() = 0;
+    
+    virtual void SetVolume(float32 volume) = 0;
+    inline float32 GetVolume() const;
+    
+    virtual void SetPosition(const Vector3 & position) = 0;
+    virtual void SetDirection(const Vector3 & direction) = 0;
+    virtual void UpdateInstancesPosition() = 0;
+    
+    inline bool IsDirectional() const;
 
-	void SetPosition(const Vector3 & position);
+    virtual void SetParameterValue(const FastName & paramName, float32 value) = 0;
+    virtual float32 GetParameterValue(const FastName & paramName) = 0;
+    virtual bool IsParameterExists(const FastName & paramName) = 0;
 
-private:
-	SoundEvent(FMOD::Event * fmodEvent);
-	~SoundEvent();
+    virtual void GetEventParametersInfo(Vector<SoundEventParameterInfo> & paramsInfo) const = 0;
 
-	FMOD::Event * fmodEvent;
+    virtual String GetEventName() const = 0;
 
-	IMPLEMENT_EVENT_DISPATCHER(eventDispatcher);
-
-friend class SoundSystem;
-friend class SoundComponent;
+protected:
+    float32 volume;
+    bool isDirectional;
 };
+
+inline float32 SoundEvent::GetVolume() const
+{
+    return volume;
+}
+
+inline bool SoundEvent::IsDirectional() const
+{
+    return isDirectional;
+}
 
 };
 

@@ -26,80 +26,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_SOUND_H__
-#define __DAVAENGINE_SOUND_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
-#include "Base/EventDispatcher.h"
-#include "Sound/VolumeAnimatedObject.h"
 
-namespace FMOD
-{
-class Sound;
-class ChannelGroup;
-class Channel;
-};
+#ifndef __IMAGE_REGION_COPY_COMMAND_H__
+#define __IMAGE_REGION_COPY_COMMAND_H__
 
-namespace DAVA
-{
+#include "Commands2/Command2.h"
 
-class Sound : public VolumeAnimatedObject
+class ImageRegionCopyCommand : public Command2
 {
 public:
+	ImageRegionCopyCommand(DAVA::Image* dst, const DAVA::Vector2& dstPos, DAVA::Image* src, const DAVA::Rect &srcRect, DAVA::FilePath savePath = DAVA::FilePath(), DAVA::Image* orig = NULL);
+	~ImageRegionCopyCommand();
 
-	enum eType
-	{
-		TYPE_STATIC = 0,
-		TYPE_STREAMED
-	};
+	virtual void Undo();
+	virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const { return NULL; }
 
-    virtual int32 Release();
-
-	static Sound * Create(const FilePath & fileName, eType type, const FastName & groupName, int32 priority = 128);
-	static Sound * Create3D(const FilePath & fileName, eType type, const FastName & groupName, int32 priority = 128);
-
-	void SetVolume(float32 volume);
-	float32	GetVolume();
-
-	void Play(const Message & msg = Message());
-	void Pause(bool isPaused);
-	bool IsPaused();
-	void Stop();
-    void PerformCallback(FMOD::Channel * instance);
-
-	void SetPosition(const Vector3 & position);
-	void UpdateInstancesPosition();
-
-	void SetLoopCount(int32 looping); // -1 = infinity
-	int32 GetLoopCount() const;
-
-	eType GetType() const;
-
-private:
-	Sound(const FilePath & fileName, eType type, int32 priority);
-	~Sound();
-
-	static Sound * CreateWithFlags(const FilePath & fileName, eType type, const FastName & groupName, int32 addFlags, int32 priority = 128);
-
-	void SetSoundGroup(const FastName & groupName);
-
-	bool is3d;
-	Vector3 position;
-
-	FilePath fileName;
-	eType type;
-	int32 priority;
-
-	FMOD::Sound * fmodSound;
-	FMOD::ChannelGroup * fmodInstanceGroup;
-
-    uint8 * soundData;
-
-    Map<FMOD::Channel *, Message> callbacks;
+	DAVA::Image* dst;
+    DAVA::Image* orig;
+    DAVA::Image* copy;
+	DAVA::Vector2 pos;
+    DAVA::FilePath savePath;
 };
 
-};
-
-#endif //__DAVAENGINE_SOUND_H__
+#endif // __IMAGE_REGION_COPY_COMMAND_H__
