@@ -97,6 +97,8 @@ bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet
     
 bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet)
 {
+#if 1
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -108,10 +110,15 @@ bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> &
     bool created = CreateFromPNG(file, imageSet);
     SafeRelease(file);
 	return created;
+#endif
+    return false;
+    
 }
     
 bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+#if 1
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -123,10 +130,14 @@ bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> &
     bool created = CreateFromPVR(file, imageSet, baseMipmap);
     SafeRelease(file);
 	return created;
+#endif
+    return false;
 }
     
 bool ImageLoader::CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+#if 1
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -138,6 +149,8 @@ bool ImageLoader::CreateFromDDSFile(const FilePath & pathname, Vector<Image *> &
     bool created = CreateFromDDS(file, imageSet, baseMipmap);
     SafeRelease(file);
 	return created;
+#endif
+    return false;
 }
 
 

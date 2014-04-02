@@ -52,7 +52,7 @@
         #define __USE_MEMORY_MAP_FOR_TEXTURE__
         #define __USE_OWN_ALLOCATORS__
         #define __USE_FIXED_STRING_ALLOCATOR__
-        #define __USE_STL_POOL_ALLOCATOR__
+        //#define __USE_STL_POOL_ALLOCATOR__
 	#endif
 #endif
 #endif

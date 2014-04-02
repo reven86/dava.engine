@@ -432,12 +432,9 @@ String KeyedArchive::GetString(const String & key, const String & defaultValue)
 #endif
 	return defaultValue;
 }
-<<<<<<< HEAD
+
 //#endif
     
-=======
-
->>>>>>> bb01b30a5a087d475e8e79b40020c82d2ad8aaf5
 WideString KeyedArchive::GetWideString(const String & key, const WideString & defaultValue)
 {
 	if (IsKeyExists(key))

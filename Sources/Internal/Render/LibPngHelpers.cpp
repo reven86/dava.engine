@@ -217,17 +217,18 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 	png_read_update_info(png_ptr, info_ptr);
 	
 	rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-	
-<<<<<<< HEAD
+    
+	uint8 *image_data = new uint8 [rowbytes * height];
+
 #if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
     MemoryMappedFile *mmFile = new MemoryMappedFile(rowbytes * height);
     image_data = mmFile->GetPointer();
 #else
 	image_data = new uint8 [rowbytes * height];
 #endif
-=======
-    uint8 *image_data = new uint8 [rowbytes * height];
->>>>>>> bb01b30a5a087d475e8e79b40020c82d2ad8aaf5
+
+
+
 	if (image_data == 0)
 	{
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);

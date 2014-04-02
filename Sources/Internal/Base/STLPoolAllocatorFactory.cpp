@@ -14,7 +14,6 @@ namespace DAVA
     
     STLPoolAllocatorFactory::STLPoolAllocatorFactory():LastAlloc(NULL)
     {
-        
     }
     
     STLPoolAllocatorFactory::~STLPoolAllocatorFactory()
@@ -33,7 +32,7 @@ namespace DAVA
     void STLPoolAllocatorFactory::Dump()
     {
         //#ifdef __DAVAENGINE_DEBUG__
-        std::cout<<std::endl<<"STLPoolAllocatorFactory::Dump ================"<<std::endl<<"Allocated:";
+      /*  std::cout<<std::endl<<"STLPoolAllocatorFactory::Dump ================"<<std::endl<<"Allocated:";
         std::vector<Pool*>::iterator itEnd = allocators.end();
         unsigned int allover = 0;
         for(std::vector<Pool*>::iterator it = allocators.begin(); it != itEnd; ++it)
@@ -41,7 +40,7 @@ namespace DAVA
             std::cout<<std::endl<<(*it)->getSize()<<" * "<<(*it)->growCount<<" = "<<(*it)->getSize()*(*it)->growCount;
             (*it)->dump();
         }
-        std::cout<<std::endl<<"End of STLPoolAllocatorFactory::Dump ========================== allover= %ubyte"<<allover;
+        std::cout<<std::endl<<"End of STLPoolAllocatorFactory::Dump ========================== allover= %ubyte"<<allover;*/
         //#endif //__DAVAENGINE_DEBUG__
     }
     
@@ -84,7 +83,7 @@ namespace DAVA
             }
         }
         if (0 == alloc) {
-            unsigned int minSize = 4096*300;/* 1024*1024*/;
+            unsigned int minSize = 4096*1024;/* 1024*1024*/;
             alloc = new Pool(size<minSize?minSize:size);
             allocators.push_back(alloc);
         }
@@ -92,8 +91,8 @@ namespace DAVA
         if(allocateSize%16){
             allocateSize+=(16-allocateSize%16);
         }
-//        void * p = alloc->allocate(allocateSize);
-        //std::cout<<"stl alloc pointer"<<p;
+       // void * p = alloc->allocate(allocateSize);
+       //std::cout<<"stl alloc pointer"<<p;
         return alloc->allocate(allocateSize);;
     }
     void STLPoolAllocatorFactory::Deallocate(void *p)
