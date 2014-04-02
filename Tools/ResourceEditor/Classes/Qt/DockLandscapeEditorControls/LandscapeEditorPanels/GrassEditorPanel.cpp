@@ -143,7 +143,12 @@ void GrassEditorPanel::InitUI()
         layersList->setStyleSheet("QTableWidget::item:selected{ background-color: palette(highlight) }");
 
         layerCheckBoxes[row] = layerCheckBox;
+        layerCheckBoxes[row]->setProperty("#layer_index", row);
     }
+
+    // lod preview
+    //lodPreview = new DistanceSlider(this);
+    //layout->addWidget(lodPreview);
 }
 
 void GrassEditorPanel::ConnectToSignals()
@@ -155,6 +160,11 @@ void GrassEditorPanel::ConnectToSignals()
     QObject::connect(grassDensityAffect, SIGNAL(toggled(bool)), this, SLOT(OnDensityAffectToggled(bool)));
     QObject::connect(grassHeightAdd, SIGNAL(toggled(bool)), this, SLOT(OnHightAddToggled(bool)));
     QObject::connect(grassDensityAdd, SIGNAL(toggled(bool)), this, SLOT(OnDensityAddToggled(bool)));
+
+    for(int row = 0; row < GRASS_EDITOR_LAYERS_COUNT; ++row)
+    {
+        QObject::connect(layerCheckBoxes[row], SIGNAL(stateChanged(int)), this, SLOT(OnLayerChecked(int)));
+    }
 }
 
 void GrassEditorPanel::StoreState()
@@ -253,6 +263,20 @@ void GrassEditorPanel::OnLayerSelected(int currentRow, int currentColumn, int pr
     if(NULL != sceneEditor)
     {
         sceneEditor->grassEditorSystem->SetCurrentLayer(currentRow);
+    }
+}
+
+void GrassEditorPanel::OnLayerChecked(int state)
+{
+    SceneEditor2* sceneEditor = GetActiveScene();
+    if(NULL != sceneEditor)
+    {
+        QVariant index = QObject::sender()->property("#layer_index");
+        if(index.isValid())
+        {
+            int layer = index.toInt();
+            sceneEditor->grassEditorSystem->SetLayerVisible(layer, state == Qt::Checked);
+        }
     }
 }
 

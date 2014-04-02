@@ -786,6 +786,9 @@
 		64806B7018BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
 		64806B7118BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
 		64806B7218BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
+		6280BAA918D6F909007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA818D6F909007809B7 /* DateTimeApple.mm */; };
+		62BD24C018C621EB00D2F0D3 /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */; };
+		62BD24C118C621EB00D2F0D3 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BD24BF18C621EB00D2F0D3 /* DateTime.h */; };
 		7410E81C17144C120028AAAA /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C18593D816F30BED005D30E2 /* UIAggregatorControl.cpp */; };
 		7410E81D17144C160028AAAA /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = C18593D916F30BED005D30E2 /* UIAggregatorControl.h */; };
 		7489A9CF1702F5A200D9AE2D /* CRC32.h in Headers */ = {isa = PBXBuildFile; fileRef = 74A909AA1701FA51003FDB31 /* CRC32.h */; };
@@ -2317,6 +2320,9 @@
 		6435963718C1FA3200862C31 /* AbstractQuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractQuadTree.h; sourceTree = "<group>"; };
 		64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VegetationRenderObject.cpp; sourceTree = "<group>"; };
 		64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VegetationRenderObject.h; sourceTree = "<group>"; };
+		6280BAA818D6F909007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
+		62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTime.cpp; sourceTree = "<group>"; };
+		62BD24BF18C621EB00D2F0D3 /* DateTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTime.h; sourceTree = "<group>"; };
 		748A99711726C5ED00C6411B /* UIScrollView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollView.cpp; sourceTree = "<group>"; };
 		748A99721726C5EE00C6411B /* UIScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollView.h; sourceTree = "<group>"; };
 		74A909A91701FA51003FDB31 /* CRC32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CRC32.cpp; sourceTree = "<group>"; };
@@ -3560,6 +3566,9 @@
 		E8989BD716BD24E400732C04 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
+				62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */,
+				62BD24BF18C621EB00D2F0D3 /* DateTime.h */,
 				A63BCD6817EB26E300EA4811 /* Process.cpp */,
 				A63BCD6917EB26E300EA4811 /* Process.h */,
 				846CFE5D174D1A64004ECE3C /* OpenUDIDApple.h */,
@@ -4901,6 +4910,7 @@
 				0256F3DC185B4CAA00D22ADF /* SoundEvent.h in Headers */,
 				CCC7A43916F1D6170061EA5D /* Landscape.h in Headers */,
 				CCC7A43D16F1D6170061EA5D /* LandscapeChunk.h in Headers */,
+				62BD24C118C621EB00D2F0D3 /* DateTime.h in Headers */,
 				CCC7A44116F1D6170061EA5D /* LandscapeCursor.h in Headers */,
 				CCC7A44516F1D6170061EA5D /* Light.h in Headers */,
 				CCC7A44916F1D6170061EA5D /* Mesh.h in Headers */,
@@ -5916,6 +5926,7 @@
 				E8989F3F16BD24E500732C04 /* RenderBase.cpp in Sources */,
 				E8989F4116BD24E500732C04 /* RenderDataObject.cpp in Sources */,
 				E8989F4316BD24E500732C04 /* RenderEffect.cpp in Sources */,
+				6280BAA918D6F909007809B7 /* DateTimeApple.mm in Sources */,
 				CC84B01C18211A9000934482 /* JobManager.cpp in Sources */,
 				E8989F4516BD24E500732C04 /* RenderGrayscaleEffect.cpp in Sources */,
 				E8989F4716BD24E500732C04 /* RenderHelper.cpp in Sources */,
@@ -6041,6 +6052,7 @@
 				C7FBCFBC16CD1FE5006F1B3F /* UIControlSwig.cpp in Sources */,
 				C7FBCFBE16CD1FE5006F1B3F /* VectorSwig.cpp in Sources */,
 				1799E52616CCEC030058061F /* ParticleForce.cpp in Sources */,
+				62BD24C018C621EB00D2F0D3 /* DateTime.cpp in Sources */,
 				840ED3E316D5095000D2BA6C /* DPIHelperMacOS.mm in Sources */,
 				7A16934D180EE75A005F1FBC /* AutotestingDB.cpp in Sources */,
 				171F938516CE6F28007038AB /* UIWebView.cpp in Sources */,

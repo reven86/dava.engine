@@ -51,11 +51,13 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
         fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_MODE, &mode);
         is3D = (mode == FMOD_3D);
 
+        InitParamsMap();
+
         isDirectional = IsParameterExists(FMOD_SYSTEM_EVENTANGLE_PARAMETER);
     }
     else
     {
-        Logger::FrameworkDebug(eventName.c_str());
+        Logger::Error(eventName.c_str());
     }
 
 }
@@ -205,19 +207,7 @@ float32 FMODSoundEvent::GetParameterValue(const FastName & paramName)
 
 bool FMODSoundEvent::IsParameterExists(const FastName & paramName)
 {
-    SoundSystem * soundSystem = SoundSystem::Instance();
-    FMOD::EventSystem * fmodEventSystem = soundSystem->fmodEventSystem;
-
-    FMOD::Event * fmodEventInfo = 0;
-    FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
-    if(fmodEventInfo)
-    {
-        FMOD::EventParameter * param = 0;
-        fmodEventInfo->getParameter(paramName.c_str(), &param);
-        return param != NULL;
-    }
-
-    return false;
+    return paramsValues.find(paramName) != paramsValues.end();
 }
 
 void FMODSoundEvent::ApplyParamsToEvent(FMOD::Event *event)
@@ -232,7 +222,18 @@ void FMODSoundEvent::ApplyParamsToEvent(FMOD::Event *event)
             FMOD_VERIFY(param->setValue(it->second));
     }
 }
-    
+
+void FMODSoundEvent::InitParamsMap()
+{
+    Vector<SoundEvent::SoundEventParameterInfo> paramsInfo;
+    GetEventParametersInfo(paramsInfo);
+    for(int32 i = 0; i < (int32)paramsInfo.size(); ++i)
+    {
+        const SoundEvent::SoundEventParameterInfo & info = paramsInfo[i];
+        paramsValues[FastName(info.name)] = info.minValue;
+    }
+}
+
 void FMODSoundEvent::PerformCallback(FMOD::Event * fmodEvent, eSoundEventCallbackType callbackType)
 {
     List<FMOD::Event *>::iterator it = std::find(fmodEventInstances.begin(), fmodEventInstances.end(), fmodEvent);

@@ -34,6 +34,7 @@
 		7497447517B3D61800282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497447317B3D61800282DAA /* AlignTest.cpp */; };
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
 		74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74BF98191876B3A7001D4CFE /* GameController.framework */; };
+		8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */; };
 		84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84C8F71316D3D16000FAC7DF /* DPITest.cpp */; };
 		C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */; };
 		C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */; };
@@ -131,6 +132,8 @@
 		7497447417B3D61800282DAA /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlignTest.h; sourceTree = "<group>"; };
 		74AF633C18852FE100070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		74BF98191876B3A7001D4CFE /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
+		8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTimeTest.cpp; sourceTree = "<group>"; };
+		8475938C18DA3FAC00C464CB /* DateTimeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTimeTest.h; sourceTree = "<group>"; };
 		84C8F71316D3D16000FAC7DF /* DPITest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DPITest.cpp; sourceTree = "<group>"; };
 		84C8F71416D3D16000FAC7DF /* DPITest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPITest.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* TemplateProjectiPhone-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TemplateProjectiPhone-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
@@ -308,6 +311,8 @@
 			children = (
 				15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */,
 				15CBB0AF18D300310038ABA3 /* StringFormatTest.h */,
+				8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */,
+				8475938C18DA3FAC00C464CB /* DateTimeTest.h */,
 				4998996918B238F7007A8DF2 /* RectSpriteTest.cpp */,
 				4998996A18B238F7007A8DF2 /* RectSpriteTest.h */,
 				E801A586183FAB8E00D5B770 /* ComponentsTest.cpp */,
@@ -504,6 +509,7 @@
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
 				15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
+				8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */,
 				5CDC2521156CD48700742348 /* TestTemplate.cpp in Sources */,
 				5C8D42441580E4D700441032 /* BaseScreen.cpp in Sources */,
 				5C8B42A61589D866001B2597 /* SampleTest.cpp in Sources */,

@@ -249,8 +249,11 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
     SafeRelease(rb->material);
 	if(material)
 	{
-		rb->material = material->Clone();
-		//rb->material->SetMaterialSystem(NULL);
+		NMaterial *mat = material->Clone();
+		rb->SetMaterial(mat);
+		mat->Release();
+
+ 		//rb->material->SetMaterialSystem(NULL);
 	}
 
 	rb->startIndex = startIndex;
@@ -338,6 +341,9 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
 
 		SetPolygonGroup(pg);
         
+		if(GetMaterial() == NULL)
+			DVASSERT(newMaterial);
+
 		if(newMaterial)
 		{
 			SetMaterial(newMaterial);

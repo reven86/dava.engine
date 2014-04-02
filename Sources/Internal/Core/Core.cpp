@@ -141,6 +141,7 @@ void Core::CreateSingletons()
 	new UIControlSystem();
 	new InputSystem();
 	new RenderHelper();
+    new RenderLayerManager();
 	new PerformanceSettings();
 	
 #if defined __DAVAENGINE_IPHONE__
@@ -169,7 +170,7 @@ void Core::CreateRenderManager()
 {
     eRenderer renderer = (eRenderer)options->GetInt32("renderer");
     
-    RenderManager::Create(renderer);
+    RenderManager::Create(renderer);	
 }
         
 void Core::ReleaseSingletons()
@@ -190,6 +191,7 @@ void Core::ReleaseSingletons()
     FileSystem::Instance()->Release();
     SoundSystem::Instance()->Release();
 	Random::Instance()->Release();
+	RenderLayerManager::Instance()->Release();
 	RenderManager::Instance()->Release();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Release();

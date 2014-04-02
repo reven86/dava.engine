@@ -59,12 +59,12 @@ RenderSystem::RenderSystem()
     ,   forceUpdateLights(false)
     ,   globalMaterial(NULL)
 {
-    renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_FORWARD));
-    renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
+    //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);
+    mainRenderPass = new MainForwardRenderPass(PASS_FORWARD, RENDER_PASS_FORWARD_ID);
+    //renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
 
     renderHierarchy = new QuadTree(10);
-	hierarchyInitialized = false;
-    globalBatchArray = new RenderPassBatchArray(this);
+	hierarchyInitialized = false;   
 	markedObjects.reserve(100);
 }
 
@@ -72,9 +72,9 @@ RenderSystem::~RenderSystem()
 {
     SafeRelease(camera);
     SafeRelease(clipCamera);
+
     SafeRelease(globalMaterial);
     
-    SafeDelete(globalBatchArray);
     SafeDelete(renderHierarchy);	
 }
     
@@ -384,11 +384,7 @@ void RenderSystem::Update(float32 timeElapsed)
         objectsForUpdate[i]->RenderUpdate(clipCamera, timeElapsed);
     }
 	
-    visibilityArray.Clear();
-    renderHierarchy->Clip(clipCamera, &visibilityArray);
-
-    globalBatchArray->Clear();
-	globalBatchArray->PrepareVisibilityArray(&visibilityArray, clipCamera); 
+    
 
     ShaderCache::Instance()->ClearAllLastBindedCaches();
 }
@@ -403,11 +399,9 @@ void RenderSystem::Render()
 {
     TIME_PROFILE("RenderSystem::Render");
 
-    uint32 size = (uint32)renderPassOrder.size();
-    for (uint32 k = 0; k < size; ++k)
-    {
-        renderPassOrder[k]->Draw(camera, globalBatchArray);
-    }
+    
+    mainRenderPass->Draw(camera, this);
+    
     
     //Logger::FrameworkDebug("OccludedRenderBatchCount: %d", RenderManager::Instance()->GetStats().occludedRenderBatchCount);
 }
@@ -427,7 +421,7 @@ void RenderSystem::Render()
     
 void RenderSystem::SetShadowRectColor(const Color &color)
 {
-    ShadowVolumeRenderPass *shadowVolume = static_cast<ShadowVolumeRenderPass *>(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
+    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
 
     ShadowRect *shadowRect = shadowVolume->GetShadowRect();
@@ -438,7 +432,7 @@ void RenderSystem::SetShadowRectColor(const Color &color)
     
 const Color & RenderSystem::GetShadowRectColor() const
 {
-    ShadowVolumeRenderPass *shadowVolume = static_cast<ShadowVolumeRenderPass *>(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
+    ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
     
     ShadowRect *shadowRect = shadowVolume->GetShadowRect();
@@ -449,7 +443,7 @@ const Color & RenderSystem::GetShadowRectColor() const
 	
 void RenderSystem::SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode)
 {
-	ShadowVolumeRenderPass *shadowVolume = static_cast<ShadowVolumeRenderPass *>(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
+	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
 
 	shadowVolume->SetBlendMode(blendMode);
@@ -457,7 +451,7 @@ void RenderSystem::SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode)
 	
 ShadowPassBlendMode::eBlend RenderSystem::GetShadowBlendMode()
 {
-	ShadowVolumeRenderPass *shadowVolume = static_cast<ShadowVolumeRenderPass *>(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
+	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
 
 	return shadowVolume->GetBlendMode();

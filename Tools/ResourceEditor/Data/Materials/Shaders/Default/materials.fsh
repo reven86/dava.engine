@@ -367,15 +367,22 @@ void main()
     gl_FragColor.a = gl_FragColor.a * varTexCoord2.x;
     
 #if defined(FRAMEBUFFER_FETCH)
-    gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, gl_FragColor.a);
+    //VI: fog is taken to account here
+    #if defined(VERTEX_FOG)
+        gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(fogColor, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, varFogFactor), gl_FragColor.a);
+    #else
+        gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, gl_FragColor.a);
+    #endif
 #else
     gl_FragColor.rgb = gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0;
 #endif
 
 #endif
     
-    
 #if defined(VERTEX_FOG)
-    gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
+    #if !defined(FRAMEBUFFER_FETCH) 
+        //VI: fog equation is inside of color equatin for framebuffer fetch
+        gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
+    #endif
 #endif
 }

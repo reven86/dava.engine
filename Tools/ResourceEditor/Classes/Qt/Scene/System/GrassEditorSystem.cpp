@@ -177,6 +177,11 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
                 drawSystem->DisableCursor();
                 drawSystem->DisableCustomDraw();
 
+                if(NULL != curVegetation)
+                {
+                    curVegetation->SetLayerVisibilityMask(0xFF);
+                }
+
                 SafeRelease(vegetationMap);
                 SafeRelease(vegetationMapCopy);
                 SafeRelease(curVegetation);
@@ -235,16 +240,27 @@ DAVA::VegetationRenderObject* GrassEditorSystem::SearchVegetation(DAVA::Entity *
 
 void GrassEditorSystem::SetLayerVisible(uint8 layer, bool visible)
 {
-    // TODO:
-    // ...
+    if(NULL != curVegetation)
+    {
+        DAVA::uint8 mask =  curVegetation->GetLayerVisibilityMask();
+
+        if(visible)
+        {
+            mask |= (1 << layer);
+        }
+        else
+        {
+            mask &= (~(1 << layer));
+        }
+
+        curVegetation->SetLayerVisibilityMask(mask);
+    }
 }
 
 bool GrassEditorSystem::IsLayerVisible(uint8 layer) const
 {
-    // TODO:
-    // ...
-
-    return true;
+    DAVA::uint8 mask = curVegetation->GetLayerVisibilityMask();
+    return (0 != (mask & (1 << layer)));
 }
 
 void GrassEditorSystem::SetBrushMode(int mode)

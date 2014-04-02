@@ -31,7 +31,7 @@ LicenceDialog::~LicenceDialog()
 
 bool LicenceDialog::process()
 {
-    return true;    // ;)
+    // return true;    // ;)
 
     accepted = SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_LICENCE_ACCEPTED, SettingsManager::INTERNAL).AsBool();
     if ( !accepted )

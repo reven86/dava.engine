@@ -288,7 +288,7 @@ void SceneValidator::ValidateMaterials(DAVA::Scene *scene, Set<String> &errorsLo
             for(DAVA::uint32 t = 0; t < count; ++t)
             {
                 Texture *tex = (*it)->GetTexture(t);
-                if(tex)
+                if(tex&&(!NMaterial::IsRuntimeTexture((*it)->GetTextureName(t))))
                 {
                     if(((*it)->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_INSTANCE) && (*it)->GetParent())
                     {

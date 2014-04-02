@@ -453,8 +453,6 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
 			}
 			else
 			{
-                return false;
-
 				// send this ray to collision system and get collision objects
 				const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 

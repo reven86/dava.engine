@@ -29,6 +29,7 @@
 
 #include "DeviceInfoTest.h"
 #include "Platform/DeviceInfo.h"
+#include "Platform/DateTime.h"
 
 DeviceInfoTest::DeviceInfoTest()
 :	TestTemplate<DeviceInfoTest>("DeviceInfoTest")

@@ -143,6 +143,8 @@ public:
 	ShadowPassBlendMode::eBlend GetShadowBlendMode();
 	
 	void DebugDrawHierarchy(const Matrix4& cameraMatrix);
+
+    RenderHierarchy * GetRenderHierarchy(){return renderHierarchy;}
     
 private:
 	void CreateSpatialTree();
@@ -157,7 +159,7 @@ private:
     Vector<RenderObject*> objectsForPermanentUpdate;
     Vector<RenderObject*> markedObjects;
     Vector<Light*> movedLights;
-    Vector<RenderPass*> renderPassOrder;
+    RenderPass* mainRenderPass;
     
     RenderPassManager renderPassManager;
     
@@ -167,10 +169,7 @@ private:
     bool forceUpdateLights;
     
     RenderHierarchy * renderHierarchy;
-	bool hierarchyInitialized;
-
-    RenderPassBatchArray * globalBatchArray;
-    VisibilityArray visibilityArray;
+	bool hierarchyInitialized;    
     
     Camera * camera;
     Camera * clipCamera;

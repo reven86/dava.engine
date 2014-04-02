@@ -69,6 +69,9 @@
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
 		5C97964714E3E75000FFFA14 /* libxml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964514E3E75000FFFA14 /* libxml_ios.a */; };
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
+		624C87F218C6160F00E1049D /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 624C87F018C6160F00E1049D /* DateTime.cpp */; };
+		624C87F318C6160F00E1049D /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 624C87F118C6160F00E1049D /* DateTime.h */; };
+		6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */; };
 		62BAA48F178EF915003DE32C /* MailComposeDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BAA48D178EF915003DE32C /* MailComposeDelegate.h */; };
 		62BAA492178EF952003DE32C /* MailComposeDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 62BAA491178EF952003DE32C /* MailComposeDelegate.mm */; };
 		641A61FB18CE0F4D003359E7 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 641A61F918CE0F4D003359E7 /* VegetationRenderObject.cpp */; };
@@ -857,6 +860,9 @@
 		5C77ABBE14C7703800E92D28 /* libpng_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_ios.a; path = ../../Libs/libs/libpng_ios.a; sourceTree = "<group>"; };
 		5C97964514E3E75000FFFA14 /* libxml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_ios.a; path = ../../Libs/libs/libxml_ios.a; sourceTree = "<group>"; };
 		5C97964614E3E75000FFFA14 /* libyaml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_ios.a; path = ../../Libs/libs/libyaml_ios.a; sourceTree = "<group>"; };
+		624C87F018C6160F00E1049D /* DateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTime.cpp; sourceTree = "<group>"; };
+		624C87F118C6160F00E1049D /* DateTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTime.h; sourceTree = "<group>"; };
+		6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
 		62BAA48D178EF915003DE32C /* MailComposeDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailComposeDelegate.h; sourceTree = "<group>"; };
 		62BAA491178EF952003DE32C /* MailComposeDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MailComposeDelegate.mm; sourceTree = "<group>"; };
 		641A61F918CE0F4D003359E7 /* VegetationRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VegetationRenderObject.cpp; sourceTree = "<group>"; };
@@ -2091,6 +2097,9 @@
 		E8B3C8BB16B9326D002BD35F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
+				624C87F018C6160F00E1049D /* DateTime.cpp */,
+				624C87F118C6160F00E1049D /* DateTime.h */,
 				84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */,
 				84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */,
 				E8B6B3C41705DEB4004F665E /* DeviceInfo.cpp */,
@@ -3036,6 +3045,7 @@
 				E8B3CD2316B9326E002BD35F /* UITextField.h in Headers */,
 				E843506017FA12BE00A25F04 /* TeamcityOutput.h in Headers */,
 				E55431A318E4644600E20E51 /* Pool.h in Headers */,
+				624C87F318C6160F00E1049D /* DateTime.h in Headers */,
 				E8B3CD2416B9326E002BD35F /* UITextFieldiPhone.h in Headers */,
 				E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */,
 				CC84B03F18211BCE00934482 /* Job.h in Headers */,
@@ -3389,6 +3399,7 @@
 				E8B3CC8D16B9326E002BD35F /* ParticleEffectNode.cpp in Sources */,
 				E8B3CC8F16B9326E002BD35F /* ParticleEmitterNode.cpp in Sources */,
 				CC84B04418211BCE00934482 /* JobWaiter.cpp in Sources */,
+				6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */,
 				E8B3CC9116B9326E002BD35F /* PathManip.cpp in Sources */,
 				E89C58F518B24832002C25FE /* AtomicMacOS.mm in Sources */,
 				CC84B04018211BCE00934482 /* JobManager.cpp in Sources */,
@@ -3536,6 +3547,7 @@
 				A695E53218113327008A0F20 /* SerializationContext.cpp in Sources */,
 				CC84B03E18211BCE00934482 /* Job.cpp in Sources */,
 				9A0116F3967F43C036364993 /* GamepadDevice.mm in Sources */,
+				624C87F218C6160F00E1049D /* DateTime.cpp in Sources */,
 				9A011FD535036524CA050EF7 /* GamepadManager.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

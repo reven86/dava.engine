@@ -89,7 +89,8 @@ static FastName TILEMASK_TILING_PROPS_NAMES[] =
 	FastName("texture1Tiling"),
 	FastName("texture2Tiling"),
 	FastName("texture3Tiling"),
-	INVALID_PROPERTY_NAME
+	INVALID_PROPERTY_NAME,
+    INVALID_PROPERTY_NAME
 };
 
 static FastName TILEMASK_COLOR_PROPS_NAMES[] =
@@ -100,7 +101,8 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 	FastName("tileColor1"),
 	FastName("tileColor2"),
 	FastName("tileColor3"),
-	INVALID_PROPERTY_NAME
+	INVALID_PROPERTY_NAME,
+    INVALID_PROPERTY_NAME
 };
 	
 const float32 DEFAULT_FOG_DENSITY = 0.006f;
@@ -1730,6 +1732,9 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
 	}
     
     Landscape *newLandscape = static_cast<Landscape *>(newObject);
+
+    newLandscape->flags = flags;
+	
     newLandscape->BuildLandscapeFromHeightmapImage(heightmapPath, bbox);
     
     for (int32 k = 0; k < TEXTURE_COUNT; ++k)

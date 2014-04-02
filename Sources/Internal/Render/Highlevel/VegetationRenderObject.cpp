@@ -394,10 +394,28 @@ void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *s
     RenderObject::Save(archive, serializationContext);
     
     archive->SetUInt32("vro.clusterLimit", GetClusterLimit());
-    archive->SetString("vro.vegmap", GetVegetationMapPath().GetRelativePathname(serializationContext->GetScenePath()));
-    archive->SetString("vro.texturesheet", GetTextureSheetPath().GetRelativePathname(serializationContext->GetScenePath()));
-    archive->SetString("vro.vegtexture", vegetationMaterial->GetTexturePath(NMaterial::TEXTURE_ALBEDO).GetRelativePathname(serializationContext->GetScenePath()));
-    archive->SetString("vro.lightmap", vegetationMaterial->GetTexturePath(UNIFORM_SAMPLER_VEGETATIONMAP).GetRelativePathname(serializationContext->GetScenePath()));
+
+	if(vegetationMapPath.IsEmpty() == false)
+	{
+		archive->SetString("vro.vegmap", vegetationMapPath.GetRelativePathname(serializationContext->GetScenePath()));
+	}
+
+	if(textureSheetPath.IsEmpty() == false)
+	{
+		archive->SetString("vro.texturesheet", textureSheetPath.GetRelativePathname(serializationContext->GetScenePath()));
+	}
+
+	const FilePath & albedoPath = vegetationMaterial->GetTexturePath(NMaterial::TEXTURE_ALBEDO);
+	if(albedoPath.IsEmpty() == false)
+	{
+		archive->SetString("vro.vegtexture", albedoPath.GetRelativePathname(serializationContext->GetScenePath()));
+	}
+
+	const FilePath & mapPath = vegetationMaterial->GetTexturePath(UNIFORM_SAMPLER_VEGETATIONMAP);
+	if(mapPath.IsEmpty() == false)
+	{
+		archive->SetString("vro.lightmap", mapPath.GetRelativePathname(serializationContext->GetScenePath()));
+	}
 }
     
 void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
@@ -422,10 +440,30 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
     if(shouldLoadData)
     {
         SetClusterLimit(archive->GetUInt32("vro.clusterLimit"));
-        SetVegetationMap(serializationContext->GetScenePath() + archive->GetString("vro.vegmap"));
-        SetTextureSheet(serializationContext->GetScenePath() + archive->GetString("vro.texturesheet"));
-        SetVegetationTexture(serializationContext->GetScenePath() + archive->GetString("vro.vegtexture"));
-        SetLightmap(serializationContext->GetScenePath() + archive->GetString("vro.lightmap"));
+
+		String vegmap = archive->GetString("vro.vegmap");
+		if(vegmap.empty() == false)
+		{
+			SetVegetationMap(serializationContext->GetScenePath() + vegmap);
+		}
+
+		String texturesheet = archive->GetString("vro.texturesheet");
+		if(texturesheet.empty() == false)
+		{
+			SetTextureSheet(serializationContext->GetScenePath() + texturesheet);
+		}
+
+		String vegtexture = archive->GetString("vro.vegtexture");
+		if(vegtexture.empty() == false)
+		{
+			SetVegetationTexture(serializationContext->GetScenePath() + vegtexture);
+		}
+
+		String lightmap = archive->GetString("vro.lightmap");
+		if(lightmap.empty() == false)
+		{
+			SetLightmap(serializationContext->GetScenePath() + lightmap);
+		}
     }
 }
 

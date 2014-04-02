@@ -463,20 +463,10 @@ void SceneFileV2::ReadDescriptor(File* file, /*out*/ Descriptor& descriptor)
 bool SceneFileV2::SaveDataNode(DataNode * node, File * file)
 {
     KeyedArchive * archive = new KeyedArchive();
-    //if (isDebugLogEnabled)
-    //    Logger::FrameworkDebug("- %s(%s)", node->GetName().c_str(), node->GetClassName().c_str());
-    
     
     node->Save(archive, &serializationContext);
-    //archive->SetInt32("#childrenCount", node->GetChildrenNodeCount());
     archive->Save(file);
-    
-    /*for (int ci = 0; ci < node->GetChildrenNodeCount(); ++ci)
-    {
-        DataNode * child = node->GetChildNode(ci);
-        SaveDataNode(child, file);
-    }*/
-    
+
     SafeRelease(archive);
     return true;
 }
@@ -507,14 +497,8 @@ void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
         node->Load(archive, &serializationContext);
         AddToNodeMap(node);
         
-        //if (parent)
-        //    parent->AddNode(node);
-        
-        /*int32 childrenCount = archive->GetInt32("#childrenCount", 0);
-        for (int ci = 0; ci < childrenCount; ++ci)
-        {
-            LoadDataNode(node, file);
-        }*/
+        int32 childrenCount = archive->GetInt32("#childrenCount", 0);
+        DVASSERT(0 == childrenCount && "We don't support hierarchical dataNodes load.");
         
         SafeRelease(node);
     }
@@ -524,20 +508,7 @@ void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
 bool SceneFileV2::SaveDataHierarchy(DataNode * node, File * file, int32 level)
 {
     KeyedArchive * archive = new KeyedArchive();
-    //if (isDebugLogEnabled)
-    //    Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), node->GetName().c_str(), node->GetClassName().c_str());
-
     node->Save(archive, &serializationContext);
-    
-    
-    /*archive->SetInt32("#childrenCount", node->GetChildrenNodeCount());
-    archive->Save(file);
-    
-	for (int ci = 0; ci < node->GetChildrenNodeCount(); ++ci)
-	{
-		DataNode * child = node->GetChildNode(ci);
-		SaveDataHierarchy(child, file, level + 1);
-	}*/
     
     SafeRelease(archive);
     return true;
@@ -568,19 +539,12 @@ void SceneFileV2::LoadDataHierarchy(Scene * scene, DataNode * root, File * file,
             String name = archive->GetString("name");
             Logger::FrameworkDebug("%s %s(%s)", GetIndentString('-', level).c_str(), name.c_str(), node->GetClassName().c_str());
         }
+
         node->Load(archive, &serializationContext);
-        
-        
         AddToNodeMap(node);
         
-        //if (node != root)
-        //    root->AddNode(node);
-        
-        /*int32 childrenCount = archive->GetInt32("#childrenCount", 0);
-        for (int ci = 0; ci < childrenCount; ++ci)
-        {
-            LoadDataHierarchy(scene, node, file, level + 1);
-        }*/
+        int32 childrenCount = archive->GetInt32("#childrenCount", 0);
+        DVASSERT(0 == childrenCount && "We don't support hierarchical dataNodes load.");
         
         SafeRelease(node);
     }

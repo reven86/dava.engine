@@ -158,6 +158,9 @@ public:
     static const FastName TEXTURE_LIGHTMAP;
 	static const FastName TEXTURE_DECAL;
 	static const FastName TEXTURE_CUBEMAP;
+    
+    static const FastName TEXTURE_DYNAMIC_REFLECTION;
+    static const FastName TEXTURE_DYNAMIC_REFRACTION;
 	
 	static const FastName PARAM_LIGHT_POSITION0;
 	static const FastName PARAM_PROP_AMBIENT_COLOR;
@@ -182,6 +185,9 @@ public:
 	static const FastName PARAM_SPEED_TREE_LEAF_OCC_OFFSET;
     static const FastName PARAM_LIGHTMAP_SIZE;
     
+    static const FastName PARAM_RCP_SCREEN_SIZE;
+    static const FastName PARAM_SCREEN_OFFSET;
+    
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
@@ -189,6 +195,11 @@ public:
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
+    static const FastName FLAG_SPECULAR;
+
+    static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
+    
+    static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
     
 	static const FastName FLAG_LIGHTMAPONLY;
 	static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
@@ -549,8 +560,11 @@ protected:
 
     FastName GetEffectiveQuality() const;
 	
+    
+public:
 	static bool IsRuntimeFlag(const FastName& flagName);
     static bool IsRuntimeProperty(const FastName& propName);
+    static bool IsRuntimeTexture(const FastName& textureName);
     static bool IsNamePartOfArray(const FastName& fastName, FastName* array, uint32 count);
 		
 protected:

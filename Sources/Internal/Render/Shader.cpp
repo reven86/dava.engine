@@ -1006,10 +1006,11 @@ void Shader::Bind()
         RENDER_VERIFY(glUseProgram(program));
         activeProgram = program;
     }
+}
     
-    //for (int32 k = 0; k < activeUniforms; ++k)
-    //{
-    //	Uniform* currentUniform = GET_UNIFORM(k);
+    
+void Shader::BindDynamicParameters()
+{
     for(uint8 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform* currentUniform = autobindUniforms[k];

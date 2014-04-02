@@ -36,7 +36,7 @@
 namespace DAVA
 {
     
-RenderPassBatchArray::RenderPassBatchArray(RenderSystem * rs)
+RenderPassBatchArray::RenderPassBatchArray()
 {
     const RenderLayerManager * manager = RenderLayerManager::Instance();
     for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)

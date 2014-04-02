@@ -59,7 +59,7 @@ RenderPassManager::RenderPassManager(RenderSystem * renderSystem)
 {
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
 
-    RenderPass * forwardPass = new RenderPass(renderSystem, PASS_FORWARD, RENDER_PASS_FORWARD_ID);
+    RenderPass * forwardPass = new RenderPass(PASS_FORWARD, RENDER_PASS_FORWARD_ID);
     InsertPass(forwardPass);
     
     forwardPass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_OPAQUE), LAST_LAYER);
@@ -67,10 +67,11 @@ RenderPassManager::RenderPassManager(RenderSystem * renderSystem)
 	forwardPass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_ALPHA_TEST_LAYER), LAST_LAYER);
     forwardPass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_TRANSLUCENT), LAST_LAYER);
 	forwardPass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_AFTER_TRANSLUCENT), LAST_LAYER);
+	forwardPass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_SHADOW_VOLUME), LAST_LAYER);
     
-    ShadowVolumeRenderPass * shadowVolumePass = new ShadowVolumeRenderPass(renderSystem, PASS_SHADOW_VOLUME, RENDER_PASS_SHADOW_VOLUME_ID);
+    /*ShadowVolumeRenderPass * shadowVolumePass = new ShadowVolumeRenderPass(renderSystem, PASS_SHADOW_VOLUME, RENDER_PASS_SHADOW_VOLUME_ID);
     InsertPass(shadowVolumePass);
-    shadowVolumePass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_SHADOW_VOLUME), LAST_LAYER);
+    shadowVolumePass->AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_SHADOW_VOLUME), LAST_LAYER);*/
     
     //StaticOcclusionRenderPass * staticOcclusionRenderPass = new StaticOcclusionRenderPass(renderSystem, PASS_STATIC_OCCLUSION, RENDER_PASS_STATIC_OCCLUSION_ID);
     //InsertPass(staticOcclusionRenderPass);

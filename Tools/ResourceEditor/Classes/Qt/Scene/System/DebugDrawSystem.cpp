@@ -100,13 +100,19 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 {
 	if(NULL != entity)
 	{
+        bool isSelected = selSystem->GetSelection().HasEntity(entity);
+
 		DrawObjectBoxesByType(entity);
 		DrawUserNode(entity);
 		DrawLightNode(entity);
-		DrawSoundNode(entity);
 		DrawHangingObjects(entity);
-        DrawStaticOcclusionComponent(entity);
         DrawSwitchesWithDifferentLods(entity);
+
+        if(isSelected)
+        {
+            DrawSoundNode(entity);
+            DrawStaticOcclusionComponent(entity);
+        }
 
 		for(int32 i = 0; i < entity->GetChildrenCount(); ++i)
 		{
@@ -257,14 +263,6 @@ void DebugDrawSystem::DrawLightNode(DAVA::Entity *entity)
 
 void DebugDrawSystem::DrawSoundNode(DAVA::Entity *entity)
 {
-    bool isSelected = false;
-    EntityGroup group = selSystem->GetSelection();
-    int32 itemsCount = group.Size();
-    for(int32 i = 0; i < itemsCount; ++i)
-        isSelected |= (group.GetEntity(i) == entity);
-   
-    if(!isSelected) return;
-
     DAVA::SoundComponent * sc = GetSoundComponent(entity);
 	if(sc)
 	{

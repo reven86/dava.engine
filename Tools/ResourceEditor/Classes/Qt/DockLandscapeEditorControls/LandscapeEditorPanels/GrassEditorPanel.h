@@ -6,6 +6,7 @@
 
 #include "LandscapeEditorBasePanel.h"
 #include "Scene/System/GrassEditorSystem.h"
+#include "DockLODEditor/DistanceSlider.h"
 
 #define GRASS_EDITOR_LAYERS_COUNT 4
 
@@ -35,6 +36,7 @@ protected:
 
 protected slots:
     void OnLayerSelected(int currentRow, int currentColumn, int previousRow, int previousColumn);
+    void OnLayerChecked(int state);
     void OnHeightChanged(int value);
     void OnDensityChanged(int value);
     void OnDensityAffectToggled(bool checked);
@@ -54,6 +56,7 @@ private:
     QToolButton *grassDensityAffect;
     QToolButton *grassHeightAdd;
     QToolButton *grassDensityAdd;
+    DistanceSlider *lodPreview;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__GRASSEDITORPANEL__) */

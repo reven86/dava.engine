@@ -383,42 +383,74 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::FilePath>() == meta)
 			{
-                QString dataName = data->GetName();
-                if(dataName == "heightmapPath" || dataName == "texture")
-                {
-                    QtPropertyDataDavaVariant* variantData = static_cast<QtPropertyDataDavaVariant*>(data);
-					QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
-                    FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
-					if (dataSourcePath.Exists())
+				struct PathDescriptor
+				{
+					enum eType
 					{
-						defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
+						PATH_TEXTURE = 0,
+						PATH_IMAGE,
+						PATH_HEIGHTMAP,
+						PATH_TEXT,
+						PATH_NOT_SPECIFIED
+					};
+
+					PathDescriptor(const QString & name, const QString &filter, eType type) : pathName(name), fileFilter(filter), pathType(type) {;};
+
+					QString pathName;
+					QString fileFilter;
+					eType pathType;
+				};
+
+				static const PathDescriptor descriptors[] = 
+				{
+					PathDescriptor("", "All (*.*)", PathDescriptor::PATH_NOT_SPECIFIED),
+					PathDescriptor("heightmapPath", "All (*.heightmap *.png);;PNG (*.png);;Height map (*.heightmap)", PathDescriptor::PATH_HEIGHTMAP),
+					PathDescriptor("texture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
+					PathDescriptor("lightmap", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
+					PathDescriptor("vegetationTexture", "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)", PathDescriptor::PATH_TEXTURE),
+					PathDescriptor("textureSheet", "All (*.txt);;TXT (*.tex)", PathDescriptor::PATH_TEXT),
+					PathDescriptor("densityMap", "All (*.png);;PNG (*.png)", PathDescriptor::PATH_IMAGE),
+				};
+
+
+				QString dataName = data->GetName();
+				PathDescriptor *pathDescriptor = (PathDescriptor *)&descriptors[0];
+
+				DAVA::uint32 count = sizeof(descriptors)/sizeof(PathDescriptor);
+				for(DAVA::uint32 i = 0; i < count; ++i)
+				{
+					if(descriptors[i].pathName == dataName)
+					{
+						pathDescriptor = (PathDescriptor *)&descriptors[i];
+						break;
 					}
-                    SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
-					if (NULL != editor && editor->GetScenePath().Exists())
-                    {
-                        DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
-                        if(String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
-                        {
-                            defaultPath = scenePath.c_str();
-                        }
-                    }
-                    variantData->SetDefaultOpenDialogPath(defaultPath);
-                    QStringList pathList;
-					pathList.append(defaultPath);
-                    QString fileFilter = "All (*.*)";
-                    if(dataName == "heightmapPath")
-                    {
-                        fileFilter = "All (*.heightmap *.png);;PNG (*.png);;Height map (*.heightmap)";
-                        variantData->SetValidator(new HeightMapValidator(pathList));
-                    }
-                    else
-                    {
-                        fileFilter = "All (*.tex *.png);;PNG (*.png);;TEX (*.tex)";
-                        variantData->SetValidator(new TexturePathValidator(pathList));
-                    }
-                    variantData->SetOpenDialogFilter(fileFilter);
-                }
-                
+				}
+
+
+				QtPropertyDataDavaVariant* variantData = static_cast<QtPropertyDataDavaVariant*>(data);
+				QString defaultPath = GetDefaultFilePath();
+				variantData->SetDefaultOpenDialogPath(defaultPath);
+				variantData->SetOpenDialogFilter(pathDescriptor->fileFilter);
+
+				QStringList pathList;
+				pathList.append(defaultPath);
+
+				switch(pathDescriptor->pathType)
+				{
+					case PathDescriptor::PATH_HEIGHTMAP:
+						variantData->SetValidator(new HeightMapValidator(pathList));
+						break;
+					case PathDescriptor::PATH_TEXTURE:
+						variantData->SetValidator(new TexturePathValidator(pathList));
+						break;
+					case PathDescriptor::PATH_IMAGE:
+					case PathDescriptor::PATH_TEXT:
+						variantData->SetValidator(new PathValidator(pathList));
+						break;
+
+					default:
+						break;
+				}
             }
 		}
 
@@ -1220,3 +1252,25 @@ void PropertyEditor::CloneRenderBatchesToFixSwitchLODs()
         }
     }
 }
+
+QString PropertyEditor::GetDefaultFilePath()
+{
+	QString defaultPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname().c_str();
+	FilePath dataSourcePath = ProjectManager::Instance()->CurProjectDataSourcePath();
+	if (dataSourcePath.Exists())
+	{
+		defaultPath = dataSourcePath.GetAbsolutePathname().c_str();
+	}
+	SceneEditor2* editor = QtMainWindow::Instance()->GetCurrentScene();
+	if (NULL != editor && editor->GetScenePath().Exists())
+	{
+		DAVA::String scenePath = editor->GetScenePath().GetDirectory().GetAbsolutePathname();
+		if(String::npos != scenePath.find(dataSourcePath.GetAbsolutePathname()))
+		{
+			defaultPath = scenePath.c_str();
+		}
+	}
+
+	return defaultPath;
+}
+ 

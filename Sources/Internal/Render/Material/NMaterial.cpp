@@ -60,6 +60,9 @@ const FastName NMaterial::TEXTURE_LIGHTMAP("lightmap");
 const FastName NMaterial::TEXTURE_DECAL("decal");
 const FastName NMaterial::TEXTURE_CUBEMAP("cubemap");
 
+const FastName NMaterial::TEXTURE_DYNAMIC_REFLECTION("dynamicReflection");
+const FastName NMaterial::TEXTURE_DYNAMIC_REFRACTION("dynamicRefraction");
+
 const FastName NMaterial::PARAM_LIGHT_POSITION0("lightPosition0");
 const FastName NMaterial::PARAM_PROP_AMBIENT_COLOR("ambientColor");
 const FastName NMaterial::PARAM_PROP_DIFFUSE_COLOR("diffuseColor");
@@ -83,6 +86,10 @@ const FastName NMaterial::PARAM_SPEED_TREE_LEAF_OCC_MUL("treeLeafOcclusionMul");
 const FastName NMaterial::PARAM_SPEED_TREE_LEAF_OCC_OFFSET("treeLeafOcclusionOffset");
 const FastName NMaterial::PARAM_LIGHTMAP_SIZE("lightmapSize");
 
+const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
+const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
+
+
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
@@ -90,6 +97,11 @@ const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED")
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
+const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
+
+const FastName NMaterial::FLAG_TANGENT_SPACE_WATER_REFLECTIONS = FastName("TANGENT_SPACE_WATER_REFLECTIONS");
+
+const FastName NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UNITY_Z_NORMAL");
 
 const FastName NMaterial::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterial::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
@@ -113,6 +125,8 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 	NMaterial::FLAG_LIGHTMAPONLY,
 	NMaterial::FLAG_TEXTUREONLY,
 	NMaterial::FLAG_SETUPLIGHTMAP,
+
+    NMaterial::FLAG_DEBUG_UNITY_Z_NORMAL,
 	
 	NMaterial::FLAG_VIEWALBEDO,
 	NMaterial::FLAG_VIEWAMBIENT,
@@ -122,12 +136,21 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 
 static FastName RUNTIME_ONLY_PROPERTIES[] =
 {
-    NMaterial::PARAM_LIGHTMAP_SIZE,
+
+	NMaterial::PARAM_LIGHTMAP_SIZE,
     NMaterial::PARAM_LIGHT_POSITION0,
     NMaterial::PARAM_LIGHT_INTENSITY0,
     NMaterial::PARAM_LIGHT_AMBIENT_COLOR,
     NMaterial::PARAM_LIGHT_DIFFUSE_COLOR,
-    NMaterial::PARAM_LIGHT_SPECULAR_COLOR
+    NMaterial::PARAM_LIGHT_SPECULAR_COLOR,
+    NMaterial::PARAM_RCP_SCREEN_SIZE,
+    NMaterial::PARAM_SCREEN_OFFSET
+};
+
+static FastName RUNTIME_ONLY_TEXTURES[] =
+{
+    NMaterial::TEXTURE_DYNAMIC_REFLECTION,
+    NMaterial::TEXTURE_DYNAMIC_REFRACTION
 };
 
 const FastName NMaterial::DEFAULT_QUALITY_NAME = FastName("Normal");
@@ -363,6 +386,10 @@ void NMaterial::Save(KeyedArchive * archive,
 		it != textures.end();
 		++it)
 	{
+
+		if (IsRuntimeTexture(it->first))
+			continue;
+		
         FilePath texturePath = it->second->GetPath();
         if(!texturePath.IsEmpty())
         {
@@ -1826,6 +1853,11 @@ bool NMaterial::IsRuntimeProperty(const FastName& propName)
 	return IsNamePartOfArray(propName, RUNTIME_ONLY_PROPERTIES, COUNT_OF(RUNTIME_ONLY_PROPERTIES));
 }
 
+bool NMaterial::IsRuntimeTexture(const FastName& textureName)
+{
+    return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES, COUNT_OF(RUNTIME_ONLY_TEXTURES));
+}
+
 void NMaterial::SetMaterialTemplateName(const FastName& templateName)
 {
 	const NMaterialTemplate* matTemplate = NMaterialTemplateCache::Instance()->Get(templateName);
@@ -2696,12 +2728,15 @@ Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *ob
 	
 	if(0 == ret.size())
 	{
-		ret.reserve(3);
+		ret.reserve(5);
 		ret.push_back(FLAG_VERTEXFOG);
         ret.push_back(FLAG_FOG_LINEAR);
 		ret.push_back(FLAG_FLATCOLOR);
 		ret.push_back(FLAG_TEXTURESHIFT);
 		ret.push_back(FLAG_TEXTURE0_ANIMATION_SHIFT);
+        ret.push_back(FLAG_SPECULAR);
+        ret.push_back(FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
+        ret.push_back(FLAG_DEBUG_UNITY_Z_NORMAL);
 	}
 	return ret;
 }

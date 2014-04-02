@@ -75,6 +75,7 @@ public:
 protected:
     FMODSoundEvent(const FastName & eventName);
     void ApplyParamsToEvent(FMOD::Event * event);
+    void InitParamsMap();
 
     void PerformCallback(FMOD::Event  * event, eSoundEventCallbackType callbackType);
 

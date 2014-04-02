@@ -1419,6 +1419,9 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2533,6 +2536,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp">
+      <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp">
+      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

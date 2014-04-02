@@ -320,7 +320,11 @@ void RenderState::Flush(RenderState * hardwareState) const
 #endif
 
     
-    if (shader)shader->Bind();
+    if (shader)
+    {
+        shader->Bind();
+        shader->BindDynamicParameters();
+    }
     else Shader::Unbind();
     hardwareState->shader = shader;
     

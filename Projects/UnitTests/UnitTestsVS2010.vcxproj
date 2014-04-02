@@ -16,6 +16,7 @@
     <ClInclude Include="Classes\CloneTest.h" />
     <ClInclude Include="Classes\ComponentsTest.h" />
     <ClInclude Include="Classes\Config.h" />
+    <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\DeviceInfoTest.h" />
     <ClInclude Include="Classes\DLCSystemTests.h" />
     <ClInclude Include="Classes\DPITest.h" />
@@ -54,6 +55,7 @@
     <ClCompile Include="Classes\BaseScreen.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
     <ClCompile Include="Classes\ComponentsTest.cpp" />
+    <ClCompile Include="Classes\DateTimeTest.cpp" />
     <ClCompile Include="Classes\DeviceInfoTest.cpp" />
     <ClCompile Include="Classes\DLCSystemTests.cpp" />
     <ClCompile Include="Classes\DPITest.cpp" />

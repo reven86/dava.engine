@@ -55,7 +55,6 @@ StaticOcclusion::StaticOcclusion()
 
 StaticOcclusion::~StaticOcclusion()
 {
-    SafeDelete(renderPassBatchArray);
     SafeDelete(staticOcclusionRenderPass);
     SafeRelease(renderTargetSprite);
     SafeRelease(renderTargetTexture);
@@ -63,34 +62,12 @@ StaticOcclusion::~StaticOcclusion()
 
     
 void StaticOcclusion::BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
-                                               StaticOcclusionData * _currentData,
-                                               RenderHierarchy * _renderHierarchy)
+                                               StaticOcclusionData * _currentData)
 {
-    staticOcclusionRenderPass = new StaticOcclusionRenderPass(renderSystem, PASS_FORWARD, this, RENDER_PASS_FORWARD_ID);
-    
-    staticOcclusionRenderPass->AddRenderLayer(new RenderLayer(LAYER_OPAQUE,
-                                                              RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                              RENDER_LAYER_OPAQUE_ID), LAST_LAYER);
-	staticOcclusionRenderPass->AddRenderLayer(new RenderLayer(LAYER_AFTER_OPAQUE,
-                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                             RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
-	staticOcclusionRenderPass->AddRenderLayer(new RenderLayer(LAYER_ALPHA_TEST_LAYER,
-                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                             RENDER_LAYER_ALPHA_TEST_LAYER_ID), LAST_LAYER);
-    staticOcclusionRenderPass->AddRenderLayer(new RenderLayer(LAYER_TRANSLUCENT,
-                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                             RENDER_LAYER_TRANSLUCENT_ID), LAST_LAYER);
-	staticOcclusionRenderPass->AddRenderLayer(new RenderLayer(LAYER_AFTER_TRANSLUCENT,
-                                                             RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK,
-                                                             RENDER_LAYER_AFTER_TRANSLUCENT_ID), LAST_LAYER);
+    staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD, this, RENDER_PASS_FORWARD_ID);        
 
-    renderPassBatchArray = new RenderPassBatchArray(renderSystem);
-    RenderLayerBatchArray * singleLayer = new RenderLayerBatchArray(RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK);
-    //renderPassBatchArray->InitPassLayersWithSingleLayer(staticOcclusionRenderPass, singleLayer);
-    renderPassBatchArray->InitPassLayers(staticOcclusionRenderPass);
     
     currentData = _currentData;
-    renderHierarchy = _renderHierarchy;
     occlusionAreaRect = currentData->bbox;
     xBlockCount = currentData->sizeX;
     yBlockCount = currentData->sizeY;
@@ -275,19 +252,13 @@ uint32 StaticOcclusion::RenderFrame()
                     
                     camera->SetupDynamicParameters();
                     
-                    uint64 timeCulling = SystemTimer::Instance()->GetAbsoluteNano();
-
-                    visibilityArray.Clear();
-                    renderHierarchy->Clip(camera, &visibilityArray);
-
-                    renderPassBatchArray->Clear();
-                    renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, camera);
+                    uint64 timeCulling = SystemTimer::Instance()->GetAbsoluteNano();                  
 
                     timeCulling = SystemTimer::Instance()->GetAbsoluteNano() - timeCulling;
                     timeTotalCulling += timeCulling;
 
                     uint64 timeRendering = SystemTimer::Instance()->GetAbsoluteNano();
-                    staticOcclusionRenderPass->Draw(camera, renderPassBatchArray);
+                    staticOcclusionRenderPass->Draw(camera, renderSystem);
                     timeRendering = SystemTimer::Instance()->GetAbsoluteNano() - timeRendering;
                     timeTotalRendering += timeRendering;
                     

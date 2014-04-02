@@ -44,7 +44,7 @@ class RenderLayerBatchArray;
 class RenderPassBatchArray
 {
 public:
-    RenderPassBatchArray(RenderSystem * rs);
+    RenderPassBatchArray();
     ~RenderPassBatchArray();
     
     void InitPassLayers(RenderPass * pass);

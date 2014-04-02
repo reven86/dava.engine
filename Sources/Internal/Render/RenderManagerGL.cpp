@@ -676,12 +676,32 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 
 void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 {
-	//renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
+    //currentRenderTarget = renderTarget;
+	renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
 	//IdentityModelMatrix();
 	//IdentityMappingMatrix();
 	HWglBindFBO(renderTarget->fboID);
-	RemoveClip();
+	//RemoveClip();
 }
+
+
+void RenderManager::DiscardFramebufferHW(uint32 attachments)
+{
+#ifdef __DAVAENGINE_IPHONE__
+    if (!attachments) 
+      return;
+    GLenum discards[3];
+    int32 discardsCount=0;
+    if (attachments&COLOR_ATTACHMENT)
+        discards[discardsCount++]=GL_COLOR_ATTACHMENT0;
+    if (attachments&DEPTH_ATTACHMENT)
+        discards[discardsCount++]=GL_DEPTH_ATTACHMENT;
+    if (attachments&STENCIL_ATTACHMENT)
+        discards[discardsCount++]=GL_STENCIL_ATTACHMENT;
+    RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
+#endif
+}
+
 #if 0
 void RenderManager::SetMatrix(eMatrixType type, const Matrix4 & matrix)
 {
@@ -896,6 +916,14 @@ void RenderManager::HWglBindFBO(const int32 fbo)
         
         lastBindedFBO = fbo;
     }
+}
+    
+void RenderManager::DiscardDepth()
+{
+#ifdef __DAVAENGINE_IPHONE__
+    static const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+    RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));
+#endif
 }
 
 #if defined(__DAVAENGINE_ANDROID__)

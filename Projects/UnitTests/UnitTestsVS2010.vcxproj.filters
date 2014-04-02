@@ -38,6 +38,7 @@
     <ClCompile Include="Classes\ComponentsTest.cpp" />
     <ClCompile Include="Classes\RectSpriteTest.cpp" />
     <ClCompile Include="Classes\StringFormatTest.cpp" />
+    <ClCompile Include="Classes\DateTimeTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\BaseScreen.h" />
@@ -77,5 +78,6 @@
     <ClInclude Include="Classes\ComponentsTest.h" />
     <ClInclude Include="Classes\RectSpriteTest.h" />
     <ClInclude Include="Classes\StringFormatTest.h" />
+    <ClInclude Include="Classes\DateTimeTest.h" />
   </ItemGroup>
 </Project>

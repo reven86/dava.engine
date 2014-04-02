@@ -353,6 +353,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleLayer.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
@@ -757,6 +758,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
@@ -778,6 +780,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp" />

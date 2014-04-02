@@ -59,7 +59,7 @@ namespace DAVA
 	{		
 	}
     
-	void LinearRenderHierarchy::Clip(Camera * camera, VisibilityArray * _visibilityArray)
+	void LinearRenderHierarchy::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 visibilityCriteria)
 	{				
 		visibilityArray = _visibilityArray;
 		Frustum * frustum = camera->GetFrustum();
@@ -67,19 +67,11 @@ namespace DAVA
 		for (uint32 pos = 0; pos < size; ++pos)
 		{
 			RenderObject * node = renderObjectArray[pos];						
-			if ((node->GetFlags() & RenderObject::CLIPPING_VISIBILITY_CRITERIA) != RenderObject::CLIPPING_VISIBILITY_CRITERIA)
+			if ((node->GetFlags() & visibilityCriteria) != visibilityCriteria)
 				continue;					
 			//still need to add flags for particles to dicede if to use DefferedUpdate
-			if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))
-			{
-				node->AddFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
-				visibilityArray->Add(node);
-			}
-			else
-			{
-				node->RemoveFlag(RenderObject::VISIBLE_AFTER_CLIPPING_THIS_FRAME);
-			}			
-			
+			if ((RenderObject::ALWAYS_CLIPPING_VISIBLE & node->GetFlags()) || frustum->IsInside(node->GetWorldBoundingBox()))			
+				visibilityArray->Add(node);						
 		}
 		       
 	}

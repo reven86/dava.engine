@@ -48,7 +48,9 @@ class QuadTree : public RenderHierarchy
 	AABBox3 worldBox;
 	int32 maxTreeDepth;
 	Frustum *currFrustum;
+	
 	Camera *currCamera;
+	uint32 currVisibilityCriteria;
 
 	List<int32> dirtyZNodes;    
 	List<RenderObject *> dirtyObjects;    	
@@ -89,7 +91,7 @@ public:
 	virtual void AddRenderObject(RenderObject * renderObject);
 	virtual void RemoveRenderObject(RenderObject * renderObject);
 	virtual void ObjectUpdated(RenderObject * renderObject);
-	virtual void Clip(Camera * camera, VisibilityArray * visibilityArray);
+	virtual void Clip(Camera * camera, VisibilityArray * visibilityArray, uint32 visibilityCriteria);
     virtual void GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray);
 
 	virtual void Initialize();

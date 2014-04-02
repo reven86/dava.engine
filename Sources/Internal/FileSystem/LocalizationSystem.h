@@ -48,6 +48,8 @@ public:
 	
 	const String &GetCurrentLocale();
 	void SetCurrentLocale(const String &newLangId);
+    
+    String GetCountryCode() const;
 	
 	WideString GetLocalizedString(const WideString & key);
 	void SetLocalizedString(const WideString & key, const WideString & value);
@@ -65,7 +67,13 @@ public:
 	bool SaveLocalizedStrings();
 
 private:
-
+    struct LanguageLocalePair
+	{
+		String languageCode;// in ISO 639-1, like en,ru,uk
+		String localeCode;// like en_US, ru_RU
+	};
+    static const LanguageLocalePair languageLocaleMap[];
+    
 	void LoadStringFile(const String & langId, const FilePath & fileName);
 	void UnloadStringFile(const FilePath & fileName); 
 
