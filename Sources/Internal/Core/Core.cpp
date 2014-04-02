@@ -106,11 +106,6 @@ void Core::CreateSingletons()
 //	}
 #endif
     
-#if defined(__USE_OWN_ALLOCATORS__)
-    new AllocatorsStack();
-    AllocatorsStack::Instance()->SetInitialized(TRUE);
-#endif
-    
     // check types size
 	new Logger();
 	//new AllocatorFactory();

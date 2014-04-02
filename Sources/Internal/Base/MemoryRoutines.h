@@ -11,7 +11,7 @@
 #define __Framework__MemoryRoutines__
 
 #include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
+#include "Base/StaticSingleton.h"
 #include <pthread.h>
 #if defined(__USE_OWN_ALLOCATORS__)
 namespace DAVA {
@@ -23,7 +23,7 @@ public:
     virtual void Delete(void *ptr) = 0;
 };
     
-class AllocatorsStack : public Singleton<AllocatorsStack>
+class AllocatorsStack : public StaticSingleton<AllocatorsStack>
 {
 public:
     AllocatorsStack();
@@ -32,11 +32,9 @@ public:
     
     void * Allocate(size_t _size);
     bool Deallocate(void* ptr);
-    inline void SetInitialized(bool bInitialized) {this->bInitialized = bInitialized;};
     
 private:
     Map<pthread_t, Stack<Allocator*>*>allocatorsStack;
-    static bool bInitialized;
 };
 
 }
