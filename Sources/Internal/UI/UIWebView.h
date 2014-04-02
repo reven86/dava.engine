@@ -54,6 +54,8 @@ public:
 	String GetCookie(const String& targetUrl, const String& name);
 	// Get the list of cookies for specific domain
 	Map<String, String> GetCookies(const String& targetUrl);
+	// Perfrom Java script
+	String ExecuteJScript(const String& scriptString);
 	
     void OpenFromBuffer(const String& string, const FilePath& basePath);
     

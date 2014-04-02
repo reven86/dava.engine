@@ -87,6 +87,11 @@ void UIWebView::DeleteCookies(const String& targetUrl)
 	webViewControl->DeleteCookies(targetUrl);
 }
 
+String UIWebView::ExecuteJScript(const String& scriptString)
+{
+	return webViewControl->ExecuteJScript(scriptString);
+}
+
 void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     this->webViewControl->OpenFromBuffer(string, basePath);

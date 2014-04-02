@@ -170,6 +170,23 @@ public class JNIWebView {
 		});
 	}
 	
+	public static void ExecuteJScript(final int id, final String scriptString)
+	{
+		final JNIActivity activity = JNIActivity.GetActivity();
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				if (!views.containsKey(id))
+				{
+					Log.d(TAG, String.format("Unknown view id %d", id));
+					return;
+				}
+				WebView webView = views.get(id);
+				webView.loadUrl(scriptString);
+			}
+		});
+	}
+	
 	public static void DeleteCookies(final int id, final String targetURL)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();

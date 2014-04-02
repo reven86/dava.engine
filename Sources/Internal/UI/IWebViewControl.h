@@ -77,6 +77,8 @@ public:
 	virtual String GetCookie(const String& url, const String& name) { return String(); };
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url) { return Map<String, String>(); };
+	// Execute javascript command
+	virtual String ExecuteJScript(const String& scriptString) { return String(); };
 	
     virtual void OpenFromBuffer(const String& string, const DAVA::FilePath& basePath) = 0;
     

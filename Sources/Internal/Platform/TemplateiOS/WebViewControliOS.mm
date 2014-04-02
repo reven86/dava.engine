@@ -238,17 +238,6 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 
 String WebViewControl::GetCookie(const String& targetUrl, const String& name)
 {
-/*	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
-	NSString *cookieName = [NSString stringWithUTF8String:name.c_str()];
-    NSArray  *cookiesArray = [[NSHTTPCookieStorage sharedHTTPCookieStorage] cookiesForURL: [NSURL URLWithString:targetUrlString]];
-	// Search for specific cookie and return its value
-	for(NSHTTPCookie * cookie in cookiesArray)
-	{
-        if ([[cookie name] isEqualToString: cookieName])
-        {
-            return [[cookie value] UTF8String];
-        }
-    }*/
 	Map<String, String> cookiesMap = GetCookies(targetUrl);
 	Map<String, String>::iterator cIter = cookiesMap.find(name);
 	
@@ -274,6 +263,14 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
     }
 	
 	return resultMap;
+}
+
+String WebViewControl::ExecuteJScript(const String& scriptString)
+{
+	NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
+	NSString *resultString = [(UIWebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+
+	return String([resultString UTF8String]);
 }
 
 void WebViewControl::SetRect(const Rect& rect)

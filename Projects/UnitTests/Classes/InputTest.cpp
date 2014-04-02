@@ -111,7 +111,6 @@ void UIWebViewDelegate::PageLoaded(UIWebView* webview)
 	webview->SetVisible(true);
 }
 
-
 InputTest::InputTest() :
  TestTemplate<InputTest>("InputTest")
 {
@@ -242,7 +241,7 @@ void InputTest::LoadResources()
 	webView2 = new UIWebView(Rect(305, 300, 440, 190));
     webView2->SetVisible(false);
     webView2->SetDelegate((UIWebViewDelegate*)delegate);
-	webView2->LoadHtmlString(L"<html>LINK TO DAVA - <a href='http://www.davaconsulting.com/'>HELLO DAVA</a></html>");
+	webView2->LoadHtmlString(L"<html><head><title>Test JavaScript Title</title></head><body>LINK TO DAVA - <a id='myLinko' href='http://www.davaconsulting.com/'>HELLO DAVA</a></body></html>");
 	webView2->SetBounces(true);
 	AddControl(webView2);
 

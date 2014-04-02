@@ -92,6 +92,17 @@ void JniWebView::LoadHtmlString(int id, const String& htmlString)
 	}
 }
 
+void JniWebView::ExecuteJScript(int id, const String& scriptString)
+{
+	jmethodID mid = GetMethodID("ExecuteJScript", "(ILjava/lang/String;)V");
+	if (mid)
+	{
+		jstring jScriptToExecute = GetEnvironment()->NewStringUTF(scriptString.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jScriptToExecute);
+		GetEnvironment()->DeleteLocalRef(jScriptToExecute);
+	}
+}
+
 void JniWebView::DeleteCookies(int id, const String& targetURL)
 {
 	jmethodID mid = GetMethodID("DeleteApplicationCookies", "(ILjava/lang/String;)V");
@@ -201,6 +212,13 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 {
 	JniWebView jniWebView;
 	jniWebView.DeleteCookies(webViewId, targetUrl);
+}
+
+String WebViewControl::ExecuteJScript(const String& scriptString)
+{
+	JniWebView jniWebView;
+	jniWebView.ExecuteJScript(webViewId, scriptString);
+	return String();
 }
 
 void WebViewControl::SetRect(const Rect& rect)

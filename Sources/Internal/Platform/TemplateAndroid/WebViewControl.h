@@ -58,6 +58,8 @@ public:
 	virtual void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
+	// Perform Java script
+	virtual String ExecuteJScript(const String& scriptString);
 
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
@@ -82,6 +84,7 @@ public:
 	void OpenURL(int id, const String& urlToOpen);
 	void LoadHtmlString(int id, const String& htmlString);
 	void DeleteCookies(int id, const String& targetUrl);
+	void ExecuteJScript(int id, const String& scriptString);
 
 	void SetRect(int id, const Rect& rect);
 	void SetVisible(int id, bool isVisible);
