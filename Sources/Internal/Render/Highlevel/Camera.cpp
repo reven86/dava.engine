@@ -86,10 +86,15 @@ void Camera::SetIsOrtho(const bool &_ortho)
 }
  
 
-void Camera::SetWidth(const float32 &width)
+void Camera::SetOrthoWidth(const float32 &width)
 {
 	orthoWidth = width;
 	Recalc();
+}
+
+float32 Camera::GetOrthoWidth() const
+{
+    return orthoWidth;
 }
     
 void Camera::SetXMin(const float32 &_xmin)
@@ -416,7 +421,7 @@ void Camera::LookAt(Vector3	position, Vector3 view, Vector3 up)
 }
  */
 
-void Camera::SetupDynamicParameters()
+void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
 {
 	flags = REQUIRE_REBUILD | REQUIRE_REBUILD_MODEL | REQUIRE_REBUILD_PROJECTION;
     if (flags & REQUIRE_REBUILD)
@@ -427,6 +432,7 @@ void Camera::SetupDynamicParameters()
     if (flags & REQUIRE_REBUILD_PROJECTION)
     {
         RebuildProjectionMatrix();
+       
     }
 
     if (flags & REQUIRE_REBUILD_MODEL)
@@ -434,10 +440,44 @@ void Camera::SetupDynamicParameters()
         RebuildViewMatrix();
     }
     
-    viewProjMatrix = viewMatrix * projMatrix;
-    flags &= ~REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
+
+    
 
     viewMatrix.GetInverse(invViewMatrix);
+
+    if (externalClipPlane)
+    {
+        Vector4 clipPlane(*externalClipPlane);
+        if (RenderManager::Instance()->GetRenderOrientation() == Core::SCREEN_ORIENTATION_TEXTURE)
+        {
+            clipPlane = -clipPlane;
+        }
+        Matrix4 m;
+        
+        viewMatrix.GetInverse(m);
+        m.Transpose();
+        clipPlane  = clipPlane * m;
+        
+        
+        projMatrix.GetInverse(m);
+        m.Transpose();
+        Vector4 v = Vector4 (Sign(clipPlane.x), Sign(clipPlane.y), 1, 1)*m;
+        
+        Vector4 scaledPlane = clipPlane * (2.0f / v.DotProduct(clipPlane));
+
+        projMatrix.data[2] = scaledPlane.x;
+        projMatrix.data[6] = scaledPlane.y;
+        projMatrix.data[10] = scaledPlane.z+1;
+        projMatrix.data[14] = scaledPlane.w;
+       
+    }
+
+    viewProjMatrix = viewMatrix * projMatrix;
+
+    
+    flags &= ~REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
+
+    
     viewProjMatrix.GetInverse(invViewProjMatrix);
     
 	RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
@@ -465,15 +505,12 @@ BaseObject * Camera::Clone(BaseObject * dstNode)
     }
     // SceneNode::Clone(dstNode);
     Camera *cnd = (Camera*)dstNode;
-    cnd->xmin = xmin;
-    cnd->xmax = xmax;
-    cnd->ymin = ymin;
-    cnd->ymax = ymax;
     cnd->znear = znear;
     cnd->zfar = zfar;
     cnd->aspect = aspect;
     cnd->fovX = fovX;
     cnd->ortho = ortho;
+    cnd->orthoWidth = orthoWidth;
     
     cnd->position = position;
     cnd->target = target;
@@ -482,8 +519,9 @@ BaseObject * Camera::Clone(BaseObject * dstNode)
     //cnd->rotation = rotation;
     cnd->cameraTransform = cameraTransform;
     cnd->flags = flags;
-    
     cnd->zoomFactor = zoomFactor;
+
+    cnd->Recalc();
     return dstNode;
 }
     
@@ -573,10 +611,7 @@ void Camera::Save(KeyedArchive * archive)
 {
     BaseObject::Save(archive);
     
-    archive->SetFloat("cam.xmin", xmin);
-    archive->SetFloat("cam.xmax", xmax);
-    archive->SetFloat("cam.ymin", ymin);
-    archive->SetFloat("cam.ymax", ymax);
+    archive->SetFloat("cam.orthoWidth", orthoWidth);
     archive->SetFloat("cam.znear", znear);
     archive->SetFloat("cam.zfar", zfar);
     archive->SetFloat("cam.aspect", aspect);
@@ -601,10 +636,7 @@ void Camera::Load(KeyedArchive * archive)
     BaseObject::Load(archive);
     
     // todo add default values
-    xmin = archive->GetFloat("cam.xmin");
-    xmax = archive->GetFloat("cam.xmax");
-    ymin = archive->GetFloat("cam.ymin");
-    ymax = archive->GetFloat("cam.ymax");
+    orthoWidth = archive->GetFloat("cam.orthoWidth");
     znear = archive->GetFloat("cam.znear");
     zfar = archive->GetFloat("cam.zfar");
     aspect = archive->GetFloat("cam.aspect");
@@ -621,6 +653,8 @@ void Camera::Load(KeyedArchive * archive)
     cameraTransform = archive->GetByteArrayAsType("cam.cameraTransform", cameraTransform);
     viewMatrix = archive->GetByteArrayAsType("cam.modelMatrix", viewMatrix);
     projMatrix = archive->GetByteArrayAsType("cam.projMatrix", projMatrix);
+
+    Recalc();
 }
 
 	

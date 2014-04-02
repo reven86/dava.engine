@@ -64,8 +64,11 @@ void RenderUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
         // Update new transform pointer, and mark that transform is changed
         Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
 		RenderObject * object = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
-        object->SetWorldTransformPtr(worldTransformPointer);
-		entity->GetScene()->renderSystem->MarkForUpdate(object);
+        if(NULL != object)
+        {
+            object->SetWorldTransformPtr(worldTransformPointer);
+            entity->GetScene()->renderSystem->MarkForUpdate(object);
+        }
     }
     
     //if (event == EventSystem::ACTIVE_CAMERA_CHANGED)
@@ -101,6 +104,11 @@ void RenderUpdateSystem::RemoveEntity(Entity * entity)
 void RenderUpdateSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("RenderUpdateSystem::Process");
+
+    RenderSystem * renderSystem = GetScene()->GetRenderSystem();
+    renderSystem->SetCamera(GetScene()->GetCurrentCamera());
+    renderSystem->SetClipCamera(GetScene()->GetClipCamera());
+
     GetScene()->GetRenderSystem()->Update(timeElapsed);
 }
     

@@ -63,95 +63,10 @@ void DataNode::SetScene(Scene * _scene)
     DVASSERT(scene == 0 || scene == _scene);
     scene = _scene;
 }
-    
-void DataNode::SetName(const String & _name)
-{
-    name = _name;
-}
-    
-const String & DataNode::GetName() const
-{
-    return name;
-}
-
+  
 void DataNode::AddNode(DataNode * node)
 {
-    if (node)
-    {
-        node->Retain();
-        node->index = children.size();
-        children.push_back(node);
-        //node->SetParent(this);
-    }
-}
-
-DataNode *	DataNode::FindByName(const String & searchName)
-{
-    if (name == searchName)
-        return this;
-    
-    uint32 size = (uint32)children.size();
-    for (uint32 c = 0; c < size; ++c)
-    {
-        DataNode * res = children[c]->FindByName(searchName);
-        if (res != 0)return res;
-    }
-    return 0;
-}
-
-void DataNode::RemoveNode(DataNode * node)
-{
-    if (!node) 
-    {
-        return;
-    }
-//    if (inUpdate) 
-//    {
-//        removedCache.push_back(node);
-//        return;
-//    }
-    const Vector<DataNode*>::iterator & childrenEnd = children.end();
-    for (Vector<DataNode*>::iterator t = children.begin(); t != childrenEnd; ++t)
-    {
-        if (*t == node)
-        {
-            children.erase(t);
-            if (node)
-            {
-                //node->SetParent(0);
-                node->index = -1;
-                node->Release();
-            }
-            break;
-        }
-    }
-    uint32 size = (uint32)children.size();
-    for (uint32 c = 0; c < size; ++c)
-    {
-        children[c]->index = c;
-    }
-}
-
-DataNode * DataNode::GetChildNode(int32 index)
-{
-    return children[index];
-}
-
-int32 DataNode::GetChildrenNodeCount()
-{
-    return (int32)children.size();
-}
-
-void DataNode::RemoveAllChildrenNodes()
-{
-    for (Vector<DataNode*>::iterator t = children.begin(); t != children.end(); ++t)
-    {
-        DataNode *node = *t;
-        //node->SetParent(0);
-        node->index = -1;
-        node->Release();
-    }
-    children.clear();
+    DVASSERT(false && "DataNode::AddNode is deprecated!");
 }
 
 int32  DataNode::GetNodeIndex()
@@ -168,7 +83,7 @@ uint64 DataNode::GetPreviousPointer()
 void DataNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
     BaseObject::Load(archive);
-    name = archive->GetString("name");
+    
     index = archive->GetInt32("#index", -1);
     pointer = archive->GetByteArrayAsType("#id", (uint64)0);
 }
@@ -177,7 +92,7 @@ void DataNode::Save(KeyedArchive * archive, SerializationContext * serialization
 {
     BaseObject::Save(archive);
     archive->SetInt32("#index", index);
-    archive->SetString("name", name);
+    
     pointer = (uint64)this;
     archive->SetByteArrayAsType("#id", pointer);
 }

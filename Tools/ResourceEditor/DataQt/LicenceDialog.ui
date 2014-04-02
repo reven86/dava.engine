@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LicenceDialog</class>
+ <widget class="QDialog" name="LicenceDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>692</width>
+    <height>470</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>400</width>
+    <height>370</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Licence agreement</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTextBrowser" name="text">
+     <property name="tabChangesFocus">
+      <bool>true</bool>
+     </property>
+     <property name="html">
+      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;ВАЖНО! ПОЖАЛУЙСТА, ПРОЧТИТЕ ВНИМАТЕЛЬНО. ЭТА ВЕРСИЯ ЛИЦЕНЗИОННОГО СОГЛАШЕНИЯ С КОНЕЧНЫМ ПОЛЬЗОВАТЕЛЕМ ResourceEditor ВСТУПАЕТ В СИЛУ 31 МАРТА 2014 ГОДА В 00:00 ЧАСОВ ПО ГРИНВИЧУ.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;ПЕРЕД УСТАНОВКОЙ ДАННОГО ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ ПРОЧТИТЕ ВНИМАТЕЛЬНО НАСТОЯЩЕЕ ЛИЦЕНЗИОННОЕ СОГЛАШЕНИЕ С КОНЕЧНЫМ ПОЛЬЗОВАТЕЛЕМ. ДАННОЕ ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ НЕ ПРОДАЕТСЯ, А ПЕРЕДАЕТСЯ В ПОЛЬЗОВАНИЕ ПО ЛИЦЕНЗИИ. УСТАНАВЛИВАЯ, КОПИРУЯ ИЛИ ИНЫМ СПОСОБОМ ИСПОЛЬЗУЯ ИГРУ (ОПРЕДЕЛЕННУЮ НИЖЕ ПО ТЕКСТУ), ВЫ ПОДТВЕРЖДАЕТЕ СВОЕ СОГЛАСИЕ СОБЛЮДАТЬ УСЛОВИЯ ДАННОГО ЛИЦЕНЗИОННОГО СОГЛАШЕНИЯ С КОНЕЧНЫМ ПОЛЬЗОВАТЕЛЕМ. ЕСЛИ ВЫ НЕ СОГЛАСНЫ С УСЛОВИЯМИ ДАННОГО СОГЛАШЕНИЯ, ВЫ НЕ ИМЕЕТЕ ПРАВА УСТАНАВЛИВАТЬ ИЛИ ИСПОЛЬЗОВАТЬ РЕДАКТОР. ЕСЛИ В ТЕЧЕНИЕ 30 (ТРИДЦАТИ) ДНЕЙ С МОМЕНТА ПОЛУЧЕНИЯ РЕДАКТОРА ВЫ НЕ ПРИНИМАЕТЕ УСЛОВИЙ НАСТОЯЩЕГО СОГЛАШЕНИЯ, ВЫ МОЖЕТЕ ВЕРНУТЬ РЕДАКТОР ПО МЕСТУ ПОЛУЧЕНИЯ ИЛИ СВЯЗАТЬСЯ С НАМИ. В ТАКОМ СЛУЧАЕ ВЫ ДОЛЖНЫ НЕМЕДЛЕННО УДАЛИТЬ ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ С ВАШЕГО КОМПЬЮТЕРА.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;1. Предоставление ограниченной пользовательской лицензии.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; В случае вашего согласия и при условии постоянного соблюдения вами данного Лицензионного соглашения Framework-Team предоставляет, а вы настоящим принимаете ограниченную, отзывную, не подлежащую передаче другим лицам, неисключительную лицензию (а) на установку ResourceEditor на одном или более компьютерах, находящихся в вашей полноправной собственности или под вашим законным контролем; (b) на пользование ResourceEditor посредством Услуги исключительно в рабочих целях; Любое использование ResourceEditor регулируется Лицензионным соглашением и Условиями пользования, которые конечный пользователь обязуется принять перед началом использования ResourceEditor. В случае противоречий между условиями настоящего Соглашения и Условиями пользования, настоящее Соглашение имеет преимущественную силу над Условиями пользования.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;2. Дополнительные ограничения лицензии.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; В отношении лицензии, предоставленной вам в соответствии с Разделом 1, действуют ограничения, предусмотренные Разделами 1 и 2 настоящего Соглашения (совместно именуемые «Ограничения лицензии»). Вы обязуетесь:&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;- пользоваться ResourceEditor таким, какой он есть.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;- досканально изучить все возможности ResourceEditor&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;- самостоятельно настраивать матрицы, править шейдеры, а так же, при необходимости, самостоятльно исправлять ошибки в файлах .sc2 с помощью HEX-редактора.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;- в случае использования ResourceEditor в состоянии алькогольного, наркотического или токсического опьянения безвозмездно передать часть веществ, вызвавшых данное состояние, в пользу Framework-Team&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;- использовать ResourceEditor вне состояния алькогольного, наркотического или токсического опьянения не более 5 дней.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;- все обеденные салаты с содержанием помидоров более 10% безвозмездно передавать в рот Сольвью Игорю; в случае сопротивлении объекта - разрешается и требуется применить силу.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;- ежемесячно отчислять не менее 4% заработной платы в пользу Framework-Team, посредством помещения денежных средств, закуски или алкоголя в емкость с надписью &amp;quot;РАБОТАЕМ ЗА ПЕЧЕНКИ&amp;quot; в комнате 210, а так же не менее 1% заработной платы отчислять лично МАСТЕРУ ЛИНЕЙНОГО ТУМАНА ЗА 5 СЕК.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;3. Внесение изменений в Соглашение.&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt; Framework-Team имеет право в любое время вносить изменения в настоящее Лицензионное соглашение. В этом случае компания Framework-Team будет сообщать вам о любых подобных изменениях путем специального уведомления. Если вы не выдвинете возражений против изменений Лицензионного соглашения в течение 1 (одного) месяца после получения специального уведомления, продолжение использования ResourceEditor будет означать, что вы принимаете измененное Лицензионное соглашение. Специальное уведомление будет содержать напоминание о том, что продолжение использования Услуги по истечении 1 (одного) месяца от даты специального уведомления означает принятие вами всех изменений.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QCheckBox" name="accepted">
+       <property name="text">
+        <string>I accept the licence agreement</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="accept">
+       <property name="text">
+        <string>Accept</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="decline">
+       <property name="text">
+        <string>Decline</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

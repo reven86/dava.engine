@@ -179,7 +179,7 @@ DAVA::ActionComponent::Action ActionComponentEditor::GetDefaultAction()
 	DAVA::ActionComponent::Action action;
 	action.eventType = DAVA::ActionComponent::Action::EVENT_SWITCH_CHANGED;
 	action.type = DAVA::ActionComponent::Action::TYPE_PARTICLE_EFFECT;	
-	action.entityName = targetComponent->GetEntity()->GetName();
+	action.entityName = DAVA::ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME;
 	action.delay = 0.0f;
 	action.switchIndex = -1;
 
@@ -242,7 +242,7 @@ QWidget* ActionItemEditDelegate::createEditor(QWidget *parent, const QStyleOptio
 		{
 			QComboBox* combo = new QComboBox(parent);
 			combo->setFrame(false);
-			for(int i = 1; i < ACTION_NAME_COUNT - 1; ++i) //do not add sound aciton
+			for(int i = 1; i < ACTION_NAME_COUNT; ++i) //do not add sound aciton
 			{
 				combo->addItem(ACTION_TYPE_NAME[i]);
 			}
@@ -261,7 +261,8 @@ QWidget* ActionItemEditDelegate::createEditor(QWidget *parent, const QStyleOptio
 			DAVA::Vector<DAVA::String> childrenNames;
             childrenNames.reserve(allChildren.size() + 1);
             
-			childrenNames.push_back(parentEntity->GetName().c_str());
+			childrenNames.push_back(DAVA::ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME.c_str());
+
 			for(int i = 0; i < (int)allChildren.size(); ++i)
 			{
 				childrenNames.push_back(allChildren[i]->GetName().c_str());

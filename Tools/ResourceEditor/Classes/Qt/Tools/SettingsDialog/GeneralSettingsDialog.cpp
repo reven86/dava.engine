@@ -92,7 +92,6 @@ void GeneralSettingsDialog::InitSettings()
 			groupEditor->AppendProperty( it->first.c_str(), propData);
 		}
 
-		groupEditor->expandAll();
 		groupEditor->setMinimumWidth(EDITOR_TAB_WIDTH);
 		tabWidget->addTab(groupEditor, groupName.c_str());
 		groupEditor->resizeColumnToContents(0);

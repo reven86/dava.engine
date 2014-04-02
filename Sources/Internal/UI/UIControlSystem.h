@@ -159,7 +159,7 @@ public:
 	 \brief Cancel all inputs for the requested control.
 	 \param[in] control to cancel inputs for.
 	 */
-	void CancelInputs(UIControl *control);
+	void CancelInputs(UIControl *control, bool hierarchical = true);
 
 	/**
 	 \brief Cancel requested input.

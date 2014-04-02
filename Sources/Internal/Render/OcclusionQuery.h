@@ -28,12 +28,15 @@
 #ifndef __DAVAENGINE_OCCLUSION_QUERY__
 #define __DAVAENGINE_OCCLUSION_QUERY__
 
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
-	
+
+#if defined(__DAVAENGINE_OPENGL__)
+
 namespace DAVA
 {
 
@@ -120,5 +123,7 @@ inline OcclusionQuery & OcclusionQueryManager::Get(OcclusionQueryManagerHandle h
 
 
 };
+
+#endif // #if defined(__DAVAENGINE_OPENGL__)
 
 #endif //__DAVAENGINE_OCCLUSION_QUERY__

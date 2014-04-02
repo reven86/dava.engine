@@ -170,7 +170,7 @@ bool TilemaskEditorSystem::IsLandscapeEditingEnabled() const
 	return enabled;
 }
 
-void TilemaskEditorSystem::Update(float32 timeElapsed)
+void TilemaskEditorSystem::Process(float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

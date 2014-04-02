@@ -44,6 +44,7 @@
 #include "WebViewControl.h"
 #include "Debug/DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
+#include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Network/MailSender.h"
 #include "Utils/UtilsAndroid.h"
 #include "UI/UITextFieldAndroid.h"
@@ -118,6 +119,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIMovieViewControl", &DAVA::JniMovieViewControl::gJavaClass, &DAVA::JniMovieViewControl::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
+	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
 	DAVA::Thread::InitMainThread();
 
 

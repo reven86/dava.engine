@@ -124,6 +124,9 @@
     <Filter Include="Internal\DLC">
       <UniqueIdentifier>{8b6654bd-b8b7-4415-97cd-58c934760ce1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Sound\FMOD">
+      <UniqueIdentifier>{2f943bab-8569-4d22-8819-d48cad640ada}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Internal\Scene3D\SceneFile">
       <UniqueIdentifier>{6ee8193e-ec7e-456e-a4ed-4aff6d19fa73}</UniqueIdentifier>
     </Filter>
@@ -605,12 +608,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\SpriteNode.h">
       <Filter>Internal\Scene3D</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Sound\Sound.h">
-      <Filter>Internal\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Sound\SoundGroup.h">
-      <Filter>Internal\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h">
       <Filter>Internal\UI</Filter>
@@ -1209,26 +1206,11 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Sound\FMODUtils.h">
-      <Filter>Internal\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h">
-      <Filter>Internal\Sound</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h">
       <Filter>Internal\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Sound\SoundEventCategory.h">
-      <Filter>Internal\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Sound\VolumeAnimatedObject.h">
-      <Filter>Internal\Sound</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.h">
-      <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\GlobalEnum.h">
       <Filter>Internal\Base</Filter>
@@ -1296,6 +1278,15 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\TeamcityOutput.h">
       <Filter>Internal\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.h">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Sound\FMODSoundEvent.h">
+      <Filter>Internal\Sound\FMOD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Sound\FMODUtils.h">
+      <Filter>Internal\Sound\FMOD</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h">
       <Filter>Internal\Autotesting</Filter>
     </ClInclude>
@@ -1304,6 +1295,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\DAVAClassRegistrator.h">
       <Filter>Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h">
+      <Filter>Internal\Sound</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\RenderBatchArray.h">
       <Filter>Internal\Render\Highlevel</Filter>
@@ -1404,6 +1398,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialNames.h">
       <Filter>Internal\Render\Material</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Sound\FMODFileSoundEvent.h">
+      <Filter>Internal\Sound\FMOD</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Converters\LodToLod2Converter.h">
       <Filter>Internal\Scene3D\Converters</Filter>
     </ClInclude>
@@ -1415,6 +1412,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h">
       <Filter>Internal\Base\Radix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\VegetationRenderObject.h">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h">
+      <Filter>Internal\Platform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1783,12 +1789,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SkeletonNode.cpp">
       <Filter>Internal\Scene3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Sound\Sound.cpp">
-      <Filter>Internal\Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundGroup.cpp">
-      <Filter>Internal\Sound</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp">
       <Filter>Internal\UI</Filter>
@@ -2330,23 +2330,8 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundEvent.cpp">
-      <Filter>Internal\Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundSystem.cpp">
-      <Filter>Internal\Sound</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\SoundUpdateSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundEventCategory.cpp">
-      <Filter>Internal\Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Sound\VolumeAnimatedObject.cpp">
-      <Filter>Internal\Sound</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.cpp">
-      <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\GlobalEnum.cpp">
       <Filter>Internal\Base</Filter>
@@ -2419,6 +2404,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\TeamcityOutput.cpp">
       <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.cpp">
+      <Filter>Internal\Scene3D\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundEvent.cpp">
+      <Filter>Internal\Sound\FMOD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Autotesting\AutotestingDB.cpp">
       <Filter>Internal\Autotesting</Filter>
@@ -2522,6 +2513,12 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialNames.cpp">
       <Filter>Internal\Render\Material</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp">
+      <Filter>Internal\Sound\FMOD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Sound\FMODFileSoundEvent.cpp">
+      <Filter>Internal\Sound\FMOD</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Converters\LodToLod2Converter.cpp">
       <Filter>Internal\Scene3D\Converters</Filter>
     </ClCompile>
@@ -2533,6 +2530,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp">
       <Filter>Internal\Base\Radix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\VegetationRenderObject.cpp">
+      <Filter>Internal\Render\Highlevel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
+      <Filter>Internal\Scene3D\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp">
+      <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp">
+      <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

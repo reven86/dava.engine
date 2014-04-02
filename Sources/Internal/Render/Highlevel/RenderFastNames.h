@@ -53,7 +53,9 @@ enum eRenderPassID
     RENDER_PASS_SHADOW_VOLUME_ID,
     RENDER_PASS_SHADOW_MAP_ID,
     RENDER_PASS_DEFERRED_ID,
-    RENDER_PASS_STATIC_OCCLUSION_ID,
+    RENDER_PASS_STATIC_OCCLUSION_ID,    
+    RENDER_PASS_WATER_REFLECTION,
+    RENDER_PASS_WATER_REFRACTION,
     RENDER_PASS_ID_COUNT,
 };
 
@@ -62,19 +64,21 @@ enum eRenderPassID
 static const FastName LAYER_OPAQUE("OpaqueRenderLayer");
 static const FastName LAYER_AFTER_OPAQUE("AfterOpaqueRenderLayer");
 static const FastName LAYER_ALPHA_TEST_LAYER("AlphaTestLayer");
+static const FastName LAYER_WATER("WaterLayer");
 static const FastName LAYER_TRANSLUCENT("TransclucentRenderLayer");
 static const FastName LAYER_AFTER_TRANSLUCENT("AfterTransclucentRenderLayer");
 static const FastName LAYER_SHADOW_VOLUME("ShadowVolumeRenderLayer");
-static const FastName LAYER_SHADOW_RECT("ShadowRectRenderLayer");
+
     
 enum eRenderLayerID
 {
     RENDER_LAYER_OPAQUE_ID = 0,
     RENDER_LAYER_AFTER_OPAQUE_ID = 1,
     RENDER_LAYER_ALPHA_TEST_LAYER_ID = 2,
-    RENDER_LAYER_TRANSLUCENT_ID = 3,
-    RENDER_LAYER_AFTER_TRANSLUCENT_ID = 4,
-    RENDER_LAYER_SHADOW_VOLUME_ID = 5,
+    RENDER_LAYER_WATER_ID = 3, 
+    RENDER_LAYER_TRANSLUCENT_ID = 4,
+    RENDER_LAYER_AFTER_TRANSLUCENT_ID = 5,
+    RENDER_LAYER_SHADOW_VOLUME_ID = 6,
     RENDER_LAYER_ID_COUNT,
 };
     

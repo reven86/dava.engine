@@ -61,6 +61,7 @@ public:
 	QModelIndex indexFromItem(QtPropertyData *data) const;
 
 	QModelIndex AppendProperty(const QString &name, QtPropertyData* data, const QModelIndex &parent = QModelIndex());
+    void MergeProperty(QtPropertyData* data, const QModelIndex &parent = QModelIndex());
 	QModelIndex InsertProperty(const QString &name, QtPropertyData* data, int row, const QModelIndex &parent = QModelIndex());
 
 	bool GetEditTracking();

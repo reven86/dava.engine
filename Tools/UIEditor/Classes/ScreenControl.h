@@ -44,19 +44,22 @@ protected:
 	~ScreenControl();
 public:
 	ScreenControl();
-	
-	virtual void SystemDraw(const UIGeometricData &geometricData);
+
 	virtual bool IsPointInside(const Vector2& point, bool expandWithFocus);
-    
+    virtual void Draw(const UIGeometricData &geometricData);
+    virtual void DrawAfterChilds(const UIGeometricData &geometricData);
+
     void SetScale(const Vector2& value);
     void SetPos(const Vector2& value);
+private:
+    void DrawSelectionFrame(const UIGeometricData &gd, const Color &color);
+    void DrawPivotPoint(const UIGeometricData &gd, const Color &color);
 
 private:
-    UIControl* background;
-    
     // Scale and Position of the screen in UIEditor. Needed to recalculate opacity texture.
     Vector2 scale;
     Vector2 pos;
+    UIControlBackground * chequeredBackground;
 };
 
 #endif /* defined(__UIEditor__ScreenControl__) */

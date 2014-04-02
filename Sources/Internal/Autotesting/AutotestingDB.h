@@ -36,18 +36,19 @@ public:
 	AutotestingDB();
 	~AutotestingDB();
 
-	bool ConnectToDB(const String &name, const String &dbName, const String &dbHost, const int32 dbPort);
+	bool ConnectToDB(const String &collection, const String &dbName, const String &dbHost, const int32 dbPort);
 	void CloseConnection();
 
 	// Work with log object in DB
-	KeyedArchive *FindRunArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg);
-	KeyedArchive *FindOrInsertRunArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg);
+	KeyedArchive *FindBuildArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg);
+	KeyedArchive *FindOrInsertBuildArchive(MongodbUpdateObject* dbUpdateObject, const String &auxArg);
 
-	KeyedArchive *InsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId, const String &testName, bool needClearGroup);
+	KeyedArchive *FindOrInsertGroupArchive(KeyedArchive* buildArchive, const String &groupId);
+	KeyedArchive *InsertTestArchive(KeyedArchive* currentGroupArchive, const String &testId);
 	KeyedArchive *InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description);
 
 	KeyedArchive *FindOrInsertTestArchive(MongodbUpdateObject *dbUpdateObject, const String &testId);
-	KeyedArchive *FindOrInsertTestStepArchive(KeyedArchive *testArchive, const String &stepId);
+	KeyedArchive *FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId);
 	KeyedArchive *FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId);
 
 	// Getting and Setting data from/in DB
@@ -72,7 +73,7 @@ public:
 	String ReadState(const String & device);
 	String ReadCommand(const String & device);
 
-
+	void SetTestStarted();
 protected:
 	MongodbClient *dbClient;
 

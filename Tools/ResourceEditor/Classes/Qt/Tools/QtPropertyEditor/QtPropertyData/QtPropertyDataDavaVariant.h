@@ -154,6 +154,11 @@ public:
 
 		trackParent = true;
 	}
+
+    virtual bool IsMergable() const
+    {
+        return false;
+    }
 };
 
 #endif // __QT_PROPERTY_DATA_DAVA_VARIANT_H__

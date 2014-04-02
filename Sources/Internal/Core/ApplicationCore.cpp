@@ -45,21 +45,22 @@ namespace DAVA
 ApplicationCore::ApplicationCore()
 	: BaseObject()
 {
+
 }
 
 ApplicationCore::~ApplicationCore()
 {
-	
+
 }
 	
 void ApplicationCore::Update(float32 timeElapsed)
 {
-	SoundSystem::Instance()->Update();
-	AnimationManager::Instance()->Update(timeElapsed);    
-	UIControlSystem::Instance()->Update();
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
+	SoundSystem::Instance()->Update(timeElapsed);
+	AnimationManager::Instance()->Update(timeElapsed);    
+	UIControlSystem::Instance()->Update();
 }
 
 void ApplicationCore::Draw()

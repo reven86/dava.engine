@@ -71,7 +71,7 @@ SceneSelectionSystem::~SceneSelectionSystem()
 
 }
 
-void SceneSelectionSystem::Update(DAVA::float32 timeElapsed)
+void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
 	ForceEmitSignals();
 

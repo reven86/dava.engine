@@ -55,6 +55,8 @@ void LodSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("LodSystem::Process");
     
+    SetCamera(GetScene()->GetCurrentCamera());
+
 	float32 currFps = 1.0f/timeElapsed;
 
 	float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS())/(PerformanceSettings::Instance()->GetPsPerformanceMaxFPS()-PerformanceSettings::Instance()->GetPsPerformanceMinFPS());

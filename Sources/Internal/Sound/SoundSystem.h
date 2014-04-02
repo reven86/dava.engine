@@ -31,70 +31,114 @@
 
 #include "Base/Singleton.h"
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/ScopedPtr.h"
-#include "Base/FastNameMap.h"
-#include "Sound/Sound.h"
+#include "Base/BaseObject.h"
+#include "Base/FastName.h"
+#include "FileSystem/FilePath.h"
+#include "Base/EventDispatcher.h"
+#include "Base/FastName.h"
+#include "Sound/SoundEvent.h"
 
+#ifdef DAVA_FMOD
 namespace FMOD
 {
+class EventGroup;
 class System;
 class EventSystem;
+class EventProject;
 };
+#endif
 
 namespace DAVA
 {
-class SoundGroup;
-class SoundEvent;
-class Animation;
-class SoundEventCategory;
-class VolumeAnimatedObject;
+
+#ifdef DAVA_FMOD
+class FMODFileSoundEvent;
+class FMODSoundEvent;
+#endif
+
+class Component;
 class SoundSystem : public Singleton<SoundSystem>
 {
 public:
-	
-	static const FastName SOUND_GROUP_FX;
-	
+    SoundSystem();
+    ~SoundSystem();
+    
+    SoundEvent * CreateSoundEventByID(const FastName & eventName, const FastName & groupName);
+    SoundEvent * CreateSoundEventFromFile(const FilePath & fileName, const FastName & groupName, uint32 createFlags = SoundEvent::SOUND_EVENT_CREATE_DEFAULT, int32 priority = 128);
+    
+    void SerializeEvent(const SoundEvent * sEvent, KeyedArchive *toArchive);
+    SoundEvent * DeserializeEvent(KeyedArchive *archive);
+
+    void Update(float32 timeElapsed);
+    void Suspend();
+    void Resume();
+
+    void SetCurrentLocale(const String & langID);
+
+    void SetListenerPosition(const Vector3 & position);
+    void SetListenerOrientation(const Vector3 & forward, const Vector3 & left);
+
+    void SetGroupVolume(const FastName & groupName, float32 volume);
+    float32 GetGroupVolume(const FastName & groupName);
+
+    void InitFromQualitySettings();
+
+protected:
+    void ParseSFXConfig(const FilePath & configPath);
+
+#ifdef DAVA_FMOD
+protected:
+    struct SoundGroup
+    {
+        SoundGroup() : volume(1.f) {};
+
+        FastName name;
+        float32 volume;
+        Vector<SoundEvent *> events;
+    };
+
 public:
-	
-	SoundSystem(int32 maxChannels);
-	virtual ~SoundSystem();
+    void LoadFEV(const FilePath & filePath);
+    void UnloadFEV(const FilePath & filePath);
+    void UnloadFMODProjects();
 
-	void Update();
-	void Suspend();
-	void Resume();
+    void PreloadFMODEventGroupData(const String & groupName);
+    void ReleaseFMODEventGroupData(const String & groupName);
+    void ReleaseAllEventWaveData();
 
-	void SetListenerPosition(const Vector3 & position);
-	void SetListenerOrientation(const Vector3 & at, const Vector3 & left);
+    void GetAllEventsNames(Vector<String> & names);
 
-	SoundEvent * CreateSoundEvent(const String & eventPath);
+    uint32 GetMemoryUsageBytes() const;
+    float32 GetTotalCPUUsage() const;
+    int32 GetChannelsUsed() const;
+    int32 GetChannelsMax() const;
 
-	void LoadFEV(const FilePath & filePath);
+protected:
+    void GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names);
 
-	SoundGroup * GetSoundGroup(const FastName & groupName);
-	ScopedPtr<SoundEventCategory> GetSoundEventCategory(const String & category);
+    void ReleaseOnUpdate(SoundEvent * sound);
 
-	void AddVolumeAnimatedObject(VolumeAnimatedObject * object);
-	void RemoveVolumeAnimatedObject(VolumeAnimatedObject * object);
+    void PerformCallbackOnUpdate(SoundEvent * event, uint32 callbackType);
+    void CancelCallbackOnUpdate(SoundEvent * event, uint32 callbackType);
 
-private:
-	SoundGroup * CreateSoundGroup(const FastName & groupName);
+    void AddSoundEventToGroup(const FastName & groupName, SoundEvent * event);
+    void RemoveSoundEventFromGroups(SoundEvent * event);
 
-    void ReleaseOnUpdate(Sound * sound);
+    FMOD::System * fmodSystem;
+    FMOD::EventSystem * fmodEventSystem;
 
-	FMOD::System * fmodSystem;
-	FMOD::EventSystem * fmodEventSystem;
+    Vector<SoundEvent *> soundsToReleaseOnUpdate;
+    MultiMap<SoundEvent *, uint32> callbackOnUpdate;
+    Vector<SoundGroup> soundGroups;
 
-    Vector<Sound *> soundsToReleaseOnUpdate;
+    Map<FilePath, FMOD::EventProject *> projectsMap;
 
-	FastNameMap<SoundGroup*> soundGroups;
-	Vector<VolumeAnimatedObject*> animatedObjects;
+    Vector<String> toplevelGroups;
 
-friend class SoundGroup;
-friend class Sound;
+    friend class FMODFileSoundEvent;
+    friend class FMODSoundEvent;
+#endif
 };
-
-
 
 };
 

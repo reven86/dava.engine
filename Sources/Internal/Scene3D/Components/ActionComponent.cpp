@@ -30,15 +30,17 @@
 
 #include "Scene3D/Entity.h"
 #include "Particles/ParticleEmitter.h"
+#include "Sound/SoundEvent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
-#include "Sound/SoundEvent.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 
 namespace DAVA
 {
 	REGISTER_CLASS(ActionComponent)
+
+    const FastName ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME("*** Self ***");
 
 	ActionComponent::ActionComponent() : started(false), allActionsActive(false)
 	{
@@ -394,11 +396,9 @@ namespace DAVA
 			SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
 			if(component)
 			{
-				SoundEvent* soundEvent = component->GetSoundEvent();
-				if(soundEvent)
-				{
-					soundEvent->Play();
-				}
+                int32 eventsCount = component->GetEventsCount();
+                for(int32 i = 0; i < eventsCount; ++i)
+                    component->GetSoundEvent(i)->Trigger();
 			}
 
 		}
@@ -406,6 +406,9 @@ namespace DAVA
 	
 	Entity* ActionComponent::GetTargetEntity(const FastName& name, Entity* parent)
 	{
+        if(name == ACTION_COMPONENT_SELF_ENTITY_NAME)
+            return parent;
+
 		if(parent->GetName() == name)
 		{
 			return parent;

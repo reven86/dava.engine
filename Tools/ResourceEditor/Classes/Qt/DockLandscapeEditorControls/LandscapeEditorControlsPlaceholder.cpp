@@ -7,6 +7,7 @@
 #include "LandscapeEditorPanels/VisibilityToolPanel.h"
 #include "LandscapeEditorPanels/TilemaskEditorPanel.h"
 #include "LandscapeEditorPanels/HeightmapEditorPanel.h"
+#include "LandscapeEditorPanels/GrassEditorPanel.h"
 
 #include <QVBoxLayout>
 
@@ -23,6 +24,7 @@ LandscapeEditorControlsPlaceholder::LandscapeEditorControlsPlaceholder(QWidget* 
 	visibilityToolPanel = new VisibilityToolPanel();
 	tilemaskEditorPanel = new TilemaskEditorPanel();
 	heightmapEditorPanel = new HeightmapEditorPanel();
+    grassEditorPanel = new GrassEditorPanel();
 }
 
 LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
@@ -32,6 +34,7 @@ LandscapeEditorControlsPlaceholder::~LandscapeEditorControlsPlaceholder()
 	SafeDelete(visibilityToolPanel);
 	SafeDelete(tilemaskEditorPanel);
 	SafeDelete(heightmapEditorPanel);
+    SafeDelete(grassEditorPanel);
 }
 
 void LandscapeEditorControlsPlaceholder::InitUI()
@@ -57,6 +60,8 @@ void LandscapeEditorControlsPlaceholder::ConnectToSignals()
 			this, SLOT(EditorToggled(SceneEditor2*)));
 	connect(SceneSignals::Instance(), SIGNAL(RulerToolToggled(SceneEditor2*)),
 			this, SLOT(EditorToggled(SceneEditor2*)));
+    connect(SceneSignals::Instance(), SIGNAL(GrassEditorToggled(SceneEditor2*)),
+        this, SLOT(EditorToggled(SceneEditor2*)));
 }
 
 void LandscapeEditorControlsPlaceholder::SceneActivated(SceneEditor2* scene)
@@ -139,4 +144,8 @@ void LandscapeEditorControlsPlaceholder::UpdatePanels()
 	{
 		SetPanel(visibilityToolPanel);
 	}
+    else if(tools & SceneEditor2::LANDSCAPE_TOOL_GRASS_EDITOR)
+    {
+        SetPanel(grassEditorPanel);
+    }
 }

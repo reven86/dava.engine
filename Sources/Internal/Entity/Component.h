@@ -38,7 +38,6 @@
 namespace DAVA 
 {
     
-class DataNode;
 class Entity;
 class Component : public Serializable, public InspBase
 {

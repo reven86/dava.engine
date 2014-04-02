@@ -31,6 +31,7 @@
 #include <QPainter>
 #include <QImage>
 #include <QDebug>
+#include <QApplication>
 
 #include "MaterialItem.h"
 #include "MaterialModel.h"
@@ -39,9 +40,8 @@
 
 namespace
 {
-    
-    const int PREVIEW_HEIGHT = 24;
-
+    const int MAX_PREVIEW_HEIGHT = 24;
+    const int MAX_MATERIAL_HEIGHT = 30;
 }
 
 MaterialItem::MaterialItem(DAVA::NMaterial * _material)
@@ -51,11 +51,13 @@ MaterialItem::MaterialItem(DAVA::NMaterial * _material)
     , isPreviewRequested(false)
     , lodIndex(-1)
     , switchIndex(-1)
+    , curFlag(0)
 {
 	DVASSERT(material);
 
-	static QImage materialIcon(QString::fromUtf8(":/QtIcons/sphere.png"));
-	static QImage instanceIcon(QString::fromUtf8(":/QtIcons/3d.png"));
+	static QIcon materialIcon(QString::fromUtf8(":/QtIcons/sphere.png"));
+	static QIcon instanceIcon(QString::fromUtf8(":/QtIcons/3d.png"));
+    static QIcon globalIcon(QString::fromUtf8(":/QtIcons/global.png"));
 	
 	setEditable(false);
     setData(QVariant::fromValue<DAVA::NMaterial *>(material));
@@ -63,16 +65,25 @@ MaterialItem::MaterialItem(DAVA::NMaterial * _material)
 	switch(material->GetMaterialType())
 	{
 		case DAVA::NMaterial::MATERIALTYPE_MATERIAL:
-			setData( materialIcon, Qt::DecorationRole );
+			setIcon(materialIcon);
 			setDragEnabled(true);
 			setDropEnabled(true);
+            setSizeHint(QSize(MAX_MATERIAL_HEIGHT, MAX_MATERIAL_HEIGHT));
 			break;
 
 		case DAVA::NMaterial::MATERIALTYPE_INSTANCE:
-			setData( instanceIcon, Qt::DecorationRole );
+			setIcon(instanceIcon);
+            setData(qApp->palette().midlight().color(), Qt::TextColorRole);
 			setDragEnabled(true);
 			setDropEnabled(false);
 			break;
+
+        case DAVA::NMaterial::MATERIALTYPE_GLOBAL:
+            setIcon(globalIcon);
+            setDragEnabled(false);
+            setDropEnabled(false);
+            setSizeHint(QSize(MAX_MATERIAL_HEIGHT, MAX_MATERIAL_HEIGHT));
+            break;
 
 		default:
 			setDragEnabled(false);
@@ -121,10 +132,14 @@ void MaterialItem::SetFlag(MaterialFlag flag, bool set)
 		switch(flag)
 		{
 			case IS_MARK_FOR_DELETE:
-				set ? setBackground(QBrush(QColor(255, 0, 0, 15))) : setBackground(QBrush());
+                if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_GLOBAL)
+                {
+                    ok = false;
+                }
 				break;
 
 			case IS_PART_OF_SELECTION:
+                if(material->GetMaterialType() == DAVA::NMaterial::MATERIALTYPE_MATERIAL)
                 {
 					QFont curFont = font();
 					curFont.setBold(set);
@@ -189,51 +204,30 @@ int MaterialItem::GetSwitchIndex() const
 
 void MaterialItem::requestPreview()
 {
-    if ( isPreviewRequested )
-        return ;
-
-    isPreviewRequested = true;
-
-    if ( material->IsFlagEffective(DAVA::NMaterial::FLAG_FLATCOLOR) )
+    if(!isPreviewRequested)
     {
-        const DAVA::NMaterialProperty *prop = material->GetMaterialProperty( DAVA::NMaterial::PARAM_FLAT_COLOR );
-        if ( prop )
+        isPreviewRequested = true;
+
+        DAVA::Texture *t = material->GetTexture(DAVA::NMaterial::TEXTURE_ALBEDO);
+        if(t)
         {
-            const DAVA::Color color = *(DAVA::Color*)prop->data;
-            QImage img(QSize(PREVIEW_HEIGHT, PREVIEW_HEIGHT), QImage::Format_ARGB32);
-        
-            img.fill(ColorToQColor(color));
-            setPreview( img );
+            DAVA::TextureDescriptor *descriptor = t->GetDescriptor();
+            QVariant itemRef = QString(descriptor->pathname.GetAbsolutePathname().c_str());
+            TextureCache::Instance()->getThumbnail(descriptor, this, "onThumbnailReady", itemRef);
         }
-        return ;
     }
-
-    DAVA::Texture *t = material->GetTexture( DAVA::NMaterial::TEXTURE_ALBEDO );
-    if ( t )
-    {
-        DAVA::TextureDescriptor *descriptor = t->GetDescriptor();
-        QVariant itemRef = QString( descriptor->pathname.GetAbsolutePathname().c_str() );
-        TextureCache::Instance()->getThumbnail( descriptor, this, "onThumbnailReady", itemRef );
-    }
-}
-
-void MaterialItem::setPreview(QImage image)
-{
-    QImage scaled = image.scaled( PREVIEW_HEIGHT, PREVIEW_HEIGHT, Qt::KeepAspectRatio );
-    QPainter p( &scaled );
-    QRect rc( 0, 0, scaled.width() - 1, scaled.height() - 1 );
-    p.setPen( QColor( 0, 0, 0, 0x30 ) );
-    p.drawRect( rc );
-
-    setData( QSize( PREVIEW_HEIGHT, PREVIEW_HEIGHT ), Qt::SizeHintRole );
-    setData( scaled, Qt::DecorationRole );
 }
 
 void MaterialItem::onThumbnailReady( QList<QImage> images, QVariant userData )
 {
-    if ( images.size() <= 0 )
-        return ;
+    if(images.size() > 0)
+    {
+        QImage img0 = images[0];
+        QPainter p(&img0);
+        QRect rc(0, 0, img0.width() - 1, img0.height() - 1);
+        p.setPen(QColor(0, 0, 0, 0x30));
+        p.drawRect(rc);
 
-    const QString key = userData.toString();
-    setPreview( images[0] );
+        setIcon(QIcon(QPixmap::fromImage(img0)));
+    }
 }

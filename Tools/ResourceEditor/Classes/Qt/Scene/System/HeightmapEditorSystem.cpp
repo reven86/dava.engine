@@ -144,7 +144,7 @@ bool HeightmapEditorSystem::DisableLandscapeEdititing()
 	return !enabled;
 }
 
-void HeightmapEditorSystem::Update(DAVA::float32 timeElapsed)
+void HeightmapEditorSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

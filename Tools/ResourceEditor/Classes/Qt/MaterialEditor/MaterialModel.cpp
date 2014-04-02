@@ -45,6 +45,8 @@
 #include "TextureBrowser/TextureConvertor.h"
 #include "TextureBrowser/TextureInfo.h"
 
+#include "Settings/SettingsManager.h"
+
 #include <QPainter>
 
 
@@ -78,7 +80,34 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
 
     if(index.column() == 0)
     {
-        ret = QStandardItemModel::data(index, role);
+        MaterialItem* item = itemFromIndex(index);
+        DVASSERT(item);
+
+        switch (role)
+        {
+        case Qt::BackgroundRole:
+            {
+                const bool toDel = item->GetFlag(MaterialItem::IS_MARK_FOR_DELETE);
+                if (toDel)
+                    ret = QBrush(QColor(255, 0, 0, 20));
+            }
+            break;
+        case Qt::FontRole:
+            {
+                const bool isSelection = item->GetFlag(MaterialItem::IS_PART_OF_SELECTION);
+                ret = QStandardItemModel::data(index, role);
+                if (isSelection)
+                {
+                    QFont font = ret.value<QFont>();
+                    font.setBold(true);
+                    ret = font;
+                }
+            }
+            break;
+        default:
+            ret = QStandardItemModel::data(index, role);
+            break;
+        }
     }
     // LOD
     else if(index.isValid() && index.column() < columnCount())
@@ -86,17 +115,18 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
         MaterialItem *item = itemFromIndex(index.sibling(index.row(), 0));
         if(NULL != item)
         {
+            int lodIndex = item->GetLodIndex();
+            int switchIndex = item->GetSwitchIndex();
+
             if(index.column() == 1)
             {
                 switch(role)
                 {
                     case Qt::DisplayRole:
                         {
-                            int index = item->GetLodIndex();
-
-                            if(-1 != index)
+                            if(-1 != lodIndex)
                             {
-                                ret = index;
+                                ret = lodIndex;
                             }
                         }
                         break;
@@ -105,6 +135,12 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
                         ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
                         break;
 
+                    case Qt::BackgroundRole:
+                        if(lodIndex >= 0 && lodIndex < supportedLodColorsCount)
+                        {
+                            ret = lodColors[lodIndex];
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -116,17 +152,22 @@ QVariant MaterialModel::data(const QModelIndex & index, int role) const
                 {
                     case Qt::DisplayRole:
                         {
-                            int index = item->GetSwitchIndex();
-
-                            if(-1 != index)
+                            if(-1 != switchIndex)
                             {
-                                ret = index;
+                                ret = switchIndex;
                             }
                         }
                         break;
 
                     case Qt::TextAlignmentRole:
                         ret = (int) (Qt::AlignCenter | Qt::AlignVCenter);
+                        break;
+
+                    case Qt::BackgroundRole:
+                        if(switchIndex >= 0 && switchIndex < supportedSwColorsCount)
+                        {
+                            ret = switchColors[switchIndex];
+                        }
                         break;
 
                     default:
@@ -157,6 +198,8 @@ void MaterialModel::SetScene(SceneEditor2 *scene)
 {
 	removeRows(0, rowCount());
 	curScene = scene;
+
+    ReloadLodSwColors();
 
 	if(NULL != scene)
 	{
@@ -211,6 +254,11 @@ void MaterialModel::Sync()
 	{
 		DAVA::Map<DAVA::NMaterial*, DAVA::Set<DAVA::NMaterial *> > materialsTree;
 		curScene->materialSystem->BuildMaterialsTree(materialsTree);
+
+        if(NULL != curScene->GetGlobalMaterial())
+        {
+            materialsTree[curScene->GetGlobalMaterial()];
+        }
 
 		// remove items, that are not in set
 		QStandardItem *root = invisibleRootItem();
@@ -291,26 +339,31 @@ void MaterialModel::Sync()
 		for(int i = 0; i < root->rowCount(); ++i)
 		{
 			MaterialItem *item = (MaterialItem *) root->child(i);
-			item->SetFlag(MaterialItem::IS_MARK_FOR_DELETE, item->rowCount() == 0);
+            const bool toDel = (item->rowCount() == 0);
+			item->SetFlag(MaterialItem::IS_MARK_FOR_DELETE, toDel);
 
             for(int j = 0; j < item->rowCount(); ++j)
             {
                 MaterialItem *instanceItem = (MaterialItem *) item->child(j);
+                
                 const DAVA::RenderBatch *rb = curScene->materialSystem->GetRenderBatch(instanceItem->GetMaterial());
-                const DAVA::RenderObject *ro = rb->GetRenderObject();
-
-                for(DAVA::uint32 k = 0; k < ro->GetRenderBatchCount(); ++k)
+                
+                if(rb)
                 {
-                    int lodIndex, swIndex;
-                    DAVA::RenderBatch *batch = ro->GetRenderBatch(k, lodIndex, swIndex);
-                    if(rb == batch)
+                    const DAVA::RenderObject *ro = rb->GetRenderObject();
+                    
+                    for(DAVA::uint32 k = 0; k < ro->GetRenderBatchCount(); ++k)
                     {
-                        instanceItem->SetLodIndex(lodIndex);
-                        instanceItem->SetSwitchIndex(swIndex);
-                        break;
+                        int lodIndex, swIndex;
+                        DAVA::RenderBatch *batch = ro->GetRenderBatch(k, lodIndex, swIndex);
+                        if(rb == batch)
+                        {
+                            instanceItem->SetLodIndex(lodIndex);
+                            instanceItem->SetSwitchIndex(swIndex);
+                            break;
+                        }
                     }
                 }
-                
             }
 		}
 
@@ -451,4 +504,39 @@ bool MaterialModel::dropCanBeAccepted(const QMimeData *data, Qt::DropAction acti
 	}
 
     return true;
+}
+
+void MaterialModel::ReloadLodSwColors()
+{
+    QString key;
+
+    for(int i = 0; i < supportedLodColorsCount; ++i)
+    {
+        key.sprintf("LodColor%d", i);
+
+        DAVA::VariantType val = SettingsManager::Instance()->GetValue(key.toStdString(), SettingsManager::GENERAL);
+        if(val.type == DAVA::VariantType::TYPE_COLOR)
+        {
+            lodColors[i] = ColorToQColor(val.AsColor());
+        }
+        else
+        {
+            lodColors[i] = QColor();
+        }
+    }
+
+    for(int i = 0; i < supportedSwColorsCount; ++i)
+    {
+        key.sprintf("SwitchColor%d", i);
+
+        DAVA::VariantType val = SettingsManager::Instance()->GetValue(key.toStdString(), SettingsManager::GENERAL);
+        if(val.type == DAVA::VariantType::TYPE_COLOR)
+        {
+            switchColors[i] = ColorToQColor(val.AsColor());
+        }
+        else
+        {
+            switchColors[i] = QColor();
+        }
+    }
 }

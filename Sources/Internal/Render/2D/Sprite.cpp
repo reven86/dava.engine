@@ -1664,6 +1664,8 @@ const float32 * Sprite::GetTextureCoordsForFrame( int32 frame ) const
 
 void Sprite::PrepareForNewSize()
 {
+    if(relativePathname.IsEmpty()) return;
+    
 	String pathname = relativePathname.GetAbsolutePathname();
 
 	int pos = (int)pathname.find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));

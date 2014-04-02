@@ -52,6 +52,7 @@ public:
     virtual void RemoveEntity(Entity * entity);
 	virtual void AddComponent(Entity * entity, Component * component);
 	virtual void RemoveComponent(Entity * entity, Component * component);
+    virtual void SceneDidLoaded();
 
     virtual void ImmediateEvent(Entity * entity, uint32 event);
     

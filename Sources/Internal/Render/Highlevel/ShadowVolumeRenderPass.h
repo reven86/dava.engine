@@ -41,21 +41,22 @@ namespace DAVA
 //class RenderLayer;
 class Camera;
 class ShadowRect;
-class ShadowVolumeRenderPass : public RenderPass
+class ShadowVolumeRenderLayer : public RenderLayer
 {
 public:
 
-    ShadowVolumeRenderPass(RenderSystem *rs, const FastName & name, RenderPassID id);
-    virtual ~ShadowVolumeRenderPass();
+    ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
+    virtual ~ShadowVolumeRenderLayer();
     
-    void Draw(Camera * camera, RenderPassBatchArray * renderPassBatchArray);
+    virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
     
-    ShadowRect * GetShadowRect() const;
+    ShadowRect * GetShadowRect();
 
 	void SetBlendMode(ShadowPassBlendMode::eBlend blendMode);
 	ShadowPassBlendMode::eBlend GetBlendMode() const;
     
 private:
+    void CreateShadowRect();
     ShadowRect * shadowRect;
 	ShadowPassBlendMode::eBlend blendMode;
 	

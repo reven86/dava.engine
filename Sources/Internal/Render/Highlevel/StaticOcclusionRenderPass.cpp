@@ -34,45 +34,19 @@
 
 namespace DAVA
 {
-    
-StaticOcclusionRenderLayer::StaticOcclusionRenderLayer(const FastName & name, uint32 sortingFlags, StaticOcclusion * _occlusion, RenderLayerID id)
-    : RenderLayer(name, sortingFlags, id)
+
+StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * _occlusion, RenderPassID id)
+    : RenderPass(name, id)
     , occlusion(_occlusion)
 {
     
-}
-StaticOcclusionRenderLayer::~StaticOcclusionRenderLayer()
-{
+    AddRenderLayer(new RenderLayer(LAYER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_OPAQUE_ID), LAST_LAYER);
+    AddRenderLayer(new RenderLayer(LAYER_AFTER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
+    AddRenderLayer(new RenderLayer(LAYER_ALPHA_TEST_LAYER, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_ALPHA_TEST_LAYER_ID), LAST_LAYER);
+    AddRenderLayer(new RenderLayer(LAYER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_TRANSLUCENT_ID), LAST_LAYER);
+    AddRenderLayer(new RenderLayer(LAYER_AFTER_TRANSLUCENT, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_TRANSLUCENT_ID), LAST_LAYER);
     
-}
-
-void StaticOcclusionRenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
-{
-    renderLayerBatchArray->Sort(camera);
-    uint32 size = (uint32)renderLayerBatchArray->GetRenderBatchCount();
-    
-    OcclusionQueryManager & manager = occlusion->GetOcclusionQueryManager();
-    
-    for (uint32 k = 0; k < size; ++k)
-    {
-        OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
-        OcclusionQuery & query = manager.Get(handle);
-        
-        RenderBatch * batch = renderLayerBatchArray->Get(k);
-        
-        query.BeginQuery();
-        batch->Draw(ownerRenderPass, camera);
-        query.EndQuery();
-        
-        occlusion->RecordFrameQuery(batch, handle);
-    }
-    //Logger::FrameworkDebug(Format("Pass: %s Layer: %s - objects: %d", ownerRenderPass.c_str(), name.c_str(), size));
-}
-
-StaticOcclusionRenderPass::StaticOcclusionRenderPass(RenderSystem * rs, const FastName & name, StaticOcclusion * _occlusion, RenderPassID id)
-    : RenderPass(rs, name, id)
-    , occlusion(_occlusion)
-{
+    renderPassBatchArray->InitPassLayers(this);
 }
     
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
@@ -80,20 +54,92 @@ StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
     
 }
 
-void StaticOcclusionRenderPass::Draw(Camera * camera, RenderPassBatchArray * renderPassBatchArray)
+
+
+
+    
+bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const RenderBatch *  b)
 {
+    return a->layerSortingKey < b->layerSortingKey;
+}
+    
+void StaticOcclusionRenderPass::Draw(Camera * camera, RenderSystem * renderSystem)
+{
+    PrepareVisibilityArrays(camera, renderSystem);
+	
+    Vector<RenderBatch*> terrainBatches;
+    Vector<RenderBatch*> batches;
+    
+    terrainBatches.clear();
+    batches.clear();
+    
     uint32 size = (uint32)renderLayers.size();
     for (uint32 k = 0; k < size; ++k)
     {
         RenderLayer * layer = renderLayers[k];
         RenderLayerBatchArray * renderLayerBatchArray = renderPassBatchArray->Get(layer->GetRenderLayerID());
-        if (renderLayerBatchArray)
+    
+        uint32 batchCount = (uint32)renderLayerBatchArray->GetRenderBatchCount();
+        for (uint32 batchIndex = 0; batchIndex < batchCount; ++batchIndex)
         {
-            layer->Draw(name, camera, renderLayerBatchArray);
+            RenderBatch * batch = renderLayerBatchArray->Get(batchIndex);
+            if (batch->GetRenderObject()->GetType() == RenderObject::TYPE_LANDSCAPE)
+            {
+                terrainBatches.push_back(batch);
+            }else
+            {
+                batches.push_back(batch);
+            }
         }
     }
+
+    OcclusionQueryManager & manager = occlusion->GetOcclusionQueryManager();
+    size = (uint32)terrainBatches.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
+        OcclusionQuery & query = manager.Get(handle);
+        
+        RenderBatch * batch = terrainBatches[k];
+        
+        query.BeginQuery();
+        batch->Draw(name, camera);
+        query.EndQuery();
+        
+        occlusion->RecordFrameQuery(batch, handle);
+    }
+    
+    
+    Vector3 cameraPosition = camera->GetPosition();
+
+    size = (uint32)batches.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        RenderBatch * batch = batches[k];
+        RenderObject * renderObject = batch->GetRenderObject();
+        Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
+        float realDistance = (position - cameraPosition).Length();
+        uint32 distance = ((uint32)(realDistance * 100.0f));
+        uint32 distanceBits = distance;
+        
+        batch->layerSortingKey = distanceBits;
+    }
+
+    std::sort(batches.begin(), batches.end(), CompareFunction);
+    
+    for (uint32 k = 0; k < size; ++k)
+    {
+        OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
+        OcclusionQuery & query = manager.Get(handle);
+        
+        RenderBatch * batch = batches[k];
+        
+        query.BeginQuery();
+        batch->Draw(name, camera);
+        query.EndQuery();
+        
+        occlusion->RecordFrameQuery(batch, handle);
+    }
 }
-
-
 
 };

@@ -89,7 +89,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;DAVA_DEBUG;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;DAVA_DEBUG;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -110,7 +110,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;$(ProjectDir)../../Sources/Internal;$(ProjectDir)/../../Sources/External;$(ProjectDir)/../../Sources/External/Freetype;$(ProjectDir)/../../Sources/External/Yaml;$(ProjectDir)/../../Libs/include;$(ProjectDir)/../../Libs/glew/include;$(ProjectDir)/../../Libs/freetype/include;$(DXSDK_DIR)/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;DAVA_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;DAVA_DEBUG;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -130,7 +130,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;$(ProjectDir)/../../Libs/lua/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;CURL_STATICLIB;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -148,7 +148,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)/../../Libs/fmod/include;./../../Sources/Internal;./../../Sources/External;./../../Sources/External/Freetype;./../../Sources/External/Yaml;./../../Libs/include;./../../Libs/glew/include;$(DXSDK_DIR)/include;./../../Libs/freetype/include;..\..\Sources\Internal\Platform\Qt;..\..\Sources\Internal\Platform\Qt\Win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;_WINDOWS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;_CRT_NON_CONFORMING_SWPRINTFS;FT_BUILD_LIBRARY;CODE_INLINE;_WINDOWS;WIN32;NDEBUG;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -353,6 +353,7 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleLayer.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\MovieViewControlStub.h" />
@@ -426,6 +427,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusion.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusionRenderPass.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\VegetationRenderObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\VisibilityArray.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Image.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\ImageConvert.h" />
@@ -537,6 +539,7 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\DebugRenderSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\EventSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\GlobalEventSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.h" />
@@ -551,13 +554,11 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\TransformSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Scene3D\UserNode.h" />
-    <ClInclude Include="..\..\Sources\Internal\Sound\SoundEventCategory.h" />
+    <ClInclude Include="..\..\Sources\Internal\Sound\FMODFileSoundEvent.h" />
+    <ClInclude Include="..\..\Sources\Internal\Sound\FMODSoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\FMODUtils.h" />
-    <ClInclude Include="..\..\Sources\Internal\Sound\Sound.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
-    <ClInclude Include="..\..\Sources\Internal\Sound\SoundGroup.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
-    <ClInclude Include="..\..\Sources\Internal\Sound\VolumeAnimatedObject.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
@@ -757,6 +758,7 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Mutex.cpp" />
@@ -778,6 +780,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='DebugQt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseQt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DeviceInfoWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\pThreadWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp" />
@@ -822,6 +825,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteRenderBatch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusion.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\StaticOcclusionRenderPass.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\VegetationRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\ImageLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\LibDxtHelper.cpp" />
@@ -928,6 +932,7 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\BaseProcessSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\DebugRenderSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\EventSystem.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\GlobalEventSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LightUpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\LodSystem.cpp" />
@@ -942,12 +947,9 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\TransformSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\UpdateSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Scene3D\UserNode.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundEventCategory.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Sound\Sound.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundEvent.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundGroup.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Sound\SoundSystem.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Sound\VolumeAnimatedObject.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Sound\FMODFileSoundEvent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundEvent.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Sound\FMODSoundSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\ScrollHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\TheoraPlayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UI3DView.cpp" />

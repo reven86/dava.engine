@@ -71,6 +71,7 @@ IndexBitVector::IndexBitVector(uint32 initBits, uint32 elementCount)
 
 IndexBitVector::~IndexBitVector()
 {
+    SafeDeleteArray(dataArray);
 }
 
 inline void IndexBitVector::PushBack(uint32 value)
@@ -130,7 +131,7 @@ void IndexBitVector::ReallocateSize(uint32 _newMaxElementCount)
     if (dataArray)
         Memcpy(newDataArray, dataArray, DataCount(currentElementCount));
     maxElementCount = _newMaxElementCount;
-    delete [] dataArray;
+    SafeDeleteArray(dataArray);
     dataArray = newDataArray;
 }
 
@@ -142,7 +143,7 @@ void IndexBitVector::ReallocateBits(uint32 _newBits)
         Set(newDataArray, k, At(k), _newBits);
     }
     maxIndexBits = _newBits;
-    delete[] dataArray;
+    SafeDeleteArray(dataArray);
     dataArray = newDataArray;
 }
     

@@ -128,7 +128,11 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
     
     Vector<int32> sizes;
 	GetStringSize(text, &sizes);
-    
+	if(sizes.size() == 0)
+	{
+		return;
+	}
+
     for(int pos = 0; pos < totalSize; pos++)
     {
         wchar_t t = text[pos];
@@ -203,6 +207,10 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 	
 	Vector<int32> sizes;
 	GetStringSize(text, &sizes);
+    if(sizes.size() == 0)
+    {
+        return;
+    }
 	
 	for(int pos = 0; state != EXIT; pos++)
 	{

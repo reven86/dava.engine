@@ -71,8 +71,9 @@ public:
 		PROPERTY("gridStep", "gridStep", GetGridStep, SetGridStep, DAVA::I_VIEW | DAVA::I_EDIT)
 		)
 
+	virtual void Process(DAVA::float32 timeElapsed);
+
 protected:
-	virtual void Update(float timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);

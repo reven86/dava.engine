@@ -110,6 +110,8 @@ void HoodSystem::SetPosition(const DAVA::Vector3 &pos)
 			{
 				curHood->UpdatePos(curPos);
 				normalHood.UpdatePos(curPos);
+
+                collWorld->updateAabbs();
 			}
 		}
 	}
@@ -129,6 +131,8 @@ void HoodSystem::SetModifOffset(const DAVA::Vector3 &offset)
 			{
 				curHood->UpdatePos(curPos + modifOffset);
 				normalHood.UpdatePos(curPos + modifOffset);
+
+                collWorld->updateAabbs();
 			}
 		}
 	}
@@ -268,13 +272,24 @@ void HoodSystem::ResetModifValues()
 	scaleHood.modifScale = 0;
 }
 
-void HoodSystem::Update(float timeElapsed)
+void HoodSystem::Process(float timeElapsed)
 {
 	if(!IsLocked() && !lockedScale)
 	{
 		// scale hood depending on current camera position
-		DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
-		SetScale((GetPosition() - camPosition).Length() / 20.f);
+        DAVA::Camera *curCamera = cameraSystem->GetCurCamera();
+        if(NULL != curCamera)
+        {
+            DAVA::float32 camToHoodDist = (GetPosition() - curCamera->GetPosition()).Length();
+            if(curCamera->GetIsOrtho())
+            {
+                SetScale(30.0f);
+            }
+            else
+            {
+                SetScale(camToHoodDist / 20.f);
+            }
+        }
 	}
 }
 
@@ -291,11 +306,12 @@ void HoodSystem::ProcessUIEvent(DAVA::UIEvent *event)
 			if(!lockedModif && NULL != curHood)
 			{
 				// get intersected items in the line from camera to current mouse position
-				DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
-				DAVA::Vector3 camToPointDirection = cameraSystem->GetPointDirection(event->point);
-				DAVA::Vector3 traceTo = camPosition + camToPointDirection * 1000.0f;
+				DAVA::Vector3 traceFrom;
+                DAVA::Vector3 traceTo;
 
-				btVector3 btFrom(camPosition.x, camPosition.y, camPosition.z);
+                cameraSystem->GetRayTo2dPoint(event->point, 99999.0f, traceFrom, traceTo);
+
+				btVector3 btFrom(traceFrom.x, traceFrom.y, traceFrom.z);
 				btVector3 btTo(traceTo.x, traceTo.y, traceTo.z);
 
 				btCollisionWorld::AllHitsRayResultCallback btCallback(btFrom, btTo);

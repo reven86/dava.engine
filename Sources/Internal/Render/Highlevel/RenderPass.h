@@ -43,7 +43,7 @@ class Camera;
 class RenderPass
 {
 public:
-    RenderPass(RenderSystem * renderSystem, const FastName & name, RenderPassID id);
+    RenderPass(const FastName & name, RenderPassID id);
     virtual ~RenderPass();
     
     void InitDefaultLayers();
@@ -54,7 +54,7 @@ public:
 	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
 	void RemoveRenderLayer(RenderLayer * layer);
 
-    virtual void Draw(Camera * camera, RenderPassBatchArray * renderBatchArray);
+    virtual void Draw(Camera * camera, RenderSystem * renderSystem);
     
     inline uint32 GetRenderLayerCount() const;
     inline RenderLayer * GetRenderLayer(uint32 index) const;
@@ -62,11 +62,16 @@ public:
     
 protected:
     // TODO: add StaticVector container
-    Vector<RenderLayer*> renderLayers;
-    RenderSystem * renderSystem;
+    Vector<RenderLayer*> renderLayers;    
     FastName name;
     RenderPassID id;
 
+    /*convinience*/
+    void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
+    void DrawLayers(Camera *camera);
+
+	RenderPassBatchArray * renderPassBatchArray;
+	VisibilityArray visibilityArray;
 public:
     
     INTROSPECTION(RenderPass,
@@ -97,6 +102,42 @@ inline RenderLayer * RenderPass::GetRenderLayer(uint32 index) const
     return renderLayers[index];
 }
 
+class WaterPrePass : public RenderPass
+{    
+public:
+    inline void SetWaterLevel(float32 level){waterLevel = level;}
+    WaterPrePass(const FastName & name, RenderPassID id);
+    ~WaterPrePass();
+protected:
+    Camera *passCamera;
+    float32 waterLevel;
+};
+class WaterReflectionRenderPass  : public WaterPrePass
+{    
+public:    
+    WaterReflectionRenderPass(const FastName & name, RenderPassID id);
+	virtual void Draw(Camera * camera, RenderSystem * renderSystem);	
+};
+
+class WaterRefractionRenderPass  : public WaterPrePass
+{    
+public:
+    WaterRefractionRenderPass(const FastName & name, RenderPassID id);
+    virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+
+};
+
+class MainForwardRenderPass : public RenderPass
+{
+	WaterReflectionRenderPass *reflectionPass;
+    WaterRefractionRenderPass *refractionPass;
+    Texture *reflectionTexture, *refractionTexture;
+    Sprite *reflectionSprite, *refractionSprite;
+public:
+    MainForwardRenderPass(const FastName & name, RenderPassID id);
+	~MainForwardRenderPass();
+	virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+};
 
 } // ns
 

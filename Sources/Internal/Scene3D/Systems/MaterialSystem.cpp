@@ -56,20 +56,6 @@ MaterialSystem::~MaterialSystem()
 
 void MaterialSystem::AddEntity(Entity * entity)
 {
-    RenderObject *ro = GetRenderObject(entity);
-    if(!ro) return;
-
-    // try to retrieve fog settings from scene settings
-    if(ro->GetType() == RenderObject::TYPE_LANDSCAPE)
-    {
-        Landscape *land = static_cast<Landscape *>(ro);
-        float32 fogDensity = land->GetFogDensity();
-        Color fogColor = land->GetFogColor();
-
-		NMaterial * globalMaterial = GetScene()->GetGlobalMaterial();
-		globalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_DENSITY, Shader::UT_FLOAT, 1, &fogDensity);
-		globalMaterial->SetPropertyValue(NMaterial::PARAM_FOG_COLOR, Shader::UT_FLOAT_VEC4, 1, &fogColor);
-    }
 }
 
 void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& materialList, NMaterial::eMaterialType materialType, bool includeRuntime) const

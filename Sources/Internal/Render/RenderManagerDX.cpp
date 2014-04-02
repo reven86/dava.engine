@@ -1252,6 +1252,11 @@ void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 
 }
 
+void RenderManager::DiscardFramebufferHW(uint32 attachments)
+{
+
+}
+
 //void RenderManager::SetDrawOffset(const Vector2 &offset)
 //{
 //	Matrix4 m;

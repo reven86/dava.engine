@@ -318,8 +318,6 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
     
     newMaterial->pointer = pointer;
     newMaterial->scene = scene;
-    newMaterial->name = name;
-    newMaterial->children = children;
     newMaterial->index = index;
 
 	newMaterial->CopySettings(this);
@@ -783,6 +781,8 @@ void Material::Load(KeyedArchive * keyedArchive, SerializationContext * serializ
     DataNode::Load(keyedArchive, serializationContext);
 
 	eType mtype = (eType)keyedArchive->GetInt32("mat.type", type);
+    
+    name = keyedArchive->GetString("name");
 
     int32 texCount = keyedArchive->GetInt32("mat.texCount");
     for (int32 k = 0; k < texCount; ++k)
@@ -1343,6 +1343,16 @@ const bool & Material::IsExportOwnerLayerEnabled()
 void Material::SetExportOwnerLayer(const bool & isEnabled)
 {
     isExportOwnerLayerEnabled = isEnabled;
+}
+
+const String& Material::GetName() const
+{
+    return name;
+}
+
+void Material::SetName(const String& materialName)
+{
+    name = materialName;
 }
 
 

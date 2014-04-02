@@ -40,10 +40,13 @@ class UIParticlesMetadata : public UIControlMetadata
 
     Q_PROPERTY(QString EffectPath READ GetEffectPath WRITE SetEffectPath);
     Q_PROPERTY(bool Autostart READ GetAutostart WRITE SetAutostart);
+    Q_PROPERTY(float StartDelay READ GetStartDelay WRITE SetStartDelay);
 
     // Invokable methods to control UIParticlesControl
     Q_INVOKABLE void Start();
     Q_INVOKABLE void Stop();
+    Q_INVOKABLE void Pause();
+    Q_INVOKABLE void Restart();
     Q_INVOKABLE void Reload();
 
 public:
@@ -58,7 +61,10 @@ protected:
     
     bool GetAutostart() const;
     void SetAutostart(bool value);
-    
+
+    float GetStartDelay() const;
+    void SetStartDelay(float value);
+
     // Default Flags.
     virtual bool GetInitialInputEnabled() const {return false;};
 

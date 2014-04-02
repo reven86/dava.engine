@@ -87,7 +87,7 @@ void BeastCommandLineTool::Process()
 	SceneEditor2 *scene = new SceneEditor2();
 	if(scene->Load(scenePathname))
 	{
-		scene->Update(0.1f);
+		//scene->Update(0.1f);
 
 		scene->Exec(new BeastAction(scene, NULL));
 

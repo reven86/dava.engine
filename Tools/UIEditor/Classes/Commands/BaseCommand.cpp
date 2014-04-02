@@ -91,17 +91,12 @@ void BaseCommand::IncrementUnsavedChanges()
 {
 	HierarchyTreePlatformNode* platform = dynamic_cast<HierarchyTreePlatformNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activePlatform));
 	HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
-
-	if (!screen && !platform)
-	{
-		return;
-	}
 	
 	if (screen)
 	{
 		screen->IncrementUnsavedChanges();
 	}
-	else if (platform)
+	if (platform)
 	{
 		platform->IncrementUnsavedChanges();
 	}
@@ -112,16 +107,11 @@ void BaseCommand::DecrementUnsavedChanges()
 	HierarchyTreePlatformNode* platform = dynamic_cast<HierarchyTreePlatformNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activePlatform));
 	HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
 	
-	if (!screen && !platform)
-	{
-		return;
-	}
-	
 	if (screen)
 	{
 		screen->DecrementUnsavedChanges();
 	}
-	else if (platform)
+	if (platform)
 	{
 		platform->DecrementUnsavedChanges();
 	}
@@ -131,16 +121,12 @@ void BaseCommand::ResetUnsavedChanges()
 {
 	HierarchyTreePlatformNode* platform = dynamic_cast<HierarchyTreePlatformNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activePlatform));
 	HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
-	if (!screen && !platform)
-	{
-		return;
-	}
-	
+
 	if (screen)
 	{
 		screen->ResetUnsavedChanges();
 	}
-	else if (platform)
+	if (platform)
 	{
 		platform->ResetUnsavedChanges();
 	}

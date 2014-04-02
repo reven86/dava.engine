@@ -158,7 +158,7 @@ bool EntityModificationSystem::InCloneState() const
 	return (cloneState == CLONE_NEED);
 }
 
-void EntityModificationSystem::Update(DAVA::float32 timeElapsed)
+void EntityModificationSystem::Process(DAVA::float32 timeElapsed)
 { }
 
 void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
@@ -174,9 +174,7 @@ void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		SceneSelectionSystem *selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
 		EntityGroup selectedEntities = selectionSystem->GetSelection();
 
-		// remember current cursor point, when looking from current camera
-		DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
-		DAVA::Vector3 camToPointDirection = cameraSystem->GetPointDirection(event->point);
+        DAVA::Camera *camera = cameraSystem->GetCurCamera();
 
 		// if we are not in modification state, try to find some selected item
 		// that have mouse cursor at the top of it
@@ -204,7 +202,7 @@ void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
 						BeginModification(selectedEntities);
 
 						// init some values, needed for modifications
-						modifStartPos3d = CamCursorPosToModifPos(camPosition, camToPointDirection, modifEntitiesCenter);
+						modifStartPos3d = CamCursorPosToModifPos(camera, event->point);
 						modifStartPos2d = event->point;
 
 						// check if this is move with copy action
@@ -235,7 +233,7 @@ void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
 				{
 				case ST_MODIF_MOVE:
 					{
-						DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camPosition, camToPointDirection, modifEntitiesCenter);
+						DAVA::Vector3 newPos3d = CamCursorPosToModifPos(camera, event->point);
 						moveOffset = Move(newPos3d);
 						modified = true;
 					}
@@ -405,7 +403,16 @@ void EntityModificationSystem::BeginModification(const EntityGroup &entities)
 		// real rotate should be done in direction of 2dAxis normal,
 		// so calculate this normal
 		rotateNormal = DAVA::Vector2(-rotateAxis.y, rotateAxis.x);
-		rotateNormal.Normalize();
+        if(!rotateNormal.IsZero())
+        {
+            rotateNormal.Normalize();
+        }
+
+        DAVA::Camera *camera = cameraSystem->GetCurCamera();
+        if(NULL != camera)
+        {
+            isOrthoModif = camera->GetIsOrtho();
+        }
 	}
 }
 
@@ -413,6 +420,7 @@ void EntityModificationSystem::EndModification()
 {
 	modifEntitiesCenter.Set(0, 0, 0);
 	modifEntities.clear();
+    isOrthoModif = false;
 }
 
 bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities) const
@@ -519,48 +527,63 @@ void EntityModificationSystem::ApplyModification()
 	}
 }
 
-DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(const DAVA::Vector3 &camPosition, const DAVA::Vector3 &camPointDirection, const DAVA::Vector3 &planePoint)
+//DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(const DAVA::Vector3 &camPosition, const DAVA::Vector3 &camPointDirection, const DAVA::Vector3 &planePoint)
+DAVA::Vector3 EntityModificationSystem::CamCursorPosToModifPos(DAVA::Camera *camera, DAVA::Vector2 pos)
 {
-	DAVA::Vector3 ret;
-	DAVA::Vector3 planeNormal;
+    DAVA::Vector3 ret;
 
-	switch(curAxis)
-	{
-	case ST_AXIS_X:
-		{
-			if(crossXY > crossXZ) planeNormal = DAVA::Vector3(0, 0, 1);
-			else planeNormal = DAVA::Vector3(0, 1, 0);
-		}
-		break;
-	case ST_AXIS_Y:
-		{
-			if(crossXY > crossYZ) planeNormal = DAVA::Vector3(0, 0, 1);
-			else planeNormal = DAVA::Vector3(1, 0, 0);
-		}
-		break;
-	case ST_AXIS_Z:
-		{
-			if(crossXZ > crossYZ) planeNormal = DAVA::Vector3(0, 1, 0);
-			else planeNormal = DAVA::Vector3(1, 0, 0);
-		}
-		break;
-	case ST_AXIS_XZ:
-		planeNormal = DAVA::Vector3(0, 1, 0);
-		break;
-	case ST_AXIS_YZ:
-		planeNormal = DAVA::Vector3(1, 0, 0);
-		break;
-	case ST_AXIS_XY:
-	default:
-		planeNormal = DAVA::Vector3(0, 0, 1);
-		break;
-	}
+    if(NULL != camera)
+    {
+        if(camera->GetIsOrtho())
+        {
+            DAVA::Vector3 dir = cameraSystem->GetPointDirection(pos);
+            ret = DAVA::Vector3(dir.x, dir.y, 0);
+        }
+        else
+        {
+            DAVA::Vector3 planeNormal;
+            DAVA::Vector3 camPosition = cameraSystem->GetCameraPosition();
+            DAVA::Vector3 camToPointDirection = cameraSystem->GetPointDirection(pos);
 
-	DAVA::Plane plane(planeNormal, planePoint);
-	DAVA::float32 distance = FLT_MAX;
+            switch(curAxis)
+            {
+                case ST_AXIS_X:
+                    {
+                        if(crossXY > crossXZ) planeNormal = DAVA::Vector3(0, 0, 1);
+                        else planeNormal = DAVA::Vector3(0, 1, 0);
+                    }
+                    break;
+                case ST_AXIS_Y:
+                    {
+                        if(crossXY > crossYZ) planeNormal = DAVA::Vector3(0, 0, 1);
+                        else planeNormal = DAVA::Vector3(1, 0, 0);
+                    }
+                    break;
+                case ST_AXIS_Z:
+                    {
+                        if(crossXZ > crossYZ) planeNormal = DAVA::Vector3(0, 1, 0);
+                        else planeNormal = DAVA::Vector3(1, 0, 0);
+                    }
+                    break;
+                case ST_AXIS_XZ:
+                    planeNormal = DAVA::Vector3(0, 1, 0);
+                    break;
+                case ST_AXIS_YZ:
+                    planeNormal = DAVA::Vector3(1, 0, 0);
+                    break;
+                case ST_AXIS_XY:
+                default:
+                    planeNormal = DAVA::Vector3(0, 0, 1);
+                    break;
+            }
 
-	plane.IntersectByRay(camPosition, camPointDirection, distance);
-	ret = camPosition + (camPointDirection * distance);
+            DAVA::Plane plane(planeNormal, modifEntitiesCenter);
+            DAVA::float32 distance = FLT_MAX;
+
+            plane.IntersectByRay(camPosition, camToPointDirection, distance);
+            ret = camPosition + (camToPointDirection * distance);
+        }
+    }
 	
 	return ret;
 }
@@ -570,8 +593,13 @@ DAVA::Vector2 EntityModificationSystem::Cam2dProjection(const DAVA::Vector3 &fro
 	DAVA::Vector2 axisBegin = cameraSystem->GetScreenPos(from);
 	DAVA::Vector2 axisEnd = cameraSystem->GetScreenPos(to);
 	DAVA::Vector2 ret = axisEnd - axisBegin;
-	ret.Normalize();
 
+    if(ret.IsZero())
+    {
+        ret = DAVA::Vector2(1.0f, 1.0f);
+    }
+
+    ret.Normalize();
 	return ret;
 }
 
@@ -590,19 +618,28 @@ DAVA::Vector3 EntityModificationSystem::Move(const DAVA::Vector3 &newPos3d)
 		modifPosWithLocedAxis.y += DAVA::Vector3(0, 1, 0).DotProduct(deltaPos3d);
 		break;
 	case ST_AXIS_Z:
-		modifPosWithLocedAxis.z += DAVA::Vector3(0, 0, 1).DotProduct(deltaPos3d);
+        if(!isOrthoModif)
+        {
+            modifPosWithLocedAxis.z += DAVA::Vector3(0, 0, 1).DotProduct(deltaPos3d);
+        }
 		break;
 	case ST_AXIS_XY:
 		modifPosWithLocedAxis.x = newPos3d.x;
 		modifPosWithLocedAxis.y = newPos3d.y;
 		break;
 	case ST_AXIS_XZ:
-		modifPosWithLocedAxis.x = newPos3d.x;
-		modifPosWithLocedAxis.z = newPos3d.z;
+        if(!isOrthoModif)
+        {
+            modifPosWithLocedAxis.x = newPos3d.x;
+            modifPosWithLocedAxis.z = newPos3d.z;
+        }
 		break;
 	case ST_AXIS_YZ:
-		modifPosWithLocedAxis.z = newPos3d.z;
-		modifPosWithLocedAxis.y = newPos3d.y;
+        if(!isOrthoModif)
+        {
+            modifPosWithLocedAxis.z = newPos3d.z;
+            modifPosWithLocedAxis.y = newPos3d.y;
+        }
 		break;
     default: break;
 	}

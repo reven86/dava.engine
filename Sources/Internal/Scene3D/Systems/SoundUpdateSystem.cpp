@@ -33,7 +33,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
-#include "Sound/SoundEvent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Sound/SoundSystem.h"
 
 namespace DAVA
@@ -42,7 +42,6 @@ SoundUpdateSystem::SoundUpdateSystem(Scene * scene)
 :	SceneSystem(scene)
 {
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
-	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SOUND_CHANGED);
 }
 
 SoundUpdateSystem::~SoundUpdateSystem()
@@ -53,20 +52,45 @@ void SoundUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
 	if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
 	{
-		Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-		Vector3 translation = worldTransformPointer->GetTranslationVector();
+		const Matrix4 & worldTransform = GetTransformComponent(entity)->GetWorldTransform();
+		Vector3 translation = worldTransform.GetTranslationVector();
 
-		SoundEvent * sEvent = ((SoundComponent *)entity->GetComponent(Component::SOUND_COMPONENT))->GetSoundEvent();
-		sEvent->SetPosition(translation);
-	}
+        SoundComponent * sc = GetSoundComponent(entity);
+        if(sc)
+        {
+            Vector3 worldDirection;
+            bool needCalcDirection = true;
 
-	if (event == EventSystem::SOUND_CHANGED)
-	{
-		SoundComponent * soundComponent = (SoundComponent *)entity->GetComponent(Component::SOUND_COMPONENT);
-		SoundEvent * sEvent = SoundSystem::Instance()->CreateSoundEvent(soundComponent->GetEventName());
-		soundComponent->SetSoundEvent(sEvent);
-		SafeRelease(sEvent);
+            uint32 eventsCount = sc->GetEventsCount();
+            for(uint32 i = 0; i < eventsCount; ++i)
+            {
+                SoundEvent * sound = sc->GetSoundEvent(i);
+                sound->SetPosition(translation);
+                if(sound->IsDirectional())
+                {
+                    if(needCalcDirection)
+                    {
+                        worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(), worldTransform);
+                        needCalcDirection = false;
+                    }
+                    sound->SetDirection(worldDirection);
+                }
+                sound->UpdateInstancesPosition();
+            }
+        }
 	}
 }
     
+void SoundUpdateSystem::Process(float32 timeElapsed)
+{
+    Camera * activeCamera = GetScene()->GetCurrentCamera();
+
+    if(activeCamera)
+    {
+        SoundSystem * ss = SoundSystem::Instance();
+        ss->SetListenerPosition(activeCamera->GetPosition());
+        ss->SetListenerOrientation(activeCamera->GetDirection(), activeCamera->GetLeft());
+    }
+}
+
 };

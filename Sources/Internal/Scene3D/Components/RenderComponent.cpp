@@ -63,8 +63,12 @@ Component * RenderComponent::Clone(Entity * toEntity)
     RenderComponent * component = new RenderComponent();
 	component->SetEntity(toEntity);
 
-    //TODO: Do not forget ot check what does it means.
-    component->renderObject = renderObject->Clone(component->renderObject);
+    if(NULL != renderObject)
+    {
+        //TODO: Do not forget ot check what does it means.
+        component->renderObject = renderObject->Clone(component->renderObject);
+    }
+
     return component;
 }
 	
@@ -91,14 +95,19 @@ void RenderComponent::OptimizeBeforeExport()
 
 void RenderComponent::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
 {
-    uint32 count = renderObject->GetRenderBatchCount();
-    for(uint32 i = 0; i < count; ++i)
+    if(NULL != renderObject)
     {
-        RenderBatch *renderBatch = renderObject->GetRenderBatch(i);
-		if(NULL != renderBatch)
-		{
-			renderBatch->GetDataNodes(dataNodes);
-		}
+        uint32 count = renderObject->GetRenderBatchCount();
+        for(uint32 i = 0; i < count; ++i)
+        {
+            RenderBatch *renderBatch = renderObject->GetRenderBatch(i);
+            if(NULL != renderBatch)
+            {
+                renderBatch->GetDataNodes(dataNodes);
+            }
+        }
+        
+        renderObject->GetDataNodes(dataNodes);
     }
 }
 

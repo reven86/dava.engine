@@ -79,7 +79,6 @@ public:
 	void SetGestures(bool value);
 
 protected:
-
 	// Platform-specific implementation of the Web View Control.
 	IWebViewControl* webViewControl;
 };

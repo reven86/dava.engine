@@ -65,6 +65,9 @@ DebugRenderSystem::~DebugRenderSystem()
 void DebugRenderSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("DebugRenderSystem::Process");
+
+    SetCamera(GetScene()->GetCurrentCamera());
+
     uint32 size = entities.size();
 	for(uint32 i = 0; i < size; ++i)
 	{

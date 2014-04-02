@@ -31,8 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <QDialog>
 #include <QtGui>
+#include <QPointer>
+#include <QStandardItemModel>
+
 #include "DAVAEngine.h"
 
+#include "MaterialTemplateModel.h"
 #include "Scene/SceneSignals.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "DockProperties/PropertyEditorStateHelper.h"
@@ -62,22 +66,23 @@ public slots:
 	void materialSelected(const QItemSelection & selected, const QItemSelection & deselected);
 
 protected slots:
-	void OnAddProperty();
+    void OnAddFlag();
+    void OnRemFlag();
+    void OnAddProperty();
 	void OnRemProperty();
 	void OnAddTexture();
 	void OnRemTexture();
 	void OnTemplateChanged(int index);
 	void OnPropertyEdited(const QModelIndex &);
-    void OnSwitchQuality(bool checked);
-    void OnMaterialReload(bool checked);
-    void OnMaterialSetFog(bool checked);
+    void OnMaterialAddGlobal(bool checked);
+    void OnMaterialRemoveGlobal(bool checked);
 
 protected:
 	virtual void showEvent(QShowEvent * event);
 
-	void SetCurMaterial(DAVA::NMaterial *material);
-	void FillMaterialProperties(DAVA::NMaterial *material);
-    void FillMaterialTemplates(DAVA::NMaterial *material);
+	void SetCurMaterial(const QList< DAVA::NMaterial *>& materials);
+	void FillMaterialProperties(const QList<DAVA::NMaterial *>& materials);
+    void FillMaterialTemplates(const QList<DAVA::NMaterial *>& materials);
 
     QVariant CheckForTextureDescriptor(const QVariant& value);
 
@@ -88,61 +93,18 @@ private slots:
 
 private:
     void initActions();
+    void initTemplates();
+
+    void setTemplatePlaceholder( const QString& text );
 
 	Ui::MaterialEditor *ui;
 	QtPosSaver posSaver;
 
-	DAVA::NMaterial *curMaterial;
+	QList< DAVA::NMaterial *> curMaterials;
 
 	PropertyEditorStateHelper *treeStateHelper;
     ExpandMap expandMap;
-};
-
-class MaterialEditorFogDialog : public QDialog
-{
-    Q_OBJECT
-
-public:
-    enum FogType
-    {
-        FOG_DISABLED,
-        FOG_EXPONENTIAL,
-        FOG_LINEAR
-    };
-
-    struct FogParams
-    {
-        FogType type;
-        DAVA::Color color;
-        DAVA::float32 density;
-        DAVA::float32 start;
-        DAVA::float32 end;
-
-        FogParams() : type(FOG_DISABLED), density(0), start(0), end(0) {}
-    };
-
-    MaterialEditorFogDialog();
-
-    void SetFogParams(const FogParams &params);
-    FogParams GetFogParams() const;
-
-public slots:
-    void OnColorPick();
-    void OnModeSwitch(bool state);
-
-protected:
-    QRadioButton *disabled;
-    QRadioButton *exponential;
-    QRadioButton *linear;
-    QPushButton *fogColor;
-    QDoubleSpinBox *fogDensity;
-    QDoubleSpinBox *fogStart;
-    QDoubleSpinBox *fogEnd;
-    QLabel *labelColor;
-    QLabel *labelDensity;
-    QLabel *labelStart;
-    QLabel *labelEnd;
-
+    QPointer< MaterialTemplateModel > templatesFilterModel;
 };
 
 #endif

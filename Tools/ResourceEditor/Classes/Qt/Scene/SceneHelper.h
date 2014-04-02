@@ -39,15 +39,21 @@
 class SceneHelper
 {
 public:
-    static void EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection);
-	static void EnumerateSceneTextures(DAVA::Scene *forScene, DAVA::TexturesMap &textures);
+    enum TexturesEnumerateMode
+    {
+        EXCLUDE_NULL,
+        INCLUDE_NULL
+    };
+
+    static void EnumerateEntityTextures(DAVA::Scene *forScene, DAVA::Entity *forNode, DAVA::TexturesMap &textureCollection, TexturesEnumerateMode mode);
+	static void EnumerateSceneTextures(DAVA::Scene *forScene, DAVA::TexturesMap &textures, TexturesEnumerateMode mode);
 
 	static void EnumerateDescriptors(DAVA::Entity *forNode, DAVA::Set<DAVA::FilePath> &descriptors);
 	static void EnumerateMaterials(DAVA::Entity *forNode, DAVA::Vector<DAVA::Material *> &materials);
 	static DAVA::int32 EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DAVA::Texture *, DAVA::Vector< DAVA::eGPUFamily> > &textures);
 
 protected:
-	static void CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures);
+	static void CollectTextures(const DAVA::NMaterial *material, DAVA::TexturesMap &textures, TexturesEnumerateMode mode);
 };
 
 #endif // __SCENE_HELPER_H__

@@ -80,6 +80,8 @@ public:
 	void SetVisible(bool visible);
 	bool IsVisible() const;
 
+    virtual void Process(DAVA::float32 timeElapsed);
+
 protected:
 	bool lockedScale;
 	bool lockedModif;
@@ -95,7 +97,6 @@ protected:
 
 	SceneCameraSystem *cameraSystem;
 
-	virtual void Update(float timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);

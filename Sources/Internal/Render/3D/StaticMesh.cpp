@@ -82,7 +82,9 @@ void StaticMesh::AddNode(DataNode * node)
     DVASSERT(group != 0);
     if (group)
     {
-        DataNode::AddNode(group);
+        group->Retain();
+        group->SetDataIndex(children.size());
+        children.push_back(node);
     }
 }
 	

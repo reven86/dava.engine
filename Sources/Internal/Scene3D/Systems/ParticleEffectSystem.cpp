@@ -76,6 +76,14 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
             NMaterialHelper::DisableStateFlags(PASS_FORWARD, material, RenderStateData::STATE_DEPTH_TEST);
 		NMaterialHelper::SetBlendMode(PASS_FORWARD, material, srcFactor, dstFactor);
 		materialMap[materialKey] = material;
+
+        // if fog is disabled for this material - we also shouldn't inherit fog from global material
+        // so force set fog flag to OFF in this instance
+        if(!enableFog)
+        {
+            material->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
+        }
+
 		return material;
 	}
 }
@@ -98,7 +106,13 @@ ParticleEffectSystem::~ParticleEffectSystem()
 	SafeRelease(particleFrameBlendMaterial);
 }
 
-void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, int32 positionSource)
+void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
+{
+    particleRegularMaterial->SetParent(material, false);
+    particleFrameBlendMaterial->SetParent(material, false);
+}
+
+void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)
 {
 	for (int32 layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
 	{

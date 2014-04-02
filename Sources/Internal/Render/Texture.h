@@ -343,7 +343,7 @@ public:							// properties for fast access
     eGPUFamily loadedAsFile:3;
 	TextureState state:2;
 	uint32		textureType:2;
-	DepthFormat depthFormat:1;
+	DepthFormat depthFormat:2;
 	bool		isRenderTarget:1;
 	bool		isPink:1;
 

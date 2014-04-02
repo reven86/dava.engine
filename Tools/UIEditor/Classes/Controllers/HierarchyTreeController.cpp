@@ -156,21 +156,6 @@ void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control)
 	
 	//add selection
 	InsertSelectedControlToList(control);
-	UIControl* uiControl = control->GetUIObject();
-	if (uiControl)
-	{
-		uiControl->SetDebugDraw(true);
-		uiControl->SetDrawPivotPointMode(UIControl::DRAW_ONLY_IF_NONZERO);
-		uiControl->SetDebugDrawColor(Color(1.f, 0, 0, 1.f));
-	
-		//YZ draw parent rect
-		UIControl* parentUiControl = uiControl->GetParent();
-		if (parentUiControl)
-		{
-			parentUiControl->SetDebugDrawColor(Color(0.55f, 0.55f, 0.55f, 1.f));
-			parentUiControl->SetDebugDraw(true);
-		}
-	}
 	
 	emit AddSelectedControl(control);
 	emit SelectedControlNodesChanged(activeControlNodes);

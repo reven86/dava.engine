@@ -86,10 +86,24 @@
  name: "PixelLit SpecularMap Reflection Opaque"
  path: PixelLit.SpecularMap.Reflection.Opaque.material
 -
- name: "WaterPerVertex Cubemap"
+ name: "Water All Qualities"
+ path: WaterAllQualities.material
+-
+ name: "Water Per Vertex Cubemap"
  path: WaterPerVertexCubemap.material
 -
- name: "WaterPerPixel Cubemap"
+ name: "Water Per Vertex Cubemap Decal"
+ path: WaterPerVertexCubemapDecal.material 
+-
+ name: "Water Per Pixel Cubemap"
  path: WaterPerPixelCubemap.material
-
+-
+ name: "Water Per Pixel Cubemap Fresnael to Alpha"
+ path: WaterPerPixelCubemapAlphablend.material
+-
+ name: "Water Real Reflections"
+ path: WaterPerPixelRealReflections.material
+-
+ name: "Grass"
+ path: Grass.material
  

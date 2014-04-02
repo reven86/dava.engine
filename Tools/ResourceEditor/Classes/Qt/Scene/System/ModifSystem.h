@@ -68,13 +68,13 @@ public:
 	bool InCloneState() const;
 
 	virtual void RemoveEntity(DAVA::Entity * entity);
+	virtual void Process(DAVA::float32 timeElapsed);
 
 protected:
 	SceneCollisionSystem *collisionSystem;
 	SceneCameraSystem *cameraSystem;
 	HoodSystem* hoodSystem;
 
-	void Update(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);
@@ -102,6 +102,7 @@ protected:
 	CloneState cloneState;
 
 	bool inModifState;
+    bool isOrthoModif;
 	bool modified;
 
 	ST_ModifMode curMode;
@@ -137,7 +138,7 @@ protected:
 	void ApplyModification();
 	bool ModifCanStart(const EntityGroup &selectedEntities) const;
 
-	DAVA::Vector3 CamCursorPosToModifPos(const DAVA::Vector3 &camPosition, const DAVA::Vector3 &camPointDirection, const DAVA::Vector3 &planePoint);
+	DAVA::Vector3 CamCursorPosToModifPos(DAVA::Camera *camera, DAVA::Vector2 pos);
 	DAVA::Vector2 Cam2dProjection(const DAVA::Vector3 &from, const DAVA::Vector3 &to);
 
 	DAVA::Vector3 Move(const DAVA::Vector3 &newPos3d);

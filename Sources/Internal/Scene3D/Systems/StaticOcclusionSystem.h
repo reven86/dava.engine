@@ -74,6 +74,7 @@ public:
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
     virtual void Process(float32 timeElapsed);
+    virtual void SceneDidLoaded();
 
 private:
     Camera * camera;

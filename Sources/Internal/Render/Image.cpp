@@ -379,4 +379,12 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 				(uint32)srcRect.x, (uint32)srcRect.y, (uint32)srcRect.dx, (uint32)srcRect.dy);
 }
 
+
+#ifndef __DAVAENGINE_IPHONE__
+bool Image::Save(const FilePath &path) const
+{
+    return false;
+}
+#endif
+    
 };

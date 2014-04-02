@@ -24,6 +24,10 @@ protected slots:
 protected:
     void UpdateButtons();
 
+	virtual void UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubleSpinBox* spinBoxWidget, const QMetaProperty& curProperty);
+    virtual void ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter,
+                                                  const double value);
+
 private:
     Ui::ParticleEffectPropertyGridWidget *ui;
 };

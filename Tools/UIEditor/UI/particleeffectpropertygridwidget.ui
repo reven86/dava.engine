@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>140</height>
+    <height>185</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>300</width>
-    <height>140</height>
+    <height>185</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -31,13 +31,13 @@
      <x>1</x>
      <y>1</y>
      <width>299</width>
-     <height>139</height>
+     <height>184</height>
     </rect>
    </property>
    <property name="minimumSize">
     <size>
      <width>299</width>
-     <height>139</height>
+     <height>159</height>
     </size>
    </property>
    <property name="title">
@@ -88,8 +88,8 @@
    <widget class="QCheckBox" name="autoStartCheckbox">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>80</y>
+      <x>200</x>
+      <y>89</y>
       <width>85</width>
       <height>18</height>
      </rect>
@@ -101,9 +101,9 @@
    <widget class="QPushButton" name="startButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>100</y>
-      <width>91</width>
+      <x>5</x>
+      <y>120</y>
+      <width>75</width>
       <height>32</height>
      </rect>
     </property>
@@ -114,9 +114,9 @@
    <widget class="QPushButton" name="stopButton">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>100</y>
-      <width>91</width>
+      <x>73</x>
+      <y>120</y>
+      <width>75</width>
       <height>32</height>
      </rect>
     </property>
@@ -127,14 +127,66 @@
    <widget class="QPushButton" name="reloadButton">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>100</y>
+      <x>102</x>
+      <y>150</y>
       <width>91</width>
       <height>32</height>
      </rect>
     </property>
     <property name="text">
      <string>Reload</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="startDelaySpinbox">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>85</y>
+      <width>71</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <double>999.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>90</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start delay:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pauseButton">
+    <property name="geometry">
+     <rect>
+      <x>142</x>
+      <y>120</y>
+      <width>75</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Pause</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="restartButton">
+    <property name="geometry">
+     <rect>
+      <x>211</x>
+      <y>120</y>
+      <width>75</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Restart</string>
     </property>
    </widget>
   </widget>

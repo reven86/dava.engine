@@ -66,7 +66,6 @@ public:
     int GetSwitchIndex() const;
 
     void requestPreview();
-    void setPreview(QImage image);
     
 private:
     DAVA::NMaterial * material;

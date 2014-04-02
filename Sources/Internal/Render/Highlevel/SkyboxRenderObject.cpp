@@ -52,6 +52,7 @@ namespace DAVA
 		
 		type = RenderObject::TYPE_SKYBOX;
 		AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
+        AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 	}
 	
 	SkyboxRenderObject::~SkyboxRenderObject()
@@ -60,7 +61,7 @@ namespace DAVA
 		
 	void SkyboxRenderObject::SetRenderSystem(RenderSystem * renderSystem)
 	{
-		if(GetRenderSystem())
+		/*if(GetRenderSystem())
 		{
 			GetRenderSystem()->UnregisterFromUpdate(this);
 		}
@@ -70,7 +71,7 @@ namespace DAVA
 		if(GetRenderSystem())
 		{
 			GetRenderSystem()->RegisterForUpdate(this);
-		}
+		}*/
 	}
 	
 	void SkyboxRenderObject::Initialize(AABBox3& box)
@@ -161,7 +162,7 @@ namespace DAVA
 		SafeRelease(polygonGroup);
 	}
 		
-	void SkyboxRenderObject::RenderUpdate(Camera *camera, float32 timeElapsed)
+	void SkyboxRenderObject::PrepareToRender(Camera *camera)
 	{
 		Vector3 camPos = camera->GetPosition();
 		

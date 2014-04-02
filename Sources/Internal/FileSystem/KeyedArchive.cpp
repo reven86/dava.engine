@@ -250,6 +250,14 @@ void KeyedArchive::SetWideString(const String & key, const WideString & value)
 	objectMap[key] = variantValue;
 }
 
+void KeyedArchive::SetFastName(const String & key, const FastName & value)
+{
+    DeleteKey(key);
+    VariantType *variantValue = new VariantType();
+    variantValue->SetFastName(value);
+    objectMap[key] = variantValue;
+}
+
 void KeyedArchive::SetByteArray(const String & key, const uint8 * value, int32 arraySize)
 {
     DeleteKey(key);
@@ -391,13 +399,21 @@ String KeyedArchive::GetString(const String & key, const String & defaultValue)
 		return objectMap[key]->AsString();
 	return defaultValue;
 }
+
 WideString KeyedArchive::GetWideString(const String & key, const WideString & defaultValue)
 {
 	if (IsKeyExists(key))
 		return objectMap[key]->AsWideString();
 	return defaultValue;
 }
-	
+
+FastName KeyedArchive::GetFastName(const String & key, const FastName & defaultValue)
+{
+    if (IsKeyExists(key))
+        return objectMap[key]->AsFastName();
+    return defaultValue;
+}
+
 const uint8 *KeyedArchive::GetByteArray(const String & key, const uint8 *defaultValue)
 {
 	if (IsKeyExists(key))

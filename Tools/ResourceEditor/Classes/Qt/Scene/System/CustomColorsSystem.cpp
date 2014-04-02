@@ -168,7 +168,7 @@ bool CustomColorsSystem::DisableLandscapeEdititing( bool saveNeeded)
 	return !enabled;
 }
 
-void CustomColorsSystem::Update(DAVA::float32 timeElapsed)
+void CustomColorsSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

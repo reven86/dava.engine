@@ -58,6 +58,7 @@ void OcclusionQuery::Release()
 
 OcclusionQuery::~OcclusionQuery()
 {
+    Release();
     id = 0;
 }
 

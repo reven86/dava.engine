@@ -15,7 +15,7 @@ class EditPreviewSettingsDialog : public QDialog
 
 public:
     explicit EditPreviewSettingsDialog(QWidget *parent = 0);
-    EditPreviewSettingsDialog();
+    ~EditPreviewSettingsDialog();
 
     // Get the resulting preview settings data.
     const PreviewSettingsData& GetData() const;

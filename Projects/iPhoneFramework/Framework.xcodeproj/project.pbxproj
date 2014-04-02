@@ -13,13 +13,19 @@
 		0224B7341598AC2800CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7321598AC2800CDEF9E /* libtheora_macos.a */; };
 		0224B74A1598B40100CDEF9E /* libogg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7481598B40100CDEF9E /* libogg_ios.a */; };
 		0224B74B1598B40100CDEF9E /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7491598B40100CDEF9E /* libogg_macos.a */; };
+		0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */; };
+		0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */; };
+		029BAE551859B81700478671 /* musicios.h in Headers */ = {isa = PBXBuildFile; fileRef = 029BAE511859B81700478671 /* musicios.h */; };
+		029BAE581859B81700478671 /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 029BAE541859B81700478671 /* SoundEvent.h */; };
+		029BAE591859C80500478671 /* musicios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 029BAE521859B81700478671 /* musicios.mm */; };
+		02C4E8CB18154E490052803E /* AutotestingDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C85172181032EA002B7E1C /* AutotestingDB.cpp */; };
+		02C4E8CC18154E4D0052803E /* GameAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C85174181032EA002B7E1C /* GameAPI.cpp */; };
+		02C4E8CD18154E520052803E /* AutotestingDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C85173181032EA002B7E1C /* AutotestingDB.h */; };
+		02C4E8CE18154E520052803E /* GameAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C85175181032EA002B7E1C /* GameAPI.h */; };
+		02D4CFC018055E29007EC9EC /* FMODSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02D4CFB818055E29007EC9EC /* FMODSoundEvent.cpp */; };
+		02D4CFC118055E29007EC9EC /* FMODSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02D4CFB918055E29007EC9EC /* FMODSoundEvent.h */; };
+		02D4CFC418055E29007EC9EC /* FMODSoundSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02D4CFBC18055E29007EC9EC /* FMODSoundSystem.cpp */; };
 		02E9E3A11729669200C501BC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3A01729669200C501BC /* FMODUtils.h */; };
-		02E9E3DA1734176200C501BC /* SoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E3D41734176100C501BC /* SoundEvent.cpp */; };
-		02E9E3DB1734176200C501BC /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3D51734176200C501BC /* SoundEvent.h */; };
-		02E9E3DC1734176200C501BC /* SoundEventCategory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E3D61734176200C501BC /* SoundEventCategory.cpp */; };
-		02E9E3DD1734176200C501BC /* SoundEventCategory.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3D71734176200C501BC /* SoundEventCategory.h */; };
-		02E9E3DE1734176200C501BC /* VolumeAnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E3D81734176200C501BC /* VolumeAnimatedObject.cpp */; };
-		02E9E3DF1734176200C501BC /* VolumeAnimatedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3D91734176200C501BC /* VolumeAnimatedObject.h */; };
 		02E9E3E21734176D00C501BC /* SoundComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E3E01734176D00C501BC /* SoundComponent.cpp */; };
 		02E9E3E31734176D00C501BC /* SoundComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3E11734176D00C501BC /* SoundComponent.h */; };
 		02F6403B173A597A0053F038 /* libfmodevent_iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3D01734165D00C501BC /* libfmodevent_iphoneos.a */; };
@@ -63,8 +69,15 @@
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
 		5C97964714E3E75000FFFA14 /* libxml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964514E3E75000FFFA14 /* libxml_ios.a */; };
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
+		624C87F218C6160F00E1049D /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 624C87F018C6160F00E1049D /* DateTime.cpp */; };
+		624C87F318C6160F00E1049D /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 624C87F118C6160F00E1049D /* DateTime.h */; };
+		6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */; };
 		62BAA48F178EF915003DE32C /* MailComposeDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BAA48D178EF915003DE32C /* MailComposeDelegate.h */; };
 		62BAA492178EF952003DE32C /* MailComposeDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 62BAA491178EF952003DE32C /* MailComposeDelegate.mm */; };
+		641A61FB18CE0F4D003359E7 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 641A61F918CE0F4D003359E7 /* VegetationRenderObject.cpp */; };
+		641A61FC18CE0F4D003359E7 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61FA18CE0F4D003359E7 /* VegetationRenderObject.h */; };
+		641A61FF18CE0F61003359E7 /* FoliageSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 641A61FD18CE0F61003359E7 /* FoliageSystem.cpp */; };
+		641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61FE18CE0F61003359E7 /* FoliageSystem.h */; };
 		7A8F772917E73E720048A43D /* AutotestingDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8F772517E73E720048A43D /* AutotestingDB.cpp */; };
 		7A8F772A17E73E720048A43D /* AutotestingDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 7A8F772617E73E720048A43D /* AutotestingDB.h */; };
 		7A8F772B17E73E720048A43D /* GameAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A8F772717E73E720048A43D /* GameAPI.cpp */; };
@@ -648,11 +661,6 @@
 		E8B3CCCD16B9326E002BD35F /* TransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA1316B9326E002BD35F /* TransformSystem.h */; };
 		E8B3CCD016B9326E002BD35F /* UserNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA1616B9326E002BD35F /* UserNode.cpp */; };
 		E8B3CCD116B9326E002BD35F /* UserNode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA1716B9326E002BD35F /* UserNode.h */; };
-		E8B3CCD516B9326E002BD35F /* Sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA1C16B9326E002BD35F /* Sound.cpp */; };
-		E8B3CCD616B9326E002BD35F /* Sound.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA1D16B9326E002BD35F /* Sound.h */; };
-		E8B3CCDD16B9326E002BD35F /* SoundGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA2416B9326E002BD35F /* SoundGroup.cpp */; };
-		E8B3CCDE16B9326E002BD35F /* SoundGroup.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA2516B9326E002BD35F /* SoundGroup.h */; };
-		E8B3CCE316B9326E002BD35F /* SoundSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA2A16B9326E002BD35F /* SoundSystem.cpp */; };
 		E8B3CCE416B9326E002BD35F /* SoundSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA2B16B9326E002BD35F /* SoundSystem.h */; };
 		E8B3CCE716B9326E002BD35F /* ScrollHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA2F16B9326E002BD35F /* ScrollHelper.cpp */; };
 		E8B3CCE816B9326E002BD35F /* ScrollHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3CA3016B9326E002BD35F /* ScrollHelper.h */; };
@@ -786,17 +794,23 @@
 		0224B7321598AC2800CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
 		0224B7481598B40100CDEF9E /* libogg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_ios.a; path = ../../Libs/libs/libogg_ios.a; sourceTree = "<group>"; };
 		0224B7491598B40100CDEF9E /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/libs/libogg_macos.a; sourceTree = "<group>"; };
+		0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
+		0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
+		029BAE511859B81700478671 /* musicios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = musicios.h; sourceTree = "<group>"; };
+		029BAE521859B81700478671 /* musicios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = musicios.mm; sourceTree = "<group>"; };
+		029BAE541859B81700478671 /* SoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundEvent.h; sourceTree = "<group>"; };
+		02C85172181032EA002B7E1C /* AutotestingDB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingDB.cpp; sourceTree = "<group>"; };
+		02C85173181032EA002B7E1C /* AutotestingDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingDB.h; sourceTree = "<group>"; };
+		02C85174181032EA002B7E1C /* GameAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameAPI.cpp; sourceTree = "<group>"; };
+		02C85175181032EA002B7E1C /* GameAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameAPI.h; sourceTree = "<group>"; };
+		02D4CFB818055E29007EC9EC /* FMODSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODSoundEvent.cpp; sourceTree = "<group>"; };
+		02D4CFB918055E29007EC9EC /* FMODSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODSoundEvent.h; sourceTree = "<group>"; };
+		02D4CFBC18055E29007EC9EC /* FMODSoundSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODSoundSystem.cpp; sourceTree = "<group>"; };
 		02E9E3A01729669200C501BC /* FMODUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODUtils.h; sourceTree = "<group>"; };
 		02E9E3A2172967F300C501BC /* libfmodex_iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfmodex_iphoneos.a; path = ../../Libs/fmod/lib/iphone/libfmodex_iphoneos.a; sourceTree = "<group>"; };
 		02E9E3A3172967F300C501BC /* libfmodex_iphonesimulator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfmodex_iphonesimulator.a; path = ../../Libs/fmod/lib/iphone/libfmodex_iphonesimulator.a; sourceTree = "<group>"; };
 		02E9E3D01734165D00C501BC /* libfmodevent_iphoneos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfmodevent_iphoneos.a; path = ../../Libs/fmod/lib/iphone/libfmodevent_iphoneos.a; sourceTree = "<group>"; };
 		02E9E3D11734165D00C501BC /* libfmodevent_iphonesimulator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfmodevent_iphonesimulator.a; path = ../../Libs/fmod/lib/iphone/libfmodevent_iphonesimulator.a; sourceTree = "<group>"; };
-		02E9E3D41734176100C501BC /* SoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundEvent.cpp; sourceTree = "<group>"; };
-		02E9E3D51734176200C501BC /* SoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundEvent.h; sourceTree = "<group>"; };
-		02E9E3D61734176200C501BC /* SoundEventCategory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundEventCategory.cpp; sourceTree = "<group>"; };
-		02E9E3D71734176200C501BC /* SoundEventCategory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundEventCategory.h; sourceTree = "<group>"; };
-		02E9E3D81734176200C501BC /* VolumeAnimatedObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VolumeAnimatedObject.cpp; sourceTree = "<group>"; };
-		02E9E3D91734176200C501BC /* VolumeAnimatedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VolumeAnimatedObject.h; sourceTree = "<group>"; };
 		02E9E3E01734176D00C501BC /* SoundComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundComponent.cpp; sourceTree = "<group>"; };
 		02E9E3E11734176D00C501BC /* SoundComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundComponent.h; sourceTree = "<group>"; };
 		02F6403F173A5A950053F038 /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
@@ -836,8 +850,15 @@
 		5C77ABBE14C7703800E92D28 /* libpng_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_ios.a; path = ../../Libs/libs/libpng_ios.a; sourceTree = "<group>"; };
 		5C97964514E3E75000FFFA14 /* libxml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_ios.a; path = ../../Libs/libs/libxml_ios.a; sourceTree = "<group>"; };
 		5C97964614E3E75000FFFA14 /* libyaml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_ios.a; path = ../../Libs/libs/libyaml_ios.a; sourceTree = "<group>"; };
+		624C87F018C6160F00E1049D /* DateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTime.cpp; sourceTree = "<group>"; };
+		624C87F118C6160F00E1049D /* DateTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTime.h; sourceTree = "<group>"; };
+		6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
 		62BAA48D178EF915003DE32C /* MailComposeDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailComposeDelegate.h; sourceTree = "<group>"; };
 		62BAA491178EF952003DE32C /* MailComposeDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MailComposeDelegate.mm; sourceTree = "<group>"; };
+		641A61F918CE0F4D003359E7 /* VegetationRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VegetationRenderObject.cpp; sourceTree = "<group>"; };
+		641A61FA18CE0F4D003359E7 /* VegetationRenderObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VegetationRenderObject.h; sourceTree = "<group>"; };
+		641A61FD18CE0F61003359E7 /* FoliageSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FoliageSystem.cpp; sourceTree = "<group>"; };
+		641A61FE18CE0F61003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		7A8F772517E73E720048A43D /* AutotestingDB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingDB.cpp; sourceTree = "<group>"; };
 		7A8F772617E73E720048A43D /* AutotestingDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingDB.h; sourceTree = "<group>"; };
 		7A8F772717E73E720048A43D /* GameAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameAPI.cpp; sourceTree = "<group>"; };
@@ -1423,11 +1444,6 @@
 		E8B3CA1316B9326E002BD35F /* TransformSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TransformSystem.h; sourceTree = "<group>"; };
 		E8B3CA1616B9326E002BD35F /* UserNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UserNode.cpp; sourceTree = "<group>"; };
 		E8B3CA1716B9326E002BD35F /* UserNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserNode.h; sourceTree = "<group>"; };
-		E8B3CA1C16B9326E002BD35F /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sound.cpp; sourceTree = "<group>"; };
-		E8B3CA1D16B9326E002BD35F /* Sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Sound.h; sourceTree = "<group>"; };
-		E8B3CA2416B9326E002BD35F /* SoundGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundGroup.cpp; sourceTree = "<group>"; };
-		E8B3CA2516B9326E002BD35F /* SoundGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundGroup.h; sourceTree = "<group>"; };
-		E8B3CA2A16B9326E002BD35F /* SoundSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundSystem.cpp; sourceTree = "<group>"; };
 		E8B3CA2B16B9326E002BD35F /* SoundSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundSystem.h; sourceTree = "<group>"; };
 		E8B3CA2F16B9326E002BD35F /* ScrollHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScrollHelper.cpp; sourceTree = "<group>"; };
 		E8B3CA3016B9326E002BD35F /* ScrollHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScrollHelper.h; sourceTree = "<group>"; };
@@ -1568,6 +1584,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		029BAE501859B81700478671 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				029BAE511859B81700478671 /* musicios.h */,
+				029BAE521859B81700478671 /* musicios.mm */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		02D4CFC618055E30007EC9EC /* FMOD */ = {
+			isa = PBXGroup;
+			children = (
+				0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */,
+				0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */,
+				02D4CFB818055E29007EC9EC /* FMODSoundEvent.cpp */,
+				02D4CFB918055E29007EC9EC /* FMODSoundEvent.h */,
+				02D4CFBC18055E29007EC9EC /* FMODSoundSystem.cpp */,
+				02E9E3A01729669200C501BC /* FMODUtils.h */,
+			);
+			name = FMOD;
+			sourceTree = "<group>";
+		};
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1686,10 +1724,10 @@
 		E8B3C7B116B9326D002BD35F /* Autotesting */ = {
 			isa = PBXGroup;
 			children = (
-				7A8F772517E73E720048A43D /* AutotestingDB.cpp */,
-				7A8F772617E73E720048A43D /* AutotestingDB.h */,
-				7A8F772717E73E720048A43D /* GameAPI.cpp */,
-				7A8F772817E73E720048A43D /* GameAPI.h */,
+				02C85172181032EA002B7E1C /* AutotestingDB.cpp */,
+				02C85173181032EA002B7E1C /* AutotestingDB.h */,
+				02C85174181032EA002B7E1C /* GameAPI.cpp */,
+				02C85175181032EA002B7E1C /* GameAPI.h */,
 				C70B56591753CB5E008966FA /* KeyedArchiveSwig.cpp */,
 				C7E76D2116DF69370041ED9A /* AutotestingSystemLua.cpp */,
 				C7E76D2216DF69370041ED9A /* AutotestingSystemLua.h */,
@@ -2027,6 +2065,9 @@
 		E8B3C8BB16B9326D002BD35F /* Platform */ = {
 			isa = PBXGroup;
 			children = (
+				6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */,
+				624C87F018C6160F00E1049D /* DateTime.cpp */,
+				624C87F118C6160F00E1049D /* DateTime.h */,
 				84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */,
 				84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */,
 				E8B6B3C41705DEB4004F665E /* DeviceInfo.cpp */,
@@ -2202,6 +2243,8 @@
 		E8B3C92316B9326D002BD35F /* Highlevel */ = {
 			isa = PBXGroup;
 			children = (
+				641A61F918CE0F4D003359E7 /* VegetationRenderObject.cpp */,
+				641A61FA18CE0F4D003359E7 /* VegetationRenderObject.h */,
 				A6AFDEFA1871C3D1006E43A1 /* SpeedTreeObject.cpp */,
 				A6AFDEFB1871C3D1006E43A1 /* SpeedTreeObject.h */,
 				A6AFDED3187187D3006E43A1 /* RenderLayerManager.cpp */,
@@ -2390,6 +2433,8 @@
 		E8B3C9AC16B9326E002BD35F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				02E9E3E01734176D00C501BC /* SoundComponent.cpp */,
+				02E9E3E11734176D00C501BC /* SoundComponent.h */,
 				E8FC1301186972B60095D8FE /* QualitySettingsComponent.cpp */,
 				E8FC1302186972B60095D8FE /* QualitySettingsComponent.h */,
 				50C7D5FA186082B100D8936D /* StaticOcclusionComponent.cpp */,
@@ -2398,8 +2443,6 @@
 				A6E4FDF01761D40200B48E41 /* ActionComponent.h */,
 				A6E4FDF11761D40200B48E41 /* CustomPropertiesComponent.cpp */,
 				A6E4FDF21761D40200B48E41 /* CustomPropertiesComponent.h */,
-				02E9E3E01734176D00C501BC /* SoundComponent.cpp */,
-				02E9E3E11734176D00C501BC /* SoundComponent.h */,
 				CC24801316DD17F300183D40 /* UserComponent.cpp */,
 				CC24801416DD17F300183D40 /* UserComponent.h */,
 				CCB4C44416CBC65D00F2B085 /* ComponentHelpers.cpp */,
@@ -2431,6 +2474,8 @@
 		E8B3C9FD16B9326E002BD35F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				641A61FD18CE0F61003359E7 /* FoliageSystem.cpp */,
+				641A61FE18CE0F61003359E7 /* FoliageSystem.h */,
 				E8F43E2B186C5D4E006796CB /* MaterialSystem.cpp */,
 				E8F43E2C186C5D4E006796CB /* MaterialSystem.h */,
 				E8FC1305186972C80095D8FE /* QualitySettingsSystem.cpp */,
@@ -2474,18 +2519,9 @@
 		E8B3CA1816B9326E002BD35F /* Sound */ = {
 			isa = PBXGroup;
 			children = (
-				02E9E3D41734176100C501BC /* SoundEvent.cpp */,
-				02E9E3D51734176200C501BC /* SoundEvent.h */,
-				02E9E3D61734176200C501BC /* SoundEventCategory.cpp */,
-				02E9E3D71734176200C501BC /* SoundEventCategory.h */,
-				02E9E3D81734176200C501BC /* VolumeAnimatedObject.cpp */,
-				02E9E3D91734176200C501BC /* VolumeAnimatedObject.h */,
-				02E9E3A01729669200C501BC /* FMODUtils.h */,
-				E8B3CA1C16B9326E002BD35F /* Sound.cpp */,
-				E8B3CA1D16B9326E002BD35F /* Sound.h */,
-				E8B3CA2416B9326E002BD35F /* SoundGroup.cpp */,
-				E8B3CA2516B9326E002BD35F /* SoundGroup.h */,
-				E8B3CA2A16B9326E002BD35F /* SoundSystem.cpp */,
+				029BAE501859B81700478671 /* iOS */,
+				02D4CFC618055E30007EC9EC /* FMOD */,
+				029BAE541859B81700478671 /* SoundEvent.h */,
 				E8B3CA2B16B9326E002BD35F /* SoundSystem.h */,
 			);
 			path = Sound;
@@ -2665,6 +2701,7 @@
 				E8B3CA8116B9326E002BD35F /* Animation.h in Headers */,
 				E8B3CA8316B9326E002BD35F /* AnimationManager.h in Headers */,
 				E8B3CA8516B9326E002BD35F /* BezierSplineAnimation.h in Headers */,
+				029BAE581859B81700478671 /* SoundEvent.h in Headers */,
 				E8B3CA8716B9326E002BD35F /* Interpolation.h in Headers */,
 				E8B3CA8916B9326E002BD35F /* KeyframeAnimation.h in Headers */,
 				E8B3CA8B16B9326E002BD35F /* LinearAnimation.h in Headers */,
@@ -2677,6 +2714,7 @@
 				E8B3CA9B16B9326E002BD35F /* BaseObject.h in Headers */,
 				E8B3CA9D16B9326E002BD35F /* BaseObjectChecker.h in Headers */,
 				E8B3CA9E16B9326E002BD35F /* BaseTypes.h in Headers */,
+				641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */,
 				E8B3CAA016B9326E002BD35F /* Data.h in Headers */,
 				E8B3CAA216B9326E002BD35F /* DynamicObjectCache.h in Headers */,
 				E8B3CAA416B9326E002BD35F /* EventDispatcher.h in Headers */,
@@ -2719,6 +2757,7 @@
 				E8B3CADC16B9326E002BD35F /* DVAssert.h in Headers */,
 				E8B3CADD16B9326E002BD35F /* List.h in Headers */,
 				E8B3CADE16B9326E002BD35F /* ListAllocator.h in Headers */,
+				0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				E8B3CAE016B9326E002BD35F /* MemoryManager.h in Headers */,
 				E8B3CAE216B9326E002BD35F /* Replay.h in Headers */,
 				E8B3CAE416B9326E002BD35F /* Stats.h in Headers */,
@@ -2861,6 +2900,7 @@
 				E8B3CC2816B9326E002BD35F /* RenderEffect.h in Headers */,
 				E8B3CC2A16B9326E002BD35F /* RenderGrayscaleEffect.h in Headers */,
 				E8B3CC2C16B9326E002BD35F /* RenderHelper.h in Headers */,
+				641A61FC18CE0F4D003359E7 /* VegetationRenderObject.h in Headers */,
 				E8B3CC2E16B9326E002BD35F /* RenderManager.h in Headers */,
 				E8B3CC3316B9326E002BD35F /* RenderManagerGL20.h in Headers */,
 				A6AFDEDC187187D3006E43A1 /* VisibilityArray.h in Headers */,
@@ -2934,8 +2974,6 @@
 				E8B3CCCB16B9326E002BD35F /* SwitchSystem.h in Headers */,
 				E8B3CCCD16B9326E002BD35F /* TransformSystem.h in Headers */,
 				E8B3CCD116B9326E002BD35F /* UserNode.h in Headers */,
-				E8B3CCD616B9326E002BD35F /* Sound.h in Headers */,
-				E8B3CCDE16B9326E002BD35F /* SoundGroup.h in Headers */,
 				E8B3CCE416B9326E002BD35F /* SoundSystem.h in Headers */,
 				E8B3CCE816B9326E002BD35F /* ScrollHelper.h in Headers */,
 				E8B3CCEA16B9326E002BD35F /* TheoraPlayer.h in Headers */,
@@ -2961,6 +2999,7 @@
 				E8B3CD0E16B9326E002BD35F /* UIPopup.h in Headers */,
 				E8B3CD1016B9326E002BD35F /* UIScreen.h in Headers */,
 				E8B3CD1116B9326E002BD35F /* UIScreenManager.h in Headers */,
+				029BAE551859B81700478671 /* musicios.h in Headers */,
 				E8B3CD1416B9326E002BD35F /* UIScreenManageriPhone.h in Headers */,
 				E8B3CD1616B9326E002BD35F /* UIScreenManageriPhoneImpl.h in Headers */,
 				A6AFDEFD1871C3D1006E43A1 /* SpeedTreeObject.h in Headers */,
@@ -2970,6 +3009,7 @@
 				E8B3CD2116B9326E002BD35F /* UIStaticText.h in Headers */,
 				E8B3CD2316B9326E002BD35F /* UITextField.h in Headers */,
 				E843506017FA12BE00A25F04 /* TeamcityOutput.h in Headers */,
+				624C87F318C6160F00E1049D /* DateTime.h in Headers */,
 				E8B3CD2416B9326E002BD35F /* UITextFieldiPhone.h in Headers */,
 				E8B3CD2716B9326E002BD35F /* UIYamlLoader.h in Headers */,
 				CC84B03F18211BCE00934482 /* Job.h in Headers */,
@@ -3008,9 +3048,6 @@
 				A611714A1860C24D00E18F8C /* StaticOcclusionRenderPass.h in Headers */,
 				E8373BD917268CD9001A9770 /* UIAggregatorControl.h in Headers */,
 				02E9E3A11729669200C501BC /* FMODUtils.h in Headers */,
-				02E9E3DB1734176200C501BC /* SoundEvent.h in Headers */,
-				02E9E3DD1734176200C501BC /* SoundEventCategory.h in Headers */,
-				02E9E3DF1734176200C501BC /* VolumeAnimatedObject.h in Headers */,
 				02E9E3E31734176D00C501BC /* SoundComponent.h in Headers */,
 				02F64042173A5A950053F038 /* SoundUpdateSystem.h in Headers */,
 				CCEB543D1886FF0C0018491F /* LodToLod2Converter.h in Headers */,
@@ -3038,8 +3075,9 @@
 				17DC600C17DE16D40075813E /* UIMovieView.h in Headers */,
 				17DC601017DE18460075813E /* MovieViewControliOS.h in Headers */,
 				EA84E17617FAC20100304C3C /* SpatialTree.h in Headers */,
-				7A8F772A17E73E720048A43D /* AutotestingDB.h in Headers */,
-				7A8F772C17E73E720048A43D /* GameAPI.h in Headers */,
+				02D4CFC118055E29007EC9EC /* FMODSoundEvent.h in Headers */,
+				02C4E8CD18154E520052803E /* AutotestingDB.h in Headers */,
+				02C4E8CE18154E520052803E /* GameAPI.h in Headers */,
 				A695E52618113195008A0F20 /* ShaderCache.h in Headers */,
 				A695E52C18113315008A0F20 /* RenderBatchArray.h in Headers */,
 				A695E52E18113315008A0F20 /* RenderHierarchy.h in Headers */,
@@ -3189,6 +3227,7 @@
 				E8B3CB3D16B9326E002BD35F /* AccelerometeriPhone.mm in Sources */,
 				E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */,
 				E8B3CB4016B9326E002BD35F /* KeyboardDevice.cpp in Sources */,
+				029BAE591859C80500478671 /* musicios.mm in Sources */,
 				E8B3CB4216B9326E002BD35F /* AABBox2.cpp in Sources */,
 				E8B3CB4416B9326E002BD35F /* AABBox3.cpp in Sources */,
 				E8B3CB4616B9326E002BD35F /* BezierSpline.cpp in Sources */,
@@ -3320,6 +3359,7 @@
 				E8B3CC8D16B9326E002BD35F /* ParticleEffectNode.cpp in Sources */,
 				E8B3CC8F16B9326E002BD35F /* ParticleEmitterNode.cpp in Sources */,
 				CC84B04418211BCE00934482 /* JobWaiter.cpp in Sources */,
+				6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */,
 				E8B3CC9116B9326E002BD35F /* PathManip.cpp in Sources */,
 				E89C58F518B24832002C25FE /* AtomicMacOS.mm in Sources */,
 				CC84B04018211BCE00934482 /* JobManager.cpp in Sources */,
@@ -3351,9 +3391,6 @@
 				E8B3CCCA16B9326E002BD35F /* SwitchSystem.cpp in Sources */,
 				E8B3CCCC16B9326E002BD35F /* TransformSystem.cpp in Sources */,
 				E8B3CCD016B9326E002BD35F /* UserNode.cpp in Sources */,
-				E8B3CCD516B9326E002BD35F /* Sound.cpp in Sources */,
-				E8B3CCDD16B9326E002BD35F /* SoundGroup.cpp in Sources */,
-				E8B3CCE316B9326E002BD35F /* SoundSystem.cpp in Sources */,
 				E8B3CCE716B9326E002BD35F /* ScrollHelper.cpp in Sources */,
 				E8B3CCE916B9326E002BD35F /* TheoraPlayer.cpp in Sources */,
 				E8B3CCEB16B9326E002BD35F /* UI3DView.cpp in Sources */,
@@ -3367,6 +3404,7 @@
 				E8B3CCFB16B9326E002BD35F /* UIHierarchy.cpp in Sources */,
 				E8B3CCFD16B9326E002BD35F /* UIHierarchyCell.cpp in Sources */,
 				E8B3CCFF16B9326E002BD35F /* UIHierarchyNode.cpp in Sources */,
+				641A61FF18CE0F61003359E7 /* FoliageSystem.cpp in Sources */,
 				E8B3CD0116B9326E002BD35F /* UIHoleTransition.cpp in Sources */,
 				E8B3CD0316B9326E002BD35F /* UIJoypad.cpp in Sources */,
 				E8B3CD0516B9326E002BD35F /* UIList.cpp in Sources */,
@@ -3413,7 +3451,9 @@
 				A6AFDEDA187187D3006E43A1 /* RenderPassManager.cpp in Sources */,
 				CC24801516DD17F300183D40 /* UserComponent.cpp in Sources */,
 				E8BD1F0C16DE4A9C00499E18 /* MailSender.cpp in Sources */,
+				0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				E8BD1F0E16DE4A9C00499E18 /* MailSenderMacOS.mm in Sources */,
+				641A61FB18CE0F4D003359E7 /* VegetationRenderObject.cpp in Sources */,
 				E8FC1307186972C80095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				E95B4C5C16DF78EE00880713 /* UISpinner.cpp in Sources */,
 				A6AFDEFC1871C3D1006E43A1 /* SpeedTreeObject.cpp in Sources */,
@@ -3429,9 +3469,6 @@
 				E8B6B3C61705DEB4004F665E /* DeviceInfo.cpp in Sources */,
 				E8373BD817268CD9001A9770 /* UIAggregatorControl.cpp in Sources */,
 				E845D4E61732B7C9000DA8E7 /* FilePathObjective.mm in Sources */,
-				02E9E3DA1734176200C501BC /* SoundEvent.cpp in Sources */,
-				02E9E3DC1734176200C501BC /* SoundEventCategory.cpp in Sources */,
-				02E9E3DE1734176200C501BC /* VolumeAnimatedObject.cpp in Sources */,
 				02E9E3E21734176D00C501BC /* SoundComponent.cpp in Sources */,
 				02F64041173A5A950053F038 /* SoundUpdateSystem.cpp in Sources */,
 				84E5E0FF174D02EA0001C74F /* OpenUDIDApple.mm in Sources */,
@@ -3457,8 +3494,10 @@
 				17DC600B17DE16D40075813E /* UIMovieView.cpp in Sources */,
 				17DC600F17DE18460075813E /* MovieViewControliOS.mm in Sources */,
 				EA84E17517FAC20100304C3C /* SpatialTree.cpp in Sources */,
-				7A8F772917E73E720048A43D /* AutotestingDB.cpp in Sources */,
-				7A8F772B17E73E720048A43D /* GameAPI.cpp in Sources */,
+				02D4CFC018055E29007EC9EC /* FMODSoundEvent.cpp in Sources */,
+				02D4CFC418055E29007EC9EC /* FMODSoundSystem.cpp in Sources */,
+				02C4E8CB18154E490052803E /* AutotestingDB.cpp in Sources */,
+				02C4E8CC18154E4D0052803E /* GameAPI.cpp in Sources */,
 				A695E5221811317E008A0F20 /* NMaterialConsts.cpp in Sources */,
 				A695E52518113195008A0F20 /* ShaderCache.cpp in Sources */,
 				A695E52B18113315008A0F20 /* RenderBatchArray.cpp in Sources */,
@@ -3466,6 +3505,7 @@
 				A695E53218113327008A0F20 /* SerializationContext.cpp in Sources */,
 				CC84B03E18211BCE00934482 /* Job.cpp in Sources */,
 				9A0116F3967F43C036364993 /* GamepadDevice.mm in Sources */,
+				624C87F218C6160F00E1049D /* DateTime.cpp in Sources */,
 				9A011FD535036524CA050EF7 /* GamepadManager.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3534,6 +3574,11 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Framework_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DDARWIN_NO_CARBON,
+					FT2_BUILD_LIBRARY,
+					DAVA_FMOD,
+				);
 				GCC_WARN_ABOUT_MISSING_NEWLINE = NO;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -3573,6 +3618,7 @@
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
 					DAVA_DEBUG,
+					DAVA_FMOD,
 				);
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -3616,6 +3662,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
+					DAVA_FMOD,
 				);
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -3659,6 +3706,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
+					DAVA_FMOD,
 				);
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -3742,6 +3790,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					DDARWIN_NO_CARBON,
 					FT2_BUILD_LIBRARY,
+					DAVA_FMOD,
 				);
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;

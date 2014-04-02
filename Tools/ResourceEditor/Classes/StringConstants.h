@@ -107,6 +107,7 @@ namespace ResourceEditor
 	static const char* SETTINGS_EDITOR_VERSION =		"editor.version";
 	static const char* SETTINGS_CUBEMAP_LAST_FACE_DIR =	"cubemap_last_face_dir";
 	static const char* SETTINGS_CUBEMAP_LAST_PROJECT_DIR = "cubemap_last_proj_dir";
+    static const char* SETTINGS_LICENCE_ACCEPTED =      "editor.licence.accepted";
 	
 	static const String CUSTOM_COLOR_TEXTURE_PROP = "customColorTexture";
 	

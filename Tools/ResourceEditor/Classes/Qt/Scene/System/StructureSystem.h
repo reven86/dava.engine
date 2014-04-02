@@ -73,7 +73,7 @@ public:
 protected:
 	bool structureChanged;
 
-	void Update(DAVA::float32 timeElapsed);
+	virtual void Process(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);

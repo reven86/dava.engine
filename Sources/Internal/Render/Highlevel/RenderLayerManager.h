@@ -40,7 +40,7 @@ namespace DAVA
 class RenderPass;
 class RenderLayer;
     
-class RenderLayerManager : public StaticSingleton<RenderLayerManager>
+class RenderLayerManager : public Singleton<RenderLayerManager>
 {
 public:
     RenderLayerManager();
@@ -52,8 +52,7 @@ public:
 
     static RenderLayerID GetLayerIDByName(const FastName & fastname) { return layerIDmap[fastname]; };
     static uint32 GetLayerIDMaskBySet(const FastNameSet & set);
-private:
-    void Release();
+private:    
     
     Vector<RenderLayer*> array;
     HashMap<FastName, RenderLayer*> map;

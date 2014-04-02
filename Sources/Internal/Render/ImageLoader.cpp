@@ -42,11 +42,11 @@ namespace DAVA
 
 Vector<Image *> ImageLoader::CreateFromFileByExtension(const FilePath &pathname)
 {
-    if(pathname.IsEqualToExtension("*.pvr"))
+    if(pathname.IsEqualToExtension(".pvr"))
     {
         return ImageLoader::CreateFromPVRFile(pathname);
     }
-    else if(pathname.IsEqualToExtension("*.dds"))
+    else if(pathname.IsEqualToExtension(".dds"))
     {
         return ImageLoader::CreateFromDDSFile(pathname);
     }

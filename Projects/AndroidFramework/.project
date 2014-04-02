@@ -1577,6 +1577,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/DPIHelper.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/Platform/DateTime.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/DateTime.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/DateTime.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/DateTime.h</locationURI>
+		</link>
+		<link>
 			<name>Internal/Platform/DeviceInfo.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/DeviceInfo.cpp</locationURI>
@@ -3080,6 +3090,16 @@
 			<name>Internal/Platform/TemplateAndroid/DPIHelperAndroid.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/DPIHelperAndroid.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/DateTimeAndroid.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/DateTimeAndroid.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/DateTimeAndroid.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/DateTimeAndroid.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/TemplateAndroid/DeviceInfoAndroid.cpp</name>

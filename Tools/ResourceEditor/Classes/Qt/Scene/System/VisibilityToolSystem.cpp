@@ -139,7 +139,7 @@ bool VisibilityToolSystem::DisableLandscapeEdititing()
 	return !enabled;
 }
 
-void VisibilityToolSystem::Update(DAVA::float32 timeElapsed)
+void VisibilityToolSystem::Process(DAVA::float32 timeElapsed)
 {
 	if (!IsLandscapeEditingEnabled())
 	{

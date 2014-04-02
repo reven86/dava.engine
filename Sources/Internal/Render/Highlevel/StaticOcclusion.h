@@ -75,11 +75,10 @@ public:
     StaticOcclusion();
     ~StaticOcclusion();
     
-    void SetScene(Scene * _scene) { scene = _scene; };
-    void SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
+    inline void SetScene(Scene * _scene);
+    inline void SetRenderSystem(RenderSystem * _renderSystem);
     void BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
-                                  StaticOcclusionData * currentData,
-                                  RenderHierarchy * renderHierarchy);
+                                  StaticOcclusionData * currentData);
     
     void SetEqualVisibilityVector(Map<RenderObject*, Vector<RenderObject*> > & equalVisibility);
 
@@ -97,10 +96,7 @@ public:
 private:
     void ProcessRecordedBatches();
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
-    
-    RenderHierarchy * renderHierarchy;
-    RenderPassBatchArray * renderPassBatchArray;
-    VisibilityArray visibilityArray;
+        
     OcclusionQueryManager manager;
     Vector<std::pair<RenderBatch*, OcclusionQueryManagerHandle> > recordedBatches;
     Set<RenderObject*> frameGlobalVisibleInfo;
@@ -131,7 +127,10 @@ inline OcclusionQueryManager & StaticOcclusion::GetOcclusionQueryManager()
 {
     return manager;
 }
-    
+
+inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };
+inline void StaticOcclusion::SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
+
 };
 
 #endif //__DAVAENGINE_STATIC_OCCLUSION__

@@ -27,10 +27,12 @@
 		5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC24FC156CC72400742348 /* TestTemplate.cpp */; };
 		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
 		5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF2253E157E555D00DF5395 /* BaseScreen.cpp */; };
+		6260B9E418E9C225002DA65F /* SaveImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6260B9E218E9C224002DA65F /* SaveImageTest.cpp */; };
 		7410E83117146D5B0028AAAA /* UIListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7410E82F17146D5B0028AAAA /* UIListTest.cpp */; };
 		7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497446617B3C38D00282DAA /* AlignTest.cpp */; };
 		749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */; };
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
+		84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
 		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
@@ -149,6 +151,8 @@
 		5CE56F9D157F2804006C953B /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Config.h; path = Classes/Config.h; sourceTree = "<group>"; };
 		5CF2253E157E555D00DF5395 /* BaseScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BaseScreen.cpp; path = Classes/BaseScreen.cpp; sourceTree = "<group>"; };
 		5CF2253F157E555D00DF5395 /* BaseScreen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BaseScreen.h; path = Classes/BaseScreen.h; sourceTree = "<group>"; };
+		6260B9E218E9C224002DA65F /* SaveImageTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SaveImageTest.cpp; path = Classes/SaveImageTest.cpp; sourceTree = "<group>"; };
+		6260B9E318E9C225002DA65F /* SaveImageTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SaveImageTest.h; path = Classes/SaveImageTest.h; sourceTree = "<group>"; };
 		7410E82F17146D5B0028AAAA /* UIListTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIListTest.cpp; path = Classes/UIListTest.cpp; sourceTree = "<group>"; };
 		7410E83017146D5B0028AAAA /* UIListTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIListTest.h; path = Classes/UIListTest.h; sourceTree = "<group>"; };
 		7497446617B3C38D00282DAA /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
@@ -158,6 +162,8 @@
 		749A3DCC17B8CF400008EC12 /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
 		749A3DCD17B8CF400008EC12 /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignTest.h; path = Classes/AlignTest.h; sourceTree = "<group>"; };
 		74AF6340188530CD00070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DateTimeTest.cpp; path = Classes/DateTimeTest.cpp; sourceTree = "<group>"; };
+		84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DateTimeTest.h; path = Classes/DateTimeTest.h; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eMailTest.cpp; path = Classes/eMailTest.cpp; sourceTree = "<group>"; };
@@ -386,6 +392,9 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				6260B9DF18E9C209002DA65F /* SaveImageTest */,
+				15CBB0B318D30B6E0038ABA3 /* StringFormatTest */,
+				84E2926A18DA5D2700B5D4C9 /* DateTimeTest */,
 				49637DF518B20D4A008A3398 /* RectSpriteTest */,
 				E8583EDB183E41B2009DEEB6 /* ComponentsTest */,
 				1770DF5217DF6CAD00000391 /* UIMovieTest */,
@@ -448,6 +457,15 @@
 			name = TestSuite;
 			sourceTree = "<group>";
 		};
+		6260B9DF18E9C209002DA65F /* SaveImageTest */ = {
+			isa = PBXGroup;
+			children = (
+				6260B9E218E9C224002DA65F /* SaveImageTest.cpp */,
+				6260B9E318E9C225002DA65F /* SaveImageTest.h */,
+			);
+			name = SaveImageTest;
+			sourceTree = "<group>";
+		};
 		7410E82E17146CB70028AAAA /* UIListTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -482,6 +500,15 @@
 				749A3DCD17B8CF400008EC12 /* AlignTest.h */,
 			);
 			name = AlignTest;
+			sourceTree = "<group>";
+		};
+		84E2926A18DA5D2700B5D4C9 /* DateTimeTest */ = {
+			isa = PBXGroup;
+			children = (
+				84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */,
+				84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */,
+			);
+			name = DateTimeTest;
 			sourceTree = "<group>";
 		};
 		C151B1BC16D50BD000E09BAF /* eMailTest */ = {
@@ -780,6 +807,7 @@
 				E8EF78011669249000DA7BD2 /* CloneTest.cpp in Sources */,
 				49C432081675E370000EA877 /* DXTTest.cpp in Sources */,
 				E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */,
+				6260B9E418E9C225002DA65F /* SaveImageTest.cpp in Sources */,
 				49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */,
 				C177F28016D227A70036F02B /* InputTest.cpp in Sources */,
 				C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */,
@@ -792,6 +820,7 @@
 				E87402D8172582DB00A4A75A /* FilePathTest.cpp in Sources */,
 				E87402D9172582DB00A4A75A /* FileSystemTest.cpp in Sources */,
 				495B67091797DCA30017D8DD /* TransparentWebViewTest.cpp in Sources */,
+				84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */,
 				E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */,
 				7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */,
 				02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */,

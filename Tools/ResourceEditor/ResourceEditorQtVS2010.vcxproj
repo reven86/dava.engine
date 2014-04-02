@@ -67,7 +67,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_BEAST__;__DAVAENGINE_SPEEDTREE__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_BEAST__;__DAVAENGINE_SPEEDTREE__;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -127,7 +127,7 @@
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_SPEEDTREE__;__DAVAENGINE_BEAST__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;WIN32;QT_DLL;QT_NO_DEBUG;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;NDEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_SPEEDTREE__;__DAVAENGINE_BEAST__;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -342,6 +342,7 @@
     <ClCompile Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.cpp" />
     <ClCompile Include="Classes\Commands2\BeastAction.cpp" />
     <ClCompile Include="Classes\Commands2\ChangeLODDistanceCommand.cpp" />
+    <ClCompile Include="Classes\Commands2\CloneLastBatchCommand.cpp" />
     <ClCompile Include="Classes\Commands2\Command2.cpp" />
     <ClCompile Include="Classes\Commands2\CommandAction.cpp" />
     <ClCompile Include="Classes\Commands2\CommandBatch.cpp" />
@@ -358,6 +359,7 @@
     <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp" />
     <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\HeightmapEditorCommands2.cpp" />
+    <ClCompile Include="Classes\Commands2\ImageRegionCopyCommand.cpp" />
     <ClCompile Include="Classes\Commands2\InspDynamicModifyCommand.cpp" />
     <ClCompile Include="Classes\Commands2\InspMemebrModifyCommand.cpp" />
     <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp" />
@@ -374,6 +376,7 @@
     <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp" />
     <ClCompile Include="Classes\Commands2\RulerToolActions.cpp" />
     <ClCompile Include="Classes\Commands2\SaveEntityAsAction.cpp" />
+    <ClCompile Include="Classes\Commands2\SoundComponentEditCommands.cpp" />
     <ClCompile Include="Classes\Commands2\TilemaskEditorCommands.cpp" />
     <ClCompile Include="Classes\Commands2\TransformCommand.cpp" />
     <ClCompile Include="Classes\Commands2\VisibilityToolActions.cpp" />
@@ -403,6 +406,7 @@
     <ClCompile Include="Classes\Qt\DockConsole\ConsoleWidget.cpp" />
     <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorControlsPlaceholder.cpp" />
     <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\CustomColorsPanel.cpp" />
+    <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\GrassEditorPanel.cpp" />
     <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\HeightmapEditorPanel.cpp" />
     <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\LandscapeEditorBasePanel.cpp" />
     <ClCompile Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\RulerToolPanel.cpp" />
@@ -435,6 +439,10 @@
     <ClCompile Include="Classes\Qt\DockSceneTree\SceneTreeDelegate.cpp" />
     <ClCompile Include="Classes\Qt\DockSceneTree\SceneTreeItem.cpp" />
     <ClCompile Include="Classes\Qt\DockSceneTree\SceneTreeModel.cpp" />
+    <ClCompile Include="Classes\Qt\ImageSplitterDialog\ImageArea.cpp" />
+    <ClCompile Include="Classes\Qt\ImageSplitterDialog\ImageSplitterDialog.cpp" />
+    <ClCompile Include="Classes\Qt\ImageSplitterDialog\SizeDialog.cpp" />
+    <ClCompile Include="Classes\Qt\LicenceDialog\LicenceDialog.cpp" />
     <ClCompile Include="Classes\Qt\main.cpp" />
     <ClCompile Include="Classes\Qt\Main\davaglwidget.cpp" />
     <ClCompile Include="Classes\Qt\Main\mainwindow.cpp" />
@@ -448,12 +456,12 @@
     <ClCompile Include="Classes\Qt\MaterialEditor\MaterialFilterModel.cpp" />
     <ClCompile Include="Classes\Qt\MaterialEditor\MaterialItem.cpp" />
     <ClCompile Include="Classes\Qt\MaterialEditor\MaterialModel.cpp" />
+    <ClCompile Include="Classes\Qt\MaterialEditor\MaterialTemplateModel.cpp" />
     <ClCompile Include="Classes\Qt\MaterialEditor\MaterialTree.cpp" />
     <ClCompile Include="Classes\Qt\PlaneLODDialog\PlaneLODDialog.cpp" />
     <ClCompile Include="Classes\Qt\Project\ProjectManager.cpp" />
     <ClCompile Include="Classes\Qt\QualitySwitcher\QualitySwitcher.cpp" />
     <ClCompile Include="Classes\Qt\Scene\EntityGroup.cpp" />
-    <ClCompile Include="Classes\Qt\Scene\FogSettingsChangedReceiver.cpp" />
     <ClCompile Include="Classes\Qt\Scene\SceneEditor2.cpp" />
     <ClCompile Include="Classes\Qt\Scene\SceneHelper.cpp" />
     <ClCompile Include="Classes\Qt\Scene\SceneSignals.cpp" />
@@ -470,6 +478,7 @@
     <ClCompile Include="Classes\Qt\Scene\System\EditorLightSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\EditorMaterialSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\EditorParticlesSystem.cpp" />
+    <ClCompile Include="Classes\Qt\Scene\System\GrassEditorSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\GridSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\HeightmapEditorSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\HoodSystem.cpp" />
@@ -482,6 +491,7 @@
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\CustomColorsProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\CustomLandscape.cpp" />
+    <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\GrassEditorProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\HeightmapProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\LandscapeProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\NotPassableTerrainProxy.cpp" />
@@ -497,6 +507,8 @@
     <ClCompile Include="Classes\Qt\Scene\System\VisibilityToolSystem.cpp" />
     <ClCompile Include="Classes\Qt\Settings\SettingsManager.cpp" />
     <ClCompile Include="Classes\Qt\Settings\SettingsStateDialog.cpp" />
+    <ClCompile Include="Classes\Qt\SoundComponentEditor\FMODSoundBrowser.cpp" />
+    <ClCompile Include="Classes\Qt\SoundComponentEditor\SoundComponentEditor.cpp" />
     <ClCompile Include="Classes\Qt\SpeedTreeImport\SpeedTreeImportDialog.cpp" />
     <ClCompile Include="Classes\Qt\SpritesPacker\SpritePackerHelper.cpp" />
     <ClCompile Include="Classes\Qt\TextureBrowser\CacheRequest.cpp" />
@@ -568,6 +580,7 @@
     <ClCompile Include="_GeneratedQt\DockConsole\Console_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorControlsPlaceholder_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\CustomColorsPanel_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\GrassEditorPanel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\HeightmapEditorPanel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\LandscapeEditorBasePanel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockLandscapeEditorControls\LandscapeEditorPanels\RulerToolPanel_moc.cpp" />
@@ -603,6 +616,10 @@
     <ClCompile Include="_GeneratedQt\DockSceneTree\SceneTreeItem_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockSceneTree\SceneTreeModel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockSceneTree\SceneTree_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\ImageArea_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\ImageSplitterDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\ImageSplitterDialog\SizeDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\LicenceDialog\LicenceDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Main\davaglwidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Main\mainwindow_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Main\ModificationWidget_moc.cpp" />
@@ -615,13 +632,13 @@
     <ClCompile Include="_GeneratedQt\MaterialEditor\MaterialFilterModel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\MaterialEditor\MaterialItem_moc.cpp" />
     <ClCompile Include="_GeneratedQt\MaterialEditor\MaterialModel_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\MaterialEditor\MaterialTemplateModel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\MaterialEditor\MaterialTree_moc.cpp" />
     <ClCompile Include="_GeneratedQt\PlaneLODDialog\PlaneLODDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Project\ProjectManager_moc.cpp" />
     <ClCompile Include="_GeneratedQt\QtIcons_qrc.cpp" />
     <ClCompile Include="_GeneratedQt\QualitySwitcher\QualitySwitcher_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\EntityGroup_moc.cpp" />
-    <ClCompile Include="_GeneratedQt\Scene\FogSettingsChangedReceiver_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\SceneEditor2_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\SceneHelper_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\SceneSignals_moc.cpp" />
@@ -666,6 +683,8 @@
     <ClCompile Include="_GeneratedQt\Scene\System\VisibilityToolSystem_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Settings\SettingsManager_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Settings\SettingsStateDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\SoundComponentEditor\FMODSoundBrowser_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\SoundComponentEditor\SoundComponentEditor_moc.cpp" />
     <ClCompile Include="_GeneratedQt\SpeedTreeImport\SpeedTreeImportDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\SpritesPacker\SpritePackerHelper_moc.cpp" />
     <ClCompile Include="_GeneratedQt\TextureBrowser\CacheRequest_moc.cpp" />
@@ -959,6 +978,7 @@
     <ClInclude Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.h" />
     <ClInclude Include="Classes\Commands2\BeastAction.h" />
     <ClInclude Include="Classes\Commands2\ChangeLODDistanceCommand.h" />
+    <ClInclude Include="Classes\Commands2\CloneLastBatchCommand.h" />
     <ClInclude Include="Classes\Commands2\Command2.h" />
     <ClInclude Include="Classes\Commands2\CommandAction.h" />
     <ClInclude Include="Classes\Commands2\CommandBatch.h" />
@@ -976,6 +996,7 @@
     <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h" />
     <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h" />
     <ClInclude Include="Classes\Commands2\HeightmapEditorCommands2.h" />
+    <ClInclude Include="Classes\Commands2\ImageRegionCopyCommand.h" />
     <ClInclude Include="Classes\Commands2\InspDynamicModifyCommand.h" />
     <ClInclude Include="Classes\Commands2\InspMemberModifyCommand.h" />
     <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h" />
@@ -992,6 +1013,7 @@
     <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h" />
     <ClInclude Include="Classes\Commands2\RulerToolActions.h" />
     <ClInclude Include="Classes\Commands2\SaveEntityAsAction.h" />
+    <ClInclude Include="Classes\Commands2\SoundComponentEditCommands.h" />
     <ClInclude Include="Classes\Commands2\TilemaskEditorCommands.h" />
     <ClInclude Include="Classes\Commands2\TransformCommand.h" />
     <ClInclude Include="Classes\Commands2\VisibilityToolActions.h" />
@@ -1023,6 +1045,7 @@
     <ClInclude Include="Classes\Qt\DockConsole\ConsoleWidget.h" />
     <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorControlsPlaceholder.h" />
     <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\CustomColorsPanel.h" />
+    <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\GrassEditorPanel.h" />
     <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\HeightmapEditorPanel.h" />
     <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\LandscapeEditorBasePanel.h" />
     <ClInclude Include="Classes\Qt\DockLandscapeEditorControls\LandscapeEditorPanels\RulerToolPanel.h" />
@@ -1055,6 +1078,10 @@
     <ClInclude Include="Classes\Qt\DockSceneTree\SceneTreeDelegate.h" />
     <ClInclude Include="Classes\Qt\DockSceneTree\SceneTreeItem.h" />
     <ClInclude Include="Classes\Qt\DockSceneTree\SceneTreeModel.h" />
+    <ClInclude Include="Classes\Qt\ImageSplitterDialog\ImageArea.h" />
+    <ClInclude Include="Classes\Qt\ImageSplitterDialog\ImageSplitterDialog.h" />
+    <ClInclude Include="Classes\Qt\ImageSplitterDialog\SizeDialog.h" />
+    <ClInclude Include="Classes\Qt\LicenceDialog\LicenceDialog.h" />
     <ClInclude Include="Classes\Qt\Main\davaglwidget.h" />
     <ClInclude Include="Classes\Qt\Main\mainwindow.h" />
     <ClInclude Include="Classes\Qt\Main\ModificationWidget.h" />
@@ -1067,12 +1094,12 @@
     <ClInclude Include="Classes\Qt\MaterialEditor\MaterialFilterModel.h" />
     <ClInclude Include="Classes\Qt\MaterialEditor\MaterialItem.h" />
     <ClInclude Include="Classes\Qt\MaterialEditor\MaterialModel.h" />
+    <ClInclude Include="Classes\Qt\MaterialEditor\MaterialTemplateModel.h" />
     <ClInclude Include="Classes\Qt\MaterialEditor\MaterialTree.h" />
     <ClInclude Include="Classes\Qt\PlaneLODDialog\PlaneLODDialog.h" />
     <ClInclude Include="Classes\Qt\Project\ProjectManager.h" />
     <ClInclude Include="Classes\Qt\QualitySwitcher\QualitySwitcher.h" />
     <ClInclude Include="Classes\Qt\Scene\EntityGroup.h" />
-    <ClInclude Include="Classes\Qt\Scene\FogSettingsChangedReceiver.h" />
     <ClInclude Include="Classes\Qt\Scene\SceneEditor2.h" />
     <ClInclude Include="Classes\Qt\Scene\SceneHelper.h" />
     <ClInclude Include="Classes\Qt\Scene\SceneSignals.h" />
@@ -1091,6 +1118,7 @@
     <ClInclude Include="Classes\Qt\Scene\System\EditorLightSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\EditorMaterialSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\EditorParticlesSystem.h" />
+    <ClInclude Include="Classes\Qt\Scene\System\GrassEditorSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\GridSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\HeightmapEditorSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\HoodSystem.h" />
@@ -1103,6 +1131,7 @@
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\CustomColorsProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\CustomLandscape.h" />
+    <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\GrassEditorProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\HeightmapProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\LandscapeProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\NotPassableTerrainProxy.h" />
@@ -1118,6 +1147,8 @@
     <ClInclude Include="Classes\Qt\Scene\System\VisibilityToolSystem.h" />
     <ClInclude Include="Classes\Qt\Settings\SettingsManager.h" />
     <ClInclude Include="Classes\Qt\Settings\SettingsStateDialog.h" />
+    <ClInclude Include="Classes\Qt\SoundComponentEditor\FMODSoundBrowser.h" />
+    <ClInclude Include="Classes\Qt\SoundComponentEditor\SoundComponentEditor.h" />
     <ClInclude Include="Classes\Qt\SpeedTreeImport\SpeedTreeImportDialog.h" />
     <ClInclude Include="Classes\Qt\SpritesPacker\SpritePackerHelper.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\CacheRequest.h" />
@@ -1155,7 +1186,6 @@
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\HeightmapValidator.h" />
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\IntRangeValidator.h" />
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\PathValidator.h" />
-    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\QtPropertyDataValidator.h" />
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\RegExpValidator.h" />
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\TexturePathValidator.h" />
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspDynamic.h" />
@@ -1198,16 +1228,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="DataQt\AddSwitchEntityDialog.ui" />
-    <None Include="DataQt\BaseAddEntityDialog.ui" />
+    <None Include="DataQt\BaseAddEntityDialog.ui">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="DataQt\CubemapEditorDialog.ui" />
     <None Include="DataQt\CubeMapTextureBrowser.ui" />
+    <None Include="DataQt\ImageSplitter.ui" />
+    <None Include="DataQt\LicenceDialog.ui" />
     <None Include="DataQt\mainwindow.ui">
       <SubType>Designer</SubType>
     </None>
     <None Include="DataQt\CustomColorsView.ui" />
-    <None Include="DataQt\materialeditor.ui" />
+    <None Include="DataQt\materialeditor.ui">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="DataQt\ModificationWidget.ui" />
     <None Include="DataQt\ParticleProperty.ui" />
+    <None Include="DataQt\soundbrowser.ui" />
+    <None Include="DataQt\soundcomponenteditor.ui" />
     <None Include="DataQt\texturebrowser.ui" />
     <None Include="DataQt\SetSwitchIndexView.ui" />
     <None Include="DataQt\treeimportdialog.ui" />

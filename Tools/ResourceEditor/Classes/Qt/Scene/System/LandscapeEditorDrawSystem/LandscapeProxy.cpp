@@ -461,13 +461,3 @@ void LandscapeProxy::SwapTilemaskSprites()
 	tilemaskSprites[TILEMASK_SPRITE_SOURCE] = tilemaskSprites[TILEMASK_SPRITE_DESTINATION];
 	tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = temp;
 }
-
-bool LandscapeProxy::IsFogEnabled()
-{
-	return baseLandscape->IsFogEnabled();
-}
-
-void LandscapeProxy::SetFogEnabled(bool enabled)
-{
-	baseLandscape->SetFog(enabled);
-}

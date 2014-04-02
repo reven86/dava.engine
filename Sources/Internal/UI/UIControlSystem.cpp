@@ -542,10 +542,19 @@ void UIControlSystem::CancelAllInputs()
 	totalInputs.clear();
 }
 
-void UIControlSystem::CancelInputs(UIControl *control)
+void UIControlSystem::CancelInputs(UIControl *control, bool hierarchical)
 {
 	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 	{
+        if (!hierarchical)
+        {
+            if (it->touchLocker == control)
+            {
+                CancelInput(&(*it));
+                break;
+            }
+            continue;
+        }
         UIControl * parentLockerControl = it->touchLocker;
         while(parentLockerControl)
         {

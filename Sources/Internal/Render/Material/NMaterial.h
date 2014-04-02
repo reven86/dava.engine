@@ -158,6 +158,9 @@ public:
     static const FastName TEXTURE_LIGHTMAP;
 	static const FastName TEXTURE_DECAL;
 	static const FastName TEXTURE_CUBEMAP;
+    
+    static const FastName TEXTURE_DYNAMIC_REFLECTION;
+    static const FastName TEXTURE_DYNAMIC_REFRACTION;
 	
 	static const FastName PARAM_LIGHT_POSITION0;
 	static const FastName PARAM_PROP_AMBIENT_COLOR;
@@ -168,8 +171,11 @@ public:
 	static const FastName PARAM_LIGHT_SPECULAR_COLOR;
 	static const FastName PARAM_LIGHT_INTENSITY0;
 	static const FastName PARAM_MATERIAL_SPECULAR_SHININESS;
+    static const FastName PARAM_FOG_LIMIT;
 	static const FastName PARAM_FOG_COLOR;
 	static const FastName PARAM_FOG_DENSITY;
+    static const FastName PARAM_FOG_START;
+    static const FastName PARAM_FOG_END;
 	static const FastName PARAM_FLAT_COLOR;
 	static const FastName PARAM_TEXTURE0_SHIFT;
 	static const FastName PARAM_UV_OFFSET;
@@ -179,6 +185,9 @@ public:
 	static const FastName PARAM_SPEED_TREE_LEAF_OCC_OFFSET;
     static const FastName PARAM_LIGHTMAP_SIZE;
     
+    static const FastName PARAM_RCP_SCREEN_SIZE;
+    static const FastName PARAM_SCREEN_OFFSET;
+    
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
@@ -186,6 +195,11 @@ public:
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
+    static const FastName FLAG_SPECULAR;
+
+    static const FastName FLAG_TANGENT_SPACE_WATER_REFLECTIONS;
+    
+    static const FastName FLAG_DEBUG_UNITY_Z_NORMAL;
     
 	static const FastName FLAG_LIGHTMAPONLY;
 	static const FastName FLAG_TEXTUREONLY; //VI: this flag is for backward compatibility with old materials. See FLAG_ALBEDOONLY
@@ -340,12 +354,12 @@ public:
 
     FastName GetMaterialGroup() const;
     void SetMaterialGroup(const FastName &group);
+
+    void BuildActiveUniformsCacheParamsCache();
+    void InvalidateProperties();
     
-    //Stores WEAK reference (actually it's valid during render pass only)
-    //These methods are not thread-safe and used in the Scene::Draw to
-    //provide default values for materials.
-    inline static void SetGlobalMaterial(NMaterial* globalMaterial);
-    inline static NMaterial* GetGlobalMaterial();
+    // set new materialKey and pointer to properly save all materials
+    virtual void UpdateUniqueKey(uint64 newKeyValue);
 
 protected:
 	
@@ -503,8 +517,6 @@ protected:
 	
 	//static Texture* stubCubemapTexture;
 	//static Texture* stub2dTexture;
-    
-    static NMaterial* GLOBAL_MATERIAL;
 	
 protected:
 	
@@ -533,7 +545,7 @@ protected:
 	bool IsTextureActive(const FastName& textureName) const;
 	void SetTexturesDirty();
 	void PrepareTextureState(RenderPassInstance* passInstance);
-	void UpdateShaderWithFlags(bool updateChildren = false);
+	void UpdateShaderWithFlags();
 	//static Texture* GetStubTexture(const FastName& uniformName);
 	
 	void SetupPerFrameProperties(Camera* camera);
@@ -544,18 +556,21 @@ protected:
 	void UpdateLightingProperties(Light* light);
 	bool IsLightingProperty(const FastName& propName) const;
 	void SetLightInternal(int index, Light* light, bool forceUpdate);
+    void SetParentInternal(NMaterial *material);
 
     FastName GetEffectiveQuality() const;
 	
+    
+public:
 	static bool IsRuntimeFlag(const FastName& flagName);
     static bool IsRuntimeProperty(const FastName& propName);
+    static bool IsRuntimeTexture(const FastName& textureName);
     static bool IsNamePartOfArray(const FastName& fastName, FastName* array, uint32 count);
 		
 protected:
 	
 	void OnParentChanged(NMaterial* newParent, bool inheritTemplate);
 	void OnMaterialTemplateChanged();
-	void OnParentFlagsChanged();
 	void OnInstanceQualityChanged();
 	
 	void OnMaterialPropertyAdded(const FastName& propName);
@@ -591,7 +606,7 @@ public:
 			FilePath path;
 		};
 
-		const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state) const;
+		const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state, bool global) const;
 	};
 
 	class NMaterialStateDynamicFlagsInsp : public InspInfoDynamic
@@ -636,7 +651,7 @@ public:
 		
 		bool isColor(const FastName &propName) const;
 		VariantType getVariant(const FastName &propName, const PropData &propData) const;
-		const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state) const;
+		const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state, bool global) const;
 	};
 	
 public:
@@ -671,16 +686,6 @@ public:
         static bool IsOpaque(const FastName& passName, NMaterial* mat);
         static eFillMode GetFillMode(const FastName& passName, NMaterial* mat);
 	};
-    
-    inline void NMaterial::SetGlobalMaterial(NMaterial* globalMaterial)
-    {
-        NMaterial::GLOBAL_MATERIAL = globalMaterial;
-    }
-    
-    inline NMaterial* NMaterial::GetGlobalMaterial()
-    {
-        return NMaterial::GLOBAL_MATERIAL;
-    }
     
     inline uint32 NMaterial::GetRenderLayers() const
     {

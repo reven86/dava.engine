@@ -48,7 +48,7 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 {
     SetInputEnabled(false, false);
 	textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
-	background->SetAlign(ALIGN_TOP|ALIGN_LEFT);
+	background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 	background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
 	shadowBg = new UIControlBackground();
@@ -389,6 +389,26 @@ Animation * UIStaticText::ShadowColorAnimation(const Color & finalColor, float32
 const Vector<int32> & UIStaticText::GetStringSizes() const
 {
 	return textBlock->GetStringSizes();
+}
+    
+void UIStaticText::PrepareSprite()
+{
+    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &UIStaticText::PrepareSpriteInternal));
+}
+    
+void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, void *callerData)
+{
+    if (textBlock->IsSpriteReady())
+    {
+        Sprite *sprite = textBlock->GetSprite();
+        shadowBg->SetSprite(sprite, 0);
+        textBg->SetSprite(sprite, 0);
+    }
+    else
+    {
+        shadowBg->SetSprite(NULL, 0);
+        textBg->SetSprite(NULL, 0);
+    }
 }
 
 };

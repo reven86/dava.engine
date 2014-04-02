@@ -31,8 +31,8 @@ textures:
 materials:
  -
   group: "Water"
-  quality: ["HIGH", "LOW"]
-  default: "HIGH"
+  quality: ["HIGH", "MEDIUM", "LOW", "ULTRA_LOW"]
+  default: "ULTRA_LOW"
 
  -
   group: "Static object"
@@ -54,3 +54,7 @@ materials:
   quality: ["HIGH", "LOW"]
   default: "HIGH"
 
+ -
+  group: "Vegetation"
+  quality: ["HIGH", "LOW"]
+  default: "HIGH"

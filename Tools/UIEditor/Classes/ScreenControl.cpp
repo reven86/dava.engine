@@ -37,24 +37,14 @@
 
 ScreenControl::ScreenControl()
 {
+    chequeredBackground = new UIControlBackground();
+    chequeredBackground->SetSprite("~res:/Gfx/chequered", 0);
+    chequeredBackground->SetDrawType(UIControlBackground::DRAW_TILED);
 }
 
 ScreenControl::~ScreenControl()
 {
-	
-}
-
-void ScreenControl::SystemDraw(const UIGeometricData &geometricData)
-{
-	// DF-2969 - Draw filled rect, instead of changing control's background color
-	Rect rect = this->GetRect();
-	
-	RenderManager::Instance()->SetColor(Color(0.2f, 0.2f, 0.2f, 1.0f));
-	RenderHelper::Instance()->FillRect(rect, RenderState::RENDERSTATE_2D_BLEND);
-	RenderManager::Instance()->ResetColor();
-	
-	UIControl::SystemDraw(geometricData);
-	GridVisualizer::Instance()->DrawGridIfNeeded(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
+    SafeRelease(chequeredBackground);
 }
 
 bool ScreenControl::IsPointInside(const Vector2& /*point*/, bool/* expandWithFocus*/)
@@ -72,4 +62,119 @@ void ScreenControl::SetScale(const Vector2& value)
 void ScreenControl::SetPos(const Vector2& value)
 {
     this->pos = value;
+}
+
+void ScreenControl::Draw( const UIGeometricData &geometricData )
+{
+    // Draw "transparent" (cheqered) backgound under the control.
+    RenderManager::Instance()->PushDrawMatrix();
+    RenderManager::Instance()->IdentityDrawMatrix();
+
+    UIGeometricData backGd;
+    backGd.scale = Vector2(1.0f, 1.0f);
+	backGd.position.x = pos.x * scale.x;
+    backGd.size.x = size.x * scale.x;
+    backGd.position.y = pos.y * scale.y;
+    backGd.size.y = size.y * scale.y;
+    backGd.AddToGeometricData(geometricData);
+    chequeredBackground->Draw(backGd);
+
+    RenderManager::Instance()->PopDrawMatrix();
+}
+
+void ScreenControl::DrawAfterChilds(const UIGeometricData &geometricData)
+{
+    // Draw the grid over the control.
+    GridVisualizer::Instance()->DrawGridIfNeeded( GetRect(), RenderState::RENDERSTATE_2D_BLEND);
+
+    static const Color RED_COLOR = Color(1.0f, 0.0f, 0.0f, 1.0f);
+    static const Color GREY_COLOR = Color(0.55f, 0.55f, 0.55f, 1.0f);
+
+    RenderManager::Instance()->PushDrawMatrix();
+    RenderManager::Instance()->IdentityDrawMatrix();
+
+    UIGeometricData screenGd;
+    screenGd.scale = scale;
+    screenGd.position = pos * scale;
+
+    const HierarchyTreeController::SELECTEDCONTROLNODES &selectedNodes = HierarchyTreeController::Instance()->GetActiveControlNodes();
+    HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedNodes.begin();
+    HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator end = selectedNodes.end();
+
+    for (; iter != end; ++iter)
+    {
+        HierarchyTreeControlNode * controlNode = (*iter);
+        if (!controlNode)
+            continue;
+
+        UIControl * control = controlNode->GetUIObject();
+        if (!control)
+            continue;
+
+        if( control->GetParent() )
+        {
+            UIGeometricData parentGd = control->GetParent()->GetGeometricData();
+            parentGd.AddToGeometricData(screenGd);
+            DrawSelectionFrame(parentGd, GREY_COLOR);
+        }
+
+        UIGeometricData controlGd = control->GetGeometricData();
+        controlGd.AddToGeometricData(screenGd);
+        DrawSelectionFrame(controlGd, RED_COLOR);
+
+        if (!control->pivotPoint.IsZero())
+        {
+            UIGeometricData pivotGd;
+            pivotGd.position = control->pivotPoint;
+            pivotGd.AddToGeometricData(controlGd);
+            DrawPivotPoint(pivotGd, RED_COLOR);
+        }
+    }
+    RenderManager::Instance()->PopDrawMatrix();
+}
+
+void ScreenControl::DrawSelectionFrame(const UIGeometricData &gd, const Color &color)
+{
+    Color oldColor = RenderManager::Instance()->GetColor();
+    RenderManager::Instance()->SetColor(color);
+    if( gd.angle != 0.0f )
+    {
+        Polygon2 poly;
+        gd.GetPolygon( poly );
+
+        RenderHelper::Instance()->DrawPolygon( poly, true, RenderState::RENDERSTATE_2D_BLEND );
+    }
+    else
+    {
+        RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND );
+    }
+    RenderManager::Instance()->SetColor(oldColor);
+}
+
+void ScreenControl::DrawPivotPoint(const UIGeometricData &gd, const Color &color)
+{
+    Vector2 pivotPointCenter = gd.GetUnrotatedRect().GetPosition() - Vector2(0.5f, -0.5f);
+
+    static const float32 PIVOT_POINT_MARK_RADIUS = 4.5f;
+    static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 10.0f;
+
+    Color oldColor = RenderManager::Instance()->GetColor();
+    RenderManager::Instance()->SetColor(color);
+
+    RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderState::RENDERSTATE_2D_BLEND);
+
+    // Draw the cross mark.
+    Vector2 lineStartPoint = pivotPointCenter;
+    Vector2 lineEndPoint = pivotPointCenter;
+    lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
+
+    lineStartPoint = pivotPointCenter;
+    lineEndPoint = pivotPointCenter;
+    lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
+    RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
+
+    RenderManager::Instance()->SetColor(oldColor);
 }

@@ -91,3 +91,4 @@ REGISTER_CLASS(StaticOcclusionDataComponent);
 REGISTER_CLASS_WITH_ALIAS(PartilceEmitterLoadProxy, "ParticleEmitter3D");
 REGISTER_CLASS(UIWebView);
 REGISTER_CLASS(UIParticles);
+REGISTER_CLASS(VegetationRenderObject);

@@ -37,14 +37,18 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/SoundComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
+#include "Render/Highlevel/VegetationRenderObject.h"
 #include "Scene3D/Components/TransformComponent.h"
 
 namespace DAVA
 {
+
 
 RenderComponent * GetRenderComponent(const Entity *fromEntity)
 {
@@ -82,7 +86,6 @@ SkyboxRenderObject * GetSkybox(const Entity * fromEntity)
     
     return NULL;
 }
-   
 
 ParticleEffectComponent * GetEffectComponent(Entity *fromEntity)
 {
@@ -130,6 +133,21 @@ Landscape * GetLandscape( Entity * fromEntity )
 	return NULL;
 }
 
+VegetationRenderObject * GetVegetation(const Entity * fromEntity)
+{
+    if(NULL != fromEntity)
+    {
+        RenderObject * object = GetRenderObject(fromEntity);
+        if(object && object->GetType() == RenderObject::TYPE_VEGETATION)
+        {
+            VegetationRenderObject *vegetation = static_cast<VegetationRenderObject *>(object);
+            return vegetation;
+        }
+    }
+
+    return NULL;
+}
+
 Camera * GetCamera(Entity * fromEntity)
 {
 	if(NULL != fromEntity)
@@ -162,6 +180,16 @@ SwitchComponent * GetSwitchComponent(Entity *fromEntity)
 	}
 
 	return NULL;
+}
+
+SoundComponent * GetSoundComponent(Entity * fromEntity)
+{
+    if(fromEntity)
+    {
+        return static_cast<SoundComponent *>(fromEntity->GetComponent(Component::SOUND_COMPONENT));
+    }
+
+    return NULL;
 }
 
 uint32 GetLodLayersCount(Entity *fromEntity)
@@ -263,11 +291,38 @@ Entity * FindLandscapeEntity(Entity * rootEntity)
 	return NULL;
 }
 
+Entity * FindVegetationEntity(Entity * rootEntity)
+{
+    if(GetVegetation(rootEntity))
+    {
+        return rootEntity;
+    }
+        
+    DAVA::int32 count = rootEntity->GetChildrenCount();
+    for(DAVA::int32 i = 0; i < count; ++i)
+    {
+        Entity *vegetationEntity = FindVegetationEntity(rootEntity->GetChild(i));
+        if(vegetationEntity)
+        {
+            return vegetationEntity;
+        }
+    }
+        
+    return NULL;
+}
+
 Landscape * FindLandscape(Entity * rootEntity)
 {
 	Entity *entity = FindLandscapeEntity(rootEntity);
 	return GetLandscape(entity);
 }
+
+VegetationRenderObject* FindVegetation(Entity * rootEntity)
+{
+    Entity *entity = FindVegetationEntity(rootEntity);
+    return GetVegetation(entity);
+}
+
 
 QualitySettingsComponent * GetQualitySettingsComponent(const Entity * fromEntity)
 {

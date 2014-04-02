@@ -185,6 +185,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/DXTTest.h</locationURI>
 		</link>
 		<link>
+			<name>src/Classes/DateTimeTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DateTimeTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/DateTimeTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DateTimeTest.h</locationURI>
+		</link>
+		<link>
 			<name>src/Classes/DeviceInfoTest.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/DeviceInfoTest.cpp</locationURI>
@@ -478,6 +488,16 @@
 			<name>bin/classes/Classes/DXTTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/DXTTest.h</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/DateTimeTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DateTimeTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/DateTimeTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DateTimeTest.h</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/DeviceInfoTest.cpp</name>

@@ -69,6 +69,7 @@ public:
 	static const FastName VERTEXLIT_OPAQUE;
 	static const FastName PIXELLIT_SPECULAR_OPAQUE;
 	static const FastName TEXTURE_LIGHTMAP_OPAQUE;
+    static const FastName GRASS;
 	
 	static const FastName PARTICLES;
 	static const FastName PARTICLES_FRAMEBLEND;
