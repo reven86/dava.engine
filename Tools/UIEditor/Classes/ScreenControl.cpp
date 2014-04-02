@@ -31,6 +31,7 @@
 #include "ScreenControl.h"
 #include <QString>
 #include "HierarchyTreeNode.h"
+#include "HierarchyTreeController.h"
 #include "Render/RenderHelper.h"
 #include "Render/RenderManager.h"
 #include "Grid/GridVisualizer.h"

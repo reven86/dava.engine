@@ -112,7 +112,7 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
     particleFrameBlendMaterial->SetParent(material, false);
 }
 
-void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)
+void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, int32 positionSource)
 {
 	for (int32 layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
 	{

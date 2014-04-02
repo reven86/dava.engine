@@ -533,6 +533,9 @@ public:
 	 \param[in] hierarchic use true if you want to all control children change visiblity.
 	 */
 	virtual void SetVisible(bool isVisible, bool hierarchic = true);
+	
+    virtual bool GetRecursiveVisible() const;
+    void SetRecursiveVisible(bool isVisible);
 
 	/**
 	 \brief Returns control input processing ability.
@@ -1241,6 +1244,7 @@ protected:
 	bool focusEnabled : 1;
 	bool exclusiveInput : 1;
 	bool visible : 1;
+	bool recursiveVisible : 1;
 	bool clipContents : 1;
 	bool debugDrawEnabled : 1;
 	bool multiInput : 1;

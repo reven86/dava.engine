@@ -63,7 +63,6 @@
 #include "UIMovieTest.h"
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
-#include "StringFormatTest.h"
 #include "SaveImageTest.h"
 #include "DateTimeTest.h"
 
@@ -93,7 +92,6 @@ void GameCore::OnAppStarted()
 
     new SaveImageTest();
     
-    new StringFormatTest();
     new RectSpriteTest();
 
 	new ComponentsTest();
