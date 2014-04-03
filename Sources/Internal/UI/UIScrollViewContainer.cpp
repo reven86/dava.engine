@@ -136,7 +136,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
     bool oldVisible = visible;
     if (currentTouch->touchLocker != this)
     {
-        visible = false;//this funny code is written to fix bugs with calling Input() twice.
+    //    visible = false;//this funny code is written to fix bugs with calling Input() twice.
     }
 	bool systemInput = UIControl::SystemInput(currentTouch);
     visible = oldVisible;//All this control must be reengeneried
