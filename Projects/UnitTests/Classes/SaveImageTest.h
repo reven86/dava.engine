@@ -33,6 +33,8 @@
 
 class SaveImageTest: public TestTemplate<SaveImageTest>
 {
+protected:
+	~SaveImageTest(){}
 public:
     SaveImageTest();
     
