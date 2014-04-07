@@ -240,6 +240,8 @@ namespace DAVA
         BuildSkybox();
 				
 		bbox = renderBatchArray[0].renderBatch->GetBoundingBox();
+
+        AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
 	}
 
 	void SkyboxRenderObject::SetTexture(const FilePath& texPath)

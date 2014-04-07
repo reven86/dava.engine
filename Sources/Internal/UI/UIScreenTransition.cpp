@@ -42,12 +42,15 @@ namespace DAVA
 	
 Sprite * UIScreenTransition::renderTargetPrevScreen = 0;	
 Sprite * UIScreenTransition::renderTargetNextScreen = 0;	
+
+UniqueHandle UIScreenTransition::alphaClearStateHandle = InvalidUniqueHandle;
 	
 UIScreenTransition::UIScreenTransition()
 {
 	duration = 0.7f;
 	interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
 	SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
+        
 }
 
 UIScreenTransition::~UIScreenTransition()
@@ -61,11 +64,14 @@ void UIScreenTransition::CreateRenderTargets()
 		Logger::FrameworkDebug("Render targets already created");
 		return;
 	}
+    /*copy of default 3d blend with alpha write only - to minimize state changes*/
+    alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_TEXTURE0 | RenderStateData::STATE_COLORMASK_ALPHA);
+
     uint32 width = (uint32)Core::Instance()->GetPhysicalScreenWidth();//(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin());
     uint32 height = (uint32)Core::Instance()->GetPhysicalScreenHeight();//(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin());
     
-    Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
-    Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
+    Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
+    Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
 	
 	renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height);
 	renderTargetPrevScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
@@ -96,6 +102,8 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	RenderManager::Instance()->SetRenderTarget(renderTargetPrevScreen);
 	RenderManager::Instance()->SetVirtualViewOffset();
 	RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+    RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
     
     
@@ -113,6 +121,10 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 		SafeRelease(prevScreen);
 	}
     
+    /*clear alpha*/
+    RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
+    RenderManager::Instance()->FlushState();
+    RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
 //    RenderManager::Instance()->SetColor(1.0, 0.0, 0.0, 1.0);
 //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
 //    
@@ -127,6 +139,8 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	RenderManager::Instance()->SetRenderTarget(renderTargetNextScreen);
 	RenderManager::Instance()->SetVirtualViewOffset();
     RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+    RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
+    RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
 
 	float32 timeElapsed = SystemTimer::FrameDelta();
@@ -135,6 +149,12 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 
 //    RenderManager::Instance()->SetColor(0.0, 1.0, 0.0, 1.0);
 //    RenderHelper::Instance()->FillRect(Rect(screenRect.x, screenRect.y, screenRect.dx / 2, screenRect.dy));
+
+
+    /*clear alpha*/
+    RenderManager::Instance()->SetRenderState(alphaClearStateHandle);
+    RenderManager::Instance()->FlushState();
+    RenderManager::Instance()->ClearWithColor(0.0, 0.0, 0.0, 1.0);
 
 	RenderManager::Instance()->RestoreRenderTarget();
     
@@ -157,10 +177,10 @@ void UIScreenTransition::Update(float32 timeElapsed)
 	if (currentTime >= duration)
 	{
 		currentTime = duration;
+		UIControlSystem::Instance()->ReplaceScreen(nextScreen);
 		nextScreen->SystemDidAppear();
 		ReleaseRenderTargets();
 		// go to next screen
-		UIControlSystem::Instance()->ReplaceScreen(nextScreen);
 		UIControlSystem::Instance()->UnlockInput();
 		
 		/*

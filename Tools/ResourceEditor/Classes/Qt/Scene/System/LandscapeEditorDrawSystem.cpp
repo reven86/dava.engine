@@ -39,6 +39,8 @@
 #include "LandscapeEditorDrawSystem/GrassEditorProxy.h"
 #include "Deprecated/LandscapeRenderer.h"
 
+#include "Commands2/InspMemberModifyCommand.h"
+
 #include "Scene3D/Systems/RenderUpdateSystem.h"
 
 #include "CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
@@ -712,4 +714,33 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 			break;
 	}
 	return ret;
+}
+
+void LandscapeEditorDrawSystem::ProcessCommand(const Command2 *command, bool redo)
+{
+    if (command == NULL)
+    {
+        return;
+    }
+
+    switch(command->GetId())
+    {
+        case CMDID_INSP_MEMBER_MODIFY:
+        {
+            const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+            if (String("heightmapPath") == cmd->member->Name())
+            {
+                if (heightmapProxy)
+                {
+                    baseLandscape->GetHeightmap()->Clone(heightmapProxy);
+                    int32 size = heightmapProxy->Size();
+                    heightmapProxy->UpdateRect(Rect(0.f, 0.f, (float32)size, (float32)size));
+                }
+            }
+            break;
+        }
+
+        default:
+            break;
+    }
 }

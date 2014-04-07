@@ -32,6 +32,8 @@
 #include "GameCore.h"
 #include "TexturePacker/CommandLineParser.h"
 
+#include "Render/ImageConvert.h"
+
 using namespace DAVA;
  
 void PrintUsage()
@@ -40,6 +42,7 @@ void PrintUsage()
 
     printf("\t-usage or --help to display this help\n");
 	printf("\t-file - pvr or dds file to unpack as png");
+	printf("\t-folder - folder with pvr or dds files to unpack as png");
 }
 
 
@@ -56,30 +59,82 @@ bool CheckPosition(int32 commandPosition)
     return true;
 }
 
+void UnpackFile(const FilePath & sourceImagePath)
+{
+    Vector<Image *> images;
+    ImageLoader::CreateFromFileByExtension(sourceImagePath, images, 0);
+    
+    if(images.size() != 0)
+    {
+        Image *image = images[0];
+        if((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format))
+        {
+            ImageLoader::Save(image, FilePath::CreateWithNewExtension(sourceImagePath,".png"));
+        }
+        else
+        {
+			Image *savedImage = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+
+			ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * Texture::GetPixelFormatSizeInBytes(image->format), 
+					savedImage->data, savedImage->width, savedImage->height, savedImage->width * Texture::GetPixelFormatSizeInBytes(savedImage->format));
+
+			ImageLoader::Save(savedImage, FilePath::CreateWithNewExtension(sourceImagePath,".png"));
+			savedImage->Release();
+        }
+        
+        for_each(images.begin(), images.end(), SafeRelease<Image>);
+    }
+    else
+    {
+        Logger::Error("Cannot load file: ", sourceImagePath.GetAbsolutePathname().c_str());
+    }
+}
+
+void UnpackFolder(const FilePath & folderPath)
+{
+    FileList * fileList = new FileList(folderPath);
+	for (int fi = 0; fi < fileList->GetCount(); ++fi)
+	{
+        const FilePath & pathname = fileList->GetPathname(fi);
+		if (fileList->IsDirectory(fi) && !fileList->IsNavigationDirectory(fi))
+		{
+            UnpackFolder(pathname);
+        }
+        else
+        {
+            if(pathname.IsEqualToExtension(".pvr") || pathname.IsEqualToExtension(".dds"))
+            {
+                UnpackFile(pathname);
+            }
+        }
+	}
+    
+    fileList->Release();
+}
+
+
 void ProcessImageUnpacker()
 {
-	if(CommandLineParser::CommandIsFound(String("-file")))
-	{
-		FilePath sourceImagePath = CommandLineParser::GetCommandParam(String("-file"));
+    RenderManager::Create(Core::RENDERER_OPENGL);
 
-		Vector<Image *> images;
-		ImageLoader::CreateFromFileByExtension(sourceImagePath, images, 0);
-
-		if(images.size() != 0)
-		{
-			ImageLoader::Save(images[0], FilePath::CreateWithNewExtension(sourceImagePath,".png"));
-			for_each(images.begin(), images.end(), SafeRelease<Image>);
-		}
-		else
-		{
-			Logger::Error("Cannot load file: ", sourceImagePath.GetAbsolutePathname().c_str());
-		}
-	}
-	else
-	{
-		PrintUsage();
-	}
-
+    FilePath sourceFolderPath = CommandLineParser::GetCommandParam(String("-folder"));
+    FilePath sourceFilePath = CommandLineParser::GetCommandParam(String("-file"));
+    
+    if(sourceFolderPath.IsEmpty() == false)
+    {
+        sourceFolderPath.MakeDirectoryPathname();
+        UnpackFolder(sourceFolderPath);
+    }
+    else if (sourceFilePath.IsEmpty() == false)
+    {
+        UnpackFile(sourceFilePath);
+    }
+    else
+    {
+        PrintUsage();
+    }
+    
+    RenderManager::Instance()->Release();
 }
 
 void FrameworkDidLaunched()

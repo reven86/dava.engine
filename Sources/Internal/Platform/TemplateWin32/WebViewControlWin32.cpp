@@ -36,6 +36,8 @@ using namespace DAVA;
 #include <atlcom.h>
 #include <ExDisp.h>
 #include <ExDispid.h>
+#include <ObjIdl.h>
+#include <Shlwapi.h>
 
 extern _ATL_FUNC_INFO BeforeNavigate2Info;
 _ATL_FUNC_INFO BeforeNavigate2Info = {CC_STDCALL, VT_EMPTY, 7, {VT_DISPATCH,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_VARIANT,VT_BYREF|VT_BOOL}};
@@ -45,25 +47,215 @@ _ATL_FUNC_INFO DocumentCompleteInfo =  {CC_STDCALL,VT_EMPTY,2,{VT_DISPATCH,VT_BY
 namespace DAVA 
 {
 
+template <class T>
+class ScopedComPtr {
+protected:
+    T *ptr;
+public:
+    ScopedComPtr() : ptr(NULL) { }
+    explicit ScopedComPtr(T *ptr) : ptr(ptr) { }
+    ~ScopedComPtr() {
+        if (ptr)
+            ptr->Release();
+    }
+    bool Create(const CLSID clsid) {
+        CrashIf(ptr);
+        if (ptr) return false;
+        HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_ALL, IID_PPV_ARGS(&ptr));
+        return SUCCEEDED(hr);
+    }
+    operator T*() const { return ptr; }
+    T** operator&() { return &ptr; }
+    T* operator->() const { return ptr; }
+    T* operator=(T* newPtr) {
+        if (ptr)
+            ptr->Release();
+        return (ptr = newPtr);
+    }
+};
+
+template <class T>
+class ScopedComQIPtr : public ScopedComPtr<T> {
+public:
+    ScopedComQIPtr() : ScopedComPtr() { }
+    explicit ScopedComQIPtr(IUnknown *unk) {
+        HRESULT hr = unk->QueryInterface(&ptr);
+        if (FAILED(hr))
+            ptr = NULL;
+    }
+    T* operator=(IUnknown *newUnk) {
+        if (ptr)
+            ptr->Release();
+        HRESULT hr = newUnk->QueryInterface(&ptr);
+        if (FAILED(hr))
+            ptr = NULL;
+        return ptr;
+    }
+};
+
+class HtmlMoniker : public IMoniker
+{
+public:
+    HtmlMoniker() :
+        refCount(1),
+        htmlStream(NULL)
+    {
+
+    }
+
+    virtual ~HtmlMoniker()
+    {
+        if (htmlStream)
+            htmlStream->Release();
+    }
+
+    HRESULT HtmlMoniker::SetHtml(const String& _htmlData)
+    {
+        htmlData = _htmlData;
+        if (htmlStream)
+            htmlStream->Release();
+        htmlStream = CreateStreamFromData(htmlData.c_str(), htmlData.size());
+        return S_OK;
+    }
+
+    HRESULT HtmlMoniker::SetBaseUrl(const WideString& _baseUrl)
+    {
+        baseUrl = _baseUrl;
+        return S_OK;
+    }
+public:
+    // IUnknown
+    STDMETHODIMP QueryInterface(REFIID riid, void **ppvObject)
+    {
+        static const QITAB qit[] = {
+            QITABENT(HtmlMoniker, IMoniker),
+            QITABENT(HtmlMoniker, IPersistStream),
+            QITABENT(HtmlMoniker, IPersist),
+            { 0 }
+        };
+        return QISearch(this, qit, riid, ppvObject);
+    }
+
+    ULONG STDMETHODCALLTYPE AddRef()
+    {
+        return InterlockedIncrement(&refCount);
+    }
+
+    ULONG STDMETHODCALLTYPE Release()
+    {
+        LONG res = InterlockedDecrement(&refCount);
+        DVASSERT(res >= 0);
+        if (0 == res)
+            delete this;
+        return res;
+    }
+
+    // IMoniker
+    STDMETHODIMP BindToStorage(IBindCtx *pbc, IMoniker *pmkToLeft, REFIID riid, void **ppvObj)
+    {
+        LARGE_INTEGER seek = {0};
+        htmlStream->Seek(seek, STREAM_SEEK_SET, NULL);
+        return htmlStream->QueryInterface(riid, ppvObj);
+    }
+
+    STDMETHODIMP GetDisplayName(IBindCtx *pbc, IMoniker *pmkToLeft, LPOLESTR *ppszDisplayName)
+    {
+        if (!ppszDisplayName)
+            return E_POINTER;
+        DVASSERT(!baseUrl.empty())
+
+        *ppszDisplayName = OleStrDup(baseUrl.c_str(), baseUrl.length());
+
+        return S_OK;
+    }
+
+    STDMETHODIMP BindToObject(IBindCtx *pbc, IMoniker *pmkToLeft, REFIID riidResult, void **ppvResult) { return E_NOTIMPL; }
+    STDMETHODIMP Reduce(IBindCtx *pbc, DWORD dwReduceHowFar, IMoniker **ppmkToLeft, IMoniker **ppmkReduced) { return E_NOTIMPL; }
+    STDMETHODIMP ComposeWith(IMoniker *pmkRight, BOOL fOnlyIfNotGeneric, IMoniker **ppmkComposite) { return E_NOTIMPL; }
+    STDMETHODIMP Enum(BOOL fForward, IEnumMoniker **ppenumMoniker) { return E_NOTIMPL; }
+    STDMETHODIMP IsEqual(IMoniker *pmkOtherMoniker) { return E_NOTIMPL; }
+    STDMETHODIMP Hash(DWORD *pdwHash) { return E_NOTIMPL; }
+    STDMETHODIMP IsRunning(IBindCtx *pbc, IMoniker *pmkToLeft, IMoniker *pmkNewlyRunning) { return E_NOTIMPL; }
+    STDMETHODIMP GetTimeOfLastChange(IBindCtx *pbc, IMoniker *pmkToLeft, FILETIME *pFileTime) { return E_NOTIMPL; }
+    STDMETHODIMP Inverse(IMoniker **ppmk) { return E_NOTIMPL; }
+    STDMETHODIMP CommonPrefixWith(IMoniker *pmkOther, IMoniker **ppmkPrefix) { return E_NOTIMPL; }
+    STDMETHODIMP RelativePathTo(IMoniker *pmkOther, IMoniker **ppmkRelPath) { return E_NOTIMPL; }
+    STDMETHODIMP ParseDisplayName(IBindCtx *pbc, IMoniker *pmkToLeft,LPOLESTR pszDisplayName,
+        ULONG *pchEaten, IMoniker **ppmkOut) { return E_NOTIMPL; }
+
+    STDMETHODIMP IsSystemMoniker(DWORD *pdwMksys) {
+        if (!pdwMksys)
+            return E_POINTER;
+        *pdwMksys = MKSYS_NONE;
+        return S_OK;
+    }
+
+    // IPersistStream methods
+    STDMETHODIMP Save(IStream *pStm, BOOL fClearDirty)  { return E_NOTIMPL; }
+    STDMETHODIMP IsDirty() { return E_NOTIMPL; }
+    STDMETHODIMP Load(IStream *pStm) { return E_NOTIMPL; }
+    STDMETHODIMP GetSizeMax(ULARGE_INTEGER *pcbSize) { return E_NOTIMPL; }
+
+    // IPersist
+    STDMETHODIMP GetClassID(CLSID *pClassID) { return E_NOTIMPL; }
+
+private:
+    LPOLESTR OleStrDup(const WCHAR *s, int len)
+    {
+        size_t cb = sizeof(WCHAR) * (len + 1);
+        LPOLESTR ret = (LPOLESTR)CoTaskMemAlloc(cb);
+        memcpy(ret, s, cb);
+        return ret;
+    }
+
+    IStream *CreateStreamFromData(const void *data, size_t len)
+    {
+        if (!data)
+            return NULL;
+
+        ScopedComPtr< IStream > stream;
+        if (FAILED(CreateStreamOnHGlobal(NULL, TRUE, &stream)))
+            return NULL;
+
+        ULONG written;
+        if (FAILED(stream->Write(data, (ULONG)len, &written)) || written != len)
+            return NULL;
+
+        LARGE_INTEGER zero = { 0 };
+        stream->Seek(zero, STREAM_SEEK_SET, NULL);
+
+        stream->AddRef();
+
+        return stream;
+    }
+
+    LONG                refCount;
+    String        htmlData;
+    IStream *           htmlStream;
+    WideString    baseUrl;
+};
+
 struct EventSink : public IDispEventImpl<1, EventSink, &DIID_DWebBrowserEvents2>
 {
 private:
-	DAVA::IUIWebViewDelegate* delegate;
-	DAVA::UIWebView* webView;
-
+	IUIWebViewDelegate* delegate;
+	UIWebView* webView;
+    WebBrowserContainer* container;
 public:
 	EventSink()
 	{
 		delegate = NULL;
 		webView = NULL;
+		container = NULL;
 	};
 
-	void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView, WebBrowserContainer* container)
 	{
-		if (delegate && webView)
+		if (delegate && webView && container)
 		{
 			this->delegate = delegate;
 			this->webView = webView;
+            this->container = container;
 		}
 	}
 
@@ -71,7 +263,8 @@ public:
 	{
 		if (delegate && webView)
 		{
-			delegate->PageLoaded(webView);
+            if (!container->DoOpenBuffer())
+                delegate->PageLoaded(webView);
 		}
 	}
 
@@ -125,7 +318,8 @@ public:
 
 WebBrowserContainer::WebBrowserContainer() :
 	hwnd(0),
-	webBrowser(NULL)
+	webBrowser(NULL),
+    openFromBufferQueued(false)
 {
 }
 
@@ -142,10 +336,10 @@ WebBrowserContainer::~WebBrowserContainer()
 	}
 }
 
-void WebBrowserContainer::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
+void WebBrowserContainer::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
 {
 	EventSink* s = (EventSink*)sink;
-	s->SetDelegate(delegate, webView);
+	s->SetDelegate(delegate, webView, this);
 }
 
 bool WebBrowserContainer::Initialize(HWND parentWindow)
@@ -263,6 +457,9 @@ bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 		return false;
 	}
 
+    openFromBufferQueued = false;
+    bufferToOpen = "";
+
 	BSTR url = SysAllocString(urlToOpen);
 	VARIANT empty = {0};
 	VariantInit(&empty);
@@ -271,6 +468,53 @@ bool WebBrowserContainer::OpenUrl(const WCHAR* urlToOpen)
 	SysFreeString(url);
 
 	return true;
+}
+
+bool WebBrowserContainer::DoOpenBuffer()
+{
+    if (bufferToOpenPath.IsEmpty() || !openFromBufferQueued)
+        return false;
+
+    ScopedComPtr<HtmlMoniker> moniker(new HtmlMoniker());
+    moniker->SetHtml(bufferToOpen);
+    moniker->SetBaseUrl(StringToWString(bufferToOpenPath.GetAbsolutePathname()));
+
+    ScopedComPtr<IDispatch> docDispatch;
+    HRESULT hr = webBrowser->get_Document(&docDispatch);
+    if (FAILED(hr) || !docDispatch)
+        return true;
+
+    ScopedComQIPtr<IHTMLDocument2> doc(docDispatch);
+    if (!doc)
+        return true;
+
+    ScopedComQIPtr<IPersistMoniker> perstMon(doc);
+    if (!perstMon)
+        return true;
+    ScopedComQIPtr<IMoniker> htmlMon(moniker);
+
+    hr = perstMon->Load(TRUE, htmlMon, NULL, STGM_READ);
+
+    bufferToOpen = "";
+    openFromBufferQueued = false;
+
+    return true;
+}
+
+bool WebBrowserContainer::OpenFromBuffer(const String& buffer, const FilePath& basePath)
+{
+    if (!this->webBrowser)
+    {
+        return false;
+    }
+
+    OpenUrl(L"about:blank"); // webbrowser2 needs about:blank being open before loading from stream
+
+    openFromBufferQueued = true;
+    bufferToOpen = buffer;
+    bufferToOpenPath = basePath;
+
+    return true;
 }
 
 void WebBrowserContainer::UpdateRect()
@@ -313,7 +557,7 @@ WebViewControl::~WebViewControl()
 	SafeDelete(browserContainer);
 }
 
-void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)
+void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView)
 {
 	browserContainer->SetDelegate(delegate, webView);
 }
@@ -358,7 +602,10 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
-    // TODO
+    if (this->browserContainer)
+    {
+        this->browserContainer->OpenFromBuffer(string, basePath);
+    }
 }
 
 void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
@@ -379,8 +626,8 @@ void WebViewControl::SetRect(const Rect& rect)
 	RECT browserRect = {0};
 	::GetWindowRect(this->browserWindow, &browserRect);
 
-	browserRect.left = (LONG)(rect.x * DAVA::Core::GetVirtualToPhysicalFactor());
-	browserRect.top  = (LONG)(rect.y * DAVA::Core::GetVirtualToPhysicalFactor());
+	browserRect.left = (LONG)(rect.x * Core::GetVirtualToPhysicalFactor());
+	browserRect.top  = (LONG)(rect.y * Core::GetVirtualToPhysicalFactor());
 	browserRect.left  += (LONG)Core::Instance()->GetPhysicalDrawOffset().x;
 	browserRect.top += (LONG)Core::Instance()->GetPhysicalDrawOffset().y;
 

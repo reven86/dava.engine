@@ -392,7 +392,12 @@ uint32 StaticOcclusion::RenderFrame()
             }
         }
     }
-    return (xBlockCount * yBlockCount * zBlockCount - currentFrameX * currentFrameY * currentFrameZ);
+
+    uint32 remain = xBlockCount * yBlockCount * zBlockCount;
+    remain -= currentFrameX;
+    remain -= (currentFrameY * xBlockCount);
+    remain -= (currentFrameZ * xBlockCount * yBlockCount);
+    return remain;
 }
     
 

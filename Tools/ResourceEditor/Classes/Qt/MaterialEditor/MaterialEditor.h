@@ -76,6 +76,8 @@ protected slots:
 	void OnPropertyEdited(const QModelIndex &);
     void OnMaterialAddGlobal(bool checked);
     void OnMaterialRemoveGlobal(bool checked);
+    void OnMaterialSave(bool checked);
+    void OnMaterialLoad(bool checked);
 
 protected:
 	virtual void showEvent(QShowEvent * event);
@@ -92,9 +94,21 @@ private slots:
     void autoExpand();
 
 private:
+    enum 
+    {
+        CHECKED_NOTHING = 0x0,
+
+        CHECKED_TEMPLATE = 0x1,
+        CHECKED_NAME = 0x2,
+        CHECKED_GROUP = 0x4,
+        CHECKED_PROPERTIES = 0x8,
+        CHECKED_TEXTURES = 0x10,
+
+        CHECKED_ALL = 0xff
+    };
+
     void initActions();
     void initTemplates();
-
     void setTemplatePlaceholder( const QString& text );
 
 	Ui::MaterialEditor *ui;
@@ -105,6 +119,9 @@ private:
 	PropertyEditorStateHelper *treeStateHelper;
     ExpandMap expandMap;
     QPointer< MaterialTemplateModel > templatesFilterModel;
+
+    DAVA::FilePath lastSavePath;
+    DAVA::uint32 lastCheckState;
 };
 
 #endif

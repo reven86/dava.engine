@@ -39,6 +39,7 @@
 
 #include "Commands2/EntityRemoveCommand.h"
 #include "Commands2/EntityParentChangeCommand.h"
+#include "Commands2/InspMemberModifyCommand.h"
 
 // framework
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -428,6 +429,17 @@ void SceneCollisionSystem::ProcessCommand(const Command2 *command, bool redo)
                 UpdateCollisionObject(command->GetEntity());
                 break;
             }
+
+        case CMDID_INSP_MEMBER_MODIFY:
+            {
+                const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
+                if (String("heightmapPath") == cmd->member->Name())
+                {
+                    UpdateCollisionObject(curLandscapeEntity);
+                }
+            }
+            break;
+
 		default:
 			break;
 		}
@@ -500,8 +512,11 @@ CollisionBaseObject* SceneCollisionSystem::BuildFromEntity(DAVA::Entity * entity
 		NULL != renderObject && entity->IsLodMain(0))
 	{
         RenderObject::eType objType = renderObject->GetType();
-        if (objType!=RenderObject::TYPE_SPRITE) 
-		    cObj = new CollisionRenderObject(entity, objectsCollWorld, renderObject);
+        if( objType != RenderObject::TYPE_SPRITE &&
+            objType != RenderObject::TYPE_VEGETATION)
+        {
+            cObj = new CollisionRenderObject(entity, objectsCollWorld, renderObject);
+        }
 	}
 
 	DAVA::Camera *camera = DAVA::GetCamera(entity);

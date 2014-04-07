@@ -595,7 +595,7 @@ String FilePath::GetFrameworkPathForPrefix( const String &typePrefix, const ePat
 {
     DVASSERT(!typePrefix.empty());
     
-	String prefixPathname = GetSystemPathname(typePrefix, pType);
+    String prefixPathname = GetSystemPathname(typePrefix, pType);
 
 	String::size_type pos = absolutePathname.find(prefixPathname);
 	if(pos == 0)

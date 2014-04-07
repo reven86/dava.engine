@@ -71,6 +71,7 @@ public:
     // Selected guides.
     bool AreGuidesSelected() const;
     List<GuideData> DeleteSelectedGuides();
+    void ResetSelection();
 
     // Get all the guides.
     const List<GuideData*> GetGuides(bool includeNewGuide) const;
@@ -96,6 +97,10 @@ public:
     // Enable/disable guides.
     bool AreGuidesEnabled() const;
     void SetGuidesEnabled(bool value);
+
+    // Lock the guides.
+    bool AreGuidesLocked() const;
+    void LockGuides(bool value);
 
 protected:
     // Check whether the same guide exists.
@@ -125,6 +130,9 @@ private:
     
     // Whether the guides are enabled?
     bool guidesEnabled;
+    
+    // Whether the guides are locked?
+    bool guidesLocked;
 };
 
 };

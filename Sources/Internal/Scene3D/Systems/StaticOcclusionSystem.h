@@ -51,7 +51,12 @@ public:
     virtual void Process(float32 timeElapsed);
     
     inline void SetCamera(Camera * camera);
-    void BuildOcclusionInformation();
+
+    void Build();
+    void Cancel();
+
+    bool IsInBuild() const;
+    uint32 GetBuildStatus() const;
 
 private:
     Camera * camera;
@@ -59,8 +64,9 @@ private:
     StaticOcclusion * staticOcclusion;
     StaticOcclusionDataComponent * componentInProgress;
     uint32 activeIndex;
+    uint32 buildStepsCount;
+    uint32 buildStepRemains;
     bool needSetupNextOcclusion;
-    
 };
     
 // System that allow to use occlusion information during rendering

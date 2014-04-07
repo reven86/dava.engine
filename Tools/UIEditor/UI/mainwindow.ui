@@ -450,6 +450,7 @@
    <addaction name="separator"/>
    <addaction name="actionEnable_Guides"/>
    <addaction name="actionStickMode"/>
+   <addaction name="actionLock_Guides"/>
    <addaction name="separator"/>
    <addaction name="actionAlign_Left"/>
    <addaction name="actionAlign_Horz_Center"/>
@@ -1000,6 +1001,21 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="actionLock_Guides">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/lockguides.png</normaloff>:/Icons/lockguides.png</iconset>
+   </property>
+   <property name="text">
+    <string>Lock Guides</string>
+   </property>
+   <property name="toolTip">
+    <string>Lock Guides</string>
    </property>
   </action>
  </widget>

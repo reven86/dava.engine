@@ -364,3 +364,13 @@ void HierarchyTreeScreenNode::SetGuidesEnabled(bool value)
 {
     guides.SetGuidesEnabled(value);
 }
+
+bool HierarchyTreeScreenNode::AreGuidesLocked() const
+{
+    return guides.AreGuidesLocked();
+}
+
+void HierarchyTreeScreenNode::LockGuides(bool value)
+{
+    guides.LockGuides(value);
+}

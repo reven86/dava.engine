@@ -120,6 +120,10 @@ public:
     bool AreGuidesEnabled() const;
     void SetGuidesEnabled(bool value);
 
+    // Lock/unlock guides.
+    bool AreGuidesLocked() const;
+    void LockGuides(bool value);
+
     // Set the stick mode.
     void SetStickMode(int32 stickMode);
 

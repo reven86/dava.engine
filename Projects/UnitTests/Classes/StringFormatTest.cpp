@@ -209,4 +209,5 @@ void StringFormatTest::FloatTestFunction( PerfFuncData * data )
         checkFloatFormat( formatStr15, value6, data );
     }
 
+	checkFloatFormat(L"%.0f", (float32)12980 / 1000.0f, data);
 }

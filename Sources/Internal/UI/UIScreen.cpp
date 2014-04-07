@@ -217,7 +217,7 @@ void UIScreen::AddToGroup(int32 _groupId)
 	groupId = _groupId;
 }
 
-void UIScreen::RemoveFromGroup(int32 _groupId)
+void UIScreen::RemoveFromGroup()
 {
 	groupId = groupIdCounter--;
 }

@@ -40,7 +40,8 @@ GuidesManager::GuidesManager() :
     newGuide(NULL),
     moveGuide(NULL),
     stickMode(NotSticked),
-    guidesEnabled(true)
+    guidesEnabled(true),
+    guidesLocked(false)
 {
 }
 
@@ -228,15 +229,41 @@ bool GuidesManager::IsGuideExist(GuideData* guideData) const
 
 bool GuidesManager::StartMoveGuide(const Vector2& pos)
 {
-    // Lookup for the guide which is about to be moved and also update the selection flags.
     GuideData* selectedGuideData = NULL;
-    for (List<GuideData*>::iterator iter = activeGuides.begin(); iter != activeGuides.end(); iter ++)
+    if (AreGuidesLocked())
     {
-        GuideData* curGuideData = *iter;
-        curGuideData->SetSelected(false);
-        if (IsGuideOnPosition(curGuideData, pos))
+        // If guides are locked and no selected guide exist - discard the move. Selected guides are
+        // reset while guides are locked, so selected guide will exist only if it was added as new one.
+        // In this case allow guide move till the selection will be reset.
+        for (List<GuideData*>::iterator iter = activeGuides.begin(); iter != activeGuides.end(); iter ++)
         {
-            selectedGuideData = curGuideData;
+            GuideData* curGuideData = *iter;
+            if (curGuideData->IsSelected() && IsGuideOnPosition(curGuideData, pos))
+            {
+                selectedGuideData = curGuideData;
+                break;
+            }
+        }
+        
+        if (!selectedGuideData)
+        {
+            // Click happened outside of selected guide, so reset the current selection. Next move
+            // will be available only after Locked flag will be reset.
+            ResetSelection();
+        }
+    }
+    else
+    {
+        // Lookup for the guide which is about to be moved and also update the selection flags.
+        for (List<GuideData*>::iterator iter = activeGuides.begin(); iter != activeGuides.end(); iter ++)
+        {
+            GuideData* curGuideData = *iter;
+            curGuideData->SetSelected(false);
+            if (IsGuideOnPosition(curGuideData, pos))
+            {
+                selectedGuideData = curGuideData;
+                break;
+            }
         }
     }
 
@@ -320,6 +347,15 @@ bool GuidesManager::AreGuidesSelected() const
     }
     
     return false;
+}
+
+void GuidesManager::ResetSelection()
+{
+    for (List<GuideData*>::iterator iter = activeGuides.begin(); iter != activeGuides.end(); iter ++)
+    {
+        GuideData* curGuideData = *iter;
+        curGuideData->SetSelected(false);
+    }
 }
 
 List<GuideData> GuidesManager::DeleteSelectedGuides()
@@ -570,6 +606,20 @@ bool GuidesManager::AreGuidesEnabled() const
 void GuidesManager::SetGuidesEnabled(bool value)
 {
     guidesEnabled = value;
+}
+
+bool GuidesManager::AreGuidesLocked() const
+{
+    return guidesLocked;
+}
+
+void GuidesManager::LockGuides(bool value)
+{
+    guidesLocked = value;
+    if (value)
+    {
+        ResetSelection();
+    }
 }
 
 };

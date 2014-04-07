@@ -348,10 +348,16 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 					bestPackerForThisStep = packer;
 					newWorkVector = tempSortVector;
 				}
+				else
+				{
+					SafeDelete(packer);
+				}
 			}
 		
 		sortVectorWork = newWorkVector;
-		packers.push_back(bestPackerForThisStep);
+
+		if(bestPackerForThisStep)
+			packers.push_back(bestPackerForThisStep);
 	}
 	
     Logger::FrameworkDebug("* Writing %d final textures", (int)packers.size());
@@ -577,6 +583,10 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 			AddError(Format("*** FATAL ERROR: Can't find rect in all of packers for frame - %d. Definition file - %s.",
 								frame,
 								fileName.c_str()));
+
+			fclose(fp);
+			FileSystem::Instance()->DeleteFile(outputPath + fileName);
+			return false;
 		}
 	}
 	

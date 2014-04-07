@@ -119,12 +119,18 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<SpriteObject>(this), "Can clone only SpriteObject");
 
-		newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
+ 		newObject = new SpriteObject(sprite, frame, sprScale, sprPivot);
 	}
-	SpriteObject *o = static_cast<SpriteObject *>(newObject);
-	o->spriteType = spriteType;
 
-	return RenderObject::Clone(newObject);
+	SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
+
+	spriteObject->type = type;
+	spriteObject->flags = flags;
+	spriteObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
+	spriteObject->debugFlags = debugFlags;
+	spriteObject->ownerDebugInfo = ownerDebugInfo;
+
+	return spriteObject;
 }
 
 

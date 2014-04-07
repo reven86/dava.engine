@@ -59,6 +59,8 @@ public:
     virtual void Update(float32 timeElapsed);
     virtual void Draw(const UIGeometricData &geometricData);
 
+    virtual void WillAppear();
+
     // Cloning.
     virtual UIControl* Clone();
     virtual void CopyDataFrom(UIControl *srcControl);

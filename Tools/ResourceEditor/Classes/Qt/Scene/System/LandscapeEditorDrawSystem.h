@@ -43,6 +43,7 @@ class CustomColorsProxy;
 class VisibilityToolProxy;
 class RulerToolProxy;
 class GrassEditorProxy;
+class Command2;
 
 using namespace DAVA;
 
@@ -91,6 +92,8 @@ public:
 	void UpdateCursorPosition();
 	
 	virtual void Process(DAVA::float32 timeElapsed);
+
+    void ProcessCommand(const Command2 *command, bool redo);
 
 	float32 GetTextureSize(Landscape::eTextureLevel level);
 	Vector3 GetLandscapeSize();
