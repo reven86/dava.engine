@@ -166,11 +166,11 @@ bool FMODFileSoundEvent::Trigger()
 
     if(flags & SOUND_EVENT_CREATE_3D)
         FMOD_VERIFY(fmodInstance->set3DAttributes((FMOD_VECTOR*)&position, 0));
-    
-    FMOD_VERIFY(fmodInstanceGroup->setPaused(false));
-    FMOD_VERIFY(fmodInstance->setPaused(false));
 
-    Retain();
+	FMOD_VERIFY(fmodInstanceGroup->setPaused(false));
+	FMOD_VERIFY(fmodInstance->setPaused(false));
+
+	Retain();
 
     return true;
 }
@@ -231,16 +231,9 @@ void FMODFileSoundEvent::SetLoopCount(int32 loopCount)
 	FMOD_VERIFY(fmodSound->setLoopCount(loopCount));
 }
 
-void FMODFileSoundEvent::Pause()
+void FMODFileSoundEvent::SetPaused(bool paused)
 {
-    FMOD_VERIFY(fmodInstanceGroup->setPaused(true));
-}
-
-void FMODFileSoundEvent::PerformCallback(FMOD::Channel * instance)
-{
-    PerformEvent(EVENT_END);
-
-    SoundSystem::Instance()->ReleaseOnUpdate(this);
+    FMOD_VERIFY(fmodInstanceGroup->setPaused(paused));
 }
 
 FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL *channel, FMOD_CHANNEL_CALLBACKTYPE type, void *commanddata1, void *commanddata2)
@@ -253,7 +246,10 @@ FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL 
             FMODFileSoundEvent * sound = 0;
             FMOD_VERIFY(cppchannel->getUserData((void**)&sound));
             if(sound)
-                sound->PerformCallback(cppchannel);
+			{
+                sound->PerformEvent(EVENT_END);
+				SoundSystem::Instance()->ReleaseOnUpdate(sound);
+			}
         }
 	}
 

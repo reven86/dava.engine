@@ -62,11 +62,12 @@ public:
     virtual bool IsActive() const;
     virtual bool Trigger();
     virtual void Stop();
-    virtual void Pause();
+    virtual void SetPaused(bool paused);
     
 	virtual void SetPosition(const Vector3 & position);
     virtual void SetDirection(const Vector3 & direction) {};
-	virtual void UpdateInstancesPosition();
+    virtual void UpdateInstancesPosition();
+    virtual void SetVelocity(const Vector3 & velocity) {};
 
 	virtual void SetLoopCount(int32 looping); // -1 = infinity
 	virtual int32 GetLoopCount();
@@ -84,8 +85,6 @@ protected:
 	virtual ~FMODFileSoundEvent();
 
 	static FMODFileSoundEvent * CreateWithFlags(const FilePath & fileName, uint32 flags, int32 priority = 128);
-
-    void PerformCallback(FMOD::Channel * instance);
 
     static Mutex soundMapMutex;
 

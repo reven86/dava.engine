@@ -32,6 +32,9 @@
 #include "Sound/SoundSystem.h"
 #include "Scene3D/Entity.h"
 
+#include "Platform/Thread.h"
+#include "Utils/StringFormat.h"
+
 namespace DAVA
 {
     
@@ -64,18 +67,7 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
 
 FMODSoundEvent::~FMODSoundEvent()
 {
-    List<FMOD::Event *>::const_iterator itEnd = fmodEventInstances.end();
-    for(List<FMOD::Event *>::const_iterator it = fmodEventInstances.begin(); it != itEnd; ++it)
-    {
-        FMOD::Event * fmodEvent = (*it);
-        
-        FMOD_VERIFY(fmodEvent->setCallback(0, 0));
-        FMOD_VERIFY(fmodEvent->stop());
-
-        SoundSystem::Instance()->CancelCallbackOnUpdate(this, SoundEvent::EVENT_END);
-    }
-
-    fmodEventInstances.clear();
+	DVASSERT(fmodEventInstances.size() == 0);
 
     SoundSystem::Instance()->RemoveSoundEventFromGroups(this);
 }
@@ -84,10 +76,6 @@ bool FMODSoundEvent::Trigger()
 {
     SoundSystem * soundSystem = SoundSystem::Instance();
     FMOD::EventSystem * fmodEventSystem = soundSystem->fmodEventSystem;
-
-    List<FMOD::Event *>::const_iterator itEnd = fmodEventInstances.end();
-    for(List<FMOD::Event *>::const_iterator it = fmodEventInstances.begin(); it != itEnd; ++it)
-        (*it)->setPaused(false);
     
     if(is3D)
     {
@@ -106,17 +94,23 @@ bool FMODSoundEvent::Trigger()
     if(result == FMOD_OK)
     {
         ApplyParamsToEvent(fmodEvent);
-        fmodEventInstances.push_back(fmodEvent);
 
-        FMOD_VERIFY(fmodEvent->setVolume(volume));
-        FMOD_VERIFY(fmodEvent->setCallback(FMODEventCallback, this));
-        FMOD_VERIFY(fmodEvent->start());
-
-        Retain();
+		FMOD_VERIFY(fmodEvent->setVolume(volume));
+		FMOD_RESULT startResult = fmodEvent->start();
+		if(startResult == FMOD_OK)
+		{
+			FMOD_VERIFY(fmodEvent->setCallback(FMODEventCallback, this));
+			fmodEventInstances.push_back(fmodEvent);
+			Retain();
+		}
+		else if(startResult != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
+		{
+			Logger::Error("[FMODSoundEvent::Trigger()] Failed to start event by %d on eventID: %s", startResult, eventName.c_str());
+		}
     }
     else if(result != FMOD_ERR_EVENT_FAILED) //'just fail' max playbacks behavior
     {
-        Logger::Error("[FMODSoundEvent::Trigger()] Failed by %d on eventID: %s", result, eventName.c_str());
+        Logger::Error("[FMODSoundEvent::Trigger()] Failed to retrieve event by %d on eventID: %s", result, eventName.c_str());
     }
     
     return fmodEvent != 0;
@@ -132,15 +126,31 @@ void FMODSoundEvent::SetDirection(const Vector3 & _direction)
     direction = _direction;
 }
 
+void FMODSoundEvent::SetVelocity(const Vector3 & velocity)
+{
+    if(is3D && fmodEventInstances.size())
+	{
+		Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
+		int32 instancesCount = instancesCopy.size();
+		for(int32 i = 0; i < instancesCount; ++i)
+		{
+            FMOD_VERIFY(instancesCopy[i]->set3DAttributes(0, (FMOD_VECTOR*)&velocity, 0));
+		}
+    }
+}
+
 void FMODSoundEvent::SetVolume(float32 _volume)
 {
     if(volume != _volume)
     {
         volume = _volume;
 
-        List<FMOD::Event *>::const_iterator itEnd = fmodEventInstances.end();
-        for(List<FMOD::Event *>::const_iterator it = fmodEventInstances.begin(); it != itEnd; ++it)
-            FMOD_VERIFY((*it)->setVolume(volume));
+		Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
+		int32 instancesCount = instancesCopy.size();
+		for(int32 i = 0; i < instancesCount; ++i)
+		{
+            FMOD_VERIFY(instancesCopy[i]->setVolume(volume));
+		}
     }
 }
     
@@ -148,11 +158,12 @@ void FMODSoundEvent::UpdateInstancesPosition()
 {
     if(is3D)
     {
-        SoundSystem * soundSystem = SoundSystem::Instance();
-
-        List<FMOD::Event *>::const_iterator itEnd = fmodEventInstances.end();
-        for(List<FMOD::Event *>::const_iterator it = fmodEventInstances.begin(); it != itEnd; ++it)
-            FMOD_VERIFY((*it)->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : NULL));
+		Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
+		int32 instancesCount = instancesCopy.size();
+		for(int32 i = 0; i < instancesCount; ++i)
+		{
+            FMOD_VERIFY(instancesCopy[i]->set3DAttributes((FMOD_VECTOR*)&position, 0, isDirectional ? (FMOD_VECTOR*)&direction : NULL));
+		}
     }
 }
     
@@ -160,16 +171,18 @@ void FMODSoundEvent::Stop()
 {
     SoundSystem * soundSystem = SoundSystem::Instance();
 
-    List<FMOD::Event *>::const_iterator itEnd = fmodEventInstances.end();
-    for(List<FMOD::Event *>::const_iterator it = fmodEventInstances.begin(); it != itEnd; ++it)
-    {
-        FMOD::Event * fEvent = (*it);
-        FMOD_VERIFY(fEvent->setCallback(0, 0));
+	Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
+	int32 instancesCount = instancesCopy.size();
+	for(int32 i = 0; i < instancesCount; ++i)
+	{
+        FMOD::Event * fEvent = instancesCopy[i];
+		FMOD_VERIFY(fEvent->setCallback(0, 0));
         FMOD_VERIFY(fEvent->stop());
-        soundSystem->ReleaseOnUpdate(this);
-        PerformEvent(SoundEvent::EVENT_END);
-    }
-    fmodEventInstances.clear();
+
+		PerformEvent(SoundEvent::EVENT_END);
+		soundSystem->ReleaseOnUpdate(this);
+	}
+	fmodEventInstances.clear();
 }
 
 bool FMODSoundEvent::IsActive() const
@@ -177,26 +190,25 @@ bool FMODSoundEvent::IsActive() const
     return fmodEventInstances.size() != 0;
 }
 
-void FMODSoundEvent::Pause()
+void FMODSoundEvent::SetPaused(bool paused)
 {
-    List<FMOD::Event *>::const_iterator itEnd = fmodEventInstances.end();
-    for(List<FMOD::Event *>::const_iterator it = fmodEventInstances.begin(); it != itEnd; ++it)
-        (*it)->setPaused(true);
+	int32 instancesCount = fmodEventInstances.size();
+	for(int32 i = 0; i < instancesCount; ++i)
+        fmodEventInstances[i]->setPaused(paused);
 }
     
 void FMODSoundEvent::SetParameterValue(const FastName & paramName, float32 value)
 {
     paramsValues[paramName] = value;
-    
-    List<FMOD::Event *>::const_iterator itEnd = fmodEventInstances.end();
-    for(List<FMOD::Event *>::const_iterator it = fmodEventInstances.begin(); it != itEnd; ++it)
-    {
+
+	Vector<FMOD::Event *> instancesCopy(fmodEventInstances);
+	int32 instancesCount = instancesCopy.size();
+	for(int32 i = 0; i < instancesCount; ++i)
+	{
         FMOD::EventParameter * param = 0;
-        FMOD_VERIFY((*it)->getParameter(paramName.c_str(), &param));
+        FMOD_VERIFY(instancesCopy[i]->getParameter(paramName.c_str(), &param));
         if(param)
-        {
             FMOD_VERIFY(param->setValue(value));
-        }
     }
 }
 
@@ -234,17 +246,14 @@ void FMODSoundEvent::InitParamsMap()
     }
 }
 
-void FMODSoundEvent::PerformCallback(FMOD::Event * fmodEvent, eSoundEventCallbackType callbackType)
+void FMODSoundEvent::PerformCallback(FMOD::Event * fmodEvent)
 {
-    List<FMOD::Event *>::iterator it = std::find(fmodEventInstances.begin(), fmodEventInstances.end(), fmodEvent);
+    Vector<FMOD::Event *>::iterator it = std::find(fmodEventInstances.begin(), fmodEventInstances.end(), fmodEvent);
     if(it != fmodEventInstances.end())
     {
-        SoundSystem * soundSystem = SoundSystem::Instance();
-        soundSystem->ReleaseOnUpdate(this);
-        soundSystem->PerformCallbackOnUpdate(this, callbackType);
-
-        (*it)->setCallback(0, 0);
-        fmodEventInstances.erase(it);
+		PerformEvent(SoundEvent::EVENT_END);
+		fmodEventInstances.erase(it);
+		SoundSystem::Instance()->ReleaseOnUpdate(this);
     }
 }
 
@@ -287,11 +296,16 @@ String FMODSoundEvent::GetEventName() const
 FMOD_RESULT F_CALLBACK FMODSoundEvent::FMODEventCallback(FMOD_EVENT *event, FMOD_EVENT_CALLBACKTYPE type, void *param1, void *param2, void *userdata)
 {
     if(type == FMOD_EVENT_CALLBACKTYPE_STOLEN || type == FMOD_EVENT_CALLBACKTYPE_EVENTFINISHED)
-    {
+	{
+		DVASSERT_MSG(Thread::IsMainThread(), DAVA::Format("FMOD Callback type %d", type).c_str());
+
         FMOD::Event * fEvent = (FMOD::Event *)event;
         FMODSoundEvent * sEvent = (FMODSoundEvent *)userdata;
         if(sEvent && fEvent)
-            sEvent->PerformCallback(fEvent, SoundEvent::EVENT_END);
+		{
+			FMOD_VERIFY(fEvent->setCallback(0, 0));
+			sEvent->PerformCallback(fEvent);
+		}
     }
     return FMOD_OK;
 }

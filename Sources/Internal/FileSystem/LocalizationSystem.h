@@ -52,6 +52,7 @@ public:
     String GetCountryCode() const;
 	
 	WideString GetLocalizedString(const WideString & key);
+    WideString GetLocalizedString(const WideString & key, const String &langId);
 	void SetLocalizedString(const WideString & key, const WideString & value);
 	void RemoveLocalizedString(const WideString & key);
 

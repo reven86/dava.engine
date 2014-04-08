@@ -191,9 +191,12 @@ void MusicIOSSoundEvent::Stop()
     [(AvSound*)avSound stop];
 }
 
-void MusicIOSSoundEvent::Pause()
+void MusicIOSSoundEvent::SetPaused(bool paused)
 {
-    [(AvSound*)avSound pause];
+    if(paused)
+        [(AvSound*)avSound pause];
+    else
+        [(AvSound*)avSound play];
 }
     
 void MusicIOSSoundEvent::SetVolume(float32 _volume)

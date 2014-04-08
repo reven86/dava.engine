@@ -260,7 +260,7 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key)
 	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
 		StringFile * file = *it;
-		
+
 		Map<WideString, WideString>::iterator res = file->strings.find(key);
 		if (res != file->strings.end())
 		{
@@ -268,6 +268,24 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key)
 		}
 	}
 	return key;
+}
+
+WideString LocalizationSystem::GetLocalizedString(const WideString & key, const String &langId)
+{
+    for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
+    {
+        StringFile * file = *it;
+
+        if(file->langId.compare(langId) == 0)
+        {
+            Map<WideString, WideString>::iterator res = file->strings.find(key);
+            if (res != file->strings.end())
+            {
+                return res->second;
+            }
+        }
+    }
+    return key;
 }
 
 void LocalizationSystem::SetLocalizedString(const WideString & key, const WideString & value)

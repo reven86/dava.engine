@@ -147,7 +147,7 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
 	DAVA::LodComponent *lodComponent = GetLodComponent(entity);
 	lodComponent->SetForceLodLayer(fromLodLayer);
 	entity->SetVisible(true);
-	//tempScene->Update(0.1f);
+	tempScene->Update(0.1f);
     tempScene->Draw();
 
     SafeRelease(entity);
@@ -204,13 +204,13 @@ void CreatePlaneLODCommand::CreatePlaneImage()
     float32 depth = 0.f;
     //draw 1st side
     depth = max.y - min.y;
- 	camera->Setup(min.x, max.x, max.z, min.z, -depth, depth * 2);
+ 	camera->Setup(min.x, max.x, min.z, max.z, -depth, depth * 2);
     camera->SetPosition(Vector3(0.f, min.y, 0.f));
     DrawToTexture(fromEntity, camera, fboTexture, fromLodLayer, firstSideViewport, true);
     
     //draw 2nd side
     depth = max.x - min.x;
-	camera->Setup(min.y, max.y, max.z, min.z, -depth, depth * 2);
+	camera->Setup(min.y, max.y, min.z, max.z, -depth, depth * 2);
     camera->SetPosition(Vector3(max.x, 0.f, 0.f));
     DrawToTexture(fromEntity, camera, fboTexture, fromLodLayer, secondSideViewport, false);
     
