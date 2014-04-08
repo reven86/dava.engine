@@ -90,6 +90,7 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+ 	new InputTest();
     new SaveImageTest();
     
     new RectSpriteTest();

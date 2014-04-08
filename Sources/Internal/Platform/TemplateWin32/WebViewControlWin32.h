@@ -62,6 +62,8 @@ public:
 	String GetCookie(const String& url, const String& name);
 	Map<String, String> GetCookies(const String& url);
 
+	void ExecuteJScript(const String& targetScript);
+
 	// COM stuff;
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject);
 
@@ -130,6 +132,8 @@ public:
 	virtual String GetCookie(const String& url, const String& name);
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url);
+	// Execute javascript string in webview
+	virtual String ExecuteJScript(const String& targetScript);
 	
     void OpenFromBuffer(const String& string, const FilePath& basePath);
 

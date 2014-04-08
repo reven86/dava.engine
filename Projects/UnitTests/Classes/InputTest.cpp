@@ -235,7 +235,7 @@ void InputTest::LoadResources()
 	webView1->SetVisible(false);
 	delegate = new UIWebViewDelegate();
 	webView1->SetDelegate((UIWebViewDelegate*)delegate);
-	webView1->OpenURL("http://www.google.com");
+	//webView1->OpenURL("http://www.google.com");
 	AddControl(webView1);
 	
 	webView2 = new UIWebView(Rect(305, 300, 440, 190));
@@ -243,6 +243,7 @@ void InputTest::LoadResources()
     webView2->SetDelegate((UIWebViewDelegate*)delegate);
 	webView2->LoadHtmlString(L"<html><head><title>Test JavaScript Title</title></head><body>LINK TO DAVA - <a id='myLinko' href='http://www.davaconsulting.com/'>HELLO DAVA</a></body></html>");
 	webView2->SetBounces(true);
+	webView2->ExecuteJScript("TEST!");
 	AddControl(webView2);
 
 	FilePath srcDir("~res:/TestData/InputTest/");
@@ -257,7 +258,7 @@ void InputTest::LoadResources()
 	//delegate = new UIWebViewDelegate();
 	webView3 = new UIWebView(Rect(520, 130, 215, 135));
 	webView3->SetDelegate((UIWebViewDelegate*)delegate);
-	webView3->OpenURL(url);
+	//webView3->OpenURL(url);
 
 	AddControl(webView3);
 

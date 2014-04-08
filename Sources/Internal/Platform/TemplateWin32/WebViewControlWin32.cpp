@@ -531,6 +531,65 @@ bool WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_C
 	return bResult ? true : false;
 }
 
+void WebBrowserContainer::ExecuteJScript(const String& targetScript)
+{
+	IDispatch *m_pDisp = NULL; 
+    webBrowser->get_Document(&m_pDisp);
+	DVASSERT(m_pDisp);
+
+	IHTMLDocument2* pHtmDoc2 = NULL;
+	m_pDisp->QueryInterface(IID_IHTMLDocument2, (LPVOID*)&pHtmDoc2);
+	DVASSERT(pHtmDoc2);
+
+	//pHtmDoc2->Invoke
+	
+	IHTMLWindow2* pHtmWin2 = NULL;
+	pHtmDoc2->get_parentWindow(&pHtmWin2);
+	DVASSERT(pHtmWin2); 
+
+	IDispatch *disp;
+	pHtmWin2->QueryInterface(&disp);
+	DVASSERT(disp);
+	/*IDispatchEx *dispEx;
+	pHtmWin2->QueryInterface(&dispEx);
+	DVASSERT(dispEx);*/
+
+	IDispatch* pScript = 0;
+	pHtmDoc2->get_Script(&pScript);
+
+    DISPID dispidEval = -1;
+	VARIANT var;
+	OLECHAR FAR* sMethod = L"eval";
+    HRESULT hr2 = webBrowser->GetIDsOfNames(IID_NULL, &sMethod, 1, LOCALE_SYSTEM_DEFAULT,&dispidEval);//GetDispID(L"eval", fdexNameCaseSensitive, &dispidEval);
+	
+    DISPPARAMS dispparams = {0};
+    dispparams.cArgs      = 1;
+    dispparams.rgvarg     = new VARIANT[dispparams.cArgs];
+    dispparams.cNamedArgs = 0;
+
+	WideString wStr = L"alert('Hello!');"; 
+	BSTR tmpBSTR = SysAllocString(wStr.c_str());
+    dispparams.rgvarg[0].bstrVal = tmpBSTR;
+    dispparams.rgvarg[0].vt = VT_BSTR;
+
+	HRESULT hr = disp->Invoke(dispidEval, IID_NULL, LOCALE_SYSTEM_DEFAULT, DISPATCH_METHOD,  &dispparams, &var, NULL, NULL);
+
+//	WideString sJSCode=L"document.title";
+//	BSTR bstrJSCode = SysAllocString(sJSCode.c_str());//.AllocSysString();
+//	WideString JSl = L"JavaScript";
+//	BSTR bstrJSl = SysAllocString(JSl.c_str());
+//	VARIANT var;
+
+	//HRESULT hr = pHtmWin2->execScript(bstrJSCode, bstrJSl, &var);
+
+	//::SysFreeString(bstrJSCode);
+	//::SysFreeString(bstrJSl);
+
+	if (m_pDisp) m_pDisp->Release(); 
+	if (pHtmWin2) pHtmWin2->Release();
+	if (pHtmDoc2) pHtmDoc2->Release();
+}
+
 void WebBrowserContainer::UpdateRect()
 {
 	IOleInPlaceObject* oleInPlaceObject = NULL;
@@ -648,6 +707,16 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
 	}
 
 	return Map<String, String>();
+}
+
+String WebViewControl::ExecuteJScript(const String& targetScript)
+{
+	if (browserContainer)
+	{
+		browserContainer->ExecuteJScript(targetScript);
+	}
+
+	return String();
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
