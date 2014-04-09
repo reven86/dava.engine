@@ -490,8 +490,10 @@ bool WebBrowserContainer::DeleteCookies(const String& targetUrl)
 	// clean up		
 	delete [] cacheEntry; 
 	FindCloseUrlCache(cacheEnumHandle);  
-
-    return bResult;
+	// Syncronize cookies storage
+	InternetSetOption(0, INTERNET_OPTION_END_BROWSER_SESSION, 0, 0); 
+    
+	return bResult;
 }
 
 HANDLE WebBrowserContainer::GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size)
