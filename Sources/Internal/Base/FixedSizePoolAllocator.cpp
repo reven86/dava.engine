@@ -34,6 +34,8 @@ namespace DAVA
 {
 FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockArraySize)
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
    // DVASSERT(_blockSize >= sizeof(uint8*));
     
     blockSize = _blockSize;
@@ -50,6 +52,8 @@ FixedSizePoolAllocator::FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockA
 
 void FixedSizePoolAllocator::CreateNewDataBlock()
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
    // DVASSERT(blockSize >= sizeof(uint8*));
     void * block = ::malloc(blockArraySize * blockSize + sizeof(uint8*));
     //Logger::FrameworkDebug("Allocated new data block: %p pointer size: %d", block, sizeof(uint8*));
@@ -66,6 +70,8 @@ void FixedSizePoolAllocator::CreateNewDataBlock()
 
 void FixedSizePoolAllocator::InsertBlockToFreeNodes(void * block)
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
     uint8 * blockItem = (uint8*)block + sizeof(uint8*) + blockSize * (blockArraySize - 1);
     for (uint32 k = 0; k < blockArraySize; ++k)
     {
@@ -79,6 +85,8 @@ void FixedSizePoolAllocator::InsertBlockToFreeNodes(void * block)
 
 void FixedSizePoolAllocator::Reset()
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
     nextFreeBlock = 0;
     void * currentBlock = allocatedBlockArrays;
     while(currentBlock)
@@ -91,6 +99,8 @@ void FixedSizePoolAllocator::Reset()
 
 void FixedSizePoolAllocator::DeallocateMemory()
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
 #ifdef __DAVAENGINE_DEBUG__
 //	DVASSERT(freeItemCount == (totalBlockCount*blockArraySize));
 #endif
@@ -114,11 +124,15 @@ void FixedSizePoolAllocator::DeallocateMemory()
 
 FixedSizePoolAllocator::~FixedSizePoolAllocator()
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
     DeallocateMemory();
 }
 
 void * FixedSizePoolAllocator::New()
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
     void * object = 0;
     if (nextFreeBlock == 0)
 	{
@@ -136,6 +150,8 @@ void * FixedSizePoolAllocator::New()
 
 void FixedSizePoolAllocator::Delete(void * block)
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
 	*(uint8**)block = (uint8*)nextFreeBlock;
 	nextFreeBlock = block;
 
@@ -146,6 +162,8 @@ void FixedSizePoolAllocator::Delete(void * block)
     
 bool FixedSizePoolAllocator::CheckIsPointerValid(void * blockvoid)
 {
+    TAG_SWITCH(MemoryManager::TAG_POOL_ALLOCATOR)
+    
     uint8 * block = (uint8*)blockvoid;
     uint8 * currentAllocatedBlockArray = (uint8*)allocatedBlockArrays; 
     while(currentAllocatedBlockArray)

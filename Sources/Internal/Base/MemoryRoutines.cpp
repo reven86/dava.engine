@@ -9,7 +9,7 @@
 #include "Base/MemoryRoutines.h"
 
 #if defined(__USE_OWN_ALLOCATORS__)
-void * operator new(size_t _size) throw(std::bad_alloc )
+/*void * operator new(size_t _size) throw(std::bad_alloc )
 {
     void *p = NULL;
     DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
@@ -131,7 +131,7 @@ void   operator delete[](void * _ptr, const std::nothrow_t &) throw()
         free(_ptr);
     }
 }
-
+*/
 namespace DAVA {
 
 AllocatorsStack::AllocatorsStack()
@@ -143,13 +143,13 @@ void *AllocatorsStack::Allocate(size_t _size)
     if(allocatorsStack.size() > 0)
     {
         pthread_t threadID = pthread_self();
-        Map<pthread_t, Stack<Allocator*>*>::iterator it = allocatorsStack.find(threadID);
+        Map<pthread_t, Stack<AllocatorBase*>*>::iterator it = allocatorsStack.find(threadID);
         if(it != allocatorsStack.end())
         {
-            Stack<Allocator*>* stack = it->second;
+            Stack<AllocatorBase*>* stack = it->second;
             if(stack && stack->size() > 0 )
             {
-                Allocator *allocator = stack->top();
+                AllocatorBase *allocator = stack->top();
                 return allocator->New(_size);
             }
         }
@@ -162,13 +162,13 @@ bool AllocatorsStack::Deallocate(void* ptr)
     if(allocatorsStack.size() > 0)
     {
         pthread_t threadID = pthread_self();
-        Map<pthread_t, Stack<Allocator*>*>::iterator it = allocatorsStack.find(threadID);
+        Map<pthread_t, Stack<AllocatorBase*>*>::iterator it = allocatorsStack.find(threadID);
         if(it != allocatorsStack.end())
         {
-            Stack<Allocator*>* stack = it->second;
+            Stack<AllocatorBase*>* stack = it->second;
             if( stack && stack->size() > 0 )
             {
-                Allocator *allocator = stack->top();
+                AllocatorBase *allocator = stack->top();
                 allocator->Delete(ptr);
                 return true;
             }
@@ -177,14 +177,14 @@ bool AllocatorsStack::Deallocate(void* ptr)
     return false;
 }
 
-void AllocatorsStack::PushAllocator(Allocator *allocator)
+void AllocatorsStack::PushAllocator(AllocatorBase *allocator)
 {
     pthread_t threadID = pthread_self();
-    Stack<Allocator*>* stack = NULL;
-    Map<pthread_t, Stack<Allocator*>*>::iterator it = allocatorsStack.find(threadID);
+    Stack<AllocatorBase*>* stack = NULL;
+    Map<pthread_t, Stack<AllocatorBase*>*>::iterator it = allocatorsStack.find(threadID);
     if(it == allocatorsStack.end())
     {
-        stack = new Stack<Allocator*>();
+        stack = new Stack<AllocatorBase*>();
         allocatorsStack[threadID] = stack;
     }
     else
@@ -200,10 +200,10 @@ void AllocatorsStack::PushAllocator(Allocator *allocator)
 void AllocatorsStack::PopAllocator()
 {
     pthread_t threadID = pthread_self();
-    Map<pthread_t, Stack<Allocator*>*>::iterator it = allocatorsStack.find(threadID);
+    Map<pthread_t, Stack<AllocatorBase*>*>::iterator it = allocatorsStack.find(threadID);
     if(it != allocatorsStack.end())
     {
-        Stack<Allocator*>* stack = it->second;
+        Stack<AllocatorBase*>* stack = it->second;
         stack->pop();
     }
 }

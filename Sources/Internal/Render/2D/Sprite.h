@@ -66,6 +66,8 @@ class Texture;
 class Sprite : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SPRITE);
+    
 	class DrawState
 	{
         friend class Sprite;

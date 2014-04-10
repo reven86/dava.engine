@@ -169,6 +169,8 @@ bool Texture::pixelizationFlag = false;
 // Main constructors
 Texture * Texture::Get(const FilePath & pathName)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     textureMapMutex.Lock();
 
 	Texture * texture = NULL;
@@ -190,6 +192,8 @@ Texture * Texture::Get(const FilePath & pathName)
 
 void Texture::AddToMap(Texture *tex)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     if(!tex->texDescriptor->pathname.IsEmpty())
     {
         textureMapMutex.Lock();
@@ -211,6 +215,8 @@ Texture::Texture()
 ,	state(STATE_INVALID)
 ,	invalidater(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 #ifdef __DAVAENGINE_DIRECTX9__
 	saveTexture = 0;
 	renderTargetModified = false;
@@ -232,12 +238,16 @@ Texture::Texture()
 
 Texture::~Texture()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     ReleaseTextureData();
 	SafeDelete(texDescriptor);
 }
     
 void Texture::ReleaseTextureData()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	state = STATE_INVALID;
 
 	ReleaseTextureDataContainer * container = new ReleaseTextureDataContainer();
@@ -253,6 +263,8 @@ void Texture::ReleaseTextureData()
 
 void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	ReleaseTextureDataContainer * container = (ReleaseTextureDataContainer*) param;
 	DVASSERT(container);
 
@@ -302,6 +314,8 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 
 Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 width, uint32 height, bool generateMipMaps, const char * addInfo)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	Texture * tx = CreateFromData(format, data, width, height, generateMipMaps);
     
 	if (!addInfo)
@@ -320,6 +334,8 @@ Texture * Texture::CreateTextFromData(PixelFormat format, uint8 * data, uint32 w
 	
 void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _data, uint32 dataSize, uint32 cubeFaceId)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 #if defined(__DAVAENGINE_OPENGL__)
 
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
@@ -407,6 +423,8 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
     
 Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint32 _width, uint32 _height, bool generateMipMaps)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	Image *image = Image::CreateFromData(_width, _height, _format, _data);
 	if(!image) return NULL;
 
@@ -424,6 +442,8 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
 	
 void Texture::SetWrapMode(TextureWrap wrapS, TextureWrap wrapT)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 #if defined(__DAVAENGINE_OPENGL__)
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 	
@@ -443,6 +463,8 @@ void Texture::SetWrapMode(TextureWrap wrapS, TextureWrap wrapT)
 
 void Texture::SetMinMagFilter(TextureFilter minFilter, TextureFilter magFilter)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 #if defined(__DAVAENGINE_OPENGL__)
 	int32 saveId = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 
@@ -462,6 +484,8 @@ void Texture::SetMinMagFilter(TextureFilter minFilter, TextureFilter magFilter)
 	
 void Texture::GenerateMipmaps()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::GenerateMipmapsInternal));
 	JobInstanceWaiter waiter(job);
 	waiter.Wait();
@@ -469,6 +493,8 @@ void Texture::GenerateMipmaps()
 
 void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	if(IsCompressedFormat(texDescriptor->format))
     {
 		return;
@@ -508,6 +534,8 @@ void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *c
 
 void Texture::GeneratePixelesation()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::GeneratePixelesationInternal));
 	JobInstanceWaiter waiter(job);
 	waiter.Wait();
@@ -515,6 +543,7 @@ void Texture::GeneratePixelesation()
 
 void Texture::GeneratePixelesationInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
 
 #if defined(__DAVAENGINE_OPENGL__)
     
@@ -539,6 +568,8 @@ void Texture::GeneratePixelesationInternal(BaseObject * caller, void * param, vo
 
 Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	Texture * texture = new Texture();
 	texture->texDescriptor->Initialize(descriptor);
 
@@ -562,6 +593,8 @@ Texture * Texture::CreateFromImage(TextureDescriptor *descriptor, eGPUFamily gpu
 
 bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	if(!IsLoadAvailable(gpu))
 		return false;
 	
@@ -633,12 +666,16 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 
 void Texture::ReleaseImages(Vector<Image *> *images)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	for_each(images->begin(), images->end(), SafeRelease<Image>);
 	images->clear();
 }
 
 void Texture::SetParamsFromImages(const Vector<Image *> * images)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	DVASSERT(images->size() != 0);
 
     Image *img = *images->begin();
@@ -653,11 +690,15 @@ void Texture::SetParamsFromImages(const Vector<Image *> * images)
 
 void Texture::FlushDataToRenderer(Vector<Image *> * images)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::FlushDataToRendererInternal, images));
 }
 
 void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     Vector<Image *> * images = static_cast< Vector<Image *> * >(param);
     
 	DVASSERT(images->size() != 0);
@@ -708,6 +749,8 @@ void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, voi
 
 bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     for (int32 i = 0; i < (int32)imageSet.size(); ++i)
     {
         if(!IsPowerOf2(imageSet[i]->GetWidth()) || !IsPowerOf2(imageSet[i]->GetHeight()))
@@ -721,6 +764,8 @@ bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
 
 bool Texture::IsCompressedFormat(PixelFormat format)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	bool retValue =  false;
 	if(FORMAT_INVALID != format)
     {
@@ -741,6 +786,8 @@ bool Texture::IsCompressedFormat(PixelFormat format)
 
 Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &group, TextureType typeHint)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	Texture * texture = PureCreate(pathName, group);
 	if(!texture)
 	{
@@ -755,6 +802,8 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
 
 Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	if(pathName.IsEmpty() || pathName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
@@ -782,11 +831,15 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 
 void Texture::Reload()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     ReloadAs(loadedAsFile);
 }
     
 void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     FilePath savedPath = texDescriptor->pathname;
     
     ReleaseTextureData();
@@ -821,6 +874,8 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
     
 bool Texture::IsLoadAvailable(const eGPUFamily gpuFamily) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     if(texDescriptor->IsCompressedFile())
     {
         return true;
@@ -839,6 +894,8 @@ bool Texture::IsLoadAvailable(const eGPUFamily gpuFamily) const
     
 int32 Texture::Release()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	if(GetRetainCount() == 1)
 	{
         textureMapMutex.Lock();
@@ -850,6 +907,8 @@ int32 Texture::Release()
 	
 Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat _depthFormat)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	int32 dx = Max((int32)w, 8);
     EnsurePowerOf2(dx);
     
@@ -895,11 +954,15 @@ Texture * Texture::CreateFBO(uint32 w, uint32 h, PixelFormat format, DepthFormat
 #if defined(__DAVAENGINE_OPENGL__)
 void Texture::HWglCreateFBOBuffers()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::HWglCreateFBOBuffersInternal));
 }
 
 void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	GLint saveFBO = RenderManager::Instance()->HWglGetLastFBO();
 	GLint saveTexture = RenderManager::Instance()->HWglGetLastTextureID(textureType);
 
@@ -982,6 +1045,8 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 	
 void Texture::DumpTextures()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	uint32 allocSize = 0;
 	int32 cnt = 0;
 	Logger::FrameworkDebug("============================================================");
@@ -1017,6 +1082,8 @@ void Texture::SetDebugInfo(const String & _debugInfo)
 	
 void Texture::Lost()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	RenderResource::Lost();
 
 	/*
@@ -1043,6 +1110,8 @@ void Texture::Lost()
 
 void Texture::Invalidate()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	RenderResource::Invalidate();
 	
 	/*
@@ -1074,6 +1143,8 @@ void Texture::Invalidate()
 
 Image * Texture::ReadDataToImage()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	PixelFormat format = texDescriptor->format;
 
     Image *image = Image::Create(width, height, format);
@@ -1104,6 +1175,8 @@ Image * Texture::ReadDataToImage()
 
 Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     Image *image = NULL;
     if(isRenderTarget)
     {
@@ -1148,6 +1221,8 @@ const TexturesMap & Texture::GetTextureMap()
 
 uint32 Texture::GetDataSize() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     DVASSERT((0 <= texDescriptor->format) && (texDescriptor->format < FORMAT_COUNT));
     
     uint32 allocSize = width * height * GetPixelFormatSizeInBits(texDescriptor->format) / 8;
@@ -1156,6 +1231,8 @@ uint32 Texture::GetDataSize() const
 
 Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	//we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
 	//pink textures at game is invalid situation
 	Texture *tex = new Texture();
@@ -1166,6 +1243,8 @@ Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 
 void Texture::MakePink(TextureType requestedType, bool checkers)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	FilePath savePath = (texDescriptor) ? texDescriptor->pathname: FilePath();
 
     Vector<Image *> *images = new Vector<Image *> ();
@@ -1207,6 +1286,8 @@ bool Texture::IsPinkPlaceholder()
 PixelFormatDescriptor Texture::pixelDescriptors[FORMAT_COUNT];
 void Texture::InitializePixelFormatDescriptors()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     SetPixelDescription(FORMAT_INVALID, String("WRONG FORMAT"), 0, 0, 0, 0);
     SetPixelDescription(FORMAT_RGBA8888, String("RGBA8888"), 32, GL_UNSIGNED_BYTE, GL_RGBA, GL_RGBA);
     SetPixelDescription(FORMAT_RGBA5551, String("RGBA5551"), 16, GL_UNSIGNED_SHORT_5_5_5_1, GL_RGBA, GL_RGBA);
@@ -1312,6 +1393,8 @@ int32 Texture::GetPixelFormatSizeInBits(PixelFormat format)
 
 int32 Texture::GetPixelFormatSizeInBytes(PixelFormat format)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     int32 bits = GetPixelFormatSizeInBits(format);
     
     if(bits < 8)
@@ -1326,12 +1409,16 @@ int32 Texture::GetPixelFormatSizeInBytes(PixelFormat format)
 
 const char * Texture::GetPixelFormatString(PixelFormat format)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     DVASSERT((0 <= format) && (format < FORMAT_COUNT));
     return pixelDescriptors[format].name.c_str();
 }
 
 PixelFormat Texture::GetPixelFormatByName(const String &formatName)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     for(int32 i = 0; i < FORMAT_COUNT; ++i)
     {
         if(0 == CompareCaseInsensitive(formatName, pixelDescriptors[i].name))
@@ -1347,6 +1434,8 @@ PixelFormat Texture::GetPixelFormatByName(const String &formatName)
     
 void Texture::GenerateID()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 #if defined(__DAVAENGINE_OPENGL__)
 	RENDER_VERIFY(glGenTextures(1, &id));
 	DVASSERT(id);
@@ -1380,6 +1469,8 @@ void Texture::SetInvalidater(TextureInvalidater* invalidater)
 
 void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>& faceNames)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	static Vector<String> defaultSuffixes;
 	if(defaultSuffixes.empty())
 	{
@@ -1394,6 +1485,8 @@ void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>&
 
 void Texture::GenerateCubeFaceNames(const FilePath & filePath, const Vector<String>& faceNameSuffixes, Vector<FilePath>& faceNames)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	faceNames.clear();
 	
 	String fileNameWithoutExtension = filePath.GetBasename();
@@ -1422,6 +1515,8 @@ PixelFormat Texture::GetFormat() const
 
 void Texture::SetPixelization(bool value)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     if (value == pixelizationFlag)
     {
         return;
@@ -1444,6 +1539,8 @@ void Texture::SetPixelization(bool value)
 
 int32 Texture::GetBaseMipMap() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     if(texDescriptor->GetQualityGroup().IsValid())
     {
         const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());

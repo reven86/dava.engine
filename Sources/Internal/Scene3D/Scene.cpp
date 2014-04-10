@@ -114,7 +114,8 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	,   materialSystem(0)
     ,   foliageSystem(0)
 	,   sceneGlobalMaterial(0)
-{   
+{
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
 	CreateComponents();
 	CreateSystems();
 }
@@ -129,6 +130,8 @@ NMaterial* Scene::GetGlobalMaterial() const
 
 void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     SafeRelease(sceneGlobalMaterial);
 
     if(NULL != globalMaterial)
@@ -144,6 +147,8 @@ void Scene::SetGlobalMaterial(NMaterial *globalMaterial)
 
 void Scene::CreateGlobalMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     NMaterial *globalMaterial = NMaterial::CreateGlobalMaterial(FastName("Scene_Global_Material"));
     SetGlobalMaterial(globalMaterial);
     SafeRelease(globalMaterial);
@@ -151,6 +156,8 @@ void Scene::CreateGlobalMaterial()
 
 void Scene::InitGlobalMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     if(NULL == stubTexture2d)
     {
         stubTexture2d = Texture::CreatePink(Texture::TEXTURE_2D);
@@ -208,6 +215,8 @@ void Scene::InitGlobalMaterial()
 
 void Scene::CreateSystems()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	renderSystem = new RenderSystem();
     eventSystem = new EventSystem();
 
@@ -298,6 +307,8 @@ void Scene::CreateSystems()
 
 Scene::~Scene()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	for (Vector<AnimatedMesh*>::iterator t = animatedMeshes.begin(); t != animatedMeshes.end(); ++t)
 	{
 		AnimatedMesh * obj = *t;
@@ -356,6 +367,8 @@ Scene::~Scene()
 
 void Scene::RegisterNode(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     uint32 systemsCount = systems.size();
     for (uint32 k = 0; k < systemsCount; ++k)
     {
@@ -369,6 +382,8 @@ void Scene::RegisterNode(Entity * node)
 
 void Scene::UnregisterNode(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     uint32 systemsCount = systems.size();
     for (uint32 k = 0; k < systemsCount; ++k)
     {
@@ -382,6 +397,8 @@ void Scene::UnregisterNode(Entity * node)
     
 void Scene::AddComponent(Entity * entity, Component * component)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	DVASSERT(entity && component);
 
     uint32 componentFlags = entity->componentFlags;
@@ -409,6 +426,8 @@ void Scene::AddComponent(Entity * entity, Component * component)
     
 void Scene::RemoveComponent(Entity * entity, Component * component)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	DVASSERT(entity && component);
 
 	uint32 componentFlags = entity->componentFlags;
@@ -468,6 +487,8 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
     
 void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool needProcess /* = false */, SceneSystem * insertBeforeSceneForProcess /* = NULL */)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     sceneSystem->SetRequiredComponents(componentFlags);
     //Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentFlags);
     //systemSetForType.insert(sceneSystem);
@@ -500,6 +521,8 @@ void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool nee
     
 void Scene::RemoveSystem(SceneSystem * sceneSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     Vector<SceneSystem*>::iterator endIt = systemsToProcess.end();
     for(Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != endIt; ++it)
     {
@@ -530,6 +553,8 @@ Scene * Scene::GetScene()
     
 void Scene::AddAnimatedMesh(AnimatedMesh * mesh)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	if (mesh)
 	{
 		mesh->Retain();
@@ -549,6 +574,8 @@ AnimatedMesh * Scene::GetAnimatedMesh(int32 index)
 	
 void Scene::AddAnimation(SceneNodeAnimationList * animation)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	if (animation)
 	{
 		animation->Retain();
@@ -577,6 +604,8 @@ SceneNodeAnimationList * Scene::GetAnimation(const FastName & name)
 	
 void Scene::AddCamera(Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	if (camera)
 	{
 		camera->Retain();
@@ -595,6 +624,8 @@ Camera * Scene::GetCamera(int32 n)
 
 void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     ProxyNode * proxyNode = new ProxyNode();
     proxyNode->SetNode(node);
     
@@ -605,6 +636,8 @@ void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
 
 Entity *Scene::GetRootNode(const FilePath &rootNodePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	ProxyNodeMap::const_iterator it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
 	if (it != rootNodes.end())
 	{
@@ -643,6 +676,8 @@ Entity *Scene::GetRootNode(const FilePath &rootNodePath)
 
 void Scene::ReleaseRootNode(const FilePath &rootNodePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	ProxyNodeMap::iterator it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
 	if (it != rootNodes.end())
 	{
@@ -718,6 +753,8 @@ void Scene::SetupTestLighting()
     
 void Scene::Update(float timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     TIME_PROFILE("Scene::Update");
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
@@ -774,6 +811,8 @@ void Scene::Update(float timeElapsed)
 
 void Scene::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     TIME_PROFILE("Scene::Draw");
 
 	float timeElapsed = SystemTimer::Instance()->FrameDelta();
@@ -807,6 +846,8 @@ void Scene::Draw()
     
 void Scene::SceneDidLoaded()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     uint32 systemsCount = systems.size();
     for (uint32 k = 0; k < systemsCount; ++k)
     {
@@ -830,6 +871,8 @@ void Scene::SceneDidLoaded()
     
 void Scene::SetCurrentCamera(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     SafeRelease(currentCamera);
     currentCamera = SafeRetain(_camera);
     SafeRelease(clipCamera);
@@ -843,6 +886,8 @@ Camera * Scene::GetCurrentCamera() const
 
 void Scene::SetClipCamera(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     SafeRelease(clipCamera);
     clipCamera = SafeRetain(_camera);
 }
@@ -919,6 +964,8 @@ Camera * Scene::GetClipCamera() const
 
 void Scene::AddDrawTimeShadowVolume(ShadowVolumeNode * shadowVolume)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	shadowVolumes.push_back(shadowVolume);
 }
 
@@ -933,6 +980,8 @@ void Scene::UpdateLights()
     
 Light * Scene::GetNearestDynamicLight(Light::eType type, Vector3 position)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     switch(type)
     {
         case Light::TYPE_DIRECTIONAL:
@@ -974,6 +1023,8 @@ Set<Light*> & Scene::GetLights()
 
 void Scene::RegisterImposter(ImposterNode * imposter)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	if(!imposterManager)
 	{
 		imposterManager = new ImposterManager(this);
@@ -984,6 +1035,8 @@ void Scene::RegisterImposter(ImposterNode * imposter)
 
 void Scene::UnregisterImposter(ImposterNode * imposter)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
 	imposterManager->Remove(imposter);
 
 	if(imposterManager->IsEmpty())
@@ -1027,6 +1080,8 @@ void Scene::Load(KeyedArchive * archive)
 
 SceneFileV2::eError Scene::Save(const DAVA::FilePath & pathname, bool saveForGame /*= false*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     ScopedPtr<SceneFileV2> file(new SceneFileV2());
 	file->EnableDebugLog(false);
 	file->EnableSaveForGame(saveForGame);
@@ -1035,6 +1090,8 @@ SceneFileV2::eError Scene::Save(const DAVA::FilePath & pathname, bool saveForGam
     
 void Scene::OptimizeBeforeExport()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+
     Set<NMaterial*> materials;
     materialSystem->BuildMaterialList(this, materials);
 
