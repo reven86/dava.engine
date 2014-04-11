@@ -90,7 +90,11 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectDa
 
 ParticleRenderObject::~ParticleRenderObject()
 {
-
+    for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
+    {
+        SafeRelease(renderGroupCache[i]->renderBatch);
+        SafeDelete(renderGroupCache[i]);
+    }
 }
 
 
@@ -178,7 +182,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 				currRenderGroup->renderBatch = new RenderBatch();
                 currRenderGroup->renderBatch->SetSortingOffset(sortingOffset);
 				currRenderGroup->renderBatch->SetRenderObject(this);
-				currRenderGroup->renderBatch->SetRenderDataObject(new RenderDataObject());
+				currRenderGroup->renderBatch->SetRenderDataObject(ScopedPtr<RenderDataObject>(new RenderDataObject()));
 				renderGroupCache.push_back(currRenderGroup);
 			}	
 			else
