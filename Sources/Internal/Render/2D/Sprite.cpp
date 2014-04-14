@@ -775,8 +775,8 @@ Sprite::~Sprite()
 		else
 		{
 		    spriteRenderObject->Release();
-	        }
-        }
+		}
+	}
 }
 
 Texture* Sprite::GetTexture()

@@ -65,6 +65,7 @@
 #include "RectSpriteTest.h"
 #include "SaveImageTest.h"
 #include "DateTimeTest.h"
+#include "UIParticlesTest.h"
 
 using namespace DAVA;
 
@@ -127,8 +128,8 @@ void GameCore::OnAppStarted()
  	new DLCTest();
  	new UIListTest();
  	new UIScrollViewTest();
- 
-     new ThreadSyncTest();
+ 	new UIParticlesTest();
+    new ThreadSyncTest();
     
     errors.reserve(TestCount());
 
