@@ -26,16 +26,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#if 0
-
 #include "SoundTest.h"
 
 SoundTest::SoundTest():
 TestTemplate<SoundTest>("SoundTest"),
 sndClick(0),
-effectPlayTest(false)
+music(0),
+effectPlayTest(true)
 {
 	RegisterFunction(this, &SoundTest::CreateInvalidSounds, "CreateInvalidSounds", NULL);
 	RegisterFunction(this, &SoundTest::CreateValidSounds, "CreateValidSounds", NULL);
@@ -43,18 +40,19 @@ effectPlayTest(false)
 	RegisterFunction(this, &SoundTest::PlayStopEffect, "PlayStopEffect", NULL);
 	RegisterFunction(this, &SoundTest::PlayStopMusic, "PlayStopMusic", NULL);
     
-	RegisterFunction(this, &SoundTest::PlayEffect, "PlayEffect", NULL);
+	RegisterFunction(this, &SoundTest::PlayEffects, "PlayEffect", NULL);
 }
 
 void SoundTest::LoadResources()
 {
     GetBackground()->SetColor(Color::White);
+	
+	sndClick = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/click.wav", FastName("clickEvent"));
     
-    sndClick = Sound::CreateFX("~res:/Sounds/click.wav", Sound::TYPE_STATIC);
 #ifdef __DAVAENGINE_IPHONE__
-	music = Sound::CreateMusic("~res:/Sounds/map.caf", Sound::TYPE_STREAMED);
+	music = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.caf", FastName("musicEvent"));
 #else
-	music = Sound::CreateMusic("~res:/Sounds/map.ogg", Sound::TYPE_STREAMED);
+	music = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("musicEvent"));
 #endif
 }
 
@@ -66,92 +64,92 @@ void SoundTest::UnloadResources()
 
 void SoundTest::CreateInvalidSounds(PerfFuncData * data)
 {
-    Sound * sound = 0;
-    sound = Sound::Create(FilePath(), (Sound::eType)1111);
-    TEST_VERIFY(sound == 0);
-    sound = Sound::Create("?InvalidPath", Sound::TYPE_STATIC);
-    TEST_VERIFY(sound == 0);
+    SoundEvent * soundEvent = 0;
+    soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile(FilePath(), FastName("1111"));
+    TEST_VERIFY(soundEvent == 0);
+    soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile("?InvalidPath", FastName("soundEvent"));
+    TEST_VERIFY(soundEvent == 0);
     
-    sound = Sound::CreateFX(FilePath(), Sound::TYPE_STATIC);
-    TEST_VERIFY(sound == 0);
-    sound = Sound::CreateFX("//InvalidPath", (Sound::eType)333);
-    TEST_VERIFY(sound == 0);
+    soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile(FilePath(), FastName("soundEvent"));
+    TEST_VERIFY(soundEvent == 0);
+    soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile("//InvalidPath", FastName("333"));
+    TEST_VERIFY(soundEvent == 0);
     
-    sound = Sound::CreateMusic(FilePath(), (Sound::eType)222);
-    TEST_VERIFY(sound == 0);
-    sound = Sound::CreateMusic(":\\InvalidPath", Sound::TYPE_STREAMED);
-    TEST_VERIFY(sound == 0);
+    soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile(FilePath(), FastName("222"));
+    TEST_VERIFY(soundEvent == 0);
+    soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile(":\\InvalidPath", FastName("soundEvent"));
+    TEST_VERIFY(soundEvent == 0);
     
 #ifdef __DAVAENGINE_IPHONE__
-	sound = Sound::CreateMusic("~res:/Sounds/null.caf", Sound::TYPE_STREAMED);
-    TEST_VERIFY(sound == 0);
-    SafeRelease(sound);
+	soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/null.caf", FastName("soundEvent"));
+    TEST_VERIFY(soundEvent == 0);
+    SafeRelease(soundEvent);
 #else
-	sound = Sound::CreateMusic("~res:/Sounds/null.ogg", Sound::TYPE_STREAMED);
-    TEST_VERIFY(sound == 0);
-    SafeRelease(sound);
+	sound = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/null.ogg", FastName("soundEvent"));
+    TEST_VERIFY(soundEvent == 0);
+    SafeRelease(soundEvent);
 #endif
 }
 
 void SoundTest::CreateValidSounds(PerfFuncData * data)
 {
-    Sound * sound = 0;
-    
-    sound = Sound::CreateFX("~res:/Sounds/click.wav", Sound::TYPE_STATIC);
-    TEST_VERIFY(sound != 0);
-    SafeRelease(sound);
+	SoundEvent *soundEvent = 0;
+
+	soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/click.wav", FastName("clickEvent"));
+    TEST_VERIFY(soundEvent != 0);
+    SafeRelease(soundEvent);
     
 #ifdef __DAVAENGINE_IPHONE__
-	sound = Sound::CreateMusic("~res:/Sounds/map.caf", Sound::TYPE_STREAMED);
-    TEST_VERIFY(sound != 0);
-    SafeRelease(sound);
+	soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.caf", FastName("musicEvent"));
+    TEST_VERIFY(soundEvent != 0);
+    SafeRelease(soundEvent);
 #else
-	sound = Sound::CreateMusic("~res:/Sounds/map.ogg", Sound::TYPE_STREAMED);
-    TEST_VERIFY(sound != 0);
-    SafeRelease(sound);
+	soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/map.ogg", FastName("musicEvent"));
+    TEST_VERIFY(soundEvent != 0);
+    SafeRelease(soundEvent);
 #endif
     
 }
 
 void SoundTest::PlayStopEffect(PerfFuncData * data)
 {
-    SoundInstance * clickInst = sndClick->Play();
-    TEST_VERIFY(clickInst->GetState() == SoundInstance::STATE_PLAYING);
-    
-    sndClick->Stop();
-    TEST_VERIFY(clickInst->GetState() == SoundInstance::STATE_FORCED_STOPPED);
+	TEST_VERIFY(sndClick->Trigger());
+	TEST_VERIFY(sndClick->IsActive());
+	sndClick->Stop();
+	TEST_VERIFY(!sndClick->IsActive());
 }
 
 void SoundTest::PlayStopMusic(PerfFuncData * data)
 {
-    SoundInstance * musicInst = music->Play();
-    TEST_VERIFY(musicInst->GetState() == SoundInstance::STATE_PLAYING);
-    
-    music->Stop();
-    TEST_VERIFY(musicInst->GetState() == SoundInstance::STATE_FORCED_STOPPED);
+	TEST_VERIFY(music->Trigger());
+	TEST_VERIFY(music->IsActive());
+	music->Stop();
+	TEST_VERIFY(!music->IsActive());
 }
 
-void SoundTest::PlayEffect(PerfFuncData * data)
+void SoundTest::PlayEffects(PerfFuncData * data)
+{	
+	TEST_VERIFY(sndClick != 0);
+	sndClick->AddEvent(SoundEvent::EVENT_END, Message(this, &SoundTest::SoundEventPlayed));
+	effectPlayTest = false;
+	sndClick->Trigger();
+
+//	TEST_VERIFY(music != 0)
+//	music->AddEvent(SoundEvent::EVENT_END, Message(this, &SoundTest::SoundEventPlayed));
+//	music->Trigger();
+}
+
+void SoundTest::SoundEventPlayed(BaseObject *obj, void *data, void *callerData)
 {
-    effectIns = sndClick->Play();
-    effectPlayTest = true;
+	effectPlayTest = true;
 }
 
 void SoundTest::Update(float32 timeElapsed)
 {
-    if(effectPlayTest)
-    {
-        if(effectIns->GetState() == SoundInstance::STATE_PLAYING)
-            return;
-        else
-        {
-            PerfFuncData * data = new PerfFuncData();
-            TEST_VERIFY(effectIns->GetState() == SoundInstance::STATE_COMPLETED);
-            SafeDelete(data);
-        }
-    }
+	if (!effectPlayTest)
+	{
+		return;
+	}
 
     TestTemplate<SoundTest>::Update(timeElapsed);
 }
-
-#endif
