@@ -90,7 +90,8 @@ void GameCore::OnAppStarted()
 	RenderManager::Instance()->SetFPS(60);
 
     CreateDocumentsFolder();
-
+ 	new UIParticlesTest();
+ 	new SoundTest();
     new SaveImageTest();
     
     new RectSpriteTest();

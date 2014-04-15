@@ -85,7 +85,7 @@ void SoundTest::CreateInvalidSounds(PerfFuncData * data)
     TEST_VERIFY(soundEvent == 0);
     SafeRelease(soundEvent);
 #else
-	sound = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/null.ogg", FastName("soundEvent"));
+	soundEvent = SoundSystem::Instance()->CreateSoundEventFromFile("~res:/Sounds/null.ogg", FastName("soundEvent"));
     TEST_VERIFY(soundEvent == 0);
     SafeRelease(soundEvent);
 #endif

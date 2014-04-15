@@ -48,6 +48,7 @@
     <ClInclude Include="Classes\TransparentWebViewTest.h" />
     <ClInclude Include="Classes\UIListTest.h" />
     <ClInclude Include="Classes\UIMovieTest.h" />
+    <ClInclude Include="Classes\UIParticlesTest.h" />
     <ClInclude Include="Classes\UIScrollViewTest.h" />
   </ItemGroup>
   <ItemGroup>
@@ -87,6 +88,7 @@
     <ClCompile Include="Classes\TransparentWebViewTest.cpp" />
     <ClCompile Include="Classes\UIListTest.cpp" />
     <ClCompile Include="Classes\UIMovieTest.cpp" />
+    <ClCompile Include="Classes\UIParticlesTest.cpp" />
     <ClCompile Include="Classes\UIScrollViewTest.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
   </ItemGroup>
