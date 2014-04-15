@@ -376,8 +376,9 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
             const YamlNode * depthNode = emitterNode->Get("depth");
             if (depthNode)
                 _size.y = depthNode->AsFloat();
-            
-            size = new PropertyLineValue<Vector3>(_size);
+           
+            size = RefPtr< PropertyLine<Vector3> >(new PropertyLineValue<Vector3>(_size));
+           // size = new PropertyLineValue<Vector3>(_size);
         }        	
 
 

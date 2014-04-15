@@ -30,7 +30,7 @@
 #ifndef __DAVAENGINE_STATIC_SINGLETON_H__
 #define __DAVAENGINE_STATIC_SINGLETON_H__
 
-#include "Debug/DVAssert.h"
+//#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -57,7 +57,7 @@ public:
 	static T * Instance() 
 	{ 
 		static T instance;
-		DVASSERT(alive == true);
+//		DVASSERT(alive == true);
 		return &instance; 
 	}
 	static bool alive;

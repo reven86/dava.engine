@@ -7,6 +7,8 @@
 //
 
 #include "STLPoolAllocatorFactory.h"
+#include "Platform/Thread.h"
+
 
 
 namespace DAVA
@@ -21,12 +23,12 @@ namespace DAVA
 #ifdef __DAVAENGINE_DEBUG__
         Dump();
 #endif
-        std::vector<Pool*>::iterator itEnd = allocators.end();
+        /*std::vector<Pool*>::iterator itEnd = allocators.end();
         for (std::vector<Pool*>::iterator it = allocators.begin(); it != itEnd; ++it)
         {
             delete (*it);
         }
-        allocators.clear();
+        allocators.clear();*/
     }
     
     void STLPoolAllocatorFactory::Dump()
@@ -44,7 +46,7 @@ namespace DAVA
         //#endif //__DAVAENGINE_DEBUG__
     }
     
-    void * STLPoolAllocatorFactory::Allocate(unsigned int classSize,unsigned int countObject)
+    void * STLPoolAllocatorFactory::Allocate(unsigned int classSize,unsigned int countObject, bool inBase=false)
     {
      /*   if (LastAlloc)
         {
@@ -53,39 +55,51 @@ namespace DAVA
                 return LastAlloc;
             }
         }
-        unsigned int initSize=1024*1024;
-        Pool * alloc = allocators[classSize];
-        if ( 0 == alloc )
+*/
+        Pool * alloc = NULL;
+        unsigned int size = classSize*countObject + sizeof(Pool::Block);
+        std::vector<Pool*> allocators;
+        pthread_t threadID;
+        /*if ( Thread::IsMainThread())
         {
-           // alloc = new FixedSizePoolAllocator(classSize, 1);
+            inBase = true;
+        }*/
+        if (inBase)
+        {
+            allocators = baseAllocator;
             
-            if (classSize*countObject > initSize) {
-                initSize = classSize*countObject*2;
-            }
-            alloc = new Pool(initSize);
-            allocators[classSize] = alloc;
-            //LastAlloc = alloc;
         } else
         {
-            if (alloc->getSize()<classSize*countObject)
-            {
-                alloc = new Pool(classSize*countObject*2);
-                allocators[classSize] = alloc;
-            }
-        }*/
-        Pool * alloc = NULL;
-        unsigned int size =classSize*countObject + sizeof(Pool::Block);
+            threadID = pthread_self();
+            allocators = allocatorThread[threadID];
+        }
+//        printf("\n Allocate in Pool (%d) ... allocatorThread.size=%d \n", threadID,allocatorThread.size());
         for (unsigned int i=0;i<allocators.size();i++)
         {
             if (allocators[i]->getSize()>size) {
                 alloc=allocators[i];
                 break;
             }
+            
         }
         if (0 == alloc) {
             unsigned int minSize = 4096*1024;/* 1024*1024*/;
+            if (!inBase)
+            {
+                printf("\n Created new Pool (%d) ... allocatorThread.size=%lu \n", threadID,allocatorThread.size());
+            }
+            
             alloc = new Pool(size<minSize?minSize:size);
-            allocators.push_back(alloc);
+            
+            printf("\n%p %p \n",alloc->Blocks , reinterpret_cast<void *>(reinterpret_cast<char*>(alloc->Blocks) + alloc->poolSize));
+            
+            if (!inBase)
+            {
+                allocators.push_back(alloc);
+                allocatorThread[threadID] = allocators;
+            }else {
+                baseAllocator.push_back(alloc);
+            }
         }
         unsigned int allocateSize=classSize*countObject;
         if(allocateSize%16){
@@ -95,10 +109,23 @@ namespace DAVA
        //std::cout<<"stl alloc pointer"<<p;
         return alloc->allocate(allocateSize);;
     }
-    void STLPoolAllocatorFactory::Deallocate(void *p)
+    void STLPoolAllocatorFactory::Deallocate(void *p, bool inBase =false)
     {
-        //Pool * alloc = NULL;
-        //Pool::deallocate(p);
+        std::vector<Pool*> allocators;
+        pthread_t threadID;
+        /*if ( Thread::IsMainThread())
+        {
+            inBase = true;
+        }*/
+        if (inBase)
+        {
+            allocators = baseAllocator;
+            
+        } else
+        {
+            threadID = pthread_self();
+            allocators = allocatorThread[threadID];
+        }
         for (unsigned int i=0;i<allocators.size();i++)
         {
             if ((p>allocators[i]->Blocks)&&(p<reinterpret_cast<void *>(reinterpret_cast<char*>(allocators[i]->Blocks) + allocators[i]->poolSize)))

@@ -302,7 +302,11 @@ public:
 	 \brief Returns list of control children without internal controls.
 	 \returns list of control children without internal controls.
 	 */
+/*#if defined (__USE_STL_POOL_ALLOCATOR__)
+    virtual ListBase<UIControl* >& GetRealChildren();
+#else*/
 	virtual List<UIControl* >& GetRealChildren();
+//#endif
 
 protected:
 	enum eButtonDrawState

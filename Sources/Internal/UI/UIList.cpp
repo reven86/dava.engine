@@ -318,10 +318,17 @@ void UIList::Update(float32 timeElapsed)
 		r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
 	}
 	scrollContainer->SetRect(r);
-	
-	List<UIControl*>::const_iterator it;
 	Rect viewRect = GetGeometricData().GetUnrotatedRect();//GetRect(TRUE);
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+	ListBase<UIControl*>::const_iterator it;
+	
+	const ListBase<UIControl*> &scrollList = scrollContainer->GetChildren();
+#else
+	List<UIControl*>::const_iterator it;
+	
 	const List<UIControl*> &scrollList = scrollContainer->GetChildren();
+
+#endif
 	List<UIControl*> removeList;
 	
 	//removing invisible elements
@@ -639,7 +646,13 @@ UIListCell* UIList::GetReusableCell(const String &cellIdentifier)
 	
 const List<UIControl*> &UIList::GetVisibleCells()
 {
-	return scrollContainer->GetChildren();	
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    List<UIControl*> listChilds;
+    copy(childs.begin(),childs.end(),back_inserter(listChilds));
+    return listChilds;
+#else
+    return scrollContainer->GetChildren();
+#endif
 }
 
 	

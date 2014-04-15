@@ -1,20 +1,20 @@
 //
-//  STLPoolAllocator.h
+//  STLBasePoolAllocator.h
 //  Framework
 //
 //  Created by Sergey Bogdanov on 3/7/14.
 //
 //
 
-#ifndef __Framework__STLPoolAllocator__
-#define __Framework__STLPoolAllocator__
+#ifndef __Framework__STLBasePoolAllocator__
+#define __Framework__STLBasePoolAllocator__
 
 #include <istream>
 #include "Base/STLPoolAllocatorFactory.h"
 
 
 
-template <class T> class STLPoolAllocator
+template <class T> class STLBasePoolAllocator
 {
 public:
     typedef T                 value_type;
@@ -28,20 +28,20 @@ public:
     template <class U>
     struct rebind
     {
-        typedef STLPoolAllocator<U> other;
+        typedef STLBasePoolAllocator<U> other;
     };
     
-    STLPoolAllocator()
+    STLBasePoolAllocator()
     {
     }
-    STLPoolAllocator(const STLPoolAllocator&)
+    STLBasePoolAllocator(const STLBasePoolAllocator&)
     {
     }
     template <class U>
-    STLPoolAllocator(const STLPoolAllocator<U>&)
+    STLBasePoolAllocator(const STLBasePoolAllocator<U>&)
     {
     }
-    ~STLPoolAllocator()
+    ~STLBasePoolAllocator()
     {
     }
     
@@ -60,8 +60,8 @@ public:
         if (DAVA::STLPoolAllocatorFactory::Instance() )
         {
             
-             return static_cast<pointer>(DAVA::STLPoolAllocatorFactory::Instance()->Allocate(sizeof(T),n,false));
-        } 
+            return static_cast<pointer>(DAVA::STLPoolAllocatorFactory::Instance()->Allocate(sizeof(T),n,true));
+        }
         
         void* p = std::malloc(n * sizeof(T));
         if (!p)
@@ -75,7 +75,7 @@ public:
     {
         if (DAVA::STLPoolAllocatorFactory::Instance() )
         {
-            return DAVA::STLPoolAllocatorFactory::Instance()->Deallocate(p,false);
+            return DAVA::STLPoolAllocatorFactory::Instance()->Deallocate(p,true);
         }
         std::free(p);
     }
@@ -95,10 +95,10 @@ public:
     }
     
 private:
-    void operator=(const STLPoolAllocator&);
+    void operator=(const STLBasePoolAllocator&);
 };
 
-template<> class STLPoolAllocator<void>
+template<> class STLBasePoolAllocator<void>
 {
     typedef void        value_type;
     typedef void*       pointer;
@@ -107,25 +107,25 @@ template<> class STLPoolAllocator<void>
     template <class U>
     struct rebind
     {
-        typedef STLPoolAllocator<U> other;
+        typedef STLBasePoolAllocator<U> other;
     };
 };
 
 
 template <class T>
-inline bool operator==(const STLPoolAllocator<T>&,
-                       const STLPoolAllocator<T>&)
+inline bool operator==(const STLBasePoolAllocator<T>&,
+                       const STLBasePoolAllocator<T>&)
 {
     return true;
 }
 
 template <class T>
-inline bool operator!=(const STLPoolAllocator<T>&,
-                       const STLPoolAllocator<T>&)
+inline bool operator!=(const STLBasePoolAllocator<T>&,
+                       const STLBasePoolAllocator<T>&)
 {
     return false;
 }
 
 
 
-#endif /* defined(__Framework__STLPoolAllocator__) */
+#endif /* defined(__Framework__STLBasePoolAllocator__) */

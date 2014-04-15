@@ -44,7 +44,7 @@ public:
         Blocks->free= 1;
         Blocks->blockSize = poolSize-sizeof(Block);
         std::cout<<std::endl<<"New pool"<<size;
-        pthread_mutex_init(&PoolMutex, 0);
+        // pthread_mutex_init(&PoolMutex, 0);
     };
     ~Pool()
     
@@ -57,7 +57,7 @@ public:
     
     void* allocate(size_t size)
     {
-        pthread_mutex_lock(&PoolMutex);
+        // pthread_mutex_lock(&PoolMutex);
         if(size>poolSize- sizeof(Block)) {
             std::cout<<std::endl<<"size="<<size;
            /* size_=size+sizeof(Block);
@@ -68,13 +68,17 @@ public:
         Block *b = Blocks;
 
         while ((b->free==0)||(b->blockSize<size)) {
-            if(b->next==NULL) grow(b);
-                b=b->next;
+            if(b->next==NULL)
+            {
+                grow(b);
+                //return 0;
+            }
+            b=b->next;
 
         }
         if(b->blockSize - size < 2*sizeof(Block)){
             b->free=0;
-            pthread_mutex_unlock(&PoolMutex);
+            // pthread_mutex_unlock(&PoolMutex);
             return reinterpret_cast<char *>(b) + sizeof(Block);
         }
         else{
@@ -90,7 +94,7 @@ public:
             
             b->blockSize = size;
             newBlock->free = 1;
-            pthread_mutex_unlock(&PoolMutex);
+            // pthread_mutex_unlock(&PoolMutex);
             return reinterpret_cast<char *>(b) + sizeof(Block);
         }
         
@@ -98,15 +102,20 @@ public:
     
     void static deallocate(void *p, size_t = 0)
     {
-        pthread_mutex_lock(&PoolMutex);
-        if(!p) return;
+        // pthread_mutex_lock(&PoolMutex);
+        if(!p){
+          // pthread_mutex_unlock(&PoolMutex);
+          return;
+        }
+
         Block *b = reinterpret_cast<Block *>(static_cast<char*>(p) - sizeof(Block));
+
         if(b->prev && b->next){
             if(b->prev->free && b->next->free){
                 b->prev->blockSize += b->blockSize + b->next->blockSize + 2*sizeof(Block);
                 b->prev->next = b->next->next;
                 if(b->next->next)b->next->next->prev = b->prev;
-                pthread_mutex_unlock(&PoolMutex);
+                // pthread_mutex_unlock(&PoolMutex);
                 return;
             }
         }
@@ -116,7 +125,7 @@ public:
                 b->prev->next=b->next;
                 if(b->next) b->next->prev = b->prev;
                 b->free= 1;
-                pthread_mutex_unlock(&PoolMutex);
+                // pthread_mutex_unlock(&PoolMutex);
                 return;
             }
         }
@@ -126,12 +135,12 @@ public:
                 b->next = b->next->next;
                 if(b->next) b->next->prev = b;
                 b->free= 1;
-                pthread_mutex_unlock(&PoolMutex);
+                // pthread_mutex_unlock(&PoolMutex);
                 return;
             }
         }
         b->free = 1;
-        pthread_mutex_unlock(&PoolMutex);
+       // pthread_mutex_unlock(&PoolMutex);
         
     }
     void dump()

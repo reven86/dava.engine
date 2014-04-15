@@ -83,7 +83,8 @@ public:
 	virtual void Invalidate();
 
 
-	static List<RenderResource*> resourceList;
+	//static List<RenderResource*> resourceList;
+    static std::list<RenderResource*> resourceList;
     static Mutex resourceListMutex;
 	static void LostAllResources();
 	static void InvalidateAllResources();

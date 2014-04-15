@@ -238,6 +238,7 @@ void QuadTree::AddRenderObject(RenderObject * renderObject)
 	if (!worldInitialized)
 	{
 		worldInitObjects.push_back(renderObject);
+        Logger::FrameworkDebug("worldInitObjects.push_back");
 		return;
 	}
 

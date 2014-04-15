@@ -483,8 +483,13 @@ AABBox3 MeshInstanceNode::GetWTMaximumBoundingBoxSlow()
 {
 	AABBox3 retBBox = transformedBox;
     
-    const Vector<Entity*>::iterator & itEnd = children.end();
-	for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    VectorBase<Entity*>::const_iterator end = children.end();
+    for (VectorBase<Entity*>::iterator it = children.begin(); it != end; ++it)
+#else
+        Vector<Entity*>::const_iterator end = children.end();
+    for (Vector<Entity*>::iterator it = children.begin(); it != end; ++it)
+#endif
     {
         AABBox3 box = (*it)->GetWTMaximumBoundingBoxSlow();
         if(  (AABBOX_INFINITY != box.min.x && AABBOX_INFINITY != box.min.y && AABBOX_INFINITY != box.min.z)

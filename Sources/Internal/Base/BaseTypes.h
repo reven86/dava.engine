@@ -32,6 +32,7 @@
 
 #include "Base/TemplateHelpers.h"
 #include "Base/STLPoolAllocator.h"
+#include "Base/STLBasePoolAllocator.h"
 // debug definition
 #if defined(DAVA_DEBUG)
 #define __DAVAENGINE_DEBUG__
@@ -49,9 +50,9 @@
 #if TARGET_OS_IPHONE
 	#if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
 		#define __DAVAENGINE_IPHONE__
-        #define __USE_MEMORY_MAP_FOR_TEXTURE__
-        #define __USE_OWN_ALLOCATORS__
-        #define __USE_FIXED_STRING_ALLOCATOR__
+        //#define __USE_MEMORY_MAP_FOR_TEXTURE__
+        //#define __USE_OWN_ALLOCATORS__
+        //#define __USE_FIXED_STRING_ALLOCATOR__
         //#define __USE_STL_POOL_ALLOCATOR__
 	#endif
 #endif
@@ -205,6 +206,7 @@ typedef std::string		String;
  
 #if defined (__USE_STL_POOL_ALLOCATOR__)
 template < typename E > class List : public std::list< E, STLPoolAllocator<E> > {};
+template < typename E > class ListBase : public std::list< E, STLBasePoolAllocator<E> > {};
 #else
 template < typename E > class List : public std::list< E > {};
 #endif
@@ -218,6 +220,15 @@ public:
     explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E, STLPoolAllocator<E> >(n, value) {}
     Vector() : std::vector< E, STLPoolAllocator<E> >() {}
 };
+    
+    template < typename E > class VectorBase : public std::vector< E, STLBasePoolAllocator<E> >
+    {
+    public:
+        typedef E	   value_type;
+        typedef size_t size_type;
+        explicit VectorBase(size_type n, const value_type & value = value_type()) : std::vector< E, STLBasePoolAllocator<E> >(n, value) {}
+        VectorBase() : std::vector< E, STLBasePoolAllocator<E> >() {}
+    };
 #else
 template < typename E > class Vector : public std::vector< E >
 {
@@ -241,6 +252,12 @@ template<	class _Kty,
     class _Pr = std::less<_Kty>,
     class _Alloc = STLPoolAllocator<std::pair<const _Kty, _Ty> > >
 class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+
+    template<	class _Kty,
+    class _Ty,
+    class _Pr = std::less<_Kty>,
+    class _Alloc = STLBasePoolAllocator<std::pair<const _Kty, _Ty> > >
+    class MapBase : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
 #else
 template<	class _Kty,
 	class _Ty,

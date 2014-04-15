@@ -50,7 +50,11 @@ public:
     void RemoveAllEvents(Entity * entity);
     
 private:
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    Map<Entity*, ListBase<uint32> > eventsCache;
+#else
     Map<Entity*, List<uint32> > eventsCache;
+#endif
 
 };
 

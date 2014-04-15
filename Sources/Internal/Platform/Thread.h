@@ -185,6 +185,14 @@ private:
             fixedAllocatorBuffers[threadID] = NULL;
         }
 #endif
+#if defined(__USE_STL_POOL_ALLOCATOR__)
+        printf("\n Delete Pool and Thread (%d) ... allocatorThread.size=%lu \n", threadId.internalTid,allocatorThread.size());
+        std::vector<Pool*> allocators = allocatorThread[threadId.internalTid];
+        for (uint32 i=0; i<allocators.size(); i++) {
+            SafeDelete(allocators[i]);
+        }
+        allocators.clear();
+#endif
     };
     
 	Thread() {};

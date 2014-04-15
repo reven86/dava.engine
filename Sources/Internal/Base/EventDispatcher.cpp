@@ -50,7 +50,11 @@ void EventDispatcher::AddEvent(int32 eventType, const Message &msg)
 	
 bool EventDispatcher::RemoveEvent(int32 eventType, const Message &msg)
 {
+#if !defined (__USE_STL_POOL_ALLOCATOR__)
 	List<Event>::iterator it = events.begin();
+#else
+    std::list<Event>::iterator it = events.begin();
+#endif
 	for(; it != events.end(); it++)
 	{
 		//if(Event(*it).msg == msg && Event(*it).eventType == eventType)
@@ -77,7 +81,11 @@ void EventDispatcher::PerformEvent(int32 eventType)
 
 void EventDispatcher::PerformEvent(int32 eventType, BaseObject *eventParam)
 {
+#if !defined (__USE_STL_POOL_ALLOCATOR__)
 	List<Event>::iterator it = events.begin();
+#else
+    std::list<Event>::iterator it = events.begin();
+#endif
 	for(; it != events.end(); it++)
 	{
 		if((*it).eventType == eventType)
@@ -94,7 +102,11 @@ void EventDispatcher::PerformEventWithData(int32 eventType, void *callerData)
 	
 void EventDispatcher::PerformEventWithData(int32 eventType, BaseObject *eventParam, void *callerData)
 {
+#if !defined (__USE_STL_POOL_ALLOCATOR__)
 	List<Event>::iterator it = events.begin();
+#else
+    std::list<Event>::iterator it = events.begin();
+#endif
 	for(; it != events.end(); it++)
 	{
 		if((*it).eventType == eventType)
@@ -107,7 +119,11 @@ void EventDispatcher::PerformEventWithData(int32 eventType, BaseObject *eventPar
 void EventDispatcher::CopyDataFrom(EventDispatcher *srcDispatcher)
 {
 	events.clear();
-	List<Event>::iterator it = srcDispatcher->events.begin();
+#if !defined (__USE_STL_POOL_ALLOCATOR__)
+	List<Event>::iterator it = events.begin();
+#else
+    std::list<Event>::iterator it = events.begin();
+#endif
 	for(; it != srcDispatcher->events.end(); it++)
 	{
 		events.push_back(*it);

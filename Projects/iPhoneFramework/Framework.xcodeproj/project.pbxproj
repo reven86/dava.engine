@@ -980,6 +980,7 @@
 		E55431A018E4644600E20E51 /* STLPoolAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STLPoolAllocator.h; sourceTree = "<group>"; };
 		E55431A118E4644600E20E51 /* STLPoolAllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = STLPoolAllocatorFactory.cpp; sourceTree = "<group>"; };
 		E55431A218E4644600E20E51 /* STLPoolAllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STLPoolAllocatorFactory.h; sourceTree = "<group>"; };
+		E5775E7818F3DBF40076520A /* STLBasePoolAllocator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = STLBasePoolAllocator.h; sourceTree = "<group>"; };
 		E80D2FB2164D51A100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81F2B0416BFF65700C4545E /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
 		E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
@@ -1781,6 +1782,7 @@
 				E8B3C7C416B9326D002BD35F /* BaseTypes.h */,
 				E554319F18E4644600E20E51 /* Pool.h */,
 				E55431A018E4644600E20E51 /* STLPoolAllocator.h */,
+				E5775E7818F3DBF40076520A /* STLBasePoolAllocator.h */,
 				E55431A118E4644600E20E51 /* STLPoolAllocatorFactory.cpp */,
 				E55431A218E4644600E20E51 /* STLPoolAllocatorFactory.h */,
 				E8B3C7C516B9326D002BD35F /* Data.cpp */,

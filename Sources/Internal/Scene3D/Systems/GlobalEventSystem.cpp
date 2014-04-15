@@ -40,7 +40,49 @@ void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, u
 {
     scene->GetEventSystem()->GroupNotifyAllSystems(entities, event);
 }
-
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    void GlobalEventSystem::Event(Entity * entity, uint32 event)
+    {
+        if (entity)
+        {
+            Scene * scene = entity->GetScene();
+            if (scene)
+            {
+                scene->GetEventSystem()->NotifyAllSystems(entity, event);
+                return;
+            }
+            
+            ListBase<uint32> & events = eventsCache[entity];
+            events.push_back(event);
+        }
+        
+    }
+    
+    void GlobalEventSystem::PerformAllEventsFromCache(Entity * entity)
+    {
+        Map<Entity*, ListBase<uint32> >::iterator it = eventsCache.find(entity);
+        if (it != eventsCache.end())
+        {
+            ListBase<uint32> & list = it->second;
+            
+            for (ListBase<uint32>::iterator listIt = list.begin(); listIt != list.end();  ++listIt)
+            {
+                entity->GetScene()->GetEventSystem()->NotifyAllSystems(entity, *listIt);
+            }
+            
+            eventsCache.erase(it);
+        }
+    }
+    
+    void GlobalEventSystem::RemoveAllEvents(Entity * entity)
+    {
+        Map<Entity*, ListBase<uint32> >::iterator it = eventsCache.find(entity);
+        if (it != eventsCache.end())
+        {
+            eventsCache.erase(it);
+        }
+    }
+#else
 void GlobalEventSystem::Event(Entity * entity, uint32 event)
 {
     if (entity)
@@ -82,5 +124,5 @@ void GlobalEventSystem::RemoveAllEvents(Entity * entity)
         eventsCache.erase(it);
     }
 }
-    
+#endif
 }

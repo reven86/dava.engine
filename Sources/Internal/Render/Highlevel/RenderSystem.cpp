@@ -75,7 +75,8 @@ RenderSystem::~RenderSystem()
 
     SafeRelease(globalMaterial);
     
-    SafeDelete(renderHierarchy);	
+    SafeDelete(renderHierarchy);
+	SafeDelete(mainRenderPass);
 }
     
 

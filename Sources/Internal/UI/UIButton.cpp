@@ -1068,6 +1068,20 @@ namespace DAVA
 		      
 		return node;
 	}
+/*#if defined (__USE_STL_POOL_ALLOCATOR__)
+    ListBase<UIControl* >& UIButton::GetRealChildren()
+	{
+		ListBase<UIControl* >& realChildren = UIControl::GetRealChildren();
+		for (uint32 i = 0; i < DRAW_STATE_COUNT; ++i)
+		{
+			realChildren.remove(stateTexts[i]);
+		}
+        
+		return realChildren;
+	}
+
+#else*/
+	
 
 	List<UIControl* >& UIButton::GetRealChildren()
 	{
@@ -1079,7 +1093,7 @@ namespace DAVA
 
 		return realChildren;
 	}
-	
+//#endif
 	void UIButton::UpdateStateTextControlSize()
 	{
 		// Current control rect

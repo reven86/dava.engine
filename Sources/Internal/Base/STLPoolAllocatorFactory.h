@@ -12,26 +12,30 @@
 
 #include <istream>
 #include <vector>
-#include "Base/Singleton.h"
+#include <map>
+#include "Base/StaticSingleton.h"
 #include "Base/Pool.h"
 
 
+std::map< pthread_t , std::vector<Pool*> > allocatorThread;
+std::vector<Pool*> baseAllocator;
 
 namespace DAVA
 {
     
-    class STLPoolAllocatorFactory : public Singleton<STLPoolAllocatorFactory>
+    class STLPoolAllocatorFactory : public StaticSingleton<STLPoolAllocatorFactory>
     {
     public:
         STLPoolAllocatorFactory();
         virtual ~STLPoolAllocatorFactory();
         
-        void * Allocate(unsigned int classSize ,unsigned int countObject);
-        void Deallocate(void *p);
+        void * Allocate(unsigned int classSize ,unsigned int countObject, bool inBase);
+        void Deallocate(void *p, bool inBase);
         void Dump();
-        
+        //std::map< pthread_t , std::vector<Pool*> > allocatorThread;
     private:
-        std::vector<Pool*> allocators;
+        //std::vector<Pool*> allocators;
+        
         Pool * LastAlloc;
     };
     

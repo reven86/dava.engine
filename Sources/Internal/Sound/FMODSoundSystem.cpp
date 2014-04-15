@@ -222,6 +222,7 @@ void SoundSystem::ParseSFXConfig(const FilePath & configPath)
             }
         }
     }
+    SafeRelease(parser);
 }
 
 void SoundSystem::LoadFEV(const FilePath & filePath)
