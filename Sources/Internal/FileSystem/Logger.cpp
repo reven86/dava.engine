@@ -29,10 +29,7 @@
 
 #include "FileSystem/Logger.h"
 #include "FileSystem/FileSystem.h"
-#include "Debug/DVAssert.h"
 #include <stdarg.h>
-
-#include "Utils/Utils.h"
 
 namespace DAVA 
 {
@@ -45,12 +42,35 @@ namespace DAVA
 
 #endif
 
+Logger::Logger()
+: logLevel(LEVEL_ALL)
+{ }
+
+Logger::~Logger()
+{
+	for(size_t i = 0; i < logOutputs.size(); ++i)
+	{
+		delete logOutputs[i];
+	}
+}
+	
+eLogLevel Logger::GetLogLevel()
+{
+	return Logger::Instance()->logLevel;
+}
+
+void Logger::SetLogLevel(eLogLevel ll)
+{
+	Logger::Instance()->logLevel = ll;
+}
+
 void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 {
-    if(!text || text[0] == '\0') return;
-    
-	char tmp[4096] = {0};
+    if(NULL != text && text[0] != '\0')
+    {
 
+    }
+    
 	vsnprintf(tmp, sizeof(tmp) - 2, text, li);
 	strcat(tmp, "\n");
 
@@ -108,46 +128,6 @@ void Logger::Logv(eLogLevel ll, const char16* text, va_list li)
 		}
 
 	}
-}
-
-static const char8 * logLevelString[5] =
-{	
-	"framwork",
-	"debug",
-	"info",
-	"warning",
-	"error" 
-};
-	
-Logger::Logger()
-{
-	logLevel = LEVEL_FRAMEWORK;
-	SetLogFilename(String());
-    
-    consoleModeEnabled = false;
-}
-
-Logger::~Logger()
-{
-	for(size_t i = 0; i < customOutputs.size(); ++i)
-	{
-		delete customOutputs[i];
-	}
-}
-	
-Logger::eLogLevel Logger::GetLogLevel()
-{
-	return logLevel;
-}
-	
-const char8 * Logger::GetLogLevelString(eLogLevel ll)
-{
-	return logLevelString[ll];
-}
-	
-void Logger::SetLogLevel(eLogLevel ll)
-{
-	logLevel = ll;
 }
 	
 void Logger::Log(eLogLevel ll, const char8* text, ...)
