@@ -52,6 +52,8 @@ GLuint Shader::activeProgram = 0;
 Shader::Shader()
 : RenderResource()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_2_0 || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL);
     
     vertexShader = 0;
@@ -236,6 +238,8 @@ const char * Shader::GetUniformTypeSLName(eUniformType type)
 
 void Shader::ClearLastBindedCaches()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     for (uint32 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform * currentUniform = autobindUniforms[k];
@@ -245,6 +249,8 @@ void Shader::ClearLastBindedCaches()
 
 int32 Shader::FindUniformIndexByName(const FastName & name)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     for (int32 k = 0; k < activeUniforms; ++k)
     {
         if (GET_UNIFORM(k)->name == name)
@@ -258,6 +264,8 @@ int32 Shader::FindUniformIndexByName(const FastName & name)
 
 int32 Shader::GetAttributeIndexByName(const FastName & name)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     for (int32 k = 0; k < VERTEX_FORMAT_STREAM_MAX_COUNT; ++k)
         if (name == attributeStrings[k]) return k;
     return -1;
@@ -270,11 +278,15 @@ void Shader::SetDefines(const String & _defines)
    
 Shader::~Shader()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     ReleaseShaderData();
 }
 
 void Shader::ReleaseShaderData()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     SafeDeleteArray(attributeNames);
     //SafeDeleteArray(uniforms);
     SafeDeleteArray(uniformOffsets);
@@ -302,6 +314,8 @@ bool Shader::IsReady()
 
 void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     bool silentDelete = (param != NULL);
     
     if(silentDelete &&
@@ -570,6 +584,8 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
 
 bool Shader::Recompile(bool silentDelete)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
                                                            Message(this, &Shader::RecompileInternal, (silentDelete) ? this : NULL));
     JobInstanceWaiter waiter(job);
@@ -580,6 +596,8 @@ bool Shader::Recompile(bool silentDelete)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, int32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(value) == false)
@@ -590,6 +608,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, int32 value)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, float32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(value) == false)
@@ -600,6 +620,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, float32 value)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector2 & vector)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(vector) == false)
@@ -610,6 +632,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector2 & vector)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector3 & vector)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(vector) == false)
@@ -620,6 +644,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector3 & vector)
 
 void Shader::SetUniformColor3ByIndex(int32 uniformIndex, const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCacheColor3(color) == false)
@@ -630,6 +656,8 @@ void Shader::SetUniformColor3ByIndex(int32 uniformIndex, const Color & color)
 
 void Shader::SetUniformColor4ByIndex(int32 uniformIndex, const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCacheColor4(color) == false)
@@ -640,6 +668,8 @@ void Shader::SetUniformColor4ByIndex(int32 uniformIndex, const Color & color)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector4 & vector)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(vector) == false)
@@ -650,6 +680,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Vector4 & vector)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, const Matrix4 & matrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(matrix) == false)
@@ -660,6 +692,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Matrix4 & matrix)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, const Matrix3 & matrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
     if(currentUniform->ValidateCache(matrix) == false)
@@ -670,6 +704,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, const Matrix3 & matrix)
 
 void Shader::SetUniformValueByIndex(int32 uniformIndex, eUniformType uniformType, uint32 arraySize, void * data)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(uniformIndex >= 0 && uniformIndex < activeUniforms);
     Uniform* currentUniform = GET_UNIFORM(uniformIndex);
 #ifdef USE_CRC_COMPARE
@@ -739,6 +775,8 @@ void Shader::SetUniformValueByIndex(int32 uniformIndex, eUniformType uniformType
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, int32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCache(value) == false)
     {
         RENDER_VERIFY(glUniform1i(currentUniform->location, value));
@@ -747,6 +785,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, int32 value)
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, float32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCache(value) == false)
     {
         RENDER_VERIFY(glUniform1f(currentUniform->location, value));
@@ -755,6 +795,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, float32 value)
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector2 & vector)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCache(vector) == false)
     {
         RENDER_VERIFY(glUniform2fv(currentUniform->location, 1, &vector.x));
@@ -763,6 +805,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector2 & v
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector3 & vector)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCache(vector) == false)
     {
         RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, &vector.x));
@@ -771,6 +815,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector3 & v
 
 void Shader::SetUniformColor3ByUniform(Uniform* currentUniform, const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCacheColor3(color) == false)
     {
         RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, &color.r));
@@ -779,6 +825,8 @@ void Shader::SetUniformColor3ByUniform(Uniform* currentUniform, const Color & co
 
 void Shader::SetUniformColor4ByUniform(Uniform* currentUniform, const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCacheColor4(color) == false)
     {
         RENDER_VERIFY(glUniform4fv(currentUniform->location, 1, &color.r));
@@ -787,6 +835,8 @@ void Shader::SetUniformColor4ByUniform(Uniform* currentUniform, const Color & co
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector4 & vector)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCache(vector) == false)
     {
         RENDER_VERIFY(glUniform4fv(currentUniform->location, 1, &vector.x));
@@ -795,6 +845,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Vector4 & v
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Matrix4 & matrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCache(matrix) == false)
     {
         RENDER_VERIFY(glUniformMatrix4fv(currentUniform->location, 1, GL_FALSE, matrix.data));
@@ -803,6 +855,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Matrix4 & m
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Matrix3 & matrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if(currentUniform->ValidateCache(matrix) == false)
     {
         RENDER_VERIFY(glUniformMatrix3fv(currentUniform->location, 1, GL_FALSE, matrix.data));
@@ -811,6 +865,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, const Matrix3 & m
 
 void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType uniformType, uint32 arraySize, void * data)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     int32 size = GetUniformTypeSize((eUniformType)currentUniform->type) * currentUniform->size;
     if(currentUniform->ValidateCache(data, size) == false)
@@ -879,6 +935,8 @@ void Shader::SetUniformValueByUniform(Uniform* currentUniform, eUniformType unif
 /* Link a program with all currently attached shaders */
 GLint Shader::LinkProgram(GLuint prog)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     GLint status;
     
     RENDER_VERIFY(glLinkProgram(prog));
@@ -903,6 +961,8 @@ GLint Shader::LinkProgram(GLuint prog)
 
 void Shader::DeleteShaders()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DVASSERT(vertexShader != 0);
     DVASSERT(fragmentShader != 0);
     //DVASSERT(program != 0);
@@ -920,6 +980,8 @@ void Shader::DeleteShaders()
 
 void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     DeleteShaderContainer * container = (DeleteShaderContainer*) param;
     DVASSERT(container);
 
@@ -939,6 +1001,8 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
 /* Create and compile a shader from the provided source(s) */
 GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLchar * sources, const String & defines)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     GLint status;
     //const GLchar *sources;
     
@@ -987,6 +1051,8 @@ GLint Shader::CompileShader(GLuint *shader, GLenum type, GLint count, const GLch
 
 void Shader::Unbind()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if (activeProgram != 0)
     {
         RENDER_VERIFY(glUseProgram(0));
@@ -1001,6 +1067,8 @@ bool Shader::IsAutobindUniform(eShaderSemantic semantic)
 
 void Shader::Bind()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if (activeProgram != program)
     {
         RENDERER_UPDATE_STATS(shaderBindCount++);
@@ -1012,6 +1080,8 @@ void Shader::Bind()
     
 void Shader::BindDynamicParameters()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     for(uint8 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform* currentUniform = autobindUniforms[k];
@@ -1211,6 +1281,8 @@ void Shader::BindDynamicParameters()
 
 void Shader::Dump()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     Logger::FrameworkDebug("Attributes: ");
     for (int32 k = 0; k < activeAttributes; ++k)
     {
@@ -1245,6 +1317,8 @@ Shader * Shader::CompileShader(const FastName & assetName,
                                uint32 fragmentShaderDataSize,
                                const FastNameSet & definesSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     Shader * shader = new Shader();
     shader->assetName = assetName;
     shader->vertexShaderData = SafeRetain(vertexShaderData);
@@ -1274,6 +1348,8 @@ void Shader::Reload(DAVA::Data *vertexShaderData,
                     uint8 *fragmentShaderDataStart,
                     uint32 fragmentShaderDataSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     ReleaseShaderData();
     
     this->vertexShaderData = SafeRetain(vertexShaderData);
@@ -1299,6 +1375,8 @@ void Shader::Reload(DAVA::Data *vertexShaderData,
 #if defined(__DAVAENGINE_ANDROID__)
 void Shader::Lost()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     RenderResource::Lost();
     
     //DeleteShaders();
@@ -1315,6 +1393,8 @@ void Shader::Lost()
 
 void Shader::Invalidate()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     RenderResource::Invalidate();
     Recompile();
     
@@ -1326,6 +1406,8 @@ void Shader::Invalidate()
 
 bool Shader::Uniform::ValidateCache(int32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value, sizeof(int32));
 #else
@@ -1343,6 +1425,8 @@ bool Shader::Uniform::ValidateCache(int32 value)
 
 bool Shader::Uniform::ValidateCache(float32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value, sizeof(float32));
 #else
@@ -1360,6 +1444,8 @@ bool Shader::Uniform::ValidateCache(float32 value)
 
 bool Shader::Uniform::ValidateCache(const Vector2 & value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.data, sizeof(float32) * 2);
 #else
@@ -1378,6 +1464,8 @@ bool Shader::Uniform::ValidateCache(const Vector2 & value)
 
 bool Shader::Uniform::ValidateCache(const Vector3 & value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.data, sizeof(float32) * 3);
 #else
@@ -1396,6 +1484,8 @@ bool Shader::Uniform::ValidateCache(const Vector3 & value)
 
 bool Shader::Uniform::ValidateCacheColor3(const Color & value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.color, sizeof(float32) * 3);
 #else
@@ -1416,6 +1506,8 @@ bool Shader::Uniform::ValidateCacheColor3(const Color & value)
 
 bool Shader::Uniform::ValidateCacheColor4(const Color & value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.color, sizeof(float32) * 4);
 #else
@@ -1437,6 +1529,8 @@ bool Shader::Uniform::ValidateCacheColor4(const Color & value)
 
 bool Shader::Uniform::ValidateCache(const Vector4 & value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     return ValidateCache(&value.data, sizeof(float32) * 4);
 #else
@@ -1455,6 +1549,8 @@ bool Shader::Uniform::ValidateCache(const Vector4 & value)
 
 bool Shader::Uniform::ValidateCache(const Matrix4 & value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
 #ifdef USE_NEON_MATRIX_COMPARE
     uint64 a0;// = (uint32)value._00 << 32 | (uint32)value._11;
@@ -1539,6 +1635,8 @@ bool Shader::Uniform::ValidateCache(const Matrix4 & value)
 
 bool Shader::Uniform::ValidateCache(const Matrix3 & value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     uint32 crc32 = CRC32::ForBuffer((const char*)value.data, sizeof(float32) * 9);
     bool result = crc == crc32;
@@ -1561,6 +1659,8 @@ bool Shader::Uniform::ValidateCache(const Matrix3 & value)
 
 bool Shader::Uniform::ValidateCache(const void* value, uint16 valueSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 #ifdef USE_CRC_COMPARE
     uint32 crc32 = CRC32::ForBuffer((const char*)value, valueSize);
     bool result = crc == crc32;

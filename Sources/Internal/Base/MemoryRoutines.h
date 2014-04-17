@@ -16,7 +16,7 @@
 #if defined(__USE_OWN_ALLOCATORS__)
 namespace DAVA {
 
-class Allocator
+class AllocatorBase
 {
 public:
     virtual void* New(size_t size) = 0;
@@ -27,14 +27,14 @@ class AllocatorsStack : public StaticSingleton<AllocatorsStack>
 {
 public:
     AllocatorsStack();
-    void PushAllocator(Allocator *allocator);
+    void PushAllocator(AllocatorBase *allocator);
     void PopAllocator();
     
     void * Allocate(size_t _size);
     bool Deallocate(void* ptr);
     
 private:
-    Map<pthread_t, Stack<Allocator*>*>allocatorsStack;
+    Map<pthread_t, Stack<AllocatorBase*>*>allocatorsStack;
 };
 
 }

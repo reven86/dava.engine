@@ -50,9 +50,13 @@
 #if TARGET_OS_IPHONE
 	#if !defined(__DAVAENGINE_IPHONE__) // for old projects we check if users defined it
 		#define __DAVAENGINE_IPHONE__
-        //#define __USE_MEMORY_MAP_FOR_TEXTURE__
-        //#define __USE_OWN_ALLOCATORS__
-        //#define __USE_FIXED_STRING_ALLOCATOR__
+        #define __USE_MEMORY_MAP_FOR_TEXTURE__
+        #define __USE_OWN_ALLOCATORS__
+        #define __USE_FIXED_STRING_ALLOCATOR__
+        #define ENABLE_MEMORY_MANAGER
+        #define ENABLE_MEMORY_INFO_TRACKING
+        //#define ENABLE_HEAP_CHECK
+        //#define ENABLE_MEMORY_BACKTRACE
         //#define __USE_STL_POOL_ALLOCATOR__
 	#endif
 #endif

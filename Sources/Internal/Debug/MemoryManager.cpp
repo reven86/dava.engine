@@ -35,6 +35,8 @@
 #include <assert.h>
 #include "Base/Mallocator.h"
 #include "Utils/StringFormat.h"
+#include "Base/MemoryRoutines.h"
+#include "Platform/Mutex.h"
 
 
 #ifdef ENABLE_MEMORY_MANAGER
@@ -45,15 +47,17 @@
 
 namespace DAVA 
 {
-        
+    
 struct MemoryBlock
 {
     MemoryBlock * next;             // 8 or 4
     MemoryBlock * prev;             // 8 or 4
+#if defined(ENABLE_MEMORY_BACKTRACE)
     Backtrace   * backtrace;        // 8
+#endif
     uint32        size;             // 4
     uint32        flags;            // 4
-#if defined(_WIN32)
+#if defined(_WIN32) || ( defined(__DAVAENGINE_IPHONE__) && defined(ENABLE_MEMORY_BACKTRACE) )
 	uint32		  align[3];
 #endif
     
@@ -130,7 +134,11 @@ struct BackTraceLessCompare
 class MemoryManagerImpl : public MemoryManager
 {
 public:
+#if defined(ENABLE_HEAP_CHECK)
     static const uint32 CHECK_SIZE = 32;
+#else
+    static const uint32 CHECK_SIZE = 0;
+#endif
     static const uint32 CHECK_CODE_HEAD = 0xCEECC0DE;
     static const uint32 CHECK_CODE_TAIL = 0xFEEDC0DE;
     static const uint32 FROM_PTR_TO_MEMORY_BLOCK = sizeof(MemoryBlock) + 16;
@@ -180,6 +188,7 @@ public:
 
     inline void PushMemoryBlock(MemoryBlock * item)
     {
+        mutex.Lock();
         MemoryBlock * insertAfter = headBlock;
         item->next = insertAfter->next;
         item->prev = insertAfter;
@@ -187,17 +196,22 @@ public:
         insertAfter->next->prev = item;
         insertAfter->next = item;
         blockCount++;
+        mutex.Unlock();
     }
     
     inline void EraseMemoryBlock(MemoryBlock * item)
     {
+        mutex.Lock();
         item->prev->next = item->next;
         item->next->prev = item->prev;
         blockCount--;
+        mutex.Unlock();
     }
     
     inline void NewUpdateStats(MemoryBlock * block)
     {
+        mutex.Lock();
+        MemoryInfo& info = taggedMemInfoMap[GetCurrentTag()];
         if (block->size > maximumBlockSize)
         {
             maximumBlockSize = block->size;
@@ -210,12 +224,18 @@ public:
         managerOverheadSize += CHECK_SIZE + sizeof(MemoryBlock);
         if (managerOverheadSize > peakManagerOverheadSize)
             peakManagerOverheadSize = managerOverheadSize;
+        info.allocated += block->size;
+        mutex.Unlock();
     }
     
     inline void DeleteUpdateStats(MemoryBlock * block)
     {
+        mutex.Lock();
+        MemoryInfo& info = taggedMemInfoMap[GetCurrentTag()];
         currentAllocatedMemory -= block->size;
         managerOverheadSize -= CHECK_SIZE + sizeof(MemoryBlock);
+        info.freed += block->size;
+        mutex.Unlock();
     }
     
     // Tail of the memory block list / Circular list
@@ -250,43 +270,157 @@ public:
 
 void * operator new(size_t _size) throw(std::bad_alloc )
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    void *p = NULL;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        p = pAllocStack->Allocate(_size);
+    }
+    if(!p)
+    {
+        p = DAVA::MemoryManagerImpl::Instance()->New(_size);
+        if (p == NULL) {
+            throw std::bad_alloc();
+        }
+    }
+    return p;
+#else
 	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+#endif
 }
 
 void * operator new(size_t _size, const std::nothrow_t &) throw()
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    void *p = NULL;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        p = pAllocStack->Allocate(_size);
+    }
+    if(!p)
+    {
+        p = DAVA::MemoryManagerImpl::Instance()->New(_size);
+    }
+    return p;
+#else
 	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+#endif
 }
 
 void   operator delete(void * _ptr) throw()
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    bool bDealocated = false;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        bDealocated = pAllocStack->Deallocate(_ptr);
+    }
+    if(!bDealocated)
+    {
+        DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+    }
+#else
 	DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+#endif
 }
 
 void   operator delete(void * _ptr, const std::nothrow_t &) throw()
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    bool bDealocated = false;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        bDealocated = pAllocStack->Deallocate(_ptr);
+    }
+    if(!bDealocated)
+    {
+        DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+    }
+#else
 	DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+#endif
 }
 
 
 void * operator new[](size_t _size) throw(std::bad_alloc)
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    void *p = NULL;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        p = pAllocStack->Allocate(_size);
+    }
+    if(!p)
+    {
+        p = DAVA::MemoryManagerImpl::Instance()->New(_size);
+        if (p == NULL) {
+            throw std::bad_alloc();
+        }
+    }
+    return p;
+#else
 	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+#endif
 }
 
 void * operator new[](size_t _size, const std::nothrow_t &) throw()
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    void *p = NULL;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        p = pAllocStack->Allocate(_size);
+    }
+    if(!p)
+    {
+        p = DAVA::MemoryManagerImpl::Instance()->New(_size);
+    }
+    return p;
+#else
 	return DAVA::MemoryManagerImpl::Instance()->New(_size);
+#endif
 }
 
 void   operator delete[](void * _ptr) throw()
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    bool bDealocated = false;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        bDealocated = pAllocStack->Deallocate(_ptr);
+    }
+    if(!bDealocated)
+    {
+        DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+    }
+#else
 	DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+#endif
 }
 
 void   operator delete[](void * _ptr, const std::nothrow_t &) throw()
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    bool bDealocated = false;
+    DAVA::AllocatorsStack *pAllocStack = DAVA::AllocatorsStack::Instance();
+    if(pAllocStack)
+    {
+        bDealocated = pAllocStack->Deallocate(_ptr);
+    }
+    if(!bDealocated)
+    {
+        DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+    }
+#else
 	DAVA::MemoryManagerImpl::Instance()->Delete(_ptr);
+#endif
 }
 
 //void*	operator new(size_t _size, void* pLoc) throw()
@@ -344,6 +478,7 @@ MemoryManagerImpl::~MemoryManagerImpl()
 
 void	*MemoryManagerImpl::New(size_t size)
 {
+#if defined(ENABLE_MEMORY_INFO_TRACKING)
     // Align to 4 byte boundary.
     if ((size & 15) != 0)
 	{
@@ -355,6 +490,8 @@ void	*MemoryManagerImpl::New(size_t size)
     
     //if (!block)throw std::bad_alloc();
     
+#if defined(ENABLE_MEMORY_BACKTRACE)
+    mutex.Lock();
     Backtrace bt;
     GetBacktrace(&bt);
     
@@ -369,6 +506,8 @@ void	*MemoryManagerImpl::New(size_t size)
         block->backtrace = backtrace;
         backtraceSet.insert(backtrace);
     }
+    mutex.Unlock();
+#endif
 
     block->size = size;
     block->flags = currentFlags;
@@ -376,6 +515,7 @@ void	*MemoryManagerImpl::New(size_t size)
     PushMemoryBlock(block);
     NewUpdateStats(block);
 
+#if defined(ENABLE_HEAP_CHECK)
     uint8 * checkHead = (uint8*)block + sizeof(MemoryBlock);
     uint8 * checkTail = (uint8*)block + sizeof(MemoryBlock) + size + CHECK_SIZE - 16;
     uint32 * checkHeadWrite = (uint32*)checkHead;
@@ -384,11 +524,23 @@ void	*MemoryManagerImpl::New(size_t size)
     *checkHeadWrite = CHECK_CODE_HEAD;
     *checkTailWrite++ = CHECK_CODE_TAIL;
     *checkTailWrite = CHECK_CODE_TAIL;
+#endif
     
     uint8 * outmemBlock = (uint8*)block;
+#if defined(ENABLE_HEAP_CHECK)
     outmemBlock += sizeof(MemoryBlock) + 16;
+#else
+    outmemBlock += sizeof(MemoryBlock);
+#endif
     //Logger::FrameworkDebug("malloc: %p %p", block, outmemBlock);
     return outmemBlock;
+#else
+    mutex.Lock();
+    MemoryInfo& info = taggedMemInfoMap[currentTag];
+    info.allocated += block->size;
+    mutex.Unlock();
+    return malloc(size);
+#endif
 }
 
 //void	*MemoryManagerImpl::New(size_t size, void *pLoc, const char * _file, int _line)
@@ -416,6 +568,7 @@ void	MemoryManagerImpl::CheckMemblockOverrun(MemoryBlock * memBlock)
             
 void	MemoryManagerImpl::Delete(void * ptr)
 {
+#if defined(ENABLE_MEMORY_INFO_TRACKING)
 	if (ptr)
 	{
 //        bool found = false;
@@ -434,10 +587,15 @@ void	MemoryManagerImpl::Delete(void * ptr)
 //            found = false;
 //        }
         
-        uint8 * uint8ptr = (uint8*)ptr; 
+        uint8 * uint8ptr = (uint8*)ptr;
+#if defined(ENABLE_HEAP_CHECK)
         uint8ptr -= sizeof(MemoryBlock) + 16;
+#else
+        uint8ptr -= sizeof(MemoryBlock);
+#endif
         MemoryBlock * block = (MemoryBlock*)(uint8ptr);
         
+#if defined(ENABLE_HEAP_CHECK)
         uint8 * checkHead = (uint8*)block + sizeof(MemoryBlock);
         uint8 * checkTail = (uint8*)block + sizeof(MemoryBlock) + block->size + CHECK_SIZE - 16;
         uint32 * checkHeadRead = (uint32*)checkHead;
@@ -450,12 +608,16 @@ void	MemoryManagerImpl::Delete(void * ptr)
         {
             Logger::Error("fatal: block: %p overwritten during usage", ptr);
         }
+#endif
         //Logger::FrameworkDebug("free: %p %p", block, ptr);
         
         DeleteUpdateStats(block);
         EraseMemoryBlock(block);
         free(block);
 	}
+#else
+    free(ptr);
+#endif
 }
 
     
@@ -518,6 +680,7 @@ void MemoryManagerImpl::CheckMemoryLeaks()
 			//Logger::FrameworkDebug("* Source Line : %d", block->line);
 			//Logger::FrameworkDebug("* Allocation Size : %d bytes", currentBlock->size);
             memoryLog << Format("* Allocation Size : %d bytes", currentBlock->size) << std::endl;
+#if defined(ENABLE_MEMORY_BACKTRACE)
             BacktraceLog log;
             CreateBacktraceLog(currentBlock->backtrace, &log);
             for (uint32 k = 0; k < currentBlock->backtrace->size; ++k) 
@@ -526,6 +689,7 @@ void MemoryManagerImpl::CheckMemoryLeaks()
                 memoryLog << log.strings[k] << std::endl;
             }
             ReleaseBacktraceLog(&log);
+#endif
 			//Logger::FrameworkDebug("* Was placed : " << (block.isPlaced ? " true" : " false")<< std::endl;
 			//Logger::FrameworkDebug("************************************");
 		}

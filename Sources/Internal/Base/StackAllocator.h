@@ -21,7 +21,7 @@ struct StackEntry
     uint32 size;
 };
     
-class StackAllocator : public Allocator
+class StackAllocator : public AllocatorBase
 {
 public:
     StackAllocator(uint32 size);

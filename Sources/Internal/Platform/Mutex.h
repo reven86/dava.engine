@@ -46,7 +46,7 @@ namespace DAVA
 class Mutex
 {
 public:
-	Mutex();
+	Mutex(bool bRecursive = false);
 	virtual ~Mutex();
 
 	/**
@@ -66,6 +66,7 @@ public:
 	CRITICAL_SECTION criticalSection;
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 	pthread_mutex_t mutex;
+    bool recursive;
 #endif //PLATFORMS
 };
 

@@ -57,10 +57,21 @@ void Mutex::Unlock()
 
 #elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
 
-Mutex::Mutex()
+Mutex::Mutex(bool bRecursive)
+    : recursive(bRecursive)
 {
 //	mutex = PTHREAD_MUTEX_INITIALIZER;
-	pthread_mutex_init(&mutex, 0);
+    if(recursive)
+    {
+        pthread_mutexattr_t mutexattr;
+        pthread_mutexattr_init(&mutexattr);
+        pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&mutex, &mutexattr);
+    }
+    else
+    {
+        pthread_mutex_init(&mutex, 0);
+    }
 }
 
 Mutex::~Mutex()
