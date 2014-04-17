@@ -58,6 +58,8 @@ public:
 	float32 GetGlobalExternalValue(const String& name);
 	Map<String, float32> GetGlobalExternals();
 	
+    inline const Map<uint32, NMaterial *> & GetMaterialInstances() const;
+    
 protected:
 	void RunEffect(ParticleEffectComponent *effect);	
     void AddToActive(ParticleEffectComponent *effect);
@@ -85,6 +87,12 @@ private: //materials stuff
     bool forceDisableDepthTest;
 };
 
+inline const Map<uint32, NMaterial *> & ParticleEffectSystem::GetMaterialInstances() const
+{
+    return materialMap;
+}
+
+    
 }
 
 #endif //__DAVAENGINE_SCENE3D_PARTICLEEFFECTSYSTEM_H__

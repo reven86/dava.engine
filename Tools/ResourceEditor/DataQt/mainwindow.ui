@@ -36,7 +36,16 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>1</number>
+    </property>
+    <property name="topMargin">
+     <number>1</number>
+    </property>
+    <property name="rightMargin">
+     <number>1</number>
+    </property>
+    <property name="bottomMargin">
      <number>1</number>
     </property>
     <item>
@@ -69,7 +78,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -85,7 +103,6 @@
        </property>
        <addaction name="actionFavoritesEdit"/>
        <addaction name="actionAddNewComponent"/>
-       <addaction name="actionRemoveComponent"/>
       </widget>
      </item>
      <item>
@@ -97,7 +114,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -136,7 +162,16 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -335,20 +370,6 @@
     <addaction name="separator"/>
     <addaction name="actionOnSceneSelection"/>
    </widget>
-   <widget class="QMenu" name="menuComponent">
-    <property name="title">
-     <string>Component</string>
-    </property>
-    <addaction name="actionAddNewComponent"/>
-    <addaction name="actionRemoveComponent"/>
-    <addaction name="separator"/>
-    <addaction name="actionAddActionComponent"/>
-    <addaction name="actionAddQualitySettingsComponent"/>
-    <addaction name="actionAddStaticOcclusionComponent"/>
-    <addaction name="separator"/>
-    <addaction name="actionAddSoundComponent"/>
-    <addaction name="actionRemoveSoundComponent"/>
-   </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
@@ -428,7 +449,6 @@
    <addaction name="menuView"/>
    <addaction name="menuQuality"/>
    <addaction name="menuCreateNode"/>
-   <addaction name="menuComponent"/>
    <addaction name="menuScene"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
@@ -526,7 +546,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -572,7 +601,16 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
       <number>1</number>
      </property>
      <item>
@@ -604,7 +642,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -1224,18 +1271,6 @@
    </property>
    <property name="toolTip">
     <string>Remove entity</string>
-   </property>
-  </action>
-  <action name="actionRemoveComponent">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/removecomponent.png</normaloff>:/QtIcons/removecomponent.png</iconset>
-   </property>
-   <property name="text">
-    <string>Remove Component</string>
-   </property>
-   <property name="toolTip">
-    <string>Remove component</string>
    </property>
   </action>
   <action name="actionConvertToShadow">

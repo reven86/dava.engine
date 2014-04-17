@@ -40,7 +40,7 @@
 namespace DAVA
 {
 
-class JobQueue;
+class MainThreadJobQueue;
 class ThreadIdJobWaiter;
 class JobInstanceWaiter;
 
@@ -77,7 +77,7 @@ public:
 
 protected:
 	Mutex jobsDoneMutex;
-	JobQueue * mainQueue;
+	MainThreadJobQueue * mainQueue;
 	void UpdateMainQueue();
 
 	Map<Thread::ThreadId, uint32> jobsPerCreatorThread;

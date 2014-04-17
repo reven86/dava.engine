@@ -69,6 +69,12 @@ void ActionEnableHeightmapEditor::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
+    
+    if(success &&
+       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(false);
+    }
 
 	SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
 }
@@ -97,6 +103,16 @@ void ActionDisableHeightmapEditor::Redo()
 	{
 		ShowErrorDialog(ResourceEditor::HEIGHTMAP_EDITOR_DISABLE_ERROR);
 	}
+    
+    if(disabled)
+    {
+        if(!sceneEditor->landscapeEditorDrawSystem->IsNotPassableTerrainEnabled())
+        {
+            sceneEditor->foliageSystem->SetFoliageVisible(true);
+        }
+        
+        sceneEditor->foliageSystem->SyncFoliageWithLandscape();
+    }
 
 	SceneSignals::Instance()->EmitHeightmapEditorToggled(sceneEditor);
 }

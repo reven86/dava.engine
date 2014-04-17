@@ -133,6 +133,9 @@ protected:
 
     friend class FMODFileSoundEvent;
     friend class FMODSoundEvent;
+#ifdef __DAVAENGINE_IPHONE__
+    friend class MusicIOSSoundEvent;
+#endif
 #endif
 };
 

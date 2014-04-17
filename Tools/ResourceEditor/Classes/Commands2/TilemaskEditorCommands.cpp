@@ -68,6 +68,12 @@ void ActionEnableTilemaskEditor::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
+    
+    if(success &&
+       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(false);
+    }
 	
 	SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
 }
@@ -96,6 +102,11 @@ void ActionDisableTilemaskEditor::Redo()
 	{
 		ShowErrorDialog(ResourceEditor::TILEMASK_EDITOR_DISABLE_ERROR);
 	}
+    
+    if(disabled)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(true);
+    }
 	
 	SceneSignals::Instance()->EmitTilemaskEditorToggled(sceneEditor);
 }

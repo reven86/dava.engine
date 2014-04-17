@@ -64,6 +64,8 @@ public:
 
     virtual String GetEventName() const { return filePath.GetFrameworkPath(); };
     
+    void PerformEndCallback();
+    
 protected:
     MusicIOSSoundEvent(const FilePath & path);
     virtual bool Init();

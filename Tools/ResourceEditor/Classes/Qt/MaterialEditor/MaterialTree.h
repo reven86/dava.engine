@@ -60,6 +60,7 @@ public:
 
 signals:
     void Updated();
+    void ContextMenuPrepare(QMenu *);
 
 public slots:
 	void ShowContextMenu(const QPoint &pos);

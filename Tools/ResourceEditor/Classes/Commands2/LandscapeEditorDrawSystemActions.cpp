@@ -65,6 +65,12 @@ void ActionEnableNotPassable::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
+    
+    if(success &&
+       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(false);
+    }
 
 	SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
 }
@@ -89,6 +95,12 @@ void ActionDisableNotPassable::Redo()
 	}
 	
 	sceneEditor->landscapeEditorDrawSystem->DisableNotPassableTerrain();
+    
+    if(disabled &&
+       !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(true);
+    }
 
 	SceneSignals::Instance()->EmitNotPassableTerrainToggled(sceneEditor);
 }

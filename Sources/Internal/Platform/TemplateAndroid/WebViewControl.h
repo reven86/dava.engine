@@ -78,6 +78,7 @@ public:
 	void Deinitialize(int id);
 
 	void OpenURL(int id, const String& urlToOpen);
+	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
 	void SetRect(int id, const Rect& rect);
 	void SetVisible(int id, bool isVisible);

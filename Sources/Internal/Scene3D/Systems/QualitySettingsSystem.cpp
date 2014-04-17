@@ -44,7 +44,7 @@ QualitySettingsSystem::QualitySettingsSystem()
 
 void QualitySettingsSystem::Load(const FilePath &path)
 {
-    DAVA::Logger::Instance()->Info("Trying to loading QUALITY from: %s", path.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("Trying to loading QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
     if(path.Exists())
     {
@@ -201,14 +201,7 @@ void QualitySettingsSystem::Load(const FilePath &path)
         parser->Release();
     }
 
-    if(0 != textureQualities.size() && 0 != materialGroups.size())
-    {
-        DAVA::Logger::Instance()->Info("Loaded. TxQualities: %u, MaGrQualities: %u", textureQualities.size(), materialGroups.size());
-    }
-    else
-    {
-        DAVA::Logger::Instance()->Error("Nothing loaded");
-    }
+    Logger::FrameworkDebug("Loaded. TxQualities: %u, MaGrQualities: %u", textureQualities.size(), materialGroups.size());
 }
 
 size_t QualitySettingsSystem::GetTextureQualityCount() const

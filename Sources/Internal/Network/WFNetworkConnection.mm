@@ -51,7 +51,7 @@
 	}
 	
 	UIDevice *myDevice = [UIDevice currentDevice];
-	NSString *deviceUDID = [myDevice uniqueIdentifier];
+	NSString *deviceUDID = @"NoUDID";//[myDevice uniqueIdentifier];
 	NSString *finalString = [NSString stringWithFormat:@"%@|eos|%@", name, deviceUDID ];
 	
 	if(![server enableBonjourWithDomain:DOMAIN_NAME applicationProtocol:[TCPServer bonjourTypeFromIdentifier:GAME_ID] name:finalString]) 

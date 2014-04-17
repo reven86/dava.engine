@@ -231,7 +231,13 @@ void FMODSoundEvent::ApplyParamsToEvent(FMOD::Event *event)
         FMOD::EventParameter * param = 0;
         FMOD_VERIFY(event->getParameter(it->first.c_str(), &param));
         if(param)
+        {
             FMOD_VERIFY(param->setValue(it->second));
+        }
+        else
+        {
+            Logger::Error("Event: %s, Param: %s", eventName.c_str(), it->first.c_str());
+        }
     }
 }
 
@@ -242,7 +248,10 @@ void FMODSoundEvent::InitParamsMap()
     for(int32 i = 0; i < (int32)paramsInfo.size(); ++i)
     {
         const SoundEvent::SoundEventParameterInfo & info = paramsInfo[i];
-        paramsValues[FastName(info.name)] = info.minValue;
+        if(info.name[0] != '(') // filter internal FMOD params
+        {
+            paramsValues[FastName(info.name)] = info.minValue;
+        }
     }
 }
 

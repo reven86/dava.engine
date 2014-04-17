@@ -135,6 +135,7 @@ protected:
     bool isMultilineBySymbolEnabled:1;
 	bool isPredrawed:1;
 	bool cacheUseJustify:1;
+    bool treatMultilineAsSingleLine:1;
 };
 
 }; //end of namespace

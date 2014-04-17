@@ -68,6 +68,12 @@ void ActionEnableCustomColors::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
+    
+    if(success &&
+       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(false);
+    }
 
 	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
 }
@@ -97,6 +103,12 @@ void ActionDisableCustomColors::Redo()
 	{
 		ShowErrorDialog(ResourceEditor::CUSTOM_COLORS_DISABLE_ERROR);
 	}
+    
+    if(success)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(true);
+    }
+    
 	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);
 }
 

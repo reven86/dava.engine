@@ -214,7 +214,7 @@ String DeviceInfo::GetUDID()
 	NSString* udid = nil;
 	if (iOSLowerThan7 || !hasAdvertisingId)
 	{
-		udid = [[UIDevice currentDevice] uniqueIdentifier];
+		udid = @"";
 	}
 	else
 	{

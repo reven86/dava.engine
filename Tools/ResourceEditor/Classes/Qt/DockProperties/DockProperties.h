@@ -30,6 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define __RESOURCEEDITORQT__DOCKPROPERTIES__
 
 #include <QDockWidget>
+#include <QPointer>
+#include <QMenu>
+
 
 class DockProperties : public QDockWidget
 {
@@ -44,6 +47,10 @@ public:
 protected slots:
 	void ActionFavoritesEdit();
 	void ViewModeSelected(int index);
+    void OnAddAction();
+
+private:
+    QPointer< QMenu > addComponentMenu;
 };
 
 #endif // __RESOURCEEDITORQT__DOCKPROPERTIES__

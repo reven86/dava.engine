@@ -106,6 +106,7 @@ TextBlock::TextBlock()
 	RegisterTextBlock(this);
 	isPredrawed = true;
     isMultilineBySymbolEnabled = false;
+    treatMultilineAsSingleLine = false;
     
     pointsStr = L"";
 }
@@ -325,8 +326,27 @@ void TextBlock::Prepare()
 		
 		Size2i textSize;
 		stringSizes.clear();
-        
-		if(!isMultilineEnabled)
+
+        // This is a temporary fix to correctly handle long multiline texts
+        // which can't be broken to the separate lines.
+        if (isMultilineEnabled)
+        {
+            Vector<WideString> strings;
+            Vector2 rectSize;
+
+            if(isMultilineBySymbolEnabled)
+            {
+                font->SplitTextBySymbolsToStrings(text, rectSize, strings);
+            }
+            else
+            {
+                font->SplitTextToStrings(text, rectSize, strings);
+            }
+            
+            treatMultilineAsSingleLine = strings.size() == 1;
+        }
+
+		if(!isMultilineEnabled || treatMultilineAsSingleLine)
 		{
 			textSize = font->GetStringSize(text);
             pointsStr.clear();
@@ -489,6 +509,16 @@ void TextBlock::Prepare()
 					textSize = font->GetStringSize(text);
 				};
 			}
+            
+            if (treatMultilineAsSingleLine)
+            {
+                // Another temporary solution to return correct multiline strings/
+                // string sizes.
+                multilineStrings.clear();
+                stringSizes.clear();
+                multilineStrings.push_back(text);
+				stringSizes.push_back(font->GetStringSize(text).dx);
+            }
 		}
 		else //if(!isMultilineEnabled)
 		{
@@ -687,7 +717,6 @@ void TextBlock::Prepare()
     
     mutex.Unlock();
 
-	Retain();
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
 }
 
@@ -704,7 +733,6 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 	{
         SafeDelete(jobData);
         mutex.Unlock();
-        Release();
 		return;
 	}
     else
@@ -719,7 +747,7 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 			DrawToBuffer(jobData->font, buf);
             
             String addInfo;
-			if(!isMultilineEnabled)
+			if(!isMultilineEnabled || treatMultilineAsSingleLine)
 			{
 				addInfo = WStringToString(text.c_str());
 			}
@@ -745,7 +773,7 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 			sprite = Sprite::CreateAsRenderTarget(cacheFinalSize.x, cacheFinalSize.y, FORMAT_RGBA8888);
 			if (sprite && sprite->GetTexture())
 			{
-				if (!isMultilineEnabled)
+				if (!isMultilineEnabled || treatMultilineAsSingleLine)
 					sprite->GetTexture()->SetDebugInfo(WStringToString(text));
 				else if (isMultilineEnabled)
 				{
@@ -762,13 +790,12 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 
     SafeDelete(jobData);
     mutex.Unlock();
-	Release();
 }
 
 void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
 {
 	Size2i realSize;
-	if(!isMultilineEnabled)
+	if(!isMultilineEnabled || treatMultilineAsSingleLine)
 	{
         WideString drawText = text;
         if(pointsStr.length())

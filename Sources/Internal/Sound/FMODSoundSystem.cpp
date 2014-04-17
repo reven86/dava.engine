@@ -105,6 +105,8 @@ SoundEvent * SoundSystem::CreateSoundEventFromFile(const FilePath & fileName, co
         MusicIOSSoundEvent * musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName);
         if(musicEvent && (flags & SoundEvent::SOUND_EVENT_CREATE_LOOP))
             musicEvent->SetLoopCount(-1);
+        
+        event = musicEvent;
     }
 #endif //__DAVAENGINE_IPHONE__
     
@@ -285,10 +287,7 @@ void SoundSystem::UnloadFMODProjects()
 void SoundSystem::Update(float32 timeElapsed)
 {
 	fmodEventSystem->update();
-}
-
-void SoundSystem::Suspend()
-{
+    
 	uint32 size = soundsToReleaseOnUpdate.size();
 	if(size)
 	{
@@ -296,6 +295,10 @@ void SoundSystem::Suspend()
 			soundsToReleaseOnUpdate[i]->Release();
 		soundsToReleaseOnUpdate.clear();
 	}
+}
+
+void SoundSystem::Suspend()
+{
 }
 
 void SoundSystem::ReleaseOnUpdate(SoundEvent * sound)
@@ -497,10 +500,9 @@ void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * 
     SoundGroup group;
     group.volume = 1.f;
     group.name = groupName;
-    soundGroups.push_back(group);
-
-    event->SetVolume(group.volume);
     group.events.push_back(event);
+
+    soundGroups.push_back(group);
 }
     
 void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)

@@ -37,7 +37,7 @@ namespace DAVA
 
 class Job;
 
-class JobQueue
+class MainThreadJobQueue
 {
 public:
 	void Update();

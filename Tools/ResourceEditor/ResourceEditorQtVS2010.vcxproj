@@ -1229,6 +1229,9 @@
     <ClInclude Include="_GeneratedQt\ui_waitdialog.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DataQt\ActionComponentEditor.ui">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="DataQt\AddSwitchEntityDialog.ui" />
     <None Include="DataQt\BaseAddEntityDialog.ui">
       <SubType>Designer</SubType>

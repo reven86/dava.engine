@@ -223,6 +223,7 @@ bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, in
         {
             Logger::Error("[ImageLoader::CreateFromPVR] Cannot read images from PVR file (%s)", file->GetFilename().GetAbsolutePathname().c_str());
 			for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
+            imageSet.clear();
             return false;
         }
 //        loadTime = SystemTimer::Instance()->AbsoluteMS() - loadTime;

@@ -182,6 +182,7 @@ void UIScreenTransition::Update(float32 timeElapsed)
 		ReleaseRenderTargets();
 		// go to next screen
 		UIControlSystem::Instance()->UnlockInput();
+		UIControlSystem::Instance()->UnlockSwitch();
 		
 		/*
 			Right now we are in update so when we change control we miss Update for new screen

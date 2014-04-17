@@ -2333,9 +2333,9 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath &filePathname)
 	}
 
     uint32 originalFileSize = fileRead->GetSize();
-    //create single buffer for incresed data amount
+    //create single buffer for increased data amount
     uint32 newFileSize = originalFileSize + METADATA_CRC_SIZE;
-    char *fileBuffer = new char[newFileSize];
+    uint8 *fileBuffer = new uint8[newFileSize];
 	if(!fileBuffer)
 	{
 		Logger::Error("[LibPVRHelper::AddCRCIntoMetaData]: cannot allocate buffer for file data");
@@ -2353,17 +2353,16 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath &filePathname)
     }
     SafeRelease(fileRead);
     //calculate for only existed part of buffer(fileSize)
-    uint32 newCRC = CRC32::ForBuffer(fileBuffer, originalFileSize);
+    uint32 newCRC = CRC32::ForBuffer((const char *)fileBuffer, originalFileSize);
     uint32 textureDataSize = originalFileSize - sizeof(header) - header.u32MetaDataSize;
-    char* currentTextureDataPointer = fileBuffer + sizeof(header) + header.u32MetaDataSize;
+    uint8* currentTextureDataPointer = fileBuffer + sizeof(header) + header.u32MetaDataSize;
     //shift texture data to get space for new crc metadata
     memmove((currentTextureDataPointer + METADATA_CRC_SIZE), currentTextureDataPointer, textureDataSize);
     
-    uint32 metadata[4] = {METADATA_CRC_TAG, 0, 0, newCRC};
-    metadata[2] = sizeof(metadata);
-    memcpy(fileBuffer + sizeof(header) + header.u32MetaDataSize, &metadata, metadata[2]);
+    uint32 metadata[4] = {PVRTEX3_METADATAIDENT, METADATA_CRC_TAG, 4, newCRC};
+    memcpy(fileBuffer + sizeof(header) + header.u32MetaDataSize, metadata, METADATA_CRC_SIZE);
     
-    uint32* metaDataSizePointer = (uint32*)(fileBuffer + sizeof(header) - sizeof(header.u32MetaDataSize))	;
+    uint32* metaDataSizePointer = (uint32*)(fileBuffer + sizeof(header) - sizeof(header.u32MetaDataSize));
     *metaDataSizePointer = header.u32MetaDataSize + METADATA_CRC_SIZE;
     
     FilePath filePathnameTmp(filePathname.GetAbsolutePathname() + "_");

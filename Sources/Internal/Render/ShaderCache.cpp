@@ -209,7 +209,7 @@ ShaderCache::~ShaderCache()
     for (FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin(); it != end; ++it)
     {
 		ShaderAsset * asset = it->second;
-        SafeDelete(asset);
+        SafeRelease(asset);
     }
 }
 

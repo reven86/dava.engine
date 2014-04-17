@@ -45,10 +45,11 @@ namespace DAVA
 	{
 		CoreWin32Platform * core = new CoreWin32Platform();
 		core->CreateSingletons();
-		bool windowCreated = core->CreateWin32Window(handle);
+        core->InitArgs();
+
+        bool windowCreated = core->CreateWin32Window(handle);
 		if(windowCreated)
 		{
-			core->InitArgs();
 			core->Run();
 			core->ReleaseSingletons();
 			
@@ -60,7 +61,7 @@ namespace DAVA
 #endif
 		}
 
-		CloseHandle(core->hMutex);
+		//CloseHandle(core->hMutex);
 		return 0;
 	
 	}
@@ -97,32 +98,6 @@ namespace DAVA
 		return 0;
 
 	}
-	
-	void CoreWin32Platform::InitArgs()
-	{
-		LPWSTR *szArglist;
-		int nArgs;
-		int i;
-		szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &nArgs);
-		if( NULL == szArglist )
-		{
-			Logger::Error("CommandLineToArgvW failed\n");
-			return;
-		}
-		else 
-		{
-			Vector<String> & cl = GetCommandLine();
-			for( i=0; i<nArgs; i++)
-			{
-				WideString w = szArglist[i];
-				String nonWide = WStringToString(w);
-				cl.push_back(nonWide);
-				Logger::FrameworkDebug("%d: %s\n", i, nonWide.c_str());
-			}
-		}
-		// Free memory allocated for CommandLineToArgvW arguments.
-		LocalFree(szArglist);
-	}
 
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -142,11 +117,11 @@ namespace DAVA
 			}
 		}
         SetLastError(0);
-		hMutex = CreateMutex(NULL, FALSE, fileName);
-		if(ERROR_ALREADY_EXISTS == GetLastError())
-		{
-			return false;
-		}
+		//hMutex = CreateMutex(NULL, FALSE, fileName);
+		//if(ERROR_ALREADY_EXISTS == GetLastError())
+		//{
+		//	return false;
+		//}
 
 		windowedMode = DisplayMode(800, 600, 16, 0);
 		fullscreenMode = DisplayMode(800, 600, 16, 0);
@@ -292,6 +267,8 @@ namespace DAVA
 		MSG msg;
 		while(1)
 		{
+            DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+
 			// process messages
 			willQuit = false;
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -312,10 +289,25 @@ namespace DAVA
 					}
 				}
 			}
-			Sleep(1);
-			RenderManager::Instance()->Lock();
+
+            RenderManager::Instance()->Lock();
 			Core::SystemProcessFrame();
 			RenderManager::Instance()->Unlock();
+
+            uint32 elapsedTime = (uint32) (SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 sleepMs = 1;
+
+            int32 fps = RenderManager::Instance()->GetFPS();
+            if(fps > 0)
+            {
+                sleepMs = (1000 / fps) - elapsedTime;
+                if(sleepMs < 1)
+                {
+                    sleepMs = 1;
+                }
+            }
+
+            Sleep(sleepMs);
 
 			if (willQuit)
 			{	
@@ -477,12 +469,6 @@ namespace DAVA
 		}
 
 		return mode;
-	}
-
-
-	void CoreWin32Platform::Quit()
-	{
-		PostQuitMessage(0);
 	}
 
 	void CoreWin32Platform::SetIcon(int32 iconId)

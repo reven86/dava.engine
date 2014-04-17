@@ -41,7 +41,7 @@ class Data;
 class Shader;
     
 // TODO: LRU cache for shaders or other type of resources
-class ShaderAsset
+class ShaderAsset : public BaseObject
 {
 public:
     struct DefaultValue

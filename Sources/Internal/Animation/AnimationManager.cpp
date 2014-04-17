@@ -321,6 +321,8 @@ void AnimationManager::Update(float32 timeElapsed)
 
 			SafeRelease(animation);
 
+            animationMutex.Lock();
+            
             size = (uint32)animations.size();
             k--;
             
@@ -331,7 +333,6 @@ void AnimationManager::Update(float32 timeElapsed)
 //			}
 //#endif
             
-            animationMutex.Lock();
 		}
 	}
 	animationMutex.Unlock();

@@ -97,6 +97,10 @@ public slots:
 	void ActionBakeTransform();
 	void ActionEditMaterial();
     void ActionEditSoundComponent();
+	void OnAddActionComponent();
+    void OnAddStaticOcclusionComponent();
+    void OnAddModelTypeComponent();
+    void OnRemoveComponent();
 	
 	void ConvertToShadow();
 

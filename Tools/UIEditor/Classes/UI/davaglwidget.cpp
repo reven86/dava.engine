@@ -53,7 +53,7 @@
 #include "Platform/Qt/MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
 #include "Platform/Qt/Win32/QtLayerWin32.h"
-#include "Platform/Qt/Win32/CorePlatformWin32.h"
+#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
@@ -173,7 +173,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 #if defined(Q_WS_WIN)
 bool DavaGLWidget::winEvent(MSG *message, long *result)
 {
-	DAVA::CoreWin32Platform *core = dynamic_cast<DAVA::CoreWin32Platform *>(DAVA::CoreWin32Platform::Instance());
+	DAVA::CoreWin32PlatformQt *core = dynamic_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
 	if (NULL != core)
 	{
 		if(NULL != message && 

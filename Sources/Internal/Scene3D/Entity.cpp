@@ -147,8 +147,6 @@ void Entity::AddComponent(Component * component)
 		Vector<Component*>* componentsVector = componentsMap.at(componentType);
 		if(NULL == componentsVector)
 		{
-			DVASSERT(componentsMap.size() < COMPONENTS_IN_MAP_COUNT);
-				
 			componentsVector = new Vector<Component*>();
 			componentsMap.insert(componentType, componentsVector);
 		}

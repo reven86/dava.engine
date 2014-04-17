@@ -564,15 +564,12 @@ void WebViewControl::SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webVie
 
 void WebViewControl::Initialize(const Rect& rect)
 {
-	CoreWin32Platform *core = dynamic_cast<CoreWin32Platform *>(CoreWin32Platform::Instance());
-	if (core == NULL)
-	{
-		return;
-	}
+	CoreWin32PlatformBase *core = static_cast<CoreWin32PlatformBase *>(Core::Instance());
+	DVASSERT(core);
 
 	// Create the browser holder window.
 	browserWindow = ::CreateWindowEx(0, L"Static", L"", WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN,
-		0, 0, 0, 0, core->hWindow, NULL, core->hInstance, NULL);
+		0, 0, 0, 0, core->GetWindow(), NULL, core->GetInstance(), NULL);
 	SetRect(rect);
 
 	// Initialize the browser itself.

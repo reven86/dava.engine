@@ -493,9 +493,7 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 
 		if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
         {
-			AddError(Format("In sprite %s.psd frame %d has size bigger than sprite size!",
-								defFile->filename.GetBasename().c_str(),
-								frame));
+            Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
         }
 	}
 	
