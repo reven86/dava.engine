@@ -82,6 +82,8 @@ public:
 class BoneAnimation
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_ANIMATED_MESH)
+    
     BoneAnimation();
     ~BoneAnimation();
 
@@ -106,7 +108,9 @@ private:
 //! Used to create skeletal & morph animations
 class AnimatedMesh : public StaticMesh
 {
-public:	
+public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_ANIMATED_MESH)
+    
 	AnimatedMesh(Scene * _scene);
 	~AnimatedMesh();
 	

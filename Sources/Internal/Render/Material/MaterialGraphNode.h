@@ -50,6 +50,8 @@ class MaterialGraphNodeConnector : public BaseObject
 protected:
     ~MaterialGraphNodeConnector(){}
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
+    
     MaterialGraphNode * GetNode() { return node; }
     
     MaterialGraphNode * node;
@@ -59,6 +61,8 @@ public:
 class MaterialGraphNode : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
+    
     enum eType
     {
         TYPE_NONE = 0,

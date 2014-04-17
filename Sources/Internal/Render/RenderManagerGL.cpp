@@ -108,12 +108,14 @@ bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
 
 bool RenderManager::Create()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return true;
 }
 	
 void RenderManager::Release()
 {
-	
+	TAG_SWITCH(MemoryManager::TAG_RENDER)
 }
 
 #endif //#if defined(__DAVAENGINE_WIN32__)
@@ -137,6 +139,8 @@ bool IsGLExtensionSupported(const String &extension)
     
 void RenderManager::DetectRenderingCapabilities()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined(__DAVAENGINE_MACOS__)
 	caps.isHardwareCursorSupported = true;
 #elif defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
@@ -202,11 +206,15 @@ void RenderManager::DetectRenderingCapabilities()
 
 bool RenderManager::IsDeviceLost()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return false;
 }
 
 void RenderManager::BeginFrame()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     stats.Clear();
     SetViewport(Rect(0, 0, -1, -1), true);
 	
@@ -230,6 +238,8 @@ void RenderManager::BeginFrame()
 
 void RenderManager::PrepareRealMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     bool isMappingMatrixChanged = mappingMatrixChanged;
     if (mappingMatrixChanged)
     {
@@ -278,6 +288,8 @@ void RenderManager::PrepareRealMatrix()
 
 void RenderManager::EndFrame()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	isInsideDraw = false;
 #if defined(__DAVAENGINE_WIN32__)
 	::SwapBuffers(hDC);
@@ -294,6 +306,8 @@ void RenderManager::EndFrame()
     
 void RenderManager::MakeGLScreenShot()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     Logger::FrameworkDebug("RenderManager::MakeGLScreenShot");
 #if defined(__DAVAENGINE_OPENGL__)
     
@@ -359,7 +373,9 @@ void RenderManager::MakeGLScreenShot()
 }
     
 void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates)
-{    
+{
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if ((rect.dx < 0.0f) && (rect.dy < 0.0f))
     {
         viewport = rect;
@@ -406,6 +422,8 @@ void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates
 // Viewport management
 void RenderManager::SetRenderOrientation(int32 orientation)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	renderOrientation = orientation;
 	
     if (orientation != Core::SCREEN_ORIENTATION_TEXTURE)
@@ -433,11 +451,15 @@ void RenderManager::SetRenderOrientation(int32 orientation)
 
 void RenderManager::SetCullOrder(eCullOrder cullOrder)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     glFrontFace(cullOrder);
 }
     
 void RenderManager::FlushState()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	PrepareRealMatrix();
     
     currentState.Flush(&hardwareState);
@@ -445,6 +467,8 @@ void RenderManager::FlushState()
 
 void RenderManager::FlushState(RenderState * stateBlock)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	PrepareRealMatrix();
 	
 	stateBlock->Flush(&hardwareState);
@@ -452,6 +476,8 @@ void RenderManager::FlushState(RenderState * stateBlock)
 
 void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	static const int32 types[PRIMITIVETYPE_COUNT] = 
 	{
 		GL_POINTS,			// 		PRIMITIVETYPE_POINTLIST = 0,
@@ -496,6 +522,8 @@ void RenderManager::HWDrawArrays(ePrimitiveType type, int32 first, int32 count)
 
 void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	static const int32 types[PRIMITIVETYPE_COUNT] = 
 	{
 		GL_POINTS,			// 		PRIMITIVETYPE_POINTLIST = 0,
@@ -551,12 +579,16 @@ void RenderManager::HWDrawElements(ePrimitiveType type, int32 count, eIndexForma
 
 void RenderManager::ClearWithColor(float32 r, float32 g, float32 b, float32 a)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	RENDER_VERIFY(glClearColor(r, g, b, a));
 	RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 void RenderManager::ClearDepthBuffer(float32 depth)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepthf(depth));
 #else //#if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
@@ -567,12 +599,16 @@ void RenderManager::ClearDepthBuffer(float32 depth)
 
 void RenderManager::ClearStencilBuffer(int32 stencil)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	RENDER_VERIFY(glClearStencil(stencil));
 	RENDER_VERIFY(glClear(GL_STENCIL_BUFFER_BIT));
 }
     
 void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     RENDER_VERIFY(glClearColor(color.r, color.g, color.b, color.a));
 #if defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glClearDepthf(depth));
@@ -587,6 +623,8 @@ void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 
 void RenderManager::SetHWClip(const Rect &rect)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	PrepareRealMatrix();
 	currentClip = rect;
 	if(rect.dx < 0 || rect.dy < 0)
@@ -613,6 +651,8 @@ void RenderManager::SetHWClip(const Rect &rect)
 
 void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     currentRenderTarget = renderTarget;
     
 	if (renderTarget == NULL)
@@ -676,6 +716,8 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 
 void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     //currentRenderTarget = renderTarget;
 	renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
 	//IdentityModelMatrix();
@@ -687,6 +729,8 @@ void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 
 void RenderManager::DiscardFramebufferHW(uint32 attachments)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #ifdef __DAVAENGINE_IPHONE__
     if (!attachments) 
       return;
@@ -740,6 +784,8 @@ void RenderManager::SetMatrix(eMatrixType type, const Matrix4 & matrix, uint32 c
     
 void RenderManager::HWglBindBuffer(GLenum target, GLuint buffer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT(target - GL_ARRAY_BUFFER <= 1);
     if (bufferBindingId[target - GL_ARRAY_BUFFER] != buffer)
     {
@@ -750,6 +796,8 @@ void RenderManager::HWglBindBuffer(GLenum target, GLuint buffer)
     
 void RenderManager::AttachRenderData()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (!currentRenderData)return;
 
     const int DEBUG = 0;
@@ -836,6 +884,8 @@ void RenderManager::AttachRenderData()
     
 int32 RenderManager::HWglGetLastTextureID(int textureType)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return lastBindedTexture[textureType];
 
     
@@ -853,6 +903,8 @@ int32 RenderManager::HWglGetLastTextureID(int textureType)
 	
 void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if(0 != tId)
     {
         RENDER_VERIFY(glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId));
@@ -868,6 +920,8 @@ void RenderManager::HWglBindTexture(int32 tId, uint32 textureType)
 	
 void RenderManager::HWglForceBindTexture(int32 tId, uint32 textureType)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	glBindTexture((Texture::TEXTURE_2D == textureType) ? GL_TEXTURE_2D : GL_TEXTURE_CUBE_MAP, tId);
 	
 	//GLenum err = glGetError();
@@ -880,6 +934,8 @@ void RenderManager::HWglForceBindTexture(int32 tId, uint32 textureType)
 
 int32 RenderManager::HWglGetLastFBO()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return lastBindedFBO;
 //    int32 saveFBO = 0;
 //#if defined(__DAVAENGINE_IPHONE__)
@@ -900,6 +956,8 @@ int32 RenderManager::HWglGetLastFBO()
 
 void RenderManager::HWglBindFBO(const int32 fbo)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     //	if(0 != fbo)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);	// Unbind the FBO for now
@@ -920,6 +978,8 @@ void RenderManager::HWglBindFBO(const int32 fbo)
     
 void RenderManager::DiscardDepth()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #ifdef __DAVAENGINE_IPHONE__
     static const GLenum discards[]  = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
     RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER,2,discards));

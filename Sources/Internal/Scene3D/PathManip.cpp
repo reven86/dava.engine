@@ -34,6 +34,8 @@ namespace DAVA
 
 	PathManip::PathManip(const char * src)
 	{
+        TAG_SWITCH(MemoryManager::TAG_PATH)
+        
 		splitToEntries(src);	
 	}
 
@@ -48,6 +50,8 @@ namespace DAVA
 
 	void PathManip::splitToEntries(const char * src)
 	{
+        TAG_SWITCH(MemoryManager::TAG_PATH)
+        
 		pathEntries.clear();
 
 		String s(src);
@@ -84,6 +88,8 @@ namespace DAVA
 
 	String PathManip::getSuffix()
 	{
+        TAG_SWITCH(MemoryManager::TAG_PATH)
+        
 		if (pathEntries.size() == 0)
 			return "";
 
@@ -97,6 +103,8 @@ namespace DAVA
 
 	void PathManip::setSuffix(const String & suf)
 	{
+        TAG_SWITCH(MemoryManager::TAG_PATH)
+        
 		if (pathEntries.size() == 0)
 		{
 			pathEntries.push_back(suf);
@@ -119,6 +127,8 @@ namespace DAVA
 
 	String PathManip::GetName()
 	{
+        TAG_SWITCH(MemoryManager::TAG_PATH)
+        
 		if (pathEntries.size())
 		{
 			return pathEntries.back();
@@ -129,6 +139,8 @@ namespace DAVA
 
 	String PathManip::GetPath()
 	{
+        TAG_SWITCH(MemoryManager::TAG_PATH)
+        
 		if (pathEntries.size() == 0)
 		{
 			return "";
@@ -155,6 +167,8 @@ namespace DAVA
 
 	String PathManip::GetString()
 	{
+        TAG_SWITCH(MemoryManager::TAG_PATH)
+        
 		if (pathEntries.size() == 0)
 		{
 			return "";

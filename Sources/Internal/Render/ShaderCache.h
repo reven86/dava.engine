@@ -44,6 +44,8 @@ class Shader;
 class ShaderAsset : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADER)
+    
     struct DefaultValue
     {
         union
@@ -93,6 +95,8 @@ protected:
 class ShaderCache : public Singleton<ShaderCache>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADER)
+    
     ShaderCache();
     ~ShaderCache();
     

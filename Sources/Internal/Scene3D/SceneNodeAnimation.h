@@ -46,6 +46,8 @@ class SceneNodeAnimation : public BaseObject
 protected:
 	virtual ~SceneNodeAnimation();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE)
+    
 	SceneNodeAnimation(int32 keyCount);
 	
 	SceneNodeAnimationKey & Intepolate(float32 t);

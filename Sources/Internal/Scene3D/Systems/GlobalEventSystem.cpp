@@ -38,6 +38,8 @@ namespace DAVA
     
 void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     scene->GetEventSystem()->GroupNotifyAllSystems(entities, event);
 }
 #if defined (__USE_STL_POOL_ALLOCATOR__)
@@ -85,6 +87,8 @@ void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, u
 #else
 void GlobalEventSystem::Event(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if (entity)
     {
         Scene * scene = entity->GetScene();
@@ -102,6 +106,8 @@ void GlobalEventSystem::Event(Entity * entity, uint32 event)
 
 void GlobalEventSystem::PerformAllEventsFromCache(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Map<Entity*, List<uint32> >::iterator it = eventsCache.find(entity);
     if (it != eventsCache.end())
     {
@@ -118,6 +124,8 @@ void GlobalEventSystem::PerformAllEventsFromCache(Entity * entity)
 
 void GlobalEventSystem::RemoveAllEvents(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Map<Entity*, List<uint32> >::iterator it = eventsCache.find(entity);
     if (it != eventsCache.end())
     {

@@ -43,16 +43,20 @@ DataNode::DataNode()
 ,   pointer(0)
 ,	nodeFlags(0)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
 }
 
 DataNode::~DataNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     //RemoveAllChildren();
 }
     
 int32 DataNode::Release()
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     int32 retainCount = BaseObject::Release();
     return retainCount;
 }
@@ -60,6 +64,8 @@ int32 DataNode::Release()
     
 void DataNode::SetScene(Scene * _scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     DVASSERT(scene == 0 || scene == _scene);
     scene = _scene;
 }
@@ -71,17 +77,23 @@ void DataNode::AddNode(DataNode * node)
 
 int32  DataNode::GetNodeIndex()
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     return index;
 }
 
 uint64 DataNode::GetPreviousPointer()
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     return pointer;
 }
 
     
 void DataNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     BaseObject::Load(archive);
     
     index = archive->GetInt32("#index", -1);
@@ -90,6 +102,8 @@ void DataNode::Load(KeyedArchive * archive, SerializationContext * serialization
 
 void DataNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     BaseObject::Save(archive);
     archive->SetInt32("#index", index);
     

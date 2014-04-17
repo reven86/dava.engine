@@ -83,6 +83,8 @@ namespace DAVA
     
 SceneFileV2::SceneFileV2()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     isDebugLogEnabled = false;
     isSaveForGame = false;
     lastError = ERROR_NO_ERROR;
@@ -96,27 +98,36 @@ SceneFileV2::SceneFileV2()
 
 SceneFileV2::~SceneFileV2()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
 }
     
 const FilePath SceneFileV2::GetScenePath()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     return FilePath(rootNodePathName.GetDirectory());
 }
         
     
 void SceneFileV2::EnableSaveForGame(bool _isSaveForGame)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     isSaveForGame = _isSaveForGame;
 }
 
 void SceneFileV2::EnableDebugLog(bool _isDebugLogEnabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     isDebugLogEnabled = _isDebugLogEnabled;
 	serializationContext.SetDebugLogEnabled(isDebugLogEnabled);
 }
 
 bool SceneFileV2::DebugLogEnabled()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     return isDebugLogEnabled;
 }
     
@@ -142,21 +153,29 @@ DataNode * SceneFileV2::GetNodeByPointer(uint64 pointer)
 
 int32 SceneFileV2::GetVersion()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     return header.version;
 }
     
 void SceneFileV2::SetError(eError error)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     lastError = error;
 }
 
 SceneFileV2::eError SceneFileV2::GetError()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     return lastError;
 }
 
 SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scene *_scene, SceneFileV2::eFileType fileType)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     File * file = File::Create(filename, File::CREATE | File::WRITE);
     if (!file)
     {
@@ -276,6 +295,8 @@ SceneFileV2::eError SceneFileV2::SaveScene(const FilePath & filename, DAVA::Scen
 
 uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	uint32 nodeCount = 0;
 	for (List<DataNode*>::iterator it = nodeList.begin(); it != nodeList.end(); ++it)
 	{
@@ -290,6 +311,8 @@ uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
     
 SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 #if defined(__USE_OWN_ALLOCATORS__)
     StackAllocator *allocator = AllocatorFactory::Instance()->CreateStackAllocator(0);
 #endif
@@ -385,6 +408,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 
 SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     SceneArchive *res = NULL;
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
@@ -441,12 +466,16 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 
 void SceneFileV2::WriteDescriptor(File* file, const Descriptor& descriptor) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	file->Write(&descriptor.size, sizeof(descriptor.size));
 	file->Write(&descriptor.fileType, sizeof(descriptor.fileType));
 }
 	
 void SceneFileV2::ReadDescriptor(File* file, /*out*/ Descriptor& descriptor)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	file->Read(&descriptor.size, sizeof(descriptor.size));
 	DVASSERT(descriptor.size >= sizeof(descriptor.fileType));
 	
@@ -462,6 +491,8 @@ void SceneFileV2::ReadDescriptor(File* file, /*out*/ Descriptor& descriptor)
 
 bool SceneFileV2::SaveDataNode(DataNode * node, File * file)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     KeyedArchive * archive = new KeyedArchive();
     
     node->Save(archive, &serializationContext);
@@ -473,6 +504,8 @@ bool SceneFileV2::SaveDataNode(DataNode * node, File * file)
     
 void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
     
@@ -507,6 +540,8 @@ void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
 
 bool SceneFileV2::SaveDataHierarchy(DataNode * node, File * file, int32 level)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     KeyedArchive * archive = new KeyedArchive();
     node->Save(archive, &serializationContext);
     
@@ -516,6 +551,8 @@ bool SceneFileV2::SaveDataHierarchy(DataNode * node, File * file, int32 level)
 
 void SceneFileV2::LoadDataHierarchy(Scene * scene, DataNode * root, File * file, int32 level)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
     
@@ -554,6 +591,8 @@ void SceneFileV2::LoadDataHierarchy(Scene * scene, DataNode * root, File * file,
     
 void SceneFileV2::AddToNodeMap(DataNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     uint64 ptr = node->GetPreviousPointer();
     
     //if(isDebugLogEnabled)
@@ -564,6 +603,8 @@ void SceneFileV2::AddToNodeMap(DataNode * node)
     
 bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     KeyedArchive * archive = new KeyedArchive();
     if (isDebugLogEnabled)
         Logger::FrameworkDebug("%s %s(%s) %d", GetIndentString('-', level).c_str(), node->GetName().c_str(), node->GetClassName().c_str(), node->GetChildrenCount());
@@ -585,6 +626,8 @@ bool SceneFileV2::SaveHierarchy(Entity * node, File * file, int32 level)
 
 void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entity * parent, File * file, int32 level)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
 
@@ -672,6 +715,8 @@ void SceneFileV2::LoadHierarchy(Scene * scene, NMaterial **globalMaterial, Entit
     
 Entity * SceneFileV2::LoadEntity(Scene * scene, KeyedArchive * archive)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     Entity * entity = new Entity();
     entity->SetScene(scene);
     entity->Load(archive, &serializationContext);
@@ -680,6 +725,8 @@ Entity * SceneFileV2::LoadEntity(Scene * scene, KeyedArchive * archive)
 
 Entity * SceneFileV2::LoadLandscape(Scene * scene, KeyedArchive * archive)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     Entity * landscapeEntity = LoadEntity(scene, archive);
     
     Landscape * landscapeRenderObject = new Landscape();
@@ -694,6 +741,8 @@ Entity * SceneFileV2::LoadLandscape(Scene * scene, KeyedArchive * archive)
 
 Entity * SceneFileV2::LoadCamera(Scene * scene, KeyedArchive * archive)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     Entity * cameraEntity = LoadEntity(scene, archive);
     
     Camera * cameraObject = new Camera();
@@ -707,6 +756,8 @@ Entity * SceneFileV2::LoadCamera(Scene * scene, KeyedArchive * archive)
 
 Entity * SceneFileV2::LoadLight(Scene * scene, KeyedArchive * archive)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     Entity * lightEntity = LoadEntity(scene, archive);
     
     bool isDynamic = lightEntity->GetCustomProperties()->GetBool("editor.dynamiclight.enable", true);
@@ -724,6 +775,8 @@ Entity * SceneFileV2::LoadLight(Scene * scene, KeyedArchive * archive)
 
 void SceneFileV2::ConvertShadows(Entity * currentNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
 	{
 		Entity * childNode = currentNode->GetChild(c);
@@ -748,6 +801,8 @@ void SceneFileV2::ConvertShadows(Entity * currentNode)
     
 bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity * currentNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     for (int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
     {
         Entity * childNode = currentNode->GetChild(c);
@@ -795,6 +850,8 @@ bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity * currentNode)
     
 bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     for (int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
     {
         Entity * childNode = currentNode->GetChild(c);
@@ -872,6 +929,8 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
     
 bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     MeshInstanceNode * oldMeshInstanceNode = dynamic_cast<MeshInstanceNode*>(node);
     if (oldMeshInstanceNode)
     {
@@ -1163,6 +1222,8 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 
 void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
 	{
 		Entity * childNode = currentNode->GetChild(c);
@@ -1182,6 +1243,8 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
     
 void SceneFileV2::OptimizeScene(Entity * rootNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     int32 beforeCount = rootNode->GetChildrenCountRecursive();
     removedNodeCount = 0;
     rootNode->BakeTransforms();
@@ -1213,13 +1276,17 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 
 void SceneFileV2::SetVersion( int32 version )
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	header.version = version;
 }
 
 
 
 SceneArchive::~SceneArchive()
-{    
+{
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     for (int32 i=0, sz = dataNodes.size(); i<sz; ++i)
     {
         SafeRelease(dataNodes[i]);
@@ -1232,10 +1299,14 @@ SceneArchive::~SceneArchive()
 
 SceneArchive::SceneArchiveHierarchyNode::SceneArchiveHierarchyNode():archive(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 }
 
 void SceneArchive::SceneArchiveHierarchyNode::LoadHierarchy(File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     archive = new KeyedArchive();
     archive->Load(file);
     int32 childrenCount = archive->GetInt32("#childrenCount", 0);
@@ -1250,6 +1321,8 @@ void SceneArchive::SceneArchiveHierarchyNode::LoadHierarchy(File *file)
 
 SceneArchive::SceneArchiveHierarchyNode::~SceneArchiveHierarchyNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     SafeRelease(archive);
     for (int32 i=0, sz = children.size(); i<sz; ++i)
     {

@@ -38,32 +38,38 @@ ProxyNode::ProxyNode()
     : DataNode()
     , node(0)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
 }
 
 ProxyNode::~ProxyNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     SafeRelease(node);
 }
     
 void ProxyNode::SetNode(Entity * _node)
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     SafeRelease(node);
     node = SafeRetain(_node);
 }
 
 Entity * ProxyNode::GetNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     return node;
 }
 
 void ProxyNode::Update(float32 timeElapsed)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
 }
 void ProxyNode::Draw()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
 }
 
 }

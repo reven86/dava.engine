@@ -52,6 +52,8 @@ namespace DAVA
     
 PolygonGroupWithMaterial::PolygonGroupWithMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     mesh = 0;
     polygroupIndex = 0;
     material = 0;
@@ -83,12 +85,16 @@ PolygonGroupWithMaterial::PolygonGroupWithMaterial()
     
 PolygonGroupWithMaterial::~PolygonGroupWithMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     SafeRelease(mesh);
     SafeRelease(material);
 }
 
 void PolygonGroupWithMaterial::Setup(StaticMesh * _mesh, int32 _polygroupIndex, Material * _material, TransformComponent * _transform)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     mesh = SafeRetain(_mesh);
     polygroupIndex = _polygroupIndex;
     material = SafeRetain(_material);
@@ -121,31 +127,43 @@ void PolygonGroupWithMaterial::Setup(StaticMesh * _mesh, int32 _polygroupIndex, 
 
 StaticMesh * PolygonGroupWithMaterial::GetMesh()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return mesh;
 }
     
 int32 PolygonGroupWithMaterial::GetPolygroupIndex()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return polygroupIndex;
 }
 
 PolygonGroup * PolygonGroupWithMaterial::GetPolygonGroup()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return mesh->GetPolygonGroup(polygroupIndex);
 }
 
 Material * PolygonGroupWithMaterial::GetMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return material;
 }
     
 NMaterial * PolygonGroupWithMaterial::GetNMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return nMaterial;
 }
     
 NMaterialInstance * PolygonGroupWithMaterial::GetNMaterialInstance()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return nMaterialInstance;
 }
     
@@ -168,16 +186,20 @@ NMaterialInstance * PolygonGroupWithMaterial::GetNMaterialInstance()
     
 uint64 PolygonGroupWithMaterial::GetSortID()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return 0;
 }
     
 void PolygonGroupWithMaterial::Draw()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
 }
 
 ShadowVolume * PolygonGroupWithMaterial::CreateShadow()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
 	return NULL;
 }
 
@@ -186,6 +208,8 @@ ShadowVolume * PolygonGroupWithMaterial::CreateShadow()
 MeshInstanceNode::MeshInstanceNode()
 :	Entity()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     //Logger::FrameworkDebug("MeshInstance: %p", this);
 	materialState = new InstanceMaterialState();
     
@@ -199,6 +223,8 @@ MeshInstanceNode::MeshInstanceNode()
 	
 MeshInstanceNode::~MeshInstanceNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	ClearLightmaps();
 
     for (int32 idx = 0; idx < (int32)polygroups.size(); ++idx)
@@ -214,6 +240,8 @@ MeshInstanceNode::~MeshInstanceNode()
 
 void MeshInstanceNode::AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupIndex, Material* material)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     PolygonGroupWithMaterial * polygroup = new PolygonGroupWithMaterial();
     polygroup->Setup(mesh, polygonGroupIndex, material, (TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT));
 	polygroups.push_back(polygroup);
@@ -232,16 +260,22 @@ void MeshInstanceNode::AddPolygonGroup(StaticMesh * mesh, int32 polygonGroupInde
     
 uint32 MeshInstanceNode::GetRenderBatchCount()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return (uint32)polygroups.size();
 }
 
 RenderBatch * MeshInstanceNode::GetRenderBatch(uint32 batchIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return polygroups[batchIndex];
 }
     
 void MeshInstanceNode::Update(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     //Stats::Instance()->BeginTimeMeasure("Scene.Update.MeshInstanceNode.Update", this);
 
     bool needUpdateTransformBox = false;
@@ -270,12 +304,16 @@ void MeshInstanceNode::Update(float32 timeElapsed)
     
 uint64 MeshInstanceNode::GetSortID()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return 0; 
 }
 
     
 void MeshInstanceNode::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     //Stats::Instance()->BeginTimeMeasure("Scene.Draw.MeshInstanceNode.Draw", this);
 
 #if 0
@@ -459,6 +497,8 @@ void MeshInstanceNode::Draw()
 
 Entity* MeshInstanceNode::Clone(Entity *dstNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if (!dstNode) 
     {
 		DVASSERT_MSG(IsPointerToExactClass<MeshInstanceNode>(this), "Can clone only MeshInstanceNode");
@@ -481,6 +521,8 @@ Entity* MeshInstanceNode::Clone(Entity *dstNode)
 
 AABBox3 MeshInstanceNode::GetWTMaximumBoundingBoxSlow()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	AABBox3 retBBox = transformedBox;
     
 #if defined (__USE_STL_POOL_ALLOCATOR__)
@@ -504,6 +546,8 @@ AABBox3 MeshInstanceNode::GetWTMaximumBoundingBoxSlow()
     
 void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Entity::Save(archive, serializationContext);
 //    archive->SetInt32("lodCount", (int32)lodLayers.size());
 //    
@@ -564,6 +608,8 @@ void MeshInstanceNode::Save(KeyedArchive * archive, SerializationContext * seria
 
 void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Entity::Load(archive, serializationContext);
 
     static const int32 errorIdx = -1;
@@ -668,11 +714,15 @@ void MeshInstanceNode::Load(KeyedArchive * archive, SerializationContext * seria
     
 Vector<PolygonGroupWithMaterial*> & MeshInstanceNode::GetPolygonGroups()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return polygroups;
 }
 
 void MeshInstanceNode::AddLightmap(int32 polygonGroupIndex, const LightmapData & lightmapData)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	LightmapData data = lightmapData;
 	data.lightmap = Texture::CreateFromFile(data.lightmapName);
 
@@ -686,11 +736,15 @@ void MeshInstanceNode::AddLightmap(int32 polygonGroupIndex, const LightmapData &
 
 void MeshInstanceNode::AddLightmap(const LightmapData & lightmapData)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	AddLightmap(lightmaps.size(), lightmapData);
 }
 
 void MeshInstanceNode::ClearLightmaps()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Vector<LightmapData>::iterator lighmapsEnd = lightmaps.end();
 	for(Vector<LightmapData>::iterator lightmapsIterator = lightmaps.begin(); lightmapsIterator != lighmapsEnd; ++lightmapsIterator)
 	{
@@ -703,12 +757,16 @@ void MeshInstanceNode::ClearLightmaps()
     
 void MeshInstanceNode::ReplaceMaterial(DAVA::Material *material, int32 index)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     SafeRelease(polygroups[index]->material);
     polygroups[index]->material = SafeRetain(material);
 }
 
 MeshInstanceNode::LightmapData * MeshInstanceNode::GetLightmapDataForIndex(int32 index)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(index < (int32)lightmaps.size())
 	{
 		return &(lightmaps[index]);
@@ -721,11 +779,15 @@ MeshInstanceNode::LightmapData * MeshInstanceNode::GetLightmapDataForIndex(int32
 
 int32 MeshInstanceNode::GetLightmapCount()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return lightmaps.size();
 }
     
 void MeshInstanceNode::CreateDynamicShadowNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	ShadowVolumeNode * shadowVolume = new ShadowVolumeNode();
 	shadowVolume->SetName("dynamicshadow.shadowvolume");
 
@@ -737,12 +799,16 @@ void MeshInstanceNode::CreateDynamicShadowNode()
 
 void MeshInstanceNode::DeleteDynamicShadowNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	ShadowVolumeNode * shadowVolume = (ShadowVolumeNode*)FindByName(FastName("dynamicshadow.shadowvolume"));
 	RemoveNode(shadowVolume);
 }
 
 void MeshInstanceNode::ConvertToShadowVolume()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	ShadowVolumeNode * shadowVolume = new ShadowVolumeNode();
 	shadowVolume->SetName("dynamicshadow.shadowvolume");
 
@@ -754,6 +820,8 @@ void MeshInstanceNode::ConvertToShadowVolume()
 
 void MeshInstanceNode::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 //    const List<LodData>::iterator & end = lodLayers.end();
 //    for (List<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
 //    {
@@ -776,6 +844,8 @@ void MeshInstanceNode::GetDataNodes(Set<DataNode*> & dataNodes)
     
 void MeshInstanceNode::BakeTransforms()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     const Matrix4 & localTransform = GetLocalTransform();
 
     Set<PolygonGroup*> groupsToBatch;
@@ -815,6 +885,8 @@ void MeshInstanceNode::BakeTransforms()
     
 void MeshInstanceNode::UpdateLights()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Vector3 meshPosition = Vector3() * GetWorldTransform();
     Light * nearestLight = scene->GetNearestDynamicLight(Light::TYPE_COUNT, meshPosition);
 
@@ -823,11 +895,15 @@ void MeshInstanceNode::UpdateLights()
 
 void MeshInstanceNode::RegisterNearestLight(Light * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     materialState->SetLight(0, node);
 }
 
 bool MeshInstanceNode::HasLightmaps()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return lightmaps.size() > 0;
 }
 

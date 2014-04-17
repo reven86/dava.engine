@@ -121,6 +121,8 @@ namespace DAVA
 	
 RenderHelper::RenderHelper()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     renderDataObject = new RenderDataObject();
     vertexStream = renderDataObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
 
@@ -130,12 +132,16 @@ RenderHelper::RenderHelper()
 }
 RenderHelper::~RenderHelper()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     SafeRelease(renderDataObject);
 	SafeRelease(gDodecObject);
 }
     
 void RenderHelper::FillRect(const Rect & rect, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
@@ -160,6 +166,8 @@ void RenderHelper::FillRect(const Rect & rect, UniqueHandle renderState)
 
 void RenderHelper::DrawRect(const Rect & rect, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     vertices[0] = rect.x;						
     vertices[1] = rect.y;
     vertices[2] = rect.x + rect.dx;
@@ -181,6 +189,8 @@ void RenderHelper::DrawRect(const Rect & rect, UniqueHandle renderState)
 
 void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Color& color, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     // TODO! review with Ivan/Victor whether it is not performance problem!
     Vector<float32> gridVertices;
     int32 verLinesCount = (int32)ceilf(rect.dx / gridSize.x);
@@ -225,6 +235,8 @@ void RenderHelper::DrawGrid(const Rect & rect, const Vector2& gridSize, const Co
 
 void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     vertices[0] = start.x;						
     vertices[1] = start.y;
     vertices[2] = end.x;
@@ -240,6 +252,8 @@ void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHand
 
 	void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, float32 lineWidth, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		vertices[0] = start.x;
 		vertices[1] = start.y;
 		vertices[2] = end.x;
@@ -263,6 +277,8 @@ void RenderHelper::DrawLine(const Vector2 &start, const Vector2 &end, UniqueHand
     
 void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 lineWidth, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     vertices[0] = start.x;						
     vertices[1] = start.y;
     vertices[2] = start.z;
@@ -289,6 +305,8 @@ void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 
 
 void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     vertexStream->Set(TYPE_FLOAT, 2, 0, linePoints.data());
 
     RenderManager::Instance()->SetRenderState(renderState);
@@ -301,6 +319,8 @@ void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle ren
 
 void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined (__DAVAENGINE_OPENGL__)
     glPointSize(ptSize);
 #endif 
@@ -317,6 +337,8 @@ void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle re
 	
 void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined (__DAVAENGINE_OPENGL__)
     glPointSize(ptSize);
 #endif 
@@ -333,6 +355,8 @@ void RenderHelper::DrawPoint(const Vector3 & pt, float32 ptSize, UniqueHandle re
 	
 void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Polygon2 pts;
     float32 angle = Min(PI/6.0f, SEGMENT_LENGTH / radius);// minimum angle 30 degrees
 	int ptsCount = (int)(2 * PI / angle) + 1;
@@ -353,6 +377,8 @@ void RenderHelper::DrawCircle(const Vector2 & center, float32 radius, UniqueHand
 
 void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Polygon3 pts;
     float32 angle = SEGMENT_LENGTH / radius;
 	int ptsCount = (int)(2 * PI / (DegToRad(angle))) + 1;
@@ -372,6 +398,8 @@ void RenderHelper::DrawCircle(const Vector3 & center, float32 radius, UniqueHand
 
 void RenderHelper::DrawCircle3D(const Vector3 & center, const Vector3 &emissionVector, float32 radius, bool useFilling, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Polygon3 pts;
     float32 angle = SEGMENT_LENGTH / radius;
 	int ptsCount = (int)(PI_2 / (DegToRad(angle))) + 1;
@@ -425,6 +453,8 @@ void RenderHelper::DrawCircle3D(const Vector3 & center, const Vector3 &emissionV
 
 void RenderHelper::DrawCylinder(const Vector3 & center, float32 radius, bool useFilling, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Polygon3 pts;
     float32 angle = SEGMENT_LENGTH / radius;
 	int32 ptsCount = (int32)(PI_2 / (DegToRad(angle))) + 1;
@@ -463,6 +493,8 @@ void RenderHelper::DrawCylinder(const Vector3 & center, float32 radius, bool use
 
 void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	int ptCount = polygon.pointCount;
 	if (ptCount >= 1)
 	{
@@ -483,6 +515,8 @@ void RenderHelper::DrawPolygonPoints(const Polygon2 & polygon, UniqueHandle rend
 	
 void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	int ptCount = polygon.pointCount;
 	if (ptCount >= 1)
 	{
@@ -503,6 +537,8 @@ void RenderHelper::DrawPolygonPoints(const Polygon3 & polygon, UniqueHandle rend
 	
 void RenderHelper::DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     int ptCount = polygon.pointCount;
 	if (ptCount >= 2)
 	{		
@@ -526,6 +562,8 @@ void RenderHelper::DrawPolygon(const Polygon3 & polygon, bool closed, UniqueHand
 
 void RenderHelper::DrawPolygon( const Polygon2 & polygon, bool closed, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	int ptCount = polygon.pointCount;
 	if (ptCount >= 2)
 	{		
@@ -546,6 +584,8 @@ void RenderHelper::DrawPolygon( const Polygon2 & polygon, bool closed, UniqueHan
     
 void RenderHelper::FillPolygon(const Polygon2 & polygon, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     int ptCount = polygon.pointCount;
 	if (ptCount >= 3)
 	{		
@@ -559,6 +599,8 @@ void RenderHelper::FillPolygon(const Polygon2 & polygon, UniqueHandle renderStat
 
 void RenderHelper::FillPolygon(const Polygon3 & polygon, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     int ptCount = polygon.pointCount;
 	if (ptCount >= 3)
 	{		
@@ -573,6 +615,8 @@ void RenderHelper::FillPolygon(const Polygon3 & polygon, UniqueHandle renderStat
 
 void RenderHelper::DrawPolygonTransformed(const Polygon2 & polygon, bool closed, const Matrix3 & transform, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Polygon2 copyPoly = polygon;
 	copyPoly.Transform(transform);
 	RenderHelper::Instance()->DrawPolygon(copyPoly, closed, renderState);
@@ -681,6 +725,8 @@ void RenderHelper::DrawStrippedLine(Polygon2 & polygon, float lineLen, float spa
     
 void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, float te, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Polygon3 pts;
     pts.points.reserve(segments);
 	for (int k = 0; k < segments; ++k)
@@ -692,6 +738,8 @@ void RenderHelper::DrawBSpline(BezierSpline3 * bSpline, int segments, float ts, 
 	
 void RenderHelper::DrawInterpolationFunc(Interpolation::Func func, const Rect & destRect, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Polygon3 pts;
 	int segmentsCount = 20;
     pts.points.reserve(segmentsCount);
@@ -708,6 +756,8 @@ void RenderHelper::DrawInterpolationFunc(Interpolation::Func func, const Rect & 
 	
 void RenderHelper::DrawBox(const AABBox2 & box, float32 lineWidth, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.min.y, 0), Vector3(box.max.x, box.min.y, 0), lineWidth, renderState);
 	RenderHelper::Instance()->DrawLine(Vector3(box.max.x, box.min.y, 0), Vector3(box.max.x, box.max.y, 0), lineWidth, renderState);
 	RenderHelper::Instance()->DrawLine(Vector3(box.max.x, box.max.y, 0), Vector3(box.min.x, box.max.y, 0), lineWidth, renderState);
@@ -716,6 +766,8 @@ void RenderHelper::DrawBox(const AABBox2 & box, float32 lineWidth, UniqueHandle 
 	
 void RenderHelper::DrawBox(const AABBox3 & box, float32 lineWidth, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.min.y, box.min.z), Vector3(box.min.x, box.min.y, box.max.z), lineWidth, renderState);
 	RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.min.y, box.min.z), Vector3(box.min.x, box.max.y, box.min.z), lineWidth, renderState);
 	RenderHelper::Instance()->DrawLine(Vector3(box.min.x, box.max.y, box.max.z), Vector3(box.min.x, box.min.y, box.max.z), lineWidth, renderState);
@@ -735,6 +787,8 @@ void RenderHelper::DrawBox(const AABBox3 & box, float32 lineWidth, UniqueHandle 
 	
 void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, UniqueHandle renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	float32 offs = ((bbox.max - bbox.min).Length()) * 0.1f + 0.1f;
     
     //1
@@ -788,6 +842,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 	
 	void RenderHelper::DrawSphere(const Vector3 &center, float32 radius, float32 lineWidth, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		int32 n = 2;
         Vector<Vector3> points;
         Vector<int32> triangleIndices;
@@ -874,6 +930,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 	void RenderHelper::FillSphere(const Vector3 &center, float32 radius, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		int32 n = 2;
 		Vector<Vector3> points;
 		Vector<int32> triangleIndices;
@@ -944,6 +1002,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 	void RenderHelper::DrawArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		if(0 != lineWidth && from != to)
 		{
 			Vector3 d = to - from;
@@ -990,6 +1050,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 	void RenderHelper::FillArrow(const Vector3 &from, const Vector3 &to, float32 arrowLength, float32 lineWidth, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		Vector3 d = to - from;
 		Vector3 c = to - (d * arrowLength / d.Length());
 
@@ -1063,6 +1125,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 	void RenderHelper::FillBox(const AABBox3 & box, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		DAVA::Vector3 min = box.min;
 		DAVA::Vector3 max = box.max;
 
@@ -1113,6 +1177,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 	void RenderHelper::DrawDodecahedron(const Vector3 &center, float32 radius, float32 lineWidth /* = 1.f */, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         if (gDodecObject->GetIndexBufferID() != 0)
         {
             gDodecObject->BuildVertexBuffer(sizeof(gDodecVertexes) / sizeof(gDodecVertexes[0]));
@@ -1142,6 +1208,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 
 	void RenderHelper::FillDodecahedron(const Vector3 &center, float32 radius, UniqueHandle renderState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         if (gDodecObject->GetIndexBufferID() != 0)
         {
             gDodecObject->BuildVertexBuffer(sizeof(gDodecVertexes) / sizeof(gDodecVertexes[0]));
@@ -1172,6 +1240,8 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 	void RenderHelper::GetLineWidthRange(int32& rangeMin, int32& rangeMax)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		int32 lineWidthMin = 1;
 		int32 lineWidthMax = 1;
 

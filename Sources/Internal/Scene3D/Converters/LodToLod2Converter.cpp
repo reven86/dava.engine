@@ -33,6 +33,8 @@ static int32 emptyEntities = 0;
 
 void LodToLod2Converter::ConvertLodToV2(Entity * scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
 	emptyEntities = 0;
 	LodSystem::UpdateEntitiesAfterLoad(scene);
 	SearchForLod(scene);
@@ -40,6 +42,8 @@ void LodToLod2Converter::ConvertLodToV2(Entity * scene)
 
 void LodToLod2Converter::SearchForLod(Entity * currentNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
 	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
 	{
 		Entity * childNode = currentNode->GetChild(c);
@@ -54,6 +58,8 @@ void LodToLod2Converter::SearchForLod(Entity * currentNode)
 
 bool LodToLod2Converter::MergeLod(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
     if (GetEffectComponent(entity))
     {
         return false;
@@ -192,6 +198,8 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
 
 void LodToLod2Converter::FindAndEraseRenderObjectsRecursive(Entity * fromEntity, Vector<std::pair<Entity*, RenderObject*> > & entitiesAndRenderObjects)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
     RenderObject * ro = GetRenderObject(fromEntity);
     if(ro && ro->GetType() == RenderObject::TYPE_MESH)
     {
@@ -210,6 +218,8 @@ void LodToLod2Converter::FindAndEraseRenderObjectsRecursive(Entity * fromEntity,
 
 void LodToLod2Converter::ConvertToShadowRecursive( Entity *entity )
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
 	if(entity->GetName().find("_shadow") != String::npos)
 	{
 		RenderObject * ro = GetRenderObject(entity);

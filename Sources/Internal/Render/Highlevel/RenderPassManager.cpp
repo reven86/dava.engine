@@ -40,12 +40,16 @@ namespace DAVA
     
 void RenderPassManager::InsertPass(RenderPass * renderPass)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     array[renderPass->GetRenderPassID()] = renderPass;
     map[renderPass->GetName()] = renderPass;
 }
 
 void RenderPassManager::Release()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     size_t size = array.size();
     for (size_t i = 0; i < size; ++i)
         SafeDelete(array[i]);
@@ -57,6 +61,8 @@ RenderPassManager::RenderPassManager(RenderSystem * renderSystem)
     : array(RENDER_PASS_ID_COUNT)
     , map(RENDER_PASS_ID_COUNT)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
 
     RenderPass * forwardPass = new RenderPass(PASS_FORWARD, RENDER_PASS_FORWARD_ID);
@@ -80,6 +86,8 @@ RenderPassManager::RenderPassManager(RenderSystem * renderSystem)
 
 RenderPassManager::~RenderPassManager()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     Release();
 }
 

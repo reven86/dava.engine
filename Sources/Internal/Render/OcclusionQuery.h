@@ -43,6 +43,8 @@ namespace DAVA
 class OcclusionQuery
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_OCLUSSION)
+    
     OcclusionQuery();
     ~OcclusionQuery();
     
@@ -67,6 +69,8 @@ template<uint32 N, uint32 M>
 class SmartHandle
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_OCLUSSION)
+    
     inline SmartHandle() {}
     inline SmartHandle(uint32 _index, uint32 _salt)
     : index(_index)
@@ -82,6 +86,8 @@ typedef SmartHandle<32, 32> OcclusionQueryManagerHandle;
 class OcclusionQueryManager
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_OCLUSSION)
+    
     static const uint32 INVALID_INDEX = 0xFFFFFFFF;
     
     OcclusionQueryManager(uint32 occlusionQueryCount);
@@ -106,6 +112,8 @@ private:
     
 inline OcclusionQuery & OcclusionQueryManager::Get(OcclusionQueryManagerHandle handle)
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
     return queries[handle.index].query;
 }
 

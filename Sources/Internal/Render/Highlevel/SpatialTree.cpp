@@ -8,11 +8,15 @@ namespace DAVA
 {
 QuadTree::QuadTreeNode::QuadTreeNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	Reset();
 }
 
 void QuadTree::QuadTreeNode::Reset()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	parent=INVALID_TREE_NODE_INDEX;
 	for (int32 i=0; i<4; i++)
 		children[i] = INVALID_TREE_NODE_INDEX;	
@@ -23,13 +27,17 @@ void QuadTree::QuadTreeNode::Reset()
 QuadTree::QuadTree(int32 _maxTreeDepth)
 	: maxTreeDepth(_maxTreeDepth)
 	, worldInitialized(false)
-{		    
+{
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	debugDrawStateHandle = InvalidUniqueHandle;
 }
 
 
 bool QuadTree::CheckBoxIntersectBranch(const AABBox3& objBox, float32 xmin, float32 ymin, float32 xmax, float32 ymax)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	
 	if ((xmin>objBox.max.x)||(ymin>objBox.max.y)||(xmax<objBox.min.x)||(ymax<objBox.min.y))
 		return false;
@@ -38,11 +46,15 @@ bool QuadTree::CheckBoxIntersectBranch(const AABBox3& objBox, float32 xmin, floa
 
 bool QuadTree::CheckObjectFitNode(const AABBox3& objBox, const AABBox3& nodeBox)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	return (objBox.min.x>=nodeBox.min.x)&&(objBox.min.y>=nodeBox.min.y)&&(objBox.max.x<=nodeBox.max.x)&&(objBox.max.y<=nodeBox.max.y);
 }
 
 bool QuadTree::CheckBoxIntersectChild(const AABBox3& objBox, const AABBox3& nodeBox, QuadTreeNode::eNodeType nodeType)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	//note - this code assumes box already intersects parent
 	switch (nodeType)
 	{
@@ -61,6 +73,8 @@ bool QuadTree::CheckBoxIntersectChild(const AABBox3& objBox, const AABBox3& node
 
 void QuadTree::UpdateChildBox(AABBox3 &parentBox, QuadTreeNode::eNodeType childType)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	switch (childType)
 	{
 	case  QuadTreeNode::NODE_LB:
@@ -85,6 +99,8 @@ void QuadTree::UpdateChildBox(AABBox3 &parentBox, QuadTreeNode::eNodeType childT
 
 void QuadTree::UpdateParentBox(AABBox3 &childtBox, QuadTreeNode::eNodeType childType)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	switch (childType)
 	{
 	case  QuadTreeNode::NODE_LB:
@@ -109,6 +125,8 @@ void QuadTree::UpdateParentBox(AABBox3 &childtBox, QuadTreeNode::eNodeType child
 
 uint16 QuadTree::FindObjectAddNode(uint16 startNodeId, const AABBox3& objBox)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	uint16 currIndex = startNodeId;					
 
 	bool placeHere = false;
@@ -189,6 +207,8 @@ uint16 QuadTree::FindObjectAddNode(uint16 startNodeId, const AABBox3& objBox)
 
 void QuadTree::MarkNodeDirty(uint16 nodeId)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	if ((nodes[nodeId].nodeInfo&QuadTreeNode::DIRTY_Z_MASK)!=QuadTreeNode::DIRTY_Z_MASK)
 	{		
 		nodes[nodeId].nodeInfo |= QuadTreeNode::DIRTY_Z_MASK;
@@ -198,6 +218,8 @@ void QuadTree::MarkNodeDirty(uint16 nodeId)
 
 void QuadTree::MarkObjectDirty(RenderObject *object)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	if (!(object->GetFlags()&RenderObject::TREE_NODE_NEED_UPDATE))
 	{
 		object->AddFlag(RenderObject::TREE_NODE_NEED_UPDATE);
@@ -207,6 +229,8 @@ void QuadTree::MarkObjectDirty(RenderObject *object)
 
 void QuadTree::RecalculateNodeZLimits(uint16 nodeId)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	QuadTreeNode& currNode = nodes[nodeId];
 	currNode.bbox.min.z = AABBOX_INFINITY;
 	currNode.bbox.max.z = -AABBOX_INFINITY;
@@ -232,7 +256,9 @@ void QuadTree::RecalculateNodeZLimits(uint16 nodeId)
 }
 
 void QuadTree::AddRenderObject(RenderObject * renderObject)
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	DVASSERT(renderObject->GetTreeNodeIndex()==INVALID_TREE_NODE_INDEX);		
 	
 	if (!worldInitialized)
@@ -262,6 +288,8 @@ void QuadTree::AddRenderObject(RenderObject * renderObject)
 
 void QuadTree::RemoveRenderObject(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	if (!worldInitialized)
 	{
 		List<RenderObject *>::iterator it = std::find(worldInitObjects.begin(), worldInitObjects.end(), renderObject);
@@ -313,7 +341,8 @@ void QuadTree::RemoveRenderObject(RenderObject * renderObject)
 
 void QuadTree::Initialize()
 {
-	
+	TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 
 	worldBox = AABBox3();
 	
@@ -340,6 +369,8 @@ void QuadTree::Initialize()
 
 void QuadTree::ObjectUpdated(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
     if (renderObject->GetFlags() & RenderObject::ALWAYS_CLIPPING_VISIBLE)return;
     
     
@@ -427,7 +458,9 @@ void QuadTree::ObjectUpdated(RenderObject * renderObject)
 }
 
 void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
-{		
+{
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	QuadTreeNode& currNode = nodes[nodeId];	
 	int32 objectsSize = currNode.objects.size();
 	int32 clipBoxCount = (currNode.nodeInfo&QuadTreeNode::NUM_CHILD_NODES_MASK) + objectsSize; //still can sometime try to clip node with only invisible objects
@@ -476,6 +509,8 @@ void QuadTree::ProcessNodeClipping(uint16 nodeId, uint8 clippingFlags)
 
 void QuadTree::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 visibilityCriteria)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	DVASSERT(worldInitialized);
 	currCamera = camera;
 	currVisibilityCriteria = visibilityCriteria;
@@ -488,6 +523,8 @@ void QuadTree::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 
     
 void QuadTree::GetObjects(uint16 nodeId, uint8 clippingFlags, const AABBox3 & bbox, VisibilityArray * visibilityArray)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
     QuadTreeNode& currNode = nodes[nodeId];
     int32 objectsSize = currNode.objects.size();
 
@@ -529,7 +566,9 @@ void QuadTree::GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visib
     
     
 void QuadTree::Update()
-{		
+{
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	DVASSERT(worldInitialized);		
 	int32 count = 0;
 	for (List<int32>::iterator it = dirtyZNodes.begin(), e=dirtyZNodes.end(); (it!=e)&&(count<RECALCULATE_Z_PER_FRAME); ++count)
@@ -574,6 +613,8 @@ void QuadTree::Update()
 
 void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	if (!worldInitialized) return;
 	if (debugDrawStateHandle == InvalidUniqueHandle) //create debug draw state
 	{
@@ -594,7 +635,9 @@ void QuadTree::DebugDraw(const Matrix4& cameraMatrix)
 }
 
 void QuadTree::DebugDrawNode(uint16 nodeId)
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_SPATIALTREE)
+    
 	RenderManager::Instance()->SetColor(0.2f, 0.2f, 1.0f, 1.0f);	
 	for (int32 i = 0, size = nodes[nodeId].objects.size(); i<size; ++i)
 	{

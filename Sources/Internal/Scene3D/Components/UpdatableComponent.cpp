@@ -41,10 +41,13 @@ REGISTER_CLASS(UpdatableComponent);
 UpdatableComponent::UpdatableComponent()
 :	updatableObject(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 Component * UpdatableComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	UpdatableComponent * newComponent = new UpdatableComponent();
 	newComponent->SetEntity(toEntity);
 
@@ -55,6 +58,8 @@ Component * UpdatableComponent::Clone(Entity * toEntity)
 
 void UpdatableComponent::SetUpdatableObject(IUpdatable * _updatableObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	updatableObject = _updatableObject;
 
 	if(entity)
@@ -66,6 +71,8 @@ void UpdatableComponent::SetUpdatableObject(IUpdatable * _updatableObject)
 
 IUpdatable * UpdatableComponent::GetUpdatableObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return updatableObject;
 }
 

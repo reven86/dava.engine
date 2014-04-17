@@ -44,6 +44,8 @@ namespace DAVA
 class LandscapeCursor
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_LANDSCAPE)
+    
 	LandscapeCursor();
 	~LandscapeCursor();
 

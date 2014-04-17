@@ -39,11 +39,14 @@ QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
     , curSoundQuality(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Load("~res:/quality.yaml");
 }
 
 void QualitySettingsSystem::Load(const FilePath &path)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
     Logger::FrameworkDebug("Trying to loading QUALITY from: %s", path.GetAbsolutePathname().c_str());
 
     if(path.Exists())
@@ -206,11 +209,15 @@ void QualitySettingsSystem::Load(const FilePath &path)
 
 size_t QualitySettingsSystem::GetTextureQualityCount() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return textureQualities.size();
 }
 
 FastName QualitySettingsSystem::GetTextureQualityName(size_t index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     FastName ret;
 
     if(index < textureQualities.size())
@@ -223,11 +230,15 @@ FastName QualitySettingsSystem::GetTextureQualityName(size_t index) const
 
 FastName QualitySettingsSystem::GetCurTextureQuality() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return GetTextureQualityName(curTextureQuality);
 }
 
 void QualitySettingsSystem::SetCurTextureQuality(const FastName &name)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     for(size_t i = 0; i < textureQualities.size(); ++i)
     {
         if(textureQualities[i].name == name)
@@ -242,6 +253,8 @@ void QualitySettingsSystem::SetCurTextureQuality(const FastName &name)
 
 const TextureQuality* QualitySettingsSystem::GetTxQuality(const FastName &name) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     const TextureQuality *ret = NULL;
 
     for(size_t i = 0; i < textureQualities.size(); ++i)
@@ -260,11 +273,15 @@ const TextureQuality* QualitySettingsSystem::GetTxQuality(const FastName &name) 
 
 size_t QualitySettingsSystem::GetSFXQualityCount() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return soundQualities.size();
 }
 
 FastName QualitySettingsSystem::GetSFXQualityName(size_t index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     FastName ret;
 
     if(index < soundQualities.size())
@@ -277,11 +294,15 @@ FastName QualitySettingsSystem::GetSFXQualityName(size_t index) const
 
 FastName QualitySettingsSystem::GetCurSFXQuality() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return GetSFXQualityName(curSoundQuality);
 }
 
 void QualitySettingsSystem::SetCurSFXQuality(const FastName &name)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     for(size_t i = 0; i < soundQualities.size(); ++i)
     {
         if(soundQualities[i].name == name)
@@ -294,6 +315,8 @@ void QualitySettingsSystem::SetCurSFXQuality(const FastName &name)
 
 FilePath QualitySettingsSystem::GetSFXQualityConfigPath(const FastName &name) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     FilePath ret;
 
     for(size_t i = 0; i < soundQualities.size(); ++i)
@@ -310,6 +333,8 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(const FastName &name) co
 
 FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     FilePath ret;
 
     if(index < soundQualities.size())
@@ -322,11 +347,15 @@ FilePath QualitySettingsSystem::GetSFXQualityConfigPath(size_t index) const
 
 size_t QualitySettingsSystem::GetMaterialQualityGroupCount() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return materialGroups.size();
 }
 
 FastName QualitySettingsSystem::GetMaterialQualityGroupName(size_t index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     FastName ret;
 
     if(index < materialGroups.size())
@@ -339,6 +368,8 @@ FastName QualitySettingsSystem::GetMaterialQualityGroupName(size_t index) const
 
 size_t QualitySettingsSystem::GetMaterialQualityCount(const FastName &group) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     size_t ret = 0;
 
     if(materialGroups.count(group) > 0)
@@ -351,6 +382,8 @@ size_t QualitySettingsSystem::GetMaterialQualityCount(const FastName &group) con
 
 FastName QualitySettingsSystem::GetMaterialQualityName(const FastName &group, size_t index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     FastName ret;
 
     if(materialGroups.count(group) > 0 && index < materialGroups[group].qualities.size())
@@ -363,6 +396,8 @@ FastName QualitySettingsSystem::GetMaterialQualityName(const FastName &group, si
 
 FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName &group) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     FastName ret;
 
     if(materialGroups.count(group) > 0)
@@ -375,6 +410,8 @@ FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName &group) con
 
 void QualitySettingsSystem::SetCurMaterialQuality(const FastName &group, const FastName &quality)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if(materialGroups.count(group) > 0)
     {
         for(size_t i = 0; i < materialGroups[group].qualities.size(); ++i)
@@ -392,6 +429,8 @@ void QualitySettingsSystem::SetCurMaterialQuality(const FastName &group, const F
 
 const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName &group, const FastName &quality) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     const MaterialQuality *ret = NULL;
 
     if(materialGroups.count(group) > 0)
@@ -415,11 +454,15 @@ const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName 
 
 void QualitySettingsSystem::EnableOption( const FastName & option, bool enabled )
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	qualityOptions[option] = enabled;
 }
 
 bool QualitySettingsSystem::IsOptionEnabled( const FastName & option ) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if(qualityOptions.count(option) > 0)
 	{
 		return qualityOptions[option];
@@ -430,6 +473,8 @@ bool QualitySettingsSystem::IsOptionEnabled( const FastName & option ) const
 
 void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if(qualityOptions.empty() || (NULL == entity)) return;
 
 	Vector<Entity *> entitiesWithQualityComponent;
@@ -442,6 +487,8 @@ void QualitySettingsSystem::UpdateEntityAfterLoad(Entity *entity)
 
 void QualitySettingsSystem::RemoveModelsByType( const Vector<Entity *> & models )
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	uint32 count = (uint32)models.size();
 	for(uint32 m = 0; m < count; ++m)
 	{
@@ -457,6 +504,8 @@ void QualitySettingsSystem::RemoveModelsByType( const Vector<Entity *> & models 
 
 bool QualitySettingsSystem::NeedLoadEntity(const Entity *entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     QualitySettingsComponent * comp = GetQualitySettingsComponent(entity);
     if(comp)
     {

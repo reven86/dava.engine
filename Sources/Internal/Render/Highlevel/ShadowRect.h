@@ -48,6 +48,9 @@ namespace DAVA
 		virtual ~ShadowRect();
 		
 	public:
+        
+        IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADOW)
+        
 		static ShadowRect * Create();
 		
 		void Draw();

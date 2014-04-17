@@ -39,15 +39,20 @@ class TextureStateData
 	friend class RenderState;
 	
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_TEXTURE)
 	
 	TextureStateData()
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		minmaxTextureIndex = 0;
 		memset(textures, 0, sizeof(textures));
 	}
 
 	TextureStateData(const TextureStateData& src)
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		minmaxTextureIndex = src.minmaxTextureIndex;
 		memcpy(textures, src.textures, sizeof(textures));
 		
@@ -56,11 +61,15 @@ public:
 	
 	~TextureStateData()
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		ReleaseAll();
 	}
 	
 	TextureStateData& operator=(const TextureStateData& src)
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		if(this != &src)
 		{
 			minmaxTextureIndex = src.minmaxTextureIndex;
@@ -80,6 +89,8 @@ public:
 	
 	void SetTexture(uint32 index, Texture* tx)
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
 		
 		if(textures[index] != tx)
@@ -104,23 +115,31 @@ public:
 	
 	Texture* GetTexture(uint32 index)
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		DVASSERT(index >= 0 && index < MAX_TEXTURE_COUNT);
 		return textures[index];
 	}
 	
 	inline void GetMinMaxIndices(uint32& minIndex, uint32& maxIndex) const
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		minIndex = minmaxTextureIndex & 0x000000FF;
 		maxIndex = ((minmaxTextureIndex & 0x0000FF00) >> 8);
 	}
 	
 	void Clear()
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		ReleaseAll();
 	}
 	
 	bool Equals(const TextureStateData& data) const
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		bool dataEquals = (minmaxTextureIndex == data.minmaxTextureIndex);
 		if(dataEquals)
 		{
@@ -146,6 +165,8 @@ private:
 	
 	void ReleaseAll()
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
 		{
 			SafeRelease(textures[i]);
@@ -154,6 +175,8 @@ private:
 	
 	void RetainAll()
 	{
+        TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+        
 		for(size_t i = 0; i < MAX_TEXTURE_COUNT; ++i)
 		{
 			SafeRetain(textures[i]);

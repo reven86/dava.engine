@@ -43,6 +43,8 @@ class RenderSystem;
 class RenderPassManager
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_PASS)
+    
     RenderPassManager(RenderSystem * renderSystem);
     ~RenderPassManager();
     

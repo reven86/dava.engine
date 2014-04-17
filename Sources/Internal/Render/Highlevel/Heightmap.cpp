@@ -43,23 +43,31 @@ Heightmap::Heightmap()
     ,   size(0)
     ,   tileSize(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     //TODO: remove it. Used only for test
     SetTileSize(17);
 }
 
 Heightmap::~Heightmap()
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     ReleaseData();
 }
 
 void Heightmap::ReleaseData()
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     SafeDeleteArray(data);
     size = 0;
 }
     
 bool Heightmap::BuildFromImage(const DAVA::Image *image)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     DVASSERT(image);
     if(size != image->width)
     {
@@ -99,6 +107,8 @@ bool Heightmap::BuildFromImage(const DAVA::Image *image)
 
 void Heightmap::SaveToImage(const FilePath & filename)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     Image * image = Image::Create(size, size, FORMAT_A16);
     
     uint16 * unpackedBytes = new uint16[size * size];
@@ -117,6 +127,8 @@ void Heightmap::SaveToImage(const FilePath & filename)
   
 bool Heightmap::AllocateData(int32 newSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     size = newSize;
     data = new uint16[size * size];
 
@@ -147,6 +159,8 @@ void Heightmap::SetTileSize(int32 newSize)
 
 void Heightmap::Save(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     if(!filePathname.IsEqualToExtension(FileExtension()))
     {
         Logger::Error("Heightmap::Save wrong extension: %s", filePathname.GetAbsolutePathname().c_str());
@@ -186,6 +200,8 @@ void Heightmap::Save(const FilePath &filePathname)
     
 bool Heightmap::Load(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     if(!filePathname.IsEqualToExtension(FileExtension()))
     {
         Logger::Error("Heightmap::Load failed with wrong extension: %s", filePathname.GetAbsolutePathname().c_str());
@@ -240,6 +256,8 @@ const String Heightmap::FileExtension()
     
 Heightmap * Heightmap::Clone(DAVA::Heightmap *clonedHeightmap)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     Heightmap *createdHeightmap = clonedHeightmap;
     if(createdHeightmap)
     {
@@ -268,6 +286,8 @@ Heightmap * Heightmap::Clone(DAVA::Heightmap *clonedHeightmap)
     
 Heightmap * Heightmap::CreateHeightmapForSize(int32 newSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_HEIGHTMAP)
+    
     Heightmap *createdHeightmap = new Heightmap();
     if(!createdHeightmap)   return NULL;
     

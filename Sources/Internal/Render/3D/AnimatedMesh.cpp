@@ -36,12 +36,16 @@ namespace DAVA
     
 BoneAnimation::BoneAnimation()
 {
+    TAG_SWITCH(MemoryManager::TAG_ANIMATED_MESH)
+    
     boneCount = 0;
     keys = 0;
 }
 
 BoneAnimation::~BoneAnimation()
 {
+    TAG_SWITCH(MemoryManager::TAG_ANIMATED_MESH)
+    
     for (int32 bi = 0; bi < boneCount; ++bi)
     {
         SafeDeleteArray(keys[bi]);
@@ -51,6 +55,8 @@ BoneAnimation::~BoneAnimation()
 
 BoneAnimationKey &	BoneAnimation::GetKey(int32 bone, int32 frame)
 {
+    TAG_SWITCH(MemoryManager::TAG_ANIMATED_MESH)
+    
 	if (frame >= frameCount)frame = frameCount - 1;
 	
 	// \TODO: We suppose that every animation frame exported
@@ -62,6 +68,8 @@ BoneAnimationKey &	BoneAnimation::GetKey(int32 bone, int32 frame)
 /// not used
 void BoneAnimation::Load(File * file, int32 _boneCount, int32 _frameCount)
 {
+    TAG_SWITCH(MemoryManager::TAG_ANIMATED_MESH)
+    
 	if (!file)return;
 	boneCount = _boneCount;
 	frameCount = _frameCount;
@@ -211,6 +219,8 @@ void AnimatedMesh::Update(float32 timeElapsed)
 
 void AnimatedMesh::RestoreBonesFromNames()
 {
+    TAG_SWITCH(MemoryManager::TAG_ANIMATED_MESH)
+    
 	for (int32 b = 0; b < (int32)boneNames.size(); ++b)
 	{
 		BoneNode * bone = dynamic_cast<BoneNode*>(scene->FindByName(boneNames[b]));

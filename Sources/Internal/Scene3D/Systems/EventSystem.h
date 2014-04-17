@@ -32,6 +32,7 @@
 #define __DAVAENGINE_SCENE3D_EVENTSYSTEM_H__
 
 #include "Base/BaseTypes.h"
+#include "Debug/MemoryManager.h"
 
 namespace DAVA
 {
@@ -41,6 +42,8 @@ class Entity;
 class EventSystem
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SYSTEMS)
+    
 	enum eEventType
 	{
 		LOCAL_TRANSFORM_CHANGED = 0,

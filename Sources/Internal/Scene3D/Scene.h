@@ -194,6 +194,8 @@ public:
      */
     void ReleaseRootNode(const FilePath &rootNodePath);
     
+    void ReleaseRootNodes();
+    
     /**
         \brief Release root node by pointer to this node.
         \param[in] nodeToRelease root node pointer you want to release.

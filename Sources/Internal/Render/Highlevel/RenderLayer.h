@@ -44,6 +44,8 @@ class Camera;
 class RenderLayer
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_LAYER)
+    
     RenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
     virtual ~RenderLayer();
     

@@ -37,71 +37,80 @@ SceneSystem::SceneSystem(Scene * _scene)
 	scene(_scene)
 ,	locked(false)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 SceneSystem::~SceneSystem()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void SceneSystem::SetRequiredComponents(uint32 _requiredComponents)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+
     requiredComponents = _requiredComponents;
 }
     
 uint32 SceneSystem::GetRequiredComponents()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+
     return requiredComponents;
 }
 
 void SceneSystem::AddEntity(Entity * entity)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void SceneSystem::RemoveEntity(Entity * entity)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
     
 void SceneSystem::SetParent(Entity *entity, Entity *parent)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
     
 void SceneSystem::SceneDidLoaded()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void SceneSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void SceneSystem::Process(float32 timeElapsed)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void SceneSystem::SetLocked(bool locked)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+
 	this->locked = locked;
 }
 
 bool SceneSystem::IsLocked()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+
 	return locked;
 }
 
 void SceneSystem::AddComponent( Entity * entity, Component * component )
 {
-
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void SceneSystem::RemoveComponent( Entity * entity, Component * component )
 {
-
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 };

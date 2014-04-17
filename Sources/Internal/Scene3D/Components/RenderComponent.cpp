@@ -39,27 +39,37 @@ REGISTER_CLASS(RenderComponent)
     
 RenderComponent::RenderComponent(RenderObject * _object)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     renderObject = SafeRetain(_object);
 }
 
 RenderComponent::~RenderComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     SafeRelease(renderObject);
 }
     
 void RenderComponent::SetRenderObject(RenderObject * _renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	SafeRelease(renderObject);
     renderObject = SafeRetain(_renderObject);
 }
     
 RenderObject * RenderComponent::GetRenderObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return renderObject;
 }
     
 Component * RenderComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     RenderComponent * component = new RenderComponent();
 	component->SetEntity(toEntity);
 
@@ -74,6 +84,8 @@ Component * RenderComponent::Clone(Entity * toEntity)
 	
 void RenderComponent::OptimizeBeforeExport()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 /*
     uint32 count = renderObject->GetRenderBatchCount();
     for(uint32 i = 0; i < count; ++i)
@@ -95,6 +107,8 @@ void RenderComponent::OptimizeBeforeExport()
 
 void RenderComponent::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(NULL != renderObject)
     {
         uint32 count = renderObject->GetRenderBatchCount();
@@ -113,6 +127,8 @@ void RenderComponent::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
 
 void RenderComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive && NULL != renderObject)
@@ -126,6 +142,8 @@ void RenderComponent::Serialize(KeyedArchive *archive, SerializationContext *ser
 
 void RenderComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
 		KeyedArchive *roArch = archive->GetArchive("rc.renderObj");

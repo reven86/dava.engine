@@ -54,6 +54,8 @@ namespace DAVA
 
 Component * Component::CreateByType(uint32 componentType)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	switch(componentType)
 	{
 	case TRANSFORM_COMPONENT:
@@ -109,19 +111,25 @@ Component * Component::CreateByType(uint32 componentType)
 Component::Component()
 :	entity(0)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 Component::~Component()
-{ }
+{
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+}
 
 void Component::SetEntity(Entity * _entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	entity = _entity;
 }
 
 Entity* Component::GetEntity() 
-{ 
+{
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return entity;
 };
 
@@ -132,6 +140,8 @@ void Component::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
 
 void Component::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
 		archive->SetUInt32("comp.type", GetType());
@@ -141,6 +151,8 @@ void Component::Serialize(KeyedArchive *archive, SerializationContext *serializa
 
 void Component::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
 		uint32 type = archive->GetUInt32("comp.type", 0xFFFFFFFF);

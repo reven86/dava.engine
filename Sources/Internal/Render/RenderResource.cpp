@@ -41,6 +41,8 @@ Mutex RenderResource::resourceListMutex;
 
 RenderResource::RenderResource()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
 	resourceList.push_back(this);
     resourceListMutex.Unlock();
@@ -48,6 +50,8 @@ RenderResource::RenderResource()
 
 RenderResource::~RenderResource()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
 	std::list<RenderResource*>::iterator it = resourceList.begin();
 	for(; it != resourceList.end(); it++)
@@ -76,6 +80,8 @@ void RenderResource::Invalidate()
 
 void RenderResource::LostAllResources()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     Logger::FrameworkDebug("[RenderResource::LostAllResources]");
     
     resourceListMutex.Lock();
@@ -90,6 +96,8 @@ void RenderResource::LostAllResources()
 
 void RenderResource::InvalidateAllResources()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     Logger::FrameworkDebug("[RenderResource::InvalidateAllResources]");
 
     resourceListMutex.Lock();
@@ -104,6 +112,8 @@ void RenderResource::InvalidateAllResources()
 
 void RenderResource::SaveAllResourcesToSystemMem()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)  ||  defined(__DAVAENGINE_DIRECTX9__)
     resourceListMutex.Lock();
 	std::list<RenderResource*>::iterator it = resourceList.begin();
@@ -121,6 +131,8 @@ void RenderResource::SaveAllResourcesToSystemMem()
     
 void RenderResource::LostAllShaders()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
     std::list<RenderResource*>::iterator it = resourceList.begin();
     std::list<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -137,6 +149,8 @@ void RenderResource::LostAllShaders()
 
 void RenderResource::InvalidateAllShaders()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
     std::list<RenderResource*>::iterator it = resourceList.begin();
     std::list<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -153,6 +167,8 @@ void RenderResource::InvalidateAllShaders()
     
 void RenderResource::LostAllTextures()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
     std::list<RenderResource*>::iterator it = resourceList.begin();
     std::list<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -169,6 +185,8 @@ void RenderResource::LostAllTextures()
 
 void RenderResource::InvalidateAllTextures()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
     std::list<RenderResource*>::iterator it = resourceList.begin();
     std::list<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -186,6 +204,8 @@ void RenderResource::InvalidateAllTextures()
 
 void RenderResource::LostAllRDO()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
     std::list<RenderResource*>::iterator it = resourceList.begin();
     std::list<RenderResource*>::const_iterator itEnd = resourceList.end();
@@ -202,6 +222,8 @@ void RenderResource::LostAllRDO()
 
 void RenderResource::InvalidateAllRDO()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resourceListMutex.Lock();
     std::list<RenderResource*>::iterator it = resourceList.begin();
     std::list<RenderResource*>::const_iterator itEnd = resourceList.end();

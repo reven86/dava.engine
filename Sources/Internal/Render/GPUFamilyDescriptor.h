@@ -42,6 +42,7 @@ class GPUFamilyDescriptor
 {
     
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
     
     struct GPUData
     {

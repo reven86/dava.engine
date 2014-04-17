@@ -42,6 +42,8 @@ class StaticOcclusion;
 class StaticOcclusionRenderPass : public RenderPass
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * occlusion, RenderPassID id);
     ~StaticOcclusionRenderPass();
 

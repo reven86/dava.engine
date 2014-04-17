@@ -48,15 +48,20 @@ namespace DAVA
 LightUpdateSystem::LightUpdateSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
 }
 
 LightUpdateSystem::~LightUpdateSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void LightUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
         // Update new transform pointer, and mark that transform is changed
@@ -75,6 +80,8 @@ void LightUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
     
 void LightUpdateSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Light * lightObject = ((LightComponent*)entity->GetComponent(Component::LIGHT_COMPONENT))->GetLightObject();
     if (!lightObject)return;
 
@@ -84,6 +91,8 @@ void LightUpdateSystem::AddEntity(Entity * entity)
 
 void LightUpdateSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Light * lightObject = entityObjectMap.at(entity);
     if (!lightObject)
 	{

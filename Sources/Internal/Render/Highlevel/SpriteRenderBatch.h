@@ -43,6 +43,8 @@ class SpriteRenderBatch : public RenderBatch
 protected:
 	virtual ~SpriteRenderBatch();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SPRITE)
+    
 	SpriteRenderBatch();
 
 	virtual void Draw(const FastName & ownerRenderPass, Camera * camera);

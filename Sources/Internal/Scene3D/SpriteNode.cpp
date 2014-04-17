@@ -41,6 +41,8 @@ SpriteNode::SpriteNode(const FilePath &pathToSprite, int32 _frame
                        , const Vector2 &reqScale, const Vector2 &pivotPoint)
 :   Entity()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     sprite = Sprite::Create(pathToSprite);
     sprScale = reqScale;
     sprPivot = pivotPoint;
@@ -59,6 +61,8 @@ SpriteNode::SpriteNode(Sprite *spr, int32 _frame
            , const Vector2 &reqScale, const Vector2 &pivotPoint)
 :   Entity()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     sprScale = reqScale;
     sprPivot = pivotPoint;
     sprite = SafeRetain(spr);
@@ -75,23 +79,31 @@ SpriteNode::SpriteNode(Sprite *spr, int32 _frame
 
 SpriteNode::~SpriteNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     SafeRelease(sprite);
     SafeRelease(renderData);
 }
 
 void SpriteNode::SetFrame(int32 newFrame)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     frame = newFrame;
 }
 
 int32 SpriteNode::GetFrame()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     return frame;
 }
 
 
 void SpriteNode::CreateMeshFromSprite(int32 frameToGen)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     float32 x0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
     float32 y0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::Y_OFFSET_TO_ACTIVE) - sprPivot.y;
     float32 x1 = x0 + sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::ACTIVE_WIDTH);
@@ -144,17 +156,23 @@ void SpriteNode::CreateMeshFromSprite(int32 frameToGen)
     
 void SpriteNode::SetType(eType _type)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     type = _type;
 }
     
 SpriteNode::eType SpriteNode::GetType()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     return type;
 }
 
 
 void SpriteNode::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 #if 0
 	if (!(flags&Entity::NODE_VISIBLE))return;
 
@@ -317,16 +335,22 @@ void SpriteNode::Draw()
 
 Sprite * SpriteNode::GetSprite() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return sprite;
 }
 
 const Vector2 & SpriteNode::GetScale() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return sprScale;
 }
 
 const Vector2 & SpriteNode::GetPivot() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return sprPivot;
 }
     

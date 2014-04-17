@@ -47,6 +47,8 @@ class ImposterManager : public BaseObject, public Observer //Dizz: I know you ha
 protected:
 	virtual ~ImposterManager();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_IMPOSTER)
+    
 	static const int32 MAX_UPDATES_PER_FRAME = 3;
 
 	ImposterManager(Scene * scene);

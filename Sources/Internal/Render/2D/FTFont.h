@@ -37,6 +37,8 @@
 #include "Platform/Mutex.h"
 #include "FileSystem/FilePath.h"
 
+#include "Debug/MemoryManager.h"
+
 struct FT_FaceRec_;
 typedef struct FT_FaceRec_*  FT_Face;
 
@@ -58,6 +60,7 @@ class FTInternalFont;
 class FTFont : public Font
 {	
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_FT_FONT);
 	
 	/**
 		\brief Factory method.

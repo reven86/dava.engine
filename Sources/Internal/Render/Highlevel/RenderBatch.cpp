@@ -60,6 +60,7 @@ RenderBatch::RenderBatch()
     ,   sortingTransformPtr(NULL)
 	,	renderLayerIDsBitmaskFromMaterial(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
 	
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     occlusionQuery = new OcclusionQuery();
@@ -71,6 +72,8 @@ RenderBatch::RenderBatch()
     
 RenderBatch::~RenderBatch()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     SafeDelete(occlusionQuery);
 #endif
@@ -82,6 +85,8 @@ RenderBatch::~RenderBatch()
     
 void RenderBatch::SetPolygonGroup(PolygonGroup * _polygonGroup)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	SafeRelease(dataSource);
     dataSource = SafeRetain(_polygonGroup);
 	UpdateAABBoxFromSource();
@@ -89,12 +94,16 @@ void RenderBatch::SetPolygonGroup(PolygonGroup * _polygonGroup)
 
 void RenderBatch::SetRenderDataObject(RenderDataObject * _renderDataObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	SafeRelease(renderDataObject);
     renderDataObject = SafeRetain(_renderDataObject);
 }
 
 void RenderBatch::SetMaterial(NMaterial * _material)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	NMaterial* oldMat = material;
     material = SafeRetain(_material);
 	SafeRelease(oldMat);
@@ -104,6 +113,8 @@ void RenderBatch::SetMaterial(NMaterial * _material)
     
 void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 //  TIME_PROFILE("RenderBatch::Draw");
 //	if(!renderObject)return;
     DVASSERT(renderObject != 0);
@@ -183,28 +194,38 @@ void RenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
     
 void RenderBatch::SetRenderObject(RenderObject * _renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	renderObject = _renderObject;
 }
 
 void RenderBatch::SetSortingTransformPtr(Matrix4 * _worldTransformPtr)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
     sortingTransformPtr = _worldTransformPtr;
 }
 
 const AABBox3 & RenderBatch::GetBoundingBox() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
     return aabbox;
 }
     
     
 void RenderBatch::SetSortingKey(uint32 _key)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
     DVASSERT(_key<16);
     sortingKey = (sortingKey&~0x0f)+_key;
 }
 
 void RenderBatch::SetSortingOffset(uint32 offset)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
     DVASSERT(offset<32);    
     sortingKey=(sortingKey&~0x1F0)+(offset<<4);
 }
@@ -212,6 +233,8 @@ void RenderBatch::SetSortingOffset(uint32 offset)
 
 void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	NMaterial* curNode = material;
 	while(curNode != NULL && curNode->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL)
 	{
@@ -227,6 +250,8 @@ void RenderBatch::GetDataNodes(Set<DataNode*> & dataNodes)
 
 void RenderBatch::InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	dataNodes.insert(node);
 
 	/*for(int32 i = 0; i < node->GetChildrenNodeCount(); ++i)
@@ -237,6 +262,8 @@ void RenderBatch::InsertDataNode(DataNode *node, Set<DataNode*> & dataNodes)
 
 RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
     RenderBatch * rb = destination;
     if (!rb)
         rb = new RenderBatch();
@@ -269,6 +296,8 @@ RenderBatch * RenderBatch::Clone(RenderBatch * destination)
 
 void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	BaseObject::Save(archive);
 
 	if(NULL != archive)
@@ -296,6 +325,8 @@ void RenderBatch::Save(KeyedArchive * archive, SerializationContext* serializati
 
 void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	if(NULL != archive)
 	{
 		type = archive->GetUInt32("rb.type", type);
@@ -359,11 +390,15 @@ void RenderBatch::Load(KeyedArchive * archive, SerializationContext *serializati
 
 void RenderBatch::SetVisibilityCriteria(uint32 criteria)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	visiblityCriteria = criteria;
 }
 
 void RenderBatch::UpdateAABBoxFromSource()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	if(NULL != dataSource)
 	{
 		aabbox = dataSource->GetBoundingBox();
@@ -375,12 +410,16 @@ void RenderBatch::UpdateAABBoxFromSource()
     
 bool RenderBatch::GetVisible() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
     uint32 flags = renderObject->GetFlags();
     return ((flags & visiblityCriteria) == visiblityCriteria);
 }
 
 ShadowVolume * RenderBatch::CreateShadow()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+	
 	ShadowVolume * newShadowVolume = new ShadowVolume();
 	newShadowVolume->MakeShadowVolumeFromPolygonGroup(dataSource);
 

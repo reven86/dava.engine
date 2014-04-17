@@ -39,11 +39,15 @@ namespace DAVA
 	
 RenderVertexAttributesState::RenderVertexAttributesState()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     activeVertexAttributes = 0;
 }
 
 void RenderVertexAttributesState::EnableVertexAttributes(uint32 attributesToEnable)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     uint32 diff = attributesToEnable ^ activeVertexAttributes;
     for (uint32 attribIndex = 0; attribIndex < 4; ++attribIndex)
         if ((diff >> attribIndex) & 1)
@@ -64,6 +68,7 @@ void RenderVertexAttributesState::EnableVertexAttributes(uint32 attributesToEnab
 RenderManagerGL20::RenderManagerGL20(Core::eRenderer renderer)
     : RenderManager(renderer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)    
 }
 
     

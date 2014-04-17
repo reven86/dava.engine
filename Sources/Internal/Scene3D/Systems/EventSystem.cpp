@@ -37,11 +37,15 @@ namespace DAVA
     
 void EventSystem::RegisterSystemForEvent(SceneSystem * system, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	registeredSystems[event].push_back(system);
 }
 
 void EventSystem::UnregisterSystemForEvent(SceneSystem * system, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Vector<SceneSystem*> & container = registeredSystems[event];
 	uint32 size = container.size();
 	for(uint32 i = 0; i < size; ++i)
@@ -57,6 +61,8 @@ void EventSystem::UnregisterSystemForEvent(SceneSystem * system, uint32 event)
     
 void EventSystem::GroupNotifyAllSystems(Vector<Entity *> & entities, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Vector<SceneSystem*> & container = registeredSystems[event];
 	uint32 size = container.size();
 	for(uint32 i = 0; i < size; ++i)
@@ -79,6 +85,8 @@ void EventSystem::GroupNotifyAllSystems(Vector<Entity *> & entities, uint32 even
     
 void EventSystem::NotifyAllSystems(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Vector<SceneSystem*> & container = registeredSystems[event];
 	uint32 size = container.size();
     uint32 componentsInEntity = entity->GetAvailableComponentFlags();
@@ -93,6 +101,8 @@ void EventSystem::NotifyAllSystems(Entity * entity, uint32 event)
 
 void EventSystem::NotifySystem(SceneSystem * system, Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Vector<SceneSystem*> & container = registeredSystems[event];
 	uint32 size = container.size();
 	for(uint32 i = 0; i < size; ++i)

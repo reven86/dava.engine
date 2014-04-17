@@ -61,7 +61,9 @@ class Entity : public BaseObject
 {
 protected:
 	virtual ~Entity();
-public:	
+public:
+	IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_ENTITY);
+    
 	Entity();
 	
     /**

@@ -77,6 +77,7 @@ public:
 class VegetationRenderObject : public RenderObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_VEGETATION)
         
     VegetationRenderObject();
     virtual ~VegetationRenderObject();
@@ -362,6 +363,8 @@ inline void VegetationRenderObject::AddVisibleCell(AbstractQuadTreeNode<SpatialD
                                                    uint32 cellValue,
                                                    Vector<AbstractQuadTreeNode<SpatialData>*>& cellList)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     if(!node->data.IsEmpty(cellValue))
     {
         if(node->data.cameraDistance <= refDistance)

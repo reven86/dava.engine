@@ -47,6 +47,8 @@ namespace DAVA
 	rotationZ(0.0f),
 	nonClippingDistance(0.0f)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		bbox.AddPoint(Vector3(0, 0, 0));
 		bbox.AddPoint(Vector3(1, 1, 1));
 		
@@ -57,10 +59,13 @@ namespace DAVA
 	
 	SkyboxRenderObject::~SkyboxRenderObject()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
 	}
 		
 	void SkyboxRenderObject::SetRenderSystem(RenderSystem * renderSystem)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		/*if(GetRenderSystem())
 		{
 			GetRenderSystem()->UnregisterFromUpdate(this);
@@ -76,6 +81,8 @@ namespace DAVA
 	
 	void SkyboxRenderObject::Initialize(AABBox3& box)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		bbox = box;
 		
 		CreateRenderData();
@@ -84,6 +91,8 @@ namespace DAVA
 	
 	void SkyboxRenderObject::CreateRenderData()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		if(renderBatchArray.size() == 0)
 		{
 			RenderDataObject* renderDataObj = new RenderDataObject();
@@ -106,6 +115,8 @@ namespace DAVA
 	
 	void SkyboxRenderObject::BuildSkybox()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		DVASSERT(renderBatchArray.size() != 0);
 		
 		if(renderBatchArray.size() == 0)
@@ -164,6 +175,8 @@ namespace DAVA
 		
 	void SkyboxRenderObject::PrepareToRender(Camera *camera)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		Vector3 camPos = camera->GetPosition();
 		
 		//scale cube so it's not get clipped by zNear plane
@@ -180,6 +193,8 @@ namespace DAVA
 	
 	RenderObject* SkyboxRenderObject::Clone(RenderObject *newObject)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		if(!newObject)
 		{
 			DVASSERT_MSG(IsPointerToExactClass<SkyboxRenderObject>(this), "Can clone only SkyboxRenderObject");
@@ -215,6 +230,8 @@ namespace DAVA
 	
 	void SkyboxRenderObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		RenderObject::Save(archive, serializationContext);
 		
 		if(archive != NULL)
@@ -227,6 +244,8 @@ namespace DAVA
 	
 	void SkyboxRenderObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		RenderObject::Load(archive, serializationContext);
 		
 		if(archive != NULL)
@@ -246,6 +265,8 @@ namespace DAVA
 
 	void SkyboxRenderObject::SetTexture(const FilePath& texPath)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
         DVASSERT(renderBatchArray.size() > 0);
         
         NMaterial* skyboxMaterial = renderBatchArray[0].renderBatch->GetMaterial();
@@ -288,6 +309,8 @@ namespace DAVA
 	
 	FilePath SkyboxRenderObject::GetTexture()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
         DVASSERT(renderBatchArray.size() > 0);
         
         FilePath path;
@@ -311,6 +334,8 @@ namespace DAVA
 	
 	void SkyboxRenderObject::SetOffsetZ(const float32& offset)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		//VI: do not allow to set offset more that 1/2 of skybox height
 		//VI see DF-1766
 		if(renderBatchArray.size() > 0)
@@ -331,21 +356,29 @@ namespace DAVA
 	
 	void SkyboxRenderObject::ForceSetOffsetZ(float32 offset)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		offsetZ = offset;
 	}
 	
 	float32 SkyboxRenderObject::GetOffsetZ()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		return offsetZ;
 	}
 	
 	void SkyboxRenderObject::SetRotationZ(const float32& rotation)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		rotationZ = rotation;
 	}
 	
 	float32 SkyboxRenderObject::GetRotationZ()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SKYBOX)
+        
 		return rotationZ;
 	}
 

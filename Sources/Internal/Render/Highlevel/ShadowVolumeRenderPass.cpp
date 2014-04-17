@@ -39,6 +39,7 @@ namespace DAVA
 ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id)
     :   RenderLayer(name, sortingFlags, id), shadowRect(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
     
 	blendMode = ShadowPassBlendMode::MODE_BLEND_ALPHA;
 	
@@ -46,6 +47,8 @@ ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(const FastName & name, uint32 s
 
 void ShadowVolumeRenderLayer::CreateShadowRect()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
     shadowRect = ShadowRect::Create();
     RenderStateData stateData;
 
@@ -74,16 +77,22 @@ void ShadowVolumeRenderLayer::CreateShadowRect()
 
 ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
     SafeRelease(shadowRect);
 }
 
 void ShadowVolumeRenderLayer::SetBlendMode(ShadowPassBlendMode::eBlend _blendMode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	blendMode = _blendMode;
 }
 
 void ShadowVolumeRenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
-{	
+{
+	TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
     if (!shadowRect)
     {
         CreateShadowRect();
@@ -166,6 +175,8 @@ void ShadowVolumeRenderLayer::Draw(const FastName & ownerRenderPass, Camera * ca
     
 ShadowRect * ShadowVolumeRenderLayer::GetShadowRect()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
     if (!shadowRect)
     {
         CreateShadowRect();
@@ -175,6 +186,8 @@ ShadowRect * ShadowVolumeRenderLayer::GetShadowRect()
 
 ShadowPassBlendMode::eBlend ShadowVolumeRenderLayer::GetBlendMode() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	return blendMode;
 }
 

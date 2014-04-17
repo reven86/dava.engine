@@ -52,10 +52,13 @@ RenderObject::RenderObject()
 	,	lodIndex(-1)
 	,	switchIndex(-1)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
 }
     
 RenderObject::~RenderObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	uint32 size = renderBatchArray.size();
 	for(uint32 i = 0; i < size; ++i)
 	{
@@ -65,11 +68,15 @@ RenderObject::~RenderObject()
   
 void RenderObject::AddRenderBatch(RenderBatch * batch)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	AddRenderBatch(batch, -1, -1);
 }
   
 void RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _switchIndex)
-{    
+{
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	batch->Retain();
     DVASSERT((batch->GetRenderObject() == 0) || (batch->GetRenderObject() == this));
 	batch->SetRenderObject(this);
@@ -94,12 +101,16 @@ void RenderObject::AddRenderBatch(RenderBatch * batch, int32 _lodIndex, int32 _s
 
 void RenderObject::UpdateBatchesSortingTransforms()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     for (int32 i=0, batchCount = renderBatchArray.size(); i<batchCount; ++i)
         renderBatchArray[i].renderBatch->SetSortingTransformPtr(worldTransform); 
 }
 
 void RenderObject::RemoveRenderBatch(RenderBatch * batch)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     batch->SetRenderObject(0);
 	
 	uint32 size = (uint32)renderBatchArray.size();
@@ -125,6 +136,8 @@ void RenderObject::RemoveRenderBatch(RenderBatch * batch)
     
 void RenderObject::RemoveRenderBatch(uint32 batchIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	uint32 size = (uint32)renderBatchArray.size();
     DVASSERT(batchIndex < size);
 
@@ -145,6 +158,8 @@ void RenderObject::RemoveRenderBatch(uint32 batchIndex)
     
 void RenderObject::RecalcBoundingBox()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     bbox = AABBox3();
     
     uint32 size = (uint32)renderBatchArray.size();
@@ -156,6 +171,8 @@ void RenderObject::RecalcBoundingBox()
     
 RenderObject * RenderObject::Clone(RenderObject *newObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	if(!newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<RenderObject>(this), "Can clone only RenderObject");
@@ -189,6 +206,8 @@ RenderObject * RenderObject::Clone(RenderObject *newObject)
 
 void RenderObject::Save(KeyedArchive * archive, SerializationContext* serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	AnimatedObject::Save(archive);
 
 	if(NULL != archive)
@@ -227,6 +246,8 @@ void RenderObject::Save(KeyedArchive * archive, SerializationContext* serializat
 
 void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	if(NULL != archive)
 	{
 		type = archive->GetUInt32("ro.type", TYPE_RENDEROBJECT);
@@ -265,20 +286,27 @@ void RenderObject::Load(KeyedArchive * archive, SerializationContext *serializat
 
 void RenderObject::SetRenderSystem(RenderSystem * _renderSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	renderSystem = _renderSystem;
 }
 
 RenderSystem * RenderObject::GetRenderSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	return renderSystem;
 }
 
 void RenderObject::BakeTransform(const Matrix4 & /*transform*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
 }
 
 void RenderObject::RecalculateWorldBoundingBox()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	DVASSERT(!bbox.IsEmpty());
 	bbox.GetTransformedBox(*worldTransform, worldBBox);
 }
@@ -286,10 +314,13 @@ void RenderObject::RecalculateWorldBoundingBox()
 
 void RenderObject::PrepareToRender(Camera *camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
 }
 
 void RenderObject::SetLodIndex(int32 _lodIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	if(lodIndex != _lodIndex)
 	{
 		lodIndex = _lodIndex;
@@ -299,6 +330,8 @@ void RenderObject::SetLodIndex(int32 _lodIndex)
 
 void RenderObject::SetSwitchIndex(int32 _switchIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	if(switchIndex != _switchIndex)
 	{
 		switchIndex = _switchIndex;
@@ -308,16 +341,22 @@ void RenderObject::SetSwitchIndex(int32 _switchIndex)
 
 int32 RenderObject::GetLodIndex()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     return lodIndex;
 }
 
 int32 RenderObject::GetSwitchIndex()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     return switchIndex;
 }
 
 void RenderObject::UpdateActiveRenderBatches()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	activeRenderBatchArray.clear();
 	uint32 size = renderBatchArray.size();
 	for(uint32 i = 0; i < size; ++i)
@@ -332,6 +371,8 @@ void RenderObject::UpdateActiveRenderBatches()
 
 int32 RenderObject::GetMaxLodIndex() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     int32 ret = -1;
     uint32 size = renderBatchArray.size();
     for(uint32 i = 0; i < size; ++i)
@@ -345,6 +386,8 @@ int32 RenderObject::GetMaxLodIndex() const
 
 int32 RenderObject::GetMaxLodIndexForSwitchIndex(int32 forSwitchIndex) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     int32 ret = -1;
     uint32 size = renderBatchArray.size();
     for(uint32 i = 0; i < size; ++i)
@@ -361,6 +404,8 @@ int32 RenderObject::GetMaxLodIndexForSwitchIndex(int32 forSwitchIndex) const
 
 int32 RenderObject::GetMaxSwitchIndex() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     int32 ret = -1;
     uint32 size = renderBatchArray.size();
     for(uint32 i = 0; i < size; ++i)
@@ -374,6 +419,7 @@ int32 RenderObject::GetMaxSwitchIndex() const
 
 void RenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)    
     //empty by default
 }
 

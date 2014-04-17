@@ -48,6 +48,8 @@ class SceneFileV2;
 class PolygonGroup : public DataNode
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_POLYGON_GROUP);
+    
 	enum VertexDataType
 	{
 		VERTEX_FLOAT = 1,

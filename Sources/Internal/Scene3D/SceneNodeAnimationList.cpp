@@ -42,11 +42,14 @@ SceneNodeAnimationList::SceneNodeAnimationList()
 ,	duration(0.0f)
 ,	blendTo(0)
 ,	eventDispatcher( new EventDispatcher() )
-{	
+{
+	TAG_SWITCH(MemoryManager::TAG_SCENE)
 }
 
 SceneNodeAnimationList::~SceneNodeAnimationList()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	for (Vector<SceneNodeAnimation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		SceneNodeAnimation * obj = *t;
@@ -57,6 +60,8 @@ SceneNodeAnimationList::~SceneNodeAnimationList()
 
 void SceneNodeAnimationList::AddAnimation(SceneNodeAnimation * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	animations.push_back(node);
 	node->Retain();
 	node->SetParent(this);
@@ -68,6 +73,8 @@ void SceneNodeAnimationList::AddAnimation(SceneNodeAnimation * node)
 	
 void SceneNodeAnimationList::CycleAnimation()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	Execute();
 	cycled = true;
 }
@@ -75,6 +82,8 @@ void SceneNodeAnimationList::CycleAnimation()
 
 void SceneNodeAnimationList::Execute(float32 _fadeInTime, float32 _fadeOutTime, float32 _timeFactor)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	if (active)return; // do not reexecute active animations
 	
 	Logger::FrameworkDebug("[SceneNodeAnimationList::Execute] %s\n", name.c_str());
@@ -97,6 +106,8 @@ void SceneNodeAnimationList::Execute(float32 _fadeInTime, float32 _fadeOutTime, 
 	
 void SceneNodeAnimationList::BlendTo(SceneNodeAnimationList * next, float32 _blendTime, float32 _timeFactor)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	if (active)return; // do not reexecute active animations
 	
 	Logger::FrameworkDebug("[SceneNodeAnimationList::BlendTo] from: %s to: %s\n", name.c_str(), next->name.c_str());
@@ -130,11 +141,15 @@ void SceneNodeAnimationList::BlendTo(SceneNodeAnimationList * next, float32 _ble
 
 float32 SceneNodeAnimationList::GetDuration()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	return duration;
 }
 
 float32 SceneNodeAnimationList::GetCurrentTime()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	if (animations.size() == 0)
 		return 0;
 	
@@ -143,6 +158,8 @@ float32 SceneNodeAnimationList::GetCurrentTime()
 	
 void SceneNodeAnimationList::Update(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	if (!active)return;
 	
 	currentTime += timeElapsed;
@@ -212,6 +229,8 @@ void SceneNodeAnimationList::StopAnimation()
 
 void SceneNodeAnimationList::SetWeight(float32 weight)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	int32 size = (int32)animations.size();
 	for (int32 k = 0; k < size; ++k)
 	{
@@ -222,6 +241,8 @@ void SceneNodeAnimationList::SetWeight(float32 weight)
 
 SceneNodeAnimation * SceneNodeAnimationList::GetNode(const FastName & name)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	int32 size = (int32)animations.size();
 	for (int32 k = 0; k < size; ++k)
 	{

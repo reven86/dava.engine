@@ -55,6 +55,8 @@ class Shader;
 class RenderVertexAttributesState
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
     RenderVertexAttributesState();
     
     void EnableVertexAttributes(uint32 attributesToEnable);
@@ -70,6 +72,8 @@ private:
 class RenderManagerGL20 : public RenderManager
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
     RenderManagerGL20(Core::eRenderer renderer);
         
     RenderVertexAttributesState attributesState;

@@ -39,24 +39,32 @@ QualitySettingsComponent::QualitySettingsComponent()
     : Component()
     , modelType("")
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 QualitySettingsComponent::~QualitySettingsComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
     
 void QualitySettingsComponent::SetModelType(const FastName & type)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     modelType = type;
 }
     
 const FastName & QualitySettingsComponent::GetModelType() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return modelType;
 }
     
 Component * QualitySettingsComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     QualitySettingsComponent * component = new QualitySettingsComponent();
 	component->SetEntity(toEntity);
     
@@ -70,12 +78,16 @@ Component * QualitySettingsComponent::Clone(Entity * toEntity)
 
 void QualitySettingsComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
     archive->SetString("modelType", (modelType.IsValid()) ? modelType.c_str() : "");
 }
 
 void QualitySettingsComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     modelType = FastName(archive->GetString("modelType"));
 	Component::Deserialize(archive, serializationContext);
 }

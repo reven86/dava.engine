@@ -54,6 +54,8 @@ InstanceMaterialState::InstanceMaterialState()
 	,	lightmapSize(LIGHTMAP_SIZE_DEFAULT)
 
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     for (int32 k = 0; k < LIGHT_NODE_MAX_COUNT; ++k)
         lightNodes[k] = 0;
     lightmapTexture = 0;
@@ -61,24 +63,32 @@ InstanceMaterialState::InstanceMaterialState()
 
 InstanceMaterialState::~InstanceMaterialState()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     for (int32 k = 0; k < LIGHT_NODE_MAX_COUNT; ++k)
         SafeRelease(lightNodes[k]);
     SafeRelease(lightmapTexture);
 }
 
 void InstanceMaterialState::SetLight(int32 lightIndex, Light * lightNode)
-{ 
+{
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     SafeRelease(lightNodes[lightIndex]);
     lightNodes[lightIndex] = SafeRetain(lightNode); 
 }
 
 Light * InstanceMaterialState::GetLight(int32 lightIndex) 
-{ 
+{
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return lightNodes[lightIndex]; 
 }
 
 void InstanceMaterialState::SetLightmap(Texture * _lightMapTexture, const FilePath & _lightmapName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     SafeRelease(lightmapTexture);
     lightmapTexture = SafeRetain(_lightMapTexture);
     lightmapName = _lightmapName;
@@ -86,22 +96,30 @@ void InstanceMaterialState::SetLightmap(Texture * _lightMapTexture, const FilePa
 
 void InstanceMaterialState::SetUVOffsetScale(const Vector2 & _uvOffset, const Vector2 _uvScale)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     uvOffset = _uvOffset;
     uvScale = _uvScale;
 }
 
 int32 InstanceMaterialState::GetLightmapSize()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return lightmapSize;
 }
 
 void InstanceMaterialState::SetLightmapSize(int32 size)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	lightmapSize = size;
 }
 
 void InstanceMaterialState::ClearLightmap()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	SafeRelease(lightmapTexture);
 	lightmapName = String("");
 }
@@ -109,27 +127,37 @@ void InstanceMaterialState::ClearLightmap()
     
 void InstanceMaterialState::SetFlatColor(const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     flatColor = color;
 }
 
 const Color & InstanceMaterialState::GetFlatColor()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return flatColor;
 }
 
 
 void InstanceMaterialState::SetTextureShift(const Vector2 & speed)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     texture0Shift = speed;
 }
 
 const Vector2 & InstanceMaterialState::GetTextureShift()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return texture0Shift;
 }
 
 void InstanceMaterialState::Save(KeyedArchive * archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(NULL != archive)
 	{
 		if(uvOffset != Vector2())
@@ -167,6 +195,8 @@ void InstanceMaterialState::Save(KeyedArchive * archive, SerializationContext *s
 
 void InstanceMaterialState::Load(KeyedArchive * archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(NULL != archive)
 	{
 		uvOffset = archive->GetVector2("ims.uvoffset");
@@ -194,6 +224,8 @@ void InstanceMaterialState::Load(KeyedArchive * archive, SerializationContext *s
 
 InstanceMaterialState * InstanceMaterialState::Clone()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	InstanceMaterialState * newState = new InstanceMaterialState();
     newState->InitFromState(this);
     
@@ -202,6 +234,8 @@ InstanceMaterialState * InstanceMaterialState::Clone()
     
 void InstanceMaterialState::InitFromState(const InstanceMaterialState * state)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     lightmapTexture = SafeRetain(state->lightmapTexture);
 	lightmapName = state->lightmapName;
 	lightmapSize = state->lightmapSize;
@@ -219,6 +253,8 @@ UberShader * Material::uberShader = 0;
     
 const char8 * Material::GetTypeName(eType format)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     switch(format)
     {
         case MATERIAL_UNLIT_TEXTURE:
@@ -288,6 +324,8 @@ Material::Material()
 	,	lightingParams(0)
 	,	viewOptions(MATERIAL_VIEW_TEXTURE_LIGHTMAP)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     //Reserve memory for Collection
     names.resize(TEXTURE_COUNT);
     
@@ -309,6 +347,8 @@ Material::Material()
 
 Material * Material::Clone(Material *newMaterial /* = NULL */)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     if(!newMaterial)
     {
 		DVASSERT_MSG(IsPointerToExactClass<Material>(this), "Can clone only Material");
@@ -358,6 +398,8 @@ Material * Material::Clone(Material *newMaterial /* = NULL */)
 
 void Material::CopySettings(Material *fromMaterial)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(fromMaterial);
 
 	type = fromMaterial->type;
@@ -424,6 +466,8 @@ void Material::CopySettings(Material *fromMaterial)
 
 void Material::SetScene(Scene * _scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     DVASSERT(scene == 0);
     scene = _scene;
 }
@@ -431,12 +475,16 @@ void Material::SetScene(Scene * _scene)
 
 int32 Material::Release()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     int32 retainCount = BaseObject::Release();
     return retainCount;
 }
 
 Material::~Material()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     for (int32 tc = 0; tc < TEXTURE_COUNT; ++tc)
     {
         SafeRelease(textures[tc]);
@@ -447,6 +495,8 @@ Material::~Material()
     
 Material::eValidationResult Material::Validate(PolygonGroup * polygonGroup)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     RebuildShader();
 	
 	if(Material::MATERIAL_SKYBOX == type)
@@ -487,6 +537,8 @@ Material::eValidationResult Material::Validate(PolygonGroup * polygonGroup)
 
 void Material::RebuildShader()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     uniformTexture0 = -1;
     uniformTexture1 = -1;
     uniformLightPosition0 = -1;
@@ -693,6 +745,8 @@ void Material::RebuildShader()
 
 void Material::RetrieveTextureSlotNames()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     // 
     //shader->F
     textureSlotCount = 0;
@@ -708,27 +762,37 @@ void Material::RetrieveTextureSlotNames()
     
 uint32 Material::GetTextureSlotCount() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return textureSlotCount;
 }
     
 const String & Material::GetTextureSlotName(uint32 index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return textureSlotNames[index];
 }
     
 uint32 Material::GetTextureSlotIndexByName(const String & string) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return -1;
 }
 
 void Material::SetType(eType _type)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     type = _type;
     RebuildShader();
 }
     
 void Material::Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     DataNode::Save(keyedArchive, serializationContext);
     
     keyedArchive->SetInt32("mat.texCount", TEXTURE_COUNT);
@@ -778,6 +842,8 @@ void Material::Save(KeyedArchive * keyedArchive, SerializationContext * serializ
 
 void Material::Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     DataNode::Load(keyedArchive, serializationContext);
 
 	eType mtype = (eType)keyedArchive->GetInt32("mat.type", type);
@@ -850,76 +916,108 @@ void Material::Load(KeyedArchive * keyedArchive, SerializationContext * serializ
 
 void Material::SetAlphatest(bool alphatest)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     isTranslucent = alphatest;
     RebuildShader();
 }
 
 bool Material::GetAlphatest()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isTranslucent;
 }
 void Material::SetTwoSided(bool _isTwoSided)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     isTwoSided = _isTwoSided;
 }
     
 bool Material::GetTwoSided()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isTwoSided;
 }
     
 void Material::SetAmbientColor(const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     ambientColor = color;
 }
 void Material::SetDiffuseColor(const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     diffuseColor = color;
 }
 void Material::SetSpecularColor(const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     specularColor = color;
 }
 void Material::SetEmissiveColor(const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     emissiveColor = color;
 }
 
 const Color & Material::GetAmbientColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return ambientColor;
 }
 const Color & Material::GetDiffuseColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return diffuseColor;
 }
 const Color & Material::GetSpecularColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return specularColor;
 }
 const Color & Material::GetEmissiveColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return emissiveColor;
 }
     
 void Material::SetShininess(float32 _shininess)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     shininess = _shininess;
 }
 
 float32 Material::GetShininess() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return shininess;
 }
     
 void Material::SetFog(const bool & _isFogEnabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     isFogEnabled = _isFogEnabled;
     RebuildShader();
 }
 
 void Material::SetViewOption(eViewOptions option)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(viewOptions != option)
 	{
 		viewOptions = option;
@@ -929,36 +1027,50 @@ void Material::SetViewOption(eViewOptions option)
 
 Material::eViewOptions Material::GetViewOption()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return viewOptions;
 }
     
 const bool & Material::IsFogEnabled() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isFogEnabled;
 }
     
 void Material::SetFogDensity(float32 _fogDensity)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     fogDensity = _fogDensity;
 }
     
 float32 Material::GetFogDensity() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return fogDensity;
 }
 
 void Material::SetFogColor(const Color & _fogColor)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     fogColor = _fogColor;
 }
 
 const Color & Material::GetFogColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return fogColor;
 }
 
 void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     ///float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
 
 	/*
@@ -1158,6 +1270,8 @@ void Material::PrepareRenderState(InstanceMaterialState * instanceMaterialState,
 
 void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMaterialState, Matrix4 * worldMxPtr)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::MATERIAL_DRAW))
 	{
 		return;
@@ -1225,6 +1339,8 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
 
 void Material::SetSetupLightmap(bool _isSetupLightmap)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(isSetupLightmap != _isSetupLightmap)
 	{
 		isSetupLightmap = _isSetupLightmap;
@@ -1234,12 +1350,16 @@ void Material::SetSetupLightmap(bool _isSetupLightmap)
     
 bool Material::GetSetupLightmap() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isSetupLightmap;
 }
 
     
 void Material::SetTexture(eTextureLevel level, Texture * texture)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     if (texture == textures[level])return;
     
     SafeRelease(textures[level]);
@@ -1257,6 +1377,8 @@ void Material::SetTexture(eTextureLevel level, Texture * texture)
 
 void Material::SetTexture(eTextureLevel level, const FilePath & textureName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     SafeRelease(textures[level]);
     names[level] = FilePath();
  
@@ -1270,32 +1392,44 @@ void Material::SetTexture(eTextureLevel level, const FilePath & textureName)
 
 void Material::SetAlphablend(bool _isAlphablend)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	isAlphablend = _isAlphablend;
 	RebuildShader();
 }
 
 bool Material::GetAlphablend()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return isAlphablend;
 }
 
 RenderState * Material::GetRenderState()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return &renderStateBlock;
 }
 
 void Material::SetWireframe(bool _isWireframe)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     isWireframe = _isWireframe;
 }
     
 bool Material::GetWireframe()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isWireframe;
 }
 
 void Material::EnableFlatColor(const bool & isEnabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     isFlatColorEnabled = isEnabled;
     RebuildShader();
     
@@ -1303,11 +1437,15 @@ void Material::EnableFlatColor(const bool & isEnabled)
 
 const bool & Material::IsFlatColorEnabled()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isFlatColorEnabled;
 }
 
 void Material::EnableTextureShift(const bool & isEnabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     isTexture0ShiftEnabled = isEnabled;
     RebuildShader();
     
@@ -1315,12 +1453,16 @@ void Material::EnableTextureShift(const bool & isEnabled)
 
 const bool & Material::IsTextureShiftEnabled()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isTexture0ShiftEnabled;
 }
 
     
 const FastName & Material::GetOwnerLayerName()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     if(GetAlphablend())
     {
         SetOwnerLayerName(LAYER_TRANSLUCENT);
@@ -1332,26 +1474,36 @@ const FastName & Material::GetOwnerLayerName()
 
 void Material::SetOwnerLayerName(const FastName & fastname)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     ownerLayerName = fastname;
     
 }
 const bool & Material::IsExportOwnerLayerEnabled()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return isExportOwnerLayerEnabled;
 }
     
 void Material::SetExportOwnerLayer(const bool & isEnabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     isExportOwnerLayerEnabled = isEnabled;
 }
 
 const String& Material::GetName() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return name;
 }
 
 void Material::SetName(const String& materialName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     name = materialName;
 }
 

@@ -41,6 +41,8 @@ RenderTechniquePass::RenderTechniquePass(const FastName & _shaderName,
 										 const FastNameSet & _uniqueDefines,
 										 RenderState * _renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     shaderName = _shaderName;
     uniqueDefines = _uniqueDefines;
     renderState = _renderState;
@@ -48,11 +50,15 @@ RenderTechniquePass::RenderTechniquePass(const FastName & _shaderName,
 
 RenderTechniquePass::~RenderTechniquePass()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     SafeDelete(renderState);
 }
 
 Shader * RenderTechniquePass::CompileShader(const FastNameSet & materialDefines)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     FastNameSet combinedDefines = materialDefines;
     if(uniqueDefines.size() > 0)
     {
@@ -67,12 +73,16 @@ RenderTechnique::RenderTechnique(const FastName & _name)
     :   name(_name)
     ,   nameIndexMap(8)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	techinqueSequenceId++;
 	techniqueId = techinqueSequenceId;
 }
     
 RenderTechnique::~RenderTechnique()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     size_t size = renderTechniquePassArray.size();
     for (size_t rt = 0; rt < size; ++rt)
     {
@@ -88,6 +98,8 @@ void RenderTechnique::AddRenderTechniquePass(const FastName& passName,
                                              const DAVA::FastNameSet & _uniqueDefines,
                                              DAVA::RenderState *_renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     RenderTechniquePass * technique = new RenderTechniquePass(_shaderName,
 															  _uniqueDefines,
 															  _renderState);
@@ -97,6 +109,8 @@ void RenderTechnique::AddRenderTechniquePass(const FastName& passName,
 
 bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * rootNode, RenderTechnique * targetTechnique)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 /*
     Move to shader level uniforms;
     const YamlNode * uniformsNode = stateNode->Get("Uniforms");
@@ -187,6 +201,8 @@ bool RenderTechniqueSingleton::LoadRenderTechniqueFromYamlNode(const YamlNode * 
     
 RenderTechnique * RenderTechniqueSingleton::CreateTechniqueByName(const FastName & renderTechniquePathInFastName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     FilePath renderTechniquePathname(renderTechniquePathInFastName.c_str());
     //FastName renderTechniqueFastName(renderTechniquePathname.GetRelativePathname().c_str());
     //Logger::Debug("Get render technique: %s %d", renderTechniquePathname.GetRelativePathname().c_str(), renderTechniqueFastName.Index());
@@ -224,6 +240,8 @@ RenderTechnique * RenderTechniqueSingleton::CreateTechniqueByName(const FastName
     
 void RenderTechniqueSingleton::ReleaseRenderTechnique(RenderTechnique * renderTechnique)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     renderTechnique->Release();
     if (renderTechnique->GetRetainCount() == 1)
     {

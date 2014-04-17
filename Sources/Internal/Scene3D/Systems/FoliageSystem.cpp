@@ -38,17 +38,21 @@ FoliageSystem::FoliageSystem(Scene* scene) : SceneSystem(scene),
         landscapeEntity(NULL),
         foliageEntity(NULL)
 {
-        
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
     
 FoliageSystem::~FoliageSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     SafeRelease(landscapeEntity);
     SafeRelease(foliageEntity);
 }
     
 void FoliageSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Landscape* landscapeRO = GetLandscape(entity);
     if(landscapeRO &&
         entity != landscapeEntity)
@@ -73,6 +77,8 @@ void FoliageSystem::AddEntity(Entity * entity)
 
 void FoliageSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if(entity == foliageEntity)
     {
         SafeRelease(foliageEntity);
@@ -86,6 +92,8 @@ void FoliageSystem::RemoveEntity(Entity * entity)
 
 void FoliageSystem::SyncFoliageWithLandscape()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if(landscapeEntity && foliageEntity)
     {
         Landscape* landscapeRO = GetLandscape(landscapeEntity);
@@ -103,6 +111,8 @@ void FoliageSystem::SetPerturbation(const Vector3& point,
                                     const Vector3& force,
                                     float32 distance)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(vegetationRO != NULL)
     {
@@ -112,6 +122,8 @@ void FoliageSystem::SetPerturbation(const Vector3& point,
 
 void FoliageSystem::SetFoliageVisible(bool show)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     if(NULL != vegetationRO)
     {
@@ -121,6 +133,8 @@ void FoliageSystem::SetFoliageVisible(bool show)
 
 bool FoliageSystem::IsFoliageVisible() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     
     return (NULL != vegetationRO) ? vegetationRO->GetVegetationVisible() : false;;

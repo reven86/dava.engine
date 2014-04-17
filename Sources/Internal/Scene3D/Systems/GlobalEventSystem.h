@@ -44,6 +44,8 @@ class Scene;
 class GlobalEventSystem : public StaticSingleton<GlobalEventSystem>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SYSTEMS)
+    
     void Event(Entity * entity, uint32 event);
     void GroupEvent(Scene * scene, Vector<Entity *> & entities, uint32 event);
     void PerformAllEventsFromCache(Entity * entity);

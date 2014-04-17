@@ -35,6 +35,8 @@
 #include "Base/Singleton.h"
 #include "Base/EventDispatcher.h"
 
+#include "Debug/MemoryManager.h"
+
 namespace DAVA
 {
 /**
@@ -54,6 +56,8 @@ class YamlNode;
 class Font : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_FONT);
+    
 	enum eFontType 
 	{
 			TYPE_FT = 0	//!< freetype-based

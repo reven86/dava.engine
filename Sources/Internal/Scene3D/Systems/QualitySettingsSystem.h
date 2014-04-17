@@ -56,6 +56,8 @@ class QualitySettingsComponent;
 class QualitySettingsSystem: public StaticSingleton<QualitySettingsSystem>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SYSTEMS)
+    
     QualitySettingsSystem();
 
     void Load(const FilePath &path);

@@ -86,6 +86,8 @@ class RenderBatch : public BaseObject
 protected:
     virtual ~RenderBatch();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_BATCH)
+    
     RenderBatch();
     //IMPLEMENT_POOL_ALLOCATOR(RenderBatch,100);
     void SetPolygonGroup(PolygonGroup * _polygonGroup);

@@ -42,7 +42,6 @@ namespace DAVA
 	class ActionComponent : public Component
 	{
 	public:
-		
         const static DAVA::FastName ACTION_COMPONENT_SELF_ENTITY_NAME;
 
 		struct Action

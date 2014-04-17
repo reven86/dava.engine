@@ -41,15 +41,18 @@ RenderLayer::RenderLayer(const FastName & _name, uint32 sortingFlags, RenderLaye
     ,   flags(sortingFlags)
     ,   id(_id)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
 }
     
 RenderLayer::~RenderLayer()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
 }
 
 void RenderLayer::Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
+    
     TIME_PROFILE("RenderLayer::Draw");
     
     renderLayerBatchArray->Sort(camera);

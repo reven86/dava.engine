@@ -38,6 +38,8 @@ namespace DAVA
     
 RenderPassBatchArray::RenderPassBatchArray()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     const RenderLayerManager * manager = RenderLayerManager::Instance();
     for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
     {
@@ -48,6 +50,8 @@ RenderPassBatchArray::RenderPassBatchArray()
     
 void RenderPassBatchArray::InitPassLayers(RenderPass * renderPass)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     // const RenderLayerManager * manager = RenderLayerManager::Instance();
     for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
     {
@@ -69,6 +73,8 @@ void RenderPassBatchArray::InitPassLayers(RenderPass * renderPass)
     
 void RenderPassBatchArray::InitPassLayersWithSingleLayer(RenderPass * renderPass, RenderLayerBatchArray * singleLayer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     // const RenderLayerManager * manager = RenderLayerManager::Instance();
     for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
     {
@@ -80,6 +86,8 @@ void RenderPassBatchArray::InitPassLayersWithSingleLayer(RenderPass * renderPass
     
 RenderPassBatchArray::~RenderPassBatchArray()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
     {
         SafeDelete(layerBatchArrays[id]);
@@ -88,6 +96,8 @@ RenderPassBatchArray::~RenderPassBatchArray()
     
 void RenderPassBatchArray::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     for (RenderLayerID id = 0; id < RENDER_LAYER_ID_COUNT; ++id)
     {
         layerBatchArrays[id]->Clear();
@@ -96,6 +106,8 @@ void RenderPassBatchArray::Clear()
 
 void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityArray, Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     cameraWorldMatrices.clear();
     uint32 size = (uint32)visibilityArray->visibilityArray.size();
     for (uint32 ro = 0; ro < size; ++ro)
@@ -141,27 +153,35 @@ void RenderPassBatchArray::PrepareVisibilityArray(VisibilityArray * visibilityAr
 RenderLayerBatchArray::RenderLayerBatchArray(uint32 sortingFlags)
     : flags(sortingFlags)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     //flags = SORT_ENABLED | SORT_BY_MATERIAL | SORT_BY_DISTANCE;
 	//renderBatchArray.reserve(4096);
 }
     
 RenderLayerBatchArray::~RenderLayerBatchArray()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
 }
 
 void RenderLayerBatchArray::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     renderBatchArray.clear();
 }
     
 bool RenderLayerBatchArray::MaterialCompareFunction(const RenderBatch * a, const RenderBatch *  b)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return a->layerSortingKey > b->layerSortingKey;
 }
 	
 void RenderLayerBatchArray::Sort(Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     TIME_PROFILE("RenderLayerBatchArray::Sort");
     // Need sort
 	flags |= SORT_REQUIRED;
@@ -232,11 +252,15 @@ void RenderLayerBatchArray::Sort(Camera * camera)
     
 uint32 RenderLayerBatchArray::GetRenderBatchCount()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return (uint32)renderBatchArray.size();
 }
 
 RenderBatch * RenderLayerBatchArray::Get(uint32 index)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+    
     return renderBatchArray[index];
 }
 

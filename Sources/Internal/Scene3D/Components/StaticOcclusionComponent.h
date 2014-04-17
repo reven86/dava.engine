@@ -67,6 +67,8 @@ class StaticOcclusionComponent : public Component
 protected:
     ~StaticOcclusionComponent(){};
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_COMPONENTS)
+    
 	IMPLEMENT_COMPONENT_TYPE(STATIC_OCCLUSION_COMPONENT);
 
 	StaticOcclusionComponent();

@@ -36,6 +36,8 @@ namespace DAVA
 
 SceneNodeAnimation::SceneNodeAnimation(int32 _keyCount)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	keyCount = _keyCount;
 	bindNode = 0;
 	startIdx = 0;
@@ -48,16 +50,22 @@ SceneNodeAnimation::SceneNodeAnimation(int32 _keyCount)
 
 SceneNodeAnimation::~SceneNodeAnimation()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	SafeDeleteArray(keys);
 }
 	
 void SceneNodeAnimation::SetKey(int32 index, const SceneNodeAnimationKey & key)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	keys[index] = key;
 }
 
 SceneNodeAnimationKey & SceneNodeAnimation::Intepolate(float32 t)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	if (keyCount == 1)
 	{
 		currentValue = keys[0];
@@ -98,21 +106,29 @@ SceneNodeAnimationKey & SceneNodeAnimation::Intepolate(float32 t)
 
 void SceneNodeAnimation::SetDuration(float32 _duration)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	duration = _duration;
 }
 	
 void SceneNodeAnimation::SetBindNode(Entity * _bindNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	bindNode = _bindNode;
 }
 	
 void SceneNodeAnimation::SetBindName(const FastName & _bindName)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	bindName = _bindName;
 }
 	
 void SceneNodeAnimation::Update(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	delayTime -= timeElapsed;
 	if (delayTime <= 0.0f)
 	{
@@ -136,6 +152,8 @@ void SceneNodeAnimation::Execute()
 	
 Vector3 SceneNodeAnimation::SetStartPosition(const Vector3 & position)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	Vector3 sPos = keys[0].translation;
 	for (int idx = 0; idx < keyCount; ++idx)
 	{
@@ -146,6 +164,8 @@ Vector3 SceneNodeAnimation::SetStartPosition(const Vector3 & position)
 
 void SceneNodeAnimation::ShiftStartPosition(const Vector3 & shift)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	for (int idx = 0; idx < keyCount; ++idx)
 	{
 		keys[idx].translation += shift;
@@ -154,11 +174,15 @@ void SceneNodeAnimation::ShiftStartPosition(const Vector3 & shift)
 	
 void SceneNodeAnimation::SetParent(SceneNodeAnimationList * list)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	parent = list;
 }
 
 SceneNodeAnimationList * SceneNodeAnimation::GetParent()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	return parent;
 }
 

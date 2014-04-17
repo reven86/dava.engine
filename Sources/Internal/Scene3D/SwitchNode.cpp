@@ -39,11 +39,13 @@ SwitchNode::SwitchNode()
 :	oldSwitchIndex(0),
 	newSwitchIndex(0)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
 }
 
 Entity* SwitchNode::Clone(Entity *dstNode /*= NULL*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!dstNode) 
 	{
 		dstNode = new SwitchNode();
@@ -54,16 +56,22 @@ Entity* SwitchNode::Clone(Entity *dstNode /*= NULL*/)
 
 void SwitchNode::SetSwitchIndex(int32 _switchIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	newSwitchIndex = _switchIndex;
 }
 
 int32 SwitchNode::GetSwitchIndex()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return newSwitchIndex;
 }
 
 void SwitchNode::Update(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(oldSwitchIndex != newSwitchIndex)
 	{
 		int32 childrenCound = GetChildrenCount();
@@ -78,6 +86,8 @@ void SwitchNode::Update(float32 timeElapsed)
 
 void SwitchNode::AddNode(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity::AddNode(node);
 
 	ReapplySwitch();
@@ -85,11 +95,15 @@ void SwitchNode::AddNode(Entity * node)
 
 void SwitchNode::ReapplySwitch()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	oldSwitchIndex = -1;
 }
 
 void SwitchNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity::Save(archive, serializationContext);
 
 	archive->SetInt32("switchIndex", newSwitchIndex);
@@ -97,6 +111,8 @@ void SwitchNode::Save(KeyedArchive * archive, SerializationContext * serializati
 
 void SwitchNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity::Load(archive, serializationContext);
 
 	int32 loadedSwitchIndex = archive->GetInt32("switchIndex");

@@ -40,16 +40,20 @@ MaterialGraph::MaterialGraph()
 :   usedTextureCoordsCount(0)
 ,   usedTextures(0)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
 }
 
 MaterialGraph::~MaterialGraph()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     RemoveAllNodes();
 }
 
 void MaterialGraph::RemoveAllNodes()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     uint32 size = allNodes.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -60,17 +64,23 @@ void MaterialGraph::RemoveAllNodes()
     
 void MaterialGraph::AddNode(MaterialGraphNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     allNodes.push_back(SafeRetain(node));
 }
     
 void MaterialGraph::RemoveNode(MaterialGraphNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     allNodes.erase(std::remove(allNodes.begin(), allNodes.end(), node));
     SafeRelease(node);
 }
     
 void MaterialGraph::RemoveNodeRecursive(MaterialGraphNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 //    Map<String, MaterialGraphNodeConnector*> & inputConnectors = node->GetInputConnectors();
 //    for (Map<String, MaterialGraphNodeConnector*>::iterator it = inputConnectors.begin(); it != inputConnectors.end(); ++it)
 //    {
@@ -84,6 +94,8 @@ void MaterialGraph::RemoveNodeRecursive(MaterialGraphNode * node)
 
 bool MaterialGraph::LoadFromFile(const FilePath & pathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     
     YamlParser * materialFileParser = YamlParser::Create(pathname);
     if (!materialFileParser)return false;
@@ -118,6 +130,8 @@ bool MaterialGraph::LoadFromFile(const FilePath & pathname)
 bool MaterialGraph::LoadNode(const YamlNode * graphNode)
 {
 
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     MaterialGraphNode * node = new MaterialGraphNode(this);
     node->InitFromYamlNode(graphNode);
     AddNode(node);
@@ -171,6 +185,8 @@ MaterialGraphNode * MaterialGraph::GetNode(uint32 index) const
 }
 MaterialGraphNode * MaterialGraph::GetNodeByName(const String & name) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     uint32 size = allNodes.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -181,11 +197,15 @@ MaterialGraphNode * MaterialGraph::GetNodeByName(const String & name) const
 
 bool MaterialGraph::SortByDepthMarkerDescending(MaterialGraphNode * node1, MaterialGraphNode * node2)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return (node1->GetDepthMarker() > node2->GetDepthMarker());
 }
 
 void MaterialGraph::SortByDepthMarkerAndRemoveUnused()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     for (Vector<MaterialGraphNode*>::iterator it = allNodes.begin(); it != allNodes.end();)
     {
         MaterialGraphNode * node = *it;

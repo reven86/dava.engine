@@ -32,6 +32,7 @@
 
 #include "Base/BaseObject.h"
 #include "Platform/Mutex.h"
+#include "Debug/MemoryManager.h"
 
 namespace DAVA
 {
@@ -61,6 +62,8 @@ class RenderResource : public BaseObject
 protected:
 	virtual ~RenderResource();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
 	RenderResource();
 	
 	/**

@@ -44,6 +44,8 @@ const float32 ImposterNode::TOGGLE_SQUARE_DISTANCE = 2500.f;
 ImposterNode::ImposterNode()
 :	Entity()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	state = STATE_3D;
 	renderData = 0;
 	manager = 0;
@@ -55,6 +57,8 @@ ImposterNode::ImposterNode()
 
 ImposterNode::~ImposterNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(manager)
 	{
 		SharedFBO * fbo = manager->GetFBO();
@@ -69,6 +73,8 @@ ImposterNode::~ImposterNode()
 
 void ImposterNode::UpdateState()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(GetChildrenCount() > 0)
 	{
 		DVASSERT(GetChildrenCount() == 1);
@@ -136,6 +142,8 @@ void ImposterNode::UpdateState()
 
 bool ImposterNode::IsAngleOrRangeChangedEnough(float32 squareDistance, float32 dotProduct)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	bool result = false;
 
 	float32 distanceDelta = squareDistance/distanceSquaredToCamera;
@@ -151,6 +159,8 @@ bool ImposterNode::IsAngleOrRangeChangedEnough(float32 squareDistance, float32 d
 
 void ImposterNode::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE) && GetChildrenCount() > 0)
 	{
 		DVASSERT(GetChildrenCount() == 1);
@@ -160,6 +170,8 @@ void ImposterNode::Draw()
 
 void ImposterNode::GeneralDraw()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(IsImposterReady())
 	{
 		DrawImposter();
@@ -172,6 +184,8 @@ void ImposterNode::GeneralDraw()
 
 void ImposterNode::GetOOBBoxScreenCoords(Entity * node, const Matrix4 & mvp, AABBox3 & screenBounds)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	const Rect & viewport = RenderManager::Instance()->GetViewport();
 	MeshInstanceNode * mesh = dynamic_cast<MeshInstanceNode*>(node);
 	if (mesh)
@@ -207,6 +221,8 @@ void ImposterNode::GetOOBBoxScreenCoords(Entity * node, const Matrix4 & mvp, AAB
 
 void ImposterNode::UpdateImposter()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Camera * camera = scene->GetCurrentCamera();
 
 	Camera * imposterCamera = new Camera();
@@ -365,6 +381,8 @@ void ImposterNode::UpdateImposter()
 
 void ImposterNode::HierarchicalRemoveCull(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	//TODO: remove this function
 	node->RemoveFlag(NODE_CLIPPED_THIS_FRAME);
 	uint32 size = (uint32)(node->GetChildrenCount());
@@ -376,6 +394,8 @@ void ImposterNode::HierarchicalRemoveCull(Entity * node)
 
 void ImposterNode::DrawImposter()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 #if 0
 	if(!block)
 	{
@@ -418,6 +438,8 @@ void ImposterNode::DrawImposter()
 
 Entity* ImposterNode::Clone(Entity *dstNode /*= NULL*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!dstNode) 
 	{
 		DVASSERT_MSG(IsPointerToExactClass<ImposterNode>(this), "Can clone only ImposterNode");
@@ -431,6 +453,8 @@ Entity* ImposterNode::Clone(Entity *dstNode /*= NULL*/)
 
 void ImposterNode::ClearGeometry()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	SafeRelease(renderData);
 	verts.clear();
 	texCoords.clear();
@@ -438,6 +462,8 @@ void ImposterNode::ClearGeometry()
 
 void ImposterNode::CreateGeometry()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	DVASSERT(verts.empty() && texCoords.empty() && !renderData);
 
 	verts.push_back(imposterVertices[0].x);
@@ -485,22 +511,30 @@ void ImposterNode::CreateGeometry()
 
 void ImposterNode::AskForRedraw()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	manager->AddToQueue(this);
 	state = STATE_QUEUED;
 }
 
 bool ImposterNode::IsRedrawApproved()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return (STATE_REDRAW_APPROVED == state);
 }
 
 bool ImposterNode::IsImposterReady()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return isReady;
 }
 
 void ImposterNode::RecreateFbo(const Vector2 & size)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	SharedFBO * fbo = manager->GetFBO();
 	if(block)
 	{
@@ -511,16 +545,22 @@ void ImposterNode::RecreateFbo(const Vector2 & size)
 
 bool ImposterNode::IsQueued()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return (STATE_QUEUED == state);
 }
 
 void ImposterNode::SetManager(ImposterManager * _manager)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	manager = _manager;
 }
 
 void ImposterNode::UpdatePriority(float32 squaredDistance, float32 dotProduct)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(dotProduct)
 	{
 		priority = squaredDistance*dotProduct;
@@ -533,11 +573,15 @@ void ImposterNode::UpdatePriority(float32 squaredDistance, float32 dotProduct)
 
 float32 ImposterNode::GetPriority()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return priority;
 }
 
 void ImposterNode::ZeroOutBlock()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	block = 0;
 }
 

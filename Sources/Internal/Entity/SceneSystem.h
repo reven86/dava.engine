@@ -31,6 +31,7 @@
 #define __DAVAENGINE_SCENE3D_SCENESYSTEM_H__
 
 #include "Base/BaseTypes.h"
+#include "Debug/MemoryManager.h"
 
 namespace DAVA 
 {
@@ -42,6 +43,8 @@ class Component;
 class SceneSystem
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SYSTEMS)
+    
     SceneSystem(Scene * scene);
     virtual ~SceneSystem();
     

@@ -46,6 +46,8 @@ const FastName ShadowVolume::MATERIAL_NAME = FastName("Shadow_Volume_Material");
 
 ShadowVolume::ShadowVolume()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
     aabbox = AABBox3(Vector3(), Vector3());
 		
 	//VI: create single instance of parent shadow volume material
@@ -65,6 +67,7 @@ ShadowVolume::ShadowVolume()
 
 ShadowVolume::~ShadowVolume()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
 }
 
 //void ShadowVolume::Draw()
@@ -76,6 +79,8 @@ static const uint32 SHADOW_VOLUME_VISIBILITY_CRITERIA = RenderObject::VISIBLE;
     
 void ShadowVolume::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
     if(!renderObject)return;
     Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
     if (!worldTransformPtr)
@@ -131,6 +136,8 @@ void ShadowVolume::Draw(const FastName & ownerRenderPass, Camera * camera)
 
 int32 ShadowVolume::FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	for( int i = 0; i < count; ++i )
 	{
 		// If both vertex indexes of the old edge in mapping entry are -1, then
@@ -152,6 +159,8 @@ int32 ShadowVolume::FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* ma
 
 void ShadowVolume::MakeShadowVolumeFromPolygonGroup(PolygonGroup * oldPolygonGroup)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	//PolygonGroup * oldPolygonGroup = meshInstance->GetPolygonGroups()[0]->GetPolygonGroup();
 
 	
@@ -487,6 +496,8 @@ void ShadowVolume::MakeShadowVolumeFromPolygonGroup(PolygonGroup * oldPolygonGro
 
 void ShadowVolume::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	RenderBatch::GetDataNodes(dataNodes);
 
 	if(dataSource)
@@ -497,7 +508,9 @@ void ShadowVolume::GetDataNodes(Set<DataNode*> & dataNodes)
 
 RenderBatch * ShadowVolume::Clone(RenderBatch * dstNode /*= NULL*/)
 {
-	if (!dstNode) 
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
+	if (!dstNode)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<ShadowVolume>(this), "Can clone only ShadowVolume");
 		dstNode = new ShadowVolume();
@@ -514,6 +527,8 @@ RenderBatch * ShadowVolume::Clone(RenderBatch * dstNode /*= NULL*/)
 
 void ShadowVolume::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	RenderBatch::Save(archive, serializationContext);
 
 	if(NULL != archive)
@@ -524,6 +539,8 @@ void ShadowVolume::Save(KeyedArchive *archive, SerializationContext *serializati
 
 void ShadowVolume::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	RenderBatch::Load(archive, serializationContext);
 
 	if(NULL != archive && NULL != serializationContext)
@@ -541,6 +558,8 @@ void ShadowVolume::Load(KeyedArchive *archive, SerializationContext *serializati
     
 void ShadowVolume::SetPolygonGroup(PolygonGroup * _polygonGroup)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	SafeRelease(dataSource);
     dataSource = SafeRetain(_polygonGroup);
 
@@ -549,11 +568,15 @@ void ShadowVolume::SetPolygonGroup(PolygonGroup * _polygonGroup)
 
 PolygonGroup * ShadowVolume::GetPolygonGroup()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
     return dataSource;
 }
 
 void ShadowVolume::UpdateAABBoxFromSource()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	if(NULL != dataSource)
 	{
         aabbox = dataSource->GetBoundingBox();
@@ -565,6 +588,8 @@ void ShadowVolume::UpdateAABBoxFromSource()
 
 ShadowVolume * ShadowVolume::CreateShadow()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	return NULL;
 }
 

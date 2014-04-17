@@ -35,6 +35,8 @@ namespace DAVA
 {
 const NMaterialTemplate* NMaterialTemplateCache::Get(const FastName& templateName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterialTemplate* matTemplate = templateCache.at(templateName);
 	if(NULL == matTemplate)
 	{
@@ -59,6 +61,8 @@ const NMaterialTemplate* NMaterialTemplateCache::Get(const FastName& templateNam
 	
 NMaterialTemplate* NMaterialTemplateCache::Load(const FilePath& loadPath)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterialTemplate* result = NULL;
 	
 	YamlParser * parser = YamlParser::Create(loadPath);

@@ -33,11 +33,15 @@ namespace DAVA
 #if defined(__DAVAENGINE_OPENGL__)
 OcclusionQuery::OcclusionQuery()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
     id = 0;
 }
     
 void OcclusionQuery::Init()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glGenQueries(1, &id));
 #else
@@ -48,6 +52,8 @@ void OcclusionQuery::Init()
     
 void OcclusionQuery::Release()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
         RENDER_VERIFY(glDeleteQueries(1, &id));
 #else
@@ -58,12 +64,16 @@ void OcclusionQuery::Release()
 
 OcclusionQuery::~OcclusionQuery()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
     Release();
     id = 0;
 }
 
 void OcclusionQuery::BeginQuery()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glBeginQuery(GL_SAMPLES_PASSED, id));
@@ -74,6 +84,8 @@ void OcclusionQuery::BeginQuery()
     
 void OcclusionQuery::EndQuery()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
 // Temporarly written, should be refactored and moved to RenderBase.h defines
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glEndQuery(GL_SAMPLES_PASSED));
@@ -84,6 +96,8 @@ void OcclusionQuery::EndQuery()
     
 bool OcclusionQuery::IsResultAvailable()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
     GLint available;
     RENDER_VERIFY(glGetQueryObjectiv(id,
@@ -108,6 +122,8 @@ bool OcclusionQuery::IsResultAvailable()
     
 void OcclusionQuery::GetQuery(uint32 * resultValue)
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
     RENDER_VERIFY(glGetQueryObjectuiv(id, GL_QUERY_RESULT_ARB, resultValue));
 #else
@@ -118,6 +134,8 @@ void OcclusionQuery::GetQuery(uint32 * resultValue)
     
 OcclusionQueryManager::OcclusionQueryManager(uint32 _occlusionQueryCount)
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
     createdCounter = 0;
     nextFree = 0;
     occlusionQueryCount = _occlusionQueryCount;
@@ -133,6 +151,8 @@ OcclusionQueryManager::OcclusionQueryManager(uint32 _occlusionQueryCount)
     
 OcclusionQueryManager::~OcclusionQueryManager()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
     for (uint32 k = 0; k < occlusionQueryCount; ++k)
     {
         queries[k].query.Release();
@@ -142,6 +162,8 @@ OcclusionQueryManager::~OcclusionQueryManager()
 
 OcclusionQueryManagerHandle OcclusionQueryManager::CreateQueryObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
     if (nextFree == INVALID_INDEX)
     {
         uint32 oldOcclusionQueryCount = occlusionQueryCount;
@@ -166,6 +188,8 @@ OcclusionQueryManagerHandle OcclusionQueryManager::CreateQueryObject()
     
 void OcclusionQueryManager::ReleaseQueryObject(OcclusionQueryManagerHandle handle)
 {
+    TAG_SWITCH(MemoryManager::TAG_OCLUSSION)
+    
     createdCounter--;
     DVASSERT(handle.salt == queries[handle.index].salt);
     queries[handle.index].salt++;

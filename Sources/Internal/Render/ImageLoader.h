@@ -34,6 +34,8 @@
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 
+#include "Debug/MemoryManager.h"
+
 namespace DAVA 
 {
 
@@ -42,6 +44,7 @@ class Image;
 class ImageLoader
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_IMAGE)
 
     static bool CreateFromFileByExtension(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
     

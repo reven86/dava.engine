@@ -47,6 +47,8 @@ static const uint32 RENDER_TARGET_HEIGHT = 512 / 4;
 StaticOcclusion::StaticOcclusion()
     : manager(10000)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     staticOcclusionRenderPass = 0;
     renderTargetSprite = 0;
     renderTargetTexture = 0;
@@ -55,6 +57,8 @@ StaticOcclusion::StaticOcclusion()
 
 StaticOcclusion::~StaticOcclusion()
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     SafeDelete(staticOcclusionRenderPass);
     SafeRelease(renderTargetSprite);
     SafeRelease(renderTargetTexture);
@@ -64,6 +68,8 @@ StaticOcclusion::~StaticOcclusion()
 void StaticOcclusion::BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
                                                StaticOcclusionData * _currentData)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD, this, RENDER_PASS_FORWARD_ID);        
 
     
@@ -100,6 +106,8 @@ void StaticOcclusion::BuildOcclusionInParallel(Vector<RenderObject*> & renderObj
     
 void StaticOcclusion::SetEqualVisibilityVector(Map<RenderObject*, Vector<RenderObject*> > & equalVisibility)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     equalVisibilityArray = equalVisibility;
 }
 
@@ -131,6 +139,8 @@ void StaticOcclusion::SetEqualVisibilityVector(Map<RenderObject*, Vector<RenderO
     
 AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     Vector3 size = occlusionAreaRect.GetSize();
     
     size.x /= xBlockCount;
@@ -146,6 +156,8 @@ AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
 
 uint32 StaticOcclusion::RenderFrame()
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
 //    for (uint32 k = 0; k < 1000; ++k)
 //    {
 //        for (uint32 m = 0; m < 3000; ++m)
@@ -403,6 +415,8 @@ uint32 StaticOcclusion::RenderFrame()
 
 void StaticOcclusion::RecordFrameQuery(RenderBatch * batch, OcclusionQueryManagerHandle handle)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     recordedBatches.push_back(std::pair<RenderBatch*, OcclusionQueryManagerHandle>(batch, handle));
 }
 
@@ -415,16 +429,20 @@ StaticOcclusionData::StaticOcclusionData()
     , sizeY(5)
     , sizeZ(2)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
 }
     
 StaticOcclusionData::~StaticOcclusionData()
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     SafeDeleteArray(data);
 }
     
 StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData & other)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     sizeX = other.sizeX;
     sizeY = other.sizeY;
     sizeZ = other.sizeZ;
@@ -441,6 +459,8 @@ StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData 
 
 void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint32 _objectCount, const AABBox3 & _bbox)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     objectCount = _objectCount;
     sizeX = _sizeX;
     sizeY = _sizeY;
@@ -456,11 +476,15 @@ void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint
 
 void StaticOcclusionData::SetVisibilityForObject(uint32 blockIndex, uint32 objectIndex, uint32 visible)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     data[(blockIndex * objectCount / 32) + (objectIndex / 32)] |= visible << (objectIndex & 31);
 }
     
 uint32 * StaticOcclusionData::GetBlockVisibilityData(uint32 blockIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     return &data[(blockIndex * objectCount / 32)];
 }
     

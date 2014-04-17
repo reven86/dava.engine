@@ -37,16 +37,19 @@ namespace DAVA
 UserNode::UserNode()
 	:drawBox(Vector3(-0.5f, -0.5f, -0.5f), Vector3(0.5f, 0.5f, 0.5f))
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
 //	SetDebugFlags(GetDebugFlags() | DEBUG_DRAW_USERNODE);
 }
 
 UserNode::~UserNode()
 {
-
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
 }
 
 void UserNode::Draw()
-{    
+{
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity::Draw();
 	if (!(flags & NODE_VISIBLE) || !(flags & NODE_UPDATABLE) || (flags & NODE_INVALID))return;
 
@@ -56,6 +59,8 @@ void UserNode::Draw()
 
 AABBox3 UserNode::GetWTMaximumBoundingBox()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	AABBox3 retBBox = drawBox;
 	drawBox.GetTransformedBox(GetWorldTransform(), retBBox);
 	return retBBox;
@@ -64,6 +69,8 @@ AABBox3 UserNode::GetWTMaximumBoundingBox()
 
 Entity* UserNode::Clone(Entity *dstNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!dstNode) 
 	{
 		DVASSERT_MSG(IsPointerToExactClass<UserNode>(this), "Can clone only UserNode");

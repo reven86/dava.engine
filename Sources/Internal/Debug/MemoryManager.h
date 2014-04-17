@@ -95,7 +95,7 @@ struct MemoryInfo
 class MemoryManager : public Singleton<MemoryManager>
 {
 public:
-	MemoryManager() : mutex(TRUE), mapMutex(TRUE) {};
+	MemoryManager() : mutex(TRUE) {};
 	virtual ~MemoryManager() {};
 		
 //	virtual void	*New(size_t size, const char * _file, int _line) { return 0; };
@@ -113,27 +113,72 @@ public:
         TAG_SHADER,
         TAG_SCENE,
         TAG_SPRITE,
+        TAG_POLYGON_GROUP,
+        TAG_RENDER_OBJECT,
+        TAG_ENTITY,
+        TAG_FONT,
+        TAG_FONT_MANAGER,
+        TAG_FT_FONT,
+        TAG_GRAPHICS_FONT,
+        TAG_TEXTBLOCK,
+        TAG_ANIMATED_MESH,
+        TAG_CAMERA,
+        TAG_HEIGHTMAP,
+        TAG_LANDSCAPE,
+        TAG_LIGHT,
+        TAG_MESH,
+        TAG_RENDER_BATCH,
+        TAG_RENDER_HIERARCHY,
+        TAG_RENDER_LAYER,
+        TAG_RENDER_PASS,
+        TAG_RENDER_SYSTEM,
+        TAG_SHADOW,
+        TAG_SKYBOX,
+        TAG_SPATIALTREE,
+        TAG_SPEEDTREE,
+        TAG_STATIC_OCLUSSION,
+        TAG_OCLUSSION,
+        TAG_VEGETATION,
+        TAG_MATERIAL,
+        TAG_GPU_FAMILY_DESCRIPTOR,
+        TAG_IMAGE,
+        TAG_RENDER,
+        TAG_FBO,
+        TAG_COMPONENTS,
+        TAG_CONVERTERS,
+        TAG_SYSTEMS,
+        TAG_DATA_NODE,
+        TAG_IMPOSTER,
+        TAG_PATH,
         
         TAG_COUNT
     };
     
     const char* GetTagTypeAsString(AllocTagType tag) const
     {
-        static const char* TagStrings[] = {"Untagged", "Textures", "Pool allocators", "Shaders", "Scene", "Sprite", ""};
+        static const char* TagStrings[] = {"Untagged", "Textures", "Pool allocators", "Shaders", "Scene", "Sprites",
+                                            "Polygon Groups", "Render objects", "Entities", "Fonts",
+                                            "Font manager", "FT Fonts", "Graphics Fonts", "TextBlocks", "Animated mesh",
+                                            "Camera", "Heightmap", "Landscape", "Light", "Mesh", "RenderBatch",
+                                            "RenderHierarchy", "RenderLayer", "RenderPass", "RenderSystem",
+                                            "Shadow", "Skybox", "SpatialTree", "SpeedTree", "StaticOclussion", "Occlusion",
+                                            "Vegetation", "Material", "GPUFamilyDescriptor", "Image", "Render",
+                                            "FBO", "Components", "Converters", "Systems", "DataNodes", "Imposters",
+                                            "Path", ""};
         return TagStrings[tag];
     }
 
     void SetCurrentTag(AllocTagType newTag)
     {
-        mapMutex.Lock();
+        mutex.Lock();
         pthread_t threadID = pthread_self();
         tagsMap[threadID] = newTag;
-        mapMutex.Unlock();
+        mutex.Unlock();
     }
     
     AllocTagType GetCurrentTag()
     {
-        mapMutex.Lock();
+        mutex.Lock();
         AllocTagType res = TAG_UNTAGGED;
         pthread_t threadID = pthread_self();
         Map<pthread_t, AllocTagType>::iterator it = tagsMap.find(threadID);
@@ -141,7 +186,7 @@ public:
         {
             res = it->second;
         }
-        mapMutex.Unlock();
+        mutex.Unlock();
         return res;
     }
     
@@ -154,14 +199,17 @@ public:
         uint32 totalFreed = 0;
         for(int i = 0; i < TAG_COUNT; ++i)
         {
-            totalAlloc += taggedMemInfoMap[i].allocated;
-            totalFreed += taggedMemInfoMap[i].freed;
-            Logger::FrameworkDebug("* Tag named %s allocated %.3f MB (%u bytes), freed %.3f MB (%u bytes), live %.3f MB (%u bytes)",
-                                    GetTagTypeAsString((AllocTagType)i),
-                                    taggedMemInfoMap[i].allocated/(1024.f*1024.f), taggedMemInfoMap[i].allocated,
-                                    taggedMemInfoMap[i].freed/(1024.f*1024.f), taggedMemInfoMap[i].freed,
-                                    (taggedMemInfoMap[i].allocated - taggedMemInfoMap[i].freed)/(1024.f*1024.f),
-                                    taggedMemInfoMap[i].allocated - taggedMemInfoMap[i].freed);
+            if(taggedMemInfoMap[i].allocated > 0 || taggedMemInfoMap[i].freed > 0)
+            {
+                totalAlloc += taggedMemInfoMap[i].allocated;
+                totalFreed += taggedMemInfoMap[i].freed;
+                Logger::FrameworkDebug("* Tag named %s allocated %.3f MB (%u bytes), freed %.3f MB (%u bytes), live %.3f MB (%u bytes)",
+                                        GetTagTypeAsString((AllocTagType)i),
+                                        taggedMemInfoMap[i].allocated/(1024.f*1024.f), taggedMemInfoMap[i].allocated,
+                                        taggedMemInfoMap[i].freed/(1024.f*1024.f), taggedMemInfoMap[i].freed,
+                                        (taggedMemInfoMap[i].allocated - taggedMemInfoMap[i].freed)/(1024.f*1024.f),
+                                        taggedMemInfoMap[i].allocated - taggedMemInfoMap[i].freed);
+            }
         }
         Logger::FrameworkDebug("* Total allocated %.3f MB (%u bytes), freed %.3f MB (%u bytes), live %.3f MB (%u bytes)",
                                totalAlloc/(1024.f*1024.f), totalAlloc,
@@ -174,7 +222,6 @@ protected:
     Map<pthread_t, AllocTagType> tagsMap;
     MemoryInfo taggedMemInfoMap[TAG_COUNT];
     Mutex mutex;
-    Mutex mapMutex;
 };
     
 class AutoTagSwitcher

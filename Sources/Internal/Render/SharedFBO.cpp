@@ -43,6 +43,8 @@ bool SortBlocks(SharedFBO::Block * a, SharedFBO::Block * b)
 SharedFBO::SharedFBO(Setup * setup)
 :	texture(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	texture = Texture::CreateFBO((uint32)setup->size.x, (uint32)setup->size.y, setup->pixelFormat, setup->depthFormat);
 	
 	TextureStateData textureState;
@@ -92,6 +94,8 @@ SharedFBO::SharedFBO(Setup * setup)
 
 SharedFBO::~SharedFBO()
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	RenderManager::Instance()->ReleaseTextureState(fboTextureState);
 	SafeRelease(texture);
 
@@ -104,6 +108,8 @@ SharedFBO::~SharedFBO()
 
 SharedFBO::Block * SharedFBO::AcquireBlock(const Vector2 & size)
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	int32 index = FindIndexForSize(size);
 
 	if(index > 0)
@@ -154,6 +160,8 @@ SharedFBO::Block * SharedFBO::AcquireBlock(const Vector2 & size)
 
 SharedFBO::Block * SharedFBO::GetBlock(int32 poolIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	if(frees[poolIndex] > 0)
 	{
 		DVASSERT(queues[poolIndex].size() > 0);
@@ -172,12 +180,16 @@ SharedFBO::Block * SharedFBO::GetBlock(int32 poolIndex)
 
 void SharedFBO::ReleaseBlock(SharedFBO::Block * block)
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	queues[block->poolIndex].push_back(block);
 	frees[block->poolIndex]++;
 }
 
 int32 SharedFBO::FindIndexForSize(const Vector2 & size)
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	int32 sizesSize = sizes.size();
 	int32 closestIndex = 1;
     
@@ -194,11 +206,15 @@ int32 SharedFBO::FindIndexForSize(const Vector2 & size)
 
 Texture * SharedFBO::GetTexture()
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	return texture;
 }
 
 UniqueHandle SharedFBO::GetTextureHandle()
 {
+    TAG_SWITCH(MemoryManager::TAG_FBO)
+    
 	return fboTextureState;
 }
 };

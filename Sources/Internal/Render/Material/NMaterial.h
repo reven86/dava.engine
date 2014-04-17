@@ -45,6 +45,8 @@
 #include "Render/Material/RenderTechnique.h"
 #include "Render/Highlevel/RenderFastNames.h"
 
+#include "Debug/MemoryManager.h"
+
 namespace DAVA
 {
 
@@ -106,6 +108,8 @@ struct IlluminationParams : public InspBase
 class NMaterialProperty
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
+    
     Shader::eUniformType type;
     uint8 size;
     uint8* data;
@@ -119,11 +123,15 @@ public:
 	
 	~NMaterialProperty()
 	{
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
 		SafeDeleteArray(data);
 	}
 	
 	NMaterialProperty* Clone()
 	{
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
 		NMaterialProperty* cloneProp = new NMaterialProperty();
 		
 		cloneProp->size = size;
@@ -366,17 +374,22 @@ protected:
 	class TextureBucket
 	{
     public:
+        IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
     
 		TextureBucket() : texture(NULL)
 		{ }
         
         ~TextureBucket()
         {
+            TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+            
             SafeRelease(texture);
         }
         
         inline void SetTexture(Texture* tx)
         {
+            TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+            
             if(tx != texture)
             {
                 SafeRelease(texture);
@@ -391,6 +404,8 @@ protected:
         
         inline void SetPath(const FilePath& filePath)
         {
+            TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+            
             path = filePath;
         }
         
@@ -429,11 +444,15 @@ protected:
 			activeUniformsCacheSize(0),
             propsDirty(true)
 		{
+            TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+            
 			renderState.shader = NULL;
 		}
         
         ~RenderPassInstance()
         {
+            TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+            
             SetRenderStateHandle(InvalidUniqueHandle);
             SetTextureStateHandle(InvalidUniqueHandle);
             SafeRelease(renderState.shader);
@@ -719,6 +738,8 @@ public:
     
     inline void NMaterial::RenderPassInstance::SetShader(Shader* curShader)
     {
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
         if(renderState.shader != curShader)
         {
             SafeRelease(renderState.shader);
@@ -738,6 +759,8 @@ public:
     
     inline void NMaterial::RenderPassInstance::SetRenderStateHandle(UniqueHandle handle)
     {
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
         if(renderState.stateHandle != handle)
         {
             if(renderState.stateHandle != InvalidUniqueHandle)
@@ -761,6 +784,8 @@ public:
     
     inline void NMaterial::RenderPassInstance::SetTextureStateHandle(UniqueHandle handle)
     {
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
         if(renderState.textureState != handle)
         {
             if(renderState.textureState != InvalidUniqueHandle)
@@ -779,6 +804,8 @@ public:
     
     inline void NMaterial::RenderPassInstance::SetRenderer(Core::eRenderer renderer)
     {
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
         renderState.renderer = renderer;
     }
     
@@ -789,6 +816,8 @@ public:
     
     inline void NMaterial::RenderPassInstance::SetColor(const Color& color)
     {
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
         renderState.color = color;
     }
     
@@ -799,6 +828,8 @@ public:
     
     inline void NMaterial::RenderPassInstance::FlushState()
     {
+        TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+        
         RenderManager::Instance()->FlushState(&renderState);
     }
 

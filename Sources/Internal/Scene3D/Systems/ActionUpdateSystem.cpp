@@ -41,34 +41,46 @@ namespace DAVA
 ActionUpdateSystem::ActionUpdateSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	UnblockAllEvents();
 }
 
 void ActionUpdateSystem::SetBlockEvent(ActionComponent::Action::eEvent eventType, bool block)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	eventBlocked[eventType] = block;
 }
 
 bool ActionUpdateSystem::IsBlockEvent(ActionComponent::Action::eEvent eventType)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	return eventBlocked[eventType];
 }
 
 void ActionUpdateSystem::UnblockAllEvents()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	for (int i=0; i<ActionComponent::Action::EVENTS_COUNT; i++)
 		eventBlocked[i] = false;
 }
 
 void ActionUpdateSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	SceneSystem::AddEntity(entity);
 	ActionComponent* actionComponent = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
 	actionComponent->StartAdd();
 }
 
 void ActionUpdateSystem::RemoveEntity(Entity * entity)
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	ActionComponent* actionComponent = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));	
 	if (actionComponent->IsStarted())
 		UnWatch(actionComponent);	
@@ -77,6 +89,8 @@ void ActionUpdateSystem::RemoveEntity(Entity * entity)
 		
 void ActionUpdateSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("ActionUpdateSystem::Process");
 
 	DelayedDeleteActions();
@@ -91,6 +105,8 @@ void ActionUpdateSystem::Process(float32 timeElapsed)
 
 void ActionUpdateSystem::DelayedDeleteActions()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Vector<ActionComponent*>::iterator end = deleteActions.end();
 	for(Vector<ActionComponent*>::iterator it = deleteActions.begin(); it != end; ++it)
 	{
@@ -107,11 +123,15 @@ void ActionUpdateSystem::DelayedDeleteActions()
 	
 void ActionUpdateSystem::Watch(ActionComponent* component)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	activeActions.push_back(component);
 }
 
 void ActionUpdateSystem::UnWatch(ActionComponent* component)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	deleteActions.push_back(component);
 }
 	

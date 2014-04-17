@@ -38,6 +38,8 @@ namespace DAVA
 
 LandscapeCursor::LandscapeCursor()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	textureHandle = InvalidUniqueHandle;
     cursorTexture = NULL;
 
@@ -59,6 +61,8 @@ LandscapeCursor::LandscapeCursor()
 
 void LandscapeCursor::Prepare()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	if(InvalidUniqueHandle == textureHandle)
 	{
 		return;
@@ -77,6 +81,8 @@ void LandscapeCursor::Prepare()
 
 LandscapeCursor::~LandscapeCursor()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	SafeRelease(shader);
     SafeRelease(cursorTexture);
     
@@ -93,16 +99,22 @@ LandscapeCursor::~LandscapeCursor()
 
 void LandscapeCursor::SetPosition(const Vector2 & _posistion)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	position = _posistion;
 }
 
 void LandscapeCursor::SetScale(float32 _scale)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	scale = _scale;
 }
 
 void LandscapeCursor::SetCursorTexture(Texture* _texture)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if(_texture != cursorTexture)
     {
         SafeRelease(cursorTexture);
@@ -122,27 +134,37 @@ void LandscapeCursor::SetCursorTexture(Texture* _texture)
 
 void LandscapeCursor::SetBigTextureSize(float32 _bigSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	bigSize = _bigSize;
 }
     
     
 Texture* LandscapeCursor::GetCursorTexture()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return cursorTexture;
 }
 
 float32 LandscapeCursor::GetBigTextureSize()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return bigSize;
 }
 
 Vector2 LandscapeCursor::GetCursorPosition()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return position;
 }
 
 float32 LandscapeCursor::GetCursorScale()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return scale;
 }
 

@@ -71,6 +71,8 @@ class InstanceMaterialState : public BaseObject
 protected:
     virtual ~InstanceMaterialState();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
+    
     InstanceMaterialState();
 
 	virtual void Save(KeyedArchive * archive, SerializationContext *serializationContext);
@@ -135,6 +137,8 @@ class Material : public DataNode
 	friend class SerializationContext;
 	
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
+    
     enum eType
     {
         // Normal Materials

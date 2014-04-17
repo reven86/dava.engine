@@ -34,6 +34,8 @@
 #include "Base/Singleton.h"
 #include "Base/BaseMath.h"
 
+#include "Debug/MemoryManager.h"
+
 struct FT_LibraryRec_;
 typedef struct FT_LibraryRec_  *FT_Library;
 
@@ -52,6 +54,8 @@ class FontManager : public Singleton<FontManager>
 
 	
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_FONT_MANAGER);
+    
 	FontManager();
 	virtual ~FontManager();
 	

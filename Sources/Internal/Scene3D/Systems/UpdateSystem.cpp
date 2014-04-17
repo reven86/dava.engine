@@ -40,11 +40,13 @@ namespace DAVA
 UpdateSystem::UpdateSystem(Scene * scene)
 :	SceneSystem(scene)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void UpdateSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	UpdatableComponent * component = (UpdatableComponent*)entity->GetComponent(Component::UPDATABLE_COMPONENT);
 	IUpdatable * object = component->GetUpdatableObject();
 
@@ -66,6 +68,8 @@ void UpdateSystem::AddEntity(Entity * entity)
 
 void UpdateSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	UpdatableComponent * component = (UpdatableComponent*)entity->GetComponent(Component::UPDATABLE_COMPONENT);
 	IUpdatable * object = component->GetUpdatableObject();
 
@@ -105,11 +109,13 @@ void UpdateSystem::RemoveEntity(Entity * entity)
 
 void UpdateSystem::Process(float32 timeElapsed)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("UpdateSystem::UpdatePreTransform");
 
 	uint32 size = updatesBeforeTransform.size();
@@ -121,6 +127,8 @@ void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 
 void UpdateSystem::UpdatePostTransform(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("UpdateSystem::UpdatePostTransform");
 
 	uint32 size = updatesAfterTransform.size();

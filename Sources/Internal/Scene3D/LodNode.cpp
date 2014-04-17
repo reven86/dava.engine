@@ -42,22 +42,30 @@ namespace DAVA
 
 LodNode::LodDistance::LodDistance()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     distance = nearDistance = nearDistanceSq = farDistance = farDistanceSq = (float32) INVALID_DISTANCE;
 }
     
 void LodNode::LodDistance::SetDistance(float32 newDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     distance = newDistance;
 }
     
 void LodNode::LodDistance::SetNearDistance(float32 newDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     nearDistance = newDistance;
     nearDistanceSq = nearDistance * nearDistance;
 }
 
 void LodNode::LodDistance::SetFarDistance(float32 newDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     farDistance = newDistance;
     farDistanceSq = farDistance * farDistance;
 }
@@ -78,6 +86,8 @@ LodNode::LodNode()
 ,   forceDistanceSq(INVALID_DISTANCE)
     
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     for(int32 iLayer = 0; iLayer < MAX_LOD_LAYERS; ++iLayer)
     {
         lodLayersArray[iLayer].SetDistance(GetDefaultDistance(iLayer));
@@ -90,6 +100,8 @@ LodNode::LodNode()
 	
 LodNode::~LodNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 //    const List<LodData>::const_iterator & end = lodLayers.end();
 //    for (List<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
 //    {
@@ -105,12 +117,16 @@ LodNode::~LodNode()
 
 void LodNode::AddNodeInLayer(Entity * node, int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     AddNode(node);
     RegisterNodeInLayer(node, layer);
 }
 
 LodNode::LodData	*LodNode::CreateNewLayer(int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     LodData *ld = NULL;
     if (lodLayers.empty()) 
     {
@@ -150,6 +166,8 @@ LodNode::LodData	*LodNode::CreateNewLayer(int32 layer)
 
 void LodNode::RegisterNodeInLayer(Entity * node, int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     LodData *ld = CreateNewLayer(layer);
     if (node->GetName().find("dummy") != String::npos) 
     {
@@ -174,6 +192,8 @@ void LodNode::RegisterNodeInLayer(Entity * node, int32 layer)
     
 void LodNode::RegisterIndexInLayer(int32 nodeIndex, int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     LodData *ld = CreateNewLayer(layer);
 	if (nodeIndex >= 0)
 	{
@@ -183,6 +203,8 @@ void LodNode::RegisterIndexInLayer(int32 nodeIndex, int32 layer)
 
 void LodNode::RemoveNode(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Entity::RemoveNode(node);
     List<LodData>::iterator ei = lodLayers.end();
     for (List<LodData>::iterator i = lodLayers.begin(); i != ei; i++) 
@@ -203,6 +225,8 @@ void LodNode::RemoveNode(Entity * node)
     
 void LodNode::RemoveAllChildren()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Entity::RemoveAllChildren();
     RemoveFlagRecursive(Entity::NODE_IS_LOD_PART);
     lodLayers.clear();
@@ -211,6 +235,8 @@ void LodNode::RemoveAllChildren()
     
 bool LodNode::IsLodMain(Entity *childToCheck)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if (!childToCheck) 
     {
         return true;
@@ -243,6 +269,8 @@ bool LodNode::IsLodMain(Entity *childToCheck)
     
 void LodNode::RecheckLod()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 //#define LOD_DEBUG
     if (!currentLod)return;
 
@@ -308,6 +336,8 @@ void LodNode::RecheckLod()
 
 void LodNode::SetCurrentLod(LodData *newLod)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if (newLod != currentLod) 
     {
         if (currentLod) 
@@ -330,6 +360,7 @@ void LodNode::SetCurrentLod(LodData *newLod)
 
 void LodNode::Update(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
     
     if (flags&Entity::NODE_VISIBLE)
     {
@@ -366,6 +397,8 @@ void LodNode::Update(float32 timeElapsed)
 	
 Entity* LodNode::Clone(Entity *dstNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if (!dstNode) 
     {
 		DVASSERT_MSG(IsPointerToExactClass<LodNode>(this), "Can clone only LodNode");
@@ -430,6 +463,8 @@ Entity* LodNode::Clone(Entity *dstNode)
      */
 void LodNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Entity::Save(archive, serializationContext);
     archive->SetInt32("lodCount", (int32)lodLayers.size());
     
@@ -463,6 +498,8 @@ void LodNode::Save(KeyedArchive * archive, SerializationContext * serializationC
      */
 void LodNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Entity::Load(archive, serializationContext);
 
     int32 lodCount = archive->GetInt32("lodCount", 0);
@@ -495,6 +532,8 @@ void LodNode::Load(KeyedArchive * archive, SerializationContext * serializationC
     
 void LodNode::SceneDidLoaded()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     Entity::SceneDidLoaded();
     const List<LodData>::const_iterator &end = lodLayers.end();
     for (List<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
@@ -522,6 +561,8 @@ void LodNode::SceneDidLoaded()
 
 int32 LodNode::GetMaxLodLayer()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	int32 ret = -1;
 	const List<LodData>::const_iterator &end = lodLayers.end();
 	for (List<LodData>::iterator it = lodLayers.begin(); it != end; ++it)
@@ -538,15 +579,21 @@ int32 LodNode::GetMaxLodLayer()
 
 void LodNode::SetForceLodLayer(int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     forceLodLayer = layer;
 }
 int32 LodNode::GetForceLodLayer()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return forceLodLayer;
 }
 
 void LodNode::SetLodLayerDistance(int32 layerNum, float32 distance)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
     
     if(INVALID_DISTANCE != distance)
@@ -574,23 +621,31 @@ void LodNode::SetLodLayerDistance(int32 layerNum, float32 distance)
     
 float32 LodNode::GetDefaultDistance(int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     float32 distance = MIN_LOD_DISTANCE + ((float32)(MAX_LOD_DISTANCE - MIN_LOD_DISTANCE) / (MAX_LOD_LAYERS-1)) * layer;
     return distance;
 }
 
 void LodNode::SetForceLodLayerDistance(float32 newForceDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     forceDistance = newForceDistance;
     forceDistanceSq = forceDistance * forceDistance;
 }
 
 float32 LodNode::GetForceLodLayerDistance()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return forceDistance;
 }
     
 void LodNode::GetLodData(List<LodData*> &retLodLayers)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     retLodLayers.clear();
     
     List<LodData>::const_iterator endIt = lodLayers.end();

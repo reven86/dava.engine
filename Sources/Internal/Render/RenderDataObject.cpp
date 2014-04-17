@@ -38,6 +38,8 @@ namespace DAVA
     
 RenderDataStream::RenderDataStream()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     formatMark = EVF_VERTEX;
     type = TYPE_FLOAT;
     size = 0;
@@ -51,10 +53,13 @@ RenderDataStream::RenderDataStream()
 
 RenderDataStream::~RenderDataStream()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
 }
 
 void RenderDataStream::Set(eVertexDataType _type, int32 _size, int32 _stride, const void * _pointer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     type = _type;
     size = _size;
     stride = _stride;
@@ -69,6 +74,8 @@ void RenderDataStream::Set(eVertexDataType _type, int32 _size, int32 _stride, co
 RenderDataObject::RenderDataObject()
 	: RenderResource()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     resultVertexFormat = 0;
     vboBuffer = 0;
     vertexAttachmentActive = false;
@@ -88,6 +95,8 @@ RenderDataObject::RenderDataObject()
 
 RenderDataObject::~RenderDataObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if(vertexAttachmentActive)
     {
         DetachVertices();
@@ -111,6 +120,8 @@ RenderDataObject::~RenderDataObject()
 
 void RenderDataObject::DeleteBuffersInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	DestructorContainer * container = (DestructorContainer*)param;
 	DVASSERT(container);
 #if defined(__DAVAENGINE_OPENGL__)
@@ -131,6 +142,8 @@ void RenderDataObject::DeleteBuffersInternal(BaseObject * caller, void * param, 
 
 RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT(!vertexAttachmentActive);
     
     Map<eVertexFormat, RenderDataStream *>::iterator iter = streamMap.find(formatMark);
@@ -156,6 +169,8 @@ RenderDataStream * RenderDataObject::SetStream(eVertexFormat formatMark, eVertex
 
 void RenderDataObject::RemoveStream(eVertexFormat formatMark)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT(!vertexAttachmentActive);
     
 	Map<eVertexFormat, RenderDataStream*>::iterator it = streamMap.find(formatMark);
@@ -182,11 +197,15 @@ void RenderDataObject::RemoveStream(eVertexFormat formatMark)
 
 uint32 RenderDataObject::GetResultFormat() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return resultVertexFormat;
 }
     
 void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT(!vertexAttachmentActive);
     
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildVertexBufferInternal, (void*)vertexCount));
@@ -200,6 +219,8 @@ void RenderDataObject::BuildVertexBuffer(int32 vertexCount, bool synchronously)
 
 void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
@@ -244,6 +265,8 @@ void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * par
     
 void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 _count)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     indexFormat = _format;
     indexCount = _count;
     indices = _indices;
@@ -255,6 +278,8 @@ void RenderDataObject::SetIndices(eIndexFormat _format, uint8 * _indices, int32 
 
 void RenderDataObject::BuildIndexBuffer(bool synchronously)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &RenderDataObject::BuildIndexBufferInternal));
     
     if(synchronously)
@@ -266,6 +291,8 @@ void RenderDataObject::BuildIndexBuffer(bool synchronously)
 
 void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	DVASSERT(Thread::IsMainThread());
 #if defined (__DAVAENGINE_OPENGL__)
     
@@ -304,6 +331,8 @@ void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * para
 
 void RenderDataObject::AttachVertices(RenderDataObject* vertexSource)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT(vertexSource);
     DVASSERT(0 == vboBuffer);
     DVASSERT(streamArray.size() == 0);
@@ -329,6 +358,8 @@ void RenderDataObject::AttachVertices(RenderDataObject* vertexSource)
     
 void RenderDataObject::DetachVertices()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     vboBuffer = 0;
     
     for(Vector<RenderDataStream *>::iterator it = streamArray.begin();

@@ -49,6 +49,8 @@ protected:
 	virtual ~ShadowVolume();
 
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADOW)
+    
 	ShadowVolume();
 	static const FastName MATERIAL_NAME;
 

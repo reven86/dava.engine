@@ -48,41 +48,54 @@ Light::Light()
     intensity(300.0f),
 	flags(IS_DYNAMIC | CAST_SHADOW)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
 }
     
 Light::~Light()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
 }
     
 void Light::SetType(DAVA::Light::eType _type)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     type = _type;
 }
     
 void Light::SetAmbientColor(const Color & _color)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     ambientColor = _color;
 }
 
 void Light::SetDiffuseColor(const Color & _color)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     diffuseColor = _color;
 }
 
 void Light::SetSpecularColor(const Color & _color)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     specularColor = _color;
 }
 
 void Light::SetIntensity(float32 _intensity)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     intensity = _intensity;
 }
 
     
 BaseObject * Light::Clone(BaseObject *dstNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     if(!dstNode)
     {
 		DVASSERT_MSG(IsPointerToExactClass<Light>(this), "Can clone only LightNode");
@@ -104,6 +117,8 @@ BaseObject * Light::Clone(BaseObject *dstNode)
 
 void Light::SetPositionDirectionFromMatrix(const Matrix4 & worldTransform)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     position = Vector3(0.0f, 0.0f, 0.0f) * worldTransform;
     direction = MultiplyVectorMat3x3(Vector3(0.0, -1.0f, 0.0f), worldTransform);
     direction.Normalize();
@@ -111,50 +126,70 @@ void Light::SetPositionDirectionFromMatrix(const Matrix4 & worldTransform)
 
 Light::eType Light::GetType() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return (eType)type;
 }
 const Vector3 & Light::GetPosition() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return position; 
 }
 
 const Vector3 & Light::GetDirection() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return direction;
 }
 
 void Light::SetPosition(const Vector3 & _position)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     position = _position;
 }
 
 void Light::SetDirection(const Vector3 & _direction)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     direction = _direction;
 }
 
 const Color & Light::GetAmbientColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return ambientColor;
 }
     
 const Color & Light::GetDiffuseColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return diffuseColor;
 }
     
 const Color & Light::GetSpecularColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return specularColor;
 }
     
 float32 Light::GetIntensity() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return intensity;
 }
 
 void Light::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
 	BaseObject::Save(archive);
 	
 	archive->SetInt32("type", type);
@@ -180,6 +215,8 @@ void Light::Save(KeyedArchive * archive, SerializationContext * serializationCon
 
 void Light::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     BaseObject::Load(archive);
 
     type = (eType)archive->GetInt32("type");
@@ -214,11 +251,15 @@ void Light::Load(KeyedArchive * archive, SerializationContext * serializationCon
 
 const bool Light::IsDynamic()
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
 	return (flags & IS_DYNAMIC) != 0;
 }
 
 void Light::SetDynamic(const bool & _isDynamic)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
 	if(_isDynamic)
 	{
 		AddFlag(IS_DYNAMIC);
@@ -231,16 +272,22 @@ void Light::SetDynamic(const bool & _isDynamic)
 
 void Light::AddFlag(uint32 flag)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     flags |= flag;
 }
 
 void Light::RemoveFlag(uint32 flag)
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     flags &= ~flag;
 }
     
 uint32 Light::GetFlags()
 {
+    TAG_SWITCH(MemoryManager::TAG_LIGHT)
+    
     return flags;
 }
 

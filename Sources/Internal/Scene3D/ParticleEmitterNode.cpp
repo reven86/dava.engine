@@ -42,11 +42,15 @@ namespace DAVA
 ParticleEmitterNode::ParticleEmitterNode()
 :	emitter(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	SetName("Particle Emitter");
 }
 
 ParticleEmitterNode::~ParticleEmitterNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	SafeRelease(emitter);
 }
 
@@ -62,6 +66,8 @@ void ParticleEmitterNode::Draw()
 
 void ParticleEmitterNode::LoadFromYaml(const FilePath& _yamlPath)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	yamlPath = _yamlPath;
 	SafeRelease(emitter);
 	emitter = new ParticleEmitter();
@@ -70,11 +76,15 @@ void ParticleEmitterNode::LoadFromYaml(const FilePath& _yamlPath)
 
 ParticleEmitter * ParticleEmitterNode::GetEmitter()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return emitter;
 }
 
 Entity* ParticleEmitterNode::Clone(Entity *dstNode /*= NULL*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!dstNode) 
 	{
 		DVASSERT_MSG(IsPointerToExactClass<ParticleEmitterNode>(this), "Can clone only ParticleEmitterNode");
@@ -92,6 +102,8 @@ Entity* ParticleEmitterNode::Clone(Entity *dstNode /*= NULL*/)
 
 void ParticleEmitterNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity::Save(archive, serializationContext);
 
 	archive->SetString("yamlPath", yamlPath.GetRelativePathname(serializationContext->GetScenePath()));
@@ -99,6 +111,8 @@ void ParticleEmitterNode::Save(KeyedArchive * archive, SerializationContext * se
 
 void ParticleEmitterNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity::Load(archive, serializationContext);
 	
 	String path = archive->GetString("yamlPath");
@@ -108,6 +122,8 @@ void ParticleEmitterNode::Load(KeyedArchive * archive, SerializationContext * se
 
 void ParticleEmitterNode::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	//VI: NMaterial is not a DataNode anymore
 	/*if(emitter)
 	{

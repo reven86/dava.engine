@@ -43,11 +43,13 @@ SwitchComponent::SwitchComponent()
 :	oldSwitchIndex(-1),
 	newSwitchIndex(0)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 Component * SwitchComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	SwitchComponent * newComponent = new SwitchComponent();
 	newComponent->SetEntity(toEntity);
 	GlobalEventSystem::Instance()->Event(toEntity, EventSystem::SWITCH_CHANGED);
@@ -56,6 +58,8 @@ Component * SwitchComponent::Clone(Entity * toEntity)
 
 void SwitchComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive)
@@ -66,6 +70,8 @@ void SwitchComponent::Serialize(KeyedArchive *archive, SerializationContext *ser
 
 void SwitchComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Deserialize(archive, serializationContext);
 	
 	if(NULL != archive)
@@ -76,6 +82,8 @@ void SwitchComponent::Deserialize(KeyedArchive *archive, SerializationContext *s
 
 void SwitchComponent::SetSwitchIndex(const int32 & _switchIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	newSwitchIndex = _switchIndex;
 
 	GlobalEventSystem::Instance()->Event(entity, EventSystem::SWITCH_CHANGED);
@@ -83,6 +91,8 @@ void SwitchComponent::SetSwitchIndex(const int32 & _switchIndex)
 
 int32 SwitchComponent::GetSwitchIndex() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return newSwitchIndex;
 }
 

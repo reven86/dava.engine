@@ -49,6 +49,8 @@ DebugRenderSystem::DebugRenderSystem(Scene * scene)
 :	SceneSystem(scene),
 	camera(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	depthTestState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL |
 																	RenderStateData::STATE_DEPTH_WRITE |
 																	RenderStateData::STATE_DEPTH_TEST);
@@ -59,11 +61,13 @@ DebugRenderSystem::DebugRenderSystem(Scene * scene)
     
 DebugRenderSystem::~DebugRenderSystem()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void DebugRenderSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("DebugRenderSystem::Process");
 
     SetCamera(GetScene()->GetCurrentCamera());
@@ -257,6 +261,8 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 
 void DebugRenderSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	entities.push_back(entity);
 
     //DebugRenderComponent * debugRenderComponent = static_cast<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
@@ -269,6 +275,8 @@ void DebugRenderSystem::AddEntity(Entity * entity)
 
 void DebugRenderSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     //DebugRenderComponent * debugRenderComponent = static_cast<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
     RenderComponent * renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
     if (renderComponent)
@@ -293,6 +301,8 @@ void DebugRenderSystem::RemoveEntity(Entity * entity)
     
 void DebugRenderSystem::SetCamera(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     camera = _camera;
 }
 

@@ -53,15 +53,20 @@ namespace DAVA
 RenderUpdateSystem::RenderUpdateSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
 }
 
 RenderUpdateSystem::~RenderUpdateSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void RenderUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
     {
         // Update new transform pointer, and mark that transform is changed
@@ -83,6 +88,8 @@ void RenderUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
     
 void RenderUpdateSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     RenderObject * renderObject = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
     if (!renderObject)return;
 	Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
@@ -94,6 +101,8 @@ void RenderUpdateSystem::AddEntity(Entity * entity)
 
 void RenderUpdateSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     RenderObject * renderObject = entityObjectMap.at(entity);
     if (!renderObject)
 	{
@@ -107,6 +116,8 @@ void RenderUpdateSystem::RemoveEntity(Entity * entity)
     
 void RenderUpdateSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("RenderUpdateSystem::Process");
 
     RenderSystem * renderSystem = GetScene()->GetRenderSystem();

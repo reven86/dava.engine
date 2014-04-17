@@ -44,6 +44,8 @@ namespace DAVA
 LodSystem::LodSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	camera = 0;
 	forceUpdateAll = true;
     
@@ -53,6 +55,8 @@ LodSystem::LodSystem(Scene * scene)
 
 void LodSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("LodSystem::Process");
     
     SetCamera(GetScene()->GetCurrentCamera());
@@ -96,6 +100,8 @@ void LodSystem::Process(float32 timeElapsed)
 	
 void LodSystem::ForceUpdate(Entity* entity, Camera* camera, float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	float32 currFps = 1.0f/timeElapsed;
 	
 	float32 currPSValue = (currFps - PerformanceSettings::Instance()->GetPsPerformanceMinFPS())/(PerformanceSettings::Instance()->GetPsPerformanceMaxFPS()-PerformanceSettings::Instance()->GetPsPerformanceMinFPS());
@@ -111,6 +117,8 @@ void LodSystem::ForceUpdate(Entity* entity, Camera* camera, float32 timeElapsed)
 	
 void LodSystem::PorcessEntityRecursive(Entity * entity, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	LodComponent * lod = GetLodComponent(entity);
 	if(lod)
 	{
@@ -126,6 +134,8 @@ void LodSystem::PorcessEntityRecursive(Entity * entity, float32 psLodOffsetSq, f
 
 void LodSystem::UpdateEntitiesAfterLoad(Entity * parentEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	int32 size = parentEntity->GetChildrenCount();
 	for(int32 i = 0; i < size; ++i)
 	{
@@ -142,12 +152,16 @@ void LodSystem::UpdateEntitiesAfterLoad(Entity * parentEntity)
 
 void LodSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	entities.push_back(entity);
 	UpdatePartialUpdateIndices();
 }
 
 void LodSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	uint32 size = entities.size();
 	for(uint32 i = 0; i < size; ++i)
 	{
@@ -165,6 +179,8 @@ void LodSystem::RemoveEntity(Entity * entity)
 
 void LodSystem::UpdateEntityAfterLoad(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	LodComponent * lod = GetLodComponent(entity);
     
     //this check is left here intentionally to protect from second call to UpdateEntityAfterLoad
@@ -204,6 +220,8 @@ void LodSystem::UpdateEntityAfterLoad(Entity * entity)
 
 void LodSystem::UpdatePartialUpdateIndices()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	currentPartialUpdateIndex = 0;
 
 	int32 size = (int32)entities.size();
@@ -224,6 +242,8 @@ void LodSystem::UpdatePartialUpdateIndices()
 
 void LodSystem::UpdateLod(Entity * entity, LodComponent* lodComponent, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	int32 oldLod = lodComponent->currentLod;
 	if(!RecheckLod(entity, lodComponent, psLodOffsetSq, psLodMultSq, camera))
 	{
@@ -261,6 +281,8 @@ void LodSystem::UpdateLod(Entity * entity, LodComponent* lodComponent, float32 p
     
 void LodSystem::SetEntityLodRecursive(Entity * entity, int32 currentLod)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     RenderObject * ro = GetRenderObject(entity);
     if(ro)
     {
@@ -277,6 +299,8 @@ void LodSystem::SetEntityLodRecursive(Entity * entity, int32 currentLod)
 
 bool LodSystem::RecheckLod(Entity * entity, LodComponent* lodComponent, float32 psLodOffsetSq, float32 psLodMultSq, Camera* camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	bool usePsSettings = (GetEffectComponent(entity) != NULL);
 
 	if(LodComponent::INVALID_LOD_LAYER != lodComponent->forceLodLayer) 
@@ -306,6 +330,8 @@ bool LodSystem::RecheckLod(Entity * entity, LodComponent* lodComponent, float32 
 
 DAVA::float32 LodSystem::CalculateDistanceToCamera(const Entity * entity, const LodComponent *lodComponent, Camera* camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if (lodComponent->forceDistance != LodComponent::INVALID_DISTANCE) //LodComponent::INVALID_DISTANCE
 	{
 		return lodComponent->forceDistanceSq;
@@ -324,6 +350,8 @@ DAVA::float32 LodSystem::CalculateDistanceToCamera(const Entity * entity, const 
 
 int32 LodSystem::FindProperLayer( float32 distance, const LodComponent *lodComponent, int32 requestedLayersCount)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if(lodComponent->currentLod != LodComponent::INVALID_LOD_LAYER)
 	{
 		if ((distance >= lodComponent->GetLodLayerNearSquare(lodComponent->currentLod)) && (distance <= lodComponent->GetLodLayerFarSquare(lodComponent->currentLod)))
@@ -346,23 +374,31 @@ int32 LodSystem::FindProperLayer( float32 distance, const LodComponent *lodCompo
 
 void LodSystem::SetCamera(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	camera = _camera;
 }
 
 void LodSystem::MergeChildLods(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	LodSystem::LodMerger merger(toEntity);
 	merger.MergeChildLods();
 }
 
 LodSystem::LodMerger::LodMerger(Entity * _toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	DVASSERT(_toEntity);
 	toEntity = _toEntity;
 }
 
 void LodSystem::LodMerger::MergeChildLods()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	LodComponent * toLod = (LodComponent*)toEntity->GetOrCreateComponent(Component::LOD_COMPONENT);
     toLod->EnableRecursiveUpdate();
 	
@@ -386,6 +422,8 @@ void LodSystem::LodMerger::MergeChildLods()
 
 void LodSystem::LodMerger::GetLodComponentsRecursive(Entity * fromEntity, Vector<Entity*> & allLods)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if(fromEntity != toEntity)
 	{
 		LodComponent * lod = GetLodComponent(fromEntity);

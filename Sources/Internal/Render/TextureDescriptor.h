@@ -47,6 +47,8 @@ class TextureDescriptor
     static const int8 CURRENT_VERSION = 7;
     
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_TEXTURE)
+    
 	enum eOptionsState
 	{
 		OPTION_DISABLED = 0,

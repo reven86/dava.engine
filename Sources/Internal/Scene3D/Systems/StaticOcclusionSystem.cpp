@@ -46,6 +46,8 @@ namespace DAVA
 StaticOcclusionBuildSystem::StaticOcclusionBuildSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     staticOcclusion = 0;
     activeIndex = -1;
     componentInProgress = 0;
@@ -53,21 +55,29 @@ StaticOcclusionBuildSystem::StaticOcclusionBuildSystem(Scene * scene)
 
 StaticOcclusionBuildSystem::~StaticOcclusionBuildSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     SafeDelete(staticOcclusion);
 }
 
 void StaticOcclusionBuildSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     entities.push_back(entity);
 }
     
 void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     entities.erase( std::remove( entities.begin(), entities.end(), entity ), entities.end() );
 }
     
 void StaticOcclusionBuildSystem::Build()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if (entities.size() == 0)return;
     activeIndex = 0;
     buildStepsCount = 0;
@@ -79,17 +89,23 @@ void StaticOcclusionBuildSystem::Build()
 
 void StaticOcclusionBuildSystem::Cancel()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     activeIndex = -1;
     SafeDelete(staticOcclusion);
 }
 
 bool StaticOcclusionBuildSystem::IsInBuild() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return (-1 != activeIndex);
 }
 
 uint32 StaticOcclusionBuildSystem::GetBuildStatus() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     uint32 ret = 0;
 
     if(0 != buildStepsCount && buildStepsCount >= buildStepRemains)
@@ -102,6 +118,8 @@ uint32 StaticOcclusionBuildSystem::GetBuildStatus() const
     
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     //ProcessStaticOcclusion(camera);
     
     if (activeIndex == -1)return; // System inactive
@@ -248,6 +266,8 @@ void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 
 void StaticOcclusionSystem::UndoOcclusionVisibility()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     uint32 size = (uint32)indexedRenderObjects.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -260,6 +280,8 @@ void StaticOcclusionSystem::UndoOcclusionVisibility()
 
 void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockIndex, StaticOcclusionData * data)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     uint32 * bitdata = data->GetBlockVisibilityData(blockIndex);
     uint32 size = (uint32)indexedRenderObjects.size();
     for (uint32 k = 0; k < size; ++k)
@@ -282,6 +304,8 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
 StaticOcclusionSystem::StaticOcclusionSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     indexedRenderObjects.reserve(2000);
     for (uint32 k = 0; k < indexedRenderObjects.size(); ++k)
         indexedRenderObjects[k] = 0;
@@ -292,10 +316,14 @@ StaticOcclusionSystem::StaticOcclusionSystem(Scene * scene)
 
 StaticOcclusionSystem::~StaticOcclusionSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 }
 
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     SetCamera(GetScene()->GetClipCamera());
 
     // Verify that system is initialized
@@ -351,12 +379,16 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     
 void StaticOcclusionSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     staticOcclusionComponents.push_back((StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT));
     SceneDidLoaded();
 }
     
 void StaticOcclusionSystem::SceneDidLoaded()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     // Recalc indices
     Vector<Entity*> entities;
     Vector<RenderObject*> renderObjectsArray;
@@ -379,6 +411,8 @@ void StaticOcclusionSystem::SceneDidLoaded()
     
 void StaticOcclusionSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     for (uint32 k = 0; k < (uint32)staticOcclusionComponents.size(); ++k)
     {
         StaticOcclusionDataComponent * component = staticOcclusionComponents[k];

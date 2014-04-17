@@ -59,6 +59,8 @@ class Image : public BaseObject
 protected:
 	virtual ~Image();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_IMAGE)
+    
 	Image();
 	
 	static Image * Create(uint32 width, uint32 height, PixelFormat format);

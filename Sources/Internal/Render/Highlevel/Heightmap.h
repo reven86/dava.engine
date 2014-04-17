@@ -34,6 +34,8 @@
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 
+#include "Debug/MemoryManager.h"
+
 namespace DAVA
 {
     
@@ -43,6 +45,7 @@ class Heightmap: public BaseObject
 protected:
 	virtual ~Heightmap();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_HEIGHTMAP)
 
     static const int32 MAX_VALUE = 65535;
     static const int32 IMAGE_CORRECTION = MAX_VALUE / 255;

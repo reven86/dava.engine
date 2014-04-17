@@ -39,16 +39,20 @@ BaseProcessSystem::BaseProcessSystem(uint32 componentId, Scene * scene)
 :	SceneSystem(scene),
 	processingComponentId(componentId)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void BaseProcessSystem::AddComponent( Entity * entity, Component * component )
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	components.push_back(component);
 }
 
 void BaseProcessSystem::RemoveComponent( Entity * entity, Component * component )
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	uint32 size = components.size();
 	for(uint32 i = 0; i < size; ++i)
 	{
@@ -65,6 +69,8 @@ void BaseProcessSystem::RemoveComponent( Entity * entity, Component * component 
 
 void BaseProcessSystem::AddEntity( Entity * entity )
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	uint32 size = entity->GetComponentCount(processingComponentId);
 	for(uint32 i = 0; i < size; ++i)
 	{
@@ -74,6 +80,8 @@ void BaseProcessSystem::AddEntity( Entity * entity )
 
 void BaseProcessSystem::RemoveEntity( Entity * entity )
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	uint32 size = entity->GetComponentCount(processingComponentId);
 	for(uint32 i = 0; i < size; ++i)
 	{

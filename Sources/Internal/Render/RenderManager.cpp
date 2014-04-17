@@ -63,6 +63,8 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     needGLScreenShot(false),
     screenShotCallback(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     // Create shader cache singleton
     ShaderCache * cache = new ShaderCache();
     cache = 0;
@@ -151,6 +153,8 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 	
 RenderManager::~RenderManager()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     ShaderCache::Instance()->Release();
     
     currentRenderData = 0;
@@ -163,6 +167,8 @@ RenderManager::~RenderManager()
 	
 void RenderManager::InitDefaultRenderStates()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     RenderState::InitDefaultStates();
     
 	hardwareState.stateHandle = RenderState::RENDERSTATE_DEFAULT;
@@ -170,17 +176,23 @@ void RenderManager::InitDefaultRenderStates()
 
 void RenderManager::SetDebug(bool isDebugEnabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	debugEnabled = isDebugEnabled;
 }
 
 void RenderManager::RequestGLScreenShot(ScreenShotCallbackDelegate *callback)
-{ 
+{
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	screenShotCallback = callback;
 	needGLScreenShot = true; 
 }
 	
 bool RenderManager::IsInsideDraw()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return isInsideDraw;
 }
     
@@ -203,6 +215,8 @@ FastName RenderManager::TEXTURE_MUL_FLAT_COLOR_SHADER("~res:/Shaders/renderer2dT
 
 void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DetectRenderingCapabilities();
     
     
@@ -262,6 +276,8 @@ void RenderManager::Init(int32 _frameBufferWidth, int32 _frameBufferHeight)
 
 void RenderManager::Reset()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	ResetColor();
 
 	currentRenderTarget = NULL;
@@ -286,55 +302,77 @@ void RenderManager::Reset()
 
 int32 RenderManager::GetRenderOrientation()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return renderOrientation;
 }
 	
 int32 RenderManager::GetScreenWidth()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return retScreenWidth;	
 }
 int32 RenderManager::GetScreenHeight()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return retScreenHeight;
 }
 
 void RenderManager::SetColor(float32 r, float32 g, float32 b, float32 a)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     currentState.SetColor(r, g, b, a);
 }
 	
 void RenderManager::SetColor(const Color & _color)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     currentState.SetColor(_color);
 }
 	
 float32 RenderManager::GetColorR() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return currentState.color.r;
 }
 	
 float32 RenderManager::GetColorG() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return currentState.color.g;
 }
 	
 float32 RenderManager::GetColorB() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return currentState.color.b;
 }
 	
 float32 RenderManager::GetColorA() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return currentState.color.a;
 }
     
 const Color & RenderManager::GetColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return currentState.color;
 }
 
 void RenderManager::ResetColor()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	currentState.ResetColor();
 }
 	
@@ -351,6 +389,8 @@ Texture *RenderManager::GetTexture(uint32 textureLevel)
     
 void RenderManager::SetShader(Shader * _shader)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 //    SafeRelease(shader);
 //    shader = SafeRetain(_shader);
     currentState.SetShader(_shader);
@@ -358,27 +398,37 @@ void RenderManager::SetShader(Shader * _shader)
 
 Shader * RenderManager::GetShader()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return currentState.shader;
 }
 
 
 void RenderManager::SetRenderData(RenderDataObject * object)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     currentRenderData = object;
 }
 		
 void RenderManager::SetClip(const Rect &rect)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	SetHWClip(rect);
 }
 	
 void RenderManager::RemoveClip()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	SetHWClip(Rect(0,0,-1,-1));
 }
 
 void RenderManager::ClipRect(const Rect &rect)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Rect r = currentClip;
 	if(r.dx < 0)
 	{
@@ -395,11 +445,15 @@ void RenderManager::ClipRect(const Rect &rect)
 
 void RenderManager::ClipPush()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	clipStack.push(currentClip);
 }
 
 void RenderManager::ClipPop()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	if(clipStack.empty())
 	{
 		Rect r(0, 0, -1, -1);
@@ -415,12 +469,16 @@ void RenderManager::ClipPop()
 	
 void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	fboViewRenderbuffer = _viewRenderbuffer;
 	fboViewFramebuffer = _viewFramebuffer;
 }
 
 void RenderManager::SetRenderTarget(Sprite *renderTarget)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 //	Logger::Info("Set Render target");
 	RenderTarget rt;
 	rt.spr = currentRenderTarget;
@@ -436,11 +494,15 @@ void RenderManager::SetRenderTarget(Sprite *renderTarget)
 
 void RenderManager::SetRenderTarget(Texture * renderTarget)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	SetHWRenderTargetTexture(renderTarget);
 }
 
 void RenderManager::RestoreRenderTarget()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 //	Logger::Info("Restore Render target");
 	RenderTarget rt = renderTargetStack.top();
 	renderTargetStack.pop();
@@ -453,6 +515,8 @@ void RenderManager::RestoreRenderTarget()
 
 bool RenderManager::IsRenderTarget()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return currentRenderTarget != NULL;
 }
     
@@ -470,11 +534,15 @@ bool RenderManager::IsDepthWriteEnabled()
 
 void RenderManager::SetRenderEffect(Shader * renderEffect)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     currentRenderEffect = renderEffect;
 }
 
 void RenderManager::DrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     RenderManager::Instance()->SetShader(currentRenderEffect);
     RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->AttachRenderData();
@@ -483,6 +551,8 @@ void RenderManager::DrawElements(ePrimitiveType type, int32 count, eIndexFormat 
 
 void RenderManager::DrawArrays(ePrimitiveType type, int32 first, int32 count)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     RenderManager::Instance()->SetShader(currentRenderEffect);
     RenderManager::Instance()->FlushState();
 	RenderManager::Instance()->AttachRenderData();
@@ -491,45 +561,63 @@ void RenderManager::DrawArrays(ePrimitiveType type, int32 first, int32 count)
 
 void RenderManager::Lock()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	glMutex.Lock();
 }
 void RenderManager::Unlock()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	glMutex.Unlock();
 }
 
 void RenderManager::LockRenderState()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     renderStateMutex.Lock();
 }
 
 void RenderManager::UnlockRenderState()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     renderStateMutex.Unlock();
 }
     
 void RenderManager::LockTextureState()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     textureStateMutex.Lock();
 }
 
 void RenderManager::UnlockTexturerState()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     textureStateMutex.Unlock();
 }
 
 void RenderManager::SetFPS(int32 newFps)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	fps = newFps;	
 }
 int32 RenderManager::GetFPS()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return fps;
 }
 	
 	
 void RenderManager::SetDrawTranslate(const Vector2 &offset)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	userDrawOffset.x += offset.x * userDrawScale.x;
 	userDrawOffset.y += offset.y * userDrawScale.y;
@@ -537,6 +625,8 @@ void RenderManager::SetDrawTranslate(const Vector2 &offset)
 
 void RenderManager::SetDrawTranslate(const Vector3 &offset)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
     userDrawOffset.x += offset.x * userDrawScale.x;
     userDrawOffset.y += offset.y * userDrawScale.y;
@@ -544,6 +634,8 @@ void RenderManager::SetDrawTranslate(const Vector3 &offset)
     
 void RenderManager::SetDrawScale(const Vector2 &scale)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	userDrawScale.x *= scale.x;
 	userDrawScale.y *= scale.y;
@@ -551,6 +643,8 @@ void RenderManager::SetDrawScale(const Vector2 &scale)
 	
 void RenderManager::IdentityDrawMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	userDrawScale.x = 1.0f;
 	userDrawScale.y = 1.0f;
@@ -561,6 +655,8 @@ void RenderManager::IdentityDrawMatrix()
 
 void RenderManager::IdentityMappingMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	viewMappingDrawOffset = Vector2(0.0f, 0.0f);
 	viewMappingDrawScale = Vector2(1.0f, 1.0f);
@@ -568,6 +664,8 @@ void RenderManager::IdentityMappingMatrix()
 	
 void RenderManager::IdentityModelMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
     currentDrawOffset = Vector2(0.0f, 0.0f);
     currentDrawScale = Vector2(1.0f, 1.0f);
@@ -579,6 +677,8 @@ void RenderManager::IdentityModelMatrix()
 	
 void RenderManager::SetPhysicalViewScale()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	viewMappingDrawScale.x = 1.0f;
 	viewMappingDrawScale.y = 1.0f;
@@ -586,12 +686,16 @@ void RenderManager::SetPhysicalViewScale()
 
 void RenderManager::SetPhysicalViewOffset()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	viewMappingDrawOffset = Core::Instance()->GetPhysicalDrawOffset();
 }
 
 void RenderManager::SetVirtualViewScale()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	viewMappingDrawScale.x = Core::GetVirtualToPhysicalFactor();
 	viewMappingDrawScale.y = Core::GetVirtualToPhysicalFactor();
@@ -599,6 +703,8 @@ void RenderManager::SetVirtualViewScale()
 
 void RenderManager::SetVirtualViewOffset()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     mappingMatrixChanged = true;
 	viewMappingDrawOffset.x -= Core::Instance()->GetVirtualScreenXMin() * viewMappingDrawScale.x;
 	viewMappingDrawOffset.y -= Core::Instance()->GetVirtualScreenYMin() * viewMappingDrawScale.y;
@@ -606,6 +712,8 @@ void RenderManager::SetVirtualViewOffset()
 	
 void RenderManager::PushDrawMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	DrawMatrix dm;
 	dm.userDrawOffset = userDrawOffset;
 	dm.userDrawScale = userDrawScale;
@@ -614,6 +722,8 @@ void RenderManager::PushDrawMatrix()
 
 void RenderManager::PopDrawMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	IdentityDrawMatrix();
 	DrawMatrix dm = matrixStack.top();
 	matrixStack.pop();
@@ -624,6 +734,8 @@ void RenderManager::PopDrawMatrix()
 	
 void RenderManager::PushMappingMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	DrawMatrix dm;
 	dm.userDrawOffset = viewMappingDrawOffset;
 	dm.userDrawScale = viewMappingDrawScale;
@@ -632,6 +744,8 @@ void RenderManager::PushMappingMatrix()
 
 void RenderManager::PopMappingMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	IdentityMappingMatrix();
 	DrawMatrix dm = mappingMatrixStack.top();
 	mappingMatrixStack.pop();
@@ -643,6 +757,8 @@ void RenderManager::PopMappingMatrix()
 
 void RenderManager::SetCursor(Cursor * _cursor)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined(__DAVAENGINE_MACOS__) || (defined(__DAVAENGINE_WIN32__) && defined(__DAVAENGINE_DIRECTX9__))
 	SafeRelease(cursor);
 	cursor = SafeRetain(_cursor);
@@ -652,27 +768,35 @@ void RenderManager::SetCursor(Cursor * _cursor)
 
 Cursor * RenderManager::GetCursor()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return cursor;
 }
 	
 const RenderManager::Caps & RenderManager::GetCaps()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return caps;
 }
     
 RenderManager::Stats & RenderManager::GetStats()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return stats;
 }
     
 void RenderManager::ClearStats()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     stats.Clear();
 }
     
 void RenderManager::RectFromRenderOrientationToViewport(Rect & rect)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
 }
 
 //const Matrix4 & RenderManager::GetMatrix(eMatrixType type)
@@ -716,6 +840,8 @@ void RenderManager::RectFromRenderOrientationToViewport(Rect & rect)
     
 void RenderManager::Stats::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	//uint32 matrixMultiplicationCount = Matrix4::matrixMultiplicationCounter;
 	//Matrix4::matrixMultiplicationCounter = 0;
     drawArraysCalls = 0;
@@ -735,11 +861,15 @@ void RenderManager::Stats::Clear()
 
 void RenderManager::EnableOutputDebugStatsEveryNFrame(int32 _frameToShowDebugStats)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     frameToShowDebugStats = _frameToShowDebugStats;
 }
 
 void RenderManager::ProcessStats()
-{ 
+{
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (frameToShowDebugStats == -1)return;
     
     statsFrameCountToShowDebug++;
@@ -766,27 +896,36 @@ void RenderManager::EnableCulling(bool isEnabled)
 
 RenderOptions * RenderManager::GetOptions()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return &options;
 }
 	
 uint32 RenderManager::GetFBOViewFramebuffer() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return fboViewFramebuffer;
 }
 
 void RenderManager::SetRenderContextId(uint64 contextId)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	renderContextId = contextId;
 }
 	
 uint64 RenderManager::GetRenderContextId()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	return renderContextId;
 }
 	
 void RenderManager::VerifyRenderContext()
 {
-	
+	TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined(__DAVAENGINE_OPENGL__) && (defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__))
 	
 #if defined(__DAVAENGINE_WIN32__)
@@ -815,6 +954,8 @@ void RenderManager::VerifyRenderContext()
     
 void RenderManager::Setup2DMatrices()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     Matrix4 glTranslate, glScale;
     glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
     glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);

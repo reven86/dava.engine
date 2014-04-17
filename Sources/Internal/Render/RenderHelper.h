@@ -54,6 +54,8 @@ class RenderDataStream;
 class RenderHelper : public Singleton<RenderHelper>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
 	RenderHelper();
     ~RenderHelper();
     

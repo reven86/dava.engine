@@ -97,6 +97,8 @@ class Scene;
 class SceneArchive : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE)
+    
     struct SceneArchiveHierarchyNode : public BaseObject
     {
         KeyedArchive *archive;
@@ -121,7 +123,9 @@ class SceneFileV2 : public BaseObject
 protected:
     virtual ~SceneFileV2();
 
-public: 
+public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE)
+    
     enum eError{
         ERROR_NO_ERROR = 0,
         ERROR_VERSION_IS_TOO_OLD = 1,

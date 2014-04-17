@@ -36,12 +36,16 @@ namespace DAVA
 {
 
 	void LinearRenderHierarchy::AddRenderObject(RenderObject * object)
-	{		
+	{
+		TAG_SWITCH(MemoryManager::TAG_RENDER_HIERARCHY)
+        
 		renderObjectArray.push_back(object);
 	}
 	
 	void LinearRenderHierarchy::RemoveRenderObject(RenderObject *renderObject)
-	{				
+	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER_HIERARCHY)
+        
 		uint32 size = renderObjectArray.size();
 		for (uint32 k = 0; k < size; ++k)
 		{
@@ -56,11 +60,14 @@ namespace DAVA
 	}
 	
 	void LinearRenderHierarchy::ObjectUpdated(RenderObject * renderObject)
-	{		
+	{
+		TAG_SWITCH(MemoryManager::TAG_RENDER_HIERARCHY)
 	}
     
 	void LinearRenderHierarchy::Clip(Camera * camera, VisibilityArray * _visibilityArray, uint32 visibilityCriteria)
-	{				
+	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER_HIERARCHY)
+        
 		visibilityArray = _visibilityArray;
 		Frustum * frustum = camera->GetFrustum();
 		uint32 size = renderObjectArray.size();
@@ -78,6 +85,8 @@ namespace DAVA
     
     void LinearRenderHierarchy::GetAllObjectsInBBox(const AABBox3 & bbox, VisibilityArray * visibilityArray)
     {
+        TAG_SWITCH(MemoryManager::TAG_RENDER_HIERARCHY)
+        
         uint32 size = renderObjectArray.size();
 		for (uint32 pos = 0; pos < size; ++pos)
 		{

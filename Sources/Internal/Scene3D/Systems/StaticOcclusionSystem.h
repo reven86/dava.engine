@@ -98,11 +98,15 @@ private:
     
 inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     camera = _camera;
 }
 
 inline void StaticOcclusionSystem::SetCamera(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     camera = _camera;
 }
 

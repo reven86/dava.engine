@@ -40,15 +40,20 @@ namespace DAVA
 SpriteRenderBatch::SpriteRenderBatch()
 	: RenderBatch()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     //SetOwnerLayerName(LAYER_TRANSLUCENT);
 }
 
 SpriteRenderBatch::~SpriteRenderBatch()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
 }
 
 void SpriteRenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(!renderObject)return;
 	Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
 	if (!worldTransformPtr)

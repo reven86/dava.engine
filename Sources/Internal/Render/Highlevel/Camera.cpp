@@ -41,6 +41,8 @@ namespace DAVA
 Camera::Camera()
 :	orthoWidth(35.f)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	SetupPerspective(35.0f, 1.0f, 1.0f, 2500.f);
 	up = Vector3(0.0f, 1.0f, 0.0f);
 	left = Vector3(1.0f, 0.0f, 0.0f);
@@ -52,35 +54,47 @@ Camera::Camera()
 	
 Camera::~Camera()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	SafeRelease(currentFrustum);
 } 
 
 void Camera::SetFOV(const float32 &fovxInDegrees)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	fovX = fovxInDegrees;
 	Recalc();
 }
     
 void Camera::SetAspect(const float32 &_aspect)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	aspect = 1.f/_aspect;
 	Recalc();
 }
     
 void Camera::SetZNear(const float32 &_zNear)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	znear = _zNear;
 	Recalc();
 }
     
 void Camera::SetZFar(const float32 &_zFar)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	zfar = _zFar;
 	Recalc();
 }
 
 void Camera::SetIsOrtho(const bool &_ortho)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	ortho = _ortho;
 	Recalc();
 }
@@ -88,6 +102,8 @@ void Camera::SetIsOrtho(const bool &_ortho)
 
 void Camera::SetOrthoWidth(const float32 &width)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	orthoWidth = width;
 	Recalc();
 }
@@ -166,6 +182,8 @@ bool Camera::GetIsOrtho() const
 
 void Camera::SetupPerspective(float32 fovxInDegrees, float32 aspectYdivX, float32 zNear, float32 zFar)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     this->aspect = 1.f/aspectYdivX;
     
     this->fovX = fovxInDegrees;
@@ -200,6 +218,8 @@ void Camera::Setup(float32 _xmin, float32 _xmax, float32 _ymin, float32 _ymax, f
 
 void Camera::Recalc()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	flags |= REQUIRE_REBUILD_PROJECTION;
 
 
@@ -225,12 +245,16 @@ void Camera::Recalc()
 
 Vector2 Camera::GetOnScreenPosition(const Vector3 &forPoint, const Rect & viewport)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	Vector3 v = GetOnScreenPositionAndDepth(forPoint, viewport);
 	return Vector2(v.x, v.y);
 }
 
 Vector3 Camera::GetOnScreenPositionAndDepth(const Vector3 & forPoint, const Rect & viewport)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	Vector4 pv(forPoint);
 	pv = pv * GetViewProjMatrix();
 	//    return Vector2((viewport.dx * 0.5f) * (1.f + pv.x/pv.w) + viewport.x
@@ -243,6 +267,8 @@ Vector3 Camera::GetOnScreenPositionAndDepth(const Vector3 & forPoint, const Rect
 
 const Matrix4 &Camera::GetViewProjMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     if (flags & REQUIRE_REBUILD)
     {
         RebuildCameraFromValues();
@@ -266,6 +292,8 @@ const Matrix4 &Camera::GetViewProjMatrix()
 
 void Camera::RebuildProjectionMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     flags &= ~REQUIRE_REBUILD_PROJECTION;
     flags |= REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
     
@@ -303,6 +331,8 @@ void Camera::RebuildProjectionMatrix()
 
 void Camera::RebuildViewMatrix()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     flags &= ~REQUIRE_REBUILD_MODEL;
     flags |= REQUIRE_REBUILD_UNIFORM_PROJ_MODEL;
     
@@ -383,6 +413,8 @@ const Matrix4 & Camera::GetMatrix() const
 
 void Camera::RebuildCameraFromValues()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 //    Logger::FrameworkDebug("camera rebuild: pos(%0.2f %0.2f %0.2f) target(%0.2f %0.2f %0.2f) up(%0.2f %0.2f %0.2f)",
 //                  position.x, position.y, position.z, target.x, target.y, target.z, up.x, up.y, up.z);
     
@@ -398,6 +430,8 @@ void Camera::RebuildCameraFromValues()
 	
 void Camera::ExtractCameraToValues()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	position.x = cameraTransform._30;
 	position.y = cameraTransform._31;
 	position.z = cameraTransform._32;
@@ -423,6 +457,8 @@ void Camera::LookAt(Vector3	position, Vector3 view, Vector3 up)
 
 void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	flags = REQUIRE_REBUILD | REQUIRE_REBUILD_MODEL | REQUIRE_REBUILD_PROJECTION;
     if (flags & REQUIRE_REBUILD)
     {
@@ -498,6 +534,8 @@ void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
 
 BaseObject * Camera::Clone(BaseObject * dstNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     if (!dstNode) 
     {
 		DVASSERT_MSG(IsPointerToExactClass<Camera>(this), "Can clone only Camera");
@@ -532,6 +570,8 @@ Frustum * Camera::GetFrustum() const
     
 void Camera::CalculateZoomFactor()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     zoomFactor = tanf(DegToRad(fovX * 0.5f));
 }
 
@@ -556,6 +596,8 @@ void Camera::Draw()
 
 Vector3 Camera::UnProject(float32 winx, float32 winy, float32 winz, const Rect & viewport)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 //	Matrix4 finalMatrix = modelMatrix * projMatrix;//RenderManager::Instance()->GetUniformMatrix(RenderManager::UNIFORM_MATRIX_MODELVIEWPROJECTION);
     
     Matrix4 finalMatrix = GetViewProjMatrix();
@@ -609,6 +651,8 @@ Vector3 Camera::UnProject(float32 winx, float32 winy, float32 winz, const Rect &
     
 void Camera::Save(KeyedArchive * archive)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     BaseObject::Save(archive);
     
     archive->SetFloat("cam.orthoWidth", orthoWidth);
@@ -633,6 +677,8 @@ void Camera::Save(KeyedArchive * archive)
 
 void Camera::Load(KeyedArchive * archive)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     BaseObject::Load(archive);
     
     // todo add default values
@@ -688,6 +734,8 @@ void Camera::Load(KeyedArchive * archive)
 
 void Camera::CopyMathOnly(const Camera & c)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     *currentFrustum = *c.currentFrustum;
     zoomFactor = c.zoomFactor;
 

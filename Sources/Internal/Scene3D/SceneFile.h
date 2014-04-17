@@ -60,6 +60,8 @@ class SceneFile : public BaseObject
 protected:
 	~SceneFile(){}
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE)
+    
 	SceneFile();
 	
 	bool LoadScene(const FilePath & filename, Scene * _scene, bool relToBundle = true);

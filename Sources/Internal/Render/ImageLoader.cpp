@@ -42,6 +42,8 @@ namespace DAVA
 
 bool ImageLoader::CreateFromFileByExtension(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     if(pathname.IsEqualToExtension(".pvr"))
     {
         return ImageLoader::CreateFromPVRFile(pathname, imageSet, baseMipmap);
@@ -58,6 +60,8 @@ bool ImageLoader::CreateFromFileByExtension(const FilePath &pathname, Vector<Ima
     
 bool ImageLoader::CreateFromFileByContent(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -74,6 +78,8 @@ bool ImageLoader::CreateFromFileByContent(const FilePath & pathname, Vector<Imag
     
 bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 #if 1
     if(IsPVRFile(file))
     {
@@ -97,6 +103,8 @@ bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet
     
 bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 #if 1
     
     File *file = File::Create(pathname, File::OPEN | File::READ);
@@ -117,6 +125,8 @@ bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> &
     
 bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 #if 1
     
     File *file = File::Create(pathname, File::OPEN | File::READ);
@@ -136,6 +146,8 @@ bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> &
     
 bool ImageLoader::CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 #if 1
     
     File *file = File::Create(pathname, File::OPEN | File::READ);
@@ -156,6 +168,8 @@ bool ImageLoader::CreateFromDDSFile(const FilePath & pathname, Vector<Image *> &
 
 bool ImageLoader::IsPNGFile(DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isPng = LibPngWrapper::IsPngFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isPng;
@@ -163,6 +177,8 @@ bool ImageLoader::IsPNGFile(DAVA::File *file)
     
 bool ImageLoader::IsPVRFile(DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isPvr = LibPVRHelper::IsPvrFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isPvr;
@@ -170,6 +186,8 @@ bool ImageLoader::IsPVRFile(DAVA::File *file)
 
 bool ImageLoader::IsDDSFile(DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isDXT = LibDxtHelper::IsDxtFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isDXT;
@@ -178,6 +196,8 @@ bool ImageLoader::IsDDSFile(DAVA::File *file)
     
 bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     Image *pngImage = new Image();
     if(pngImage)
     {
@@ -196,11 +216,15 @@ bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
 
 bool ImageLoader::CreateFromDDS(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	return LibDxtHelper::ReadDxtFile(file, imageSet, baseMipmap);
 }
 
 bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 //    uint64 loadTime = SystemTimer::Instance()->AbsoluteMS();
 
     int32 mipMapLevelsCount = LibPVRHelper::GetMipMapLevelsCount(file);
@@ -235,6 +259,8 @@ bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, in
 
 void ImageLoader::Save(DAVA::Image *image, const FilePath &pathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     DVASSERT(pathname.IsEqualToExtension(".png"));
     
     DVASSERT((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format));

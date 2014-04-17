@@ -326,12 +326,8 @@ Scene::~Scene()
     SafeRelease(currentCamera);
     SafeRelease(clipCamera);
     
-    for (ProxyNodeMap::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
-    {
-        SafeRelease(it->second);
-    }
-    rootNodes.clear();
-
+    ReleaseRootNodes();
+    
     // Children should be removed first because they should unregister themselves in managers
 	RemoveAllChildren();
     
@@ -684,6 +680,17 @@ void Scene::ReleaseRootNode(const FilePath &rootNodePath)
         it->second->Release();
         rootNodes.erase(it);
 	}
+}
+
+void Scene::ReleaseRootNodes()
+{
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
+    for (ProxyNodeMap::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
+    {
+        SafeRelease(it->second);
+    }
+    rootNodes.clear();
 }
     
 void Scene::ReleaseRootNode(Entity *nodeToRelease)

@@ -52,6 +52,8 @@ class Sprite;
 class StaticOcclusionData
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     StaticOcclusionData();
     ~StaticOcclusionData();
     
@@ -72,6 +74,8 @@ public:
 class StaticOcclusion
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_STATIC_OCLUSSION)
+    
     StaticOcclusion();
     ~StaticOcclusion();
     

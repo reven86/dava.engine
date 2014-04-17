@@ -88,6 +88,8 @@ protected:
 	{}
 	
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SPATIALTREE)
+    
 	QuadTree(int32 maxTreeDepth);
 	
 	virtual void AddRenderObject(RenderObject * renderObject);

@@ -58,6 +58,8 @@ class NMaterialProperty;
 class RenderSystem
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_SYSTEM)
+    
     RenderSystem();
     virtual ~RenderSystem();
     

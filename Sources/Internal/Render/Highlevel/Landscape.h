@@ -135,7 +135,8 @@ public:
     };
     
 	Landscape();
-    IMPLEMENT_NATIVE_ALLOCATOR;
+    //IMPLEMENT_NATIVE_ALLOCATOR;
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_LANDSCAPE)
 	virtual ~Landscape();
     
     /**

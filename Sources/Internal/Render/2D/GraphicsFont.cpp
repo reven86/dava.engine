@@ -42,6 +42,8 @@ namespace DAVA
 	
 GraphicsFontDefinition::GraphicsFontDefinition()
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	characterTable = 0;
 	characterPreShift = 0;
 	characterWidthTable = 0;
@@ -52,6 +54,8 @@ GraphicsFontDefinition::GraphicsFontDefinition()
 
 GraphicsFontDefinition::~GraphicsFontDefinition()
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	SafeDeleteArray(characterTable);
 	SafeDeleteArray(characterPreShift);
 	SafeDeleteArray(characterWidthTable);
@@ -62,6 +66,8 @@ GraphicsFontDefinition::~GraphicsFontDefinition()
 GraphicsFont::GraphicsFont()
 	:fontSprite(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	fontType = TYPE_GRAPHICAL;
 	fdef = 0;
 	fontScaleCoeff = 1.0f;
@@ -72,6 +78,8 @@ GraphicsFont::GraphicsFont()
     
 bool GraphicsFont::IsEqual(const Font *font) const
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	if (font->GetFontType() != this->GetFontType())
 	{
 		return false;
@@ -89,6 +97,8 @@ bool GraphicsFont::IsEqual(const Font *font) const
 
 String GraphicsFont::GetRawHashString()
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
     return fontDefinitionName.GetFrameworkPath() + "_" +
            fontSprite->GetRelativePathname().GetFrameworkPath() + "_" +
            Font::GetRawHashString();
@@ -96,6 +106,8 @@ String GraphicsFont::GetRawHashString()
 
 GraphicsFont::~GraphicsFont()
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	SafeRelease(fdef);
 	SafeRelease(fontSprite);
 	FontManager::Instance()->UnregisterFont(this);
@@ -108,6 +120,8 @@ int32 GraphicsFont::GetHorizontalSpacing() const
     
 Font * GraphicsFont::Clone() const
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	GraphicsFont * cloneFont = new GraphicsFont();
 
 	cloneFont->fdef = SafeRetain(this->fdef);	
@@ -125,6 +139,8 @@ Font * GraphicsFont::Clone() const
 
 Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *charSizes) const
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	uint32 length = (uint32)string.length();
 	if (length == 0)
 		return Size2i(0, 0); //YZ: return size (0,0) for empty string
@@ -205,12 +221,16 @@ void GraphicsFont::SetHorizontalSpacing(int32 _horizontalSpacing)
 
 void GraphicsFont::SetSize(float32 _size)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
     Font::SetSize(_size);
 	fontScaleCoeff = size / (fdef->fontAscent + fdef->fontDescent);
 }
 
 YamlNode * GraphicsFont::SaveToYamlNode() const
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
     YamlNode *node = Font::SaveToYamlNode();
     
     //Type
@@ -245,6 +265,8 @@ const FilePath & GraphicsFont::GetFontDefinitionName() const
 
 bool GraphicsFontDefinition::LoadFontDefinition(const FilePath & fontDefName)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
     File * file = 0;
     
 //    size_t pos = fontDefName.rfind("/");
@@ -347,12 +369,16 @@ bool GraphicsFontDefinition::LoadFontDefinition(const FilePath & fontDefName)
 
 void GraphicsFontDefinition::AddKerningPair(KerningPair * kpair)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	kpair->next = kerningTable[kpair->ch1Index];
 	kerningTable[kpair->ch1Index] = kpair;
 }
 	
 GraphicsFontDefinition::KerningPair * GraphicsFontDefinition::FindKerningPair(uint16 ch1Index, uint16 ch2Index)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	KerningPair * current = kerningTable[ch1Index];	
 	while(current != 0)
 	{
@@ -364,6 +390,8 @@ GraphicsFontDefinition::KerningPair * GraphicsFontDefinition::FindKerningPair(ui
 
 uint16 GraphicsFontDefinition::CharacterToIndex(char16 c)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	for (int32 ci = 0; ci < tableLenght; ++ci)
 	{
 		if (characterTable[ci] == c)
@@ -376,6 +404,8 @@ uint16 GraphicsFontDefinition::CharacterToIndex(char16 c)
 	
 GraphicsFont * GraphicsFont::Create(const FilePath & fontDefName, const FilePath & spriteName)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	GraphicsFont * font = new GraphicsFont();
 	font->fdef = new GraphicsFontDefinition();
     //Set font Definition path
@@ -405,6 +435,8 @@ bool GraphicsFont::IsTextSupportsHardwareRendering() const
 
 float32 GraphicsFont::GetDistanceFromAtoB(int32 prevChIndex, int32 chIndex) const
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	float32 currentX = 0.0f;
 	currentX += fdef->defaultShiftValue;
 	currentX += fdef->kerningBaseShift[prevChIndex];
@@ -416,6 +448,8 @@ float32 GraphicsFont::GetDistanceFromAtoB(int32 prevChIndex, int32 chIndex) cons
 
 Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth)
 {
+    TAG_SWITCH(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	uint32 length = (uint32)string.length();
     if(length==0) return Size2i();
     

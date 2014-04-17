@@ -35,6 +35,8 @@ using namespace DAVA;
 class LodToLod2Converter
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_CONVERTERS)
+    
 	void ConvertLodToV2(Entity *scene);
 	void SearchForLod(Entity * currentNode);
 	bool MergeLod(Entity * entity);

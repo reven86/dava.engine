@@ -75,6 +75,8 @@ void UnregisterTextBlock(TextBlock *tbl)
 
 void TextBlock::ScreenResolutionChanged()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
 	Logger::FrameworkDebug("Regenerate text blocks");
 	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
 	{
@@ -84,6 +86,8 @@ void TextBlock::ScreenResolutionChanged()
 
 TextBlock * TextBlock::Create(const Vector2 & size)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
 	TextBlock * textSprite = new TextBlock();
 	textSprite->SetRectSize(size);
 	return textSprite;
@@ -96,6 +100,8 @@ TextBlock::TextBlock()
     , cacheDx(0)
     , cacheDy(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
 	font = NULL;
 	constFont = NULL;
 	isMultilineEnabled = false;
@@ -113,6 +119,8 @@ TextBlock::TextBlock()
 
 TextBlock::~TextBlock()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
 	SafeRelease(sprite);
 	SafeRelease(font);
 	SafeRelease(constFont);
@@ -123,6 +131,8 @@ TextBlock::~TextBlock()
 	
 void TextBlock::SetFont(Font * _font)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     
 	if (!_font || _font == font)
@@ -142,6 +152,8 @@ void TextBlock::SetFont(Font * _font)
    
 void TextBlock::SetRectSize(const Vector2 & size)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
 	if (rectSize != size)
 	{
@@ -156,6 +168,8 @@ void TextBlock::SetRectSize(const Vector2 & size)
 
 void TextBlock::SetText(const WideString & _string, const Vector2 &requestedTextRectSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
 	if(text == _string && requestedSize == requestedTextRectSize)
 	{
@@ -171,6 +185,8 @@ void TextBlock::SetText(const WideString & _string, const Vector2 &requestedText
 
 void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
 	if (isMultilineEnabled != _isMultilineEnabled || isMultilineBySymbolEnabled != bySymbol)
 	{
@@ -186,6 +202,8 @@ void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 
 void TextBlock::SetFittingOption(int32 _fittingType)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
 	if (fittingType != _fittingType)
 	{
@@ -201,6 +219,8 @@ void TextBlock::SetFittingOption(int32 _fittingType)
 	
 Font * TextBlock::GetFont()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
     
@@ -209,6 +229,8 @@ Font * TextBlock::GetFont()
     
 const Vector<WideString> & TextBlock::GetMultilineStrings()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
 
@@ -217,6 +239,8 @@ const Vector<WideString> & TextBlock::GetMultilineStrings()
     
 const WideString & TextBlock::GetText()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
 
@@ -225,6 +249,8 @@ const WideString & TextBlock::GetText()
 
 bool TextBlock::GetMultiline()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
 
@@ -233,6 +259,8 @@ bool TextBlock::GetMultiline()
     
 bool TextBlock::GetMultilineBySymbol()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
 
@@ -241,6 +269,8 @@ bool TextBlock::GetMultilineBySymbol()
 
 int32 TextBlock::GetFittingOption()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
 
@@ -249,6 +279,8 @@ int32 TextBlock::GetFittingOption()
 	
 void TextBlock::SetAlign(int32 _align)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
 	if (align != _align) 
 	{
@@ -263,6 +295,8 @@ void TextBlock::SetAlign(int32 _align)
 
 int32 TextBlock::GetAlign()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
 
@@ -271,6 +305,8 @@ int32 TextBlock::GetAlign()
 
 Sprite * TextBlock::GetSprite()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
 
 	DVASSERT(sprite);
@@ -287,6 +323,8 @@ Sprite * TextBlock::GetSprite()
 	
 bool TextBlock::IsSpriteReady()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
 
@@ -297,6 +335,8 @@ bool TextBlock::IsSpriteReady()
 
 void TextBlock::Prepare()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
 
     if(!font || text == L"")
@@ -722,6 +762,8 @@ void TextBlock::Prepare()
 
 void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
 #if 1
     
     TextBlockData *jobData = (TextBlockData *)param;
@@ -794,6 +836,8 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 
 void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
 	Size2i realSize;
 	if(!isMultilineEnabled || treatMultilineAsSingleLine)
 	{
@@ -885,6 +929,8 @@ void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
 	
 void TextBlock::PreDraw()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
 	if (isPredrawed)
 	{
 		return;
@@ -904,6 +950,8 @@ void TextBlock::PreDraw()
     
 TextBlock * TextBlock::Clone()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     TextBlock *block = new TextBlock();
 
     block->SetRectSize(rectSize);
@@ -922,6 +970,8 @@ TextBlock * TextBlock::Clone()
 
 const Vector2 & TextBlock::GetTextSize()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTBLOCK)
+    
     mutex.Lock();
     mutex.Unlock();
     

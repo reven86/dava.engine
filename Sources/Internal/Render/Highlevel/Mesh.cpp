@@ -39,16 +39,20 @@ namespace DAVA
 
 Mesh::Mesh()
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
     type = TYPE_MESH;
 }
     
 Mesh::~Mesh()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_MESH)
 }
 
 void Mesh::AddPolygonGroup(PolygonGroup * polygonGroup, NMaterial * material)
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
     RenderBatch * batch = new RenderBatch();
     batch->SetPolygonGroup(polygonGroup);
     batch->SetMaterial(material);
@@ -63,16 +67,22 @@ void Mesh::AddPolygonGroup(PolygonGroup * polygonGroup, NMaterial * material)
     
 uint32 Mesh::GetPolygonGroupCount()
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
     return (uint32)renderBatchArray.size();
 }
 
 PolygonGroup * Mesh::GetPolygonGroup(uint32 index)
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
     return renderBatchArray[index].renderBatch->GetPolygonGroup();
 }
 
 RenderObject * Mesh::Clone( RenderObject *newObject )
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
 	if(!newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<Mesh>(this), "Can clone only Mesh");
@@ -84,16 +94,22 @@ RenderObject * Mesh::Clone( RenderObject *newObject )
 
 void Mesh::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
 	RenderObject::Save(archive, serializationContext);
 }
 
 void Mesh::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
 	RenderObject::Load(archive, serializationContext);
 }
 
 void Mesh::BakeTransform(const Matrix4 & transform)
 {
+    TAG_SWITCH(MemoryManager::TAG_MESH)
+    
 	uint32 size = renderBatchArray.size();
 	for(uint32 i = 0; i < size; ++i)
 	{

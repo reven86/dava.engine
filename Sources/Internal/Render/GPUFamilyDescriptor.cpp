@@ -42,12 +42,16 @@ GPUFamilyDescriptor::GPUData GPUFamilyDescriptor::gpuData[GPU_FAMILY_COUNT];
 
 void GPUFamilyDescriptor::SetupGPUParameters()
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     SetupGPUFormats();
     SetupGPUPostfixes();
 }
 
 void GPUFamilyDescriptor::SetupGPUFormats()
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     //pvr ios
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_RGBA8888] = ".pvr";
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_RGBA5551] = ".pvr";
@@ -134,6 +138,8 @@ void GPUFamilyDescriptor::SetupGPUFormats()
 
 void GPUFamilyDescriptor::SetupGPUPostfixes()
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     gpuData[GPU_POWERVR_IOS].name = "PowerVR_iOS";
     gpuData[GPU_POWERVR_ANDROID].name = "PowerVR_Android";
     gpuData[GPU_TEGRA].name = "tegra";
@@ -144,6 +150,8 @@ void GPUFamilyDescriptor::SetupGPUPostfixes()
     
 const Map<PixelFormat, String> & GPUFamilyDescriptor::GetAvailableFormatsForGpu(eGPUFamily gpuFamily)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
     
     return gpuData[gpuFamily].availableFormats;
@@ -151,6 +159,8 @@ const Map<PixelFormat, String> & GPUFamilyDescriptor::GetAvailableFormatsForGpu(
 
 eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     const String filename = pathname.GetFilename();
     
     for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
@@ -170,6 +180,8 @@ eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
  
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     DVASSERT(descriptor);
     
     eGPUFamily requestedGPU = gpuFamily;
@@ -186,6 +198,8 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
 
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     return FilePath::CreateWithNewExtension(pathname, GetFilenamePostfix(gpuFamily, pixelFormat));
 }
 
@@ -193,6 +207,8 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const FilePath & pathname, co
     
 const String & GPUFamilyDescriptor::GetGPUName(const eGPUFamily gpuFamily)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
 
     return gpuData[gpuFamily].name;
@@ -200,6 +216,8 @@ const String & GPUFamilyDescriptor::GetGPUName(const eGPUFamily gpuFamily)
 
 eGPUFamily GPUFamilyDescriptor::GetGPUByName(const String & name)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
     {
         eGPUFamily gpu = (eGPUFamily)i;
@@ -214,6 +232,8 @@ eGPUFamily GPUFamilyDescriptor::GetGPUByName(const String & name)
 
 bool GPUFamilyDescriptor::IsFormatSupported(const eGPUFamily gpu, const PixelFormat format)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
 	if(gpu <= GPU_UNKNOWN || gpu >= GPU_FAMILY_COUNT)
 	{
 		return false;
@@ -223,6 +243,8 @@ bool GPUFamilyDescriptor::IsFormatSupported(const eGPUFamily gpu, const PixelFor
     
 const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     DVASSERT(0 <= gpuFamily && gpuFamily < GPU_FAMILY_COUNT);
 
     Map<PixelFormat, String>::const_iterator format = gpuData[gpuFamily].availableFormats.find(pixelFormat);
@@ -234,6 +256,8 @@ const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily 
     
 String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
+    TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
+    
     DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
 
     if(gpuFamily == GPU_UNKNOWN || pixelFormat == FORMAT_INVALID)
