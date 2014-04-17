@@ -33,6 +33,8 @@
 
 namespace DAVA
 {
+    
+REGISTER_CLASS(UserComponent);
 
 UserComponent::UserComponent()
 { }
@@ -45,14 +47,14 @@ Component * UserComponent::Clone(Entity * toEntity)
 	return uc;
 }
 
-void UserComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void UserComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Serialize(archive, sceneFile);
+	Component::Serialize(archive, serializationContext);
 }
 
-void UserComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void UserComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Deserialize(archive, sceneFile);
+	Component::Deserialize(archive, serializationContext);
 }
 
 }

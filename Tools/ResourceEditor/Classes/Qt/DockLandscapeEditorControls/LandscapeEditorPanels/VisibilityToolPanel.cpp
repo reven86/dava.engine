@@ -246,6 +246,9 @@ void VisibilityToolPanel::ConnectToShortcuts()
 			this, SLOT(SetVisibilityPoint()));
 	connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA), SIGNAL(activated()),
 			this, SLOT(SetVisibilityArea()));
+	
+	shortcutManager->SetBrushSizeShortcutsEnabled(true);
+	shortcutManager->SetVisibilityToolShortcutsEnabled(true);
 }
 
 void VisibilityToolPanel::DisconnectFromShortcuts()
@@ -265,6 +268,9 @@ void VisibilityToolPanel::DisconnectFromShortcuts()
 			   this, SLOT(SetVisibilityPoint()));
 	disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_VISIBILITY_TOOL_SET_AREA), SIGNAL(activated()),
 			   this, SLOT(SetVisibilityArea()));
+	
+	shortcutManager->SetBrushSizeShortcutsEnabled(false);
+	shortcutManager->SetVisibilityToolShortcutsEnabled(false);
 }
 
 void VisibilityToolPanel::IncreaseBrushSize()

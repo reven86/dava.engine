@@ -42,7 +42,13 @@
 #include "Render/Cursor.h"
 #include "Render/RenderState.h"
 #include "Render/RenderOptions.h"
+#include "Render/Shader.h"
+#include "Render/UniqueStateSet.h"
+#include "Render/RenderStateData.h"
+#include "Render/TextureStateData.h"
+
 #include <stack>
+
 
 namespace DAVA
 {
@@ -73,13 +79,28 @@ protected:
 class RenderManager : public Singleton<RenderManager>
 {
 public:
-    static RenderEffect * FLAT_COLOR;
-    static RenderEffect * TEXTURE_MUL_FLAT_COLOR;
-    static RenderEffect * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
+    static FastName FLAT_COLOR_SHADER;
+    static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
+    
+    static Shader * FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST;
+    static Shader * TEXTURE_MUL_FLAT_COLOR_IMAGE_A8;
     
     
     struct Caps
 	{
+		Caps() 
+		{
+			isHardwareCursorSupported = false;
+			isFramebufferFetchSupported = isPVRTCSupported = isETCSupported = isDXTSupported = isATCSupported = false;
+			isVertexTextureUnitsSupported = isBGRA8888Supported = isFloat16Supported = isFloat32Supported = false;
+            
+#if defined(__DAVAENGINE_ANDROID__)
+            isGlDepth24Stencil8Supported = isGlDepthNvNonLinearSupported = false;
+#endif
+		}
+
         Core::eRenderer renderer;
 		bool isHardwareCursorSupported;
         bool isPVRTCSupported;
@@ -89,6 +110,13 @@ public:
         bool isFloat32Supported;
 		bool isDXTSupported;
 		bool isATCSupported;
+		bool isVertexTextureUnitsSupported;
+        bool isFramebufferFetchSupported;
+        
+#if defined(__DAVAENGINE_ANDROID__)
+        bool isGlDepth24Stencil8Supported;
+        bool isGlDepthNvNonLinearSupported;
+#endif
 	};
     
     struct Stats
@@ -97,13 +125,24 @@ public:
         
         uint32 drawArraysCalls;
         uint32 drawElementsCalls;
+        uint32 shaderBindCount;
+        uint32 occludedRenderBatchCount;
         uint32 primitiveCount[PRIMITIVETYPE_COUNT];
+		
+		uint32 renderStateSwitches;
+		uint32 renderStateFullSwitches;
+		uint32 textureStateFullSwitches;
+		
+		uint32 attachRenderDataCount;
+        uint32 dynamicParamUniformBindCount;
+        uint32 materialParamUniformBindCount;
+        uint32 spriteDrawCount;
     };
     
     static void Create(Core::eRenderer renderer);
 
 	RenderManager(Core::eRenderer renderer);
-	virtual ~RenderManager();
+	~RenderManager();
     
     
     Core::eRenderer GetRenderer() { return renderer; };
@@ -158,7 +197,7 @@ public:
 	void DetectRenderingCapabilities();
 	const RenderManager::Caps & GetCaps();
     
-    const RenderManager::Stats & GetStats();
+    RenderManager::Stats & GetStats();
     void ClearStats();
     void EnableOutputDebugStatsEveryNFrame(int32 frameToShowDebugStats);
     void ProcessStats();
@@ -221,7 +260,10 @@ public:
         \brief 
         
      */
-    void SetViewport(const Rect & rect, bool precaleulatedCoordinates);     
+    void SetViewport(const Rect & rect, bool precaleulatedCoordinates);
+    
+    
+    void SetCullOrder(eCullOrder cullOrder);
 
     const Rect & GetViewport()
     {
@@ -243,15 +285,6 @@ public:
 	void FlushState();
 
 	void FlushState(RenderState * stateBlock);
-
-	/** 
-	 \brief 
-	 \param[in] sfactor
-	 \param[in] dfactor
-	 */
-	void SetBlendMode(eBlendMode sfactor, eBlendMode dfactor);
-	eBlendMode GetSrcBlend();
-	eBlendMode GetDestBlend();
 	
 	/** 
 	 \brief 
@@ -270,8 +303,8 @@ public:
 	void ResetColor();
 
 	// 
-	void SetTexture(Texture *texture, uint32 textureLevel = 0);
-	Texture * GetTexture(uint32 textureLevel = 0);
+	//void SetTexture(Texture *texture, uint32 textureLevel = 0);
+	//Texture * GetTexture(uint32 textureLevel = 0);
     void SetShader(Shader * shader);
     Shader * GetShader();
     
@@ -295,31 +328,8 @@ public:
     */
     
     
-    void PushState(uint32 );
-    void AppendState(uint32 state);
-    void RemoveState(uint32 state);
-    void SetState(uint32 state);
-    uint32 GetState();
-    void PopState();
-
-	static RenderState * State();
-    
-    void SetAlphaFunc(eCmpFunc func, float32 cmpValue);
-    void SetCullMode(eFace cullFace);
-	void SetDepthFunc(eCmpFunc func);
-    
-    
     void SetRenderData(RenderDataObject * object);
-	virtual void AttachRenderData();
-	
-	/** 
-	 \brief 
-	 */
-	void SetTexCoordPointer(int32 size, eVertexDataType type, int stride, const void *pointer);
-    void SetVertexPointer(int32 size, eVertexDataType type, int stride, const void *pointer);
-	void SetColorPointer(int32 size, eVertexDataType type, int stride, const void *pointer);
-	void SetNormalPointer(eVertexDataType type, int stride, const void *pointer);
-
+	void AttachRenderData();
     
 	/** 
         \brief 
@@ -334,55 +344,55 @@ public:
 	 \brief Sets the clip rect
 	 \param[in] rect
 	 */
-	virtual void SetClip(const Rect &rect);
+	void SetClip(const Rect &rect);
 
 	/** 
 	 \brief Sets the clip rect as an intersection of the current rect and rect sent to method
 	 \param[in] rect
 	 */
-	virtual void ClipRect(const Rect &rect);
+	void ClipRect(const Rect &rect);
 	
 	/** 
 	 \brief Sets clip yo the full screen
 	 */
-	virtual void RemoveClip();
+	void RemoveClip();
 
 	/** 
 	 \brief Store current clip
 	 */
-	virtual void ClipPush();
+	void ClipPush();
 
 	/** 
 	 \brief Restore current screen
 	 */
-	virtual void ClipPop();
+	void ClipPop();
     
-    virtual void Clear(const Color & color, float32 depth, int32 stencil);
+    void Clear(const Color & color, float32 depth, int32 stencil);
 	
 	/** 
         \brief Clear rendering surface with required color 
         \param[in] r,g,b,a Clear color components
 	 */
-	virtual void ClearWithColor(float32 r, float32 g, float32 b, float32 a);
+	void ClearWithColor(float32 r, float32 g, float32 b, float32 a);
     
     /** 
         \brief Clear attached depth buffer with requested depth
         \param[in] depth by default 1.0f, means clear the depth
      */
-    virtual void ClearDepthBuffer(float32 depth = 1.0f);
+    void ClearDepthBuffer(float32 depth = 1.0f);
 
 	/** 
         \brief Clear stencil buffer with requested value
         \param[in] stencil specifies the index used when the stencil buffer is cleared
      */
-	virtual void ClearStencilBuffer(int32 stencil = 0);
+	void ClearStencilBuffer(int32 stencil = 0);
 
 	/** 
 	 \brief Sets the sprite to use as a render target. Sprite should be created with CreateAsRenderTarget method.
 			Call RestoreRenderTarget when you finish drawing to your sprite 
 	 \param[in] renderTarget - Render target sprite. If NULL 0 render manager will draw to the screen.
 	 */
-	virtual void SetRenderTarget(Sprite *renderTarget);
+	void SetRenderTarget(Sprite *renderTarget);
 
 	/** 
 	 \brief Sets the texture to use as a render target. Texture should be created with CreateFBO method.
@@ -394,52 +404,53 @@ public:
 	/** 
         \brief Restores the previous render target
 	 */
-	virtual void RestoreRenderTarget();
+	void RestoreRenderTarget();
 
 	/** 
 	 \brief Checks is render target using for drawing now
 	 \param[out] true if render manager sets to a render targe. false if render manager draws to the screen now
 	 */
-	virtual bool IsRenderTarget();
+	bool IsRenderTarget();
+       
 	
 	/** 
         \brief Sets the effect for the rendering. 
         \param[in] renderEffect - if 0, sets the effect to none
 	 */
-	virtual void SetRenderEffect(RenderEffect *renderEffect);
+	void SetRenderEffect(Shader * shader);
 
 	/** 
 	 \brief Sets the requested framerate. For iPhone can be set to 60, 30, 20, 15
 	 \param[in] newFps requested frames per second
 	 */
-	virtual void SetFPS(int32 newFps);
+	void SetFPS(int32 newFps);
 
 	/** 
 	 \brief Returns current requested framerate
 	 \returns frames per second
 	 */
-    virtual int32 GetFPS();
+    int32 GetFPS();
 
-	virtual void SetDebug(bool isDebugEnabled);
+	void SetDebug(bool isDebugEnabled);
 
 
 	/** 
 	 \brief 
 	 \param[in] offset
 	 */
-	virtual void SetDrawTranslate(const Vector2 &offset);
+	void SetDrawTranslate(const Vector2 &offset);
     
-	virtual void SetDrawTranslate(const Vector3 &offset);
+	void SetDrawTranslate(const Vector3 &offset);
 
 	/** 
 	 \brief 
 	 \param[in] offset
 	 */
-	virtual void SetDrawScale(const Vector2 &scale);
+	void SetDrawScale(const Vector2 &scale);
 
-	virtual void IdentityDrawMatrix();
-	virtual void IdentityMappingMatrix();
-	virtual void IdentityModelMatrix();
+	void IdentityDrawMatrix();
+	void IdentityMappingMatrix();
+	void IdentityModelMatrix();
 	
 	/*
 		TODO:	Hottych - напиши пожалуйста что делают эти функции детально, 
@@ -447,21 +458,21 @@ public:
 				Думаю что пока воспоминания свежи, напиши документацию по системе виртуальных преобразований
 				Можешь писать на русском - я переведу потом.
 	 */
-	virtual void SetPhysicalViewScale();
-	virtual void SetPhysicalViewOffset();
-	virtual void SetVirtualViewScale();
-	virtual void SetVirtualViewOffset();
+	void SetPhysicalViewScale();
+	void SetPhysicalViewOffset();
+	void SetVirtualViewScale();
+	void SetVirtualViewOffset();
 
-	virtual void PushDrawMatrix();
-    virtual void PopDrawMatrix();
+	void PushDrawMatrix();
+    void PopDrawMatrix();
 
-    virtual void PushMappingMatrix();
-	virtual void PopMappingMatrix();
+    void PushMappingMatrix();
+	void PopMappingMatrix();
     
     void SetRenderContextId(uint64 contextId);
 	uint64 GetRenderContextId();
 	void VerifyRenderContext();
-    
+        
     /*  
         Matrix support
      */
@@ -479,19 +490,44 @@ public:
         UNIFORM_MATRIX_COUNT,
     };
     
-    virtual void SetMatrix(eMatrixType type, const Matrix4 & matrix);
-    virtual const Matrix4 & GetMatrix(eMatrixType type);
-    virtual const Matrix4 & GetUniformMatrix(eUniformMatrixType type);
-    virtual const Matrix3 & GetNormalMatrix();
-    virtual void  ClearUniformMatrices();
+    static AutobindVariableData dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
+    static uint32  dynamicParamersRequireUpdate;
+    static Matrix4 worldViewMatrix;
+    static Matrix4 viewProjMatrix;
+    static Matrix4 worldViewProjMatrix;
+    static Matrix4 invWorldViewMatrix;
+    static Matrix3 normalMatrix;
+    static Matrix4 invWorldMatrix;
+    static Matrix3 worldInvTransposeMatrix;
+
+    static inline void SetDynamicParam(eShaderSemantic shaderSemantic, const void * value, pointer_size updateSemantic);
+    
+    //void SetMatrix(eShaderSemantic type, void * value, uint32 updateSemantic);
+    //void SetMatrix(eShaderSemantic type, const Matrix4 & matrix, uint32 cacheValue);
+
+    static inline const void * GetDynamicParam(eShaderSemantic shaderSemantic);
+    static inline const Matrix4 & GetDynamicParamMatrix(eShaderSemantic shaderSemantic);
+    static inline void ComputeWorldViewMatrixIfRequired();
+    static inline void ComputeViewProjMatrixIfRequired();
+    static inline void ComputeWorldViewProjMatrixIfRequired();
+    static inline void ComputeInvWorldViewMatrixIfRequired();
+    static inline void ComputeWorldViewInvTransposeMatrixIfRequired();
+    
+    static inline void ComputeInvWorldMatrixIfRequired();
+    static inline void ComputeWorldInvTransposeMatrixIfRequired();
+
+    
+    //const Matrix4 & GetUniformMatrix(eUniformMatrixType type);
+    //const Matrix3 & GetNormalMatrix();
+    //void  ClearUniformMatrices();
 
 
 	/**
 		\brief This function sets hardware cursor to render manager
-		It acts differently in different operation systems but idea is common. 
+		It acts differently in different operation systems but idea is common.
 		When you call this function on next refresh cursor will be changed to the new one.
 	*/
-	virtual void SetCursor(Cursor * cursor);
+	void SetCursor(Cursor * cursor);
 
 	/**
 		\brief This function get hardware cursor that actively set
@@ -499,7 +535,7 @@ public:
 		we use default cursor that is provided by operational system. 
 		\returns pointer to custom cursor or null if there is no cursor set by default.
 	 */
-	virtual Cursor * GetCursor();
+	Cursor * GetCursor();
 
 	RenderOptions * GetOptions();
 
@@ -521,19 +557,148 @@ public:
     int32 lastBindedFBO;
 #endif //#if defined(__DAVAENGINE_OPENGL__)
     
+    void DiscardDepth();
+    
     void RequestGLScreenShot(ScreenShotCallbackDelegate *screenShotCallback);
+    
+    void LockRenderState();
+	void UnlockRenderState();
 
+    void LockTextureState();
+	void UnlockTexturerState();
 	
+	inline void RetainRenderState(UniqueHandle handle)
+	{
+        LockRenderState();
+		uniqueRenderStates.RetainUnique(handle);
+        UnlockRenderState();
+	}
+	
+	inline UniqueHandle CreateRenderState(const RenderStateData& data)
+	{
+        LockRenderState();
+		UniqueHandle renderStateHandle = uniqueRenderStates.MakeUnique(data);
+        UnlockRenderState();
+        
+        return renderStateHandle;
+	}
+
+    //this method is not thread safe since array element could be modified in background
+	inline const RenderStateData& GetRenderStateData(UniqueHandle handle)
+	{
+		return uniqueRenderStates.GetUnique(handle);
+	}
+    
+    //this method is thread safe
+    inline const void GetRenderStateData(UniqueHandle handle, RenderStateData& target)
+	{
+		LockRenderState();
+		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(handle);
+		memcpy(&target, &parentState, sizeof(target));
+        UnlockRenderState();
+	}
+	
+	inline void ReleaseRenderState(UniqueHandle handle)
+	{
+        LockRenderState();
+		uniqueRenderStates.ReleaseUnique(handle);
+        UnlockRenderState();
+	}
+				
+	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle, uint32 renderStateFlags)
+	{
+        LockRenderState();
+		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
+		RenderStateData derivedState;
+		memcpy(&derivedState, &parentState, sizeof(derivedState));
+        UnlockRenderState();
+		
+		derivedState.state = renderStateFlags;
+		return CreateRenderState(derivedState);
+	}
+	
+	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle,
+										  eBlendMode srcBlend,
+										  eBlendMode dstBlend)
+	{
+        LockRenderState();
+		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
+		RenderStateData derivedState;
+		memcpy(&derivedState, &parentState, sizeof(derivedState));
+        UnlockRenderState();
+		
+		derivedState.sourceFactor = srcBlend;
+		derivedState.destFactor = dstBlend;
+		return CreateRenderState(derivedState);
+	}
+
+	inline UniqueHandle Subclass3DRenderState(eBlendMode srcBlend,
+										  eBlendMode dstBlend)
+	{
+		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, srcBlend, dstBlend);
+	}
+	
+	inline UniqueHandle Subclass3DRenderState(uint32 renderStateFlags)
+	{
+		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, renderStateFlags);
+	}
+	
+	inline UniqueHandle Subclass2DRenderState(uint32 renderStateFlags)
+	{
+		return SubclassRenderState(RenderState::RENDERSTATE_2D_BLEND, renderStateFlags);
+	}
+	
+	inline void SetRenderState(UniqueHandle requestedState)
+	{
+		currentState.stateHandle = requestedState;
+	}
+	
+	inline UniqueHandle CreateTextureState(const TextureStateData& data)
+	{
+        LockTextureState();
+		UniqueHandle textureStateHandle = uniqueTextureStates.MakeUnique(data);
+        UnlockTexturerState();
+        
+        return textureStateHandle;
+	}
+	
+    //this method is not thread safe since array element could be modified in background
+	inline const TextureStateData& GetTextureState(UniqueHandle handle)
+	{
+		return uniqueTextureStates.GetUnique(handle);
+	}
+
+    inline void RetainTextureState(UniqueHandle handle)
+	{
+        LockTextureState();
+		uniqueTextureStates.RetainUnique(handle);
+        UnlockTexturerState();
+	}
+	
+	inline void ReleaseTextureState(UniqueHandle handle)
+	{
+        LockTextureState();
+		uniqueTextureStates.ReleaseUnique(handle);
+        UnlockTexturerState();
+	}
+
+	inline void SetTextureState(UniqueHandle requestedState)
+	{
+		currentState.textureState = requestedState;
+	}
+		
 protected:
     //
     // general matrices for rendermanager 
     // 
     
-    Matrix4 matrices[MATRIX_COUNT];
-    int32   uniformMatrixFlags[UNIFORM_MATRIX_COUNT];
-    Matrix4 uniformMatrices[UNIFORM_MATRIX_COUNT];
-    Matrix3 uniformMatrixNormal;
-    
+//    Matrix4 matrices[MATRIX_COUNT];
+//    uint32 projectionMatrixCache;
+//    uint32 modelViewMatrixCache;
+//    int32   uniformMatrixFlags[UNIFORM_MATRIX_COUNT];
+//    Matrix4 uniformMatrices[UNIFORM_MATRIX_COUNT];
+//    Matrix3 uniformMatrixNormal;
+//    
 
     //do nothing right now
     DAVA_DEPRECATED(void RectFromRenderOrientationToViewport(Rect & rect));
@@ -552,9 +717,22 @@ protected:
     bool mappingMatrixChanged;
 	
 	void PrepareRealMatrix();
+    
+    struct Renderer2D
+    {
+        
+        Matrix4 viewMatrix;
+        Matrix4 projMatrix;
+        Matrix4 viewProjMatrix;
+        
+	};
+    Renderer2D renderer2d;
+public:
+    void Setup2DMatrices();
+    Renderer2D * GetRenderer2D() { return &renderer2d; };
 
-	
-	
+    
+    
 	/** 
 	 \brief 
 	 \returns 
@@ -596,33 +774,14 @@ protected:
 //	Texture *currentTexture[MAX_TEXTURE_LEVELS];                        // Texture that was set
 //  Shader * shader;
 	
+	UniqueStateSet<RenderStateData> uniqueRenderStates;
+	UniqueStateSet<TextureStateData> uniqueTextureStates;
     
+    void InitDefaultRenderStates();
+	   
     RenderState currentState;
     RenderState hardwareState;
 
-    int oldVertexArrayEnabled;                      // state
-    int oldNormalArrayEnabled;                      // state
-	int oldTextureCoordArrayEnabled[RenderState::MAX_TEXTURE_LEVELS];                // state
-	int oldColorArrayEnabled;                       // state
-//	int oldBlendingEnabled;                         // state
-
-    
-    /*int newTextureEnabled, oldTextureEnabled;       // Enable or disable texturing
-    int depthWriteEnabled;                          // state
-    int depthTestEnabled;                           // state
-    
-    bool oldAlphaTestEnabled;                       // default value: false
-    bool alphaTestEnabled;                          // default value: false
-    eCmpFunc alphaFunc;                           // 
-    eCmpFunc oldAlphaFunc;
-    float32 oldAlphaTestCmpValue;                   // old alpha test cmp value
-    float32 alphaTestCmpValue;                      // default value: 0.0f
-    bool cullingEnabled, oldCullingEnabled;
-    eCull cullFace, oldCullFace;*/
-    
-    uint32 pointerArraysCurrentState;
-    uint32 pointerArraysRendererState;
-    uint32 gl20RendererState;
     int32 enabledAttribCount;
 
     
@@ -634,8 +793,7 @@ protected:
 	std::stack<DrawMatrix> matrixStack;
 	std::stack<DrawMatrix> mappingMatrixStack;
 
-	std::stack<RenderEffect*> renderEffectStack;
-	RenderEffect *currentRenderEffect;
+	Shader * currentRenderEffect;
 	
     RenderDataObject * currentRenderData;
 
@@ -655,13 +813,26 @@ protected:
 	bool isInsideDraw;
 
 	Mutex glMutex;
+    Mutex renderStateMutex;
+    Mutex textureStateMutex;
 	
 	Rect currentClip;
 	
 	void SetHWClip(const Rect &rect);
 	void SetHWRenderTargetSprite(Sprite *renderTarget);
 	void SetHWRenderTargetTexture(Texture * renderTarget);
-	void SetNewRenderEffect(RenderEffect *renderEffect);
+    
+    enum eDiscardAttachments
+    {
+        COLOR_ATTACHMENT = 1,
+        DEPTH_ATTACHMENT = 2,
+        STENCIL_ATTACHMENT = 4
+    };
+    /**
+     \Hints renderer that attachment is not needed anymore 
+     \param[in] attachments - bitmask of eDiscardAttachments
+    */
+    void DiscardFramebufferHW(uint32 attachments);
 	
 	bool debugEnabled;
 
@@ -711,7 +882,158 @@ protected:
     ScreenShotCallbackDelegate *screenShotCallback;
     void MakeGLScreenShot();
 };
+    
+inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const void * value, pointer_size _updateSemantic)
+{
+    //AutobindVariableData * var = &dynamicParameters[shaderSemantic];
+    //if (var->updateSemantic
+    if (_updateSemantic == UPDATE_SEMANTIC_ALWAYS || dynamicParameters[shaderSemantic].updateSemantic != _updateSemantic)
+    {
+        
+        if (_updateSemantic == UPDATE_SEMANTIC_ALWAYS)
+            dynamicParameters[shaderSemantic].updateSemantic++;
+        else
+            dynamicParameters[shaderSemantic].updateSemantic = _updateSemantic;
+        
+        dynamicParameters[shaderSemantic].value = value;
+        dynamicParamersRequireUpdate &= ~(1 << shaderSemantic);
+        
+//        PARAM_WORLD,
+//        PARAM_INV_WORLD,
+//        PARAM_VIEW,
+//        PARAM_INV_VIEW,
+//        PARAM_PROJ,
+//        PARAM_INV_PROJ,
+//        
+//        PARAM_WORLD_VIEW,
+//        PARAM_INV_WORLD_VIEW,
+//        PARAM_NORMAL, // NORMAL MATRIX
+//        
+//        PARAM_VIEW_PROJ,
+//        PARAM_INV_VIEW_PROJ,
+//        
+//        PARAM_WORLD_VIEW_PROJ,
+//        PARAM_INV_WORLD_VIEW_PROJ,
+        switch(shaderSemantic)
+        {
+            case PARAM_WORLD:
+                dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | ( 1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW)
+                                                 | ( 1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_INV_TRANSPOSE));
+            break;
+            case PARAM_VIEW:
+                dynamicParamersRequireUpdate |= (   (1 << PARAM_INV_VIEW)
+                                                 |  (1 << PARAM_WORLD_VIEW)
+                                                 |  (1 << PARAM_INV_WORLD_VIEW)
+                                                 |  (1 << PARAM_WORLD_VIEW_PROJ)
+                                                 |  (1 << PARAM_INV_WORLD_VIEW_PROJ)
+                                                 |  (1 << PARAM_VIEW_PROJ)
+                                                 |  (1 << PARAM_INV_VIEW_PROJ)
+                                                 |  (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) );
+            break;
+            case PARAM_PROJ:
+                dynamicParamersRequireUpdate |= ((1 << PARAM_INV_PROJ) | (1 << PARAM_VIEW_PROJ) | (1 << PARAM_INV_VIEW_PROJ) |
+                                                 (1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ));
+            break;
+            default:
+            break;
+        }
+        
+    }
+}
 
+inline const Matrix4 & RenderManager::GetDynamicParamMatrix(eShaderSemantic shaderSemantic)
+{
+    return *(Matrix4*)dynamicParameters[shaderSemantic].value;
+}
+    
+inline void RenderManager::ComputeWorldViewMatrixIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW))
+    {
+        worldViewMatrix = GetDynamicParamMatrix(PARAM_WORLD) * GetDynamicParamMatrix(PARAM_VIEW);
+        SetDynamicParam(PARAM_WORLD_VIEW, &worldViewMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+    
+inline void RenderManager::ComputeViewProjMatrixIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_VIEW_PROJ))
+    {
+        viewProjMatrix = GetDynamicParamMatrix(PARAM_VIEW) * GetDynamicParamMatrix(PARAM_PROJ);
+        SetDynamicParam(PARAM_VIEW_PROJ, &viewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
 
+inline void RenderManager::ComputeWorldViewProjMatrixIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW_PROJ))
+    {
+        ComputeViewProjMatrixIfRequired();
+        worldViewProjMatrix = GetDynamicParamMatrix(PARAM_WORLD) * GetDynamicParamMatrix(PARAM_VIEW_PROJ);
+        SetDynamicParam(PARAM_WORLD_VIEW_PROJ, &worldViewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+    
+inline void RenderManager::ComputeInvWorldViewMatrixIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_INV_WORLD_VIEW))
+    {
+        ComputeWorldViewMatrixIfRequired();
+        worldViewMatrix.GetInverse(invWorldViewMatrix);
+        SetDynamicParam(PARAM_INV_WORLD_VIEW, &invWorldViewMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+    
+inline void RenderManager::ComputeWorldViewInvTransposeMatrixIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE))
+    {
+        ComputeInvWorldViewMatrixIfRequired();
+        normalMatrix = invWorldViewMatrix;
+        normalMatrix.Transpose();
+        SetDynamicParam(PARAM_WORLD_VIEW_INV_TRANSPOSE, &normalMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+    
+    
+inline void RenderManager::ComputeInvWorldMatrixIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_INV_WORLD))
+    {
+        const Matrix4 & worldMatrix = GetDynamicParamMatrix(PARAM_WORLD);
+        worldMatrix.GetInverse(invWorldMatrix);
+        SetDynamicParam(PARAM_INV_WORLD, &invWorldMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+    
+inline void RenderManager::ComputeWorldInvTransposeMatrixIfRequired()
+{
+    if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_INV_TRANSPOSE))
+    {
+        ComputeInvWorldMatrixIfRequired();
+        worldInvTransposeMatrix = invWorldMatrix;
+        worldInvTransposeMatrix.Transpose();
+        SetDynamicParam(PARAM_WORLD_INV_TRANSPOSE, &worldInvTransposeMatrix, UPDATE_SEMANTIC_ALWAYS);
+    }
+}
+ 
+const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
+{
+    DVASSERT(dynamicParameters[shaderSemantic].value != 0);
+    return dynamicParameters[shaderSemantic].value;
+}
+
+#define SET_DYNAMIC_PARAM(x, y, z) RenderManager::SetDynamicParam(x, y, z)
+#define GET_DYNAMIC_PARAM(x) RenderManager::dynamicParameters[x]
+#define GET_DYNAMIC_PARAM_VALUE(x) RenderManager::dynamicParameters[x].value
+#define GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(x) RenderManager::dynamicParameters[x].updateSemantic
+    
+// Update debug stats only in debug.
+#if defined(__DAVAENGINE_DEBUG__)
+#define RENDERER_UPDATE_STATS(param) RenderManager::Instance()->GetStats().param
+#else
+#define RENDERER_UPDATE_STATS(param)
+#endif
+    
 };
 #endif

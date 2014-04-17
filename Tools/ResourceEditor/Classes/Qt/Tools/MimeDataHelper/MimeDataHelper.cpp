@@ -158,7 +158,7 @@ void MimeDataHelper::GetItemNamesFromSceneTreeMime(const QMimeData* mimeData, Li
 	nameList.clear();
 	Q_FOREACH(Entity* entity, entityList)
 	{
-		nameList.push_back(entity->GetName());
+		nameList.push_back(entity->GetName().c_str());
 	}
 }
 

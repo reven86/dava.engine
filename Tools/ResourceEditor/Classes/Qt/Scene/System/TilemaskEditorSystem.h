@@ -31,14 +31,17 @@
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 #define __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 
-#include "Entity/SceneSystem.h"
-#include "EditorScene.h"
+#include "DAVAEngine.h"
 #include "Commands2/MetaObjModifyCommand.h"
 #include "LandscapeEditorDrawSystem.h"
+
+#include "Render/UniqueStateSet.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
 class EntityModificationSystem;
+
+using namespace DAVA;
 
 class TilemaskEditorSystem: public DAVA::SceneSystem
 {
@@ -58,7 +61,7 @@ public:
 	bool DisableLandscapeEdititing();
 	bool IsLandscapeEditingEnabled() const;
 	
-	void Update(DAVA::float32 timeElapsed);
+	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
 	void Draw();
 	
@@ -146,6 +149,8 @@ protected:
 
 	MetaObjModifyCommand* CreateTileColorCommand(Landscape::eTextureLevel level,
 												 const Color& color);
+	
+	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__) */

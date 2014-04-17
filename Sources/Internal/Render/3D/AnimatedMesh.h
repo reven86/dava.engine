@@ -121,7 +121,7 @@ public:
 	
 	SkeletonNode			* skeleton;
 	Vector<BoneNode*>		bones;
-	Vector<String>			boneNames;
+	Vector<FastName>		boneNames;
 	
 	void					RestoreBonesFromNames();
 	

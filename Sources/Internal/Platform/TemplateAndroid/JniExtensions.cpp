@@ -34,24 +34,25 @@
 namespace DAVA
 {
 
-JniExtension::JniExtension()
+JniExtension::JniExtension() :
+	isAttached(false)
 {
-	//Logger::Debug("JniExtension::JniExtension(%s)", GetJavaClassName());
-
 	CorePlatformAndroid *core = (CorePlatformAndroid *)Core::Instance();
 	AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
 	vm = delegate->GetVM();
 
 	jint res = JNI_OK;
 
-	if (Thread::IsMainThread())
-	{
-		res = vm->GetEnv((void **)&env,JNI_VERSION_1_6);
-	}
-	else
+	res = vm->GetEnv((void **)&env,JNI_VERSION_1_6);
+
+	if (env == NULL && !Thread::IsMainThread())
 	{
 		res = vm->AttachCurrentThread(&env, NULL);
-		if (res != JNI_OK)
+		if (res == JNI_OK)
+		{
+			isAttached = true;
+		}
+		else
 		{
 			Logger::Error("Failed to AttachCurrentThread: res:%d", res);
 		}
@@ -66,12 +67,11 @@ JniExtension::JniExtension()
 
 JniExtension::~JniExtension()
 {
-	//Logger::Debug("JniExtension::~JniExtension(%s)", GetJavaClassName());
-
-	if (!Thread::IsMainThread())
+	if (isAttached && !Thread::IsMainThread())
 	{
 		jint res = vm->DetachCurrentThread();
-		Logger::Error("Failed to DetachCurrentThread: res:%d", res);
+		if (res != JNI_OK)
+			Logger::Error("Failed to DetachCurrentThread: res:%d", res);
 	}
 }
 

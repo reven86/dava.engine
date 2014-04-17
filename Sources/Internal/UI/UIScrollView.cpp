@@ -45,7 +45,8 @@ UIScrollView::UIScrollView(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 	scrollHorizontal(new ScrollHelper()),
 	scrollVertical(new ScrollHelper())
 {
-	inputEnabled = true;
+    SetInputEnabled(false, false);
+    SetFocusEnabled(false);
 	multiInput = true;
 	SetClipContents(true);
 	
@@ -172,14 +173,6 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	
 	return maxSize;
 }
-    
-List<UIControl* >& UIScrollView::GetRealChildren()
-{
-	List<UIControl* >& realChildren = UIControl::GetRealChildren();
-	realChildren.remove(FindByName(UISCROLL_VIEW_CONTAINER_NAME));
-	
-	return realChildren;
-}
 
 List<UIControl* > UIScrollView::GetSubcontrols()
 {
@@ -199,14 +192,17 @@ UIControl* UIScrollView::Clone()
 	
 void UIScrollView::CopyDataFrom(UIControl *srcControl)
 {
-	UIControl::CopyDataFrom(srcControl);
-	
+	// Release and remove scrollContainer here - it has to be copied from srcControl
+	// We have to finish this before call UIControl::CopyDataFrom() to avoid release
+	// of unavailable object
 	RemoveControl(scrollContainer);
   	SafeRelease(scrollContainer);
 	
-	UIScrollView* t = (UIScrollView*) srcControl;
+	UIControl::CopyDataFrom(srcControl);
+	
+	UIScrollView* t = static_cast<UIScrollView*>(srcControl);
 		
-	this->scrollContainer = static_cast<UIScrollViewContainer*>(t->scrollContainer->Clone());
+	scrollContainer = static_cast<UIScrollViewContainer*>(t->scrollContainer->Clone());
 		
 	AddControl(scrollContainer);
 }
@@ -226,7 +222,7 @@ void UIScrollView::SetPadding(const Vector2 & padding)
 		return;
 	}
 	
-	Rect parentRect = this->GetRect();
+	Rect parentRect = GetRect();
 	Rect contentRect = scrollContainer->GetRect();
 	
 	// Apply scroll offset only if it value don't exceed content size
@@ -273,17 +269,14 @@ void UIScrollView::LoadFromYamlNodeCompleted()
 
 YamlNode * UIScrollView::SaveToYamlNode(UIYamlLoader * loader)
 {
+    if (scrollContainer)
+    {
+        scrollContainer->SetName(UISCROLL_VIEW_CONTAINER_NAME);
+    }
+    
     YamlNode *node = UIControl::SaveToYamlNode(loader);
-    // Control Type
 	SetPreferredNodeType(node, "UIScrollView");
 
-	// Scroll container with all childs have to be saved too.
-	if (scrollContainer)
-	{
-		YamlNode* scrollContainerNode = scrollContainer->SaveToYamlNode(loader);
-		node->AddNodeToMap(UISCROLL_VIEW_CONTAINER_NAME, scrollContainerNode);
-	}
-	
     return node;
 }
 
@@ -295,7 +288,7 @@ void UIScrollView::RecalculateContentSize()
 	}
 	
 	Rect contentRect = scrollContainer->GetRect();
-	Rect parentRect = this->GetRect();
+	Rect parentRect = GetRect();
 	
 	// Move all scrollContainer content with negative positions iside its rect
 	PushContentToBounds(scrollContainer);
@@ -426,6 +419,81 @@ ScrollHelper* UIScrollView::GetHorizontalScroll()
 ScrollHelper* UIScrollView::GetVerticalScroll()
 {
 	return scrollVertical;
+}
+
+float32 UIScrollView::GetHorizontalScrollPosition() const
+{
+    if (scrollHorizontal)
+    {
+        return scrollHorizontal->GetPosition();
+    }
+    
+    return 0.0f;
+}
+
+float32 UIScrollView::GetVerticalScrollPosition() const
+{
+    if (scrollVertical)
+    {
+        return scrollVertical->GetPosition();
+    }
+
+    return 0.0f;
+}
+
+Vector2 UIScrollView::GetScrollPosition() const
+{
+    return Vector2(GetHorizontalScrollPosition(), GetVerticalScrollPosition());
+}
+
+void UIScrollView::SetHorizontalScrollPosition(float32 horzPos)
+{
+    if (!scrollContainer || !scrollHorizontal)
+    {
+        return;
+    }
+
+    Rect contentRect = scrollContainer->GetRect();
+	contentRect.x = horzPos;
+    scrollContainer->SetRect(contentRect);
+
+    scrollHorizontal->SetPosition(horzPos);
+}
+    
+void UIScrollView::SetVerticalScrollPosition(float32 vertPos)
+{
+    if (!scrollContainer || !scrollVertical)
+    {
+        return;
+    }
+    
+    Rect contentRect = scrollContainer->GetRect();
+	contentRect.y = vertPos;
+    scrollContainer->SetRect(contentRect);
+    
+    scrollVertical->SetPosition(vertPos);
+}
+
+void UIScrollView::SetScrollPosition(const Vector2& pos)
+{
+    SetHorizontalScrollPosition(pos.x);
+    SetVerticalScrollPosition(pos.y);
+}
+
+void UIScrollView::ScrollToHorizontalPosition( float32 horzPos, float32 timeSec )
+{
+    scrollHorizontal->ScrollToPosition(horzPos, timeSec);
+}
+
+void UIScrollView::ScrollToVerticalPosition( float32 vertPos, float32 timeSec )
+{
+    scrollVertical->ScrollToPosition(vertPos, timeSec);
+}
+
+void UIScrollView::ScrollToPosition( const Vector2& pos, float32 timeSec )
+{
+    scrollHorizontal->ScrollToPosition(pos.x, timeSec);
+    scrollVertical->ScrollToPosition(pos.y, timeSec);
 }
 
 };

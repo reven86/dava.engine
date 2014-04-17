@@ -1,28 +1,130 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+Copyright (c) 2008, binaryzebra
+All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
+* Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+* Neither the name of the binaryzebra nor the
+names of its contributors may be used to endorse or promote products
+derived from this software without specific prior written permission.
 
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __MATERIAL_EDITOR_H__
+#define __MATERIAL_EDITOR_H__
+
+#include <QDialog>
+#include <QtGui>
+#include <QPointer>
+#include <QStandardItemModel>
+
+#include "DAVAEngine.h"
+
+#include "MaterialTemplateModel.h"
+#include "Scene/SceneSignals.h"
+#include "Tools/QtPosSaver/QtPosSaver.h"
+#include "DockProperties/PropertyEditorStateHelper.h"
+
+namespace Ui {
+	class MaterialEditor;
+}
+
+class MaterialEditor : public QDialog, public DAVA::Singleton<MaterialEditor>
+{
+	Q_OBJECT
+
+private:
+    typedef QMap< int, bool > ExpandMap;
+
+public:
+	MaterialEditor(QWidget *parent = 0);
+	~MaterialEditor();
+
+	void SelectMaterial(DAVA::NMaterial *material);
+	void SelectEntities(DAVA::NMaterial *material);
+
+public slots:
+	void sceneActivated(SceneEditor2 *scene);
+	void sceneDeactivated(SceneEditor2 *scene);
+	void commandExecuted(SceneEditor2 *scene, const Command2 *command, bool redo);
+	void materialSelected(const QItemSelection & selected, const QItemSelection & deselected);
+
+protected slots:
+    void OnAddFlag();
+    void OnRemFlag();
+    void OnAddProperty();
+	void OnRemProperty();
+	void OnAddTexture();
+	void OnRemTexture();
+	void OnTemplateChanged(int index);
+	void OnPropertyEdited(const QModelIndex &);
+    void OnMaterialAddGlobal(bool checked);
+    void OnMaterialRemoveGlobal(bool checked);
+    void OnMaterialSave(bool checked);
+    void OnMaterialLoad(bool checked);
+
+protected:
+	virtual void showEvent(QShowEvent * event);
+
+	void SetCurMaterial(const QList< DAVA::NMaterial *>& materials);
+	void FillMaterialProperties(const QList<DAVA::NMaterial *>& materials);
+    void FillMaterialTemplates(const QList<DAVA::NMaterial *>& materials);
+
+    QVariant CheckForTextureDescriptor(const QVariant& value);
+
+private slots:
+    void onFilterChanged();
+    void onCurrentExpandModeChange( bool mode );
+    void onContextMenuPrepare(QMenu *menu);
+    void autoExpand();
+
+private:
+    enum 
+    {
+        CHECKED_NOTHING = 0x0,
+
+        CHECKED_TEMPLATE = 0x1,
+        CHECKED_NAME = 0x2,
+        CHECKED_GROUP = 0x4,
+        CHECKED_PROPERTIES = 0x8,
+        CHECKED_TEXTURES = 0x10,
+
+        CHECKED_ALL = 0xff
+    };
+
+    void initActions();
+    void initTemplates();
+    void setTemplatePlaceholder( const QString& text );
+    QString GetTemplatePath(int index) const;
+    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState);
+
+	Ui::MaterialEditor *ui;
+	QtPosSaver posSaver;
+
+	QList< DAVA::NMaterial *> curMaterials;
+
+	PropertyEditorStateHelper *treeStateHelper;
+    ExpandMap expandMap;
+    QPointer< MaterialTemplateModel > templatesFilterModel;
+
+    DAVA::FilePath lastSavePath;
+    DAVA::uint32 lastCheckState;
+};
+
+#endif

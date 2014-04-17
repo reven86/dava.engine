@@ -39,6 +39,7 @@ class CommandLineTool
 public:
     
 	CommandLineTool();
+    virtual ~CommandLineTool() {};
 
     virtual DAVA::String GetCommandLineKey() = 0;
     

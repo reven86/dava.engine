@@ -49,14 +49,12 @@ public:
 	void SetCameraLightEnabled(bool enabled);
 	inline bool GetCameraLightEnabled();
 
-	virtual void Process();
-
+	virtual void Process(DAVA::float32 timeElapsed);
 
 protected:
 	void ProcessCommand(const Command2 *command, bool redo);
 
 	void UpdateCameraLightState();
-
 
 	void UpdateCameraLightPosition();
 	void AddCameraLightOnScene();

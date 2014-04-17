@@ -31,7 +31,6 @@
 #include "LayerForceWidget.h"
 #include "TimeLineWidget.h"
 #include "Commands2/ParticleEditorCommands.h"
-#include "../Scene/SceneDataManager.h"
 
 #include <QVBoxLayout>
 #include <QScrollArea>
@@ -46,8 +45,6 @@ LayerForceWidget::LayerForceWidget(QWidget *parent):
 	
 	forceTimeLine = new TimeLineWidget(this);
 	InitWidget(forceTimeLine);
-	forceVariationTimeLine = new TimeLineWidget(this);
-	InitWidget(forceVariationTimeLine);
 	forceOverLifeTimeLine = new TimeLineWidget(this);
 	InitWidget(forceOverLifeTimeLine);
 	
@@ -69,22 +66,20 @@ void LayerForceWidget::InitWidget(QWidget* widget)
 			SLOT(OnValueChanged()));
 }
 
-void LayerForceWidget::Init(SceneEditor2* scene, ParticleEmitter* emitter, ParticleLayer* layer, uint32 forceIndex, bool updateMinimized)
+void LayerForceWidget::Init(SceneEditor2* scene, ParticleLayer* layer, uint32 forceIndex, bool updateMinimized)
 {	
 	if (!layer || layer->forces.size() <= forceIndex)
 	{
 		return;
 	}
-	
-	this->emitter = emitter;
+		
 	this->layer = layer;
 	this->forceIndex = forceIndex;
 	SetActiveScene(scene);
 	
 	blockSignals = true;
 	
-	float32 emitterLifeTime = emitter->GetLifeTime();
-	float32 lifeTime = Min(emitterLifeTime, layer->endTime);
+	float32 lifeTime = layer->endTime;
 	ParticleForce* curForce = layer->forces[forceIndex];
 
 	Vector<QColor> colors;
@@ -92,17 +87,14 @@ void LayerForceWidget::Init(SceneEditor2* scene, ParticleEmitter* emitter, Parti
 	Vector<QString> legends;
 	legends.push_back("force x"); legends.push_back("force y"); legends.push_back("force z");
 	forceTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true, false);
-	forceTimeLine->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(curForce->GetForce())).GetProps(), colors, legends);
+	forceTimeLine->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(curForce->force)).GetProps(), colors, legends);
 	forceTimeLine->EnableLock(true);
 
 	legends.clear();
-	legends.push_back("force variable x"); legends.push_back("force variable y"); legends.push_back("force variable z");
-	forceVariationTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true, false);
-	forceVariationTimeLine->AddLines(PropLineWrapper<Vector3>(PropertyLineHelper::GetValueLine(curForce->GetForceVariation())).GetProps(), colors, legends);
-	forceVariationTimeLine->EnableLock(true);
+	legends.push_back("force variable x"); legends.push_back("force variable y"); legends.push_back("force variable z");	
 
 	forceOverLifeTimeLine->Init(0, 1, updateMinimized, true, false);
-	forceOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(curForce->GetForceOverlife())).GetProps(), Qt::blue, "forces over life");
+	forceOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(curForce->forceOverLife)).GetProps(), Qt::blue, "forces over life");
 
 	blockSignals = false;
 }
@@ -113,7 +105,6 @@ void LayerForceWidget::RestoreVisualState(KeyedArchive* visualStateProps)
 		return;
 
 	forceTimeLine->SetVisualState(visualStateProps->GetArchive("FORCE_PROPS"));
-	forceVariationTimeLine->SetVisualState(visualStateProps->GetArchive("FORCE_VARIATION_PROPS"));
 	forceOverLifeTimeLine->SetVisualState(visualStateProps->GetArchive("FORCE_OVER_LIFE_PROPS"));
 }
 
@@ -126,10 +117,6 @@ void LayerForceWidget::StoreVisualState(KeyedArchive* visualStateProps)
 
 	forceTimeLine->GetVisualState(props);
 	visualStateProps->SetArchive("FORCE_PROPS", props);
-
-	props->DeleteAllKeys();
-	forceVariationTimeLine->GetVisualState(props);
-	visualStateProps->SetArchive("FORCE_VARIATION_PROPS", props);
 
 	props->DeleteAllKeys();
 	forceOverLifeTimeLine->GetVisualState(props);
@@ -145,24 +132,21 @@ void LayerForceWidget::OnValueChanged()
 	
 	PropLineWrapper<Vector3> propForce;
 	forceTimeLine->GetValues(propForce.GetPropsPtr());
-	PropLineWrapper<Vector3> propForceVariable;
-	forceVariationTimeLine->GetValues(propForceVariable.GetPropsPtr());
 	PropLineWrapper<float32> propForceOverLife;
 	forceOverLifeTimeLine->GetValue(0, propForceOverLife.GetPropsPtr());
 
 	CommandUpdateParticleForce* updateForceCmd = new CommandUpdateParticleForce(layer, forceIndex);
-	updateForceCmd->Init(propForce.GetPropLine(),
-						 propForceVariable.GetPropLine(),
+	updateForceCmd->Init(propForce.GetPropLine(),						 
 						 propForceOverLife.GetPropLine());
 	
 	DVASSERT(activeScene);
 	activeScene->Exec(updateForceCmd);
 
-	Init(activeScene, emitter, layer, forceIndex, false);
+	Init(activeScene, layer, forceIndex, false);
 	emit ValueChanged();
 }
 
 void LayerForceWidget::Update()
 {
-	Init(activeScene, emitter, layer, forceIndex, false);
+	Init(activeScene, layer, forceIndex, false);
 }

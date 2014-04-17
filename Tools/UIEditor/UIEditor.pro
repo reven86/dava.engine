@@ -64,7 +64,11 @@ SOURCES += \
     UI/spinnerpropertygridwidget.cpp \
     Classes/UI/PropertyGridWidgets/spinnerpropertygridwidget.cpp \
     Classes/UI/PropertyGridWidgets/listpropertygridwidget.cpp \
-    Classes/UI/PropertyGridWidgets/scrollviewpropertygridwidget.cpp
+    Classes/UI/PropertyGridWidgets/scrollviewpropertygridwidget.cpp \
+    Classes/UI/PropertyGridWidgets/previewsettingsdialog.cpp \
+    Classes/UI/PropertyGridWidgets/editeditorsettingsdialog.cpp \
+    Classes/UI/Dialogs/errorslistdialog.cpp
+    Classes/UI/particleeffectpropertygridwidget.cpp
 
 HEADERS  += \
         Classes/AppScreens.h \
@@ -115,7 +119,11 @@ HEADERS  += \
     UI/spinnerpropertygridwidget.h \
     Classes/UI/PropertyGridWidgets/spinnerpropertygridwidget.h \
     Classes/UI/PropertyGridWidgets/listpropertygridwidget.h \
-    Classes/UI/PropertyGridWidgets/scrollviewpropertygridwidget.h
+    Classes/UI/PropertyGridWidgets/scrollviewpropertygridwidget.h \
+    Classes/UI/PropertyGridWidgets/previewsettingsdialog.h \
+    Classes/UI/PropertyGridWidgets/editeditorsettingsdialog.h \
+    Classes/UI/Dialogs/errorslistdialog.h
+    Classes/UI/particleeffectpropertygridwidget.h
 
 FORMS    += \
         UI/mainwindow.ui \
@@ -158,7 +166,12 @@ FORMS    += \
     UI/alignspropertygridwidget.ui \
     UI/sliderpropertygridwidget.ui \
     UI/scrollviewpropertygridwidget.ui \
-    UI/scrollcontrolpropertygridwidget.ui
+    UI/scrollcontrolpropertygridwidget.ui \
+    UI/previewsettingsdialog.ui \
+    UI/editeditorsettingsdialog.ui \
+    UI/localizationeditordialog.ui \
+    UI/errorslistdialog.ui
+    UI/particleeffectpropertygridwidget.ui
 
 
 #debug dependent

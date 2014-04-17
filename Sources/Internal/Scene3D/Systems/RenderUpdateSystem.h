@@ -58,9 +58,10 @@ public:
     virtual void RemoveEntity(Entity * entity);
     virtual void ImmediateEvent(Entity * entity, uint32 event);
 
-    virtual void Process();
+    virtual void Process(float32 timeElapsed);
     
 private:
+    void UpdateActiveIndexes(Entity *entity, RenderObject *object);
     HashMap<Entity*, RenderObject*> entityObjectMap;
 };
     

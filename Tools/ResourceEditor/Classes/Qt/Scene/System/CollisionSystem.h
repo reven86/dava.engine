@@ -59,7 +59,7 @@ public:
 	~SceneCollisionSystem();
 
 	void SetDrawMode(int mode);
-	int GetDebugDrawFlags();
+	int GetDrawMode();
 
 	DAVA::AABBox3 GetBoundingBox(DAVA::Entity *entity);
 
@@ -74,13 +74,15 @@ public:
 	void UpdateCollisionObject(DAVA::Entity *entity);
 	void RemoveCollisionObject(DAVA::Entity *entity);
 
+	virtual void Process(DAVA::float32 timeElapsed);
+
 protected:
-	void Update(DAVA::float32 timeElapsed);
 	void Draw();
 
 	void ProcessUIEvent(DAVA::UIEvent *event);
 	void ProcessCommand(const Command2 *command, bool redo);
 
+    virtual void ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event);
 	virtual void AddEntity(DAVA::Entity * entity);
 	virtual void RemoveEntity(DAVA::Entity * entity);
 
@@ -101,6 +103,8 @@ protected:
 	bool landIntersectCachedResult;
 
 	DAVA::Entity *curLandscapeEntity;
+	
+	DAVA::UniqueHandle renderState;
 
 	btDefaultCollisionConfiguration* objectsCollConf;
 	btCollisionDispatcher* objectsCollDisp;
@@ -122,12 +126,20 @@ protected:
 
 	CollisionBaseObject* BuildFromEntity(DAVA::Entity * entity);
 	void DestroyFromEntity(DAVA::Entity * entity);
+
+public:
+    INTROSPECTION(SceneCollisionSystem,
+        PROPERTY("collisionDrawMode", "Debug Draw mode for CollisionSystem", GetDrawMode, SetDrawMode, DAVA::I_VIEW | DAVA::I_EDIT)
+        )
 };
 
 class SceneCollisionDebugDrawer : public btIDebugDraw
 {
 public:
 	SceneCollisionDebugDrawer();
+    ~SceneCollisionDebugDrawer();
+    
+    void SetRenderState(DAVA::UniqueHandle _renderState);
 
 	virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
 	virtual void drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color);
@@ -140,6 +152,7 @@ protected:
 	int dbgMode;
 	DAVA::RenderManager *manager;
 	DAVA::RenderHelper *helper;
+    DAVA::UniqueHandle renderState;
 };
 
 #endif // __SCENE_COLLISION_SYSTEM_H__

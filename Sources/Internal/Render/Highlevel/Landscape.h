@@ -41,6 +41,10 @@
 
 #include "FileSystem/FilePath.h"
 
+#include "Scene3D/SceneFile/SerializationContext.h"
+
+//#define LANDSCAPE_SPECULAR_LIT 1
+
 namespace DAVA
 {
 
@@ -51,6 +55,7 @@ class RenderDataObject;
 class Shader;
 class SceneFileV2;
 class Heightmap;
+class NMaterial;
     
 template<class T>
 class LandQuadTreeNode
@@ -102,6 +107,8 @@ public:
     Keep in mind that landscape orientation cannot be changed using localTransform and worldTransform matrices. 
  */ 
 
+class FoliageSystem;
+class NMaterial;
 class Landscape : public RenderObject
 {
 public:	
@@ -123,29 +130,11 @@ public:
      */
     void SetLods(const Vector4 & lods);
     
-
-    enum eTiledShaderMode
-    {
-        TILED_MODE_TILEMASK = 0,
-        TILED_MODE_TEXTURE,
-        TILED_MODE_MIXED,
-        TILED_MODE_TILE_DETAIL_MASK, 
-        
-        TILED_MODE_COUNT
-    };
-
     
-    /**
-     \brief Change rendering mode. 
-     \param[in] renderingMode rendering mode of landscape.
-     */
-    void SetTiledShaderMode(eTiledShaderMode _tiledShaderMode);
-    
-    /**
-     \brief Get rendering mode. 
-     \returns rendering mode of landscape.
-     */
-    inline eTiledShaderMode GetTiledShaderMode();
+    const static FastName PARAM_TILE_COLOR0;
+	const static FastName PARAM_TILE_COLOR1;
+	const static FastName PARAM_TILE_COLOR2;
+	const static FastName PARAM_TILE_COLOR3;
 
     
     /**
@@ -171,11 +160,16 @@ public:
         TEXTURE_COUNT
     };
 
+	//TODO: think about how to switch normal generation for landscape on/off
+	//ideally it should be runtime option and normal generaiton should happen when material that requires landscape has been set
 	class LandscapeVertex
 	{
 	public:
 		Vector3 position;
 		Vector2 texCoord;
+#ifdef LANDSCAPE_SPECULAR_LIT
+		Vector3 normal;
+#endif
 	};
     
     /**
@@ -237,10 +231,10 @@ public:
         \brief Get tiling for specified texture level.
         \returns Tiling for specified texture level.
      */
-    const Vector2 & GetTextureTiling(eTextureLevel level); 
+    Vector2 GetTextureTiling(eTextureLevel level); 
 
     void SetTileColor(eTextureLevel level, const Color & color);
-    const Color & GetTileColor(eTextureLevel level);
+    Color GetTileColor(eTextureLevel level);
 
     /**
         \brief Overloaded draw function to draw landscape
@@ -260,10 +254,20 @@ public:
         \returns pathname of heightmap
      */
     const FilePath & GetHeightmapPathname();
+	
+	void SetHeightmapPathname(const FilePath & newPath);
+	
+	float32 GetLandscapeSize();
+	
+	void SetLandscapeSize(float32 newSize);
 
+	float32 GetLandscapeHeight();
+	
+	void SetLandscapeHeight(float32 newHeight);
     
-    void Save(KeyedArchive * archive, SceneFileV2 * sceneFile);
-    void Load(KeyedArchive * archive, SceneFileV2 * sceneFile);
+    void Save(KeyedArchive * archive, SerializationContext * serializationContext);
+    void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+    DAVA_DEPRECATED(void LoadFog(KeyedArchive * archive, SerializationContext * serializationContext));
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
@@ -271,32 +275,32 @@ public:
 
 	void CursorEnable();
 	void CursorDisable();
-	void SetCursorTexture(Texture * texture);
-	void SetBigTextureSize(float32 bigSize);
-	void SetCursorPosition(const Vector2 & position);
-	void SetCursorScale(float32 scale);
 
     Heightmap *GetHeightmap();
     virtual void SetHeightmap(Heightmap *height);
     
-    virtual void UpdateFullTiledTexture();
-    FilePath SaveFullTiledTexture();
-    Texture *CreateFullTiledTexture();
-    
-    void SetFog(const bool& fogState);
-    bool IsFogEnabled() const;
-    void SetFogDensity(float32 _fogDensity);
-    float32 GetFogDensity() const;
-    void SetFogColor(const Color & _fogColor);
-    const Color & GetFogColor() const;
-
+//    virtual void UpdateFullTiledTexture();
+//    FilePath SaveFullTiledTexture();
+    Texture *CreateLandscapeTexture();
     LandscapeCursor *GetCursor();
     
 	virtual RenderObject * Clone(RenderObject *newObject);
 
-    int32 GetDrawIndices() const;
+	int32 GetDrawIndices() const;
+    
+    void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
-protected:	
+protected:
+	
+	const static FastName PARAM_CAMERA_POSITION;
+	const static FastName PARAM_TEXTURE0_TILING;
+	const static FastName PARAM_TEXTURE1_TILING;
+	const static FastName PARAM_TEXTURE2_TILING;
+	const static FastName PARAM_TEXTURE3_TILING;
+	const static FastName PARAM_PROP_SPECULAR_COLOR;
+	const static FastName PARAM_SPECULAR_SHININESS;
+	const static FastName TEXTURE_SPECULAR_MAP;
+	const static FastName TECHNIQUE_TILEMASK_NAME;
     
     class LandscapeQuad
     {
@@ -329,7 +333,7 @@ protected:
     void FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode);
     void MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth);
 
-    void BindMaterial(int32 lodLayer);
+    void BindMaterial(int32 lodLayer, Camera* camera);
     void UnbindMaterial();
     
     void DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod);
@@ -344,12 +348,23 @@ protected:
 	int GetMaxLod(float32 quadDistance);
 	float32 GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad);
 	
+	void SetupMaterialProperties();
+	
+	void SetSpecularColor(const Color& color);
+	Color GetSpecularColor();
+	void SetSpecularShininess(const float32& shininess);
+	float32 GetSpecularShininess();
+	void SetSpecularMapPath(const FilePath& path);
+	FilePath GetSpecularMapPath();
+    
+    void SetLandscapeSize(const Vector3 & newSize);
+	
     Vector<LandscapeVertex *> landscapeVerticesArray;
     Vector<RenderDataObject *> landscapeRDOArray;
     
     uint16 * indices;
-    Texture * textures[TEXTURE_COUNT];
-    Vector<FilePath> textureNames;
+    //Texture * textures[TEXTURE_COUNT];
+    //Vector<FilePath> textureNames;
     
     int32 lodLevelsCount;
     float32 lodDistance[8]; //
@@ -365,26 +380,10 @@ protected:
     Frustum *frustum;
     
     ePrimitiveType primitypeType;
-
-    void InitShaders();
-    void ReleaseShaders();
     
-    int32 uniformCameraPosition;
-    int32 uniformTextures[TEXTURE_COUNT];
-    int32 uniformTextureTiling[TEXTURE_COUNT];
-    Vector<Vector2> textureTiling;
-    int32 uniformTileColor[TEXTURE_COUNT];
-    Vector<Color> tileColor;
+    //Vector2 textureTiling[TEXTURE_COUNT];
+    //Color tileColor[TEXTURE_COUNT];
     
-    int32 uniformFogDensity;
-    int32 uniformFogColor;
-    int32 uniformFogDensityFT;
-    int32 uniformFogColorFT;
-
-    
-    Shader * tileMaskShader;
-    Shader * fullTiledShader;
-
 	LandscapeCursor * cursor;
         
     int16 queueRdoQuad;
@@ -408,42 +407,43 @@ protected:
     
     int32 flashQueueCounter;
     
-//    eTiledShaderMode tiledShaderMode;
-    uint32 tiledShaderMode;
-    
     int32 nearLodIndex;
     int32 farLodIndex;
     
+	NMaterial* tileMaskMaterial;
+	//NMaterial* fullTiledMaterial;
+	//NMaterial* currentMaterial;
+	
+	uint32 drawIndices;
+	
+	void SetDefaultValues();
     
-    bool    isFogEnabled;
-    float32 fogDensity;
-    Color   fogColor;
-    
-    uint32 drawIndices;
-    
+    FoliageSystem* foliageSystem;
+
 public:
-    
+   
+#if defined(LANDSCAPE_SPECULAR_LIT)
     INTROSPECTION_EXTEND(Landscape, RenderObject,
-//        MEMBER(heightmapPath, "Heightmap Path", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-//        COLLECTION(textureNames, "Texture Names", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
          
         MEMBER(tiledShaderMode, "Tiled Shader Mode", I_SAVE | I_VIEW | I_EDIT)
 
-        PROPERTY("isFogEnabled", "Is Fog Enabled", IsFogEnabled, SetFog, I_SAVE | I_VIEW | I_EDIT)
-        MEMBER(fogDensity, "Fog Density", I_SAVE | I_VIEW | I_EDIT)
-        MEMBER(fogColor, "Fog Color", I_SAVE | I_VIEW | I_EDIT)
-		COLLECTION(tileColor, "Tile Color",  I_VIEW | I_EDIT)
-		COLLECTION(textureTiling, "Texture tiling", I_VIEW | I_EDIT)
-		//PROPERTY("tiledShaderMode", "Tiled shader mode", GetTiledShaderMode, SetTiledShaderMode, I_SAVE | I_VIEW | I_EDIT)
-    );
+		PROPERTY("specularColor", "Specular Color", GetSpecularColor, SetSpecularColor, I_SAVE | I_VIEW | I_EDIT)
+		PROPERTY("specularShininess", "Specular Shininess", GetSpecularShininess, SetSpecularShininess, I_SAVE | I_VIEW | I_EDIT)
+		PROPERTY("specularMap", "Specular Map", GetSpecularMapPath, SetSpecularMapPath, I_SAVE | I_VIEW | I_EDIT)
+
+		);
+#else
+
+	    INTROSPECTION_EXTEND(Landscape, RenderObject,
+            PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
+            PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
+            PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
+		);
+
+#endif
+    
 };
 
-    
-inline Landscape::eTiledShaderMode Landscape::GetTiledShaderMode()
-{
-    return (eTiledShaderMode)tiledShaderMode;
-}
-    
 };
 
 #endif // __DAVAENGINE_LANDSCAPE_NODE_H__

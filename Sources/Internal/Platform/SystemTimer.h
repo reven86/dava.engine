@@ -57,30 +57,40 @@ class SystemTimer : public Singleton<SystemTimer>
 	//other platforms
 #endif //PLATFORMS
 
-	static float delta;
-	static uint64 stampTime;
+    static float realFrameDelta;
+    
+    //frame delta clamped between 0.001f and 0.1f
+    static float delta;
+    static uint64 stampTime;
 
-	float32 ElapsedSec();
-	void Start();
+    float32 ElapsedSec();
+    void Start();
 public:
 	
-	SystemTimer();
-	virtual ~SystemTimer();
+    SystemTimer();
+    virtual ~SystemTimer();
 
     uint64 AbsoluteMS();
     uint64 GetAbsoluteNano();
 
-	static void SetFrameDelta(float32 _delta); //for replay playback only
+    static void SetFrameDelta(float32 _delta); //for replay playback only
 	
-	static float FrameDelta()
-	{
-		return delta;
-	}
+    //returns frame delta clamped between 0.001f and 0.1f
+    static float FrameDelta()
+    {
+        return delta;
+    }
 	
-	static uint64 FrameStampTimeMS()
-	{
-		return stampTime;
-	}
+    static uint64 FrameStampTimeMS()
+    {
+        return stampTime;
+    }
+
+    //use it if you need synchronization with server
+    static float RealFrameDelta()
+    {
+        return realFrameDelta;
+    }
 
     // Global time is something that can be used by game
 

@@ -141,6 +141,41 @@ DAVA::AABBox3 EntityGroup::GetCommonBbox() const
 	return ret;
 }
 
+DAVA::Vector3 EntityGroup::GetZeroPos(size_t i) const
+{
+	DAVA::Vector3 ret;
+
+	if(i < entities.size())
+	{
+		ret = entities[i].entity->GetWorldTransform().GetTranslationVector();
+	}
+
+	return ret;
+}
+
+DAVA::Vector3 EntityGroup::GetCommonZeroPos() const
+{
+	DAVA::Vector3 ret;
+
+	if(entities.size() == 1)
+	{
+		ret = GetZeroPos(0);
+	}
+	else if(entities.size() > 0)
+	{
+		DAVA::AABBox3 tmp;
+
+		for(size_t i = 0; i < entities.size(); ++i)
+		{
+			tmp.AddPoint(entities[i].entity->GetWorldTransform().GetTranslationVector());
+		}
+
+		ret = tmp.GetCenter();
+	}
+
+	return ret;
+}
+
 bool EntityGroup::HasEntity(DAVA::Entity *entity) const
 {
 	size_t i;
@@ -160,6 +195,7 @@ bool EntityGroup::operator==( const EntityGroup &ss ) const
 	if(entities.size() == ss.entities.size())
 	{
 		ret = true;
+
 		for(size_t i = 0; i < entities.size(); ++i)
 		{
 			if(!ss.HasEntity(entities[i].entity))
@@ -170,7 +206,7 @@ bool EntityGroup::operator==( const EntityGroup &ss ) const
 		}
 	}
 
-	return ret = true;
+	return ret;
 }
 
 bool EntityGroup::Index(DAVA::Entity *entity, size_t &index) const

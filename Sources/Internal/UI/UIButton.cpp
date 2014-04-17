@@ -46,7 +46,6 @@ namespace DAVA
 	UIButton::UIButton(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 	: UIControl(rect, rectInAbsoluteCoordinates)
 	{
-		inputEnabled = TRUE;
 		oldState = 0;
 		for(int i = 0; i < DRAW_STATE_COUNT; i++)
 		{
@@ -57,6 +56,7 @@ namespace DAVA
 		selectedBackground = background;
 		selectedText = NULL;
 		exclusiveInput = TRUE;
+        SetInputEnabled(true, false);
 
 	}
 
@@ -350,6 +350,18 @@ namespace DAVA
 		}
     }
 
+    void UIButton::SetStateFittingOption(int32 state, int32 fittingOption)
+    {
+		for(int i = 0; i < DRAW_STATE_COUNT; i++)
+		{
+			if(state & 0x01)
+			{
+				CreateTextForState((eButtonDrawState)i)->SetFittingOption(fittingOption);
+			}
+			state >>= 1;
+		}
+    }
+
 	void UIButton::SetStateText(int32 state, const WideString &text, const Vector2 &requestedTextRectSize/* = Vector2(0,0)*/)
 	{
 		for(int i = 0; i < DRAW_STATE_COUNT; i++)
@@ -361,7 +373,19 @@ namespace DAVA
 			state >>= 1;
 		}
 	}
-	
+
+    void UIButton::SetStateTextAlign(int32 state, int32 align)
+	{
+		for(int i = 0; i < DRAW_STATE_COUNT; i++)
+		{
+			if(state & 0x01)
+			{
+				CreateTextForState((eButtonDrawState)i)->SetTextAlign(align);
+			}
+			state >>= 1;
+		}
+	}
+
 	void UIButton::SetStateTextControl(int32 state, UIStaticText *textControl)
 	{
 		for(int i = 0; i < DRAW_STATE_COUNT; i++)
@@ -826,19 +850,23 @@ namespace DAVA
 			{
 				SetStateText(stateArray[k], LocalizedString(stateTextNode->AsWString()));
 			}
-			
+
+            const YamlNode * stateTextAlignNode = node->Get(Format("stateTextAlign%s", statePostfix[k].c_str()));
+            if (stateTextAlignNode)
+            {
+                SetStateTextAlign(stateArray[k], loader->GetAlignFromYamlNode(stateTextAlignNode));
+			}
+
 			const YamlNode * stateTextColorNode = node->Get(Format("stateTextcolor%s", statePostfix[k].c_str()));
 			if (stateTextColorNode)
 			{
-				Vector4 c = stateTextColorNode->AsVector4();
-				SetStateFontColor(stateArray[k], Color(c.x, c.y, c.z, c.w));
+				SetStateFontColor(stateArray[k], stateTextColorNode->AsColor());
 			}
 			
 			const YamlNode * stateShadowColorNode = node->Get(Format("stateShadowcolor%s", statePostfix[k].c_str()));
 			if (stateShadowColorNode)
 			{
-				Vector4 c = stateShadowColorNode->AsVector4();
-				SetStateShadowColor(stateArray[k], Color(c.x, c.y, c.z, c.w));
+				SetStateShadowColor(stateArray[k], stateShadowColorNode->AsColor());
 			}			
 			
 			const YamlNode * stateShadowOffsetNode = node->Get(Format("stateShadowoffset%s", statePostfix[k].c_str()));
@@ -846,7 +874,13 @@ namespace DAVA
 			{
 				SetStateShadowOffset(stateArray[k], stateShadowOffsetNode->AsVector2());
 			}
-			
+
+            const YamlNode * stateFittingOptionNode = node->Get(Format("stateFittingOption%s", statePostfix[k].c_str()));
+			if (stateFittingOptionNode)
+			{
+				SetStateFittingOption(stateArray[k], stateFittingOptionNode->AsInt32());
+			}
+
 			const YamlNode * colorInheritNode = node->Get(Format("stateColorInherit%s", statePostfix[k].c_str()));
 			if(colorInheritNode)
 			{
@@ -871,7 +905,8 @@ namespace DAVA
 		String stringValue;
 		
 		UIButton *baseControl = new UIButton();
-		
+		UIStaticText *baseStaticText = new UIStaticText();
+
 		//Control Type
 		SetPreferredNodeType(node, "UIButton");
         
@@ -971,29 +1006,50 @@ namespace DAVA
 				Font *stateFont = this->GetStateTextControl(stateArray[i])->GetFont();
 				node->Set(Format("stateFont%s", statePostfix[i].c_str()), FontManager::Instance()->GetFontName(stateFont));
 
-				nodeValue->SetWideString(this->GetStateTextControl(stateArray[i])->GetText());
-				node->Set(Format("stateText%s", statePostfix[i].c_str()), nodeValue);
-				
-				Color textColor = this->GetStateTextControl(stateArray[i])->GetTextColor();
-				nodeValue->SetVector4(Vector4(textColor.r, textColor.g, textColor.b, textColor.a));
-				node->Set(Format("stateTextcolor%s", statePostfix[i].c_str()), nodeValue);
-				
-				Color shadowColor = this->GetStateTextControl(stateArray[i])->GetShadowColor();
-				nodeValue->SetVector4(Vector4(shadowColor.r, shadowColor.g, shadowColor.b, shadowColor.a));
-				node->Set(Format("stateShadowcolor%s", statePostfix[i].c_str()), nodeValue);
-				
-				Vector2 shadowOffset = this->GetStateTextControl(stateArray[i])->GetShadowOffset();
-				nodeValue->SetVector2(shadowOffset);
-				node->Set(Format("stateShadowoffset%s", statePostfix[i].c_str()), nodeValue);
+                nodeValue->SetWideString(GetStateTextControl(stateArray[i])->GetText());
+                node->Set(Format("stateText%s", statePostfix[i].c_str()), nodeValue);
+
+                const Color &textColor = GetStateTextControl(stateArray[i])->GetTextColor();
+                if (baseStaticText->GetTextColor() != textColor)
+                {
+                    nodeValue->SetColor(textColor);
+                    node->Set(Format("stateTextcolor%s", statePostfix[i].c_str()), nodeValue);
+                }
+
+                const Color &shadowColor = GetStateTextControl(stateArray[i])->GetShadowColor();
+                if( baseStaticText->GetShadowColor() != shadowColor )
+                {
+                    nodeValue->SetColor(shadowColor);
+                    node->Set(Format("stateShadowcolor%s", statePostfix[i].c_str()), nodeValue);
+                }
+
+                const Vector2 &shadowOffset = GetStateTextControl(stateArray[i])->GetShadowOffset();
+                if (baseStaticText->GetShadowOffset() != shadowOffset)
+                {
+                    nodeValue->SetVector2(shadowOffset);
+                    node->Set(Format("stateShadowoffset%s", statePostfix[i].c_str()), nodeValue);
+                }
+
+                int32 fittingOption = GetStateTextControl(stateArray[i])->GetFittingOption();
+                if (baseStaticText->GetFittingOption() != fittingOption)
+                {
+                    nodeValue->SetInt32(fittingOption);
+                    node->Set(Format("stateFittingOption%s", statePostfix[i].c_str()), nodeValue);
+                }
+                
+                int32 textAlign = GetStateTextControl(stateArray[i])->GetTextAlign();
+                if (baseStaticText->GetTextAlign() != textAlign)
+                {
+                    node->SetNodeToMap(Format("stateTextAlign%s", statePostfix[i].c_str()), loader->GetAlignNodeValue(textAlign));
+                }
 			}
 			
 			// State background color
-			Color color = this->GetActualBackground(stateArray[i])->GetColor();
-			Color baseColor =  baseControl->GetActualBackground(stateArray[i])->GetColor();
+			const Color &color = this->GetActualBackground(stateArray[i])->GetColor();
+			const Color &baseColor =  baseControl->GetActualBackground(stateArray[i])->GetColor();
 			if (baseColor != color)
 			{
-				Vector4 colorVector4(color.r, color.g, color.b, color.a);
-				nodeValue->SetVector4(colorVector4);
+				nodeValue->SetColor(color);
 				node->Set(Format("stateColor%s", statePostfix[i].c_str()), nodeValue);
 			}
 			
@@ -1008,6 +1064,7 @@ namespace DAVA
         
 		SafeDelete(nodeValue);
 		SafeRelease(baseControl);
+        SafeRelease(baseStaticText);
 		      
 		return node;
 	}

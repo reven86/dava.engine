@@ -56,6 +56,7 @@ public:
 	Job(const Message & message, const Thread::ThreadId & creatorThreadId);
 	eState GetState();
 	ePerformedWhere PerformedWhere();
+    const Message & GetMessage();
 
 protected:
 	void Perform();
@@ -68,9 +69,15 @@ protected:
 	eState state;
 	ePerformedWhere performedWhere;
 
-	friend class JobQueue;
+	friend class MainThreadJobQueue;
 	friend class JobManager;
 };
+
+inline 
+const Message & Job::GetMessage()
+{
+    return message;
+}
 
 }
 

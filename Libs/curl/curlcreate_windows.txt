@@ -1,7 +1,0 @@
-1. Unpack curl-7.28.1.tar.gz
-2. Open vc6curl.dsw in Visual Studio 2010. Confirm converting project to the current format.
-3. Set build type to LIB Release (LIB Debug - if you need debug build)
-4. Go to Project properties -> General. Set "Character set" to "Use Unicode Character Set"
-5. Go to Project properties -> Configuration Properties -> C/C++ -> Code Generation. Set "Runtime Library" to "Multi-threaded (/MT)" or "Multi-threaded Debug (/MTd)" according to build type.
-6. Build libcurl project in solution
-7. Copy lib/LIB-%buildtype%/libcurl(d).lib file to %frameworkpath%/Libs/libs

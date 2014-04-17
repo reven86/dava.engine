@@ -26,6 +26,8 @@ extern "C" int luaopen_Rect(lua_State *l);
 extern "C" int luaopen_Vector(lua_State *l);
 extern "C" int luaopen_KeyedArchive(lua_State *l);
 
+#define LUA_OK 0
+
 namespace DAVA
 {
         
@@ -61,6 +63,13 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
         bool isOk = true;
         luaState = lua_open();
         luaL_openlibs(luaState);
+
+		lua_pushcfunction(luaState, &AutotestingSystemLua::Print);
+		lua_setglobal(luaState, "print");
+
+		lua_pushcfunction(luaState, &AutotestingSystemLua::ReqModule);
+		lua_setglobal(luaState, "require");
+
         String errors;
         
         if(isOk)
@@ -81,8 +90,8 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
             errors += ", LoadWrappedLuaObjects failed";
         }
         
-        FilePath pathToAutotesting = "~res:/Autotesting/";
-        String setPackagePathScript = Format("SetPackagePath(\"%s\")", pathToAutotesting.GetAbsolutePathname().c_str());
+		String setPackagePathScript = Format("SetPackagePath('~res:/Autotesting/')");
+
         if(isOk)
         {
             isOk = RunScript(setPackagePathScript);
@@ -94,7 +103,7 @@ void AutotestingSystemLua::InitFromFile(const String &luaFilePath)
         
         if(isOk)
         {
-            isOk = LoadScriptFromFile(luaFilePath);
+            isOk = RunScriptFromFile(luaFilePath);
         }
         else
         {
@@ -127,6 +136,95 @@ void AutotestingSystemLua::StartTest()
     RunScript();
 }
     
+int AutotestingSystemLua::Print(lua_State* L)
+{
+	const char* str = lua_tostring(L, -1);
+
+	Logger::Debug("AutotestingSystemLua::Print: %s", str);
+	lua_pop(L, 1);
+
+	return 0;
+}
+
+const char *AutotestingSystemLua::pushnexttemplate (lua_State *L, const char *path) 
+{
+	const char *l;
+	while (*path == *LUA_PATHSEP) path++;  /* skip separators */
+	if (*path == '\0') return NULL;  /* no more templates */
+	l = strchr(path, *LUA_PATHSEP);  /* find next separator */
+	if (l == NULL) l = path + strlen(path);
+	lua_pushlstring(L, path, l - path);  /* template */
+	return l;
+}
+
+const char *AutotestingSystemLua::findfile (lua_State *L, const char *name, const char *pname) 
+{
+		const char *path;
+		name = luaL_gsub(L, name, ".", LUA_DIRSEP);
+		lua_getglobal(L, "package");
+		lua_getfield(L, -1, pname);
+		path = lua_tostring(L, -1);
+		if (path == NULL)
+			luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
+		lua_pushliteral(L, "");  /* error accumulator */
+		while ((path = pushnexttemplate(L, path)) != NULL) {
+			const char *filename;
+			filename = luaL_gsub(L, lua_tostring(L, -1), LUA_PATH_MARK, name);
+			lua_remove(L, -2);  /* remove path template */
+			if (FileSystem::Instance()->IsFile(filename))  /* does file exist and is readable? */
+				return filename;  /* return that file name */
+			lua_pushfstring(L, "\n\tno file " LUA_QS, filename);
+			lua_remove(L, -2);  /* remove file name */
+			lua_concat(L, 2);  /* add entry to possible error message */
+		}
+		return NULL;  /* not found */
+}
+
+int AutotestingSystemLua::ReqModule(lua_State* L)
+{
+	String module = lua_tostring(L, -1);
+	lua_pop(L, 1);
+	FilePath path = AutotestingSystemLua::Instance()->findfile(L, module.c_str(), "path");
+
+	if (!AutotestingSystemLua::Instance()->LoadScriptFromFile(path)) AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::ReqModule: couldn't load module " + path.GetAbsolutePathname());
+
+	lua_pushstring(AutotestingSystemLua::Instance()->luaState, path.GetBasename().c_str());
+	if (!AutotestingSystemLua::Instance()->RunScript()) AutotestingSystem::Instance()->ForceQuit("AutotestingSystemLua::ReqModule: couldn't run module " + path.GetBasename());
+
+	lua_pushcfunction(L, lua_tocfunction(AutotestingSystemLua::Instance()->luaState, -1));
+	lua_pushstring(L, path.GetBasename().c_str());
+	return 2;
+}
+
+void AutotestingSystemLua::stackDump(lua_State *L) {
+	Logger::Debug("*** Stack Dump ***");
+	int i;
+	int top = lua_gettop(L);
+	for (i = 1; i <= top; i++) { /* repeat for each level */
+		int t = lua_type(L, i);
+		switch (t) {
+		case LUA_TSTRING: { /* strings */
+			Logger::Debug("'%s'", lua_tostring(L, i));
+			break;
+						  }
+		case LUA_TBOOLEAN: { /* booleans */
+			Logger::Debug(lua_toboolean(L, i) ? "true" : "false");
+			break;
+						   }
+		case LUA_TNUMBER: { /* numbers */
+			Logger::Debug("%g", lua_tonumber(L, i));
+			break;
+						  }
+		default: { /* other values */
+			Logger::Debug("%s", lua_typename(L, t));
+			break;
+				 }
+		}
+		//Logger::Debug(" "); /* put a separator */
+	}
+	Logger::Debug("*** Stack Dump END***"); /* end the listing */
+}
+
 // Multiplayer API
 void AutotestingSystemLua::WriteState(const String & device, const String & state)
 {
@@ -240,7 +338,7 @@ UIControl *AutotestingSystemLua::GetScreen()
 
 UIControl *AutotestingSystemLua::FindControl(const String &path)
 {
-    Logger::Debug("AutotestingSystemLua::FindControl %s", path.c_str());
+    //Logger::Debug("AutotestingSystemLua::FindControl %s", path.c_str());
     
     Vector<String> controlPath;
     ParsePath(path, controlPath);
@@ -400,22 +498,6 @@ void AutotestingSystemLua::KeyPress(int32 keyChar)
 			}
 		}
 	}
-
-	/*
-	UIEvent keyPress;
-	keyPress.tid = keyChar;
-	keyPress.phase = UIEvent::PHASE_KEYCHAR;
-	keyPress.tapCount = 1;
-	keyPress.keyChar = keyChar;
-
-	Logger::Debug("AutotestingSystemLua::KeyPress %d phase=%d count=%d point=(%f, %f) physPoint=(%f,%f) key=%c", keyPress.tid, keyPress.phase, keyPress.tapCount, keyPress.point.x, keyPress.point.y, keyPress.physPoint.x, keyPress.physPoint.y, keyPress.keyChar);
-
-	Vector<UIEvent> emptyTouches;
-	Vector<UIEvent> touches;
-	touches.push_back(keyPress);
-	UIControlSystem::Instance()->OnInput(0, emptyTouches, touches);
-	AutotestingSystem::Instance()->OnInput(keyPress);
-	*/
 }
 
 String AutotestingSystemLua::GetText(UIControl *control)
@@ -424,12 +506,12 @@ String AutotestingSystemLua::GetText(UIControl *control)
 	UIStaticText *uiStaticText = dynamic_cast<UIStaticText*>(control);
 	if(uiStaticText)
 	{
-		return WStringToString(uiStaticText->GetText());
+		return UTF8Utils::EncodeToUTF8(uiStaticText->GetText());
 	}
 	UITextField *uiTextField = dynamic_cast<UITextField*>(control);
 	if(uiTextField)
 	{
-		return WStringToString(uiTextField->GetText());
+		return UTF8Utils::EncodeToUTF8(uiTextField->GetText());
 	}
 	return "";
 }
@@ -553,7 +635,7 @@ void AutotestingSystemLua::ProcessInput(const UIEvent &input)
 
 void AutotestingSystemLua::ParsePath(const String &path, Vector<String> &parsedPath)
 {
-    Logger::Debug("AutotestingSystemLua::ParsePath path=%s", path.c_str());
+    //Logger::Debug("AutotestingSystemLua::ParsePath path=%s", path.c_str());
     Split(path, "/", parsedPath);
 }
     
@@ -588,24 +670,45 @@ bool AutotestingSystemLua::LoadScript(const String &luaScript)
     return true;
 }
     
-bool AutotestingSystemLua::LoadScriptFromFile(const String &luaFilePath)
+bool AutotestingSystemLua::LoadScriptFromFile(const FilePath &luaFilePath)
 {
-    if(!luaState) return false;
-    
-    String realPath = FilePath(luaFilePath).GetAbsolutePathname();
-    if(luaL_loadfile(luaState, realPath.c_str()) != 0)
-    {
-        Logger::Error("AutotestingSystemLua::LoadScriptFromFile Error: unable to load %s", realPath.c_str());
-        return false;
-    }
-    return true;
+	Logger::Debug("AutotestingSystemLua::LoadScriptFromFile: %s", luaFilePath.GetAbsolutePathname().c_str());
+	File * file = File::Create(luaFilePath, File::OPEN | File::READ );
+	if (file)
+	{
+		char *data = new char[file->GetSize()];
+		file->Read(data, file->GetSize());
+		uint32 fileSize = file->GetSize();
+		file->Release();
+		file = NULL;
+
+		bool result = luaL_loadbuffer(luaState, data, fileSize, luaFilePath.GetAbsolutePathname().c_str()) == LUA_OK;
+		delete [] data;
+		if (result)
+		{
+			return true;
+		}
+		else
+		{
+			Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't load buffer %s", luaFilePath.GetAbsolutePathname().c_str());
+			//lua_pushnil(L);
+			return false;
+		}
+
+	} else {
+		Logger::Error("AutotestingSystemLua::LoadScriptFromFile: couldn't open %s",luaFilePath.GetAbsolutePathname().c_str());
+		//lua_pushnil(L);
+		return false;
+	}
+
 }
-    
-bool AutotestingSystemLua::RunScriptFromFile(const String &luaFilePath)
+
+bool AutotestingSystemLua::RunScriptFromFile(const FilePath &luaFilePath)
 {
-    Logger::Debug("AutotestingSystemLua::RunScriptFromFile %s", luaFilePath.c_str());
+    Logger::Debug("AutotestingSystemLua::RunScriptFromFile %s", luaFilePath.GetAbsolutePathname().c_str());
     if(LoadScriptFromFile(luaFilePath))
     {
+		lua_pushstring(luaState, luaFilePath.GetBasename().c_str());
         return RunScript();
     }
     return false;
@@ -616,16 +719,31 @@ bool AutotestingSystemLua::RunScript(const DAVA::String &luaScript)
     //Logger::Debug("AutotestingSystemLua::RunScript %s", luaScript.c_str());
     if(LoadScript(luaScript))
     {
-        return RunScript();
+ 		if (lua_pcall(luaState, 0, 1, 0))
+		{
+			const char* err = lua_tostring(luaState, -1);
+
+			Logger::Error("AutotestingSystemLua::RunScript error %s", err);
+
+			return false;
+		}
+		return true;
     }
+	Logger::Error("AutotestingSystemLua::RunScript couldnt't load script %s", luaScript.c_str());
     return false;
 }
     
 bool AutotestingSystemLua::RunScript()
 {
-    //Logger::Debug("AutotestingSystemLua::RunScript");
-    lua_pcall(luaState, 0, 0, 0); //TODO: LUA_MULTRET?
-    //TODO: check if lua_pcall was successfull
+	//stackDump(luaState);
+	if (lua_pcall(luaState, 1, 1, 0))
+	{
+		const char* err = lua_tostring(luaState, -1);
+
+		Logger::Debug("AutotestingSystemLua::RunScript error %s", err);
+
+		return false;
+	}
     return true;
 }
 

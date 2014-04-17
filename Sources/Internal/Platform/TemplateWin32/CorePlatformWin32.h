@@ -33,11 +33,12 @@
 #include "DAVAEngine.h"
 #if defined(__DAVAENGINE_WIN32__)
 
+#include "CoreWin32PlatformBase.h"
 #include "WindowsSpecifics.h"
 
-namespace DAVA 
-{
-class CoreWin32Platform : public Core
+namespace DAVA {
+
+class CoreWin32Platform : public CoreWin32PlatformBase
 {
 public:
 	virtual eScreenMode GetScreenMode();
@@ -46,8 +47,6 @@ public:
 
 	virtual DisplayMode GetCurrentDisplayMode();
 
-	virtual void Quit();
-
 	virtual bool CreateWin32Window(HINSTANCE hInstance); //true if window created, if false, need to quit the app
 	virtual void Run();
 
@@ -55,12 +54,9 @@ public:
 
 	virtual void SetIcon(int32 iconId);
 
-	void InitArgs();
 	void InitOpenGL();
 	void ReleaseOpenGL();
 
-	HINSTANCE hInstance;
-	HWND hWindow;
 	HDC hDC;
 	HGLRC hRC;
 	HANDLE hMutex;

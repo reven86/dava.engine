@@ -46,7 +46,6 @@ public:
 	UIScrollView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	virtual void AddControl(UIControl *control);
-	virtual List<UIControl* >& GetRealChildren();
     virtual List<UIControl* > GetSubcontrols();
 
 	// Add the control directly to the Scroll View Container.
@@ -57,6 +56,19 @@ public:
 	ScrollHelper* GetHorizontalScroll();
 	ScrollHelper* GetVerticalScroll();
 	
+    // Scroll Position getter/setters.
+    float32 GetHorizontalScrollPosition() const;
+    float32 GetVerticalScrollPosition() const;
+    Vector2 GetScrollPosition() const;
+
+    void SetHorizontalScrollPosition(float32 horzPos);
+    void SetVerticalScrollPosition(float32 vertPos);
+    void SetScrollPosition(const Vector2& pos);
+
+    void ScrollToHorizontalPosition(float32 horzPos, float32 timeSec = 0.3f);
+    void ScrollToVerticalPosition(float32 vertPos, float32 timeSec = 0.3f);
+    void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
+
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 	

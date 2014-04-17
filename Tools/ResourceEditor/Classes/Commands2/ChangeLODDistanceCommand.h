@@ -51,5 +51,4 @@ protected:
 	DAVA::float32 oldDistance;
 };
 
-
 #endif // __CHANGE_LOD_DISTANCE_COMMAND_H__

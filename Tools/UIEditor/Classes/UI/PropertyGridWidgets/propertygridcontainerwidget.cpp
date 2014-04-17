@@ -31,6 +31,7 @@
 #include "ui_propertygridcontainerwidget.h"
 
 #include "MetadataFactory.h"
+#include "EditorSettings.h"
 
 PropertyGridContainerWidget::PropertyGridContainerWidget(QWidget *parent) :
     QWidget(parent),

@@ -63,7 +63,66 @@ void Image::SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback)
     [library release];
 }
 
+void *Image::GetUIImage()
+{
+    size_t bitsPerComponent = 8;
+    size_t bitsPerPixel = Texture::GetPixelFormatSizeInBits(format);
+    size_t bytesPerPixel = Texture::GetPixelFormatSizeInBytes(format);
+    size_t bytesPerRow = width * bytesPerPixel;
+    CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
+    CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
 
+    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, data, width * height * bytesPerPixel, NULL);
+    CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpaceRef, bitmapInfo, provider, NULL, NO, renderingIntent);
+
+    UIImage* image = [UIImage imageWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+    CGDataProviderRelease(provider);
+
+    return image;
+}
+
+bool Image::Save(const FilePath &path) const
+{
+    String ext = path.GetExtension();
+    std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+    
+    size_t bitsPerComponent = 8;
+    size_t bitsPerPixel = Texture::GetPixelFormatSizeInBits(format);
+    size_t bytesPerPixel = Texture::GetPixelFormatSizeInBytes(format);
+    size_t bytesPerRow = width * bytesPerPixel;
+    CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
+    CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
+    CGColorRenderingIntent renderingIntent = kCGRenderingIntentDefault;
+    
+    CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, data, width * height * bytesPerPixel, NULL);
+    CGImageRef imageRef = CGImageCreate(width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, colorSpaceRef, bitmapInfo, provider, NULL, NO, renderingIntent);
+    
+    UIImage* image = [UIImage imageWithCGImage:imageRef];
+    CGImageRelease(imageRef);
+    CGDataProviderRelease(provider);
+
+    NSData* _data = nil;
+    
+    if (ext.compare(".png") == 0)
+    {
+        _data = UIImagePNGRepresentation(image);
+    }
+    else if (ext.compare(".jpeg") == 0 || ext.compare(".jpg") == 0)
+    {
+        _data = UIImageJPEGRepresentation(image, 1.0f);
+    }
+    
+    if (_data != nil)
+    {
+        NSString *_path = [NSString stringWithCString:path.GetAbsolutePathname().c_str() encoding:NSASCIIStringEncoding];
+        return ([_data writeToFile:_path atomically:YES] == YES) ? true : false;
+    }
+
+    return false;
+}
+    
 }
 
 #endif //__DAVAENGINE_IPHONE_

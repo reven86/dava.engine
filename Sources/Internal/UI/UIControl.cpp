@@ -38,6 +38,7 @@
 #include "Render/RenderHelper.h"
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA 
 {
@@ -46,6 +47,7 @@ namespace DAVA
 	{
 		parent = NULL;
 		controlState = STATE_NORMAL;
+        recursiveVisible = true;
 		visible = true;
 		visibleForUIEditor = true;
 		/* 
@@ -54,6 +56,8 @@ namespace DAVA
 			for particular controls it can be changed, but no make sense to make that for all controls.
 		 */
 		inputEnabled = true; 
+        inputProcessorsCount = 1;
+        focusEnabled = true;
 		
 		background = new UIControlBackground();
 		needToRecalcFromAbsoluteCoordinates = false;
@@ -111,10 +115,7 @@ namespace DAVA
 	
 	UIControl::~UIControl()
 	{
-		if(totalTouches > 0)
-		{
-			UIControlSystem::Instance()->CancelInputs(this);
-		}
+        UIControlSystem::Instance()->CancelInputs(this);
 		SafeRelease(background);
 		SafeRelease(eventDispatcher);
 		RemoveAllControls();
@@ -122,20 +123,20 @@ namespace DAVA
 	
 	void UIControl::SetParent(UIControl *newParent)
 	{
-		if (!newParent) 
-		{
-			if(totalTouches > 0)
-			{
-				UIControlSystem::Instance()->CancelInputs(this);
-			}
-		}
+        if (parent)
+        {
+            parent->UnregisterInputProcessors(inputProcessorsCount);
+        }
 		parent = newParent;
 		if(parent && needToRecalcFromAbsoluteCoordinates)
 		{
 			relativePosition = absolutePosition - parent->GetGeometricData().position;
 			needToRecalcFromAbsoluteCoordinates = false;
 		}
-		
+        if (parent)
+        {
+            parent->RegisterInputProcessors(inputProcessorsCount);
+        }
 	}
 	UIControl *UIControl::GetParent()
 	{
@@ -271,19 +272,6 @@ namespace DAVA
 		}
 		
 		return false;
-	}
-
-	List<UIControl* > UIControl::GetRealChildrenAndSubcontrols()
-	{
-		List<UIControl*>& realChildrenList = GetRealChildren();
-		List<UIControl*> subControlsList = GetSubcontrols();
-
-		// Merge two lists without duplicates.
-		List<UIControl*> resultList = realChildrenList;
-		resultList.insert(resultList.end(), subControlsList.begin(), subControlsList.end());
-		resultList.erase(std::unique(resultList.begin(), resultList.end()), resultList.end());
-		
-		return resultList;
 	}
 
 	String UIControl::GetSpriteFrameworkPath( const Sprite* sprite)
@@ -940,14 +928,11 @@ namespace DAVA
 	
 	void UIControl::SetVisible(bool isVisible, bool hierarchic/* = true*/)
 	{
-		visible = isVisible;
-		if (!visible) 
+		if (!isVisible && visible)
 		{
-			if(totalTouches > 0)
-			{
-				UIControlSystem::Instance()->CancelInputs(this);
-			}
+            UIControlSystem::Instance()->CancelInputs(this);
 		}
+		visible = isVisible;
 		
 		if(hierarchic)
 		{	
@@ -958,6 +943,38 @@ namespace DAVA
 			}
 		}
 	}
+
+    bool UIControl::GetRecursiveVisible() const
+    {
+        return recursiveVisible;
+    }
+
+    void UIControl::SetRecursiveVisible(bool isVisible)
+    {
+        if (recursiveVisible == isVisible)
+            return;
+
+        bool onScreen = IsOnScreen();
+        if (!onScreen)
+        {
+            if (isVisible) SystemWillAppear();
+        }
+        else
+        {
+            if (!isVisible) SystemWillDisappear();
+        }
+
+        recursiveVisible = isVisible;
+
+        if (!onScreen)
+        {
+            if (isVisible) SystemDidAppear();
+        }
+        else
+        {
+            if(!isVisible) SystemDidDisappear();
+        }
+    }
 
 	void UIControl::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
 	{
@@ -979,7 +996,18 @@ namespace DAVA
 	
 	void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic/* = true*/)
 	{
-		inputEnabled = isEnabled;
+        if (isEnabled != inputEnabled)
+        {
+            inputEnabled = isEnabled;
+            if (inputEnabled)
+            {
+                RegisterInputProcessor();
+            }
+            else
+            {
+                UnregisterInputProcessor();
+            }
+        }
 		if(hierarchic)
 		{	
 			List<UIControl*>::iterator it = childs.begin();
@@ -989,6 +1017,17 @@ namespace DAVA
 			}
 		}
 	}
+    
+    bool UIControl::GetFocusEnabled() const
+    {
+        return focusEnabled;
+    }
+    
+	void UIControl::SetFocusEnabled(bool isEnabled)
+    {
+        focusEnabled = isEnabled;
+    }
+
 	
 	bool UIControl::GetDisabled() const
 	{
@@ -1000,6 +1039,9 @@ namespace DAVA
 		if(isDisabled)
 		{
 			controlState |= STATE_DISABLED;
+            
+            // Cancel all inputs because of DF-2943.
+            UIControlSystem::Instance()->CancelInputs(this);
 		}
 		else
 		{
@@ -1080,7 +1122,6 @@ namespace DAVA
 			control->SystemWillAppear();
 		}
 		control->isUpdated = false;
-//		control->WillAppear();
 		control->SetParent(this);
 		childs.push_back(control);
 		if(onScreen)
@@ -1328,6 +1369,7 @@ namespace DAVA
 		needToRecalcFromAbsoluteCoordinates = srcControl->needToRecalcFromAbsoluteCoordinates;
 
 		controlState = srcControl->controlState;
+        recursiveVisible = srcControl->recursiveVisible;
 		visible = srcControl->visible;
 		visibleForUIEditor = srcControl->visibleForUIEditor;
 		inputEnabled = srcControl->inputEnabled;
@@ -1347,6 +1389,14 @@ namespace DAVA
 		}
 		
 		RemoveAllControls();
+        if (inputEnabled)
+        {
+            inputProcessorsCount = 1;
+        }
+        else
+        {
+            inputProcessorsCount = 0;
+        }
         
         // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
         // unnecessary children we have on the for example UIButton.
@@ -1364,16 +1414,16 @@ namespace DAVA
 	
     bool UIControl::IsOnScreen() const
     {
-		if(parent)
-		{
-			return parent->IsOnScreen();
-		}
-		
-		if(UIControlSystem::Instance()->GetScreen() == this || UIControlSystem::Instance()->GetPopupContainer() == this)
-		{
-			return true;
-		}
-		return false;
+        if(UIControlSystem::Instance()->GetScreen() == this ||
+           UIControlSystem::Instance()->GetPopupContainer() == this)
+        {
+            return GetRecursiveVisible();
+        }
+
+        if( !GetRecursiveVisible() || !parent )
+            return false;
+
+		return parent->IsOnScreen();
 	}
 
 
@@ -1407,6 +1457,10 @@ namespace DAVA
         if (UIControlSystem::Instance()->GetFocusedControl() == this) 
         {
             UIControlSystem::Instance()->SetFocusedControl(NULL, true);
+        }
+        if (GetInputEnabled())
+        {
+            UIControlSystem::Instance()->CancelInputs(this, false);
         }
 
 		List<UIControl*>::iterator it = childs.begin();
@@ -1519,6 +1573,7 @@ namespace DAVA
 
 	void UIControl::SystemUpdate(float32 timeElapsed)
 	{		
+        UIControlSystem::Instance()->updateCounter++;
 		Update(timeElapsed);
 		isUpdated = true;
 		List<UIControl*>::iterator it = childs.begin();
@@ -1549,6 +1604,10 @@ namespace DAVA
 
 	void UIControl::SystemDraw(const UIGeometricData &geometricData)
 	{
+        if( !recursiveVisible )
+            return;
+
+        UIControlSystem::Instance()->drawCounter++;
 		UIGeometricData drawData;
 		drawData.position = relativePosition;
 		drawData.size = size;
@@ -1581,7 +1640,7 @@ namespace DAVA
 	
 		if (debugDrawEnabled && !clipContents)
 		{	//TODO: Add debug draw for rotated controls
-			DrawDebugRect(drawData);
+			DrawDebugRect(drawData, false);
 		}
 		DrawPivotPoint(unrotatedRect);
 		
@@ -1604,7 +1663,7 @@ namespace DAVA
 			
 			if(debugDrawEnabled)
 			{ //TODO: Add debug draw for rotated controls
-				DrawDebugRect(drawData);
+				DrawDebugRect(drawData, false);
 			}
 		}
 		
@@ -1640,11 +1699,11 @@ namespace DAVA
 			Polygon2 poly;
 			gd.GetPolygon( poly );
 
-			RenderHelper::Instance()->DrawPolygon( poly, true );
+			RenderHelper::Instance()->DrawPolygon( poly, true, RenderState::RENDERSTATE_2D_BLEND );
 		}
 		else
 		{
-			RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect() );
+			RenderHelper::Instance()->DrawRect( gd.GetUnrotatedRect(), RenderState::RENDERSTATE_2D_BLEND );
 		}
 
 		RenderManager::Instance()->ClipPop();
@@ -1671,20 +1730,20 @@ namespace DAVA
 		RenderManager::Instance()->SetColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
 
 		Vector2 pivotPointCenter = drawRect.GetPosition() + pivotPoint;
-		RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS);
+		RenderHelper::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, RenderState::RENDERSTATE_2D_BLEND);
 
 		// Draw the cross mark.
 		Vector2 lineStartPoint = pivotPointCenter;
 		Vector2 lineEndPoint = pivotPointCenter;
 		lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
 		lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint);
+		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
 		
 		lineStartPoint = pivotPointCenter;
 		lineEndPoint = pivotPointCenter;
 		lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
 		lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint);
+		RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
 
 		RenderManager::Instance()->ClipPop();
 		RenderManager::Instance()->SetColor(oldColor);
@@ -1734,14 +1793,12 @@ namespace DAVA
 		
 		switch (currentInput->phase) 
 		{
-#if !defined(__DAVAENGINE_IPHONE__)
+#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 			case UIEvent::PHASE_KEYCHAR:
 			{
 					Input(currentInput);
 			}
 			break;
-#endif
-#if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 			case UIEvent::PHASE_MOVE:
 			{
 				if (!currentInput->touchLocker && IsPointInside(currentInput->point))
@@ -1775,15 +1832,17 @@ namespace DAVA
 						++touchesInside;
 						++totalTouches;
 						currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
-						
-						
-						PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
+
+                        // Yuri Coder, 2013/12/18. Set the touch lockers before the EVENT_TOUCH_DOWN handler
+                        // to have possibility disable control inside the EVENT_TOUCH_DOWN. See also DF-2943.
 						currentInput->touchLocker = this;
 						if(exclusiveInput)
 						{
-							UIControlSystem::Instance()->SetExclusiveInputLocker(this);
+							UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->tid);
 						}
-						
+
+   						PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
+
 						if(!multiInput)
 						{
 							currentInputID = currentInput->tid;
@@ -1885,7 +1944,7 @@ namespace DAVA
 #endif
 								if (IsPointInside(currentInput->point, true))
 								{
-                                    if (UIControlSystem::Instance()->GetFocusedControl() != this) 
+                                    if (UIControlSystem::Instance()->GetFocusedControl() != this && focusEnabled)
                                     {
                                         UIControlSystem::Instance()->SetFocusedControl(this, false);
                                     }
@@ -1900,7 +1959,7 @@ namespace DAVA
 								controlState |= STATE_NORMAL;
 								if(UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
 								{
-									UIControlSystem::Instance()->SetExclusiveInputLocker(NULL);
+									UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
 								}
 							}
 							else if(touchesInside <= 0)
@@ -1930,7 +1989,12 @@ namespace DAVA
 
 	bool UIControl::SystemInput(UIEvent *currentInput)
 	{
+        UIControlSystem::Instance()->inputCounter++;
 		isUpdated = true;
+
+        if( !recursiveVisible )
+            return false;
+
 		//if(currentInput->touchLocker != this)
 		{
 			if(clipContents 
@@ -1961,7 +2025,7 @@ namespace DAVA
 				if(!current->isUpdated)
 				{
 					current->Retain();
-					if(current->SystemInput(currentInput))
+					if(current->inputProcessorsCount > 0 && current->SystemInput(currentInput))
 					{
 						current->Release();
 						return true;
@@ -1997,7 +2061,7 @@ namespace DAVA
 			controlState |= STATE_NORMAL;
 			if(UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
 			{
-				UIControlSystem::Instance()->SetExclusiveInputLocker(NULL);
+				UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
 			}
 		}
 		
@@ -2071,6 +2135,11 @@ namespace DAVA
 
 		// Control name
 		//node->Set("name", this->GetName());
+        // Recursive Visible
+        if (baseControl->GetRecursiveVisible() != GetRecursiveVisible())
+        {
+            node->Set("recursiveVisible", GetRecursiveVisible());
+        }
 		// Visible
 		if (baseControl->GetVisible() != this->GetVisible())
 		{
@@ -2099,11 +2168,10 @@ namespace DAVA
 		}
 
 		// Color
-		Color color =  this->GetBackground()->GetColor();
+		const Color &color =  this->GetBackground()->GetColor();
 		if (baseControl->GetBackground()->color != color)
 		{		
-			Vector4 colorVector4(color.r, color.g, color.b, color.a);
-			nodeValue->SetVector4(colorVector4);
+			nodeValue->SetColor(color);
 			node->Set("color", nodeValue);
 		}
 		// Frame
@@ -2322,6 +2390,13 @@ namespace DAVA
 			bool clipContents = loader->GetBoolFromYamlNode(clipNode, false); 
 			SetClipContents(clipContents);
 		}
+
+        const YamlNode * recursiveVisibleNode = node->Get("recursiveVisible");
+        if(recursiveVisibleNode)
+        {
+            bool isVisible = loader->GetBoolFromYamlNode(recursiveVisibleNode, true);
+            SetRecursiveVisible(isVisible);
+        }
 		
 		const YamlNode * visibleNode = node->Get("visible");
 		if(visibleNode)
@@ -2511,7 +2586,13 @@ namespace DAVA
 		SetVisible(params[0], params[1]);
 		delete[]params;
 	}
-	
+
+    void UIControl::RecursiveVisibleAnimationCallback( BaseObject * caller, void * param, void *callerData )
+    {
+        bool visible = ( pointer_size(param) > 0 );
+        SetRecursiveVisible(visible);
+    }
+
 	Animation * UIControl::VisibleAnimation(bool visible, bool hierarhic/* = true*/, int32 track/* = 0*/)
 	{
 		//TODO: change to bool animation - Dizz
@@ -2523,6 +2604,14 @@ namespace DAVA
 		animation->Start(track);
 		return animation;
 	}
+
+    Animation * UIControl::RecursiveVisibleAnimation(bool visible, int32 track/* = 0*/)
+    {
+        Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
+        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::RecursiveVisibleAnimationCallback, (void*)(pointer_size)visible));
+        animation->Start(track);
+        return animation;
+    }
 	
 	void UIControl::RemoveControlAnimationCallback(BaseObject * caller, void * param, void *callerData)
 	{
@@ -2800,11 +2889,6 @@ namespace DAVA
 		return position;
 	}
 
-	float32 UIControl::Round(float32 value)
-	{
-		return (float32)((value > 0.0) ? floor(value+ 0.5) : ceil(value - 0.5));
-	}
-	
 	void UIControl::RecalculatePivotPoint(const Rect &newRect)
 	{
 		Rect oldRect = this->GetRect();
@@ -2866,22 +2950,67 @@ namespace DAVA
 		initialState = newState;
 	}
 
-	YamlNode * UIControl::SaveToYamlNodeRecursive(UIYamlLoader* loader, UIControl* control,  YamlNode* rootNode)
-	{
-		YamlNode* controlNode = control->SaveToYamlNode(loader);
-		
-		if (rootNode)
-		{
-			rootNode->AddNodeToMap(control->GetName(), controlNode);
-		}
-		
-		const List<UIControl*>& children = control->GetRealChildren();
-		for (List<UIControl*>::const_iterator childIter = children.begin(); childIter != children.end(); childIter ++)
-		{
-			UIControl* childControl = (*childIter);
-			SaveToYamlNodeRecursive(loader, childControl, controlNode);
-		}
-		
-		return controlNode;
-	}
+    void UIControl::RegisterInputProcessor()
+    {
+        inputProcessorsCount++;
+        if (parent)
+        {
+            parent->RegisterInputProcessor();
+        }
+    }
+
+    void UIControl::RegisterInputProcessors(int32 processorsCount)
+    {
+        inputProcessorsCount += processorsCount;
+        if (parent)
+        {
+            parent->RegisterInputProcessors(processorsCount);
+        }
+    }
+
+    void UIControl::UnregisterInputProcessor()
+    {
+        inputProcessorsCount--;
+        DVASSERT(inputProcessorsCount >= 0);
+        if (parent)
+        {
+            parent->UnregisterInputProcessor();
+        }
+    }
+    void UIControl::UnregisterInputProcessors(int32 processorsCount)
+    {
+        inputProcessorsCount -= processorsCount;
+        DVASSERT(inputProcessorsCount >= 0);
+        if (parent)
+        {
+            parent->UnregisterInputProcessors(processorsCount);
+        }
+    }
+
+    void UIControl::DumpInputs(int32 depthLevel)
+    {
+        String outStr;
+        for (int32 i = 0; i < depthLevel; i++)
+        {
+            outStr += "| ";
+        }
+        outStr += "\\-";
+        outStr += name;
+        if (inputProcessorsCount > 0)
+        {
+            outStr += " ";
+            outStr += Format("%d", inputProcessorsCount);
+        }
+
+        if (inputEnabled)
+        {
+            outStr += " ***";
+        }
+        Logger::Info("%s", outStr.c_str());
+        List<UIControl*>::iterator it = childs.begin();
+        for(; it != childs.end(); ++it)
+        {
+            (*it)->DumpInputs(depthLevel + 1);
+        }
+    }
 }

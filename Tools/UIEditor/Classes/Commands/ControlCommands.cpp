@@ -109,6 +109,80 @@ void ControlResizeCommand::ApplyResize(const Rect& prevRect, const Rect& updated
     SAFE_DELETE(baseMetadata);
 }
 
+ControlsAdjustSizeCommand::ControlsAdjustSizeCommand(const HierarchyTreeController::SELECTEDCONTROLNODES& controls)
+{
+	this->selectedControls = controls;
+}
+
+void ControlsAdjustSizeCommand::Execute()
+{
+	// Apply resize and save previous size data for possible undo action
+	this->prevSizeData = ApplyAjustedSize(selectedControls);
+
+    CommandsController::Instance()->EmitUpdatePropertyValues();
+}
+
+void ControlsAdjustSizeCommand::Rollback()
+{
+	UndoAdjustedSize(prevSizeData);
+
+    // Notify the Grid some properties were changed.
+    CommandsController::Instance()->EmitUpdatePropertyValues();
+}
+
+ControlsPositionData ControlsAdjustSizeCommand::ApplyAjustedSize(HierarchyTreeController::SELECTEDCONTROLNODES& controls)
+{
+	ControlsPositionData resultData;
+	
+	for (HierarchyTreeController::SELECTEDCONTROLNODES::iterator iter = controls.begin(); iter != controls.end(); ++iter)
+	{
+		HierarchyTreeControlNode* control = (*iter);
+		UIControl* uiControl = control->GetUIObject();
+		int32 nodeId = control->GetId();
+		
+		if (uiControl)
+		{
+			// Get sprite
+			Sprite* sprite = uiControl->GetSprite();
+			Rect prevRect = uiControl->GetRect();
+			Rect updatedRect = prevRect;
+			
+			if (sprite)
+			{
+				// Save control size data for undo
+				resultData.AddControl(uiControl);
+				// Set new size of updated rect
+				updatedRect.dx = sprite->GetWidth();
+				updatedRect.dy = sprite->GetHeight();
+			
+				BaseMetadata* baseMetadata = GetMetadataForTreeNode(nodeId);
+
+   				// This command is NOT state-aware and contains one and only param.
+   				baseMetadata->SetActiveParamID(0);
+  		 		baseMetadata->ApplyResize(prevRect, updatedRect);
+    
+  		  		SAFE_DELETE(baseMetadata);
+			}
+		}
+	}
+	
+	return resultData;
+}
+void ControlsAdjustSizeCommand::UndoAdjustedSize(const ControlsPositionData& sizeData)
+{
+	for (Map<UIControl*, Rect>::const_iterator iter = sizeData.GetControlPositions().begin();
+		 iter != sizeData.GetControlPositions().end(); iter ++)
+	{
+		UIControl* control = iter->first;
+		Rect rect = iter->second;
+
+		if (control)
+		{
+			control->SetRect(rect);
+		}
+	}
+}
+
 ControlsAlignDistributeCommand::ControlsAlignDistributeCommand(const HierarchyTreeController::SELECTEDCONTROLNODES& controls, eAlignControlsType alignType)
 {
 	this->selectedControls = controls;
@@ -152,7 +226,7 @@ void ControlsAlignDistributeCommand::Execute()
 			
 		default:
 		{
-			DVASSERT_MSG(Format("Unknown Command Mode %i", this->commandMode), false);
+			DVASSERT_MSG(Format("Unknown Command Mode %i", this->commandMode).c_str(), false);
 			break;
 		}
 	}
@@ -162,3 +236,40 @@ void ControlsAlignDistributeCommand::Rollback()
 {
 	AlignDistributeManager::UndoAlignDistribute(prevPositionData);
 }
+
+ControlRenameCommand::ControlRenameCommand(HierarchyTreeNode::HIERARCHYTREENODEID nodeId, const QString& originalName, const QString& newName)
+{
+	this->nodeId = nodeId;
+	this->originalName = originalName;
+	this->newName = newName;
+}
+
+void ControlRenameCommand::Execute()
+{
+	ApplyRename(originalName, newName);
+	
+	// Notify the Grid some properties were changed.
+    CommandsController::Instance()->EmitUpdatePropertyValues();
+}
+
+void ControlRenameCommand::Rollback()
+{
+	// Return the controls to the previous size.
+	ApplyRename(newName, originalName);
+	
+    // Notify the Grid some properties were changed.
+    CommandsController::Instance()->EmitUpdatePropertyValues();
+}
+
+void ControlRenameCommand::ApplyRename(const QString& prevName, const QString& updatedName)
+{
+	
+    BaseMetadata* baseMetadata = GetMetadataForTreeNode(nodeId);
+
+    // This command is NOT state-aware and contains one and only param.
+    baseMetadata->SetActiveParamID(0);
+    baseMetadata->ApplyRename(prevName, updatedName);
+    
+    SAFE_DELETE(baseMetadata);
+}
+

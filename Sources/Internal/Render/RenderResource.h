@@ -31,6 +31,7 @@
 #define __DAVAENGINE_RESOURCE_H__
 
 #include "Base/BaseObject.h"
+#include "Platform/Mutex.h"
 
 namespace DAVA
 {
@@ -83,6 +84,7 @@ public:
 
 
 	static List<RenderResource*> resourceList;
+    static Mutex resourceListMutex;
 	static void LostAllResources();
 	static void InvalidateAllResources();
 	static void SaveAllResourcesToSystemMem();

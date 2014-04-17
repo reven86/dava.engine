@@ -30,22 +30,24 @@
 
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneSignals.h"
-#include "Scene/SceneHelper.h"
 
-#include "SceneEditor/EditorSettings.h"
-#include "SceneEditor/SceneValidator.h"
+#include "Qt/Settings/SettingsManager.h"
+#include "Deprecated/SceneValidator.h"
 #include "Commands2/VisibilityToolActions.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/RulerToolActions.h"
 #include "Commands2/LandscapeEditorDrawSystemActions.h"
-
+#include "Project/ProjectManager.h"
 #include "CommandLine/SceneExporter/SceneExporter.h"
 
 // framework
 #include "Scene3D/SceneFileV2.h"
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
+#include "Scene3D/Systems/RenderUpdateSystem.h"
+
+const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
 SceneEditor2::SceneEditor2()
 	: Scene()
@@ -58,53 +60,56 @@ SceneEditor2::SceneEditor2()
 	commandStack.SetNotify(notify);
 	SafeRelease(notify);
 
-	cameraSystem = new SceneCameraSystem(this);
-	AddSystem(cameraSystem, (1 << DAVA::Component::CAMERA_COMPONENT));
-
 	gridSystem = new SceneGridSystem(this);
-	AddSystem(gridSystem, 0);
-	
+	AddSystem(gridSystem, 0, true, renderUpdateSystem);
+
+    cameraSystem = new SceneCameraSystem(this);
+    AddSystem(cameraSystem, (1 << DAVA::Component::CAMERA_COMPONENT), true, transformSystem);
+
 	collisionSystem = new SceneCollisionSystem(this);
-	AddSystem(collisionSystem, 0);
+	AddSystem(collisionSystem, 0, true, renderUpdateSystem);
 
 	hoodSystem = new HoodSystem(this, cameraSystem);
-	AddSystem(hoodSystem, 0);
+	AddSystem(hoodSystem, 0, true, renderUpdateSystem);
 
 	selectionSystem = new SceneSelectionSystem(this, collisionSystem, hoodSystem);
-	AddSystem(selectionSystem, 0);
-	
-	particlesSystem = new EditorParticlesSystem(this);
-	AddSystem(particlesSystem, (1 << DAVA::Component::PARTICLE_EFFECT_COMPONENT));
+	AddSystem(selectionSystem, 0, true, renderUpdateSystem);
 
 	modifSystem = new EntityModificationSystem(this, collisionSystem, cameraSystem, hoodSystem);
-	AddSystem(modifSystem, 0);
+	AddSystem(modifSystem, 0, true, renderUpdateSystem);
 
 	landscapeEditorDrawSystem = new LandscapeEditorDrawSystem(this);
-	AddSystem(landscapeEditorDrawSystem, 0);
+	AddSystem(landscapeEditorDrawSystem, 0, true, renderUpdateSystem);
 
 	heightmapEditorSystem = new HeightmapEditorSystem(this);
-	AddSystem(heightmapEditorSystem, 0);
+	AddSystem(heightmapEditorSystem, 0, true, renderUpdateSystem);
 
 	tilemaskEditorSystem = new TilemaskEditorSystem(this);
-	AddSystem(tilemaskEditorSystem, 0);
+	AddSystem(tilemaskEditorSystem, 0, true, renderUpdateSystem);
 
 	customColorsSystem = new CustomColorsSystem(this);
-	AddSystem(customColorsSystem, 0);
+	AddSystem(customColorsSystem, 0, true, renderUpdateSystem);
 
 	visibilityToolSystem = new VisibilityToolSystem(this);
-	AddSystem(visibilityToolSystem, 0);
+	AddSystem(visibilityToolSystem, 0, true, renderUpdateSystem);
+
+    grassEditorSystem = new GrassEditorSystem(this);
+    AddSystem(grassEditorSystem, 0);
 
 	rulerToolSystem = new RulerToolSystem(this);
-	AddSystem(rulerToolSystem, 0);
+	AddSystem(rulerToolSystem, 0, true, renderUpdateSystem);
 
 	structureSystem = new StructureSystem(this);
-	AddSystem(structureSystem, 0);
+	AddSystem(structureSystem, 0, true, renderUpdateSystem);
 
-	editorLightSystem = new EditorLightSystem(this);
-	AddSystem(editorLightSystem, 1 << Component::LIGHT_COMPONENT);
+    particlesSystem = new EditorParticlesSystem(this);
+    AddSystem(particlesSystem, (1 << DAVA::Component::PARTICLE_EFFECT_COMPONENT), true, renderUpdateSystem);
 
 	textDrawSystem = new TextDrawSystem(this, cameraSystem);
-	AddSystem(textDrawSystem, 0);
+    AddSystem(textDrawSystem, 0, true, renderUpdateSystem);
+
+    editorLightSystem = new EditorLightSystem(this);
+    AddSystem(editorLightSystem, 1 << Component::LIGHT_COMPONENT, true, renderUpdateSystem);
 
 	debugDrawSystem = new DebugDrawSystem(this);
 	AddSystem(debugDrawSystem, 0);
@@ -114,18 +119,40 @@ SceneEditor2::SceneEditor2()
 	
 	ownersSignatureSystem = new OwnersSignatureSystem(this);
 	AddSystem(ownersSignatureSystem, 0);
+    
+    staticOcclusionBuildSystem = new StaticOcclusionBuildSystem(this);
+    AddSystem(staticOcclusionBuildSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT) | (1 << Component::TRANSFORM_COMPONENT), true, renderUpdateSystem);
 
-	SetShadowBlendMode(ShadowVolumeRenderPass::MODE_BLEND_MULTIPLY);
+	materialSystem = new EditorMaterialSystem(this);
+	AddSystem(materialSystem, 1 << Component::RENDER_COMPONENT, true, renderUpdateSystem);
+
+	SetShadowBlendMode(ShadowPassBlendMode::MODE_BLEND_MULTIPLY);
 
 	SceneSignals::Instance()->EmitOpened(this);
 
 	wasChanged = false;
+    
+    //RenderTechnique * technique1 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/PixelLit.Opaque.material"));
+    //FastNameSet set;
+    //technique1->GetPassByIndex(technique1->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
+
+    //RenderTechnique * technique2 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/PixelLit.Alphatest.material"));
+    //technique2->GetPassByIndex(technique2->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
+
+    //RenderTechnique * technique3 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Opaque.material"));
+    //technique3->GetPassByIndex(technique3->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
+    
+    //RenderTechnique * technique4 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Alphatest.material"));
+    //technique4->GetPassByIndex(technique4->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
+
+    //RenderTechnique * technique5 = RenderTechniqueSingleton::Instance()->RetainRenderTechniqueByName(FastName("~res:/Materials/Legacy/Textured.Alphablend.material"));
+    //technique5->GetPassByIndex(technique5->GetIndexByName(FastName("ForwardPass")))->RecompileShader(set);
 }
 
 SceneEditor2::~SceneEditor2()
 {
 	RemoveSystems();
-    
+
 	SceneSignals::Instance()->EmitClosed(this);
 }
 
@@ -146,6 +173,7 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
     
 	SceneSignals::Instance()->EmitLoaded(this);
+
 	return ret;
 }
 
@@ -215,11 +243,11 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
 {
 	SceneExporter exporter;
 	
-	KeyedArchive *keyedArchieve = EditorSettings::Instance()->GetSettings();
-    FilePath projectPath(keyedArchieve->GetString(String("ProjectPath")));
+	FilePath projectPath(ProjectManager::Instance()->CurProjectPath());
 	
 	exporter.SetInFolder(projectPath + String("DataSource/3d/"));
     exporter.SetOutFolder(projectPath + String("Data/3d/"));
+    exporter.SetOutSoundsFolder(projectPath + String("Data/Sfx/"));
 	exporter.SetGPUForExporting(newGPU);
 	Set<String> errorLog;
 
@@ -284,6 +312,11 @@ void SceneEditor2::ClearCommands(int commandId)
 	commandStack.Clear(commandId);
 }
 
+void SceneEditor2::ClearAllCommands()
+{
+    commandStack.Clear();
+}
+
 const CommandStack* SceneEditor2::GetCommandStack() const
 {
 	return (&commandStack);
@@ -317,34 +350,7 @@ void SceneEditor2::SetChanged(bool changed)
 
 void SceneEditor2::Update(float timeElapsed)
 {
-	Scene::Update(timeElapsed);
-	gridSystem->Update(timeElapsed);
-	cameraSystem->Update(timeElapsed);
-	
-	if(collisionSystem)
-		collisionSystem->Update(timeElapsed);
-
-	hoodSystem->Update(timeElapsed);
-	selectionSystem->Update(timeElapsed);
-	modifSystem->Update(timeElapsed);
-
-	if(landscapeEditorDrawSystem)
-		landscapeEditorDrawSystem->Update(timeElapsed);
-
-	heightmapEditorSystem->Update(timeElapsed);
-	tilemaskEditorSystem->Update(timeElapsed);
-	customColorsSystem->Update(timeElapsed);
-	visibilityToolSystem->Update(timeElapsed);
-	rulerToolSystem->Update(timeElapsed);
-	
-	if(structureSystem)
-		structureSystem->Update(timeElapsed);
-	
-	particlesSystem->Update(timeElapsed);
-	textDrawSystem->Update(timeElapsed);
-	
-	if(editorLightSystem)
-		editorLightSystem->Process();
+    Scene::Update(timeElapsed);
 }
 
 void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
@@ -361,11 +367,13 @@ void SceneEditor2::PostUIEvent(DAVA::UIEvent *event)
 	customColorsSystem->ProcessUIEvent(event);
 	visibilityToolSystem->ProcessUIEvent(event);
 	rulerToolSystem->ProcessUIEvent(event);
+    grassEditorSystem->ProcessUIEvent(event);
 
 	if(structureSystem)
 		structureSystem->ProcessUIEvent(event);
 
 	particlesSystem->ProcessUIEvent(event);
+	materialSystem->ProcessUIEvent(event);
 }
 
 void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
@@ -375,8 +383,19 @@ void SceneEditor2::SetViewportRect(const DAVA::Rect &newViewportRect)
 
 void SceneEditor2::Draw()
 {
+
     RenderManager::Instance()->ClearStats();
+	
+//	NMaterial* global = renderSystem->GetMaterialSystem()->GetMaterial(MATERIAL_FOR_REBIND);
+//	DVASSERT(global);
+//	
+//	if(global)
+//	{
+//		global->Rebind();
+//	}
+	
 	Scene::Draw();
+    
     renderStats = RenderManager::Instance()->GetStats();
 
 	if(isHUDVisible)
@@ -391,9 +410,15 @@ void SceneEditor2::Draw()
 
 		if(structureSystem)
 			structureSystem->Draw();
-	}
 
+		materialSystem->Draw();
+	}
+ 
+    //VI: need to call Setup2DDrawing in order to draw 2d to render targets correctly
+    Setup2DDrawing();
 	tilemaskEditorSystem->Draw();
+    //VI: restore 3d camera state
+    Setup3DDrawing();
 
 	if(isHUDVisible)
 	{
@@ -418,6 +443,7 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 	selectionSystem->ProcessCommand(command, redo);
 	hoodSystem->ProcessCommand(command, redo);
 	modifSystem->ProcessCommand(command, redo);
+    grassEditorSystem->ProcessCommand(command, redo);
 	
 	if(structureSystem)
 		structureSystem->ProcessCommand(command, redo);
@@ -429,6 +455,11 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 	
 	if(ownersSignatureSystem)
 		ownersSignatureSystem->ProcessCommand(command, redo);
+
+	materialSystem->ProcessCommand(command, redo);
+
+    if (landscapeEditorDrawSystem)
+        landscapeEditorDrawSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )
@@ -495,27 +526,25 @@ const Color SceneEditor2::GetShadowColor() const
 	if(GetRenderSystem())
 		return GetRenderSystem()->GetShadowRectColor();
 
-	return Color::White();
+	return Color::White;
 }
 
-void SceneEditor2::SetShadowBlendMode( ShadowVolumeRenderPass::eBlend blend )
+void SceneEditor2::SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend)
 {
 	if(GetRenderSystem())
 	{
-		ShadowVolumeRenderPass *shadowPass = DynamicTypeCheck<ShadowVolumeRenderPass*>( GetRenderSystem()->GetRenderPass(PASS_SHADOW_VOLUME) );
-		shadowPass->SetBlendMode(blend);
+		GetRenderSystem()->SetShadowBlendMode(blend);
 	}
 }
 
-ShadowVolumeRenderPass::eBlend SceneEditor2::GetShadowBlendMode() const
+DAVA::ShadowPassBlendMode::eBlend SceneEditor2::GetShadowBlendMode() const
 {
 	if(GetRenderSystem())
 	{
-		ShadowVolumeRenderPass *shadowPass = DynamicTypeCheck<ShadowVolumeRenderPass*>( GetRenderSystem()->GetRenderPass(PASS_SHADOW_VOLUME) );
-		return shadowPass->GetBlendMode();
+		return GetRenderSystem()->GetShadowBlendMode();
 	}
 
-	return ShadowVolumeRenderPass::MODE_BLEND_COUNT;
+	return DAVA::ShadowPassBlendMode::MODE_BLEND_COUNT;
 }
 
 const RenderManager::Stats & SceneEditor2::GetRenderStats() const
@@ -523,11 +552,11 @@ const RenderManager::Stats & SceneEditor2::GetRenderStats() const
     return renderStats;
 }
 
-void SceneEditor2::DisableTools(int32 toolFlags)
+void SceneEditor2::DisableTools(int32 toolFlags, bool saveChanges /*= true*/)
 {
-	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR)
+	if (toolFlags & LANDSCAPE_TOOL_CUSTOM_COLOR )
 	{
-		Exec(new ActionDisableCustomColors(this));
+		Exec(new ActionDisableCustomColors(this, saveChanges));
 	}
 	
 	if (toolFlags & LANDSCAPE_TOOL_VISIBILITY)
@@ -554,6 +583,11 @@ void SceneEditor2::DisableTools(int32 toolFlags)
 	{
 		Exec(new ActionDisableNotPassable(this));
 	}
+
+    if(toolFlags & LANDSCAPE_TOOL_GRASS_EDITOR)
+    {
+        grassEditorSystem->EnableGrassEdit(false);
+    }
 }
 
 bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
@@ -589,6 +623,11 @@ bool SceneEditor2::IsToolsEnabled(int32 toolFlags)
 	{
 		res |= landscapeEditorDrawSystem->IsNotPassableTerrainEnabled();
 	}
+
+    if(toolFlags & LANDSCAPE_TOOL_GRASS_EDITOR)
+    {
+        res |= grassEditorSystem->IsEnabledGrassEdit();
+    }
 
 	return res;
 }
@@ -626,25 +665,32 @@ int32 SceneEditor2::GetEnabledTools()
 	{
 		toolFlags |= LANDSCAPE_TOOL_NOT_PASSABLE_TERRAIN;
 	}
-	
+
+    if(grassEditorSystem->IsEnabledGrassEdit())
+    {
+        toolFlags |= LANDSCAPE_TOOL_GRASS_EDITOR;
+    }
+
 	return toolFlags;
 }
 
 Entity* SceneEditor2::Clone( Entity *dstNode /*= NULL*/ )
 {
-	if(!dstNode)
-	{
-		DVASSERT_MSG(IsPointerToExactClass<SceneEditor2>(this), "Can clone only SceneEditor2");
-		dstNode = new SceneEditor2();
-	}
-	
-	return Scene::Clone(dstNode);
+    if(!dstNode)
+    {
+        DVASSERT_MSG(IsPointerToExactClass<SceneEditor2>(this), "Can clone only SceneEditor2");
+        dstNode = new SceneEditor2();
+    }
+
+    return Scene::Clone(dstNode);
 }
 
 SceneEditor2 * SceneEditor2::CreateCopyForExport()
 {
 	SceneEditor2 *clonedScene = new SceneEditor2();
 	clonedScene->RemoveSystems();
+
+    clonedScene->SetGlobalMaterial(GetGlobalMaterial());
 
 	return (SceneEditor2 *)Clone(clonedScene);
 }
@@ -674,6 +720,12 @@ void SceneEditor2::RemoveSystems()
 		RemoveSystem(collisionSystem);
 		SafeDelete(collisionSystem);
 	}
+
+    if(materialSystem)
+    {
+        RemoveSystem(materialSystem);
+        SafeDelete(materialSystem);
+    }
 	
 }
 
@@ -685,3 +737,18 @@ void SceneEditor2::MarkAsChanged()
 		SceneSignals::Instance()->EmitModifyStatusChanged(this, wasChanged);
 	}
 }
+
+void SceneEditor2::Setup2DDrawing()
+{
+    RenderManager::Instance()->Setup2DMatrices();
+}
+
+void SceneEditor2::Setup3DDrawing()
+{
+    if (currentCamera)
+    {
+        currentCamera->SetupDynamicParameters();
+    }
+}
+
+

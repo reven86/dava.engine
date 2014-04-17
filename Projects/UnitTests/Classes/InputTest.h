@@ -73,17 +73,24 @@ private:
 	UITextField* passwordTextField;
 
 	UIStaticText* staticText;
+    
 	UIButton* testButton;
 	UIButton* removeFromParentButton;
+    UIButton* disableInEventButton;
 	
 	UIWebView* webView1;
 	UIWebView* webView2;
 	UIWebView* webView3;
 	
+    UIStaticText* cursorPositionStaticText;
+
 	void* delegate;
 
 	bool testFinished;
 	float onScreenTime;
+    
+    float cursorUpdateTime;
+    bool cursorMoveForward;
 };
 
 #endif /* defined(__TemplateProjectMacOS__InputTest__) */

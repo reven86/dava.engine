@@ -43,12 +43,12 @@ class UpdateSystem : public SceneSystem
 {
 public:
 	UpdateSystem(Scene * scene);
-	virtual void Process();
+	virtual void Process(float32 timeElapsed);
 	virtual void AddEntity(Entity * entity);
 	virtual void RemoveEntity(Entity * entity);
 
-	void UpdatePreTransform();
-	void UpdatePostTransform();
+	void UpdatePreTransform(float32 timeElapsed);
+	void UpdatePostTransform(float32 timeElapsed);
 
 private:
 	Vector<IUpdatableBeforeTransform*> updatesBeforeTransform;

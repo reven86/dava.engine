@@ -38,13 +38,14 @@
 #define IMPLEMENT_POOL_ALLOCATOR(TYPE, poolSize) \
 	void * operator new(std::size_t size) \
 	{ \
-		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator<TYPE>(poolSize); \
+        DVASSERT(size == sizeof(TYPE)); /*probably you are allocating child class*/ \
+		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator(typeid(TYPE).name(), sizeof(TYPE), poolSize); \
 		return alloc->New(); \
 	} \
 	 \
 	void operator delete(void * ptr) \
 	{ \
-		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator<TYPE>(poolSize); \
+		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator(typeid(TYPE).name(), sizeof(TYPE), poolSize); \
 		alloc->Delete(ptr); \
 	} \
 
@@ -57,8 +58,7 @@ public:
 	AllocatorFactory();
 	virtual ~AllocatorFactory();
 
-	template<class T>
-	FixedSizePoolAllocator * GetAllocator(int32 poolLength);
+	FixedSizePoolAllocator * GetAllocator(const String& className, uint32 classSize, int32 poolLength);
 
 	void Dump();
 
@@ -66,19 +66,6 @@ private:
 	Map<String, FixedSizePoolAllocator*> allocators;
 };
 
-template<class T>
-FixedSizePoolAllocator * AllocatorFactory::GetAllocator(int32 poolLength)
-{
-	String className = typeid(T).name();
-	FixedSizePoolAllocator * alloc = allocators[className];
-	if(0 == alloc)
-	{
-		alloc = new FixedSizePoolAllocator(sizeof(T), poolLength);
-		allocators[className] = alloc;
-	}
-
-	return alloc;
-}
 
 };
 

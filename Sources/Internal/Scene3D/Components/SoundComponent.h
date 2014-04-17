@@ -34,42 +34,61 @@
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
+#include "Sound/SoundEvent.h"
 
 namespace DAVA 
 {
 
-class SoundEvent;
-class SoundUpdateSystem;
 class SoundComponent : public Component
 {
+public:
+    SoundComponent();
+    virtual ~SoundComponent();
+
+    virtual Component * Clone(Entity * toEntity);
+
+    virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    virtual void Deserialize(KeyedArchive *archive, SerializationContext *serializationContext);
+    
+    inline uint32 GetEventsCount() const;
+    inline SoundEvent * GetSoundEvent(uint32 index) const;
+
+    void AddSoundEvent(SoundEvent * event);
+    void RemoveSoundEvent(SoundEvent * event);
+    void RemoveAllEvents();
+    
+    void SetLocalDirection(const Vector3 & direction);
+    inline const Vector3 & GetLocalDirection() const;
+
+    IMPLEMENT_COMPONENT_TYPE(SOUND_COMPONENT);
+    
 protected:
-	virtual ~SoundComponent();
-public:
-	SoundComponent();
-
-	IMPLEMENT_COMPONENT_TYPE(SOUND_COMPONENT);
-
-	SoundEvent * GetSoundEvent();
-	const String & GetEventName();
-	void SetEventName(const String & eventName);
-
-	virtual Component * Clone(Entity * toEntity);
-	virtual void Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
-	virtual void Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile);
-
-private:
-	void SetSoundEvent(SoundEvent * sEvent);
-
-	SoundEvent * soundEvent;
-	String eventName;
-
-	friend class SoundUpdateSystem;
+    Vector<SoundEvent *> events;
+    Vector3 localDirection;
 
 public:
-	INTROSPECTION_EXTEND(SoundComponent, Component,
-		PROPERTY("eventName", "eventName", GetEventName, SetEventName, I_SAVE | I_VIEW | I_EDIT)
-		);
+    INTROSPECTION_EXTEND(SoundComponent, Component,
+        MEMBER(localDirection, "localDirection", I_SAVE | I_VIEW | I_EDIT)
+        );
 };
+
+//Inline
+inline SoundEvent * SoundComponent::GetSoundEvent(uint32 index) const
+{
+    DVASSERT(index >= 0 && index < (uint32)events.size());
+    return events[index];
+}
+
+inline uint32 SoundComponent::GetEventsCount() const
+{
+    return events.size();
+}
+
+inline const Vector3 & SoundComponent::GetLocalDirection() const
+{
+    return localDirection;
+}
 
 };
 

@@ -87,8 +87,15 @@ ResizeType UIControlResizeHelper::GetRotatedResizeType(ResizeType unrotatedResiz
 
     return rotatedResizeType;
 }
-    
-Rect UIControlResizeHelper::ResizeControl(ResizeType unrotatedResizeType, UIControl* uiControl, const Rect& resizeRect, const Vector2& delta)
+
+
+void UIControlResizeHelper::ResizeControl(ResizeType unrotatedResizeType, UIControl* uiControl, const Rect& resizeRect, const Vector2& delta)
+{
+    Rect finalResizeRect = GetResizeRect(unrotatedResizeType, uiControl, resizeRect, delta);
+    uiControl->SetRect(finalResizeRect);
+}
+
+Rect UIControlResizeHelper::GetResizeRect(ResizeType unrotatedResizeType, UIControl* uiControl, const Rect& resizeRect, const Vector2& delta)
 {
     if (!uiControl)
     {

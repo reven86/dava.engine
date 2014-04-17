@@ -43,6 +43,7 @@ void UIAggregatorMetadata::InitializeControl(const String& controlName, const Ve
 		
         control->SetName(controlName);
         control->SetPosition(position);
+        control->SetInputEnabled(GetInitialInputEnabled());
         
         control->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
@@ -65,4 +66,10 @@ QString UIAggregatorMetadata::GetUIControlClassName()
 	}
 	
 	return UIControlMetadata::GetUIControlClassName();
+}
+
+void UIAggregatorMetadata::SetVisible(const bool value)
+{
+    // UIAggregator must update its children hierarchically.
+    SetUIControlVisible(value, true);
 }

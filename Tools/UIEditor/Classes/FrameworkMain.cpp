@@ -30,46 +30,34 @@
 
 #include "DAVAEngine.h"
 #include "GameCore.h"
- 
-using namespace DAVA;
+#include "version.h"
 
+using namespace DAVA;
 
 void FrameworkDidLaunched()
 {
-/*#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-	KeyedArchive * appOptions = new KeyedArchive();
-	appOptions->SetInt32("orientation", Core::SCREEN_ORIENTATION_LANDSCAPE_RIGHT);
-    appOptions->SetInt32("renderer", Core::RENDERER_OPENGL_ES_2_0);
-	
-	DAVA::Core::Instance()->SetVirtualScreenSize(960, 480);
-	DAVA::Core::Instance()->RegisterAvailableResourceSize(960, 480, "Gfx");
+    KeyedArchive * appOptions = new KeyedArchive();
 
-#else*/
-	KeyedArchive * appOptions = new KeyedArchive();
-	
-	appOptions->SetInt32("width", 700);
-	appOptions->SetInt32("height", 500);
+    appOptions->SetInt32("width", 700);
+    appOptions->SetInt32("height", 500);
 
-// 	appOptions->SetInt("fullscreen.width",	1280);
-// 	appOptions->SetInt("fullscreen.height", 800);
-	
-	appOptions->SetInt32("fullscreen", 0);
-	appOptions->SetInt32("bpp", 32);
-	appOptions->SetBool("trackFont", true);
+    appOptions->SetInt32("fullscreen", 0);
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetBool("trackFont", true);
 
-//	DAVA::Core::Instance()->SetVirtualScreenSize(700, 500);
-//	DAVA::Core::Instance()->RegisterAvailableResourceSize(700, 500, "Gfx");
-	Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
-//#endif
+    appOptions->SetString("title", DAVA::Format("DAVA Framework - UIEditor | %s-%s", DAVAENGINE_VERSION, UI_EDITOR_VERSION));
 
-	Core::Instance()->SetOptions(appOptions);
+    Core::Instance()->RegisterAvailableResourceSize(500, 700, "Gfx");
 
-	GameCore * core = new GameCore();
-	Core::SetApplicationCore(core);
+    Core::Instance()->SetOptions(appOptions);
+    Core::Instance()->EnableReloadResourceOnResize(false);
+
+    GameCore * core = new GameCore();
+    Core::SetApplicationCore(core);
 }
 
-
-void FrameworkWillTerminate() 
+void FrameworkWillTerminate()
 {
-
+    ApplicationCore* core = Core::GetApplicationCore();
+    SafeRelease(core);
 }

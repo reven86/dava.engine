@@ -29,18 +29,14 @@
 
 
 #include "QtUtils.h"
-#include "../../SceneEditor/SceneValidator.h"
+#include "Deprecated/SceneValidator.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
 
 #include <QMessageBox>
 #include <QToolButton>
 #include "mainwindow.h"
-#include "QtMainWindowHandler.h"
 
 #include "TexturePacker/CommandLineParser.h"
-#include "../../Commands/FileCommands.h"
-#include "../../Commands/CommandsManager.h"
-
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "DAVAEngine.h"
@@ -108,7 +104,8 @@ DAVA::WideString SizeInBytesToWideString(DAVA::float32 size)
 DAVA::Image * CreateTopLevelImage(const DAVA::FilePath &imagePathname)
 {
     Image *image = NULL;
-    Vector<Image *> imageSet = ImageLoader::CreateFromFile(imagePathname);
+    Vector<Image *> imageSet;
+    ImageLoader::CreateFromFileByContent(imagePathname, imageSet);
     if(0 != imageSet.size())
     {
         image = SafeRetain(imageSet[0]);
@@ -127,6 +124,8 @@ void ShowErrorDialog(const DAVA::Set<DAVA::String> &errors)
     Set<String>::const_iterator endIt = errors.end();
     for(Set<String>::const_iterator it = errors.begin(); it != endIt; ++it)
     {
+		Logger::Error((*it).c_str());
+
         errorMessage += *it + String("\n");
     }
     
@@ -155,7 +154,13 @@ bool IsKeyModificatorsPressed()
 
 QColor ColorToQColor(const DAVA::Color& color)
 {
-	return QColor::fromRgbF(color.r, color.g, color.b, color.a);
+    DAVA::float32 maxC = 1.0;
+
+    if(maxC < color.r) maxC = color.r;
+    if(maxC < color.g) maxC = color.g;
+    if(maxC < color.b) maxC = color.b;
+
+	return QColor::fromRgbF(color.r / maxC, color.g / maxC, color.b / maxC, DAVA::Clamp(color.a, 0.0f, 1.0f));
 }
 
 DAVA::Color QColorToColor(const QColor &qcolor)
@@ -167,20 +172,6 @@ int ShowQuestion(const DAVA::String &header, const DAVA::String &question, int b
 {
     int answer = QMessageBox::question(NULL, QString::fromStdString(header), QString::fromStdString(question),
                                        (QMessageBox::StandardButton)buttons, (QMessageBox::StandardButton)defaultButton);
-    return answer;
-}
-
-int ShowSaveSceneQuestion(DAVA::Scene *scene)
-{
-    int answer = MB_FLAG_NO;
-    
-    int32 changesCount = CommandsManager::Instance()->GetUndoQueueLength(scene);
-    if(changesCount)
-    {
-        answer = ShowQuestion("Scene was changed", "Do you want to save changes in the current scene prior to creating new one?",
-                                    MB_FLAG_YES | MB_FLAG_NO | MB_FLAG_CANCEL, MB_FLAG_CANCEL);
-    }
-    
     return answer;
 }
 

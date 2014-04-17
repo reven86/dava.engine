@@ -11,6 +11,7 @@ class QComboBox;
 class QRadioButton;
 class QLineEdit;
 class SliderWidget;
+class QDoubleSpinBox;
 
 class HeightmapEditorPanel: public LandscapeEditorBasePanel
 {
@@ -79,6 +80,8 @@ protected:
 
 	virtual void ConnectToShortcuts();
 	virtual void DisconnectFromShortcuts();
+	
+	bool eventFilter(QObject *o, QEvent *e);
 
 private:
 	SliderWidget* sliderWidgetBrushSize;
@@ -91,11 +94,12 @@ private:
 	QRadioButton* radioAverage;
 	QRadioButton* radioDropper;
 	QRadioButton* radioRelative;
-	QLineEdit* editHeight;
+	QDoubleSpinBox* editHeight;
 
 	void InitBrushImages();
 	void UpdateRadioState(HeightmapEditorSystem::eHeightmapDrawType type);
 	void SetDrawingType(HeightmapEditorSystem::eHeightmapDrawType type);
+
 
 	float32 GetBrushScaleCoef();
 	int32 BrushSizeUIToSystem(int32 uiValue);

@@ -48,6 +48,13 @@ namespace DAVA
 {
 
 class UIScreen;
+
+class ScreenSwitchListener
+{
+public:
+	virtual void OnScreenSwitched(UIScreen* newScreen) {}
+};
+
 	/**
 	 \brief	UIControlSystem it's a core of the all controls work.
 		ControlSystem managed all update, draw, appearence and disappearence of the controls.
@@ -60,6 +67,7 @@ class UIControlSystem : public Singleton<UIControlSystem>
 	
 	int frameSkip;
 	int transitionType;
+
 	
 	Vector<UIEvent> totalInputs;
 
@@ -72,6 +80,19 @@ protected:
 	UIControlSystem();
 			
 public:
+    /* 
+       Player + 6 ally bots. All visible on the screen
+    Old measures:
+    UIControlSystem::inputs: 309
+    UIControlSystem::updates: 310
+    UIControlSystem::draws: 310
+
+    New measures:
+    UIControlSystem::inputs: 42
+    */
+    int32 updateCounter;
+    int32 drawCounter;
+    int32 inputCounter;
 
 	/**
 	 \brief Sets the requested screen as current.
@@ -87,15 +108,6 @@ public:
 	 \returns currently seted screen
 	 */
 	UIScreen *GetScreen();
-
-	/**
-	 \brief Instantly replace one screen to enother.
-		Call this only on your own risk if you are really know what you need. 
-		May cause to abnormal behavior!
-		Internally used by UITransition.
-	 \param[in] Screen you want to set as current.
-	 */
-	void ReplaceScreen(UIScreen *newMainControl);
 
 	/**
 	 \brief Adds new popup to the popup container.
@@ -145,7 +157,7 @@ public:
 	 \brief Cancel all inputs for the requested control.
 	 \param[in] control to cancel inputs for.
 	 */
-	void CancelInputs(UIControl *control);
+	void CancelInputs(UIControl *control, bool hierarchical = true);
 
 	/**
 	 \brief Cancel requested input.
@@ -195,8 +207,9 @@ public:
 	 \brief Sets requested control as a exclusive input locker.
 	 All inputs goes only to the exclusive input locker if input locker is present.
 	 \param[in] control to set the input locker.
+	 \param[in] event id to cause a lock. All other events will be cancelled(excepts the locker == NULL situation).
 	 */
-	void SetExclusiveInputLocker(UIControl *locker);
+	void SetExclusiveInputLocker(UIControl *locker, int32 lockEventId);
 
 	/**
 	 \brief Returns current exclusive input locker. Returns NULL if exclusive input locker is not present.
@@ -291,14 +304,42 @@ public:
 	Vector2 GetInputOffset() const { return inputOffset; };
 	float32 GetScaleFactor() const { return scaleFactor; };
 	
+	void AddScreenSwitchListener(ScreenSwitchListener * listener);
+	void RemoveScreenSwitchListener(ScreenSwitchListener * listener);
+
+	/**
+	 \brief Disallow screen switch.
+	 Locking screen switch or incrementing lock counter.
+	 \returns current screen switch lock counter
+	 */
+	DAVA::int32 LockSwitch();
+
+	/**
+	 \brief Allow screen switch.
+	 Decrementing lock counter if counter is zero unlocking screen switch.
+	 \returns current screen switch lock counter
+	 */
+	DAVA::int32 UnlockSwitch();
+
 private:
+	/**
+	 \brief Instantly replace one screen to enother.
+		Call this only on your own risk if you are really know what you need. 
+		May cause to abnormal behavior!
+		Internally used by UITransition.
+	 \param[in] Screen you want to set as current.
+	 */
+	void ReplaceScreen(UIScreen *newMainControl);
 
 	void ProcessScreenLogic();
 
-	
+	DAVA::Vector<ScreenSwitchListener*> screenSwitchListeners;
+
 	UIScreen * currentScreen;
 	UIScreen * nextScreen;
 	UIScreen * prevScreen;
+
+	DAVA::int32 screenLockCount;
 
 	bool removeCurrentScreen;
 	

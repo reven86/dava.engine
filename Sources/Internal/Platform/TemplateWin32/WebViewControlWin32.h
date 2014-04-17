@@ -33,11 +33,13 @@
 
 #include <MsHTML.h>
 
-#include "../../UI/IWebViewControl.h"
-using namespace DAVA;
+#include "UI/IWebViewControl.h"
+#include "FileSystem/FilePath.h"
 
 // Helper class to contain Web Browser.
 interface IWebBrowser2;
+namespace DAVA {
+
 class WebBrowserContainer : IOleClientSite, IOleInPlaceSite
 {
 public:
@@ -53,6 +55,9 @@ public:
 
 	// Open the URL.
 	bool OpenUrl(const WCHAR* urlToOpen);
+
+    bool OpenFromBuffer(const String& buffer, const FilePath& basePath);
+    bool DoOpenBuffer();
 
 	// COM stuff;
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject);
@@ -86,8 +91,7 @@ public:
 	HRESULT __stdcall OnShowWindow(BOOL) { return S_OK; }
 	HRESULT __stdcall RequestNewObjectLayout() { return E_NOTIMPL; }
 
-	void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 protected:
 	// Parent window.
 	HWND hwnd;
@@ -96,6 +100,10 @@ protected:
 	IWebBrowser2* webBrowser;
 
 	void* sink;
+
+	bool openFromBufferQueued;
+	String bufferToOpen; // temporary buffer
+	FilePath bufferToOpenPath;
 };
 
 // Web View Control for Win32.
@@ -111,11 +119,13 @@ public:
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
 	
-	// Size/pos/visibility changes.
+    void OpenFromBuffer(const String& string, const FilePath& basePath);
+
+    // Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
 	virtual void SetVisible(bool isVisible, bool hierarchic);
 
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
+	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 
 protected:
 	// Initialize the COM and create the browser container.
@@ -128,4 +138,5 @@ protected:
 	WebBrowserContainer* browserContainer;
 };
 
+};
 #endif //__WEBVIEWCONTROL_WIN32_H__

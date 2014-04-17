@@ -43,45 +43,70 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity *entity, btCollisionWo
 
 		DAVA::AABBox3 commonBox;
 
+        int maxVertexCount = 0;
+        int bestLodIndex = 0;
+        int curSwitchIndex = renderObject->GetSwitchIndex();
+
+        // search for best lod index
+        for(DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+        {
+            int batchLodIndex;
+            int batchSwitchIndex;
+
+            DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
+            int vertexCount = batch->GetPolygonGroup()->GetVertexCount();
+            if(vertexCount > maxVertexCount && curSwitchIndex == batchSwitchIndex)
+            {
+                bestLodIndex = batchLodIndex;
+                maxVertexCount = vertexCount;
+            }
+        }
+
 		for(DAVA::uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
 		{
-			DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i);
-			DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
+            int batchLodIndex;
+            int batchSwitchIndex;
 
-			if(NULL != pg)
-			{
-				// is this the first polygon in cycle
-				if(!anyPolygonAdded)
-				{
-					anyPolygonAdded = true;
-					btTriangles = new btTriangleMesh();
-				}
+            DAVA::RenderBatch* batch = renderObject->GetRenderBatch(i, batchLodIndex, batchSwitchIndex);
+            if(batchLodIndex == bestLodIndex && batchSwitchIndex == curSwitchIndex)
+            {
+			    DAVA::PolygonGroup* pg = batch->GetPolygonGroup();
 
-				for(int i = 0; i < pg->indexCount; i += 3 )
-				{
-					DAVA::uint16 index0 = pg->indexArray[i];
-					DAVA::uint16 index1 = pg->indexArray[i+1];
-					DAVA::uint16 index2 = pg->indexArray[i+2];
+			    if(NULL != pg)
+			    {
+				    // is this the first polygon in cycle
+				    if(!anyPolygonAdded)
+				    {
+					    anyPolygonAdded = true;
+					    btTriangles = new btTriangleMesh();
+				    }
 
-					DAVA::Vector3 v;
-					pg->GetCoord(index0, v);
-					v = v * curEntityTransform;
-					btVector3 vertex0(v.x, v.y, v.z);
+				    for(int i = 0; i < pg->indexCount; i += 3 )
+				    {
+					    DAVA::uint16 index0 = pg->indexArray[i];
+					    DAVA::uint16 index1 = pg->indexArray[i+1];
+					    DAVA::uint16 index2 = pg->indexArray[i+2];
 
-					pg->GetCoord(index1, v);
-					v = v * curEntityTransform;
-					btVector3 vertex1(v.x, v.y, v.z);
+					    DAVA::Vector3 v;
+					    pg->GetCoord(index0, v);
+					    v = v * curEntityTransform;
+					    btVector3 vertex0(v.x, v.y, v.z);
 
-					pg->GetCoord(index2, v);
-					v = v * curEntityTransform;
-					btVector3 vertex2(v.x, v.y, v.z);
+					    pg->GetCoord(index1, v);
+					    v = v * curEntityTransform;
+					    btVector3 vertex1(v.x, v.y, v.z);
 
-					btTriangles->addTriangle(vertex0, vertex1, vertex2, false);
-				}
+					    pg->GetCoord(index2, v);
+					    v = v * curEntityTransform;
+					    btVector3 vertex2(v.x, v.y, v.z);
 
-				// save original bbox
-				boundingBox.AddAABBox(pg->GetBoundingBox());
-			}
+					    btTriangles->addTriangle(vertex0, vertex1, vertex2, false);
+				    }
+
+				    // save original bbox
+				    boundingBox.AddAABBox(pg->GetBoundingBox());
+			    }
+            }
 		}
 
 		if(anyPolygonAdded)

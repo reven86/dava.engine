@@ -34,43 +34,120 @@
 #include "PropertyEditorStateHelper.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
-#include "Scene/SceneData.h"
 #include "Scene/SceneSignals.h"
 
-class DAVA::Entity;
+struct PropEditorUserData : public QtPropertyData::UserData 
+{
+	enum PropertyType
+	{
+		ORIGINAL,
+		COPY
+	};
+
+	PropEditorUserData(PropertyType _type, QtPropertyData *_associatedData = NULL, bool _isFavorite = false, DAVA::Entity *_entity = NULL)
+		: type(_type)
+		, associatedData(_associatedData)
+		, isFavorite(_isFavorite)
+        , entity(_entity)
+	{}
+
+	PropertyType type;
+	QtPropertyData *associatedData;
+	QString realPath;
+	bool isFavorite;
+    DAVA::Entity *entity;
+};
 
 class PropertyEditor : public QtPropertyEditor
 {
 	Q_OBJECT
 
 public:
+	enum eViewMode
+	{
+		VIEW_NORMAL,
+		VIEW_ADVANCED,
+		VIEW_FAVORITES_ONLY
+	};
+
 	PropertyEditor(QWidget *parent = 0, bool connectToSceneSignals = true);
 	~PropertyEditor();
 
 	virtual void SetEntities(const EntityGroup *selected);
-	void SetAdvancedMode(bool set);
+	
+	void SetViewMode(eViewMode mode);
+	eViewMode GetViewMode() const;
 
-protected:
-    QtPropertyData* AppendIntrospectionInfo(void *object, const DAVA::InspInfo * info);
-	virtual void OnItemEdited(const QString &name, QtPropertyData *data);
+	void SetFavoritesEditMode(bool set);
+	bool GetFavoritesEditMode() const;
 
-    void ResetProperties();
-    
+	bool IsFavorite(QtPropertyData *data) const;
+	void SetFavorite(QtPropertyData *data, bool favorite);
+
+	void LoadScheme(const DAVA::FilePath &path);
+	void SaveScheme(const DAVA::FilePath &path);
+
 public slots:
 	void sceneActivated(SceneEditor2 *scene);
 	void sceneDeactivated(SceneEditor2 *scene);
 	void sceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
+
+	void ActionEditComponent();
+	void ActionBakeTransform();
+	void ActionEditMaterial();
+    void ActionEditSoundComponent();
+	void OnAddActionComponent();
+    void OnAddStaticOcclusionComponent();
+    void OnAddModelTypeComponent();
+    void OnRemoveComponent();
 	
-	void actionShowAdvanced();
-	void EditActionComponent();
+	void ConvertToShadow();
+
+	void DeleteRenderBatch();
+
+    void CloneRenderBatchesToFixSwitchLODs();
 
 protected:
-	bool advancedMode;
-	QtPosSaver posSaver;
+	eViewMode viewMode;
+	bool favoritesEditMode;
 
-	DAVA::Entity *curNode;
+	QtPosSaver posSaver;
+	QSet<QString> scheme;
+
+	QtPropertyData *favoriteGroup;
+	QList<QtPropertyData *> favoriteList;
+
+	QList<DAVA::Entity *> curNodes;
 	PropertyEditorStateHelper treeStateHelper;
+
+	QtPropertyData* CreateInsp(void *object, const DAVA::InspInfo *info);
+	QtPropertyData* CreateInspMember(void *object, const DAVA::InspMember *member);
+	QtPropertyData* CreateInspCollection(void *object, const DAVA::InspColl *collection);
+	QtPropertyData* CreateClone(QtPropertyData *original);
+
+    void ClearCurrentNodes();
+	void ResetProperties();
+	void ApplyModeFilter(QtPropertyData *parent);
+	void ApplyFavorite(QtPropertyData *data);
+	void ApplyCustomExtensions(QtPropertyData *data);
+
+	void AddFavoriteChilds(QtPropertyData *parent);
+	void RemFavoriteChilds(QtPropertyData *parent);
+
+	bool IsInspViewAllowed(const DAVA::InspInfo *info) const;
+
+	virtual void OnItemEdited(const QModelIndex &index);
+	virtual void drawRow(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
+	virtual void mouseReleaseEvent(QMouseEvent *event);
+
+	//void FindAndCheckFavorite(QtPropertyData *data);
+	bool IsParentFavorite(QtPropertyData *data) const;
+	PropEditorUserData* GetUserData(QtPropertyData *data) const;
+
+	QtPropertyToolButton * CreateButton(QtPropertyData *data, const QIcon & icon, const QString & tooltip);
+
+	QString GetDefaultFilePath(); 
 };
 
 #endif // __QT_PROPERTY_WIDGET_H__

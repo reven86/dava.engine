@@ -36,7 +36,9 @@
 #include "MetadataFactory.h"
 #include "LibraryController.h"
 #include "CommandsController.h"
+#include "PreviewController.h"
 #include "ControlCommands.h"
+#include "ReloadSpritesCommand.h"
 
 #include "AlignDistribute/AlignDistributeManager.h"
 
@@ -126,6 +128,12 @@ void HierarchyTreeController::UpdateSelection(const HierarchyTreePlatformNode* a
 		
 		ResetSelectedControl();
 		this->activeScreen = (HierarchyTreeScreenNode*)activeScreen;
+
+        if (this->activeScreen)
+        {
+            this->activeScreen->SetStickMode(stickMode);
+        }
+
 		emit SelectedScreenChanged(this->activeScreen);
 	}
 	if (updateLibrary)
@@ -154,21 +162,6 @@ void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control)
 	
 	//add selection
 	InsertSelectedControlToList(control);
-	UIControl* uiControl = control->GetUIObject();
-	if (uiControl)
-	{
-		uiControl->SetDebugDraw(true);
-		uiControl->SetDrawPivotPointMode(UIControl::DRAW_ONLY_IF_NONZERO);
-		uiControl->SetDebugDrawColor(Color(1.f, 0, 0, 1.f));
-	
-		//YZ draw parent rect
-		UIControl* parentUiControl = uiControl->GetParent();
-		if (parentUiControl)
-		{
-			parentUiControl->SetDebugDrawColor(Color(0.55f, 0.55f, 0.55f, 1.f));
-			parentUiControl->SetDebugDraw(true);
-		}
-	}
 	
 	emit AddSelectedControl(control);
 	emit SelectedControlNodesChanged(activeControlNodes);
@@ -259,7 +252,8 @@ void HierarchyTreeController::Clear()
 {
 	activePlatform = NULL;
     activeScreen = NULL;
-	
+    stickMode = (int32)NotSticked;
+
 	ResetSelectedControl();
 	CleanupNodesDeletedFromScene();
 }
@@ -400,6 +394,11 @@ bool HierarchyTreeController::NewProject(const QString& projectPath)
 HierarchyTreePlatformNode* HierarchyTreeController::AddPlatform(const QString& name, const Vector2& size)
 {
 	HierarchyTreePlatformNode* platformNode = hierarchyTree.AddPlatform(name, size);
+	if (platformNode)
+	{
+		UpdateSelection(platformNode, NULL);
+	}
+
 	EmitHierarchyTreeUpdated();
 	
 	return platformNode;
@@ -540,6 +539,29 @@ void HierarchyTreeController::DeleteNodesInternal(const HierarchyTreeNode::HIERA
 	}
 }
 
+void HierarchyTreeController::SynchronizeSelection(const QList<HierarchyTreeControlNode*>& selectedNodes)
+{
+    SELECTEDCONTROLNODES nodesToDeselect = activeControlNodes;
+
+    foreach(HierarchyTreeControlNode* selectedNode, selectedNodes)
+    {
+        SelectControl(selectedNode);
+        nodesToDeselect.remove(selectedNode);
+    }
+
+    // In case some nodes remain in the deselected list - unselect them.
+    for (SELECTEDCONTROLNODES::iterator iter = nodesToDeselect.begin(); iter != nodesToDeselect.end();
+         iter ++)
+    {
+        UnselectControl(*iter, false);
+    }
+}
+
+void HierarchyTreeController::UpdateControlsData()
+{
+	 hierarchyTree.UpdateControlsData();
+}
+
 void HierarchyTreeController::UpdateLocalization(bool takePathFromLocalizationSystem)
 {
     // Update the Active Platform.
@@ -669,6 +691,13 @@ void HierarchyTreeController::DistributeSelectedControls(eDistributeControlsType
 	SafeRelease(command);
 }
 
+void HierarchyTreeController::AdjustSelectedControlsSize()
+{
+	BaseCommand* command = new ControlsAdjustSizeCommand(activeControlNodes);
+    CommandsController::Instance()->ExecuteCommand(command);
+	SafeRelease(command);
+}
+
 bool HierarchyTreeController::CanPerformAlign(eAlignControlsType /*alignType*/)
 {
 	// Align is not possible if less than two controls selected.
@@ -679,4 +708,54 @@ bool HierarchyTreeController::CanPerformDistribute(eDistributeControlsType /*dis
 {
 	// Distribute is not possible if less than three controls selected.
 	return activeControlNodes.size() >= 3;
+}
+
+void HierarchyTreeController::RepackAndReloadSprites()
+{
+    ReloadSpritesCommand* cmd = new ReloadSpritesCommand(hierarchyTree.GetRootNode());
+    CommandsController::Instance()->ExecuteCommand(cmd);
+    SafeRelease(cmd);
+}
+
+void HierarchyTreeController::EnablePreview(const PreviewSettingsData& data)
+{
+    if (PreviewController::Instance()->IsPreviewEnabled() || !activePlatform ||
+        !activeScreen || !activeScreen->GetScreen())
+    {
+        return;
+    }
+
+    // We are entering Preview Mode - nothing should be selected.
+    ResetSelectedControl();
+
+    uint32 screenDPI = Core::Instance()->GetScreenDPI();
+    const PreviewTransformData& transformData = PreviewController::Instance()->EnablePreview(data, activePlatform->GetSize(), screenDPI);
+    activePlatform->EnablePreview(transformData.screenSize.x, transformData.screenSize.y);
+    activeScreen->GetScreen()->SetSize(transformData.screenSize);
+
+    emit SelectedScreenChanged(activeScreen);
+}
+
+void HierarchyTreeController::DisablePreview()
+{
+    if (!PreviewController::Instance()->IsPreviewEnabled() || !activePlatform ||
+        !activeScreen || !activeScreen->GetScreen())
+    {
+        return;
+    }
+
+    PreviewController::Instance()->DisablePreview();
+    activePlatform->DisablePreview();
+    activeScreen->GetScreen()->SetSize(activePlatform->GetSize());
+    
+    emit SelectedScreenChanged(activeScreen);
+}
+
+void HierarchyTreeController::SetStickMode(int32 mode)
+{
+    stickMode = mode;
+    if (activeScreen)
+    {
+        activeScreen->SetStickMode(mode);
+    }
 }

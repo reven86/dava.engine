@@ -96,13 +96,15 @@ public:
         
         \param[in] width new width for the camera
      */ 
-	void SetWidth(const float32 &width);
+	void SetOrthoWidth(const float32 &width);
+
+    float32 GetOrthoWidth() const;
 
     /**
         \brief Set camera aspect ratio
         \param[in] aspectYdivX Aspect ratio is viewport height / viewport width
      */
-	void SetAspect(const float32 &aspectYdivX);
+	virtual void SetAspect(const float32 &aspectYdivX);
 
 
     /**
@@ -129,7 +131,7 @@ public:
         \brief Function applies camera transformations (projection, model-view matrices) to RenderManager
         This function normally is called internally from Scene class. In most cases you'll not need it. 
      */
-	void Set();
+	void SetupDynamicParameters(Vector4 *externalClipPlane = NULL);
 	
 	/**     
         \brief Restore camera transform to original camera transform that was set using 
@@ -287,6 +289,10 @@ public:
      */
 	void ExtractCameraToValues();
 	
+
+    void RebuildProjectionMatrix();
+	void RebuildViewMatrix();
+
     /**
         \brief Clone current camera
         TODO: remove, make adjustments in copy constructor instead. Clone() is evil, see Effective Java for details.
@@ -297,7 +303,7 @@ public:
         \brief Get project * camera matrix
         \returns matrix 
      */
-    const Matrix4 &GetUniformProjModelMatrix();
+    const Matrix4 &GetViewProjMatrix();
     
     /**
         \brief Function to return 2D position of 3D point that is transformed to screen. 
@@ -329,6 +335,11 @@ public:
         \returns tanf(fov / 2). 
      */
     float32 GetZoomFactor() const;
+    
+    /**
+        \brief Request camera to invert cull order direction.
+     */
+    void SetCullInvert(bool enabled);
 
     
     /**
@@ -348,9 +359,10 @@ public:
     enum
     {
         REQUIRE_REBUILD = 1,
-        REQUIRE_REBUILD_MODEL = 1<<1,
-        REQUIRE_REBUILD_PROJECTION = 1<<2,
-        REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1<<3
+        REQUIRE_REBUILD_MODEL = 1 << 1,
+        REQUIRE_REBUILD_PROJECTION = 1 << 2,
+        REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3,
+        INVERT_CULL = 1 << 4,
     };
     
     
@@ -371,9 +383,11 @@ public:
 	//Quaternion rotation;	// 
 	Matrix4 cameraTransform;
 
-    Matrix4 modelMatrix;
+    Matrix4 viewMatrix;
 	Matrix4 projMatrix;
-    Matrix4 uniformProjModelMatrix;
+    Matrix4 viewProjMatrix;
+    Matrix4 invViewMatrix;
+    Matrix4 invViewProjMatrix;
 
     uint32 flags;
 
@@ -382,10 +396,7 @@ public:
 	
 	void ExtractValuesFromMatrix();
 	void ConstructMatrixFromValues();
-	void Recalc();
-
-	void RecalcFrustum();
-	void RecalcTransform();
+	void Recalc();	
     
 	
 	/** calls glFrustum for projection matrix */
@@ -401,17 +412,18 @@ public:
 
 public:
     INTROSPECTION_EXTEND(Camera, BaseObject,
-        PROPERTY("xmin", "xmin", GetXMin, SetXMin, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("xmax", "xmax", GetXMax, SetXMax, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("ymin", "ymin", GetYMin, SetYMin, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("ymax", "ymax", GetYMax, SetYMax, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("xmin", "xmin", GetXMin, SetXMin, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("xmax", "xmax", GetXMax, SetXMax, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("ymin", "ymin", GetYMin, SetYMin, I_SAVE | I_VIEW | I_EDIT)
+        //PROPERTY("ymax", "ymax", GetYMax, SetYMax, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("aspect", "aspect", GetAspect, SetAspect, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("znear", "znear", GetZNear, SetZNear, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("zfar", "zfar", GetZFar, SetZFar, I_SAVE | I_VIEW | I_EDIT)
-        PROPERTY("aspect", "aspect", GetAspect, SetAspect, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("fovx", "fovx", GetFOV, SetFOV, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("ortho", "Is Ortho", GetIsOrtho, SetIsOrtho, I_SAVE | I_VIEW | I_EDIT)
+        PROPERTY("orthoWidth", "orthoWidth", GetOrthoWidth, SetOrthoWidth, I_SAVE | I_VIEW | I_EDIT)
                          
-//        PROPERTY(zoomFactor, "Zoom factor", GetFOV, SetFOV, INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
+        //PROPERTY(zoomFactor, "Zoom factor", GetFOV, SetFOV, INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
 		PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("target", "Target", GetTarget, SetTarget, I_SAVE | I_VIEW | I_EDIT)
 		PROPERTY("up", "Up", GetUp, SetUp, I_SAVE | I_VIEW | I_EDIT)
@@ -420,7 +432,7 @@ public:
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
                          
         MEMBER(cameraTransform, "Camera Transform", I_SAVE | I_VIEW)
-        MEMBER(modelMatrix, "Model Matrix", I_SAVE | I_VIEW)
+        MEMBER(viewMatrix, "View Matrix", I_SAVE | I_VIEW)
         MEMBER(projMatrix, "Proj Matrix", I_SAVE | I_VIEW)
     );
 };

@@ -34,6 +34,7 @@
 
 #include "HierarchyTreeScreenNode.h"
 #include "HierarchyTreeControlNode.h"
+#include "EditorListDelegate.h"
 
 namespace DAVA
 {
@@ -78,6 +79,8 @@ private:
 	CHILDS childs;
 	
 	FilePath path;
+    
+    EditorListDelegate* listDelegate;
 };
 	
 }

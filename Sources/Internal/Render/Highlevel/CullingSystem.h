@@ -40,7 +40,6 @@ namespace DAVA
 class RenderPass;
 class RenderLayer;
 class RenderObject;
-class RenderBatch;
 class Entity;
 class Camera;
 

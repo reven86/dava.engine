@@ -31,7 +31,7 @@
 #define __SCENE_PREVIEW_CONTROL_H__
 
 #include "DAVAEngine.h"
-#include "SceneEditor/CameraController.h"
+#include "Deprecated/CameraController.h"
 
 using namespace DAVA;
 

@@ -64,3 +64,5 @@ Entity * ChangeLODDistanceCommand::GetEntity() const
 
 	return NULL;
 }
+
+

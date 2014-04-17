@@ -31,7 +31,6 @@
 #include "SaveEntityAsAction.h"
 #include "Scene3D/SceneFileV2.h"
 
-#include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/StringConstants.h"
 
 
@@ -50,10 +49,16 @@ void SaveEntityAsAction::Redo()
 		NULL != entities && entities->Size() > 0)
 	{
 		DAVA::Scene *scene = new DAVA::Scene();
+        Vector3 oldZero = entities->GetCommonZeroPos();
 		for(size_t i = 0; i < entities->Size(); ++i)
 		{
 			DAVA::Entity *entity = entities->GetEntity(i);
 			DAVA::Entity *clone = entity->Clone();
+
+            Vector3 offset = clone->GetLocalTransform().GetTranslationVector() - oldZero;
+            Matrix4 newLocalTransform = clone->GetLocalTransform();
+            newLocalTransform.SetTranslationVector(offset);
+            clone->SetLocalTransform(newLocalTransform);
 
             DAVA::KeyedArchive *props = clone->GetCustomProperties();
             props->DeleteKey(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);

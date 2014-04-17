@@ -44,7 +44,7 @@ public:
 	void OpenKeyboard();
 	void CloseKeyboard();
 	void SetText(WideString & string);
-	void GetText(WideString & string);
+	void GetText(WideString & string) const;
 	void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect);
 
@@ -53,14 +53,15 @@ public:
     
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
-    
+
+    void SetVisible(bool value);
 	void ShowField();
 	void HideField();
 	
 	void SetIsPassword(bool isPassword);
 
 	void SetInputEnabled(bool value);
-
+    
 	// Keyboard traits.
 	void SetAutoCapitalizationType(DAVA::int32 value);
 	void SetAutoCorrectionType(DAVA::int32 value);
@@ -69,6 +70,10 @@ public:
 	void SetKeyboardType(DAVA::int32 value);
 	void SetReturnKeyType(DAVA::int32 value);
 	void SetEnableReturnKeyAutomatically(bool value);
+
+    // Cursor pos.
+    uint32 GetCursorPos();
+    void SetCursorPos(uint32 pos);
 
 private:
 	void * objcClassPtr;

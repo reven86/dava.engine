@@ -162,7 +162,14 @@ DAVA::Core::eDeviceFamily DAVA::Core::GetDeviceFamily()
 	NSLog(@"Application termination started");
 	DAVA::Core::Instance()->SystemAppFinished();
 	NSLog(@"System release started");
-	DAVA::Core::Instance()->ReleaseSingletons();
+    
+    if(DAVA::Logger::Instance())
+    {
+        DAVA::Logger::Instance()->SetLogFilename("");
+    }
+    
+//	DAVA::Core::Instance()->ReleaseSingletons();
+    
 
 //	DAVA::Sprite::DumpSprites();
 //	DAVA::Texture::DumpTextures();

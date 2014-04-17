@@ -35,36 +35,36 @@
 #include "Scene3D/SceneFileV2.h"
 #include "Render/Highlevel/RenderFastNames.h"
 #include "FileSystem/FilePath.h"
+#include "Scene3D/Systems/MaterialSystem.h"
+
+#include "Render/Material/NMaterialNames.h"
 
 namespace DAVA
 {
 
-Shader * ShadowVolume::shader = 0;
-int32 ShadowVolume::uniformLightPosition0 = 0;
+const FastName ShadowVolume::MATERIAL_NAME = FastName("Shadow_Volume_Material");
 
 ShadowVolume::ShadowVolume()
-:   shadowPolygonGroup(0)
 {
-	if(!shader)
-	{
-		//TODO: shader is never deleted on old materials
-		shader = new Shader();
-		shader->LoadFromYaml("~res:/Shaders/ShadowVolume/shadowvolume.shader");
-		shader->Recompile();
-		uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
-	}
-
-
-    SetOwnerLayerName(LAYER_SHADOW_VOLUME);
-    
     aabbox = AABBox3(Vector3(), Vector3());
-
-    
+		
+	//VI: create single instance of parent shadow volume material
+	static NMaterial* parentShadowVolume = NMaterial::CreateMaterial(MATERIAL_NAME,
+                                                                     NMaterialName::SHADOW_VOLUME,
+															         NMaterial::DEFAULT_QUALITY_NAME);
+	parentShadowVolume->AddNodeFlags(DataNode::NodeRuntimeFlag);
+	
+	NMaterial* shadowMat = NMaterial::CreateMaterialInstance();
+	shadowMat->AddNodeFlags(DataNode::NodeRuntimeFlag);
+	shadowMat->SetParent(parentShadowVolume);
+	
+	SetMaterial(shadowMat);
+	
+	SafeRelease(shadowMat);
 }
 
 ShadowVolume::~ShadowVolume()
 {
-	SafeRelease(shadowPolygonGroup);
 }
 
 //void ShadowVolume::Draw()
@@ -72,9 +72,9 @@ ShadowVolume::~ShadowVolume()
 //	scene->AddDrawTimeShadowVolume(this);
 //}
 
-static const uint32 SHADOW_VOLUME_VISIBILITY_CRITERIA = RenderObject::VISIBLE | RenderObject::VISIBLE_LOD | RenderObject::VISIBLE_SWITCH;
+static const uint32 SHADOW_VOLUME_VISIBILITY_CRITERIA = RenderObject::VISIBLE;
     
-void ShadowVolume::Draw(Camera * camera)
+void ShadowVolume::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
     if(!renderObject)return;
     Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
@@ -87,14 +87,18 @@ void ShadowVolume::Draw(Camera * camera)
     if ((flags & SHADOW_VOLUME_VISIBILITY_CRITERIA) != SHADOW_VOLUME_VISIBILITY_CRITERIA)
         return;
     
-    Light * light = GetMaterialInstance()->GetLight(0);
+    Light * light = GetMaterial()->GetLight(0);
     if((!light) || (!(light->GetFlags() & Light::CAST_SHADOW)))
 	{
 		return;
 	}
-    
+	
+    RenderManager::SetDynamicParam(PARAM_WORLD, worldTransformPtr, (pointer_size)worldTransformPtr);
+	
+    material->BindMaterialTechnique(ownerRenderPass, camera);
+    material->Draw(dataSource);
 
-    Matrix4 finalMatrix = (*worldTransformPtr) * camera->GetMatrix();
+    /*Matrix4 finalMatrix = (*worldTransformPtr) * camera->GetMatrix();
 	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, finalMatrix);
 
 	Matrix4 projMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
@@ -105,6 +109,7 @@ void ShadowVolume::Draw(Camera * camera)
 	RenderManager::Instance()->AttachRenderData();
 
 	//Vector3 position = Vector3() * GetWorldTransform();
+	int32 uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
 	if (light && uniformLightPosition0 != -1)
 	{
 		Vector3 lightPosition0 = light->GetPosition();
@@ -121,7 +126,7 @@ void ShadowVolume::Draw(Camera * camera)
 	else
 	{
 		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, shadowPolygonGroup->indexCount, EIF_16, shadowPolygonGroup->indexArray);
-	}
+	}*/
 }
 
 int32 ShadowVolume::FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count)
@@ -468,11 +473,11 @@ void ShadowVolume::MakeShadowVolumeFromPolygonGroup(PolygonGroup * oldPolygonGro
 		}
 	}
 
-	SafeRelease(shadowPolygonGroup);
-	shadowPolygonGroup = new PolygonGroup();
-	shadowPolygonGroup->AllocateData(EVF_VERTEX | EVF_NORMAL, nextVertex, nextIndex);
-	Memcpy(shadowPolygonGroup->meshData, newPolygonGroup->meshData, nextVertex*newPolygonGroup->vertexStride);
-	Memcpy(shadowPolygonGroup->indexArray, newPolygonGroup->indexArray, nextIndex*sizeof(int16));
+	SafeRelease(dataSource);
+	dataSource = new PolygonGroup();
+	dataSource->AllocateData(EVF_VERTEX | EVF_NORMAL, nextVertex, nextIndex);
+	Memcpy(dataSource->meshData, newPolygonGroup->meshData, nextVertex*newPolygonGroup->vertexStride);
+	Memcpy(dataSource->indexArray, newPolygonGroup->indexArray, nextIndex*sizeof(int16));
 
 	SafeRelease(newPolygonGroup);
 
@@ -484,9 +489,9 @@ void ShadowVolume::GetDataNodes(Set<DataNode*> & dataNodes)
 {
 	RenderBatch::GetDataNodes(dataNodes);
 
-	if(shadowPolygonGroup)
+	if(dataSource)
 	{
-		InsertDataNode(shadowPolygonGroup, dataNodes);
+		InsertDataNode(dataSource, dataNodes);
 	}
 }
 
@@ -500,30 +505,32 @@ RenderBatch * ShadowVolume::Clone(RenderBatch * dstNode /*= NULL*/)
 
 	RenderBatch::Clone(dstNode);
 	ShadowVolume *nd = (ShadowVolume *)dstNode;
-	nd->shadowPolygonGroup = SafeRetain(shadowPolygonGroup);
+
+    SafeRelease(nd->dataSource);
+	nd->dataSource = SafeRetain(dataSource);
 
 	return nd;
 }
 
-void ShadowVolume::Save(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void ShadowVolume::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	RenderBatch::Save(archive, sceneFile);
+	RenderBatch::Save(archive, serializationContext);
 
 	if(NULL != archive)
 	{
-		archive->SetVariant("sv.spg", VariantType((uint64)shadowPolygonGroup));
+		archive->SetVariant("sv.spg", VariantType((uint64)dataSource));
 	}
 }
 
-void ShadowVolume::Load(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void ShadowVolume::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	RenderBatch::Load(archive, sceneFile);
+	RenderBatch::Load(archive, serializationContext);
 
-	if(NULL != archive && NULL != sceneFile)
+	if(NULL != archive && NULL != serializationContext)
 	{
 		if(archive->IsKeyExists("sv.spg"))
 		{
-			PolygonGroup *pg = (PolygonGroup *) sceneFile->GetNodeByPointer(archive->GetVariant("sv.spg")->AsUInt64());
+			PolygonGroup *pg = (PolygonGroup*)serializationContext->GetDataBlock(archive->GetVariant("sv.spg")->AsUInt64());
 			if(NULL != pg)
 			{
 				SetPolygonGroup(pg);
@@ -534,26 +541,31 @@ void ShadowVolume::Load(KeyedArchive *archive, SceneFileV2 *sceneFile)
     
 void ShadowVolume::SetPolygonGroup(PolygonGroup * _polygonGroup)
 {
-	SafeRelease(shadowPolygonGroup);
-    shadowPolygonGroup = SafeRetain(_polygonGroup);
+	SafeRelease(dataSource);
+    dataSource = SafeRetain(_polygonGroup);
 
 	UpdateAABBoxFromSource();
 }
 
 PolygonGroup * ShadowVolume::GetPolygonGroup()
 {
-    return shadowPolygonGroup;
+    return dataSource;
 }
 
 void ShadowVolume::UpdateAABBoxFromSource()
 {
-	if(NULL != shadowPolygonGroup)
+	if(NULL != dataSource)
 	{
-		aabbox = shadowPolygonGroup->GetBoundingBox();
+        aabbox = dataSource->GetBoundingBox();
 		DVASSERT(aabbox.min.x != AABBOX_INFINITY &&
 			aabbox.min.y != AABBOX_INFINITY &&
 			aabbox.min.z != AABBOX_INFINITY);
 	}
+}
+
+ShadowVolume * ShadowVolume::CreateShadow()
+{
+	return NULL;
 }
 
 

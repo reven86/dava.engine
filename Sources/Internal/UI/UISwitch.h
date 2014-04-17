@@ -65,7 +65,6 @@ public:
 
 	YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 
-    virtual List<UIControl* >& GetRealChildren();
     virtual List<UIControl* > GetSubcontrols();
 	virtual void AddControl(UIControl *control);
     virtual UIControl *Clone();

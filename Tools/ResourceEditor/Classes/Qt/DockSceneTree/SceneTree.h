@@ -40,9 +40,6 @@
 #include "DockSceneTree/SceneTreeModel.h"
 #include "DockSceneTree/SceneTreeDelegate.h"
 
-// temp include
-#include "ParticlesEditorQT/Nodes/BaseParticleEditorNode.h"
-
 class SceneTree : public QTreeView
 {
 	Q_OBJECT
@@ -77,18 +74,18 @@ public slots:
 	void LockEntities();
 	void UnlockEntities();
 
-	void SetCurrentCamera();
 	void CollapseSwitch();
 	
 	void SetEntityNameAsFilter();
 
 	// Particle Emitter handlers.
 	void AddEmitter();
-	void StartEmitter();
-	void StopEmitter();
-	void RestartEmitter();
+	void StartEffect();
+	void StopEffect();
+	void RestartEffect();
 	
 	void AddLayer();
+	void RemoveEmitter();
 	void LoadEmitterFromYaml();
 	void SaveEmitterToYaml();
 	void SaveEmitterToYamlAs();
@@ -109,6 +106,9 @@ public slots:
 	void SaveEntityAs();
 	
 	void CollapseAll();
+    
+	void SetCurrentCamera();
+    void SetClipCamera();
 
 protected slots:
 	void SceneActivated(SceneEditor2 *scene);
@@ -125,16 +125,17 @@ protected slots:
 	void TreeItemExpanded(const QModelIndex &index);
 
 	void SyncSelectionToTree();
-	void SyncSelectionFromTree();
-
-	void ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlags, const QPoint &pos);
-	void ShowContextMenuLayer(DAVA::ParticleLayer *layer, const QPoint &pos);
-	void ShowContextMenuForce(DAVA::ParticleLayer *layer, DAVA::ParticleForce *force, const QPoint &pos);
-	void ShowContextMenuInnerEmitter(DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer *parentLayer, const QPoint &pos);
+	void SyncSelectionFromTree();	
 
 	void OnRefreshTimeout();
 
 protected:
+	void ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlags, const QPoint &pos);
+	
+	void ShowContextMenuEmitter(DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, const QPoint &pos);
+	void ShowContextMenuLayer(DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer *layer, const QPoint &pos);
+	void ShowContextMenuForce(DAVA::ParticleLayer *layer, DAVA::ParticleForce *force, const QPoint &pos);
+	void ShowContextMenuInnerEmitter(DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, DAVA::ParticleLayer *parentLayer, const QPoint &pos);
 	// Helpers for Particles.
 	// Get the default path to Particles Config.
 	QString GetParticlesConfigPath();
@@ -145,12 +146,16 @@ protected:
 	// Cleanup the selected Particle Editor items.
 	void CleanupParticleEditorSelectedItems();
 
+	void ExpandUntilFilterAccepted(const QModelIndex &index);
+    
+    void AddCameraActions(QMenu &menu);
+
 private:
-	// Selected Particle Layer.
+	
+	ParticleEffectComponent *selectedEffect;
+	ParticleEmitter *selectedEmitter;
 	ParticleLayer* selectedLayer;
-	ParticleForce* selectedForce;
-	ParticleEmitter *selectedInnerEmmiter;
-	ParticleLayer *selectedInnerEmmiterParentLayer;
+	ParticleForce* selectedForce;	
 };
 
 #endif // __QT_SCENE_TREE_H__

@@ -31,10 +31,12 @@
 #define __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__
 
 #include "DAVAEngine.h"
+#include "CoreMacOSPlatformBase.h"
 
-namespace DAVA 
+namespace DAVA
 {
-class CoreMacOSPlatform : public Core
+
+class CoreMacOSPlatform : public CoreMacOSPlatformBase
 {
 public:
 	virtual eScreenMode GetScreenMode();
@@ -42,13 +44,11 @@ public:
 	virtual void ToggleFullscreen();
 	virtual void Quit();
 	
-	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
-	virtual DisplayMode GetCurrentDisplayMode();
 	virtual Vector2 GetMousePosition();
 	
 	virtual void* GetOpenGLView();
 };	
-};
 
+};
 
 #endif // __DAVAENGINE_CORE_PLATFORM_MAC_OS_H__

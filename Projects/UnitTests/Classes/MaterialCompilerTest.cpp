@@ -39,7 +39,7 @@ MaterialCompilerTest::MaterialCompilerTest()
 
 void MaterialCompilerTest::LoadResources()
 {
-    GetBackground()->SetColor(Color::White());
+    GetBackground()->SetColor(Color::White);
 }
 
 void MaterialCompilerTest::UnloadResources()

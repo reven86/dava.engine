@@ -46,6 +46,7 @@ public:
 
 	virtual void Initialize(BaseMetadata* activeMetadata);
     virtual void Cleanup();
+	virtual void OnPropertiesChangedFromExternalSource() {};
 
 private:
     Ui::SpinnerPropertyGridWidget *ui;

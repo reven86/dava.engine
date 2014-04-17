@@ -44,7 +44,7 @@ class SelectPathWidgetBase: public QLineEdit
 	Q_OBJECT
 
 public:
-	explicit SelectPathWidgetBase( QWidget* parent = 0, DAVA::String openDialoDefualtPath = "", DAVA::String relativPath = "",
+	explicit SelectPathWidgetBase( QWidget* parent = 0, bool checkForProjectPath = false,DAVA::String openDialoDefualtPath = "", DAVA::String relativPath = "",
 								  DAVA::String openFileDialogTitle = "Open File", DAVA::String fileFormatDescriotion = "*.*");
 	
 	virtual ~SelectPathWidgetBase();
@@ -54,48 +54,27 @@ public:
 	DAVA::String getText();
 
 	virtual void EraseWidget();
-	
-	DAVA::FilePath GetRelativPath()
-	{
-		return relativePath;
-	}
-
-	void SetRelativePath(const DAVA::String& );
-
-	DAVA::String GetOpenDialogDefaultPath()
-	{
-		return openDialogDefaultPath;
-	}
-
-	void SetOpenDialogDefaultPath(const DAVA::String& newPath)
-	{
-		openDialogDefaultPath = newPath;
-	}
-	
-	void SetOpenFileDialogTitle(const DAVA::String& value)
-	{
-		openFileDialogTitle = value;
-	}
-	
-	DAVA::String GetOpenFileDialogTitle()
-	{
-		return openFileDialogTitle;
-	}
-	
-	void SetFileFormatFilter(const DAVA::String& value)
-	{
-		fileFormatFilter = value;
-	}
-	
-	DAVA::String GetFileFormatFilter()
-	{
-		return fileFormatFilter;
-	}
 
 	void SetAllowedFormatsList(const DAVA::List<DAVA::String>& _allowedFormatsList)
 	{
 		allowedFormatsList = _allowedFormatsList;
 	}
+    
+    bool IsOpenButtonVisible() const;
+    
+    void SetOpenButtonVisible(bool value);
+    
+    bool IsClearButtonVisible() const;
+    
+    void SetClearButtonVisible(bool value);
+    
+    DAVA::String GetOpenDialogDefaultPath() const;
+    
+    void SetOpenDialogDefaultPath(const DAVA::FilePath& path);
+    
+    DAVA::String GetFileFormatFilter() const;
+    
+    void SetFileFormatFilter(const DAVA::String& filter);
 	
 public slots:
 
@@ -103,6 +82,8 @@ public slots:
 		
 	void acceptEditing();
 
+    void setVisible(bool);
+    
 signals:
 	
 	void PathSelected(DAVA::String selectedFile);
@@ -134,6 +115,8 @@ protected:
 	DAVA::String			openFileDialogTitle;
 		
 	QMimeData				mimeData;
+    
+    bool                    checkForProjectPath;
 
 protected slots:
 

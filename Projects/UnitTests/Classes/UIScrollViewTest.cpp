@@ -114,7 +114,7 @@ void UIScrollViewTest::LoadResources()
 	UIButton *testButton = new UIButton(Rect(10, 50, 250, 100));
 	testButton->SetDebugDraw(true);
 	testButton->SetStateFont(STATE_NORMAL, font);
-	testButton->SetStateFontColor(STATE_NORMAL, Color::White());
+	testButton->SetStateFontColor(STATE_NORMAL, Color::White);
 	testButton->SetStateText(STATE_NORMAL, L"First button");
 	testButton->GetBackground()->SetColor(Color(0.6667, 0.6667, 0.4980, 1.0000));
 	testButton->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);

@@ -48,6 +48,7 @@ public:
     
     void SetInFolder(const FilePath &folderPathname);
     void SetOutFolder(const FilePath &folderPathname);
+    void SetOutSoundsFolder(const FilePath &folderPathname);
     
 	void EnableOptimizations( bool enable );
 
@@ -61,20 +62,21 @@ protected:
     void RemoveEditorNodes(Entity *rootNode);
     void RemoveEditorCustomProperties(Entity *rootNode);
     
-    void ExportDescriptors(Scene *scene, Set<String> &errorLog);
+    bool ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog);
     bool ExportTextureDescriptor(const FilePath &pathname, Set<String> &errorLog);
     bool ExportTexture(const TextureDescriptor * descriptor, Set<String> &errorLog);
     void CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog);
 
-    void ExportLandscape(Scene *scene, Set<String> &errorLog);
-    void ExportLandscapeFullTiledTexture(Landscape *landscape, Set<String> &errorLog);
+    bool ExportLandscape(Scene *scene, Set<String> &errorLog);
+    bool ExportVegetation(Scene *scene, Set<String> &errorLog);
     
-    
-    
+    void ExportSounds(const FilePath &scenePath);
     
 protected:
     
     SceneUtils sceneUtils;
+
+    FilePath soundsOutFolder;
 
     eGPUFamily exportForGPU;
 	bool optimizeOnExport;

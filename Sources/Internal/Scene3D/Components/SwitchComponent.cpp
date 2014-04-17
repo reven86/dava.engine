@@ -36,6 +36,9 @@
 namespace DAVA
 {
 
+REGISTER_CLASS(SwitchComponent)
+
+
 SwitchComponent::SwitchComponent()
 :	oldSwitchIndex(-1),
 	newSwitchIndex(0)
@@ -47,13 +50,13 @@ Component * SwitchComponent::Clone(Entity * toEntity)
 {
 	SwitchComponent * newComponent = new SwitchComponent();
 	newComponent->SetEntity(toEntity);
-	GlobalEventSystem::Instance()->Event(toEntity, this, EventSystem::SWITCH_CHANGED);
+	GlobalEventSystem::Instance()->Event(toEntity, EventSystem::SWITCH_CHANGED);
 	return newComponent;
 }
 
-void SwitchComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void SwitchComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Serialize(archive, sceneFile);
+	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive)
 	{
@@ -61,21 +64,21 @@ void SwitchComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 	}
 }
 
-void SwitchComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void SwitchComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+	Component::Deserialize(archive, serializationContext);
+	
 	if(NULL != archive)
 	{
 		SetSwitchIndex(archive->GetInt32("sc.switchindex"));
 	}
-
-	Component::Deserialize(archive, sceneFile);
 }
 
 void SwitchComponent::SetSwitchIndex(const int32 & _switchIndex)
 {
 	newSwitchIndex = _switchIndex;
 
-	GlobalEventSystem::Instance()->Event(entity, this, EventSystem::SWITCH_CHANGED);
+	GlobalEventSystem::Instance()->Event(entity, EventSystem::SWITCH_CHANGED);
 }
 
 int32 SwitchComponent::GetSwitchIndex() const

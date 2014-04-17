@@ -32,10 +32,10 @@
 
 #include "TexturePacker/CommandLineParser.h"
 
-#include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/Qt/Scene/SceneHelper.h"
-#include "Classes/Commands2/BeastAction.h"
-#include "Classes/SceneEditor/EditorSettings.h"
+#include "Scene/SceneEditor2.h"
+#include "Scene/SceneHelper.h"
+#include "Commands2/BeastAction.h"
+#include "Qt/Settings/SettingsManager.h"
 
 using namespace DAVA;
 
@@ -87,7 +87,7 @@ void BeastCommandLineTool::Process()
 	SceneEditor2 *scene = new SceneEditor2();
 	if(scene->Load(scenePathname))
 	{
-		scene->Update(0.1f);
+		//scene->Update(0.1f);
 
 		scene->Exec(new BeastAction(scene, NULL));
 

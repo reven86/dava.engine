@@ -85,7 +85,7 @@ void QtLabelWithActions::setDefaultAction(QAction *action)
 {
 	if(action)
 	{
-		setText(DAVA::Format("[ %s ]", action->text().toStdString().c_str()));
+		setText(DAVA::Format("[ %s ]", action->text().toStdString().c_str()).c_str());
 	}
 	else
 	{

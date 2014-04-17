@@ -70,6 +70,7 @@ protected:
     // These methods are called when property change is succeeded/failed.
     virtual void HandleChangePropertySucceeded(const QString& propertyName);
     virtual void HandleChangePropertyFailed(const QString& propertyName);
+	virtual void OnPropertiesChangedFromExternalSource() {};
 
     // Markup the "dirty" states in the States combo.
     void MarkupDirtyStates();

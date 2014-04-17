@@ -178,16 +178,6 @@ void AlignsPropertyGridWidget::OnAlignCheckBoxStateChanged(int state)
 	SafeRelease(command);
 }
 
-void AlignsPropertyGridWidget::OnPropertiesChangedFromExternalSource()
-{
-    // Re-read all the properties related to this grid.
-    for (PROPERTYGRIDWIDGETSITER iter = this->propertyGridWidgetsMap.begin();
-         iter != this->propertyGridWidgetsMap.end(); iter ++)
-    {
-        UpdateWidgetWithPropertyValue(iter);
-    }
-}
-
 void AlignsPropertyGridWidget::UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget,
                                                                    const QMetaProperty& curProperty)
 {

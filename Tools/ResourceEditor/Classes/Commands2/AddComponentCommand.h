@@ -45,11 +45,10 @@ public:
 	virtual DAVA::Entity* GetEntity() const;
 
 private:
-
 	DAVA::Entity* entityToAdd;
-
-	DAVA::Component *newComponent;
-	DAVA::Component *oldComponent;
+    DAVA::Component* backup;
+    DAVA::Component* original;
+    int componentType;
 };
 
 #endif // __ADD_COMPONENT_COMMAND_H__

@@ -86,7 +86,7 @@ void FormatsTest::LoadResources()
 
 	finishTestBtn = new UIButton(Rect(10, 700, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);
-    finishTestBtn->SetStateFontColor(0xFF, Color::White());
+    finishTestBtn->SetStateFontColor(0xFF, Color::White);
 	finishTestBtn->SetStateText(0xFF, L"Finish test");
 
 	finishTestBtn->SetDebugDraw(true);

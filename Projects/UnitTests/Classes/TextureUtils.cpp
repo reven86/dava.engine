@@ -108,14 +108,16 @@ Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
     Sprite *renderTarget = Sprite::CreateAsRenderTarget(sprite->GetWidth(), sprite->GetHeight(), FORMAT_RGBA8888);
     RenderManager::Instance()->SetRenderTarget(renderTarget);
-    
-    sprite->SetPosition(0, 0);
-    sprite->Draw();
+
+    Sprite::DrawState state;
+    state.SetFrame(0);
+    state.SetPosition(0.f, 0.f);
+    sprite->Draw(&state);
     
     RenderManager::Instance()->RestoreRenderTarget();
     
     Texture *renderTargetTexture = renderTarget->GetTexture();
-    Image *resultImage = renderTargetTexture->CreateImageFromMemory();
+    Image *resultImage = renderTargetTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
     
     SafeRelease(renderTarget);
     return resultImage;

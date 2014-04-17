@@ -129,6 +129,16 @@ String DeviceInfo::GetModel()
 		if ([modelName hasPrefix:@"iPad3,6"])
 			model = "iPad 4 CDMA LTE";
 
+		if ([modelName hasPrefix:@"iPad4,1"])
+			model = "iPad 5 WiFi";
+		if ([modelName hasPrefix:@"iPad4,2"])
+			model = "iPad 5 GSM CDMA LTE";
+
+		if ([modelName hasPrefix:@"iPad4,4"])
+			model = "iPad Mini 2 WiFi";
+		if ([modelName hasPrefix:@"iPad4,5"])
+			model = "iPad Mini 2 GSM CDMA LTE";
+
 		// iPod
 		if ([modelName hasPrefix:@"iPod1,1"])
 			model = "iPod Touch";
@@ -204,7 +214,7 @@ String DeviceInfo::GetUDID()
 	NSString* udid = nil;
 	if (iOSLowerThan7 || !hasAdvertisingId)
 	{
-		udid = [[UIDevice currentDevice] uniqueIdentifier];
+		udid = @"";
 	}
 	else
 	{

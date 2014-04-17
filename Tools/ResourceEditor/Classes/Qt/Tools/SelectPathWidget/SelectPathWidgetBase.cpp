@@ -31,14 +31,18 @@
 #include "SelectPathWidgetBase.h"
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
+#include "Qt/Settings/SettingsManager.h"
+#include "Project/ProjectManager.h"
 
 #include <QFileInfo>
 #include <QKeyEvent>
 #include <QUrl>
 #include <QStyle>
+#include <QMessageBox>
 
-SelectPathWidgetBase::SelectPathWidgetBase(QWidget* _parent, DAVA::String _openDialogDefualtPath, DAVA::String _relativPath, DAVA::String _openFileDialogTitle, DAVA::String _fileFormatDescriotion)
-:	QLineEdit(_parent)
+SelectPathWidgetBase::SelectPathWidgetBase(QWidget* _parent, bool _checkForProjectPath, DAVA::String _openDialogDefualtPath, DAVA::String _relativPath, DAVA::String _openFileDialogTitle, DAVA::String _fileFormatDescriotion)
+:	QLineEdit(_parent),
+    checkForProjectPath(_checkForProjectPath)
 {
 	Init(_openDialogDefualtPath, _relativPath, _openFileDialogTitle, _fileFormatDescriotion);
 }
@@ -73,7 +77,8 @@ void SelectPathWidgetBase::resizeEvent(QResizeEvent *)
 	clearButton->move(rect().right() - frameWidth - sz.width(),(rect().bottom() + 1 - sz.height())/2);
 	
 	QSize szOpenBtn = openButton->sizeHint();
-	openButton->move(rect().right() - sz.width() - frameWidth - szOpenBtn.width(),(rect().bottom() + 1 - szOpenBtn.height())/2);
+    int offsetFromRight = clearButton->isVisible() ? sz.width() : 0;
+	openButton->move(rect().right() - offsetFromRight - frameWidth - szOpenBtn.width(),(rect().bottom() + 1 - szOpenBtn.height())/2);
 }
 
 QToolButton* SelectPathWidgetBase::CreateToolButton(const DAVA::String& iconPath)
@@ -111,6 +116,12 @@ void SelectPathWidgetBase::acceptEditing()
 	this->setText(getText());
 }
 
+void SelectPathWidgetBase::setVisible(bool value)
+{
+    QLineEdit::setVisible(value);
+    SelectPathWidgetBase::resizeEvent(NULL);
+}
+
 void SelectPathWidgetBase::OpenClicked()
 {
 	DAVA::FilePath presentPath(text().toStdString());
@@ -122,11 +133,21 @@ void SelectPathWidgetBase::OpenClicked()
 	this->blockSignals(true);
 	DAVA::String retString = QtFileDialog::getOpenFileName(this, openFileDialogTitle.c_str(), QString(dialogString.GetAbsolutePathname().c_str()), fileFormatFilter.c_str()).toStdString();
 	this->blockSignals(false);
-	
-	if(!retString.empty())
-	{
-		HandlePathSelected(retString);
-	}
+
+    if(retString.empty())
+    {
+        return;
+    }
+    
+    DAVA::String projectPath = ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname();
+
+    if(checkForProjectPath && DAVA::String::npos == retString.find(projectPath))
+    {
+        QMessageBox::warning(NULL, "Wrong file selected", QString( Format("Path %s doesn't belong to project.", retString.c_str()).c_str() ), QMessageBox::Ok);
+        return;
+    }
+    
+	HandlePathSelected(retString);
 }
 
 void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
@@ -144,14 +165,17 @@ void SelectPathWidgetBase::HandlePathSelected(DAVA::String name)
 
 void SelectPathWidgetBase::setText(const QString& filePath)
 {
-	QLineEdit::setText(filePath);
-	setToolTip(filePath);
-	emit PathSelected(filePath.toStdString());
+    if(filePath != text())
+    {
+        QLineEdit::setText(filePath);
+        setToolTip(filePath);
+        emit PathSelected(filePath.toStdString());
+    }
 }
 
 void SelectPathWidgetBase::setText(const DAVA::String &filePath)
 {
-	setText(QString(filePath.c_str()));
+    SelectPathWidgetBase::setText(QString(filePath.c_str()));
 }
 
 DAVA::String SelectPathWidgetBase::getText()
@@ -159,15 +183,6 @@ DAVA::String SelectPathWidgetBase::getText()
 	return text().toStdString();
 }
 
-void SelectPathWidgetBase::SetRelativePath(const DAVA::String& newRelativPath)
-{
-	relativePath = DAVA::FilePath(newRelativPath);
-	DAVA::String existingPath = text().toStdString();
-	if(!existingPath.empty())
-	{
-		setText(QString(ConvertToRelativPath(existingPath).c_str()));
-	}
-}
 
 DAVA::String SelectPathWidgetBase::ConvertToRelativPath(const DAVA::String& path)
 {
@@ -224,4 +239,45 @@ void SelectPathWidgetBase::dragEnterEvent(QDragEnterEvent* event)
 	{
 		event->acceptProposedAction();
 	}
+}
+
+
+bool SelectPathWidgetBase::IsOpenButtonVisible() const
+{
+    return openButton->isVisible();
+}
+
+void SelectPathWidgetBase::SetOpenButtonVisible(bool value)
+{
+    openButton->setVisible(value);
+}
+
+bool SelectPathWidgetBase::IsClearButtonVisible() const
+{
+    return clearButton->isVisible();
+}
+
+void SelectPathWidgetBase::SetClearButtonVisible(bool value)
+{
+    clearButton->setVisible(value);
+}
+
+DAVA::String SelectPathWidgetBase::GetOpenDialogDefaultPath() const
+{
+    return openDialogDefaultPath;
+}
+
+void SelectPathWidgetBase::SetOpenDialogDefaultPath(const DAVA::FilePath& path)
+{
+    openDialogDefaultPath = path.GetAbsolutePathname();
+}
+
+DAVA::String SelectPathWidgetBase::GetFileFormatFilter() const
+{
+    return fileFormatFilter;
+}
+
+void SelectPathWidgetBase::SetFileFormatFilter(const DAVA::String& filter)
+{
+    fileFormatFilter = filter;
 }

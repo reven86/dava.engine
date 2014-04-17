@@ -53,9 +53,11 @@ public:
 	virtual eAction URLChanged(DAVA::UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) = 0;
 	
 	virtual void PageLoaded(DAVA::UIWebView* webview) = 0;
+	virtual void SwipeGesture(bool left){};
 };
 
-
+class FilePath;
+    
 // Common interface for Web View Controls for different platforms.
 class IWebViewControl
 {
@@ -68,6 +70,8 @@ public:
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen) = 0;
 	
+    virtual void OpenFromBuffer(const String& string, const DAVA::FilePath& basePath) = 0;
+    
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect) = 0;
 	virtual void SetVisible(bool isVisible, bool hierarchic) = 0;
@@ -78,6 +82,8 @@ public:
 	// Bounces settings.
 	virtual bool GetBounces() const {return false;};
 	virtual void SetBounces(bool value) {};
+    virtual void SetGestures(bool value){};
+
 };
 
 };

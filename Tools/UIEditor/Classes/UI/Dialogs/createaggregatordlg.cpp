@@ -38,7 +38,8 @@ CreateAggregatorDlg::CreateAggregatorDlg(QWidget *parent) :
     ui(new Ui::CreateAggregatorDlg)
 {
     ui->setupUi(this);
-	
+	ui->lineEdit->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp()));
+
 	const HierarchyTreeNode::HIERARCHYTREENODESLIST& platforms = HierarchyTreeController::Instance()->GetTree().GetPlatforms();
 	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = platforms.begin();
 		 iter != platforms.end();
@@ -76,7 +77,9 @@ void CreateAggregatorDlg::SetDefaultPlatform(HierarchyTreeNode::HIERARCHYTREENOD
 	{
 		node = HierarchyTreeController::Instance()->GetActivePlatform();
 		if (node)
+		{
 			platformId = node->GetId();
+		}
 	}
 
 	int id = ui->platformsCombo->findData(QVariant(platformId));
@@ -95,7 +98,11 @@ void CreateAggregatorDlg::accept()
 	QString errorMsg("");
 	if (!name.isNull() && !name.isEmpty())
 	{
-		if(!HierarchyTreeController::Instance()->GetActivePlatform()->IsAggregatorOrScreenNamePresent(name))
+		// Get current selected patform in combobox. It could differ from active one.
+		int platformId = GetPlatformId();
+		HierarchyTreePlatformNode* paltfromNode = dynamic_cast<HierarchyTreePlatformNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(platformId));
+		
+		if(paltfromNode && !paltfromNode->IsAggregatorOrScreenNamePresent(name))
 		{
 			QDialog::accept();
 		}

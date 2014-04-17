@@ -33,6 +33,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/EventDispatcher.h"
+#include "Base/AllocatorFactory.h"
 #include "Animation/Interpolation.h"
 #include "Animation/AnimatedObject.h"
 

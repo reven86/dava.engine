@@ -42,6 +42,8 @@ ScreenWrapper::ScreenWrapper(QObject *parent) :
 	qtScreen = NULL;
 	mainWindow = NULL;
 	cursorPosition.SetZero();
+    
+    backgroundFrameColor = EditorSettings::Instance()->GetCurrentBackgroundFrameColor();
 }
 
 ScreenWrapper::~ScreenWrapper()
@@ -191,4 +193,48 @@ void ScreenWrapper::SetCursor(const Vector2& position, Qt::CursorShape cursor)
 Vector2 ScreenWrapper::GetCursorPosition()
 {
 	return cursorPosition;
+}
+
+void ScreenWrapper::SetApplicationCursor(Qt::CursorShape cursor)
+{
+    QApplication::setOverrideCursor(cursor);
+}
+
+void ScreenWrapper::RestoreApplicationCursor()
+{
+    QApplication::restoreOverrideCursor();
+}
+
+void ScreenWrapper::SetBackgroundFrameRect(const Rect& rect)
+{
+    backgroundFrameRect = rect;
+}
+
+Rect ScreenWrapper::GetBackgroundFrameRect() const
+{
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+	if (!activeScreen)
+    {
+        // No screen is loaded yet, so scale should not be applied.
+        return backgroundFrameRect;
+    }
+
+    Rect resultRect = backgroundFrameRect;
+    resultRect.SetSize(backgroundFrameRect.GetSize() / activeScreen->GetScale());
+    return resultRect;
+}
+
+void ScreenWrapper::SetBackgroundFrameColor(const Color& color)
+{
+    backgroundFrameColor = color;
+}
+
+Vector2 ScreenWrapper::LocalToInternal(const Vector2& point)
+{
+    if (!GetActiveScreen())
+    {
+        return point;
+    }
+
+    return GetActiveScreen()->LocalToInternal(point);
 }

@@ -36,7 +36,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>280</width>
+      <width>140</width>
       <height>20</height>
      </rect>
     </property>
@@ -91,6 +91,19 @@
       <width>201</width>
       <height>26</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="recursiveVisibleCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>20</y>
+      <width>140</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Recursive Visible</string>
     </property>
    </widget>
   </widget>

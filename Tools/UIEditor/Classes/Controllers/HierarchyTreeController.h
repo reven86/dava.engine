@@ -45,6 +45,8 @@
 
 #include "AlignDistribute/AlignDistributeEnums.h"
 
+#include "PreviewController.h"
+
 using namespace DAVA;
 
 // Hierarchy Tree Controller for handling UI Editor Project Hierarchy Tree.
@@ -104,12 +106,18 @@ public:
 	bool IsControlSelected(HierarchyTreeControlNode* control) const;
 	void ResetSelectedControl();
 	
+    // Synchronize the selection - select the nodes from the list, unselect the remainigns.
+    void SynchronizeSelection(const QList<HierarchyTreeControlNode*>& selectedNodes);
+
 	HierarchyTreePlatformNode* GetActivePlatform() const;
     HierarchyTreeScreenNode* GetActiveScreen() const;
 	
     void EmitHierarchyTreeUpdated(bool needRestoreSelection = true);
 
     const SELECTEDCONTROLNODES& GetActiveControlNodes() const;
+
+	// Loock through all controls and update their values
+	void UpdateControlsData();
 
     // Look through all controls and update their localized texts.
     void UpdateLocalization(bool takePathFromLocalizationSystem);
@@ -121,6 +129,19 @@ public:
 	// Align/Distribute logic.
 	void AlignSelectedControls(eAlignControlsType alignType);
 	void DistributeSelectedControls(eDistributeControlsType distributeType);
+	
+	// Adjust control size logic
+	void AdjustSelectedControlsSize();
+
+    // Repack and reload sprites.
+    void RepackAndReloadSprites();
+    
+    // Preview mode control.
+    void EnablePreview(const PreviewSettingsData& data);
+    void DisablePreview();
+
+    // Set the Stick Mode.
+    void SetStickMode(int32 mode);
 
 private:
 	void DeleteNodesInternal(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes);
@@ -183,6 +204,9 @@ protected:
 	// Active Platform/Active Screen after nodes deletion.
 	HierarchyTreePlatformNode* activePlatformAfterDeleteNodes;
     HierarchyTreeScreenNode* activeScreenAfterDeleteNodes;
+
+    // Stick mode set from MainWindow.
+    int32 stickMode;
 };
 
 #endif /* defined(__UIEditor__HierarchyTreeController__) */

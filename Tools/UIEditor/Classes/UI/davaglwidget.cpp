@@ -47,11 +47,13 @@
 #include "ItemsCommand.h"
 #include "CommandsController.h"
 
+#include "Guides/GuideMimeData.h"
+
 #if defined (__DAVAENGINE_MACOS__)
 #include "Platform/Qt/MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
 #include "Platform/Qt/Win32/QtLayerWin32.h"
-#include "Platform/Qt/Win32/CorePlatformWin32.h"
+#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
@@ -135,6 +137,8 @@ void DavaGLWidget::resizeEvent(QResizeEvent *e)
 	Core::Instance()->UnregisterAllAvailableResourceSizes();
 	Core::Instance()->RegisterAvailableResourceSize(size().width(), size().height(), "Gfx");
 	Core::Instance()->CalculateScaleMultipliers();
+    
+    emit DavaGLWidgetResized();
 }
 
 void DavaGLWidget::showEvent(QShowEvent *e)
@@ -169,7 +173,7 @@ void DavaGLWidget::focusOutEvent(QFocusEvent *e)
 #if defined(Q_WS_WIN)
 bool DavaGLWidget::winEvent(MSG *message, long *result)
 {
-	DAVA::CoreWin32Platform *core = dynamic_cast<DAVA::CoreWin32Platform *>(DAVA::CoreWin32Platform::Instance());
+	DAVA::CoreWin32PlatformQt *core = dynamic_cast<DAVA::CoreWin32PlatformQt *>(DAVA::CoreWin32PlatformQt::Instance());
 	if (NULL != core)
 	{
 		if(NULL != message && 
@@ -228,22 +232,47 @@ void DavaGLWidget::dragMoveEvent(QDragMoveEvent *event)
 {
 	const QMimeData* data = event->mimeData();
 	const ControlMimeData* controlData = dynamic_cast<const ControlMimeData*>(data);
+    const GuideMimeData* guideData = dynamic_cast<const GuideMimeData*>(data);
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    
 	if (controlData && ScreenWrapper::Instance()->IsDropEnable(event->pos()))
 	{
 		event->accept();
 	}
-	else
-	{
+	else if (activeScreen && activeScreen->AreGuidesEnabled() && guideData)
+    {
+        Vector2 curPos = GuideToInternal(event->pos());
+        activeScreen->MoveNewGuide(curPos);
+        event->accept();
+    }
+    else
+    {
 		event->ignore();
 	}
 }
 
 void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
 {
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (!activeScreen)
+    {
+        return;
+    }
+
 	const QMimeData* data = event->mimeData();
 	const ControlMimeData* controlData = dynamic_cast<const ControlMimeData*>(data);
-	if (controlData && HierarchyTreeController::Instance()->GetActiveScreen())
+	if (controlData)
+    {
 		event->acceptProposedAction();
+        return;
+    }
+
+    const GuideMimeData* guideData = dynamic_cast<const GuideMimeData*>(data);
+    if (guideData && activeScreen->AreGuidesEnabled())
+    {
+        activeScreen->StartNewGuide(guideData->GetGuideType());
+        event->acceptProposedAction();
+    }
 }
 
 void DavaGLWidget::keyPressEvent(QKeyEvent *)
@@ -291,4 +320,16 @@ void DavaGLWidget::Quit()
 {
 	DAVA::Logger::Info("[QUIT]");
 	exit(0);
+}
+
+Vector2 DavaGLWidget::GuideToInternal(const QPoint& pos)
+{
+    Vector2 curPos = Vector2(pos.x(), pos.y());
+    Vector2 internalPos = ScreenWrapper::Instance()->LocalToInternal(curPos);
+    
+    // Allow moving per-pixel only.
+    internalPos.x =  Round(internalPos.x);
+    internalPos.y = Round(internalPos.y);
+    
+    return internalPos;
 }

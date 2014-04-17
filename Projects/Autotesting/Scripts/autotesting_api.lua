@@ -4,11 +4,11 @@ DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT = 300 -- Multiplayer timeout
 
+
+
 -- API setup
 function SetPackagePath(path)
 	package.path = package.path .. ";" .. path .. "Actions/?.lua;" .. path .. "Scripts/?.lua;"
-	
-	--require "logger"
 	require "coxpcall"
 end
 
@@ -100,20 +100,26 @@ function ResumeTest()
     end
 end
 
-function CreateTest(test)
+function CreateTest()
     --print("CreateTest")
-    co = coroutine.create(test) -- create a coroutine with foo as the entry
+    co = coroutine.create(function (func)
+			local status, err = copcall(func)
+			--print(status, err)
+			if not status then
+				OnError(err)
+			end
+		end) -- create a coroutine with foo as the entry
     autotestingSystem = AutotestingSystem.Singleton_Autotesting_Instance()
     
     --print(autotestingSystem:GetTimeElapsed())	
 end
 
 function StartTest(name, test)      
-    CreateTest(test)
+    CreateTest()
 	--print('StartTest')
 	--Yield()
 	autotestingSystem:OnTestStart(name)
-    Yield()
+    coroutine.resume(co, test)
 end
 
 function OnError(text)
@@ -371,6 +377,19 @@ function IsOnScreen(control)
 	end
 end
 
+function IsCenterOnScreen(control)
+	local screen = autotestingSystem:GetScreen()
+    local center = GetCenter(control)
+	local geomData = screen:GetGeometricData()
+	local backRect = geomData:GetUnrotatedRect()
+			
+	if (center.x >= backRect.x) and (center.x <= backRect.x + backRect.dx) and (center.y >= backRect.y) and (center.y <= backRect.y + backRect.dy) then
+		return true
+	else
+		return false
+	end
+end
+
 function Wait(waitTime)
     waitTime =  waitTime or DELAY
     local count = 0
@@ -392,7 +411,7 @@ end
 
 function WaitControl(name, time)
     local waitTime = time or TIMEOUT
-    --Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
+    Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
     
     local elapsedTime = 0.0
     while elapsedTime < waitTime do
@@ -512,7 +531,8 @@ function ClickControl(name, time, touchId)
         
         local control = autotestingSystem:FindControl(name)
         local screen = autotestingSystem:GetScreen()
-        if control and IsVisible(name) and IsOnScreen(control) then     
+		
+        if control and IsVisible(name) and IsCenterOnScreen(control) then     
             -- local position = control:GetPosition(true)
             local position = GetCenter(name)
 --            print(position)
@@ -526,7 +546,17 @@ function ClickControl(name, time, touchId)
         end
     end
     
-    Log("ClickControl not found "..name)
+	local control = autotestingSystem:FindControl(name)
+	if  control then
+		if not IsVisible(name) then
+			Log(name .. " is not visible")
+		end
+		if not IsCenterOnScreen(control) then
+			Log(name .. " is not on the Screen")
+		end
+	else
+		Log("ClickControl not found "..name)
+	end
     return false
 end
 

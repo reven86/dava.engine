@@ -36,7 +36,16 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>1</number>
+    </property>
+    <property name="topMargin">
+     <number>1</number>
+    </property>
+    <property name="rightMargin">
+     <number>1</number>
+    </property>
+    <property name="bottomMargin">
      <number>1</number>
     </property>
     <item>
@@ -44,92 +53,11 @@
     </item>
    </layout>
   </widget>
-  <widget class="QDockWidget" name="dockLibrary">
-   <property name="minimumSize">
-    <size>
-     <width>214</width>
-     <height>144</height>
-    </size>
-   </property>
-   <property name="windowTitle">
-    <string>Library</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-   <widget class="QWidget" name="libraryBody">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="spacing">
-      <number>0</number>
-     </property>
-     <property name="margin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="QFrame" name="frame_2">
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>20</height>
-        </size>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::StyledPanel</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <property name="leftMargin">
-         <number>5</number>
-        </property>
-        <property name="topMargin">
-         <number>1</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="bottomMargin">
-         <number>1</number>
-        </property>
-        <item>
-         <widget class="QCheckBox" name="cbShowDAEFiles">
-          <property name="text">
-           <string>Display .dae</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="cbShowSC2Files">
-          <property name="text">
-           <string>Display .sc2</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-     <item>
-      <widget class="LibraryView" name="libraryView">
-       <property name="contextMenuPolicy">
-        <enum>Qt::CustomContextMenu</enum>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dockProperties">
+  <widget class="DockProperties" name="dockProperties">
    <property name="minimumSize">
     <size>
      <width>150</width>
-     <height>200</height>
+     <height>342</height>
     </size>
    </property>
    <property name="windowIcon">
@@ -150,7 +78,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -164,25 +101,102 @@
        <property name="toolButtonStyle">
         <enum>Qt::ToolButtonIconOnly</enum>
        </property>
-       <addaction name="actionShowAdvancedProp"/>
+       <addaction name="actionFavoritesEdit"/>
        <addaction name="actionAddNewComponent"/>
-       <addaction name="actionRemoveComponent"/>
       </widget>
      </item>
      <item>
-      <widget class="PropertyEditor" name="propertyEditor">
-       <property name="mouseTracking">
+      <widget class="QFrame" name="frame_6">
+       <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="editTriggers">
-        <set>QAbstractItemView::AllEditTriggers</set>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <property name="spacing">
+         <number>3</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLineEdit" name="propertiesFilterEdit">
+          <property name="placeholderText">
+           <string>Type here to search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="propertiesFilterClear">
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="QtIcons.qrc">
+            <normaloff>:/QtIconsTextureDialog/editclear.png</normaloff>:/QtIconsTextureDialog/editclear.png</iconset>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
        </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::SingleSelection</enum>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
        </property>
-       <property name="indentation">
-        <number>16</number>
-       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="spacing">
+         <number>1</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="PropertyEditor" name="propertyEditor">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::AllEditTriggers</set>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="indentation">
+           <number>20</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
@@ -216,7 +230,6 @@
    <addaction name="separator"/>
    <addaction name="actionMaterialEditor"/>
    <addaction name="actionTextureConverter"/>
-   <addaction name="separator"/>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -224,7 +237,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -250,6 +263,7 @@
      <addaction name="actionImportSpeedTreeXML"/>
     </widget>
     <addaction name="actionOpenProject"/>
+    <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionNewScene"/>
     <addaction name="actionOpenScene"/>
@@ -273,16 +287,21 @@
      <addaction name="actionAddEmptyEntity"/>
      <addaction name="actionLight"/>
      <addaction name="actionCamera"/>
+     <addaction name="actionEditor_2D_Camera"/>
      <addaction name="actionUserNode"/>
      <addaction name="actionSwitchNode"/>
      <addaction name="actionParticleEffectNode"/>
+     <addaction name="actionAddLandscape"/>
+     <addaction name="actionAddSkybox"/>
+     <addaction name="actionAddVegetation"/>
+     <addaction name="separator"/>
+     <addaction name="actionEditor_Sprite"/>
     </widget>
     <addaction name="actionParticleEmitter"/>
     <addaction name="actionParticle_Emitter"/>
     <addaction name="menuAdd"/>
     <addaction name="actionRemoveEntity"/>
     <addaction name="separator"/>
-    <addaction name="actionUniteEntitiesWithLODs"/>
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
@@ -291,6 +310,7 @@
     <addaction name="actionTextureConverter"/>
     <addaction name="actionMaterialEditor"/>
     <addaction name="actionCubemapEditor"/>
+    <addaction name="actionImageSplitter"/>
     <addaction name="separator"/>
     <addaction name="actionShowSettings"/>
    </widget>
@@ -300,7 +320,7 @@
     </property>
     <widget class="QMenu" name="menuTexturesForGPU">
      <property name="title">
-      <string>Textures for GPU</string>
+      <string>GPU</string>
      </property>
      <addaction name="actionReloadPoverVRIOS"/>
      <addaction name="actionReloadPoverVRAndroid"/>
@@ -315,12 +335,22 @@
       <string>Toolbars</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuLightView">
+     <property name="title">
+      <string>Light</string>
+     </property>
+     <addaction name="actionAlbedo"/>
+     <addaction name="actionAmbient"/>
+     <addaction name="actionDiffuse"/>
+     <addaction name="actionSpecular"/>
+    </widget>
     <addaction name="menuTexturesForGPU"/>
+    <addaction name="menuLightView"/>
     <addaction name="separator"/>
     <addaction name="menuToolbars"/>
     <addaction name="separator"/>
     <addaction name="actionShowEditorGizmo"/>
-    <addaction name="actionOnSceneSelection"/>
+    <addaction name="actionLightmapCanvas"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -338,17 +368,7 @@
     <addaction name="actionModifyPlaceOnLandscape"/>
     <addaction name="actionModifySnapToLandscape"/>
     <addaction name="separator"/>
-    <addaction name="actionConvertToShadow"/>
-   </widget>
-   <widget class="QMenu" name="menuComponent">
-    <property name="title">
-     <string>Component</string>
-    </property>
-    <addaction name="actionAddNewComponent"/>
-    <addaction name="actionRemoveComponent"/>
-    <addaction name="separator"/>
-    <addaction name="actionAddActionComponent"/>
-    <addaction name="actionRemoveActionComponent"/>
+    <addaction name="actionOnSceneSelection"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -374,13 +394,6 @@
      <addaction name="actionSaveHeightmapToPNG"/>
      <addaction name="actionSaveTiledTexture"/>
     </widget>
-    <widget class="QMenu" name="menuBeast">
-     <property name="title">
-      <string>Beast</string>
-     </property>
-     <addaction name="actionBeast"/>
-     <addaction name="actionBeastAndSave"/>
-    </widget>
     <widget class="QMenu" name="menuObjectTypes">
      <property name="title">
       <string>Collision Type</string>
@@ -395,14 +408,16 @@
      <addaction name="actionFalling"/>
      <addaction name="actionBuilding"/>
      <addaction name="actionInvisibleWall"/>
+     <addaction name="actionSpeedTree"/>
     </widget>
     <addaction name="actionEnableCameraLight"/>
     <addaction name="actionReloadSprites"/>
+    <addaction name="actionReloadShader"/>
+    <addaction name="actionConvertModifiedTextures"/>
     <addaction name="separator"/>
     <addaction name="actionSetShadowColor"/>
     <addaction name="menuDynamicShadowBlendMode"/>
     <addaction name="separator"/>
-    <addaction name="actionLandscape"/>
     <addaction name="actionHeightMapEditor"/>
     <addaction name="actionTileMapEditor"/>
     <addaction name="actionShowNotPassableLandscape"/>
@@ -411,18 +426,29 @@
     <addaction name="actionVisibilityCheckTool"/>
     <addaction name="menuLandscape_2"/>
     <addaction name="separator"/>
-    <addaction name="actionSkyboxEditor"/>
     <addaction name="separator"/>
-    <addaction name="menuBeast"/>
+    <addaction name="actionBuildStaticOcclusion"/>
+    <addaction name="actionBeastAndSave"/>
     <addaction name="separator"/>
     <addaction name="menuObjectTypes"/>
     <addaction name="actionHangingObjects"/>
+    <addaction name="actionSwitchesWithDifferentLODs"/>
+    <addaction name="separator"/>
+    <addaction name="actionCurrentSceneSettings"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menuQuality">
+    <property name="title">
+     <string>Quality</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionCustomQuality"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
+   <addaction name="menuQuality"/>
    <addaction name="menuCreateNode"/>
-   <addaction name="menuComponent"/>
    <addaction name="menuScene"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
@@ -505,32 +531,6 @@
    </attribute>
   </widget>
   <widget class="StatusBar" name="statusBar"/>
-  <widget class="QDockWidget" name="dockWidget">
-   <property name="windowTitle">
-    <string>Material View Options</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_5">
-    <property name="maximumSize">
-     <size>
-      <width>16777215</width>
-      <height>70</height>
-     </size>
-    </property>
-    <widget class="MaterialViewOptions" name="widget" native="true">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>251</width>
-       <height>41</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-  </widget>
   <widget class="QDockWidget" name="dockSceneInfo">
    <property name="enabled">
     <bool>true</bool>
@@ -546,7 +546,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -592,7 +601,16 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
       <number>1</number>
      </property>
      <item>
@@ -624,7 +642,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -659,6 +686,12 @@
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
+       <property name="uniformRowHeights">
+        <bool>true</bool>
+       </property>
+       <property name="expandsOnDoubleClick">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
     </layout>
@@ -671,44 +704,7 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="dockWidgetContents_11">
-    <layout class="QVBoxLayout" name="verticalLayout_20">
-     <property name="spacing">
-      <number>1</number>
-     </property>
-     <property name="margin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="ConsoleView" name="consoleView">
-       <property name="font">
-        <font>
-         <pointsize>9</pointsize>
-        </font>
-       </property>
-       <property name="undoRedoEnabled">
-        <bool>false</bool>
-       </property>
-       <property name="lineWrapMode">
-        <enum>QPlainTextEdit::NoWrap</enum>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="backgroundVisible">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="consoleEdit">
-       <property name="frame">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+   <widget class="ConsoleWidget" name="dockConsoleContents"/>
   </widget>
   <widget class="QDockWidget" name="dockLODEditor">
    <property name="windowTitle">
@@ -735,15 +731,14 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionSkyboxEditor"/>
-   <addaction name="actionLandscape"/>
-   <addaction name="separator"/>
    <addaction name="actionHeightMapEditor"/>
    <addaction name="actionTileMapEditor"/>
    <addaction name="actionShowNotPassableLandscape"/>
    <addaction name="actionRulerTool"/>
    <addaction name="actionCustomColorsEditor"/>
    <addaction name="actionVisibilityCheckTool"/>
+   <addaction name="separator"/>
+   <addaction name="actionGrasEditor"/>
   </widget>
   <widget class="QDockWidget" name="dockLandscapeEditorControls">
    <property name="windowTitle">
@@ -774,8 +769,37 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionReloadSprites"/>
+   <addaction name="actionReloadShader"/>
    <addaction name="actionSetShadowColor"/>
    <addaction name="actionConvertModifiedTextures"/>
+   <addaction name="actionCurrentSceneSettings"/>
+  </widget>
+  <widget class="QDockWidget" name="dockLibrary">
+   <property name="windowTitle">
+    <string>Library</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="LibraryWidget" name="libraryWidget"/>
+  </widget>
+  <widget class="QToolBar" name="testingToolBar">
+   <property name="windowTitle">
+    <string>Testing Toolbar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionSwitchesWithDifferentLODs"/>
   </widget>
   <action name="actionNewScene">
    <property name="icon">
@@ -844,15 +868,6 @@
   <action name="actionExportTegra">
    <property name="text">
     <string>Tegra</string>
-   </property>
-  </action>
-  <action name="actionLandscape">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/land_settings.png</normaloff>:/QtIcons/land_settings.png</iconset>
-   </property>
-   <property name="text">
-    <string>Landscape...</string>
    </property>
   </action>
   <action name="actionLight">
@@ -1198,16 +1213,19 @@
     <bool>false</bool>
    </property>
   </action>
-  <action name="actionShowAdvancedProp">
+  <action name="actionFavoritesEdit">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="icon">
     <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/advanced.png</normaloff>:/QtIcons/advanced.png</iconset>
+     <normaloff>:/QtIcons/star.png</normaloff>:/QtIcons/star.png</iconset>
    </property>
    <property name="text">
-    <string>Advanced View</string>
+    <string>Favorites edit</string>
+   </property>
+   <property name="toolTip">
+    <string>Favorites edit</string>
    </property>
   </action>
   <action name="actionModifyReset">
@@ -1253,18 +1271,6 @@
    </property>
    <property name="toolTip">
     <string>Remove entity</string>
-   </property>
-  </action>
-  <action name="actionRemoveComponent">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/removecomponent.png</normaloff>:/QtIcons/removecomponent.png</iconset>
-   </property>
-   <property name="text">
-    <string>Remove Component</string>
-   </property>
-   <property name="toolTip">
-    <string>Remove component</string>
    </property>
   </action>
   <action name="actionConvertToShadow">
@@ -1421,15 +1427,6 @@
     <string>Setup Skybox</string>
    </property>
   </action>
-  <action name="actionSkyboxEditor">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/cloud.png</normaloff>:/QtIcons/cloud.png</iconset>
-   </property>
-   <property name="text">
-    <string>Skybox...</string>
-   </property>
-  </action>
   <action name="actionSetShadowColor">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1464,11 +1461,6 @@
     <string>Reload Sprites</string>
    </property>
   </action>
-  <action name="actionUniteEntitiesWithLODs">
-   <property name="text">
-    <string>Group to entity with merged LODs</string>
-   </property>
-  </action>
   <action name="actionSaveHeightmapToPNG">
    <property name="text">
     <string>Save Heightmap to PNG</string>
@@ -1476,7 +1468,7 @@
   </action>
   <action name="actionSaveTiledTexture">
    <property name="text">
-    <string>Save Tiled Texture</string>
+    <string>Save Landscape Texture</string>
    </property>
   </action>
   <action name="actionCustomColorsEditor">
@@ -1526,24 +1518,17 @@
     <string>Import SpeedTree</string>
    </property>
   </action>
-  <action name="actionBeast">
-   <property name="text">
-    <string>Beast</string>
-   </property>
-  </action>
   <action name="actionBeastAndSave">
    <property name="text">
-    <string>Beast And Save</string>
+    <string>Generate Lightmaps</string>
+   </property>
+   <property name="toolTip">
+    <string>Generate Lightmaps</string>
    </property>
   </action>
   <action name="actionAddActionComponent">
    <property name="text">
     <string>Add Action Component</string>
-   </property>
-  </action>
-  <action name="actionRemoveActionComponent">
-   <property name="text">
-    <string>Remove Action Component</string>
    </property>
   </action>
   <action name="actionNoObject">
@@ -1608,6 +1593,16 @@
    </property>
    <property name="text">
     <string>Invisible Wall</string>
+   </property>
+  </action>
+  <action name="actionAddSoundComponent">
+   <property name="text">
+    <string>Add Sound Component</string>
+   </property>
+  </action>
+  <action name="actionRemoveSoundComponent">
+   <property name="text">
+    <string>Remove Sound Component</string>
    </property>
   </action>
   <action name="actionHangingObjects">
@@ -1696,27 +1691,226 @@
     <string>Collapse all.</string>
    </property>
   </action>
+  <action name="actionAddStaticOcclusionComponent">
+   <property name="text">
+    <string>Add Static Occlusion Component</string>
+   </property>
+  </action>
+  <action name="actionBuildStaticOcclusion">
+   <property name="text">
+    <string>Build Static Occlusion</string>
+   </property>
+  </action>
+  <action name="actionAddQualitySettingsComponent">
+   <property name="text">
+    <string>Add Quality Settings Component</string>
+   </property>
+  </action>
+  <action name="actionSpeedTree">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Speed Tree</string>
+   </property>
+  </action>
   <action name="actionConvertModifiedTextures">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
      <normaloff>:/QtIconsTextureDialog/convert.png</normaloff>:/QtIconsTextureDialog/convert.png</iconset>
    </property>
    <property name="text">
-    <string>Convert Modified texture's PNGs.</string>
+    <string>Convert Modified texture's PNGs</string>
+   </property>
+  </action>
+  <action name="actionCurrentSceneSettings">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/settings.png</normaloff>:/QtIcons/settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Current scene settings...</string>
+   </property>
+  </action>
+  <action name="actionAlbedo">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Albedo</string>
+   </property>
+  </action>
+  <action name="actionAmbient">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Ambient</string>
+   </property>
+  </action>
+  <action name="actionDiffuse">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Diffuse</string>
+   </property>
+  </action>
+  <action name="actionSpecular">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Specular</string>
+   </property>
+  </action>
+  <action name="actionEditor_Sprite">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/map.png</normaloff>:/QtIcons/map.png</iconset>
+   </property>
+   <property name="text">
+    <string>Editor Sprite</string>
+   </property>
+  </action>
+  <action name="actionEditor_2D_Camera">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/camera.png</normaloff>:/QtIcons/camera.png</iconset>
+   </property>
+   <property name="text">
+    <string>Camera 2D</string>
+   </property>
+  </action>
+  <action name="actionAddLandscape">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/land_settings.png</normaloff>:/QtIcons/land_settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>Landscape</string>
+   </property>
+   <property name="toolTip">
+    <string>Add landscape</string>
+   </property>
+  </action>
+  <action name="actionAddSkybox">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/cloud.png</normaloff>:/QtIcons/cloud.png</iconset>
+   </property>
+   <property name="text">
+    <string>Skybox</string>
+   </property>
+   <property name="toolTip">
+    <string>Add skybox</string>
+   </property>
+  </action>
+  <action name="actionCustomQuality">
+   <property name="text">
+    <string>Custom...</string>
+   </property>
+   <property name="toolTip">
+    <string>Custom Quality Settings</string>
+   </property>
+  </action>
+  <action name="actionSetLightViewMode">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/light_settings.png</normaloff>:/QtIcons/light_settings.png</iconset>
+   </property>
+   <property name="text">
+    <string>setLightViewMode</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Materials LightViewMode</string>
+   </property>
+  </action>
+  <action name="actionCloseProject">
+   <property name="text">
+    <string>Close Project</string>
+   </property>
+   <property name="toolTip">
+    <string>Close Project</string>
+   </property>
+  </action>
+  <action name="actionLightmapCanvas">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Lightmap Canvas</string>
+   </property>
+  </action>
+  <action name="actionGrasEditor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/grass.png</normaloff>:/QtIcons/grass.png</iconset>
+   </property>
+   <property name="text">
+    <string>GrasEditor</string>
+   </property>
+  </action>
+  <action name="actionImageSplitter">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/image_splitter.png</normaloff>:/QtIcons/image_splitter.png</iconset>
+   </property>
+   <property name="text">
+    <string>ImageSplitter</string>
+   </property>
+  </action>
+  <action name="actionAddVegetation">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/grass.png</normaloff>:/QtIcons/grass.png</iconset>
+   </property>
+   <property name="text">
+    <string>Vegetation</string>
+   </property>
+  </action>
+  <action name="actionReloadShader">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/reload_shaders.png</normaloff>:/QtIcons/reload_shaders.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reload Shaders</string>
+   </property>
+  </action>
+  <action name="actionSwitchesWithDifferentLODs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/switches_with_different_lods.png</normaloff>:/QtIcons/switches_with_different_lods.png</iconset>
+   </property>
+   <property name="text">
+    <string>Switches with Different LODs</string>
    </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
-  <customwidget>
-   <class>LibraryView</class>
-   <extends>QTreeView</extends>
-   <header>DockLibrary/libraryview.h</header>
-   <slots>
-    <slot>ShowDAE(bool)</slot>
-    <slot>ShowSC2(bool)</slot>
-   </slots>
-  </customwidget>
   <customwidget>
    <class>PropertyEditor</class>
    <extends>QTreeView</extends>
@@ -1732,11 +1926,6 @@
    <extends>QWidget</extends>
    <header>DockParticleEditor/particletimelinewidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>MaterialViewOptions</class>
-   <extends>QWidget</extends>
-   <header>DockMaterialViewOptions/materialviewoptions.h</header>
   </customwidget>
   <customwidget>
    <class>SceneTabWidget</class>
@@ -1756,11 +1945,6 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>ConsoleView</class>
-   <extends>QPlainTextEdit</extends>
-   <header>DockConsole/ConsoleView.h</header>
-  </customwidget>
-  <customwidget>
    <class>LODEditor</class>
    <extends>QWidget</extends>
    <header>DockLODEditor/LODEditor.h</header>
@@ -1777,42 +1961,27 @@
    <header>DockLandscapeEditorControls/LandscapeEditorControlsPlaceholder.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>DockProperties</class>
+   <extends>QDockWidget</extends>
+   <header>DockProperties/DockProperties.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LibraryWidget</class>
+   <extends>QWidget</extends>
+   <header>DockLibrary/LibraryWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ConsoleWidget</class>
+   <extends>QWidget</extends>
+   <header>DockConsole/ConsoleWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
   <include location="QtIcons.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>cbShowDAEFiles</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>libraryView</receiver>
-   <slot>ShowDAE(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>823</x>
-     <y>121</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>840</x>
-     <y>154</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>cbShowSC2Files</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>libraryView</receiver>
-   <slot>ShowSC2(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>953</x>
-     <y>121</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>957</x>
-     <y>164</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

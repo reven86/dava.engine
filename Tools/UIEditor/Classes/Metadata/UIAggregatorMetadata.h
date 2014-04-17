@@ -43,6 +43,12 @@ namespace DAVA
 		virtual void InitializeControl(const String& controlName, const Vector2& position);
 		
 		virtual QString GetUIControlClassName();
+        
+    protected:
+        virtual void SetVisible(const bool value);
+
+        // Default Flags.
+        virtual bool GetInitialInputEnabled() const {return true;};
 	};
 }
 

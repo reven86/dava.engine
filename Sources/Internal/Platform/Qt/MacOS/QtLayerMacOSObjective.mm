@@ -21,8 +21,6 @@
 #import "AppKit/NSView.h"
 #include "OpenGLView.h"
 
-#include "Platform/Qt/MacOS/CorePlatformMacOS.h"
-
 extern void FrameworkWillTerminate();
 
 

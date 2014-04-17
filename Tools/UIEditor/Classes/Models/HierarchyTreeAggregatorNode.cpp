@@ -36,7 +36,6 @@
 #include "HierarchyTreeAggregatorControlNode.h"
 
 #include "UI/UIList.h"
-#include "EditorListDelegate.h"
 
 #define WIDTH_NODE "width"
 #define HEIGHT_NODE "height"
@@ -44,7 +43,8 @@
 using namespace DAVA;
 
 HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent, const QString& name, const Rect& rect) :
-	HierarchyTreeScreenNode(parent, name)
+	HierarchyTreeScreenNode(parent, name),
+    listDelegate(NULL)
 {
 	this->rect = rect;
 	screen->SetRect(rect);
@@ -54,7 +54,8 @@ HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNo
 
 HierarchyTreeAggregatorNode::HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent,
 														 const HierarchyTreeAggregatorNode* base)
-:	HierarchyTreeScreenNode(parent, base)
+:	HierarchyTreeScreenNode(parent, base),
+    listDelegate(NULL)
 {
 	this->rect = base->GetRect();
 	screen->SetRect(rect);
@@ -66,6 +67,8 @@ HierarchyTreeAggregatorNode::~HierarchyTreeAggregatorNode()
 {
 	LibraryController::Instance()->RemoveControl(this);
 	DVASSERT(childs.size() == 0);
+    
+    SafeRelease(listDelegate);
 }
 
 void HierarchyTreeAggregatorNode::AddChild(HierarchyTreeControlNode *node)
@@ -150,6 +153,7 @@ void HierarchyTreeAggregatorNode::UpdateChilds()
 			UIControl* newControl = control->Clone();
 			aggregatorControl->InsertChildBelow(newControl, belowControl);
 			aggregatorControl->AddAggregatorChild(newControl);
+            newControl->Release();
 		}
 
 		// Have to remember Align Data prior to changing rectangle and then apply the alignment
@@ -239,7 +243,7 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 	// Set aggregator ID for list if it has saved aggregator path and it is available in tree
 	if (list && list->GetAggregatorPath() == path)
 	{
-		EditorListDelegate *listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
 		// If loaded delegate has aggregator path - pass its id to delegate
 		listDelegate->SetAggregatorID(GetId());
 		// Always set a delegate for loaded UIList

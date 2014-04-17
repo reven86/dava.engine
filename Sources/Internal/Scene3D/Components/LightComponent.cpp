@@ -29,9 +29,13 @@
 
 
 #include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Scene.h"
+#include "Render/Highlevel/RenderSystem.h"
 
 namespace DAVA 
 {
+    
+REGISTER_CLASS(LightComponent)
 
 LightComponent::LightComponent(Light * _light)
 {
@@ -49,7 +53,7 @@ void LightComponent::SetLightObject(Light * _light)
     light = SafeRetain(_light);
 }
     
-Light * LightComponent::GetLightObject()
+Light * LightComponent::GetLightObject() const
 {
     return light;
 }
@@ -58,18 +62,21 @@ Component * LightComponent::Clone(Entity * toEntity)
 {
     LightComponent * component = new LightComponent();
 	component->SetEntity(toEntity);
-    component->light = (Light*)light->Clone();
+    
+    if(light)
+        component->light = (Light*)light->Clone();
+    
     return component;
 }
 
-void LightComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void LightComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Serialize(archive, sceneFile);
+	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive && NULL != light)
 	{
 		KeyedArchive *lightArch = new KeyedArchive();
-		light->Save(lightArch, sceneFile);
+		light->Save(lightArch, serializationContext);
 
 		archive->SetArchive("lc.light", lightArch);
 
@@ -77,7 +84,7 @@ void LightComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 	}
 }
 
-void LightComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void LightComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	if(NULL != archive)
 	{
@@ -85,13 +92,181 @@ void LightComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 		if(NULL != lightArch)
 		{
 			Light* l = new Light();
-			l->Load(lightArch, sceneFile);
+			l->Load(lightArch, serializationContext);
 			SetLightObject(l);
 			l->Release();
 		}
 	}
 
-	Component::Deserialize(archive, sceneFile);
+	Component::Deserialize(archive, serializationContext);
+}
+
+const bool LightComponent::IsDynamic()
+{
+    return (light) ? light->IsDynamic() : false;
+}
+
+void LightComponent::SetDynamic(const bool & isDynamic)
+{
+    if(light)
+    {
+        light->SetDynamic(isDynamic);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+    
+void LightComponent::SetLightType(const uint32 & _type)
+{
+    if(light)
+    {
+        light->SetType((Light::eType)_type);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+
+void LightComponent::SetAmbientColor(const Color & _color)
+{
+    if(light)
+    {
+        light->SetAmbientColor(_color);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+
+void LightComponent::SetDiffuseColor(const Color & _color)
+{
+    if(light)
+    {
+        light->SetDiffuseColor(_color);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+
+void LightComponent::SetSpecularColor(const Color & _color)
+{
+    if(light)
+    {
+        light->SetSpecularColor(_color);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+
+void LightComponent::SetIntensity(const float32& intensity)
+{
+    if(light)
+    {
+        light->SetIntensity(intensity);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+    
+const uint32 LightComponent::GetLightType()
+{
+    if(light)
+    {
+        return light->GetType();
+    }
+
+    return Light::TYPE_SKY;
+}
+
+const Color LightComponent::GetAmbientColor()
+{
+    if(light)
+    {
+        return light->GetAmbientColor();
+    }
+
+    return Color();
+}
+
+const Color LightComponent::GetDiffuseColor()
+{
+    if(light)
+    {
+        return light->GetDiffuseColor();
+    }
+    
+    return Color();
+}
+
+const Color LightComponent::GetSpecularColor()
+{
+    if(light)
+    {
+        return light->GetSpecularColor();
+    }
+    
+    return Color();
+
+}
+
+const float32 LightComponent::GetIntensity()
+{
+    if(light)
+    {
+        return light->GetIntensity();
+    }
+    
+    return 0.0f;
+}
+    
+const Vector3 LightComponent::GetPosition() const
+{
+    if(light)
+    {
+        return light->GetPosition();
+    }
+    
+    return Vector3();
+}
+
+const Vector3 LightComponent::GetDirection() const
+{
+    if(light)
+    {
+        return light->GetDirection();
+    }
+    
+    return Vector3();
+}
+
+void LightComponent::SetPosition(const Vector3 & position)
+{
+    if(light)
+    {
+        light->SetPosition(position);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+
+void LightComponent::SetDirection(const Vector3& direction)
+{
+    if(light)
+    {
+        light->SetDirection(direction);
+        
+        NotifyRenderSystemLightChanged();
+    }
+}
+
+void LightComponent::NotifyRenderSystemLightChanged()
+{
+    if(entity)
+    {
+        Scene* curScene = entity->GetScene();
+        if(curScene)
+        {
+            curScene->renderSystem->SetForceUpdateLights();
+        }
+    }
 }
 
 

@@ -81,7 +81,7 @@ protected:
 	DAVA::GraphicsFont *font;
 	DAVA::List<TextToDraw> listToDraw;
 
-	virtual void Update(float timeElapsed);
+	virtual void Process(DAVA::float32 timeElapsed);
 	void Draw();
 };
 

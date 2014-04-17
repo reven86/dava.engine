@@ -38,6 +38,7 @@ extern void FrameworkWillTerminate();
 
 #include "Platform/Thread.h"
 #include "Input/InputSystem.h"
+#include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
@@ -192,6 +193,7 @@ namespace DAVA
 
 			Logger::Debug("[CorePlatformAndroid::] before create renderer");
 			RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
+			FileSystem::Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");
@@ -296,7 +298,7 @@ namespace DAVA
 		SafeDelete(keyEvent);
 	}
 
-	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source)
+	UIEvent CorePlatformAndroid::CreateInputEvent(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
 	{
 		int32 phase = DAVA::UIEvent::PHASE_DRAG;
 		switch(action)
@@ -337,7 +339,7 @@ namespace DAVA
 		newEvent.point.x = x;
 		newEvent.point.y = y;
 		newEvent.phase = phase;
-		newEvent.tapCount = 1;
+		newEvent.tapCount = tapCount;
 		newEvent.timestamp = time;
 
 		return newEvent;
@@ -353,10 +355,16 @@ namespace DAVA
 		assetMngr = mngr;
 	}
 
-	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source)
+	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)
 	{
-		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source);
+		UIEvent touchEvent = CreateInputEvent(action, id, x, y, time, source, tapCount);
 
+		if(touchEvent.phase == DAVA::UIEvent::PHASE_JOYSTICK)
+		{
+			InputSystem::Instance()->ProcessInputEvent(&touchEvent);
+			return;
+		}
+		
 		bool isFound = false;
 		for(Vector<DAVA::UIEvent>::iterator it = totalTouches.begin(); it != totalTouches.end(); ++it)
 		{

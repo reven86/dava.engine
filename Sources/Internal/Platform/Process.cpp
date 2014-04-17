@@ -171,7 +171,7 @@ namespace DAVA
 			String runArgsFlat = executablePath.GetAbsolutePathname();
 			if(runArgs.size() > 0)
 			{
-				for(int i = 0; i < runArgs.size(); ++i)
+				for(int i = 0; i < (int)runArgs.size(); ++i)
 				{
 					runArgsFlat += " ";
 					runArgsFlat += runArgs[i];

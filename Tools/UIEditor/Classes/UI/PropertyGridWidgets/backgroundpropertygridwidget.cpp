@@ -43,7 +43,6 @@
 #include "UIStaticTextMetadata.h"
 #include "ResourcesManageHelper.h"
 
-#include "TexturePacker/ResourcePacker2D.h"
 #include "StringUtils.h"
 
 static const QString TEXT_PROPERTY_BLOCK_NAME = "Background";
@@ -92,7 +91,7 @@ void BackGroundPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::COLOR_INHERIT_TYPE_PROPERTY_NAME, ui->colorInheritComboBox, false, true);
 	RegisterComboBoxWidgetForProperty(propertiesMap, PropertyNames::ALIGN_PROPERTY_NAME, ui->alignComboBox, false, true);
 	
-    RegisterColorButtonWidgetForProperty(propertiesMap, PropertyNames::BACKGROUND_COLOR_PROPERTY_NAME, ui->selectColorButton, false, true);
+    RegisterColorWidgetForProperty(propertiesMap, PropertyNames::BACKGROUND_COLOR_PROPERTY_NAME, ui->selectColorWidget, false, true);
 
 	ui->spriteLineEdit->setEnabled(true);
 	HandleDrawTypeComboBox();
@@ -107,7 +106,7 @@ void BackGroundPropertyGridWidget::Cleanup()
     UnregisterComboBoxWidget(ui->drawTypeComboBox);
     UnregisterComboBoxWidget(ui->colorInheritComboBox);
     UnregisterComboBoxWidget(ui->alignComboBox);
-    UnregisterColorButtonWidget(ui->selectColorButton);
+    UnregisterColorWidget(ui->selectColorWidget);
 
 	UnregisterComboBoxWidget(ui->modificationComboBox);
 	UnregisterSpinBoxWidget(ui->lrSpinBox);
@@ -156,13 +155,6 @@ void BackGroundPropertyGridWidget::FillComboboxes()
 
 void BackGroundPropertyGridWidget::OpenSpriteDialog()
 {
-	// Pack all available sprites each time user open sprite dialog
-	ResourcePacker2D *resPacker = new ResourcePacker2D();
-	resPacker->InitFolders(ResourcesManageHelper::GetSpritesDatasourceDirectory().toStdString(),
-                           ResourcesManageHelper::GetSpritesDirectory().toStdString());
-    
-    resPacker->PackResources(GPU_UNKNOWN);
-
 	// Get sprites directory to open
 	QString currentSpriteDir = ResourcesManageHelper::GetDefaultSpritesPath(this->ui->spriteLineEdit->text());
 	// Get sprite path from file dialog
@@ -189,8 +181,6 @@ void BackGroundPropertyGridWidget::OpenSpriteDialog()
 			ResourcesManageHelper::ShowErrorMessage(spriteName);
 		}
     }
-	
-	SafeDelete(resPacker);
 }
 
 void BackGroundPropertyGridWidget::RemoveSprite()
@@ -330,11 +320,13 @@ void BackGroundPropertyGridWidget::HandleDrawTypeComboBox()
 			lrState = true;
 			tbState = false;
 			modificationComboBoxState = false;
+			SetStretchCapMaxValues();
 			break;
 		case UIControlBackground::DRAW_STRETCH_VERTICAL:
 			lrState = false;
 			tbState = true;
 			modificationComboBoxState = false;
+			SetStretchCapMaxValues();
 			break;
 		case UIControlBackground::DRAW_STRETCH_BOTH:
         case UIControlBackground::DRAW_TILED:
@@ -362,34 +354,24 @@ void BackGroundPropertyGridWidget::SetStretchCapMaxValues()
 {
 	WidgetSignalsBlocker blocker(ui->drawTypeComboBox);
 	
-	// Get current drawType combo value
-	int selectedIndex = ui->drawTypeComboBox->currentIndex();
-	UIControlBackground::eDrawType drawType = BackgroundGridWidgetHelper::GetDrawType(selectedIndex);
-	
 	// Set default values
 	int horizontalStretchMax = 999;
 	int verticalStretchMax = 999;
-	
-	// For DRAW_TILED option we should set horizontal and vertical stretch maximum values
-	// Tiling the sprite to more than half of its size have no sence
-	if (drawType == UIControlBackground::DRAW_TILED)
+	// For all options with DRAW_TILED and DRAW_STRETCH we should update maximum
+	QString spriteName =  ui->spriteLineEdit->text();
+	if (!spriteName.isEmpty())
 	{
-		QString spriteName =  ui->spriteLineEdit->text();
-		if (!spriteName.isEmpty())
+		Sprite* sprite = Sprite::Create(spriteName.toStdString());
+		if (sprite)
 		{
-			Sprite* sprite = Sprite::Create(spriteName.toStdString());
-			
-			if (sprite)
-			{
-				// Get sprite's active size
-				float32 texDx = sprite->GetWidth();
-				float32 texDy = sprite->GetHeight();
-				// Calculate maximum stretch values
-				horizontalStretchMax = texDx / 2 - 1;
-				verticalStretchMax = texDy / 2 - 1;
-            }
-        	SafeRelease(sprite);
+			// Get sprite's active size
+			float32 texDx = sprite->GetWidth();
+			float32 texDy = sprite->GetHeight();
+			// Calculate maximum stretch values
+			horizontalStretchMax = texDx / 2 - 1;
+			verticalStretchMax = texDy / 2 - 1;
 		}
+       	SafeRelease(sprite);
 	}
 
 	ui->lrSpinBox->setMaximum(horizontalStretchMax);

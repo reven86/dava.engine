@@ -155,7 +155,7 @@ void AnimatedMesh::Update(float32 timeElapsed)
 	}
 	*/
 	
-	int32 boneCount = (int32)bones.size();
+	/*int32 boneCount = (int32)bones.size();
 	for (int b = 0; b < boneCount; ++b)
 	{
 		bones[b]->finalMatrix = bindShapeMatrix * bones[b]->inverse0Matrix * bones[b]->GetWorldTransform();
@@ -206,7 +206,7 @@ void AnimatedMesh::Update(float32 timeElapsed)
 			jointsWeightsPlain += polyGroup->vertexStride;
 			vertexPlain += polyGroup->vertexStride;
 		}
-	}
+	}*/
 }
 
 void AnimatedMesh::RestoreBonesFromNames()

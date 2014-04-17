@@ -33,71 +33,51 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderBatch.h"
+#include "Render/Highlevel/RenderFastNames.h"
 
 namespace DAVA
 {
 
-class RenderBatchArray;
+class RenderLayerBatchArray;
 class Camera;
     
 class RenderLayer
 {
 public:
-    RenderLayer(const FastName & name);
+    RenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
     virtual ~RenderLayer();
     
-    enum
-    {
-        SORT_ENABLED = 1 << 0,
-        SORT_BY_MATERIAL = 1 << 1,
-        SORT_BY_DISTANCE = 1 << 2,
-        
-        SORT_REQUIRED = 1 << 3,
+    inline RenderLayerID GetRenderLayerID() const;
+	inline const FastName & GetName() const;
+	inline uint32 GetFlags() const;
 
-		VISIBLE = 1 << 4
-    };
+    virtual void Draw(const FastName & ownerRenderPass, Camera * camera, RenderLayerBatchArray * renderLayerBatchArray);
     
-    static const uint32 SORT_THIS_FRAME = SORT_ENABLED | SORT_REQUIRED;
-    
-    void AddRenderBatch(RenderBatch * batch);
-    void RemoveRenderBatch(RenderBatch * batch);
-    uint32 GetRenderBatchCount();
-    inline void ForceLayerSort();
-	const FastName & GetName();
-
-    void Update(Camera * camera);
-    virtual void Draw(Camera * camera);
-
-	void SetVisible(bool visible);
-	bool GetVisible();
-private:
+protected:
     FastName name;
-    Vector<RenderBatch*> renderBatchArray;
-    //Vector<
-    uint32 index;
     uint32 flags;
-    //RenderBatchArray * renderBatchArray;
-    
-    struct RenderBatchSortItem
-    {
-        pointer_size sortingKey;
-        RenderBatch * renderBatch;
-    };
-    Vector<RenderBatchSortItem> sortArray;
-    static bool MaterialCompareFunction(const RenderBatchSortItem & a, const RenderBatchSortItem & b);
+    RenderLayerID id;
 public:
-    
     INTROSPECTION(RenderLayer,
-        MEMBER(name, "Name", I_VIEW)
-        COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW | I_EDIT)
+        MEMBER(name, "Name", I_VIEW )
+        //COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW)
     );
 };
     
-inline void RenderLayer::ForceLayerSort()
+inline RenderLayerID RenderLayer::GetRenderLayerID() const
 {
-    flags |= SORT_REQUIRED;
+    return id;
+}
+    
+inline const FastName & RenderLayer::GetName() const
+{
+    return name;
 }
 
+inline uint32 RenderLayer::GetFlags() const
+{
+    return flags;
+}
     
 } // ns
 

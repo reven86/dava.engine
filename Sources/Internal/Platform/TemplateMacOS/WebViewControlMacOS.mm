@@ -139,7 +139,8 @@ using namespace DAVA;
 @end
 
 
-WebViewControl::WebViewControl()
+WebViewControl::WebViewControl() :
+    isWebViewVisible(true)
 {
 	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
 	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil groupName:nil];
@@ -193,6 +194,13 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	[(WebView*)webViewPtr setMainFrameURL:nsURLPathToOpen];
 }
 
+void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
+{
+    NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
+    NSString* baseUrl = [NSString stringWithUTF8String:basePath.GetAbsolutePathname().c_str()];
+    [[(WebView*)webViewPtr mainFrame] loadHTMLString:dataToOpen baseURL:[NSURL fileURLWithPath:baseUrl]];
+}
+
 void WebViewControl::SetRect(const Rect& rect)
 {
 	NSRect webViewRect = [(WebView*)webViewPtr frame];
@@ -211,7 +219,17 @@ void WebViewControl::SetRect(const Rect& rect)
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-	[(WebView*)webViewPtr setHidden:!isVisible];
+    if (!isWebViewVisible && isVisible)
+    {
+        NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+        [openGLView addSubview:(WebView*)webViewPtr];
+    }
+    else if (isWebViewVisible && !isVisible)
+    {
+        [(WebView*)webViewPtr removeFromSuperview];
+    }
+    
+    isWebViewVisible = isVisible;
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)

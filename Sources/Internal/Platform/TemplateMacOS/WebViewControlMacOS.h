@@ -47,6 +47,8 @@ public:
 	
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
+    
+    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
 
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
@@ -58,6 +60,7 @@ public:
 protected:
 	//A pointer to MacOS WebView.
 	void* webViewPtr;
+    bool isWebViewVisible;
 	
 	// A pointer to the WebView delegate.
 	void* webViewDelegatePtr;

@@ -258,7 +258,7 @@ void MD5::Init ()
   this->buf[3] = (uint32)0x10325476;
 }
 
-void MD5::Update (uint8 *inBuf, uint32 inLen)
+void MD5::Update (const uint8 *inBuf, uint32 inLen)
 {
   uint32 in[16];
   int mdi;

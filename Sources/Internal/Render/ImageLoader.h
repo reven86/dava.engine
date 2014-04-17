@@ -43,20 +43,25 @@ class ImageLoader
 {
 public:
 
-	static Vector<Image *> CreateFromFile(const FilePath & pathname);
-	static Vector<Image *> CreateFromFile(File *file);
+    static bool CreateFromFileByExtension(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
     
+	static bool CreateFromFileByContent(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+	static bool CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+
     static void Save(Image *image, const FilePath & pathname);
     
 protected:
 
-	static Vector<Image *> CreateFromPNG(File *file);
-	static Vector<Image *> CreateFromPVR(File *file);
-	static Vector<Image *> CreateFromDXT(File *file);
+    static bool CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet);
+	static bool CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+	static bool CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+	static bool CreateFromPNG(File *file, Vector<Image *> & imageSet);
+	static bool CreateFromPVR(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+	static bool CreateFromDDS(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
     
     static bool IsPVRFile(File *file);
     static bool IsPNGFile(File *file);
-	static bool IsDXTFile(File *file);
+	static bool IsDDSFile(File *file);
 };
 	
 };

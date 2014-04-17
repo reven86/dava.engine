@@ -32,6 +32,7 @@
 #include "EditorFontManager.h"
 
 #include "StringUtils.h"
+#include "ColorHelper.h"
 
 using namespace DAVA;
 
@@ -127,7 +128,7 @@ QColor UITextFieldMetadata::GetTextColor() const
         return QColor();
     }
 	
-	return DAVAColorToQTColor(GetActiveUITextField()->GetTextColor());
+	return ColorHelper::DAVAColorToQTColor(GetActiveUITextField()->GetTextColor());
 }
 
 void UITextFieldMetadata::SetTextColor(const QColor &color)
@@ -137,7 +138,7 @@ void UITextFieldMetadata::SetTextColor(const QColor &color)
         return;
     }
 	
-    GetActiveUITextField()->SetTextColor(QTColorToDAVAColor(color));
+    GetActiveUITextField()->SetTextColor(ColorHelper::QTColorToDAVAColor(color));
 }
 
 QColor UITextFieldMetadata::GetFontColor() const
@@ -199,7 +200,7 @@ QColor UITextFieldMetadata::GetShadowColor() const
         return QColor();
     }
 	
-	return DAVAColorToQTColor(GetActiveUITextField()->GetShadowColor());
+	return ColorHelper::DAVAColorToQTColor(GetActiveUITextField()->GetShadowColor());
 }
 
 void UITextFieldMetadata::SetShadowColor(const QColor& value)
@@ -209,7 +210,7 @@ void UITextFieldMetadata::SetShadowColor(const QColor& value)
         return;
     }
 	
-	GetActiveUITextField()->SetShadowColor(QTColorToDAVAColor(value));
+	GetActiveUITextField()->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 }
 
 int UITextFieldMetadata::GetTextAlign()

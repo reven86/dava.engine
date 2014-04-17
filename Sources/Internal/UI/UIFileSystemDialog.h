@@ -152,8 +152,8 @@ public:
     
     virtual int32 ElementsCount(UIList *forList);
 	virtual UIListCell *CellAtIndex(UIList *forList, int32 index);
-	virtual int32 CellWidth(UIList *forList, int32 index);//calls only for horizontal orientation
-	virtual int32 CellHeight(UIList *forList, int32 index);//calls only for vertical orientation
+	virtual float32 CellWidth(UIList *forList, int32 index);//calls only for horizontal orientation
+	virtual float32 CellHeight(UIList *forList, int32 index);//calls only for vertical orientation
 	virtual void OnCellSelected(UIList *forList, UIListCell *selectedCell);
     
     void ButtonPressed(BaseObject *obj, void *data, void *callerData);
@@ -178,7 +178,7 @@ protected:
     Vector<String> extensionFilter;
     FilePath currentDir;
     String selectedFileName;
-    int32 cellH;
+    float32 cellH;
     
     UIList *fileListView;
     FileList *files;

@@ -123,7 +123,10 @@ void BaseMetadata::InitializeControl(const String& controlName, const Vector2& p
         control->SetName(controlName);
         control->SetSize(INITIAL_CONTROL_SIZE);
         control->SetPosition(position);
-        
+
+        // Default Flags.
+        control->SetInputEnabled(GetInitialInputEnabled());
+
         control->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     }
 }
@@ -265,16 +268,6 @@ UIControl::eControlState BaseMetadata::GetReferenceState()
     return UIControl::STATE_NORMAL;
 }
 
-Color BaseMetadata::QTColorToDAVAColor(const QColor& qtColor) const
-{
-    return Color(qtColor.redF(), qtColor.greenF(), qtColor.blueF(), qtColor.alphaF());
-}
-
-QColor BaseMetadata::DAVAColorToQTColor(const Color& davaColor) const
-{
-    return QColor(davaColor.r * 0xFF, davaColor.g * 0xFF, davaColor.b * 0xFF, davaColor.a * 0xFF);
-}
-
 void BaseMetadata::SetActiveStateIndex(int32 index)
 {
 	if (index >= STATE_INDEX_DEFAULT && index < (int32)GetStatesCount())
@@ -310,4 +303,9 @@ void BaseMetadata::ResetActiveStateIndex()
 uint32 BaseMetadata::GetStatesCount() const
 {
 	return uiControlStates.size();
+}
+
+void BaseMetadata::ApplyRename(const QString& /*originalName*/, const QString& newName)
+{
+	SetName(newName);
 }

@@ -33,6 +33,8 @@
 
 namespace DAVA
 {
+    
+REGISTER_CLASS(BulletComponent)
 
 BulletComponent::BulletComponent()
 :	bulletObject(0)
@@ -65,12 +67,12 @@ BaseObject * BulletComponent::GetBulletObject()
 	return bulletObject;
 }
 
-void BulletComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void BulletComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	// Don't need to save
 }
 
-void BulletComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void BulletComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	// Don't need to save
 }

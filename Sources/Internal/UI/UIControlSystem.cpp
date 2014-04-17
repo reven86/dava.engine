@@ -46,9 +46,11 @@ UIControlSystem::~UIControlSystem()
 	
 UIControlSystem::UIControlSystem()
 {
+	screenLockCount = 0;
 	frameSkip = 0;
 	transitionType = 0;
 	
+	transition = 0;
 	currentScreen = 0;
 	nextScreen = 0;
 	prevScreen = NULL;
@@ -79,7 +81,10 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
 		return;
 	}
 
-	LockInput();
+	// 2 switches on one frame can cause memory leak
+	SafeRelease(transition);
+	SafeRelease(nextScreen);
+
 	transition = SafeRetain(_transition);
 	
 	if (_nextScreen == 0)
@@ -151,13 +156,21 @@ void UIControlSystem::ProcessScreenLogic()
 	/*
 	 if next screen or we need to removecurrent screen
 	 */
-	if (nextScreen || removeCurrentScreen)
+	if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
 	{
+		LockInput();
+		
 		CancelAllInputs();
 		
+		int32 listenersCount = screenSwitchListeners.size();
+		for(int32 i = 0; i < listenersCount; ++i)
+			screenSwitchListeners[i]->OnScreenSwitched(nextScreen);
+
 		// If we have transition set
 		if (transition)
 		{
+			LockSwitch();
+
 			// check if we have not loading transition
 			if (!transition->IsLoadingTransition())
 			{
@@ -168,7 +181,8 @@ void UIControlSystem::ProcessScreenLogic()
 			{
 				// if we got loading transition
 				UILoadingTransition * loadingTransition = dynamic_cast<UILoadingTransition*> (transition);
-				
+                DVASSERT(loadingTransition);
+
 				// Firstly start transition
 				loadingTransition->StartTransition(currentScreen, nextScreen);
 				
@@ -195,8 +209,8 @@ void UIControlSystem::ProcessScreenLogic()
                     currentScreen = loadingTransition;
                     loadingTransition->SystemDidAppear();
                 }
-
 			}
+			transition = NULL;
 		}
         else	// if there is no transition do change immediatelly
 		{	
@@ -248,6 +262,7 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
+    updateCounter = 0;
 	ProcessScreenLogic();
 	
 	float32 timeElapsed = SystemTimer::FrameDelta();
@@ -263,10 +278,12 @@ void UIControlSystem::Update()
 	}
 	
 	SafeRelease(prevScreen);
+    //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
 	
 void UIControlSystem::Draw()
 {
+    drawCounter = 0;
 //	if(currentScreen && (!currentPopup || currentPopup->isTransparent))
 	if (currentScreen)
 	{
@@ -280,6 +297,7 @@ void UIControlSystem::Draw()
 	{
 		frameSkip--;
 	}
+    //Logger::Info("UIControlSystem::draws: %d", drawCounter);
 }
 	
 void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetControl)
@@ -303,11 +321,11 @@ void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetContr
 			targetControl->currentInputID = eventID;
 			if(targetControl->GetExclusiveInput())
 			{
-				SetExclusiveInputLocker(targetControl);
+				SetExclusiveInputLocker(targetControl, eventID);
 			}
 			else 
 			{
-				SetExclusiveInputLocker(NULL);
+				SetExclusiveInputLocker(NULL, -1);
 			}
 
 			targetControl->totalTouches++;
@@ -318,6 +336,7 @@ void UIControlSystem::SwitchInputToControl(int32 eventID, UIControl *targetContr
 	
 void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInputs, const Vector<UIEvent> &allInputs, bool fromReplay/* = false*/)
 {
+    inputCounter = 0;
 	if(Replay::IsPlayback() && !fromReplay) return;
 	if (lockInputCounter > 0)return;
 
@@ -449,7 +468,10 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 		{
 			if((*it).activeState == UIEvent::ACTIVITY_STATE_INACTIVE || (*it).phase == UIEvent::PHASE_CANCELLED)
 			{
-				CancelInput(&(*it));
+                if ((*it).phase != UIEvent::PHASE_ENDED)
+                {
+                    CancelInput(&(*it));
+                }
 				totalInputs.erase(it);
 				it = totalInputs.begin();
 				if(it == totalInputs.end())
@@ -487,6 +509,7 @@ void UIControlSystem::OnInput(int32 touchType, const Vector<UIEvent> &activeInpu
 			}
 		}
 	}
+    //Logger::Info("UIControlSystem::inputs: %d", inputCounter);
 }
 
 void UIControlSystem::OnInput(UIEvent * event)
@@ -504,7 +527,6 @@ void UIControlSystem::CancelInput(UIEvent *touch)
 	if(touch->touchLocker)
 	{
 		touch->touchLocker->SystemInputCancelled(touch);
-		touch->touchLocker = NULL;
 	}
 	if (touch->touchLocker != currentScreen)
 	{
@@ -520,14 +542,29 @@ void UIControlSystem::CancelAllInputs()
 	totalInputs.clear();
 }
 
-void UIControlSystem::CancelInputs(UIControl *control)
+void UIControlSystem::CancelInputs(UIControl *control, bool hierarchical)
 {
 	for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++) 
 	{
-		if(it->touchLocker == control)
-		{
-			CancelInput(&(*it));
-		}
+        if (!hierarchical)
+        {
+            if (it->touchLocker == control)
+            {
+                CancelInput(&(*it));
+                break;
+            }
+            continue;
+        }
+        UIControl * parentLockerControl = it->touchLocker;
+        while(parentLockerControl)
+        {
+            if(control == parentLockerControl)
+            {
+                CancelInput(&(*it));
+                break;
+            }
+            parentLockerControl = parentLockerControl->GetParent();
+        }
 	}
 }
 
@@ -569,9 +606,20 @@ const Vector<UIEvent> & UIControlSystem::GetAllInputs()
 	return totalInputs;
 }
 	
-void UIControlSystem::SetExclusiveInputLocker(UIControl *locker)
+void UIControlSystem::SetExclusiveInputLocker(UIControl *locker, int32 lockEventId)
 {
 	SafeRelease(exclusiveInputLocker);
+    if (locker != NULL)
+    {
+        for (Vector<UIEvent>::iterator it = totalInputs.begin(); it != totalInputs.end(); it++)
+        {
+            if (it->tid != lockEventId && it->touchLocker != locker)
+            {//cancel all inputs excepts current input and inputs what allready handles by this locker.
+                CancelInput(&(*it));
+            }
+        }
+    }
+
 	exclusiveInputLocker = SafeRetain(locker);
 }
 	
@@ -722,6 +770,31 @@ void UIControlSystem::ReplayEvents()
 			OnInput(0, activeInputs, allInputs, true);
 		}
 	}
+}
+
+DAVA::int32 UIControlSystem::LockSwitch()
+{
+	screenLockCount++;
+	return screenLockCount;
+}
+
+DAVA::int32 UIControlSystem::UnlockSwitch()
+{
+	screenLockCount--;
+	DVASSERT(screenLockCount >= 0);
+	return screenLockCount;
+}
+
+void UIControlSystem::AddScreenSwitchListener(ScreenSwitchListener * listener)
+{
+	screenSwitchListeners.push_back(listener);
+}
+
+void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener * listener)
+{
+	Vector<ScreenSwitchListener *>::iterator it = std::find(screenSwitchListeners.begin(), screenSwitchListeners.end(), listener);
+	if(it != screenSwitchListeners.end())
+		screenSwitchListeners.erase(it);
 }
 
 };

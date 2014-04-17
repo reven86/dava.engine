@@ -42,9 +42,10 @@ class MessageBase : public BaseObject
 protected:
 	virtual ~MessageBase() {};
 public:
-	virtual void operator () (BaseObject *, void *, void *) = 0;
+	virtual void operator () (BaseObject *, void *, void *) const = 0;
 	virtual MessageBase * Clone() const = 0;
 	virtual bool IsEqual(const MessageBase * message) const = 0;
+    virtual BaseObject * GetTargetObject() const = 0;
 
 };
 
@@ -62,9 +63,9 @@ public:
 		targetFunction = _function;
 	}
 	
-	virtual void operator () (BaseObject * callerObject, void * userData, void * callerData)
+	virtual void operator () (BaseObject * callerObject, void * userData, void * callerData) const
 	{
-		(targetObject->*targetFunction)(callerObject, userData, callerData);
+        (targetObject->*targetFunction)(callerObject, userData, callerData);
 	}
 	
 	virtual MessageBase * Clone() const
@@ -81,6 +82,51 @@ public:
 		}
 		return false;
 	}
+
+    virtual BaseObject * GetTargetObject() const
+    {
+        return 0;
+    }
+};
+
+template<>
+class MessageBaseClassFunctionImpl<BaseObject> : public MessageBase
+{
+    BaseObject * targetObject;
+    void (BaseObject::*targetFunction)(BaseObject *, void *, void *);
+protected:
+    ~MessageBaseClassFunctionImpl(){}
+public:
+    MessageBaseClassFunctionImpl(BaseObject *_object, void (BaseObject::*_function)(BaseObject *, void *, void *)) 
+    {
+        targetObject = _object;
+        targetFunction = _function;
+    }
+
+    virtual void operator () (BaseObject * callerObject, void * userData, void * callerData) const
+    {
+        (targetObject->*targetFunction)(callerObject, userData, callerData);
+    }
+
+    virtual MessageBase * Clone() const
+    {
+        return new MessageBaseClassFunctionImpl(targetObject, targetFunction);
+    }
+
+    virtual bool IsEqual(const MessageBase * messageBase) const
+    {
+        const MessageBaseClassFunctionImpl<BaseObject> * t = dynamic_cast<const MessageBaseClassFunctionImpl<BaseObject>*> (messageBase);
+        if (t != 0)
+        {
+            if (targetObject == t->targetObject && targetFunction == t->targetFunction)return true;
+        }
+        return false;
+    }
+
+    virtual BaseObject * GetTargetObject() const
+    {
+        return targetObject;
+    }
 };
 	
 class MessageBaseStaticFunctionImpl : public MessageBase
@@ -94,9 +140,9 @@ public:
 		targetFunction = _function;
 	}
 	
-	virtual void operator () (BaseObject * callerObject, void * userData, void * callerData)
+	virtual void operator () (BaseObject * callerObject, void * userData, void * callerData) const
 	{
-		(*targetFunction)(callerObject, userData, callerData);
+        (*targetFunction)(callerObject, userData, callerData);
 	}
 	
 	virtual MessageBase * Clone() const
@@ -113,6 +159,11 @@ public:
 		}
 		return false;
 	}
+
+    virtual BaseObject * GetTargetObject() const
+    {
+        return 0;
+    }
 };
 
 	
@@ -162,7 +213,7 @@ public:
 	
 	// void SetSelector(BaseObject *_pObj, void (BaseObject::*_pFunc)(BaseObject*, void*, void*), void * _pUserData);
 
-	void operator() (BaseObject * caller)
+	void operator() (BaseObject * caller) const
 	{	
 		if (messageBase) 
 		{
@@ -170,7 +221,7 @@ public:
 		}
 	}
 
-	void operator() (BaseObject * caller, void * callerData)
+	void operator() (BaseObject * caller, void * callerData) const
 	{	
 		if (messageBase) 
 		{
@@ -205,6 +256,16 @@ public:
     bool IsEmpty() const
     {
         return (messageBase==0);
+    }
+
+    BaseObject * GetTargetObject() const
+    {
+        if(messageBase)
+        {
+            return messageBase->GetTargetObject();
+        }
+
+        return 0;
     }
 
 };

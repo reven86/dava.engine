@@ -176,14 +176,31 @@ namespace DAVA
 		return number * y;
 	}
 
-	inline Vector3 TransformPerserveLength(Vector3 vec, const Matrix3& mat)
+	inline Vector3& TransformPerserveLength(Vector3& vec, const Matrix3& mat)
 	{
-		float vl = vec.Length();
+		float32 oldLength = vec.SquareLength();
 		vec = vec*mat;
-		vec *=(vl/vec.Length());
+		float newLength = vec.SquareLength();
+		if (newLength>EPSILON)
+			vec *=sqrtf(oldLength/newLength);
 		return vec;
 	}
-	
+
+	inline Vector3& TransformPerserveLength(Vector3 &vec, const Matrix4& mat)
+	{
+		float32 oldLength = vec.SquareLength();
+		vec = vec*mat;
+		float newLength = vec.SquareLength();
+		if (newLength>EPSILON)
+			vec *=sqrtf(oldLength/newLength);
+		return vec;
+	}
+
+    inline float32 Round(float32 value)
+	{
+		return (float32)((value > 0.0) ? floor(value+ 0.5) : ceil(value - 0.5));
+	}
+
 } // end of namespace DAVA
 
 #endif 

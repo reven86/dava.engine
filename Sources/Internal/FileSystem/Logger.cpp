@@ -47,6 +47,8 @@ namespace DAVA
 
 void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 {
+    if(!text || text[0] == '\0') return;
+    
 	char tmp[4096] = {0};
 
 	vsnprintf(tmp, sizeof(tmp) - 2, text, li);
@@ -77,6 +79,8 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 
 void Logger::Logv(eLogLevel ll, const char16* text, va_list li)
 {
+    if(!text || text[0] == '\0') return;
+
 	wchar_t tmp[4096] = {0};
 
 	vswprintf(tmp, sizeof(tmp)/sizeof(wchar_t) - 2, text, li);
@@ -289,6 +293,12 @@ void Logger::SetLogFilename(const String & filename)
 		logFilename = FileSystem::Instance()->GetCurrentDocumentsDirectory() + filename;
 	}
 }
+
+void Logger::SetLogPathname(const FilePath & filepath)
+{
+	logFilename = filepath;
+}
+
 
 void Logger::FileLog(eLogLevel ll, const char8* text)
 {

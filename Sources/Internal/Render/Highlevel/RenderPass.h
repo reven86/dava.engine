@@ -33,30 +33,45 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Render/Highlevel/RenderLayer.h"
+#include "Render/Highlevel/RenderFastNames.h"
 
 namespace DAVA
 {
-//class RenderLayer;
+class RenderPassBatchArray;
 class Camera;
+
 class RenderPass
 {
 public:
-    RenderPass(const FastName & name);
+    RenderPass(const FastName & name, RenderPassID id);
     virtual ~RenderPass();
     
-    const FastName & GetName();
+    void InitDefaultLayers();
     
-    virtual void Draw(Camera * camera);
+    inline RenderPassID GetRenderPassID() const;
+    inline const FastName & GetName() const;
     
-protected:
-    Vector<RenderLayer*> renderLayers;
-    FastName name;
-
-private:
 	void AddRenderLayer(RenderLayer * layer, const FastName & afterLayer);
 	void RemoveRenderLayer(RenderLayer * layer);
-	
 
+    virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+    
+    inline uint32 GetRenderLayerCount() const;
+    inline RenderLayer * GetRenderLayer(uint32 index) const;
+    
+    
+protected:
+    // TODO: add StaticVector container
+    Vector<RenderLayer*> renderLayers;    
+    FastName name;
+    RenderPassID id;
+
+    /*convinience*/
+    void PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem);
+    void DrawLayers(Camera *camera);
+
+	RenderPassBatchArray * renderPassBatchArray;
+	VisibilityArray visibilityArray;
 public:
     
     INTROSPECTION(RenderPass,
@@ -66,7 +81,64 @@ public:
 
 	friend class RenderSystem;
 };
+
+inline RenderPassID RenderPass::GetRenderPassID() const
+{
+    return id;
+}
+
+inline const FastName & RenderPass::GetName() const
+{
+    return name;
+}
+
+inline uint32 RenderPass::GetRenderLayerCount() const
+{
+    return (uint32)renderLayers.size();
+}
     
+inline RenderLayer * RenderPass::GetRenderLayer(uint32 index) const
+{
+    return renderLayers[index];
+}
+
+class WaterPrePass : public RenderPass
+{    
+public:
+    inline void SetWaterLevel(float32 level){waterLevel = level;}
+    WaterPrePass(const FastName & name, RenderPassID id);
+    ~WaterPrePass();
+protected:
+    Camera *passCamera;
+    float32 waterLevel;
+};
+class WaterReflectionRenderPass  : public WaterPrePass
+{    
+public:    
+    WaterReflectionRenderPass(const FastName & name, RenderPassID id);
+	virtual void Draw(Camera * camera, RenderSystem * renderSystem);	
+};
+
+class WaterRefractionRenderPass  : public WaterPrePass
+{    
+public:
+    WaterRefractionRenderPass(const FastName & name, RenderPassID id);
+    virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+
+};
+
+class MainForwardRenderPass : public RenderPass
+{
+	WaterReflectionRenderPass *reflectionPass;
+    WaterRefractionRenderPass *refractionPass;
+    Texture *reflectionTexture, *refractionTexture;
+    Sprite *reflectionSprite, *refractionSprite;
+public:
+    MainForwardRenderPass(const FastName & name, RenderPassID id);
+	~MainForwardRenderPass();
+	virtual void Draw(Camera * camera, RenderSystem * renderSystem);
+};
+
 } // ns
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */

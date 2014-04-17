@@ -72,10 +72,12 @@ protected slots:
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
     
+    void CreatePlaneLODClicked();
+
     void ForceLayerActivated(int index);
     
 protected:
-    
+
     void SetupInternalUI();
     void InitCorrectionSpinBox(QDoubleSpinBox *spinbox, int index);
     void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
@@ -99,8 +101,6 @@ private:
     QtPosSaver posSaver;
     
     EditorLODData *editedLODData;
-    
-    
 };
 
 #endif //#ifndef __LOD_EDITOR_H__

@@ -45,8 +45,10 @@ protected:
 public:
 	SpriteRenderBatch();
 
-	virtual void Draw(Camera * camera);
+	virtual void Draw(const FastName & ownerRenderPass, Camera * camera);
 
+    void Save(KeyedArchive * archive, SerializationContext * serializationContext);
+    void Load(KeyedArchive * archive, SerializationContext * serializationContext);
 protected:
     
 

@@ -125,7 +125,7 @@ public:
 protected:
 
 //DB
-    void ClearTestInDB();
+    void SetUpTestArchive();
 
 	//KeyedArchive *FindTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId);
     KeyedArchive *FindStepArchive(KeyedArchive *testArchive, const String &stepId);
@@ -160,7 +160,7 @@ public:
     String groupName;
 	String deviceId;
 	String deviceName;
-    uint32 testsDate;
+    String testsDate;
     int32 testIndex;
     int32 stepIndex;
     int32 logIndex;
@@ -169,7 +169,12 @@ public:
     String testFileName;
     String testFilePath;
 
-	
+	String buildDate;
+	String buildId;
+	String branch;
+	String framework;
+	String branchRev;
+	String frameworkRev;
 //    struct TestResult
 //    {
 //        TestResult(const String &_name, bool _isPassed, const String &_error) : name(_name), isPassed(_isPassed), error(_error) {}

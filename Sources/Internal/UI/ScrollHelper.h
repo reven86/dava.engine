@@ -48,8 +48,8 @@ class ScrollHelper : public BaseObject
 	class MovesDelta
 	{
 	public:
-		float deltaMove;
-		float deltaTime;
+		float32 deltaMove;
+		float32 deltaTime;
 	};
 protected:
     ~ScrollHelper(){}
@@ -65,6 +65,8 @@ public:
 	 \param[in] pos new scrolling position.
 	 */
 	void SetPosition(float32 pos);
+    
+    void ScrollToPosition(float32 newPos, float32 scrollTimeSec = 0.3f);
 	/**
 	 \brief Sets scrollable element size.
 	 \param[in] newSize scrollable element size.
@@ -119,18 +121,22 @@ public:
 	void SetBorderMoveModifer(float newValue);
 	
 private:
-	float position;
-	float elementSize;
-	float viewSize;
-	float virtualViewSize;
+	float32 position;
+	float32 elementSize;
+	float32 viewSize;
+	float32 virtualViewSize;
 	
-	float totalDeltaTime;
-	float totalDeltaMove;
+	float32 totalDeltaTime;
+	float32 totalDeltaMove;
 	
-	float slowDown;
-	float backward;
+	float32 slowDown;
+	float32 backward;
 	
-	float speed;
+	float32 speed;
+    
+    float32 scrollToPos;
+    float32 scrollToAcc;
+    float32 scrollToTopSpeed;
 	
 	List<MovesDelta> moves;
 };

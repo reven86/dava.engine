@@ -69,6 +69,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Converters/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/SceneFile/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
@@ -76,9 +78,13 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/*.cpp))
 
+LOCAL_ARM_NEON := true
+LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
+
 # set build flags
 LOCAL_CFLAGS := -frtti -DGL_GLEXT_PROTOTYPES=1 -Wno-psabi
 LOCAL_CFLAGS += -Wno-invalid-offsetof
+LOCAL_CFLAGS += -DDAVA_FMOD
 
 # set exported build flags
 LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
@@ -87,7 +93,7 @@ LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS)
 
 LIBS_PATH := $(call host-path,$(LOCAL_PATH)/../../Libs/libs)
 
-LOCAL_LDLIBS := -lGLESv1_CM -llog -lGLESv2 -lEGL
+LOCAL_LDLIBS := -lGLESv1_CM -llog -lEGL
 LOCAL_LDLIBS += $(LIBS_PATH)/libxml_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libpng_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libfreetype_android.a
@@ -97,9 +103,22 @@ LOCAL_LDLIBS += $(LIBS_PATH)/liblua_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libdxt_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libcurl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libTextureConverter_android.a
+LOCAL_LDLIBS += $(LIBS_PATH)/libssl_android.a
+LOCAL_LDLIBS += $(LIBS_PATH)/libcrypto_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libiconv_android.so
 LOCAL_LDLIBS += $(LOCAL_PATH)/../../Libs/fmod/lib/libfmodex.so
 LOCAL_LDLIBS += $(LOCAL_PATH)/../../Libs/fmod/lib/libfmodevent.so
+
+APP_PLATFORM_LEVEL := $(strip $(subst android-,,$(APP_PLATFORM)))
+IS_GL2_PLATFORM := $(shell (if [ $(APP_PLATFORM_LEVEL) -lt 18 ]; then echo "GLES2"; else echo "GLES3"; fi))
+ifeq ($(IS_GL2_PLATFORM), GLES2)
+LOCAL_LDLIBS += -lGLESv2
+else ifeq ($(IS_GL2_PLATFORM), GLES3)
+LOCAL_LDLIBS += -lGLESv3
+else
+#$(warning UNKNOWN GL VERSION)
+LOCAL_LDLIBS += -lGLESv2
+endif
 
 # set exported used libs
 LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)

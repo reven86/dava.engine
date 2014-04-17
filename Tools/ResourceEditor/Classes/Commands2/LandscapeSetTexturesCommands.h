@@ -39,30 +39,6 @@ using namespace DAVA;
 
 class LandscapeProxy;
 
-class LandscapeSetTexturesCommand: public Command2
-{
-public:
-	LandscapeSetTexturesCommand( Entity* landscapeEntity,
-								Landscape::eTextureLevel textureID,
-								const FilePath& texturePath);
-	~LandscapeSetTexturesCommand();
-	
-	virtual void Undo();
-	virtual void Redo();
-	DAVA::Entity* GetEntity() const
-	{
-		return landscapeEntity;
-	}
-
-protected:
-	Landscape::eTextureLevel textureID;
-	FilePath originalTexturePath;
-	FilePath newTexturePath;
-	Entity* landscapeEntity;
-	Landscape* landscape;
-};
-
-
 class LandscapeSetHeightMapCommand: public Command2
 {
 public:

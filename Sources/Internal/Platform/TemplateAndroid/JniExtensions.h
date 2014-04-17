@@ -59,6 +59,9 @@ protected:
 protected:
 	JNIEnv* env;
 	JavaVM* vm;
+
+private:
+	bool isAttached;
 };
 
 }

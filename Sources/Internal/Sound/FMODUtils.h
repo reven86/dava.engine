@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
+#ifdef DAVA_FMOD
 
 #ifndef __DAVAENGINE_FMODUTILS_H__
 #define __DAVAENGINE_FMODUTILS_H__
@@ -46,15 +46,16 @@ namespace DAVA
 
 #else
 #define FMOD_VERIFY(command) \
-{ \
-FMOD_RESULT result = command; \
-if(result != FMOD_OK) \
-{ \
-Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(result)); \
-} \
+	{ \
+	FMOD_RESULT result = command; \
+	if(result != FMOD_OK && result != FMOD_ERR_EVENT_FAILED) \
+	{ \
+		Logger::Error("FMOD: %s file:%s line:%d failed with error: %s", #command, __FILE__, __LINE__, FMOD_ErrorString(result)); \
+	} \
 } \
 
-#endif
-}
+};
 
 #endif //__DAVAENGINE_FMODUTILS_H__
+
+#endif //DAVA_FMOD

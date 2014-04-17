@@ -45,6 +45,7 @@ ClickableQLabel::ClickableQLabel(QWidget *parent) : QLabel(parent)
 	buttonDrawFlags = ClickableQLabel::None;
 	currentRotation = 0;
 	faceLoaded = false;
+    visualRotation = 0;
 	
 	setMouseTracking(true);
 	
@@ -237,7 +238,7 @@ void ClickableQLabel::DrawFaceImage(QPaintEvent *ev)
 	QPainter painter(this);
 
 	painter.translate(QPoint(width() / 2, height() / 2));
-	painter.rotate(currentRotation);
+	painter.rotate(currentRotation + visualRotation);
 	
 	const QPixmap& pixmap = *this->pixmap();
 	painter.drawPixmap(QPoint(-pixmap.width() / 2, -pixmap.height() / 2), pixmap);
@@ -270,3 +271,18 @@ bool ClickableQLabel::IsPointOutsideControl(QMouseEvent *ev)
 	QPoint pos = ev->globalPos();
 	return !currentRect.contains(pos);
 }
+
+void ClickableQLabel::SetVisualRotation(int rotation)
+{
+    if(rotation != visualRotation)
+    {
+        visualRotation = rotation;
+        this->update();
+    }
+}
+
+int ClickableQLabel::GetVisualRotation()
+{
+    return visualRotation;
+}
+

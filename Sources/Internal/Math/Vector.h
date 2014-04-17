@@ -129,6 +129,8 @@ inline Vector2 Reflect(const Vector2 & v, const Vector2 & n);
 	\ingroup math
 	\brief Vector with 3 coordinates
  */
+class Vector4;
+
 class Vector3
 {
 public:
@@ -149,6 +151,7 @@ public:
 	inline Vector3(float32 _x, float32 _y, float32 _z);
 	inline Vector3(const float32 *_data);
 	explicit inline Vector3(const Vector2 & v);
+    explicit inline Vector3(const Vector4 & v);
 	inline Vector3 & operator =(const Vector3 & _v);
 	inline Vector3 & operator =(const Vector2 & _v);
 	
@@ -541,6 +544,13 @@ inline Vector3::Vector3(const Vector2 & v)
 	z = 0.0f;
 }
 	
+inline Vector3::Vector3(const Vector4 & v)
+{
+    x = v.x;
+    y = v.y;
+    z = v.z;
+}
+
 inline Vector3 & Vector3::operator =(const Vector3 & _v)
 {
 	x = _v.x;

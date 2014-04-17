@@ -48,6 +48,8 @@
 namespace DAVA
 {
 
+static const String FLAG_RECURSIVE = "--recursive";
+
 ResourcePacker2D::ResourcePacker2D()
 {
 	isLightmapsPacking = false;
@@ -107,7 +109,8 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
 		}
 		if (!result && Core::Instance()->IsConsoleMode() && CommandLineParser::Instance()->GetVerbose())
 		{
-			Logger::Error("[ERROR: Can't delete directory %s]", outputGfxDirectory.GetAbsolutePathname().c_str());
+			AddError(Format("[ERROR: Can't delete directory %s]",
+									outputGfxDirectory.GetAbsolutePathname().c_str()));
 		}
 	}
 
@@ -201,7 +204,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
-	int32 maxTextureSize = TexturePacker::TEXTURE_SIZE;
+	uint32 maxTextureSize = (CommandLineParser::Instance()->IsFlagSet("--tsize4096")) ? TexturePacker::TSIZE_4096 : TexturePacker::DEFAULT_TEXTURE_SIZE;
 	
 	// TODO: Check CRC32
 	Vector<Magick::Image> layers;
@@ -215,7 +218,8 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 		
 		if (layers.size() == 0)
 		{
-			Logger::Error("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str());
+			AddError(Format("Number of layers is too low: %s", psdPathname.GetAbsolutePathname().c_str()));
+			
 			return 0;
 		}
 		
@@ -261,7 +265,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			
 			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
 			
-			if ((defFile->frameRects[k - 1].dx >= maxTextureSize) || (defFile->frameRects[k - 1].dy >= maxTextureSize))
+			if ((defFile->frameRects[k - 1].dx > (int32)maxTextureSize) || (defFile->frameRects[k - 1].dy > (int32)maxTextureSize))
 			{
 				Logger::Warning("* WARNING * - frame of %s layer %d is bigger than maxTextureSize(%d) layer exportSize (%d x %d) FORCE REDUCE TO (%d x %d). Bewarned!!! Results not guaranteed!!!", psdName.c_str(), k - 1, maxTextureSize
 					   , defFile->frameRects[k - 1].dx, defFile->frameRects[k - 1].dy, width, height);
@@ -304,23 +308,25 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 	}
 	catch( Magick::Exception &error_ )
     {
-        Logger::Error("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str());
+		AddError(Format("Caught exception: %s file: %s", error_.what(), psdPathname.GetAbsolutePathname().c_str()));
+
 		return 0;
     }
 	return 0;
 }
 
-void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
+Vector<String> ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 {
 	File * file = File::Create(flagsPathname, File::READ | File::OPEN);
 	if (!file)
 	{
-		Logger::Error("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str());
-        return;
+		AddError(Format("Failed to open file: %s", flagsPathname.GetAbsolutePathname().c_str()));
+		
+        return Vector<String>();
 	}
-    
-	char flagsTmpBuffer[4096] = {0};
-	int flagsSize = 0;
+
+	Vector<char> flagsTmpVector;
+	flagsTmpVector.reserve(file->GetSize() + 1);
 	while(!file->IsEof())
 	{
 		char c = 0x00;
@@ -333,13 +339,13 @@ void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 				break;
 			}
 
-			flagsTmpBuffer[flagsSize++] = c;
+			flagsTmpVector.push_back(c);
 		}	
 	}
-	flagsTmpBuffer[flagsSize++] = 0;
-	
-	currentFlags = flagsTmpBuffer;
-	String flags = flagsTmpBuffer;
+	flagsTmpVector.push_back(0);
+
+	currentFlags = flagsTmpVector.data();
+	String flags = flagsTmpVector.data();
 	
 	const String & delims=" ";
 	
@@ -368,11 +374,29 @@ void ResourcePacker2D::ProcessFlags(const FilePath & flagsPathname)
 	CommandLineParser::Instance()->SetArguments(tokens);
 	
 	SafeRelease(file);
+	
+	return tokens;
 }
 
 
-void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath)
+bool ResourcePacker2D::isRecursiveFlagSet(const Vector<String> & flags)
 {
+	for (uint32 k = 0; k < flags.size(); ++k)
+	{
+		if (flags[k] == FLAG_RECURSIVE)
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FilePath & outputPath, const Vector<String> & flags)
+{
+	// Local list for flags command arguments
+	Vector<String> currentCommandFlags = flags;
+
     DVASSERT(inputPath.IsDirectoryPathname() && outputPath.IsDirectoryPathname());
     
 	uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
@@ -400,6 +424,8 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 	CommandLineParser::Instance()->Clear();
 	List<DefinitionFile *> definitionFileList;
 
+	// Reset processed flag
+	bool flagsProcessed = false;
 	// Find flags and setup them
 	FileList * fileList = new FileList(inputPath);
 	for (int fi = 0; fi < fileList->GetCount(); ++fi)
@@ -408,8 +434,27 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 		{
 			if (fileList->GetFilename(fi) == "flags.txt")
 			{
-				ProcessFlags(fileList->GetPathname(fi));
+				currentCommandFlags = ProcessFlags(fileList->GetPathname(fi));
+				flagsProcessed = true;
 				break;
+			}
+		}
+	}
+	
+	// If "flags.txt" do not exist - try to use previous flags command line
+	if (!flagsProcessed)
+	{
+		currentFlags = "";
+		if (currentCommandFlags.size() > 0)
+		{
+			CommandLineParser::Instance()->SetArguments(currentCommandFlags);
+			for (uint32 k = 0; k < currentCommandFlags.size(); ++k)
+			{
+				currentFlags += currentCommandFlags[k];
+				if (k != (currentCommandFlags.size() - 1))
+				{
+					 currentFlags += " ";
+				}
 			}
 		}
 	}
@@ -477,14 +522,21 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 				packer.UseOnlySquareTextures();
 				packer.SetMaxTextureSize(2048);
 			}
+            else if(CommandLineParser::Instance()->IsFlagSet("--tsize4096"))
+            {
+                packer.SetMaxTextureSize(TexturePacker::TSIZE_4096);
+            }
 
             if(definitionFileList.size() == 1)
             {
                 DefinitionFile * def = definitionFileList.front();
                 if(def->frameCount == 1)
                 {
-                    def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
-                    CommandLineParser::Instance()->AddArgument("--add0pixel");
+                    if (CommandLineParser::Instance()->IsFlagSet("--add2sidepixel") == false)
+                    {
+                        def->frameRects[0] = packer.ReduceRectToOriginalSize(def->frameRects[0]);
+                        CommandLineParser::Instance()->AddArgument("--add0pixel");
+                    }
                 }
             }
 
@@ -495,6 +547,12 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
 			else
 			{
 				packer.PackToTextures(excludeDirectory, outputPath, definitionFileList, requestedGPUFamily);
+			}
+			
+			Set<String> currentErrors = packer.GetErrors();
+			if (!currentErrors.empty())
+			{
+				errors.insert(currentErrors.begin(), currentErrors.end());
 			}
 		}
 	}	
@@ -534,13 +592,32 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath & inputPath, const FileP
                     
                     FilePath output = outputPath + filename;
                     output.MakeDirectoryPathname();
-					RecursiveTreeWalk(input, output);
+					
+					if (isRecursiveFlagSet(currentCommandFlags))
+					{
+						RecursiveTreeWalk(input, output, currentCommandFlags);
+					}
+					else
+					{
+						RecursiveTreeWalk(input, output);
+					}
                 }
 			}
 		}
 	}
 	
 	SafeRelease(fileList);
+}
+
+const Set<String>& ResourcePacker2D::GetErrors() const
+{
+	return errors;
+}
+
+void ResourcePacker2D::AddError(const String& errorMsg)
+{
+	Logger::Error(errorMsg.c_str());
+	errors.insert(errorMsg);
 }
 
 

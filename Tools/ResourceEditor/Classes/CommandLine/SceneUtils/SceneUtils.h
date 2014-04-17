@@ -46,16 +46,24 @@ public:
     void SetOutFolder(const DAVA::FilePath &folderPathname);
     
     bool CopyFile(const DAVA::FilePath &filePathname, DAVA::Set<DAVA::String> &errorLog);
-    
     void PrepareFolderForCopyFile(const DAVA::String &filename, DAVA::Set<DAVA::String> &errorLog);
+
 
     DAVA::FilePath GetNewFilePath(const DAVA::FilePath &oldPathname) const;
     
+    void AddFile(const DAVA::FilePath &sourcePath);
+    void CopyFiles(DAVA::Set<DAVA::String> &errorLog);
+
+protected:
+    void PrepareDestination(DAVA::Set<DAVA::String> &errorLog);
+
 public:
 
     DAVA::FilePath dataFolder;
     DAVA::FilePath dataSourceFolder;
     DAVA::String workingFolder;
+    
+    DAVA::Map<DAVA::FilePath, DAVA::FilePath> filesForCopy;
 };
 
 

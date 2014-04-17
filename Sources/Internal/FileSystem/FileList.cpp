@@ -30,7 +30,7 @@
 #include "FileSystem/FileList.h"
 #include "Utils/Utils.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,17 +39,12 @@
 #include <stdio.h>
 #include <io.h>
 #include <direct.h>
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/FileListAndroid.h"
 #endif //PLATFORMS
 
 namespace DAVA
 {
-
-#if defined(__DAVAENGINE_ANDROID__)
-int alphasortAndroid(const dirent **a, const dirent **b)
-{
-	alphasort(a, b);
-}
-#endif //#if defined(__DAVAENGINE_ANDROID__)
 
 FileList::FileList(const FilePath & filepath)
 {
@@ -100,16 +95,12 @@ FileList::FileList(const FilePath & filepath)
 	//entry.Name = "E:\\";
 	//entry.isDirectory = true;
 	//Files.push_back(entry);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 	struct dirent **namelist;
 	FileEntry entry;
 
-#if defined (__DAVAENGINE_ANDROID__)
-	int32 n = scandir(path.GetAbsolutePathname().c_str(), &namelist, 0, alphasortAndroid);
-#else //#if defined (__DAVAENGINE_ANDROID__)
 	int32 n = scandir(path.GetAbsolutePathname().c_str(), &namelist, 0, alphasort);
-#endif //#if defined (__DAVAENGINE_ANDROID__)    
-    
+
 	if (n >= 0)
 	{
 		while(n--)
@@ -126,6 +117,25 @@ FileList::FileList(const FilePath & filepath)
 			free(namelist[n]);
 		}
 		free(namelist);
+	}
+#elif defined (__DAVAENGINE_ANDROID__)
+	JniFileList jniFileList;
+	Vector<JniFileList::JniFileListEntry> entrys = jniFileList.GetFileList(path.GetAbsolutePathname());
+	FileEntry entry;
+	for (int32 i = 0; i < entrys.size(); ++i)
+	{
+		const JniFileList::JniFileListEntry& jniEntry = entrys[i];
+
+		entry.path = path + jniEntry.name;
+		entry.name = jniEntry.name;
+		entry.size = jniEntry.size;
+		entry.isDirectory = jniEntry.isDirectory;
+
+		if(entry.isDirectory)
+		{
+			entry.path.MakeDirectoryPathname();
+		}
+		fileList.push_back(entry);
 	}
 #endif //PLATFORMS
 

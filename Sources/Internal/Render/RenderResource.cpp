@@ -36,14 +36,18 @@ namespace DAVA
 {
 
 List<RenderResource*> RenderResource::resourceList;
+Mutex RenderResource::resourceListMutex;
 
 RenderResource::RenderResource()
 {
+    resourceListMutex.Lock();
 	resourceList.push_back(this);
+    resourceListMutex.Unlock();
 }
 
 RenderResource::~RenderResource()
 {
+    resourceListMutex.Lock();
 	List<RenderResource*>::iterator it = resourceList.begin();
 	for(; it != resourceList.end(); it++)
 	{
@@ -53,6 +57,7 @@ RenderResource::~RenderResource()
 			break;
 		}
 	}
+    resourceListMutex.Unlock();
 }
 
 void RenderResource::SaveToSystemMemory()
@@ -72,29 +77,34 @@ void RenderResource::LostAllResources()
 {
     Logger::FrameworkDebug("[RenderResource::LostAllResources]");
     
+    resourceListMutex.Lock();
 	List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
 	for(; it != itEnd; ++it)
 	{
 		(*it)->Lost();
 	}
+    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllResources()
 {
     Logger::FrameworkDebug("[RenderResource::InvalidateAllResources]");
 
+    resourceListMutex.Lock();
 	List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
 	for(; it != itEnd; ++it)
 	{
 		(*it)->Invalidate();
 	}
+    resourceListMutex.Unlock();
 }
 
 void RenderResource::SaveAllResourcesToSystemMem()
 {
 #if defined(__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_MACOS__)  ||  defined(__DAVAENGINE_DIRECTX9__)
+    resourceListMutex.Lock();
 	List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
 	for(; it != itEnd; ++it)
@@ -104,11 +114,13 @@ void RenderResource::SaveAllResourcesToSystemMem()
 // 		if (t)
 // 			Logger::FrameworkDebug("%s", t->relativePathname.c_str());
 	}
+    resourceListMutex.Unlock();
 #endif
 }
     
 void RenderResource::LostAllShaders()
 {
+    resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
@@ -119,10 +131,12 @@ void RenderResource::LostAllShaders()
             s->Lost();
         }
     }
+    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllShaders()
 {
+    resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
@@ -133,10 +147,12 @@ void RenderResource::InvalidateAllShaders()
             s->Invalidate();
         }
     }
+    resourceListMutex.Unlock();
 }
     
 void RenderResource::LostAllTextures()
 {
+    resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
@@ -147,10 +163,12 @@ void RenderResource::LostAllTextures()
             s->Lost();
         }
     }
+    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllTextures()
 {
+    resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
@@ -161,11 +179,13 @@ void RenderResource::InvalidateAllTextures()
             s->Invalidate();
         }
     }
+    resourceListMutex.Unlock();
 }
 
 
 void RenderResource::LostAllRDO()
 {
+    resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
@@ -176,10 +196,12 @@ void RenderResource::LostAllRDO()
             s->Lost();
         }
     }
+    resourceListMutex.Unlock();
 }
 
 void RenderResource::InvalidateAllRDO()
 {
+    resourceListMutex.Lock();
     List<RenderResource*>::iterator it = resourceList.begin();
     List<RenderResource*>::const_iterator itEnd = resourceList.end();
     for(; it != itEnd; ++it)
@@ -190,6 +212,7 @@ void RenderResource::InvalidateAllRDO()
             s->Invalidate();
         }
     }
+    resourceListMutex.Unlock();
 }
     
 };

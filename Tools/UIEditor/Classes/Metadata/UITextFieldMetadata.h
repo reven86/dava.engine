@@ -56,6 +56,8 @@ public:
     UITextFieldMetadata(QObject* parent = 0);
 
 protected:
+    virtual bool GetInitialInputEnabled() const {return true;};
+    
 	virtual QString GetUIControlClassName() { return "UITextField"; };
 	
     // Initialization.

@@ -35,7 +35,7 @@
 #include "Math/MathConstants.h"
 #include "Math/Matrix4.h"
 #include "Base/Singleton.h"
-#include "Scene3D/Systems/BaseProcessSystem.h"
+#include "Entity/SceneSystem.h"
 #include "Render/Highlevel/RenderBatch.h"
 
 
@@ -44,7 +44,7 @@ namespace DAVA
 	class Material;
 	class Entity;
 	class Scene;
-	class SkyboxSystem : public BaseProcessSystem
+	class SkyboxSystem : public SceneSystem
 	{
 	private:
 		
@@ -53,8 +53,7 @@ namespace DAVA
 	public:
 		SkyboxSystem(Scene* scene);
 		~SkyboxSystem();
-		virtual void Process();
-		
+
 		virtual void AddEntity(Entity * entity);
 		virtual void RemoveEntity(Entity * entity);
 		

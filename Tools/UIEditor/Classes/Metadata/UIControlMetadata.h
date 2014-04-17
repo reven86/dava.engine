@@ -45,8 +45,7 @@ class UIControlMetadata : public BaseMetadata
     
     // Properties which are common for all UIControls.
     Q_PROPERTY(QString UIControlClassName READ GetUIControlClassName);
-    
-    Q_PROPERTY(QString Name READ GetName WRITE SetName);
+
     Q_PROPERTY(int Tag READ GetTag WRITE SetTag);
     
     // Size and position.
@@ -81,6 +80,7 @@ class UIControlMetadata : public BaseMetadata
 
     // Flag Properties
     Q_PROPERTY(bool Visible READ GetVisible WRITE SetVisible);
+    Q_PROPERTY(bool RecursiveVisible READ GetRecursiveVisible WRITE SetRecursiveVisible);
     Q_PROPERTY(bool Input READ GetInput WRITE SetInput);
     Q_PROPERTY(bool ClipContents READ GetClipContents WRITE SetClipContents);
 	
@@ -116,11 +116,14 @@ public:
 protected:
     virtual QString GetUIControlClassName() { return "UIControl"; };
 	
+    // Default Flags.
+    virtual bool GetInitialInputEnabled() const {return false;}; // false because of DF-2944
+
 	virtual void InitializeControl(const String& controlName, const Vector2& position);
 
     // Getters/setters.
-    QString GetName() const;
-    void SetName(const QString& name);
+    virtual QString GetName() const;
+    virtual void SetName(const QString& name);
     
     int GetTag() const;
     void SetTag(int tag);
@@ -185,7 +188,10 @@ protected:
 
     //Boolean gettes/setters
     bool GetVisible() const;
-    void SetVisible(const bool value);
+    virtual void SetVisible(const bool value);
+
+    bool GetRecursiveVisible() const;
+    virtual void SetRecursiveVisible(const bool value);
 
     bool GetInput() const;
     void SetInput(const bool value);
@@ -242,6 +248,12 @@ protected:
 
 	// Refresh the align params.
 	void RefreshAlign();
+
+    // Refresh the thumb size for UISlider.
+    void UpdateThumbSizeForUIControlThumb();
+
+    // Verify whether UIControl exists and set its visible flag.
+    void SetUIControlVisible(const bool isVisible, bool hierarchic);
 
 private:
 	void ResizeScrollViewContent(UIControl *control);

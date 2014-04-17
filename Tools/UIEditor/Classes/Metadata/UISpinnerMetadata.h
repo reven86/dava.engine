@@ -49,6 +49,9 @@ public:
 	UISpinnerMetadata(QObject* parent = 0);
 
 protected:
+    // Default Flags.
+    virtual bool GetInitialInputEnabled() const {return true;};
+
 	// Initialize the appropriate control.
 	virtual void InitializeControl(const String& controlName, const Vector2& position);
 	virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);

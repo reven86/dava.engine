@@ -103,15 +103,29 @@ public:
 		
 		\param[in] name name of class you want to create
 	 */
-	BaseObject * New(const String & name); 
+    template <class T>
+    T* New(const String & name)
+    {
+        Map<String, CreateObjectFunc>::iterator it = creatorMap.find(name);
+        if (it != creatorMap.end())
+        {
+            CreateObjectFunc newFunc = it->second;
+            
+            //VI: cannot use cast_if_equal since we need to cast to base types
+            //VI: but cast_if_equal casts to the exact types only
+            return static_cast<T*>((newFunc)());
+        }
+        return 0;
+    }
+
 	/**
         \brief creates a class with given name
 
         \param[in] name name of class you want to create
         \param[in] object you can pass as creation parameter
 	 */
-    template <class T>
-	BaseObject * New(const String & name, const T & object); 
+    template <class S, class T>
+	T* New(const String & name, const S & object);
     
     //    /**
     //        \brief 

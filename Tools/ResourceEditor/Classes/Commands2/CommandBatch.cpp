@@ -93,7 +93,7 @@ int CommandBatch::Size() const
 
 Command2 * CommandBatch::GetCommand(int index) const
 {
-	if(index >= 0 && index < commandList.size())
+	if(index >= 0 && index < (int)commandList.size())
 		return commandList[index];
 
 	return NULL;

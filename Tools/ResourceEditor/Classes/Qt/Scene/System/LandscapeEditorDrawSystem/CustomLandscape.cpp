@@ -29,16 +29,20 @@
 
 
 #include "CustomLandscape.h"
-#include "LandscapeEditor/LandscapeRenderer.h"
+#include "Deprecated/LandscapeRenderer.h"
 
 CustomLandscape::CustomLandscape()
 :	landscapeRenderer(NULL)
+,	textureState(InvalidUniqueHandle)
 {
 }
 
 CustomLandscape::~CustomLandscape()
 {
 	SafeRelease(landscapeRenderer);
+    
+    if(textureState != InvalidUniqueHandle)
+        RenderManager::Instance()->ReleaseTextureState(textureState);
 }
 
 void CustomLandscape::SetRenderer(LandscapeRenderer *renderer)
@@ -52,6 +56,20 @@ LandscapeRenderer* CustomLandscape::GetRenderer()
 	return landscapeRenderer;
 }
 
+void CustomLandscape::UpdateTextureState()
+{
+	TextureStateData textureStateData;
+	textureStateData.SetTexture(0, GetTexture(TEXTURE_TILE_FULL));
+	UniqueHandle uniqueHandle = RenderManager::Instance()->CreateTextureState(textureStateData);
+
+	if (textureState != InvalidUniqueHandle)
+	{
+		RenderManager::Instance()->ReleaseTextureState(textureState);
+	}
+
+	textureState = uniqueHandle;
+}
+
 void CustomLandscape::Draw(DAVA::Camera *camera)
 {
 	if(!landscapeRenderer)
@@ -59,25 +77,19 @@ void CustomLandscape::Draw(DAVA::Camera *camera)
 		return;
 	}
 	
-	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, camera->GetMatrix());
-	
-	landscapeRenderer->BindMaterial(GetTexture(Landscape::TEXTURE_TILE_FULL));
+	RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+
+	landscapeRenderer->BindMaterial(textureState);
 	landscapeRenderer->DrawLandscape();
 	
 	if (cursor)
 	{
-		RenderManager::Instance()->AppendState(RenderState::STATE_BLEND);
-		eBlendMode src = RenderManager::Instance()->GetSrcBlend();
-		eBlendMode dst = RenderManager::Instance()->GetDestBlend();
-		RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-		RenderManager::Instance()->SetDepthFunc(CMP_LEQUAL);
+		RenderManager::Instance()->SetRenderState(cursor->GetRenderState());
+		RenderManager::Instance()->FlushState();
+
 		cursor->Prepare();
 		
 		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, (heightmap->Size() - 1) * (heightmap->Size() - 1) * 6, EIF_32, landscapeRenderer->Indicies());
-		
-		RenderManager::Instance()->SetDepthFunc(CMP_LESS);
-		RenderManager::Instance()->RemoveState(RenderState::STATE_BLEND);
-		RenderManager::Instance()->SetBlendMode(src, dst);
 	}
 	
 	landscapeRenderer->UnbindMaterial();

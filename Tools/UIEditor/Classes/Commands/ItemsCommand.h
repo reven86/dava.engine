@@ -218,12 +218,15 @@ private:
 	// Previous parents for the "items" list.
 	struct PreviousState
 	{
+		QString baseName;
 		HierarchyTreeNode::HIERARCHYTREENODEID parent;
 		HierarchyTreeNode::HIERARCHYTREENODEID addedAfter;
-		PreviousState(HierarchyTreeNode::HIERARCHYTREENODEID parent, HierarchyTreeNode::HIERARCHYTREENODEID addedAfter)
+		PreviousState(HierarchyTreeNode::HIERARCHYTREENODEID parent, HierarchyTreeNode::HIERARCHYTREENODEID addedAfter,
+					const QString& baseName)
 		{
 			this->parent = parent;
 			this->addedAfter = addedAfter;
+			this->baseName = baseName;
 		}
 	};
 	typedef Map<HierarchyTreeNode::HIERARCHYTREENODEID, PreviousState> PARENTNODESMAP;

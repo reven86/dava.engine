@@ -53,6 +53,7 @@ class UITextControlMetadata : public UIControlMetadata
 	Q_PROPERTY(float ShadowOffsetY READ GetShadowOffsetY WRITE SetShadowOffsetY);
 	Q_PROPERTY(QColor ShadowColor READ GetShadowColor WRITE SetShadowColor);
 	Q_PROPERTY(int TextAlign READ GetTextAlign WRITE SetTextAlign);
+    Q_PROPERTY(int FittingType READ GetFittingType WRITE SetFittingType);
 
 public:
     UITextControlMetadata(QObject* parent = 0);
@@ -87,6 +88,10 @@ protected:
 	Vector2 GetOffsetX(const Vector2& currentOffset, float offsetX);
 	Vector2 GetOffsetY(const Vector2& currentOffset, float offsetY);
 
+    // These methods should not be overriden for the UITextField, that's why not pure virtual.
+    virtual int GetFittingType() const;
+    virtual void SetFittingType(int value);
+
     // Get the localized text for particular control state.
     QString GetLocalizedTextKeyForState(UIControl::eControlState controlState) const;
     
@@ -94,6 +99,9 @@ protected:
     void UpdateStaticTextExtraData(UIStaticText* staticText, UIControl::eControlState state,
                                    HierarchyTreeNodeExtraData& extraData,
                                    eExtraDataUpdateStyle updateStyle);
+    
+    // Clone the font of the Static Text.
+    void CloneFont(UIStaticText* staticText);
 };
 
 };

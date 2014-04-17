@@ -70,7 +70,7 @@ DistanceSlider::DistanceSlider(QWidget *parent /*= 0*/)
     {
         frames[i] = new QFrame(splitter);
 
-        frames[i]->setObjectName(QString::fromUtf8(DAVA::Format("frame_%d",  i)));
+        frames[i]->setObjectName(QString::fromUtf8(DAVA::Format("frame_%d",  i).c_str()));
         frames[i]->setFrameShape(QFrame::StyledPanel);
         frames[i]->setFrameShadow(QFrame::Raised);
         

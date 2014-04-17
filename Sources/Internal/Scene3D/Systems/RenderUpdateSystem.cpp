@@ -32,6 +32,9 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
@@ -64,8 +67,11 @@ void RenderUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
         // Update new transform pointer, and mark that transform is changed
         Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
 		RenderObject * object = ((RenderComponent*)entity->GetComponent(Component::RENDER_COMPONENT))->GetRenderObject();
-        object->SetWorldTransformPtr(worldTransformPointer);
-		entity->GetScene()->renderSystem->MarkForUpdate(object);
+        if(NULL != object)
+        {
+            object->SetWorldTransformPtr(worldTransformPointer);
+            entity->GetScene()->renderSystem->MarkForUpdate(object);
+        }
     }
     
     //if (event == EventSystem::ACTIVE_CAMERA_CHANGED)
@@ -81,13 +87,14 @@ void RenderUpdateSystem::AddEntity(Entity * entity)
     if (!renderObject)return;
 	Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
     renderObject->SetWorldTransformPtr(worldTransformPointer);
-    entityObjectMap.Insert(entity, renderObject);
+    UpdateActiveIndexes(entity, renderObject);
+    entityObjectMap.insert(entity, renderObject);
 	GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
 }
 
 void RenderUpdateSystem::RemoveEntity(Entity * entity)
 {
-    RenderObject * renderObject = entityObjectMap.GetValue(entity);
+    RenderObject * renderObject = entityObjectMap.at(entity);
     if (!renderObject)
 	{
 		return;
@@ -95,14 +102,51 @@ void RenderUpdateSystem::RemoveEntity(Entity * entity)
     
     GetScene()->GetRenderSystem()->RemoveFromRender(renderObject);
 
-	entityObjectMap.Remove(entity);
+	entityObjectMap.erase(entity);
 }
     
-void RenderUpdateSystem::Process()
+void RenderUpdateSystem::Process(float32 timeElapsed)
 {
     TIME_PROFILE("RenderUpdateSystem::Process");
-    float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
+
+    RenderSystem * renderSystem = GetScene()->GetRenderSystem();
+    renderSystem->SetCamera(GetScene()->GetCurrentCamera());
+    renderSystem->SetClipCamera(GetScene()->GetClipCamera());
+
     GetScene()->GetRenderSystem()->Update(timeElapsed);
+}
+
+void RenderUpdateSystem::UpdateActiveIndexes(Entity *entity, RenderObject *object)
+{
+    Entity *parent;
+    
+    // search effective lod index
+    parent = entity;
+    while(NULL != parent)
+    {
+        LodComponent *lc = GetLodComponent(parent);
+        if(NULL != lc)
+        {
+            object->SetLodIndex(lc->currentLod);
+            break;
+        }
+
+        parent = parent->GetParent();
+    }
+
+    // search effective switch index
+    parent = entity;
+    while(NULL != parent)
+    {
+        SwitchComponent *sc = GetSwitchComponent(parent);
+        if(NULL != sc)
+        {
+            object->SetSwitchIndex(sc->GetSwitchIndex());
+            break;
+        }
+
+        parent = parent->GetParent();
+    }
 }
     
 };

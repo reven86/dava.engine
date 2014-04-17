@@ -167,6 +167,8 @@ void RulerToolPanel::ConnectToShortcuts()
 			this, SLOT(IncreaseBrushSizeLarge()));
 	connect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_BRUSH_SIZE_DECREASE_LARGE), SIGNAL(activated()),
 			this, SLOT(DecreaseBrushSizeLarge()));
+	
+	shortcutManager->SetBrushSizeShortcutsEnabled(true);
 }
 
 void RulerToolPanel::DisconnectFromShortcuts()
@@ -181,6 +183,8 @@ void RulerToolPanel::DisconnectFromShortcuts()
 			this, SLOT(IncreaseBrushSizeLarge()));
 	disconnect(shortcutManager->GetShortcutByName(ResourceEditor::SHORTCUT_BRUSH_SIZE_DECREASE_LARGE), SIGNAL(activated()),
 			this, SLOT(DecreaseBrushSizeLarge()));
+	
+	shortcutManager->SetBrushSizeShortcutsEnabled(false);
 }
 
 void RulerToolPanel::IncreaseBrushSize()

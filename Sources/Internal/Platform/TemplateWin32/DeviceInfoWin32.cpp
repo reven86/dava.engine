@@ -29,8 +29,15 @@
 
 
 #include "Platform/DeviceInfo.h"
+#include "Utils/StringFormat.h"
+#include "Utils/MD5.h"
+#include "Utils/Utils.h"
+#include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_WIN32__)
+
+#include "winsock2.h"
+#include "Iphlpapi.h"
 
 namespace DAVA
 {
@@ -67,7 +74,95 @@ String DeviceInfo::GetTimeZone()
 
 String DeviceInfo::GetUDID()
 {
-	return "Not yet implemented";
+    ULONG family = AF_INET;
+    ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_FRIENDLY_NAME | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_UNICAST;
+
+    PIP_ADAPTER_ADDRESSES buf;
+    ULONG bufLength = 15000;
+
+    DWORD retVal;
+
+    do
+    {
+        buf = (PIP_ADAPTER_ADDRESSES)malloc(bufLength);
+        retVal = GetAdaptersAddresses(family, flags, 0, buf, &bufLength);
+
+        if (retVal == ERROR_BUFFER_OVERFLOW)
+        {
+            free(buf);
+            bufLength *= 2;
+        }
+    } while (retVal == ERROR_BUFFER_OVERFLOW);
+
+    String res = "";
+    if (retVal == NO_ERROR)
+    {
+        PIP_ADAPTER_ADDRESSES curAddress = buf;
+
+        if(curAddress)
+        {
+            if (curAddress->PhysicalAddressLength)
+            {
+                for (int32 i = 0; i < (int32)curAddress->PhysicalAddressLength; ++i)
+                {
+                    res += String(Format("%.2x", curAddress->PhysicalAddress[i]));
+                }
+            }
+        }
+    }
+
+    if (buf)
+    {
+        free(buf);
+    }
+
+    if (res == "")
+    {
+        bool idOk = false;
+        DWORD bufSize = 1024;
+        LPBYTE buf = new BYTE[bufSize];
+        HKEY key;
+        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key) == ERROR_SUCCESS)
+        {
+
+            if (RegQueryValueEx(key, L"MachineGuid", 0, 0, buf, &bufSize) == ERROR_SUCCESS)
+            {
+                idOk = true;
+            }
+            else
+            {
+                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY,  &key) == ERROR_SUCCESS)
+                {
+                    if (RegQueryValueEx(key, L"MachineGuid", 0, 0, buf, &bufSize) == ERROR_SUCCESS)
+                    {
+                        idOk = true;
+                    }
+                }
+            }
+        }
+
+        if (idOk)
+        {
+            WideString wstr = WideString((wchar_t*)buf);
+            res = WStringToString(wstr);
+        }
+        else
+        {
+            DVASSERT(false && "Invalid UDID");
+            res = "Invalid UDID";
+        }
+        SafeDeleteArray(buf);
+    }
+
+    MD5 md5;
+    md5.Init();
+    md5.Update((uint8*)res.c_str(), (uint32)res.size());
+    md5.Final();
+
+    char8 digest[MD5::DIGEST_SIZE * 2 + 1];
+    MD5::HashToChar(md5.GetDigest(), digest, MD5::DIGEST_SIZE * 2 + 1);
+
+    return String(digest);
 }
 
 WideString DeviceInfo::GetName()

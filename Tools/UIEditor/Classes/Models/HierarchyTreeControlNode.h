@@ -35,6 +35,7 @@
 #include "DAVAEngine.h"
 #include "HierarchyTreeNode.h"
 #include "HierarchyTreeScreenNode.h"
+#include "EditorListDelegate.h"
 
 using namespace DAVA;
 
@@ -71,6 +72,7 @@ private:
 	HierarchyTreeNode* parent;
 
 	UIControl* uiObject;
+    EditorListDelegate *listDelegate;
 
 	UIControl* parentUIObject;
 	UIControl* childUIObjectAbove;

@@ -65,6 +65,12 @@ void ActionEnableRulerTool::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
+    
+    if(success &&
+       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(false);
+    }
 	
 	SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
 }
@@ -93,6 +99,11 @@ void ActionDisableRulerTool::Redo()
 	{
 		ShowErrorDialog(ResourceEditor::RULER_TOOL_DISABLE_ERROR);
 	}
+    
+    if(disabled)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(true);
+    }
 	
 	SceneSignals::Instance()->EmitRulerToolToggled(sceneEditor);
 }

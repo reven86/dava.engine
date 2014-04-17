@@ -77,6 +77,29 @@ private:
 	Rect newRect;
 };
 
+// Adjust controls size to fit sizeo of sprite
+class ControlsAdjustSizeCommand: public BaseCommand
+{
+public:
+	ControlsAdjustSizeCommand(const HierarchyTreeController::SELECTEDCONTROLNODES& controls);
+	
+	virtual void Execute();
+	virtual void Rollback();
+	
+	virtual bool IsUndoRedoSupported() {return true;};
+	
+protected:
+	ControlsPositionData ApplyAjustedSize(HierarchyTreeController::SELECTEDCONTROLNODES& controls);
+	void UndoAdjustedSize(const ControlsPositionData& sizeData);
+	
+private:
+	// List of selected controls
+	HierarchyTreeController::SELECTEDCONTROLNODES selectedControls;
+	
+	// Adjust size result - needed for Undo.
+	ControlsPositionData prevSizeData;
+};
+
 // Align/distribute the controls.
 class ControlsAlignDistributeCommand : public BaseCommand
 {
@@ -106,6 +129,26 @@ protected:
 
 	// Alignment/distribution result - needed for Undo.
 	ControlsPositionData prevPositionData;
+};
+
+class ControlRenameCommand : public BaseCommand
+{
+public:
+	ControlRenameCommand(HierarchyTreeNode::HIERARCHYTREENODEID nodeId, const QString& originalName, const QString& newName);
+	
+	virtual void Execute();
+	virtual void Rollback();
+	
+	virtual bool IsUndoRedoSupported() {return true;};
+
+protected:
+	// Apply the rename of control
+	void ApplyRename(const QString& prevName, const QString& updatedName);
+
+private:
+	HierarchyTreeNode::HIERARCHYTREENODEID nodeId;
+	QString originalName;
+	QString newName;
 };
 
 #endif /* defined(__UIEditor__ControlsMoveCommand__) */

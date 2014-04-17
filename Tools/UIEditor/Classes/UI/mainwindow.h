@@ -35,6 +35,8 @@
 #include "ScreenWrapper.h"
 #include "EditorSettings.h"
 
+#include "PreviewController.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -89,6 +91,8 @@ private slots:
 	void FileMenuTriggered(QAction *resentScene);
 	void MenuFileWillShow();
 
+    void SetBackgroundColorMenuTriggered(QAction* action);
+
 	void OnUndoRequested();
 	void OnRedoRequested();
 	
@@ -100,6 +104,11 @@ private slots:
 
 	void OnUnsavedChangesNumberChanged();
 
+    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
+
+	// Adjust size
+	void OnAdjustSize();
+	
 	// Align block.
 	void OnAlignLeft();
 	void OnAlignHorzCenter();
@@ -119,6 +128,33 @@ private slots:
 	void OnDistributeEqualDistanceBetweenBottomEdges();
 	void OnDistributeEqualDistanceBetweenY();
 
+    // Repack and Reload.
+    void OnRepackAndReloadSprites();
+    
+    // Pixelization.
+    void OnPixelizationStateChanged();
+
+    // Editing mode (Edit/Preview)
+    void OnPreviewTriggered();
+    
+    // Edit Preview Settings..
+    void OnEditPreviewSettings();
+    
+    // Guides signals.
+    void OnGuideDropped(Qt::DropAction dropAction);
+
+    // Stick mode changed.
+    void OnStickModeChanged();
+
+    // Enable/disable guides.
+    void OnEnableGuidesChanged();
+
+    // Lock/unlock guides.
+    void OnLockGuidesChanged();
+
+    // Notification from GL widget its resize is done.
+    void OnGLWidgetResized();
+
 private:
 	bool CloseProject();
 
@@ -127,8 +163,10 @@ private:
 	void UpdateScreenPosition();
 	
 	void InitMenu();
+    void SetupViewMenu();
 	void UpdateMenu();
 	void UpdateProjectSettings(const QString& filename);
+
 	// Save/restore positions of DockWidgets and main window geometry
 	void SaveMainWindowState();
 	void RestoreMainWindowState();
@@ -150,10 +188,33 @@ private:
 	void ScrollToScenePositionAndPoint(const Vector2& scenePosition, const Vector2& point,
 									   float newScale);
 
+    // Notify external systems that the scale is updated.
+    void NotifyScaleUpdated(float32 newScale);
+
+    // Repack and reload sprites.
+    void RepackAndReloadSprites();
+
+    // Control Align/Distribute actions.
+    void SetAlignEnabled(bool value);
+    void SetDistributeEnabled(bool value);
+
+    // Preview handling.
+    void EnablePreview(const PreviewSettingsData& data);
+    void DisablePreview();
+    void UpdatePreviewButton();
+
+    // Enable/disable editing controls for Preview mode.
+    void EnableEditing(bool value);
+
 private:
     Ui::MainWindow *ui;
 	QAction *recentPojectActions[EditorSettings::RECENT_FILES_COUNT];
-	
+
+    // Background Frame Color menu actions.
+    QList<QAction*> backgroundFramePredefinedColorActions;
+    QAction* backgroundFrameUseCustomColorAction;
+    QAction* backgroundFrameSelectCustomColorAction;
+
 	bool screenChangeUpdate;
 };
 

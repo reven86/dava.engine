@@ -32,7 +32,9 @@
 #define __RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__
 
 #include "Entity/SceneSystem.h"
-#include "EditorScene.h"
+#include "Scene3D/Scene.h"
+#include "Render/Highlevel/Landscape.h"
+#include "Render/UniqueStateSet.h"
 
 class LandscapeProxy;
 class HeightmapProxy;
@@ -40,6 +42,10 @@ class NotPassableTerrainProxy;
 class CustomColorsProxy;
 class VisibilityToolProxy;
 class RulerToolProxy;
+class GrassEditorProxy;
+class Command2;
+
+using namespace DAVA;
 
 class LandscapeEditorDrawSystem: public DAVA::SceneSystem
 {
@@ -66,6 +72,7 @@ public:
 	CustomColorsProxy* GetCustomColorsProxy();
 	VisibilityToolProxy* GetVisibilityToolProxy();
 	RulerToolProxy* GetRulerToolProxy();
+    GrassEditorProxy* GetGrassEditorProxy();
 
 	eErrorType EnableCustomDraw();
 	void DisableCustomDraw();
@@ -84,7 +91,9 @@ public:
 	void SetCursorPosition(const Vector2& cursorPos);
 	void UpdateCursorPosition();
 	
-	void Update(DAVA::float32 timeElapsed);
+	virtual void Process(DAVA::float32 timeElapsed);
+
+    void ProcessCommand(const Command2 *command, bool redo);
 
 	float32 GetTextureSize(Landscape::eTextureLevel level);
 	Vector3 GetLandscapeSize();
@@ -112,8 +121,6 @@ public:
 	void SaveTileMaskTexture();
 	void ResetTileMaskTexture();
 
-	Landscape::eTiledShaderMode GetLandscapeTiledShaderMode();
-
 	eErrorType VerifyLandscape();
 
 	Landscape * GetBaseLandscape() const;
@@ -129,6 +136,7 @@ private:
 	CustomColorsProxy* customColorsProxy;
 	VisibilityToolProxy* visibilityToolProxy;
 	RulerToolProxy* rulerToolProxy;
+    GrassEditorProxy *grassEditorProxy;
 
 	uint32 customDrawRequestCount;
 	
@@ -145,6 +153,8 @@ private:
 	void DeinitLandscape();
 
 	eErrorType IsNotPassableTerrainCanBeEnabled();
+	
+	UniqueHandle noBlendDrawState;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__LANDSCAPEEDITORDRAWSYSTEM__) */

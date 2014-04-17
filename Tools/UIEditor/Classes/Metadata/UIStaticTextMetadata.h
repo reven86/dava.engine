@@ -49,6 +49,8 @@ public:
     UIStaticTextMetadata(QObject* parent = 0);
 
 protected:
+    virtual bool GetInitialInputEnabled() const {return false;}; // false because of DF-2944
+
     // Initialize the appropriate control.
     virtual void InitializeControl(const String& controlName, const Vector2& position);
     virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
@@ -91,6 +93,9 @@ protected:
 
 	virtual bool GetMultilineBySymbol() const;
 	virtual void SetMultilineBySymbol(const bool value);
+    
+    virtual int GetFittingType() const;
+    virtual void SetFittingType(int value);
 };
 
 };

@@ -34,7 +34,9 @@
 
 namespace DAVA 
 {
-
+    
+REGISTER_CLASS(RenderComponent)
+    
 RenderComponent::RenderComponent(RenderObject * _object)
 {
     renderObject = SafeRetain(_object);
@@ -61,13 +63,18 @@ Component * RenderComponent::Clone(Entity * toEntity)
     RenderComponent * component = new RenderComponent();
 	component->SetEntity(toEntity);
 
-    //TODO: Do not forget ot check what does it means.
-    component->renderObject = renderObject->Clone(component->renderObject);
+    if(NULL != renderObject)
+    {
+        //TODO: Do not forget ot check what does it means.
+        component->renderObject = renderObject->Clone(component->renderObject);
+    }
+
     return component;
 }
 	
 void RenderComponent::OptimizeBeforeExport()
 {
+/*
     uint32 count = renderObject->GetRenderBatchCount();
     for(uint32 i = 0; i < count; ++i)
     {
@@ -75,53 +82,59 @@ void RenderComponent::OptimizeBeforeExport()
 		if(NULL != renderBatch)
 		{
 			PolygonGroup* polygonGroup = renderBatch->GetPolygonGroup();
-			Material* material = renderBatch->GetMaterial();
+			NMaterial* material = renderBatch->GetMaterial();
 			if(NULL != polygonGroup && NULL != material)
 			{
-				uint32 newFormat = MaterialOptimizer::GetOptimizedVertexFormat((Material::eType)material->type);
+				//uint32 newFormat = MaterialOptimizer::GetOptimizedVertexFormat((Material::eType)renderBatch->GetMaterial()->type);
 				// polygonGroup->OptimizeVertices(newFormat); //TODO::VK crash on Tanks/USSR/T-28_crash.sc2
 			}
 		}
 	}
+*/
 }
 
 void RenderComponent::GetDataNodes(Set<DAVA::DataNode *> &dataNodes)
 {
-    uint32 count = renderObject->GetRenderBatchCount();
-    for(uint32 i = 0; i < count; ++i)
+    if(NULL != renderObject)
     {
-        RenderBatch *renderBatch = renderObject->GetRenderBatch(i);
-		if(NULL != renderBatch)
-		{
-			renderBatch->GetDataNodes(dataNodes);
-		}
+        uint32 count = renderObject->GetRenderBatchCount();
+        for(uint32 i = 0; i < count; ++i)
+        {
+            RenderBatch *renderBatch = renderObject->GetRenderBatch(i);
+            if(NULL != renderBatch)
+            {
+                renderBatch->GetDataNodes(dataNodes);
+            }
+        }
+        
+        renderObject->GetDataNodes(dataNodes);
     }
 }
 
-void RenderComponent::Serialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void RenderComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
-	Component::Serialize(archive, sceneFile);
+	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive && NULL != renderObject)
 	{
 		KeyedArchive *roArch = new KeyedArchive();
-		renderObject->Save(roArch, sceneFile);
+		renderObject->Save(roArch, serializationContext);
 		archive->SetArchive("rc.renderObj", roArch);
 		roArch->Release();
 	}
 }
 
-void RenderComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
+void RenderComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
 	if(NULL != archive)
 	{
 		KeyedArchive *roArch = archive->GetArchive("rc.renderObj");
 		if(NULL != roArch)
 		{
-			RenderObject* ro = (RenderObject *) ObjectFactory::Instance()->New(roArch->GetString("##name"));
+			RenderObject* ro = (RenderObject *) ObjectFactory::Instance()->New<RenderObject>(roArch->GetString("##name"));
 			if(NULL != ro)
 			{
-				ro->Load(roArch, sceneFile);
+				ro->Load(roArch, serializationContext);
 				SetRenderObject(ro);
 
 				ro->Release();
@@ -129,7 +142,7 @@ void RenderComponent::Deserialize(KeyedArchive *archive, SceneFileV2 *sceneFile)
 		}
 	}
 
-	Component::Deserialize(archive, sceneFile);
+	Component::Deserialize(archive, serializationContext);
 }
 
 };

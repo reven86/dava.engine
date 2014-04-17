@@ -35,6 +35,10 @@
 #include "CommandsController.h"
 #include "CopyPasteController.h"
 #include "UndoRedoController.h"
+#include "PreviewController.h"
+
+#include "Grid/GridVisualizer.h"
+#include "Ruler/RulerController.h"
 
 #include "ScreenWrapper.h"
 #include "MetadataFactory.h"
@@ -50,10 +54,15 @@ using namespace DAVA;
 
 GameCore::GameCore()
 {
+    // Editor Settings might be used by any singleton below during initialization, so
+    // initialize it before any other one.
+    new EditorSettings();
+    
 	new HierarchyTreeController();
     new PropertiesGridController();
     new CommandsController();
 	new CopyPasteController();
+    new PreviewController();
 
 	// All the controllers are created - initialize them where needed.
 	HierarchyTreeController::Instance()->ConnectToSignals();
@@ -62,9 +71,10 @@ GameCore::GameCore()
     new MetadataFactory();
 	new EditorFontManager();
 	new ScreenManager();
-	new EditorSettings();
-	new UndoRedoController();
 	new LibraryController();
+
+    new GridVisualizer();
+    new RulerController();
 
 	// Unpack the help data, if needed.
 	UnpackHelp();
@@ -75,6 +85,23 @@ GameCore::GameCore()
 
 GameCore::~GameCore()
 {
+    RulerController::Instance()->Release();
+    GridVisualizer::Instance()->Release();
+
+    LibraryController::Instance()->Release();
+    EditorSettings::Instance()->Release();
+    ScreenManager::Instance()->Release();
+    EditorFontManager::Instance()->Release();
+    MetadataFactory::Instance()->Release();
+    ScreenWrapper::Instance()->Release();
+
+    CopyPasteController::Instance()->Release();
+    PreviewController::Instance()->Release();
+    CommandsController::Instance()->Release();
+    PropertiesGridController::Instance()->Release();
+    
+    HierarchyTreeController::Instance()->DisconnectFromSignals();
+    HierarchyTreeController::Instance()->Release();
 }
 
 void GameCore::OnAppStarted()

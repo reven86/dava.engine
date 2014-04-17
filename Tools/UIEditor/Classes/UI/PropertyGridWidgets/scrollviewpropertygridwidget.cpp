@@ -114,12 +114,7 @@ void ScrollViewPropertyGridWidget::UpdateMaximumValue()
 
 void ScrollViewPropertyGridWidget::OnPropertiesChangedFromExternalSource()
 {
-    // Re-read all the properties related to this grid.
-    for (PROPERTYGRIDWIDGETSITER iter = this->propertyGridWidgetsMap.begin();
-         iter != this->propertyGridWidgetsMap.end(); iter ++)
-    {
-        UpdateWidgetWithPropertyValue(iter);
-    }
+    BasePropertyGridWidget::OnPropertiesChangedFromExternalSource();
 	UpdateMaximumValue();
 }
 

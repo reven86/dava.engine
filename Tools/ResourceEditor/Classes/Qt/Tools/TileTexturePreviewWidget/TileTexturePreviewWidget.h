@@ -28,7 +28,7 @@ public:
 	explicit TileTexturePreviewWidget(QWidget* parent = 0);
 	~TileTexturePreviewWidget();
 
-	void AddTexture(Image* previewTexture, const Color& color = Color::White());
+	void AddTexture(Image* previewTexture, const Color& color = Color::White);
 	void UpdateColor(int32 index, const Color& color);
 
 	int32 GetSelectedTexture();

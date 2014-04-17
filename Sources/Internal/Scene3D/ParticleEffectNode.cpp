@@ -192,7 +192,7 @@ void DAVA::ParticleEffectNode::Draw()
 
 bool ParticleEffectNode::IsStopEmitter(ParticleEmitter* emitter) const
 {
-    if (!emitter)
+  /*  if (!emitter)
     {
         return true;
     }
@@ -213,7 +213,7 @@ bool ParticleEffectNode::IsStopEmitter(ParticleEmitter* emitter) const
     if (stopWhenEmpty && emitter->GetParticleCount() == 0)
     {
         return true;
-    }
+    }*/
     
     // No rules to stop emitter - continue its playback.
     return false;
@@ -221,12 +221,12 @@ bool ParticleEffectNode::IsStopEmitter(ParticleEmitter* emitter) const
 
 void ParticleEffectNode::CheckPlaybackComplete()
 {
-    if (GetChildrenCount() == this->emittersCurrentlyStopped)
+ /*   if (GetChildrenCount() == this->emittersCurrentlyStopped)
     {
         // Playback is finished!
         this->emittersCurrentlyStopped = 0;
         this->playbackComplete(this, 0);
-    }
+    }*/
 }
 
 void ParticleEffectNode::SetPlaybackCompleteMessage(const Message& msg)

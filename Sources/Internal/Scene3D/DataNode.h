@@ -35,6 +35,7 @@
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/Entity.h"
+#include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
 {
@@ -42,11 +43,15 @@ namespace DAVA
 /**
     
  */
-class SceneFileV2;
 class DataNode : public BaseObject
 {
 protected:
 	virtual ~DataNode();
+	
+public:
+	
+	static const uint16 NodeRuntimeFlag;
+	
 public:	
 	DataNode();
     virtual int32 Release();
@@ -57,76 +62,65 @@ public:
     void SetScene(Scene * _scene);
     inline Scene * GetScene() { return scene; };
     
-    /**
-        \brief Set name of this particular node.
-        \param[in] new name for this node
-     */
-    void SetName(const String & name);
-
-    /**
-        \brief Get name of this particular node.
-        \returns name of this node
-     */
-    const String & GetName() const;
-    
     DataNode *	FindByName(const String & searchName);
-    virtual void	AddNode(DataNode * node);
-	virtual void	RemoveNode(DataNode * node);
-	virtual DataNode * GetChild(int32 index);
-	virtual int32   GetChildrenCount();
-	virtual void	RemoveAllChildren();
+	virtual void	AddNode(DataNode * node);
 
-    //DataNode * FindByAddress();
     int32  GetNodeIndex();
-    uint64 GetPreviousPointer(); 
+    uint64 GetPreviousPointer();
+	
+	inline uint16 GetNodeGlags() const
+	{
+		return nodeFlags;
+	}
+	
+	inline void AddNodeFlags(uint16 flags)
+	{
+		nodeFlags = nodeFlags | flags;
+	}
+	
+	inline void RemoveNodeFlags(uint16 flags)
+	{
+		nodeFlags = nodeFlags & ~flags;
+	}
     
     /**
         \brief virtual function to save node to KeyedArchive
      */
-    virtual void Save(KeyedArchive * archive, SceneFileV2 * sceneFile);
+    virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     
     /**
         \brief virtual function to load node to KeyedArchive
      */
-	virtual void Load(KeyedArchive * archive, SceneFileV2 * sceneFile);
+	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+    
+    virtual void UpdateUniqueKey(uint64 newKeyValue) {};
+    
+    inline void SetDataIndex(int32 idx);
     
 protected:
     uint64 pointer;
     Scene * scene;
-    String name;
-    Vector<DataNode*> children;
+
     int32 index;
+	uint16 nodeFlags;
     
 public:
     
     INTROSPECTION_EXTEND(DataNode, BaseObject,
-        MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(index, "Index", I_SAVE)
         MEMBER(pointer, "Pointer", I_SAVE)
-        COLLECTION(children, "Children", I_SAVE | I_VIEW | I_EDIT)
     );
 };
-    
-/*class DataNodeArray : public BaseObject
+
+inline void DataNode::SetDataIndex(int32 idx)
 {
-public:
-    DataNodeArray(Scene * _scene);
-    
-    virtual void	AddNode(DataNode * node);
-	virtual void	RemoveNode(DataNode * node);
-	virtual DataNode * GetChild(int32 index);
-	virtual int32   GetChildrenCount();
-	virtual void	RemoveAllChildren();
+    index = idx;
+}
 
-protected:
     
-    Scene * scene;
-};*/
-    
-
 };
 
-#endif // __DAVAENGINE_SCENENODE_H__
+#endif // __DAVAENGINE_DATANODE_H__
 
 
 

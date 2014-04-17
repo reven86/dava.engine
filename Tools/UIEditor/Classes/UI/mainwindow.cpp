@@ -37,16 +37,28 @@
 #include "createplatformdlg.h"
 #include "createplatformdlg.h"
 #include "createscreendlg.h"
-#include "Dialogs/createaggregatordlg.h"
 #include "fontmanagerdialog.h"
-#include "Dialogs/localizationeditordialog.h"
-#include "ItemsCommand.h"
-#include "CommandsController.h"
 #include "FileSystem/FileSystem.h"
 #include "ResourcesManageHelper.h"
+
+#include "CommandsController.h"
+#include "ItemsCommand.h"
+#include "GuideCommands.h"
+
+#include "Dialogs/createaggregatordlg.h"
 #include "Dialogs/importdialog.h"
+#include "Dialogs/importdialog.h"
+#include "Dialogs/localizationeditordialog.h"
+#include "Dialogs/previewsettingsdialog.h"
+
 #include "ImportCommands.h"
 #include "AlignDistribute/AlignDistributeEnums.h"
+#include "DefaultScreen.h"
+#include "ColorHelper.h"
+
+#include "Grid/GridVisualizer.h"
+
+#include "Ruler/RulerController.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -54,6 +66,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QSettings>
+#include <QColorDialog>
 
 #define SPIN_SCALE 10.f
 
@@ -72,16 +85,21 @@ static const int SCALE_PERCENTAGES[] =
 static const int32 DEFAULT_SCALE_PERCENTAGE_INDEX = 4; // 100%
 static const char* PERCENTAGE_FORMAT = "%1 %";
 
+static const char* COLOR_PROPERTY_ID = "color";
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    backgroundFrameUseCustomColorAction(NULL),
+    backgroundFrameSelectCustomColorAction(NULL)
 {
 	screenChangeUpdate = false;
 	
     ui->setupUi(this);
     
 	ui->davaGlWidget->setFocus();
-    
+    connect(ui->davaGlWidget, SIGNAL(DavaGLWidgetResized()), this, SLOT(OnGLWidgetResized()));
+
 	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
 	int32 scalesCount = COUNT_OF(SCALE_PERCENTAGES);
@@ -98,6 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	{
 		ui->scaleCombo->addItem(QString(PERCENTAGE_FORMAT).arg(SCALE_PERCENTAGES[i]));
 	}
+
 	ui->scaleCombo->setCurrentIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
 	ui->scaleCombo->lineEdit()->setMaxLength(6);
 	ui->scaleCombo->setInsertPolicy(QComboBox::NoInsert);
@@ -107,9 +126,29 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(ui->verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnSliderMoved()));
 	connect(ui->horizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(OnSliderMoved()));
 
-	ui->menuView->addAction(ui->hierarchyDockWidget->toggleViewAction());
-	ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());
-	ui->menuView->addAction(ui->propertiesDockWidget->toggleViewAction());
+    // Setup rulers.
+    ui->horizontalRuler->SetOrientation(RulerWidget::Horizontal);
+    ui->verticalRuler->SetOrientation(RulerWidget::Vertical);
+
+    connect(RulerController::Instance(),
+            SIGNAL(HorisontalRulerSettingsChanged(const RulerSettings &)),
+            ui->horizontalRuler,
+            SLOT(OnRulerSettingsChanged(const RulerSettings &)));
+    connect(RulerController::Instance(),
+            SIGNAL(VerticalRulerSettingsChanged(const RulerSettings &)),
+            ui->verticalRuler,
+            SLOT(OnRulerSettingsChanged(const RulerSettings &)));
+    
+    connect(RulerController::Instance(),
+            SIGNAL(HorisontalRulerMarkPositionChanged(int)),
+            ui->horizontalRuler,
+            SLOT(OnMarkerPositionChanged(int)));
+    connect(RulerController::Instance(),
+            SIGNAL(VerticalRulerMarkPositionChanged(int)),
+            ui->verticalRuler,
+            SLOT(OnMarkerPositionChanged(int)));
+    
+    RulerController::Instance()->UpdateRulers();
 
     connect(ui->actionFontManager, SIGNAL(triggered()), this, SLOT(OnOpenFontManager()));
     connect(ui->actionLocalizationManager, SIGNAL(triggered()), this, SLOT(OnOpenLocalizationManager()));
@@ -134,6 +173,11 @@ MainWindow::MainWindow(QWidget *parent) :
 			this,
 			SLOT(OnSelectedScreenChanged()));
 	
+    connect(HierarchyTreeController::Instance(),
+			SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &)),
+			this,
+			SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &)));
+
 	connect(ui->hierarchyDockWidget->widget(),
 			SIGNAL(CreateNewScreen()),
 			this,
@@ -176,9 +220,33 @@ MainWindow::MainWindow(QWidget *parent) :
 			this,
 			SLOT(OnUnsavedChangesNumberChanged()));
 
+    connect(this->ui->actionPreview,
+            SIGNAL(triggered()),
+            this,
+            SLOT(OnPreviewTriggered()));
+    
+    connect(this->ui->actionEditPreviewSettings,
+            SIGNAL(triggered()),
+            this,
+            SLOT(OnEditPreviewSettings()));
+
+    connect(this->ui->horizontalRuler,
+            SIGNAL(GuideDropped(Qt::DropAction)),
+            this,
+            SLOT(OnGuideDropped(Qt::DropAction)));
+
+    connect(this->ui->verticalRuler,
+            SIGNAL(GuideDropped(Qt::DropAction)),
+            this,
+            SLOT(OnGuideDropped(Qt::DropAction)));
+
 	InitMenu();
 	RestoreMainWindowState();
 	CreateHierarchyDockWidgetToolbar();
+    UpdatePreviewButton();
+
+    SetAlignEnabled(false);
+    SetDistributeEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -218,6 +286,8 @@ void MainWindow::CreateHierarchyDockWidgetToolbar()
 {
 	QMainWindow *window = new QMainWindow(0);
  	QToolBar *toolBar = new QToolBar(window);
+    toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    
 	// Change size of icons to 16x16 (default is 32x32)
 	toolBar->setIconSize(QSize(16, 16));
 	// Set actions for toolbar
@@ -276,12 +346,19 @@ void MainWindow::UpdateScaleControls()
 		this->ui->scaleCombo->setEditText(QString("%1 %").arg(scaleInPercents));
 	}
 
-	// Re-update the scale on the Screen Wrapper level to sync everything.
-	ScreenWrapper::Instance()->SetScale(newScale);
+    // Re-update the scale on the Screen Wrapper level to sync everything.
+    NotifyScaleUpdated(newScale);
 }
 
 void MainWindow::OnUpdateScaleRequest(float scaleDelta)
 {
+    // TODO! temporary solution to don't add new class variable, should be refactored
+    // together with the new Scale Control.
+    if (!ui->scaleSlider->isVisible())
+    {
+        return;
+    }
+    
 	// Lookup for the next/prev index.
 	int32 curScaleIndex = ui->scaleSlider->value();
 	if (scaleDelta > 0)
@@ -313,6 +390,13 @@ void MainWindow::OnScaleComboIndexChanged(int value)
 
 void MainWindow::OnScaleComboTextEditingFinished()
 {
+    // TODO! temporary solution to don't add new class variable, should be refactored
+    // together with the new Scale Control.
+    if (!ui->scaleCombo->isVisible())
+    {
+        return;
+    }
+
 	// Firstly verify whether the value is already set.
 	QString curTextValue = ui->scaleCombo->currentText().trimmed();
 	int scaleValue = 0;
@@ -391,7 +475,7 @@ void MainWindow::UpdateScale(int32 newScalePercents)
 	Vector2 cursorPos = ScreenWrapper::Instance()->GetCursorPosition();
 	Vector2 scenePosition = CalculateScenePositionForPoint(ui->davaGlWidget->rect(), cursorPos, prevScale);
 
-	ScreenWrapper::Instance()->SetScale(newScale);
+    NotifyScaleUpdated(newScale);
 
 	UpdateSliders();
 	UpdateScreenPosition();
@@ -456,7 +540,11 @@ void MainWindow::resizeEvent(QResizeEvent * event)
 	widgetSize = ui->davaGlWidget->size();
 	Vector2 newViewPortCenter = Vector2(widgetSize.width() / 2, widgetSize.height() / 2);
 
+    UpdateScreenPosition();
 	ScrollToScenePositionAndPoint(viewPortSceneCenter, newViewPortCenter, curScale);
+
+	// Update the rulers to take new window size int account.
+	RulerController::Instance()->UpdateRulers();
 }
 
 void MainWindow::closeEvent(QCloseEvent * event)
@@ -479,12 +567,12 @@ void MainWindow::showEvent(QShowEvent * event)
 void MainWindow::OnSelectedScreenChanged()
 {
 	screenChangeUpdate = true;
-	if (HierarchyTreeController::Instance()->GetActiveScreen())
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+	if (activeScreen)
 	{
 		UpdateSliders();
 		UpdateScaleControls();
 
-		HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
 		float posX = activeScreen->GetPosX();
 		float posY = activeScreen->GetPosY();
 
@@ -503,15 +591,27 @@ void MainWindow::OnSelectedScreenChanged()
 
 		// Enable library widget for selected screen
 		ui->libraryDockWidget->setEnabled(true);
+        
+        ui->actionEnable_Guides->setChecked(activeScreen->AreGuidesEnabled());
+        ui->actionLock_Guides->setChecked(activeScreen->AreGuidesLocked());
 	}
 	else
 	{	// Disable library widget if no screen is selected
 		ui->libraryDockWidget->setEnabled(false);
+        ui->actionEnable_Guides->setEnabled(false);
 	}
 	
 	screenChangeUpdate = false;
-	
+	UpdateMenu();
 	UpdateScreenPosition();
+}
+
+void MainWindow::OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES& selectedNodes)
+{
+    int nodesCount = selectedNodes.size();
+
+    SetAlignEnabled(nodesCount >= 2);
+    SetDistributeEnabled(nodesCount >= 3);
 }
 
 void MainWindow::UpdateSliders()
@@ -541,6 +641,22 @@ void MainWindow::UpdateScreenPosition()
 	int valueV = ui->verticalScrollBar->value();
 	int valueH = ui->horizontalScrollBar->value();
 	ScreenWrapper::Instance()->SetViewPos(valueH, valueV, ui->davaGlWidget->rect());
+
+    DefaultScreen* currentScreen = ScreenWrapper::Instance()->GetActiveScreen();
+    if (currentScreen)
+    {
+        Vector2 viewPos = -currentScreen->GetPos();
+        viewPos *= ScreenWrapper::Instance()->GetScale();
+        RulerController::Instance()->SetViewPos(viewPos);
+        
+        // Recalculate the background frame position and size.
+        Rect frameRect;
+        frameRect.SetPosition(-currentScreen->GetPos());
+        QRect glWidgetRect = ui->davaGlWidget->rect();
+        frameRect.SetSize(Vector2(glWidgetRect.width(), glWidgetRect.height()));
+
+        ScreenWrapper::Instance()->SetBackgroundFrameRect(frameRect);
+    }
 }
 
 void MainWindow::OnUpdateScreenPositionRequest(const QPoint& posDelta)
@@ -576,12 +692,7 @@ void MainWindow::OnShowHelp()
 
 void MainWindow::InitMenu()
 {
-	ui->menuView->addAction(ui->hierarchyDockWidget->toggleViewAction());
-	ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());
-	ui->menuView->addAction(ui->propertiesDockWidget->toggleViewAction());
-    ui->menuView->addAction(ui->actionZoomIn);
-    ui->menuView->insertSeparator(ui->actionZoomIn);
-    ui->menuView->addAction(ui->actionZoomOut);
+    SetupViewMenu();
 
 	connect(ui->actionNew_project, SIGNAL(triggered()), this, SLOT(OnNewProject()));
 	connect(ui->actionSave_project, SIGNAL(triggered()), this, SLOT(OnSaveProject()));
@@ -612,7 +723,7 @@ void MainWindow::InitMenu()
 	for(int32 i = 0; i < EditorSettings::RECENT_FILES_COUNT; ++i)
     {
         recentPojectActions[i] = new QAction(this);
-        recentPojectActions[i]->setObjectName(QString::fromUtf8(Format("recentPojectActions[%d]", i)));
+        recentPojectActions[i]->setObjectName(QString::fromStdString(Format("recentPojectActions[%d]", i)));
     }
 	
 	//Help contents dialog
@@ -621,6 +732,9 @@ void MainWindow::InitMenu()
 	// Undo/Redo.
 	connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndoRequested()));
 	connect(ui->actionRedo, SIGNAL(triggered()), this, SLOT(OnRedoRequested()));
+	
+	// Adjust controls size
+	connect(ui->actionAdjustControlSize, SIGNAL(triggered()), this, SLOT(OnAdjustSize()));
 
 	// Align.
 	connect(ui->actionAlign_Left, SIGNAL(triggered()), this, SLOT(OnAlignLeft()));
@@ -642,20 +756,125 @@ void MainWindow::InitMenu()
 	connect(ui->actionEqualBetweenBottomEdges, SIGNAL(triggered()),this, SLOT(OnDistributeEqualDistanceBetweenBottomEdges()));
 	connect(ui->actionEqualBetweenYObjects, SIGNAL(triggered()),this, SLOT(OnDistributeEqualDistanceBetweenY()));
 
-	UpdateMenu();
+    // Reload.
+    connect(ui->actionRepack_And_Reload, SIGNAL(triggered()), this, SLOT(OnRepackAndReloadSprites()));
+
+    // Pixelization.
+    ui->actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
+    connect(ui->actionPixelized, SIGNAL(triggered()), this, SLOT(OnPixelizationStateChanged()));
+    
+    // Stick Mode - enable by default.
+    ui->actionStickMode->setChecked(true);
+    connect(ui->actionStickMode, SIGNAL(triggered()), this, SLOT(OnStickModeChanged()));
+    OnStickModeChanged();
+
+    connect(ui->actionEnable_Guides, SIGNAL(triggered()), this, SLOT(OnEnableGuidesChanged()));
+    connect(ui->actionLock_Guides, SIGNAL(triggered()), this, SLOT(OnLockGuidesChanged()));
+    UpdateMenu();
+}
+
+void MainWindow::SetupViewMenu()
+{
+    // Setup the common menu actions.
+    ui->menuView->addAction(ui->hierarchyDockWidget->toggleViewAction());
+    ui->menuView->addAction(ui->libraryDockWidget->toggleViewAction());
+    ui->menuView->addAction(ui->propertiesDockWidget->toggleViewAction());
+
+    ui->menuView->addSeparator();
+    ui->menuView->addAction(ui->mainToolbar->toggleViewAction());
+
+    // Setup the Background Color menu.
+    QMenu* setBackgroundColorMenu = new QMenu("Background Color");
+    ui->menuView->addSeparator();
+    ui->menuView->addMenu(setBackgroundColorMenu);
+
+    static const struct
+    {
+        QColor color;
+        QString colorName;
+    } colorsMap[] =
+    {
+        { Qt::black, "Black" },
+        { QColor(0x33, 0x33, 0x33, 0xFF), "Default" },
+        { QColor(0x53, 0x53, 0x53, 0xFF), "Dark Gray" },
+        { QColor(0xB8, 0xB8, 0xB8, 0xFF), "Medium Gray" },
+        { QColor(0xD6, 0xD6, 0xD6, 0xFF), "Light Gray" },
+    };
+    
+    Color curBackgroundColor = EditorSettings::Instance()->GetCurrentBackgroundFrameColor();
+    int32 itemsCount = COUNT_OF(colorsMap);
+    
+    bool isCustomColor = true;
+    for (int32 i = 0; i < itemsCount; i ++)
+    {
+        QAction* colorAction = new QAction(colorsMap[i].colorName, setBackgroundColorMenu);
+		colorAction->setProperty(COLOR_PROPERTY_ID, colorsMap[i].color);
+        
+        Color curColor = ColorHelper::QTColorToDAVAColor(colorsMap[i].color);
+        if (curColor == curBackgroundColor)
+        {
+            isCustomColor = false;
+        }
+
+        colorAction->setCheckable(true);
+        colorAction->setChecked(curColor == curBackgroundColor);
+        
+        backgroundFramePredefinedColorActions.append(colorAction);
+		setBackgroundColorMenu->addAction(colorAction);
+	}
+	
+    backgroundFrameUseCustomColorAction = new QAction("Custom", setBackgroundColorMenu);
+	backgroundFrameUseCustomColorAction->setProperty(COLOR_PROPERTY_ID, ColorHelper::DAVAColorToQTColor(curBackgroundColor));
+    backgroundFrameUseCustomColorAction->setCheckable(true);
+    backgroundFrameUseCustomColorAction->setChecked(isCustomColor);
+    setBackgroundColorMenu->addAction(backgroundFrameUseCustomColorAction);
+    
+    setBackgroundColorMenu->addSeparator();
+    
+    backgroundFrameSelectCustomColorAction = new QAction("Select Custom Color...", setBackgroundColorMenu);
+    setBackgroundColorMenu->addAction(backgroundFrameSelectCustomColorAction);
+    
+    connect(setBackgroundColorMenu, SIGNAL(triggered(QAction*)), this, SLOT(SetBackgroundColorMenuTriggered(QAction*)));
+
+    // Another actions below the Set Background Color.
+    ui->menuView->addAction(ui->actionZoomIn);
+    ui->menuView->insertSeparator(ui->actionZoomIn);
+    ui->menuView->addAction(ui->actionZoomOut);
 }
 
 void MainWindow::UpdateMenu()
 {
-	//ui->actionNew
-	ui->actionSave_project->setEnabled(HierarchyTreeController::Instance()->GetTree().IsProjectCreated());
-	ui->actionSave_All->setEnabled(HierarchyTreeController::Instance()->GetTree().IsProjectCreated());
-	ui->actionClose_project->setEnabled(HierarchyTreeController::Instance()->GetTree().IsProjectCreated());
-	ui->menuProject->setEnabled(HierarchyTreeController::Instance()->GetTree().IsProjectCreated());
-	ui->actionNew_platform->setEnabled(HierarchyTreeController::Instance()->GetTree().IsProjectCreated());
-	ui->actionNew_screen->setEnabled(HierarchyTreeController::Instance()->GetTree().GetPlatforms().size());
-	ui->actionNew_aggregator->setEnabled(HierarchyTreeController::Instance()->GetTree().GetPlatforms().size());
-	ui->actionImport_Platform->setEnabled(HierarchyTreeController::Instance()->GetTree().GetPlatforms().size());
+    bool projectCreated = HierarchyTreeController::Instance()->GetTree().IsProjectCreated();
+    bool projectNotEmpty = (HierarchyTreeController::Instance()->GetTree().GetPlatforms().size() > 0);
+
+	ui->actionSave_project->setEnabled(projectCreated);
+	ui->actionSave_All->setEnabled(projectCreated);
+	ui->actionClose_project->setEnabled(projectCreated);
+	ui->menuProject->setEnabled(projectCreated);
+	ui->actionNew_platform->setEnabled(projectCreated);
+	ui->actionImport_Platform->setEnabled(projectCreated);
+	
+	ui->actionNew_screen->setEnabled(projectNotEmpty);
+	ui->actionNew_aggregator->setEnabled(projectNotEmpty);
+
+	ui->actionAdjustControlSize->setEnabled(projectNotEmpty);
+
+    ui->actionFontManager->setEnabled(projectNotEmpty);
+    ui->actionLocalizationManager->setEnabled(projectNotEmpty);
+
+    // Reload.
+    ui->actionRepack_And_Reload->setEnabled(projectNotEmpty);
+    
+    // Preview - enabling for Screens only - not for Aggregators.
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    bool enablePreview = projectNotEmpty && activeScreen && IsPointerToExactClass<HierarchyTreeScreenNode>(activeScreen);
+    ui->actionPreview->setEnabled(enablePreview);
+    ui->actionEditPreviewSettings->setEnabled(enablePreview);
+    
+    // Guides.
+    ui->actionEnable_Guides->setEnabled(projectNotEmpty);
+    ui->actionLock_Guides->setEnabled(projectNotEmpty);
+    ui->actionStickMode->setEnabled(projectNotEmpty);
 }
 
 void MainWindow::OnNewProject()
@@ -685,6 +904,12 @@ void MainWindow::OnProjectCreated()
 	UpdateMenu();
 	UpdateScaleSlider(SCALE_PERCENTAGES[DEFAULT_SCALE_PERCENTAGE_INDEX]);
 	UpdateScaleComboIndex(DEFAULT_SCALE_PERCENTAGE_INDEX);
+
+    SetAlignEnabled(false);
+    SetDistributeEnabled(false);
+
+    DisablePreview();
+    UpdatePreviewButton();
 
 	// Release focus from Dava GL widget, so after the first click to it
 	// it will lock the keyboard and will process events successfully.
@@ -752,6 +977,9 @@ void MainWindow::OnImportPlatform()
 		return;
 	}
 
+	// Convert directory path into Unix-style path
+	selectedDir = ResourcesManageHelper::ConvertPathToUnixStyle(selectedDir);
+
 	if (!selectedDir.startsWith(platformsPath))
 	{
 		QMessageBox::critical(this, tr("Import error"),
@@ -774,6 +1002,7 @@ void MainWindow::OnImportPlatform()
 															   size, files);
 		CommandsController::Instance()->ExecuteCommand(cmd);
 		SafeRelease(cmd);
+		UpdateMenu();
 	}
 }
 
@@ -876,6 +1105,10 @@ void MainWindow::DoSaveProject(bool changesOnly)
 
 void MainWindow::OnOpenProject()
 {
+	// Close and save current project if any
+	if (!CloseProject())
+		return;
+
 	QString projectPath = QFileDialog::getOpenFileName(this, tr("Select a project file"),
 														ResourcesManageHelper::GetDefaultDirectory(),
 														tr( "Project (*.uieditor)"));
@@ -925,8 +1158,10 @@ void MainWindow::OnExitApplication()
 
 bool MainWindow::CloseProject()
 {
-	bool lastChangeSaved = !HierarchyTreeController::Instance()->HasUnsavedChanges();
-	if (!lastChangeSaved)
+	bool hasUnsavedChanged = (HierarchyTreeController::Instance()->HasUnsavedChanges() ||
+                             PreviewController::Instance()->HasUnsavedChanges());
+    
+	if (hasUnsavedChanged)
 	{
 		int ret = QMessageBox::warning(this, qApp->applicationName(),
 									   tr("The project has been modified.\n"
@@ -958,6 +1193,9 @@ void MainWindow::UpdateProjectSettings(const QString& projectPath)
 
 	// Update window title
 	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle(projectPath));
+    
+    // Apply the pixelization value.
+    Texture::SetPixelization(EditorSettings::Instance()->IsPixelized());
 }
 
 void MainWindow::OnUndoRequested()
@@ -1023,7 +1261,6 @@ Vector2 MainWindow::CalculateScenePositionForPoint(const QRect& widgetRect, cons
 	Vector2 resultPosition;
 	resultPosition.x = (hOffset + point.x) / curScale;
 	resultPosition.y = (vOffset + point.y) / curScale;
-	Logger::Warning("Scene position under mouse: X:%f, Y:%f", resultPosition.x, resultPosition.y);
 	
 	return resultPosition;
 }
@@ -1053,6 +1290,11 @@ void MainWindow::ScrollToScenePositionAndPoint(const Vector2& scenePosition, con
 	
 	ui->horizontalScrollBar->setValue(newHScrollValue);
 	ui->verticalScrollBar->setValue(newVScrollValue);
+}
+
+void MainWindow::OnAdjustSize()
+{
+	HierarchyTreeController::Instance()->AdjustSelectedControlsSize();
 }
 
 void MainWindow::OnAlignLeft()
@@ -1123,4 +1365,266 @@ void MainWindow::OnDistributeEqualDistanceBetweenBottomEdges()
 void MainWindow::OnDistributeEqualDistanceBetweenY()
 {
 	HierarchyTreeController::Instance()->DistributeSelectedControls(DISTRIBUTE_CONTROLS_EQUAL_DISTANCE_BETWEEN_Y);
+}
+
+void MainWindow::OnRepackAndReloadSprites()
+{
+    RepackAndReloadSprites();
+}
+
+void MainWindow::NotifyScaleUpdated(float32 newScale)
+{
+    ScreenWrapper::Instance()->SetScale(newScale);
+    GridVisualizer::Instance()->SetScale(newScale);
+
+    RulerController::Instance()->SetScale(newScale);
+}
+
+void MainWindow::OnPixelizationStateChanged()
+{
+    bool isPixelized = ui->actionPixelized->isChecked();
+    EditorSettings::Instance()->SetPixelized(isPixelized);
+
+    ScreenWrapper::Instance()->SetApplicationCursor(Qt::WaitCursor);
+    Texture::SetPixelization(isPixelized);
+    ScreenWrapper::Instance()->RestoreApplicationCursor();
+}
+
+void MainWindow::RepackAndReloadSprites()
+{
+    ScreenWrapper::Instance()->SetApplicationCursor(Qt::WaitCursor);
+    HierarchyTreeController::Instance()->RepackAndReloadSprites();
+    ScreenWrapper::Instance()->RestoreApplicationCursor();
+}
+
+void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
+{
+    Color newColor;
+
+    if (action == backgroundFrameSelectCustomColorAction)
+    {
+        // Need to select new Background Frame color.
+        QColor curColor = ColorHelper::DAVAColorToQTColor(EditorSettings::Instance()->GetCustomBackgroundFrameColor());
+        QColor color = QColorDialog::getColor(curColor, this, "Select color", QColorDialog::ShowAlphaChannel);
+        if (color.isValid() == false)
+        {
+            return;
+        }
+
+        newColor = ColorHelper::QTColorToDAVAColor(color);
+        EditorSettings::Instance()->SetCustomBackgroundFrameColor(newColor);
+    }
+    else if (action == backgroundFrameUseCustomColorAction)
+    {
+        // Need to use custom Background Frame Color set up earlier.
+        newColor = EditorSettings::Instance()->GetCustomBackgroundFrameColor();
+    }
+    else
+    {
+        // Need to use predefined Background Frame Color.
+        newColor = ColorHelper::QTColorToDAVAColor(action->property(COLOR_PROPERTY_ID).value<QColor>());
+    }
+
+    EditorSettings::Instance()->SetCurrentBackgroundFrameColor(newColor);
+    ScreenWrapper::Instance()->SetBackgroundFrameColor(newColor);
+    
+    // Update the check marks.
+    bool colorFound = false;
+    foreach (QAction* colorAction, backgroundFramePredefinedColorActions)
+    {
+        Color color = ColorHelper::QTColorToDAVAColor(colorAction->property(COLOR_PROPERTY_ID).value<QColor>());
+        if (color == newColor)
+        {
+            colorAction->setChecked(true);
+            colorFound = true;
+        }
+        else
+        {
+            colorAction->setChecked(false);
+        }
+    }
+
+    // In case we don't found current color in predefined ones - select "Custom" menu item.
+    backgroundFrameUseCustomColorAction->setChecked(!colorFound);
+}
+
+void MainWindow::SetAlignEnabled(bool value)
+{
+	ui->actionAlign_Left->setEnabled(value);
+	ui->actionAlign_Horz_Center->setEnabled(value);
+	ui->actionAlign_Right->setEnabled(value);
+
+	ui->actionAlign_Top->setEnabled(value);
+    ui->actionAlign_Vert_Center->setEnabled(value);
+	ui->actionAlign_Bottom->setEnabled(value);
+}
+
+void MainWindow::SetDistributeEnabled(bool value)
+{
+	ui->actionEqualBetweenLeftEdges->setEnabled(value);
+	ui->actionEqualBetweenXCenters->setEnabled(value);
+    ui->actionEqualBetweenRightEdges->setEnabled(value);
+    ui->actionEqualBetweenXObjects->setEnabled(value);
+
+	ui->actionEqualBetweenTopEdges->setEnabled(value);
+    ui->actionEqualBetweenYCenters->setEnabled(value);
+    ui->actionEqualBetweenBottomEdges->setEnabled(value);
+    ui->actionEqualBetweenYObjects->setEnabled(value);
+}
+
+void MainWindow::OnPreviewTriggered()
+{
+    bool isPreview = ui->actionPreview->isChecked();
+    if (isPreview)
+    {
+        PreviewSettingsDialog* dialog = new PreviewSettingsDialog(true);
+        if (dialog->exec() != QDialog::Accepted)
+        {
+            ui->actionPreview->setChecked(false);
+            delete dialog;
+            return;
+        }
+
+        PreviewSettingsData previewData = dialog->GetSelectedData();
+        EnablePreview(previewData);
+        delete dialog;
+    }
+    else
+    {
+        DisablePreview();
+    }
+
+    UpdatePreviewButton();
+}
+
+void MainWindow::OnGLWidgetResized()
+{
+    UpdateSliders();
+    UpdateScreenPosition();
+}
+
+void MainWindow::EnablePreview(const PreviewSettingsData& data)
+{
+    HierarchyTreeController::Instance()->EnablePreview(data);
+
+    const PreviewTransformData& transformData = PreviewController::Instance()->GetTransformData();
+    ScreenWrapper::Instance()->SetScale(transformData.zoomLevel);
+    UpdateScaleControls();
+
+    EnableEditing(false);
+}
+
+void MainWindow::DisablePreview()
+{
+    EnableEditing(true);
+    HierarchyTreeController::Instance()->DisablePreview();
+
+    ScreenWrapper::Instance()->SetScale(1.0f);
+    UpdateScaleControls();
+    UpdateSliders();
+	UpdateScreenPosition();
+}
+
+void MainWindow::EnableEditing(bool value)
+{
+    ui->hierarchyDockWidget->setVisible(value);
+    ui->libraryDockWidget->setVisible(value);
+    ui->propertiesDockWidget->setVisible(value);
+    ui->scaleCombo->setVisible(value);
+    ui->scaleSlider->setVisible(value);
+
+    ui->mainToolbar->setEnabled(value);
+
+    ui->actionZoomIn->setEnabled(value);
+    ui->actionZoomOut->setEnabled(value);
+
+    ui->horizontalRuler->setVisible(value);
+    ui->verticalRuler->setVisible(value);
+
+    ui->hierarchyDockWidget->toggleViewAction()->setEnabled(value);
+    ui->libraryDockWidget->toggleViewAction()->setEnabled(value);
+    ui->propertiesDockWidget->toggleViewAction()->setEnabled(value);
+
+    if (value)
+    {
+        ui->actionUndo->setEnabled(CommandsController::Instance()->IsUndoAvailable());
+        ui->actionRedo->setEnabled(CommandsController::Instance()->IsRedoAvailable());
+    }
+    else
+    {
+        ui->actionUndo->setEnabled(false);
+        ui->actionRedo->setEnabled(false);
+    }
+}
+
+void MainWindow::UpdatePreviewButton()
+{
+    bool isPreview = ui->actionPreview->isChecked();
+    if (isPreview)
+    {
+        ui->actionPreview->setText("Preview Mode");
+    }
+    else
+    {
+        ui->actionPreview->setText("Editing Mode");
+    }
+}
+
+void MainWindow::OnEditPreviewSettings()
+{
+    // The dialog should be opened in Edit mode, nos Select.
+    PreviewSettingsDialog* dialog = new PreviewSettingsDialog(false);
+    dialog->exec();
+    delete dialog;
+}
+
+void MainWindow::OnGuideDropped(Qt::DropAction dropAction)
+{
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (!activeScreen)
+    {
+        return;
+    }
+    
+    if (dropAction == Qt::IgnoreAction)
+    {
+        activeScreen->CancelNewGuide();
+        return;
+    }
+    
+    if (!activeScreen->CanAcceptNewGuide())
+    {
+        // New guide is on the same position as existing one - no need to add.
+        activeScreen->CancelNewGuide();
+        return;
+    }
+    
+    // Create the appropriate command.
+    AddNewGuideCommand* command = new AddNewGuideCommand(activeScreen);
+    CommandsController::Instance()->ExecuteCommand(command);
+    SafeRelease(command);
+}
+
+void MainWindow::OnStickModeChanged()
+{
+    int32 stickMode = ui->actionStickMode->isChecked() ? StickToSides | StickToCenters : StickDisabled;
+    HierarchyTreeController::Instance()->SetStickMode(stickMode);
+}
+
+void MainWindow::OnEnableGuidesChanged()
+{
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (activeScreen)
+    {
+        activeScreen->SetGuidesEnabled(ui->actionEnable_Guides->isChecked());
+    }
+}
+
+void MainWindow::OnLockGuidesChanged()
+{
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (activeScreen)
+    {
+        activeScreen->LockGuides(ui->actionLock_Guides->isChecked());
+    }
 }

@@ -31,11 +31,11 @@
 #include "DAEConvertAction.h"
 #include "Collada/ColladaConvert.h"
 
-#include "Classes/SceneEditor/SceneValidator.h"
-#include "Classes/Qt/DockLODEditor/EditorLODData.h"
+#include "Deprecated/SceneValidator.h"
+#include "DockLODEditor/EditorLODData.h"
 
-#include "Classes/Qt/Scene/SceneHelper.h"
-#include "Classes/Commands2/ConvertToShadowCommand.h"
+#include "Scene/SceneHelper.h"
+#include "Commands2/ConvertToShadowCommand.h"
 
 using namespace DAVA;
 
@@ -48,7 +48,7 @@ void DAEConvertAction::Redo()
 {
 	if(daePath.Exists() && daePath.IsEqualToExtension(".dae"))
 	{
-		eColladaErrorCodes code = ConvertDaeToSce(daePath.GetAbsolutePathname());
+		eColladaErrorCodes code = ConvertDaeToSce(daePath);
 		if(code == COLLADA_OK)
 		{
             ConvertFromSceToSc2();
@@ -84,164 +84,17 @@ DAVA::Scene * DAEConvertAction::CreateSceneFromSce() const
 	{
 		rootNode = rootNode->Clone();
 		scene->AddNode(rootNode);
-		scene->BakeTransforms();
-		rootNode->Release();
-	}
-    
-    return scene;
-}
 
+		Logger::Info("Scene Optimization started");
 
-DAEConvertWithSettingsAction::DAEConvertWithSettingsAction(const DAVA::FilePath &path)
-    : DAEConvertAction(path)
-{
-    
-}
+		ScopedPtr<SceneFileV2> sceneFile(new SceneFileV2());
+		sceneFile->OptimizeScene(scene);
 
-void DAEConvertWithSettingsAction::ConvertFromSceToSc2() const
-{
-    FilePath sc2Path = FilePath::CreateWithNewExtension(daePath, ".sc2");
-    if(sc2Path.Exists())
-    {
-        Scene *scene = CreateSceneFromSce();
-        
-        FilePath newSc2Path = sc2Path;
-        newSc2Path.ReplaceBasename(sc2Path.GetBasename() + "_new");
-        scene->Save(newSc2Path);
-        scene->Release();
-        
-        TryToMergeScenes(sc2Path, newSc2Path);
-        
-        FileSystem::Instance()->DeleteFile(newSc2Path);
-    }
-    else
-    {
-        DAEConvertAction::ConvertFromSceToSc2();
-    }
-}
-
-
-void DAEConvertWithSettingsAction::TryToMergeScenes(const DAVA::FilePath &originalPath, const DAVA::FilePath &newPath)
-{
-    Scene * oldScene = CreateSceneFromSc2(originalPath);
-    Scene * newScene = CreateSceneFromSc2(newPath);
-    
-	CopyGeometryRecursive(newScene, oldScene);
-	oldScene->Save(originalPath);
-
-    oldScene->Release();
-    newScene->Release();
-}
-
-DAVA::Scene * DAEConvertWithSettingsAction::CreateSceneFromSc2(const DAVA::FilePath &scenePathname)
-{
-    Scene * scene = new Scene();
-    
-    Entity * rootNode = scene->GetRootNode(scenePathname);
-	if(rootNode)
-	{
-		rootNode = rootNode->Clone();
-
-		Vector<Entity*> tmpEntities;
-		uint32 entitiesCount = (uint32)rootNode->GetChildrenCount();
-        
-		// optimize scene
-        SceneFileV2 *sceneFile = new SceneFileV2();
-		sceneFile->OptimizeScene(rootNode);
-		sceneFile->Release();
-        
-		// remember all child pointers, but don't add them to scene in this cycle
-		// because when entity is adding it is automatically removing from its old hierarchy
-		tmpEntities.reserve(entitiesCount);
-		for (uint32 i = 0; i < entitiesCount; ++i)
-		{
-			tmpEntities.push_back(rootNode->GetChild(i));
-		}
-        
-
-		// now we can safely add entities into our hierarchy
-		for (uint32 i = 0; i < (uint32) tmpEntities.size(); ++i)
-		{
-			scene->AddNode(tmpEntities[i]);
-		}
+		Logger::Info("Scene Optimization finished");
 
 		rootNode->Release();
-
-        Set<String> errorsLog;
-        SceneValidator::Instance()->ValidateScene(scene, scenePathname, errorsLog);
 	}
-    
+
     return scene;
-}
-
-
-void DAEConvertWithSettingsAction::CopyGeometryRecursive( DAVA::Entity *srcEntity, DAVA::Entity *dstEntity )
-{
-	CopyGeometry(srcEntity, dstEntity);
-
-	uint32 srcCount = srcEntity->GetChildrenCount();
-	uint32 dstCount = dstEntity->GetChildrenCount();
-	for(uint32 iSrc = 0, iDst = 0; iSrc < srcCount && iDst < dstCount; )
-	{
-		Entity * src = srcEntity->GetChild(iSrc);
-		Entity * dst = dstEntity->GetChild(iDst);
-
-		if(src->GetName() == dst->GetName())
-		{
-			CopyGeometryRecursive(src, dst);
-			++iSrc;
-			++iDst;
-		}
-		else
-		{
-			++iDst;
-		}
-	}
-}
-
-void DAEConvertWithSettingsAction::CopyGeometry(DAVA::Entity *srcEntity, DAVA::Entity *dstEntity)
-{
-	if(ConvertToShadowCommand::IsEntityWithShadowVolume(dstEntity))
-	{
-		DAVA::RenderBatch *oldBatch = ConvertToShadowCommand::ConvertToShadowVolume(srcEntity);
-		SafeRelease(oldBatch);
-	}
-
-	RenderObject *srcRo = GetRenderObject(srcEntity);
-	RenderObject *dstRo = GetRenderObject(dstEntity);
-	if(srcRo && dstRo)
-	{
-		bool ret = CopyRenderObjects(srcRo, dstRo);
-        if(ret)
-        {
-            dstEntity->SetLocalTransform(srcEntity->GetLocalTransform());
-        }
-		else
-		{
-			Logger::Error("Can't copy geometry from %s to %s", srcEntity->GetName().c_str(), dstEntity->GetName().c_str());
-		}
-	}
-}
-
-
-bool DAEConvertWithSettingsAction::CopyRenderObjects( DAVA::RenderObject *srcRo, DAVA::RenderObject *dstRo )
-{
-	uint32 srcBatchCount = srcRo->GetRenderBatchCount();
-	uint32 dstBatchCount = dstRo->GetRenderBatchCount();
-
-	if(srcBatchCount != dstBatchCount)
-	{
-		return false;
-	}
-
-	for(uint32 i = 0; i < srcBatchCount; ++i)
-	{
-		RenderBatch *srcBatch = srcRo->GetRenderBatch(i);
-		RenderBatch *dstBatch = dstRo->GetRenderBatch(i);
-
-		dstBatch->SetPolygonGroup(srcBatch->GetPolygonGroup());
-	}
-
-	return true;
 }
 

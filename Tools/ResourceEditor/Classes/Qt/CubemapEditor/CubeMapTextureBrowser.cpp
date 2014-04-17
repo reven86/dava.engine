@@ -35,11 +35,12 @@
 #include "../../StringConstants.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
+#include "Project/ProjectManager.h"
 
 #include <QFileDialog>
 #include <QScrollBar>
 
-#include "SceneEditor/EditorSettings.h"
+#include "Qt/Settings/SettingsManager.h"
 #include <qdir>
 
 const int FACE_IMAGE_SIZE = 64;
@@ -57,9 +58,8 @@ CubeMapTextureBrowser::CubeMapTextureBrowser(SceneEditor2* currentScene, QWidget
 	
 	ConnectSignals();
 	
-	FilePath projectPath = CubemapUtils::GetDialogSavedPath(ResourceEditor::CUBEMAP_LAST_PROJECT_DIR_KEY,
-															EditorSettings::Instance()->GetDataSourcePath().GetAbsolutePathname(),
-															EditorSettings::Instance()->GetDataSourcePath().GetAbsolutePathname());
+	FilePath projectPath = CubemapUtils::GetDialogSavedPath(ResourceEditor::SETTINGS_CUBEMAP_LAST_PROJECT_DIR,
+															ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
 		
 	ui->textRootPath->setText(projectPath.GetAbsolutePathname().c_str());
 	ReloadTextures(projectPath.GetAbsolutePathname());
@@ -74,12 +74,12 @@ CubeMapTextureBrowser::~CubeMapTextureBrowser()
 
 void CubeMapTextureBrowser::ConnectSignals()
 {    
-	QObject::connect(ui->buttonSelectRootPath, SIGNAL(pressed()), this, SLOT(OnChooseDirectoryClicked()));
-	QObject::connect(ui->buttonCreateCube, SIGNAL(pressed()), this, SLOT(OnCreateCubemapClicked()));
-	QObject::connect(ui->buttonReload, SIGNAL(pressed()), this, SLOT(OnReloadClicked()));
+	QObject::connect(ui->buttonSelectRootPath, SIGNAL(clicked()), this, SLOT(OnChooseDirectoryClicked()));
+	QObject::connect(ui->buttonCreateCube, SIGNAL(clicked()), this, SLOT(OnCreateCubemapClicked()));
+	QObject::connect(ui->buttonReload, SIGNAL(clicked()), this, SLOT(OnReloadClicked()));
 	QObject::connect(&cubeListItemDelegate, SIGNAL(OnEditCubemap(const QModelIndex&)), this, SLOT(OnEditCubemap(const QModelIndex&)));
 	QObject::connect(&cubeListItemDelegate, SIGNAL(OnItemCheckStateChanged(const QModelIndex&)), this, SLOT(OnItemCheckStateChanged(const QModelIndex&)));
-	QObject::connect(ui->buttonRemove, SIGNAL(pressed()), this, SLOT(OnDeleteSelectedItemsClicked()));
+	QObject::connect(ui->buttonRemove, SIGNAL(clicked()), this, SLOT(OnDeleteSelectedItemsClicked()));
 }
 
 void CubeMapTextureBrowser::ReloadTextures(const DAVA::String& rootPath)
@@ -127,6 +127,8 @@ void CubeMapTextureBrowser::ReloadTextures(const DAVA::String& rootPath)
 					cubemapList.insert(cubemapList.begin(), itemInfo);
 				}
 			}
+
+			SafeDelete(texDesc);
 		}
 		
 		cubeListItemDelegate.UpdateCache(cubemapList);
@@ -165,9 +167,7 @@ void CubeMapTextureBrowser::ReloadTexturesFromUI(QString& path)
 	ui->textRootPath->setText(path);
 	
 	FilePath projectPath = path.toStdString();
-	EditorSettings::Instance()->GetSettings()->SetString(ResourceEditor::CUBEMAP_LAST_PROJECT_DIR_KEY,
-														 projectPath.GetAbsolutePathname());
-	EditorSettings::Instance()->Save();
+	SettingsManager::Instance()->SetValue(ResourceEditor::SETTINGS_CUBEMAP_LAST_PROJECT_DIR, VariantType(projectPath), SettingsManager::INTERNAL);
 	
 	ReloadTextures(path.toStdString());
 }

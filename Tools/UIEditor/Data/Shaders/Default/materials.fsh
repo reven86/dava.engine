@@ -25,11 +25,6 @@ varying mediump vec3 varTexCoord0;
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
 uniform sampler2D texture1;
 varying highp vec2 varTexCoord1;
-<<<<<<< HEAD
-#elif defined(FRAME_BLEND)
-varying mediump vec2 varTexCoord1;
-=======
->>>>>>> to_master_qa
 #endif
 
 #if defined(PIXEL_LIT)

@@ -140,6 +140,10 @@ public:
 	*/
 	eThreadState	GetState();
 
+    /** Wait until thread's finished.
+    */
+    void Join();
+
     /**
         Wrapp pthread wait, signal and broadcast
 	*/
@@ -190,6 +194,7 @@ public:
 	static HGLRC	secondaryContext;
 
 private:
+    HANDLE threadHandle;
 	void		StartWin32();
 	friend DWORD WINAPI ThreadFunc(void* param);
 public:

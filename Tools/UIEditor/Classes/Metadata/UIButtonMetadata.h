@@ -46,6 +46,8 @@ public:
     UIButtonMetadata(QObject* parent = 0);    
 
 protected:
+    virtual bool GetInitialInputEnabled() const {return true;};
+
     // Initialization.
     virtual void InitializeControl(const String& controlName, const Vector2& position);
     virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
@@ -105,6 +107,16 @@ protected:
 	virtual int GetTextAlign();
     virtual void SetTextAlign(int align);
 
+    virtual int GetFittingType() const;
+    virtual void SetFittingType(int value);
+
+    // Stretch Cap.
+    virtual float GetLeftRightStretchCap();
+	virtual void SetLeftRightStretchCap(float value);
+    
+    virtual float GetTopBottomStretchCap();
+	virtual void SetTopBottomStretchCap(float value);
+
     // For UI Button localized text depends on state, so overriding this function.
     virtual UIControl::eControlState GetCurrentStateForLocalizedText() const;
     
@@ -154,6 +166,17 @@ protected:
 	// Sprite Modification Type
 	int GetSpriteModificationForState(UIControl::eControlState state) const;
 	void UpdatePropertyDirtyFlagForSpriteModification();
+
+    // Fitting Type.
+    int GetFittingTypeForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForFittingType();
+
+    // Stretch Cap.
+    float GetLeftRightStretchCapForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForLeftRightStretchCap();
+
+    float GetTopBottomStretchCapForState(UIControl::eControlState state) const;
+    void UpdatePropertyDirtyFlagForTopBottomStretchCap();
 
     // Recover dirty flags.
     void RecoverPropertyDirtyFlags();

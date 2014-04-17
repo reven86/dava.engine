@@ -81,7 +81,7 @@ void AlignTest::LoadResources()
 {
 	// DF-1627 - Always set black background for this test for Windows - all screenshots should be the same
 #ifdef __DAVAENGINE_WIN32__
-	GetBackground()->SetColor(Color::Black());
+	GetBackground()->SetColor(Color::Black);
 	GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
 #endif
 
@@ -90,7 +90,7 @@ void AlignTest::LoadResources()
 
     staticText = new UIStaticText();
     staticText->SetRect(Rect(10.f, 10.f, 400.f, 200.f));
-	staticText->SetTextColor(Color::White());
+	staticText->SetTextColor(Color::White);
 	staticText->SetDebugDraw(true);    
     staticText->SetFont(font);
 	staticText->SetText(controlText);
@@ -98,7 +98,7 @@ void AlignTest::LoadResources()
 
     staticText2 = new UIStaticText();
     staticText2->SetRect(Rect(550.f, 10.f, 200.f, 100.f));
-	staticText2->SetTextColor(Color::White());
+	staticText2->SetTextColor(Color::White);
 	staticText2->SetDebugDraw(true);
     staticText2->SetFont(font);
 	staticText2->SetText(controlText);
@@ -190,7 +190,8 @@ void AlignTest::VerifyTestImage(Image *testImage)
 {
 	// Loade reference image for current test
 	Image *referenceImage = NULL;
-	Vector<Image *> imageSet = ImageLoader::CreateFromFile(Format(REFERENCE_IMAGE_PATH, currenTestIndex));
+	Vector<Image *> imageSet;
+	ImageLoader::CreateFromFileByContent(Format(REFERENCE_IMAGE_PATH, currenTestIndex), imageSet);
 	
 	if(imageSet.size() != 0)
     {

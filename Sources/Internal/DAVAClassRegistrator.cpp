@@ -28,6 +28,7 @@
 
 #include "DAVAEngine.h"
 #include "DAVAClassRegistrator.h"
+#include "Render/Highlevel/SpriteRenderBatch.h"
 
 using namespace DAVA;
 
@@ -43,8 +44,6 @@ void DAVA::RegisterDAVAClasses()
 REGISTER_CLASS(TheoraPlayer);
 #endif
 
-REGISTER_CLASS(ParticleEmitter);
-REGISTER_CLASS(ParticleEmitter3D);
 REGISTER_CLASS(PolygonGroup);
 REGISTER_CLASS(StaticMesh);
 REGISTER_CLASS(Camera);
@@ -59,12 +58,14 @@ REGISTER_CLASS(Landscape);
 REGISTER_CLASS(UIAggregatorControl);
 REGISTER_CLASS(Light);
 REGISTER_CLASS(Mesh);
+REGISTER_CLASS(SpeedTreeObject);
 REGISTER_CLASS(RenderBatch);
 REGISTER_CLASS(RenderObject);
 REGISTER_CLASS(ShadowVolume);
 REGISTER_CLASS(SkyboxRenderObject);
 REGISTER_CLASS(InstanceMaterialState);
 REGISTER_CLASS(Material);
+REGISTER_CLASS(NMaterial);
 REGISTER_CLASS(ImposterNode);
 REGISTER_CLASS(BillboardNode);
 REGISTER_CLASS(BoneNode);
@@ -86,5 +87,11 @@ REGISTER_CLASS(UIList);
 REGISTER_CLASS(UIListCell);
 REGISTER_CLASS(UIScrollBar);
 REGISTER_CLASS(UIScrollView);
-
-
+REGISTER_CLASS(StaticOcclusionComponent);
+REGISTER_CLASS(StaticOcclusionDataComponent);
+REGISTER_CLASS_WITH_ALIAS(PartilceEmitterLoadProxy, "ParticleEmitter3D");
+REGISTER_CLASS(UIWebView);
+REGISTER_CLASS(UIParticles);
+REGISTER_CLASS(VegetationRenderObject);
+REGISTER_CLASS(SpriteObject);
+REGISTER_CLASS(SpriteRenderBatch);

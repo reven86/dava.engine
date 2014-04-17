@@ -73,6 +73,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 
         Log.i(JNIConst.LOG_TAG, "[Activity::onCreate] isFirstRun is " + isFirstRun); 
         nativeOnCreate(isFirstRun);
+        
+        JNITextField.RelinkNativeControls();
+        JNIWebView.RelinkNativeControls();
     }
     
     @Override

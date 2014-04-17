@@ -35,6 +35,7 @@
 #include "Base/BaseMath.h"
 #include <stack>
 #include "FileSystem/File.h"
+#include "Base/FastName.h"
 
 namespace DAVA 
 {
@@ -73,7 +74,7 @@ public:
 	};
 
     // Predefined node name to store Relative Depth.
-    static const char8* YAML_NODE_RELATIVE_DEPTH_NAME;
+    static const char8* SAVE_INDEX_NAME;
 
 protected:
 	virtual ~YamlNode();
@@ -95,6 +96,7 @@ public:
 	const WideString & AsWString() const;
 	const Vector<YamlNode*> & AsVector() const;
     const MultiMap<String, YamlNode*> & AsMap() const;
+    FastName AsFastName() const;
 	
 	/*
 		These functions work only if type of node is array
@@ -216,17 +218,27 @@ protected:
 	YamlParser();
 	virtual ~YamlParser();
 
-	bool Parse(const FilePath & fileName);
-	
 public:
     // This method just creates the YAML parser.
     static YamlParser   * Create();
-    
+
     // This method creates the parser and parses the input file.
-	static YamlParser	* Create(const FilePath & fileName);
-	
-    // Save to YAML file.
-	bool SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool skipRootNode, uint32 attr = File::CREATE | File::WRITE);
+    static YamlParser * Create(const FilePath & fileName)
+    {
+        return YamlParser::CreateAndParse(fileName);
+    }
+
+    // This method creates the parser and parses the data string.
+    static YamlParser * CreateAndParseString(const String & data)
+    {
+        return YamlParser::CreateAndParse(data);
+    }
+
+    // Save to YAML file. "saveLevelOneMapsOnly" is a special mode where
+    // root node is skipped and only nodes with YamlNode::TYPE_MAP are saved
+    // on a root level.
+    // TODO! replace this flag to the separate method!
+	bool SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool saveLevelOneMapsOnly, uint32 attr = File::CREATE | File::WRITE);
     
 	// Save the strings list (needed for Localization).
 	bool SaveStringsList(const FilePath & fileName, YamlNode * rootNode, uint32 attr = File::CREATE | File::WRITE);
@@ -240,6 +252,26 @@ public:
 		uint32 dataOffset;
 		uint8 * data;
 	};
+
+protected:
+    template<typename T> static YamlParser * CreateAndParse(const T & data)
+    {
+        YamlParser * parser = new YamlParser();
+        if (parser)
+        {
+            bool parseResult = parser->Parse(data);
+            if(!parseResult)
+            {
+                SafeRelease(parser);
+                return 0;
+            }
+        }
+        return parser;
+    }
+
+    bool Parse(const String & fileName);
+    bool Parse(const FilePath & fileName);
+    bool Parse(YamlDataHolder * dataHolder);
 
 private:
 	YamlNode			* GetNodeByPath(const String & path);
@@ -273,8 +305,6 @@ private:
 	String				lastMapKey;
 	
 	Stack<YamlNode *> objectStack;
-
-	YamlDataHolder dataHolder;
 };
 
 };

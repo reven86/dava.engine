@@ -58,7 +58,6 @@
 #include <tchar.h>
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Utils/UtilsAndroid.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -156,12 +155,12 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
 }
 
 
-bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFile)
+bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting /* = false */)
 {
     DVASSERT(newFile.GetType() != FilePath::PATH_IN_RESOURCES);
 
 #ifdef __DAVAENGINE_WIN32__
-	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), true);
+	BOOL ret = ::CopyFileA(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), !overwriteExisting);
 	return ret != 0;
 #elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_HTML5__)
 
@@ -207,7 +206,7 @@ bool FileSystem::CopyFile(const FilePath & existingFile, const FilePath & newFil
 	return copied;
 
 #else //iphone & macos
-    int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, COPYFILE_ALL | COPYFILE_EXCL);
+    int ret = copyfile(existingFile.GetAbsolutePathname().c_str(), newFile.GetAbsolutePathname().c_str(), NULL, overwriteExisting ? COPYFILE_ALL : COPYFILE_ALL | COPYFILE_EXCL);
     return ret==0;
 #endif //PLATFORMS
 }
@@ -239,7 +238,7 @@ bool FileSystem::MoveFile(const FilePath & existingFile, const FilePath & newFil
 }
 
 
-bool FileSystem::CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory)
+bool FileSystem::CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory, bool overwriteExisting /* = false */)
 {
     DVASSERT(destinationDirectory.GetType() != FilePath::PATH_IN_RESOURCES);
     DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
@@ -255,7 +254,7 @@ bool FileSystem::CopyDirectory(const FilePath & sourceDirectory, const FilePath 
 		if(!fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
 		{
             const FilePath destinationPath = destinationDirectory + fileList->GetFilename(i);
-			if(!CopyFile(fileList->GetPathname(i), destinationPath))
+			if(!CopyFile(fileList->GetPathname(i), destinationPath, overwriteExisting))
 			{
 				ret = false;
 			}
@@ -356,19 +355,20 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath & path, bool isRecursive)
 File *FileSystem::CreateFileForFrameworkPath(const FilePath & frameworkPath, uint32 attributes)
 {
 #if defined(__DAVAENGINE_ANDROID__)
-    if(frameworkPath.GetType() == FilePath::PATH_IN_RESOURCES)
+    if (frameworkPath.GetType() == FilePath::PATH_IN_RESOURCES &&
+        frameworkPath.GetAbsolutePathname().size() &&
+        frameworkPath.GetAbsolutePathname().c_str()[0] != '/')
     {
 #ifdef USE_LOCAL_RESOURCES
-		return File::CreateFromSystemPath(frameworkPath, attributes);
+        return File::CreateFromSystemPath(frameworkPath, attributes);
 #else
-		return APKFile::CreateFromAssets(frameworkPath, attributes);
+        return APKFile::CreateFromAssets(frameworkPath, attributes);
 #endif
     }
-	else
-	{
-		return File::CreateFromSystemPath(frameworkPath, attributes);
-	}
-    
+    else
+    {
+        return File::CreateFromSystemPath(frameworkPath, attributes);
+    }
 #else //#if defined(__DAVAENGINE_ANDROID__)
 	return File::CreateFromSystemPath(frameworkPath, attributes);
 #endif //#if defined(__DAVAENGINE_ANDROID__)
@@ -427,15 +427,15 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
 bool FileSystem::IsFile(const FilePath & pathToCheck)
 {
 #if defined(__DAVAENGINE_ANDROID__)
-	JniUtils utils;
-	return utils.IsFile(pathToCheck.GetAbsolutePathname());
-#else
+	const String& path = pathToCheck.GetAbsolutePathname();
+	if (IsAPKPath(path))
+		return (fileSet.find(path) != fileSet.end());
+#endif
 	struct stat s;
 	if(stat(pathToCheck.GetAbsolutePathname().c_str(),&s) == 0)
 	{
 		return (0 != (s.st_mode & S_IFREG));
 	}
-#endif
 
  	return false;
 }
@@ -446,10 +446,12 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 #if defined (__DAVAENGINE_WIN32__)
 	DWORD stats = GetFileAttributesA(pathToCheck.GetAbsolutePathname().c_str());
 	return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
-#elif defined(__DAVAENGINE_ANDROID__)
-	JniUtils utils;
-	return utils.IsDirectory(pathToCheck.GetAbsolutePathname());
-#else //#if defined (__DAVAENGINE_WIN32__)
+#else //defined (__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_ANDROID__)
+	const String& path = pathToCheck.GetAbsolutePathname();
+	if (IsAPKPath(path))
+		return (dirSet.find(path) != dirSet.end());
+#endif //#if defined(__DAVAENGINE_ANDROID__)
 
 	struct stat s;
 	if(stat(pathToCheck.GetAbsolutePathname().c_str(), &s) == 0)
@@ -457,7 +459,7 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 		return (0 != (s.st_mode & S_IFDIR));
 	}
 #endif //#if defined (__DAVAENGINE_WIN32__)
-    
+
 	return false;
 }
 
@@ -634,7 +636,43 @@ int32 FileSystem::Spawn(const String& command)
 	return retCode;
 }
 
-    
+#if defined(__DAVAENGINE_ANDROID__)
+
+Set<String> FileSystem::dirSet;
+Set<String> FileSystem::fileSet;
+
+bool FileSystem::IsAPKPath(const String& path) const
+{
+	if (!path.empty() && path.c_str()[0] == '/')
+		return false;
+	return true;
+}
+
+void FileSystem::Init()
+{
+	YamlParser* parser = YamlParser::Create("~res:/fileSystem.yaml");
+	if (parser)
+	{
+		const YamlNode* node = parser->GetRootNode();
+		const YamlNode* dirList = node->Get("dirList");
+		if (dirList)
+		{
+			const Vector<YamlNode*> vec = dirList->AsVector();
+			for (uint32 i = 0; i < vec.size(); ++i)
+				dirSet.insert(vec[i]->AsString());
+		}
+		const YamlNode* fileList = node->Get("fileList");
+		if (fileList)
+		{
+			const Vector<YamlNode*> vec = fileList->AsVector();
+			for (uint32 i = 0; i < vec.size(); ++i)
+				fileSet.insert(vec[i]->AsString());
+		}
+	}
+	SafeRelease(parser);
+}
+#endif
+
 }
 
 

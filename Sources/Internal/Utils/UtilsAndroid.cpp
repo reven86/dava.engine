@@ -67,31 +67,16 @@ bool JniUtils::EnableSleepTimer()
 	return true;
 }
 
-bool JniUtils::IsFile(const String& absolutePath)
+void JniUtils::OpenURL(const String& url)
 {
-	jmethodID mid = GetMethodID("IsFile", "(Ljava/lang/String;)Z");
-	if (!mid)
-		return false;
-
-	jstring jAbsolutePath = GetEnvironment()->NewStringUTF(absolutePath.c_str());
-	bool res = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, jAbsolutePath);
-	GetEnvironment()->DeleteLocalRef(jAbsolutePath);
-	return res;
+	jmethodID mid = GetMethodID("OpenURL", "(Ljava/lang/String;)V");
+	if (mid)
+	{
+		jstring jUrl = GetEnvironment()->NewStringUTF(url.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jUrl);
+		GetEnvironment()->DeleteLocalRef(jUrl);
+	}
 }
-
-bool JniUtils::IsDirectory(const String& absolutePath)
-{
-	jmethodID mid = GetMethodID("IsDirectory", "(Ljava/lang/String;)Z");
-	if (!mid)
-		return false;
-
-	jstring jAbsolutePath = GetEnvironment()->NewStringUTF(absolutePath.c_str());
-	bool res = GetEnvironment()->CallStaticBooleanMethod(GetJavaClass(), mid, jAbsolutePath);
-	GetEnvironment()->DeleteLocalRef(jAbsolutePath);
-	return res;
-}
-
-
 
 void DAVA::DisableSleepTimer()
 {
@@ -113,6 +98,12 @@ uint64 DAVA::EglGetCurrentContext()
 	//TDOD: see iOS implementation for example
 	DVASSERT(false && "Implement this method for Android if needed");
 	return 0;
+}
+
+void DAVA::OpenURL(const String& url)
+{
+	JniUtils jniUtils;
+	jniUtils.OpenURL(url);
 }
 
 #endif //#if defined(__DAVAENGINE_ANDROID__)

@@ -34,6 +34,7 @@
 #include "Scene/System/HoodSystem.h"
 #include "Scene/System/ModifSystem.h"
 #include "Scene/SceneSignals.h"
+#include "Settings/SettingsManager.h"
 
 #include <QApplication>
 #include "Scene/SceneEditor2.h"
@@ -47,16 +48,54 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, applyOnPhaseEnd(false)
 	, selectionAllowed(true)
 	, selectionHasChanges(false)
+    , invalidSelectionBoxes(false)
 {
+	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
+	DAVA::RenderStateData selectionStateData;
+	memcpy(&selectionStateData, &default3dState, sizeof(selectionStateData));
+	
+	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
+								DAVA::RenderStateData::STATE_COLORMASK_ALL;
+	selectionStateData.sourceFactor = DAVA::BLEND_SRC_ALPHA;
+	selectionStateData.destFactor = DAVA::BLEND_ONE_MINUS_SRC_ALPHA;
+	
+	selectionNormalDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
 
+	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
+								DAVA::RenderStateData::STATE_COLORMASK_ALL |
+								DAVA::RenderStateData::STATE_DEPTH_TEST;
+	
+	selectionDepthDrawState = DAVA::RenderManager::Instance()->CreateRenderState(selectionStateData);
+
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
 SceneSelectionSystem::~SceneSelectionSystem()
 {
-
+	if(GetScene())
+	{
+		GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
+	}
 }
 
-void SceneSelectionSystem::Update(DAVA::float32 timeElapsed)
+void SceneSelectionSystem::ImmediateEvent(DAVA::Entity * entity, DAVA::uint32 event)
+{
+    if(EventSystem::SWITCH_CHANGED == event)
+    {
+        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+        {
+            DAVA::Entity *selectedEntity = curSelections.GetEntity(i);
+
+            // if switched entity selected - update it bounding box
+            if(selectedEntity == entity)
+            {
+                invalidSelectionBoxes = true;
+            }
+        }
+    }
+}
+
+void SceneSelectionSystem::Process(DAVA::float32 timeElapsed)
 {
 	ForceEmitSignals();
 
@@ -64,6 +103,20 @@ void SceneSelectionSystem::Update(DAVA::float32 timeElapsed)
 	{
 		return;
 	}
+
+    // if boxes are invalid we should request them from collision system
+    // and store them in selection entityGroup
+    if(invalidSelectionBoxes)
+    {
+        for(DAVA::uint32 i = 0; i < curSelections.Size(); i++)
+        {
+            EntityGroupItem *item = curSelections.GetItem(i);
+            item->bbox = GetSelectionAABox(curSelections.GetEntity(i));
+        }
+
+        invalidSelectionBoxes = false;
+    }
+
 
 	UpdateHoodPos();
 }
@@ -90,7 +143,11 @@ void SceneSelectionSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	if(DAVA::UIEvent::PHASE_BEGAN == event->phase)
 	{
 		// we can select only if mouse isn't over hood axis
-		if(ST_AXIS_NONE == hoodSystem->GetPassingAxis())
+		// or if hood is invisible now
+		// or if current mode is NORMAL (no modification)
+		if(!hoodSystem->IsVisible() ||
+			ST_MODIF_OFF == hoodSystem->GetModifMode() ||
+			ST_AXIS_NONE == hoodSystem->GetPassingAxis())
 		{
 			if(event->tid == DAVA::UIEvent::BUTTON_1)
 			{
@@ -100,23 +157,27 @@ void SceneSelectionSystem::ProcessUIEvent(DAVA::UIEvent *event)
 				DAVA::Entity *firstEntity = selectableItems.GetEntity(0);
 				DAVA::Entity *nextEntity = selectableItems.GetEntity(0);
 
-				// search possible next item only if now there is no selection or is only single selection
-				if(curSelections.Size() <= 1)
-				{
-					// find first after currently selected items
-					for(size_t i = 0; i < selectableItems.Size(); i++)
-					{
-						DAVA::Entity *entity = selectableItems.GetEntity(i);
-						if(curSelections.HasEntity(entity))
-						{
-							if((i + 1) < selectableItems.Size())
-							{
-								nextEntity = selectableItems.GetEntity(i + 1);
-								break;
-							}
-						}
-					}
-				}
+                // sequent selection?
+                if(SettingsManager::Instance()->GetValue("SequentSelection", SettingsManager::GENERAL).AsBool())
+                {
+				    // search possible next item only if now there is no selection or is only single selection
+				    if(curSelections.Size() <= 1)
+				    {
+					    // find first after currently selected items
+					    for(size_t i = 0; i < selectableItems.Size(); i++)
+					    {
+						    DAVA::Entity *entity = selectableItems.GetEntity(i);
+						    if(curSelections.HasEntity(entity))
+						    {
+							    if((i + 1) < selectableItems.Size())
+							    {
+								    nextEntity = selectableItems.GetEntity(i + 1);
+								    break;
+							    }
+						    }
+					    }
+				    }
+                }
 
 				int curKeyModifiers = QApplication::keyboardModifiers();
 				if(curKeyModifiers & Qt::ControlModifier)
@@ -166,47 +227,33 @@ void SceneSelectionSystem::Draw()
 
 	if(curSelections.Size() > 0)
 	{
-		int oldState = DAVA::RenderManager::Instance()->GetState();
-		DAVA::eBlendMode oldBlendSrc = DAVA::RenderManager::Instance()->GetSrcBlend();
-		DAVA::eBlendMode oldBlendDst = DAVA::RenderManager::Instance()->GetDestBlend();
-
-		int newState = DAVA::RenderState::STATE_BLEND | DAVA::RenderState::STATE_COLORMASK_ALL;
-
-		if(!(drawMode & ST_SELDRAW_NO_DEEP_TEST))
-		{
-			newState |= DAVA::RenderState::STATE_DEPTH_TEST;
-		}
-
-		DAVA::RenderManager::Instance()->SetState(newState);
-		DAVA::RenderManager::Instance()->SetBlendMode(DAVA::BLEND_SRC_ALPHA, DAVA::BLEND_ONE_MINUS_SRC_ALPHA);
+        DAVA::RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
+        UniqueHandle renderState = (!(drawMode & ST_SELDRAW_NO_DEEP_TEST)) ? selectionDepthDrawState : selectionNormalDrawState;
 
 		for (DAVA::uint32 i = 0; i < curSelections.Size(); i++)
 		{
-			DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
+            DAVA::AABBox3 selectionBox = curSelections.GetBbox(i);
 
 			// draw selection share
 			if(drawMode & ST_SELDRAW_DRAW_SHAPE)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawBox(selectionBox);
+				DAVA::RenderHelper::Instance()->DrawBox(selectionBox, 1.0f, renderState);
 			}
 			// draw selection share
 			else if(drawMode & ST_SELDRAW_DRAW_CORNERS)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 1.0f));
-				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox);
+				DAVA::RenderHelper::Instance()->DrawCornerBox(selectionBox, 1.0f, renderState);
 			}
 
 			// fill selection shape
 			if(drawMode & ST_SELDRAW_FILL_SHAPE)
 			{
 				DAVA::RenderManager::Instance()->SetColor(DAVA::Color(1.0f, 1.0f, 1.0f, 0.15f));
-				DAVA::RenderHelper::Instance()->FillBox(selectionBox);
+				DAVA::RenderHelper::Instance()->FillBox(selectionBox, renderState);
 			}
 		}
-
-		DAVA::RenderManager::Instance()->SetBlendMode(oldBlendSrc, oldBlendDst);
-		DAVA::RenderManager::Instance()->SetState(oldState);
 	}
 }
 
@@ -366,13 +413,15 @@ void SceneSelectionSystem::UpdateHoodPos() const
 		switch (curPivotPoint)
 		{
 		case ST_PIVOT_ENTITY_CENTER:
-			p = curSelections.GetBbox(0).GetCenter();
+			p = curSelections.GetZeroPos(0);
 			break;
 		default:
-			p = curSelections.GetCommonBbox().GetCenter();
+			p = curSelections.GetCommonZeroPos();
 			break;
 		}
 
+		// check if we have locked entities in selection group
+		// if so - lock modification hood
 		for(size_t i = 0; i < curSelections.Size(); ++i)
 		{
 			if(curSelections.GetEntity(i)->GetLocked())

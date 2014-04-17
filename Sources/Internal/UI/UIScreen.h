@@ -71,7 +71,7 @@ public:
 	virtual bool IsLoaded();
 	
 	virtual void AddToGroup(int32 groupId);
-	virtual void RemoveFromGroup(int32 groupId);
+	virtual void RemoveFromGroup();
 
 	virtual	int32 GetGroupId();
 	virtual void SystemDraw(const UIGeometricData &geometricData);// Internal method used by ControlSystem

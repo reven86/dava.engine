@@ -69,7 +69,7 @@ void EMailTest::LoadResources()
     staticText->SetAlign(ALIGN_RIGHT | ALIGN_VCENTER);
     staticText->SetMultiline(true);
     staticText->SetFont(font);
-    staticText->SetTextColor(Color::White());
+    staticText->SetTextColor(Color::White);
     
 	staticText->SetText(L"address");
     AddControl(staticText);
@@ -79,7 +79,7 @@ void EMailTest::LoadResources()
     staticText->SetAlign(ALIGN_RIGHT | ALIGN_VCENTER);
     staticText->SetMultiline(true);
     staticText->SetFont(font);
-    staticText->SetTextColor(Color::White());
+    staticText->SetTextColor(Color::White);
 	staticText->SetText(L"subject");
     AddControl(staticText);
 	SafeRelease(staticText);
@@ -88,7 +88,7 @@ void EMailTest::LoadResources()
     staticText->SetAlign(ALIGN_RIGHT | ALIGN_VCENTER);
     staticText->SetMultiline(true);
     staticText->SetFont(font);
-    staticText->SetTextColor(Color::White());
+    staticText->SetTextColor(Color::White);
 	staticText->SetText(L"text");
     AddControl(staticText);
 	SafeRelease(staticText);
@@ -98,7 +98,7 @@ void EMailTest::LoadResources()
 	//address->SetFontColor(1.f, 1.f, 1.f, 1.f);
 #else
 	address->SetFont(font);
-    address->SetTextColor(Color::White());
+    address->SetTextColor(Color::White);
 #endif
 
 	address->SetText(L"test@test.com");
@@ -111,7 +111,7 @@ void EMailTest::LoadResources()
 	//subject->SetFontColor(1.f, 1.f, 1.f, 1.f);
 #else
 	subject->SetFont(font);
-    subject->SetTextColor(Color::White());
+    subject->SetTextColor(Color::White);
 #endif
 
 	subject->SetText(L"test subject");
@@ -124,7 +124,7 @@ void EMailTest::LoadResources()
 	//text->SetFontColor(1.f, 1.f, 1.f, 1.f);
 #else
 	text->SetFont(font);
-    text->SetTextColor(Color::White());
+    text->SetTextColor(Color::White);
 #endif
 
 	text->SetText(L"test text");
@@ -135,14 +135,14 @@ void EMailTest::LoadResources()
 	sendMailBtn = new UIButton(Rect(10, 310, 300, 30));
 	sendMailBtn->SetStateFont(0xFF, font);
 	sendMailBtn->SetStateText(0xFF, L"Send Mail");
-    sendMailBtn->SetStateFontColor(0xFF, Color::White());
+    sendMailBtn->SetStateFontColor(0xFF, Color::White);
 	sendMailBtn->SetDebugDraw(true);
 	sendMailBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &EMailTest::ButtonPressed));
 	AddControl(sendMailBtn);
 	
 	finishTestBtn = new UIButton(Rect(320, 310, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);
-    finishTestBtn->SetStateFontColor(0xFF, Color::White());
+    finishTestBtn->SetStateFontColor(0xFF, Color::White);
 	finishTestBtn->SetStateText(0xFF, L"Finish test");
 	finishTestBtn->SetDebugDraw(true);
 	finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &EMailTest::ButtonPressed));

@@ -34,6 +34,7 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/SelectionSystem.h"
 #include "Scene/System/CollisionSystem.h"
+#include "Qt/Settings/SettingsManager.h"
 
 // framework
 #include "Scene3D/Components/CameraComponent.h"
@@ -46,11 +47,14 @@
 #include "../StringConstants.h"
 
 #include "../../Main/QtUtils.h"
+#include "Qt/Settings/SettingsManager.h"
+
+#define SPEED_ARRAY_SIZE	4
 
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	: SceneSystem(scene)
 	, curSceneCamera(NULL)
-	, curSpeed(35.0f)
+	, activeSpeedArrayIndex(0)
 	, curViewAngleZ(0)
 	, curViewAngleY(0)
 	, maxViewAngle(89.0f)
@@ -58,11 +62,24 @@ SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	, animateToNewPosTime(0)
 	, debugCamerasCreated(false)
     , distanceToCamera(0.f)
-{ }
+    , cameraShouldIgnoreKeyboard(false)
+{
+	renderState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL | RenderStateData::STATE_DEPTH_WRITE);
+	
+	cameraSpeedArray.push_back(SettingsManager::Instance()->GetValue("CameraSpeedValue_0", SettingsManager::DEFAULT).AsFloat());
+	cameraSpeedArray.push_back(SettingsManager::Instance()->GetValue("CameraSpeedValue_1", SettingsManager::DEFAULT).AsFloat());
+	cameraSpeedArray.push_back(SettingsManager::Instance()->GetValue("CameraSpeedValue_2", SettingsManager::DEFAULT).AsFloat());
+	cameraSpeedArray.push_back(SettingsManager::Instance()->GetValue("CameraSpeedValue_3", SettingsManager::DEFAULT).AsFloat());
+}
 
 SceneCameraSystem::~SceneCameraSystem()
 {
 	SafeRelease(curSceneCamera);
+}
+
+DAVA::Camera* SceneCameraSystem::GetCurCamera() const
+{
+    return curSceneCamera;
 }
 
 DAVA::Vector3 SceneCameraSystem::GetPointDirection(const DAVA::Vector2 &point) const
@@ -103,14 +120,31 @@ DAVA::Vector3 SceneCameraSystem::GetCameraDirection() const
 	return dir;
 }
 
-void SceneCameraSystem::SetMoveSpeed(DAVA::float32 speed)
-{
-	curSpeed = speed;
-}
-
 DAVA::float32 SceneCameraSystem::GetMoveSpeed()
 {
-	return curSpeed;
+	return cameraSpeedArray[activeSpeedArrayIndex];
+}
+
+DAVA::uint32 SceneCameraSystem::GetActiveSpeedIndex()
+{
+	return activeSpeedArrayIndex;
+}
+
+void SceneCameraSystem::SetMoveSpeedArrayIndex(DAVA::uint32 index)
+{
+	DVASSERT(index < 4);
+	activeSpeedArrayIndex = index;
+}
+
+void SceneCameraSystem::SetMoveSpeed(DAVA::float32 speed, DAVA::uint32 index)
+{
+	DVASSERT(index < 4);
+	cameraSpeedArray[index] = speed;
+}
+
+DAVA::float32 SceneCameraSystem::GetMoveSpeed(uint32 index)
+{
+	return cameraSpeedArray[index];
 }
 
 void SceneCameraSystem::SetViewportRect(const DAVA::Rect &rect)
@@ -187,14 +221,17 @@ void SceneCameraSystem::MoveTo(const DAVA::Vector3 &pos)
 
 void SceneCameraSystem::MoveTo(const DAVA::Vector3 &pos, const DAVA::Vector3 &target)
 {
-	animateToNewPos = true;
-	animateToNewPosTime = 0;
+    if(NULL != curSceneCamera && !curSceneCamera->GetIsOrtho())
+    {
+        animateToNewPos = true;
+        animateToNewPosTime = 0;
 
-	newPos = pos;
-	newTar = target;
+        newPos = pos;
+        newTar = target;
+    }
 }
 
-void SceneCameraSystem::Update(float timeElapsed)
+void SceneCameraSystem::Process(float timeElapsed)
 {
 	if(!debugCamerasCreated)
 	{
@@ -243,6 +280,10 @@ void SceneCameraSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		rotateStartPoint = event->point;
 		rotateStopPoint = event->point;
 	}
+    else if(DAVA::UIEvent::PHASE_WHEEL == event->phase)
+    {
+        printf("%d %d\n", event->point.x, event->point.y);
+    }
 	else if(DAVA::UIEvent::PHASE_DRAG == event->phase || DAVA::UIEvent::PHASE_ENDED == event->phase)
 	{
 		rotateStartPoint = rotateStopPoint;
@@ -275,9 +316,9 @@ void SceneCameraSystem::ProcessUIEvent(DAVA::UIEvent *event)
 
 void SceneCameraSystem::Draw()
 {
-	int oldState = DAVA::RenderManager::Instance()->GetState();
-	DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::STATE_COLORMASK_ALL | DAVA::RenderState::STATE_DEPTH_TEST);
-
+	//int oldState = DAVA::RenderManager::Instance()->GetState();
+	//DAVA::RenderManager::Instance()->SetState(DAVA::RenderState::STATE_COLORMASK_ALL | DAVA::RenderState::STATE_DEPTH_TEST);
+	
 	SceneEditor2 *sceneEditor = (SceneEditor2 *) GetScene();
 	if(NULL != sceneEditor)
 	{
@@ -302,7 +343,7 @@ void SceneCameraSystem::Draw()
 					transform.Identity();
 					transform.SetTranslationVector(camera->GetPosition());
 					collBox.GetTransformedBox(transform, worldBox);	
-					DAVA::RenderHelper::Instance()->FillBox(worldBox);
+					DAVA::RenderHelper::Instance()->FillBox(worldBox, renderState);
 				}
 			}
 
@@ -310,7 +351,7 @@ void SceneCameraSystem::Draw()
 		}
 	}
 
-	DAVA::RenderManager::Instance()->SetState(oldState);
+	//DAVA::RenderManager::Instance()->SetState(oldState);
 }
 
 void SceneCameraSystem::ProcessCommand(const Command2 *command, bool redo)
@@ -334,13 +375,37 @@ void SceneCameraSystem::RemoveEntity(DAVA::Entity * entity)
 	}
 }
 
+bool SceneCameraSystem::IsCameraMovementKeyPressed()
+{
+    DAVA::KeyboardDevice *kd = DAVA::InputSystem::Instance()->GetKeyboard();
+    bool movingKeyPressed = kd->IsKeyPressed(DAVA::DVKEY_UP) | kd->IsKeyPressed(DAVA::DVKEY_W) |
+                            kd->IsKeyPressed(DAVA::DVKEY_LEFT) | kd->IsKeyPressed(DAVA::DVKEY_A) |
+                            kd->IsKeyPressed(DAVA::DVKEY_DOWN) | kd->IsKeyPressed(DAVA::DVKEY_S) |
+                            kd->IsKeyPressed(DAVA::DVKEY_RIGHT) | kd->IsKeyPressed(DAVA::DVKEY_D);
+
+    return movingKeyPressed;
+}
+
+bool SceneCameraSystem::IsModifiersPressed()
+{
+    return (QApplication::queryKeyboardModifiers() != Qt::NoModifier);
+}
+
 void SceneCameraSystem::ProcessKeyboardMove(DAVA::float32 timeElapsed)
 {
-	if(NULL != curSceneCamera)
+	if(NULL != curSceneCamera && !curSceneCamera->GetIsOrtho())
 	{
-		DAVA::float32 moveSpeed = curSpeed * timeElapsed;        
+		DAVA::float32 moveSpeed = cameraSpeedArray[activeSpeedArrayIndex] * timeElapsed;        
 
-		if(Qt::NoModifier == QApplication::keyboardModifiers())
+        // since pressing shortcuts with camera movement keys could produce camera flickering,
+        // camera should ignore movement till both - modifier keys and movement keys - are released
+        if (!IsCameraMovementKeyPressed())
+        {
+            cameraShouldIgnoreKeyboard = false;
+        }
+        cameraShouldIgnoreKeyboard |= IsModifiersPressed();
+
+		if(!cameraShouldIgnoreKeyboard)
 		{
 			DAVA::KeyboardDevice *kd = DAVA::InputSystem::Instance()->GetKeyboard();
 
@@ -424,12 +489,13 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
 		topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
 		topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
-		topCamera->SetupPerspective(70.0f, 320.0f / 480.0f, 1.0f, 5000.0f);
+		float fov = SettingsManager::Instance()->GetValue(ResourceEditor::SETTINGS_DEFAULT_FOV, SettingsManager::DEFAULT).AsFloat();
+		topCamera->SetupPerspective(fov, 320.0f / 480.0f, 1.0f, 5000.0f);
 		topCamera->SetAspect(1.0f);
 
 		DAVA::Entity *topCameraEntity = new DAVA::Entity();
 		topCameraEntity->SetName(ResourceEditor::EDITOR_DEBUG_CAMERA);
-		topCameraEntity->AddComponent(DAVA::ScopedPtr<DAVA::CameraComponent> (new DAVA::CameraComponent(topCamera)));
+		topCameraEntity->AddComponent(new DAVA::CameraComponent(topCamera));
 		scene->InsertBeforeNode(topCameraEntity, scene->GetChild(0));
 
 		// set current default camera
@@ -455,15 +521,28 @@ void SceneCameraSystem::RecalcCameraViewAngles()
 	{
 		DAVA::Vector3 dir = curSceneCamera->GetDirection();
 		DAVA::Vector2 dirXY(dir.x, dir.y);
+        DAVA::Vector3 dirXY0(dir.x, dir.y, 0.0f);
 
-		dirXY.Normalize();
-		curViewAngleZ = -(DAVA::RadToDeg(dirXY.Angle()) - 90.0f);
+        if(!dirXY.IsZero())
+        {
+            dirXY.Normalize();
+            curViewAngleZ = -(DAVA::RadToDeg(dirXY.Angle()) - 90.0f);
+        }
+        else
+        {
+		    curViewAngleZ = 0;
+        }
 
-		DAVA::Vector3 dirXY0(dir.x, dir.y, 0.0f);
-		dirXY0.Normalize();
-
-		DAVA::float32 cosA = dirXY0.DotProduct(dir);
-		curViewAngleY = DAVA::RadToDeg(acos(cosA));
+        if(!dirXY0.IsZero())
+        {
+		    dirXY0.Normalize();
+	    	DAVA::float32 cosA = dirXY0.DotProduct(dir);
+    		curViewAngleY = DAVA::RadToDeg(acos(cosA));
+        }
+        else
+        {
+            curViewAngleY = 0;
+        }
 
 		if(curViewAngleY > maxViewAngle)
 			curViewAngleY -= 360;
@@ -499,7 +578,7 @@ void SceneCameraSystem::MouseMoveCameraDirection()
 {
 	animateToNewPos = false;
 
-	if(NULL != curSceneCamera)
+	if(NULL != curSceneCamera && !curSceneCamera->GetIsOrtho())
 	{
 		DAVA::Vector2 dp = rotateStopPoint - rotateStartPoint;
 		curViewAngleZ += dp.x * 0.15f;
@@ -661,4 +740,24 @@ DAVA::Entity* SceneCameraSystem::GetEntityFromCamera(DAVA::Camera *c) const
 	}
 
 	return ret;
+}
+
+void SceneCameraSystem::GetRayTo2dPoint(const DAVA::Vector2 &point, DAVA::float32 maxRayLen, DAVA::Vector3 &outPointFrom, DAVA::Vector3 &outPointTo) const
+{
+    if(NULL != curSceneCamera)
+    {
+        DAVA::Vector3 camPos = GetCameraPosition();
+        DAVA::Vector3 camDir = GetPointDirection(point);
+
+        if(curSceneCamera->GetIsOrtho())
+        {
+            outPointFrom = DAVA::Vector3(camDir.x, camDir.y, camPos.z);
+            outPointTo = DAVA::Vector3(camDir.x, camDir.y, camPos.z + maxRayLen);
+        }
+        else
+        {
+            outPointFrom = camPos;
+            outPointTo = outPointFrom + camDir * maxRayLen;
+        }
+    }
 }

@@ -35,6 +35,8 @@
 
 namespace DAVA {
 
+class FilePath;
+    
 // Web View Control - MacOS version.
 class WebViewControl : public IWebViewControl
 {
@@ -48,6 +50,8 @@ public:
 	// Open the URL requested.
 	virtual void OpenURL(const String& urlToOpen);
 
+    virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
+    
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
 	virtual void SetVisible(bool isVisible, bool hierarchic);
@@ -58,6 +62,7 @@ public:
 	// Bounces control.
 	virtual bool GetBounces() const;
 	virtual void SetBounces(bool value);
+    virtual void SetGestures(bool value);
 
 protected:
 	// Get the scale divider for Retina devices.
@@ -71,10 +76,15 @@ protected:
 
 	void* webViewURLDelegatePtr;
 
+    void *rightSwipeGesturePtr;
+    void *leftSwipeGesturePtr;
+
+    
 	Map<void*, bool> subviewVisibilityMap;
 
 	void HideSubviewImages(void* view);
 	void RestoreSubviewImages();
+    bool gesturesEnabled;
 };
 
 };

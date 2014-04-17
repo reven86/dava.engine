@@ -33,10 +33,11 @@
 
 #include "DAVAEngine.h"
 #include <ApplicationServices/ApplicationServices.h>
+#include "CoreMacOSPlatformBase.h"
 
 namespace DAVA {
 
-class NPAPICoreMacOSPlatform : public Core
+class NPAPICoreMacOSPlatform : public CoreMacOSPlatformBase
 {
 public:
 	NPAPICoreMacOSPlatform();
@@ -45,14 +46,10 @@ public:
 	virtual eScreenMode GetScreenMode();
 	virtual void SwitchScreenToMode(eScreenMode screenMode);
 	virtual void ToggleFullscreen();
-		
-	virtual void GetAvailableDisplayModes(List<DisplayMode> & availableModes);
+
 	virtual DisplayMode GetCurrentDisplayMode();
 
 	virtual void* GetOpenGLView();
-	
-protected:
-	long GetDictionaryLong(CFDictionaryRef theDict, const void* key);
 };
 
 };

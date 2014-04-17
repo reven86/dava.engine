@@ -51,7 +51,7 @@ public:
 	explicit ParticleEmitterPropertiesWidget(QWidget* parent = 0);
 	~ParticleEmitterPropertiesWidget();
 
-	void Init(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, bool updateMinimize, bool needUpdateTimeLimits = true);
+	void Init(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter* emitter, bool updateMinimize, bool needUpdateTimeLimits = true);
 	void Update();
 	
 	virtual bool eventFilter( QObject * o, QEvent * e );
@@ -68,18 +68,21 @@ signals:
 	void ValueChanged();
 	
 public slots:
-	void OnValueChanged();
+	void OnValueChanged();    
 	void OnEmitterYamlPathChanged(const QString& newPath);
+    void OnEmitterPositionChanged();
 
 protected:
-	void UpdateTooltip();
-	void UpdatePlaybackSpeedLabel();
+	void UpdateTooltip();	
 
 private:
 	QVBoxLayout* mainLayout;
+	QLineEdit* emitterNameLineEdit;
 
 	QLineEdit* emitterYamlPath;
 	QComboBox* emitterType;
+
+	EventFilterDoubleSpinBox *positionXSpinBox, *positionYSpinBox, *positionZSpinBox;
 
 	QCheckBox* shortEffectCheckBox;
 
@@ -88,10 +91,7 @@ private:
 	TimeLineWidget* emitterRadius;
 	TimeLineWidget* emitterSize;
 	EventFilterDoubleSpinBox* emitterLife;
-	GradientPickerWidget* emitterColorWidget;
-	
-	QLabel* emitterPlaybackSpeedLabel;
-	QSlider* emitterPlaybackSpeed;
+	GradientPickerWidget* emitterColorWidget;		
 
 	bool blockSignals;
 	

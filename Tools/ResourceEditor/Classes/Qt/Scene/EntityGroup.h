@@ -61,8 +61,12 @@ public:
 	size_t Size() const;
 	DAVA::Entity* GetEntity(size_t i) const;
 	EntityGroupItem* GetItem(size_t i) const;
+
 	DAVA::AABBox3 GetBbox(size_t i) const;
 	DAVA::AABBox3 GetCommonBbox() const;
+
+	DAVA::Vector3 GetZeroPos(size_t i) const;
+	DAVA::Vector3 GetCommonZeroPos() const;
 
 	bool HasEntity(DAVA::Entity *entity) const;
 	bool Index(DAVA::Entity *entity, size_t &index) const;

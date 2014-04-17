@@ -42,8 +42,7 @@ class JniUtils: public JniExtension
 public:
 	bool DisableSleepTimer();
 	bool EnableSleepTimer();
-	bool IsFile(const String& absolutePath);
-	bool IsDirectory(const String& absolutePath);
+	void OpenURL(const String& url);
 
 protected:
 	virtual jclass GetJavaClass() const;

@@ -36,13 +36,19 @@
 
 #include "../QtPropertyData.h"
 
-class QToolButton;
-
+class QtComboFake;
 class QtPropertyDataDavaVariant : public QtPropertyData
 {
 	Q_OBJECT
 
 	friend class QtPropertyDataDavaVariantSubValue;
+
+public:
+    enum AllowedValueType
+    {
+        Default,
+        TypeFlags,
+    };
 
 public:
 	QtPropertyDataDavaVariant(const DAVA::VariantType &value);
@@ -53,20 +59,27 @@ public:
 
 	void AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue = QVariant());
 	void ClearAllowedValues();
+    void SetAllowedValueType(AllowedValueType type);
+    AllowedValueType GetAllowedValueType() const;
 
-	virtual void SetIcon(const QIcon &icon);
-	virtual QIcon GetIcon();
+	QVariant FromDavaVariant(const DAVA::VariantType &variant) const;
+    
+    void SetOpenDialogFilter(const QString&);
+    QString GetOpenDialogFilter();
+    
+    void SetDefaultOpenDialogPath(const QString&);
+    QString GetDefaultOpenDialogPath();
 
-	QVariant FromDavaVariant(const DAVA::VariantType &variant);
+    QVariant GetToolTip() const;
 
 protected:
 	DAVA::VariantType curVariantValue;
 
-	virtual QVariant GetValueInternal();
-	virtual QVariant GetValueAlias();
+	virtual QVariant GetValueInternal() const;
+	virtual QVariant GetValueAlias() const;
 	virtual void SetValueInternal(const QVariant &value);
 
-	virtual QWidget* CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option);
+	virtual QWidget* CreateEditorInternal(QWidget *parent, const QStyleOptionViewItem& option) const;
 	virtual bool SetEditorDataInternal(QWidget *editor);
 	virtual bool EditorDoneInternal(QWidget *editor);
 
@@ -76,7 +89,7 @@ protected slots:
 	void AllowedOWPressed();
 	void AllowedSelected(int index);
 
-private:
+protected:
 	struct AllowedValue
 	{
 		DAVA::VariantType realValue;
@@ -84,28 +97,34 @@ private:
 	};
 
 	QVector<AllowedValue> allowedValues;
-	bool allowedValuesLocked;
-	QToolButton *allowedButton;
-
-	bool iconCacheIsValid;
-	QIcon iconCache;
+	mutable bool allowedValuesLocked;
+	QtPropertyToolButton *allowedButton;
+    AllowedValueType allowedValueType;
+    
+    QString openDialogFilter;
+    QString defaultOpenDialogPath;
+    bool isSettingMeFromChilds;
 
 	void InitFlags();
 	void ChildsCreate();
 	void ChildsSetFromMe();
 	void MeSetFromChilds();
 
-	QVariant FromKeyedArchive(DAVA::KeyedArchive *archive);
-	QVariant FromVector4(const DAVA::Vector4 &vector);
-	QVariant FromVector3(const DAVA::Vector3 &vector);
-	QVariant FromVector2(const DAVA::Vector2 &vector);
-	QVariant FromMatrix4(const DAVA::Matrix4 &matrix);
-	QVariant FromMatrix3(const DAVA::Matrix3 &matrix);
-	QVariant FromMatrix2(const DAVA::Matrix2 &matrix);
-	QVariant FromColor(const DAVA::Color &color);
-	QVariant FromAABBox3(const DAVA::AABBox3 &aabbox);
+	void SetColorIcon();
+
+	QVariant FromKeyedArchive(DAVA::KeyedArchive *archive) const;
+    QVariant FromFloat(DAVA::float32 value) const;
+	QVariant FromVector4(const DAVA::Vector4 &vector) const;
+	QVariant FromVector3(const DAVA::Vector3 &vector) const;
+	QVariant FromVector2(const DAVA::Vector2 &vector) const;
+	QVariant FromMatrix4(const DAVA::Matrix4 &matrix) const;
+	QVariant FromMatrix3(const DAVA::Matrix3 &matrix) const;
+	QVariant FromMatrix2(const DAVA::Matrix2 &matrix) const;
+	QVariant FromColor(const DAVA::Color &color) const;
+	QVariant FromAABBox3(const DAVA::AABBox3 &aabbox) const;
 
 	void ToKeyedArchive(const QVariant &value);
+    void ToFloat(const QVariant &value);
 	void ToVector4(const QVariant &value);
 	void ToVector3(const QVariant &value);
 	void ToVector2(const QVariant &value);
@@ -114,21 +133,23 @@ private:
 	void ToMatrix2(const QVariant &value);
 	void ToColor(const QVariant &value);
 	void ToAABBox3(const QVariant &value);
+	int ParseFloatList(const QString &str, int maxCount, DAVA::float32 *dest);
 
-	void SubValueAdd(const QString &key, const QVariant &value);
-	void SubValueSet(const QString &key, const QVariant &value);
+	void SubValueAdd(const QString &key, const DAVA::VariantType &subvalue);
+	void SubValueSet(const QString &key, const QVariant &subvalue);
 	QVariant SubValueGet(const QString &key);
 
-	QWidget* CreateAllowedValuesEditor(QWidget *parent);
+	QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
+    QWidget* CreateAllowedFlagsEditor(QWidget *parent) const;
 	void SetAllowedValueEditorData(QWidget *editorWidget);
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);
 };
 
-class QtPropertyDataDavaVariantSubValue : public QtPropertyData
+class QtPropertyDataDavaVariantSubValue : public QtPropertyDataDavaVariant
 {
 public:
-	QtPropertyDataDavaVariantSubValue(QtPropertyDataDavaVariant *_parentVariant, const QVariant &value)
-		: QtPropertyData(value)
+	QtPropertyDataDavaVariantSubValue(QtPropertyDataDavaVariant *_parentVariant, const DAVA::VariantType &subvalue)
+		: QtPropertyDataDavaVariant(subvalue)
 		, parentVariant(_parentVariant)
 		, trackParent(true)
 	{ }
@@ -138,7 +159,7 @@ public:
 
 	virtual void SetValueInternal(const QVariant &value)
 	{
-		QtPropertyData::SetValueInternal(value);
+		QtPropertyDataDavaVariant::SetValueInternal(value);
 		if(NULL != parentVariant && trackParent)
 		{
 			parentVariant->MeSetFromChilds();
@@ -146,6 +167,11 @@ public:
 
 		trackParent = true;
 	}
+
+    virtual bool IsMergable() const
+    {
+        return false;
+    }
 };
 
 #endif // __QT_PROPERTY_DATA_DAVA_VARIANT_H__

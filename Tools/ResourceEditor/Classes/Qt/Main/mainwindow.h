@@ -41,10 +41,6 @@
 #include "Scene/SceneEditor2.h"
 #include "Tools/QtPosSaver/QtPosSaver.h"
 
-// TODO: remove old screen -->
-#include "Classes/SceneEditor/MaterialEditor.h"
-// <---
-
 class AddSwitchEntityDialog;
 class Request;
 class QtLabelWithActions;
@@ -55,7 +51,6 @@ class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 	Q_OBJECT
 
 protected:
-    
     static const int GLOBAL_INVALIDATE_TIMER_DELTA = 1000;
 
 public:
@@ -85,6 +80,9 @@ public:
 
 signals:
     void GlobalInvalidateTimeout();
+
+    void TexturesReloaded();
+    void SpritesReloaded();
     
 // qt actions slots
 public slots:
@@ -104,6 +102,7 @@ public slots:
 	void OnRedo();
 
 	void OnEditorGizmoToggle(bool show);
+    void OnViewLightmapCanvas(bool show);
 	void OnAllowOnSceneSelectionToggle(bool allow);
 
 	void OnReloadTextures();
@@ -126,8 +125,11 @@ public slots:
 	void OnSceneLightMode();
 
 	void OnCubemapEditor();
-		
-	void OnLandscapeDialog();
+    void OnImageSplitter();
+	
+	void OnAddLandscape();
+    void OnAddSkybox();
+    void OnAddVegetation();
 	void OnLightDialog();
 	void OnCameraDialog();
 	void OnEmptyEntity();
@@ -135,14 +137,13 @@ public slots:
 	void OnUserNodeDialog();
 	void OnSwitchEntityDialog();
 	void OnParticleEffectDialog();
-	void OnUniteEntitiesWithLODs();
-	void OnAddEntityMenuAboutToShow();
+    void On2DCameraDialog();
+    void On2DSpriteDialog();
 	void OnAddEntityFromSceneTree();
-
-	void OnSetSkyboxNode();
 	
-	void OnShowSettings();
+	void OnShowGeneralSettings();
 	void OnOpenHelp();
+	void OnShowCurrentSceneSettings();
 
 	void OnSetShadowColor();
 	void OnShadowBlendModeWillShow();
@@ -156,10 +157,9 @@ public slots:
     
 	void OnCloseTabRequest(int tabIndex, Request *closeRequest);
 
-	void OnBeast();
 	void OnBeastAndSave();
-
-	void OnConvertToShadow();
+    
+    void OnBuildStaticOcclusion();
 
 	void OnCameraSpeed0();
 	void OnCameraSpeed1();
@@ -174,10 +174,10 @@ public slots:
 	void OnTilemaskEditor();
 	void OnVisibilityTool();
 	void OnNotPassableTerrain();
+    void OnGrasEditor();
 	
-	void OnAddActionComponent();
-	void OnRemoveActionComponent();
-
+    void OnAddSoundComponent();
+    void OnRemoveSoundComponent();
 	void OnObjectsTypeMenuWillShow();
 	void OnObjectsTypeChanged(QAction *action);
     void OnObjectsTypeChanged(int type);
@@ -185,6 +185,13 @@ public slots:
 	void OnHangingObjects();
 	void OnHangingObjectsHeight(double value);
 
+    void OnMaterialLightViewChanged(bool);
+    void OnCustomQuality();
+
+    void OnReloadShaders();
+
+    void OnSwitchWithDifferentLODs(bool checked);
+    
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
 	void closeEvent(QCloseEvent * e);
@@ -200,19 +207,16 @@ protected:
 	void InitRecent();
 	void AddRecent(const QString &path);
     
-    void CreateMaterialEditorIfNeed();
-    
     void StartGlobalInvalidateTimer();
 
 	void RunBeast();
 
-
 	bool IsAnySceneChanged();
 
-	void SetLandscapeSettingsEnabled(bool);
-
 	void DiableUIForFutureUsing();
-
+	
+	bool SelectCustomColorsTexturePath();
+	
 protected slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
@@ -239,15 +243,10 @@ private:
 	QList<QAction *> recentScenes;
 	ModificationWidget *modificationWidget;
 
-	// TODO: remove this old screen -->
-	MaterialEditor *materialEditor;
-	// <--
-
 	QtLabelWithActions *objectTypesLabel;
     QComboBox *objectTypesWidget;
 
 	AddSwitchEntityDialog*	addSwitchEntityDialog;
-	LandscapeDialog*		landscapeDialog;
 	HangingObjectsHeight*	hangingObjectsWidget;
 
 	void EnableSceneActions(bool enable);
@@ -263,6 +262,7 @@ private:
 	void LoadLandscapeEditorState(SceneEditor2* scene);
 	void LoadObjectTypes(SceneEditor2 *scene);
 	void LoadHangingObjects(SceneEditor2 *scene);
+    void LoadMaterialLightViewMode();
 
 	bool SaveTilemask(bool forAllTabs = true);
 

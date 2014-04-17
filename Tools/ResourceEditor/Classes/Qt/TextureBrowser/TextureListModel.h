@@ -84,6 +84,8 @@ private:
 
 	void clear();
 	void applyFilterAndSort();
+    
+    DAVA::Scene *activeScene;
 };
 
 struct SortFnByName

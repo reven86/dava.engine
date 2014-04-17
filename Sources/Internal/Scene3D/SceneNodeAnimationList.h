@@ -60,7 +60,7 @@ public:
 	void Execute(float32 fadeInTime = 0.0f, float32 fadeOutTime = 0.0f, float32 timeFactor = 1.0f);
 	void BlendTo(SceneNodeAnimationList * next, float32 blendTime, float32 timeFactor = 1.0f);
 
-	SceneNodeAnimation * GetNode(const String & name);
+	SceneNodeAnimation * GetNode(const FastName & name);
 		
 	void Update(float32 timeElapsed);
 	

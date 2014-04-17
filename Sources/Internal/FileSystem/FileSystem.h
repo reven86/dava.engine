@@ -180,7 +180,7 @@ public:
 		\param[out] newFile The name of the new file.
 		\returns true if file was successfully copied, false otherwise
 	*/
-	virtual bool CopyFile(const FilePath & existingFile, const FilePath & newFile);
+	virtual bool CopyFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting = false);
 
 	/**
 		\brief Moves an existing file to a new file.
@@ -197,7 +197,7 @@ public:
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-	virtual bool CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory);
+	virtual bool CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory, bool overwriteExisting = false);
     
     /**
         \brief Read whole file contents into new buffer. 
@@ -252,6 +252,13 @@ private:
 	friend class File;
 #if defined(__DAVAENGINE_ANDROID__)
 	friend class APKFile;
+public:
+	static void Init();
+
+private:
+	bool IsAPKPath(const String& path) const;
+	static Set<String> dirSet;
+	static Set<String> fileSet;
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 };
 	

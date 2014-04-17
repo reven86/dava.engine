@@ -38,7 +38,7 @@ SampleTest::SampleTest()
 
 void SampleTest::LoadResources()
 {
-    GetBackground()->SetColor(Color::White());
+    GetBackground()->SetColor(Color::White);
 }
 
 void SampleTest::UnloadResources()

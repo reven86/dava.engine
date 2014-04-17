@@ -34,6 +34,8 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Render/Texture.h"
 #include "Utils/Utils.h"
+#include "Render/LibPVRHelper.h"
+#include "Render/LibDxtHelper.h"
 
 #include "Render/GPUFamilyDescriptor.h"
 
@@ -68,7 +70,7 @@ void TextureDescriptor::Compression::Clear()
 TextureDescriptor::TextureDescriptor()
 {
     isCompressedFile = false;
-    InitializeValues();
+    SetDefaultValues();
 }
 
 TextureDescriptor::~TextureDescriptor()
@@ -80,62 +82,57 @@ TextureDescriptor * TextureDescriptor::CreateFromFile(const FilePath &filePathna
 	if(filePathname.IsEmpty() || filePathname.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
-    FilePath descriptorPathname = GetDescriptorPathname(filePathname);
-    TextureDescriptor *descriptor = new TextureDescriptor();
-    bool loaded = descriptor->Load(descriptorPathname);
-    if(!loaded)
-    {
-        Logger::Error("[TextureDescriptor::CreateFromFile(]: there are no descriptor file (%s).", descriptorPathname.GetAbsolutePathname().c_str());
-        SafeRelease(descriptor);
-        return NULL;
-    }
-    
+	TextureDescriptor *descriptor = new TextureDescriptor();
+	bool initialized = descriptor->Initialize(filePathname);
+	if(!initialized)
+	{
+		Logger::Error("[TextureDescriptor::CreateFromFile(]: there are no descriptor file (%s).", filePathname.GetAbsolutePathname().c_str());
+		delete descriptor;
+
+		return NULL;
+	}
+
     return descriptor;
 }
     
 TextureDescriptor * TextureDescriptor::CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps)
 {
     TextureDescriptor *descriptor = new TextureDescriptor();
-	
-    descriptor->settings.wrapModeS = wrap;
-    descriptor->settings.wrapModeT = wrap;
-    
-    descriptor->settings.generateMipMaps = generateMipmaps;
-	if(descriptor->settings.generateMipMaps)
-	{
-		descriptor->settings.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
-		descriptor->settings.magFilter = Texture::FILTER_LINEAR;
-	}
-	else
-	{
-		descriptor->settings.minFilter = Texture::FILTER_LINEAR;
-		descriptor->settings.magFilter = Texture::FILTER_LINEAR;
-	}
-    
-    return descriptor;
+	descriptor->Initialize(wrap, generateMipmaps);
+
+	return descriptor;
 }
 
     
     
-void TextureDescriptor::InitializeValues()
-{
-    SetDefaultValues();
-    
-    for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
-    {
-        compression[i].Clear();
-    }
-    
-    exportedAsGpuFamily = GPU_UNKNOWN;
-    exportedAsPixelFormat = FORMAT_INVALID;
-	faceDescription = 0;
-}
-    
 void TextureDescriptor::SetDefaultValues()
 {
-    settings.SetDefaultValues();
+	pathname = FilePath();
+
+	settings.SetDefaultValues();
+
+	for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
+	{
+		compression[i].Clear();
+	}
+
+	isCompressedFile = false;
+	exportedAsGpuFamily = GPU_UNKNOWN;
+	exportedAsPixelFormat = FORMAT_INVALID;
+	faceDescription = 0;
+
+	format = FORMAT_INVALID;
 }
-    
+
+void TextureDescriptor::SetQualityGroup(const FastName &group)
+{
+    qualityGroup = group;
+}
+
+FastName TextureDescriptor::GetQualityGroup() const
+{
+    return qualityGroup;
+}
     
 bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
 {
@@ -177,7 +174,7 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
         return false;
     }
     
-    pathname = filePathname;
+	pathname = filePathname;
 
     int32 signature;
     file->Read(&signature, sizeof(signature));
@@ -571,7 +568,17 @@ uint32 TextureDescriptor::ReadSourceCRC() const
     
 uint32 TextureDescriptor::ReadConvertedCRC(eGPUFamily forGPU) const
 {
-    return CRC32::ForFile(GPUFamilyDescriptor::CreatePathnameForGPU(this, forGPU));
+	FilePath filePath = GPUFamilyDescriptor::CreatePathnameForGPU(this, forGPU);
+	if(filePath.IsEqualToExtension(".pvr"))
+	{
+		return LibPVRHelper::GetCRCFromFile(filePath);
+	}
+	else if(filePath.IsEqualToExtension(".dds"))
+	{
+		return LibDxtHelper::GetCRCFromFile(filePath);
+	}
+    DVASSERT(0);//converted means only pvr or dds
+    return 0;
 }
 
     
@@ -582,6 +589,59 @@ PixelFormat TextureDescriptor::GetPixelFormatForCompression(eGPUFamily forGPU)
 
     DVASSERT(0 <= forGPU && forGPU < GPU_FAMILY_COUNT);
     return (PixelFormat) compression[forGPU].format;
+}
+
+void TextureDescriptor::Initialize( Texture::TextureWrap wrap, bool generateMipmaps )
+{
+	SetDefaultValues();
+
+	settings.wrapModeS = wrap;
+	settings.wrapModeT = wrap;
+
+	settings.generateMipMaps = generateMipmaps;
+	if(settings.generateMipMaps)
+	{
+		settings.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
+		settings.magFilter = Texture::FILTER_LINEAR;
+	}
+	else
+	{
+		settings.minFilter = Texture::FILTER_LINEAR;
+		settings.magFilter = Texture::FILTER_LINEAR;
+	}
+}
+
+void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
+{
+	if(!descriptor)
+	{
+		SetDefaultValues();
+		return;
+	}
+
+	pathname = descriptor->pathname;
+
+	settings = descriptor->settings;
+	for(uint32 i = 0; i < GPU_FAMILY_COUNT; ++i)
+	{
+		compression[i] = descriptor->compression[i];
+	}
+
+    qualityGroup = descriptor->qualityGroup;
+	exportedAsGpuFamily = descriptor->exportedAsGpuFamily;
+	exportedAsPixelFormat = descriptor->exportedAsPixelFormat;
+	isCompressedFile = descriptor->isCompressedFile;
+
+	faceDescription = descriptor->faceDescription;
+	format = descriptor->format;
+}
+
+bool TextureDescriptor::Initialize(const FilePath &filePathname)
+{
+	SetDefaultValues();
+
+	FilePath descriptorPathname = GetDescriptorPathname(filePathname);
+	return Load(descriptorPathname);
 }
 
     

@@ -36,6 +36,8 @@
 namespace DAVA
 {
 
+REGISTER_CLASS(UpdatableComponent);
+
 UpdatableComponent::UpdatableComponent()
 :	updatableObject(0)
 {

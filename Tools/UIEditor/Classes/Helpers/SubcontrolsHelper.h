@@ -33,6 +33,8 @@
 #define __SUBCONTROLS_HELPER_H__
 
 #include "UI/UIControl.h"
+#include "HierarchyTreeController.h"
+#include <QString>
 
 namespace DAVA
 {
@@ -41,6 +43,7 @@ class SubcontrolsHelper
 public:
 	// Verify whether the control is subcontrol for its parent.
 	static bool ControlIsSubcontrol(UIControl* uiControl);
+	static QString FormatCopyName(QString baseName, const HierarchyTreeNode* parent);
 };
 }
 

@@ -258,9 +258,9 @@ public:
 	Color color;//!<Control color. By default is Color(1,1,1,1).
     
 protected:
-	void DrawStretched(const Rect &drawRect);
-	void DrawTiled(const UIGeometricData &geometricData);
-	void DrawFilled(const UIGeometricData &geometricData);
+	void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
+	void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
+	void DrawFilled(const UIGeometricData &geometricData, UniqueHandle renderState);
 
 	Sprite *spr;
 	int32 align;
@@ -281,24 +281,25 @@ protected:
 private:
 	struct TiledDrawData
 	{
-		Vector< Vector2 > tilesVerticesList;
-		Vector< Vector2 > tilesTexCoordsList;
-		Vector< uint32  > tilesIndecesList;
+		Vector< Vector2 > vertices;
+		Vector< Vector2 > texCoords;
+		Vector< uint16  > indeces;
+		void GenerateTileData();
+		void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
 
-		Vector< Vector2 > transformedVerList;
+		Vector< Vector2 > transformedVertices;
+		void GenerateTransformData();
 
-		Sprite *lastSprite;
-		int32 lastFrame;
-		Vector2 lastSize;
-		Vector2 lastStretchCap;
-		Matrix3 lastTransformMatr;
+		Sprite *sprite;
+		int32 frame;
+		Vector2 size;
+		Vector2 stretchCap;
+		Matrix3 transformMatr;
 	};
 
-	TiledDrawData *tiledDrawData;
-
-	
+	TiledDrawData *tiledData;
 public:
-	void ReleaseSpecDrawData(); // Delete all spec draw data
+	void ReleaseDrawData(); // Delete all spec draw data
 
 protected:
 	~UIControlBackground();

@@ -143,6 +143,7 @@ namespace DAVA
 			// DF-1770 - Reset aggregator's background draw type
 			control->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);
 			cell->AddControl(control);
+            SafeRelease(control);
 		}
 		else
 		{			
@@ -154,12 +155,12 @@ namespace DAVA
     	return cell;
 	}
 
-	int32 EditorListDelegate::CellHeight(UIList *, int32)
+	float32 EditorListDelegate::CellHeight(UIList *, int32)
 	{
     	return cellSize.y;
 	}
 	
-	int32 EditorListDelegate::CellWidth(UIList *, int32)
+	float32 EditorListDelegate::CellWidth(UIList *, int32)
 	{
 		return cellSize.x;
 	}

@@ -39,7 +39,7 @@ namespace DAVA
 {
 
 class File;
-typedef void CURL;
+typedef void DCURL;
 
 
 class FileDownloaderDelegate
@@ -62,6 +62,12 @@ public:
 
 class FileDownloader: public BaseObject
 {
+    struct ThreadFileData
+    {
+        ThreadFileData() {}; 
+        FilePath downloadedFilePath;
+    };
+
 protected:
     virtual ~FileDownloader();
 public:
@@ -71,8 +77,8 @@ public:
     
     // Start download file & save with same name
     // return type CURLcode
-    virtual uint32 SynchDownload();
-    virtual void AsynchDownload();
+    virtual uint32 SynchDownload(const FilePath & downloadedFilePath = FilePath());
+    virtual void AsynchDownload(const FilePath & downloadedFilePath = FilePath());
     
     virtual void Pause();
     virtual void Resume();
@@ -103,7 +109,7 @@ protected:
 
     // Main download func 
     // return type CURLcode
-    uint32 DownloadFile();
+    uint32 DownloadFile(const FilePath & downloadedFilePath = FilePath());
     
     // CURL download to tile
     // return type CURLcode
@@ -111,7 +117,7 @@ protected:
     
     static bool isCURLInit;
 
-    virtual CURL * GetCurlHandler() const;
+    virtual DCURL * GetCurlHandler() const;
 
     enum FdState
     {
@@ -132,7 +138,7 @@ private:
     
     FdState state;
     bool isPauseChangeApplied;
-    CURL *curl_handle;
+    DCURL *curl_handle;
 };
 
 }

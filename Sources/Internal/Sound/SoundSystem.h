@@ -31,70 +31,117 @@
 
 #include "Base/Singleton.h"
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/ScopedPtr.h"
-#include "Base/FastNameMap.h"
-#include "Sound/Sound.h"
+#include "Base/BaseObject.h"
+#include "Base/FastName.h"
+#include "FileSystem/FilePath.h"
+#include "Base/EventDispatcher.h"
+#include "Base/FastName.h"
+#include "Sound/SoundEvent.h"
 
+#ifdef DAVA_FMOD
 namespace FMOD
 {
+class EventGroup;
 class System;
 class EventSystem;
+class EventProject;
 };
+#endif
 
 namespace DAVA
 {
-    
 #if defined(__DAVAENGINE_HTML5__)
     void SoundChannelFinishedPlaying(int nChannelID);
 #endif
     
-class SoundGroup;
-class SoundEvent;
-class Animation;
-class SoundEventCategory;
-class VolumeAnimatedObject;
+
+#ifdef DAVA_FMOD
+class FMODFileSoundEvent;
+class FMODSoundEvent;
+#endif
+
+class Component;
 class SoundSystem : public Singleton<SoundSystem>
 {
 public:
-	SoundSystem(int32 maxChannels);
-	virtual ~SoundSystem();
+    SoundSystem();
+    ~SoundSystem();
+    
+    SoundEvent * CreateSoundEventByID(const FastName & eventName, const FastName & groupName);
+    SoundEvent * CreateSoundEventFromFile(const FilePath & fileName, const FastName & groupName, uint32 createFlags = SoundEvent::SOUND_EVENT_CREATE_DEFAULT, int32 priority = 128);
+    
+    void SerializeEvent(const SoundEvent * sEvent, KeyedArchive *toArchive);
+    SoundEvent * DeserializeEvent(KeyedArchive *archive);
 
-	void Update();
-	void Suspend();
-	void Resume();
+    void Update(float32 timeElapsed);
+    void Suspend();
+    void Resume();
 
-	void SetListenerPosition(const Vector3 & position);
-	void SetListenerOrientation(const Vector3 & at, const Vector3 & left);
+    void SetCurrentLocale(const String & langID);
 
-	SoundEvent * CreateSoundEvent(const String & eventPath);
+    void SetListenerPosition(const Vector3 & position);
+    void SetListenerOrientation(const Vector3 & forward, const Vector3 & left);
 
-	void LoadFEV(const FilePath & filePath);
+    void SetGroupVolume(const FastName & groupName, float32 volume);
+    float32 GetGroupVolume(const FastName & groupName);
 
-	SoundGroup * GetSoundGroup(const FastName & groupName);
-	ScopedPtr<SoundEventCategory> GetSoundEventCategory(const String & category);
+    void InitFromQualitySettings();
 
-	void AddVolumeAnimatedObject(VolumeAnimatedObject * object);
-	void RemoveVolumeAnimatedObject(VolumeAnimatedObject * object);
+protected:
+    void ParseSFXConfig(const FilePath & configPath);
 
-private:
-	SoundGroup * CreateSoundGroup(const FastName & groupName);
+#ifdef DAVA_FMOD
+protected:
+    struct SoundGroup
+    {
+        SoundGroup() : volume(1.f) {};
 
-    void ReleaseOnUpdate(Sound * sound);
+        FastName name;
+        float32 volume;
+        Vector<SoundEvent *> events;
+    };
 
-	FMOD::System * fmodSystem;
-	FMOD::EventSystem * fmodEventSystem;
+public:
+    void LoadFEV(const FilePath & filePath);
+    void UnloadFEV(const FilePath & filePath);
+    void UnloadFMODProjects();
 
-    Vector<Sound *> soundsToReleaseOnUpdate;
+    void PreloadFMODEventGroupData(const String & groupName);
+    void ReleaseFMODEventGroupData(const String & groupName);
+    void ReleaseAllEventWaveData();
 
-	FastNameMap<SoundGroup*> soundGroups;
-	Vector<VolumeAnimatedObject*> animatedObjects;
+    void GetAllEventsNames(Vector<String> & names);
 
-friend class SoundGroup;
-friend class Sound;
+    uint32 GetMemoryUsageBytes() const;
+    float32 GetTotalCPUUsage() const;
+    int32 GetChannelsUsed() const;
+    int32 GetChannelsMax() const;
+
+protected:
+    void GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names);
+
+    void AddSoundEventToGroup(const FastName & groupName, SoundEvent * event);
+    void RemoveSoundEventFromGroups(SoundEvent * event);
+
+	void ReleaseOnUpdate(SoundEvent * sound);
+
+	Vector<SoundEvent *> soundsToReleaseOnUpdate;
+
+    FMOD::System * fmodSystem;
+    FMOD::EventSystem * fmodEventSystem;
+
+    Vector<SoundGroup> soundGroups;
+    Map<FilePath, FMOD::EventProject *> projectsMap;
+
+    Vector<String> toplevelGroups;
+
+    friend class FMODFileSoundEvent;
+    friend class FMODSoundEvent;
+#ifdef __DAVAENGINE_IPHONE__
+    friend class MusicIOSSoundEvent;
+#endif
+#endif
 };
-
-
 
 };
 

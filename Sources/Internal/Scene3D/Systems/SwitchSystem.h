@@ -42,13 +42,13 @@ class SwitchSystem : public SceneSystem
 public:
 	SwitchSystem(Scene * scene);
 
-	virtual void Process();
+	virtual void Process(float32 timeElapsed);
 	virtual void ImmediateEvent(Entity * entity, uint32 event);
 
 private:
 	Set<Entity*> updatableEntities;
 
-	void SetVisibleHierarchy(Entity * entity, bool visible);
+    void SetSwitchHierarchy(Entity * entity, int32 switchIndex);
 };
 
 }

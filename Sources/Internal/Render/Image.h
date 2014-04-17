@@ -33,6 +33,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
+#include "Render/RenderBase.h"
+
 
 namespace DAVA 
 {
@@ -50,19 +52,6 @@ public:
 
 class Image : public BaseObject
 {
-public:
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static const int MAX_WIDTH = 1024;
-	static const int MIN_WIDTH = 8;
-	static const int MAX_HEIGHT = 1024;
-	static const int MIN_HEIGHT = 8;
-#else //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-	static const int MAX_WIDTH = 4096;
-	static const int MIN_WIDTH = 8;
-	static const int MAX_HEIGHT = 4096;
-	static const int MIN_HEIGHT = 8;
-#endif //#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    
 protected:
 	virtual ~Image();
 public:
@@ -71,7 +60,7 @@ public:
 	static Image * Create(uint32 width, uint32 height, PixelFormat format);
 	static Image * CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data);
     
-    static Image * CreatePinkPlaceholder();
+    static Image * CreatePinkPlaceholder(bool checkers = true);
     
     // \todo Change function name to Image::Create for consistency
 	static Vector2 GetImageSize(const FilePath & pathName);
@@ -81,7 +70,12 @@ public:
 	inline uint8 * GetData() const;
 	inline PixelFormat GetPixelFormat() const;
 
-    
+#ifdef __DAVAENGINE_IPHONE__
+    void *GetUIImage();
+#endif
+
+    bool Save(const FilePath &path) const;
+
 #ifdef __DAVAENGINE_IPHONE__
     void SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback = 0);
 #endif
@@ -123,14 +117,16 @@ public:
         
      */
 
-	uint8 * data;
     uint32 dataSize;
-	uint32	width;
-	uint32	height;
-	PixelFormat format;
+	uint32	width:16;
+	uint32	height:16;
+
+	uint8 * data;
+
+    uint32 mipmapLevel;
+    PixelFormat format:8;
 	
 	uint32 cubeFaceID;
-	uint32 mipmapLevel;
 };
 	
 // Implementation of inline functions

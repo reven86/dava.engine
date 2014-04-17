@@ -32,6 +32,7 @@
 #define __PROJECT_MANAGER_H__
 
 #include <QObject>
+#include <QVector>
 #include "DAVAEngine.h"
 
 class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
@@ -39,29 +40,52 @@ class ProjectManager : public QObject, public DAVA::Singleton<ProjectManager>
 	Q_OBJECT
 
 public:
+    struct AvailableMaterialTemplate
+    {
+        QString name;
+        QString path;
+    };
+
+    struct AvailableMaterialQuality
+    {
+        QString name;
+        QString prefix;
+        QVector<QString> values;
+    };
+
 	ProjectManager();
 	~ProjectManager();
 
-	bool IsOpened();
+	bool IsOpened() const;
 
-	QString CurProjectPath();
-	QString CurProjectDataSourcePath();
+	DAVA::FilePath CurProjectPath() const;
+	DAVA::FilePath CurProjectDataSourcePath() const;
+    DAVA::FilePath CurProjectDataParticles() const;
+    
+    const QVector<ProjectManager::AvailableMaterialTemplate>* GetAvailableMaterialTemplates() const;
+    const QVector<ProjectManager::AvailableMaterialQuality>* GetAvailableMaterialQualities() const;
 
 public slots:
-	QString ProjectOpenDialog();
+    DAVA::FilePath ProjectOpenDialog();
 	void ProjectOpen(const QString &path);
+    void ProjectOpen(const DAVA::FilePath &path);
 	void ProjectOpenLast();
 	void ProjectClose();
 
 signals:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
-
+    
 private:
-	QString curProjectPath;
-	QString curProjectPathDataSource;
+    DAVA::FilePath curProjectPath;
+	DAVA::FilePath curProjectPathDataSource;
+    DAVA::FilePath curProjectPathParticles;
 
 	void LoadProjectSettings();
+    void LoadMaterialsSettings();
+
+    QVector<AvailableMaterialTemplate> templates;
+    QVector<AvailableMaterialQuality> qualities;
 };
 
 #endif // __PROJECT_MANAGER_H__ 

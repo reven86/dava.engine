@@ -30,10 +30,11 @@
 #include "CubemapEditor/CubemapEditorDialog.h"
 #include "CubemapEditor/ClickableQLabel.h"
 #include "CubemapEditor/CubemapUtils.h"
-#include "SceneEditor/EditorSettings.h"
+#include "Qt/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
 #include "ui_cubemapeditordialog.h"
+#include "Project/ProjectManager.h"
 
 #include <QMouseEvent>
 
@@ -58,6 +59,13 @@ CubemapEditorDialog::CubemapEditorDialog(QWidget *parent) :
 	faceChanged = false;
 	
 	ConnectSignals();
+    
+    ui->labelPX->SetVisualRotation(90);
+    ui->labelNX->SetVisualRotation(90);
+    ui->labelPY->SetVisualRotation(90);
+    ui->labelNY->SetVisualRotation(90);
+    ui->labelPZ->SetVisualRotation(90);
+    ui->labelNZ->SetVisualRotation(90);
 
 	setMouseTracking(true);
 }
@@ -86,15 +94,13 @@ void CubemapEditorDialog::ConnectSignals()
 
 	//QObject::connect(ui->buttonLoadTexture, SIGNAL(pressed()), this, SLOT(OnLoadTexture()));
 	QObject::connect(ui->buttonSave, SIGNAL(pressed()), this, SLOT(OnSave()));
-	QObject::connect(ui->buttonClose, SIGNAL(pressed()), this, SLOT(OnClose()));
+	QObject::connect(ui->buttonClose, SIGNAL(pressed()), this, SLOT(close()));
 }
 
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 {
-	KeyedArchive* settings = EditorSettings::Instance()->GetSettings();
-	FilePath projectPath = CubemapUtils::GetDialogSavedPath(CUBEMAP_LAST_FACE_DIR_KEY,
-															rootPath.toStdString(),
-															EditorSettings::Instance()->GetDataSourcePath().GetAbsolutePathname());
+	FilePath projectPath = CubemapUtils::GetDialogSavedPath(ResourceEditor::SETTINGS_CUBEMAP_LAST_FACE_DIR,
+															ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
 		
 	QString fileName = QtFileDialog::getOpenFileName(this,
 													tr("Open Cubemap Face Image"),
@@ -107,7 +113,7 @@ void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 		LoadImageTo(stdFilePath, face, false);
 		
 		projectPath = stdFilePath;
-		settings->SetString(CUBEMAP_LAST_FACE_DIR_KEY, projectPath.GetDirectory().GetAbsolutePathname());
+		SettingsManager::Instance()->SetValue("cubemap_last_face_dir", VariantType(projectPath.GetDirectory()), SettingsManager::INTERNAL);
 		
 		if(AllFacesLoaded())
 		{
@@ -303,6 +309,8 @@ void CubemapEditorDialog::LoadCubemap(const QString& path)
 			ShowErrorDialog("Failed to load cubemap texture " + path.toStdString() + ". Seems this is not a cubemap texture.");
 		}
 	}
+
+	SafeDelete(texDescriptor);
 }
 
 void CubemapEditorDialog::SaveCubemap(const QString& path)
@@ -366,21 +374,33 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 				QImage qimg(targetFullPath.c_str());
 				QImage rotatedImage = qimg.transformed(transform);
 				rotatedImage.save(targetFullPath.c_str());
+                faceLabel->SetRotation(0);
 			}
 		}
 	}
 	
 	TextureDescriptor* descriptor = new TextureDescriptor();
-	descriptor->settings.wrapModeS = descriptor->settings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
-    descriptor->settings.generateMipMaps = true;
-	descriptor->settings.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
-	descriptor->settings.magFilter = Texture::FILTER_LINEAR;
-    descriptor->exportedAsGpuFamily = GPU_UNKNOWN;
-	descriptor->exportedAsPixelFormat = FORMAT_INVALID;
+    
+    bool descriptorReady = false;
+    if(filePath.Exists())
+    {
+        descriptorReady = descriptor->Load(filePath);
+    }
+    
+    if(!descriptorReady)
+    {
+        descriptor->settings.wrapModeS = descriptor->settings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
+        descriptor->settings.generateMipMaps = true;
+        descriptor->settings.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
+        descriptor->settings.magFilter = Texture::FILTER_LINEAR;
+        descriptor->exportedAsGpuFamily = GPU_UNKNOWN;
+        descriptor->exportedAsPixelFormat = FORMAT_INVALID;
+    }
+    
 	descriptor->faceDescription = faceMask;
-	    
+    
     descriptor->Save(filePath);
-	SafeRelease(descriptor);
+	delete descriptor;
 	
 	QMessageBox::information(this, "Cubemap texture save result", "Cubemap texture was saved successfully!");
 }
@@ -505,27 +525,24 @@ void CubemapEditorDialog::OnSave()
 	
 	this->setUpdatesEnabled(true);
 	ui->lblSaving->setVisible(false);
-	
-	EditorSettings::Instance()->Save();
-	close();
+    QDialog::accept();
 }
 
-void CubemapEditorDialog::OnClose()
+void CubemapEditorDialog::done(int result)
 {
-	int answer = MB_FLAG_YES;
 	if(IsCubemapEdited())
 	{
-		answer = ShowQuestion("Warning",
+	    int answer = ShowQuestion("Warning",
 							  "Cubemap texture was edited. Do you want to close it without saving?",
 							  MB_FLAG_YES | MB_FLAG_NO,
 							  MB_FLAG_NO);
-	}
 
-	if(MB_FLAG_YES == answer)
-	{
-		EditorSettings::Instance()->Save();
-		close();
+       if(answer != MB_FLAG_YES)
+       {
+           return;
+       }
 	}
+    QDialog::done(QDialog::Accepted);
 }
 
 bool CubemapEditorDialog::IsCubemapEdited()

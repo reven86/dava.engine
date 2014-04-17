@@ -29,6 +29,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <math.h> 
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
@@ -38,66 +39,38 @@ namespace DAVA
 static const int32 FORMAT_STRING_SIZE = 2048;
 static const int32 FORMAT_STRING_MAX_LEN = 256;
 
-static char8 formatString8[FORMAT_STRING_SIZE];
-static char16 formatString16[FORMAT_STRING_SIZE];
-static int32 formatString8Position = 0;
-static int32 formatString16Position = 0;
+//static char8 formatString8[FORMAT_STRING_SIZE];
+//static char16 formatString16[FORMAT_STRING_SIZE];
+//static int32 formatString8Position = 0;
+//static int32 formatString16Position = 0;
 
 //! formatting function (use printf syntax)
-const char8* Format(const char8 * text, ...)
+String Format(const char8 * text, ...)
 {
-	if (formatString8Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString8Position = 0;
-	}
-
-	char8 *buffer = &formatString8[formatString8Position];
+	String str;
+	char8 buffer[FORMAT_STRING_MAX_LEN];
 
 	va_list ll;
 	va_start(ll, text);
-	int32 len = vsnprintf(buffer,  FORMAT_STRING_MAX_LEN, text, ll);
+	vsnprintf(buffer,  FORMAT_STRING_MAX_LEN, text, ll);
 	va_end(ll);
 
-	if(len < 0 || len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[Format8] len = %d, str = %s", len, buffer);
-
-		formatString8Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString8Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 
-const char8* GetIndentString(char8 indentChar, int32 level)
+String GetIndentString(char8 indentChar, int32 level)
 {
-	if (formatString8Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString8Position = 0;
-	}
-	if (level > FORMAT_STRING_MAX_LEN)level = FORMAT_STRING_MAX_LEN - 1;
+	String str;
+	str.resize(level, indentChar);
 	
-	for (int k = 0; k < level; k++)
-	{
-		formatString8[formatString8Position + k] = indentChar;
-	}
-	formatString8[formatString8Position + level] = 0;
-	formatString8Position += (level + 1);
-	return &formatString8[formatString8Position  - (level + 1)];
+	return str;
 }
 
 //  Format(L"") use case with WideString parameter:
 //         WideString info( Format(L"%ls", tank->GetName().c_str()) ); // tank->GetName() -> WideString&
 //         activeTankInfo->SetText(info);
 
-
-    
-    
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
-    
 #define ZEROPAD	1		/* pad with zero */
 #define SIGN	2		/* unsigned/signed long */
 #define PLUS	4		/* show plus */
@@ -105,14 +78,15 @@ const char8* GetIndentString(char8 indentChar, int32 level)
 #define LEFT	16		/* left justified */
 #define SPECIAL	32		/* 0x */
 #define LARGE	64		/* use 'ABCDEF' instead of 'abcdef' */
-    
-    
-#define do_div(n,base) ({ \
-int32 __res; \
-__res = ((unsigned long long) n) % (unsigned) base; \
-n = ((unsigned long long) n) / (unsigned) base; \
-__res; })
-    
+#define LONG_LONG  128  /* use to convert long long '%lld' */
+  
+int32 do_div(int64 &n, int32 base)
+{
+	int32 __res;
+	__res = ((unsigned long long) n) % (unsigned) base;
+	n = ((unsigned long long) n) / (unsigned) base;
+	return __res;
+}
     
     static int32 SkipAtoi(const char16 **s)
     {
@@ -246,6 +220,13 @@ __res; })
     
     static char16 * Numberf (char16 *str, float64 num, int32 base, int32 size, int32 precision, int32 type)
     {
+        bool isNegativeValue = false;
+        if (num < 0)
+        {
+            isNegativeValue = true;
+            num = -num;
+        }
+        
         int32 whole = (int32)num;
         
         num -= whole;
@@ -257,9 +238,39 @@ __res; })
         
         int32 tail = (int32)num;
         
+        num -= tail;
+        if (num > 0.5f)
+        {
+            if (precision > 0)
+                tail++;
+            else if (precision == 0)
+                whole++;
+        }
+
+		if (tail >= pow(10.f, precision))
+		{
+			whole++;
+			tail -= pow(10.f, precision);
+		}
+		
         type = SIGN | LEFT;
         char16 *firstStr = Number(str, whole, 10, -1, -1, type);
-        if(tail)
+        if (isNegativeValue)
+        {
+            memcpy(str + 1, str, (firstStr - str) * sizeof(char16));
+            *str = L'-';
+            firstStr++;
+        }
+        if (base > 0)
+        {
+            while (firstStr - str < base - precision)
+            {
+                memcpy(str + 1, str, (firstStr - str) * sizeof(char16));
+                *str = L' ';
+                firstStr++;
+            }
+        }
+        if (precision > 0)
         {
             *firstStr++ = '.';
             
@@ -271,11 +282,10 @@ __res; })
     }
     
     
-    
     int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list args)
     {
         int32 len;
-        uint64 num;
+        int64 num;
         int32 i, base;
         const char8 *s;
         const char16 *sw;
@@ -287,6 +297,7 @@ __res; })
                                      number of chars for from string */
         int32 qualifier = 0;		/* 'h', 'l', 'L', 'w' or 'I' for integer fields */
         
+        const char16 *strBase = fmt;
         char16 * str = NULL;
         for (str=buf ; *fmt ; ++fmt)
         {
@@ -648,10 +659,49 @@ __res; })
                 case L'u':
                     break;
                     
+                case L'l':
+                    if (*(fmt) == L'l' && *(fmt + 1) == L'd')
+                    {
+                        flags |= LONG_LONG | SIGN;
+                        fmt++;
+                    }
+                    else if (*(fmt) == L'l' && *(fmt + 1) == L'u')
+                    {
+                        flags |= LONG_LONG;
+                        fmt++;
+                    }
+                    break;
+                    
                 case L'f':
+                {
+                    base = -1;
+                    
+                    while (*strBase)
+                    {
+                        if (iswdigit(*strBase))
+                        {
+                            if (base == -1)
+                                base = 0;
+                            base = base * 10 + SkipAtoi(&strBase);
+                            continue;
+                        }
+
+                        switch (*strBase)
+                        {
+                            case L'%':
+                                ++strBase;
+                                continue;
+
+                            default:
+                                break;
+                        }
+                    
+                        break;
+                    }
+                    
                     qualifier = 'f';
                     flags |= SIGN;
-                    break;
+                } break;
                     
                 default:
                     if (*fmt != L'%')
@@ -714,9 +764,14 @@ __res; })
                 }
                 else if (qualifier == 'l')
                 {
-                    num = va_arg(args, unsigned long);
+                    if (flags & (LONG_LONG | SIGN))
+                        num = va_arg(args, long long);
+                    else if (flags & LONG_LONG)
+                        num = va_arg(args, unsigned long long);
+                    else
+                        num = va_arg(args, unsigned long);
                 }
-                else if (qualifier == 'h') 
+                else if (qualifier == 'h')
                 {
                     if (flags & SIGN)
                     {
@@ -746,103 +801,57 @@ __res; })
         return str-buf;
     }
     
-#endif //#if defined(__DAVAENDGINE_ANDROID__) || defined(__DAVAENDGINE_IPHONE__)
-    
-    
-
 //! formatting function (use printf syntax (%ls for WideString))
-const char16* Format(const char16 * text, ...)
+WideString Format(const char16 * text, ...)
 {
-	if (formatString16Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString16Position = 0;
-	}
-
-	char16 *buffer = formatString16 + formatString16Position;
+	WideString str;
+	char16 buffer[FORMAT_STRING_MAX_LEN];
 
     va_list ll;
 	va_start(ll, text);
 
+    Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
+
+/*
 #if defined(_WIN32)
-	int32 len = vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
 #elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_HTML5__)
-    int32 len = Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
+    Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
 #else
     // MAC_OS & other nix systems
-	int32 len = vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
 #endif
+	*/
+
 	va_end(ll);
 
-	if(len < 0)
-    {
-        Logger::Error("[Format16] len = %d", len);
-    }
-    else if(len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[Format16] len = %d, str = %s", len,  WStringToString(WideString(buffer, len)).c_str());
-
-		formatString16Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString16Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 
-const char8* FormatVL(const char8 * text, va_list ll)
+String FormatVL(const char8 * text, va_list ll)
 {
-	if (formatString8Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString8Position = 0;
-	}
+	String str;
+	char8 buffer[FORMAT_STRING_MAX_LEN];
 
-	char8 *buffer = formatString8 + formatString8Position;
+	vsprintf(buffer,  text, ll);
 
-	int32 len = vsprintf(buffer,  text, ll);
-    DVASSERT_MSG(0 < len && len < FORMAT_STRING_MAX_LEN, buffer);
-
-	if(len < 0 || len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[FormatVL8] len = %d, str = %s", len, buffer);
-
-		formatString8Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString8Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 
-const char16* FormatVL(const char16 * text, va_list ll)
+WideString FormatVL(const char16 * text, va_list ll)
 {
-	if (formatString16Position + FORMAT_STRING_MAX_LEN >= FORMAT_STRING_SIZE)
-	{
-		formatString16Position = 0;
-	}
-
-	char16 *buffer = formatString16 + formatString16Position;
+	WideString str;
+	char16 buffer[FORMAT_STRING_MAX_LEN];
 
 #if defined(_WIN32)
-	int32 len = vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
 #else // MAC_OS & other nix systems
-	int32 len = vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
+	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
 #endif
 
-	if(len < 0 || len > FORMAT_STRING_MAX_LEN)
-	{
-		Logger::Error("[FormatVL16] len = %d, str = %s", len,  WStringToString(WideString(buffer, len)).c_str());
-
-		formatString16Position += FORMAT_STRING_MAX_LEN;
-	}
-	else
-	{
-		formatString16Position += (len + 1);
-	}
-
-	return buffer;
+	str = buffer;
+	return str;
 }
 }; // end of namespace Log
