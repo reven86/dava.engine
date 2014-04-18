@@ -78,11 +78,18 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DLC/*.cpp))
 
+ifndef USE_NEON
+#ifneq ($(USE_NEON),)
+USE_NEON := true
+endif
+ifeq ($(USE_NEON), true)
 LOCAL_ARM_NEON := true
 LOCAL_NEON_CFLAGS := -mfloat-abi=softfp -mfpu=neon -march=armv7
+LOCAL_CFLAGS += -DUSE_NEON
+endif
 
 # set build flags
-LOCAL_CFLAGS := -frtti -DGL_GLEXT_PROTOTYPES=1 -Wno-psabi
+LOCAL_CFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1 -Wno-psabi
 LOCAL_CFLAGS += -Wno-invalid-offsetof
 LOCAL_CFLAGS += -DDAVA_FMOD
 
