@@ -33,6 +33,7 @@
 		7497447517B3D61800282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497447317B3D61800282DAA /* AlignTest.cpp */; };
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
 		74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74BF98191876B3A7001D4CFE /* GameController.framework */; };
+		74BFA6601901424F0043E5BA /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74BFA65E1901424F0043E5BA /* StringFormatTest.cpp */; };
 		74F7355F18F596D000685E69 /* UIParticlesTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74F7355D18F596D000685E69 /* UIParticlesTest.cpp */; };
 		8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */; };
 		84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84C8F71316D3D16000FAC7DF /* DPITest.cpp */; };
@@ -130,6 +131,8 @@
 		7497447417B3D61800282DAA /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlignTest.h; sourceTree = "<group>"; };
 		74AF633C18852FE100070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		74BF98191876B3A7001D4CFE /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
+		74BFA65E1901424F0043E5BA /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFormatTest.cpp; sourceTree = "<group>"; };
+		74BFA65F1901424F0043E5BA /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringFormatTest.h; sourceTree = "<group>"; };
 		74F7355D18F596D000685E69 /* UIParticlesTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticlesTest.cpp; sourceTree = "<group>"; };
 		74F7355E18F596D000685E69 /* UIParticlesTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticlesTest.h; sourceTree = "<group>"; };
 		8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTimeTest.cpp; sourceTree = "<group>"; };
@@ -309,8 +312,6 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */,
-				15CBB0AF18D300310038ABA3 /* StringFormatTest.h */,
 				8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */,
 				8475938C18DA3FAC00C464CB /* DateTimeTest.h */,
 				4998996918B238F7007A8DF2 /* RectSpriteTest.cpp */,
@@ -375,6 +376,8 @@
 				1770DF4417DF446600000391 /* UIMovieTest.h */,
 				C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */,
 				C166A6F018E31B4700007C2D /* SaveImageTest.h */,
+				74BFA65E1901424F0043E5BA /* StringFormatTest.cpp */,
+				74BFA65F1901424F0043E5BA /* StringFormatTest.h */,
 				74F7355D18F596D000685E69 /* UIParticlesTest.cpp */,
 				74F7355E18F596D000685E69 /* UIParticlesTest.h */,
 			);
@@ -539,6 +542,7 @@
 				E832BD95170D5610004D88A0 /* FileListTest.cpp in Sources */,
 				E832BDA0170D823C004D88A0 /* FileSystemTest.cpp in Sources */,
 				495B66FF1796FA7F0017D8DD /* TransparentWebViewTest.cpp in Sources */,
+				74BFA6601901424F0043E5BA /* StringFormatTest.cpp in Sources */,
 				4998996B18B238F7007A8DF2 /* RectSpriteTest.cpp in Sources */,
 				E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */,
 				74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */,

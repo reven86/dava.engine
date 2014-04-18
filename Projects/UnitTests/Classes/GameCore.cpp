@@ -64,6 +64,7 @@
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
 #include "SaveImageTest.h"
+#include "StringFormatTest.h"
 #include "DateTimeTest.h"
 #include "UIParticlesTest.h"
 
@@ -90,10 +91,9 @@ void GameCore::OnAppStarted()
 	RenderManager::Instance()->SetFPS(60);
 
     CreateDocumentsFolder();
- 	new UIParticlesTest();
- 	new SoundTest();
+
     new SaveImageTest();
-    
+	new StringFormatTest();
     new RectSpriteTest();
 
 	new ComponentsTest();
