@@ -35,15 +35,14 @@ namespace DAVA
 {
 
 #if defined(__DAVAENGINE_WIN32__)
-
 #define vsnprintf _vsnprintf
 #define vswprintf _vsnwprintf
 #define snprintf _snprintf
-
 #endif
 
+eLogLevel Logger::logLevel = LEVEL_ALL;
+
 Logger::Logger()
-: logLevel(LEVEL_ALL)
 { }
 
 Logger::~Logger()
@@ -52,27 +51,33 @@ Logger::~Logger()
 	{
 		delete logOutputs[i];
 	}
+
+    for(size_t i = 0; i < logAsyncOutputs.size(); ++i)
+    {
+        delete logAsyncOutputs[i];
+    }
 }
 	
 eLogLevel Logger::GetLogLevel()
 {
-	return Logger::Instance()->logLevel;
+	return logLevel;
 }
 
 void Logger::SetLogLevel(eLogLevel ll)
 {
-	Logger::Instance()->logLevel = ll;
+	logLevel = ll;
 }
 
 void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 {
-    if(NULL != text && text[0] != '\0')
+    if(ll >= logLevel)
     {
-
+        if(NULL != text && text[0] != '\0')
+        {
+    	    vsnprintf(tmp, sizeof(tmp) - 2, text, li);
+	        strcat(tmp, "\n");
+        }
     }
-    
-	vsnprintf(tmp, sizeof(tmp) - 2, text, li);
-	strcat(tmp, "\n");
 
 	// always send log to custom subscribers
 	CustomLog(ll, tmp);
@@ -94,150 +99,79 @@ void Logger::Logv(eLogLevel ll, const char8* text, va_list li)
 		{
 			FileLog(ll, tmp);
 		}
-	}
-}
-
-void Logger::Logv(eLogLevel ll, const char16* text, va_list li)
-{
-    if(!text || text[0] == '\0') return;
-
-	wchar_t tmp[4096] = {0};
-
-	vswprintf(tmp, sizeof(tmp)/sizeof(wchar_t) - 2, text, li);
-	wcscat(tmp, L"\n");
-
-	// always send log to custom subscribers
-	CustomLog(ll, tmp);
-
-	// print platform log or write log to file
-	// only if log level is acceptable
-	if (ll >= logLevel)
-	{
-        if(consoleModeEnabled)
-        {
-            ConsoleLog(ll, tmp);
-        }
-        else
-        {
-            PlatformLog(ll, tmp);
-        }
-
-		if(!logFilename.IsEmpty())
-		{
-			FileLog(ll, tmp);
-		}
-
 	}
 }
 	
 void Logger::Log(eLogLevel ll, const char8* text, ...)
 {
-	if (ll < logLevel)return; 
-	
-	va_list vl;
-	va_start(vl, text);
-	Logv(ll, text, vl);
-	va_end(vl);
-}	
-
-void Logger::Log(eLogLevel ll, const char16* text, ...)
-{
-	if (ll < logLevel) return; 
-	
-	va_list vl;
-	va_start(vl, text);
-	Logv(ll, text, vl);
-	va_end(vl);
+    if(logLevel <= ll)
+    {
+	    va_list vl;
+	    va_start(vl, text);
+	    if (Logger::Instance())
+		    Logger::Instance()->Logv(ll, text, vl);
+	    va_end(vl);
+    }
 }
 	
-void Logger::FrameworkDebug( const char8 * text, ... )
+void Logger::Framework(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-	if (Logger::Instance())
-		Logger::Instance()->Logv(LEVEL_FRAMEWORK, text, vl);
-	va_end(vl);
+    if(logLevel <= LEVEL_FRAMEWORK)
+    {
+	    va_list vl;
+	    va_start(vl, text);
+	    if (Logger::Instance())
+		    Logger::Instance()->Logv(LEVEL_FRAMEWORK, text, vl);
+	    va_end(vl);
+    }
 }
 
 void Logger::Debug(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_DEBUG, text, vl);
-	va_end(vl);
+    if(logLevel <= LEVEL_DEBUG)
+    {
+	    va_list vl;
+	    va_start(vl, text);
+        if (Logger::Instance())
+            Logger::Instance()->Logv(LEVEL_DEBUG, text, vl);
+	    va_end(vl);
+    }
 }
 	
 void Logger::Info(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_INFO, text, vl);
-	va_end(vl);
+    if(logLevel <= LEVEL_INFO)
+    {
+	    va_list vl;
+	    va_start(vl, text);
+        if (Logger::Instance())
+            Logger::Instance()->Logv(LEVEL_INFO, text, vl);
+	    va_end(vl);
+    }
 }	
 	
 void Logger::Warning(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_WARNING, text, vl);
-	va_end(vl);
+    if(logLevel <= LEVEL_WARNING)
+    {
+	    va_list vl;
+	    va_start(vl, text);
+        if (Logger::Instance())
+            Logger::Instance()->Logv(LEVEL_WARNING, text, vl);
+	    va_end(vl);
+    }
 }
 	
 void Logger::Error(const char8 * text, ...)
 {
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
-	va_end(vl);
-}
-
-void Logger::FrameworkDebug( const char16 * text, ... )
-{
-	va_list vl;
-	va_start(vl, text);
-	if (Logger::Instance())
-		Logger::Instance()->Logv(LEVEL_FRAMEWORK, text, vl);
-	va_end(vl);
-}
-
-void Logger::Debug(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_DEBUG, text, vl);
-	va_end(vl);
-}
-
-void Logger::Info(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_INFO, text, vl);
-	va_end(vl);
-}	
-
-void Logger::Warning(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_WARNING, text, vl);
-	va_end(vl);
-}
-
-void Logger::Error(const char16 * text, ...)
-{
-	va_list vl;
-	va_start(vl, text);
-    if (Logger::Instance())
-        Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
-	va_end(vl);
+    if(logLevel <= LEVEL_ERROR)
+    {
+	    va_list vl;
+	    va_start(vl, text);
+        if (Logger::Instance())
+            Logger::Instance()->Logv(LEVEL_ERROR, text, vl);
+	    va_end(vl);
+    }
 }
 
 void Logger::AddCustomOutput(DAVA::LoggerOutput *lo)

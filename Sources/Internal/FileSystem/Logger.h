@@ -32,7 +32,9 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "Base/FixedSizePoolAllocator.h"
 #include "Platform/Mutex.h"
+#include "Platform/Thread.h"
 
 namespace DAVA 
 {
@@ -51,8 +53,15 @@ enum eLogLevel
 	LEVEL_DISABLE = 0xFFFF
 };
 
-struct LoggerRecord
+class LoggerRecord
 {
+public:
+    LoggerRecord();
+    ~LoggerRecord();
+
+    const char *GetText() const;
+
+protected:
     const char* text;
 };
 
@@ -90,16 +99,24 @@ public:
 	static void Warning(const char * text, ...);
 	static void Error(const char * text, ...);
 
-	static void AddCustomOutput(LoggerOutput *lo);
-	static void RemoveCustomOutput(LoggerOutput *lo);
+	static void AddOutput(LoggerOutput *lo);
+	static void RemoveOutput(LoggerOutput *lo);
+
+	static void AddAsyncOutput(LoggerOutput *lo);
+	static void RemoveAsyncOutput(LoggerOutput *lo);
 
 protected:
-    Mutex logMutex;
-	eLogLevel logLevel;
-	Vector<LoggerOutput *> logOutputs;
+	static eLogLevel logLevel;
+    static const int logMaxTextLength;
+    static FixedSizePoolAllocator recordsPool;
 
-    static const int logMaxTextLength = 4096;
-    static char logTextBuffer[logMaxTextLength];
+    Mutex logMutex;
+    Thread *logThread;
+
+	Vector<LoggerOutput *> logOutputs;
+	Vector<LoggerOutput *> logAsyncOutputs;
+
+    List<LoggerRecord> logRecords;
 
 	void Logv(eLogLevel ll, const char* text, va_list li);
 };
