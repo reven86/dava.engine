@@ -19,6 +19,7 @@
     <ClCompile Include="Classes\Commands\CenterPivotPointCommand.cpp" />
     <ClCompile Include="Classes\Commands\ChangeAlignPropertyCommand.cpp" />
     <ClCompile Include="Classes\Commands\ControlCommands.cpp" />
+    <ClCompile Include="Classes\Commands\GuideCommands.cpp" />
     <ClCompile Include="Classes\Commands\ImportCommands.cpp" />
     <ClCompile Include="Classes\Commands\InvokeMethodCommand.cpp" />
     <ClCompile Include="Classes\Commands\ItemsCommand.cpp" />
@@ -39,6 +40,9 @@
     <ClCompile Include="Classes\GameCore.cpp" />
     <ClCompile Include="Classes\Grid\GridController.cpp" />
     <ClCompile Include="Classes\Grid\GridVisualizer.cpp" />
+    <ClCompile Include="Classes\Guides\GuideData.cpp" />
+    <ClCompile Include="Classes\Guides\GuideMimeData.cpp" />
+    <ClCompile Include="Classes\Guides\GuidesManager.cpp" />
     <ClCompile Include="Classes\Helpers\BackgroundGridWidgetHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ColorHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ListPropertyGridWidgetHelper.cpp" />
@@ -132,6 +136,7 @@
     <ClCompile Include="Classes\UI\StateComboBoxItemDelegate.cpp" />
     <ClCompile Include="GeneratedFiles\Commands\BaseCommand_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Commands\ChangePropertyCommand_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\Commands\GuideCommands_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Commands\InvokeMethodCommand_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Commands\ItemsCommand_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Commands\PasteCommand_moc.cpp" />
@@ -148,6 +153,10 @@
     <ClCompile Include="GeneratedFiles\GameCore_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Grid\GridController_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Grid\GridVisualizer_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\Guides\GuideData_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\Guides\GuideMimeData_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\Guides\GuidesEnums_moc.cpp" />
+    <ClCompile Include="GeneratedFiles\Guides\GuidesManager_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Helpers\BackgroundGridWidgetHelper_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Helpers\LocalizationSystemHelper_moc.cpp" />
     <ClCompile Include="GeneratedFiles\Helpers\PropertiesHelper_moc.cpp" />
@@ -244,6 +253,7 @@
     <ClInclude Include="Classes\Commands\ChangeAlignPropertyCommand.h" />
     <ClInclude Include="Classes\Commands\ChangePropertyCommand.h" />
     <ClInclude Include="Classes\Commands\ControlCommands.h" />
+    <ClInclude Include="Classes\Commands\GuideCommands.h" />
     <ClInclude Include="Classes\Commands\ImportCommands.h" />
     <ClInclude Include="Classes\Commands\InvokeMethodCommand.h" />
     <ClInclude Include="Classes\Commands\ItemsCommand.h" />
@@ -304,6 +314,10 @@
     <ClInclude Include="Classes\GameCore.h" />
     <ClInclude Include="Classes\Grid\GridController.h" />
     <ClInclude Include="Classes\Grid\GridVisualizer.h" />
+    <ClInclude Include="Classes\Guides\GuideData.h" />
+    <ClInclude Include="Classes\Guides\GuideMimeData.h" />
+    <ClInclude Include="Classes\Guides\GuidesEnums.h" />
+    <ClInclude Include="Classes\Guides\GuidesManager.h" />
     <ClInclude Include="Classes\Helpers\BackgroundGridWidgetHelper.h" />
     <ClInclude Include="Classes\Helpers\ColorHelper.h" />
     <ClInclude Include="Classes\Helpers\ListPropertyGridWidgetHelper.h" />
