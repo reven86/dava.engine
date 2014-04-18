@@ -98,7 +98,7 @@ void EntityModificationSystem::SetLandscapeSnap(bool snap)
 
 void EntityModificationSystem::PlaceOnLandscape(const EntityGroup &entities)
 {
-	if(entities.Size() > 0)
+	if(ModifCanStart(entities))
 	{
 		bool prevSnapToLandscape = snapToLandscape;
 
@@ -121,7 +121,7 @@ void EntityModificationSystem::ResetTransform(const EntityGroup &entities)
 {
 	SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 
-	if(NULL != sceneEditor)
+	if(NULL != sceneEditor && ModifCanStart(entities))
 	{
 		bool isMultiple = (entities.Size() > 1);
 		
@@ -182,7 +182,7 @@ void EntityModificationSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		if(!inModifState)
 		{
 			// can we start modification???
-			if(ModifCanStart(selectedEntities))
+			if(ModifCanStartByMouse(selectedEntities))
 			{
 				SceneSignals::Instance()->EmitMouseOverSelection((SceneEditor2 *) GetScene(), &selectedEntities);
 
@@ -442,43 +442,52 @@ bool EntityModificationSystem::ModifCanStart(const EntityGroup &selectedEntities
 			}
 		}
 
-		// we can start modif only if there is no locked entities
-		if(!hasLocked)
+        modifCanStart = !hasLocked;
+    }
+
+    return modifCanStart;
+}
+
+bool EntityModificationSystem::ModifCanStartByMouse(const EntityGroup &selectedEntities) const
+{
+	bool modifCanStart = false;
+
+	// we can start modif only if there is no locked entities
+	if(ModifCanStart(selectedEntities))
+	{
+		// we can start modification only if mouse is over hood
+		// on mouse is over one of currently selected items
+		if(hoodSystem->GetPassingAxis() != ST_AXIS_NONE)
 		{
-			// we can start modification only if mouse is over hood
-			// on mouse is over one of currently selected items
-			if(hoodSystem->GetPassingAxis() != ST_AXIS_NONE)
-			{
-				// allow starting modification
-				modifCanStart = true;
-			}
-			else
-			{
-				// send this ray to collision system and get collision objects
-				const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
+			// allow starting modification
+			modifCanStart = true;
+		}
+		else
+		{
+			// send this ray to collision system and get collision objects
+			const EntityGroup *collisionEntities = collisionSystem->ObjectsRayTestFromCamera();
 
-				// check if one of got collision objects is intersected with selected items
-				// if so - we can start modification
-				if(collisionEntities->Size() > 0)
+			// check if one of got collision objects is intersected with selected items
+			// if so - we can start modification
+			if(collisionEntities->Size() > 0)
+			{
+				for(size_t i = 0; !modifCanStart && i < collisionEntities->Size(); ++i)
 				{
-					for(size_t i = 0; !modifCanStart && i < collisionEntities->Size(); ++i)
+					DAVA::Entity *collisionedEntity = collisionEntities->GetEntity(i);
+
+					for(size_t j = 0; !modifCanStart && j < selectedEntities.Size(); ++j)
 					{
-						DAVA::Entity *collisionedEntity = collisionEntities->GetEntity(i);
+						DAVA::Entity *selectedEntity = selectedEntities.GetEntity(j);
 
-						for(size_t j = 0; !modifCanStart && j < selectedEntities.Size(); ++j)
+						if(selectedEntity == collisionedEntity)
 						{
-							DAVA::Entity *selectedEntity = selectedEntities.GetEntity(j);
-
-							if(selectedEntity == collisionedEntity)
+							modifCanStart = true;
+						}
+						else
+						{
+							if(selectedEntity->GetSolid())
 							{
-								modifCanStart = true;
-							}
-							else
-							{
-								if(selectedEntity->GetSolid())
-								{
-									modifCanStart = IsEntityContainRecursive(selectedEntity, collisionedEntity);
-								}
+								modifCanStart = IsEntityContainRecursive(selectedEntity, collisionedEntity);
 							}
 						}
 					}
@@ -852,12 +861,26 @@ void EntityModificationSystem::RemoveEntity(DAVA::Entity * entity)
 
 void EntityModificationSystem::MovePivotZero(const EntityGroup &entities)
 {
-    Bake(entities, false);
+    if(ModifCanStart(entities))
+    {
+        Bake(entities, false);
+    }
 }
 
 void EntityModificationSystem::MovePivotCenter(const EntityGroup &entities)
 {
-    Bake(entities, true);
+    if(ModifCanStart(entities))
+    {
+        Bake(entities, true);
+    }
+}
+
+void EntityModificationSystem::LockTransform(const EntityGroup &entities, bool lock)
+{
+ 	for(size_t i = 0; i < entities.Size(); ++i)
+ 	{
+ 		entities.GetEntity(i)->SetLocked(lock);
+ 	}
 }
 
 void EntityModificationSystem::Bake(const EntityGroup &entities, bool inverse)

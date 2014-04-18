@@ -49,6 +49,7 @@ UIControlSystem::UIControlSystem()
 	screenLockCount = 0;
 	frameSkip = 0;
 	transitionType = 0;
+	
 	transition = 0;
 	currentScreen = 0;
 	nextScreen = 0;

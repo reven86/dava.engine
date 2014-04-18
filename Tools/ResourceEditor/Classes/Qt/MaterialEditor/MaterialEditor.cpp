@@ -1059,8 +1059,6 @@ void MaterialEditor::OnMaterialLoad(bool checked)
                     curMaterials[i]->Load(materialArchive, &materialContext);
                 }
 
-            lastSavePath = outputFile.toStdString();
-            parser->SaveToYamlFile(outputFile.toStdString(), rootYamlNode, false);
                 materialArchive->Dump();
             }
         }

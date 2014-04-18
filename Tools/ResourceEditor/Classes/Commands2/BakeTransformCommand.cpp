@@ -124,13 +124,3 @@ DAVA::Entity* BakeTransformCommand::GetEntity() const
 {
 	return entity;
 }
-
-void BakeTransformCommand::PivotToZeroPos()
-{
-
-}
-
-void BakeTransformCommand::PivotToCenterPos()
-{
-
-}
