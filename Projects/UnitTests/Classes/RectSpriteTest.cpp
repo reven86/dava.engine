@@ -65,7 +65,8 @@ void RectSpriteTest::LoadResources()
 
 void RectSpriteTest::AddImage(const FilePath& filePath)
 {
-    Vector<Image*> imageSet = ImageLoader::CreateFromFileByExtension(filePath);
+    Vector<Image*> imageSet;
+	ImageLoader::CreateFromFileByExtension(filePath, imageSet);
 
     if (imageSet.size() == 0)
     {

@@ -40,6 +40,7 @@
 #include "Scene/SceneEditor2.h"
 
 #include "Commands2/TransformCommand.h"
+#include "Commands2/BakeTransformCommand.h"
 #include "Commands2/EntityAddCommand.h"
 #include <QApplication>
 
@@ -846,5 +847,47 @@ void EntityModificationSystem::RemoveEntity(DAVA::Entity * entity)
 
 		SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
 		SceneSignals::Instance()->EmitSnapToLandscapeChanged(sceneEditor, false);
+	}
+}
+
+void EntityModificationSystem::MovePivotZero(const EntityGroup &entities)
+{
+    Bake(entities, false);
+}
+
+void EntityModificationSystem::MovePivotCenter(const EntityGroup &entities)
+{
+    Bake(entities, true);
+}
+
+void EntityModificationSystem::Bake(const EntityGroup &entities, bool inverse)
+{
+	SceneEditor2 *sceneEditor = ((SceneEditor2 *) GetScene());
+
+	if(NULL != sceneEditor)
+	{
+		bool isMultiple = (entities.Size() > 1);
+		
+		DAVA::Matrix4 zeroTransform;
+		zeroTransform.Identity();
+
+		if(isMultiple)
+		{
+			sceneEditor->BeginBatch("Move pivot point to zero");
+		}
+
+		for (size_t i = 0; i < entities.Size(); ++i)
+		{
+			DAVA::Entity *entity = entities.GetEntity(i);
+			if(NULL != entity)
+			{
+				sceneEditor->Exec(new BakeTransformCommand(entity, inverse));
+			}
+		}
+
+		if(isMultiple)
+		{
+			sceneEditor->EndBatch();
+		}
 	}
 }

@@ -366,11 +366,6 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
             }
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
 			{
-				// Add optional button to bake transform render object
-				QtPropertyToolButton * bakeButton = CreateButton(data, QIcon(":/QtIcons/transform_bake.png"), "Bake Transform");
-                bakeButton->setEnabled(true);   // enabled for multiselect
-				QObject::connect(bakeButton, SIGNAL(pressed()), this, SLOT(ActionBakeTransform()));
-
                 QtPropertyDataIntrospection *introData = dynamic_cast<QtPropertyDataIntrospection *>(data);
                 if(NULL != introData)
                 {
@@ -385,7 +380,6 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderBatch>() == meta)
 			{
-				// Add optional button to bake transform render object
 				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
@@ -405,14 +399,12 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::ShadowVolume>() == meta)
 			{
-				// Add optional button to bake transform render object
 				QtPropertyToolButton * deleteButton = CreateButton(data, QIcon(":/QtIcons/remove.png"), "Delete RenderBatch");
                 deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
-				// Add optional button to bake transform render object
 				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
                 goToMaterialButton->setEnabled(isSingleSelection);
 				QObject::connect(goToMaterialButton, SIGNAL(pressed()), this, SLOT(ActionEditMaterial()));
@@ -835,21 +827,6 @@ void PropertyEditor::ActionEditComponent()
 
 		ResetProperties();
 	}	
-}
-
-void PropertyEditor::ActionBakeTransform()
-{
-    const int n = curNodes.size();
-    for (int i = 0; i < n; i++)
-    {
-        Entity *node = curNodes.at(i);
-		DAVA::RenderObject * ro = GetRenderObject(node);
-		if(NULL != ro)
-		{
-			ro->BakeTransform(node->GetLocalTransform());
-			node->SetLocalTransform(DAVA::Matrix4::IDENTITY);
-		}
-    }
 }
 
 void PropertyEditor::ConvertToShadow()

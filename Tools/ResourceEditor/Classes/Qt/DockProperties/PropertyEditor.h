@@ -36,8 +36,6 @@
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Scene/SceneSignals.h"
 
-class DAVA::Entity;
-
 struct PropEditorUserData : public QtPropertyData::UserData 
 {
 	enum PropertyType
@@ -96,7 +94,6 @@ public slots:
 	void CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo);
 
 	void ActionEditComponent();
-	void ActionBakeTransform();
 	void ActionEditMaterial();
     void ActionEditSoundComponent();
 	void OnAddActionComponent();

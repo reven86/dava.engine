@@ -312,55 +312,55 @@ public:
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetInt64(const String & key, int64 &value);
+	void SetInt64(const String & key, const int64 &value);
 	/**
      \brief Function to set variable in archive.
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetUInt64(const String & key, uint64 &value);
+	void SetUInt64(const String & key, const uint64 &value);
     
 	/**
      \brief Function to set variable in archive.
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetVector2(const String & key, Vector2 &value);
+	void SetVector2(const String & key, const Vector2 &value);
     
     /**
      \brief Function to set variable in archive.
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetVector3(const String & key, Vector3 &value);
+	void SetVector3(const String & key, const Vector3 &value);
  
     /**
      \brief Function to set variable in archive.
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetVector4(const String & key, Vector4 &value);
+	void SetVector4(const String & key, const Vector4 &value);
 
     /**
      \brief Function to set variable in archive.
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetMatrix2(const String & key, Matrix2 &value);
+	void SetMatrix2(const String & key, const Matrix2 &value);
     
     /**
      \brief Function to set variable in archive.
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetMatrix3(const String & key, Matrix3 &value);
+	void SetMatrix3(const String & key, const Matrix3 &value);
     
     /**
      \brief Function to set variable in archive.
      \param[in] key string key
      \param[in] value we want to set for this key
 	 */
-	void SetMatrix4(const String & key, Matrix4 &value);
+	void SetMatrix4(const String & key, const Matrix4 &value);
     
     /**
         \brief Function to set value from template type to byte array.  

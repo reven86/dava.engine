@@ -240,6 +240,27 @@
     <string>Remove Global Material</string>
    </property>
   </action>
+  <action name="actionLoadMaterialPreset">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/openscene.png</normaloff>:/QtIcons/openscene.png</iconset>
+   </property>
+   <property name="text">
+    <string>Load Materia Preset...</string>
+   </property>
+   <property name="toolTip">
+    <string>Load Materia Preset</string>
+   </property>
+  </action>
+  <action name="actionSaveMaterialPreset">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/save_as.png</normaloff>:/QtIcons/save_as.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save Material Preset As...</string>
+   </property>
+  </action>
   <actiongroup name="filterType">
    <action name="actionShowAll">
     <property name="checkable">

@@ -329,7 +329,6 @@
     <ClCompile Include="Classes\CommandLine\CommandLineManager.cpp" />
     <ClCompile Include="Classes\CommandLine\CommandLineTool.cpp" />
     <ClCompile Include="Classes\CommandLine\DDSExtractor\DDSExtractorTool.cpp" />
-    <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitter.cpp" />
     <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.cpp" />
     <ClCompile Include="Classes\CommandLine\SceneExporter\SceneExporter.cpp" />
     <ClCompile Include="Classes\CommandLine\SceneExporter\SceneExporterTool.cpp" />
@@ -340,6 +339,7 @@
     <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp" />
     <ClCompile Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorTool.cpp" />
     <ClCompile Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.cpp" />
+    <ClCompile Include="Classes\Commands2\BakeTransformCommand.cpp" />
     <ClCompile Include="Classes\Commands2\BeastAction.cpp" />
     <ClCompile Include="Classes\Commands2\ChangeLODDistanceCommand.cpp" />
     <ClCompile Include="Classes\Commands2\CloneLastBatchCommand.cpp" />
@@ -967,7 +967,6 @@
     <ClInclude Include="Classes\CommandLine\CommandLineManager.h" />
     <ClInclude Include="Classes\CommandLine\CommandLineTool.h" />
     <ClInclude Include="Classes\CommandLine\DDSExtractor\DDSExtractorTool.h" />
-    <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitter.h" />
     <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.h" />
     <ClInclude Include="Classes\CommandLine\SceneExporter\SceneExporter.h" />
     <ClInclude Include="Classes\CommandLine\SceneExporter\SceneExporterTool.h" />
@@ -978,6 +977,7 @@
     <ClInclude Include="Classes\Commands2\AddComponentCommand.h" />
     <ClInclude Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorTool.h" />
     <ClInclude Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.h" />
+    <ClInclude Include="Classes\Commands2\BakeTransformCommand.h" />
     <ClInclude Include="Classes\Commands2\BeastAction.h" />
     <ClInclude Include="Classes\Commands2\ChangeLODDistanceCommand.h" />
     <ClInclude Include="Classes\Commands2\CloneLastBatchCommand.h" />

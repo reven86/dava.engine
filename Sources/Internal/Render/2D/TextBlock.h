@@ -112,6 +112,7 @@ protected:
     Vector2 cacheFinalSize;
 
 	float32 originalFontSize;
+    
 	int32 cacheDx;
 	int32 cacheDy;
 	int32 cacheW;

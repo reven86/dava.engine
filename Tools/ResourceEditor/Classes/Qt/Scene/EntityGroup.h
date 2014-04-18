@@ -63,7 +63,9 @@ public:
 	EntityGroupItem* GetItem(size_t i) const;
 
 	DAVA::AABBox3 GetBbox(size_t i) const;
-	DAVA::AABBox3 GetCommonBbox() const;
+	void SetBbox(size_t i, DAVA::AABBox3 &entityBbox);
+
+    DAVA::AABBox3 GetCommonBbox() const;
 
 	DAVA::Vector3 GetZeroPos(size_t i) const;
 	DAVA::Vector3 GetCommonZeroPos() const;

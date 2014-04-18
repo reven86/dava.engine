@@ -31,6 +31,7 @@
 #include "Main/QtUtils.h"
 #include "QtPropertyDataDavaVariant.h"
 #include "Tools/QtFileDialog/QtFileDialog.h"
+#include "Tools/QtPropertyEditor/QtPropertyWidgets/FlagSelectorCombo.h"
 
 #include <QColorDialog>
 #include <QListWidget>
@@ -53,6 +54,7 @@ QtPropertyDataDavaVariant::QtPropertyDataDavaVariant(const DAVA::VariantType &va
 	, allowedValuesLocked(false)
 	, allowedButton(NULL)
     , isSettingMeFromChilds(false)
+    , allowedValueType(Default)
 {
 	InitFlags();
 	ChildsCreate();
@@ -177,6 +179,66 @@ void QtPropertyDataDavaVariant::ClearAllowedValues()
 	}
 }
 
+void QtPropertyDataDavaVariant::SetAllowedValueType(AllowedValueType type)
+{
+    allowedValueType = type;
+}
+
+QtPropertyDataDavaVariant::AllowedValueType QtPropertyDataDavaVariant::GetAllowedValueType( ) const
+{
+    return allowedValueType;
+}
+
+
+QVariant QtPropertyDataDavaVariant::GetToolTip() const
+{
+    QVariant ret;
+
+    if (allowedValues.size() > 0)
+    {
+        switch (allowedValueType)
+        {
+        case TypeFlags:
+            {
+                const int flags = FromDavaVariant( curVariantValue ).toInt();
+                QStringList values;
+                for ( int i = 0; i < allowedValues.size(); ++i )
+                {
+                    const int flag = FromDavaVariant( allowedValues[i].realValue ).toInt();
+                    if ( ( flag & flags ) == flag )
+                    {
+                        const QString visible = allowedValues[i].visibleValue.toString();
+                        const QString real = QString::number( FromDavaVariant( allowedValues[i].realValue ).toInt() );
+                        values << ( allowedValues[i].visibleValue.isValid() ? visible : real );
+                    }
+                }
+                ret = values.join( "\n" );
+            }
+            break;
+        default:
+            {
+                ret = GetValueAlias();
+            }
+            break;
+        } // end switch
+    }
+    else
+    {
+        switch (curVariantValue.type)
+        {
+        case DAVA::VariantType::TYPE_STRING:
+        case DAVA::VariantType::TYPE_FASTNAME:
+        case DAVA::VariantType::TYPE_FILEPATH:
+            ret = GetValueAlias();
+            break;
+        default:
+            break;
+        }
+    }
+
+    return ret;
+}
+
 QVariant QtPropertyDataDavaVariant::GetValueInternal() const
 {
 	return FromDavaVariant(curVariantValue);
@@ -188,26 +250,32 @@ QVariant QtPropertyDataDavaVariant::GetValueAlias() const
 
 	if(allowedValues.size() > 0)
 	{
-		for (int i = 0; i < allowedValues.size(); ++i)
-		{
-			DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[i].realValue, curVariantValue.type);
-			if(v == curVariantValue)
-			{
-				ret = allowedValues[i].visibleValue;
-				break;
-			}
-		}
+        if (allowedValueType == TypeFlags)
+        {
+            const quint64 val = FromDavaVariant(curVariantValue).toULongLong();
+            const QString alias = QString("Flags: %1").arg(val);
+            ret = alias;
+        }
+        else
+        {
+		    for (int i = 0; i < allowedValues.size(); ++i)
+		    {
+			    DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[i].realValue, curVariantValue.type);
+			    if(v == curVariantValue)
+			    {
+				    ret = allowedValues[i].visibleValue;
+				    break;
+			    }
+		    }
 
-		if(!ret.isValid())
-		{
-			// if we have allowed value, but current value isn't in set
-			// print this value as unknown
-			// 
-			QString s("Unknown - ");
-			s += FromDavaVariant(curVariantValue).toString();
-
-			ret = s;
-		}
+		    if(!ret.isValid())
+		    {
+			    // if we have allowed value, but current value isn't in set
+			    // print this value as unknown
+			    const QString s = QString("Unknown - %1").arg(FromDavaVariant(curVariantValue).toString());
+			    ret = s;
+		    }
+        }
 	}
 
 	return ret;
@@ -851,7 +919,14 @@ QWidget* QtPropertyDataDavaVariant::CreateEditorInternal(QWidget *parent, const 
 	// user will only be able to select values from combobox
 	if(allowedValues.size() > 0)
 	{
-		ret = CreateAllowedValuesEditor(parent);
+        if (allowedValueType == TypeFlags)
+        {
+		    ret = CreateAllowedFlagsEditor(parent);
+        }
+        else
+        {
+		    ret = CreateAllowedValuesEditor(parent);
+        }
 	}
 	// check types and create our own widgets for edit
 	// if we don't create - Qt will create standard editing widget for QVariant
@@ -865,6 +940,9 @@ QWidget* QtPropertyDataDavaVariant::CreateEditorInternal(QWidget *parent, const 
                     sb->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d+[,\\.]?\\d*\\s*")));
                     ret = sb;
                 }
+                break;
+
+            case DAVA::VariantType::TYPE_INT32:
                 break;
 
             default:
@@ -1018,47 +1096,97 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedValuesEditor(QWidget *parent) c
 	return allowedWidget;
 }
 
-void QtPropertyDataDavaVariant::SetAllowedValueEditorData(QWidget *editorWidget)
+QWidget* QtPropertyDataDavaVariant::CreateAllowedFlagsEditor(QWidget *parent) const
 {
-	QComboBox *allowedWidget = dynamic_cast<QComboBox*>(editorWidget);
+	FlagSelectorCombo *allowedWidget = NULL;
 
-	if(NULL != allowedWidget)
+	if(allowedValues.size() > 0)
 	{
-		int index = -1;
+		allowedWidget = new FlagSelectorCombo(parent);
 
-		// we should set combobox current index,
-		// that matches current value
 		for(int i = 0; i < allowedValues.size(); ++i)
 		{
-			DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[i].realValue, curVariantValue.type);
-			if(v == curVariantValue)
-			{
-				index = i;
-				break;
-			}
-		}
+            const auto value = allowedValues.at(i);
+            const QString text = value.visibleValue.isValid()
+                ? value.visibleValue.toString()
+                : FromDavaVariant(curVariantValue).toString();
+            const quint64 intVal = value.realValue.AsUInt64();
 
-		allowedWidget->setCurrentIndex(index);
-		allowedWidget->showPopup();
+            allowedWidget->AddFlagItem(intVal, text);
+		}
 	}
+
+	return allowedWidget;
+}
+
+void QtPropertyDataDavaVariant::SetAllowedValueEditorData(QWidget *editorWidget)
+{
+    if (allowedValueType == TypeFlags)
+    {
+        FlagSelectorCombo *cb = qobject_cast< FlagSelectorCombo * >( editorWidget );
+
+        if (NULL!=cb)
+        {
+            const quint64 flags = GetValue().toULongLong();
+            cb->SetFlags(flags);
+            cb->showPopup();
+        }
+    }
+    else
+    {
+	    QComboBox *allowedWidget = dynamic_cast<QComboBox*>(editorWidget);
+
+	    if(NULL != allowedWidget)
+	    {
+		    int index = -1;
+
+		    // we should set combobox current index,
+		    // that matches current value
+		    for(int i = 0; i < allowedValues.size(); ++i)
+		    {
+			    DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[i].realValue, curVariantValue.type);
+			    if(v == curVariantValue)
+			    {
+				    index = i;
+				    break;
+			    }
+		    }
+
+		    allowedWidget->setCurrentIndex(index);
+		    allowedWidget->showPopup();
+	    }
+    }
 }
 
 void QtPropertyDataDavaVariant::ApplyAllowedValueFromEditor(QWidget *editorWidget)
 {
-	QComboBox *allowedWidget = dynamic_cast<QComboBox*>(editorWidget);
+    if (allowedValueType == TypeFlags)
+    {
+        FlagSelectorCombo *cb = qobject_cast< FlagSelectorCombo * >( editorWidget );
 
-	if(NULL != allowedWidget)
-	{
-		int index = allowedWidget->currentIndex();
-		if(index >= 0 && index < allowedValues.size())
-		{
-			DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[index].realValue, curVariantValue.type);
-			if(curVariantValue != v)
-			{
-				SetValue(FromDavaVariant(allowedValues[index].realValue), QtPropertyData::VALUE_EDITED);
-			}
-		}
-	}
+        if (NULL!=cb)
+        {
+            const quint64 flags = cb->GetFlags();
+            SetValue(flags, QtPropertyData::VALUE_EDITED);
+        }
+    }
+    else
+    {
+	    QComboBox *allowedWidget = dynamic_cast<QComboBox*>(editorWidget);
+
+	    if(NULL != allowedWidget)
+	    {
+		    int index = allowedWidget->currentIndex();
+		    if(index >= 0 && index < allowedValues.size())
+		    {
+			    DAVA::VariantType v = DAVA::VariantType::Convert(allowedValues[index].realValue, curVariantValue.type);
+			    if(curVariantValue != v)
+			    {
+				    SetValue(FromDavaVariant(allowedValues[index].realValue), QtPropertyData::VALUE_EDITED);
+			    }
+		    }
+	    }
+    }
 }
 
 void QtPropertyDataDavaVariant::SetOpenDialogFilter(const QString& value)

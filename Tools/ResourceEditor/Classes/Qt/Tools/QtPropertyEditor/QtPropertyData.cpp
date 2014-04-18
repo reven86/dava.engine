@@ -90,6 +90,9 @@ QVariant QtPropertyData::data(int role) const
 			ret = GetValue();
 		}
 		break;
+    case Qt::ToolTipRole:
+        ret = GetToolTip();
+        break;
 	case Qt::CheckStateRole:
 		if(GetFlags() & Qt::ItemIsUserCheckable)
 		{
@@ -444,6 +447,11 @@ void QtPropertyData::SetUserData(UserData *data)
 QtPropertyData::UserData* QtPropertyData::GetUserData() const
 {
 	return userData;
+}
+
+QVariant QtPropertyData::GetToolTip() const
+{
+    return QVariant();
 }
 
 const DAVA::MetaInfo* QtPropertyData::MetaInfo() const

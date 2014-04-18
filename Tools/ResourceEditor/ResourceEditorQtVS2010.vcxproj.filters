@@ -792,9 +792,6 @@
     <ClCompile Include="Classes\CommandLine\CommandLineTool.cpp">
       <Filter>Classes\CommandLine</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitter.cpp">
-      <Filter>Classes\CommandLine\ImageSplitter</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.cpp">
       <Filter>Classes\CommandLine\ImageSplitter</Filter>
     </ClCompile>
@@ -1824,12 +1821,6 @@
     <ClCompile Include="_GeneratedQt\PlaneLODDialog\PlaneLODDialog_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\Scene\FogSettingsChangedReceiver.cpp">
-      <Filter>Classes\Qt\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\Scene\FogSettingsChangedReceiver_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
     <ClCompile Include="Classes\Qt\Scene\System\EditorMaterialSystem.cpp">
       <Filter>Classes\Qt\Scene\System</Filter>
     </ClCompile>
@@ -1967,6 +1958,9 @@
     </ClCompile>
     <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo_moc.cpp">
       <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\BakeTransformCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2765,9 +2759,6 @@
     <ClInclude Include="Classes\CommandLine\CommandLineTool.h">
       <Filter>Classes\CommandLine</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitter.h">
-      <Filter>Classes\CommandLine\ImageSplitter</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\CommandLine\ImageSplitter\ImageSplitterTool.h">
       <Filter>Classes\CommandLine\ImageSplitter</Filter>
     </ClInclude>
@@ -3404,9 +3395,6 @@
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\PathValidator.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator</Filter>
     </ClInclude>
-    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyDataValidator\QtPropertyDataValidator.h">
-      <Filter>QtGenerated</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Qt\SoundComponentEditor\FMODSoundBrowser.h">
       <Filter>Classes\Qt\SoundEditor</Filter>
     </ClInclude>
@@ -3464,6 +3452,9 @@
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo.h">
       <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Commands2\BakeTransformCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DataQt\mainwindow.ui">
@@ -3515,6 +3506,9 @@
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\LicenceDialog.ui">
+      <Filter>QtData</Filter>
+    </None>
+    <None Include="DataQt\ActionComponentEditor.ui">
       <Filter>QtData</Filter>
     </None>
   </ItemGroup>

@@ -120,6 +120,9 @@ public slots:
 	void OnSnapToLandscape();
 	void OnResetTransform();
 
+    void OnCenterPivotPoint();
+    void OnZeroPivotPoint();
+
 	void OnMaterialEditor();
 	void OnTextureBrowser();
 	void OnSceneLightMode();

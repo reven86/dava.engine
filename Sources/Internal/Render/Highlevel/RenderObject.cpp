@@ -273,8 +273,18 @@ RenderSystem * RenderObject::GetRenderSystem()
 	return renderSystem;
 }
 
-void RenderObject::BakeTransform(const Matrix4 & /*transform*/)
+void RenderObject::BakeTransform(const Matrix4 & transform)
 {
+    for(int i = 0; i < GetRenderBatchCount(); ++i)
+    {
+        DAVA::RenderBatch *rb = GetRenderBatch(i);
+        DAVA::PolygonGroup *pg = rb->GetPolygonGroup();
+
+        for(uint32 i = 0; i < pg->vertexCount; ++i)
+        {
+            pg->vertexArray[i] = pg->vertexArray[i] * transform;
+        }
+    }
 }
 
 void RenderObject::RecalculateWorldBoundingBox()

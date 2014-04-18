@@ -365,6 +365,9 @@
     <addaction name="actionModifyRotate"/>
     <addaction name="actionModifyScale"/>
     <addaction name="separator"/>
+    <addaction name="actionZeroPivotPoint"/>
+    <addaction name="actionCenterPivotPoint"/>
+    <addaction name="separator"/>
     <addaction name="actionModifyPlaceOnLandscape"/>
     <addaction name="actionModifySnapToLandscape"/>
     <addaction name="separator"/>
@@ -500,6 +503,9 @@
    <addaction name="separator"/>
    <addaction name="actionPivotCommon"/>
    <addaction name="actionPivotCenter"/>
+   <addaction name="separator"/>
+   <addaction name="actionZeroPivotPoint"/>
+   <addaction name="actionCenterPivotPoint"/>
    <addaction name="separator"/>
    <addaction name="actionModifyPlaceOnLandscape"/>
    <addaction name="actionModifySnapToLandscape"/>
@@ -1906,6 +1912,24 @@
    </property>
    <property name="text">
     <string>Switches with Different LODs</string>
+   </property>
+  </action>
+  <action name="actionCenterPivotPoint">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/pivot_mote_to_center.png</normaloff>:/QtIcons/pivot_mote_to_center.png</iconset>
+   </property>
+   <property name="text">
+    <string>Center Pivot Point</string>
+   </property>
+  </action>
+  <action name="actionZeroPivotPoint">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/pivot_move_to_zero.png</normaloff>:/QtIcons/pivot_move_to_zero.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zero Pivot Point</string>
    </property>
   </action>
  </widget>

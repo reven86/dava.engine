@@ -167,28 +167,30 @@ void QtPropertyItemDelegate::updateEditorGeometry(QWidget * editor, const QStyle
 
 bool QtPropertyItemDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index)
 {
-	bool showToolTip = true;
 
-	if(NULL != event && NULL != view && event->type() == QEvent::ToolTip)
-	{
-		QRect rect = view->visualRect(index);
-		QSize size = sizeHint(option, index);
-		if(rect.width() >= size.width()) 
-		{
-			showToolTip = false;
-		}
-	}
+    if (index.column() == 0)
+    {
+        // Custom tooltip processing for 0 column only
+	    if(NULL != event && NULL != view && event->type() == QEvent::ToolTip)
+	    {
+		    QRect rect = view->visualRect(index);
+		    QSize size = sizeHint(option, index);
+		    if(rect.width() >= size.width()) 
+		    {
+		        QToolTip::hideText();
+                return false;
+		    }
+	    }
+    }
 
-	if(showToolTip)
-	{
-		return QStyledItemDelegate::helpEvent(event, view, option, index);
-	}
-	else
-	{
-		QToolTip::hideText();
-	}
+    QtPropertyData* data = model->itemFromIndex(index);
+    if (data && data->GetToolTip().isValid())
+    {
+    	return QStyledItemDelegate::helpEvent(event, view, option, index);
+    }
 
-	return false;
+	QToolTip::hideText();
+    return false;
 }
 
 void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index, OptionalButtonsType type) const

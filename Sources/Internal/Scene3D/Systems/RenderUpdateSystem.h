@@ -61,6 +61,7 @@ public:
     virtual void Process(float32 timeElapsed);
     
 private:
+    void UpdateActiveIndexes(Entity *entity, RenderObject *object);
     HashMap<Entity*, RenderObject*> entityObjectMap;
 };
     

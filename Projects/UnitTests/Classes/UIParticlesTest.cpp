@@ -28,7 +28,7 @@
 
 #include "UIParticlesTest.h"
 
-static const float LIST_TEST_AUTO_CLOSE_TIME = 300.0f;
+static const float LIST_TEST_AUTO_CLOSE_TIME = 30.0f;
 
 UIParticlesTest::UIParticlesTest() :
  TestTemplate<UIParticlesTest>("UIParticlesTest")

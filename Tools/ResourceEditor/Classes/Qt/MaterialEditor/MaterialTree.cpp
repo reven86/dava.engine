@@ -225,6 +225,7 @@ void MaterialTree::ShowContextMenu(const QPoint &pos)
         }
     }
 
+    emit ContextMenuPrepare(&contextMenu);
 	contextMenu.exec(mapToGlobal(pos));
 }
 

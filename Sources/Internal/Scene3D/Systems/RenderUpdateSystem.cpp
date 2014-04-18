@@ -32,6 +32,9 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/LodComponent.h"
+#include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
@@ -84,6 +87,7 @@ void RenderUpdateSystem::AddEntity(Entity * entity)
     if (!renderObject)return;
 	Matrix4 * worldTransformPointer = ((TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
     renderObject->SetWorldTransformPtr(worldTransformPointer);
+    UpdateActiveIndexes(entity, renderObject);
     entityObjectMap.insert(entity, renderObject);
 	GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
 }
@@ -110,6 +114,39 @@ void RenderUpdateSystem::Process(float32 timeElapsed)
     renderSystem->SetClipCamera(GetScene()->GetClipCamera());
 
     GetScene()->GetRenderSystem()->Update(timeElapsed);
+}
+
+void RenderUpdateSystem::UpdateActiveIndexes(Entity *entity, RenderObject *object)
+{
+    Entity *parent;
+    
+    // search effective lod index
+    parent = entity;
+    while(NULL != parent)
+    {
+        LodComponent *lc = GetLodComponent(parent);
+        if(NULL != lc)
+        {
+            object->SetLodIndex(lc->currentLod);
+            break;
+        }
+
+        parent = parent->GetParent();
+    }
+
+    // search effective switch index
+    parent = entity;
+    while(NULL != parent)
+    {
+        SwitchComponent *sc = GetSwitchComponent(parent);
+        if(NULL != sc)
+        {
+            object->SetSwitchIndex(sc->GetSwitchIndex());
+            break;
+        }
+
+        parent = parent->GetParent();
+    }
 }
     
 };

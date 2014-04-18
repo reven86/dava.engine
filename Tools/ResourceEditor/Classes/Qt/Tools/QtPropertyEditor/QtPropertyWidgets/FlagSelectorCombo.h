@@ -24,13 +24,16 @@ private:
         ValueRole = Qt::UserRole + 1,
     };
 
+signals:
+    void done( quint64 flags );
+
 public:
     FlagSelectorCombo(QWidget *parent = NULL);
     ~FlagSelectorCombo();
 
-    void AddFlagItem(const int value, const QString& hint);
-    void SetFlags(const int flags);
-    int GetFlags() const;
+    void AddFlagItem(const quint64 value, const QString& hint);
+    void SetFlags(const quint64 flags);
+    quint64 GetFlags() const;
 
 private slots:
     void onItemChanged(QStandardItem *item);
@@ -41,6 +44,7 @@ private:
     void paintEvent(QPaintEvent *event);
 
     QString text;
+    quint64 extraMask;
 };
 
 

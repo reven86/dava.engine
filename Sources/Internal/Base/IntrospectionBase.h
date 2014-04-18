@@ -56,17 +56,27 @@ namespace DAVA
 
 	struct InspDesc
 	{
+        enum Type
+        {
+            T_UNDEFINED,
+            T_ENUM,
+            T_FLAGS,
+        };
+
 		const char *text;
 		const EnumMap *enumMap;
+        const int type;
 
 		InspDesc(const char *_text) 
 			: text(_text)
 			, enumMap(NULL)
+            , type(T_UNDEFINED)
 		{ }
 
-		explicit InspDesc(const char *_text, const EnumMap *_enumMap)
+		explicit InspDesc(const char *_text, const EnumMap *_enumMap, InspDesc::Type _type = T_ENUM)
 			: text(_text)
 			, enumMap(_enumMap)
+            , type(_type)
 		{}
 	};
 

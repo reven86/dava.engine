@@ -227,7 +227,6 @@ Texture::Texture()
 
 #endif
 
-
 	texDescriptor = new TextureDescriptor();
 }
 
@@ -250,7 +249,7 @@ void Texture::ReleaseTextureData()
     container->stencilRboID = stencilRboID;
 #endif
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::ReleaseTextureDataInternal, container));
-
+    
     id = 0;
 	fboID = -1;
 	rboID = -1;
@@ -278,7 +277,7 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 	{
 		RENDER_VERIFY(glDeleteFramebuffers(1, &container->fboID));
 	}
-	
+    
 #if defined(__DAVAENGINE_ANDROID__)
     if (container->stencilRboID != (uint32)-1)
     {
@@ -286,7 +285,7 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
     }
 #endif
 
-	if(container->rboID != (uint32)-1)
+	if (container->rboID != (uint32)-1)
 	{
 		RENDER_VERIFY(glDeleteRenderbuffers(1, &container->rboID));
 	}
@@ -635,6 +634,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	return true;
 }
 
+
 void Texture::ReleaseImages(Vector<Image *> *images)
 {
 	for_each(images->begin(), images->end(), SafeRelease<Image>);
@@ -746,7 +746,7 @@ bool Texture::IsCompressedFormat(PixelFormat format)
 Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &group, TextureType typeHint)
 {
 	Texture * texture = PureCreate(pathName, group);
-	if(!texture)
+ 	if(!texture)
 	{
 		texture = CreatePink(typeHint);
         texture->texDescriptor->pathname = pathName;
@@ -761,7 +761,7 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 {
 	if(pathName.IsEmpty() || pathName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
-		
+
     if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
         return NULL;
 
@@ -1431,6 +1431,7 @@ void Texture::SetPixelization(bool value)
     }
     textureMapMutex.Unlock();
 }
+
 
 int32 Texture::GetBaseMipMap() const
 {

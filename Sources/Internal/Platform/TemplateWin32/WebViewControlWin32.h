@@ -114,6 +114,7 @@ protected:
 	HANDLE GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
 	bool GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
 	bool GetInternetCookies(const String& targetUrl, const String& name, LPTSTR &lpszData, DWORD &dwSize);
+
 	bool openFromBufferQueued;
 	String bufferToOpen; // temporary buffer
 	FilePath bufferToOpenPath;

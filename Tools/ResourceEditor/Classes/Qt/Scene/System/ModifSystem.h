@@ -64,6 +64,9 @@ public:
 	void PlaceOnLandscape(const EntityGroup &entities);
 	void ResetTransform(const EntityGroup &entities);
 
+    void MovePivotZero(const EntityGroup &entities);
+    void MovePivotCenter(const EntityGroup &entities);
+
 	bool InModifState() const;
 	bool InCloneState() const;
 
@@ -144,6 +147,7 @@ protected:
 	DAVA::Vector3 Move(const DAVA::Vector3 &newPos3d);
 	DAVA::float32 Rotate(const DAVA::Vector2 &newPos2d);
 	DAVA::float32 Scale(const DAVA::Vector2 &newPos2d);
+    void Bake(const EntityGroup &entities, bool inverse);
 
 	DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3 &point, const DAVA::Matrix4 &originalParentTransform) const;
 	bool IsEntityContainRecursive(const DAVA::Entity *entity, const DAVA::Entity *child) const;
