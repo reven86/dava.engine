@@ -72,13 +72,7 @@ void FilePath::AddResourcesFolder(const FilePath & folder)
 {
 	DVASSERT(!folder.IsEmpty());
 
-    for(List<FilePath>::iterator it = resourceFolders.begin(); it != resourceFolders.end(); ++it)
-    {
-        if(folder == *it)
-        {
-            DVASSERT(false);
-        }
-    }
+	RemoveResourcesFolder(folder); // we need to remove folder from list to organize correct order of resource folders
     
     FilePath resPath = folder;
     resPath.pathType = PATH_IN_RESOURCES;
@@ -89,13 +83,7 @@ void FilePath::AddTopResourcesFolder(const FilePath & folder)
 {
 	DVASSERT(!folder.IsEmpty());
 
-	for(List<FilePath>::iterator it = resourceFolders.begin(); it != resourceFolders.end(); ++it)
-	{
-		if(folder == *it)
-		{
-			DVASSERT(false);
-		}
-	}
+	RemoveResourcesFolder(folder); // we need to remove folder from list to organize correct order of resource folders
 
 	FilePath resPath = folder;
 	resPath.pathType = PATH_IN_RESOURCES;
@@ -112,8 +100,6 @@ void FilePath::RemoveResourcesFolder(const FilePath & folder)
             return;
         }
     }
-    
-    DVASSERT(false);
 }
     
 const List<FilePath> FilePath::GetResourcesFolders()
@@ -595,7 +581,7 @@ String FilePath::GetFrameworkPathForPrefix( const String &typePrefix, const ePat
 {
     DVASSERT(!typePrefix.empty());
     
-	String prefixPathname = GetSystemPathname(typePrefix, pType);
+    String prefixPathname = GetSystemPathname(typePrefix, pType);
 
 	String::size_type pos = absolutePathname.find(prefixPathname);
 	if(pos == 0)

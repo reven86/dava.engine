@@ -136,6 +136,7 @@ protected:
 	bool isPredrawed:1;
 	bool cacheUseJustify:1;
 	bool needDrawText:1;
+    bool treatMultilineAsSingleLine:1;
 };
 
 }; //end of namespace

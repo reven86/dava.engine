@@ -139,6 +139,7 @@ void UILoadingTransition::Update(float32 timeElapsed)
         if (!inTransition) 
         {
             UIControlSystem:: Instance()->UnlockInput();//need to call this because once its calls on loading start
+            UIControlSystem:: Instance()->UnlockSwitch();
         }
 		SafeRelease(thread);
 	}

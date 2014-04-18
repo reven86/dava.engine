@@ -137,8 +137,8 @@ LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditi
 	Sprite* srcSprite = drawSystem->GetLandscapeProxy()->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_SOURCE);
 	Sprite* dstSprite = drawSystem->GetLandscapeProxy()->GetTilemaskSprite(LandscapeProxy::TILEMASK_SPRITE_DESTINATION);
 
-	srcSprite->GetTexture()->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_NEAREST);
-	dstSprite->GetTexture()->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_NEAREST);
+	srcSprite->GetTexture()->SetMinMagFilter(Texture::FILTER_LINEAR, Texture::FILTER_LINEAR);
+	dstSprite->GetTexture()->SetMinMagFilter(Texture::FILTER_LINEAR, Texture::FILTER_LINEAR);
 
 	enabled = true;
 	return LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS;

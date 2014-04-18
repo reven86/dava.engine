@@ -98,32 +98,6 @@ namespace DAVA
 		return 0;
 
 	}
-	
-	void CoreWin32Platform::InitArgs()
-	{
-		LPWSTR *szArglist;
-		int nArgs;
-		int i;
-		szArglist = ::CommandLineToArgvW(::GetCommandLineW(), &nArgs);
-		if( NULL == szArglist )
-		{
-			Logger::Error("CommandLineToArgvW failed\n");
-			return;
-		}
-		else 
-		{
-			Vector<String> & cl = GetCommandLine();
-			for( i=0; i<nArgs; i++)
-			{
-				WideString w = szArglist[i];
-				String nonWide = WStringToString(w);
-				cl.push_back(nonWide);
-				Logger::FrameworkDebug("%d: %s\n", i, nonWide.c_str());
-			}
-		}
-		// Free memory allocated for CommandLineToArgvW arguments.
-		LocalFree(szArglist);
-	}
 
 	LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -483,12 +457,6 @@ namespace DAVA
 		}
 
 		return mode;
-	}
-
-
-	void CoreWin32Platform::Quit()
-	{
-		PostQuitMessage(0);
 	}
 
 	void CoreWin32Platform::SetIcon(int32 iconId)

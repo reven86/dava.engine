@@ -281,7 +281,8 @@ bool Landscape::BuildHeightmap()
     bool retValue = false;
     if(heightmapPath.IsEqualToExtension(".png"))
     {
-        Vector<Image *> imageSet = ImageLoader::CreateFromFileByExtension(heightmapPath);
+        Vector<Image *> imageSet;
+		ImageLoader::CreateFromFileByExtension(heightmapPath, imageSet);
         if(0 != imageSet.size())
         {
             if ((imageSet[0]->GetPixelFormat() != FORMAT_A8) && (imageSet[0]->GetPixelFormat() != FORMAT_A16))
@@ -1658,6 +1659,9 @@ Texture * Landscape::CreateLandscapeTexture()
     
     prevLodLayer = -1;
 
+    int32 fogFlag = tileMaskMaterial->GetFlagValue(NMaterial::FLAG_VERTEXFOG);
+    tileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOff);
+
 	BindMaterial(0, NULL);
 
 	RenderManager::Instance()->SetRenderData(ftRenderData);
@@ -1665,6 +1669,15 @@ Texture * Landscape::CreateLandscapeTexture()
 
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, 0, 4);
     UnbindMaterial();
+
+    if(fogFlag & NMaterial::FlagInherited)
+    {
+        tileMaskMaterial->ResetFlag(NMaterial::FLAG_VERTEXFOG);
+    }
+    else
+    {
+        tileMaskMaterial->SetFlag(NMaterial::FLAG_VERTEXFOG, (NMaterial::eFlagValue) (fogFlag & NMaterial::FlagOn));
+    }
 
 #ifdef __DAVAENGINE_OPENGL__
 	RenderManager::Instance()->HWglBindFBO(RenderManager::Instance()->GetFBOViewFramebuffer());

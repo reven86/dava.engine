@@ -82,9 +82,13 @@ public:
 	inline uint32 GetHeight() const;
 	inline uint8 * GetData() const;
 	inline PixelFormat GetPixelFormat() const;
-    
+
+#ifdef __DAVAENGINE_IPHONE__
+    void *GetUIImage();
+#endif
+
     bool Save(const FilePath &path) const;
- 
+
 #ifdef __DAVAENGINE_IPHONE__
     void SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback = 0);
 #endif

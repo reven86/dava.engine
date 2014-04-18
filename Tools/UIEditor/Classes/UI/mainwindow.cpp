@@ -38,10 +38,12 @@
 #include "createplatformdlg.h"
 #include "createscreendlg.h"
 #include "fontmanagerdialog.h"
-#include "ItemsCommand.h"
-#include "CommandsController.h"
 #include "FileSystem/FileSystem.h"
 #include "ResourcesManageHelper.h"
+
+#include "CommandsController.h"
+#include "ItemsCommand.h"
+#include "GuideCommands.h"
 
 #include "Dialogs/createaggregatordlg.h"
 #include "Dialogs/importdialog.h"
@@ -228,6 +230,16 @@ MainWindow::MainWindow(QWidget *parent) :
             SIGNAL(triggered()),
             this,
             SLOT(OnEditPreviewSettings()));
+
+    connect(this->ui->horizontalRuler,
+            SIGNAL(GuideDropped(Qt::DropAction)),
+            this,
+            SLOT(OnGuideDropped(Qt::DropAction)));
+
+    connect(this->ui->verticalRuler,
+            SIGNAL(GuideDropped(Qt::DropAction)),
+            this,
+            SLOT(OnGuideDropped(Qt::DropAction)));
 
 	InitMenu();
 	RestoreMainWindowState();
@@ -556,12 +568,12 @@ void MainWindow::showEvent(QShowEvent * event)
 void MainWindow::OnSelectedScreenChanged()
 {
 	screenChangeUpdate = true;
-	if (HierarchyTreeController::Instance()->GetActiveScreen())
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+	if (activeScreen)
 	{
 		UpdateSliders();
 		UpdateScaleControls();
 
-		HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
 		float posX = activeScreen->GetPosX();
 		float posY = activeScreen->GetPosY();
 
@@ -580,10 +592,14 @@ void MainWindow::OnSelectedScreenChanged()
 
 		// Enable library widget for selected screen
 		ui->libraryDockWidget->setEnabled(true);
+        
+        ui->actionEnable_Guides->setChecked(activeScreen->AreGuidesEnabled());
+        ui->actionLock_Guides->setChecked(activeScreen->AreGuidesLocked());
 	}
 	else
 	{	// Disable library widget if no screen is selected
 		ui->libraryDockWidget->setEnabled(false);
+        ui->actionEnable_Guides->setEnabled(false);
 	}
 	
 	screenChangeUpdate = false;
@@ -747,7 +763,15 @@ void MainWindow::InitMenu()
     // Pixelization.
     ui->actionPixelized->setChecked(EditorSettings::Instance()->IsPixelized());
     connect(ui->actionPixelized, SIGNAL(triggered()), this, SLOT(OnPixelizationStateChanged()));
-	UpdateMenu();
+    
+    // Stick Mode - enable by default.
+    ui->actionStickMode->setChecked(true);
+    connect(ui->actionStickMode, SIGNAL(triggered()), this, SLOT(OnStickModeChanged()));
+    OnStickModeChanged();
+
+    connect(ui->actionEnable_Guides, SIGNAL(triggered()), this, SLOT(OnEnableGuidesChanged()));
+    connect(ui->actionLock_Guides, SIGNAL(triggered()), this, SLOT(OnLockGuidesChanged()));
+    UpdateMenu();
 }
 
 void MainWindow::SetupViewMenu()
@@ -847,6 +871,11 @@ void MainWindow::UpdateMenu()
     bool enablePreview = projectNotEmpty && activeScreen && IsPointerToExactClass<HierarchyTreeScreenNode>(activeScreen);
     ui->actionPreview->setEnabled(enablePreview);
     ui->actionEditPreviewSettings->setEnabled(enablePreview);
+    
+    // Guides.
+    ui->actionEnable_Guides->setEnabled(projectNotEmpty);
+    ui->actionLock_Guides->setEnabled(projectNotEmpty);
+    ui->actionStickMode->setEnabled(projectNotEmpty);
 }
 
 void MainWindow::OnNewProject()
@@ -1077,6 +1106,10 @@ void MainWindow::DoSaveProject(bool changesOnly)
 
 void MainWindow::OnOpenProject()
 {
+	// Close and save current project if any
+	if (!CloseProject())
+		return;
+
 	QString projectPath = QFileDialog::getOpenFileName(this, tr("Select a project file"),
 														ResourcesManageHelper::GetDefaultDirectory(),
 														tr( "Project (*.uieditor)"));
@@ -1545,4 +1578,55 @@ void MainWindow::OnEditPreviewSettings()
     PreviewSettingsDialog* dialog = new PreviewSettingsDialog(false);
     dialog->exec();
     delete dialog;
+}
+
+void MainWindow::OnGuideDropped(Qt::DropAction dropAction)
+{
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (!activeScreen)
+    {
+        return;
+    }
+    
+    if (dropAction == Qt::IgnoreAction)
+    {
+        activeScreen->CancelNewGuide();
+        return;
+    }
+    
+    if (!activeScreen->CanAcceptNewGuide())
+    {
+        // New guide is on the same position as existing one - no need to add.
+        activeScreen->CancelNewGuide();
+        return;
+    }
+    
+    // Create the appropriate command.
+    AddNewGuideCommand* command = new AddNewGuideCommand(activeScreen);
+    CommandsController::Instance()->ExecuteCommand(command);
+    SafeRelease(command);
+}
+
+void MainWindow::OnStickModeChanged()
+{
+    int32 stickMode = ui->actionStickMode->isChecked() ? StickToSides | StickToCenters : StickDisabled;
+    HierarchyTreeController::Instance()->SetStickMode(stickMode);
+}
+
+void MainWindow::OnEnableGuidesChanged()
+{
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (activeScreen)
+    {
+        activeScreen->SetGuidesEnabled(ui->actionEnable_Guides->isChecked());
+    }
+}
+
+void MainWindow::OnLockGuidesChanged()
+{
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (activeScreen)
+    {
+        activeScreen->LockGuides(ui->actionLock_Guides->isChecked());
+    }
 }

@@ -73,6 +73,10 @@ UIParticles::~UIParticles()
     SafeDelete(effect);
 }
 
+void UIParticles::WillAppear()
+{
+    updateTime = 0.0f;
+}
 
 void UIParticles::Start()
 {
@@ -91,7 +95,14 @@ void UIParticles::DoStart()
 {
     DVASSERT(effect);
     updateTime = 0;
-    effect->isPaused = false;    
+
+    if (effect->state == ParticleEffectComponent::STATE_STARTING ||
+        effect->state == ParticleEffectComponent::STATE_PLAYING)
+    {
+        return;
+    }
+
+    effect->isPaused = false;
     system->AddToActive(effect);
     effect->effectRenderObject->SetEffectMatrix(&matrix);
     system->RunEffect(effect);
@@ -101,7 +112,9 @@ void UIParticles::Stop(bool isDeleteAllParticles)
 {
     DVASSERT(effect);
     updateTime = 0;
+    
     if (effect->state == ParticleEffectComponent::STATE_STOPPED) return;
+    
     if (isDeleteAllParticles)
     {
         effect->ClearCurrentGroups();		
@@ -168,7 +181,7 @@ void UIParticles::AddControl(UIControl *control)
     
 void UIParticles::Update(float32 timeElapsed)
 {
-    updateTime += timeElapsed;        
+    updateTime = timeElapsed;        
     if (delayedActionType != UIParticles::actionNone)
     {
         HandleDelayedAction(timeElapsed);

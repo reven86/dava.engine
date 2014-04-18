@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -557,6 +557,7 @@
     <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspColl.cpp" />
     <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataIntrospection.cpp" />
     <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataMetaObject.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo.cpp" />
     <ClCompile Include="Classes\Qt\Tools\QtWaitDialog\QtWaitDialog.cpp" />
     <ClCompile Include="Classes\Qt\Tools\RunGuard\RunGuard.cpp" />
     <ClCompile Include="Classes\Qt\Tools\SelectPathWidget\SelectEntityPathWidget.cpp" />
@@ -726,6 +727,7 @@
     <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyItem_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyModelFiltering_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyModel_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\QtWaitDialog\QtWaitDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\SelectPathWidget\SelectEntityPathWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\SelectPathWidget\SelectPathWidgetBase_moc.cpp" />
@@ -1154,6 +1156,7 @@
     <ClInclude Include="Classes\Qt\TextureBrowser\CacheRequest.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureBrowser.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureCache.h" />
+    <ClInclude Include="Classes\Qt\TextureBrowser\TextureConvertMode.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureConvertor.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureConvertorWork.h" />
     <ClInclude Include="Classes\Qt\TextureBrowser\TextureInfo.h" />
@@ -1200,6 +1203,7 @@
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataInspColl.h" />
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataIntrospection.h" />
     <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyData\QtPropertyDataMetaObject.h" />
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo.h" />
     <ClInclude Include="Classes\Qt\Tools\QtWaitDialog\QtWaitDialog.h" />
     <ClInclude Include="Classes\Qt\Tools\RunGuard\RunGuard.h" />
     <ClInclude Include="Classes\Qt\Tools\SelectPathWidget\SelectEntityPathWidget.h" />
@@ -1227,6 +1231,9 @@
     <ClInclude Include="_GeneratedQt\ui_waitdialog.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DataQt\ActionComponentEditor.ui">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="DataQt\AddSwitchEntityDialog.ui" />
     <None Include="DataQt\BaseAddEntityDialog.ui">
       <SubType>Designer</SubType>

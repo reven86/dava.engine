@@ -35,6 +35,8 @@
 #include "HierarchyTreeNode.h"
 #include "ScreenControl.h"
 
+#include "Guides/GuidesManager.h"
+
 using namespace DAVA;
 
 class HierarchyTreeControlNode;
@@ -81,6 +83,50 @@ public:
 
 	virtual bool IsNeedSave() const;
 
+    // Facade to the Guide Controller.
+    // Methods related to the adding existing guide.
+    void StartNewGuide(GuideData::eGuideType guideType);
+    void MoveNewGuide(const Vector2& pos);
+    
+    bool CanAcceptNewGuide();
+    const GuideData* AcceptNewGuide();
+    void CancelNewGuide();
+
+    // Methods related to the moving existing guide.
+    bool StartMoveGuide(const Vector2& pos);
+    void MoveGuide(const Vector2& pos);
+
+    Vector2 GetMoveGuideStartPos() const;
+    const GuideData* AcceptMoveGuide();
+
+    // Selected Guide methods.
+    bool AreGuidesSelected() const;
+    List<GuideData> DeleteSelectedGuides();
+
+    // Calculate the stick to guides.
+    int32 CalculateStickToGuides(const List<Rect>& controlsRectList, Vector2& offset) const;
+
+    // Get the stick treshold.
+    int32 GetGuideStickTreshold() const;
+
+    // Access to the guides.
+    void AddGuide(const GuideData& guideData);
+    bool RemoveGuide(const GuideData& guideData);
+    bool UpdateGuidePosition(const GuideData& guideData, const Vector2& newPos);
+
+    const List<GuideData*> GetGuides(bool includeNewGuide) const;
+
+    // Set the guide enabled mode.
+    bool AreGuidesEnabled() const;
+    void SetGuidesEnabled(bool value);
+
+    // Lock/unlock guides.
+    bool AreGuidesLocked() const;
+    void LockGuides(bool value);
+
+    // Set the stick mode.
+    void SetStickMode(int32 stickMode);
+
 protected:
 	void CombineRectWithChild(Rect& rect) const;
 
@@ -90,6 +136,8 @@ private:
 protected:
 	HierarchyTreePlatformNode* parent;
 	ScreenControl* screen;
+	
+    GuidesManager guides;
 	
 	float scale;
 	int posX;

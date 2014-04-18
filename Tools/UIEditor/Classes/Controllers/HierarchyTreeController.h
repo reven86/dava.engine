@@ -139,6 +139,9 @@ public:
     // Preview mode control.
     void EnablePreview(const PreviewSettingsData& data);
     void DisablePreview();
+	
+    // Set the Stick Mode.
+    void SetStickMode(int32 mode);
 
 private:
 	void DeleteNodesInternal(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes);
@@ -201,6 +204,9 @@ protected:
 	// Active Platform/Active Screen after nodes deletion.
 	HierarchyTreePlatformNode* activePlatformAfterDeleteNodes;
     HierarchyTreeScreenNode* activeScreenAfterDeleteNodes;
+	
+    // Stick mode set from MainWindow.
+    int32 stickMode;
 };
 
 #endif /* defined(__UIEditor__HierarchyTreeController__) */

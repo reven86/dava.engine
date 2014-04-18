@@ -47,8 +47,8 @@ public:
 private:
 
 	DAVA::Entity* entity;
-	DAVA::Component *savedComponent;
-	DAVA::Component *currentComponent;
+    DAVA::Component* backup;
+    int componentType;
 };
 
 #endif // __REMOVE_COMPONENT_COMMAND_H__

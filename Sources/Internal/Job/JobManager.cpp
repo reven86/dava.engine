@@ -39,7 +39,7 @@ namespace DAVA
 
 JobManager::JobManager()
 {
-	mainQueue = new JobQueue();
+	mainQueue = new MainThreadJobQueue();
 }
 
 JobManager::~JobManager()

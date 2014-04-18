@@ -51,8 +51,8 @@ public:
 	//input data only in RGBA8888
 	static bool WriteDdsFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps);
 
-	static bool ReadDxtFile(const FilePath & fileName, Vector<Image*> &imageSet, bool forceSoftwareConvertation = false);
-	static bool ReadDxtFile(File * file, Vector<Image*> &imageSet, bool forceSoftwareConvertation = false);
+	static bool ReadDxtFile(const FilePath & fileName, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
+	static bool ReadDxtFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
 
 	static bool DecompressImageToRGBA(const DAVA::Image & image, Vector<DAVA::Image*> &imageSet, bool forceSoftwareConvertation = false);
 

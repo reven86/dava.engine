@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 DockProperties::DockProperties(QWidget *parent /* = NULL */)
 	: QDockWidget(parent)
+    , addComponentMenu(new QMenu(this))
 { }
 
 DockProperties::~DockProperties()
@@ -61,6 +62,13 @@ void DockProperties::Init()
 	// filter
 	QObject::connect(ui->propertiesFilterClear, SIGNAL(pressed()), ui->propertiesFilterEdit, SLOT(clear()));
 	QObject::connect(ui->propertiesFilterEdit, SIGNAL(textChanged(const QString &)), ui->propertyEditor, SLOT(SetFilter(const QString &)));
+
+    // Add components
+    addComponentMenu->addAction(ui->actionAddActionComponent);
+    addComponentMenu->addAction(ui->actionAddQualitySettingsComponent);
+    addComponentMenu->addAction(ui->actionAddStaticOcclusionComponent);
+    addComponentMenu->addAction(ui->actionAddSoundComponent);
+    connect(ui->actionAddNewComponent, SIGNAL(triggered()), SLOT(OnAddAction()));
 }
 
 void DockProperties::ActionFavoritesEdit()
@@ -81,4 +89,18 @@ void DockProperties::ViewModeSelected(int index)
 		PropertyEditor::eViewMode mode = (PropertyEditor::eViewMode) viewModes->itemData(index).toInt();
 		QtMainWindow::Instance()->GetUI()->propertyEditor->SetViewMode(mode);
 	}
+}
+
+void DockProperties::OnAddAction()
+{
+    Ui::MainWindow* ui = QtMainWindow::Instance()->GetUI();
+    QWidget *w = ui->propertiesToolBar->widgetForAction(ui->actionAddNewComponent);
+    QPoint pos = QCursor::pos();
+
+    if (w != NULL)
+    {
+        pos = w->mapToGlobal(QPoint(0, w->height()));
+    }
+
+    addComponentMenu->exec(pos, ui->actionAddNewComponent);
 }

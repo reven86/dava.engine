@@ -53,6 +53,7 @@ int32 Font::GetDPI()
 	
 Font::Font()
 :	size(14.0f)
+,   renderSize(14.0f)
 ,	verticalSpacing(0)
 {
 	FontManager::Instance()->RegisterFont(this);
@@ -97,11 +98,22 @@ String Font::GetRawHashString()
 void Font::SetSize(float32 _size)
 {
 	size = _size;
+    renderSize = _size;
 }
 
 float32	Font::GetSize() const
 {
 	return size;
+}
+
+void Font::SetRenderSize(float32 _originalSize)
+{
+    renderSize = _originalSize;
+}
+
+float32	Font::GetRenderSize() const
+{
+    return renderSize;
 }
 
 void Font::SetVerticalSpacing(int32 _verticalSpacing)

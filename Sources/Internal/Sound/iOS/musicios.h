@@ -44,7 +44,7 @@ public:
     virtual bool Trigger();
     virtual bool IsActive() const;
     virtual void Stop();
-    virtual void Pause();
+    virtual void SetPaused(bool paused);
     
     virtual void SetVolume(float32 volume);
     
@@ -54,6 +54,7 @@ public:
     virtual void SetPosition(const Vector3 & position) {};
     virtual void SetDirection(const Vector3 & direction) {};
     virtual void UpdateInstancesPosition() {};
+    virtual void SetVelocity(const Vector3 & velocity) {};
     
     virtual void SetParameterValue(const FastName & paramName, float32 value) {};
     virtual float32 GetParameterValue(const FastName & paramName) { return 0.f; };
@@ -62,6 +63,8 @@ public:
     virtual void GetEventParametersInfo(Vector<SoundEventParameterInfo> & paramsInfo) const { return; };
 
     virtual String GetEventName() const { return filePath.GetFrameworkPath(); };
+    
+    void PerformEndCallback();
     
 protected:
     MusicIOSSoundEvent(const FilePath & path);

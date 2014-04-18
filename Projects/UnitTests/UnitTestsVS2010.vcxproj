@@ -27,6 +27,8 @@
     <ClInclude Include="Classes\FilePathTest.h" />
     <ClInclude Include="Classes\FileSystemTest.h" />
     <ClInclude Include="Classes\FormatsTest.h" />
+    <ClInclude Include="Classes\SaveImageTest.h" />
+    <ClInclude Include="Classes\StringFormatTest.h" />
     <ClInclude Include="Classes\FrameworkMain.h" />
     <ClInclude Include="Classes\GameCore.h" />
     <ClInclude Include="Classes\HashMapTest.h" />
@@ -39,7 +41,6 @@
     <ClInclude Include="Classes\PVRTest.h" />
     <ClInclude Include="Classes\RectSpriteTest.h" />
     <ClInclude Include="Classes\SampleTest.h" />
-    <ClInclude Include="Classes\SaveImageTest.h" />
     <ClInclude Include="Classes\SoundTest.h" />
     <ClInclude Include="Classes\SplitTest.h" />
     <ClInclude Include="Classes\TestTemplate.h" />
@@ -67,6 +68,8 @@
     <ClCompile Include="Classes\FilePathTest.cpp" />
     <ClCompile Include="Classes\FileSystemTest.cpp" />
     <ClCompile Include="Classes\FormatsTest.cpp" />
+    <ClCompile Include="Classes\SaveImageTest.cpp" />
+    <ClCompile Include="Classes\StringFormatTest.cpp" />
     <ClCompile Include="Classes\FrameworkMain.cpp" />
     <ClCompile Include="Classes\GameCore.cpp" />
     <ClCompile Include="Classes\HashMapTest.cpp" />
@@ -79,7 +82,6 @@
     <ClCompile Include="Classes\PVRTest.cpp" />
     <ClCompile Include="Classes\RectSpriteTest.cpp" />
     <ClCompile Include="Classes\SampleTest.cpp" />
-    <ClCompile Include="Classes\SaveImageTest.cpp" />
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
     <ClCompile Include="Classes\TestTemplate.cpp" />

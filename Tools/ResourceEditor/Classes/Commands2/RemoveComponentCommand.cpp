@@ -34,32 +34,33 @@
 RemoveComponentCommand::RemoveComponentCommand(DAVA::Entity* _entity, DAVA::Component * component)
 	: Command2(CMDID_COMPONENT_REMOVE, "Remove Component")
     , entity(_entity)
+    , backup(NULL)
+    , componentType(-1)
 {
 	DVASSERT(entity);
 	DVASSERT(component);
 
-	currentComponent = component;
-	savedComponent = NULL;
+    componentType = component->GetType();
 }
 
 RemoveComponentCommand::~RemoveComponentCommand()
 {
-	SafeDelete(savedComponent);
-	currentComponent = NULL;
+	SafeDelete(backup);
 }
 
 void RemoveComponentCommand::Redo()
 {
-	savedComponent = currentComponent->Clone(entity);
-	entity->RemoveComponent(currentComponent);
-	currentComponent = NULL;
+    const DAVA::uint32 nComponents = entity->GetComponentCount(componentType);
+    DAVA::Component * component = entity->GetComponent(componentType, nComponents - 1);
+    DVASSERT(component);
+    backup = component->Clone(entity);
+	entity->RemoveComponent(component);
 }
 
 void RemoveComponentCommand::Undo()
 {
-	entity->AddComponent(savedComponent);
-	currentComponent = savedComponent;
-	savedComponent = NULL;
+	entity->AddComponent(backup);
+    backup = NULL;
 }
 
 DAVA::Entity* RemoveComponentCommand::GetEntity() const

@@ -40,7 +40,7 @@ namespace DAVA
 class SpriteObject: public RenderObject
 {
 public:
-
+    SpriteObject();
 	SpriteObject(const FilePath &pathToSprite, int32 frame = 0
 				, const Vector2 &reqScale = Vector2(1.0f, 1.0f)
 				, const Vector2 &pivotPoint = Vector2(0.0f, 0.0f));
@@ -88,11 +88,14 @@ public:
 
 	virtual RenderObject * Clone(RenderObject *newObject);
 
+	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
+	virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
+
 protected:
 
 	void CreateMeshFromSprite(int32 frameToGen);
 
-
+    void Clear();
 	void Init(Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint);
 	void SetupRenderBatch();
 

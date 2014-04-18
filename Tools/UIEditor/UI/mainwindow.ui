@@ -448,6 +448,10 @@
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
    <addaction name="separator"/>
+   <addaction name="actionEnable_Guides"/>
+   <addaction name="actionStickMode"/>
+   <addaction name="actionLock_Guides"/>
+   <addaction name="separator"/>
    <addaction name="actionAlign_Left"/>
    <addaction name="actionAlign_Horz_Center"/>
    <addaction name="actionAlign_Right"/>
@@ -973,6 +977,57 @@
   <action name="actionEditPreviewSettings">
    <property name="text">
     <string>Preview Settings</string>
+   </property>
+  </action>
+  <action name="actionStickMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/stickmode.png</normaloff>:/Icons/stickmode.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Stick Mode</string>
+   </property>
+   <property name="toolTip">
+    <string>Stick objects by sides/centers to the guidelines</string>
+   </property>
+  </action>
+  <action name="actionEnable_Guides">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/enableguides.png</normaloff>:/Icons/enableguides.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Guides</string>
+   </property>
+   <property name="toolTip">
+    <string>Enable/disable Guides</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::ApplicationShortcut</enum>
+   </property>
+  </action>
+  <action name="actionLock_Guides">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/lockguides.png</normaloff>:/Icons/lockguides.png</iconset>
+   </property>
+   <property name="text">
+    <string>Lock Guides</string>
+   </property>
+   <property name="toolTip">
+    <string>Lock Guides</string>
    </property>
   </action>
  </widget>

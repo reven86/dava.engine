@@ -114,6 +114,19 @@ void JniWebView::DeleteCookies(int id, const String& targetURL)
 	}
 }
 
+void JniWebView::OpenFromBuffer(int id, const String& string, const String& baseUrl)
+{
+	jmethodID mid = GetMethodID("OpenFromBuffer", "(ILjava/lang/String;Ljava/lang/String;)V");
+	if (mid)
+	{
+		jstring jString = GetEnvironment()->NewStringUTF(string.c_str());
+		jstring jBaseUrl = GetEnvironment()->NewStringUTF(baseUrl.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jString, jBaseUrl);
+		GetEnvironment()->DeleteLocalRef(jString);
+		GetEnvironment()->DeleteLocalRef(jBaseUrl);
+	}
+}
+
 void JniWebView::SetRect(int id, const Rect& controlRect)
 {
 	Rect rect = V2P(controlRect);
@@ -219,6 +232,12 @@ String WebViewControl::ExecuteJScript(const String& scriptString)
 	JniWebView jniWebView;
 	jniWebView.ExecuteJScript(webViewId, scriptString);
 	return String();
+}
+
+void WebViewControl::OpenFromBuffer(const String& data, const FilePath& urlToOpen)
+{
+	JniWebView jniWebView;
+	jniWebView.OpenFromBuffer(webViewId, data, urlToOpen.GetAbsolutePathname());
 }
 
 void WebViewControl::SetRect(const Rect& rect)

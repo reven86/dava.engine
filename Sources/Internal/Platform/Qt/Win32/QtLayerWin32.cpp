@@ -31,7 +31,7 @@
 
 #if defined(__DAVAENGINE_WIN32__)
 
-#include "Platform/Qt/Win32/CorePlatformWin32.h"
+#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
 
 
 extern void FrameworkDidLaunched();
@@ -95,18 +95,17 @@ void QtLayerWin32::AppFinished()
 
 void QtLayerWin32::SetWindow(HINSTANCE hInstance, HWND hWindow, int32 width, int32 height)
 {
-	CoreWin32Platform *core = dynamic_cast<CoreWin32Platform *>(CoreWin32Platform::Instance());
-	if (NULL != core)
-	{
-		core->SetupWindow(hInstance, hWindow);
-		RenderManager::Create(Core::RENDERER_OPENGL);		
-		RenderManager::Instance()->Create(hInstance, hWindow);
+	CoreWin32PlatformQt *core = static_cast<CoreWin32PlatformQt*>(CoreWin32PlatformQt::Instance());
+	DVASSERT(core);
 
-		FrameworkDidLaunched();
+	core->SetupWindow(hInstance, hWindow);
+	RenderManager::Create(Core::RENDERER_OPENGL);		
+	RenderManager::Instance()->Create(hInstance, hWindow);
 
-		Resize(width, height);
-		AppStarted();
-	}
+	FrameworkDidLaunched();
+
+	Resize(width, height);
+	AppStarted();
 }
 
 
@@ -180,13 +179,11 @@ void QtLayerWin32::ProcessFrame()
 
 void QtLayerWin32::LockKeyboardInput(bool locked)
 {
-	CoreWin32Platform *core = dynamic_cast<CoreWin32Platform *>(CoreWin32Platform::Instance());
-	if (NULL != core)
-	{
-		core->SetFocused(locked);
-	}
-}
+	CoreWin32PlatformQt *core = static_cast<CoreWin32PlatformQt*>(CoreWin32PlatformQt::Instance());
+	DVASSERT(core);
 
+	core->SetFocused(locked);
+}
 
 };
 

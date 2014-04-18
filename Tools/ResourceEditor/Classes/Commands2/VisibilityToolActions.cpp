@@ -68,6 +68,13 @@ void ActionEnableVisibilityTool::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
+    
+    if(success &&
+       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(false);
+    }
+    
 	SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
 }
 
@@ -95,6 +102,11 @@ void ActionDisableVisibilityTool::Redo()
 	{
 		ShowErrorDialog(ResourceEditor::VISIBILITY_TOOL_DISABLE_ERROR);
 	}
+    
+    if(disabled)
+    {
+        sceneEditor->foliageSystem->SetFoliageVisible(true);
+    }
 
 	SceneSignals::Instance()->EmitVisibilityToolToggled(sceneEditor);
 }

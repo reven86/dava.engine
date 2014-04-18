@@ -35,10 +35,12 @@
 #include "Wininet.h" //for functions to delete cache entry and to end session
 
 #include "UI/IWebViewControl.h"
+#include "FileSystem/FilePath.h"
 
 // Helper class to contain Web Browser.
 interface IWebBrowser2;
 namespace DAVA {
+
 class WebBrowserContainer : IOleClientSite, IOleInPlaceSite
 {
 public:
@@ -63,6 +65,9 @@ public:
 	Map<String, String> GetCookies(const String& url);
 
 	void ExecuteJScript(const String& targetScript);
+
+    bool OpenFromBuffer(const String& buffer, const FilePath& basePath);
+    bool DoOpenBuffer();
 
 	// COM stuff;
 	HRESULT __stdcall QueryInterface(REFIID riid, void** ppvObject);
@@ -96,8 +101,7 @@ public:
 	HRESULT __stdcall OnShowWindow(BOOL) { return S_OK; }
 	HRESULT __stdcall RequestNewObjectLayout() { return E_NOTIMPL; }
 
-	void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
-
+	void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 protected:
 	// Parent window.
 	HWND hwnd;
@@ -110,6 +114,9 @@ protected:
 	HANDLE GetFirstCacheEntry(LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
 	bool GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_CACHE_ENTRY_INFO &cacheEntry, DWORD &size);
 	bool GetInternetCookies(const String& targetUrl, const String& name, LPTSTR &lpszData, DWORD &dwSize);
+	bool openFromBufferQueued;
+	String bufferToOpen; // temporary buffer
+	FilePath bufferToOpenPath;
 };
 
 // Web View Control for Win32.
@@ -141,7 +148,7 @@ public:
 	virtual void SetRect(const Rect& rect);
 	virtual void SetVisible(bool isVisible, bool hierarchic);
 
-	virtual void SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView);
+	virtual void SetDelegate(IUIWebViewDelegate *delegate, UIWebView* webView);
 
 protected:
 	// Initialize the COM and create the browser container.

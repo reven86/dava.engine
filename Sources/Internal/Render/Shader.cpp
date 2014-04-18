@@ -42,6 +42,7 @@
 #include "Utils/CRC32.h"
 #endif
 #include "Utils/Utils.h"
+#include "Render/ShaderCache.h"
 
 namespace DAVA
 {
@@ -1277,6 +1278,10 @@ void Shader::Invalidate()
 {
     RenderResource::Invalidate();
     Recompile();
+    
+    ShaderAsset* asset = ShaderCache::Instance()->Get(assetName);
+    if (asset)
+        asset->BindShaderDefaults(this);
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 

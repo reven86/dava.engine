@@ -92,7 +92,10 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest)	
 {	
     if (scene) //for 2d particles there would be no scene
+    {
 	    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
+    }
 	particleRegularMaterial = NMaterial::CreateMaterial(FastName("Particle_Material"),  NMaterialName::PARTICLES, NMaterial::DEFAULT_QUALITY_NAME);		
 	particleFrameBlendMaterial = NMaterial::CreateMaterial(FastName("Particle_Frameblend_Material"),  NMaterialName::PARTICLES_FRAMEBLEND, NMaterial::DEFAULT_QUALITY_NAME);	
 }
@@ -112,7 +115,7 @@ void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
     particleFrameBlendMaterial->SetParent(material, false);
 }
 
-void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, int32 positionSource)
+void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)
 {
 	for (int32 layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
 	{
@@ -123,6 +126,7 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 		ParticleGroup group;
 		group.emitter = SafeRetain(emitter);
 		group.layer = SafeRetain(layer);
+        group.spawnPosition = spawnPosition;
 		group.visibleLod = isLodActive;
 		group.positionSource = positionSource;
 		//prepare 1st loop info - so even not looped layers will follow common logic
@@ -150,7 +154,7 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 	//create particle groups
 	for (int32 emitterId = 0, emittersCount = effect->emitters.size(); emitterId<emittersCount; ++emitterId)
 	{
-		RunEmitter(effect, effect->emitters[emitterId]);		
+		RunEmitter(effect, effect->emitters[emitterId], effect->spawnPositions[emitterId]);		
 	}
 		
 	effect->state = ParticleEffectComponent::STATE_PLAYING;
@@ -213,13 +217,13 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
             AddToActive(effect);            
         effect->state = ParticleEffectComponent::STATE_STARTING;                    
     }
-	else if (event = EventSystem::STOP_PARTICLE_EFFECT)
+	else if (event == EventSystem::STOP_PARTICLE_EFFECT)
 		RemoveFromActive(effect);
 
 }
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
-{    
+{        
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
 	/*shortEffectTime*/
@@ -554,7 +558,7 @@ Particle* ParticleEffectSystem::GenerateNewParticle(ParticleEffectComponent *eff
 		particle->positionTarget = effect->effectData.infoSources.size()-1;		
 		ParticleEmitter *innerEmitter = group.layer->innerEmitter;
 		if (innerEmitter)
-			RunEmitter(effect, innerEmitter, particle->positionTarget);
+			RunEmitter(effect, innerEmitter, Vector3(0,0,0), particle->positionTarget);
 	}
 	return particle;
 }
@@ -637,7 +641,7 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle * particle, Particl
 		particle->position=particle->position*rotation;
 		particle->speed=particle->speed*rotation;
 	}
-	particle->position += group.emitter->position;
+	particle->position += group.spawnPosition;
 	TransformPerserveLength(particle->speed, newTransform);
 	TransformPerserveLength(particle->position, newTransform); //note - from now emitter position is not effected by scale anymore (artist request)	
 }

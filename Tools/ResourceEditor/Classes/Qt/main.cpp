@@ -58,13 +58,13 @@
 	#include "Platform/Qt/MacOS/QtLayerMacOS.h"
 #elif defined (__DAVAENGINE_WIN32__)
 	#include "Platform/Qt/Win32/QtLayerWin32.h"
-	#include "Platform/Qt/Win32/CorePlatformWin32.h"
+	#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
 #endif
 
 #ifdef __DAVAENGINE_BEAST__
 #include "BeastProxyImpl.h"
 #else
-#include "BeastProxy.h"
+#include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
 void UnpackHelpDoc();

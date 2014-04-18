@@ -58,6 +58,8 @@ public:
 	float32 GetGlobalExternalValue(const String& name);
 	Map<String, float32> GetGlobalExternals();
 	
+    inline const Map<uint32, NMaterial *> & GetMaterialInstances() const;
+    
 protected:
 	void RunEffect(ParticleEffectComponent *effect);	
     void AddToActive(ParticleEffectComponent *effect);
@@ -69,7 +71,7 @@ protected:
 	void PrepareEmitterParameters(Particle * particle, ParticleGroup &group, const Matrix4 &worldTransform);
 	void AddParticleToBBox(const Vector3& position, float radius, AABBox3& bbox);
 
-	void RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, int32 positionSource = 0);
+	void RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource = 0);
 	
 
 private:
@@ -85,6 +87,12 @@ private: //materials stuff
     bool forceDisableDepthTest;
 };
 
+inline const Map<uint32, NMaterial *> & ParticleEffectSystem::GetMaterialInstances() const
+{
+    return materialMap;
+}
+
+    
 }
 
 #endif //__DAVAENGINE_SCENE3D_PARTICLEEFFECTSYSTEM_H__

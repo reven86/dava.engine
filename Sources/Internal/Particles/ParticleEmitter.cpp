@@ -38,8 +38,7 @@ namespace DAVA
 
 #define PARTICLE_EMITTER_DEFAULT_LIFE_TIME 100.0f
 
-
-ParticleEmitter::YamlCacheMap ParticleEmitter::emitterYamlCache;
+bool ParticleEmitter::FORCE_DEEP_CLONE = false;
 
 PartilceEmitterLoadProxy::PartilceEmitterLoadProxy()
 {
@@ -53,14 +52,15 @@ void PartilceEmitterLoadProxy::Load(KeyedArchive *archive, SerializationContext 
 		emitterFilename = archive->GetString("pe.configpath");
 }
 
-ParticleEmitter::ParticleEmitter()
-{	
+ParticleEmitter::ParticleEmitter() : requireDeepClone(true)
+{        
 	Cleanup(false);
 }
 
 ParticleEmitter::~ParticleEmitter()
-{
+{    
 	CleanupLayers();	
+    ReleaseFromCache(configPath);
 }
 
 void ParticleEmitter::Cleanup(bool needCleanupLayers)
@@ -93,9 +93,11 @@ void ParticleEmitter::CleanupLayers()
 
 ParticleEmitter * ParticleEmitter::Clone()
 {
+    if (!requireDeepClone) //emitter referencing is allowed instead of deep cloning
+        return SafeRetain(this);
+
 	ParticleEmitter* clonedEmitter = new ParticleEmitter();
 	clonedEmitter->configPath = this->configPath;
-	clonedEmitter->position = this->position;
 	
 	clonedEmitter->name = name;
 	clonedEmitter->lifeTime = lifeTime;
@@ -138,10 +140,7 @@ ParticleEmitter * ParticleEmitter::Clone()
 	for (int32 i=0, sz=layers.size(); i<sz; ++i)
 	{		
 		clonedEmitter->layers[i] = layers[i]->Clone();		
-	}	
-
-	clonedEmitter->emitterFileName = emitterFileName;
-	RetainInCache(emitterFileName);
+	}			
 
 	return clonedEmitter;
 }
@@ -236,49 +235,47 @@ void ParticleEmitter::MoveLayer(ParticleLayer * layer, ParticleLayer * beforeLay
 }
 
 
-void ParticleEmitter::RetainInCache(const FilePath& name)
-{
-	YamlCacheMap::iterator it = emitterYamlCache.find(FILEPATH_MAP_KEY(name));
-	if (it!=emitterYamlCache.end())
-	{
-		(*it).second.refCount++;
-	}
-}
+ParticleEmitter::EmitterCacheMap ParticleEmitter::emitterCache;	
 
 void ParticleEmitter::ReleaseFromCache(const FilePath& name)
 {
-	YamlCacheMap::iterator it = emitterYamlCache.find(FILEPATH_MAP_KEY(name));
-	if (it!=emitterYamlCache.end())
-	{
-		(*it).second.refCount--;
-		if (!(*it).second.refCount)
-		{
-			SafeRelease((*it).second.parser);
-			emitterYamlCache.erase(it);
-		}
+	EmitterCacheMap::iterator it = emitterCache.find(FILEPATH_MAP_KEY(name));
+	if (it!=emitterCache.end())
+	{		
+		emitterCache.erase(it);	
 	}
 }
 
-YamlParser* ParticleEmitter::GetParser(const FilePath &filename)
+ParticleEmitter *ParticleEmitter::LoadEmitter(const FilePath & filename)
 {
-	YamlParser *res = NULL;
-	YamlCacheMap::iterator it = emitterYamlCache.find(FILEPATH_MAP_KEY(filename));
-	if (it!=emitterYamlCache.end())
-	{
-		(*it).second.refCount++;
-		res = (*it).second.parser;
-	}
-	else
-	{
-		res = YamlParser::Create(filename);
-		EmitterYamlCacheEntry entry;
-		entry.parser = res;
-		entry.refCount = 1;
-		emitterYamlCache[FILEPATH_MAP_KEY(filename)] = entry;
-	}
-	ReleaseFromCache(emitterFileName);
-	emitterFileName = filename;
-	return res;
+    ParticleEmitter *res;
+    if (FORCE_DEEP_CLONE) //resource and ui editor set this flag not to cache emitters
+    {
+        res = new ParticleEmitter();
+        res->LoadFromYaml(filename);
+        return res;
+    }
+
+    EmitterCacheMap::iterator it = emitterCache.find(FILEPATH_MAP_KEY(filename));
+    if (it!=emitterCache.end())    
+    {                
+        //just return reference        
+        res = SafeRetain(it->second);        
+    }
+    else
+    {
+        res = new ParticleEmitter();
+        res->LoadFromYaml(filename);
+        List<ModifiablePropertyLineBase *> modifiables;
+        res->GetModifableLines(modifiables);
+        if (modifiables.empty()) //if emitter have no modifiable lines - cache it
+        {                    
+            res->requireDeepClone = false; //allow referencing instead of cloning
+            emitterCache[FILEPATH_MAP_KEY(filename)] = res;   
+        }        
+    }
+
+    return res;
 }
 
 
@@ -286,7 +283,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
 {
     Cleanup(true);
     
-	YamlParser * parser = GetParser(filename);
+	YamlParser * parser = YamlParser::Create(filename);
 	if(!parser)
 	{
 		Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetAbsolutePathname().c_str());
@@ -399,6 +396,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
 	// Yuri Coder, 2013/01/15. The "name" node for Layer was just added and may not exist for
 	// old yaml files. Generate the default name for nodes with empty names.
 	UpdateEmptyLayerNames();		
+    SafeRelease(parser);
 }
 
 void ParticleEmitter::SaveToYaml(const FilePath & filename)

@@ -426,7 +426,7 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
     
     bool shouldLoadData = deviceCaps.isVertexTextureUnitsSupported;
     
-    FastName currentQuality = QualitySettingsSystem::Instance()->GetCurMaQuality(VEGETATION_QUALITY_GROUP_NAME);
+    FastName currentQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(VEGETATION_QUALITY_GROUP_NAME);
     bool qualityAllowsVegetation = (VEGETATION_QUALITY_NAME_HIGH == currentQuality);
     
     shouldLoadData = shouldLoadData && qualityAllowsVegetation;
@@ -474,7 +474,7 @@ void VegetationRenderObject::PrepareToRender(Camera *camera)
 #if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
 //VI: case when vegetation was turned off and then qualit changed from low t high is not a real-world scenario
 //VI: real-world scenario is in resource editor when quality has been changed.
-    FastName currentQuality = QualitySettingsSystem::Instance()->GetCurMaQuality(VEGETATION_QUALITY_GROUP_NAME);
+    FastName currentQuality = QualitySettingsSystem::Instance()->GetCurMaterialQuality(VEGETATION_QUALITY_GROUP_NAME);
     bool qualityAllowsVegetation = (VEGETATION_QUALITY_NAME_HIGH == currentQuality);
     
     renderFlag = (renderFlag && qualityAllowsVegetation);
@@ -592,7 +592,8 @@ void VegetationRenderObject::SetVegetationMap(const FilePath& path)
 {
     if(path.Exists())
     {
-        Vector<Image*> images = ImageLoader::CreateFromFileByExtension(path);
+        Vector<Image*> images;
+		ImageLoader::CreateFromFileByExtension(path, images);
             
         DVASSERT(images.size());
             

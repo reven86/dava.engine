@@ -1285,7 +1285,7 @@ bool YamlParser::Parse(YamlDataHolder * dataHolder)
 	return true;
 }
 	
-bool YamlParser::SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool skipRootNode, uint32 attr /*= File::CREATE | File::WRITE*/)
+bool YamlParser::SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool saveLevelOneMapsOnly, uint32 attr /*= File::CREATE | File::WRITE*/)
 {
     // Firstly try to check whether the file can be created.
 	File * yamlFileToSave = File::Create(fileName, attr);
@@ -1301,9 +1301,9 @@ bool YamlParser::SaveToYamlFile(const FilePath & fileName, const YamlNode * root
     // This line is not a real loop - it just helps us to break if something wrong happens.
     for (;;)
     {
-        if (skipRootNode)
+        if (saveLevelOneMapsOnly)
         {
-            // Take only the children of root node.
+            // Take only the maps of root node.
             DVASSERT(rootNode->GetType() == YamlNode::TYPE_MAP);
             const MultiMap<String, YamlNode*> & childrenList = rootNode->AsMap();
             
@@ -1331,9 +1331,28 @@ bool YamlParser::SaveToYamlFile(const FilePath & fileName, const YamlNode * root
             break;
         }
 
-        // Save everything including the root.
-        String nodeName;
-        saveSucceeded = SaveNodeRecursive(yamlFileToSave, nodeName, rootNode, index);
+        // Save everything including the root. If the root node is map - take its children
+        // and save each one separately.
+        if (rootNode->GetType() == YamlNode::TYPE_MAP)
+        {
+            saveSucceeded = true;
+            const MultiMap<String, YamlNode*>& nodeMap = rootNode->AsMap();
+            for (MultiMap<String, YamlNode*>::const_iterator iter = nodeMap.begin();
+                 iter != nodeMap.end(); iter ++)
+            {
+                if (!SaveNodeRecursive(yamlFileToSave, iter->first, iter->second, index))
+                {
+                    saveSucceeded = false;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            String nodeName;
+            saveSucceeded = SaveNodeRecursive(yamlFileToSave, nodeName, rootNode, index);
+        }
+
         break;
     }
 

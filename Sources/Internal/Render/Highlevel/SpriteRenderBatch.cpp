@@ -138,6 +138,15 @@ void SpriteRenderBatch::Draw(const FastName & ownerRenderPass, Camera * camera)
 	RenderManager::Instance()->HWDrawArrays(PRIMITIVETYPE_TRIANGLESTRIP, spriteObject->GetFrame() * 4, 4);
 }
 
+void SpriteRenderBatch::Save(KeyedArchive * archive, SerializationContext * serializationContext)
+{
+    // Don't need to save this batch
+}
+
+void SpriteRenderBatch::Load(KeyedArchive * archive, SerializationContext * serializationContext)
+{
+    // Don't need to load this batch
+}
 
 };
 

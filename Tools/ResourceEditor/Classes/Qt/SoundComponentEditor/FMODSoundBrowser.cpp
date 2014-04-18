@@ -144,7 +144,9 @@ FilePath FMODSoundBrowser::MakeFEVPathFromScenePath(const FilePath & scenePath)
     String mapSubDir = sceneDir.substr(projectPath.length() + mapsSubPath.length());
     Vector<String> dirs;
     Split(mapSubDir, "/", dirs);
-    DVASSERT(dirs.size());
+    if(dirs.size() == 0)
+        return FilePath();
+    
     String mapName = dirs[0];
 
     FilePath fevPath = FilePath(sfxMapsPath + mapName + "/iOS/" + mapName + ".fev");

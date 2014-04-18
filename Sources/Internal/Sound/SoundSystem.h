@@ -116,27 +116,26 @@ public:
 protected:
     void GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names);
 
-    void ReleaseOnUpdate(SoundEvent * sound);
-
-    void PerformCallbackOnUpdate(SoundEvent * event, uint32 callbackType);
-    void CancelCallbackOnUpdate(SoundEvent * event, uint32 callbackType);
-
     void AddSoundEventToGroup(const FastName & groupName, SoundEvent * event);
     void RemoveSoundEventFromGroups(SoundEvent * event);
+
+	void ReleaseOnUpdate(SoundEvent * sound);
+
+	Vector<SoundEvent *> soundsToReleaseOnUpdate;
 
     FMOD::System * fmodSystem;
     FMOD::EventSystem * fmodEventSystem;
 
-    Vector<SoundEvent *> soundsToReleaseOnUpdate;
-    MultiMap<SoundEvent *, uint32> callbackOnUpdate;
     Vector<SoundGroup> soundGroups;
-
     Map<FilePath, FMOD::EventProject *> projectsMap;
 
     Vector<String> toplevelGroups;
 
     friend class FMODFileSoundEvent;
     friend class FMODSoundEvent;
+#ifdef __DAVAENGINE_IPHONE__
+    friend class MusicIOSSoundEvent;
+#endif
 #endif
 };
 

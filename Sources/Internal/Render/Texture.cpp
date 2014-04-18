@@ -221,7 +221,12 @@ Texture::Texture()
 #ifdef __DAVAENGINE_OPENGL__
 	fboID = -1;
 	rboID = -1;
+#if defined(__DAVAENGINE_ANDROID__)
+    stencilRboID = -1;
 #endif
+
+#endif
+
 
 	texDescriptor = new TextureDescriptor();
 }
@@ -241,7 +246,14 @@ void Texture::ReleaseTextureData()
 	container->id = id;
 	container->fboID = fboID;
 	container->rboID = rboID;
+#if defined(__DAVAENGINE_ANDROID__)
+    container->stencilRboID = stencilRboID;
+#endif
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::ReleaseTextureDataInternal, container));
+
+    id = 0;
+	fboID = -1;
+	rboID = -1;
 }
 
 void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData)
@@ -266,6 +278,13 @@ void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void
 	{
 		RENDER_VERIFY(glDeleteFramebuffers(1, &container->fboID));
 	}
+	
+#if defined(__DAVAENGINE_ANDROID__)
+    if (container->stencilRboID != (uint32)-1)
+    {
+        RENDER_VERIFY(glDeleteRenderbuffers(1, &container->stencilRboID));
+    }
+#endif
 
 	if(container->rboID != (uint32)-1)
 	{
@@ -551,6 +570,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	if(!IsLoadAvailable(gpu))
 		return false;
 	
+    int32 baseMipMap = GetBaseMipMap();
+
 	if(texDescriptor->IsCubeMap() && (GPU_UNKNOWN == gpu))
 	{
 		Vector<FilePath> faceNames;
@@ -558,7 +579,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 
 		for(size_t i = 0; i < faceNames.size(); ++i)
 		{
-			Vector<Image *> imageFace = ImageLoader::CreateFromFileByExtension(faceNames[i]);
+            Vector<Image *> imageFace;
+			ImageLoader::CreateFromFileByExtension(faceNames[i], imageFace, baseMipMap);
 			if(imageFace.size() == 0)
 			{
 				Logger::Error("[Texture::LoadImages] Cannot open file %s", faceNames[i].GetAbsolutePathname().c_str());
@@ -588,56 +610,12 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	{
 		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(texDescriptor, gpu);
 
-		*images = ImageLoader::CreateFromFileByExtension(imagePathname);
+		ImageLoader::CreateFromFileByExtension(imagePathname, *images, baseMipMap);
         if(images->size() == 1 && gpu == GPU_UNKNOWN && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();
             *images = img->CreateMipMapsImages();
             SafeRelease(img);
-        }
-
-        if(texDescriptor->GetQualityGroup().IsValid() && images->size() > 1)
-        {
-            const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTxQuality());
-            if(NULL != curTxQuality)
-            {
-                // TODO:
-                // this is draft code and should be reimplemented
-                // to use texture group qualities
-                // -->
-                
-                int baselevel = curTxQuality->albedoBaseMipMapLevel;
-                
-                if(baselevel > 0)
-                {
-                    int leaveCount = images->size() - baselevel;
-                    
-                    // we should leave at last one last image
-                    if(leaveCount < 1)
-                    {
-                        leaveCount = 1;
-                    }
-                    
-                    int leaveOffset = images->size() - leaveCount;
-                    
-                    // release all images, except last one
-                    for(int i = 0; i < leaveOffset; ++i)
-                    {
-                        SafeRelease(images->operator[](i));
-                    }
-                    
-                    // move last items to the beginning of the vector vector
-                    for(int i = 0; i < leaveCount; ++i)
-                    {
-                        images->operator[](i) = images->operator[](leaveOffset + i);
-                        images->operator[](i)->mipmapLevel = i;
-                    }
-                    
-                    images->resize(leaveCount);
-                }
-                
-                // <-
-            }
         }
     }
 
@@ -656,7 +634,6 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 
 	return true;
 }
-
 
 void Texture::ReleaseImages(Vector<Image *> *images)
 {
@@ -784,6 +761,9 @@ Texture * Texture::PureCreate(const FilePath & pathName, const FastName &group)
 {
 	if(pathName.IsEmpty() || pathName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
+		
+    if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
+        return NULL;
 
     FilePath descriptorPathname = TextureDescriptor::GetDescriptorPathname(pathName);
     Texture * texture = Texture::Get(descriptorPathname);
@@ -828,7 +808,12 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
 	eGPUFamily gpuForLoading = GetGPUForLoading(gpuFamily, texDescriptor);
     Vector<Image *> *images = new Vector<Image *> ();
     
-	bool loaded = LoadImages(gpuForLoading, images);
+    bool loaded = false;
+    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
+    {
+	    loaded = LoadImages(gpuForLoading, images);
+    }
+
 	if(loaded)
 	{
 		loadedAsFile = gpuForLoading;
@@ -934,12 +919,38 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 
 	RENDER_VERIFY(glGenFramebuffers(1, &fboID));
 	RenderManager::Instance()->HWglBindFBO(fboID);
-
+    
 	if(DEPTH_RENDERBUFFER == depthFormat)
 	{
 		RENDER_VERIFY(glGenRenderbuffers(1, &rboID));
 		RENDER_VERIFY(glBindRenderbuffer(GL_RENDERBUFFER, rboID));
-		RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+        
+#if defined(__DAVAENGINE_ANDROID__)
+        if (RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
+#endif
+        {
+            RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+        }
+#if defined(__DAVAENGINE_ANDROID__)
+        else
+        {
+            if (RenderManager::Instance()->GetCaps().isGlDepthNvNonLinearSupported)
+            {
+                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16_NONLINEAR_NV, width, height));
+            }
+            else
+            {
+                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height));
+            }
+
+            if (!RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
+            {
+                glGenRenderbuffers(1, &stencilRboID);
+                glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID);
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
+            }
+        }
+#endif
 	}
 
 	RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
@@ -947,7 +958,18 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 	if(DEPTH_RENDERBUFFER == depthFormat)
 	{
 		RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboID));
-		RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboID));
+#if defined(__DAVAENGINE_ANDROID__)
+        if (RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
+#endif
+        {
+            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rboID));
+        }
+#if defined(__DAVAENGINE_ANDROID__)
+        else
+        {
+            RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, stencilRboID));
+        }
+#endif
 	}
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1008,41 +1030,21 @@ void Texture::SetDebugInfo(const String & _debugInfo)
 void Texture::Lost()
 {
 	RenderResource::Lost();
-
-	/*
-	if(RenderManager::Instance()->GetTexture() == this)
-	{//to avoid drawing deleted textures
-		RenderManager::Instance()->SetTexture(0);
-	}
-	
-	ReleaseImages();
-
-	if(fboID != (uint32)-1)
-	{
-		RENDER_VERIFY(glDeleteFramebuffers(1, &fboID));
-		fboID = -1;
-	}
-	
-	if(id)
-	{
-		RENDER_VERIFY(glDeleteTextures(1, &id));
-		id = 0;
-	}
-	*/
+    
+    ReleaseTextureData();
 }
 
 void Texture::Invalidate()
 {
 	RenderResource::Invalidate();
 	
-	/*
-
 	DVASSERT(id == 0 && "Texture always invalidated");
 	if (id)
 	{
 		return;
 	}
 	
+    const FilePath& relativePathname = texDescriptor->GetSourceTexturePathname();
 	if (relativePathname.GetType() == FilePath::PATH_IN_FILESYSTEM ||
 		relativePathname.GetType() == FilePath::PATH_IN_RESOURCES ||
 		relativePathname.GetType() == FilePath::PATH_IN_DOCUMENTS)
@@ -1058,7 +1060,6 @@ void Texture::Invalidate()
 	{
 		MakePink((TextureType)textureType);
 	}
-	*/
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
@@ -1429,6 +1430,20 @@ void Texture::SetPixelization(bool value)
         texture->SetMinMagFilter(minFilter, magFilter);
     }
     textureMapMutex.Unlock();
+}
+
+int32 Texture::GetBaseMipMap() const
+{
+    if(texDescriptor->GetQualityGroup().IsValid())
+    {
+        const TextureQuality *curTxQuality = QualitySettingsSystem::Instance()->GetTxQuality(QualitySettingsSystem::Instance()->GetCurTextureQuality());
+        if(NULL != curTxQuality)
+        {
+            return curTxQuality->albedoBaseMipMapLevel;
+        }
+    }
+
+    return 0;
 }
 
 };

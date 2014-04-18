@@ -64,6 +64,8 @@ protected:
 	
 	UIScreen * prevScreen;
 	UIScreen * nextScreen;
+    
+    static UniqueHandle alphaClearStateHandle;
 };
 
 };

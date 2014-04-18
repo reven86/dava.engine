@@ -46,6 +46,7 @@ UIControlSystem::~UIControlSystem()
 	
 UIControlSystem::UIControlSystem()
 {
+	screenLockCount = 0;
 	frameSkip = 0;
 	transitionType = 0;
 	transition = 0;
@@ -79,7 +80,7 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
 		return;
 	}
 
-    if (transition)
+   /* if (transition)
     {
        if (transition->IsLoadingTransition())
         {
@@ -92,7 +93,12 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
         }
     }
 
-	LockInput();
+	LockInput();*/
+
+	// 2 switches on one frame can cause memory leak
+	SafeRelease(transition);
+	SafeRelease(nextScreen);
+
 	transition = SafeRetain(_transition);
 	
 	if (_nextScreen == 0)
@@ -164,13 +170,21 @@ void UIControlSystem::ProcessScreenLogic()
 	/*
 	 if next screen or we need to removecurrent screen
 	 */
-	if (nextScreen || removeCurrentScreen)
+	if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
 	{
+		LockInput();
+		
 		CancelAllInputs();
 		
+		int32 listenersCount = screenSwitchListeners.size();
+		for(int32 i = 0; i < listenersCount; ++i)
+			screenSwitchListeners[i]->OnScreenSwitched(nextScreen);
+
 		// If we have transition set
 		if (transition)
 		{
+			LockSwitch();
+
 			// check if we have not loading transition
 			if (!transition->IsLoadingTransition())
 			{
@@ -209,8 +223,8 @@ void UIControlSystem::ProcessScreenLogic()
                     currentScreen = loadingTransition;
                     loadingTransition->SystemDidAppear();
                 }
-
 			}
+			transition = NULL;
 		}
         else	// if there is no transition do change immediatelly
 		{	
@@ -770,6 +784,31 @@ void UIControlSystem::ReplayEvents()
 			OnInput(0, activeInputs, allInputs, true);
 		}
 	}
+}
+
+DAVA::int32 UIControlSystem::LockSwitch()
+{
+	screenLockCount++;
+	return screenLockCount;
+}
+
+DAVA::int32 UIControlSystem::UnlockSwitch()
+{
+	screenLockCount--;
+	DVASSERT(screenLockCount >= 0);
+	return screenLockCount;
+}
+
+void UIControlSystem::AddScreenSwitchListener(ScreenSwitchListener * listener)
+{
+	screenSwitchListeners.push_back(listener);
+}
+
+void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener * listener)
+{
+	Vector<ScreenSwitchListener *>::iterator it = std::find(screenSwitchListeners.begin(), screenSwitchListeners.end(), listener);
+	if(it != screenSwitchListeners.end())
+		screenSwitchListeners.erase(it);
 }
 
 };

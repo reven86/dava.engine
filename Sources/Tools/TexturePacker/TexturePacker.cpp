@@ -348,10 +348,16 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 					bestPackerForThisStep = packer;
 					newWorkVector = tempSortVector;
 				}
+				else
+				{
+					SafeDelete(packer);
+				}
 			}
 		
 		sortVectorWork = newWorkVector;
-		packers.push_back(bestPackerForThisStep);
+
+		if(bestPackerForThisStep)
+			packers.push_back(bestPackerForThisStep);
 	}
 	
     Logger::FrameworkDebug("* Writing %d final textures", (int)packers.size());
@@ -487,9 +493,7 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
 
 		if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
         {
-			AddError(Format("In sprite %s.psd frame %d has size bigger than sprite size!",
-								defFile->filename.GetBasename().c_str(),
-								frame));
+            Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
         }
 	}
 	
@@ -578,6 +582,10 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 			AddError(Format("*** FATAL ERROR: Can't find rect in all of packers for frame - %d. Definition file - %s.",
 								frame,
 								fileName.c_str()));
+
+			fclose(fp);
+			FileSystem::Instance()->DeleteFile(outputPath + fileName);
+			return false;
 		}
 	}
 	

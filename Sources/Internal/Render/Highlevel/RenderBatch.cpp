@@ -58,6 +58,7 @@ RenderBatch::RenderBatch()
     ,	visiblityCriteria(RenderObject::VISIBILITY_CRITERIA)
     ,   aabbox(Vector3(), Vector3())
     ,   sortingTransformPtr(NULL)
+	,	renderLayerIDsBitmaskFromMaterial(0)
 {
 	
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)

@@ -176,7 +176,7 @@ bool HierarchyTreeScreenNode::Load(const QString& path)
 {
 	ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
 	loader->Load(screen, path.toStdString());
-	
+	guides.Load(path.toStdString());
 	BuildHierarchyTree(this, screen->GetChildren());
 	return true;
 }
@@ -212,6 +212,12 @@ bool HierarchyTreeScreenNode::Save(const QString& path, bool saveAll)
 	bool saveResult = UIYamlLoader::Save(screen, path.toStdString(), true);
 	if (saveResult)
 	{
+	    // Save the Guides - append their data to the existing screen YAML.
+        saveResult = guides.Save(path.toStdString(), File::APPEND | File::WRITE);
+    }
+
+    if (saveResult)
+    {
 		ResetUnsavedChanges();
 	}
 
@@ -256,4 +262,114 @@ Rect HierarchyTreeScreenNode::GetRect() const
 bool HierarchyTreeScreenNode::IsNeedSave() const
 {
 	return IsMarked() | (this->unsavedChangesCounter != 0);
+}
+
+void HierarchyTreeScreenNode::StartNewGuide(GuideData::eGuideType guideType)
+{
+    guides.StartNewGuide(guideType);
+}
+
+void HierarchyTreeScreenNode::MoveNewGuide(const Vector2& pos)
+{
+    guides.MoveNewGuide(pos);
+}
+
+bool HierarchyTreeScreenNode::CanAcceptNewGuide()
+{
+    return guides.CanAcceptNewGuide();
+}
+
+const GuideData* HierarchyTreeScreenNode::AcceptNewGuide()
+{
+    return guides.AcceptNewGuide();
+}
+
+void HierarchyTreeScreenNode::CancelNewGuide()
+{
+    guides.CancelNewGuide();
+}
+
+bool HierarchyTreeScreenNode::StartMoveGuide(const Vector2& pos)
+{
+    return guides.StartMoveGuide(pos);
+}
+
+void HierarchyTreeScreenNode::MoveGuide(const Vector2& pos)
+{
+    guides.MoveGuide(pos);
+}
+
+const GuideData* HierarchyTreeScreenNode::AcceptMoveGuide()
+{
+    return guides.AcceptMoveGuide();
+}
+
+Vector2 HierarchyTreeScreenNode::GetMoveGuideStartPos() const
+{
+    return guides.GetMoveGuideStartPos();
+}
+
+bool HierarchyTreeScreenNode::AreGuidesSelected() const
+{
+    return guides.AreGuidesSelected();
+}
+
+List<GuideData> HierarchyTreeScreenNode::DeleteSelectedGuides()
+{
+    return guides.DeleteSelectedGuides();
+}
+
+int32 HierarchyTreeScreenNode::CalculateStickToGuides(const List<Rect>& controlsRectList, Vector2& offset) const
+{
+    return guides.CalculateStickToGuides(controlsRectList, offset);
+}
+
+int32 HierarchyTreeScreenNode::GetGuideStickTreshold() const
+{
+    return guides.GetGuideStickTreshold();
+}
+
+void HierarchyTreeScreenNode::AddGuide(const GuideData& guideData)
+{
+    guides.AddGuide(guideData);
+}
+
+bool HierarchyTreeScreenNode::RemoveGuide(const GuideData& guideData)
+{
+    return guides.RemoveGuide(guideData);
+}
+
+bool HierarchyTreeScreenNode::UpdateGuidePosition(const GuideData& guideData, const Vector2& newPos)
+{
+    return guides.UpdateGuidePosition(guideData, newPos);
+}
+
+const List<GuideData*> HierarchyTreeScreenNode::GetGuides(bool includeNewGuide) const
+{
+    return guides.GetGuides(includeNewGuide);
+}
+
+void HierarchyTreeScreenNode::SetStickMode(int32 stickMode)
+{
+    guides.SetStickMode(stickMode);
+}
+
+bool HierarchyTreeScreenNode::AreGuidesEnabled() const
+{
+    return guides.AreGuidesEnabled();
+}
+
+void HierarchyTreeScreenNode::SetGuidesEnabled(bool value)
+{
+    guides.SetGuidesEnabled(value);
+}
+
+bool HierarchyTreeScreenNode::AreGuidesLocked() const
+{
+    return guides.AreGuidesLocked();
+}
+
+void HierarchyTreeScreenNode::LockGuides(bool value)
+{
+    guides.LockGuides(value);
 }

@@ -234,8 +234,11 @@ public:
         return YamlParser::CreateAndParse(data);
     }
 
-    // Save to YAML file.
-	bool SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool skipRootNode, uint32 attr = File::CREATE | File::WRITE);
+    // Save to YAML file. "saveLevelOneMapsOnly" is a special mode where
+    // root node is skipped and only nodes with YamlNode::TYPE_MAP are saved
+    // on a root level.
+    // TODO! replace this flag to the separate method!
+	bool SaveToYamlFile(const FilePath & fileName, const YamlNode * rootNode, bool saveLevelOneMapsOnly, uint32 attr = File::CREATE | File::WRITE);
     
 	// Save the strings list (needed for Localization).
 	bool SaveStringsList(const FilePath & fileName, YamlNode * rootNode, uint32 attr = File::CREATE | File::WRITE);

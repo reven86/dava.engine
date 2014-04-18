@@ -27,6 +27,7 @@
  =====================================================================================*/
 
 #include "FileSystem/FilePath.h"
+#include "Sound/SoundSystem.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 
@@ -130,7 +131,7 @@
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag
 {
-    musicEvent->PerformEvent(DAVA::MusicIOSSoundEvent::EVENT_END);
+    musicEvent->PerformEndCallback();
 }
 
 @end
@@ -179,10 +180,13 @@ MusicIOSSoundEvent::~MusicIOSSoundEvent()
 {
     [(AvSound*)avSound release];
     avSound = 0;
+    
+    SoundSystem::Instance()->RemoveSoundEventFromGroups(this);
 }
 
 bool MusicIOSSoundEvent::Trigger()
 {
+    Retain();
     return [(AvSound*)avSound play];
 }
 
@@ -191,9 +195,12 @@ void MusicIOSSoundEvent::Stop()
     [(AvSound*)avSound stop];
 }
 
-void MusicIOSSoundEvent::Pause()
+void MusicIOSSoundEvent::SetPaused(bool paused)
 {
-    [(AvSound*)avSound pause];
+    if(paused)
+        [(AvSound*)avSound pause];
+    else
+        [(AvSound*)avSound play];
 }
     
 void MusicIOSSoundEvent::SetVolume(float32 _volume)
@@ -217,5 +224,11 @@ bool MusicIOSSoundEvent::IsActive() const
     return [((AvSound*)avSound).audioPlayer isPlaying];
 }
 
+void MusicIOSSoundEvent::PerformEndCallback()
+{
+    SoundSystem::Instance()->ReleaseOnUpdate(this);
+    PerformEvent(DAVA::MusicIOSSoundEvent::EVENT_END);
+}
+    
 };
 #endif //#ifdef __DAVAENGINE_IPHONE__

@@ -61,6 +61,8 @@ public:
 	// Perform Java script
 	virtual String ExecuteJScript(const String& scriptString);
 
+	void OpenFromBuffer(const String& string, const FilePath& basePath);
+
 	// Size/pos/visibility changes.
 	virtual void SetRect(const Rect& rect);
 	virtual void SetVisible(bool isVisible, bool hierarchic);
@@ -85,6 +87,7 @@ public:
 	void LoadHtmlString(int id, const String& htmlString);
 	void DeleteCookies(int id, const String& targetUrl);
 	void ExecuteJScript(int id, const String& scriptString);
+	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
 	void SetRect(int id, const Rect& rect);
 	void SetVisible(int id, bool isVisible);

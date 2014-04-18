@@ -105,6 +105,8 @@ SoundEvent * SoundSystem::CreateSoundEventFromFile(const FilePath & fileName, co
         MusicIOSSoundEvent * musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName);
         if(musicEvent && (flags & SoundEvent::SOUND_EVENT_CREATE_LOOP))
             musicEvent->SetLoopCount(-1);
+        
+        event = musicEvent;
     }
 #endif //__DAVAENGINE_IPHONE__
     
@@ -222,6 +224,7 @@ void SoundSystem::ParseSFXConfig(const FilePath & configPath)
             }
         }
     }
+    SafeRelease(parser);
 }
 
 void SoundSystem::LoadFEV(const FilePath & filePath)
@@ -283,31 +286,26 @@ void SoundSystem::UnloadFMODProjects()
 
 void SoundSystem::Update(float32 timeElapsed)
 {
-    fmodEventSystem->update();
-
-    if(callbackOnUpdate.size())
-    {
-        MultiMap<SoundEvent *, uint32>::iterator mapIt = callbackOnUpdate.begin();
-        MultiMap<SoundEvent *, uint32>::iterator endIt = callbackOnUpdate.end();
-        for(; mapIt != endIt; ++mapIt)
-            mapIt->first->PerformEvent(mapIt->second);
-        callbackOnUpdate.clear();
-    }
-
-    uint32 size = soundsToReleaseOnUpdate.size();
-    if(size)
-    {
-        for(uint32 i = 0; i < size; i++)
-            soundsToReleaseOnUpdate[i]->Release();
-        soundsToReleaseOnUpdate.clear();
-    }
+	fmodEventSystem->update();
+    
+	uint32 size = soundsToReleaseOnUpdate.size();
+	if(size)
+	{
+		for(uint32 i = 0; i < size; i++)
+			soundsToReleaseOnUpdate[i]->Release();
+		soundsToReleaseOnUpdate.clear();
+	}
 }
 
 void SoundSystem::Suspend()
 {
-
 }
-    
+
+void SoundSystem::ReleaseOnUpdate(SoundEvent * sound)
+{
+	soundsToReleaseOnUpdate.push_back(sound);
+}
+
 uint32 SoundSystem::GetMemoryUsageBytes() const
 {
     uint32 memory = 0;
@@ -366,11 +364,6 @@ void SoundSystem::SetListenerOrientation(const Vector3 & forward, const Vector3 
 	upNorm.Normalize();
 
 	FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, (FMOD_VECTOR*)&forwardNorm, (FMOD_VECTOR*)&upNorm));
-}
-
-void SoundSystem::ReleaseOnUpdate(SoundEvent * sound)
-{
-    soundsToReleaseOnUpdate.push_back(sound);
 }
 
 void SoundSystem::GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names)
@@ -507,10 +500,9 @@ void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * 
     SoundGroup group;
     group.volume = 1.f;
     group.name = groupName;
-    soundGroups.push_back(group);
-
-    event->SetVolume(group.volume);
     group.events.push_back(event);
+
+    soundGroups.push_back(group);
 }
     
 void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
@@ -536,21 +528,6 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
             it = soundGroups.erase(it);
         else
             ++it;
-    }
-}
-
-void SoundSystem::PerformCallbackOnUpdate(SoundEvent * event, uint32 callbackType)
-{
-    callbackOnUpdate.insert(std::pair<SoundEvent *, uint32>(event, callbackType));
-}
-
-void SoundSystem::CancelCallbackOnUpdate(SoundEvent * event, uint32 callbackType)
-{
-    if(callbackOnUpdate.size())
-    {
-        MultiMap<SoundEvent *, uint32>::iterator it = callbackOnUpdate.find(event);
-        if(it != callbackOnUpdate.end())
-            callbackOnUpdate.erase(it);
     }
 }
 

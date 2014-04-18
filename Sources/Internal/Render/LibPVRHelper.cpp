@@ -1792,8 +1792,10 @@ const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeade
     return FORMAT_INVALID;
 }
 	
-bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel)
+bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap)
 {
+	DVASSERT(mipMapLevel >= baseMipMap);
+	
     //Texture setup
     PVRHeaderV3 compressedHeader;
     uint8* pTextureData=NULL;
@@ -1829,12 +1831,12 @@ bool LibPVRHelper::ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize,
 	bool result = true;
 	for(uint32 faceIndex = 0; faceIndex < compressedHeader.u32NumFaces; ++faceIndex)
     {
-		Image* image = images[mipMapLevel * compressedHeader.u32NumFaces + faceIndex];
+		Image* image = images[(mipMapLevel - baseMipMap) * compressedHeader.u32NumFaces + faceIndex];
 		
 		image->width = PVRT_MAX(1, compressedHeader.u32Width >> mipMapLevel);
 		image->height = PVRT_MAX(1, compressedHeader.u32Height >> mipMapLevel);
 		image->format = formatDescriptor.formatID;
-		image->mipmapLevel = mipMapLevel;
+		image->mipmapLevel = mipMapLevel - baseMipMap;
 		
 		if(cubemapLayout != 0)
 		{
@@ -2300,9 +2302,9 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath &filePathname)
 	}
 
     uint32 originalFileSize = fileRead->GetSize();
-    //create single buffer for incresed data amount
+    //create single buffer for increased data amount
     uint32 newFileSize = originalFileSize + METADATA_CRC_SIZE;
-    char *fileBuffer = new char[newFileSize];
+    uint8 *fileBuffer = new uint8[newFileSize];
 	if(!fileBuffer)
 	{
 		Logger::Error("[LibPVRHelper::AddCRCIntoMetaData]: cannot allocate buffer for file data");
@@ -2320,17 +2322,16 @@ bool LibPVRHelper::AddCRCIntoMetaData(const FilePath &filePathname)
     }
     SafeRelease(fileRead);
     //calculate for only existed part of buffer(fileSize)
-    uint32 newCRC = CRC32::ForBuffer(fileBuffer, originalFileSize);
+    uint32 newCRC = CRC32::ForBuffer((const char *)fileBuffer, originalFileSize);
     uint32 textureDataSize = originalFileSize - sizeof(header) - header.u32MetaDataSize;
-    char* currentTextureDataPointer = fileBuffer + sizeof(header) + header.u32MetaDataSize;
+    uint8* currentTextureDataPointer = fileBuffer + sizeof(header) + header.u32MetaDataSize;
     //shift texture data to get space for new crc metadata
     memmove((currentTextureDataPointer + METADATA_CRC_SIZE), currentTextureDataPointer, textureDataSize);
     
-    uint32 metadata[4] = {METADATA_CRC_TAG, 0, 0, newCRC};
-    metadata[2] = sizeof(metadata);
-    memcpy(fileBuffer + sizeof(header) + header.u32MetaDataSize, &metadata, metadata[2]);
+    uint32 metadata[4] = {PVRTEX3_METADATAIDENT, METADATA_CRC_TAG, 4, newCRC};
+    memcpy(fileBuffer + sizeof(header) + header.u32MetaDataSize, metadata, METADATA_CRC_SIZE);
     
-    uint32* metaDataSizePointer = (uint32*)(fileBuffer + sizeof(header) - sizeof(header.u32MetaDataSize))	;
+    uint32* metaDataSizePointer = (uint32*)(fileBuffer + sizeof(header) - sizeof(header.u32MetaDataSize));
     *metaDataSizePointer = header.u32MetaDataSize + METADATA_CRC_SIZE;
     
     FilePath filePathnameTmp(filePathname.GetAbsolutePathname() + "_");
@@ -2530,7 +2531,7 @@ uint32 LibPVRHelper::GetCubemapFaceCount(File* file)
 	return header.u32NumFaces;
 }
     
-bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet)
+bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet, int32 baseMipMap)
 {
     uint32 fileSize = file->GetSize();
     uint8 *fileData = new uint8[fileSize];
@@ -2560,9 +2561,9 @@ bool LibPVRHelper::ReadFile(File *file, const Vector<Image *> &imageSet)
 
     bool read = true;
 	uint32 mipmapLevelCount = LibPVRHelper::GetMipMapLevelsCount(file);
-    for (uint32 i = 0; i < mipmapLevelCount; ++i)
+    for (uint32 i = baseMipMap; i < mipmapLevelCount; ++i)
     {
-        read &= ReadMipMapLevel((const char *)fileData, fileSize, imageSet, i);
+        read &= ReadMipMapLevel((const char *)fileData, fileSize, imageSet, i, baseMipMap);
     }
     
     SafeDeleteArray(fileData);

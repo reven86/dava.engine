@@ -68,7 +68,7 @@ public:
     virtual bool IsActive() const = 0;
     virtual bool Trigger() = 0;
     virtual void Stop() = 0;
-    virtual void Pause() = 0;
+    virtual void SetPaused(bool paused) = 0;
     
     virtual void SetVolume(float32 volume) = 0;
     inline float32 GetVolume() const;
@@ -76,6 +76,7 @@ public:
     virtual void SetPosition(const Vector3 & position) = 0;
     virtual void SetDirection(const Vector3 & direction) = 0;
     virtual void UpdateInstancesPosition() = 0;
+    virtual void SetVelocity(const Vector3 & velocity) = 0;
     
     inline bool IsDirectional() const;
 

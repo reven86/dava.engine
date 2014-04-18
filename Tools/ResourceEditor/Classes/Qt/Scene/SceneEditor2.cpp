@@ -457,6 +457,9 @@ void SceneEditor2::EditorCommandProcess(const Command2 *command, bool redo)
 		ownersSignatureSystem->ProcessCommand(command, redo);
 
 	materialSystem->ProcessCommand(command, redo);
+
+    if (landscapeEditorDrawSystem)
+        landscapeEditorDrawSystem->ProcessCommand(command, redo);
 }
 
 void SceneEditor2::AddEditorEntity( Entity *editorEntity )

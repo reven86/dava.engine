@@ -216,9 +216,14 @@
 		74AD4BCD1727DB880082EFB3 /* scrollviewpropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74AD4BCC1727DB880082EFB3 /* scrollviewpropertygridwidget.ui */; };
 		74AD4BD11727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74AD4BCF1727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp */; };
 		74AD4BD41727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74AD4BD31727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp */; };
-		74BCC56E18D05F3600C98406 /* errorslistdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */; };
-		74BCC57518D0671E00C98406 /* errorslistdialog.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74BCC57418D0671E00C98406 /* errorslistdialog.ui */; };
-		74BCC57718D0673100C98406 /* errorslistdialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */; };
+		74C095E1190114CC00679942 /* GuideData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C095DA190114CC00679942 /* GuideData.cpp */; };
+		74C095E2190114CC00679942 /* GuideMimeData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C095DC190114CC00679942 /* GuideMimeData.cpp */; };
+		74C095E3190114CC00679942 /* GuidesManager.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C095DF190114CC00679942 /* GuidesManager.cpp */; };
+		74C095F61901161700679942 /* GuideCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C095F41901161700679942 /* GuideCommands.cpp */; };
+		74C096361901239800679942 /* GuideData_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C096321901239800679942 /* GuideData_moc.cpp */; };
+		74C096371901239800679942 /* GuideMimeData_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C096331901239800679942 /* GuideMimeData_moc.cpp */; };
+		74C096381901239800679942 /* GuidesEnums_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C096341901239800679942 /* GuidesEnums_moc.cpp */; };
+		74C096391901239800679942 /* GuidesManager_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74C096351901239800679942 /* GuidesManager_moc.cpp */; };
 		74CD181C18D84AE3004615A5 /* rootpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74CD181A18D84AE3004615A5 /* rootpropertygridwidget.cpp */; };
 		74EED62F16B187CF00262D63 /* alignspropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */; };
 		74EED63216B18C7600262D63 /* alignspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74EED63016B18C7600262D63 /* alignspropertygridwidget.cpp */; };
@@ -681,11 +686,19 @@
 		74AD4BD01727DBA50082EFB3 /* scrollviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scrollviewpropertygridwidget.h; path = PropertyGridWidgets/scrollviewpropertygridwidget.h; sourceTree = "<group>"; };
 		74AD4BD21727DD940082EFB3 /* ui_scrollviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_scrollviewpropertygridwidget.h; sourceTree = "<group>"; };
 		74AD4BD31727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scrollviewpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
-		74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = errorslistdialog.cpp; path = Dialogs/errorslistdialog.cpp; sourceTree = "<group>"; };
-		74BCC56D18D05F3600C98406 /* errorslistdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = errorslistdialog.h; path = Dialogs/errorslistdialog.h; sourceTree = "<group>"; };
-		74BCC57418D0671E00C98406 /* errorslistdialog.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = errorslistdialog.ui; sourceTree = "<group>"; };
-		74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errorslistdialog_moc.cpp; sourceTree = "<group>"; };
-		74BCC57818D0675A00C98406 /* ui_errorslistdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_errorslistdialog.h; sourceTree = "<group>"; };
+		74C095DA190114CC00679942 /* GuideData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideData.cpp; path = Guides/GuideData.cpp; sourceTree = "<group>"; };
+		74C095DB190114CC00679942 /* GuideData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuideData.h; path = Guides/GuideData.h; sourceTree = "<group>"; };
+		74C095DC190114CC00679942 /* GuideMimeData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideMimeData.cpp; path = Guides/GuideMimeData.cpp; sourceTree = "<group>"; };
+		74C095DD190114CC00679942 /* GuideMimeData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuideMimeData.h; path = Guides/GuideMimeData.h; sourceTree = "<group>"; };
+		74C095DE190114CC00679942 /* GuidesEnums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuidesEnums.h; path = Guides/GuidesEnums.h; sourceTree = "<group>"; };
+		74C095DF190114CC00679942 /* GuidesManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuidesManager.cpp; path = Guides/GuidesManager.cpp; sourceTree = "<group>"; };
+		74C095E0190114CC00679942 /* GuidesManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuidesManager.h; path = Guides/GuidesManager.h; sourceTree = "<group>"; };
+		74C095F41901161700679942 /* GuideCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideCommands.cpp; path = Commands/GuideCommands.cpp; sourceTree = "<group>"; };
+		74C095F51901161700679942 /* GuideCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuideCommands.h; path = Commands/GuideCommands.h; sourceTree = "<group>"; };
+		74C096321901239800679942 /* GuideData_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideData_moc.cpp; path = Guides/GuideData_moc.cpp; sourceTree = "<group>"; };
+		74C096331901239800679942 /* GuideMimeData_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideMimeData_moc.cpp; path = Guides/GuideMimeData_moc.cpp; sourceTree = "<group>"; };
+		74C096341901239800679942 /* GuidesEnums_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuidesEnums_moc.cpp; path = Guides/GuidesEnums_moc.cpp; sourceTree = "<group>"; };
+		74C096351901239800679942 /* GuidesManager_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuidesManager_moc.cpp; path = Guides/GuidesManager_moc.cpp; sourceTree = "<group>"; };
 		74CD181A18D84AE3004615A5 /* rootpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rootpropertygridwidget.cpp; path = PropertyGridWidgets/rootpropertygridwidget.cpp; sourceTree = "<group>"; };
 		74CD181B18D84AE3004615A5 /* rootpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rootpropertygridwidget.h; path = PropertyGridWidgets/rootpropertygridwidget.h; sourceTree = "<group>"; };
 		74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = alignspropertygridwidget.ui; sourceTree = "<group>"; };
@@ -1197,6 +1210,8 @@
 		17F2EF2916355E1000DEE054 /* Commands */ = {
 			isa = PBXGroup;
 			children = (
+				74C095F41901161700679942 /* GuideCommands.cpp */,
+				74C095F51901161700679942 /* GuideCommands.h */,
 				1775862B1834E02200908EE9 /* CenterPivotPointCommand.cpp */,
 				1775862C1834E02200908EE9 /* CenterPivotPointCommand.h */,
 				C15D3E4F16415A3600161684 /* ControlCommands.cpp */,
@@ -1302,6 +1317,31 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		74C095D4190114BC00679942 /* Guides */ = {
+			isa = PBXGroup;
+			children = (
+				74C095DA190114CC00679942 /* GuideData.cpp */,
+				74C095DB190114CC00679942 /* GuideData.h */,
+				74C095DC190114CC00679942 /* GuideMimeData.cpp */,
+				74C095DD190114CC00679942 /* GuideMimeData.h */,
+				74C095DE190114CC00679942 /* GuidesEnums.h */,
+				74C095DF190114CC00679942 /* GuidesManager.cpp */,
+				74C095E0190114CC00679942 /* GuidesManager.h */,
+			);
+			name = Guides;
+			sourceTree = "<group>";
+		};
+		74C0962C1901238600679942 /* Guides */ = {
+			isa = PBXGroup;
+			children = (
+				74C096321901239800679942 /* GuideData_moc.cpp */,
+				74C096331901239800679942 /* GuideMimeData_moc.cpp */,
+				74C096341901239800679942 /* GuidesEnums_moc.cpp */,
+				74C096351901239800679942 /* GuidesManager_moc.cpp */,
+			);
+			name = Guides;
+			sourceTree = "<group>";
+		};
 		7CABE3C80E79AD2B307756D2 /* Sources [qmake] */ = {
 			isa = PBXGroup;
 			children = (
@@ -1342,6 +1382,7 @@
 				02D69C3B16F08CED00F3803F /* EditorSettings_moc.cpp */,
 				02D69C3C16F08CED00F3803F /* FrameworkMain_moc.cpp */,
 				02D69C3D16F08CED00F3803F /* GameCore_moc.cpp */,
+				74C0962C1901238600679942 /* Guides */,
 				02D69C3E16F08CED00F3803F /* Helpers */,
 				02D69C4616F08CED00F3803F /* Metadata */,
 				02D69C5516F08CED00F3803F /* Models */,
@@ -1397,6 +1438,7 @@
 				176B4ED418682ADE0020798C /* Grid */,
 				17660BB4186B1D8D00CF7A14 /* Ruler */,
 				171FA7EC17C4A3EA00C7F7F2 /* AlignDistribute */,
+				74C095D4190114BC00679942 /* Guides */,
 				C1C62A3A162D371E000C1B32 /* DefaultScreen.cpp */,
 				C1C62A3B162D371E000C1B32 /* DefaultScreen.h */,
 				C17246101637E18900709AAF /* EditorFontManager.cpp */,
@@ -1714,6 +1756,7 @@
 				176D394A162C2FAE0099AACF /* HierarchyTreePlatformNode.cpp in Build Sources */,
 				176D3950162C2FE50099AACF /* HierarchyTreeControlNode.cpp in Build Sources */,
 				176D3954162C396A0099AACF /* HierarchyTreeController.cpp in Build Sources */,
+				74C095F61901161700679942 /* GuideCommands.cpp in Build Sources */,
 				176D3957162C397F0099AACF /* HierarchyTree.cpp in Build Sources */,
 				176D395B162C3CAA0099AACF /* BaseMetadata.cpp in Build Sources */,
 				176D395E162C3DF90099AACF /* UIButtonMetadata.cpp in Build Sources */,
@@ -1741,6 +1784,7 @@
 				17DF04DA16368040001F7ED2 /* ScreenMetadata.cpp in Build Sources */,
 				17DF04EB1636850C001F7ED2 /* platformpropertygridwidget.cpp in Build Sources */,
 				17DF04EC1636850C001F7ED2 /* screenpropertygridwidget.cpp in Build Sources */,
+				74C095E2190114CC00679942 /* GuideMimeData.cpp in Build Sources */,
 				747FA19C1636DBED000CEEDA /* UITextControlMetadata.cpp in Build Sources */,
 				1767C4301636C8F5008D25BD /* UIStaticTextMetadata.cpp in Build Sources */,
 				747FA17C1636A7CF000CEEDA /* backgroundpropertygridwidget.cpp in Build Sources */,
@@ -1751,6 +1795,7 @@
 				17112B481639214D0017E713 /* BaseCommand.cpp in Build Sources */,
 				17112B5916392EA80017E713 /* WidgetSignalsBlocker.cpp in Build Sources */,
 				C10740DE163A94360069A640 /* createplatformdlg.cpp in Build Sources */,
+				74C095E3190114CC00679942 /* GuidesManager.cpp in Build Sources */,
 				C10740DF163A94360069A640 /* createscreendlg.cpp in Build Sources */,
 				C10740E4163A94450069A640 /* ScreenControl.cpp in Build Sources */,
 				C10740E5163A94450069A640 /* ScreenManager.cpp in Build Sources */,
@@ -1758,6 +1803,7 @@
 				C10740FF163A960D0069A640 /* BaseMetadataParams.cpp in Build Sources */,
 				17CED76C163ABD3B00F9B02D /* propertygridcontainerwidget.cpp in Build Sources */,
 				C1074160163E7B740069A640 /* ItemsCommand.cpp in Build Sources */,
+				74C095E1190114CC00679942 /* GuideData.cpp in Build Sources */,
 				17FBCE46163A7ED100FD96C0 /* UIControlStateHelper.cpp in Build Sources */,
 				17CED79C163E829600F9B02D /* statepropertygridwidget.cpp in Build Sources */,
 				C161DCEB16400E9F00068417 /* hierarchytreecontrol.cpp in Build Sources */,
@@ -1784,6 +1830,7 @@
 				74EED63216B18C7600262D63 /* alignspropertygridwidget.cpp in Build Sources */,
 				1710178B16EE197900BC7AE0 /* UIListMetadata.cpp in Build Sources */,
 				1710179016EE2F3200BC7AE0 /* UISpinnerMetadata.cpp in Build Sources */,
+				74C096361901239800679942 /* GuideData_moc.cpp in Build Sources */,
 				1746932818A3E99D0089EFF5 /* particleeffectpropertygridwidget_moc.cpp in Build Sources */,
 				174226D518A276F3003D53F4 /* editpreviewsettingsdialog.cpp in Build Sources */,
 				02D69C9D16F08CEE00F3803F /* BaseCommand_moc.cpp in Build Sources */,
@@ -1876,6 +1923,7 @@
 				C18593F516F30D74005D30E2 /* createaggregatordlg.cpp in Build Sources */,
 				C18593F916F314F2005D30E2 /* createaggregatordlg_moc.cpp in Build Sources */,
 				C18593FE16F31B3A005D30E2 /* aggregatorpropertygridwidget.cpp in Build Sources */,
+				74C096391901239800679942 /* GuidesManager_moc.cpp in Build Sources */,
 				C185940116F31CDF005D30E2 /* aggregatorpropertygridwidget_moc.cpp in Build Sources */,
 				C185940416F31DD5005D30E2 /* AggregatorMetadata.cpp in Build Sources */,
 				C185940616F3243E005D30E2 /* AggregatorMetadata_moc.cpp in Build Sources */,
@@ -1884,6 +1932,7 @@
 				17C5B5D918A4DB0100415933 /* UIParticlesMetadata_moc.cpp in Build Sources */,
 				17C5CCDC16F323E900FB90B4 /* spinnerpropertygridwidget.cpp in Build Sources */,
 				178D10F0188406A100529DA8 /* QtColorLineEdit_moc.cpp in Build Sources */,
+				74C096381901239800679942 /* GuidesEnums_moc.cpp in Build Sources */,
 				7497D74D1705AD5500E1DE60 /* UISwitchMetadata.cpp in Build Sources */,
 				178D10EB1883FED600529DA8 /* QColorWidget_moc.cpp in Build Sources */,
 				7497D74F1705AD7200E1DE60 /* UISwitchMetadata_moc.cpp in Build Sources */,
@@ -1895,6 +1944,7 @@
 				49B02651170AC25D001E28CC /* importdialog.cpp in Build Sources */,
 				49FD832F170B24E800F3B650 /* ImportCommands.cpp in Build Sources */,
 				497774C0170DB808004CE2FB /* importdialogfilewidget_moc.cpp in Build Sources */,
+				74C096371901239800679942 /* GuideMimeData_moc.cpp in Build Sources */,
 				497774C2170DB80F004CE2FB /* importdialog_moc.cpp in Build Sources */,
 				748A997D1726D7A700C6411B /* UIScrollViewMetadata.cpp in Build Sources */,
 				748A997F1726DAB300C6411B /* UIScrollViewMetadata_moc.cpp in Build Sources */,

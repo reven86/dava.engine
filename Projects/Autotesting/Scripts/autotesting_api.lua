@@ -411,7 +411,7 @@ end
 
 function WaitControl(name, time)
     local waitTime = time or TIMEOUT
-    --Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
+    Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
     
     local elapsedTime = 0.0
     while elapsedTime < waitTime do

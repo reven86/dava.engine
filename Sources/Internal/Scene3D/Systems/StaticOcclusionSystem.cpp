@@ -66,13 +66,38 @@ void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
     entities.erase( std::remove( entities.begin(), entities.end(), entity ), entities.end() );
 }
     
-void StaticOcclusionBuildSystem::BuildOcclusionInformation()
+void StaticOcclusionBuildSystem::Build()
 {
     if (entities.size() == 0)return;
     activeIndex = 0;
+    buildStepsCount = 0;
+    buildStepRemains = 0;
     needSetupNextOcclusion = true;
     if (!staticOcclusion)
         staticOcclusion = new StaticOcclusion();
+}
+
+void StaticOcclusionBuildSystem::Cancel()
+{
+    activeIndex = -1;
+    SafeDelete(staticOcclusion);
+}
+
+bool StaticOcclusionBuildSystem::IsInBuild() const
+{
+    return (-1 != activeIndex);
+}
+
+uint32 StaticOcclusionBuildSystem::GetBuildStatus() const
+{
+    uint32 ret = 0;
+
+    if(0 != buildStepsCount && buildStepsCount >= buildStepRemains)
+    {
+        ret = ((buildStepsCount - buildStepRemains) * 100) / buildStepsCount;
+    }
+
+    return ret;
 }
     
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
@@ -180,15 +205,14 @@ void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
         needSetupNextOcclusion = false;
     }else
     {
-        //Logger::FrameworkDebug("start");
-        uint32 result = 0;
-        while(1)
+        buildStepRemains = staticOcclusion->RenderFrame();
+        if(buildStepRemains > buildStepsCount)
         {
-            result = staticOcclusion->RenderFrame();
-            if (result == 0)break;
+            buildStepsCount = buildStepRemains + 1;
         }
+
         //Logger::FrameworkDebug("end");
-        if (result == 0)
+        if (buildStepRemains == 0)
         {
             
             //occlusionComponent->renderPositions = staticOcclusion->renderPositions;

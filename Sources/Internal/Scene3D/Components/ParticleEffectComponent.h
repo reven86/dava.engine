@@ -133,6 +133,7 @@ private:
 
 	/*Emitters setup*/
 	Vector<ParticleEmitter*> emitters;
+    Vector<Vector3> spawnPositions;
 		
 	ParticleEffectData effectData;
 	ParticleRenderObject *effectRenderObject;
@@ -141,6 +142,8 @@ private:
 public: //mostly editor commands
 	int32 GetEmittersCount();
 	ParticleEmitter* GetEmitter(int32 id);
+    Vector3 GetSpawnPosition(int id);
+    void SetSpawnPosition(int id, Vector3 position);
 	void AddEmitter(ParticleEmitter *emitter);
     int32 GetEmitterId(ParticleEmitter *emitter);
     void InsertEmitterAt(ParticleEmitter *emitter, int32 position);

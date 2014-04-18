@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="QtData">
@@ -1889,7 +1889,7 @@
     </ClCompile>
     <ClCompile Include="_GeneratedQt\SoundComponentEditor\SoundComponentEditor_moc.cpp">
       <Filter>QtGenerated</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="Classes\Commands2\DeleteLODCommand.cpp">
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
@@ -1960,6 +1960,12 @@
       <Filter>Classes\Qt\LicenceDialog</Filter>
     </ClCompile>
     <ClCompile Include="_GeneratedQt\LicenceDialog\LicenceDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo.cpp">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
   </ItemGroup>
@@ -3454,6 +3460,9 @@
     </ClInclude>
     <ClInclude Include="Classes\Qt\LicenceDialog\LicenceDialog.h">
       <Filter>Classes\Qt\LicenceDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets\FlagSelectorCombo.h">
+      <Filter>Classes\Qt\Tools\QtPropertyEditor\QtPropertyWidgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
