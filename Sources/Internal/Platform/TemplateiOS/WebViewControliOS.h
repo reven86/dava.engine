@@ -58,7 +58,7 @@ public:
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& targetUrl);
 	// Perfrom Java script
-	virtual String ExecuteJScript(const String& scriptString);
+	virtual void ExecuteJScript(const String& scriptString);
 
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
     
@@ -84,7 +84,7 @@ protected:
 	void* webViewPtr;
 	
 	// A pointer to the WebView delegate.
-	void* webViewDelegatePtr;
+	//void* webViewDelegatePtr;
 
 	void* webViewURLDelegatePtr;
 

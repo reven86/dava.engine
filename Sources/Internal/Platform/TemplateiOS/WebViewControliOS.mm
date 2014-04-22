@@ -35,6 +35,7 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
 - (void)leftGesture;
 - (void)rightGesture;
+- (void)onExecuteJScript:(NSString *)result;
 
 @end
 
@@ -128,6 +129,14 @@
     if (delegate && self->webView)
 	{
         delegate->PageLoaded(self->webView);
+    }
+}
+
+- (void)onExecuteJScript:(NSString *)result
+{
+    if (delegate)
+    {
+        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
     }
 }
 
@@ -265,12 +274,14 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
 	return resultMap;
 }
 
-String WebViewControl::ExecuteJScript(const String& scriptString)
+void WebViewControl::ExecuteJScript(const String& scriptString)
 {
 	NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
 	NSString *resultString = [(UIWebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
 
-	return String([resultString UTF8String]);
+    WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
+    if (w)
+        [w onExecuteJScript:resultString];
 }
 
 void WebViewControl::SetRect(const Rect& rect)

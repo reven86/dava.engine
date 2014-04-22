@@ -59,7 +59,7 @@ public:
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
 	// Perform Java script
-	virtual String ExecuteJScript(const String& scriptString);
+	virtual void ExecuteJScript(const String& scriptString);
 
 	void OpenFromBuffer(const String& string, const FilePath& basePath);
 
@@ -96,6 +96,7 @@ public:
 
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
 	static void PageLoaded(int id);
+	static void OnExecuteJScript(int id, const String& result);
 
 protected:
 	virtual jclass GetJavaClass() const;

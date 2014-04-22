@@ -51,6 +51,7 @@ public:
 	};
 
 	virtual eAction URLChanged(DAVA::UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) = 0;
+	virtual void OnExecuteJScript(DAVA::UIWebView* webview, const String& result) {};
 	
 	virtual void PageLoaded(DAVA::UIWebView* webview) = 0;
 	virtual void SwipeGesture(bool left){};
@@ -78,7 +79,7 @@ public:
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url) { return Map<String, String>(); };
 	// Execute javascript command
-	virtual String ExecuteJScript(const String& scriptString) { return String(); };
+	virtual void ExecuteJScript(const String& scriptString) { };
 	
     virtual void OpenFromBuffer(const String& string, const DAVA::FilePath& basePath) = 0;
     

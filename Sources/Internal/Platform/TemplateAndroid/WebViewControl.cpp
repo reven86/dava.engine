@@ -189,6 +189,23 @@ void JniWebView::PageLoaded(int id)
 	}
 }
 
+void JniWebView::OnExecuteJScript(int id, const String& result)
+{
+	CONTROLS_MAP::iterator iter = controls.find(id);
+	if (iter == controls.end())
+	{
+		Logger::Debug("Error web view id=%d", id);
+		return;
+	}
+
+	WebViewControl* control = iter->second;
+	IUIWebViewDelegate *delegate = control->delegate;
+	if (delegate)
+	{
+		delegate->OnExecuteJScript(control->webView, result);
+	}
+}
+
 WebViewControl::WebViewControl()
 {
 	delegate = NULL;
@@ -227,11 +244,10 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	jniWebView.DeleteCookies(webViewId, targetUrl);
 }
 
-String WebViewControl::ExecuteJScript(const String& scriptString)
+void WebViewControl::ExecuteJScript(const String& scriptString)
 {
 	JniWebView jniWebView;
 	jniWebView.ExecuteJScript(webViewId, scriptString);
-	return String();
 }
 
 void WebViewControl::OpenFromBuffer(const String& data, const FilePath& urlToOpen)

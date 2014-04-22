@@ -922,14 +922,12 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
 	return Map<String, String>();
 }
 
-String WebViewControl::ExecuteJScript(const String& targetScript)
+void WebViewControl::ExecuteJScript(const String& targetScript)
 {
 	if (browserContainer)
 	{
 		browserContainer->ExecuteJScript(targetScript);
 	}
-
-	return String();
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)

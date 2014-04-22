@@ -12,6 +12,8 @@ import android.net.Uri;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.webkit.CookieSyncManager;
+import android.webkit.JsResult;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.CookieManager;
@@ -99,9 +101,6 @@ public class JNIWebView {
 				}
 			};
 			
-			if (url.contains("code"))
-				Log.d("shouldOverrideUrlLoading", url);
-			
 			FutureTask<Integer> task = new FutureTask<Integer>(urlChanged);
 			
 			JNIActivity.GetActivity().PostEventToGL(task);
@@ -133,6 +132,7 @@ public class JNIWebView {
 				webView.getSettings().setLoadWithOverviewMode(true);
 				webView.getSettings().setUseWideViewPort(true);
 				webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+				webView.setWebChromeClient(new InternalWebClient(id));
 				
 				activity.addContentView(webView, params);
 				views.put(id, webView);
@@ -223,7 +223,7 @@ public class JNIWebView {
 					return;
 				}
 				WebView webView = views.get(id);
-				webView.loadUrl(scriptString);
+				webView.loadUrl("javascript:alert(" + scriptString +")");
 			}
 		});
 	}
@@ -327,6 +327,35 @@ public class JNIWebView {
 		});
 	}
 	
+	static class InternalWebClient extends WebChromeClient {
+		int id = 0;
+		
+		InternalWebClient(int id) {
+			this.id = id;
+		}
+		
+		@Override
+		public boolean onJsAlert(WebView view, String url, final String message,
+				JsResult result) {
+			
+			Callable<Void> jsCallback = new Callable<Void>() {
+				
+				@Override
+				public Void call() {
+					OnExecuteJScript(id, message);
+					return null;
+				}
+			};
+			
+			FutureTask<Void> task = new FutureTask<Void>(jsCallback);
+			
+			JNIActivity.GetActivity().PostEventToGL(task);
+			
+			result.cancel();
+			return true;
+		}
+	}
+	
 	static protected void RelinkNativeControls() {
 		for (WebView view: views.values()) {
 			ViewGroup viewGroup = (ViewGroup) view.getParent();
@@ -337,4 +366,5 @@ public class JNIWebView {
 	
 	private static native int OnUrlChange(int id, String url);
 	private static native int OnPageLoaded(int id);
+	private static native void OnExecuteJScript(int id, String result);
 }
