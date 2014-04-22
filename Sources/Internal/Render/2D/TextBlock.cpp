@@ -799,6 +799,7 @@ void TextBlock::Prepare2()
 
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
 	//ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
+	Release();
 }
 
 void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
