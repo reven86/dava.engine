@@ -788,6 +788,7 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 
     SafeDelete(jobData);
     mutex.Unlock();
+	Release();
 }
 
 void TextBlock::Prepare2()
@@ -799,7 +800,6 @@ void TextBlock::Prepare2()
 
 	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
 	//ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
-	Release();
 }
 
 void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
