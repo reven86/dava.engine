@@ -644,7 +644,9 @@ namespace DAVA
         textFieldHolder->textField.text = [[ [ NSString alloc ]  
                                             initWithBytes : (char*)string.data()   
                                             length : string.size() * sizeof(wchar_t)   
-                                            encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease]; 
+                                            encoding : CFStringConvertEncodingToNSStringEncoding ( kCFStringEncodingUTF32LE ) ] autorelease];
+        
+        [textFieldHolder->textField.undoManager removeAllActions];
     }
 	
     void UITextFieldiPhone::GetText(std::wstring & string) const

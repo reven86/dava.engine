@@ -461,6 +461,37 @@ void ParticleEffectComponent::RemoveEmitter(ParticleEmitter *emitter)
     
 }
 
+/*statistics for editor*/
+int32 ParticleEffectComponent::GetLayerActiveParticlesCount(ParticleLayer *layer)
+{
+    int32 count = 0;
+    for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
+    {
+        if (it->layer == layer)
+        {
+            count+=it->activeParticleCount;
+        }
+    }
+    return count;
+}
+float32 ParticleEffectComponent::GetLayerActiveParticlesSquare(ParticleLayer *layer)
+{
+    float32 square = 0;
+    for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
+    {
+        if (it->layer == layer)
+        {
+            Particle *currParticle = it->head;
+            while (currParticle)
+            {
+                square+=currParticle->currSize.x*currParticle->currSize.y;
+                currParticle = currParticle->next;
+            }
+        }
+    }
+    return square;
+}
+
 float32 ParticleEffectComponent::GetCurrTime()
 {
     return time;

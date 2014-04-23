@@ -269,13 +269,9 @@ void SceneSelectionSystem::ProcessCommand(const Command2 *command, bool redo)
 		else if(command->GetId() == CMDID_ENTITY_CHANGE_PARENT ||
 				command->GetId() == CMDID_TRANSFORM)
 		{
-			for(size_t i = 0; i < curSelections.Size(); ++i)
-			{
-				EntityGroupItem* selectedItem = curSelections.GetItem(i);
-				selectedItem->bbox = GetSelectionAABox(selectedItem->entity);
-			}
-		}
-	}
+            invalidSelectionBoxes = true;
+        }
+    }
 }
 
 void SceneSelectionSystem::SetSelection(DAVA::Entity *entity)

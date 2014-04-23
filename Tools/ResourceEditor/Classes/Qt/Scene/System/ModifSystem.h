@@ -38,6 +38,7 @@
 #include "UI/UIEvent.h"
 
 #include "Scene/SceneTypes.h"
+#include "Render/Highlevel/RenderObject.h"
 
 class SceneCollisionSystem;
 class SceneCameraSystem;
@@ -64,8 +65,14 @@ public:
 	void PlaceOnLandscape(const EntityGroup &entities);
 	void ResetTransform(const EntityGroup &entities);
 
+    void MovePivotZero(const EntityGroup &entities);
+    void MovePivotCenter(const EntityGroup &entities);
+
+    void LockTransform(const EntityGroup &entities, bool lock);
+
 	bool InModifState() const;
 	bool InCloneState() const;
+	bool ModifCanStart(const EntityGroup &selectedEntities) const;
 
 	virtual void RemoveEntity(DAVA::Entity * entity);
 	virtual void Process(DAVA::float32 timeElapsed);
@@ -98,6 +105,12 @@ protected:
 		CLONE_NEED,
 		CLONE_DONE
 	};
+
+    enum BakeMode
+    {
+        BAKE_ZERO_PIVOT,
+        BAKE_CENTER_PIVOT
+    };
 
 	CloneState cloneState;
 
@@ -136,7 +149,7 @@ protected:
 	void CloneEnd();
 
 	void ApplyModification();
-	bool ModifCanStart(const EntityGroup &selectedEntities) const;
+	bool ModifCanStartByMouse(const EntityGroup &selectedEntities) const;
 
 	DAVA::Vector3 CamCursorPosToModifPos(DAVA::Camera *camera, DAVA::Vector2 pos);
 	DAVA::Vector2 Cam2dProjection(const DAVA::Vector3 &from, const DAVA::Vector3 &to);
@@ -144,6 +157,8 @@ protected:
 	DAVA::Vector3 Move(const DAVA::Vector3 &newPos3d);
 	DAVA::float32 Rotate(const DAVA::Vector2 &newPos2d);
 	DAVA::float32 Scale(const DAVA::Vector2 &newPos2d);
+    void BakeGeometry(const EntityGroup &entities, BakeMode mode);
+    void SearchEntitiesWithRenderObject(DAVA::RenderObject *ro, DAVA::Entity *root, DAVA::Set<DAVA::Entity *> &result);
 
 	DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3 &point, const DAVA::Matrix4 &originalParentTransform) const;
 	bool IsEntityContainRecursive(const DAVA::Entity *entity, const DAVA::Entity *child) const;

@@ -71,8 +71,6 @@ protected:
 public slots:
 	void LookAtSelection();
 	void RemoveSelection();
-	void LockEntities();
-	void UnlockEntities();
 
 	void CollapseSwitch();
 	

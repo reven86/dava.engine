@@ -55,6 +55,8 @@ ShaderAsset::ShaderAsset(const FastName & _name,
 
 ShaderAsset::~ShaderAsset()
 {
+	DVASSERT(Thread::IsMainThread());
+
     HashMap<FastNameSet, Shader *>::iterator end = compiledShaders.end();
     for (HashMap<FastNameSet, Shader *>::iterator it = compiledShaders.begin(); it != end; ++it)
     {
@@ -86,7 +88,12 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
     Shader * checkShader = compiledShaders.at(defines);
     if (checkShader)return checkShader;
     
-    Shader * shader = Shader::CompileShader(name,
+	compileShaderMutex.Lock();
+
+	Shader * shader = compiledShaders.at(defines); //to check if shader was created while mutex was locked
+	if (NULL == shader)
+	{
+        shader = Shader::CompileShader(name,
                                             vertexShaderData,
                                             fragmentShaderData,
                                             vertexShaderDataStart,
@@ -95,12 +102,18 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
                                             fragmentShaderDataSize,
                                             defines);
 	
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
-														   Message(this, &ShaderAsset::BindShaderDefaultsInternal, shader));
-	JobInstanceWaiter waiter(job);
-	waiter.Wait();
+        CompiledShaderData * shaderData = new CompiledShaderData();
+        shaderData->shader = shader;
+        shaderData->defines = defines;
 
-    compiledShaders.insert(defines, shader);
+        ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
+                                                               Message(this, &ShaderAsset::CompileShaderInternal, shaderData));
+        JobInstanceWaiter waiter(job);
+        waiter.Wait();
+    }
+    
+	compileShaderMutex.Unlock();
+
     return shader;
 }
 	
@@ -118,7 +131,7 @@ void ShaderAsset::ReloadShaders()
                            fragmentShaderDataSize);
         
         ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
-                                                               Message(this, &ShaderAsset::BindShaderDefaultsInternal, it->second));
+                                                               Message(this, &ShaderAsset::ReloadShaderInternal, it->second));
         
         ++it;
         if(it == endIt)
@@ -130,8 +143,20 @@ void ShaderAsset::ReloadShaders()
         }
     }
 }
-    
-void ShaderAsset::BindShaderDefaultsInternal(BaseObject * caller, void * param, void *callerData)
+
+void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void *callerData )
+{
+	CompiledShaderData *shaderData = (CompiledShaderData*)param;
+	DVASSERT(shaderData);
+
+	BindShaderDefaults(shaderData->shader);
+	compiledShaders.insert(shaderData->defines, shaderData->shader);
+
+	delete shaderData;
+}
+
+
+void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *callerData)
 {
 	BindShaderDefaults((Shader*)param);
 }
@@ -197,7 +222,7 @@ void ShaderAsset::ClearAllLastBindedCaches()
     for (HashMap<FastNameSet, Shader *>::iterator it = compiledShaders.begin(); it != end; ++it)
         it->second->ClearLastBindedCaches();
 }
-    
+
 ShaderCache::ShaderCache()
 {
     
@@ -205,19 +230,28 @@ ShaderCache::ShaderCache()
     
 ShaderCache::~ShaderCache()
 {
+	shaderAssetMapMutex.Lock();
+
     FastNameMap<ShaderAsset*>::iterator end = shaderAssetMap.end();
     for (FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin(); it != end; ++it)
     {
 		ShaderAsset * asset = it->second;
         SafeRelease(asset);
     }
+	shaderAssetMap.clear();
+	
+	shaderAssetMapMutex.Unlock();
 }
 
 void ShaderCache::ClearAllLastBindedCaches()
 {
+	shaderAssetMapMutex.Lock();
+
     FastNameMap<ShaderAsset*>::iterator end = shaderAssetMap.end();
     for (FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin(); it != end; ++it)
         it->second->ClearAllLastBindedCaches();
+
+	shaderAssetMapMutex.Unlock();
 }
     
 void ShaderCache::ParseShader(ShaderAsset * asset)
@@ -429,25 +463,34 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
 
 ShaderAsset * ShaderCache::Load(const FastName & shaderFastName)
 {
-    ShaderAsset * checkAsset = shaderAssetMap.at(shaderFastName);
-    DVASSERT(checkAsset == 0);
-
     ShaderAsset * asset = new ShaderAsset(shaderFastName, NULL, NULL);
     LoadAsset(asset);
 
-    shaderAssetMap.Insert(shaderFastName, asset);
+	shaderAssetMapMutex.Lock();
+	ShaderAsset * checkAsset = shaderAssetMap.at(shaderFastName);
+	DVASSERT(checkAsset == 0);
+	
+	shaderAssetMap.Insert(shaderFastName, asset);
+	shaderAssetMapMutex.Unlock();
+
     return asset;
 };
 
 
 ShaderAsset * ShaderCache::Get(const FastName & shader)
 {
-    return shaderAssetMap.at(shader);
+	shaderAssetMapMutex.Lock();
+	ShaderAsset *asset = shaderAssetMap.at(shader);
+	shaderAssetMapMutex.Unlock();
+    return asset;
 }
     
 Shader * ShaderCache::Get(const FastName & shaderName, const FastNameSet & definesSet)
 {
+	shaderAssetMapMutex.Lock();
     ShaderAsset * asset = shaderAssetMap.at(shaderName);
+	shaderAssetMapMutex.Unlock();
+
     if (!asset)
     {
         asset = Load(shaderName);
@@ -459,15 +502,19 @@ Shader * ShaderCache::Get(const FastName & shaderName, const FastNameSet & defin
     
 void ShaderCache::Reload()
 {
+	shaderAssetMapMutex.Lock();
+
     FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin();
     FastNameMap<ShaderAsset*>::iterator endIt = shaderAssetMap.end();
     for( ; it != endIt; ++it)
     {
         ShaderAsset *asset = it->second;
-        
+
         LoadAsset(asset);
         asset->ReloadShaders();
     }
+
+	shaderAssetMapMutex.Unlock();
 }
 
   

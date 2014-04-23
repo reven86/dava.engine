@@ -16,6 +16,8 @@
 
 #include "QtPropertyDataKeyedArchiveMember.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Deprecated/EditorConfig.h"
+#include "Main/QtUtils.h"
 
 QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(DAVA::KeyedArchive* _archive, const DAVA::String& _key)
 	: QtPropertyDataDavaVariant(DAVA::VariantType())
@@ -23,6 +25,8 @@ QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(DAVA::KeyedArchive* _
 	, key(_key)
 	, lastCommand(NULL)
 {
+    CheckAndFillPresetValues();
+
 	if(NULL != archive)
 	{
 		DAVA::VariantType *val = archive->GetVariant(key);
@@ -36,6 +40,35 @@ QtPropertyKeyedArchiveMember::QtPropertyKeyedArchiveMember(DAVA::KeyedArchive* _
 QtPropertyKeyedArchiveMember::~QtPropertyKeyedArchiveMember()
 {
 	DAVA::SafeDelete(lastCommand);
+}
+
+void QtPropertyKeyedArchiveMember::CheckAndFillPresetValues()
+{
+    const int valueType = archive->GetVariant(key)->GetType();
+
+    const int presetValueType = EditorConfig::Instance()->GetPropertyValueType(key);
+    if (presetValueType != DAVA::VariantType::TYPE_NONE)
+    {
+        if (valueType == presetValueType)
+        {
+            const DAVA::Vector<DAVA::String>& allowedValues = EditorConfig::Instance()->GetComboPropertyValues(key);
+            if (allowedValues.size() > 0)
+            {
+                for (size_t i = 0; i < allowedValues.size(); ++i)
+                {
+                    AddAllowedValue(DAVA::VariantType((int)i), allowedValues[i].c_str());
+                }
+            }
+            else
+            {
+                const DAVA::Vector<Color> & allowedColors = EditorConfig::Instance()->GetColorPropertyValues(key);
+                for (size_t i = 0; i < allowedColors.size(); ++i)
+                {
+                    AddAllowedValue(DAVA::VariantType((int)i), ColorToQColor(allowedColors[i]));
+                }
+            }
+        }
+    }
 }
 
 void QtPropertyKeyedArchiveMember::SetValueInternal(const QVariant &value)

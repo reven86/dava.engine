@@ -154,7 +154,7 @@ public:
     virtual void SetRenderSystem(RenderSystem * renderSystem);
 	RenderSystem * GetRenderSystem();
 
-	virtual void BakeTransform(const Matrix4 & transform);
+	virtual void BakeGeometry(const Matrix4 & transform);
 
 	virtual void RecalculateWorldBoundingBox();
     

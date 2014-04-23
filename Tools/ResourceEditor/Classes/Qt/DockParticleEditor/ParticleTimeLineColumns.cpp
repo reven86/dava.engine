@@ -75,7 +75,7 @@ void ParticlesExtraInfoColumn::paintEvent(QPaintEvent *)
 		QRect textRect (EXTRA_INFO_LEFT_PADDING, TOP_INDENT + startY,
 						rect().width() - EXTRA_INFO_LEFT_PADDING, LINE_STEP);
 		painter.drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter,
-						 GetExtraInfoForLayerLine(line));
+						 GetExtraInfoForLayerLine(timeLineWidget->selectedEffect, line));
 	}
 	
 	OnAfterGetExtraInfoLoop();
@@ -176,15 +176,14 @@ void ParticlesCountColumn::OnBeforeGetExtraInfoLoop()
 	this->totalParticlesCount = 0;
 }
 
-QString ParticlesCountColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
+QString ParticlesCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
 {
 	if (!line.layer)
 	{
 		return QString();
 	}
-	
-	//int32 particlesNumber = line.layer->GetActiveParticlesCount();
-	int32 particlesNumber = 0; //TODO: later think how to restore functionality
+		
+	int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
 	this->totalParticlesCount += particlesNumber;
 	
 	return QString::number(particlesNumber);
@@ -212,7 +211,7 @@ void ParticlesAverageCountColumn::Reset()
 	CleanupCumulativeData();
 }
 
-QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
 {
 	if (!line.layer)
 	{
@@ -221,9 +220,8 @@ QString ParticlesAverageCountColumn::GetExtraInfoForLayerLine(const ParticleTime
 
 	// Calculate the cumulative info.
 	this->totalUpdatesCount ++;
-
-	//int32 particlesNumber = line.layer->GetActiveParticlesCount();
-	int32 particlesNumber = 0; //TODO: later think how to restore functionality
+	
+	int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
 	UpdateCumulativeData(line.layer, particlesNumber);
 	this->totalParticlesCount += particlesNumber;
 
@@ -274,7 +272,7 @@ void ParticlesMaxCountColumn::OnBeforeGetExtraInfoLoop()
 	this->totalParticlesCountOnThisLoop = 0;
 }
 
-QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
+QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
 {
 	if (!line.layer)
 	{
@@ -282,8 +280,8 @@ QString ParticlesMaxCountColumn::GetExtraInfoForLayerLine(const ParticleTimeLine
 	}
 
 	// Calculate the cumulative info.
-	//int32 particlesCount = line.layer->GetActiveParticlesCount();
-	int32 particlesNumber = 0; //TODO: later think how to restore functionality
+	
+	int32 particlesNumber = effect->GetLayerActiveParticlesCount(line.layer);
 	UpdateCumulativeDataIfMaximum(line.layer, particlesNumber);
 	totalParticlesCountOnThisLoop += particlesNumber;
 	
@@ -322,15 +320,15 @@ void ParticlesAreaColumn::OnBeforeGetExtraInfoLoop()
 	this->totalParticlesArea = 0;
 }
 
-QString ParticlesAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
 {
 	if (!line.layer)
 	{
 		return QString();
 	}
 	
-	//float32 area = line.layer->GetActiveParticlesArea();
-	float32 area = 0; //TODO: later think how to restore functionality
+	
+	float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
 	this->totalParticlesArea += area;
 	
 	return FormatFloat(area);
@@ -359,7 +357,7 @@ void ParticlesAverageAreaColumn::Reset()
 	CleanupCumulativeData();
 }
 
-QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
+QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
 {
 	if (!line.layer)
 	{
@@ -369,8 +367,7 @@ QString ParticlesAverageAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeL
 	// Calculate the cumulative info.
 	this->totalUpdatesCount ++;
 
-	//float32 area = line.layer->GetActiveParticlesArea();
-	float32 area = 0; //TODO: later think how to restore functionality
+	float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
 	UpdateCumulativeData(line.layer, area);
 	this->totalParticlesArea += area;
 
@@ -421,7 +418,7 @@ void ParticlesMaxAreaColumn::OnBeforeGetExtraInfoLoop()
 	totalParticlesAreaOnThisLoop = 0;
 }
 
-QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line)
+QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line)
 {
 	if (!line.layer)
 	{
@@ -429,8 +426,7 @@ QString ParticlesMaxAreaColumn::GetExtraInfoForLayerLine(const ParticleTimeLineW
 	}
 	
 	// Calculate the cumulative info.
-	//float32 particlesArea = line.layer->GetActiveParticlesArea();
-	float32 area = 0; //TODO: later think how to restore functionality
+	float32 area = effect->GetLayerActiveParticlesSquare(line.layer);
 	UpdateCumulativeDataIfMaximum(line.layer, area);
 	totalParticlesAreaOnThisLoop += area;
 	

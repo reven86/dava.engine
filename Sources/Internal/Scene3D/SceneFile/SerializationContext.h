@@ -75,8 +75,11 @@ namespace DAVA
 	
 	public:
 		
+        SerializationContext();
 		~SerializationContext();
 				
+        KeyedArchive *customProperties;
+
 		inline void SetVersion(uint32 curVersion)
 		{
 			version = curVersion;

@@ -141,7 +141,7 @@ private:
 
 	// Handle situation when the Particle Emitter Node is selected (including
 	// case when separate Layer node is selected.
-	void HandleEmitterSelected(ParticleEmitter* emitter, ParticleLayer* layer);
+	void HandleEmitterSelected(ParticleEffectComponent *effect, ParticleEmitter* emitter, ParticleLayer* layer);
 	
 	virtual QRect GetSliderRect() const;
 	virtual QRect GetIncreaseRect() const;

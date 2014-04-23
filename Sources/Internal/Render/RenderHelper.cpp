@@ -399,8 +399,11 @@ void RenderHelper::DrawCircle3D(const Vector3 & center, const Vector3 &emissionV
 		// Rotate the direction vector according to the current emission vector value.
 		Vector3 zNormalVector(0.0f, 0.0f, 1.0f);
 		Vector3 curEmissionVector = emissionVector;
-		curEmissionVector.Normalize();
-		
+        if (FLOAT_EQUAL(curEmissionVector.Length(), 0.f) == false)
+        {
+            curEmissionVector.Normalize();
+        }
+
 		// This code rotates the (XY) plane with the particles to the direction vector.
 		// Taking into account that a normal vector to the (XY) plane is (0,0,1) this
 		// code is very simplified version of the generic "plane rotation" code.
@@ -410,7 +413,10 @@ void RenderHelper::DrawCircle3D(const Vector3 & center, const Vector3 &emissionV
 			float32 cosAngleRot = curEmissionVector.z / length;
 			float32 angleRot = acos(cosAngleRot);
 			Vector3 axisRot(curEmissionVector.y, -curEmissionVector.x, 0);
-            axisRot.Normalize();
+            if (FLOAT_EQUAL(axisRot.Length(), 0.f) == false)
+            {
+                axisRot.Normalize();
+            }
 			Matrix3 planeRotMatrix;
 			planeRotMatrix.CreateRotation(axisRot, angleRot);
 			Vector3 rotatedVector = directionVector * planeRotMatrix;

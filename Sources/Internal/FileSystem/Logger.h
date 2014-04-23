@@ -137,13 +137,14 @@ public:
 #endif    
     
     void EnableConsoleMode();
-    
+
+    const char8 * GetLogLevelString(eLogLevel ll);
+
 protected:	
 	eLogLevel logLevel;
 	FilePath logFilename;
 	Vector<LoggerOutput *> customOutputs;
 
-	const char8 * GetLogLevelString(eLogLevel ll);
 
 	void PlatformLog(eLogLevel ll, const char8* text);
 	void PlatformLog(eLogLevel ll, const char16* text);

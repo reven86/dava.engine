@@ -566,221 +566,18 @@ void EmitterLayerWidget::InitWidget(QWidget* widget)
 			SLOT(OnValueChanged()));
 }
 
-void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEmitter* emitter, DAVA::ParticleLayer *layer, bool updateMinimized)
+void EmitterLayerWidget::Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, DAVA::ParticleLayer *layer, bool updateMinimized)
 {
 	if (!emitter || !layer)
-		return;
+		return;		
 	
-	blockSignals = true;
-	
+    this->effect = effect;
 	this->emitter = emitter;
 	this->layer = layer;
 	SetActiveScene(scene);
 	
+	Update(updateMinimized);
 	
-	float32 lifeTime = layer->endTime;
-
-	layerNameLineEdit->setText(QString::fromStdString(layer->layerName));
-	layerTypeComboBox->setCurrentIndex(LayerTypeToIndex(layer->type));
-
-	enableCheckBox->setChecked(!layer->isDisabled);	
-	inheritPostionCheckBox->setChecked(layer->inheritPosition);
-	
-	isLongCheckBox->setChecked(layer->isLong);
-	scaleVelocityBaseSpinBox->setValue((double)layer->scaleVelocityBase);
-	scaleVelocityFactorSpinBox->setValue((double)layer->scaleVelocityFactor);
-
-	bool scaleVelocityVisible = layer->isLong;
-	scaleVelocityBaseLabel->setVisible(scaleVelocityVisible);
-	scaleVelocityBaseSpinBox->setVisible(scaleVelocityVisible);
-	scaleVelocityFactorLabel->setVisible(scaleVelocityVisible);
-	scaleVelocityFactorSpinBox->setVisible(scaleVelocityVisible);
-
-	isLoopedCheckBox->setChecked(layer->isLooped);
-
-	for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
-	{
-		layerLodsCheckBox[i]->setChecked(layer->IsLodActive(i));
-	}
-
-	//LAYER_SPRITE = 0,
-	sprite = layer->sprite;
-	Sprite* renderSprite = Sprite::CreateAsRenderTarget(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
-	RenderManager::Instance()->SetRenderTarget(renderSprite);
-	if (sprite)
-	{
-        Sprite::DrawState drawState;
-        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE,
-                               sprite->GetWidth(), sprite->GetHeight());
-		sprite->Draw(&drawState);
-	}
-
-	RenderManager::Instance()->RestoreRenderTarget();
-	Texture* texture = renderSprite->GetTexture();
-	Image* image = texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
-	SafeRelease(image);
-	SafeRelease(renderSprite);
-
-	QString spriteName = "<none>";
-	if (sprite)
-	{
-		spriteName = QString::fromStdString(sprite->GetRelativePathname().GetAbsolutePathname());
-	}
-	spritePathLabel->setText(spriteName);
-
-	//particle orientation
-	cameraFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
-	xFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_X_FACING);
-	yFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Y_FACING);
-	zFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Z_FACING);
-	worldAlignCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
-
-	//blend and fog
-	eBlendMode sFactor = layer->srcBlendFactor;
-	eBlendMode dFactor = layer->dstBlendFactor;
-	//-1 as we don't have BLEND_NONE
-	srcFactorComboBox->setCurrentIndex(sFactor-1);
-	dstFactorComboBox->setCurrentIndex(dFactor-1);
-	int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
-	int32 presetId;
-	for (presetId=0; presetId<presetsCount; presetId++)
-	{
-		if ((blendPresetsMap[presetId].srcFactor == sFactor)&&(blendPresetsMap[presetId].dstFactor == dFactor))
-			break;
-	}
-	presetComboBox->setCurrentIndex(presetId);
-
-	fogCheckBox->setChecked(layer->enableFog);
-
-	frameBlendingCheckBox->setChecked(layer->enableFrameBlend);
-	
-
-	//LAYER_LIFE, LAYER_LIFE_VARIATION,
-	lifeTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-	lifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->life)).GetProps(), Qt::blue, "life");
-	lifeTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->lifeVariation)).GetProps(), Qt::darkGreen, "life variation");
-	lifeTimeLine->SetMinLimits(0.0f);
-
-	//LAYER_NUMBER, LAYER_NUMBER_VARIATION,
-	numberTimeLine->Init(layer->startTime, lifeTime, updateMinimized, false, true, true);
-//		void Init(float32 minT, float32 maxT, bool updateSizeState, bool aliasLinePoint = false, bool allowDeleteLine = true, bool integer = false);
-	numberTimeLine->SetMinLimits(0);
-	numberTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->number)).GetProps(), Qt::blue, "number");
-	numberTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->numberVariation)).GetProps(), Qt::darkGreen, "number variation");
-	
-	ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
-	numberTimeLine->setVisible(propLayerType != ParticleLayer::TYPE_SINGLE_PARTICLE);
-
-	//LAYER_SIZE, LAYER_SIZE_VARIATION, LAYER_SIZE_OVER_LIFE,
-	Vector<QColor> colors;
-	colors.push_back(Qt::red); colors.push_back(Qt::darkGreen);
-	Vector<QString> legends;
-	legends.push_back("size X"); legends.push_back("size Y");
-	sizeTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
-	sizeTimeLine->SetMinLimits(0);
-	sizeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->size)).GetProps(), colors, legends);
-	sizeTimeLine->EnableLock(true);
-	
-	legends.clear();
-	legends.push_back("size variation X"); legends.push_back("size variation Y");
-	sizeVariationTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
-	sizeVariationTimeLine->SetMinLimits(0);
-	sizeVariationTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeVariation)).GetProps(), colors, legends);
-	sizeVariationTimeLine->EnableLock(true);
-
-	legends.clear();
-	legends.push_back("size over life X"); legends.push_back("size over life Y");
-	sizeOverLifeTimeLine->Init(0, 1, updateMinimized, true);
-	sizeOverLifeTimeLine->SetMinLimits(0);
-	sizeOverLifeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeOverLifeXY)).GetProps(), colors, legends);
-	sizeOverLifeTimeLine->EnableLock(true);
-
-	//LAYER_VELOCITY, LAYER_VELOCITY_VARIATION,
-	velocityTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-	velocityTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocity)).GetProps(), Qt::blue, "velocity");
-	velocityTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocityVariation)).GetProps(), Qt::darkGreen, "velocity variation");
-	
-	//LAYER_VELOCITY_OVER_LIFE,
-	velocityOverLifeTimeLine->Init(0, 1, updateMinimized);
-	velocityOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocityOverLife)).GetProps(), Qt::blue, "velocity over life");
-
-	//LAYER_FORCES, LAYER_FORCES_VARIATION, LAYER_FORCES_OVER_LIFE,
-
-	//LAYER_SPIN, LAYER_SPIN_VARIATION, 
-	spinTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-	spinTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spin)).GetProps(), Qt::blue, "spin");
-	spinTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spinVariation)).GetProps(), Qt::darkGreen, "spin variation");
-	
-	//LAYER_SPIN_OVER_LIFE,
-	spinOverLifeTimeLine->Init(0, 1, updateMinimized);
-	spinOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spinOverLife)).GetProps(), Qt::blue, "spin over life");
-	
-	randomSpinDirectionCheckBox->setChecked(layer->randomSpinDirection);
-
-	//LAYER_COLOR_RANDOM, LAYER_ALPHA_OVER_LIFE, LAYER_COLOR_OVER_LIFE,
-	colorRandomGradient->Init(0, 1, "random color");
-	colorRandomGradient->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(layer->colorRandom)).GetProps());
-	
-	colorOverLifeGradient->Init(0, 1, "color over life");
-	colorOverLifeGradient->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(layer->colorOverLife)).GetProps());
-
-	alphaOverLifeTimeLine->Init(0, 1, updateMinimized);
-	alphaOverLifeTimeLine->SetMinLimits(0);
-	alphaOverLifeTimeLine->SetMaxLimits(1.f);
-	alphaOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->alphaOverLife)).GetProps(), Qt::blue, "alpha over life");
-	
-	frameOverlifeCheckBox->setChecked(layer->frameOverLifeEnabled);
-	frameOverlifeFPSSpin->setValue(layer->frameOverLifeFPS);
-	frameOverlifeFPSSpin->setEnabled(layer->frameOverLifeEnabled);
-	randomFrameOnStartCheckBox->setChecked(layer->randomFrameOnStart);
-	loopSpriteAnimationCheckBox->setChecked(layer->loopSpriteAnimation);
-
-	animSpeedOverLifeTimeLine->Init(0, 1, updateMinimized);
-	animSpeedOverLifeTimeLine->SetMinLimits(0);
-	animSpeedOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->animSpeedOverLife)).GetProps(), Qt::blue, "anim speed over life");
-	
-	angleTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
-	angleTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->angle)).GetProps(), Qt::blue, "angle");
-	angleTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->angleVariation)).GetProps(), Qt::darkGreen, "angle variation");
-	angleTimeLine->SetMinLimits(ANGLE_MIN_LIMIT_DEGREES);
-	angleTimeLine->SetMaxLimits(ANGLE_MAX_LIMIT_DEGREES);
-	angleTimeLine->SetYLegendMark(DEGREE_MARK_CHARACTER);
-
-	//LAYER_START_TIME, LAYER_END_TIME
-	startTimeSpin->setMinimum(0);
-	startTimeSpin->setValue(layer->startTime);
-	startTimeSpin->setMaximum(layer->endTime);
-	endTimeSpin->setMinimum(0);
-	endTimeSpin->setValue(layer->endTime);	
-
-	// LAYER delta, deltaVariation, loopEnd and loopVariation
-	bool isLoopedChecked = isLoopedCheckBox->isChecked();	
-	deltaSpin->setMinimum(0);
-	deltaSpin->setValue(layer->deltaTime);
-	deltaSpin->setVisible(isLoopedChecked);
-	deltaSpinLabel->setVisible(isLoopedChecked);
-	
-	deltaVariationSpin->setMinimum(0);	
-	deltaVariationSpin->setValue(layer->deltaVariation);
-	deltaVariationSpin->setVisible(isLoopedChecked);
-	deltaVariationSpinLabel->setVisible(isLoopedChecked);
-
-	loopEndSpin->setMinimum(0);	
-	loopEndSpin->setValue(layer->loopEndTime);
-	loopEndSpin->setVisible(isLoopedChecked);
-	loopEndSpinLabel->setVisible(isLoopedChecked);
-	
-	loopVariationSpin->setMinimum(0);	
-	loopVariationSpin->setValue(layer->loopVariation);
-	loopVariationSpin->setVisible(isLoopedChecked);
-	loopVariationSpinLabel->setVisible(isLoopedChecked);
-
-	const Vector2& layerPivotPoint = layer->layerPivotPoint;
-	pivotPointXSpinBox->setValue((double)layerPivotPoint.x);
-	pivotPointYSpinBox->setValue((double)layerPivotPoint.y);
-
-	blockSignals = false;
 }
 
 void EmitterLayerWidget::RestoreVisualState(KeyedArchive* visualStateProps)
@@ -986,6 +783,7 @@ void EmitterLayerWidget::OnValueChanged()
 	if (worldAlignCheckBox->isChecked())
 		particleOrientation+=ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN;
 
+    bool superemitterStatusChanged = (layer->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)!=(propLayerType == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES);
 	CommandUpdateParticleLayer* updateLayerCmd = new CommandUpdateParticleLayer(emitter, layer);
 	updateLayerCmd->Init(layerNameLineEdit->text().toStdString(),
 						 propLayerType,
@@ -1038,8 +836,12 @@ void EmitterLayerWidget::OnValueChanged()
 
 	DVASSERT(activeScene);
 	activeScene->Exec(updateLayerCmd);
-
-	Init(activeScene, emitter, layer, false);
+    Update(false);
+    if (superemitterStatusChanged)
+    {
+        if (!effect->IsStopped())
+            effect->Restart(true);
+    }	
 	emit ValueChanged();
 }
 
@@ -1058,9 +860,213 @@ void EmitterLayerWidget::OnLodsChanged()
 	emit ValueChanged();
 }
 
-void EmitterLayerWidget::Update()
+void EmitterLayerWidget::Update(bool updateMinimized)
 {
-	Init(activeScene, emitter, layer, false);
+    blockSignals = true;
+    float32 lifeTime = layer->endTime;
+
+    layerNameLineEdit->setText(QString::fromStdString(layer->layerName));
+    layerTypeComboBox->setCurrentIndex(LayerTypeToIndex(layer->type));
+
+    enableCheckBox->setChecked(!layer->isDisabled);	
+    inheritPostionCheckBox->setChecked(layer->inheritPosition);
+
+    isLongCheckBox->setChecked(layer->isLong);
+    scaleVelocityBaseSpinBox->setValue((double)layer->scaleVelocityBase);
+    scaleVelocityFactorSpinBox->setValue((double)layer->scaleVelocityFactor);
+
+    bool scaleVelocityVisible = layer->isLong;
+    scaleVelocityBaseLabel->setVisible(scaleVelocityVisible);
+    scaleVelocityBaseSpinBox->setVisible(scaleVelocityVisible);
+    scaleVelocityFactorLabel->setVisible(scaleVelocityVisible);
+    scaleVelocityFactorSpinBox->setVisible(scaleVelocityVisible);
+
+    isLoopedCheckBox->setChecked(layer->isLooped);
+
+    for (int32 i = 0; i < LodComponent::MAX_LOD_LAYERS; ++i)
+    {
+        layerLodsCheckBox[i]->setChecked(layer->IsLodActive(i));
+    }
+
+    //LAYER_SPRITE = 0,
+    sprite = layer->sprite;
+    Sprite* renderSprite = Sprite::CreateAsRenderTarget(SPRITE_SIZE, SPRITE_SIZE, FORMAT_RGBA8888);
+    RenderManager::Instance()->SetRenderTarget(renderSprite);
+    if (sprite)
+    {
+        Sprite::DrawState drawState;
+        drawState.SetScaleSize(SPRITE_SIZE, SPRITE_SIZE,
+            sprite->GetWidth(), sprite->GetHeight());
+        sprite->Draw(&drawState);
+    }
+
+    RenderManager::Instance()->RestoreRenderTarget();
+    Texture* texture = renderSprite->GetTexture();
+    Image* image = texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    spriteLabel->setPixmap(QPixmap::fromImage(TextureConvertor::FromDavaImage(image)));
+    SafeRelease(image);
+    SafeRelease(renderSprite);
+
+    QString spriteName = "<none>";
+    if (sprite)
+    {
+        spriteName = QString::fromStdString(sprite->GetRelativePathname().GetAbsolutePathname());
+    }
+    spritePathLabel->setText(spriteName);
+
+    //particle orientation
+    cameraFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_CAMERA_FACING);
+    xFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_X_FACING);
+    yFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Y_FACING);
+    zFacingCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_Z_FACING);
+    worldAlignCheckBox->setChecked(layer->particleOrientation&ParticleLayer::PARTICLE_ORIENTATION_WORLD_ALIGN);
+
+    //blend and fog
+    eBlendMode sFactor = layer->srcBlendFactor;
+    eBlendMode dFactor = layer->dstBlendFactor;
+    //-1 as we don't have BLEND_NONE
+    srcFactorComboBox->setCurrentIndex(sFactor-1);
+    dstFactorComboBox->setCurrentIndex(dFactor-1);
+    int32 presetsCount = sizeof(blendPresetsMap)/sizeof(BlendPreset);
+    int32 presetId;
+    for (presetId=0; presetId<presetsCount; presetId++)
+    {
+        if ((blendPresetsMap[presetId].srcFactor == sFactor)&&(blendPresetsMap[presetId].dstFactor == dFactor))
+            break;
+    }
+    presetComboBox->setCurrentIndex(presetId);
+
+    fogCheckBox->setChecked(layer->enableFog);
+
+    frameBlendingCheckBox->setChecked(layer->enableFrameBlend);
+
+
+    //LAYER_LIFE, LAYER_LIFE_VARIATION,
+    lifeTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
+    lifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->life)).GetProps(), Qt::blue, "life");
+    lifeTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->lifeVariation)).GetProps(), Qt::darkGreen, "life variation");
+    lifeTimeLine->SetMinLimits(0.0f);
+
+    //LAYER_NUMBER, LAYER_NUMBER_VARIATION,
+    numberTimeLine->Init(layer->startTime, lifeTime, updateMinimized, false, true, true);
+    //		void Init(float32 minT, float32 maxT, bool updateSizeState, bool aliasLinePoint = false, bool allowDeleteLine = true, bool integer = false);
+    numberTimeLine->SetMinLimits(0);
+    numberTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->number)).GetProps(), Qt::blue, "number");
+    numberTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->numberVariation)).GetProps(), Qt::darkGreen, "number variation");
+
+    ParticleLayer::eType propLayerType = layerTypeMap[layerTypeComboBox->currentIndex()].layerType;
+    numberTimeLine->setVisible(propLayerType != ParticleLayer::TYPE_SINGLE_PARTICLE);
+
+    //LAYER_SIZE, LAYER_SIZE_VARIATION, LAYER_SIZE_OVER_LIFE,
+    Vector<QColor> colors;
+    colors.push_back(Qt::red); colors.push_back(Qt::darkGreen);
+    Vector<QString> legends;
+    legends.push_back("size X"); legends.push_back("size Y");
+    sizeTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
+    sizeTimeLine->SetMinLimits(0);
+    sizeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->size)).GetProps(), colors, legends);
+    sizeTimeLine->EnableLock(true);
+
+    legends.clear();
+    legends.push_back("size variation X"); legends.push_back("size variation Y");
+    sizeVariationTimeLine->Init(layer->startTime, lifeTime, updateMinimized, true);
+    sizeVariationTimeLine->SetMinLimits(0);
+    sizeVariationTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeVariation)).GetProps(), colors, legends);
+    sizeVariationTimeLine->EnableLock(true);
+
+    legends.clear();
+    legends.push_back("size over life X"); legends.push_back("size over life Y");
+    sizeOverLifeTimeLine->Init(0, 1, updateMinimized, true);
+    sizeOverLifeTimeLine->SetMinLimits(0);
+    sizeOverLifeTimeLine->AddLines(PropLineWrapper<Vector2>(PropertyLineHelper::GetValueLine(layer->sizeOverLifeXY)).GetProps(), colors, legends);
+    sizeOverLifeTimeLine->EnableLock(true);
+
+    //LAYER_VELOCITY, LAYER_VELOCITY_VARIATION,
+    velocityTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
+    velocityTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocity)).GetProps(), Qt::blue, "velocity");
+    velocityTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocityVariation)).GetProps(), Qt::darkGreen, "velocity variation");
+
+    //LAYER_VELOCITY_OVER_LIFE,
+    velocityOverLifeTimeLine->Init(0, 1, updateMinimized);
+    velocityOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->velocityOverLife)).GetProps(), Qt::blue, "velocity over life");
+
+    //LAYER_FORCES, LAYER_FORCES_VARIATION, LAYER_FORCES_OVER_LIFE,
+
+    //LAYER_SPIN, LAYER_SPIN_VARIATION, 
+    spinTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
+    spinTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spin)).GetProps(), Qt::blue, "spin");
+    spinTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spinVariation)).GetProps(), Qt::darkGreen, "spin variation");
+
+    //LAYER_SPIN_OVER_LIFE,
+    spinOverLifeTimeLine->Init(0, 1, updateMinimized);
+    spinOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->spinOverLife)).GetProps(), Qt::blue, "spin over life");
+
+    randomSpinDirectionCheckBox->setChecked(layer->randomSpinDirection);
+
+    //LAYER_COLOR_RANDOM, LAYER_ALPHA_OVER_LIFE, LAYER_COLOR_OVER_LIFE,
+    colorRandomGradient->Init(0, 1, "random color");
+    colorRandomGradient->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(layer->colorRandom)).GetProps());
+
+    colorOverLifeGradient->Init(0, 1, "color over life");
+    colorOverLifeGradient->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(layer->colorOverLife)).GetProps());
+
+    alphaOverLifeTimeLine->Init(0, 1, updateMinimized);
+    alphaOverLifeTimeLine->SetMinLimits(0);
+    alphaOverLifeTimeLine->SetMaxLimits(1.f);
+    alphaOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->alphaOverLife)).GetProps(), Qt::blue, "alpha over life");
+
+    frameOverlifeCheckBox->setChecked(layer->frameOverLifeEnabled);
+    frameOverlifeFPSSpin->setValue(layer->frameOverLifeFPS);
+    frameOverlifeFPSSpin->setEnabled(layer->frameOverLifeEnabled);
+    randomFrameOnStartCheckBox->setChecked(layer->randomFrameOnStart);
+    loopSpriteAnimationCheckBox->setChecked(layer->loopSpriteAnimation);
+
+    animSpeedOverLifeTimeLine->Init(0, 1, updateMinimized);
+    animSpeedOverLifeTimeLine->SetMinLimits(0);
+    animSpeedOverLifeTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->animSpeedOverLife)).GetProps(), Qt::blue, "anim speed over life");
+
+    angleTimeLine->Init(layer->startTime, lifeTime, updateMinimized);
+    angleTimeLine->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->angle)).GetProps(), Qt::blue, "angle");
+    angleTimeLine->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(layer->angleVariation)).GetProps(), Qt::darkGreen, "angle variation");
+    angleTimeLine->SetMinLimits(ANGLE_MIN_LIMIT_DEGREES);
+    angleTimeLine->SetMaxLimits(ANGLE_MAX_LIMIT_DEGREES);
+    angleTimeLine->SetYLegendMark(DEGREE_MARK_CHARACTER);
+
+    //LAYER_START_TIME, LAYER_END_TIME
+    startTimeSpin->setMinimum(0);
+    startTimeSpin->setValue(layer->startTime);
+    startTimeSpin->setMaximum(layer->endTime);
+    endTimeSpin->setMinimum(0);
+    endTimeSpin->setValue(layer->endTime);	
+
+    // LAYER delta, deltaVariation, loopEnd and loopVariation
+    bool isLoopedChecked = isLoopedCheckBox->isChecked();	
+    deltaSpin->setMinimum(0);
+    deltaSpin->setValue(layer->deltaTime);
+    deltaSpin->setVisible(isLoopedChecked);
+    deltaSpinLabel->setVisible(isLoopedChecked);
+
+    deltaVariationSpin->setMinimum(0);	
+    deltaVariationSpin->setValue(layer->deltaVariation);
+    deltaVariationSpin->setVisible(isLoopedChecked);
+    deltaVariationSpinLabel->setVisible(isLoopedChecked);
+
+    loopEndSpin->setMinimum(0);	
+    loopEndSpin->setValue(layer->loopEndTime);
+    loopEndSpin->setVisible(isLoopedChecked);
+    loopEndSpinLabel->setVisible(isLoopedChecked);
+
+    loopVariationSpin->setMinimum(0);	
+    loopVariationSpin->setValue(layer->loopVariation);
+    loopVariationSpin->setVisible(isLoopedChecked);
+    loopVariationSpinLabel->setVisible(isLoopedChecked);
+
+    const Vector2& layerPivotPoint = layer->layerPivotPoint;
+    pivotPointXSpinBox->setValue((double)layerPivotPoint.x);
+    pivotPointYSpinBox->setValue((double)layerPivotPoint.y);
+
+    blockSignals = false;
+	
 }
 
 void EmitterLayerWidget::UpdateTooltip()

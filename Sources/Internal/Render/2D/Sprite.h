@@ -333,9 +333,7 @@ protected:
     static Sprite* GetSpriteFromMap(const FilePath & pathname);
     static FilePath GetScaledName(const FilePath & spriteName);
     static File* LoadLocalizedFile(const FilePath & spritePathname, FilePath & texturePath);
-    
-    void ReloadExistingTextures();
-	
+
 	void RegisterTextureStates();
 	void UnregisterTextureStates();
 

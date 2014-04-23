@@ -1110,7 +1110,26 @@ QWidget* QtPropertyDataDavaVariant::CreateAllowedFlagsEditor(QWidget *parent) co
             const QString text = value.visibleValue.isValid()
                 ? value.visibleValue.toString()
                 : FromDavaVariant(curVariantValue).toString();
-            const quint64 intVal = value.realValue.AsUInt64();
+            const DAVA::VariantType real = value.realValue;
+            quint64 intVal = 0;
+            switch ( real.type )
+            {
+            case DAVA::VariantType::TYPE_INT32:
+                intVal = real.AsInt32();
+                break;
+            case DAVA::VariantType::TYPE_UINT32:
+                intVal = real.AsUInt32();
+                break;
+            case DAVA::VariantType::TYPE_INT64:
+                intVal = real.AsInt64();
+                break;
+            case DAVA::VariantType::TYPE_UINT64:
+                intVal = real.AsUInt64();
+                break;
+            default:
+                DVASSERT( false && "Unsupported type of flags" );
+                break;
+            }
 
             allowedWidget->AddFlagItem(intVal, text);
 		}

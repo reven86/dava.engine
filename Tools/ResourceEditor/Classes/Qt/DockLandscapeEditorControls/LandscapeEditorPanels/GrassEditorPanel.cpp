@@ -168,9 +168,7 @@ void GrassEditorPanel::ConnectToSignals()
 }
 
 void GrassEditorPanel::StoreState()
-{
-    SceneEditor2* sceneEditor = GetActiveScene();
-}
+{ }
 
 void GrassEditorPanel::RestoreState()
 { 

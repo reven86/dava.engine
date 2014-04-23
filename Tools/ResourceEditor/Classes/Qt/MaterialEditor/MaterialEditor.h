@@ -105,6 +105,8 @@ private:
         CHECKED_PROPERTIES = 0x8,
         CHECKED_TEXTURES = 0x10,
 
+        CHECKED_CLEAR_MATERIAL = 0x20,
+
         CHECKED_ALL = 0xff
     };
 

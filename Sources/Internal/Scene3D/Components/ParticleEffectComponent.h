@@ -149,6 +149,10 @@ public: //mostly editor commands
 	void RemoveEmitter(ParticleEmitter *emitter);
     float32 GetCurrTime();
 
+    /*statistics for editor*/
+    int32 GetLayerActiveParticlesCount(ParticleLayer *layer);
+    float32 GetLayerActiveParticlesSquare(ParticleLayer *layer);
+
 public:
 	uint32 loadedVersion;
 	void CollapseOldEffect(SerializationContext *serializationContext);

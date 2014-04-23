@@ -161,6 +161,8 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 	QObject::connect(SceneSignals::Instance(), SIGNAL(CommandExecuted(SceneEditor2 *, const Command2*, bool)), this, SLOT(SceneCommandExecuted(SceneEditor2 *, const Command2*, bool)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
 	QObject::connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
+	QObject::connect(SceneSignals::Instance(), SIGNAL(SelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)), this, SLOT(SceneSelectionChanged(SceneEditor2 *, const EntityGroup *, const EntityGroup *)));
+
 
 	QObject::connect(SceneSignals::Instance(), SIGNAL(EditorLightEnabled(bool)), this, SLOT(EditorLightEnabled(bool)));
 
@@ -633,6 +635,10 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionModifyPlaceOnLandscape, SIGNAL(triggered()), this, SLOT(OnPlaceOnLandscape()));
 	QObject::connect(ui->actionModifySnapToLandscape, SIGNAL(triggered()), this, SLOT(OnSnapToLandscape()));
 	QObject::connect(ui->actionModifyReset, SIGNAL(triggered()), this, SLOT(OnResetTransform()));
+	QObject::connect(ui->actionLockTransform, SIGNAL(triggered()), this, SLOT(OnLockTransform()));
+	QObject::connect(ui->actionUnlockTransform, SIGNAL(triggered()), this, SLOT(OnUnlockTransform()));
+	QObject::connect(ui->actionCenterPivotPoint, SIGNAL(triggered()), this, SLOT(OnCenterPivotPoint()));
+	QObject::connect(ui->actionZeroPivotPoint, SIGNAL(triggered()), this, SLOT(OnZeroPivotPoint()));
 
 	// tools
 	QObject::connect(ui->actionMaterialEditor, SIGNAL(triggered()), this, SLOT(OnMaterialEditor()));
@@ -825,14 +831,26 @@ void QtMainWindow::SceneActivated(SceneEditor2 *scene)
 
 	int32 tools = scene->GetEnabledTools();
 	UpdateConflictingActionsState(tools == 0);
+    UpdateModificationActionsState();
 
     ui->actionSwitchesWithDifferentLODs->setChecked(scene->debugDrawSystem->SwithcesWithDifferentLODsModeEnabled());
+
+    if(NULL != scene)
+    {
+        EntityGroup curSelection = scene->selectionSystem->GetSelection();
+        SceneSelectionChanged(scene, &curSelection, NULL);
+    }
 }
 
 void QtMainWindow::SceneDeactivated(SceneEditor2 *scene)
 {
 	// block some actions, when there is no scene
 	EnableSceneActions(false);
+}
+
+void QtMainWindow::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
+{
+    UpdateModificationActionsState();
 }
 
 void QtMainWindow::EnableProjectActions(bool enable)
@@ -877,6 +895,8 @@ void QtMainWindow::EnableSceneActions(bool enable)
 	ui->actionConvertToShadow->setEnabled(enable);
 	ui->actionPivotCenter->setEnabled(enable);
 	ui->actionPivotCommon->setEnabled(enable);
+	ui->actionCenterPivotPoint->setEnabled(enable);
+	ui->actionZeroPivotPoint->setEnabled(enable);
 	ui->actionManualModifMode->setEnabled(enable);
 
     if(modificationWidget)
@@ -922,11 +942,34 @@ void QtMainWindow::EnableSceneActions(bool enable)
     ui->actionSwitchesWithDifferentLODs->setEnabled(enable);
 }
 
+void QtMainWindow::UpdateModificationActionsState()
+{
+    bool canModify = false;
+    bool isMultiple = false;
+
+    SceneEditor2 *scene = GetCurrentScene();
+    if(NULL != scene)
+    {
+        EntityGroup selection = scene->selectionSystem->GetSelection();
+        canModify = scene->modifSystem->ModifCanStart(selection);
+        isMultiple = (selection.Size() > 1);
+    }
+
+    ui->actionModifyReset->setEnabled(canModify);
+    ui->actionModifyPlaceOnLandscape->setEnabled(canModify);
+
+    ui->actionCenterPivotPoint->setEnabled(canModify && !isMultiple);
+    ui->actionZeroPivotPoint->setEnabled(canModify && !isMultiple);
+
+    modificationWidget->setEnabled(canModify);
+}
+
 void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
 	if(scene == GetCurrentScene())
 	{
 		LoadUndoRedoState(scene);
+        UpdateModificationActionsState();
 	}
 }
 
@@ -1321,6 +1364,50 @@ void QtMainWindow::OnResetTransform()
 		EntityGroup selection = scene->selectionSystem->GetSelection();
 		scene->modifSystem->ResetTransform(selection);
 	}
+}
+
+void QtMainWindow::OnLockTransform()
+{
+	SceneEditor2* scene = GetCurrentScene();
+	if(NULL != scene)
+	{
+		EntityGroup selection = scene->selectionSystem->GetSelection();
+		scene->modifSystem->LockTransform(selection, true);
+	}
+
+    UpdateModificationActionsState();
+}
+
+void QtMainWindow::OnUnlockTransform()
+{
+	SceneEditor2* scene = GetCurrentScene();
+	if(NULL != scene)
+	{
+		EntityGroup selection = scene->selectionSystem->GetSelection();
+		scene->modifSystem->LockTransform(selection, false);
+	}
+
+    UpdateModificationActionsState();
+}
+
+void QtMainWindow::OnCenterPivotPoint()
+{
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+	if(NULL != curScene)
+	{
+		EntityGroup selection = curScene->selectionSystem->GetSelection();
+		curScene->modifSystem->MovePivotCenter(selection);
+    }
+}
+
+void QtMainWindow::OnZeroPivotPoint()
+{
+    SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+	if(NULL != curScene)
+	{
+		EntityGroup selection = curScene->selectionSystem->GetSelection();
+		curScene->modifSystem->MovePivotZero(selection);
+    }
 }
 
 void QtMainWindow::OnMaterialEditor()

@@ -339,6 +339,7 @@
     <ClCompile Include="Classes\Commands2\AddComponentCommand.cpp" />
     <ClCompile Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorTool.cpp" />
     <ClCompile Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.cpp" />
+    <ClCompile Include="Classes\Commands2\BakeTransformCommand.cpp" />
     <ClCompile Include="Classes\Commands2\BeastAction.cpp" />
     <ClCompile Include="Classes\Commands2\ChangeLODDistanceCommand.cpp" />
     <ClCompile Include="Classes\Commands2\CloneLastBatchCommand.cpp" />
@@ -355,6 +356,7 @@
     <ClCompile Include="Classes\Commands2\DeleteRenderBatchCommand.cpp" />
     <ClCompile Include="Classes\Commands2\DynamicShadowCommands.cpp" />
     <ClCompile Include="Classes\Commands2\EntityAddCommand.cpp" />
+    <ClCompile Include="Classes\Commands2\EntityLockCommand.cpp" />
     <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp" />
     <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\HeightmapEditorCommands2.cpp" />
@@ -976,6 +978,7 @@
     <ClInclude Include="Classes\Commands2\AddComponentCommand.h" />
     <ClInclude Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorTool.h" />
     <ClInclude Include="Classes\CommandLine\TextureDescriptor\TextureDescriptorUtils.h" />
+    <ClInclude Include="Classes\Commands2\BakeTransformCommand.h" />
     <ClInclude Include="Classes\Commands2\BeastAction.h" />
     <ClInclude Include="Classes\Commands2\ChangeLODDistanceCommand.h" />
     <ClInclude Include="Classes\Commands2\CloneLastBatchCommand.h" />
@@ -993,6 +996,7 @@
     <ClInclude Include="Classes\Commands2\DeleteRenderBatchCommand.h" />
     <ClInclude Include="Classes\Commands2\DynamicShadowCommands.h" />
     <ClInclude Include="Classes\Commands2\EntityAddCommand.h" />
+    <ClInclude Include="Classes\Commands2\EntityLockCommand.h" />
     <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h" />
     <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h" />
     <ClInclude Include="Classes\Commands2\HeightmapEditorCommands2.h" />

@@ -312,14 +312,14 @@ public:
 	 Locking screen switch or incrementing lock counter.
 	 \returns current screen switch lock counter
 	 */
-	DAVA::int32 LockSwitch();
+	int32 LockSwitch();
 
 	/**
 	 \brief Allow screen switch.
 	 Decrementing lock counter if counter is zero unlocking screen switch.
 	 \returns current screen switch lock counter
 	 */
-	DAVA::int32 UnlockSwitch();
+	int32 UnlockSwitch();
 
 private:
 	/**
@@ -333,13 +333,13 @@ private:
 
 	void ProcessScreenLogic();
 
-	DAVA::Vector<ScreenSwitchListener*> screenSwitchListeners;
+	Vector<ScreenSwitchListener*> screenSwitchListeners;
 
 	UIScreen * currentScreen;
 	UIScreen * nextScreen;
 	UIScreen * prevScreen;
 
-	DAVA::int32 screenLockCount;
+	int32 screenLockCount;
 
 	bool removeCurrentScreen;
 	
@@ -353,7 +353,7 @@ private:
 	
 	int32 lockInputCounter;
 	
-	UIScreenTransition * transition;
+	UIScreenTransition * nextScreenTransition;
 	
 	UIGeometricData baseGeometricData;
 	

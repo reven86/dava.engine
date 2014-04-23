@@ -113,7 +113,7 @@ void GameCore::OnAppStarted()
  	new EntityTest(); 
  	new MemoryAllocatorsTest();
  	new HashMapTest();
- //	new SoundTest();
+ 	new SoundTest();
  	new SplitTest();
  	new AlignTest();
  	new EMailTest();

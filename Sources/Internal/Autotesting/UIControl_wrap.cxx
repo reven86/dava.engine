@@ -2718,6 +2718,30 @@ fail:
 }
 
 
+static int _wrap_UIControl_IsOnScreen(lua_State* L) {
+  int SWIG_arg = 0;
+  DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
+  bool result;
+  
+  SWIG_check_num_args("DAVA::UIControl::IsOnScreen",1,1)
+  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("DAVA::UIControl::IsOnScreen",1,"DAVA::UIControl const *");
+  
+  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_DAVA__UIControl,0))){
+    SWIG_fail_ptr("UIControl_IsOnScreen",1,SWIGTYPE_p_DAVA__UIControl);
+  }
+  
+  result = (bool)((DAVA::UIControl const *)arg1)->IsOnScreen();
+  lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
+  return SWIG_arg;
+  
+  if(0) SWIG_fail;
+  
+fail:
+  lua_error(L);
+  return SWIG_arg;
+}
+
+
 static int _wrap_UIControl_GetTag(lua_State* L) {
   int SWIG_arg = 0;
   DAVA::UIControl *arg1 = (DAVA::UIControl *) 0 ;
@@ -2777,6 +2801,7 @@ static swig_lua_method swig_DAVA_UIControl_methods[] = {
     {"GetDisabled", _wrap_UIControl_GetDisabled}, 
     {"GetSelected", _wrap_UIControl_GetSelected}, 
     {"GetName", _wrap_UIControl_GetName}, 
+    {"IsOnScreen", _wrap_UIControl_IsOnScreen}, 
     {"GetTag", _wrap_UIControl_GetTag}, 
     {"GetParent", _wrap_UIControl_GetParent}, 
     {0,0}
@@ -2801,22 +2826,6 @@ static swig_lua_var_info swig_variables[] = {
 };
 
 static swig_lua_const_info swig_constants[] = {
-    {SWIG_LUA_CONSTTAB_INT("UIControl_STATE_NORMAL", DAVA::UIControl::STATE_NORMAL)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_STATE_PRESSED_INSIDE", DAVA::UIControl::STATE_PRESSED_INSIDE)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_STATE_PRESSED_OUTSIDE", DAVA::UIControl::STATE_PRESSED_OUTSIDE)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_STATE_DISABLED", DAVA::UIControl::STATE_DISABLED)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_STATE_SELECTED", DAVA::UIControl::STATE_SELECTED)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_STATE_HOVER", DAVA::UIControl::STATE_HOVER)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_STATE_COUNT", DAVA::UIControl::STATE_COUNT)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_TOUCH_DOWN", DAVA::UIControl::EVENT_TOUCH_DOWN)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_TOUCH_UP_INSIDE", DAVA::UIControl::EVENT_TOUCH_UP_INSIDE)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_VALUE_CHANGED", DAVA::UIControl::EVENT_VALUE_CHANGED)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_HOVERED_SET", DAVA::UIControl::EVENT_HOVERED_SET)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_HOVERED_REMOVED", DAVA::UIControl::EVENT_HOVERED_REMOVED)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_FOCUS_SET", DAVA::UIControl::EVENT_FOCUS_SET)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_FOCUS_LOST", DAVA::UIControl::EVENT_FOCUS_LOST)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENT_TOUCH_UP_OUTSIDE", DAVA::UIControl::EVENT_TOUCH_UP_OUTSIDE)},
-    {SWIG_LUA_CONSTTAB_INT("UIControl_EVENTS_COUNT", DAVA::UIControl::EVENTS_COUNT)},
     {0,0,0,0,0,0}
 };
 

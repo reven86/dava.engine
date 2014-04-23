@@ -103,7 +103,7 @@ private:
 	// Switch editor to the particular mode.
 	void SwitchEditorToEffectMode(SceneEditor2* scene, ParticleEffectComponent* effect);
 	void SwitchEditorToEmitterMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
-	void SwitchEditorToLayerMode(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
+	void SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
 	void SwitchEditorToForceMode(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
 	// Reset the editor mode, hide/disconnect appropriate widgets.

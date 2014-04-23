@@ -126,7 +126,7 @@ void ParticleEditorWidget::OnUpdate()
 
 		case MODE_LAYER:
 		{
-			emitterLayerWidget->Update();
+			emitterLayerWidget->Update(false);
 			break;
 		}
 
@@ -259,7 +259,7 @@ void ParticleEditorWidget::OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAV
 		return;
 	}
 
-	SwitchEditorToLayerMode(scene, emitter, layer);
+	SwitchEditorToLayerMode(scene, effect, emitter, layer);
 }
 
 void ParticleEditorWidget::OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
@@ -344,7 +344,7 @@ void ParticleEditorWidget::SwitchEditorToEmitterMode(SceneEditor2* scene, Partic
 	UpdateParticleEditorWidgets();
 }
 
-void ParticleEditorWidget::SwitchEditorToLayerMode(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer)
+void ParticleEditorWidget::SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer)
 {
 	ResetEditorMode();
 	
@@ -357,7 +357,7 @@ void ParticleEditorWidget::SwitchEditorToLayerMode(SceneEditor2* scene, DAVA::Pa
 	emit ChangeVisible(true);
 	this->widgetMode = MODE_LAYER;
 
-	emitterLayerWidget->Init(scene, emitter, layer, true);
+	emitterLayerWidget->Init(scene, effect, emitter, layer, true);
 	setWidget(emitterLayerWidget);
 	emitterLayerWidget->show();
 

@@ -358,7 +358,6 @@ void Logger::EnableConsoleMode()
 void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char8 *text)
 {
     printf("[%s] %s", GetLogLevelString(ll), text);
-    
 }
 
 void Logger::ConsoleLog(DAVA::Logger::eLogLevel ll, const char16 *text)

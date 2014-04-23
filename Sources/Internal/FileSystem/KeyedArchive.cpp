@@ -290,7 +290,7 @@ void KeyedArchive::SetArchive(const String & key, KeyedArchive * archive)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetInt64(const String & key, int64 &value)
+void KeyedArchive::SetInt64(const String & key, const int64 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
@@ -298,7 +298,7 @@ void KeyedArchive::SetInt64(const String & key, int64 &value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetUInt64(const String & key, uint64 &value)
+void KeyedArchive::SetUInt64(const String & key, const uint64 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
@@ -306,7 +306,7 @@ void KeyedArchive::SetUInt64(const String & key, uint64 &value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetVector2(const String & key, Vector2 &value)
+void KeyedArchive::SetVector2(const String & key, const Vector2 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
@@ -314,7 +314,7 @@ void KeyedArchive::SetVector2(const String & key, Vector2 &value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetVector3(const String & key, Vector3 &value)
+void KeyedArchive::SetVector3(const String & key, const Vector3 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
@@ -322,7 +322,7 @@ void KeyedArchive::SetVector3(const String & key, Vector3 &value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetVector4(const String & key, Vector4 &value)
+void KeyedArchive::SetVector4(const String & key, const Vector4 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
@@ -330,7 +330,7 @@ void KeyedArchive::SetVector4(const String & key, Vector4 &value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetMatrix2(const String & key, Matrix2 &value)
+void KeyedArchive::SetMatrix2(const String & key, const Matrix2 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
@@ -338,7 +338,7 @@ void KeyedArchive::SetMatrix2(const String & key, Matrix2 &value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetMatrix3(const String & key, Matrix3 &value)
+void KeyedArchive::SetMatrix3(const String & key, const Matrix3 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
@@ -346,7 +346,7 @@ void KeyedArchive::SetMatrix3(const String & key, Matrix3 &value)
 	objectMap[key] = variantValue;
 }
 
-void KeyedArchive::SetMatrix4(const String & key, Matrix4 &value)
+void KeyedArchive::SetMatrix4(const String & key, const Matrix4 &value)
 {
     DeleteKey(key);
 	VariantType *variantValue = new VariantType();
