@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#if defined(__DAVA_USE_OCCLUSION_QUERY__)
+
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/StaticOcclusion.h"
@@ -465,3 +467,4 @@ uint32 * StaticOcclusionData::GetBlockVisibilityData(uint32 blockIndex)
 }
     
 };
+#endif //#if defined(__DAVA_USE_OCCLUSION_QUERY__)

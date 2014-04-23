@@ -54,6 +54,8 @@ namespace DAVA
 	} \
 } \
 
+#endif
+
 };
 
 #endif //__DAVAENGINE_FMODUTILS_H__

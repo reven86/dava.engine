@@ -87,8 +87,10 @@ REGISTER_CLASS(UIList);
 REGISTER_CLASS(UIListCell);
 REGISTER_CLASS(UIScrollBar);
 REGISTER_CLASS(UIScrollView);
+#if defined(__DAVA_USE_OCCLUSION_QUERY__)
 REGISTER_CLASS(StaticOcclusionComponent);
 REGISTER_CLASS(StaticOcclusionDataComponent);
+#endif
 REGISTER_CLASS_WITH_ALIAS(PartilceEmitterLoadProxy, "ParticleEmitter3D");
 REGISTER_CLASS(UIWebView);
 REGISTER_CLASS(UIParticles);

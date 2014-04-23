@@ -28,6 +28,8 @@
 #ifndef __DAVAENGINE_STATIC_OCCLUSION__
 #define __DAVAENGINE_STATIC_OCCLUSION__
 
+#if defined(__DAVA_USE_OCCLUSION_QUERY__)
+
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
@@ -133,4 +135,5 @@ inline void StaticOcclusion::SetRenderSystem(RenderSystem * _renderSystem) {rend
 
 };
 
+#endif // #if defined(__DAVA_USE_OCCLUSION_QUERY__)
 #endif //__DAVAENGINE_STATIC_OCCLUSION__

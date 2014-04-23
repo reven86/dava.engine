@@ -37,6 +37,7 @@
 
 #if defined(__DAVAENGINE_OPENGL__)
 
+#if defined(__DAVA_USE_OCCLUSION_QUERY__)
 namespace DAVA
 {
 
@@ -123,6 +124,8 @@ inline OcclusionQuery & OcclusionQueryManager::Get(OcclusionQueryManagerHandle h
 
 
 };
+
+#endif //#if defined(__DAVA_USE_OCCLUSION_QUERY__)
 
 #endif // #if defined(__DAVAENGINE_OPENGL__)
 

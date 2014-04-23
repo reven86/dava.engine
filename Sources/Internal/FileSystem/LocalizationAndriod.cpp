@@ -26,6 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#if defined(__DAVAENGINE_ANDROID__)
 #include "FileSystem/LocalizationAndroid.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "ExternC/AndroidLayer.h"
@@ -68,3 +69,4 @@ void LocalizationAndroid::SelecePreferedLocalization()
 }
 
 };
+#endif

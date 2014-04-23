@@ -25,6 +25,8 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+
+#if defined(__DAVA_USE_OCCLUSION_QUERY__)
 #include "Render/RenderManager.h"
 #include "Render/OcclusionQuery.h"
 
@@ -179,3 +181,4 @@ void OcclusionQueryManager::ReleaseQueryObject(OcclusionQueryManagerHandle handl
 #endif
 
 };
+#endif //#if defined(__DAVA_USE_OCCLUSION_QUERY__)
