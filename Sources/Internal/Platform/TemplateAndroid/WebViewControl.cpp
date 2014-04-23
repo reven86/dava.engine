@@ -35,7 +35,8 @@
 namespace DAVA
 {
 
-int WebViewControl::webViewIdCount = 0;
+int32_t WebViewControl::webViewIdCount = 0;
+int32_t WebViewControl::requestId = 0;
 
 jclass JniWebView::gJavaClass = NULL;
 const char* JniWebView::gJavaClassName = NULL;
@@ -92,13 +93,13 @@ void JniWebView::LoadHtmlString(int id, const String& htmlString)
 	}
 }
 
-void JniWebView::ExecuteJScript(int id, const String& scriptString)
+void JniWebView::ExecuteJScript(int id, int requestId, const String& scriptString)
 {
-	jmethodID mid = GetMethodID("ExecuteJScript", "(ILjava/lang/String;)V");
+	jmethodID mid = GetMethodID("ExecuteJScript", "(IILjava/lang/String;)V");
 	if (mid)
 	{
 		jstring jScriptToExecute = GetEnvironment()->NewStringUTF(scriptString.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jScriptToExecute);
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, requestId, jScriptToExecute);
 		GetEnvironment()->DeleteLocalRef(jScriptToExecute);
 	}
 }
@@ -189,7 +190,7 @@ void JniWebView::PageLoaded(int id)
 	}
 }
 
-void JniWebView::OnExecuteJScript(int id, const String& result)
+void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
 {
 	CONTROLS_MAP::iterator iter = controls.find(id);
 	if (iter == controls.end())
@@ -202,7 +203,7 @@ void JniWebView::OnExecuteJScript(int id, const String& result)
 	IUIWebViewDelegate *delegate = control->delegate;
 	if (delegate)
 	{
-		delegate->OnExecuteJScript(control->webView, result);
+		delegate->OnExecuteJScript(control->webView, requestId, result);
 	}
 }
 
@@ -244,10 +245,12 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	jniWebView.DeleteCookies(webViewId, targetUrl);
 }
 
-void WebViewControl::ExecuteJScript(const String& scriptString)
+int32_t WebViewControl::ExecuteJScript(const String& scriptString)
 {
+	requestId++;
 	JniWebView jniWebView;
-	jniWebView.ExecuteJScript(webViewId, scriptString);
+	jniWebView.ExecuteJScript(webViewId, requestId, scriptString);
+	return requestId;
 }
 
 void WebViewControl::OpenFromBuffer(const String& data, const FilePath& urlToOpen)

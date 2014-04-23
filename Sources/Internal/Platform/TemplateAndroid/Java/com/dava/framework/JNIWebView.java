@@ -211,7 +211,7 @@ public class JNIWebView {
 		});
 	}
 	
-	public static void ExecuteJScript(final int id, final String scriptString)
+	public static void ExecuteJScript(final int id, final int requestId, final String scriptString)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
 		activity.runOnUiThread(new Runnable() {
@@ -223,7 +223,8 @@ public class JNIWebView {
 					return;
 				}
 				WebView webView = views.get(id);
-				webView.loadUrl("javascript:alert(" + scriptString +")");
+				String a = "javascript:function call_back_func(){return \"" + requestId +", \" + " + scriptString + ";}javascript:alert(call_back_func())";
+				webView.loadUrl(a);
 			}
 		});
 	}
@@ -328,30 +329,47 @@ public class JNIWebView {
 	}
 	
 	static class InternalWebClient extends WebChromeClient {
-		int id = 0;
+		int id;
 		
 		InternalWebClient(int id) {
 			this.id = id;
 		}
 		
 		@Override
-		public boolean onJsAlert(WebView view, String url, final String message,
+		public boolean onJsAlert(WebView view, String url, String message,
 				JsResult result) {
-			
-			Callable<Void> jsCallback = new Callable<Void>() {
+
+			class jsCallback implements Callable<Void> {
+				int id;
+				int requestId;
+				String result;
 				
+				jsCallback(int id, int requestId, String result){
+					this.id = id;
+					this.requestId = requestId;
+					this.result = result;
+				}
+
 				@Override
-				public Void call() {
-					OnExecuteJScript(id, message);
+				public Void call() throws Exception {
+					OnExecuteJScript(this.id, this.requestId, this.result);
 					return null;
 				}
-			};
+				
+			}
 			
-			FutureTask<Void> task = new FutureTask<Void>(jsCallback);
+			int split = message.indexOf(",");
+			if (split > 0)
+			{
+				FutureTask<Void> task = new FutureTask<Void>(new jsCallback(
+						id,
+						Integer.parseInt((String) message.subSequence(0, split)),
+						(String) message.subSequence(split + 2, message.length())));
 			
-			JNIActivity.GetActivity().PostEventToGL(task);
+				JNIActivity.GetActivity().PostEventToGL(task);
+			}
 			
-			result.cancel();
+			result.confirm();
 			return true;
 		}
 	}
@@ -366,5 +384,5 @@ public class JNIWebView {
 	
 	private static native int OnUrlChange(int id, String url);
 	private static native int OnPageLoaded(int id);
-	private static native void OnExecuteJScript(int id, String result);
+	private static native void OnExecuteJScript(int id, int requestId, String result);
 }

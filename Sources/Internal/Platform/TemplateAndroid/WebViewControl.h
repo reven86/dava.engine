@@ -59,7 +59,7 @@ public:
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
 	// Perform Java script
-	virtual void ExecuteJScript(const String& scriptString);
+	virtual int32_t ExecuteJScript(const String& scriptString);
 
 	void OpenFromBuffer(const String& string, const FilePath& basePath);
 
@@ -71,10 +71,11 @@ public:
 	virtual void SetBackgroundTransparency(bool enabled);
 
 private:
-	static int webViewIdCount;
-	int webViewId;
+	static int32_t webViewIdCount;
+	int32_t webViewId;
 	IUIWebViewDelegate *delegate;
 	UIWebView* webView;
+	static int32_t requestId;
 };
 
 class JniWebView: public JniExtension
@@ -86,7 +87,7 @@ public:
 	void OpenURL(int id, const String& urlToOpen);
 	void LoadHtmlString(int id, const String& htmlString);
 	void DeleteCookies(int id, const String& targetUrl);
-	void ExecuteJScript(int id, const String& scriptString);
+	void ExecuteJScript(int id, int requestId, const String& scriptString);
 	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
 	void SetRect(int id, const Rect& rect);
@@ -96,7 +97,7 @@ public:
 
 	static IUIWebViewDelegate::eAction URLChanged(int id, const String& newURL);
 	static void PageLoaded(int id);
-	static void OnExecuteJScript(int id, const String& result);
+	static void OnExecuteJScript(int id, int requestId, const String& result);
 
 protected:
 	virtual jclass GetJavaClass() const;

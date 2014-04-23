@@ -35,7 +35,7 @@
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error;
 - (void)leftGesture;
 - (void)rightGesture;
-- (void)onExecuteJScript:(NSString *)result;
+- (void)onExecuteJScript:(NSArray *)result;
 
 @end
 
@@ -132,12 +132,15 @@
     }
 }
 
-- (void)onExecuteJScript:(NSString *)result
+- (void)onExecuteJScript:(NSArray *)result
 {
     if (delegate)
     {
-        delegate->OnExecuteJScript(webView, DAVA::String([result UTF8String]));
+        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
+        NSString* requestResult = (NSString*)[result objectAtIndex:1];
+        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
     }
+    [result release];
 }
 
 @end
@@ -149,6 +152,8 @@ namespace DAVA
 	//Use unqualified UIWebView and UIScreen from global namespace, i.e. from UIKit
 	using ::UIWebView;
 	using ::UIScreen;
+    
+int WebViewControl::runScriptID = 0;
 
 WebViewControl::WebViewControl()
 {
@@ -274,14 +279,20 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
 	return resultMap;
 }
 
-void WebViewControl::ExecuteJScript(const String& scriptString)
+int32_t WebViewControl::ExecuteJScript(const String& scriptString)
 {
+    int requestID = runScriptID++;
 	NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
 	NSString *resultString = [(UIWebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
 
     WebViewURLDelegate* w = (WebViewURLDelegate*)webViewURLDelegatePtr;
     if (w)
-        [w onExecuteJScript:resultString];
+    {
+        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
+        [array retain];
+        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+    }
+    return requestID;
 }
 
 void WebViewControl::SetRect(const Rect& rect)
