@@ -81,21 +81,6 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
 		return;
 	}
 
-   /* if (transition)
-    {
-       if (transition->IsLoadingTransition())
-        {
-            UILoadingTransition * loadingTransition = static_cast<UILoadingTransition*> (transition);
-			// DF-2672 - Unlock input for current running transition
-            if(loadingTransition->IsTransitionInProcess())
-            {
-                UnlockInput();
-            }
-        }
-    }
-
-	LockInput();*/
-
 	// 2 switches on one frame can cause memory leak
 	SafeRelease(transition);
 	SafeRelease(nextScreen);
