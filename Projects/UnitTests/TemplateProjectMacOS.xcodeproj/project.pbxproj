@@ -34,6 +34,8 @@
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
 		84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		C110BF101908F51A00D2E9E8 /* UIParticlesTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C110BF0E1908F51A00D2E9E8 /* UIParticlesTest.cpp */; };
+		C110BF141908F54100D2E9E8 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C110BF121908F54100D2E9E8 /* StringFormatTest.cpp */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
 		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
 		C177F28016D227A70036F02B /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C177F27E16D227A70036F02B /* InputTest.cpp */; };
@@ -98,7 +100,7 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		020AB208174639BB0082F336 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
@@ -165,6 +167,10 @@
 		84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DateTimeTest.cpp; path = Classes/DateTimeTest.cpp; sourceTree = "<group>"; };
 		84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DateTimeTest.h; path = Classes/DateTimeTest.h; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C110BF0E1908F51A00D2E9E8 /* UIParticlesTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIParticlesTest.cpp; path = Classes/UIParticlesTest.cpp; sourceTree = "<group>"; };
+		C110BF0F1908F51A00D2E9E8 /* UIParticlesTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIParticlesTest.h; path = Classes/UIParticlesTest.h; sourceTree = "<group>"; };
+		C110BF121908F54100D2E9E8 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringFormatTest.cpp; path = Classes/StringFormatTest.cpp; sourceTree = "<group>"; };
+		C110BF131908F54100D2E9E8 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringFormatTest.h; path = Classes/StringFormatTest.h; sourceTree = "<group>"; };
 		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eMailTest.cpp; path = Classes/eMailTest.cpp; sourceTree = "<group>"; };
 		C151B1BF16D50BDA00E09BAF /* eMailTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = eMailTest.h; path = Classes/eMailTest.h; sourceTree = "<group>"; };
@@ -392,8 +398,9 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				C110BF111908F53000D2E9E8 /* StringFormatTest */,
+				C110BF0B1908F50900D2E9E8 /* ParticleTest */,
 				6260B9DF18E9C209002DA65F /* SaveImageTest */,
-				15CBB0B318D30B6E0038ABA3 /* StringFormatTest */,
 				84E2926A18DA5D2700B5D4C9 /* DateTimeTest */,
 				49637DF518B20D4A008A3398 /* RectSpriteTest */,
 				E8583EDB183E41B2009DEEB6 /* ComponentsTest */,
@@ -509,6 +516,24 @@
 				84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */,
 			);
 			name = DateTimeTest;
+			sourceTree = "<group>";
+		};
+		C110BF0B1908F50900D2E9E8 /* ParticleTest */ = {
+			isa = PBXGroup;
+			children = (
+				C110BF0E1908F51A00D2E9E8 /* UIParticlesTest.cpp */,
+				C110BF0F1908F51A00D2E9E8 /* UIParticlesTest.h */,
+			);
+			name = ParticleTest;
+			sourceTree = "<group>";
+		};
+		C110BF111908F53000D2E9E8 /* StringFormatTest */ = {
+			isa = PBXGroup;
+			children = (
+				C110BF121908F54100D2E9E8 /* StringFormatTest.cpp */,
+				C110BF131908F54100D2E9E8 /* StringFormatTest.h */,
+			);
+			name = StringFormatTest;
 			sourceTree = "<group>";
 		};
 		C151B1BC16D50BD000E09BAF /* eMailTest */ = {
@@ -778,7 +803,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ntouch -cm ${SRCROOT}/Data/\ntouch -cm ${SRCROOT}/Data/XGfx/\ntouch -cm ${SRCROOT}/Data/Configs/\ntouch -cm ${SRCROOT}/Data/Audio/";
+			shellScript = "\ntouch -cm ${SRCROOT}/Data/\ntouch -cm ${SRCROOT}/Data/XGfx/\ntouch -cm ${SRCROOT}/Data/Configs/\ntouch -cm ${SRCROOT}/Data/Audio/";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -792,6 +817,7 @@
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
 				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
+				C110BF141908F54100D2E9E8 /* StringFormatTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,
@@ -816,6 +842,7 @@
 				E8B6B3C11705DD97004F665E /* LocalizationTest.cpp in Sources */,
 				7410E83117146D5B0028AAAA /* UIListTest.cpp in Sources */,
 				749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */,
+				C110BF101908F51A00D2E9E8 /* UIParticlesTest.cpp in Sources */,
 				E87402D7172582DB00A4A75A /* FileListTest.cpp in Sources */,
 				E87402D8172582DB00A4A75A /* FilePathTest.cpp in Sources */,
 				E87402D9172582DB00A4A75A /* FileSystemTest.cpp in Sources */,
