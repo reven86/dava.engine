@@ -731,7 +731,7 @@ bool WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_C
 	return bResult ? true : false;
 }
 
-void WebBrowserContainer::ExecuteJScript(const String& targetScript)
+int32_t WebBrowserContainer::ExecuteJScript(const String& targetScript)
 {
 	IDispatch *m_pDisp = NULL; 
     webBrowser->get_Document(&m_pDisp);
@@ -757,6 +757,8 @@ void WebBrowserContainer::ExecuteJScript(const String& targetScript)
 	if (m_pDisp) m_pDisp->Release(); 
 	if (pHtmWin2) pHtmWin2->Release();
 	if (pHtmDoc2) pHtmDoc2->Release();
+
+	return 0;
 }
 	
 bool WebBrowserContainer::DoOpenBuffer()
@@ -922,12 +924,13 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
 	return Map<String, String>();
 }
 
-void WebViewControl::ExecuteJScript(const String& targetScript)
+int32_t WebViewControl::ExecuteJScript(const String& targetScript)
 {
 	if (browserContainer)
 	{
-		browserContainer->ExecuteJScript(targetScript);
+		return browserContainer->ExecuteJScript(targetScript);
 	}
+	return 0;
 }
 
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)

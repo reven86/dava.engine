@@ -64,7 +64,7 @@ public:
 	String GetCookie(const String& url, const String& name);
 	Map<String, String> GetCookies(const String& url);
 
-	void ExecuteJScript(const String& targetScript);
+	int32_t ExecuteJScript(const String& targetScript);
 
     bool OpenFromBuffer(const String& buffer, const FilePath& basePath);
     bool DoOpenBuffer();
@@ -141,8 +141,8 @@ public:
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url);
 	// Execute javascript string in webview
-	virtual void ExecuteJScript(const String& targetScript);
-	
+	virtual int32_t ExecuteJScript(const String& scriptString);
+
     void OpenFromBuffer(const String& string, const FilePath& basePath);
 
     // Size/pos/visibility changes.

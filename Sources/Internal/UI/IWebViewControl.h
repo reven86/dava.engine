@@ -31,6 +31,7 @@
 #ifndef __DAVAENGINE_IWEBVIEWCONTROL_H__
 #define __DAVAENGINE_IWEBVIEWCONTROL_H__
 
+#include <stdint.h>
 #include "Math/MathConstants.h"
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
