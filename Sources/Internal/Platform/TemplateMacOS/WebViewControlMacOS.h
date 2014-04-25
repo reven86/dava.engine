@@ -51,6 +51,9 @@ public:
 	virtual void LoadHtmlString(const WideString& htlmString);
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
+    // Execute javascript command, return request ID
+	virtual int32_t ExecuteJScript(const String& scriptString);
+    
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
 
 	// Size/pos/visibility changes.
@@ -68,6 +71,8 @@ protected:
 	void* webViewDelegatePtr;
 
 	void* webViewPolicyDelegatePtr;
+    
+    static int32_t runScriptID;
 };
 
 };

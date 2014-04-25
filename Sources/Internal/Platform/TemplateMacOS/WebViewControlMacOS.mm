@@ -55,8 +55,8 @@ using namespace DAVA;
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
-
 - (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
+- (void)onExecuteJScript:(NSArray *)result;
 
 @end
 
@@ -136,8 +136,20 @@ using namespace DAVA;
 	}
 }
 
+- (void)onExecuteJScript:(NSArray *)result
+{
+    if (delegate)
+    {
+        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
+        NSString* requestResult = (NSString*)[result objectAtIndex:1];
+        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+    }
+    [result release];
+}
+
 @end
 
+int32_t WebViewControl::runScriptID = 0;
 
 WebViewControl::WebViewControl()
 {
@@ -249,4 +261,20 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
 	WebView* webView = (WebView*)webViewPtr;
 	[webView setDrawsBackground:(enabled ? NO : YES)];
+}
+
+int32_t WebViewControl::ExecuteJScript(const String& scriptString)
+{
+    int requestID = runScriptID++;
+    NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
+    NSString *resultString = [(WebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+
+    WebViewPolicyDelegate* w = (WebViewPolicyDelegate*) webViewPolicyDelegatePtr;
+    if (w)
+    {
+        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
+        [array retain];
+        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+    }
+    return requestID;
 }
