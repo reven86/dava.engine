@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieSyncManager;
 import android.webkit.JsResult;
@@ -131,9 +133,30 @@ public class JNIWebView {
 				webView.getSettings().setJavaScriptEnabled(true);
 				webView.getSettings().setLoadWithOverviewMode(true);
 				webView.getSettings().setUseWideViewPort(true);
-				webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+				if (android.os.Build.VERSION.SDK_INT >= 11)
+				{
+					webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+				}
 				webView.setWebChromeClient(new InternalWebClient(id));
-				
+				webView.setOnTouchListener(new View.OnTouchListener()
+				{
+				    @Override
+				    public boolean onTouch(View v, MotionEvent event)
+				    {
+				        switch (event.getAction())
+				        {
+				            case MotionEvent.ACTION_DOWN:
+				            case MotionEvent.ACTION_UP:
+				                if (!v.hasFocus())
+				                {
+				                    v.requestFocus();
+				                }
+				                break;
+				        }
+				        return false;
+				    }
+				});
+
 				activity.addContentView(webView, params);
 				views.put(id, webView);
 			}
