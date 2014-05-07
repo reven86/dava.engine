@@ -25,7 +25,6 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#if defined(__DAVA_USE_OCCLUSION_QUERY__)
 
 #ifndef __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
 #define __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
@@ -155,4 +154,3 @@ inline StaticOcclusionData & StaticOcclusionDataComponent::GetData()
 
 }
 #endif //__DAVAENGINE_SWITCH_COMPONENT_H__
-#endif //#if defined(__DAVA_USE_OCCLUSION_QUERY__)

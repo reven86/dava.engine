@@ -10,7 +10,7 @@
 #define IN_LIBXML
 #include "libxml/elfgcchack.h"
 
-#if defined(WIN32) || defined(_WIN32)
+#if defined(WIN32) || defined(_WIN32) || defined(EMSCRIPTEN)
 #include "libxml/libxml.h"
 #endif
 
@@ -1553,12 +1553,23 @@ xmlNewInputFromFile(xmlParserCtxtPtr ctxt, const char *filename) {
     buf = xmlParserInputBufferCreateFilename(filename, XML_CHAR_ENCODING_NONE);
     if (buf == NULL) {
 	if (filename == NULL)
+#if defined(EMSCRIPTEN)
+	    (void)__xmlLoaderErr((void*)ctxt,
+	                   "failed to load external entity: NULL filename \n",
+			   (const char*)NULL);
+#else
 	    __xmlLoaderErr(ctxt,
 	                   "failed to load external entity: NULL filename \n",
 			   NULL);
+#endif
 	else
+#if defined(EMSCRIPTEN)
+	    (void)__xmlLoaderErr((void*)ctxt, "failed to load external entity \"%s\"\n",
+			   (const char *) filename);
+#else
 	    __xmlLoaderErr(ctxt, "failed to load external entity \"%s\"\n",
 			   (const char *) filename);
+#endif
 	return(NULL);
     }
 

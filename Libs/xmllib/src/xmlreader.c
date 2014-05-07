@@ -220,8 +220,14 @@ static void xmlTextReaderFreeNodeList(xmlTextReaderPtr reader, xmlNodePtr cur);
  *
  * Deallocate the memory used by an id definition
  */
+#if defined(EMSCRIPTEN)
+static void
+xmlFreeID(void *vId, xmlChar *name) {
+	xmlIDPtr id = (xmlIDPtr) vId;
+#else
 static void
 xmlFreeID(xmlIDPtr id) {
+#endif
     xmlDictPtr dict = NULL;
 
     if (id == NULL) return;

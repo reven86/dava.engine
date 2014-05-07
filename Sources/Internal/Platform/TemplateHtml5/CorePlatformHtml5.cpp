@@ -20,7 +20,7 @@ namespace DAVA {
     {
    		Core::Instance()->SetIsActive(true);
 		Core::Instance()->SystemAppStarted();
-		emscripten_set_main_loop(CorePlatformHtml5::EnterFrameRoutine, 60, true);
+		emscripten_set_main_loop(CorePlatformHtml5::EnterFrameRoutine, 0, true);
     }
     
     void CorePlatformHtml5::EnterFrameRoutine()
@@ -274,6 +274,7 @@ namespace DAVA {
     	{
     		printf("Error creating GLES2 context\n");
     	}
+    	SDL_StartTextInput();
                               
 	    RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
 		RenderManager::Instance()->Create();

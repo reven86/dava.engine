@@ -8,6 +8,7 @@ INCLUDE_SYS_TYPES_H := 1
 
 SOURCE_DIRS := $(DIR_SOURCES_MAIN) \
  				$(DIR_SOURCES_MAIN)/Animation \
+ 				$(DIR_SOURCES_MAIN)/Asset \
  				$(DIR_SOURCES_MAIN)/Autotesting \
                 $(DIR_SOURCES_MAIN)/Base \
                 $(DIR_SOURCES_MAIN)/Base/Radix \
@@ -35,6 +36,8 @@ SOURCE_DIRS := $(DIR_SOURCES_MAIN) \
                 $(DIR_SOURCES_MAIN)/Scene2D \
                 $(DIR_SOURCES_MAIN)/Scene3D \
                 $(DIR_SOURCES_MAIN)/Scene3D/Components \
+                $(DIR_SOURCES_MAIN)/Scene3D/Converters \
+                $(DIR_SOURCES_MAIN)/Scene3D/SceneFile \
                 $(DIR_SOURCES_MAIN)/Scene3D/Systems \
                 $(DIR_SOURCES_MAIN)/Sound \
                 $(DIR_SOURCES_MAIN)/UI \
@@ -60,7 +63,7 @@ $(PROGRAM_NAME) : $(notdir $(patsubst %.cpp, %.o, $(wildcard $(SEARCH_WILDCARDS)
 VPATH := $(SOURCE_DIRS)
 
 %.o : %.cpp
-	python $(EMSCRIPTEN_ROOT)/em++ -O2 -c -w -MD $(addprefix -I, $(SOURCE_DIRS)) $(addprefix -I, $(INCLUDE_DIRS)) $(BUILD_FLAGS) $(COMPILE_FLAGS) $<
+	python $(EMSCRIPTEN_ROOT)/em++ -O2 -c -w $(addprefix -I, $(SOURCE_DIRS)) $(addprefix -I, $(INCLUDE_DIRS)) $(BUILD_FLAGS) $(COMPILE_FLAGS) $<
 	
 include $(wildcard *.d)
 

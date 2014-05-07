@@ -17,7 +17,7 @@
 #define IN_LIBXML
 #include "libxml/elfgcchack.h"
 
-#if defined(WIN32) || defined(_WIN32)
+#if defined(WIN32) || defined(_WIN32) || defined(EMSCRIPTEN)
 #include "libxml/libxml.h"
 #endif
 

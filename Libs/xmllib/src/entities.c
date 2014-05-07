@@ -827,8 +827,14 @@ xmlFreeEntitiesTable(xmlEntitiesTablePtr table) {
  * 
  * Returns the new xmlEntitiesPtr or NULL in case of error.
  */
+#if defined(EMSCRIPTEN)
+static void*
+xmlCopyEntity(void *vEnt, xmlChar *name) {
+	xmlEntityPtr ent = (xmlEntityPtr)vEnt;
+#else
 static xmlEntityPtr
 xmlCopyEntity(xmlEntityPtr ent) {
+#endif
     xmlEntityPtr cur;
 
     cur = (xmlEntityPtr) xmlMalloc(sizeof(xmlEntity));
@@ -852,7 +858,11 @@ xmlCopyEntity(xmlEntityPtr ent) {
 	cur->orig = xmlStrdup(ent->orig);
     if (ent->URI != NULL)
 	cur->URI = xmlStrdup(ent->URI);
+#if defined(EMSCRIPTEN)
+	return (void*)(cur);
+#else
     return(cur);
+#endif
 }
 
 /**

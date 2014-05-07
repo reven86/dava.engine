@@ -1,0 +1,1 @@
+./Configure emscripten -no-hw -no-asm -no-shared -no-dso -pthread

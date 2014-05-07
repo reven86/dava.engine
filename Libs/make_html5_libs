@@ -1,42 +1,28 @@
 cd libpng/html5/
-rm -rf *.o *.a
 make -j6
-rm -rf *.o *.a
 cd ../..
 
 cd freetype_and/html5/
-rm -rf *.o *.a
 make -j6
-rm -rf *.o *.a
 cd ../..
 
 cd mongodb/html5/
-rm -rf *.o *.a
 make -j6
-rm -rf *.o *.a
 cd ../..
 
 cd yaml/html5/
-rm -rf *.o *.a
 make -j6
-rm -rf *.o *.a
 cd ../..
 
 cd ImageMagick-6.7.4-Windows/zlib/html5/
-rm -rf *.o *.a
 make -j6
-rm -rf *.o *.a
 cd ../../..
 
 cd xmllib/html5/
-rm -rf *.o *.a
 make -j6
-rm -rf *.o *.a
 cd ../..
 
 cd NVTT/html5/
-rm -rf *.o *.a
 make -j6
-rm -rf *.o *.a
 cd ..
 

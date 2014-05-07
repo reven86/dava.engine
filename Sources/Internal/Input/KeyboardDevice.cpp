@@ -151,6 +151,7 @@ void KeyboardDevice::PrepareKeyTranslator()
     keyTranslator[0x51] = DVKEY_DOWN;
     keyTranslator[0x7F] = DVKEY_DELETE;
     keyTranslator[0x0D] = DVKEY_ENTER;
+    keyTranslator[0xE1] = DVKEY_SHIFT;
     
 
     keyTranslator[0x61] = DVKEY_A;

@@ -40,6 +40,11 @@
 #include <windows.h>
 #endif
 
+#if defined(EMSCRIPTEN)
+// Need to be explicitly defined in emscripten
+#include <unistd.h>
+#endif
+
 #if defined(_WIN32_WCE)
 #include <winnls.h> /* for CP_UTF8 */
 #endif
@@ -786,8 +791,13 @@ xmlCheckFilename (const char *path)
     return 1;
 }
 
+#if defined(EMSCRIPTEN)
+static int
+xmlNop(void* v, char* c, int i) {
+#else
 static int
 xmlNop(void) {
+#endif
     return(0);
 }
 
@@ -3691,11 +3701,19 @@ xmlCheckHTTPInput(xmlParserCtxtPtr ctxt, xmlParserInputPtr ret) {
         if (code >= 400) {
             /* fatal error */
 	    if (ret->filename != NULL)
+#if defined(EMSCRIPTEN)
+		(void)__xmlLoaderErr((void*)ctxt, "failed to load HTTP resource \"%s\"\n",
+                         (const char *) ret->filename);
+#else
 		__xmlLoaderErr(ctxt, "failed to load HTTP resource \"%s\"\n",
                          (const char *) ret->filename);
+#endif
 	    else
+#if defined(EMSCRIPTEN)
+		(void)__xmlLoaderErr((void*)ctxt, "failed to load HTTP resource\n", (const char*)NULL);
+#else
 		__xmlLoaderErr(ctxt, "failed to load HTTP resource\n", NULL);
-            xmlFreeInputStream(ret);
+#endif
             ret = NULL;
         } else {
 
@@ -3879,7 +3897,11 @@ xmlDefaultExternalEntityLoader(const char *URL, const char *ID,
     if (resource == NULL) {
         if (ID == NULL)
             ID = "NULL";
+#if defined(EMSCRIPTEN)
+		(void)__xmlLoaderErr((void*)ctxt, "failed to load external entity \"%s\"\n", (const char*)ID);
+#else
         __xmlLoaderErr(ctxt, "failed to load external entity \"%s\"\n", ID);
+#endif
         return (NULL);
     }
     ret = xmlNewInputFromFile(ctxt, (const char *) resource);

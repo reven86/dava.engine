@@ -89,12 +89,10 @@ Component * Component::CreateByType(uint32 componentType)
 		return new CustomPropertiesComponent();
 	case ACTION_COMPONENT:
 		return new ActionComponent();
-#if defined(__DAVA_USE_OCCLUSION_QUERY__)
     case STATIC_OCCLUSION_COMPONENT:
         return new StaticOcclusionComponent();
     case STATIC_OCCLUSION_DATA_COMPONENT:
         return new StaticOcclusionDataComponent();
-#endif
     case QUALITY_SETTINGS_COMPONENT:
         return new QualitySettingsComponent();
 	case ANIMATION_COMPONENT:

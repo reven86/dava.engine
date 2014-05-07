@@ -68,6 +68,12 @@
 #endif
 #endif
 
+#if defined(EMSCRIPTEN)
+// Need to be explicitly defined in emscripten
+#include <unistd.h>
+#endif
+
+
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>

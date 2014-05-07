@@ -18,6 +18,11 @@
 #  define ZLIB_INTERNAL
 #endif
 
+#if defined(EMSCRIPTEN)
+// Need to be explicitly defined in emscripten
+#include <unistd.h>
+#endif
+
 #include <stdio.h>
 #include "zlib.h"
 #ifdef STDC

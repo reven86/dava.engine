@@ -25,7 +25,6 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#if defined(__DAVA_USE_OCCLUSION_QUERY__)
 
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Scene.h"
@@ -141,4 +140,3 @@ void StaticOcclusionDataComponent::Deserialize(KeyedArchive *archive, Serializat
 
 
 }
-#endif //#if defined(__DAVA_USE_OCCLUSION_QUERY__)
