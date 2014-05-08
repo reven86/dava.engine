@@ -68,7 +68,7 @@ void RenderLayerManager::InsertLayer(RenderLayer * renderLayer)
 
 RenderLayerManager::RenderLayerManager()
     : array(RENDER_LAYER_ID_COUNT)
-    , map(RENDER_LAYER_ID_COUNT)
+    , map(NextPowerOf2(RENDER_LAYER_ID_COUNT))
 {
     TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
     

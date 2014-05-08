@@ -76,6 +76,7 @@ namespace DAVA
 	public:
         IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE)
 		
+        SerializationContext();
 		~SerializationContext();
 				
 		inline void SetVersion(uint32 curVersion)

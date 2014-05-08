@@ -9,6 +9,7 @@
 
 FlagSelectorCombo::FlagSelectorCombo(QWidget* parent)
     : QComboBox(parent)
+    , extraMask(0)
 {
     setEditable(false);
 
@@ -26,52 +27,60 @@ FlagSelectorCombo::~FlagSelectorCombo()
 {
 }
 
-void FlagSelectorCombo::AddFlagItem(int const value, QString const& hint)
+void FlagSelectorCombo::AddFlagItem(const quint64 value, const QString& hint)
 {
     QStandardItemModel* m = qobject_cast<QStandardItemModel*>(model());
     DVASSERT(m);
+
+    const QString numValue = QString::number(value);
+    const QString toolTip = hint.isEmpty() ? numValue : QString("(%1) %2").arg(value).arg(hint);
 
     QStandardItem *item = new QStandardItem();
     item->setCheckable(true);
     item->setData(value, ValueRole);
-    item->setText(!hint.isEmpty() ? hint : QString::number(value));
+    item->setText(!hint.isEmpty() ? hint : numValue);
+    item->setToolTip(toolTip);
 
     m->appendRow(item);
 }
 
-void FlagSelectorCombo::SetFlags(const int flags)
+void FlagSelectorCombo::SetFlags(const quint64 flags)
 {
     QStandardItemModel* m = qobject_cast<QStandardItemModel*>(model());
     DVASSERT(m);
 
+    int knownFlags = 0;
     const int n = m->rowCount();
     for (int i = 0; i < n; i++)
     {
         QStandardItem *item = m->item(i);
-        const int flag = item->data(ValueRole).toInt();
+        const quint64 flag = item->data(ValueRole).toULongLong();
         const bool isChecked = ( (flag & flags) == flag );
         item->setCheckState(isChecked ? Qt::Checked : Qt::Unchecked);
+        knownFlags |= flag;
     }
+    extraMask = flags & ~knownFlags;
 
     updateText();
 }
 
-int FlagSelectorCombo::GetFlags() const
+quint64 FlagSelectorCombo::GetFlags() const
 {
     QStandardItemModel* m = qobject_cast<QStandardItemModel*>(model());
     DVASSERT(m);
 
-    int flags = 0;
+    quint64 flags = 0;
     const int n = m->rowCount();
     for (int i = 0; i < n; i++)
     {
         QStandardItem *item = m->item(i);
         if (item->checkState() == Qt::Checked)
         {
-            const int flag = item->data(ValueRole).toInt();
+            const quint64 flag = item->data(ValueRole).toULongLong();
             flags |= flag;
         }
     }
+    flags |= extraMask;
 
     return flags;
 }
@@ -99,7 +108,8 @@ void FlagSelectorCombo::updateText()
     }
 
     text = hints.join( " | " );
-    setToolTip(text);
+    const QString toolTip = hints.join( "\n" );
+    setToolTip(toolTip);
     repaint();
 }
 
@@ -118,6 +128,13 @@ bool FlagSelectorCombo::eventFilter(QObject* obj, QEvent* e)
                 m->setData( index, isChecked ? Qt::Unchecked : Qt::Checked, Qt::CheckStateRole);
             }
             return true;
+
+        case QEvent::Hide:
+            {
+                const quint64 flags = GetFlags();
+                emit done(flags);
+            }
+            break;
 
         default:
             break;

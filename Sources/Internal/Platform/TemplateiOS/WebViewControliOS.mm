@@ -141,6 +141,21 @@ namespace DAVA
 	using ::UIWebView;
 	using ::UIScreen;
 
+    static const struct
+    {
+        DAVAWebView::eDataDetectorType davaDetectorType;
+        NSUInteger systemDetectorType;
+    }
+    detectorsMap[] =
+    {
+        {DAVAWebView::DATA_DETECTOR_ALL, UIDataDetectorTypeAll},
+        {DAVAWebView::DATA_DETECTOR_NONE, UIDataDetectorTypeNone},
+        {DAVAWebView::DATA_DETECTOR_PHONE_NUMBERS, UIDataDetectorTypePhoneNumber},
+        {DAVAWebView::DATA_DETECTOR_LINKS, UIDataDetectorTypeLink},
+        {DAVAWebView::DATA_DETECTOR_ADDRESSES, UIDataDetectorTypeAddress},
+        {DAVAWebView::DATA_DETECTOR_CALENDAR_EVENTS, UIDataDetectorTypeCalendarEvent}
+    };
+
 WebViewControl::WebViewControl()
 {
     gesturesEnabled = false;
@@ -359,6 +374,42 @@ void WebViewControl::SetGestures(bool value)
         leftSwipeGesturePtr = nil;
     }
     gesturesEnabled = value;
+}
+
+void WebViewControl::SetDataDetectorTypes(int32 value)
+{
+    NSUInteger systemDetectorTypes = 0;
+
+    int detectorsCount = COUNT_OF(detectorsMap);
+    for (int i = 0; i < detectorsCount; i ++)
+    {
+        if ((value & detectorsMap[i].davaDetectorType) == detectorsMap[i].davaDetectorType)
+        {
+            systemDetectorTypes |= detectorsMap[i].systemDetectorType;
+        }
+    }
+
+    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    localWebView.dataDetectorTypes = systemDetectorTypes;
+}
+
+int32 WebViewControl::GetDataDetectorTypes() const
+{
+    UIWebView* localWebView = (UIWebView*)webViewPtr;
+    NSUInteger systemDetectorTypes = localWebView.dataDetectorTypes;
+
+    int32 davaDetectorTypes = 0;
+    
+    int detectorsCount = COUNT_OF(detectorsMap);
+    for (int i = 0; i < detectorsCount; i ++)
+    {
+        if ((systemDetectorTypes & detectorsMap[i].systemDetectorType) == detectorsMap[i].systemDetectorType)
+        {
+            davaDetectorTypes |= detectorsMap[i].davaDetectorType;
+        }
+    }
+
+    return davaDetectorTypes;
 }
     
 };

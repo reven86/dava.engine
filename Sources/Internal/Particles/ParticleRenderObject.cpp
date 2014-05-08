@@ -170,6 +170,7 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 		if (!currGroup.material) continue; //if no material was set up - don't draw
 		if (!currGroup.head) continue; //skip empty group
 		if (currGroup.layer->isDisabled) continue; //note - it's just stop it from being rendered, still processing particles
+        if (!currGroup.layer->sprite) continue; //cant draw if sprite is removed
 
 		//start new batch if needed
 		if (currGroup.material!=currMaterial) 

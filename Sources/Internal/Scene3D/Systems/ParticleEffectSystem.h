@@ -65,6 +65,7 @@ protected:
     void AddToActive(ParticleEffectComponent *effect);
 	void RemoveFromActive(ParticleEffectComponent *effect);
 
+    void UpdateActiveLod(ParticleEffectComponent *effect);
 	void UpdateEffect(ParticleEffectComponent *effect, float32 time, float32 shortEffectTime);
 	Particle* GenerateNewParticle(ParticleEffectComponent *effect, ParticleGroup& group, float32 currLoopTime, const Matrix4 &worldTransform);
 	

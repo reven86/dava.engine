@@ -111,10 +111,6 @@ public:
     uint32 GetRenderBatchCount();
     RenderBatch * GetRenderBatch(uint32 batchIndex);
 
-
-	inline void SetVisible(bool isVisible);
-	inline bool GetVisible();
-	
 	inline const AABBox3 & GetBoundingBox() const;
     inline const AABBox3 & GetWorldTransformedBox() const; 
 	

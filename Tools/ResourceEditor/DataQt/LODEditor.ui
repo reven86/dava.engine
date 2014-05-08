@@ -10,11 +10,23 @@
     <height>821</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="margin">
+   <property name="leftMargin">
+    <number>5</number>
+   </property>
+   <property name="topMargin">
+    <number>5</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
     <number>5</number>
    </property>
    <item>
@@ -43,7 +55,16 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
        <number>5</number>
       </property>
       <item row="0" column="0">
@@ -230,7 +251,16 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
        <number>5</number>
       </property>
       <item row="0" column="0" colspan="2">
@@ -321,7 +351,16 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <property name="margin">
+      <property name="leftMargin">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>5</number>
+      </property>
+      <property name="bottomMargin">
        <number>5</number>
       </property>
       <item row="3" column="0">
@@ -589,6 +628,24 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>globalLODSettingsButton</tabstop>
+  <tabstop>lod0Correction</tabstop>
+  <tabstop>lod1Correction</tabstop>
+  <tabstop>lod2Correction</tabstop>
+  <tabstop>lod3Correction</tabstop>
+  <tabstop>viewLODButton</tabstop>
+  <tabstop>enableForceDistance</tabstop>
+  <tabstop>forceLayer</tabstop>
+  <tabstop>editLODButton</tabstop>
+  <tabstop>lod0Distance</tabstop>
+  <tabstop>lod1Distance</tabstop>
+  <tabstop>lod2Distance</tabstop>
+  <tabstop>lod3Distance</tabstop>
+  <tabstop>createPlaneLodButton</tabstop>
+  <tabstop>buttonDeleteFirstLOD</tabstop>
+  <tabstop>buttonDeleteLastLOD</tabstop>
+ </tabstops>
  <resources>
   <include location="QtIcons.qrc"/>
  </resources>

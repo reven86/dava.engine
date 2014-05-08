@@ -932,7 +932,7 @@ void BasePropertyGridWidget::UpdateWidgetPalette(QWidget* widget, const QString&
 void BasePropertyGridWidget::PreparePalettes()
 {
     dirtyPropertyPalette.setColor(QPalette::Text, Qt::red);
-    clearPropertyPalette.setColor(QPalette::Text, Qt::black);
+    clearPropertyPalette.setColor(QPalette::Text, QApplication::palette().text().color());
 }
 
 const QPalette& BasePropertyGridWidget::GetWidgetPaletteForDirtyProperty() const

@@ -39,6 +39,8 @@ protected:
 	virtual bool EditorDoneInternal(QWidget *editor);
 
 	virtual void* CreateLastCommand() const;
+private:
+    void CheckAndFillPresetValues();
 };
 
 #endif // __QT_PROPERTY_KEYED_ARCHIVE_MEMBER_H__

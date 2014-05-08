@@ -159,7 +159,7 @@ enum PixelFormat
     FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
 
     FORMAT_COUNT,
-    FORMAT_CLOSEST = 256
+    FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };
     
 struct PixelFormatDescriptor

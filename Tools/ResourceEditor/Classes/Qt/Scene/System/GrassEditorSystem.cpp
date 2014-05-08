@@ -150,6 +150,8 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
             if(enable)
             {
                 DAVA::VegetationRenderObject *veg = SearchVegetation(GetScene());
+
+                DVASSERT(NULL == curVegetation);
                 curVegetation = SafeRetain(veg);
 
                 if(NULL != veg && NULL != veg->GetVegetationMap())
@@ -157,6 +159,7 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
                     isEnabled = true;
                     ret = true;
 
+                    DVASSERT(NULL == vegetationMap);
                     vegetationMap = SafeRetain(veg->GetVegetationMap());
 
                     selectionSystem->SetLocked(true);
@@ -227,7 +230,7 @@ DAVA::VegetationRenderObject* GrassEditorSystem::SearchVegetation(DAVA::Entity *
 {
     DAVA::VegetationRenderObject* ret = DAVA::GetVegetation(entity);
 
-    if(NULL == ret && NULL != entity)
+    if(NULL == ret)
     {
         for(int i = 0; NULL == ret && i < entity->GetChildrenCount(); ++i)
         {

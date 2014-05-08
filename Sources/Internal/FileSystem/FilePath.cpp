@@ -447,7 +447,10 @@ String FilePath::GetRelativePathname(const char * forDirectory) const
 	return GetRelativePathname(FilePath(forDirectory));
 }
 
-    
+const String & FilePath::GetStringValue() const
+{
+    return absolutePathname;
+}
     
 void FilePath::ReplaceFilename(const String &filename)
 {

@@ -30,6 +30,7 @@
 #include "Render/Image.h"
 #include "Render/Texture.h"
 #include "Render/ImageConvert.h"
+#include "Render/ImageLoader.h"
 
 namespace DAVA 
 {
@@ -446,11 +447,9 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 }
 
 
-#ifndef __DAVAENGINE_IPHONE__
 bool Image::Save(const FilePath &path) const
 {
-    return false;
+    return ImageLoader::Save(this, path);
 }
-#endif
     
 };

@@ -130,6 +130,7 @@ CommandUpdateParticleLayer::CommandUpdateParticleLayer(ParticleEmitter* emitter,
 
 void CommandUpdateParticleLayer::Init(const String& layerName,
 									  ParticleLayer::eType layerType,
+                                      ParticleLayer::eDegradeStrategy degradeStrategy,
 									  bool isDisabled,									  
 									  bool inheritPosition,
 									  bool isLong,
@@ -180,6 +181,7 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 {
 	this->layerName = layerName;
 	this->layerType = layerType;
+    this->degradeStrategy = degradeStrategy;
 	this->isDisabled = isDisabled;	
 	this->inheritPosition = inheritPosition;
 	this->isLooped = isLooped;
@@ -233,6 +235,7 @@ void CommandUpdateParticleLayer::Init(const String& layerName,
 void CommandUpdateParticleLayer::Redo()
 {
 	layer->layerName = layerName;
+    layer->degradeStrategy = degradeStrategy;
 	layer->isDisabled = isDisabled;	
 	layer->inheritPosition = inheritPosition;
 	layer->isLong = isLong;

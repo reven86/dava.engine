@@ -55,9 +55,9 @@ public:
     explicit EmitterLayerWidget(QWidget *parent = 0);
     ~EmitterLayerWidget();
 
-	void Init(SceneEditor2* scene, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
+	void Init(SceneEditor2* scene, ParticleEffectComponent* effect, ParticleEmitter* emitter, ParticleLayer* layer, bool updateMinimized);
 	ParticleLayer* GetLayer() const {return layer;};
-	void Update();
+	void Update(bool updateMinimized);
 	
 	virtual bool eventFilter(QObject *, QEvent *);
 
@@ -108,6 +108,7 @@ private:
 
 
 	QCheckBox* layerLodsCheckBox[LodComponent::MAX_LOD_LAYERS];
+    QComboBox* degradeStrategyComboBox;
 
 	QLabel* layerTypeLabel;
 	QComboBox* layerTypeComboBox;

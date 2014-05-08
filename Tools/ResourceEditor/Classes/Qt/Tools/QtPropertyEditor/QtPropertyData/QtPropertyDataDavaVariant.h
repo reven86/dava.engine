@@ -44,6 +44,13 @@ class QtPropertyDataDavaVariant : public QtPropertyData
 	friend class QtPropertyDataDavaVariantSubValue;
 
 public:
+    enum AllowedValueType
+    {
+        Default,
+        TypeFlags,
+    };
+
+public:
 	QtPropertyDataDavaVariant(const DAVA::VariantType &value);
 	virtual ~QtPropertyDataDavaVariant();
 
@@ -52,6 +59,10 @@ public:
 
 	void AddAllowedValue(const DAVA::VariantType& realValue, const QVariant& visibleValue = QVariant());
 	void ClearAllowedValues();
+    void SetAllowedValueType(AllowedValueType type);
+    AllowedValueType GetAllowedValueType() const;
+
+    void SetInspDescription(const DAVA::InspDesc &desc);
 
 	QVariant FromDavaVariant(const DAVA::VariantType &variant) const;
     
@@ -60,6 +71,8 @@ public:
     
     void SetDefaultOpenDialogPath(const QString&);
     QString GetDefaultOpenDialogPath();
+
+    QVariant GetToolTip() const;
 
 protected:
 	DAVA::VariantType curVariantValue;
@@ -88,6 +101,7 @@ protected:
 	QVector<AllowedValue> allowedValues;
 	mutable bool allowedValuesLocked;
 	QtPropertyToolButton *allowedButton;
+    AllowedValueType allowedValueType;
     
     QString openDialogFilter;
     QString defaultOpenDialogPath;
@@ -128,8 +142,11 @@ protected:
 	QVariant SubValueGet(const QString &key);
 
 	QWidget* CreateAllowedValuesEditor(QWidget *parent) const;
+    QWidget* CreateAllowedFlagsEditor(QWidget *parent) const;
 	void SetAllowedValueEditorData(QWidget *editorWidget);
 	void ApplyAllowedValueFromEditor(QWidget *editorWidget);
+
+    QStringList GetFlagsList() const;
 };
 
 class QtPropertyDataDavaVariantSubValue : public QtPropertyDataDavaVariant

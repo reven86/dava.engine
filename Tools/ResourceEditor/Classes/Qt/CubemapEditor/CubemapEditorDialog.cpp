@@ -38,6 +38,8 @@
 
 #include <QMouseEvent>
 
+using namespace DAVA;
+
 const String CUBEMAP_LAST_FACE_DIR_KEY = "cubemap_last_face_dir";
 
 CubemapEditorDialog::CubemapEditorDialog(QWidget *parent) :
@@ -99,7 +101,7 @@ void CubemapEditorDialog::ConnectSignals()
 
 void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 {
-	FilePath projectPath = CubemapUtils::GetDialogSavedPath(ResourceEditor::SETTINGS_CUBEMAP_LAST_FACE_DIR,
+	FilePath projectPath = CubemapUtils::GetDialogSavedPath("Internal/CubemapLastFaceDir",
 															ProjectManager::Instance()->CurProjectDataSourcePath().GetAbsolutePathname());
 		
 	QString fileName = QtFileDialog::getOpenFileName(this,
@@ -113,7 +115,7 @@ void CubemapEditorDialog::LoadImageFromUserFile(float rotation, int face)
 		LoadImageTo(stdFilePath, face, false);
 		
 		projectPath = stdFilePath;
-		SettingsManager::Instance()->SetValue("cubemap_last_face_dir", VariantType(projectPath.GetDirectory()), SettingsManager::INTERNAL);
+		SettingsManager::SetValue(Settings::Internal_CubemapLastFaceDir, VariantType(projectPath.GetDirectory()));
 		
 		if(AllFacesLoaded())
 		{
@@ -281,7 +283,7 @@ void CubemapEditorDialog::LoadCubemap(const QString& path)
 		bool cubemapLoadResult = true;
 		for(int i = 0; i < CubemapUtils::GetMaxFaces(); ++i)
 		{
-			if(texDescriptor->faceDescription & (1 << CubemapUtils::MapUIToFrameworkFace(i)))
+			if(texDescriptor->dataSettings.faceDescription & (1 << CubemapUtils::MapUIToFrameworkFace(i)))
 			{
 				FilePath faceFilePath = filePath;
 				faceFilePath.ReplaceFilename(fileNameWithoutExtension +
@@ -389,18 +391,14 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
     
     if(!descriptorReady)
     {
-        descriptor->settings.wrapModeS = descriptor->settings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
-        descriptor->settings.generateMipMaps = true;
-        descriptor->settings.minFilter = Texture::FILTER_LINEAR_MIPMAP_LINEAR;
-        descriptor->settings.magFilter = Texture::FILTER_LINEAR;
-        descriptor->exportedAsGpuFamily = GPU_UNKNOWN;
-        descriptor->exportedAsPixelFormat = FORMAT_INVALID;
+        descriptor->SetDefaultValues();
+        descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = Texture::WRAP_CLAMP_TO_EDGE;
     }
     
-	descriptor->faceDescription = faceMask;
+	descriptor->dataSettings.faceDescription = faceMask;
     
     descriptor->Save(filePath);
-	delete descriptor;
+	SafeDelete(descriptor);
 	
 	QMessageBox::information(this, "Cubemap texture save result", "Cubemap texture was saved successfully!");
 }

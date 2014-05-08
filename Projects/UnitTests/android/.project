@@ -335,6 +335,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SampleTest.h</locationURI>
 		</link>
 		<link>
+			<name>src/Classes/SaveImageTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/Classes/SaveImageTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.h</locationURI>
+		</link>
+		<link>
 			<name>src/Classes/SoundTest.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SoundTest.cpp</locationURI>
@@ -638,6 +648,16 @@
 			<name>bin/classes/Classes/SampleTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SampleTest.h</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/SaveImageTest.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.cpp</locationURI>
+		</link>
+		<link>
+			<name>bin/classes/Classes/SaveImageTest.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/SaveImageTest.h</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/SoundTest.cpp</name>

@@ -30,13 +30,13 @@
 
 #include "Scene/System/CollisionSystem/CollisionBox.h"
 
-CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::Vector3 position, DAVA::float32 boxHalfSize)
+CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::Vector3 position, DAVA::float32 boxSize)
 	: CollisionBaseObject(entity, word)
 {
 	if(NULL != word)
 	{
 		btObject = new btCollisionObject();
-		btShape = new btBoxShape(btVector3(boxHalfSize, boxHalfSize, boxHalfSize));
+		btShape = new btBoxShape(btVector3(boxSize / 2, boxSize / 2, boxSize / 2));
 
 		btObject->setCollisionShape(btShape);
 
@@ -47,7 +47,7 @@ CollisionBox::CollisionBox(DAVA::Entity *entity, btCollisionWorld *word,  DAVA::
 
 		btWord->addCollisionObject(btObject);
 
-		boundingBox = DAVA::AABBox3(DAVA::Vector3(), boxHalfSize * 2);
+		boundingBox = DAVA::AABBox3(DAVA::Vector3(), boxSize);
 	}
 }
 

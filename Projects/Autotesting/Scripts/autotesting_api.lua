@@ -17,6 +17,7 @@ function assert(isTrue, errorMsg)
 end
 
 EPSILON = 1
+----------------------------------------------------------------------------------------------------
 -- High-level test function
 ----------------------------------------------------------------------------------------------------
 -- This function for simple test step without any assertion. Fail while error throwing
@@ -325,50 +326,35 @@ end
 
 function IsVisible(element, background)
 	Yield()
+	local result = false
 	local control = autotestingSystem:FindControl(element)
-	if control and control:GetVisible() then
-		Yield()
-		if background then
-			local back = autotestingSystem:FindControl(background)
-			assert(back, background.." background not found")
-			local geomData = control:GetGeometricData()
-            local rect = geomData:GetUnrotatedRect()
-			local geomData = back:GetGeometricData()
-			local backRect = geomData:GetUnrotatedRect()
-            --Log("Control "..tostring(rect.x)..","..tostring(rect.y).." ["..tostring(rect.dx)..", "..tostring(rect.dy).."]")
-            --Log("Background "..tostring(backRect.x)..","..tostring(backRect.y).." ["..tostring(backRect.dx)..", "..tostring(backRect.dy).."]")
-			
-			if (rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y) and (rect.y + rect.dy <= backRect.y + backRect.dy) then
-				return true
-			else
-				return false
-			end
-		else
-			return true
-		end
-	else
-		return false
+	if control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background) then
+		result = true
 	end
+	
+	Log("Element " ..  element .. " is visible on " .. tostring(background) .. "= " .. tostring(result))
+	return result
 end
 
 function IsDisabled(element)
 	Yield()
 	local control = GetControl(element)
-	if control:GetDisabled() then
-		return true
-	else
-		return false
-	end 
+	return control:GetDisabled()
 end
 
-function IsOnScreen(control)
-	local screen = autotestingSystem:GetScreen()
+function IsOnScreen(control, background)
+	local screen 
+	if background then 
+		screen = autotestingSystem:FindControl(background)
+	else
+		screen = autotestingSystem:GetScreen()
+	end
+	
 	local geomData = control:GetGeometricData()
     local rect = geomData:GetUnrotatedRect()
+	
 	local geomData = screen:GetGeometricData()
 	local backRect = geomData:GetUnrotatedRect()
-    --Log("Control "..tostring(rect.x)..","..tostring(rect.y).." ["..tostring(rect.dx)..", "..tostring(rect.dy).."]")
-    --Log("Background "..tostring(backRect.x)..","..tostring(backRect.y).." ["..tostring(backRect.dx)..", "..tostring(backRect.dy).."]")
 			
 	if (rect.x >= backRect.x) and (rect.x + rect.dx <= backRect.x + backRect.dx) and (rect.y >= backRect.y) and (rect.y + rect.dy <= backRect.y + backRect.dy) then
 		return true
@@ -377,8 +363,14 @@ function IsOnScreen(control)
 	end
 end
 
-function IsCenterOnScreen(control)
-	local screen = autotestingSystem:GetScreen()
+function IsCenterOnScreen(control, background)
+	local screen 
+	if background then 
+		screen = autotestingSystem:FindControl(background)
+	else
+		screen = autotestingSystem:GetScreen()
+	end
+	
     local center = GetCenter(control)
 	local geomData = screen:GetGeometricData()
 	local backRect = geomData:GetUnrotatedRect()
@@ -447,121 +439,26 @@ function WaitControlDisappeared(name, time)
     return false
 end
 
-function TouchDownPosition(position, touchId)
-    local touchId = touchId or 1
-    --print("TouchDownPosition position="..position.x..","..position.y.." touchId="..touchId)
-    autotestingSystem:TouchDown(position, touchId)
-     Yield()
-end
-
-function TouchDown(x, y, touchId)
-    local touchId = touchId or 1
-    --print("TouchDown x="..x.." y="..y.." touchId="..touchId)
-    local position = Vector.Vector2(x, y)
-    autotestingSystem:TouchDown(position, touchId)
-    Yield()
-end
-
-function TouchMovePosition(position, touchId, waitTime)
-	waitTime =  waitTime or TIMECLICK
-    local touchId = touchId or 1
-    Log("TouchMovePosition position="..position.x..","..position.y.." touchId="..touchId)
-    autotestingSystem:TouchMove(position, touchId)
-    Yield()
-end
-
---[[ old and deprecated
-function TouchMove(x, y, touchId, waitTime)
-	waitTime =  waitTime or TIMECLICK
-    local touchId = touchId or 1
-    --Log("TouchMove x="..x.." y="..y.." touchId="..touchId)
-    local position = Vector.Vector2(x, y)
-    autotestingSystem:TouchMove(position, touchId)
-    Wait(waitTime)
-end
-]]
-
-function TouchMove(position, new_position, waitTime, touchId)
-	waitTime =  waitTime or TIMECLICK
-    local touchId = touchId or 1
-    --Log("TouchMove x="..x.." y="..y.." touchId="..touchId)
-    autotestingSystem:TouchDown(position, touchId)
-    Wait(waitTime)
-	autotestingSystem:TouchMove(new_position, touchId)
-	Wait(waitTime)
-	autotestingSystem:TouchUp(touchId)
-	Wait(waitTime)
-end
-
-function TouchUp(touchId)
-	local touchId = touchId or 1
-    --Log("TouchUp "..touchId)
-    autotestingSystem:TouchUp(touchId)
-end
-
-function ClickPosition(position, touchId)
-    local touchId = touchId or 1
-    --Log("ClickPosition position="..position.x..","..position.y.." touchId="..touchId)
-    
-    TouchDownPosition(position, touchId)
-	Yield()
-    TouchUp(touchId)
-    Yield()
-end
-
-function Click(x, y, touchId)
-    local waitTime = time or TIMECLICK
-    local touchId = touchId or 1
-    --print("Click x="..x.." y="..y.." touchId="..touchId)
-    
-    local position = Vector.Vector2(x, y)
-    ClickPosition(position, touchId, waitTime)
-end
-
-function ClickControl(name, time, touchId)
+function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
-    local touchId = touchId or 1
-	
-    Log("ClickControl name="..name.." touchId="..touchId.." waitTime="..waitTime)
-    
+    Log("WaitControlBecomeVisible name="..name.." waitTime="..waitTime,"DEBUG")
+
     local elapsedTime = 0.0
     while elapsedTime < waitTime do
         elapsedTime = elapsedTime + autotestingSystem:GetTimeElapsed()
---        print("Searching "..elapsedTime)
-        
-        local control = autotestingSystem:FindControl(name)
-        local screen = autotestingSystem:GetScreen()
+		coroutine.yield()
 		
-        if control and IsVisible(name) and IsCenterOnScreen(control) then     
-            -- local position = control:GetPosition(true)
-            local position = GetCenter(name)
---            print(position)
---            print("position="..position.x..","..position.y)
-
-            ClickPosition(position, touchId)
-            
+		local control = autotestingSystem:FindControl(name)
+        if control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background) then
+            --Log("WaitControl found "..name, "DEBUG")
             return true
-        else
-			coroutine.yield()
         end
     end
     
-	local control = autotestingSystem:FindControl(name)
-	if  control then
-		if not IsVisible(name) then
-			Log(name .. " is not visible")
-		end
-		if not IsCenterOnScreen(control) then
-			Log(name .. " is not on the Screen")
-		end
-	else
-		Log("ClickControl not found "..name)
-	end
+    Log("WaitControl not found "..name, "DEBUG")
     return false
 end
-
 -- Work with Text field and labels 
-
 function SetText(path, text, time)
 	local waitTime = time or DELAY
     Log("SetText path="..path.." text="..text)
@@ -648,7 +545,7 @@ function SelectHorizontal(list, item)
 			
 			index = last_visible + 1
 			while true do
-				if not IsVisible(list.."/"..tostring(index)) then
+				if not IsVisible(list.."/"..tostring(index), list) then
 					last_visible = index - 1
 					--Log( "previous_last = "..tostring(previous_last) )
 					break
@@ -727,7 +624,7 @@ function SelectVertical(list, item)
 
 			index = last_visible + 1
 			while true do
-				if not IsVisible(list.."/"..tostring(index)) then
+				if not IsVisible(list.."/"..tostring(index), list) then
 					last_visible = index - 1
 					--Log( "previous_last = "..tostring(previous_last) )
 					break
@@ -763,49 +660,137 @@ function SelectFirstVertical(list)
 end
 
 function ScrollDown(list, invert)
+	Log("Make horizontal scroll for "..list)
 	local control = GetControl(list)
 
 	local position = Vector.Vector2()
-            
+	local new_position = Vector.Vector2()
+	
     local geomData = control:GetGeometricData()
     local rect = geomData:GetUnrotatedRect()
        
     position.x = rect.x + rect.dx/2
     position.y = rect.y + rect.dy/2
 		
-	TouchDownPosition(position)
-	Wait(0.5)
-		
 	if invert then
-		position.y = position.y + rect.dy/3
+		new_position.y = position.y + rect.dy/3
+		new_position.x = position.x
 	else
-       	position.y = position.y - rect.dy/3
+       	new_position.y = position.y - rect.dy/3
+		new_position.x = position.x
     end
-        
-	TouchMovePosition(position)
-	TouchUp()
-	Wait(0.5)
+	
+	TouchMove(position, new_position)
 end
 
 function ScrollLeft(list, invert)
+	Log("Make horizontal scroll for "..list)
 	local control = GetControl(list)	
     
     local position = Vector.Vector2()
+	local new_position = Vector.Vector2()
             
     local geomData = control:GetGeometricData()
     local rect = geomData:GetUnrotatedRect()
        
     position.x = rect.x + rect.dx/2
     position.y = rect.y + rect.dy/2
-		
-	TouchDownPosition(position)
-	Wait(0.5)
-    if invert then
-		position.x = position.x + rect.dx/3
+	
+	if invert then
+		new_position.x = position.x + rect.dx/3
+		new_position.y = position.y
 	else
-      	position.x = position.x - rect.dx/3
-    end
-	TouchMovePosition(position)
-	TouchUp()
-	Wait(0.5)
+      	new_position.x = position.x - rect.dx/3
+		new_position.y = position.y
+    end	
+	
+	TouchMove(position, new_position)
 end
+
+
+----------------------------------------------------------------------------------------------------
+-- Touch actions
+----------------------------------------------------------------------------------------------------
+
+-- Touch down
+function TouchDownPosition(position, touchId)
+    local touchId = touchId or 1
+    autotestingSystem:TouchDown(position, touchId)
+    Yield()
+end
+
+function TouchDown(x, y, touchId)
+    local touchId = touchId or 1
+    local position = Vector.Vector2(x, y)
+    autotestingSystem:TouchDown(position, touchId)
+    Yield()
+end
+
+-- Touch up
+function TouchUp(touchId)
+	local touchId = touchId or 1
+    autotestingSystem:TouchUp(touchId)
+end
+
+function ClickPosition(position, time, touchId)
+    local touchId = touchId or 1
+    local waitTime = time or TIMECLICK
+	
+    TouchDownPosition(position, touchId)
+	Wait(waitTime)
+    TouchUp(touchId)
+	Wait(waitTime)
+end
+
+function Click(x, y, time, touchId)
+    local waitTime = time or TIMECLICK
+    local touchId = touchId or 1
+    
+    local position = Vector.Vector2(x, y)
+    ClickPosition(position, touchId, waitTime)
+end
+
+function ClickControl(name, time, touchId)
+    local waitTime = time or TIMEOUT
+    local touchId = touchId or 1
+	
+    Log("ClickControl name="..name.." touchId="..touchId.." waitTime="..waitTime)  
+    if WaitControl(name, waitTime) then
+	
+		local control = autotestingSystem:FindControl(name)
+	
+		if IsVisible(name) then     
+			local position = GetCenter(name)
+			ClickPosition(position, TIMECLICK, touchId)
+			return true
+		elseif not IsCenterOnScreen(control) then
+			Log(name .. " is not on the Screen")
+		else
+			Log(name .. " is not visible")
+		end
+	else
+			Log("ClickControl not found "..name)
+	end
+    return false
+end
+
+-- Move touch actions
+function TouchMovePosition(position, time, touchId)
+	waitTime =  waitTime or TIMECLICK
+    local touchId = touchId or 1
+    autotestingSystem:TouchMove(position, touchId)
+    Yield()
+end
+
+function TouchMove(position, new_position, time, touchId)
+	waitTime =  time or TIMECLICK
+    local touchId = touchId or 1
+    Log("TouchMove from x="..position.x.." y="..position.y.."  to x="..new_position.x.." y="..new_position.y.." touchId="..touchId)
+    TouchDownPosition(position, touchId)
+    Wait(waitTime)
+	TouchMovePosition(new_position, touchId)
+	Wait(waitTime)
+	TouchUp(touchId)
+	Wait(waitTime)
+end
+

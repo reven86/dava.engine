@@ -248,10 +248,7 @@ void FMODSoundEvent::InitParamsMap()
     for(int32 i = 0; i < (int32)paramsInfo.size(); ++i)
     {
         const SoundEvent::SoundEventParameterInfo & info = paramsInfo[i];
-        if(info.name[0] != '(') // filter internal FMOD params
-        {
-            paramsValues[FastName(info.name)] = info.minValue;
-        }
+        paramsValues[FastName(info.name)] = info.minValue;
     }
 }
 

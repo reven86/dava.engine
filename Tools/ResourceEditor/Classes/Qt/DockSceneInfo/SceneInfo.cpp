@@ -88,6 +88,14 @@ SceneInfo::~SceneInfo()
 	posSaver.SaveValue("splitPos", v);
 }
 
+void SceneInfo::LODInfo::AddTriangles(int32 index, int32 count)
+{
+    if (index==-1)
+        trianglesOnObjects += count;
+    else
+        trianglesOnLod[index] += count;
+}
+
 void SceneInfo::InitializeInfo()
 {
     RemovePropertyAll();
@@ -288,7 +296,7 @@ uint32 SceneInfo::CalculateTextureSize(const TexturesMap &textures)
             continue;
         }
         
-        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily)SettingsManager::Instance()->GetValue("TextureViewGPU", SettingsManager::INTERNAL).AsInt32());
+        textureSize += ImageTools::GetTexturePhysicalSize(tex->GetDescriptor(), (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
     }
 
     return textureSize;
@@ -312,8 +320,7 @@ void SceneInfo::CollectSceneData(SceneEditor2 *scene)
         CollectParticlesData();
         particleTexturesSize = CalculateTextureSize(particleTextures);
         
-        CollectLODDataInFrame();
-        CollectLODDataForSelection();
+        CollectLODDataInFrame();        
         
     }
 }
@@ -339,6 +346,7 @@ void SceneInfo::ClearData()
 void SceneInfo::ClearSelectionData()
 {
     lodInfoSelection.Clear();
+    selectedRenderObjects.clear();
 }
 
 void SceneInfo::CollectParticlesData()
@@ -375,31 +383,55 @@ void SceneInfo::CollectParticlesData()
     spritesCount = (uint32)sprites.size();
 }
 
-void SceneInfo::CollectLODDataForSelection()
-{
-    if(!activeScene) return;
-    
-    Vector<LodComponent *>lods;
-    for(size_t i = 0; i < activeScene->selectionSystem->GetSelectionCount(); ++i)
-    {
-        EditorLODData::EnumerateLODsRecursive(activeScene->selectionSystem->GetSelectionEntity(i), lods);
-        lodInfoSelection.trianglesOnObjects += GetTrianglesForNotLODEntityRecursive(activeScene->selectionSystem->GetSelectionEntity(i), false);
-    }
-    
-    CollectLODTriangles(lods, lodInfoSelection);
-}
-
 void SceneInfo::CollectLODDataInFrame()
 {
     lodInfoInFrame.Clear();
+    lodInfoSelection.Clear();
 
-    if(!activeScene) return;
+    if(!activeScene||!activeScene->renderSystem||!activeScene->renderSystem->IsRenderHierarchyInitialized()||!activeScene->GetCurrentCamera())
+        return;
 
-    CollectLODDataInFrameRecursive(activeScene);
+    visibilityArray.Clear();
+    activeScene->renderSystem->GetRenderHierarchy()->Clip(activeScene->GetCurrentCamera(), &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA);
+
+    uint32 size = (uint32)visibilityArray.visibilityArray.size();
+    for (uint32 ro = 0; ro < size; ++ro)
+    {
+        RenderObject * renderObject = visibilityArray.visibilityArray[ro];
+        uint32 batchCount = renderObject->GetActiveRenderBatchCount();
+        int32 indexCount = 0;
+        for(uint32 i = 0; i < batchCount; ++i)
+        {            
+            RenderBatch *rb = renderObject->GetActiveRenderBatch(i);
+            if(IsPointerToExactClass<RenderBatch>(rb))
+            {                
+                PolygonGroup *pg = rb->GetPolygonGroup();
+                if(pg)                
+                    indexCount += pg->GetIndexCount();                
+            }
+        }
+        int32 currLodIndex = renderObject->GetLodIndex();
+        int32 polygonCount = indexCount/3;
+        lodInfoInFrame.AddTriangles(currLodIndex, polygonCount);        
+
+        if (selectedRenderObjects.find(renderObject)!=selectedRenderObjects.end())
+        {
+            lodInfoSelection.AddTriangles(currLodIndex, polygonCount);                    
+        }
+    }    
+}
+
+void SceneInfo::CollectLODDataInScene()
+{
+    lodInfoInFrame.Clear();
+    if(!activeScene)
+        return;
+
+    CollectLODDataInEntityRecursive(activeScene);
     lodInfoInFrame.trianglesOnObjects += GetTrianglesForNotLODEntityRecursive(activeScene, true);
 }
 
-void SceneInfo::CollectLODDataInFrameRecursive(DAVA::Entity *entity)
+void SceneInfo::CollectLODDataInEntityRecursive(DAVA::Entity *entity)
 {
     DAVA::LodComponent *lod = GetLodComponent(entity);
     
@@ -411,7 +443,7 @@ void SceneInfo::CollectLODDataInFrameRecursive(DAVA::Entity *entity)
     DAVA::int32 count = entity->GetChildrenCount();
     for(DAVA::int32 i = 0; i < count; ++i)
     {
-        CollectLODDataInFrameRecursive(entity->GetChild(i));
+        CollectLODDataInEntityRecursive(entity->GetChild(i));
     }
 }
 
@@ -546,6 +578,7 @@ void SceneInfo::UpdateInfoByTimer()
     
     CollectLODDataInFrame();
     RefreshLODInfoInFrame();
+    RefreshLODInfoForSelection();
 }
 
 void SceneInfo::RefreshAllData(SceneEditor2 *scene)
@@ -603,11 +636,32 @@ void SceneInfo::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *parent)
 void SceneInfo::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
     ClearSelectionData();
-    CollectLODDataForSelection();
+        
+    CollectSelectedRenderObjects(selected);
+
+    CollectLODDataInFrame();
     RefreshLODInfoForSelection();
 
     CollectSpeedTreeLeafsSquare(selected);
     RefreshSpeedTreeInfoSelection();
+}
+
+
+void SceneInfo::CollectSelectedRenderObjects(const EntityGroup *selected)
+{
+    for (int32 i = 0, sz = selected->Size(); i<sz; ++i)
+    {
+        CollectSelectedRenderObjectsRecursivly(selected->GetEntity(i));
+    }
+}
+void SceneInfo::CollectSelectedRenderObjectsRecursivly(Entity * entity)
+{
+    RenderObject *renderObject = GetRenderObject(entity);
+    if (renderObject)    
+        selectedRenderObjects.insert(renderObject);    
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        CollectSelectedRenderObjectsRecursivly(entity->GetChild(i));
 }
 
 void SceneInfo::CollectSpeedTreeLeafsSquare(const EntityGroup * forGroup)

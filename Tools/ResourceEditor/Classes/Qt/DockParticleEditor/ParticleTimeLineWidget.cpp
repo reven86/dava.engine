@@ -144,7 +144,7 @@ ParticleTimeLineWidget::~ParticleTimeLineWidget()
 }
 
 
-void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEmitter* emitter, ParticleLayer* layer)
+void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEffectComponent *effect, ParticleEmitter* emitter, ParticleLayer* layer)
 {
 	if (!emitter)
 	{
@@ -155,7 +155,7 @@ void ParticleTimeLineWidget::HandleEmitterSelected(ParticleEmitter* emitter, Par
 
 	selectedEmitter = emitter;
 	selectedLayer = layer;
-	selectedEffect = NULL;
+	selectedEffect = effect;
 	
 	float32 minTime = 0;
 	float32 maxTime = emitter->lifeTime;
@@ -847,7 +847,7 @@ void ParticleTimeLineWidget::OnUpdate()
 {
 	if (selectedEmitter)
 	{
-		HandleEmitterSelected(selectedEmitter, selectedLayer);
+		HandleEmitterSelected(selectedEffect, selectedEmitter, selectedLayer);
 	}
 	else if (selectedEffect)
 	{
@@ -879,26 +879,26 @@ void ParticleTimeLineWidget::OnEmitterSelectedFromSceneTree(SceneEditor2* scene,
 
 	
 
-	HandleEmitterSelected(emitter, NULL);
+	HandleEmitterSelected(effect, emitter, NULL);
 }
 
 void ParticleTimeLineWidget::OnInnerEmitterSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter)
 {
 	activeScene = scene;	
-	HandleEmitterSelected(emitter, NULL);
+	HandleEmitterSelected(effect, emitter, NULL);
 }
 
 void ParticleTimeLineWidget::OnLayerSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer, bool forceRefresh)
 {
 	activeScene = scene;		
-	HandleEmitterSelected(emitter, layer);
+	HandleEmitterSelected(effect, emitter, layer);
 }
 
 void ParticleTimeLineWidget::OnForceSelectedFromSceneTree(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex)
 {
 	activeScene = scene;		
 	
-	HandleEmitterSelected(NULL, layer);
+	HandleEmitterSelected(NULL, NULL, layer);
 }
 
 void ParticleTimeLineWidget::OnParticleEmitterValueChanged(SceneEditor2* /*scene*/, DAVA::ParticleEmitter* emitter)
@@ -968,7 +968,7 @@ void ParticleTimeLineWidget::OnParticleEmitterLoaded(SceneEditor2* scene, DAVA::
 
 	// Handle in the same way as new emitter is selected.
 	activeScene = scene;
-	HandleEmitterSelected(emitter, NULL);
+	HandleEmitterSelected(selectedEffect, emitter, NULL);
 }
 
 void ParticleTimeLineWidget::OnParticleLayerAdded(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer)
@@ -980,7 +980,7 @@ void ParticleTimeLineWidget::OnParticleLayerAdded(SceneEditor2* scene, DAVA::Par
 	
 	// Handle in the same way as new emitter is selected.
 	activeScene = scene;
-	HandleEmitterSelected(emitter, NULL);
+	HandleEmitterSelected(selectedEffect, emitter, NULL);
 }
 
 void ParticleTimeLineWidget::OnParticleLayerRemoved(SceneEditor2* scene, DAVA::ParticleEmitter* emitter)
@@ -992,7 +992,7 @@ void ParticleTimeLineWidget::OnParticleLayerRemoved(SceneEditor2* scene, DAVA::P
 	
 	// Handle in the same way as new emitter is selected.
 	activeScene = scene;
-	HandleEmitterSelected(emitter, NULL);
+	HandleEmitterSelected(selectedEffect, emitter, NULL);
 }
 
 void ParticleTimeLineWidget::CleanupTimelines()

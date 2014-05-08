@@ -101,6 +101,9 @@
  name: "Water Per Pixel Cubemap"
  path: WaterPerPixelCubemap.material
 -
+ name: "Water Per Pixel Cubemap Const Refraction Color"
+ path: WaterPerPixelCubemapConstRefraction.material
+-
  name: "Water Per Pixel Cubemap Fresnael to Alpha"
  path: WaterPerPixelCubemapAlphablend.material
 -

@@ -268,9 +268,9 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
     }
     
     descriptor->exportedAsGpuFamily = exportForGPU;
-    descriptor->exportedAsPixelFormat = descriptor->GetPixelFormatForCompression(exportForGPU);
+    descriptor->format = descriptor->GetPixelFormatForCompression(exportForGPU);
 
-    if((descriptor->exportedAsGpuFamily != GPU_UNKNOWN) && (descriptor->exportedAsPixelFormat == FORMAT_INVALID))
+    if((descriptor->exportedAsGpuFamily != GPU_UNKNOWN) && (descriptor->format == FORMAT_INVALID))
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
         
@@ -410,8 +410,8 @@ bool SceneExporter::ExportVegetation(Scene *scene, Set<String> &errorLog)
     VegetationRenderObject *vegetation = FindVegetation(scene);
     if (vegetation)
     {
-        wasExported &= sceneUtils.CopyFile(vegetation->GetTextureSheetPath(), errorLog);
-        wasExported &= sceneUtils.CopyFile(vegetation->GetVegetationMapPath(), errorLog);
+        wasExported |= sceneUtils.CopyFile(vegetation->GetTextureSheetPath(), errorLog);
+        wasExported |= sceneUtils.CopyFile(vegetation->GetVegetationMapPath(), errorLog);
     }
     
     return wasExported;
@@ -435,7 +435,7 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
         //TODO: do we need to convert to pvr if needToConvert is false, but *.pvr file isn't at filesystem
         
 		eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
-		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, (PixelFormat)descriptor->exportedAsPixelFormat);
+		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, descriptor->format);
 		TextureConverter::ConvertTexture(*descriptor, gpuFamily, true);
         
         DAVA::TexturesMap texturesMap = Texture::GetTextureMap();

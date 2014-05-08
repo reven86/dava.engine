@@ -160,7 +160,7 @@ void DebugDrawSystem::DrawStaticOcclusionComponent(DAVA::Entity *entity)
     StaticOcclusionComponent * staticOcclusionComponent = 0;
 	if((staticOcclusionComponent = (StaticOcclusionComponent*)entity->GetComponent(DAVA::Component::STATIC_OCCLUSION_COMPONENT)) != 0)
 	{
-        Camera * camera = GetScene()->GetClipCamera();
+        Camera * camera = GetScene()->GetCurrentCamera();
        
 		RenderManager::SetDynamicParam(PARAM_WORLD, &entity->GetWorldTransform(), (pointer_size)&entity->GetWorldTransform());
         

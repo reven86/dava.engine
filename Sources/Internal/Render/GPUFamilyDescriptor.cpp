@@ -183,15 +183,23 @@ FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *desc
     TAG_SWITCH(MemoryManager::TAG_GPU_FAMILY_DESCRIPTOR)
     
     DVASSERT(descriptor);
-    
-    eGPUFamily requestedGPU = gpuFamily;
-    PixelFormat requestedFormat = (PixelFormat) descriptor->compression[gpuFamily].format;
-    
+
+	if(GPU_UNKNOWN == gpuFamily)
+		return CreatePathnameForGPU(descriptor->pathname, GPU_UNKNOWN, FORMAT_INVALID);
+
+	eGPUFamily requestedGPU = gpuFamily;
+	
+	PixelFormat requestedFormat = FORMAT_INVALID;
     if(descriptor->IsCompressedFile())
     {
         requestedGPU = (eGPUFamily)descriptor->exportedAsGpuFamily;
-        requestedFormat = (PixelFormat)descriptor->exportedAsPixelFormat;
+        requestedFormat = (PixelFormat)descriptor->format;
     }
+	else
+	{
+		DVASSERT(descriptor->compression);
+		requestedFormat = (PixelFormat) descriptor->compression[gpuFamily]->format;
+	}
     
     return CreatePathnameForGPU(descriptor->pathname, requestedGPU, requestedFormat);
 }

@@ -101,15 +101,15 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 		return enableCustomDrawError;
 	}
 
-	selectionSystem->SetLocked(true);
-	modifSystem->SetLocked(true);
-
-	landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_TILE_FULL);
+    selectionSystem->SetLocked(true);
+    modifSystem->SetLocked(true);
+    landscapeSize = drawSystem->GetTextureSize(Landscape::TEXTURE_TILE_FULL);
 
 	FilePath filePath = GetCurrentSaveFileName();
 	if (!filePath.IsEmpty())
 	{
-		LoadTexture(filePath, false);
+        const bool isTextureLoaded = LoadTexture(filePath, false);
+        drawSystem->GetCustomColorsProxy()->ResetLoadedState(isTextureLoaded);
 	}
 	else
 	{
@@ -383,15 +383,15 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
 	drawSystem->GetCustomColorsProxy()->ResetChanges();
 }
 
-void CustomColorsSystem::LoadTexture(const DAVA::FilePath &filePath, bool createUndo /* = true */)
+bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool createUndo /* = true */ )
 {
 	if(filePath.IsEmpty())
-		return;
+		return false;
 
     Vector<Image*> images;
 	ImageLoader::CreateFromFileByContent(filePath, images);
 	if(images.empty())
-		return;
+		return false;
 
 	Image* image = images.front();
 	if(image)
@@ -427,6 +427,8 @@ void CustomColorsSystem::LoadTexture(const DAVA::FilePath &filePath, bool create
 			((SceneEditor2*)GetScene())->EndBatch();
 		}
 	}
+
+    return true;
 }
 
 void CustomColorsSystem::StoreSaveFileName(const FilePath& filePath)

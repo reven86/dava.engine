@@ -51,16 +51,19 @@ FilePath DXTConverter::ConvertPngToDxt(const TextureDescriptor &descriptor, eGPU
         
         FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
         
-        if((descriptor.compression[gpuFamily].compressToWidth != 0) && (descriptor.compression[gpuFamily].compressToHeight != 0))
+		DVASSERT(descriptor.compression);
+		const TextureDescriptor::Compression * compression = descriptor.compression[gpuFamily];
+
+        if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
             Logger::Warning("[DXTConverter::ConvertPngToDxt] convert to compression size");
-            image->ResizeImage(descriptor.compression[gpuFamily].compressToWidth, descriptor.compression[gpuFamily].compressToHeight);
+            image->ResizeImage(compression->compressToWidth, compression->compressToHeight);
         }
         
         if(LibDxtHelper::WriteDdsFile(outputName,
                                       image->width, image->height, &(image->data), 1,
-                                      (PixelFormat) descriptor.compression[gpuFamily].format,
-                                      (descriptor.settings.generateMipMaps == TextureDescriptor::OPTION_ENABLED)))
+                                      (PixelFormat) compression->format,
+                                      (descriptor.GetGenerateMipMaps())))
         {
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
 			LibDxtHelper::AddCRCIntoMetaData(outputName);
@@ -107,13 +110,17 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
     {
         FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
         
-        if((descriptor.compression[gpuFamily].compressToWidth != 0) && (descriptor.compression[gpuFamily].compressToHeight != 0))
+		DVASSERT(descriptor.compression);
+		const TextureDescriptor::Compression * compression = descriptor.compression[gpuFamily];
+
+
+        if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
             Logger::Warning("[DXTConverter::ConvertPngToDxt] convert to compression size");
 			
 			for(size_t i = 0; i < inputImages.size(); ++i)
 			{
-				inputImages[i]->ResizeImage(descriptor.compression[gpuFamily].compressToWidth, descriptor.compression[gpuFamily].compressToHeight);
+				inputImages[i]->ResizeImage(compression->compressToWidth, compression->compressToHeight);
 			}
         }
 		
@@ -125,8 +132,8 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
         
         if(LibDxtHelper::WriteDdsFile(outputName,
                                       inputImages[0]->width, inputImages[0]->height, faceData, (uint32)inputImages.size(),
-                                      (PixelFormat) descriptor.compression[gpuFamily].format,
-                                      (descriptor.settings.generateMipMaps == TextureDescriptor::OPTION_ENABLED)))
+                                      (PixelFormat) compression->format,
+                                      (descriptor.GetGenerateMipMaps())))
         {
 			SafeDeleteArray(faceData);
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);

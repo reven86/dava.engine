@@ -455,7 +455,7 @@ void Camera::LookAt(Vector3	position, Vector3 view, Vector3 up)
 }
  */
 
-void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
+void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
 {
     TAG_SWITCH(MemoryManager::TAG_CAMERA)
     
@@ -515,7 +515,17 @@ void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
 
     
     viewProjMatrix.GetInverse(invViewProjMatrix);
-    
+
+    if (currentFrustum)
+    {
+        currentFrustum->Build(viewProjMatrix);
+    }
+}   
+
+void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
+{
+    PrepareDynamicParameters(externalClipPlane);
+
 	RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
     RenderManager::SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
     RenderManager::SetDynamicParam(PARAM_VIEW_PROJ, &viewProjMatrix, UPDATE_SEMANTIC_ALWAYS);
@@ -525,11 +535,7 @@ void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
     RenderManager::SetDynamicParam(PARAM_CAMERA_POS, &position, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::SetDynamicParam(PARAM_CAMERA_DIR, &direction, UPDATE_SEMANTIC_ALWAYS);
 	RenderManager::SetDynamicParam(PARAM_CAMERA_UP, &up, UPDATE_SEMANTIC_ALWAYS);
-
-    if (currentFrustum)
-    {
-        currentFrustum->Build(viewProjMatrix);
-    }
+    
 }
 
 BaseObject * Camera::Clone(BaseObject * dstNode)

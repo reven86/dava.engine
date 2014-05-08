@@ -106,7 +106,7 @@ void Mesh::Load(KeyedArchive *archive, SerializationContext *serializationContex
 	RenderObject::Load(archive, serializationContext);
 }
 
-void Mesh::BakeTransform(const Matrix4 & transform)
+void Mesh::BakeGeometry(const Matrix4 & transform)
 {
     TAG_SWITCH(MemoryManager::TAG_MESH)
     

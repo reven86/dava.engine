@@ -56,18 +56,43 @@ namespace DAVA
 
 	struct InspDesc
 	{
+        enum Type
+        {
+            T_UNDEFINED,
+            T_ENUM,
+            T_FLAGS,
+        };
+
 		const char *text;
 		const EnumMap *enumMap;
+        int type;
+
+        InspDesc()
+            : text("")
+			, enumMap(NULL)
+            , type(T_UNDEFINED)
+        { }
 
 		InspDesc(const char *_text) 
 			: text(_text)
 			, enumMap(NULL)
+            , type(T_UNDEFINED)
 		{ }
 
-		explicit InspDesc(const char *_text, const EnumMap *_enumMap)
+		explicit InspDesc(const char *_text, const EnumMap *_enumMap, InspDesc::Type _type = T_ENUM)
 			: text(_text)
 			, enumMap(_enumMap)
+            , type(_type)
 		{}
+
+        InspDesc & operator=(const InspDesc &desc)
+        {
+            text = desc.text;
+            enumMap = desc.enumMap;
+            type = desc.type;
+
+            return *this;
+        }
 	};
 
 	// Базовое представление члена интроспекции

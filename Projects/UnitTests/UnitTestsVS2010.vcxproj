@@ -27,6 +27,7 @@
     <ClInclude Include="Classes\FilePathTest.h" />
     <ClInclude Include="Classes\FileSystemTest.h" />
     <ClInclude Include="Classes\FormatsTest.h" />
+    <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
     <ClInclude Include="Classes\StringFormatTest.h" />
     <ClInclude Include="Classes\FrameworkMain.h" />
@@ -67,6 +68,7 @@
     <ClCompile Include="Classes\FilePathTest.cpp" />
     <ClCompile Include="Classes\FileSystemTest.cpp" />
     <ClCompile Include="Classes\FormatsTest.cpp" />
+    <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
     <ClCompile Include="Classes\StringFormatTest.cpp" />
     <ClCompile Include="Classes\FrameworkMain.cpp" />

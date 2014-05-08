@@ -38,9 +38,9 @@
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 #ifdef Q_OS_DARWIN
-#define REMOTE_CONFIG_URL_DEFAULT "http://by2-svn.wargaming.net/dava.framework/mac/launcher/launcher_config.yaml"
+#define REMOTE_CONFIG_URL_DEFAULT "http://winserver.corp.wargaming.local/dava.framework/mac/launcher/launcher_config.yaml"
 #else
-#define REMOTE_CONFIG_URL_DEFAULT "http://by2-svn.wargaming.net/dava.framework/win/launcher/launcher_config.yaml"
+#define REMOTE_CONFIG_URL_DEFAULT "http://winserver.corp.wargaming.local/dava.framework/win/launcher/launcher_config.yaml"
 #endif
 
 ////YAML config keys

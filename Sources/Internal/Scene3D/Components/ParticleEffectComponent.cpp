@@ -61,6 +61,7 @@ ParticleEffectComponent::ParticleEffectComponent()
     effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY); //world transform doesn't effect particle render object drawing - instead particles are generated in corresponding world position
 	time = 0;
 	desiredLodLevel = 1;
+    activeLodLevel = 1;
 }
 
 ParticleEffectComponent::~ParticleEffectComponent()
@@ -93,6 +94,7 @@ Component * ParticleEffectComponent::Clone(Entity * toEntity)
 		newComponent->emitters[i] = emitters[i]->Clone();
     newComponent->spawnPositions = spawnPositions;
     newComponent->RebuildEffectModifiables();
+    newComponent->effectRenderObject->SetFlags(effectRenderObject->GetFlags());
 	return newComponent;
 }
 
@@ -182,21 +184,26 @@ void ParticleEffectComponent::StopWhenEmpty(bool value /*= true*/)
 	stopWhenEmpty = value;
 }
 
+void ParticleEffectComponent::ClearGroup(ParticleGroup& group)
+{
+    Particle * current = group.head;
+    while (current)
+    {
+        Particle *next = current->next;
+        delete current;
+        current = next;
+    }
+    group.layer->Release();
+    group.emitter->Release();		
+}
+
 void ParticleEffectComponent::ClearCurrentGroups()
 {
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
     
 	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
 	{
-		Particle * current = (*it).head;
-		while (current)
-		{
-			Particle *next = current->next;
-			delete current;
-			current = next;
-		}
-		it->layer->Release();
-		it->emitter->Release();		
+		ClearGroup(*it);
 	}
 	effectData.groups.clear();
 }
@@ -248,14 +255,8 @@ void ParticleEffectComponent::SetPlaybackSpeed(float32 value)
 void ParticleEffectComponent::SetDesiredLodLevel(int32 level)
 {
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
-    
-	desiredLodLevel = level;
-	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e=effectData.groups.end(); it!=e;++it)
-	{
-		ParticleGroup& group = *it;
-		if (!group.emitter->shortEffect)
-			group.visibleLod = group.layer->IsLodActive(level);
-	}
+
+	desiredLodLevel = level;	
 }
 
 
@@ -368,6 +369,8 @@ void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationCont
 		emitterArch->Release();
 	} 
 	archive->SetArchive("pe.emitters", emittersArch);
+    
+    archive->SetUInt32("ro.flags", effectRenderObject->GetFlags() & PARTICLE_FLAGS_SERIALIZATION_CRITERIA);
 	emittersArch->Release();
 }
 	
@@ -400,6 +403,8 @@ void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SerializationCo
                 emitters[i]=new ParticleEmitter();
             spawnPositions[i] = emitterArch->GetVector3("emitter.position");
 		} 	
+        uint32 savedFlags = RenderObject::SERIALIZATION_CRITERIA & archive->GetUInt32("ro.flags", RenderObject::VISIBLE);
+        effectRenderObject->SetFlags(savedFlags | (effectRenderObject->GetFlags() & ~PARTICLE_FLAGS_SERIALIZATION_CRITERIA));        
         RebuildEffectModifiables();
 	}
 }
@@ -537,11 +542,59 @@ void ParticleEffectComponent::RemoveEmitter(ParticleEmitter *emitter)
     
 }
 
+/*statistics for editor*/
+int32 ParticleEffectComponent::GetLayerActiveParticlesCount(ParticleLayer *layer)
+{
+    int32 count = 0;
+    for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
+    {
+        if (it->layer == layer)
+        {
+            count+=it->activeParticleCount;
+        }
+    }
+    return count;
+}
+float32 ParticleEffectComponent::GetLayerActiveParticlesSquare(ParticleLayer *layer)
+{
+    float32 square = 0;
+    for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
+    {
+        if (it->layer == layer)
+        {
+            Particle *currParticle = it->head;
+            while (currParticle)
+            {
+                square+=currParticle->currSize.x*currParticle->currSize.y;
+                currParticle = currParticle->next;
+            }
+        }
+    }
+    return square;
+}
+
 float32 ParticleEffectComponent::GetCurrTime()
 {
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
     
     return time;
+}
+
+bool ParticleEffectComponent::GetReflectionVisible()
+{
+    return effectRenderObject->GetReflectionVisible();
+}
+void ParticleEffectComponent::SetReflectionVisible(bool visible)
+{
+    effectRenderObject->SetReflectionVisible(visible);
+}
+bool ParticleEffectComponent::GetRefractionVisible()
+{
+    return effectRenderObject->GetRefractionVisible();
+}
+void ParticleEffectComponent::SetRefractionVisible(bool visible)
+{
+    effectRenderObject->SetRefractionVisible(visible);
 }
 
 }

@@ -325,7 +325,14 @@ void SceneSaver::CopyEffects(Entity *node)
 
 void SceneSaver::CopyEmitter( ParticleEmitter *emitter)
 {
-	sceneUtils.AddFile(emitter->configPath);
+    if(emitter->configPath.IsEmpty() == false)
+    {
+        sceneUtils.AddFile(emitter->configPath);
+    }
+    else
+    {
+        Logger::Warning("[SceneSaver::CopyEmitter] empty config path for emitter %s", emitter->name.c_str());
+    }
 
 	const Vector<ParticleLayer*> &layers = emitter->layers;
 

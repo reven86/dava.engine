@@ -167,28 +167,43 @@ void QtPropertyItemDelegate::updateEditorGeometry(QWidget * editor, const QStyle
 
 bool QtPropertyItemDelegate::helpEvent(QHelpEvent * event, QAbstractItemView * view, const QStyleOptionViewItem & option, const QModelIndex & index)
 {
-	bool showToolTip = true;
+    if ( event == NULL || view == NULL )
+        return false;
 
-	if(NULL != event && NULL != view && event->type() == QEvent::ToolTip)
-	{
-		QRect rect = view->visualRect(index);
-		QSize size = sizeHint(option, index);
-		if(rect.width() >= size.width()) 
-		{
-			showToolTip = false;
-		}
-	}
+    bool showTooltip = false;
 
-	if(showToolTip)
-	{
-		return QStyledItemDelegate::helpEvent(event, view, option, index);
-	}
-	else
-	{
-		QToolTip::hideText();
-	}
+    if (NULL != event && NULL != view && event->type() == QEvent::ToolTip)
+    {
+        QRect rect = view->visualRect(index);
+        QSize size = sizeHint(option, index);
+        if (rect.width() < size.width())
+        {
+            showTooltip = true;
+        }
+    }
 
-	return false;
+    if (!showTooltip && index.column() == 1)
+    {
+        QtPropertyData* data = model->itemFromIndex(index);
+        if (data && data->GetToolTip().isValid())
+        {
+            showTooltip = true;
+        }
+    }
+
+    if (showTooltip)
+    {
+        const QString toolTip = view->model()->data(index, Qt::ToolTipRole).toString();
+        if (!toolTip.isEmpty())
+        {
+            const QRect updateRect( 0, 0, 10, 10 );
+            QToolTip::showText(QCursor::pos(), toolTip, view, updateRect);
+            return true;
+        }
+    }
+
+    QToolTip::hideText();
+    return false;
 }
 
 void QtPropertyItemDelegate::drawOptionalButtons(QPainter *painter, QStyleOptionViewItem &opt, const QModelIndex &index, OptionalButtonsType type) const

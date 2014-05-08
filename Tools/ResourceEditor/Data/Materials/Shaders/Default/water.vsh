@@ -22,7 +22,7 @@ attribute vec2 inTexCoord0;
 
 #if defined(MATERIAL_DECAL)
 attribute vec2 inTexCoord1;
-varying vec2 varTexCoord1;
+varying vec2 varTexCoordDecal;
 #endif
 
 // UNIFORMS
@@ -55,12 +55,12 @@ varying vec3 eyeDist;
 #endif
 
 #if defined(PIXEL_LIT)
-varying highp vec2 varTexCoord0;
-varying highp vec2 varTexCoord1;
 varying vec3 varLightVec;
 #endif
 
-#if defined(PIXEL_LIT)
+#if defined(PIXEL_LIT)||defined(MATERIAL_DECAL)	
+varying highp vec2 varTexCoord0;
+varying highp vec2 varTexCoord1;
 uniform mediump vec2 normal0ShiftPerSecond;
 uniform mediump vec2 normal1ShiftPerSecond;
 uniform mediump float normal0Scale;
@@ -104,7 +104,7 @@ void main()
     vec3 normalDirectionInWorldSpace = normalize(vec3(worldInvTransposeMatrix * inNormal));
     reflectionDirectionInWorldSpace = reflect(viewDirectionInWorldSpace, normalDirectionInWorldSpace);
 	#if defined(MATERIAL_DECAL)
-		varTexCoord1 = inTexCoord1;
+		varTexCoordDecal = inTexCoord1;		
 	#endif	
 #endif    
 
@@ -136,10 +136,11 @@ void main()
     
     vec3 binormTS = cross(inNormal, inTangent);
     tbnToWorldMatrix = mat3(inTangent, binormTS, inNormal);
+#endif
 	
-	
+#if defined(PIXEL_LIT)||defined(MATERIAL_DECAL)	
 	varTexCoord0 = inTexCoord0 * normal0Scale + normal0ShiftPerSecond * globalTime;
-    varTexCoord1 = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
+    varTexCoord1 = vec2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.x-inTexCoord0.y) * normal1Scale + normal1ShiftPerSecond * globalTime;
 #endif
 
 #if defined(VERTEX_FOG)

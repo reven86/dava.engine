@@ -215,13 +215,16 @@ void RenderLayerBatchArray::Sort(Camera * camera)
         else if (flags & SORT_BY_DISTANCE_BACK_TO_FRONT)
         {
             Vector3 cameraPosition = camera->GetPosition();
+            Vector3 cameraDirection = camera->GetDirection();
             
             for (uint32 k = 0; k < renderBatchCount; ++k)
             {
                 RenderBatch * batch = renderBatchArray[k];
                 RenderObject * renderObject = batch->GetRenderObject();
-                Vector3 position = batch->GetSortingTransformPtr()->GetTranslationVector();
-                uint32 distance = ((uint32)((position - cameraPosition).Length())) + 31 - batch->GetSortingOffset();                
+                Vector3 delta = batch->GetSortingTransformPtr()->GetTranslationVector() - cameraPosition;
+                float32 fDist = delta.Length();
+                uint32 distance = delta.DotProduct(cameraDirection)<0?0:((uint32)fDist);
+                distance = distance + 31 - batch->GetSortingOffset();
                 batch->layerSortingKey = (distance & 0x0fffffff) | (batch->GetSortingKey() << 28);
             }
             

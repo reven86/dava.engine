@@ -26,12 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #ifndef __SOUND_TEST_H__
 #define __SOUND_TEST_H__
-
-#if 0
 
 #include "DAVAEngine.h"
 using namespace DAVA;
@@ -55,17 +51,17 @@ public:
     void PlayStopEffect(PerfFuncData * data);
     void PlayStopMusic(PerfFuncData * data);
     
-    void PlayEffect(PerfFuncData * data);
+    void PlayEffects(PerfFuncData * data);
     
 private:
-    
-    SoundInstance * effectIns;
-    Sound * sndClick;
-    Sound * music;
+  	SoundEvent *sndClick;
+	SoundEvent *music;
     
     bool effectPlayTest;
+
+ 
+  	void SoundEventPlayed(BaseObject *obj, void *data, void *callerData);
 };
 
-#endif
 
 #endif //#ifndef __SOUND_TEST_H__

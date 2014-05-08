@@ -224,6 +224,9 @@ namespace DAVA
         
 	};
 
+	SerializationContext::SerializationContext()
+	{ }
+
 	SerializationContext::~SerializationContext()
 	{
         TAG_SWITCH(MemoryManager::TAG_SCENE)

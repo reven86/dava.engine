@@ -155,7 +155,7 @@ bool LodToLod2Converter::MergeLod(Entity * entity)
                         if(pg && bakedPolygonGroups.end() == bakedPolygonGroups.find(pg))
                         {
                             Matrix4 totalTransform = sourceRenderObjects[j].first->AccamulateTransformUptoFarParent(entity);
-                            sourceRenderObject->BakeTransform(totalTransform);
+                            sourceRenderObject->BakeGeometry(totalTransform);
                             bakedPolygonGroups.insert(pg);
                         }
                     }

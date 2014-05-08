@@ -79,6 +79,8 @@ ParticleLayer::ParticleLayer()
 	enableFrameBlend = false;
 	inheritPosition = false;
 	type = TYPE_PARTICLES;
+
+    degradeStrategy = DEGRADE_KEEP;
     
     endTime = 100.0f;
 	deltaTime = 0.0f;
@@ -213,6 +215,7 @@ ParticleLayer * ParticleLayer::Clone()
 	dstLayer->isDisabled = isDisabled;
 
 	dstLayer->type = type;
+    dstLayer->degradeStrategy = degradeStrategy;
 	SafeRelease(dstLayer->sprite);
 	dstLayer->sprite = SafeRetain(sprite);
 	dstLayer->layerPivotPoint = layerPivotPoint;	
@@ -369,6 +372,13 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 	{
 		type = StringToLayerType(typeNode->AsString(), TYPE_PARTICLES);
 	}
+
+    degradeStrategy = DEGRADE_KEEP;
+    const YamlNode * degradeNode = node->Get("degradeStrategy");
+    if (degradeNode)
+    {
+        degradeStrategy = (eDegradeStrategy)(degradeNode->AsInt());
+    }
 
 	const YamlNode * nameNode = node->Get("name");
 	if (nameNode)
@@ -693,15 +703,18 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "layerType",
 																 LayerTypeToString(type, "particles"));
     
+
+    PropertyLineYamlWriter::WritePropertyValueToYamlNode<int32>(layerNode, "degradeStrategy", (int32)degradeStrategy);
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(layerNode, "isLong", isLong);
     
 
 	PropertyLineYamlWriter::WritePropertyValueToYamlNode<Vector2>(layerNode, "pivotPoint", layerPivotPoint);
 
     // Truncate an extension of the sprite file.
-	String relativePath = spritePath.GetRelativePathname(configPath.GetDirectory());
-	PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite",
-        relativePath.substr(0, relativePath.size()-4));
+    FilePath savePath = spritePath;
+    savePath.TruncateExtension();
+	String relativePath = savePath.GetRelativePathname(configPath.GetDirectory());
+	PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
 
 
 	layerNode->Add("srcBlendFactor", BLEND_MODE_NAMES[(int32)srcBlendFactor]);

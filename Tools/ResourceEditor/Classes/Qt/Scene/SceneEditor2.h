@@ -34,10 +34,13 @@
 #include <QObject>
 #include "UI/UIEvent.h"
 #include "Scene3D/Scene.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Base/StaticSingleton.h"
 
+#include "Main/Request.h"
 #include "Commands2/CommandStack.h"
+#include "Settings/SettingsManager.h"
 
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/CollisionSystem.h"
@@ -59,10 +62,7 @@
 #include "Scene/System/DebugDrawSystem.h"
 #include "Scene/System/BeastSystem.h"
 #include "Scene/System/OwnersSignatureSystem.h"
-#include "Main/Request.h"
 #include "Scene/System/EditorMaterialSystem.h"
-
-#include "Scene3D/Systems/StaticOcclusionSystem.h"
 
 class FogSettingsChangedReceiver;
 

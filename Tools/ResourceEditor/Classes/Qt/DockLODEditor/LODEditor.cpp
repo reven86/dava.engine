@@ -182,7 +182,6 @@ void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int i
     spinbox->setRange(0.f, DAVA::LodComponent::MAX_LOD_DISTANCE);  //distance 
     spinbox->setProperty(ResourceEditor::TAG.c_str(), index);
     spinbox->setValue(0.f);
-    spinbox->setKeyboardTracking(false);
     
     connect(spinbox, SIGNAL(valueChanged(double)), SLOT(LODDistanceChangedBySpinbox(double)));
     
@@ -284,6 +283,7 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
         
         editedLODData->SetLayerDistance(lodLevel, value);
         ui->distanceSlider->SetDistance(lodLevel, value);
+        spinBox->setFocus();
     }
 }
 

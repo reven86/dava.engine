@@ -122,7 +122,10 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
 										eGPUFamily gpuFamily,
 										Vector<String>& args)
 {
-	String format = pixelFormatToPVRFormat[(PixelFormat) descriptor.compression[gpuFamily].format];
+	DVASSERT(descriptor.compression);
+	const TextureDescriptor::Compression *compression = descriptor.compression[gpuFamily];
+
+	String format = pixelFormatToPVRFormat[(PixelFormat) compression->format];
 	FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
 		
 	// assemble command
@@ -148,18 +151,18 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
 	args.push_back("-yflip0");
 		
 	// mipmaps
-	if(descriptor.settings.generateMipMaps)
+	if(descriptor.GetGenerateMipMaps())
 	{
 		args.push_back("-m");
 	}
 		
 	// base mipmap level (base resize)
-	if(0 != descriptor.compression[gpuFamily].compressToWidth && descriptor.compression[gpuFamily].compressToHeight != 0)
+	if(0 != compression->compressToWidth && compression->compressToHeight != 0)
 	{
 		args.push_back("-x");
-		args.push_back(Format("%d", descriptor.compression[gpuFamily].compressToWidth));
+		args.push_back(Format("%d", compression->compressToWidth));
 		args.push_back("-y");
-		args.push_back(Format("%d", descriptor.compression[gpuFamily].compressToHeight));
+		args.push_back(Format("%d", compression->compressToHeight));
 	}
 		
 	// output file

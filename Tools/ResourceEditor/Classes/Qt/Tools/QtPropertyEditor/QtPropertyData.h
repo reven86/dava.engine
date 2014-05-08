@@ -101,6 +101,8 @@ public:
 	virtual UserData* GetUserData() const;
 	virtual void SetUserData(UserData* userdata);
 
+    virtual QVariant GetToolTip() const;
+
 	virtual const DAVA::MetaInfo* MetaInfo() const;
 
 	// reset background/foreground/font settings

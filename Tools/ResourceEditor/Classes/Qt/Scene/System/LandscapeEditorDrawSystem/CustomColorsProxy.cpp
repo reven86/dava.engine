@@ -32,13 +32,24 @@
 #include "Deprecated/EditorConfig.h"
 
 CustomColorsProxy::CustomColorsProxy(int32 size)
-:	changedRect(Rect())
-,	spriteChanged(false)
-,	size(size)
-,	changes(0)
+    : changedRect(Rect())
+    , spriteChanged(false)
+    , textureLoaded(false)
+    , size(size)
+    , changes(0)
 {
 	customColorsSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888);
 	UpdateSpriteFromConfig();
+}
+
+void CustomColorsProxy::ResetLoadedState( bool isLoaded )
+{
+    textureLoaded = isLoaded;
+}
+
+bool CustomColorsProxy::IsTextureLoaded() const
+{
+    return textureLoaded;
 }
 
 CustomColorsProxy::~CustomColorsProxy()

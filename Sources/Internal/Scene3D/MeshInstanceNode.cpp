@@ -882,7 +882,6 @@ void MeshInstanceNode::BakeTransforms()
     }
 }
     
-    
 void MeshInstanceNode::UpdateLights()
 {
     TAG_SWITCH(MemoryManager::TAG_ENTITY)

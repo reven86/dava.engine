@@ -29,6 +29,7 @@
 		5CDC2521156CD48700742348 /* TestTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC251E156CD48700742348 /* TestTemplate.cpp */; };
 		5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5CDC252F156CDED900742348 /* MainWindow-iPad.xib */; };
 		5CDC2533156CE21000742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2532156CE20F00742348 /* libz.dylib */; };
+		627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 627C796B18ED9DA900C05154 /* JPEGTest.cpp */; };
 		74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7433863C179D18CE0014FBD3 /* UIListTest.cpp */; };
 		74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7433863E179D18CE0014FBD3 /* UIScrollViewTest.cpp */; };
 		7497447517B3D61800282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497447317B3D61800282DAA /* AlignTest.cpp */; };
@@ -124,6 +125,8 @@
 		5CDC251F156CD48700742348 /* TestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestTemplate.h; sourceTree = "<group>"; };
 		5CDC252F156CDED900742348 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "MainWindow-iPad.xib"; path = "iOSSpecific/iPad/MainWindow-iPad.xib"; sourceTree = "<group>"; };
 		5CDC2532156CE20F00742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		627C796B18ED9DA900C05154 /* JPEGTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGTest.cpp; sourceTree = "<group>"; };
+		627C796C18ED9DA900C05154 /* JPEGTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JPEGTest.h; sourceTree = "<group>"; };
 		7433863C179D18CE0014FBD3 /* UIListTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIListTest.cpp; sourceTree = "<group>"; };
 		7433863D179D18CE0014FBD3 /* UIListTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIListTest.h; sourceTree = "<group>"; };
 		7433863E179D18CE0014FBD3 /* UIScrollViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollViewTest.cpp; sourceTree = "<group>"; };
@@ -309,6 +312,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				627C796B18ED9DA900C05154 /* JPEGTest.cpp */,
+				627C796C18ED9DA900C05154 /* JPEGTest.h */,
 				15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */,
 				15CBB0AF18D300310038ABA3 /* StringFormatTest.h */,
 				8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */,
@@ -516,6 +521,7 @@
 				5CA2462E158F472100465879 /* EntityTest.cpp in Sources */,
 				02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */,
 				FEC95C7015B409E500588BBF /* HashMapTest.cpp in Sources */,
+				627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */,
 				FEC95C7115B409E500588BBF /* MemoryAllocatorsTest.cpp in Sources */,
 				02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */,
 				E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */,

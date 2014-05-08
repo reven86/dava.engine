@@ -124,7 +124,7 @@ void LightmapsPacker::CreateDescriptors()
 			continue;
 		}
 
-		TextureDescriptor *descriptor = new TextureDescriptor();
+		TextureDescriptor *descriptor = new TextureDescriptor(true);
 		descriptor->Save(TextureDescriptor::GetDescriptorPathname(filePath));
 		delete descriptor;
 	}

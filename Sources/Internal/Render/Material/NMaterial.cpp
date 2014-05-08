@@ -473,7 +473,7 @@ void NMaterial::Load(KeyedArchive * archive,
     TAG_SWITCH(MemoryManager::TAG_MATERIAL)
     
 	DataNode::Load(archive, serializationContext);
-	
+
     if(archive->IsKeyExists("materialName"))
     {
         materialName = FastName(archive->GetString("materialName"));
@@ -506,7 +506,7 @@ void NMaterial::Load(KeyedArchive * archive,
 			instancePassRenderStates.insert(FastName(it->first.c_str()), currentHandle);
 		}
 	}
-	
+
 	if(archive->IsKeyExists("materialGroup"))
 	{
 		SetMaterialGroup(FastName(archive->GetString("materialGroup").c_str()));

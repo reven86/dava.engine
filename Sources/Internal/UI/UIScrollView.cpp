@@ -147,22 +147,27 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 	for(List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
 	{
     	UIControl *childControl = (*it);
-		if (!childControl)
+		if ( !(childControl && childControl->GetRecursiveVisible()) )
 			continue;
 		
-		Rect childRect = childControl->GetRect();
-		// Calculate control full "length" and "height"
-		float32 controlSizeX = Abs(parentOffset.x) + childRect.x + childRect.dx;
-		float32 controlSizeY = Abs(parentOffset.y) + childRect.y + childRect.dy;
-		// Check horizontal size
-		if (controlSizeX >= maxSize.x)
-		{
-			maxSize.x = controlSizeX;
-		}
-		if (controlSizeY >= maxSize.y)
-		{
-			maxSize.y = controlSizeY;
-		}
+		const Rect &childRect = childControl->GetRect();
+        
+        if (childControl->GetVisible())
+        {
+            // Calculate control full "length" and "height"
+            float32 controlSizeX = Abs(parentOffset.x) + childRect.x + childRect.dx;
+            float32 controlSizeY = Abs(parentOffset.y) + childRect.y + childRect.dy;
+            // Check horizontal size
+            if (controlSizeX >= maxSize.x)
+            {
+                maxSize.x = controlSizeX;
+            }
+            if (controlSizeY >= maxSize.y)
+            {
+                maxSize.y = controlSizeY;
+            }
+        }
+        
 		// Change global offset - it has to include parent offset and current child offset
 		Vector2 offset;
 		offset.x = Abs(parentOffset.x) + childRect.x;

@@ -531,7 +531,7 @@ void ChangeNodeHeirarchy::Execute()
 					{
 						if (targetPlatform->IsAggregatorOrScreenNamePresent(node->GetName()))
 						{
-							QString newName = SubcontrolsHelper::FormatCopyName(node->GetName(), sourceNode);
+							QString newName = SubcontrolsHelper::FormatCopyName(node->GetName(), targetNode);
 							node->SetName(newName);
 						}
 					}

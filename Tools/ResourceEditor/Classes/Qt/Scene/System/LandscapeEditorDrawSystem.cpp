@@ -709,6 +709,9 @@ String LandscapeEditorDrawSystem::GetDescriptionByError(eErrorType error)
 		case LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT:
 			ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_HEIGHTMAP_ABSENT;
 			break;
+        case LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT:
+            ret = ResourceEditor::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT;
+            break;
 			
 		default:
 			break;

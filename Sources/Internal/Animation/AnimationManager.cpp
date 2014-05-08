@@ -35,76 +35,40 @@
 
 namespace DAVA
 {
-		
-AnimationManager::AnimationManager()
-{
-#ifdef ANIMATIONS_DEBUG	
-	animationLoggerEnabled = false;
-#endif
-}
-	
-AnimationManager::~AnimationManager()
-{
-}
-	
-void AnimationManager::SetAnimationLoggerEnabled(bool isEnabled)
-{
-#ifdef ANIMATIONS_DEBUG
-	animationLoggerEnabled = isEnabled;
-#endif
-}
-bool AnimationManager::IsAnimationLoggerEnabled()
-{
-#ifdef ANIMATIONS_DEBUG
-	return animationLoggerEnabled;
-#endif
-	return false;
-}
-
 
 void AnimationManager::AddAnimation(Animation * animation)
 {
-	animationMutex.Lock();
+    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &AnimationManager::AddAnimationInternal, animation));
+}
+    
+void AnimationManager::AddAnimationInternal(BaseObject * caller, void * param, void *callerData)
+{
+    Animation * animation = (Animation*)param;
 	animations.push_back(animation);
-	animationMutex.Unlock();
-
-//#ifdef ANIMATIONS_DEBUG
-//	if(animationLoggerEnabled)
-//	{
-//		Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::AddAnimation 0x%x   new animations size %d", (int)animation, animations.size());
-//	}
-//#endif
 }
 
 void AnimationManager::RemoveAnimation(Animation * animation)
 {
-	//Debug::Log("");
-	//Logger::FrameworkDebug("RemoveAnimation: before animations: %d\n", animations.size());
-	//std::remo ve(animations.begin(), animations.end(), animation);
-
-	animationMutex.Lock();
+    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &AnimationManager::RemoveAnimationInternal, animation));
+}
+    
+void AnimationManager::RemoveAnimationInternal(BaseObject * caller, void * param, void *callerData)
+{
+    Animation * animation = (Animation*)param;
 	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		if (*t == animation)
 		{
 			animations.erase(t);
-//#ifdef ANIMATIONS_DEBUG
-//			if(animationLoggerEnabled)
-//			{
-//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::RemoveAnimation 0x%x   new animations size %d", (int)animation, animations.size());
-//			}
-//#endif
 			break;
 		}
 	}
-	animationMutex.Unlock();
-	//Logger::FrameworkDebug("RemoveAnimation: after animations: %d\n", animations.size());
-	
 }
     
 void AnimationManager::StopAnimations()
 {
-	animationMutex.Lock();
+    DVASSERT(Thread::IsMainThread());
+    
     for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
@@ -114,49 +78,48 @@ void AnimationManager::StopAnimations()
         animation->state &= ~Animation::STATE_FINISHED;
         animation->state |= Animation::STATE_DELETE_ME;
 	}	
-	animationMutex.Unlock();
 }
 	
-void AnimationManager::DeleteAnimations(AnimatedObject * _owner, int32 track)
+void AnimationManager::DeleteAnimations(AnimatedObject * owner, int32 track)
 {
-	animationMutex.Lock();
+    DeleteAnimationsData * data = new DeleteAnimationsData();
+    data->owner = owner;
+    data->track = track;
+    
+    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &AnimationManager::DeleteAnimationInternal, data));
+}
+    
+void AnimationManager::DeleteAnimationInternal(BaseObject * caller, void * param, void *callerData)
+{
+    DeleteAnimationsData * data = (DeleteAnimationsData*)param;
+
 	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
-        animationMutex.Unlock();
-
-		if ((track != -1) && (animation->groupId != track))
+		if ((data->track != -1) && (animation->groupId != data->track))
         {
-            animationMutex.Lock();
             continue;
         }
 		
-		if (animation->owner == _owner)
+		if (animation->owner == data->owner)
 		{
-//#ifdef ANIMATIONS_DEBUG
-//			if(animationLoggerEnabled)
-//			{
-//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Set  DELETE_ME 0x%x    for owner 0x%x", (int)animation, (int)_owner);
-//			}
-//#endif
             animation->owner = 0;   // zero owner to avoid any issues (it was a problem with DumpState, when animations was deleted before). 
 			animation->state &= ~Animation::STATE_IN_PROGRESS;
 			animation->state &= ~Animation::STATE_FINISHED;
 			animation->state |= Animation::STATE_DELETE_ME;
 		}
-        
-        animationMutex.Lock();
 	}
-	animationMutex.Unlock();
+    
+    SafeDelete(data);
 }
 	
 Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _groupId)
 {
-	animationMutex.Lock();
+    DVASSERT(Thread::IsMainThread());
+    
 	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
-        animationMutex.Unlock();
 
 		if ((animation->owner == _owner) && (animation->groupId == _groupId))
 		{
@@ -166,24 +129,20 @@ Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _
 			}
 			return animation; // return latest animation in current group
 		}
-
-        animationMutex.Lock();
 	}
-	animationMutex.Unlock();
 	return 0;
 }
 
 bool AnimationManager::IsAnimating(AnimatedObject * owner, int32 track)
 {
-	animationMutex.Lock();
+    DVASSERT(Thread::IsMainThread());
+
 	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
-        animationMutex.Unlock();
 
 		if ((track != -1) && (animation->groupId != track))
         {
-            animationMutex.Lock();
             continue;
         }
 
@@ -192,25 +151,20 @@ bool AnimationManager::IsAnimating(AnimatedObject * owner, int32 track)
 		{
 			return true;
 		}
-        
-        animationMutex.Lock();
 	}
-
-	animationMutex.Unlock();
 	return false;
 }
 
 Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32 _groupId)
 {
-	animationMutex.Lock();
+    DVASSERT(Thread::IsMainThread());
+
 	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
-        animationMutex.Unlock();
 
 		if ((_groupId != -1) && (animation->groupId != _groupId))
         {
-            animationMutex.Lock();
             continue;
         }
 
@@ -218,28 +172,23 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
 		{
 			return animation;
 		}
-
-        animationMutex.Lock();
     }
 
-	animationMutex.Unlock();
 	return 0;
 }
 
 void AnimationManager::Update(float32 timeElapsed)
 {
+    DVASSERT(Thread::IsMainThread());
+
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_ANIMATIONS))
 		return;
-	//int animationsCount = (int)animations.size();
-	//NSLog(@"animations: %d\n", animations.size());
 	
 	// update animations first
-	animationMutex.Lock();
     uint32 size = (uint32)animations.size();
 	for (uint32 k = 0; k < size; ++k)
 	{
 		Animation * animation = animations[k];
-        animationMutex.Unlock();
 
 		if (animation->state & Animation::STATE_IN_PROGRESS)
 		{
@@ -248,8 +197,6 @@ void AnimationManager::Update(float32 timeElapsed)
 				animation->Update(timeElapsed);
 			}	
 		}
-        
-        animationMutex.Lock();
 	}
 
 	// process all finish callbacks
@@ -257,20 +204,11 @@ void AnimationManager::Update(float32 timeElapsed)
 	for (uint32 k = 0; k < size; ++k)
 	{
 		Animation * animation = animations[k];
-        animationMutex.Unlock();
 
 		if (animation->state & Animation::STATE_FINISHED)
 		{
-			//#ifdef ANIMATIONS_DEBUG
-			//			if(animationLoggerEnabled)
-			//			{
-			//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Finishing animation 0x%x    for owner 0x%x", (int)animation, (int)animation->owner);
-			//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Finishing index %d", k);
-			//			}
-			//#endif
 			animation->Stop(); 
 		}
-        animationMutex.Lock();
 	}
 
 	//remove all old animations
@@ -278,7 +216,6 @@ void AnimationManager::Update(float32 timeElapsed)
 	for (uint32 k = 0; k < size; ++k)
 	{
 		Animation * animation = animations[k];
-        animationMutex.Unlock();
 
 		if (animation->state & Animation::STATE_DELETE_ME)
 		{
@@ -287,62 +224,27 @@ void AnimationManager::Update(float32 timeElapsed)
 				animation->OnCancel();
 			}
 
-//#ifdef ANIMATIONS_DEBUG
-//			if(animationLoggerEnabled)
-//			{
-//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Deleting animation 0x%x    for owner 0x%x", (int)animation, (int)animation->owner);
-//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Finishing index %d", k);
-//			}
-//#endif
 			if(animation->next && !(animation->next->state  & Animation::STATE_DELETE_ME))
 			{
-//#ifdef ANIMATIONS_DEBUG
-//				if(animationLoggerEnabled)
-//				{
-//					Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Starting next animation 0x%x    for owner 0x%x", (int)animation->next, (int)animation->next->owner);
-//				}
-//#endif
 				animation->next->state |= Animation::STATE_IN_PROGRESS;
 				animation->next->OnStart();
 			}
-//#ifdef ANIMATIONS_DEBUG
-//			if(animationLoggerEnabled)
-//			{
-//				for (int n = 0; n < (int)animations.size(); ++n)
-//				{
-//					if(animations[n]->next == animation)
-//					{
-//						Logger::Error("PIZDEC");
-//						Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::Animation 0x%x (%d) used as next for 0x%x (%d)   for owner 0x%x", (int)animation, k, animations[n], n, (int)animation->owner);
-//					}
-//				}
-//			}
-//#endif
 
 			SafeRelease(animation);
-
-            animationMutex.Lock();
             
             size = (uint32)animations.size();
             k--;
-            
-//#ifdef ANIMATIONS_DEBUG
-//			if(animationLoggerEnabled)
-//			{
-//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::After Deleting index %d", k);
-//			}
-//#endif
-            
 		}
 	}
-	animationMutex.Unlock();
 }
 	
 void AnimationManager::DumpState()
 {
+    DVASSERT(Thread::IsMainThread());
+
 	Logger::FrameworkDebug("============================================================");
 	Logger::FrameworkDebug("------------ Currently allocated animations - %2d ---------", animations.size());
-	animationMutex.Lock();
+
 	for (int k = 0; k < (int)animations.size(); ++k)
 	{
 		Animation * animation = animations[k];  
@@ -352,43 +254,39 @@ void AnimationManager::DumpState()
             ownerName = typeid(*animation->owner).name();
 		Logger::FrameworkDebug("addr:0x%08x state:%d class: %s ownerClass: %s", animation, animation->state, typeid(*animation).name(), ownerName.c_str());
 	}
-	animationMutex.Unlock();
+
 	Logger::FrameworkDebug("============================================================");
 }
 
 
 void AnimationManager::PauseAnimations(bool isPaused, int tag)
 {
-	animationMutex.Lock();
+    DVASSERT(Thread::IsMainThread());
+
 	for(Vector<Animation*>::iterator i = animations.begin(); i != animations.end(); ++i)
     {
         Animation * &a = *i;
-        animationMutex.Unlock();
         
         if (a->GetTagId() == tag)
         {
             a->Pause(isPaused);
         }
-        animationMutex.Lock();
     }
-	animationMutex.Unlock();
 }
 
 void AnimationManager::SetAnimationsMultiplier(float32 f, int tag)
 {
-	animationMutex.Lock();
+    DVASSERT(Thread::IsMainThread());
+    
     for(Vector<Animation*>::iterator i = animations.begin(); i != animations.end(); ++i)
     {
         Animation * &a = *i;
-        animationMutex.Unlock();
         
         if (a->GetTagId() == tag)
         {
             a->SetTimeMultiplier(f);
         }
-        animationMutex.Lock();
     }
-	animationMutex.Unlock();
 }
 
 };

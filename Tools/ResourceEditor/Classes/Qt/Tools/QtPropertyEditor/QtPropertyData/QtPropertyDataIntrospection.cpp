@@ -143,18 +143,7 @@ QtPropertyData * QtPropertyDataIntrospection::CreateMemberData(void *_object, co
                 {
 					// check if description has some predefines enum values
 					const DAVA::InspDesc &desc = member->Desc();
-
-					if(NULL != desc.enumMap)
-					{
-						for(size_t i = 0; i < desc.enumMap->GetCount(); ++i)
-						{
-							int v;
-							if(desc.enumMap->GetValue(i, v))
-							{
-								childData->AddAllowedValue(DAVA::VariantType(v), desc.enumMap->ToString(v));
-							}
-						}
-					}
+                    childData->SetInspDescription(desc);
 				}
                 
                 retData = childData;

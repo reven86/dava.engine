@@ -85,6 +85,7 @@ protected:
 	void SetCurMaterial(const QList< DAVA::NMaterial *>& materials);
 	void FillMaterialProperties(const QList<DAVA::NMaterial *>& materials);
     void FillMaterialTemplates(const QList<DAVA::NMaterial *>& materials);
+    void ClearMaterialDynamicMember(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicInsp);
 
     QVariant CheckForTextureDescriptor(const QVariant& value);
 
@@ -100,10 +101,9 @@ private:
         CHECKED_NOTHING = 0x0,
 
         CHECKED_TEMPLATE = 0x1,
-        CHECKED_NAME = 0x2,
-        CHECKED_GROUP = 0x4,
-        CHECKED_PROPERTIES = 0x8,
-        CHECKED_TEXTURES = 0x10,
+        CHECKED_GROUP = 0x2,
+        CHECKED_PROPERTIES = 0x4,
+        CHECKED_TEXTURES = 0x8,
 
         CHECKED_ALL = 0xff
     };
@@ -112,7 +112,7 @@ private:
     void initTemplates();
     void setTemplatePlaceholder( const QString& text );
     QString GetTemplatePath(int index) const;
-    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState);
+    DAVA::uint32 ExecMaterialLoadingDialog(DAVA::uint32 initialState, const QString &inputFile);
 
 	Ui::MaterialEditor *ui;
 	QtPosSaver posSaver;

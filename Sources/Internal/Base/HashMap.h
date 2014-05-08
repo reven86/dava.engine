@@ -35,6 +35,7 @@
 #include "Base/AllocatorFactory.h"
 #include "Base/Hash.h"
 #include "Base/TemplateHelpers.h"
+#include "Math/MathHelpers.h"
 #include "Debug/DVAssert.h"
 #include <map>
 
@@ -154,6 +155,9 @@ HashMap<K, V>::HashMap(size_t _hashSize, V _defaultV)
 	, szTable(_hashSize)
 	, defaultV(_defaultV)
 {
+	// not 0 and power of 2
+	DVASSERT(IsPowerOf2(szTable));
+
 	table = new HashMapItem*[szTable];
 	for(size_t i = 0; i < szTable; ++i)
 	{
@@ -351,7 +355,7 @@ void HashMap<K, V>::resize(size_t newSize)
 	HashMapItem* next = NULL;
 
 	// not 0 and power of 2
-	DVASSERT(0 != newSize && 0 == (newSize & (newSize - 1)));
+	DVASSERT(IsPowerOf2(newSize));
 
 	HashMapItem **oldTable = table;
 	size_t szOld = szTable;

@@ -333,8 +333,7 @@ void ScenePreviewControl::SetupCamera()
             radius = 5.f;
         }
         
-        editorScene->SetCurrentCamera(camera);
-        editorScene->SetClipCamera(camera);
+        editorScene->SetCurrentCamera(camera);        
         
 		cameraController->SetScene(editorScene);
         cameraController->SetRadius(radius);

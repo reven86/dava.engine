@@ -32,10 +32,12 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/RenderBase.h"
 #include "Render/LibPngHelpers.h"
+#include "Render/LibJpegHelper.h"
 #include "Render/LibPVRHelper.h"
 #include "Render/LibDxtHelper.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
+#include "Render/ImageConvert.h"
 
 namespace DAVA 
 {
@@ -97,6 +99,11 @@ bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet
     }
 #endif
     
+    if(IsJPEGFile(file))
+    {
+        return CreateFromJPEG(file, imageSet);
+    }
+    
     return false;
 }
 
@@ -121,6 +128,24 @@ bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> &
 #endif
     return false;
     
+}
+    
+bool ImageLoader::CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> & imageSet)
+{
+    Image *jpegImage = new Image();
+    if(jpegImage)
+    {
+        bool created = LibJpegWrapper::ReadJpegFile(pathname, jpegImage);
+        if(created)
+        {
+            imageSet.push_back(jpegImage);
+            return true;
+        }
+        
+        SafeRelease(jpegImage);
+    }
+    
+    return false;
 }
     
 bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
@@ -175,6 +200,13 @@ bool ImageLoader::IsPNGFile(DAVA::File *file)
     return isPng;
 }
     
+bool ImageLoader::IsJPEGFile(File *file)
+{
+    bool isJpeg = LibJpegWrapper::IsJpegFile(file->GetFilename());
+    file->Seek(0, File::SEEK_FROM_START);
+    return isJpeg;
+}
+    
 bool ImageLoader::IsPVRFile(DAVA::File *file)
 {
     TAG_SWITCH(MemoryManager::TAG_IMAGE)
@@ -212,6 +244,11 @@ bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
     }
     
     return false;
+}
+    
+bool ImageLoader::CreateFromJPEG(File *file, Vector<Image *> & imageSet)
+{
+    return CreateFromJPEGFile(file->GetFilename(), imageSet);
 }
 
 bool ImageLoader::CreateFromDDS(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
@@ -257,15 +294,62 @@ bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, in
     return false;
 }
 
-void ImageLoader::Save(DAVA::Image *image, const FilePath &pathname)
+bool ImageLoader::Save(const DAVA::Image *image, const FilePath &pathname)
 {
     TAG_SWITCH(MemoryManager::TAG_IMAGE)
+
+    bool retValue = false;
+    DVASSERT(image && (pathname.IsEqualToExtension(".png") || pathname.IsEqualToExtension(".jpg") || pathname.IsEqualToExtension(".jpeg")));
     
-    DVASSERT(pathname.IsEqualToExtension(".png"));
+    DVASSERT((FORMAT_RGB888 == image->format)||(FORMAT_RGBA8888 == image->format) ||
+             (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format));
     
-    DVASSERT((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format));
-    LibPngWrapper::WritePngFile(pathname, image->width, image->height, image->data, image->format);
+    if(pathname.IsEqualToExtension(".png"))
+    {
+        if(FORMAT_RGB888 == image->format)
+        {
+            Image* imgToSave = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+            
+            ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
+            convert(image->data, image->width, image->height, sizeof(RGB888)*image->width, imgToSave->data, imgToSave->width, imgToSave->height, sizeof(uint32)*image->width);
+            
+            retValue = LibPngWrapper::WritePngFile(pathname, imgToSave->width, imgToSave->height, imgToSave->data, imgToSave->format);
+            SafeRelease(imgToSave);
+        }
+        else
+        {
+            retValue = LibPngWrapper::WritePngFile(pathname, image->width, image->height, image->data, image->format);
+        }
+    }
+    else if(pathname.IsEqualToExtension(".jpg") || pathname.IsEqualToExtension(".jpeg"))
+    {
+        if((FORMAT_RGB888 == image->format) || (FORMAT_A8 == image->format))
+        {
+            LibJpegWrapper::WriteJpegFile(pathname, image->width, image->height, image->data, image->format);
+        }
+        else
+        {
+            Image* imgToSave= NULL;
+            if(FORMAT_RGBA8888 == image->format)
+            {
+                imgToSave = Image::Create(image->width, image->height, FORMAT_RGB888);
+                ConvertDirect<uint32, RGB888, ConvertRGBA8888toRGB888> convert;
+                convert(image->data, image->width, image->height, sizeof(uint32)*image->width, imgToSave->data, imgToSave->width, imgToSave->height, sizeof(RGB888)*image->width);
+            }
+            else if(FORMAT_A16 == image->format)
+            {
+                imgToSave = Image::Create(image->width, image->height, FORMAT_A8);
+                ConvertDirect<uint16, uint8, ConvertA16toA8> convert;
+                convert(image->data, image->width, image->height, sizeof(uint16)*image->width, imgToSave->data, imgToSave->width, imgToSave->height, sizeof(uint8)*image->width);
+            }
+            if(imgToSave != NULL)
+            {
+                retValue = LibJpegWrapper::WriteJpegFile(pathname, imgToSave->width, imgToSave->height, imgToSave->data, imgToSave->format);
+                SafeRelease(imgToSave);
+            }
+        }
+    }
+    return retValue;
 }
-    
     
 };

@@ -298,7 +298,7 @@ RenderSystem * RenderObject::GetRenderSystem()
 	return renderSystem;
 }
 
-void RenderObject::BakeTransform(const Matrix4 & /*transform*/)
+void RenderObject::BakeGeometry(const Matrix4 & transform)
 {
     TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
 }
