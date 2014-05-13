@@ -41,6 +41,8 @@ SpriteObject::SpriteObject()
     : RenderObject()
     , sprite(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     Texture* t = Texture::CreatePink();
     Sprite *spr = Sprite::CreateFromTexture(t, 0, 0, t->GetWidth(), t->GetHeight());
     Init(spr, 0, Vector2(1.f, 1.f), Vector2(0.f, 0.f));
@@ -81,6 +83,8 @@ SpriteObject::~SpriteObject()
 
 void SpriteObject::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     while (GetRenderBatchCount())
     {
         RemoveRenderBatch(GetRenderBatchCount() - 1);
@@ -277,6 +281,8 @@ void SpriteObject::CreateMeshFromSprite(int32 frameToGen)
 
 void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     RenderObject::Save(archive, serializationContext);
 
     if (!archive || !sprite)
@@ -293,6 +299,8 @@ void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializati
 
 void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     RenderObject::Load(archive, serializationContext);
 
     if (!archive)

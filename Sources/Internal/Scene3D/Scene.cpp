@@ -708,6 +708,8 @@ void Scene::ReleaseRootNodes()
     
 void Scene::ReleaseRootNode(Entity *nodeToRelease)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 //	for (Map<String, Entity*>::iterator it = rootNodes.begin(); it != rootNodes.end(); ++it)
 //	{
 //        if (nodeToRelease == it->second) 

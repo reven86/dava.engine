@@ -237,6 +237,8 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     DVASSERT(mainCamera);
@@ -346,7 +348,9 @@ void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
 }
 
 void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
-{    
+{
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();    
             

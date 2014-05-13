@@ -1436,6 +1436,8 @@ void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 
 const FilePath & Landscape::GetHeightmapPathname()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return heightmapPath;
 }
 	
@@ -1452,6 +1454,8 @@ void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
 	
 float32 Landscape::GetLandscapeSize()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	return bbox.GetSize().x;
 }
 	

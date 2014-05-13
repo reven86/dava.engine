@@ -186,6 +186,8 @@ void ParticleEffectComponent::StopWhenEmpty(bool value /*= true*/)
 
 void ParticleEffectComponent::ClearGroup(ParticleGroup& group)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     Particle * current = group.head;
     while (current)
     {
@@ -545,6 +547,8 @@ void ParticleEffectComponent::RemoveEmitter(ParticleEmitter *emitter)
 /*statistics for editor*/
 int32 ParticleEffectComponent::GetLayerActiveParticlesCount(ParticleLayer *layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     int32 count = 0;
     for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
     {
@@ -557,6 +561,8 @@ int32 ParticleEffectComponent::GetLayerActiveParticlesCount(ParticleLayer *layer
 }
 float32 ParticleEffectComponent::GetLayerActiveParticlesSquare(ParticleLayer *layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     float32 square = 0;
     for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
     {
@@ -582,18 +588,26 @@ float32 ParticleEffectComponent::GetCurrTime()
 
 bool ParticleEffectComponent::GetReflectionVisible()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return effectRenderObject->GetReflectionVisible();
 }
 void ParticleEffectComponent::SetReflectionVisible(bool visible)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     effectRenderObject->SetReflectionVisible(visible);
 }
 bool ParticleEffectComponent::GetRefractionVisible()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return effectRenderObject->GetRefractionVisible();
 }
 void ParticleEffectComponent::SetRefractionVisible(bool visible)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     effectRenderObject->SetRefractionVisible(visible);
 }
 

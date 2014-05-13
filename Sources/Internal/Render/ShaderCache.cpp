@@ -161,6 +161,8 @@ void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void
 
 void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 	Shader *shader = (Shader*)param;
 	shader->Recompile();
 

@@ -129,6 +129,8 @@ void RenderUpdateSystem::Process(float32 timeElapsed)
 
 void RenderUpdateSystem::UpdateActiveIndexes(Entity *entity, RenderObject *object)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Entity *parent;
     
     // search effective lod index

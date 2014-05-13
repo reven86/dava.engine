@@ -314,6 +314,8 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 
 void ParticleEffectSystem::UpdateActiveLod(ParticleEffectComponent *effect)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     DVASSERT(effect->activeLodLevel!=effect->desiredLodLevel);
     effect->activeLodLevel = effect->desiredLodLevel;
     for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e=effect->effectData.groups.end(); it!=e;++it)

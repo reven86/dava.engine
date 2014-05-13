@@ -242,6 +242,8 @@ void Entity::RemoveComponent(Component * component)
 
 void Entity::DetachComponent( Component * component )
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if ( scene )
         scene->RemoveComponent( this, component );
 

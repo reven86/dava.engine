@@ -449,6 +449,8 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 
 bool Image::Save(const FilePath &path) const
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     return ImageLoader::Save(this, path);
 }
     

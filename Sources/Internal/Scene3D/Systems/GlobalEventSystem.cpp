@@ -45,6 +45,8 @@ void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, u
 #if defined (__USE_STL_POOL_ALLOCATOR__)
     void GlobalEventSystem::Event(Entity * entity, uint32 event)
     {
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
         if (entity)
         {
             Scene * scene = entity->GetScene();
@@ -62,6 +64,8 @@ void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, u
     
     void GlobalEventSystem::PerformAllEventsFromCache(Entity * entity)
     {
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
         Map<Entity*, ListBase<uint32> >::iterator it = eventsCache.find(entity);
         if (it != eventsCache.end())
         {
@@ -78,6 +82,8 @@ void GlobalEventSystem::GroupEvent(Scene * scene, Vector<Entity *> & entities, u
     
     void GlobalEventSystem::RemoveAllEvents(Entity * entity)
     {
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
         Map<Entity*, ListBase<uint32> >::iterator it = eventsCache.find(entity);
         if (it != eventsCache.end())
         {

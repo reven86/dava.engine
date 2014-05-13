@@ -75,6 +75,8 @@ Sprite::DrawState::DrawState()
 
 void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     renderState = _renderState;
     
     /*if(_renderState != renderState)
@@ -95,6 +97,8 @@ void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
 
 void Sprite::DrawState::SetShader(Shader* _shader)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     shader = _shader;
     /*if(_shader != shader)
     {
@@ -709,6 +713,8 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 
 void Sprite::PrepareForTiling()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(!isPreparedForTiling)
 	{
 		for (int i = 0;	i < this->frameCount; i++)
@@ -728,6 +734,8 @@ void Sprite::PrepareForTiling()
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	DVASSERT(frame < frameCount);
 
 	rectsAndOffsets[frame][4] = xOff;
@@ -811,11 +819,15 @@ Sprite::~Sprite()
 
 Texture* Sprite::GetTexture()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return textures[0];
 }
 
 Texture* Sprite::GetTexture(int32 frameNumber)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 //	DVASSERT(frameNumber > -1 && frameNumber < frameCount);
 	frame = Clamp(frameNumber, 0, frameCount - 1);
 	return textures[frameTextureIndex[frame]];
@@ -823,12 +835,16 @@ Texture* Sprite::GetTexture(int32 frameNumber)
 	
 UniqueHandle Sprite::GetTextureHandle(int32 frameNumber)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	frame = Clamp(frameNumber, 0, frameCount - 1);
 	return textureHandles[frameTextureIndex[frame]];
 }
 
 float32 *Sprite::GetTextureVerts(int32 frame)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 //	DVASSERT(frame > -1 && frame < frameCount);
 	uint32 frameNumber = Clamp(frame, 0, frameCount - 1);
 	return texCoords[frameNumber];
@@ -836,42 +852,58 @@ float32 *Sprite::GetTextureVerts(int32 frame)
 
 int32 Sprite::GetFrameCount() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return frameCount;
 }
 
 float32 Sprite::GetWidth() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return size.dx;
 }
 
 float32 Sprite::GetHeight() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return size.dy;
 }
 
 const Vector2 &Sprite::GetSize() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return size;
 }
 
 const Vector2 &Sprite::GetDefaultPivotPoint() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return defaultPivotPoint;
 }
 
 void Sprite::SetDefaultPivotPoint(float32 x, float32 y)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     defaultPivotPoint.x = x;
     defaultPivotPoint.y = y;
 }
     
 void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     defaultPivotPoint = newPivotPoint;
 }
 
 void Sprite::SetFrame(int32 frm)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	frame = Max(0, Min(frm, frameCount - 1));
 }
 
@@ -976,6 +1008,8 @@ void Sprite::SetModification(int32 modif)
 
 void Sprite::Reset()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	//drawCoord.x = 0;
 	//drawCoord.y = 0;
 	//frame = 0;
@@ -989,6 +1023,8 @@ void Sprite::Reset()
 
 void Sprite::ResetModification()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     flags = flags & ~EST_MODIFICATION;
 }
 
@@ -1684,18 +1720,24 @@ void Sprite::DrawPoints(Vector2 *verticies, DrawState* drawState)
 
 float32 Sprite::GetRectOffsetValueForFrame(int32 frame, eRectsAndOffsets valueType) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
 	return rectsAndOffsets[clampedFrame][valueType];
 }
 
 const float32 * Sprite::GetFrameVerticesForFrame( int32 frame ) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
 	return frameVertices[clampedFrame];
 }
 
 const float32 * Sprite::GetTextureCoordsForFrame( int32 frame ) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
 	return texCoords[clampedFrame];
 }
@@ -1794,6 +1836,8 @@ void Sprite::ValidateForSize()
 
 void Sprite::DumpSprites()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	Logger::FrameworkDebug("============================================================");
 	Logger::FrameworkDebug("--------------- Currently allocated sprites ----------------");
 
@@ -1810,6 +1854,8 @@ void Sprite::DumpSprites()
 
 void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	clipPolygon = _clipPolygon;
 }
 
@@ -1841,6 +1887,8 @@ void Sprite::ConvertToVirtualSize()
 
 const FilePath & Sprite::GetRelativePathname() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return relativePathname;
 }
 

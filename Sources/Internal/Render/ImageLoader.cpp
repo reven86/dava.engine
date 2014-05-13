@@ -132,6 +132,8 @@ bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> &
     
 bool ImageLoader::CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     Image *jpegImage = new Image();
     if(jpegImage)
     {
@@ -202,6 +204,8 @@ bool ImageLoader::IsPNGFile(DAVA::File *file)
     
 bool ImageLoader::IsJPEGFile(File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isJpeg = LibJpegWrapper::IsJpegFile(file->GetFilename());
     file->Seek(0, File::SEEK_FROM_START);
     return isJpeg;
@@ -248,6 +252,8 @@ bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
     
 bool ImageLoader::CreateFromJPEG(File *file, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     return CreateFromJPEGFile(file->GetFilename(), imageSet);
 }
 

@@ -273,6 +273,8 @@ int32 Shader::GetAttributeIndexByName(const FastName & name)
 
 void Shader::SetDefines(const String & _defines)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     shaderDefines = _defines;
 }
    

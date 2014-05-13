@@ -196,6 +196,8 @@ void Camera::SetupPerspective(float32 fovxInDegrees, float32 aspectYdivX, float3
 
 void Camera::SetupOrtho(float32 width, float32 aspectYdivX, float32 zNear, float32 zFar)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	this->aspect = 1.f/aspectYdivX;
 
 	this->orthoWidth = width;
@@ -350,30 +352,40 @@ void Camera::RebuildViewMatrix()
 
 void Camera::SetPosition(const Vector3 & _position)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	position = _position;
     flags |= REQUIRE_REBUILD;
 }
 
 void Camera::SetDirection(const Vector3 & _direction)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	target = position + _direction;
     flags |= REQUIRE_REBUILD;
 }
 
 void Camera::SetTarget(const Vector3 & _target)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	target = _target;
     flags |= REQUIRE_REBUILD;
 }
     
 void Camera::SetUp(const Vector3 & _up)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     up = _up;
     flags |= REQUIRE_REBUILD;
 }
     
 void Camera::SetLeft(const Vector3 & _left)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     left = _left;
     flags |= REQUIRE_REBUILD;
 }
@@ -381,16 +393,22 @@ void Camera::SetLeft(const Vector3 & _left)
 	
 const Vector3 & Camera::GetTarget() const
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	return target;
 }
 
 const Vector3 & Camera::GetPosition() const
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
 	return position;
 }
 
 const Vector3 & Camera::GetDirection()
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     direction = target - position;
     direction.Normalize(); //TODO: normalize only on target/position changes
     return direction;
@@ -398,16 +416,22 @@ const Vector3 & Camera::GetDirection()
 
 const Vector3 & Camera::GetUp() const
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     return up;
 }
 
 const Vector3 & Camera::GetLeft() const
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     return left;
 }
     
 const Matrix4 & Camera::GetMatrix() const 
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     return viewMatrix;
 }
 
@@ -524,6 +548,8 @@ void Camera::PrepareDynamicParameters(Vector4 *externalClipPlane)
 
 void Camera::SetupDynamicParameters(Vector4 *externalClipPlane)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     PrepareDynamicParameters(externalClipPlane);
 
 	RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
@@ -571,6 +597,8 @@ BaseObject * Camera::Clone(BaseObject * dstNode)
     
 Frustum * Camera::GetFrustum() const
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     return currentFrustum;
 }
     
@@ -583,11 +611,15 @@ void Camera::CalculateZoomFactor()
 
 float32 Camera::GetZoomFactor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     return zoomFactor;
 }
 
 void Camera::SetCullInvert(bool enabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_CAMERA)
+    
     if (enabled)
         flags |= INVERT_CULL;
     else

@@ -55,6 +55,8 @@ static HINSTANCE hInstance;
 
 bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	hInstance = _hInstance;
 	hWnd = _hWnd;
 
@@ -90,6 +92,8 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 void RenderManager::Release()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	Singleton<RenderManager>::Release();
 
 	wglMakeCurrent(0, 0);
@@ -99,6 +103,8 @@ void RenderManager::Release()
 
 bool RenderManager::ChangeDisplayMode(DisplayMode mode, bool isFullscreen)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	hardwareState.Reset(false);
 	currentState.Reset(true);
 	return true;
@@ -989,6 +995,8 @@ void RenderManager::DiscardDepth()
 #if defined(__DAVAENGINE_ANDROID__)
 void RenderManager::Lost()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
 
@@ -1004,7 +1012,7 @@ void RenderManager::Lost()
 
 void RenderManager::Invalidate()
 {
-
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
 }
 #endif
 
