@@ -135,8 +135,13 @@ public:
     };
     
 	Landscape();
-    //IMPLEMENT_NATIVE_ALLOCATOR;
+    
+#if defined(ENABLE_MEMORY_MANAGER)
     IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_LANDSCAPE)
+#else
+    IMPLEMENT_NATIVE_ALLOCATOR;
+#endif
+    
 	virtual ~Landscape();
     
     /**

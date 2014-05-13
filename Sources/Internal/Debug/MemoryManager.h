@@ -37,12 +37,6 @@
 #include "Platform/Mutex.h"
 
 #ifdef ENABLE_MEMORY_MANAGER
-
-#include <string>
-#include <map>
-#include <fstream>
-
-#ifdef ENABLE_MEMORY_MANAGER
 #define IMPLEMENT_TAGGED_CREATOR(tag) \
 void * operator new(std::size_t size) \
 { \
@@ -63,6 +57,12 @@ AutoTagSwitcher tagSwitcher(tag);\
 #define IMPLEMENT_TAGGED_CREATOR(tag)
 #define TAG_SWITCH(tag)
 #endif
+
+#ifdef ENABLE_MEMORY_MANAGER
+
+#include <string>
+#include <map>
+#include <fstream>
 
 
 namespace DAVA
