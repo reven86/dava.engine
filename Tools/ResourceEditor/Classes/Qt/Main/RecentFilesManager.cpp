@@ -58,7 +58,9 @@ void RecentFilesManager::SetFileToRecent(const DAVA::String& file)
     vectorToSave.erase(std::remove(vectorToSave.begin(), vectorToSave.end(), stringToInsert), vectorToSave.end());
     
     vectorToSave.insert(vectorToSave.begin(), stringToInsert);
-    int32 recentFilesMaxCount = SettingsManager::GetValue(Settings::General_RecentFilesCount).AsInt32();
+
+    uint32 recentFilesMaxCount = SettingsManager::GetValue(Settings::General_RecentFilesCount).AsInt32();
+
     DAVA::uint32 size = vectorToSave.size() > recentFilesMaxCount ? recentFilesMaxCount : vectorToSave.size();
     KeyedArchive* archive = new KeyedArchive();
     for (DAVA::uint32 i = 0; i < size; ++i)

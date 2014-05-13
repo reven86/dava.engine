@@ -46,6 +46,7 @@ class Request;
 class QtLabelWithActions;
 class LandscapeDialog;
 class HangingObjectsHeight;
+class DeveloperTools;
 class QtMainWindow : public QMainWindow, public DAVA::Singleton<QtMainWindow>
 {
 	Q_OBJECT
@@ -279,6 +280,9 @@ private:
 	bool LoadAppropriateTextureFormat();
 	bool IsSavingAllowed();
 	// <--
+
+    //Need for any debug functionality
+    DeveloperTools *developerTools;
 };
 
 

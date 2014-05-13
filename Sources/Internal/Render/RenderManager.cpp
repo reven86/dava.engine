@@ -36,6 +36,7 @@
 #include "Render/RenderDataObject.h"
 #include "Render/ShaderCache.h"
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -71,7 +72,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     
 //	Logger::FrameworkDebug("[RenderManager] created");
 
-    Texture::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
     
 	renderOrientation = 0;
@@ -124,7 +124,7 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     
 	cursor = 0;
     currentRenderData = 0;
-    enabledAttribCount = 0;
+    cachedEnabledStreams = 0;
     
     statsFrameCountToShowDebug = 0;
     frameToShowDebugStats = -1;

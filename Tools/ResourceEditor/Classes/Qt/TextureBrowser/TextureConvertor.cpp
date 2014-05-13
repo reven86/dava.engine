@@ -48,6 +48,7 @@
 #include "Main/QtUtils.h"
 #include "Scene/SceneHelper.h"
 #include "ImageTools/ImageTools.h"
+#include "Settings/SettingsManager.h"
 
 TextureConvertor::TextureConvertor()
 	: curJobOriginal(NULL)
@@ -611,7 +612,8 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 		{
 			DVASSERT(descriptor->compression);
 			TextureConverter::CleanupOldTextures(descriptor, gpu, (DAVA::PixelFormat)descriptor->compression[gpu]->format);
-			outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true);
+            DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
+			outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true, (TextureConverter::eConvertQuality)quality.AsInt32());
         }
 		
         Vector<DAVA::Image *> davaImages;
@@ -676,7 +678,6 @@ QImage TextureConvertor::FromDavaImage(DAVA::Image *image)
 		{
 		case DAVA::FORMAT_DXT1:
 		case DAVA::FORMAT_DXT1A:
-		case DAVA::FORMAT_DXT1NM:
 		case DAVA::FORMAT_DXT3:
 		case DAVA::FORMAT_DXT5:
 		case DAVA::FORMAT_DXT5NM:

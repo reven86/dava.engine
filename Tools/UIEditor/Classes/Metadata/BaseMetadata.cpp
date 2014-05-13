@@ -96,19 +96,11 @@ bool BaseMetadata::VerifyActiveParamID() const
 
 bool BaseMetadata::VerifyParamID(BaseMetadataParams::METADATAPARAMID paramID) const
 {
-    if (treeNodeParams.empty())
+    if (treeNodeParams.empty() || paramID < 0 || paramID >= GetParamsCount())
     {
-        Logger::Error("No Framework Controls defined to setup the Param ID! %i", paramID);
         return false;
     }
-    
-    if (paramID < 0 || paramID >= GetParamsCount())
-    {
-        Logger::Error("Param ID %i passed is less of 0 or more than Params Count!",
-                      paramID, GetParamsCount());
-        return false;
-    }
-    
+
     return true;
 }
 

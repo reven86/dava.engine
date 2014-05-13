@@ -47,6 +47,8 @@
 #include "UITextFieldMetadata.h"
 #include "UIParticlesMetadata.h"
 
+#include "Metadata/Custom/GuideMetadata.h"
+
 using namespace DAVA;
 
 PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
@@ -101,6 +103,9 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
     
     particleWidget = new ParticleEffectPropertyGridWidget();
     registeredWidgets.push_back(particleWidget);
+    
+    guideWidget = new GuidePropertyGridWidget();
+    registeredWidgets.push_back(guideWidget);
 }
 
 PropertyGridWidgetsFactory::~PropertyGridWidgetsFactory()
@@ -294,6 +299,14 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
         resultList.push_back(backgroundWidget);
         resultList.push_back(flagsWidget);
         
+        return resultList;
+    }
+
+    // Handle Custom metadata here.
+    const GuideMetadata* guideMetadata = dynamic_cast<const GuideMetadata*>(metaData);
+    if (guideMetadata)
+    {
+        resultList.push_back(guideWidget);
         return resultList;
     }
 

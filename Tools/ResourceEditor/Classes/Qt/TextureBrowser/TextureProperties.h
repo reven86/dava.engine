@@ -47,6 +47,7 @@ public:
 	typedef enum PropType
 	{
 		PROP_MIPMAP,
+        PROP_NORMALMAP,
 		PROP_WRAP,
 		PROP_FILTER,
 		PROP_FORMAT,
@@ -70,7 +71,8 @@ protected:
 	DAVA::TextureDescriptor *curTextureDescriptor;
 	DAVA::eGPUFamily curGPU;
 
-	QtPropertyDataInspMember *propMipMap;
+    QtPropertyDataInspMember *propMipMap;
+    QtPropertyDataInspMember *propNormalMap;
 	QtPropertyDataInspMember *propWrapModeS;
 	QtPropertyDataInspMember *propWrapModeT;
 	QtPropertyDataInspMember *propMinFilter;

@@ -1425,6 +1425,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\LibJpegHelper.h">
       <Filter>Internal\Render</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h">
+      <Filter>Internal\Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2550,6 +2553,9 @@
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\LibJpegHelper.cpp">
+      <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp">
       <Filter>Internal\Render</Filter>
     </ClCompile>
   </ItemGroup>

@@ -342,7 +342,7 @@ void TextureBrowser::updateInfoOriginal(const QList<QImage> &images)
 	{
 		char tmp[1024];
 
-		const char *formatStr = DAVA::Texture::GetPixelFormatString(DAVA::FORMAT_RGBA8888);
+		const char *formatStr = DAVA::PixelFormatDescriptor::GetPixelFormatString(DAVA::FORMAT_RGBA8888);
 
 		int datasize = TextureCache::Instance()->getOriginalSize(curDescriptor);
 		int filesize = TextureCache::Instance()->getOriginalFileSize(curDescriptor);
@@ -690,6 +690,7 @@ void TextureBrowser::texturePropertyChanged(int type)
 	// settings that need texture to reconvert
 	if( type == TextureProperties::PROP_FORMAT ||
 		type == TextureProperties::PROP_MIPMAP ||
+        type == TextureProperties::PROP_NORMALMAP||
 		type == TextureProperties::PROP_SIZE)
 	{
 		// set current Texture view and force texture convertion

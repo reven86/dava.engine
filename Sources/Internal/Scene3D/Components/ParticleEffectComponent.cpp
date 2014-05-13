@@ -78,7 +78,7 @@ ParticleEffectComponent::~ParticleEffectComponent()
 }
 
 Component * ParticleEffectComponent::Clone(Entity * toEntity)
-{
+{	
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
     
 	ParticleEffectComponent * newComponent = new ParticleEffectComponent();
@@ -132,7 +132,7 @@ void ParticleEffectComponent::Stop(bool isDeleteAllParticles)
 }
 
 void ParticleEffectComponent::Pause(bool isPaused /*= true*/)
-{
+{	
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
     
 	this->isPaused = isPaused;
@@ -214,7 +214,7 @@ void ParticleEffectComponent::SetRenderObjectVisible(bool visible)
 {
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
     
-    if (visible)
+    if (visible) 
         effectRenderObject->AddFlag(RenderObject::VISIBLE);
     else
         effectRenderObject->RemoveFlag(RenderObject::VISIBLE);
@@ -586,7 +586,7 @@ float32 ParticleEffectComponent::GetCurrTime()
     return time;
 }
 
-bool ParticleEffectComponent::GetReflectionVisible()
+bool ParticleEffectComponent::GetReflectionVisible() const
 {
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
     
@@ -598,7 +598,7 @@ void ParticleEffectComponent::SetReflectionVisible(bool visible)
     
     effectRenderObject->SetReflectionVisible(visible);
 }
-bool ParticleEffectComponent::GetRefractionVisible()
+bool ParticleEffectComponent::GetRefractionVisible() const
 {
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
     

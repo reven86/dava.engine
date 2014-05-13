@@ -47,7 +47,7 @@ public:
     
     // Functionality related to adding new Guide.
     // Start to adding new guide is get - it might be cancelled though.
-    void StartNewGuide(GuideData::eGuideType guideType);
+    void StartNewGuide(GuideData::eGuideType guideType, const List<Rect>& rectsList);
     
     // New guide (guide candidate) is moved.
     void MoveNewGuide(const Vector2& pos);
@@ -62,14 +62,17 @@ public:
     void CancelNewGuide();
 
     // Methods related to the moving existing guide.
-    bool StartMoveGuide(const Vector2& pos);
+    bool StartMoveGuide(const Vector2& pos, const List<Rect>& rectsList);
     void MoveGuide(const Vector2& pos);
     
     Vector2 GetMoveGuideStartPos() const;
+    const GuideData* GetMoveGuide() const;
     const GuideData* AcceptMoveGuide();
 
     // Selected guides.
     bool AreGuidesSelected() const;
+    const List<GuideData*> GetSelectedGuides(bool includeNewGuide = false) const;
+
     List<GuideData> DeleteSelectedGuides();
     void ResetSelection();
 
@@ -79,7 +82,11 @@ public:
     // Add/remove/update.
     void AddGuide(const GuideData& guideData);
     bool RemoveGuide(const GuideData& guideData);
+
     bool UpdateGuidePosition(const GuideData& guideData, const Vector2& newPos);
+
+    // Set the guide position and emit the signal.
+    void SetGuidePosition(GuideData* guideData, const Vector2& pos);
 
     // Load/Save functionality.
     bool Load(const FilePath& fileName);
@@ -101,6 +108,9 @@ public:
     // Lock the guides.
     bool AreGuidesLocked() const;
     void LockGuides(bool value);
+    
+signals:
+    void GuideMoved(GuideData* guideData);
 
 protected:
     // Check whether the same guide exists.
@@ -111,9 +121,19 @@ protected:
 
     // Calculate the distance from rect to guide depending on magnet mode.
     Vector2 CalculateDistanceToGuide(GuideData* guide, const Rect& rect) const;
+    Vector2 CalculateDistanceToGuide(GuideData::eGuideType guideType, const Vector2& guidePos, const Rect& rect) const;
 
     // Cleanup the memory.
     void Cleanup();
+
+    // Move the guide in the sticked mode.
+    void MoveGuideSticked(GuideData* guideData, const Vector2& pos);
+    
+    // Get the guide stick result depending on distance to guide and tresholds.
+    int32 GetGuideStickResult(const Vector2& distance, Vector2& offset) const;
+
+    // Get the closest stick position.
+    Vector2 GetClosedStickPosition(const Rect& rect, const Vector2& pos, int32 stickResult) const;
 
 private:
     List<GuideData*> activeGuides;
@@ -125,6 +145,9 @@ private:
     GuideData* moveGuide;
     Vector2 moveGuideStartPos;
     
+    // Stick rects for moving new/existing guide.
+    List<Rect> stickRects;
+
     // Current stick mode (may be a combination of different ones).
     int32 stickMode;
     

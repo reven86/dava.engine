@@ -502,27 +502,35 @@ Sprite * Sprite::CreateFromTexture(const Vector2 & spriteSize, Texture * fromTex
 	return spr;
 }
 
-Sprite* Sprite::CreateFromImage(const Image* image, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
+Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
     TAG_SWITCH(MemoryManager::TAG_SPRITE)
     
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
-
+    
     int32 size = (int32)Max(width, height);
-    EnsurePowerOf2(size);
+    
+    Image *img = NULL;
+    if(IsPowerOf2(width) && IsPowerOf2(height))
+    {
+        img = SafeRetain(image);
+    }
+    else
+    {
+        EnsurePowerOf2(size);
 
-    Image* img = Image::Create((uint32)size, (uint32)size, image->GetPixelFormat());
+        img = Image::Create((uint32)size, (uint32)size, image->GetPixelFormat());
+        img->InsertImage(image, 0, 0);
+    }
 
-    img->InsertImage(image, 0, 0);
-
-    Texture* texture = Texture::CreateFromData(img->GetPixelFormat(), img->GetData(), size, size, false);
+    Texture* texture = Texture::CreateFromData(img, false);
 
     Sprite* sprite = NULL;
     if (texture)
     {
-        float32 sprWidth = width;
-		float32 sprHeight = height;
+        float32 sprWidth = (float32)width;
+		float32 sprHeight = (float32)height;
         if(inVirtualSpace)
         {
             sprWidth *= Core::GetPhysicalToVirtualFactor();
@@ -543,7 +551,7 @@ Sprite* Sprite::CreateFromImage(const Image* image, bool contentScaleIncluded /*
     return sprite;
 }
 
-Sprite* Sprite::CreateFromPNG(const uint8* data, uint32 size, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
+Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
     TAG_SWITCH(MemoryManager::TAG_SPRITE)
     
@@ -573,15 +581,10 @@ Sprite* Sprite::CreateFromPNG(const uint8* data, uint32 size, bool contentScaleI
     return sprite;
 }
 
-Sprite* Sprite::CreateFromPNG(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
+Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
     TAG_SWITCH(MemoryManager::TAG_SPRITE)
     
-    if (path.GetExtension() != ".png")
-    {
-        return NULL;
-    }
-
     Vector<Image*> images;
     ImageLoader::CreateFromFileByExtension(path, images);
     if (images.size() == 0)
@@ -760,9 +763,8 @@ int32 Sprite::Release()
     
 	if(GetRetainCount() == 1)
 	{
-		SafeRelease(spriteRenderObject);
-
         spriteMapMutex.Lock();
+		SafeRelease(spriteRenderObject);
 		spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
         spriteMapMutex.Unlock();
 	}

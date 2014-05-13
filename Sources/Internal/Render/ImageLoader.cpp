@@ -268,36 +268,22 @@ bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, in
 {
     TAG_SWITCH(MemoryManager::TAG_IMAGE)
     
-//    uint64 loadTime = SystemTimer::Instance()->AbsoluteMS();
-
-    int32 mipMapLevelsCount = LibPVRHelper::GetMipMapLevelsCount(file);
-    baseMipmap = Min(baseMipmap, mipMapLevelsCount - 1);
-
-	int32 faceCount = LibPVRHelper::GetCubemapFaceCount(file);
-	int32 totalImageCount = (mipMapLevelsCount - baseMipmap) * faceCount;
-    if(totalImageCount)
+    bool loaded = false;
+    
+    PVRFile *pvrFile = LibPVRHelper::ReadFile(file, true, true);
+    if(pvrFile)
     {
-        imageSet.reserve(totalImageCount);
-        for(int32 i = 0; i < totalImageCount; ++i)
-        {
-            Image *image = new Image();
-            imageSet.push_back(image);
-        }
-
-        file->Seek(0, File::SEEK_FROM_START);
-        bool read = LibPVRHelper::ReadFile(file, imageSet, baseMipmap);
-        if(!read)
+        baseMipmap = Min(baseMipmap, (int32)(pvrFile->header.u32MIPMapCount - 1));
+        loaded = LibPVRHelper::LoadImages(pvrFile, imageSet, baseMipmap);
+        if(!loaded)
         {
             Logger::Error("[ImageLoader::CreateFromPVR] Cannot read images from PVR file (%s)", file->GetFilename().GetAbsolutePathname().c_str());
-			for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
-            imageSet.clear();
-            return false;
         }
-//        loadTime = SystemTimer::Instance()->AbsoluteMS() - loadTime;
-//        Logger::Info("Unpack PVR(%s) for %ldms", file->GetFilename().c_str(), loadTime);
-        return true;
+        
+        delete pvrFile;
     }
-    return false;
+
+    return loaded;
 }
 
 bool ImageLoader::Save(const DAVA::Image *image, const FilePath &pathname)

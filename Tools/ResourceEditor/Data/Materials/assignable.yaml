@@ -92,13 +92,13 @@
  name: "Water All Qualities"
  path: WaterAllQualities.material
 -
- name: "Water Per Vertex Cubemap"
+ name: "WaterPerVertex Cubemap"
  path: WaterPerVertexCubemap.material
 -
  name: "Water Per Vertex Cubemap Decal"
  path: WaterPerVertexCubemapDecal.material 
 -
- name: "Water Per Pixel Cubemap"
+ name: "WaterPerPixel Cubemap"
  path: WaterPerPixelCubemap.material
 -
  name: "Water Per Pixel Cubemap Const Refraction Color"
@@ -112,4 +112,38 @@
 -
  name: "Grass"
  path: Grass.material
+-
+ name: "Normalized BlinnPhong Per Vertex Opaque"
+ path: NormalizedBlinnPhongPerVertex.Opaque.material
+-
+ name: "Normalized BlinnPhong Per Vertex Alphatest"
+ path: NormalizedBlinnPhongPerVertex.Alphatest.material
+-
+ name: "Normalized BlinnPhong Per Vertex Alphatest + Alphablend"
+ path: NormalizedBlinnPhongPerVertex.Alphatest.Alphablend.material
+-
+ name: "Normalized BlinnPhong Per Pixel Opaque"
+ path: NormalizedBlinnPhongPerPixel.Opaque.material
+-
+ name: "Normalized BlinnPhong Per Pixel Alphatest + Alphablend"
+ path: NormalizedBlinnPhongPerPixel.Alphatest.Alphablend.material
+-
+ name: "Normalized BlinnPhong With All Qualities Opaque"
+ path: NormalizedBlinnPhongAllQualities.Opaque.material
+-
+ name: "Normalized BlinnPhong With All Qualities Alphatest"
+ path: NormalizedBlinnPhongAllQualities.Alphatest.material
+-
+ name: "Normalized BlinnPhong With All Qualities Alphatest + Alphablend"
+ path: NormalizedBlinnPhongAllQualities.Alphatest.Alphablend.material
+-
+ name: "Normalized BlinnPhong With Lightmap Per Vertex"
+ path: NormalizedBlinnPhongWithLightmapPerVertex.Opaque.material
+-
+ name: "Normalized BlinnPhong With Lightmap Per Pixel"
+ path: NormalizedBlinnPhongWithLightmapPerPixel.Opaque.material
+-
+ name: "Normalized BlinnPhong With Lightmap All Qualities"
+ path: NormalizedBlinnPhongWithLightmapAllQualities.Opaque.material
+
  

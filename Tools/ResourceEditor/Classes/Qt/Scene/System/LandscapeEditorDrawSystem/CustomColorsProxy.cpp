@@ -84,7 +84,7 @@ Rect CustomColorsProxy::GetChangedRect()
 
 void CustomColorsProxy::UpdateRect(const DAVA::Rect &rect)
 {
-	DAVA::Rect bounds(0.f, 0.f, size, size);
+	DAVA::Rect bounds(0.f, 0.f, (float32)size, (float32)size);
 	changedRect = rect;
 	bounds.ClampToRect(changedRect);
 

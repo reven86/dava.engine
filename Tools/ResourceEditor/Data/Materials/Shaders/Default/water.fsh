@@ -1,10 +1,10 @@
 <CONFIG>
-normalmap = 0
-albedo = 0
-cubemap = 1
-decal = 2
-dynamicReflection = 1
-dynamicRefraction = 2
+uniform sampler2D normalmap = 0
+uniform sampler2D albedo = 0
+uniform samplerCube cubemap = 1
+uniform sampler2D decal = 2
+uniform sampler2D dynamicReflection = 1
+uniform sampler2D dynamicRefraction = 2
 <FRAGMENT_SHADER>
 
 #ifdef GL_ES
@@ -89,6 +89,10 @@ uniform highp float distortionFallSquareDist;
 #if defined(VERTEX_FOG)
 uniform vec3 fogColor;
 varying float varFogFactor;
+#if defined(FOG_GLOW)
+uniform vec3 fogGlowColor;
+varying float varFogGlowFactor;
+#endif
 #endif
 
 
@@ -107,7 +111,10 @@ void main()
 		lowp vec3 textureColorDecal = texture2D(decal, varTexCoordDecal).rgb;
 		lowp vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
 		lowp vec3 textureColor1 = texture2D(albedo, varTexCoord1).rgb;
-		gl_FragColor = vec4((textureColor0 *textureColorDecal* decalTintColor * 2.0 + reflectionColor * reflectanceColor) * textureColor1 * 2.0, 1.0);
+		//gl_FragColor = vec4((textureColor0 *textureColorDecal* decalTintColor * 2.0 + reflectionColor * reflectanceColor) * textureColor1 * 2.0, 1.0);
+		//gl_FragColor = vec4(((textureColor0 + textureColor1)* decalTintColor + reflectionColor * reflectanceColor) * textureColorDecal * 2.0, 1.0);
+		//gl_FragColor = vec4((textureColorDecal* decalTintColor * reflectionColor * reflectanceColor) * (textureColor0 + textureColor1) * 2.0, 1.0);
+		gl_FragColor = vec4(((textureColor0 * textureColor1) * 3.0 * decalTintColor * textureColorDecal + reflectionColor * reflectanceColor) , 1.0);
 	#else
 		gl_FragColor = vec4(reflectionColor * reflectionTintColor, 1.0);
 	#endif
@@ -188,6 +195,11 @@ void main()
 #endif
     
 #if defined(VERTEX_FOG)
-    gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
+	#if defined(FOG_GLOW)
+		vec3 realFogColor = mix(fogColor, fogGlowColor, varFogGlowFactor);
+		gl_FragColor.rgb = mix(realFogColor, gl_FragColor.rgb, varFogFactor);
+	#else
+		gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
+	#endif
 #endif
 }

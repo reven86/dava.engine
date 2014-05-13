@@ -137,7 +137,8 @@ public:
     void RepackAndReloadSprites();
     
     // Preview mode control.
-    void EnablePreview(const PreviewSettingsData& data);
+    void EnablePreview(const PreviewSettingsData& data, bool applyScale);
+    void SetPreviewMode(const PreviewSettingsData& data);
     void DisablePreview();
 
     // Set the Stick Mode.
@@ -188,7 +189,7 @@ protected:
 	// Whether align/distribute is possible.
 	bool CanPerformAlign(eAlignControlsType alignType);
 	bool CanPerformDistribute(eDistributeControlsType distributeType);
-
+    
     // Hierarchy Tree.
     HierarchyTree hierarchyTree;
     

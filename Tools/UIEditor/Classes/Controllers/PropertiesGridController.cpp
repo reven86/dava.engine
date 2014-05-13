@@ -157,7 +157,7 @@ void PropertiesGridController::UpdatePropertiesForUIControlNodeList(const Hierar
 void PropertiesGridController::HandleNothingSelected()
 {
     CleanupSelection();
-    emit PropertiesGridUpdated();
+    emit UIControlsDeselected();
 }
 
 void PropertiesGridController::CleanupSelection()

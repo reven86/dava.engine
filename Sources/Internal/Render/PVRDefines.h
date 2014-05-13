@@ -527,6 +527,100 @@ inline bool PVRTIsLittleEndian()
     
     return bLittleEndian;
 }
+
+    
+/*!***********************************************************************
+ @struct       	MetaDataBlock
+ @brief      	A struct containing a block of extraneous meta data for a texture.
+ *************************************************************************/
+struct MetaDataBlock
+{
+    uint32	DevFOURCC;		///< A 4cc descriptor of the data type's creator. Values equating to values between 'P' 'V' 'R' 0 and 'P' 'V' 'R' 255 will be used by our headers.
+    uint32	u32Key;			///< A DWORD (enum value) identifying the data type, and thus how to read it.
+    uint32	u32DataSize;	///< Size of the Data member.
+    uint8*	Data;			///< Data array, can be absolutely anything, the loader needs to know how to handle it based on DevFOURCC and Key. Use new operator to assign to it.
+    
+    /*!***********************************************************************
+     @fn       		MetaDataBlock
+     @brief      	Meta Data Block Constructor
+     *************************************************************************/
+    MetaDataBlock() : DevFOURCC(0), u32Key(0), u32DataSize(0), Data(NULL)
+    {}
+    
+    /*!***********************************************************************
+     @fn       		MetaDataBlock
+     @brief      	Meta Data Block Copy Constructor
+     *************************************************************************/
+    MetaDataBlock(const MetaDataBlock& rhs)  : DevFOURCC(rhs.DevFOURCC), u32Key(rhs.u32Key), u32DataSize(rhs.u32DataSize)
+    {
+        //Copy the data across.
+        Data = new uint8[u32DataSize];
+        for (uint32 uiDataAmt=0; uiDataAmt<u32DataSize; ++uiDataAmt)
+        {
+            Data[uiDataAmt]=rhs.Data[uiDataAmt];
+        }
+    }
+    
+    /*!***********************************************************************
+     @fn       		~MetaDataBlock
+     @brief      	Meta Data Block Destructor
+     *************************************************************************/
+    ~MetaDataBlock()
+    {
+        if (Data)
+            delete [] Data;
+        Data = NULL;
+    }
+    
+    /*!***********************************************************************
+     @fn       		SizeOfBlock
+     @return			size_t Size (in a file) of the block.
+     @brief      	Returns the number of extra bytes this will add to any output files.
+     *************************************************************************/
+    size_t SizeOfBlock() const
+    {
+        return sizeof(DevFOURCC)+sizeof(u32Key)+sizeof(u32DataSize)+u32DataSize;
+    }
+    
+    /*!***********************************************************************
+     @brief      	Assigns one MetaDataBlock to the other.
+     @return			MetaDataBlock This MetaDataBlock after the operation.
+     *************************************************************************/
+    MetaDataBlock& operator=(const MetaDataBlock& rhs)
+    {
+        if (&rhs==this)
+            return *this;
+        
+        //Remove pre-existing data.
+        if (Data)
+            delete [] Data;
+        Data=NULL;
+        
+        //Copy the basic parameters
+        DevFOURCC=rhs.DevFOURCC;
+        u32Key=rhs.u32Key;
+        u32DataSize=rhs.u32DataSize;
+        
+        //Copy the data across.
+        if (rhs.Data)
+        {
+            Data = new uint8[u32DataSize];
+            for (uint32 uiDataAmt=0; uiDataAmt<u32DataSize; ++uiDataAmt)
+            {
+                Data[uiDataAmt]=rhs.Data[uiDataAmt];
+            }
+        }
+        
+        return *this;
+    }
+    
+    /*!***************************************************************************
+     @fn       		ReadFromPtr
+     @param[in]		pDataCursor		The data to read
+     @brief      	Reads from a pointer of memory in to the meta data block.
+     *****************************************************************************/
+    bool ReadFromPtr(const unsigned char** pDataCursor);
+};
     
 
 #endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)

@@ -46,6 +46,8 @@
 #include "Render/Texture.h"
 #include "Render/Image.h"
 #include "FileSystem/FileSystem.h"
+#include "Render/PixelFormatDescriptor.h"
+
 
 using namespace DAVA;
 
@@ -360,7 +362,7 @@ uint32 LibPngWrapper::GetDataSize(const FilePath &filePathname)
         format = (bit_depth == 16) ? FORMAT_A16 : FORMAT_A8;
 	}
 
-    uint32 imageSize = width * height * Texture::GetPixelFormatSizeInBytes(format);
+    uint32 imageSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     
     
 	/* Clean up. */

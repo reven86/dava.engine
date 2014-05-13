@@ -249,6 +249,10 @@ bool SceneEditor2::Export(const DAVA::eGPUFamily newGPU)
     exporter.SetOutFolder(projectPath + String("Data/3d/"));
     exporter.SetOutSoundsFolder(projectPath + String("Data/Sfx/"));
 	exporter.SetGPUForExporting(newGPU);
+
+	DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
+	exporter.SetCompressionQuality((DAVA::TextureConverter::eConvertQuality)quality.AsInt32());
+
 	Set<String> errorLog;
 
 	SceneEditor2 *clonedScene = CreateCopyForExport();

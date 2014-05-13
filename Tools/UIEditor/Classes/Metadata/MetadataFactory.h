@@ -61,6 +61,10 @@ public:
 
     // Get the common metadata for list of Hierarchy Tree Control nodes.
     BaseMetadata* GetMetadataForTreeNodesList(const HierarchyTreeController::SELECTEDCONTROLNODES& nodesList) const;
+    
+    // Get custom (non-UIControl) metadata based on what is selected on the screen
+    // (guides only for now).
+    BaseMetadata* GetCustomMetadata(HierarchyTreeScreenNode* screenNode);
 
 protected:
     // Get the specific metadata for non-UI Controls.

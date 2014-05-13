@@ -170,18 +170,6 @@ void LightComponent::SetDiffuseColor(const Color & _color)
     }
 }
 
-void LightComponent::SetSpecularColor(const Color & _color)
-{
-    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
-    
-    if(light)
-    {
-        light->SetSpecularColor(_color);
-        
-        NotifyRenderSystemLightChanged();
-    }
-}
-
 void LightComponent::SetIntensity(const float32& intensity)
 {
     TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
@@ -228,19 +216,6 @@ const Color LightComponent::GetDiffuseColor()
     }
     
     return Color();
-}
-
-const Color LightComponent::GetSpecularColor()
-{
-    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
-    
-    if(light)
-    {
-        return light->GetSpecularColor();
-    }
-    
-    return Color();
-
 }
 
 const float32 LightComponent::GetIntensity()

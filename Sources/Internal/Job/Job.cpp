@@ -32,10 +32,11 @@
 namespace DAVA
 {
 
-Job::Job(const Message & _message, const Thread::ThreadId & _creatorThreadId)
+Job::Job(const Message & _message, const Thread::ThreadId & _creatorThreadId, uint32 _flags)
 :	message(_message),
 	creatorThreadId(_creatorThreadId),
-	state(STATUS_UNDONE)
+	state(STATUS_UNDONE),
+    flags(_flags)
 {
 
 }

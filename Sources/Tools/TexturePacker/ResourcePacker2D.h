@@ -76,11 +76,13 @@ public:
 	bool clearProcessDirectory;
     eGPUFamily requestedGPUFamily;
  	FILESMAP spriteFiles;
+
 	const Set<String>& GetErrors() const;
 	
 protected:
 	bool isRecursiveFlagSet(const Vector<String> & flags);
 	Set<String> errors;
+
 	void AddError(const String& errorMsg);
 };
 };

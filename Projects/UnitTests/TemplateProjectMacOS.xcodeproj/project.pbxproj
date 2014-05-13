@@ -43,6 +43,7 @@
 		E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */; };
 		E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */; };
 		E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */; };
+		E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */; };
 		E8583EE0183E41B9009DEEB6 /* ComponentsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */; };
 		E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679172175F407200C5A6A2 /* FormatsTest.cpp */; };
 		E87402D7172582DB00A4A75A /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87402D1172582DB00A4A75A /* FileListTest.cpp */; };
@@ -184,6 +185,8 @@
 		E83604EE163FEB4C0061A636 /* KeyedArchiveTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveTest.h; path = Classes/KeyedArchiveTest.h; sourceTree = "<group>"; };
 		E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyedArchiveYamlTest.cpp; path = Classes/KeyedArchiveYamlTest.cpp; sourceTree = "<group>"; };
 		E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveYamlTest.h; path = Classes/KeyedArchiveYamlTest.h; sourceTree = "<group>"; };
+		E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OpenGLES30FormatTest.cpp; path = Classes/OpenGLES30FormatTest.cpp; sourceTree = "<group>"; };
+		E8573EA718C890E4004A8B50 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OpenGLES30FormatTest.h; path = Classes/OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComponentsTest.cpp; path = Classes/ComponentsTest.cpp; sourceTree = "<group>"; };
 		E8583EDF183E41B9009DEEB6 /* ComponentsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ComponentsTest.h; path = Classes/ComponentsTest.h; sourceTree = "<group>"; };
 		E8679172175F407200C5A6A2 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Classes/FormatsTest.cpp; sourceTree = "<group>"; };
@@ -407,8 +410,8 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8573EA318C890B0004A8B50 /* OpenGLES30 */,
 				840CB01F18EE088A00B722D0 /* JPEGTest */,
-				62C1212818E9614C0008D201 /* SaveImageTest */,
 				6260B9DF18E9C209002DA65F /* SaveImageTest */,
 				15CBB0B318D30B6E0038ABA3 /* StringFormatTest */,
 				84E2926A18DA5D2700B5D4C9 /* DateTimeTest */,
@@ -582,6 +585,15 @@
 				E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */,
 			);
 			name = KeyedArchiveTest;
+			sourceTree = "<group>";
+		};
+		E8573EA318C890B0004A8B50 /* OpenGLES30 */ = {
+			isa = PBXGroup;
+			children = (
+				E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */,
+				E8573EA718C890E4004A8B50 /* OpenGLES30FormatTest.h */,
+			);
+			name = OpenGLES30;
 			sourceTree = "<group>";
 		};
 		E8583EDB183E41B2009DEEB6 /* ComponentsTest */ = {
@@ -819,7 +831,7 @@
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
 				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
-				62C1212D18E961700008D201 /* SaveImageTest.cpp in Sources */,
+				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,

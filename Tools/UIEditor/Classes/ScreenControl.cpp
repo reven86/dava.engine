@@ -38,7 +38,8 @@
 
 #include "DefaultScreen.h"
 
-ScreenControl::ScreenControl()
+ScreenControl::ScreenControl() :
+    screenShotMode(false)
 {
     chequeredBackground = new UIControlBackground();
     chequeredBackground->SetSprite("~res:/Gfx/chequered", 0);
@@ -180,5 +181,10 @@ void ScreenControl::DrawPivotPoint(const UIGeometricData &gd, const Color &color
     RenderHelper::Instance()->DrawLine(lineStartPoint, lineEndPoint, RenderState::RENDERSTATE_2D_BLEND);
 
     RenderManager::Instance()->SetColor(oldColor);
+}
+
+void ScreenControl::SetScreenshotMode(bool value)
+{
+    screenShotMode = value;
 }
 

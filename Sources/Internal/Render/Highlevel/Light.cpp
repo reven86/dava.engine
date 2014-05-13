@@ -41,10 +41,11 @@ namespace DAVA
 
 Light::Light()
 :	BaseObject(),
+    camera(NULL),
+    lastUpdatedFrame(0),
 	type(TYPE_DIRECTIONAL),
     ambientColor(0.0f, 0.0f, 0.0f, 1.0f),
 	diffuseColor(1.0f, 1.0f, 1.0f, 1.0f),
-    specularColor(1.0f, 1.0f, 1.0f, 1.0f),
     intensity(300.0f),
 	flags(IS_DYNAMIC | CAST_SHADOW)
 {
@@ -77,13 +78,6 @@ void Light::SetDiffuseColor(const Color & _color)
     diffuseColor = _color;
 }
 
-void Light::SetSpecularColor(const Color & _color)
-{
-    TAG_SWITCH(MemoryManager::TAG_LIGHT)
-    
-    specularColor = _color;
-}
-
 void Light::SetIntensity(float32 _intensity)
 {
     TAG_SWITCH(MemoryManager::TAG_LIGHT)
@@ -108,7 +102,6 @@ BaseObject * Light::Clone(BaseObject *dstNode)
     lightNode->type = type;
     lightNode->ambientColor = ambientColor;
     lightNode->diffuseColor = diffuseColor;
-    lightNode->specularColor = specularColor;
 	lightNode->intensity = intensity;
 	lightNode->flags = flags;
     
@@ -172,13 +165,6 @@ const Color & Light::GetDiffuseColor() const
     return diffuseColor;
 }
     
-const Color & Light::GetSpecularColor() const
-{
-    TAG_SWITCH(MemoryManager::TAG_LIGHT)
-    
-    return specularColor;
-}
-    
 float32 Light::GetIntensity() const
 {
     TAG_SWITCH(MemoryManager::TAG_LIGHT)
@@ -202,11 +188,6 @@ void Light::Save(KeyedArchive * archive, SerializationContext * serializationCon
 	archive->SetFloat("color.g", diffuseColor.g);
 	archive->SetFloat("color.b", diffuseColor.b);
 	archive->SetFloat("color.a", diffuseColor.a);
-
-	archive->SetFloat("specColor.r", specularColor.r);
-	archive->SetFloat("specColor.g", specularColor.g);
-	archive->SetFloat("specColor.b", specularColor.b);
-	archive->SetFloat("specColor.a", specularColor.a);
     
     archive->SetFloat("intensity", intensity);
 
@@ -230,11 +211,6 @@ void Light::Load(KeyedArchive * archive, SerializationContext * serializationCon
     diffuseColor.g = archive->GetFloat("color.g", diffuseColor.g);
     diffuseColor.b = archive->GetFloat("color.b", diffuseColor.b);
     diffuseColor.a = archive->GetFloat("color.a", diffuseColor.a);
-    
-    specularColor.r = archive->GetFloat("specColor.r", specularColor.r);
-    specularColor.g = archive->GetFloat("specColor.g", specularColor.g);
-    specularColor.b = archive->GetFloat("specColor.b", specularColor.b);
-    specularColor.a = archive->GetFloat("specColor.a", specularColor.a);
     
     intensity = archive->GetFloat("intensity", intensity);
 
@@ -289,6 +265,28 @@ uint32 Light::GetFlags()
     TAG_SWITCH(MemoryManager::TAG_LIGHT)
     
     return flags;
+}
+
+const Vector4 & Light::CalculatePositionDirectionBindVector(Camera * inCamera)
+{
+    uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
+    if (inCamera != camera || lastUpdatedFrame != globalFrameIndex)
+    {
+        DVASSERT(inCamera);
+        
+        camera = inCamera;
+        lastUpdatedFrame = globalFrameIndex;
+        if (type == TYPE_DIRECTIONAL)
+        {
+            // Here we prepare direction according to shader direction usage. Shader use as ToLightDirection, so we invert it here
+            resultPositionDirection = - (MultiplyVectorMat3x3(direction, camera->GetMatrix()));
+            resultPositionDirection.w = 0.0f;
+        }else
+        {
+            resultPositionDirection = position * camera->GetMatrix();
+        }
+    }
+    return resultPositionDirection;
 }
 
     

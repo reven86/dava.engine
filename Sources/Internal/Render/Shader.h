@@ -235,6 +235,7 @@ public:
 
     void Bind();
     void BindDynamicParameters();
+
     static void Unbind();
     
 	static bool IsAutobindUniform(eShaderSemantic uniformId);

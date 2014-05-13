@@ -23,6 +23,7 @@
 #import <UIKit/UIKit.h>
 
 #import "Render/Texture.h"
+#import "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -33,8 +34,8 @@ void Image::SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback)
     DVASSERT(format == FORMAT_RGBA8888);
 
     size_t bitsPerComponent = 8;
-    size_t bitsPerPixel = Texture::GetPixelFormatSizeInBits(format);
-    size_t bytesPerPixel = Texture::GetPixelFormatSizeInBytes(format);
+    size_t bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    size_t bytesPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     size_t bytesPerRow = width * bytesPerPixel;
     CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
     CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;
@@ -66,8 +67,8 @@ void Image::SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback)
 void *Image::GetUIImage()
 {
     size_t bitsPerComponent = 8;
-    size_t bitsPerPixel = Texture::GetPixelFormatSizeInBits(format);
-    size_t bytesPerPixel = Texture::GetPixelFormatSizeInBytes(format);
+    size_t bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
+    size_t bytesPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
     size_t bytesPerRow = width * bytesPerPixel;
     CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
     CGBitmapInfo bitmapInfo = kCGBitmapByteOrderDefault;

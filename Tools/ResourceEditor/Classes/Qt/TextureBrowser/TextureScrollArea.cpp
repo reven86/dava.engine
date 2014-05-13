@@ -396,7 +396,7 @@ void TextureScrollArea::setImage(const QList<QImage>& images, int flags)
 	currentCompositeImages.clear();
 	currentCompositeImages.resize(images.size());
 	
-	for(size_t i = 0; i < images.size(); ++i)
+	for(int i = 0; i < images.size(); ++i)
 	{
 		currentCompositeImages[i] = images[i];
 	}

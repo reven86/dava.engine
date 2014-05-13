@@ -32,6 +32,7 @@
 #include "TextureDescriptorUtils.h"
 
 #include "TexturePacker/CommandLineParser.h"
+#include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
 
@@ -40,12 +41,14 @@ void TextureDescriptorTool::PrintUsage()
 {
     printf("\n");
     printf("-texdescriptor [-resave] [-copycompression] [-create] [-folder [folder for action with descriptors]]\n");
-	printf("-texdescriptor [-setcompression] [-file [descriptors folderPathname]] [-folder [folder with descriptors]] [-gpuName gpuValue] [-f] [-convert]\n");
+	printf("-texdescriptor [-setcompression] [-file [descriptors folderPathname]] [-folder [folder with descriptors]] [-gpuName gpuValue] [-f] [-convert] [-quality 0..4] [-m]\n");
     printf("\tDo different operations with *.tex files\n");
     printf("\t-resave - resave all *.tex with new format\n");
     printf("\t-copycompression - copy compressionParams parameters from PowerVR_iOS to other gpus\n");
     printf("\t-create - create *.tex for *.png if need\n");
 	printf("\t-setcompression - set compressionParams parameters for *tex or for all *text in folder. -f enables force mode. -convert runs convertation to selected format\n");
+    printf("\t-quality will affect only with -convert option");
+    printf("\t-m will generate mipmaps");
 
     
     printf("\n");
@@ -54,7 +57,7 @@ void TextureDescriptorTool::PrintUsage()
     printf("-texdescriptor -copycompression -folder /Users/User/Project/DataSource/3d/\n");
     printf("-texdescriptor -create -folder /Users/User/Project/DataSource/3d/\n");
 	printf("-texdescriptor -setcompression -file /Users/User/Project/DataSource/3d/Tanks/images/a-20.tex -PowerVR_iOS PVR4 -tegra DXT1 -mali ETC1 -adreno RGBA4444\n");
-	printf("-texdescriptor -setcompression -folder /Users/User/Project/DataSource/3d/Tanks/images/ -PowerVR_iOS PVR4 -tegra DXT1 -mali ETC1 -adreno RGBA4444 -f -convert\n");
+	printf("-texdescriptor -setcompression -folder /Users/User/Project/DataSource/3d/Tanks/images/ -PowerVR_iOS PVR4 -tegra DXT1 -mali ETC1 -adreno RGBA4444 -f -convert -quality 0\n");
 }
 
 DAVA::String TextureDescriptorTool::GetCommandLineKey()
@@ -65,6 +68,7 @@ DAVA::String TextureDescriptorTool::GetCommandLineKey()
 bool TextureDescriptorTool::InitializeFromCommandLine()
 {
     commandAction = ACTION_NONE;
+    quality = TextureConverter::ECQ_DEFAULT;
     
     if(CommandLineParser::CommandIsFound("-resave"))
     {
@@ -102,6 +106,13 @@ bool TextureDescriptorTool::InitializeFromCommandLine()
 
 		forceModeEnabled = CommandLineParser::CommandIsFound("-f");
 		convertEnabled = CommandLineParser::CommandIsFound("-convert");
+		generateMipMaps = CommandLineParser::CommandIsFound("-m");
+        
+        if(convertEnabled && CommandLineParser::CommandIsFound("-quality"))
+        {
+            int32 q = atoi(CommandLineParser::GetCommandParam(String("-quality")).c_str());
+            quality = Clamp((TextureConverter::eConvertQuality)q, TextureConverter::ECQ_FASTEST, TextureConverter::ECQ_VERY_HIGH);
+        }
 
 		ReadCompressionParams();
 	}
@@ -116,6 +127,8 @@ bool TextureDescriptorTool::InitializeFromCommandLine()
 
 void TextureDescriptorTool::ReadCompressionParams()
 {
+    PixelFormatDescriptor::InitializePixelFormatDescriptors();
+    
 	compressionParams.clear();
 	for(int32 i = GPU_POWERVR_IOS; i < GPU_FAMILY_COUNT; ++i)
 	{
@@ -126,7 +139,7 @@ void TextureDescriptorTool::ReadCompressionParams()
 			String formatName = CommandLineParser::GetCommandParam(gpuFlag);
 
 			TextureDescriptor::Compression compression;
-			compression.format = Texture::GetPixelFormatByName(formatName);
+			compression.format = PixelFormatDescriptor::GetPixelFormatByName(FastName(formatName.c_str()));
 			compression.compressToWidth = compression.compressToHeight = 0;
 
 
@@ -168,11 +181,11 @@ void TextureDescriptorTool::Process()
 			break;
 
 		case ACTION_SET_COMPRESSION_FOR_FOLDER:
-			TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled);
+			TextureDescriptorUtils::SetCompressionParamsForFolder(folderPathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
 			break;
 
 		case ACTION_SET_COMPRESSION_FOR_DESCRIPTOR:
-			TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled);
+			TextureDescriptorUtils::SetCompressionParams(filePathname, compressionParams, convertEnabled, forceModeEnabled, quality, generateMipMaps);
 			break;
 
         default:

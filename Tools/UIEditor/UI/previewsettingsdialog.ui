@@ -58,6 +58,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="buttonPreviewNoScale">
+       <property name="text">
+        <string>Preview 1:1</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="buttonClose">
        <property name="text">
         <string>Close</string>

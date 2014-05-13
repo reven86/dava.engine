@@ -51,6 +51,8 @@ public:
 
     void SetScale(const Vector2& value);
     void SetPos(const Vector2& value);
+    void SetScreenshotMode(bool value);
+
 private:
     void DrawSelectionFrame(const UIGeometricData &gd, const Color &color);
     void DrawPivotPoint(const UIGeometricData &gd, const Color &color);
@@ -59,6 +61,10 @@ private:
     // Scale and Position of the screen in UIEditor. Needed to recalculate opacity texture.
     Vector2 scale;
     Vector2 pos;
+    
+    // Screenshot mode.
+    bool screenShotMode;
+
     UIControlBackground * chequeredBackground;
 };
 

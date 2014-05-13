@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="DebugQt|Win32">
@@ -444,6 +444,7 @@
     <ClInclude Include="..\..\Sources\Internal\Render\MipmapReplacer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\OcclusionQuery.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\OGLHelpers.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\PVRDefines.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\RenderBase.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\RenderDataObject.h" />
@@ -839,6 +840,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Material\RenderTechnique.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\MipmapReplacer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\OcclusionQuery.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RenderBase.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RenderDataObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\RenderEffect.cpp" />

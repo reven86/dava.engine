@@ -70,6 +70,15 @@
     <Filter Include="Sources\Guides">
       <UniqueIdentifier>{a20bf5fc-1a1f-410a-bd4c-5cae96eb7906}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Metadata\Custom">
+      <UniqueIdentifier>{b51befad-18ec-490c-b961-a09c99d6ece4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files\Custom">
+      <UniqueIdentifier>{7a66cd13-db34-46b0-9bc9-3474cd321d23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\UI\PropertyGridWidgets\Custom">
+      <UniqueIdentifier>{5524db80-47d1-4dcd-ae89-8617d0ea1efd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\DefaultScreen.cpp">
@@ -747,6 +756,12 @@
     <ClCompile Include="GeneratedFiles\Guides\GuidesManager_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\previewsettingswidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\previewsettingswidget.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\UI\Dialogs\errorslistdialog.cpp">
       <Filter>Sources\UI\Dialogs</Filter>
     </ClCompile>
@@ -758,6 +773,18 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\rootpropertygridwidget_moc.cpp">
       <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\Custom\guidepropertygridwidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Metadata\Custom\GuideMetadata.cpp">
+      <Filter>Sources\Metadata\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\Custom\GuideMetadata_moc.cpp">
+      <Filter>Generated Files\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\Custom\guidepropertygridwidget.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets\Custom</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1205,6 +1232,15 @@
     <ClInclude Include="Classes\Guides\GuidesManager.h">
       <Filter>Sources\Guides</Filter>
     </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_previewsettingsdialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_previewsettingswidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\previewsettingswidget.h">
+      <Filter>Sources\UI</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\UI\Dialogs\errorslistdialog.h">
       <Filter>Sources\UI\Dialogs</Filter>
     </ClInclude>
@@ -1213,6 +1249,15 @@
     </ClInclude>
     <ClInclude Include="Classes\UI\PropertyGridWidgets\rootpropertygridwidget.h">
       <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Metadata\Custom\GuideMetadata.h">
+      <Filter>Sources\Metadata\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_guidepropertygridwidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\Custom\guidepropertygridwidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets\Custom</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1303,8 +1348,14 @@
     <None Include="UI\particleeffectpropertygridwidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
+    <None Include="UI\previewsettingswidget.ui">
+      <Filter>Form Files</Filter>
+    </None>
     <None Include="UI\errorslistdialog.ui">
       <Filter>Form Files\Dialogs</Filter>
+    </None>
+    <None Include="UI\guidepropertygridwidget.ui">
+      <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
   </ItemGroup>
 </Project>

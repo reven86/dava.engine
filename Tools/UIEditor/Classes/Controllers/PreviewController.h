@@ -32,6 +32,7 @@
 
 #include "DAVAEngine.h"
 
+class DefaultScreen;
 namespace DAVA {
 
 struct PreviewSettingsData
@@ -68,12 +69,14 @@ public:
     PreviewController();
     virtual ~PreviewController();
     
-    const PreviewTransformData& EnablePreview(const PreviewSettingsData& data,
+    void EnablePreview(bool applyScale);
+    const PreviewTransformData& SetPreviewMode(const PreviewSettingsData& data,
                                               const Vector2& virtualScreenSize,
                                               uint32 screenDPI);
     void DisablePreview();
-    
+
     bool IsPreviewEnabled() const {return previewEnabled;};
+    int32 GetActivePreviewSettingsID() const {return activePreviewSettingsID;};
 
     // Get the current preview screen size.
     const PreviewTransformData& GetTransformData() const;
@@ -83,7 +86,9 @@ public:
     void SavePreviewSettings(YamlNode* rootNode);
     
     // Editing functionality.
-    PreviewSettingsData GetPreviewSettingsData(int32 id);
+    PreviewSettingsData GetPreviewSettingsData(int32 id) const;
+    PreviewSettingsData GetActivePreviewSettingsData() const;
+
     void AddPreviewSettingsData(const PreviewSettingsData& data);
     void RemovePreviewSettingsData(int32 id);
 
@@ -92,6 +97,9 @@ public:
     
     // Return true if some changes were made in the preview settings list after the initial load.
     bool HasUnsavedChanges() const;
+    
+    // Make the screenshot of the screen passed.
+    void MakeScreenshot(const String& fileName, DefaultScreen* screen);
 
 protected:
     // Calculate the transform data.
@@ -99,9 +107,13 @@ protected:
                                             const Vector2& virtualScreenSize,
                                             uint32 screenDPI);
 
+    // Load the predefined (hardcoded) preview settings.
+    void LoadPredefinedPreviewSettings();
+
     // Set the dirty flag.
     void SetDirty(bool value);
 
+private:
     bool previewEnabled;
     PreviewTransformData currentTransformData;
     
@@ -113,6 +125,12 @@ protected:
     
     // Dirty flag.
     bool isDirty;
+    
+    // Active Preview Settings ID.
+    int32 activePreviewSettingsID;
+    
+    // Whether the preview scale is needed.
+    bool isApplyPreviewScale;
 };
 
 };

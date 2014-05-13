@@ -85,8 +85,9 @@ public:
 	public:
 		enum eOptionsFlag
 		{
-			FLAG_GENERATE_MIPMAPS = 1 << 0,
-			FLAG_INVALID = 1 << 7
+			FLAG_GENERATE_MIPMAPS   = 1 << 0,
+            FLAG_IS_NORMAL_MAP      = 1 << 1,
+			FLAG_INVALID            = 1 << 7
 		};
 
 		TextureDataSettings() { SetDefaultValues(); }
@@ -95,11 +96,15 @@ public:
 		void SetGenerateMipmaps(const bool & generateMipmaps);
 		bool GetGenerateMipMaps() const;
 
+        void SetIsNormalMap(const bool & isNormalMap);
+        bool GetIsNormalMap() const;
+
 		int8 textureFlags;
 		uint8 faceDescription;
 
 		INTROSPECTION(TextureDataSettings,
-			PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
+            PROPERTY("generateMipMaps", "generateMipMaps", GetGenerateMipMaps, SetGenerateMipmaps, I_VIEW | I_EDIT | I_SAVE)
+            PROPERTY("isNormalMap", "isNormalMap", GetIsNormalMap, SetIsNormalMap, I_VIEW | I_EDIT | I_SAVE)
 			MEMBER(faceDescription, "faceDescription", I_SAVE)
 		)
 

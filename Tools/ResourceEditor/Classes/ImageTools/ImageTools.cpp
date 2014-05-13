@@ -35,6 +35,7 @@
 #include "TextureCompression/TextureConverter.h"
 
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 
 #include "Main/QtUtils.h"
 
@@ -76,7 +77,6 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 			return 0;
 		}
 		
-		
 		if(ImageLoader::IsPNGFile(imageFile))
 		{
 			size += LibPngWrapper::GetDataSize(imagePathname);
@@ -101,12 +101,12 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 }
 
 
-void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format)
+void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality)
 {
 	if(!descriptor || (format == FORMAT_INVALID)) return;
 
 	TextureConverter::CleanupOldTextures(descriptor, forGPU, format);
-	TextureConverter::ConvertTexture(*descriptor, forGPU, true);
+	TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
 }
 
 bool ImageTools::SplitImage(const FilePath &pathname, Set<String> &errorLog)
@@ -120,7 +120,7 @@ bool ImageTools::SplitImage(const FilePath &pathname, Set<String> &errorLog)
     
     if(loadedImage->GetPixelFormat() != FORMAT_RGBA8888)
     {
-        errorLog.insert(String(Format("Incorrect image format %s. Must be RGBA8888", Texture::GetPixelFormatString(loadedImage->GetPixelFormat()))));
+        errorLog.insert(String(Format("Incorrect image format %s. Must be RGBA8888", PixelFormatDescriptor::GetPixelFormatString(loadedImage->GetPixelFormat()))));
         return false;
     }
     
@@ -192,7 +192,7 @@ Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
     DAVA::Image* a = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
     
     int32 size = originalImage->width * originalImage->height;
-    int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
     for(int32 i = 0; i < size; ++i)
     {
         int32 offset = i * pixelSize;
@@ -212,7 +212,7 @@ DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
     }
     Image *mergedImage = Image::Create(channels.red->width, channels.red->height, FORMAT_RGBA8888);
     int32 size = mergedImage->width * mergedImage->height;
-    int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
     for(int32 i = 0; i < size; ++i)
     {
         int32 offset = i * pixelSize;
@@ -231,7 +231,7 @@ void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::u
         return;
     }
     int32 size = image->width * image->height;
-    int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
     int32 offset = channel;
     for( int32 i = 0; i < size; ++i, offset += pixelSize)
     {

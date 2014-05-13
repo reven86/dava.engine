@@ -49,7 +49,7 @@ public:
 	static bool IsDxtFile(File * file);
 
 	//input data only in RGBA8888
-	static bool WriteDdsFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps);
+	static bool WriteDdsFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap);
 
 	static bool ReadDxtFile(const FilePath & fileName, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation = false);
 	static bool ReadDxtFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation = false);
@@ -76,8 +76,8 @@ private:
 	static bool GetCRCFromDDSHeader(const FilePath &filePathname, uint32* tag, uint32* outputCRC);
 	
 	//input data only in RGBA8888
-	static bool WriteDxtFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps);
-	static bool WriteAtcFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps);
+	static bool WriteDxtFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap);
+	static bool WriteAtcFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap);
 };
 
 };

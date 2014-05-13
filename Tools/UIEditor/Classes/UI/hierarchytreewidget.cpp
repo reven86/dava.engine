@@ -344,12 +344,12 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
 	}
 		
 	HierarchyTreeController::Instance()->UpdateSelection(selectedPlatform, selectedScreen);
-	HierarchyTreeController::Instance()->UpdateSelection(baseNode);
 	
 	internalSelectionChanged = false;
 	
 	if (selectedControl)
 	{
+        // UI Control is selected.
 		int32 selectedItemsSize = ui->treeWidget->selectedItems().size();
 		if (selectedItemsSize == 0)
 		{
@@ -377,6 +377,11 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
             HierarchyTreeController::Instance()->ChangeItemSelection(selectedControl);
         }
 	}
+    else
+    {
+        // Platform/Screen/Aggregator is selected.
+        HierarchyTreeController::Instance()->UpdateSelection(baseNode);
+    }
 }
 
 void HierarchyTreeWidget::Select(const QList<QTreeWidgetItem*>& selectedItems)

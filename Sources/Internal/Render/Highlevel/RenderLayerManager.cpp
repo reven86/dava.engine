@@ -36,6 +36,11 @@ namespace DAVA
     
 HashMap<FastName, RenderLayerID> RenderLayerManager::layerIDmap(16);
     
+RenderLayerID RenderLayerManager::GetLayerIDByName(const FastName & fastname)
+{
+    return layerIDmap[fastname];
+}
+
 uint32 RenderLayerManager::GetLayerIDMaskBySet(const FastNameSet & layers)
 {
     TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)

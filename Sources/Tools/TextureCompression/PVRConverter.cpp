@@ -35,10 +35,13 @@
 
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/LibPVRHelper.h"
+#include "Render/ImageLoader.h"
+#include "Render/Image.h"
+
+#include "Base/GlobalEnum.h"
 
 namespace DAVA
 {
-
 static String CUBEMAP_TMP_DIR = "~doc:/ResourceEditor_Cubemap_Tmp/";
 	
 static String PVRTOOL_INPUT_NAMES[] =
@@ -53,27 +56,64 @@ static String PVRTOOL_INPUT_NAMES[] =
 	
 static DAVA::String PVRTOOL_MAP_NAMES[] =
 {
-	String("_pz"), //1
-	String("_nz"), //2
-	String("_px"), //3
-	String("_nx"), //4
-	String("_ny"), //5
-	String("_py"), //6
+// 	String("_pz"), //1
+// 	String("_nz"), //2
+// 	String("_px"), //3
+// 	String("_nx"), //4
+// 	String("_ny"), //5
+// 	String("_py"), //6
+	String("_px"), //1
+	String("_nx"), //2
+	String("_py"), //3
+	String("_ny"), //4
+	String("_pz"), //5
+	String("_nz"), //6
 };
+    
+static DAVA::String PVR_QUALITY_SETTING[] =
+{
+    "pvrtcfastest",
+    "pvrtcfast",
+    "pvrtcnormal",
+    "pvrtchigh",
+    "pvrtcbest"
+};
+
+static DAVA::String ETC_QUALITY_SETTING[] =
+{
+	"etcfast",
+	"etcfast",
+	"etcslow",
+	"etcfastperceptual",
+	"etcslowperceptual"
+};
+
 
 PVRConverter::PVRConverter()
 {
+//	PVRTC1_2, PVRTC1_4, PVRTC1_2_RGB, PVRTC1_4_RGB, PVRTC2_2, PVRTC2_4, ETC1, BC1, BC2, BC3,UYVY, YUY2, 1BPP, RGBE9995, RGBG8888, GRGB8888, ETC2_RGB, ETC2_RGBA, ETC2_RGB_A1, EAC_R11, EAC_RG11
+
 	// pvr map
-	pixelFormatToPVRFormat[FORMAT_RGBA8888] = "OGL8888";
-	pixelFormatToPVRFormat[FORMAT_RGBA4444] = "OGL4444";
-	pixelFormatToPVRFormat[FORMAT_RGBA5551] = "OGL5551";
-	pixelFormatToPVRFormat[FORMAT_RGB565] = "OGL565";
-	pixelFormatToPVRFormat[FORMAT_RGB888] = "OGL888";
-	pixelFormatToPVRFormat[FORMAT_PVR2] = "OGLPVRTC2";
-	pixelFormatToPVRFormat[FORMAT_PVR4] = "OGLPVRTC4";
-	pixelFormatToPVRFormat[FORMAT_A8] = "OGL8";
-	pixelFormatToPVRFormat[FORMAT_ETC1] = "ETC";
-	
+	pixelFormatToPVRFormat[FORMAT_RGBA8888] = "r8g8b8a8";//"OGL8888";
+	pixelFormatToPVRFormat[FORMAT_RGBA4444] = "r4g4b4a4";//"OGL4444";
+	pixelFormatToPVRFormat[FORMAT_RGBA5551] = "r5g5b5a1";//"OGL5551";
+	pixelFormatToPVRFormat[FORMAT_RGB565] = "r5g6b5";//"OGL565";
+	pixelFormatToPVRFormat[FORMAT_RGB888] = "r8g8b8";//"OGL888";
+	pixelFormatToPVRFormat[FORMAT_PVR2] = "PVRTC1_2";
+	pixelFormatToPVRFormat[FORMAT_PVR4] = "PVRTC1_4";
+	pixelFormatToPVRFormat[FORMAT_A8] = "l8";//"OGL8";
+	pixelFormatToPVRFormat[FORMAT_ETC1] = "ETC1";
+
+    pixelFormatToPVRFormat[FORMAT_PVR2_2] = "PVRTC2_2";
+	pixelFormatToPVRFormat[FORMAT_PVR4_2] = "PVRTC2_4";
+	pixelFormatToPVRFormat[FORMAT_EAC_R11_UNSIGNED] = "EAC_R11";
+	pixelFormatToPVRFormat[FORMAT_EAC_R11_SIGNED] = "EAC_R11";
+	pixelFormatToPVRFormat[FORMAT_EAC_RG11_UNSIGNED] = "EAC_RG11";
+	pixelFormatToPVRFormat[FORMAT_EAC_RG11_SIGNED] = "EAC_RG11";
+	pixelFormatToPVRFormat[FORMAT_ETC2_RGB] = "ETC2_RGB";
+	pixelFormatToPVRFormat[FORMAT_ETC2_RGBA] = "ETC2_RGBA";
+	pixelFormatToPVRFormat[FORMAT_ETC2_RGB_A1] = "ETC2_RGB_A1";
+
 	InitFileSuffixes();
 }
 
@@ -82,12 +122,12 @@ PVRConverter::~PVRConverter()
 
 }
 
-FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
+FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, bool addCRC /* = true */)
 {
 	FilePath outputName = (descriptor.IsCubeMap()) ? PrepareCubeMapForPvrConvert(descriptor) : FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
 
 	Vector<String> args;
-	GetToolCommandLine(descriptor, outputName, gpuFamily, args);
+	GetToolCommandLine(descriptor, outputName, gpuFamily, quality, args);
 	Process process(pvrTexToolPathname, args);
 	if(process.Run(false))
 	{
@@ -112,15 +152,71 @@ FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPU
 		CleanupCubemapAfterConversion(descriptor);
 	}
 		
-	LibPVRHelper::AddCRCIntoMetaData(outputName);
+    if(addCRC)
+    {
+	    LibPVRHelper::AddCRCIntoMetaData(outputName);
+    }
 	return outputName;
 }
 
+FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality)
+{
+    FilePath filePath = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
 
-void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
-										FilePath fileToConvert,
-										eGPUFamily gpuFamily,
-										Vector<String>& args)
+    Vector<Image *> images;
+    ImageLoader::CreateFromFileByExtension(filePath, images);
+
+    if(!images.size())
+        return FilePath();
+
+    DVASSERT(images.size() == 1);
+
+    Image * originalImage = images[0];
+    originalImage->Normalize();
+    if(descriptor.GetGenerateMipMaps())
+    {
+        images = originalImage->CreateMipMapsImages(true);
+        SafeRelease(originalImage);
+    }
+
+    FilePath dirPath = filePath + "_mips";
+    dirPath.MakeDirectoryPathname();
+    FileSystem::Instance()->CreateDirectory(dirPath);
+
+    Vector<FilePath> convertedPVRs;
+
+    int32 imgCount = images.size();
+    for(int32 i = 0; i < imgCount; ++i)
+    {
+        FilePath imgPath = dirPath + Format("mip%d.png", i);
+        ImageLoader::Save(images[i], imgPath);
+
+        TextureDescriptor desc;
+        desc.Initialize(&descriptor);
+        desc.SetGenerateMipmaps(false);
+        desc.pathname = imgPath;
+        FilePath convertedImgPath = ConvertPngToPvr(desc, gpuFamily, quality, false);
+
+        convertedPVRs.push_back(convertedImgPath);
+    }
+
+    FilePath outputName = GetPVRToolOutput(descriptor, gpuFamily);
+    bool ret = LibPVRHelper::WriteFileFromMipMapFiles(outputName, convertedPVRs);
+
+    FileSystem::Instance()->DeleteDirectory(dirPath, true);
+
+    if(ret)
+    {
+        LibPVRHelper::AddCRCIntoMetaData(outputName);
+        return outputName;
+    }
+    else
+    {
+        return FilePath();
+    }
+}
+
+void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const FilePath & fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args)
 {
 	DVASSERT(descriptor.compression);
 	const TextureDescriptor::Compression *compression = descriptor.compression[gpuFamily];
@@ -128,34 +224,49 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
 	String format = pixelFormatToPVRFormat[(PixelFormat) compression->format];
 	FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
 		
-	// assemble command
+	// input file
 	args.push_back("-i");
-    
+	String inputName = GenerateInputName(descriptor, fileToConvert);
 #if defined (__DAVAENGINE_MACOS__)
-	args.push_back(fileToConvert.GetAbsolutePathname());
+	args.push_back(inputName);
 #else //defined (__DAVAENGINE_WIN32__)
-	args.push_back(String("\"") + fileToConvert.GetAbsolutePathname() + String("\""));
+	args.push_back(String("\"") + inputName + String("\""));
 #endif //MAC-WIN
 
-	args.push_back("-pvrtcbest");
+	// output file
+	args.push_back("-o");
+#if defined (__DAVAENGINE_MACOS__)
+	args.push_back(outputFile.GetAbsolutePathname());
+#else //defined (__DAVAENGINE_WIN32__)
+	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
+#endif //MAC-WIN
 
-	if(descriptor.IsCubeMap())
+	//quality
+	args.push_back("-q");
+	if(FORMAT_ETC1 == descriptor.compression[gpuFamily]->format)
 	{
-		args.push_back("-s");
+		args.push_back(ETC_QUALITY_SETTING[quality]);
 	}
-		
-	// output format
-	args.push_back(Format("-f%s", format.c_str()));
-		
-	// pvr should be always flipped-y
-	args.push_back("-yflip0");
-		
+	else
+	{
+		args.push_back(PVR_QUALITY_SETTING[quality]);
+	}
+
 	// mipmaps
 	if(descriptor.GetGenerateMipMaps())
 	{
 		args.push_back("-m");
 	}
+    
+	if(descriptor.IsCubeMap())
+	{
+		args.push_back("-cube");
+	}
 		
+	// output format
+	args.push_back("-f");
+	args.push_back(format);
+
 	// base mipmap level (base resize)
 	if(0 != compression->compressToWidth && compression->compressToHeight != 0)
 	{
@@ -164,14 +275,10 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor,
 		args.push_back("-y");
 		args.push_back(Format("%d", compression->compressToHeight));
 	}
-		
-	// output file
-	args.push_back("-o");
-#if defined (__DAVAENGINE_MACOS__)
-	args.push_back(outputFile.GetAbsolutePathname());
-#else //defined (__DAVAENGINE_WIN32__)
-	args.push_back(String("\"") + outputFile.GetAbsolutePathname() + String("\""));
-#endif //MAC-WIN
+    
+    
+    //args.push_back("-l"); //Alpha Bleed: Discards any data in fully transparent areas to optimise the texture for better compression.
+
 }
 
 FilePath PVRConverter::GetPVRToolOutput(const TextureDescriptor &descriptor, eGPUFamily gpuFamily)
@@ -253,5 +360,30 @@ void PVRConverter::InitFileSuffixes()
 		}
 	}
 }	
+
+DAVA::String PVRConverter::GenerateInputName( const TextureDescriptor& descriptor, const FilePath & fileToConvert)
+{
+	if(descriptor.IsCubeMap())
+	{
+		Vector<FilePath> pvrToolFaceNames;
+		Texture::GenerateCubeFaceNames(CUBEMAP_TMP_DIR, pvrToolSuffixes, pvrToolFaceNames);
+
+		String retNames;
+		for(size_t i = 0; i < pvrToolFaceNames.size(); ++i)
+		{
+			if(i)
+			{
+				retNames += ",";
+			}
+
+			retNames += pvrToolFaceNames[i].GetAbsolutePathname();
+		}
+
+		return retNames;
+	}
+
+	return	fileToConvert.GetAbsolutePathname();
+}
+
 };
 

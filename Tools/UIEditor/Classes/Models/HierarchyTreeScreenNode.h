@@ -96,6 +96,9 @@ public:
     bool StartMoveGuide(const Vector2& pos);
     void MoveGuide(const Vector2& pos);
 
+    // Get the active (selected or moved) guide.
+    const GuideData* GetActiveGuide() const;
+
     Vector2 GetMoveGuideStartPos() const;
     const GuideData* AcceptMoveGuide();
 
@@ -112,10 +115,13 @@ public:
     // Access to the guides.
     void AddGuide(const GuideData& guideData);
     bool RemoveGuide(const GuideData& guideData);
+
+    void SetGuidePosition(GuideData* guideData, const Vector2& newPos);
     bool UpdateGuidePosition(const GuideData& guideData, const Vector2& newPos);
 
     const List<GuideData*> GetGuides(bool includeNewGuide) const;
-
+    const List<GuideData*> GetSelectedGuides(bool includeNewGuide = false) const;
+    
     // Set the guide enabled mode.
     bool AreGuidesEnabled() const;
     void SetGuidesEnabled(bool value);
@@ -126,6 +132,13 @@ public:
 
     // Set the stick mode.
     void SetStickMode(int32 stickMode);
+
+    // Access to Guides Manager.
+    const GuidesManager& GetGuidesManager() const;
+
+    // Access to the list of control rects for this node.
+    List<Rect> GetControlRectsList(bool includeScreenBounds) const;
+    void GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<Rect>& rectsList) const;
 
 protected:
 	void CombineRectWithChild(Rect& rect) const;

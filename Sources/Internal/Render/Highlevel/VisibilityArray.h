@@ -44,6 +44,9 @@ class VisibilityArray
 public:
     inline void Clear();
 	inline void Add(RenderObject * renderObject);
+    inline uint32 GetCount() const;
+    inline RenderObject * Get(uint32 index) const;
+private:
     Vector<RenderObject*> visibilityArray;
 };
 
@@ -56,6 +59,17 @@ inline void VisibilityArray::Add(RenderObject * renderObject)
 {
     visibilityArray.push_back(renderObject);
 }
+    
+inline uint32 VisibilityArray::GetCount() const
+{
+    return (uint32)visibilityArray.size();
+}
+
+inline RenderObject * VisibilityArray::Get(uint32 index) const
+{
+    return visibilityArray[index];
+}
+
 
 
 } // ns

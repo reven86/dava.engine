@@ -57,8 +57,8 @@ void RectSpriteTest::LoadResources()
     AddImage("~res:/TestData/RectSpriteTest/3.png");
     AddImage("~res:/TestData/RectSpriteTest/4.png");
 
-    sprites.push_back(Sprite::CreateFromPNG("~res:/TestData/RectSpriteTest/1.png"));
-    sprites.push_back(Sprite::CreateFromPNG("~res:/TestData/RectSpriteTest/2.png"));
+    sprites.push_back(Sprite::CreateFromSourceFile("~res:/TestData/RectSpriteTest/1.png"));
+    sprites.push_back(Sprite::CreateFromSourceFile("~res:/TestData/RectSpriteTest/2.png"));
     sprites.push_back(LoadSpriteFromFileBuf("~res:/TestData/RectSpriteTest/3.png"));
     sprites.push_back(LoadSpriteFromFileBuf("~res:/TestData/RectSpriteTest/4.png"));
 }
@@ -89,7 +89,7 @@ Sprite* RectSpriteTest::LoadSpriteFromFileBuf(const FilePath& filePath)
     uint8* buf = new uint8[file->GetSize()];
     file->Read(buf, file->GetSize());
 
-    Sprite* sprite = Sprite::CreateFromPNG(buf, file->GetSize());
+    Sprite* sprite = Sprite::CreateFromSourceData(buf, file->GetSize());
 
     SafeRelease(file);
     SafeDeleteArray(buf);

@@ -63,6 +63,7 @@
 #include "UIMovieTest.h"
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
+#include "OpenGLES30FormatTest.h"
 #include "StringFormatTest.h"
 #include "SaveImageTest.h"
 #include "JPEGTest.h"
@@ -91,10 +92,10 @@ void GameCore::OnAppStarted()
 	RenderManager::Instance()->SetFPS(60);
 
     CreateDocumentsFolder();
-	    
+
+    new OpenGLES30FormatTest();
 	new JPEGTest();
     new SaveImageTest();
-    
     new StringFormatTest();
     new RectSpriteTest();
 

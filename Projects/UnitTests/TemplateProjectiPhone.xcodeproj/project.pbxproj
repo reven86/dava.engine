@@ -50,6 +50,7 @@
 		E832BD95170D5610004D88A0 /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E832BD93170D5610004D88A0 /* FileListTest.cpp */; };
 		E832BDA0170D823C004D88A0 /* FileSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E832BD9E170D823C004D88A0 /* FileSystemTest.cpp */; };
 		E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679177175F607700C5A6A2 /* FormatsTest.cpp */; };
+		E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */; };
 		E8B6B3CA1705DED5004F665E /* LocalizationTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */; };
 		E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */; };
 		E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C6B12016692E87001EBE09 /* CloneTest.cpp */; };
@@ -166,6 +167,8 @@
 		E832BD9F170D823C004D88A0 /* FileSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemTest.h; sourceTree = "<group>"; };
 		E8679177175F607700C5A6A2 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatsTest.cpp; sourceTree = "<group>"; };
 		E8679178175F607700C5A6A2 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatsTest.h; sourceTree = "<group>"; };
+		E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGLES30FormatTest.cpp; sourceTree = "<group>"; };
+		E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationTest.cpp; sourceTree = "<group>"; };
 		E8B6B3C91705DED5004F665E /* LocalizationTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationTest.h; sourceTree = "<group>"; };
 		E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = eMailTest.cpp; sourceTree = "<group>"; };
@@ -312,6 +315,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */,
+				E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */,
 				627C796B18ED9DA900C05154 /* JPEGTest.cpp */,
 				627C796C18ED9DA900C05154 /* JPEGTest.h */,
 				15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */,
@@ -439,6 +444,11 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						DevelopmentTeam = 6V9352ME4J;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TemplateProjectiPhone" */;
 			compatibilityVersion = "Xcode 3.1";
@@ -524,6 +534,7 @@
 				627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */,
 				FEC95C7115B409E500588BBF /* MemoryAllocatorsTest.cpp in Sources */,
 				02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */,
+				E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */,
 				E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */,
 				E801A588183FAB8E00D5B770 /* ComponentsTest.cpp in Sources */,
 				E80842BA1639147A002A6A77 /* TextureUtils.cpp in Sources */,
@@ -568,6 +579,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -580,6 +593,7 @@
 					"$(OTHER_CFLAGS)",
 				);
 				PRODUCT_NAME = UnitTests;
+				PROVISIONING_PROFILE = "412BD2A3-1C8B-431F-A8D7-BD0645AF119A";
 			};
 			name = Debug;
 		};
@@ -587,6 +601,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
@@ -597,6 +613,7 @@
 					"$(OTHER_CFLAGS)",
 				);
 				PRODUCT_NAME = UnitTests;
+				PROVISIONING_PROFILE = "412BD2A3-1C8B-431F-A8D7-BD0645AF119A";
 			};
 			name = Release;
 		};
@@ -631,6 +648,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
@@ -641,6 +660,7 @@
 					"$(OTHER_CFLAGS)",
 				);
 				PRODUCT_NAME = UnitTests;
+				PROVISIONING_PROFILE = "412BD2A3-1C8B-431F-A8D7-BD0645AF119A";
 			};
 			name = AdHoc;
 		};

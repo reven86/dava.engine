@@ -35,9 +35,19 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "FileSystem/FileSystem.h"
 
+
+ENUM_DECLARE(DAVA::TextureConverter::eConvertQuality)
+{
+    ENUM_ADD_DESCR(DAVA::TextureConverter::ECQ_FAST, "Developer Quality");
+    ENUM_ADD_DESCR(DAVA::TextureConverter::ECQ_FASTEST, "Lower Quality");
+    ENUM_ADD_DESCR(DAVA::TextureConverter::ECQ_NORMAL, "Normal Quality");
+    ENUM_ADD_DESCR(DAVA::TextureConverter::ECQ_HIGH, "Better Quality");
+    ENUM_ADD_DESCR(DAVA::TextureConverter::ECQ_VERY_HIGH, "Best Quality");
+};
+
 namespace DAVA
 {
-	FilePath TextureConverter::ConvertTexture(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, bool updateAfterConversion)
+	FilePath TextureConverter::ConvertTexture(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, bool updateAfterConversion, eConvertQuality quality)
 	{
 		DVASSERT(descriptor.compression);
 		const TextureDescriptor::Compression * compression = descriptor.compression[gpuFamily];
@@ -49,7 +59,14 @@ namespace DAVA
 			Logger::FrameworkDebug("Starting PVR (%s) conversion (%s)...",
 							   GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(compression->format), descriptor.pathname.GetAbsolutePathname().c_str());
 			
-			outputPath = PVRConverter::Instance()->ConvertPngToPvr(descriptor, gpuFamily);
+            if(descriptor.dataSettings.GetIsNormalMap())
+            {
+                outputPath = PVRConverter::Instance()->ConvertNormalMapPngToPvr(descriptor, gpuFamily, quality);
+            }
+            else
+            {
+                outputPath = PVRConverter::Instance()->ConvertPngToPvr(descriptor, gpuFamily, quality);
+            }
 		}
 		else if(outExtension == ".dds")
 		{

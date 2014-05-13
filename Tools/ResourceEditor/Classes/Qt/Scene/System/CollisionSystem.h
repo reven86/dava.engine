@@ -74,6 +74,9 @@ public:
 	SceneCollisionSystem(DAVA::Scene * scene);
 	~SceneCollisionSystem();
 
+	void SetDrawMode(int mode);
+	int GetDrawMode() const;
+
 	DAVA::AABBox3 GetBoundingBox(DAVA::Entity *entity);
 
 	const EntityGroup* ObjectsRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to);

@@ -63,6 +63,9 @@ signals:
     // Generated when Properties Grid is updated and needs to be re-built.
     void PropertiesGridUpdated();
     
+    // Generated when UI Controls are deselected and Properties Grid is about to be cleaned.
+    void UIControlsDeselected();
+    
     // Generated when UI Control State is changed.
     void SelectedUIControlStatesChanged(const Vector<UIControl::eControlState>& newState);
 

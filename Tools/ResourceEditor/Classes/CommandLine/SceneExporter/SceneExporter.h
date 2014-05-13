@@ -33,6 +33,7 @@
 
 #include "DAVAEngine.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
+#include "TextureCompression/TextureConverter.h"
 
 using namespace DAVA;
 
@@ -46,6 +47,8 @@ public:
     void SetGPUForExporting(const String &newGPU);
     void SetGPUForExporting(const eGPUFamily newGPU);
     
+	void SetCompressionQuality(TextureConverter::eConvertQuality quality);
+
     void SetInFolder(const FilePath &folderPathname);
     void SetOutFolder(const FilePath &folderPathname);
     void SetOutSoundsFolder(const FilePath &folderPathname);
@@ -80,6 +83,8 @@ protected:
 
     eGPUFamily exportForGPU;
 	bool optimizeOnExport;
+
+	TextureConverter::eConvertQuality quality;
 };
 
 

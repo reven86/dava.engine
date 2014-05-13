@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-sceneexporter -export -indir /Users/victorkleschenko/Work/WoT/wot.blitz_054/DataSource/3d/ -outdir /Users/victorkleschenko/Work/WoT/wot.blitz_054/Data/3d -processdir Tanks"
+            argument = "-sceneexporter -export -indir /Users/victorkleschenko/Work/WoT/wot.blitz_lighting/DataSource/3d/ -outdir /Users/victorkleschenko/Work/WoT/wot.blitz_lighting/Data/3d -processdir Tanks"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument

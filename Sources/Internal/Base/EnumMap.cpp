@@ -76,6 +76,10 @@ const char* EnumMap::ToString(const int e) const
 	{
 		ret = map.at(e).c_str();
 	}
+    else
+    {
+        DVASSERT_MSG(false, "Be sure that e is declared at global enum"); //example ENUM_ADD_DESCR(FORMAT_ATC_RGBA_EXPLICIT_ALPHA, "ATC_RGBA_EXPLICIT_ALPHA");
+    }
 
 	return ret;
 }

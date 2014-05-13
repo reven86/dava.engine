@@ -32,6 +32,8 @@
 #include <QPainter>
 #include <QFileInfo>
 
+#include "Render/PixelFormatDescriptor.h"
+
 TextureListModel::TextureListModel(QObject *parent /* = 0 */) 
 	: QAbstractListModel(parent)
 	, curSortMode(TextureListModel::SortByName)
@@ -294,5 +296,5 @@ bool SortFnByDataSize::operator()(const DAVA::TextureDescriptor* t1, const DAVA:
 	DAVA::Texture *tx1 = model->getTexture(t1);
 	DAVA::Texture *tx2 = model->getTexture(t2);
 
-	return (tx1->width * tx1->height * DAVA::Texture::GetPixelFormatSizeInBytes(tx1->GetFormat())) < (tx2->width * tx2->height * DAVA::Texture::GetPixelFormatSizeInBytes(tx2->GetFormat()));
+	return (tx1->width * tx1->height * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(tx1->GetFormat())) < (tx2->width * tx2->height * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(tx2->GetFormat()));
 }

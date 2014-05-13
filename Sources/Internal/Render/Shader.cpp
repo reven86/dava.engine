@@ -54,7 +54,7 @@ Shader::Shader()
 {
     TAG_SWITCH(MemoryManager::TAG_SHADER)
     
-    DVASSERT(RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_2_0 || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL);
+    DVASSERT(RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_2_0 || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_3_0);
     
     vertexShader = 0;
     fragmentShader = 0;
@@ -240,6 +240,8 @@ void Shader::ClearLastBindedCaches()
 {
     TAG_SWITCH(MemoryManager::TAG_SHADER)
     
+    //Logger::FrameworkDebug("Frame reset");
+
     for (uint32 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform * currentUniform = autobindUniforms[k];
@@ -334,13 +336,13 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     
     if (!CompileShader(&vertexShader, GL_VERTEX_SHADER, vertexShaderDataSize, (GLchar*)vertexShaderDataStart, shaderDefines))
     {
-        Logger::Error("Failed to compile vertex shader: %s", assetName.c_str());
+        Logger::Error("Failed to compile vertex shader: %s defines: %s", assetName.c_str(), shaderDefines.c_str());
         return;
     }
     
     if (!CompileShader(&fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderDataSize, (GLchar*)fragmentShaderDataStart, shaderDefines))
     {
-        Logger::Error("Failed to compile fragment shader: %s", assetName.c_str());
+        Logger::Error("Failed to compile fragment shader: %s defines:%s", assetName.c_str(), shaderDefines.c_str());
         return ;
     }
     
@@ -425,7 +427,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         
         if(IsAutobindUniform(shaderSemantic))
         {
-            //Logger::FrameworkDebug(Format("%s %d", attrName.c_str(), shaderSemantic).c_str());
+            Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
             autobindUniformCount++;
         }
         
@@ -965,8 +967,8 @@ void Shader::DeleteShaders()
 {
     TAG_SWITCH(MemoryManager::TAG_SHADER)
     
-    DVASSERT(vertexShader != 0);
-    DVASSERT(fragmentShader != 0);
+    //DVASSERT(vertexShader != 0);
+    //DVASSERT(fragmentShader != 0);
     //DVASSERT(program != 0);
 
     DeleteShaderContainer * container = new DeleteShaderContainer();
@@ -994,8 +996,15 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
         RENDER_VERIFY(glDeleteProgram(container->program));
     }
     
-    RENDER_VERIFY(glDeleteShader(container->vertexShader));
-    RENDER_VERIFY(glDeleteShader(container->fragmentShader));
+    if(container->vertexShader)
+    {
+        RENDER_VERIFY(glDeleteShader(container->vertexShader));
+    }
+
+    if(container->fragmentShader)
+    {
+        RENDER_VERIFY(glDeleteShader(container->fragmentShader));
+    }
 
     SafeDelete(container);
 }
@@ -1073,6 +1082,7 @@ void Shader::Bind()
     
     if (activeProgram != program)
     {
+        //Logger::FrameworkDebug(Format("Bind: %d", program).c_str());
         RENDERER_UPDATE_STATS(shaderBindCount++);
         RENDER_VERIFY(glUseProgram(program));
         activeProgram = program;
@@ -1244,16 +1254,27 @@ void Shader::BindDynamicParameters()
             case PARAM_CAMERA_POS:
             case PARAM_CAMERA_DIR:
             case PARAM_CAMERA_UP:
+            case PARAM_LIGHT0_COLOR:
+            case PARAM_LIGHT0_AMBIENT_COLOR:
             {
                 pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
                 if (_updateSemantic != currentUniform->updateSemantic)
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    
-                    Vector3 * camParam = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    //RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, (float*)camParam));
-                    SetUniformValueByUniform(currentUniform, *camParam);
-
+                    Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_LIGHT0_POSITION:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
+                    Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
                 break;
@@ -1265,6 +1286,7 @@ void Shader::BindDynamicParameters()
                 SetUniformColor4ByUniform(currentUniform, c);
                 break;
             }
+            
             case PARAM_GLOBAL_TIME:
             {
                 if (currentUniform->updateSemantic != Core::Instance()->GetGlobalFrameIndex())

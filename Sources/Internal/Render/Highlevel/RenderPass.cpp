@@ -32,6 +32,8 @@
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/Camera.h"
+#include "Render/ShaderCache.h"
+
 #include "Render/ImageLoader.h"
 
 namespace DAVA
@@ -116,9 +118,11 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
 }
 
 void RenderPass::DrawLayers(Camera *camera)
-{
+{    
     TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
-    
+
+    ShaderCache::Instance()->ClearAllLastBindedCaches();
+
     // Draw all layers with their materials
     uint32 size = (uint32)renderLayers.size();
     for (uint32 k = 0; k < size; ++k)
@@ -158,6 +162,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
     
     if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
+
         return;
 
     RenderLayerBatchArray *waterLayer = renderPassBatchArray->Get(RenderLayerManager::Instance()->GetLayerIDByName(LAYER_WATER));
@@ -300,7 +305,7 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 }
 
 MainForwardRenderPass::~MainForwardRenderPass()
-{
+{	
     TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
 
 	SafeRelease(reflectionTexture);
@@ -330,7 +335,7 @@ WaterPrePass::~WaterPrePass()
 }
 
 WaterReflectionRenderPass::WaterReflectionRenderPass(const FastName & name, RenderPassID id):WaterPrePass(name, id)
-{
+{	
     TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
 }
 
@@ -348,7 +353,7 @@ void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
 }
 
 void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
-{
+{    
     TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
     
     Camera *mainCamera = renderSystem->GetMainCamera();        
@@ -440,7 +445,7 @@ void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
 
 
     visibilityArray.Clear();
-    renderSystem->GetRenderHierarchy()->Clip(currMainCamera, &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFLECTION);	
+    renderSystem->GetRenderHierarchy()->Clip(currMainCamera, &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA | RenderObject::VISIBLE_REFRACTION);	
     renderPassBatchArray->Clear();
     renderPassBatchArray->PrepareVisibilityArray(&visibilityArray, currMainCamera); 
     DrawLayers(currMainCamera);       

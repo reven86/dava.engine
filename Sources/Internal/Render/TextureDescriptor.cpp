@@ -73,6 +73,16 @@ bool TextureDescriptor::TextureDataSettings::GetGenerateMipMaps() const
 	return IsFlagEnabled(FLAG_GENERATE_MIPMAPS);
 }
 
+void TextureDescriptor::TextureDataSettings::SetIsNormalMap(const bool & isNormalMap)
+{
+    EnableFlag(isNormalMap, FLAG_IS_NORMAL_MAP);
+}
+
+bool TextureDescriptor::TextureDataSettings::GetIsNormalMap() const
+{
+    return IsFlagEnabled(FLAG_IS_NORMAL_MAP);
+}
+
 void TextureDescriptor::TextureDataSettings::EnableFlag( bool enable, int8 flag )
 {
 	if(enable)
@@ -575,8 +585,7 @@ bool TextureDescriptor::GetGenerateMipMaps() const
 
     return dataSettings.GetGenerateMipMaps();
 }
-    
-    
+
 FilePath TextureDescriptor::GetSourceTexturePathname() const
 {
     TAG_SWITCH(MemoryManager::TAG_TEXTURE)
@@ -654,7 +663,7 @@ bool TextureDescriptor::IsCubeMap() const
 
 	return (dataSettings.faceDescription != 0);
 }
-	
+
 uint32 TextureDescriptor::ReadSourceCRC() const
 {
     TAG_SWITCH(MemoryManager::TAG_TEXTURE)

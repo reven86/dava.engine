@@ -186,8 +186,6 @@ void DXTTest::Draw(const DAVA::UIGeometricData &geometricData)
 {
     RenderManager::Instance()->ClearWithColor(0.f, 0.0f, 0.f, 1.f);
     
-//    RenderManager::Instance()->SetBlendMode(BLEND_SRC_ALPHA, BLEND_ONE_MINUS_SRC_ALPHA);
-
     Sprite::DrawState state;
     state.SetFrame(0);
 

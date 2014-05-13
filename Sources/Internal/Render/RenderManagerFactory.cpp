@@ -39,7 +39,7 @@ void RenderManager::Create(Core::eRenderer renderer)
     TAG_SWITCH(MemoryManager::TAG_RENDER)
     
     //new RenderManager(renderer);
-    if (renderer == Core::RENDERER_OPENGL_ES_2_0)
+    if (renderer == Core::RENDERER_OPENGL_ES_2_0 || renderer == Core::RENDERER_OPENGL_ES_3_0)
     {
 #if defined(__DAVAENGINE_OPENGL__)
 	new RenderManagerGL20(renderer);

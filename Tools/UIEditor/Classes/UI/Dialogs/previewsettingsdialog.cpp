@@ -15,17 +15,22 @@ static const QString PREVIEW_SCREEN_SIZE_COLUMN = "Screen Size";
 PreviewSettingsDialog::PreviewSettingsDialog(bool selectionMode, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PreviewSettingsDialog),
-    isSelectionMode(selectionMode)
+    isSelectionMode(selectionMode),
+    isApplyScale(true)
 {
     ui->setupUi(this);
 
     connect(ui->buttonAdd, SIGNAL(clicked()), this, SLOT(AddButtonClicked()));
     connect(ui->buttonRemove, SIGNAL(clicked()), this, SLOT(RemoveButtonClicked()));
 	connect(ui->buttonClose, SIGNAL(clicked()), this, SLOT(CloseButtonClicked()));
+    
+    connect(ui->buttonPreviewNoScale, SIGNAL(clicked()), this, SLOT(PreviewNoScaleButtonClicked()));
+
     connect(ui->settingsTableView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(SettingsTableDoubleClicked(const QModelIndex&)));
 
     this->ui->buttonAdd->setVisible(!selectionMode);
     this->ui->buttonRemove->setVisible(!selectionMode);
+    this->ui->buttonPreviewNoScale->setVisible(selectionMode);
 
     InitializeTableView();
     ReloadSettings();
@@ -158,3 +163,19 @@ void PreviewSettingsDialog::CloseButtonClicked()
 {
     reject();
 }
+
+void PreviewSettingsDialog::PreviewNoScaleButtonClicked()
+{
+    QItemSelectionModel *select = ui->settingsTableView->selectionModel();
+    if (select->hasSelection())
+    {
+        isApplyScale = false;
+        accept();
+    }
+}
+
+bool PreviewSettingsDialog::GetApplyScale() const
+{
+    return isApplyScale;
+}
+

@@ -105,9 +105,9 @@ public:
      /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
 
-    bool GetReflectionVisible();
+    bool GetReflectionVisible() const;
     void SetReflectionVisible(bool visible);
-    bool GetRefractionVisible();
+    bool GetRefractionVisible() const;
     void SetRefractionVisible(bool visible);
 
 private:

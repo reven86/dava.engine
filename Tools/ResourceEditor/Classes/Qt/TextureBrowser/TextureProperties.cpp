@@ -34,11 +34,11 @@
 #include "TextureProperties.h"
 #include "Tools/QtPropertyEditor/QtPropertyItem.h"
 
-
 TextureProperties::TextureProperties( QWidget *parent /*= 0*/ )
 	: QtPropertyEditor(parent)
 	, curTextureDescriptor(NULL)
 	, skipPropSizeChanged(false)
+    , curGPU(DAVA::GPU_UNKNOWN)
 {
 	SetEditTracking(true);
 }
@@ -166,11 +166,19 @@ void TextureProperties::ReloadProperties()
 		propMipMap->SetCheckable(true);
 		propMipMap->SetEditable(false);
 		
-		//TODO: magic to display introspection info as bool, not int
-		bool savedValue = propMipMap->GetValue().toBool();
-		propMipMap->SetValue(!savedValue);
-		propMipMap->SetValue(savedValue);
-		//END of TODO
+        propNormalMap = AddPropertyItem("isNormalMap", textureDataSettings, headerIndex);
+        propNormalMap->SetCheckable(true);
+        propNormalMap->SetEditable(false);
+
+        //TODO: magic to display introspection info as bool, not int
+        bool savedValue = propMipMap->GetValue().toBool();
+        propMipMap->SetValue(!savedValue);
+        propMipMap->SetValue(savedValue);
+
+        savedValue = propNormalMap->GetValue().toBool();
+        propNormalMap->SetValue(!savedValue);
+        propNormalMap->SetValue(savedValue);
+        //END of TODO
 
 		propWrapModeS = AddPropertyItem("wrapModeS", textureDrawSettings, headerIndex);
 		propWrapModeT = AddPropertyItem("wrapModeT", textureDrawSettings, headerIndex);
@@ -334,6 +342,10 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
 
 		emit PropertyChanged(PROP_MIPMAP);
 	}
+    else if(data == propNormalMap)
+    {
+        emit PropertyChanged(PROP_NORMALMAP);
+    }
 	else if(data == propFormat)
 	{
 		emit PropertyChanged(PROP_FORMAT);

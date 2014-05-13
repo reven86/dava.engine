@@ -65,11 +65,11 @@ private:
     GuideData guideData;
 };
 
-// Move the guide.
-class MoveGuideCommand : public BaseGuideCommand
+// Move the guide by mouse.
+class MoveGuideByMouseCommand : public BaseGuideCommand
 {
 public:
-    MoveGuideCommand(const HierarchyTreeScreenNode* screenNode);
+    MoveGuideByMouseCommand(const HierarchyTreeScreenNode* screenNode);
     
     virtual void Execute();
     virtual void Rollback();
@@ -83,6 +83,23 @@ private:
     bool isFirstMovePerformed;
     Vector2 startGuidePos;
     GuideData movedGuideData;
+};
+
+// Move guide by setting its position.
+class MoveGuideCommand : public BaseGuideCommand
+{
+public:
+    MoveGuideCommand(const HierarchyTreeScreenNode* screenNode, const Vector2& delta);
+
+    virtual void Execute();
+    virtual void Rollback();
+    
+   	virtual bool IsUndoRedoSupported() {return true;};
+    
+private:
+    bool isFirstMovePerformed;
+    Vector2 moveDelta;
+    List<Vector2> guidesPositions;
 };
 
 // Delete the guides.

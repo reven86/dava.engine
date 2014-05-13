@@ -271,6 +271,7 @@ void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
     if (guideData && activeScreen->AreGuidesEnabled())
     {
         activeScreen->StartNewGuide(guideData->GetGuideType());
+        HierarchyTreeController::Instance()->ResetSelectedControl();
         event->acceptProposedAction();
     }
 }

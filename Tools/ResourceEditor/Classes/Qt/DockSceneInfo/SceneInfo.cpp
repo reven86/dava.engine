@@ -394,10 +394,10 @@ void SceneInfo::CollectLODDataInFrame()
     visibilityArray.Clear();
     activeScene->renderSystem->GetRenderHierarchy()->Clip(activeScene->GetCurrentCamera(), &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA);
 
-    uint32 size = (uint32)visibilityArray.visibilityArray.size();
+    uint32 size = (uint32)visibilityArray.GetCount();
     for (uint32 ro = 0; ro < size; ++ro)
     {
-        RenderObject * renderObject = visibilityArray.visibilityArray[ro];
+        RenderObject * renderObject = visibilityArray.Get(ro);
         uint32 batchCount = renderObject->GetActiveRenderBatchCount();
         int32 indexCount = 0;
         for(uint32 i = 0; i < batchCount; ++i)

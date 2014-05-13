@@ -67,7 +67,7 @@ public:
     IMPLEMENT_COMPONENT_TYPE(DEBUG_RENDER_COMPONENT);
 
     void SetDebugFlags(uint32 debugFlags);
-    uint32 GetDebugFlags();
+    uint32 GetDebugFlags() const;
 
 	virtual Component * Clone(Entity * toEntity);
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);

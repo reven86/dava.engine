@@ -41,7 +41,8 @@ EditorLightSystem::EditorLightSystem(DAVA::Scene * scene)
 	: DAVA::SceneSystem(scene)
 {
 	Light *light = new Light();
-	light->SetType(Light::TYPE_DIRECTIONAL);
+	light->SetType(Light::TYPE_POINT);
+    light->SetAmbientColor(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f));
 		
 	cameraLight = new DAVA::Entity();
 	cameraLight->SetLocked(true);

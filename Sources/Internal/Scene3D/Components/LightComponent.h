@@ -61,13 +61,11 @@ public:
     void SetLightType(const uint32 & _type);
     void SetAmbientColor(const Color & _color);
     void SetDiffuseColor(const Color & _color);
-    void SetSpecularColor(const Color & _color);
     void SetIntensity(const float32& intensity);
     
     const uint32 GetLightType();
     const Color GetAmbientColor();
     const Color GetDiffuseColor();
-    const Color GetSpecularColor();
     const float32 GetIntensity();
     
     const Vector3 GetPosition() const;
@@ -87,10 +85,9 @@ public:
         PROPERTY("isDynamic", "isDynamic", IsDynamic, SetDynamic, I_VIEW | I_EDIT)
 
         PROPERTY("lightType", InspDesc("type", GlobalEnumMap<Light::eType>::Instance()), GetLightType, SetLightType, I_VIEW | I_EDIT)
-        PROPERTY("ambientColor", "ambientColor", GetAmbientColor, SetAmbientColor, I_VIEW | I_EDIT)
-        PROPERTY("diffuseColor", "diffuseColor", GetDiffuseColor, SetDiffuseColor, I_VIEW | I_EDIT)
-        PROPERTY("specularColor", "specularColor", GetSpecularColor, SetSpecularColor, I_VIEW | I_EDIT)
-        PROPERTY("intensity", "intensity", GetIntensity, SetIntensity, I_VIEW | I_EDIT)
+        PROPERTY("Ambient Color", "Ambient Color", GetAmbientColor, SetAmbientColor, I_VIEW | I_EDIT)
+        PROPERTY("Color", "Color", GetDiffuseColor, SetDiffuseColor, I_VIEW | I_EDIT)
+        PROPERTY("Intensity", "Intensity", GetIntensity, SetIntensity, I_VIEW | I_EDIT)
     
         //VI: seems we don't need this
         //PROPERTY("position", "position", GetPosition, SetPosition, I_VIEW)

@@ -63,7 +63,7 @@ FilePath DXTConverter::ConvertPngToDxt(const TextureDescriptor &descriptor, eGPU
         if(LibDxtHelper::WriteDdsFile(outputName,
                                       image->width, image->height, &(image->data), 1,
                                       (PixelFormat) compression->format,
-                                      (descriptor.GetGenerateMipMaps())))
+                                      descriptor.GetGenerateMipMaps(), descriptor.dataSettings.GetIsNormalMap()))
         {
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);
 			LibDxtHelper::AddCRCIntoMetaData(outputName);
@@ -133,7 +133,7 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
         if(LibDxtHelper::WriteDdsFile(outputName,
                                       inputImages[0]->width, inputImages[0]->height, faceData, (uint32)inputImages.size(),
                                       (PixelFormat) compression->format,
-                                      (descriptor.GetGenerateMipMaps())))
+                                      descriptor.GetGenerateMipMaps(), descriptor.dataSettings.GetIsNormalMap()))
         {
 			SafeDeleteArray(faceData);
             for_each(inputImages.begin(), inputImages.end(), SafeRelease<Image>);

@@ -125,6 +125,16 @@ SceneCollisionSystem::~SceneCollisionSystem()
 	DAVA::SafeDelete(landCollConf);
 }
 
+void SceneCollisionSystem::SetDrawMode(int mode)
+{
+	drawMode = mode;
+}
+
+int SceneCollisionSystem::GetDrawMode() const
+{
+	return drawMode;
+}
+
 const EntityGroup* SceneCollisionSystem::ObjectsRayTest(const DAVA::Vector3 &from, const DAVA::Vector3 &to)
 {
 	DAVA::Entity *retEntity = NULL;

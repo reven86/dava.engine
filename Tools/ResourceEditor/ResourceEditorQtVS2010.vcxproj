@@ -528,6 +528,7 @@
     <ClCompile Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.cpp" />
     <ClCompile Include="Classes\Qt\Tools\AddSwitchEntityDialog\SwitchEntityCreator.cpp" />
     <ClCompile Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.cpp" />
     <ClCompile Include="Classes\Qt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox.cpp" />
     <ClCompile Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.cpp" />
     <ClCompile Include="Classes\Qt\Tools\LabeledSlider\LabeledSlider.cpp" />
@@ -701,6 +702,7 @@
     <ClCompile Include="_GeneratedQt\Tools\AddSkyboxDialog\AddSkyboxDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\BaseAddEntityDialog\BaseAddEntityDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\DeveloperTools\DeveloperTools_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\HangingObjectsHeight\HangingObjectsHeight_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\LabeledSlider\LabeledSlider_moc.cpp" />
@@ -1170,6 +1172,7 @@
     <ClInclude Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.h" />
     <ClInclude Include="Classes\Qt\Tools\AddSwitchEntityDialog\SwitchEntityCreator.h" />
     <ClInclude Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.h" />
+    <ClInclude Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.h" />
     <ClInclude Include="Classes\Qt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox.h" />
     <ClInclude Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.h" />
     <ClInclude Include="Classes\Qt\Tools\LabeledSlider\LabeledSlider.h" />
