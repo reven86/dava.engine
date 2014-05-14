@@ -46,7 +46,7 @@ UIScrollViewMetadata::UIScrollViewMetadata(QObject* parent) :
 
 UIScrollView* UIScrollViewMetadata::GetActiveUIScrollView() const
 {
-	return dynamic_cast<UIScrollView*>(GetActiveUIControl());
+	return static_cast<UIScrollView*>(GetActiveUIControl());
 }
 
 void UIScrollViewMetadata::InitializeControl(const String& controlName, const Vector2& position)
@@ -57,17 +57,9 @@ void UIScrollViewMetadata::InitializeControl(const String& controlName, const Ve
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
 		// Initialize UIList
-        UIScrollView* scrollView = dynamic_cast<UIScrollView*>(this->treeNodeParams[i].GetUIControl());
-		if (scrollView)
-		{
-			scrollView->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-		}
+        UIScrollView* scrollView = static_cast<UIScrollView*>(this->treeNodeParams[i].GetUIControl());
+        scrollView->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }	
-}
-
-void UIScrollViewMetadata::UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle)
-{
-	UIControlMetadata::UpdateExtraData(extraData, updateStyle);
 }
 
 float UIScrollViewMetadata::GetHorizontalScrollPosition() const

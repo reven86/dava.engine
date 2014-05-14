@@ -126,6 +126,10 @@ public:
 	static AlignData SaveAlignData(UIControl* uiControl);
 	static void RestoreAlignData(UIControl* uiControl, const AlignData& alignData);
 
+    // Screen scale/position changed.
+    virtual void OnScreenScaleChanged();
+    virtual void OnScreenPositionChanged();
+
     // Get a regexp for name
     static const QRegExp& GetNameRegExp();
 

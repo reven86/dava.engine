@@ -686,9 +686,6 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     //Temp variable
     VariantType *nodeValue = new VariantType();
 
-    //Control Type
-	SetPreferredNodeType(node, "UITextField");
-
     //Text
     nodeValue->SetWideString(this->GetText());
     node->Set("text", nodeValue);

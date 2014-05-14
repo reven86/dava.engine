@@ -373,8 +373,6 @@ YamlNode * UISpinner::SaveToYamlNode(UIYamlLoader * loader)
 	content->SetName(UISPINNER_CONTENT_NAME);
 
 	YamlNode *node = UIControl::SaveToYamlNode(loader);
-	SetPreferredNodeType(node, "UISpinner");
-
 	return node;
 }
 	

@@ -43,7 +43,7 @@ UITextFieldMetadata::UITextFieldMetadata(QObject* parent) :
 
 UITextField* UITextFieldMetadata::GetActiveUITextField() const
 {
-    return dynamic_cast<UITextField*>(GetActiveUIControl());
+    return static_cast<UITextField*>(GetActiveUIControl());
 }
 
 QString UITextFieldMetadata::GetText() const
@@ -401,7 +401,7 @@ void UITextFieldMetadata::InitializeControl(const String& controlName, const Vec
     int paramsCount = this->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
-        UITextField* textField = dynamic_cast<UITextField*>(this->treeNodeParams[i].GetUIControl());
+        UITextField* textField = static_cast<UITextField*>(this->treeNodeParams[i].GetUIControl());
         
         textField->SetFont(EditorFontManager::Instance()->GetDefaultFont());
         textField->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);

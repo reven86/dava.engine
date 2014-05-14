@@ -541,12 +541,22 @@ void RenderManager::SetDrawTranslate(const Vector3 &offset)
     userDrawOffset.x += offset.x * userDrawScale.x;
     userDrawOffset.y += offset.y * userDrawScale.y;
 }
-    
+
+const Vector2& RenderManager::GetDrawTranslate() const
+{
+    return userDrawOffset;
+}
+
 void RenderManager::SetDrawScale(const Vector2 &scale)
 {
     mappingMatrixChanged = true;
 	userDrawScale.x *= scale.x;
 	userDrawScale.y *= scale.y;
+}
+
+const Vector2& RenderManager::GetDrawScale() const
+{
+    return userDrawScale;
 }
 	
 void RenderManager::IdentityDrawMatrix()

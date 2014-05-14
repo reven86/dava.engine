@@ -57,7 +57,7 @@ void BaseMetadata::SetupParams(const METADATAPARAMSVECT& params)
     activeParamID = BaseMetadataParams::BaseMetadataID_UNKNOWN;
 }
 
-const METADATAPARAMSVECT& BaseMetadata::GetParams()
+const METADATAPARAMSVECT& BaseMetadata::GetParams() const
 {
     return treeNodeParams;
 }

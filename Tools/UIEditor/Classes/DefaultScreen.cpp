@@ -92,6 +92,9 @@ DefaultScreen::DefaultScreen()
     
     isStickedToX = false;
     isStickedToY = false;
+    
+    isNeedHandleScreenScaleChanged = false;
+    isNeedHandleScreenPositionChanged = false;
 }
 
 DefaultScreen::~DefaultScreen()
@@ -106,6 +109,9 @@ void DefaultScreen::Update(float32 /*timeElapsed*/)
 	//update view port
 	RenderManager::Instance()->SetDrawScale(scale);
 	RenderManager::Instance()->SetDrawTranslate(pos);
+    
+    // Handle the "screen scale changed"/"screen position changed" after the scale/translate is set.
+    HandleScreenScalePositionChanged();
 }
 
 void DefaultScreen::Draw(const UIGeometricData &geometricData)
@@ -1718,4 +1724,41 @@ Vector2 DefaultScreen::AlignToNearestScale(const Vector2& value) const
     result.y = Round(value.y / scale.y) * scale.y;
     
     return result;
+}
+
+// Screen scale/position is changed.
+void DefaultScreen::SetScreenScaleChangedFlag()
+{
+    isNeedHandleScreenScaleChanged = true;
+}
+
+void DefaultScreen::SetScreenPositionChangedFlag()
+{
+    isNeedHandleScreenPositionChanged = true;
+}
+
+void DefaultScreen::HandleScreenScalePositionChanged()
+{
+    if (!(isNeedHandleScreenScaleChanged || isNeedHandleScreenPositionChanged))
+    {
+        return;
+    }
+    
+    HierarchyTreeNode::HIERARCHYTREENODESLIST nodesList = HierarchyTreeController::Instance()->GetNodes();
+    
+    for (HierarchyTreeNode::HIERARCHYTREENODESITER iter = nodesList.begin(); iter != nodesList.end(); iter ++)
+    {
+        if (isNeedHandleScreenScaleChanged)
+        {
+            (*iter)->OnScreenScaleChanged();
+        }
+        
+        if (isNeedHandleScreenPositionChanged)
+        {
+            (*iter)->OnScreenPositionChanged();
+        }
+    }
+    
+    isNeedHandleScreenScaleChanged = false;
+    isNeedHandleScreenPositionChanged = false;
 }

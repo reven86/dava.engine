@@ -144,6 +144,9 @@ public:
     // Set the Stick Mode.
     void SetStickMode(int32 mode);
 
+    // Access to the hierarchy tree nodes list.
+    HierarchyTreeNode::HIERARCHYTREENODESLIST GetNodes() const;
+
 private:
 	void DeleteNodesInternal(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes);
 	String GetNewControlName(const String& baseName);

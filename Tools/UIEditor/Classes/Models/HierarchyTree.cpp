@@ -328,6 +328,34 @@ const HierarchyTreeNode::HIERARCHYTREENODESLIST& HierarchyTree::GetPlatforms() c
 	return rootNode.GetChildNodes();
 }
 
+HierarchyTreeNode::HIERARCHYTREENODESLIST HierarchyTree::GetNodes() const
+{
+    HierarchyTreeNode::HIERARCHYTREENODESLIST resultList;
+    if (GetPlatforms().empty())
+    {
+        return  resultList;
+    }
+
+    GetNodesRecursive(&rootNode, resultList);
+
+    return resultList;
+}
+
+void HierarchyTree::GetNodesRecursive(const HierarchyTreeNode* rootNode, HierarchyTreeNode::HIERARCHYTREENODESLIST& resultList) const
+{
+    for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = rootNode->GetChildNodes().begin(); iter != rootNode->GetChildNodes().end(); ++iter)
+	{
+		HierarchyTreeNode* childNode = (*iter);
+		if (!childNode)
+		{
+			continue;
+		}
+        
+        resultList.push_back(childNode);
+        GetNodesRecursive(childNode, resultList);
+    }
+}
+
 void HierarchyTree::DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes, bool deleteNodeFromMemory, bool deleteNodeFromScene)
 {
 	//copy id for safe delete

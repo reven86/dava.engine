@@ -46,6 +46,9 @@
 #include "UISwitchMetadata.h"
 #include "UITextFieldMetadata.h"
 #include "UIParticlesMetadata.h"
+#include "UIJoypadMetadata.h"
+#include "UIWebViewMetadata.h"
+#include "UI3DViewMetadata.h"
 
 #include "Metadata/Custom/GuideMetadata.h"
 
@@ -103,6 +106,12 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
     
     particleWidget = new ParticleEffectPropertyGridWidget();
     registeredWidgets.push_back(particleWidget);
+
+    joypadWidget = new JoypadPropertyGridWidget();
+    registeredWidgets.push_back(joypadWidget);
+    
+    webViewWidget = new WebViewPropertyGridWidget();
+    registeredWidgets.push_back(webViewWidget);
     
     guideWidget = new GuidePropertyGridWidget();
     registeredWidgets.push_back(guideWidget);
@@ -282,6 +291,46 @@ const PropertyGridWidgetsFactory::PROPERTYGRIDWIDGETSLIST PropertyGridWidgetsFac
 		resultList.push_back(alignWidget);
 		resultList.push_back(particleWidget);
         resultList.push_back(backgroundWidget);
+        resultList.push_back(flagsWidget);
+        
+        return resultList;
+	}
+
+    // UIJoypad
+	const UIJoypadMetadata* uiJoypadMetadata = dynamic_cast<const UIJoypadMetadata*>(metaData);
+	if (uiJoypadMetadata)
+	{
+		resultList.push_back(controlWidget);
+        resultList.push_back(rectWidget);
+		resultList.push_back(alignWidget);
+		resultList.push_back(joypadWidget);
+        resultList.push_back(backgroundWidget);
+        resultList.push_back(flagsWidget);
+
+        return resultList;
+	}
+
+    // UIWebView
+	const UIWebViewMetadata* uiWebViewMetadata = dynamic_cast<const UIWebViewMetadata*>(metaData);
+	if (uiWebViewMetadata)
+	{
+		resultList.push_back(controlWidget);
+        resultList.push_back(rectWidget);
+		resultList.push_back(alignWidget);
+		resultList.push_back(webViewWidget);
+        resultList.push_back(backgroundWidget);
+        resultList.push_back(flagsWidget);
+        
+        return resultList;
+	}
+
+    // UI3DView - no background widget needed.
+	const UI3DViewMetadata* ui3DViewMetadata = dynamic_cast<const UI3DViewMetadata*>(metaData);
+	if (ui3DViewMetadata)
+	{
+		resultList.push_back(controlWidget);
+        resultList.push_back(rectWidget);
+		resultList.push_back(alignWidget);
         resultList.push_back(flagsWidget);
         
         return resultList;

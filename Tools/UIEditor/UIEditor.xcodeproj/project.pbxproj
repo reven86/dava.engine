@@ -92,12 +92,19 @@
 		1700E418162EB2C20069650D /* basepropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1700E416162EB2C20069650D /* basepropertygridwidget.cpp */; };
 		1700E41D162EB8C60069650D /* rectpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1700E41B162EB8C60069650D /* rectpropertygridwidget.cpp */; };
 		1707BA111709C90D00D69DC0 /* SubcontrolsHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1707BA0F1709C90D00D69DC0 /* SubcontrolsHelper.cpp */; };
+		170A18A6190F8EBE00252A1F /* webviewpropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 170A18A5190F8EBE00252A1F /* webviewpropertygridwidget.ui */; };
+		170A18AE190F8EF300252A1F /* webviewpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 170A18AC190F8EF300252A1F /* webviewpropertygridwidget.cpp */; };
+		170A18B2190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 170A18B1190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp */; };
 		1710178B16EE197900BC7AE0 /* UIListMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17AB665116EDF86B00634657 /* UIListMetadata.cpp */; };
 		1710179016EE2F3200BC7AE0 /* UISpinnerMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1710178E16EE2F3100BC7AE0 /* UISpinnerMetadata.cpp */; };
 		17112B45163920BC0017E713 /* CommandsController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17112B43163920BC0017E713 /* CommandsController.cpp */; };
 		17112B481639214D0017E713 /* BaseCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17112B461639214D0017E713 /* BaseCommand.cpp */; };
 		17112B5916392EA80017E713 /* WidgetSignalsBlocker.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17112B5716392EA80017E713 /* WidgetSignalsBlocker.cpp */; };
 		1712331E1741118F0051D960 /* PropertyNames.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1712331D1741118F0051D960 /* PropertyNames.cpp */; };
+		17183C3618C8800400491E66 /* UIMovieViewMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17183C3418C8800400491E66 /* UIMovieViewMetadata_moc.cpp */; };
+		17183C3718C8800400491E66 /* UIWebViewMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17183C3518C8800400491E66 /* UIWebViewMetadata_moc.cpp */; };
+		17183C3F18C8830000491E66 /* AVFoundation.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17183C3E18C8830000491E66 /* AVFoundation.framework */; };
+		17183C4118C8833A00491E66 /* CoreMedia.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17183C4018C8833A00491E66 /* CoreMedia.framework */; };
 		1719682217CE4BD400053905 /* ScaleSlider.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1719682017CE4BD400053905 /* ScaleSlider.cpp */; };
 		1719682617CE4C2900053905 /* ScaleSlider_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1719682517CE4C2900053905 /* ScaleSlider_moc.cpp */; };
 		171FA7F117C4A48B00C7F7F2 /* AlignDistributeManager.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 171FA7EF17C4A48B00C7F7F2 /* AlignDistributeManager.cpp */; };
@@ -150,6 +157,8 @@
 		178D10F0188406A100529DA8 /* QtColorLineEdit_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 178D10EF188406A100529DA8 /* QtColorLineEdit_moc.cpp */; };
 		178F303E165677BF008678AD /* StringUtils.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 178F303C165677BF008678AD /* StringUtils.cpp */; };
 		179BCD45189AA3DC003EA256 /* PreviewController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 179BCD43189AA3DC003EA256 /* PreviewController.cpp */; };
+		179DCD9D1918DFD800BE6F43 /* UI3DViewMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 179DCD9B1918DFD800BE6F43 /* UI3DViewMetadata.cpp */; };
+		179DCDA41918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 179DCDA31918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp */; };
 		17A1225C18F43DDC00780837 /* GuideMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17A1225A18F43DDC00780837 /* GuideMetadata.cpp */; };
 		17A1225F18F43FB200780837 /* GuideMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17A1225E18F43FB200780837 /* GuideMetadata_moc.cpp */; };
 		17A1226618F4499300780837 /* guidepropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17A1226418F4499300780837 /* guidepropertygridwidget.cpp */; };
@@ -160,6 +169,13 @@
 		17A6305A18AA2BDD00957C77 /* GuideMimeData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17A6305818AA2BDD00957C77 /* GuideMimeData.cpp */; };
 		17A6305C18AA2C7200957C77 /* GuideMimeData_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17A6305B18AA2C7200957C77 /* GuideMimeData_moc.cpp */; };
 		17B0617518892C1500FD8007 /* WebKit.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17B0617418892C1500FD8007 /* WebKit.framework */; };
+		17C4116118C9BE3D002BA05F /* UIJoypadMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C4115F18C9BE3D002BA05F /* UIJoypadMetadata.cpp */; };
+		17C4116818C9CE01002BA05F /* UIJoypadMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C4116718C9CE01002BA05F /* UIJoypadMetadata_moc.cpp */; };
+		17C4116A18CA0933002BA05F /* joypadpropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17C4116918CA0933002BA05F /* joypadpropertygridwidget.ui */; };
+		17C411B018CA0966002BA05F /* joypadpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C411AE18CA0966002BA05F /* joypadpropertygridwidget.cpp */; };
+		17C411B218CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C411B118CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp */; };
+		17C5A56D18C86D4E00064AFF /* UIWebViewMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C5A56B18C86D4E00064AFF /* UIWebViewMetadata.cpp */; };
+		17C5A57518C86DA600064AFF /* UIMovieViewMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C5A57318C86DA600064AFF /* UIMovieViewMetadata.cpp */; };
 		17C1FD2018F54A6700CEA911 /* guidepropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17C1FD1F18F54A6700CEA911 /* guidepropertygridwidget.ui */; };
 		17C5B5D918A4DB0100415933 /* UIParticlesMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C5B5D818A4DB0100415933 /* UIParticlesMetadata_moc.cpp */; };
 		17C5CCD516F31E5300FB90B4 /* spinnerpropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17C5CCD416F31E5300FB90B4 /* spinnerpropertygridwidget.ui */; };
@@ -462,6 +478,11 @@
 		1700E41C162EB8C60069650D /* rectpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rectpropertygridwidget.h; path = PropertyGridWidgets/rectpropertygridwidget.h; sourceTree = "<group>"; };
 		1707BA0F1709C90D00D69DC0 /* SubcontrolsHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SubcontrolsHelper.cpp; path = Helpers/SubcontrolsHelper.cpp; sourceTree = "<group>"; };
 		1707BA101709C90D00D69DC0 /* SubcontrolsHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SubcontrolsHelper.h; path = Helpers/SubcontrolsHelper.h; sourceTree = "<group>"; };
+		170A18A5190F8EBE00252A1F /* webviewpropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = webviewpropertygridwidget.ui; sourceTree = "<group>"; };
+		170A18AC190F8EF300252A1F /* webviewpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = webviewpropertygridwidget.cpp; path = PropertyGridWidgets/webviewpropertygridwidget.cpp; sourceTree = "<group>"; };
+		170A18AD190F8EF300252A1F /* webviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = webviewpropertygridwidget.h; path = PropertyGridWidgets/webviewpropertygridwidget.h; sourceTree = "<group>"; };
+		170A18B0190F8F7A00252A1F /* ui_webviewpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_webviewpropertygridwidget.h; sourceTree = "<group>"; };
+		170A18B1190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = webviewpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
 		1710178E16EE2F3100BC7AE0 /* UISpinnerMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UISpinnerMetadata.cpp; path = Metadata/UISpinnerMetadata.cpp; sourceTree = "<group>"; };
 		1710178F16EE2F3200BC7AE0 /* UISpinnerMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UISpinnerMetadata.h; path = Metadata/UISpinnerMetadata.h; sourceTree = "<group>"; };
 		17112B43163920BC0017E713 /* CommandsController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CommandsController.cpp; path = Controllers/CommandsController.cpp; sourceTree = "<group>"; };
@@ -473,6 +494,10 @@
 		17112B5816392EA80017E713 /* WidgetSignalsBlocker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WidgetSignalsBlocker.h; path = Helpers/WidgetSignalsBlocker.h; sourceTree = "<group>"; };
 		17112B5B16392EC60017E713 /* PropertiesHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PropertiesHelper.h; path = Helpers/PropertiesHelper.h; sourceTree = "<group>"; };
 		1712331D1741118F0051D960 /* PropertyNames.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertyNames.cpp; path = Metadata/PropertyNames.cpp; sourceTree = "<group>"; };
+		17183C3418C8800400491E66 /* UIMovieViewMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIMovieViewMetadata_moc.cpp; sourceTree = "<group>"; };
+		17183C3518C8800400491E66 /* UIWebViewMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIWebViewMetadata_moc.cpp; sourceTree = "<group>"; };
+		17183C3E18C8830000491E66 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		17183C4018C8833A00491E66 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		1719682017CE4BD400053905 /* ScaleSlider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScaleSlider.cpp; sourceTree = "<group>"; };
 		1719682117CE4BD400053905 /* ScaleSlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScaleSlider.h; sourceTree = "<group>"; };
 		1719682517CE4C2900053905 /* ScaleSlider_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ScaleSlider_moc.cpp; sourceTree = "<group>"; };
@@ -570,6 +595,9 @@
 		179BCD43189AA3DC003EA256 /* PreviewController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PreviewController.cpp; path = Controllers/PreviewController.cpp; sourceTree = "<group>"; };
 		179BCD44189AA3DC003EA256 /* PreviewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PreviewController.h; path = Controllers/PreviewController.h; sourceTree = "<group>"; };
 		179D0ECB17C5F65B006F59CA /* AlignDistributeEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AlignDistributeEnums.h; path = AlignDistribute/AlignDistributeEnums.h; sourceTree = "<group>"; };
+		179DCD9B1918DFD800BE6F43 /* UI3DViewMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UI3DViewMetadata.cpp; path = Metadata/UI3DViewMetadata.cpp; sourceTree = "<group>"; };
+		179DCD9C1918DFD800BE6F43 /* UI3DViewMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UI3DViewMetadata.h; path = Metadata/UI3DViewMetadata.h; sourceTree = "<group>"; };
+		179DCDA31918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UI3DViewMetadata_moc.cpp; sourceTree = "<group>"; };
 		17A1225A18F43DDC00780837 /* GuideMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideMetadata.cpp; path = Metadata/Custom/GuideMetadata.cpp; sourceTree = "<group>"; };
 		17A1225B18F43DDC00780837 /* GuideMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuideMetadata.h; path = Metadata/Custom/GuideMetadata.h; sourceTree = "<group>"; };
 		17A1225E18F43FB200780837 /* GuideMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideMetadata_moc.cpp; path = Custom/GuideMetadata_moc.cpp; sourceTree = "<group>"; };
@@ -589,6 +617,19 @@
 		17AB665216EDF86B00634657 /* UIListMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIListMetadata.h; path = Metadata/UIListMetadata.h; sourceTree = "<group>"; };
 		17B0617418892C1500FD8007 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		17C0678918ABC909000A1CE0 /* GuidesEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GuidesEnums.h; path = Guides/GuidesEnums.h; sourceTree = "<group>"; };
+		17C4115F18C9BE3D002BA05F /* UIJoypadMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIJoypadMetadata.cpp; path = Metadata/UIJoypadMetadata.cpp; sourceTree = "<group>"; };
+		17C4116018C9BE3D002BA05F /* UIJoypadMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIJoypadMetadata.h; path = Metadata/UIJoypadMetadata.h; sourceTree = "<group>"; };
+		17C4116718C9CE01002BA05F /* UIJoypadMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIJoypadMetadata_moc.cpp; sourceTree = "<group>"; };
+		17C4116918CA0933002BA05F /* joypadpropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = joypadpropertygridwidget.ui; sourceTree = "<group>"; };
+		17C411AE18CA0966002BA05F /* joypadpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = joypadpropertygridwidget.cpp; path = PropertyGridWidgets/joypadpropertygridwidget.cpp; sourceTree = "<group>"; };
+		17C411AF18CA0966002BA05F /* joypadpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = joypadpropertygridwidget.h; path = PropertyGridWidgets/joypadpropertygridwidget.h; sourceTree = "<group>"; };
+		17C411B118CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = joypadpropertygridwidget_moc.cpp; sourceTree = "<group>"; };
+		17C411E018CA0B55002BA05F /* ui_joypadpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_joypadpropertygridwidget.h; path = GeneratedFiles/ui_joypadpropertygridwidget.h; sourceTree = SOURCE_ROOT; };
+		17C411E118CA0B55002BA05F /* ui_previewsettingswidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui_previewsettingswidget.h; path = GeneratedFiles/ui_previewsettingswidget.h; sourceTree = SOURCE_ROOT; };
+		17C5A56B18C86D4E00064AFF /* UIWebViewMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIWebViewMetadata.cpp; path = Metadata/UIWebViewMetadata.cpp; sourceTree = "<group>"; };
+		17C5A56C18C86D4E00064AFF /* UIWebViewMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIWebViewMetadata.h; path = Metadata/UIWebViewMetadata.h; sourceTree = "<group>"; };
+		17C5A57318C86DA600064AFF /* UIMovieViewMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIMovieViewMetadata.cpp; path = Metadata/UIMovieViewMetadata.cpp; sourceTree = "<group>"; };
+		17C5A57418C86DA600064AFF /* UIMovieViewMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIMovieViewMetadata.h; path = Metadata/UIMovieViewMetadata.h; sourceTree = "<group>"; };
 		17C1FD1F18F54A6700CEA911 /* guidepropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = guidepropertygridwidget.ui; sourceTree = "<group>"; };
 		17C5B5D818A4DB0100415933 /* UIParticlesMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticlesMetadata_moc.cpp; sourceTree = "<group>"; };
 		17C5CCD416F31E5300FB90B4 /* spinnerpropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = spinnerpropertygridwidget.ui; sourceTree = "<group>"; };
@@ -827,7 +868,6 @@
 				C107916716D78CCD0081E58C /* libFrameworkQt.a in Frameworks & Libraries */,
 				5CCC10E915B460C900DA83EB /* libbz2.dylib in Frameworks & Libraries */,
 				5CCC10E715B460BF00DA83EB /* libz.dylib in Frameworks & Libraries */,
-				77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */,
 				B08AE0866171E2B79EF2D621 /* QtOpenGL.framework in Frameworks & Libraries */,
 				A51FBC516D952C0C5AB72EA1 /* QtGui.framework in Frameworks & Libraries */,
 				A93E34BD17283146D6E95207 /* QtCore.framework in Frameworks & Libraries */,
@@ -835,6 +875,9 @@
 				BCEF71E1EDFB18DA77DC750B /* OpenGL.framework in Frameworks & Libraries */,
 				0C6D4628EE0B0D1479A20551 /* AGL.framework in Frameworks & Libraries */,
 				17B0617518892C1500FD8007 /* WebKit.framework in Frameworks & Libraries */,
+				17183C3F18C8830000491E66 /* AVFoundation.framework in Frameworks & Libraries */,
+				77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */,
+				17183C4118C8833A00491E66 /* CoreMedia.framework in Frameworks & Libraries */,
 			);
 			name = "Frameworks & Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -882,6 +925,10 @@
 		02D69C4616F08CED00F3803F /* Metadata */ = {
 			isa = PBXGroup;
 			children = (
+				179DCDA31918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp */,
+				17C4116718C9CE01002BA05F /* UIJoypadMetadata_moc.cpp */,
+				17183C3418C8800400491E66 /* UIMovieViewMetadata_moc.cpp */,
+				17183C3518C8800400491E66 /* UIWebViewMetadata_moc.cpp */,
 				17A1225D18F43FA800780837 /* Custom */,
 				17C5B5D818A4DB0100415933 /* UIParticlesMetadata_moc.cpp */,
 				749B309117E0BF7100900A2E /* UIAggregatorMetadata_moc.cpp */,
@@ -961,6 +1008,8 @@
 		02D69C7616F08CED00F3803F /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
+				170A18B1190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp */,
+				17C411B118CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp */,
 				17A1226718F44AC800780837 /* Custom */,
 				7426F56418D85918003D3D25 /* rootpropertygridwidget_moc.cpp */,
 				1746932718A3E99D0089EFF5 /* particleeffectpropertygridwidget_moc.cpp */,
@@ -991,6 +1040,8 @@
 		05596AB53D8D521C69802C27 /* TemplateProjectQt */ = {
 			isa = PBXGroup;
 			children = (
+				17183C4018C8833A00491E66 /* CoreMedia.framework */,
+				17183C3E18C8830000491E66 /* AVFoundation.framework */,
 				17B0617418892C1500FD8007 /* WebKit.framework */,
 				A641262317D0C97B004D3C5E /* FrameworkTools.xcodeproj */,
 				02E9E447173A3AED00C501BC /* libfmodevent.dylib */,
@@ -1013,6 +1064,10 @@
 		1700E40B162EAD760069650D /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
+				170A18AC190F8EF300252A1F /* webviewpropertygridwidget.cpp */,
+				170A18AD190F8EF300252A1F /* webviewpropertygridwidget.h */,
+				17C411AE18CA0966002BA05F /* joypadpropertygridwidget.cpp */,
+				17C411AF18CA0966002BA05F /* joypadpropertygridwidget.h */,
 				17A1226318F4498500780837 /* Custom */,
 				17A4F58218A3E1C000182E44 /* particleeffectpropertygridwidget.cpp */,
 				17A4F58318A3E1C000182E44 /* particleeffectpropertygridwidget.h */,
@@ -1190,6 +1245,8 @@
 		176D3958162C3C8C0099AACF /* Metadata */ = {
 			isa = PBXGroup;
 			children = (
+				179DCD9B1918DFD800BE6F43 /* UI3DViewMetadata.cpp */,
+				179DCD9C1918DFD800BE6F43 /* UI3DViewMetadata.h */,
 				17A1225318F43D7C00780837 /* Custom */,
 				1712331D1741118F0051D960 /* PropertyNames.cpp */,
 				C185940216F31DD4005D30E2 /* AggregatorMetadata.cpp */,
@@ -1231,6 +1288,12 @@
 				7497D74C1705AD5500E1DE60 /* UISwitchMetadata.h */,
 				1746932918A3ED9D0089EFF5 /* UIParticlesMetadata.cpp */,
 				1746932A18A3ED9D0089EFF5 /* UIParticlesMetadata.h */,
+				17C5A56B18C86D4E00064AFF /* UIWebViewMetadata.cpp */,
+				17C5A56C18C86D4E00064AFF /* UIWebViewMetadata.h */,
+				17C5A57318C86DA600064AFF /* UIMovieViewMetadata.cpp */,
+				17C5A57418C86DA600064AFF /* UIMovieViewMetadata.h */,
+				17C4115F18C9BE3D002BA05F /* UIJoypadMetadata.cpp */,
+				17C4116018C9BE3D002BA05F /* UIJoypadMetadata.h */,
 			);
 			name = Metadata;
 			sourceTree = "<group>";
@@ -1348,6 +1411,8 @@
 		17FF15E316400207001B130F /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
+				170A18A5190F8EBE00252A1F /* webviewpropertygridwidget.ui */,
+				17C4116918CA0933002BA05F /* joypadpropertygridwidget.ui */,
 				17C1FD1E18F54A5D00CEA911 /* Custom */,
 				17A4F58518A3E1ED00182E44 /* particleeffectpropertygridwidget.ui */,
 				74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */,
@@ -1472,9 +1537,11 @@
 				02D69C4516F08CED00F3803F /* icons_qrc.cpp */,
 				02D69C6A16F08CED00F3803F /* UI */,
 				02D69C8816F08CED00F3803F /* ui_alignspropertygridwidget.h */,
+				170A18B0190F8F7A00252A1F /* ui_webviewpropertygridwidget.h */,
 				17C8578718C4940D00FBB5EF /* ui_previewsettingswidget.h */,
 				17A4F58718A3E23F00182E44 /* ui_particleeffectpropertygridwidget.h */,
 				74AD4BD21727DD940082EFB3 /* ui_scrollviewpropertygridwidget.h */,
+				17A4F58718A3E23F00182E44 /* ui_particleeffectpropertygridwidget.h */,
 				1742272B18A27B14003D53F4 /* ui_editpreviewsettingsdialog.h */,
 				74BCC57818D0675A00C98406 /* ui_errorslistdialog.h */,
 				497774BD170DB7F2004CE2FB /* ui_importdialog.h */,
@@ -1504,6 +1571,8 @@
 				02D69C9A16F08CEE00F3803F /* ui_statepropertygridwidget.h */,
 				02D69C9C16F08CEE00F3803F /* ui_uitextfieldpropertygridwidget.h */,
 				17FC1337189F905A009D83A8 /* ui_previewsettingsdialog.h */,
+				17C411E018CA0B55002BA05F /* ui_joypadpropertygridwidget.h */,
+				17C411E118CA0B55002BA05F /* ui_previewsettingswidget.h */,
 			);
 			path = GeneratedFiles;
 			sourceTree = "<group>";
@@ -1744,6 +1813,7 @@
 				17C1FD2018F54A6700CEA911 /* guidepropertygridwidget.ui in Bundle Resources */,
 				C15C2FF7162AD71C00818631 /* mainwindow.ui in Bundle Resources */,
 				C1C62A54162D7455000C1B32 /* hierarchytreewidget.ui in Bundle Resources */,
+				170A18A6190F8EBE00252A1F /* webviewpropertygridwidget.ui in Bundle Resources */,
 				74BCC57518D0671E00C98406 /* errorslistdialog.ui in Bundle Resources */,
 				C1C62A70162EC800000C1B32 /* librarywidget.ui in Bundle Resources */,
 				17FF15E016400160001B130F /* createplatformdlg.ui in Bundle Resources */,
@@ -1771,6 +1841,7 @@
 				748A9423170C599C0087E18A /* listpropertygridwidget.ui in Bundle Resources */,
 				49B0263F1709D6B5001E28CC /* importdialog.ui in Bundle Resources */,
 				49B026421709D6BD001E28CC /* importdialogfilewidget.ui in Bundle Resources */,
+				17C4116A18CA0933002BA05F /* joypadpropertygridwidget.ui in Bundle Resources */,
 				74AD4BCD1727DB880082EFB3 /* scrollviewpropertygridwidget.ui in Bundle Resources */,
 				749B303117E0B78700900A2E /* scrollcontrolpropertygridwidget.ui in Bundle Resources */,
 			);
@@ -1863,6 +1934,7 @@
 				173AC3471631458000A773F5 /* PropertyGridWidgetData.cpp in Build Sources */,
 				749D71271636920600C99861 /* textpropertygridwidget.cpp in Build Sources */,
 				17DF04D916368040001F7ED2 /* PlatformMetadata.cpp in Build Sources */,
+				17C411B218CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp in Build Sources */,
 				17DF04DA16368040001F7ED2 /* ScreenMetadata.cpp in Build Sources */,
 				17DF04EB1636850C001F7ED2 /* platformpropertygridwidget.cpp in Build Sources */,
 				17DF04EC1636850C001F7ED2 /* screenpropertygridwidget.cpp in Build Sources */,
@@ -1890,6 +1962,8 @@
 				17FF160016400A75001B130F /* localizationeditordialog.cpp in Build Sources */,
 				17607FC2164121FB004E36DE /* LocalizationSystemHelper.cpp in Build Sources */,
 				C15D3E5116415A3600161684 /* ControlCommands.cpp in Build Sources */,
+				179DCD9D1918DFD800BE6F43 /* UI3DViewMetadata.cpp in Build Sources */,
+				170A18AE190F8EF300252A1F /* webviewpropertygridwidget.cpp in Build Sources */,
 				748955FD1641620200070AE1 /* QColorWidget.cpp in Build Sources */,
 				1742272A18A277B3003D53F4 /* editpreviewsettingsdialog_moc.cpp in Build Sources */,
 				17660BBC186B1DD700CF7A14 /* RulerWidget.cpp in Build Sources */,
@@ -1916,6 +1990,7 @@
 				02D69C9D16F08CEE00F3803F /* BaseCommand_moc.cpp in Build Sources */,
 				02D69C9E16F08CEE00F3803F /* ChangePropertyCommand_moc.cpp in Build Sources */,
 				02D69C9F16F08CEE00F3803F /* ControlCommands_moc.cpp in Build Sources */,
+				17183C3618C8800400491E66 /* UIMovieViewMetadata_moc.cpp in Build Sources */,
 				02D69CA016F08CEE00F3803F /* ItemsCommand_moc.cpp in Build Sources */,
 				02D69CA116F08CEE00F3803F /* PasteCommand_moc.cpp in Build Sources */,
 				02D69CA216F08CEE00F3803F /* CommandsController_moc.cpp in Build Sources */,
@@ -1930,9 +2005,11 @@
 				02D69CAA16F08CEE00F3803F /* FrameworkMain_moc.cpp in Build Sources */,
 				02D69CAB16F08CEE00F3803F /* GameCore_moc.cpp in Build Sources */,
 				02D69CAC16F08CEE00F3803F /* BackgroundGridWidgetHelper_moc.cpp in Build Sources */,
+				17C4116818C9CE01002BA05F /* UIJoypadMetadata_moc.cpp in Build Sources */,
 				02D69CAD16F08CEE00F3803F /* LocalizationSystemHelper_moc.cpp in Build Sources */,
 				02D69CAE16F08CEE00F3803F /* PropertiesHelper_moc.cpp in Build Sources */,
 				02D69CAF16F08CEE00F3803F /* ResourcesManageHelper_moc.cpp in Build Sources */,
+				179DCDA41918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp in Build Sources */,
 				17660BC9186C22B400CF7A14 /* RulerSettings_moc.cpp in Build Sources */,
 				179BCD45189AA3DC003EA256 /* PreviewController.cpp in Build Sources */,
 				02D69CB016F08CEE00F3803F /* UIControlStateHelper_moc.cpp in Build Sources */,
@@ -2002,9 +2079,11 @@
 				C18593E216F30C06005D30E2 /* HierarchyTreeAggregatorControlNode.cpp in Build Sources */,
 				C18593E316F30C06005D30E2 /* HierarchyTreeAggregatorNode.cpp in Build Sources */,
 				178D10EE188405F800529DA8 /* QtColorLineEdit.cpp in Build Sources */,
+				17C5A57518C86DA600064AFF /* UIMovieViewMetadata.cpp in Build Sources */,
 				C18593E616F30C10005D30E2 /* UIAggregatorMetadata.cpp in Build Sources */,
 				1775862D1834E02200908EE9 /* CenterPivotPointCommand.cpp in Build Sources */,
 				C18593F516F30D74005D30E2 /* createaggregatordlg.cpp in Build Sources */,
+				170A18B2190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp in Build Sources */,
 				C18593F916F314F2005D30E2 /* createaggregatordlg_moc.cpp in Build Sources */,
 				C18593FE16F31B3A005D30E2 /* aggregatorpropertygridwidget.cpp in Build Sources */,
 				C185940116F31CDF005D30E2 /* aggregatorpropertygridwidget_moc.cpp in Build Sources */,
@@ -2022,6 +2101,7 @@
 				178D10EB1883FED600529DA8 /* QColorWidget_moc.cpp in Build Sources */,
 				7497D74F1705AD7200E1DE60 /* UISwitchMetadata_moc.cpp in Build Sources */,
 				1707BA111709C90D00D69DC0 /* SubcontrolsHelper.cpp in Build Sources */,
+				17183C3718C8800400491E66 /* UIWebViewMetadata_moc.cpp in Build Sources */,
 				748A9427170C59DF0087E18A /* listpropertygridwidget.cpp in Build Sources */,
 				748A942A170C5C650087E18A /* listpropertygridwidget_moc.cpp in Build Sources */,
 				7410E82A171462C70028AAAA /* EditorListDelegate.cpp in Build Sources */,
@@ -2035,7 +2115,10 @@
 				17A1226618F4499300780837 /* guidepropertygridwidget.cpp in Build Sources */,
 				748A997F1726DAB300C6411B /* UIScrollViewMetadata_moc.cpp in Build Sources */,
 				74AD4BD11727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp in Build Sources */,
+				17C5A56D18C86D4E00064AFF /* UIWebViewMetadata.cpp in Build Sources */,
 				74AD4BD41727DDB90082EFB3 /* scrollviewpropertygridwidget_moc.cpp in Build Sources */,
+				17C4116118C9BE3D002BA05F /* UIJoypadMetadata.cpp in Build Sources */,
+				17C411B018CA0966002BA05F /* joypadpropertygridwidget.cpp in Build Sources */,
 				74BCC57718D0673100C98406 /* errorslistdialog_moc.cpp in Build Sources */,
 				84B61F7B1727CF560011E66D /* textpropertygridwidget_moc.cpp in Build Sources */,
 				1712331E1741118F0051D960 /* PropertyNames.cpp in Build Sources */,

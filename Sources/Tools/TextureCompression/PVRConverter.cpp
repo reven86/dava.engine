@@ -270,12 +270,9 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 	// base mipmap level (base resize)
 	if(0 != compression->compressToWidth && compression->compressToHeight != 0)
 	{
-		args.push_back("-x");
-		args.push_back(Format("%d", compression->compressToWidth));
-		args.push_back("-y");
-		args.push_back(Format("%d", compression->compressToHeight));
+        args.push_back("-r");
+		args.push_back(Format("%d,%d", compression->compressToWidth, compression->compressToHeight));
 	}
-    
     
     //args.push_back("-l"); //Alpha Bleed: Discards any data in fully transparent areas to optimise the texture for better compression.
 

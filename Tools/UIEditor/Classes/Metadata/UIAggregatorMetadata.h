@@ -42,7 +42,7 @@ namespace DAVA
 	    // Initialize the control(s) attached.
 		virtual void InitializeControl(const String& controlName, const Vector2& position);
 		
-		virtual QString GetUIControlClassName();
+		virtual QString GetUIControlClassName() const;
         
     protected:
         virtual void SetVisible(const bool value);

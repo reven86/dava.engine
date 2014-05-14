@@ -114,13 +114,14 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 	Color curDebugDrawColor = GetDebugDrawColor();
 	RenderManager::Instance()->ClipPush();
 
+	Rect absRect = GetRect(true);
 	RenderManager::Instance()->SetColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
-	RenderHelper::Instance()->DrawRect(GetRect(), RenderState::RENDERSTATE_2D_BLEND);
+	RenderHelper::Instance()->DrawRect(absRect, RenderState::RENDERSTATE_2D_BLEND);
 
 	float32 minRadius = Min(GetSize().x, GetSize().y);
-	RenderHelper::Instance()->DrawCircle(GetRect().GetCenter(), minRadius / 2, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawCircle(GetRect().GetCenter(), minRadius / 3, RenderState::RENDERSTATE_2D_BLEND);
-	RenderHelper::Instance()->DrawCircle(GetRect().GetCenter(), minRadius / 4, RenderState::RENDERSTATE_2D_BLEND);
+	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 2, RenderState::RENDERSTATE_2D_BLEND);
+	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, RenderState::RENDERSTATE_2D_BLEND);
+	RenderHelper::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, RenderState::RENDERSTATE_2D_BLEND);
 
 	RenderManager::Instance()->ClipPop();
 	SetDebugDrawColor(curDebugDrawColor);
@@ -137,5 +138,12 @@ void UIMovieView::WillDisappear()
 {
     UIControl::WillDisappear();
     movieViewControl->SetVisible(false);
+}
+
+UIControl* UIMovieView::Clone()
+{
+    UIMovieView* ui3DView = new UIMovieView(GetRect());
+    ui3DView->CopyDataFrom(this);
+    return ui3DView;
 }
 };

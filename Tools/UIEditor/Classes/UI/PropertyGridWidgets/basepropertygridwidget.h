@@ -217,6 +217,9 @@ protected:
 	// Whether the active control IS subcontrol?
 	bool ActiveControlIsSubcontrol();
 
+    // Pre-process the sprite name.
+    QString PreprocessSpriteName(const QString& rawSpriteName);
+
 protected slots:
     // Properties are updated from the external source and needs to be re-drawn.
     void OnPropertiesChangedExternally();

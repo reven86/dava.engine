@@ -194,7 +194,9 @@ void HierarchyTreeScreenNode::BuildHierarchyTree(HierarchyTreeNode* parent, List
 			node = new HierarchyTreeAggregatorControlNode(NULL, parent, uiControl, QString::fromStdString(uiControl->GetName()));
 		else
 			node = new HierarchyTreeControlNode(parent, uiControl, QString::fromStdString(uiControl->GetName()));
+
 		// Build hierarchy tree for all control's children. Subcontrols are loaded separately
+        InitializeControlBeforeAddingToTree(uiControl);
 		BuildHierarchyTree(node, uiControl->GetRealChildren());
 		parent->AddTreeNode(node);
 	}
@@ -390,6 +392,16 @@ bool HierarchyTreeScreenNode::AreGuidesEnabled() const
 void HierarchyTreeScreenNode::SetGuidesEnabled(bool value)
 {
     guides.SetGuidesEnabled(value);
+}
+
+void HierarchyTreeScreenNode::InitializeControlBeforeAddingToTree(UIControl* uiControl)
+{
+    // Hide WebView native control during load.
+    UIWebView* webViewControl = dynamic_cast<UIWebView*>(uiControl);
+    if (webViewControl)
+    {
+        webViewControl->SetNativeControlVisible(false);
+    }
 }
 
 bool HierarchyTreeScreenNode::AreGuidesLocked() const

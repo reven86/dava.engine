@@ -96,10 +96,11 @@
 
 
 #if defined(ENABLE_ASSERT_LOGGING)
-//    #define LogFunction(logmessage) { DAVA::Logger::Instance()->Warning(logmessage); }
-    #define LogFunction(assertType, expr, msg, file, line) { DAVA::Logger::Warning("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n========================================", assertType, expr, msg, file, line); }
+    #define LogErrorFunction(assertType, expr, msg, file, line) { DAVA::Logger::Error("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n========================================", assertType, expr, msg, file, line); }
+    #define LogWarningFunction(assertType, expr, msg, file, line) { DAVA::Logger::Warning("========================================\n%s\n%s\n%s\nFile: %s\nLine: %d\n========================================", assertType, expr, msg, file, line); }
 #else //ENABLE_ASSERT_LOGGING
-    #define LogFunction(assertType, expr, msg, file, line)
+    #define LogErrorFunction(assertType, expr, msg, file, line)
+    #define LogWarningFunction(assertType, expr, msg, file, line)
 #endif //ENABLE_ASSERT_LOGGING
 
 #if defined(ENABLE_ASSERT_MESSAGE)
@@ -125,7 +126,7 @@
 #define DVASSERT(expr)\
 	if (!(expr))\
 	{\
-        LogFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
+        LogErrorFunction("DV_ASSERT", #expr, "", __FILE__, __LINE__);\
 		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, "", __FILE__, __LINE__);\
 		DebugBreak()\
 	}\
@@ -133,7 +134,7 @@
 #define DVASSERT_MSG(expr, msg)\
 	if (!(expr))\
 	{\
-        LogFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
+        LogErrorFunction("DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
 		MessageFunction(DAVA::DVAssertMessage::ALWAYS_MODAL, "DV_ASSERT", #expr, msg, __FILE__, __LINE__);\
 		DebugBreak()\
 	}\
@@ -141,7 +142,7 @@
 #define DVWARNING(expr, msg)\
     if (!(expr))\
     {\
-        LogFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__);\
+        LogWarningFunction("DV_WARNING", #expr, msg, __FILE__, __LINE__);\
 		MessageFunction(DAVA::DVAssertMessage::TRY_NONMODAL, "DV_WARNING", #expr, msg, __FILE__, __LINE__);\
     }\
 

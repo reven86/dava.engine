@@ -52,7 +52,7 @@ protected:
     virtual void InitializeControl(const String& controlName, const Vector2& position);
     virtual void UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle);
     
-    virtual QString GetUIControlClassName() { return "UIButton"; };
+    virtual QString GetUIControlClassName() const { return "UIButton"; };
 
     // Set the text of the button.
     virtual void SetLocalizedTextKey(const QString& value);

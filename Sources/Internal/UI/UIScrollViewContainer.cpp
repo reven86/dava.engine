@@ -241,14 +241,6 @@ void UIScrollViewContainer::Update(float32 timeElapsed)
 	}
 }
 
-YamlNode * UIScrollViewContainer::SaveToYamlNode(UIYamlLoader * loader)
-{
-    YamlNode *node = UIControl::SaveToYamlNode(loader);
-	SetPreferredNodeType(node, "UIScrollViewContainer");
-
-    return node;
-}
-
 void UIScrollViewContainer::InputCancelled( UIEvent *currentInput )
 {
     if (currentInput->tid == mainTouch)

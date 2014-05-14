@@ -51,7 +51,7 @@ materials:
 
  -
   group: "Tank"
-  quality: ["HIGH", "LOW"]
+  quality: ["HIGH", "MEDIUM", "LOW"]
   default: "HIGH"
 
  -

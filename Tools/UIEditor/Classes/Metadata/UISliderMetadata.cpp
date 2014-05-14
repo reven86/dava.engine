@@ -41,7 +41,7 @@ UISliderMetadata::UISliderMetadata(QObject* parent) :
 
 UISlider* UISliderMetadata::GetActiveUISlider() const
 {
-    return dynamic_cast<UISlider*>(GetActiveUIControl());
+    return static_cast<UISlider*>(GetActiveUIControl());
 }
 
 // Initialize the control(s) attached.
@@ -53,11 +53,8 @@ void UISliderMetadata::InitializeControl(const String& controlName, const Vector
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
 		// Initialize UISlider with default parameters
-        UISlider* slider = dynamic_cast<UISlider*>(this->treeNodeParams[i].GetUIControl());
-		if (slider)
-		{
-			slider->SetMinMaxValue(0.0f, 100.0f);
-		}
+        UISlider* slider = static_cast<UISlider*>(this->treeNodeParams[i].GetUIControl());
+        slider->SetMinMaxValue(0.0f, 100.0f);
     }
 }
 

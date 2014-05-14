@@ -304,3 +304,11 @@ const QRegExp& HierarchyTreeNode::GetNameRegExp()
 {
     return nameRegExp;
 }
+
+void HierarchyTreeNode::OnScreenScaleChanged()
+{
+}
+
+void HierarchyTreeNode::OnScreenPositionChanged()
+{
+}

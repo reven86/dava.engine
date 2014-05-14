@@ -756,6 +756,30 @@
     <ClCompile Include="GeneratedFiles\Guides\GuidesManager_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Metadata\UIJoypadMetadata.cpp">
+      <Filter>Sources\Metadata</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Metadata\UIMovieViewMetadata.cpp">
+      <Filter>Sources\Metadata</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Metadata\UIWebViewMetadata.cpp">
+      <Filter>Sources\Metadata</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\UIJoypadMetadata_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\UIMovieViewMetadata_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\UIWebViewMetadata_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\joypadpropertygridwidget.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\joypadpropertygridwidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\UI\previewsettingswidget_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -773,6 +797,18 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\rootpropertygridwidget_moc.cpp">
       <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\webviewpropertygridwidget.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\webviewpropertygridwidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\UI3DViewMetadata_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Metadata\UI3DViewMetadata.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\Custom\guidepropertygridwidget_moc.cpp">
       <Filter>Generated Files</Filter>
@@ -1232,6 +1268,21 @@
     <ClInclude Include="Classes\Guides\GuidesManager.h">
       <Filter>Sources\Guides</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Metadata\UIJoypadMetadata.h">
+      <Filter>Sources\Metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Metadata\UIMovieViewMetadata.h">
+      <Filter>Sources\Metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Metadata\UIWebViewMetadata.h">
+      <Filter>Sources\Metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\joypadpropertygridwidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_joypadpropertygridwidget.h">
+      <Filter>Sources\UI\Dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_previewsettingsdialog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
@@ -1248,6 +1299,15 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="Classes\UI\PropertyGridWidgets\rootpropertygridwidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\webviewpropertygridwidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_webviewpropertygridwidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Metadata\UI3DViewMetadata.h">
       <Filter>Sources\UI\PropertyGridWidgets</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Metadata\Custom\GuideMetadata.h">
@@ -1348,11 +1408,17 @@
     <None Include="UI\particleeffectpropertygridwidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
+    <None Include="UI\joypadpropertygridwidget.ui">
+      <Filter>Form Files\PropertyGridWidgets</Filter>
+    </None>
     <None Include="UI\previewsettingswidget.ui">
       <Filter>Form Files</Filter>
     </None>
     <None Include="UI\errorslistdialog.ui">
       <Filter>Form Files\Dialogs</Filter>
+    </None>
+    <None Include="UI\webviewpropertygridwidget.ui">
+      <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
     <None Include="UI\guidepropertygridwidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>

@@ -50,7 +50,7 @@ uniform mat4 worldViewProjMatrix;
 uniform mat4 worldViewMatrix;
 #endif
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT)
 uniform mat3 worldViewInvTransposeMatrix;
 uniform vec4 lightPosition0;
 uniform float lightIntensity0; 
@@ -66,18 +66,12 @@ uniform vec3 metalFresnelReflectance;
 
 #if defined(VERTEX_FOG)
     uniform float fogLimit;
-	varying float varFogFactor;
     #if !defined(FOG_LINEAR)
     uniform float fogDensity;
     #else
     uniform float fogStart;
     uniform float fogEnd;
     #endif
-
-	#if defined(FOG_GLOW)
-	uniform float fogGlowScattering;
-	varying float varFogGlowFactor;
-	#endif
 #endif
 
 #if defined(MATERIAL_LIGHTMAP)
@@ -127,6 +121,10 @@ varying vec3 varToLightVec;
 varying vec3 varHalfVec;
 varying vec3 varToCameraVec;
 varying float varPerPixelAttenuation;
+#endif
+
+#if defined(VERTEX_FOG)
+varying float varFogFactor;
 #endif
 
 #if defined(SETUP_LIGHTMAP)
@@ -360,17 +358,14 @@ void main()
 #if defined(MATERIAL_GRASS)
     vec3 eyeCoordsPosition = vec3(worldViewMatrix * pos); // view direction in view space
 #else
-    vec3 eyeCoordsPosition = vec3(worldViewMatrix * inPosition); // view direction in view space
+    vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition); // view direction in view space
 #endif
-#endif
-
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
-    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 #endif
 
 #if defined(VERTEX_LIT)
     vec3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
-   
+    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
+    
 #if defined(DISTANCE_ATTENUATION)
     float attenuation = lightIntensity0;
     float distAttenuation = length(toLightDir);
@@ -423,6 +418,7 @@ void main()
 	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
 	vec3 b = cross (n, t);
     
+    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 #if defined(DISTANCE_ATTENUATION)
     varPerPixelAttenuation = length(toLightDir);
 #endif
@@ -487,15 +483,10 @@ void main()
     #if !defined(FOG_LINEAR)
         const float LOG2 = 1.442695;
         varFogFactor = exp2( -fogDensity * fogDensity * fogFragCoord * fogFragCoord *  LOG2);
-		varFogFactor = clamp(varFogFactor, 1.0 - fogLimit, 1.0);
+        varFogFactor = clamp(varFogFactor, 1.0 - fogLimit, 1.0);
     #else
         varFogFactor = 1.0 - clamp((fogFragCoord - fogStart) / (fogEnd - fogStart), 0.0, fogLimit);
     #endif
-	
-	#if defined(FOG_GLOW)
-		toLightDir = normalize(toLightDir);
-		varFogGlowFactor = pow(dot(toLightDir, normalize(eyeCoordsPosition)) * 0.5 + 0.5, fogGlowScattering);
-	#endif
 #endif
 
 #if defined(VERTEX_COLOR)

@@ -142,6 +142,9 @@ public:
 
 protected:
 	void CombineRectWithChild(Rect& rect) const;
+    
+    // Initialize the control before adding to hierarchy tree.
+    virtual void InitializeControlBeforeAddingToTree(UIControl* uiControl);
 
 private:
 	void BuildHierarchyTree(HierarchyTreeNode* parent, List<UIControl*> child);

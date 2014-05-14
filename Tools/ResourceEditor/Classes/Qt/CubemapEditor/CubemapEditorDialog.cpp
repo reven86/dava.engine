@@ -381,11 +381,16 @@ void CubemapEditorDialog::SaveCubemap(const QString& path)
 		}
 	}
 	
-	TextureDescriptor* descriptor = new TextureDescriptor(true);
+	TextureDescriptor* descriptor = NULL;
     bool descriptorReady = false;
     if(filePath.Exists())
     {
+        descriptor = new TextureDescriptor(false);
         descriptorReady = descriptor->Load(filePath);
+    }
+    else
+    {
+        descriptor = new TextureDescriptor(true);
     }
     
     if(!descriptorReady)

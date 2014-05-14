@@ -139,4 +139,11 @@ void UI3DView::SetSize(const DAVA::Vector2 &newSize)
     }
 }
 
+UIControl* UI3DView::Clone()
+{
+    UI3DView* ui3DView = new UI3DView(GetRect());
+    ui3DView->CopyDataFrom(this);
+    return ui3DView;
+}
+
 }

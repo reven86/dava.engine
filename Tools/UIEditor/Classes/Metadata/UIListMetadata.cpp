@@ -40,7 +40,7 @@ UIListMetadata::UIListMetadata(QObject* parent) :
 
 UIList* UIListMetadata::GetActiveUIList() const
 {
-	return dynamic_cast<UIList*>(GetActiveUIControl());
+	return static_cast<UIList*>(GetActiveUIControl());
 }
 
 void UIListMetadata::InitializeControl(const String& controlName, const Vector2& position)
@@ -51,19 +51,11 @@ void UIListMetadata::InitializeControl(const String& controlName, const Vector2&
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
 		// Initialize UIList
-        UIList* list = dynamic_cast<UIList*>(this->treeNodeParams[i].GetUIControl());
-		if (list)
-		{
-			EditorListDelegate *editorList = new EditorListDelegate(list->GetRect(), list->GetOrientation());
-			list->SetDelegate(editorList);
-			list->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
-		}
+        UIList* list = static_cast<UIList*>(this->treeNodeParams[i].GetUIControl());
+        EditorListDelegate *editorList = new EditorListDelegate(list->GetRect(), list->GetOrientation());
+        list->SetDelegate(editorList);
+        list->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
     }	
-}
-
-void UIListMetadata::UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle)
-{
-	UIControlMetadata::UpdateExtraData(extraData, updateStyle);
 }
 
 int UIListMetadata::GetAggregatorID()

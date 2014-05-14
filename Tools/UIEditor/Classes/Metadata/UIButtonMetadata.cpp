@@ -47,7 +47,7 @@ UIButtonMetadata::UIButtonMetadata(QObject* parent) :
 
 UIButton* UIButtonMetadata::GetActiveUIButton() const
 {
-    return dynamic_cast<UIButton*>(GetActiveUIControl());
+    return static_cast<UIButton*>(GetActiveUIControl());
 }
 
 void UIButtonMetadata::SetLocalizedTextKey(const QString& value)
@@ -755,8 +755,7 @@ void UIButtonMetadata::InitializeControl(const String& controlName, const Vector
     int paramsCount = this->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
-        UIButton* button = dynamic_cast<UIButton*>(this->treeNodeParams[i].GetUIControl());
-
+        UIButton* button = static_cast<UIButton*>(this->treeNodeParams[i].GetUIControl());
         WideString controlText = StringToWString(button->GetName());
         HierarchyTreeNode* activeNode = GetTreeNode(i);
     

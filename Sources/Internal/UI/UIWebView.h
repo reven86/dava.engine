@@ -81,6 +81,15 @@ public:
 	// Page scale property change
 	void SetScalesPageToFit(bool isScalesToFit);
 
+    virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+
+    virtual UIControl* Clone();
+    virtual void CopyDataFrom(UIControl *srcControl);
+
+    void SetNativeControlVisible(bool isVisible);
+    bool GetNativeControlVisible() const;
+
 	void SetDelegate(IUIWebViewDelegate* delegate);
 	void SetBackgroundTransparency(bool enabled);
 
@@ -94,8 +103,19 @@ public:
     int32 GetDataDetectorTypes() const;
 
 protected:
+
+    // Set the visibility of native control.
+    void UpdateNativeControlVisible(bool value, bool hierarchic);
+
+    // Update the rect of the web view control.
+    void UpdateControlRect();
+
 	// Platform-specific implementation of the Web View Control.
 	IWebViewControl* webViewControl;
+    
+private:
+    bool isNativeControlVisible;
+    int32 dataDetectorTypes;
 };
 };
 

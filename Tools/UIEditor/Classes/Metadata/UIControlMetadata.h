@@ -114,7 +114,7 @@ public:
     virtual void ApplyResize(const Rect& originalRect, const Rect& newRect);
 
 protected:
-    virtual QString GetUIControlClassName() { return "UIControl"; };
+    virtual QString GetUIControlClassName() const { return "UIControl"; };
 	
     // Default Flags.
     virtual bool GetInitialInputEnabled() const {return false;}; // false because of DF-2944

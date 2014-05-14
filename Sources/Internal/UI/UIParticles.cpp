@@ -273,7 +273,6 @@ YamlNode * UIParticles::SaveToYamlNode(UIYamlLoader * loader)
     UIParticles* baseControl = new UIParticles();
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
-    SetPreferredNodeType(node, "UIParticles");
     
     if (baseControl->GetEffectPath() != effectPath)
     {

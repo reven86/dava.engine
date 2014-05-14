@@ -44,7 +44,7 @@ UIStaticTextMetadata::UIStaticTextMetadata(QObject* parent) :
 
 UIStaticText* UIStaticTextMetadata::GetActiveStaticText() const
 {
-    return dynamic_cast<UIStaticText*>(GetActiveUIControl());
+    return static_cast<UIStaticText*>(GetActiveUIControl());
 }
 
 Font * UIStaticTextMetadata::GetFont()
@@ -116,7 +116,7 @@ void UIStaticTextMetadata::InitializeControl(const String& controlName, const Ve
     int paramsCount = this->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
-        UIStaticText* staticText = dynamic_cast<UIStaticText*>(this->treeNodeParams[i].GetUIControl());
+        UIStaticText* staticText = static_cast<UIStaticText*>(this->treeNodeParams[i].GetUIControl());
 
         staticText->SetFont(EditorFontManager::Instance()->GetDefaultFont());
         staticText->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);

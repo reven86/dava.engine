@@ -367,3 +367,26 @@ bool HierarchyTreeControlNode::GetVisibleFlag() const
 
 	return false;
 }
+
+void HierarchyTreeControlNode::OnScreenScaleChanged()
+{
+    UpdateUIObject();
+}
+
+void HierarchyTreeControlNode::OnScreenPositionChanged()
+{
+    UpdateUIObject();
+}
+
+void HierarchyTreeControlNode::UpdateUIObject()
+{
+    // UIWebView contains the interal system object,
+    // which has to be repositioned while screen scale/position is changed.
+    UIWebView* webView = dynamic_cast<UIWebView*>(GetUIObject());
+    if (!webView)
+    {
+        return;
+    }
+    
+    webView->SetRect(webView->GetRect(true), true);
+}

@@ -89,10 +89,6 @@ uniform highp float distortionFallSquareDist;
 #if defined(VERTEX_FOG)
 uniform vec3 fogColor;
 varying float varFogFactor;
-#if defined(FOG_GLOW)
-uniform vec3 fogGlowColor;
-varying float varFogGlowFactor;
-#endif
 #endif
 
 
@@ -166,6 +162,7 @@ void main()
 	//gl_FragColor = vec4(vec3(normalize(eyeDist)/100.0), 1.0);
 #else
     lowp vec3 reflectionVectorInTangentSpace = reflect(cameraToPointInTangentSpaceNorm, normal);
+	reflectionVectorInTangentSpace.z = abs(reflectionVectorInTangentSpace.z); //prevent reflection through surface
     lowp vec3 reflectionVectorInWorldSpace = (tbnToWorldMatrix * reflectionVectorInTangentSpace);    
     lowp vec3 reflectionColor = textureCube(cubemap, reflectionVectorInWorldSpace).rgb * reflectionTintColor;
     
@@ -195,11 +192,6 @@ void main()
 #endif
     
 #if defined(VERTEX_FOG)
-	#if defined(FOG_GLOW)
-		vec3 realFogColor = mix(fogColor, fogGlowColor, varFogGlowFactor);
-		gl_FragColor.rgb = mix(realFogColor, gl_FragColor.rgb, varFogFactor);
-	#else
-		gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
-	#endif
+    gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
 #endif
 }

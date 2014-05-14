@@ -72,9 +72,6 @@ protected:
     // Handler for the custom combobox values.
     void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
 
-    // Pre-process the sprite name.
-    QString PreprocessSpriteName(const QString& rawSpriteName);
-
 	//handle elements according drawType
 	void HandleDrawTypeComboBox();
 	

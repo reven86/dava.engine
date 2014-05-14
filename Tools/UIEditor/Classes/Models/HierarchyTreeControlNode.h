@@ -65,8 +65,13 @@ public:
 	void SetVisibleFlag(bool value);
 	bool GetVisibleFlag() const;
 
+    // Screen scale/position changed.
+    virtual void OnScreenScaleChanged();
+    virtual void OnScreenPositionChanged();
+
 private:
 	void AddControlToParent();
+    void UpdateUIObject();
 	
 private:
 	HierarchyTreeNode* parent;

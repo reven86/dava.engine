@@ -554,9 +554,6 @@ YamlNode * UISlider::SaveToYamlNode(UIYamlLoader * loader)
     bgMax->SetName(UISLIDER_MAX_SPRITE_CONTROL_NAME);
 
     YamlNode *node = UIControl::SaveToYamlNode(loader);
-    
-    // Control Type
-	SetPreferredNodeType(node, "UISlider");
 
 	// Sprite value
 	float32 value = this->GetValue();

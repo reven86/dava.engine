@@ -31,6 +31,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
+#import <AppKit/AppKit.h>
 
 enum MoviePlayerHelperState
 {

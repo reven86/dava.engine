@@ -258,7 +258,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
     {
         RenderBatch * batch = renderObject->GetRenderBatch(k);
         NMaterial * material = batch->GetMaterial();
-        if(material && material->IsDynamicLit())
+        if (material && material->IsDynamicLit())
         {
 			needUpdate = true;
 			break;

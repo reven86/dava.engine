@@ -46,8 +46,8 @@ void UISpinnerMetadata::InitializeControl(const String& controlName, const Vecto
 	int paramsCount = this->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
-        UISpinner* spinner = dynamic_cast<UISpinner*>(this->treeNodeParams[i].GetUIControl());
-		if (spinner && spinner->GetButtonNext() && spinner->GetButtonPrevious())
+        UISpinner* spinner = static_cast<UISpinner*>(this->treeNodeParams[i].GetUIControl());
+		if (spinner->GetButtonNext() && spinner->GetButtonPrevious())
 		{
 			spinner->GetButtonNext()->SetStateText(0, L"Next");
 			spinner->GetButtonPrevious()->SetStateText(0, L"Prev");
@@ -56,11 +56,6 @@ void UISpinnerMetadata::InitializeControl(const String& controlName, const Vecto
 			PositionSpinnerButtons(spinner);
 		}
     }
-}
-
-void UISpinnerMetadata::UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eExtraDataUpdateStyle updateStyle)
-{
-	UIControlMetadata::UpdateExtraData(extraData, updateStyle);
 }
 
 QString UISpinnerMetadata::GetPrevButtonText()
@@ -123,7 +118,7 @@ void UISpinnerMetadata::SetNextButtonText(const QString& value)
 
 UISpinner* UISpinnerMetadata::GetActiveUISpinner()
 {
-    return dynamic_cast<UISpinner*>(GetActiveUIControl());
+    return static_cast<UISpinner*>(GetActiveUIControl());
 }
 
 UIButton* UISpinnerMetadata::GetPrevButton()

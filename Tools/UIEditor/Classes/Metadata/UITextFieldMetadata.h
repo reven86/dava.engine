@@ -58,7 +58,7 @@ public:
 protected:
     virtual bool GetInitialInputEnabled() const {return true;};
     
-	virtual QString GetUIControlClassName() { return "UITextField"; };
+	virtual QString GetUIControlClassName() const { return "UITextField"; };
 	
     // Initialization.
     void InitializeControl(const String& controlName, const Vector2& position);

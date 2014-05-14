@@ -55,6 +55,8 @@ public:
     virtual void WillAppear();
     virtual void WillDisappear();
 
+    virtual UIControl* Clone();
+
 	// Start/stop the video playback.
 	void Play();
 	void Stop();
@@ -65,6 +67,7 @@ public:
 	
 	// Whether the movie is being played?
 	bool IsPlaying();
+
 protected:
 	// Platform-specific implementation of the Movie Control.
 	IMovieViewControl* movieViewControl;

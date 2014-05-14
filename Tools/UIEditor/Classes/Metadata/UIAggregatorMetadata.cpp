@@ -49,7 +49,7 @@ void UIAggregatorMetadata::InitializeControl(const String& controlName, const Ve
     }
 }
 
-QString UIAggregatorMetadata::GetUIControlClassName()
+QString UIAggregatorMetadata::GetUIControlClassName() const
 {
 	const METADATAPARAMSVECT& params = GetParams();
 	if (params.size())

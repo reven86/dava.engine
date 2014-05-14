@@ -121,6 +121,15 @@ const char* PropertyNames::UIPARTICLES_PAUSE_METHOD_NAME = "Pause";
 const char* PropertyNames::UIPARTICLES_RESTART_METHOD_NAME = "Restart";
 const char* PropertyNames::UIPARTICLES_RELOAD_METHOD_NAME = "Reload";
 
+// UI Joypad properties.
+const char* PropertyNames::JOYPAD_STICK_SPRITE_PROPERTY_NAME = "StickSprite";
+const char* PropertyNames::JOYPAD_STICK_SPRITE_FRAME_PROPERTY_NAME = "StickSpriteFrame";
+const char* PropertyNames::JOYPAD_DEAD_AREA_PROPERTY_NAME = "DeadArea";
+const char* PropertyNames::JOYPAD_DIGITAL_SENSE_PROPERTY_NAME = "DigitalSense";
+
+// UI Web View properties.
+const char* PropertyNames::WEBVIEW_DATA_DETECTOR_TYPES_PROPERTY_NAME = "DataDetectorTypes";
+
 // Custom Control properties.
 const char* PropertyNames::CUSTOM_CONTROL_NAME = "CustomControlName";
 

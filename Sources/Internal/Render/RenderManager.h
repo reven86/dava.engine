@@ -448,11 +448,14 @@ public:
     
 	void SetDrawTranslate(const Vector3 &offset);
 
+    const Vector2& GetDrawTranslate() const;
+
 	/** 
 	 \brief 
 	 \param[in] offset
 	 */
 	void SetDrawScale(const Vector2 &scale);
+    const Vector2& GetDrawScale() const;
 
 	void IdentityDrawMatrix();
 	void IdentityMappingMatrix();

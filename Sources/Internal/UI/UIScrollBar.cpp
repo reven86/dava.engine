@@ -151,9 +151,6 @@ YamlNode * UIScrollBar::SaveToYamlNode(UIYamlLoader * loader)
 	YamlNode *node = UIControl::SaveToYamlNode(loader);
 	//Temp variables
 	String stringValue;
-    
-	//Control Type
-	SetPreferredNodeType(node, "UIScrollBar");
 
 	//Orientation
 	eScrollOrientation orient = this->GetOrientation();

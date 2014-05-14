@@ -294,11 +294,6 @@ void BackGroundPropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(QComboB
     BasePropertyGridWidget::UpdateComboBoxWidgetWithPropertyValue(comboBoxWidget, curProperty);
 }
 
-QString BackGroundPropertyGridWidget::PreprocessSpriteName(const QString& rawSpriteName)
-{    
-    return ResourcesManageHelper::GetResourceRelativePath(rawSpriteName);
-}
-
 void BackGroundPropertyGridWidget::HandleDrawTypeComboBox()
 {
 	if(NULL == ui->drawTypeComboBox)

@@ -91,7 +91,7 @@ uniform float physicalFresnelReflectance;
 uniform vec3 metalFresnelReflectance;
 #endif
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT)
 uniform vec3 lightAmbientColor0;
 uniform vec3 lightColor0;
 uniform float inGlossiness;
@@ -123,10 +123,6 @@ varying float varPerPixelAttenuation;
 #if defined(VERTEX_FOG)
 uniform vec3 fogColor;
 varying float varFogFactor;
-#if defined(FOG_GLOW)
-uniform vec3 fogGlowColor;
-varying float varFogGlowFactor;
-#endif
 #endif
 
 #if defined(SPEED_TREE_LEAF)
@@ -481,12 +477,7 @@ void main()
 #if defined(FRAMEBUFFER_FETCH)
     //VI: fog is taken to account here
     #if defined(VERTEX_FOG)
-		#if defined(FOG_GLOW)
-			vec3 realFogColor = mix(fogColor, fogGlowColor, varFogGlowFactor);
-			gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(realFogColor, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, varFogFactor), gl_FragColor.a);
-		#else
-			gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(fogColor, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, varFogFactor), gl_FragColor.a);
-		#endif
+        gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(fogColor, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, varFogFactor), gl_FragColor.a);
     #else
         gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, gl_FragColor.a);
     #endif
@@ -497,13 +488,9 @@ void main()
 #endif
     
 #if defined(VERTEX_FOG)
-    #if !defined(FRAMEBUFFER_FETCH)
-		#if defined(FOG_GLOW)
-			vec3 realFogColor = mix(fogColor, fogGlowColor, varFogGlowFactor);
-			gl_FragColor.rgb = mix(realFogColor, gl_FragColor.rgb, varFogFactor);
-		#else
-			gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
-		#endif
+    #if !defined(FRAMEBUFFER_FETCH) 
+        //VI: fog equation is inside of color equatin for framebuffer fetch
+        gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
     #endif
 #endif
 }

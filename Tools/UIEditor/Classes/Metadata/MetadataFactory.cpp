@@ -46,6 +46,10 @@
 #include "UISwitchMetadata.h"
 #include "UIScrollBarMetadata.h"
 #include "UIParticlesMetadata.h"
+#include "UIWebViewMetadata.h"
+#include "UIMovieViewMetadata.h"
+#include "UIJoypadMetadata.h"
+#include "UI3DViewMetadata.h"
 
 #include "Custom/GuideMetadata.h"
 
@@ -135,6 +139,26 @@ BaseMetadata* MetadataFactory::GetMetadataForUIControl(const UIControl* uiContro
 	{
 		return new UIParticlesMetadata();
 	}
+
+    if (dynamic_cast<const UIWebView*>(uiControl))
+	{
+		return new UIWebViewMetadata();
+	}
+
+    if (dynamic_cast<const UIMovieView*>(uiControl))
+	{
+		return new UIMovieViewMetadata();
+	}
+
+    if (dynamic_cast<const UIJoypad*>(uiControl))
+	{
+		return new UIJoypadMetadata();
+	}
+
+    if (dynamic_cast<const UI3DView*>(uiControl))
+    {
+        return new UI3DViewMetadata();
+    }
 
     // Add metadata for other Controls here.
 

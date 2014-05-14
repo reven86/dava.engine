@@ -145,8 +145,6 @@ YamlNode * UISwitch::SaveToYamlNode(UIYamlLoader * loader)
 	buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
 
 	YamlNode *node = UIControl::SaveToYamlNode(loader);
-	SetPreferredNodeType(node, "UISwitch");
-
 	return node;
 }
 

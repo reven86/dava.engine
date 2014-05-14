@@ -112,9 +112,6 @@ namespace DAVA
     YamlNode * UIListCell::SaveToYamlNode(UIYamlLoader * loader)
     {
         YamlNode *node = UIControl::SaveToYamlNode(loader);
-        
-        //Control Type
-		SetPreferredNodeType(node, "UIListCell");
 
         //Identifier
         node->Set("identifier", this->GetIdentifier());

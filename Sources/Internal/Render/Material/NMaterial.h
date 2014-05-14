@@ -191,7 +191,7 @@ public:
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
-    static const FastName FLAG_TEXTURESHIFT;
+	static const FastName FLAG_TEXTURESHIFT;
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_WAVE_ANIMATION;
 	static const FastName FLAG_FAST_NORMALIZATION;
@@ -363,7 +363,7 @@ public:
     
     // set new materialKey and pointer to properly save all materials
     virtual void UpdateUniqueKey(uint64 newKeyValue);
-
+    
 protected:
 	
 	class TextureBucket

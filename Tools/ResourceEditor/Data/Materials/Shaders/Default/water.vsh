@@ -27,14 +27,14 @@ varying vec2 varTexCoordDecal;
 
 // UNIFORMS
 uniform mat4 worldViewProjMatrix;
+
+
 uniform mat4 worldViewMatrix;
 
-#if defined(PIXEL_LIT) || defined(VERTEX_FOG)
-uniform vec4 lightPosition0;
-#endif
 
 #if defined(PIXEL_LIT)
 uniform mat3 worldViewInvTransposeMatrix;
+uniform vec3 lightPosition0;
 uniform float lightIntensity0; 
 uniform float materialSpecularShininess;
 #endif
@@ -46,18 +46,12 @@ varying vec3 eyeDist;
 
 #if defined(VERTEX_FOG)
     uniform float fogLimit;
-	varying float varFogFactor;
     #if !defined(FOG_LINEAR)
     uniform float fogDensity;
     #else
     uniform float fogStart;
     uniform float fogEnd;
     #endif
-
-	#if defined(FOG_GLOW)
-	uniform float fogGlowScattering;
-	varying float varFogGlowFactor;
-	#endif
 #endif
 
 #if defined(PIXEL_LIT)
@@ -74,9 +68,20 @@ uniform mediump float normal1Scale;
 uniform float globalTime;
 #endif
 
+
+
+
+#if defined(VERTEX_FOG)
+varying float varFogFactor;
+#endif
+
 uniform vec3 cameraPosition;
 uniform mat4 worldMatrix;
 uniform mat3 worldInvTransposeMatrix;
+
+
+
+
 
 #if defined(VERTEX_LIT)
 	varying mediump vec3 reflectionDirectionInWorldSpace;
@@ -103,27 +108,25 @@ void main()
 	#endif	
 #endif    
 
-#if defined(PIXEL_LIT) || defined(VERTEX_FOG) 
-    vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition);
-    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
-#endif
-
 #if defined(PIXEL_LIT)
 	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
 	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
 	vec3 b = cross (n, t);
 
 	
+    vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition);
 	
 	#if !defined (TANGENT_SPACE_WATER_REFLECTIONS)
 		eyeDist = eyeCoordsPosition;
 	#endif
     
+    vec3 lightDir = lightPosition0 - eyeCoordsPosition;    
+    
 	// transform light and half angle vectors by tangent basis
 	vec3 v;
-	v.x = dot (toLightDir, t);
-	v.y = dot (toLightDir, b);
-	v.z = dot (toLightDir, n);
+	v.x = dot (lightDir, t);
+	v.y = dot (lightDir, b);
+	v.z = dot (lightDir, n);
 	varLightVec = v;       
 
     v.x = dot (eyeCoordsPosition, t);
@@ -144,6 +147,7 @@ void main()
     #if defined(PIXEL_LIT)
         float fogFragCoord = length(eyeCoordsPosition);
     #else
+        vec3 eyeCoordsPosition = vec3(worldViewMatrix * inPosition);
         float fogFragCoord = length(eyeCoordsPosition);
     #endif
     #if !defined(FOG_LINEAR)
@@ -153,11 +157,6 @@ void main()
     #else
         varFogFactor = 1.0 - clamp((fogFragCoord - fogStart) / (fogEnd - fogStart), 0.0, fogLimit);
     #endif
-	
-	#if defined(FOG_GLOW)
-		toLightDir = normalize(toLightDir);
-		varFogGlowFactor = pow(dot(toLightDir, normalize(eyeCoordsPosition)) * 0.5 + 0.5, fogGlowScattering);
-	#endif
 #endif
 
     

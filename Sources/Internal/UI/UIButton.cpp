@@ -906,9 +906,6 @@ namespace DAVA
 		
 		UIButton *baseControl = new UIButton();
 		UIStaticText *baseStaticText = new UIStaticText();
-
-		//Control Type
-		SetPreferredNodeType(node, "UIButton");
         
 		//Remove values of UIControl
 		//UIButton has state specific properties

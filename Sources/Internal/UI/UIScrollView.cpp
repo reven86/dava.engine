@@ -280,8 +280,6 @@ YamlNode * UIScrollView::SaveToYamlNode(UIYamlLoader * loader)
     }
     
     YamlNode *node = UIControl::SaveToYamlNode(loader);
-	SetPreferredNodeType(node, "UIScrollView");
-
     return node;
 }
 

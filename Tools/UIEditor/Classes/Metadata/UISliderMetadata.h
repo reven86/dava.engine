@@ -54,7 +54,7 @@ protected:
 
     // Initialize the appropriate control.
     virtual void InitializeControl(const String& controlName, const Vector2& position);   
-    virtual QString GetUIControlClassName() { return "UISlider"; };
+    virtual QString GetUIControlClassName() const { return "UISlider"; };
 	// Override Resize function
 	virtual void ApplyResize(const Rect& originalRect, const Rect& newRect);
 		

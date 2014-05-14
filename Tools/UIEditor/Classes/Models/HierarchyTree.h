@@ -73,6 +73,9 @@ public:
 	
 	const HierarchyTreeNode::HIERARCHYTREENODESLIST& GetPlatforms() const;
 
+    // Return all nodes in a tree.
+    HierarchyTreeNode::HIERARCHYTREENODESLIST GetNodes() const;
+
 	// Whether the project is created?
 	bool IsProjectCreated() const {return projectCreated;};
 
@@ -93,6 +96,9 @@ protected:
 
 	// Insert the new scren node to the proper place.
 	void InsertScreenNode(HierarchyTreePlatformNode* platformNode, HierarchyTreeScreenNode* screenNode);
+
+    // Recursively traverse the nodes tree.
+    void GetNodesRecursive(const HierarchyTreeNode* rootNode, HierarchyTreeNode::HIERARCHYTREENODESLIST& resultList) const;
 
 private:
 	void Clear();

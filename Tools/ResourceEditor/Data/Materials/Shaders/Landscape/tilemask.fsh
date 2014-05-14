@@ -12,11 +12,6 @@ precision highp float;
 #define mediump
 #endif
 
-
-#ifdef VERTEX_FOG
-uniform vec3 lightColor0;
-#endif
-
 #ifdef SPECULAR_LAND
 uniform sampler2D specularMap;
 uniform vec3 materialLightSpecularColor;
@@ -43,10 +38,6 @@ uniform sampler2D cursorTexture;
 #if defined(VERTEX_FOG)
 uniform vec3 fogColor;
 varying float varFogFactor;
-#if defined(FOG_GLOW)
-uniform vec3 fogGlowColor;
-varying float varFogGlowFactor;
-#endif
 #endif
 
 void main()
@@ -68,12 +59,7 @@ void main()
 #endif
 
 #if defined(VERTEX_FOG)
-	#if defined(FOG_GLOW)
-		vec3 realFogColor = mix(fogColor, fogGlowColor, varFogGlowFactor);
-		gl_FragColor.rgb = mix(realFogColor, color, varFogFactor);
-	#else
-		gl_FragColor.rgb = mix(fogColor, color, varFogFactor);
-	#endif
+    gl_FragColor = vec4(mix(fogColor, color, varFogFactor), 1.0);
 #else
     gl_FragColor = vec4(color, 1.0);
 #endif
