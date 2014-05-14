@@ -1482,7 +1482,7 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
     }
     
     DVASSERT(GetRenderBatch(0));
-    IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
+    IlluminationParams * illuminationParams = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
     if(illuminationParams)
     {
         archive->SetBool("illumination.isUsed", illuminationParams->isUsed);
@@ -1795,7 +1795,7 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
 	
 	newLandscape->SetupMaterialProperties();
 
-    IlluminationParams * params = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();
+    IlluminationParams * params = GetRenderBatch(0)->GetMaterial()->GetIlluminationParams(false);
     if(params)
     {
         IlluminationParams * newParams = newLandscape->GetRenderBatch(0)->GetMaterial()->GetIlluminationParams();

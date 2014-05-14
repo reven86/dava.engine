@@ -31,6 +31,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Utils/StringFormat.h"
 #include "Utils/MD5.h"
+#include "Utils/Utils.h"
 #include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -117,8 +118,40 @@ String DeviceInfo::GetUDID()
 
     if (res == "")
     {
-        DVASSERT(false && "Invalid UDID");
-        res = "Invalid UDID";
+        bool idOk = false;
+        DWORD bufSize = 1024;
+        LPBYTE buf = new BYTE[bufSize];
+        HKEY key;
+        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &key) == ERROR_SUCCESS)
+        {
+
+            if (RegQueryValueEx(key, L"MachineGuid", 0, 0, buf, &bufSize) == ERROR_SUCCESS)
+            {
+                idOk = true;
+            }
+            else
+            {
+                if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY,  &key) == ERROR_SUCCESS)
+                {
+                    if (RegQueryValueEx(key, L"MachineGuid", 0, 0, buf, &bufSize) == ERROR_SUCCESS)
+                    {
+                        idOk = true;
+                    }
+                }
+            }
+        }
+
+        if (idOk)
+        {
+            WideString wstr = WideString((wchar_t*)buf);
+            res = WStringToString(wstr);
+        }
+        else
+        {
+            DVASSERT(false && "Invalid UDID");
+            res = "Invalid UDID";
+        }
+        SafeDeleteArray(buf);
     }
 
     MD5 md5;

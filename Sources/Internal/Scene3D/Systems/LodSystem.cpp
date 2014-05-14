@@ -373,32 +373,11 @@ void LodSystem::LodMerger::MergeChildLods()
 	uint32 count = allLods.size();
 	for(uint32 i = 0; i < count; ++i)
 	{
-        LodComponent * fromLod = GetLodComponent(allLods[i]);
-        int32 fromLodsCount = fromLod->GetMaxLodLayer();
-        for(int32 l = 0; l <= fromLodsCount; ++l)
+        if(i == 0)
         {
-            LodComponent::LodData & fromData = fromLod->lodLayers[l];
-            int32 lodLayerIndex = fromData.layer;
-            
-            LodComponent::LodData * toData = 0;
-            
-            int32 maxLod = toLod->GetMaxLodLayer();
-            //create loddata if needed
-            if(lodLayerIndex > maxLod)
-            {
-                DVASSERT(maxLod == lodLayerIndex-1);
-                
-                toLod->lodLayers.push_back(fromData);
-                toData = &(toLod->lodLayers[lodLayerIndex]);
-                toData->nodes.clear();
-                toData->indexes.clear(); //indeces will not have any sense after lod merge
-                
-                toLod->lodLayersArray = fromLod->lodLayersArray;
-            }
-            else
-            {
-                toData = &(toLod->lodLayers[lodLayerIndex]);
-            }
+            LodComponent * fromLod = GetLodComponent(allLods[i]);
+            //copy lod distances from 1st found lod
+            toLod->lodLayersArray = fromLod->lodLayersArray;
         }
         
         allLods[i]->RemoveComponent(Component::LOD_COMPONENT);

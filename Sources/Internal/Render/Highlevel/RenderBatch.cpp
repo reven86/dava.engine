@@ -108,7 +108,7 @@ void RenderBatch::SetMaterial(NMaterial * _material)
     
 void RenderBatch::BindDynamicParameters(Camera * camera)
 {
-    if(camera && lights[0])
+    if(camera && material->IsDynamicLit() && lights[0])
 	{
 		const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
         RenderManager::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);

@@ -905,8 +905,8 @@ GLint Shader::LinkProgram(GLuint prog)
 
 void Shader::DeleteShaders()
 {
-    //DVASSERT(vertexShader != 0);
-    //DVASSERT(fragmentShader != 0);
+    DVASSERT(vertexShader != 0);
+    DVASSERT(fragmentShader != 0);
     //DVASSERT(program != 0);
 
     DeleteShaderContainer * container = new DeleteShaderContainer();
@@ -932,15 +932,8 @@ void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *call
         RENDER_VERIFY(glDeleteProgram(container->program));
     }
     
-    if(container->vertexShader)
-    {
-        RENDER_VERIFY(glDeleteShader(container->vertexShader));
-    }
-
-    if(container->fragmentShader)
-    {
-        RENDER_VERIFY(glDeleteShader(container->fragmentShader));
-    }
+    RENDER_VERIFY(glDeleteShader(container->vertexShader));
+    RENDER_VERIFY(glDeleteShader(container->fragmentShader));
 
     SafeDelete(container);
 }

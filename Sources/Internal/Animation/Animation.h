@@ -81,9 +81,7 @@ protected:
 	virtual ~Animation();
 
 public:
-    IMPLEMENT_POOL_ALLOCATOR_FOR_SIZE("Animation", sizeof(void*) * 48, 25);
-
-	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0); 
+	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0);
 	
 	virtual void	Reset();				
 	virtual void	Start(int _groupId);

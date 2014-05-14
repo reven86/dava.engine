@@ -165,7 +165,9 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_OES_texture_float");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
-    
+    caps.isGlDepth24Stencil8Supported = IsGLExtensionSupported("GL_DEPTH24_STENCIL8");
+    caps.isGlDepthNvNonLinearSupported = IsGLExtensionSupported("GL_DEPTH_COMPONENT16_NONLINEAR_NV");
+	
 #   if (__ANDROID_API__ < 18)
     InitFakeOcclusion();
 #   endif
@@ -620,6 +622,8 @@ void RenderManager::SetHWClip(const Rect &rect)
 
 void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 {
+    currentRenderTarget = renderTarget;
+	
 	if (renderTarget == NULL)
 	{
 //#if defined(__DAVAENGINE_IPHONE__)
@@ -676,8 +680,6 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 //		Logger::FrameworkDebug("Sets with render target: Scale %.4f,    Offset: %.4f, %.4f", viewMappingDrawScale.x, viewMappingDrawOffset.x, viewMappingDrawOffset.y);
 		RemoveClip();
 	}
-	
-	currentRenderTarget = renderTarget;
 }
 
 void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)

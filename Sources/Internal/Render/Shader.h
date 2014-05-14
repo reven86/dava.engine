@@ -198,7 +198,6 @@ public:
 
 protected:
     virtual ~Shader();
-	void ReleaseShaderData();
 
 public:
     Shader();
@@ -215,12 +214,15 @@ public:
                                   uint8 * fragmentShaderDataStart,
                                   uint32 fragmentShaderDataSize,
                                   const FastNameSet & definesSet);
-	void Reload(DAVA::Data *vertexShaderData,
-                DAVA::Data *fragmentShaderData,
-                uint8 *vertexShaderDataStart,
-                uint32 vertexShaderDataSize,
-                uint8 *fragmentShaderDataStart,
-                uint32 fragmentShaderDataSize);
+				
+    void Reload(    Data * vertexShaderData,
+                    Data * fragmentShaderData,
+                    uint8 * vertexShaderDataStart,
+                    uint32 vertexShaderDataSize,
+                    uint8 * fragmentShaderDataStart,
+                    uint32 fragmentShaderDataSize);
+				
+				
     
     const FastName & GetAssetName() { return assetName; };
     
@@ -288,6 +290,9 @@ public:
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
 private:
+
+	void ReleaseShaderData();
+   
 #if defined(__DAVAENGINE_DIRECTX9__)
 #elif defined(__DAVAENGINE_OPENGL__)
     String shaderDefines;

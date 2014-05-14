@@ -287,6 +287,17 @@ void RenderHelper::DrawLine(const Vector3 & start, const Vector3 & end, float32 
 #endif
 }
 
+void RenderHelper::DrawLines(const Vector<float32>& linePoints, UniqueHandle renderState)
+{
+    vertexStream->Set(TYPE_FLOAT, 2, 0, linePoints.data());
+
+    RenderManager::Instance()->SetRenderState(renderState);
+    RenderManager::Instance()->SetRenderEffect(RenderManager::FLAT_COLOR);
+    RenderManager::Instance()->SetRenderData(renderDataObject);
+
+    RenderManager::Instance()->DrawArrays(PRIMITIVETYPE_LINELIST, 0, linePoints.size() / 2);
+}
+
 
 void RenderHelper::DrawPoint(const Vector2 & pt, float32 ptSize, UniqueHandle renderState)
 {

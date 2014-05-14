@@ -77,8 +77,6 @@ const FastName NMaterial::PARAM_FOG_COLOR("fogColor");
 const FastName NMaterial::PARAM_FOG_DENSITY("fogDensity");
 const FastName NMaterial::PARAM_FOG_START("fogStart");
 const FastName NMaterial::PARAM_FOG_END("fogEnd");
-const FastName NMaterial::PARAM_FOG_GLOW_COLOR("fogGlowColor");
-const FastName NMaterial::PARAM_FOG_GLOW_SCATTERING("fogGlowScattering");
 const FastName NMaterial::PARAM_FLAT_COLOR("flatColor");
 const FastName NMaterial::PARAM_TEXTURE0_SHIFT("texture0Shift");
 const FastName NMaterial::PARAM_UV_OFFSET("uvOffset");
@@ -95,7 +93,6 @@ const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
-const FastName NMaterial::FLAG_FOG_GLOW = FastName("FOG_GLOW");
 const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
@@ -754,9 +751,9 @@ NMaterial* NMaterial::Clone(const String& newName)
 	return clonedMaterial;
 }
 
-IlluminationParams * NMaterial::GetIlluminationParams()
+IlluminationParams * NMaterial::GetIlluminationParams(bool createIfNeeded /*= true*/)
 {
-	if(!illuminationParams)
+	if(createIfNeeded && !illuminationParams)
 		illuminationParams = new IlluminationParams(this);
 	
 	return illuminationParams;
@@ -1025,24 +1022,7 @@ void NMaterial::SetMaterialTemplate(const NMaterialTemplate* matTemplate,
 	
 	LoadActiveTextures();
 	
-	this->Retain();
-	
-	//{VI: temporray code should be removed once lighting system is up
-	materialDynamicLit = (baseTechnique->GetLayersSet().count(LAYER_SHADOW_VOLUME) != 0);
-	
-	if(!materialDynamicLit)
-	{
-		uint32 passCount = baseTechnique->GetPassCount();
-		for(uint32 i = 0; i < passCount; ++i)
-		{
-			RenderTechniquePass* pass = baseTechnique->GetPassByIndex(i);
-			const FastNameSet& defines = pass->GetUniqueDefineSet();
-			materialDynamicLit = materialDynamicLit ||
-			defines.count(DEFINE_VERTEX_LIT) ||
-			defines.count(DEFINE_PIXEL_LIT);
-		}
-	}
-	//}
+	this->Retain();		
 	
 	size_t childrenCount = children.size();
 	for(size_t i = 0; i < childrenCount; ++i)
@@ -1182,6 +1162,22 @@ void NMaterial::UpdateMaterialTemplate()
 	SetTexturesDirty();
 	
 	SetRenderLayers(RenderLayerManager::Instance()->GetLayerIDMaskBySet(baseTechnique->GetLayersSet()));
+	
+    //{VI: temporray code should be removed once lighting system is up
+    materialDynamicLit = (baseTechnique->GetLayersSet().count(LAYER_SHADOW_VOLUME) != 0);
+
+    if(!materialDynamicLit)
+    {
+        uint32 passCount = baseTechnique->GetPassCount();
+        for(uint32 i = 0; i < passCount; ++i)
+        {
+            RenderTechniquePass* pass = baseTechnique->GetPassByIndex(i);
+            const FastNameSet& defines = pass->GetUniqueDefineSet();
+            materialDynamicLit = materialDynamicLit ||
+                defines.count(DEFINE_VERTEX_LIT) ||
+                defines.count(DEFINE_PIXEL_LIT);
+        }
+    }
 }
 
 void NMaterial::UpdateRenderPass(const FastName& passName,
@@ -1238,6 +1234,17 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
 			}
 		}
 	}
+}
+    
+void NMaterial::BuildActiveUniformsCacheParamsCache()
+{
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
+    HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
+    while(it != endIt)
+    {
+        BuildActiveUniformsCacheParamsCache(it->second);
+        ++it;
+    }
 }
 
 void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInstance)
