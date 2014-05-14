@@ -44,6 +44,8 @@ class RenderLayerBatchArray;
 class RenderPassBatchArray
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_BATCH)
+    
     RenderPassBatchArray();
     ~RenderPassBatchArray();
     
@@ -64,6 +66,8 @@ private:
 class RenderLayerBatchArray
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_BATCH)
+    
     RenderLayerBatchArray(uint32 sortingFlags);
     virtual ~RenderLayerBatchArray();
     
@@ -106,17 +110,23 @@ public:
 	
 	inline void RenderPassBatchArray::AddRenderBatch(RenderLayerID id, RenderBatch * renderBatch)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+        
         //layerBatchArrays[id]->renderBatchArray->push_back(renderBatch);
 		layerBatchArrays[id]->AddRenderBatch(renderBatch);
 	}
 	
 	inline void RenderLayerBatchArray::AddRenderBatch(RenderBatch * batch)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+        
 		renderBatchArray.push_back(batch);
 	}
 
     inline void RenderLayerBatchArray::SetFlags(uint32 _flags)
     {
+        TAG_SWITCH(MemoryManager::TAG_RENDER_BATCH)
+        
         flags = _flags;
     }
 

@@ -40,6 +40,7 @@
 #include "FileSystem/FilePath.h"
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
+#include "Debug/MemoryManager.h"
 
 //#define USE_CRC_COMPARE
 
@@ -116,6 +117,8 @@ class Data;
 class Shader : public RenderResource
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADER);
+    
     enum eUniform
     {
         UNIFORM_NONE = 0, 

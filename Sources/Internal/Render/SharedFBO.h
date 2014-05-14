@@ -44,6 +44,8 @@ namespace DAVA
 class SharedFBO : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_FBO)
+    
 	struct Block
 	{
 		Vector2 offset;

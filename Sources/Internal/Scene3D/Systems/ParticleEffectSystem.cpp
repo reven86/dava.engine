@@ -49,6 +49,8 @@ namespace DAVA
 
 NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, bool enableFrameBlend, eBlendMode srcFactor, eBlendMode dstFactor)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if (!texture) //for superemmiter particles eg
 		return NULL;
 
@@ -90,7 +92,9 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 
 
 ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest)	
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if (scene) //for 2d particles there would be no scene
     {
 	    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
@@ -101,6 +105,8 @@ ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDept
 }
 ParticleEffectSystem::~ParticleEffectSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	for (Map<uint32, NMaterial *>::iterator it = materialMap.begin(), e = materialMap.end(); it!=e; ++it)
 	{
 		SafeRelease(it->second);
@@ -111,12 +117,16 @@ ParticleEffectSystem::~ParticleEffectSystem()
 
 void ParticleEffectSystem::SetGlobalMaterial(NMaterial *material)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     particleRegularMaterial->SetParent(material, false);
     particleFrameBlendMaterial->SetParent(material, false);
 }
 
 void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleEmitter *emitter, const Vector3& spawnPosition, int32 positionSource)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	for (int32 layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
 	{
 		ParticleLayer *layer = emitter->layers[layerId];
@@ -144,7 +154,9 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 }
 
 void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Scene *scene = GetScene();
     
     if (scene)
@@ -166,6 +178,8 @@ void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if (effect->state==ParticleEffectComponent::STATE_STOPPED)
     {
         //add to active effects and to render
@@ -187,6 +201,8 @@ void ParticleEffectSystem::AddToActive(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
 	DVASSERT(it!=activeComponents.end());
 	activeComponents.erase(it);	
@@ -198,6 +214,8 @@ void ParticleEffectSystem::RemoveFromActive(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
 	if (effect&&effect->state!=ParticleEffectComponent::STATE_STOPPED)
 		RemoveFromActive(effect);
@@ -205,6 +223,8 @@ void ParticleEffectSystem::RemoveEntity(Entity * entity)
 }
 void ParticleEffectSystem::RemoveComponent(Entity * entity, Component * component)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	ParticleEffectComponent * effect = static_cast<ParticleEffectComponent *>(component);
 	if (effect&&effect->state!=ParticleEffectComponent::STATE_STOPPED)
 		RemoveFromActive(effect);
@@ -212,6 +232,8 @@ void ParticleEffectSystem::RemoveComponent(Entity * entity, Component * componen
 
 void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	ParticleEffectComponent *effect = GetEffectComponent(entity);
 	if (!effect) return;
 	if (event == EventSystem::START_PARTICLE_EFFECT)
@@ -226,7 +248,9 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 }
 
 void ParticleEffectSystem::Process(float32 timeElapsed)
-{        
+{
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_PARTICLE_EMMITERS)) 
 		return;		
 	/*shortEffectTime*/
@@ -290,6 +314,8 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 
 void ParticleEffectSystem::UpdateActiveLod(ParticleEffectComponent *effect)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     DVASSERT(effect->activeLodLevel!=effect->desiredLodLevel);
     effect->activeLodLevel = effect->desiredLodLevel;
     for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e=effect->effectData.groups.end(); it!=e;++it)
@@ -344,6 +370,8 @@ void ParticleEffectSystem::UpdateActiveLod(ParticleEffectComponent *effect)
 
 void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32 time, float32 shortEffectTime)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	effect->time+=time;
     const Matrix4 *worldTransformPtr;
     if (GetScene())
@@ -525,7 +553,9 @@ void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32
 }
 
 void ParticleEffectSystem::AddParticleToBBox(const Vector3& position, float radius, AABBox3& bbox)
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Vector3 sz = Vector3(radius,radius,radius);			
 	bbox.AddPoint(position-sz);
 	bbox.AddPoint(position+sz);
@@ -534,6 +564,8 @@ void ParticleEffectSystem::AddParticleToBBox(const Vector3& position, float radi
 
 Particle* ParticleEffectSystem::GenerateNewParticle(ParticleEffectComponent *effect, ParticleGroup& group, float32 currLoopTime, const Matrix4 &worldTransform)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Particle *particle = new Particle();		
 	particle->life = 0.0f;	
 
@@ -624,7 +656,9 @@ Particle* ParticleEffectSystem::GenerateNewParticle(ParticleEffectComponent *eff
 }
 
 void ParticleEffectSystem::PrepareEmitterParameters(Particle * particle, ParticleGroup &group, const Matrix4 &worldTransform)
-{		
+{
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	//calculate position new particle position in emitter space (for point leave it V3(0,0,0))
 	if (group.emitter->emitterType == ParticleEmitter::EMITTER_RECT)
 	{        
@@ -710,6 +744,8 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle * particle, Particl
 
 void ParticleEffectSystem::SetGlobalExtertnalValue(const String& name, float32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	globalExternalValues[name] = value;
 	for (Vector<ParticleEffectComponent *>::iterator it = activeComponents.begin(), e=activeComponents.end(); it!=e; ++it)
 		(*it)->SetExtertnalValue(name, value);
@@ -717,6 +753,8 @@ void ParticleEffectSystem::SetGlobalExtertnalValue(const String& name, float32 v
 
 float32 ParticleEffectSystem::GetGlobalExternalValue(const String& name)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	Map<String, float32>::iterator it = globalExternalValues.find(name);
 	if (it!=globalExternalValues.end())
 		return (*it).second;
@@ -726,6 +764,8 @@ float32 ParticleEffectSystem::GetGlobalExternalValue(const String& name)
 
 Map<String, float32> ParticleEffectSystem::GetGlobalExternals()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	return globalExternalValues;
 }
 

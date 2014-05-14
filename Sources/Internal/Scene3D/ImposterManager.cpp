@@ -40,6 +40,8 @@ ImposterManager::ImposterManager(Scene * _scene)
 :	scene(_scene),
 	sharedFBO(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
 	{
 		CreateFBO();
@@ -49,6 +51,8 @@ ImposterManager::ImposterManager(Scene * _scene)
 
 void ImposterManager::CreateFBO()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	if(!sharedFBO)
 	{
 		SharedFBO::Setup setup;
@@ -66,6 +70,8 @@ void ImposterManager::CreateFBO()
 
 void ImposterManager::ReleaseFBO()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	SafeRelease(sharedFBO);
 	queue.clear();
 	List<ImposterNode*>::iterator end = imposters.end();
@@ -78,17 +84,23 @@ void ImposterManager::ReleaseFBO()
 
 ImposterManager::~ImposterManager()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	RenderManager::Instance()->GetOptions()->RemoveObserver(this);
 	ReleaseFBO();
 }
 
 bool ImposterManager::IsEmpty()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	return imposters.empty();
 }
 
 void ImposterManager::Update(float32 frameTime)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
 	{
 		return;
@@ -104,6 +116,8 @@ void ImposterManager::Update(float32 frameTime)
 
 void ImposterManager::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
     TIME_PROFILE("ImposterManager::Draw");
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
 	{
@@ -121,6 +135,8 @@ void ImposterManager::Draw()
 
 void ImposterManager::ProcessQueue()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	if(!queue.empty())
 	{
 		Camera * camera = scene->GetCurrentCamera();
@@ -143,6 +159,8 @@ void ImposterManager::ProcessQueue()
 
 void ImposterManager::Add(ImposterNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	//Add can be called multiple times for one node, because ImposterNode::SetScene can be called multiple times
 	List<ImposterNode*>::iterator iter = find(imposters.begin(), imposters.end(), node);
 	if(imposters.end() == iter)
@@ -154,6 +172,8 @@ void ImposterManager::Add(ImposterNode * node)
 
 void ImposterManager::Remove(ImposterNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	List<ImposterNode*>::iterator iter = find(imposters.begin(), imposters.end(), node);
 	if(imposters.end() == iter)
 	{
@@ -168,17 +188,23 @@ void ImposterManager::Remove(ImposterNode * node)
 
 void ImposterManager::AddToQueue(ImposterNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	AddToPrioritizedPosition(node);
 }
 
 void ImposterManager::UpdateQueue(ImposterNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	RemoveFromQueue(node);
 	AddToPrioritizedPosition(node);
 }
 
 void ImposterManager::AddToPrioritizedPosition(ImposterNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	List<ImposterNode*>::iterator endIterator = queue.end();
 	for(List<ImposterNode*>::iterator iter = queue.begin(); iter != endIterator; ++iter)
 	{
@@ -195,6 +221,8 @@ void ImposterManager::AddToPrioritizedPosition(ImposterNode * node)
 
 void ImposterManager::RemoveFromQueue(ImposterNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	List<ImposterNode*>::iterator endIterator = queue.end();
 	for(List<ImposterNode*>::iterator iter = queue.begin(); iter != endIterator; ++iter)
 	{
@@ -208,6 +236,8 @@ void ImposterManager::RemoveFromQueue(ImposterNode * node)
 
 void ImposterManager::HandleEvent(Observable * observable)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	RenderOptions * renderOptions = dynamic_cast<RenderOptions*>(observable);
 	if(renderOptions)
 	{
@@ -225,6 +255,8 @@ void ImposterManager::HandleEvent(Observable * observable)
 
 SharedFBO * ImposterManager::GetFBO()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMPOSTER)
+    
 	return sharedFBO;
 }
 

@@ -61,7 +61,9 @@ class Entity : public BaseObject
 {
 protected:
 	virtual ~Entity();
-public:	
+public:
+	IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_ENTITY);
+    
 	Entity();
 	
     /**
@@ -370,8 +372,11 @@ public:
 	static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
 
 	void FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components);
-    
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    VectorBase<Entity*> children;
+#else
     Vector<Entity*> children;
+#endif
     
 protected:
     
@@ -525,9 +530,14 @@ void Entity::GetDataNodes(Container<T> & container)
     
 template<template <typename> class Container, class T>
 void Entity::GetChildNodes(Container<T> & container)
-{    
+{
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    VectorBase<Entity*>::const_iterator end = children.end();
+    for (VectorBase<Entity*>::iterator t = children.begin(); t != end; ++t)
+#else
     Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
+#endif
     {
         Entity* obj = *t;
         
@@ -542,8 +552,13 @@ void Entity::GetChildNodes(Container<T> & container)
 template<template <typename> class Container>
 void Entity::GetChildEntitiesWithComponent(Container<Entity*> & container, Component::eType type)
 {
-    Vector<Entity*>::const_iterator end = children.end();
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    VectorBase<Entity*>::const_iterator end = children.end();
+    for (VectorBase<Entity*>::iterator t = children.begin(); t != end; ++t)
+#else
+        Vector<Entity*>::const_iterator end = children.end();
     for (Vector<Entity*>::iterator t = children.begin(); t != end; ++t)
+#endif
     {
         Entity* entity = *t;
         if (entity)

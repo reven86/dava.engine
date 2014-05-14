@@ -40,6 +40,7 @@ namespace DAVA
 class SpriteObject: public RenderObject
 {
 public:
+    IMPLEMENT_POOL_ALLOCATOR(SpriteObject, 127);
     SpriteObject();
 	SpriteObject(const FilePath &pathToSprite, int32 frame = 0
 				, const Vector2 &reqScale = Vector2(1.0f, 1.0f)

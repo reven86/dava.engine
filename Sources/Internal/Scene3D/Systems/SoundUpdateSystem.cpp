@@ -41,15 +41,20 @@ namespace DAVA
 SoundUpdateSystem::SoundUpdateSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
 }
 
 SoundUpdateSystem::~SoundUpdateSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void SoundUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
 	{
 		const Matrix4 & worldTransform = GetTransformComponent(entity)->GetWorldTransform();
@@ -83,6 +88,8 @@ void SoundUpdateSystem::ImmediateEvent(Entity * entity, uint32 event)
     
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Camera * activeCamera = GetScene()->GetCurrentCamera();
 
     if(activeCamera)

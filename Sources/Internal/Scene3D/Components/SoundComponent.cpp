@@ -38,15 +38,21 @@ REGISTER_CLASS(SoundComponent)
 
 SoundComponent::SoundComponent() :
     localDirection(1.f, 0.f, 0.f)
-{}
+{
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+}
 
 SoundComponent::~SoundComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     RemoveAllEvents();
 }
 
 void SoundComponent::AddSoundEvent(SoundEvent * _event)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     DVASSERT(_event);
 
     SafeRetain(_event);
@@ -55,6 +61,8 @@ void SoundComponent::AddSoundEvent(SoundEvent * _event)
 
 void SoundComponent::RemoveSoundEvent(SoundEvent * event)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     Vector<SoundEvent *>::iterator it = events.begin();
     Vector<SoundEvent *>::iterator itEnd = events.end();
     for(; it != itEnd; ++it)
@@ -70,6 +78,8 @@ void SoundComponent::RemoveSoundEvent(SoundEvent * event)
 
 void SoundComponent::RemoveAllEvents()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     uint32 eventsCount = events.size();
     for(uint32 i = 0; i < eventsCount; ++i)
         SafeRelease(events[i]);
@@ -79,11 +89,15 @@ void SoundComponent::RemoveAllEvents()
 
 void SoundComponent::SetLocalDirection(const Vector3 & direction)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     localDirection = direction;
 }
 
 Component * SoundComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     SoundComponent * soundComponent = new SoundComponent();
     soundComponent->SetEntity(toEntity);
     
@@ -98,6 +112,8 @@ Component * SoundComponent::Clone(Entity * toEntity)
 
 void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     Component::Serialize(archive, serializationContext);
 
     if(archive)
@@ -118,6 +134,8 @@ void SoundComponent::Serialize(KeyedArchive *archive, SerializationContext *seri
 
 void SoundComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     events.clear();
 
     if(archive)

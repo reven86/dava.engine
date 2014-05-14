@@ -46,20 +46,26 @@ namespace DAVA
 MaterialSystem::MaterialSystem(Scene * scene)
     : SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME); //TODO: add code setting material quality based on device specs
 }
 
 MaterialSystem::~MaterialSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
     
 
 void MaterialSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& materialList, NMaterial::eMaterialType materialType, bool includeRuntime) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     if(!forEntity) return;
     
     List<NMaterial*> materials;
@@ -78,21 +84,29 @@ void MaterialSystem::BuildMaterialList(Entity *forEntity, Set<NMaterial*>& mater
 
 void MaterialSystem::SetDefaultMaterialQuality(const FastName& qualityLevelName)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     defaultMaterialQuality = qualityLevelName;
 }
 
 const FastName& MaterialSystem::GetDefaultMaterialQuality() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return defaultMaterialQuality;
 }
 
 const FastName& MaterialSystem::GetCurrentMaterialQuality() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     return currentMaterialQuality;
 }
 
 void MaterialSystem::SwitchMaterialQuality(const FastName& qualityLevelName, bool force)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     Set<NMaterial*> materials;
     BuildMaterialList(GetScene(), materials, NMaterial::MATERIALTYPE_MATERIAL);
     

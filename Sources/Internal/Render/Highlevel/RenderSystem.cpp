@@ -59,6 +59,8 @@ RenderSystem::RenderSystem()
     ,   forceUpdateLights(false)
     ,   globalMaterial(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     //mainRenderPass = GetRenderPassManager()->GetRenderPass(PASS_FORWARD);
     mainRenderPass = new MainForwardRenderPass(PASS_FORWARD, RENDER_PASS_FORWARD_ID);
     //renderPassOrder.push_back(GetRenderPassManager()->GetRenderPass(PASS_SHADOW_VOLUME));
@@ -70,17 +72,22 @@ RenderSystem::RenderSystem()
 
 RenderSystem::~RenderSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+
     SafeRelease(mainCamera);
     SafeRelease(drawCamera);
 
     SafeRelease(globalMaterial);
     
-    SafeDelete(renderHierarchy);	
+    SafeDelete(renderHierarchy);
+	SafeDelete(mainRenderPass);
 }
     
 
 void RenderSystem::RenderPermanent(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     DVASSERT(renderObject->GetRemoveIndex() == -1);
     
 	/*on add calculate valid world bbox*/	
@@ -99,6 +106,8 @@ void RenderSystem::RenderPermanent(RenderObject * renderObject)
 
 void RenderSystem::RemoveFromRender(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     DVASSERT(renderObject->GetRemoveIndex() != -1);
     
 //	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
@@ -124,6 +133,8 @@ void RenderSystem::RemoveFromRender(RenderObject * renderObject)
 
 void RenderSystem::AddRenderObject(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	renderObject->RecalculateWorldBoundingBox();						
 	renderHierarchy->AddRenderObject(renderObject);
 
@@ -140,6 +151,8 @@ void RenderSystem::AddRenderObject(RenderObject * renderObject)
 
 void RenderSystem::RemoveRenderObject(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	uint32 size = renderObject->GetRenderBatchCount();
 	for(uint32 i = 0; i < size; ++i)
 	{
@@ -153,16 +166,22 @@ void RenderSystem::RemoveRenderObject(RenderObject * renderObject)
     
 void RenderSystem::RegisterBatch(RenderBatch * batch)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     RegisterMaterial(batch->GetMaterial());
 }
     
 void RenderSystem::UnregisterBatch(RenderBatch * batch)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     UnregisterMaterial(batch->GetMaterial());
 }
     
 void RenderSystem::RegisterMaterial(NMaterial * material)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     NMaterial * topParent = NULL;
 
     // search for top material that isn't global
@@ -181,11 +200,13 @@ void RenderSystem::RegisterMaterial(NMaterial * material)
     
 void RenderSystem::UnregisterMaterial(NMaterial * material)
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
 }
     
 void RenderSystem::SetGlobalMaterial(NMaterial *material)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     SafeRelease(globalMaterial);
     globalMaterial = SafeRetain(material);
 
@@ -203,11 +224,15 @@ void RenderSystem::SetGlobalMaterial(NMaterial *material)
 
 NMaterial* RenderSystem::GetGlobalMaterial() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     return globalMaterial;
 }
 
 void RenderSystem::MarkForUpdate(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	uint32 flags = renderObject->GetFlags();
 	if (flags&RenderObject::MARKED_FOR_UPDATE) return;
 	flags|=RenderObject::NEED_UPDATE;
@@ -221,16 +246,22 @@ void RenderSystem::MarkForUpdate(RenderObject * renderObject)
   
 void RenderSystem::MarkForUpdate(Light * lightNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     movedLights.push_back(lightNode);
 }
     
 void RenderSystem::RegisterForUpdate(IRenderUpdatable * updatable)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     objectsForUpdate.push_back(updatable);
 }
     
 void RenderSystem::UnregisterFromUpdate(IRenderUpdatable * updatable)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     uint32 size = objectsForUpdate.size();
 	for(uint32 i = 0; i < size; ++i)
 	{
@@ -251,6 +282,8 @@ void RenderSystem::UnregisterFromUpdate(IRenderUpdatable * updatable)
     
 void RenderSystem::FindNearestLights(RenderObject * renderObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	//do not calculate nearest lights for non-lit objects
 	bool needUpdate = false;
 	uint32 renderBatchCount = renderObject->GetRenderBatchCount();
@@ -308,6 +341,8 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
 
 void RenderSystem::FindNearestLights()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     uint32 size = (uint32)renderObjectArray.size();
     for (uint32 k = 0; k < size; ++k)
     {
@@ -317,12 +352,16 @@ void RenderSystem::FindNearestLights()
     
 void RenderSystem::AddLight(Light * light)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     lights.push_back(SafeRetain(light));
     FindNearestLights();
 }
     
 void RenderSystem::RemoveLight(Light * light)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     FindAndRemoveExchangingWithLast(lights, light);
     FindNearestLights();
     
@@ -331,16 +370,22 @@ void RenderSystem::RemoveLight(Light * light)
 
 Vector<Light*> & RenderSystem::GetLights()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     return lights;
 }
 
 void RenderSystem::SetForceUpdateLights()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     forceUpdateLights = true;
 }
 
 void RenderSystem::Update(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	if (!hierarchyInitialized)
 	{
 		renderHierarchy->Initialize();
@@ -383,12 +428,16 @@ void RenderSystem::Update(float32 timeElapsed)
 
 void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	if (renderHierarchy)
 		renderHierarchy->DebugDraw(cameraMatrix);
 }
 
 void RenderSystem::Render()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     TIME_PROFILE("RenderSystem::Render");
 
     
@@ -400,6 +449,8 @@ void RenderSystem::Render()
     
 void RenderSystem::SetShadowRectColor(const Color &color)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
 
@@ -411,6 +462,8 @@ void RenderSystem::SetShadowRectColor(const Color &color)
     
 const Color & RenderSystem::GetShadowRectColor() const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
     ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
     
@@ -422,6 +475,8 @@ const Color & RenderSystem::GetShadowRectColor() const
 	
 void RenderSystem::SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
 
@@ -430,6 +485,8 @@ void RenderSystem::SetShadowBlendMode(ShadowPassBlendMode::eBlend blendMode)
 	
 ShadowPassBlendMode::eBlend RenderSystem::GetShadowBlendMode()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_SYSTEM)
+    
 	ShadowVolumeRenderLayer *shadowVolume = static_cast<ShadowVolumeRenderLayer *>(RenderLayerManager::Instance()->GetRenderLayer(LAYER_SHADOW_VOLUME));
     DVASSERT(shadowVolume);
 

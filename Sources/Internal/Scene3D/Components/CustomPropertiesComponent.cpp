@@ -43,21 +43,29 @@ namespace DAVA
 	
 	CustomPropertiesComponent::CustomPropertiesComponent()
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		properties = new KeyedArchive();
 	}
 	
 	CustomPropertiesComponent::CustomPropertiesComponent(const KeyedArchive& srcProperties)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		properties = new KeyedArchive(srcProperties);
 	}
 	
 	CustomPropertiesComponent::~CustomPropertiesComponent()
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		SafeRelease(properties);
 	}
 		
 	Component* CustomPropertiesComponent::Clone(Entity * toEntity)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		CustomPropertiesComponent* newProperties = new CustomPropertiesComponent(*properties);
 		newProperties->SetEntity(toEntity);
 		
@@ -66,6 +74,8 @@ namespace DAVA
 	
 	void CustomPropertiesComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Component::Serialize(archive, serializationContext);
 		
 		if(NULL != archive && properties->Count() > 0)
@@ -89,6 +99,8 @@ namespace DAVA
 	
 	void CustomPropertiesComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		properties->DeleteAllKeys();
 		
 		if(NULL != archive && archive->IsKeyExists("cpc.properties"))
@@ -103,11 +115,15 @@ namespace DAVA
 
 	KeyedArchive* CustomPropertiesComponent::GetArchive()
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		return properties;
 	}
 	
 	void CustomPropertiesComponent::LoadFromArchive(const KeyedArchive& srcProperties, SerializationContext *serializationContext)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		SafeRelease(properties);
 		properties = new KeyedArchive(srcProperties);
 		

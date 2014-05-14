@@ -40,6 +40,10 @@
 #include <pthread.h>
 #endif
 
+#if defined(__USE_FIXED_STRING_ALLOCATOR__)
+#include "Base/FixedString.h"
+#endif
+
 namespace DAVA
 {
 /**
@@ -169,7 +173,28 @@ public:
 	ThreadId GetThreadId();
 
 private:
-    ~Thread() {};
+    ~Thread()
+    {
+#if defined(__USE_FIXED_STRING_ALLOCATOR__)
+        pthread_t threadID = pthread_self();
+        AllocatorBuffer *bufferAlloc = fixedAllocatorBuffers[threadID];
+        if(bufferAlloc)
+        {
+            SafeDeleteArray(bufferAlloc->pBuffer);
+            SafeDelete(bufferAlloc);
+            fixedAllocatorBuffers[threadID] = NULL;
+        }
+#endif
+#if defined(__USE_STL_POOL_ALLOCATOR__)
+        printf("\n Delete Pool and Thread (%d) ... allocatorThread.size=%lu \n", threadId.internalTid,allocatorThread.size());
+        std::vector<Pool*> allocators = allocatorThread[threadId.internalTid];
+        for (uint32 i=0; i<allocators.size(); i++) {
+            SafeDelete(allocators[i]);
+        }
+        allocators.clear();
+#endif
+    };
+    
 	Thread() {};
 	Thread(const Thread& t);
 	Thread(const Message& msg);

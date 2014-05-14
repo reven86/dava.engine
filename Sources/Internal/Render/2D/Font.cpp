@@ -56,17 +56,23 @@ Font::Font()
 ,   renderSize(14.0f)
 ,	verticalSpacing(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
 	FontManager::Instance()->RegisterFont(this);
 }
 
 Font::~Font()
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
 	FontManager::Instance()->UnregisterFont(this);
 }
 
 
 bool Font::IsEqual(const Font *font) const
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
     if(!font)
     {
         return false;
@@ -86,6 +92,8 @@ bool Font::IsEqual(const Font *font) const
 
 uint32 Font::GetHashCode()
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
 	String rawHashString = GetRawHashString();
 	return CRC32::ForBuffer(rawHashString.c_str(), rawHashString.length());
 }
@@ -129,6 +137,8 @@ int32 Font::GetVerticalSpacing() const
     
 void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
 	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
     int32 totalSize = (int)text.length();
     
@@ -195,6 +205,8 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
 }    
 void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
 	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
 
 	enum
@@ -338,6 +350,8 @@ Font::eFontType Font::GetFontType() const
 
 YamlNode * Font::SaveToYamlNode() const
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
     YamlNode *node = new YamlNode(YamlNode::TYPE_MAP);
     
     VariantType *nodeValue = new VariantType();
@@ -355,11 +369,15 @@ YamlNode * Font::SaveToYamlNode() const
 
 Size2i Font::DrawString(float32 /*offsetX*/, float32 /*offsetY*/, const WideString & /*str*/, int32 /*justifyWidth*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
 	return Size2i(0, 0);
 }
 
 Size2i Font::DrawStringToBuffer(void * /*buffer*/, int32 /*bufWidth*/, int32 /*bufHeight*/, int32 /*offsetX*/, int32 /*offsetY*/, int32 /*justifyWidth*/, int32 /*spaceAddon*/, const WideString & /*str*/, bool /*contentScaleIncluded*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT)
+    
 	return  Size2i(0, 0);
 }
 

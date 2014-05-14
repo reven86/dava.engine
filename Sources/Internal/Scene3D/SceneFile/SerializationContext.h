@@ -74,6 +74,7 @@ namespace DAVA
 		Vector<MaterialBinding> materialBindings;
 	
 	public:
+        IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE)
 		
         SerializationContext();
 		~SerializationContext();

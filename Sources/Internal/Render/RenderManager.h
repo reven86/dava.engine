@@ -79,6 +79,8 @@ protected:
 class RenderManager : public Singleton<RenderManager>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
     static FastName FLAT_COLOR_SHADER;
     static FastName TEXTURE_MUL_FLAT_COLOR_SHADER;
     
@@ -575,6 +577,8 @@ public:
 	
 	inline void RetainRenderState(UniqueHandle handle)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockRenderState();
 		uniqueRenderStates.RetainUnique(handle);
         UnlockRenderState();
@@ -582,6 +586,8 @@ public:
 	
 	inline UniqueHandle CreateRenderState(const RenderStateData& data)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockRenderState();
 		UniqueHandle renderStateHandle = uniqueRenderStates.MakeUnique(data);
         UnlockRenderState();
@@ -592,12 +598,16 @@ public:
     //this method is not thread safe since array element could be modified in background
 	inline const RenderStateData& GetRenderStateData(UniqueHandle handle)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		return uniqueRenderStates.GetUnique(handle);
 	}
     
     //this method is thread safe
     inline const void GetRenderStateData(UniqueHandle handle, RenderStateData& target)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		LockRenderState();
 		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(handle);
 		memcpy(&target, &parentState, sizeof(target));
@@ -606,6 +616,8 @@ public:
 	
 	inline void ReleaseRenderState(UniqueHandle handle)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockRenderState();
 		uniqueRenderStates.ReleaseUnique(handle);
         UnlockRenderState();
@@ -613,6 +625,8 @@ public:
 				
 	inline UniqueHandle SubclassRenderState(UniqueHandle parentStateHandle, uint32 renderStateFlags)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockRenderState();
 		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
 		RenderStateData derivedState;
@@ -627,6 +641,8 @@ public:
 										  eBlendMode srcBlend,
 										  eBlendMode dstBlend)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockRenderState();
 		const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
 		RenderStateData derivedState;
@@ -641,26 +657,36 @@ public:
 	inline UniqueHandle Subclass3DRenderState(eBlendMode srcBlend,
 										  eBlendMode dstBlend)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, srcBlend, dstBlend);
 	}
 	
 	inline UniqueHandle Subclass3DRenderState(uint32 renderStateFlags)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		return SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, renderStateFlags);
 	}
 	
 	inline UniqueHandle Subclass2DRenderState(uint32 renderStateFlags)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		return SubclassRenderState(RenderState::RENDERSTATE_2D_BLEND, renderStateFlags);
 	}
 	
 	inline void SetRenderState(UniqueHandle requestedState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		currentState.stateHandle = requestedState;
 	}
 	
 	inline UniqueHandle CreateTextureState(const TextureStateData& data)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockTextureState();
 		UniqueHandle textureStateHandle = uniqueTextureStates.MakeUnique(data);
         UnlockTexturerState();
@@ -671,11 +697,15 @@ public:
     //this method is not thread safe since array element could be modified in background
 	inline const TextureStateData& GetTextureState(UniqueHandle handle)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		return uniqueTextureStates.GetUnique(handle);
 	}
 
     inline void RetainTextureState(UniqueHandle handle)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockTextureState();
 		uniqueTextureStates.RetainUnique(handle);
         UnlockTexturerState();
@@ -683,6 +713,8 @@ public:
 	
 	inline void ReleaseTextureState(UniqueHandle handle)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
         LockTextureState();
 		uniqueTextureStates.ReleaseUnique(handle);
         UnlockTexturerState();
@@ -690,6 +722,8 @@ public:
 
 	inline void SetTextureState(UniqueHandle requestedState)
 	{
+        TAG_SWITCH(MemoryManager::TAG_RENDER)
+        
 		currentState.textureState = requestedState;
 	}
 		
@@ -891,6 +925,8 @@ public:
     
 inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const void * value, pointer_size _updateSemantic)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     //AutobindVariableData * var = &dynamicParameters[shaderSemantic];
     //if (var->updateSemantic
     if (_updateSemantic == UPDATE_SEMANTIC_ALWAYS || dynamicParameters[shaderSemantic].updateSemantic != _updateSemantic)
@@ -949,11 +985,15 @@ inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const
 
 inline const Matrix4 & RenderManager::GetDynamicParamMatrix(eShaderSemantic shaderSemantic)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     return *(Matrix4*)dynamicParameters[shaderSemantic].value;
 }
     
 inline void RenderManager::ComputeWorldViewMatrixIfRequired()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW))
     {
         worldViewMatrix = GetDynamicParamMatrix(PARAM_WORLD) * GetDynamicParamMatrix(PARAM_VIEW);
@@ -963,6 +1003,8 @@ inline void RenderManager::ComputeWorldViewMatrixIfRequired()
     
 inline void RenderManager::ComputeViewProjMatrixIfRequired()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (dynamicParamersRequireUpdate & (1 << PARAM_VIEW_PROJ))
     {
         viewProjMatrix = GetDynamicParamMatrix(PARAM_VIEW) * GetDynamicParamMatrix(PARAM_PROJ);
@@ -972,6 +1014,8 @@ inline void RenderManager::ComputeViewProjMatrixIfRequired()
 
 inline void RenderManager::ComputeWorldViewProjMatrixIfRequired()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW_PROJ))
     {
         ComputeViewProjMatrixIfRequired();
@@ -982,6 +1026,8 @@ inline void RenderManager::ComputeWorldViewProjMatrixIfRequired()
     
 inline void RenderManager::ComputeInvWorldViewMatrixIfRequired()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (dynamicParamersRequireUpdate & (1 << PARAM_INV_WORLD_VIEW))
     {
         ComputeWorldViewMatrixIfRequired();
@@ -992,6 +1038,8 @@ inline void RenderManager::ComputeInvWorldViewMatrixIfRequired()
     
 inline void RenderManager::ComputeWorldViewInvTransposeMatrixIfRequired()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE))
     {
         ComputeInvWorldViewMatrixIfRequired();
@@ -1004,6 +1052,8 @@ inline void RenderManager::ComputeWorldViewInvTransposeMatrixIfRequired()
     
 inline void RenderManager::ComputeInvWorldMatrixIfRequired()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (dynamicParamersRequireUpdate & (1 << PARAM_INV_WORLD))
     {
         const Matrix4 & worldMatrix = GetDynamicParamMatrix(PARAM_WORLD);
@@ -1014,6 +1064,8 @@ inline void RenderManager::ComputeInvWorldMatrixIfRequired()
     
 inline void RenderManager::ComputeWorldInvTransposeMatrixIfRequired()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (dynamicParamersRequireUpdate & (1 << PARAM_WORLD_INV_TRANSPOSE))
     {
         ComputeInvWorldMatrixIfRequired();
@@ -1025,6 +1077,8 @@ inline void RenderManager::ComputeWorldInvTransposeMatrixIfRequired()
  
 const void * RenderManager::GetDynamicParam(eShaderSemantic shaderSemantic)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT(dynamicParameters[shaderSemantic].value != 0);
     return dynamicParameters[shaderSemantic].value;
 }

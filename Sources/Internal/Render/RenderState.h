@@ -50,7 +50,8 @@ class Shader;
  */
 class RenderState : public Serializable
 {
-public:  
+public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
 
 	static const uint32 STATE_COUNT = 10;
 

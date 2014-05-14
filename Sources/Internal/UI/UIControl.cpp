@@ -224,19 +224,30 @@ namespace DAVA
 		}
 	}
 	
-
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    const ListBase<UIControl*> & UIControl::GetChildren() const
+    {
+		return childs;
+	}
+    
+#else
     const List<UIControl*> & UIControl::GetChildren() const
     {
 		return childs;
 	}
-
+#endif
 	List<UIControl* >& UIControl::GetRealChildren()
 	{
         realChilds.clear();
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+        copy(childs.begin(),childs.end(),back_inserter(realChilds));
+#else
         realChilds = childs;
+#endif
 
 		return realChilds;
 	}
+
 
 	List<UIControl* > UIControl::GetSubcontrols()
 	{
@@ -1397,7 +1408,19 @@ namespace DAVA
         {
             inputProcessorsCount = 0;
         }
-        
+/*#if defined (__USE_STL_POOL_ALLOCATOR__)
+        // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
+        // unnecessary children we have on the for example UIButton.
+        const ListBase<UIControl*>& realChildren = srcControl->GetRealChildren();
+		ListBase<UIControl*>::const_iterator it = realChildren.begin();
+		for(; it != realChildren.end(); ++it)
+		{
+			
+			UIControl *c = (*it)->Clone();
+			AddControl(c);
+			c->Release();
+		}
+#else*/
         // Yuri Coder, 2012/11/30. Use Real Children List to avoid copying
         // unnecessary children we have on the for example UIButton.
         const List<UIControl*>& realChildren = srcControl->GetRealChildren();
@@ -1409,8 +1432,9 @@ namespace DAVA
 			AddControl(c);
 			c->Release();
 		}
-	}
+//#endif
 
+	}
 	
     bool UIControl::IsOnScreen() const
     {
@@ -2773,8 +2797,13 @@ namespace DAVA
 	void UIControl::RecalculateChildsSize()
 	{
 //		const List<UIControl*>& realChildren = this->GetRealChildren();
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+        const ListBase<UIControl*>& realChildren = this->GetChildren();	//YZ recalculate size for all controls
+		for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
+#else
 		const List<UIControl*>& realChildren = this->GetChildren();	//YZ recalculate size for all controls
 		for(List<UIControl*>::const_iterator iter = realChildren.begin(); iter != realChildren.end(); ++iter)
+#endif
 		{
 			UIControl* child = (*iter);
 			if (child)

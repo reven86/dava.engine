@@ -76,6 +76,8 @@ SceneFile::Header::Header()
 	
 SceneFile::SceneFile()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	sceneFP = 0;
 	scene = 0;
 	currentSkeletonNode = 0;
@@ -84,11 +86,15 @@ SceneFile::SceneFile()
 	
 void SceneFile::SetDebugLog(bool _debugLogEnabled)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	debugLogEnabled = _debugLogEnabled;
 }
 
 bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToBundle /*= true*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
     materials.clear();
     
 	scene = _scene;
@@ -225,11 +231,15 @@ bool SceneFile::LoadScene(const FilePath & filename, Scene * _scene, bool relToB
 
 bool SceneFile::SaveScene(const FilePath & filename)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	return true;
 };
 	
 bool SceneFile::ReadTexture()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	SceneFile::TextureDef textureDef;
 	sceneFP->ReadString(textureDef.name, 512);
 	
@@ -255,6 +265,8 @@ bool SceneFile::ReadTexture()
 	
 bool SceneFile::ReadMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	SceneFile::MaterialDef materialDef; 
 	sceneFP->ReadString(materialDef.name, 512);
 
@@ -342,6 +354,8 @@ bool SceneFile::ReadMaterial()
 	
 bool SceneFile::ReadStaticMesh()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	uint32 polyGroupCount;
 	sceneFP->Read(&polyGroupCount, sizeof(uint32));
 	if (debugLogEnabled)Logger::FrameworkDebug("- Static Mesh: %d\n", polyGroupCount);
@@ -422,6 +436,8 @@ bool SceneFile::ReadStaticMesh()
 	
 bool SceneFile::ReadAnimatedMesh()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	int polyGroupCount;
 	sceneFP->Read(&polyGroupCount, sizeof(int));
 	if (debugLogEnabled)Logger::FrameworkDebug("- Animated Mesh: %d\n", polyGroupCount);
@@ -506,6 +522,8 @@ bool SceneFile::ReadAnimatedMesh()
 
 bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	if (sceneFP->IsEof())return false;
 
 	int32 id;
@@ -655,6 +673,8 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 	
 bool SceneFile::ReadSceneGraph()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	currentSkeletonNode = 0;
 	ReadSceneNode(scene, 0);
 	return true;
@@ -662,6 +682,8 @@ bool SceneFile::ReadSceneGraph()
 
 bool SceneFile::ReadCamera()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	Camera * cam = new Camera();
 	scene->AddCamera(cam);
 	
@@ -677,6 +699,8 @@ bool SceneFile::ReadCamera()
 
 bool SceneFile::ReadAnimation()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	SceneNodeAnimationList * animationList = new SceneNodeAnimationList();
 	
 	char name[512];
@@ -724,6 +748,8 @@ bool SceneFile::ReadAnimation()
 	
 bool SceneFile::ReadLight()
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 	// read light options
 	
 	LightDef ld;
@@ -736,6 +762,8 @@ bool SceneFile::ReadLight()
 
 void SceneFile::ProcessLOD(Entity *forRootNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_SCENE)
+    
 //    if (scene->GetLodLayersCount() <= 0) 
 //    {
 //        return;

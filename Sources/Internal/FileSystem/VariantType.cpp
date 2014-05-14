@@ -242,7 +242,11 @@ void VariantType::SetString(const String & value)
 {
     ReleasePointer();
 	type = TYPE_STRING;
+#if defined(__USE_OWN_ALLOCATORS__)
+    stringValue = new String(value.c_str());
+#else
 	stringValue = new String(value);
+#endif
 }
 void VariantType::SetWideString(const WideString & value)
 {

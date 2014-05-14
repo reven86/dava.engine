@@ -138,8 +138,13 @@ void UIControlSystem::RemovePopup(UIPopup *popup)
 	
 void UIControlSystem::RemoveAllPopups()
 {
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    const ListBase<UIControl*> &totalChilds = popupContainer->GetChildren();
+	for (ListBase<UIControl*>::const_iterator it = totalChilds.begin(); it != totalChilds.end(); it++)
+#else
 	const List<UIControl*> &totalChilds = popupContainer->GetChildren();
 	for (List<UIControl*>::const_iterator it = totalChilds.begin(); it != totalChilds.end(); it++)
+#endif
 	{
 		popupsToRemove.push_back((UIPopup *)*it);
 	}

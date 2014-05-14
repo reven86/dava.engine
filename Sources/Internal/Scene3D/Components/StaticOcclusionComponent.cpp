@@ -38,6 +38,8 @@ REGISTER_CLASS(StaticOcclusionComponent)
 
 StaticOcclusionComponent::StaticOcclusionComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     xSubdivisions = 2;
     ySubdivisions = 2;
     zSubdivisions = 2;
@@ -46,6 +48,8 @@ StaticOcclusionComponent::StaticOcclusionComponent()
 
 Component * StaticOcclusionComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	StaticOcclusionComponent * newComponent = new StaticOcclusionComponent();
 	newComponent->SetEntity(toEntity);
     newComponent->SetSubdivisionsX(xSubdivisions);
@@ -57,6 +61,8 @@ Component * StaticOcclusionComponent::Clone(Entity * toEntity)
 
 void StaticOcclusionComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive)
@@ -70,6 +76,8 @@ void StaticOcclusionComponent::Serialize(KeyedArchive *archive, SerializationCon
 
 void StaticOcclusionComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
         boundingBox = archive->GetVariant("soc.aabbox")->AsAABBox3();
@@ -87,14 +95,18 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive *archive, SerializationC
     
 StaticOcclusionDataComponent::StaticOcclusionDataComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 StaticOcclusionDataComponent::~StaticOcclusionDataComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 Component * StaticOcclusionDataComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     StaticOcclusionDataComponent * newComponent = new StaticOcclusionDataComponent();
 	newComponent->SetEntity(toEntity);
     newComponent->data = data;
@@ -103,6 +115,8 @@ Component * StaticOcclusionDataComponent::Clone(Entity * toEntity)
     
 void StaticOcclusionDataComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     Component::Serialize(archive, serializationContext);
     
 	if(NULL != archive)
@@ -120,6 +134,8 @@ void StaticOcclusionDataComponent::Serialize(KeyedArchive *archive, Serializatio
     
 void StaticOcclusionDataComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(NULL != archive)
 	{
         data.bbox = archive->GetVariant("sodc.bbox")->AsAABBox3();

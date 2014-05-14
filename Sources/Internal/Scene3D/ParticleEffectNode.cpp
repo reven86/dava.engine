@@ -37,6 +37,8 @@ using namespace DAVA;
 
 ParticleEffectNode::ParticleEffectNode() : Entity()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     this->stopAfterNRepeats = -1;
     this->stopWhenEmpty = false;
     this->effectDuration = 0.0f;
@@ -47,6 +49,8 @@ ParticleEffectNode::ParticleEffectNode() : Entity()
 
 void ParticleEffectNode::AddNode(Entity* node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	//Dizz: commented due to ParticleEmitterNode => Component transition (ParticleEmitterNode on load, Component after conversion)
     //if (PrepareNewParticleEmitterNode(node))
     {
@@ -56,6 +60,8 @@ void ParticleEffectNode::AddNode(Entity* node)
 
 void ParticleEffectNode::InsertBeforeNode(Entity *newNode, Entity *beforeNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if (PrepareNewParticleEmitterNode(newNode))
     {
         Entity::InsertBeforeNode(newNode, beforeNode);
@@ -64,6 +70,8 @@ void ParticleEffectNode::InsertBeforeNode(Entity *newNode, Entity *beforeNode)
 
 bool ParticleEffectNode::PrepareNewParticleEmitterNode(Entity* node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     //// Only Particle Emitter nodes are allowed.
     //ParticleEmitterComponent * particleEmitterComponent = static_cast<ParticleEmitterComponent*>(node->GetComponent(Component::PARTICLE_EMITTER_COMPONENT));
     //if (!particleEmitterComponent)
@@ -99,6 +107,8 @@ bool ParticleEffectNode::PrepareNewParticleEmitterNode(Entity* node)
 
 void ParticleEffectNode::UpdateDurationForChildNodes(float32 newEmitterLifeTime)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
   //  int32 childrenCount = GetChildrenCount();
   //  for (int32 i = 0; i < childrenCount; i ++)
   //  {
@@ -112,6 +122,8 @@ void ParticleEffectNode::UpdateDurationForChildNodes(float32 newEmitterLifeTime)
 
 void ParticleEffectNode::Start()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
   //  int32 childrenCount = GetChildrenCount();
   //  for (int32 i = 0; i < childrenCount; i ++)
   //  {
@@ -127,6 +139,8 @@ void ParticleEffectNode::Start()
 
 void ParticleEffectNode::Stop()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	//int32 childrenCount = GetChildrenCount();
 	//for (int32 i = 0; i < childrenCount; i ++)
 	//{
@@ -141,6 +155,8 @@ void ParticleEffectNode::Stop()
 
 void ParticleEffectNode::Restart()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	//int32 childrenCount = GetChildrenCount();
 	//for (int32 i = 0; i < childrenCount; i ++)
 	//{
@@ -154,16 +170,22 @@ void ParticleEffectNode::Restart()
 
 void ParticleEffectNode::StopAfterNRepeats(int32 numberOfRepeats)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     this->stopAfterNRepeats = numberOfRepeats;
 }
 
 void ParticleEffectNode::StopWhenEmpty(bool value)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     this->stopWhenEmpty = value;
 }
 
 void ParticleEffectNode::Update(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
   //  int32 childrenCount = GetChildrenCount();
   //  for (int32 i = 0; i < childrenCount; i ++)
   //  {
@@ -186,12 +208,16 @@ void ParticleEffectNode::Update(float32 timeElapsed)
 
 void DAVA::ParticleEffectNode::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity::Draw();
 }
 
 
 bool ParticleEffectNode::IsStopEmitter(ParticleEmitter* emitter) const
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
   /*  if (!emitter)
     {
         return true;
@@ -221,6 +247,8 @@ bool ParticleEffectNode::IsStopEmitter(ParticleEmitter* emitter) const
 
 void ParticleEffectNode::CheckPlaybackComplete()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
  /*   if (GetChildrenCount() == this->emittersCurrentlyStopped)
     {
         // Playback is finished!
@@ -231,11 +259,15 @@ void ParticleEffectNode::CheckPlaybackComplete()
 
 void ParticleEffectNode::SetPlaybackCompleteMessage(const Message& msg)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     this->playbackComplete = msg;
 }
 
 Entity* ParticleEffectNode::Clone(Entity *dstNode /*= NULL*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!dstNode) 
 	{
 		DVASSERT_MSG(IsPointerToExactClass<ParticleEffectNode>(this), "Can clone only ParticleEffectNode");

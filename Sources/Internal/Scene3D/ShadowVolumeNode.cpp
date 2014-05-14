@@ -45,23 +45,31 @@ namespace DAVA
 ShadowVolumeNode::ShadowVolumeNode()
 : shadowPolygonGroup(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	shader = 0; //ShaderCache::Instance->Get("~res:/Shaders/ShadowVolume/shadowvolume.shader");
     uniformLightPosition0 = -1; //shader->FindUniformIndexByName(FastName("lightPosition0"));
 }
 
 DAVA::ShadowVolumeNode::~ShadowVolumeNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	SafeRelease(shader);
 	SafeRelease(shadowPolygonGroup);
 }
 
 void DAVA::ShadowVolumeNode::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	scene->AddDrawTimeShadowVolume(this);
 }
 
 void DAVA::ShadowVolumeNode::DrawShadow()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 #if 0
 	Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
 	Matrix4 meshFinalMatrix = GetWorldTransform() * prevMatrix;
@@ -100,6 +108,8 @@ void DAVA::ShadowVolumeNode::DrawShadow()
 
 int32 ShadowVolumeNode::FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	for( int i = 0; i < count; ++i )
 	{
 		// If both vertex indexes of the old edge in mapping entry are -1, then
@@ -121,6 +131,8 @@ int32 ShadowVolumeNode::FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping
 
 void ShadowVolumeNode::CopyGeometryFrom(MeshInstanceNode * meshInstance)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	PolygonGroup * oldPolygonGroup = meshInstance->GetPolygonGroups()[0]->GetPolygonGroup();
 
 	int32 numEdges = oldPolygonGroup->GetIndexCount();
@@ -451,6 +463,8 @@ void ShadowVolumeNode::CopyGeometryFrom(MeshInstanceNode * meshInstance)
 
 void ShadowVolumeNode::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	Entity::Save(archive, serializationContext);
 
 	archive->SetByteArrayAsType("pg", (uint64)shadowPolygonGroup);
@@ -458,6 +472,8 @@ void ShadowVolumeNode::Save(KeyedArchive * archive, SerializationContext * seria
 
 void ShadowVolumeNode::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	Entity::Load(archive, serializationContext);
 
 	uint64 ptr = archive->GetByteArrayAsType("pg", (uint64)0);
@@ -467,11 +483,15 @@ void ShadowVolumeNode::Load(KeyedArchive * archive, SerializationContext * seria
 
 void ShadowVolumeNode::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	dataNodes.insert(shadowPolygonGroup);
 }
 
 Entity* ShadowVolumeNode::Clone(Entity *dstNode /*= NULL*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADOW)
+    
 	if (!dstNode) 
 	{
 		DVASSERT_MSG(IsPointerToExactClass<ShadowVolumeNode>(this), "Can clone only ShadowVolumeNode");

@@ -46,6 +46,7 @@ class LandscapeChunk : public RenderBatch
 protected:
     ~LandscapeChunk();
 public:
+    IMPLEMENT_POOL_ALLOCATOR(LandscapeChunk, 100);
     LandscapeChunk(Landscape * node = 0);
     
 	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);

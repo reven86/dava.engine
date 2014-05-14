@@ -44,6 +44,8 @@ namespace DAVA
 
 bool ImageLoader::CreateFromFileByExtension(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     if(pathname.IsEqualToExtension(".pvr"))
     {
         return ImageLoader::CreateFromPVRFile(pathname, imageSet, baseMipmap);
@@ -60,6 +62,8 @@ bool ImageLoader::CreateFromFileByExtension(const FilePath &pathname, Vector<Ima
     
 bool ImageLoader::CreateFromFileByContent(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -76,6 +80,9 @@ bool ImageLoader::CreateFromFileByContent(const FilePath & pathname, Vector<Imag
     
 bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
+#if 1
     if(IsPVRFile(file))
     {
         return CreateFromPVR(file, imageSet, baseMipmap);
@@ -90,6 +97,7 @@ bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet
     {
         return CreateFromDDS(file, imageSet, baseMipmap);
     }
+#endif
     
     if(IsJPEGFile(file))
     {
@@ -102,6 +110,10 @@ bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet
     
 bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
+#if 1
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -113,10 +125,15 @@ bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> &
     bool created = CreateFromPNG(file, imageSet);
     SafeRelease(file);
 	return created;
+#endif
+    return false;
+    
 }
     
 bool ImageLoader::CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     Image *jpegImage = new Image();
     if(jpegImage)
     {
@@ -135,6 +152,10 @@ bool ImageLoader::CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> 
     
 bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
+#if 1
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -146,10 +167,16 @@ bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> &
     bool created = CreateFromPVR(file, imageSet, baseMipmap);
     SafeRelease(file);
 	return created;
+#endif
+    return false;
 }
     
 bool ImageLoader::CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
+#if 1
+    
     File *file = File::Create(pathname, File::OPEN | File::READ);
     
     if(!file)
@@ -161,11 +188,15 @@ bool ImageLoader::CreateFromDDSFile(const FilePath & pathname, Vector<Image *> &
     bool created = CreateFromDDS(file, imageSet, baseMipmap);
     SafeRelease(file);
 	return created;
+#endif
+    return false;
 }
 
 
 bool ImageLoader::IsPNGFile(DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isPng = LibPngWrapper::IsPngFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isPng;
@@ -173,6 +204,8 @@ bool ImageLoader::IsPNGFile(DAVA::File *file)
     
 bool ImageLoader::IsJPEGFile(File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isJpeg = LibJpegWrapper::IsJpegFile(file->GetFilename());
     file->Seek(0, File::SEEK_FROM_START);
     return isJpeg;
@@ -180,6 +213,8 @@ bool ImageLoader::IsJPEGFile(File *file)
     
 bool ImageLoader::IsPVRFile(DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isPvr = LibPVRHelper::IsPvrFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isPvr;
@@ -187,6 +222,8 @@ bool ImageLoader::IsPVRFile(DAVA::File *file)
 
 bool ImageLoader::IsDDSFile(DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool isDXT = LibDxtHelper::IsDxtFile(file);
     file->Seek(0, File::SEEK_FROM_START);
     return isDXT;
@@ -195,6 +232,8 @@ bool ImageLoader::IsDDSFile(DAVA::File *file)
     
 bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     Image *pngImage = new Image();
     if(pngImage)
     {
@@ -213,16 +252,22 @@ bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
     
 bool ImageLoader::CreateFromJPEG(File *file, Vector<Image *> & imageSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     return CreateFromJPEGFile(file->GetFilename(), imageSet);
 }
 
 bool ImageLoader::CreateFromDDS(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	return LibDxtHelper::ReadDxtFile(file, imageSet, baseMipmap);
 }
 
 bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool loaded = false;
     
     PVRFile *pvrFile = LibPVRHelper::ReadFile(file, true, true);
@@ -243,6 +288,8 @@ bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, in
 
 bool ImageLoader::Save(const DAVA::Image *image, const FilePath &pathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+
     bool retValue = false;
     DVASSERT(image && (pathname.IsEqualToExtension(".png") || pathname.IsEqualToExtension(".jpg") || pathname.IsEqualToExtension(".jpeg")));
     

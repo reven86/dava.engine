@@ -34,24 +34,41 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/VariantType.h"
 
+#if defined(__USE_OWN_ALLOCATORS__)
+#include "Base/AllocatorFactory.h"
+#endif
+
 namespace DAVA 
 {
 	
 KeyedArchive::KeyedArchive()
+#if defined(__USE_OWN_ALLOCATORS__)
+    :prevStackPos(0)
+#endif
 {
 }
     
 KeyedArchive::KeyedArchive(const KeyedArchive &arc)
+#if defined(__USE_OWN_ALLOCATORS__)
+    :prevStackPos(0)
+#endif
 {
     const Map<String, VariantType*> &customMap = arc.GetArchieveData();
     for (Map<String, VariantType*>::const_iterator it = customMap.begin(); it != customMap.end(); it++)
     {
+#if defined(__USE_OWN_ALLOCATORS__)
+        SetVariant(String(it->first.c_str()), *it->second);
+#else
         SetVariant(it->first, *it->second);
+#endif
     }
 }
 
 KeyedArchive::~KeyedArchive()
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    AUTO_STACK_ALLOCATOR(&prevStackPos, FALSE, TRUE)
+#endif
     DeleteAllKeys();
 }
 
@@ -68,6 +85,10 @@ bool KeyedArchive::Load(const FilePath & pathName)
 	
 bool KeyedArchive::Load(File *archive)
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    AUTO_STACK_ALLOCATOR(&prevStackPos, TRUE, FALSE)
+#endif
+    
     char header[2];
     archive->Read(header, 2);
     if ((header[0] != 'K') || (header[1] != 'A'))
@@ -393,13 +414,27 @@ float32 KeyedArchive::GetFloat(const String & key, float32 defaultValue)
 	return defaultValue;
 }
 
+/*#if defined(__USE_OWN_ALLOCATORS__)
+const char* KeyedArchive::GetString(const String & key, const String & defaultValue)
+{
+    if (IsKeyExists(key))
+		return objectMap[key]->AsString().c_str();
+	return defaultValue.c_str();
+}
+#else*/
 String KeyedArchive::GetString(const String & key, const String & defaultValue)
 {
 	if (IsKeyExists(key))
+#if defined(__USE_OWN_ALLOCATORS__)
+        return String(objectMap[key]->AsString().c_str());
+#else
 		return objectMap[key]->AsString();
+#endif
 	return defaultValue;
 }
 
+//#endif
+    
 WideString KeyedArchive::GetWideString(const String & key, const WideString & defaultValue)
 {
 	if (IsKeyExists(key))
@@ -519,6 +554,10 @@ Matrix4 KeyedArchive::GetMatrix4(const String & key, const Matrix4 & defaultValu
     
 void KeyedArchive::DeleteKey(const String & key)
 {
+#if defined(__USE_OWN_ALLOCATORS__)
+    AUTO_STACK_ALLOCATOR(&prevStackPos, FALSE, FALSE)
+#endif
+    
 	Map<String, VariantType*>::iterator t = objectMap.find(key);
 	if (t != objectMap.end())
     {

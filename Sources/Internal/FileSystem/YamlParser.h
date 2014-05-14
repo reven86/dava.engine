@@ -80,7 +80,7 @@ protected:
 	virtual ~YamlNode();
 public:
 	YamlNode(eType type, eRepresentationType repType = REPRESENT_AS_DEFAULT);
-
+   // IMPLEMENT_POOL_ALLOCATOR(YamlNode,100);
 	
 	void Print(int32 identation);
     void PrintToFile(DAVA::File* file, uint32 identationDepth = 0) const;

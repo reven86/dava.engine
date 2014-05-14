@@ -32,8 +32,12 @@
 #define __DAVAENGINE_ALLOCATOR_FACTORY_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
+#include "Base/StaticSingleton.h"
 #include "Base/FixedSizePoolAllocator.h"
+
+#if defined(__USE_OWN_ALLOCATORS__)
+#include "Base/StackAllocator.h"
+#endif
 
 #define IMPLEMENT_POOL_ALLOCATOR(TYPE, poolSize) \
 	void * operator new(std::size_t size) \
@@ -49,23 +53,92 @@
 		alloc->Delete(ptr); \
 	} \
 
+#define IMPLEMENT_NATIVE_ALLOCATOR \
+    void * operator new(std::size_t size) \
+    { \
+        return ::malloc(size); \
+    } \
+    \
+    void operator delete(void * ptr) \
+    {\
+        ::free(ptr);\
+    }\
+
+#if defined(__USE_OWN_ALLOCATORS__)
+#define AUTO_STACK_ALLOCATOR(pStackPos, bInit, bWipe) \
+    AutoStackAllocator autoStack(pStackPos, bInit, bWipe); \
+
+#endif
+
 namespace DAVA
 {
 
-class AllocatorFactory : public Singleton<AllocatorFactory>
+class AllocatorFactory : public StaticSingleton<AllocatorFactory>
 {
 public:
 	AllocatorFactory();
 	virtual ~AllocatorFactory();
 
 	FixedSizePoolAllocator * GetAllocator(const String& className, uint32 classSize, int32 poolLength);
+    
+#if defined(__USE_OWN_ALLOCATORS__)
+    StackAllocator *CreateStackAllocator(uint32 size);
+    StackAllocator * GetAllocator();
+    void FreeAllocator(StackAllocator *);
+#endif
 
 	void Dump();
 
 private:
 	Map<String, FixedSizePoolAllocator*> allocators;
+#if defined(__USE_OWN_ALLOCATORS__)
+    Map<pthread_t, StackAllocator*> stackAllocators;
+#endif
 };
 
+#if defined(__USE_OWN_ALLOCATORS__)
+class AutoStackAllocator
+{
+public:
+    AutoStackAllocator(uint32 *pStackPos, bool bInitPos, bool bWipe)
+    :bWipe(bWipe)
+    ,bInitPos(bInitPos)
+    ,wipeTo(0)
+    {
+        pAlloc = AllocatorFactory::Instance()->GetAllocator();
+        if(pAlloc)
+        {
+            if(bInitPos)
+            {
+                *pStackPos = pAlloc->GetCurrPos();
+            }
+            if(bWipe)
+            {
+                wipeTo = *pStackPos;
+            }
+            AllocatorsStack::Instance()->PushAllocator(pAlloc);
+        }
+    }
+    
+    ~AutoStackAllocator()
+    {
+        if(pAlloc)
+        {
+            if(bWipe)
+            {
+                pAlloc->SetCurrPos(wipeTo);
+            }
+            AllocatorsStack::Instance()->PopAllocator();
+        }
+    }
+    
+private:
+    StackAllocator *pAlloc;
+    bool bInitPos;
+    bool bWipe;
+    uint32 wipeTo;
+};
+#endif
 
 };
 

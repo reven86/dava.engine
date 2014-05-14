@@ -38,24 +38,32 @@ REGISTER_CLASS(DebugRenderComponent)
 DebugRenderComponent::DebugRenderComponent()
     : curDebugFlags(DEBUG_DRAW_NONE)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 DebugRenderComponent::~DebugRenderComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
     
 void DebugRenderComponent::SetDebugFlags(uint32 debugFlags)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     curDebugFlags = debugFlags;
 }
     
 uint32 DebugRenderComponent::GetDebugFlags() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return curDebugFlags;
 }
     
 Component * DebugRenderComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     DebugRenderComponent * component = new DebugRenderComponent();
 	component->SetEntity(toEntity);
     component->curDebugFlags = curDebugFlags;

@@ -45,11 +45,15 @@ namespace DAVA
 SwitchSystem::SwitchSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SWITCH_CHANGED);
 }
 
 void SwitchSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("SwitchSystem::Process");
 	Set<Entity*>::iterator it;
 	Set<Entity*>::const_iterator itEnd = updatableEntities.end();
@@ -77,6 +81,8 @@ void SwitchSystem::Process(float32 timeElapsed)
 
 void SwitchSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if(EventSystem::SWITCH_CHANGED == event)
 	{
 		updatableEntities.insert(entity);
@@ -90,6 +96,8 @@ void SwitchSystem::RemoveEntity(Entity* entity)
 
 void SwitchSystem::SetSwitchHierarchy(Entity * entity, int32 switchIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     RenderObject * ro = GetRenderObject(entity);
 	if(ro)
     {

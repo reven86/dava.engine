@@ -31,6 +31,7 @@
 #define	_PATHMANIP_H
 
 #include "Base/BaseTypes.h"
+#include "Debug/MemoryManager.h"
 
 namespace DAVA
 {
@@ -38,6 +39,8 @@ namespace DAVA
 	class PathManip
 	{
 	public:
+        IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_PATH)
+        
 		PathManip(const char * src);
 		//PathManip(const PathManip& orig);
 		//virtual ~PathManip();

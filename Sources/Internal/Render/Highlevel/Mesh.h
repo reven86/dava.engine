@@ -48,6 +48,8 @@ class NMaterial;
 class Mesh : public RenderObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MESH)
+    
     Mesh();
     virtual ~Mesh();
     

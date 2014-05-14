@@ -48,6 +48,8 @@ LandscapeChunk::~LandscapeChunk()
     
 void LandscapeChunk::Draw(const FastName & ownerPassName, Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	if(NULL != landscape)
 	{
 		landscape->Draw(camera);

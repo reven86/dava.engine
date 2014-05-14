@@ -114,6 +114,8 @@ Landscape::Landscape()
     : indices(0), foliageSystem(NULL)//,
 	  //currentMaterial(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	drawIndices = 0;
     //textureNames.resize(TEXTURE_COUNT);
     
@@ -156,6 +158,8 @@ Landscape::Landscape()
 
 Landscape::~Landscape()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     ReleaseAllRDOQuads();
     
     SafeDeleteArray(indices);
@@ -169,6 +173,8 @@ Landscape::~Landscape()
 
 int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 //    Logger::FrameworkDebug("AllocateRDOQuad: %d %d size: %d", quad->x, quad->y, quad->size);
     DVASSERT(quad->size == RENDER_QUAD_WIDTH - 1);
     LandscapeVertex * landscapeVertices = new LandscapeVertex[(quad->size + 1) * (quad->size + 1)];
@@ -261,6 +267,8 @@ int16 Landscape::AllocateRDOQuad(LandscapeQuad * quad)
 
 void Landscape::ReleaseAllRDOQuads()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     for (size_t k = 0; k < landscapeRDOArray.size(); ++k)
     {
         SafeRelease(landscapeRDOArray[k]);
@@ -272,6 +280,8 @@ void Landscape::ReleaseAllRDOQuads()
 
 void Landscape::SetLods(const Vector4 & lods)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     lodLevelsCount = 4;
     
     lodDistance[0] = lods.x;
@@ -285,6 +295,8 @@ void Landscape::SetLods(const Vector4 & lods)
     
 void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathname, const AABBox3 & _box)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	heightmapPath = heightmapPathname;
     BuildHeightmap();
 
@@ -300,6 +312,8 @@ void Landscape::BuildLandscapeFromHeightmapImage(const FilePath & heightmapPathn
 
 bool Landscape::BuildHeightmap()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     bool retValue = false;
     if(heightmapPath.IsEqualToExtension(".png"))
     {
@@ -339,6 +353,8 @@ bool Landscape::BuildHeightmap()
     
 void Landscape::BuildLandscape()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     ReleaseAllRDOQuads();
     SafeDeleteArray(indices);
 
@@ -383,6 +399,8 @@ void Landscape::BuildLandscape()
 //float32 LandscapeNode::BitmapHeightToReal(uint8 height)
 Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     Vector3 res;
     res.x = (bbox.min.x + (float32)x / (float32)(heightmap->Size() - 1) * (bbox.max.x - bbox.min.x));
     res.y = (bbox.min.y + (float32)y / (float32)(heightmap->Size() - 1) * (bbox.max.y - bbox.min.y));
@@ -392,6 +410,8 @@ Vector3 Landscape::GetPoint(int16 x, int16 y, uint16 height)
 
 bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal) const
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	if (point.x > bbox.max.x ||
 		point.x < bbox.min.x ||
 		point.y > bbox.max.y ||
@@ -465,6 +485,8 @@ bool Landscape::PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * no
 	
 void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 level, int32 maxLevels)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     allocatedMemoryForQuads += sizeof(LandQuadTreeNode<LandscapeQuad>);
     currentNode->data.lod = level;
     
@@ -578,6 +600,8 @@ void Landscape::RecursiveBuild(LandQuadTreeNode<LandscapeQuad> * currentNode, in
 
 LandQuadTreeNode<Landscape::LandscapeQuad> * Landscape::FindNodeWithXY(LandQuadTreeNode<LandscapeQuad> * currentNode, int16 quadX, int16 quadY, int16 quadSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if ((currentNode->data.x <= quadX) && (quadX < currentNode->data.x + currentNode->data.size))
         if ((currentNode->data.y <= quadY) && (quadY < currentNode->data.y + currentNode->data.size))
     {
@@ -599,6 +623,8 @@ LandQuadTreeNode<Landscape::LandscapeQuad> * Landscape::FindNodeWithXY(LandQuadT
     
 void Landscape::FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     currentNode->neighbours[LEFT] = FindNodeWithXY(&quadTreeHead, currentNode->data.x - 1, currentNode->data.y, currentNode->data.size);
     currentNode->neighbours[RIGHT] = FindNodeWithXY(&quadTreeHead, currentNode->data.x + currentNode->data.size, currentNode->data.y, currentNode->data.size);
     currentNode->neighbours[TOP] = FindNodeWithXY(&quadTreeHead, currentNode->data.x, currentNode->data.y - 1, currentNode->data.size);
@@ -616,6 +642,8 @@ void Landscape::FindNeighbours(LandQuadTreeNode<LandscapeQuad> * currentNode)
 
 void Landscape::MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 & depth)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if (--depth <= 0)
     {
         currentNode->data.frame = Core::Instance()->GetGlobalFrameIndex();
@@ -635,6 +663,8 @@ void Landscape::MarkFrames(LandQuadTreeNode<LandscapeQuad> * currentNode, int32 
     
 void Landscape::SetTextureTiling(eTextureLevel level, const Vector2 & tiling)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if(TILEMASK_TILING_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
     {
         tileMaskMaterial->SetPropertyValue(TILEMASK_TILING_PROPS_NAMES[level], Shader::UT_FLOAT_VEC2, 1, &tiling);
@@ -643,6 +673,8 @@ void Landscape::SetTextureTiling(eTextureLevel level, const Vector2 & tiling)
 
 Vector2 Landscape::GetTextureTiling(eTextureLevel level)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     Vector2 propValue;
     NMaterialProperty* prop = tileMaskMaterial->GetPropertyValue(TILEMASK_TILING_PROPS_NAMES[level]);
     
@@ -656,6 +688,8 @@ Vector2 Landscape::GetTextureTiling(eTextureLevel level)
     
 void Landscape::SetTileColor(eTextureLevel level, const Color & color)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if(TILEMASK_COLOR_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
     {
         tileMaskMaterial->SetPropertyValue(TILEMASK_COLOR_PROPS_NAMES[level], Shader::UT_FLOAT_VEC3, 1, &color);
@@ -664,6 +698,8 @@ void Landscape::SetTileColor(eTextureLevel level, const Color & color)
 
 Color Landscape::GetTileColor(eTextureLevel level)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     Color propValue;
     NMaterialProperty* prop = tileMaskMaterial->GetPropertyValue(TILEMASK_COLOR_PROPS_NAMES[level]);
     
@@ -679,6 +715,8 @@ Color Landscape::GetTileColor(eTextureLevel level)
     
 void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	if(TEXTURE_TILE_FULL != level &&
        TILEMASK_TEXTURE_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
 	{
@@ -688,6 +726,8 @@ void Landscape::SetTexture(eTextureLevel level, const FilePath & textureName)
     
 Texture * Landscape::CreateTexture(eTextureLevel level, const FilePath & textureName)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if(TEXTURE_TILE_FULL == level)
     {
         //must not zero only for finalized maps
@@ -704,6 +744,8 @@ Texture * Landscape::CreateTexture(eTextureLevel level, const FilePath & texture
 
 void Landscape::SetTexture(eTextureLevel level, Texture *texture)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
  	//textureNames[level] = String("");
 
 	if(TILEMASK_TEXTURE_PROPS_NAMES[level] != INVALID_PROPERTY_NAME)
@@ -715,11 +757,15 @@ void Landscape::SetTexture(eTextureLevel level, Texture *texture)
     
 Texture * Landscape::GetTexture(eTextureLevel level)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	return tileMaskMaterial->GetEffectiveTexture(TILEMASK_TEXTURE_PROPS_NAMES[level]);
 }
     
 void Landscape::FlushQueue()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if (queueRenderCount == 0) return;
     
 	//currentMaterial->Draw(landscapeRDOArray[queueRdoQuad], indices, queueRenderCount);
@@ -734,6 +780,8 @@ void Landscape::FlushQueue()
     
 void Landscape::ClearQueue()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     queueRenderCount = 0;
     queueRdoQuad = -1;
     queueDrawIndices = indices;
@@ -741,6 +789,8 @@ void Landscape::ClearQueue()
 
 void Landscape::DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     int32 depth = currentNode->data.size / (1 << lod);
     if (depth == 1)
     {
@@ -784,6 +834,8 @@ void Landscape::DrawQuad(LandQuadTreeNode<LandscapeQuad> * currentNode, int8 lod
     
 void Landscape::DrawFans()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     uint32 currentFrame = Core::Instance()->GetGlobalFrameIndex();;
     int16 width = RENDER_QUAD_WIDTH;//heightmap->GetWidth();
     
@@ -916,6 +968,8 @@ void Landscape::DrawFans()
 	
 int Landscape::GetMaxLod(float32 quadDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	int32 maxLod = 0;
 		
 	for (int32 k = 0; k < lodLevelsCount; ++k)
@@ -935,6 +989,8 @@ int Landscape::GetMaxLod(float32 quadDistance)
 	
 float32 Landscape::GetQuadToCameraDistance(const Vector3& camPos, const LandscapeQuad& quad)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	Vector3 v = camPos - quad.bbox.max;
 	float32 dist0 = v.SquareLength();
 	
@@ -947,6 +1003,8 @@ float32 Landscape::GetQuadToCameraDistance(const Vector3& camPos, const Landscap
 	
 void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippingFlags)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     //Frustum * frustum = scene->GetClipCamera()->GetFrustum();
     // if (!frustum->IsInside(currentNode->data.bbox))return;
     Frustum::eFrustumResult frustumRes = Frustum::EFR_INSIDE; 
@@ -1135,7 +1193,9 @@ void Landscape::Draw(LandQuadTreeNode<LandscapeQuad> * currentNode, uint8 clippi
 
     
 void Landscape::BindMaterial(int32 lodLayer, Camera* camera)
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
 	tileMaskMaterial->BindMaterialTechnique(TECHNIQUE_TILEMASK_NAME, camera);
     
@@ -1144,6 +1204,8 @@ void Landscape::BindMaterial(int32 lodLayer, Camera* camera)
 
 void Landscape::UnbindMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if(-1 != prevLodLayer)
     {
 		//TODO: review if should unbind new material
@@ -1155,6 +1217,8 @@ void Landscape::UnbindMaterial()
     
 void Landscape::Draw(Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     TIME_PROFILE("LandscapeNode.Draw");
 	
 	drawIndices = 0;
@@ -1336,6 +1400,8 @@ void Landscape::Draw(Camera * camera)
 
 void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<int32> & indices)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	LandQuadTreeNode<LandscapeQuad> * currentNode = &quadTreeHead;
 	LandscapeQuad * quad = &currentNode->data;
 	
@@ -1392,11 +1458,15 @@ void Landscape::GetGeometry(Vector<LandscapeVertex> & landscapeVertices, Vector<
 
 const FilePath & Landscape::GetHeightmapPathname()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return heightmapPath;
 }
 	
 void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	if(newHeightMapPath == heightmapPath)
 	{
 		return;
@@ -1406,28 +1476,38 @@ void Landscape::SetHeightmapPathname(const FilePath & newHeightMapPath)
 	
 float32 Landscape::GetLandscapeSize() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	return bbox.GetSize().x;
 }
 	
 void Landscape::SetLandscapeSize(float32 newSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	Vector3 newLandscapeSize(newSize, newSize, bbox.GetSize().z);
 	SetLandscapeSize(newLandscapeSize);
 }
 	
 float32 Landscape::GetLandscapeHeight() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	return bbox.GetSize().z;
 }
 	
 void Landscape::SetLandscapeHeight(float32 newHeight)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	Vector3 newLandscapeSize(bbox.GetSize().x, bbox.GetSize().y, newHeight);
 	SetLandscapeSize(newLandscapeSize);
 }
 
 void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     if(newLandscapeSize.z < 0.0f || newLandscapeSize.x <0 || newLandscapeSize.y < 0)
 	{
 		return;
@@ -1449,6 +1529,8 @@ void Landscape::SetLandscapeSize(const Vector3 & newLandscapeSize)
     
 void Landscape::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     RenderObject::Save(archive, serializationContext);
         
     //TODO: remove code in future. Need for transition from *.png to *.heightmap
@@ -1494,6 +1576,8 @@ void Landscape::Save(KeyedArchive * archive, SerializationContext * serializatio
     
 void Landscape::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	RenderObject::Load(archive, serializationContext);
 	
     DVASSERT(serializationContext->GetVersion() >= 4);
@@ -1553,6 +1637,8 @@ void Landscape::Load(KeyedArchive * archive, SerializationContext * serializatio
 
 void Landscape::LoadFog(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     DAVA::NMaterial *globalMaterial = serializationContext->GetScene()->GetGlobalMaterial();
 
     if(NULL != globalMaterial)
@@ -1579,12 +1665,16 @@ void Landscape::LoadFog(KeyedArchive * archive, SerializationContext * serializa
 
 const FilePath & Landscape::GetTextureName(DAVA::Landscape::eTextureLevel level)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     DVASSERT(0 <= level && level < TEXTURE_COUNT);
     return tileMaskMaterial->GetEffectiveTexturePath(TILEMASK_TEXTURE_PROPS_NAMES[level]);
 }
     
 void Landscape::SetTextureName(eTextureLevel level, const FilePath &newTextureName)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     DVASSERT(0 <= level && level < TEXTURE_COUNT);
     tileMaskMaterial->SetTexturePath(TILEMASK_TEXTURE_PROPS_NAMES[level], newTextureName);
 }
@@ -1592,22 +1682,30 @@ void Landscape::SetTextureName(eTextureLevel level, const FilePath &newTextureNa
 
 void Landscape::CursorEnable()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	DVASSERT(0 == cursor);
 	cursor = new LandscapeCursor();
 }
 
 void Landscape::CursorDisable()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	SafeDelete(cursor);
 }
     
 Heightmap * Landscape::GetHeightmap()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return heightmap;
 }
 
 void Landscape::SetHeightmap(DAVA::Heightmap *height)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     SafeRelease(heightmap);
     heightmap = SafeRetain(height);
     
@@ -1617,6 +1715,8 @@ void Landscape::SetHeightmap(DAVA::Heightmap *height)
     
 Texture * Landscape::CreateLandscapeTexture()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     //Set indexes
     Vector<float32> ftVertexes;
     Vector<float32> ftTextureCoords;
@@ -1753,12 +1853,16 @@ Texture * Landscape::CreateLandscapeTexture()
 
 LandscapeCursor * Landscape::GetCursor()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return cursor;
 }
 
 	//TODO: review landscape cloning
 RenderObject * Landscape::Clone( RenderObject *newObject )
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	if(!newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<Landscape>(this), "Can clone only Landscape");
@@ -1810,11 +1914,15 @@ RenderObject * Landscape::Clone( RenderObject *newObject )
 	
 int32 Landscape::GetDrawIndices() const
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     return drawIndices;
 }
 
 void Landscape::SetDefaultValues()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     Color color;
     SetTileColor(TEXTURE_TILE0, color);
     SetTileColor(TEXTURE_TILE1, color);
@@ -1824,6 +1932,8 @@ void Landscape::SetDefaultValues()
 
 void Landscape::SetupMaterialProperties()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	if(tileMaskMaterial)
 	{
 		tileMaskMaterial->SetPropertyValue(Landscape::PARAM_CAMERA_POSITION, Shader::UT_FLOAT_VEC3, 1, &cameraPos);
@@ -1832,6 +1942,8 @@ void Landscape::SetupMaterialProperties()
 
 void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
     foliageSystem = _foliageSystem;
 }
 
@@ -1839,11 +1951,15 @@ void Landscape::SetFoliageSystem(FoliageSystem* _foliageSystem)
 	
 void Landscape::SetSpecularColor(const Color& color)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_PROP_SPECULAR_COLOR, Shader::UT_FLOAT_VEC4, 1, &color);
 }
 	
 Color Landscape::GetSpecularColor()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	Color specularColor = Color(1, 1, 1, 1);
 	NMaterialProperty* specularColorProp = tileMaskMaterial->GetMaterialProperty(Landscape::PARAM_PROP_SPECULAR_COLOR);
 	
@@ -1857,11 +1973,15 @@ Color Landscape::GetSpecularColor()
 	
 void Landscape::SetSpecularShininess(const float32& shininess)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	tileMaskMaterial->SetPropertyValue(Landscape::PARAM_SPECULAR_SHININESS, Shader::UT_FLOAT, 1, &shininess);
 }
 	
 float32 Landscape::GetSpecularShininess()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	float32 shininess = 1.0f;
 	NMaterialProperty* shininessProp = tileMaskMaterial->GetMaterialProperty(Landscape::PARAM_SPECULAR_SHININESS);
 	
@@ -1875,6 +1995,8 @@ float32 Landscape::GetSpecularShininess()
 	
 void Landscape::SetSpecularMapPath(const FilePath& path)
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	bool needReload = true;
 	Texture* specularMapTexture = tileMaskMaterial->GetTexture(TEXTURE_SPECULAR_MAP);
 	if(specularMapTexture)
@@ -1894,6 +2016,8 @@ void Landscape::SetSpecularMapPath(const FilePath& path)
 	
 FilePath Landscape::GetSpecularMapPath()
 {
+    TAG_SWITCH(MemoryManager::TAG_LANDSCAPE)
+    
 	FilePath texturePath;
 	Texture* specularMapTexture = tileMaskMaterial->GetTexture("specularMap");
 	if(specularMapTexture)

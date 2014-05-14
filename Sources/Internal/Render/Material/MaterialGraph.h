@@ -47,6 +47,8 @@ class MaterialGraph : public BaseObject
 protected:
     ~MaterialGraph();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
+    
     MaterialGraph();
     
     bool LoadFromFile(const FilePath & pathname);

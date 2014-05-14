@@ -51,6 +51,8 @@ namespace DAVA
 class TextBlock : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_TEXTBLOCK)
+    
 	enum eFitType 
 	{
 			FITTING_DISABLED = 0

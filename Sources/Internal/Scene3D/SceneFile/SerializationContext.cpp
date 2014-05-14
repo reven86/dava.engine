@@ -229,6 +229,8 @@ namespace DAVA
 
 	SerializationContext::~SerializationContext()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SCENE)
+        
 		for(Map<uint64, DataNode*>::iterator it = dataBlocks.begin();
 			it != dataBlocks.end();
 			++it)
@@ -249,6 +251,8 @@ namespace DAVA
 	
 	void SerializationContext::ResolveMaterialBindings()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SCENE)
+        
 		size_t instanceCount = materialBindings.size();
 		for(size_t i = 0; i < instanceCount; ++i)
 		{
@@ -269,6 +273,8 @@ namespace DAVA
 																	 InstanceMaterialState* oldMaterialState,
 																	 uint64 oldMaterialId)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SCENE)
+        
 		//VI: need to build the following material structure:
 		//VI:     INSTANCE_WITH_COMMON_PROPS_AND_TEXTURES
 		//VI:     (this instance has
@@ -475,6 +481,8 @@ namespace DAVA
 	Texture* SerializationContext::PrepareTexture(uint32 textureTypeHint,
 												  Texture* tx)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SCENE)
+        
 		if(tx)
 		{
 			if(tx->isPink)

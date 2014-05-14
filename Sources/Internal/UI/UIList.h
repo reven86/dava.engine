@@ -213,7 +213,11 @@ public:
     
 	const List<UIControl*> &GetVisibleCells();
 
+/*#if defined (__USE_STL_POOL_ALLOCATOR__)
+    virtual ListBase<UIControl* >& GetRealChildren();
+#else*/
 	virtual List<UIControl* >& GetRealChildren();
+//#endif
 
 	UIListCell* GetReusableCell(const String &cellIdentifier);//returns cell from the cells cache, if returns 0 you need to create the new one
 	

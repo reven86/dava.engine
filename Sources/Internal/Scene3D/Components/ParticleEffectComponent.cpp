@@ -46,6 +46,8 @@ REGISTER_CLASS(ParticleEffectComponent)
 
 ParticleEffectComponent::ParticleEffectComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	repeatsCount = -1;
 	stopWhenEmpty = false;
 	clearOnRestart = true;
@@ -64,6 +66,8 @@ ParticleEffectComponent::ParticleEffectComponent()
 
 ParticleEffectComponent::~ParticleEffectComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	ClearCurrentGroups();
 	if (state!=STATE_STOPPED)
 		GetEntity()->GetScene()->particleEffectSystem->RemoveFromActive(this);
@@ -75,6 +79,8 @@ ParticleEffectComponent::~ParticleEffectComponent()
 
 Component * ParticleEffectComponent::Clone(Entity * toEntity)
 {	
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	ParticleEffectComponent * newComponent = new ParticleEffectComponent();
 	newComponent->SetEntity(toEntity);
 	newComponent->repeatsCount = repeatsCount;
@@ -94,17 +100,23 @@ Component * ParticleEffectComponent::Clone(Entity * toEntity)
 
 void ParticleEffectComponent::SetSortingOffset(uint32 offset)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     effectRenderObject->SetSortingOffset(offset);
 }
 
 void ParticleEffectComponent::Start()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	isPaused = false;
 	GlobalEventSystem::Instance()->Event(GetEntity(), EventSystem::START_PARTICLE_EFFECT);	
 }
 
 void ParticleEffectComponent::Stop(bool isDeleteAllParticles)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if (state == STATE_STOPPED) return;
 	if (isDeleteAllParticles)
 	{
@@ -121,26 +133,36 @@ void ParticleEffectComponent::Stop(bool isDeleteAllParticles)
 
 void ParticleEffectComponent::Pause(bool isPaused /*= true*/)
 {	
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	this->isPaused = isPaused;
 }
 
 bool ParticleEffectComponent::IsStopped()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return state == STATE_STOPPED;
 }
 
 bool ParticleEffectComponent::IsPaused()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return isPaused;
 }
 
 void ParticleEffectComponent::Step(float32 delta)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	GetEntity()->GetScene()->particleEffectSystem->UpdateEffect(this, delta, delta);
 }
 	
 void ParticleEffectComponent::Restart(bool isDeleteAllParticles)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	isPaused = false;
 	if (isDeleteAllParticles)
 		ClearCurrentGroups();
@@ -150,16 +172,22 @@ void ParticleEffectComponent::Restart(bool isDeleteAllParticles)
 
 void ParticleEffectComponent::StopAfterNRepeats(int32 numberOfRepeats)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     repeatsCount = numberOfRepeats;
 }
 
 void ParticleEffectComponent::StopWhenEmpty(bool value /*= true*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	stopWhenEmpty = value;
 }
 
 void ParticleEffectComponent::ClearGroup(ParticleGroup& group)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     Particle * current = group.head;
     while (current)
     {
@@ -173,6 +201,8 @@ void ParticleEffectComponent::ClearGroup(ParticleGroup& group)
 
 void ParticleEffectComponent::ClearCurrentGroups()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
 	{
 		ClearGroup(*it);
@@ -182,6 +212,8 @@ void ParticleEffectComponent::ClearCurrentGroups()
 
 void ParticleEffectComponent::SetRenderObjectVisible(bool visible)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if (visible) 
         effectRenderObject->AddFlag(RenderObject::VISIBLE);
     else
@@ -191,6 +223,8 @@ void ParticleEffectComponent::SetRenderObjectVisible(bool visible)
 
 void ParticleEffectComponent::SetGroupsFinishing()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
     {
         (*it).finishingGroup = true;
@@ -199,29 +233,39 @@ void ParticleEffectComponent::SetGroupsFinishing()
 
 void ParticleEffectComponent::SetPlaybackCompleteMessage(const Message & msg)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	playbackComplete = msg;
 }
 
 
 float32 ParticleEffectComponent::GetPlaybackSpeed()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return playbackSpeed;
 }
 
 void ParticleEffectComponent::SetPlaybackSpeed(float32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	playbackSpeed = value;
 }
 
 
 void ParticleEffectComponent::SetDesiredLodLevel(int32 level)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+
 	desiredLodLevel = level;	
 }
 
 
 void ParticleEffectComponent::SetExtertnalValue(const String& name, float32 value)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	externalValues[name] = value;
 	for (MultiMap<String, ModifiablePropertyLineBase *>::iterator it = externalModifiables.lower_bound(name), e=externalModifiables.upper_bound(name); it!=e; ++it)
 		(*it).second->SetModifier(value);
@@ -229,6 +273,8 @@ void ParticleEffectComponent::SetExtertnalValue(const String& name, float32 valu
 
 float32 ParticleEffectComponent::GetExternalValue(const String& name)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Map<String, float32>::iterator it = externalValues.find(name);
 	if (it!=externalValues.end())
 		return (*it).second;
@@ -238,6 +284,8 @@ float32 ParticleEffectComponent::GetExternalValue(const String& name)
 
 Set<String> ParticleEffectComponent::EnumerateVariables()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Set<String> res;
 	for (MultiMap<String, ModifiablePropertyLineBase *>::iterator it = externalModifiables.begin(), e=externalModifiables.end(); it!=e; ++it)
 		res.insert((*it).first);
@@ -246,6 +294,8 @@ Set<String> ParticleEffectComponent::EnumerateVariables()
 
 void ParticleEffectComponent::RegisterModifiable(ModifiablePropertyLineBase *propertyLine)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	externalModifiables.insert(std::make_pair(propertyLine->GetValueName(), propertyLine));
 	Map<String, float32>::iterator it = externalValues.find(propertyLine->GetValueName());
 	if (it!=externalValues.end())
@@ -253,6 +303,8 @@ void ParticleEffectComponent::RegisterModifiable(ModifiablePropertyLineBase *pro
 }
 void ParticleEffectComponent::UnRegisterModifiable(ModifiablePropertyLineBase *propertyLine)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	for (MultiMap<String, ModifiablePropertyLineBase *>::iterator it = externalModifiables.lower_bound(propertyLine->GetValueName()), e=externalModifiables.upper_bound(propertyLine->GetValueName()); it!=e; ++it)
 	{
 		if ((*it).second == propertyLine) 
@@ -265,6 +317,8 @@ void ParticleEffectComponent::UnRegisterModifiable(ModifiablePropertyLineBase *p
 
 void ParticleEffectComponent::RebuildEffectModifiables()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	externalModifiables.clear();
 	List<ModifiablePropertyLineBase *> modifiables;
 	
@@ -285,6 +339,8 @@ void ParticleEffectComponent::RebuildEffectModifiables()
 	
 int32 ParticleEffectComponent::GetActiveParticlesCount()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	int32 totalActiveParticles = 0;
 	for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e=effectData.groups.end(); it!=e; ++it)
 		totalActiveParticles+=(*it).activeParticleCount;
@@ -295,6 +351,8 @@ int32 ParticleEffectComponent::GetActiveParticlesCount()
 
 void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 	archive->SetUInt32("pe.version", 1);
 	archive->SetBool("pe.stopWhenEmpty", stopWhenEmpty);
@@ -321,6 +379,8 @@ void ParticleEffectComponent::Serialize(KeyedArchive *archive, SerializationCont
 
 void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Deserialize(archive, serializationContext);
 	loadedVersion = archive->GetUInt32("pe.version", 0);
 	
@@ -353,6 +413,8 @@ void ParticleEffectComponent::Deserialize(KeyedArchive *archive, SerializationCo
 
 void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Entity *entity = GetEntity();
 	bool lodDefined = false;
 	effectDuration = 0;
@@ -403,28 +465,38 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext *serializat
 
 int32 ParticleEffectComponent::GetEmittersCount()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return (int32)emitters.size();
 }
 ParticleEmitter* ParticleEffectComponent::GetEmitter(int32 id)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	DVASSERT((id>=0)&&(id<(int32)emitters.size()));
 	return emitters[id];
 }
 
 Vector3 ParticleEffectComponent::GetSpawnPosition(int id)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     DVASSERT((id>=0)&&(id<(int32)spawnPositions.size()));
     return spawnPositions[id];
 }
 
 void ParticleEffectComponent::SetSpawnPosition(int id, Vector3 position)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     DVASSERT((id>=0)&&(id<(int32)spawnPositions.size()));
     spawnPositions[id] = position;
 }
 
 void ParticleEffectComponent::AddEmitter(ParticleEmitter *emitter)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     SafeRetain(emitter);
 
 	emitters.push_back(emitter);
@@ -434,6 +506,8 @@ void ParticleEffectComponent::AddEmitter(ParticleEmitter *emitter)
 
 int32 ParticleEffectComponent::GetEmitterId(ParticleEmitter *emitter)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     for (int32 i=0, sz=emitters.size(); i<sz; ++i)
         if (emitters[i]==emitter)
             return i;
@@ -442,6 +516,8 @@ int32 ParticleEffectComponent::GetEmitterId(ParticleEmitter *emitter)
 
 void ParticleEffectComponent::InsertEmitterAt(ParticleEmitter *emitter, int32 position)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     Vector<ParticleEmitter*>::iterator it = emitters.begin();
     std::advance(it, Min(position, GetEmittersCount()));
     SafeRetain(emitter);
@@ -454,6 +530,8 @@ void ParticleEffectComponent::InsertEmitterAt(ParticleEmitter *emitter, int32 po
 
 void ParticleEffectComponent::RemoveEmitter(ParticleEmitter *emitter)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Vector<ParticleEmitter *>::iterator it = std::find(emitters.begin(), emitters.end(), emitter);
 	DVASSERT(it!=emitters.end());
     int32 id = GetEmitterId(emitter);
@@ -469,6 +547,8 @@ void ParticleEffectComponent::RemoveEmitter(ParticleEmitter *emitter)
 /*statistics for editor*/
 int32 ParticleEffectComponent::GetLayerActiveParticlesCount(ParticleLayer *layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     int32 count = 0;
     for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
     {
@@ -481,6 +561,8 @@ int32 ParticleEffectComponent::GetLayerActiveParticlesCount(ParticleLayer *layer
 }
 float32 ParticleEffectComponent::GetLayerActiveParticlesSquare(ParticleLayer *layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     float32 square = 0;
     for (List<ParticleGroup>::iterator it = effectData.groups.begin(), e = effectData.groups.end(); it!=e; ++it)
     {
@@ -499,23 +581,33 @@ float32 ParticleEffectComponent::GetLayerActiveParticlesSquare(ParticleLayer *la
 
 float32 ParticleEffectComponent::GetCurrTime()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return time;
 }
 
 bool ParticleEffectComponent::GetReflectionVisible() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return effectRenderObject->GetReflectionVisible();
 }
 void ParticleEffectComponent::SetReflectionVisible(bool visible)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     effectRenderObject->SetReflectionVisible(visible);
 }
 bool ParticleEffectComponent::GetRefractionVisible() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return effectRenderObject->GetRefractionVisible();
 }
 void ParticleEffectComponent::SetRefractionVisible(bool visible)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     effectRenderObject->SetRefractionVisible(visible);
 }
 

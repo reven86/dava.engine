@@ -39,6 +39,10 @@ namespace DAVA
 
 Image::Image()
 :	data(0)
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    ,   mmFile(NULL)
+    ,   offset(0)
+#endif
 ,   dataSize(0)
 ,	width(0)
 ,	height(0)
@@ -46,11 +50,19 @@ Image::Image()
 ,	cubeFaceID(Texture::CUBE_FACE_INVALID)
 ,	mipmapLevel(-1)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
 }
 
 Image::~Image()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    data = NULL;
+    SafeRelease(mmFile);
+#else
 	SafeDeleteArray(data);
+#endif
 	
 	width = 0;
 	height = 0;
@@ -58,6 +70,8 @@ Image::~Image()
 
 Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	Image * image = new Image();
 	image->width = width;
 	image->height = height;
@@ -87,9 +101,14 @@ Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 			image->dataSize = dSize;
 		}
         
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        image->mmFile = new MemoryMappedFile(image->dataSize);
+        image->data = image->mmFile->GetPointer();
+#else
         image->data = new uint8[image->dataSize];
+#endif
     }
-    else 
+    else
     {
         Logger::Error("[Image::Create] trying to create image with wrong format");
 		SafeRelease(image);
@@ -100,6 +119,8 @@ Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 
 Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	Image * image = Image::Create(width, height, format);
 	if(!image) return NULL;
 
@@ -113,12 +134,19 @@ Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, c
 
 Image * Image::CreatePinkPlaceholder(bool checkers)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     Image * image = new Image();
 	image->width = 16;
 	image->height = 16;
 	image->format = FORMAT_RGBA8888;
     image->dataSize = image->width * image->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    image->mmFile = new MemoryMappedFile(image->dataSize);
+    image->data = image->mmFile->GetPointer();
+#else
     image->data = new uint8[image->dataSize];
+#endif
 
     image->MakePink(checkers);
     
@@ -157,6 +185,8 @@ void Image::Normalize()
     
 Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     Vector<Image *> imageSet;
 
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
@@ -205,12 +235,19 @@ Vector<Image *> Image::CreateMipMapsImages(bool isNormalMap /* = false */)
 
 void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	uint8 * newData = NULL;
 	int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
 
 	if(formatSize>0)
 	{
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        MemoryMappedFile *mmFile = new MemoryMappedFile(newWidth * newHeight * formatSize);
+        newData = mmFile->GetPointer();
+#else
 		newData = new uint8[newWidth * newHeight * formatSize];
+#endif
 		memset(newData, 0, newWidth * newHeight * formatSize);
 
 		float32 kx = (float32)width / (float32)newWidth;
@@ -246,13 +283,21 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 		// resized data
 		width = newWidth;
 		height = newHeight;
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        SafeRelease(this->mmFile);
+        this->mmFile = mmFile;
+        this->offset = 0;
+#else
 		SafeDeleteArray(data);
+#endif
 		data = newData;
 	}
 }
 
 void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     uint8 * newData = NULL;
     uint32 newDataSize = 0;
     int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(format);
@@ -260,8 +305,13 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
     if(formatSize>0)
     {
         newDataSize = newWidth * newHeight * formatSize;
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        MemoryMappedFile *mmFile = new MemoryMappedFile(newDataSize);
+        newData = mmFile->GetPointer();
+#else
         newData = new uint8[newDataSize];
-            
+#endif
+        
         uint32 currentLine = 0;
         uint32 indexOnLine = 0;
         uint32 indexInOldData = 0;
@@ -298,8 +348,14 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
         // resized data
         width = newWidth;
         height = newHeight;
-            
+        
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        SafeRelease(this->mmFile);
+        this->mmFile = mmFile;
+        this->offset = 0;
+#else
         SafeDeleteArray(data);
+#endif
         data = newData;
         dataSize = newDataSize;
     }
@@ -307,6 +363,8 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
 
 void Image::ResizeToSquare()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     uint32 newImageSize = Max(width, height);
     ResizeCanvas(newImageSize, newImageSize);
 }
@@ -315,6 +373,8 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 							  uint32 newWidth, uint32 newHeight,
 							  uint32 xOffset, uint32 yOffset)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	DVASSERT(newWidth >= 0 && newHeight >= 0 && xOffset >= 0 && yOffset >= 0);
 
 	uint32 oldWidth = imageToCopy->GetWidth();
@@ -341,6 +401,8 @@ Image* Image::CopyImageRegion(const Image* imageToCopy,
 
 Image* Image::CopyImageRegion(const Image* imageToCopy, const Rect& rect)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	return CopyImageRegion(imageToCopy, (uint32)rect.dx, (uint32)rect.dy, (uint32)rect.x, (uint32)rect.y);
 }
 
@@ -348,6 +410,8 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 						uint32 srcX /* = 0 */, uint32 srcY /* = 0 */,
 						uint32 srcWidth /* = -1 */, uint32 srcHeight /* = -1 */)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	if (GetPixelFormat() != image->GetPixelFormat())
 	{
 		return;
@@ -396,6 +460,8 @@ void Image::InsertImage(const Image* image, uint32 dstX, uint32 dstY,
 
 void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& srcRect)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	InsertImage(image, (uint32)dstPos.x, (uint32)dstPos.y,
 				(uint32)srcRect.x, (uint32)srcRect.y, (uint32)srcRect.dx, (uint32)srcRect.dy);
 }
@@ -403,6 +469,8 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 
 bool Image::Save(const FilePath &path) const
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     return ImageLoader::Save(this, path);
 }
     

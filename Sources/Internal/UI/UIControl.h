@@ -726,12 +726,20 @@ public:
 	 \returns if contorl hasn't parent returns NULL.
 	 */
 	UIControl *GetParent();
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    /**
+	 \brief Returns list of control children.
+	 \returns list of control children.
+	 */
+    const ListBase<UIControl*> &GetChildren() const;
 
+#else
 	/**
 	 \brief Returns list of control children.
 	 \returns list of control children.
 	 */
     const List<UIControl*> &GetChildren() const;
+#endif
 	/**
 	 \brief Returns list of control children without internal controls.
 	 \returns list of control children without internal controls.
@@ -1244,7 +1252,13 @@ protected:
 	Vector2 absolutePosition;
 	
 	UIControl *parent;
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    ListBase<UIControl*> childs;
+#else
+
 	List<UIControl*> childs;
+#endif
+
 	List<UIControl*> realChilds;
     
 	UIControlBackground *background;

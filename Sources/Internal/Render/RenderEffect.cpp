@@ -36,6 +36,7 @@ Map<String, RenderEffect*> RenderEffect::effectsMap;
     
 RenderEffect::RenderEffect()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
     /* 
     TODO: fix this code
      
@@ -53,21 +54,28 @@ RenderEffect::RenderEffect()
 
 RenderEffect::~RenderEffect()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     //effectsMap.erase(GetName());
 }
     
 const char * RenderEffect::GetName()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
     return "EmptyEffect";
 }
 
 void RenderEffect::DrawArrays(ePrimitiveType mode, int32 first, int32 count)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT("RenderEffect::DrawArrays not implemented but called" && 0);
 }
     
 void RenderEffect::DrawElements(ePrimitiveType type, int32 count, eIndexFormat indexFormat, void * indices)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     DVASSERT("RenderEffect::DrawElements not implemented but called" && 0);
 }
 

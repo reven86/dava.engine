@@ -35,6 +35,8 @@ namespace DAVA
 
 void SpeedTreeObject::RecalcBoundingBox()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPEEDTREE)
+    
     bbox = AABBox3();
 
     uint32 size = (uint32)renderBatchArray.size();
@@ -54,6 +56,8 @@ void SpeedTreeObject::RecalcBoundingBox()
 
 RenderObject * SpeedTreeObject::Clone(RenderObject *newObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPEEDTREE)
+    
     if(!newObject)
     {
         DVASSERT_MSG(IsPointerToExactClass<SpeedTreeObject>(this), "Can clone only SpeedTreeObject");
@@ -65,6 +69,8 @@ RenderObject * SpeedTreeObject::Clone(RenderObject *newObject)
 
 AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeLeafGeometry(PolygonGroup * pg)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPEEDTREE)
+    
     AABBox3 pgBbox;
     if(pg)
     {

@@ -46,7 +46,7 @@ protected:
     ~SwitchComponent(){};
 public:
 	IMPLEMENT_COMPONENT_TYPE(SWITCH_COMPONENT);
-
+    IMPLEMENT_POOL_ALLOCATOR(SwitchComponent,100);
 	SwitchComponent();
 	virtual Component * Clone(Entity * toEntity);
 	virtual void Serialize(KeyedArchive *archive, SerializationContext *serializationContext);

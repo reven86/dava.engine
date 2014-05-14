@@ -39,6 +39,7 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name, Stat
     : RenderPass(name, id)
     , occlusion(_occlusion)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
     
     AddRenderLayer(new RenderLayer(LAYER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_OPAQUE_ID), LAST_LAYER);
     AddRenderLayer(new RenderLayer(LAYER_AFTER_OPAQUE, RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK, RENDER_LAYER_AFTER_OPAQUE_ID), LAST_LAYER);
@@ -51,7 +52,7 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName & name, Stat
     
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
 }
 
 
@@ -65,6 +66,8 @@ bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const Ren
     
 void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_STATIC_OCLUSSION)
+
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();   
 

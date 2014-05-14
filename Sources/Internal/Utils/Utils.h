@@ -37,9 +37,10 @@
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
 #include "Render/RenderBase.h"
+#include "Base/FixedString.h"
 #include <sstream>
 
-namespace DAVA 
+namespace DAVA
 {
 int read_handler(void *ext, unsigned char *buffer, size_t size, size_t *length);
 
@@ -61,6 +62,10 @@ void EnableSleepTimer();
 	
 //int SplitString(const String& input, const String& delimiter, std::vector<String>& results, bool includeEmpties = true);
 void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated = false);
+
+#if defined (__USE_FIXED_STRING_ALLOCATOR__)
+void Split(const FixedString & inputString, const FixedString & delims, Vector<FixedString> & tokens, bool skipDuplicated = false);
+#endif
 
 void ReplaceBundleName(const String &newBundlePath);
     

@@ -49,6 +49,9 @@ class TextureDescriptor
     static const int32 LINE_SIZE = 256;
     static const int8 CURRENT_VERSION = 7;
     
+public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_TEXTURE)
+
 	enum eSignatures
 	{
 		COMPRESSED_FILE = 0x00EEEE00,

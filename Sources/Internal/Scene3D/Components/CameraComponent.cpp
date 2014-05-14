@@ -41,27 +41,37 @@ REGISTER_CLASS(CameraComponent)
     
 CameraComponent::CameraComponent(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     camera = SafeRetain(_camera);
 }
 
 CameraComponent::~CameraComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     SafeRelease(camera);
 }
 
 Camera* CameraComponent::GetCamera()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return camera;
 }
     
 void CameraComponent::SetCamera(Camera * _camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	SafeRelease(camera);
     camera = SafeRetain(_camera);
 }
 
 Component* CameraComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     CameraComponent * newComponent = new CameraComponent();
 	newComponent->SetEntity(toEntity);
     newComponent->camera = (Camera*)camera->Clone();
@@ -71,6 +81,8 @@ Component* CameraComponent::Clone(Entity * toEntity)
 
 void CameraComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive && NULL != camera)
@@ -86,6 +98,8 @@ void CameraComponent::Serialize(KeyedArchive *archive, SerializationContext *ser
 
 void CameraComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
 		KeyedArchive *camArch = archive->GetArchive("cc.camera");

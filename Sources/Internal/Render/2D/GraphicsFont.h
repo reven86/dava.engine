@@ -45,6 +45,8 @@ class GraphicsFontDefinition;
 class GraphicsFont : public Font
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_GRAPHICS_FONT)
+    
 	static GraphicsFont * Create(const FilePath & fontDefName, const FilePath & spriteName);
 	
 	virtual void	SetSize(float32 size);

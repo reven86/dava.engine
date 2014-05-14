@@ -47,6 +47,7 @@ class SpriteNode : public Entity
 protected:
     ~SpriteNode();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SPRITE)
     
     SpriteNode(const FilePath &pathToSprite, int32 frame = 0
                , const Vector2 &reqScale = Vector2(1.0f, 1.0f)

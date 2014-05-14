@@ -104,7 +104,12 @@ public:
 		\param[in] defaultValue this is value that is used if variable with this key do not exists in archive
 		\returns value of variable or defaultValue if key isn't available
 	 */
+//#if defined(__USE_OWN_ALLOCATORS__)
+  //  const char* GetString(const String & key, const String & defaultValue = "");
+//#else
 	String GetString(const String & key, const String & defaultValue = "");
+//#endif
+
 	/**
 		\brief Function to get variable from archive.
 		\param[in] key string key
@@ -454,6 +459,9 @@ public:
 
 private:
 	Map<String, VariantType*> objectMap;
+#if defined(__USE_OWN_ALLOCATORS__)
+    uint32 prevStackPos;
+#endif
 
 public:
 	INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL);

@@ -56,6 +56,8 @@ using namespace DAVA;
 
 void abort_(const char * s, ...)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	va_list args;
 	va_start(args, s);
 	vfprintf(stderr, s, args);
@@ -68,6 +70,8 @@ void abort_(const char * s, ...)
 
 void convert_rawpp_to_bytestream(int32 width, int32 height, png_bytepp row_pointers, uint8 * data)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	for (int y = 0; y < height; y++) 
 	{
 		png_byte* row = row_pointers[y];
@@ -78,6 +82,8 @@ void convert_rawpp_to_bytestream(int32 width, int32 height, png_bytepp row_point
 
 void convert_bytestream_to_rawpp(int32 width, int32 height, uint8 * data, png_bytepp row_pointers)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	for (int y = 0; y < height; y++)
 	{
 		png_byte* row = row_pointers[y];
@@ -93,12 +99,16 @@ struct	PngImageRawData
 
 static void	PngImageRead(png_structp pngPtr, png_bytep data, png_size_t size)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	PngImageRawData * self = (PngImageRawData*)png_get_io_ptr(pngPtr);
 	self->file->Read(data, (uint32)size);
 }
 
 int LibPngWrapper::ReadPngFile(const FilePath & file, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	File * infile = File::Create(file, File::OPEN | File::READ);
 	if (!infile)
 	{
@@ -113,6 +123,8 @@ int LibPngWrapper::ReadPngFile(const FilePath & file, Image * image, PixelFormat
 
 int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
     
 	png_structp png_ptr;
@@ -219,8 +231,16 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 	png_read_update_info(png_ptr, info_ptr);
 	
 	rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-	
-    uint8 *image_data = new uint8 [rowbytes * height];
+    
+
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    MemoryMappedFile *mmFile = new MemoryMappedFile(rowbytes * height);
+    uint8 *image_data = mmFile->GetPointer();
+#else
+	uint8 *image_data = new uint8 [rowbytes * height];
+#endif
+
+
 	if (image_data == 0)
 	{
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -254,13 +274,20 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFo
 	/* Clean up. */
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 	
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    image->mmFile = mmFile;
+#endif
+    image->dataSize = rowbytes * height;
 	image->data = image_data;
+
 	
 	return 1;
 }
 
 bool LibPngWrapper::IsPngFile(File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     char sig[8];
     file->Read(sig, 8);
 	
@@ -269,6 +296,8 @@ bool LibPngWrapper::IsPngFile(File *file)
 
 uint32 LibPngWrapper::GetDataSize(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     File * infile = File::Create(filePathname, File::OPEN | File::READ);
 	if (!infile)
 	{
@@ -348,6 +377,8 @@ uint32 LibPngWrapper::GetDataSize(const FilePath &filePathname)
 
 bool LibPngWrapper::WritePngFile(const FilePath & file_name, int32 width, int32 height, uint8 * data, PixelFormat format)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 //	printf("* Writing PNG file (%d x %d): %s\n", width, height, file_name);
 	png_color_8 sig_bit;
 	
@@ -513,11 +544,13 @@ PngImage::PngImage()
 ,	data(0)
 ,   format(FORMAT_INVALID)
 {
-		
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
 }
 
 PngImage::~PngImage()
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	SafeDeleteArray(data);
 	width = 0;
 	height = 0;
@@ -526,18 +559,24 @@ PngImage::~PngImage()
 
 bool PngImage::Load(const FilePath & filename)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	//LibPngWrapper::ReadPngFile(filename, &width, &height, &data);
 	return true;
 }
 
 bool PngImage::Save(const FilePath & filename)
 {
-	LibPngWrapper::WritePngFile(filename, width, height, data, format);
+	TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
+    LibPngWrapper::WritePngFile(filename, width, height, data, format);
 	return true;
 }
 
 bool PngImage::Create(int _width, int _height)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	width = _width;
 	height = _height;
 	data = new uint8[width * 4 * height];
@@ -548,6 +587,8 @@ bool PngImage::Create(int _width, int _height)
 
 void PngImage::DrawImage(int sx, int sy, PngImage * image)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	// printf("0x%08x 0x%08x %d %d\n", data, image->data, sx, sy);
 	
 	uint32 * destData32 = (uint32*)data;
@@ -563,6 +604,8 @@ void PngImage::DrawImage(int sx, int sy, PngImage * image)
 
 void PngImage::DrawRect(const Rect2i & rect, uint32 color)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	uint32 * destData32 = (uint32*)data;
 	
 	for (int i = 0; i < rect.dx; ++i)
@@ -579,6 +622,8 @@ void PngImage::DrawRect(const Rect2i & rect, uint32 color)
 
 bool PngImage::CreateFromFBOSprite(Sprite * fboSprite)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	if (!fboSprite)return false;
 	
 	width = fboSprite->GetTexture()->GetWidth();

@@ -47,6 +47,8 @@ class Data;
 class ShaderAsset : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADER)
+    
     struct DefaultValue
     {
         Shader::eUniformType type;
@@ -114,6 +116,8 @@ protected:
 class ShaderCache : public Singleton<ShaderCache>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADER)
+    
     ShaderCache();
     ~ShaderCache();
     

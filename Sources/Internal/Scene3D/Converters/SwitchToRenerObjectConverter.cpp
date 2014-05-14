@@ -32,11 +32,15 @@
 
 void SwitchToRenerObjectConverter::ConsumeSwitchedRenderObjects(Entity * scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
 	SerachForSwitch(scene);
 }
 
 void SwitchToRenerObjectConverter::SerachForSwitch(Entity * currentNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
 	for(int32 c = 0; c < currentNode->GetChildrenCount(); ++c)
 	{
 		Entity * childNode = currentNode->GetChild(c);
@@ -51,6 +55,8 @@ void SwitchToRenerObjectConverter::SerachForSwitch(Entity * currentNode)
 
 bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
 	Vector<Entity*> entitiesToRemove;
 
 	SwitchComponent * sw = GetSwitchComponent(entity);
@@ -159,6 +165,8 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
 
 void SwitchToRenerObjectConverter::FindRenderObjectsRecursive(Entity * fromEntity, Vector<std::pair<Entity*, RenderObject*> > & entityAndObjectPairs)
 {
+    TAG_SWITCH(MemoryManager::TAG_CONVERTERS)
+    
     RenderObject * ro = GetRenderObject(fromEntity);
     if(ro && ro->GetType() == RenderObject::TYPE_MESH)
     {

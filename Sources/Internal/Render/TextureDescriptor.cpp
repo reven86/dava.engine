@@ -47,6 +47,8 @@ namespace DAVA
 //================   TextureDrawSettings  ===================
 void TextureDescriptor::TextureDrawSettings::SetDefaultValues()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     wrapModeS = Texture::WRAP_REPEAT;
     wrapModeT = Texture::WRAP_REPEAT;
 
@@ -102,6 +104,8 @@ bool TextureDescriptor::TextureDataSettings::IsFlagEnabled( int8 flag ) const
 //================   Compression  ===================
 void TextureDescriptor::Compression::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     format = FORMAT_INVALID;
 	sourceFileCrc = 0;
     convertedFileCrc = 0;
@@ -119,6 +123,8 @@ TextureDescriptor::TextureDescriptor(bool needCompressionSettings /*= true*/)
 	: isCompressedFile(!needCompressionSettings)
 	, compression(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
     if(needCompressionSettings)
         AllocateCompressionData();
     
@@ -127,12 +133,15 @@ TextureDescriptor::TextureDescriptor(bool needCompressionSettings /*= true*/)
 
 TextureDescriptor::~TextureDescriptor()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
 	if(isCompressedFile == false)
 		ReleaseCompressionData();
 }
 
 TextureDescriptor * TextureDescriptor::CreateFromFile(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	if(filePathname.IsEmpty() || filePathname.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
@@ -151,6 +160,8 @@ TextureDescriptor * TextureDescriptor::CreateFromFile(const FilePath &filePathna
     
 TextureDescriptor * TextureDescriptor::CreateDescriptor(Texture::TextureWrap wrap, bool generateMipmaps)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     TextureDescriptor *descriptor = new TextureDescriptor();
 	descriptor->Initialize(wrap, generateMipmaps);
 
@@ -160,6 +171,8 @@ TextureDescriptor * TextureDescriptor::CreateDescriptor(Texture::TextureWrap wra
     
 void TextureDescriptor::SetDefaultValues()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	pathname = FilePath();
 	format = FORMAT_INVALID;
 
@@ -180,16 +193,22 @@ void TextureDescriptor::SetDefaultValues()
 
 void TextureDescriptor::SetQualityGroup(const FastName &group)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     qualityGroup = group;
 }
 
 FastName TextureDescriptor::GetQualityGroup() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     return qualityGroup;
 }
     
 bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     const Compression *compression = GetCompressionParams(forGPU);
 	uint32 sourceCRC = ReadSourceCRC();
     uint32 convertedCRC = GetConvertedCRC(forGPU);
@@ -199,6 +218,8 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
     
 bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     bool wasUpdated = false;
     const Compression *compression = GetCompressionParams(forGPU);
 
@@ -221,6 +242,8 @@ bool TextureDescriptor::UpdateCrcForFormat(eGPUFamily forGPU) const
     
 bool TextureDescriptor::Load(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	DVASSERT(compression == NULL);
 
     File *file = File::Create(filePathname, File::READ | File::OPEN);
@@ -273,12 +296,16 @@ bool TextureDescriptor::Load(const FilePath &filePathname)
 
 void TextureDescriptor::Save() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     DVASSERT_MSG(!pathname.IsEmpty(), "Can use this method only after calling Load()");
     Save(pathname);
 }
     
 void TextureDescriptor::Save(const FilePath &filePathname) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     File *file = File::Create(filePathname, File::WRITE | File::OPEN | File::CREATE);
     if(!file)
     {
@@ -308,6 +335,8 @@ void TextureDescriptor::Save(const FilePath &filePathname) const
   
 void TextureDescriptor::Export(const FilePath &filePathname) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     File *file = File::Create(filePathname, File::WRITE | File::OPEN | File::CREATE);
     if(!file)
     {
@@ -333,6 +362,8 @@ void TextureDescriptor::Export(const FilePath &filePathname) const
     
 void TextureDescriptor::ConvertToCurrentVersion(int8 version, int32 signature, DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	if(version == 5)
     {
         LoadVersion5(signature, file);
@@ -346,6 +377,8 @@ void TextureDescriptor::ConvertToCurrentVersion(int8 version, int32 signature, D
 
 void TextureDescriptor::LoadVersion5(int32 signature, DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	file->Read(&drawSettings.wrapModeS);
 	file->Read(&drawSettings.wrapModeT);
 	file->Read(&dataSettings.textureFlags);
@@ -408,6 +441,8 @@ void TextureDescriptor::LoadVersion5(int32 signature, DAVA::File *file)
 
 void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	file->Read(&drawSettings.wrapModeS);
 	file->Read(&drawSettings.wrapModeT);
 	file->Read(&dataSettings.textureFlags);
@@ -438,6 +473,8 @@ void TextureDescriptor::LoadVersion6(int32 signature, DAVA::File *file)
     
 void TextureDescriptor::LoadNotCompressed(File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     ReadGeneralSettings(file);
     
 	for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
@@ -448,6 +485,8 @@ void TextureDescriptor::LoadNotCompressed(File *file)
     
 void TextureDescriptor::LoadCompressed(File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     ReadGeneralSettings(file);
 	file->Read(&exportedAsGpuFamily);
 	int8 exportedAsPixelFormat = FORMAT_INVALID;
@@ -457,6 +496,8 @@ void TextureDescriptor::LoadCompressed(File *file)
 
 void TextureDescriptor::ReadGeneralSettings(File *file)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	file->Read(&drawSettings.wrapModeS);
 	file->Read(&drawSettings.wrapModeT);
 	file->Read(&dataSettings.textureFlags);
@@ -466,6 +507,8 @@ void TextureDescriptor::ReadGeneralSettings(File *file)
     
 void TextureDescriptor::WriteGeneralSettings(File *file) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	file->Write(&drawSettings.wrapModeS);
 	file->Write(&drawSettings.wrapModeT);
 	file->Write(&dataSettings.textureFlags);
@@ -476,6 +519,8 @@ void TextureDescriptor::WriteGeneralSettings(File *file) const
     
 void TextureDescriptor::ReadCompression(File *file, Compression *compression)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     int8 format;
 	file->Read(&format);
     compression->format = (PixelFormat)format;
@@ -488,6 +533,8 @@ void TextureDescriptor::ReadCompression(File *file, Compression *compression)
 
 void TextureDescriptor::ReadCompressionWithDateOld( File *file, Compression *compression )
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	int8 format;
 	file->Read(&format);
 	compression->format = (PixelFormat)format;
@@ -505,6 +552,8 @@ void TextureDescriptor::ReadCompressionWithDateOld( File *file, Compression *com
 
 void TextureDescriptor::ReadCompressionWith16CRCOld( File *file, Compression *compression )
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	int8 format;
 	file->Read(&format);
 	compression->format = (PixelFormat)format;
@@ -519,6 +568,8 @@ void TextureDescriptor::ReadCompressionWith16CRCOld( File *file, Compression *co
 
 void TextureDescriptor::WriteCompression(File *file, const Compression *compression) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
     int8 format = compression->format;
 
 	file->Write(&format);
@@ -530,11 +581,15 @@ void TextureDescriptor::WriteCompression(File *file, const Compression *compress
 
 bool TextureDescriptor::GetGenerateMipMaps() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
     return dataSettings.GetGenerateMipMaps();
 }
 
 FilePath TextureDescriptor::GetSourceTexturePathname() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     if(pathname.IsEmpty())
     {
         return FilePath();
@@ -545,6 +600,8 @@ FilePath TextureDescriptor::GetSourceTexturePathname() const
 
 FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     DVASSERT(!texturePathname.IsEmpty());
     
     if(0 == CompareCaseInsensitive(texturePathname.GetExtension(), GetDescriptorExtension()))
@@ -558,17 +615,23 @@ FilePath TextureDescriptor::GetDescriptorPathname(const FilePath &texturePathnam
 
 const String & TextureDescriptor::GetDescriptorExtension()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
     return DESCRIPTOR_EXTENSION;
 }
     
 const String & TextureDescriptor::GetSourceTextureExtension()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
     return SOURCEFILE_EXTENSION;
 }
     
     
 const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(eGPUFamily gpuFamily) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	DVASSERT(compression);
 
     DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
@@ -582,21 +645,29 @@ const TextureDescriptor::Compression * TextureDescriptor::GetCompressionParams(e
 
 String TextureDescriptor::GetSupportedTextureExtensions()
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     return String(".png;.pvr;.dxt;") + TextureDescriptor::GetDescriptorExtension();
 }
 
 bool TextureDescriptor::IsCompressedFile() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
     return isCompressedFile;
 }
 
 bool TextureDescriptor::IsCubeMap() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	return (dataSettings.faceDescription != 0);
 }
 
 uint32 TextureDescriptor::ReadSourceCRC() const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	uint32 crc = 0;
 
 	DAVA::File *f = DAVA::File::Create(GetSourceTexturePathname(), DAVA::File::OPEN | DAVA::File::READ);
@@ -633,6 +704,8 @@ uint32 TextureDescriptor::ReadSourceCRC() const
     
 uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	FilePath filePath = GPUFamilyDescriptor::CreatePathnameForGPU(this, forGPU);
 	if(filePath.IsEqualToExtension(".pvr"))
 	{
@@ -649,6 +722,8 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
     
 PixelFormat TextureDescriptor::GetPixelFormatForCompression(eGPUFamily forGPU) const
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+
 	DVASSERT(compression);
 
 	if(forGPU == GPU_UNKNOWN)	
@@ -660,6 +735,8 @@ PixelFormat TextureDescriptor::GetPixelFormatForCompression(eGPUFamily forGPU) c
 
 void TextureDescriptor::Initialize( Texture::TextureWrap wrap, bool generateMipmaps )
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	SetDefaultValues();
 
 	drawSettings.wrapModeS = wrap;
@@ -680,6 +757,8 @@ void TextureDescriptor::Initialize( Texture::TextureWrap wrap, bool generateMipm
 
 void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	if(!descriptor)
 	{
 		SetDefaultValues();
@@ -715,6 +794,8 @@ void TextureDescriptor::Initialize( const TextureDescriptor *descriptor )
 
 bool TextureDescriptor::Initialize(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_TEXTURE)
+    
 	SetDefaultValues();
 
 	FilePath descriptorPathname = GetDescriptorPathname(filePathname);

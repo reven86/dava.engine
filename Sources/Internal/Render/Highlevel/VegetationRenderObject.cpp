@@ -309,6 +309,8 @@ VegetationRenderObject::VegetationRenderObject() :
     layerVisibilityMask(0xFF),
     vegetationVisible(true)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     bbox.AddPoint(Vector3(0, 0, 0));
     bbox.AddPoint(Vector3(1, 1, 1));
     
@@ -339,6 +341,8 @@ VegetationRenderObject::VegetationRenderObject() :
 
 VegetationRenderObject::~VegetationRenderObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     SafeRelease(vegetationMap);
     SafeRelease(heightmap);
     
@@ -355,6 +359,8 @@ VegetationRenderObject::~VegetationRenderObject()
     
 RenderObject* VegetationRenderObject::Clone(RenderObject *newObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     if(!newObject)
     {
         DVASSERT_MSG(IsPointerToExactClass<VegetationRenderObject>(this), "Can clone only from VegetationRenderObject");
@@ -383,6 +389,8 @@ RenderObject* VegetationRenderObject::Clone(RenderObject *newObject)
 
 void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     //VI: need to remove render batches since they are temporary
     int32 batchesToRemove = GetRenderBatchCount();
     while(GetRenderBatchCount())
@@ -420,6 +428,8 @@ void VegetationRenderObject::Save(KeyedArchive *archive, SerializationContext *s
     
 void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     RenderObject::Load(archive, serializationContext);
     
     RenderManager::Caps deviceCaps = RenderManager::Instance()->GetCaps();
@@ -469,6 +479,8 @@ void VegetationRenderObject::Load(KeyedArchive *archive, SerializationContext *s
 
 void VegetationRenderObject::PrepareToRender(Camera *camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     bool renderFlag = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::VEGETATION_DRAW);
     
 #if defined(__DAVAENGINE_MACOS__)  || defined(__DAVAENGINE_WIN32__)
@@ -579,6 +591,8 @@ void VegetationRenderObject::PrepareToRender(Camera *camera)
 
 void VegetationRenderObject::SetVegetationMap(VegetationMap* map)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     if(map != vegetationMap)
     {
         SafeRelease(vegetationMap);
@@ -590,6 +604,8 @@ void VegetationRenderObject::SetVegetationMap(VegetationMap* map)
 
 void VegetationRenderObject::SetVegetationMap(const FilePath& path)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     if(path.Exists())
     {
         Vector<Image*> images;
@@ -619,6 +635,8 @@ VegetationMap* VegetationRenderObject::GetVegetationMap() const
     
 void VegetationRenderObject::SetVegetationMapPath(const FilePath& path)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     vegetationMapPath = path;
 }
 
@@ -629,6 +647,8 @@ const FilePath& VegetationRenderObject::GetVegetationMapPath() const
 
 void VegetationRenderObject::SetTextureSheet(const FilePath& path)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     textureSheetPath = path;
     textureSheet.Load(path);
     
@@ -637,12 +657,16 @@ void VegetationRenderObject::SetTextureSheet(const FilePath& path)
 
 void VegetationRenderObject::SetVegetationTexture(const FilePath& texturePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     vegetationMaterial->SetTexture(NMaterial::TEXTURE_ALBEDO,
                                    texturePath);
 }
 
 const FilePath& VegetationRenderObject::GetVegetationTexture() const
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     return vegetationMaterial->GetTexturePath(NMaterial::TEXTURE_ALBEDO);
 }
     
@@ -658,6 +682,8 @@ const FilePath& VegetationRenderObject::GetTextureSheetPath() const
 
 void VegetationRenderObject::SetClusterLimit(const uint32& maxClusters)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     clusterLimit = maxClusters;
     
     UpdateVegetationSetup();
@@ -670,6 +696,8 @@ uint32 VegetationRenderObject::GetClusterLimit() const
 
 void VegetationRenderObject::SetHeightmap(Heightmap* _heightmap)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     if(heightmap != _heightmap)
     {
         SafeRelease(heightmap);
@@ -696,16 +724,22 @@ const FilePath& VegetationRenderObject::GetHeightmapPath() const
 
 void VegetationRenderObject::SetHeightmapPath(const FilePath& path)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     heightmapPath = path;
 }
     
 void VegetationRenderObject::SetLightmap(const FilePath& filePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     vegetationMaterial->SetTexture(UNIFORM_SAMPLER_VEGETATIONMAP, filePath);
 }
     
 Texture* VegetationRenderObject::GetLightmap() const
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     return vegetationMaterial->GetTexture(UNIFORM_SAMPLER_VEGETATIONMAP);
 }
 
@@ -716,6 +750,8 @@ const FilePath& VegetationRenderObject::GetLightmapPath() const
 
 RenderBatch* VegetationRenderObject::GetRenderBatchFromPool(NMaterial* material)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     RenderBatch* rb = NULL;
     
     size_t currentPoolSize = renderBatchPool.size();
@@ -759,6 +795,8 @@ void VegetationRenderObject::ReturnToPool(int32 batchCount)
 
 void VegetationRenderObject::SetWorldSize(const Vector3 size)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     worldSize = size;
     
     vegetationMaterial->SetPropertyValue(UNIFORM_WORLD_SIZE,
@@ -783,6 +821,8 @@ Vector2 VegetationRenderObject::GetVegetationUnitWorldSize(float32 resolution) c
     
 void VegetationRenderObject::BuildSpatialStructure(VegetationMap* vegMap)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     DVASSERT(vegMap);
     DVASSERT(heightmap);
     DVASSERT(IsPowerOf2(vegMap->GetWidth()));
@@ -813,6 +853,8 @@ void VegetationRenderObject::BuildSpatialQuad(AbstractQuadTreeNode<SpatialData>*
                           uint16 width, uint16 height,
                           AABBox3& parentBox)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     DVASSERT(node);
     
     node->data.x = x;
@@ -874,6 +916,8 @@ void VegetationRenderObject::BuildVisibleCellList(const Vector3& cameraPoint,
                                                   Frustum* frustum,
                                                   Vector<AbstractQuadTreeNode<SpatialData>*>& cellList)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     uint8 planeMask = 0x3F;
     Vector3 cameraPosXY = cameraPoint;
     cameraPosXY.z = 0.0f;
@@ -886,6 +930,8 @@ void VegetationRenderObject::BuildVisibleCellList(const Vector3& cameraPoint,
                                                   AbstractQuadTreeNode<SpatialData>* node,
                                                   Vector<AbstractQuadTreeNode<SpatialData>*>& cellList)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     //static Vector3 corners[8];
     if(node)
     {
@@ -937,6 +983,8 @@ bool VegetationRenderObject::CellByDistanceCompareFunction(const AbstractQuadTre
     
 void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     Image* originalImage = Image::CreateFromData(heightMap->Size(),
                                                  heightMap->Size(),
                                                  FORMAT_A16,
@@ -983,6 +1031,8 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
     
 float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     uint32 hX = heightmapToVegetationMapScale.x * x;
     uint32 hY = heightmapToVegetationMapScale.y * y;
     
@@ -1017,6 +1067,8 @@ bool VegetationRenderObject::IsValidSpatialData() const
 
 void VegetationRenderObject::UpdateVegetationSetup()
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     if(vegetationMap)
     {
         for(size_t i = 0; i < COUNT_OF(RESOLUTION_SCALE); ++i)
@@ -1038,6 +1090,8 @@ void VegetationRenderObject::UpdateVegetationSetup()
 
 void VegetationRenderObject::SetVisibilityDistance(const Vector2& distances)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     visibleClippingDistances = distances;
 }
     
@@ -1048,12 +1102,16 @@ const Vector2& VegetationRenderObject::GetVisibilityDistance() const
     
 void VegetationRenderObject::ResetVisibilityDistance()
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     visibleClippingDistances.x = MAX_VISIBLE_CLIPPING_DISTANCE;
     visibleClippingDistances.y = MAX_VISIBLE_SCALING_DISTANCE;
 }
     
 void VegetationRenderObject::SetLodRange(const Vector3& distances)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     lodRanges = distances;
     
     InitLodRanges();
@@ -1066,6 +1124,8 @@ const Vector3& VegetationRenderObject::GetLodRange() const
     
 void VegetationRenderObject::ResetLodRanges()
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
    lodRanges = LOD_RANGES_SCALE;
    
    InitLodRanges();
@@ -1073,6 +1133,8 @@ void VegetationRenderObject::ResetLodRanges()
 
 void VegetationRenderObject::InitLodRanges()
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     Vector2 smallestUnitSize = GetVegetationUnitWorldSize(RESOLUTION_SCALE[0]);
     
     RESOLUTION_RANGES[0].x = lodRanges.x * smallestUnitSize.x;
@@ -1094,6 +1156,8 @@ void VegetationRenderObject::InitLodRanges()
 
 void VegetationRenderObject::SetMaxVisibleQuads(const uint32& _maxVisibleQuads)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     maxVisibleQuads = _maxVisibleQuads;
 }
 
@@ -1104,6 +1168,8 @@ const uint32& VegetationRenderObject::GetMaxVisibleQuads() const
 
 void VegetationRenderObject::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
      dataNodes.insert(vegetationMaterial);
 }
 
@@ -1111,6 +1177,8 @@ void VegetationRenderObject::SetupHeightmapParameters(BaseObject * caller,
                                                     void * param,
                                                     void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     Texture* tx = (Texture*)param;
     tx->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
     tx->SetMinMagFilter(Texture::FILTER_NEAREST, Texture::FILTER_NEAREST);
@@ -1118,6 +1186,8 @@ void VegetationRenderObject::SetupHeightmapParameters(BaseObject * caller,
 
 void VegetationRenderObject::CreateRenderData(uint32 maxClusters)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     DVASSERT(maxClusters > 0);
     DVASSERT(textureSheet.cells.size() > 0);
     
@@ -1313,6 +1383,8 @@ void VegetationRenderObject::CreateRenderData(uint32 maxClusters)
     
 void VegetationRenderObject::ReleaseRenderData()
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     size_t indexBufferResolutionCount = indexRenderDataObject.size();
     for(size_t indexBufferIndex = 0; indexBufferIndex < indexBufferResolutionCount; ++indexBufferIndex)
     {
@@ -1344,6 +1416,8 @@ void VegetationRenderObject::SetupNodeUniforms(AbstractQuadTreeNode<SpatialData>
                                                float32 cameraDistance,
                                                Vector<float32>& uniforms)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     if(node->IsTerminalLeaf())
     {
         DVASSERT(node->data.rdoIndex >= 0 && node->data.rdoIndex < uniforms.size());
@@ -1391,6 +1465,8 @@ void VegetationRenderObject::SetPerturbation(const Vector3& point,
                                             const Vector3& force,
                                             float32 distance)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     perturbationForce = force;
     maxPerturbationDistance = distance;
     perturbationPoint = point;
@@ -1417,12 +1493,16 @@ const Vector3& VegetationRenderObject::GetPerturbationPoint() const
 
 void VegetationRenderObject::SetPerturbationPoint(const Vector3& point)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     perturbationPoint = point;
     vegetationMaterial->SetPropertyValue(UNIFORM_PERTURBATION_POINT, Shader::UT_FLOAT_VEC3, 1, perturbationPoint.data);
 }
 
 void VegetationRenderObject::SetLayerVisibilityMask(const uint8& mask)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     layerVisibilityMask = mask;
 }
     
@@ -1433,6 +1513,8 @@ const uint8& VegetationRenderObject::GetLayerVisibilityMask() const
 
 void VegetationRenderObject::SetVegetationVisible(bool show)
 {
+    TAG_SWITCH(MemoryManager::TAG_VEGETATION)
+    
     vegetationVisible = show;
 }
     

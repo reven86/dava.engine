@@ -166,6 +166,8 @@ const NvttHelper::PairNvttPixelGLFormat NvttHelper::formatNamesMap[] =
 
 PixelFormat NvttHelper::GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	PixelFormat retValue = FORMAT_INVALID;
 	for(uint32 i = 0; i < Format_COUNT; ++i)
 	{
@@ -180,6 +182,8 @@ PixelFormat NvttHelper::GetPixelFormatByNVTTFormat(nvtt::Format nvttFormat)
 
 nvtt::Format NvttHelper::GetNVTTFormatByPixelFormat(PixelFormat pixelFormat)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	//bc5 is unsupported, used to determinate fail in search
 	nvtt::Format retValue = Format_BC5;
 	for(uint32 i = 0; i < Format_COUNT; ++i)
@@ -222,6 +226,8 @@ const QualcommHeler::PairQualcommPixelGLFormat QualcommHeler::formatPair[] =
 
 int32 QualcommHeler::GetQualcommFormat(PixelFormat format)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	for (int32 i = 0; i < Q_FORMAT_COUNT; ++i)
 	{
 		if (formatPair[i].davaFormat == format)
@@ -233,6 +239,8 @@ int32 QualcommHeler::GetQualcommFormat(PixelFormat format)
 
 PixelFormat QualcommHeler::GetDavaFormat(int32 format)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	for (int32 i = 0; i < Q_FORMAT_COUNT; ++i)
 	{
 		if (formatPair[i].qFormat == format)
@@ -245,6 +253,8 @@ PixelFormat QualcommHeler::GetDavaFormat(int32 format)
 	
 bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSet, int32 baseMipMap /*= 0*/, bool forceSoftwareConvertation /*=false*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, fileName))
@@ -257,6 +267,8 @@ bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSe
 
 bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap /*= 0*/, bool forceSoftwareConvertation /*=false*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, file))
@@ -268,6 +280,8 @@ bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet, int32 base
 
 bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	if(!(image.format >= FORMAT_DXT1 && image.format <= FORMAT_DXT5NM) )
 	{
 		Logger::Error("[LibDxtHelper::DecompressImageToRGBA] Wrong copression format (%d).", image.format);
@@ -320,6 +334,8 @@ bool NvttHelper::IsAtcFormat(nvtt::Format format)
 	
 bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     DDSInfo info;
     if(!GetInfo(dec, info))
     {
@@ -433,6 +449,8 @@ bool NvttHelper::ReadDxtFile(nvtt::Decompressor & dec, Vector<Image*> &imageSet,
 	
 bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vector<Image*> &imageSet, int32 baseMipMap)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	for(uint32 faceIndex = 0; faceIndex < info.faceCount; ++faceIndex)
 	{
 		uint32 faceWidth = info.width;
@@ -476,6 +494,8 @@ bool NvttHelper::DecompressDxt(const nvtt::Decompressor & dec, DDSInfo info, Vec
 
 bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, PixelFormat format, Vector<Image*> &imageSet, int32 baseMipMap)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 #if defined(__DAVAENGINE_MACOS__)
 	if (format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
 	{
@@ -573,6 +593,8 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 
 bool LibDxtHelper::WriteDdsFile(const FilePath & fileNameOriginal, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	//creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
 	if(!fileNameOriginal.IsEqualToExtension(".dds"))
     {
@@ -591,6 +613,8 @@ bool LibDxtHelper::WriteDdsFile(const FilePath & fileNameOriginal, int32 width, 
 
 bool LibDxtHelper::WriteDxtFile(const FilePath & fileNameOriginal, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	if(!( (compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)|| (compressionFormat == FORMAT_RGBA8888)) )
 	{
 		Logger::Error("[LibDxtHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
@@ -653,6 +677,8 @@ bool LibDxtHelper::WriteDxtFile(const FilePath & fileNameOriginal, int32 width, 
 
 bool LibDxtHelper::WriteAtcFile(const FilePath & fileNameOriginal, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     bool ret = true;
 
 	if (compressionFormat != FORMAT_ATC_RGB &&
@@ -806,18 +832,24 @@ bool LibDxtHelper::WriteAtcFile(const FilePath & fileNameOriginal, int32 width, 
 	
 bool LibDxtHelper::IsDxtFile(const FilePath & filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 	return dec.initWithDDSFile(filePathname.GetAbsolutePathname().c_str());
 }
 
 bool LibDxtHelper::IsDxtFile(File * file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 	return NvttHelper::InitDecompressor(dec,file);
 }
 
 PixelFormat LibDxtHelper::GetPixelFormat(const FilePath & fileName)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, fileName))
@@ -830,6 +862,8 @@ PixelFormat LibDxtHelper::GetPixelFormat(const FilePath & fileName)
 
 PixelFormat LibDxtHelper::GetPixelFormat(File * file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, file))
@@ -842,6 +876,8 @@ PixelFormat LibDxtHelper::GetPixelFormat(File * file)
 
 uint32 LibDxtHelper::GetMipMapLevelsCount(const FilePath & fileName)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, fileName))
@@ -854,6 +890,8 @@ uint32 LibDxtHelper::GetMipMapLevelsCount(const FilePath & fileName)
 
 uint32 LibDxtHelper::GetMipMapLevelsCount(File * file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, file))
@@ -866,6 +904,8 @@ uint32 LibDxtHelper::GetMipMapLevelsCount(File * file)
 
 uint32 LibDxtHelper::GetDataSize(const FilePath & fileName)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, fileName))
@@ -878,6 +918,8 @@ uint32 LibDxtHelper::GetDataSize(const FilePath & fileName)
 
 uint32 LibDxtHelper::GetDataSize(File * file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     nvtt::Decompressor dec ;
 
 	if(!NvttHelper::InitDecompressor(dec, file))
@@ -891,6 +933,8 @@ uint32 LibDxtHelper::GetDataSize(File * file)
 
 bool LibDxtHelper::GetTextureSize(const FilePath & fileName, uint32 & width, uint32 & height)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec;
 
 	if(!NvttHelper::InitDecompressor(dec, fileName))
@@ -903,6 +947,8 @@ bool LibDxtHelper::GetTextureSize(const FilePath & fileName, uint32 & width, uin
 
 bool LibDxtHelper::GetTextureSize(File * file, uint32 & width, uint32 & height)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	nvtt::Decompressor dec ;
 
 	if(!NvttHelper::InitDecompressor(dec, file))
@@ -916,6 +962,8 @@ bool LibDxtHelper::GetTextureSize(File * file, uint32 & width, uint32 & height)
 
 bool LibDxtHelper::AddCRCIntoMetaData(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	String fileNameStr = filePathname.GetAbsolutePathname();
 
 	uint32 tag = 0, crc = 0;
@@ -991,6 +1039,8 @@ bool LibDxtHelper::AddCRCIntoMetaData(const FilePath &filePathname)
 
 bool LibDxtHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* outputTag, uint32* outputCRC)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	String fileNameStr = filePathname.GetAbsolutePathname();
 	
 	File *fileRead = File::Create(filePathname, File::READ | File::OPEN);
@@ -1033,6 +1083,8 @@ bool LibDxtHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
 
 uint32 LibDxtHelper::GetCRCFromFile(const FilePath &filePathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	uint32 tag = 0, crc = 0;
 	bool success = GetCRCFromDDSHeader(filePathname, &tag, &crc);
 	return success ? crc : CRC32::ForFile(filePathname);
@@ -1040,6 +1092,8 @@ uint32 LibDxtHelper::GetCRCFromFile(const FilePath &filePathname)
 
 PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor & dec)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     nvtt::Format innerFormat;
     
     if(!dec.getCompressionFormat(innerFormat))
@@ -1053,6 +1107,8 @@ PixelFormat NvttHelper::GetPixelFormat(nvtt::Decompressor & dec)
 
 uint32 NvttHelper::GetMipMapLevelsCount(nvtt::Decompressor & dec)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     DDSInfo info;
     GetInfo(dec, info);
     return info.mipmapsCount;
@@ -1060,6 +1116,8 @@ uint32 NvttHelper::GetMipMapLevelsCount(nvtt::Decompressor & dec)
     
 uint32 NvttHelper::GetDataSize(nvtt::Decompressor & dec)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
     DDSInfo info;
     GetInfo(dec, info);
     return info.dataSize;
@@ -1068,6 +1126,8 @@ uint32 NvttHelper::GetDataSize(nvtt::Decompressor & dec)
 
 bool NvttHelper::GetTextureSize(nvtt::Decompressor & dec, uint32 & width, uint32 & height)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	DDSInfo info;
 	
 	bool ret = GetInfo(dec, info);
@@ -1078,6 +1138,8 @@ bool NvttHelper::GetTextureSize(nvtt::Decompressor & dec, uint32 & width, uint32
 
 bool NvttHelper::GetInfo(nvtt::Decompressor & dec, DDSInfo &info)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	bool retVal = dec.getInfo(info.mipmapsCount, info.width, info.height, info.dataSize, info.headerSize, info.faceCount, info.faceFlags);
 	if(!retVal)
 	{
@@ -1089,6 +1151,8 @@ bool NvttHelper::GetInfo(nvtt::Decompressor & dec, DDSInfo &info)
 
 void NvttHelper::SwapBRChannels(uint8* data, uint32 size)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	for(uint32 i = 0; i < size; i+=4)
 	{
 		//RGBA <-> BGRA
@@ -1104,6 +1168,8 @@ void NvttHelper::SwapBRChannels(uint8* data, uint32 size)
 
 bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, const FilePath & fileName)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	if(fileName.IsEmpty())
 	{
 		Logger::Error("[NvttHelper::InitDecompressor] try init with empty name");
@@ -1121,6 +1187,8 @@ bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, const FilePath & fil
 
 bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, File * file)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	if(NULL == file)
 	{
 		Logger::Error("[NvttHelper::InitDecompressor] Wrong handler.");
@@ -1139,6 +1207,8 @@ bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, File * file)
 
 bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, const uint8 * mem, uint32 size)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	if(NULL == mem || size == 0 )
 	{
 		Logger::Error("[NvttHelper::InitDecompressor] Wrong buffer params.");
@@ -1156,6 +1226,8 @@ bool NvttHelper::InitDecompressor(nvtt::Decompressor & dec, const uint8 * mem, u
 	
 uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_IMAGE)
+    
 	uint32 faceId = Texture::CUBE_FACE_INVALID;
 	
 	if(faceIndex >= 0 && faceIndex < 6)

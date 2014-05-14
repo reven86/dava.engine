@@ -55,23 +55,58 @@ AllocatorFactory::~AllocatorFactory()
 void AllocatorFactory::Dump()
 {
 #ifdef __DAVAENGINE_DEBUG__
-	Logger::FrameworkDebug("AllocatorFactory::Dump (Max item count) ================");
+	//Logger::FrameworkDebug("AllocatorFactory::Dump (Max item count) ================");
 	Map<String, FixedSizePoolAllocator*>::iterator itEnd = allocators.end();
+    uint32 allover = 0;
 	for(Map<String, FixedSizePoolAllocator*>::iterator it = allocators.begin(); it != itEnd; ++it)
 	{
 		FixedSizePoolAllocator * alloc = (*it).second;
-		Logger::FrameworkDebug("  %s: %u", it->first.c_str(), alloc->maxItemCount);
+		//Logger::FrameworkDebug("  %s: maxItemCount=%u blockSize=%u blockArraySize=%u over=%u freeItemCount=%u", it->first.c_str(), alloc->maxItemCount, alloc->blockSize, alloc->blockArraySize, alloc->freeItemCount*alloc->blockSize, alloc->freeItemCount);
+        allover+=alloc->freeItemCount*alloc->blockSize;
 	}
 
-	Logger::FrameworkDebug("End of AllocatorFactory::Dump ==========================");
+	//Logger::FrameworkDebug("End of AllocatorFactory::Dump ========================== allover= %ubyte",allover);
 #endif //__DAVAENGINE_DEBUG__
 }
 
+#if defined(__USE_OWN_ALLOCATORS__)
+void AllocatorFactory::FreeAllocator(StackAllocator *)
+{
+    pthread_t threadID = pthread_self();
+    StackAllocator* allocator = stackAllocators[threadID];
+    if(allocator != 0)
+    {
+        delete allocator;
+        stackAllocators[threadID] = NULL;
+    }
+}
+
+StackAllocator *AllocatorFactory::CreateStackAllocator(uint32 size)
+{
+    // TODO: use size?
+    pthread_t threadID = pthread_self();
+    StackAllocator* allocator = stackAllocators[threadID];
+    if(allocator == 0)
+    {
+        allocator = new StackAllocator(1024*512);
+        stackAllocators[threadID] = allocator;
+    }
+    return allocator;
+}
+
+StackAllocator * AllocatorFactory::GetAllocator()
+{
+    pthread_t threadID = pthread_self();
+    return stackAllocators[threadID];
+}
+#endif
+    
 FixedSizePoolAllocator * AllocatorFactory::GetAllocator(const DAVA::String& className, DAVA::uint32 classSize, int32 poolLength)
 {
     FixedSizePoolAllocator * alloc = allocators[className];
     if(0 == alloc)
     {
+       // Logger::FrameworkDebug("new FixedSizePoolAllocator %s size=%d",className.c_str(),classSize);
         alloc = new FixedSizePoolAllocator(classSize, poolLength);
         allocators[className] = alloc;
     }

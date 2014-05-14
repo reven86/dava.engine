@@ -48,6 +48,8 @@ class RenderDataStream : public BaseObject
 protected:
     virtual ~RenderDataStream();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
     RenderDataStream();
     
     void Set(eVertexDataType type, int32 size, int32 stride, const void * pointer);
@@ -67,6 +69,8 @@ class RenderDataObject : public RenderResource //BaseObject
 protected:
     virtual ~RenderDataObject();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
     RenderDataObject();
     
     RenderDataStream * SetStream(eVertexFormat formatMark, eVertexDataType vertexType, int32 size, int32 stride, const void * pointer);

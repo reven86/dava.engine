@@ -45,7 +45,11 @@ namespace DAVA
 
 		virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);
 		virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-		virtual List<UIControl* >& GetRealChildren();
+/*#if defined (__USE_STL_POOL_ALLOCATOR__)
+        virtual ListBase<UIControl* >& GetRealChildren();
+#else*/
+        virtual List<UIControl* >& GetRealChildren();
+//#endif
 	
 		void AddAggregatorChild(UIControl* uiControl);
 		

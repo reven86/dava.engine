@@ -40,6 +40,7 @@ namespace DAVA
 class SpeedTreeObject: public Mesh
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SPEEDTREE)
 
     SpeedTreeObject() {};
     virtual ~SpeedTreeObject() {};

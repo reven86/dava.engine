@@ -43,6 +43,8 @@ class Camera;
 class RenderPass
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_PASS)
+    
     RenderPass(const FastName & name, RenderPassID id);
     virtual ~RenderPass();
     

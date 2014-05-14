@@ -223,11 +223,15 @@ materialProperties(16),
 instancePassRenderStates(4),
 materialSortKey(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	memset(lights, 0, sizeof(lights));
 }
 
 NMaterial::~NMaterial()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	SetParentInternal(NULL);
 	ReleaseInstancePasses();
 	
@@ -261,6 +265,8 @@ NMaterial::~NMaterial()
 
 void NMaterial::SetParent(NMaterial* newParent, bool inheritTemplate)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(this != newParent);
 	
 	if(newParent != parent &&
@@ -273,6 +279,8 @@ void NMaterial::SetParent(NMaterial* newParent, bool inheritTemplate)
     
 void NMaterial::SetParentInternal(DAVA::NMaterial *newParent)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     if(parent)
     {
         Vector<NMaterial*>::iterator curMaterial = std::find(parent->children.begin(),
@@ -300,6 +308,8 @@ void NMaterial::SetParentInternal(DAVA::NMaterial *newParent)
 
 void NMaterial::SetFlag(const FastName& flag, eFlagValue flagValue)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	materialSetFlags.insert(flag, flagValue);
 
     // TODO: #################
@@ -310,6 +320,8 @@ void NMaterial::SetFlag(const FastName& flag, eFlagValue flagValue)
 
 void NMaterial::ResetFlag(const FastName& flag)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(materialSetFlags.count(flag) > 0)
 	{
 		materialSetFlags.erase(flag);
@@ -320,6 +332,8 @@ void NMaterial::ResetFlag(const FastName& flag)
 
 int32 NMaterial::GetFlagValue(const FastName& flag) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	int32 flagValue = NMaterial::FlagOff | NMaterial::FlagInherited;
 	
 	if(materialSetFlags.count(flag) > 0)
@@ -339,6 +353,8 @@ int32 NMaterial::GetFlagValue(const FastName& flag) const
 
 bool NMaterial::IsFlagEffective(const FastName& flag) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	int32 flagValue = GetFlagValue(flag);
 	
 	return ((flagValue & NMaterial::FlagOn) == NMaterial::FlagOn);
@@ -347,6 +363,8 @@ bool NMaterial::IsFlagEffective(const FastName& flag) const
 void NMaterial::Save(KeyedArchive * archive,
 					 SerializationContext* serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DataNode::Save(archive, serializationContext);
 	
 	archive->SetString("materialName", (materialName.IsValid()) ? materialName.c_str() : "");
@@ -457,6 +475,8 @@ void NMaterial::Save(KeyedArchive * archive,
 void NMaterial::Load(KeyedArchive * archive,
 					 SerializationContext* serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DataNode::Load(archive, serializationContext);
 
     if(archive->IsKeyExists("materialName"))
@@ -585,12 +605,16 @@ void NMaterial::Load(KeyedArchive * archive,
 
 void NMaterial::SetQuality(const FastName& stateName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(stateName.IsValid());
 	orderedQuality = stateName;
 }
 
 FastName NMaterial::GetEffectiveQuality() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	FastName ret = orderedQuality;
 	
 	const NMaterial* parent = GetParent();
@@ -605,6 +629,8 @@ FastName NMaterial::GetEffectiveQuality() const
 
 bool NMaterial::ReloadQuality(bool force)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	bool ret = false;
 	
 	DVASSERT(materialTemplate);
@@ -659,6 +685,8 @@ bool NMaterial::ReloadQuality(bool force)
 
 NMaterial* NMaterial::Clone()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterial* clonedMaterial = NULL;
 	if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
 	{
@@ -746,6 +774,8 @@ NMaterial* NMaterial::Clone()
 
 NMaterial* NMaterial::Clone(const String& newName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterial* clonedMaterial = Clone();
 	//clonedMaterial->SetName(newName);
 	clonedMaterial->SetMaterialName(FastName(newName));
@@ -756,6 +786,8 @@ NMaterial* NMaterial::Clone(const String& newName)
 
 IlluminationParams * NMaterial::GetIlluminationParams(bool createIfNeeded /*= true*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(createIfNeeded && !illuminationParams)
 		illuminationParams = new IlluminationParams(this);
 	
@@ -764,11 +796,15 @@ IlluminationParams * NMaterial::GetIlluminationParams(bool createIfNeeded /*= tr
 
 void NMaterial::ReleaseIlluminationParams()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	SafeDelete(illuminationParams);
 }
 
 void NMaterial::RemoveTexture(const FastName& textureFastName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	TextureBucket* bucket = textures.at(textureFastName);
 	DVASSERT(bucket);
 	
@@ -784,6 +820,8 @@ void NMaterial::RemoveTexture(const FastName& textureFastName)
 void NMaterial::SetTexture(const FastName& textureFastName,
 						   const FilePath& texturePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	TextureBucket* bucket = textures.at(textureFastName);
 	if(NULL == bucket)
 	{
@@ -810,6 +848,8 @@ void NMaterial::SetTexture(const FastName& textureFastName,
 void NMaterial::SetTexture(const FastName& textureFastName,
 						   Texture* texture)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	TextureBucket* bucket = textures.at(textureFastName);
 	if(NULL == bucket)
 	{
@@ -828,6 +868,8 @@ void NMaterial::SetTexture(const FastName& textureFastName,
 
 void NMaterial::SetTexturePath(const FastName& textureFastName, const FilePath& texturePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	TextureBucket* bucket = textures.at(textureFastName);
 	
 	if(NULL == bucket)
@@ -841,12 +883,16 @@ void NMaterial::SetTexturePath(const FastName& textureFastName, const FilePath& 
 
 Texture * NMaterial::GetTexture(const FastName& textureFastName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	TextureBucket* bucket = textures.at(textureFastName);
 	return (NULL == bucket) ? NULL : bucket->GetTexture();
 }
 
 const FilePath& NMaterial::GetTexturePath(const FastName& textureFastName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	static FilePath invalidEmptyPath;
 	TextureBucket* bucket = textures.at(textureFastName);
 	return (NULL == bucket) ? invalidEmptyPath : bucket->GetPath();
@@ -854,12 +900,16 @@ const FilePath& NMaterial::GetTexturePath(const FastName& textureFastName) const
 
 Texture * NMaterial::GetEffectiveTexture(const FastName& textureFastName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	TextureBucket* bucket = GetEffectiveTextureBucket(textureFastName);
 	return (NULL == bucket) ? NULL : bucket->GetTexture();
 }
 
 const FilePath& NMaterial::GetEffectiveTexturePath(const FastName& textureFastName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	static FilePath invalidEmptyPath;
 	TextureBucket* bucket = GetEffectiveTextureBucket(textureFastName);
 	return (NULL == bucket) ? invalidEmptyPath : bucket->GetPath();
@@ -867,6 +917,8 @@ const FilePath& NMaterial::GetEffectiveTexturePath(const FastName& textureFastNa
 
 Texture * NMaterial::GetTexture(uint32 index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(index >= 0 && index < textures.size());
 	
 	TextureBucket* bucket = textures.valueByIndex(index);
@@ -875,6 +927,8 @@ Texture * NMaterial::GetTexture(uint32 index) const
 
 const FilePath& NMaterial::GetTexturePath(uint32 index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(index >= 0 && index < textures.size());
 	
 	TextureBucket* bucket = textures.valueByIndex(index);
@@ -883,6 +937,8 @@ const FilePath& NMaterial::GetTexturePath(uint32 index) const
 
 const FastName& NMaterial::GetTextureName(uint32 index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(index >= 0 && index < textures.size());
 	
 	return textures.keyByIndex(index);
@@ -890,6 +946,8 @@ const FastName& NMaterial::GetTextureName(uint32 index) const
 
 uint32 NMaterial::GetTextureCount() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return textures.size();
 }
 
@@ -898,6 +956,8 @@ void NMaterial::SetPropertyValue(const FastName & keyName,
 								 uint32 size,
 								 const void * data)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(data);
 	DVASSERT(size);
 	DVASSERT(keyName.IsValid());
@@ -948,6 +1008,8 @@ void NMaterial::SetPropertyValue(const FastName & keyName,
 
 NMaterialProperty* NMaterial::GetPropertyValue(const FastName & keyName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	const NMaterial* currentMaterial = this;
 	NMaterialProperty * property = NULL;
 	while(currentMaterial != NULL)
@@ -966,11 +1028,15 @@ NMaterialProperty* NMaterial::GetPropertyValue(const FastName & keyName) const
 
 NMaterialProperty* NMaterial::GetMaterialProperty(const FastName & keyName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return materialProperties.at(keyName);
 }
 
 void NMaterial::RemoveMaterialProperty(const FastName & keyName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterialProperty* prop = materialProperties.at(keyName);
 	if(prop)
 	{
@@ -983,11 +1049,15 @@ void NMaterial::RemoveMaterialProperty(const FastName & keyName)
 
 void NMaterial::SetMaterialName(const FastName& name)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	materialName = name;
 }
 
 FastName NMaterial::GetMaterialGroup() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	FastName result = materialGroup;
 	
 	NMaterial* curMaterial = GetParent();
@@ -1003,6 +1073,8 @@ FastName NMaterial::GetMaterialGroup() const
 
 void NMaterial::SetMaterialGroup(const FastName &group)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(group.IsValid())
 	{
 		materialGroup = group;
@@ -1018,6 +1090,8 @@ void NMaterial::SetMaterialGroup(const FastName &group)
 void NMaterial::SetMaterialTemplate(const NMaterialTemplate* matTemplate,
 									const FastName& defaultQuality)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	materialTemplate = matTemplate;
 	currentQuality = defaultQuality;
 	
@@ -1041,11 +1115,15 @@ void NMaterial::SetMaterialTemplate(const NMaterialTemplate* matTemplate,
 
 void NMaterial::OnMaterialTemplateChanged()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	UpdateMaterialTemplate();
 }
 
 void NMaterial::OnParentChanged(NMaterial* newParent, bool inheritTemplate)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	materialSortKey = (uint16)((pointer_size) newParent);
 	
 	bool useParentTemplate = (inheritTemplate || NULL == materialTemplate);
@@ -1068,6 +1146,8 @@ void NMaterial::OnParentChanged(NMaterial* newParent, bool inheritTemplate)
 
 void NMaterial::OnInstanceQualityChanged()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	UpdateMaterialTemplate();
 	
 	LoadActiveTextures();
@@ -1078,6 +1158,8 @@ void NMaterial::OnInstanceQualityChanged()
 
 void NMaterial::BuildEffectiveFlagSet(FastNameSet& effectiveFlagSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	effectiveFlagSet.clear();
 	
 	BuildEffectiveFlagSetInternal(effectiveFlagSet);
@@ -1085,6 +1167,8 @@ void NMaterial::BuildEffectiveFlagSet(FastNameSet& effectiveFlagSet)
 
 void NMaterial::BuildEffectiveFlagSetInternal(FastNameSet& effectiveFlagSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(parent)
 	{
 		parent->BuildEffectiveFlagSetInternal(effectiveFlagSet);
@@ -1108,6 +1192,8 @@ void NMaterial::BuildEffectiveFlagSetInternal(FastNameSet& effectiveFlagSet)
 
 void NMaterial::ReleaseInstancePasses()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
@@ -1123,6 +1209,8 @@ void NMaterial::ReleaseInstancePasses()
 
 void NMaterial::UpdateMaterialTemplate()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(materialTemplate);
 	
 	ReleaseInstancePasses();
@@ -1187,6 +1275,8 @@ void NMaterial::UpdateRenderPass(const FastName& passName,
 								 const FastNameSet& instanceDefines,
 								 RenderTechniquePass* pass)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	RenderState* parentRenderState = pass->GetRenderState();
 	
 	RenderPassInstance* passInstance = new RenderPassInstance();
@@ -1219,6 +1309,8 @@ void NMaterial::UpdateRenderPass(const FastName& passName,
 
 void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	Shader* shader = passInstance->GetShader();
 	
 	uint32 uniformCount = shader->GetUniformCount();
@@ -1241,6 +1333,8 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
     
 void NMaterial::BuildActiveUniformsCacheParamsCache()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator it = instancePasses.begin();
     HashMap<FastName, DAVA::NMaterial::RenderPassInstance*>::iterator endIt = instancePasses.end();
     while(it != endIt)
@@ -1252,6 +1346,8 @@ void NMaterial::BuildActiveUniformsCacheParamsCache()
 
 void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInstance)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	Shader* shader = passInstance->GetShader();
 	passInstance->activeUniformsCache.clear();
 	
@@ -1287,6 +1383,8 @@ void NMaterial::BuildActiveUniformsCacheParamsCache(RenderPassInstance* passInst
 
 NMaterial::TextureBucket* NMaterial::GetEffectiveTextureBucket(const FastName& textureFastName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	TextureBucket* bucket = NULL;
 	const NMaterial* currentMaterial = this;
 	while(currentMaterial &&
@@ -1302,6 +1400,8 @@ NMaterial::TextureBucket* NMaterial::GetEffectiveTextureBucket(const FastName& t
 
 void NMaterial::LoadActiveTextures()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
@@ -1319,6 +1419,8 @@ void NMaterial::LoadActiveTextures()
 
 void NMaterial::CleanupUnusedTextures()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
 		it != textures.end();
 		++it)
@@ -1337,6 +1439,8 @@ void NMaterial::CleanupUnusedTextures()
 
 Texture* NMaterial::GetOrLoadTextureRecursive(const FastName& textureName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	Texture* tex = NULL;
 	
 	NMaterial* currentMaterial = this;
@@ -1365,6 +1469,8 @@ Texture* NMaterial::GetOrLoadTextureRecursive(const FastName& textureName)
 
 bool NMaterial::IsTextureActive(const FastName& textureName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	bool active = false;
 	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
@@ -1396,6 +1502,8 @@ bool NMaterial::IsTextureActive(const FastName& textureName) const
 
 void NMaterial::SetTexturesDirty()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
@@ -1413,6 +1521,8 @@ void NMaterial::SetTexturesDirty()
 
 void NMaterial::PrepareTextureState(RenderPassInstance* passInstance)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(passInstance);
 	
 	TextureStateData textureData;
@@ -1464,6 +1574,8 @@ void NMaterial::PrepareTextureState(RenderPassInstance* passInstance)
 
 void NMaterial::BindMaterialTechnique(const FastName & passName, Camera* camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(activePassName != passName)
 	{
 		activePassName = passName;
@@ -1498,6 +1610,8 @@ void NMaterial::BindMaterialTechnique(const FastName & passName, Camera* camera)
 
 void NMaterial::BindMaterialTextures(RenderPassInstance* passInstance)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(passInstance->texturesDirty)
 	{
 		PrepareTextureState(passInstance);
@@ -1506,6 +1620,8 @@ void NMaterial::BindMaterialTextures(RenderPassInstance* passInstance)
 
 void NMaterial::BindMaterialProperties(RenderPassInstance* passInstance)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	//TODO: think of a way to re-bind only changed properties. (Move dirty flag to UniformCacheEntry or something?)
 	if(passInstance->propsDirty)
 	{
@@ -1537,7 +1653,9 @@ void NMaterial::BindMaterialProperties(RenderPassInstance* passInstance)
 
 void NMaterial::OnMaterialPropertyAdded(const FastName& propName)
 {
-    // TODO: 
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
+    // TODO:
     // now all properties are processed, but 
     // should be processed only one - propName
     // ...
@@ -1547,7 +1665,9 @@ void NMaterial::OnMaterialPropertyAdded(const FastName& propName)
 
 void NMaterial::OnMaterialPropertyRemoved(const FastName& propName)
 {
-    // TODO: 
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
+    // TODO:
     // now all properties are processed, but 
     // should be processed only one - propName
     // ...
@@ -1557,6 +1677,8 @@ void NMaterial::OnMaterialPropertyRemoved(const FastName& propName)
 
 void NMaterial::InvalidateProperties()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
         it != instancePasses.end();
         ++it)
@@ -1578,6 +1700,8 @@ void NMaterial::InvalidateProperties()
 
 void NMaterial::Draw(PolygonGroup * polygonGroup)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	// TODO: Remove support of OpenGL ES 1.0 from attach render data
 	RenderManager::Instance()->SetRenderData(polygonGroup->renderDataObject);
 	RenderManager::Instance()->AttachRenderData();
@@ -1597,6 +1721,8 @@ void NMaterial::Draw(PolygonGroup * polygonGroup)
 
 void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 indexCount)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(renderData);
 	
 	RenderManager::Instance()->SetRenderData(renderData);
@@ -1699,6 +1825,8 @@ void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 index
 
 const RenderStateData& NMaterial::GetRenderState(const FastName& passName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	RenderPassInstance* pass = instancePasses.at(passName);
 	DVASSERT(pass);
 	
@@ -1707,6 +1835,8 @@ const RenderStateData& NMaterial::GetRenderState(const FastName& passName) const
 
 void NMaterial::GetRenderState(const FastName& passName, RenderStateData& target) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	RenderPassInstance* pass = instancePasses.at(passName);
 	DVASSERT(pass);
 	
@@ -1715,6 +1845,8 @@ void NMaterial::GetRenderState(const FastName& passName, RenderStateData& target
 
 void NMaterial::SubclassRenderState(const FastName& passName, RenderStateData& newState)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	RenderPassInstance* pass = instancePasses.at(passName);
 	DVASSERT(pass);
 	
@@ -1747,6 +1879,8 @@ void NMaterial::SubclassRenderState(const FastName& passName, RenderStateData& n
 
 void NMaterial::SubclassRenderState(RenderStateData& newState)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	for(HashMap<FastName, RenderPassInstance*>::iterator it = instancePasses.begin();
 		it != instancePasses.end();
 		++it)
@@ -1757,6 +1891,8 @@ void NMaterial::SubclassRenderState(RenderStateData& newState)
 
 void NMaterial::UpdateShaderWithFlags()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	if(baseTechnique)
 	{
 		FastNameSet effectiveFlags(16);
@@ -1796,6 +1932,8 @@ void NMaterial::UpdateShaderWithFlags()
 //VI: These methods DO NOT add newly created materials to the material system
 NMaterial* NMaterial::CreateMaterialInstance()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	static int32 instanceCounter = 0;
 	instanceCounter++;
 	
@@ -1814,6 +1952,8 @@ NMaterial* NMaterial::CreateMaterial(const FastName& materialName,
 									 const FastName& templateName,
 									 const FastName& defaultQuality)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterial* mat = new NMaterial();
 	mat->SetMaterialType(NMaterial::MATERIALTYPE_MATERIAL);
 	mat->SetMaterialKey((NMaterial::NMaterialKey)mat); //this value may be temporary
@@ -1829,6 +1969,8 @@ NMaterial* NMaterial::CreateMaterial(const FastName& materialName,
 
 NMaterial* NMaterial::CreateGlobalMaterial(const FastName& materialName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterial* mat = new NMaterial();
 	mat->SetMaterialType(NMaterial::MATERIALTYPE_GLOBAL);
 	mat->SetMaterialKey((NMaterial::NMaterialKey)mat); //this value may be temporary
@@ -1844,6 +1986,8 @@ NMaterial* NMaterial::CreateMaterialInstance(const FastName& materialName,
 											 const FastName& templateName,
 											 const FastName& defaultQuality)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterial* parentMat = CreateMaterial(materialName, templateName, defaultQuality);
 	
 	NMaterial* mat = CreateMaterialInstance();
@@ -1856,6 +2000,8 @@ NMaterial* NMaterial::CreateMaterialInstance(const FastName& materialName,
 
 bool NMaterial::IsNamePartOfArray(const FastName& fastName, FastName* array, uint32 count)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(array);
 	
 	bool result = false;
@@ -1874,21 +2020,29 @@ bool NMaterial::IsNamePartOfArray(const FastName& fastName, FastName* array, uin
 
 bool NMaterial::IsRuntimeFlag(const FastName& flagName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return IsNamePartOfArray(flagName, RUNTIME_ONLY_FLAGS, COUNT_OF(RUNTIME_ONLY_FLAGS));
 }
 
 bool NMaterial::IsRuntimeProperty(const FastName& propName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return IsNamePartOfArray(propName, RUNTIME_ONLY_PROPERTIES, COUNT_OF(RUNTIME_ONLY_PROPERTIES));
 }
 
 bool NMaterial::IsRuntimeTexture(const FastName& textureName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     return IsNamePartOfArray(textureName, RUNTIME_ONLY_TEXTURES, COUNT_OF(RUNTIME_ONLY_TEXTURES));
 }
 
 void NMaterial::SetMaterialTemplateName(const FastName& templateName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	const NMaterialTemplate* matTemplate = NMaterialTemplateCache::Instance()->Get(templateName);
 	DVASSERT(matTemplate);
 	
@@ -1897,6 +2051,8 @@ void NMaterial::SetMaterialTemplateName(const FastName& templateName)
 
 FastName NMaterial::GetMaterialTemplateName() const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return (materialTemplate) ? materialTemplate->name : FastName();
 }
 
@@ -1907,6 +2063,8 @@ void NMaterialHelper::EnableStateFlags(const FastName& passName,
 									   NMaterial* target,
 									   uint32 stateFlags)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(target);
 	
 	RenderStateData newData;
@@ -1921,6 +2079,8 @@ void NMaterialHelper::DisableStateFlags(const FastName& passName,
 										NMaterial* target,
 										uint32 stateFlags)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(target);
 	
 	RenderStateData newData;
@@ -1936,6 +2096,8 @@ void NMaterialHelper::SetBlendMode(const FastName& passName,
 								   eBlendMode src,
 								   eBlendMode dst)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(target);
 	
 	RenderStateData newData;
@@ -1950,6 +2112,8 @@ void NMaterialHelper::SetBlendMode(const FastName& passName,
 void NMaterialHelper::SwitchTemplate(NMaterial* material,
 									 const FastName& templateName)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	const NMaterialTemplate* matTemplate = NMaterialTemplateCache::Instance()->Get(templateName);
 	DVASSERT(matTemplate);
 	
@@ -1958,6 +2122,8 @@ void NMaterialHelper::SwitchTemplate(NMaterial* material,
 
 Texture* NMaterialHelper::GetEffectiveTexture(const FastName& textureName, NMaterial* mat)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(mat);
 	
 	NMaterial::TextureBucket* bucket = mat->GetEffectiveTextureBucket(textureName);
@@ -1966,6 +2132,8 @@ Texture* NMaterialHelper::GetEffectiveTexture(const FastName& textureName, NMate
 
 bool NMaterialHelper::IsAlphatest(const FastName& passName, NMaterial* mat)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(mat);
 	DVASSERT(mat->baseTechnique);
 	
@@ -1980,6 +2148,8 @@ bool NMaterialHelper::IsAlphatest(const FastName& passName, NMaterial* mat)
     
 bool NMaterialHelper::IsOpaque(const FastName& passName, NMaterial* mat)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(mat);
 	DVASSERT(mat->baseTechnique);
 	
@@ -1994,6 +2164,8 @@ bool NMaterialHelper::IsOpaque(const FastName& passName, NMaterial* mat)
 
 bool NMaterialHelper::IsAlphablend(const FastName& passName, NMaterial* mat)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(mat);
 	
 	bool result = false;
@@ -2010,6 +2182,8 @@ bool NMaterialHelper::IsAlphablend(const FastName& passName, NMaterial* mat)
 
 bool NMaterialHelper::IsTwoSided(const FastName& passName, NMaterial* mat)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(mat);
 	
 	bool result = false;
@@ -2024,6 +2198,8 @@ void NMaterialHelper::SetFillMode(const FastName& passName,
 								  NMaterial* mat,
 								  eFillMode fillMode)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(mat);
 	
 	RenderStateData newData;
@@ -2036,6 +2212,8 @@ void NMaterialHelper::SetFillMode(const FastName& passName,
 
 eFillMode NMaterialHelper::GetFillMode(const FastName& passName, NMaterial* mat)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	DVASSERT(mat);
 	
 	const RenderStateData& currentData = mat->GetRenderState(passName);
@@ -2047,6 +2225,8 @@ eFillMode NMaterialHelper::GetFillMode(const FastName& passName, NMaterial* mat)
 
 const FastNameMap<NMaterial::NMaterialStateDynamicTexturesInsp::PropData>* NMaterial::NMaterialStateDynamicTexturesInsp::FindMaterialTextures(NMaterial *state, bool global) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	static FastNameMap<PropData> staticData;
 	
 	staticData.clear();
@@ -2133,6 +2313,8 @@ const FastNameMap<NMaterial::NMaterialStateDynamicTexturesInsp::PropData>* NMate
 
 Vector<FastName> NMaterial::NMaterialStateDynamicTexturesInsp::MembersList(void *object) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	Vector<FastName> ret;
 	
 	NMaterial *state = (NMaterial*) object;
@@ -2155,11 +2337,15 @@ Vector<FastName> NMaterial::NMaterialStateDynamicTexturesInsp::MembersList(void 
 
 InspDesc NMaterial::NMaterialStateDynamicTexturesInsp::MemberDesc(void *object, const FastName &texture) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return InspDesc(texture.c_str());
 }
 
 VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberAliasGet(void *object, const FastName &texture) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	VariantType ret;
 	
 	NMaterial *state = (NMaterial*) object;
@@ -2176,6 +2362,8 @@ VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberAliasGet(void *o
 
 VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberValueGet(void *object, const FastName &texture) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	VariantType ret;
 	
 	NMaterial *state = (NMaterial*) object;
@@ -2195,6 +2383,8 @@ VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberValueGet(void *o
 
 void NMaterial::NMaterialStateDynamicTexturesInsp::MemberValueSet(void *object, const FastName &texture, const VariantType &value)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	VariantType ret;
 	NMaterial *state = (NMaterial*) object;
 	DVASSERT(state);
@@ -2218,6 +2408,8 @@ void NMaterial::NMaterialStateDynamicTexturesInsp::MemberValueSet(void *object, 
 
 int NMaterial::NMaterialStateDynamicTexturesInsp::MemberFlags(void *object, const FastName &texture) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	int flags = 0;
 	
 	NMaterial *state = (NMaterial*) object;
@@ -2251,6 +2443,8 @@ int NMaterial::NMaterialStateDynamicTexturesInsp::MemberFlags(void *object, cons
 ///// NMaterialState::NMaterialStateDynamicPropertiesInsp implementation
 const FastNameMap<NMaterial::NMaterialStateDynamicPropertiesInsp::PropData>* NMaterial::NMaterialStateDynamicPropertiesInsp::FindMaterialProperties(NMaterial *state, bool global) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	static FastNameMap<PropData> staticData;
 	
 	staticData.clear();
@@ -2370,6 +2564,8 @@ const FastNameMap<NMaterial::NMaterialStateDynamicPropertiesInsp::PropData>* NMa
 
 Vector<FastName> NMaterial::NMaterialStateDynamicPropertiesInsp::MembersList(void *object) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	Vector<FastName> ret;
 	
 	NMaterial *state = (NMaterial*) object;
@@ -2392,11 +2588,15 @@ Vector<FastName> NMaterial::NMaterialStateDynamicPropertiesInsp::MembersList(voi
 
 InspDesc NMaterial::NMaterialStateDynamicPropertiesInsp::MemberDesc(void *object, const FastName &member) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return InspDesc(member.c_str());
 }
 
 int NMaterial::NMaterialStateDynamicPropertiesInsp::MemberFlags(void *object, const FastName &member) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	int flags = 0;
 	
 	NMaterial *state = (NMaterial*) object;
@@ -2428,6 +2628,8 @@ int NMaterial::NMaterialStateDynamicPropertiesInsp::MemberFlags(void *object, co
 
 VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::MemberAliasGet(void *object, const FastName &member) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     VariantType ret;
 
     NMaterial *state = (NMaterial*) object;
@@ -2445,6 +2647,8 @@ VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::MemberAliasGet(void 
 
 VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::MemberValueGet(void *object, const FastName &member) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	VariantType ret;
 	
 	NMaterial *state = (NMaterial*) object;
@@ -2465,6 +2669,8 @@ VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::MemberValueGet(void 
 
 VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::getVariant(const FastName &propName, const PropData &prop) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	VariantType ret;
 	
 	// self or parent property
@@ -2594,6 +2800,8 @@ VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::getVariant(const Fas
 
 bool NMaterial::NMaterialStateDynamicPropertiesInsp::isColor(const FastName &propName) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return (NULL != strstr(propName.c_str(), "Color"));
 	
 	// 		return (propName == NMaterial::PARAM_PROP_AMBIENT_COLOR ||
@@ -2610,6 +2818,8 @@ bool NMaterial::NMaterialStateDynamicPropertiesInsp::isColor(const FastName &pro
 
 void NMaterial::NMaterialStateDynamicPropertiesInsp::MemberValueSet(void *object, const FastName &member, const VariantType &value)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterial *state = (NMaterial*) object;
 	DVASSERT(state);
 	
@@ -2753,6 +2963,8 @@ void NMaterial::NMaterialStateDynamicPropertiesInsp::MemberValueSet(void *object
 
 Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	static Vector<FastName> ret;
 	
 	if(0 == ret.size())
@@ -2778,11 +2990,15 @@ Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *ob
 
 InspDesc NMaterial::NMaterialStateDynamicFlagsInsp::MemberDesc(void *object, const FastName &member) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	return InspDesc(member.c_str());
 }
 
 VariantType NMaterial::NMaterialStateDynamicFlagsInsp::MemberValueGet(void *object, const FastName &member) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	VariantType ret;
 	NMaterial *state = (NMaterial*) object;
 	DVASSERT(state);
@@ -2794,6 +3010,8 @@ VariantType NMaterial::NMaterialStateDynamicFlagsInsp::MemberValueGet(void *obje
 
 void NMaterial::NMaterialStateDynamicFlagsInsp::MemberValueSet(void *object, const FastName &member, const VariantType &value)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
 	NMaterial *state = (NMaterial*) object;
 	DVASSERT(state);
 	
@@ -2815,6 +3033,8 @@ void NMaterial::NMaterialStateDynamicFlagsInsp::MemberValueSet(void *object, con
 
 int NMaterial::NMaterialStateDynamicFlagsInsp::MemberFlags(void *object, const FastName &member) const
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     int ret = I_VIEW;
 
     NMaterial *state = (NMaterial*) object;
@@ -2830,6 +3050,8 @@ int NMaterial::NMaterialStateDynamicFlagsInsp::MemberFlags(void *object, const F
     
 void NMaterial::UpdateUniqueKey(uint64 newKeyValue)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     materialKey = newKeyValue;
     pointer = newKeyValue;
 }

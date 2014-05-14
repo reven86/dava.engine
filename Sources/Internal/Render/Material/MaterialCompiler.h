@@ -54,6 +54,8 @@ class MaterialCompiler : public BaseObject
 protected:
     ~MaterialCompiler(){}
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_MATERIAL)
+    
     enum eCompileResult
     {
         COMPILATION_SUCCESS = 1,

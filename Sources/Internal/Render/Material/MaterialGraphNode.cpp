@@ -67,10 +67,13 @@ MaterialGraphNode::MaterialGraphNode(MaterialGraph * _graph)
     ,   textureChannelIndex(0)
     ,   shader(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
 }
     
 MaterialGraphNode::~MaterialGraphNode()
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     for (Map<String, MaterialGraphNodeConnector*>::iterator it = inputConnectors.begin(); it != inputConnectors.end(); ++it)
     {
         SafeRelease(it->second);
@@ -80,6 +83,8 @@ MaterialGraphNode::~MaterialGraphNode()
     
 void MaterialGraphNode::InitFromYamlNode(const YamlNode * graphNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     const YamlNode * typeNode = graphNode->Get("node");
     const YamlNode * nameNode = graphNode->Get("name");
     SetType(typeNode->AsString());
@@ -133,6 +138,8 @@ void MaterialGraphNode::InitFromYamlNode(const YamlNode * graphNode)
 
 void MaterialGraphNode::SetDepthMarker(uint32 _depthMarker)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     depthMarker = _depthMarker;
 }
     
@@ -149,6 +156,8 @@ Map<String, MaterialGraphNodeConnector*> & MaterialGraphNode::GetInputConnectors
     
 void MaterialGraphNode::ConnectToNode(const String & connectorName, MaterialGraphNode * node, const String & connectionModifier)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     MaterialGraphNodeConnector * connector = new MaterialGraphNodeConnector();
     connector->node = node;
     connector->modifier = connectionModifier;
@@ -158,6 +167,8 @@ void MaterialGraphNode::ConnectToNode(const String & connectorName, MaterialGrap
     
 uint32 MaterialGraphNode::StringToRGBAModifier(const String & input)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     uint32 result = 0;
     for (uint32 k = 0; k < input.length(); ++k)
     {
@@ -171,6 +182,8 @@ uint32 MaterialGraphNode::StringToRGBAModifier(const String & input)
     
 String MaterialGraphNode::RGBAModifierToString(uint32 modifier)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     String result;
     if (modifier & VAR_MODIFIER_R)
         result += 'r';
@@ -211,6 +224,8 @@ String MaterialGraphNode::RGBAModifierToType(uint32 modifier)
     
 void MaterialGraphNode::MergeConnectionModifiers(const String & usedByOtherNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     uint32 otherNodeModifier = StringToRGBAModifier(usedByOtherNode);
     
     usedByOthersModifier |= otherNodeModifier;
@@ -218,6 +233,8 @@ void MaterialGraphNode::MergeConnectionModifiers(const String & usedByOtherNode)
 
 MaterialGraphNodeConnector * MaterialGraphNode::GetInputConnector(const String & name)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     Map<String, MaterialGraphNodeConnector*>::iterator res = inputConnectors.find(name);
     if (res != inputConnectors.end())
         return res->second;
@@ -226,6 +243,8 @@ MaterialGraphNodeConnector * MaterialGraphNode::GetInputConnector(const String &
 
 String MaterialGraphNode::GetResultFormat(const String & s1, const String & s2)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     uint32 s1Len = s1.length();
     uint32 s2Len = s2.length();
     if ((s1Len == 1) || (s2Len == 1))
@@ -271,6 +290,8 @@ MaterialGraphNode::TypeUsageStruct MaterialGraphNode::types[] =
     
 void MaterialGraphNode::SetType(const String & _type)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     for (uint32 k = 0; k < TYPE_COUNT; ++k)
     {
         if (_type == types[k].name)
@@ -284,6 +305,8 @@ void MaterialGraphNode::SetType(const String & _type)
     
 void MaterialGraphNode::RecursiveSetRealUsageForward(MaterialGraphNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     Map<String, eNodeUsage> resultUsage;
     Map<String, MaterialGraphNodeConnector*> & inputConnectors = node->GetInputConnectors();
     
@@ -304,6 +327,8 @@ void MaterialGraphNode::RecursiveSetRealUsageForward(MaterialGraphNode * node)
 
 MaterialGraphNode::eNodeUsage MaterialGraphNode::RecursiveSetRealUsageBack(MaterialGraphNode * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     
     // DEBUG
     //Logger::Debug("eval node: %s", node->GetName().c_str());

@@ -43,6 +43,8 @@ RenderLayerID RenderLayerManager::GetLayerIDByName(const FastName & fastname)
 
 uint32 RenderLayerManager::GetLayerIDMaskBySet(const FastNameSet & layers)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
+    
     uint32 renderLayerIDsBitmask = 0;
     uint32 minLayerID = 100000;
     uint32 maxLayerID = 0;
@@ -62,6 +64,8 @@ uint32 RenderLayerManager::GetLayerIDMaskBySet(const FastNameSet & layers)
     
 void RenderLayerManager::InsertLayer(RenderLayer * renderLayer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
+    
     array[renderLayer->GetRenderLayerID()] = renderLayer;
     map[renderLayer->GetName()] = renderLayer;
     layerIDmap[renderLayer->GetName()] = renderLayer->GetRenderLayerID();
@@ -71,6 +75,8 @@ RenderLayerManager::RenderLayerManager()
     : array(RENDER_LAYER_ID_COUNT)
     , map(NextPowerOf2(RENDER_LAYER_ID_COUNT))
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
+    
     RenderLayer * renderLayerOpaque = new RenderLayer(LAYER_OPAQUE,
                                                       RenderLayerBatchArray::SORT_ENABLED | RenderLayerBatchArray::SORT_BY_MATERIAL,
                                                       RENDER_LAYER_OPAQUE_ID);
@@ -108,6 +114,8 @@ RenderLayerManager::RenderLayerManager()
 
 RenderLayerManager::~RenderLayerManager()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_LAYER)
+    
 	size_t size = array.size();
 	for (size_t i = 0; i < size; ++i)
 		SafeDelete(array[i]);

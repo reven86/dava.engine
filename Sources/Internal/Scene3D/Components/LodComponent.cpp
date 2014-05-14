@@ -44,38 +44,52 @@ const float32 LodComponent::MAX_LOD_DISTANCE = 1000.f;
 
 LodComponent::LodDistance::LodDistance()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	distance = nearDistanceSq = farDistanceSq = (float32) INVALID_DISTANCE;
 }
 
 void LodComponent::LodDistance::SetDistance(const float32 &newDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	distance = newDistance;
 }
 
 void LodComponent::LodDistance::SetNearDistance(const float32 &newDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	nearDistanceSq = newDistance * newDistance;
 }
 
 float32 LodComponent::LodDistance::GetNearDistance() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return sqrtf(nearDistanceSq);
 }
 
 
 void LodComponent::LodDistance::SetFarDistance(const float32 &newDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	farDistanceSq = newDistance * newDistance;
 }
 
 float32 LodComponent::LodDistance::GetFarDistance() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return sqrtf(farDistanceSq);
 }
 
 
 Component * LodComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	LodComponent * newLod = new LodComponent();
 	newLod->SetEntity(toEntity);
 
@@ -95,6 +109,8 @@ Component * LodComponent::Clone(Entity * toEntity)
 
 void LodComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive)
@@ -121,6 +137,8 @@ void LodComponent::Serialize(KeyedArchive *archive, SerializationContext *serial
 
 void LodComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
 		if(archive->IsKeyExists("lc.flags")) flags = archive->GetUInt32("lc.flags");
@@ -189,6 +207,8 @@ LodComponent::LodComponent()
 	forceDistanceSq(INVALID_DISTANCE),
     currentLod(INVALID_LOD_LAYER)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	lodLayersArray.resize(MAX_LOD_LAYERS);
 
 	flags = NEED_UPDATE_AFTER_LOAD;
@@ -204,23 +224,31 @@ LodComponent::LodComponent()
 
 float32 LodComponent::GetDefaultDistance(int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	float32 distance = MIN_LOD_DISTANCE + ((float32)(MAX_LOD_DISTANCE - MIN_LOD_DISTANCE) / (MAX_LOD_LAYERS-1)) * layer;
 	return distance;
 }
 
 void LodComponent::SetForceDistance(const float32 &newDistance)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     forceDistance = newDistance;
     forceDistanceSq = forceDistance * forceDistance;
 }
     
 float32 LodComponent::GetForceDistance() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return forceDistance;
 }
 
 void LodComponent::GetLodData(Vector<LodData*> &retLodLayers)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	retLodLayers.clear();
     retLodLayers.reserve(lodLayers.size());
 
@@ -234,6 +262,8 @@ void LodComponent::GetLodData(Vector<LodData*> &retLodLayers)
     
 void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
     
     if(INVALID_DISTANCE != distance)
@@ -261,16 +291,22 @@ void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
 
 void LodComponent::SetForceLodLayer(int32 layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     forceLodLayer = layer;
 }
     
 int32 LodComponent::GetForceLodLayer() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return forceLodLayer;
 }
 
 int32 LodComponent::GetMaxLodLayer() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	int32 ret = -1;
 	const Vector<LodData>::const_iterator &end = lodLayers.end();
 	for (Vector<LodData>::const_iterator it = lodLayers.begin(); it != end; ++it)
@@ -287,6 +323,8 @@ int32 LodComponent::GetMaxLodLayer() const
 
 void LodComponent::CopyLODSettings(const LodComponent * fromLOD)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     lodLayersArray = fromLOD->lodLayersArray;
 
     forceDistance = fromLOD->forceDistance;

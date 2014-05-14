@@ -30,11 +30,17 @@
 #ifndef __DAVAENGINE_FIXED_SIZE_POOL_ALLOCATOR_H__
 #define __DAVAENGINE_FIXED_SIZE_POOL_ALLOCATOR_H__
 
+#include "Debug/MemoryManager.h"
+
+/*
 #include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
+*/
 
 namespace DAVA
 {
+typedef unsigned int	uint32;
+typedef unsigned char	uint8;
 /**
     \brief Fast pool based allocator almost without memory overhead. Can be used to allocate small objects.
     
@@ -70,6 +76,8 @@ namespace DAVA
 class FixedSizePoolAllocator
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_POOL_ALLOCATOR);
+    
 	FixedSizePoolAllocator(uint32 _blockSize, uint32 _blockArraySize);
 	~FixedSizePoolAllocator();
 	

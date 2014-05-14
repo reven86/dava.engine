@@ -62,6 +62,8 @@ class PngImage : public BaseObject
 protected:
 	~PngImage();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_IMAGE)
+    
 	PngImage();
 	
 	bool Create(int32 _width, int32 _height);

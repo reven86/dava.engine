@@ -45,6 +45,8 @@ namespace DAVA
 	
 	ShadowRect * ShadowRect::Create()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SHADOW)
+        
 		if(instance)
 		{
 			instance->Retain();
@@ -59,6 +61,8 @@ namespace DAVA
 	
 	ShadowRect::ShadowRect()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SHADOW)
+        
 		rdo = new RenderDataObject();
 		
 		Vector3 vert3[4] = {Vector3(-100.f, 100.f, -50), Vector3(100.f, 100.f, -50), Vector3(-100.f, -100.f, -50), Vector3(100.f, -100.f, -50)};
@@ -83,6 +87,8 @@ namespace DAVA
 	
 	ShadowRect::~ShadowRect()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SHADOW)
+        
 		uniformShadowColor = -1;
 		SafeRelease(shader);
 		SafeRelease(rdo);
@@ -92,6 +98,8 @@ namespace DAVA
 	
 	void ShadowRect::Draw()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SHADOW)
+        
 		RenderManager::Instance()->SetShader(shader);
 		RenderManager::Instance()->SetRenderData(rdo);
 		RenderManager::Instance()->FlushState();
@@ -104,11 +112,15 @@ namespace DAVA
     
 	void ShadowRect::SetColor(const Color &color)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SHADOW)
+        
 		shadowColor = color;
 	}
 	
 	const Color & ShadowRect::GetColor() const
 	{
+        TAG_SWITCH(MemoryManager::TAG_SHADOW)
+        
 		return shadowColor;
 	}
 	

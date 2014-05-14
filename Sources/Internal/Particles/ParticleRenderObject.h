@@ -66,6 +66,8 @@ class ParticleRenderObject : public RenderObject
 
     uint32 vertexSize, vertexStride;
 public:
+    //IMPLEMENT_POOL_ALLOCATOR(ParticleRenderObject, 100);
+    IMPLEMENT_NATIVE_ALLOCATOR;
 	ParticleRenderObject(ParticleEffectData *effect);
 	~ParticleRenderObject();
 	

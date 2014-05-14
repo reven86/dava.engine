@@ -39,6 +39,10 @@
 #include "Render/RenderBase.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+#include "FileSystem/MemoryMappedFile.h"
+#endif
+
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     #include "PVRDefines.h"
 #else //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
@@ -174,7 +178,12 @@ protected:
     
 	static PVRHeaderV3 CreateDecompressedHeader(const PVRHeaderV3 &compressedHeader);
 
-	static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header,
+                            MemoryMappedFile *mmFile, uint32 offset);
+#else
+    static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
+#endif
     static bool AllocateImageData(Image *image, uint32 mipMapLevel, const PVRHeaderV3 &header);
 };
     

@@ -41,6 +41,8 @@ REGISTER_CLASS(TransformComponent)
     
 TransformComponent::TransformComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     localMatrix = Matrix4::IDENTITY;
 	worldMatrix = Matrix4::IDENTITY;
 	parentMatrix = 0;
@@ -49,11 +51,13 @@ TransformComponent::TransformComponent()
     
 TransformComponent::~TransformComponent()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 Component * TransformComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     TransformComponent * newTransform = new TransformComponent();
 	newTransform->SetEntity(toEntity);
 	newTransform->localMatrix = localMatrix;
@@ -66,6 +70,8 @@ Component * TransformComponent::Clone(Entity * toEntity)
 
 void TransformComponent::SetLocalTransform(const Matrix4 * transform)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	localMatrix = *transform;
 	if(!parent)
 	{
@@ -77,6 +83,8 @@ void TransformComponent::SetLocalTransform(const Matrix4 * transform)
 
 void TransformComponent::SetParent(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	parent = node;
 
 	if(node)
@@ -93,12 +101,16 @@ void TransformComponent::SetParent(Entity * node)
 
 Matrix4 & TransformComponent::ModifyLocalTransform()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	GlobalEventSystem::Instance()->Event(entity, EventSystem::LOCAL_TRANSFORM_CHANGED);
 	return localMatrix;
 }
 
 void TransformComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive)
@@ -110,6 +122,8 @@ void TransformComponent::Serialize(KeyedArchive *archive, SerializationContext *
 
 void TransformComponent::Deserialize(KeyedArchive *archive, SerializationContext *sceneFile)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
 		localMatrix = archive->GetMatrix4("tc.localMatrix", Matrix4::IDENTITY);

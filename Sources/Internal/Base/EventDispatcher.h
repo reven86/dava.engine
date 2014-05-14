@@ -120,8 +120,12 @@ protected:
 		{
 		}
 	};
-	
-	List<Event> events;
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    std::list<Event> events;
+#else
+    List<Event> events;
+ 
+#endif
 };
 	
 /**

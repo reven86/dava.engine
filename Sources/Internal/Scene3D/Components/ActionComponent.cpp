@@ -44,11 +44,13 @@ namespace DAVA
 
 	ActionComponent::ActionComponent() : started(false), allActionsActive(false)
 	{
-		
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 	}
 	
 	ActionComponent::~ActionComponent()
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		if(entity &&
 		   entity->GetScene())
 		{
@@ -58,6 +60,8 @@ namespace DAVA
 	
 	ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Action action;
 		
 		action.type = type;
@@ -69,6 +73,8 @@ namespace DAVA
 
 	ActionComponent::Action ActionComponent::MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay, int32 switchIndex)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Action action;
 		
 		action.type = type;
@@ -82,6 +88,8 @@ namespace DAVA
 	
 	void ActionComponent::StartSwitch(int32 switchIndex)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_SWITCH_CHANGED))
 			return;
 
@@ -109,7 +117,9 @@ namespace DAVA
 		}
 	}
 	void ActionComponent::StartAdd()
-	{		
+	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_ADDED_TO_SCENE))
 			return;
 		uint32 markedCount = 0;
@@ -139,11 +149,15 @@ namespace DAVA
 	
 	bool ActionComponent::IsStarted()
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		return started;
 	}
 	
 	void ActionComponent::StopAll()
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		if(started)
 		{
 			started = false;
@@ -163,6 +177,8 @@ namespace DAVA
 	
 	void ActionComponent::StopSwitch(int32 switchIndex)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		uint32 activeCount = 0;
 		uint32 count = actions.size();
 		for(uint32 i = 0; i < count; ++i)
@@ -192,12 +208,16 @@ namespace DAVA
 	
 	void ActionComponent::Add(ActionComponent::Action action)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		actions.push_back(ActionContainer(action));
 		allActionsActive = false;
 	}
 	
 	void ActionComponent::Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Vector<ActionComponent::ActionContainer>::iterator i = actions.begin();
 		for(; i < actions.end(); ++i)
 		{
@@ -233,22 +253,30 @@ namespace DAVA
 	
 	void ActionComponent::Remove(const ActionComponent::Action& action)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Remove(action.type, action.entityName, action.switchIndex);
 	}
 	
 	uint32 ActionComponent::GetCount()
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		return actions.size();
 	}
 	
 	ActionComponent::Action& ActionComponent::Get(uint32 index)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		DVASSERT(index >= 0 && index < actions.size());
 		return actions[index].action;
 	}
 	
 	void ActionComponent::Update(float32 timeElapsed)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		//do not evaluate time if all actions started
 		if(started && !allActionsActive)
 		{
@@ -289,6 +317,8 @@ namespace DAVA
 	
 	Component * ActionComponent::Clone(Entity * toEntity)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		ActionComponent* actionComponent = new ActionComponent();
 		actionComponent->SetEntity(toEntity);
 		
@@ -306,6 +336,8 @@ namespace DAVA
 	
 	void ActionComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Component::Serialize(archive, serializationContext);
 		
 		if(NULL != archive)
@@ -333,6 +365,8 @@ namespace DAVA
 	
 	void ActionComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		actions.clear();
 		
 		if(NULL != archive)
@@ -360,6 +394,8 @@ namespace DAVA
 		
 	void ActionComponent::EvaluateAction(const Action& action)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		if(Action::TYPE_PARTICLE_EFFECT == action.type)
 		{
 			OnActionParticleEffect(action);
@@ -372,6 +408,8 @@ namespace DAVA
 	
 	void ActionComponent::OnActionParticleEffect(const Action& action)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Entity* target = GetTargetEntity(action.entityName, entity);
 		
 		if(target != NULL)
@@ -389,6 +427,8 @@ namespace DAVA
 	
 	void ActionComponent::OnActionSound(const Action& action)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
 		Entity* target = GetTargetEntity(action.entityName, entity);
 		
 		if(target != NULL)
@@ -406,6 +446,8 @@ namespace DAVA
 	
 	Entity* ActionComponent::GetTargetEntity(const FastName& name, Entity* parent)
 	{
+        TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+        
         if(name == ACTION_COMPONENT_SELF_ENTITY_NAME)
             return parent;
 

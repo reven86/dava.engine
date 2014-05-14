@@ -75,6 +75,8 @@ Entity::Entity()
 , componentsMap(4)
 #endif
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	//    Logger::FrameworkDebug("Entity: %p", this);
 	componentFlags = 0;
 		
@@ -95,6 +97,8 @@ Entity::Entity()
 	
 Entity::~Entity()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	/*
 		TODO: Double check that everything is working fine.
 		*/
@@ -119,6 +123,8 @@ Entity::~Entity()
     
 void Entity::AddComponent(Component * component)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	component->SetEntity(this);
 		
 	uint32 componentType = component->GetType();
@@ -164,6 +170,8 @@ void Entity::AddComponent(Component * component)
     
 void Entity::RemoveAllComponents()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	for(int32 i = 0; i < COMPONENTS_IN_VECTOR_COUNT; ++i)
 	{
 		if(components[i])
@@ -199,6 +207,8 @@ void Entity::RemoveAllComponents()
 	
 void Entity::RemoveComponent(Component * component)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (scene)
 		scene->RemoveComponent(this, component);
 
@@ -232,6 +242,8 @@ void Entity::RemoveComponent(Component * component)
 
 void Entity::DetachComponent( Component * component )
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if ( scene )
         scene->RemoveComponent( this, component );
 
@@ -283,6 +295,8 @@ void Entity::DetachComponent( Component * component )
     
 void Entity::RemoveComponent(uint32 componentType, uint32 index)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (scene)
 	{
 		Component *c = GetComponent(componentType, index);
@@ -334,6 +348,8 @@ void Entity::RemoveComponent(uint32 componentType, uint32 index)
     
 inline void Entity::CleanupComponent(Component* component, uint32 componentCount)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	component->SetEntity(0);
 		
 	if(componentCount <= 0)
@@ -346,6 +362,8 @@ inline void Entity::CleanupComponent(Component* component, uint32 componentCount
     
 Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Component* component = NULL;
 	if(USE_VECTOR(componentType))
 	{
@@ -379,6 +397,8 @@ Component * Entity::GetComponent(uint32 componentType, uint32 index) const
 	
 Component * Entity::GetOrCreateComponent(uint32 componentType, uint32 index)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Component * ret = GetComponent(componentType, index);
 	if(!ret)
 	{
@@ -391,6 +411,8 @@ Component * Entity::GetOrCreateComponent(uint32 componentType, uint32 index)
     
 uint32 Entity::GetComponentCount()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	uint32 count = 0;
 	for (uint32 k = 0; k < COMPONENTS_IN_VECTOR_COUNT; ++k)
 		if ((componentFlags >> k) & 1)
@@ -432,6 +454,8 @@ uint32 Entity::GetComponentCount()
 	
 uint32 Entity::GetComponentCount(uint32 componentType)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	int componentCount = 0;
 		
 	if(USE_VECTOR(componentType))
@@ -467,6 +491,8 @@ uint32 Entity::GetComponentCount(uint32 componentType)
 	
 void Entity::SetScene(Scene * _scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (scene == _scene)
 	{
 		return;
@@ -485,8 +511,8 @@ void Entity::SetScene(Scene * _scene)
 		
 		
 		
-	const std::vector<Entity*>::iterator & childrenEnd = children.end();
-	for (std::vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
+	const Vector<Entity*>::iterator & childrenEnd = children.end();
+	for (Vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
 	{
 		(*t)->SetScene(_scene);
 	}
@@ -500,12 +526,16 @@ Scene * Entity::GetScene()
 	
 void Entity::SetParent(Entity * _parent)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	parent = _parent;
 	((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetParent(parent);
 }
 	
 void Entity::AddNode(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (node)
 	{
 		node->Retain();
@@ -523,6 +553,8 @@ void Entity::AddNode(Entity * node)
     
 void Entity::InsertBeforeNode(Entity *newNode, Entity *beforeNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(newNode && newNode != beforeNode)
 	{
 		bool canBeInserted = false;
@@ -566,13 +598,15 @@ void Entity::InsertBeforeNode(Entity *newNode, Entity *beforeNode)
 
 void Entity::RemoveNode(Entity * node)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!node)
 	{
 		return;
 	}
 		
-	const std::vector<Entity*>::iterator & childrenEnd = children.end();
-	for (std::vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
+	const Vector<Entity*>::iterator & childrenEnd = children.end();
+	for (Vector<Entity*>::iterator t = children.begin(); t != childrenEnd; ++t)
 	{
 		if (*t == node)
 		{
@@ -592,6 +626,8 @@ void Entity::RemoveNode(Entity * node)
 		
 Entity* Entity::GetNextChild(Entity *child)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity* next = NULL;
 		
 	for(uint32 i = 0; i < children.size(); i++)
@@ -611,9 +647,11 @@ Entity* Entity::GetNextChild(Entity *child)
     
 int32 Entity::GetChildrenCountRecursive() const
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	int32 result = 0;
 	result += (int32)children.size();
-	for (std::vector<Entity*>::const_iterator t = children.begin(); t != children.end(); ++t)
+	for (Vector<Entity*>::const_iterator t = children.begin(); t != children.end(); ++t)
 	{
 		Entity *node = *t;
 		result += node->GetChildrenCountRecursive();
@@ -624,7 +662,9 @@ int32 Entity::GetChildrenCountRecursive() const
     
 void Entity::RemoveAllChildren()
 {
-	for (std::vector<Entity*>::iterator t = children.begin(); t != children.end(); ++t)
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
+	for (Vector<Entity*>::iterator t = children.begin(); t != children.end(); ++t)
 	{
 		Entity *node = *t;
 		node->SetScene(0);
@@ -636,6 +676,8 @@ void Entity::RemoveAllChildren()
 
 Entity *	Entity::FindByName(const FastName & searchName)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (name == searchName)
 		return this;
 		
@@ -653,6 +695,8 @@ Entity *	Entity::FindByName(const FastName & searchName)
 
 Entity *	Entity::FindByName(const char * searchName)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     return FindByName(FastName(searchName));
 }
 	
@@ -699,6 +743,8 @@ Entity *	Entity::FindByName(const char * searchName)
 	
 void Entity::RestoreOriginalTransforms()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	SetLocalTransform(GetDefaultLocalTransform());
 		
 	uint32 size = (uint32)children.size();
@@ -708,6 +754,8 @@ void Entity::RestoreOriginalTransforms()
     
 void Entity::BakeTransforms()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	uint32 size = (uint32)children.size();
 	if(size == 1 && (0 == GetComponent(Component::LOD_COMPONENT)) && (0 == GetComponent(Component::SWITCH_COMPONENT))) // propagate matrices
 	{
@@ -728,6 +776,8 @@ void Entity::BakeTransforms()
 	
 void Entity::PropagateBoolProperty(String name, bool value)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	KeyedArchive *currentProperties = GetCustomProperties();
 	currentProperties->SetBool(name, value);
 		
@@ -745,6 +795,8 @@ void Entity::PropagateBoolProperty(String name, bool value)
 	
 void Entity::ExtractCurrentNodeKeyForAnimation(SceneNodeAnimationKey & key)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	const Matrix4 & localTransform = GetLocalTransform();
 	key.time = 0.0f;
 	key.translation.x = localTransform._30;
@@ -832,6 +884,8 @@ void Entity::ExtractCurrentNodeKeyForAnimation(SceneNodeAnimationKey & key)
 	
 void Entity::Draw()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	//Stats::Instance()->BeginTimeMeasure("Scene.Draw.Entity.Draw", this);
 		
 	if (!(flags & NODE_VISIBLE) || !(flags & NODE_UPDATABLE) || (flags & NODE_INVALID))return;
@@ -885,6 +939,8 @@ void Entity::Draw()
     
 void Entity::SceneDidLoaded()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	const Vector<Entity*>::const_iterator & itEnd = children.end();
 	for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
 		(*it)->SceneDidLoaded();
@@ -892,6 +948,8 @@ void Entity::SceneDidLoaded()
     
 Entity* Entity::Clone(Entity *dstNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!dstNode)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<Entity>(this), "Can clone only Entity");
@@ -947,8 +1005,8 @@ Entity* Entity::Clone(Entity *dstNode)
 		
 	dstNode->RemoveAllChildren();
     dstNode->children.reserve(children.size());
-	std::vector<Entity*>::iterator it = children.begin();
-	const std::vector<Entity*>::iterator & childsEnd = children.end();
+	Vector<Entity*>::iterator it = children.begin();
+	const Vector<Entity*>::iterator & childsEnd = children.end();
 	for(; it != childsEnd; it++)
 	{
 		Entity *n = (*it)->Clone();
@@ -961,6 +1019,8 @@ Entity* Entity::Clone(Entity *dstNode)
 	
 void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	DebugRenderComponent * debugComponent = cast_if_equal<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
 		
 	if(!debugComponent)
@@ -981,8 +1041,8 @@ void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 		
 	if (isRecursive)
 	{
-		std::vector<Entity*>::iterator it = children.begin();
-		const std::vector<Entity*>::iterator & childrenEnd = children.end();
+		Vector<Entity*>::iterator it = children.begin();
+		const Vector<Entity*>::iterator & childrenEnd = children.end();
 		for(; it != childrenEnd; it++)
 		{
 			Entity *n = (*it);
@@ -993,6 +1053,8 @@ void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 
 uint32 Entity::GetDebugFlags() const
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	DebugRenderComponent * debugComponent = cast_if_equal<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
 	if(debugComponent)
 	{
@@ -1004,21 +1066,29 @@ uint32 Entity::GetDebugFlags() const
 
 void Entity::SetName(const FastName & _name)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	name = _name;
 }
 
 void Entity::SetName(const char * _name)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	name = FastName(_name);
 }
 	
 String Entity::GetFullName()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return RecursiveBuildFullName(this, scene);
 }
 	
 String Entity::RecursiveBuildFullName(Entity * node, Entity * endNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!node)
 		return "";
         
@@ -1033,6 +1103,8 @@ String Entity::RecursiveBuildFullName(Entity * node, Entity * endNode)
     
 bool Entity::FindNodesByNamePart(const String &namePart, List<Entity *> &outNodeList)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	bool isFind = false;
 	size_t fp = name.find(namePart);
 	if (fp != String::npos)
@@ -1055,6 +1127,8 @@ bool Entity::FindNodesByNamePart(const String &namePart, List<Entity *> &outNode
 	
 AABBox3 Entity::GetWTMaximumBoundingBoxSlow()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	AABBox3 retBBox;
 		
 	RenderComponent * renderComponent = static_cast<RenderComponent*>(GetComponent(Component::RENDER_COMPONENT));
@@ -1082,12 +1156,16 @@ AABBox3 Entity::GetWTMaximumBoundingBoxSlow()
     
 String Entity::GetDebugDescription()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return Format("children: %d ", GetChildrenCount());
 }
 	
     
 void Entity::Save(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	// Perform refactoring and add Matrix4, Vector4 types to VariantType and KeyedArchive
 	BaseObject::Save(archive);
 
@@ -1170,8 +1248,10 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 	
 void Entity::Load(KeyedArchive * archive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	BaseObject::Load(archive);
-        
+    
 	name = FastName(archive->GetString("name", "").c_str());
 	tag = archive->GetInt32("tag", 0);
 		
@@ -1213,6 +1293,8 @@ void Entity::Load(KeyedArchive * archive, SerializationContext * serializationCo
     
 void Entity::LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(NULL != compsArch)
 	{
 		for(uint32 i = 0; i < COMPONENT_COUNT_V6; ++i)
@@ -1254,6 +1336,8 @@ void Entity::LoadComponentsV6(KeyedArchive *compsArch, SerializationContext * se
 	
 CustomPropertiesComponent* Entity::GetCustomPropertiesComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	CustomPropertiesComponent* component = (CustomPropertiesComponent *) GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT);
 	if(NULL == component)
 	{
@@ -1266,6 +1350,8 @@ CustomPropertiesComponent* Entity::GetCustomPropertiesComponent()
 	
 void Entity::LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if(NULL != compsArch)
 	{
 		uint32 componentCount = compsArch->GetUInt32("count");
@@ -1293,32 +1379,44 @@ void Entity::LoadComponentsV7(KeyedArchive *compsArch, SerializationContext * se
 	
 KeyedArchive * Entity::GetCustomProperties()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	CustomPropertiesComponent* component = GetCustomPropertiesComponent();
 	return component->GetArchive();
 }
     
 void Entity::SetSolid(bool isSolid)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	GetCustomProperties()->SetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, isSolid);
 }
     
 bool Entity::GetSolid()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return GetCustomProperties()->GetBool(SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
 }
 	
 void Entity::SetLocked(bool isLocked)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	GetCustomProperties()->SetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, isLocked);
 }
 	
 bool Entity::GetLocked()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return GetCustomProperties()->GetBool(SCENE_NODE_IS_LOCKED_PROPERTY_NAME, false);
 }
 	
 void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	for (uint32 k = 0; k < components.size(); ++k)
 	{
 		if(components[k])
@@ -1367,6 +1465,8 @@ void Entity::GetDataNodes(Set<DataNode*> & dataNodes)
 	
 void Entity::OptimizeBeforeExport()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	for (uint32 i = 0; i < Component::COMPONENT_COUNT; ++i)
 	{
         uint32 componentsCount = GetComponentCount(i);
@@ -1386,6 +1486,8 @@ void Entity::OptimizeBeforeExport()
     
 void Entity::AddFlagRecursive(int32 flagToAdd)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	AddFlag(flagToAdd);
 	const Vector<Entity*>::iterator &itEnd = children.end();
 	for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
@@ -1396,6 +1498,8 @@ void Entity::AddFlagRecursive(int32 flagToAdd)
 	
 void Entity::RemoveFlagRecursive(int32 flagToRemove)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	RemoveFlag(flagToRemove);
 	const Vector<Entity*>::iterator &itEnd = children.end();
 	for (Vector<Entity*>::iterator it = children.begin(); it != itEnd; ++it)
@@ -1406,6 +1510,8 @@ void Entity::RemoveFlagRecursive(int32 flagToRemove)
 	
 bool Entity::IsLodMain(Entity *childToCheck)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (!parent || !IsLodPart())
 	{
 		return true;
@@ -1416,6 +1522,8 @@ bool Entity::IsLodMain(Entity *childToCheck)
 	
 String Entity::GetPathID(Entity * root)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	String result;
 	Entity * curr = this;
 	Entity * parent = NULL;
@@ -1440,6 +1548,8 @@ String Entity::GetPathID(Entity * root)
 	
 Entity * Entity::GetNodeByPathID(Entity * root, String pathID)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Entity * result = root;
 	int32 offs = 0;
 	int32 index = 0;
@@ -1465,27 +1575,37 @@ Entity * Entity::GetNodeByPathID(Entity * root, String pathID)
 	
 Matrix4 & Entity::ModifyLocalTransform()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->ModifyLocalTransform();
 }
 	
 void Entity::SetLocalTransform(const Matrix4 & newMatrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	TIME_PROFILE("Entity::SetLocalTransform");
 	((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->SetLocalTransform(&newMatrix);
 }
 	
 const Matrix4 & Entity::GetLocalTransform()
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->GetLocalTransform();
 }
 	
 const Matrix4 & Entity::GetWorldTransform() const
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	return ((TransformComponent*)GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransform();
 }
 	
 void Entity::SetVisible(const bool &isVisible)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	RenderComponent * renderComponent = (RenderComponent *)GetComponent(Component::RENDER_COMPONENT);
 	if(isVisible)
 	{
@@ -1525,6 +1645,8 @@ void Entity::SetVisible(const bool &isVisible)
 	
 void Entity::SetUpdatable(bool isUpdatable)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	RenderComponent * renderComponent = (RenderComponent *)GetComponent(Component::RENDER_COMPONENT);
 	if(isUpdatable)
 	{
@@ -1552,6 +1674,8 @@ void Entity::SetUpdatable(bool isUpdatable)
 	
 Matrix4 Entity::AccamulateLocalTransform(Entity * fromParent)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	if (fromParent == this)
 	{
 		return GetLocalTransform();
@@ -1561,6 +1685,8 @@ Matrix4 Entity::AccamulateLocalTransform(Entity * fromParent)
 
 Matrix4 Entity::AccamulateTransformUptoFarParent(Entity * farParent)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
     if (farParent == this)
     {
         return Matrix4::IDENTITY;
@@ -1570,6 +1696,8 @@ Matrix4 Entity::AccamulateTransformUptoFarParent(Entity * farParent)
 	
 void Entity::FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*> & components)
 {
+    TAG_SWITCH(MemoryManager::TAG_ENTITY)
+    
 	Component * component = GetComponent(type);
 	if (component)
 	{

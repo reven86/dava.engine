@@ -39,27 +39,37 @@ REGISTER_CLASS(LightComponent)
 
 LightComponent::LightComponent(Light * _light)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     light = SafeRetain(_light);
 }
 
 LightComponent::~LightComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     SafeRelease(light);
 }
     
 void LightComponent::SetLightObject(Light * _light)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	SafeRelease(light);
     light = SafeRetain(_light);
 }
     
 Light * LightComponent::GetLightObject() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return light;
 }
     
 Component * LightComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     LightComponent * component = new LightComponent();
 	component->SetEntity(toEntity);
     
@@ -71,6 +81,8 @@ Component * LightComponent::Clone(Entity * toEntity)
 
 void LightComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 
 	if(NULL != archive && NULL != light)
@@ -86,6 +98,8 @@ void LightComponent::Serialize(KeyedArchive *archive, SerializationContext *seri
 
 void LightComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	if(NULL != archive)
 	{
 		KeyedArchive *lightArch = archive->GetArchive("lc.light");
@@ -103,11 +117,15 @@ void LightComponent::Deserialize(KeyedArchive *archive, SerializationContext *se
 
 const bool LightComponent::IsDynamic()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     return (light) ? light->IsDynamic() : false;
 }
 
 void LightComponent::SetDynamic(const bool & isDynamic)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         light->SetDynamic(isDynamic);
@@ -118,6 +136,8 @@ void LightComponent::SetDynamic(const bool & isDynamic)
     
 void LightComponent::SetLightType(const uint32 & _type)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         light->SetType((Light::eType)_type);
@@ -128,6 +148,8 @@ void LightComponent::SetLightType(const uint32 & _type)
 
 void LightComponent::SetAmbientColor(const Color & _color)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         light->SetAmbientColor(_color);
@@ -138,6 +160,8 @@ void LightComponent::SetAmbientColor(const Color & _color)
 
 void LightComponent::SetDiffuseColor(const Color & _color)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         light->SetDiffuseColor(_color);
@@ -148,6 +172,8 @@ void LightComponent::SetDiffuseColor(const Color & _color)
 
 void LightComponent::SetIntensity(const float32& intensity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         light->SetIntensity(intensity);
@@ -158,6 +184,8 @@ void LightComponent::SetIntensity(const float32& intensity)
     
 const uint32 LightComponent::GetLightType()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         return light->GetType();
@@ -168,6 +196,8 @@ const uint32 LightComponent::GetLightType()
 
 const Color LightComponent::GetAmbientColor()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         return light->GetAmbientColor();
@@ -178,6 +208,8 @@ const Color LightComponent::GetAmbientColor()
 
 const Color LightComponent::GetDiffuseColor()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         return light->GetDiffuseColor();
@@ -188,6 +220,8 @@ const Color LightComponent::GetDiffuseColor()
 
 const float32 LightComponent::GetIntensity()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         return light->GetIntensity();
@@ -198,6 +232,8 @@ const float32 LightComponent::GetIntensity()
     
 const Vector3 LightComponent::GetPosition() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         return light->GetPosition();
@@ -208,6 +244,8 @@ const Vector3 LightComponent::GetPosition() const
 
 const Vector3 LightComponent::GetDirection() const
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         return light->GetDirection();
@@ -218,6 +256,8 @@ const Vector3 LightComponent::GetDirection() const
 
 void LightComponent::SetPosition(const Vector3 & position)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         light->SetPosition(position);
@@ -228,6 +268,8 @@ void LightComponent::SetPosition(const Vector3 & position)
 
 void LightComponent::SetDirection(const Vector3& direction)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(light)
     {
         light->SetDirection(direction);
@@ -238,6 +280,8 @@ void LightComponent::SetDirection(const Vector3& direction)
 
 void LightComponent::NotifyRenderSystemLightChanged()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     if(entity)
     {
         Scene* curScene = entity->GetScene();

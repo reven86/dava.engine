@@ -32,6 +32,7 @@
 
 #include "Base/BaseObject.h"
 #include "Platform/Mutex.h"
+#include "Debug/MemoryManager.h"
 
 namespace DAVA
 {
@@ -61,6 +62,8 @@ class RenderResource : public BaseObject
 protected:
 	virtual ~RenderResource();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
 	RenderResource();
 	
 	/**
@@ -83,7 +86,8 @@ public:
 	virtual void Invalidate();
 
 
-	static List<RenderResource*> resourceList;
+	//static List<RenderResource*> resourceList;
+    static std::list<RenderResource*> resourceList;
     static Mutex resourceListMutex;
 	static void LostAllResources();
 	static void InvalidateAllResources();

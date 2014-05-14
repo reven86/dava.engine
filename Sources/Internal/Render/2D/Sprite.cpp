@@ -63,6 +63,8 @@ Mutex Sprite::spriteMapMutex;
 
 Sprite::DrawState::DrawState()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     Reset();
     
     renderState = RenderState::RENDERSTATE_2D_BLEND;
@@ -73,6 +75,8 @@ Sprite::DrawState::DrawState()
 
 void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     renderState = _renderState;
     
     /*if(_renderState != renderState)
@@ -93,6 +97,8 @@ void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
 
 void Sprite::DrawState::SetShader(Shader* _shader)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     shader = _shader;
     /*if(_shader != shader)
     {
@@ -104,6 +110,8 @@ void Sprite::DrawState::SetShader(Shader* _shader)
 
 Sprite::Sprite()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	textures = 0;
 	textureNames = 0;
 	frameTextureIndex = 0;
@@ -141,6 +149,8 @@ Sprite::Sprite()
 
 Sprite* Sprite::PureCreate(const FilePath & spriteName, Sprite* forPointer)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(spriteName.IsEmpty() || spriteName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
@@ -211,6 +221,8 @@ Sprite* Sprite::PureCreate(const FilePath & spriteName, Sprite* forPointer)
 
 Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     Sprite * ret = NULL;
 
     spriteMapMutex.Lock();
@@ -229,6 +241,8 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 
 FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	String::size_type pos = spriteName.GetAbsolutePathname().find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));
 	if(String::npos != pos)
 	{
@@ -248,6 +262,8 @@ FilePath Sprite::GetScaledName(const FilePath &spriteName)
 
 File * Sprite::LoadLocalizedFile(const FilePath & spritePathname, FilePath & texturePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	FilePath localizedScaledPath(spritePathname);
 	localizedScaledPath.ReplaceDirectory(spritePathname.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
 
@@ -271,6 +287,8 @@ File * Sprite::LoadLocalizedFile(const FilePath & spritePathname, FilePath & tex
 
 void Sprite::InitFromFile(File *file, const FilePath &pathName)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	bool usedForScale = false;//Думаю, после исправлений в конвертере, эта магия больше не нужна. Но переменную пока оставлю.
 
 //	uint64 timeSpriteRead = SystemTimer::Instance()->AbsoluteMS();
@@ -414,6 +432,8 @@ void Sprite::InitFromFile(File *file, const FilePath &pathName)
 
 Sprite* Sprite::Create(const FilePath &spriteName)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	Sprite * spr = PureCreate(spriteName,NULL);
 	if (!spr)
 	{
@@ -429,6 +449,8 @@ Sprite* Sprite::Create(const FilePath &spriteName)
 
 Sprite* Sprite::CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	Sprite * sprite = new Sprite();
 	sprite->InitAsRenderTarget(sprWidth, sprHeight, textureFormat, contentScaleIncluded);
 	return sprite;
@@ -436,6 +458,8 @@ Sprite* Sprite::CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelF
 
 void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if (!contentScaleIncluded)
 	{
 		sprWidth = sprWidth * Core::GetVirtualToPhysicalFactor();
@@ -458,6 +482,8 @@ void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat
 
 Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, bool contentScaleIncluded)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	DVASSERT(fromTexture);
 	Sprite *spr = new Sprite();
 	DVASSERT_MSG(spr, "Render Target Sprite Creation failed");
@@ -467,6 +493,8 @@ Sprite* Sprite::CreateFromTexture(Texture *fromTexture, int32 xOffset, int32 yOf
 
 Sprite * Sprite::CreateFromTexture(const Vector2 & spriteSize, Texture * fromTexture, const Vector2 & textureRegionOffset, const Vector2 & textureRegionSize, const FilePath &spriteName /* = FilePath()*/)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	DVASSERT(fromTexture);
 	Sprite *spr = new Sprite();
 	DVASSERT_MSG(spr, "Render Target Sprite Creation failed");
@@ -476,6 +504,8 @@ Sprite * Sprite::CreateFromTexture(const Vector2 & spriteSize, Texture * fromTex
 
 Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     uint32 width = image->GetWidth();
     uint32 height = image->GetHeight();
     
@@ -523,6 +553,8 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
 
 Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     if (data == NULL || size == 0)
     {
         return NULL;
@@ -551,6 +583,8 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
 
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     Vector<Image*> images;
     ImageLoader::CreateFromFileByExtension(path, images);
     if (images.size() == 0)
@@ -567,6 +601,8 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if (!contentScaleIncluded)
 	{
 		xOffset = (int32)(Core::GetVirtualToPhysicalFactor() * xOffset);
@@ -680,6 +716,8 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 
 void Sprite::PrepareForTiling()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(!isPreparedForTiling)
 	{
 		for (int i = 0;	i < this->frameCount; i++)
@@ -699,6 +737,8 @@ void Sprite::PrepareForTiling()
 
 void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	DVASSERT(frame < frameCount);
 
 	rectsAndOffsets[frame][4] = xOff;
@@ -719,6 +759,8 @@ void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 
 int32 Sprite::Release()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(GetRetainCount() == 1)
 	{
         spriteMapMutex.Lock();
@@ -732,6 +774,8 @@ int32 Sprite::Release()
 
 void Sprite::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	UnregisterTextureStates();
 	for (int32 k = 0; k < textureCount; ++k)
 	{
@@ -768,6 +812,8 @@ void Sprite::Clear()
 
 Sprite::~Sprite()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 //	Logger::FrameworkDebug("Removing sprite");
 	Clear();
 
@@ -775,11 +821,15 @@ Sprite::~Sprite()
 
 Texture* Sprite::GetTexture()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return textures[0];
 }
 
 Texture* Sprite::GetTexture(int32 frameNumber)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 //	DVASSERT(frameNumber > -1 && frameNumber < frameCount);
 	frame = Clamp(frameNumber, 0, frameCount - 1);
 	return textures[frameTextureIndex[frame]];
@@ -787,12 +837,16 @@ Texture* Sprite::GetTexture(int32 frameNumber)
 	
 UniqueHandle Sprite::GetTextureHandle(int32 frameNumber)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	frame = Clamp(frameNumber, 0, frameCount - 1);
 	return textureHandles[frameTextureIndex[frame]];
 }
 
 float32 *Sprite::GetTextureVerts(int32 frame)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 //	DVASSERT(frame > -1 && frame < frameCount);
 	uint32 frameNumber = Clamp(frame, 0, frameCount - 1);
 	return texCoords[frameNumber];
@@ -800,42 +854,58 @@ float32 *Sprite::GetTextureVerts(int32 frame)
 
 int32 Sprite::GetFrameCount() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return frameCount;
 }
 
 float32 Sprite::GetWidth() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return size.dx;
 }
 
 float32 Sprite::GetHeight() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return size.dy;
 }
 
 const Vector2 &Sprite::GetSize() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return size;
 }
 
 const Vector2 &Sprite::GetDefaultPivotPoint() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return defaultPivotPoint;
 }
 
 void Sprite::SetDefaultPivotPoint(float32 x, float32 y)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     defaultPivotPoint.x = x;
     defaultPivotPoint.y = y;
 }
     
 void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     defaultPivotPoint = newPivotPoint;
 }
 
 void Sprite::SetFrame(int32 frm)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	frame = Max(0, Min(frm, frameCount - 1));
 }
 
@@ -925,6 +995,8 @@ void Sprite::SetScaleSize(const Vector2 &drawSize)
 
 void Sprite::SetModification(int32 modif)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	modification = modif;
 	if(modif != 0)
 	{
@@ -938,6 +1010,8 @@ void Sprite::SetModification(int32 modif)
 
 void Sprite::Reset()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	//drawCoord.x = 0;
 	//drawCoord.y = 0;
 	//frame = 0;
@@ -951,6 +1025,8 @@ void Sprite::Reset()
 
 void Sprite::ResetModification()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     flags = flags & ~EST_MODIFICATION;
 }
 
@@ -976,6 +1052,8 @@ void Sprite::ResetScale()
 
 inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     DVASSERT(state);
     
 	float32 x, y;
@@ -1376,6 +1454,8 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 void Sprite::Draw(DrawState * state)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
@@ -1449,6 +1529,8 @@ void Sprite::EndBatching()
 
 void Sprite::DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawState* drawState)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	GLfloat tempCoord[8];
 	Memcpy(tempCoord, texCoords[frame], sizeof(float32)*8);
 
@@ -1469,6 +1551,8 @@ void Sprite::DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawSta
 
 void Sprite::DrawPoints(Vector2 *verticies, DrawState* drawState)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
 	{
 		return;
@@ -1638,24 +1722,32 @@ void Sprite::DrawPoints(Vector2 *verticies, DrawState* drawState)
 
 float32 Sprite::GetRectOffsetValueForFrame(int32 frame, eRectsAndOffsets valueType) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
 	return rectsAndOffsets[clampedFrame][valueType];
 }
 
 const float32 * Sprite::GetFrameVerticesForFrame( int32 frame ) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
 	return frameVertices[clampedFrame];
 }
 
 const float32 * Sprite::GetTextureCoordsForFrame( int32 frame ) const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	int32 clampedFrame = Clamp(frame, 0, frameCount - 1);
 	return texCoords[clampedFrame];
 }
 
 void Sprite::PrepareForNewSize()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     if(relativePathname.IsEmpty()) return;
     
 	String pathname = relativePathname.GetAbsolutePathname();
@@ -1719,6 +1811,8 @@ void Sprite::PrepareForNewSize()
 
 void Sprite::ValidateForSize()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	Logger::FrameworkDebug("--------------- Sprites validation for new resolution ----------------");
 	List<Sprite*> spritesToReload;
 
@@ -1744,6 +1838,8 @@ void Sprite::ValidateForSize()
 
 void Sprite::DumpSprites()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	Logger::FrameworkDebug("============================================================");
 	Logger::FrameworkDebug("--------------- Currently allocated sprites ----------------");
 
@@ -1760,11 +1856,15 @@ void Sprite::DumpSprites()
 
 void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	clipPolygon = _clipPolygon;
 }
 
 void Sprite::ConvertToVirtualSize()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	float32 virtualToPhysicalFactor = Core::Instance()->GetVirtualToPhysicalFactor();
 	float32 resourceToVirtualFactor = Core::Instance()->GetResourceToVirtualFactor(GetResourceSizeIndex());
 
@@ -1789,11 +1889,15 @@ void Sprite::ConvertToVirtualSize()
 
 const FilePath & Sprite::GetRelativePathname() const
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	return relativePathname;
 }
 
 void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	position.x = parentState.position.x + localState.position.x * parentState.scale.x;
 	position.y = parentState.position.y + localState.position.y * parentState.scale.y;
 	if(parentState.angle != 0)
@@ -1828,6 +1932,8 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState &pa
 
 void Sprite::Reload()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(type == SPRITE_FROM_FILE)
 	{
 		int32 sizeIndex = resourceSizeIndex;
@@ -1864,6 +1970,8 @@ void Sprite::Reload()
 	
 void Sprite::RegisterTextureStates()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	textureHandles.resize(textureCount, InvalidUniqueHandle);
 	for(int32 i = 0; i < textureCount; ++i)
     {
@@ -1880,6 +1988,8 @@ void Sprite::RegisterTextureStates()
 
 void Sprite::UnregisterTextureStates()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	for(int32 i = 0; i < textureCount; ++i)
     {
 		if(textureHandles[i] != InvalidUniqueHandle)

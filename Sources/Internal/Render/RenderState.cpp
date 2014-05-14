@@ -69,6 +69,8 @@ UniqueHandle RenderState::TEXTURESTATE_EMPTY = InvalidUniqueHandle;
 
 RenderState::RenderState()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     renderer = RenderManager::Instance()->GetRenderer();
 
 	Reset(false);
@@ -79,7 +81,7 @@ RenderState::RenderState()
 
 RenderState::~RenderState()
 {
-
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
 }
     
 //#define LOG_FINAL_RENDER_STATE
@@ -89,6 +91,8 @@ RenderState::~RenderState()
  */
 void RenderState::Reset(bool doHardwareReset)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     color.r = 1.0f;
     color.g = 1.0f;
     color.b = 1.0f;
@@ -125,6 +129,8 @@ void RenderState::Reset(bool doHardwareReset)
 
 bool RenderState::IsEqual(RenderState * anotherState)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (stateHandle != anotherState->stateHandle) return false;
 	if (textureState != anotherState->textureState) return false;
     if (color != anotherState->color) return false;
@@ -134,6 +140,8 @@ bool RenderState::IsEqual(RenderState * anotherState)
 
 void RenderState::Flush(RenderState * hardwareState) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	RENDERER_UPDATE_STATS(renderStateSwitches++);
 	
 	if(hardwareState->stateHandle != stateHandle)
@@ -273,6 +281,8 @@ void RenderState::Flush(RenderState * hardwareState) const
     
 inline void RenderState::SetColorMaskInHW(uint32 state) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     GLboolean redMask = (state & RenderStateData::STATE_COLORMASK_RED) != 0;
     GLboolean greenMask = (state & RenderStateData::STATE_COLORMASK_GREEN) != 0;
     GLboolean blueMask = (state & RenderStateData::STATE_COLORMASK_BLUE) != 0;
@@ -289,6 +299,8 @@ inline void RenderState::SetColorMaskInHW(uint32 state) const
 
 inline void RenderState::SetStensilTestInHW(uint32 state) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	if (state & RenderStateData::STATE_STENCIL_TEST)
 	{
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -307,6 +319,8 @@ inline void RenderState::SetStensilTestInHW(uint32 state) const
 
 inline void RenderState::SetEnableBlendingInHW(uint32 state) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (state & RenderStateData::STATE_BLEND)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -325,6 +339,8 @@ inline void RenderState::SetEnableBlendingInHW(uint32 state) const
     
 inline void RenderState::SetCullInHW(uint32 state) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if (state & RenderStateData::STATE_CULL)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -344,6 +360,8 @@ inline void RenderState::SetCullInHW(uint32 state) const
 
 inline void RenderState::SetCullModeInHW(eFace cullMode) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::cull_mode = %d", cullMode);
 #endif    
@@ -355,6 +373,8 @@ inline void RenderState::SetCullModeInHW(eFace cullMode) const
 inline void RenderState::SetBlendModeInHW(eBlendMode  sourceFactor,
 											eBlendMode  destFactor) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::blend_src_dst = (%d, %d)", sourceFactor, destFactor);
 #endif    
@@ -364,6 +384,8 @@ inline void RenderState::SetBlendModeInHW(eBlendMode  sourceFactor,
 
 inline void RenderState::SetTextureLevelInHW(uint32 textureLevel, Texture* texture) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
     if(texture)
     {
@@ -381,6 +403,8 @@ inline void RenderState::SetTextureLevelInHW(uint32 textureLevel, Texture* textu
 }
 inline void RenderState::SetDepthTestInHW(uint32 state) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if(state & RenderStateData::STATE_DEPTH_TEST)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -399,6 +423,8 @@ inline void RenderState::SetDepthTestInHW(uint32 state) const
 
 inline void RenderState::SetDepthWriteInHW(uint32 state) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     if(state & RenderStateData::STATE_DEPTH_WRITE)
     {
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -418,6 +444,8 @@ inline void RenderState::SetDepthWriteInHW(uint32 state) const
     
 inline void RenderState::SetDepthFuncInHW(eCmpFunc depthFunc) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined (LOG_FINAL_RENDER_STATE)
     Logger::FrameworkDebug("RenderState::depth func = (%d)", depthFunc);
 #endif    
@@ -427,6 +455,8 @@ inline void RenderState::SetDepthFuncInHW(eCmpFunc depthFunc) const
 
 inline void RenderState::SetScissorTestInHW(uint32 state) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	if(state & RenderStateData::STATE_SCISSOR_TEST)
 	{
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -445,6 +475,8 @@ inline void RenderState::SetScissorTestInHW(uint32 state) const
 
 inline void RenderState::SetFillModeInHW(eFillMode fillMode) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 #if defined(__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
 	RENDER_VERIFY(glPolygonMode(GL_FRONT_AND_BACK, FILLMODE_MAP[fillMode]));
 #endif
@@ -460,6 +492,8 @@ inline void RenderState::SetStencilMaskInHW() const
 
 inline void RenderState::SetStencilFuncInHW(eCmpFunc stencilFunc0, eCmpFunc stencilFunc1, int32 stencilRef, uint32 stencilMask) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	if(stencilFunc0 == stencilFunc1)
 	{
 		RENDER_VERIFY(glStencilFunc(COMPARE_FUNCTION_MAP[stencilFunc0], stencilRef, stencilMask));
@@ -493,6 +527,8 @@ inline void RenderState::SetStencilOpInHW(eStencilOp stencilFail0,
 										  eStencilOp stencilZFail1,
 										  eStencilOp stencilPass1) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	RENDER_VERIFY(glStencilOpSeparate(CULL_FACE_MAP[FACE_FRONT], STENCIL_OP_MAP[stencilFail0], STENCIL_OP_MAP[stencilZFail0], STENCIL_OP_MAP[stencilPass0]));
 	RENDER_VERIFY(glStencilOpSeparate(CULL_FACE_MAP[FACE_BACK], STENCIL_OP_MAP[stencilFail1], STENCIL_OP_MAP[stencilZFail1], STENCIL_OP_MAP[stencilPass1]));
 }
@@ -664,6 +700,8 @@ inline void RenderState::SetStencilOpInHW()
 
 void RenderState::LoadFromYamlFile(const FilePath & filePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	YamlParser * parser = YamlParser::Create(filePath);
 	if (!parser)
 	{
@@ -685,6 +723,8 @@ void RenderState::LoadFromYamlFile(const FilePath & filePath)
 
 void RenderState::LoadFromYamlNode(const YamlNode * rootNode)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	if (!rootNode)
 		return;
 
@@ -813,6 +853,8 @@ void RenderState::LoadFromYamlNode(const YamlNode * rootNode)
 
 bool RenderState::SaveToYamlFile(const FilePath & filePath)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	YamlParser * parser = YamlParser::Create();
 	DVASSERT(parser);
 
@@ -826,6 +868,8 @@ bool RenderState::SaveToYamlFile(const FilePath & filePath)
 	
 YamlNode * RenderState::SaveToYamlNode(YamlNode * parentNode /* = 0 */)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	if(!parentNode)
 		parentNode = new YamlNode(YamlNode::TYPE_MAP);
 	
@@ -875,6 +919,8 @@ YamlNode * RenderState::SaveToYamlNode(YamlNode * parentNode /* = 0 */)
 
 void RenderState::GetCurrentStateStrings(uint32 state, Vector<String> & statesStrs)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	statesStrs.clear();
 
 	for(uint32 bit = 0; bit < 32; bit++)
@@ -887,6 +933,8 @@ void RenderState::GetCurrentStateStrings(uint32 state, Vector<String> & statesSt
 
 uint32 RenderState::GetRenderStateByName(const String & str)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	for(uint32 i = 0; i < STATE_COUNT; i++)
 	{
 		if(RENDER_STATES_NAMES[i] == str)
@@ -900,6 +948,8 @@ uint32 RenderState::GetRenderStateByName(const String & str)
 	
 void RenderState::CopyTo(RenderState* target) const
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	target->renderer = renderer;
     
     target->color = color;
@@ -915,6 +965,8 @@ void RenderState::CopyTo(RenderState* target) const
 	
 void RenderState::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	static RenderStateData emptyState;
 	
 	const RenderStateData& renderState = (stateHandle != InvalidUniqueHandle) ? RenderManager::Instance()->GetRenderStateData(stateHandle) : emptyState;
@@ -946,6 +998,8 @@ void RenderState::Serialize(KeyedArchive *archive, SerializationContext *seriali
 
 void RenderState::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
 	RenderStateData renderState;
 	
 	renderState.state = archive->GetUInt32("state");
@@ -975,6 +1029,8 @@ void RenderState::Deserialize(KeyedArchive *archive, SerializationContext *seria
 
 void RenderState::InitDefaultStates()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     RenderStateData defaultStateData;
 	
 	defaultStateData.state = RenderState::DEFAULT_2D_STATE_BLEND;

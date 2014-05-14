@@ -43,6 +43,8 @@ class RenderLayer;
 class RenderLayerManager : public Singleton<RenderLayerManager>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_LAYER)
+    
     RenderLayerManager();
     ~RenderLayerManager();
     

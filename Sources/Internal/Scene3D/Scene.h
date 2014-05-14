@@ -38,6 +38,7 @@
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFileV2.h"
+#include "Debug/MemoryManager.h"
 
 namespace DAVA
 {
@@ -93,7 +94,9 @@ class Scene : public Entity
 {
 protected:
 	virtual ~Scene();
-public:	
+public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE);
+    
     enum
     {
         SCENE_SYSTEM_TRANSFORM_FLAG         = 1 << 0,
@@ -190,6 +193,8 @@ public:
         \param[in] rootNodePath root node path you want to release.
      */
     void ReleaseRootNode(const FilePath &rootNodePath);
+    
+    void ReleaseRootNodes();
     
     /**
         \brief Release root node by pointer to this node.

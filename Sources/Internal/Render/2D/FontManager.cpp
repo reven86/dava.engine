@@ -44,6 +44,8 @@ namespace DAVA
 	
 FontManager::FontManager()
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	FT_Error error = FT_Init_FreeType(&library);
 	if(error)
 	{
@@ -53,6 +55,8 @@ FontManager::FontManager()
 	
 FontManager::~FontManager()
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	FTFont::ClearCache();
 
 	FT_Error error = FT_Done_FreeType(library);
@@ -66,6 +70,8 @@ FontManager::~FontManager()
 	
 void FontManager::RegisterFont(Font* font)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	if (!Core::Instance()->GetOptions()->GetBool("trackFont"))
 		return;
 
@@ -77,11 +83,15 @@ void FontManager::RegisterFont(Font* font)
 
 void FontManager::UnregisterFont(Font *font)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	registeredFonts.erase(font);
 }
 	
 void FontManager::SetFontName(Font* font, const String& name)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	if (registeredFonts.find(font) == registeredFonts.end())
 		return;
 
@@ -92,6 +102,8 @@ void FontManager::SetFontName(Font* font, const String& name)
 	
 String FontManager::GetFontName(Font *font)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	REGISTERED_FONTS::iterator fontIter = registeredFonts.find(font);
 	if (fontIter == registeredFonts.end())
 		return "";
@@ -126,6 +138,8 @@ String FontManager::GetFontName(Font *font)
 
 void FontManager::PrepareToSaveFonts()
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	Clear();
 	fontsName.clear();
 	trackedFonts.clear();
@@ -163,6 +177,8 @@ void FontManager::PrepareToSaveFonts()
 	
 void FontManager::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	for (FONTS_NAME::iterator iter = fontsName.begin();
 		 iter != fontsName.end();
 		 ++iter)
@@ -175,11 +191,15 @@ void FontManager::Clear()
 
 const FontManager::TRACKED_FONTS& FontManager::GetTrackedFont() const
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	return trackedFonts;
 }
 
 String FontManager::GetFontHashName(Font* font)
 {
+    TAG_SWITCH(MemoryManager::TAG_FONT_MANAGER)
+    
 	return Format("Font_%X", font->GetHashCode());
 }
 

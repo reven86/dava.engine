@@ -259,6 +259,7 @@ WideString LocalizationSystem::GetLocalizedString(const WideString & key)
 	//List<StringFile*>::const_reverse_iterator rEnd = stringsList.rend();
 	for (List<StringFile*>::reverse_iterator it = stringsList.rbegin(); it != stringsList.rend(); ++it)
 	{
+        pthread_t threadID = pthread_self();
 		StringFile * file = *it;
 
 		Map<WideString, WideString>::iterator res = file->strings.find(key);

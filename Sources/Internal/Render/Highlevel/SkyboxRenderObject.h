@@ -38,7 +38,13 @@ namespace DAVA
 	class SkyboxRenderObject : public RenderObject
 	{
 	public:
-		
+        
+#if defined(ENABLE_MEMORY_MANAGER)
+        IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SKYBOX)
+#else
+		IMPLEMENT_NATIVE_ALLOCATOR;
+#endif
+        
 		SkyboxRenderObject();
 		virtual ~SkyboxRenderObject();
 		

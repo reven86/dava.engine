@@ -43,6 +43,8 @@ class SceneAnimationMixer : public BaseObject
 protected:
 	~SceneAnimationMixer();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SCENE)
+    
 	SceneAnimationMixer(Scene * scene);
 	
 	// void SetTimeMultiplier(float32 timeMult);

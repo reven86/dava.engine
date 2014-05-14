@@ -41,6 +41,8 @@ namespace DAVA
     
 MaterialCompiler::eCompileResult MaterialCompiler::Compile(MaterialGraph * _materialGraph, PolygonGroup * _polygonGroup, uint32 maxLights, NMaterial ** resultMaterial)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     materialGraph = _materialGraph;
     polygonGroup = _polygonGroup;
     
@@ -73,18 +75,26 @@ MaterialCompiler::eCompileResult MaterialCompiler::Compile(MaterialGraph * _mate
 };
     
 String MaterialCompiler::GetCompiledVertexShaderPathname() const
-{	//VK: why we return string instead of FilePath
+{
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
+	//VK: why we return string instead of FilePath
     return materialCompiledVshName.GetAbsolutePathname();
 }
 
 String MaterialCompiler::GetCompiledFragmentShaderPathname() const
-{	//VK: why we return string instead of FilePath
+{
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
+	//VK: why we return string instead of FilePath
     return materialCompiledFshName.GetAbsolutePathname();
 }
 
     
 void MaterialCompiler::RecursiveSetDepthMarker(MaterialGraphNode * node, uint32 depthMarker)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     node->SetDepthMarker(depthMarker);
     
     Map<String, MaterialGraphNodeConnector*> & inputConnectors = node->GetInputConnectors();
@@ -101,6 +111,8 @@ void MaterialCompiler::RecursiveSetDepthMarker(MaterialGraphNode * node, uint32 
 
 void MaterialCompiler::GenerateCode(MaterialGraph * materialGraph)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     // Generate pixel shader code
     String pixelShader;
     String vertexShader;
@@ -135,12 +147,14 @@ void MaterialCompiler::GenerateCode(MaterialGraph * materialGraph)
     
 void MaterialCompiler::FixNodesWithoutProperInputs()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
 }
 
 
 MaterialCompiler::eCompileError MaterialCompiler::GenerateCodeForNode(MaterialGraphNode * node, String & vertexShader, String & pixelShader)
 {
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
     Logger::Debug("Generate Code: %s %d", node->GetName().c_str(), node->GetType());
     
     

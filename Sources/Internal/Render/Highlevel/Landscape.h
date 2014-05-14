@@ -61,6 +61,20 @@ template<class T>
 class LandQuadTreeNode
 {
 public:
+    // IMPLEMENT_POOL_ALLOCATOR
+    
+    void * operator new[](std::size_t size)
+	{
+		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator("LandQuadTreeNode4", size, 994);
+		return alloc->New();
+	}
+    
+	void operator delete[](void * ptr)
+	{
+		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator("LandQuadTreeNode4", 0, 0);
+		alloc->Delete(ptr);
+	}
+    
     LandQuadTreeNode()
     {
         children = 0;
@@ -121,6 +135,13 @@ public:
     };
     
 	Landscape();
+    
+#if defined(ENABLE_MEMORY_MANAGER)
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_LANDSCAPE)
+#else
+    IMPLEMENT_NATIVE_ALLOCATOR;
+#endif
+    
 	virtual ~Landscape();
     
     /**

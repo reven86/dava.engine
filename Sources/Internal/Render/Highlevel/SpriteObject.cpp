@@ -41,6 +41,8 @@ SpriteObject::SpriteObject()
     : RenderObject()
     , sprite(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     Texture* t = Texture::CreatePink();
     Sprite *spr = Sprite::CreateFromTexture(t, 0, 0, t->GetWidth(), t->GetHeight());
     Init(spr, 0, Vector2(1.f, 1.f), Vector2(0.f, 0.f));
@@ -54,6 +56,8 @@ SpriteObject::SpriteObject(const FilePath &pathToSprite, int32 _frame
 	:   RenderObject()
     ,   sprite(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	Sprite *spr = Sprite::Create(pathToSprite);
 	Init(spr, _frame, reqScale, pivotPoint);
 	SafeRelease(spr);
@@ -64,17 +68,23 @@ SpriteObject::SpriteObject(Sprite *spr, int32 _frame
 	:   RenderObject()
     ,   sprite(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	Init(spr, _frame, reqScale, pivotPoint);
 }
 
 
 SpriteObject::~SpriteObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	SafeRelease(sprite);
 }
 
 void SpriteObject::Clear()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     while (GetRenderBatchCount())
     {
         RemoveRenderBatch(GetRenderBatchCount() - 1);
@@ -87,6 +97,8 @@ void SpriteObject::Clear()
 
 void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, const Vector2 &pivotPoint )
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+
     Clear();
 
 	type = TYPE_SPRITE;
@@ -103,6 +115,8 @@ void SpriteObject::Init( Sprite *spr, int32 _frame, const Vector2 &reqScale, con
 
 void SpriteObject::SetupRenderBatch()
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(sprite)
 	{
 		for (int32 i = 0; i < sprite->GetFrameCount(); ++i) 
@@ -143,6 +157,8 @@ void SpriteObject::SetupRenderBatch()
 
 RenderObject * SpriteObject::Clone(RenderObject *newObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	if(!newObject)
 	{
 		DVASSERT_MSG(IsPointerToExactClass<SpriteObject>(this), "Can clone only SpriteObject");
@@ -164,6 +180,8 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 
 void SpriteObject::SetFrame(int32 newFrame)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	frame = Clamp(newFrame, 0, sprite->GetFrameCount() - 1);
 
 	int32 count = GetRenderBatchCount();
@@ -207,6 +225,8 @@ const Vector2 & SpriteObject::GetPivot() const
 
 void SpriteObject::CreateMeshFromSprite(int32 frameToGen)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
 	float32 x0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::X_OFFSET_TO_ACTIVE) - sprPivot.x;
 	float32 y0 = sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::Y_OFFSET_TO_ACTIVE) - sprPivot.y;
 	float32 x1 = x0 + sprite->GetRectOffsetValueForFrame(frameToGen, Sprite::ACTIVE_WIDTH);
@@ -261,6 +281,8 @@ void SpriteObject::CreateMeshFromSprite(int32 frameToGen)
 
 void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     RenderObject::Save(archive, serializationContext);
 
     if (!archive || !sprite)
@@ -277,6 +299,8 @@ void SpriteObject::Save(KeyedArchive *archive, SerializationContext *serializati
 
 void SpriteObject::Load(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_SPRITE)
+    
     RenderObject::Load(archive, serializationContext);
 
     if (!archive)

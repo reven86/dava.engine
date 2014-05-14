@@ -5,6 +5,7 @@
 #include "Math/AABBox3.h"
 #include "Render/Highlevel/RenderHierarchy.h"
 #include "Render/UniqueStateSet.h"
+#include <list>
 
 namespace DAVA
 {
@@ -75,7 +76,8 @@ class QuadTree : public RenderHierarchy
 	void MarkObjectDirty(RenderObject *object);
 
 	bool worldInitialized;
-	List<RenderObject *> worldInitObjects;	
+	//List<RenderObject *> worldInitObjects;
+    std::list<RenderObject *> worldInitObjects;
 
 
 	void DebugDrawNode(uint16 nodeId);
@@ -86,6 +88,8 @@ protected:
 	{}
 	
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SPATIALTREE)
+    
 	QuadTree(int32 maxTreeDepth);
 	
 	virtual void AddRenderObject(RenderObject * renderObject);

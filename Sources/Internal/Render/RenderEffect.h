@@ -83,6 +83,8 @@ protected:
     virtual ~RenderEffect();
 
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER)
+    
     RenderEffect();
     
     virtual const char * GetName();

@@ -68,11 +68,15 @@ PolygonGroup::PolygonGroup()
 
 PolygonGroup::~PolygonGroup()
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
 	ReleaseData();
 }
     
 void PolygonGroup::UpdateDataPointersAndStreams()
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     int32 baseShift = 0;
 	if (vertexFormat & EVF_VERTEX)
 	{
@@ -178,6 +182,8 @@ void PolygonGroup::UpdateDataPointersAndStreams()
 
 void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount)
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
 	vertexCount = _vertexCount;
 	indexCount = _indexCount;
 	vertexStride = GetVertexSize(_meshFormat);
@@ -205,6 +211,8 @@ void PolygonGroup::TangentVectors(  const Vector3 &v0,
                                     Vector3 &tdir, 
                                     Vector3 &normal)
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     Vector3 dv0 = v1 - v0;
     Vector3 dv1 = v2 - v0;
     
@@ -220,6 +228,8 @@ void PolygonGroup::TangentVectors(  const Vector3 &v0,
     
 void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     if (!(vertexFormat & EVF_TANGENT))
     {
         // Dirty hack. Copy pointers of this polygon group 
@@ -365,6 +375,8 @@ void PolygonGroup::BuildTangentsBinormals(uint32 flagsToAdd)
     
 void PolygonGroup::CreateBaseVertexArray()
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
 	SafeDeleteArray(baseVertexArray);
 	baseVertexArray = new Vector3[vertexCount];
 
@@ -376,6 +388,8 @@ void PolygonGroup::CreateBaseVertexArray()
     
 void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     aabbox = AABBox3(); // reset bbox
     
     Matrix4 normalMatrix4;
@@ -406,6 +420,8 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
 	    
 void PolygonGroup::ReleaseData()
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     SafeRelease(renderDataObject);
     
     SafeDeleteArray(jointCountArray);
@@ -417,11 +433,15 @@ void PolygonGroup::ReleaseData()
 	
 void PolygonGroup::BuildBuffers()
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &PolygonGroup::BuildBuffersInternal));
 };
     
 void PolygonGroup::BuildBuffersInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     DVASSERT(Thread::IsMainThread());
 
     UpdateDataPointersAndStreams();
@@ -435,6 +455,8 @@ void PolygonGroup::BuildBuffersInternal(BaseObject * caller, void * param, void 
     
 void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     DataNode::Save(keyedArchive, serializationContext);
     
     keyedArchive->SetInt32("vertexFormat", vertexFormat);
@@ -461,6 +483,8 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
 
 void PolygonGroup::Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     DataNode::Load(keyedArchive, serializationContext);
     
     vertexFormat = keyedArchive->GetInt32("vertexFormat");
@@ -520,6 +544,8 @@ void PolygonGroup::Load(KeyedArchive * keyedArchive, SerializationContext * seri
     
 void PolygonGroup::RecalcAABBox()
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     aabbox = AABBox3(); // reset bbox
 
     // recalc aabbox
@@ -533,6 +559,8 @@ void PolygonGroup::RecalcAABBox()
     
 void PolygonGroup::DebugDraw()
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
     RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
     for (int k = 0; k < indexCount / 3; ++k)
     {
@@ -572,6 +600,8 @@ public:
 
 void PolygonGroup::CopyData(uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
 	if (vertexFormat & format)
 	{
 		uint32 formatSize = GetVertexSize(format);
@@ -586,6 +616,8 @@ void PolygonGroup::CopyData(uint8 ** meshData, uint8 ** newMeshData, uint32 vert
 
 bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
 	if (vertexFormat & format)
 	{
 		uint32 size = GetVertexSize(format);
@@ -605,6 +637,8 @@ bool PolygonGroup::IsFloatDataEqual(const float32 ** meshData, const float32 ** 
 	
 int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat) const
 {
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
 	uint32 optimizedVertexCount = optMeshData.size() / GetVertexSize(vertexFormat);
 
 	for (uint32 i = 0; i < optimizedVertexCount; ++i)
@@ -635,7 +669,9 @@ int32 PolygonGroup::OptimazeVertexes(const uint8 * meshData, Vector<uint8> & opt
 }
 	
 void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
-{	
+{
+    TAG_SWITCH(MemoryManager::TAG_POLYGON_GROUP)
+    
 	int32 newVertexStride = GetVertexSize(newVertexFormat);
 	uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
 	memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));

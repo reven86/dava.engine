@@ -51,6 +51,8 @@ class Camera : public BaseObject
 protected:
 	virtual ~Camera();
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_CAMERA)
+    
 	Camera();
     Camera(const Camera & c);
 	

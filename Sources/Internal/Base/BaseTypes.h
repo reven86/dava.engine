@@ -32,6 +32,8 @@
 
 #include "DAVAConfig.h"
 #include "Base/TemplateHelpers.h"
+#include "Base/STLPoolAllocator.h"
+#include "Base/STLBasePoolAllocator.h"
 
 // Platform detection:
 
@@ -40,6 +42,30 @@
 #include <TargetConditionals.h>
 #endif
 
+// This turns on mmem mapped files fot texture loading
+//#define __USE_MEMORY_MAP_FOR_TEXTURE__
+
+// This turne on stack allocator on keyed archives loading
+//#define __USE_OWN_ALLOCATORS__
+
+// This enables fixed string allocator in NormalizePathname
+//#define __USE_FIXED_STRING_ALLOCATOR__
+
+// This enables memory manager (user to track memory, use this for investigation purposes only, as it
+// is very CPU/memory expensive.
+//#define ENABLE_MEMORY_MANAGER
+
+// More memory manager info tracking
+//#define ENABLE_MEMORY_INFO_TRACKING
+
+// More memory manager info tracking
+//#define ENABLE_HEAP_CHECK
+
+// More memory manager info tracking
+//#define ENABLE_MEMORY_BACKTRACE
+
+
+//#define __USE_STL_POOL_ALLOCATOR__
 
 #if defined(TARGET_OS_IPHONE)
 #if TARGET_OS_IPHONE
@@ -194,7 +220,33 @@ typedef std::string		String;
 
 //#define List std::list
 //#define Vector std::vector
+ 
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+template < typename E > class List : public std::list< E, STLPoolAllocator<E> > {};
+template < typename E > class ListBase : public std::list< E, STLBasePoolAllocator<E> > {};
+#else
 template < typename E > class List : public std::list< E > {};
+#endif
+
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+template < typename E > class Vector : public std::vector< E, STLPoolAllocator<E> >
+{
+public:
+    typedef E	   value_type;
+    typedef size_t size_type;
+    explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E, STLPoolAllocator<E> >(n, value) {}
+    Vector() : std::vector< E, STLPoolAllocator<E> >() {}
+};
+    
+    template < typename E > class VectorBase : public std::vector< E, STLBasePoolAllocator<E> >
+    {
+    public:
+        typedef E	   value_type;
+        typedef size_t size_type;
+        explicit VectorBase(size_type n, const value_type & value = value_type()) : std::vector< E, STLBasePoolAllocator<E> >(n, value) {}
+        VectorBase() : std::vector< E, STLBasePoolAllocator<E> >() {}
+    };
+#else
 template < typename E > class Vector : public std::vector< E >
 {
 public:
@@ -203,20 +255,41 @@ public:
     explicit Vector(size_type n, const value_type & value = value_type()) : std::vector< E >(n, value) {}
     Vector() : std::vector< E >() {}
 };
+#endif
+
+    
 template < class E > class Set : public std::set< E > {};
+
+    
 template < class E > class Deque : public std::deque< E > {};
 
+#if defined (__USE_STL_POOL_ALLOCATOR__)
 template<	class _Kty,
-			class _Ty,
-			class _Pr = std::less<_Kty>,
-			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
+    class _Ty,
+    class _Pr = std::less<_Kty>,
+    class _Alloc = STLPoolAllocator<std::pair<const _Kty, _Ty> > >
 class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
 
+    template<	class _Kty,
+    class _Ty,
+    class _Pr = std::less<_Kty>,
+    class _Alloc = STLBasePoolAllocator<std::pair<const _Kty, _Ty> > >
+    class MapBase : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+#else
+template<	class _Kty,
+	class _Ty,
+	class _Pr = std::less<_Kty>,
+	class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
+class Map : public std::map<_Kty, _Ty, _Pr, _Alloc> {};
+#endif
+
+    
 template<	class _Kty,
 			class _Ty,
 			class _Pr = std::less<_Kty>,
 			class _Alloc = std::allocator<std::pair<const _Kty, _Ty> > >
 class MultiMap : public std::multimap<_Kty, _Ty, _Pr, _Alloc> {};
+
 
 template < class T, class Container = std::deque<T> > class Stack : public std::stack< T, Container > {};
 

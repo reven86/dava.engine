@@ -44,7 +44,8 @@ class ShadowRect;
 class ShadowVolumeRenderLayer : public RenderLayer
 {
 public:
-
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SHADOW)
+    
     ShadowVolumeRenderLayer(const FastName & name, uint32 sortingFlags, RenderLayerID id);
     virtual ~ShadowVolumeRenderLayer();
     

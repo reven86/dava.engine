@@ -43,24 +43,31 @@ namespace DAVA
 TransformSystem::TransformSystem(Scene * scene)
 :	SceneSystem(scene)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
 	scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 TransformSystem::~TransformSystem()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void TransformSystem::LinkTransform(int32 parentIndex, int32 childIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void TransformSystem::UnlinkTransform(int32 childIndex)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void TransformSystem::Process(float32 timeElapsed)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     TIME_PROFILE("TransformSystem::Process");
     
     passedNodes = 0;
@@ -86,6 +93,8 @@ void TransformSystem::Process(float32 timeElapsed)
 
 void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     //    stack1.push(entity);
     static const uint32 STACK_SIZE = 5000;
     uint32 stackPosition = 0;
@@ -123,6 +132,8 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
 
 void TransformSystem::TransformAllChildEntities(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
     static const uint32 STACK_SIZE = 5000;
     uint32 stackPosition = 0;
     Entity * stack[STACK_SIZE];
@@ -165,6 +176,8 @@ void TransformSystem::TransformAllChildEntities(Entity * entity)
 
 void TransformSystem::HierahicFindUpdatableTransform(Entity * entity, bool forcedUpdate)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	passedNodes++;
 
 	if(forcedUpdate || entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
@@ -194,10 +207,13 @@ void TransformSystem::HierahicFindUpdatableTransform(Entity * entity, bool force
 
 void TransformSystem::SortAndThreadSplit()
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
 }
 
 void TransformSystem::ImmediateEvent(Entity * entity, uint32 event)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	switch(event)
 	{
 	case EventSystem::LOCAL_TRANSFORM_CHANGED:
@@ -210,11 +226,15 @@ void TransformSystem::ImmediateEvent(Entity * entity, uint32 event)
 
 void TransformSystem::EntityNeedUpdate(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	entity->AddFlag(Entity::TRANSFORM_NEED_UPDATE);
 }
 
 void TransformSystem::HierahicAddToUpdate(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	if(!(entity->GetFlags() & Entity::TRANSFORM_DIRTY))
 	{
 		entity->AddFlag(Entity::TRANSFORM_DIRTY);
@@ -233,6 +253,8 @@ void TransformSystem::HierahicAddToUpdate(Entity * entity)
 
 void TransformSystem::AddEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	TransformComponent * transform = (TransformComponent*)entity->GetComponent(Component::TRANSFORM_COMPONENT);
 	if (!transform) return; //just in case
 	if(transform->parentMatrix)	
@@ -243,6 +265,8 @@ void TransformSystem::AddEntity(Entity * entity)
 
 void TransformSystem::RemoveEntity(Entity * entity)
 {
+    TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+    
 	//TODO: use hashmap
 	uint32 size = updatableEntities.size();
 	for(uint32 i = 0; i < size; ++i)

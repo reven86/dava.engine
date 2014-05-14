@@ -46,7 +46,9 @@ class Camera;
 	
 class RenderHierarchy
 {
-public:    
+public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_HIERARCHY)
+    
 	virtual ~RenderHierarchy(){};
     
     virtual void AddRenderObject(RenderObject * renderObject) = 0;

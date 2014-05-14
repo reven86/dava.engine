@@ -79,6 +79,42 @@ bool IsEqual(const WideString& s1, const WideString& s2)
 	return (*p1 == *p2);
 }
 
+#if defined (__USE_FIXED_STRING_ALLOCATOR__)
+void Split(const FixedString & inputString, const FixedString & delims, Vector<FixedString> & tokens, bool skipDuplicated)
+{
+    // Skip delims at beginning, find start of first token
+	FixedString::size_type lastPos = inputString.find_first_not_of(delims, 0);
+	// Find next delimiter @ end of token
+	FixedString::size_type pos     = inputString.find_first_of(delims, lastPos);
+	// output vector
+	// Vector<String> tokens;
+	
+	while (FixedString::npos != pos || FixedString::npos != lastPos)
+	{
+		// Found a token, add it to the vector.
+		FixedString token = inputString.substr(lastPos, pos - lastPos);
+		bool needAddToken = true;
+		if (skipDuplicated)
+		{
+			for (uint32 i = 0; i < tokens.size(); ++i)
+			{
+				if (token.compare(tokens[i]) == 0)
+				{
+					needAddToken = false;
+					break;
+				}
+			}
+		}
+		if (needAddToken)
+			tokens.push_back(token);
+		// Skip delims.  Note the "not_of". this is beginning of token
+		lastPos = inputString.find_first_not_of(delims, pos);
+		// Find next delimiter at end of token.
+		pos     = inputString.find_first_of(delims, lastPos);
+	}
+}
+#endif
+
 void Split(const String & inputString, const String & delims, Vector<String> & tokens, bool skipDuplicated/* = false*/)
 {
 	// Skip delims at beginning, find start of first token

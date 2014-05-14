@@ -43,17 +43,23 @@ RenderPass::RenderPass(const FastName & _name, RenderPassID _id)
     :   name(_name)
     ,   id(_id)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     renderPassBatchArray = new RenderPassBatchArray();
     renderLayers.reserve(RENDER_LAYER_ID_COUNT);
 }
 
 RenderPass::~RenderPass()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     SafeDelete(renderPassBatchArray);
 }
     
 void RenderPass::AddRenderLayer(RenderLayer * layer, const FastName & afterLayer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
 	if(LAST_LAYER != afterLayer)
 	{
 		uint32 size = renderLayers.size();
@@ -76,6 +82,8 @@ void RenderPass::AddRenderLayer(RenderLayer * layer, const FastName & afterLayer
     
 void RenderPass::RemoveRenderLayer(RenderLayer * layer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
 	Vector<RenderLayer*>::iterator it = std::find(renderLayers.begin(), renderLayers.end(), layer);
 	DVASSERT(it != renderLayers.end());
 
@@ -84,6 +92,8 @@ void RenderPass::RemoveRenderLayer(RenderLayer * layer)
 
 void RenderPass::Draw(RenderSystem * renderSystem)
 {   
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     
@@ -99,6 +109,8 @@ void RenderPass::Draw(RenderSystem * renderSystem)
 
 void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     visibilityArray.Clear();
     renderSystem->GetRenderHierarchy()->Clip(camera, &visibilityArray, RenderObject::CLIPPING_VISIBILITY_CRITERIA);
     renderPassBatchArray->Clear();
@@ -107,6 +119,8 @@ void RenderPass::PrepareVisibilityArrays(Camera *camera, RenderSystem * renderSy
 
 void RenderPass::DrawLayers(Camera *camera)
 {    
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+
     ShaderCache::Instance()->ClearAllLastBindedCaches();
 
     // Draw all layers with their materials
@@ -130,6 +144,8 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID
     refractionPass(NULL), 
     needWaterPrepass(false)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
     AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_OPAQUE), LAST_LAYER);
     AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_AFTER_OPAQUE), LAST_LAYER);
@@ -143,7 +159,10 @@ MainForwardRenderPass::MainForwardRenderPass(const FastName & name, RenderPassID
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * renderSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::WATER_REFLECTION_REFRACTION_DRAW))
+
         return;
 
     RenderLayerBatchArray *waterLayer = renderPassBatchArray->Get(RenderLayerManager::Instance()->GetLayerIDByName(LAYER_WATER));
@@ -223,6 +242,8 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
 
 void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();   
     DVASSERT(mainCamera);
@@ -285,6 +306,8 @@ void MainForwardRenderPass::Draw(RenderSystem * renderSystem)
 
 MainForwardRenderPass::~MainForwardRenderPass()
 {	
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+
 	SafeRelease(reflectionTexture);
 	SafeRelease(refractionTexture);
 	SafeDelete(reflectionPass);
@@ -293,6 +316,8 @@ MainForwardRenderPass::~MainForwardRenderPass()
 
 WaterPrePass::WaterPrePass(const FastName & name, RenderPassID id):RenderPass(name, id), passMainCamera(NULL), passDrawCamera(NULL)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
     AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_OPAQUE), LAST_LAYER);
     AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_AFTER_OPAQUE), LAST_LAYER);
@@ -303,16 +328,21 @@ WaterPrePass::WaterPrePass(const FastName & name, RenderPassID id):RenderPass(na
 }
 WaterPrePass::~WaterPrePass()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+
     SafeRelease(passMainCamera);
     SafeRelease(passDrawCamera);
 }
 
 WaterReflectionRenderPass::WaterReflectionRenderPass(const FastName & name, RenderPassID id):WaterPrePass(name, id)
 {	
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
 }
 
 void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+
     Vector3 v;
     v = camera->GetPosition();
     v.z = waterLevel - (v.z - waterLevel);
@@ -324,6 +354,8 @@ void WaterReflectionRenderPass::UpdateCamera(Camera *camera)
 
 void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
 {    
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();    
             
@@ -369,12 +401,16 @@ void WaterReflectionRenderPass::Draw(RenderSystem * renderSystem)
 
 WaterRefractionRenderPass::WaterRefractionRenderPass(const FastName & name, RenderPassID id) : WaterPrePass(name, id)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+    
     /*const RenderLayerManager * renderLayerManager = RenderLayerManager::Instance();
     AddRenderLayer(renderLayerManager->GetRenderLayer(LAYER_SHADOW_VOLUME), LAST_LAYER);*/
 }
 
 void WaterRefractionRenderPass::Draw(RenderSystem * renderSystem)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_PASS)
+
     Camera *mainCamera = renderSystem->GetMainCamera();        
     Camera *drawCamera = renderSystem->GetDrawCamera();    
 

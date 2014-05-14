@@ -45,16 +45,22 @@ namespace DAVA
 	SkyboxSystem::SkyboxSystem(Scene * scene)
 	:	SceneSystem(scene)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		skyboxEntity = NULL;
 	}
 	
 	SkyboxSystem::~SkyboxSystem()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		SafeRelease(skyboxEntity);
 	}
 	
 	void SkyboxSystem::AddEntity(Entity * entity)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		if((NULL == skyboxEntity) && GetSkybox(entity))
 		{
             skyboxEntity = SafeRetain(entity);
@@ -63,6 +69,8 @@ namespace DAVA
 	
 	void SkyboxSystem::RemoveEntity(Entity * entity)
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		if(entity == skyboxEntity)
 		{
 			SafeRelease(skyboxEntity);
@@ -71,11 +79,15 @@ namespace DAVA
 
 	bool SkyboxSystem::IsSkyboxPresent()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		return (skyboxEntity != NULL);
 	}
 	
 	Entity* SkyboxSystem::AddSkybox()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		Entity* result = skyboxEntity;
 		
 		if(NULL == skyboxEntity)
@@ -108,11 +120,15 @@ namespace DAVA
 	
 	Entity* SkyboxSystem::GetSkyboxEntity() const
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		return skyboxEntity;
 	}
 	
 	void SkyboxSystem::Reload()
 	{
+        TAG_SWITCH(MemoryManager::TAG_SYSTEMS)
+        
 		if(skyboxEntity)
 		{
 			RenderComponent* renderComponent = static_cast<RenderComponent*>(skyboxEntity->GetComponent(Component::RENDER_COMPONENT));

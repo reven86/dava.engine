@@ -41,6 +41,8 @@
 
 #include "Render/UniqueStateSet.h"
 
+#include "Debug/MemoryManager.h"
+
 namespace DAVA
 {
 /**
@@ -70,6 +72,7 @@ public:
 class Texture : public RenderResource
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_TEXTURE);
     
     enum TextureWrap
 	{

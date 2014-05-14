@@ -36,6 +36,8 @@ namespace DAVA
 
 void RenderManager::Create(Core::eRenderer renderer)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER)
+    
     //new RenderManager(renderer);
     if (renderer == Core::RENDERER_OPENGL_ES_2_0 || renderer == Core::RENDERER_OPENGL_ES_3_0)
     {

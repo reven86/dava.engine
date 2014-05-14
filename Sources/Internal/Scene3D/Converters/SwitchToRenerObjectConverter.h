@@ -36,6 +36,8 @@ using namespace DAVA;
 class SwitchToRenerObjectConverter
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_CONVERTERS)
+    
 	void ConsumeSwitchedRenderObjects(Entity * scene);
 	void SerachForSwitch(Entity * currentNode);
 	bool MergeSwitch(Entity * entity);

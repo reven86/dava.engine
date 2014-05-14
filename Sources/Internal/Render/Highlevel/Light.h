@@ -45,6 +45,8 @@ class Camera;
 class Light : public BaseObject
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_LIGHT)
+    
     enum eType
     {
         TYPE_DIRECTIONAL = 0,

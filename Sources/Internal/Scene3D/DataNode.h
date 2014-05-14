@@ -52,7 +52,9 @@ public:
 	
 	static const uint16 NodeRuntimeFlag;
 	
-public:	
+public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_DATA_NODE)
+    
 	DataNode();
     virtual int32 Release();
 
@@ -114,6 +116,8 @@ public:
 
 inline void DataNode::SetDataIndex(int32 idx)
 {
+    TAG_SWITCH(MemoryManager::TAG_DATA_NODE)
+    
     index = idx;
 }
 

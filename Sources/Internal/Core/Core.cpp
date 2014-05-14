@@ -106,10 +106,9 @@ void Core::CreateSingletons()
 //	}
 #endif
     
-    
     // check types size
 	new Logger();
-	new AllocatorFactory();
+	//new AllocatorFactory();
 	new JobManager();
 	new FileSystem();
     FilePath::InitializeBundleName();
@@ -195,7 +194,7 @@ void Core::ReleaseSingletons()
 
 	InputSystem::Instance()->Release();
 	JobManager::Instance()->Release();
-	AllocatorFactory::Instance()->Release();
+	//AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
 }
 

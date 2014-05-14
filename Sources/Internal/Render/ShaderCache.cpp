@@ -42,6 +42,8 @@ ShaderAsset::ShaderAsset(const FastName & _name,
                          Data * _vertexShaderData,
                          Data * _fragmentShaderData)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     name = _name;
     vertexShaderData = SafeRetain(_vertexShaderData);
     fragmentShaderData = SafeRetain(_fragmentShaderData);
@@ -55,6 +57,8 @@ ShaderAsset::ShaderAsset(const FastName & _name,
 
 ShaderAsset::~ShaderAsset()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
 	DVASSERT(Thread::IsMainThread());
 
     HashMap<FastNameSet, Shader *>::iterator end = compiledShaders.end();
@@ -69,6 +73,8 @@ ShaderAsset::~ShaderAsset()
 
 void ShaderAsset::SetShaderData(Data * _vertexShaderData, Data * _fragmentShaderData)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     SafeRelease(vertexShaderData);
     SafeRelease(fragmentShaderData);
    
@@ -85,6 +91,8 @@ void ShaderAsset::SetShaderData(Data * _vertexShaderData, Data * _fragmentShader
 
 Shader * ShaderAsset::Compile(const FastNameSet & defines)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
     Shader * shader = compiledShaders.at(defines);
     if (shader)return shader;
     
@@ -119,6 +127,8 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
 	
 void ShaderAsset::ReloadShaders()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     HashMap < FastNameSet, Shader *>::iterator it = compiledShaders.begin();
     HashMap < FastNameSet, Shader *>::iterator endIt = compiledShaders.end();
 	for( ; it != endIt; ++it)
@@ -135,6 +145,8 @@ void ShaderAsset::ReloadShaders()
 
 void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void *callerData )
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
 	CompiledShaderData *shaderData = (CompiledShaderData*)param;
 	DVASSERT(shaderData);
 
@@ -149,6 +161,8 @@ void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void
 
 void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *callerData)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 	Shader *shader = (Shader*)param;
 	shader->Recompile();
 
@@ -157,6 +171,8 @@ void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *
 
 void ShaderAsset::BindShaderDefaults(Shader * shader)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     shader->Bind();
     uint32 count = shader->GetUniformCount(); // TODO: Fix shader get uniform count type to uint32
     //uint32 defaultCount = (uint32)defaultValues.size();
@@ -213,6 +229,8 @@ void ShaderAsset::Remove(const FastNameSet & defines)
     
 Shader * ShaderAsset::Get(const FastNameSet & defines)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 	/*String str;
 	defines.ToString(str);
 	
@@ -243,6 +261,8 @@ Shader * ShaderAsset::Get(const FastNameSet & defines)
 
 void ShaderAsset::ClearAllLastBindedCaches()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     HashMap<FastNameSet, Shader *>::iterator end = compiledShaders.end();
     for (HashMap<FastNameSet, Shader *>::iterator it = compiledShaders.begin(); it != end; ++it)
         it->second->ClearLastBindedCaches();
@@ -250,11 +270,13 @@ void ShaderAsset::ClearAllLastBindedCaches()
 
 ShaderCache::ShaderCache()
 {
-    
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
 }
     
 ShaderCache::~ShaderCache()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
 	shaderAssetMapMutex.Lock();
 
     FastNameMap<ShaderAsset*>::iterator end = shaderAssetMap.end();
@@ -270,6 +292,8 @@ ShaderCache::~ShaderCache()
 
 void ShaderCache::ClearAllLastBindedCaches()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
 	shaderAssetMapMutex.Lock();
 
     FastNameMap<ShaderAsset*>::iterator end = shaderAssetMap.end();
@@ -281,6 +305,8 @@ void ShaderCache::ClearAllLastBindedCaches()
     
 void ShaderCache::ParseDefaultVariable(ShaderAsset * asset, const String & inputLine)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     if (inputLine.find("uniform") == String::npos) return;
     
     Vector<String> tokens;
@@ -387,6 +413,8 @@ void ShaderCache::ParseDefaultVariable(ShaderAsset * asset, const String & input
     
 void ShaderCache::ParseShader(ShaderAsset * asset)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     Data * vertexShaderData = asset->vertexShaderData;
     Data * fragmentShaderData = asset->fragmentShaderData;
     
@@ -562,6 +590,8 @@ void ShaderCache::ParseShader(ShaderAsset * asset)
 
 ShaderAsset * ShaderCache::Load(const FastName & shaderFastName)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
     ShaderAsset * asset = new ShaderAsset(shaderFastName, NULL, NULL);
     LoadAsset(asset);
 
@@ -578,6 +608,8 @@ ShaderAsset * ShaderCache::Load(const FastName & shaderFastName)
 
 ShaderAsset * ShaderCache::Get(const FastName & shader)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
 	shaderAssetMapMutex.Lock();
 	ShaderAsset *asset = shaderAssetMap.at(shader);
 	shaderAssetMapMutex.Unlock();
@@ -586,6 +618,8 @@ ShaderAsset * ShaderCache::Get(const FastName & shader)
     
 Shader * ShaderCache::Get(const FastName & shaderName, const FastNameSet & definesSet)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
 	shaderAssetMapMutex.Lock();
     ShaderAsset * asset = shaderAssetMap.at(shaderName);
 	shaderAssetMapMutex.Unlock();
@@ -601,6 +635,8 @@ Shader * ShaderCache::Get(const FastName & shaderName, const FastNameSet & defin
     
 void ShaderCache::Reload()
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+
 	shaderAssetMapMutex.Lock();
 
     FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin();
@@ -619,6 +655,8 @@ void ShaderCache::Reload()
   
 void ShaderCache::LoadAsset(ShaderAsset *asset)
 {
+    TAG_SWITCH(MemoryManager::TAG_SHADER)
+    
     const FastName & shaderFastName = asset->name;
 
     String shader = shaderFastName.c_str();

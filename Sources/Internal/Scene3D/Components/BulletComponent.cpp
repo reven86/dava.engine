@@ -39,16 +39,20 @@ REGISTER_CLASS(BulletComponent)
 BulletComponent::BulletComponent()
 :	bulletObject(0)
 {
-
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
 }
 
 BulletComponent::~BulletComponent()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	SafeRelease(bulletObject);
 }
 
 Component * BulletComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	BulletComponent * newComponent = new BulletComponent();
 	newComponent->SetEntity(toEntity);
 	//bulletObject is intentionally not cloned
@@ -57,6 +61,8 @@ Component * BulletComponent::Clone(Entity * toEntity)
 
 void BulletComponent::SetBulletObject(BaseObject * _bulletObject)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	SafeRelease(bulletObject);
 
 	bulletObject = SafeRetain(_bulletObject);
@@ -64,6 +70,8 @@ void BulletComponent::SetBulletObject(BaseObject * _bulletObject)
 
 BaseObject * BulletComponent::GetBulletObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	return bulletObject;
 }
 

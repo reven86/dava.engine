@@ -44,13 +44,19 @@ class Scene;
 class GlobalEventSystem : public StaticSingleton<GlobalEventSystem>
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_SYSTEMS)
+    
     void Event(Entity * entity, uint32 event);
     void GroupEvent(Scene * scene, Vector<Entity *> & entities, uint32 event);
     void PerformAllEventsFromCache(Entity * entity);
     void RemoveAllEvents(Entity * entity);
     
 private:
+#if defined (__USE_STL_POOL_ALLOCATOR__)
+    Map<Entity*, ListBase<uint32> > eventsCache;
+#else
     Map<Entity*, List<uint32> > eventsCache;
+#endif
 
 };
 

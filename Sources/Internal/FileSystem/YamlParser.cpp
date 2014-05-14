@@ -1700,7 +1700,7 @@ bool YamlParser::SaveNodeRecursive(File* fileToSave, const String& nodeName,
             // Order the map nodes by the "Save Index" and write.
             Vector<YamlNodeKeyValuePair> sortedMapNodes;
             OrderMapYamlNode(mapNodes, sortedMapNodes);
-            for (std::vector<YamlNodeKeyValuePair>::const_iterator t = sortedMapNodes.begin(); t != sortedMapNodes.end(); ++t)
+            for (Vector<YamlNodeKeyValuePair>::const_iterator t = sortedMapNodes.begin(); t != sortedMapNodes.end(); ++t)
             {
                 SaveNodeRecursive(fileToSave, (*t).GetNodeName(), (*t).GetNodeValue(), index);
             }

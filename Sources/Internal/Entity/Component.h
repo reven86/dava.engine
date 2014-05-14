@@ -42,6 +42,8 @@ class Entity;
 class Component : public Serializable, public InspBase
 {
 public:
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_COMPONENTS)
+    
     enum eType
     {
         TRANSFORM_COMPONENT = 0,
@@ -112,6 +114,8 @@ public:
 template<template <typename> class Container, class T>
 void Component::GetDataNodes(Container<T> & container)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
     Set<DataNode*> objects;
     GetDataNodes(objects);
     

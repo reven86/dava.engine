@@ -38,6 +38,8 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
+#include "Debug/MemoryManager.h"
+
 namespace DAVA
 {
 
@@ -104,7 +106,7 @@ public:
     virtual ~RenderObject();
 public:
     RenderObject();
-    
+    IMPLEMENT_POOL_ALLOCATOR(RenderObject, 127);
     
     inline void SetRemoveIndex(uint32 removeIndex);
     inline uint32 GetRemoveIndex();

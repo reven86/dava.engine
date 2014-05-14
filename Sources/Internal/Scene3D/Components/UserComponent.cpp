@@ -37,10 +37,14 @@ namespace DAVA
 REGISTER_CLASS(UserComponent);
 
 UserComponent::UserComponent()
-{ }
+{
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+}
 
 Component * UserComponent::Clone(Entity * toEntity)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	UserComponent *uc = new UserComponent();
 	uc->SetEntity(toEntity);
 
@@ -49,11 +53,15 @@ Component * UserComponent::Clone(Entity * toEntity)
 
 void UserComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Serialize(archive, serializationContext);
 }
 
 void UserComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
 {
+    TAG_SWITCH(MemoryManager::TAG_COMPONENTS)
+    
 	Component::Deserialize(archive, serializationContext);
 }
 
