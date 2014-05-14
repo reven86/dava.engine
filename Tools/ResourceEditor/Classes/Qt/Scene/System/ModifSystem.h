@@ -38,6 +38,7 @@
 #include "UI/UIEvent.h"
 
 #include "Scene/SceneTypes.h"
+#include "Render/Highlevel/RenderObject.h"
 
 class SceneCollisionSystem;
 class SceneCameraSystem;
@@ -105,6 +106,12 @@ protected:
 		CLONE_DONE
 	};
 
+    enum BakeMode
+    {
+        BAKE_ZERO_PIVOT,
+        BAKE_CENTER_PIVOT
+    };
+
 	CloneState cloneState;
 
 	bool inModifState;
@@ -150,7 +157,8 @@ protected:
 	DAVA::Vector3 Move(const DAVA::Vector3 &newPos3d);
 	DAVA::float32 Rotate(const DAVA::Vector2 &newPos2d);
 	DAVA::float32 Scale(const DAVA::Vector2 &newPos2d);
-    void Bake(const EntityGroup &entities, bool inverse);
+    void BakeGeometry(const EntityGroup &entities, BakeMode mode);
+    void SearchEntitiesWithRenderObject(DAVA::RenderObject *ro, DAVA::Entity *root, DAVA::Set<DAVA::Entity *> &result);
 
 	DAVA::Matrix4 SnapToLandscape(const DAVA::Vector3 &point, const DAVA::Matrix4 &originalParentTransform) const;
 	bool IsEntityContainRecursive(const DAVA::Entity *entity, const DAVA::Entity *child) const;

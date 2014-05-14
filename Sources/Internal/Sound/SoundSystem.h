@@ -45,6 +45,7 @@ class EventGroup;
 class System;
 class EventSystem;
 class EventProject;
+class ChannelGroup;
 };
 #endif
 
@@ -113,6 +114,11 @@ public:
     int32 GetChannelsUsed() const;
     int32 GetChannelsMax() const;
 
+#ifdef __DAVAENGINE_IPHONE__
+    bool IsSystemMusicPlaying();
+    void DuckSystemMusic(bool duck);
+#endif
+    
 protected:
     void GetGroupEventsNamesRecursive(FMOD::EventGroup * group, String & currNamePath, Vector<String> & names);
 
@@ -126,6 +132,9 @@ protected:
     FMOD::System * fmodSystem;
     FMOD::EventSystem * fmodEventSystem;
 
+    FMOD::ChannelGroup * masterChannelGroup;
+    FMOD::ChannelGroup * masterEventChannelGroup;
+    
     Vector<SoundGroup> soundGroups;
     Map<FilePath, FMOD::EventProject *> projectsMap;
 

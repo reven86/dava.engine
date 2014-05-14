@@ -47,8 +47,8 @@ public:
     ~RenderPassManager();
     
     void InsertPass(RenderPass * renderPass);
-    inline RenderPass * GetRenderPass(uint32 index) const { return array[index]; };
-    inline RenderPass * GetRenderPass(const FastName & name) const { return map.at(name); };
+    inline RenderPass * GetRenderPass(uint32 index) const;
+    inline RenderPass * GetRenderPass(const FastName & name) const;
     
 private:
     void Release();
@@ -56,6 +56,11 @@ private:
     Vector<RenderPass*> array;
     HashMap<FastName, RenderPass*> map;
 };
+    
+// Implementation
+inline RenderPass * RenderPassManager::GetRenderPass(uint32 index) const { return array[index]; };
+inline RenderPass * RenderPassManager::GetRenderPass(const FastName & name) const { return map.at(name); };
+
     
 } // ns
 

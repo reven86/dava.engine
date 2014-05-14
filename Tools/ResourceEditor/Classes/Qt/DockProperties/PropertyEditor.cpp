@@ -204,6 +204,7 @@ void PropertyEditor::ResetProperties()
                         switch (component->GetType())
                         {
                         case Component::TRANSFORM_COMPONENT:
+                        case Component::CUSTOM_PROPERTIES_COMPONENT:    // Disable removing, because custom properties are created automatically
                             isRemovable = false;
                             break;
                         }

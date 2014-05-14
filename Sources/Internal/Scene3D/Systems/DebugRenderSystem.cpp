@@ -99,7 +99,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 					AABBox3 camBox(camPos, 2.5f);
 
 					// If this is clip camera - show it as red camera
-					if (entityCamera == entity->GetScene()->GetClipCamera()) camColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
+					if (entityCamera == entity->GetScene()->GetDrawCamera()) camColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 
 
 					RenderManager::Instance()->SetColor(camColor);

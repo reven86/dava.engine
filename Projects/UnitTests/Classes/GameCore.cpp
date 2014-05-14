@@ -63,8 +63,10 @@
 #include "UIMovieTest.h"
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
-#include "SaveImageTest.h"
+#include "OpenGLES30FormatTest.h"
 #include "StringFormatTest.h"
+#include "SaveImageTest.h"
+#include "JPEGTest.h"
 #include "DateTimeTest.h"
 #include "UIParticlesTest.h"
 
@@ -92,8 +94,10 @@ void GameCore::OnAppStarted()
 
     CreateDocumentsFolder();
 
+    new OpenGLES30FormatTest();
+	new JPEGTest();
     new SaveImageTest();
-	new StringFormatTest();
+    new StringFormatTest();
     new RectSpriteTest();
 
 	new ComponentsTest();

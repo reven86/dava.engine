@@ -65,7 +65,13 @@ namespace DAVA
 
 		const char *text;
 		const EnumMap *enumMap;
-        const int type;
+        int type;
+
+        InspDesc()
+            : text("")
+			, enumMap(NULL)
+            , type(T_UNDEFINED)
+        { }
 
 		InspDesc(const char *_text) 
 			: text(_text)
@@ -78,6 +84,15 @@ namespace DAVA
 			, enumMap(_enumMap)
             , type(_type)
 		{}
+
+        InspDesc & operator=(const InspDesc &desc)
+        {
+            text = desc.text;
+            enumMap = desc.enumMap;
+            type = desc.type;
+
+            return *this;
+        }
 	};
 
 	// Базовое представление члена интроспекции

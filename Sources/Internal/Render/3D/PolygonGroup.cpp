@@ -384,17 +384,23 @@ void PolygonGroup::ApplyMatrix(const Matrix4 & matrix)
     Matrix3 normalMatrix3;
     normalMatrix3 = normalMatrix4;
     
-    for (int32 vi = 0; vi < vertexCount; ++vi)
+    if(NULL != vertexArray)
     {
-        Vector3 vertex;
-        GetCoord(vi, vertex);
-        vertex = vertex * matrix;
-        SetCoord(vi, vertex);
+        for (int32 vi = 0; vi < vertexCount; ++vi)
+        {
+            Vector3 vertex;
+            GetCoord(vi, vertex);
+            vertex = vertex * matrix;
+            SetCoord(vi, vertex);
         
-        Vector3 normal;
-        GetNormal(vi, normal);
-        normal = normal * normalMatrix3;
-        SetNormal(vi, normal);
+            if(NULL != normalArray)
+            {
+                Vector3 normal;
+                GetNormal(vi, normal);
+                normal = normal * normalMatrix3;
+                SetNormal(vi, normal);
+            }
+        }
     }
 }
 	    

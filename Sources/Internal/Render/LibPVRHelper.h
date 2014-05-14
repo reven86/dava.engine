@@ -37,7 +37,7 @@
 #include "FileSystem/FilePath.h"
 
 #include "Render/RenderBase.h"
-
+#include "Render/PixelFormatDescriptor.h"
 
 #if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
     #include "PVRDefines.h"
@@ -107,71 +107,75 @@ struct PVRHeaderV2
 };
 
     
-    
-class Texture;
+class PVRFile
+{
+public:
+
+	PVRFile() : metaData(NULL), compressedDataSize(0), compressedData(NULL) {;} ;
+	~PVRFile();
+	
+	PVRHeaderV3 header;
+	Vector<MetaDataBlock *> metaDatablocks;
+    uint8 *metaData;
+
+	uint32 compressedDataSize;
+	uint8 *compressedData;
+};
+
 class Image;
-class ImageSet;
 class File;
+
 class LibPVRHelper
 {
 public:
 
     static bool IsPvrFile(File *file);
-    static uint32 GetMipMapLevelsCount(File *file);
-	static uint32 GetCubemapFaceCount(File* file);
     
-    static bool ReadFile(File *file, const Vector<Image *> &imageSet, int32 baseMipMap);
-    
-    static PixelFormat GetPixelFormat(const FilePath &filePathname);
     static uint32 GetDataSize(const FilePath &filePathname);
 	
 	static bool AddCRCIntoMetaData(const FilePath &filePathname);
 	static uint32 GetCRCFromFile(const FilePath &filePathname);
-    
-protected:
-		
-	static uint32 ReadNextMetadata(DAVA::File* file, uint32* crc);
-	
-	static bool GetCRCFromMetaData(const FilePath &filePathname, uint32* outputCRC);
 
-    static bool PreparePVRData(const char* pvrData, const int32 pvrDataSize);
+	static PVRFile * ReadFile(const FilePath &filePathname, bool readMetaData = false, bool readData = false);
+	static PVRFile * ReadFile(File *file, bool readMetaData = false, bool readData = false);
+    static bool LoadImages(const PVRFile *pvrFile, Vector<Image *> &imageSet, uint32 fromMipMap);
+    
+    static bool WriteFile(const PVRFile * pvrFile, File * outFile);
+    static bool WriteFileFromMipMapFiles(const FilePath & outputFile, const Vector<FilePath> & imgPaths);
+
+protected:
+
+    static bool DetectIfNeedSwapBytes(const PVRHeaderV3 *header);
+	static void PrepareHeader(PVRHeaderV3 *header, const bool swapBytes);
+	static void SwapDataBytes(const PVRHeaderV3 &header, uint8 *data, const uint32 dataSize);
+
+    static void ReadMetaData(File *file, PVRFile *pvrFile, const bool swapBytes);
+
+  	static bool LoadMipMapLevel(const PVRFile *pvrFile, const uint32 mipMapLevel, const uint32 baseMipMap, Vector<Image *> &imageSet);
+  	static uint32 GetCubemapLayout(const PVRFile *pvrFile);
+    static const MetaDataBlock * GetCubemapMetadata(const PVRFile *pvrFile);
+
+	static bool GetCRCFromMetaData(const FilePath &filePathname, uint32* outputCRC);
+	static bool GetCRCFromMetaData(const PVRFile *pvrFile, uint32* outputCRC);
 
     static uint32 GetBitsPerPixel(uint64 pixelFormat);
     static void GetFormatMinDims(uint64 pixelFormat, uint32 &minX, uint32 &minY, uint32 &minZ);
     static uint32 GetTextureDataSize(PVRHeaderV3 textureHeader, int32 mipLevel = PVRTEX_ALLMIPLEVELS, bool allSurfaces = true, bool allFaces = true);
+	static int32 GetMipMapLayerOffset(uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header);
     static void MapLegacyTextureEnumToNewFormat(PVRTPixelType OldFormat, uint64& newType, EPVRTColourSpace& newCSpace, EPVRTVariableType& newChanType, bool& isPreMult);
-    static void ConvertOldTextureHeaderToV3(const PVRHeaderV2* LegacyHeader, PVRHeaderV3& NewHeader);
-//    static bool IsGLExtensionSupported(const char * const extension);
 
+	static const PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader);
     static const PixelFormat GetCompressedFormat(const uint64 PixelFormat);
     static const PixelFormat GetFloatTypeFormat(const uint64 PixelFormat);
     static const PixelFormat GetUnsignedByteFormat(const uint64 PixelFormat);
     static const PixelFormat GetUnsignedShortFormat(const uint64 PixelFormat);
     
-    static const PixelFormat GetTextureFormat(const PVRHeaderV3& textureHeader);
-    
-    static PVRHeaderV3 GetHeader(const FilePath &filePathname);
-    static PVRHeaderV3 GetHeader(File *file);
-    static PVRHeaderV3 GetHeader(const uint8* pvrData, const int32 pvrDataSize);
-	
-	static uint32 GetCubemapLayout(PVRHeaderV3* pvrHeader, const char* pvrData, const int32 pvrDataSize);
-	static bool IsCubemap(PVRHeaderV3* pvrHeader, const char* pvrData, const int32 pvrDataSize);
-	static const char* GetCubemapMetadata(PVRHeaderV3* pvrHeader, const char* pvrData, const int32 pvrDataSize, uint32* outDataSize);
-    
     static bool IsFormatSupported(const PixelFormatDescriptor &format);
     
-    //static bool ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, Image *image, uint32 mipMapLevel);
-    
-	//load cubemap
-	static bool ReadMipMapLevel(const char* pvrData, const int32 pvrDataSize, const Vector<Image*>& images, uint32 mipMapLevel, uint32 baseMipMap);
-    
-    static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
-    
-    static PVRHeaderV3 CreateDecompressedHeader(const PVRHeaderV3 &compressedHeader);
+	static PVRHeaderV3 CreateDecompressedHeader(const PVRHeaderV3 &compressedHeader);
+
+	static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
     static bool AllocateImageData(Image *image, uint32 mipMapLevel, const PVRHeaderV3 &header);
-    
-    static int32 GetMipMapLayerOffset(uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header);
-    
 };
     
 };

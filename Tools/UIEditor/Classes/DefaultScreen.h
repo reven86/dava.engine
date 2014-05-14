@@ -73,6 +73,7 @@ public:
 	bool IsDropEnable(const Vector2& pos)const;
 	
     void SetScreenControl(ScreenControl* control);
+    ScreenControl* GetScreenControl() const;
 
 private:
 	enum InputState
@@ -81,9 +82,18 @@ private:
 		InputStateDrag,
 		InputStateSize,
 		InputStateSelectorControl,
-		InputStateScreenMove
+		InputStateScreenMove,
+        InputStateGuideMove
 	};
 	
+    enum eKeyboardMoveDirection
+    {
+        moveUp,
+        moveDown,
+        moveLeft,
+        moveRight
+    };
+
 	void GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST& list, const Rect& rect, const HierarchyTreeNode* parent) const;
 	
 	class SmartSelection
@@ -117,9 +127,17 @@ private:
 	HierarchyTreeController::SELECTEDCONTROLNODES GetActiveMoveControls() const;
 	void ResetMoveDelta();
 	void SaveControlsPostion();
+
+    // Entry point for performing move from keyboard.
+    void DoKeyboardMove(eKeyboardMoveDirection moveDirection);
+
 	void MoveControl(const Vector2& delta);
 
+    void MoveGuide(HierarchyTreeScreenNode* screenNode);
+    void MoveGuides(eKeyboardMoveDirection moveDirection, const Vector2& delta);
+
 	void DeleteSelectedControls();
+    void DeleteSelectedGuides(HierarchyTreeScreenNode* screenNode);
 	
 	void ApplySizeDelta(const Vector2& delta);
 	bool IsNeedApplyResize() const;
@@ -134,7 +152,7 @@ private:
 	void MouseInputDrag(const DAVA::UIEvent* event);
 	void KeyboardInput(const DAVA::UIEvent* event);
 	
-	Vector2 GetInputDelta(const Vector2& point, bool applyScale = true) const;
+	Vector2 GetInputDelta(const Vector2& point, bool applyScale = true);
 	
 	Rect GetControlRect(const HierarchyTreeControlNode* control) const;
 	void CopySelectedControls();
@@ -146,7 +164,12 @@ private:
 	Vector2 scale;
 	Vector2 pos;
     Vector2 viewSize;
-	
+
+    bool isStickedToX;
+    bool isStickedToY;
+    Vector2 stickDelta;
+    Vector2 prevDragPoint;
+
 	InputState inputState;
 	ResizeType resizeType;
 	Rect resizeRect;
@@ -186,13 +209,26 @@ private:
 	// Get the state of the "Move Screen" key.
 	bool IsMoveScreenKeyPressed();
 
-	// Get the control move delta (coarse/fine, depending on whether Shift key is pressed).
+	// Get the control/guide move delta (coarse/fine, depending on whether Shift key is pressed).
 	int32 GetControlMoveDelta();
+    int32 GetGuideMoveDelta();
 
 	// Check control's visibility.
 	bool IsControlVisible(const UIControl* uiControl) const;
 
     bool IsControlContentVisible( const UIControl *control ) const;
+
+    // Calculate the stick to guides for different input modes.
+    int32 CalculateStickToGuidesDrag(Vector2& offset) const;
+
+    // Get the stick treshold.
+    int32 GetGuideStickTreshold() const;
+
+    // Draw the guides.
+    void DrawGuides();
+    
+    // Align the vector to the nearest scale value.
+    Vector2 AlignToNearestScale(const Vector2& value) const;
 
 private slots:
 	void ControlContextMenuTriggered(QAction* action);

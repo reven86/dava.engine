@@ -32,26 +32,21 @@
 #define __BAKE_TRANSFORM_COMMAND_H__
 
 #include "Commands2/Command2.h"
+#include "Render/Highlevel/RenderObject.h"
 
-class BakeTransformCommand : public Command2
+class BakeGeometryCommand : public Command2
 {
 public:
-	BakeTransformCommand(DAVA::Entity* _entity, bool _inverse);
-	~BakeTransformCommand();
+	BakeGeometryCommand(DAVA::RenderObject* _object, DAVA::Matrix4 _transform);
+	~BakeGeometryCommand();
 
 	virtual void Undo();
 	virtual void Redo();
-	virtual DAVA::Entity* GetEntity() const;
+    virtual DAVA::Entity* GetEntity() const { return NULL; }
 
 protected:
-    bool inverse;
-	DAVA::Entity* entity;
-	DAVA::Matrix4 origTransform;
-    DAVA::Matrix4 toCenterModif;
-
-    void PivotToZeroPos();
-    void PivotToCenterPos();
+    DAVA::RenderObject* object;
+	DAVA::Matrix4 transform;
 };
-
 
 #endif // __BAKE_COMMAND_BATCH_H__

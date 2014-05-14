@@ -6,6 +6,8 @@
 #include "Constants.h"
 #include "../LandscapeEditorShortcutManager.h"
 
+#include "Render/PixelFormatDescriptor.h"
+
 #include <QLayout>
 #include <QComboBox>
 #include <QRadioButton>
@@ -302,7 +304,7 @@ void TilemaskEditorPanel::SplitImageToChannels(Image* image, Image*& r, Image*& 
 		images[i] = Image::Create(width, height, FORMAT_RGBA8888);
 	}
 
-	int32 pixelSize = Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+	int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
 	for(int32 i = 0; i < size; ++i)
 	{
 		int32 offset = i * pixelSize;

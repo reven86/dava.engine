@@ -35,6 +35,7 @@
 #include "TextureCompression/TextureConverter.h"
 
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 
 #include "Main/QtUtils.h"
 
@@ -76,7 +77,6 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 			return 0;
 		}
 		
-		
 		if(ImageLoader::IsPNGFile(imageFile))
 		{
 			size += LibPngWrapper::GetDataSize(imagePathname);
@@ -101,10 +101,148 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 }
 
 
-void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format)
+void ImageTools::ConvertImage(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format, DAVA::TextureConverter::eConvertQuality quality)
 {
 	if(!descriptor || (format == FORMAT_INVALID)) return;
 
 	TextureConverter::CleanupOldTextures(descriptor, forGPU, format);
-	TextureConverter::ConvertTexture(*descriptor, forGPU, true);
+	TextureConverter::ConvertTexture(*descriptor, forGPU, true, quality);
+}
+
+bool ImageTools::SplitImage(const FilePath &pathname, Set<String> &errorLog)
+{
+    Image *loadedImage = CreateTopLevelImage(pathname);
+    if(!loadedImage)
+    {
+        errorLog.insert(String(Format("Can't load image %s", pathname.GetAbsolutePathname().c_str())));
+        return false;
+    }
+    
+    if(loadedImage->GetPixelFormat() != FORMAT_RGBA8888)
+    {
+        errorLog.insert(String(Format("Incorrect image format %s. Must be RGBA8888", PixelFormatDescriptor::GetPixelFormatString(loadedImage->GetPixelFormat()))));
+        return false;
+    }
+    
+    Channels channels = CreateSplittedImages(loadedImage);
+    
+    FilePath folder(pathname.GetDirectory());
+    
+    SaveImage(channels.red, folder + "r.png");
+    SaveImage(channels.green, folder + "g.png");
+    SaveImage(channels.blue, folder + "b.png");
+    SaveImage(channels.alpha, folder + "a.png");
+    
+    channels.ReleaseImages();
+    SafeRelease(loadedImage);
+    return true;
+}
+
+bool ImageTools::MergeImages(const FilePath &folder, Set<String> &errorLog)
+{
+    DVASSERT(folder.IsDirectoryPathname());
+    
+    Channels channels(LoadImage(folder + "r.png"), LoadImage(folder + "g.png"), LoadImage(folder + "b.png"), LoadImage(folder + "a.png"));
+    
+    if(channels.IsEmpty())
+    {
+        errorLog.insert(String(Format("Can't load one or more channel images from folder %s", folder.GetAbsolutePathname().c_str())));
+        channels.ReleaseImages();
+        return false;
+    }
+    
+    if(!channels.HasFormat(FORMAT_A8))
+    {
+        errorLog.insert(String("Can't merge images. Source format must be Grayscale 8bit"));
+        channels.ReleaseImages();
+        return false;
+    }
+    
+    if(!channels.ChannelesResolutionEqual())
+    {
+        errorLog.insert(String("Can't merge images. Source images must have same size"));
+        channels.ReleaseImages();
+        return false;
+    }
+    
+    Image *mergedImage = CreateMergedImage(channels);
+    
+    ImageLoader::Save(mergedImage, folder + "merged.png");
+    
+    channels.ReleaseImages();
+    SafeRelease(mergedImage);
+    return true;
+}
+
+void ImageTools::SaveImage(Image *image, const FilePath &pathname)
+{
+    ImageLoader::Save(image, pathname);
+}
+
+Image * ImageTools::LoadImage(const FilePath &pathname)
+{
+    return CreateTopLevelImage(pathname);
+}
+
+Channels ImageTools::CreateSplittedImages(DAVA::Image* originalImage)
+{
+    DAVA::Image* r = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
+    DAVA::Image* g = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
+    DAVA::Image* b = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
+    DAVA::Image* a = Image::Create(originalImage->width, originalImage->height, FORMAT_A8);
+    
+    int32 size = originalImage->width * originalImage->height;
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    for(int32 i = 0; i < size; ++i)
+    {
+        int32 offset = i * pixelSize;
+        r->data[i] = originalImage->data[offset];
+        g->data[i] = originalImage->data[offset + 1];
+        b->data[i] = originalImage->data[offset + 2];
+        a->data[i] = originalImage->data[offset + 3];
+    }
+    return Channels(r,g,b,a);
+}
+
+DAVA::Image* ImageTools::CreateMergedImage(const Channels& channels)
+{
+    if(!channels.ChannelesResolutionEqual() || !channels.HasFormat(FORMAT_A8))
+    {
+        return NULL;
+    }
+    Image *mergedImage = Image::Create(channels.red->width, channels.red->height, FORMAT_RGBA8888);
+    int32 size = mergedImage->width * mergedImage->height;
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    for(int32 i = 0; i < size; ++i)
+    {
+        int32 offset = i * pixelSize;
+        mergedImage->data[offset] = channels.red->data[i];
+        mergedImage->data[offset + 1] = channels.green->data[i];
+        mergedImage->data[offset + 2] = channels.blue->data[i];
+        mergedImage->data[offset + 3] = channels.alpha->data[i];
+    }
+    return mergedImage;
+}
+
+void ImageTools::SetChannel(DAVA::Image* image, eComponentsRGBA channel, DAVA::uint8 value)
+{
+    if(image->format != FORMAT_RGBA8888)
+    {
+        return;
+    }
+    int32 size = image->width * image->height;
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
+    int32 offset = channel;
+    for( int32 i = 0; i < size; ++i, offset += pixelSize)
+    {
+        image->data[offset] = value;
+    }
+}
+
+void Channels::ReleaseImages()
+{
+    DAVA::SafeRelease(red);
+    DAVA::SafeRelease(green);
+    DAVA::SafeRelease(blue);
+    DAVA::SafeRelease(alpha);
 }

@@ -26,172 +26,161 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #include "SettingsManager.h"
-#include "Deprecated/ControlsFactory.h"
-#include "Render/RenderManager.h"
 #include "Scene/System/EditorMaterialSystem.h"
-#include <QHeaderView>
+#include "TextureCompression/TextureConverter.h"
 
-#define CONFIG_FILE						"~doc:/ResourceEditorOptions.archive"
-#define SETTINGS_VERSION_NUMBER			1
-#define SETTINGS_VERSION_KEY			"settingsVersion"
+#include "Scene/System/SelectionSystem.h"
+#include "Scene/System/CollisionSystem.h"
 
-const SettingRow SETTINGS_GROUP_GENERAL_MAP[] =
-{
-	SettingRow("DesignerName", DAVA::VariantType(DAVA::String("nobody"))),
-	SettingRow("PreviewDialogEnabled", DAVA::VariantType(false)),
-};
+// framework
+#include "FileSystem/KeyedArchive.h"
+#include "Render/RenderBase.h"
 
-const SettingRow SETTINGS_GROUP_DEFAULT_MAP[] =
-{
-	SettingRow("GridStep", DAVA::VariantType(10.0f)),
-	SettingRow("CameraSpeedValue_0", DAVA::VariantType(35.0f)),
-	SettingRow("CameraSpeedValue_1", DAVA::VariantType(100.0f)),
-	SettingRow("CameraSpeedValue_2", DAVA::VariantType(250.0f)),
-	SettingRow("CameraSpeedValue_3", DAVA::VariantType(400.0f)),
-	SettingRow("DefaultCameraFOV", DAVA::VariantType(70.0f)),
-    SettingRow("DefaultLandscapeSize", DAVA::VariantType(600.0f)),
-    SettingRow("DefaultLandscapeHeight", DAVA::VariantType(50.0f)),
-	SettingRow("DefaultFogColor", DAVA::VariantType(DAVA::Color(1.f, 0, 0.f, 1.f))),
-	SettingRow("DefaultFogDensity", DAVA::VariantType(1.0f)),
-};
-
-const SettingRow SETTINGS_GROUP_INTERNAL_MAP[] =
-{
-	SettingRow("LastProjectPath", DAVA::VariantType(DAVA::String(""))),
-	SettingRow("TextureViewGPU", DAVA::VariantType(GPU_UNKNOWN)),
-	SettingRow("editor.version", DAVA::VariantType(DAVA::String("local build"))),
-	SettingRow("cubemap_last_face_dir", DAVA::VariantType(DAVA::FilePath())),
-	SettingRow("cubemap_last_proj_dir", DAVA::VariantType(DAVA::FilePath())),
-	SettingRow("recentFiles", DAVA::VariantType((KeyedArchive *)NULL)),
-    SettingRow("recentFilesListCount", DAVA::VariantType(5)),
-    SettingRow("materialsLightViewMode", DAVA::VariantType(EditorMaterialSystem::LIGHTVIEW_ALL)),
-    SettingRow("materialsShowLightmapCanvas", DAVA::VariantType(false)),
-    SettingRow( ResourceEditor::SETTINGS_LICENCE_ACCEPTED, DAVA::VariantType(false)),
-};
+#define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
 
 SettingsManager::SettingsManager()
 {
-	settings = new KeyedArchive();
-
-	InitSettingsGroup(GENERAL, SETTINGS_GROUP_GENERAL_MAP, sizeof(SETTINGS_GROUP_GENERAL_MAP) / sizeof(SettingRow));
-	InitSettingsGroup(DEFAULT, SETTINGS_GROUP_DEFAULT_MAP, sizeof(SETTINGS_GROUP_DEFAULT_MAP) / sizeof(SettingRow));
-	InitSettingsGroup(INTERNAL, SETTINGS_GROUP_INTERNAL_MAP, sizeof(SETTINGS_GROUP_INTERNAL_MAP) / sizeof(SettingRow));
-	
-	settings->SetUInt32(SETTINGS_VERSION_KEY, SETTINGS_VERSION_NUMBER);
-	
+	Init();
 	Load();
 }
 
 SettingsManager::~SettingsManager()
 {
 	Save();
-	SafeRelease(settings);
 }
 
-void SettingsManager::InitSettingsGroup(SettingsManager::eSettingsGroups groupID, const SettingRow* groupMap, DAVA::uint32 mapSize)
+void SettingsManager::Init()
 {
-	KeyedArchive* groupSettings = new KeyedArchive();
-	
-	for (uint32 i = 0; i < mapSize; ++i )
-	{
-		groupSettings->SetVariant( groupMap[i].key, DAVA::VariantType(groupMap[i].defValue) );
-	}
-	
-	settings->SetArchive(GetNameOfGroup(groupID), groupSettings);
-	SafeRelease(groupSettings);
+	CreateValue(Settings::General_DesinerName, DAVA::VariantType(DAVA::String("nobody")));
+    CreateValue(Settings::General_RecentFilesCount, DAVA::VariantType((DAVA::int32) 5));
+	CreateValue(Settings::General_PreviewEnabled, DAVA::VariantType(false));
+    CreateValue(Settings::General_CompressionQuality, DAVA::VariantType((DAVA::int32)DAVA::TextureConverter::ECQ_DEFAULT), DAVA::InspDesc("Compression quality", GlobalEnumMap<DAVA::TextureConverter::eConvertQuality>::Instance()));
+
+    CreateValue(Settings::General_MaterialEditor_SwitchColor0, DAVA::VariantType(DAVA::Color(0.0f, 1.0f, 0.0f, 1.0f)));
+    CreateValue(Settings::General_MaterialEditor_SwitchColor1, DAVA::VariantType(DAVA::Color(1.0f, 0.0f, 0.0f, 1.0f)));
+    CreateValue(Settings::General_MaterialEditor_LodColor0, DAVA::VariantType(DAVA::Color(0.9f, 0.9f, 0.9f, 1.0f)));
+    CreateValue(Settings::General_MaterialEditor_LodColor1, DAVA::VariantType(DAVA::Color(0.7f, 0.7f, 0.7f, 1.0f)));
+    CreateValue(Settings::General_MaterialEditor_LodColor2, DAVA::VariantType(DAVA::Color(0.5f, 0.5f, 0.5f, 1.0f)));
+    CreateValue(Settings::General_MaterialEditor_LodColor3, DAVA::VariantType(DAVA::Color(0.3f, 0.3f, 0.3f, 1.0f)));
+
+	CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
+	CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));
+	CreateValue(Settings::Scene_CameraSpeed0, DAVA::VariantType(35.0f));
+	CreateValue(Settings::Scene_CameraSpeed1, DAVA::VariantType(100.0f));
+	CreateValue(Settings::Scene_CameraSpeed2, DAVA::VariantType(250.0f));
+	CreateValue(Settings::Scene_CameraSpeed3, DAVA::VariantType(400.0f));
+	CreateValue(Settings::Scene_CameraFOV, DAVA::VariantType(70.0f));
+    CreateValue(Settings::Scene_SelectionSequent, DAVA::VariantType(false));
+    CreateValue(Settings::Scene_SelectionDrawMode, DAVA::VariantType((DAVA::int32) SS_DRAW_DEFAULT), DAVA::InspDesc("Selection draw modes", GlobalEnumMap<SelectionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
+    CreateValue(Settings::Scene_CollisionDrawMode, DAVA::VariantType((DAVA::int32) CS_DRAW_DEFAULT), DAVA::InspDesc("Collision draw modes", GlobalEnumMap<CollisionSystemDrawMode>::Instance(), DAVA::InspDesc::T_FLAGS));
+    CreateValue(Settings::Scene_GizmoScale, DAVA::VariantType(DAVA::float32(1.0)));
+    CreateValue(Settings::Scene_DebugBoxScale, DAVA::VariantType(DAVA::float32(1.0)));
+    CreateValue(Settings::Scene_DebugBoxUserScale, DAVA::VariantType(DAVA::float32(1.0)));
+    CreateValue(Settings::Scene_DebugBoxParticleScale, DAVA::VariantType(DAVA::float32(1.0)));
+
+    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType((DAVA::int32) DAVA::GPU_UNKNOWN));
+	CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
+	CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
+	CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
+	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
+
+	CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType((DAVA::KeyedArchive *) NULL));
+    CreateValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType((DAVA::int32) EditorMaterialSystem::LIGHTVIEW_ALL));
+    CreateValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType((bool) false));
+    CreateValue(Settings::Internal_LicenceAccepted, DAVA::VariantType((bool) false));
+}
+
+DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)
+{
+    DAVA::FastNameMap<SettingsNode>::iterator i = SettingsManager::Instance()->settingsMap.find(path);
+    DVASSERT(i != SettingsManager::Instance()->settingsMap.end() && "No such setting path");
+
+    return i->second.value;
+}
+
+void SettingsManager::SetValue(const DAVA::FastName& path, const DAVA::VariantType &value)
+{
+    DAVA::FastNameMap<SettingsNode>::iterator i = SettingsManager::Instance()->settingsMap.find(path);
+    DVASSERT(i != SettingsManager::Instance()->settingsMap.end() && "No such setting path");
+    DVASSERT(i->second.value.type == value.type && "Setting different type");
+
+    i->second.value.SetVariant(value);
+}
+
+size_t SettingsManager::GetSettingsCount()
+{
+    return SettingsManager::Instance()->settingsMap.size();
+}
+
+SettingsNode* SettingsManager::GetSettingsNode(const DAVA::FastName &name)
+{
+    DVASSERT(0 != SettingsManager::Instance()->settingsMap.count(name));
+    return &SettingsManager::Instance()->settingsMap.at(name);
+}
+
+DAVA::FastName SettingsManager::GetSettingsName(size_t index)
+{
+    DVASSERT(index < SettingsManager::Instance()->settingsOrder.size());
+    return SettingsManager::Instance()->settingsOrder[index];
 }
 
 void SettingsManager::Load()
 {
-	KeyedArchive* loadedArchive = new KeyedArchive();
-	if(!loadedArchive->Load(CONFIG_FILE))
+	DAVA::KeyedArchive* toLoad = new DAVA::KeyedArchive();
+	if(toLoad->Load(SETTINGS_CONFIG_FILE))
 	{
-        loadedArchive->Release();
-		return;
-	}
-	bool isSettingsFileVersionActual = loadedArchive->IsKeyExists(SETTINGS_VERSION_KEY);
-	// perform synchronization: update present in settings elements from file
-	for (uint32 i = 0; i < GROUPS_COUNT; ++i)
-	{
-		KeyedArchive* presentSettingsGroup = GetSettingsGroup((eSettingsGroups)i);
-		KeyedArchive* archiveFromFile = isSettingsFileVersionActual ?
-		loadedArchive->GetArchive(GetNameOfGroup((eSettingsGroups)i)) : loadedArchive;
-		
-		if(NULL == archiveFromFile)
-		{
-			continue;
-		}
-		
-		Map<String, VariantType*> predefinedSettingsGroupMap = presentSettingsGroup->GetArchieveData();
-		DAVA::Map<DAVA::String, DAVA::VariantType*>::iterator it = predefinedSettingsGroupMap.begin();
-		DAVA::Map<DAVA::String, DAVA::VariantType*>::iterator end = predefinedSettingsGroupMap.end();
-		
-		for(; it != end; ++it)
-		{
-			if(archiveFromFile->IsKeyExists(it->first))
-			{
-				presentSettingsGroup->SetVariant(it->first, *archiveFromFile->GetVariant(it->first));
-			}
-		}
-	}
-	
-	SafeRelease(loadedArchive);
-}
+        DAVA::FastNameMap<SettingsNode>::iterator i;
+        DAVA::FastNameMap<SettingsNode>::iterator end = settingsMap.end();
+        for(i = settingsMap.begin(); i != end; ++i)
+        {
+            SettingsNode *node = &i->second;
+            DAVA::String name = i->first.c_str();
 
-DAVA::VariantType SettingsManager::GetValue(const DAVA::String& _name, eSettingsGroups _group) const
-{
-	KeyedArchive* foundedGroupSettings = settings->GetArchive(GetNameOfGroup(_group));
-	DVASSERT(foundedGroupSettings->IsKeyExists(_name));
-	return *foundedGroupSettings->GetVariant(_name);
-}
+            if(toLoad->IsKeyExists(name))
+            {
+                DAVA::VariantType* sourceValue = toLoad->GetVariant(name);
+                if(sourceValue->type == node->value.type)
+                {
+                    node->value.SetVariant(*sourceValue);
+                }
+            }
+        }
+	}
 
-void SettingsManager::SetValue(const DAVA::String& _name, const DAVA::VariantType& _value, eSettingsGroups group)
-{
-	KeyedArchive* foundedGroupSettings = settings->GetArchive(GetNameOfGroup(group));
-	DVASSERT(foundedGroupSettings->IsKeyExists(_name));
-	foundedGroupSettings->SetVariant(_name, _value);
-	Save();
+    SafeRelease(toLoad);
 }
 
 void SettingsManager::Save()
 {
-	settings->Save(CONFIG_FILE);
+	DAVA::KeyedArchive* toSave = new DAVA::KeyedArchive();
+
+    DAVA::FastNameMap<SettingsNode>::iterator i;
+    DAVA::FastNameMap<SettingsNode>::iterator end = settingsMap.end();
+    for(i = settingsMap.begin(); i != end; ++i)
+    {
+        SettingsNode *node = &i->second;
+        DAVA::String name = i->first.c_str();
+
+        toSave->SetVariant(name, node->value);
+    }
+
+	toSave->Save(SETTINGS_CONFIG_FILE);
+    toSave->Release();
 }
 
-DAVA::KeyedArchive* SettingsManager::GetSettingsGroup(eSettingsGroups group)
+void SettingsManager::CreateValue(const DAVA::FastName& pathName, const DAVA::VariantType &defaultValue, const DAVA::InspDesc &description)
 {
-	String nameOfGroup = GetNameOfGroup(group);
-	return settings->GetArchive(nameOfGroup);
+    DVASSERT(pathName.IsValid());
+    
+    settingsMap[pathName].value = defaultValue;
+    settingsMap[pathName].desc = description;
+
+    settingsOrder.push_back(pathName);
 }
 
-DAVA::String SettingsManager::GetNameOfGroup(eSettingsGroups group) const
+void SettingsManager::ResetToDefault()
 {
-	static struct
-	{
-		eSettingsGroups groupKey;
-		const char* groupName;
-	}
-	groupNamesMap[] =
-	{
-		{GENERAL, "General\0"},
-		{DEFAULT, "Scene default\0"},
-		{INTERNAL, "Internal\0"}
-	};
-	
-	uint32 namesCount = COUNT_OF(groupNamesMap);
-	DVASSERT(namesCount == GROUPS_COUNT);
-	
-	for (uint32 i = 0; i < namesCount; i ++)
-	{
-		if (groupNamesMap[i].groupKey == group)
-		{
-			return groupNamesMap[i].groupName;
-		}
-	}
-	
-	DVASSERT(false);
-	return DAVA::String();
+    SettingsManager::Instance()->Init();
 }
+

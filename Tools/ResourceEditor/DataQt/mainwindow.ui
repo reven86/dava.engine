@@ -403,9 +403,6 @@
     <addaction name="menuObjectTypes"/>
     <addaction name="actionHangingObjects"/>
     <addaction name="actionSwitchesWithDifferentLODs"/>
-    <addaction name="separator"/>
-    <addaction name="actionCurrentSceneSettings"/>
-    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuQuality">
     <property name="title">
@@ -413,6 +410,12 @@
     </property>
     <addaction name="separator"/>
     <addaction name="actionCustomQuality"/>
+   </widget>
+   <widget class="QMenu" name="menuDebug_Functions">
+    <property name="title">
+     <string>Debug Functions</string>
+    </property>
+    <addaction name="actionGridCopy"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -422,6 +425,7 @@
    <addaction name="menuScene"/>
    <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
+   <addaction name="menuDebug_Functions"/>
   </widget>
   <widget class="QDockWidget" name="dockParticleEditor">
    <property name="sizePolicy">
@@ -718,7 +722,6 @@
    <addaction name="actionReloadShader"/>
    <addaction name="actionSetShadowColor"/>
    <addaction name="actionConvertModifiedTextures"/>
-   <addaction name="actionCurrentSceneSettings"/>
   </widget>
   <widget class="QDockWidget" name="dockLibrary">
    <property name="windowTitle">
@@ -1669,15 +1672,6 @@
     <string>Convert Modified texture's PNGs</string>
    </property>
   </action>
-  <action name="actionCurrentSceneSettings">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/settings.png</normaloff>:/QtIcons/settings.png</iconset>
-   </property>
-   <property name="text">
-    <string>Current scene settings...</string>
-   </property>
-  </action>
   <action name="actionAlbedo">
    <property name="checkable">
     <bool>true</bool>
@@ -1770,6 +1764,11 @@
    </property>
    <property name="toolTip">
     <string>Custom Quality Settings</string>
+   </property>
+  </action>
+  <action name="actionGridCopy">
+   <property name="text">
+    <string>Grid Copy</string>
    </property>
   </action>
   <action name="actionSetLightViewMode">

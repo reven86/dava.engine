@@ -93,7 +93,10 @@ void HierarchyTreeAggregatorNode::SetRect(const Rect& rect)
 
 Rect HierarchyTreeAggregatorNode::GetRect() const
 {
-	return this->rect;
+	// Recalculate aggregator rect according to its childs positions
+	Rect rect = this->rect;
+	CombineRectWithChild(rect);
+	return rect;
 }
 
 void HierarchyTreeAggregatorNode::SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter)

@@ -33,11 +33,13 @@ void FlagSelectorCombo::AddFlagItem(const quint64 value, const QString& hint)
     DVASSERT(m);
 
     const QString numValue = QString::number(value);
+    const QString toolTip = hint.isEmpty() ? numValue : QString("(%1) %2").arg(value).arg(hint);
+
     QStandardItem *item = new QStandardItem();
     item->setCheckable(true);
     item->setData(value, ValueRole);
     item->setText(!hint.isEmpty() ? hint : numValue);
-    item->setToolTip(numValue);
+    item->setToolTip(toolTip);
 
     m->appendRow(item);
 }

@@ -108,6 +108,7 @@ LOCAL_LDLIBS += $(LIBS_PATH)/libyaml_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libmongodb_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/liblua_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libdxt_android.a
+LOCAL_LDLIBS += $(LIBS_PATH)/libjpeg_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libcurl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libTextureConverter_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/libssl_android.a

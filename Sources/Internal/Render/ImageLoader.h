@@ -43,25 +43,28 @@ class ImageLoader
 {
 public:
 
-	static bool CreateFromFileByExtension(const FilePath &pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-
+    static bool CreateFromFileByExtension(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+    
 	static bool CreateFromFileByContent(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
 	static bool CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
 
-    static void Save(Image *image, const FilePath & pathname);
+    static bool Save(const Image *image, const FilePath & pathname);
     
 protected:
 
     static bool CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet);
+    static bool CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> & imageSet);
 	static bool CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
 	static bool CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet);
-	static bool CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromDDS(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+	static bool CreateFromPNG(File *file, Vector<Image *> & imageSet);
+    static bool CreateFromJPEG(File *file, Vector<Image *> & imageSet);
+	static bool CreateFromPVR(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+	static bool CreateFromDDS(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
     
     static bool IsPVRFile(File *file);
     static bool IsPNGFile(File *file);
 	static bool IsDDSFile(File *file);
+    static bool IsJPEGFile(File *file);
 };
 	
 };

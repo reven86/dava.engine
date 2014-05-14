@@ -32,10 +32,12 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/RenderBase.h"
 #include "Render/LibPngHelpers.h"
+#include "Render/LibJpegHelper.h"
 #include "Render/LibPVRHelper.h"
 #include "Render/LibDxtHelper.h"
 #include "Platform/SystemTimer.h"
 #include "Utils/Utils.h"
+#include "Render/ImageConvert.h"
 
 namespace DAVA 
 {
@@ -89,6 +91,11 @@ bool ImageLoader::CreateFromFileByContent(File *file, Vector<Image *> & imageSet
         return CreateFromDDS(file, imageSet, baseMipmap);
     }
     
+    if(IsJPEGFile(file))
+    {
+        return CreateFromJPEG(file, imageSet);
+    }
+    
     return false;
 }
 
@@ -106,6 +113,24 @@ bool ImageLoader::CreateFromPNGFile(const FilePath & pathname, Vector<Image *> &
     bool created = CreateFromPNG(file, imageSet);
     SafeRelease(file);
 	return created;
+}
+    
+bool ImageLoader::CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> & imageSet)
+{
+    Image *jpegImage = new Image();
+    if(jpegImage)
+    {
+        bool created = LibJpegWrapper::ReadJpegFile(pathname, jpegImage);
+        if(created)
+        {
+            imageSet.push_back(jpegImage);
+            return true;
+        }
+        
+        SafeRelease(jpegImage);
+    }
+    
+    return false;
 }
     
 bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
@@ -146,6 +171,13 @@ bool ImageLoader::IsPNGFile(DAVA::File *file)
     return isPng;
 }
     
+bool ImageLoader::IsJPEGFile(File *file)
+{
+    bool isJpeg = LibJpegWrapper::IsJpegFile(file->GetFilename());
+    file->Seek(0, File::SEEK_FROM_START);
+    return isJpeg;
+}
+    
 bool ImageLoader::IsPVRFile(DAVA::File *file)
 {
     bool isPvr = LibPVRHelper::IsPvrFile(file);
@@ -178,6 +210,11 @@ bool ImageLoader::CreateFromPNG(DAVA::File *file, Vector<Image *> & imageSet)
     
     return false;
 }
+    
+bool ImageLoader::CreateFromJPEG(File *file, Vector<Image *> & imageSet)
+{
+    return CreateFromJPEGFile(file->GetFilename(), imageSet);
+}
 
 bool ImageLoader::CreateFromDDS(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
@@ -186,45 +223,78 @@ bool ImageLoader::CreateFromDDS(DAVA::File *file, Vector<Image *> & imageSet, in
 
 bool ImageLoader::CreateFromPVR(DAVA::File *file, Vector<Image *> & imageSet, int32 baseMipmap /*= 0*/)
 {
-//    uint64 loadTime = SystemTimer::Instance()->AbsoluteMS();
-
-    int32 mipMapLevelsCount = LibPVRHelper::GetMipMapLevelsCount(file);
-    baseMipmap = Min(baseMipmap, mipMapLevelsCount - 1);
-
-	int32 faceCount = LibPVRHelper::GetCubemapFaceCount(file);
-	int32 totalImageCount = (mipMapLevelsCount - baseMipmap) * faceCount;
-    if(totalImageCount)
+    bool loaded = false;
+    
+    PVRFile *pvrFile = LibPVRHelper::ReadFile(file, true, true);
+    if(pvrFile)
     {
-        imageSet.reserve(totalImageCount);
-        for(int32 i = 0; i < totalImageCount; ++i)
-        {
-            Image *image = new Image();
-            imageSet.push_back(image);
-        }
-
-        file->Seek(0, File::SEEK_FROM_START);
-        bool read = LibPVRHelper::ReadFile(file, imageSet, baseMipmap);
-        if(!read)
+        baseMipmap = Min(baseMipmap, (int32)(pvrFile->header.u32MIPMapCount - 1));
+        loaded = LibPVRHelper::LoadImages(pvrFile, imageSet, baseMipmap);
+        if(!loaded)
         {
             Logger::Error("[ImageLoader::CreateFromPVR] Cannot read images from PVR file (%s)", file->GetFilename().GetAbsolutePathname().c_str());
-			for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
-            imageSet.clear();
-            return false;
         }
-//        loadTime = SystemTimer::Instance()->AbsoluteMS() - loadTime;
-//        Logger::Info("Unpack PVR(%s) for %ldms", file->GetFilename().c_str(), loadTime);
-        return true;
+        
+        delete pvrFile;
     }
-    return false;
+
+    return loaded;
 }
 
-void ImageLoader::Save(DAVA::Image *image, const FilePath &pathname)
+bool ImageLoader::Save(const DAVA::Image *image, const FilePath &pathname)
 {
-    DVASSERT(pathname.IsEqualToExtension(".png"));
+    bool retValue = false;
+    DVASSERT(image && (pathname.IsEqualToExtension(".png") || pathname.IsEqualToExtension(".jpg") || pathname.IsEqualToExtension(".jpeg")));
     
-    DVASSERT((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format));
-    LibPngWrapper::WritePngFile(pathname, image->width, image->height, image->data, image->format);
+    DVASSERT((FORMAT_RGB888 == image->format)||(FORMAT_RGBA8888 == image->format) ||
+             (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format));
+    
+    if(pathname.IsEqualToExtension(".png"))
+    {
+        if(FORMAT_RGB888 == image->format)
+        {
+            Image* imgToSave = Image::Create(image->width, image->height, FORMAT_RGBA8888);
+            
+            ConvertDirect<RGB888, uint32, ConvertRGB888toRGBA8888> convert;
+            convert(image->data, image->width, image->height, sizeof(RGB888)*image->width, imgToSave->data, imgToSave->width, imgToSave->height, sizeof(uint32)*image->width);
+            
+            retValue = LibPngWrapper::WritePngFile(pathname, imgToSave->width, imgToSave->height, imgToSave->data, imgToSave->format);
+            SafeRelease(imgToSave);
+        }
+        else
+        {
+            retValue = LibPngWrapper::WritePngFile(pathname, image->width, image->height, image->data, image->format);
+        }
+    }
+    else if(pathname.IsEqualToExtension(".jpg") || pathname.IsEqualToExtension(".jpeg"))
+    {
+        if((FORMAT_RGB888 == image->format) || (FORMAT_A8 == image->format))
+        {
+            LibJpegWrapper::WriteJpegFile(pathname, image->width, image->height, image->data, image->format);
+        }
+        else
+        {
+            Image* imgToSave= NULL;
+            if(FORMAT_RGBA8888 == image->format)
+            {
+                imgToSave = Image::Create(image->width, image->height, FORMAT_RGB888);
+                ConvertDirect<uint32, RGB888, ConvertRGBA8888toRGB888> convert;
+                convert(image->data, image->width, image->height, sizeof(uint32)*image->width, imgToSave->data, imgToSave->width, imgToSave->height, sizeof(RGB888)*image->width);
+            }
+            else if(FORMAT_A16 == image->format)
+            {
+                imgToSave = Image::Create(image->width, image->height, FORMAT_A8);
+                ConvertDirect<uint16, uint8, ConvertA16toA8> convert;
+                convert(image->data, image->width, image->height, sizeof(uint16)*image->width, imgToSave->data, imgToSave->width, imgToSave->height, sizeof(uint8)*image->width);
+            }
+            if(imgToSave != NULL)
+            {
+                retValue = LibJpegWrapper::WriteJpegFile(pathname, imgToSave->width, imgToSave->height, imgToSave->data, imgToSave->format);
+                SafeRelease(imgToSave);
+            }
+        }
+    }
+    return retValue;
 }
-    
     
 };

@@ -43,6 +43,7 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/TextureDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -245,7 +246,8 @@ bool SceneFile::ReadTexture()
     sceneFP->Read(&hasOpacity, sizeof(hasOpacity));
 	
 	DAVA::Texture * texture = DAVA::Texture::CreateFromFile(tname);//textureDef.name);//0;
-	if (debugLogEnabled)Logger::FrameworkDebug("- Texture: %s hasOpacity: %s %s\n", textureDef.name, (hasOpacity) ? ("yes") : ("no"), Texture::GetPixelFormatString(texture->texDescriptor->format));
+	if (debugLogEnabled)
+		Logger::FrameworkDebug("- Texture: %s hasOpacity: %s %s\n", textureDef.name, (hasOpacity) ? ("yes") : ("no"), PixelFormatDescriptor::GetPixelFormatString(texture->texDescriptor->format));
     
     SafeRelease(texture);
 	return true;

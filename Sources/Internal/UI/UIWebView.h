@@ -42,6 +42,17 @@ class UIWebView : public UIControl
 protected:
 	virtual ~UIWebView();
 public:
+    // Data detector types. May be a combination of several flags.
+    enum eDataDetectorType
+    {
+        DATA_DETECTOR_NONE              = 0x00,
+        DATA_DETECTOR_PHONE_NUMBERS     = 0x01,
+        DATA_DETECTOR_LINKS             = 0x02,
+        DATA_DETECTOR_ADDRESSES         = 0x04,
+        DATA_DETECTOR_CALENDAR_EVENTS   = 0x08,
+        DATA_DETECTOR_ALL               = 0xFF
+    };
+
 	UIWebView(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 		
 	// Open the URL.
@@ -77,6 +88,10 @@ public:
 	void SetBounces(bool value);
 	bool GetBounces() const;
 	void SetGestures(bool value);
+    
+    // Set the data detector types.
+    void SetDataDetectorTypes(int32 value);
+    int32 GetDataDetectorTypes() const;
 
 protected:
 	// Platform-specific implementation of the Web View Control.

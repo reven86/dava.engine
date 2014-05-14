@@ -258,7 +258,7 @@ uint32 StaticOcclusion::RenderFrame()
                     timeTotalCulling += timeCulling;
 
                     uint64 timeRendering = SystemTimer::Instance()->GetAbsoluteNano();
-                    staticOcclusionRenderPass->Draw(camera, renderSystem);
+                    staticOcclusionRenderPass->Draw(renderSystem);
                     timeRendering = SystemTimer::Instance()->GetAbsoluteNano() - timeRendering;
                     timeTotalRendering += timeRendering;
                     

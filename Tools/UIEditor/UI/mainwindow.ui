@@ -493,13 +493,30 @@
    <property name="windowTitle">
     <string>Preview Toolbar</string>
    </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionSetScreenshotFolder"/>
+   <addaction name="actionScreenshot"/>
    <addaction name="actionPreview"/>
+  </widget>
+  <widget class="QDockWidget" name="previewSettingsDockWidget">
+   <property name="windowTitle">
+    <string>Preview Settings</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="PreviewSettingsWidget" name="dockWidgetContents"/>
   </widget>
   <action name="actionOpen_project">
    <property name="enabled">
@@ -1015,6 +1032,27 @@
     <enum>Qt::ApplicationShortcut</enum>
    </property>
   </action>
+  <action name="actionScreenshot">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/screenshot.png</normaloff>:/Icons/screenshot.png</iconset>
+   </property>
+   <property name="text">
+    <string>Screenshot</string>
+   </property>
+   <property name="toolTip">
+    <string>Make a Screenshot</string>
+   </property>
+  </action>
+  <action name="actionSetScreenshotFolder">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/screenshot_folder.png</normaloff>:/Icons/screenshot_folder.png</iconset>
+   </property>
+   <property name="text">
+    <string>Set Screenshot Folder</string>
+   </property>
+  </action>
   <action name="actionLock_Guides">
    <property name="checkable">
     <bool>true</bool>
@@ -1066,6 +1104,12 @@
    <class>RulerWidget</class>
    <extends>QWidget</extends>
    <header>Classes/Ruler/RulerWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PreviewSettingsWidget</class>
+   <extends>QWidget</extends>
+   <header>previewsettingswidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

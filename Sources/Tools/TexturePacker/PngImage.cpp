@@ -32,6 +32,7 @@
 #include "Render/LibPngHelpers.h"
 #include "Render/ImageLoader.h"
 #include "Render/Texture.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -75,7 +76,7 @@ bool PngImageExt::Create(uint32 width, uint32 height)
     SafeRelease(internalData);
     
     internalData = Image::Create(width, height, FORMAT_RGBA8888);
-    memset(GetData(), 0, width * height * Texture::GetPixelFormatSizeInBytes(FORMAT_RGBA8888));
+    memset(GetData(), 0, width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888));
 
 	return (internalData != 0);
 }

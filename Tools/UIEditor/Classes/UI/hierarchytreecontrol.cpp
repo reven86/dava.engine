@@ -288,6 +288,8 @@ void HierarchyTreeControl::HandleDropHierarchyMimeData(QDropEvent *event, const 
  
 void HierarchyTreeControl::dragEnterEvent(QDragEnterEvent *event)
 {
+	QTreeWidget::dragEnterEvent(event);
+	
 	if (!event->mimeData())
 		return;
 

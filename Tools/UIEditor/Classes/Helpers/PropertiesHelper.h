@@ -115,12 +115,8 @@ template<typename T>
         return T();
     }
         
-    // Get the first control value.
-    activeMetadata->SetActiveParamID(0);
-    const T firstValue = activeMetadata->property(propertyName.toStdString().c_str()).value<T>();
-
-    // Look for the other values - start from 1, since the value #0 is already processed.
     int paramsCount = activeMetadata->GetParamsCount();
+    T firstValue;
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
 		activeMetadata->SetActiveParamID(i);
@@ -128,9 +124,12 @@ template<typename T>
 		for (uint32 stateIndex = 0; stateIndex < activeMetadata->GetStatesCount(); ++stateIndex)
 		{
 			activeMetadata->SetActiveStateIndex(stateIndex);
-
 			const T& curValue = activeMetadata->property(propertyName.toStdString().c_str()).value<T>();
-			if (curValue != firstValue)
+            if (i == 0 && stateIndex == 0)
+            {
+                firstValue = curValue;
+            }
+			else if (curValue != firstValue)
 			{
 				isPropertyValueDiffers = true;
 				break;
@@ -142,8 +141,8 @@ template<typename T>
 			break;
 		}
     }
-	activeMetadata->ResetActiveStateIndex();
 
+	activeMetadata->ResetActiveStateIndex();
     return firstValue;
 }
     

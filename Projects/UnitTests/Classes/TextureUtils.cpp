@@ -108,9 +108,9 @@ Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
 {
     Sprite *renderTarget = Sprite::CreateAsRenderTarget(sprite->GetWidth(), sprite->GetHeight(), FORMAT_RGBA8888);
     RenderManager::Instance()->SetRenderTarget(renderTarget);
-	
-	Sprite::DrawState drawState;
-	drawState.SetPosition(0, 0);
+    
+    
+    Sprite::DrawState drawState;
     sprite->Draw(&drawState);
     
     RenderManager::Instance()->RestoreRenderTarget();
@@ -121,6 +121,5 @@ Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
     SafeRelease(renderTarget);
     return resultImage;
 }
-
 
 

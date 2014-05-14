@@ -56,6 +56,8 @@
 #include "uitextfieldpropertygridwidget.h"
 #include "particleeffectpropertygridwidget.h"
 
+#include "Custom/guidepropertygridwidget.h"
+
 namespace DAVA {
     
 // Property Grid Widgets Factory - a class which stores pointers to all existing
@@ -95,6 +97,8 @@ private:
 	ScrollControlPropertyGridWidget* scrollWidget;
 	ScrollViewPropertyGridWidget* scrollViewWidget;
     ParticleEffectPropertyGridWidget* particleWidget;
+    
+    GuidePropertyGridWidget* guideWidget;
 	
     // The same widgets in the list manner - for easier handling of group operations.
     PROPERTYGRIDWIDGETSLIST registeredWidgets;

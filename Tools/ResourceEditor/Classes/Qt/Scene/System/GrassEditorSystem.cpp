@@ -39,6 +39,8 @@
 #include "Scene/SceneSignals.h"
 #include "Commands2/ImageRegionCopyCommand.h"
 
+#include "Render/PixelFormatDescriptor.h"
+
 #include <QApplication>
 
 GrassEditorSystem::GrassEditorSystem(Scene* scene)
@@ -150,6 +152,8 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
             if(enable)
             {
                 DAVA::VegetationRenderObject *veg = SearchVegetation(GetScene());
+
+                DVASSERT(NULL == curVegetation);
                 curVegetation = SafeRetain(veg);
 
                 if(NULL != veg && NULL != veg->GetVegetationMap())
@@ -157,6 +161,7 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
                     isEnabled = true;
                     ret = true;
 
+                    DVASSERT(NULL == vegetationMap);
                     vegetationMap = SafeRetain(veg->GetVegetationMap());
 
                     selectionSystem->SetLocked(true);
@@ -227,7 +232,7 @@ DAVA::VegetationRenderObject* GrassEditorSystem::SearchVegetation(DAVA::Entity *
 {
     DAVA::VegetationRenderObject* ret = DAVA::GetVegetation(entity);
 
-    if(NULL == ret && NULL != entity)
+    if(NULL == ret)
     {
         for(int i = 0; NULL == ret && i < entity->GetChildrenCount(); ++i)
         {
@@ -336,7 +341,7 @@ void GrassEditorSystem::DrawGrass(DAVA::Vector2 pos)
 
         for(DAVA::uint8 layer = applyFromLayer; layer <= applyToLayer; ++layer)
         {
-            DAVA::uint32 index = offset * Texture::GetPixelFormatSizeInBytes(vegetationMap->format);
+            DAVA::uint32 index = offset * DAVA::PixelFormatDescriptor::GetPixelFormatSizeInBytes(vegetationMap->format);
             index += layer;
 
             uint8 mapData = vegetationMap->data[index];

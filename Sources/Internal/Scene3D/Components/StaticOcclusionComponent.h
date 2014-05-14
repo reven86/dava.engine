@@ -81,9 +81,9 @@ public:
     inline void SetSubdivisionsY(uint32 _sizeY);
     inline void SetSubdivisionsZ(uint32 _sizeZ);
     
-    inline uint32 GetSubdivisionsX();
-    inline uint32 GetSubdivisionsY();
-    inline uint32 GetSubdivisionsZ();
+    inline uint32 GetSubdivisionsX() const;
+    inline uint32 GetSubdivisionsY() const;
+    inline uint32 GetSubdivisionsZ() const;
     
     
     //Vector<Vector3> renderPositions;
@@ -130,17 +130,17 @@ inline void StaticOcclusionComponent::SetSubdivisionsZ(uint32 _sizeZ)
     zSubdivisions = _sizeZ;
 }
 
-inline uint32 StaticOcclusionComponent::GetSubdivisionsX()
+inline uint32 StaticOcclusionComponent::GetSubdivisionsX() const
 {
     return xSubdivisions;
 }
     
-inline uint32 StaticOcclusionComponent::GetSubdivisionsY()
+inline uint32 StaticOcclusionComponent::GetSubdivisionsY() const
 {
     return ySubdivisions;
 }
 
-inline uint32 StaticOcclusionComponent::GetSubdivisionsZ()
+inline uint32 StaticOcclusionComponent::GetSubdivisionsZ() const
 {
     return zSubdivisions;
 }

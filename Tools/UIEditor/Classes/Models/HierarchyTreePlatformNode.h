@@ -46,9 +46,9 @@ public:
 	virtual ~HierarchyTreePlatformNode();
 
 	void SetSize(int width, int height);
-	int GetWidth() const;
-	int GetHeight() const;
-    Vector2 GetSize() const;
+	int GetWidth(bool forceOriginal = false) const;
+	int GetHeight(bool forceOriginal = false) const;
+    Vector2 GetSize(bool forceOriginal = false) const;
 
 	virtual HierarchyTreeNode* GetParent();
 
@@ -82,7 +82,7 @@ public:
 	bool IsAggregatorOrScreenNamePresent(const QString& candidatName);
 
     // Enable/disable Preview Mode. In Preview Mode different (preview) platform size is returned.
-    void EnablePreview(int width, int height);
+    void SetPreviewMode(int width, int height);
     void DisablePreview();
 
 private:

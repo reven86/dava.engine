@@ -96,7 +96,7 @@ public:
     
     void SetMaterial(NMaterial * _material);
     inline NMaterial * GetMaterial();
-    inline uint32 GetRenderLayerIDsBitmask() const { return renderLayerIDsBitmaskFromMaterial; };
+    inline uint32 GetRenderLayerIDsBitmask() const;
     
 	void SetRenderObject(RenderObject * renderObject);
 	inline RenderObject * GetRenderObject() const;
@@ -121,15 +121,18 @@ public:
      */
    
     void SetSortingKey(uint32 key);
-    inline uint32 GetSortingKey();
+    inline uint32 GetSortingKey() const;
 
     /*sorting offset allowed in 0..31 range, 15 default, more - closer to camera*/
     void SetSortingOffset(uint32 offset);
     inline uint32 GetSortingOffset();
 
 	void SetVisibilityCriteria(uint32 criteria);
-    bool GetVisible() const;
-
+    //bool GetVisible() const;
+    
+    inline void SetLight(uint32 index, Light * light);
+    inline Light * GetLight(uint32 index);
+    
 	virtual void UpdateAABBoxFromSource();
 	
     pointer_size layerSortingKey;
@@ -137,6 +140,9 @@ public:
 	virtual ShadowVolume * CreateShadow();
 
 protected:
+    void BindDynamicParameters(Camera * camera);
+    
+    
     uint32 renderLayerIDsBitmaskFromMaterial;
     PolygonGroup * dataSource;
     RenderDataObject * renderDataObject;   // Probably should be replaced to VBO / IBO, but not sure
@@ -152,6 +158,10 @@ protected:
     uint32 sortingKey; //oooookkkk -where o is offset, k is key
     uint32 visiblityCriteria;
 
+    static const uint32 MAX_LIGHT_COUNT = 2;
+    Light * lights[MAX_LIGHT_COUNT];
+    
+    
 	AABBox3 aabbox;
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)
     OcclusionQuery * occlusionQuery;
@@ -179,6 +189,11 @@ public:
                          
         PROPERTY("sortingKey", "Key for the sorting inside render layer", GetSortingKey, SetSortingKey, I_SAVE | I_VIEW | I_EDIT)
     );
+};
+    
+inline uint32 RenderBatch::GetRenderLayerIDsBitmask() const
+{
+    return renderLayerIDsBitmaskFromMaterial;
 };
 
 inline PolygonGroup * RenderBatch::GetPolygonGroup()
@@ -216,7 +231,7 @@ inline void RenderBatch::SetIndexCount(uint32 _indexCount)
     indexCount = _indexCount;
 }
     
-inline uint32 RenderBatch::GetSortingKey()
+inline uint32 RenderBatch::GetSortingKey() const
 {
     return sortingKey&0x0f;
 }
@@ -226,8 +241,20 @@ inline uint32 RenderBatch::GetSortingOffset()
     return ((sortingKey>>4)&0x1f);
 }
 
+inline void RenderBatch::SetLight(uint32 index, Light * light)
+{
+    DVASSERT(index < MAX_LIGHT_COUNT)
+    lights[index] = light;
+}
+
+inline Light * RenderBatch::GetLight(uint32 index)
+{
+    DVASSERT(index < MAX_LIGHT_COUNT)
+    return lights[index];
+}
+
     
-} // ns
+} //
 
 #endif	/* __DAVAENGINE_SCENE3D_RENDER_BATCH_H__ */
 

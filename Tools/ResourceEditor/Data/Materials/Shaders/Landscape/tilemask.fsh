@@ -1,8 +1,8 @@
 <CONFIG>
-tileTexture0 = 2
-tileMask = 1
-colorTexture = 0
-specularMap = 6
+uniform sampler2D tileTexture0 = 2;
+uniform sampler2D tileMask = 1;
+uniform sampler2D colorTexture = 0;
+uniform sampler2D specularMap = 6;
 <FRAGMENT_SHADER>
 #ifdef GL_ES
 precision highp float;
@@ -10,6 +10,11 @@ precision highp float;
 #define lowp
 #define highp
 #define mediump
+#endif
+
+
+#ifdef VERTEX_FOG
+uniform vec3 lightColor0;
 #endif
 
 #ifdef SPECULAR_LAND
@@ -38,6 +43,10 @@ uniform sampler2D cursorTexture;
 #if defined(VERTEX_FOG)
 uniform vec3 fogColor;
 varying float varFogFactor;
+#if defined(FOG_GLOW)
+uniform vec3 fogGlowColor;
+varying float varFogGlowFactor;
+#endif
 #endif
 
 void main()
@@ -59,7 +68,12 @@ void main()
 #endif
 
 #if defined(VERTEX_FOG)
-    gl_FragColor = vec4(mix(fogColor, color, varFogFactor), 1.0);
+	#if defined(FOG_GLOW)
+		vec3 realFogColor = mix(fogColor, fogGlowColor, varFogGlowFactor);
+		gl_FragColor.rgb = mix(realFogColor, color, varFogFactor);
+	#else
+		gl_FragColor.rgb = mix(fogColor, color, varFogFactor);
+	#endif
 #else
     gl_FragColor = vec4(color, 1.0);
 #endif

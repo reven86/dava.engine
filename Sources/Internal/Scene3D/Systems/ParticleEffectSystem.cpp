@@ -120,7 +120,7 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 	for (int32 layerId=0, layersCount = emitter->layers.size(); layerId<layersCount; ++layerId)
 	{
 		ParticleLayer *layer = emitter->layers[layerId];
-		bool isLodActive = layer->IsLodActive(effect->desiredLodLevel);
+		bool isLodActive = layer->IsLodActive(effect->activeLodLevel);
 		if ((!isLodActive)&&emitter->shortEffect) //layer could never become active
 			continue; 
 		ParticleGroup group;
@@ -146,8 +146,11 @@ void ParticleEffectSystem::RunEmitter(ParticleEffectComponent *effect, ParticleE
 void ParticleEffectSystem::RunEffect(ParticleEffectComponent *effect)
 {	
     Scene *scene = GetScene();
+    
     if (scene)
-        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetClipCamera(), 1.0f/60.0f);
+        scene->lodSystem->ForceUpdate(effect->GetEntity(), scene->GetCurrentCamera(), 1.0f/60.0f);
+    if (effect->activeLodLevel!=effect->desiredLodLevel)
+        UpdateActiveLod(effect);
 
 	if (effect->effectData.groups.empty()) //clean position sources
 		effect->effectData.infoSources.resize(1);
@@ -237,6 +240,8 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 	for(int i=0; i<componentsCount; i++) 
 	{
 		ParticleEffectComponent * effect = activeComponents[i];
+        if (effect->activeLodLevel!=effect->desiredLodLevel)
+            UpdateActiveLod(effect);
         if (effect->state == ParticleEffectComponent::STATE_STARTING)        
             RunEffect(effect);
         
@@ -280,6 +285,61 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 		
 		
 	}
+}
+
+
+void ParticleEffectSystem::UpdateActiveLod(ParticleEffectComponent *effect)
+{
+    DVASSERT(effect->activeLodLevel!=effect->desiredLodLevel);
+    effect->activeLodLevel = effect->desiredLodLevel;
+    for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e=effect->effectData.groups.end(); it!=e;++it)
+    {
+        ParticleGroup& group = *it;
+        if (!group.emitter->shortEffect)
+            group.visibleLod = group.layer->IsLodActive(effect->activeLodLevel);
+    }    
+
+    if (effect->activeLodLevel == 0) //degrade existing groups if needed
+    {
+        for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e=effect->effectData.groups.end(); it!=e;++it)
+        {
+            ParticleGroup& group = *it;
+            if (group.layer->degradeStrategy==ParticleLayer::DEGRADE_REMOVE)
+            {
+                Particle * current = group.head;
+                while (current)
+                {
+                    Particle *next = current->next;
+                    delete current;
+                    current = next;
+                }
+                group.head = NULL;
+            }
+            else if (group.layer->degradeStrategy==ParticleLayer::DEGRADE_CUT_PARTICLES)
+            {
+
+                Particle * current = group.head;
+                Particle * prev = NULL;
+                int32 i=0;
+                while (current)
+                {
+                    Particle *next = current->next;
+                    if (i%2) //cut every second particle
+                    {                            
+                        delete current;                 
+                        group.activeParticleCount--;
+                        if (prev)
+                            prev->next = next;
+                        else
+                            group.head = next;
+                    }
+                    prev = current;
+                    current = next;
+                    i++;                        
+                }               
+            }
+        }
+    }
 }
 
 void ParticleEffectSystem::UpdateEffect(ParticleEffectComponent *effect, float32 time, float32 shortEffectTime)

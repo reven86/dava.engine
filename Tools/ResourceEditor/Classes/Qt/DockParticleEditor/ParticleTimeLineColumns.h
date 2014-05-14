@@ -68,7 +68,7 @@ protected:
 	
 	// These methods are to be overriden for derived classes.
 	// Get an extra information to be displayed near the line.
-	virtual QString GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line) {return QString();};
+	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line) {return QString();};
 	
 	// Get the extra info for the header/footer.
 	virtual QString GetExtraInfoHeader() {return QString(); };
@@ -124,7 +124,7 @@ public:
 
 protected:
 	virtual void OnBeforeGetExtraInfoLoop();
-	virtual QString GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line);
+	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
 	
 	virtual QString GetExtraInfoHeader();
 	virtual QString GetExtraInfoFooter();
@@ -143,7 +143,7 @@ public:
 	virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line);
+	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
 	
 	virtual QString GetExtraInfoHeader();
 	virtual QString GetExtraInfoFooter();
@@ -161,7 +161,7 @@ public:
 	virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line);
+	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
 
 	virtual void OnBeforeGetExtraInfoLoop();
 	virtual void OnAfterGetExtraInfoLoop();
@@ -185,7 +185,7 @@ public:
 
 protected:
 	virtual void OnBeforeGetExtraInfoLoop();
-	virtual QString GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line);
+	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
 	
 	virtual QString GetExtraInfoHeader();
 	virtual QString GetExtraInfoFooter();
@@ -203,7 +203,7 @@ public:
 	virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line);
+	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
 	
 	virtual QString GetExtraInfoHeader();
 	virtual QString GetExtraInfoFooter();
@@ -219,7 +219,7 @@ public:
 	virtual void Reset();
 
 protected:
-	virtual QString GetExtraInfoForLayerLine(const ParticleTimeLineWidget::LINE& line);
+	virtual QString GetExtraInfoForLayerLine(ParticleEffectComponent *effect, const ParticleTimeLineWidget::LINE& line);
 
 	virtual void OnBeforeGetExtraInfoLoop();
 	virtual void OnAfterGetExtraInfoLoop();

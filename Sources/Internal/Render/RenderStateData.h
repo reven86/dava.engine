@@ -34,9 +34,10 @@
 
 namespace DAVA
 {
-//this class holds exclusively render state data such as blen parameters, depth parameters etc
-//it will be a part of RenderState
-
+/**
+    \ingroup render
+    \brief Class to hold render state data such as blend, depth, stencil and so on.
+ */
 class RenderStateData
 {
 public:
@@ -49,28 +50,13 @@ public:
 		STATE_DEPTH_WRITE = 1 << 2,
 		STATE_STENCIL_TEST = 1 << 3,
 		STATE_CULL = 1 << 4,
-		
-		STATE_SCISSOR_TEST = 1 << 6,
-					
-		STATE_COLORMASK_RED =  1 << 15,
-		STATE_COLORMASK_GREEN = 1 << 16,
-		STATE_COLORMASK_BLUE = 1 << 17,
-		STATE_COLORMASK_ALPHA = 1 << 18,
+		STATE_SCISSOR_TEST = 1 << 5,
+		STATE_COLORMASK_RED =  1 << 6,
+		STATE_COLORMASK_GREEN = 1 << 7,
+		STATE_COLORMASK_BLUE = 1 << 8,
+		STATE_COLORMASK_ALPHA = 1 << 9,
 		STATE_COLORMASK_ALL = (STATE_COLORMASK_RED | STATE_COLORMASK_GREEN | STATE_COLORMASK_BLUE | STATE_COLORMASK_ALPHA),
-		
-		//legacy fixed func states
-		STATE_ALPHA_TEST = 1 << 5,          // fixed func only / in programmable pipeline can check for consistency
-					
-		STATE_TEXTURE0 = 1 << 7,            // fixed func only / in programmable pipeline only checks for consistency
-		STATE_TEXTURE1 = 1 << 8,            // fixed func only / in programmable pipeline only checks for consistency
-		STATE_TEXTURE2 = 1 << 9,            // fixed func only / in programmable pipeline only checks for consistency
-		STATE_TEXTURE3 = 1 << 10,            // fixed func only / in programmable pipeline only checks for consistency
-		STATE_TEXTURE4 = 1 << 11,
-		STATE_TEXTURE5 = 1 << 12,
-		STATE_TEXTURE6 = 1 << 13,
-		STATE_TEXTURE7 = 1 << 14,
-
-	};
+    };
 
 	uint32 state; //one of STATE_* values bits
 	

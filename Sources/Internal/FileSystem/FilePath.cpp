@@ -151,12 +151,12 @@ bool FilePath::ContainPath(const FilePath& basePath, const FilePath& partPath)
 	return basePath.GetAbsolutePathname().find(partPath.GetAbsolutePathname()) != std::string::npos;
 }
 
-bool ContainPath(const FilePath& basePath, const String & partPath)
+bool FilePath::ContainPath(const FilePath& basePath, const String & partPath)
 {
 	return basePath.GetAbsolutePathname().find(partPath) != std::string::npos;
 }
 
-bool ContainPath(const FilePath& basePath, const char * partPath)
+bool FilePath::ContainPath(const FilePath& basePath, const char * partPath)
 {
 	return ContainPath(basePath, String(partPath));
 }
@@ -447,7 +447,10 @@ String FilePath::GetRelativePathname(const char * forDirectory) const
 	return GetRelativePathname(FilePath(forDirectory));
 }
 
-    
+const String & FilePath::GetStringValue() const
+{
+    return absolutePathname;
+}
     
 void FilePath::ReplaceFilename(const String &filename)
 {
@@ -521,6 +524,8 @@ String FilePath::GetLastDirectoryName() const
     
 bool FilePath::IsEqualToExtension( const String & extension ) const
 {
+    DVASSERT(!extension.empty() && extension.at(0) != '*');
+    
 	String selfExtension = GetExtension();
 	return (CompareCaseInsensitive(extension, selfExtension) == 0);
 }

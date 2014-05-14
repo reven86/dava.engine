@@ -7,8 +7,6 @@ precision highp float;
 #define mediump
 #endif
 
-//#define TEXTURE0_SHIFT_ENABLED
-
 // INPUT ATTRIBUTES
 attribute vec4 inPosition;
 
@@ -52,24 +50,34 @@ uniform mat4 worldViewProjMatrix;
 uniform mat4 worldViewMatrix;
 #endif
 
-#if defined(VERTEX_LIT) || defined(PIXEL_LIT)
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
 uniform mat3 worldViewInvTransposeMatrix;
-uniform vec3 lightPosition0;
+uniform vec4 lightPosition0;
 uniform float lightIntensity0; 
 #endif
 
 #if defined(VERTEX_LIT)
 uniform float materialSpecularShininess;
+uniform float inSpecularity;
+uniform float inGlossiness;
+uniform float physicalFresnelReflectance;
+uniform vec3 metalFresnelReflectance;
 #endif
 
 #if defined(VERTEX_FOG)
     uniform float fogLimit;
+	varying float varFogFactor;
     #if !defined(FOG_LINEAR)
     uniform float fogDensity;
     #else
     uniform float fogStart;
     uniform float fogEnd;
     #endif
+
+	#if defined(FOG_GLOW)
+	uniform float fogGlowScattering;
+	varying float varFogGlowFactor;
+	#endif
 #endif
 
 #if defined(MATERIAL_LIGHTMAP)
@@ -104,18 +112,21 @@ varying vec2 varTexCoord2;
 
 #if defined(VERTEX_LIT)
 varying lowp float varDiffuseColor;
-varying lowp float varSpecularColor;
+
+    #if defined(BLINN_PHONG)
+    varying lowp float varSpecularColor;
+    #elif defined(NORMALIZED_BLINN_PHONG)
+    varying lowp vec3 varSpecularColor;
+    varying lowp float varNdotH;
+    #endif
 #endif
 
 #if defined(PIXEL_LIT)
-varying vec3 varLightVec;
+varying vec3 varLightPosition;
+varying vec3 varToLightVec;
 varying vec3 varHalfVec;
-varying vec3 varEyeVec;
+varying vec3 varToCameraVec;
 varying float varPerPixelAttenuation;
-#endif
-
-#if defined(VERTEX_FOG)
-varying float varFogFactor;
 #endif
 
 #if defined(SETUP_LIGHTMAP)
@@ -169,9 +180,59 @@ uniform vec3 perturbationPoint;
 uniform float perturbationForceDistance;
 #endif
 
+const float _PI = 3.141592654;
+
+float FresnelShlick(float NdotL, float Cspec)
+{
+	float fresnel_exponent = 5.0;
+	return Cspec + (1.0 - Cspec) * pow(1.0 - NdotL, fresnel_exponent);
+}
+
+vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
+{
+	float fresnel_exponent = 5.0;
+	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, fresnel_exponent));
+}
+
+#if defined(WAVE_ANIMATION)
+uniform float globalTime;
+#endif
+
+vec4 Wave(float time, vec4 pos, vec2 uv)
+{
+//	float time = globalTime;
+//	vec4 pos = inPosition;
+//	vec2 uv = inTexCoord0;
+#if 1
+    vec4 off;
+    float sinOff = pos.x + pos.y + pos.z;
+    float t = -time * 3.0;
+    float cos1 = cos(t * 1.45 + sinOff);
+    float cos2 = cos(t * 3.12 + sinOff);
+    float cos3 = cos(t * 2.2 + sinOff);
+    float fx= uv.x;
+    float fy= uv.x * uv.y;
+    
+    off.y = pos.y + cos2 * fx * 0.5 - fy * 0.9;
+    off.x = pos.x + cos1 * fx * 0.5;
+    off.z = pos.z + cos3 * fx * 0.5;
+    off.w = pos.w;
+#else
+    vec4 off;
+    float t = -time;
+    float sin2 = sin(4.0 * sqrt(uv.x + uv.x + uv.y * uv.y) + time);
+    
+    off.x = pos.x;// + cos1 * fx * 0.5;
+    off.y = pos.y + sin2 * 0.5;// - fy * 0.9;
+    off.z = pos.z;// + cos3 * fx * 0.5;
+    off.w = pos.w;
+#endif
+    
+    return off;
+}
 
 void main()
-{
+{	
 #if defined(MATERIAL_SKYBOX)
 	vec4 vecPos = (worldViewProjMatrix * inPosition);
 	gl_Position = vec4(vecPos.xy, vecPos.w - 0.0001, vecPos.w);
@@ -215,10 +276,10 @@ void main()
     
 	gl_Position = projMatrix * vec4(worldScale * (inPosition.xyz - inTangent) + worldViewTranslate, inPosition.w) + worldViewProjMatrix * vec4(inTangent, 0.0);
 #endif
-#else
-    
-    #if defined(MATERIAL_GRASS)
-    
+
+#elif defined(WAVE_ANIMATION)
+	gl_Position = worldViewProjMatrix * Wave(globalTime, inPosition, inTexCoord0);
+#elif defined(MATERIAL_GRASS)
         //inTangent.y - cluster type (0...3)
         //inTangent.z - cluster's reference density (0...15)
     
@@ -291,30 +352,31 @@ void main()
 
         gl_Position = worldViewProjMatrix * pos;
         varTexCoord1 = hUV;
-    
-    #else
-        gl_Position = worldViewProjMatrix * inPosition;
-    #endif
+#else
+	gl_Position = worldViewProjMatrix * inPosition;
 #endif
-
+    
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG) || defined(SPEED_TREE_LEAF)
 #if defined(MATERIAL_GRASS)
-    vec3 eyeCoordsPosition = vec3(worldViewMatrix * pos);
+    vec3 eyeCoordsPosition = vec3(worldViewMatrix * pos); // view direction in view space
 #else
-    vec3 eyeCoordsPosition = vec3(worldViewMatrix *  inPosition);
+    vec3 eyeCoordsPosition = vec3(worldViewMatrix * inPosition); // view direction in view space
 #endif
+#endif
+
+#if defined(VERTEX_LIT) || defined(PIXEL_LIT) || defined(VERTEX_FOG)
+    vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 #endif
 
 #if defined(VERTEX_LIT)
     vec3 normal = normalize(worldViewInvTransposeMatrix * inNormal); // normal in eye coordinates
-    vec3 lightDir = lightPosition0 - eyeCoordsPosition;
-    
+   
 #if defined(DISTANCE_ATTENUATION)
     float attenuation = lightIntensity0;
-    float distAttenuation = length(lightDir);
+    float distAttenuation = length(toLightDir);
     attenuation /= (distAttenuation * distAttenuation); // use inverse distance for distance attenuation
 #endif
-    lightDir = normalize(lightDir);
+    toLightDir = normalize(toLightDir);
     
 #if defined(REFLECTION)
     vec3 viewDirectionInWorldSpace = vec3(worldMatrix * inPosition) - cameraPosition;
@@ -322,60 +384,89 @@ void main()
     reflectionDirectionInWorldSpace = reflect(viewDirectionInWorldSpace, normalDirectionInWorldSpace);
 #endif
     
-    varDiffuseColor = max(0.0, dot(normal, lightDir));
+#if defined(BLINN_PHONG)
+    varDiffuseColor = max(0.0, dot(normal, toLightDir));
 
     // Blinn-phong reflection
-    vec3 E = normalize(-eyeCoordsPosition);
-    vec3 H = normalize(lightDir + E);
+    vec3 toCameraDir = normalize(-eyeCoordsPosition);
+    vec3 H = normalize(toLightDir + toCameraDir);
     float nDotHV = max(0.0, dot(normal, H));
-    
-    /*
-        Phong Reflection
-        vec3 E = normalize(-eyeCoordsPosition);
-        vec3 L = lightDir;
-        vec3 R = reflect(-L, normal);
-        float nDotHV = max(0.0, dot(E, R));
-    */
-    
     varSpecularColor = pow(nDotHV, materialSpecularShininess);
+    
+#elif defined(NORMALIZED_BLINN_PHONG)
+    vec3 toCameraNormalized = normalize(-eyeCoordsPosition);
+    vec3 H = normalize(toLightDir + toCameraNormalized);
+
+    float NdotL = max (dot (normal, toLightDir), 0.0);
+    float NdotH = max (dot (normal, H), 0.0);
+    float LdotH = max (dot (toLightDir, H), 0.0);
+    float NdotV = max (dot (normal, toCameraNormalized), 0.0);
+
+    //vec3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
+    vec3 fresnelOut = FresnelShlickVec3(NdotV, metalFresnelReflectance);
+    float specularity = inSpecularity;
+
+    float Dbp = NdotL;
+    float Geo = 1.0 / LdotH * LdotH;
+    
+	varDiffuseColor = NdotL / _PI;
+    
+    varSpecularColor = Dbp * Geo * fresnelOut * specularity;
+    varNdotH = NdotH;
+#endif
+
+    
 #endif
 
 #if defined(PIXEL_LIT)
 	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
 	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
 	vec3 b = cross (n, t);
-
-    vec3 lightDir = lightPosition0 - eyeCoordsPosition;
-    varPerPixelAttenuation = length(lightDir);
-    lightDir = normalize(lightDir);
+    
+#if defined(DISTANCE_ATTENUATION)
+    varPerPixelAttenuation = length(toLightDir);
+#endif
+    //lightDir = normalize(lightDir);
     
 	// transform light and half angle vectors by tangent basis
 	vec3 v;
-	v.x = dot (lightDir, t);
-	v.y = dot (lightDir, b);
-	v.z = dot (lightDir, n);
-	varLightVec = normalize (v);
+	v.x = dot (toLightDir, t);
+	v.y = dot (toLightDir, b);
+	v.z = dot (toLightDir, n);
+    
+#if !defined(FAST_NORMALIZATION)
+	varToLightVec = v;
+#else
+    varToLightVec = normalize(v);
+#endif
 
-    // eyeCoordsPosition = -eyeCoordsPosition;
-	// v.x = dot (eyeCoordsPosition, t);
-	// v.y = dot (eyeCoordsPosition, b);
-	// v.z = dot (eyeCoordsPosition, n);
-	// varEyeVec = normalize (v);
+    vec3 toCameraDir = -eyeCoordsPosition;
 
-    vec3 E = normalize(-eyeCoordsPosition);
-
-	/* Normalize the halfVector to pass it to the fragment shader */
-
+    v.x = dot (toCameraDir, t);
+	v.y = dot (toCameraDir, b);
+	v.z = dot (toCameraDir, n);
+#if !defined(FAST_NORMALIZATION)
+	varToCameraVec = v;
+#else
+    varToCameraVec = normalize(v);
+#endif
+    
+    /* Normalize the halfVector to pass it to the fragment shader */
 	// No need to divide by two, the result is normalized anyway.
-	// vec3 halfVector = normalize((E + lightDir) / 2.0); 
-	vec3 halfVector = normalize(E + lightDir);
+	// vec3 halfVector = normalize((E + lightDir) / 2.0);
+#if defined(FAST_NORMALIZATION)
+	vec3 halfVector = normalize(normalize(toCameraDir) + normalize(toLightDir));
 	v.x = dot (halfVector, t);
 	v.y = dot (halfVector, b);
 	v.z = dot (halfVector, n);
-
+    
 	// No need to normalize, t,b,n and halfVector are normal vectors.
-	//normalize (v);
 	varHalfVec = v;
+#endif
+
+//    varLightPosition.x = dot (lightPosition0.xyz, t);
+//    varLightPosition.y = dot (lightPosition0.xyz, b);
+//    varLightPosition.z = dot (lightPosition0.xyz, n);
     
 #if defined(REFLECTION)
     v.x = dot (eyeCoordsPosition, t);
@@ -396,10 +487,15 @@ void main()
     #if !defined(FOG_LINEAR)
         const float LOG2 = 1.442695;
         varFogFactor = exp2( -fogDensity * fogDensity * fogFragCoord * fogFragCoord *  LOG2);
-        varFogFactor = clamp(varFogFactor, 1.0 - fogLimit, 1.0);
+		varFogFactor = clamp(varFogFactor, 1.0 - fogLimit, 1.0);
     #else
         varFogFactor = 1.0 - clamp((fogFragCoord - fogStart) / (fogEnd - fogStart), 0.0, fogLimit);
     #endif
+	
+	#if defined(FOG_GLOW)
+		toLightDir = normalize(toLightDir);
+		varFogGlowFactor = pow(dot(toLightDir, normalize(eyeCoordsPosition)) * 0.5 + 0.5, fogGlowScattering);
+	#endif
 #endif
 
 #if defined(VERTEX_COLOR)
@@ -431,5 +527,6 @@ void main()
 #if defined(FRAME_BLEND)
 	varTime = inTime;
 #endif
+
 
 }

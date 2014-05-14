@@ -31,30 +31,25 @@
 #include "Commands2/RemoveComponentCommand.h"
 #include "DAVAEngine.h"
 
-RemoveComponentCommand::RemoveComponentCommand(DAVA::Entity* _entity, DAVA::Component * component)
+RemoveComponentCommand::RemoveComponentCommand(DAVA::Entity* _entity, DAVA::Component * _component)
 	: Command2(CMDID_COMPONENT_REMOVE, "Remove Component")
     , entity(_entity)
+    , component(_component)
     , backup(NULL)
-    , componentType(-1)
 {
 	DVASSERT(entity);
-	DVASSERT(component);
-
-    componentType = component->GetType();
+    DVASSERT(component);
 }
 
 RemoveComponentCommand::~RemoveComponentCommand()
 {
-	SafeDelete(backup);
+    DAVA::SafeDelete(backup);
 }
 
 void RemoveComponentCommand::Redo()
 {
-    const DAVA::uint32 nComponents = entity->GetComponentCount(componentType);
-    DAVA::Component * component = entity->GetComponent(componentType, nComponents - 1);
-    DVASSERT(component);
-    backup = component->Clone(entity);
-	entity->RemoveComponent(component);
+    backup = component;
+    entity->DetachComponent(component);
 }
 
 void RemoveComponentCommand::Undo()

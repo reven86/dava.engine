@@ -38,6 +38,8 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "FramePathHelper.h"
 #include "Utils/StringFormat.h"
+#include "Render/PixelFormatDescriptor.h"
+
 
 #ifdef WIN32
 #define snprintf _snprintf
@@ -46,9 +48,49 @@
 namespace DAVA
 {
 
+static Set<PixelFormat> InitPixelFormatsWithCompression()
+{
+    Set<PixelFormat> set;
+    set.insert(FORMAT_PVR4);
+    set.insert(FORMAT_PVR2);
+    set.insert(FORMAT_DXT1);
+    set.insert(FORMAT_DXT1A);
+    set.insert(FORMAT_DXT3);
+    set.insert(FORMAT_DXT5);
+    set.insert(FORMAT_DXT5NM);
+    set.insert(FORMAT_ETC1);
+    set.insert(FORMAT_ATC_RGB);
+    set.insert(FORMAT_ATC_RGBA_EXPLICIT_ALPHA);
+    set.insert(FORMAT_ATC_RGBA_INTERPOLATED_ALPHA);
+	set.insert(FORMAT_PVR2_2);
+	set.insert(FORMAT_PVR4_2);
+	set.insert(FORMAT_EAC_R11_UNSIGNED);
+	set.insert(FORMAT_EAC_R11_SIGNED);
+	set.insert(FORMAT_EAC_RG11_UNSIGNED);
+	set.insert(FORMAT_EAC_RG11_SIGNED);
+	set.insert(FORMAT_ETC2_RGB);
+	set.insert(FORMAT_ETC2_RGBA);
+	set.insert(FORMAT_ETC2_RGB_A1);
+
+    return set;
+}
+
+const Set<PixelFormat> TexturePacker::PIXEL_FORMATS_WITH_COMPRESSION = InitPixelFormatsWithCompression();
+
 TexturePacker::TexturePacker()
 {
-	maxTextureSize = TEXTURE_SIZE;
+	quality = TextureConverter::ECQ_VERY_HIGH;
+	if (CommandLineParser::Instance()->IsFlagSet("--quality"))
+	{
+		String qualityName = CommandLineParser::Instance()->GetParamForFlag("--quality");
+		int32 q = atoi(qualityName.c_str());
+		if((q >= TextureConverter::ECQ_FASTEST) && (q <= TextureConverter::ECQ_VERY_HIGH))
+		{
+			quality = (TextureConverter::eConvertQuality)q;
+		}
+	}
+    
+	maxTextureSize = DEFAULT_TEXTURE_SIZE;
 	onlySquareTextures = false;
 	errors.clear();
 }
@@ -146,13 +188,13 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 
 		
 		// try to pack for each resolution
-		int bestResolution = (maxTextureSize + 1) * (maxTextureSize + 1);
-		int bestXResolution, bestYResolution;
+		uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
+		uint32 bestXResolution, bestYResolution;
 		
         Logger::FrameworkDebug("* Packing tries started: ");
 		
-		for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
-			for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
+		for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
+			for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
 			{
 				Rect2i textureRect = Rect2i(0, 0, xResolution, yResolution);
 				
@@ -167,7 +209,7 @@ void TexturePacker::PackToTexturesSeparate(const FilePath & excludeFolder, const
 
         Logger::FrameworkDebug("");
         
-		if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
+		if (bestResolution != (maxTextureSize) * (maxTextureSize))
 		{
 			char textureNameWithIndex[50];
 			sprintf(textureNameWithIndex, "texture%d", textureIndex++);
@@ -228,14 +270,14 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 	std::sort(sortVector.begin(), sortVector.end(), sortFn);
 
 	// try to pack for each resolution
-	int bestResolution = (maxTextureSize + 1) * (maxTextureSize + 1);
-	int bestXResolution, bestYResolution;
+	uint32 bestResolution = (maxTextureSize) * (maxTextureSize);
+	uint32 bestXResolution = 0, bestYResolution = 0;
 	
     Logger::FrameworkDebug("* Packing tries started: ");
 	
     bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
-	for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
-		 for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
+	for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
+		 for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
 		 {
 			 if (needOnlySquareTexture && (xResolution != yResolution))continue;
 			 
@@ -251,7 +293,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 		 }
     Logger::FrameworkDebug("\n");
 
-	if (bestResolution != (maxTextureSize + 1) * (maxTextureSize + 1))
+	if (bestResolution != (maxTextureSize) * (maxTextureSize))
 	{
 		FilePath textureName = outputPath + "texture";
         Logger::FrameworkDebug("* Writing final texture (%d x %d): %s", bestXResolution, bestYResolution , textureName.GetAbsolutePathname().c_str());
@@ -301,7 +343,7 @@ void TexturePacker::PackToTextures(const FilePath & excludeFolder, const FilePat
 
 void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const FilePath & outputPath, List<DefinitionFile*> & defList, eGPUFamily forGPU)
 {
-	if (defList.size() != 1)
+	if (defList.size() == 1)
 	{
 		AddError(Format("* ERROR: Failed to pack to multiple textures for path - %s.", outputPath.GetAbsolutePathname().c_str()));
 	}
@@ -330,8 +372,8 @@ void TexturePacker::PackToMultipleTextures(const FilePath & excludeFolder, const
 		Vector<SizeSortItem> newWorkVector;
 		
         bool needOnlySquareTexture = onlySquareTextures || NeedSquareTextureForCompression(forGPU);
-		for (int yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
-			for (int xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
+		for (uint32 yResolution = 8; yResolution <= maxTextureSize; yResolution *= 2)
+			for (uint32 xResolution = 8; xResolution <= maxTextureSize; xResolution *= 2)
 			{
 				if (needOnlySquareTexture && (xResolution != yResolution))continue;
 				
@@ -570,7 +612,6 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 		{
 			Rect2i origRect = defFile->frameRects[frame];
 			Rect2i writeRect = ReduceRectToOriginalSize(*destRect);
-			fprintf(fp, "%d %d %d %d %d %d %d\n", writeRect.x, writeRect.y, writeRect.dx, writeRect.dy, origRect.x, origRect.y, packerIndex);
 			WriteDefinitionString(fp, writeRect, origRect, packerIndex);
 
             if(!CheckFrameSize(Size2i(defFile->spriteWidth, defFile->spriteHeight), writeRect.GetSize()))
@@ -604,7 +645,7 @@ void TexturePacker::UseOnlySquareTextures()
 	onlySquareTextures = true;
 }
 
-void TexturePacker::SetMaxTextureSize(int32 _maxTextureSize)
+void TexturePacker::SetMaxTextureSize(uint32 _maxTextureSize)
 {
 	maxTextureSize = _maxTextureSize;
 }
@@ -621,7 +662,7 @@ void TexturePacker::ExportImage(PngImageExt *image, const FilePath &exportedPath
     eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
     if(gpuFamily != GPU_UNKNOWN)
     {
-		TextureConverter::ConvertTexture(*descriptor, gpuFamily, false);
+		TextureConverter::ConvertTexture(*descriptor, gpuFamily, false, quality);
         
         FileSystem::Instance()->DeleteFile(exportedPathname);
     }
@@ -632,14 +673,14 @@ void TexturePacker::ExportImage(PngImageExt *image, const FilePath &exportedPath
 
 TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
 {
-    TextureDescriptor *descriptor = new TextureDescriptor();
+    TextureDescriptor *descriptor = new TextureDescriptor(true);
 
-    descriptor->settings.wrapModeS = descriptor->settings.wrapModeT = GetDescriptorWrapMode();
-    descriptor->settings.generateMipMaps = CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps"));
+    descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = GetDescriptorWrapMode();
+    descriptor->SetGenerateMipmaps(CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps")));
 	
-	TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->settings.generateMipMaps == TextureDescriptor::OPTION_ENABLED);
-	descriptor->settings.minFilter = ftItem.minFilter;
-	descriptor->settings.magFilter = ftItem.magFilter;
+	TexturePacker::FilterItem ftItem = GetDescriptorFilter(descriptor->GetGenerateMipMaps());
+	descriptor->drawSettings.minFilter = ftItem.minFilter;
+	descriptor->drawSettings.magFilter = ftItem.magFilter;
 	
     if(forGPU == GPU_UNKNOWN)   // not need compression
         return descriptor;
@@ -650,13 +691,16 @@ TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
     if(CommandLineParser::Instance()->IsFlagSet(gpuNameFlag))
     {
 		String formatName = CommandLineParser::Instance()->GetParamForFlag(gpuNameFlag);
-		PixelFormat format = Texture::GetPixelFormatByName(formatName);
+		PixelFormat format = PixelFormatDescriptor::GetPixelFormatByName(FastName(formatName.c_str()));
 
 		// Additional check whether this format type is accepted for this GPU.
 		if (IsFormatSupportedForGPU(format, forGPU))
 		{
-			descriptor->exportedAsPixelFormat = format;
-			descriptor->compression[forGPU].format = format;
+			descriptor->format = format;
+
+			DVASSERT(descriptor->compression);
+			descriptor->compression[forGPU]->format = format;
+
 		}
 		else
 		{
@@ -737,11 +781,19 @@ TexturePacker::FilterItem TexturePacker::GetDescriptorFilter(bool generateMipMap
     
 bool TexturePacker::NeedSquareTextureForCompression(eGPUFamily forGPU)
 {
-    if(forGPU == GPU_UNKNOWN)   // not need compression
-        return false;
-    
-    const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(forGPU);
-    return (CommandLineParser::Instance()->IsFlagSet(gpuNameFlag));
+    if(forGPU != GPU_UNKNOWN)
+    {
+        const String gpuNameFlag = "--" + GPUFamilyDescriptor::GetGPUName(forGPU);
+        if(CommandLineParser::Instance()->IsFlagSet(gpuNameFlag))
+        {
+            String formatName = CommandLineParser::Instance()->GetParamForFlag(gpuNameFlag);
+            PixelFormat format = PixelFormatDescriptor::GetPixelFormatByName(FastName(formatName));
+            bool result = PIXEL_FORMATS_WITH_COMPRESSION.count(format) > 0;
+            return result;
+        }
+    }
+
+    return false;
 }
 
 bool TexturePacker::IsFormatSupportedForGPU(PixelFormat format, eGPUFamily forGPU)
@@ -797,6 +849,12 @@ const Set<String>& TexturePacker::GetErrors() const
 {
 	return errors;
 }
+    
+void TexturePacker::SetConvertQuality(TextureConverter::eConvertQuality _quality)
+{
+    quality = _quality;
+}
+
 
 void TexturePacker::AddError(const String& errorMsg)
 {

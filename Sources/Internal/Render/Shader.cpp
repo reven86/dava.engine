@@ -52,7 +52,7 @@ GLuint Shader::activeProgram = 0;
 Shader::Shader()
 : RenderResource()
 {
-    DVASSERT(RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_2_0 || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL);
+    DVASSERT(RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_2_0 || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL || RenderManager::Instance()->GetRenderer() == Core::RENDERER_OPENGL_ES_3_0);
     
     vertexShader = 0;
     fragmentShader = 0;
@@ -236,6 +236,8 @@ const char * Shader::GetUniformTypeSLName(eUniformType type)
 
 void Shader::ClearLastBindedCaches()
 {
+    //Logger::FrameworkDebug("Frame reset");
+
     for (uint32 k = 0; k < autobindUniformCount; ++k)
     {
         Uniform * currentUniform = autobindUniforms[k];
@@ -270,6 +272,11 @@ void Shader::SetDefines(const String & _defines)
    
 Shader::~Shader()
 {
+    ReleaseShaderData();
+}
+
+void Shader::ReleaseShaderData()
+{
     SafeDeleteArray(attributeNames);
     //SafeDeleteArray(uniforms);
     SafeDeleteArray(uniformOffsets);
@@ -279,6 +286,15 @@ Shader::~Shader()
     SafeRelease(fragmentShaderData);
     
     DeleteShaders();
+
+    activeAttributes = 0;
+    activeUniforms = 0;
+    
+    SafeDeleteArray(autobindUniforms);
+    autobindUniformCount = 0;
+    
+    for (int32 ki = 0; ki < VERTEX_FORMAT_STREAM_MAX_COUNT; ++ki)
+        vertexFormatAttribIndeces[ki] = -1;
 }
 
 bool Shader::IsReady()
@@ -304,13 +320,13 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     
     if (!CompileShader(&vertexShader, GL_VERTEX_SHADER, vertexShaderDataSize, (GLchar*)vertexShaderDataStart, shaderDefines))
     {
-        Logger::Error("Failed to compile vertex shader: %s", assetName.c_str());
+        Logger::Error("Failed to compile vertex shader: %s defines: %s", assetName.c_str(), shaderDefines.c_str());
         return;
     }
     
     if (!CompileShader(&fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderDataSize, (GLchar*)fragmentShaderDataStart, shaderDefines))
     {
-        Logger::Error("Failed to compile fragment shader: %s", assetName.c_str());
+        Logger::Error("Failed to compile fragment shader: %s defines:%s", assetName.c_str(), shaderDefines.c_str());
         return ;
     }
     
@@ -329,6 +345,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &activeAttributes));
     
     char attributeName[512];
+    DVASSERT(attributeNames == NULL);
     attributeNames = new FastName[activeAttributes];
     for (int32 k = 0; k < activeAttributes; ++k)
     {
@@ -394,7 +411,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         
         if(IsAutobindUniform(shaderSemantic))
         {
-            //Logger::FrameworkDebug(Format("%s %d", attrName.c_str(), shaderSemantic).c_str());
+            Logger::FrameworkDebug(Format("Autobind: %s %d", attrName.c_str(), shaderSemantic).c_str());
             autobindUniformCount++;
         }
         
@@ -888,33 +905,44 @@ GLint Shader::LinkProgram(GLuint prog)
 
 void Shader::DeleteShaders()
 {
-DVASSERT(vertexShader != 0);  
-DVASSERT(fragmentShader != 0);
-DVASSERT(program != 0);
+    //DVASSERT(vertexShader != 0);
+    //DVASSERT(fragmentShader != 0);
+    //DVASSERT(program != 0);
 
-DeleteShaderContainer * container = new DeleteShaderContainer();
-container->program = program;
-container->vertexShader = vertexShader;
-container->fragmentShader = fragmentShader;
-ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::DeleteShadersInternal, container));
+    DeleteShaderContainer * container = new DeleteShaderContainer();
+    container->program = program;
+    container->vertexShader = vertexShader;
+    container->fragmentShader = fragmentShader;
+    ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Shader::DeleteShadersInternal, container));
 
-vertexShader = 0;
-fragmentShader = 0;
-program = 0;
+    vertexShader = 0;
+    fragmentShader = 0;
+    program = 0;
 }
 
 void Shader::DeleteShadersInternal(BaseObject * caller, void * param, void *callerData)
 {
-DeleteShaderContainer * container = (DeleteShaderContainer*) param;
-DVASSERT(container);
+    DeleteShaderContainer * container = (DeleteShaderContainer*) param;
+    DVASSERT(container);
 
-RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
-RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
-RENDER_VERIFY(glDeleteShader(container->vertexShader));
-RENDER_VERIFY(glDeleteShader(container->fragmentShader));
-RENDER_VERIFY(glDeleteProgram(container->program));
+    if (container->program)
+    {
+        RENDER_VERIFY(glDetachShader(container->program, container->vertexShader));
+        RENDER_VERIFY(glDetachShader(container->program, container->fragmentShader));
+        RENDER_VERIFY(glDeleteProgram(container->program));
+    }
+    
+    if(container->vertexShader)
+    {
+        RENDER_VERIFY(glDeleteShader(container->vertexShader));
+    }
 
-SafeDelete(container);
+    if(container->fragmentShader)
+    {
+        RENDER_VERIFY(glDeleteShader(container->fragmentShader));
+    }
+
+    SafeDelete(container);
 }
 
 /* Create and compile a shader from the provided source(s) */
@@ -984,6 +1012,7 @@ void Shader::Bind()
 {
     if (activeProgram != program)
     {
+        //Logger::FrameworkDebug(Format("Bind: %d", program).c_str());
         RENDERER_UPDATE_STATS(shaderBindCount++);
         RENDER_VERIFY(glUseProgram(program));
         activeProgram = program;
@@ -1153,16 +1182,27 @@ void Shader::BindDynamicParameters()
             case PARAM_CAMERA_POS:
             case PARAM_CAMERA_DIR:
             case PARAM_CAMERA_UP:
+            case PARAM_LIGHT0_COLOR:
+            case PARAM_LIGHT0_AMBIENT_COLOR:
             {
                 pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
                 if (_updateSemantic != currentUniform->updateSemantic)
                 {
                     RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
-                    
-                    Vector3 * camParam = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
-                    //RENDER_VERIFY(glUniform3fv(currentUniform->location, 1, (float*)camParam));
-                    SetUniformValueByUniform(currentUniform, *camParam);
-
+                    Vector3 * param = (Vector3*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
+            case PARAM_LIGHT0_POSITION:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    RENDERER_UPDATE_STATS(dynamicParamUniformBindCount++);
+                    Vector4 * param = (Vector4*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
                     currentUniform->updateSemantic = _updateSemantic;
                 }
                 break;
@@ -1174,6 +1214,7 @@ void Shader::BindDynamicParameters()
                 SetUniformColor4ByUniform(currentUniform, c);
                 break;
             }
+            
             case PARAM_GLOBAL_TIME:
             {
                 if (currentUniform->updateSemantic != Core::Instance()->GetGlobalFrameIndex())
@@ -1217,7 +1258,7 @@ void Shader::Dump()
     }
 }
 
-Shader * Shader::CompileShader(const FastName & assetName,
+Shader * Shader::CreateShader(const FastName & assetName,
                                Data * vertexShaderData,
                                Data * fragmentShaderData,
                                uint8 * vertexShaderDataStart,
@@ -1243,11 +1284,28 @@ Shader * Shader::CompileShader(const FastName & assetName,
         result += Format("#define %s\n", fname.c_str());
     }
     shader->SetDefines(result);
-    
-    shader->Recompile();
-    return shader;
+
+	return shader;
 }
 
+void Shader::Reload(DAVA::Data *vertexShaderData,
+                    DAVA::Data *fragmentShaderData,
+                    uint8 *vertexShaderDataStart,
+                    uint32 vertexShaderDataSize,
+                    uint8 *fragmentShaderDataStart,
+                    uint32 fragmentShaderDataSize)
+{
+    ReleaseShaderData();
+    
+    this->vertexShaderData = SafeRetain(vertexShaderData);
+    this->fragmentShaderData = SafeRetain(fragmentShaderData);
+    this->vertexShaderDataStart = vertexShaderDataStart;
+    this->vertexShaderDataSize = vertexShaderDataSize;
+    this->fragmentShaderDataStart = fragmentShaderDataStart;
+    this->fragmentShaderDataSize = fragmentShaderDataSize;
+}
+
+    
 //void Shader::RequestAsset()
 //{
 //    //ShaderCache *

@@ -40,8 +40,21 @@ namespace DAVA
 	class TextureConverter
 	{
 	public:
+
+        enum eConvertQuality
+        {
+            ECQ_FASTEST        =   0,
+            ECQ_FAST,
+            ECQ_NORMAL,
+            ECQ_HIGH,
+            ECQ_VERY_HIGH,
+            
+            ECQ_COUNT,
+            ECQ_DEFAULT = ECQ_VERY_HIGH
+        };
+
 		
-		static FilePath ConvertTexture(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, bool updateAfterConversion);
+		static FilePath ConvertTexture(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, bool updateAfterConversion, eConvertQuality quality);
 		static bool CleanupOldTextures(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily forGPU, const DAVA::PixelFormat format);
 		static FilePath GetOutputPath(const TextureDescriptor &descriptor, eGPUFamily gpuFamily);
 		

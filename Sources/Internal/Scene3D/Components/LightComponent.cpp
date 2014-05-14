@@ -146,16 +146,6 @@ void LightComponent::SetDiffuseColor(const Color & _color)
     }
 }
 
-void LightComponent::SetSpecularColor(const Color & _color)
-{
-    if(light)
-    {
-        light->SetSpecularColor(_color);
-        
-        NotifyRenderSystemLightChanged();
-    }
-}
-
 void LightComponent::SetIntensity(const float32& intensity)
 {
     if(light)
@@ -194,17 +184,6 @@ const Color LightComponent::GetDiffuseColor()
     }
     
     return Color();
-}
-
-const Color LightComponent::GetSpecularColor()
-{
-    if(light)
-    {
-        return light->GetSpecularColor();
-    }
-    
-    return Color();
-
 }
 
 const float32 LightComponent::GetIntensity()

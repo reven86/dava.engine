@@ -100,7 +100,8 @@ void TransformSystem::FindNodeThatRequireUpdate(Entity * entity)
         {
             TransformAllChildEntities(entity);
         }
-        else{
+        else
+        {
             entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE | Entity::TRANSFORM_DIRTY);
             
             // We already marked all children as non-dirty if we entered to TransformAllChildEntities()

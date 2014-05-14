@@ -154,7 +154,7 @@ public:
     virtual void SetRenderSystem(RenderSystem * renderSystem);
 	RenderSystem * GetRenderSystem();
 
-	virtual void BakeTransform(const Matrix4 & transform);
+	virtual void BakeGeometry(const Matrix4 & transform);
 
 	virtual void RecalculateWorldBoundingBox();
     
@@ -162,16 +162,19 @@ public:
     inline void SetStaticOcclusionIndex(uint16 index);
 	virtual void PrepareToRender(Camera *camera); //objects passed all tests and is going to be rendered this frame - by default calculates final matrix	
 
-	void SetLodIndex(int32 lodIndex);
-	void SetSwitchIndex(int32 switchIndex);
+	void SetLodIndex(const int32 lodIndex);
+	void SetSwitchIndex(const int32 switchIndex);
+    int32 GetLodIndex() const;
+    int32 GetSwitchIndex() const;
     int32 GetMaxLodIndex() const;
+    int32 GetMaxLodIndexForSwitchIndex(int32 forSwitchIndex) const;
     int32 GetMaxSwitchIndex() const;
 
 	uint8 startClippingPlane;
 
-	inline bool GetReflectionVisible();
+	inline bool GetReflectionVisible() const;
 	inline void SetReflectionVisible(bool visible);
-    inline bool GetRefractionVisible();
+    inline bool GetRefractionVisible() const;
     inline void SetRefractionVisible(bool visible);
     
     virtual void GetDataNodes(Set<DataNode*> & dataNodes);
@@ -229,8 +232,8 @@ public:
         MEMBER(bbox, "Box", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(worldBBox, "World Box", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(worldTransform, "World Transform", I_SAVE | I_VIEW | I_EDIT)
-		MEMBER(lodIndex, "Lod Index", I_VIEW | I_EDIT)
-		MEMBER(switchIndex, "Switch Index", I_VIEW | I_EDIT)
+		PROPERTY("lodIndex", "Lod Index", GetLodIndex, SetLodIndex, I_VIEW | I_EDIT)
+		PROPERTY("switchIndex", "Switch Index", GetSwitchIndex, SetSwitchIndex, I_VIEW | I_EDIT)
 
 		PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
         PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
@@ -333,7 +336,7 @@ inline void RenderObject::SetStaticOcclusionIndex(uint16 _index)
     staticOcclusionIndex = _index;
 }
 
-inline bool RenderObject::GetReflectionVisible(){return (flags&VISIBLE_REFLECTION) == VISIBLE_REFLECTION;}
+inline bool RenderObject::GetReflectionVisible() const {return (flags&VISIBLE_REFLECTION) == VISIBLE_REFLECTION;}
 inline void RenderObject::SetReflectionVisible(bool visible)
 {
 	if (visible)
@@ -342,7 +345,7 @@ inline void RenderObject::SetReflectionVisible(bool visible)
 		flags&= ~VISIBLE_REFLECTION;
 }
 
-inline bool RenderObject::GetRefractionVisible(){return (flags&VISIBLE_REFRACTION) == VISIBLE_REFRACTION;}
+inline bool RenderObject::GetRefractionVisible() const {return (flags&VISIBLE_REFRACTION) == VISIBLE_REFRACTION;}
 inline void RenderObject::SetRefractionVisible(bool visible)
 {
     if (visible)

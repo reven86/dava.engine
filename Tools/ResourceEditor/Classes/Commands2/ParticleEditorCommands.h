@@ -219,6 +219,7 @@ public:
 	CommandUpdateParticleLayer(ParticleEmitter* emitter, ParticleLayer* layer);
 	void Init(const String& layerName,
 			  ParticleLayer::eType layerType,
+              ParticleLayer::eDegradeStrategy degradeStrategy,
 			  bool isDisabled,			  
 			  bool inheritPosition,
   			  bool isLong,
@@ -274,6 +275,7 @@ protected:
 
 	String layerName;
 	ParticleLayer::eType layerType;
+    ParticleLayer::eDegradeStrategy degradeStrategy;
 	bool isDisabled;
 	bool isLong;	
 	float32 scaleVelocityBase;

@@ -169,6 +169,7 @@ public:
 		Vector2 texCoord;
 #ifdef LANDSCAPE_SPECULAR_LIT
 		Vector3 normal;
+        Vector3 tangent;
 #endif
 	};
     
@@ -257,11 +258,11 @@ public:
 	
 	void SetHeightmapPathname(const FilePath & newPath);
 	
-	float32 GetLandscapeSize();
+	float32 GetLandscapeSize() const;
 	
 	void SetLandscapeSize(float32 newSize);
 
-	float32 GetLandscapeHeight();
+	float32 GetLandscapeHeight() const;
 	
 	void SetLandscapeHeight(float32 newHeight);
     

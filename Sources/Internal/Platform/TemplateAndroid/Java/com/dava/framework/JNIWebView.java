@@ -103,6 +103,9 @@ public class JNIWebView {
 				}
 			};
 			
+			if (url.contains("code"))
+				Log.d("shouldOverrideUrlLoading", url);
+			
 			FutureTask<Integer> task = new FutureTask<Integer>(urlChanged);
 			
 			JNIActivity.GetActivity().PostEventToGL(task);

@@ -26,68 +26,90 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
 #ifndef __RESOURCEEDITORQT__SETTINGS_MANAGER__
 #define __RESOURCEEDITORQT__SETTINGS_MANAGER__
 
 #include <QObject>
 #include "DAVAEngine.h"
 #include "FileSystem/VariantType.h"
-#include "../StringConstants.h"
 
-struct SettingRow
+namespace Settings
 {
-	DAVA::String key;
-	DAVA::VariantType defValue;
+    static const char Delimiter('/');
 
-	SettingRow(const char* _key,const DAVA::VariantType& _defaultValue)
-	{
-		key = _key;
-		defValue  = _defaultValue;
-	}
+    static const DAVA::FastName General_DesinerName("General/DesignerName");
+    static const DAVA::FastName General_RecentFilesCount("General/RecentFilesCount");
+	static const DAVA::FastName General_PreviewEnabled("General/PreviewEnabled");
+    static const DAVA::FastName General_CompressionQuality("General/CompressionQuality");
+
+    static const DAVA::FastName General_MaterialEditor_SwitchColor0("General/MaterialEditor/SwitchColor0");
+    static const DAVA::FastName General_MaterialEditor_SwitchColor1("General/MaterialEditor/SwitchColor1");
+    static const DAVA::FastName General_MaterialEditor_LodColor0("General/MaterialEditor/LodColor0");
+    static const DAVA::FastName General_MaterialEditor_LodColor1("General/MaterialEditor/LodColor1");
+    static const DAVA::FastName General_MaterialEditor_LodColor2("General/MaterialEditor/LodColor2");
+    static const DAVA::FastName General_MaterialEditor_LodColor3("General/MaterialEditor/LodColor3");
+    
+	static const DAVA::FastName Scene_GridStep("Scene/GridStep");
+	static const DAVA::FastName Scene_GridSize("Scene/GridSize");
+	static const DAVA::FastName Scene_CameraSpeed0("Scene/CameraSpeed0");
+	static const DAVA::FastName Scene_CameraSpeed1("Scene/CameraSpeed1");
+	static const DAVA::FastName Scene_CameraSpeed2("Scene/CameraSpeed2");
+	static const DAVA::FastName Scene_CameraSpeed3("Scene/CameraSpeed3");
+	static const DAVA::FastName Scene_CameraFOV("Scene/CameraFOV");
+    static const DAVA::FastName Scene_SelectionSequent("Scene/SelectionSequent");
+    static const DAVA::FastName Scene_SelectionDrawMode("Scene/SelectionDrawMode");
+    static const DAVA::FastName Scene_CollisionDrawMode("Scene/CollisionDrawMode");
+    static const DAVA::FastName Scene_GizmoScale("Scene/GizmoScale");
+    static const DAVA::FastName Scene_DebugBoxScale("Scene/DebugBoxScale");
+    static const DAVA::FastName Scene_DebugBoxUserScale("Scene/DebugBoxUserScale");
+    static const DAVA::FastName Scene_DebugBoxParticleScale("Scene/DebugBoxParticleScale");
+    
+    // this settings won't be shown in settings dialog
+    // and are used only by application
+    static const DAVA::FastName InternalGroup("Internal");
+    static const DAVA::FastName Internal_TextureViewGPU("Internal/TextureViewGPU");
+	static const DAVA::FastName Internal_LastProjectPath("Internal/LastProjectPath");
+	static const DAVA::FastName Internal_EditorVersion("Internal/EditorVersion");
+	static const DAVA::FastName Internal_CubemapLastFaceDir("Internal/CubemapLastFaceDir");
+	static const DAVA::FastName Internal_CubemapLastProjDir("Internal/CubemapLastProjDir");
+	static const DAVA::FastName Internal_RecentFiles("Internal/RecentFiles");
+    static const DAVA::FastName Internal_MaterialsLightViewMode("Internal/MaterialsLightViewMode");
+    static const DAVA::FastName Internal_MaterialsShowLightmapCanvas("Internal/MaterialsShowLightmapCanvas");
+    static const DAVA::FastName Internal_LicenceAccepted("Internal/LicenceAccepted");
 };
 
-extern const SettingRow SETTINGS_GROUP_GENERAL_MAP[];
-
-extern const SettingRow SETTINGS_GROUP_DEFAULT_MAP[];
-
-extern const SettingRow SETTINGS_GROUP_INTERNAL_MAP[];
+struct SettingsNode
+{
+    DAVA::VariantType value;
+    DAVA::InspDesc desc;
+};
 
 class SettingsManager: public DAVA::Singleton<SettingsManager>
 {
 public:
-
-	enum eSettingsGroups
-	{
-		GENERAL = 0,
-		DEFAULT,
-		INTERNAL,
-
-		GROUPS_COUNT
-	};
-	
 	SettingsManager();
-
 	~SettingsManager();
 
-	DAVA::KeyedArchive* GetSettingsGroup(eSettingsGroups group);
+    static DAVA::VariantType GetValue(const DAVA::FastName& path);
+	static void SetValue(const DAVA::FastName& path, const DAVA::VariantType &value);
 
-	DAVA::VariantType GetValue(const DAVA::String& _name, eSettingsGroups group) const;
+    static DAVA::VariantType GetValue(const DAVA::String& path) { return GetValue(DAVA::FastName(path)); }
+    static void SetValue(const DAVA::String& path, const DAVA::VariantType &value) { SetValue(DAVA::FastName(path), value); } 
 
-	void SetValue(const DAVA::String& _name, const DAVA::VariantType& _value, eSettingsGroups group);
+    static size_t GetSettingsCount();
+    static DAVA::FastName GetSettingsName(size_t index);
+    static SettingsNode* GetSettingsNode(const DAVA::FastName &name);
 
-	DAVA::String GetNameOfGroup(eSettingsGroups group) const;
+    static void ResetToDefault();
 
-private:
+protected:
+    DAVA::Vector<DAVA::FastName> settingsOrder;
+    DAVA::FastNameMap<SettingsNode> settingsMap;
 
-	void Save();
-
+    void Init();
+    void Save();
 	void Load();
-
-	void InitSettingsGroup(eSettingsGroups groupID, const SettingRow* groupMap, DAVA::uint32 mapSize);
-	
-	DAVA::KeyedArchive* settings;
+    void CreateValue(const DAVA::FastName& path, const DAVA::VariantType &defaultValue, const DAVA::InspDesc &description = DAVA::InspDesc(""));
 };
 
 #endif /* defined(__RESOURCEEDITORQT__SETTINGS_MANAGER__) */

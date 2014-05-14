@@ -97,8 +97,6 @@ protected:
 	FMOD::Sound * fmodSound;
 	FMOD::ChannelGroup * fmodInstanceGroup;
 
-    uint8 * soundData;
-
 friend class SoundSystem;
 };
 

@@ -51,6 +51,9 @@ public slots:
     // Emitted by Controller when Properties Grid is updated.
     void OnPropertiesGridUpdated();
     
+    // Emitted by Controller when no UI Controls selected.
+    void OnUIControlsDeselected();
+
 protected:
     // Connect/disconnect to the signals.
     void ConnectToSignals();
@@ -66,6 +69,9 @@ protected:
     
     // Cleanup the existing Properties Grid.
     void CleanupPropertiesGrid();
+
+    // Build the custom Properties Grid for items which aren't bound to any UI Control.
+    void BuildCustomPropertiesGrid(HierarchyTreeScreenNode* activeScreenNode);
 
     // Work with Active Metadata.
     BaseMetadata* GetActiveMetadata(const HierarchyTreeNode* activeTreeNode);

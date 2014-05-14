@@ -40,6 +40,7 @@
 #include "Render/ImageLoader.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
+#include "Render/PixelFormatDescriptor.h"
 
 #ifdef __DAVAENGINE_OPENGL__
 
@@ -145,7 +146,9 @@ void RenderManager::DetectRenderingCapabilities()
 
 #if defined(__DAVAENGINE_IPHONE__)
     caps.isPVRTCSupported = IsGLExtensionSupported("GL_IMG_texture_compression_pvrtc");
+	caps.isPVRTC2Supported = IsGLExtensionSupported("GL_IMG_texture_compression_pvrtc2");
     caps.isETCSupported = false;
+
 	caps.isDXTSupported = false;
     caps.isBGRA8888Supported = IsGLExtensionSupported("GL_APPLE_texture_format_BGRA8888");
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
@@ -154,7 +157,9 @@ void RenderManager::DetectRenderingCapabilities()
 #elif defined(__DAVAENGINE_ANDROID__)
     //TODO: added correct
     caps.isPVRTCSupported = IsGLExtensionSupported("GL_IMG_texture_compression_pvrtc");
+	caps.isPVRTC2Supported = IsGLExtensionSupported("GL_IMG_texture_compression_pvrtc2");
     caps.isETCSupported = IsGLExtensionSupported("GL_OES_compressed_ETC1_RGB8_texture");
+
 	caps.isDXTSupported = IsGLExtensionSupported("GL_EXT_texture_compression_s3tc");
     caps.isBGRA8888Supported = false;
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
@@ -191,6 +196,10 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_ARB_half_float_pixel");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_ARB_texture_float");
 #endif
+
+    caps.isOpenGLES3Supported = (renderer == Core::RENDERER_OPENGL_ES_3_0);
+
+	PixelFormatDescriptor::InitializePixelFormatDescriptors();
 
     int maxVertexTextureUnits = 0;
     glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &maxVertexTextureUnits);
@@ -299,7 +308,7 @@ void RenderManager::MakeGLScreenShot()
     int32 width = frameBufferWidth;
     int32 height = frameBufferHeight;
     
-    PixelFormatDescriptor formatDescriptor = Texture::GetPixelFormatDescriptor(FORMAT_RGBA8888);
+    const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(FORMAT_RGBA8888);
     
     Logger::FrameworkDebug("RenderManager::MakeGLScreenShot w=%d h=%d", width, height);
     
@@ -308,7 +317,7 @@ void RenderManager::MakeGLScreenShot()
     image = Image::Create(width, height, formatDescriptor.formatID);
     uint8 *imageData = image->GetData();
     
-    int32 formatSize = Texture::GetPixelFormatSizeInBytes(formatDescriptor.formatID);
+    int32 formatSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(formatDescriptor.formatID);
     uint8 *tempData;
     
     uint32 imageDataSize = width * height * formatSize;
@@ -727,7 +736,7 @@ void RenderManager::SetMatrix(eMatrixType type, const Matrix4 & matrix, uint32 c
         }
     }
     
-    if (renderer != Core::RENDERER_OPENGL_ES_2_0)
+    if ((renderer != Core::RENDERER_OPENGL_ES_2_0) && (renderer != Core::RENDERER_OPENGL_ES_3_0))
     {
         RENDER_VERIFY(glMatrixMode(matrixMode[type]));
         RENDER_VERIFY(glLoadMatrixf(matrix.data));
@@ -755,7 +764,7 @@ void RenderManager::AttachRenderData()
 	GetStats().attachRenderDataCount++;
     
     {
-        int32 currentEnabledAttribCount = 0;
+        int32 currentEnabledStreams = 0;
         
         HWglBindBuffer(GL_ARRAY_BUFFER, currentRenderData->vboBuffer);
         HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentRenderData->indexBuffer);
@@ -777,6 +786,8 @@ void RenderManager::AttachRenderData()
             int32 attribIndex = shader->GetAttributeIndex(stream->formatMark);
             if (attribIndex != -1)
             {
+                int32 attribIndexBitPos = (1 << attribIndex);
+
 				if(TYPE_UNSIGNED_BYTE == stream->type)
 				{
 					normalized = GL_TRUE;
@@ -784,26 +795,35 @@ void RenderManager::AttachRenderData()
                 RENDER_VERIFY(glVertexAttribPointer(attribIndex, stream->size, VERTEX_DATA_TYPE_TO_GL[stream->type], normalized, stream->stride, stream->pointer));
                 if (DEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
 
-                if (attribIndex >= enabledAttribCount)  // enable only if it was not enabled on previous step
+                if (!(cachedEnabledStreams & attribIndexBitPos))  // enable only if it was not enabled on previous step
                 {
                     RENDER_VERIFY(glEnableVertexAttribArray(attribIndex));
                     if (DEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
                 }
-                if (attribIndex + 1 > currentEnabledAttribCount)
-                    currentEnabledAttribCount = attribIndex + 1;    // count of enabled attributes
-                
-                //pointerArraysCurrentState |= stream->formatMark;
+
+                currentEnabledStreams |= attribIndexBitPos;
             }
         };
         
-        for (int32 p = currentEnabledAttribCount; p < enabledAttribCount; ++p)
+        if(cachedEnabledStreams != currentEnabledStreams)
         {
-            if (DEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", p);
+            // now we should disable all attribs, that are was enable previously and should not be enabled now
+            int attribIndex = 0;
+            int32 streamsToDisable = (cachedEnabledStreams ^ currentEnabledStreams) & cachedEnabledStreams;
+            while(0 != streamsToDisable)
+            {
+                if(streamsToDisable & 0x1)
+                {
+                    if(DEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
+                    RENDER_VERIFY(glDisableVertexAttribArray(attribIndex));
+                }
 
-            RENDER_VERIFY(glDisableVertexAttribArray(p));
+                streamsToDisable = streamsToDisable >> 1;
+                attribIndex++;
+            }
+
+            cachedEnabledStreams = currentEnabledStreams;
         }
-        enabledAttribCount = currentEnabledAttribCount;
-        //pointerArraysRendererState = pointerArraysCurrentState;
     }
 }
 
@@ -929,7 +949,7 @@ void RenderManager::Lost()
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
 
-	enabledAttribCount = 0;
+	//enabledAttribCount = 0;
 	for(int32 i = 0; i < Texture::TEXTURE_TYPE_COUNT; ++i)
 	{
 		lastBindedTexture[i] = 0;

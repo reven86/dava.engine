@@ -123,19 +123,19 @@ void HierarchyTreePlatformNode::SetSize(int width, int height)
 	}
 }
 	
-int HierarchyTreePlatformNode::GetWidth() const
+int HierarchyTreePlatformNode::GetWidth(bool forceOriginal) const
 {
-    return isPreview ? previewWidth : width;
+    return forceOriginal || !isPreview ? width : previewWidth;
 }
 
-int HierarchyTreePlatformNode::GetHeight() const
+int HierarchyTreePlatformNode::GetHeight(bool forceOriginal) const
 {
-    return isPreview ? previewHeight : height;
+    return forceOriginal || !isPreview ? height : previewHeight;
 }
 
-Vector2 HierarchyTreePlatformNode::GetSize() const
+Vector2 HierarchyTreePlatformNode::GetSize(bool forceOriginal) const
 {
-    return Vector2(GetWidth(), GetHeight());
+    return Vector2(GetWidth(forceOriginal), GetHeight(forceOriginal));
 }
 
 HierarchyTreeNode* HierarchyTreePlatformNode::GetParent()
@@ -408,7 +408,7 @@ bool HierarchyTreePlatformNode::IsAggregatorOrScreenNamePresent(const QString& c
 	return false;
 }
 
-void HierarchyTreePlatformNode::EnablePreview(int width, int height)
+void HierarchyTreePlatformNode::SetPreviewMode(int width, int height)
 {
     previewWidth = width;
     previewHeight = height;

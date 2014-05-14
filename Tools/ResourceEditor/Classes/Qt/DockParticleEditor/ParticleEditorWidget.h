@@ -85,7 +85,7 @@ private:
 	void UpdateParticleEditorWidgets();
 	
 	// Handle the "Emitter Selected" notification for different cases.
-	void HandleEmitterSelected(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, bool forceUpdate);
+	void HandleEmitterSelected(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, bool forceUpdate);
 	
 	// Update the visible timelines for the particular Particle Emitter elements.
 	void UpdateVisibleTimelinesForParticleEmitter();
@@ -102,8 +102,8 @@ private:
 
 	// Switch editor to the particular mode.
 	void SwitchEditorToEffectMode(SceneEditor2* scene, ParticleEffectComponent* effect);
-	void SwitchEditorToEmitterMode(SceneEditor2* scene, DAVA::ParticleEmitter* emitter);
-	void SwitchEditorToLayerMode(SceneEditor2* scene, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
+	void SwitchEditorToEmitterMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter);
+	void SwitchEditorToLayerMode(SceneEditor2* scene, ParticleEffectComponent* effect, DAVA::ParticleEmitter* emitter, DAVA::ParticleLayer* layer);
 	void SwitchEditorToForceMode(SceneEditor2* scene, DAVA::ParticleLayer* layer, DAVA::int32 forceIndex);
 
 	// Reset the editor mode, hide/disconnect appropriate widgets.

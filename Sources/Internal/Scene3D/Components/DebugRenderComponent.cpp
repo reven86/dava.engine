@@ -49,7 +49,7 @@ void DebugRenderComponent::SetDebugFlags(uint32 debugFlags)
     curDebugFlags = debugFlags;
 }
     
-uint32 DebugRenderComponent::GetDebugFlags()
+uint32 DebugRenderComponent::GetDebugFlags() const
 {
     return curDebugFlags;
 }

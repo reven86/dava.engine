@@ -287,15 +287,17 @@ const FastName DYNAMIC_PARAM_NAMES[] =
         FastName("cameraDirection"), // PARAM_CAMERA_DIR,
         FastName("cameraUp"), // PARAM_CAMERA_UP,
         
-        FastName("objectPosition"),
-        FastName("objectScale"),
-        
-        FastName("light0Position"),
+        FastName("lightPosition0"),
+        FastName("lightColor0"),
+        FastName("lightAmbientColor0"),
         
         FastName("rtSize"),
         FastName("rtPixelSize"),
         FastName("rtHalfPixelSize"),
         FastName("rtAspectRatio")
+
+//        FastName("objectPosition"),
+//        FastName("objectScale"),
     };
 
 RenderGuard::RenderGuard()

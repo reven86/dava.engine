@@ -77,6 +77,8 @@ const FastName NMaterial::PARAM_FOG_COLOR("fogColor");
 const FastName NMaterial::PARAM_FOG_DENSITY("fogDensity");
 const FastName NMaterial::PARAM_FOG_START("fogStart");
 const FastName NMaterial::PARAM_FOG_END("fogEnd");
+const FastName NMaterial::PARAM_FOG_GLOW_COLOR("fogGlowColor");
+const FastName NMaterial::PARAM_FOG_GLOW_SCATTERING("fogGlowScattering");
 const FastName NMaterial::PARAM_FLAT_COLOR("flatColor");
 const FastName NMaterial::PARAM_TEXTURE0_SHIFT("texture0Shift");
 const FastName NMaterial::PARAM_UV_OFFSET("uvOffset");
@@ -93,8 +95,12 @@ const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 const FastName NMaterial::FLAG_VERTEXFOG = FastName("VERTEX_FOG");
 const FastName NMaterial::FLAG_FOG_EXP = FastName("FOG_EXP");
 const FastName NMaterial::FLAG_FOG_LINEAR = FastName("FOG_LINEAR");
+const FastName NMaterial::FLAG_FOG_GLOW = FastName("FOG_GLOW");
 const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED");
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
+const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
+const FastName NMaterial::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
+
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterial::FLAG_SPECULAR = FastName("SPECULAR");
@@ -136,8 +142,7 @@ static FastName RUNTIME_ONLY_FLAGS[] =
 
 static FastName RUNTIME_ONLY_PROPERTIES[] =
 {
-
-	NMaterial::PARAM_LIGHTMAP_SIZE,
+    NMaterial::PARAM_LIGHTMAP_SIZE,
     NMaterial::PARAM_LIGHT_POSITION0,
     NMaterial::PARAM_LIGHT_INTENSITY0,
     NMaterial::PARAM_LIGHT_AMBIENT_COLOR,
@@ -453,7 +458,7 @@ void NMaterial::Load(KeyedArchive * archive,
 					 SerializationContext* serializationContext)
 {
 	DataNode::Load(archive, serializationContext);
-	
+
     if(archive->IsKeyExists("materialName"))
     {
         materialName = FastName(archive->GetString("materialName"));
@@ -478,6 +483,7 @@ void NMaterial::Load(KeyedArchive * archive,
 			it != customRenderState.end();
 			++it)
 		{
+            
 			DVASSERT(it->second->AsByteArraySize() == sizeof(RenderStateData));
 			const uint8* array = it->second->AsByteArray();
 			memcpy(&stateData, array, sizeof(RenderStateData));
@@ -486,7 +492,7 @@ void NMaterial::Load(KeyedArchive * archive,
 			instancePassRenderStates.insert(FastName(it->first.c_str()), currentHandle);
 		}
 	}
-	
+
 	if(archive->IsKeyExists("materialGroup"))
 	{
 		SetMaterialGroup(FastName(archive->GetString("materialGroup").c_str()));
@@ -522,6 +528,8 @@ void NMaterial::Load(KeyedArchive * archive,
 		    it != propsMap.end();
 		    ++it)
 	    {
+		    if (IsRuntimeProperty(FastName(it->first)))continue;
+
 		    const VariantType* propVariant = it->second;
 		    DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
 		    DVASSERT(propVariant->AsByteArraySize() >= (sizeof(uint32) +sizeof(uint32)));
@@ -932,10 +940,10 @@ void NMaterial::SetPropertyValue(const FastName & keyName,
 	memcpy(materialProperty->data, data, dataSize);
 	
 	//VI: this is temporary solution. It has to be removed once lighting system + autobind system is ready
-	if(IsDynamicLit() && IsLightingProperty(keyName))
-	{
-		UpdateLightingProperties(lights[0]);
-	}
+//	if(IsDynamicLit() && IsLightingProperty(keyName))
+//	{
+//		UpdateLightingProperties(lights[0]);
+//	}
 }
 
 NMaterialProperty* NMaterial::GetPropertyValue(const FastName & keyName) const
@@ -1457,7 +1465,7 @@ void NMaterial::BindMaterialTechnique(const FastName & passName, Camera* camera)
 	}
 	
 	//VI: this call is temporary solution. It will be removed once autobind system and lighting system ready
-	SetupPerFrameProperties(camera);
+	//SetupPerFrameProperties(camera);
 	
 	BindMaterialTextures(activePassInstance);
 	
@@ -1466,16 +1474,17 @@ void NMaterial::BindMaterialTechnique(const FastName & passName, Camera* camera)
 	BindMaterialProperties(activePassInstance);
 }
 
-void NMaterial::SetupPerFrameProperties(Camera* camera)
-{
-	if(camera && IsDynamicLit() && lights[0])
-	{
-		const Matrix4 & matrix = camera->GetMatrix();
-		Vector3 lightPosition0InCameraSpace = lights[0]->GetPosition() * matrix;
-		
-		SetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC3, 1, lightPosition0InCameraSpace.data);
-	}
-}
+//void NMaterial::SetupPerFrameProperties(Camera* camera)
+//{
+//	if(camera && IsDynamicLit() && lights[0])
+//	{
+//		//const Matrix4 & matrix = camera->GetMatrix();
+//		//Vector3 lightPosition0InCameraSpace = lights[0]->GetPosition() * matrix;
+//		const Vector4 & lightPositionDirection0InCameraSpace = lights[0]->CalculatePositionDirectionBindVector(camera);
+//        
+//		SetPropertyValue(NMaterial::PARAM_LIGHT_POSITION0, Shader::UT_FLOAT_VEC4, 1, lightPositionDirection0InCameraSpace.data);
+//	}
+//}
 
 void NMaterial::BindMaterialTextures(RenderPassInstance* passInstance)
 {
@@ -1603,81 +1612,80 @@ void NMaterial::Draw(RenderDataObject* renderData, uint16* indices, uint16 index
 	}
 }
 
-void NMaterial::SetLight(uint32 index, Light * light, bool forceUpdate)
-{
-	if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
-	{
-		if(parent)
-		{
-			parent->SetLight(index, light, forceUpdate);
-		}
-		else
-		{
-			SetLightInternal(index, light, forceUpdate);
-		}
-	}
-	else if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
-	{
-		SetLightInternal(index, light, forceUpdate);
-		
-		for(size_t i = 0; i < children.size(); ++i)
-		{
-			children[i]->SetLightInternal(index, light, forceUpdate);
-		}
-	}
-}
+//void NMaterial::SetLight(uint32 index, Light * light, bool forceUpdate)
+//{
+//	if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
+//	{
+//		if(parent)
+//		{
+//			parent->SetLight(index, light, forceUpdate);
+//		}
+//		else
+//		{
+//			SetLightInternal(index, light, forceUpdate);
+//		}
+//	}
+//	else if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
+//	{
+//		SetLightInternal(index, light, forceUpdate);
+//		
+//		for(size_t i = 0; i < children.size(); ++i)
+//		{
+//			children[i]->SetLightInternal(index, light, forceUpdate);
+//		}
+//	}
+//}
+//
+//void NMaterial::SetLightInternal(int index, Light* light, bool forceUpdate)
+//{
+//	bool changed = forceUpdate || (light != lights[index]);
+//	lights[index] = light;
+//	
+//	if(changed && materialDynamicLit)
+//	{
+//		UpdateLightingProperties(lights[0]);
+//	}
+//}
+//
+//void NMaterial::UpdateLightingProperties(Light* light)
+//{
+//	NMaterialProperty* propAmbientColor = GetMaterialProperty(NMaterial::PARAM_PROP_AMBIENT_COLOR);
+//	if(propAmbientColor)
+//	{
+//		Color lightAmbientColor = (light) ? light->GetAmbientColor() : Color(0, 0, 0, 0);
+//		Color materialAmbientColor = *(Color*) propAmbientColor->data;
+//		materialAmbientColor = materialAmbientColor * lightAmbientColor;
+//		SetPropertyValue(NMaterial::PARAM_LIGHT_AMBIENT_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialAmbientColor);
+//	}
+//	
+//	NMaterialProperty* propDiffuseColor = GetMaterialProperty(NMaterial::PARAM_PROP_DIFFUSE_COLOR);
+//	if(propDiffuseColor)
+//	{
+//		Color lightDiffuseColor = (light) ? light->GetDiffuseColor() : Color(0, 0, 0, 0);
+//		Color materialDiffuseColor = *(Color*) propDiffuseColor->data;
+//		materialDiffuseColor = materialDiffuseColor * lightDiffuseColor;
+//		SetPropertyValue(NMaterial::PARAM_LIGHT_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialDiffuseColor);
+//	}
+//	
+//	NMaterialProperty* propSpecularColor = GetMaterialProperty(NMaterial::PARAM_PROP_SPECULAR_COLOR);
+//	if(propSpecularColor)
+//	{
+//		Color lightSpecularColor = (light) ? light->GetSpecularColor() : Color(0, 0, 0, 0);
+//		Color materialSpecularColor = *(Color*) propSpecularColor->data;
+//		materialSpecularColor = materialSpecularColor * lightSpecularColor;
+//		SetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialSpecularColor);
+//	}
+//	
+//	float32 intensity = (light) ? light->GetIntensity() : 0;
+//	SetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &intensity);
+//}
 
-void NMaterial::SetLightInternal(int index, Light* light, bool forceUpdate)
-{
-	bool changed = forceUpdate || (light != lights[index]);
-	lights[index] = light;
-	
-	if(changed && materialDynamicLit)
-	{
-		UpdateLightingProperties(lights[0]);
-	}
-}
-
-void NMaterial::UpdateLightingProperties(Light* light)
-{
-	NMaterialProperty* propAmbientColor = GetMaterialProperty(NMaterial::PARAM_PROP_AMBIENT_COLOR);
-	if(propAmbientColor)
-	{
-		Color lightAmbientColor = (light) ? light->GetAmbientColor() : Color(0, 0, 0, 0);
-		Color materialAmbientColor = *(Color*) propAmbientColor->data;
-		materialAmbientColor = materialAmbientColor * lightAmbientColor;
-		SetPropertyValue(NMaterial::PARAM_LIGHT_AMBIENT_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialAmbientColor);
-	}
-	
-	NMaterialProperty* propDiffuseColor = GetMaterialProperty(NMaterial::PARAM_PROP_DIFFUSE_COLOR);
-	if(propDiffuseColor)
-	{
-		Color lightDiffuseColor = (light) ? light->GetDiffuseColor() : Color(0, 0, 0, 0);
-		Color materialDiffuseColor = *(Color*) propDiffuseColor->data;
-		materialDiffuseColor = materialDiffuseColor * lightDiffuseColor;
-		SetPropertyValue(NMaterial::PARAM_LIGHT_DIFFUSE_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialDiffuseColor);
-	}
-	
-	NMaterialProperty* propSpecularColor = GetMaterialProperty(NMaterial::PARAM_PROP_SPECULAR_COLOR);
-	if(propSpecularColor)
-	{
-		Color lightSpecularColor = (light) ? light->GetSpecularColor() : Color(0, 0, 0, 0);
-		Color materialSpecularColor = *(Color*) propSpecularColor->data;
-		materialSpecularColor = materialSpecularColor * lightSpecularColor;
-		SetPropertyValue(NMaterial::PARAM_LIGHT_SPECULAR_COLOR, Shader::UT_FLOAT_VEC3, 1, &materialSpecularColor);
-	}
-	
-	float32 intensity = (light) ? light->GetIntensity() : 0;
-	intensity = 2.0f;
-	SetPropertyValue(NMaterial::PARAM_LIGHT_INTENSITY0, Shader::UT_FLOAT, 1, &intensity);
-}
-
-bool NMaterial::IsLightingProperty(const FastName& propName) const
-{
-	return (NMaterial::PARAM_PROP_AMBIENT_COLOR == propName ||
-			NMaterial::PARAM_PROP_DIFFUSE_COLOR == propName ||
-			NMaterial::PARAM_PROP_SPECULAR_COLOR == propName);
-}
+//bool NMaterial::IsLightingProperty(const FastName& propName) const
+//{
+//	return (NMaterial::PARAM_PROP_AMBIENT_COLOR == propName ||
+//			NMaterial::PARAM_PROP_DIFFUSE_COLOR == propName ||
+//			NMaterial::PARAM_PROP_SPECULAR_COLOR == propName);
+//}
 
 const RenderStateData& NMaterial::GetRenderState(const FastName& passName) const
 {
@@ -2739,15 +2747,21 @@ Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *ob
 	
 	if(0 == ret.size())
 	{
-		ret.reserve(5);
+		ret.reserve(10);
+
 		ret.push_back(FLAG_VERTEXFOG);
-        ret.push_back(FLAG_FOG_LINEAR);
+		ret.push_back(FLAG_FOG_LINEAR);
+		ret.push_back(FLAG_FOG_GLOW);
 		ret.push_back(FLAG_FLATCOLOR);
 		ret.push_back(FLAG_TEXTURESHIFT);
 		ret.push_back(FLAG_TEXTURE0_ANIMATION_SHIFT);
-        ret.push_back(FLAG_SPECULAR);
-        ret.push_back(FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
-        ret.push_back(FLAG_DEBUG_UNITY_Z_NORMAL);
+
+		ret.push_back(FLAG_WAVE_ANIMATION);
+		ret.push_back(FLAG_FAST_NORMALIZATION);
+
+		ret.push_back(FLAG_SPECULAR);
+		ret.push_back(FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
+		ret.push_back(FLAG_DEBUG_UNITY_Z_NORMAL);
 	}
 	return ret;
 }

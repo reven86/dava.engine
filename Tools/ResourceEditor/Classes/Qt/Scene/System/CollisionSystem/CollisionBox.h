@@ -37,7 +37,7 @@
 class CollisionBox : public CollisionBaseObject
 {
 public:
-	CollisionBox(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Vector3 position, DAVA::float32 boxHalfSize = 0.75f);
+	CollisionBox(DAVA::Entity *entity, btCollisionWorld *word, DAVA::Vector3 position, DAVA::float32 boxSize);
 	virtual ~CollisionBox();
 
 protected:

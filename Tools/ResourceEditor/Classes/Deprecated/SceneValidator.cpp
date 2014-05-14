@@ -251,14 +251,39 @@ void SceneValidator::ValidateRenderComponent(Entity *ownerNode, Set<String> &err
 
 
 
-void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity *ownerNode, Set<String> &errorsLog)
+void SceneValidator::ValidateParticleEffectComponent(DAVA::Entity *ownerNode, Set<String> &errorsLog) const
 {
 	ParticleEffectComponent *effect = GetEffectComponent(ownerNode);
-    if(!effect)
+    if(effect)
 	{
-		return;
+        DAVA::uint32 count = effect->GetEmittersCount();
+        for(DAVA::uint32 i = 0; i < count; ++i)
+        {
+            ValidateParticleEmitter(effect->GetEmitter(i), errorsLog);
+        }
 	}
+}
 
+void SceneValidator::ValidateParticleEmitter(ParticleEmitter *emitter, Set<String> &errorsLog) const
+{
+    DVASSERT(emitter);
+    if(!emitter) return;
+
+    if(emitter->configPath.IsEmpty())
+    {
+        errorsLog.insert(Format("Empty config path for emitter %s", emitter->name.c_str()));
+    }
+    
+    const Vector<ParticleLayer*> &layers = emitter->layers;
+    
+	uint32 count = (uint32)layers.size();
+	for(uint32 i = 0; i < count; ++i)
+	{
+		if(layers[i]->type == ParticleLayer::TYPE_SUPEREMITTER_PARTICLES)
+		{
+			ValidateParticleEmitter(layers[i]->innerEmitter, errorsLog);
+		}
+	}
 }
 
 void SceneValidator::ValidateRenderBatch(Entity *ownerNode, RenderBatch *renderBatch, Set<String> &errorsLog)

@@ -6,26 +6,27 @@ uniform mat4 worldViewMatrix;
 uniform mat4 projMatrix;
 uniform mat3 worldViewInvTransposeMatrix;
 
-uniform vec3 lightPosition0;
+uniform vec4 lightPosition0;
 
 void main()
 {
 	vec3 normal = worldViewInvTransposeMatrix * inNormal.xyz;
-	vec4 PosView = worldViewMatrix * inPosition;
+	vec4 posView = worldViewMatrix * inPosition;
 	
-	vec3 LightVecView = PosView.xyz - lightPosition0;
+    // convert light position + direction into light direction
+	vec3 lightVecView = posView.xyz * lightPosition0.w - lightPosition0.xyz;
 
-	if(dot(normal, -LightVecView) < 0.0)
+	if(dot(normal, -lightVecView) < 0.0)
 	{
-		if(PosView.z < lightPosition0.z)
+		if(posView.z * lightPosition0.w < lightPosition0.z)
 		{
-			PosView.xyz -= LightVecView * (1000.0 - 10.0 + PosView.z) / LightVecView.z;
+			posView.xyz -= lightVecView * (1000.0 - 10.0 + posView.z) / lightVecView.z;
 		}
 		else
 		{
-			PosView = vec4(LightVecView, 0.0);
+			posView = vec4(lightVecView, 0.0);
 		}
-		gl_Position = projMatrix * PosView;
+		gl_Position = projMatrix * posView;
 	}
 	else
 	{

@@ -54,6 +54,8 @@
 	#import <OpenGLES/ES1/glext.h>
     #import <OpenGLES/ES2/gl.h>
     #import <OpenGLES/ES2/glext.h>
+    #import <OpenGLES/ES3/gl.h>
+    #import <OpenGLES/ES3/glext.h>
 #elif defined(__DAVAENGINE_MACOS__)
 	#define __DAVAENGINE_OPENGL__
 	//	#include <GL/glew.h>
@@ -146,8 +148,7 @@ enum PixelFormat
     FORMAT_RGBA32323232,
 
     FORMAT_DXT1,
-    FORMAT_DXT1NM,
-    FORMAT_DXT1A,
+    FORMAT_DXT1A = 14, //back compatibility
     FORMAT_DXT3,
     FORMAT_DXT5,
     FORMAT_DXT5NM,
@@ -157,28 +158,20 @@ enum PixelFormat
 	FORMAT_ATC_RGB,
 	FORMAT_ATC_RGBA_EXPLICIT_ALPHA,
     FORMAT_ATC_RGBA_INTERPOLATED_ALPHA,
+    
+	FORMAT_PVR2_2,	//pvrtc2 generation
+	FORMAT_PVR4_2,
+	FORMAT_EAC_R11_UNSIGNED,
+	FORMAT_EAC_R11_SIGNED,
+	FORMAT_EAC_RG11_UNSIGNED,	//2 channels format for normal maps
+	FORMAT_EAC_RG11_SIGNED,	//2 channels format for normal maps
+	FORMAT_ETC2_RGB,
+	FORMAT_ETC2_RGBA,
+	FORMAT_ETC2_RGB_A1,
 
     FORMAT_COUNT,
-    FORMAT_CLOSEST = 255
+    FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };
-    
-struct PixelFormatDescriptor
-{
-    GLenum format;
-    GLenum internalformat;
-    GLenum type;
-    
-    String name;
-    int32 pixelSize;
-    PixelFormat formatID;
-    
-    PixelFormatDescriptor()
-    :   format(0), internalformat(0), type(0), pixelSize(0), formatID(FORMAT_INVALID)
-    {
-        
-    }
-};
-
     
 enum eGPUFamily
 {
@@ -479,6 +472,10 @@ enum eShaderSemantic
     PARAM_CAMERA_DIR,
     PARAM_CAMERA_UP,
     
+    PARAM_LIGHT0_POSITION,
+    PARAM_LIGHT0_COLOR,
+    PARAM_LIGHT0_AMBIENT_COLOR,
+
     PARAM_RT_SIZE,
     PARAM_RT_PIXEL_SIZE,
     PARAM_RT_HALF_PIXEL_SIZE,
@@ -486,13 +483,11 @@ enum eShaderSemantic
 
     AUTOBIND_UNIFORMS_END,
     
-    PARAM_OBJECT_POS,
-    PARAM_OBJECT_SCALE,
-    
-    PARAM_LIGHT0_POSITION,
+//    PARAM_OBJECT_POS,
+//    PARAM_OBJECT_SCALE,
     
     
-    DYNAMIC_PARAMETERS_COUNT,
+    DYNAMIC_PARAMETERS_COUNT = AUTOBIND_UNIFORMS_END,
 };
     
 extern const FastName DYNAMIC_PARAM_NAMES[DYNAMIC_PARAMETERS_COUNT];

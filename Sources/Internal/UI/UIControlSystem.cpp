@@ -50,7 +50,7 @@ UIControlSystem::UIControlSystem()
 	frameSkip = 0;
 	transitionType = 0;
 	
-	transition = 0;
+	nextScreenTransition = 0;
 	currentScreen = 0;
 	nextScreen = 0;
 	prevScreen = NULL;
@@ -77,25 +77,30 @@ void UIControlSystem::SetScreen(UIScreen *_nextScreen, UIScreenTransition * _tra
 {
 	if (_nextScreen == currentScreen)
 	{
-		Logger::Warning("Tried to switch to current screen again.");
+		if (nextScreen != 0)
+		{
+			SafeRelease(nextScreenTransition);
+			SafeRelease(nextScreen);
+		}
 		return;
 	}
 
+	if (nextScreen)
+	{
+		Logger::Warning("2 screen switches during one frame.");
+	}
+    
 	// 2 switches on one frame can cause memory leak
-	SafeRelease(transition);
+	SafeRelease(nextScreenTransition);
 	SafeRelease(nextScreen);
-
-	transition = SafeRetain(_transition);
+    
+	nextScreenTransition = SafeRetain(_transition);
 	
 	if (_nextScreen == 0)
 	{
 		removeCurrentScreen = true;
 	}
 	
-	if (nextScreen)
-	{
-		Logger::Warning("2 screen switches during one frame.");
-	}
 	nextScreen = SafeRetain(_nextScreen);
 }
 	
@@ -158,33 +163,41 @@ void UIControlSystem::ProcessScreenLogic()
 	 */
 	if (screenLockCount == 0 && (nextScreen || removeCurrentScreen))
 	{
+        UIScreen* nextScreenProcessed = 0;
+        UIScreenTransition* transitionProcessed = 0;
+        
+        nextScreenProcessed = nextScreen;
+        transitionProcessed = nextScreenTransition;
+        nextScreen = 0; // functions called by this method can request another screen switch (for example, LoadResources)
+        nextScreenTransition = 0;
+        
 		LockInput();
 		
 		CancelAllInputs();
 		
-		int32 listenersCount = screenSwitchListeners.size();
-		for(int32 i = 0; i < listenersCount; ++i)
-			screenSwitchListeners[i]->OnScreenSwitched(nextScreen);
+		uint32 listenersCount = screenSwitchListeners.size();
+		for(uint32 i = 0; i < listenersCount; ++i)
+			screenSwitchListeners[i]->OnScreenSwitched(nextScreenProcessed);
 
 		// If we have transition set
-		if (transition)
+		if (transitionProcessed)
 		{
 			LockSwitch();
 
 			// check if we have not loading transition
-			if (!transition->IsLoadingTransition())
+			if (!transitionProcessed->IsLoadingTransition())
 			{
 				// start transition and set currentScreen 
-				transition->StartTransition(currentScreen, nextScreen);
-				currentScreen = transition;
+				transitionProcessed->StartTransition(currentScreen, nextScreenProcessed);
+				currentScreen = transitionProcessed;
 			}else
 			{
 				// if we got loading transition
-				UILoadingTransition * loadingTransition = dynamic_cast<UILoadingTransition*> (transition);
+				UILoadingTransition * loadingTransition = dynamic_cast<UILoadingTransition*> (transitionProcessed);
                 DVASSERT(loadingTransition);
 
 				// Firstly start transition
-				loadingTransition->StartTransition(currentScreen, nextScreen);
+				loadingTransition->StartTransition(currentScreen, nextScreenProcessed);
 				
 				// Manage transfer to loading transition through InTransition of LoadingTransition
                 if (loadingTransition->GetInTransition())
@@ -197,7 +210,7 @@ void UIControlSystem::ProcessScreenLogic()
                     if(currentScreen)
                     {
                         currentScreen->SystemWillDisappear();
-                        if ((nextScreen == 0) || (currentScreen->GetGroupId() != nextScreen->GetGroupId()))
+                        if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
                         {
                             currentScreen->UnloadGroup();
                         }
@@ -210,7 +223,6 @@ void UIControlSystem::ProcessScreenLogic()
                     loadingTransition->SystemDidAppear();
                 }
 			}
-			transition = NULL;
 		}
         else	// if there is no transition do change immediatelly
 		{	
@@ -218,28 +230,27 @@ void UIControlSystem::ProcessScreenLogic()
 			if(currentScreen)
 			{
 				currentScreen->SystemWillDisappear();
-				if ((nextScreen == 0) || (currentScreen->GetGroupId() != nextScreen->GetGroupId()))
+				if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
 				{
 					currentScreen->UnloadGroup();
 				}
 				currentScreen->SystemDidDisappear();
 			}
 			// if we have next screen we load new resources, if it equal to zero we just remove screen
-			if (nextScreen)
+			if (nextScreenProcessed)
 			{
-				nextScreen->LoadGroup();
-				nextScreen->SystemWillAppear();
+				nextScreenProcessed->LoadGroup();
+				nextScreenProcessed->SystemWillAppear();
 			}
-			currentScreen = nextScreen;
-            if (nextScreen) 
+			currentScreen = nextScreenProcessed;
+            if (nextScreenProcessed)
             {
-				nextScreen->SystemDidAppear();
+				nextScreenProcessed->SystemDidAppear();
             }
 			
 			UnlockInput();
 		}
 		frameSkip = FRAME_SKIP;
-		nextScreen = 0; // switch already happen so set nextScreen to zero
 		removeCurrentScreen = false;
 	}
 	
@@ -772,13 +783,13 @@ void UIControlSystem::ReplayEvents()
 	}
 }
 
-DAVA::int32 UIControlSystem::LockSwitch()
+int32 UIControlSystem::LockSwitch()
 {
 	screenLockCount++;
 	return screenLockCount;
 }
 
-DAVA::int32 UIControlSystem::UnlockSwitch()
+int32 UIControlSystem::UnlockSwitch()
 {
 	screenLockCount--;
 	DVASSERT(screenLockCount >= 0);

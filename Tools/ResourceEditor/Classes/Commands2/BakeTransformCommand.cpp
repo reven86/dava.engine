@@ -33,63 +33,41 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Entity.h"
 
-BakeTransformCommand::BakeTransformCommand(DAVA::Entity* _entity, bool _inverse)
-	: Command2(CMDID_BAKE_TRANSFORM, "Bake transform")
-	, entity(_entity)
-    , inverse(_inverse)
-{
-    if(NULL != entity)
-    {
-	    origTransform = entity->GetLocalTransform();
-    }
+BakeGeometryCommand::BakeGeometryCommand(DAVA::RenderObject* _object, DAVA::Matrix4 _transform)
+	: Command2(CMDID_BAKE_GEOMERTY, "Bake geometry")
+	, object(_object)
+    , transform(_transform)
+{ }
 
-	DAVA::RenderObject * ro = GetRenderObject(entity);
-    if(NULL != ro)
-    {
-        DAVA::AABBox3 box = ro->GetBoundingBox();
-        toCenterModif.CreateTranslation(box.GetCenter());
-    }
-}
-
-BakeTransformCommand::~BakeTransformCommand()
-{
-
-}
-
-void BakeTransformCommand::Undo()
+BakeGeometryCommand::~BakeGeometryCommand()
 {
 	if(NULL != entity)
 	{
         // move pivot point back from the object center
         if(inverse)
-        {
+{ }
 		    DAVA::RenderObject * ro = GetRenderObject(entity);
             if(NULL != ro)
 		    {
                 DAVA::Matrix4 trMove = toCenterModif;
                 trMove.Inverse();
 
-                ro->BakeTransform(toCenterModif);
-                entity->SetLocalTransform(entity->GetLocalTransform() * trMove);
-            }
-        }
-        // move pivot back from zero pos
-        else
-        {
+void BakeGeometryCommand::Undo()
+{
 		    DAVA::RenderObject * ro = GetRenderObject(entity);
-            if(NULL != ro)
-		    {
-                DAVA::Matrix4 tr = origTransform;
-                tr.Inverse();
+    if(NULL != object)
+	{
+        DAVA::Matrix4 undoTransform = transform;
+        undoTransform.Inverse();
                 ro->BakeTransform(tr);
             }
 
-            entity->SetLocalTransform(origTransform);
+        object->BakeGeometry(undoTransform);
         }
 	}
 }
 
-void BakeTransformCommand::Redo()
+void BakeGeometryCommand::Redo()
 {
 	if(NULL != entity)
 	{
@@ -97,15 +75,15 @@ void BakeTransformCommand::Redo()
         if(inverse)
         {
 		    DAVA::RenderObject * ro = GetRenderObject(entity);
-            if(NULL != ro)
-		    {
+	if(NULL != object)
+	{
                 DAVA::Matrix4 trBake = toCenterModif;
                 trBake.Inverse();
 
-                ro->BakeTransform(trBake);
+        object->BakeGeometry(transform);
                 entity->SetLocalTransform(entity->GetLocalTransform() * toCenterModif);
             }
-        }
+	}
         // move pivot point to zero pos
         else
         {

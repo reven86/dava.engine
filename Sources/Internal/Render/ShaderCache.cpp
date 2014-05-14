@@ -55,6 +55,8 @@ ShaderAsset::ShaderAsset(const FastName & _name,
 
 ShaderAsset::~ShaderAsset()
 {
+	DVASSERT(Thread::IsMainThread());
+
     HashMap<FastNameSet, Shader *>::iterator end = compiledShaders.end();
     for (HashMap<FastNameSet, Shader *>::iterator it = compiledShaders.begin(); it != end; ++it)
     {
@@ -65,12 +67,33 @@ ShaderAsset::~ShaderAsset()
     SafeRelease(fragmentShaderData);
 }
 
+void ShaderAsset::SetShaderData(Data * _vertexShaderData, Data * _fragmentShaderData)
+{
+    SafeRelease(vertexShaderData);
+    SafeRelease(fragmentShaderData);
+   
+    vertexShaderData = SafeRetain(_vertexShaderData);
+    fragmentShaderData = SafeRetain(_fragmentShaderData);
+    
+    vertexShaderDataStart = 0;
+    vertexShaderDataSize = 0;
+    
+    fragmentShaderDataStart = 0;
+    fragmentShaderDataSize = 0;
+}
+
+
 Shader * ShaderAsset::Compile(const FastNameSet & defines)
 {
-    Shader * checkShader = compiledShaders.at(defines);
-    if (checkShader)return checkShader;
+    Shader * shader = compiledShaders.at(defines);
+    if (shader)return shader;
     
-    Shader * shader = Shader::CompileShader(name,
+	compileShaderMutex.Lock();
+
+	shader = compiledShaders.at(defines); //to check if shader was created while mutex was locked
+	if (NULL == shader)
+	{
+        shader = Shader::CreateShader(name,
                                             vertexShaderData,
                                             fragmentShaderData,
                                             vertexShaderDataStart,
@@ -79,18 +102,57 @@ Shader * ShaderAsset::Compile(const FastNameSet & defines)
                                             fragmentShaderDataSize,
                                             defines);
 	
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
-														   Message(this, &ShaderAsset::BindShaderDefaultsInternal, shader));
-	JobInstanceWaiter waiter(job);
-	waiter.Wait();
+        CompiledShaderData * shaderData = new CompiledShaderData();
+        shaderData->shader = shader;
+        shaderData->defines = defines;
 
-    compiledShaders.insert(defines, shader);
+        ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN,
+                                                               Message(this, &ShaderAsset::CompileShaderInternal, shaderData));
+        JobInstanceWaiter waiter(job);
+        waiter.Wait();
+    }
+    
+	compileShaderMutex.Unlock();
+
     return shader;
 }
 	
-void ShaderAsset::BindShaderDefaultsInternal(BaseObject * caller, void * param, void *callerData)
+void ShaderAsset::ReloadShaders()
 {
-	BindShaderDefaults((Shader*)param);
+    HashMap < FastNameSet, Shader *>::iterator it = compiledShaders.begin();
+    HashMap < FastNameSet, Shader *>::iterator endIt = compiledShaders.end();
+	for( ; it != endIt; ++it)
+	{
+		Shader *shader = it->second;
+
+		shader->Reload(vertexShaderData, fragmentShaderData, vertexShaderDataStart, vertexShaderDataSize, fragmentShaderDataStart, fragmentShaderDataSize);
+		ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &ShaderAsset::ReloadShaderInternal, shader));
+
+        JobInstanceWaiter waiter(job);
+        waiter.Wait();
+	}
+}
+
+void ShaderAsset::CompileShaderInternal( BaseObject * caller, void * param, void *callerData )
+{
+	CompiledShaderData *shaderData = (CompiledShaderData*)param;
+	DVASSERT(shaderData);
+
+	shaderData->shader->Recompile();
+
+	BindShaderDefaults(shaderData->shader);
+	compiledShaders.insert(shaderData->defines, shaderData->shader);
+
+	delete shaderData;
+}
+
+
+void ShaderAsset::ReloadShaderInternal(BaseObject * caller, void * param, void *callerData)
+{
+	Shader *shader = (Shader*)param;
+	shader->Recompile();
+
+	BindShaderDefaults(shader);
 }
 
 void ShaderAsset::BindShaderDefaults(Shader * shader)
@@ -105,8 +167,39 @@ void ShaderAsset::BindShaderDefaults(Shader * shader)
         if (defaultValues.count(uniform->name) > 0)
         {
             const DefaultValue & value = defaultValues.at(uniform->name);
-            shader->SetUniformValueByIndex(ui, value.int32Value);
-            //Logger::FrameworkDebug("Assign: %s = %d", uniform->name.c_str(), value.int32Value);
+            
+            switch (value.type)
+            {
+                case Shader::UT_FLOAT_MAT4:
+                    shader->SetUniformValueByIndex(ui, Matrix4(value.matrix4Value[0], value.matrix4Value[1], value.matrix4Value[2], value.matrix4Value[3],
+                                                               value.matrix4Value[4], value.matrix4Value[5], value.matrix4Value[6], value.matrix4Value[7],
+                                                               value.matrix4Value[8], value.matrix4Value[9], value.matrix4Value[10], value.matrix4Value[11],
+                                                               value.matrix4Value[12], value.matrix4Value[13], value.matrix4Value[14], value.matrix4Value[15]));
+                break;
+                case Shader::UT_FLOAT_MAT3:
+                    shader->SetUniformValueByIndex(ui, Matrix3(value.matrix3Value[0], value.matrix3Value[1], value.matrix3Value[2],
+                                                               value.matrix3Value[3], value.matrix3Value[4], value.matrix3Value[5],
+                                                               value.matrix3Value[6], value.matrix3Value[7], value.matrix3Value[8]));
+                break;
+                case Shader::UT_FLOAT_VEC3:
+                    shader->SetUniformValueByIndex(ui, Vector3(value.vector3Value[0], value.vector3Value[1], value.vector3Value[2]));
+                break;
+                case Shader::UT_FLOAT_VEC2:
+                    shader->SetUniformValueByIndex(ui, Vector2(value.vector2Value[0], value.vector2Value[1]));
+                break;
+                case Shader::UT_FLOAT:
+                    shader->SetUniformValueByIndex(ui, value.float32Value);
+                    Logger::FrameworkDebug("Assign: %s = %f", uniform->name.c_str(), value.float32Value);
+                break;
+                case Shader::UT_INT:
+                    shader->SetUniformValueByIndex(ui, value.int32Value);
+                    Logger::FrameworkDebug("Assign: %s = %d", uniform->name.c_str(), value.int32Value);
+                break;
+
+                default:
+                break;
+            }
+            
         }
     }
     shader->Unbind();
@@ -154,7 +247,7 @@ void ShaderAsset::ClearAllLastBindedCaches()
     for (HashMap<FastNameSet, Shader *>::iterator it = compiledShaders.begin(); it != end; ++it)
         it->second->ClearLastBindedCaches();
 }
-    
+
 ShaderCache::ShaderCache()
 {
     
@@ -162,24 +255,140 @@ ShaderCache::ShaderCache()
     
 ShaderCache::~ShaderCache()
 {
+	shaderAssetMapMutex.Lock();
+
     FastNameMap<ShaderAsset*>::iterator end = shaderAssetMap.end();
     for (FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin(); it != end; ++it)
     {
 		ShaderAsset * asset = it->second;
         SafeRelease(asset);
     }
+	shaderAssetMap.clear();
+	
+	shaderAssetMapMutex.Unlock();
 }
 
 void ShaderCache::ClearAllLastBindedCaches()
 {
+	shaderAssetMapMutex.Lock();
+
     FastNameMap<ShaderAsset*>::iterator end = shaderAssetMap.end();
     for (FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin(); it != end; ++it)
         it->second->ClearAllLastBindedCaches();
+
+	shaderAssetMapMutex.Unlock();
 }
     
-ShaderAsset * ShaderCache::ParseShader(const FastName & name, Data * vertexShaderData, Data * fragmentShaderData)
+void ShaderCache::ParseDefaultVariable(ShaderAsset * asset, const String & inputLine)
 {
-    ShaderAsset * asset = new ShaderAsset(name, vertexShaderData, fragmentShaderData);
+    if (inputLine.find("uniform") == String::npos) return;
+    
+    Vector<String> tokens;
+    Split(inputLine, " (,\t;", tokens);
+    
+    
+    /*
+        Line format: 
+        uniform [highp] vec3 var1 = vec3(1.0, 1.0, 1.0);
+        uniform mat3 var2 = mat3(1.0, 1.0, 1.0, 5.0, 1.0, 0.4, 8.5, 0.6, 0.8);
+        uniform float float = 1.0;
+     */
+    
+    // Remove precision qualifiers
+    String qualifier;
+    for (size_t k = 0; k < tokens.size(); ++k)
+    {
+        if ((tokens[k] == "highp") || (tokens[k] == "mediump") || (tokens[k] == "lowp"))
+        {
+            qualifier = tokens[k];
+            tokens.erase (tokens.begin() + k);
+            k--;
+        }
+    }
+    
+    if (tokens[0] == "uniform")
+    {
+        //
+        const String & type = tokens[1];
+        const String & name = tokens[2];
+        const String & equals = tokens[3];
+        const String & type2 = tokens[4];
+        
+        DVASSERT(equals == "=");
+        
+        uint32 valuesCount = 0;
+        ShaderAsset::DefaultValue value;
+        if ((type == "sampler2D") || (type == "samplerCube"))
+        {
+            value.type = Shader::UT_INT;
+            value.int32Value = atoi(tokens[4].c_str());
+        }
+        else if (type == "float")
+        {
+            value.type = Shader::UT_FLOAT;
+            value.float32Value = (float32)atof(tokens[4].c_str());
+        }
+        else if (type == "vec2")
+        {
+            value.type = Shader::UT_FLOAT_VEC2;
+            valuesCount = 2;
+        }
+        else if (type == "vec3")
+        {
+            value.type = Shader::UT_FLOAT_VEC3;
+            valuesCount = 3;
+        }
+        else if (type == "vec4")
+        {
+            value.type = Shader::UT_FLOAT_VEC4;
+            valuesCount = 4;
+        }
+        else if (type == "mat2")
+        {
+            value.type = Shader::UT_FLOAT_MAT2;
+            valuesCount = 2 * 2;
+        }
+        else if (type == "mat3")
+        {
+            value.type = Shader::UT_FLOAT_MAT3;
+            valuesCount = 3 * 3;
+        }
+        else if (type == "mat4")
+        {
+            value.type = Shader::UT_FLOAT_MAT4;
+            valuesCount = 4 * 4;
+        }
+        
+        if (valuesCount > 1)
+            for (uint32 k = 0; k < valuesCount; ++k)
+            {
+                value.matrix4Value[k] = (float32)atof(tokens[5 + k].c_str());
+            };
+        
+        FastName fastName = FastName(name);
+        asset->defaultValues.insert(fastName, value);
+        
+        //return tokens[0] + String(" ") + type + String(" ") + qualifier + String(" ") + name + ";";
+    }
+    
+    /*if ((tokens.size() == 3) && (tokens[1] == "=") && (tokens[2].size() > 0))
+    {
+        ShaderAsset::DefaultValue value;
+        if ((tokens[2].find(".") != String::npos) || (tokens[2].find("-") != String::npos))
+        value.float32Value = (float32)atof(tokens[2].c_str());
+        else
+        value.int32Value = atoi(tokens[2].c_str());
+        FastName fastName = FastName(tokens[0]);
+        asset->defaultValues.insert(fastName, value);
+        
+        Logger::Debug("Shader Default: %s = %d", fastName.c_str(), value.int32Value);
+    }*/
+}
+    
+void ShaderCache::ParseShader(ShaderAsset * asset)
+{
+    Data * vertexShaderData = asset->vertexShaderData;
+    Data * fragmentShaderData = asset->fragmentShaderData;
     
     static const char * TOKEN_CONFIG = "<CONFIG>";
     static const char * TOKEN_VERTEX_SHADER = "<VERTEX_SHADER>";
@@ -250,21 +459,7 @@ ShaderAsset * ShaderCache::ParseShader(const FastName & name, Data * vertexShade
         else if (configStarted)
         {
             // GetToken();
-            Vector<String> tokens;
-            Split(line, " \t", tokens);
-            
-            if ((tokens.size() == 3) && (tokens[1] == "=") && (tokens[2].size() > 0))
-            {
-                ShaderAsset::DefaultValue value;
-                if ((tokens[2].find(".") != String::npos) || (tokens[2].find("-") != String::npos))
-                    value.float32Value = (float32)atof(tokens[2].c_str());
-                else
-                    value.int32Value = atoi(tokens[2].c_str());
-                FastName fastName = FastName(tokens[0]);
-                asset->defaultValues.insert(fastName, value);
-                
-                Logger::Debug("Shader Default: %s = %d", fastName.c_str(), value.int32Value);
-            }
+            ParseDefaultVariable(asset, line);
         }
         //Logger::Debug("%s", line.c_str());
         lineBegin = lineEnd + lineEnding;
@@ -272,9 +467,9 @@ ShaderAsset * ShaderCache::ParseShader(const FastName & name, Data * vertexShade
     
     asset->vertexShaderDataStart = vertexShaderStartPosition;
     asset->vertexShaderDataSize = vertexShaderData->GetSize() - (vertexShaderStartPosition - vertexShaderData->GetPtr());
-
-//    includesList.clear();
-//    includesList.push_back(fragmentShaderPath.GetFilename());
+    
+    //    includesList.clear();
+    //    includesList.push_back(fragmentShaderPath.GetFilename());
     uint8 * fragmentShaderStartPosition = fragmentShaderData->GetPtr();
     sourceFile = String((char8*)fragmentShaderData->GetPtr(), fragmentShaderData->GetSize());
     configStarted = false;
@@ -292,20 +487,20 @@ ShaderAsset * ShaderCache::ParseShader(const FastName & name, Data * vertexShade
             break;
         }
         /*
-        lineEnding = 0;
-        // get next line
-        lineEnd = sourceFile.find("\r\n", lineBegin);
-        if(String::npos != lineEnd)
-        {
-            lineEnding = 2;
-        }else
-        {
-            lineEnd = sourceFile.find("\n", lineBegin);
-            if(String::npos != lineEnd)
-            {
-                lineEnding = 1;
-            }
-        }
+         lineEnding = 0;
+         // get next line
+         lineEnd = sourceFile.find("\r\n", lineBegin);
+         if(String::npos != lineEnd)
+         {
+         lineEnding = 2;
+         }else
+         {
+         lineEnd = sourceFile.find("\n", lineBegin);
+         if(String::npos != lineEnd)
+         {
+         lineEnding = 1;
+         }
+         }
          */
         // get next line
         lineEnding = 0;
@@ -346,26 +541,8 @@ ShaderAsset * ShaderCache::ParseShader(const FastName & name, Data * vertexShade
         }
         else if (configStarted)
         {
-            // GetToken();
-            Vector<String> tokens;
-            Split(line, " \t", tokens);
-            
-            if ((tokens.size() == 3) && (tokens[1] == "=") && (tokens[2].size() > 0))
-            {
-                ShaderAsset::DefaultValue value;
-                if ((tokens[2].find(".") != String::npos) || (tokens[2].find("-") != String::npos))
-                    value.float32Value = (float32)atof(tokens[2].c_str());
-                else
-                    value.int32Value = atoi(tokens[2].c_str());
-                FastName fastName = FastName(tokens[0]);
-                asset->defaultValues.insert(fastName, value);
-                
-                Logger::Debug("Shader Default: %s = %d", fastName.c_str(), value.int32Value);
-            }
+            ParseDefaultVariable(asset, line);
         }
-        
-        //Logger::Debug("%s", line.c_str());
-
         lineBegin = lineEnd + lineEnding;
     }
     asset->fragmentShaderDataStart = fragmentShaderStartPosition;
@@ -381,46 +558,38 @@ ShaderAsset * ShaderCache::ParseShader(const FastName & name, Data * vertexShade
     //            }
     //            curData = strtok(NULL, "\n");
     //        }
-    return asset;
 }
 
-    
 ShaderAsset * ShaderCache::Load(const FastName & shaderFastName)
 {
-    ShaderAsset * checkAsset = shaderAssetMap.at(shaderFastName);
-    DVASSERT(checkAsset == 0);
+    ShaderAsset * asset = new ShaderAsset(shaderFastName, NULL, NULL);
+    LoadAsset(asset);
 
-    String shader = shaderFastName.c_str();
-    String vertexShaderPath = shader + ".vsh";
-    String fragmentShaderPath = shader + ".fsh";
-    
-    uint32 vertexShaderSize = 0, fragmentShaderSize = 0;
-    
-    uint8 * vertexShaderBytes = FileSystem::Instance()->ReadFileContents(vertexShaderPath, vertexShaderSize);
-    Data * vertexShaderData = new Data(vertexShaderBytes, vertexShaderSize);
-    
-    uint8 * fragmentShaderBytes = FileSystem::Instance()->ReadFileContents(fragmentShaderPath, fragmentShaderSize);
-    Data * fragmentShaderData = new Data(fragmentShaderBytes, fragmentShaderSize);
-    
-    ShaderAsset * asset = ParseShader(shaderFastName, vertexShaderData, fragmentShaderData);
-    //new ShaderAsset(vertexShaderData, fragmentShaderData);
+	shaderAssetMapMutex.Lock();
+	ShaderAsset * checkAsset = shaderAssetMap.at(shaderFastName);
+	DVASSERT(checkAsset == 0);
+	
+	shaderAssetMap.Insert(shaderFastName, asset);
+	shaderAssetMapMutex.Unlock();
 
-    SafeRelease(vertexShaderData);
-    SafeRelease(fragmentShaderData);
-
-    shaderAssetMap.Insert(shaderFastName, asset);
     return asset;
 };
 
 
 ShaderAsset * ShaderCache::Get(const FastName & shader)
 {
-    return shaderAssetMap.at(shader);
+	shaderAssetMapMutex.Lock();
+	ShaderAsset *asset = shaderAssetMap.at(shader);
+	shaderAssetMapMutex.Unlock();
+    return asset;
 }
     
 Shader * ShaderCache::Get(const FastName & shaderName, const FastNameSet & definesSet)
 {
+	shaderAssetMapMutex.Lock();
     ShaderAsset * asset = shaderAssetMap.at(shaderName);
+	shaderAssetMapMutex.Unlock();
+
     if (!asset)
     {
         asset = Load(shaderName);
@@ -429,9 +598,45 @@ Shader * ShaderCache::Get(const FastName & shaderName, const FastNameSet & defin
     //Logger::FrameworkDebug(Format("shader: %s %d", shaderName.c_str(), shader->GetRetainCount()).c_str());
     return shader;
 }
-
     
+void ShaderCache::Reload()
+{
+	shaderAssetMapMutex.Lock();
 
-    
+    FastNameMap<ShaderAsset*>::iterator it = shaderAssetMap.begin();
+    FastNameMap<ShaderAsset*>::iterator endIt = shaderAssetMap.end();
+    for( ; it != endIt; ++it)
+    {
+        ShaderAsset *asset = it->second;
+
+        LoadAsset(asset);
+        asset->ReloadShaders();
+    }
+
+	shaderAssetMapMutex.Unlock();
+}
+
+  
+void ShaderCache::LoadAsset(ShaderAsset *asset)
+{
+    const FastName & shaderFastName = asset->name;
+
+    String shader = shaderFastName.c_str();
+    String vertexShaderPath = shader + ".vsh";
+    String fragmentShaderPath = shader + ".fsh";
+
+    uint32 vertexShaderSize = 0, fragmentShaderSize = 0;
+
+    uint8 * vertexShaderBytes = FileSystem::Instance()->ReadFileContents(vertexShaderPath, vertexShaderSize);
+    Data * vertexShaderData = new Data(vertexShaderBytes, vertexShaderSize);
+
+    uint8 * fragmentShaderBytes = FileSystem::Instance()->ReadFileContents(fragmentShaderPath, fragmentShaderSize);
+    Data * fragmentShaderData = new Data(fragmentShaderBytes, fragmentShaderSize);
+
+    asset->SetShaderData(vertexShaderData, fragmentShaderData);
+    ParseShader(asset);
+    SafeRelease(vertexShaderData);
+    SafeRelease(fragmentShaderData);
+}
     
 };

@@ -47,6 +47,9 @@ public:
 	
 	void ResetSpriteChanged();
 	bool IsSpriteChanged();
+    
+    void ResetLoadedState(bool isLoaded = true);
+    bool IsTextureLoaded() const;
 	
 	Rect GetChangedRect();
 
@@ -61,6 +64,7 @@ protected:
 	Sprite* customColorsSprite;
 	Rect changedRect;
 	bool spriteChanged;
+    bool textureLoaded;
 	int32 size;
 
 	int32 changes;

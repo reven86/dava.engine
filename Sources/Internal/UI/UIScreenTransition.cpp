@@ -65,7 +65,7 @@ void UIScreenTransition::CreateRenderTargets()
 		return;
 	}
     /*copy of default 3d blend with alpha write only - to minimize state changes*/
-    alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_TEXTURE0 | RenderStateData::STATE_COLORMASK_ALPHA);
+    alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
 
     uint32 width = (uint32)Core::Instance()->GetPhysicalScreenWidth();//(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin());
     uint32 height = (uint32)Core::Instance()->GetPhysicalScreenHeight();//(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin());

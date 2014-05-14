@@ -40,7 +40,8 @@
 namespace DAVA 
 {
 class SceneFileV2;
-
+class Camera;
+    
 class Light : public BaseObject
 {
 public:
@@ -69,13 +70,11 @@ public:
     void SetType(eType _type);
     void SetAmbientColor(const Color & _color);
     void SetDiffuseColor(const Color & _color);
-    void SetSpecularColor(const Color & _color);
     void SetIntensity(float32 intensity);
     
     eType GetType() const;
     const Color & GetAmbientColor() const;
     const Color & GetDiffuseColor() const;    
-    const Color & GetSpecularColor() const;    
     float32 GetIntensity() const;
     
     const Vector3 & GetPosition() const;
@@ -85,6 +84,8 @@ public:
     void SetDirection(const Vector3 & direction);
     
     void SetPositionDirectionFromMatrix(const Matrix4 & worldTransform);
+
+    const Vector4 & CalculatePositionDirectionBindVector(Camera * camera);
 
     //virtual void Update(float32 timeElapsed);
     //virtual void Draw();
@@ -101,18 +102,17 @@ public:
 	//void SetRenderSystem
     
 protected:
+	uint32 flags;
+    Camera * camera;
+    uint32 lastUpdatedFrame;
+    uint32 type;
     Vector3 position;
     Vector3 direction;
-    
-    uint32 type;
+    Vector4 resultPositionDirection;
     
     Color ambientColor;
     Color diffuseColor;
-    Color specularColor;
     float32 intensity;
-
-	uint32 flags;
-    
 public:
     
     INTROSPECTION_EXTEND(Light, BaseObject,
@@ -124,8 +124,7 @@ public:
 		PROPERTY("isDynamic", "isDynamic", IsDynamic, SetDynamic, I_VIEW | I_EDIT)
                          
         MEMBER(ambientColor, "Ambient Color", I_SAVE | I_VIEW | I_EDIT)
-        MEMBER(diffuseColor, "Diffuse Color", I_SAVE | I_VIEW | I_EDIT)
-        MEMBER(specularColor, "Specular Color", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(diffuseColor, "Color", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(intensity, "Intensity", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
     );

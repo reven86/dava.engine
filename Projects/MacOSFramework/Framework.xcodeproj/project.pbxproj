@@ -779,6 +779,11 @@
 		5C50EA1A15761947005ABED7 /* libmongodb_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C50EA1915761947005ABED7 /* libmongodb_macos.a */; };
 		5C77AB7D14C7509D00E92D28 /* libpng_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77AB7C14C7509D00E92D28 /* libpng_macos.a */; };
 		5C97965A14E3F09F00FFFA14 /* libyaml_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97965914E3F09F00FFFA14 /* libyaml_macos.a */; };
+		620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
+		6246724918EEA48C00046586 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */; };
+		6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
+		62C1213018E961AE0008D201 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */; };
+		62C1213118E961AE0008D201 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 62C1212F18E961AE0008D201 /* LibJpegHelper.h */; };
 		6280BAA918D6F909007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA818D6F909007809B7 /* DateTimeApple.mm */; };
 		62BD24C018C621EB00D2F0D3 /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */; };
 		62BD24C118C621EB00D2F0D3 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BD24BF18C621EB00D2F0D3 /* DateTime.h */; };
@@ -2110,6 +2115,12 @@
 		E89CE91216C549D2006BEFF4 /* libcurl_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E89CE91116C549D2006BEFF4 /* libcurl_macos.a */; };
 		E8ACC88118A29FBA00F26ABC /* ParticleRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA106060188921FC00CB99A3 /* ParticleRenderObject.cpp */; };
 		E8ACC88218A29FBB00F26ABC /* ParticleRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = EA106061188921FC00CB99A3 /* ParticleRenderObject.h */; };
+		E8ADAEB918CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */; };
+		E8ADAEBA18CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */; };
+		E8ADAEBB18CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */; };
+		E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
+		E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
+		E8ADAEBE18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B6B3B01705DB26004F665E /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840D24201703311400267C58 /* DeviceInfo.cpp */; };
@@ -2324,6 +2335,9 @@
 		5C6BF78214C85A2A009297F7 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		5C77AB7C14C7509D00E92D28 /* libpng_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_macos.a; path = ../../Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
 		5C97965914E3F09F00FFFA14 /* libyaml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_macos.a; path = ../../Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
+		627AFA6C18E964E300F2A52A /* libjpeg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_macos.a; path = ../../Libs/libs/libjpeg_macos.a; sourceTree = "<group>"; };
+		62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibJpegHelper.cpp; sourceTree = "<group>"; };
+		62C1212F18E961AE0008D201 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibJpegHelper.h; sourceTree = "<group>"; };
 		6280BAA818D6F909007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
 		62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTime.cpp; sourceTree = "<group>"; };
 		62BD24BF18C621EB00D2F0D3 /* DateTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTime.h; sourceTree = "<group>"; };
@@ -2975,6 +2989,8 @@
 		E89C58E318B2458E002C25FE /* Atomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Atomic.h; sourceTree = "<group>"; };
 		E89C58E718B245A6002C25FE /* AtomicMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AtomicMacOS.mm; sourceTree = "<group>"; };
 		E89CE91116C549D2006BEFF4 /* libcurl_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_macos.a; path = ../../Libs/libs/libcurl_macos.a; sourceTree = "<group>"; };
+		E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
+		E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
 		E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UTF8UtilsMac.mm; sourceTree = "<group>"; };
 		E8B6B3BA1705DD59004F665E /* DeviceInfoMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoMacOS.mm; sourceTree = "<group>"; };
 		E8B731A5180BF7EB00C7CF26 /* TeamcityOutputMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TeamcityOutputMac.mm; sourceTree = "<group>"; };
@@ -3039,6 +3055,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */,
 				02E9E40A17395FDD00C501BC /* libfmodevent.dylib in Frameworks */,
 				02E9E40B17395FDD00C501BC /* libfmodex.dylib in Frameworks */,
 				C1DC1F001717EC1E001C5EC3 /* libTextureConverter_macos.a in Frameworks */,
@@ -3065,6 +3082,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */,
 				02E9E40C17395FED00C501BC /* libfmodevent.dylib in Frameworks */,
 				02E9E40D17395FED00C501BC /* libfmodex.dylib in Frameworks */,
 				C1DC1EFD1717E8B7001C5EC3 /* libTextureConverter_macos.a in Frameworks */,
@@ -3114,6 +3132,7 @@
 		0867D691FE84028FC02AAC07 /* Framework */ = {
 			isa = PBXGroup;
 			children = (
+				627AFA6C18E964E300F2A52A /* libjpeg_macos.a */,
 				02E9E40817395FDD00C501BC /* libfmodevent.dylib */,
 				02E9E40917395FDD00C501BC /* libfmodex.dylib */,
 				C1DC1EFB1717E791001C5EC3 /* libTextureConverter_macos.a */,
@@ -3656,6 +3675,10 @@
 		E8989C1516BD24E400732C04 /* Render */ = {
 			isa = PBXGroup;
 			children = (
+				E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */,
+				E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */,
+				62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */,
+				62C1212F18E961AE0008D201 /* LibJpegHelper.h */,
 				A670F2EF1847A99E0030E075 /* TextureStateData.h */,
 				A69B7A461834CD640093AF7F /* RenderStateData.h */,
 				A69B7A471834CD640093AF7F /* UniqueStateSet.h */,
@@ -4393,6 +4416,7 @@
 				176DE998174B5561007A983B /* LibPngHelpers.h in Headers */,
 				176DE999174B5561007A983B /* LibPVRHelper.h in Headers */,
 				176DE99A174B5561007A983B /* MaterialCompiler.h in Headers */,
+				E8ADAEBE18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				176DE99B174B5561007A983B /* MaterialGraph.h in Headers */,
 				176DE99C174B5561007A983B /* MaterialGraphNode.h in Headers */,
 				176DE99D174B5561007A983B /* NMaterial.h in Headers */,
@@ -4740,6 +4764,7 @@
 				E8989ECF16BD24E500732C04 /* OpenGLView.h in Headers */,
 				E8989ED516BD24E500732C04 /* Thread.h in Headers */,
 				E8989EDA16BD24E500732C04 /* Font.h in Headers */,
+				62C1213118E961AE0008D201 /* LibJpegHelper.h in Headers */,
 				E8989EDC16BD24E500732C04 /* FontManager.h in Headers */,
 				E8989EDE16BD24E500732C04 /* FTFont.h in Headers */,
 				E8989EE016BD24E500732C04 /* GraphicsFont.h in Headers */,
@@ -4785,6 +4810,7 @@
 				E89C58E418B2458E002C25FE /* Atomic.h in Headers */,
 				E8989F5D16BD24E500732C04 /* SharedFBO.h in Headers */,
 				E8989F6316BD24E500732C04 /* Texture.h in Headers */,
+				E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				E8989F6516BD24E500732C04 /* TextureDescriptor.h in Headers */,
 				E8989F6816BD24E500732C04 /* UberShader.h in Headers */,
 				CC84B01F18211A9000934482 /* JobManager.h in Headers */,
@@ -5124,6 +5150,7 @@
 				E898A0CD16BD265400732C04 /* NetworkPacket.h in Headers */,
 				E898A0CE16BD265400732C04 /* TCPServer.h in Headers */,
 				E898A0CF16BD265400732C04 /* WFNetworkConnection.h in Headers */,
+				E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */,
 				E898A0D016BD265400732C04 /* Particle.h in Headers */,
 				E898A0D116BD265400732C04 /* ParticleEmitter.h in Headers */,
 				E898A0D416BD265400732C04 /* ParticleLayer.h in Headers */,
@@ -5540,6 +5567,7 @@
 				176DEA83174B5561007A983B /* KeyboardDevice.cpp in Sources */,
 				176DEA84174B5561007A983B /* AABBox2.cpp in Sources */,
 				176DEA85174B5561007A983B /* AABBox3.cpp in Sources */,
+				E8ADAEBB18CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				176DEA86174B5561007A983B /* BezierSpline.cpp in Sources */,
 				176DEA87174B5561007A983B /* Math2D.cpp in Sources */,
 				176DEA88174B5561007A983B /* Matrix4.cpp in Sources */,
@@ -5815,9 +5843,11 @@
 				E8989DB016BD24E500732C04 /* MongodbUpdateObject.cpp in Sources */,
 				E8989DB416BD24E500732C04 /* BaseMath.cpp in Sources */,
 				E8989DB616BD24E500732C04 /* BaseObject.cpp in Sources */,
+				E8ADAEB918CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				E8989DB816BD24E500732C04 /* BaseObjectChecker.cpp in Sources */,
 				E8989DBB16BD24E500732C04 /* Data.cpp in Sources */,
 				E8989DBD16BD24E500732C04 /* DynamicObjectCache.cpp in Sources */,
+				62C1213018E961AE0008D201 /* LibJpegHelper.cpp in Sources */,
 				E8989DBF16BD24E500732C04 /* EventDispatcher.cpp in Sources */,
 				E8989DC216BD24E500732C04 /* FastName.cpp in Sources */,
 				E8989DC516BD24E500732C04 /* FixedSizePoolAllocator.cpp in Sources */,
@@ -6214,6 +6244,7 @@
 				50A3043C18575C370082CA8D /* StaticOcclusion.cpp in Sources */,
 				E898A1D016BD265400732C04 /* KeyedUnarchiver.cpp in Sources */,
 				E898A1D116BD265400732C04 /* LocalizationSystem.cpp in Sources */,
+				E8ADAEBA18CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				7A169354180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				E898A1D216BD265400732C04 /* Logger.cpp in Sources */,
 				E898A1D316BD265400732C04 /* LoggerMacOS.mm in Sources */,
@@ -6344,6 +6375,7 @@
 				E898A26416BD265400732C04 /* ParticleEmitterNode.cpp in Sources */,
 				E898A26516BD265400732C04 /* PathManip.cpp in Sources */,
 				E898A26616BD265400732C04 /* PolygonGroupInstance.cpp in Sources */,
+				6246724918EEA48C00046586 /* LibJpegHelper.cpp in Sources */,
 				E898A26716BD265400732C04 /* ProxyNode.cpp in Sources */,
 				E898A26B16BD265400732C04 /* Scene.cpp in Sources */,
 				E898A26C16BD265400732C04 /* SceneAnimationMixer.cpp in Sources */,
@@ -6626,6 +6658,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/a_makovii/Documents/work/git/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = Framework;
 			};
@@ -6662,6 +6695,7 @@
 					"\"$(SRCROOT)/../../Libs/libs\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/macos\"",
+					/Users/a_makovii/Documents/work/git/dava.framework/Libs/libs,
 				);
 				PRODUCT_NAME = Framework;
 			};

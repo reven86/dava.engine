@@ -58,7 +58,7 @@ void SwitchSystem::Process(float32 timeElapsed)
 		Entity * entity = *it;
 		SwitchComponent * sw = (SwitchComponent*)entity->GetComponent(Component::SWITCH_COMPONENT);
 
-		if(sw->oldSwitchIndex != sw->newSwitchIndex)
+        if (sw->oldSwitchIndex != sw->newSwitchIndex)
 		{
             SetSwitchHierarchy(entity, sw->newSwitchIndex);
 
@@ -81,6 +81,11 @@ void SwitchSystem::ImmediateEvent(Entity * entity, uint32 event)
 	{
 		updatableEntities.insert(entity);
 	}
+}
+
+void SwitchSystem::RemoveEntity(Entity* entity)
+{
+    updatableEntities.erase(entity);
 }
 
 void SwitchSystem::SetSwitchHierarchy(Entity * entity, int32 switchIndex)

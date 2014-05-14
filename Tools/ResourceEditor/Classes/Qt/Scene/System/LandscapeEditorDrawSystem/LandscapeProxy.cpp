@@ -439,7 +439,7 @@ void LandscapeProxy::InitTilemaskSprites()
 		SafeRelease(tilemaskSprites[TILEMASK_SPRITE_SOURCE]);
 		SafeRelease(tilemaskSprites[TILEMASK_SPRITE_DESTINATION]);
 
-		int32 texSize = GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->GetWidth();
+		float32 texSize = (float32)GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->GetWidth();
 		tilemaskSprites[TILEMASK_SPRITE_SOURCE] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888);
 		tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888);
 	}

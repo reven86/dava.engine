@@ -112,7 +112,7 @@ bool SwitchToRenerObjectConverter::MergeSwitch(Entity * entity)
                     PolygonGroup * pg = sourceRenderObject->GetRenderBatchCount() > 0 ? sourceRenderObject->GetRenderBatch(0)->GetPolygonGroup() : 0;
                     if(pg && bakedPolygonGroups.end() == bakedPolygonGroups.find(pg))
                     {
-                        sourceRenderObject->BakeTransform(sourceTransform->GetLocalTransform());
+                        sourceRenderObject->BakeGeometry(sourceTransform->GetLocalTransform());
                         bakedPolygonGroups.insert(pg);
                     }
                 }

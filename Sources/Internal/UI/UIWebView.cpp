@@ -50,6 +50,8 @@ UIWebView::UIWebView(const Rect &rect, bool rectInAbsoluteCoordinates) :
 {
     Rect newRect = GetRect(true);
     webViewControl->Initialize(newRect);
+    webViewControl->SetVisible(false, true); // will be displayed in WillAppear.
+    SetDataDetectorTypes(DATA_DETECTOR_LINKS);
 }
 
 UIWebView::~UIWebView()
@@ -158,4 +160,14 @@ bool UIWebView::GetBounces() const
 void UIWebView::SetGestures(bool value)
 {
 	webViewControl->SetGestures(value);    
+}
+
+void UIWebView::SetDataDetectorTypes(int32 value)
+{
+    this->webViewControl->SetDataDetectorTypes(value);
+}
+
+int32 UIWebView::GetDataDetectorTypes() const
+{
+    return this->webViewControl->GetDataDetectorTypes();
 }

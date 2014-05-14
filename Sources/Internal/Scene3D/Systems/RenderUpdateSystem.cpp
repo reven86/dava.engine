@@ -110,8 +110,8 @@ void RenderUpdateSystem::Process(float32 timeElapsed)
     TIME_PROFILE("RenderUpdateSystem::Process");
 
     RenderSystem * renderSystem = GetScene()->GetRenderSystem();
-    renderSystem->SetCamera(GetScene()->GetCurrentCamera());
-    renderSystem->SetClipCamera(GetScene()->GetClipCamera());
+    renderSystem->SetMainCamera(GetScene()->GetCurrentCamera());
+    renderSystem->SetDrawCamera(GetScene()->GetDrawCamera());
 
     GetScene()->GetRenderSystem()->Update(timeElapsed);
 }

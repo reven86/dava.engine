@@ -807,7 +807,6 @@ void MeshInstanceNode::BakeTransforms()
     }
 }
     
-    
 void MeshInstanceNode::UpdateLights()
 {
     Vector3 meshPosition = Vector3() * GetWorldTransform();

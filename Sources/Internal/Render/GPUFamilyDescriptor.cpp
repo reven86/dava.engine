@@ -34,6 +34,7 @@
 #include "Utils/StringFormat.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Texture.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA
 {
@@ -57,7 +58,18 @@ void GPUFamilyDescriptor::SetupGPUFormats()
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_A8] = ".pvr";
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR4] = ".pvr";
     gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR2] = ".pvr";
-    
+
+    //es30
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR2_2] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_PVR4_2] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_R11_UNSIGNED] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_R11_SIGNED] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_RG11_SIGNED] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_EAC_RG11_UNSIGNED] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_ETC2_RGB] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_ETC2_RGBA] = ".pvr";
+    gpuData[GPU_POWERVR_IOS].availableFormats[FORMAT_ETC2_RGB_A1] = ".pvr";
+
 
     //pvr android
     gpuData[GPU_POWERVR_ANDROID].availableFormats[FORMAT_RGBA8888] = ".pvr";
@@ -80,7 +92,6 @@ void GPUFamilyDescriptor::SetupGPUFormats()
     gpuData[GPU_TEGRA].availableFormats[FORMAT_RGBA8888] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT1] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT1A] = ".dds";
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT1NM] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT3] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT5] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT5NM] = ".dds";
@@ -106,30 +117,6 @@ void GPUFamilyDescriptor::SetupGPUFormats()
     gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGB] = ".dds";
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_EXPLICIT_ALPHA] = ".dds";
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_INTERPOLATED_ALPHA] = ".dds";
-
-    
-    //for test all formats
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA8888] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA5551] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA4444] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGB888] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGB565] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_A8] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_A16] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_PVR4] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_PVR2] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA16161616] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_RGBA32323232] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_DXT1] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_DXT1NM] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_DXT1A] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_DXT3] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_DXT5] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_DXT5NM] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_ETC1] = ".pvr";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGB] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_EXPLICIT_ALPHA] = ".dds";
-//    gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_INTERPOLATED_ALPHA] = ".dds";
 }
 
 void GPUFamilyDescriptor::SetupGPUPostfixes()
@@ -171,15 +158,23 @@ eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily)
 {
     DVASSERT(descriptor);
-    
-    eGPUFamily requestedGPU = gpuFamily;
-    PixelFormat requestedFormat = (PixelFormat) descriptor->compression[gpuFamily].format;
-    
+
+	if(GPU_UNKNOWN == gpuFamily)
+		return CreatePathnameForGPU(descriptor->pathname, GPU_UNKNOWN, FORMAT_INVALID);
+
+	eGPUFamily requestedGPU = gpuFamily;
+	
+	PixelFormat requestedFormat = FORMAT_INVALID;
     if(descriptor->IsCompressedFile())
     {
         requestedGPU = (eGPUFamily)descriptor->exportedAsGpuFamily;
-        requestedFormat = (PixelFormat)descriptor->exportedAsPixelFormat;
+        requestedFormat = (PixelFormat)descriptor->format;
     }
+	else
+	{
+		DVASSERT(descriptor->compression);
+		requestedFormat = (PixelFormat) descriptor->compression[gpuFamily]->format;
+	}
     
     return CreatePathnameForGPU(descriptor->pathname, requestedGPU, requestedFormat);
 }
@@ -243,7 +238,7 @@ String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const
     Map<PixelFormat, String>::const_iterator format = gpuData[gpuFamily].availableFormats.find(pixelFormat);
 	if(format == gpuData[gpuFamily].availableFormats.end())
 	{
-		Logger::Error("[GPUFamilyDescriptor::GetFilenamePostfix: can't find format %s for gpu %s]", Texture::GetPixelFormatString(pixelFormat), gpuData[gpuFamily].name.c_str());
+		Logger::Error("[GPUFamilyDescriptor::GetFilenamePostfix: can't find format %s for gpu %s]", PixelFormatDescriptor::GetPixelFormatString(pixelFormat), gpuData[gpuFamily].name.c_str());
 		return ".png";
 	}
 

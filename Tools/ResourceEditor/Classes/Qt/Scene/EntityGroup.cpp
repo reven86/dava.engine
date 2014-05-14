@@ -129,7 +129,7 @@ DAVA::AABBox3 EntityGroup::GetBbox(size_t i) const
 	return ret;
 }
 
-void EntityGroup::SetBbox(size_t i, DAVA::AABBox3 &entityBbox)
+void EntityGroup::SetBbox(size_t i, const DAVA::AABBox3 &entityBbox)
 {
 	if(i < entities.size())
 	{

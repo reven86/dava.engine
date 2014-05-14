@@ -92,6 +92,10 @@ QVariant QtPropertyData::data(int role) const
 		break;
     case Qt::ToolTipRole:
         ret = GetToolTip();
+        if (!ret.isValid())
+        {
+            ret = data(Qt::DisplayRole);
+        }
         break;
 	case Qt::CheckStateRole:
 		if(GetFlags() & Qt::ItemIsUserCheckable)

@@ -356,6 +356,7 @@
     <ClCompile Include="Classes\Commands2\DeleteRenderBatchCommand.cpp" />
     <ClCompile Include="Classes\Commands2\DynamicShadowCommands.cpp" />
     <ClCompile Include="Classes\Commands2\EntityAddCommand.cpp" />
+    <ClCompile Include="Classes\Commands2\EntityLockCommand.cpp" />
     <ClCompile Include="Classes\Commands2\EntityParentChangeCommand.cpp" />
     <ClCompile Include="Classes\Commands2\EntityRemoveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\HeightmapEditorCommands2.cpp" />
@@ -365,6 +366,7 @@
     <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\LandscapeEditorDrawSystemActions.cpp" />
     <ClCompile Include="Classes\Commands2\LandscapeSetTexturesCommands.cpp" />
+    <ClCompile Include="Classes\Commands2\MaterialGlobalCommand.cpp" />
     <ClCompile Include="Classes\Commands2\MaterialSwitchParentCommand.cpp" />
     <ClCompile Include="Classes\Commands2\MetaObjModifyCommand.cpp" />
     <ClCompile Include="Classes\Commands2\ParticleEditorCommands.cpp" />
@@ -505,8 +507,8 @@
     <ClCompile Include="Classes\Qt\Scene\System\TextDrawSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\TilemaskEditorSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\VisibilityToolSystem.cpp" />
+    <ClCompile Include="Classes\Qt\Settings\SettingsDialog.cpp" />
     <ClCompile Include="Classes\Qt\Settings\SettingsManager.cpp" />
-    <ClCompile Include="Classes\Qt\Settings\SettingsStateDialog.cpp" />
     <ClCompile Include="Classes\Qt\SoundComponentEditor\FMODSoundBrowser.cpp" />
     <ClCompile Include="Classes\Qt\SoundComponentEditor\SoundComponentEditor.cpp" />
     <ClCompile Include="Classes\Qt\SpeedTreeImport\SpeedTreeImportDialog.cpp" />
@@ -526,6 +528,7 @@
     <ClCompile Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.cpp" />
     <ClCompile Include="Classes\Qt\Tools\AddSwitchEntityDialog\SwitchEntityCreator.cpp" />
     <ClCompile Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.cpp" />
+    <ClCompile Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.cpp" />
     <ClCompile Include="Classes\Qt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox.cpp" />
     <ClCompile Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.cpp" />
     <ClCompile Include="Classes\Qt\Tools\LabeledSlider\LabeledSlider.cpp" />
@@ -562,8 +565,6 @@
     <ClCompile Include="Classes\Qt\Tools\RunGuard\RunGuard.cpp" />
     <ClCompile Include="Classes\Qt\Tools\SelectPathWidget\SelectEntityPathWidget.cpp" />
     <ClCompile Include="Classes\Qt\Tools\SelectPathWidget\SelectPathWidgetBase.cpp" />
-    <ClCompile Include="Classes\Qt\Tools\SettingsDialog\GeneralSettingsDialog.cpp" />
-    <ClCompile Include="Classes\Qt\Tools\SettingsDialog\SceneSettingsDialog.cpp" />
     <ClCompile Include="Classes\Qt\Tools\SliderWidget\PopupEditorDialog.cpp" />
     <ClCompile Include="Classes\Qt\Tools\SliderWidget\SliderWidget.cpp" />
     <ClCompile Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget.cpp" />
@@ -682,8 +683,7 @@
     <ClCompile Include="_GeneratedQt\Scene\System\TextDrawSystem_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\System\TilemaskEditorSystem_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\System\VisibilityToolSystem_moc.cpp" />
-    <ClCompile Include="_GeneratedQt\Settings\SettingsManager_moc.cpp" />
-    <ClCompile Include="_GeneratedQt\Settings\SettingsStateDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Settings\SettingsDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\SoundComponentEditor\FMODSoundBrowser_moc.cpp" />
     <ClCompile Include="_GeneratedQt\SoundComponentEditor\SoundComponentEditor_moc.cpp" />
     <ClCompile Include="_GeneratedQt\SpeedTreeImport\SpeedTreeImportDialog_moc.cpp" />
@@ -702,6 +702,7 @@
     <ClCompile Include="_GeneratedQt\Tools\AddSkyboxDialog\AddSkyboxDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\BaseAddEntityDialog\BaseAddEntityDialog_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\Tools\DeveloperTools\DeveloperTools_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\HangingObjectsHeight\HangingObjectsHeight_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\LabeledSlider\LabeledSlider_moc.cpp" />
@@ -731,7 +732,6 @@
     <ClCompile Include="_GeneratedQt\Tools\QtWaitDialog\QtWaitDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\SelectPathWidget\SelectEntityPathWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\SelectPathWidget\SelectPathWidgetBase_moc.cpp" />
-    <ClCompile Include="_GeneratedQt\Tools\SettingsDialog\GeneralSettingsDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\SliderWidget\PopupEditorDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\SliderWidget\SliderWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate_moc.cpp" />
@@ -995,6 +995,7 @@
     <ClInclude Include="Classes\Commands2\DeleteRenderBatchCommand.h" />
     <ClInclude Include="Classes\Commands2\DynamicShadowCommands.h" />
     <ClInclude Include="Classes\Commands2\EntityAddCommand.h" />
+    <ClInclude Include="Classes\Commands2\EntityLockCommand.h" />
     <ClInclude Include="Classes\Commands2\EntityParentChangeCommand.h" />
     <ClInclude Include="Classes\Commands2\EntityRemoveCommand.h" />
     <ClInclude Include="Classes\Commands2\HeightmapEditorCommands2.h" />
@@ -1004,6 +1005,7 @@
     <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h" />
     <ClInclude Include="Classes\Commands2\LandscapeEditorDrawSystemActions.h" />
     <ClInclude Include="Classes\Commands2\LandscapeSetTexturesCommands.h" />
+    <ClInclude Include="Classes\Commands2\MaterialGlobalCommand.h" />
     <ClInclude Include="Classes\Commands2\MaterialSwitchParentCommand.h" />
     <ClInclude Include="Classes\Commands2\MetaObjModifyCommand.h" />
     <ClInclude Include="Classes\Commands2\ParticleEditorCommands.h" />
@@ -1147,8 +1149,8 @@
     <ClInclude Include="Classes\Qt\Scene\System\TextDrawSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\TilemaskEditorSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\VisibilityToolSystem.h" />
+    <ClInclude Include="Classes\Qt\Settings\SettingsDialog.h" />
     <ClInclude Include="Classes\Qt\Settings\SettingsManager.h" />
-    <ClInclude Include="Classes\Qt\Settings\SettingsStateDialog.h" />
     <ClInclude Include="Classes\Qt\SoundComponentEditor\FMODSoundBrowser.h" />
     <ClInclude Include="Classes\Qt\SoundComponentEditor\SoundComponentEditor.h" />
     <ClInclude Include="Classes\Qt\SpeedTreeImport\SpeedTreeImportDialog.h" />
@@ -1170,6 +1172,7 @@
     <ClInclude Include="Classes\Qt\Tools\AddSwitchEntityDialog\AddSwitchEntityDialog.h" />
     <ClInclude Include="Classes\Qt\Tools\AddSwitchEntityDialog\SwitchEntityCreator.h" />
     <ClInclude Include="Classes\Qt\Tools\BaseAddEntityDialog\BaseAddEntityDialog.h" />
+    <ClInclude Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.h" />
     <ClInclude Include="Classes\Qt\Tools\EventFilterDoubleSpinBox\EventFilterDoubleSpinBox.h" />
     <ClInclude Include="Classes\Qt\Tools\HangingObjectsHeight\HangingObjectsHeight.h" />
     <ClInclude Include="Classes\Qt\Tools\LabeledSlider\LabeledSlider.h" />
@@ -1208,8 +1211,6 @@
     <ClInclude Include="Classes\Qt\Tools\RunGuard\RunGuard.h" />
     <ClInclude Include="Classes\Qt\Tools\SelectPathWidget\SelectEntityPathWidget.h" />
     <ClInclude Include="Classes\Qt\Tools\SelectPathWidget\SelectPathWidgetBase.h" />
-    <ClInclude Include="Classes\Qt\Tools\SettingsDialog\GeneralSettingsDialog.h" />
-    <ClInclude Include="Classes\Qt\Tools\SettingsDialog\SceneSettingsDialog.h" />
     <ClInclude Include="Classes\Qt\Tools\SliderWidget\PopupEditorDialog.h" />
     <ClInclude Include="Classes\Qt\Tools\SliderWidget\SliderWidget.h" />
     <ClInclude Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidget.h" />
@@ -1242,6 +1243,7 @@
     <None Include="DataQt\CubeMapTextureBrowser.ui" />
     <None Include="DataQt\ImageSplitter.ui" />
     <None Include="DataQt\LicenceDialog.ui" />
+    <None Include="DataQt\LODEditor.ui" />
     <None Include="DataQt\mainwindow.ui">
       <SubType>Designer</SubType>
     </None>

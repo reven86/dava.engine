@@ -176,6 +176,8 @@ public:
 	static const FastName PARAM_FOG_DENSITY;
     static const FastName PARAM_FOG_START;
     static const FastName PARAM_FOG_END;
+    static const FastName PARAM_FOG_GLOW_COLOR;
+    static const FastName PARAM_FOG_GLOW_SCATTERING;
 	static const FastName PARAM_FLAT_COLOR;
 	static const FastName PARAM_TEXTURE0_SHIFT;
 	static const FastName PARAM_UV_OFFSET;
@@ -191,8 +193,12 @@ public:
 	static const FastName FLAG_VERTEXFOG;
 	static const FastName FLAG_FOG_EXP;
 	static const FastName FLAG_FOG_LINEAR;
-	static const FastName FLAG_TEXTURESHIFT;
+	static const FastName FLAG_FOG_GLOW;
+    static const FastName FLAG_TEXTURESHIFT;
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
+	static const FastName FLAG_WAVE_ANIMATION;
+	static const FastName FLAG_FAST_NORMALIZATION;
+    
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
     static const FastName FLAG_SPECULAR;
@@ -250,9 +256,9 @@ public:
 		
 	//{TODO: these should be removed and changed to a generic system
 	//setting properties via special setters
-    uint32 GetLightCount() { return lightCount; };
-    void SetLight(uint32 index, Light * light, bool forceUpdate);
-    Light * GetLight(uint32 index) { return lights[index]; };
+//    uint32 GetLightCount() { return lightCount; };
+//    void SetLight(uint32 index, Light * light, bool forceUpdate);
+//    Light * GetLight(uint32 index) { return lights[index]; };
 	inline bool IsDynamicLit() {return materialDynamicLit;}
 	//}END TODO
 	
@@ -548,15 +554,15 @@ protected:
 	void UpdateShaderWithFlags();
 	//static Texture* GetStubTexture(const FastName& uniformName);
 	
-	void SetupPerFrameProperties(Camera* camera);
 	void BindMaterialTextures(RenderPassInstance* passInstance);
 	void BindMaterialProperties(RenderPassInstance* passInstance);
 	
 	//VI: this method is for updating light. It's temporary solution hopefully
-	void UpdateLightingProperties(Light* light);
+	//void UpdateLightingProperties(Light* light);
 	bool IsLightingProperty(const FastName& propName) const;
-	void SetLightInternal(int index, Light* light, bool forceUpdate);
-    void SetParentInternal(NMaterial *material);
+	//void SetLightInternal(int index, Light* light, bool forceUpdate);
+
+	void SetParentInternal(NMaterial *material);
 
     FastName GetEffectiveQuality() const;
 	

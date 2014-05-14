@@ -248,11 +248,12 @@ void Texture::ReleaseTextureData()
 #if defined(__DAVAENGINE_ANDROID__)
     container->stencilRboID = stencilRboID;
 #endif
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::ReleaseTextureDataInternal, container));
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &Texture::ReleaseTextureDataInternal, container), Job::NO_FLAGS);
     
     id = 0;
 	fboID = -1;
 	rboID = -1;
+    isRenderTarget = false;
 }
 
 void Texture::ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData)
@@ -332,10 +333,8 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
 
     RENDER_VERIFY(glPixelStorei( GL_UNPACK_ALIGNMENT, 1 ));
 
-	PixelFormat format = texDescriptor->format;
-	DVASSERT((0 <= format) && (format < FORMAT_COUNT));
-	
-    if(FORMAT_INVALID != format)
+	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
+    if(FORMAT_INVALID != formatDescriptor.formatID)
     {
 		GLuint textureMode = GL_TEXTURE_2D;
 		
@@ -344,13 +343,13 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
 			textureMode = CUBE_FACE_GL_NAMES[cubeFaceId];
 		}
 		
-		if (IsCompressedFormat(format))
+		if (formatDescriptor.isCompressedFormat)
         {
-			RENDER_VERIFY(glCompressedTexImage2D(textureMode, level, pixelDescriptors[format].internalformat, width, height, 0, dataSize, _data));
+			RENDER_VERIFY(glCompressedTexImage2D(textureMode, level, formatDescriptor.internalformat, width, height, 0, dataSize, _data));
         }
         else
         {
-            RENDER_VERIFY(glTexImage2D(textureMode, level, pixelDescriptors[format].internalformat, width, height, 0, pixelDescriptors[format].format, pixelDescriptors[format].type, _data));
+            RENDER_VERIFY(glTexImage2D(textureMode, level, formatDescriptor.internalformat, width, height, 0, formatDescriptor.format, formatDescriptor.type, _data));
         }
     }
 	
@@ -372,7 +371,7 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void * _d
 	}
 
 	// \todo instead of hardcoding transformations, use ImageConvert.
-	int32 pixelSizeInBits = GetPixelFormatSize(format);
+	int32 pixelSizeInBits = PixelFormatDescriptor::GetPixelFormatSize(format);
 	if (format ==  FORMAT_RGBA8888)
 	{
 		//int32 pitchInBytes = 
@@ -424,7 +423,23 @@ Texture * Texture::CreateFromData(PixelFormat _format, const uint8 *_data, uint3
 	texture->FlushDataToRenderer(images);
 
 	return texture;
-}		
+}
+    
+Texture * Texture::CreateFromData(Image *image, bool generateMipMaps)
+{
+	Texture * texture = new Texture();
+	texture->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, generateMipMaps);
+    
+    Vector<Image *> *images = new Vector<Image *>();
+    image->Retain();
+    images->push_back(image);
+	
+    texture->SetParamsFromImages(images);
+	texture->FlushDataToRenderer(images);
+    
+	return texture;
+}
+
 	
 void Texture::SetWrapMode(TextureWrap wrapS, TextureWrap wrapT)
 {
@@ -473,7 +488,8 @@ void Texture::GenerateMipmaps()
 
 void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *callerData)
 {
-	if(IsCompressedFormat(texDescriptor->format))
+	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
+	if(formatDescriptor.isCompressedFormat)
     {
 		return;
 	}
@@ -486,7 +502,7 @@ void Texture::GenerateMipmapsInternal(BaseObject * caller, void * param, void *c
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
 		
     Image * image0 = CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-    Vector<Image *> images = image0->CreateMipMapsImages();
+    Vector<Image *> images = image0->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
     SafeRelease(image0);
 
     for(uint32 i = 1; i < (uint32)images.size(); ++i)
@@ -613,7 +629,7 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
         if(images->size() == 1 && gpu == GPU_UNKNOWN && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();
-            *images = img->CreateMipMapsImages();
+            *images = img->CreateMipMapsImages(texDescriptor->dataSettings.GetIsNormalMap());
             SafeRelease(img);
         }
     }
@@ -685,8 +701,8 @@ void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, voi
 
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
 
-	RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_WRAP_S, TEXTURE_WRAP_MAP[texDescriptor->settings.wrapModeS]));
-	RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_WRAP_T, TEXTURE_WRAP_MAP[texDescriptor->settings.wrapModeT]));
+	RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_WRAP_S, TEXTURE_WRAP_MAP[texDescriptor->drawSettings.wrapModeS]));
+	RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_WRAP_T, TEXTURE_WRAP_MAP[texDescriptor->drawSettings.wrapModeT]));
 
     if (pixelizationFlag)
     {
@@ -695,8 +711,8 @@ void Texture::FlushDataToRendererInternal(BaseObject * caller, void * param, voi
     }
     else
     {
-        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MIN_FILTER, TEXTURE_FILTER_MAP[texDescriptor->settings.minFilter]));
-        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MAG_FILTER, TEXTURE_FILTER_MAP[texDescriptor->settings.magFilter]));
+        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MIN_FILTER, TEXTURE_FILTER_MAP[texDescriptor->drawSettings.minFilter]));
+        RENDER_VERIFY(glTexParameteri(SELECT_GL_TEXTURE_TYPE(textureType), GL_TEXTURE_MAG_FILTER, TEXTURE_FILTER_MAP[texDescriptor->drawSettings.magFilter]));
     }
 
 	RenderManager::Instance()->HWglBindTexture(saveId, textureType);
@@ -722,26 +738,6 @@ bool Texture::CheckImageSize(const Vector<DAVA::Image *> &imageSet)
     
     return true;
 }
-
-bool Texture::IsCompressedFormat(PixelFormat format)
-{
-	bool retValue =  false;
-	if(FORMAT_INVALID != format)
-    {
-        if (FORMAT_PVR2 == format ||
-			FORMAT_PVR4 == format ||
-			(format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM) ||
-			FORMAT_ETC1 == format ||
-			FORMAT_ATC_RGB == format ||
-			FORMAT_ATC_RGBA_EXPLICIT_ALPHA == format ||
-			FORMAT_ATC_RGBA_INTERPOLATED_ALPHA == format)
-        {
-            retValue = true;
-        }
-    }
-	return retValue;
-}
-
 
 Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &group, TextureType typeHint)
 {
@@ -794,14 +790,13 @@ void Texture::Reload()
     
 void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
+    DVASSERT(isRenderTarget == false);
+    
     FilePath savedPath = texDescriptor->pathname;
     
     ReleaseTextureData();
 
-    if(savedPath.Exists())
-    {
-        texDescriptor->Initialize(savedPath);
-    }
+	texDescriptor->Reload();
     
 	DVASSERT(NULL != texDescriptor);
     
@@ -817,7 +812,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
 	if(loaded)
 	{
 		loadedAsFile = gpuForLoading;
-        
+
 		SetParamsFromImages(images);
 		FlushDataToRenderer(images);
 	}
@@ -840,7 +835,8 @@ bool Texture::IsLoadAvailable(const eGPUFamily gpuFamily) const
     
     DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
     
-    if(gpuFamily != GPU_UNKNOWN && texDescriptor->compression[gpuFamily].format == FORMAT_INVALID)
+	DVASSERT(texDescriptor->compression);
+    if(gpuFamily != GPU_UNKNOWN && texDescriptor->compression[gpuFamily]->format == FORMAT_INVALID)
     {
         return false;
     }
@@ -1003,13 +999,14 @@ void Texture::DumpTextures()
 	for(TexturesMap::iterator it = textureMap.begin(); it != textureMap.end(); ++it)
 	{
 		Texture *t = it->second;
-		Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), t->id, t->width, t->height, t->GetRetainCount(), t->debugInfo.c_str(), GetPixelFormatString(t->texDescriptor->format));
+		Logger::FrameworkDebug("%s with id %d (%dx%d) retainCount: %d debug: %s format: %s", t->texDescriptor->pathname.GetAbsolutePathname().c_str(), t->id, t->width, t->height, 
+								t->GetRetainCount(), t->debugInfo.c_str(), PixelFormatDescriptor::GetPixelFormatString(t->texDescriptor->format));
 		cnt++;
         
         DVASSERT((0 <= t->texDescriptor->format) && (t->texDescriptor->format < FORMAT_COUNT));
         if(FORMAT_INVALID != t->texDescriptor->format)
         {
-            allocSize += t->width * t->height * GetPixelFormatSizeInBits(t->texDescriptor->format);
+            allocSize += t->width * t->height * PixelFormatDescriptor::GetPixelFormatSizeInBits(t->texDescriptor->format);
         }
 	}
     textureMapMutex.Unlock();
@@ -1065,9 +1062,9 @@ void Texture::Invalidate()
 
 Image * Texture::ReadDataToImage()
 {
-	PixelFormat format = texDescriptor->format;
+	const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(texDescriptor->format);
 
-    Image *image = Image::Create(width, height, format);
+    Image *image = Image::Create(width, height, formatDescriptor.formatID);
     uint8 *imageData = image->GetData();
     
 #if defined(__DAVAENGINE_OPENGL__)
@@ -1077,11 +1074,10 @@ Image * Texture::ReadDataToImage()
 
 	RenderManager::Instance()->HWglBindTexture(id, textureType);
     
-    DVASSERT((0 <= format) && (format < FORMAT_COUNT));
-    if(FORMAT_INVALID != format)
+    if(FORMAT_INVALID != formatDescriptor.formatID)
     {
 		RENDER_VERIFY(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-        RENDER_VERIFY(glReadPixels(0, 0, width, height, pixelDescriptors[format].format, pixelDescriptors[format].type, (GLvoid *)imageData));
+        RENDER_VERIFY(glReadPixels(0, 0, width, height, formatDescriptor.format, formatDescriptor.type, (GLvoid *)imageData));
     }
 
     RenderManager::Instance()->HWglBindFBO(saveFBO);
@@ -1141,7 +1137,7 @@ uint32 Texture::GetDataSize() const
 {
     DVASSERT((0 <= texDescriptor->format) && (texDescriptor->format < FORMAT_COUNT));
     
-    uint32 allocSize = width * height * GetPixelFormatSizeInBits(texDescriptor->format) / 8;
+    uint32 allocSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBits(texDescriptor->format) / 8;
     return allocSize;
 }
 
@@ -1157,7 +1153,7 @@ Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 
 void Texture::MakePink(TextureType requestedType, bool checkers)
 {
-	FilePath savePath = (texDescriptor) ? texDescriptor->pathname: FilePath();
+	FilePath savePath = texDescriptor->pathname;
 
     Vector<Image *> *images = new Vector<Image *> ();
 	if(Texture::TEXTURE_CUBE == requestedType)
@@ -1172,7 +1168,7 @@ void Texture::MakePink(TextureType requestedType, bool checkers)
 			images->push_back(img);
 		}
 		
-		texDescriptor->faceDescription = 0x000000FF;
+		texDescriptor->dataSettings.faceDescription = 0x000000FF;
 	}
 	else
 	{
@@ -1195,147 +1191,6 @@ bool Texture::IsPinkPlaceholder()
 	return isPink;
 }
 
-PixelFormatDescriptor Texture::pixelDescriptors[FORMAT_COUNT];
-void Texture::InitializePixelFormatDescriptors()
-{
-    SetPixelDescription(FORMAT_INVALID, String("WRONG FORMAT"), 0, 0, 0, 0);
-    SetPixelDescription(FORMAT_RGBA8888, String("RGBA8888"), 32, GL_UNSIGNED_BYTE, GL_RGBA, GL_RGBA);
-    SetPixelDescription(FORMAT_RGBA5551, String("RGBA5551"), 16, GL_UNSIGNED_SHORT_5_5_5_1, GL_RGBA, GL_RGBA);
-    SetPixelDescription(FORMAT_RGBA4444, String("RGBA4444"), 16, GL_UNSIGNED_SHORT_4_4_4_4, GL_RGBA, GL_RGBA);
-    SetPixelDescription(FORMAT_RGB888, String("RGB888"), 24, GL_UNSIGNED_BYTE, GL_RGB, GL_RGB);
-    SetPixelDescription(FORMAT_RGB565, String("RGB565"), 16, GL_UNSIGNED_SHORT_5_6_5, GL_RGB, GL_RGB);
-    SetPixelDescription(FORMAT_A8, String("A8"), 8, GL_UNSIGNED_BYTE, GL_ALPHA, GL_ALPHA);
-    SetPixelDescription(FORMAT_A16, String("A16"), 16, GL_UNSIGNED_SHORT, GL_ALPHA, GL_ALPHA);
-    
-#if defined (GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
-    SetPixelDescription(FORMAT_PVR4, String("PVR4"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG);
-#else
-    SetPixelDescription(FORMAT_PVR4, String("PVR4"), 4, 0, 0, 0);
-#endif
-
-    
-#if defined (GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG)
-    SetPixelDescription(FORMAT_PVR2, String("PVR2"), 2, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
-#else
-    SetPixelDescription(FORMAT_PVR2, String("PVR2"), 2, 0, 0, 0);
-#endif
-
-#if defined (GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-	SetPixelDescription(FORMAT_DXT1,     "DXT1", 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
-	SetPixelDescription(FORMAT_DXT1NM, "DXT1nm", 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, GL_COMPRESSED_RGB_S3TC_DXT1_EXT);
-#else
-	SetPixelDescription(FORMAT_DXT1,     "DXT1", 4, 0, 0, 0);
-	SetPixelDescription(FORMAT_DXT1NM, "DXT1nm", 4, 0, 0, 0);
-#endif
-
-#if defined (GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
-	SetPixelDescription(FORMAT_DXT1A,   "DXT1a", 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
-#else
-	SetPixelDescription(FORMAT_DXT1A,   "DXT1a", 4, 0, 0, 0);
-#endif
-
-#if defined (GL_COMPRESSED_RGBA_S3TC_DXT3_EXT)
-	SetPixelDescription(FORMAT_DXT3,     "DXT3", 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT);
-#else
-	SetPixelDescription(FORMAT_DXT3,     "DXT3", 8, 0, 0, 0);
-#endif
-
-#if defined (GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-	SetPixelDescription(FORMAT_DXT5,     "DXT5", 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
-	SetPixelDescription(FORMAT_DXT5NM, "DXT5nm", 8, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT);
-#else
-	SetPixelDescription(FORMAT_DXT5,     "DXT5", 8, 0, 0, 0);
-	SetPixelDescription(FORMAT_DXT5NM, "DXT5nm", 8, 0, 0, 0);
-#endif
-
-    SetPixelDescription(FORMAT_RGBA16161616, String("RGBA16161616"), 64, GL_HALF_FLOAT, GL_RGBA, GL_RGBA);
-    SetPixelDescription(FORMAT_RGBA32323232, String("RGBA32323232"), 128, GL_FLOAT, GL_RGBA, GL_RGBA);
-
-#if defined (GL_ETC1_RGB8_OES)
-	SetPixelDescription(FORMAT_ETC1,     "ETC1", 8, GL_UNSIGNED_BYTE, GL_ETC1_RGB8_OES, GL_ETC1_RGB8_OES);
-#else
-	SetPixelDescription(FORMAT_ETC1,     "ETC1", 8, 0, 0, 0);
-#endif
-	
-	
-#if defined (GL_ATC_RGB_AMD)
-	SetPixelDescription(FORMAT_ATC_RGB, "ATC_RGB", 4, GL_UNSIGNED_BYTE, GL_ATC_RGB_AMD, GL_ATC_RGB_AMD);
-#else
-	SetPixelDescription(FORMAT_ATC_RGB, "ATC_RGB", 4, 0, 0, 0);
-#endif
-	
-#if defined (GL_ATC_RGBA_EXPLICIT_ALPHA_AMD)
-	SetPixelDescription(FORMAT_ATC_RGBA_EXPLICIT_ALPHA, "ATC_RGBA_EXPLICIT_ALPHA", 8, GL_UNSIGNED_BYTE, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD);
-#else
-	SetPixelDescription(FORMAT_ATC_RGBA_EXPLICIT_ALPHA, "ATC_RGBA_EXPLICIT_ALPHA", 8, 0, 0, 0);
-#endif
-
-#if defined (GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD)
-	SetPixelDescription(FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, "ATC_RGBA_INTERPOLATED_ALPHA", 8, GL_UNSIGNED_BYTE, GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD, GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD);
-#else
-	SetPixelDescription(FORMAT_ATC_RGBA_INTERPOLATED_ALPHA, "ATC_RGBA_INTERPOLATED_ALPHA", 8, 0, 0, 0);
-#endif
-}
-
-void Texture::SetPixelDescription(PixelFormat index, const String &name, int32 size, GLenum type, GLenum format, GLenum internalFormat)
-{
-    DVASSERT((0 <= index) && (index < FORMAT_COUNT));
-    
-    pixelDescriptors[index].formatID = index;
-    pixelDescriptors[index].name = name;
-    pixelDescriptors[index].pixelSize = size;
-    pixelDescriptors[index].format = format;
-    pixelDescriptors[index].internalformat = internalFormat;
-    pixelDescriptors[index].type = type;
-}
-
-PixelFormatDescriptor Texture::GetPixelFormatDescriptor(PixelFormat formatID)
-{
-    DVASSERT((0 <= formatID) && (formatID < FORMAT_COUNT));
-    return pixelDescriptors[formatID];
-}
-
-int32 Texture::GetPixelFormatSizeInBits(PixelFormat format)
-{
-    DVASSERT((0 < format) && (format < FORMAT_COUNT));
-    return pixelDescriptors[format].pixelSize;
-}
-
-int32 Texture::GetPixelFormatSizeInBytes(PixelFormat format)
-{
-    int32 bits = GetPixelFormatSizeInBits(format);
-    
-    if(bits < 8)
-    {   // To detect wrong situations
-        Logger::Warning("[Texture::GetPixelFormatSizeInBytes] format takes less than byte");
-    }
-    
-    return  bits / 8;
-}
-
-
-
-const char * Texture::GetPixelFormatString(PixelFormat format)
-{
-    DVASSERT((0 <= format) && (format < FORMAT_COUNT));
-    return pixelDescriptors[format].name.c_str();
-}
-
-PixelFormat Texture::GetPixelFormatByName(const String &formatName)
-{
-    for(int32 i = 0; i < FORMAT_COUNT; ++i)
-    {
-        if(0 == CompareCaseInsensitive(formatName, pixelDescriptors[i].name))
-        {
-            return pixelDescriptors[i].formatID;
-        }
-    }
-    
-    return FORMAT_INVALID;
-}
-
-    
-    
 void Texture::GenerateID()
 {
 #if defined(__DAVAENGINE_OPENGL__)
@@ -1374,7 +1229,7 @@ void Texture::GenerateCubeFaceNames(const FilePath & baseName, Vector<FilePath>&
 	static Vector<String> defaultSuffixes;
 	if(defaultSuffixes.empty())
 	{
-		for(int i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
+		for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
 		{
 			defaultSuffixes.push_back(FACE_NAME_SUFFIX[i]);
 		}
@@ -1425,8 +1280,8 @@ void Texture::SetPixelization(bool value)
     for (Map<FilePath, Texture *>::const_iterator iter = texturesMap.begin(); iter != texturesMap.end(); iter ++)
     {
         Texture* texture = iter->second;
-        TextureFilter minFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->settings.minFilter;
-        TextureFilter magFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->settings.magFilter;
+        TextureFilter minFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->drawSettings.minFilter;
+        TextureFilter magFilter = pixelizationFlag ? FILTER_NEAREST : (TextureFilter)texture->GetDescriptor()->drawSettings.magFilter;
         texture->SetMinMagFilter(minFilter, magFilter);
     }
     textureMapMutex.Unlock();

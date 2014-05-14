@@ -46,18 +46,8 @@ static const String RENDER_STATES_NAMES[] =
 	"STATE_STENCIL_TEST",
 	"STATE_CULL",
 
-	"STATE_ALPHA_TEST",
 	"STATE_SCISSOR_TEST",
-
-	"STATE_TEXTURE0",
-	"STATE_TEXTURE1",
-	"STATE_TEXTURE2",
-	"STATE_TEXTURE3",
-	"STATE_TEXTURE4",
-	"STATE_TEXTURE5",
-	"STATE_TEXTURE6",
-	"STATE_TEXTURE7",
-
+    
 	"STATE_COLORMASK_RED",
 	"STATE_COLORMASK_GREEN",
 	"STATE_COLORMASK_BLUE",
@@ -80,10 +70,7 @@ UniqueHandle RenderState::TEXTURESTATE_EMPTY = InvalidUniqueHandle;
 RenderState::RenderState()
 {
     renderer = RenderManager::Instance()->GetRenderer();
-	/*for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
-	{
-		currentTexture[idx] = 0;
-	}*/
+
 	Reset(false);
 	
 	stateHandle = InvalidUniqueHandle;
@@ -92,10 +79,7 @@ RenderState::RenderState()
 
 RenderState::~RenderState()
 {
-	/*for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
-	{
-		SafeRelease(currentTexture[idx]);
-	}*/
+
 }
     
 //#define LOG_FINAL_RENDER_STATE
@@ -109,11 +93,7 @@ void RenderState::Reset(bool doHardwareReset)
     color.g = 1.0f;
     color.b = 1.0f;
     color.a = 1.0f;
-   /* for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
-	{
-        SafeRelease(currentTexture[idx]);
-	}
-	*/
+
     shader = 0;
     
     if (doHardwareReset)
@@ -125,28 +105,16 @@ void RenderState::Reset(bool doHardwareReset)
         rm->GetRenderStateData(RenderState::RENDERSTATE_2D_BLEND);
 //        Logger::FrameworkDebug("Do hardware reset");
         // PrintBackTraceToLog();
-        SetColorInHW();
+        
         SetEnableBlendingInHW(renderStateData.state);
         SetBlendModeInHW(renderStateData.sourceFactor, renderStateData.destFactor);
         SetDepthTestInHW(renderStateData.state);
         SetDepthWriteInHW(renderStateData.state);
         SetColorMaskInHW(renderStateData.state);
         
-        if (renderer != Core::RENDERER_OPENGL_ES_2_0)
-        {
-            SetAlphaTestInHW(DEFAULT_2D_STATE);
-            SetAlphaTestFuncInHW(CMP_ALWAYS, 0);
-        }
-             
         for (uint32 textureLevel = 0; textureLevel < MAX_TEXTURE_LEVELS; ++textureLevel)
         {
             SetTextureLevelInHW(textureLevel, NULL);
-            
-            if (renderer != Core::RENDERER_OPENGL_ES_2_0)
-			{
-                RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
-                RENDER_VERIFY(glDisable(GL_TEXTURE_2D));
-            }
         }
 		
 		textureState = RenderState::TEXTURESTATE_EMPTY;
@@ -154,25 +122,12 @@ void RenderState::Reset(bool doHardwareReset)
 		
     }
 }
+
 bool RenderState::IsEqual(RenderState * anotherState)
 {
-    if (stateHandle != anotherState->stateHandle)
-        return false;
-	
-	if(textureState != anotherState->textureState)
-	{
-		return false;
-	}
-    
-    // check texture first for early rejection 
-    //if (currentTexture[0] != anotherState->currentTexture[0])return false;
-
-    
-    if (color != anotherState->color)return false;
-    
-    //if (currentTexture[1] != anotherState->currentTexture[1])return false;
-   // if (currentTexture[2] != anotherState->currentTexture[2])return false;
-    //if (currentTexture[3] != anotherState->currentTexture[3])return false;
+    if (stateHandle != anotherState->stateHandle) return false;
+	if (textureState != anotherState->textureState) return false;
+    if (color != anotherState->color) return false;
     
     return true;
 }
@@ -212,27 +167,7 @@ void RenderState::Flush(RenderState * hardwareState) const
 			
 			if (diffState & RenderStateData::STATE_SCISSOR_TEST)
 				SetScissorTestInHW(state);
-			
-			if (renderer != Core::RENDERER_OPENGL_ES_2_0)
-			{
-				for (uint32 textureLevel = 0; textureLevel < MAX_TEXTURE_LEVELS; ++textureLevel)
-				{
-					if (diffState & (RenderStateData::STATE_TEXTURE0 << textureLevel))
-					{
-						if (currentData.state & (RenderStateData::STATE_TEXTURE0 << textureLevel))
-						{
-							RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
-							RENDER_VERIFY(glEnable(GL_TEXTURE_2D));
-						}
-						else
-						{
-							RENDER_VERIFY(glActiveTexture(GL_TEXTURE0 + textureLevel));
-							RENDER_VERIFY(glDisable(GL_TEXTURE_2D));
-						}
-					}
-				}
-			}
-		}
+        }
 		
 		if (currentData.sourceFactor != hardwareData.sourceFactor ||
 			currentData.destFactor != hardwareData.destFactor)
@@ -288,38 +223,37 @@ void RenderState::Flush(RenderState * hardwareState) const
     Logger::FrameworkDebug("RenderState::Flush started");
 #endif
 	
-        if (color != hardwareState->color)
+    if (color != hardwareState->color)
+    {
+        hardwareState->color = color;
+    }
+
+    if(textureState != hardwareState->textureState &&
+       textureState != InvalidUniqueHandle)
+    {
+        const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
+        const TextureStateData& hardwareTextureData = RenderManager::Instance()->GetTextureState(hardwareState->textureState);
+        
+        uint32 minIndex = currentTextureData.minmaxTextureIndex & 0x000000FF;
+        uint32 maxIndex = ((currentTextureData.minmaxTextureIndex & 0x0000FF00) >> 8);
+        for(size_t i = minIndex; i <= maxIndex; ++i)
         {
-            hardwareState->color = color;
+            if(currentTextureData.textures[i] != hardwareTextureData.textures[i])
+            {
+                SetTextureLevelInHW(i, currentTextureData.textures[i]);
+            }
         }
-	
-		if(textureState != hardwareState->textureState &&
-		   textureState != InvalidUniqueHandle)
-		{
-			const TextureStateData& currentTextureData = RenderManager::Instance()->GetTextureState(textureState);
-			const TextureStateData& hardwareTextureData = RenderManager::Instance()->GetTextureState(hardwareState->textureState);
-			
-			uint32 minIndex = currentTextureData.minmaxTextureIndex & 0x000000FF;
-			uint32 maxIndex = ((currentTextureData.minmaxTextureIndex & 0x0000FF00) >> 8);
-			for(size_t i = minIndex; i <= maxIndex; ++i)
-			{
-				if(currentTextureData.textures[i] != hardwareTextureData.textures[i])
-				{
-					SetTextureLevelInHW(i, currentTextureData.textures[i]);
-				}
-			}
-			
-			hardwareState->textureState = textureState;
-			
-			RENDERER_UPDATE_STATS(textureStateFullSwitches++);
-		}
+        
+        hardwareState->textureState = textureState;
+        
+        RENDERER_UPDATE_STATS(textureStateFullSwitches++);
+    }
     
 	
 #if defined(__DAVAENGINE_OPENGL__)
         RENDER_VERIFY(glActiveTexture(GL_TEXTURE0));
 #endif
 
-    
     if (shader)
     {
         shader->Bind();
@@ -335,16 +269,7 @@ void RenderState::Flush(RenderState * hardwareState) const
     
     
 #if defined (__DAVAENGINE_OPENGL__)
-inline void RenderState::SetColorInHW() const
-{
-    if (renderer != Core::RENDERER_OPENGL_ES_2_0)
-    {
-#if defined (LOG_FINAL_RENDER_STATE)
-        Logger::FrameworkDebug("RenderState::color = (%f, %f, %f, %f)", color.r, color.g, color.b, color.a);
-#endif
-        RENDER_VERIFY(glColor4f(color.r, color.g, color.b, color.a));
-    }
-}
+
     
 inline void RenderState::SetColorMaskInHW(uint32 state) const
 {
@@ -444,7 +369,7 @@ inline void RenderState::SetTextureLevelInHW(uint32 textureLevel, Texture* textu
     {
 #if defined (LOG_FINAL_RENDER_STATE)
         Logger::FrameworkDebug("RenderState::bind_texture %d = (%d)", textureLevel, texture->id);
-#endif    
+#endif
         RenderManager::Instance()->HWglBindTexture(texture->id, texture->textureType);
     }else
     {
@@ -491,43 +416,6 @@ inline void RenderState::SetDepthWriteInHW(uint32 state) const
     }
 }
     
-inline void RenderState::SetAlphaTestInHW(uint32 state) const
-{
-    if(state & RenderStateData::STATE_ALPHA_TEST)
-    {
-#if defined (LOG_FINAL_RENDER_STATE)
-        Logger::FrameworkDebug("RenderState::alpha_test = true");
-#endif    
-
-        RENDER_VERIFY(glEnable(GL_ALPHA_TEST));
-    }
-    else
-    {
-#if defined (LOG_FINAL_RENDER_STATE)
-        Logger::FrameworkDebug("RenderState::alpha_test = false");
-#endif    
-        RENDER_VERIFY(glDisable(GL_ALPHA_TEST));
-    }
-}
-
-inline void RenderState::SetAlphaTestFuncInHW(eCmpFunc alphaFunc, uint8 alphaFuncCmpValue) const
-{
-    if (renderer == Core::RENDERER_OPENGL)
-    {
-#if defined (LOG_FINAL_RENDER_STATE)
-        Logger::FrameworkDebug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
-#endif    
-
-        RENDER_VERIFY(glAlphaFunc(COMPARE_FUNCTION_MAP[alphaFunc], (float32)alphaFuncCmpValue / 255.0f) );
-    }else
-    {
-#if defined (LOG_FINAL_RENDER_STATE)
-        Logger::FrameworkDebug("RenderState::alpha func = (%d, %d)", alphaFunc, alphaFuncCmpValue);
-#endif    
-        RENDER_VERIFY(glAlphaFunc(COMPARE_FUNCTION_MAP[alphaFunc], alphaFuncCmpValue) );
-    }
-}
-
 inline void RenderState::SetDepthFuncInHW(eCmpFunc depthFunc) const
 {
 #if defined (LOG_FINAL_RENDER_STATE)
@@ -611,13 +499,7 @@ inline void RenderState::SetStencilOpInHW(eStencilOp stencilFail0,
 
     
 #elif defined(__DAVAENGINE_DIRECTX9__)
-    
-inline void RenderState::SetColorInHW()
-{
-	//if (renderer != Core::RENDERER_OPENGL_ES_2_0)
-	//	RENDER_VERIFY(glColor4f(color.r * color.a, color.g * color.a, color.b * color.a, color.a));
-}
-    
+
 inline void RenderState::SetColorMaskInHW()
 {
     DWORD flags = 0;
@@ -998,7 +880,7 @@ void RenderState::GetCurrentStateStrings(uint32 state, Vector<String> & statesSt
 	for(uint32 bit = 0; bit < 32; bit++)
 	{
 		uint32 tempState = 1 << bit;
-		if ((state & tempState) && !(tempState & IGNORE_SAVE_LOAD_RENDER_STATES))
+		if (state & tempState)
 			statesStrs.push_back(RENDER_STATES_NAMES[bit]);
 	}
 }
@@ -1010,10 +892,7 @@ uint32 RenderState::GetRenderStateByName(const String & str)
 		if(RENDER_STATES_NAMES[i] == str)
 		{
 			uint32 tempState = 1 << i;
-			if(tempState & IGNORE_SAVE_LOAD_RENDER_STATES)
-				return 0;
-			else
-				return tempState;
+            return tempState;
 		}
 	}
 	return 0;

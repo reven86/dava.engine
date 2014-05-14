@@ -612,5 +612,4 @@ void ResourcePacker2D::AddError(const String& errorMsg)
 	errors.insert(errorMsg);
 }
 
-
 };

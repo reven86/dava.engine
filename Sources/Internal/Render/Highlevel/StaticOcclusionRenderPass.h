@@ -45,7 +45,7 @@ public:
     StaticOcclusionRenderPass(const FastName & name, StaticOcclusion * occlusion, RenderPassID id);
     ~StaticOcclusionRenderPass();
 
-    void Draw(Camera * camera, RenderSystem * renderSystem);
+    void Draw(RenderSystem * renderSystem);
     static bool CompareFunction(const RenderBatch * a, const RenderBatch *  b);
     
 private:

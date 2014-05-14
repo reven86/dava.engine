@@ -224,6 +224,9 @@ namespace DAVA
         
 	};
 
+	SerializationContext::SerializationContext()
+	{ }
+
 	SerializationContext::~SerializationContext()
 	{
 		for(Map<uint64, DataNode*>::iterator it = dataBlocks.begin();

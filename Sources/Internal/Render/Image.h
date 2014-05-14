@@ -74,6 +74,8 @@ public:
 	static Image * CreateFromData(uint32 width, uint32 height, PixelFormat format, const uint8 *data);
     
     static Image * CreatePinkPlaceholder(bool checkers = true);
+    void MakePink(bool checkers = true);
+
     
     // \todo Change function name to Image::Create for consistency
 	static Vector2 GetImageSize(const FilePath & pathName);
@@ -93,7 +95,9 @@ public:
     void SaveToSystemPhotos(SaveToSystemPhotoCallbackReceiver* callback = 0);
 #endif
 
-    Vector<Image *> CreateMipMapsImages();
+    Vector<Image *> CreateMipMapsImages(bool isNormalMap = false);
+
+    void Normalize();
 
     // changes size of image canvas to required size, if new size is bigger, sets 0 to all new pixels
     void ResizeCanvas(uint32 newWidth, uint32 newHeight);
@@ -129,6 +133,7 @@ public:
         static void ConvertFromRGBA8888toA8(const uint8 * sourceData, int32 width, int32 height, uint8 * destData, eAlphaAction action = ALPHA_ACTION_NONE);
         
      */
+    
 
     uint32 dataSize;
 	uint32	width:16;

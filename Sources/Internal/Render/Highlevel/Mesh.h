@@ -61,7 +61,7 @@ public:
 	virtual void Save(KeyedArchive *archive, SerializationContext *serializationContext);
 	virtual void Load(KeyedArchive *archive, SerializationContext *serializationContext);
 
-	virtual void BakeTransform(const Matrix4 & transform);
+	virtual void BakeGeometry(const Matrix4 & transform);
 
 protected:
 };

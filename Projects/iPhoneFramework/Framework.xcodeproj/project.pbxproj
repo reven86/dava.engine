@@ -69,6 +69,7 @@
 		5C77ABBF14C7703800E92D28 /* libpng_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C77ABBE14C7703800E92D28 /* libpng_ios.a */; };
 		5C97964714E3E75000FFFA14 /* libxml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964514E3E75000FFFA14 /* libxml_ios.a */; };
 		5C97964814E3E75000FFFA14 /* libyaml_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C97964614E3E75000FFFA14 /* libyaml_ios.a */; };
+		6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6252BF2518ED506E00058754 /* libjpeg_ios.a */; };
 		624C87F218C6160F00E1049D /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 624C87F018C6160F00E1049D /* DateTime.cpp */; };
 		624C87F318C6160F00E1049D /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 624C87F118C6160F00E1049D /* DateTime.h */; };
 		6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */; };
@@ -80,6 +81,8 @@
 		641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61FE18CE0F61003359E7 /* FoliageSystem.h */; };
 		840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 840ED3C816D506F900D2BA6C /* DPIHelperiOS.mm */; };
 		840ED3CB16D5070400D2BA6C /* DPIHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 840ED3CA16D5070400D2BA6C /* DPIHelper.h */; };
+		8465CD3818E4D46D005AA9F8 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8465CD3618E4D46D005AA9F8 /* LibJpegHelper.cpp */; };
+		8465CD3918E4D46D005AA9F8 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 8465CD3718E4D46D005AA9F8 /* LibJpegHelper.h */; };
 		84E5E0FE174D02EA0001C74F /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */; };
 		84E5E0FF174D02EA0001C74F /* OpenUDIDApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */; };
 		84E5E102174D02F60001C74F /* OpenUDIDios.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E100174D02F60001C74F /* OpenUDIDios.h */; };
@@ -192,12 +195,16 @@
 		E8679181175F621E00C5A6A2 /* GPUFamilyDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E867917F175F621E00C5A6A2 /* GPUFamilyDescriptor.h */; };
 		E8679184175F62D600C5A6A2 /* EnumMap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679182175F62D600C5A6A2 /* EnumMap.cpp */; };
 		E8679185175F62D600C5A6A2 /* EnumMap.h in Headers */ = {isa = PBXBuildFile; fileRef = E8679183175F62D600C5A6A2 /* EnumMap.h */; };
+		E8983CC618C8A540002FB974 /* ES3Renderer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8983CC418C8A540002FB974 /* ES3Renderer.h */; };
+		E8983CC718C8A540002FB974 /* ES3Renderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8983CC518C8A540002FB974 /* ES3Renderer.mm */; };
 		E89C58F418B24832002C25FE /* Atomic.h in Headers */ = {isa = PBXBuildFile; fileRef = E89C58F218B24832002C25FE /* Atomic.h */; };
 		E89C58F518B24832002C25FE /* AtomicMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = E89C58F318B24832002C25FE /* AtomicMacOS.mm */; };
 		E89CE92A16C54A36006BEFF4 /* SpriteObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E89CE92616C54A36006BEFF4 /* SpriteObject.cpp */; };
 		E89CE92B16C54A36006BEFF4 /* SpriteObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E89CE92716C54A36006BEFF4 /* SpriteObject.h */; };
 		E89CE92C16C54A36006BEFF4 /* SpriteRenderBatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E89CE92816C54A36006BEFF4 /* SpriteRenderBatch.cpp */; };
 		E89CE92D16C54A36006BEFF4 /* SpriteRenderBatch.h in Headers */ = {isa = PBXBuildFile; fileRef = E89CE92916C54A36006BEFF4 /* SpriteRenderBatch.h */; };
+		E8ADAEC818CA1325000B251C /* PixelFormatDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8ADAEC618CA1325000B251C /* PixelFormatDescriptor.cpp */; };
+		E8ADAEC918CA1325000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEC718CA1325000B251C /* PixelFormatDescriptor.h */; };
 		E8B3CA7E16B9326E002BD35F /* AnimatedObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7A216B9326D002BD35F /* AnimatedObject.cpp */; };
 		E8B3CA7F16B9326E002BD35F /* AnimatedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7A316B9326D002BD35F /* AnimatedObject.h */; };
 		E8B3CA8016B9326E002BD35F /* Animation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7A416B9326D002BD35F /* Animation.cpp */; };
@@ -847,6 +854,7 @@
 		5C77ABBE14C7703800E92D28 /* libpng_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_ios.a; path = ../../Libs/libs/libpng_ios.a; sourceTree = "<group>"; };
 		5C97964514E3E75000FFFA14 /* libxml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libxml_ios.a; path = ../../Libs/libs/libxml_ios.a; sourceTree = "<group>"; };
 		5C97964614E3E75000FFFA14 /* libyaml_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_ios.a; path = ../../Libs/libs/libyaml_ios.a; sourceTree = "<group>"; };
+		6252BF2518ED506E00058754 /* libjpeg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_ios.a; path = ../../Libs/libs/libjpeg_ios.a; sourceTree = "<group>"; };
 		624C87F018C6160F00E1049D /* DateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTime.cpp; sourceTree = "<group>"; };
 		624C87F118C6160F00E1049D /* DateTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTime.h; sourceTree = "<group>"; };
 		6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
@@ -858,6 +866,8 @@
 		641A61FE18CE0F61003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		840ED3C816D506F900D2BA6C /* DPIHelperiOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DPIHelperiOS.mm; sourceTree = "<group>"; };
 		840ED3CA16D5070400D2BA6C /* DPIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPIHelper.h; sourceTree = "<group>"; };
+		8465CD3618E4D46D005AA9F8 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibJpegHelper.cpp; sourceTree = "<group>"; };
+		8465CD3718E4D46D005AA9F8 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibJpegHelper.h; sourceTree = "<group>"; };
 		84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDIDApple.h; sourceTree = "<group>"; };
 		84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenUDIDApple.mm; sourceTree = "<group>"; };
 		84E5E100174D02F60001C74F /* OpenUDIDios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDIDios.h; sourceTree = "<group>"; };
@@ -972,12 +982,16 @@
 		E867917F175F621E00C5A6A2 /* GPUFamilyDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPUFamilyDescriptor.h; sourceTree = "<group>"; };
 		E8679182175F62D600C5A6A2 /* EnumMap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EnumMap.cpp; sourceTree = "<group>"; };
 		E8679183175F62D600C5A6A2 /* EnumMap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnumMap.h; sourceTree = "<group>"; };
+		E8983CC418C8A540002FB974 /* ES3Renderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ES3Renderer.h; sourceTree = "<group>"; };
+		E8983CC518C8A540002FB974 /* ES3Renderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ES3Renderer.mm; sourceTree = "<group>"; };
 		E89C58F218B24832002C25FE /* Atomic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Atomic.h; sourceTree = "<group>"; };
 		E89C58F318B24832002C25FE /* AtomicMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AtomicMacOS.mm; sourceTree = "<group>"; };
 		E89CE92616C54A36006BEFF4 /* SpriteObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteObject.cpp; sourceTree = "<group>"; };
 		E89CE92716C54A36006BEFF4 /* SpriteObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteObject.h; sourceTree = "<group>"; };
 		E89CE92816C54A36006BEFF4 /* SpriteRenderBatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpriteRenderBatch.cpp; sourceTree = "<group>"; };
 		E89CE92916C54A36006BEFF4 /* SpriteRenderBatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpriteRenderBatch.h; sourceTree = "<group>"; };
+		E8ADAEC618CA1325000B251C /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
+		E8ADAEC718CA1325000B251C /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
 		E8B3C7A216B9326D002BD35F /* AnimatedObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AnimatedObject.cpp; sourceTree = "<group>"; };
 		E8B3C7A316B9326D002BD35F /* AnimatedObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AnimatedObject.h; sourceTree = "<group>"; };
 		E8B3C7A416B9326D002BD35F /* Animation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Animation.cpp; sourceTree = "<group>"; };
@@ -1553,6 +1567,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */,
 				87A0C45B18EACBEE00A7402D /* AssetsLibrary.framework in Frameworks */,
 				02F6403B173A597A0053F038 /* libfmodevent_iphoneos.a in Frameworks */,
 				02F6403C173A597A0053F038 /* libfmodevent_iphonesimulator.a in Frameworks */,
@@ -1644,6 +1659,7 @@
 		0867D69AFE84028FC02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6252BF2518ED506E00058754 /* libjpeg_ios.a */,
 				87A0C45A18EACBEE00A7402D /* AssetsLibrary.framework */,
 				EA7DEDDC1448550100D9E652 /* libfreetype_ios.a */,
 				9A0118E18AC6866222998E4C /* GameController.framework */,
@@ -2098,6 +2114,8 @@
 				E8B3C8DF16B9326D002BD35F /* ES1Renderer.mm */,
 				E8B3C8E016B9326D002BD35F /* ES2Renderer.h */,
 				E8B3C8E116B9326D002BD35F /* ES2Renderer.mm */,
+				E8983CC418C8A540002FB974 /* ES3Renderer.h */,
+				E8983CC518C8A540002FB974 /* ES3Renderer.mm */,
 				E8B3C8E216B9326D002BD35F /* ESRenderer.h */,
 				E8B3C8E316B9326D002BD35F /* HelperAppDelegate.h */,
 				E8B3C8E416B9326D002BD35F /* HelperAppDelegate.mm */,
@@ -2110,6 +2128,10 @@
 		E8B3C8F916B9326D002BD35F /* Render */ = {
 			isa = PBXGroup;
 			children = (
+				8465CD3618E4D46D005AA9F8 /* LibJpegHelper.cpp */,
+				8465CD3718E4D46D005AA9F8 /* LibJpegHelper.h */,
+				E8ADAEC618CA1325000B251C /* PixelFormatDescriptor.cpp */,
+				E8ADAEC718CA1325000B251C /* PixelFormatDescriptor.h */,
 				A6919533183A6E9B00D598AE /* RenderStateData.h */,
 				A6919535183A6E9B00D598AE /* UniqueStateSet.h */,
 				A695E52318113195008A0F20 /* ShaderCache.cpp */,
@@ -2771,6 +2793,7 @@
 				E8B3CB1716B9326E002BD35F /* FileList.h in Headers */,
 				E8B3CB1916B9326E002BD35F /* FilePath.h in Headers */,
 				E8B3CB1B16B9326E002BD35F /* FileSystem.h in Headers */,
+				8465CD3918E4D46D005AA9F8 /* LibJpegHelper.h in Headers */,
 				E8B3CB1E16B9326E002BD35F /* KeyedArchive.h in Headers */,
 				E8B3CB2016B9326E002BD35F /* KeyedArchiver.h in Headers */,
 				E8B3CB2216B9326E002BD35F /* KeyedUnarchiver.h in Headers */,
@@ -2814,6 +2837,7 @@
 				E8B3CB5E16B9326E002BD35F /* Rect.h in Headers */,
 				E8B3CB6016B9326E002BD35F /* RectPacker.h in Headers */,
 				E8B3CB6116B9326E002BD35F /* Sphere.h in Headers */,
+				E8983CC618C8A540002FB974 /* ES3Renderer.h in Headers */,
 				E8B3CB6316B9326E002BD35F /* Spline.h in Headers */,
 				E8B3CB6416B9326E002BD35F /* Vector.h in Headers */,
 				E8B3CB6516B9326E002BD35F /* BaseNetworkConnection.h in Headers */,
@@ -2869,6 +2893,7 @@
 				E8B3CBF916B9326E002BD35F /* RenderBatch.h in Headers */,
 				E8B3CBFA16B9326E002BD35F /* RenderDataSource.h in Headers */,
 				E8B3CBFC16B9326E002BD35F /* RenderLayer.h in Headers */,
+				E8ADAEC918CA1325000B251C /* PixelFormatDescriptor.h in Headers */,
 				E8B3CBFE16B9326E002BD35F /* RenderObject.h in Headers */,
 				E8B3CC0016B9326E002BD35F /* RenderPass.h in Headers */,
 				E8B3CC0216B9326E002BD35F /* RenderSystem.h in Headers */,
@@ -3159,6 +3184,7 @@
 			files = (
 				E8B3CA7E16B9326E002BD35F /* AnimatedObject.cpp in Sources */,
 				E8B3CA8016B9326E002BD35F /* Animation.cpp in Sources */,
+				E8ADAEC818CA1325000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				E8B3CA8216B9326E002BD35F /* AnimationManager.cpp in Sources */,
 				E8B3CA8416B9326E002BD35F /* BezierSplineAnimation.cpp in Sources */,
 				E8B3CA8616B9326E002BD35F /* Interpolation.cpp in Sources */,
@@ -3341,6 +3367,7 @@
 				E8B3CC6E16B9326E002BD35F /* LightComponent.cpp in Sources */,
 				E8B3CC7016B9326E002BD35F /* LodComponent.cpp in Sources */,
 				A611714D1860C2A500E18F8C /* StaticOcclusionSystem.cpp in Sources */,
+				E8983CC718C8A540002FB974 /* ES3Renderer.mm in Sources */,
 				E8B3CC7216B9326E002BD35F /* ParticleEffectComponent.cpp in Sources */,
 				E8B3CC7616B9326E002BD35F /* RenderComponent.cpp in Sources */,
 				E8B3CC7816B9326E002BD35F /* SwitchComponent.cpp in Sources */,
@@ -3379,6 +3406,7 @@
 				E8FC1303186972B60095D8FE /* QualitySettingsComponent.cpp in Sources */,
 				E8B3CCBE16B9326E002BD35F /* EventSystem.cpp in Sources */,
 				EA10607818892B7C00CB99A3 /* ParticleRenderObject.cpp in Sources */,
+				8465CD3818E4D46D005AA9F8 /* LibJpegHelper.cpp in Sources */,
 				E8B3CCC016B9326E002BD35F /* LightUpdateSystem.cpp in Sources */,
 				E8F43E2D186C5D4E006796CB /* MaterialSystem.cpp in Sources */,
 				E8B3CCC216B9326E002BD35F /* LodSystem.cpp in Sources */,

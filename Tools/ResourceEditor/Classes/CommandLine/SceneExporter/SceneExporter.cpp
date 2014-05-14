@@ -48,6 +48,7 @@ using namespace DAVA;
 SceneExporter::SceneExporter()
 {
     exportForGPU = GPU_UNKNOWN;
+	quality = TextureConverter::ECQ_DEFAULT;
 	optimizeOnExport = true;
 }
 
@@ -268,9 +269,9 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
     }
     
     descriptor->exportedAsGpuFamily = exportForGPU;
-    descriptor->exportedAsPixelFormat = descriptor->GetPixelFormatForCompression(exportForGPU);
+    descriptor->format = descriptor->GetPixelFormatForCompression(exportForGPU);
 
-    if((descriptor->exportedAsGpuFamily != GPU_UNKNOWN) && (descriptor->exportedAsPixelFormat == FORMAT_INVALID))
+    if((descriptor->exportedAsGpuFamily != GPU_UNKNOWN) && (descriptor->format == FORMAT_INVALID))
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
         
@@ -435,8 +436,9 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
         //TODO: do we need to convert to pvr if needToConvert is false, but *.pvr file isn't at filesystem
         
 		eGPUFamily gpuFamily = (eGPUFamily)descriptor->exportedAsGpuFamily;
-		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, (PixelFormat)descriptor->exportedAsPixelFormat);
-		TextureConverter::ConvertTexture(*descriptor, gpuFamily, true);
+
+		TextureConverter::CleanupOldTextures(descriptor, gpuFamily, descriptor->format);
+		TextureConverter::ConvertTexture(*descriptor, gpuFamily, true, quality);
         
         DAVA::TexturesMap texturesMap = Texture::GetTextureMap();
         
@@ -452,5 +454,10 @@ void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, 
 void SceneExporter::EnableOptimizations( bool enable )
 {
 	optimizeOnExport = enable;
+}
+
+void SceneExporter::SetCompressionQuality( TextureConverter::eConvertQuality _quality )
+{
+	quality = _quality;
 }
 

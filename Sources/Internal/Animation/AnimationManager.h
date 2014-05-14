@@ -49,9 +49,6 @@ namespace DAVA
 class AnimationManager : public Singleton <AnimationManager>
 {
 public:
-	AnimationManager();
-	virtual ~AnimationManager();
-		
 	/**
 		\brief Updates all animations in the system on current frame
 		This method is called from ApplicationCore::Update function. 
@@ -66,16 +63,6 @@ public:
 	 */
 	void DumpState();
 	
-	/**
-		\brief Internal function. For debugging purposes
-	 */
-	void SetAnimationLoggerEnabled(bool isEnabled);
-	
-	/**
-		\brief Internal function. For debugging purposes
-	 */
-	bool IsAnimationLoggerEnabled();
-	
 	Animation * FindPlayingAnimation(AnimatedObject * owner, int32 _groupId);
 	
     void StopAnimations();
@@ -86,22 +73,27 @@ private:
 	bool IsAnimating(const AnimatedObject * owner, int32 trackId) const;
 	
 	void AddAnimation(Animation * _animation);
-	void RemoveAnimation(Animation * _animation);
+    void AddAnimationInternal(BaseObject * caller, void * param, void *callerData);
+	
+    void RemoveAnimation(Animation * _animation);
+    void RemoveAnimationInternal(BaseObject * caller, void * param, void *callerData);
 	
 	bool HasActiveAnimations(AnimatedObject * owner);
 	/*
 	 Function remove all animations for given object from update and delete objects and their references
 	 */
 	void DeleteAnimations(AnimatedObject * _owner, int32 track = -1);
+    void DeleteAnimationInternal(BaseObject * caller, void * param, void *callerData);
+    struct DeleteAnimationsData
+    {
+        AnimatedObject * owner;
+        int32 track;
+    };
 	
 	Vector<Animation*> animations;
-	mutable Mutex animationMutex;
 	
 	friend class Animation;
 	friend class AnimatedObject;
-#ifdef ANIMATIONS_DEBUG	
-	bool animationLoggerEnabled;
-#endif
 };
 	
 };

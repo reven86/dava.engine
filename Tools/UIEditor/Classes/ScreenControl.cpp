@@ -31,12 +31,15 @@
 #include "ScreenControl.h"
 #include <QString>
 #include "HierarchyTreeNode.h"
-#include "HierarchyTreeController.h"
+
 #include "Render/RenderHelper.h"
 #include "Render/RenderManager.h"
 #include "Grid/GridVisualizer.h"
 
-ScreenControl::ScreenControl()
+#include "DefaultScreen.h"
+
+ScreenControl::ScreenControl() :
+    screenShotMode(false)
 {
     chequeredBackground = new UIControlBackground();
     chequeredBackground->SetSprite("~res:/Gfx/chequered", 0);
@@ -179,3 +182,9 @@ void ScreenControl::DrawPivotPoint(const UIGeometricData &gd, const Color &color
 
     RenderManager::Instance()->SetColor(oldColor);
 }
+
+void ScreenControl::SetScreenshotMode(bool value)
+{
+    screenShotMode = value;
+}
+

@@ -36,6 +36,7 @@
 #include "TextureCompression/PVRConverter.h"
 
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 
 using namespace DAVA;
  
@@ -125,9 +126,9 @@ void ProcessRecourcePacker()
     }
     
 #if defined (__DAVAENGINE_MACOS__)
-	String toolName = String("/PVRTexToolCL");
+	String toolName = String("/PVRTexToolCLI");
 #elif defined (__DAVAENGINE_WIN32__)
-	String toolName = String("/PVRTexToolCL.exe");
+	String toolName = String("/PVRTexToolCLI.exe");
 #endif
     PVRConverter::Instance()->SetPVRTexTool(resourcePacker->excludeDirectory + (commandLine[2] + toolName));
     
@@ -137,7 +138,7 @@ void ProcessRecourcePacker()
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker->outputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[EXCLUDE DIR] - [%s]", resourcePacker->excludeDirectory.GetAbsolutePathname().c_str());
     
-    Texture::InitializePixelFormatDescriptors();
+    PixelFormatDescriptor::InitializePixelFormatDescriptors();
     GPUFamilyDescriptor::SetupGPUParameters();
     
     

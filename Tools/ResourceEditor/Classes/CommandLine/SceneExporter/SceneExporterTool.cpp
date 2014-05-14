@@ -47,10 +47,11 @@ void SceneExporterTool::PrintUsage()
     printf("\t-processfile - filename from DataSource/3d/ for exporting\n");
     printf("\t-gpu - PoverVR_iOS, PoverVR_Android, tegra, mali, adreno\n");
 	printf("\t-saveNormals - disable removing of normals from vertexes\n");
+	printf("\t-quality [0-4] - quality of pvr/etc compression. default is 4 - the best quality\n");
 
     printf("\n");
     printf("Samples:\n");
-    printf("-sceneexporter -export -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processdir Maps/objects/\n");
+    printf("-sceneexporter -export -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processdir Maps/objects/ -quality 3\n");
     printf("-sceneexporter -export -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2 -forceclose\n");
 
 }
@@ -77,8 +78,19 @@ bool SceneExporterTool::InitializeFromCommandLine()
     outFolder.MakeDirectoryPathname();
     if(!outSoundsFolder.IsEmpty())
         outSoundsFolder.MakeDirectoryPathname();
+
     
-    gpu = CommandLineParser::GetCommandParam(String("-gpu"));
+	String qualityName = CommandLineParser::GetCommandParam(String("-quality"));
+	if(qualityName.empty())
+	{
+		quality = DAVA::TextureConverter::ECQ_DEFAULT;
+	}
+	else
+	{
+		quality = Clamp((DAVA::TextureConverter::eConvertQuality)atoi(qualityName.c_str()), DAVA::TextureConverter::ECQ_FASTEST, DAVA::TextureConverter::ECQ_VERY_HIGH);
+	}
+	
+	gpu = CommandLineParser::GetCommandParam(String("-gpu"));
     
     filename = CommandLineParser::GetCommandParam(String("-processfile"));
     foldername = CommandLineParser::GetCommandParam(String("-processdir"));
@@ -111,6 +123,7 @@ void SceneExporterTool::Process()
     exporter.SetInFolder(inFolder);
     exporter.SetGPUForExporting(gpu);
 	exporter.EnableOptimizations(optimizeOnExport);
+	exporter.SetCompressionQuality(quality);
     
     if(commandAction == ACTION_EXPORT_FILE)
     {

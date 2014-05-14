@@ -33,6 +33,8 @@
 
 #include "DAVAEngine.h"
 #include "CommandLine/SceneUtils/SceneUtils.h"
+#include "TextureCompression/TextureConverter.h"
+
 
 //using namespace DAVA;
 
@@ -42,9 +44,9 @@ public:
     static void ResaveDescriptorsForFolder(const DAVA::FilePath &folderPathname);
 	static void CopyCompressionParamsForFolder(const DAVA::FilePath &folderPathname);
     static void CreateDescriptorsForFolder(const DAVA::FilePath &folderPathname);
-	static void SetCompressionParamsForFolder(const DAVA::FilePath &folderPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force);
+	static void SetCompressionParamsForFolder(const DAVA::FilePath &folderPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
 
-	static void SetCompressionParams(const DAVA::FilePath &descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force);
+	static void SetCompressionParams(const DAVA::FilePath &descriptorPathname, const DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> & compressionParams, bool convertionEnabled, bool force, DAVA::TextureConverter::eConvertQuality quality, bool generateMipMaps);
     static void CreateDescriptorIfNeed(const DAVA::FilePath &pngPathname);
     
 private:

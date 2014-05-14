@@ -30,12 +30,8 @@
 #ifndef __DAVAENGINE_TYPES_H__
 #define __DAVAENGINE_TYPES_H__
 
+#include "DAVAConfig.h"
 #include "Base/TemplateHelpers.h"
-
-// debug definition
-#if defined(DAVA_DEBUG)
-#define __DAVAENGINE_DEBUG__
-#endif
 
 // Platform detection:
 

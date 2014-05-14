@@ -45,10 +45,9 @@ public:
 	virtual DAVA::Entity* GetEntity() const;
 
 private:
-
 	DAVA::Entity* entity;
+    DAVA::Component* component;
     DAVA::Component* backup;
-    int componentType;
 };
 
 #endif // __REMOVE_COMPONENT_COMMAND_H__

@@ -68,7 +68,6 @@ public:
 	DAVA::Texture* getTexture(const QModelIndex &index) const;
 	DAVA::Texture* getTexture(const DAVA::TextureDescriptor* descriptor) const;
 	DAVA::TextureDescriptor* getDescriptor(const QModelIndex &index) const;
-	void setTexture(const DAVA::TextureDescriptor* descriptor, DAVA::Texture *texture);
 
 	bool isHighlited(const QModelIndex &index) const;
 

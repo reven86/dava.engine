@@ -13,6 +13,7 @@
 		02E9E45E173A43A900C501BC /* libfmodevent.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45C173A43A900C501BC /* libfmodevent.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02E9E45F173A43A900C501BC /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E45D173A43A900C501BC /* libfmodex.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01217CF994300D5A334 /* ThreadSyncTest.cpp */; };
+		15CBB0B818D30B870038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0B618D30B870038ABA3 /* StringFormatTest.cpp */; };
 		1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A194183D1B4A000DE581 /* AVFoundation.framework */; };
 		1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1767A19A183D227A000DE581 /* CoreMedia.framework */; };
 		1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF5717DF6CC200000391 /* UIMovieTest.cpp */; };
@@ -32,10 +33,10 @@
 		7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497446617B3C38D00282DAA /* AlignTest.cpp */; };
 		749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */; };
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
+		840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840CB02218EE08C600B722D0 /* JPEGTest.cpp */; };
 		84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C110BF101908F51A00D2E9E8 /* UIParticlesTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C110BF0E1908F51A00D2E9E8 /* UIParticlesTest.cpp */; };
-		C110BF141908F54100D2E9E8 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C110BF121908F54100D2E9E8 /* StringFormatTest.cpp */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
 		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
 		C177F28016D227A70036F02B /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C177F27E16D227A70036F02B /* InputTest.cpp */; };
@@ -43,6 +44,7 @@
 		E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */; };
 		E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */; };
 		E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */; };
+		E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */; };
 		E8583EE0183E41B9009DEEB6 /* ComponentsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */; };
 		E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679172175F407200C5A6A2 /* FormatsTest.cpp */; };
 		E87402D7172582DB00A4A75A /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87402D1172582DB00A4A75A /* FileListTest.cpp */; };
@@ -100,7 +102,7 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		020AB208174639BB0082F336 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 12;
+			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
@@ -120,6 +122,8 @@
 		02F8B01317CF994300D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ThreadSyncTest.h; path = Classes/ThreadSyncTest.h; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		13E42FB307B3F0F600E4EEF1 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = /System/Library/Frameworks/CoreData.framework; sourceTree = "<absolute>"; };
+		15CBB0B618D30B870038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringFormatTest.cpp; path = Classes/StringFormatTest.cpp; sourceTree = "<group>"; };
+		15CBB0B718D30B870038ABA3 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringFormatTest.h; path = Classes/StringFormatTest.h; sourceTree = "<group>"; };
 		1767A194183D1B4A000DE581 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		1767A198183D1E7F000DE581 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		1767A19A183D227A000DE581 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
@@ -164,13 +168,13 @@
 		749A3DCC17B8CF400008EC12 /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
 		749A3DCD17B8CF400008EC12 /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignTest.h; path = Classes/AlignTest.h; sourceTree = "<group>"; };
 		74AF6340188530CD00070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		840CB02218EE08C600B722D0 /* JPEGTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JPEGTest.cpp; path = Classes/JPEGTest.cpp; sourceTree = "<group>"; };
+		840CB02318EE08C600B722D0 /* JPEGTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JPEGTest.h; path = Classes/JPEGTest.h; sourceTree = "<group>"; };
 		84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DateTimeTest.cpp; path = Classes/DateTimeTest.cpp; sourceTree = "<group>"; };
 		84E2926E18DA5D4300B5D4C9 /* DateTimeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DateTimeTest.h; path = Classes/DateTimeTest.h; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* UnitTests.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTests.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C110BF0E1908F51A00D2E9E8 /* UIParticlesTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIParticlesTest.cpp; path = Classes/UIParticlesTest.cpp; sourceTree = "<group>"; };
 		C110BF0F1908F51A00D2E9E8 /* UIParticlesTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIParticlesTest.h; path = Classes/UIParticlesTest.h; sourceTree = "<group>"; };
-		C110BF121908F54100D2E9E8 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StringFormatTest.cpp; path = Classes/StringFormatTest.cpp; sourceTree = "<group>"; };
-		C110BF131908F54100D2E9E8 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = StringFormatTest.h; path = Classes/StringFormatTest.h; sourceTree = "<group>"; };
 		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eMailTest.cpp; path = Classes/eMailTest.cpp; sourceTree = "<group>"; };
 		C151B1BF16D50BDA00E09BAF /* eMailTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = eMailTest.h; path = Classes/eMailTest.h; sourceTree = "<group>"; };
@@ -184,6 +188,8 @@
 		E83604EE163FEB4C0061A636 /* KeyedArchiveTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveTest.h; path = Classes/KeyedArchiveTest.h; sourceTree = "<group>"; };
 		E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyedArchiveYamlTest.cpp; path = Classes/KeyedArchiveYamlTest.cpp; sourceTree = "<group>"; };
 		E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveYamlTest.h; path = Classes/KeyedArchiveYamlTest.h; sourceTree = "<group>"; };
+		E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OpenGLES30FormatTest.cpp; path = Classes/OpenGLES30FormatTest.cpp; sourceTree = "<group>"; };
+		E8573EA718C890E4004A8B50 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OpenGLES30FormatTest.h; path = Classes/OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComponentsTest.cpp; path = Classes/ComponentsTest.cpp; sourceTree = "<group>"; };
 		E8583EDF183E41B9009DEEB6 /* ComponentsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ComponentsTest.h; path = Classes/ComponentsTest.h; sourceTree = "<group>"; };
 		E8679172175F407200C5A6A2 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FormatsTest.cpp; path = Classes/FormatsTest.cpp; sourceTree = "<group>"; };
@@ -278,6 +284,15 @@
 				FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */,
 			);
 			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		15CBB0B318D30B6E0038ABA3 /* StringFormatTest */ = {
+			isa = PBXGroup;
+			children = (
+				15CBB0B618D30B870038ABA3 /* StringFormatTest.cpp */,
+				15CBB0B718D30B870038ABA3 /* StringFormatTest.h */,
+			);
+			name = StringFormatTest;
 			sourceTree = "<group>";
 		};
 		1770DF5217DF6CAD00000391 /* UIMovieTest */ = {
@@ -398,9 +413,11 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				C110BF111908F53000D2E9E8 /* StringFormatTest */,
 				C110BF0B1908F50900D2E9E8 /* ParticleTest */,
+				E8573EA318C890B0004A8B50 /* OpenGLES30 */,
+				840CB01F18EE088A00B722D0 /* JPEGTest */,
 				6260B9DF18E9C209002DA65F /* SaveImageTest */,
+				15CBB0B318D30B6E0038ABA3 /* StringFormatTest */,
 				84E2926A18DA5D2700B5D4C9 /* DateTimeTest */,
 				49637DF518B20D4A008A3398 /* RectSpriteTest */,
 				E8583EDB183E41B2009DEEB6 /* ComponentsTest */,
@@ -509,6 +526,15 @@
 			name = AlignTest;
 			sourceTree = "<group>";
 		};
+		840CB01F18EE088A00B722D0 /* JPEGTest */ = {
+			isa = PBXGroup;
+			children = (
+				840CB02218EE08C600B722D0 /* JPEGTest.cpp */,
+				840CB02318EE08C600B722D0 /* JPEGTest.h */,
+			);
+			name = JPEGTest;
+			sourceTree = "<group>";
+		};
 		84E2926A18DA5D2700B5D4C9 /* DateTimeTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -525,15 +551,6 @@
 				C110BF0F1908F51A00D2E9E8 /* UIParticlesTest.h */,
 			);
 			name = ParticleTest;
-			sourceTree = "<group>";
-		};
-		C110BF111908F53000D2E9E8 /* StringFormatTest */ = {
-			isa = PBXGroup;
-			children = (
-				C110BF121908F54100D2E9E8 /* StringFormatTest.cpp */,
-				C110BF131908F54100D2E9E8 /* StringFormatTest.h */,
-			);
-			name = StringFormatTest;
 			sourceTree = "<group>";
 		};
 		C151B1BC16D50BD000E09BAF /* eMailTest */ = {
@@ -581,6 +598,15 @@
 				E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */,
 			);
 			name = KeyedArchiveTest;
+			sourceTree = "<group>";
+		};
+		E8573EA318C890B0004A8B50 /* OpenGLES30 */ = {
+			isa = PBXGroup;
+			children = (
+				E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */,
+				E8573EA718C890E4004A8B50 /* OpenGLES30FormatTest.h */,
+			);
+			name = OpenGLES30;
 			sourceTree = "<group>";
 		};
 		E8583EDB183E41B2009DEEB6 /* ComponentsTest */ = {
@@ -803,7 +829,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\ntouch -cm ${SRCROOT}/Data/\ntouch -cm ${SRCROOT}/Data/XGfx/\ntouch -cm ${SRCROOT}/Data/Configs/\ntouch -cm ${SRCROOT}/Data/Audio/";
+			shellScript = "install_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -change ./libfmodevent.dylib @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$EXECUTABLE_PATH\ninstall_name_tool -id @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodex.dylib\ninstall_name_tool -id @executable_path/../Frameworks/libfmodevent.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ninstall_name_tool -change ./libfmodex.dylib @executable_path/../Frameworks/libfmodex.dylib $BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/libfmodevent.dylib\ntouch -cm ${SRCROOT}/Data/\ntouch -cm ${SRCROOT}/Data/XGfx/\ntouch -cm ${SRCROOT}/Data/Configs/\ntouch -cm ${SRCROOT}/Data/Audio/";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -813,11 +839,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEA30C331231362D00E691CC /* main.mm in Sources */,
+				15CBB0B818D30B870038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
 				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
-				C110BF141908F54100D2E9E8 /* StringFormatTest.cpp in Sources */,
+				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
 				FEA8F6EB159DB0EF00EED3DC /* MemoryAllocatorsTest.cpp in Sources */,
@@ -850,6 +877,7 @@
 				84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */,
 				E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */,
 				7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */,
+				840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */,
 				02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */,
 				1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */,
 			);
@@ -889,6 +917,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -916,6 +945,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;

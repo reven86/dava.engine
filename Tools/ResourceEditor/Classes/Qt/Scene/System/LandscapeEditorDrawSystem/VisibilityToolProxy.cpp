@@ -77,7 +77,7 @@ Rect VisibilityToolProxy::GetChangedRect()
 
 void VisibilityToolProxy::UpdateRect(const DAVA::Rect &rect)
 {
-	Rect bounds(0.f, 0.f, size - 1, size - 1);
+	Rect bounds(0.f, 0.f, (float32)(size - 1), (float32)(size - 1));
 	changedRect = rect;
 	bounds.ClampToRect(changedRect);
 

@@ -10,6 +10,7 @@
 		02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02B3D3DD159C8D360082111B /* SoundTest.cpp */; };
 		02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02BC3C0515E6399C0047F67F /* SplitTest.cpp */; };
 		02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */; };
+		15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */; };
 		1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4317DF446600000391 /* UIMovieTest.cpp */; };
 		1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF4617DF497600000391 /* MediaPlayer.framework */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
@@ -28,12 +29,12 @@
 		5CDC2521156CD48700742348 /* TestTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC251E156CD48700742348 /* TestTemplate.cpp */; };
 		5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5CDC252F156CDED900742348 /* MainWindow-iPad.xib */; };
 		5CDC2533156CE21000742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2532156CE20F00742348 /* libz.dylib */; };
+		627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 627C796B18ED9DA900C05154 /* JPEGTest.cpp */; };
 		74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7433863C179D18CE0014FBD3 /* UIListTest.cpp */; };
 		74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7433863E179D18CE0014FBD3 /* UIScrollViewTest.cpp */; };
 		7497447517B3D61800282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497447317B3D61800282DAA /* AlignTest.cpp */; };
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
 		74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74BF98191876B3A7001D4CFE /* GameController.framework */; };
-		74BFA6601901424F0043E5BA /* StringFormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74BFA65E1901424F0043E5BA /* StringFormatTest.cpp */; };
 		74F7355F18F596D000685E69 /* UIParticlesTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74F7355D18F596D000685E69 /* UIParticlesTest.cpp */; };
 		8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */; };
 		84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84C8F71316D3D16000FAC7DF /* DPITest.cpp */; };
@@ -50,6 +51,7 @@
 		E832BD95170D5610004D88A0 /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E832BD93170D5610004D88A0 /* FileListTest.cpp */; };
 		E832BDA0170D823C004D88A0 /* FileSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E832BD9E170D823C004D88A0 /* FileSystemTest.cpp */; };
 		E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679177175F607700C5A6A2 /* FormatsTest.cpp */; };
+		E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */; };
 		E8B6B3CA1705DED5004F665E /* LocalizationTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */; };
 		E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */; };
 		E8C6B12216692E87001EBE09 /* CloneTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8C6B12016692E87001EBE09 /* CloneTest.cpp */; };
@@ -123,6 +125,8 @@
 		5CDC251F156CD48700742348 /* TestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestTemplate.h; sourceTree = "<group>"; };
 		5CDC252F156CDED900742348 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "MainWindow-iPad.xib"; path = "iOSSpecific/iPad/MainWindow-iPad.xib"; sourceTree = "<group>"; };
 		5CDC2532156CE20F00742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		627C796B18ED9DA900C05154 /* JPEGTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGTest.cpp; sourceTree = "<group>"; };
+		627C796C18ED9DA900C05154 /* JPEGTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JPEGTest.h; sourceTree = "<group>"; };
 		7433863C179D18CE0014FBD3 /* UIListTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIListTest.cpp; sourceTree = "<group>"; };
 		7433863D179D18CE0014FBD3 /* UIListTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIListTest.h; sourceTree = "<group>"; };
 		7433863E179D18CE0014FBD3 /* UIScrollViewTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIScrollViewTest.cpp; sourceTree = "<group>"; };
@@ -166,6 +170,8 @@
 		E832BD9F170D823C004D88A0 /* FileSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemTest.h; sourceTree = "<group>"; };
 		E8679177175F607700C5A6A2 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatsTest.cpp; sourceTree = "<group>"; };
 		E8679178175F607700C5A6A2 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatsTest.h; sourceTree = "<group>"; };
+		E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGLES30FormatTest.cpp; sourceTree = "<group>"; };
+		E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationTest.cpp; sourceTree = "<group>"; };
 		E8B6B3C91705DED5004F665E /* LocalizationTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalizationTest.h; sourceTree = "<group>"; };
 		E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = eMailTest.cpp; sourceTree = "<group>"; };
@@ -312,6 +318,12 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */,
+				E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */,
+				627C796B18ED9DA900C05154 /* JPEGTest.cpp */,
+				627C796C18ED9DA900C05154 /* JPEGTest.h */,
+				15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */,
+				15CBB0AF18D300310038ABA3 /* StringFormatTest.h */,
 				8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */,
 				8475938C18DA3FAC00C464CB /* DateTimeTest.h */,
 				4998996918B238F7007A8DF2 /* RectSpriteTest.cpp */,
@@ -376,8 +388,6 @@
 				1770DF4417DF446600000391 /* UIMovieTest.h */,
 				C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */,
 				C166A6F018E31B4700007C2D /* SaveImageTest.h */,
-				74BFA65E1901424F0043E5BA /* StringFormatTest.cpp */,
-				74BFA65F1901424F0043E5BA /* StringFormatTest.h */,
 				74F7355D18F596D000685E69 /* UIParticlesTest.cpp */,
 				74F7355E18F596D000685E69 /* UIParticlesTest.h */,
 			);
@@ -439,6 +449,11 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				TargetAttributes = {
+					1D6058900D05DD3D006BFB54 = {
+						DevelopmentTeam = 6V9352ME4J;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TemplateProjectiPhone" */;
 			compatibilityVersion = "Xcode 3.1";
@@ -512,6 +527,7 @@
 				FEC3CBD91284374A00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CBDA1284374A00541220 /* GameCore.cpp in Sources */,
 				FEC9200F13BA2D7D006F347F /* iPhoneProjectDelegate.mm in Sources */,
+				15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */,
 				5CDC2521156CD48700742348 /* TestTemplate.cpp in Sources */,
@@ -520,8 +536,10 @@
 				5CA2462E158F472100465879 /* EntityTest.cpp in Sources */,
 				02B3D3DF159C8D360082111B /* SoundTest.cpp in Sources */,
 				FEC95C7015B409E500588BBF /* HashMapTest.cpp in Sources */,
+				627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */,
 				FEC95C7115B409E500588BBF /* MemoryAllocatorsTest.cpp in Sources */,
 				02BC3C0715E6399C0047F67F /* SplitTest.cpp in Sources */,
+				E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */,
 				E8F98C48161AE9B900B50BDA /* PVRTest.cpp in Sources */,
 				E801A588183FAB8E00D5B770 /* ComponentsTest.cpp in Sources */,
 				E80842BA1639147A002A6A77 /* TextureUtils.cpp in Sources */,
@@ -542,7 +560,6 @@
 				E832BD95170D5610004D88A0 /* FileListTest.cpp in Sources */,
 				E832BDA0170D823C004D88A0 /* FileSystemTest.cpp in Sources */,
 				495B66FF1796FA7F0017D8DD /* TransparentWebViewTest.cpp in Sources */,
-				74BFA6601901424F0043E5BA /* StringFormatTest.cpp in Sources */,
 				4998996B18B238F7007A8DF2 /* RectSpriteTest.cpp in Sources */,
 				E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */,
 				74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */,
@@ -568,22 +585,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/Users/denisbespalov/Sources/dava.framework/Libs/libs,
-				);
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"-mno-thumb",
 					"$(OTHER_CFLAGS)",
 				);
 				PRODUCT_NAME = UnitTests;
+				PROVISIONING_PROFILE = "412BD2A3-1C8B-431F-A8D7-BD0645AF119A";
 			};
 			name = Debug;
 		};
@@ -591,20 +607,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/Users/denisbespalov/Sources/dava.framework/Libs/libs,
-				);
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"-mno-thumb",
 					"$(OTHER_CFLAGS)",
 				);
 				PRODUCT_NAME = UnitTests;
+				PROVISIONING_PROFILE = "412BD2A3-1C8B-431F-A8D7-BD0645AF119A";
 			};
 			name = Release;
 		};
@@ -624,7 +639,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
@@ -639,20 +654,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Victor Kleschenko (J99YFSYAJF)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = TemplateProjectiPhone_Prefix.pch;
 				INFOPLIST_FILE = "TemplateProjectiPhone-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/Users/denisbespalov/Sources/dava.framework/Libs/libs,
-				);
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"-mno-thumb",
 					"$(OTHER_CFLAGS)",
 				);
 				PRODUCT_NAME = UnitTests;
+				PROVISIONING_PROFILE = "412BD2A3-1C8B-431F-A8D7-BD0645AF119A";
 			};
 			name = AdHoc;
 		};
@@ -672,7 +686,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;
@@ -698,7 +712,7 @@
 					./../../Sources/External,
 					./../../Libs/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
 				LIBRARY_SEARCH_PATHS = ./../../Libs/libs;
 				OTHER_LDFLAGS = "-ObjC";
 				PREBINDING = NO;

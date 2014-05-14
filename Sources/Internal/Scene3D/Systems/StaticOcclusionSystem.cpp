@@ -106,7 +106,7 @@ void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
     
     if (activeIndex == -1)return; // System inactive
     
-    SetCamera(GetScene()->GetClipCamera());
+    SetCamera(GetScene()->GetCurrentCamera());
 
     Entity * entity = entities[activeIndex];
     StaticOcclusionComponent * occlusionComponent = (StaticOcclusionComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT);
@@ -296,7 +296,7 @@ StaticOcclusionSystem::~StaticOcclusionSystem()
 
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
-    SetCamera(GetScene()->GetClipCamera());
+    SetCamera(GetScene()->GetCurrentCamera());
 
     // Verify that system is initialized
     if (!camera)return;

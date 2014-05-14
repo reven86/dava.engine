@@ -22,6 +22,9 @@ public:
     // Get the selected Preview Settings Data.
     PreviewSettingsData GetSelectedData() const;
 
+    // Get the "apply scale" flag.
+    bool GetApplyScale() const;
+
 protected:
     void InitializeTableView();
     void ReloadSettings();
@@ -30,6 +33,8 @@ protected slots:
     void AddButtonClicked();
     void RemoveButtonClicked();
     void CloseButtonClicked();
+    
+    void PreviewNoScaleButtonClicked();
     void SettingsTableDoubleClicked(const QModelIndex& modelIndex);
 
 private:
@@ -38,6 +43,9 @@ private:
     
     // true if this dialog is opened just for selection preview mode.
     bool isSelectionMode;
+    
+    // Whether apply scale is needed? TRUE by default.
+    bool isApplyScale;
 };
 
 #endif // PREVIEWSETTINGSDIALOG_H

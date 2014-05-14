@@ -59,7 +59,7 @@ public:
 	int32 GetColor();
 
 	void SaveTexture(const FilePath& filePath);
-	void LoadTexture(const FilePath& filePath, bool createUndo = true);
+	bool LoadTexture(const FilePath& filePath, bool createUndo = true);
 	FilePath GetCurrentSaveFileName();
 	
 	bool ChangesPresent();

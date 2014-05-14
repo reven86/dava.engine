@@ -67,66 +67,15 @@ ShadowVolume::~ShadowVolume()
 {
 }
 
-//void ShadowVolume::Draw()
-//{
-//	scene->AddDrawTimeShadowVolume(this);
-//}
-
-static const uint32 SHADOW_VOLUME_VISIBILITY_CRITERIA = RenderObject::VISIBLE;
-    
 void ShadowVolume::Draw(const FastName & ownerRenderPass, Camera * camera)
 {
-    if(!renderObject)return;
-    Matrix4 * worldTransformPtr = renderObject->GetWorldTransformPtr();
-    if (!worldTransformPtr)
-    {
-        return;
-    }
-
-    uint32 flags = renderObject->GetFlags();
-    if ((flags & SHADOW_VOLUME_VISIBILITY_CRITERIA) != SHADOW_VOLUME_VISIBILITY_CRITERIA)
-        return;
-    
-    Light * light = GetMaterial()->GetLight(0);
-    if((!light) || (!(light->GetFlags() & Light::CAST_SHADOW)))
+	Light * light = GetLight(0);
+	if((!light) || (!(light->GetFlags() & Light::CAST_SHADOW)))
 	{
 		return;
 	}
-	
-    RenderManager::SetDynamicParam(PARAM_WORLD, worldTransformPtr, (pointer_size)worldTransformPtr);
-	
-    material->BindMaterialTechnique(ownerRenderPass, camera);
-    material->Draw(dataSource);
 
-    /*Matrix4 finalMatrix = (*worldTransformPtr) * camera->GetMatrix();
-	RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, finalMatrix);
-
-	Matrix4 projMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-
-	RenderManager::Instance()->SetShader(shader);
-	RenderManager::Instance()->SetRenderData(shadowPolygonGroup->renderDataObject);
-	RenderManager::Instance()->FlushState();
-	RenderManager::Instance()->AttachRenderData();
-
-	//Vector3 position = Vector3() * GetWorldTransform();
-	int32 uniformLightPosition0 = shader->FindUniformIndexByName("lightPosition0");
-	if (light && uniformLightPosition0 != -1)
-	{
-		Vector3 lightPosition0 = light->GetPosition();
-		const Matrix4 & matrix = camera->GetMatrix();
-		lightPosition0 = lightPosition0 * matrix;
-
-		shader->SetUniformValueByIndex(uniformLightPosition0, lightPosition0);
-	}
-
-	if (shadowPolygonGroup->renderDataObject->GetIndexBufferID() != 0)
-	{
-		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, shadowPolygonGroup->indexCount, EIF_16, 0);
-	}
-	else
-	{
-		RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, shadowPolygonGroup->indexCount, EIF_16, shadowPolygonGroup->indexArray);
-	}*/
+	RenderBatch::Draw(ownerRenderPass, camera);
 }
 
 int32 ShadowVolume::FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMapping* mapping, int32 count)
