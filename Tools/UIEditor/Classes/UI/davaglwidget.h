@@ -95,6 +95,8 @@ private:
 
 	// Previous widget size.
 	QSize prevSize;
+	
+	DAVA::Vector2 GuideToInternal(const QPoint& pos);
 
 	void Quit();
 };

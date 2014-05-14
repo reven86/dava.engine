@@ -204,7 +204,7 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 {
     DVASSERT(processDirectoryPath.IsDirectoryPathname());
     
-	int32 maxTextureSize = TexturePacker::TEXTURE_SIZE;
+	int32 maxTextureSize = TexturePacker::DEFAULT_TEXTURE_SIZE;
 	
 	// TODO: Check CRC32
 	Vector<Magick::Image> layers;

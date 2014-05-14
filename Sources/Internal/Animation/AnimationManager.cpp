@@ -69,9 +69,7 @@ void AnimationManager::RemoveAnimationInternal(BaseObject * caller, void * param
 			break;
 		}
 	}
-	animationMutex.Unlock();
 	//Logger::FrameworkDebug("RemoveAnimation: after animations: %d\n", animations.size());
-	
 }
     
 void AnimationManager::StopAnimations()
