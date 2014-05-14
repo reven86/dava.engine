@@ -1560,8 +1560,7 @@ namespace DAVA
 	
 
 	void UIControl::SystemUpdate(float32 timeElapsed)
-	{
-		UIControlSystem::Instance()->updateCounter++;
+	{		
 		Update(timeElapsed);
 		isUpdated = true;
 		List<UIControl*>::iterator it = childs.begin();
@@ -1594,8 +1593,6 @@ namespace DAVA
 	{
         if( !recursiveVisible )
             return;
-			
-		UIControlSystem::Instance()->drawCounter++;
 		UIGeometricData drawData;
 		drawData.position = relativePosition;
 		drawData.size = size;
@@ -1632,13 +1629,18 @@ namespace DAVA
 		}
 		DrawPivotPoint(unrotatedRect);
 		
-		isIteratorCorrupted = false;
-		List<UIControl*>::iterator it = childs.begin();
-		List<UIControl*>::iterator itEnd = childs.end();
-		for(; it != itEnd; ++it)
+		
+		// Do not draw child controls if parent is not visible
+		if (visible && visibleForUIEditor)
 		{
-			(*it)->SystemDraw(drawData);
-			DVASSERT(!isIteratorCorrupted);
+			isIteratorCorrupted = false;
+			List<UIControl*>::iterator it = childs.begin();
+			List<UIControl*>::iterator itEnd = childs.end();
+			for(; it != itEnd; ++it)
+			{
+				(*it)->SystemDraw(drawData);
+				DVASSERT(!isIteratorCorrupted);
+			}
 		}
 		
 		if(visible && visibleForUIEditor)
@@ -1977,7 +1979,6 @@ namespace DAVA
 
 	bool UIControl::SystemInput(UIEvent *currentInput)
 	{
-		UIControlSystem::Instance()->inputCounter++;
 		isUpdated = true;
 
         if( !recursiveVisible )
@@ -1996,36 +1997,39 @@ namespace DAVA
 					return false;
 				}
 			}
-
-			List<UIControl*>::reverse_iterator it = childs.rbegin();
-			List<UIControl*>::reverse_iterator itEnd = childs.rend();
-			for(; it != itEnd; ++it)
+			// Do not handle input for child controls which are insibible from parent
+			if (visible)
 			{
-				(*it)->isUpdated = false;
-			}
-			
-			it = childs.rbegin();
-			itEnd = childs.rend();
-			while(it != itEnd)
-			{
-				isIteratorCorrupted = false;
-				UIControl *current = *it;
-				if(!current->isUpdated)
+				List<UIControl*>::reverse_iterator it = childs.rbegin();
+				List<UIControl*>::reverse_iterator itEnd = childs.rend();
+				for(; it != itEnd; ++it)
 				{
-					current->Retain();
-					if(current->SystemInput(currentInput))
-					{
-						current->Release();
-						return true;
-					}
-					current->Release();
-					if(isIteratorCorrupted)
-					{
-						it = childs.rbegin();
-						continue;
-					}
+					(*it)->isUpdated = false;
 				}
-				++it;
+			
+				it = childs.rbegin();
+				itEnd = childs.rend();
+				while(it != itEnd)
+				{
+					isIteratorCorrupted = false;
+					UIControl *current = *it;
+					if(!current->isUpdated)
+					{
+						current->Retain();
+						if(current->SystemInput(currentInput))
+						{
+							current->Release();
+							return true;
+						}
+						current->Release();
+						if(isIteratorCorrupted)
+						{
+							it = childs.rbegin();
+							continue;
+						}
+					}
+					++it;
+				}
 			}
 		}
 		return SystemProcessInput(currentInput);

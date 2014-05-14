@@ -1253,9 +1253,11 @@ protected:
 	int32 controlState;
 
 	// boolean flags are grouped here to pack them together (see please DF-2149).
+	bool inputEnabled : 1;
+	bool focusEnabled : 1;
 	bool exclusiveInput : 1;
-	bool recursiveVisible : 1;
 	bool visible : 1;
+	bool recursiveVisible : 1;
 	bool clipContents : 1;
 	bool debugDrawEnabled : 1;
 	bool multiInput : 1;
@@ -1320,9 +1322,6 @@ protected:
 private:
 	String	name;
 	int32	tag;
-	bool inputEnabled : 1;
-	bool focusEnabled : 1;
-	
 
 	void RecalculateAlignProperties();
 	void RecalculateChildsSize();
