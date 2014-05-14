@@ -38,7 +38,7 @@
 #define IMPLEMENT_POOL_ALLOCATOR(TYPE, poolSize) \
 	void * operator new(std::size_t size) \
 	{ \
-        DVASSERT(size <= sizeof(TYPE)); /*probably you are allocating child class*/ \
+        DVASSERT(size == sizeof(TYPE)); /*probably you are allocating child class*/ \
 		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator(typeid(TYPE).name(), sizeof(TYPE), poolSize); \
 		return alloc->New(); \
 	} \
@@ -48,20 +48,6 @@
 		static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator(typeid(TYPE).name(), sizeof(TYPE), poolSize); \
 		alloc->Delete(ptr); \
 	} \
-
-#define IMPLEMENT_POOL_ALLOCATOR_FOR_SIZE(name, classSize, poolSize) \
-    void * operator new(std::size_t size) \
-    { \
-        DVASSERT(size <= classSize); /*decrease your child classes size*/ \
-        static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator(name, classSize, poolSize); \
-        return alloc->New(); \
-    } \
-    \
-    void operator delete(void * ptr) \
-    { \
-        static FixedSizePoolAllocator * alloc = AllocatorFactory::Instance()->GetAllocator(name, classSize, poolSize); \
-        alloc->Delete(ptr); \
-    } \
 
 namespace DAVA
 {

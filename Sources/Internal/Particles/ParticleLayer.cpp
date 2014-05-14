@@ -652,7 +652,7 @@ void ParticleLayer::LoadFromYaml(const FilePath & configPath, const YamlNode * n
 
 	// Load the Inner Emitter parameters.
 	const YamlNode * innerEmitterPathNode = node->Get("innerEmitterPath");
-	if (innerEmitterPathNode)
+	if ((type == TYPE_SUPEREMITTER_PARTICLES) && innerEmitterPathNode)
 	{
 		SafeRelease(innerEmitter);
 		innerEmitter = new ParticleEmitter();       
@@ -776,7 +776,7 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 		lodsNode->AddValueToArray((int32)activeLODS[i]); //as for now AddValueToArray has no bool type - force it to int
 	layerNode->SetNodeToMap("activeLODS", lodsNode);
 
-	if (innerEmitter)
+	if ((type == TYPE_SUPEREMITTER_PARTICLES) && innerEmitter)
 	{
 		String innerRelativePath = innerEmitterPath.GetRelativePathname(configPath.GetDirectory());
 		PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "innerEmitterPath", innerRelativePath);

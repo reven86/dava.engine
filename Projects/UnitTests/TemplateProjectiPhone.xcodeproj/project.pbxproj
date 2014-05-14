@@ -96,6 +96,8 @@
 		02BC3C0615E6399C0047F67F /* SplitTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SplitTest.h; sourceTree = "<group>"; };
 		02F8B01A17CF996C00D5A334 /* ThreadSyncTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ThreadSyncTest.cpp; sourceTree = "<group>"; };
 		02F8B01B17CF996C00D5A334 /* ThreadSyncTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ThreadSyncTest.h; sourceTree = "<group>"; };
+		15CBB0AE18D300310038ABA3 /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFormatTest.cpp; sourceTree = "<group>"; };
+		15CBB0AF18D300310038ABA3 /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringFormatTest.h; sourceTree = "<group>"; };
 		1770DF4317DF446600000391 /* UIMovieTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIMovieTest.cpp; sourceTree = "<group>"; };
 		1770DF4417DF446600000391 /* UIMovieTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIMovieTest.h; sourceTree = "<group>"; };
 		1770DF4617DF497600000391 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
@@ -135,8 +137,6 @@
 		7497447417B3D61800282DAA /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlignTest.h; sourceTree = "<group>"; };
 		74AF633C18852FE100070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		74BF98191876B3A7001D4CFE /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
-		74BFA65E1901424F0043E5BA /* StringFormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StringFormatTest.cpp; sourceTree = "<group>"; };
-		74BFA65F1901424F0043E5BA /* StringFormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringFormatTest.h; sourceTree = "<group>"; };
 		74F7355D18F596D000685E69 /* UIParticlesTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticlesTest.cpp; sourceTree = "<group>"; };
 		74F7355E18F596D000685E69 /* UIParticlesTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticlesTest.h; sourceTree = "<group>"; };
 		8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTimeTest.cpp; sourceTree = "<group>"; };

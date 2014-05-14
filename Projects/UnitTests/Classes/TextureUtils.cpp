@@ -29,6 +29,7 @@
 
 
 #include "TextureUtils.h"
+#include "Render/PixelFormatDescriptor.h"
 
 
 Sprite * TextureUtils::CreateSpriteFromTexture(const String &texturePathname)
@@ -80,14 +81,14 @@ TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *sec
 
     CompareResult compareResult = {0};
     
-    int32 imageSizeInBytes = (int32)(first->GetWidth() * first->GetHeight() * Texture::GetPixelFormatSizeInBytes(first->format));
+    int32 imageSizeInBytes = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(first->format));
 
     int32 step = 1;
     int32 startIndex = 0;
     
 	if(FORMAT_A8 == format)
 	{
-		compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * Texture::GetPixelFormatSizeInBytes(FORMAT_A8));
+		compareResult.bytesCount = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_A8));
 		step = 4;
 		startIndex = 3;
 	}

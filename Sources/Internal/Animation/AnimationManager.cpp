@@ -60,16 +60,9 @@ void AnimationManager::RemoveAnimationInternal(BaseObject * caller, void * param
 		if (*t == animation)
 		{
 			animations.erase(t);
-//#ifdef ANIMATIONS_DEBUG
-//			if(animationLoggerEnabled)
-//			{
-//				Logger::FrameworkDebug("ANIMATION LOGGER: AnimationManager::RemoveAnimation 0x%x   new animations size %d", (int)animation, animations.size());
-//			}
-//#endif
 			break;
 		}
 	}
-	//Logger::FrameworkDebug("RemoveAnimation: after animations: %d\n", animations.size());
 }
     
 void AnimationManager::StopAnimations()

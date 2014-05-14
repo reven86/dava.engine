@@ -29,6 +29,7 @@
 
 
 #include "FormatsTest.h"
+#include "Render/PixelFormatDescriptor.h"
 
 static const float TEST_TIME = 30.0f;
 
@@ -64,7 +65,7 @@ void FormatsTest::LoadResources()
         int32 y = (i-1) / columnCount;
         int32 x = (i-1) % columnCount;
         
-        String formatName = Texture::GetPixelFormatString((PixelFormat)i);
+        String formatName = PixelFormatDescriptor::GetPixelFormatString((PixelFormat)i);
         
         UIControl *c = new UIControl(Rect(x*size, y*size, size - 2, size - 2));
         c->SetSprite(Format("~res:/TestData/FormatTest/%s/number_0", formatName.c_str()), 0);
@@ -84,11 +85,11 @@ void FormatsTest::LoadResources()
         SafeRelease(c);
     }
 
-	Rect parentSize = this->GetRect();
-	finishTestBtn = new UIButton(Rect(parentSize.dx - 325, parentSize.dy - 55, 300, 30));
+	finishTestBtn = new UIButton(Rect(10, 700, 300, 30));
 	finishTestBtn->SetStateFont(0xFF, font);
     finishTestBtn->SetStateFontColor(0xFF, Color::White);
 	finishTestBtn->SetStateText(0xFF, L"Finish test");
+
 	finishTestBtn->SetDebugDraw(true);
 	finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &FormatsTest::ButtonPressed));
 	AddControl(finishTestBtn);

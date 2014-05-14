@@ -464,7 +464,7 @@ framework_path = { "Darwin": "./../dava.framework", "Windows": "./../dava.framew
 	Every directory inside Gfx folder can contain flags.txt file. Using this file you can change packing options for this particular directory. 
 	\code
 --pvr - pack textures in this folder to pvr format
---tsize2048 - set max texture size to 2048
+--tsize4096 - set max texture size to 4096
 --add0pixel - set 0 pixels default space between sprite frames
 --add1pixel - set 1 pixels default space between sprite frames
 --add2pixel - set 2 pixels default space between sprite frames

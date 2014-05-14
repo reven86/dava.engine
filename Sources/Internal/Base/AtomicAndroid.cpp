@@ -43,7 +43,7 @@ int32 AtomicIncrement( int32 &value )
 
 int32 AtomicDecrement( int32 &value )
 {
-    return (int32)__sync_fetch_and_sub((int *)&value, 1);
+    return (int32)__sync_fetch_and_sub((int *)&value, 1) - 1;
 }
 
 };

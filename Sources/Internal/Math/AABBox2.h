@@ -80,28 +80,28 @@ public:
     inline bool IsEmpty() const;
 
 	//! \brief check if bounding box intersect line
-	inline bool IsIntersectLine(const Vector2 & l1, const Vector2 &l2);
+	inline bool IsIntersectLine(const Vector2 & l1, const Vector2 &l2) const;
 	
 	//! \brief check if bounding box intersect ray
-	bool IsIntersectsWithRay(Ray2 & r, float32 & tmin, float32 & tmax, float32 t0 = 0.0f, float32 t1 = 1.0f);
+	bool IsIntersectsWithRay(Ray2 & r, float32 & tmin, float32 & tmax, float32 t0 = 0.0f, float32 t1 = 1.0f) const;
 
 	//! \brief check if bounding box intersect other bounding box. SAT.
 	//! \param box another bounding box
 	//! \return true if intersect, false otherwise
-	bool IsIntersectsWithBox(const AABBox2 & box);
+	bool IsIntersectsWithBox(const AABBox2 & box) const;
 	
 	//! \brief check if point inside bbox
 	inline bool IsInside(const Vector2 & pt) const;
 	
 	//! \brief get center
-	inline Vector2 GetCenter();
+	inline Vector2 GetCenter() const;
 
 	//! \brief copy operator of bounding box class
 	inline AABBox2 & operator =(const AABBox2 & _bbox);
 
         
         
-        inline bool IntersectsSegment(const Vector2 & l1, const Vector2 &l2);
+        inline bool IntersectsSegment(const Vector2 & l1, const Vector2 &l2) const;
 };
 
 //! \brief construct empty bounding box
@@ -163,7 +163,7 @@ inline bool AABBox2::IsEmpty() const
 }
 
 //! \brief check if bounding box intersect line
-inline bool IsIntersectLine(const Vector2 & /*l1*/, const Vector2 & /*l2*/)
+inline bool AABBox2::IsIntersectLine(const Vector2 & /*l1*/, const Vector2 & /*l2*/) const
 {
 	//float32 tmin[3];
 	//float32 tmax[3];
@@ -200,13 +200,13 @@ inline AABBox2 & AABBox2::operator =(const AABBox2 & _bbox)
 }
 
 //! \brief get center
-inline Vector2 AABBox2::GetCenter()
+inline Vector2 AABBox2::GetCenter() const
 {
 	return (min + max) / 2.0f;
 }
 
 
-    inline bool AABBox2::IntersectsSegment(const Vector2 & l1, const Vector2 &l2)
+    inline bool AABBox2::IntersectsSegment(const Vector2 & l1, const Vector2 &l2) const
     {
         float xmin, xmax, ymin, ymax;
         

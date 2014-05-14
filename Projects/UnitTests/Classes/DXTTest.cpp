@@ -29,11 +29,11 @@
 
 #include "DXTTest.h"
 #include "TextureUtils.h"
+#include "Render/PixelFormatDescriptor.h"
 
 static const PixelFormat formats[] =
 {
 	FORMAT_DXT1,
-	FORMAT_DXT1NM,
 	FORMAT_DXT1A,
 	FORMAT_DXT3,
 	FORMAT_DXT5,
@@ -53,7 +53,7 @@ DXTTest::DXTTest()
     currentTest = FIRST_TEST;
     for(int32 i = 0; i < TESTS_COUNT; ++i)
     {
-        PixelFormatDescriptor formatDescriptor = Texture::GetPixelFormatDescriptor(formats[i]);
+        const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(formats[i]);
         RegisterFunction(this, &DXTTest::TestFunction, Format("DXTTest of %s", formatDescriptor.name.c_str()), NULL);
     }
 }
@@ -104,7 +104,6 @@ void DXTTest::TestFunction(PerfFuncData * data)
 			differencePersentage = ((float32)result.difference / ((float32)result.bytesCount * 256.f)) * 100.f;
 		}
         
-        PixelFormatDescriptor formatDescriptor = Texture::GetPixelFormatDescriptor(formats[currentTest]);
         data->testData.message = Format("\nDifference: %f%%\nCoincidence: %f%%",
                                         differencePersentage, 100.f - differencePersentage);
 
@@ -148,7 +147,7 @@ bool DXTTest::IsCurrentTestAccepted()
     }
 
 
-	PixelFormatDescriptor pixelFormat = Texture::GetPixelFormatDescriptor(formats[currentTest]);
+	PixelFormatDescriptor pixelFormat = PixelFormatDescriptor::GetPixelFormatDescriptor(formats[currentTest]);
 	
 	if (pixelFormat.format == 0)
 		return false;
@@ -159,7 +158,7 @@ bool DXTTest::IsCurrentTestAccepted()
 		return false;
 	}
 
-	if(formats[currentTest] == FORMAT_DXT1A || formats[currentTest] == FORMAT_DXT1NM || formats[currentTest] == FORMAT_DXT5NM)
+	if(formats[currentTest] == FORMAT_DXT1A || formats[currentTest] == FORMAT_DXT5NM)
 	{
 		//not all DXT formats are supported 
 		return false;

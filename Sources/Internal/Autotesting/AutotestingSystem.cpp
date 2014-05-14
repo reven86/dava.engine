@@ -433,8 +433,8 @@ void AutotestingSystem::MakeScreenShot()
     uint16 hours = (timeAbsMs/3600000)%24;
     uint16 minutes = (timeAbsMs/60000)%60;
     uint16 seconds = (timeAbsMs/1000)%60;
-	screenShotName = Format("%s_%s_%02d_%02d_%02d", AUTOTESTING_PLATFORM_NAME, groupName.c_str(), hours, minutes, seconds);
-
+	screenShotName = Format("%s_%s_%s_%02d_%02d_%02d", AUTOTESTING_PLATFORM_NAME, deviceName.c_str(), groupName.c_str(), hours, minutes, seconds);
+	
 	RenderManager::Instance()->RequestGLScreenShot(this);
 }
 

@@ -735,7 +735,7 @@ int32 Sprite::Release()
 	if(GetRetainCount() == 1)
 	{
         spriteMapMutex.Lock();
-		SafeRelease(spriteRenderObject);
+		//SafeRelease(spriteRenderObject);
 		spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
         spriteMapMutex.Unlock();
 	}

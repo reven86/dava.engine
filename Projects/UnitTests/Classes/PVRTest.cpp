@@ -30,6 +30,7 @@
 
 #include "PVRTest.h"
 #include "TextureUtils.h"
+#include "Render/PixelFormatDescriptor.h"
 
 static const PixelFormat formats[] =
 {
@@ -59,7 +60,7 @@ PVRTest::PVRTest()
     currentTest = FIRST_TEST;
     for(int32 i = 0; i < TESTS_COUNT; ++i)
     {
-        PixelFormatDescriptor formatDescriptor = Texture::GetPixelFormatDescriptor(formats[i]);
+        const PixelFormatDescriptor & formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(formats[i]);
         RegisterFunction(this, &PVRTest::TestFunction, Format("PVRTest of %s", formatDescriptor.name.c_str()), NULL);
     }
 }
@@ -106,9 +107,7 @@ void PVRTest::TestFunction(PerfFuncData * data)
         TextureUtils::CompareResult result = TextureUtils::CompareSprites(decompressedPNGSprite, pvrSprite, formats[currentTest]);
         float32 differencePersentage = ((float32)result.difference / ((float32)result.bytesCount * 256.f)) * 100.f;
         
-        PixelFormatDescriptor formatDescriptor = Texture::GetPixelFormatDescriptor(formats[currentTest]);
-        data->testData.message = Format("\nDifference: %f%%\nCoincidence: %f%%",
-                                        differencePersentage, 100.f - differencePersentage);
+        data->testData.message = Format("\nDifference: %f%%\nCoincidence: %f%%", differencePersentage, 100.f - differencePersentage);
         
         compareResultText->SetText(StringToWString(data->testData.message));
         Logger::Debug(data->testData.message.c_str());

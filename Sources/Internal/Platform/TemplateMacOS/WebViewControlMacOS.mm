@@ -151,7 +151,8 @@ using namespace DAVA;
 
 int32_t WebViewControl::runScriptID = 0;
 
-WebViewControl::WebViewControl()
+WebViewControl::WebViewControl() :
+	isWebViewVisible(true)
 {
 	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
 	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil groupName:nil];
@@ -254,7 +255,17 @@ void WebViewControl::SetRect(const Rect& rect)
 
 void WebViewControl::SetVisible(bool isVisible, bool hierarchic)
 {
-	[(WebView*)webViewPtr setHidden:!isVisible];
+    if (!isWebViewVisible && isVisible)
+    {
+        NSView* openGLView = (NSView*)Core::Instance()->GetOpenGLView();
+        [openGLView addSubview:(WebView*)webViewPtr];
+    }
+    else if (isWebViewVisible && !isVisible)
+    {
+        [(WebView*)webViewPtr removeFromSuperview];
+    }
+    
+    isWebViewVisible = isVisible;
 }
 
 void WebViewControl::SetBackgroundTransparency(bool enabled)
