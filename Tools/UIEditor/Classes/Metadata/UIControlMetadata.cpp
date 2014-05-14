@@ -347,6 +347,26 @@ void UIControlMetadata::SetVisible(const bool value)
     SetUIControlVisible(value, false);
 }
 
+bool UIControlMetadata::GetRecursiveVisible() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return false;
+    }
+
+    return GetActiveUIControl()->GetRecursiveVisible();
+}
+
+void UIControlMetadata::SetRecursiveVisible(const bool value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    GetActiveUIControl()->SetRecursiveVisible(value);
+}
+
 bool UIControlMetadata::GetInput() const
 {
     if (!VerifyActiveParamID())

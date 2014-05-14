@@ -29,6 +29,9 @@
 #include "RulerWidget.h"
 
 #include <QPainter>
+#include <QApplication>
+
+#include "Guides/GuideMimeData.h"
 
 RulerWidget::RulerWidget(QWidget *parent) :
     QWidget(parent),
@@ -227,6 +230,34 @@ void RulerWidget::UpdateDoubleBufferImage()
     
     tickStep = settings.bigTicksDelta * settings.zoomLevel;
     DrawScale(painter, tickStep, bigTickStart, tickEnd, true, isHorizontal);
+}
 
+void RulerWidget::mousePressEvent(QMouseEvent *event)
+{
+    // Distinguish between just click and drag.
+    if (event->button() == Qt::LeftButton)
+    {
+        dragStartPos = event->pos();
+    }
+}
 
+void RulerWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    if (!(event->buttons() & Qt::LeftButton))
+    {
+        return;
+    }
+
+    if ((event->pos() - dragStartPos).manhattanLength() < QApplication::startDragDistance())
+    {
+        return;
+    }
+
+    QDrag *drag = new QDrag(this);
+    GuideData::eGuideType guideType = (orientation == Horizontal) ? GuideData::Horizontal : GuideData::Vertical;
+    GuideMimeData *mimeData = new GuideMimeData(guideType);
+    drag->setMimeData(mimeData);
+
+    Qt::DropAction dropAction = drag->exec(Qt::CopyAction);
+    emit GuideDropped(dropAction);
 }

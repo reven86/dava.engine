@@ -228,3 +228,13 @@ void ScreenWrapper::SetBackgroundFrameColor(const Color& color)
 {
     backgroundFrameColor = color;
 }
+
+Vector2 ScreenWrapper::LocalToInternal(const Vector2& point)
+{
+    if (!GetActiveScreen())
+    {
+        return point;
+    }
+
+    return GetActiveScreen()->LocalToInternal(point);
+}

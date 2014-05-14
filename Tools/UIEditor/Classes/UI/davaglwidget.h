@@ -52,7 +52,8 @@ public:
 	int GetFPS();
 
 	QSize GetPrevSize() const { return prevSize;};
-
+	
+protected:
 	virtual QPaintEngine *paintEngine() const;
 	virtual void paintEvent(QPaintEvent *);
 
@@ -86,6 +87,11 @@ public:
 
 signals:
     void DavaGLWidgetResized();
+	
+protected:
+    // Recalculate "raw" guide coord to internal.
+    DAVA::Vector2 GuideToInternal(const QPoint& pos);
+    DAVA::float32 ToNearestInteger(DAVA::float32 value);
 
 private:
 	Ui::DavaGLWidget *ui;
@@ -95,8 +101,6 @@ private:
 
 	// Previous widget size.
 	QSize prevSize;
-	
-	DAVA::Vector2 GuideToInternal(const QPoint& pos);
 
 	void Quit();
 };

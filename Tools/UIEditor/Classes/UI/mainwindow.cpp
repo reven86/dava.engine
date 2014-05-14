@@ -56,7 +56,6 @@
 #include "DefaultScreen.h"
 #include "ColorHelper.h"
 
-#include "Grid/GridController.h"
 #include "Grid/GridVisualizer.h"
 
 #include "Ruler/RulerController.h"
@@ -1404,7 +1403,6 @@ void MainWindow::NotifyScaleUpdated(float32 newScale)
     ScreenWrapper::Instance()->SetScale(newScale);
     GridVisualizer::Instance()->SetScale(newScale);
 
-    GridController::Instance()->SetScale(newScale);
     RulerController::Instance()->SetScale(newScale);
 }
 
