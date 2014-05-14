@@ -943,18 +943,6 @@
     <string>Repack and reload sprites</string>
    </property>
   </action>
-  <action name="actionAdjustControlSize">
-   <property name="icon">
-    <iconset resource="../Data/icons.qrc">
-     <normaloff>:/Icons/adjust_size.png</normaloff>:/Icons/adjust_size.png</iconset>
-   </property>
-   <property name="text">
-    <string>Adjust control size</string>
-   </property>
-   <property name="toolTip">
-    <string>Adjust control size to fit its sprite size</string>
-   </property>
-  </action>
   <action name="actionPixelized">
    <property name="checkable">
     <bool>true</bool>
