@@ -533,9 +533,22 @@ public:
 	 \param[in] hierarchic use true if you want to all control children change visiblity.
 	 */
 	virtual void SetVisible(bool isVisible, bool hierarchic = true);
-	
+
+    /**
+     \brief Returns control visibility.
+        Invisible controls don't process any inputs.
+        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods. 
+     \returns control visibility.
+     */
     virtual bool GetRecursiveVisible() const;
-    void SetRecursiveVisible(bool isVisible);
+
+    /**
+     \brief Sets contol recursive visibility.
+        Invisible controls don't process any inputs.
+        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
+     \param[in] isVisible new control visibility.
+     */
+    virtual void SetRecursiveVisible(bool isVisible);
 
 	/**
 	 \brief Returns control input processing ability.
@@ -1240,11 +1253,9 @@ protected:
 	int32 controlState;
 
 	// boolean flags are grouped here to pack them together (see please DF-2149).
-	bool inputEnabled : 1;
-	bool focusEnabled : 1;
 	bool exclusiveInput : 1;
-	bool visible : 1;
 	bool recursiveVisible : 1;
+	bool visible : 1;
 	bool clipContents : 1;
 	bool debugDrawEnabled : 1;
 	bool multiInput : 1;
@@ -1309,6 +1320,9 @@ protected:
 private:
 	String	name;
 	int32	tag;
+	bool inputEnabled : 1;
+	bool focusEnabled : 1;
+	
 
 	void RecalculateAlignProperties();
 	void RecalculateChildsSize();
@@ -1324,7 +1338,6 @@ private:
 	float32 GetRelativeX(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
 	float32 GetRelativeY(UIControl *parent, int32 align);
 	float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
-	float32 Round(float32 value);
 };
 };
 

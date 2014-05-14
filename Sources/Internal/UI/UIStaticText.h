@@ -91,7 +91,7 @@ public:
 	const Vector2 &GetShadowOffset() const;
 
 	// Animation methods for Text Color and Shadow Color.
-	virtual Animation *	ColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+	virtual Animation *	TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
 	virtual Animation* ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
 
 	const Vector<int32> & GetStringSizes() const;

@@ -745,7 +745,7 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
     RenderManager::Instance()->SetRenderState(renderState);
 	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 	RenderManager::Instance()->SetRenderData(rdoObject);
-	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_32, &td.indeces[0]);
+	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 }
 
 void UIControlBackground::DrawFilled( const UIGeometricData &gd, UniqueHandle renderState )
@@ -788,11 +788,11 @@ void UIControlBackground::TiledDrawData::GenerateTileData()
 	Texture *texture = sprite->GetTexture(frame);
 
 	Vector< Vector3 > cellsWidth;
-	GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), (float32)texture->GetWidth(), stretchCap.x, cellsWidth );
+	GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), (float32)texture->GetWidth() * sprite->GetResourceToVirtualFactor(), stretchCap.x, cellsWidth );
 
 	Vector< Vector3 > cellsHeight;
-	GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight(), stretchCap.y, cellsHeight );
-
+	GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * sprite->GetResourceToVirtualFactor(), stretchCap.y, cellsHeight );
+	
 	int32 vertexCount = 4 * cellsHeight.size() * cellsWidth.size();
 	vertices.resize( vertexCount );
 	transformedVertices.resize( vertexCount );

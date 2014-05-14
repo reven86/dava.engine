@@ -1560,7 +1560,8 @@ namespace DAVA
 	
 
 	void UIControl::SystemUpdate(float32 timeElapsed)
-	{		
+	{
+		UIControlSystem::Instance()->updateCounter++;
 		Update(timeElapsed);
 		isUpdated = true;
 		List<UIControl*>::iterator it = childs.begin();
@@ -1593,6 +1594,8 @@ namespace DAVA
 	{
         if( !recursiveVisible )
             return;
+			
+		UIControlSystem::Instance()->drawCounter++;
 		UIGeometricData drawData;
 		drawData.position = relativePosition;
 		drawData.size = size;
@@ -1629,18 +1632,13 @@ namespace DAVA
 		}
 		DrawPivotPoint(unrotatedRect);
 		
-		
-		// Do not draw child controls if parent is not visible
-		if (visible && visibleForUIEditor)
+		isIteratorCorrupted = false;
+		List<UIControl*>::iterator it = childs.begin();
+		List<UIControl*>::iterator itEnd = childs.end();
+		for(; it != itEnd; ++it)
 		{
-			isIteratorCorrupted = false;
-			List<UIControl*>::iterator it = childs.begin();
-			List<UIControl*>::iterator itEnd = childs.end();
-			for(; it != itEnd; ++it)
-			{
-				(*it)->SystemDraw(drawData);
-				DVASSERT(!isIteratorCorrupted);
-			}
+			(*it)->SystemDraw(drawData);
+			DVASSERT(!isIteratorCorrupted);
 		}
 		
 		if(visible && visibleForUIEditor)
@@ -1979,6 +1977,7 @@ namespace DAVA
 
 	bool UIControl::SystemInput(UIEvent *currentInput)
 	{
+		UIControlSystem::Instance()->inputCounter++;
 		isUpdated = true;
 
         if( !recursiveVisible )
@@ -1997,39 +1996,36 @@ namespace DAVA
 					return false;
 				}
 			}
-			// Do not handle input for child controls which are insibible from parent
-			if (visible)
+
+			List<UIControl*>::reverse_iterator it = childs.rbegin();
+			List<UIControl*>::reverse_iterator itEnd = childs.rend();
+			for(; it != itEnd; ++it)
 			{
-				List<UIControl*>::reverse_iterator it = childs.rbegin();
-				List<UIControl*>::reverse_iterator itEnd = childs.rend();
-				for(; it != itEnd; ++it)
-				{
-					(*it)->isUpdated = false;
-				}
+				(*it)->isUpdated = false;
+			}
 			
-				it = childs.rbegin();
-				itEnd = childs.rend();
-				while(it != itEnd)
+			it = childs.rbegin();
+			itEnd = childs.rend();
+			while(it != itEnd)
+			{
+				isIteratorCorrupted = false;
+				UIControl *current = *it;
+				if(!current->isUpdated)
 				{
-					isIteratorCorrupted = false;
-					UIControl *current = *it;
-					if(!current->isUpdated)
+					current->Retain();
+					if(current->SystemInput(currentInput))
 					{
-						current->Retain();
-						if(current->SystemInput(currentInput))
-						{
-							current->Release();
-							return true;
-						}
 						current->Release();
-						if(isIteratorCorrupted)
-						{
-							it = childs.rbegin();
-							continue;
-						}
+						return true;
 					}
-					++it;
+					current->Release();
+					if(isIteratorCorrupted)
+					{
+						it = childs.rbegin();
+						continue;
+					}
 				}
+				++it;
 			}
 		}
 		return SystemProcessInput(currentInput);
@@ -2884,11 +2880,6 @@ namespace DAVA
 		float32 position = parentSize - align - child->GetSize().y;
 		
 		return position;
-	}
-
-	float32 UIControl::Round(float32 value)
-	{
-		return (float32)((value > 0.0) ? floor(value+ 0.5) : ceil(value - 0.5));
 	}
 	
 	void UIControl::RecalculatePivotPoint(const Rect &newRect)

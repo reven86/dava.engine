@@ -64,6 +64,10 @@ public:
     void SetHorizontalScrollPosition(float32 horzPos);
     void SetVerticalScrollPosition(float32 vertPos);
     void SetScrollPosition(const Vector2& pos);
+	
+    void ScrollToHorizontalPosition(float32 horzPos, float32 timeSec = 0.3f);
+    void ScrollToVerticalPosition(float32 vertPos, float32 timeSec = 0.3f);
+    void ScrollToPosition(const Vector2& pos, float32 timeSec = 0.3f);
 
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);

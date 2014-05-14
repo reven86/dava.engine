@@ -205,6 +205,8 @@ public:
 
 	void ScrollTo(float delta);
 	
+	 void ScrollToPosition(float32 position, float32 timeSec = 0.3f);
+	 	
 	
 	void SetOrientation(eListOrientation orientation);
     inline eListOrientation GetOrientation() { return orientation; };

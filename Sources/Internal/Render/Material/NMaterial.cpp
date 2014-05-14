@@ -2758,7 +2758,6 @@ Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *ob
 
 		ret.push_back(FLAG_VERTEXFOG);
 		ret.push_back(FLAG_FOG_LINEAR);
-		ret.push_back(FLAG_FOG_GLOW);
 		ret.push_back(FLAG_FLATCOLOR);
 		ret.push_back(FLAG_TEXTURESHIFT);
 		ret.push_back(FLAG_TEXTURE0_ANIMATION_SHIFT);
