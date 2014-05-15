@@ -39,10 +39,6 @@ namespace DAVA
 
 Image::Image()
 :	data(0)
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-    ,   mmFile(NULL)
-    ,   offset(0)
-#endif
 ,   dataSize(0)
 ,	width(0)
 ,	height(0)
@@ -57,12 +53,7 @@ Image::~Image()
 {
     TAG_SWITCH(MemoryManager::TAG_IMAGE)
     
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-    data = NULL;
-    SafeRelease(mmFile);
-#else
 	SafeDeleteArray(data);
-#endif
 	
 	width = 0;
 	height = 0;
@@ -101,12 +92,7 @@ Image * Image::Create(uint32 width, uint32 height, PixelFormat format)
 			image->dataSize = dSize;
 		}
         
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-        image->mmFile = new MemoryMappedFile(image->dataSize);
-        image->data = image->mmFile->GetPointer();
-#else
         image->data = new uint8[image->dataSize];
-#endif
     }
     else
     {
@@ -141,12 +127,7 @@ Image * Image::CreatePinkPlaceholder(bool checkers)
 	image->height = 16;
 	image->format = FORMAT_RGBA8888;
     image->dataSize = image->width * image->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-    image->mmFile = new MemoryMappedFile(image->dataSize);
-    image->data = image->mmFile->GetPointer();
-#else
     image->data = new uint8[image->dataSize];
-#endif
 
     image->MakePink(checkers);
     
@@ -242,12 +223,7 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 
 	if(formatSize>0)
 	{
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-        MemoryMappedFile *mmFile = new MemoryMappedFile(newWidth * newHeight * formatSize);
-        newData = mmFile->GetPointer();
-#else
 		newData = new uint8[newWidth * newHeight * formatSize];
-#endif
 		memset(newData, 0, newWidth * newHeight * formatSize);
 
 		float32 kx = (float32)width / (float32)newWidth;
@@ -283,13 +259,7 @@ void Image::ResizeImage(uint32 newWidth, uint32 newHeight)
 		// resized data
 		width = newWidth;
 		height = newHeight;
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-        SafeRelease(this->mmFile);
-        this->mmFile = mmFile;
-        this->offset = 0;
-#else
 		SafeDeleteArray(data);
-#endif
 		data = newData;
 	}
 }
@@ -305,12 +275,7 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
     if(formatSize>0)
     {
         newDataSize = newWidth * newHeight * formatSize;
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-        MemoryMappedFile *mmFile = new MemoryMappedFile(newDataSize);
-        newData = mmFile->GetPointer();
-#else
         newData = new uint8[newDataSize];
-#endif
         
         uint32 currentLine = 0;
         uint32 indexOnLine = 0;
@@ -349,13 +314,7 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
         width = newWidth;
         height = newHeight;
         
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-        SafeRelease(this->mmFile);
-        this->mmFile = mmFile;
-        this->offset = 0;
-#else
         SafeDeleteArray(data);
-#endif
         data = newData;
         dataSize = newDataSize;
     }

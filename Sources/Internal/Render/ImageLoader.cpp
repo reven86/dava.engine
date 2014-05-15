@@ -64,7 +64,11 @@ bool ImageLoader::CreateFromFileByContent(const FilePath & pathname, Vector<Imag
 {
     TAG_SWITCH(MemoryManager::TAG_IMAGE)
     
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    File *file = MemoryMappedFile::Create(pathname);
+#else
     File *file = File::Create(pathname, File::OPEN | File::READ);
+#endif
     
     if(!file)
     {
@@ -156,7 +160,11 @@ bool ImageLoader::CreateFromPVRFile(const FilePath & pathname, Vector<Image *> &
     
 #if 1
     
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    File *file = MemoryMappedFile::Create(pathname);
+#else
     File *file = File::Create(pathname, File::OPEN | File::READ);
+#endif
     
     if(!file)
     {

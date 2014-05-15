@@ -36,11 +36,7 @@
 #include "Render/RenderBase.h"
 
 
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-#include "FileSystem/MemoryMappedFile.h"
-#endif
-
-namespace DAVA 
+namespace DAVA
 {
 
 class File;
@@ -132,10 +128,6 @@ public:
 	uint32	width:16;
 	uint32	height:16;
 
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-    MemoryMappedFile *mmFile;
-    uint32 offset;
-#endif
 	uint8 * data;
 
     uint32 mipmapLevel;

@@ -10,12 +10,12 @@
 #define __Framework__MemoryMappedFile__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
+#include "FileSystem/File.h"
 
 namespace DAVA
 {
     
-class MemoryMappedFile : public BaseObject
+class MemoryMappedFile : public File
 {
 protected:
     virtual ~MemoryMappedFile();
@@ -24,12 +24,15 @@ public:
     MemoryMappedFile(const FilePath &path, uint32 size);
     MemoryMappedFile(const FilePath &path);
     MemoryMappedFile(uint32 size);
+    static MemoryMappedFile* Create(const FilePath &path);
     
     uint8 * GetPointer(uint32 offset = 0);
     
     uint32 Read(void * pointerToData, uint32 dataSize);
+    uint8 *Read(uint32 dataSizeNeeded, uint32 &dataSizeRead);
     bool Seek(int32 position, uint32 seekType);
     bool IsEof();
+    virtual	uint32 GetSize() { return size; }
     
     //! File seek enumeration
 	enum eFileSeek
@@ -41,10 +44,9 @@ public:
     
 private:
     uint8 *pointer;
-    uint32 size;
     int fd;
-    int32 currPos;
-    
+    uint32 size;
+    int32 currPos;    
 };
     
 }

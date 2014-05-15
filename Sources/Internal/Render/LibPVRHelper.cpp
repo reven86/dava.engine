@@ -76,7 +76,11 @@ PVRFile::~PVRFile()
     metaDatablocks.clear();
     
     SafeDeleteArray(metaData);
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    SafeRelease(mmFile);
+#else
     SafeDeleteArray(compressedData);
+#endif
     compressedDataSize = 0;
 }
     
@@ -1729,28 +1733,15 @@ const PixelFormat LibPVRHelper::GetTextureFormat(const PVRHeaderV3& textureHeade
 	
 
 
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header,
-                                   MemoryMappedFile *mmFile, uint32 offset)
-#else
 bool LibPVRHelper::CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData)
-#endif
 {
     TAG_SWITCH(MemoryManager::TAG_IMAGE)
     
     if(AllocateImageData(image, mipMapLevel, header))
     {
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-        offset += GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
-        image->mmFile = mmFile;
-        image->offset = offset;
-        image->mmFile->Retain();
-        image->data = mmFile->GetPointer(offset);
-#else
         //Setup temporary variables.
         uint8* data = (uint8*)pvrData + GetMipMapLayerOffset(mipMapLevel, faceIndex, header);
         Memcpy(image->data, data, image->dataSize);
-#endif
 
         return true;
     }
@@ -1763,14 +1754,12 @@ bool LibPVRHelper::AllocateImageData(DAVA::Image *image, uint32 mipMapLevel, con
     TAG_SWITCH(MemoryManager::TAG_IMAGE)
     
     image->dataSize = GetTextureDataSize(header, mipMapLevel, false, (header.u32NumFaces == 1));
-#if !defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
     image->data = new uint8[image->dataSize];
     if(!image->data)
     {
         Logger::Error("[LibPVRHelper::AllocateImageData] Unable to allocate memory to compressed texture.\n");
         return false;
     }
-#endif
     
     return true;
 }
@@ -2107,6 +2096,10 @@ PVRFile * LibPVRHelper::ReadFile( File *file, bool readMetaData /*= false*/, boo
 	if(!file) return false;
 
 	PVRFile *pvrFile = new PVRFile();
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    pvrFile->mmFile = SafeRetain(dynamic_cast<MemoryMappedFile*>(file));
+    DVASSERT(pvrFile->mmFile);
+#endif
 
 	uint32 readSize = file->Read(&pvrFile->header, PVRTEX3_HEADERSIZE);
 	if(readSize != PVRTEX3_HEADERSIZE)
@@ -2131,8 +2124,12 @@ PVRFile * LibPVRHelper::ReadFile( File *file, bool readMetaData /*= false*/, boo
     pvrFile->compressedDataSize = file->GetSize() - (PVRTEX3_HEADERSIZE + pvrFile->header.u32MetaDataSize);
 	if(readData)
 	{
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+        pvrFile->compressedData = pvrFile->mmFile->Read(pvrFile->compressedDataSize, readSize);
+#else
         pvrFile->compressedData = new uint8[pvrFile->compressedDataSize];
         readSize = file->Read(pvrFile->compressedData, pvrFile->compressedDataSize);
+#endif
         if(readSize != pvrFile->compressedDataSize)
         {
             Logger::Error("[LibPVRHelper::ReadFile]: cannot read data from file");

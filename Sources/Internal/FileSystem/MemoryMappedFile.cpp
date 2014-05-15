@@ -7,6 +7,7 @@
 //
 
 #include "FileSystem/MemoryMappedFile.h"
+#include "FileSystem/FileSystem.h"
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -16,6 +17,15 @@
 namespace DAVA
 {
 
+MemoryMappedFile* MemoryMappedFile::Create(const FilePath &path)
+{
+    if(FileSystem::Instance()->IsFile(path))
+    {
+        return new MemoryMappedFile(path);
+    }
+    return NULL;
+}
+    
 MemoryMappedFile::MemoryMappedFile(const FilePath& path, uint32 size)
     : size(size)
     , pointer(NULL)
@@ -60,9 +70,19 @@ MemoryMappedFile::MemoryMappedFile(uint32 size)
 uint32 MemoryMappedFile::Read(void * pointerToData, uint32 dataSize)
 {
     DVASSERT(fd != -1);
+    dataSize = Min(size - currPos, dataSize);
     Memcpy(pointerToData, pointer + currPos, dataSize);
     currPos += dataSize;
 	return dataSize;
+}
+
+uint8 *MemoryMappedFile::Read(uint32 dataSize, uint32 &dataSizeRead)
+{
+    DVASSERT(fd != -1);
+    dataSizeRead = Min(size - currPos, dataSize);
+    uint8 *res = (pointer + currPos);
+    currPos += dataSizeRead;
+    return res;
 }
 
 bool MemoryMappedFile::IsEof()

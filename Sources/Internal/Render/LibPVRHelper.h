@@ -124,6 +124,9 @@ public:
 
 	uint32 compressedDataSize;
 	uint8 *compressedData;
+#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
+    MemoryMappedFile* mmFile;
+#endif
 };
 
 class Image;
@@ -178,12 +181,7 @@ protected:
     
 	static PVRHeaderV3 CreateDecompressedHeader(const PVRHeaderV3 &compressedHeader);
 
-#if defined(__USE_MEMORY_MAP_FOR_TEXTURE__)
-    static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header,
-                            MemoryMappedFile *mmFile, uint32 offset);
-#else
     static bool CopyToImage(Image *image, uint32 mipMapLevel, uint32 faceIndex, const PVRHeaderV3 &header, const uint8 *pvrData);
-#endif
     static bool AllocateImageData(Image *image, uint32 mipMapLevel, const PVRHeaderV3 &header);
 };
     
