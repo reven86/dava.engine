@@ -249,7 +249,8 @@ public class JNIWebView {
 					return;
 				}
 				WebView webView = views.get(id);
-				String a = "javascript:function call_back_func(){return \"" + requestId +", \" + " + scriptString + ";}javascript:alert(call_back_func())";
+				//String a = "javascript:function call_back_func(){return \"" + requestId +", \" + " + scriptString + ";}javascript:alert(call_back_func())";
+				String a = "javascript:function call_back_func(){return \"" + requestId +", \" + eval(\"" + scriptString + "\");}javascript:alert(call_back_func())";
 				webView.loadUrl(a);
 			}
 		});
