@@ -598,7 +598,7 @@ void RenderManager::SetHWClip(const Rect &rect)
 {
 	PrepareRealMatrix();
 	currentClip = rect;
-	if(rect.dx < 0 || rect.dy < 0)
+	if(rect.dx <= 0 || rect.dy <= 0)
 	{
 		RENDER_VERIFY(glDisable(GL_SCISSOR_TEST));
 		return;
