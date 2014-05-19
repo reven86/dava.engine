@@ -690,5 +690,5 @@ public class JNITextField {
 			int id,
 			int replacementLocation,
 			int replacementLength,
-			String replacementString);
+			byte[] byteArray);
 }
