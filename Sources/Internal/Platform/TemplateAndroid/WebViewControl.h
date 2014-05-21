@@ -58,6 +58,10 @@ public:
 	virtual void LoadHtmlString(const WideString& htmlString);
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	virtual String GetCookie(const String& url, const String& name);
+	// Get the list of cookies for specific domain
+	virtual Map<String, String> GetCookies(const String& url);
 	// Perform Java script
 	virtual int32_t ExecuteJScript(const String& scriptString);
 
@@ -87,6 +91,8 @@ public:
 	void OpenURL(int id, const String& urlToOpen);
 	void LoadHtmlString(int id, const String& htmlString);
 	void DeleteCookies(int id, const String& targetUrl);
+	String GetCookie(const String& targetUrl, const String& name);
+	String GetCookies(const String& targetUrl);
 	void ExecuteJScript(int id, int requestId, const String& scriptString);
 	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
@@ -106,6 +112,7 @@ protected:
 public:
 	static jclass gJavaClass;
 	static const char* gJavaClassName;
+	static String returnStr;
 
 private:
 	typedef std::map<int, WebViewControl*> CONTROLS_MAP;

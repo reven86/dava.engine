@@ -270,32 +270,71 @@ public class JNIWebView {
 				// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
 				CookieSyncManager.createInstance(activity.getApplicationContext()); 
 			    CookieManager cookieManager = CookieManager.getInstance();
-			    // Get cookies for specific URL and change their expiration date
-			    // This should force android system to remove these cookies
-			    String cookiestring = cookieManager.getCookie(targetURL);
-			    String[] cookies =  cookiestring.split(";");
-			    
-			    for (int i=0; i<cookies.length; i++) 
+			    if (cookieManager.hasCookies())
 			    {
-			        String[] cookieparts = cookies[i].split("=");
-			        cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
-			    }
-			    // Synchronize cookies storage
-			    CookieSyncManager.getInstance().sync();
+			    	// Get cookies for specific URL and change their expiration date
+			    	// This should force android system to remove these cookies
+			    	String cookiestring = cookieManager.getCookie(targetURL);
+			    	String[] cookies =  cookiestring.split(";");
 			    
-			    // Check if cookies were removed - if not - delete all cookies
-			    cookiestring = cookieManager.getCookie(targetURL);
-			    cookies =  cookiestring.split(";");
-			    if (cookies.length > 0)
-			    {
-			    	cookieManager.removeAllCookie();
+			    	for (int i=0; i<cookies.length; i++) 
+			    	{
+			    		String[] cookieparts = cookies[i].split("=");
+			    		cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
+			    	}
 			    	// Synchronize cookies storage
-				    CookieSyncManager.getInstance().sync();
-			    }			    
+			    	CookieSyncManager.getInstance().sync();
+			    
+			    	// Check if cookies were removed - if not - delete all cookies
+			    	cookiestring = cookieManager.getCookie(targetURL);
+			    	cookies =  cookiestring.split(";");
+			    	if (cookies.length > 0)
+			    	{
+			    		cookieManager.removeExpiredCookie();
+			    		// Synchronize cookies storage
+			    		CookieSyncManager.getInstance().sync();
+			    	}	
+			    }
 			}
 		});
 	}	
 	
+	public static void GetCookie(final String targetURL, final String cookieName)
+	{		
+		final JNIActivity activity = JNIActivity.GetActivity();
+		
+		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
+		CookieSyncManager.createInstance(activity.getApplicationContext()); 
+	    CookieManager cookieManager = CookieManager.getInstance();
+
+	    if (cookieManager.hasCookies())
+	    {
+	    	// Get cookies for specific URL
+	    	String cookieString = cookieManager.getCookie(targetURL);	
+	    	String[] cookies =  cookieString.split(";");
+
+	    	for (int i=0; i<cookies.length; i++) 
+	    	{
+	    		String[] cookieparts = cookies[i].split("=");
+	    		if (cookieparts[0].trim().compareTo(cookieName) == 0)
+	    		{
+	    			SetJString(cookieparts[1]);			    			
+	    			break;
+	    		}			    		
+	    	}
+	    }		
+	}
+	
+	public static void GetCookies(final String targetURL)
+	{
+		final JNIActivity activity = JNIActivity.GetActivity();		
+		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
+		CookieSyncManager.createInstance(activity.getApplicationContext()); 
+	    CookieManager cookieManager = CookieManager.getInstance();
+	    // Get cookies for specific URL
+	    SetJString(cookieManager.getCookie(targetURL));		
+	}
+
 	public static void SetRect(final int id, final float x, final float y, final float dx, final float dy)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();
@@ -412,4 +451,5 @@ public class JNIWebView {
 	private static native int OnUrlChange(int id, String url);
 	private static native int OnPageLoaded(int id);
 	private static native void OnExecuteJScript(int id, int requestId, String result);
+	private static native void SetJString(String str);
 }

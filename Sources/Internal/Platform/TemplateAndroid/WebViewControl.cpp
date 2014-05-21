@@ -31,6 +31,7 @@
 #include "WebViewControl.h"
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -41,7 +42,7 @@ int32_t WebViewControl::requestId = 0;
 jclass JniWebView::gJavaClass = NULL;
 const char* JniWebView::gJavaClassName = NULL;
 JniWebView::CONTROLS_MAP JniWebView::controls;
-
+DAVA::String JniWebView::returnStr = "";
 
 jclass JniWebView::GetJavaClass() const
 {
@@ -113,6 +114,37 @@ void JniWebView::DeleteCookies(int id, const String& targetURL)
 		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jTargetURL);
 		GetEnvironment()->DeleteLocalRef(jTargetURL);
 	}
+}
+
+String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
+{
+	jmethodID mid = GetMethodID("GetCookie", "(Ljava/lang/String;Ljava/lang/String;)V");
+	returnStr = "";
+
+	if (mid)
+	{
+		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
+		jstring jName = GetEnvironment()->NewStringUTF(cookieName.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(),  mid, jTargetURL, jName);
+		GetEnvironment()->DeleteLocalRef(jTargetURL);
+		GetEnvironment()->DeleteLocalRef(jName);
+	}
+
+	return returnStr;
+}
+
+String JniWebView::GetCookies(const String& targetUrl)
+{
+	jmethodID mid = GetMethodID("GetCookies", "(Ljava/lang/String;)V");
+	returnStr = "";
+
+	if (mid)
+	{
+		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jTargetURL);
+		GetEnvironment()->DeleteLocalRef(jTargetURL);
+	}
+	return returnStr;
 }
 
 void JniWebView::OpenFromBuffer(int id, const String& string, const String& baseUrl)
@@ -243,6 +275,31 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 {
 	JniWebView jniWebView;
 	jniWebView.DeleteCookies(webViewId, targetUrl);
+}
+
+String WebViewControl::GetCookie(const String& url, const String& name)
+{
+	JniWebView jniWebView;
+	return jniWebView.GetCookie(url, name);
+}
+// Get the list of cookies for specific domain
+Map<String, String> WebViewControl::GetCookies(const String& url)
+{
+	JniWebView jniWebView;
+	String cookieString = jniWebView.GetCookies(url);
+
+	Map<String, String> cookiesMap;
+	Vector<String> cookiesVector;
+    Split(cookieString, ";", cookiesVector);
+
+	for(uint32 i = 0; i < (uint32)cookiesVector.size(); ++i)
+    {
+	   Vector<String> cookieEntry;
+	   Split(cookiesVector[i], "=", cookieEntry);
+	   cookiesMap[cookieEntry[0]] = cookieEntry[1];
+    }
+
+	return cookiesMap;
 }
 
 int32_t WebViewControl::ExecuteJScript(const String& scriptString)
