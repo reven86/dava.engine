@@ -48,6 +48,7 @@ namespace DAVA
 {
 
 class UIScreen;
+class UIKeyboard;
 
 class ScreenSwitchListener
 {
@@ -322,6 +323,8 @@ public:
 	 */
 	int32 UnlockSwitch();
 
+    UIKeyboard * GetUIKeyboard() const { return keyboard; }
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -368,6 +371,7 @@ private:
 	
 	friend class UIScreenTransition;
 	friend class UIScreenManager;
+    UIKeyboard * keyboard;
 };
 };
 

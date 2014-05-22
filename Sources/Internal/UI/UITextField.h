@@ -35,6 +35,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
+#include "UIKeyboardListener.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "UI/UITextFieldiPhone.h"
@@ -98,7 +99,8 @@ public:
             You typically use this class to gather small amounts of text from the user and perform some immediate action, such as a search operation, based on that text.
             A text field object supports the use of a delegate object to handle editing-related notifications. 
  */
-class UITextField : public UIControl 
+class UITextField : public UIControl
+                  , private UIKeyboardListener
 {
 public:
 	// TODO: fix big BOOLs(TRUE, FALSE) in code
@@ -333,6 +335,16 @@ public:
     void SetCursorPos(uint32 pos);
 
 protected:
+    virtual void OnKeyboardShown(const Rect& keyboardRect)
+    {
+        if( delegate )
+            delegate->OnKeyboardShown(keyboardRect);
+    }
+    virtual void OnKeyboardHidden()
+    {
+        if( delegate )
+            delegate->OnKeyboardHidden();
+    }
 	WideString text;
 	UITextFieldDelegate * delegate;
 	float32	cursorBlinkingTime;

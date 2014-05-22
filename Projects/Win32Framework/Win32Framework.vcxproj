@@ -609,6 +609,8 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIHierarchyNode.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIHoleTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIJoypad.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIKeyboard.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIKeyboardListener.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIList.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIListCell.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UILoadingTransition.h" />
@@ -1005,6 +1007,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIHierarchyNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIHoleTransition.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIJoypad.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIKeyboard.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIList.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIListCell.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UILoadingTransition.cpp" />

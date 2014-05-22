@@ -1421,6 +1421,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UIKeyboard.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UIKeyboardListener.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2544,5 +2550,8 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UIKeyboard.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

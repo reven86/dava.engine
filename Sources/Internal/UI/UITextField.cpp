@@ -35,6 +35,7 @@
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
+#include "UI/UIKeyboard.h"
 #ifdef __DAVAENGINE_ANDROID__
 #include "UITextFieldAndroid.h"
 #endif
@@ -179,20 +180,22 @@ UITextField::~UITextField()
 
 void UITextField::OpenKeyboard()
 {
-#ifdef __DAVAENGINE_IPHONE__
-	textFieldiPhone->OpenKeyboard();
-#elif defined(__DAVAENGINE_ANDROID__)
-	textFieldAndroid->OpenKeyboard();
-#endif
+    UIControlSystem::Instance()->GetUIKeyboard()->OpenKeyboard();
+// #ifdef __DAVAENGINE_IPHONE__
+// 	textFieldiPhone->OpenKeyboard();
+// #elif defined(__DAVAENGINE_ANDROID__)
+// 	textFieldAndroid->OpenKeyboard();
+// #endif
 }
 
 void UITextField::CloseKeyboard()
 {
-#ifdef __DAVAENGINE_IPHONE__
-	textFieldiPhone->CloseKeyboard();
-#elif defined(__DAVAENGINE_ANDROID__)
-	textFieldAndroid->CloseKeyboard();
-#endif
+    UIControlSystem::Instance()->GetUIKeyboard()->CloseKeyboard();
+// #ifdef __DAVAENGINE_IPHONE__
+// 	textFieldiPhone->CloseKeyboard();
+// #elif defined(__DAVAENGINE_ANDROID__)
+// 	textFieldAndroid->CloseKeyboard();
+// #endif
 }
 	
 void UITextField::Update(float32 timeElapsed)

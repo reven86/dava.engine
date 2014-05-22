@@ -35,6 +35,7 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
+#include "UI/UIKeyboard.h"
 
 namespace DAVA 
 {
@@ -42,10 +43,12 @@ UIControlSystem::~UIControlSystem()
 {
 	SafeRelease(currentScreen); 
 	SafeRelease(popupContainer);
+    SafeRelease(keyboard);
 }
 	
 UIControlSystem::UIControlSystem()
 {
+    keyboard = new UIKeyboard();
 	screenLockCount = 0;
 	frameSkip = 0;
 	transitionType = 0;
