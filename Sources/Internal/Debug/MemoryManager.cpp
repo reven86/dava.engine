@@ -535,10 +535,6 @@ void	*MemoryManagerImpl::New(size_t size)
     //Logger::FrameworkDebug("malloc: %p %p", block, outmemBlock);
     return outmemBlock;
 #else
-    mutex.Lock();
-    MemoryInfo& info = taggedMemInfoMap[currentTag];
-    info.allocated += block->size;
-    mutex.Unlock();
     return malloc(size);
 #endif
 }

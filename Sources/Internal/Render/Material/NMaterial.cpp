@@ -262,6 +262,14 @@ NMaterial::~NMaterial()
 	
 	SafeRelease(baseTechnique);
 }
+    
+int32 NMaterial::Release()
+{
+    TAG_SWITCH(MemoryManager::TAG_MATERIAL)
+    
+    int32 retainCount = BaseObject::Release();
+    return retainCount;
+}
 
 void NMaterial::SetParent(NMaterial* newParent, bool inheritTemplate)
 {

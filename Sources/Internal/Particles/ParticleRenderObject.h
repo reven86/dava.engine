@@ -67,7 +67,11 @@ class ParticleRenderObject : public RenderObject
     uint32 vertexSize, vertexStride;
 public:
     //IMPLEMENT_POOL_ALLOCATOR(ParticleRenderObject, 100);
+#if defined(ENABLE_MEMORY_MANAGER)
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_RENDER_OBJECT)
+#else
     IMPLEMENT_NATIVE_ALLOCATOR;
+#endif
 	ParticleRenderObject(ParticleEffectData *effect);
 	~ParticleRenderObject();
 	

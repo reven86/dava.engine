@@ -105,7 +105,7 @@ private:
 
 FTFont::FTFont(FTInternalFont* _internalFont)
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	internalFont = _internalFont;
 	internalFont->Retain();
@@ -114,14 +114,14 @@ FTFont::FTFont(FTInternalFont* _internalFont)
 
 FTFont::~FTFont()
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	SafeRelease(internalFont);
 }
 
 FTFont * FTFont::Create(const FilePath& path)
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	FTInternalFont * iFont = 0;
 
@@ -151,7 +151,7 @@ FTFont * FTFont::Create(const FilePath& path)
 
 void FTFont::ClearCache()
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	while (fontMap.size())
 	{
@@ -163,7 +163,7 @@ void FTFont::ClearCache()
 	
 FTFont *	FTFont::Clone() const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	FTFont *retFont = new FTFont(internalFont);
 	retFont->size =	size;
@@ -178,7 +178,7 @@ FTFont *	FTFont::Clone() const
 
 bool FTFont::IsEqual(const Font *font) const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	if (font->GetFontType() != this->GetFontType())
 	{
@@ -196,28 +196,28 @@ bool FTFont::IsEqual(const Font *font) const
 
 String FTFont::GetRawHashString()
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	return fontPath.GetFrameworkPath() + "_" + Font::GetRawHashString();
 }
 
 Size2i FTFont::DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded )
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	return internalFont->DrawString(str, buffer, bufWidth, bufHeight, 255, 255, 255, 255, renderSize, true, offsetX, offsetY, justifyWidth, spaceAddon, NULL, contentScaleIncluded );
 }
 
 Size2i FTFont::GetStringSize(const WideString& str, Vector<int32> *charSizes) const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	return internalFont->DrawString(str, 0, 0, 0, 0, 0, 0, 0, renderSize, false, 0, 0, 0, 0, charSizes);
 }
 
 uint32 FTFont::GetFontHeight() const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	return internalFont->GetFontHeight(renderSize);
 }
@@ -225,21 +225,21 @@ uint32 FTFont::GetFontHeight() const
 
 bool FTFont::IsCharAvaliable(char16 ch) const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	return internalFont->IsCharAvaliable(ch);
 }
 
 const FilePath & FTFont::GetFontPath() const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	return internalFont->fontPath;
 }
 
 YamlNode * FTFont::SaveToYamlNode() const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	YamlNode *node = Font::SaveToYamlNode();
 	//Type
@@ -263,7 +263,7 @@ FTInternalFont::FTInternalFont(const FilePath & path)
     memoryFont(NULL),
     memoryFontSize(0)
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
     FilePath pathName(path);
     pathName.ReplaceDirectory(path.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
@@ -297,7 +297,7 @@ FTInternalFont::FTInternalFont(const FilePath & path)
 	
 FTInternalFont::~FTInternalFont()
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	ClearString();
 
@@ -308,7 +308,7 @@ FTInternalFont::~FTInternalFont()
 
 int32 FTInternalFont::Release()
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 // 	if(1 == GetRetainCount())
 // 	{
@@ -328,7 +328,7 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 					Vector<int32> *charSizes,
 					bool contentScaleIncluded )
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	drawStringMutex.Lock();
 
@@ -499,7 +499,7 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 
 bool FTInternalFont::IsCharAvaliable(char16 ch) const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	return FT_Get_Char_Index(face, ch) != 0;
 }
@@ -507,7 +507,7 @@ bool FTInternalFont::IsCharAvaliable(char16 ch) const
 
 uint32 FTInternalFont::GetFontHeight(float32 size) const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
     drawStringMutex.Lock();
 
@@ -521,7 +521,7 @@ uint32 FTInternalFont::GetFontHeight(float32 size) const
 	
 void FTInternalFont::SetFTCharSize(float32 size) const
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	FT_Error error = FT_Set_Char_Size(face, 0, (int32)(size * 64), 0, (FT_UInt)Font::GetDPI()); 
 	
@@ -533,7 +533,7 @@ void FTInternalFont::SetFTCharSize(float32 size) const
 
 void FTInternalFont::Prepare(FT_Vector * advances)
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	FT_Vector	* prevAdvance = 0;
 	FT_Vector	extent = {0, 0};
@@ -600,7 +600,7 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 
 void FTInternalFont::ClearString()
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
     //TODO: temporary fix for
     Set<Glyph> clearedGlyphs;
@@ -628,7 +628,7 @@ void FTInternalFont::ClearString()
 
 int32 FTInternalFont::LoadString(const WideString& str)
 {
-    TAG_SWITCH(MemoryManager::TAG_FT_FONT)
+    TAG_SWITCH(MemoryManager::TAG_FONT)
     
 	ClearString();
 

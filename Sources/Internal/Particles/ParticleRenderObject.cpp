@@ -85,11 +85,15 @@ void ParticleRenderGroup::ClearArrays()
 
 ParticleRenderObject::ParticleRenderObject(ParticleEffectData *effect): effectData(effect), sortingOffset(15), vertexSize(3), vertexStride(0)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 }
 
 ParticleRenderObject::~ParticleRenderObject()
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
     {
         SafeRelease(renderGroupCache[i]->renderBatch);
@@ -100,11 +104,15 @@ ParticleRenderObject::~ParticleRenderObject()
 
 void ParticleRenderObject::PrepareToRender(Camera *camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	PrepareRenderData(camera);
 }
 
 void ParticleRenderObject::SetEffectMatrix(Matrix4 *matrix)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     effectMatrix = matrix;
 }
 
@@ -115,6 +123,8 @@ Matrix4 * ParticleRenderObject::GetEffectMatrix()
 
 void ParticleRenderObject::SetSortingOffset(uint32 offset)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     sortingOffset = offset;
     for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
         renderGroupCache[i]->renderBatch->SetSortingOffset(offset);
@@ -122,6 +132,8 @@ void ParticleRenderObject::SetSortingOffset(uint32 offset)
 
 void ParticleRenderObject::Set2DMode(bool is2d)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
     if (is2d)
     {
         vertexSize=2;
@@ -136,6 +148,8 @@ void ParticleRenderObject::Set2DMode(bool is2d)
 
 void ParticleRenderObject::PrepareRenderData(Camera * camera)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	for (int32 i=0, sz = renderGroupCache.size(); i<sz; ++i)
 		renderGroupCache[i]->ClearArrays();
 	activeRenderBatchArray.clear();
@@ -238,6 +252,8 @@ void ParticleRenderObject::PrepareRenderData(Camera * camera)
 
 void ParticleRenderObject::AppendParticleGroup(const ParticleGroup &group, ParticleRenderGroup *renderGroup, const Vector3& cameraDirection)
 {
+    TAG_SWITCH(MemoryManager::TAG_RENDER_OBJECT)
+    
 	//prepare basis indexes
 	int32 basisCount = 0;
 	int32 basises[4]; //4 basises max per particle

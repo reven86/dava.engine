@@ -118,8 +118,6 @@ public:
         TAG_ENTITY,
         TAG_FONT,
         TAG_FONT_MANAGER,
-        TAG_FT_FONT,
-        TAG_GRAPHICS_FONT,
         TAG_TEXTBLOCK,
         TAG_ANIMATED_MESH,
         TAG_CAMERA,
@@ -158,7 +156,7 @@ public:
     {
         static const char* TagStrings[] = {"Untagged", "Textures", "Pool allocators", "Shaders", "Scene", "Sprites",
                                             "Polygon Groups", "Render objects", "Entities", "Fonts",
-                                            "Font manager", "FT Fonts", "Graphics Fonts", "TextBlocks", "Animated mesh",
+                                            "Font manager", "TextBlocks", "Animated mesh",
                                             "Camera", "Heightmap", "Landscape", "Light", "Mesh", "RenderBatch",
                                             "RenderHierarchy", "RenderLayer", "RenderPass", "RenderSystem",
                                             "Shadow", "Skybox", "SpatialTree", "SpeedTree", "StaticOclussion", "Occlusion",

@@ -245,6 +245,8 @@ public:
 public:
 	
 	NMaterial();
+    virtual int32 Release();
+    
 	IMPLEMENT_POOL_ALLOCATOR(NMaterial, 1200);
 	inline NMaterial* GetParent() const {return parent;}
 	

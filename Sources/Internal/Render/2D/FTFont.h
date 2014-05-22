@@ -60,7 +60,7 @@ class FTInternalFont;
 class FTFont : public Font
 {	
 public:
-    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_FT_FONT);
+    IMPLEMENT_TAGGED_CREATOR(MemoryManager::TAG_FONT);
 	
 	/**
 		\brief Factory method.
