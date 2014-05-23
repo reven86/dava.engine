@@ -1,5 +1,7 @@
 #include "UI/UIKeyboard.h"
 #include "UI/UIKeyboardListener.h"
+#include "UIKeyboard_iOSImpl.h"
+#include "Base/BaseMath.h"
 
 namespace DAVA
 {
@@ -10,19 +12,19 @@ UIKeyboard::~UIKeyboard()
 
 UIKeyboard::UIKeyboard()
 {
-
+    impl = new UIKeyboardImpl( this );
 }
-
-void UIKeyboard::OpenKeyboard()
+/*
+void UIKeyboard::Show( UITextField * textField )
 {
-
+    impl->Show( textField );
 }
 
-void UIKeyboard::CloseKeyboard()
+void UIKeyboard::Hide( UITextField * textField )
 {
-
+    impl->Hide( textField );
 }
-
+*/
 void UIKeyboard::AddListener( UIKeyboardListener * listener )
 {
     listeners.insert( listener );
@@ -33,19 +35,32 @@ void UIKeyboard::RemoveListener( UIKeyboardListener * listener )
     listeners.erase( listener );
 }
 
-void UIKeyboard::NotifyKeyboardShownNotify( const Rect& keyboardRect )
+void UIKeyboard::SendWillShowNotification( const Rect &keyboardRect )
 {
     for( Set<UIKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
     {
-        (*it)->OnKeyboardShown( keyboardRect );
+        (*it)->OnKeyboardWillShow( keyboardRect );
     }
 }
-
-void UIKeyboard::NotifyKeyboardHiddenNotify()
+void UIKeyboard::SendDidShowNotification( const Rect &keyboardRect )
 {
     for( Set<UIKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
     {
-        (*it)->OnKeyboardHidden();
+        (*it)->OnKeyboardDidShow( keyboardRect );
+    }
+}
+void UIKeyboard::SendWillHideNotification()
+{
+    for( Set<UIKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
+    {
+        (*it)->OnKeyboardWillHide();
+    }
+}
+void UIKeyboard::SendDidHideNotification()
+{
+    for( Set<UIKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
+    {
+        (*it)->OnKeyboardDidHide();
     }
 }
 

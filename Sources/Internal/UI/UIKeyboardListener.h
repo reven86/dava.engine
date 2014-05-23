@@ -36,8 +36,11 @@ struct Rect;
 class UIKeyboardListener
 {
 public:
-    virtual void OnKeyboardShown(const Rect& keyboardRect){}
-    virtual void OnKeyboardHidden(){}
+    virtual void OnKeyboardWillShow(const Rect& keyboardRect){}
+    virtual void OnKeyboardDidShow(const Rect& keyboardRect){}
+    virtual void OnKeyboardWillHide(){}
+    virtual void OnKeyboardDidHide(){}
+    
     virtual void KeyboardFrameDidChange(){}
 };
 

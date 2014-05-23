@@ -37,17 +37,11 @@
 #include "UI/UIControlSystem.h"
 #include "UIKeyboardListener.h"
 
-#ifdef __DAVAENGINE_IPHONE__
-#include "UI/UITextFieldiPhone.h"
-#endif
-
 namespace DAVA 
 {
 
 class UITextField;
-#ifdef __DAVAENGINE_ANDROID__
-class UITextFieldAndroid;
-#endif
+class UITextFieldImpl;
 /**
     \brief  The UITextFieldDelegate interface defines the messages sent to a text field delegate as part of the sequence of editing its text. 
             All the methods of the interface is optional.
@@ -335,12 +329,12 @@ public:
     void SetCursorPos(uint32 pos);
 
 protected:
-    virtual void OnKeyboardShown(const Rect& keyboardRect)
+    virtual void OnKeyboardDidShow(const Rect& keyboardRect)
     {
         if( delegate )
             delegate->OnKeyboardShown(keyboardRect);
     }
-    virtual void OnKeyboardHidden()
+    virtual void OnKeyboardWillHide()
     {
         if( delegate )
             delegate->OnKeyboardHidden();
@@ -365,13 +359,11 @@ protected:
 	bool showCursor : 1;
 
     void RenderText();
-private:
+protected:
     WideString GetVisibleText() const;
-
-#ifdef __DAVAENGINE_IPHONE__
-	UITextFieldiPhone * textFieldiPhone;
-#elif defined(__DAVAENGINE_ANDROID__)
-	UITextFieldAndroid* textFieldAndroid;
+    friend class UIKeyboardImpl;
+#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+	UITextFieldImpl * textFieldImpl;
 #else
     UIStaticText * staticText;
     Font * textFont;

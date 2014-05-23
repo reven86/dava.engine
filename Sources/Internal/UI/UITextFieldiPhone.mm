@@ -417,7 +417,7 @@ float GetUITextViewSizeDivider()
 		}
 	}
 }
-
+/*
 - (void)keyboardFrameDidChange:(NSNotification *)notification
 {
     NSDictionary* userInfo = notification.userInfo;
@@ -461,7 +461,7 @@ float GetUITextViewSizeDivider()
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
-
+*/
 @end
 
 void CreateTextField(DAVA::UITextField  * tf)
@@ -483,12 +483,12 @@ void CloseKeyboard()
 
 namespace DAVA 
 {
-    UITextFieldiPhone::UITextFieldiPhone(void  * tf)
+    UITextFieldImpl::UITextFieldImpl(void  * tf)
     {
         UITextFieldHolder * textFieldHolder = [[UITextFieldHolder alloc] init: (DAVA::UITextField*)tf];
         objcClassPtr = textFieldHolder;
     }
-    UITextFieldiPhone::~UITextFieldiPhone()
+    UITextFieldImpl::~UITextFieldImpl()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         [textFieldHolder removeFromSuperview];
@@ -496,13 +496,13 @@ namespace DAVA
         textFieldHolder = 0;
     }
 	
-    void UITextFieldiPhone::SetTextColor(const DAVA::Color &color)
+    void UITextFieldImpl::SetTextColor(const DAVA::Color &color)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.textColor = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
         
     }
-    void UITextFieldiPhone::SetFontSize(float size)
+    void UITextFieldImpl::SetFontSize(float size)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         float scaledSize = size * Core::GetVirtualToPhysicalFactor();
@@ -514,7 +514,7 @@ namespace DAVA
         textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
     }
     
-    void UITextFieldiPhone::SetTextAlign(DAVA::int32 align)
+    void UITextFieldImpl::SetTextAlign(DAVA::int32 align)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (align & ALIGN_LEFT)
@@ -541,7 +541,7 @@ namespace DAVA
             textFieldHolder->textField.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
     }
 	
-    DAVA::int32 UITextFieldiPhone::GetTextAlign()
+    DAVA::int32 UITextFieldImpl::GetTextAlign()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
@@ -580,54 +580,54 @@ namespace DAVA
     return retValue;
     }
     
-    void UITextFieldiPhone::OpenKeyboard()
+    void UITextFieldImpl::OpenKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = YES;
         [textFieldHolder->textField becomeFirstResponder];
     }
     
-    void UITextFieldiPhone::CloseKeyboard()
+    void UITextFieldImpl::CloseKeyboard()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
     }
     
-    void UITextFieldiPhone::ShowField()
+    void UITextFieldImpl::ShowField()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         [[appDelegate glController].backgroundView addSubview:textFieldHolder];
         
         // Attach to "keyboard shown/keyboard hidden" notifications.
-		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-		[center addObserver:textFieldHolder selector:@selector(keyboardDidShow:)
-					   name:UIKeyboardDidShowNotification object:nil];
-		[center addObserver:textFieldHolder selector:@selector(keyboardWillHide:)
-					   name:UIKeyboardWillHideNotification object:nil];
+		//NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+		//[center addObserver:textFieldHolder selector:@selector(keyboardDidShow:)
+		//			   name:UIKeyboardDidShowNotification object:nil];
+		//[center addObserver:textFieldHolder selector:@selector(keyboardWillHide:)
+		//			   name:UIKeyboardWillHideNotification object:nil];
         
-		[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
-					   name:UIKeyboardDidChangeFrameNotification object:nil];
+		//[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
+		//			   name:UIKeyboardDidChangeFrameNotification object:nil];
 
-        [center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
-					   name:UIKeyboardDidChangeFrameNotification object:nil];
+        //[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
+		//			   name:UIKeyboardDidChangeFrameNotification object:nil];
     }
     
-    void UITextFieldiPhone::HideField()
+    void UITextFieldImpl::HideField()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 
         // Attach to "keyboard shown/keyboard hidden" notifications.
-		NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-		[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
-		[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
-        [center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
+		//NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+		//[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
+		//[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
+        //[center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
 
         [textFieldHolder removeFromSuperview];
     }
     
-    void UITextFieldiPhone::UpdateRect(const Rect & rect)
+    void UITextFieldImpl::UpdateRect(const Rect & rect)
     {
         float divider = GetUITextViewSizeDivider();
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
@@ -638,7 +638,7 @@ namespace DAVA
         textFieldHolder->textField.frame = cgRect;
     }
 	
-    void UITextFieldiPhone::SetText(std::wstring & string)
+    void UITextFieldImpl::SetText(std::wstring & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.text = [[ [ NSString alloc ]  
@@ -649,7 +649,7 @@ namespace DAVA
         [textFieldHolder->textField.undoManager removeAllActions];
     }
 	
-    void UITextFieldiPhone::GetText(std::wstring & string) const
+    void UITextFieldImpl::GetText(std::wstring & string) const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
@@ -669,33 +669,33 @@ namespace DAVA
          */
     }
 
-	void UITextFieldiPhone::SetIsPassword(bool isPassword)
+	void UITextFieldImpl::SetIsPassword(bool isPassword)
 	{
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
 	}
 
-	void UITextFieldiPhone::SetInputEnabled(bool value)
+	void UITextFieldImpl::SetInputEnabled(bool value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		[textFieldHolder setTextInputAllowed:value];
 	}
 
-	void UITextFieldiPhone::SetAutoCapitalizationType(DAVA::int32 value)
+	void UITextFieldImpl::SetAutoCapitalizationType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		textFieldHolder->textField.autocapitalizationType = [textFieldHolder convertAutoCapitalizationType:
 															 (DAVA::UITextField::eAutoCapitalizationType)value];
 	}
 
-	void UITextFieldiPhone::SetAutoCorrectionType(DAVA::int32 value)
+	void UITextFieldImpl::SetAutoCorrectionType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		textFieldHolder->textField.autocorrectionType = [textFieldHolder convertAutoCorrectionType:
 														 (DAVA::UITextField::eAutoCorrectionType)value];
 	}
 
-	void UITextFieldiPhone::SetSpellCheckingType(DAVA::int32 value)
+	void UITextFieldImpl::SetSpellCheckingType(DAVA::int32 value)
 	{
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
@@ -704,34 +704,34 @@ namespace DAVA
 #endif
 	}
 
-	void UITextFieldiPhone::SetKeyboardAppearanceType(DAVA::int32 value)
+	void UITextFieldImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		textFieldHolder->textField.keyboardAppearance = [textFieldHolder convertKeyboardAppearanceType:
 														(DAVA::UITextField::eKeyboardAppearanceType)value];
 	}
 
-	void UITextFieldiPhone::SetKeyboardType(DAVA::int32 value)
+	void UITextFieldImpl::SetKeyboardType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		textFieldHolder->textField.keyboardType = [textFieldHolder convertKeyboardType:
 														 (DAVA::UITextField::eKeyboardType)value];
 	}
 
-	void UITextFieldiPhone::SetReturnKeyType(DAVA::int32 value)
+	void UITextFieldImpl::SetReturnKeyType(DAVA::int32 value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		textFieldHolder->textField.returnKeyType = [textFieldHolder convertReturnKeyType:
 												   (DAVA::UITextField::eReturnKeyType)value];
 	}
 	
-	void UITextFieldiPhone::SetEnableReturnKeyAutomatically(bool value)
+	void UITextFieldImpl::SetEnableReturnKeyAutomatically(bool value)
 	{
 		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
 		textFieldHolder->textField.enablesReturnKeyAutomatically = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
 	}
 
-    uint32 UITextFieldiPhone::GetCursorPos()
+    uint32 UITextFieldImpl::GetCursorPos()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (!textFieldHolder)
@@ -745,7 +745,7 @@ namespace DAVA
         return pos;
     }
 
-    void UITextFieldiPhone::SetCursorPos(uint32 pos)
+    void UITextFieldImpl::SetCursorPos(uint32 pos)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (!textFieldHolder)
@@ -769,7 +769,7 @@ namespace DAVA
         [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
     }
     
-    void UITextFieldiPhone::SetVisible(bool value)
+    void UITextFieldImpl::SetVisible(bool value)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (textFieldHolder)

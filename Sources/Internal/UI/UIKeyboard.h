@@ -25,34 +25,38 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-
 #ifndef __DAVAENGINE_UI_KEYBOARD_H__
 #define __DAVAENGINE_UI_KEYBOARD_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 
-
 namespace DAVA
 {
 class UIKeyboardListener;
 struct Rect;
+class UIKeyboardImpl;
 
 class UIKeyboard: public BaseObject
 {
+    friend UIKeyboardImpl;
+    friend class UIControlSystem;
     ~UIKeyboard();
-public:
+protected:
     UIKeyboard();
-
-    void OpenKeyboard();
-    void CloseKeyboard();
+public:
+    //void Show( UITextField * textField = NULL );
+    //void Hide( UITextField * textField = NULL );
     void AddListener( UIKeyboardListener * listener );
     void RemoveListener( UIKeyboardListener * listener );
 protected:
-    void NotifyKeyboardShownNotify( const Rect& keyboardRect );
-    void NotifyKeyboardHiddenNotify();
+    void SendWillShowNotification( const Rect &keyboardRect );
+    void SendDidShowNotification( const Rect &keyboardRect );
+    void SendWillHideNotification();
+    void SendDidHideNotification();
 private:
     Set<UIKeyboardListener *> listeners;
+    UIKeyboardImpl * impl;
 };
 };
 

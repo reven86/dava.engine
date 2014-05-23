@@ -797,6 +797,13 @@
 		02FD82041924997C007762C0 /* libBox2D_iPhone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4D38612C91A3A004B850E /* libBox2D_iPhone.a */; };
 		02FD82051924997C007762C0 /* libfreetype_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */; };
 		02FD82061924997C007762C0 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
+		15677819192E817B00A29C2D /* UIKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15677816192E817B00A29C2D /* UIKeyboard.cpp */; };
+		1567781A192E817B00A29C2D /* UIKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 15677817192E817B00A29C2D /* UIKeyboard.h */; };
+		1567781B192E817B00A29C2D /* UIKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15677818192E817B00A29C2D /* UIKeyboardListener.h */; };
+		15677827192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15677825192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h */; };
+		15677828192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15677825192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h */; };
+		15677829192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 15677826192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm */; };
+		1567782A192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 15677826192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm */; };
 		17816B8017B2748900B067E1 /* AllocatorFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */; };
 		17816B8117B2748900B067E1 /* AllocatorFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 17816B7F17B2748900B067E1 /* AllocatorFactory.h */; };
 		1799E51A16CCEBDA0058061F /* ParticleForce.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1799E51816CCEBDA0058061F /* ParticleForce.cpp */; };
@@ -1583,6 +1590,11 @@
 		02F6403F173A5A950053F038 /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
 		02F64040173A5A950053F038 /* SoundUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundUpdateSystem.h; sourceTree = "<group>"; };
 		02FD820C1924997C007762C0 /* libFrameworkTesting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTesting.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		15677816192E817B00A29C2D /* UIKeyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIKeyboard.cpp; sourceTree = "<group>"; };
+		15677817192E817B00A29C2D /* UIKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyboard.h; sourceTree = "<group>"; };
+		15677818192E817B00A29C2D /* UIKeyboardListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyboardListener.h; sourceTree = "<group>"; };
+		15677825192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIKeyboard_iOSImpl.h; sourceTree = "<group>"; };
+		15677826192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UIKeyboard_iOSImpl.mm; sourceTree = "<group>"; };
 		17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorFactory.cpp; sourceTree = "<group>"; };
 		17816B7F17B2748900B067E1 /* AllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorFactory.h; sourceTree = "<group>"; };
 		1799E51816CCEBDA0058061F /* ParticleForce.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleForce.cpp; sourceTree = "<group>"; };
@@ -3336,6 +3348,9 @@
 		E8B3CA2E16B9326E002BD35F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				15677816192E817B00A29C2D /* UIKeyboard.cpp */,
+				15677817192E817B00A29C2D /* UIKeyboard.h */,
+				15677818192E817B00A29C2D /* UIKeyboardListener.h */,
 				EAADA0031892A48E001E1AA2 /* UIParticles.cpp */,
 				EAADA0041892A48E001E1AA2 /* UIParticles.h */,
 				17DC600717DE16D40075813E /* IMovieViewControl.h */,
@@ -3416,6 +3431,8 @@
 				E8B3CA6D16B9326E002BD35F /* UITextFieldiPhone.mm */,
 				E8B3CA6E16B9326E002BD35F /* UIYamlLoader.cpp */,
 				E8B3CA6F16B9326E002BD35F /* UIYamlLoader.h */,
+				15677825192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h */,
+				15677826192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -3781,6 +3798,7 @@
 				02FD801E1924997C007762C0 /* RenderUpdateSystem.h in Headers */,
 				02FD801F1924997C007762C0 /* SwitchSystem.h in Headers */,
 				02FD80201924997C007762C0 /* TransformSystem.h in Headers */,
+				15677828192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h in Headers */,
 				02FD80211924997C007762C0 /* UserNode.h in Headers */,
 				02FD80221924997C007762C0 /* SoundSystem.h in Headers */,
 				02FD80231924997C007762C0 /* ScrollHelper.h in Headers */,
@@ -4113,6 +4131,7 @@
 				A6AFDEDC187187D3006E43A1 /* VisibilityArray.h in Headers */,
 				E8B3CC3516B9326E002BD35F /* RenderOptions.h in Headers */,
 				E8B3CC3716B9326E002BD35F /* RenderResource.h in Headers */,
+				1567781A192E817B00A29C2D /* UIKeyboard.h in Headers */,
 				E8B3CC3A16B9326E002BD35F /* RGBColor.h in Headers */,
 				E8B3CC3C16B9326E002BD35F /* Shader.h in Headers */,
 				E8B3CC4116B9326E002BD35F /* SharedFBO.h in Headers */,
@@ -4181,6 +4200,7 @@
 				E8B3CCCB16B9326E002BD35F /* SwitchSystem.h in Headers */,
 				E8B3CCCD16B9326E002BD35F /* TransformSystem.h in Headers */,
 				E8B3CCD116B9326E002BD35F /* UserNode.h in Headers */,
+				15677827192E9FFB00A29C2D /* UIKeyboard_iOSImpl.h in Headers */,
 				E8B3CCE416B9326E002BD35F /* SoundSystem.h in Headers */,
 				E8B3CCE816B9326E002BD35F /* ScrollHelper.h in Headers */,
 				E8B3CCEA16B9326E002BD35F /* TheoraPlayer.h in Headers */,
@@ -4263,6 +4283,7 @@
 				62BAA48F178EF915003DE32C /* MailComposeDelegate.h in Headers */,
 				E867917D175F620400C5A6A2 /* GlobalEnum.h in Headers */,
 				E8679181175F621E00C5A6A2 /* GPUFamilyDescriptor.h in Headers */,
+				1567781B192E817B00A29C2D /* UIKeyboardListener.h in Headers */,
 				E8679185175F62D600C5A6A2 /* EnumMap.h in Headers */,
 				A6E4FDF41761D40200B48E41 /* ActionComponent.h in Headers */,
 				A6E4FDF61761D40200B48E41 /* CustomPropertiesComponent.h in Headers */,
@@ -4520,6 +4541,7 @@
 				02FD81171924997C007762C0 /* ShadowVolume.cpp in Sources */,
 				02FD81181924997C007762C0 /* ShadowVolumeRenderPass.cpp in Sources */,
 				02FD81191924997C007762C0 /* Image.cpp in Sources */,
+				1567782A192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm in Sources */,
 				02FD811A1924997C007762C0 /* Image.mm in Sources */,
 				02FD811B1924997C007762C0 /* ImageLoader.cpp in Sources */,
 				02FD811C1924997C007762C0 /* LibDxtHelper.cpp in Sources */,
@@ -4858,6 +4880,7 @@
 				E8B3CBE316B9326E002BD35F /* Camera.cpp in Sources */,
 				E8B3CBE516B9326E002BD35F /* CullingSystem.cpp in Sources */,
 				E8B3CBE716B9326E002BD35F /* Heightmap.cpp in Sources */,
+				15677829192E9FFB00A29C2D /* UIKeyboard_iOSImpl.mm in Sources */,
 				E8B3CBEA16B9326E002BD35F /* LandscapeChunk.cpp in Sources */,
 				E8B3CBEC16B9326E002BD35F /* LandscapeCursor.cpp in Sources */,
 				E8B3CBF216B9326E002BD35F /* Light.cpp in Sources */,
@@ -4965,6 +4988,7 @@
 				EA10607818892B7C00CB99A3 /* ParticleRenderObject.cpp in Sources */,
 				8465CD3818E4D46D005AA9F8 /* LibJpegHelper.cpp in Sources */,
 				E8B3CCC016B9326E002BD35F /* LightUpdateSystem.cpp in Sources */,
+				15677819192E817B00A29C2D /* UIKeyboard.cpp in Sources */,
 				E8F43E2D186C5D4E006796CB /* MaterialSystem.cpp in Sources */,
 				E8B3CCC216B9326E002BD35F /* LodSystem.cpp in Sources */,
 				E8B3CCC416B9326E002BD35F /* ParticleEffectSystem.cpp in Sources */,
