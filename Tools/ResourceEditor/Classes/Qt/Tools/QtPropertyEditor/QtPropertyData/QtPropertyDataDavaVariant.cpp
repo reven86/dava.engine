@@ -152,7 +152,7 @@ void QtPropertyDataDavaVariant::AddAllowedValue(const DAVA::VariantType& realVal
 
 	if(NULL == allowedButton)
 	{
-		allowedButton = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE);
+		allowedButton = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
 		allowedButton->setArrowType(Qt::DownArrow);
 		allowedButton->setAutoRaise(true);
 		//allowedButton->setEnabled(false);
@@ -440,7 +440,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 		break;
 	case DAVA::VariantType::TYPE_COLOR:
 		{
-			QToolButton *colorBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE);
+			QToolButton *colorBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
 			colorBtn->setIcon(QIcon(":/QtIcons/color.png"));
 			colorBtn->setIconSize(QSize(12, 12));
 			colorBtn->setAutoRaise(true);
@@ -467,7 +467,7 @@ void QtPropertyDataDavaVariant::ChildsCreate()
 		break;
 	case DAVA::VariantType::TYPE_FILEPATH:
 		{
-			QToolButton *filePathBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE);
+			QToolButton *filePathBtn = AddButton(QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED);
 			filePathBtn->setIcon(QIcon(":/QtIcons/openscene.png"));
 			filePathBtn->setIconSize(QSize(14, 14));
 			filePathBtn->setAutoRaise(true);

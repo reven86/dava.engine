@@ -52,7 +52,7 @@ FilePath DXTConverter::ConvertPngToDxt(const TextureDescriptor &descriptor, eGPU
         FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
         
 		DVASSERT(descriptor.compression);
-		const TextureDescriptor::Compression * compression = descriptor.compression[gpuFamily];
+		const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
 
         if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))
         {
@@ -111,7 +111,7 @@ FilePath DXTConverter::ConvertCubemapPngToDxt(const TextureDescriptor &descripto
         FilePath outputName = GetDXTOutput(descriptor, gpuFamily);
         
 		DVASSERT(descriptor.compression);
-		const TextureDescriptor::Compression * compression = descriptor.compression[gpuFamily];
+		const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
 
 
         if((compression->compressToWidth != 0) && (compression->compressToHeight != 0))

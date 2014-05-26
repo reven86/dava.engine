@@ -271,7 +271,7 @@ protected:
 	void FlushDataToRenderer(Vector<Image *> * images);
 	void ReleaseImages(Vector<Image *> * images);
     
-    void MakePink(TextureType requestedType = Texture::TEXTURE_2D, bool checkers = true);
+    void MakePink(bool checkers = true);
 	void ReleaseTextureDataInternal(BaseObject * caller, void * param, void *callerData);
     
 	void GeneratePixelesationInternal(BaseObject * caller, void * param, void *callerData);

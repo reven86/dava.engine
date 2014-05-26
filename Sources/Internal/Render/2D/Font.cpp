@@ -108,7 +108,9 @@ float32	Font::GetSize() const
 
 void Font::SetRenderSize(float32 _originalSize)
 {
-    renderSize = _originalSize;
+    // Fots with zero render size are incorrectly handled by
+    // TextBlock::Prepare(), so define the minimum size.
+    renderSize = Max(_originalSize, 0.1f);
 }
 
 float32	Font::GetRenderSize() const

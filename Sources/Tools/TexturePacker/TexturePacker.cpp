@@ -698,8 +698,7 @@ TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
 		{
 			descriptor->format = format;
 
-			DVASSERT(descriptor->compression);
-			descriptor->compression[forGPU]->format = format;
+			descriptor->compression[forGPU].format = format;
 
 		}
 		else

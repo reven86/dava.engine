@@ -845,12 +845,6 @@ namespace DAVA
 				if (font)SetStateFont(stateArray[k], font);
 			}
 			
-			const YamlNode * stateTextNode = node->Get(Format("stateText%s", statePostfix[k].c_str()));
-			if (stateTextNode)
-			{
-				SetStateText(stateArray[k], LocalizedString(stateTextNode->AsWString()));
-			}
-
             const YamlNode * stateTextAlignNode = node->Get(Format("stateTextAlign%s", statePostfix[k].c_str()));
             if (stateTextAlignNode)
             {
@@ -893,6 +887,12 @@ namespace DAVA
 			{
 				Color color = loader->GetColorFromYamlNode(colorNode);
 				GetActualBackground(stateArray[k])->SetColor(color);
+			}
+
+			const YamlNode * stateTextNode = node->Get(Format("stateText%s", statePostfix[k].c_str()));
+			if (stateTextNode)
+			{
+				SetStateText(stateArray[k], LocalizedString(stateTextNode->AsWString()));
 			}
 		}
 	}

@@ -33,11 +33,13 @@
 #include "Base/BaseTypes.h"
 #include "Base/Message.h"
 #include "Base/BaseObject.h"
+#include "Mutex.h"
 
 #if defined (__DAVAENGINE_WIN32__)
 #include "Platform/TemplateWin32/pThreadWin32.h"
 #else
 #include <pthread.h>
+#include <signal.h>
 #endif
 
 namespace DAVA
@@ -71,7 +73,8 @@ public:
 	{
 		STATE_CREATED = 0,
 		STATE_RUNNING,
-		STATE_ENDED
+		STATE_ENDED,
+        STATE_KILLED
 	};
 
 	class ThreadId
@@ -129,6 +132,8 @@ public:
 	*/
 	static Thread		* Create(const Message& msg);
 
+    static void KillAll();
+
 	/**
 		\brief start execution of the thread
 	*/
@@ -143,6 +148,10 @@ public:
     /** Wait until thread's finished.
     */
     void Join();
+
+    /** Kill thread
+    */
+    void Kill();
 
     /**
         Wrapp pthread wait, signal and broadcast
@@ -169,9 +178,7 @@ public:
 	ThreadId GetThreadId();
 
 private:
-    ~Thread() {};
-	Thread() {};
-	Thread(const Thread& t);
+    ~Thread();
 	Thread(const Message& msg);
 	
 	Message	msg;
@@ -179,6 +186,9 @@ private:
 
 	ThreadId threadId;
 	static ThreadId mainThreadId;
+
+    static Set<Thread *> threadList;
+    static Mutex threadListMutex;
 	
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 	#if defined (__DAVAENGINE_NPAPI__)

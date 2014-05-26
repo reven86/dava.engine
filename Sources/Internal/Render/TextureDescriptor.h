@@ -173,12 +173,9 @@ public:
     
     PixelFormat GetPixelFormatForCompression(eGPUFamily forGPU) const;
     
-	void Reload();
+	bool Reload();
 
 protected:
-
-	void AllocateCompressionData();
-	void ReleaseCompressionData();
 
     const Compression * GetCompressionParams(eGPUFamily forGPU) const;
     
@@ -212,7 +209,7 @@ public:
 	FastName qualityGroup;
 	TextureDrawSettings drawSettings;
 	TextureDataSettings dataSettings;
-	Compression **compression;
+	Compression compression[GPU_FAMILY_COUNT];
     
 	PixelFormat format:8;			// texture format
     //Binary only

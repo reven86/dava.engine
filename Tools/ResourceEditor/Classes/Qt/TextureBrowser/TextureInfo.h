@@ -38,11 +38,12 @@
 
 struct TextureInfo
 {
-	TextureInfo(): dataSize(0), fileSize(0) {};
+	TextureInfo(): dataSize(0), fileSize(0), imageSize(0, 0) {};
 
 	QList<QImage> images;
 	DAVA::uint32 dataSize;
 	DAVA::uint32 fileSize;
+	QSize imageSize;
 };
 
 #endif // __TEXTURE_INFO_H__

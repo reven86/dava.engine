@@ -122,7 +122,7 @@ void EditFontDialog::ConnectToSignals()
     connect(ui->localizedFontSelectButton, SIGNAL(clicked()), this, SLOT(OnPushButtonClicked()));
     connect(ui->localizedFontSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnSpinBoxValueChanged(int)));
     
-    connect(ui->buttonBox, SIGNAL(clicked(QAbstractButton*)), this, SLOT(OnButtonBoxButtonClicked(QAbstractButton*)));
+    connect(ui->buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()), this, SLOT(OnOkButtonClicked()));
 }
 
 void EditFontDialog::DisconnectFromSignals()
@@ -419,24 +419,4 @@ void EditFontDialog::OnOkButtonClicked()
     dialogResult.fontPresetName = ui->fontPresetNameLlineEdit->text().toStdString();
     
     Logger::FrameworkDebug("EditFontDialog::OnOkButtonClicked");
-}
-
-void EditFontDialog::OnButtonBoxButtonClicked(QAbstractButton* button)
-{
-    if (button == ui->buttonBox->button(QDialogButtonBox::Ok))
-    {
-        DisplayNotification();
-        OnOkButtonClicked();
-    }
-}
-
-void EditFontDialog::DisplayNotification()
-{
-    if (ui->fontSizeSpinBox->value() == 0.0f ||
-        ui->localizedFontSizeSpinBox->value() == 0.0f)
-    {
-        QMessageBox msgBox;
-        msgBox.setText("You've set the font size to zero. Approriate texts might not be visible (depending on fitting).");
-        msgBox.exec();
-    }
 }

@@ -111,7 +111,8 @@ void UITextFieldPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 void UITextFieldPropertyGridWidget::Cleanup()
 {
 	UnregisterCheckBoxWidget(ui->isPasswordCheckbox);
-	
+    UnregisterColorWidget(ui->textColorWidget);
+
 	UnregisterComboBoxWidget(ui->autoCapitalizationTypeComboBox);
 	UnregisterComboBoxWidget(ui->autoCorrectionTypeComboBox);
 	UnregisterComboBoxWidget(ui->spellCheckingTypeComboBox);

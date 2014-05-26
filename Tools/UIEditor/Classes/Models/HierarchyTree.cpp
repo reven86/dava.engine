@@ -504,6 +504,10 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
         EditorFontManager::Instance()->SaveLocalizedFonts();
     }
 
+    // Delete unused items from disk before saving.
+    HierarchyTreeController::Instance()->DeleteUnusedItemsFromDisk(projectPath);
+
+    // Do the save itself.
 	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = rootNode.GetChildNodes().begin();
 		 iter != rootNode.GetChildNodes().end();
 		 ++iter)
@@ -546,6 +550,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	}
 
     SafeRelease(parser);
+
 	return result;
 }
 

@@ -131,7 +131,8 @@ void UIStaticTextPropertyGridWidget::Cleanup()
 {
     UnregisterGridWidgetAsStateAware();
     UnregisterLineEditWidget(ui->localizationKeyNameLineEdit);
-    
+    UnregisterColorWidget(ui->textColorWidget);
+
     // DF-3280 multiline should be enabled for UIStaticText and UIButton - unregister checkbox
     //if (dynamic_cast<UIStaticTextMetadata*>(this->activeMetadata) != NULL)
     {

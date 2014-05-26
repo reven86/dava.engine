@@ -59,13 +59,18 @@ public:
 
 	void setDrawRule(DrawRule rule);
 
+protected:
+    bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index);
+
 private slots:
 	void textureReadyThumbnail(const DAVA::TextureDescriptor *descriptor,  const TextureInfo & images);
+    void onOpenTexturePath();
 
 private:
 	QFont nameFont;
 	QFontMetrics nameFontMetrics;
 	mutable QMap<DAVA::FilePath, QModelIndex> descriptorIndexes;
+    QString lastSelectedTextureFolder;
     
 	DrawRule drawRule;
 

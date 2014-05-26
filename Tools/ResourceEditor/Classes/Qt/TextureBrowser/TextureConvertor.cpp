@@ -170,7 +170,7 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
 					DVASSERT(descriptor->compression);
 					for(int gpu = DAVA::GPU_UNKNOWN + 1; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)
 					{
-						if( ! GPUFamilyDescriptor::IsFormatSupported((eGPUFamily)gpu, (PixelFormat)descriptor->compression[gpu]->format))
+						if( ! GPUFamilyDescriptor::IsFormatSupported((eGPUFamily)gpu, (PixelFormat)descriptor->compression[gpu].format))
 						{
 							continue;
 						}
@@ -473,6 +473,12 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 
 		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_UNKNOWN);
 		result.fileSize = fileSize;
+
+		if(result.images.size())
+		{
+			result.imageSize.setWidth(result.images[0].width());
+			result.imageSize.setHeight(result.images[0].height());
+		}
 	}
 
     DAVA::QtLayer::Instance()->ReleaseAutoreleasePool(pool);
@@ -494,27 +500,24 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 		DAVA::TextureDescriptor *descriptor = (DAVA::TextureDescriptor*) item->descriptor;
 		DAVA::eGPUFamily gpu = (DAVA::eGPUFamily) item->type;
 
-		if(descriptor)
-		{
-			DVASSERT(descriptor->compression);
-		}
-
 		if( NULL != descriptor &&
 			gpu > DAVA::GPU_UNKNOWN && gpu < DAVA::GPU_FAMILY_COUNT && 
-			descriptor->compression[gpu]->format > DAVA::FORMAT_INVALID && descriptor->compression[gpu]->format < DAVA::FORMAT_COUNT)
+			descriptor->compression[gpu].format > DAVA::FORMAT_INVALID && descriptor->compression[gpu].format < DAVA::FORMAT_COUNT)
 		{
-			const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpu, (DAVA::PixelFormat) descriptor->compression[gpu]->format);
+			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
+
+			const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpu, (DAVA::PixelFormat) descriptor->compression[gpu].format);
 			if(outExtension == ".pvr")
 			{
 				DAVA::Logger::FrameworkDebug("Starting PVR conversion (%s), id %d..., (%s)",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu]->format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
+					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
 				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}
 			else if(outExtension == ".dds")
 			{
 				DAVA::Logger::FrameworkDebug("Starting DXT conversion (%s), id %d..., (%s)",
-					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu]->format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
+					GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(descriptor->compression[gpu].format), item->id, descriptor->pathname.GetAbsolutePathname().c_str());
 				convertedImages = ConvertFormat(descriptor, gpu, item->convertMode);
 				DAVA::Logger::FrameworkDebug("Done, id %d", item->id);
 			}
@@ -526,8 +529,13 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 
 			result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, gpu);
 
-			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);
 			result.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
+
+			if(convertedImages.size())
+			{
+				result.imageSize.setWidth(convertedImages[0]->GetWidth());
+				result.imageSize.setHeight(convertedImages[0]->GetHeight());
+			}
 		}
 		else
 		{
@@ -610,8 +618,7 @@ DAVA::Vector<DAVA::Image*> TextureConvertor::ConvertFormat(DAVA::TextureDescript
 
 		if(convert)
 		{
-			DVASSERT(descriptor->compression);
-			TextureConverter::CleanupOldTextures(descriptor, gpu, (DAVA::PixelFormat)descriptor->compression[gpu]->format);
+			TextureConverter::CleanupOldTextures(descriptor, gpu, (DAVA::PixelFormat)descriptor->compression[gpu].format);
             DAVA::VariantType quality = SettingsManager::Instance()->GetValue(Settings::General_CompressionQuality);
 			outputPath = TextureConverter::ConvertTexture(*descriptor, gpu, true, (TextureConverter::eConvertQuality)quality.AsInt32());
         }

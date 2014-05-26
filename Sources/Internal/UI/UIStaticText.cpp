@@ -261,11 +261,6 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
         SetFittingOption(loader->GetFittingOptionFromYamlNode(fittingNode));
     }
     
-	if (textNode)
-	{
-		SetText(LocalizedString(textNode->AsWString()));
-	}
-
 	if(textColorNode)
 	{
 		SetTextColor(textColorNode->AsColor());
@@ -285,6 +280,11 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     {
         SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
     }
+
+	if (textNode)
+	{
+		SetText(LocalizedString(textNode->AsWString()));
+	}
 }
 
 YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)

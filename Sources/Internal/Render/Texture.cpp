@@ -792,17 +792,15 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
 {
     DVASSERT(isRenderTarget == false);
     
-    FilePath savedPath = texDescriptor->pathname;
-    
     ReleaseTextureData();
 
-	texDescriptor->Reload();
+	bool descriptorReloaded = texDescriptor->Reload();
     
 	eGPUFamily gpuForLoading = GetGPUForLoading(gpuFamily, texDescriptor);
     Vector<Image *> *images = new Vector<Image *> ();
     
     bool loaded = false;
-    if(RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
+    if(descriptorReloaded && RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::TEXTURE_LOAD_ENABLED))
     {
 	    loaded = LoadImages(gpuForLoading, images);
     }
@@ -818,7 +816,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
     {
         SafeDelete(images);
         
-        Logger::Error("[Texture::ReloadAs] Cannot reload from file %s", savedPath.GetAbsolutePathname().c_str());
+        Logger::Error("[Texture::ReloadAs] Cannot reload from file %s", texDescriptor->pathname.GetAbsolutePathname().c_str());
         MakePink(texDescriptor->IsCubeMap() ? Texture::TEXTURE_CUBE : Texture::TEXTURE_2D);
     }
 }
@@ -833,8 +831,7 @@ bool Texture::IsLoadAvailable(const eGPUFamily gpuFamily) const
     
     DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
     
-	DVASSERT(texDescriptor->compression);
-    if(gpuFamily != GPU_UNKNOWN && texDescriptor->compression[gpuFamily]->format == FORMAT_INVALID)
+    if(gpuFamily != GPU_UNKNOWN && texDescriptor->compression[gpuFamily].format == FORMAT_INVALID)
     {
         return false;
     }
@@ -1144,19 +1141,26 @@ Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 	//we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
 	//pink textures at game is invalid situation
 	Texture *tex = new Texture();
-	tex->MakePink(requestedType, checkers);
+	if(Texture::TEXTURE_CUBE == requestedType)
+	{
+		tex->texDescriptor->Initialize(WRAP_REPEAT, true);
+		tex->texDescriptor->dataSettings.faceDescription = 0x000000FF;
+	}
+	else
+	{
+		tex->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, false);
+	}
+
+	tex->MakePink(checkers);
 
 	return tex;
 }
 
-void Texture::MakePink(TextureType requestedType, bool checkers)
+void Texture::MakePink(bool checkers)
 {
-	FilePath savePath = texDescriptor->pathname;
-
     Vector<Image *> *images = new Vector<Image *> ();
-	if(Texture::TEXTURE_CUBE == requestedType)
+	if(texDescriptor->IsCubeMap())
 	{
-		texDescriptor->Initialize(WRAP_REPEAT, true);
 		for(uint32 i = 0; i < Texture::CUBE_FACE_MAX_COUNT; ++i)
 		{
             Image *img = Image::CreatePinkPlaceholder(checkers);
@@ -1165,16 +1169,11 @@ void Texture::MakePink(TextureType requestedType, bool checkers)
 
 			images->push_back(img);
 		}
-		
-		texDescriptor->dataSettings.faceDescription = 0x000000FF;
 	}
 	else
 	{
-		texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, false);
 		images->push_back(Image::CreatePinkPlaceholder(checkers));
 	}
-
-	texDescriptor->pathname = savePath;
 
 	SetParamsFromImages(images);
     FlushDataToRenderer(images);

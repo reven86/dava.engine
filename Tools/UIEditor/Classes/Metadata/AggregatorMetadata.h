@@ -45,6 +45,8 @@ class AggregatorMetadata : public BaseMetadata
     Q_PROPERTY(float Width READ GetWidth WRITE SetWidth);
     Q_PROPERTY(float Height READ GetHeight WRITE SetHeight);
     
+    virtual void ApplyRename(const QString& originalName, const QString& newName);
+
 protected:
     // Default Flags.
     virtual bool GetInitialInputEnabled() const {return true;};

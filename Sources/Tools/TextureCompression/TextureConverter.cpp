@@ -49,8 +49,7 @@ namespace DAVA
 {
 	FilePath TextureConverter::ConvertTexture(const TextureDescriptor &descriptor, eGPUFamily gpuFamily, bool updateAfterConversion, eConvertQuality quality)
 	{
-		DVASSERT(descriptor.compression);
-		const TextureDescriptor::Compression * compression = descriptor.compression[gpuFamily];
+		const TextureDescriptor::Compression * compression = &descriptor.compression[gpuFamily];
 
 		FilePath outputPath;
 		const String& outExtension = GPUFamilyDescriptor::GetCompressedFileExtension(gpuFamily, (DAVA::PixelFormat)compression->format);

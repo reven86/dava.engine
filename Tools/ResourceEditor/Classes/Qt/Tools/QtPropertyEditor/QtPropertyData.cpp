@@ -417,6 +417,8 @@ void QtPropertyData::SetEditable(bool editable)
 {
 	(editable) ? (curFlags |= Qt::ItemIsEditable) : (curFlags &= ~Qt::ItemIsEditable);
     UpdateOWState();
+
+    EmitDataChanged(STATE_CHANGED);
 }
 
 bool QtPropertyData::IsEditable() const
@@ -428,6 +430,8 @@ void QtPropertyData::SetEnabled(bool enabled)
 {
 	(enabled) ? (curFlags |= Qt::ItemIsEnabled) : (curFlags &= ~Qt::ItemIsEnabled);
     UpdateOWState();
+
+    EmitDataChanged(STATE_CHANGED);
 }
 
 void QtPropertyData::UpdateOWState()

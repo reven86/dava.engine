@@ -52,6 +52,9 @@ protected:
     // Default Flags.
     virtual bool GetInitialInputEnabled() const {return true;};
 
+    // Rename the platform.
+    virtual void ApplyRename(const QString& originalName, const QString& newName);
+
     // Accessors to the Tree Node.
     HierarchyTreePlatformNode* GetPlatformNode() const;
 

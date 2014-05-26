@@ -219,7 +219,7 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
 void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const FilePath & fileToConvert, eGPUFamily gpuFamily, TextureConverter::eConvertQuality quality, Vector<String>& args)
 {
 	DVASSERT(descriptor.compression);
-	const TextureDescriptor::Compression *compression = descriptor.compression[gpuFamily];
+	const TextureDescriptor::Compression *compression = &descriptor.compression[gpuFamily];
 
 	String format = pixelFormatToPVRFormat[(PixelFormat) compression->format];
 	FilePath outputFile = GetPVRToolOutput(descriptor, gpuFamily);
@@ -243,7 +243,7 @@ void PVRConverter::GetToolCommandLine(const TextureDescriptor &descriptor, const
 
 	//quality
 	args.push_back("-q");
-	if(FORMAT_ETC1 == descriptor.compression[gpuFamily]->format)
+	if(FORMAT_ETC1 == descriptor.compression[gpuFamily].format)
 	{
 		args.push_back(ETC_QUALITY_SETTING[quality]);
 	}

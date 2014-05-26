@@ -362,16 +362,14 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
 			{
 				// Add optional button to edit action component
-				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "");
+				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
 				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
-                QtPropertyToolButton *editSound = data->AddButton();
-                editSound->setIcon(QIcon(":/QtIcons/settings.png"));
+                QtPropertyToolButton * editSound = CreateButton(data, QIcon( ":/QtIcons/settings.png" ), "Edit sound component");
                 editSound->setAutoRaise(true);
-
                 QObject::connect(editSound, SIGNAL(pressed()), this, SLOT(ActionEditSoundComponent()));
             }
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)

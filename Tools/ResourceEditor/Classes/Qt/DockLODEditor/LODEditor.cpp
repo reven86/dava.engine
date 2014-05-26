@@ -283,7 +283,6 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
         
         editedLODData->SetLayerDistance(lodLevel, value);
         ui->distanceSlider->SetDistance(lodLevel, value);
-        spinBox->setFocus();
     }
 }
 

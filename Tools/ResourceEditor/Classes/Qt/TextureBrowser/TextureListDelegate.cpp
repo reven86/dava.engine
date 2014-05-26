@@ -36,6 +36,12 @@
 #include "TextureBrowser.h"
 #include <QPainter>
 #include <QFileInfo>
+#include <QEvent>
+#include <QMouseEvent>
+#include <QMenu>
+#include <QDir>
+#include <QUrl>
+#include <QCursor>
 
 #include "Main/QtUtils.h"
 
@@ -48,6 +54,7 @@
 #define INFO_TEXT_COLOR QColor(0, 0, 0, 100)
 #define FORMAT_INFO_WIDTH 3
 #define FORMAT_INFO_SPACING 1
+#include <QDesktopServices>
 
 TextureListDelegate::TextureListDelegate(QObject *parent /* = 0 */)
 	: QAbstractItemDelegate(parent)
@@ -281,12 +288,11 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
 		gpuInfoColors[DAVA::GPU_ADRENO] = TextureBrowser::gpuColor_Adreno;
 
 		// format lines
-		DVASSERT(descriptor->compression);
-		for(int i = (DAVA::GPU_FAMILY_COUNT - 1); i >= 0 && descriptor->compression; --i)
+		for(int i = (DAVA::GPU_FAMILY_COUNT - 1); i >= 0; --i)
 		{
 			r.moveLeft(r.x() - FORMAT_INFO_WIDTH);
 
-			if(descriptor->compression[i]->format != DAVA::FORMAT_INVALID)
+			if(descriptor->compression[i].format != DAVA::FORMAT_INVALID)
 			{
 				QColor c = gpuInfoColors[i];
 
@@ -309,4 +315,50 @@ int TextureListDelegate::drawFormatInfo(QPainter *painter, QRect rect, const DAV
 	}
 
 	return ret;
+}
+
+bool TextureListDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
+{
+    switch ( event->type() )
+    {
+    case QEvent::MouseButtonRelease:
+        {
+            if ( !index.isValid() )
+            {
+                break;
+            }
+
+            QMouseEvent *me = static_cast<QMouseEvent *>(event);
+            if (me->button() != Qt::RightButton)
+            {
+                break;
+            }
+
+            const TextureListModel *curModel = qobject_cast<const TextureListModel *>(index.model());
+            DVASSERT(curModel);
+            DAVA::TextureDescriptor *curTextureDescriptor = curModel->getDescriptor(index);
+            if (curTextureDescriptor == NULL)
+            {
+                break;
+            }
+
+            lastSelectedTextureFolder = curTextureDescriptor->pathname.GetAbsolutePathname().c_str();
+            QMenu menu;
+            QAction *act = menu.addAction("Open texture folder");
+            connect(act, SIGNAL( triggered() ), SLOT( onOpenTexturePath() ));
+            menu.exec( QCursor::pos() );
+        }
+        break;
+
+    default:
+        break;
+    }
+
+    return QAbstractItemDelegate::editorEvent(event, model, option, index);
+}
+
+void TextureListDelegate::onOpenTexturePath()
+{
+    ShowFileInExplorer(lastSelectedTextureFolder);
+    lastSelectedTextureFolder.clear();
 }

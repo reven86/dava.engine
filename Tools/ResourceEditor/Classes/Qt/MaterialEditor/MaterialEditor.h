@@ -45,6 +45,8 @@ namespace Ui {
 	class MaterialEditor;
 }
 
+class QtPropertyDataInspDynamic;
+
 class MaterialEditor : public QDialog, public DAVA::Singleton<MaterialEditor>
 {
 	Q_OBJECT
@@ -66,14 +68,10 @@ public slots:
 	void materialSelected(const QItemSelection & selected, const QItemSelection & deselected);
 
 protected slots:
-    void OnAddFlag();
-    void OnRemFlag();
-    void OnAddProperty();
-	void OnRemProperty();
-	void OnAddTexture();
-	void OnRemTexture();
 	void OnTemplateChanged(int index);
 	void OnPropertyEdited(const QModelIndex &);
+    void OnAddRemoveButton();
+
     void OnMaterialAddGlobal(bool checked);
     void OnMaterialRemoveGlobal(bool checked);
     void OnMaterialSave(bool checked);
@@ -83,11 +81,16 @@ protected:
 	virtual void showEvent(QShowEvent * event);
 
 	void SetCurMaterial(const QList< DAVA::NMaterial *>& materials);
-	void FillMaterialProperties(const QList<DAVA::NMaterial *>& materials);
-    void FillMaterialTemplates(const QList<DAVA::NMaterial *>& materials);
-    void ClearMaterialDynamicMember(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicInsp);
 
-    QVariant CheckForTextureDescriptor(const QVariant& value);
+    void FillBase();
+    void FillDynamic(QtPropertyData *root, const char* dynamicName);
+    void FillDynamicMembers(QtPropertyData *root, DAVA::InspInfoDynamic *dynamic, DAVA::NMaterial *material);
+    void FillTemplates(const QList<DAVA::NMaterial *>& materials);
+
+    void UpdateAllAddRemoveButtons(QtPropertyData *root);
+    void UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data);
+
+    void ClearDynamicMembers(DAVA::NMaterial *material, const DAVA::InspMemberDynamic *dynamicInsp);
 
 private slots:
     void onFilterChanged();
@@ -118,6 +121,12 @@ private:
 	QtPosSaver posSaver;
 
 	QList< DAVA::NMaterial *> curMaterials;
+
+    QtPropertyData *baseRoot;
+    QtPropertyData *flagsRoot;
+    QtPropertyData *propertiesRoot;
+    QtPropertyData *illuminationRoot;
+    QtPropertyData *texturesRoot;
 
 	PropertyEditorStateHelper *treeStateHelper;
     ExpandMap expandMap;
