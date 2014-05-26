@@ -26,11 +26,49 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-
-#include "UITextFieldAndroid.h"
+#include "UI/UITextFieldImpl.h"
 
 using namespace DAVA;
+
+class JniTextField: public JniExtension
+{
+public:
+    JniTextField(uint32_t id);
+
+    void Create(Rect rect);
+    void Destroy();
+    void UpdateRect(const Rect & rect);
+    void SetText(const char* text);
+    void SetTextColor(float r, float g, float b, float a);
+    void SetFontSize(float size);
+    void SetIsPassword(bool isPassword);
+    void SetTextAlign(int32_t align);
+    void SetInputEnabled(bool value);
+    void SetAutoCapitalizationType(int32_t value);
+    void SetAutoCorrectionType(int32_t value);
+    void SetSpellCheckingType(int32_t value);
+    void SetKeyboardAppearanceType(int32_t value);
+    void SetKeyboardType(int32_t value);
+    void SetReturnKeyType(int32_t value);
+    void SetEnableReturnKeyAutomatically(bool value);
+    void ShowField();
+    void HideField();
+    void OpenKeyboard();
+    void CloseKeyboard();
+    uint32 GetCursorPos();
+    void SetCursorPos(uint32 pos);
+
+protected:
+    virtual jclass GetJavaClass() const;
+    virtual const char* GetJavaClassName() const;
+
+public:
+    static jclass gJavaClass;
+    static const char* gJavaClassName;
+
+private:
+    uint32_t id;
+};
 
 jclass JniTextField::gJavaClass = NULL;
 const char* JniTextField::gJavaClassName = NULL;
@@ -335,12 +373,12 @@ void JniTextField::SetCursorPos(uint32 pos)
 	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, pos);
 }
 
-uint32_t UITextFieldAndroid::sId = 0;
-DAVA::Map<uint32_t, UITextFieldAndroid*> UITextFieldAndroid::controls;
+uint32_t UITextFieldImpl::sId = 0;
+DAVA::Map<uint32_t, UITextFieldImpl*> UITextFieldImpl::controls;
 
-UITextFieldAndroid::UITextFieldAndroid(UITextField* textField)
+UITextFieldImpl::UITextFieldImpl(UITextField* tf)
 {
-	this->textField = textField;
+	textField = tf;
 	id = sId++;
 	rect = textField->GetRect();
 	JniTextField jniTextField(id);
@@ -349,7 +387,7 @@ UITextFieldAndroid::UITextFieldAndroid(UITextField* textField)
 	controls[id] = this;
 }
 
-UITextFieldAndroid::~UITextFieldAndroid()
+UITextFieldImpl::~UITextFieldImpl()
 {
 	controls.erase(id);
 
@@ -357,24 +395,24 @@ UITextFieldAndroid::~UITextFieldAndroid()
 	jniTextField.Destroy();
 }
 
-void UITextFieldAndroid::OpenKeyboard()
+void UITextFieldImpl::OpenKeyboard()
 {
 	JniTextField jniTextField(id);
 	jniTextField.OpenKeyboard();
 }
 
-void UITextFieldAndroid::CloseKeyboard()
+void UITextFieldImpl::CloseKeyboard()
 {
 	JniTextField jniTextField(id);
 	jniTextField.CloseKeyboard();
 }
 
-void UITextFieldAndroid::GetText(WideString & string) const
+void UITextFieldImpl::GetText(WideString & string) const
 {
 	string = text;
 }
 
-void UITextFieldAndroid::SetText(const WideString & string)
+void UITextFieldImpl::SetText(const WideString & string)
 {
 	if (text.compare(string) != 0)
 	{
@@ -385,53 +423,53 @@ void UITextFieldAndroid::SetText(const WideString & string)
 	}
 }
 
-void UITextFieldAndroid::UpdateRect(const Rect & rect)
+void UITextFieldImpl::UpdateRect(const Rect & newRect, float32 timeElapsed)
 {
-	if (rect != this->rect)
+	if (newRect != rect)
 	{
-		this->rect = rect;
+		rect = newRect;
 		JniTextField jniTextField(id);
 		jniTextField.UpdateRect(rect);
 	}
 }
 
-void UITextFieldAndroid::SetTextColor(const DAVA::Color &color)
+void UITextFieldImpl::SetTextColor(const DAVA::Color &color)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetTextColor(color.r, color.g, color.b, color.a);
 }
 
-void UITextFieldAndroid::SetFontSize(float size)
+void UITextFieldImpl::SetFontSize(float size)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetFontSize(size);
 }
 
-void UITextFieldAndroid::SetTextAlign(DAVA::int32 align)
+void UITextFieldImpl::SetTextAlign(DAVA::int32 newAlign)
 {
-	this->align = align;
+	align = newAlign;
 	JniTextField jniTextField(id);
 	jniTextField.SetTextAlign(align);
 }
 
-DAVA::int32 UITextFieldAndroid::GetTextAlign()
+DAVA::int32 UITextFieldImpl::GetTextAlign()
 {
 	return align;
 }
 
-void UITextFieldAndroid::ShowField()
+void UITextFieldImpl::ShowField()
 {
 	JniTextField jniTextField(id);
 	jniTextField.ShowField();
 }
 
-void UITextFieldAndroid::HideField()
+void UITextFieldImpl::HideField()
 {
 	JniTextField jniTextField(id);
 	jniTextField.HideField();
 }
 
-void UITextFieldAndroid::SetVisible(bool isVisible)
+void UITextFieldImpl::SetVisible(bool isVisible)
 {
 	if (isVisible)
 		ShowField();
@@ -439,74 +477,74 @@ void UITextFieldAndroid::SetVisible(bool isVisible)
 		HideField();
 }
 
-void UITextFieldAndroid::SetIsPassword(bool isPassword)
+void UITextFieldImpl::SetIsPassword(bool isPassword)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetIsPassword(isPassword);
 }
 
-void UITextFieldAndroid::SetInputEnabled(bool value)
+void UITextFieldImpl::SetInputEnabled(bool value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetInputEnabled(value);
 }
 
 // Keyboard traits.
-void UITextFieldAndroid::SetAutoCapitalizationType(DAVA::int32 value)
+void UITextFieldImpl::SetAutoCapitalizationType(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetAutoCapitalizationType(value);
 }
 
-void UITextFieldAndroid::SetAutoCorrectionType(DAVA::int32 value)
+void UITextFieldImpl::SetAutoCorrectionType(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetAutoCorrectionType(value);
 }
 
-void UITextFieldAndroid::SetSpellCheckingType(DAVA::int32 value)
+void UITextFieldImpl::SetSpellCheckingType(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetSpellCheckingType(value);
 }
 
-void UITextFieldAndroid::SetKeyboardAppearanceType(DAVA::int32 value)
+void UITextFieldImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetKeyboardAppearanceType(value);
 }
 
-void UITextFieldAndroid::SetKeyboardType(DAVA::int32 value)
+void UITextFieldImpl::SetKeyboardType(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetKeyboardType(value);
 }
 
-void UITextFieldAndroid::SetReturnKeyType(DAVA::int32 value)
+void UITextFieldImpl::SetReturnKeyType(DAVA::int32 value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetReturnKeyType(value);
 }
 
-void UITextFieldAndroid::SetEnableReturnKeyAutomatically(bool value)
+void UITextFieldImpl::SetEnableReturnKeyAutomatically(bool value)
 {
 	JniTextField jniTextField(id);
 	jniTextField.SetEnableReturnKeyAutomatically(value);
 }
 
-uint32 UITextFieldAndroid::GetCursorPos()
+uint32 UITextFieldImpl::GetCursorPos()
 {
 	JniTextField jniTextField(id);
 	return jniTextField.GetCursorPos();
 }
 
-void UITextFieldAndroid::SetCursorPos(uint32 pos)
+void UITextFieldImpl::SetCursorPos(uint32 pos)
 {
 	JniTextField jniTextField(id);
 	return jniTextField.SetCursorPos(pos);
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
+bool UITextFieldImpl::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
 	bool res = true;
 	UITextFieldDelegate* delegate = textField->GetDelegate();
@@ -525,34 +563,34 @@ bool UITextFieldAndroid::TextFieldKeyPressed(int32 replacementLocation, int32 re
 	return res;
 }
 
-bool UITextFieldAndroid::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
+bool UITextFieldImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
-	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+	UITextFieldImpl* control = GetUITextFieldAndroid(id);
 	if (!control)
 		return false;
 
 	return control->TextFieldKeyPressed(replacementLocation, replacementLength, text);
 }
 
-void UITextFieldAndroid::TextFieldShouldReturn()
+void UITextFieldImpl::TextFieldShouldReturn()
 {
 	UITextFieldDelegate* delegate = textField->GetDelegate();
 	if (delegate)
 		delegate->TextFieldShouldReturn(textField);
 }
 
-void UITextFieldAndroid::TextFieldShouldReturn(uint32_t id)
+void UITextFieldImpl::TextFieldShouldReturn(uint32_t id)
 {
-	UITextFieldAndroid* control = GetUITextFieldAndroid(id);
+	UITextFieldImpl* control = GetUITextFieldAndroid(id);
 	if (!control)
 		return;
 
 	control->TextFieldShouldReturn();
 }
 
-UITextFieldAndroid* UITextFieldAndroid::GetUITextFieldAndroid(uint32_t id)
+UITextFieldImpl* UITextFieldImpl::GetUITextFieldAndroid(uint32_t id)
 {
-	DAVA::Map<uint32_t, UITextFieldAndroid*>::iterator iter = controls.find(id);
+	DAVA::Map<uint32_t, UITextFieldImpl*>::iterator iter = controls.find(id);
 	if (iter != controls.end())
 		return iter->second;
 

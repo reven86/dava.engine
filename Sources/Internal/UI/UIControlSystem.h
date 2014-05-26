@@ -48,7 +48,7 @@ namespace DAVA
 {
 
 class UIScreen;
-class UIKeyboard;
+class UISystemKeyboard;
 
 class ScreenSwitchListener
 {
@@ -323,7 +323,7 @@ public:
 	 */
 	int32 UnlockSwitch();
 
-    UIKeyboard * GetUIKeyboard() const { return keyboard; }
+    UISystemKeyboard * GetUISystemKeyboard() const { return keyboard; }
 
 private:
 	/**
@@ -371,7 +371,7 @@ private:
 	
 	friend class UIScreenTransition;
 	friend class UIScreenManager;
-    UIKeyboard * keyboard;
+    UISystemKeyboard * keyboard;
 };
 };
 

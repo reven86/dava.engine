@@ -25,39 +25,25 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#ifndef __DAVAENGINE_UI_KEYBOARD_H__
-#define __DAVAENGINE_UI_KEYBOARD_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
+#ifndef __DAVAENGINE_UI_KEYBOARD_LISTENER_H__
+#define __DAVAENGINE_UI_KEYBOARD_LISTENER_H__
 
 namespace DAVA
 {
-class UIKeyboardListener;
 struct Rect;
-class UIKeyboardImpl;
 
-class UIKeyboard: public BaseObject
+class UISystemKeyboardListener
 {
-    friend UIKeyboardImpl;
-    friend class UIControlSystem;
-    ~UIKeyboard();
-protected:
-    UIKeyboard();
 public:
-    //void Show( UITextField * textField = NULL );
-    //void Hide( UITextField * textField = NULL );
-    void AddListener( UIKeyboardListener * listener );
-    void RemoveListener( UIKeyboardListener * listener );
-protected:
-    void SendWillShowNotification( const Rect &keyboardRect );
-    void SendDidShowNotification( const Rect &keyboardRect );
-    void SendWillHideNotification();
-    void SendDidHideNotification();
-private:
-    Set<UIKeyboardListener *> listeners;
-    UIKeyboardImpl * impl;
-};
+    virtual void OnKeyboardWillShow(const Rect& keyboardRect){}
+    virtual void OnKeyboardDidShow(const Rect& keyboardRect){}
+    virtual void OnKeyboardWillHide(){}
+    virtual void OnKeyboardDidHide(){}
+    
+    virtual void KeyboardFrameDidChange(){}
 };
 
-#endif // __DAVAENGINE_UI_KEYBOARD_H__
+};
+
+#endif // __DAVAENGINE_UI_KEYBOARD_LISTENER_H__

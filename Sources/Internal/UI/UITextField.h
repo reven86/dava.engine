@@ -35,7 +35,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
-#include "UIKeyboardListener.h"
+#include "UISystemKeyboardListener.h"
 
 namespace DAVA 
 {
@@ -94,7 +94,7 @@ public:
             A text field object supports the use of a delegate object to handle editing-related notifications. 
  */
 class UITextField : public UIControl
-                  , private UIKeyboardListener
+                  , private UISystemKeyboardListener
 {
 public:
 	// TODO: fix big BOOLs(TRUE, FALSE) in code
@@ -164,8 +164,7 @@ public:
 protected:
 	virtual ~UITextField();
 public:
-	UITextField();
-	UITextField(const Rect &rect, bool rectInAbsoluteCoordinates = false);
+	UITextField(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
 	virtual void WillAppear();
 	virtual void DidAppear();
@@ -204,21 +203,6 @@ public:
 	 \returns Font font of the control
 	 */
     Font *GetFont();
-	/**
-	 \brief Returns the text color of control.
-	 \returns Color color of control's text
-	 */
-	virtual const Color &GetTextColor() const;
-	/**
-	 \brief Returns text shadow offset relative to base text.
-	 \returns Vector2 with shadow offset for X and Y axis
-	 */
-	Vector2 GetShadowOffset() const;
-	/**
-	 \brief Returns color of text shadow.
-	 \returns Color of text shadow.
-	 */
-	virtual const Color &GetShadowColor() const;
 
 	int32 GetTextAlign() const;
 
@@ -236,6 +220,8 @@ public:
 	 \param[in] font font used for text draw of the states.
 	 */  
     void SetFont(Font * font);
+
+    virtual const Color& GetTextColor() const;
 	/**
 	 \brief Sets the color of the text.
 	 \param[in] fontColor font used for text draw of the states.
@@ -245,23 +231,11 @@ public:
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
 	 */
-    void SetFontSize(float size);
-	/**
-	 \brief Sets shadow offset of text control.
-	 \param[in] offset offset of text shadow relative to base text.
-	 */
-	void SetShadowOffset(const DAVA::Vector2 &offset);
-	/**
-	 \brief Sets shadow color of text control.
-	 \param[in] color color of text shadow.
-	 */
-	virtual void SetShadowColor(const Color& color);
+    void SetFontSize(float32 size);
 
 	void SetTextAlign(int32 align);
 
     virtual void SetVisible(bool isVisible, bool hierarchic = true);
-
-    virtual void SetSize(const DAVA::Vector2 &newSize);
 
     /**
 	 \brief Set control text style hide.
@@ -328,6 +302,8 @@ public:
     uint32 GetCursorPos();
     void SetCursorPos(uint32 pos);
 
+    virtual void Draw(const UIGeometricData &geometricData);
+
 protected:
     virtual void OnKeyboardDidShow(const Rect& keyboardRect)
     {
@@ -341,7 +317,6 @@ protected:
     }
 	WideString text;
 	UITextFieldDelegate * delegate;
-	float32	cursorBlinkingTime;
 
     // Keyboard customization params.
 	eAutoCapitalizationType autoCapitalizationType;
@@ -353,22 +328,13 @@ protected:
 
 
 	// All Boolean variables are grouped together because of DF-2149.
-	bool needRedraw : 1;
 	bool isPassword : 1;
 	bool enableReturnKeyAutomatically : 1;
-	bool showCursor : 1;
 
-    void RenderText();
 protected:
     WideString GetVisibleText() const;
-    friend class UIKeyboardImpl;
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+    friend UITextFieldImpl;
 	UITextFieldImpl * textFieldImpl;
-#else
-    UIStaticText * staticText;
-    Font * textFont;
-#endif
-    float32 cursorTime;
 };
 
 };

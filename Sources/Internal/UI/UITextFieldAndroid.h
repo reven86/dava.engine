@@ -40,45 +40,6 @@
 namespace DAVA
 {
 
-class JniTextField: public JniExtension
-{
-public:
-	JniTextField(uint32_t id);
-
-	void Create(Rect rect);
-	void Destroy();
-	void UpdateRect(const Rect & rect);
-	void SetText(const char* text);
-	void SetTextColor(float r, float g, float b, float a);
-	void SetFontSize(float size);
-	void SetIsPassword(bool isPassword);
-	void SetTextAlign(int32_t align);
-	void SetInputEnabled(bool value);
-	void SetAutoCapitalizationType(int32_t value);
-	void SetAutoCorrectionType(int32_t value);
-	void SetSpellCheckingType(int32_t value);
-	void SetKeyboardAppearanceType(int32_t value);
-	void SetKeyboardType(int32_t value);
-	void SetReturnKeyType(int32_t value);
-	void SetEnableReturnKeyAutomatically(bool value);
-	void ShowField();
-	void HideField();
-	void OpenKeyboard();
-	void CloseKeyboard();
-	uint32 GetCursorPos();
-	void SetCursorPos(uint32 pos);
-
-protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
-
-private:
-	uint32_t id;
-};
 
 class UITextFieldAndroid
 {

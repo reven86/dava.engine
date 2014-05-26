@@ -25,36 +25,39 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
+#ifndef __DAVAENGINE_UI_TEXT_FIELD_IMPL_H__
+#define __DAVAENGINE_UI_TEXT_FIELD_IMPL_H__
 
-
-
-#ifndef __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
-#define __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
-
-#include "UI/UITextField.h"
+#include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
 
 namespace DAVA 
 {
+class UITextField;
+class UIEvent;
+class Font;
+class UIGeometricData;
 class UITextFieldImpl
 {
 public:
-	UITextFieldImpl(void  * tf);
+	UITextFieldImpl(UITextField * textField);
 	virtual ~UITextFieldImpl();
 	
 	void OpenKeyboard();
 	void CloseKeyboard();
-	void SetText(WideString & string);
 	void GetText(WideString & string) const;
 	void SetText(const WideString & string);
-	void UpdateRect(const Rect & rect);
+	void UpdateRect(const Rect & rect, float32 timeElapsed);
 
+    const DAVA::Color &GetTextColor() const;
 	void SetTextColor(const DAVA::Color &color);
-	void SetFontSize(float size);
+    Font *GetFont();
+    void SetFont(Font * font);
+	void SetFontSize(float32 size);
     
     void SetTextAlign(DAVA::int32 align);
     DAVA::int32 GetTextAlign();
 
-    void SetVisible(bool value);
 	void ShowField();
 	void HideField();
 	
@@ -75,9 +78,41 @@ public:
     uint32 GetCursorPos();
     void SetCursorPos(uint32 pos);
 
+    void Input(UIEvent *currentInput);
+    void Draw(const UIGeometricData &geometricData);
+#if defined(__DAVAENGINE_ANDROID__)
+public:
+    bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
+    void TextFieldShouldReturn();
+    static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
+    static void TextFieldShouldReturn(uint32_t id);
+
+private:
+    static UITextFieldImpl* GetUITextFieldAndroid(uint32_t id);
+    static uint32_t sId;
+    static DAVA::Map<uint32_t, UITextFieldImpl*> controls;
+    uint32_t id;
+    Rect rect;
+    WideString text;
+    int32 align;
+#elif defined(__DAVAENGINE_IPHONE__)
+
+#else
+    class UIStaticText * staticText;
+    class Font * textFont;
+    WideString text;
+
+    bool needRedraw:1;
+    bool showCursor:1;
+    bool isPassword:1;
+    float32 cursorTime;
+    int32 align;
+#endif
+
 private:
 	void * objcClassPtr;
+    UITextField * textField;
 };
 };
 
-#endif // __DAVAENGINE_UI_TEXT_FIELD_IPHONE_H__
+#endif // __DAVAENGINE_UI_TEXT_FIELD_IMPL_H__

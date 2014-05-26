@@ -693,9 +693,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UITextField.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UITextFieldiPhone.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIYamlLoader.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1421,10 +1418,13 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIKeyboard.h">
+    <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboard.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIKeyboardListener.h">
+    <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboardListener.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UITextFieldImpl.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2550,7 +2550,10 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\UIKeyboard.cpp">
+    <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboard.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UITextFieldImpl_Custom.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
   </ItemGroup>
