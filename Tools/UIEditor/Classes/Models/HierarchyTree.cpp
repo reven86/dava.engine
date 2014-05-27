@@ -130,16 +130,24 @@ bool HierarchyTree::Load(const QString& projectPath)
 			EditorFontManager::Instance()->InitDefaultFontFromPath(defaultFontPath);
 		}
         
-        const YamlNode *localizationFontsPath = font->Get(DEFAULT_FONTS_PATH_NODE);
-        if(localizationFontsPath)
+        const YamlNode *localizationFontsPathNode = font->Get(DEFAULT_FONTS_PATH_NODE);
+        if(localizationFontsPathNode)
         {
-            EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(localizationFontsPath->AsString()));
+            FilePath localizationFontsPath(localizationFontsPathNode->AsString());
+            if(localizationFontsPath.Exists())
+            {
+                EditorFontManager::Instance()->SetDefaultFontsPath(localizationFontsPath.GetAbsolutePathname());
+            }
+            else
+            {
+                EditorFontManager::Instance()->SetDefaultFontsPath(bundleName.GetAbsolutePathname() + "Data" + localizationFontsPath.GetAbsolutePathname().substr(5));
+            }
         }
     }
     
     if(EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
     {
-        EditorFontManager::Instance()->SetDefaultFontsPath(FilePath("~res:/UI/Fonts/fonts.yaml"));
+        EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
     }
     EditorFontManager::Instance()->LoadLocalizedFonts();
     
@@ -231,7 +239,7 @@ void HierarchyTree::CloseProject()
 	// Reset default font
 	EditorFontManager::Instance()->ResetDefaultFont();
     // TODO: reset localized fonts path (unload localized fonts)
-    EditorFontManager::Instance()->ResetLocalizedFontsPath();
+    EditorFontManager::Instance()->Reset();
 	Clear();
 }
 

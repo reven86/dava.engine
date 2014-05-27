@@ -105,6 +105,8 @@ public slots:
 
 	void DeleteRenderBatch();
 
+    void RebuildTangentSpace();
+
     void CloneRenderBatchesToFixSwitchLODs();
 
 protected:

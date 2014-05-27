@@ -41,6 +41,7 @@
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\DateTimeTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
+    <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\BaseScreen.h" />
@@ -83,5 +84,6 @@
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
+    <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
   </ItemGroup>
 </Project>

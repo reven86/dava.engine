@@ -234,6 +234,7 @@ private:
         Vector3 tangent, binormal;
         int32 tbRatio;
         int32 refIndex;
+        int32 resultGroup;
     };
 
     

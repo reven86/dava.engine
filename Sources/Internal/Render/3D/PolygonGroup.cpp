@@ -679,7 +679,113 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 
 void MeshConverter::CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos)
 {
+    int32 copyFormat = srcGroup->GetFormat() & dstGroup->GetFormat();    //most common format;   
 
+    if (copyFormat&EVF_VERTEX)
+    {
+        Vector3 v;
+        srcGroup->GetCoord(srcPos, v);
+        dstGroup->SetCoord(dstPos, v);
+        copyFormat&=~EVF_VERTEX;
+    }
+
+    if (copyFormat&EVF_COLOR)
+    {
+        uint32 v;
+        srcGroup->GetColor(srcPos, v);
+        dstGroup->SetColor(dstPos, v);
+        copyFormat&=~EVF_COLOR;
+    }
+
+    if (copyFormat&EVF_NORMAL)
+    {
+        Vector3 v;
+        srcGroup->GetNormal(srcPos, v);
+        dstGroup->SetNormal(dstPos, v);
+        copyFormat&=~EVF_NORMAL;
+    }
+
+    if (copyFormat&EVF_TANGENT)
+    {
+        Vector3 v;
+        srcGroup->GetTangent(srcPos, v);
+        dstGroup->SetTangent(dstPos, v);
+        copyFormat&=~EVF_TANGENT;
+    }
+
+    if (copyFormat&EVF_BINORMAL)
+    {
+        Vector3 v;
+        srcGroup->GetBinormal(srcPos, v);
+        dstGroup->SetBinormal(dstPos, v);
+        copyFormat&=~EVF_BINORMAL;
+    }
+
+    if (copyFormat&EVF_TEXCOORD0)
+    {
+        Vector2 v;
+        srcGroup->GetTexcoord(0, srcPos, v);
+        dstGroup->SetTexcoord(0, dstPos, v);
+        copyFormat&=~EVF_TEXCOORD0;
+    }
+
+    if (copyFormat&EVF_TEXCOORD1)
+    {
+        Vector2 v;
+        srcGroup->GetTexcoord(1, srcPos, v);
+        dstGroup->SetTexcoord(1, dstPos, v);
+        copyFormat&=~EVF_TEXCOORD1;
+    }
+
+    if (copyFormat&EVF_TEXCOORD2)
+    {
+        Vector2 v;
+        srcGroup->GetTexcoord(2, srcPos, v);
+        dstGroup->SetTexcoord(2, dstPos, v);
+        copyFormat&=~EVF_TEXCOORD2;
+    }
+
+    if (copyFormat&EVF_TEXCOORD3)
+    {
+        Vector2 v;
+        srcGroup->GetTexcoord(3, srcPos, v);
+        dstGroup->SetTexcoord(3, dstPos, v);
+        copyFormat&=~EVF_TEXCOORD3;
+    }
+
+    if (copyFormat&EVF_CUBETEXCOORD0)
+    {
+        Vector3 v;
+        srcGroup->GetCubeTexcoord(0, srcPos, v);
+        dstGroup->SetCubeTexcoord(0, dstPos, v);
+        copyFormat&=~EVF_CUBETEXCOORD0;
+    }
+
+    if (copyFormat&EVF_CUBETEXCOORD1)
+    {
+        Vector3 v;
+        srcGroup->GetCubeTexcoord(1, srcPos, v);
+        dstGroup->SetCubeTexcoord(1, dstPos, v);
+        copyFormat&=~EVF_CUBETEXCOORD1;
+    }
+    if (copyFormat&EVF_CUBETEXCOORD2)
+    {
+        Vector3 v;
+        srcGroup->GetCubeTexcoord(2, srcPos, v);
+        dstGroup->SetCubeTexcoord(2, dstPos, v);
+        copyFormat&=~EVF_CUBETEXCOORD2;
+    }
+    if (copyFormat&EVF_CUBETEXCOORD3)
+    {
+        Vector3 v;
+        srcGroup->GetCubeTexcoord(3, srcPos, v);
+        dstGroup->SetCubeTexcoord(3, dstPos, v);
+        copyFormat&=~EVF_CUBETEXCOORD3;
+    }
+    
+    /*unsupported stream*/
+    DVASSERT((copyFormat == 0)&&"Unsupported attribute stream in copy");
+    
 }
 
 void MeshConverter::RebuildMeshTangentSpace(PolygonGroup *group, bool normalizeTangentSpace/*=true*/, bool computeBinormal/*=false*/)
@@ -804,17 +910,68 @@ void MeshConverter::RebuildMeshTangentSpace(PolygonGroup *group, bool normalizeT
         }
     }
 
+    Vector<int32> groups;
     //unlock vertices that have different tangent/binormal but same ref
     for (uint32 i=0, sz=vertices_origin.size(); i<sz; ++i)
-    {
-        /*TODO: dopisat'*/
+    {        
+        DVASSERT(vertices_origin[i].refIndices.size()); //vertex with no reference triangles found?
+
+        vertices_origin[i].tangent = vertices_full[vertices_origin[i].refIndices[0]].tangent;
+        vertices_origin[i].binormal = vertices_full[vertices_origin[i].refIndices[0]].binormal;
+
+        if (vertices_origin[i].refIndices.size()<=1) //1 and less references do not need unlock test
+            continue;
+        groups.clear();
+        groups.push_back(0);
+        vertices_full[vertices_origin[i].refIndices[0]].resultGroup = 0;
+        //if has different refs, check different groups;
+        for (int32 refId=1, refSz = vertices_origin[i].refIndices.size(); refId<refSz; ++refId)
+        {
+            VertexWork& vertexRef = vertices_full[vertices_origin[i].refIndices[refId]];
+            bool groupFound = false;
+            for (int32 groupId = 0, groupSz = groups.size(); groupId<groupSz; ++groupId)
+            {
+                const VertexWork& groupRef = vertices_full[vertices_origin[i].refIndices[groups[groupId]]];                
+                bool groupEqual = FLOAT_EQUAL(vertexRef.tangent.x, groupRef.tangent.x) && FLOAT_EQUAL(vertexRef.tangent.y, groupRef.tangent.y) && FLOAT_EQUAL(vertexRef.tangent.z, groupRef.tangent.z);
+                if (computeBinormal)
+                    groupEqual &= FLOAT_EQUAL(vertexRef.binormal.x, groupRef.binormal.x) && FLOAT_EQUAL(vertexRef.binormal.y, groupRef.binormal.y) && FLOAT_EQUAL(vertexRef.binormal.z, groupRef.binormal.z);
+
+                if (groupEqual)
+                {                    
+                    vertexRef.resultGroup = groupId;
+                    groupFound = true;
+                    break;
+                }
+            }
+            if (!groupFound) //start new group
+            {
+                vertexRef.resultGroup = groups.size();
+                groups.push_back(refId);
+            }
+        }
+
+        if (groups.size()>1) //different groups found - unlock vertices and update refs
+        {            
+            groups[0] = i;
+            for (int32 groupId = 1, groupSz = groups.size(); groupId<groupSz; ++groupId)
+            {
+                vertices_origin.push_back(vertices_origin[i]);
+                groups[groupId] = vertices_origin.size()-1;
+                vertices_origin[groups[groupId]].refIndex = i;
+            }
+            for (int32 refId=1, refSz = vertices_origin[i].refIndices.size(); refId<refSz; ++refId)
+            {
+                VertexWork& vertexRef = vertices_full[vertices_origin[i].refIndices[refId]];
+                vertexRef.refIndex = groups[vertexRef.resultGroup];
+            }
+        }
     }
     
     ScopedPtr<PolygonGroup> tmpGroup(new PolygonGroup());        
     tmpGroup->AllocateData(group->GetFormat(), group->GetVertexCount(), group->GetIndexCount());
 
-    Memcpy(tmpGroup->meshData, tmpGroup->meshData, group->GetVertexCount()*group->vertexStride);
-    Memcpy(tmpGroup->indexArray, tmpGroup->indexArray, group->GetIndexCount()*sizeof(int16));
+    Memcpy(tmpGroup->meshData, group->meshData, group->GetVertexCount()*group->vertexStride);
+    Memcpy(tmpGroup->indexArray, group->indexArray, group->GetIndexCount()*sizeof(int16));
 
     int32 vertexFormat = group->GetFormat() | EVF_TANGENT;
     if (computeBinormal)
@@ -834,6 +991,8 @@ void MeshConverter::RebuildMeshTangentSpace(PolygonGroup *group, bool normalizeT
     //copy indices
     for (int32 i = 0, sz = vertices_full.size(); i<sz; ++i)
         group->SetIndex(i, vertices_full[i].refIndex);
+
+    group->BuildBuffers();
 }
     
 };

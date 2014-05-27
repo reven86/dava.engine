@@ -124,7 +124,27 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
 {
 	KeyedArchive * customProperties = entity->GetCustomProperties();
-	if(customProperties && customProperties->IsKeyExists("CollisionType") && (customProperties->GetInt32("CollisionType", 0) == objectType))
+    bool drawBox = false;
+
+    if ( customProperties )
+    {
+        if ( customProperties->IsKeyExists( "CollisionType" ) )
+        {
+            drawBox = customProperties->GetInt32( "CollisionType", 0 ) == objectType;
+        }
+        else if ( objectType == ResourceEditor::ESOT_UNDEFINED_COLLISION && entity->GetParent() == GetScene() )
+        {
+            const bool skip =
+                GetLight( entity ) == NULL &&
+                GetCamera( entity ) == NULL &&
+                GetLandscape( entity ) == NULL &&
+                GetSkybox( entity ) == NULL;
+
+            drawBox = skip;
+        }
+    }
+
+    if ( drawBox )
 	{
 		DrawEntityBox(entity, objectTypeColor);
 	}

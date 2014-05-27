@@ -43,6 +43,8 @@
 #include "AlignDistribute/AlignDistributeManager.h"
 #include "ResourcesManageHelper.h"
 
+#include "EditorFontManager.h"
+
 QDir HierarchyTreeController::BaseUnusedItem::GetFullPath(const QString& baseDir,
                                                           const QString& dirName) const
 {
@@ -403,6 +405,12 @@ void HierarchyTreeController::EmitHierarchyTreeUpdated(bool needRestoreSelection
 bool HierarchyTreeController::NewProject(const QString& projectPath)
 {
 	hierarchyTree.CreateProject();
+    
+    // add project path to res folders (to allow loading fonts before everything else)
+    FilePath bundleName(projectPath.toStdString());
+    bundleName.MakeDirectoryPathname();
+    EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
+    
 	
 	bool res = SaveAll(projectPath);
 	if (res)

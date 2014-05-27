@@ -411,6 +411,12 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                 deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 			}
+            else if(DAVA::MetaInfo::Instance<DAVA::PolygonGroup>() == meta)
+            {
+                QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                rebuildTangentButton->setEnabled(isSingleSelection);
+                QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
+            }
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
 				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
@@ -883,6 +889,21 @@ void PropertyEditor::ConvertToShadow()
             }
 		}
 	}
+}
+
+void PropertyEditor::RebuildTangentSpace()
+{
+    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+
+    if(NULL != btn)
+    {
+        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
+        if(NULL != data)
+        {
+            PolygonGroup *group = (PolygonGroup *)data->object;
+            MeshConverter::RebuildMeshTangentSpace(group, true, false);
+        }
+    }
 }
 
 void PropertyEditor::DeleteRenderBatch()

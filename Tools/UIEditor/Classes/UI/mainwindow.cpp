@@ -947,9 +947,8 @@ void MainWindow::OnProjectCreated()
 
 void MainWindow::OnProjectLoaded()
 {
-    EditorFontManager::Instance()->OnProjectLoaded();
-    
     OnProjectCreated();
+    EditorFontManager::Instance()->OnProjectLoaded();
 }
 
 void MainWindow::OnNewPlatform()

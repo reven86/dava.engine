@@ -49,7 +49,8 @@ public:
     virtual bool InitializeFromCommandLine();
     virtual void Process();
     virtual void PrintUsage();
-    
+    virtual void DumpParams();
+
 protected:
 
     eAction commandAction;

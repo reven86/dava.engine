@@ -1143,7 +1143,7 @@ Texture * Texture::CreatePink(TextureType requestedType, bool checkers)
 	Texture *tex = new Texture();
 	if(Texture::TEXTURE_CUBE == requestedType)
 	{
-		tex->texDescriptor->Initialize(WRAP_REPEAT, true);
+		tex->texDescriptor->Initialize(WRAP_CLAMP_TO_EDGE, true);
 		tex->texDescriptor->dataSettings.faceDescription = 0x000000FF;
 	}
 	else

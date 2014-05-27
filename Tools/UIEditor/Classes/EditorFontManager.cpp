@@ -35,6 +35,8 @@
 
 #include "LocalizationSystemHelper.h"
 
+static const String DEFAULT_FONT_PRESET = "Font_default";
+
 static const String DEFAULT_FONT_NAME = "MyriadPro-Regular.otf";
 static const String DEFAULT_FONT_PATH = "~res:/Fonts/MyriadPro-Regular.otf";
 
@@ -48,6 +50,7 @@ EditorFontManager::EditorFontManager()
 EditorFontManager::~EditorFontManager()
 {
 	Reset();
+    SafeRelease(baseFont);
 }
 
 void EditorFontManager::Init()
@@ -213,6 +216,14 @@ void EditorFontManager::SaveLocalizedFonts()
 {
     Logger::FrameworkDebug("EditorFontManager::SaveLocalizedFonts");
     
+    const FilePath &defaultFontsPath = EditorFontManager::Instance()->GetDefaultFontsPath();
+    Logger::FrameworkDebug("EditorFontManager::SaveLocalizedFonts defaultFontsPath=%s", defaultFontsPath.GetAbsolutePathname().c_str());
+    
+    if(!FileSystem::Instance()->IsDirectory(defaultFontsPath.GetDirectory()))
+    {
+        FileSystem::Instance()->CreateDirectory(defaultFontsPath.GetDirectory());
+    }
+    
     int32 localesCount = locales.size();
     for(int32 i = 0; i < localesCount; ++i)
     {
@@ -233,7 +244,14 @@ void EditorFontManager::SaveLocalizedFonts()
 
         FontManager::Instance()->PrepareToSaveFonts(true);
         
-        UIYamlLoader::SaveFonts(EditorFontManager::Instance()->GetLocalizedFontsPath(locale));
+        const FilePath &localizedFontsPath = EditorFontManager::Instance()->GetLocalizedFontsPath(locale);
+        Logger::FrameworkDebug("EditorFontManager::SaveLocalizedFonts locale=%s defaultFontsPath=%s", locale.c_str(), localizedFontsPath.GetAbsolutePathname().c_str());
+        
+        if(!FileSystem::Instance()->IsDirectory(localizedFontsPath.GetDirectory()))
+        {
+            FileSystem::Instance()->CreateDirectory(localizedFontsPath.GetDirectory());
+        }
+        UIYamlLoader::SaveFonts(localizedFontsPath);
     }
     
     //load default fonts into FontManager
@@ -246,7 +264,7 @@ void EditorFontManager::SaveLocalizedFonts()
     
     FontManager::Instance()->PrepareToSaveFonts(true);
     
-    UIYamlLoader::SaveFonts(EditorFontManager::Instance()->GetDefaultFontsPath());
+    UIYamlLoader::SaveFonts(defaultFontsPath);
 }
 
 void EditorFontManager::ClearLocalizedFonts()
@@ -280,13 +298,25 @@ void EditorFontManager::ClearFonts(Map<String, Font*>& fonts)
 void EditorFontManager::Reset()
 {
 	defaultFont = NULL;
-	SafeRelease(baseFont);
 
     FontManager::Instance()->UnregisterFonts();
     
     ClearLocalizedFonts();
     
     ResetLocalizedFontsPath();
+    
+    RegisterDefaultFont(baseFont);
+}
+
+void EditorFontManager::RegisterDefaultFont(Font* font)
+{
+    Map<String, Map<String, Font*> >::iterator it = localizedFonts.begin();
+    Map<String, Map<String, Font*> >::iterator endIt = localizedFonts.end();
+    
+    for (; it != endIt; ++it) {
+        SetLocalizedFont(DEFAULT_FONT_PRESET, font, DEFAULT_FONT_PRESET, true, it->first);
+    }
+    SetLocalizedFont(DEFAULT_FONT_PRESET, font, DEFAULT_FONT_PRESET, true, "default");
 }
 
 Font* EditorFontManager::CreateDefaultFont(const String& fontPath, const String& fontName)
@@ -304,6 +334,7 @@ Font* EditorFontManager::CreateDefaultFont(const String& fontPath, const String&
         //TODO: remove default font or create also default localized font
 //		fonts[fontName] = font;
 //        FontManager::Instance()->RegisterFont(font);
+        RegisterDefaultFont(font);
         
         //If font was successfully loaded - emit the signal
         emit FontLoaded();
@@ -319,7 +350,16 @@ Font* EditorFontManager::GetDefaultFont() const
 
 void EditorFontManager::SetDefaultFont(Font *font)
 {
-	defaultFont = font->Clone();
+    Font* localizedDefaultFont = GetLocalizedFont(font);
+    if(localizedDefaultFont)
+    {
+        defaultFont = localizedDefaultFont->Clone();
+    }
+    else
+    {
+        defaultFont = font->Clone();
+    }
+    RegisterDefaultFont(defaultFont);
 }
 
 void EditorFontManager::ResetDefaultFont()
@@ -329,7 +369,7 @@ void EditorFontManager::ResetDefaultFont()
 
 void EditorFontManager::SetDefaultFontsPath(const FilePath& path)
 {
-    //TODO: use current locale
+    Logger::FrameworkDebug("EditorFontManager::SetDefaultFontsPath %s", path.GetAbsolutePathname().c_str());
     defaultFontsPath = path;
 }
 
@@ -517,6 +557,12 @@ String EditorFontManager::SetLocalizedFont(const String& fontOriginalName, Font*
             {
                 fonts->erase(findOriginalIt);
             }
+        }
+        else if(isSameFontName)
+        {
+            // need to replace existing, but it does not exist (this can happen on default font) - add new font
+            Logger::FrameworkDebug("EditorFontManager::SetLocalizedFont (locale=%s) fonts[%s] = %p", locale.c_str(), newFontName.c_str(), newFont);
+            (*fonts)[newFontName] = newFont;
         }
         
         if(!isSameFontName)

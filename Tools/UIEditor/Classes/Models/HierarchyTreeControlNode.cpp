@@ -203,6 +203,9 @@ void HierarchyTreeControlNode::SetParent(HierarchyTreeNode* node, HierarchyTreeN
 	node->AddTreeNode(this, insertAfter);
 	if (newParentUI && uiObject)
 	{
+        Rect controlAbsoluteRect = uiObject->GetRect(true);
+        Rect parentAbsoluteRect = newParentUI->GetRect(true);
+
 		if (insertAfter != node)
 		{
 			newParentUI->InsertChildAbove(uiObject, afterControl);
@@ -217,6 +220,12 @@ void HierarchyTreeControlNode::SetParent(HierarchyTreeNode* node, HierarchyTreeN
 			}
 			newParentUI->InsertChildBelow(uiObject, belowControl);
 		}
+
+        // Recalculate the relative coords of the moved object to don't change its position.
+        Vector2 newControlOffset = controlAbsoluteRect.GetPosition() - parentAbsoluteRect.GetPosition();
+        uiObject->SetRect(Rect(newControlOffset, uiObject->GetRect().GetSize()));
+        
+        // Fix
 		// DF-2395 - Recalculate scrollContainer content each time we add controls to it
 		UIScrollViewContainer *container = dynamic_cast<UIScrollViewContainer*>(newParentUI);
 		if (container)

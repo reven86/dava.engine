@@ -104,6 +104,11 @@ bool SceneSaverTool::InitializeFromCommandLine()
     return true;
 }
 
+void SceneSaverTool::DumpParams()
+{
+    Logger::Info("SceneSaver started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tFilename: %s\n\tCopy converted: %d", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(),filename.c_str(), copyConverted);
+}
+
 void SceneSaverTool::Process()
 {
     SceneSaver saver;

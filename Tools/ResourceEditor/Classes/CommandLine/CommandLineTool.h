@@ -48,6 +48,8 @@ public:
     virtual void Process() = 0;
 
     virtual void PrintUsage() = 0;
+    
+    virtual void DumpParams() {};
 
     inline const DAVA::Set<DAVA::String> & GetErrorList() const;
     
