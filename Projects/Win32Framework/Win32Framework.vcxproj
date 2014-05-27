@@ -610,6 +610,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIHoleTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIJoypad.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboard.h" />
+    <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboardListener.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIList.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIListCell.h" />
@@ -1025,6 +1026,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStaticText.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Desktop.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextFieldImpl_Custom.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />

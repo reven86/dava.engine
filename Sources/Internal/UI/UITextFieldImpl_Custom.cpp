@@ -135,8 +135,9 @@ void UITextFieldImpl::SetFont(Font * font)
 
 void UITextFieldImpl::SetFontSize(float32 size)
 {
-    textFont->SetSize(size);
-    staticText->PrepareSprite();
+    ScopedPtr<Font> newFont( textFont->Clone() );
+    newFont->SetSize(size);
+    SetFont(newFont);
 }
 
 void UITextFieldImpl::SetTextAlign(DAVA::int32 newAlign)
@@ -226,8 +227,14 @@ void UITextFieldImpl::Input(UIEvent *currentInput)
     if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
     {	
         /// macos
-
-        if (currentInput->tid == DVKEY_BACKSPACE)
+        if (currentInput->tid == DVKEY_LEFT||
+            currentInput->tid == DVKEY_RIGHT||
+            currentInput->tid == DVKEY_DOWN||
+            currentInput->tid == DVKEY_UP)
+        {
+            ;//ignore arrows
+        }
+        else if (currentInput->tid == DVKEY_BACKSPACE)
         {
             //TODO: act the same way on iPhone
             WideString str = L"";

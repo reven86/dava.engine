@@ -1427,6 +1427,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UITextFieldImpl.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl.h">
+      <Filter>Internal\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2554,6 +2557,9 @@
       <Filter>Internal\UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UITextFieldImpl_Custom.cpp">
+      <Filter>Internal\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Desktop.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
   </ItemGroup>
