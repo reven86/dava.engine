@@ -2792,26 +2792,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UIScreenManagerMacOS.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/UI/UIScreenManageriPhone.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UIScreenManageriPhone.h</locationURI>
-		</link>
-		<link>
-			<name>Internal/UI/UIScreenManageriPhone.mm</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UIScreenManageriPhone.mm</locationURI>
-		</link>
-		<link>
-			<name>Internal/UI/UIScreenManageriPhoneImpl.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UIScreenManageriPhoneImpl.h</locationURI>
-		</link>
-		<link>
-			<name>Internal/UI/UIScreenManageriPhoneImpl.mm</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UIScreenManageriPhoneImpl.mm</locationURI>
-		</link>
-		<link>
 			<name>Internal/UI/UIScreenTransition.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UIScreenTransition.cpp</locationURI>
@@ -2872,6 +2852,31 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UISwitch.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/UI/UISystemKeyboard.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UISystemKeyboard.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/UI/UISystemKeyboard.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UISystemKeyboard.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/UI/UISystemKeyboardImpl.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UISystemKeyboardImpl.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/UI/UISystemKeyboardImpl_Android.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UISystemKeyboardImpl_Android.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/UI/UISystemKeyboardListener.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UISystemKeyboardListener.h</locationURI>
+		</link>
+		<link>
 			<name>Internal/UI/UITextField.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextField.cpp</locationURI>
@@ -2882,24 +2887,14 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextField.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/UI/UITextFieldAndroid.cpp</name>
+			<name>Internal/UI/UITextFieldImpl.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldAndroid.cpp</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldImpl.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/UI/UITextFieldAndroid.h</name>
+			<name>Internal/UI/UITextFieldImpl_Android.cpp</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldAndroid.h</locationURI>
-		</link>
-		<link>
-			<name>Internal/UI/UITextFieldiPhone.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldiPhone.h</locationURI>
-		</link>
-		<link>
-			<name>Internal/UI/UITextFieldiPhone.mm</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldiPhone.mm</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldImpl_Android.cpp</locationURI>
 		</link>
 		<link>
 			<name>Internal/UI/UIWebView.cpp</name>
@@ -3145,6 +3140,16 @@
 			<name>Internal/Platform/TemplateAndroid/JniExtensions.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniExtensions.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/JniTextField.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniTextField.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/JniTextField.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniTextField.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/TemplateAndroid/MovieViewControlAndroid.cpp</name>
