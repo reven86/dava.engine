@@ -47,7 +47,7 @@
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Network/MailSender.h"
 #include "Utils/UtilsAndroid.h"
-#include "UI/UITextFieldAndroid.h"
+#include "Platform/TemplateAndroid/JniTextField.h"
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"

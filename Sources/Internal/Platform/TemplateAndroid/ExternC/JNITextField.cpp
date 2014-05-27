@@ -29,15 +29,15 @@
 
 
 #include "AndroidLayer.h"
-#include "UI/UITextFieldAndroid.h"
 #include "Base/BaseTypes.h"
 #include "Utils/UTF8Utils.h"
+#include "UI/UITextFieldImpl.h"
 
 extern "C"
 {
 	void Java_com_dava_framework_JNITextField_TextFieldShouldReturn(JNIEnv* env, jobject classthis, uint32_t id)
 	{
-		DAVA::UITextFieldAndroid::TextFieldShouldReturn(id);
+		DAVA::UITextFieldImpl::TextFieldShouldReturn(id);
 	}
 
 	bool Java_com_dava_framework_JNITextField_TextFieldKeyPressed(JNIEnv* env, jobject classthis, uint32_t id, int replacementLocation, int replacementLength, jbyteArray replacementString)
@@ -51,7 +51,7 @@ extern "C"
 
 		env->ReleaseByteArrayElements(replacementString, bufferPtr, 0);
 
-		return DAVA::UITextFieldAndroid::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
+		return DAVA::UITextFieldImpl::TextFieldKeyPressed(id, replacementLocation, replacementLength, string);
 	}
 
 };

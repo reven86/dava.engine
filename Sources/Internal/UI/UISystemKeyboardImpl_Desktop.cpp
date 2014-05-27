@@ -1,4 +1,6 @@
 #include "UI/UISystemKeyboardImpl.h"
+#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_IPHONE__)
+
 #include "UI/UISystemKeyboard.h"
 
 namespace DAVA
@@ -33,3 +35,4 @@ void UISystemKeyboardImpl::SendDidHideNotification()
 }
     
 };
+#endif //#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_IPHONE__)

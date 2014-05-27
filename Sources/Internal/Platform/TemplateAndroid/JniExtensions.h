@@ -39,7 +39,7 @@
 namespace DAVA
 {
 
-class Rect;
+struct Rect;
 
 class JniExtension
 {

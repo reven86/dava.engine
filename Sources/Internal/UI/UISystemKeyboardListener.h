@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_KEYBOARD_LISTENER_H__
-#define __DAVAENGINE_UI_KEYBOARD_LISTENER_H__
+#ifndef __DAVAENGINE_UI_SYSTEM_KEYBOARD_LISTENER_H__
+#define __DAVAENGINE_UI_SYSTEM_KEYBOARD_LISTENER_H__
 
 namespace DAVA
 {
@@ -46,4 +46,4 @@ public:
 
 };
 
-#endif // __DAVAENGINE_UI_KEYBOARD_LISTENER_H__
+#endif // __DAVAENGINE_UI_SYSTEM_KEYBOARD_LISTENER_H__

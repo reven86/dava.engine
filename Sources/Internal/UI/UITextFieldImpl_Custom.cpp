@@ -27,6 +27,8 @@
 =====================================================================================*/
 
 #include "UI/UITextFieldImpl.h"
+#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_IPHONE__)
+
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "Input/KeyboardDevice.h"
@@ -271,3 +273,4 @@ void UITextFieldImpl::Draw( const UIGeometricData & )
 }
 
 };
+#endif //#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_IPHONE__)
