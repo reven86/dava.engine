@@ -2,15 +2,15 @@
 
 namespace DAVA
 {
-class UIKeyboard;
+class UISystemKeyboard;
 class UITextField;
 struct Rect;
 
-class UIKeyboardImpl
+class UISystemKeyboardImpl
 {
 public:
-    UIKeyboardImpl( UIKeyboard * keyboard );
-    ~UIKeyboardImpl();
+    UISystemKeyboardImpl( UISystemKeyboard * keyboard );
+    ~UISystemKeyboardImpl();
     
     //void Show( UITextField * davaTextField );
     //void Hide( UITextField * davaTextField );
@@ -19,7 +19,7 @@ public:
     void SendWillHideNotification();
     void SendDidHideNotification();
 private:
-    UIKeyboard * keyboard;
+    UISystemKeyboard * keyboard;
     void * implPointer;
 };
     

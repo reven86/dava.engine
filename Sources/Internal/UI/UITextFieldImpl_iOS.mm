@@ -483,7 +483,7 @@ void CloseKeyboard()
 
 namespace DAVA 
 {
-    UITextFieldImpl::UITextFieldImpl(void  * tf)
+    UITextFieldImpl::UITextFieldImpl(UITextField * tf)
     {
         UITextFieldHolder * textFieldHolder = [[UITextFieldHolder alloc] init: (DAVA::UITextField*)tf];
         objcClassPtr = textFieldHolder;
@@ -496,12 +496,21 @@ namespace DAVA
         textFieldHolder = 0;
     }
 	
+    void UITextFieldImpl::GetTextColor(DAVA::Color &color) const
+    {
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        [textFieldHolder->textField.textColor getRed:&color.r green:&color.g blue:&color.b alpha:&color.a];
+    }
+    
     void UITextFieldImpl::SetTextColor(const DAVA::Color &color)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.textColor = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
-        
     }
+    
+    Font *UITextFieldImpl::GetFont(){ return NULL; }
+    void UITextFieldImpl::SetFont(Font * font){}
+    
     void UITextFieldImpl::SetFontSize(float size)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
@@ -541,7 +550,7 @@ namespace DAVA
             textFieldHolder->textField.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
     }
 	
-    DAVA::int32 UITextFieldImpl::GetTextAlign()
+    DAVA::int32 UITextFieldImpl::GetTextAlign() const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
@@ -577,7 +586,7 @@ namespace DAVA
                 break;
         }
         
-    return retValue;
+        return retValue;
     }
     
     void UITextFieldImpl::OpenKeyboard()
@@ -599,35 +608,15 @@ namespace DAVA
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         [[appDelegate glController].backgroundView addSubview:textFieldHolder];
-        
-        // Attach to "keyboard shown/keyboard hidden" notifications.
-		//NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-		//[center addObserver:textFieldHolder selector:@selector(keyboardDidShow:)
-		//			   name:UIKeyboardDidShowNotification object:nil];
-		//[center addObserver:textFieldHolder selector:@selector(keyboardWillHide:)
-		//			   name:UIKeyboardWillHideNotification object:nil];
-        
-		//[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
-		//			   name:UIKeyboardDidChangeFrameNotification object:nil];
-
-        //[center addObserver:textFieldHolder selector:@selector(keyboardFrameDidChange:)
-		//			   name:UIKeyboardDidChangeFrameNotification object:nil];
     }
     
     void UITextFieldImpl::HideField()
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-
-        // Attach to "keyboard shown/keyboard hidden" notifications.
-		//NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-		//[center removeObserver:textFieldHolder name:UIKeyboardDidShowNotification object:nil];
-		//[center removeObserver:textFieldHolder name:UIKeyboardWillHideNotification object:nil];
-        //[center removeObserver:textFieldHolder name:UIKeyboardDidChangeFrameNotification object:nil];
-
         [textFieldHolder removeFromSuperview];
     }
     
-    void UITextFieldImpl::UpdateRect(const Rect & rect)
+    void UITextFieldImpl::UpdateRect(const Rect & rect, float32 timeElapsed)
     {
         float divider = GetUITextViewSizeDivider();
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
@@ -638,7 +627,7 @@ namespace DAVA
         textFieldHolder->textField.frame = cgRect;
     }
 	
-    void UITextFieldImpl::SetText(std::wstring & string)
+    void UITextFieldImpl::SetText(const WideString & string)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         textFieldHolder->textField.text = [[ [ NSString alloc ]  
@@ -649,7 +638,7 @@ namespace DAVA
         [textFieldHolder->textField.undoManager removeAllActions];
     }
 	
-    void UITextFieldImpl::GetText(std::wstring & string) const
+    void UITextFieldImpl::GetText(WideString & string) const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         
@@ -731,7 +720,7 @@ namespace DAVA
 		textFieldHolder->textField.enablesReturnKeyAutomatically = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
 	}
 
-    uint32 UITextFieldImpl::GetCursorPos()
+    uint32 UITextFieldImpl::GetCursorPos() const
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
         if (!textFieldHolder)
@@ -768,16 +757,18 @@ namespace DAVA
         UITextPosition *end = [textField positionFromPosition:start offset:0];
         [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
     }
-    
-    void UITextFieldImpl::SetVisible(bool value)
-    {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        if (textFieldHolder)
-        {
-            ::UITextField* textField = textFieldHolder->textField;
-            [textField setHidden: value == false];
-        }
-    }
-}
+//
+//    void UITextFieldImpl::SetVisible(bool value)
+//    {
+//        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+//        if (textFieldHolder)
+//        {
+//            ::UITextField* textField = textFieldHolder->textField;
+//            [textField setHidden: value == false];
+//        }
+//    }
+    void UITextFieldImpl::Input(UIEvent *currentInput){}
+    void UITextFieldImpl::Draw(const UIGeometricData &geometricData){}
+};
 
 #endif

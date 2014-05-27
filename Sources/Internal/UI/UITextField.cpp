@@ -169,9 +169,10 @@ void UITextField::SetFont(Font * font)
     textFieldImpl->SetFont( font );
 }
 
-const Color& UITextField::GetTextColor() const
+const Color& UITextField::GetTextColor()
 {
-    return textFieldImpl->GetTextColor();
+    textFieldImpl->GetTextColor( textColor );
+    return textColor;
 }
 
 void UITextField::SetTextColor(const Color& fontColor)

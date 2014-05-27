@@ -56,6 +56,27 @@
 		02E9E43A173964DA00C501BC /* SoundUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E436173964DA00C501BC /* SoundUpdateSystem.h */; };
 		02E9E465173A453700C501BC /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E40817395FDD00C501BC /* libfmodevent.dylib */; };
 		02E9E466173A453700C501BC /* libfmodex.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E40917395FDD00C501BC /* libfmodex.dylib */; };
+		15F73E971933E0CC0061A1BD /* UISystemKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E901933E0CC0061A1BD /* UISystemKeyboard.cpp */; };
+		15F73E981933E0CC0061A1BD /* UISystemKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E901933E0CC0061A1BD /* UISystemKeyboard.cpp */; };
+		15F73E991933E0CC0061A1BD /* UISystemKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E901933E0CC0061A1BD /* UISystemKeyboard.cpp */; };
+		15F73E9A1933E0CC0061A1BD /* UISystemKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E911933E0CC0061A1BD /* UISystemKeyboard.h */; };
+		15F73E9B1933E0CC0061A1BD /* UISystemKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E911933E0CC0061A1BD /* UISystemKeyboard.h */; };
+		15F73E9C1933E0CC0061A1BD /* UISystemKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E911933E0CC0061A1BD /* UISystemKeyboard.h */; };
+		15F73E9D1933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E921933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp */; };
+		15F73E9E1933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E921933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp */; };
+		15F73E9F1933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E921933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp */; };
+		15F73EA01933E0CC0061A1BD /* UISystemKeyboardImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E931933E0CC0061A1BD /* UISystemKeyboardImpl.h */; };
+		15F73EA11933E0CC0061A1BD /* UISystemKeyboardImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E931933E0CC0061A1BD /* UISystemKeyboardImpl.h */; };
+		15F73EA21933E0CC0061A1BD /* UISystemKeyboardImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E931933E0CC0061A1BD /* UISystemKeyboardImpl.h */; };
+		15F73EA31933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */; };
+		15F73EA41933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */; };
+		15F73EA51933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */; };
+		15F73EA61933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */; };
+		15F73EA71933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */; };
+		15F73EA81933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */; };
+		15F73EA91933E0CC0061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */; };
+		15F73EAA1933E0CC0061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */; };
+		15F73EAB1933E0CC0061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */; };
 		17183C3D18C880A600491E66 /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4E17DF67E500000391 /* MovieViewControlMacOS.mm */; };
 		171F938516CE6F28007038AB /* UIWebView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 171F938316CE6F28007038AB /* UIWebView.cpp */; };
 		171F938616CE6F28007038AB /* UIWebView.h in Headers */ = {isa = PBXBuildFile; fileRef = 171F938416CE6F28007038AB /* UIWebView.h */; };
@@ -2278,6 +2299,13 @@
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		15F73E901933E0CC0061A1BD /* UISystemKeyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UISystemKeyboard.cpp; sourceTree = "<group>"; };
+		15F73E911933E0CC0061A1BD /* UISystemKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboard.h; sourceTree = "<group>"; };
+		15F73E921933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UISystemKeyboardImpl_Desktop.cpp; sourceTree = "<group>"; };
+		15F73E931933E0CC0061A1BD /* UISystemKeyboardImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboardImpl.h; sourceTree = "<group>"; };
+		15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboardListener.h; sourceTree = "<group>"; };
+		15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UITextFieldImpl_Custom.cpp; sourceTree = "<group>"; };
+		15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldImpl.h; sourceTree = "<group>"; };
 		171F938316CE6F28007038AB /* UIWebView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIWebView.cpp; sourceTree = "<group>"; };
 		171F938416CE6F28007038AB /* UIWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIWebView.h; sourceTree = "<group>"; };
 		176DEB77174B5561007A983B /* libFrameworkNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -4086,6 +4114,13 @@
 		E8989D4A16BD24E500732C04 /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				15F73E901933E0CC0061A1BD /* UISystemKeyboard.cpp */,
+				15F73E911933E0CC0061A1BD /* UISystemKeyboard.h */,
+				15F73E921933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp */,
+				15F73E931933E0CC0061A1BD /* UISystemKeyboardImpl.h */,
+				15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */,
+				15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */,
+				15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */,
 				EAAD9FFE1892A458001E1AA2 /* UIParticles.cpp */,
 				EAAD9FFF1892A458001E1AA2 /* UIParticles.h */,
 				C18593D816F30BED005D30E2 /* UIAggregatorControl.cpp */,
@@ -4391,6 +4426,7 @@
 				176DE982174B5561007A983B /* Thread.h in Headers */,
 				176DE983174B5561007A983B /* Font.h in Headers */,
 				E8F43E29186C3D02006796CB /* MaterialSystem.h in Headers */,
+				15F73EA21933E0CC0061A1BD /* UISystemKeyboardImpl.h in Headers */,
 				176DE984174B5561007A983B /* FontManager.h in Headers */,
 				176DE985174B5561007A983B /* FTFont.h in Headers */,
 				176DE986174B5561007A983B /* GraphicsFont.h in Headers */,
@@ -4480,12 +4516,14 @@
 				176DE9CD174B5561007A983B /* MeshInstance.h in Headers */,
 				176DE9CE174B5561007A983B /* MeshInstanceNode.h in Headers */,
 				176DE9CF174B5561007A983B /* ParticleEffectNode.h in Headers */,
+				15F73EAB1933E0CC0061A1BD /* UITextFieldImpl.h in Headers */,
 				176DE9D0174B5561007A983B /* ParticleEmitterNode.h in Headers */,
 				176DE9D1174B5561007A983B /* PathManip.h in Headers */,
 				50A3044318575C370082CA8D /* StaticOcclusionRenderPass.h in Headers */,
 				176DE9D2174B5561007A983B /* PolygonGroupInstance.h in Headers */,
 				176DE9D3174B5561007A983B /* ProxyNode.h in Headers */,
 				176DE9D4174B5561007A983B /* Scene.h in Headers */,
+				15F73EA51933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */,
 				176DE9D5174B5561007A983B /* SceneAnimationMixer.h in Headers */,
 				CC84B02118211A9000934482 /* JobManager.h in Headers */,
 				176DE9D6174B5561007A983B /* SceneFile.h in Headers */,
@@ -4563,6 +4601,7 @@
 				176DEA1A174B5561007A983B /* UserComponent.h in Headers */,
 				176DEA1B174B5561007A983B /* UISpinner.h in Headers */,
 				176DEA1C174B5561007A983B /* VectorSpinnerAdapter.h in Headers */,
+				15F73E9C1933E0CC0061A1BD /* UISystemKeyboard.h in Headers */,
 				176DEA1D174B5561007A983B /* UISwitch.h in Headers */,
 				176DEA1E174B5561007A983B /* Camera.h in Headers */,
 				176DEA1F174B5561007A983B /* CullingSystem.h in Headers */,
@@ -4668,6 +4707,7 @@
 				E8989DD716BD24E500732C04 /* Observer.h in Headers */,
 				E8989DD916BD24E500732C04 /* Radix.h in Headers */,
 				E8989DDA16BD24E500732C04 /* RefPtr.h in Headers */,
+				15F73EA91933E0CC0061A1BD /* UITextFieldImpl.h in Headers */,
 				E8989DDB16BD24E500732C04 /* ScopedPtr.h in Headers */,
 				E8989DDC16BD24E500732C04 /* Singleton.h in Headers */,
 				E8989DDD16BD24E500732C04 /* StaticSingleton.h in Headers */,
@@ -4718,6 +4758,7 @@
 				E8989E5116BD24E500732C04 /* YamlArchive.h in Headers */,
 				E8989E5316BD24E500732C04 /* YamlParser.h in Headers */,
 				E8989E5516BD24E500732C04 /* Accelerometer.h in Headers */,
+				15F73EA01933E0CC0061A1BD /* UISystemKeyboardImpl.h in Headers */,
 				E8989E5B16BD24E500732C04 /* InputSystem.h in Headers */,
 				E8989E5D16BD24E500732C04 /* KeyboardDevice.h in Headers */,
 				E8989E5F16BD24E500732C04 /* AABBox2.h in Headers */,
@@ -4850,6 +4891,7 @@
 				E8989FA216BD24E500732C04 /* ImposterNode.h in Headers */,
 				E8989FA416BD24E500732C04 /* LodNode.h in Headers */,
 				E8989FA616BD24E500732C04 /* MeshInstance.h in Headers */,
+				15F73EA31933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */,
 				E8989FA816BD24E500732C04 /* MeshInstanceNode.h in Headers */,
 				E8989FAA16BD24E500732C04 /* ParticleEffectNode.h in Headers */,
 				E8989FAC16BD24E500732C04 /* ParticleEmitterNode.h in Headers */,
@@ -5009,6 +5051,7 @@
 				A69B7A481834CD640093AF7F /* RenderStateData.h in Headers */,
 				A69B7A4B1834CD640093AF7F /* UniqueStateSet.h in Headers */,
 				A670F2F11847A99E0030E075 /* TextureStateData.h in Headers */,
+				15F73E9A1933E0CC0061A1BD /* UISystemKeyboard.h in Headers */,
 				E8F43E27186C3D02006796CB /* MaterialSystem.h in Headers */,
 				9A0114637D598239F4C36EA3 /* GamepadDevice.h in Headers */,
 				9A0114DFC94738EDBF7B7A79 /* GamepadManager.h in Headers */,
@@ -5122,6 +5165,7 @@
 				E898A0AF16BD265400732C04 /* AABBox2.h in Headers */,
 				E898A0B016BD265400732C04 /* AABBox3.h in Headers */,
 				E898A0B116BD265400732C04 /* BezierSpline.h in Headers */,
+				15F73EA11933E0CC0061A1BD /* UISystemKeyboardImpl.h in Headers */,
 				E898A0B216BD265400732C04 /* Circle.h in Headers */,
 				E898A0B316BD265400732C04 /* Color.h in Headers */,
 				E898A0B416BD265400732C04 /* Math2D.h in Headers */,
@@ -5135,6 +5179,7 @@
 				50229520186DD1BC00F55478 /* RenderPassManager.h in Headers */,
 				E898A0BB16BD265400732C04 /* Matrix4.h in Headers */,
 				E898A0BC16BD265400732C04 /* NeonMath.h in Headers */,
+				15F73EAA1933E0CC0061A1BD /* UITextFieldImpl.h in Headers */,
 				E898A0BD16BD265400732C04 /* OOBBox.h in Headers */,
 				E898A0BE16BD265400732C04 /* Plane.h in Headers */,
 				E898A0BF16BD265400732C04 /* Polygon2.h in Headers */,
@@ -5175,6 +5220,7 @@
 				5043DDAC18706828005E3584 /* VisibilityArray.h in Headers */,
 				E898A0EB16BD265400732C04 /* TextBlock.h in Headers */,
 				E898A0EC16BD265400732C04 /* AnimatedMesh.h in Headers */,
+				15F73E9B1933E0CC0061A1BD /* UISystemKeyboard.h in Headers */,
 				E898A0ED16BD265400732C04 /* EdgeAdjacency.h in Headers */,
 				E898A0EE16BD265400732C04 /* PolygonGroup.h in Headers */,
 				E898A0EF16BD265400732C04 /* StaticMesh.h in Headers */,
@@ -5291,6 +5337,7 @@
 				E898A17C16BD265400732C04 /* UIControlBackground.h in Headers */,
 				E898A17D16BD265400732C04 /* UIControlSystem.h in Headers */,
 				E898A17E16BD265400732C04 /* UIEvent.h in Headers */,
+				15F73EA41933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */,
 				E898A17F16BD265400732C04 /* UIFadeTransition.h in Headers */,
 				E898A18016BD265400732C04 /* UIFileSystemDialog.h in Headers */,
 				E898A18116BD265400732C04 /* UIHierarchy.h in Headers */,
@@ -5506,6 +5553,7 @@
 				176DEA43174B5561007A983B /* Animation.cpp in Sources */,
 				176DEA44174B5561007A983B /* AnimationManager.cpp in Sources */,
 				176DEA45174B5561007A983B /* BezierSplineAnimation.cpp in Sources */,
+				15F73EA81933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */,
 				176DEA46174B5561007A983B /* Interpolation.cpp in Sources */,
 				176DEA47174B5561007A983B /* KeyframeAnimation.cpp in Sources */,
 				176DEA48174B5561007A983B /* LinearAnimation.cpp in Sources */,
@@ -5557,6 +5605,7 @@
 				176DEA74174B5561007A983B /* FileSystemObjective.mm in Sources */,
 				176DEA75174B5561007A983B /* KeyedArchive.cpp in Sources */,
 				176DEA76174B5561007A983B /* KeyedArchiver.cpp in Sources */,
+				15F73E9F1933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp in Sources */,
 				176DEA77174B5561007A983B /* KeyedUnarchiver.cpp in Sources */,
 				176DEA78174B5561007A983B /* LocalizationSystem.cpp in Sources */,
 				176DEA79174B5561007A983B /* Logger.cpp in Sources */,
@@ -5789,6 +5838,7 @@
 				176DEB49174B5561007A983B /* RenderSystem.cpp in Sources */,
 				176DEB4A174B5561007A983B /* ShadowRect.cpp in Sources */,
 				176DEB4B174B5561007A983B /* ShadowVolume.cpp in Sources */,
+				15F73E991933E0CC0061A1BD /* UISystemKeyboard.cpp in Sources */,
 				176DEB4C174B5561007A983B /* ShadowVolumeRenderPass.cpp in Sources */,
 				176DEB4D174B5561007A983B /* SpriteObject.cpp in Sources */,
 				7A169346180EE619005F1FBC /* RectSwig.cpp in Sources */,
@@ -5867,6 +5917,7 @@
 				E8989DDF16BD24E500732C04 /* CollisionObject2.cpp in Sources */,
 				E8989DE116BD24E500732C04 /* CollisionPolygons.cpp in Sources */,
 				E8989DE316BD24E500732C04 /* Collisions.cpp in Sources */,
+				15F73E971933E0CC0061A1BD /* UISystemKeyboard.cpp in Sources */,
 				E8989DE516BD24E500732C04 /* ApplicationCore.cpp in Sources */,
 				E8989DE716BD24E500732C04 /* Core.cpp in Sources */,
 				E8989DE916BD24E500732C04 /* CoreMacOS.cpp in Sources */,
@@ -6173,6 +6224,7 @@
 				1AD7C36717D895AE00B9977C /* Vector.cpp in Sources */,
 				17DC600017DE11650075813E /* UIMovieView.cpp in Sources */,
 				1770DF5017DF67E500000391 /* MovieViewControlMacOS.mm in Sources */,
+				15F73EA61933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */,
 				A63BCD6A17EB26E300EA4811 /* Process.cpp in Sources */,
 				EA84E16C17FAC0B400304C3C /* SpatialTree.cpp in Sources */,
 				024DF6E917FDE4C400138748 /* FMODSoundEvent.cpp in Sources */,
@@ -6180,6 +6232,7 @@
 				17DC600017DE11650075813E /* UIMovieView.cpp in Sources */,
 				1770DF5017DF67E500000391 /* MovieViewControlMacOS.mm in Sources */,
 				9A0119EF8F7D1F04F61B31DF /* GamepadManager.cpp in Sources */,
+				15F73E9D1933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp in Sources */,
 				9A01188C3CE745EA32A7DD33 /* GamepadDevice.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6208,6 +6261,7 @@
 				50B06921186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
 				E8BAD5B1185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
 				CC931B27188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp in Sources */,
+				15F73EA71933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */,
 				E898A1AB16BD265400732C04 /* DynamicObjectCache.cpp in Sources */,
 				E898A1AC16BD265400732C04 /* EventDispatcher.cpp in Sources */,
 				E898A1AD16BD265400732C04 /* FastName.cpp in Sources */,
@@ -6224,6 +6278,7 @@
 				E898A1B716BD265400732C04 /* Core.cpp in Sources */,
 				E898A1B816BD265400732C04 /* CoreMacOS.cpp in Sources */,
 				E898A1B916BD265400732C04 /* CoreMacOS_CarbonWindow.cpp in Sources */,
+				15F73E9E1933E0CC0061A1BD /* UISystemKeyboardImpl_Desktop.cpp in Sources */,
 				E898A1BA16BD265400732C04 /* CoreMacOS_OpenGL.cpp in Sources */,
 				176395A91863373800EADDA2 /* GamepadManager.cpp in Sources */,
 				E898A1BB16BD265400732C04 /* MongodbClient.cpp in Sources */,
@@ -6389,6 +6444,7 @@
 				E898A26C16BD265400732C04 /* SceneAnimationMixer.cpp in Sources */,
 				E898A26D16BD265400732C04 /* SceneFile.cpp in Sources */,
 				E898A26E16BD265400732C04 /* SceneFileV2.cpp in Sources */,
+				15F73E981933E0CC0061A1BD /* UISystemKeyboard.cpp in Sources */,
 				E898A26F16BD265400732C04 /* SceneManager.cpp in Sources */,
 				E89C58E918B245A6002C25FE /* AtomicMacOS.mm in Sources */,
 				E898A27116BD265400732C04 /* SceneNodeAnimation.cpp in Sources */,

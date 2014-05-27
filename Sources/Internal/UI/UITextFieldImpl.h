@@ -49,14 +49,14 @@ public:
 	void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect, float32 timeElapsed);
 
-    const DAVA::Color &GetTextColor() const;
+    void GetTextColor(DAVA::Color &color) const;
 	void SetTextColor(const DAVA::Color &color);
     Font *GetFont();
     void SetFont(Font * font);
 	void SetFontSize(float32 size);
     
     void SetTextAlign(DAVA::int32 align);
-    DAVA::int32 GetTextAlign();
+    DAVA::int32 GetTextAlign() const;
 
 	void ShowField();
 	void HideField();
@@ -75,7 +75,7 @@ public:
 	void SetEnableReturnKeyAutomatically(bool value);
 
     // Cursor pos.
-    uint32 GetCursorPos();
+    uint32 GetCursorPos() const;
     void SetCursorPos(uint32 pos);
 
     void Input(UIEvent *currentInput);

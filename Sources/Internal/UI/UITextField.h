@@ -221,7 +221,7 @@ public:
 	 */  
     void SetFont(Font * font);
 
-    virtual const Color& GetTextColor() const;
+    virtual const Color& GetTextColor();
 	/**
 	 \brief Sets the color of the text.
 	 \param[in] fontColor font used for text draw of the states.
@@ -316,6 +316,7 @@ protected:
             delegate->OnKeyboardHidden();
     }
 	WideString text;
+    Color textColor;
 	UITextFieldDelegate * delegate;
 
     // Keyboard customization params.

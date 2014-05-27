@@ -1,41 +1,41 @@
-#import "UIKeyboard_iOSImpl.h"
-#import "HelperAppDelegate.h"
+#include "UI/UISystemKeyboardImpl.h"
+#include "UI/UISystemKeyboard.h"
+#include "HelperAppDelegate.h"
 #import <Foundation/Foundation.h>
-#include "UI/UIKeyboard.h"
 
 
-@interface UIKeyboard_iOSImpl : NSObject
+@interface UISystemKeyboardNativeImpl : NSObject
 {
 @private
-    DAVA::UIKeyboardImpl * keyboard;
+    DAVA::UISystemKeyboardImpl * keyboard;
 }
-- (id) init : (DAVA::UIKeyboardImpl  *) kb;
+- (id) init : (DAVA::UISystemKeyboardImpl  *) kb;
 - (void) Subscribe;
 - (void) Unsubscribe;
-- (void) ShowKeyboard : (UITextField *) textField;
-- (void) HideKeyboard : (UITextField *) textField;
+//- (void) ShowKeyboard : (UITextField *) textField;
+//- (void) HideKeyboard : (UITextField *) textField;
 @end
 
 namespace DAVA
 {
-UIKeyboardImpl::UIKeyboardImpl( UIKeyboard *kb )
+UISystemKeyboardImpl::UISystemKeyboardImpl( UISystemKeyboard *kb )
 {
     keyboard = kb;
-    UIKeyboard_iOSImpl * impl = [[UIKeyboard_iOSImpl alloc] init: (DAVA::UIKeyboardImpl*) this];
+    UISystemKeyboardNativeImpl * impl = [[UISystemKeyboardNativeImpl alloc] init: (DAVA::UISystemKeyboardImpl*) this];
     implPointer = impl;
     [impl Subscribe];
 }
     
-UIKeyboardImpl::~UIKeyboardImpl()
+UISystemKeyboardImpl::~UISystemKeyboardImpl()
 {
-    UIKeyboard_iOSImpl * impl = (UIKeyboard_iOSImpl*)implPointer;
+    UISystemKeyboardNativeImpl * impl = (UISystemKeyboardNativeImpl*)implPointer;
     [impl Unsubscribe];
     [impl release];
     implPointer = NULL;
 }
 
 /*
-void UIKeyboardImpl::Show( DAVA::UITextField * davaTextField )
+void UISystemKeyboardImpl::Show( DAVA::UITextField * davaTextField )
 {
     ::UITextField * textField = NULL;
     UIKeyboard_iOSImpl * impl = (UIKeyboard_iOSImpl*)implPointer;
@@ -43,38 +43,38 @@ void UIKeyboardImpl::Show( DAVA::UITextField * davaTextField )
     
 }
     
-void UIKeyboardImpl::Hide( DAVA::UITextField * davaTextField )
+void UISystemKeyboardImpl::Hide( DAVA::UITextField * davaTextField )
 {
     ::UITextField * textField = NULL;
     UIKeyboard_iOSImpl * impl = (UIKeyboard_iOSImpl*)implPointer;
     [ impl HideKeyboard: (::UITextField*) textField ];
 }
  */   
-void UIKeyboardImpl::SendWillShowNotification( const Rect &kbRect )
+void UISystemKeyboardImpl::SendWillShowNotification( const Rect &kbRect )
 {
     keyboard->SendWillShowNotification( kbRect );
 }
     
-void UIKeyboardImpl::SendDidShowNotification( const Rect &kbRect )
+void UISystemKeyboardImpl::SendDidShowNotification( const Rect &kbRect )
 {
     keyboard->SendDidShowNotification( kbRect );
 }
     
-void UIKeyboardImpl::SendWillHideNotification()
+void UISystemKeyboardImpl::SendWillHideNotification()
 {
     keyboard->SendWillHideNotification();
 }
     
-void UIKeyboardImpl::SendDidHideNotification()
+void UISystemKeyboardImpl::SendDidHideNotification()
 {
     keyboard->SendDidHideNotification();
 }
     
 };
 
-@implementation UIKeyboard_iOSImpl
+@implementation UISystemKeyboardNativeImpl
 
-- (id) init : (DAVA::UIKeyboardImpl  *) kb
+- (id) init : (DAVA::UISystemKeyboardImpl  *) kb
 {
     if (self = [super init])
 	{

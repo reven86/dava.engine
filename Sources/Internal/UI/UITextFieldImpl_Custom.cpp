@@ -98,7 +98,7 @@ void UITextFieldImpl::UpdateRect(const Rect & newRect, float32 timeElapsed)
 	if(textField == UIControlSystem::Instance()->GetFocusedControl())
 	{
         WideString txt = textField->GetVisibleText();
-        txt += showCursor ? L"_" : L" ";
+        txt += showCursor ? L"|" : L" ";
         staticText->SetText(txt);
 	}
 	else
@@ -108,9 +108,9 @@ void UITextFieldImpl::UpdateRect(const Rect & newRect, float32 timeElapsed)
     needRedraw = false;
 }
 
-const Color & UITextFieldImpl::GetTextColor() const
+void UITextFieldImpl::GetTextColor( Color & color) const
 {
-    return staticText->GetTextColor();
+    color = staticText->GetTextColor();
 }
 
 void UITextFieldImpl::SetTextColor(const DAVA::Color &color)
@@ -145,7 +145,7 @@ void UITextFieldImpl::SetTextAlign(DAVA::int32 newAlign)
     staticText->SetTextAlign(align);
 }
 
-DAVA::int32 UITextFieldImpl::GetTextAlign()
+DAVA::int32 UITextFieldImpl::GetTextAlign() const
 {
 	return align;
 }
@@ -203,7 +203,7 @@ void UITextFieldImpl::SetEnableReturnKeyAutomatically(bool value)
 
 }
 
-uint32 UITextFieldImpl::GetCursorPos()
+uint32 UITextFieldImpl::GetCursorPos() const
 {
     return 0;
 }

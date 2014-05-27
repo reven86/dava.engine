@@ -1,12 +1,7 @@
 #include "UI/UISystemKeyboard.h"
 #include "UI/UISystemKeyboardListener.h"
+#include "UI/UISystemKeyboardImpl.h"
 #include "Base/BaseMath.h"
-
-#if defined (__DAVAENGINE_ANDROID__)
-#include "UIKeyboard_iOSImpl.h"
-#elif defined (__DAVAENGINE_IPHONE__)
-#include "UIKeyboard_iOSImpl.h"
-#endif
 
 namespace DAVA
 {
@@ -18,9 +13,7 @@ UISystemKeyboard::~UISystemKeyboard()
 UISystemKeyboard::UISystemKeyboard()
     : impl( NULL )
 {
-#if defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
     impl = new UISystemKeyboardImpl( this );
-#endif
 }
 /*
 void UIKeyboard::Show( UITextField * textField )
