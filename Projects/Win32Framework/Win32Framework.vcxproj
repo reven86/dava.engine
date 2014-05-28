@@ -621,8 +621,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIPopup.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreen.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManager.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhone.h" />
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhoneImpl.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenTransition.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UIScrollBar.h" />
@@ -1026,7 +1024,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISpinner.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIStaticText.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Desktop.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Custom.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextFieldImpl_Custom.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />

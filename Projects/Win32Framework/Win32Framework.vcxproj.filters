@@ -669,12 +669,6 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManager.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhone.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManageriPhoneImpl.h">
-      <Filter>Internal\UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIScreenManagerMacOS.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -2559,7 +2553,7 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UITextFieldImpl_Custom.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Desktop.cpp">
+    <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Custom.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
   </ItemGroup>

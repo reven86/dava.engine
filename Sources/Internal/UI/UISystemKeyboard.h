@@ -25,8 +25,9 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
-#ifndef __DAVAENGINE_UI_KEYBOARD_H__
-#define __DAVAENGINE_UI_KEYBOARD_H__
+
+#ifndef __DAVAENGINE_UI_SYSTEM_KEYBOARD_H__
+#define __DAVAENGINE_UI_SYSTEM_KEYBOARD_H__
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -60,4 +61,4 @@ private:
 };
 };
 
-#endif // __DAVAENGINE_UI_KEYBOARD_H__
+#endif // __DAVAENGINE_UI_SYSTEM_KEYBOARD_H__

@@ -26,71 +26,41 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UI/UISystemKeyboard.h"
-#include "UI/UISystemKeyboardListener.h"
 #include "UI/UISystemKeyboardImpl.h"
-#include "Base/BaseMath.h"
+#if !defined(__DAVAENGINE_IPHONE__)
+
+#include "UI/UISystemKeyboard.h"
 
 namespace DAVA
 {
-UISystemKeyboard::~UISystemKeyboard()
+UISystemKeyboardImpl::UISystemKeyboardImpl( UISystemKeyboard *kb )
 {
-
+    keyboard = kb;
 }
-
-UISystemKeyboard::UISystemKeyboard()
-    : impl( NULL )
+    
+UISystemKeyboardImpl::~UISystemKeyboardImpl()
 {
-    impl = new UISystemKeyboardImpl( this );
-}
-/*
-void UIKeyboard::Show( UITextField * textField )
-{
-    impl->Show( textField );
 }
 
-void UIKeyboard::Hide( UITextField * textField )
+void UISystemKeyboardImpl::SendWillShowNotification( const Rect &kbRect )
 {
-    impl->Hide( textField );
+    keyboard->SendWillShowNotification( kbRect );
 }
-*/
-void UISystemKeyboard::AddListener( UISystemKeyboardListener * listener )
+    
+void UISystemKeyboardImpl::SendDidShowNotification( const Rect &kbRect )
 {
-    listeners.insert( listener );
+    keyboard->SendDidShowNotification( kbRect );
 }
-
-void UISystemKeyboard::RemoveListener( UISystemKeyboardListener * listener )
+    
+void UISystemKeyboardImpl::SendWillHideNotification()
 {
-    listeners.erase( listener );
+    keyboard->SendWillHideNotification();
 }
-
-void UISystemKeyboard::SendWillShowNotification( const Rect &keyboardRect )
+    
+void UISystemKeyboardImpl::SendDidHideNotification()
 {
-    for( Set<UISystemKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
-    {
-        (*it)->OnKeyboardWillShow( keyboardRect );
-    }
+    keyboard->SendDidHideNotification();
 }
-void UISystemKeyboard::SendDidShowNotification( const Rect &keyboardRect )
-{
-    for( Set<UISystemKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
-    {
-        (*it)->OnKeyboardDidShow( keyboardRect );
-    }
-}
-void UISystemKeyboard::SendWillHideNotification()
-{
-    for( Set<UISystemKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
-    {
-        (*it)->OnKeyboardWillHide();
-    }
-}
-void UISystemKeyboard::SendDidHideNotification()
-{
-    for( Set<UISystemKeyboardListener *>::iterator it = listeners.begin(); it != listeners.end(); ++it )
-    {
-        (*it)->OnKeyboardDidHide();
-    }
-}
-
-}
+    
+};
+#endif //#if !defined(__DAVAENGINE_IPHONE__)
