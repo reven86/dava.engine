@@ -80,10 +80,6 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive *archive, SerializationC
 
 	Component::Deserialize(archive, serializationContext);
 }
-
-    
-    
-    
     
 StaticOcclusionDataComponent::StaticOcclusionDataComponent()
 {
@@ -136,6 +132,7 @@ void StaticOcclusionDataComponent::Deserialize(KeyedArchive *archive, Serializat
     
 	Component::Deserialize(archive, serializationContext);
 }
+
 
 
 }

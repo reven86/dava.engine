@@ -102,7 +102,7 @@ HierarchyTreeControlNode::HierarchyTreeControlNode(HierarchyTreeNode* parent,
 		if (!controlNode)
 			continue;
 				
-		AddTreeNode(new HierarchyTreeControlNode(this, controlNode));
+		AddTreeNode(controlNode->CreateControlCopy(parent ? this : NULL));
 	}
 }
 
@@ -241,6 +241,11 @@ void HierarchyTreeControlNode::SetParent(HierarchyTreeNode* node, HierarchyTreeN
 	parent = node;
 }
 
+HierarchyTreeControlNode* HierarchyTreeControlNode::CreateControlCopy(HierarchyTreeNode* parent) const
+{
+	return new HierarchyTreeControlNode(parent, this);
+}
+
 Vector2 HierarchyTreeControlNode::GetParentDelta(bool skipControl/* = false*/) const
 {
 	Vector2 parentDelta(0, 0);
@@ -268,6 +273,14 @@ void HierarchyTreeControlNode::RemoveTreeNodeFromScene()
 	if (!this->GetParent() || !uiObject->GetParent())
 	{
 		return;
+	}
+	
+	for (HIERARCHYTREENODESLIST::iterator iter = childNodes.begin(); iter != childNodes.end(); ++iter)
+	{
+		HierarchyTreeControlNode* control = dynamic_cast<HierarchyTreeControlNode*>(*iter);
+		if (!control)
+			continue;
+		control->RemoveTreeNodeFromScene();
 	}
 	
 	this->parentUIObject = uiObject->GetParent();

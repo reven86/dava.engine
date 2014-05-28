@@ -127,14 +127,7 @@ void CopyPasteController::CopyControls(const HierarchyTreeController::SELECTEDCO
 		if (ControlIsChild(items, control))
 			continue;
 		
-		HierarchyTreeControlNode* copy = NULL;
-		const HierarchyTreeAggregatorControlNode* aggregatorControl = dynamic_cast<const HierarchyTreeAggregatorControlNode*>(control);
-		if (aggregatorControl)
-			copy = new HierarchyTreeAggregatorControlNode(NULL, aggregatorControl);
-		else
-			copy = new HierarchyTreeControlNode(NULL, control);
-		
-		this->items.push_back(copy);
+		this->items.push_back(control->CreateControlCopy(NULL));
 	}
 	if (this->items.size())
 		copyType = CopyTypeControl;

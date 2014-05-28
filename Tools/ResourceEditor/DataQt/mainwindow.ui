@@ -237,7 +237,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -435,6 +435,7 @@
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionBuildStaticOcclusion"/>
+    <addaction name="actionRebuildCurrentOcclusionCell"/>
     <addaction name="actionBeastAndSave"/>
     <addaction name="separator"/>
     <addaction name="menuObjectTypes"/>
@@ -1951,6 +1952,11 @@
    </property>
    <property name="text">
     <string>Unlock Transform</string>
+   </property>
+  </action>
+  <action name="actionRebuildCurrentOcclusionCell">
+   <property name="text">
+    <string>Rebuild Current Occlusion Cell</string>
    </property>
   </action>
   <action name="actionUndefinedCollision">

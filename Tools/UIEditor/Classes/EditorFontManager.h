@@ -51,7 +51,6 @@ public:
     
     void ClearLocalizedFonts();
     
-    void OnProjectCreated();
     void OnProjectLoaded();
 
 	Font* GetDefaultFont() const;

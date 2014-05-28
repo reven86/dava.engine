@@ -31,6 +31,8 @@
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/StaticOcclusion.h"
 #include "Utils/StringFormat.h"
+#include "Render/Image.h"
+#include "Render/ImageLoader.h"
 
 namespace DAVA
 {
@@ -65,8 +67,8 @@ bool StaticOcclusionRenderPass::CompareFunction(const RenderBatch * a, const Ren
     
 void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
 {
-    Camera *mainCamera = renderSystem->GetMainCamera();        
-    Camera *drawCamera = renderSystem->GetDrawCamera();   
+    Camera *mainCamera = occlusionCamera;
+    Camera *drawCamera = occlusionCamera;
 
     DVASSERT(drawCamera);
     DVASSERT(mainCamera);
@@ -101,6 +103,42 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
             }
         }
     }
+    
+    //glColorMask(false, false, false, false);
+    // Sort
+    Vector3 cameraPosition = mainCamera->GetPosition();
+    
+    size = (uint32)batches.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        RenderBatch * batch = batches[k];
+        RenderObject * renderObject = batch->GetRenderObject();
+        Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
+        float realDistance = (position - cameraPosition).Length();
+        uint32 distance = ((uint32)(realDistance * 100.0f));
+        uint32 distanceBits = distance;
+        
+        batch->layerSortingKey = distanceBits;
+    }
+    std::sort(batches.begin(), batches.end(), CompareFunction);
+    
+//    size = (uint32)terrainBatches.size();
+//    for (uint32 k = 0; k < size; ++k)
+//    {
+//        RenderBatch * batch = terrainBatches[k];
+//        batch->Draw(name, camera);
+//    }
+//    
+//    size = (uint32)batches.size();
+//    for (uint32 k = 0; k < size; ++k)
+//    {
+//        RenderBatch * batch = batches[k];
+//        batch->Draw(name, camera);
+//    }
+    
+    //
+//    glDepthFunc(GL_LEQUAL);
+//    glDepthMask(GL_FALSE);
 
     OcclusionQueryManager & manager = occlusion->GetOcclusionQueryManager();
     size = (uint32)terrainBatches.size();
@@ -118,24 +156,7 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
         occlusion->RecordFrameQuery(batch, handle);
     }
     
-    
-    Vector3 cameraPosition = mainCamera->GetPosition();
-
     size = (uint32)batches.size();
-    for (uint32 k = 0; k < size; ++k)
-    {
-        RenderBatch * batch = batches[k];
-        RenderObject * renderObject = batch->GetRenderObject();
-        Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
-        float realDistance = (position - cameraPosition).Length();
-        uint32 distance = ((uint32)(realDistance * 100.0f));
-        uint32 distanceBits = distance;
-        
-        batch->layerSortingKey = distanceBits;
-    }
-
-    std::sort(batches.begin(), batches.end(), CompareFunction);
-    
     for (uint32 k = 0; k < size; ++k)
     {
         OcclusionQueryManagerHandle handle = manager.CreateQueryObject();
@@ -147,8 +168,57 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem)
         batch->Draw(name, mainCamera);
         query.EndQuery();
         
+        //glFlush();
+        
+        
+        
+//        if ((debugK) && (debugI == 0) && (debugJ == 0))
+//        {
+//            //RenderManager::Instance()->SetRenderTarget((Sprite*)0);
+//            const Matrix4 * oldProj = (const Matrix4*)RenderManager::Instance()->GetDynamicParam(PARAM_PROJ);
+//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_3D_BLEND);
+//            ImageLoader::Save(image, Format("~doc:/renderobj_%d_%d.png", debugSide, k));
+//            SafeRelease(image);
+//            RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, oldProj, UPDATE_SEMANTIC_ALWAYS);
+// 
+//            //RenderManager::Instance()->RestoreRenderTarget();
+//        }
+//
+//        if ((debugK) && (debugI == 1) && (debugJ == 0))
+//        {
+//            RenderManager::Instance()->SetRenderTarget((Sprite*)0);
+//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+//            ImageLoader::Save(image, Format("~doc:/renderobj2_%d_%d.png", debugSide, k));
+//            SafeRelease(image);
+//            RenderManager::Instance()->RestoreRenderTarget();
+//        }
+//        
+//        if ((debugK) && (debugI == 1) && (debugJ == 1))
+//        {
+//            RenderManager::Instance()->SetRenderTarget((Sprite*)0);
+//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+//            ImageLoader::Save(image, Format("~doc:/renderobj3_%d_%d.png", debugSide, k));
+//            SafeRelease(image);
+//            RenderManager::Instance()->RestoreRenderTarget();
+//        }
+//        
+//        if ((debugK) && (debugI == 5) && (debugJ == 5))
+//        {
+//            RenderManager::Instance()->SetRenderTarget((Sprite*)0);
+//            Image * image = occlusion->GetRTTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
+//            ImageLoader::Save(image, Format("~doc:/renderobj4_%d_%d.png", debugSide, k));
+//            SafeRelease(image);
+//            RenderManager::Instance()->RestoreRenderTarget();
+//        }
+        
         occlusion->RecordFrameQuery(batch, handle);
     }
+    
+    //
+//    glDepthMask(GL_TRUE);
+//    glDepthFunc(GL_LESS);
+//    glColorMask(true, true, true, true);
+    int32 x = 0;
 }
 
 };

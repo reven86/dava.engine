@@ -30,6 +30,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
+#include "Base/Message.h"
 
 namespace DAVA
 {
@@ -38,6 +39,17 @@ class RenderObject;
 class StaticOcclusion;
 class StaticOcclusionData;
 class StaticOcclusionDataComponent;
+
+class MessageQueue
+{
+public:
+    MessageQueue();
+    
+    void DispatchMessages();
+    void AddMessage(const Message & message);
+private:
+    std::queue<Message> messageQueue;
+};
     
 // System that allow to build occlusion information. Required only in editor.
 class StaticOcclusionBuildSystem : public SceneSystem
@@ -53,12 +65,21 @@ public:
     inline void SetCamera(Camera * camera);
 
     void Build();
+    void RebuildCurrentCell();
     void Cancel();
 
     bool IsInBuild() const;
     uint32 GetBuildStatus() const;
 
 private:
+    MessageQueue messageQueue;
+    
+    
+    void StartBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
+    void OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData);
+    void FinishBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
+    void SceneForceLod(int32 layerIndex);
+    
     Camera * camera;
     Vector<Entity*> entities;
     StaticOcclusion * staticOcclusion;
@@ -66,7 +87,7 @@ private:
     uint32 activeIndex;
     uint32 buildStepsCount;
     uint32 buildStepRemains;
-    bool needSetupNextOcclusion;
+    uint32 renewIndex;
 };
     
 // System that allow to use occlusion information during rendering
@@ -86,6 +107,7 @@ private:
     Camera * camera;
     StaticOcclusionData * activePVSSet;
     uint32 activeBlockIndex;
+    
     
     // Final system part
     void ProcessStaticOcclusion(Camera * camera);

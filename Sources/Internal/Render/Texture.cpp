@@ -745,7 +745,7 @@ Texture * Texture::CreateFromFile(const FilePath & pathName, const FastName &gro
  	if(!texture)
 	{
 		texture = CreatePink(typeHint);
-        texture->texDescriptor->pathname = pathName;
+        texture->texDescriptor->pathname = (!pathName.IsEmpty()) ? TextureDescriptor::GetDescriptorPathname(pathName) : FilePath();
         
         AddToMap(texture);
 	}
@@ -817,7 +817,7 @@ void Texture::ReloadAs(eGPUFamily gpuFamily)
         SafeDelete(images);
         
         Logger::Error("[Texture::ReloadAs] Cannot reload from file %s", texDescriptor->pathname.GetAbsolutePathname().c_str());
-        MakePink(texDescriptor->IsCubeMap() ? Texture::TEXTURE_CUBE : Texture::TEXTURE_2D);
+        MakePink();
     }
 }
 
@@ -1050,7 +1050,7 @@ void Texture::Invalidate()
 	}
 	else if (isPink)
 	{
-		MakePink((TextureType)textureType);
+		MakePink();
 	}
 }
 #endif //#if defined(__DAVAENGINE_ANDROID__)

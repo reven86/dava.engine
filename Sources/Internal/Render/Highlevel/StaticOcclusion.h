@@ -72,20 +72,31 @@ public:
 class StaticOcclusion
 {
 public:
+    enum eIndexRenew
+    {
+        RENEW_OCCLUSION_INDICES,
+        LEAVE_OLD_INDICES,
+    };
+    
     StaticOcclusion();
     ~StaticOcclusion();
     
     inline void SetScene(Scene * _scene);
     inline void SetRenderSystem(RenderSystem * _renderSystem);
-    void BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
-                                  StaticOcclusionData * currentData);
     
-    void SetEqualVisibilityVector(Map<RenderObject*, Vector<RenderObject*> > & equalVisibility);
+    void BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
+                                  StaticOcclusionData * currentData,
+                                  eIndexRenew renewIndexEnum);
+    
+    void SetEqualVisibilityVector(Map<RenderObject*,
+                                  Vector<RenderObject*> > & equalVisibility);
 
     
     inline OcclusionQueryManager & GetOcclusionQueryManager();
     //uint32 * GetCellVisibilityData(Camera * camera);
+    
     uint32 RenderFrame();
+    void RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ);
 
     void FillOcclusionDataObject(StaticOcclusionData * data);
     
@@ -93,6 +104,9 @@ public:
     
     //Vector<Vector3> renderPositions;
     //Vector<Vector3> renderDirections;
+    
+    inline Texture * GetRTTexture() const;
+    
 private:
     void ProcessRecordedBatches();
     AABBox3 GetCellBox(uint32 x, uint32 y, uint32 z);
@@ -130,6 +144,7 @@ inline OcclusionQueryManager & StaticOcclusion::GetOcclusionQueryManager()
 
 inline void StaticOcclusion::SetScene(Scene * _scene) { scene = _scene; };
 inline void StaticOcclusion::SetRenderSystem(RenderSystem * _renderSystem) {renderSystem = _renderSystem; };
+inline Texture * StaticOcclusion::GetRTTexture() const { return renderTargetTexture; };
 
 };
 

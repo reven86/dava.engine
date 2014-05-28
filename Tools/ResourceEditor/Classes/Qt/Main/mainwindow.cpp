@@ -690,6 +690,7 @@ void QtMainWindow::SetupActions()
 #endif //#if defined(__DAVAENGINE_BEAST__)
     
     QObject::connect(ui->actionBuildStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnBuildStaticOcclusion()));
+    QObject::connect(ui->actionRebuildCurrentOcclusionCell, SIGNAL(triggered()), this, SLOT(OnRebuildCurrentOcclusionCell()));
     
 	//Help
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
@@ -2461,6 +2462,14 @@ void QtMainWindow::OnBuildStaticOcclusion()
     }
 
     delete waitOcclusionDlg;
+}
+
+void QtMainWindow::OnRebuildCurrentOcclusionCell()
+{
+    SceneEditor2* scene = GetCurrentScene();
+    if(!scene) return;
+
+    scene->staticOcclusionBuildSystem->RebuildCurrentCell();
 }
 
 bool QtMainWindow::IsSavingAllowed()

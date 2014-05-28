@@ -214,6 +214,7 @@ bool HierarchyTreePlatformNode::Load(const YamlNode* platform)
 		}
 	}
 	
+    List<HierarchyTreeAggregatorNode*> aggregatorNodes;
 	const YamlNode* aggregators = platform->Get(AGGREGATORS_NODE);
 	if (aggregators)
 	{
@@ -237,12 +238,20 @@ bool HierarchyTreePlatformNode::Load(const YamlNode* platform)
 			{
 				Rect r = Rect(0, 0, aggregatorWidth->AsInt(), aggregatorHeight->AsInt());
 				result &= aggregatorNode->Load(r, aggregatorPath);
+                aggregatorNodes.push_back(aggregatorNode);
 			}
 
 			AddTreeNode(aggregatorNode);			
 		}
 	}
-	
+
+    // When all screens and aggregators are loaded, re-sync the aggregator nodes content.
+    for (List<HierarchyTreeAggregatorNode*>::iterator iter = aggregatorNodes.begin(); iter != aggregatorNodes.end();
+         iter ++)
+    {
+        (*iter)->UpdateChilds();
+    }
+
 	return result;
 }
 

@@ -54,6 +54,8 @@ public:
 	virtual void SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter);
 	virtual HierarchyTreeNode* GetParent() {return parent;};
 	
+	virtual HierarchyTreeControlNode* CreateControlCopy(HierarchyTreeNode* parent) const;
+	
 	Vector2 GetParentDelta(bool skipControl = false) const;
 
 	// Remove/return Tree Node from the scene.

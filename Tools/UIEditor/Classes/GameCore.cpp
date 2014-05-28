@@ -88,6 +88,7 @@ GameCore::~GameCore()
     RulerController::Instance()->Release();
     GridVisualizer::Instance()->Release();
 
+    CopyPasteController::Instance()->Release();	
     LibraryController::Instance()->Release();
     EditorSettings::Instance()->Release();
     ScreenManager::Instance()->Release();
@@ -95,7 +96,6 @@ GameCore::~GameCore()
     MetadataFactory::Instance()->Release();
     ScreenWrapper::Instance()->Release();
 
-    CopyPasteController::Instance()->Release();
     PreviewController::Instance()->Release();
     CommandsController::Instance()->Release();
     PropertiesGridController::Instance()->Release();
