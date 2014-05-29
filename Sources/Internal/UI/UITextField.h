@@ -183,7 +183,7 @@ public:
 	
 	virtual void SetSpriteAlign(int32 align);
     
-	virtual const WideString & GetText();
+	virtual WideString GetText() const;
 	virtual void SetText(const WideString & text);
     
     virtual WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
@@ -221,7 +221,7 @@ public:
 	 */  
     void SetFont(Font * font);
 
-    virtual const Color& GetTextColor();
+    virtual Color GetTextColor() const;
 	/**
 	 \brief Sets the color of the text.
 	 \param[in] fontColor font used for text draw of the states.
@@ -315,8 +315,6 @@ protected:
         if( delegate )
             delegate->OnKeyboardHidden();
     }
-	WideString text;
-    Color textColor;
 	UITextFieldDelegate * delegate;
 
     // Keyboard customization params.
@@ -326,14 +324,12 @@ protected:
 	eKeyboardAppearanceType keyboardAppearanceType;
 	eKeyboardType keyboardType;
 	eReturnKeyType returnKeyType;
-
-
+    int32 align;
 	// All Boolean variables are grouped together because of DF-2149.
 	bool isPassword : 1;
 	bool enableReturnKeyAutomatically : 1;
 
 protected:
-    WideString GetVisibleText() const;
     friend UITextFieldImpl;
 	UITextFieldImpl * textFieldImpl;
 };

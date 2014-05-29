@@ -29,30 +29,23 @@
 #include "UI/UITextFieldImpl.h"
 #if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_IPHONE__)
 
-#include "UI/UITextField.h"
-#include "UI/UIStaticText.h"
-#include "Input/KeyboardDevice.h"
+#include "Platform/CustomTextField.h"
 
 namespace DAVA
 {
 
 UITextFieldImpl::UITextFieldImpl(UITextField* tf)
-    : needRedraw(false)
-    , showCursor(true)
-    , isPassword(false)
-    , cursorTime(0.0f)
-    , textFont(NULL)
 {
     textField = tf;
-    staticText = new UIStaticText(tf->GetRect(true));
-
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    CustomTextField * ptr = new CustomTextField(this);
+    nativeClassPtr = ptr;
 }
 
 UITextFieldImpl::~UITextFieldImpl()
 {
-    SafeRelease(textFont);
-    SafeRelease(staticText);
+    CustomTextField * customTF = static_cast<CustomTextField *>(nativeClassPtr);
+    nativeClassPtr = NULL;
+    SafeDelete(customTF);
 }
 
 void UITextFieldImpl::OpenKeyboard()
@@ -65,92 +58,55 @@ void UITextFieldImpl::CloseKeyboard()
 
 void UITextFieldImpl::GetText(WideString & string) const
 {
-	string = text;
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->GetText(string);
 }
 
 void UITextFieldImpl::SetText(const WideString & string)
 {
-    text = string;
-    needRedraw = true;
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->SetText(string);
 }
 
 void UITextFieldImpl::UpdateRect(const Rect & newRect, float32 timeElapsed)
 {
-    if( newRect != staticText->GetRect(true) )
-    {
-        staticText->SetRect(newRect, false);
-        needRedraw = true;
-    }
-    
-    if(textField == UIControlSystem::Instance()->GetFocusedControl())
-    {
-        cursorTime += timeElapsed;
-
-        if (cursorTime >= 0.5f)
-        {
-            cursorTime = 0;
-            showCursor = !showCursor;
-            needRedraw = true;
-        }
-    }
-    
-    if (!needRedraw)
-        return;
-
-	if(textField == UIControlSystem::Instance()->GetFocusedControl())
-	{
-        WideString txt = textField->GetVisibleText();
-        txt += showCursor ? L"|" : L" ";
-        staticText->SetText(txt);
-	}
-	else
-    {
-        staticText->SetText(textField->GetVisibleText());
-    }
-    needRedraw = false;
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->UpdateRect( newRect, timeElapsed );
 }
 
 void UITextFieldImpl::GetTextColor( Color & color) const
 {
-    color = staticText->GetTextColor();
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->GetTextColor( color );
 }
 
-void UITextFieldImpl::SetTextColor(const DAVA::Color &color)
+void UITextFieldImpl::SetTextColor(const Color &color)
 {
-    staticText->SetTextColor(color);
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
 }
 
 Font *UITextFieldImpl::GetFont()
 {
-    return textFont;
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    return ptr->GetFont();
 }
 
 void UITextFieldImpl::SetFont(Font * font)
 {
-    if( textFont == font )
-        return;
-
-    SafeRelease(textFont);
-    textFont = SafeRetain(font);
-    staticText->SetFont(textFont);
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->SetFont(font);
 }
 
 void UITextFieldImpl::SetFontSize(float32 size)
 {
-    ScopedPtr<Font> newFont( textFont->Clone() );
-    newFont->SetSize(size);
-    SetFont(newFont);
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->SetFontSize(size);
 }
 
-void UITextFieldImpl::SetTextAlign(DAVA::int32 newAlign)
+void UITextFieldImpl::SetTextAlign(int32 align)
 {
-	align = newAlign;
-    staticText->SetTextAlign(align);
-}
-
-DAVA::int32 UITextFieldImpl::GetTextAlign() const
-{
-	return align;
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->SetTextAlign(align);
 }
 
 void UITextFieldImpl::ShowField()
@@ -161,10 +117,10 @@ void UITextFieldImpl::HideField()
 {
 }
 
-void UITextFieldImpl::SetIsPassword(bool isPasswordValue)
+void UITextFieldImpl::SetIsPassword(bool isPassword)
 {
-    needRedraw = true;
-    isPassword = isPasswordValue;
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->SetIsPassword(isPassword);
 }
 
 void UITextFieldImpl::SetInputEnabled(bool value)
@@ -172,31 +128,31 @@ void UITextFieldImpl::SetInputEnabled(bool value)
 }
 
 // Keyboard traits.
-void UITextFieldImpl::SetAutoCapitalizationType(DAVA::int32 value)
+void UITextFieldImpl::SetAutoCapitalizationType(int32 value)
 {
 }
 
-void UITextFieldImpl::SetAutoCorrectionType(DAVA::int32 value)
-{
-
-}
-
-void UITextFieldImpl::SetSpellCheckingType(DAVA::int32 value)
+void UITextFieldImpl::SetAutoCorrectionType(int32 value)
 {
 
 }
 
-void UITextFieldImpl::SetKeyboardAppearanceType(DAVA::int32 value)
+void UITextFieldImpl::SetSpellCheckingType(int32 value)
 {
 
 }
 
-void UITextFieldImpl::SetKeyboardType(DAVA::int32 value)
+void UITextFieldImpl::SetKeyboardAppearanceType(int32 value)
 {
 
 }
 
-void UITextFieldImpl::SetReturnKeyType(DAVA::int32 value)
+void UITextFieldImpl::SetKeyboardType(int32 value)
+{
+
+}
+
+void UITextFieldImpl::SetReturnKeyType(int32 value)
 {
 
 }
@@ -208,68 +164,26 @@ void UITextFieldImpl::SetEnableReturnKeyAutomatically(bool value)
 
 uint32 UITextFieldImpl::GetCursorPos() const
 {
-    return 0;
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    return ptr->GetCursorPos();
 }
 
 void UITextFieldImpl::SetCursorPos(uint32 pos)
 {
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->SetCursorPos(pos);
 }
 
 void UITextFieldImpl::Input(UIEvent *currentInput)
 {
-    if (NULL == textField->delegate)
-    {
-        return;
-    }
-
-    if(textField != UIControlSystem::Instance()->GetFocusedControl())
-        return;
-
-
-    if (currentInput->phase == UIEvent::PHASE_KEYCHAR)
-    {	
-        /// macos
-        if (currentInput->tid == DVKEY_LEFT||
-            currentInput->tid == DVKEY_RIGHT||
-            currentInput->tid == DVKEY_DOWN||
-            currentInput->tid == DVKEY_UP)
-        {
-            ;//ignore arrows
-        }
-        else if (currentInput->tid == DVKEY_BACKSPACE)
-        {
-            //TODO: act the same way on iPhone
-            WideString str = L"";
-            if(textField->delegate->TextFieldKeyPressed(textField, (int32)textField->GetText().length() - 1, 1, str))
-            {
-                textField->SetText(textField->GetAppliedChanges((int32)textField->GetText().length() - 1,  1, str));
-            }
-        }
-        else if (currentInput->tid == DVKEY_ENTER)
-        {
-            textField->delegate->TextFieldShouldReturn(textField);
-        }
-        else if (currentInput->tid == DVKEY_ESCAPE)
-        {
-            textField->delegate->TextFieldShouldCancel(textField);
-        }
-        else if(currentInput->keyChar != 0)
-        {
-            WideString str;
-            str += currentInput->keyChar;
-            if(textField->delegate->TextFieldKeyPressed(textField, (int32)textField->GetText().length(), 0, str))
-            {
-                textField->SetText(textField->GetAppliedChanges((int32)textField->GetText().length(),  0, str));
-            }
-        }
-    }
-
-    currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->Input(currentInput);
 }
 
 void UITextFieldImpl::Draw( const UIGeometricData & )
 {
-    staticText->SystemDraw( UIControlSystem::Instance()->GetBaseGeometricData() );
+    CustomTextField * ptr = static_cast<CustomTextField *>(nativeClassPtr);
+    ptr->Draw();
 }
 
 };

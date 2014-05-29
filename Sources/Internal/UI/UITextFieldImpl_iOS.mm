@@ -51,6 +51,62 @@ float GetUITextViewSizeDivider()
     
     return divider;
 }
+static const UITextAutocapitalizationType DavaToNativeUITextAutocapitalizationType[] = 
+{
+    UITextAutocapitalizationTypeNone,        //UITextField::AUTO_CAPITALIZATION_TYPE_NONE
+    UITextAutocapitalizationTypeWords,       //UITextField::AUTO_CAPITALIZATION_TYPE_WORDS
+    UITextAutocapitalizationTypeSentences,   //UITextField::AUTO_CAPITALIZATION_TYPE_SENTENCES
+    UITextAutocapitalizationTypeAllCharacters//UITextField::AUTO_CAPITALIZATION_TYPE_ALL_CHARS
+};
+
+static const UITextAutocorrectionType DavaToNativeUITextAutocorrectionType[] = 
+{
+    UITextAutocorrectionTypeDefault,//UITextField::AUTO_CORRECTION_TYPE_DEFAULT
+    UITextAutocorrectionTypeNo,     //UITextField::AUTO_CORRECTION_TYPE_NO
+    UITextAutocorrectionTypeYes     //UITextField::AUTO_CORRECTION_TYPE_YES
+};
+
+static const UITextSpellCheckingType DavaToNativeUITextSpellCheckingType[] =
+{
+    UITextSpellCheckingTypeDefault, //UITextField::SPELL_CHECKING_TYPE_DEFAULT
+    UITextSpellCheckingTypeNo,      //UITextField::SPELL_CHECKING_TYPE_NO
+    UITextSpellCheckingTypeYes      //UITextField::SPELL_CHECKING_TYPE_YES
+};
+
+static const UIKeyboardAppearance DavaToNativeUIKeyboardAppearance[] =
+{
+    UIKeyboardAppearanceDefault,    //UITextField::KEYBOARD_APPEARANCE_DEFAULT
+    UIKeyboardAppearanceAlert       //UITextField::KEYBOARD_APPEARANCE_ALERT
+};
+
+static const UIKeyboardType DavaToNativeUIKeyboardType[] =
+{
+    UIKeyboardTypeDefault,      //UITextField::KEYBOARD_TYPE_DEFAULT
+    UIKeyboardTypeASCIICapable, //UITextField::KEYBOARD_TYPE_ASCII_CAPABLE
+    UIKeyboardTypeNumbersAndPunctuation, //UITextField::KEYBOARD_TYPE_NUMBERS_AND_PUNCTUATION
+    UIKeyboardTypeURL,          //UITextField::KEYBOARD_TYPE_URL
+    UIKeyboardTypeNumberPad,    //UITextField::KEYBOARD_TYPE_NUMBER_PAD
+    UIKeyboardTypePhonePad,     //UITextField::KEYBOARD_TYPE_PHONE_PAD
+    UIKeyboardTypeNamePhonePad, //UITextField::KEYBOARD_TYPE_NAME_PHONE_PAD
+    UIKeyboardTypeEmailAddress, //UITextField::KEYBOARD_TYPE_EMAIL_ADDRESS
+    UIKeyboardTypeDecimalPad,   //UITextField::KEYBOARD_TYPE_DECIMAL_PAD
+    UIKeyboardTypeTwitter       //UITextField::KEYBOARD_TYPE_TWITTER
+};
+
+static const UIReturnKeyType DavaToNativeUIReturnKeyType[] =
+{
+    UIReturnKeyDefault,         //UITextField::RETURN_KEY_DEFAULT
+    UIReturnKeyGo,              //UITextField::RETURN_KEY_GO
+    UIReturnKeyGoogle,          //UITextField::RETURN_KEY_GOOGLE
+    UIReturnKeyJoin,            //UITextField::RETURN_KEY_JOIN
+    UIReturnKeyNext,            //UITextField::RETURN_KEY_NEXT
+    UIReturnKeyRoute,           //UITextField::RETURN_KEY_ROUTE
+    UIReturnKeySearch,          //UITextField::RETURN_KEY_SEARCH
+    UIReturnKeySend,            //UITextField::RETURN_KEY_SEND
+    UIReturnKeyYahoo,           //UITextField::RETURN_KEY_YAHOO
+    UIReturnKeyDone,            //UITextField::RETURN_KEY_DONE
+    UIReturnKeyEmergencyCall    //UITextField::RETURN_KEY_EMERGENCY_CALL
+};
 
 @interface UITextFieldHolder : UIView < UITextFieldDelegate >
 {
@@ -165,17 +221,6 @@ float GetUITextViewSizeDivider()
 			DAVA::WideString repString;
             const char * cstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
             DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), repString);
-            // TODO convert range?
-            
-            /*
-            int length = [string length];
-			repString.resize(length); 
-			for (int i = 0; i < length; i++) 
-			{
-				unichar uchar = [string characterAtIndex:i];
-				repString[i] = (wchar_t)uchar;
-			}
-             */
 			return cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, range.location, range.length, repString);
 		}
 	}
@@ -218,75 +263,17 @@ float GetUITextViewSizeDivider()
 
 - (UITextAutocapitalizationType) convertAutoCapitalizationType:(DAVA::UITextField::eAutoCapitalizationType) davaType
 {
-	switch (davaType)
-	{
-		case DAVA::UITextField::AUTO_CAPITALIZATION_TYPE_NONE:
-		{
-			return UITextAutocapitalizationTypeNone;
-		}
-
-		case DAVA::UITextField::AUTO_CAPITALIZATION_TYPE_WORDS:
-		{
-			return UITextAutocapitalizationTypeWords;
-		}
-
-		case DAVA::UITextField::AUTO_CAPITALIZATION_TYPE_ALL_CHARS:
-		{
-			return UITextAutocapitalizationTypeAllCharacters;
-		}
-
-		case DAVA::UITextField::AUTO_CAPITALIZATION_TYPE_SENTENCES:
-		default:
-		{
-			// This is default one for iOS.
-			return UITextAutocapitalizationTypeSentences;
-		}
-	}
+    return DavaToNativeUITextAutocapitalizationType[davaType];
 }
 
 - (UITextAutocorrectionType) convertAutoCorrectionType:(DAVA::UITextField::eAutoCorrectionType) davaType
 {
-	switch (davaType)
-	{
-		case DAVA::UITextField::AUTO_CORRECTION_TYPE_NO:
-		{
-			return UITextAutocorrectionTypeNo;
-		}
-			
-		case DAVA::UITextField::AUTO_CORRECTION_TYPE_YES:
-		{
-			
-			return UITextAutocorrectionTypeYes;
-		}
-
-		case DAVA::UITextField::AUTO_CORRECTION_TYPE_DEFAULT:
-		default:
-		{
-			return UITextAutocorrectionTypeDefault;
-		}
-	}
+    return DavaToNativeUITextAutocorrectionType[davaType];
 }
 
 - (UITextSpellCheckingType) convertSpellCheckingType:(DAVA::UITextField::eSpellCheckingType) davaType
 {
-	switch (davaType)
-	{
-		case DAVA::UITextField::SPELL_CHECKING_TYPE_NO:
-		{
-			return UITextSpellCheckingTypeNo;
-		}
-
-		case DAVA::UITextField::SPELL_CHECKING_TYPE_YES:
-		{
-			return UITextSpellCheckingTypeYes;
-		}
-
-		case DAVA::UITextField::SPELL_CHECKING_TYPE_DEFAULT:
-		default:
-		{
-			return UITextSpellCheckingTypeDefault;
-		}
-	}
+    return DavaToNativeUITextSpellCheckingType[davaType];
 }
 
 - (BOOL) convertEnablesReturnKeyAutomatically:(bool) davaType
@@ -296,213 +283,31 @@ float GetUITextViewSizeDivider()
 
 - (UIKeyboardAppearance) convertKeyboardAppearanceType:(DAVA::UITextField::eKeyboardAppearanceType) davaType
 {
-	switch (davaType)
-	{
-		case DAVA::UITextField::KEYBOARD_APPEARANCE_ALERT:
-		{
-			return UIKeyboardAppearanceAlert;
-		}
-			
-		case DAVA::UITextField::KEYBOARD_APPEARANCE_DEFAULT:
-		default:
-		{
-			return UIKeyboardAppearanceDefault;
-		}
-	}
+    return DavaToNativeUIKeyboardAppearance[davaType];
 }
 
 - (UIKeyboardType) convertKeyboardType:(DAVA::UITextField::eKeyboardType) davaType
 {
-	switch (davaType)
-	{
-		case DAVA::UITextField::KEYBOARD_TYPE_ASCII_CAPABLE:
-		{
-			return UIKeyboardTypeASCIICapable;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_NUMBERS_AND_PUNCTUATION:
-		{
-			return UIKeyboardTypeNumbersAndPunctuation;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_URL:
-		{
-			return UIKeyboardTypeURL;
-		}
-
-		case DAVA::UITextField:: KEYBOARD_TYPE_NUMBER_PAD:
-		{
-			return UIKeyboardTypeNumberPad;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_PHONE_PAD:
-		{
-			return UIKeyboardTypePhonePad;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_NAME_PHONE_PAD:
-		{
-			return UIKeyboardTypeNamePhonePad;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_EMAIL_ADDRESS:
-		{
-			return UIKeyboardTypeEmailAddress;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_DECIMAL_PAD:
-		{
-			return UIKeyboardTypeDecimalPad;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_TWITTER:
-		{
-			return UIKeyboardTypeTwitter;
-		}
-
-		case DAVA::UITextField::KEYBOARD_TYPE_DEFAULT:
-		default:
-		{
-			return UIKeyboardTypeDefault;
-		}
-	}
+    return DavaToNativeUIKeyboardType[davaType];
 }
 
 - (UIReturnKeyType) convertReturnKeyType:(DAVA::UITextField::eReturnKeyType) davaType
 {
-	switch (davaType)
-	{
-		case DAVA::UITextField::RETURN_KEY_GO:
-		{
-			return UIReturnKeyGo;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_GOOGLE:
-		{
-			return UIReturnKeyGoogle;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_JOIN:
-		{
-			return UIReturnKeyJoin;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_NEXT:
-		{
-			return UIReturnKeyNext;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_ROUTE:
-		{
-			return UIReturnKeyRoute;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_SEARCH:
-		{
-			return UIReturnKeySearch;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_SEND:
-		{
-			return UIReturnKeySend;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_YAHOO:
-		{
-			return UIReturnKeyYahoo;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_DONE:
-		{
-			return UIReturnKeyDone;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_EMERGENCY_CALL:
-		{
-			return UIReturnKeyEmergencyCall;
-		}
-
-		case DAVA::UITextField::RETURN_KEY_DEFAULT:
-		default:
-		{
-			return UIReturnKeyDefault;
-		}
-	}
-}
-/*
-- (void)keyboardFrameDidChange:(NSNotification *)notification
-{
-    NSDictionary* userInfo = notification.userInfo;
-
-    // Remember the last keyboard frame here, since it might be incorrect in keyboardDidShow.
-    lastKeyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    return DavaToNativeUIReturnKeyType[davaType];
 }
 
-- (void)keyboardWillHide:(NSNotification *)notification
-{
-	if (cppTextField && cppTextField->GetDelegate())
-	{
-		cppTextField->GetDelegate()->OnKeyboardHidden();
-	}
-}
-
-- (void)keyboardDidShow:(NSNotification *)notification
-{
-	if (!cppTextField || !cppTextField->GetDelegate())
-	{
-		return;
-	}
-
-	// convert own frame to window coordinates, frame is in superview's coordinates
-	CGRect ownFrame = [textField.window convertRect:self.frame fromView:textField.superview];
-
-	// calculate the area of own frame that is covered by keyboard
-	CGRect keyboardFrame = CGRectIntersection(ownFrame, lastKeyboardFrame);
-
-	// now this might be rotated, so convert it back
-	keyboardFrame = [textField.window convertRect:keyboardFrame toView:textField.superview];
-
-	// Recalculate to virtual coordinates.
-	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
-	keyboardOrigin *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardOrigin += DAVA::UIControlSystem::Instance()->GetInputOffset();
-	
-	DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
-	keyboardSize *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
-
-	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
-}
-*/
 @end
-
-void CreateTextField(DAVA::UITextField  * tf)
-{
-	///[textFieldHolder->textField becomeFirstResponder];
-}
-
-void ReleaseTextField()
-{
-}
-
-void OpenKeyboard()
-{
-}
-
-void CloseKeyboard()
-{
-}
 
 namespace DAVA 
 {
     UITextFieldImpl::UITextFieldImpl(UITextField * tf)
     {
         UITextFieldHolder * textFieldHolder = [[UITextFieldHolder alloc] init: (DAVA::UITextField*)tf];
-        objcClassPtr = textFieldHolder;
+        nativeClassPtr = textFieldHolder;
     }
     UITextFieldImpl::~UITextFieldImpl()
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         [textFieldHolder removeFromSuperview];
         [textFieldHolder release];
         textFieldHolder = 0;
@@ -510,13 +315,13 @@ namespace DAVA
 	
     void UITextFieldImpl::GetTextColor(DAVA::Color &color) const
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         [textFieldHolder->textField.textColor getRed:&color.r green:&color.g blue:&color.b alpha:&color.a];
     }
     
     void UITextFieldImpl::SetTextColor(const DAVA::Color &color)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         textFieldHolder->textField.textColor = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
     }
     
@@ -525,7 +330,7 @@ namespace DAVA
     
     void UITextFieldImpl::SetFontSize(float size)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         float scaledSize = size * Core::GetVirtualToPhysicalFactor();
         
         if( [[::UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)])
@@ -537,7 +342,7 @@ namespace DAVA
     
     void UITextFieldImpl::SetTextAlign(DAVA::int32 align)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         if (align & ALIGN_LEFT)
 		{
             textFieldHolder->textField.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
@@ -561,77 +366,38 @@ namespace DAVA
         else if (align & ALIGN_BOTTOM)
             textFieldHolder->textField.contentVerticalAlignment = UIControlContentVerticalAlignmentBottom;
     }
-	
-    DAVA::int32 UITextFieldImpl::GetTextAlign() const
-    {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        
-        DAVA::int32 retValue = 0;
-        
-        
-        UIControlContentHorizontalAlignment horAligment = textFieldHolder->textField.contentHorizontalAlignment;
-        UIControlContentVerticalAlignment   verAligment = textFieldHolder->textField.contentVerticalAlignment;
-        
-        switch (horAligment)
-        {
-            case UIControlContentHorizontalAlignmentLeft:
-                retValue |= ALIGN_LEFT;
-                break;
-            case UIControlContentHorizontalAlignmentCenter:
-                retValue |= ALIGN_HCENTER;
-                break;
-            case UIControlContentHorizontalAlignmentRight:
-                retValue |= ALIGN_RIGHT;
-                break;
-        }
-        
-        switch (verAligment)
-        {
-            case UIControlContentVerticalAlignmentTop:
-                retValue |= ALIGN_TOP;
-                break;
-            case UIControlContentVerticalAlignmentCenter:
-                retValue |= ALIGN_VCENTER;
-                break;
-            case UIControlContentVerticalAlignmentBottom:
-                retValue |= ALIGN_BOTTOM;
-                break;
-        }
-        
-        return retValue;
-    }
-    
+
     void UITextFieldImpl::OpenKeyboard()
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         textFieldHolder->textField.userInteractionEnabled = YES;
         [textFieldHolder->textField becomeFirstResponder];
     }
     
     void UITextFieldImpl::CloseKeyboard()
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         textFieldHolder->textField.userInteractionEnabled = NO;
         [textFieldHolder->textField resignFirstResponder];
     }
     
     void UITextFieldImpl::ShowField()
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
         [[appDelegate glController].backgroundView addSubview:textFieldHolder];
     }
     
     void UITextFieldImpl::HideField()
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         [textFieldHolder removeFromSuperview];
     }
     
     void UITextFieldImpl::UpdateRect(const Rect & rect, float32 timeElapsed)
     {
         float divider = GetUITextViewSizeDivider();
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         CGRect cgRect = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
                                    , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
                                    , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()/divider
@@ -641,7 +407,7 @@ namespace DAVA
 	
     void UITextFieldImpl::SetText(const WideString & string)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         textFieldHolder->textField.text = [[ [ NSString alloc ]  
                                             initWithBytes : (char*)string.data()   
                                             length : string.size() * sizeof(wchar_t)   
@@ -652,46 +418,34 @@ namespace DAVA
 	
     void UITextFieldImpl::GetText(WideString & string) const
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         
         const char * cstr = [textFieldHolder->textField.text cStringUsingEncoding:NSUTF8StringEncoding];
         DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
-        
-        /*
-        int length = [textFieldHolder->textField.text length];
-		
-
-        string.resize(length); 
-        for (int i = 0; i < length; i++) 
-        {
-            unichar uchar = [textFieldHolder->textField.text characterAtIndex:i];
-            string[i] = (wchar_t)uchar;
-        }
-         */
     }
 
 	void UITextFieldImpl::SetIsPassword(bool isPassword)
 	{
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		[textFieldHolder setIsPassword: isPassword];
 	}
 
 	void UITextFieldImpl::SetInputEnabled(bool value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		[textFieldHolder setTextInputAllowed:value];
 	}
 
 	void UITextFieldImpl::SetAutoCapitalizationType(DAVA::int32 value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		textFieldHolder->textField.autocapitalizationType = [textFieldHolder convertAutoCapitalizationType:
 															 (DAVA::UITextField::eAutoCapitalizationType)value];
 	}
 
 	void UITextFieldImpl::SetAutoCorrectionType(DAVA::int32 value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		textFieldHolder->textField.autocorrectionType = [textFieldHolder convertAutoCorrectionType:
 														 (DAVA::UITextField::eAutoCorrectionType)value];
 	}
@@ -699,7 +453,7 @@ namespace DAVA
 	void UITextFieldImpl::SetSpellCheckingType(DAVA::int32 value)
 	{
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		textFieldHolder->textField.spellCheckingType = [textFieldHolder convertSpellCheckingType:
 														 (DAVA::UITextField::eSpellCheckingType)value];
 #endif
@@ -707,34 +461,34 @@ namespace DAVA
 
 	void UITextFieldImpl::SetKeyboardAppearanceType(DAVA::int32 value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		textFieldHolder->textField.keyboardAppearance = [textFieldHolder convertKeyboardAppearanceType:
 														(DAVA::UITextField::eKeyboardAppearanceType)value];
 	}
 
 	void UITextFieldImpl::SetKeyboardType(DAVA::int32 value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		textFieldHolder->textField.keyboardType = [textFieldHolder convertKeyboardType:
 														 (DAVA::UITextField::eKeyboardType)value];
 	}
 
 	void UITextFieldImpl::SetReturnKeyType(DAVA::int32 value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		textFieldHolder->textField.returnKeyType = [textFieldHolder convertReturnKeyType:
 												   (DAVA::UITextField::eReturnKeyType)value];
 	}
 	
 	void UITextFieldImpl::SetEnableReturnKeyAutomatically(bool value)
 	{
-		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+		UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
 		textFieldHolder->textField.enablesReturnKeyAutomatically = [textFieldHolder convertEnablesReturnKeyAutomatically:value];
 	}
 
     uint32 UITextFieldImpl::GetCursorPos() const
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         if (!textFieldHolder)
         {
             return 0;
@@ -748,7 +502,7 @@ namespace DAVA
 
     void UITextFieldImpl::SetCursorPos(uint32 pos)
     {
-        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
+        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
         if (!textFieldHolder)
         {
             return;
@@ -769,16 +523,7 @@ namespace DAVA
         UITextPosition *end = [textField positionFromPosition:start offset:0];
         [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
     }
-//
-//    void UITextFieldImpl::SetVisible(bool value)
-//    {
-//        UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-//        if (textFieldHolder)
-//        {
-//            ::UITextField* textField = textFieldHolder->textField;
-//            [textField setHidden: value == false];
-//        }
-//    }
+
     void UITextFieldImpl::Input(UIEvent *currentInput){}
     void UITextFieldImpl::Draw(const UIGeometricData &geometricData){}
 };

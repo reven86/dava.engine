@@ -26,67 +26,54 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JNI_TEXT_FIELD_H__
-#define __DAVAENGINE_JNI_TEXT_FIELD_H__
+#ifndef __DAVAENGINE_CUSTOM_TEXT_FIELD_H__
+#define __DAVAENGINE_CUSTOM_TEXT_FIELD_H__
 
 #include "Base/BaseTypes.h"
-#if defined(__DAVAENGINE_ANDROID__)
-
-#include "JniExtensions.h"
 
 namespace DAVA
 {
+struct Rect;
+class Color;
+class Font;
+class UIEvent;
+class UIStaticText;
 class UITextFieldImpl;
-class JniTextField: public JniExtension
+
+class CustomTextField
 {
 public:
-    JniTextField(UITextFieldImpl * impl);
-    ~JniTextField();
+    CustomTextField(UITextFieldImpl* impl);
+    ~CustomTextField();
 
-    void Create(const Rect &rect);
-    void Destroy();
-    void UpdateRect(const Rect & rect);
-    const char* GetText();
-    void SetText(const char* text);
-    void SetTextColor(float r, float g, float b, float a);
-    void SetFontSize(float size);
+    void GetText(WideString & string) const;
+    void SetText(const WideString & string);
+    void UpdateRect(const Rect & rect, float32 timeElapsed);
+    void GetTextColor(DAVA::Color &color) const;
+    void SetTextColor(const DAVA::Color &color);
+    Font *GetFont();
+    void SetFont(Font * font);
+    void SetFontSize(float32 size);
+    void SetTextAlign(DAVA::int32 align);
     void SetIsPassword(bool isPassword);
-    void SetTextAlign(int32_t align);
-    void SetInputEnabled(bool value);
-    void SetAutoCapitalizationType(int32_t value);
-    void SetAutoCorrectionType(int32_t value);
-    void SetSpellCheckingType(int32_t value);
-    void SetKeyboardAppearanceType(int32_t value);
-    void SetKeyboardType(int32_t value);
-    void SetReturnKeyType(int32_t value);
-    void SetEnableReturnKeyAutomatically(bool value);
-    void ShowField();
-    void HideField();
-    void OpenKeyboard();
-    void CloseKeyboard();
-    uint32 GetCursorPos();
+
+    uint32 GetCursorPos() const;
     void SetCursorPos(uint32 pos);
 
-    static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
-    static void TextFieldShouldReturn(uint32_t id);
+    void Input(UIEvent *currentInput);
+    void Draw();
 
-protected:
-    virtual jclass GetJavaClass() const;
-    virtual const char* GetJavaClassName() const;
-
-public:
-    static jclass gJavaClass;
-    static const char* gJavaClassName;
+    WideString GetVisibleText() const;
 
 private:
-    uint32_t id;
-    Rect rect;
+    UIStaticText *staticText;
     WideString text;
-    UITextFieldImpl *textFieldImpl;
+
+    bool needRedraw:1;
+    bool showCursor:1;
+    bool isPassword:1;
+    float32 cursorTime;
+    UITextFieldImpl * textFieldImpl;
 };
-
 };
-
-#endif //#if defined(__DAVAENGINE_ANDROID__)
-
-#endif// __DAVAENGINE_JNI_TEXT_FIELD_H__
+#endif // __DAVAENGINE_CUSTOM_TEXT_FIELD_H__

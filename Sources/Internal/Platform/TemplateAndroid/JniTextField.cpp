@@ -33,6 +33,18 @@
 
 namespace DAVA
 {
+static uint32_t sId = 0;
+static DAVA::Map<uint32_t, UITextFieldImpl*> idToImpl;
+
+UITextFieldImpl* GetUITextFieldImpl(uint32_t id)
+{
+    DAVA::Map<uint32_t, UITextFieldImpl*>::iterator iter = idToImpl.find(id);
+    if (iter != idToImpl.end())
+        return iter->second;
+
+    return NULL;
+}
+
 jclass JniTextField::gJavaClass = NULL;
 const char* JniTextField::gJavaClassName = NULL;
 
@@ -46,9 +58,16 @@ const char* JniTextField::GetJavaClassName() const
 	return gJavaClassName;
 }
 
-JniTextField::JniTextField(uint32_t id)
+JniTextField::JniTextField(UITextFieldImpl * impl)
+    : textFieldImpl(impl)
 {
-	this->id = id;
+    id = sId++;
+    idToImpl[id] = textFieldImpl;
+}
+
+JniTextField::~JniTextField()
+{
+    idToImpl.erase(id);
 }
 
 void JniTextField::Create(const Rect &controlRect)
@@ -82,7 +101,10 @@ void JniTextField::Destroy()
 
 void JniTextField::UpdateRect(const Rect & controlRect)
 {
-	Rect rect = V2P(controlRect);
+    if (controlRect == rect)
+        return;
+    rect = controlRect;
+	Rect newRect = V2P(controlRect);
 	jmethodID mid = GetMethodID("UpdateRect", "(IFFFF)V");
 	if (mid)
 	{
@@ -90,13 +112,16 @@ void JniTextField::UpdateRect(const Rect & controlRect)
 				GetJavaClass(),
 				mid,
 				id,
-				rect.x,
-				rect.y,
-				rect.dx,
-				rect.dy);
+				newRect.x,
+				newRect.y,
+				newRect.dx,
+				newRect.dy);
 	}
 }
+const char* JniTextField::GetText()
+{
 
+}
 void JniTextField::SetText(const char* text)
 {
 	jmethodID mid = GetMethodID("SetText", "(ILjava/lang/String;)V");
@@ -336,5 +361,29 @@ void JniTextField::SetCursorPos(uint32 pos)
 	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, pos);
 }
 
+bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
+{
+    UITextFieldImpl* impl = GetUITextFieldImpl(id);
+    if (!impl || !impl->GetTextFieldControl() || !impl->GetTextFieldControl()->GetDelegate())
+        return true;
+
+    if( impl->GetTextFieldControl()->GetDelegate()->TextFieldKeyPressed(impl->GetTextFieldControl(), replacementLocation, replacementLength, text) )
+    {
+        WideString str = L"";
+        SetText(impl->GetTextFieldControl()->GetAppliedChanges((int32)text.length() - 1,  1, str));
+        return true;
+    }
+
+    return false;
+}
+
+void JniTextField::TextFieldShouldReturn(uint32_t id)
+{
+    UITextFieldImpl* impl = GetUITextFieldImpl(id);
+    if (!impl || !impl->GetTextFieldControl() || !impl->GetTextFieldControl()->GetDelegate())
+        return;
+
+    impl->GetTextFieldControl()->GetDelegate()->TextFieldShouldReturn( impl->GetTextFieldControl() );
+}
 };
 #endif //#if defined(__DAVAENGINE_ANDROID__)

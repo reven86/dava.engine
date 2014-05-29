@@ -32,74 +32,61 @@
 
 using namespace DAVA;
 
-uint32_t UITextFieldImpl::sId = 0;
-DAVA::Map<uint32_t, UITextFieldImpl*> UITextFieldImpl::controls;
-
 UITextFieldImpl::UITextFieldImpl(UITextField* tf)
 {
 	textField = tf;
-	id = sId++;
-	rect = textField->GetRect();
-	JniTextField jniTextField(id);
-	jniTextField.Create(rect);
-
-	controls[id] = this;
+    JniTextField * ptr = new JniTextField(tf);
+    ptr->Create(textField->GetRect());
+    nativeClassPtr = ptr;
 }
 
 UITextFieldImpl::~UITextFieldImpl()
 {
-	controls.erase(id);
-
-	JniTextField jniTextField(id);
-	jniTextField.Destroy();
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->Destroy();
+    nativeClassPtr = NULL;
+    SafeDelete(ptr);
 }
 
 void UITextFieldImpl::OpenKeyboard()
 {
-	JniTextField jniTextField(id);
-	jniTextField.OpenKeyboard();
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->OpenKeyboard();
 }
 
 void UITextFieldImpl::CloseKeyboard()
 {
-	JniTextField jniTextField(id);
-	jniTextField.CloseKeyboard();
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->CloseKeyboard();
 }
 
 void UITextFieldImpl::GetText(WideString & string) const
 {
-	string = text;
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    string = ptr->GetText();
 }
 
 void UITextFieldImpl::SetText(const WideString & string)
 {
-	if (text.compare(string) != 0)
-	{
-		text = string;
-		JniTextField jniTextField(id);
-		String utfText = WStringToString(text);
-		jniTextField.SetText(utfText.c_str());
-	}
+    String utfText = WStringToString(string);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetText(utfText.c_str());
 }
 
 void UITextFieldImpl::UpdateRect(const Rect & newRect, float32 timeElapsed)
 {
-	if (newRect != rect)
-	{
-		rect = newRect;
-		JniTextField jniTextField(id);
-		jniTextField.UpdateRect(rect);
-	}
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->UpdateRect(newRect);
 }
-void UITextFieldImpl::GetTextColor(DAVA::Color &color) const
+void UITextFieldImpl::GetTextColor(Color &color) const
 {
 
 }
 
-void UITextFieldImpl::SetTextColor(const DAVA::Color &color)
+void UITextFieldImpl::SetTextColor(const Color &color)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetTextColor(color.r, color.g, color.b, color.a);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetTextColor(color.r, color.g, color.b, color.a);
 }
 Font *UITextFieldImpl::GetFont(){ return NULL; }
 
@@ -107,160 +94,121 @@ void UITextFieldImpl::SetFont(Font * font){}
 
 void UITextFieldImpl::SetFontSize(float size)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetFontSize(size);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetFontSize(size);
 }
 
-void UITextFieldImpl::SetTextAlign(DAVA::int32 newAlign)
+void UITextFieldImpl::SetTextAlign(int32 newAlign)
 {
-	align = newAlign;
-	JniTextField jniTextField(id);
-	jniTextField.SetTextAlign(align);
-}
-
-int32 UITextFieldImpl::GetTextAlign() const
-{
-	return align;
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetTextAlign(newAlign);
 }
 
 void UITextFieldImpl::ShowField()
 {
-	JniTextField jniTextField(id);
-	jniTextField.ShowField();
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->ShowField();
 }
 
 void UITextFieldImpl::HideField()
 {
-	JniTextField jniTextField(id);
-	jniTextField.HideField();
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->HideField();
 }
-/*
-void UITextFieldImpl::SetVisible(bool isVisible)
-{
-	if (isVisible)
-		ShowField();
-	else
-		HideField();
-}
-*/
+
 void UITextFieldImpl::SetIsPassword(bool isPassword)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetIsPassword(isPassword);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetIsPassword(isPassword);
 }
 
 void UITextFieldImpl::SetInputEnabled(bool value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetInputEnabled(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetInputEnabled(value);
 }
 
 // Keyboard traits.
-void UITextFieldImpl::SetAutoCapitalizationType(DAVA::int32 value)
+void UITextFieldImpl::SetAutoCapitalizationType(int32 value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetAutoCapitalizationType(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetAutoCapitalizationType(value);
 }
 
-void UITextFieldImpl::SetAutoCorrectionType(DAVA::int32 value)
+void UITextFieldImpl::SetAutoCorrectionType(int32 value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetAutoCorrectionType(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetAutoCorrectionType(value);
 }
 
-void UITextFieldImpl::SetSpellCheckingType(DAVA::int32 value)
+void UITextFieldImpl::SetSpellCheckingType(int32 value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetSpellCheckingType(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetSpellCheckingType(value);
 }
 
-void UITextFieldImpl::SetKeyboardAppearanceType(DAVA::int32 value)
+void UITextFieldImpl::SetKeyboardAppearanceType(int32 value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetKeyboardAppearanceType(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetKeyboardAppearanceType(value);
 }
 
-void UITextFieldImpl::SetKeyboardType(DAVA::int32 value)
+void UITextFieldImpl::SetKeyboardType(int32 value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetKeyboardType(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetKeyboardType(value);
 }
 
-void UITextFieldImpl::SetReturnKeyType(DAVA::int32 value)
+void UITextFieldImpl::SetReturnKeyType(int32 value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetReturnKeyType(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetReturnKeyType(value);
 }
 
 void UITextFieldImpl::SetEnableReturnKeyAutomatically(bool value)
 {
-	JniTextField jniTextField(id);
-	jniTextField.SetEnableReturnKeyAutomatically(value);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    ptr->SetEnableReturnKeyAutomatically(value);
 }
 
 uint32 UITextFieldImpl::GetCursorPos() const
 {
-	JniTextField jniTextField(id);
-	return jniTextField.GetCursorPos();
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    return ptr->GetCursorPos();
 }
 
 void UITextFieldImpl::SetCursorPos(uint32 pos)
 {
-	JniTextField jniTextField(id);
-	return jniTextField.SetCursorPos(pos);
+    JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
+    return ptr->SetCursorPos(pos);
 }
 
-bool UITextFieldImpl::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
-{
-	bool res = true;
-	UITextFieldDelegate* delegate = textField->GetDelegate();
-	if (delegate)
-		res = delegate->TextFieldKeyPressed(textField, replacementLocation, replacementLength, text);
+// bool UITextFieldImpl::TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text)
+// {
+// 	bool res = true;
+// 	UITextFieldDelegate* delegate = textField->GetDelegate();
+// 	if (delegate)
+// 		res = delegate->TextFieldKeyPressed(textField, replacementLocation, replacementLength, text);
+// 
+// 	if (res)
+// 	{
+// 		WideString curText = textField->GetText();
+// 		if (curText.length() >= replacementLocation)
+// 		{
+// 			curText.replace(replacementLocation, replacementLength, text);
+// 			SetText( curText );
+// 		}
+// 	}
+// 	return res;
+// }
+//
+// void UITextFieldImpl::TextFieldShouldReturn()
+// {
+// 	UITextFieldDelegate* delegate = textField->GetDelegate();
+// 	if (delegate)
+// 		delegate->TextFieldShouldReturn(textField);
+// }
+//
 
-	if (res)
-	{
-		WideString curText = textField->GetText();
-		if (curText.length() >= replacementLocation)
-		{
-			curText.replace(replacementLocation, replacementLength, text);
-			this->text = curText;
-		}
-	}
-	return res;
-}
-
-bool UITextFieldImpl::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
-{
-	UITextFieldImpl* control = GetUITextFieldAndroid(id);
-	if (!control)
-		return false;
-
-	return control->TextFieldKeyPressed(replacementLocation, replacementLength, text);
-}
-
-void UITextFieldImpl::TextFieldShouldReturn()
-{
-	UITextFieldDelegate* delegate = textField->GetDelegate();
-	if (delegate)
-		delegate->TextFieldShouldReturn(textField);
-}
-
-void UITextFieldImpl::TextFieldShouldReturn(uint32_t id)
-{
-	UITextFieldImpl* control = GetUITextFieldAndroid(id);
-	if (!control)
-		return;
-
-	control->TextFieldShouldReturn();
-}
-
-UITextFieldImpl* UITextFieldImpl::GetUITextFieldAndroid(uint32_t id)
-{
-	DAVA::Map<uint32_t, UITextFieldImpl*>::iterator iter = controls.find(id);
-	if (iter != controls.end())
-		return iter->second;
-
-	return NULL;
-}
 void UITextFieldImpl::Input(UIEvent *currentInput){}
 void UITextFieldImpl::Draw(const UIGeometricData &geometricData){}

@@ -46,11 +46,11 @@ void UITextFieldDelegate::TextFieldShouldReturn(UITextField * /*textField*/)
 
 void UITextFieldDelegate::TextFieldShouldCancel(UITextField * /*textField*/)
 {
-};
-    
+}
+
 void UITextFieldDelegate::TextFieldLostFocus(UITextField * /*textField*/)
 {
-};
+}
 
 bool UITextFieldDelegate::TextFieldKeyPressed(UITextField * /*textField*/, int32 /*replacementLocation*/, int32 /*replacementLength*/, const WideString & /*replacementString*/)
 {
@@ -77,7 +77,6 @@ void UITextFieldDelegate::OnKeyboardHidden()
 
 UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= false*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
-,	text()
 ,	delegate(NULL)
 ,	autoCapitalizationType(AUTO_CAPITALIZATION_TYPE_SENTENCES)
 ,	autoCorrectionType(AUTO_CORRECTION_TYPE_DEFAULT)
@@ -87,6 +86,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	returnKeyType(RETURN_KEY_DEFAULT)
 ,   isPassword(false)
 ,	enableReturnKeyAutomatically(false)
+,	align(0)
 {
 	textFieldImpl = new UITextFieldImpl(this);
 }
@@ -169,8 +169,9 @@ void UITextField::SetFont(Font * font)
     textFieldImpl->SetFont( font );
 }
 
-const Color& UITextField::GetTextColor()
+Color UITextField::GetTextColor() const
 {
+    Color textColor;
     textFieldImpl->GetTextColor( textColor );
     return textColor;
 }
@@ -205,16 +206,15 @@ void UITextField::SetSpriteAlign(int32 align)
     UIControl::SetSpriteAlign(align);
 }
 
-void UITextField::SetText(const WideString & _text)
+void UITextField::SetText(const WideString & text)
 {
-	text = _text;
 	textFieldImpl->SetText(text);
 }
 
-const WideString & UITextField::GetText()
+WideString UITextField::GetText() const
 {
+    WideString text;
 	textFieldImpl->GetText(text);
-	
 	return text;
 }
     
@@ -225,7 +225,7 @@ Font* UITextField::GetFont()
 
 int32 UITextField::GetTextAlign() const
 {
-    return textFieldImpl->GetTextAlign();
+    return align;
 }
 
 void UITextField::Input(UIEvent *currentInput)
@@ -337,7 +337,7 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     VariantType *nodeValue = new VariantType();
 
     //Text
-    nodeValue->SetWideString(this->GetText());
+    nodeValue->SetWideString(GetText());
     node->Set("text", nodeValue);
 
     //Font
@@ -416,16 +416,6 @@ void UITextField::SetIsPassword(bool isPassword)
 bool UITextField::IsPassword() const
 {
     return isPassword;
-}
-    
-WideString UITextField::GetVisibleText() const
-{
-    if (!isPassword)
-        return text;
-    
-    WideString text = this->text;
-    text.replace(0, text.length(), text.length(), L'*');
-    return text;
 }
 	
 UITextField::eAutoCapitalizationType UITextField::GetAutoCapitalizationType() const

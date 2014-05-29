@@ -46,8 +46,6 @@ class UISystemKeyboard: public BaseObject
 protected:
     UISystemKeyboard();
 public:
-    //void Show( UITextField * textField = NULL );
-    //void Hide( UITextField * textField = NULL );
     void AddListener( UISystemKeyboardListener * listener );
     void RemoveListener( UISystemKeyboardListener * listener );
 protected:

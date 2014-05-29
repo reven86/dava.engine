@@ -40,8 +40,6 @@
 - (id) init : (DAVA::UISystemKeyboardImpl  *) kb;
 - (void) Subscribe;
 - (void) Unsubscribe;
-//- (void) ShowKeyboard : (UITextField *) textField;
-//- (void) HideKeyboard : (UITextField *) textField;
 @end
 
 namespace DAVA
@@ -62,42 +60,26 @@ UISystemKeyboardImpl::~UISystemKeyboardImpl()
     implPointer = NULL;
 }
 
-/*
-void UISystemKeyboardImpl::Show( DAVA::UITextField * davaTextField )
-{
-    ::UITextField * textField = NULL;
-    UIKeyboard_iOSImpl * impl = (UIKeyboard_iOSImpl*)implPointer;
-    [ impl ShowKeyboard: (::UITextField*) textField ];
-    
-}
-    
-void UISystemKeyboardImpl::Hide( DAVA::UITextField * davaTextField )
-{
-    ::UITextField * textField = NULL;
-    UIKeyboard_iOSImpl * impl = (UIKeyboard_iOSImpl*)implPointer;
-    [ impl HideKeyboard: (::UITextField*) textField ];
-}
- */   
 void UISystemKeyboardImpl::SendWillShowNotification( const Rect &kbRect )
 {
     keyboard->SendWillShowNotification( kbRect );
 }
-    
+
 void UISystemKeyboardImpl::SendDidShowNotification( const Rect &kbRect )
 {
     keyboard->SendDidShowNotification( kbRect );
 }
-    
+
 void UISystemKeyboardImpl::SendWillHideNotification()
 {
     keyboard->SendWillHideNotification();
 }
-    
+
 void UISystemKeyboardImpl::SendDidHideNotification()
 {
     keyboard->SendDidHideNotification();
 }
-    
+
 };
 
 @implementation UISystemKeyboardNativeImpl
@@ -119,8 +101,6 @@ void UISystemKeyboardImpl::SendDidHideNotification()
     [center addObserver:self selector:@selector(keyboardDidShow:)  name:UIKeyboardDidShowNotification object:nil];
     [center addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     [center addObserver:self selector:@selector(keyboardDidHide:)  name:UIKeyboardDidHideNotification object:nil];
-    [center addObserver:self selector:@selector(keyboardFrameWillChange:) name:UIKeyboardWillChangeFrameNotification object:nil];
-    [center addObserver:self selector:@selector(keyboardFrameDidChange:) name:UIKeyboardDidChangeFrameNotification object:nil];
 }
 
 -(void)Unsubscribe
@@ -131,11 +111,6 @@ void UISystemKeyboardImpl::SendDidHideNotification()
     [center removeObserver:self name:UIKeyboardDidShowNotification object:nil];
     [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
     [center removeObserver:self name:UIKeyboardDidHideNotification object:nil];
-    [center removeObserver:self name:UIKeyboardWillChangeFrameNotification object:nil];
-    [center removeObserver:self name:UIKeyboardDidChangeFrameNotification object:nil];
-    
-    //[center removeObserver:self];
-    //[self removeFromSuperview];
 }
 
 - (void) ShowKeyboard : (UITextField *) textField
@@ -196,11 +171,5 @@ void UISystemKeyboardImpl::SendDidHideNotification()
 {
     keyboard->SendDidHideNotification();
 }
-
--(void)keyboardFrameWillChange:(NSNotification *)notification
-{}
-
--(void)keyboardFrameDidChange:(NSNotification *)notification
-{}
 
 @end

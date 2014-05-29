@@ -30,10 +30,11 @@
 #define __DAVAENGINE_UI_TEXT_FIELD_IMPL_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
 
 namespace DAVA 
 {
+struct Rect;
+class Color;
 class UITextField;
 class UIEvent;
 class Font;
@@ -50,14 +51,13 @@ public:
 	void SetText(const WideString & string);
 	void UpdateRect(const Rect & rect, float32 timeElapsed);
 
-    void GetTextColor(DAVA::Color &color) const;
-	void SetTextColor(const DAVA::Color &color);
+    void GetTextColor(Color &color) const;
+	void SetTextColor(const Color &color);
     Font *GetFont();
     void SetFont(Font * font);
 	void SetFontSize(float32 size);
     
-    void SetTextAlign(DAVA::int32 align);
-    DAVA::int32 GetTextAlign() const;
+    void SetTextAlign(int32 align);
 
 	void ShowField();
 	void HideField();
@@ -67,12 +67,12 @@ public:
 	void SetInputEnabled(bool value);
     
 	// Keyboard traits.
-	void SetAutoCapitalizationType(DAVA::int32 value);
-	void SetAutoCorrectionType(DAVA::int32 value);
-	void SetSpellCheckingType(DAVA::int32 value);
-	void SetKeyboardAppearanceType(DAVA::int32 value);
-	void SetKeyboardType(DAVA::int32 value);
-	void SetReturnKeyType(DAVA::int32 value);
+	void SetAutoCapitalizationType(int32 value);
+	void SetAutoCorrectionType(int32 value);
+	void SetSpellCheckingType(int32 value);
+	void SetKeyboardAppearanceType(int32 value);
+	void SetKeyboardType(int32 value);
+	void SetReturnKeyType(int32 value);
 	void SetEnableReturnKeyAutomatically(bool value);
 
     // Cursor pos.
@@ -81,37 +81,10 @@ public:
 
     void Input(UIEvent *currentInput);
     void Draw(const UIGeometricData &geometricData);
-#if defined(__DAVAENGINE_ANDROID__)
-public:
-    bool TextFieldKeyPressed(int32 replacementLocation, int32 replacementLength, const WideString &text);
-    void TextFieldShouldReturn();
-    static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
-    static void TextFieldShouldReturn(uint32_t id);
 
+    UITextField * GetTextFieldControl() const { return textField; };
 private:
-    static UITextFieldImpl* GetUITextFieldAndroid(uint32_t id);
-    static uint32_t sId;
-    static DAVA::Map<uint32_t, UITextFieldImpl*> controls;
-    uint32_t id;
-    Rect rect;
-    WideString text;
-    int32 align;
-#elif defined(__DAVAENGINE_IPHONE__)
-
-#else
-    class UIStaticText * staticText;
-    class Font * textFont;
-    WideString text;
-
-    bool needRedraw:1;
-    bool showCursor:1;
-    bool isPassword:1;
-    float32 cursorTime;
-    int32 align;
-#endif
-
-private:
-	void * objcClassPtr;
+	void * nativeClassPtr;//pointer to native implementation
     UITextField * textField;
 };
 };
