@@ -31,7 +31,7 @@
 #include "AndroidLayer.h"
 #include "Base/BaseTypes.h"
 #include "Utils/UTF8Utils.h"
-#include "UI/UITextFieldImpl.h"
+#include "Platform/TemplateAndroid/JniTextField.h"
 
 extern "C"
 {

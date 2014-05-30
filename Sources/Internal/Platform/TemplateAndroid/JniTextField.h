@@ -30,6 +30,7 @@
 #define __DAVAENGINE_JNI_TEXT_FIELD_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "JniExtensions.h"
@@ -46,8 +47,8 @@ public:
     void Create(const Rect &rect);
     void Destroy();
     void UpdateRect(const Rect & rect);
-    const char* GetText();
-    void SetText(const char* text);
+    const WideString &GetText() const;
+    void SetText(const WideString &text);
     void SetTextColor(float r, float g, float b, float a);
     void SetFontSize(float size);
     void SetIsPassword(bool isPassword);

@@ -35,7 +35,7 @@ using namespace DAVA;
 UITextFieldImpl::UITextFieldImpl(UITextField* tf)
 {
 	textField = tf;
-    JniTextField * ptr = new JniTextField(tf);
+    JniTextField * ptr = new JniTextField(this);
     ptr->Create(textField->GetRect());
     nativeClassPtr = ptr;
 }
@@ -68,9 +68,8 @@ void UITextFieldImpl::GetText(WideString & string) const
 
 void UITextFieldImpl::SetText(const WideString & string)
 {
-    String utfText = WStringToString(string);
     JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
-    ptr->SetText(utfText.c_str());
+    ptr->SetText(string);
 }
 
 void UITextFieldImpl::UpdateRect(const Rect & newRect, float32 timeElapsed)

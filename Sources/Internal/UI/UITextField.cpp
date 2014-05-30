@@ -86,7 +86,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	returnKeyType(RETURN_KEY_DEFAULT)
 ,   isPassword(false)
 ,	enableReturnKeyAutomatically(false)
-,	align(0)
+,	align(ALIGN_LEFT|ALIGN_VCENTER)
 {
 	textFieldImpl = new UITextFieldImpl(this);
 }

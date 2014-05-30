@@ -29,7 +29,9 @@
 #include "JniTextField.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Base/BaseMath.h"
+#include "UI/UITextFieldImpl.h"
+#include "UI/UITextField.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -118,16 +120,18 @@ void JniTextField::UpdateRect(const Rect & controlRect)
 				newRect.dy);
 	}
 }
-const char* JniTextField::GetText()
+const WideString &JniTextField::GetText() const
 {
-
+	return text;
 }
-void JniTextField::SetText(const char* text)
+void JniTextField::SetText(const WideString & newText)
 {
+	text = newText;
+    String utfText = UTF8Utils::EncodeToUTF8(text);
 	jmethodID mid = GetMethodID("SetText", "(ILjava/lang/String;)V");
 	if (mid)
 	{
-		jstring jStrDefaultText = GetEnvironment()->NewStringUTF(text);
+		jstring jStrDefaultText = GetEnvironment()->NewStringUTF(utfText.c_str());
 		GetEnvironment()->CallStaticVoidMethod(
 				GetJavaClass(),
 				mid,
@@ -364,13 +368,18 @@ void JniTextField::SetCursorPos(uint32 pos)
 bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
     UITextFieldImpl* impl = GetUITextFieldImpl(id);
-    if (!impl || !impl->GetTextFieldControl() || !impl->GetTextFieldControl()->GetDelegate())
+    if (!impl)
         return true;
 
-    if( impl->GetTextFieldControl()->GetDelegate()->TextFieldKeyPressed(impl->GetTextFieldControl(), replacementLocation, replacementLength, text) )
+    UITextField * control = impl->GetTextFieldControl();
+
+    if(!control || !control->GetDelegate())
+    	return true;
+
+    if( control->GetDelegate()->TextFieldKeyPressed(control, replacementLocation, replacementLength, text) )
     {
         WideString str = L"";
-        SetText(impl->GetTextFieldControl()->GetAppliedChanges((int32)text.length() - 1,  1, str));
+        impl->SetText(control->GetAppliedChanges((int32)text.length() - 1,  1, str));
         return true;
     }
 
@@ -380,10 +389,15 @@ bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, i
 void JniTextField::TextFieldShouldReturn(uint32_t id)
 {
     UITextFieldImpl* impl = GetUITextFieldImpl(id);
-    if (!impl || !impl->GetTextFieldControl() || !impl->GetTextFieldControl()->GetDelegate())
+    if (!impl)
         return;
 
-    impl->GetTextFieldControl()->GetDelegate()->TextFieldShouldReturn( impl->GetTextFieldControl() );
+    UITextField * control = impl->GetTextFieldControl();
+
+    if(!control || !control->GetDelegate())
+    	return;
+
+    control->GetDelegate()->TextFieldShouldReturn( control );
 }
 };
 #endif //#if defined(__DAVAENGINE_ANDROID__)

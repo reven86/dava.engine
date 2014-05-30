@@ -259,6 +259,10 @@ static const UIReturnKeyType DavaToNativeUIReturnKeyType[] =
 	textField.keyboardAppearance = [self convertKeyboardAppearanceType: cppTextField->GetKeyboardAppearanceType()];
 	textField.keyboardType = [self convertKeyboardType: cppTextField->GetKeyboardType()];
 	textField.returnKeyType = [self convertReturnKeyType: cppTextField->GetReturnKeyType()];
+    
+    textField.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+    textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    textField.textAlignment = NSTextAlignmentLeft;
 }
 
 - (UITextAutocapitalizationType) convertAutoCapitalizationType:(DAVA::UITextField::eAutoCapitalizationType) davaType
