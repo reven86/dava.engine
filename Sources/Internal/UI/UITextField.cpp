@@ -41,7 +41,7 @@
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/UITextFieldImplAndroid.h"
 #else
-#include "Platform/UITextFieldImplCustom.h"
+#include "Platform/UITextFieldImpl_Custom.h"
 #endif
 
 namespace DAVA 

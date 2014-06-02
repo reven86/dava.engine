@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "UITextFieldImplCustom.h"
+#include "UITextFieldImpl_Custom.h"
 #include "UI/UITextFieldImpl.h"
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
