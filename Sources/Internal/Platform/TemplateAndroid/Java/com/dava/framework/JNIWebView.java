@@ -162,6 +162,8 @@ public class JNIWebView {
 
 				activity.addContentView(webView, params);
 				views.put(id, webView);
+				
+				CookieSyncManager.createInstance(activity.getApplicationContext()); 
 			}
 		});
 	}
@@ -256,61 +258,40 @@ public class JNIWebView {
 		});
 	}
 	
-	public static void DeleteCookies(final int id, final String targetURL)
+	public static void DeleteCookies(final String targetURL)
 	{
-		final JNIActivity activity = JNIActivity.GetActivity();
-		activity.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				if (!views.containsKey(id))
-				{
-					Log.d(TAG, String.format("Unknown view id %d", id));
-					return;
-				}
-				// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
-				if (CookieSyncManager.getInstance() == null)
-				{
-					CookieSyncManager.createInstance(activity.getApplicationContext()); 
-				}
-			    CookieManager cookieManager = CookieManager.getInstance();
-			    if (cookieManager.hasCookies())
-			    {
-			    	// Get cookies for specific URL and change their expiration date
-			    	// This should force android system to remove these cookies
-			    	String cookiestring = cookieManager.getCookie(targetURL);
-			    	String[] cookies =  cookiestring.split(";");
-			    
-			    	for (int i=0; i<cookies.length; i++) 
-			    	{
-			    		String[] cookieparts = cookies[i].split("=");
-			    		cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
-			    	}
-			    	// Synchronize cookies storage
-			    	CookieSyncManager.getInstance().sync();
-			    
-			    	// Check if cookies were removed - if not - delete all cookies
-			    	cookiestring = cookieManager.getCookie(targetURL);
-			    	cookies =  cookiestring.split(";");
-			    	if (cookies.length > 0)
-			    	{
-			    		cookieManager.removeExpiredCookie();
-			    		// Synchronize cookies storage
-			    		CookieSyncManager.getInstance().sync();
-			    	}	
-			    }
-			}
-		});
+		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 		
+		CookieManager cookieManager = CookieManager.getInstance();
+		if (cookieManager.hasCookies())
+		{
+		   	// Get cookies for specific URL and change their expiration date
+		   	// This should force android system to remove these cookies
+		   	String cookiestring = cookieManager.getCookie(targetURL);
+		   	String[] cookies =  cookiestring.split(";");
+		    
+		   	for (int i=0; i<cookies.length; i++) 
+		   	{
+		   		String[] cookieparts = cookies[i].split("=");
+		   		cookieManager.setCookie(targetURL, cookieparts[0].trim()+"=; Expires=Mon, 31 Dec 2012 23:59:59 GMT");
+		   	}
+		   	// Synchronize cookies storage
+		   	CookieSyncManager.getInstance().sync();
+		    
+		   	// Check if cookies were removed - if not - delete all cookies
+		   	cookiestring = cookieManager.getCookie(targetURL);
+		   	cookies =  cookiestring.split(";");
+		   	if (cookies.length > 0)
+		   	{
+		   		cookieManager.removeExpiredCookie();
+		   		// Synchronize cookies storage
+		   		CookieSyncManager.getInstance().sync();
+		   	}	
+		}
 	}	
 	
 	public static String GetCookie(final String targetURL, final String cookieName)
 	{		
-		final JNIActivity activity = JNIActivity.GetActivity();
-		
 		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
-		if (CookieSyncManager.getInstance() == null)
-		{
-			CookieSyncManager.createInstance(activity.getApplicationContext()); 
-		}
 	    CookieManager cookieManager = CookieManager.getInstance();
 	    String resultCookie = "";
 
@@ -336,12 +317,7 @@ public class JNIWebView {
 	
 	public static Object[] GetCookies(final String targetURL)
 	{
-		final JNIActivity activity = JNIActivity.GetActivity();		
 		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
-		if (CookieSyncManager.getInstance() == null)
-		{
-			CookieSyncManager.createInstance(activity.getApplicationContext()); 
-		}
 	    CookieManager cookieManager = CookieManager.getInstance();
 	    // Get cookies for specific URL and put them into array
 	    String cookieString = cookieManager.getCookie(targetURL);

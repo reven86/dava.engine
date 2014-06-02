@@ -61,8 +61,8 @@ public:
 
 	bool DeleteCookies(const String& targetUrl);
 
-	String GetCookie(const String& url, const String& name);
-	Map<String, String> GetCookies(const String& url);
+	const String GetCookie(const String& url, const String& name);
+	const Map<String, String> GetCookies(const String& url);
 
 	int32_t ExecuteJScript(const String& targetScript);
 
@@ -137,9 +137,9 @@ public:
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
 	// Get cookie for specific domain and name
-	virtual String GetCookie(const String& url, const String& name);
+	virtual const String GetCookie(const String& url, const String& name);
 	// Get the list of cookies for specific domain
-	virtual Map<String, String> GetCookies(const String& url);
+	virtual const Map<String, String> GetCookies(const String& url);
 	// Execute javascript string in webview
 	virtual int32_t ExecuteJScript(const String& scriptString);
 

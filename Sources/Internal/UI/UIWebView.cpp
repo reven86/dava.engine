@@ -79,12 +79,12 @@ void UIWebView::LoadHtmlString(const WideString& htmlString)
 	webViewControl->LoadHtmlString(htmlString);
 }
 
-String UIWebView::GetCookie(const String& targetUrl, const String& name)
+const String UIWebView::GetCookie(const String& targetUrl, const String& name)
 {
 	return webViewControl->GetCookie(targetUrl, name);
 }
 
-Map<String, String> UIWebView::GetCookies(const String& targetUrl)
+const Map<String, String> UIWebView::GetCookies(const String& targetUrl)
 {
 	return webViewControl->GetCookies(targetUrl);
 }
