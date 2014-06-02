@@ -76,6 +76,7 @@ protected slots:
     void OnMaterialRemoveGlobal(bool checked);
     void OnMaterialSave(bool checked);
     void OnMaterialLoad(bool checked);
+    void OnMaterialPropertyEditorContextMenuRequest(const QPoint & pos);
 
 protected:
 	virtual void showEvent(QShowEvent * event);

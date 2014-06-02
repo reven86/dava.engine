@@ -578,6 +578,7 @@
 		E8D417C5188160C800A76E21 /* EditorMaterialSystem.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8D417C3188160C800A76E21 /* EditorMaterialSystem.cpp */; };
 		E8EA8DBF185C38040064906E /* MaterialTree.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8EA8DBD185C38040064906E /* MaterialTree.cpp */; };
 		E8EA8DC1185C38170064906E /* MaterialTree_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8EA8DC0185C38170064906E /* MaterialTree_moc.cpp */; };
+		EAAC98921937335F00549BAD /* RebuildTangentSpaceCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = EAAC98901937335F00549BAD /* RebuildTangentSpaceCommand.cpp */; };
 		EAADA00E189FB59E001E1AA2 /* ParticleEmitterMoveCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = EAADA00C189FB59E001E1AA2 /* ParticleEmitterMoveCommands.cpp */; };
 /* End PBXBuildFile section */
 
@@ -1713,6 +1714,8 @@
 		E8EA8DBD185C38040064906E /* MaterialTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTree.cpp; sourceTree = "<group>"; };
 		E8EA8DBE185C38040064906E /* MaterialTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialTree.h; sourceTree = "<group>"; };
 		E8EA8DC0185C38170064906E /* MaterialTree_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTree_moc.cpp; sourceTree = "<group>"; };
+		EAAC98901937335F00549BAD /* RebuildTangentSpaceCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RebuildTangentSpaceCommand.cpp; sourceTree = "<group>"; };
+		EAAC98911937335F00549BAD /* RebuildTangentSpaceCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RebuildTangentSpaceCommand.h; sourceTree = "<group>"; };
 		EAADA00C189FB59E001E1AA2 /* ParticleEmitterMoveCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleEmitterMoveCommands.cpp; sourceTree = "<group>"; };
 		EAADA00D189FB59E001E1AA2 /* ParticleEmitterMoveCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParticleEmitterMoveCommands.h; sourceTree = "<group>"; };
 		F7C12D3D2FE75302773F34BB /* vorbisfile_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = vorbisfile_macos; path = ../../Libs/oggvorbis/lib/libvorbisfile_macos.a; sourceTree = "<group>"; };
@@ -3118,6 +3121,8 @@
 		E8C99008184CD0EB00AFBF3F /* Commands2 */ = {
 			isa = PBXGroup;
 			children = (
+				EAAC98901937335F00549BAD /* RebuildTangentSpaceCommand.cpp */,
+				EAAC98911937335F00549BAD /* RebuildTangentSpaceCommand.h */,
 				E8185C29190950E500AAD457 /* MaterialGlobalCommand.cpp */,
 				E8185C2A190950E500AAD457 /* MaterialGlobalCommand.h */,
 				504697D3190175CE00BE1E6C /* EntityLockCommand.h */,
@@ -4324,6 +4329,7 @@
 				E8C991F0184CD0EC00AFBF3F /* btDbvtBroadphase.cpp in Build Sources */,
 				E8C992DE184CD0EC00AFBF3F /* PropertyEditor.cpp in Build Sources */,
 				E8BAD6B91859F50300C98C8D /* TilemaskEditorPanel_moc.cpp in Build Sources */,
+				EAAC98921937335F00549BAD /* RebuildTangentSpaceCommand.cpp in Build Sources */,
 				76741C9118A3BE650044A0BF /* CacheRequest_moc.cpp in Build Sources */,
 				643BE8FF18C74B1C00D824FE /* ImageRegionCopyCommand.cpp in Build Sources */,
 				E8C99273184CD0EC00AFBF3F /* CommandLineTool.cpp in Build Sources */,

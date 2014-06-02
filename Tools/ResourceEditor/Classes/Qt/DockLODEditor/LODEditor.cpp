@@ -182,6 +182,7 @@ void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int i
     spinbox->setRange(0.f, DAVA::LodComponent::MAX_LOD_DISTANCE);  //distance 
     spinbox->setProperty(ResourceEditor::TAG.c_str(), index);
     spinbox->setValue(0.f);
+    spinbox->setFocusPolicy(Qt::WheelFocus);
     spinbox->setKeyboardTracking(false);
     
     connect(spinbox, SIGNAL(valueChanged(double)), SLOT(LODDistanceChangedBySpinbox(double)));
@@ -197,10 +198,9 @@ void LODEditor::UpdateSpinboxColor(QDoubleSpinBox *spinbox)
 {
     QColor color = ((spinbox->value() > 0)) ? Qt::red : Qt::green;
     
-    QPalette* palette = new QPalette();
-    palette->setColor(QPalette::Text, color);
-    
-    spinbox->setPalette(*palette);
+    QPalette palette;
+    palette.setColor(QPalette::Text, color);
+    spinbox->setPalette(palette);
 }
 
 
@@ -281,9 +281,17 @@ void LODEditor::LODDistanceChangedBySpinbox(double value)
     {
         //TODO set new value to scene
         int lodLevel = spinBox->property(ResourceEditor::TAG.c_str()).toInt();
-        
-        editedLODData->SetLayerDistance(lodLevel, value);
-        ui->distanceSlider->SetDistance(lodLevel, value);
+
+        {
+            const bool wasBlocked = editedLODData->blockSignals(true);
+            editedLODData->SetLayerDistance(lodLevel, value);
+            editedLODData->blockSignals(wasBlocked);
+        }
+        {
+            const bool wasBlocked = ui->distanceSlider->blockSignals(true);
+            ui->distanceSlider->SetDistance(lodLevel, value);
+            ui->distanceSlider->blockSignals(wasBlocked);
+        }
     }
 }
 

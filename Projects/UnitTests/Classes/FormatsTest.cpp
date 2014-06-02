@@ -62,7 +62,7 @@ void FormatsTest::LoadResources()
 
     for(int32 i = FORMAT_RGBA8888; i < FORMAT_COUNT; ++i)
     {
-		if(i == 13) continue; //was DXT1NM
+		if(i == 13) continue; // FORMAT_DXT1NM was deleted
 
         int32 y = (i-1) / columnCount;
         int32 x = (i-1) % columnCount;

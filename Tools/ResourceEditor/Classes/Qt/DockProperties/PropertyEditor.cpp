@@ -55,6 +55,7 @@
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/RebuildTangentSpaceCommand.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
@@ -403,6 +404,10 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                         convertButton->setEnabled(isSingleSelection);
 						QObject::connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
 					}
+
+                    QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                    rebuildTangentButton->setEnabled(isSingleSelection);
+                    QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
 				}
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::ShadowVolume>() == meta)
@@ -411,12 +416,6 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                 deleteButton->setEnabled(isSingleSelection);
 				QObject::connect(deleteButton, SIGNAL(pressed()), this, SLOT(DeleteRenderBatch()));
 			}
-            else if(DAVA::MetaInfo::Instance<DAVA::PolygonGroup>() == meta)
-            {
-                QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
-                rebuildTangentButton->setEnabled(isSingleSelection);
-                QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
-            }
 			else if(DAVA::MetaInfo::Instance<DAVA::NMaterial>() == meta)
 			{
 				QtPropertyToolButton * goToMaterialButton = CreateButton(data, QIcon(":/QtIcons/3d.png"), "Edit material");
@@ -898,10 +897,37 @@ void PropertyEditor::RebuildTangentSpace()
     if(NULL != btn)
     {
         QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
-        if(NULL != data)
-        {
-            PolygonGroup *group = (PolygonGroup *)data->object;
-            MeshConverter::RebuildMeshTangentSpace(group, true, false);
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        if(NULL != data && NULL != curScene)
+        {            
+            QDialog *dlg = new QDialog(this);
+            QVBoxLayout *dlgLayout = new QVBoxLayout();
+            dlgLayout->setMargin(10);
+            dlgLayout->setSpacing(15);
+
+            dlg->setWindowTitle("Rebuild tangent space");
+            dlg->setWindowFlags(Qt::Tool);
+            dlg->setLayout(dlgLayout);                                
+
+            QCheckBox *exportBinormalCheckBox = new QCheckBox("Export binormal");
+            exportBinormalCheckBox->setChecked(false);
+            dlgLayout->addWidget(exportBinormalCheckBox);                
+
+            QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
+            dlgLayout->addWidget(buttons);
+
+            QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
+            QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+
+            if(QDialog::Accepted == dlg->exec())
+            {
+                bool exportBinormal = (exportBinormalCheckBox->checkState() == Qt::Checked);                    
+                RenderBatch *batch = (RenderBatch *)data->object;
+                curScene->Exec(new RebuildTangentSpaceCommand(batch, exportBinormal));                    
+                ResetProperties();
+            }            
+
+            delete dlg;
         }
     }
 }

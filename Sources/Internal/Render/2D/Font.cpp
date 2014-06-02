@@ -129,6 +129,7 @@ int32 Font::GetVerticalSpacing() const
 }
 
     
+    
 void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
 	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
@@ -149,8 +150,8 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
 
     for(int pos = 0; pos < totalSize; pos++)
     {
-        wchar_t t = text[pos];
-        wchar_t tNext = 0;
+        char16 t = text[pos];
+        char16 tNext = 0;
         if(pos+1 < totalSize)
             tNext = text[pos+1];
         
@@ -194,7 +195,116 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
     
     WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart + 1);
     resultVector.push_back(currentLine);
-}    
+}
+    
+    
+void Font::SeparatorPositions::Reset()
+{
+    lastWordStart = lastWordEnd = currentLineEnd = 0;
+    currentLineStart = -1;
+}
+    
+bool Font::SeparatorPositions::IsLineInitialized() const
+{
+    return (currentLineStart != -1);
+}
+
+
+bool Font::IsWordSeparator(char16 t) const
+{
+    switch(t)
+    {
+        case 183: // interpunkt
+        // japanese characters that cannot start line ヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻
+        case 12541:
+        case 12542:
+        case 12540:
+        case 12449:
+        case 12451:
+        case 12453:
+        case 12455:
+        case 12457:
+        case 12483:
+        case 12515:
+        case 12517:
+        case 12519:
+        case 12526:
+        case 12533:
+        case 12534:
+        case 12353:
+        case 12355:
+        case 12357:
+        case 12359:
+        case 12361:
+        case 12387:
+        case 12419:
+        case 12421:
+        case 12423:
+        case 12430:
+        case 12437:
+        case 12438:
+        case 12784:
+        case 12785:
+        case 12786:
+        case 12787:
+        case 12788:
+        case 12789:
+        case 12790:
+        case 12791:
+        case 12792:
+        case 12793:
+        case 12794:
+        case 12795:
+        case 12796:
+        case 12797:
+        case 12798:
+        case 12799:
+        case 12293:
+        case 12347:
+        // brackets )]｝〕〉》」』】〙〗〟’”｠»
+        case 41:
+        case 93:
+        case 65373:
+        case 12309:
+        case 12297:
+        case 12299:
+        case 12301:
+        case 12303:
+        case 12305:
+        case 12313:
+        case 12311:
+        case 12319:
+        case 8217:
+        case 8221:
+        case 65376:
+        case 187:
+        // hyphens ‐゠–〜
+        case 8208:
+        case 12448:
+        case 8211:
+        case 12316:
+        // delimeters ?!‼⁇⁈⁉
+        case 63:
+        case 33:
+        case 8252:
+        case 8263:
+        case 8264:
+        case 8265:
+        // punctuation mid ・、:;,
+        case 12539:
+        case 12289: // ideographic comma
+        case 58:
+        case 59:
+        case 44:
+        // punctuation end 。.
+        case 12290:
+        case 46:
+            return true;
+    }
+    
+    return false;
+}
+    
 void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
 	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
@@ -210,13 +320,11 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
     // Yuri Coder, 2013/12/10. Replace "\n" occurrences (two chars) to '\n' (one char) is done by Yaml parser,
     // so appropriate code (state NEXTLINE)is removed from here. See please MOBWOT-6499.
 
+    
+    SeparatorPositions separator;
+    
 	resultVector.clear();
-	//int textLength = text.length();
 	int state = SKIP;
-	int lastWordStart = 0;
-	int lastWordEnd = 0;
-	int currentLineStart = -1;
-	int currentLineEnd = 0;
 	int totalSize = (int)text.length();
 	
 	Vector<int32> sizes;
@@ -225,10 +333,12 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
     {
         return;
     }
+
+    bool wasSeparator = false;
 	
 	for(int pos = 0; state != EXIT; pos++)
 	{
-		wchar_t t = 0;
+		char16 t = 0;
 		if(pos < totalSize)
 		{
 			t = text[pos];
@@ -237,20 +347,16 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 		{
 			case SKIP:
 				if (t == 0){ state = FINISH; break; } // if end of string process FINISH state and exit
-				else if (t == ' ')break; // if space continue with the same state
-				else if(t == '\n')
+				else if (IsSpace(t))break; // if space continue with the same state
+                //else if (IsWordSeparator(t)) { state = SEPARATOR; break; } // if word separator - continue with the same state
+                else if(IsLineEnd(t))
 				{
 					// this block is copied from case NEXTLINE: if(t == 'n')
 					// unlike in NEXTLINE where we ignore 2 symbols, here we ignore only one
 					// so last position is pos instead of (pos-1)
-					if (currentLineStart != -1) // if we already have something in current line we add to result
+					if (separator.IsLineInitialized()) // if we already have something in current line we add to result
 					{
-						//Logger::FrameworkDebug("before=%d %d", currentLineStart, pos - 1);
-						WideString currentLineWithoutLastWord = text.substr(currentLineStart, pos - currentLineStart);
-						//Logger::FrameworkDebug(L"after=%S", currentLineWithoutLastWord.c_str());
-						resultVector.push_back(currentLineWithoutLastWord);
-						
-						currentLineStart = -1;	// start search of characters for the new line
+                        AddCurrentLine(text, pos, separator, resultVector);
 					}else
 					{
 						resultVector.push_back(L""); // here we add empty line if there was no characters in current line
@@ -261,71 +367,112 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 				else // everything else is good characters
 				{
 					state = GOODCHAR;
-					lastWordStart = pos;
-					lastWordEnd = pos;
-					if (currentLineStart == -1)currentLineStart = pos;
+					separator.lastWordStart = pos;
+					separator.lastWordEnd = pos;
+					if (!separator.IsLineInitialized()) separator.currentLineStart = pos;
 				}
 				break;
-			case GOODCHAR: 
-				if ((t == ' ') || (t == '\n') || t == 0) // if we've found any possible separator process current line
-				{ 
-					lastWordEnd = pos;
-					
-					//					WideString currentLine = text.substr(currentLineStart, lastWordEnd - currentLineStart);
-					//					Size2i currentLineSize = GetStringSize(currentLine);
-					int currentLineDx = 0;
-					for (int i = currentLineStart; i < lastWordEnd ; i++)
-					{
-						currentLineDx += sizes[i];
-					}
-					if ((currentLineDx < targetWidth) || (currentLineEnd <= currentLineStart)) // if current line size < rect size set line end to current word end
-					{
-						currentLineEnd = lastWordEnd;
-					}else // here we add current line to results because current word is too big for current line
-					{
-						//Logger::FrameworkDebug("before=%d %d", currentLineStart, currentLineEnd);
-						WideString currentLineWithoutLastWord = text.substr(currentLineStart, currentLineEnd - currentLineStart);
-						//Logger::FrameworkDebug(L"after=%S", currentLineWithoutLastWord.c_str());
-						resultVector.push_back(currentLineWithoutLastWord);
-						currentLineStart = lastWordStart;
-						//fix: 
-						// there can be case when last word on current line with one more word (lastWordEnd = pos;) will be wider than targetRect.dx
-						// in this case currentLineEnd could have been less than currentLineStart
-						currentLineEnd = lastWordEnd;   
-					}
-				}
-				if (t == ' ')state = SKIP; // if cur char is space go to skip
-				else if(t == '\n')
-				{
-					// this block is copied from case NEXTLINE: if(t == 'n')
-					// unlike in NEXTLINE where we ignore 2 symbols, here we ignore only one
-					// so last position is pos instead of (pos-1)
-					if (currentLineStart != -1) // if we already have something in current line we add to result
-					{
-						//Logger::FrameworkDebug("before=%d %d", currentLineStart, pos - 1);
-						WideString currentLineWithoutLastWord = text.substr(currentLineStart, pos - currentLineStart);
-						//Logger::FrameworkDebug(L"after=%S", currentLineWithoutLastWord.c_str());
-						resultVector.push_back(currentLineWithoutLastWord);
-						
-						currentLineStart = -1;	// start search of characters for the new line
-					}else
-					{
-						resultVector.push_back(L""); // here we add empty line if there was no characters in current line
-					}
-					state = SKIP; //always switch to SKIP because we do not know here what will be next
-					break;
-				}
+			case GOODCHAR:
+                {
+                    bool isSeparator = IsWordSeparator(t);
+                    if(IsSpace(t) || IsLineEnd(t) || t == 0 || (wasSeparator && !isSeparator)) // if we've found any possible separator process current line
+				    {
+                    
+                        //calculate current line width
+					    int currentLineWidth = 0;
 
-				else if (t == 0) state = FINISH; 
-				
+					    int32 startPos = (separator.IsLineInitialized()) ? separator.currentLineStart : 0;
+					    for (int i = startPos; i < pos ; i++)
+					    {
+						    currentLineWidth += sizes[i];
+					    }
+                    
+                        if((currentLineWidth < targetWidth) || ((IsSpace(t) || isSeparator) && 0 == targetWidth))
+                        {   // pos could be the end of line. We need to save it
+                            if(IsLineEnd(t) || t == 0)
+                            {
+                                AddCurrentLine(text, pos, separator, resultVector);
+                            }
+                            else
+                            {
+                                separator.currentLineEnd = pos;
+                                separator.lastWordEnd = pos;
+                            }
+                        }
+                        else if(currentLineWidth == targetWidth)
+                        {   // line fit all available space
+                            DVASSERT(pos > separator.currentLineStart);
+                        
+                            AddCurrentLine(text, pos, separator, resultVector);
+                        }
+                        else
+                        {   //currentLineWidth > targetWidth
+                            int32 currentLineLength = separator.currentLineEnd - separator.currentLineStart;
+                            if((currentLineLength > 0))
+                            {   // use previous position of separator to split text
+                            
+                                pos = separator.currentLineEnd;
+                                AddCurrentLine(text, pos, separator, resultVector);
+							    state = SKIP;
+							    break;
+                            }
+                            else if(pos)
+                            {   // truncate text by symbol for very long word
+                                if(0 == targetWidth)
+                                {
+                                    AddCurrentLine(text, pos, separator, resultVector);
+                                }
+                                else
+                                {
+								    int32 endPos = (separator.IsLineInitialized()) ? separator.currentLineStart : 0;
+                                    for (int i = pos-1; i >= endPos; --i)
+                                    {
+                                        currentLineWidth -= sizes[i];
+                                        if(currentLineWidth <= targetWidth)
+                                        {
+                                            separator.currentLineEnd = i;
+                                            int32 currentLineLength = separator.currentLineEnd - separator.currentLineStart;
+                                            if((currentLineLength > 0)) // use previous position of separator to split text
+                                            {
+                                                pos = separator.currentLineEnd-1;
+                                            
+                                                AddCurrentLine(text, separator.currentLineEnd, separator, resultVector);
+                                            }
+                                        
+                                            break;
+                                        }
+                                    
+                                        DVASSERT(i);
+                                    }
+                                }
+
+							    state = SKIP;
+							    break;
+                            }
+                            else
+                            {
+                                DVASSERT(0);
+                            }
+                        }
+
+					    if (IsSpace(t) || IsLineEnd(t)) state = SKIP; // if cur char is space go to skip
+					    else if (t == 0) state = FINISH;
+                        else if(wasSeparator && !isSeparator)
+                        {
+                            // good char after separator
+					        separator.lastWordStart = pos;
+					        separator.lastWordEnd = pos;
+					        if (!separator.IsLineInitialized()) separator.currentLineStart = pos;
+                        }
+                        wasSeparator = isSeparator;
+				    }
+                }
 				break;
 			case FINISH:
-				if (currentLineStart != -1) // we check if we have something left in currentline and add this line to results
+				if (separator.IsLineInitialized()) // we check if we have something left in currentline and add this line to results
 				{
-					//Logger::FrameworkDebug("ending=%d %d", currentLineStart, currentLineEnd);
-					WideString currentLine = text.substr(currentLineStart, currentLineEnd - currentLineStart);
-					//Logger::FrameworkDebug(L"after=%S", currentLine.c_str());
-					resultVector.push_back(currentLine);
+                    DVASSERT(separator.currentLineEnd > separator.currentLineStart);
+                    AddCurrentLine(text, separator.currentLineEnd, separator, resultVector);
 				}
 				state = EXIT; // always exit from here
 				break;
@@ -333,6 +480,15 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 	};
 }
 
+void Font::AddCurrentLine(const WideString & text, const int32 pos, SeparatorPositions & separatorPosition, Vector<WideString> & resultVector) const
+{
+    WideString currentLine = text.substr(separatorPosition.currentLineStart, pos - separatorPosition.currentLineStart);
+    resultVector.push_back(currentLine);
+    
+    separatorPosition.Reset();
+}
+
+    
 Font::eFontType Font::GetFontType() const
 {
     return  fontType;

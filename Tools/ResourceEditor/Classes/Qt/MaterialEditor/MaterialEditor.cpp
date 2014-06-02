@@ -77,6 +77,7 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
     ui->materialTree->setDragDropMode(QAbstractItemView::DragDrop);
 
     ui->materialProperty->SetEditTracking(true);
+    ui->materialProperty->setContextMenuPolicy(Qt::CustomContextMenu);
     //ui->materialProperty->setSortingEnabled(true);
     //ui->materialProperty->header()->setSortIndicator(0, Qt::AscendingOrder);
 
@@ -111,6 +112,7 @@ MaterialEditor::MaterialEditor(QWidget *parent /* = 0 */)
 
     // material properties
     QObject::connect(ui->materialProperty, SIGNAL(PropertyEdited(const QModelIndex &)), this, SLOT(OnPropertyEdited(const QModelIndex &)));
+    QObject::connect(ui->materialProperty, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(OnMaterialPropertyEditorContextMenuRequest(const QPoint &)));
     QObject::connect(ui->templateBox, SIGNAL(activated(int)), this, SLOT(OnTemplateChanged(int)));
     QObject::connect(ui->actionAddGlobalMaterial, SIGNAL(triggered(bool)), this, SLOT(OnMaterialAddGlobal(bool)));
     QObject::connect(ui->actionRemoveGlobalMaterial, SIGNAL(triggered(bool)), this, SLOT(OnMaterialRemoveGlobal(bool)));
@@ -532,17 +534,17 @@ void MaterialEditor::UpdateAddRemoveButtonState(QtPropertyDataInspDynamic *data)
             addRemoveButton->setIcon(QIcon(":/QtIcons/cminus.png"));
             addRemoveButton->setToolTip("Remove property");
 
-        // isn't set in parent or shader
-        if(!(memberFlags & DAVA::I_VIEW) && !(memberFlags & DAVA::I_SAVE))
-        {
-            bgColor = QBrush(QColor(255, 0, 0, 25));
-        }
+            // isn't set in parent or shader
+            if(!(memberFlags & DAVA::I_VIEW) && !(memberFlags & DAVA::I_SAVE))
+            {
+                bgColor = QBrush(QColor(255, 0, 0, 25));
+            }
         }
         // inherited from parent property - should be add button
-    else
+        else
         {
             editEnabled = false;
-        bgColor = QBrush(QColor(0, 0, 0, 25));
+            bgColor = QBrush(QColor(0, 0, 0, 25));
             addRemoveButton->setIcon(QIcon(":/QtIcons/cplus.png"));
             addRemoveButton->setToolTip( "Add property" );
         }
@@ -788,6 +790,44 @@ void MaterialEditor::onContextMenuPrepare(QMenu *menu)
         menu->addSeparator();
         menu->addAction(ui->actionLoadMaterialPreset);
         menu->addAction(ui->actionSaveMaterialPreset);
+    }
+}
+
+void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint & pos)
+{
+    SceneEditor2 *sceneEditor = QtMainWindow::Instance()->GetCurrentScene();
+    if(NULL != sceneEditor && curMaterials.size() == 1)
+    {
+        DAVA::NMaterial *globalMaterial = sceneEditor->GetGlobalMaterial();
+        DAVA::NMaterial *material = curMaterials[0];
+
+        QModelIndex index = ui->materialProperty->indexAt(pos);
+
+        if(globalMaterial != material && index.column() == 0)
+        {
+            QtPropertyData *data = ui->materialProperty->GetProperty(index);
+            if(NULL != data && data->Parent() == propertiesRoot)
+            {
+                QtPropertyDataInspDynamic *dynamicData = (QtPropertyDataInspDynamic *) data;
+                if(NULL != dynamicData)
+                {
+                    DAVA::FastName propertyName = dynamicData->name;
+                    DAVA::NMaterialProperty *property = material->GetMaterialProperty(propertyName);
+                    if(NULL != property && NULL != globalMaterial)
+                    {
+                        QMenu menu;
+                        menu.addAction("Add to Global Material");
+                        QAction *resultAction = menu.exec(ui->materialProperty->viewport()->mapToGlobal(pos));
+
+                        if(NULL != resultAction)
+                        {
+                            globalMaterial->SetPropertyValue(propertyName, property->type, property->size, property->data);
+                            sceneEditor->SetChanged(true);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -531,7 +531,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 
 			result.fileSize = QFileInfo(compressedTexturePath.GetAbsolutePathname().c_str()).size();
 
-			if(convertedImages.size())
+			if(convertedImages.size() && convertedImages[0])
 			{
 				result.imageSize.setWidth(convertedImages[0]->GetWidth());
 				result.imageSize.setHeight(convertedImages[0]->GetHeight());

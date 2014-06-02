@@ -1412,6 +1412,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h">
+      <Filter>Internal\Render\3D</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboard.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -2550,6 +2553,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp">
+      <Filter>Internal\Render\3D</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboard.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>

@@ -382,6 +382,11 @@ const List<GuideData*> HierarchyTreeScreenNode::GetGuides(bool includeNewGuide) 
     return guides.GetGuides(includeNewGuide);
 }
 
+int32 HierarchyTreeScreenNode::GetStickMode() const
+{
+    return guides.GetStickMode();
+}
+
 void HierarchyTreeScreenNode::SetStickMode(int32 stickMode)
 {
     guides.SetStickMode(stickMode);

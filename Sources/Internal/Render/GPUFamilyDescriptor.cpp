@@ -89,7 +89,6 @@ void GPUFamilyDescriptor::SetupGPUFormats()
     gpuData[GPU_TEGRA].availableFormats[FORMAT_RGB888] = ".pvr";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_RGB565] = ".pvr";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_A8] = ".pvr";
-    gpuData[GPU_TEGRA].availableFormats[FORMAT_RGBA8888] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT1] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT1A] = ".dds";
     gpuData[GPU_TEGRA].availableFormats[FORMAT_DXT3] = ".dds";

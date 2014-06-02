@@ -226,7 +226,16 @@ private:
     bool IsControlContentVisible( const UIControl *control ) const;
 
     // Calculate the stick to guides for different input modes.
+    int32 CalculateStickToGuides(Vector2& offset) const;
     int32 CalculateStickToGuidesDrag(Vector2& offset) const;
+    int32 CalculateStickToGuidesSize(Vector2& offset) const;
+
+    // Helper stick calculation functions.
+    int32 CalculateStickToRectBounds(HierarchyTreeScreenNode* screenNode, const Rect& selectedRect, Vector2& offset) const;
+    int32 CalculateStickToRectCenter(HierarchyTreeScreenNode* screenNode, const Rect& selectedRect, Vector2& offset) const;
+
+    // Do we need to calculate stick mode at all?
+    bool NeedCalculateStickMode(HierarchyTreeScreenNode* screenNode) const;
 
     // Get the stick treshold.
     int32 GetGuideStickTreshold() const;

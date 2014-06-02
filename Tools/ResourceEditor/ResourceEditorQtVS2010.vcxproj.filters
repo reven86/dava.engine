@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="QtData">
@@ -1953,6 +1953,15 @@
     <ClCompile Include="_GeneratedQt\Settings\SettingsDialog_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\Tools\DeveloperTools\DeveloperTools_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\RebuildTangentSpaceCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">
@@ -3445,6 +3454,12 @@
     </ClInclude>
     <ClInclude Include="Classes\Qt\Settings\SettingsDialog.h">
       <Filter>Classes\Qt\Settings</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.h">
+      <Filter>QtGenerated</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\RebuildTangentSpaceCommand.h">
+      <Filter>Classes\Commands2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

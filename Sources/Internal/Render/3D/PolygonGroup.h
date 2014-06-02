@@ -215,31 +215,6 @@ public:
     );
 };
 
-class MeshConverter
-{
-public:
-    static void RebuildMeshTangentSpace(PolygonGroup *group, bool normalizeTangentSpace=true, bool computeBinormal=false);
-    static void CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos);
-    
-private:
-    struct FaceWork
-    {
-        int32 indexOrigin[3];
-        Vector3 tangent, binormal;
-    };
-
-    struct VertexWork
-    {
-        Vector<int32> refIndices;
-        Vector3 tangent, binormal;
-        int32 tbRatio;
-        int32 refIndex;
-        int32 resultGroup;
-    };
-
-    
-};
-
 // Static Mesh Implementation
 
 inline void	PolygonGroup::SetCoord(int32 i, const Vector3 & _v)

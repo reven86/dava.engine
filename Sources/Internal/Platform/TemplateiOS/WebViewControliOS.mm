@@ -159,19 +159,19 @@ namespace DAVA
 WebViewControl::WebViewControl()
 {
     gesturesEnabled = false;
-	CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
-	webViewPtr = [[UIWebView alloc] initWithFrame:emptyRect];
-	SetBounces(false);
+    CGRect emptyRect = CGRectMake(0.0f, 0.0f, 0.0f, 0.0f);
+    webViewPtr = [[UIWebView alloc] initWithFrame:emptyRect];
+    SetBounces(false);
 
 	UIWebView* localWebView = (UIWebView*)webViewPtr;
 	HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
 	[[appDelegate glController].backgroundView addSubview:localWebView];
 
-	webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
-	[localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
+    webViewURLDelegatePtr = [[WebViewURLDelegate alloc] init];
+    [localWebView setDelegate:(WebViewURLDelegate*)webViewURLDelegatePtr];
 
-	[localWebView becomeFirstResponder];
-}
+    [localWebView becomeFirstResponder];
+ }
 
 WebViewControl::~WebViewControl()
 {

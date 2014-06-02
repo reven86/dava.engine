@@ -512,6 +512,11 @@ int32 GuidesManager::GetGuideStickTreshold() const
     return GUIDE_STICK_TRESHOLD;
 }
 
+int32 GuidesManager::GetStickMode() const
+{
+    return stickMode;
+}
+
 void GuidesManager::SetStickMode(int32 mode)
 {
     stickMode = mode;

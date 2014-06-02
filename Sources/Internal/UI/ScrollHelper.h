@@ -88,12 +88,12 @@ public:
 	 \brief Returns scroll position for the current scroll helper states.
 	 \returns Current scroll position.
 	 */
-	float32 GetPosition();
+	float32 GetPosition() const;
     
-    float32 GetViewSize();
-    float32 GetElementSize();
+    float32 GetViewSize() const;
+    float32 GetElementSize() const;
 	
-	float32 GetCurrentSpeed();
+	float32 GetCurrentSpeed() const;
 	
 	/**
 	 \brief Returns scroll position accordingly to the new incoming data.

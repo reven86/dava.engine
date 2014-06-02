@@ -26,73 +26,41 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifdef DAVA_FMOD
 
-#ifndef __DAVAENGINE_FMOD_SOUND_EVENT_H__
-#define __DAVAENGINE_FMOD_SOUND_EVENT_H__
+#ifndef __DAVAENGINE_MESH_UTILS_H__
+#define __DAVAENGINE_MESH_UTILS_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "Base/EventDispatcher.h"
-#include "Base/FastNameMap.h"
-#include "Sound/SoundEvent.h"
-#include "Sound/FMODUtils.h"
+#include "Render/3D/PolygonGroup.h"
 
-namespace FMOD
-{
-    class Event;
-};
 
 namespace DAVA
 {
 
-class FMODSoundEvent : public SoundEvent
+class MeshUtils
 {
 public:
-    static FMOD_RESULT F_CALLBACK FMODEventCallback(FMOD_EVENT *event, FMOD_EVENT_CALLBACKTYPE type, void *param1, void *param2, void *userdata);
+    static void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal=false);
+    static void CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos);
+    static void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup);
 
-	virtual ~FMODSoundEvent();
+private:
+    struct FaceWork
+    {
+        int32 indexOrigin[3];
+        Vector3 tangent, binormal;
+    };
 
-    virtual bool IsActive() const;
-    virtual bool Trigger();
-	virtual void Stop();
-    virtual void SetPaused(bool paused);
-    
-    virtual void SetVolume(float32 volume);
-    
-    virtual void SetPosition(const Vector3 & position);
-    virtual void SetDirection(const Vector3 & direction);
-    virtual void UpdateInstancesPosition();
-    virtual void SetVelocity(const Vector3 & velocity);
-    
-    virtual void SetParameterValue(const FastName & paramName, float32 value);
-    virtual float32 GetParameterValue(const FastName & paramName);
-    virtual bool IsParameterExists(const FastName & paramName);
-
-    virtual void GetEventParametersInfo(Vector<SoundEventParameterInfo> & paramsInfo) const;
-
-    virtual String GetEventName() const;
-    
-protected:
-    FMODSoundEvent(const FastName & eventName);
-    void ApplyParamsToEvent(FMOD::Event * event);
-    void InitParamsMap();
-
-    void PerformCallback(FMOD::Event * event);
-
-	bool is3D;
-    FastName eventName;
-    Vector3 position;
-    Vector3 direction;
-
-	FastNameMap<float32> paramsValues;
-	Vector<FMOD::Event *> fmodEventInstances;
-    
-friend class SoundSystem;
+    struct VertexWork
+    {
+        Vector<int32> refIndices;
+        Vector3 tangent, binormal;
+        int32 tbRatio;
+        int32 refIndex;
+        int32 resultGroup;
+    };
 };
 
 };
 
 #endif
 
-#endif //DAVA_FMOD

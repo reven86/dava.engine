@@ -133,7 +133,7 @@ public:
     
 
 public:
-    TextureDescriptor(bool needCompressionSettings = false);
+    TextureDescriptor();
 	virtual ~TextureDescriptor();
 
 	static TextureDescriptor * CreateFromFile(const FilePath &filePathname);

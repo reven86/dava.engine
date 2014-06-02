@@ -1535,6 +1535,10 @@
 		EA7DEDDA144854E900D9E652 /* libfreetype_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */; };
 		EA84E17517FAC20100304C3C /* SpatialTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA84E17317FAC20100304C3C /* SpatialTree.cpp */; };
 		EA84E17617FAC20100304C3C /* SpatialTree.h in Headers */ = {isa = PBXBuildFile; fileRef = EA84E17417FAC20100304C3C /* SpatialTree.h */; };
+		EAAC98BC1937354800549BAD /* MeshUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAAC98BA1937354800549BAD /* MeshUtils.cpp */; };
+		EAAC98BD1937354800549BAD /* MeshUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAAC98BA1937354800549BAD /* MeshUtils.cpp */; };
+		EAAC98BE1937354800549BAD /* MeshUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAC98BB1937354800549BAD /* MeshUtils.h */; };
+		EAAC98BF1937354800549BAD /* MeshUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAC98BB1937354800549BAD /* MeshUtils.h */; };
 		EAADA0051892A48E001E1AA2 /* UIParticles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAADA0031892A48E001E1AA2 /* UIParticles.cpp */; };
 		EAADA0061892A48E001E1AA2 /* UIParticles.h in Headers */ = {isa = PBXBuildFile; fileRef = EAADA0041892A48E001E1AA2 /* UIParticles.h */; };
 		FEF4D44812C92F57004B850E /* libBox2D_iPhone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4D38612C91A3A004B850E /* libBox2D_iPhone.a */; };
@@ -2334,6 +2338,8 @@
 		EA7DEDDC1448550100D9E652 /* libfreetype_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfreetype_ios.a; path = ../../Libs/freetype/lib/libfreetype_ios.a; sourceTree = "<group>"; };
 		EA84E17317FAC20100304C3C /* SpatialTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpatialTree.cpp; sourceTree = "<group>"; };
 		EA84E17417FAC20100304C3C /* SpatialTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpatialTree.h; sourceTree = "<group>"; };
+		EAAC98BA1937354800549BAD /* MeshUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshUtils.cpp; sourceTree = "<group>"; };
+		EAAC98BB1937354800549BAD /* MeshUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshUtils.h; sourceTree = "<group>"; };
 		EAADA0031892A48E001E1AA2 /* UIParticles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticles.cpp; sourceTree = "<group>"; };
 		EAADA0041892A48E001E1AA2 /* UIParticles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticles.h; sourceTree = "<group>"; };
 		FEF4D38112C91A3A004B850E /* Box2D_iPhone.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Box2D_iPhone.xcodeproj; path = ../../Libs/Box2D/Projects/Box2D_iPhone/Box2D_iPhone.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -3034,6 +3040,8 @@
 		E8B3C90816B9326D002BD35F /* 3D */ = {
 			isa = PBXGroup;
 			children = (
+				EAAC98BA1937354800549BAD /* MeshUtils.cpp */,
+				EAAC98BB1937354800549BAD /* MeshUtils.h */,
 				E8B3C90916B9326D002BD35F /* AnimatedMesh.cpp */,
 				E8B3C90A16B9326D002BD35F /* AnimatedMesh.h */,
 				E8B3C90B16B9326D002BD35F /* EdgeAdjacency.cpp */,
@@ -3590,6 +3598,7 @@
 				02FD7F4B1924997C007762C0 /* DLCSystem.h in Headers */,
 				02FD7F4C1924997C007762C0 /* ParticleRenderObject.h in Headers */,
 				02FD7F4D1924997C007762C0 /* DLCUnpacker.h in Headers */,
+				EAAC98BF1937354800549BAD /* MeshUtils.h in Headers */,
 				02FD7F4E1924997C007762C0 /* FileDownloader.h in Headers */,
 				02FD7F4F1924997C007762C0 /* RenderTechnique.h in Headers */,
 				15F73E841933D8B00061A1BD /* UISystemKeyboardListener.h in Headers */,
@@ -4117,6 +4126,7 @@
 				E8B3CC0E16B9326E002BD35F /* ImageLoader.h in Headers */,
 				E8B3CC0F16B9326E002BD35F /* IndexBuffer.h in Headers */,
 				E8B3CC1116B9326E002BD35F /* LibDxtHelper.h in Headers */,
+				EAAC98BE1937354800549BAD /* MeshUtils.h in Headers */,
 				E8B3CC1316B9326E002BD35F /* LibPngHelpers.h in Headers */,
 				E8B3CC1516B9326E002BD35F /* LibPVRHelper.h in Headers */,
 				E8B3CC1716B9326E002BD35F /* MaterialCompiler.h in Headers */,
@@ -4635,6 +4645,7 @@
 				02FD816E1924997C007762C0 /* SwitchNode.cpp in Sources */,
 				02FD816F1924997C007762C0 /* BaseProcessSystem.cpp in Sources */,
 				02FD81701924997C007762C0 /* DebugRenderSystem.cpp in Sources */,
+				EAAC98BD1937354800549BAD /* MeshUtils.cpp in Sources */,
 				02FD81711924997C007762C0 /* QualitySettingsComponent.cpp in Sources */,
 				02FD81721924997C007762C0 /* EventSystem.cpp in Sources */,
 				02FD81731924997C007762C0 /* ParticleRenderObject.cpp in Sources */,
@@ -4785,6 +4796,7 @@
 				E8B3CA9A16B9326E002BD35F /* BaseObject.cpp in Sources */,
 				E8B3CA9C16B9326E002BD35F /* BaseObjectChecker.cpp in Sources */,
 				E8B3CA9F16B9326E002BD35F /* Data.cpp in Sources */,
+				EAAC98BC1937354800549BAD /* MeshUtils.cpp in Sources */,
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
 				E8B3CAA316B9326E002BD35F /* EventDispatcher.cpp in Sources */,
 				E8B3CAA616B9326E002BD35F /* FastName.cpp in Sources */,

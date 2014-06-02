@@ -341,6 +341,8 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 	FT_Vector * advances = new FT_Vector[strLen];
 	Prepare(advances);
 
+    const int spaceWidth = (face->glyph->metrics.width >> 6) >> 1;
+    
 	int32 lastRight = 0; //charSizes helper
 	//int32 justifyOffset = 0;
 	int32 maxWidth = 0;
@@ -392,7 +394,15 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 				{
 					if(0 == width)
 					{
-						charSizes->push_back(0);
+                        if(str[i] == ' ')
+                        {
+                            charSizes->push_back(spaceWidth);
+                            lastRight += spaceWidth;
+                        }
+                        else
+                        {
+                            charSizes->push_back(0);
+                        }
 					}
 					else if(charSizes->empty())
 					{
@@ -401,7 +411,6 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 					}
 					else
 					{
-						//int32 sizesSize = charSizes->size();
 						int32 value = left+width-lastRight;
 						lastRight += value;
 						charSizes->push_back(value);
@@ -496,8 +505,8 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 	FT_Vector	* prevAdvance = 0;
 	FT_Vector	extent = {0, 0};
 	FT_UInt		prevIndex   = 0;
-	bool		useKerning = (FT_HAS_KERNING(face) > 0);
-	int32		size = glyphs.size();
+	const bool		useKerning = (FT_HAS_KERNING(face) > 0);
+	const int32		size = glyphs.size();
 
 	for(int32 i = 0; i < size; ++i)
 	{
@@ -587,7 +596,7 @@ int32 FTInternalFont::LoadString(const WideString& str)
 	ClearString();
 
 	int32 spacesCount = 0;
-	FT_Pos prevRsbDelta = 0;
+	const FT_Pos prevRsbDelta = 0;
 	int32 size = str.size();
 	for(int32 i = 0; i < size; ++i)
 	{

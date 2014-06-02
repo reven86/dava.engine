@@ -29,6 +29,7 @@
     <ClInclude Include="Classes\FormatsTest.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
+    <ClInclude Include="Classes\ParseTextTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
     <ClInclude Include="Classes\StringFormatTest.h" />
     <ClInclude Include="Classes\FrameworkMain.h" />
@@ -52,6 +53,7 @@
     <ClInclude Include="Classes\UIListTest.h" />
     <ClInclude Include="Classes\UIMovieTest.h" />
     <ClInclude Include="Classes\UIScrollViewTest.h" />
+    <ClInclude Include="Classes\UITestTemplate.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\AlignTest.cpp" />
@@ -71,6 +73,7 @@
     <ClCompile Include="Classes\FormatsTest.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
+    <ClCompile Include="Classes\ParseTextTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
     <ClCompile Include="Classes\StringFormatTest.cpp" />
     <ClCompile Include="Classes\FrameworkMain.cpp" />
@@ -87,7 +90,6 @@
     <ClCompile Include="Classes\SampleTest.cpp" />
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
-    <ClCompile Include="Classes\TestTemplate.cpp" />
     <ClCompile Include="Classes\TextureUtils.cpp" />
     <ClCompile Include="Classes\ThreadSyncTest.cpp" />
     <ClCompile Include="Classes\TransparentWebViewTest.cpp" />

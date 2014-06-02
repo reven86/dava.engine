@@ -25,7 +25,6 @@
 		5C44737715B5A0FD00028948 /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C44737515B5A0FD00028948 /* SoundTest.cpp */; };
 		5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA2461B158F46D600465879 /* EntityTest.cpp */; };
 		5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC24FA156CC72400742348 /* SampleTest.cpp */; };
-		5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC24FC156CC72400742348 /* TestTemplate.cpp */; };
 		5CDC2501156CC93300742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2500156CC93300742348 /* libz.dylib */; };
 		5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CF2253E157E555D00DF5395 /* BaseScreen.cpp */; };
 		6260B9E418E9C225002DA65F /* SaveImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6260B9E218E9C224002DA65F /* SaveImageTest.cpp */; };
@@ -43,6 +42,7 @@
 		E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */; };
 		E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */; };
 		E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */; };
+		E8490AA8192386B600C07E36 /* ParseTextTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8490AA6192386B600C07E36 /* ParseTextTest.cpp */; };
 		E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */; };
 		E8583EE0183E41B9009DEEB6 /* ComponentsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */; };
 		E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679172175F407200C5A6A2 /* FormatsTest.cpp */; };
@@ -150,7 +150,6 @@
 		5CA2461C158F46D600465879 /* EntityTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EntityTest.h; path = Classes/EntityTest.h; sourceTree = "<group>"; };
 		5CDC24FA156CC72400742348 /* SampleTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SampleTest.cpp; path = Classes/SampleTest.cpp; sourceTree = "<group>"; };
 		5CDC24FB156CC72400742348 /* SampleTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SampleTest.h; path = Classes/SampleTest.h; sourceTree = "<group>"; };
-		5CDC24FC156CC72400742348 /* TestTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TestTemplate.cpp; path = Classes/TestTemplate.cpp; sourceTree = "<group>"; };
 		5CDC24FD156CC72400742348 /* TestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TestTemplate.h; path = Classes/TestTemplate.h; sourceTree = "<group>"; };
 		5CDC2500156CC93300742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		5CE56F9D157F2804006C953B /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Config.h; path = Classes/Config.h; sourceTree = "<group>"; };
@@ -185,6 +184,9 @@
 		E83604EE163FEB4C0061A636 /* KeyedArchiveTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveTest.h; path = Classes/KeyedArchiveTest.h; sourceTree = "<group>"; };
 		E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyedArchiveYamlTest.cpp; path = Classes/KeyedArchiveYamlTest.cpp; sourceTree = "<group>"; };
 		E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KeyedArchiveYamlTest.h; path = Classes/KeyedArchiveYamlTest.h; sourceTree = "<group>"; };
+		E8490AA11923838D00C07E36 /* UITestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UITestTemplate.h; path = Classes/UITestTemplate.h; sourceTree = "<group>"; };
+		E8490AA6192386B600C07E36 /* ParseTextTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ParseTextTest.cpp; path = Classes/ParseTextTest.cpp; sourceTree = "<group>"; };
+		E8490AA7192386B600C07E36 /* ParseTextTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParseTextTest.h; path = Classes/ParseTextTest.h; sourceTree = "<group>"; };
 		E8573EA618C890E4004A8B50 /* OpenGLES30FormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OpenGLES30FormatTest.cpp; path = Classes/OpenGLES30FormatTest.cpp; sourceTree = "<group>"; };
 		E8573EA718C890E4004A8B50 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OpenGLES30FormatTest.h; path = Classes/OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8583EDE183E41B9009DEEB6 /* ComponentsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComponentsTest.cpp; path = Classes/ComponentsTest.cpp; sourceTree = "<group>"; };
@@ -410,6 +412,7 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8490AA51923864A00C07E36 /* ParseTextTest */,
 				E8573EA318C890B0004A8B50 /* OpenGLES30 */,
 				840CB01F18EE088A00B722D0 /* JPEGTest */,
 				6260B9DF18E9C209002DA65F /* SaveImageTest */,
@@ -471,8 +474,8 @@
 			children = (
 				5CF2253E157E555D00DF5395 /* BaseScreen.cpp */,
 				5CF2253F157E555D00DF5395 /* BaseScreen.h */,
-				5CDC24FC156CC72400742348 /* TestTemplate.cpp */,
 				5CDC24FD156CC72400742348 /* TestTemplate.h */,
+				E8490AA11923838D00C07E36 /* UITestTemplate.h */,
 			);
 			name = TestSuite;
 			sourceTree = "<group>";
@@ -585,6 +588,15 @@
 				E83604F0163FEB4C0061A636 /* KeyedArchiveYamlTest.h */,
 			);
 			name = KeyedArchiveTest;
+			sourceTree = "<group>";
+		};
+		E8490AA51923864A00C07E36 /* ParseTextTest */ = {
+			isa = PBXGroup;
+			children = (
+				E8490AA6192386B600C07E36 /* ParseTextTest.cpp */,
+				E8490AA7192386B600C07E36 /* ParseTextTest.h */,
+			);
+			name = ParseTextTest;
 			sourceTree = "<group>";
 		};
 		E8573EA318C890B0004A8B50 /* OpenGLES30 */ = {
@@ -830,7 +842,6 @@
 				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
-				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
 				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
@@ -865,6 +876,7 @@
 				7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */,
 				840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */,
 				02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */,
+				E8490AA8192386B600C07E36 /* ParseTextTest.cpp in Sources */,
 				1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

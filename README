@@ -11,8 +11,3 @@ Cross platform game development framework
 
 Enhancing dava framework
 https://github.com/dava/dava.framework/wiki/Topics-that-requires-investigation
-
-- Why not other's
-   - Cocos 2D. It's a great technology but it's hardly portable
-   - Unity. It's a great technology but it's not free, and you can't modify or improve it. 
-   - UDK. It's a great engine, but again it's not free, and you can't modify or improve it. 
