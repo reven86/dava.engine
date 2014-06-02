@@ -268,7 +268,10 @@ public class JNIWebView {
 					return;
 				}
 				// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
-				CookieSyncManager.createInstance(activity.getApplicationContext()); 
+				if (CookieSyncManager.getInstance() == null)
+				{
+					CookieSyncManager.createInstance(activity.getApplicationContext()); 
+				}
 			    CookieManager cookieManager = CookieManager.getInstance();
 			    if (cookieManager.hasCookies())
 			    {
@@ -299,13 +302,17 @@ public class JNIWebView {
 		});
 	}	
 	
-	public static void GetCookie(final String targetURL, final String cookieName)
+	public static String GetCookie(final String targetURL, final String cookieName)
 	{		
 		final JNIActivity activity = JNIActivity.GetActivity();
 		
 		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
-		CookieSyncManager.createInstance(activity.getApplicationContext()); 
+		if (CookieSyncManager.getInstance() == null)
+		{
+			CookieSyncManager.createInstance(activity.getApplicationContext()); 
+		}
 	    CookieManager cookieManager = CookieManager.getInstance();
+	    String resultCookie = "";
 
 	    if (cookieManager.hasCookies())
 	    {
@@ -318,21 +325,29 @@ public class JNIWebView {
 	    		String[] cookieparts = cookies[i].split("=");
 	    		if (cookieparts[0].trim().compareTo(cookieName) == 0)
 	    		{
-	    			SetJString(cookieparts[1]);			    			
+	    			resultCookie = cookieparts[1];		
 	    			break;
 	    		}			    		
 	    	}
-	    }		
+	    }
+	    
+	    return resultCookie;
 	}
 	
-	public static void GetCookies(final String targetURL)
+	public static Object[] GetCookies(final String targetURL)
 	{
 		final JNIActivity activity = JNIActivity.GetActivity();		
 		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
-		CookieSyncManager.createInstance(activity.getApplicationContext()); 
+		if (CookieSyncManager.getInstance() == null)
+		{
+			CookieSyncManager.createInstance(activity.getApplicationContext()); 
+		}
 	    CookieManager cookieManager = CookieManager.getInstance();
-	    // Get cookies for specific URL
-	    SetJString(cookieManager.getCookie(targetURL));		
+	    // Get cookies for specific URL and put them into array
+	    String cookieString = cookieManager.getCookie(targetURL);
+	    String[] cookies =  cookieString.split(";");
+	    
+	    return cookies;
 	}
 
 	public static void SetRect(final int id, final float x, final float y, final float dx, final float dy)
@@ -451,5 +466,4 @@ public class JNIWebView {
 	private static native int OnUrlChange(int id, String url);
 	private static native int OnPageLoaded(int id);
 	private static native void OnExecuteJScript(int id, int requestId, String result);
-	private static native void SetJString(String str);
 }

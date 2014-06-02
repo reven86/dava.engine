@@ -32,6 +32,7 @@
 #include "FileSystem/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
+#include "ExternC/AndroidLayer.h"
 
 namespace DAVA
 {
@@ -42,7 +43,6 @@ int32_t WebViewControl::requestId = 0;
 jclass JniWebView::gJavaClass = NULL;
 const char* JniWebView::gJavaClassName = NULL;
 JniWebView::CONTROLS_MAP JniWebView::controls;
-DAVA::String JniWebView::returnStr = "";
 
 jclass JniWebView::GetJavaClass() const
 {
@@ -118,14 +118,19 @@ void JniWebView::DeleteCookies(int id, const String& targetURL)
 
 String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 {
-	jmethodID mid = GetMethodID("GetCookie", "(Ljava/lang/String;Ljava/lang/String;)V");
-	returnStr = "";
+	jmethodID mid = GetMethodID("GetCookie", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+	String returnStr = "";
 
 	if (mid)
 	{
 		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
 		jstring jName = GetEnvironment()->NewStringUTF(cookieName.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(),  mid, jTargetURL, jName);
+		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL, jName);
+
+		char str[1024] = {0};
+		CreateStringFromJni(env, jstring(obj), str);
+		returnStr = str;
+
 		GetEnvironment()->DeleteLocalRef(jTargetURL);
 		GetEnvironment()->DeleteLocalRef(jName);
 	}
@@ -133,18 +138,36 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 	return returnStr;
 }
 
-String JniWebView::GetCookies(const String& targetUrl)
+Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 {
-	jmethodID mid = GetMethodID("GetCookies", "(Ljava/lang/String;)V");
-	returnStr = "";
+	jmethodID mid = GetMethodID("GetCookies", "(Ljava/lang/String;)[Ljava/lang/Object;");
+	Map<String, String> cookiesMap;
 
 	if (mid)
 	{
 		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
-		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jTargetURL);
+
+		jobjectArray jArray = (jobjectArray) GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL);
+		if (jArray)
+		{
+			jsize size = GetEnvironment()->GetArrayLength(jArray);
+			for (jsize i = 0; i < size; ++i)
+			{
+				jobject item = GetEnvironment()->GetObjectArrayElement(jArray, i);
+				char str[1024] = {0};
+				CreateStringFromJni(env, jstring(item), str);
+				String cookiesString = str;
+
+				Vector<String> cookieEntry;
+				Split(cookiesString, "=", cookieEntry);
+				cookiesMap[cookieEntry[0]] = cookieEntry[1];
+			}
+		}
+
 		GetEnvironment()->DeleteLocalRef(jTargetURL);
 	}
-	return returnStr;
+
+	return cookiesMap;
 }
 
 void JniWebView::OpenFromBuffer(int id, const String& string, const String& baseUrl)
@@ -286,20 +309,7 @@ String WebViewControl::GetCookie(const String& url, const String& name)
 Map<String, String> WebViewControl::GetCookies(const String& url)
 {
 	JniWebView jniWebView;
-	String cookieString = jniWebView.GetCookies(url);
-
-	Map<String, String> cookiesMap;
-	Vector<String> cookiesVector;
-    Split(cookieString, ";", cookiesVector);
-
-	for(uint32 i = 0; i < (uint32)cookiesVector.size(); ++i)
-    {
-	   Vector<String> cookieEntry;
-	   Split(cookiesVector[i], "=", cookieEntry);
-	   cookiesMap[cookieEntry[0]] = cookieEntry[1];
-    }
-
-	return cookiesMap;
+	return jniWebView.GetCookies(url);
 }
 
 int32_t WebViewControl::ExecuteJScript(const String& scriptString)

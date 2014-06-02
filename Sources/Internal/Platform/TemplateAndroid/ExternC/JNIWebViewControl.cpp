@@ -55,10 +55,4 @@ extern "C"
 		DAVA::JniWebView::OnExecuteJScript(id, requestId, resultStr);
 	}
 
-	void Java_com_dava_framework_JNIWebView_SetJString(JNIEnv* env, jobject classthis, jstring jString)
-	{
-		char str[1024] = {0};
-		CreateStringFromJni(env, jString, str);
-		DAVA::JniWebView::returnStr = DAVA::String(str);
-	}
 };

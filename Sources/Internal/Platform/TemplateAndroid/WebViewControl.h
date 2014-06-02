@@ -92,7 +92,7 @@ public:
 	void LoadHtmlString(int id, const String& htmlString);
 	void DeleteCookies(int id, const String& targetUrl);
 	String GetCookie(const String& targetUrl, const String& name);
-	String GetCookies(const String& targetUrl);
+	Map<String, String> GetCookies(const String& targetUrl);
 	void ExecuteJScript(int id, int requestId, const String& scriptString);
 	void OpenFromBuffer(int id, const String& string, const String& basePath);
 
@@ -112,7 +112,6 @@ protected:
 public:
 	static jclass gJavaClass;
 	static const char* gJavaClassName;
-	static String returnStr;
 
 private:
 	typedef std::map<int, WebViewControl*> CONTROLS_MAP;
