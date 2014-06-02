@@ -63,7 +63,7 @@ void UITextFieldImpl::CloseKeyboard()
 void UITextFieldImpl::GetText(WideString & string) const
 {
     JniTextField * ptr = static_cast<JniTextField *>(nativeClassPtr);
-    string = ptr->GetText();
+    ptr->GetText(string);
 }
 
 void UITextFieldImpl::SetText(const WideString & string)

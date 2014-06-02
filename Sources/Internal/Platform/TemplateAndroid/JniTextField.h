@@ -47,7 +47,7 @@ public:
     void Create(const Rect &rect);
     void Destroy();
     void UpdateRect(const Rect & rect);
-    const WideString &GetText() const;
+    void GetText(WideString &text);
     void SetText(const WideString &text);
     void SetTextColor(float r, float g, float b, float a);
     void SetFontSize(float size);

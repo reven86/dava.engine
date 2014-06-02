@@ -36,11 +36,11 @@
 namespace DAVA
 {
 static uint32_t sId = 0;
-static DAVA::Map<uint32_t, UITextFieldImpl*> idToImpl;
+static DAVA::Map<uint32_t, JniTextField*> idToImpl;
 
-UITextFieldImpl* GetUITextFieldImpl(uint32_t id)
+JniTextField* GetUITextFieldImpl(uint32_t id)
 {
-    DAVA::Map<uint32_t, UITextFieldImpl*>::iterator iter = idToImpl.find(id);
+    DAVA::Map<uint32_t, JniTextField*>::iterator iter = idToImpl.find(id);
     if (iter != idToImpl.end())
         return iter->second;
 
@@ -64,7 +64,7 @@ JniTextField::JniTextField(UITextFieldImpl * impl)
     : textFieldImpl(impl)
 {
     id = sId++;
-    idToImpl[id] = textFieldImpl;
+    idToImpl[id] = this;
 }
 
 JniTextField::~JniTextField()
@@ -120,9 +120,21 @@ void JniTextField::UpdateRect(const Rect & controlRect)
 				newRect.dy);
 	}
 }
-const WideString &JniTextField::GetText() const
+void JniTextField::GetText(WideString &text)
 {
-	return text;
+	jmethodID mid = GetMethodID("GetText", "(I)Ljava/lang/String;");
+	if (mid)
+	{
+		jstring string = (jstring)GetEnvironment()->CallStaticObjectMethod(
+				GetJavaClass(),
+				mid,
+				id);
+		const char * utf8str = GetEnvironment()->GetStringUTFChars(string, NULL);
+		jsize utf8strLen = env->GetStringUTFLength(string);
+		UTF8Utils::EncodeToWideString((uint8*)utf8str, utf8strLen, text);
+		GetEnvironment()->ReleaseStringUTFChars(string, utf8str);
+		GetEnvironment()->DeleteLocalRef(string);
+	}
 }
 void JniTextField::SetText(const WideString & newText)
 {
@@ -367,7 +379,7 @@ void JniTextField::SetCursorPos(uint32 pos)
 
 bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
-    UITextFieldImpl* impl = GetUITextFieldImpl(id);
+    UITextFieldImpl* impl = GetUITextFieldImpl(id)->textFieldImpl;
     if (!impl)
         return true;
 
@@ -376,19 +388,12 @@ bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, i
     if(!control || !control->GetDelegate())
     	return true;
 
-    if( control->GetDelegate()->TextFieldKeyPressed(control, replacementLocation, replacementLength, text) )
-    {
-        WideString str = L"";
-        impl->SetText(control->GetAppliedChanges((int32)text.length() - 1,  1, str));
-        return true;
-    }
-
-    return false;
+    return control->GetDelegate()->TextFieldKeyPressed(control, replacementLocation, replacementLength, text);
 }
 
 void JniTextField::TextFieldShouldReturn(uint32_t id)
 {
-    UITextFieldImpl* impl = GetUITextFieldImpl(id);
+    UITextFieldImpl* impl = GetUITextFieldImpl(id)->textFieldImpl;
     if (!impl)
         return;
 

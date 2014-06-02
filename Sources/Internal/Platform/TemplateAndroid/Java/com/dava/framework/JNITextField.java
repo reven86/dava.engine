@@ -236,6 +236,13 @@ public class JNITextField {
 		});
 		task.Run();
 	}
+	
+	public static String GetText(int id) {
+		final EditText text = GetEditText(id);
+		if (text == null)
+			return "";
+		return text.getText().toString();
+	}
 
 	public static void SetText(int id, final String string) {
 		final EditText text = GetEditText(id);
