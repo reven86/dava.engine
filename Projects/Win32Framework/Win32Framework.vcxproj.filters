@@ -1427,7 +1427,7 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\CustomTextField.h">
+    <ClInclude Include="..\..\Sources\Internal\Platform\UITextFieldImplCustom.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2559,13 +2559,10 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboard.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\UI\UITextFieldImpl_Custom.cpp">
-      <Filter>Internal\UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Custom.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\CustomTextField.cpp">
+    <ClCompile Include="..\..\Sources\Internal\Platform\UITextFieldImplCustom.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
   </ItemGroup>

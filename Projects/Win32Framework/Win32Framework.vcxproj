@@ -389,7 +389,6 @@
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleLayer.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.h" />
     <ClInclude Include="..\..\Sources\Internal\Particles\ParticleRenderObject.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\CustomTextField.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DeviceInfo.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\DPIHelper.h" />
@@ -421,6 +420,7 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\UITextFieldImplCustom.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h" />
@@ -795,7 +795,6 @@
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleLayer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticlePropertyLine.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Particles\ParticleRenderObject.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\CustomTextField.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DateTime.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\DeviceInfo.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\MovieViewControlStub.cpp" />
@@ -829,6 +828,7 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DPIHelperWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\UITextFieldImplCustom.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp" />
@@ -1030,7 +1030,6 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UISwitch.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboardImpl_Custom.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UITextField.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\UI\UITextFieldImpl_Custom.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp" />
     <ClCompile Include="..\..\Sources\Internal\UI\UIYamlLoader.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\CRC32.cpp" />

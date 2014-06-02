@@ -38,53 +38,51 @@ class Color;
 class UITextField;
 class UIEvent;
 class Font;
-class UIGeometricData;
+
 class UITextFieldImpl
 {
 public:
-	UITextFieldImpl(UITextField * textField);
-	virtual ~UITextFieldImpl();
+	UITextFieldImpl(UITextField * tf):textField(tf){}
+	virtual ~UITextFieldImpl(){}
 	
-	void OpenKeyboard();
-	void CloseKeyboard();
-	void GetText(WideString & string) const;
-	void SetText(const WideString & string);
-	void UpdateRect(const Rect & rect, float32 timeElapsed);
+	virtual void OpenKeyboard(){}
+	virtual void CloseKeyboard(){}
+	virtual void GetText(WideString & string) const{}
+	virtual void SetText(const WideString & string){}
+	virtual void UpdateRect(const Rect & rect, float32 timeElapsed){}
 
-    void GetTextColor(Color &color) const;
-	void SetTextColor(const Color &color);
-    Font *GetFont();
-    void SetFont(Font * font);
-	void SetFontSize(float32 size);
+    virtual void GetTextColor(Color &color) const{}
+    virtual void SetTextColor(const Color &color){}
+    virtual Font *GetFont(){ return NULL; }
+    virtual void SetFont(Font * font){}
+    virtual void SetFontSize(float32 size){}
     
-    void SetTextAlign(int32 align);
+    virtual void SetTextAlign(int32 align){}
 
-	void ShowField();
-	void HideField();
+	virtual void ShowField(){}
+	virtual void HideField(){}
 	
-	void SetIsPassword(bool isPassword);
+	virtual void SetIsPassword(bool isPassword){}
 
-	void SetInputEnabled(bool value);
+    virtual void SetInputEnabled(bool value){}
     
 	// Keyboard traits.
-	void SetAutoCapitalizationType(int32 value);
-	void SetAutoCorrectionType(int32 value);
-	void SetSpellCheckingType(int32 value);
-	void SetKeyboardAppearanceType(int32 value);
-	void SetKeyboardType(int32 value);
-	void SetReturnKeyType(int32 value);
-	void SetEnableReturnKeyAutomatically(bool value);
+	virtual void SetAutoCapitalizationType(int32 value){}
+	virtual void SetAutoCorrectionType(int32 value){}
+	virtual void SetSpellCheckingType(int32 value){}
+	virtual void SetKeyboardAppearanceType(int32 value){}
+	virtual void SetKeyboardType(int32 value){}
+	virtual void SetReturnKeyType(int32 value){}
+	virtual void SetEnableReturnKeyAutomatically(bool value){}
 
     // Cursor pos.
-    uint32 GetCursorPos() const;
-    void SetCursorPos(uint32 pos);
+    virtual uint32 GetCursorPos() const{ return 0; }
+    virtual void SetCursorPos(uint32 pos){}
 
-    void Input(UIEvent *currentInput);
-    void Draw(const UIGeometricData &geometricData);
+    virtual void Input(UIEvent *currentInput){}
+    virtual void Draw(){}
 
-    UITextField * GetTextFieldControl() const { return textField; };
-private:
-	void * nativeClassPtr;//pointer to native implementation
+protected:
     UITextField * textField;
 };
 };

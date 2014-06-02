@@ -34,8 +34,15 @@
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
 #include "UI/UISystemKeyboard.h"
-#include "UI/UITextFieldImpl.h"
+
 #include "Input/KeyboardDevice.h"
+#if defined(__DAVAENGINE_IPHONE__)
+//#include "Platform/TemplateiOS/"
+#elif defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/UITextFieldImplAndroid.h"
+#else
+#include "Platform/UITextFieldImplCustom.h"
+#endif
 
 namespace DAVA 
 {
@@ -88,7 +95,14 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	enableReturnKeyAutomatically(false)
 ,	align(ALIGN_LEFT|ALIGN_VCENTER)
 {
-	textFieldImpl = new UITextFieldImpl(this);
+#if defined(__DAVAENGINE_IPHONE__)
+    textFieldImpl = new UITextFieldImpl_iOS(this);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldImpl = new UITextFieldImpl_Android(this);
+#else
+    textFieldImpl = new UITextFieldImpl_Custom(this);
+#endif
+	
 }
 
 UITextField::~UITextField()
@@ -524,7 +538,7 @@ void UITextField::SetVisible(bool isVisible, bool hierarchic)
 void UITextField::Draw( const UIGeometricData &geometricData )
 {
     UIControl::Draw( geometricData );
-    textFieldImpl->Draw( geometricData );
+    textFieldImpl->Draw();
 }
 
 }; // namespace

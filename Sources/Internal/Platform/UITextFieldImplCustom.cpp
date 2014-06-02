@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "CustomTextField.h"
+#include "UITextFieldImplCustom.h"
 #include "UI/UITextFieldImpl.h"
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
@@ -36,23 +36,23 @@ namespace DAVA
 {
 static const float32 CURSOR_BLINK_PERIOD = 0.5f;
 
-CustomTextField::CustomTextField(UITextFieldImpl * impl)
-    : needRedraw(false)
+UITextFieldImpl_Custom::UITextFieldImpl_Custom(UITextField* tf)
+    : UITextFieldImpl( tf )
+    , needRedraw(false)
     , showCursor(true)
     , isPassword(false)
     , cursorTime(0.0f)
-    , textFieldImpl(impl)
 {
-    staticText = new UIStaticText(textFieldImpl->GetTextFieldControl()->GetRect(true));
+    staticText = new UIStaticText (textField->GetRect(true));
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
 }
 
-CustomTextField::~CustomTextField()
+UITextFieldImpl_Custom::~UITextFieldImpl_Custom()
 {
     SafeRelease(staticText);
 }
 
-WideString CustomTextField::GetVisibleText() const
+WideString UITextFieldImpl_Custom::GetVisibleText() const
 {
     if (!isPassword)
         return text;
@@ -62,20 +62,19 @@ WideString CustomTextField::GetVisibleText() const
     return passText;
 }
 
-void CustomTextField::GetText( WideString & string ) const
+void UITextFieldImpl_Custom::GetText( WideString & string ) const
 {
     string = text;
 }
 
-void CustomTextField::SetText( const WideString & string )
+void UITextFieldImpl_Custom::SetText( const WideString & string )
 {
     text = string;
     needRedraw = true;
 }
 
-void CustomTextField::UpdateRect( const Rect & newRect, float32 timeElapsed )
+void UITextFieldImpl_Custom::UpdateRect( const Rect & newRect, float32 timeElapsed )
 {
-    UITextField * textField = textFieldImpl->GetTextFieldControl();
     if( newRect != staticText->GetRect(true) )
     {
         staticText->SetRect(newRect, false);
@@ -110,57 +109,56 @@ void CustomTextField::UpdateRect( const Rect & newRect, float32 timeElapsed )
     needRedraw = false;
 }
 
-void CustomTextField::GetTextColor( DAVA::Color &color ) const
+void UITextFieldImpl_Custom::GetTextColor( DAVA::Color &color ) const
 {
     color = staticText->GetTextColor();
 }
 
-void CustomTextField::SetTextColor( const DAVA::Color &color )
+void UITextFieldImpl_Custom::SetTextColor( const DAVA::Color &color )
 {
     staticText->SetTextColor(color);
 }
 
-Font * CustomTextField::GetFont()
+Font * UITextFieldImpl_Custom::GetFont()
 {
     return staticText->GetFont();
 }
 
-void CustomTextField::SetFont( Font * font )
+void UITextFieldImpl_Custom::SetFont( Font * font )
 {
     staticText->SetFont(font);
 }
 
-void CustomTextField::SetFontSize( float32 size )
+void UITextFieldImpl_Custom::SetFontSize( float32 size )
 {
     ScopedPtr<Font> newFont( staticText->GetFont()->Clone() );
     newFont->SetSize(size);
     SetFont(newFont);
 }
 
-void CustomTextField::SetTextAlign( DAVA::int32 align )
+void UITextFieldImpl_Custom::SetTextAlign( DAVA::int32 align )
 {
     staticText->SetTextAlign(align);
 }
 
-void CustomTextField::SetIsPassword( bool isPasswordValue )
+void UITextFieldImpl_Custom::SetIsPassword( bool isPasswordValue )
 {
     needRedraw = true;
     isPassword = isPasswordValue;
 }
 
-uint32 CustomTextField::GetCursorPos() const
+uint32 UITextFieldImpl_Custom::GetCursorPos() const
 {
     return 0;
 }
 
-void CustomTextField::SetCursorPos( uint32 pos )
+void UITextFieldImpl_Custom::SetCursorPos( uint32 pos )
 {
 
 }
 
-void CustomTextField::Input( UIEvent *currentInput )
+void UITextFieldImpl_Custom::Input( UIEvent *currentInput )
 {
-    UITextField * textField = textFieldImpl->GetTextFieldControl();
     UITextFieldDelegate * delegate = textField->GetDelegate();
     if (!delegate)
     {
@@ -212,7 +210,7 @@ void CustomTextField::Input( UIEvent *currentInput )
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 }
 
-void CustomTextField::Draw()
+void UITextFieldImpl_Custom::Draw()
 {
     staticText->SystemDraw( UIControlSystem::Instance()->GetBaseGeometricData() );
 }

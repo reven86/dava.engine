@@ -26,7 +26,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "JniTextField.h"
+#include "UITextFieldImpl_Android.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "UI/UITextFieldImpl.h"
@@ -36,43 +36,43 @@
 namespace DAVA
 {
 static uint32_t sId = 0;
-static DAVA::Map<uint32_t, JniTextField*> idToImpl;
+static DAVA::Map<uint32_t, UITextFieldImpl_Android*> idToImpl;
 
-JniTextField* GetUITextFieldImpl(uint32_t id)
+UITextFieldImpl_Android* GetUITextFieldImpl(uint32_t id)
 {
-    DAVA::Map<uint32_t, JniTextField*>::iterator iter = idToImpl.find(id);
+    DAVA::Map<uint32_t, UITextFieldImpl_Android*>::iterator iter = idToImpl.find(id);
     if (iter != idToImpl.end())
         return iter->second;
 
     return NULL;
 }
 
-jclass JniTextField::gJavaClass = NULL;
-const char* JniTextField::gJavaClassName = NULL;
+jclass UITextFieldImpl_Android::gJavaClass = NULL;
+const char* UITextFieldImpl_Android::gJavaClassName = NULL;
 
-jclass JniTextField::GetJavaClass() const
+jclass UITextFieldImpl_Android::GetJavaClass() const
 {
 	return gJavaClass;
 }
 
-const char* JniTextField::GetJavaClassName() const
+const char* UITextFieldImpl_Android::GetJavaClassName() const
 {
 	return gJavaClassName;
 }
 
-JniTextField::JniTextField(UITextFieldImpl * impl)
-    : textFieldImpl(impl)
+UITextFieldImpl_Android::UITextFieldImpl_Android(UITextField * tf)
+    : UITextFieldImpl(tf)
 {
     id = sId++;
     idToImpl[id] = this;
 }
 
-JniTextField::~JniTextField()
+UITextFieldImpl_Android::~UITextFieldImpl_Android()
 {
     idToImpl.erase(id);
 }
 
-void JniTextField::Create(const Rect &controlRect)
+void UITextFieldImpl_Android::Create(const Rect &controlRect)
 {
 	Rect rect = V2P(controlRect);
 	jmethodID mid = GetMethodID("Create", "(IFFFF)V");
@@ -89,7 +89,7 @@ void JniTextField::Create(const Rect &controlRect)
 	}
 }
 
-void JniTextField::Destroy()
+void UITextFieldImpl_Android::Destroy()
 {
 	jmethodID mid = GetMethodID("Destroy", "(I)V");
 	if (mid)
@@ -101,7 +101,7 @@ void JniTextField::Destroy()
 	}
 }
 
-void JniTextField::UpdateRect(const Rect & controlRect)
+void UITextFieldImpl_Android::UpdateRect(const Rect & controlRect)
 {
     if (controlRect == rect)
         return;
@@ -120,7 +120,7 @@ void JniTextField::UpdateRect(const Rect & controlRect)
 				newRect.dy);
 	}
 }
-void JniTextField::GetText(WideString &text)
+void UITextFieldImpl_Android::GetText(WideString &text)
 {
 	jmethodID mid = GetMethodID("GetText", "(I)Ljava/lang/String;");
 	if (mid)
@@ -136,7 +136,7 @@ void JniTextField::GetText(WideString &text)
 		GetEnvironment()->DeleteLocalRef(string);
 	}
 }
-void JniTextField::SetText(const WideString & newText)
+void UITextFieldImpl_Android::SetText(const WideString & newText)
 {
 	text = newText;
     String utfText = UTF8Utils::EncodeToUTF8(text);
@@ -153,7 +153,7 @@ void JniTextField::SetText(const WideString & newText)
 	}
 }
 
-void JniTextField::SetTextColor(float r, float g, float b, float a)
+void UITextFieldImpl_Android::SetTextColor(float r, float g, float b, float a)
 {
 	jmethodID mid = GetMethodID("SetTextColor", "(IFFFF)V");
 	if (mid)
@@ -169,7 +169,7 @@ void JniTextField::SetTextColor(float r, float g, float b, float a)
 	}
 }
 
-void JniTextField::SetFontSize(float size)
+void UITextFieldImpl_Android::SetFontSize(float size)
 {
 	jmethodID mid = GetMethodID("SetFontSize", "(IF)V");
 	if (mid)
@@ -182,7 +182,7 @@ void JniTextField::SetFontSize(float size)
 	}
 }
 
-void JniTextField::SetIsPassword(bool isPassword)
+void UITextFieldImpl_Android::SetIsPassword(bool isPassword)
 {
 	jmethodID mid = GetMethodID("SetIsPassword", "(IZ)V");
 	if (mid)
@@ -195,7 +195,7 @@ void JniTextField::SetIsPassword(bool isPassword)
 	}
 }
 
-void JniTextField::SetTextAlign(int32_t align)
+void UITextFieldImpl_Android::SetTextAlign(int32_t align)
 {
 	jmethodID mid = GetMethodID("SetTextAlign", "(II)V");
 	if (mid)
@@ -208,7 +208,7 @@ void JniTextField::SetTextAlign(int32_t align)
 	}
 }
 
-void JniTextField::SetInputEnabled(bool value)
+void UITextFieldImpl_Android::SetInputEnabled(bool value)
 {
 	jmethodID mid = GetMethodID("SetInputEnabled", "(IZ)V");
 	if (mid)
@@ -221,7 +221,7 @@ void JniTextField::SetInputEnabled(bool value)
 	}
 }
 
-void JniTextField::SetAutoCapitalizationType(int32_t value)
+void UITextFieldImpl_Android::SetAutoCapitalizationType(int32_t value)
 {
 	jmethodID mid = GetMethodID("SetAutoCapitalizationType", "(II)V");
 	if (mid)
@@ -234,7 +234,7 @@ void JniTextField::SetAutoCapitalizationType(int32_t value)
 	}
 }
 
-void JniTextField::SetAutoCorrectionType(int32_t value)
+void UITextFieldImpl_Android::SetAutoCorrectionType(int32_t value)
 {
 	jmethodID mid = GetMethodID("SetAutoCorrectionType", "(II)V");
 	if (mid)
@@ -247,7 +247,7 @@ void JniTextField::SetAutoCorrectionType(int32_t value)
 	}
 }
 
-void JniTextField::SetSpellCheckingType(int32_t value)
+void UITextFieldImpl_Android::SetSpellCheckingType(int32_t value)
 {
 	jmethodID mid = GetMethodID("SetSpellCheckingType", "(II)V");
 	if (mid)
@@ -260,7 +260,7 @@ void JniTextField::SetSpellCheckingType(int32_t value)
 	}
 }
 
-void JniTextField::SetKeyboardAppearanceType(int32_t value)
+void UITextFieldImpl_Android::SetKeyboardAppearanceType(int32_t value)
 {
 	jmethodID mid = GetMethodID("SetKeyboardAppearanceType", "(II)V");
 	if (mid)
@@ -273,7 +273,7 @@ void JniTextField::SetKeyboardAppearanceType(int32_t value)
 	}
 }
 
-void JniTextField::SetKeyboardType(int32_t value)
+void UITextFieldImpl_Android::SetKeyboardType(int32_t value)
 {
 	jmethodID mid = GetMethodID("SetKeyboardType", "(II)V");
 	if (mid)
@@ -286,7 +286,7 @@ void JniTextField::SetKeyboardType(int32_t value)
 	}
 }
 
-void JniTextField::SetReturnKeyType(int32_t value)
+void UITextFieldImpl_Android::SetReturnKeyType(int32_t value)
 {
 	jmethodID mid = GetMethodID("SetReturnKeyType", "(II)V");
 	if (mid)
@@ -299,7 +299,7 @@ void JniTextField::SetReturnKeyType(int32_t value)
 	}
 }
 
-void JniTextField::SetEnableReturnKeyAutomatically(bool value)
+void UITextFieldImpl_Android::SetEnableReturnKeyAutomatically(bool value)
 {
 	jmethodID mid = GetMethodID("SetEnableReturnKeyAutomatically", "(IZ)V");
 	if (mid)
@@ -312,7 +312,7 @@ void JniTextField::SetEnableReturnKeyAutomatically(bool value)
 	}
 }
 
-void JniTextField::HideField()
+void UITextFieldImpl_Android::HideField()
 {
 	jmethodID mid = GetMethodID("HideField", "(I)V");
 	if (mid)
@@ -324,7 +324,7 @@ void JniTextField::HideField()
 	}
 }
 
-void JniTextField::ShowField()
+void UITextFieldImpl_Android::ShowField()
 {
 	jmethodID mid = GetMethodID("ShowField", "(I)V");
 	if (mid)
@@ -336,7 +336,7 @@ void JniTextField::ShowField()
 	}
 }
 
-void JniTextField::OpenKeyboard()
+void UITextFieldImpl_Android::OpenKeyboard()
 {
 	jmethodID mid = GetMethodID("OpenKeyboard", "(I)V");
 	if (mid)
@@ -348,7 +348,7 @@ void JniTextField::OpenKeyboard()
 	}
 }
 
-void JniTextField::CloseKeyboard()
+void UITextFieldImpl_Android::CloseKeyboard()
 {
 	jmethodID mid = GetMethodID("CloseKeyboard", "(I)V");
 	if (mid)
@@ -360,7 +360,7 @@ void JniTextField::CloseKeyboard()
 	}
 }
 
-uint32 JniTextField::GetCursorPos()
+uint32 UITextFieldImpl_Android::GetCursorPos()
 {
 	jmethodID mid = GetMethodID("GetCursorPos", "(I)I");
 	if (!mid)
@@ -369,7 +369,7 @@ uint32 JniTextField::GetCursorPos()
 	return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid, id);
 }
 
-void JniTextField::SetCursorPos(uint32 pos)
+void UITextFieldImpl_Android::SetCursorPos(uint32 pos)
 {
 	jmethodID mid = GetMethodID("SetCursorPos", "(II)V");
 	if (!mid)
@@ -377,7 +377,7 @@ void JniTextField::SetCursorPos(uint32 pos)
 	GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, pos);
 }
 
-bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
+bool UITextFieldImpl_Android::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
     UITextFieldImpl* impl = GetUITextFieldImpl(id)->textFieldImpl;
     if (!impl)
@@ -391,7 +391,7 @@ bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, i
     return control->GetDelegate()->TextFieldKeyPressed(control, replacementLocation, replacementLength, text);
 }
 
-void JniTextField::TextFieldShouldReturn(uint32_t id)
+void UITextFieldImpl_Android::TextFieldShouldReturn(uint32_t id)
 {
     UITextFieldImpl* impl = GetUITextFieldImpl(id)->textFieldImpl;
     if (!impl)

@@ -30,39 +30,35 @@
 #define __DAVAENGINE_CUSTOM_TEXT_FIELD_H__
 
 #include "Base/BaseTypes.h"
+#include "UI/UITextFieldImpl.h"
 
 namespace DAVA
 {
-struct Rect;
-class Color;
-class Font;
-class UIEvent;
 class UIStaticText;
-class UITextFieldImpl;
-
-class CustomTextField
+class UITextFieldImpl_Custom: public UITextFieldImpl
 {
 public:
-    CustomTextField(UITextFieldImpl* impl);
-    ~CustomTextField();
+    UITextFieldImpl_Custom(UITextField* textfield);
+    ~UITextFieldImpl_Custom();
 
-    void GetText(WideString & string) const;
-    void SetText(const WideString & string);
-    void UpdateRect(const Rect & rect, float32 timeElapsed);
-    void GetTextColor(DAVA::Color &color) const;
-    void SetTextColor(const DAVA::Color &color);
-    Font *GetFont();
-    void SetFont(Font * font);
-    void SetFontSize(float32 size);
-    void SetTextAlign(DAVA::int32 align);
-    void SetIsPassword(bool isPassword);
+    virtual void GetText(WideString & string) const override;
+    virtual void SetText(const WideString & string) override;
+    virtual void UpdateRect(const Rect & rect, float32 timeElapsed) override;
+    virtual void GetTextColor(DAVA::Color &color) const override;
+    virtual void SetTextColor(const DAVA::Color &color) override;
+    virtual Font *GetFont() override;
+    virtual void SetFont(Font * font) override;
+    virtual void SetFontSize(float32 size) override;
+    virtual void SetTextAlign(DAVA::int32 align) override;
+    virtual void SetIsPassword(bool isPassword) override;
 
-    uint32 GetCursorPos() const;
-    void SetCursorPos(uint32 pos);
+    virtual uint32 GetCursorPos() const override;
+    virtual void SetCursorPos(uint32 pos) override;
 
-    void Input(UIEvent *currentInput);
-    void Draw();
+    virtual void Input(UIEvent *currentInput) override;
+    virtual void Draw() override;
 
+protected:
     WideString GetVisibleText() const;
 
 private:
@@ -73,7 +69,6 @@ private:
     bool showCursor:1;
     bool isPassword:1;
     float32 cursorTime;
-    UITextFieldImpl * textFieldImpl;
 };
 };
 #endif // __DAVAENGINE_CUSTOM_TEXT_FIELD_H__
