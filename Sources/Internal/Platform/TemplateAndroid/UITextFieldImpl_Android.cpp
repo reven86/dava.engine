@@ -35,11 +35,11 @@
 namespace DAVA
 {
 static uint32_t sId = 0;
-static DAVA::Map<uint32_t, UITextFieldImpl_Android*> idToImpl;
+static Map<uint32_t, UITextFieldImpl_Android*> idToImpl;
 
 UITextFieldImpl_Android* GetUITextFieldImpl(uint32_t id)
 {
-    DAVA::Map<uint32_t, UITextFieldImpl_Android*>::iterator iter = idToImpl.find(id);
+    Map<uint32_t, UITextFieldImpl_Android*>::iterator iter = idToImpl.find(id);
     if (iter != idToImpl.end())
         return iter->second;
 
@@ -402,7 +402,7 @@ void UITextFieldImpl_Android::TextFieldShouldReturn(uint32_t id)
     if(!control || !control->GetDelegate())
     	return;
 
-    control->GetDelegate()->TextFieldShouldReturn( control );
+    control->GetDelegate()->TextFieldShouldReturn(control);
 }
 };
 #endif //#if defined(__DAVAENGINE_ANDROID__)

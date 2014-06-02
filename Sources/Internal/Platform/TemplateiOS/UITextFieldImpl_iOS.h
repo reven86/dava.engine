@@ -40,37 +40,37 @@ public:
 	UITextFieldImpl_iOS(UITextField * tf);
 	virtual ~UITextFieldImpl_iOS();
 	
-	virtual void OpenKeyboard() override;
-	virtual void CloseKeyboard() override;
-	virtual void GetText(WideString & string) const override;
-	virtual void SetText(const WideString & string) override;
-	virtual void UpdateRect(const Rect & rect, float32 timeElapsed) override;
+	virtual void OpenKeyboard();
+	virtual void CloseKeyboard();
+	virtual void GetText(WideString & string) const;
+	virtual void SetText(const WideString & string);
+	virtual void UpdateRect(const Rect & rect, float32 timeElapsed);
 
-    virtual void GetTextColor(Color &color) const override;
-    virtual void SetTextColor(const Color &color) override;
-    virtual void SetFontSize(float32 size) override;
+    virtual void GetTextColor(Color &color) const;
+    virtual void SetTextColor(const Color &color);
+    virtual void SetFontSize(float32 size);
     
-    virtual void SetTextAlign(int32 align) override;
+    virtual void SetTextAlign(int32 align);
 
-	virtual void ShowField() override;
-	virtual void HideField() override;
+	virtual void ShowField();
+	virtual void HideField();
 	
-	virtual void SetIsPassword(bool isPassword) override;
+	virtual void SetIsPassword(bool isPassword);
 
-    virtual void SetInputEnabled(bool value) override;
+    virtual void SetInputEnabled(bool value);
     
 	// Keyboard traits.
-	virtual void SetAutoCapitalizationType(int32 value) override;
-	virtual void SetAutoCorrectionType(int32 value) override;
-	virtual void SetSpellCheckingType(int32 value) override;
-	virtual void SetKeyboardAppearanceType(int32 value) override;
-	virtual void SetKeyboardType(int32 value) override;
-	virtual void SetReturnKeyType(int32 value) override;
-	virtual void SetEnableReturnKeyAutomatically(bool value) override;
+	virtual void SetAutoCapitalizationType(int32 value);
+	virtual void SetAutoCorrectionType(int32 value);
+	virtual void SetSpellCheckingType(int32 value);
+	virtual void SetKeyboardAppearanceType(int32 value);
+	virtual void SetKeyboardType(int32 value);
+	virtual void SetReturnKeyType(int32 value);
+	virtual void SetEnableReturnKeyAutomatically(bool value);
 
     // Cursor pos.
-    virtual uint32 GetCursorPos() const override;
-    virtual void SetCursorPos(uint32 pos) override;
+    virtual uint32 GetCursorPos() const;
+    virtual void SetCursorPos(uint32 pos);
 private:
     void * nativeClassPtr;
 };

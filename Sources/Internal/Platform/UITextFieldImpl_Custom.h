@@ -41,22 +41,22 @@ public:
     UITextFieldImpl_Custom(UITextField* textfield);
     ~UITextFieldImpl_Custom();
 
-    virtual void GetText(WideString & string) const override;
-    virtual void SetText(const WideString & string) override;
-    virtual void UpdateRect(const Rect & rect, float32 timeElapsed) override;
-    virtual void GetTextColor(DAVA::Color &color) const override;
-    virtual void SetTextColor(const DAVA::Color &color) override;
-    virtual Font *GetFont() override;
-    virtual void SetFont(Font * font) override;
-    virtual void SetFontSize(float32 size) override;
-    virtual void SetTextAlign(DAVA::int32 align) override;
-    virtual void SetIsPassword(bool isPassword) override;
+    virtual void GetText(WideString & string) const;
+    virtual void SetText(const WideString & string);
+    virtual void UpdateRect(const Rect & rect, float32 timeElapsed);
+    virtual void GetTextColor(Color &color) const;
+    virtual void SetTextColor(const Color &color);
+    virtual Font *GetFont();
+    virtual void SetFont(Font * font);
+    virtual void SetFontSize(float32 size);
+    virtual void SetTextAlign(int32 align);
+    virtual void SetIsPassword(bool isPassword);
 
-    virtual uint32 GetCursorPos() const override;
-    virtual void SetCursorPos(uint32 pos) override;
+    virtual uint32 GetCursorPos() const;
+    virtual void SetCursorPos(uint32 pos);
 
-    virtual void Input(UIEvent *currentInput) override;
-    virtual void Draw() override;
+    virtual void Input(UIEvent *currentInput);
+    virtual void Draw();
 
 protected:
     WideString GetVisibleText() const;

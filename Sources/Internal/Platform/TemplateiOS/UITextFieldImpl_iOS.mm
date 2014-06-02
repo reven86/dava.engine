@@ -26,10 +26,9 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "BaseTypes.h"
+#include "UITextFieldImpl_iOS.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "UITextFieldImpl_iOS.h"
 #include "UI/UITextField.h"
 #include "Core/Core.h"
 
@@ -315,13 +314,13 @@ UITextFieldImpl_iOS::~UITextFieldImpl_iOS()
     textFieldHolder = 0;
 }
 
-void UITextFieldImpl_iOS::GetTextColor(DAVA::Color &color) const
+void UITextFieldImpl_iOS::GetTextColor(Color &color) const
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     [textFieldHolder->textField.textColor getRed:&color.r green:&color.g blue:&color.b alpha:&color.a];
 }
 
-void UITextFieldImpl_iOS::SetTextColor(const DAVA::Color &color)
+void UITextFieldImpl_iOS::SetTextColor(const Color &color)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     textFieldHolder->textField.textColor = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
@@ -339,7 +338,7 @@ void UITextFieldImpl_iOS::SetFontSize(float size)
     textFieldHolder->textField.font = [UIFont systemFontOfSize:scaledSize];
 }
 
-void UITextFieldImpl_iOS::SetTextAlign(DAVA::int32 align)
+void UITextFieldImpl_iOS::SetTextAlign(int32 align)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     if (align & ALIGN_LEFT)
@@ -397,10 +396,10 @@ void UITextFieldImpl_iOS::UpdateRect(const Rect & rect, float32 timeElapsed)
 {
     float divider = GetUITextViewSizeDivider();
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
-    CGRect cgRect = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                               , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                               , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                               , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor()/divider);
+    CGRect cgRect = CGRectMake((rect.x - Core::Instance()->GetVirtualScreenXMin()) * Core::GetVirtualToPhysicalFactor()/divider
+                               , (rect.y - Core::Instance()->GetVirtualScreenYMin()) * Core::GetVirtualToPhysicalFactor()/divider
+                               , rect.dx * Core::GetVirtualToPhysicalFactor()/divider
+                               , rect.dy * Core::GetVirtualToPhysicalFactor()/divider);
     textFieldHolder->textField.frame = cgRect;
 }
 
@@ -420,7 +419,7 @@ void UITextFieldImpl_iOS::GetText(WideString & string) const
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     
     const char * cstr = [textFieldHolder->textField.text cStringUsingEncoding:NSUTF8StringEncoding];
-    DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
+    UTF8Utils::EncodeToWideString((uint8*)cstr, strlen(cstr), string);
 }
 
 void UITextFieldImpl_iOS::SetIsPassword(bool isPassword)
@@ -435,21 +434,21 @@ void UITextFieldImpl_iOS::SetInputEnabled(bool value)
     [textFieldHolder setTextInputAllowed:value];
 }
 
-void UITextFieldImpl_iOS::SetAutoCapitalizationType(DAVA::int32 value)
+void UITextFieldImpl_iOS::SetAutoCapitalizationType(int32 value)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     textFieldHolder->textField.autocapitalizationType = [textFieldHolder convertAutoCapitalizationType:
-                                                         (DAVA::UITextField::eAutoCapitalizationType)value];
+                                                         (UITextField::eAutoCapitalizationType)value];
 }
 
-void UITextFieldImpl_iOS::SetAutoCorrectionType(DAVA::int32 value)
+void UITextFieldImpl_iOS::SetAutoCorrectionType(int32 value)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     textFieldHolder->textField.autocorrectionType = [textFieldHolder convertAutoCorrectionType:
                                                      (DAVA::UITextField::eAutoCorrectionType)value];
 }
 
-void UITextFieldImpl_iOS::SetSpellCheckingType(DAVA::int32 value)
+void UITextFieldImpl_iOS::SetSpellCheckingType(int32 value)
 {
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
@@ -458,21 +457,21 @@ void UITextFieldImpl_iOS::SetSpellCheckingType(DAVA::int32 value)
 #endif
 }
 
-void UITextFieldImpl_iOS::SetKeyboardAppearanceType(DAVA::int32 value)
+void UITextFieldImpl_iOS::SetKeyboardAppearanceType(int32 value)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     textFieldHolder->textField.keyboardAppearance = [textFieldHolder convertKeyboardAppearanceType:
                                                     (DAVA::UITextField::eKeyboardAppearanceType)value];
 }
 
-void UITextFieldImpl_iOS::SetKeyboardType(DAVA::int32 value)
+void UITextFieldImpl_iOS::SetKeyboardType(int32 value)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     textFieldHolder->textField.keyboardType = [textFieldHolder convertKeyboardType:
                                                      (DAVA::UITextField::eKeyboardType)value];
 }
 
-void UITextFieldImpl_iOS::SetReturnKeyType(DAVA::int32 value)
+void UITextFieldImpl_iOS::SetReturnKeyType(int32 value)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     textFieldHolder->textField.returnKeyType = [textFieldHolder convertReturnKeyType:

@@ -62,20 +62,20 @@ WideString UITextFieldImpl_Custom::GetVisibleText() const
     return passText;
 }
 
-void UITextFieldImpl_Custom::GetText(WideString & string ) const
+void UITextFieldImpl_Custom::GetText(WideString & string) const
 {
     string = text;
 }
 
-void UITextFieldImpl_Custom::SetText( const WideString & string )
+void UITextFieldImpl_Custom::SetText(const WideString & string)
 {
     text = string;
     needRedraw = true;
 }
 
-void UITextFieldImpl_Custom::UpdateRect( const Rect & newRect, float32 timeElapsed )
+void UITextFieldImpl_Custom::UpdateRect(const Rect & newRect, float32 timeElapsed)
 {
-    if( newRect != staticText->GetRect(true) )
+    if(newRect != staticText->GetRect(true))
     {
         staticText->SetRect(newRect, false);
         needRedraw = true;
@@ -109,12 +109,12 @@ void UITextFieldImpl_Custom::UpdateRect( const Rect & newRect, float32 timeElaps
     needRedraw = false;
 }
 
-void UITextFieldImpl_Custom::GetTextColor( DAVA::Color &color ) const
+void UITextFieldImpl_Custom::GetTextColor(Color &color) const
 {
     color = staticText->GetTextColor();
 }
 
-void UITextFieldImpl_Custom::SetTextColor( const DAVA::Color &color )
+void UITextFieldImpl_Custom::SetTextColor(const Color &color)
 {
     staticText->SetTextColor(color);
 }
@@ -124,24 +124,24 @@ Font * UITextFieldImpl_Custom::GetFont()
     return staticText->GetFont();
 }
 
-void UITextFieldImpl_Custom::SetFont( Font * font )
+void UITextFieldImpl_Custom::SetFont(Font * font)
 {
     staticText->SetFont(font);
 }
 
-void UITextFieldImpl_Custom::SetFontSize( float32 size )
+void UITextFieldImpl_Custom::SetFontSize(float32 size)
 {
-    ScopedPtr<Font> newFont( staticText->GetFont()->Clone() );
+    ScopedPtr<Font> newFont(staticText->GetFont()->Clone());
     newFont->SetSize(size);
     SetFont(newFont);
 }
 
-void UITextFieldImpl_Custom::SetTextAlign( DAVA::int32 align )
+void UITextFieldImpl_Custom::SetTextAlign(int32 align)
 {
     staticText->SetTextAlign(align);
 }
 
-void UITextFieldImpl_Custom::SetIsPassword( bool isPasswordValue )
+void UITextFieldImpl_Custom::SetIsPassword(bool isPasswordValue)
 {
     needRedraw = true;
     isPassword = isPasswordValue;
@@ -152,12 +152,12 @@ uint32 UITextFieldImpl_Custom::GetCursorPos() const
     return 0;
 }
 
-void UITextFieldImpl_Custom::SetCursorPos( uint32 pos )
+void UITextFieldImpl_Custom::SetCursorPos(uint32 pos)
 {
 
 }
 
-void UITextFieldImpl_Custom::Input( UIEvent *currentInput )
+void UITextFieldImpl_Custom::Input(UIEvent *currentInput)
 {
     UITextFieldDelegate * delegate = textField->GetDelegate();
     if (!delegate)
@@ -212,7 +212,7 @@ void UITextFieldImpl_Custom::Input( UIEvent *currentInput )
 
 void UITextFieldImpl_Custom::Draw()
 {
-    staticText->SystemDraw( UIControlSystem::Instance()->GetBaseGeometricData() );
+    staticText->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 }
 
 }

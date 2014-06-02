@@ -420,7 +420,7 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WindowsSpecifics.h" />
     <ClInclude Include="..\..\Sources\Internal\Platform\Thread.h" />
-    <ClInclude Include="..\..\Sources\Internal\Platform\UITextFieldImplCustom.h" />
+    <ClInclude Include="..\..\Sources\Internal\Platform\UITextFieldImpl_Custom.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Cursor.h" />
@@ -828,7 +828,7 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DPIHelperWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\Thread.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Platform\ThreadWin32.cpp" />
-    <ClCompile Include="..\..\Sources\Internal\Platform\UITextFieldImplCustom.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Platform\UITextFieldImpl_Custom.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\EdgeAdjacency.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\CursorWin32.cpp" />
