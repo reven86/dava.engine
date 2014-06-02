@@ -795,6 +795,10 @@
 		02FD82041924997C007762C0 /* libBox2D_iPhone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4D38612C91A3A004B850E /* libBox2D_iPhone.a */; };
 		02FD82051924997C007762C0 /* libfreetype_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */; };
 		02FD82061924997C007762C0 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
+		15E94926193C6FA3002EA07A /* UITextFieldImpl_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 15E94924193C6FA3002EA07A /* UITextFieldImpl_iOS.h */; };
+		15E94927193C6FA3002EA07A /* UITextFieldImpl_iOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 15E94924193C6FA3002EA07A /* UITextFieldImpl_iOS.h */; };
+		15E94928193C6FA3002EA07A /* UITextFieldImpl_iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 15E94925193C6FA3002EA07A /* UITextFieldImpl_iOS.mm */; };
+		15E94929193C6FA3002EA07A /* UITextFieldImpl_iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 15E94925193C6FA3002EA07A /* UITextFieldImpl_iOS.mm */; };
 		15F73E7B1933D8B00061A1BD /* UISystemKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E741933D8B00061A1BD /* UISystemKeyboard.cpp */; };
 		15F73E7C1933D8B00061A1BD /* UISystemKeyboard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E741933D8B00061A1BD /* UISystemKeyboard.cpp */; };
 		15F73E7D1933D8B00061A1BD /* UISystemKeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E751933D8B00061A1BD /* UISystemKeyboard.h */; };
@@ -805,8 +809,6 @@
 		15F73E821933D8B00061A1BD /* UISystemKeyboardImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E771933D8B00061A1BD /* UISystemKeyboardImpl.h */; };
 		15F73E831933D8B00061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E781933D8B00061A1BD /* UISystemKeyboardListener.h */; };
 		15F73E841933D8B00061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E781933D8B00061A1BD /* UISystemKeyboardListener.h */; };
-		15F73E851933D8B00061A1BD /* UITextFieldImpl_iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E791933D8B00061A1BD /* UITextFieldImpl_iOS.mm */; };
-		15F73E861933D8B00061A1BD /* UITextFieldImpl_iOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E791933D8B00061A1BD /* UITextFieldImpl_iOS.mm */; };
 		15F73E871933D8B00061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E7A1933D8B00061A1BD /* UITextFieldImpl.h */; };
 		15F73E881933D8B00061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E7A1933D8B00061A1BD /* UITextFieldImpl.h */; };
 		17816B8017B2748900B067E1 /* AllocatorFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */; };
@@ -1597,12 +1599,13 @@
 		02F6403F173A5A950053F038 /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
 		02F64040173A5A950053F038 /* SoundUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundUpdateSystem.h; sourceTree = "<group>"; };
 		02FD820C1924997C007762C0 /* libFrameworkTesting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTesting.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		15E94924193C6FA3002EA07A /* UITextFieldImpl_iOS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldImpl_iOS.h; sourceTree = "<group>"; };
+		15E94925193C6FA3002EA07A /* UITextFieldImpl_iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldImpl_iOS.mm; sourceTree = "<group>"; };
 		15F73E741933D8B00061A1BD /* UISystemKeyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UISystemKeyboard.cpp; sourceTree = "<group>"; };
 		15F73E751933D8B00061A1BD /* UISystemKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboard.h; sourceTree = "<group>"; };
 		15F73E761933D8B00061A1BD /* UISystemKeyboardImpl_iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UISystemKeyboardImpl_iOS.mm; sourceTree = "<group>"; };
 		15F73E771933D8B00061A1BD /* UISystemKeyboardImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboardImpl.h; sourceTree = "<group>"; };
 		15F73E781933D8B00061A1BD /* UISystemKeyboardListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboardListener.h; sourceTree = "<group>"; };
-		15F73E791933D8B00061A1BD /* UITextFieldImpl_iOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UITextFieldImpl_iOS.mm; sourceTree = "<group>"; };
 		15F73E7A1933D8B00061A1BD /* UITextFieldImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldImpl.h; sourceTree = "<group>"; };
 		17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorFactory.cpp; sourceTree = "<group>"; };
 		17816B7F17B2748900B067E1 /* AllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorFactory.h; sourceTree = "<group>"; };
@@ -2911,6 +2914,8 @@
 		E8B3C8D916B9326D002BD35F /* TemplateiOS */ = {
 			isa = PBXGroup;
 			children = (
+				15E94924193C6FA3002EA07A /* UITextFieldImpl_iOS.h */,
+				15E94925193C6FA3002EA07A /* UITextFieldImpl_iOS.mm */,
 				84E5E100174D02F60001C74F /* OpenUDIDios.h */,
 				84E5E101174D02F60001C74F /* OpenUDIDios.mm */,
 				497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */,
@@ -3364,7 +3369,6 @@
 				15F73E761933D8B00061A1BD /* UISystemKeyboardImpl_iOS.mm */,
 				15F73E771933D8B00061A1BD /* UISystemKeyboardImpl.h */,
 				15F73E781933D8B00061A1BD /* UISystemKeyboardListener.h */,
-				15F73E791933D8B00061A1BD /* UITextFieldImpl_iOS.mm */,
 				15F73E7A1933D8B00061A1BD /* UITextFieldImpl.h */,
 				EAADA0031892A48E001E1AA2 /* UIParticles.cpp */,
 				EAADA0041892A48E001E1AA2 /* UIParticles.h */,
@@ -3683,6 +3687,7 @@
 				02FD7F9E1924997C007762C0 /* Font.h in Headers */,
 				02FD7F9F1924997C007762C0 /* FontManager.h in Headers */,
 				02FD7FA01924997C007762C0 /* FTFont.h in Headers */,
+				15E94927193C6FA3002EA07A /* UITextFieldImpl_iOS.h in Headers */,
 				02FD7FA11924997C007762C0 /* GraphicsFont.h in Headers */,
 				02FD7FA21924997C007762C0 /* GridSprite.h in Headers */,
 				02FD7FA31924997C007762C0 /* Sprite.h in Headers */,
@@ -4187,6 +4192,7 @@
 				E8B3CC8416B9326E002BD35F /* ImposterManager.h in Headers */,
 				E8B3CC8616B9326E002BD35F /* ImposterNode.h in Headers */,
 				E8B3CC8816B9326E002BD35F /* LodNode.h in Headers */,
+				15E94926193C6FA3002EA07A /* UITextFieldImpl_iOS.h in Headers */,
 				E8B3CC8A16B9326E002BD35F /* MeshInstance.h in Headers */,
 				E8B3CC8C16B9326E002BD35F /* MeshInstanceNode.h in Headers */,
 				E8B3CC8E16B9326E002BD35F /* ParticleEffectNode.h in Headers */,
@@ -4456,6 +4462,7 @@
 				02FD80B31924997C007762C0 /* UIParticles.cpp in Sources */,
 				02FD80B41924997C007762C0 /* DAVAEngine.cpp in Sources */,
 				02FD80B51924997C007762C0 /* Backtrace.cpp in Sources */,
+				15E94929193C6FA3002EA07A /* UITextFieldImpl_iOS.mm in Sources */,
 				02FD80B61924997C007762C0 /* MemoryManager.cpp in Sources */,
 				02FD80B71924997C007762C0 /* Replay.cpp in Sources */,
 				02FD80B81924997C007762C0 /* Stats.cpp in Sources */,
@@ -4534,7 +4541,6 @@
 				02FD81011924997C007762C0 /* PolygonGroup.cpp in Sources */,
 				02FD81021924997C007762C0 /* StaticMesh.cpp in Sources */,
 				02FD81031924997C007762C0 /* SwitchToRenerObjectConverter.cpp in Sources */,
-				15F73E861933D8B00061A1BD /* UITextFieldImpl_iOS.mm in Sources */,
 				02FD81041924997C007762C0 /* ColorOnlyEffect.cpp in Sources */,
 				02FD81051924997C007762C0 /* MultiTextureEffect.cpp in Sources */,
 				02FD81061924997C007762C0 /* TextureMulColorAlphaTestEffect.cpp in Sources */,
@@ -4892,6 +4898,7 @@
 				E8B3CBCE16B9326E002BD35F /* PolygonGroup.cpp in Sources */,
 				E8B3CBD016B9326E002BD35F /* StaticMesh.cpp in Sources */,
 				15F73E7F1933D8B00061A1BD /* UISystemKeyboardImpl_iOS.mm in Sources */,
+				15E94928193C6FA3002EA07A /* UITextFieldImpl_iOS.mm in Sources */,
 				CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */,
 				E8B3CBDB16B9326E002BD35F /* ColorOnlyEffect.cpp in Sources */,
 				E8B3CBDD16B9326E002BD35F /* MultiTextureEffect.cpp in Sources */,
@@ -4995,7 +5002,6 @@
 				E8B3CCA516B9326E002BD35F /* SceneManager.cpp in Sources */,
 				E8B3CCA916B9326E002BD35F /* SceneNodeAnimation.cpp in Sources */,
 				E8B3CCAB16B9326E002BD35F /* SceneNodeAnimationKey.cpp in Sources */,
-				15F73E851933D8B00061A1BD /* UITextFieldImpl_iOS.mm in Sources */,
 				E8B3CCAD16B9326E002BD35F /* SceneNodeAnimationList.cpp in Sources */,
 				E8B3CCAF16B9326E002BD35F /* ShadowVolumeNode.cpp in Sources */,
 				E8B3CCB116B9326E002BD35F /* SkeletonNode.cpp in Sources */,

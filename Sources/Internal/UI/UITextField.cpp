@@ -37,9 +37,9 @@
 
 #include "Input/KeyboardDevice.h"
 #if defined(__DAVAENGINE_IPHONE__)
-//#include "Platform/TemplateiOS/"
+#include "Platform/TemplateiOS/UITextFieldImpl_iOS.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/UITextFieldImplAndroid.h"
+#include "Platform/TemplateAndroid/UITextFieldImpl_Android.h"
 #else
 #include "Platform/UITextFieldImpl_Custom.h"
 #endif
@@ -169,6 +169,11 @@ bool UITextField::IsLostFocusAllowed(UIControl *newFocus)
     }
     return true;
 }
+    
+void UITextField::SetFocused()
+{
+    UIControlSystem::Instance()->SetFocusedControl(this, true);
+}
 
 void UITextField::ReleaseFocus()
 {
@@ -225,9 +230,8 @@ void UITextField::SetText(const WideString & text)
 	textFieldImpl->SetText(text);
 }
 
-WideString UITextField::GetText() const
+const WideString &UITextField::GetText()
 {
-    WideString text;
 	textFieldImpl->GetText(text);
 	return text;
 }

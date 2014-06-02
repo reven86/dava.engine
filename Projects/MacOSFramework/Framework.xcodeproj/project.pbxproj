@@ -56,8 +56,12 @@
 		02E9E43A173964DA00C501BC /* SoundUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E436173964DA00C501BC /* SoundUpdateSystem.h */; };
 		02E9E465173A453700C501BC /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E40817395FDD00C501BC /* libfmodevent.dylib */; };
 		02E9E466173A453700C501BC /* libfmodex.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E40917395FDD00C501BC /* libfmodex.dylib */; };
-		15A8876319388D200081AD54 /* CustomTextField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15A8876119388D200081AD54 /* CustomTextField.cpp */; };
-		15A8876419388D200081AD54 /* CustomTextField.h in Headers */ = {isa = PBXBuildFile; fileRef = 15A8876219388D200081AD54 /* CustomTextField.h */; };
+		15E94917193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E94915193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp */; };
+		15E94918193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E94915193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp */; };
+		15E94919193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15E94915193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp */; };
+		15E9491A193C6C9D002EA07A /* UITextFieldImpl_Custom.h in Headers */ = {isa = PBXBuildFile; fileRef = 15E94916193C6C9D002EA07A /* UITextFieldImpl_Custom.h */; };
+		15E9491B193C6C9D002EA07A /* UITextFieldImpl_Custom.h in Headers */ = {isa = PBXBuildFile; fileRef = 15E94916193C6C9D002EA07A /* UITextFieldImpl_Custom.h */; };
+		15E9491C193C6C9D002EA07A /* UITextFieldImpl_Custom.h in Headers */ = {isa = PBXBuildFile; fileRef = 15E94916193C6C9D002EA07A /* UITextFieldImpl_Custom.h */; };
 		15F0AED7193610A500BA34AD /* UISystemKeyboardImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F0AED6193610A500BA34AD /* UISystemKeyboardImpl_Custom.cpp */; };
 		15F0AED8193610A500BA34AD /* UISystemKeyboardImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F0AED6193610A500BA34AD /* UISystemKeyboardImpl_Custom.cpp */; };
 		15F0AED9193610A500BA34AD /* UISystemKeyboardImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F0AED6193610A500BA34AD /* UISystemKeyboardImpl_Custom.cpp */; };
@@ -73,9 +77,6 @@
 		15F73EA31933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */; };
 		15F73EA41933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */; };
 		15F73EA51933E0CC0061A1BD /* UISystemKeyboardListener.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */; };
-		15F73EA61933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */; };
-		15F73EA71933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */; };
-		15F73EA81933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */; };
 		15F73EA91933E0CC0061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */; };
 		15F73EAA1933E0CC0061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */; };
 		15F73EAB1933E0CC0061A1BD /* UITextFieldImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */; };
@@ -2307,14 +2308,13 @@
 		0867D69BFE84028FC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		15A8876119388D200081AD54 /* CustomTextField.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CustomTextField.cpp; sourceTree = "<group>"; };
-		15A8876219388D200081AD54 /* CustomTextField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomTextField.h; sourceTree = "<group>"; };
+		15E94915193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UITextFieldImpl_Custom.cpp; sourceTree = "<group>"; };
+		15E94916193C6C9D002EA07A /* UITextFieldImpl_Custom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldImpl_Custom.h; sourceTree = "<group>"; };
 		15F0AED6193610A500BA34AD /* UISystemKeyboardImpl_Custom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UISystemKeyboardImpl_Custom.cpp; sourceTree = "<group>"; };
 		15F73E901933E0CC0061A1BD /* UISystemKeyboard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UISystemKeyboard.cpp; sourceTree = "<group>"; };
 		15F73E911933E0CC0061A1BD /* UISystemKeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboard.h; sourceTree = "<group>"; };
 		15F73E931933E0CC0061A1BD /* UISystemKeyboardImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboardImpl.h; sourceTree = "<group>"; };
 		15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UISystemKeyboardListener.h; sourceTree = "<group>"; };
-		15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UITextFieldImpl_Custom.cpp; sourceTree = "<group>"; };
 		15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UITextFieldImpl.h; sourceTree = "<group>"; };
 		171F938316CE6F28007038AB /* UIWebView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIWebView.cpp; sourceTree = "<group>"; };
 		171F938416CE6F28007038AB /* UIWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIWebView.h; sourceTree = "<group>"; };
@@ -3635,8 +3635,8 @@
 		E8989BD716BD24E400732C04 /* Platform */ = {
 			isa = PBXGroup;
 			children = (
-				15A8876119388D200081AD54 /* CustomTextField.cpp */,
-				15A8876219388D200081AD54 /* CustomTextField.h */,
+				15E94915193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp */,
+				15E94916193C6C9D002EA07A /* UITextFieldImpl_Custom.h */,
 				6280BAA818D6F909007809B7 /* DateTimeApple.mm */,
 				62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */,
 				62BD24BF18C621EB00D2F0D3 /* DateTime.h */,
@@ -4135,7 +4135,6 @@
 				15F73E911933E0CC0061A1BD /* UISystemKeyboard.h */,
 				15F73E931933E0CC0061A1BD /* UISystemKeyboardImpl.h */,
 				15F73E941933E0CC0061A1BD /* UISystemKeyboardListener.h */,
-				15F73E951933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp */,
 				15F73E961933E0CC0061A1BD /* UITextFieldImpl.h */,
 				EAAD9FFE1892A458001E1AA2 /* UIParticles.cpp */,
 				EAAD9FFF1892A458001E1AA2 /* UIParticles.h */,
@@ -4629,6 +4628,7 @@
 				176DEA23174B5561007A983B /* Landscape.h in Headers */,
 				176DEA24174B5561007A983B /* LandscapeChunk.h in Headers */,
 				176DEA25174B5561007A983B /* LandscapeCursor.h in Headers */,
+				15E9491C193C6C9D002EA07A /* UITextFieldImpl_Custom.h in Headers */,
 				176DEA26174B5561007A983B /* Light.h in Headers */,
 				176DEA27174B5561007A983B /* Mesh.h in Headers */,
 				176DEA29174B5561007A983B /* RenderBatch.h in Headers */,
@@ -4929,7 +4929,6 @@
 				E8989FCC16BD24E500732C04 /* ShadowVolumeNode.h in Headers */,
 				E8989FCE16BD24E500732C04 /* SkeletonNode.h in Headers */,
 				E8989FD016BD24E500732C04 /* SpriteNode.h in Headers */,
-				15A8876419388D200081AD54 /* CustomTextField.h in Headers */,
 				E8989FD316BD24E500732C04 /* SwitchNode.h in Headers */,
 				EAAC988D1937333E00549BAD /* MeshUtils.h in Headers */,
 				5013F6941859EB0400FB3C51 /* StaticOcclusionSystem.h in Headers */,
@@ -4942,6 +4941,7 @@
 				E8989FE516BD24E500732C04 /* RenderUpdateSystem.h in Headers */,
 				64806B7018BB6CD10015FC03 /* VegetationRenderObject.h in Headers */,
 				E8989FE716BD24E500732C04 /* SwitchSystem.h in Headers */,
+				15E9491A193C6C9D002EA07A /* UITextFieldImpl_Custom.h in Headers */,
 				E8989FE916BD24E500732C04 /* TransformSystem.h in Headers */,
 				E8989FED16BD24E500732C04 /* UserNode.h in Headers */,
 				E898A00016BD24E500732C04 /* SoundSystem.h in Headers */,
@@ -5233,6 +5233,7 @@
 				CC931B29188EC95F000375F9 /* SwitchToRenerObjectConverter.h in Headers */,
 				E898A0E516BD265400732C04 /* Font.h in Headers */,
 				E898A0E616BD265400732C04 /* FontManager.h in Headers */,
+				15E9491B193C6C9D002EA07A /* UITextFieldImpl_Custom.h in Headers */,
 				E898A0E716BD265400732C04 /* FTFont.h in Headers */,
 				E898A0E816BD265400732C04 /* GraphicsFont.h in Headers */,
 				E898A0E916BD265400732C04 /* GridSprite.h in Headers */,
@@ -5573,7 +5574,6 @@
 				176DEA43174B5561007A983B /* Animation.cpp in Sources */,
 				176DEA44174B5561007A983B /* AnimationManager.cpp in Sources */,
 				176DEA45174B5561007A983B /* BezierSplineAnimation.cpp in Sources */,
-				15F73EA81933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */,
 				176DEA46174B5561007A983B /* Interpolation.cpp in Sources */,
 				176DEA47174B5561007A983B /* KeyframeAnimation.cpp in Sources */,
 				176DEA48174B5561007A983B /* LinearAnimation.cpp in Sources */,
@@ -5750,6 +5750,7 @@
 				176DEAE5174B5561007A983B /* UpdatableComponent.cpp in Sources */,
 				176DEAE6174B5561007A983B /* DataNode.cpp in Sources */,
 				176DEAE7174B5561007A983B /* ImposterManager.cpp in Sources */,
+				15E94919193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp in Sources */,
 				176DEAE8174B5561007A983B /* ImposterNode.cpp in Sources */,
 				176DEAE9174B5561007A983B /* LodNode.cpp in Sources */,
 				176DEAEA174B5561007A983B /* MeshInstance.cpp in Sources */,
@@ -6027,7 +6028,6 @@
 				E8989EE616BD24E500732C04 /* AnimatedMesh.cpp in Sources */,
 				E8989EE816BD24E500732C04 /* EdgeAdjacency.cpp in Sources */,
 				E8989EEA16BD24E500732C04 /* PolygonGroup.cpp in Sources */,
-				15A8876319388D200081AD54 /* CustomTextField.cpp in Sources */,
 				E8989EEC16BD24E500732C04 /* StaticMesh.cpp in Sources */,
 				E8989EEF16BD24E500732C04 /* CursorMacOS.mm in Sources */,
 				E8989EF716BD24E500732C04 /* ColorOnlyEffect.cpp in Sources */,
@@ -6246,9 +6246,9 @@
 				50A5187017B256250022E8FA /* ShaderCache.cpp in Sources */,
 				A68290BA17F5EEF9007BAFDC /* SerializationContext.cpp in Sources */,
 				1AD7C36717D895AE00B9977C /* Vector.cpp in Sources */,
+				15E94917193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp in Sources */,
 				17DC600017DE11650075813E /* UIMovieView.cpp in Sources */,
 				1770DF5017DF67E500000391 /* MovieViewControlMacOS.mm in Sources */,
-				15F73EA61933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */,
 				A63BCD6A17EB26E300EA4811 /* Process.cpp in Sources */,
 				EA84E16C17FAC0B400304C3C /* SpatialTree.cpp in Sources */,
 				024DF6E917FDE4C400138748 /* FMODSoundEvent.cpp in Sources */,
@@ -6285,7 +6285,6 @@
 				50B06921186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
 				E8BAD5B1185213F100C98C8D /* IntrospectionDynamic.cpp in Sources */,
 				CC931B27188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp in Sources */,
-				15F73EA71933E0CC0061A1BD /* UITextFieldImpl_Custom.cpp in Sources */,
 				E898A1AB16BD265400732C04 /* DynamicObjectCache.cpp in Sources */,
 				E898A1AC16BD265400732C04 /* EventDispatcher.cpp in Sources */,
 				E898A1AD16BD265400732C04 /* FastName.cpp in Sources */,
@@ -6454,6 +6453,7 @@
 				E898A25B16BD265400732C04 /* UpdatableComponent.cpp in Sources */,
 				E898A25C16BD265400732C04 /* DataNode.cpp in Sources */,
 				E898A25E16BD265400732C04 /* ImposterManager.cpp in Sources */,
+				15E94918193C6C9D002EA07A /* UITextFieldImpl_Custom.cpp in Sources */,
 				E898A25F16BD265400732C04 /* ImposterNode.cpp in Sources */,
 				E898A26016BD265400732C04 /* LodNode.cpp in Sources */,
 				E898A26116BD265400732C04 /* MeshInstance.cpp in Sources */,

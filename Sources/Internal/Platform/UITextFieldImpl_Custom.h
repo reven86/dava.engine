@@ -26,8 +26,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_CUSTOM_TEXT_FIELD_H__
-#define __DAVAENGINE_CUSTOM_TEXT_FIELD_H__
+#ifndef __DAVAENGINE_UI_TEXT_FIELD_IMPL_CUSTOM_H__
+#define __DAVAENGINE_UI_TEXT_FIELD_IMPL_CUSTOM_H__
 
 #include "Base/BaseTypes.h"
 #include "UI/UITextFieldImpl.h"
@@ -71,4 +71,4 @@ private:
     float32 cursorTime;
 };
 };
-#endif // __DAVAENGINE_CUSTOM_TEXT_FIELD_H__
+#endif // __DAVAENGINE_UI_TEXT_FIELD_IMPL_CUSTOM_H__

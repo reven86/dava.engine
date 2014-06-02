@@ -33,8 +33,6 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-#include "UI/UIStaticText.h"
-#include "UI/UIControlSystem.h"
 #include "UISystemKeyboardListener.h"
 
 namespace DAVA 
@@ -183,7 +181,7 @@ public:
 	
 	virtual void SetSpriteAlign(int32 align);
     
-	virtual WideString GetText() const;
+	virtual const WideString &GetText();
 	virtual void SetText(const WideString & text);
     
     virtual WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
@@ -206,10 +204,7 @@ public:
 
 	int32 GetTextAlign() const;
 
-    void SetFocused()
-    {
-        UIControlSystem::Instance()->SetFocusedControl(this, true);
-    }
+    void SetFocused();
     
     void ReleaseFocus();
     
@@ -330,8 +325,8 @@ protected:
 	bool enableReturnKeyAutomatically : 1;
 
 protected:
-    friend UITextFieldImpl;
 	UITextFieldImpl * textFieldImpl;
+    WideString text;
 };
 
 };

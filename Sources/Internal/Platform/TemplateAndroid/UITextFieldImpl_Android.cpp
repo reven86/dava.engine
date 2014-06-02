@@ -29,7 +29,6 @@
 #include "UITextFieldImpl_Android.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "UI/UITextFieldImpl.h"
 #include "UI/UITextField.h"
 #include "Utils/UTF8Utils.h"
 
@@ -65,10 +64,12 @@ UITextFieldImpl_Android::UITextFieldImpl_Android(UITextField * tf)
 {
     id = sId++;
     idToImpl[id] = this;
+    Create(textField->GetRect(true));
 }
 
 UITextFieldImpl_Android::~UITextFieldImpl_Android()
 {
+	Destroy();
     idToImpl.erase(id);
 }
 
@@ -101,7 +102,7 @@ void UITextFieldImpl_Android::Destroy()
 	}
 }
 
-void UITextFieldImpl_Android::UpdateRect(const Rect & controlRect)
+void UITextFieldImpl_Android::UpdateRect(const Rect & controlRect, float32 timeElapsed)
 {
     if (controlRect == rect)
         return;
@@ -120,7 +121,7 @@ void UITextFieldImpl_Android::UpdateRect(const Rect & controlRect)
 				newRect.dy);
 	}
 }
-void UITextFieldImpl_Android::GetText(WideString &text)
+void UITextFieldImpl_Android::GetText(WideString &text) const
 {
 	jmethodID mid = GetMethodID("GetText", "(I)Ljava/lang/String;");
 	if (mid)
@@ -136,9 +137,8 @@ void UITextFieldImpl_Android::GetText(WideString &text)
 		GetEnvironment()->DeleteLocalRef(string);
 	}
 }
-void UITextFieldImpl_Android::SetText(const WideString & newText)
+void UITextFieldImpl_Android::SetText(const WideString & text)
 {
-	text = newText;
     String utfText = UTF8Utils::EncodeToUTF8(text);
 	jmethodID mid = GetMethodID("SetText", "(ILjava/lang/String;)V");
 	if (mid)
@@ -153,7 +153,7 @@ void UITextFieldImpl_Android::SetText(const WideString & newText)
 	}
 }
 
-void UITextFieldImpl_Android::SetTextColor(float r, float g, float b, float a)
+void UITextFieldImpl_Android::SetTextColor(const Color &color)
 {
 	jmethodID mid = GetMethodID("SetTextColor", "(IFFFF)V");
 	if (mid)
@@ -162,14 +162,14 @@ void UITextFieldImpl_Android::SetTextColor(float r, float g, float b, float a)
 				GetJavaClass(),
 				mid,
 				id,
-				r,
-				g,
-				b,
-				a);
+				color.r,
+				color.g,
+				color.b,
+				color.a);
 	}
 }
 
-void UITextFieldImpl_Android::SetFontSize(float size)
+void UITextFieldImpl_Android::SetFontSize(float32 size)
 {
 	jmethodID mid = GetMethodID("SetFontSize", "(IF)V");
 	if (mid)
@@ -195,7 +195,7 @@ void UITextFieldImpl_Android::SetIsPassword(bool isPassword)
 	}
 }
 
-void UITextFieldImpl_Android::SetTextAlign(int32_t align)
+void UITextFieldImpl_Android::SetTextAlign(int32 align)
 {
 	jmethodID mid = GetMethodID("SetTextAlign", "(II)V");
 	if (mid)
@@ -221,7 +221,7 @@ void UITextFieldImpl_Android::SetInputEnabled(bool value)
 	}
 }
 
-void UITextFieldImpl_Android::SetAutoCapitalizationType(int32_t value)
+void UITextFieldImpl_Android::SetAutoCapitalizationType(int32 value)
 {
 	jmethodID mid = GetMethodID("SetAutoCapitalizationType", "(II)V");
 	if (mid)
@@ -234,7 +234,7 @@ void UITextFieldImpl_Android::SetAutoCapitalizationType(int32_t value)
 	}
 }
 
-void UITextFieldImpl_Android::SetAutoCorrectionType(int32_t value)
+void UITextFieldImpl_Android::SetAutoCorrectionType(int32 value)
 {
 	jmethodID mid = GetMethodID("SetAutoCorrectionType", "(II)V");
 	if (mid)
@@ -247,7 +247,7 @@ void UITextFieldImpl_Android::SetAutoCorrectionType(int32_t value)
 	}
 }
 
-void UITextFieldImpl_Android::SetSpellCheckingType(int32_t value)
+void UITextFieldImpl_Android::SetSpellCheckingType(int32 value)
 {
 	jmethodID mid = GetMethodID("SetSpellCheckingType", "(II)V");
 	if (mid)
@@ -260,7 +260,7 @@ void UITextFieldImpl_Android::SetSpellCheckingType(int32_t value)
 	}
 }
 
-void UITextFieldImpl_Android::SetKeyboardAppearanceType(int32_t value)
+void UITextFieldImpl_Android::SetKeyboardAppearanceType(int32 value)
 {
 	jmethodID mid = GetMethodID("SetKeyboardAppearanceType", "(II)V");
 	if (mid)
@@ -273,7 +273,7 @@ void UITextFieldImpl_Android::SetKeyboardAppearanceType(int32_t value)
 	}
 }
 
-void UITextFieldImpl_Android::SetKeyboardType(int32_t value)
+void UITextFieldImpl_Android::SetKeyboardType(int32 value)
 {
 	jmethodID mid = GetMethodID("SetKeyboardType", "(II)V");
 	if (mid)
@@ -286,7 +286,7 @@ void UITextFieldImpl_Android::SetKeyboardType(int32_t value)
 	}
 }
 
-void UITextFieldImpl_Android::SetReturnKeyType(int32_t value)
+void UITextFieldImpl_Android::SetReturnKeyType(int32 value)
 {
 	jmethodID mid = GetMethodID("SetReturnKeyType", "(II)V");
 	if (mid)
@@ -360,7 +360,7 @@ void UITextFieldImpl_Android::CloseKeyboard()
 	}
 }
 
-uint32 UITextFieldImpl_Android::GetCursorPos()
+uint32 UITextFieldImpl_Android::GetCursorPos() const
 {
 	jmethodID mid = GetMethodID("GetCursorPos", "(I)I");
 	if (!mid)
@@ -379,11 +379,11 @@ void UITextFieldImpl_Android::SetCursorPos(uint32 pos)
 
 bool UITextFieldImpl_Android::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
 {
-    UITextFieldImpl* impl = GetUITextFieldImpl(id)->textFieldImpl;
+	UITextFieldImpl_Android* impl = GetUITextFieldImpl(id);
     if (!impl)
         return true;
 
-    UITextField * control = impl->GetTextFieldControl();
+    UITextField * control = impl->textField;
 
     if(!control || !control->GetDelegate())
     	return true;
@@ -393,11 +393,11 @@ bool UITextFieldImpl_Android::TextFieldKeyPressed(uint32_t id, int32 replacement
 
 void UITextFieldImpl_Android::TextFieldShouldReturn(uint32_t id)
 {
-    UITextFieldImpl* impl = GetUITextFieldImpl(id)->textFieldImpl;
+	UITextFieldImpl_Android* impl = GetUITextFieldImpl(id);
     if (!impl)
         return;
 
-    UITextField * control = impl->GetTextFieldControl();
+    UITextField * control = impl->textField;
 
     if(!control || !control->GetDelegate())
     	return;

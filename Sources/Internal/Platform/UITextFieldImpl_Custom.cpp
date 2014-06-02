@@ -27,9 +27,9 @@
 =====================================================================================*/
 
 #include "UITextFieldImpl_Custom.h"
-#include "UI/UITextFieldImpl.h"
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
+#include "UI/UIControlSystem.h"
 #include "Input/KeyboardDevice.h"
 
 namespace DAVA
@@ -37,7 +37,7 @@ namespace DAVA
 static const float32 CURSOR_BLINK_PERIOD = 0.5f;
 
 UITextFieldImpl_Custom::UITextFieldImpl_Custom(UITextField* tf)
-    : UITextFieldImpl( tf )
+    : UITextFieldImpl(tf)
     , needRedraw(false)
     , showCursor(true)
     , isPassword(false)
@@ -62,7 +62,7 @@ WideString UITextFieldImpl_Custom::GetVisibleText() const
     return passText;
 }
 
-void UITextFieldImpl_Custom::GetText( WideString & string ) const
+void UITextFieldImpl_Custom::GetText(WideString & string ) const
 {
     string = text;
 }

@@ -2892,11 +2892,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldImpl.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/UI/UITextFieldImpl_Android.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UITextFieldImpl_Android.cpp</locationURI>
-		</link>
-		<link>
 			<name>Internal/UI/UIWebView.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/UI/UIWebView.cpp</locationURI>
@@ -3142,16 +3137,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniExtensions.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/Platform/TemplateAndroid/JniTextField.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniTextField.cpp</locationURI>
-		</link>
-		<link>
-			<name>Internal/Platform/TemplateAndroid/JniTextField.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniTextField.h</locationURI>
-		</link>
-		<link>
 			<name>Internal/Platform/TemplateAndroid/MovieViewControlAndroid.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/MovieViewControlAndroid.cpp</locationURI>
@@ -3160,6 +3145,16 @@
 			<name>Internal/Platform/TemplateAndroid/MovieViewControlAndroid.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/MovieViewControlAndroid.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/UITextFieldImpl_Android.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/UITextFieldImpl_Android.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/UITextFieldImpl_Android.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/UITextFieldImpl_Android.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/TemplateAndroid/WebViewControl.cpp</name>
