@@ -265,7 +265,7 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-const String WebViewControl::GetCookie(const String& targetUrl, const String& name)
+String WebViewControl::GetCookie(const String& targetUrl, const String& name) const
 {
 	Map<String, String> cookiesMap = GetCookies(targetUrl);
 	Map<String, String>::iterator cIter = cookiesMap.find(name);
@@ -278,7 +278,7 @@ const String WebViewControl::GetCookie(const String& targetUrl, const String& na
 	return String();
 }
 
-const Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
+Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 {
 	Map<String, String> resultMap;
 	

@@ -542,7 +542,7 @@ bool WebBrowserContainer::LoadHtmlString(LPCTSTR pszHTMLContent)
 	return bResult;
 }
 
-const String WebBrowserContainer::GetCookie(const String& targetUrl, const String& name)
+String WebBrowserContainer::GetCookie(const String& targetUrl, const String& name)
 {
 	if (!webBrowser)
 	{
@@ -573,7 +573,7 @@ const String WebBrowserContainer::GetCookie(const String& targetUrl, const Strin
 	return retCookie;
 }
 
-const Map<String, String> WebBrowserContainer::GetCookies(const String& targetUrl)
+Map<String, String> WebBrowserContainer::GetCookies(const String& targetUrl)
 {
 	if (!webBrowser)
 	{
@@ -904,7 +904,7 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	}
 }
 
-const String WebViewControl::GetCookie(const String& targetUrl, const String& name)
+String WebViewControl::GetCookie(const String& targetUrl, const String& name) const
 {
 	if (browserContainer)
 	{
@@ -914,7 +914,7 @@ const String WebViewControl::GetCookie(const String& targetUrl, const String& na
 	return String();
 }
 
-const Map<String, String> WebViewControl::GetCookies(const String& targetUrl)
+Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 {
 	if (browserContainer)
 	{

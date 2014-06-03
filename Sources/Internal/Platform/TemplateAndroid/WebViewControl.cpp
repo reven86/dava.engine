@@ -116,7 +116,7 @@ void JniWebView::DeleteCookies(const String& targetURL)
 	}
 }
 
-const String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
+String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 {
 	jmethodID mid = GetMethodID("GetCookie", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
 	String returnStr = "";
@@ -125,11 +125,9 @@ const String JniWebView::GetCookie(const String& targetUrl, const String& cookie
 	{
 		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
 		jstring jName = GetEnvironment()->NewStringUTF(cookieName.c_str());
-		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL, jName);
+		jobject item = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL, jName);
 
-		char str[1024] = {0};
-		CreateStringFromJni(env, jstring(obj), str);
-		returnStr = str;
+		CreateStringFromJni(env, jstring(item), returnStr);
 
 		GetEnvironment()->DeleteLocalRef(jTargetURL);
 		GetEnvironment()->DeleteLocalRef(jName);
@@ -138,7 +136,7 @@ const String JniWebView::GetCookie(const String& targetUrl, const String& cookie
 	return returnStr;
 }
 
-const Map<String, String> JniWebView::GetCookies(const String& targetUrl)
+Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 {
 	jmethodID mid = GetMethodID("GetCookies", "(Ljava/lang/String;)[Ljava/lang/Object;");
 	Map<String, String> cookiesMap;
@@ -154,9 +152,8 @@ const Map<String, String> JniWebView::GetCookies(const String& targetUrl)
 			for (jsize i = 0; i < size; ++i)
 			{
 				jobject item = GetEnvironment()->GetObjectArrayElement(jArray, i);
-				char str[1024] = {0};
-				CreateStringFromJni(env, jstring(item), str);
-				String cookiesString = str;
+				String cookiesString = "";
+				CreateStringFromJni(env, jstring(item), cookiesString);
 
 				Vector<String> cookieEntry;
 				Split(cookiesString, "=", cookieEntry);
@@ -300,13 +297,13 @@ void WebViewControl::DeleteCookies(const String& targetUrl)
 	jniWebView.DeleteCookies(targetUrl);
 }
 
-const String WebViewControl::GetCookie(const String& url, const String& name)
+String WebViewControl::GetCookie(const String& url, const String& name) const
 {
 	JniWebView jniWebView;
 	return jniWebView.GetCookie(url, name);
 }
 // Get the list of cookies for specific domain
-const Map<String, String> WebViewControl::GetCookies(const String& url)
+Map<String, String> WebViewControl::GetCookies(const String& url) const
 {
 	JniWebView jniWebView;
 	return jniWebView.GetCookies(url);

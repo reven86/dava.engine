@@ -76,9 +76,9 @@ public:
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl) { };
 	// Get cookie for specific domain and name
-	virtual const String GetCookie(const String& url, const String& name) { return String(); };
+	virtual String GetCookie(const String& url, const String& name) const { return String(); };
 	// Get the list of cookies for specific domain
-	virtual const Map<String, String> GetCookies(const String& url) { return Map<String, String>(); };
+	virtual Map<String, String> GetCookies(const String& url) const { return Map<String, String>(); };
 	// Execute javascript command, return request ID
 	virtual int32_t ExecuteJScript(const String& scriptString) { return 0; };
 	

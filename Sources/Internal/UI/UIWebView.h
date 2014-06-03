@@ -62,9 +62,9 @@ public:
 	// Delete all cookies for target URL
 	void DeleteCookies(const String& targetUrl);
 	// Get cookie for specific domain and name
-	const String GetCookie(const String& targetUrl, const String& name);
+	String GetCookie(const String& targetUrl, const String& name) const;
 	// Get the list of cookies for specific domain
-	const Map<String, String> GetCookies(const String& targetUrl);
+	Map<String, String> GetCookies(const String& targetUrl) const;
 	// Perfrom Java script, return script id
 	int32_t ExecuteJScript(const String& scriptString);
 	

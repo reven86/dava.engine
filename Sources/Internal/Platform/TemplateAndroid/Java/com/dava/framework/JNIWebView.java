@@ -293,7 +293,6 @@ public class JNIWebView {
 	{		
 		// The CookieSyncManager is used to synchronize the browser cookie store between RAM and permanent storage. 
 	    CookieManager cookieManager = CookieManager.getInstance();
-	    String resultCookie = "";
 
 	    if (cookieManager.hasCookies())
 	    {
@@ -306,13 +305,12 @@ public class JNIWebView {
 	    		String[] cookieparts = cookies[i].split("=");
 	    		if (cookieparts[0].trim().compareTo(cookieName) == 0)
 	    		{
-	    			resultCookie = cookieparts[1];		
-	    			break;
+	    			return cookieparts[1];		
 	    		}			    		
 	    	}
 	    }
 	    
-	    return resultCookie;
+	    return "";
 	}
 	
 	public static Object[] GetCookies(final String targetURL)
@@ -321,8 +319,7 @@ public class JNIWebView {
 	    CookieManager cookieManager = CookieManager.getInstance();
 	    // Get cookies for specific URL and put them into array
 	    String cookieString = cookieManager.getCookie(targetURL);
-	    String[] cookies =  cookieString.split(";");
-	    
+	    String[] cookies =  cookieString.split(";");	    
 	    return cookies;
 	}
 

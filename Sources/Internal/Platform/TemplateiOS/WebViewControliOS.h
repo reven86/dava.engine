@@ -54,9 +54,9 @@ public:
 	// Delete all cookies associated with target URL
 	virtual void DeleteCookies(const String& targetUrl);
 	// Get cookie for specific domain and name
-	virtual const String GetCookie(const String& targetUrl, const String& name);
+	virtual String GetCookie(const String& targetUrl, const String& name) const;
 	// Get the list of cookies for specific domain
-	virtual const Map<String, String> GetCookies(const String& targetUrl);
+	virtual Map<String, String> GetCookies(const String& targetUrl) const;
 	// Perfrom Java script
 	virtual int32_t ExecuteJScript(const String& scriptString);
 
