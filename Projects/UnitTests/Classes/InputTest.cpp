@@ -37,7 +37,6 @@
 
 #include "InputTest.h"
 #include "UI/UIMovieView.h"
-#include "UI/UIScrollView.h"
 
 using namespace DAVA;
 

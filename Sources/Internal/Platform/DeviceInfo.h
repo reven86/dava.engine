@@ -85,6 +85,9 @@ public:
 	static String GetTimeZone();
     static String GetUDID();
     static WideString GetName();
+    static String GetHTTPProxyHost();
+	static String GetHTTPNonProxyHosts();
+	static int GetHTTPProxyPort();
 	
    	static ScreenInfo GetScreenInfo();
     //internal?

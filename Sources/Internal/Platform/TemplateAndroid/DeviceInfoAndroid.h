@@ -48,6 +48,9 @@ public:
 	String GetTimeZone();
 	String GetUDID();
 	String GetName();
+	String GetHTTPProxyHost();
+	String GetHTTPNonProxyHosts();
+	int GetHTTPProxyPort();
 	int GetZBufferSize();
 
 protected:

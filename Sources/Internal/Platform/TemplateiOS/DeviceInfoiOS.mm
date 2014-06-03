@@ -233,6 +233,24 @@ WideString DeviceInfo::GetName()
     
     return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
 }
+
+// Not impletemted yet
+String DeviceInfo::GetHTTPProxyHost()
+{
+	return String();
+}
+
+// Not impletemted yet
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	return String();
+}
+
+// Not impletemted yet
+int DeviceInfo::GetHTTPProxyPort()
+{
+	return 0;
+}
     
 }
 

@@ -71,6 +71,23 @@ public class JNIDeviceInfo {
 	{
 		return JNIConfigChooser.GetDepthBufferSize();
 	}
+	
+	public static String GetHTTPProxyHost()
+	{		
+		return System.getProperty("http.proxyHost");
+	}
+	
+	public static int GetHTTPProxyPort()
+	{
+		String portStr = System.getProperty("http.proxyPort");
+	    int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+	    return proxyPort;
+	}
+	
+	public static String GetHTTPNonProxyHosts()
+	{
+		return System.getProperty("http.nonProxyHosts");
+	}
 
 	public static native void SetJString(String str);
 }

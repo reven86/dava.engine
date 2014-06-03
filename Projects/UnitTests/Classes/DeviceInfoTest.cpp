@@ -59,6 +59,9 @@ void DeviceInfoTest::TestFunction(TestTemplate<DeviceInfoTest>::PerfFuncData *da
     String region = DeviceInfo::GetRegion();
     String timezone = DeviceInfo::GetTimeZone();
     String udid = DeviceInfo::GetUDID();
+    String proxyHost = DeviceInfo::GetHTTPProxyHost();
+    int proxyPort = DeviceInfo::GetHTTPProxyPort();
+    String proxyExculde = DeviceInfo::GetHTTPNonProxyHosts();
     WideString name = DeviceInfo::GetName();
 
 	Logger::Debug("********** Device info **********");
@@ -72,6 +75,9 @@ void DeviceInfoTest::TestFunction(TestTemplate<DeviceInfoTest>::PerfFuncData *da
     Logger::Debug("UDID: %s", udid.c_str());
     Logger::Debug("Name: %s", WStringToString(name).c_str());
     Logger::Debug("ZBufferSize: %d", DeviceInfo::GetZBufferSize());
+	Logger::Debug("Proxy Host: %s", proxyHost.c_str());
+	Logger::Debug("Proxy Port: %d", proxyPort);
+	Logger::Debug("Proxy Exclude Hosts: %s", proxyExculde.c_str());
 	Logger::Debug("********** Device info **********");
 
 	data->testData.message = "DeviceInfo test - passed";
