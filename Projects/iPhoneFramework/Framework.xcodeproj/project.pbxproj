@@ -1041,6 +1041,10 @@
 		E8B3CACB16B9326E002BD35F /* Core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7F416B9326D002BD35F /* Core.cpp */; };
 		E8B3CACC16B9326E002BD35F /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7F516B9326D002BD35F /* Core.h */; };
 		E8B3CAD216B9326E002BD35F /* DisplayMode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FB16B9326D002BD35F /* DisplayMode.h */; };
+		E8B3CAD316B9326E002BD35F /* MongodbClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7FD16B9326D002BD35F /* MongodbClient.cpp */; };
+		E8B3CAD416B9326E002BD35F /* MongodbClient.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FE16B9326D002BD35F /* MongodbClient.h */; };
+		E8B3CAD516B9326E002BD35F /* MongodbObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7FF16B9326D002BD35F /* MongodbObject.cpp */; };
+		E8B3CAD616B9326E002BD35F /* MongodbObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80016B9326D002BD35F /* MongodbObject.h */; };
 		E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80116B9326D002BD35F /* DAVAConfig.h */; };
 		E8B3CAD816B9326E002BD35F /* DAVAEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80216B9326D002BD35F /* DAVAEngine.cpp */; };
 		E8B3CAD916B9326E002BD35F /* DAVAEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80316B9326D002BD35F /* DAVAEngine.h */; };
@@ -3964,6 +3968,8 @@
 				E8B3CACA16B9326E002BD35F /* ApplicationCore.h in Headers */,
 				E8B3CACC16B9326E002BD35F /* Core.h in Headers */,
 				E8B3CAD216B9326E002BD35F /* DisplayMode.h in Headers */,
+				E8B3CAD416B9326E002BD35F /* MongodbClient.h in Headers */,
+				E8B3CAD616B9326E002BD35F /* MongodbObject.h in Headers */,
 				E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */,
 				E8B3CAD916B9326E002BD35F /* DAVAEngine.h in Headers */,
 				E8B3CADB16B9326E002BD35F /* Backtrace.h in Headers */,
@@ -4782,6 +4788,8 @@
 				E8B3CAC716B9326E002BD35F /* Collisions.cpp in Sources */,
 				E8B3CAC916B9326E002BD35F /* ApplicationCore.cpp in Sources */,
 				E8B3CACB16B9326E002BD35F /* Core.cpp in Sources */,
+				E8B3CAD316B9326E002BD35F /* MongodbClient.cpp in Sources */,
+				E8B3CAD516B9326E002BD35F /* MongodbObject.cpp in Sources */,
 				EAADA0051892A48E001E1AA2 /* UIParticles.cpp in Sources */,
 				E8B3CAD816B9326E002BD35F /* DAVAEngine.cpp in Sources */,
 				E8B3CADA16B9326E002BD35F /* Backtrace.cpp in Sources */,

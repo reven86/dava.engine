@@ -26,14 +26,15 @@
 		5C8B42A61589D866001B2597 /* SampleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C8B42A41589D866001B2597 /* SampleTest.cpp */; };
 		5C8D42441580E4D700441032 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C8D42421580E4D700441032 /* BaseScreen.cpp */; };
 		5CA2462E158F472100465879 /* EntityTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA2462C158F472100465879 /* EntityTest.cpp */; };
-		5CDC2521156CD48700742348 /* TestTemplate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC251E156CD48700742348 /* TestTemplate.cpp */; };
 		5CDC2530156CDED900742348 /* MainWindow-iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5CDC252F156CDED900742348 /* MainWindow-iPad.xib */; };
 		5CDC2533156CE21000742348 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5CDC2532156CE20F00742348 /* libz.dylib */; };
 		627C796D18ED9DA900C05154 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 627C796B18ED9DA900C05154 /* JPEGTest.cpp */; };
 		74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7433863C179D18CE0014FBD3 /* UIListTest.cpp */; };
 		74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7433863E179D18CE0014FBD3 /* UIScrollViewTest.cpp */; };
 		7497447517B3D61800282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497447317B3D61800282DAA /* AlignTest.cpp */; };
+		74990F5C193F60B20013BCC7 /* libmongodb_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 74990F5B193F60B20013BCC7 /* libmongodb_ios.a */; };
 		74AF633D18852FE100070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF633C18852FE100070C35 /* Security.framework */; };
+		74AF84BD193F70A300FDB3C5 /* ParseTextTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74AF84BB193F70A300FDB3C5 /* ParseTextTest.cpp */; };
 		74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74BF98191876B3A7001D4CFE /* GameController.framework */; };
 		74F7355F18F596D000685E69 /* UIParticlesTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74F7355D18F596D000685E69 /* UIParticlesTest.cpp */; };
 		8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8475938B18DA3FAC00C464CB /* DateTimeTest.cpp */; };
@@ -73,6 +74,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		74AF84BF193F70A300FDB3C5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 02FD820C1924997C007762C0;
+			remoteInfo = FrameworkTesting;
+		};
 		FE9895571163F13500500198 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = FE9895531163F13500500198 /* Framework.xcodeproj */;
@@ -123,7 +131,6 @@
 		5C8D42451580E4ED00441032 /* Config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Config.h; sourceTree = "<group>"; };
 		5CA2462C158F472100465879 /* EntityTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EntityTest.cpp; sourceTree = "<group>"; };
 		5CA2462D158F472100465879 /* EntityTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EntityTest.h; sourceTree = "<group>"; };
-		5CDC251E156CD48700742348 /* TestTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestTemplate.cpp; sourceTree = "<group>"; };
 		5CDC251F156CD48700742348 /* TestTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestTemplate.h; sourceTree = "<group>"; };
 		5CDC252F156CDED900742348 /* MainWindow-iPad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = "MainWindow-iPad.xib"; path = "iOSSpecific/iPad/MainWindow-iPad.xib"; sourceTree = "<group>"; };
 		5CDC2532156CE20F00742348 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -135,7 +142,10 @@
 		7433863F179D18CF0014FBD3 /* UIScrollViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIScrollViewTest.h; sourceTree = "<group>"; };
 		7497447317B3D61800282DAA /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AlignTest.cpp; sourceTree = "<group>"; };
 		7497447417B3D61800282DAA /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlignTest.h; sourceTree = "<group>"; };
+		74990F5B193F60B20013BCC7 /* libmongodb_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmongodb_ios.a; path = ../../Libs/libs/libmongodb_ios.a; sourceTree = "<group>"; };
 		74AF633C18852FE100070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		74AF84BB193F70A300FDB3C5 /* ParseTextTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParseTextTest.cpp; sourceTree = "<group>"; };
+		74AF84BC193F70A300FDB3C5 /* ParseTextTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParseTextTest.h; sourceTree = "<group>"; };
 		74BF98191876B3A7001D4CFE /* GameController.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameController.framework; path = System/Library/Frameworks/GameController.framework; sourceTree = SDKROOT; };
 		74F7355D18F596D000685E69 /* UIParticlesTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticlesTest.cpp; sourceTree = "<group>"; };
 		74F7355E18F596D000685E69 /* UIParticlesTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticlesTest.h; sourceTree = "<group>"; };
@@ -208,6 +218,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74990F5C193F60B20013BCC7 /* libmongodb_ios.a in Frameworks */,
 				C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */,
 				74AF633D18852FE100070C35 /* Security.framework in Frameworks */,
 				74BF981A1876B3A8001D4CFE /* GameController.framework in Frameworks */,
@@ -296,6 +307,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				74990F5B193F60B20013BCC7 /* libmongodb_ios.a */,
 				C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */,
 				74AF633C18852FE100070C35 /* Security.framework */,
 				74BF98191876B3A7001D4CFE /* GameController.framework */,
@@ -318,6 +330,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				74AF84BB193F70A300FDB3C5 /* ParseTextTest.cpp */,
+				74AF84BC193F70A300FDB3C5 /* ParseTextTest.h */,
 				E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */,
 				E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */,
 				627C796B18ED9DA900C05154 /* JPEGTest.cpp */,
@@ -397,7 +411,6 @@
 		5C8D42411580E4C300441032 /* TestSuite */ = {
 			isa = PBXGroup;
 			children = (
-				5CDC251E156CD48700742348 /* TestTemplate.cpp */,
 				5CDC251F156CD48700742348 /* TestTemplate.h */,
 				5C8D42421580E4D700441032 /* BaseScreen.cpp */,
 				5C8D42431580E4D700441032 /* BaseScreen.h */,
@@ -417,6 +430,7 @@
 			isa = PBXGroup;
 			children = (
 				FE9895581163F13500500198 /* libFramework.a */,
+				74AF84C0193F70A300FDB3C5 /* libFrameworkTesting.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -481,6 +495,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		74AF84C0193F70A300FDB3C5 /* libFrameworkTesting.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkTesting.a;
+			remoteRef = 74AF84BF193F70A300FDB3C5 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		FE9895581163F13500500198 /* libFramework.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -530,7 +551,6 @@
 				15CBB0B018D300310038ABA3 /* StringFormatTest.cpp in Sources */,
 				FEC9201013BA2D7D006F347F /* main.mm in Sources */,
 				8475938D18DA3FAC00C464CB /* DateTimeTest.cpp in Sources */,
-				5CDC2521156CD48700742348 /* TestTemplate.cpp in Sources */,
 				5C8D42441580E4D700441032 /* BaseScreen.cpp in Sources */,
 				5C8B42A61589D866001B2597 /* SampleTest.cpp in Sources */,
 				5CA2462E158F472100465879 /* EntityTest.cpp in Sources */,
@@ -566,6 +586,7 @@
 				74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */,
 				7497447517B3D61800282DAA /* AlignTest.cpp in Sources */,
 				02F8B01C17CF996C00D5A334 /* ThreadSyncTest.cpp in Sources */,
+				74AF84BD193F70A300FDB3C5 /* ParseTextTest.cpp in Sources */,
 				1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
