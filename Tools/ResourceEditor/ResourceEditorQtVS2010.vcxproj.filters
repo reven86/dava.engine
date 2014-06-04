@@ -1962,6 +1962,9 @@
     <ClCompile Include="Classes\Commands2\RebuildTangentSpaceCommand.cpp">
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Commands2\CopyLastLODCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">
@@ -3459,6 +3462,9 @@
       <Filter>QtGenerated</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Commands2\RebuildTangentSpaceCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\CopyLastLODCommand.h">
       <Filter>Classes\Commands2</Filter>
     </ClInclude>
   </ItemGroup>

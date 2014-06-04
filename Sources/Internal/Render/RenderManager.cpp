@@ -123,7 +123,7 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 	cursor = 0;
     currentRenderData = 0;
     cachedEnabledStreams = 0;
-
+    cachedAttributeMask = 0;
     attachedRenderData = 0;
     
     statsFrameCountToShowDebug = 0;

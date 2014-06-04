@@ -122,6 +122,8 @@ void LODEditor::SetupInternalUI()
     SetForceLayerValues(DAVA::LodComponent::MAX_LOD_LAYERS);
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
+    //TODO: remove after lod editing implementation
+    connect(ui->lastLodToFrontButton, SIGNAL(clicked()), this, SLOT(CopyLODToLod0Clicked()));
     connect(ui->createPlaneLodButton, SIGNAL(clicked()), this, SLOT(CreatePlaneLODClicked()));
     connect(ui->buttonDeleteFirstLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteFirstLOD()));
     connect(ui->buttonDeleteLastLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteLastLOD()));
@@ -243,6 +245,7 @@ void LODEditor::LODDataChanged()
     
     UpdateWidgetVisibility();
 
+    ui->lastLodToFrontButton->setEnabled(editedLODData->CanCreatePlaneLOD());
     ui->createPlaneLodButton->setEnabled(editedLODData->CanCreatePlaneLOD());
     ui->buttonDeleteFirstLOD->setEnabled(editedLODData->CanDeleteLod());
     ui->buttonDeleteLastLOD->setEnabled(editedLODData->CanDeleteLod());
@@ -372,6 +375,12 @@ void LODEditor::UpdateWidgetVisibility()
     ui->frameViewLOD->setVisible(visible);
     ui->editLODButton->setVisible(visible);
     ui->frameEditLOD->setVisible(visible);
+}
+
+void LODEditor::CopyLODToLod0Clicked()
+{
+    if(editedLODData->CanCreatePlaneLOD())
+        editedLODData->CopyLastLodToLod0();
 }
 
 void LODEditor::CreatePlaneLODClicked()

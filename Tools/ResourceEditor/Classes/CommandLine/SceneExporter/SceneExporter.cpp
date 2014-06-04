@@ -41,8 +41,6 @@
 
 #include "../Qt/Main/QtUtils.h"
 
-#include "Qt/SoundComponentEditor/FMODSoundBrowser.h"
-
 using namespace DAVA;
 
 SceneExporter::SceneExporter()
@@ -65,11 +63,6 @@ void SceneExporter::SetInFolder(const FilePath &folderPathname)
 void SceneExporter::SetOutFolder(const FilePath &folderPathname)
 {
     sceneUtils.SetOutFolder(folderPathname);
-}
-
-void SceneExporter::SetOutSoundsFolder(const FilePath &folderPathname)
-{
-    soundsOutFolder = folderPathname;
 }
 
 void SceneExporter::SetGPUForExporting(const String &newGPU)
@@ -174,10 +167,6 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
 	}
     uint64 moveTime = SystemTimer::Instance()->AbsoluteMS() - moveStart;
 
-    uint64 soundStart = SystemTimer::Instance()->AbsoluteMS();
-    ExportSounds(fileName);
-    uint64 soundTime = SystemTimer::Instance()->AbsoluteMS() - soundStart;
-
     SceneValidator::Instance()->SetPathForChecking(oldPath);
     
     if(!sceneWasExportedCorrectly)
@@ -187,8 +176,8 @@ void SceneExporter::ExportScene(Scene *scene, const FilePath &fileName, Set<Stri
     
     
     uint64 exportTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
-    Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tVegetation time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tSound time: %ldms\n\tErrors occured: %d",
-                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, vegetationTime, saveTime, moveTime, soundTime, !sceneWasExportedCorrectly
+    Logger::Info("Export Status\n\tScene: %s\n\tExport time: %ldms\n\tRemove editor nodes time: %ldms\n\tRemove custom properties: %ldms\n\tExport descriptors: %ldms\n\tValidation time: %ldms\n\tLandscape time: %ldms\n\tVegetation time: %ldms\n\tSave time: %ldms\n\tMove time: %ldms\n\tErrors occured: %d",
+                 fileName.GetStringValue().c_str(), exportTime, removeEditorNodesTime, removeEditorCPTime, exportDescriptorsTime, validationTime, landscapeTime, vegetationTime, saveTime, moveTime, !sceneWasExportedCorrectly
                  );
     
     return;
@@ -393,30 +382,6 @@ void SceneExporter::ExportFolder(const String &folderName, Set<String> &errorLog
     }
     
     SafeRelease(fileList);
-}
-
-void SceneExporter::ExportSounds(const FilePath &scenePath)
-{
-#ifdef DAVA_FMOD
-    FilePath sfxDir = FMODSoundBrowser::MakeFEVPathFromScenePath(scenePath).GetDirectory();
-    if(sfxDir.IsEmpty())
-        return;
-
-    if(exportForGPU != GPU_POWERVR_IOS && exportForGPU != GPU_UNKNOWN)
-    {
-        String pathStr = sfxDir.GetAbsolutePathname();
-        pathStr = pathStr.substr(0, pathStr.length() - 4) + "Android/";
-        sfxDir = FilePath(pathStr);
-    }
-
-    if(!soundsOutFolder.IsEmpty())
-    {
-        if(!soundsOutFolder.Exists())
-            FileSystem::Instance()->CreateDirectory(soundsOutFolder, true);
-
-        FileSystem::Instance()->CopyDirectory(sfxDir, soundsOutFolder, true);
-    }
-#endif
 }
 
 bool SceneExporter::ExportLandscape(Scene *scene, Set<String> &errorLog)

@@ -61,6 +61,7 @@ Shader::Shader()
     attributeNames = 0;
     activeAttributes = 0;
     activeUniforms = 0;
+    activeAttributesMask = 0;
     
     //uniforms = 0;
     uniformData = NULL;
@@ -347,6 +348,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
     char attributeName[512];
     DVASSERT(attributeNames == NULL);
     attributeNames = new FastName[activeAttributes];
+    activeAttributesMask = 0;
     for (int32 k = 0; k < activeAttributes; ++k)
     {
         GLint size;
@@ -355,7 +357,16 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         attributeNames[k] = FastName(attributeName);
         
         int32 flagIndex = GetAttributeIndexByName(attributeNames[k]);
-        vertexFormatAttribIndeces[flagIndex] = glGetAttribLocation(program, attributeName);
+        if(flagIndex != -1)
+        {
+            int32 attributeLocationIndex = glGetAttribLocation(program, attributeName);
+            vertexFormatAttribIndeces[flagIndex] = attributeLocationIndex;
+            
+            if(attributeLocationIndex != -1)
+            {
+                activeAttributesMask |= (1 << flagIndex);
+            }
+        }
     }
     
     RENDER_VERIFY(glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &activeUniforms));

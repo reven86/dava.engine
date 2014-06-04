@@ -119,6 +119,9 @@ public:
     void RemoveRenderBatch(RenderBatch * batch);
     void RemoveRenderBatch(uint32 batchIndex);
 
+    void SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex);
+    void SetRenderBatchSwitchIndex(uint32 batchIndex, int32 newSwitchIndex);
+
     void UpdateBatchesSortingTransforms();
 
     virtual void RecalcBoundingBox();

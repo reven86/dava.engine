@@ -288,7 +288,7 @@ int32 do_div(int64 &n, int32 base)
     }
     
     
-    int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list args)
+    int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list &args)
     {
         int32 len;
         int64 num;
@@ -811,51 +811,34 @@ int32 do_div(int64 &n, int32 base)
 WideString Format(const char16 * text, ...)
 {
 	WideString str;
-	char16 buffer[FORMAT_STRING_MAX_LEN];
-
+    
     va_list ll;
 	va_start(ll, text);
 
-    Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
-
-/*
-#if defined(_WIN32)
-	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
-#elif defined (__DAVAENGINE_ANDROID__) || defined (__DAVAENGINE_IPHONE__)
-    Vsnwprintf((char16 *)buffer, FORMAT_STRING_MAX_LEN, (char16 *)text, ll);
-#else
-    // MAC_OS & other nix systems
-	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
-#endif
-	*/
+    str = FormatVL(text, ll);
 
 	va_end(ll);
 
-	str = buffer;
 	return str;
 }
 
-String FormatVL(const char8 * text, va_list ll)
+String FormatVL(const char8 * text, va_list &ll)
 {
 	String str;
 	char8 buffer[FORMAT_STRING_MAX_LEN];
 
-	vsprintf(buffer,  text, ll);
+	vsprintf(buffer, text, ll);
 
 	str = buffer;
 	return str;
 }
 
-WideString FormatVL(const char16 * text, va_list ll)
+WideString FormatVL(const char16 * text, va_list &ll)
 {
 	WideString str;
 	char16 buffer[FORMAT_STRING_MAX_LEN];
 
-#if defined(_WIN32)
-	vswprintf((wchar_t *)buffer, (wchar_t *)text, ll);
-#else // MAC_OS & other nix systems
-	vswprintf((wchar_t *)buffer, FORMAT_STRING_MAX_LEN, (wchar_t *)text, ll);
-#endif
+    Vsnwprintf(buffer, FORMAT_STRING_MAX_LEN, text, ll);
 
 	str = buffer;
 	return str;

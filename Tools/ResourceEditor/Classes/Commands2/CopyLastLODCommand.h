@@ -28,60 +28,26 @@
 
 
 
-#ifndef __SCENE_EXPORTER_H__
-#define __SCENE_EXPORTER_H__
+#ifndef __COPY_LAST_LOD_COMMAND_H__
+#define __COPY_LAST_LOD_COMMAND_H__
 
+#include "Commands2/Command2.h"
 #include "DAVAEngine.h"
-#include "CommandLine/SceneUtils/SceneUtils.h"
-#include "TextureCompression/TextureConverter.h"
 
-using namespace DAVA;
-
-class SceneExporter
+class CopyLastLODToLod0Command: public Command2
 {
-public:
+    public:
+    //TODO: remove after lod editing implementation
+    DAVA_DEPRECATED(CopyLastLODToLod0Command(DAVA::LodComponent *lod));
+    ~CopyLastLODToLod0Command();
 
-	SceneExporter();
-	virtual ~SceneExporter();
-    
-    void SetGPUForExporting(const String &newGPU);
-    void SetGPUForExporting(const eGPUFamily newGPU);
-    
-	void SetCompressionQuality(TextureConverter::eConvertQuality quality);
+    virtual void Undo();
+    virtual void Redo();
+    virtual DAVA::Entity* GetEntity() const;
 
-    void SetInFolder(const FilePath &folderPathname);
-    void SetOutFolder(const FilePath &folderPathname);
-    
-	void EnableOptimizations( bool enable );
-
-    void ExportFile(const String &fileName, Set<String> &errorLog);
-    void ExportFolder(const String &folderName, Set<String> &errorLog);
-    
-    void ExportScene(Scene *scene, const FilePath &fileName, Set<String> &errorLog);
-    
-protected:
-    
-    void RemoveEditorNodes(Entity *rootNode);
-    void RemoveEditorCustomProperties(Entity *rootNode);
-    
-    bool ExportDescriptors(DAVA::Scene *scene, Set<String> &errorLog);
-    bool ExportTextureDescriptor(const FilePath &pathname, Set<String> &errorLog);
-    bool ExportTexture(const TextureDescriptor * descriptor, Set<String> &errorLog);
-    void CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog);
-
-    bool ExportLandscape(Scene *scene, Set<String> &errorLog);
-    bool ExportVegetation(Scene *scene, Set<String> &errorLog);
-    
-protected:
-    
-    SceneUtils sceneUtils;
-
-    eGPUFamily exportForGPU;
-	bool optimizeOnExport;
-
-	TextureConverter::eConvertQuality quality;
+    DAVA::LodComponent *lodComponent;
+    DAVA::Vector<DAVA::RenderBatch *> newBatches;
+    DAVA::Vector<DAVA::int32> switchIndices;
 };
 
-
-
-#endif // __SCENE_EXPORTER_H__
+#endif // __COPY_LAST_LOD_COMMAND_H__

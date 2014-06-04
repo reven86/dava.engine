@@ -135,6 +135,8 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
         RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
     Scene * tempScene = new Scene();
+    tempScene->SetGlobalMaterial(fromEntity->GetScene()->GetGlobalMaterial());
+
     Entity * entity = fromEntity->Clone();
 	entity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
 

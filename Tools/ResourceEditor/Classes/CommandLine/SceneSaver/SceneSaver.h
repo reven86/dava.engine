@@ -62,8 +62,6 @@ protected:
 	void CopyEffects(Entity *node);
 	void CopyEmitter(ParticleEmitter *emitter);
 
-    void CopySounds(const FilePath & scenePath);
-
 	void CopyCustomColorTexture(Scene *scene, const FilePath & sceneFolder, Set<String> &errorLog);
 
     static FilePath CreateProjectPathFromPath(const FilePath & pathname);

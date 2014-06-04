@@ -707,6 +707,8 @@ void DefaultScreen::DeleteSelectedGuides(HierarchyTreeScreenNode* screenNode)
     DeleteGuidesCommand* command = new DeleteGuidesCommand(screenNode);
     CommandsController::Instance()->ExecuteCommand(command);
     SafeRelease(command);
+    
+    HierarchyTreeController::Instance()->ResetSelectedControl();
 }
 
 Qt::CursorShape DefaultScreen::GetCursor(const Vector2& point)

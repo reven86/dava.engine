@@ -348,7 +348,6 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 			case SKIP:
 				if (t == 0){ state = FINISH; break; } // if end of string process FINISH state and exit
 				else if (IsSpace(t))break; // if space continue with the same state
-                //else if (IsWordSeparator(t)) { state = SEPARATOR; break; } // if word separator - continue with the same state
                 else if(IsLineEnd(t))
 				{
 					// this block is copied from case NEXTLINE: if(t == 'n')

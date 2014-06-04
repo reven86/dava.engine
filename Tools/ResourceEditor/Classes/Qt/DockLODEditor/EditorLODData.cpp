@@ -34,6 +34,7 @@
 #include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/DeleteLODCommand.h"
+#include "Commands2/CopyLastLODCommand.h"
 
 
 EditorLODData::EditorLODData()
@@ -392,6 +393,7 @@ void EditorLODData::CommandExecuted(SceneEditor2 *scene, const Command2* command
 		CommandBatch *batch = (CommandBatch *)command;
 		Command2 *firstCommand = batch->GetCommand(0);
 		if(firstCommand && (firstCommand->GetId() == CMDID_LOD_DISTANCE_CHANGE || 
+                            firstCommand->GetId() == CMDID_LOD_COPY_LAST_LOD ||
                             firstCommand->GetId() == CMDID_LOD_DELETE ||
                             firstCommand->GetId() == CMDID_LOD_CREATE_PLANE))
 		{
@@ -409,6 +411,20 @@ void EditorLODData::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSi
 
         for(DAVA::uint32 i = 0; i < componentsCount; ++i)
             activeScene->Exec(new CreatePlaneLODCommand(lodData[i], fromLayer, textureSize, texturePath));
+
+        activeScene->EndBatch();
+    }
+}
+
+void EditorLODData::CopyLastLodToLod0()
+{
+    DAVA::uint32 componentsCount = (DAVA::uint32)lodData.size();
+    if(componentsCount && activeScene)
+    {
+        activeScene->BeginBatch("LOD Added");
+
+        for(DAVA::uint32 i = 0; i < componentsCount; ++i)
+            activeScene->Exec(new CopyLastLODToLod0Command(lodData[i]));
 
         activeScene->EndBatch();
     }

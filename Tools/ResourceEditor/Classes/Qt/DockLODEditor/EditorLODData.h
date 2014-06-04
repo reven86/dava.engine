@@ -74,6 +74,9 @@ public:
     static void EnumerateLODsRecursive(DAVA::Entity *entity, DAVA::Vector<DAVA::LodComponent *> & lods);
     static void AddTrianglesInfo(DAVA::uint32 triangles[], DAVA::LodComponent *lod, bool onlyVisibleBatches);
 
+    //TODO: remove after lod editing implementation
+    DAVA_DEPRECATED(void CopyLastLodToLod0());
+
     bool CanDeleteLod();
 
 signals:
