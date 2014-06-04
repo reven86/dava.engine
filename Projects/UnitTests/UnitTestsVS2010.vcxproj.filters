@@ -13,7 +13,6 @@
     <ClCompile Include="Classes\SampleTest.cpp" />
     <ClCompile Include="Classes\SoundTest.cpp" />
     <ClCompile Include="Classes\SplitTest.cpp" />
-    <ClCompile Include="Classes\TestTemplate.cpp" />
     <ClCompile Include="Classes\TextureUtils.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
     <ClCompile Include="Classes\CloneTest.cpp" />
@@ -42,6 +41,8 @@
     <ClCompile Include="Classes\DateTimeTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
     <ClCompile Include="Classes\UIParticlesTest.cpp" />
+    <ClCompile Include="Classes\ParseTextTest.cpp" />
+    <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\BaseScreen.h" />
@@ -85,5 +86,8 @@
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
     <ClInclude Include="Classes\UIParticlesTest.h" />
+    <ClInclude Include="Classes\UITestTemplate.h" />
+    <ClInclude Include="Classes\ParseTextTest.h" />
+    <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
   </ItemGroup>
 </Project>

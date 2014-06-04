@@ -153,7 +153,21 @@ void RenderObject::RecalcBoundingBox()
         bbox.AddAABBox(renderBatchArray[k].renderBatch->GetBoundingBox());
     }
 }
-    
+
+void RenderObject::CollectRenderBatches(int32 requestLodIndex, int32 requestSwitchIndex, Vector<RenderBatch*> & batches, bool includeShareLods /* = false */) const
+{
+    uint32 batchesCount = renderBatchArray.size();
+    for(uint32 i = 0; i < batchesCount; ++i)
+    {
+        const IndexedRenderBatch & irb = renderBatchArray[i];
+        if( (requestLodIndex == -1 || requestLodIndex == irb.lodIndex || (includeShareLods && irb.lodIndex == -1)) &&
+            (requestSwitchIndex == -1 || requestSwitchIndex == irb.switchIndex) )
+        {
+            batches.push_back(irb.renderBatch);
+        }
+    }
+}
+
 RenderObject * RenderObject::Clone(RenderObject *newObject)
 {
 	if(!newObject)

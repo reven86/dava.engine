@@ -130,7 +130,8 @@ public:
     bool AreGuidesLocked() const;
     void LockGuides(bool value);
 
-    // Set the stick mode.
+    // Get/set the stick mode.
+    int32 GetStickMode() const;
     void SetStickMode(int32 stickMode);
 
     // Access to Guides Manager.

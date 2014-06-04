@@ -36,7 +36,16 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>1</number>
+    </property>
+    <property name="topMargin">
+     <number>1</number>
+    </property>
+    <property name="rightMargin">
+     <number>1</number>
+    </property>
+    <property name="bottomMargin">
      <number>1</number>
     </property>
     <item>
@@ -69,7 +78,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -96,7 +114,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -135,7 +162,16 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -201,7 +237,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -379,6 +415,7 @@
      <addaction name="actionBuilding"/>
      <addaction name="actionInvisibleWall"/>
      <addaction name="actionSpeedTree"/>
+     <addaction name="actionUndefinedCollision"/>
     </widget>
     <addaction name="actionEnableCameraLight"/>
     <addaction name="actionReloadSprites"/>
@@ -398,6 +435,7 @@
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionBuildStaticOcclusion"/>
+    <addaction name="actionRebuildCurrentOcclusionCell"/>
     <addaction name="actionBeastAndSave"/>
     <addaction name="separator"/>
     <addaction name="menuObjectTypes"/>
@@ -523,7 +561,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -569,7 +616,16 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
       <number>1</number>
      </property>
      <item>
@@ -601,7 +657,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -1887,6 +1952,19 @@
    </property>
    <property name="text">
     <string>Unlock Transform</string>
+   </property>
+  </action>
+  <action name="actionRebuildCurrentOcclusionCell">
+   <property name="text">
+    <string>Rebuild Current Occlusion Cell</string>
+   </property>
+  </action>
+  <action name="actionUndefinedCollision">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Undefined Collision</string>
    </property>
   </action>
  </widget>

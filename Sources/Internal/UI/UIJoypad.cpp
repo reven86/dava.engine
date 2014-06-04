@@ -195,7 +195,7 @@ Sprite* UIJoypad::GetStickSprite() const
     return stick ? stick->GetSprite() : NULL;
 }
 
-int UIJoypad::GetStickSpriteFrame() const
+int32 UIJoypad::GetStickSpriteFrame() const
 {
     if (stick && stick->GetSprite())
     {

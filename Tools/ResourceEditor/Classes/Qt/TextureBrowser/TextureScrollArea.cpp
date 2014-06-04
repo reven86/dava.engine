@@ -66,7 +66,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 	, textureBorder(NULL)
 	, zoomFactor(1.0)
 	, tiledBgDoDraw(false)
-	, warningVisible(false)
+	, noImageVisible(false)
 	, compositeImagesFlags(0)
 {
 	// create and setup scene
@@ -82,25 +82,47 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 
 	// add items to scene
 	texturePixmap = textureScene->addPixmap(QPixmap());
-	textureBorder = textureScene->addRect(0, 0, 10, 10, QPen(QColor(255, 255, 0, 255)), QBrush(Qt::NoBrush));
+    textureBorder = textureScene->addRect(0, 0, 10, 10, QPen(QColor(255, 255, 0, 255)), QBrush(Qt::NoBrush));
 
-	// add warning label
-	warningLabel = new QLabel("No image");
-	warningLabel->setAttribute(Qt::WA_NoSystemBackground, true);
-	// label color
-	QPalette palette = warningLabel->palette();
-	palette.setColor(warningLabel->foregroundRole(), Qt::gray);
-	warningLabel->setPalette(palette);
-	// label font size
-	QFont font = warningLabel->font();
-	font.setPointSize(18);
-	font.setBold(true);
-	warningLabel->setFont(font);
-	warningLabel->setAlignment(Qt::AlignCenter);
-	// add it to scene
-	warningProxy = textureScene->addWidget(warningLabel);
-	warningProxy->setGeometry(QRectF(-150, -20, 150, 20));
-	warningProxy->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+    // add "No Image" label
+    {
+	    noImageLabel = new QLabel("No image");
+	    noImageLabel->setAttribute(Qt::WA_NoSystemBackground, true);
+	    // label color
+	    QPalette palette = noImageLabel->palette();
+	    palette.setColor(noImageLabel->foregroundRole(), Qt::gray);
+	    noImageLabel->setPalette(palette);
+	    // label font size
+	    QFont font = noImageLabel->font();
+	    font.setPointSize(18);
+	    font.setBold(true);
+	    noImageLabel->setFont(font);
+	    noImageLabel->setAlignment(Qt::AlignCenter);
+	    // add it to scene
+	    noImageProxy = textureScene->addWidget(noImageLabel);
+	    noImageProxy->setGeometry(QRectF(-150, -20, 150, 20));
+	    noImageProxy->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+    }
+
+    // add warning label
+    {
+	    warningLabel = new QLabel("Warning");
+	    warningLabel->setAttribute(Qt::WA_NoSystemBackground, true);
+	    // label color
+	    QPalette palette = noImageLabel->palette();
+	    palette.setColor(noImageLabel->foregroundRole(), Qt::red);
+	    warningLabel->setPalette(palette);
+	    // label font size
+	    QFont font = warningLabel->font();
+	    font.setPointSize(18);
+	    font.setBold(true);
+	    warningLabel->setFont(font);
+	    warningLabel->setAlignment(Qt::AlignCenter);
+	    // add it to scene
+	    warningProxy = textureScene->addWidget(warningLabel);
+	    warningProxy->setGeometry(QRectF(-150, -40, 150, -20));
+	    warningProxy->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+    }
 
 	// add wait-bar to scene
 	QProgressBar *progressBar = new QProgressBar();
@@ -118,6 +140,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 	borderShow(false);
 	bgmaskShow(false);
 	waitbarShow(false);
+    warningShow(false);
 }
 
 TextureScrollArea::~TextureScrollArea()
@@ -135,8 +158,8 @@ void TextureScrollArea::setImage(const QImage &image)
 	applyTextureImageToScenePixmap();
 	applyTextureImageBorder();
 
-	warningVisible = currentTextureImage.isNull();
-	warningProxy->setVisible(warningVisible);
+	noImageVisible = currentTextureImage.isNull();
+	noImageProxy->setVisible(noImageVisible);
 
 	adjustWidgetsPos();
 }
@@ -223,16 +246,26 @@ void TextureScrollArea::waitbarShow(bool show)
 {
 	if(show)
 	{
-		warningProxy->setVisible(false);
+		noImageProxy->setVisible(false);
 		waitBar->show();
 	}
 	else
 	{
-		warningProxy->setVisible(warningVisible);
+		noImageProxy->setVisible(noImageVisible);
 		waitBar->hide();
 	}
 
 	adjustWidgetsPos();
+}
+
+void TextureScrollArea::warningSetText(const QString &text)
+{
+    warningLabel->setText(text);
+}
+
+void TextureScrollArea::warningShow(bool show)
+{
+    warningProxy->setVisible(show);
 }
 
 void TextureScrollArea::setTextureZoom(const float &zoom)
@@ -352,11 +385,16 @@ void TextureScrollArea::adjustWidgetsPos()
 	qreal y = viewCenter.x() - rect.height() / 2.0 / scaleY;
 	waitBar->setPos(x, y);
 
-	// calculate new warning pos
-	rect = warningProxy->sceneBoundingRect();
-	viewCenter = mapToScene(width() / 2.0, height() / 2.0);
+	// calculate new noImage pos
+	rect = noImageProxy->sceneBoundingRect();
 	x = viewCenter.x() - rect.width() / 2.0 / scaleX;
 	y = viewCenter.x() - rect.height() / 2.0 / scaleY;
+	noImageProxy->setPos(x, y);
+
+	// calculate warning pos
+	rect = warningProxy->sceneBoundingRect();
+	x = viewCenter.x() - rect.width() / 2.0 / scaleX;
+	y = viewCenter.x() - rect.height() / 2.0 / scaleY - (warningLabel->font().pointSize() + 25); // 25 is spacing
 	warningProxy->setPos(x, y);
 }
 
@@ -408,13 +446,13 @@ void TextureScrollArea::setImage(const QList<QImage>& images, int flags)
 	
 	if(isCompositeImage())
 	{
-		warningVisible = (images.size() == 0);
-		warningProxy->setVisible(warningVisible);
+		noImageVisible = (images.size() == 0);
+		noImageProxy->setVisible(noImageVisible);
 	}
 	else
 	{
-		warningVisible = currentTextureImage.isNull();
-		warningProxy->setVisible(warningVisible);
+		noImageVisible = currentTextureImage.isNull();
+		noImageProxy->setVisible(noImageVisible);
 	}
 	
 	adjustWidgetsPos();

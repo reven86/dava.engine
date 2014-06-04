@@ -37,6 +37,9 @@ attribute vec3 inBinormal;
 
 #if defined(PIXEL_LIT) || defined(SPEED_TREE_LEAF) || defined(MATERIAL_GRASS)
 attribute vec3 inTangent;
+#if defined (PRECOMPUTED_BINORMAL)
+attribute vec3 inBinormal;
+#endif
 #endif
 
 #if defined(FRAME_BLEND)
@@ -416,7 +419,12 @@ void main()
 #if defined(PIXEL_LIT)
 	vec3 n = normalize (worldViewInvTransposeMatrix * inNormal);
 	vec3 t = normalize (worldViewInvTransposeMatrix * inTangent);
-	vec3 b = cross (n, t);
+	
+	#if defined (PRECOMPUTED_BINORMAL)
+		vec3 b = normalize (worldViewInvTransposeMatrix * inBinormal);
+	#else
+		vec3 b = cross (n, t);
+	#endif
     
     vec3 toLightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;
 #if defined(DISTANCE_ATTENUATION)

@@ -97,6 +97,7 @@ const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED")
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
 const FastName NMaterial::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
+const FastName NMaterial::FLAG_PRECOMPUTED_BINORMAL = FastName("PRECOMPUTED_BINORMAL");
 
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
@@ -1234,6 +1235,8 @@ void NMaterial::BuildTextureParamsCache(RenderPassInstance* passInstance)
 			}
 		}
 	}
+
+    SetTexturesDirty();
 }
     
 void NMaterial::BuildActiveUniformsCacheParamsCache()
@@ -2155,7 +2158,7 @@ InspDesc NMaterial::NMaterialStateDynamicTexturesInsp::MemberDesc(void *object, 
 	return InspDesc(texture.c_str());
 }
 
-VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberAliasGet(void *object, const FastName &texture) const
+VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberValueGet(void *object, const FastName &texture) const
 {
 	VariantType ret;
 	
@@ -2166,25 +2169,6 @@ VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberAliasGet(void *o
 	if(textures->count(texture))
 	{
 		ret.SetFilePath(textures->at(texture).path);
-	}
-	
-	return ret;
-}
-
-VariantType NMaterial::NMaterialStateDynamicTexturesInsp::MemberValueGet(void *object, const FastName &texture) const
-{
-	VariantType ret;
-	
-	NMaterial *state = (NMaterial*) object;
-	DVASSERT(state);
-	
-	const FastNameMap<NMaterial::NMaterialStateDynamicTexturesInsp::PropData>* textures = FindMaterialTextures(state, false);
-	if(textures->count(texture))
-	{
-		if(textures->at(texture).source & PropData::SOURCE_SELF)
-		{
-			ret.SetFilePath(textures->at(texture).path);
-		}
 	}
 	
 	return ret;
@@ -2423,23 +2407,6 @@ int NMaterial::NMaterialStateDynamicPropertiesInsp::MemberFlags(void *object, co
 	return flags;
 }
 
-VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::MemberAliasGet(void *object, const FastName &member) const
-{
-    VariantType ret;
-
-    NMaterial *state = (NMaterial*) object;
-    DVASSERT(state);
-
-    const FastNameMap<NMaterial::NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state, true);
-    if(members->count(member))
-    {
-        const PropData &prop = members->at(member);
-        ret = getVariant(member, prop);
-    }
-
-    return ret;
-}
-
 VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::MemberValueGet(void *object, const FastName &member) const
 {
 	VariantType ret;
@@ -2447,14 +2414,11 @@ VariantType NMaterial::NMaterialStateDynamicPropertiesInsp::MemberValueGet(void 
 	NMaterial *state = (NMaterial*) object;
 	DVASSERT(state);
 	
-	const FastNameMap<NMaterial::NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state, false);
+	const FastNameMap<NMaterial::NMaterialStateDynamicPropertiesInsp::PropData>* members = FindMaterialProperties(state, true);
 	if(members->count(member))
 	{
 		const PropData &prop = members->at(member);
-        if(prop.source & PropData::SOURCE_SELF)
-        {
-            ret = getVariant(member, prop);
-        }
+        ret = getVariant(member, prop);
 	}
 	
 	return ret;
@@ -2765,6 +2729,8 @@ Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *ob
 		ret.push_back(FLAG_WAVE_ANIMATION);
 		ret.push_back(FLAG_FAST_NORMALIZATION);
 
+        ret.push_back(FLAG_PRECOMPUTED_BINORMAL);
+
 		ret.push_back(FLAG_SPECULAR);
 		ret.push_back(FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
 		ret.push_back(FLAG_DEBUG_UNITY_Z_NORMAL);
@@ -2783,8 +2749,7 @@ VariantType NMaterial::NMaterialStateDynamicFlagsInsp::MemberValueGet(void *obje
 	NMaterial *state = (NMaterial*) object;
 	DVASSERT(state);
 	
-	ret.SetBool(state->IsFlagEffective(member));
-	
+    ret.SetBool(state->IsFlagEffective(member));
 	return ret;
 }
 
@@ -2793,19 +2758,31 @@ void NMaterial::NMaterialStateDynamicFlagsInsp::MemberValueSet(void *object, con
 	NMaterial *state = (NMaterial*) object;
 	DVASSERT(state);
 	
-    if(value.GetType() == VariantType::TYPE_NONE && state->GetMaterialType() != MATERIALTYPE_GLOBAL)
+	NMaterial::eFlagValue newValue = NMaterial::FlagOff;
+	if(value.GetType() == VariantType::TYPE_BOOLEAN && value.AsBool())
+	{
+		newValue = NMaterial::FlagOn;
+	}
+
+    if(state->GetMaterialType() == MATERIALTYPE_GLOBAL)
     {
-        state->ResetFlag(member);
+        // global material accepts only valid values 
+        if(value.GetType() == VariantType::TYPE_BOOLEAN)
+        {
+    	    state->SetFlag(member, newValue);
+        }
     }
     else
     {
-	    NMaterial::eFlagValue newValue = NMaterial::FlagOff;
-	    if(value.AsBool())
-	    {
-		    newValue = NMaterial::FlagOn;
-	    }
-	
-	    state->SetFlag(member, newValue);
+        // empty value is thread as flag remove
+        if(value.GetType() == VariantType::TYPE_NONE)
+        {
+            state->ResetFlag(member);
+        }
+        else
+        {
+	        state->SetFlag(member, newValue);
+        }
     }
 }
 

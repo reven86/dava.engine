@@ -105,6 +105,8 @@ public slots:
 
 	void DeleteRenderBatch();
 
+    void RebuildTangentSpace();
+
     void CloneRenderBatchesToFixSwitchLODs();
 
 protected:
@@ -125,8 +127,9 @@ protected:
 	QtPropertyData* CreateInspCollection(void *object, const DAVA::InspColl *collection);
 	QtPropertyData* CreateClone(QtPropertyData *original);
 
+    void QueueResetProperties();
+
     void ClearCurrentNodes();
-	void ResetProperties();
 	void ApplyModeFilter(QtPropertyData *parent);
 	void ApplyFavorite(QtPropertyData *data);
 	void ApplyCustomExtensions(QtPropertyData *data);
@@ -147,6 +150,12 @@ protected:
 	QtPropertyToolButton * CreateButton(QtPropertyData *data, const QIcon & icon, const QString & tooltip);
 
 	QString GetDefaultFilePath(); 
+
+private slots:
+    void ResetProperties();
+
+private:
+    int resetRequests;
 };
 
 #endif // __QT_PROPERTY_WIDGET_H__

@@ -107,7 +107,7 @@ BasePropertyGridWidget::PROPERTIESMAP BasePropertyGridWidget::BuildMetadataPrope
     for (int32 i = 0; i < count; i ++)
     {
         const QMetaProperty& curProperty = activeMetadata->metaObject()->property(i);
-        //Logger::Debug("Property name %s", curProperty.name());
+        //Logger::FrameworkDebug("Property name %s", curProperty.name());
         propertiesMap.insert(std::make_pair(curProperty.name(), curProperty));
     }
     

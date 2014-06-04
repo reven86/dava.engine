@@ -72,7 +72,6 @@ void FilePathTest::FilePathOperationsTest(PerfFuncData * data)
 
     path3.TruncateExtension();
     TEST_VERIFY(path3 == "~res:/Gfx/UI/texture");
-    TEST_VERIFY(path3.IsEqualToExtension(""));
     TEST_VERIFY(!path3.IsEqualToExtension(".psd"));
 
     path3.ReplaceFilename("");

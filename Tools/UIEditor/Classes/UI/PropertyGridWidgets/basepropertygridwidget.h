@@ -49,9 +49,6 @@
 
 using namespace DAVA;
 
-//Register DAVA::Font type here so we can use it as Qt object
-Q_DECLARE_METATYPE(Font*);
-
 namespace Ui {
 class BasePropertyGridWidget;
 }

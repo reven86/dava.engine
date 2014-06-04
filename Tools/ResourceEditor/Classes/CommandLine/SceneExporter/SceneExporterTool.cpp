@@ -111,7 +111,13 @@ bool SceneExporterTool::InitializeFromCommandLine()
     
 	optimizeOnExport = (CommandLineParser::CommandIsFound(String("-saveNormals")) == false);
 
+    
     return true;
+}
+
+void SceneExporterTool::DumpParams()
+{
+    Logger::Info("Export started with params:\n\tIn folder: %s\n\tOut folder: %s\n\tOut sound folder: %s\n\tQuality: %d\n\tGPU: %s\n\tFilename: %s\n\tFoldername: %s", inFolder.GetStringValue().c_str(), outFolder.GetStringValue().c_str(), outSoundsFolder.GetStringValue().c_str(), quality, gpu.c_str(), filename.c_str(), foldername.c_str());
 }
 
 void SceneExporterTool::Process()

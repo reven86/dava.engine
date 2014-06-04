@@ -83,6 +83,7 @@ private slots:
 	void OnImportScreenOrAggregator();
 
 	void OnProjectCreated();
+    void OnProjectLoaded();
 	void OnSelectedScreenChanged();
 	
 	void OnUpdateScaleRequest(float scaleDelta);
@@ -217,6 +218,8 @@ private:
     // Set the screenshot folder.
     void SetScreenshotFolder();
     
+    void UpdateSaveButtons();
+
 private:
     Ui::MainWindow *ui;
 	QAction *recentPojectActions[EditorSettings::RECENT_FILES_COUNT];

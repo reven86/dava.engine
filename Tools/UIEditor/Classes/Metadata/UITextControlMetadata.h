@@ -44,7 +44,8 @@ class UITextControlMetadata : public UIControlMetadata
 
     // Font Properties
     Q_PROPERTY(Font* Font READ GetFont WRITE SetFont);
-    Q_PROPERTY(float FontSize READ GetFontSize WRITE SetFontSize);
+    //Q_PROPERTY(float FontSize READ GetFontSize WRITE SetFontSize);
+    Q_PROPERTY(float FontSize READ GetFontSize);
     Q_PROPERTY(QColor FontColor READ GetFontColor WRITE SetFontColor);
 
     Q_PROPERTY(QString LocalizedTextKey READ GetLocalizedTextKey WRITE SetLocalizedTextKey);
@@ -71,7 +72,7 @@ protected:
     virtual void SetTextAlign(int align) = 0;
     
     virtual float GetFontSize() const = 0;
-    virtual void SetFontSize(float fontSize) = 0;
+    //virtual void SetFontSize(float fontSize) = 0;
 
     virtual QColor GetFontColor() const = 0;
     virtual void SetFontColor(const QColor& value) = 0;

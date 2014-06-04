@@ -375,6 +375,7 @@
     <ClCompile Include="Classes\Commands2\ParticleForceRemoveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\ParticleLayerMoveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\ParticleLayerRemoveCommand.cpp" />
+    <ClCompile Include="Classes\Commands2\RebuildTangentSpaceCommand.cpp" />
     <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp" />
     <ClCompile Include="Classes\Commands2\RulerToolActions.cpp" />
     <ClCompile Include="Classes\Commands2\SaveEntityAsAction.cpp" />
@@ -1014,6 +1015,7 @@
     <ClInclude Include="Classes\Commands2\ParticleForceRemoveCommand.h" />
     <ClInclude Include="Classes\Commands2\ParticleLayerMoveCommand.h" />
     <ClInclude Include="Classes\Commands2\ParticleLayerRemoveCommand.h" />
+    <ClInclude Include="Classes\Commands2\RebuildTangentSpaceCommand.h" />
     <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h" />
     <ClInclude Include="Classes\Commands2\RulerToolActions.h" />
     <ClInclude Include="Classes\Commands2\SaveEntityAsAction.h" />

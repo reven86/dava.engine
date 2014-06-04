@@ -675,6 +675,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 	meshData = new uint8[vertexStride * vertexCount];
 	memcpy(meshData, &optMeshData[0], vertexStride * vertexCount);
 };
+
     
 };
 

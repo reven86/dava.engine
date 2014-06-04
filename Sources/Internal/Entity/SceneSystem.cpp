@@ -44,16 +44,6 @@ SceneSystem::~SceneSystem()
     
 }
 
-void SceneSystem::SetRequiredComponents(uint32 _requiredComponents)
-{
-    requiredComponents = _requiredComponents;
-}
-    
-uint32 SceneSystem::GetRequiredComponents()
-{
-    return requiredComponents;
-}
-
 void SceneSystem::AddEntity(Entity * entity)
 {
     

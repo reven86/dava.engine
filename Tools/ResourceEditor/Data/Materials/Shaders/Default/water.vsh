@@ -34,9 +34,11 @@ uniform mat4 worldViewMatrix;
 
 #if defined(PIXEL_LIT)
 uniform mat3 worldViewInvTransposeMatrix;
-uniform vec3 lightPosition0;
-uniform float lightIntensity0; 
-uniform float materialSpecularShininess;
+
+#if defined(SPECULAR)
+uniform vec4 lightPosition0;
+#endif
+
 #endif
 
 #if !defined (TANGENT_SPACE_WATER_REFLECTIONS)
@@ -55,7 +57,9 @@ varying vec3 eyeDist;
 #endif
 
 #if defined(PIXEL_LIT)
+#if defined(SPECULAR)
 varying vec3 varLightVec;
+#endif
 #endif
 
 #if defined(PIXEL_LIT)||defined(MATERIAL_DECAL)	
@@ -120,14 +124,16 @@ void main()
 		eyeDist = eyeCoordsPosition;
 	#endif
     
-    vec3 lightDir = lightPosition0 - eyeCoordsPosition;    
-    
-	// transform light and half angle vectors by tangent basis
 	vec3 v;
-	v.x = dot (lightDir, t);
-	v.y = dot (lightDir, b);
-	v.z = dot (lightDir, n);
-	varLightVec = v;       
+	#if defined(SPECULAR)
+		vec3 lightDir = lightPosition0.xyz - eyeCoordsPosition * lightPosition0.w;    
+		
+		// transform light and half angle vectors by tangent basis		
+		v.x = dot (lightDir, t);
+		v.y = dot (lightDir, b);
+		v.z = dot (lightDir, n);
+		varLightVec = v;     
+	#endif	
 
     v.x = dot (eyeCoordsPosition, t);
 	v.y = dot (eyeCoordsPosition, b);

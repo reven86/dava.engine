@@ -87,7 +87,7 @@ void ResultScreen::SaveResults()
     Core *core=DAVA::Core::Instance();
     Vector2 screenSize(core->GetVirtualScreenWidth(), core->GetVirtualScreenHeight());
     
-    Image* image = resultSprite->GetTexture()->CreateImageFromMemory();
+    Image* image = resultSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
     FilePath saveFileName = FileSystem::Instance()->GetUserDocumentsPath();
     saveFileName += filename.GetFilename() + ".png";
     ImageLoader::Save(image, saveFileName);
@@ -203,10 +203,11 @@ void ResultScreen::Draw(const UIGeometricData &geometricData)
 	float32 drawSize = Min(screenSize.x, screenSize.y);
 	float32 scale = Min(drawSize / resultSprite->GetWidth(), drawSize / resultSprite->GetHeight());
 	
-	resultSprite->SetPosition(0, 0);
-	resultSprite->SetScale(scale, scale);
+    Sprite::DrawState state;
+	state.SetPosition(0, 0);
+	state.SetScale(scale, scale);
 	
-	resultSprite->Draw();
+	resultSprite->Draw(&state);
 
     UIScreen::Draw(geometricData);
 }
@@ -216,8 +217,10 @@ void ResultScreen::PrepareSprite()
 	Rect r(0, 0, resultSprite->GetWidth(), resultSprite->GetHeight());
 
 	RenderManager::Instance()->SetRenderTarget(resultSprite);
-    textureSprite->SetScale(RESULT_TEXTURE_SCALE, RESULT_TEXTURE_SCALE);
-	textureSprite->Draw();
+    
+    Sprite::DrawState state;
+    state.SetScale(RESULT_TEXTURE_SCALE, RESULT_TEXTURE_SCALE);
+	textureSprite->Draw(&state);
 	DrawStatImage(r);
 	RenderManager::Instance()->RestoreRenderTarget();
 }
@@ -239,9 +242,9 @@ void ResultScreen::DrawStatImage(Rect rect)
 			curSector.AddPoint(GetVecInRect(curRect, DegToRad((SECTORS_COUNT - j) * 45.f - 22.5f)));
 			curSector.AddPoint(GetVecInRect(curRect, DegToRad((SECTORS_COUNT - j) * 45.f)));
 			curSector.AddPoint(GetVecInRect(curRect, DegToRad((SECTORS_COUNT - j) * 45.f + 22.5f)));
-			helper->FillPolygon(curSector);
-			manager->SetColor(Color::Black());
-			helper->DrawPolygon(curSector, true);
+			helper->FillPolygon(curSector, RenderState::DEFAULT_2D_STATE);
+			manager->SetColor(Color::Black);
+			helper->DrawPolygon(curSector, true, RenderState::DEFAULT_2D_STATE);
 		}
 	}
 }

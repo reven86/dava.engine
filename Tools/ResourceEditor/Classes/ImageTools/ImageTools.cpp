@@ -91,6 +91,7 @@ uint32 ImageTools::GetTexturePhysicalSize(const TextureDescriptor *descriptor, c
 		}
 		else
 		{
+			Logger::Error("[ImageTools::GetTexturePhysicalSize] Can't detect type of file %s", imagePathname.GetAbsolutePathname().c_str());
 			DVASSERT(false);
 		}
 		

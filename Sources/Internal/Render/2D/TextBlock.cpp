@@ -326,19 +326,16 @@ void TextBlock::Prepare()
         // which can't be broken to the separate lines.
         if (isMultilineEnabled)
         {
-            Vector<WideString> strings;
-            Vector2 rectSize;
-
             if(isMultilineBySymbolEnabled)
             {
-                font->SplitTextBySymbolsToStrings(text, rectSize, strings);
+                font->SplitTextBySymbolsToStrings(text, drawSize, multilineStrings);
             }
             else
             {
-                font->SplitTextToStrings(text, rectSize, strings);
+                font->SplitTextToStrings(text, drawSize, multilineStrings);
             }
             
-            treatMultilineAsSingleLine = strings.size() == 1;
+            treatMultilineAsSingleLine = multilineStrings.size() == 1;
         }
 
 		if(!isMultilineEnabled || treatMultilineAsSingleLine)
@@ -659,7 +656,6 @@ void TextBlock::Prepare()
 				{
 					textSize.dx = Max(textSize.dx, stringSize.dx);
 				}
-				
 			}
 		}
 		
@@ -948,6 +944,5 @@ const Vector<int32> & TextBlock::GetStringSizes() const
 {
 	return stringSizes;
 }
-
 
 };

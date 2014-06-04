@@ -83,6 +83,11 @@ void SwitchSystem::ImmediateEvent(Entity * entity, uint32 event)
 	}
 }
 
+void SwitchSystem::AddEntity(Entity * entity)
+{
+    updatableEntities.insert(entity); //need update entity when add it into scene
+}
+
 void SwitchSystem::RemoveEntity(Entity* entity)
 {
     updatableEntities.erase(entity);

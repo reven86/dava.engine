@@ -323,13 +323,73 @@ Color UIYamlLoader::GetColorFromYamlNode(const YamlNode * node)
 
 Font * UIYamlLoader::GetFontByName(const String & fontName)
 {
-	Map<String, Font*>::iterator it = fontMap.find(fontName);
-	if (it != fontMap.end())
-	{
-		Font * font = it->second;
-		return font;
-	}
-	return 0;
+    return FontManager::Instance()->GetFont(fontName);
+    
+//	Map<String, Font*>::iterator it = fontMap.find(fontName);
+//	if (it != fontMap.end())
+//	{
+//		Font * font = it->second;
+//		return font;
+//	}
+//	return 0;
+}
+    
+void UIYamlLoader::LoadFonts(const FilePath & yamlPathname)
+{
+	UIYamlLoader * loader = new UIYamlLoader();
+    YamlNode * rootNode = loader->CreateRootNode(yamlPathname);
+    if (!rootNode)
+    {
+        // Empty YAML file.
+        Logger::Warning("yaml file: %s is empty", yamlPathname.GetAbsolutePathname().c_str());
+        return;
+    }
+    loader->LoadFontsFromNode(rootNode);
+    SafeRelease(rootNode);
+	loader->Release();
+}
+    
+bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
+{
+    YamlParser * parser = YamlParser::Create();
+    
+    if (!parser)
+    {
+        Logger::Error("ProcessSave: error while creating YAML parser!");
+        return false;
+    }
+    bool res = false;
+    
+    //save used fonts
+    const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
+    ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
+    for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
+         iter != usedFonts.end();
+         ++iter)
+    {
+        Font* font = (*iter);
+        if (!font)
+            continue;
+        
+        // The font should be stored once only.
+        String fontName = FontManager::Instance()->GetFontName(font);
+        Logger::FrameworkDebug("UIYamlLoader::SaveFonts fontName=%s for font=%p", fontName.c_str(), font);
+        
+        font = FontManager::Instance()->GetFont(fontName);
+        if (!font)
+            continue;
+        Logger::FrameworkDebug("UIYamlLoader::SaveFonts font=%p for fontName=%s", font, fontName.c_str());
+        
+        if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
+        {
+            fontsNode->AddNodeToMap( fontName, font->SaveToYamlNode() );
+        }
+    }
+    
+    res = parser->SaveToYamlFile(yamlPathname, fontsNode, true, File::CREATE | File::WRITE);
+    
+    SafeRelease(parser);
+    return res;
 }
 
 void UIYamlLoader::Load(UIControl * rootControl, const FilePath & yamlPathname, bool assertIfCustomControlNotFound)
@@ -351,27 +411,111 @@ bool UIYamlLoader::Save(UIControl * rootControl, const FilePath & yamlPathname, 
 	loader->Release();
 	return savedOK;
 }
-
-void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPathname)
+    
+YamlNode *UIYamlLoader::CreateRootNode(const FilePath & yamlPathname)
 {
-	uint64 t1 = SystemTimer::Instance()->AbsoluteMS();
 	YamlParser * parser = YamlParser::Create(yamlPathname);
 	if (!parser)
 	{
 		Logger::Error("Failed to open yaml file: %s", yamlPathname.GetAbsolutePathname().c_str());
-		return;
+		return NULL;
 	}
 	currentPath = yamlPathname.GetDirectory();
+	YamlNode * rootNode = SafeRetain(parser->GetRootNode());
+	SafeRelease(parser);
+    return rootNode;
+}
 
-	YamlNode * rootNode = parser->GetRootNode();
+void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPathname)
+{
+	uint64 t1 = SystemTimer::Instance()->AbsoluteMS();
+
+    YamlNode * rootNode = CreateRootNode(yamlPathname);
     if (!rootNode)
     {
         // Empty YAML file.
         Logger::Warning("yaml file: %s is empty", yamlPathname.GetAbsolutePathname().c_str());
         return;
     }
+
+    LoadFontsFromNode(rootNode);
 	
-	for (MultiMap<String, YamlNode*>::const_iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
+	LoadFromNode(rootControl, rootNode, false);
+    
+    SafeRelease(rootNode);
+	
+	// After the scene is fully loaded, apply the align settings
+	// to position child controls correctly.
+	rootControl->ApplyAlignSettingsForChildren();
+	
+//	for (Map<String, Font *>::iterator t = fontMap.begin(); t != fontMap.end(); ++t)
+//	{
+//		Font * font = t->second;
+//		SafeRelease(font);
+//	}
+//	fontMap.clear();
+    
+    
+	uint64 t2 = SystemTimer::Instance()->AbsoluteMS();
+	Logger::FrameworkDebug("Load of %s time: %lld", yamlPathname.GetAbsolutePathname().c_str(), t2 - t1);
+}
+	
+bool UIYamlLoader::ProcessSave(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode)
+{
+    uint64 t1 = SystemTimer::Instance()->AbsoluteMS();
+    YamlParser * parser = YamlParser::Create();
+
+    if (!parser)
+    {
+        Logger::Error("ProcessSave: error while creating YAML parser!");
+        return false;
+    }
+    
+    DVASSERT(rootControl);
+    YamlNode* resultNode = SaveToNode(rootControl, NULL);
+
+	uint32 fileAttr = File::CREATE | File::WRITE;
+    
+#if defined(SAVE_TRACKED_FONTS)
+    //save used fonts
+    const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
+    ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
+    for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
+         iter != usedFonts.end();
+         ++iter)
+    {
+        Font* font = (*iter);
+        if (!font)
+            continue;
+        
+        // The font should be stored once only.
+        String fontName = FontManager::Instance()->GetFontName(font);
+        if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
+        {
+            fontsNode->AddNodeToMap( fontName, font->SaveToYamlNode() );
+        }
+    }
+
+    //resultNode
+    parser->SaveToYamlFile(yamlPathname, fontsNode, true, fileAttr);
+    fileAttr = File::APPEND | File::WRITE;
+#endif
+	
+    // Save the resulting YAML file to the path passed.
+    bool savedOK = parser->SaveToYamlFile(yamlPathname, resultNode, skipRootNode, fileAttr);
+    SafeRelease(parser);
+    
+    SafeRelease(resultNode);
+    
+    uint64 t2 = SystemTimer::Instance()->AbsoluteMS();
+	Logger::FrameworkDebug("Save of %s time: %lld", yamlPathname.GetAbsolutePathname().c_str(), t2 - t1);
+
+    return savedOK;
+}
+	
+void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
+{
+    for (MultiMap<String, YamlNode*>::const_iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)
 	{
 		YamlNode * node = t->second;
 		const YamlNode * typeNode = node->Get("type");
@@ -393,7 +537,7 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
             {
                 continue;
             }
-
+            
 			font->SetSize(fontSize);
 			
             const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
@@ -402,7 +546,7 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
                 font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
             }
             
-			fontMap[t->first] = font;
+			//fontMap[t->first] = font;
 			FontManager::Instance()->SetFontName(font, t->first);
 		}
 		else if(type == "GraphicsFont")
@@ -410,16 +554,16 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
 			// parse font
 			const YamlNode * fontNameNode = node->Get("sprite");
 			if (!fontNameNode)continue;
-
+            
 			const YamlNode * definitionNode = node->Get("definition");
 			if (!definitionNode)continue;
-
+            
 			GraphicsFont * font = GraphicsFont::Create(definitionNode->AsString(), fontNameNode->AsString());
             if (!font)
             {
                 continue;
             }
-
+            
 			const YamlNode * fontSizeNode = node->Get("size");
 			if (fontSizeNode)
 			{
@@ -437,79 +581,14 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
             {
                 font->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt());
             }
-
-			fontMap[t->first] = font;
+            
+			//fontMap[t->first] = font;
 			FontManager::Instance()->SetFontName(font, t->first);
+            SafeRelease(font);
 		}
 	}
-	
-	LoadFromNode(rootControl, rootNode, false);
-	SafeRelease(parser);
-
-	// After the scene is fully loaded, apply the align settings
-	// to position child controls correctly.
-	rootControl->ApplyAlignSettingsForChildren();
-	
-	for (Map<String, Font *>::iterator t = fontMap.begin(); t != fontMap.end(); ++t)
-	{
-		Font * font = t->second;
-		SafeRelease(font);
-	}
-	fontMap.clear();
-	uint64 t2 = SystemTimer::Instance()->AbsoluteMS();
-	Logger::FrameworkDebug("Load of %s time: %lld", yamlPathname.GetAbsolutePathname().c_str(), t2 - t1);
 }
-	
-bool UIYamlLoader::ProcessSave(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode)
-{
-    uint64 t1 = SystemTimer::Instance()->AbsoluteMS();
-    YamlParser * parser = YamlParser::Create();
-
-    if (!parser)
-    {
-        Logger::Error("ProcessSave: error while creating YAML parser!");
-        return false;
-    }
     
-    DVASSERT(rootControl);
-    YamlNode* resultNode = SaveToNode(rootControl, NULL);
-
-	uint32 fileAttr = File::CREATE | File::WRITE;
-	//save used fonts
-	const FontManager::TRACKED_FONTS& usedFonts = FontManager::Instance()->GetTrackedFont();
-	ScopedPtr<YamlNode> fontsNode( new YamlNode(YamlNode::TYPE_MAP) );
-	for (FontManager::TRACKED_FONTS::const_iterator iter = usedFonts.begin();
-		 iter != usedFonts.end();
-		 ++iter)
-	{
-		Font* font = (*iter);
-		if (!font)
-			continue;
-		
-		// The font should be stored once only.
-        String fontName = FontManager::Instance()->GetFontName(font);
-		if (fontsNode->AsMap().find(fontName) == fontsNode->AsMap().end())
-		{
-            fontsNode->AddNodeToMap( fontName, font->SaveToYamlNode() );
-		}
-	}
-
-	//resultNode
-	parser->SaveToYamlFile(yamlPathname, fontsNode, true, File::CREATE | File::WRITE);
-	fileAttr = File::APPEND | File::WRITE;
-	
-    // Save the resulting YAML file to the path passed.
-    bool savedOK = parser->SaveToYamlFile(yamlPathname, resultNode, skipRootNode, fileAttr);
-    SafeRelease(parser);
-    
-    SafeRelease(resultNode);
-    
-    uint64 t2 = SystemTimer::Instance()->AbsoluteMS();
-	Logger::FrameworkDebug("Save of %s time: %lld", yamlPathname.GetAbsolutePathname().c_str(), t2 - t1);
-
-    return savedOK;
-}
-	
 void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * rootNode, bool needParentCallback)
 {
 	//for (Map<String, YamlNode*>::iterator t = rootNode->AsMap().begin(); t != rootNode->AsMap().end(); ++t)

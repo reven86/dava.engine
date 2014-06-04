@@ -101,7 +101,6 @@ void JniCrashReporter::ThrowJavaExpetion(const Vector<CrashStep>& chashSteps)
 	}
 }
 
-
 //libcorkscrew definition
 typedef struct map_info_t map_info_t;
 
@@ -187,23 +186,29 @@ void AndroidCrashReport::Init()
 void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void *sigcontext)
 {
 	Vector<JniCrashReporter::CrashStep> crashSteps;
-	if (unwind_backtrace_signal_arch != NULL)  {
+	if (unwind_backtrace_signal_arch != NULL)
+	{
 		map_info_t *map_info = acquire_my_map_info_list();
 		backtrace_frame_t frames[256] = {0};
 		backtrace_symbol_t symbols[256] = {0};
 
 		const ssize_t size = unwind_backtrace_signal_arch(siginfo, sigcontext, map_info, frames, 0, 255);
-		get_backtrace_symbols(frames,  size, symbols);
+		get_backtrace_symbols(frames, size, symbols);
 		for (int i = 0; i < size; ++i)
 		{
 			JniCrashReporter::CrashStep step;
 			step.module = symbols[i].map_name;
-			step.function = symbols[i].demangled_name ? symbols[i].demangled_name : symbols[i].symbol_name;;
+			if (symbols[i].demangled_name)
+				step.function = symbols[i].demangled_name;
+			else if (symbols[i].symbol_name)
+				step.function = symbols[i].symbol_name;
+
 			step.fileLine = symbols[i].relative_pc;
+
 			crashSteps.push_back(step);
 		}
-		free_backtrace_symbols(symbols, size);
-		release_my_map_info_list(map_info);
+		//free_backtrace_symbols(symbols, size);
+		//release_my_map_info_list(map_info);
 	}
 	else
 	{

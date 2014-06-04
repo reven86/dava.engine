@@ -45,8 +45,8 @@ public:
     SceneSystem(Scene * scene);
     virtual ~SceneSystem();
     
-    void SetRequiredComponents(uint32 requiredComponents);
-    uint32 GetRequiredComponents();
+    inline void SetRequiredComponents(uint32 requiredComponents);
+    inline uint32 GetRequiredComponents() const;
     
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
@@ -77,6 +77,16 @@ private:
 inline Scene * SceneSystem::GetScene() const
 {
     return scene;
+}
+
+inline void SceneSystem::SetRequiredComponents(uint32 _requiredComponents)
+{
+    requiredComponents = _requiredComponents;
+}
+
+inline uint32 SceneSystem::GetRequiredComponents() const
+{
+    return requiredComponents;
 }
 
 };

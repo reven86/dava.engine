@@ -822,9 +822,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene2D\TextGameObject.h">
       <Filter>Internal\Scene2D</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\RenderManagerGL20.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UIFileSystemDialog.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
@@ -1161,6 +1158,9 @@
     <ClInclude Include="..\..\Sources\Internal\UI\UIWebView.h">
       <Filter>Internal\UI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Network\MailSender.h">
       <Filter>Internal\Network</Filter>
     </ClInclude>
@@ -1419,14 +1419,10 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\DateTime.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.h">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\LibJpegHelper.h">
-      <Filter>Internal\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h">
-      <Filter>Internal\Render</Filter>
+    <ClInclude Include="..\..\Sources\Internal\Render\LibJpegHelper.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h">
+      <Filter>Internal\Render\3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1988,9 +1984,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene2D\TextGameObject.cpp">
       <Filter>Internal\Scene2D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\RenderManagerGL20.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\SpriteNode.cpp">
       <Filter>Internal\Scene3D</Filter>
     </ClCompile>
@@ -2276,6 +2269,9 @@
     <ClCompile Include="..\..\Sources\Internal\UI\UIWebView.cpp">
       <Filter>Internal\UI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp">
+      <Filter>Internal\Platform</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Network\MailSender.cpp">
       <Filter>Internal\Network</Filter>
     </ClCompile>
@@ -2549,14 +2545,10 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\DateTimeWin32.cpp">
       <Filter>Internal\Platform\TemplateWin32</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Platform\TemplateWin32\WebViewControlWin32.cpp">
-      <Filter>Internal\Platform\TemplateWin32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\LibJpegHelper.cpp">
-      <Filter>Internal\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp">
-      <Filter>Internal\Render</Filter>
+    <ClCompile Include="..\..\Sources\Internal\Render\LibJpegHelper.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp">
+      <Filter>Internal\Render\3D</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

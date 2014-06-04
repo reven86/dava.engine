@@ -25,7 +25,12 @@ InspDynamicModifyCommand::InspDynamicModifyCommand(DAVA::InspInfoDynamic *_dynam
 {
 	if(NULL != dynamicInfo && NULL != object)
 	{
-		oldValue = dynamicInfo->MemberValueGet(object, key);
+        // if value can't be edited, it means that it was inherited
+        // so don't retrieve oldValue, but leave it as uninitialized variant
+        if(dynamicInfo->MemberFlags(object, key) & DAVA::I_EDIT)
+        {
+    		oldValue = dynamicInfo->MemberValueGet(object, key);
+        }
 	}
 }
 

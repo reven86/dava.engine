@@ -52,7 +52,7 @@ public:
 	int GetFPS();
 
 	QSize GetPrevSize() const { return prevSize;};
-	
+
 protected:
 	virtual QPaintEngine *paintEngine() const;
 	virtual void paintEvent(QPaintEvent *);
@@ -66,10 +66,10 @@ protected:
 	virtual void focusInEvent(QFocusEvent *);
 	virtual void focusOutEvent(QFocusEvent *);
 
-
-	void dropEvent(QDropEvent *event);
-	void dragMoveEvent(QDragMoveEvent *event);
-	void dragEnterEvent(QDragEnterEvent *event);
+	virtual void dropEvent(QDropEvent *event);
+	virtual void dragMoveEvent(QDragMoveEvent *event);
+	virtual void dragEnterEvent(QDragEnterEvent *event);
+    virtual void dragLeaveEvent(QDragLeaveEvent * event);
 
 	virtual void keyPressEvent(QKeyEvent *);
 	virtual void keyReleaseEvent(QKeyEvent *);
@@ -87,7 +87,7 @@ protected:
 
 signals:
     void DavaGLWidgetResized();
-	
+
 protected:
     // Recalculate "raw" guide coord to internal.
     DAVA::Vector2 GuideToInternal(const QPoint& pos);

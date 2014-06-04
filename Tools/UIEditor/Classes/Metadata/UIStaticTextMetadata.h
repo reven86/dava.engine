@@ -74,7 +74,7 @@ protected:
     virtual void SetFont(Font* font);
     
     virtual float GetFontSize() const;
-    virtual void SetFontSize(float fontSize);
+    //virtual void SetFontSize(float fontSize);
     
     virtual QColor GetFontColor() const;
     virtual void SetFontColor(const QColor& value);

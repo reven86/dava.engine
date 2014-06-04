@@ -27,6 +27,62 @@
 =====================================================================================*/
 
 
+#ifndef EDITFONTDIALOG_H
+#define EDITFONTDIALOG_H
 
-#include "TestTemplate.h"
+#include <QDialog>
+#include <DAVAEngine.h>
 
+#include <QSpinBox>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QLineEdit>
+#include <QComboBox>
+
+#include "ChangeFontPropertyCommand.h"
+
+using namespace DAVA;
+
+namespace Ui {
+class EditFontDialog;
+}
+
+class EditFontDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit EditFontDialog(const String & editFontPresetName, QDialog *parent = 0);
+    ~EditFontDialog();
+    
+    const ChangeFontPropertyCommandData &GetResult() {return dialogResult; }
+    
+private:
+    Ui::EditFontDialog *ui;
+    
+    ChangeFontPropertyCommandData dialogResult;
+    String currentLocale;
+    
+    void ConnectToSignals();
+    void DisconnectFromSignals();
+    
+    virtual void ProcessComboBoxValueChanged(QComboBox *senderWidget, const QString& value);
+    virtual void ProcessPushButtonClicked(QPushButton *senderWidget);
+    
+    void UpdateDefaultFontParams();
+    void UpdateLocalizedFontParams();
+    
+    void UpdateLineEditWidgetWithPropertyValue(QLineEdit *lineEditWidget);
+    void UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushButtonWidget);
+    void UpdateSpinBoxWidgetWithPropertyValue(QSpinBox *spinBoxWidget);
+    void UpdateComboBoxWidgetWithPropertyValue(QComboBox *comboBoxWidget);
+
+private slots:
+    void OnOkButtonClicked();
+    void OnRadioButtonClicked();
+    void OnPushButtonClicked();
+    void OnSpinBoxValueChanged(int newValue);
+    void OnComboBoxValueChanged(QString value);
+};
+
+#endif // EDITFONTDIALOG_H

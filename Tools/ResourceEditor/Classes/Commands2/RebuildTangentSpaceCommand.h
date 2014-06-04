@@ -27,46 +27,31 @@
 =====================================================================================*/
 
 
-#include "Render/RenderBase.h"
-#include "Render/RenderManagerGL20.h"
-#include "Render/Shader.h"
-#include "Render/OGLHelpers.h"
+#ifndef __REBUILD_TANGENT_SPACE_COMMAND_H__
+#define __REBUILD_TANGENT_SPACE_COMMAND_H__
 
-#if defined(__DAVAENGINE_OPENGL__)
+#include "Command2.h"
 
-namespace DAVA
+#include "Render/Highlevel/RenderBatch.h"
+
+
+class RebuildTangentSpaceCommand: public Command2
 {
-	
-RenderVertexAttributesState::RenderVertexAttributesState()
-{
-    activeVertexAttributes = 0;
-}
+public:
+    RebuildTangentSpaceCommand(DAVA::RenderBatch *renderBatch, bool computeBinormal);
+    virtual ~RebuildTangentSpaceCommand();
 
-void RenderVertexAttributesState::EnableVertexAttributes(uint32 attributesToEnable)
-{
-    uint32 diff = attributesToEnable ^ activeVertexAttributes;
-    for (uint32 attribIndex = 0; attribIndex < 4; ++attribIndex)
-        if ((diff >> attribIndex) & 1)
-        {
-            if ((attributesToEnable >> attribIndex) & 1)
-            {
-                RENDER_VERIFY(glEnableVertexAttribArray(attribIndex));
-            }
-            else 
-            {
-                RENDER_VERIFY(glDisableVertexAttribArray(attribIndex));
-            }
-        }
-    activeVertexAttributes = attributesToEnable;
-}
+    virtual void Undo();
+    virtual void Redo();
 
-    
-RenderManagerGL20::RenderManagerGL20(Core::eRenderer renderer)
-    : RenderManager(renderer)
-{
-}
+    virtual DAVA::Entity* GetEntity() const {return NULL;}    
 
-    
+protected:    
+    DAVA::RenderBatch *renderBatch;       
+    bool computeBinormal;
+    DAVA::PolygonGroup* originalGroup;    
+    DAVA::int32 materialBinormalFlagState;
 };
 
-#endif // __DAVAENGINE_OPENGL__
+
+#endif 

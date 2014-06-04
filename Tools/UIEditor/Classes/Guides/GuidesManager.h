@@ -98,7 +98,8 @@ public:
     // Get the stick treshold.
     int32 GetGuideStickTreshold() const;
 
-    // Set the stick mode.
+    // Get/Set the stick mode.
+    int32 GetStickMode() const;
     void SetStickMode(int32 mode);
 
     // Enable/disable guides.

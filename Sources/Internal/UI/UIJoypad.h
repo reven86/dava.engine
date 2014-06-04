@@ -57,7 +57,7 @@ public:
 	const Vector2 & GetAnalogPosition();
     
     virtual Sprite* GetStickSprite() const;
-    virtual int GetStickSpriteFrame() const;
+    virtual int32 GetStickSpriteFrame() const;
 
     virtual void SetStickSprite(Sprite *stickSprite, int32 frame);
     virtual void SetStickSprite(const FilePath &stickSpriteName, int32 frame);
@@ -88,7 +88,7 @@ protected:
     UIControl *stick;
     
 private:
-	int mainTouch;
+	int32 mainTouch;
 	float deadAreaSize;// dead area size in pixels (must be positive value)
 	float32 digitalSense;
 	bool needRecalcDigital;

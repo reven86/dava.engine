@@ -28,6 +28,7 @@
 
 
 #include "AggregatorMetadata.h"
+#include "HierarchyTreeController.h"
 
 // Getters/setters.
 QString AggregatorMetadata::GetName() const
@@ -94,4 +95,12 @@ HierarchyTreeAggregatorNode* AggregatorMetadata::GetNode() const
 {
     // Platform Node is one and only.
     return dynamic_cast<HierarchyTreeAggregatorNode*>(GetTreeNode(0));
+}
+
+void AggregatorMetadata::ApplyRename(const QString& originalName, const QString& newName)
+{
+    // Aggregator unused item exactly the same as Screen one.
+    HierarchyTreeController::Instance()->AddUnusedItem(new HierarchyTreeController::ScreenUnusedItem(GetNode()->GetPlatform()->GetName(), originalName));
+
+    BaseMetadata::ApplyRename(originalName, newName);
 }

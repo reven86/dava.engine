@@ -252,6 +252,7 @@ void QtPropertyData::SetValue(const QVariant &value, ValueChangeReason reason)
 	// (example: we are trying to set 10, but accepted range is 0-5
 	//   value is 10
 	//   curValue becomes 0-5)
+    UpdateValue();
 	curValue = GetValueInternal();
 
 	if(curValue != oldValue)
@@ -416,6 +417,9 @@ bool QtPropertyData::IsChecked() const
 void QtPropertyData::SetEditable(bool editable)
 {
 	(editable) ? (curFlags |= Qt::ItemIsEditable) : (curFlags &= ~Qt::ItemIsEditable);
+    UpdateOWState();
+
+    EmitDataChanged(STATE_CHANGED);
 }
 
 bool QtPropertyData::IsEditable() const
@@ -426,10 +430,19 @@ bool QtPropertyData::IsEditable() const
 void QtPropertyData::SetEnabled(bool enabled)
 {
 	(enabled) ? (curFlags |= Qt::ItemIsEnabled) : (curFlags &= ~Qt::ItemIsEnabled);
+    UpdateOWState();
+
+    EmitDataChanged(STATE_CHANGED);
+}
+
+void QtPropertyData::UpdateOWState()
+{
+    bool isItemEditable = IsEditable();
+    bool isItemEnabled = IsEnabled();
 
 	for(int i = 0; i < optionalButtons.size(); ++i)
 	{
-		optionalButtons[i]->setEnabled(enabled);
+		optionalButtons[i]->UpdateState(isItemEnabled, isItemEditable);
 	}
 }
 
@@ -812,14 +825,17 @@ QtPropertyToolButton* QtPropertyData::GetButton(int index)
 	return ret;
 }
 
-QtPropertyToolButton* QtPropertyData::AddButton()
+QtPropertyToolButton* QtPropertyData::AddButton(QtPropertyToolButton::StateVariant stateVariant /* = QtPropertyToolButton::ACTIVE_ALWAYS */)
 {
 	QtPropertyToolButton *button = new QtPropertyToolButton(this, optionalButtonsViewport);
 
 	optionalButtons.append(button);
+    button->stateVariant = stateVariant;
 	button->setGeometry(0, 0, 18, 18);
 	button->setAttribute(Qt::WA_NoSystemBackground, true);
 	button->hide();
+
+    UpdateOWState();
 
 	return button;
 }
@@ -930,6 +946,22 @@ bool QtPropertyData::SetEditorDataInternal(QWidget *editor)
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
+QtPropertyToolButton::QtPropertyToolButton(QtPropertyData* data, QWidget * parent /* = 0 */)
+	: QToolButton(parent)
+	, propertyData(data)
+	, eventsPassThrought(false) 
+	, overlayed(false)
+    , stateVariant(ACTIVE_ALWAYS)
+{}
+
+QtPropertyToolButton::~QtPropertyToolButton()
+{}
+
+QtPropertyData* QtPropertyToolButton::GetPropertyData() const
+{
+	return propertyData;
+}
+
 bool QtPropertyToolButton::event(QEvent * event)
 {
 	int type = event->type();
@@ -947,4 +979,41 @@ bool QtPropertyToolButton::event(QEvent * event)
 	}
 
 	return QToolButton::event(event);
+}
+
+QtPropertyToolButton::StateVariant QtPropertyToolButton::GetStateVariant() const
+{
+    return stateVariant;
+}
+
+void QtPropertyToolButton::SetStateVariant(StateVariant state)
+{
+    stateVariant = state;
+}
+
+void QtPropertyToolButton::UpdateState(bool itemIsEnabled, bool itemIsEditable)
+{
+    bool enabled = false;
+    switch(stateVariant)
+    {
+        case QtPropertyToolButton::ACTIVE_ALWAYS:
+            enabled = true;
+            break;
+        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_ENABLED:
+            enabled = itemIsEnabled;
+            break;
+        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE:
+            enabled = itemIsEditable;
+            break;
+        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_OR_ENABLED:
+            enabled = (itemIsEnabled || itemIsEditable);
+            break;
+        case QtPropertyToolButton::ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED:
+            enabled = (itemIsEnabled && itemIsEditable);
+            break;
+        default:
+            break;
+    }
+
+    setEnabled(enabled);
 }

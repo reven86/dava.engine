@@ -221,5 +221,6 @@ void CommandLineManager::InitalizeTool()
 	if(activeTool)
 	{
 		isToolInitialized = activeTool->InitializeFromCommandLine();
+        activeTool->DumpParams();
 	}
 }

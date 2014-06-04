@@ -55,6 +55,7 @@
 #include "Commands2/CloneLastBatchCommand.h"
 #include "Commands2/AddComponentCommand.h"
 #include "Commands2/RemoveComponentCommand.h"
+#include "Commands2/RebuildTangentSpaceCommand.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
 
@@ -71,6 +72,7 @@ PropertyEditor::PropertyEditor(QWidget *parent /* = 0 */, bool connectToSceneSig
 	, viewMode(VIEW_NORMAL)
 	, treeStateHelper(this, curModel)
 	, favoriteGroup(NULL)
+    , resetRequests(0)
 {
 	if(connectToSceneSignals)
 	{
@@ -162,6 +164,14 @@ void PropertyEditor::ClearCurrentNodes()
 
 void PropertyEditor::ResetProperties()
 {
+    if (resetRequests > 1)
+    {
+        resetRequests--;
+        return;
+    }
+
+    resetRequests = 0;
+
     // Store the current Property Editor Tree state before switching to the new node.
 	// Do not clear the current states map - we are using one storage to share opened
 	// Property Editor nodes between the different Scene Nodes.
@@ -353,16 +363,14 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
 			if(DAVA::MetaInfo::Instance<DAVA::ActionComponent>() == meta)
 			{
 				// Add optional button to edit action component
-				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "");
+				QtPropertyToolButton * editActions = CreateButton(data, QIcon(":/QtIcons/settings.png"), "Edit action component");
                 editActions->setEnabled(isSingleSelection);
 				QObject::connect(editActions, SIGNAL(pressed()), this, SLOT(ActionEditComponent()));
 			}
             else if(DAVA::MetaInfo::Instance<DAVA::SoundComponent>() == meta)
             {
-                QtPropertyToolButton *editSound = data->AddButton();
-                editSound->setIcon(QIcon(":/QtIcons/settings.png"));
+                QtPropertyToolButton * editSound = CreateButton(data, QIcon( ":/QtIcons/settings.png" ), "Edit sound component");
                 editSound->setAutoRaise(true);
-
                 QObject::connect(editSound, SIGNAL(pressed()), this, SLOT(ActionEditSoundComponent()));
             }
 			else if(DAVA::MetaInfo::Instance<DAVA::RenderObject>() == meta)
@@ -396,6 +404,10 @@ void PropertyEditor::ApplyCustomExtensions(QtPropertyData *data)
                         convertButton->setEnabled(isSingleSelection);
 						QObject::connect(convertButton, SIGNAL(pressed()), this, SLOT(ConvertToShadow()));
 					}
+
+                    QtPropertyToolButton * rebuildTangentButton = CreateButton(data, QIcon(":/QtIcons/external.png"), "Rebuild tangent space");
+                    rebuildTangentButton->setEnabled(isSingleSelection);
+                    QObject::connect(rebuildTangentButton, SIGNAL(pressed()), this, SLOT(RebuildTangentSpace()));
 				}
 			}
 			else if(DAVA::MetaInfo::Instance<DAVA::ShadowVolume>() == meta)
@@ -683,6 +695,12 @@ void PropertyEditor::sceneSelectionChanged(SceneEditor2 *scene, const EntityGrou
     SetEntities(selected);
 }
 
+void PropertyEditor::QueueResetProperties()
+{
+    resetRequests++;
+    QTimer::singleShot(0, this, SLOT(ResetProperties()));
+}
+
 void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* command, bool redo)
 {
 	int cmdId = command->GetId();
@@ -708,7 +726,7 @@ void PropertyEditor::CommandExecuted(SceneEditor2 *scene, const Command2* comman
             }
             if (doReset)
             {
-                ResetProperties();
+                QueueResetProperties();
             }
             break;
         }
@@ -870,6 +888,48 @@ void PropertyEditor::ConvertToShadow()
             }
 		}
 	}
+}
+
+void PropertyEditor::RebuildTangentSpace()
+{
+    QtPropertyToolButton *btn = dynamic_cast<QtPropertyToolButton *>(QObject::sender());
+
+    if(NULL != btn)
+    {
+        QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        if(NULL != data && NULL != curScene)
+        {            
+            QDialog *dlg = new QDialog(this);
+            QVBoxLayout *dlgLayout = new QVBoxLayout();
+            dlgLayout->setMargin(10);
+            dlgLayout->setSpacing(15);
+
+            dlg->setWindowTitle("Rebuild tangent space");
+            dlg->setWindowFlags(Qt::Tool);
+            dlg->setLayout(dlgLayout);                                
+
+            QCheckBox *exportBinormalCheckBox = new QCheckBox("Export binormal");
+            exportBinormalCheckBox->setChecked(false);
+            dlgLayout->addWidget(exportBinormalCheckBox);                
+
+            QDialogButtonBox *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, dlg);
+            dlgLayout->addWidget(buttons);
+
+            QObject::connect(buttons, SIGNAL(accepted()), dlg, SLOT(accept()));
+            QObject::connect(buttons, SIGNAL(rejected()), dlg, SLOT(reject()));
+
+            if(QDialog::Accepted == dlg->exec())
+            {
+                bool exportBinormal = (exportBinormalCheckBox->checkState() == Qt::Checked);                    
+                RenderBatch *batch = (RenderBatch *)data->object;
+                curScene->Exec(new RebuildTangentSpaceCommand(batch, exportBinormal));                    
+                ResetProperties();
+            }            
+
+            delete dlg;
+        }
+    }
 }
 
 void PropertyEditor::DeleteRenderBatch()

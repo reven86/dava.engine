@@ -502,6 +502,7 @@ void QtMainWindow::SetupToolBars()
 		objectTypesWidget->setMinimumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
 
 		const QList<QAction *> actions = ui->menuObjectTypes->actions();
+        QActionGroup *group = new QActionGroup(ui->menuObjectTypes);
 
 		auto endIt = actions.end();
 		for(auto it = actions.begin(); it != endIt; ++it)
@@ -509,6 +510,7 @@ void QtMainWindow::SetupToolBars()
 			if((*it)->isSeparator()) continue;
 
 			objectTypesWidget->addItem((*it)->icon(), (*it)->text());
+            group->addAction(*it);
 		}
 
 		objectTypesWidget->setCurrentIndex(ResourceEditor::ESOT_NONE + 1);
@@ -686,10 +688,9 @@ void QtMainWindow::SetupActions()
 #else
 	//ui->menuScene->removeAction(ui->menuBeast->menuAction());
 #endif //#if defined(__DAVAENGINE_BEAST__)
-
     
     QObject::connect(ui->actionBuildStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnBuildStaticOcclusion()));
-
+    QObject::connect(ui->actionRebuildCurrentOcclusionCell, SIGNAL(triggered()), this, SLOT(OnRebuildCurrentOcclusionCell()));
     
 	//Help
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
@@ -711,8 +712,6 @@ void QtMainWindow::SetupActions()
     // Debug functions
 	QObject::connect(ui->actionGridCopy, SIGNAL(triggered()), developerTools, SLOT(OnDebugFunctionsGridCopy()));
     
-    
-    
  	//Collision Box Types
     objectTypesLabel = new QtLabelWithActions();
  	objectTypesLabel->setMenu(ui->menuObjectTypes);
@@ -730,13 +729,10 @@ void QtMainWindow::SetupActions()
 	ui->actionBuilding->setData(ResourceEditor::ESOT_BUILDING);
 	ui->actionInvisibleWall->setData(ResourceEditor::ESOT_INVISIBLE_WALL);
     ui->actionSpeedTree->setData(ResourceEditor::ESOT_SPEED_TREE);
-	QObject::connect(ui->menuObjectTypes, SIGNAL(triggered(QAction *)), this, SLOT(OnObjectsTypeChanged(QAction *)));
-	QObject::connect(ui->menuObjectTypes, SIGNAL(aboutToShow()), this, SLOT(OnObjectsTypeMenuWillShow()));
-
+	
+    QObject::connect(ui->menuObjectTypes, SIGNAL(triggered(QAction *)), this, SLOT(OnObjectsTypeChanged(QAction *)));
 	QObject::connect(ui->actionHangingObjects, SIGNAL(triggered()), this, SLOT(OnHangingObjects()));
-
 	QObject::connect(ui->actionReloadShader, SIGNAL(triggered()), this, SLOT(OnReloadShaders()));
-
     QObject::connect(ui->actionSwitchesWithDifferentLODs, SIGNAL(triggered(bool)), this, SLOT(OnSwitchWithDifferentLODs(bool)));
 }
 
@@ -2468,6 +2464,14 @@ void QtMainWindow::OnBuildStaticOcclusion()
     delete waitOcclusionDlg;
 }
 
+void QtMainWindow::OnRebuildCurrentOcclusionCell()
+{
+    SceneEditor2* scene = GetCurrentScene();
+    if(!scene) return;
+
+    scene->staticOcclusionBuildSystem->RebuildCurrentCell();
+}
+
 bool QtMainWindow::IsSavingAllowed()
 {
 	SceneEditor2* scene = GetCurrentScene();
@@ -2507,26 +2511,6 @@ void QtMainWindow::OnObjectsTypeChanged(int type)
 	{
 		scene->debugDrawSystem->SetRequestedObjectType(objectType);
 	}
-}
-
-
-void QtMainWindow::OnObjectsTypeMenuWillShow()
-{
-	SceneEditor2* scene = GetCurrentScene();
-	if(!scene) return;
-
-	ResourceEditor::eSceneObjectType objectType = scene->debugDrawSystem->GetRequestedObjectType();
-
-	ui->actionObjectTypesOff->setChecked(ResourceEditor::ESOT_NONE == objectType);
-	ui->actionNoObject->setChecked(ResourceEditor::ESOT_NO_COLISION == objectType);
-	ui->actionTree->setChecked(ResourceEditor::ESOT_TREE == objectType);
-	ui->actionBush->setChecked(ResourceEditor::ESOT_BUSH == objectType);
-	ui->actionFragileProj->setChecked(ResourceEditor::ESOT_FRAGILE_PROJ == objectType);
-	ui->actionFragileProjInv->setChecked(ResourceEditor::ESOT_FRAGILE_PROJ_INV == objectType);
-	ui->actionFalling->setChecked(ResourceEditor::ESOT_FALLING == objectType);
-	ui->actionBuilding->setChecked(ResourceEditor::ESOT_BUILDING == objectType);
-	ui->actionInvisibleWall->setChecked(ResourceEditor::ESOT_INVISIBLE_WALL == objectType);
-	ui->actionSpeedTree->setChecked(ResourceEditor::ESOT_SPEED_TREE == objectType);
 }
 
 void QtMainWindow::LoadObjectTypes( SceneEditor2 *scene )

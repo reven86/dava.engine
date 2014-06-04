@@ -276,6 +276,17 @@ void DavaGLWidget::dragEnterEvent(QDragEnterEvent *event)
     }
 }
 
+void DavaGLWidget::dragLeaveEvent(QDragLeaveEvent* /*event*/)
+{
+    // Reset the selected guide when we are leaving screen.
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (activeScreen->AreGuidesEnabled())
+    {
+        activeScreen->CancelNewGuide();
+        HierarchyTreeController::Instance()->ResetSelectedControl();
+    }
+}
+
 void DavaGLWidget::keyPressEvent(QKeyEvent *)
 {
 	//qDebug("DavaGLWidget::keyPressEvent");

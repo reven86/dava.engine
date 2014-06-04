@@ -41,6 +41,29 @@
 #include "ReloadSpritesCommand.h"
 
 #include "AlignDistribute/AlignDistributeManager.h"
+#include "ResourcesManageHelper.h"
+
+#include "EditorFontManager.h"
+
+QDir HierarchyTreeController::BaseUnusedItem::GetFullPath(const QString& baseDir,
+                                                          const QString& dirName) const
+{
+    return QDir::cleanPath(QDir(ResourcesManageHelper::GetPlatformRootPath(baseDir)).filePath(dirName));
+}
+
+void HierarchyTreeController::PlatformUnusedItem::DeleteFromDisk(const QString& baseDir) const
+{
+    // Append a separator, since we are deleting the directory.
+    QString platformPath = GetFullPath(baseDir, platformName).path() + QDir::separator();
+    FileSystem::Instance()->DeleteDirectory(platformPath.toStdString());
+}
+
+void HierarchyTreeController::ScreenUnusedItem::DeleteFromDisk(const QString& baseDir) const
+{
+    QString platformPath = GetFullPath(baseDir, platformName).path() + QDir::separator();
+    QString screenPath = QString("%1%2.yaml").arg(platformPath).arg(screenName);
+    FileSystem::Instance()->DeleteFile(screenPath.toStdString());
+}
 
 HierarchyTreeController::HierarchyTreeController(QObject* parent) :
 	QObject(parent)
@@ -51,6 +74,7 @@ HierarchyTreeController::HierarchyTreeController(QObject* parent) :
 HierarchyTreeController::~HierarchyTreeController()
 {
 	DisconnectFromSignals();
+    CleanupUnusedItems();
 }
 
 void HierarchyTreeController::ConnectToSignals()
@@ -255,6 +279,7 @@ void HierarchyTreeController::Clear()
 
 	ResetSelectedControl();
 	CleanupNodesDeletedFromScene();
+    CleanupUnusedItems();
 }
 
 HierarchyTreeNode::HIERARCHYTREENODEID HierarchyTreeController::CreateNewControl(const QString& strType, const QPoint& position)
@@ -380,6 +405,12 @@ void HierarchyTreeController::EmitHierarchyTreeUpdated(bool needRestoreSelection
 bool HierarchyTreeController::NewProject(const QString& projectPath)
 {
 	hierarchyTree.CreateProject();
+    
+    // add project path to res folders (to allow loading fonts before everything else)
+    FilePath bundleName(projectPath.toStdString());
+    bundleName.MakeDirectoryPathname();
+    EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
+    
 	
 	bool res = SaveAll(projectPath);
 	if (res)
@@ -433,7 +464,9 @@ void HierarchyTreeController::CloseProject()
 	UpdateSelection(NULL, NULL);
 	// Need clean undo/redo stack before close project
 	CommandsController::Instance()->CleanupUndoRedoStack();
+
 	CleanupNodesDeletedFromScene();
+    CleanupUnusedItems();
 	hierarchyTree.CloseProject();
 
 	EmitHierarchyTreeUpdated();
@@ -598,6 +631,7 @@ void HierarchyTreeController::UpdateLocalization(bool takePathFromLocalizationSy
     // Localization System is updated; need to look through all controls
     // and cause them to update their texts according to the new Localization.
     hierarchyTree.UpdateLocalization();
+    ResetSelectedControl();
 }
 
 void HierarchyTreeController::RegisterNodesDeletedFromScene(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes)
@@ -768,4 +802,36 @@ void HierarchyTreeController::SetStickMode(int32 mode)
 HierarchyTreeNode::HIERARCHYTREENODESLIST HierarchyTreeController::GetNodes() const
 {
     return hierarchyTree.GetNodes();
+}
+
+void HierarchyTreeController::AddUnusedItem(BaseUnusedItem* item)
+{
+    if (!item)
+    {
+        DVASSERT(false);
+        return;
+    }
+
+    unusedItems.push_back(item);
+}
+
+void HierarchyTreeController::CleanupUnusedItems()
+{
+    for (List<BaseUnusedItem*>::iterator iter = unusedItems.begin(); iter != unusedItems.end(); iter ++)
+    {
+        BaseUnusedItem* item = *iter;
+        SafeDelete(item);
+    }
+
+    unusedItems.clear();
+}
+
+void HierarchyTreeController::DeleteUnusedItemsFromDisk(const QString& projectPath)
+{
+    for (List<BaseUnusedItem*>::iterator iter = unusedItems.begin(); iter != unusedItems.end(); iter ++)
+    {
+        (*iter)->DeleteFromDisk(projectPath);
+    }
+
+    CleanupUnusedItems();
 }

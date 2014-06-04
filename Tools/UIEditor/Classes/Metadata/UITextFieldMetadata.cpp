@@ -101,25 +101,33 @@ float UITextFieldMetadata::GetFontSize() const
         return 0.0f;
     }
     
+    //TODO: font should be set correctly, remove this workaround
+    Font* localizedFont = EditorFontManager::Instance()->GetLocalizedFont(font);
+    if(localizedFont)
+    {
+        return localizedFont->GetSize();
+    }
+    
     return font->GetSize();
 }
 
-void UITextFieldMetadata::SetFontSize(float fontSize)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-    
-    Font* font = GetActiveUITextField()->GetFont();
-    if (font)
-    {
-        Font* newFont = font->Clone();
-        newFont->SetSize(fontSize);
-        GetActiveUITextField()->SetFont(newFont);
-        newFont->Release();
-    }
-}
+//DF-3435 font size is defined in font preset and can be changed only by modifying font preset
+//void UITextFieldMetadata::SetFontSize(float fontSize)
+//{
+//    if (!VerifyActiveParamID())
+//    {
+//        return;
+//    }
+//    
+//    Font* font = GetActiveUITextField()->GetFont();
+//    if (font)
+//    {
+//        Font* newFont = font->Clone();
+//        newFont->SetSize(fontSize);
+//        GetActiveUITextField()->SetFont(newFont);
+//        newFont->Release();
+//    }
+//}
 
 QColor UITextFieldMetadata::GetTextColor() const
 {

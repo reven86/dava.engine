@@ -230,7 +230,6 @@
 		176DE9A5174B5561007A983B /* RenderGrayscaleEffect.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8816BD24E400732C04 /* RenderGrayscaleEffect.h */; };
 		176DE9A6174B5561007A983B /* RenderHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8A16BD24E400732C04 /* RenderHelper.h */; };
 		176DE9A7174B5561007A983B /* RenderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8C16BD24E400732C04 /* RenderManager.h */; };
-		176DE9A8174B5561007A983B /* RenderManagerGL20.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9116BD24E400732C04 /* RenderManagerGL20.h */; };
 		176DE9A9174B5561007A983B /* RenderOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9316BD24E500732C04 /* RenderOptions.h */; };
 		176DE9AA174B5561007A983B /* RenderResource.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9516BD24E500732C04 /* RenderResource.h */; };
 		176DE9AB174B5561007A983B /* RGBColor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9816BD24E500732C04 /* RGBColor.h */; };
@@ -501,7 +500,6 @@
 		176DEAC5174B5561007A983B /* RenderManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8B16BD24E400732C04 /* RenderManager.cpp */; };
 		176DEAC6174B5561007A983B /* RenderManagerFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */; };
 		176DEAC7174B5561007A983B /* RenderManagerGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */; };
-		176DEAC8174B5561007A983B /* RenderManagerGL20.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */; };
 		176DEAC9174B5561007A983B /* RenderOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9216BD24E400732C04 /* RenderOptions.cpp */; };
 		176DEACA174B5561007A983B /* RenderResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9416BD24E500732C04 /* RenderResource.cpp */; };
 		176DEACB174B5561007A983B /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9916BD24E500732C04 /* Shader.cpp */; };
@@ -693,6 +691,18 @@
 		17F53E2316D36DDE004D5099 /* IWebViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F53E2116D36DDE004D5099 /* IWebViewControl.h */; };
 		17F687E1174B63BA000783FD /* NPAPIEntryPoint.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1795D26C174B56900023F61E /* NPAPIEntryPoint.mm */; };
 		17F687E2174B63C0000783FD /* NPAPIEntryPoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 1795D26D174B56900023F61E /* NPAPIEntryPoint.h */; };
+		17FB4BB31923B97500F3E3BC /* UIScrollView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 748A99711726C5ED00C6411B /* UIScrollView.cpp */; };
+		17FB4BB41923B97800F3E3BC /* UIScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = 748A99721726C5EE00C6411B /* UIScrollView.h */; };
+		17FB4BB51923B97D00F3E3BC /* UIScrollViewContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74D1EAB6172E950700EDE0B7 /* UIScrollViewContainer.cpp */; };
+		17FB4BB61923B97F00F3E3BC /* UIScrollViewContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = 74D1EAB7172E950700EDE0B7 /* UIScrollViewContainer.h */; };
+		17FB4BB71923B9A400F3E3BC /* UIWebView.h in Headers */ = {isa = PBXBuildFile; fileRef = 171F938416CE6F28007038AB /* UIWebView.h */; };
+		17FB4BB81923B9AB00F3E3BC /* UIMovieView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17DC5FFE17DE11650075813E /* UIMovieView.cpp */; };
+		17FB4BB91923B9B000F3E3BC /* UIMovieView.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DC5FFF17DE11650075813E /* UIMovieView.h */; };
+		17FB4BBA1923B9B100F3E3BC /* UIMovieView.h in Headers */ = {isa = PBXBuildFile; fileRef = 17DC5FFF17DE11650075813E /* UIMovieView.h */; };
+		17FB4BBB1923B9D900F3E3BC /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4E17DF67E500000391 /* MovieViewControlMacOS.mm */; };
+		17FB4BBC1923B9D900F3E3BC /* MovieViewControlMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1770DF4F17DF67E500000391 /* MovieViewControlMacOS.h */; };
+		17FB4BBD1923B9DB00F3E3BC /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4E17DF67E500000391 /* MovieViewControlMacOS.mm */; };
+		17FB4BBE1923B9DB00F3E3BC /* MovieViewControlMacOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 1770DF4F17DF67E500000391 /* MovieViewControlMacOS.h */; };
 		1AD7C36717D895AE00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C36617D895AE00B9977C /* Vector.cpp */; };
 		1AD7C36817D895AE00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C36617D895AE00B9977C /* Vector.cpp */; };
 		1AD7C36917D895AE00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C36617D895AE00B9977C /* Vector.cpp */; };
@@ -783,11 +793,11 @@
 		620638B618EE9F5100C85F25 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
 		6246724918EEA48C00046586 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */; };
 		6246724A18EEA50E00046586 /* libjpeg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627AFA6C18E964E300F2A52A /* libjpeg_macos.a */; };
-		62C1213018E961AE0008D201 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */; };
-		62C1213118E961AE0008D201 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 62C1212F18E961AE0008D201 /* LibJpegHelper.h */; };
 		6280BAA918D6F909007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA818D6F909007809B7 /* DateTimeApple.mm */; };
 		62BD24C018C621EB00D2F0D3 /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */; };
 		62BD24C118C621EB00D2F0D3 /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BD24BF18C621EB00D2F0D3 /* DateTime.h */; };
+		62C1213018E961AE0008D201 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */; };
+		62C1213118E961AE0008D201 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 62C1212F18E961AE0008D201 /* LibJpegHelper.h */; };
 		641A61DA18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 641A61D818CDC2F4003359E7 /* FoliageSystem.cpp */; };
 		641A61DB18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 641A61D818CDC2F4003359E7 /* FoliageSystem.cpp */; };
 		641A61DC18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 641A61D818CDC2F4003359E7 /* FoliageSystem.cpp */; };
@@ -1407,8 +1417,6 @@
 		E8989F4A16BD24E500732C04 /* RenderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8C16BD24E400732C04 /* RenderManager.h */; };
 		E8989F4C16BD24E500732C04 /* RenderManagerFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */; };
 		E8989F4D16BD24E500732C04 /* RenderManagerGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */; };
-		E8989F4E16BD24E500732C04 /* RenderManagerGL20.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */; };
-		E8989F4F16BD24E500732C04 /* RenderManagerGL20.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9116BD24E400732C04 /* RenderManagerGL20.h */; };
 		E8989F5016BD24E500732C04 /* RenderOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9216BD24E400732C04 /* RenderOptions.cpp */; };
 		E8989F5116BD24E500732C04 /* RenderOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9316BD24E500732C04 /* RenderOptions.h */; };
 		E8989F5216BD24E500732C04 /* RenderResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9416BD24E500732C04 /* RenderResource.cpp */; };
@@ -1770,7 +1778,6 @@
 		E898A11B16BD265400732C04 /* RenderGrayscaleEffect.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8816BD24E400732C04 /* RenderGrayscaleEffect.h */; };
 		E898A11C16BD265400732C04 /* RenderHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8A16BD24E400732C04 /* RenderHelper.h */; };
 		E898A11D16BD265400732C04 /* RenderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8C16BD24E400732C04 /* RenderManager.h */; };
-		E898A11E16BD265400732C04 /* RenderManagerGL20.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9116BD24E400732C04 /* RenderManagerGL20.h */; };
 		E898A11F16BD265400732C04 /* RenderOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9316BD24E500732C04 /* RenderOptions.h */; };
 		E898A12016BD265400732C04 /* RenderResource.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9516BD24E500732C04 /* RenderResource.h */; };
 		E898A12216BD265400732C04 /* RGBColor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9816BD24E500732C04 /* RGBColor.h */; };
@@ -1997,7 +2004,6 @@
 		E898A23716BD265400732C04 /* RenderManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8B16BD24E400732C04 /* RenderManager.cpp */; };
 		E898A23816BD265400732C04 /* RenderManagerFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */; };
 		E898A23916BD265400732C04 /* RenderManagerGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */; };
-		E898A23A16BD265400732C04 /* RenderManagerGL20.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */; };
 		E898A23B16BD265400732C04 /* RenderOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9216BD24E400732C04 /* RenderOptions.cpp */; };
 		E898A23C16BD265400732C04 /* RenderResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9416BD24E500732C04 /* RenderResource.cpp */; };
 		E898A23E16BD265400732C04 /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9916BD24E500732C04 /* Shader.cpp */; };
@@ -2180,6 +2186,12 @@
 		EA84E16F17FAC0B400304C3C /* SpatialTree.h in Headers */ = {isa = PBXBuildFile; fileRef = EA84E16B17FAC0B400304C3C /* SpatialTree.h */; };
 		EA84E17017FAC0B400304C3C /* SpatialTree.h in Headers */ = {isa = PBXBuildFile; fileRef = EA84E16B17FAC0B400304C3C /* SpatialTree.h */; };
 		EA84E17117FAC0B400304C3C /* SpatialTree.h in Headers */ = {isa = PBXBuildFile; fileRef = EA84E16B17FAC0B400304C3C /* SpatialTree.h */; };
+		EAAC988A1937333D00549BAD /* MeshUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAAC98881937333D00549BAD /* MeshUtils.cpp */; };
+		EAAC988B1937333E00549BAD /* MeshUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAAC98881937333D00549BAD /* MeshUtils.cpp */; };
+		EAAC988C1937333E00549BAD /* MeshUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAAC98881937333D00549BAD /* MeshUtils.cpp */; };
+		EAAC988D1937333E00549BAD /* MeshUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAC98891937333D00549BAD /* MeshUtils.h */; };
+		EAAC988E1937333E00549BAD /* MeshUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAC98891937333D00549BAD /* MeshUtils.h */; };
+		EAAC988F1937333E00549BAD /* MeshUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAC98891937333D00549BAD /* MeshUtils.h */; };
 		EAADA0001892A458001E1AA2 /* UIParticles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAAD9FFE1892A458001E1AA2 /* UIParticles.cpp */; };
 		EAADA0011892A458001E1AA2 /* UIParticles.h in Headers */ = {isa = PBXBuildFile; fileRef = EAAD9FFF1892A458001E1AA2 /* UIParticles.h */; };
 		EAADA01F189FCB30001E1AA2 /* ParticleRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA106060188921FC00CB99A3 /* ParticleRenderObject.cpp */; };
@@ -2337,11 +2349,11 @@
 		5C77AB7C14C7509D00E92D28 /* libpng_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpng_macos.a; path = ../../Libs/libs/libpng_macos.a; sourceTree = "<group>"; };
 		5C97965914E3F09F00FFFA14 /* libyaml_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libyaml_macos.a; path = ../../Libs/libs/libyaml_macos.a; sourceTree = "<group>"; };
 		627AFA6C18E964E300F2A52A /* libjpeg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_macos.a; path = ../../Libs/libs/libjpeg_macos.a; sourceTree = "<group>"; };
-		62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibJpegHelper.cpp; sourceTree = "<group>"; };
-		62C1212F18E961AE0008D201 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibJpegHelper.h; sourceTree = "<group>"; };
 		6280BAA818D6F909007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
 		62BD24BE18C621EB00D2F0D3 /* DateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTime.cpp; sourceTree = "<group>"; };
 		62BD24BF18C621EB00D2F0D3 /* DateTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTime.h; sourceTree = "<group>"; };
+		62C1212E18E961AE0008D201 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibJpegHelper.cpp; sourceTree = "<group>"; };
+		62C1212F18E961AE0008D201 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibJpegHelper.h; sourceTree = "<group>"; };
 		641A61D818CDC2F4003359E7 /* FoliageSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FoliageSystem.cpp; sourceTree = "<group>"; };
 		641A61D918CDC2F4003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		6435963718C1FA3200862C31 /* AbstractQuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractQuadTree.h; sourceTree = "<group>"; };
@@ -2789,8 +2801,6 @@
 		E8989C8C16BD24E400732C04 /* RenderManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderManager.h; sourceTree = "<group>"; };
 		E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderManagerFactory.cpp; sourceTree = "<group>"; };
 		E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderManagerGL.cpp; sourceTree = "<group>"; };
-		E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderManagerGL20.cpp; sourceTree = "<group>"; };
-		E8989C9116BD24E400732C04 /* RenderManagerGL20.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderManagerGL20.h; sourceTree = "<group>"; };
 		E8989C9216BD24E400732C04 /* RenderOptions.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderOptions.cpp; sourceTree = "<group>"; };
 		E8989C9316BD24E500732C04 /* RenderOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderOptions.h; sourceTree = "<group>"; };
 		E8989C9416BD24E500732C04 /* RenderResource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderResource.cpp; sourceTree = "<group>"; };
@@ -3016,6 +3026,8 @@
 		EA56554917CDFF4B00426EB8 /* PerformanceSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PerformanceSettings.h; sourceTree = "<group>"; };
 		EA84E16A17FAC0B400304C3C /* SpatialTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpatialTree.cpp; sourceTree = "<group>"; };
 		EA84E16B17FAC0B400304C3C /* SpatialTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpatialTree.h; sourceTree = "<group>"; };
+		EAAC98881937333D00549BAD /* MeshUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshUtils.cpp; sourceTree = "<group>"; };
+		EAAC98891937333D00549BAD /* MeshUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshUtils.h; sourceTree = "<group>"; };
 		EAAD9FFE1892A458001E1AA2 /* UIParticles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIParticles.cpp; sourceTree = "<group>"; };
 		EAAD9FFF1892A458001E1AA2 /* UIParticles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIParticles.h; sourceTree = "<group>"; };
 		FE444329114D8DF600F5EFD6 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
@@ -3729,8 +3741,6 @@
 				E8989C8C16BD24E400732C04 /* RenderManager.h */,
 				E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */,
 				E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */,
-				E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */,
-				E8989C9116BD24E400732C04 /* RenderManagerGL20.h */,
 				E8989C9216BD24E400732C04 /* RenderOptions.cpp */,
 				E8989C9316BD24E500732C04 /* RenderOptions.h */,
 				E8989C9416BD24E500732C04 /* RenderResource.cpp */,
@@ -3777,6 +3787,8 @@
 		E8989C2416BD24E400732C04 /* 3D */ = {
 			isa = PBXGroup;
 			children = (
+				EAAC98881937333D00549BAD /* MeshUtils.cpp */,
+				EAAC98891937333D00549BAD /* MeshUtils.h */,
 				E8989C2516BD24E400732C04 /* AnimatedMesh.cpp */,
 				E8989C2616BD24E400732C04 /* AnimatedMesh.h */,
 				E8989C2716BD24E400732C04 /* EdgeAdjacency.cpp */,
@@ -4327,6 +4339,7 @@
 				176DE944174B5561007A983B /* FileSystem.h in Headers */,
 				176DE945174B5561007A983B /* KeyedArchive.h in Headers */,
 				176DE946174B5561007A983B /* KeyedArchiver.h in Headers */,
+				EAAC988F1937333E00549BAD /* MeshUtils.h in Headers */,
 				176DE947174B5561007A983B /* KeyedUnarchiver.h in Headers */,
 				176DE948174B5561007A983B /* LocalizationSystem.h in Headers */,
 				176DE949174B5561007A983B /* Logger.h in Headers */,
@@ -4340,6 +4353,7 @@
 				176DE951174B5561007A983B /* KeyboardDevice.h in Headers */,
 				176DE952174B5561007A983B /* AABBox2.h in Headers */,
 				176DE953174B5561007A983B /* AABBox3.h in Headers */,
+				17FB4BB41923B97800F3E3BC /* UIScrollView.h in Headers */,
 				176DE954174B5561007A983B /* BezierSpline.h in Headers */,
 				176DE955174B5561007A983B /* Circle.h in Headers */,
 				CC84B01B18211A9000934482 /* Job.h in Headers */,
@@ -4433,7 +4447,6 @@
 				176DE9A5174B5561007A983B /* RenderGrayscaleEffect.h in Headers */,
 				176DE9A6174B5561007A983B /* RenderHelper.h in Headers */,
 				176DE9A7174B5561007A983B /* RenderManager.h in Headers */,
-				176DE9A8174B5561007A983B /* RenderManagerGL20.h in Headers */,
 				17B3EA8B18E9A3120069AE7A /* CoreMacOSPlatformBase.h in Headers */,
 				176DE9A9174B5561007A983B /* RenderOptions.h in Headers */,
 				176DE9AA174B5561007A983B /* RenderResource.h in Headers */,
@@ -4450,6 +4463,7 @@
 				176DE9B5174B5561007A983B /* Box2DGameObjectManager.h in Headers */,
 				176DE9B6174B5561007A983B /* Box2DHelper.h in Headers */,
 				176DE9B7174B5561007A983B /* Box2DTileCollider.h in Headers */,
+				17FB4BB61923B97F00F3E3BC /* UIScrollViewContainer.h in Headers */,
 				176DE9B8174B5561007A983B /* GameObject.h in Headers */,
 				176DE9B9174B5561007A983B /* GameObjectAnimations.h in Headers */,
 				176DE9BA174B5561007A983B /* GameObjectManager.h in Headers */,
@@ -4458,6 +4472,7 @@
 				176DE9BC174B5561007A983B /* BillboardNode.h in Headers */,
 				A650F4BD1864A10100D3278D /* NMaterialTemplate.h in Headers */,
 				176DE9BD174B5561007A983B /* BoneNode.h in Headers */,
+				17FB4BBA1923B9B100F3E3BC /* UIMovieView.h in Headers */,
 				176DE9BE174B5561007A983B /* BulletComponent.h in Headers */,
 				176DE9BF174B5561007A983B /* CameraComponent.h in Headers */,
 				176DE9C0174B5561007A983B /* DebugRenderComponent.h in Headers */,
@@ -4584,6 +4599,7 @@
 				176DEA31174B5561007A983B /* ShadowVolume.h in Headers */,
 				176DEA32174B5561007A983B /* ShadowVolumeRenderPass.h in Headers */,
 				176DEA33174B5561007A983B /* SpriteObject.h in Headers */,
+				17FB4BBC1923B9D900F3E3BC /* MovieViewControlMacOS.h in Headers */,
 				176DEA34174B5561007A983B /* SpriteRenderBatch.h in Headers */,
 				176DEA35174B5561007A983B /* RenderState.h in Headers */,
 				176DEA36174B5561007A983B /* UpdateSystem.h in Headers */,
@@ -4803,7 +4819,6 @@
 				E8989F4616BD24E500732C04 /* RenderGrayscaleEffect.h in Headers */,
 				E8989F4816BD24E500732C04 /* RenderHelper.h in Headers */,
 				E8989F4A16BD24E500732C04 /* RenderManager.h in Headers */,
-				E8989F4F16BD24E500732C04 /* RenderManagerGL20.h in Headers */,
 				E8989F5116BD24E500732C04 /* RenderOptions.h in Headers */,
 				E8989F5316BD24E500732C04 /* RenderResource.h in Headers */,
 				E8989F5616BD24E500732C04 /* RGBColor.h in Headers */,
@@ -4868,6 +4883,7 @@
 				E8989FCE16BD24E500732C04 /* SkeletonNode.h in Headers */,
 				E8989FD016BD24E500732C04 /* SpriteNode.h in Headers */,
 				E8989FD316BD24E500732C04 /* SwitchNode.h in Headers */,
+				EAAC988D1937333E00549BAD /* MeshUtils.h in Headers */,
 				5013F6941859EB0400FB3C51 /* StaticOcclusionSystem.h in Headers */,
 				E8989FD516BD24E500732C04 /* BaseProcessSystem.h in Headers */,
 				E8989FD716BD24E500732C04 /* DebugRenderSystem.h in Headers */,
@@ -5159,6 +5175,7 @@
 				E898A0D916BD265400732C04 /* Mutex.h in Headers */,
 				E898A0DB16BD265400732C04 /* OpenGLView.h in Headers */,
 				E898A0DC16BD265400732C04 /* QtLayerMacOS.h in Headers */,
+				EAAC988E1937333E00549BAD /* MeshUtils.h in Headers */,
 				E898A0DD16BD265400732C04 /* QtLayer.h in Headers */,
 				E898A0DE16BD265400732C04 /* SystemTimer.h in Headers */,
 				E898A0E416BD265400732C04 /* Thread.h in Headers */,
@@ -5206,7 +5223,6 @@
 				17B3EA8A18E9A3120069AE7A /* CoreMacOSPlatformBase.h in Headers */,
 				E898A11C16BD265400732C04 /* RenderHelper.h in Headers */,
 				E898A11D16BD265400732C04 /* RenderManager.h in Headers */,
-				E898A11E16BD265400732C04 /* RenderManagerGL20.h in Headers */,
 				E898A11F16BD265400732C04 /* RenderOptions.h in Headers */,
 				E898A12016BD265400732C04 /* RenderResource.h in Headers */,
 				E898A12216BD265400732C04 /* RGBColor.h in Headers */,
@@ -5231,6 +5247,7 @@
 				E898A13316BD265400732C04 /* BillboardNode.h in Headers */,
 				E898A13416BD265400732C04 /* BoneNode.h in Headers */,
 				E898A13716BD265400732C04 /* BulletComponent.h in Headers */,
+				17FB4BB91923B9B000F3E3BC /* UIMovieView.h in Headers */,
 				E898A13816BD265400732C04 /* CameraComponent.h in Headers */,
 				E898A13916BD265400732C04 /* DebugRenderComponent.h in Headers */,
 				E898A13A16BD265400732C04 /* LightComponent.h in Headers */,
@@ -5328,12 +5345,14 @@
 				E9EA496F16DF93FA00C44B6F /* UISpinner.h in Headers */,
 				E9E798AC16F0BE7600745AF5 /* UISwitch.h in Headers */,
 				CCC7A42816F1D6170061EA5D /* Camera.h in Headers */,
+				17FB4BB71923B9A400F3E3BC /* UIWebView.h in Headers */,
 				CCC7A42C16F1D6170061EA5D /* CullingSystem.h in Headers */,
 				CCC7A43016F1D6170061EA5D /* Frustum.h in Headers */,
 				CCC7A43416F1D6170061EA5D /* Heightmap.h in Headers */,
 				CCC7A43616F1D6170061EA5D /* IRenderUpdatable.h in Headers */,
 				CCC7A43A16F1D6170061EA5D /* Landscape.h in Headers */,
 				CCC7A43E16F1D6170061EA5D /* LandscapeChunk.h in Headers */,
+				17FB4BBE1923B9DB00F3E3BC /* MovieViewControlMacOS.h in Headers */,
 				17B3EA9218E9A4ED0069AE7A /* CoreMacOSPlatformQt.h in Headers */,
 				E8FC12FD186972740095D8FE /* QualitySettingsComponent.h in Headers */,
 				CCC7A44216F1D6170061EA5D /* LandscapeCursor.h in Headers */,
@@ -5638,7 +5657,6 @@
 				176DEAC5174B5561007A983B /* RenderManager.cpp in Sources */,
 				176DEAC6174B5561007A983B /* RenderManagerFactory.cpp in Sources */,
 				176DEAC7174B5561007A983B /* RenderManagerGL.cpp in Sources */,
-				176DEAC8174B5561007A983B /* RenderManagerGL20.cpp in Sources */,
 				176DEAC9174B5561007A983B /* RenderOptions.cpp in Sources */,
 				E89C58EA18B245A6002C25FE /* AtomicMacOS.mm in Sources */,
 				176DEACA174B5561007A983B /* RenderResource.cpp in Sources */,
@@ -5665,6 +5683,7 @@
 				176DEADC174B5561007A983B /* BulletComponent.cpp in Sources */,
 				176DEADD174B5561007A983B /* CameraComponent.cpp in Sources */,
 				176DEADE174B5561007A983B /* DebugRenderComponent.cpp in Sources */,
+				17FB4BB51923B97D00F3E3BC /* UIScrollViewContainer.cpp in Sources */,
 				176DEADF174B5561007A983B /* LightComponent.cpp in Sources */,
 				176DEAE0174B5561007A983B /* LodComponent.cpp in Sources */,
 				176DEAE1174B5561007A983B /* ParticleEffectComponent.cpp in Sources */,
@@ -5688,6 +5707,7 @@
 				7A169345180EE619005F1FBC /* AutotestingSystemSwig.cpp in Sources */,
 				176DEAF0174B5561007A983B /* ProxyNode.cpp in Sources */,
 				7A16934F180EE75A005F1FBC /* AutotestingDB.cpp in Sources */,
+				EAAC988C1937333E00549BAD /* MeshUtils.cpp in Sources */,
 				176DEAF1174B5561007A983B /* Scene.cpp in Sources */,
 				176DEAF2174B5561007A983B /* SceneAnimationMixer.cpp in Sources */,
 				176DEAF3174B5561007A983B /* SceneFile.cpp in Sources */,
@@ -5707,6 +5727,7 @@
 				E8FC12FE186972740095D8FE /* QualitySettingsComponent.cpp in Sources */,
 				E8FC12F81869726A0095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				176DEB00174B5561007A983B /* LightUpdateSystem.cpp in Sources */,
+				17FB4BB31923B97500F3E3BC /* UIScrollView.cpp in Sources */,
 				176DEB01174B5561007A983B /* LodSystem.cpp in Sources */,
 				176DEB02174B5561007A983B /* ParticleEffectSystem.cpp in Sources */,
 				176DEB04174B5561007A983B /* RenderUpdateSystem.cpp in Sources */,
@@ -5723,6 +5744,7 @@
 				176DEB0F174B5561007A983B /* UIControl.cpp in Sources */,
 				176DEB10174B5561007A983B /* UIControlBackground.cpp in Sources */,
 				176DEB11174B5561007A983B /* UIControlSystem.cpp in Sources */,
+				17FB4BB81923B9AB00F3E3BC /* UIMovieView.cpp in Sources */,
 				176DEB12174B5561007A983B /* UIEvent.cpp in Sources */,
 				176DEB13174B5561007A983B /* UIFadeTransition.cpp in Sources */,
 				176DEB14174B5561007A983B /* UIFileSystemDialog.cpp in Sources */,
@@ -5823,6 +5845,7 @@
 				1AD7C36917D895AE00B9977C /* Vector.cpp in Sources */,
 				A63BCD6C17EB26E300EA4811 /* Process.cpp in Sources */,
 				EA84E16E17FAC0B400304C3C /* SpatialTree.cpp in Sources */,
+				17FB4BBB1923B9D900F3E3BC /* MovieViewControlMacOS.mm in Sources */,
 				024DF6EB17FDE4C400138748 /* FMODSoundEvent.cpp in Sources */,
 				024DF6F717FDE4C400138748 /* FMODSoundSystem.cpp in Sources */,
 			);
@@ -5974,7 +5997,6 @@
 				E8989F4916BD24E500732C04 /* RenderManager.cpp in Sources */,
 				E8989F4C16BD24E500732C04 /* RenderManagerFactory.cpp in Sources */,
 				E8989F4D16BD24E500732C04 /* RenderManagerGL.cpp in Sources */,
-				E8989F4E16BD24E500732C04 /* RenderManagerGL20.cpp in Sources */,
 				E8989F5016BD24E500732C04 /* RenderOptions.cpp in Sources */,
 				E8989F5216BD24E500732C04 /* RenderResource.cpp in Sources */,
 				E8989F5716BD24E500732C04 /* Shader.cpp in Sources */,
@@ -6025,6 +6047,7 @@
 				50A3044418575C370082CA8D /* StaticOcclusionRenderPass.cpp in Sources */,
 				E8989FC116BD24E500732C04 /* SceneManager.cpp in Sources */,
 				E8989FC516BD24E500732C04 /* SceneNodeAnimation.cpp in Sources */,
+				EAAC988A1937333D00549BAD /* MeshUtils.cpp in Sources */,
 				E8989FC716BD24E500732C04 /* SceneNodeAnimationKey.cpp in Sources */,
 				E8989FC916BD24E500732C04 /* SceneNodeAnimationList.cpp in Sources */,
 				E8989FCB16BD24E500732C04 /* ShadowVolumeNode.cpp in Sources */,
@@ -6193,6 +6216,7 @@
 				E898A1A416BD265400732C04 /* AutotestingSystem.cpp in Sources */,
 				E898A1A516BD265400732C04 /* MongodbUpdateObject.cpp in Sources */,
 				E898A1A716BD265400732C04 /* BaseMath.cpp in Sources */,
+				EAAC988B1937333E00549BAD /* MeshUtils.cpp in Sources */,
 				EAADA02818A26524001E1AA2 /* UIParticles.cpp in Sources */,
 				A6931ACE1868569D00006294 /* RenderTechnique.cpp in Sources */,
 				E898A1A816BD265400732C04 /* BaseObject.cpp in Sources */,
@@ -6295,6 +6319,7 @@
 				E898A20816BD265400732C04 /* FontManager.cpp in Sources */,
 				E898A20916BD265400732C04 /* FTFont.cpp in Sources */,
 				E898A20A16BD265400732C04 /* GraphicsFont.cpp in Sources */,
+				17FB4BBD1923B9DB00F3E3BC /* MovieViewControlMacOS.mm in Sources */,
 				E898A20B16BD265400732C04 /* Sprite.cpp in Sources */,
 				E898A20C16BD265400732C04 /* TextBlock.cpp in Sources */,
 				E898A20D16BD265400732C04 /* AnimatedMesh.cpp in Sources */,
@@ -6330,7 +6355,6 @@
 				E898A23716BD265400732C04 /* RenderManager.cpp in Sources */,
 				E898A23816BD265400732C04 /* RenderManagerFactory.cpp in Sources */,
 				E898A23916BD265400732C04 /* RenderManagerGL.cpp in Sources */,
-				E898A23A16BD265400732C04 /* RenderManagerGL20.cpp in Sources */,
 				E898A23B16BD265400732C04 /* RenderOptions.cpp in Sources */,
 				5013F6921859EB0400FB3C51 /* StaticOcclusionSystem.cpp in Sources */,
 				E898A23C16BD265400732C04 /* RenderResource.cpp in Sources */,

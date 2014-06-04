@@ -42,8 +42,41 @@
 
 // model class
 class QtPropertyModel;
-class QtPropertyToolButton;
+class QtPropertyData;
 class QtPropertyDataValidator;
+
+class QtPropertyToolButton : public QToolButton
+{
+	friend class QtPropertyData;
+
+public:
+    enum StateVariant
+    {
+        ACTIVE_ALWAYS,
+        ACTIVE_WHEN_ITEM_IS_ENABLED,
+        ACTIVE_WHEN_ITEM_IS_EDITABLE,
+        ACTIVE_WHEN_ITEM_IS_EDITABLE_OR_ENABLED,
+        ACTIVE_WHEN_ITEM_IS_EDITABLE_AND_ENABLED
+    };
+
+	QtPropertyToolButton(QtPropertyData* data, QWidget * parent = 0);
+	~QtPropertyToolButton();
+
+	QtPropertyData* GetPropertyData() const;
+	virtual bool event(QEvent * event);
+
+    void SetStateVariant(StateVariant state);
+    StateVariant GetStateVariant() const;
+
+	bool eventsPassThrought;
+	bool overlayed;
+
+protected:
+	QtPropertyData* propertyData;
+    StateVariant stateVariant;
+
+    void UpdateState(bool itemIsEnabled, bool itemIsEditable);
+};
 
 // PropertyData class
 class QtPropertyData : public QObject
@@ -148,7 +181,7 @@ public:
 	// Optional widgets
 	int GetButtonsCount() const;
 	QtPropertyToolButton* GetButton(int index = 0);
-	QtPropertyToolButton* AddButton();
+	QtPropertyToolButton* AddButton(QtPropertyToolButton::StateVariant stateVariant = QtPropertyToolButton::ACTIVE_ALWAYS);
 	void RemButton(int index);
 	void RemButton(QtPropertyToolButton *button);
 
@@ -184,7 +217,7 @@ protected:
     QList<QtPropertyData*> mergedData;
 	
 	QWidget *optionalButtonsViewport;
-	QVector<QtPropertyToolButton*> optionalButtons;
+	QVector<QtPropertyToolButton *> optionalButtons;
     
     QtPropertyDataValidator* validator;
 
@@ -207,36 +240,10 @@ protected:
 	QWidget* GetOWViewport() const;
 	void SetOWViewport(QWidget *viewport);
 
+    // optional widgets state update
+    void UpdateOWState();
+
 	void ChildRemoveInternal(int i, bool del);
-};
-
-class QtPropertyToolButton : public QToolButton
-{
-	friend class QtPropertyData;
-
-public:
-	QtPropertyToolButton(QtPropertyData* data, QWidget * parent = 0) 
-		: QToolButton(parent)
-		, propertyData(data)
-		, eventsPassThrought(false) 
-		, overlayed(false)
-	{}
-
-	~QtPropertyToolButton() 
-	{}
-
-	QtPropertyData* GetPropertyData() const
-	{
-		return propertyData;
-	}
-
-	virtual bool event(QEvent * event);
-
-	bool eventsPassThrought;
-	bool overlayed;
-
-protected:
-	QtPropertyData* propertyData;
 };
 
 #endif // __QT_PROPERTY_DATA_H__

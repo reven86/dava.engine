@@ -27,19 +27,40 @@
 =====================================================================================*/
 
 
-//
-//  Config.h
-//  Framework
-//
-//  Created by Dmitry Shpakov on 6/8/12.
-//  Copyright (c) 2012 DAVA Consulting. All rights reserved.
-//
+#ifndef __DAVAENGINE_MESH_UTILS_H__
+#define __DAVAENGINE_MESH_UTILS_H__
 
-#ifndef __DAVAENGINE_AUTOTESTING_CONFIG_H__
-#define __DAVAENGINE_AUTOTESTING_CONFIG_H__
-
-#define __DAVAENGINE_AUTOTESTING__
-#define AUTOTESTING_LUA
+#include "Render/3D/PolygonGroup.h"
 
 
-#endif // __DAVAENGINE_AUTOTESTING_CONFIG_H__
+namespace DAVA
+{
+
+class MeshUtils
+{
+public:
+    static void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal=false);
+    static void CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos);
+    static void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup);
+
+private:
+    struct FaceWork
+    {
+        int32 indexOrigin[3];
+        Vector3 tangent, binormal;
+    };
+
+    struct VertexWork
+    {
+        Vector<int32> refIndices;
+        Vector3 tangent, binormal;
+        int32 tbRatio;
+        int32 refIndex;
+        int32 resultGroup;
+    };
+};
+
+};
+
+#endif
+

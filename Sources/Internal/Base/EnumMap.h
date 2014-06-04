@@ -51,6 +51,7 @@ public:
 protected:
 	typedef DAVA::Map<int, DAVA::String> EnumMapContainer;
 	mutable EnumMapContainer map;
+    mutable DAVA::Vector<int> indexes;
 };
 
 #endif // __DAVAENGINE_ENUM_MAP_H__

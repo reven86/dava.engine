@@ -44,6 +44,7 @@ public:
 
 	virtual void Process(float32 timeElapsed);
 	virtual void ImmediateEvent(Entity * entity, uint32 event);
+    virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
 
 private:

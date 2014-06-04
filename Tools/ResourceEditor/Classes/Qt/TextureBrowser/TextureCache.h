@@ -74,9 +74,11 @@ public:
 	DAVA::uint32 getThumbnailSize(const DAVA::TextureDescriptor *descriptor);
     DAVA::uint32 getOriginalSize(const DAVA::TextureDescriptor *descriptor);
     DAVA::uint32 getOriginalFileSize(const DAVA::TextureDescriptor *descriptor);
+	QSize getOriginalImageSize(const DAVA::TextureDescriptor *descriptor) const;
     DAVA::uint32 getConvertedSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu);
     DAVA::uint32 getConvertedFileSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu);
-    
+	QSize getConvertedImageSize(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu) const;
+
     QList<QImage> getThumbnail(const DAVA::TextureDescriptor *descriptor);
 	QList<QImage> getOriginal(const DAVA::TextureDescriptor *descriptor);
 	QList<QImage> getConverted(const DAVA::TextureDescriptor *descriptor, const DAVA::eGPUFamily gpu);

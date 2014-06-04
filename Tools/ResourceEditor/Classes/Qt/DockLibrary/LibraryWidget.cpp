@@ -33,6 +33,7 @@
 #include "LibraryFileSystemModel.h"
 
 #include "Main/mainwindow.h"
+#include "Main/QtUtils.h"
 #include "Project/ProjectManager.h"
 #include "Scene/SceneTabWidget.h"
 #include "Scene/SceneEditor2.h"
@@ -544,24 +545,8 @@ void LibraryWidget::OnRevealAtFolder()
 {
     QVariant indexAsVariant = ((QAction *)sender())->data();
     const QFileInfo fileInfo = indexAsVariant.value<QFileInfo>();
-    
-#if defined (Q_WS_MAC)
-    QStringList args;
-    args << "-e";
-    args << "tell application \"Finder\"";
-    args << "-e";
-    args << "activate";
-    args << "-e";
-    args << "select POSIX file \""+fileInfo.absoluteFilePath()+"\"";
-    args << "-e";
-    args << "end tell";
-    QProcess::startDetached("osascript", args);
-#elif defined (Q_WS_WIN)
-    QStringList args;
-    args << "/select," << QDir::toNativeSeparators(fileInfo.absoluteFilePath());
-    QProcess::startDetached("explorer", args);
-#endif//
 
+    ShowFileInExplorer( fileInfo.absoluteFilePath() );
 }
 
 void LibraryWidget::HidePreview() const

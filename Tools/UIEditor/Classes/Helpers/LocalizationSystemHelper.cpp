@@ -38,12 +38,21 @@ const LocalizationSystemHelper::LocalizationSystemHelperData LocalizationSystemH
 {
     {"en", "English"},
 	{"ru", "Russian"},
-    {"fr", "French"},
     {"de", "German"},
-    {"it", "Italian"},
     {"es", "Spanish"},
-    {"nl", "Dutch"},
-    {"sv", "Swedish"}
+    {"fr", "French"},
+    {"it", "Italian"},
+    {"cs", "Czech"},
+    {"fi", "Finnish"},
+    {"pl", "Polish"},
+    {"pt", "Portuguese"},
+    {"tr", "Turkish"},
+    {"ja", "Japanese"},
+    {"ko", "Korean"},
+    {"zh-Hant", "Chinese(Traditional)"},
+    {"zh-Hans", "Chinese(Simplified)"}
+    //{"nl", "Dutch"},
+    //{"sv", "Swedish"}
 };
 
 int LocalizationSystemHelper::GetSupportedLanguagesCount()

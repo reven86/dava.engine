@@ -673,7 +673,7 @@ void TexturePacker::ExportImage(PngImageExt *image, const FilePath &exportedPath
 
 TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
 {
-    TextureDescriptor *descriptor = new TextureDescriptor(true);
+    TextureDescriptor *descriptor = new TextureDescriptor();
 
     descriptor->drawSettings.wrapModeS = descriptor->drawSettings.wrapModeT = GetDescriptorWrapMode();
     descriptor->SetGenerateMipmaps(CommandLineParser::Instance()->IsFlagSet(String("--generateMipMaps")));
@@ -698,8 +698,7 @@ TextureDescriptor * TexturePacker::CreateDescriptor(eGPUFamily forGPU)
 		{
 			descriptor->format = format;
 
-			DVASSERT(descriptor->compression);
-			descriptor->compression[forGPU]->format = format;
+			descriptor->compression[forGPU].format = format;
 
 		}
 		else

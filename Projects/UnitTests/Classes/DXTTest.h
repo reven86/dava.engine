@@ -40,7 +40,7 @@ class DXTTest : public TestTemplate<DXTTest>
     enum eConst
     {
         FIRST_TEST = 0,
-        TESTS_COUNT = 6,
+        TESTS_COUNT = 5,
         ACCETABLE_DELTA_IN_PERSENTS = 2
     };
 protected:

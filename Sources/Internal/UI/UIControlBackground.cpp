@@ -67,7 +67,6 @@ UIControlBackground::UIControlBackground()
 	{
 		rdoObject->Retain();
 	}
-	//rdoObject->SetStream()
 }
 	
 UIControlBackground *UIControlBackground::Clone()
@@ -83,7 +82,9 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 	spr = SafeRetain(srcBackground->spr);
 	frame = srcBackground->frame;
 	align = srcBackground->align;
-	type = srcBackground->type;
+	
+	SetDrawType((eDrawType)srcBackground->type);
+    
 	color = srcBackground->color;
 	spriteModification = srcBackground->spriteModification;
 	colorInheritType = srcBackground->colorInheritType;
@@ -173,6 +174,22 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
 	type = drawType;
+    switch(type)
+    {
+    case DRAW_STRETCH_BOTH:
+    case DRAW_STRETCH_HORIZONTAL:
+    case DRAW_STRETCH_VERTICAL:
+    case DRAW_TILED:
+        {
+            if (!rdoObject)
+            {
+                rdoObject = new RenderDataObject();
+                vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+                texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+                //rdoObject->SetStream()
+            }
+        }
+    }
 	ReleaseDrawData();
 }
 
@@ -265,7 +282,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 	RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 	
 	Sprite::DrawState drawState;
-        drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND); // set state explicitly
+    drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND); // set state explicitly
 	if (spr)
 	{
 		drawState.frame = frame;
@@ -505,14 +522,18 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 void UIControlBackground::DrawStretched(const Rect &drawRect, UniqueHandle renderState)
 {
     DVASSERT(rdoObject);
-    if (!spr)return;
-    UniqueHandle textureHandle = spr->GetTextureHandle(frame);
-    Texture* texture = spr->GetTexture(frame);
+	if (!spr)return;
+    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    {
+        return;
+    }
+	UniqueHandle textureHandle = spr->GetTextureHandle(frame);
+	Texture* texture = spr->GetTexture(frame);
 	
-    float32 texX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
-    float32 texY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
-    float32 texDx = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
-    float32 texDy = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
+	float32 texX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_POSITION_IN_TEXTURE);
+	float32 texY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_POSITION_IN_TEXTURE);
+	float32 texDx = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH);
+	float32 texDy = spr->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT);
     float32 texOffX = spr->GetRectOffsetValueForFrame(frame, Sprite::X_OFFSET_TO_ACTIVE);
     float32 texOffY = spr->GetRectOffsetValueForFrame(frame, Sprite::Y_OFFSET_TO_ACTIVE);
 
@@ -689,6 +710,10 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
 {
     DVASSERT(rdoObject);
 	if (!spr)return;
+    if (!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+    {
+        return;
+    }
 
 	const Vector2 &size = gd.size;
 
@@ -792,7 +817,7 @@ void UIControlBackground::TiledDrawData::GenerateTileData()
 
 	Vector< Vector3 > cellsHeight;
 	GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * sprite->GetResourceToVirtualFactor(), stretchCap.y, cellsHeight );
-	
+
 	int32 vertexCount = 4 * cellsHeight.size() * cellsWidth.size();
 	vertices.resize( vertexCount );
 	transformedVertices.resize( vertexCount );

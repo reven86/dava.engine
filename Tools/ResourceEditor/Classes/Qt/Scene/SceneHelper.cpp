@@ -90,7 +90,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 		for(int i = DAVA::GPU_UNKNOWN + 1; i < DAVA::GPU_FAMILY_COUNT; ++i)
 		{
 			eGPUFamily gpu = (eGPUFamily)i;
-			if(GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu]->format))
+			if(GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu].format))
 			{
 				FilePath texPath = descriptor->GetSourceTexturePathname();
 				if(texPath.Exists() && !descriptor->IsCompressedTextureActual(gpu))

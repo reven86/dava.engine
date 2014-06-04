@@ -1,5 +1,5 @@
 TIMEOUT = 30.0 -- Big time out for waiting
-TIMECLICK = 0.2 -- time for simple action
+TIMECLICK = 0.5 -- time for simple action
 DELAY = 0.5 -- time for simulation of human reaction
 
 MULTIPLAYER_TIMEOUT = 300 -- Multiplayer timeout
@@ -332,7 +332,7 @@ function IsVisible(element, background)
 		result = true
 	end
 	
-	Log("Element " ..  element .. " is visible on " .. tostring(background) .. "= " .. tostring(result))
+	--Log("Element " ..  element .. " is visible on " .. tostring(background) .. "= " .. tostring(result))
 	return result
 end
 
@@ -403,7 +403,7 @@ end
 
 function WaitControl(name, time)
     local waitTime = time or TIMEOUT
-    Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
+    --Log("WaitControl name="..name.." waitTime="..waitTime,"DEBUG")
     
     local elapsedTime = 0.0
     while elapsedTime < waitTime do
@@ -441,7 +441,7 @@ end
 
 function WaitControlBecomeVisible(name, time)
     local waitTime = time or TIMEOUT
-    Log("WaitControlBecomeVisible name="..name.." waitTime="..waitTime,"DEBUG")
+    --Log("WaitControlBecomeVisible name="..name.." waitTime="..waitTime,"DEBUG")
 
     local elapsedTime = 0.0
     while elapsedTime < waitTime do
@@ -449,7 +449,7 @@ function WaitControlBecomeVisible(name, time)
 		coroutine.yield()
 		
 		local control = autotestingSystem:FindControl(name)
-        if control and control:GetVisible() and control:IsOnScreen() and IsOnScreen(control, background) then
+        if IsVisible(name) then
             --Log("WaitControl found "..name, "DEBUG")
             return true
         end
@@ -458,6 +458,7 @@ function WaitControlBecomeVisible(name, time)
     Log("WaitControl not found "..name, "DEBUG")
     return false
 end
+
 -- Work with Text field and labels 
 function SetText(path, text, time)
 	local waitTime = time or DELAY
@@ -502,19 +503,19 @@ end
 -- Work with List
 function SelectHorizontal(list, item)
 	Log("Select "..tostring(item).." item in horizontal list "..list)
-	
+
 	local cell = list.."/".. tostring(item)
 	assert(WaitControl(list), "Couldn't select "..cell)
-	
+
 	if IsVisible(cell, list) then
 		ClickControl(cell)
 		return true
 	end
-	
+
 	local last_visible = 0
 	local previous_last = 0
 	local index = 0
-	
+
 	-- find first visible element
 	for i = 0, 100 do --to avoid hanging up in empty list
 		if IsVisible(list.."/"..tostring(i)) then
@@ -535,14 +536,14 @@ function SelectHorizontal(list, item)
 		end
 		index = index + 1
 	end
-	
+
 	repeat
 		if IsVisible(cell, list) then
 			break
 		else
 			previous_last = last_visible
-			ScrollLeft(list)
-			
+			HorizontalScroll(list)
+
 			index = last_visible + 1
 			while true do
 				if not IsVisible(list.."/"..tostring(index), list) then
@@ -566,13 +567,13 @@ end
 
 function SelectFirstHorizontal(list)
 	Log("Select first item in horizontal list "..list)
-	
+
 	-- find first visible element
 	for i = 0, 100 do --to avoid hanging up in empty list
 		if IsVisible(list.."/0", list) then
 			return true
 		else
-			ScrollLeft(list, true)
+			HorizontalScroll(list, true)
 		end
 	end
     
@@ -620,7 +621,7 @@ function SelectVertical(list, item)
 			break
 		else
 			previous_last = last_visible
-			ScrollDown(list)
+			VerticalScroll(list)
 
 			index = last_visible + 1
 			while true do
@@ -651,7 +652,7 @@ function SelectFirstVertical(list)
 		if IsVisible(list.."/0", list) then
 			return true
 		else
-			ScrollDown(list, true)
+			VerticalScroll(list, true)
 		end
 	end
     
@@ -659,8 +660,8 @@ function SelectFirstVertical(list)
 	return false
 end
 
-function ScrollDown(list, invert)
-	Log("Make horizontal scroll for "..list)
+function VerticalScroll(list, invert)
+	--Log("Make horizontal scroll for "..list)
 	local control = GetControl(list)
 
 	local position = Vector.Vector2()
@@ -673,18 +674,18 @@ function ScrollDown(list, invert)
     position.y = rect.y + rect.dy/2
 		
 	if invert then
-		new_position.y = position.y + rect.dy/3
+		new_position.y = position.y + rect.dy/2
 		new_position.x = position.x
 	else
-       	new_position.y = position.y - rect.dy/3
+       	new_position.y = position.y - rect.dy/2
 		new_position.x = position.x
     end
 	
 	TouchMove(position, new_position)
 end
 
-function ScrollLeft(list, invert)
-	Log("Make horizontal scroll for "..list)
+function HorizontalScroll(list, invert)
+	--Log("Make horizontal scroll for "..list)
 	local control = GetControl(list)	
     
     local position = Vector.Vector2()
@@ -697,10 +698,10 @@ function ScrollLeft(list, invert)
     position.y = rect.y + rect.dy/2
 	
 	if invert then
-		new_position.x = position.x + rect.dx/3
+		new_position.x = position.x + rect.dx/2
 		new_position.y = position.y
 	else
-      	new_position.x = position.x - rect.dx/3
+      	new_position.x = position.x - rect.dx/2
 		new_position.y = position.y
     end	
 	
@@ -785,10 +786,11 @@ end
 function TouchMove(position, new_position, time, touchId)
 	waitTime =  time or TIMECLICK
     local touchId = touchId or 1
-    Log("TouchMove from x="..position.x.." y="..position.y.."  to x="..new_position.x.." y="..new_position.y.." touchId="..touchId)
+    --Log("TouchMove from x="..position.x.." y="..position.y.."  to x="..new_position.x.." y="..new_position.y.." touchId="..touchId)
     TouchDownPosition(position, touchId)
     Wait(waitTime)
 	TouchMovePosition(new_position, touchId)
+	Wait(waitTime)
 	Wait(waitTime)
 	TouchUp(touchId)
 	Wait(waitTime)

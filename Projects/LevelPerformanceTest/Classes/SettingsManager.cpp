@@ -32,18 +32,19 @@
 #define H 10.f
 #define ANGLE_SPEED 80.f
 #define VELOCITY 40.f
-#define LANDSCAPE_NODE_NAME "Landscape"
 #define XSIZE 100.f
 #define YSIZE 100.f
 #define MIN_FPS 15
 #define MIN_FPS_SECTOR_COUNT 10
 #define COLOR_TRANSPARENCY 127
 
+static const FastName LANDSCAPE_NODE_NAME("Landscape");
+
 SettingsManager sm;
 
 void SettingsManager::InitWithFile(const FilePath &filename)
 {
-	landscapeNodeName = LANDSCAPE_NODE_NAME;
+    landscapeNodeName = LANDSCAPE_NODE_NAME;
 	landscapePartitioningSize.x = XSIZE;
 	landscapePartitioningSize.y = YSIZE;
 	cameraElevation = H;
@@ -67,7 +68,7 @@ void SettingsManager::InitWithFile(const FilePath &filename)
             node = rootNode->Get("landscapeNodeName");
             if(node)
             {
-                landscapeNodeName = node->AsString();
+                landscapeNodeName = node->AsFastName();
             }
             
             node = rootNode->Get("landscapePartitioningSize");
@@ -152,7 +153,7 @@ Vector2 SettingsManager::GetLandscapePartitioningSize() const
 	return landscapePartitioningSize;
 }
 
-const String SettingsManager::GetLandscapeNodeName() const
+const FastName & SettingsManager::GetLandscapeNodeName() const
 {
 	return landscapeNodeName;
 }

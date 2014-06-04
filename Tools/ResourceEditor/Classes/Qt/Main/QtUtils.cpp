@@ -34,12 +34,15 @@
 
 #include <QMessageBox>
 #include <QToolButton>
+#include <QFileInfo>
+
 #include "mainwindow.h"
 
 #include "TexturePacker/CommandLineParser.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "DAVAEngine.h"
+#include <QProcess>
 using namespace DAVA;
 
 
@@ -206,3 +209,25 @@ DAVA::String ReplaceInString(const DAVA::String & sourceString, const DAVA::Stri
 	return sourceString;
 }
 
+void ShowFileInExplorer(const QString& path)
+{
+    const QFileInfo fileInfo(path);
+
+#if defined (Q_WS_MAC)
+    QStringList args;
+    args << "-e";
+    args << "tell application \"Finder\"";
+    args << "-e";
+    args << "activate";
+    args << "-e";
+    args << "select POSIX file \"" + fileInfo.absoluteFilePath() + "\"";
+    args << "-e";
+    args << "end tell";
+    QProcess::startDetached( "osascript", args );
+#elif defined (Q_WS_WIN)
+    QStringList args;
+    args << "/select," << QDir::toNativeSeparators( fileInfo.absoluteFilePath() );
+    QProcess::startDetached( "explorer", args );
+#endif//
+
+}

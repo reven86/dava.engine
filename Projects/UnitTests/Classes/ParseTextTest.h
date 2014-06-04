@@ -27,19 +27,38 @@
 =====================================================================================*/
 
 
-//
-//  Config.h
-//  Framework
-//
-//  Created by Dmitry Shpakov on 6/8/12.
-//  Copyright (c) 2012 DAVA Consulting. All rights reserved.
-//
 
-#ifndef __DAVAENGINE_AUTOTESTING_CONFIG_H__
-#define __DAVAENGINE_AUTOTESTING_CONFIG_H__
+#ifndef __PARSE_TEXT_TEST_H__
+#define __PARSE_TEXT_TEST_H__
 
-//#define __DAVAENGINE_AUTOTESTING__
-//#define AUTOTESTING_LUA
+#include "DAVAEngine.h"
 
+using namespace DAVA;
 
-#endif // __DAVAENGINE_AUTOTESTING_CONFIG_H__
+#include "UITestTemplate.h"
+#include "Render/RenderManager.h"
+
+class ParseTextTest : public UITestTemplate<ParseTextTest>
+{
+protected:
+    ~ParseTextTest();
+public:
+	ParseTextTest();
+    
+	virtual void LoadResources();
+	virtual void UnloadResources();
+
+private:
+    
+    void ParseTestFunction(PerfFuncData * testData);
+    
+    UIStaticText *CreateTextControl(const Rect &rect, const WideString & text, bool wrapBySymbol, const Vector2 &requestedSize = Vector2(0, 0));
+
+    UIStaticText *wrapBySymbolShort;
+    UIStaticText *wrapByWordShort;
+
+    UIStaticText *wrapBySymbolLong;
+    UIStaticText *wrapByWordLong;
+};
+
+#endif /* defined(__PARSE_TEXT_TEST_H__) */

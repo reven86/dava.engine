@@ -30,51 +30,55 @@
 #ifndef TEXTPROPERTYGRIDWIDGET_H
 #define TEXTPROPERTYGRIDWIDGET_H
 
-#include <QWidget>
 #include "basepropertygridwidget.h"
-#include "uitextfieldpropertygridwidget.h"
 
-class QLabel;
+namespace Ui {
+    class TextPropertyGridWidget;
+}
 
-class TextPropertyGridWidget : public UITextFieldPropertyGridWidget
+class TextPropertyGridWidget : public BasePropertyGridWidget
 {
     Q_OBJECT
-
+    
 public:
     explicit TextPropertyGridWidget(QWidget *parent = 0);
     ~TextPropertyGridWidget();
-
+    
     virtual void Initialize(BaseMetadata* activeMetadata);
+    
     virtual void Cleanup();
-
+    
 protected:
     
-	virtual void InsertLocalizationFields();
-
-    // Update the widget with Localization Value when the key is changed.
-    virtual void UpdateLocalizationValue();
-
-    virtual void HandleChangePropertySucceeded(const QString& propertyName);
-    virtual void HandleChangePropertyFailed(const QString& propertyName);
+    virtual void ProcessPushButtonClicked(QPushButton* senderWidget);
     
-    virtual void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
+    //Update of internal propeperties
+    virtual void UpdatePushButtonWidgetWithPropertyValue(QPushButton *pushButtonWidget, const QMetaProperty& curProperty);
+    void UpdatePushButtonWidgetWithFont(QPushButton *pushButtonWidget, Font* font);
+    
     virtual void ProcessComboboxValueChanged(QComboBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter,
                                              const QString& value);
+    virtual void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
+    
+    virtual void FillComboboxes();
+    
+    virtual void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
+    
+    virtual void HandleChangePropertySucceeded(const QString& propertyName);
+    
+    virtual void HandleChangePropertyFailed(const QString& propertyName);
 
-	// Handle UI Control State is changed - needed for updating Localization Text.
-    virtual void HandleSelectedUIControlStatesChanged(const Vector<UIControl::eControlState>& newStates);
-
+    void UpdateFontPresetValues();
+    
     // Handle dependent checkboxes.
     virtual void UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty);
-	virtual void OnPropertiesChangedFromExternalSource() {};
-
-private:
-	QLineEdit *localizationKeyNameLineEdit;
-    QLineEdit *localizationKeyTextLineEdit;
-	QLabel	*localizationKeyNameLabel;
-	QLabel	*localizationKeyTextLabel;
-	QCheckBox *multilineCheckBox;
-	QCheckBox *multilineBySymbolCheckBox;
+    //virtual void UpdateSpinBoxWidgetWithPropertyValue(QSpinBox* spinBoxWidget, const QMetaProperty& curProperty);
+    
+    virtual void OnPropertiesChangedFromExternalSource() {};
+    
+    void FillFontPresetCombobox();
+    
+    Ui::TextPropertyGridWidget *ui;
 };
 
 #endif // TEXTPROPERTYGRIDWIDGET_H

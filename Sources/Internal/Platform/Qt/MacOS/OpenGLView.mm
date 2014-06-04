@@ -69,6 +69,8 @@
 	trackingArea = nil;
 	[self enableTrackingArea];
 	isFirstDraw = true;
+    
+    [self setWantsBestResolutionOpenGLSurface:YES];
 
 	// enable vsync
 	GLint swapInt = 1;
@@ -141,13 +143,14 @@
 - (void)reshape
 {
 	NSRect rect = self.frame;
-	RenderManager::Instance()->Init(rect.size.width, rect.size.height);
+    NSRect boundRect = [self convertRectToBacking: rect];
+	RenderManager::Instance()->Init(boundRect.size.width, boundRect.size.height);
 	UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
     
     Core::Instance()->UnregisterAllAvailableResourceSizes();
-    Core::Instance()->RegisterAvailableResourceSize(rect.size.width, rect.size.height, "Gfx");
+    Core::Instance()->RegisterAvailableResourceSize(boundRect.size.width, boundRect.size.height, "Gfx");
     
-	Core::Instance()->SetPhysicalScreenSize(rect.size.width, rect.size.height);
+	Core::Instance()->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
     Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
 	Core::Instance()->CalculateScaleMultipliers();
 	
@@ -368,7 +371,8 @@ void MoveTouchsToVector(NSEvent *curEvent, int touchPhase, Vector<UIEvent> *outT
 
 - (void)CalcOffset:(NSEvent *)theEvent
 {
-    NSPoint p = [self convertPointFromBase:[theEvent locationInWindow]];
+    NSPoint origPos = [self convertPointToBacking:[theEvent locationInWindow]];
+    NSPoint p = [self convertPointFromBase:origPos];
     offset.x = [theEvent locationInWindow].x - p.x;
     offset.y = [theEvent locationInWindow].y - p.y;
     

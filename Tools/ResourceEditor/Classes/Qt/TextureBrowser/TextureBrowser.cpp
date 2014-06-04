@@ -365,25 +365,14 @@ void TextureBrowser::updateInfoConverted()
 
 		int datasize = TextureCache::Instance()->getConvertedSize(curDescriptor, curTextureView);
 		int filesize = TextureCache::Instance()->getConvertedFileSize(curDescriptor, curTextureView);
-		QSize imgSize(0, 0);
-        
-		DVASSERT(curDescriptor->compression);
+		QSize imgSize = TextureCache::Instance()->getConvertedImageSize(curDescriptor, curTextureView);
 
-        bool isFormatValid = curDescriptor->compression[curTextureView]->format != DAVA::FORMAT_INVALID;
+        bool isUpToDate = curDescriptor->IsCompressedTextureActual(curTextureView);
+        
+        bool isFormatValid = curDescriptor->compression[curTextureView].format != DAVA::FORMAT_INVALID;
 		if(isFormatValid)
 		{
-			formatStr = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(curDescriptor->compression[curTextureView]->format);
-			
-			int w = curDescriptor->compression[curTextureView]->compressToWidth;
-			int h = curDescriptor->compression[curTextureView]->compressToHeight;
-			if(0 != w && 0 != h)
-			{
-				imgSize = QSize(w, h);
-			}
-			else
-			{
-				imgSize = QSize(curTexture->width, curTexture->height);
-			}
+			formatStr = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(curDescriptor->compression[curTextureView].format);
 		}
         ui->convertToolButton->setEnabled(isFormatValid);
         
@@ -392,10 +381,12 @@ void TextureBrowser::updateInfoConverted()
 			SizeInBytesToString(filesize).c_str());
 
 		ui->labelConvertedFormat->setText(tmp);
+        ui->textureAreaConverted->warningShow(!isUpToDate);
 	}
 	else
 	{
 		ui->labelConvertedFormat->setText("");
+        ui->textureAreaConverted->warningShow(false);
 	}
 }
 
@@ -446,6 +437,8 @@ void TextureBrowser::setupImagesScrollAreas()
 	// mouse wheel
 	QObject::connect(ui->textureAreaOriginal, SIGNAL(mouseWheel(int)), this, SLOT(textureAreaWheel(int)));
 	QObject::connect(ui->textureAreaConverted, SIGNAL(mouseWheel(int)), this, SLOT(textureAreaWheel(int)));
+
+    ui->textureAreaConverted->warningSetText("Not relevant");
 }
 
 void TextureBrowser::setupTextureToolbar()

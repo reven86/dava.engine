@@ -244,7 +244,7 @@ public:
 	bool SaveStringsList(const FilePath & fileName, YamlNode * rootNode, uint32 attr = File::CREATE | File::WRITE);
 
 	// Get the root node.
-	YamlNode			* GetRootNode();
+	YamlNode			* GetRootNode() const;
 	
 	struct YamlDataHolder
 	{

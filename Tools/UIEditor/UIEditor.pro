@@ -170,6 +170,8 @@ FORMS    += \
     UI/previewsettingsdialog.ui \
     UI/editeditorsettingsdialog.ui \
     UI/localizationeditordialog.ui \
+    UI/localizationfontseditordialog.ui \
+    UI/uitextfieldpropertygridwidget.ui
     UI/errorslistdialog.ui
     UI/particleeffectpropertygridwidget.ui
 

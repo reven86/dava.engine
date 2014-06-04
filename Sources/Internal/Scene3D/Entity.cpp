@@ -169,7 +169,7 @@ void Entity::RemoveAllComponents()
 		if(components[i])
 		{
 			CleanupComponent(components[i], 0);
-			components[i] = NULL;
+            SafeDelete(components[i]);
 		}
 	}
 
@@ -188,7 +188,8 @@ void Entity::RemoveAllComponents()
 			{
 				componentCount--;
 				CleanupComponent(*compIt, componentCount);
-			}
+                SafeDelete(*compIt);
+            }
 		}
 
 		SafeDelete(componentsVector);
@@ -199,17 +200,12 @@ void Entity::RemoveAllComponents()
 	
 void Entity::RemoveComponent(Component * component)
 {
-	if (scene)
-		scene->RemoveComponent(this, component);
-
 	int componentCount = 0;
 	uint32 componentType = component->GetType();
-		
-	if(USE_VECTOR(componentType))
-	{
-		components[componentType] = 0;
-	}
-	else
+    
+    DetachComponent(component);
+
+	if (!USE_VECTOR(componentType))
 	{
         Vector<Component*>* componentsVector = NULL;
 
@@ -226,7 +222,6 @@ void Entity::RemoveComponent(Component * component)
         }
     }
 
-    DetachComponent(component);
 	CleanupComponent(component, componentCount);
     SafeDelete(component);
 }

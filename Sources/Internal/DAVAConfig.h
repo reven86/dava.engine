@@ -72,7 +72,6 @@
 #endif //
 
 
-#include "Autotesting/Config.h"
 
 #define USE_FILEPATH_IN_MAP
 #ifdef USE_FILEPATH_IN_MAP

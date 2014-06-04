@@ -80,7 +80,7 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
 	sliderWidget = new SliderPropertyGridWidget();
 	registeredWidgets.push_back(sliderWidget);
 
-    textWidget = new TextPropertyGridWidget();
+    textWidget = new UIStaticTextPropertyGridWidget();
     registeredWidgets.push_back(textWidget);
 
     uiTextFieldWidget = new UITextFieldPropertyGridWidget();

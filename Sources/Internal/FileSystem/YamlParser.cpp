@@ -1772,7 +1772,7 @@ YamlNode * YamlParser::GetNodeByPath(const String & path)
 	return 0;
 }
 	
-YamlNode * YamlParser::GetRootNode()
+YamlNode * YamlParser::GetRootNode() const
 {
 	return rootObject;
 }

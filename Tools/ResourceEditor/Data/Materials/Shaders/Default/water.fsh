@@ -41,7 +41,10 @@ uniform sampler2D normalmap; // [1]:ONCE
 uniform mat3 worldInvTransposeMatrix;
 varying mediump vec3 cameraToPointInTangentSpace;
 varying mediump mat3 tbnToWorldMatrix;
+
+#if defined(SPECULAR)
 varying vec3 varLightVec;
+#endif
 
 varying highp vec2 varTexCoord0;
 varying highp vec2 varTexCoord1;
@@ -57,8 +60,10 @@ uniform lowp vec3 refractionConstColor;
 uniform lowp float eta;
 #endif
 
+#if defined(SPECULAR)
 uniform mediump float materialSpecularShininess;
 uniform lowp vec3 materialLightSpecularColor;    // engine pass premultiplied material * light specular color
+#endif
 
 #if defined (REAL_REFLECTION)
 uniform sampler2D dynamicReflection;

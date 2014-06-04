@@ -104,8 +104,7 @@ protected:
 	void DrawToBuffer(Font *font, int16 *buf);
 
 	void ProcessAlign();
-	
-
+    
 	Vector2 rectSize;
 	Vector2 requestedSize;
 

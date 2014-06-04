@@ -54,6 +54,7 @@
 #include "statepropertygridwidget.h"
 #include "textpropertygridwidget.h"
 #include "uitextfieldpropertygridwidget.h"
+#include "uistatictextpropertygridwidget.h"
 #include "particleeffectpropertygridwidget.h"
 #include "joypadpropertygridwidget.h"
 #include "webviewpropertygridwidget.h"

@@ -167,6 +167,7 @@ public slots:
 	void OnBeastAndSave();
     
     void OnBuildStaticOcclusion();
+    void OnRebuildCurrentOcclusionCell();
 
 	void OnCameraSpeed0();
 	void OnCameraSpeed1();
@@ -185,7 +186,6 @@ public slots:
 	
     void OnAddSoundComponent();
     void OnRemoveSoundComponent();
-	void OnObjectsTypeMenuWillShow();
 	void OnObjectsTypeChanged(QAction *action);
     void OnObjectsTypeChanged(int type);
 

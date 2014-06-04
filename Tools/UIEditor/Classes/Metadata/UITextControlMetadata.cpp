@@ -30,6 +30,8 @@
 #include "UITextControlMetadata.h"
 #include "StringUtils.h"
 
+#include "EditorFontManager.h"
+
 using namespace DAVA;
 
 UITextControlMetadata::UITextControlMetadata(QObject* parent) :
@@ -99,6 +101,11 @@ void UITextControlMetadata::UpdateStaticTextExtraData(UIStaticText* staticText, 
             
         case BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED:
         {
+            //TODO: remove this workaround
+            String fontPresetName = EditorFontManager::Instance()->GetLocalizedFontName(staticText->GetFont());
+            Font* font = EditorFontManager::Instance()->GetLocalizedFont(fontPresetName, LocalizationSystem::Instance()->GetCurrentLocale());
+            staticText->SetFont(font);
+            
             staticText->SetText(LocalizationSystem::Instance()->GetLocalizedString(extraData.GetLocalizationKey(state)));
             break;
         }

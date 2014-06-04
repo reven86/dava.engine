@@ -61,7 +61,7 @@ FontManager::~FontManager()
 		Logger::Error("FontManager FT_Done_FreeType failed");
 	}
 
-	Clear();
+	UnregisterFonts();
 }
 	
 void FontManager::RegisterFont(Font* font)
@@ -79,22 +79,96 @@ void FontManager::UnregisterFont(Font *font)
 {
 	registeredFonts.erase(font);
 }
+    
+void FontManager::RegisterFonts(const Map<Font*, String>& _registeredFonts, const Map<String, Font*> &fonts)
+{
+    UnregisterFonts();
+    
+    registeredFonts = _registeredFonts;
+    
+    Map<String, Font*>::const_iterator it = fonts.begin();
+    Map<String, Font*>::const_iterator endIt = fonts.end();
+    Map<String, Font*>::const_iterator endMapIt = fontMap.end();
+    for(; it != endIt; ++it)
+    {
+        Map<String, Font*>::iterator findIt = fontMap.find(it->first);
+        if(findIt != endMapIt)
+        {
+            if(findIt->second != it->second)
+            {
+                SafeRelease(findIt->second);
+                findIt->second = SafeRetain(it->second);
+            }
+        }
+        else
+        {
+            fontMap[it->first] = SafeRetain(it->second);
+        }
+    }
+}
+    
+void FontManager::UnregisterFonts()
+{
+    registeredFonts.clear();
+    
+    //TODO: remove fontMap legacy from UIYamlLoader?
+    for (Map<String, Font *>::iterator t = fontMap.begin(); t != fontMap.end(); ++t)
+	{
+		SafeRelease(t->second);
+	}
+	fontMap.clear();
+    //
+    
+    Clear();
+}
 	
 void FontManager::SetFontName(Font* font, const String& name)
 {
+    Map<String, Font*>::iterator findIt = fontMap.find(name);
+    if(findIt != fontMap.end())
+    {
+        if(findIt->second != font)
+        {
+            SafeRelease(findIt->second);
+            findIt->second = SafeRetain(font);
+        }
+    }
+    else
+    {
+        fontMap[name] = SafeRetain(font);
+    }
+    
 	if (registeredFonts.find(font) == registeredFonts.end())
 		return;
-
+    
+    //TODO: check if font hash is still needed for anything
+    registeredFonts[font] = name;
+    //Logger::Debug("FontManager::SetFontName %x %s", font, name.c_str());
+    
 	// The names of all fonts should coincide with their hashed names (see DF-2316).
-	String fontHashName = GetFontHashName(font);
-	registeredFonts[font] = fontHashName;
+	//String fontHashName = GetFontHashName(font);
+	//registeredFonts[font] = fontHashName;
 }
 	
+Font* FontManager::GetFont(const String &name)
+{
+	Map<String, Font*>::iterator it = fontMap.find(name);
+	if (it != fontMap.end())
+	{
+		Font * font = it->second;
+		return font;
+	}
+	return 0;
+}
+    
 String FontManager::GetFontName(Font *font)
 {
 	REGISTERED_FONTS::iterator fontIter = registeredFonts.find(font);
 	if (fontIter == registeredFonts.end())
+    {
+        Logger::Warning("FontManager::GetFontName %x not found in registeredFonts", font);
 		return "";
+    }
 	
 	for (FONTS_NAME::iterator iter = fontsName.begin();
 		 iter != fontsName.end();
@@ -124,9 +198,9 @@ String FontManager::GetFontName(Font *font)
 	return "";
 }
 
-void FontManager::PrepareToSaveFonts()
+void FontManager::PrepareToSaveFonts(bool saveAllFonts)
 {
-	Clear();
+    Clear();
 	fontsName.clear();
 	trackedFonts.clear();
 
@@ -136,28 +210,35 @@ void FontManager::PrepareToSaveFonts()
 	{
 		Font* font = iter->first;
 		
-		bool fontAdded = false;
-		for (FONTS_NAME::iterator iter = fontsName.begin();
-			 iter != fontsName.end();
-			 ++iter)
-		{
-			FONT_NAME* fontName = (*iter);
-			
-			Font* firstFont = (*fontName->fonts.begin());
-			if (firstFont && firstFont->IsEqual(font))
-			{
-				fontName->fonts.insert(font);
-				fontAdded = true;
-				break;
-			}
-		}
-		
-		if (fontAdded)
-			continue;
-		
-		FONT_NAME* fontName = new FONT_NAME();
-		fontName->fonts.insert(font);
-		fontsName.insert(fontName);
+        if(saveAllFonts)
+        {
+            trackedFonts.insert(font);
+        }
+        else
+        {
+            bool fontAdded = false;
+            for (FONTS_NAME::iterator iter = fontsName.begin();
+                 iter != fontsName.end();
+                 ++iter)
+            {
+                FONT_NAME* fontName = (*iter);
+                
+                Font* firstFont = (*fontName->fonts.begin());
+                if (firstFont && firstFont->IsEqual(font))
+                {
+                    fontName->fonts.insert(font);
+                    fontAdded = true;
+                    break;
+                }
+            }
+            
+            if (fontAdded)
+                continue;
+        }
+        
+        FONT_NAME* fontName = new FONT_NAME();
+        fontName->fonts.insert(font);
+        fontsName.insert(fontName);
 	}
 }
 	
@@ -178,6 +259,11 @@ const FontManager::TRACKED_FONTS& FontManager::GetTrackedFont() const
 	return trackedFonts;
 }
 
+const Map<Font*, String>& FontManager::GetRegisteredFonts() const
+{
+    return registeredFonts;
+}
+    
 String FontManager::GetFontHashName(Font* font)
 {
 	return Format("Font_%X", font->GetHashCode());

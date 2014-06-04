@@ -195,6 +195,7 @@ public:
 	static const FastName FLAG_TEXTURE0_ANIMATION_SHIFT;
 	static const FastName FLAG_WAVE_ANIMATION;
 	static const FastName FLAG_FAST_NORMALIZATION;
+    static const FastName FLAG_PRECOMPUTED_BINORMAL;
     
 	static const FastName FLAG_FLATCOLOR;
     static const FastName FLAG_DISTANCEATTENUATION;
@@ -587,7 +588,6 @@ public:
 		Vector<FastName> MembersList(void *object) const;
 		InspDesc MemberDesc(void *object, const FastName &member) const;
 		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberAliasGet(void *object, const FastName &member) const;
 		VariantType MemberValueGet(void *object, const FastName &member) const;
 		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
 
@@ -628,7 +628,6 @@ public:
 		Vector<FastName> MembersList(void *object) const;
 		InspDesc MemberDesc(void *object, const FastName &member) const;
 		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberAliasGet(void *object, const FastName &member) const;
 		VariantType MemberValueGet(void *object, const FastName &member) const;
 		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
 		

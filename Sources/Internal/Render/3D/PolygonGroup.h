@@ -201,13 +201,13 @@ private:
 public:
     
     INTROSPECTION_EXTEND(PolygonGroup, DataNode,
-        MEMBER(vertexCount, "Vertex Count", I_SAVE)
-        MEMBER(indexCount, "Index Count", I_SAVE)
-        MEMBER(textureCoordCount, "Texture Coord Count", I_SAVE)
-        MEMBER(vertexStride, "Vertex Stride", I_SAVE)
-        MEMBER(vertexFormat, "Vertex Format", I_SAVE)
-        MEMBER(indexFormat, "Index Format", I_SAVE)
-        MEMBER(triangleCount, "Triangle Count", I_SAVE)
+        MEMBER(vertexCount, "Vertex Count", I_VIEW | I_SAVE)
+        MEMBER(indexCount, "Index Count", I_VIEW | I_SAVE)
+        MEMBER(textureCoordCount, "Texture Coord Count", I_VIEW | I_SAVE)
+        MEMBER(vertexStride, "Vertex Stride", I_VIEW | I_SAVE)
+        MEMBER(vertexFormat, "Vertex Format", I_VIEW | I_SAVE)
+        MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)
+        MEMBER(triangleCount, "Triangle Count", I_VIEW | I_SAVE)
 //        MEMBER(primitiveType, "Primitive Type", INTROSPECTION_SERIALIZABLE)
 
 //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)

@@ -35,8 +35,8 @@
 #define SECONDS_IN_HOUR 3600
 #define MAX_OFFSET_IN_HOURS 12
 
-static char *days[] = { "sun","mon","tue","wed","thu","fri","sat" };
-static char *months[] = { "jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec" };
+static const char *days[] = { "sun","mon","tue","wed","thu","fri","sat" };
+static const char *months[] = { "jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec" };
 
 namespace DAVA
 {

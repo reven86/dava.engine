@@ -489,8 +489,10 @@ void SceneCameraSystem::CreateDebugCameras()
 		topCamera->SetUp(DAVA::Vector3(0.0f, 0.0f, 1.0f));
 		topCamera->SetPosition(DAVA::Vector3(-50.0f, 0.0f, 50.0f));
 		topCamera->SetTarget(DAVA::Vector3(0.0f, 0.1f, 0.0f));
-		float fov = SettingsManager::GetValue(Settings::Scene_CameraFOV).AsFloat();
-		topCamera->SetupPerspective(fov, 320.0f / 480.0f, 1.0f, 5000.0f);
+		DAVA::float32 cameraFov = SettingsManager::GetValue(Settings::Scene_CameraFOV).AsFloat();
+		DAVA::float32 cameraNear = SettingsManager::GetValue(Settings::Scene_CameraNear).AsFloat();
+		DAVA::float32 cameraFar = SettingsManager::GetValue(Settings::Scene_CameraFar).AsFloat();
+		topCamera->SetupPerspective(cameraFov, 320.0f / 480.0f, cameraNear, cameraFar);
 		topCamera->SetAspect(1.0f);
 
 		DAVA::Entity *topCameraEntity = new DAVA::Entity();

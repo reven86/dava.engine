@@ -189,6 +189,14 @@
 
 	DAVA::RenderManager::Instance()->Lock();
     
+    DAVA::uint64 renderManagerContextId = DAVA::RenderManager::Instance()->GetRenderContextId();
+    DAVA::uint64 currentContextId = DAVA::EglGetCurrentContext();
+    if (renderManagerContextId!=currentContextId)
+    {
+        EAGLContext * context =  (EAGLContext *)renderManagerContextId;
+        [EAGLContext setCurrentContext:context];
+    }
+    
     if(DAVA::Core::Instance()->IsActive())
     {
         [renderer startRendering];

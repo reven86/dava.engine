@@ -37,7 +37,6 @@
 #include "FileSystem/FileSystem.h"
 #include "Core/Core.h"
 #include "Render/Shader.h"
-#include "Render/RenderManagerGL20.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "Render/Image.h"

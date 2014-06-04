@@ -36,6 +36,10 @@
 #include "BaseMetadata.h"
 #include "HierarchyTreeController.h"
 
+#include <QMetaProperty>
+//Register DAVA::Font type here so we can use it as Qt object
+Q_DECLARE_METATYPE(Font*);
+
 namespace DAVA {
 
 // Base Command for all the Commands existing in the UI Editor system.
