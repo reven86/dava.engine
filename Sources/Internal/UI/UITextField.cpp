@@ -185,14 +185,12 @@ void UITextField::ReleaseFocus()
     
 void UITextField::SetFont(Font * font)
 {
-    textFieldImpl->SetFont( font );
+    textFieldImpl->SetFont(font);
 }
 
-Color UITextField::GetTextColor() const
+const Color &UITextField::GetTextColor() const
 {
-    Color textColor;
-    textFieldImpl->GetTextColor( textColor );
-    return textColor;
+    return textFieldImpl->GetTextColor();
 }
 
 void UITextField::SetTextColor(const Color& fontColor)
@@ -230,13 +228,12 @@ void UITextField::SetText(const WideString & text)
 	textFieldImpl->SetText(text);
 }
 
-const WideString &UITextField::GetText()
+const WideString &UITextField::GetText() const
 {
-	textFieldImpl->GetText(text);
-	return text;
+	return textFieldImpl->GetText();
 }
     
-Font* UITextField::GetFont()
+Font* UITextField::GetFont() const
 {
     return textFieldImpl->GetFont();
 }
@@ -390,15 +387,6 @@ YamlNode * UITextField::SaveToYamlNode(UIYamlLoader * loader)
     SafeDelete(nodeValue);
     
     return node;
-}
-
-List<UIControl* >& UITextField::GetRealChildren()
-{
-	List<UIControl* >& realChildren = UIControl::GetRealChildren();
-// #if !defined (__DAVAENGINE_ANDROID__) && !defined (__DAVAENGINE_IPHONE__)
-// 	realChildren.remove(staticText);
-// #endif
-	return realChildren;
 }
 
 UIControl* UITextField::Clone()

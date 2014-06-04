@@ -26,65 +26,66 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_UI_TEXT_FIELD_IMPL_H__
-#define __DAVAENGINE_UI_TEXT_FIELD_IMPL_H__
+#ifndef __DAVAENGINE_JNI_TEXT_FIELD_H__
+#define __DAVAENGINE_JNI_TEXT_FIELD_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
+#if defined(__DAVAENGINE_ANDROID__)
 
-namespace DAVA 
+#include "UI/UITextFieldImpl.h"
+#include "JniExtensions.h"
+
+namespace DAVA
 {
-struct Rect;
-class Color;
-class UITextField;
-class UIEvent;
-class Font;
-
-class UITextFieldImpl
+class UITextFieldImpl;
+class JniTextField: public JniExtension
 {
 public:
-    UITextFieldImpl(UITextField * tf):textField(tf){}
-    virtual ~UITextFieldImpl(){}
-    
-    virtual void OpenKeyboard(){}
-    virtual void CloseKeyboard(){}
-    virtual const WideString &GetText() const = 0;
-    virtual void SetText(const WideString & string){}
-    virtual void UpdateRect(const Rect & rect, float32 timeElapsed){}
+    JniTextField(uint32_t id);
+    ~JniTextField();
 
-    virtual const Color &GetTextColor() const = 0;
-    virtual void SetTextColor(const Color &color){}
-    virtual Font *GetFont() const { return NULL; }
-    virtual void SetFont(Font * font){}
-    virtual void SetFontSize(float32 size){}
-    
-    virtual void SetTextAlign(int32 align){}
+    void Create(const Rect &rect);
+    void Destroy();
+    void UpdateRect(const Rect &rect, float32 timeElapsed);
+    void GetText(WideString &text) const;
+    void SetText(const WideString &text);
+    void SetTextColor(const Color &color);
+    void SetFontSize(float32 size);
+    void SetIsPassword(bool isPassword);
+    void SetTextAlign(int32 align);
+    void SetInputEnabled(bool value);
+    void SetAutoCapitalizationType(int32 value);
+    void SetAutoCorrectionType(int32 value);
+    void SetSpellCheckingType(int32 value);
+    void SetKeyboardAppearanceType(int32 value);
+    void SetKeyboardType(int32 value);
+    void SetReturnKeyType(int32 value);
+    void SetEnableReturnKeyAutomatically(bool value);
+    void ShowField();
+    void HideField();
+    void OpenKeyboard();
+    void CloseKeyboard();
+    uint32 GetCursorPos() const;
+    void SetCursorPos(uint32 pos);
 
-    virtual void ShowField(){}
-    virtual void HideField(){}
-    
-    virtual void SetIsPassword(bool isPassword){}
-
-    virtual void SetInputEnabled(bool value){}
-    
-    // Keyboard traits.
-    virtual void SetAutoCapitalizationType(int32 value){}
-    virtual void SetAutoCorrectionType(int32 value){}
-    virtual void SetSpellCheckingType(int32 value){}
-    virtual void SetKeyboardAppearanceType(int32 value){}
-    virtual void SetKeyboardType(int32 value){}
-    virtual void SetReturnKeyType(int32 value){}
-    virtual void SetEnableReturnKeyAutomatically(bool value){}
-
-    // Cursor pos.
-    virtual uint32 GetCursorPos() const{ return 0; }
-    virtual void SetCursorPos(uint32 pos){}
-
-    virtual void Input(UIEvent *currentInput){}
-    virtual void Draw(){}
+    static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
+    static void TextFieldShouldReturn(uint32_t id);
 
 protected:
-    UITextField * textField;
-};
+    virtual jclass GetJavaClass() const;
+    virtual const char* GetJavaClassName() const;
+
+public:
+    static jclass gJavaClass;
+    static const char* gJavaClassName;
+
+private:
+    uint32_t id;
 };
 
-#endif // __DAVAENGINE_UI_TEXT_FIELD_IMPL_H__
+};
+
+#endif //#if defined(__DAVAENGINE_ANDROID__)
+
+#endif// __DAVAENGINE_JNI_TEXT_FIELD_H__

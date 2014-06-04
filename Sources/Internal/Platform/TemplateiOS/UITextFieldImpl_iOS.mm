@@ -109,9 +109,9 @@ static const UIReturnKeyType DavaToNativeUIReturnKeyType[] =
 @interface UITextFieldHolder : UIView < UITextFieldDelegate >
 {
 @public
-	UITextField * textField;
-	DAVA::UITextField * cppTextField;
-	BOOL textInputAllowed;
+    UITextField * textField;
+    DAVA::UITextField * cppTextField;
+    BOOL textInputAllowed;
 }
 - (id) init : (DAVA::UITextField  *) tf;
 - (void) dealloc;
@@ -136,38 +136,38 @@ static const UIReturnKeyType DavaToNativeUIReturnKeyType[] =
 
 - (id) init : (DAVA::UITextField  *) tf
 {
-	if (self = [super init])
-	{
+    if (self = [super init])
+    {
         float divider = GetUITextViewSizeDivider();
         
         self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider);
         
-		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
-		self.userInteractionEnabled = TRUE;
-		textInputAllowed = YES;
+        self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
+        self.userInteractionEnabled = TRUE;
+        textInputAllowed = YES;
 
-		cppTextField = tf;
-		DAVA::Rect rect = tf->GetRect();
-		textField = [[UITextField alloc] initWithFrame: CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) 
+        cppTextField = tf;
+        DAVA::Rect rect = tf->GetRect();
+        textField = [[UITextField alloc] initWithFrame: CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) 
                                                                    * DAVA::Core::GetVirtualToPhysicalFactor()
-																   , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-																   , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
-																   , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor())];
-		textField.frame = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-									 , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-									 , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
-									 , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor());
+                                                                   , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
+                                                                   , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
+                                                                   , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor())];
+        textField.frame = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
+                                     , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
+                                     , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
+                                     , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor());
         
-		textField.delegate = self;
-		
-		[self setupTraits];
+        textField.delegate = self;
+        
+        [self setupTraits];
         
         textField.userInteractionEnabled = NO;
 
-		// Done!
-		[self addSubview:textField];
-	}
-	return self;
+        // Done!
+        [self addSubview:textField];
+    }
+    return self;
 }
 
 -(void)textFieldDidBeginEditing:(UITextField *)textField
@@ -190,71 +190,71 @@ static const UIReturnKeyType DavaToNativeUIReturnKeyType[] =
 
 - (void) dealloc
 {
-	[textField release];
-	textField = 0;
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
+    [textField release];
+    textField = 0;
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-	[super dealloc];
+    [super dealloc];
 }
 
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-	if (cppTextField)
-	{
-		if (cppTextField->GetDelegate() != 0)
-			cppTextField->GetDelegate()->TextFieldShouldReturn(cppTextField);
-	}
-	return TRUE;
+    if (cppTextField)
+    {
+        if (cppTextField->GetDelegate() != 0)
+            cppTextField->GetDelegate()->TextFieldShouldReturn(cppTextField);
+    }
+    return TRUE;
 }
 
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-	if (cppTextField)
-	{
-		if (cppTextField->GetDelegate() != 0)
-		{
-			DAVA::WideString repString;
+    if (cppTextField)
+    {
+        if (cppTextField->GetDelegate() != 0)
+        {
+            DAVA::WideString repString;
             const char * cstr = [string cStringUsingEncoding:NSUTF8StringEncoding];
             DAVA::UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), repString);
-			return cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, range.location, range.length, repString);
-		}
-	}
-	return TRUE;
+            return cppTextField->GetDelegate()->TextFieldKeyPressed(cppTextField, range.location, range.length, repString);
+        }
+    }
+    return TRUE;
 }
 
 - (BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
-	return textInputAllowed;
+    return textInputAllowed;
 }
 
 - (void)setIsPassword:(bool)isPassword
 {
-	[textField setSecureTextEntry:isPassword ? YES: NO];
+    [textField setSecureTextEntry:isPassword ? YES: NO];
 }
 
 - (void)setTextInputAllowed:(bool)value
 {
-	textInputAllowed = (value == true);
+    textInputAllowed = (value == true);
 }
 
 - (void) setupTraits
 {
-	if (!cppTextField || !textField)
-	{
-		return;
-	}
+    if (!cppTextField || !textField)
+    {
+        return;
+    }
 
-	textField.autocapitalizationType = [self convertAutoCapitalizationType: cppTextField->GetAutoCapitalizationType()];
-	textField.autocorrectionType = [self convertAutoCorrectionType: cppTextField->GetAutoCorrectionType()];
-	
+    textField.autocapitalizationType = [self convertAutoCapitalizationType: cppTextField->GetAutoCapitalizationType()];
+    textField.autocorrectionType = [self convertAutoCorrectionType: cppTextField->GetAutoCorrectionType()];
+    
 #if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_5_0
-	textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
+    textField.spellCheckingType = [self convertSpellCheckingType: cppTextField->GetSpellCheckingType()];
 #endif
-	textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
-	textField.keyboardAppearance = [self convertKeyboardAppearanceType: cppTextField->GetKeyboardAppearanceType()];
-	textField.keyboardType = [self convertKeyboardType: cppTextField->GetKeyboardType()];
-	textField.returnKeyType = [self convertReturnKeyType: cppTextField->GetReturnKeyType()];
+    textField.enablesReturnKeyAutomatically = [self convertEnablesReturnKeyAutomatically: cppTextField->IsEnableReturnKeyAutomatically()];
+    textField.keyboardAppearance = [self convertKeyboardAppearanceType: cppTextField->GetKeyboardAppearanceType()];
+    textField.keyboardType = [self convertKeyboardType: cppTextField->GetKeyboardType()];
+    textField.returnKeyType = [self convertReturnKeyType: cppTextField->GetReturnKeyType()];
     
     textField.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
@@ -278,7 +278,7 @@ static const UIReturnKeyType DavaToNativeUIReturnKeyType[] =
 
 - (BOOL) convertEnablesReturnKeyAutomatically:(bool) davaType
 {
-	return (davaType ? YES : NO);
+    return (davaType ? YES : NO);
 }
 
 - (UIKeyboardAppearance) convertKeyboardAppearanceType:(DAVA::UITextField::eKeyboardAppearanceType) davaType
@@ -300,8 +300,8 @@ static const UIReturnKeyType DavaToNativeUIReturnKeyType[] =
 
 namespace DAVA 
 {
-UITextFieldImpl_iOS::UITextFieldImpl_iOS(UITextField * tf)
-                    :UITextFieldImpl(tf)
+UITextFieldImpl_iOS::UITextFieldImpl_iOS(UITextField *tf)
+    : UITextFieldImpl(tf)
 {
     UITextFieldHolder * textFieldHolder = [[UITextFieldHolder alloc] init: (DAVA::UITextField*)tf];
     nativeClassPtr = textFieldHolder;
@@ -314,10 +314,11 @@ UITextFieldImpl_iOS::~UITextFieldImpl_iOS()
     textFieldHolder = 0;
 }
 
-void UITextFieldImpl_iOS::GetTextColor(Color &color) const
+const Color &UITextFieldImpl_iOS::GetTextColor() const
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
-    [textFieldHolder->textField.textColor getRed:&color.r green:&color.g blue:&color.b alpha:&color.a];
+    [textFieldHolder->textField.textColor getRed:&textColor.r green:&textColor.g blue:&textColor.b alpha:&textColor.a];
+    return textColor;
 }
 
 void UITextFieldImpl_iOS::SetTextColor(const Color &color)
@@ -414,12 +415,13 @@ void UITextFieldImpl_iOS::SetText(const WideString & string)
     [textFieldHolder->textField.undoManager removeAllActions];
 }
 
-void UITextFieldImpl_iOS::GetText(WideString & string) const
+const WideString &UITextFieldImpl_iOS::GetText() const
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     
     const char * cstr = [textFieldHolder->textField.text cStringUsingEncoding:NSUTF8StringEncoding];
-    UTF8Utils::EncodeToWideString((uint8*)cstr, strlen(cstr), string);
+    UTF8Utils::EncodeToWideString((uint8*)cstr, strlen(cstr), text);
+    return text;
 }
 
 void UITextFieldImpl_iOS::SetIsPassword(bool isPassword)

@@ -181,7 +181,7 @@ public:
 	
 	virtual void SetSpriteAlign(int32 align);
     
-	virtual const WideString &GetText();
+	virtual const WideString &GetText() const;
 	virtual void SetText(const WideString & text);
     
     virtual WideString GetAppliedChanges(int32 replacementLocation, int32 replacementLength, const WideString & replacementString);
@@ -200,7 +200,7 @@ public:
 	 \brief Returns the font of control
 	 \returns Font font of the control
 	 */
-    Font *GetFont();
+    Font *GetFont() const;
 
 	int32 GetTextAlign() const;
 
@@ -216,7 +216,7 @@ public:
 	 */  
     void SetFont(Font * font);
 
-    virtual Color GetTextColor() const;
+    virtual const Color &GetTextColor() const;
 	/**
 	 \brief Sets the color of the text.
 	 \param[in] fontColor font used for text draw of the states.
@@ -284,12 +284,6 @@ public:
 	bool IsEnableReturnKeyAutomatically() const;
 	void SetEnableReturnKeyAutomatically(bool value);
 	
-	/**
-	 \brief Returns list of control children without internal controls.
-	 \returns list of control children without internal controls.
-	 */
-	virtual List<UIControl* >& GetRealChildren();
-	
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 
@@ -326,7 +320,6 @@ protected:
 
 protected:
 	UITextFieldImpl * textFieldImpl;
-    WideString text;
 };
 
 };

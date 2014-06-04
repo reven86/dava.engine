@@ -31,26 +31,24 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "UI/UITextFieldImpl.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "UI/UITextFieldImpl.h"
 #include "JniExtensions.h"
 
 namespace DAVA
 {
 class UITextFieldImpl;
 class UITextFieldImpl_Android: public UITextFieldImpl
-                             , public JniExtension
 {
 public:
-    UITextFieldImpl_Android(UITextField * textfield);
+    UITextFieldImpl_Android(UITextField *textfield);
     ~UITextFieldImpl_Android();
 
-    void Create(const Rect &rect);
-    void Destroy();
-    virtual void UpdateRect(const Rect & rect, float32 timeElapsed);
-    virtual void GetText(WideString &text) const;
+    virtual void UpdateRect(const Rect &rect, float32 timeElapsed);
+    virtual const WideString &GetText() const;
     virtual void SetText(const WideString &text);
+    virtual const Color &GetTextColor() const;
     virtual void SetTextColor(const Color &color);
     virtual void SetFontSize(float32 size);
     virtual void SetIsPassword(bool isPassword);
@@ -84,6 +82,8 @@ public:
 private:
     uint32_t id;
     Rect rect;
+    WideString text;
+    Color textColor;
 };
 
 };

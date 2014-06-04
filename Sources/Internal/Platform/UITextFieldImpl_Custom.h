@@ -41,12 +41,12 @@ public:
     UITextFieldImpl_Custom(UITextField* textfield);
     ~UITextFieldImpl_Custom();
 
-    virtual void GetText(WideString & string) const;
+    virtual const WideString &GetText() const;
     virtual void SetText(const WideString & string);
     virtual void UpdateRect(const Rect & rect, float32 timeElapsed);
-    virtual void GetTextColor(Color &color) const;
+    virtual const Color &GetTextColor() const;
     virtual void SetTextColor(const Color &color);
-    virtual Font *GetFont();
+    virtual Font *GetFont() const;
     virtual void SetFont(Font * font);
     virtual void SetFontSize(float32 size);
     virtual void SetTextAlign(int32 align);

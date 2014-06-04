@@ -62,9 +62,9 @@ WideString UITextFieldImpl_Custom::GetVisibleText() const
     return passText;
 }
 
-void UITextFieldImpl_Custom::GetText(WideString & string) const
+const WideString & UITextFieldImpl_Custom::GetText() const
 {
-    string = text;
+    return text;
 }
 
 void UITextFieldImpl_Custom::SetText(const WideString & string)
@@ -96,22 +96,22 @@ void UITextFieldImpl_Custom::UpdateRect(const Rect & newRect, float32 timeElapse
     if (!needRedraw)
         return;
 
-	if(textField == UIControlSystem::Instance()->GetFocusedControl())
-	{
+    if(textField == UIControlSystem::Instance()->GetFocusedControl())
+    {
         WideString txt = GetVisibleText();
         txt += showCursor ? L"|" : L" ";
         staticText->SetText(txt);
-	}
-	else
+    }
+    else
     {
         staticText->SetText(GetVisibleText());
     }
     needRedraw = false;
 }
 
-void UITextFieldImpl_Custom::GetTextColor(Color &color) const
+const Color &UITextFieldImpl_Custom::GetTextColor() const
 {
-    color = staticText->GetTextColor();
+    return staticText->GetTextColor();
 }
 
 void UITextFieldImpl_Custom::SetTextColor(const Color &color)
@@ -119,7 +119,7 @@ void UITextFieldImpl_Custom::SetTextColor(const Color &color)
     staticText->SetTextColor(color);
 }
 
-Font * UITextFieldImpl_Custom::GetFont()
+Font * UITextFieldImpl_Custom::GetFont() const
 {
     return staticText->GetFont();
 }
