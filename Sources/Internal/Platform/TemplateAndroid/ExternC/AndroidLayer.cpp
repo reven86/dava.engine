@@ -47,7 +47,7 @@
 #include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Network/MailSender.h"
 #include "Utils/UtilsAndroid.h"
-#include "Platform/TemplateAndroid/UITextFieldImpl_Android.h"
+#include "Platform/TemplateAndroid/JniTextField.h"
 #include "Platform/TemplateAndroid/DPIHelperAndroid.h"
 #include "Platform/TemplateAndroid/AndroidCrashReport.h"
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
@@ -111,7 +111,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIUtils", &DAVA::JniUtils::gJavaClass, &DAVA::JniUtils::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDeviceInfo", &DAVA::JniDeviceInfo::gJavaClass, &DAVA::JniDeviceInfo::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNISendMail", &DAVA::JniMailSender::gJavaClass, &DAVA::JniMailSender::gJavaClassName);
-	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNITextField", &DAVA::UITextFieldImpl_Android::gJavaClass, &DAVA::UITextFieldImpl_Android::gJavaClassName);
+	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNITextField", &DAVA::JniTextField::gJavaClass, &DAVA::JniTextField::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIWebView", &DAVA::JniWebView::gJavaClass, &DAVA::JniWebView::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDpiHelper", &DAVA::JniDpiHelper::gJavaClass, &DAVA::JniDpiHelper::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNICrashReporter", &DAVA::JniCrashReporter::gJavaClass, &DAVA::JniCrashReporter::gJavaClassName);

@@ -3137,6 +3137,16 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniExtensions.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/Platform/TemplateAndroid/JniTextField.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniTextField.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/JniTextField.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/JniTextField.h</locationURI>
+		</link>
+		<link>
 			<name>Internal/Platform/TemplateAndroid/MovieViewControlAndroid.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/MovieViewControlAndroid.cpp</locationURI>

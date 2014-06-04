@@ -33,7 +33,6 @@
 #include "Base/BaseMath.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "UI/UITextFieldImpl.h"
 #include "JniExtensions.h"
 
 namespace DAVA
@@ -68,9 +67,6 @@ public:
     void CloseKeyboard();
     uint32 GetCursorPos() const;
     void SetCursorPos(uint32 pos);
-
-    static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
-    static void TextFieldShouldReturn(uint32_t id);
 
 protected:
     virtual jclass GetJavaClass() const;

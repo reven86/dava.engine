@@ -29,6 +29,7 @@
 #include "UITextFieldImpl_Android.h"
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Platform/TemplateAndroid/JniTextField.h"
 #include "UI/UITextField.h"
 #include "Utils/UTF8Utils.h"
 
@@ -44,19 +45,6 @@ UITextFieldImpl_Android* GetUITextFieldImpl(uint32_t id)
         return iter->second;
 
     return NULL;
-}
-
-jclass UITextFieldImpl_Android::gJavaClass = NULL;
-const char* UITextFieldImpl_Android::gJavaClassName = NULL;
-
-jclass UITextFieldImpl_Android::GetJavaClass() const
-{
-    return gJavaClass;
-}
-
-const char* UITextFieldImpl_Android::GetJavaClassName() const
-{
-    return gJavaClassName;
 }
 
 UITextFieldImpl_Android::UITextFieldImpl_Android(UITextField *tf)
@@ -81,12 +69,12 @@ void UITextFieldImpl_Android::UpdateRect(const Rect & controlRect, float32 timeE
         return;
     rect = controlRect;
     JniTextField jniField(id);
-    jniField.UpdateRect(rect);
+    jniField.UpdateRect(rect, timeElapsed);
 }
 const WideString &UITextFieldImpl_Android::GetText() const
 {
     JniTextField jniField(id);
-    jniField.GetString(text);
+    jniField.GetText(text);
     return text;
 }
 void UITextFieldImpl_Android::SetText(const WideString &newText)

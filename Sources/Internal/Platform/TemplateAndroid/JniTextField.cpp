@@ -34,18 +34,6 @@
 
 namespace DAVA
 {
-static uint32_t sId = 0;
-static Map<uint32_t, JniTextField*> idToImpl;
-
-JniTextField* GetUITextFieldImpl(uint32_t id)
-{
-    Map<uint32_t, JniTextField*>::iterator iter = idToImpl.find(id);
-    if (iter != idToImpl.end())
-        return iter->second;
-
-    return NULL;
-}
-
 jclass JniTextField::gJavaClass = NULL;
 const char* JniTextField::gJavaClassName = NULL;
 
@@ -97,12 +85,9 @@ void JniTextField::Destroy()
     }
 }
 
-void JniTextField::UpdateRect(const Rect & controlRect, float32 timeElapsed)
+void JniTextField::UpdateRect(const Rect & rect, float32 timeElapsed)
 {
-    if (controlRect == rect)
-        return;
-    rect = controlRect;
-    Rect newRect = V2P(controlRect);
+    Rect newRect = V2P(rect);
     jmethodID mid = GetMethodID("UpdateRect", "(IFFFF)V");
     if (mid)
     {
@@ -372,32 +357,5 @@ void JniTextField::SetCursorPos(uint32 pos)
     GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, pos);
 }
 
-bool JniTextField::TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text)
-{
-    JniTextField* impl = GetUITextFieldImpl(id);
-    if (!impl)
-        return true;
-
-    UITextField * control = impl->textField;
-
-    if(!control || !control->GetDelegate())
-        return true;
-
-    return control->GetDelegate()->TextFieldKeyPressed(control, replacementLocation, replacementLength, text);
-}
-
-void JniTextField::TextFieldShouldReturn(uint32_t id)
-{
-    JniTextField* impl = GetUITextFieldImpl(id);
-    if (!impl)
-        return;
-
-    UITextField * control = impl->textField;
-
-    if(!control || !control->GetDelegate())
-        return;
-
-    control->GetDelegate()->TextFieldShouldReturn(control);
-}
 };
 #endif //#if defined(__DAVAENGINE_ANDROID__)

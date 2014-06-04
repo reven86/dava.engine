@@ -30,6 +30,7 @@
 #define __DAVAENGINE_UI_TEXT_FIELD_IMPL_IOS_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
 #include "UI/UITextFieldImpl.h"
 
 namespace DAVA 
@@ -73,8 +74,8 @@ public:
     virtual void SetCursorPos(uint32 pos);
 private:
     void * nativeClassPtr;
-    WideString text;
-    Color textColor;
+    mutable WideString text;
+    mutable Color textColor;
 };
 };
 

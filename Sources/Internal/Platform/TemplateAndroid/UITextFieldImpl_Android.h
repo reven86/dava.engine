@@ -34,7 +34,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "UI/UITextFieldImpl.h"
-#include "JniExtensions.h"
 
 namespace DAVA
 {
@@ -71,19 +70,11 @@ public:
     static bool TextFieldKeyPressed(uint32_t id, int32 replacementLocation, int32 replacementLength, const WideString &text);
     static void TextFieldShouldReturn(uint32_t id);
 
-protected:
-    virtual jclass GetJavaClass() const;
-    virtual const char* GetJavaClassName() const;
-
-public:
-    static jclass gJavaClass;
-    static const char* gJavaClassName;
-
 private:
     uint32_t id;
     Rect rect;
-    WideString text;
-    Color textColor;
+    mutable WideString text;
+    mutable Color textColor;
 };
 
 };
