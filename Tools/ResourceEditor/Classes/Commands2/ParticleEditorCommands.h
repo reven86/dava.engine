@@ -407,14 +407,17 @@ protected:
 class CommandSaveParticleEmitterToYaml : public CommandAction
 {
 public:
-	CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path);
+	CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path, bool updateEmitterWidget);
 	virtual void Redo();
 
 	ParticleEmitter* GetEmitter() const {return selectedEmitter;};
 
+    bool NeedUpdateEmitterWidget() const {return updateEmitterWidget;};
+
 protected:
 	ParticleEmitter* selectedEmitter;
 	FilePath filePath;
+    bool updateEmitterWidget;
 };
 
 /*

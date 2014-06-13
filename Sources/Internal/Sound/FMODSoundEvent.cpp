@@ -47,7 +47,7 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
     eventName = _eventName;
 
     FMOD::Event * fmodEventInfo = 0;
-    FMOD_VERIFY(SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo));
+    SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
     if(fmodEventInfo)
     {
         FMOD_MODE mode = 0;
@@ -58,11 +58,6 @@ FMODSoundEvent::FMODSoundEvent(const FastName & _eventName) :
 
         isDirectional = IsParameterExists(FMOD_SYSTEM_EVENTANGLE_PARAMETER);
     }
-    else
-    {
-        Logger::Error(eventName.c_str());
-    }
-
 }
 
 FMODSoundEvent::~FMODSoundEvent()

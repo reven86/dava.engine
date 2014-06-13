@@ -33,7 +33,7 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Utils/StringFormat.h"
 #include "Render/Shader.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/Scene.h"

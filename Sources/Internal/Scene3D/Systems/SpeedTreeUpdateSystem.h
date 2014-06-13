@@ -27,46 +27,45 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_IMAGELOADER_H__
-#define __DAVAENGINE_IMAGELOADER_H__
+#ifndef __DAVAENGINE_SCENE3D_SPEEDTREEUPDATESYSTEM_H__
+#define	__DAVAENGINE_SCENE3D_SPEEDTREEUPDATESYSTEM_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
+#include "Base/BaseMath.h"
+#include "Base/Observer.h"
+#include "Entity/SceneSystem.h"
 
-namespace DAVA 
+namespace DAVA
 {
-
-class File;
-class Image;
-class ImageLoader
+class Entity;
+class SpeedTreeComponent;
+    
+class SpeedTreeUpdateSystem : public SceneSystem, public Observer
 {
 public:
-
-    static bool CreateFromFileByExtension(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-    
-	static bool CreateFromFileByContent(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-
-    static bool Save(const Image *image, const FilePath & pathname);
-    
-protected:
-
-    static bool CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet);
-    static bool CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> & imageSet);
-	static bool CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromPNG(File *file, Vector<Image *> & imageSet);
-    static bool CreateFromJPEG(File *file, Vector<Image *> & imageSet);
-	static bool CreateFromPVR(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromDDS(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-    
-    static bool IsPVRFile(File *file);
-    static bool IsPNGFile(File *file);
-	static bool IsDDSFile(File *file);
-    static bool IsJPEGFile(File *file);
-};
+    SpeedTreeUpdateSystem(Scene * scene);
+    virtual ~SpeedTreeUpdateSystem();
 	
-};
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    virtual void ImmediateEvent(Entity * entity, uint32 event);
+    virtual void Process(float32 timeElapsed);
+    
+	virtual void HandleEvent(Observable * observable);
 
-#endif // __DAVAENGINE_IMAGELOADER_H__
+protected:
+    void UpdateAnimationFlag(Entity * entity);
+
+private:
+    Vector<SpeedTreeComponent *> allTrees;
+
+    bool isAnimationEnabled;
+    bool isVegetationAnimationEnabled;
+
+    friend class SpeedTreeComponent;
+};
+    
+} // ns
+
+#endif	/* __DAVAENGINE_SCENE3D_SPEEDTREEUPDATESYSTEM_H__ */
+

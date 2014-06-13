@@ -31,8 +31,6 @@
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Render/Highlevel/StaticOcclusion.h"
 #include "Utils/StringFormat.h"
-#include "Render/Image.h"
-#include "Render/ImageLoader.h"
 
 namespace DAVA
 {

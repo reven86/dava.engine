@@ -376,7 +376,7 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
 	Texture* customColorsTexture = customColorsSprite->GetTexture();
 
 	Image* image = customColorsTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	ImageLoader::Save(image, filePath);
+    ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 
 	StoreSaveFileName(filePath);
@@ -389,7 +389,7 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		return false;
 
     Vector<Image*> images;
-	ImageLoader::CreateFromFileByContent(filePath, images);
+    ImageSystem::Instance()->Load(filePath, images);
 	if(images.empty())
 		return false;
 

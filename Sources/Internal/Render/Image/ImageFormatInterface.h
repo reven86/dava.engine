@@ -28,8 +28,8 @@
 
 
 
-#ifndef __DAVAENGINE_JPEG_HELPER_H__
-#define __DAVAENGINE_JPEG_HELPER_H__
+#ifndef __DAVAENGINE_IMAGE_FORMAT_INTERFACE_H__
+#define __DAVAENGINE_IMAGE_FORMAT_INTERFACE_H__
 
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
@@ -41,20 +41,35 @@ namespace DAVA
 class Image;
 class File;
 
-class LibJpegWrapper
+class ImageFormatInterface
 {
 public:
     
-    static bool IsJpegFile(const FilePath & fileName);
-    static bool IsJpegFile(File *file);
+    virtual ~ImageFormatInterface()
+    {};
     
-    static bool ReadJpegFile(const FilePath & fileName, Image * image);
-    static bool ReadJpegFile(File *infile, Image * image);
+    virtual bool IsImage(File *file) const = 0;
     
-    //only RGB888 or A8
-    static bool WriteJpegFile(const FilePath & fileName, int32 width, int32 height, uint8 * data, PixelFormat format);
+    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 fromMipmap) const = 0;
+    
+    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
+    
+    virtual uint32 GetDataSize(File *infile) const = 0;
+    
+    inline bool IsFileExtensionSupported(const String& extension) const;
+    
+protected:
+
+    Vector<String> supportedExtensions;
+    
 };
+    
+inline bool ImageFormatInterface::IsFileExtensionSupported(const String& extension) const
+{
+    return std::find(supportedExtensions.begin(), supportedExtensions.end(), extension) != supportedExtensions.end();
+}
 
 };
 
-#endif // __DAVAENGINE_JPEG_HELPER_H__
+#endif // __DAVAENGINE_IMAGE_FORMAT_INTERFACE_H__

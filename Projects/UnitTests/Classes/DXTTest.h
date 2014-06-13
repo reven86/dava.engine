@@ -41,7 +41,7 @@ class DXTTest : public TestTemplate<DXTTest>
     {
         FIRST_TEST = 0,
         TESTS_COUNT = 5,
-        ACCETABLE_DELTA_IN_PERSENTS = 2
+        ACCETABLE_DELTA_IN_PERSENTS = 7
     };
 protected:
     ~DXTTest(){}

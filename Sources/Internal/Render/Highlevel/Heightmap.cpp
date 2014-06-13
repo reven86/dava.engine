@@ -29,8 +29,8 @@
 
 
 #include "Render/Highlevel/Heightmap.h"
-#include "Render/Image.h"
-#include "Render/ImageLoader.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 
@@ -111,7 +111,7 @@ void Heightmap::SaveToImage(const FilePath & filename)
 
     SafeDeleteArray(unpackedBytes);
     
-    ImageLoader::Save(image, filename);
+    ImageSystem::Instance()->Save(filename, image);
     SafeRelease(image);
 }
   

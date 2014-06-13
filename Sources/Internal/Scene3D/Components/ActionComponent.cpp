@@ -34,6 +34,8 @@
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 
 namespace DAVA
@@ -163,7 +165,7 @@ namespace DAVA
 	
 	void ActionComponent::StopSwitch(int32 switchIndex)
 	{
-		uint32 activeCount = 0;
+		uint32 markedCount = 0;
 		uint32 count = actions.size();
 		for(uint32 i = 0; i < count; ++i)
 		{
@@ -174,14 +176,14 @@ namespace DAVA
 				actions[i].markedForUpdate = false;
 			}
 			
-			if(actions[i].active)
+			if(actions[i].markedForUpdate)
 			{
-				activeCount++;
+				markedCount++;
 			}
 		}
 
 		if(started &&
-		   0 == activeCount)
+		   0 == markedCount)
 		{			
 			started = false;
 			allActionsActive = false;
@@ -368,6 +370,10 @@ namespace DAVA
 		{
 			OnActionSound(action);
 		}
+        else if(Action::TYPE_WAVE == action.type)
+        {
+            OnActionWave(action);
+        }
 	}
 	
 	void ActionComponent::OnActionParticleEffect(const Action& action)
@@ -404,6 +410,21 @@ namespace DAVA
 		}
 	}
 	
+    void ActionComponent::OnActionWave(const Action& action)
+    {
+        Entity* target = GetTargetEntity(action.entityName, entity);
+
+        if(target != NULL)
+        {
+            WaveComponent* component = GetWaveComponent(target);
+            if(component)
+            {
+                component->Trigger();
+            }
+
+        }
+    }
+
 	Entity* ActionComponent::GetTargetEntity(const FastName& name, Entity* parent)
 	{
         if(name == ACTION_COMPONENT_SELF_ENTITY_NAME)

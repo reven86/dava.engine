@@ -37,24 +37,39 @@
 namespace DAVA 
 {
 
-class SpeedTreeObject: public Mesh
+class SpeedTreeUpdateSystem;
+class SpeedTreeObject: public RenderObject
 {
 public:
 
-    SpeedTreeObject() {};
-    virtual ~SpeedTreeObject() {};
+    SpeedTreeObject();
+    virtual ~SpeedTreeObject();
 
     virtual void RecalcBoundingBox();
     virtual RenderObject * Clone(RenderObject *newObject);
 
-private:
-    AABBox3 CalcBBoxForSpeedTreeLeafGeometry(PolygonGroup * rb);
+    static bool IsTreeLeafBatch(RenderBatch * batch);
 
+    void BindDynamicParams();
+
+protected:
+    static const FastName FLAG_WIND_ANIMATION;
+
+    AABBox3 CalcBBoxForSpeedTreeGeometry(RenderBatch * rb);
+
+    void SetTreeAnimationParams(const Vector2 & trunkOscillationParams, const Vector2 & leafOscillationParams);
+    void UpdateAnimationFlag(int32 maxAnimatedLod);
+
+    Vector2 trunkOscillation;
+    Vector2 leafOscillation;
+    
 public:
 
 	INTROSPECTION_EXTEND(SpeedTreeObject, Mesh, 
 		NULL
 	);
+
+friend class SpeedTreeUpdateSystem;
 };
 
 

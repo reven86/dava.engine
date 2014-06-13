@@ -40,6 +40,7 @@
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\DateTimeTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
+    <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\ParseTextTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
   </ItemGroup>
@@ -84,6 +85,7 @@
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
+    <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\UITestTemplate.h" />
     <ClInclude Include="Classes\ParseTextTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />

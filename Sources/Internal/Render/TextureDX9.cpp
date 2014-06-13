@@ -30,7 +30,7 @@
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
 #include "Render/D3D9Helpers.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA

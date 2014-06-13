@@ -26,11 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-
-#include "Render/Image.h"
 #include "Render/Texture.h"
-#include "Render/ImageConvert.h"
-#include "Render/ImageLoader.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageConvert.h"
+#include "Render/Image/ImageSystem.h"
 #include "Render/PixelFormatDescriptor.h"
 
 namespace DAVA 
@@ -113,13 +112,7 @@ Image * Image::CreateFromData(uint32 width, uint32 height, PixelFormat format, c
 
 Image * Image::CreatePinkPlaceholder(bool checkers)
 {
-    Image * image = new Image();
-	image->width = 16;
-	image->height = 16;
-	image->format = FORMAT_RGBA8888;
-    image->dataSize = image->width * image->height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-    image->data = new uint8[image->dataSize];
-
+    Image * image = Image::Create(16, 16, FORMAT_RGBA8888);
     image->MakePink(checkers);
     
     return image;
@@ -261,6 +254,7 @@ void Image::ResizeCanvas(uint32 newWidth, uint32 newHeight)
     {
         newDataSize = newWidth * newHeight * formatSize;
         newData = new uint8[newDataSize];
+        memset(newData, 0, newDataSize);
             
         uint32 currentLine = 0;
         uint32 indexOnLine = 0;
@@ -400,10 +394,9 @@ void Image::InsertImage(const Image* image, const Vector2& dstPos, const Rect& s
 				(uint32)srcRect.x, (uint32)srcRect.y, (uint32)srcRect.dx, (uint32)srcRect.dy);
 }
 
-
 bool Image::Save(const FilePath &path) const
 {
-    return ImageLoader::Save(this, path);
+    return ImageSystem::Instance()->Save(path, const_cast<Image*>(this), format) == SUCCESS;
 }
     
 };

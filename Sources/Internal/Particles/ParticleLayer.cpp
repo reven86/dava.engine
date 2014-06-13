@@ -30,7 +30,7 @@
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleEmitter.h"
 #include "Utils/StringFormat.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "FileSystem/FileSystem.h"
 
 namespace DAVA

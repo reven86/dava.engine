@@ -52,8 +52,10 @@ class SwitchComponent;
 class QualitySettingsComponent;
 class TransformComponent;
 class RenderComponent;
+class SpeedTreeComponent;
+class WindComponent;
+class WaveComponent;
 
-class TransformComponent;
 class VegetationRenderObject;
 
 TransformComponent * GetTransformComponent(Entity * fromEntity);
@@ -87,6 +89,9 @@ Landscape * FindLandscape(Entity * rootEntity);
 Entity * FindVegetationEntity(Entity * rootEntity);
 VegetationRenderObject* FindVegetation(Entity * rootEntity);
 
+SpeedTreeComponent * GetSpeedTreeComponent(Entity * fromEntity);
+WindComponent * GetWindComponent(Entity * fromEntity);
+WaveComponent * GetWaveComponent(Entity * fromEntity);
 
 QualitySettingsComponent * GetQualitySettingsComponent(const Entity *fromEntity);
     

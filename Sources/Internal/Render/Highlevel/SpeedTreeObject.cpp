@@ -28,11 +28,23 @@
 
 
 #include "Render/Highlevel/SpeedTreeObject.h"
+#include "Render/Material/NMaterialNames.h"
 #include "Utils/Utils.h"
 
 namespace DAVA 
 {
+    
+const FastName SpeedTreeObject::FLAG_WIND_ANIMATION("WIND_ANIMATION");
 
+SpeedTreeObject::SpeedTreeObject()
+{
+    type = TYPE_SPEED_TREE;
+}
+    
+SpeedTreeObject::~SpeedTreeObject()
+{
+}
+    
 void SpeedTreeObject::RecalcBoundingBox()
 {
     bbox = AABBox3();
@@ -41,14 +53,29 @@ void SpeedTreeObject::RecalcBoundingBox()
     for (uint32 k = 0; k < size; ++k)
     {
         RenderBatch * rb = renderBatchArray[k].renderBatch;
-        PolygonGroup * pg = rb->GetPolygonGroup();
-        if(pg)
-        {
-            if((pg->GetFormat() & EVF_TANGENT) > 0) //speedtree leaf batch
-                bbox.AddAABBox(CalcBBoxForSpeedTreeLeafGeometry(pg));
-            else
-                bbox.AddAABBox(rb->GetBoundingBox());
-        }   
+        bbox.AddAABBox(CalcBBoxForSpeedTreeGeometry(rb));
+    }
+}
+    
+void SpeedTreeObject::SetTreeAnimationParams(const Vector2 & trunkOscillationParams, const Vector2 & leafOscillationParams)
+{
+    trunkOscillation = trunkOscillationParams;
+    leafOscillation = leafOscillationParams;
+}
+
+void SpeedTreeObject::BindDynamicParams()
+{
+    RenderManager::SetDynamicParam(PARAM_SPEED_TREE_TRUNK_OSCILLATION, &trunkOscillation, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_SPEED_TREE_LEAFS_OSCILLATION, &leafOscillation, UPDATE_SEMANTIC_ALWAYS);
+}
+
+void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
+{
+    uint32 size = (uint32)renderBatchArray.size();
+    for (uint32 k = 0; k < size; ++k)
+    {
+        NMaterial::eFlagValue flagValue = (renderBatchArray[k].lodIndex > maxAnimatedLod) ? NMaterial::FlagOff : NMaterial::FlagOn;
+        renderBatchArray[k].renderBatch->GetMaterial()->SetFlag(FLAG_WIND_ANIMATION, flagValue);
     }
 }
 
@@ -60,27 +87,32 @@ RenderObject * SpeedTreeObject::Clone(RenderObject *newObject)
         newObject = new SpeedTreeObject();
     }
 
-    return Mesh::Clone(newObject);
+    RenderObject::Clone(newObject);
+    
+    return newObject;
 }
-
-AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeLeafGeometry(PolygonGroup * pg)
+    
+AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch * rb)
 {
-    AABBox3 pgBbox;
-    if(pg)
+    if(IsTreeLeafBatch(rb))
     {
-        DVASSERT((pg->GetFormat() & EVF_TANGENT) > 0); //non speedtree leaf batch
+        AABBox3 pgBbox;
+        PolygonGroup * pg = rb->GetPolygonGroup();
+
+        if((pg->GetFormat() & EVF_PIVOT) == 0)
+            return rb->GetBoundingBox();
 
         int32 vertexCount = pg->GetVertexCount();
         for(int32 vi = 0; vi < vertexCount; vi++)
         {
             Vector3 pivot;
-            pg->GetTangent(vi, pivot);
+            pg->GetPivot(vi, pivot);
 
             Vector3 pointX, pointY, pointZ;
-            Vector3 offsetX, offsetY, offsetZ;
+            Vector3 offsetX, offsetY;
 
             pg->GetCoord(vi, pointZ);
-            offsetX = offsetY = offsetZ = pointZ - pivot;
+            offsetX = offsetY = pointZ - pivot;
 
             Swap(offsetX.x, offsetX.z);
             Swap(offsetX.y, offsetX.z);
@@ -92,9 +124,16 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeLeafGeometry(PolygonGroup * pg)
             pgBbox.AddPoint(pointY);
             pgBbox.AddPoint(pointZ);
         }
+
+        return pgBbox;
     }
 
-    return pgBbox;
+    return rb->GetBoundingBox();
+}
+
+bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch * batch)
+{
+    return (batch && batch->GetMaterial() && batch->GetMaterial()->GetMaterialTemplate()->name == NMaterialName::SPEEDTREE_LEAF);
 }
 
 };

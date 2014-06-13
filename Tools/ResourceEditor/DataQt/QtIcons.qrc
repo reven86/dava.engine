@@ -146,6 +146,7 @@
     <file>QtIcons/hangingobjects.png</file>
     <file>QtIcons/map.png</file>
     <file>QtIcons/image_splitter.png</file>
+    <file>QtIcons/wind.png</file>
     <file>QtIcons/reload_shaders.png</file>
     <file>QtIcons/switches_with_different_lods.png</file>
     <file>QtIcons/clone_batches.png</file>

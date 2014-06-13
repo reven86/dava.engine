@@ -193,7 +193,7 @@ namespace DAVA
 
 			Logger::Debug("[CorePlatformAndroid::] before create renderer");
 			RenderManager::Create(Core::RENDERER_OPENGL_ES_2_0);
-			FileSystem::Init();
+			FileSystem::Instance()->Init();
 
 			RenderManager::Instance()->InitFBO(androidDelegate->RenderBuffer(), androidDelegate->FrameBuffer());
 			Logger::Debug("[CorePlatformAndroid::] after create renderer");

@@ -35,6 +35,7 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderLayer.h"
 #include "Render/Highlevel/RenderFastNames.h"
+#include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/Systems/MaterialSystem.h"
@@ -114,6 +115,10 @@ void RenderBatch::BindDynamicParameters(Camera * camera)
         RenderManager::SetDynamicParam(PARAM_LIGHT0_POSITION, &lightPositionDirection0InCameraSpace, (pointer_size)&lightPositionDirection0InCameraSpace);
         RenderManager::SetDynamicParam(PARAM_LIGHT0_COLOR, &lights[0]->GetDiffuseColor(), (pointer_size)&lights[0]->GetDiffuseColor());
         RenderManager::SetDynamicParam(PARAM_LIGHT0_AMBIENT_COLOR, &lights[0]->GetAmbientColor(), (pointer_size)&lights[0]->GetAmbientColor());
+    }
+    if(renderObject->GetType() == RenderObject::TYPE_SPEED_TREE)
+    {
+        (static_cast<SpeedTreeObject*>(renderObject))->BindDynamicParams();
     }
 }
 

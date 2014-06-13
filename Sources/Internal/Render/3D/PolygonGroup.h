@@ -79,6 +79,10 @@ public:
 	inline void	GetCubeTexcoord(int32 ti, int32 i, Vector3 & v);
 	inline void	GetIndex(int32 i, int32 & index);
     
+    inline void GetPivot(int32 i, Vector3 & v);
+    inline void GetFlexibility(int32 i, float32 & v);
+    inline void GetAngle(int32 i, Vector2 & v);
+
     inline ePrimitiveType GetPrimitiveType();
 	
 	//! Setters
@@ -96,6 +100,10 @@ public:
 	
 	inline void	SetIndex(int32 i, int16 index);
 	
+    inline void SetPivot(int32 i, const Vector3 & v);
+    inline void SetFlexibility(int32 i, const float32 & v);
+    inline void SetAngle(int32 i, const Vector2 & v);
+
 	inline int32 GetVertexCount();
 	inline int32 GetIndexCount();
 	
@@ -126,6 +134,10 @@ public:
 
 	int32		*jointCountArray;
 	
+    Vector3     *pivotArray;
+    float32     *flexArray;
+    Vector2      *angleArray;
+
 	uint32	*colorArray;
 	int16		*indexArray; // Boroda: why int16? should be uint16? 
 	uint8		*meshData;
@@ -260,7 +272,25 @@ inline void	PolygonGroup::SetCubeTexcoord(int32 ti, int32 i, const Vector3 & _t)
 	Vector3 * t = (Vector3 *)((uint8 *)cubeTextureCoordArray[ti] + i * vertexStride);
 	*t = _t;
 }
-	
+
+inline void PolygonGroup::SetPivot(int32 i, const Vector3 & _v)
+{
+    Vector3 * v = (Vector3 *)((uint8 *)pivotArray + i * vertexStride);  
+    *v = _v;
+}
+
+inline void PolygonGroup::SetFlexibility(int32 i, const float32 & _v)
+{
+    float32 * v = (float32 *)((uint8 *)flexArray + i * vertexStride);  
+    *v = _v;
+}
+
+inline void PolygonGroup::SetAngle(int32 i, const Vector2 & _v)
+{
+    Vector2* v = (Vector2 *)((uint8 *)angleArray + i * vertexStride);  
+    *v = _v;
+}
+
 inline void	PolygonGroup::SetJointIndex(int32 vIndex, int32 jointIndex, int32 boneIndexValue)
 {
 	int32 * t = (int32*)((uint8*)jointIdxArray + vIndex * vertexStride);  
@@ -334,6 +364,24 @@ inline void	PolygonGroup::GetCubeTexcoord(int32 ti, int32 i, Vector3 & _t)
 {
 	Vector3 * t = (Vector3 *)((uint8 *)cubeTextureCoordArray[ti] + i * vertexStride);
 	_t = *t;
+}
+
+inline void PolygonGroup::GetPivot(int32 i, Vector3 & _v)
+{
+    Vector3 * v = (Vector3 *)((uint8 *)pivotArray + i * vertexStride);  
+    _v = *v;
+}
+
+inline void PolygonGroup::GetFlexibility(int32 i, float32 & _v)
+{
+    float32 * v = (float32 *)((uint8 *)flexArray + i * vertexStride);  
+    _v = *v;
+}
+
+inline void PolygonGroup::GetAngle(int32 i, Vector2 & _v)
+{
+    Vector2 * v = (Vector2 *)((uint8 *)angleArray + i * vertexStride);
+    _v = *v;
 }
 	
 inline void	PolygonGroup::GetIndex(int32 i, int32 &index)

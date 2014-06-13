@@ -394,7 +394,8 @@ void EditorParticlesSystem::ProcessCommand(const Command2 *command, bool redo)
 		case CMDID_PARTICLE_EMITTER_SAVE_TO_YAML:
 		{
 			const CommandSaveParticleEmitterToYaml* castedCmd = static_cast<const CommandSaveParticleEmitterToYaml*>(command);
-			SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
+            if (castedCmd->NeedUpdateEmitterWidget())
+			    SceneSignals::Instance()->EmitParticleEmitterSaved(activeScene, castedCmd->GetEmitter());
 			break;
 		}
 

@@ -33,6 +33,7 @@
 #include "ImageTools/ImageTools.h"
 #include "SizeDialog.h"
 #include "Main/QtUtils.h"
+#include "Render/Image/ImageSystem.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -307,20 +308,21 @@ void ImageSplitterDialog::Save(const DAVA::FilePath& filePath, bool saveSplitted
         return;
     }
     
+    DAVA::ImageSystem* system = DAVA::ImageSystem::Instance();
     if (saveSplittedImagesSeparately)
     {
         DAVA::String directory = filePath.GetDirectory().GetAbsolutePathname();
         DAVA::String baseName = filePath.GetBasename();
         
-        DAVA::ImageLoader::Save(channels.red, directory + baseName + "_red.png");
-        DAVA::ImageLoader::Save(channels.green, directory + baseName + "_green.png");
-        DAVA::ImageLoader::Save(channels.blue, directory + baseName + "_blue.png");
-        DAVA::ImageLoader::Save(channels.alpha, directory + baseName + "_alpha.png");
+        system->Save(directory + baseName + "_red.png", channels.red, channels.red->format);
+        system->Save(directory + baseName + "_green.png", channels.green, channels.green->format);
+        system->Save(directory + baseName + "_blue.png", channels.blue, channels.blue->format);
+        system->Save(directory + baseName + "_alpha.png", channels.alpha, channels.alpha->format);
     }
     else
     {
         DAVA::Image* mergedImage = ImageTools::CreateMergedImage(channels);
-        DAVA::ImageLoader::Save(mergedImage, filePath);
+        system->Save(filePath, mergedImage, mergedImage->format);
         DAVA::SafeRelease(mergedImage);
         ui->selectPathWidget->setText(filePath.GetAbsolutePathname());
     }

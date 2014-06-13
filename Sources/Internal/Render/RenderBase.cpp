@@ -291,6 +291,9 @@ const FastName DYNAMIC_PARAM_NAMES[] =
         FastName("lightColor0"),
         FastName("lightAmbientColor0"),
         
+        FastName("trunkOscillationParams"),
+        FastName("leafOscillationParams"),
+
         FastName("rtSize"),
         FastName("rtPixelSize"),
         FastName("rtHalfPixelSize"),

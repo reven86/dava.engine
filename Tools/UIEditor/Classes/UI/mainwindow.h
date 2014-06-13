@@ -220,6 +220,8 @@ private:
     
     void UpdateSaveButtons();
 
+    bool CheckAndUnlockProject(const QString& projectPath);
+
 private:
     Ui::MainWindow *ui;
 	QAction *recentPojectActions[EditorSettings::RECENT_FILES_COUNT];

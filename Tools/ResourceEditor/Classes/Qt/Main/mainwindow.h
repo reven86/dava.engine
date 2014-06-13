@@ -139,6 +139,7 @@ public slots:
 	void OnLightDialog();
 	void OnCameraDialog();
 	void OnEmptyEntity();
+	void OnAddWindEntity();
 
 	void OnUserNodeDialog();
 	void OnSwitchEntityDialog();
@@ -182,8 +183,6 @@ public slots:
 	void OnNotPassableTerrain();
     void OnGrasEditor();
 	
-    void OnAddSoundComponent();
-    void OnRemoveSoundComponent();
 	void OnObjectsTypeChanged(QAction *action);
     void OnObjectsTypeChanged(int type);
 

@@ -152,7 +152,6 @@ RenderObject * SpriteObject::Clone(RenderObject *newObject)
 
 	SpriteObject* spriteObject = static_cast<SpriteObject*>(newObject);
 
-	spriteObject->type = type;
 	spriteObject->flags = flags;
 	spriteObject->RemoveFlag(RenderObject::MARKED_FOR_UPDATE);
 	spriteObject->debugFlags = debugFlags;

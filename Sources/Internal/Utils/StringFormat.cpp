@@ -37,7 +37,7 @@
 namespace DAVA
 {
 static const int32 FORMAT_STRING_SIZE = 2048;
-static const int32 FORMAT_STRING_MAX_LEN = 256;
+static const int32 FORMAT_STRING_MAX_LEN = 512;
 
 //static char8 formatString8[FORMAT_STRING_SIZE];
 //static char16 formatString16[FORMAT_STRING_SIZE];

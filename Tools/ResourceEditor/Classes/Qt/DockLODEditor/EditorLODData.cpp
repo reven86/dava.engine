@@ -43,6 +43,7 @@ EditorLODData::EditorLODData()
     ,   forceDistance(0.f)
     ,   forceLayer(DAVA::LodComponent::INVALID_LOD_LAYER)
     ,   activeScene(NULL)
+	,	allSceneModeEnabled(false)
 {
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), SLOT(SceneActivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), SLOT(SceneDeactivated(SceneEditor2 *)));
@@ -150,14 +151,14 @@ DAVA::uint32 EditorLODData::GetLayerTriangles(DAVA::uint32 layerNum) const
 
 void EditorLODData::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-    if(activeScene == scene)
+    if(activeScene == scene && !allSceneModeEnabled)
     {
 		for(size_t i = 0; i < deselected->Size(); ++i)
 		{
 			ResetForceState(deselected->GetEntity(i));
 		}
 
-		GetDataFromSelection();
+		GetLODDataFromScene();
         UpdateForceData();
     }
 }
@@ -217,10 +218,10 @@ bool EditorLODData::GetForceDistanceEnabled() const
 }
 
 
-void EditorLODData::GetDataFromSelection()
+void EditorLODData::GetLODDataFromScene()
 {
     ClearLODData();
-    EnumerateSelectionLODs(activeScene);
+    EnumerateLODs();
 
     DAVA::int32 lodComponentsSize = lodData.size();
     if(lodComponentsSize)
@@ -297,15 +298,24 @@ void EditorLODData::AddTrianglesInfo(DAVA::uint32 triangles[], DAVA::LodComponen
 }
 
 
-void EditorLODData::EnumerateSelectionLODs(SceneEditor2 * scene)
+void EditorLODData::EnumerateLODs()
 {
-    EntityGroup selection = scene->selectionSystem->GetSelection();
-    
-    DAVA::uint32 count = selection.Size();
-    for(DAVA::uint32 i = 0; i < count; ++i)
-    {
-        EnumerateLODsRecursive(selection.GetEntity(i), lodData);
-    }
+	if(!activeScene) return;
+
+	if(allSceneModeEnabled)
+	{
+		EnumerateLODsRecursive(activeScene, lodData);
+	}
+	else
+	{
+		EntityGroup selection = activeScene->selectionSystem->GetSelection();
+
+		DAVA::uint32 count = selection.Size();
+		for(DAVA::uint32 i = 0; i < count; ++i)
+		{
+			EnumerateLODsRecursive(selection.GetEntity(i), lodData);
+		}
+	}
 }
 
 
@@ -345,7 +355,7 @@ DAVA::int32 EditorLODData::GetForceLayer() const
 void EditorLODData::SceneActivated(SceneEditor2 *scene)
 {
     activeScene = scene;
-    GetDataFromSelection();
+    GetLODDataFromScene();
     ClearForceData();
 }
 
@@ -367,7 +377,7 @@ void EditorLODData::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *par
 
     if(activeScene == scene)
     {
-        GetDataFromSelection();
+        GetLODDataFromScene();
     }
 
     UpdateForceData();
@@ -397,7 +407,7 @@ void EditorLODData::CommandExecuted(SceneEditor2 *scene, const Command2* command
                             firstCommand->GetId() == CMDID_LOD_DELETE ||
                             firstCommand->GetId() == CMDID_LOD_CREATE_PLANE))
 		{
-			GetDataFromSelection();
+			GetLODDataFromScene();
 		}
     }
 }
@@ -510,4 +520,12 @@ void EditorLODData::DeleteLastLOD()
         activeScene->EndBatch();
     }
 }
+
+void EditorLODData::EnableAllSceneMode( bool enabled )
+{
+	allSceneModeEnabled = enabled;
+
+	SceneActivated(activeScene);
+}
+
 

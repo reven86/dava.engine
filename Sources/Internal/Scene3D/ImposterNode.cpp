@@ -31,7 +31,7 @@
 #include "ImposterNode.h"
 #include "ImposterManager.h"
 #include "Utils/Utils.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 #include "Platform/SystemTimer.h"
 #include "Scene3D/MeshInstanceNode.h"
 

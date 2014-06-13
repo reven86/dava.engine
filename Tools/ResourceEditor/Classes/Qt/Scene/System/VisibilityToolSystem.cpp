@@ -576,7 +576,7 @@ void VisibilityToolSystem::SaveTexture(const FilePath& filePath)
 	Texture* visibilityToolTexture = visibilityToolSprite->GetTexture();
 
 	Image* image = visibilityToolTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	ImageLoader::Save(image, filePath);
+    ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 }
 

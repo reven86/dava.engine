@@ -76,6 +76,10 @@ LODEditor::LODEditor(QWidget* parent)
     LODDataChanged();
     
     posSaver.Attach(this);
+
+	allSceneModeEnabled = SettingsManager::GetValue(Settings::Internal_LODEditorMode).AsBool();
+	ui->checkBoxLodEditorMode->setChecked(allSceneModeEnabled);
+	editedLODData->EnableAllSceneMode(allSceneModeEnabled);
 }
 
 LODEditor::~LODEditor()
@@ -87,25 +91,13 @@ LODEditor::~LODEditor()
 
 void LODEditor::SetupInternalUI()
 {
-    ui->globalLODSettingsButton->setVisible(false);
-    ui->frameGlobalSettings->setVisible(false);
-    ui->viewLODButton->setVisible(false);
-    ui->frameViewLOD->setVisible(false);
-    ui->editLODButton->setVisible(false);
-    ui->frameEditLOD->setVisible(false);
-    
-    ui->globalLODSettingsButton->setStyleSheet("Text-align:left");
+    ui->lodEditorSettingsButton->setStyleSheet("Text-align:left");
     ui->viewLODButton->setStyleSheet("Text-align:left");
     ui->editLODButton->setStyleSheet("Text-align:left");
     
-    connect(ui->globalLODSettingsButton, SIGNAL(released()), SLOT(GlobalSettingsButtonReleased()));
+    connect(ui->lodEditorSettingsButton, SIGNAL(released()), SLOT(LODEditorSettingsButtonReleased()));
     connect(ui->viewLODButton, SIGNAL(released()), SLOT(ViewLODButtonReleased()));
     connect(ui->editLODButton, SIGNAL(released()), SLOT(EditLODButtonReleased()));
-    
-    InitCorrectionSpinBox(ui->lod0Correction, 0);
-    InitCorrectionSpinBox(ui->lod1Correction, 1);
-    InitCorrectionSpinBox(ui->lod2Correction, 2);
-    InitCorrectionSpinBox(ui->lod3Correction, 3);
     
     connect(ui->enableForceDistance, SIGNAL(stateChanged(int)), SLOT(ForceDistanceStateChanged(int)));
     connect(ui->forceSlider, SIGNAL(valueChanged(int)), SLOT(ForceDistanceChanged(int)));
@@ -122,6 +114,8 @@ void LODEditor::SetupInternalUI()
     SetForceLayerValues(DAVA::LodComponent::MAX_LOD_LAYERS);
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
+	connect(ui->checkBoxLodEditorMode, SIGNAL(stateChanged(int)), this, SLOT(EditorModeChanged(int)));
+
     //TODO: remove after lod editing implementation
     connect(ui->lastLodToFrontButton, SIGNAL(clicked()), this, SLOT(CopyLODToLod0Clicked()));
     connect(ui->createPlaneLodButton, SIGNAL(clicked()), this, SLOT(CreatePlaneLODClicked()));
@@ -134,20 +128,6 @@ void LODEditor::SetupSceneSignals()
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), this, SLOT(SceneActivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), this, SLOT(SceneDeactivated(SceneEditor2 *)));
 }
-
-
-void LODEditor::LODCorrectionChanged(double value)
-{
-    QDoubleSpinBox *spinBox = dynamic_cast<QDoubleSpinBox *>(sender());
-    if(spinBox)
-    {
-        //TODO set new value to scene
-//        int lodLevel = spinBox->property("tag").toInt();
-        
-        UpdateSpinboxColor(spinBox);
-    }
-}
-
 
 void LODEditor::ForceDistanceStateChanged(int checked)
 {
@@ -170,15 +150,6 @@ void LODEditor::ForceDistanceChanged(int distance)
 }
 
 
-void LODEditor::InitCorrectionSpinBox(QDoubleSpinBox *spinbox, int index)
-{
-    spinbox->setRange(-100.f, +100.f);  //persents
-    spinbox->setProperty(ResourceEditor::TAG.c_str(), index);
-    spinbox->setValue(0.f);
-    
-    connect(spinbox, SIGNAL(valueChanged(double)), SLOT(LODCorrectionChanged(double)));
-}
-
 void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index)
 {
     spinbox->setRange(0.f, DAVA::LodComponent::MAX_LOD_DISTANCE);  //distance 
@@ -193,16 +164,6 @@ void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int i
     distanceWidgets[index].distance = spinbox;
     
     distanceWidgets->SetVisible(false);
-}
-
-
-void LODEditor::UpdateSpinboxColor(QDoubleSpinBox *spinbox)
-{
-    QColor color = ((spinbox->value() > 0)) ? Qt::red : Qt::green;
-    
-    QPalette palette;
-    palette.setColor(QPalette::Text, color);
-    spinbox->setPalette(palette);
 }
 
 
@@ -327,20 +288,14 @@ void LODEditor::SetForceLayerValues(int layersCount)
 	ui->forceLayer->setCurrentIndex(requestedIndex);
 }
 
-void LODEditor::GlobalSettingsButtonReleased()
+void LODEditor::LODEditorSettingsButtonReleased()
 {
-    InvertVisibility(ui->frameGlobalSettings);
-    
-    QIcon icon = (ui->frameGlobalSettings->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
-    ui->globalLODSettingsButton->setIcon(icon);
+    InvertFrameVisibility(ui->frameLodEditorSettings, ui->lodEditorSettingsButton);
 }
 
 void LODEditor::ViewLODButtonReleased()
 {
-    InvertVisibility(ui->frameViewLOD);
-
-    QIcon icon = (ui->frameViewLOD->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
-    ui->viewLODButton->setIcon(icon);
+    InvertFrameVisibility(ui->frameViewLOD, ui->viewLODButton);
     
     if(ui->frameViewLOD->isVisible() == false)
     {
@@ -354,16 +309,16 @@ void LODEditor::ViewLODButtonReleased()
 
 void LODEditor::EditLODButtonReleased()
 {
-    InvertVisibility(ui->frameEditLOD);
-    
-    QIcon icon = (ui->frameEditLOD->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
-    ui->editLODButton->setIcon(icon);
+    InvertFrameVisibility(ui->frameEditLOD, ui->editLODButton);
 }
 
-void LODEditor::InvertVisibility(QWidget *widget)
+void LODEditor::InvertFrameVisibility(QFrame *frame, QPushButton *frameButton)
 {
-    bool visible = widget->isVisible();
-    widget->setVisible(!visible);
+    bool visible = frame->isVisible();
+    frame->setVisible(!visible);
+
+	QIcon icon = (frame->isVisible()) ? QIcon(":/QtIcons/advanced.png") : QIcon(":/QtIcons/play.png");
+	frameButton->setIcon(icon);
 }
 
 
@@ -400,4 +355,14 @@ void LODEditor::CreatePlaneLODClicked()
         }
     }
 }
+
+void LODEditor::EditorModeChanged(int newMode)
+{
+	allSceneModeEnabled = (newMode == Qt::Checked);
+	DAVA::VariantType value(allSceneModeEnabled);
+	SettingsManager::SetValue(Settings::Internal_LODEditorMode, value);
+
+	editedLODData->EnableAllSceneMode(allSceneModeEnabled);
+}
+
 

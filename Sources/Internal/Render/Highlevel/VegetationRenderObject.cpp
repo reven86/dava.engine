@@ -28,13 +28,13 @@
 
 #include <cfloat>
 
-#include "Render/Image.h"
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Highlevel/VegetationRenderObject.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Material/NMaterial.h"
 #include "Utils/Random.h"
-#include "Render/ImageLoader.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
@@ -593,8 +593,8 @@ void VegetationRenderObject::SetVegetationMap(const FilePath& path)
     if(path.Exists())
     {
         Vector<Image*> images;
-        ImageLoader::CreateFromFileByExtension(path, images);
-            
+        ImageSystem::Instance()->Load(path, images);
+        
         DVASSERT(images.size());
             
         if(images.size())
