@@ -136,7 +136,7 @@ void GameCore::OnAppStarted()
  	new MemoryAllocatorsTest();
  	new HashMapTest();
  	new KeyedArchiveYamlTest();
- 	new DLCTest();
+ 	//new DLCTest();
  	new UIListTest();
  	new UIScrollViewTest();
  
