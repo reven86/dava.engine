@@ -32,6 +32,7 @@
 #define __FRAMEWORK__DEVICEINFO__
 
 #include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
@@ -93,6 +94,7 @@ public:
     //internal?
     static void SetScreenInfo(int32 w, int32 h, int32 scale);
     static int GetZBufferSize();
+    static eGPUFamily GetGPUFamily();
 };
 
 };

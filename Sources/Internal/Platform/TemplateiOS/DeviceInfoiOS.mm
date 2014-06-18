@@ -252,6 +252,11 @@ int DeviceInfo::GetHTTPProxyPort()
 	return 0;
 }
     
+eGPUFamily DeviceInfo::GetGPUFamily()
+{
+    return GPU_POWERVR_IOS;
+}
+    
 }
 
 #endif

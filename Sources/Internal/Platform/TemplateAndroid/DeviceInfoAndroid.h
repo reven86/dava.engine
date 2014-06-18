@@ -52,6 +52,7 @@ public:
 	String GetHTTPNonProxyHosts();
 	int GetHTTPProxyPort();
 	int GetZBufferSize();
+	int GetGPUFamily();
 
 protected:
 	virtual jclass GetJavaClass() const;

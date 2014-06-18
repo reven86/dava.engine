@@ -5,11 +5,13 @@ import java.util.TimeZone;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 import java.math.BigInteger;
+import javax.microedition.khronos.opengles.GL10;
 import android.os.Build;
 import android.provider.Settings.Secure;
 
 public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";
+	static int gpuFamily = -1;
 
 	public static void GetVersion()
 	{
@@ -87,6 +89,35 @@ public class JNIDeviceInfo {
 	public static String GetHTTPNonProxyHosts()
 	{
 		return System.getProperty("http.nonProxyHosts");
+	}
+	
+	static int GPU_UNKNOWN = -1;
+	static int GPU_POWERVR_IOS = 0;
+	static int GPU_POWERVR_ANDROID = 1;
+	static int GPU_TEGRA = 2;
+	static int GPU_MALI = 3;
+	static int GPU_ADRENO = 4;
+	
+	protected static void SetGPUFamily(GL10 gl)
+	{
+		
+		String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
+		
+		if (extensions.indexOf("GL_IMG_texture_compression_pvrtc") >= 0)
+			gpuFamily = GPU_POWERVR_ANDROID;
+		else if (extensions.indexOf("GL_NV_draw_texture") >= 0)
+			gpuFamily = GPU_TEGRA;
+		else if (extensions.indexOf("GL_AMD_compressed_ATC_texture") >= 0)
+			gpuFamily = GPU_ADRENO;
+		else if (extensions.indexOf("GL_OES_compressed_ETC1_RGB8_texture") >= 0)
+			gpuFamily = GPU_MALI;
+		else
+			gpuFamily = GPU_UNKNOWN;
+	}
+	
+	public static int GetGPUFamily()
+	{
+		return gpuFamily;
 	}
 
 	public static native void SetJString(String str);

@@ -194,6 +194,11 @@ WideString DeviceInfo::GetName()
     return WideString ();
 }
 
+eGPUFamily DeviceInfo::GetGPUFamily()
+{
+    return GPU_UNKNOWN;
+}
+
 }
 
 #endif

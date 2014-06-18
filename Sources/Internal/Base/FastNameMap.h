@@ -119,7 +119,7 @@ template<> struct Hash <FastNameSet>
 		std::stable_sort(indices.begin(), indices.end());
 		
 		size_t keyCount = indices.size();
-		size_t hashVal = 2166136261;
+		size_t hashVal = 2166136261u;
 		for(i = 0; i < keyCount; ++i)
 		{
 			hashVal += ( hashVal * 16777619 ) ^ indices[i];

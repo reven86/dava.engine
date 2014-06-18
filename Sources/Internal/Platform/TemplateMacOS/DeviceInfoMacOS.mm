@@ -105,6 +105,11 @@ int DeviceInfo::GetHTTPProxyPort()
 	return 0;
 }
 
+eGPUFamily DeviceInfo::GetGPUFamily()
+{
+    return GPU_UNKNOWN;
+}
+
 }
 
 #endif
