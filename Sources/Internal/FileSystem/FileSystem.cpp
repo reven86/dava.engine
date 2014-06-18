@@ -68,8 +68,6 @@
 namespace DAVA
 {
 
-	
-
 FileSystem::FileSystem()
 {
 }
@@ -83,6 +81,9 @@ FileSystem::~FileSystem()
 		SafeRelease(item.archive);
 	}
 	resourceArchiveList.clear();
+
+    // All locked files should be explicitely unlocked before closing the app.
+    DVASSERT(lockedFileHandles.empty());
 }
 
 FileSystem::eCreateDirectoryResult FileSystem::CreateDirectory(const FilePath & filePath, bool isRecursive)
@@ -458,6 +459,95 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 	return false;
 }
 
+bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
+{
+    if (IsFileLocked(filePath) == isLock)
+    {
+        return true;
+    }
+
+    String path = filePath.GetAbsolutePathname();
+#if defined (__DAVAENGINE_WIN32__)
+    if (isLock)
+    {
+        HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile != INVALID_HANDLE_VALUE)
+        {
+            lockedFileHandles[path] = hFile;
+            return true;
+        }
+    }
+    else
+    {
+        Map<String, void*>::iterator lockedFileIter = lockedFileHandles.find(path);
+        if (lockedFileIter != lockedFileHandles.end())
+        {
+            CloseHandle((HANDLE)lockedFileIter->second);
+            lockedFileHandles.erase(lockedFileIter);
+            return true;
+        }
+    }
+
+    return false;
+#elif defined(__DAVAENGINE_MACOS__)
+    if (isLock)
+    {
+        if (chflags(path.c_str(), UF_IMMUTABLE) == 0)
+        {
+            lockedFileHandles[path] = NULL; // handle is not needed in case of MacOS.
+            return true;
+        }
+    }
+    else
+    {
+        struct stat s;
+        if(stat(path.c_str(), &s) == 0)
+        {
+            Map<String, void*>::iterator lockedFileIter = lockedFileHandles.find(path);
+            if (lockedFileIter != lockedFileHandles.end())
+            {
+                lockedFileHandles.erase(lockedFileIter);
+            }
+
+            s.st_flags &= ~UF_IMMUTABLE;
+            return (chflags(path.c_str(), s.st_flags) == 0);
+        }
+    }
+
+    return false;
+#else
+    // Not implemented for all other platforms yet.
+    DVASSERT(false);
+    return false;
+#endif
+}
+
+bool FileSystem::IsFileLocked(const FilePath & filePath) const
+{
+    String path = filePath.GetAbsolutePathname();
+#if defined (__DAVAENGINE_WIN32__)
+	HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile == INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION)
+	{
+		return true;
+	}
+
+	CloseHandle(hFile);
+	return false;
+#elif defined(__DAVAENGINE_MACOS__)
+	struct stat s;
+	if(stat(path.c_str(), &s) == 0)
+	{
+		return (0 != (s.st_flags & UF_IMMUTABLE));
+	}
+
+	return false;
+#else
+	// Not implemented for all other platforms yet.
+	return false;
+#endif
+}
+
 const FilePath & FileSystem::GetCurrentDocumentsDirectory()
 {
     return currentDocDirectory; 
@@ -621,9 +711,6 @@ int32 FileSystem::Spawn(const String& command)
 }
 
 #if defined(__DAVAENGINE_ANDROID__)
-
-Set<String> FileSystem::dirSet;
-Set<String> FileSystem::fileSet;
 
 bool FileSystem::IsAPKPath(const String& path) const
 {
