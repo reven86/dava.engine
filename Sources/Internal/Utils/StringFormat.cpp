@@ -37,7 +37,7 @@
 namespace DAVA
 {
 static const int32 FORMAT_STRING_SIZE = 2048;
-static const int32 FORMAT_STRING_MAX_LEN = 256;
+static const int32 FORMAT_STRING_MAX_LEN = 512;
 
 //static char8 formatString8[FORMAT_STRING_SIZE];
 //static char16 formatString16[FORMAT_STRING_SIZE];
@@ -288,8 +288,7 @@ int32 do_div(int64 &n, int32 base)
     }
     
     
-    
-    int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list args)
+    int32 Vsnwprintf(char16 *buf, size_t cnt, const char16 *fmt, va_list &args)
     {
         int32 len;
         int64 num;
@@ -823,18 +822,18 @@ WideString Format(const char16 * text, ...)
 	return str;
 }
 
-String FormatVL(const char8 * text, va_list ll)
+String FormatVL(const char8 * text, va_list &ll)
 {
 	String str;
 	char8 buffer[FORMAT_STRING_MAX_LEN];
 
-	vsprintf(buffer,  text, ll);
+	vsprintf(buffer, text, ll);
 
 	str = buffer;
 	return str;
 }
 
-WideString FormatVL(const char16 * text, va_list ll)
+WideString FormatVL(const char16 * text, va_list &ll)
 {
 	WideString str;
 	char16 buffer[FORMAT_STRING_MAX_LEN];

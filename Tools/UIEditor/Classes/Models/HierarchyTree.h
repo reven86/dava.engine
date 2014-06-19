@@ -48,6 +48,7 @@ class HierarchyTree
 {
 public:
 	HierarchyTree();
+    virtual ~HierarchyTree();
 
     bool Load(const QString& projectPath);
 	
@@ -100,6 +101,11 @@ protected:
     // Recursively traverse the nodes tree.
     void GetNodesRecursive(const HierarchyTreeNode* rootNode, HierarchyTreeNode::HIERARCHYTREENODESLIST& resultList) const;
 
+    // Lock/unlock the project files.
+    void LockProjectFiles(const List<QString>& fileNames);
+    void LockProjectFiles();
+    void UnlockProjectFiles(bool needCleanup);
+
 private:
 	void Clear();
     
@@ -114,6 +120,9 @@ private:
 	HierarchyTreeNode* FindNode(const HierarchyTreeNode* parent, HierarchyTreeNode::HIERARCHYTREENODEID id) const;
 	HierarchyTreeNode* FindNode(const HierarchyTreeNode* parent, const UIControl* control) const;
     HierarchyTreeRootNode rootNode;
+    
+    // List of lock files for the project.
+    List<String> projectLockedFiles;
 	
 	bool projectCreated;
 };

@@ -38,8 +38,6 @@
 
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 
-#include "Qt/SoundComponentEditor/FMODSoundBrowser.h"
-
 using namespace DAVA;
 
 SceneSaver::SceneSaver()
@@ -174,7 +172,6 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
 	CopyReferencedObject(scene);
 	CopyEffects(scene);
 	CopyCustomColorTexture(scene, fileName.GetDirectory(), errorLog);
-    CopySounds(fileName);
 
     //save scene to new place
     FilePath tempSceneName = sceneUtils.dataSourceFolder + relativeFilename;
@@ -204,38 +201,6 @@ void SceneSaver::CopyTextures(DAVA::Scene *scene)
     {
         CopyTexture(it->first);
     }
-}
-
-void SceneSaver::CopySounds(const FilePath & scenePath)
-{
-#ifdef DAVA_FMOD
-    FilePath sfxDir = FMODSoundBrowser::MakeFEVPathFromScenePath(scenePath).GetDirectory();
-    if(sfxDir.IsEmpty())
-        return;
-
-    String pathStr = sfxDir.GetAbsolutePathname();
-    pathStr = pathStr.substr(0, pathStr.length() - 4); // remove "iOS/"
-    sfxDir = FilePath(pathStr);
-
-    FileList * fileList = new FileList(sfxDir);
-    for(int32 i = 0; i < fileList->GetCount(); ++i)
-    {
-        if(fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
-        {
-            FilePath path = fileList->GetPathname(i);
-            FileList * list = new FileList(path);
-            for(int32 j = 0; j < list->GetCount(); ++j)
-            {
-                if(!list->IsDirectory(j))
-                {
-                    sceneUtils.AddFile(list->GetPathname(j));
-                }
-            }
-            SafeRelease(list);
-        }
-    }
-    SafeRelease(fileList);
-#endif //DAVA_FMOD
 }
 
 void SceneSaver::ReleaseTextures()
@@ -301,7 +266,7 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 
 void SceneSaver::CopyReferencedObject( Entity *node)
 {
-	KeyedArchive *customProperties = node->GetCustomProperties();
+	KeyedArchive *customProperties = GetCustomPropertiesArchieve(node);
 	if(customProperties && customProperties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
 	{
 		String path = customProperties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
@@ -365,7 +330,7 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
 	Entity *land = FindLandscapeEntity(scene);
 	if(!land) return;
 
-	KeyedArchive* customProps = land->GetCustomProperties();
+	KeyedArchive* customProps = GetCustomPropertiesArchieve(land);
 	if(!customProps) return;
 
 	String pathname = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);

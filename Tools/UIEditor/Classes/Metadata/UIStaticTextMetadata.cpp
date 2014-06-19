@@ -351,3 +351,44 @@ int UIStaticTextMetadata::GetFittingType() const
     
     return GetActiveStaticText()->GetFittingOption();
 }
+
+int UIStaticTextMetadata::GetFontColorInheritType() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return UIControlBackground::COLOR_MULTIPLY_ON_PARENT;
+    }
+
+    return GetActiveStaticText()->GetTextBackground()->GetColorInheritType();
+}
+
+int UIStaticTextMetadata::GetShadowColorInheritType() const
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetShadowBackground())
+    {
+        return UIControlBackground::COLOR_MULTIPLY_ON_PARENT;
+    }
+    
+    return GetActiveStaticText()->GetShadowBackground()->GetColorInheritType();
+}
+
+void UIStaticTextMetadata::SetFontColorInheritType(int value)
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetTextBackground())
+    {
+        return;
+    }
+
+    GetActiveStaticText()->GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+}
+
+void UIStaticTextMetadata::SetShadowColorInheritType(int value)
+{
+    if (!VerifyActiveParamID() || !GetActiveStaticText()->GetShadowBackground())
+    {
+        return;
+    }
+    
+    GetActiveStaticText()->GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+
+}

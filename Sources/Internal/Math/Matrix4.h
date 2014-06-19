@@ -160,6 +160,7 @@ struct Matrix4
 inline Vector3 operator * (const Vector3 & _v, const Matrix4 & _m);
 // Function to perform matrix multiplication without creation of Matrix3
 inline Vector3 MultiplyVectorMat3x3(const Vector3 & _v, const Matrix4 & _m);
+inline Vector2 MultiplyVectorMat2x2(const Vector2 & _v, const Matrix4 & _m);
 
 // Implementation of matrix4
 
@@ -453,6 +454,13 @@ inline Vector3 MultiplyVectorMat3x3(const Vector3 & _v, const Matrix4 & _m)
 
 }
 
+inline Vector2 MultiplyVectorMat2x2(const Vector2 & _v, const Matrix4 & _m)
+{
+    Vector2 res;
+    res.x = _v.x * _m._00 + _v.y * _m._10;
+    res.y = _v.x * _m._01 + _v.y * _m._11;
+    return res;
+}
 
 inline void Matrix4::Transpose()
 {

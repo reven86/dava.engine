@@ -669,6 +669,10 @@ NMaterial* NMaterial::Clone()
 	{
 		clonedMaterial = NMaterial::CreateMaterialInstance();
 	}
+    else if(NMaterial::MATERIALTYPE_GLOBAL == materialType)
+    {
+        clonedMaterial = NMaterial::CreateGlobalMaterial(materialName);
+    }
 	else
 	{
 		DVASSERT(false && "Material is not initialized properly!");

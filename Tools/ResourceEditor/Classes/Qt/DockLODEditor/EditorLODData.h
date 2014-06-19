@@ -65,7 +65,7 @@ public:
     void SetForceLayer(DAVA::int32 layer);
     DAVA::int32 GetForceLayer() const;
 
-    void GetDataFromSelection();
+    void GetLODDataFromScene();
 
     void CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
     bool CanCreatePlaneLOD();
@@ -74,7 +74,12 @@ public:
     static void EnumerateLODsRecursive(DAVA::Entity *entity, DAVA::Vector<DAVA::LodComponent *> & lods);
     static void AddTrianglesInfo(DAVA::uint32 triangles[], DAVA::LodComponent *lod, bool onlyVisibleBatches);
 
+    //TODO: remove after lod editing implementation
+    DAVA_DEPRECATED(void CopyLastLodToLod0());
+
     bool CanDeleteLod();
+
+	void EnableAllSceneMode(bool enabled);
 
 signals:
     
@@ -100,7 +105,7 @@ protected:
     void UpdateForceData();
 
     
-    void EnumerateSelectionLODs(SceneEditor2 * scene);
+    void EnumerateLODs();
 
     void ResetForceState(DAVA::Entity *entity);
     
@@ -120,6 +125,8 @@ protected:
     DAVA::Vector<DAVA::LodComponent *> lodData;
     
     SceneEditor2 *activeScene;
+
+	bool allSceneModeEnabled;
 };
 
 #endif //#ifndef __EDITOR_LOD_DATA_H__

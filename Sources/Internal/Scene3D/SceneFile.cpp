@@ -608,18 +608,20 @@ bool SceneFile::ReadSceneNode(Entity * parentNode, int level)
 			sceneFP->Read(&materialIndex, sizeof(int32));
             
             DVASSERT(materialIndex < (int)materials.size());
+            DVASSERT(0 <= materialIndex);
 
+            Material * material = (0 <= materialIndex) ? materials[materialIndex] : NULL;
 			if (debugLogEnabled)Logger::FrameworkDebug("%s polygon group: meshIndex:%d polyGroupIndex:%d materialIndex:%d\n", GetIndentString('-', level + 1).c_str(), meshIndex, polyGroupIndex, materialIndex);
 		
 			if (def.nodeType == SceneNodeDef::SCENE_NODE_MESH)
 			{
 				StaticMesh * staticMesh = staticMeshes[meshIndex]; // staticMeshIndexOffset);
-				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, materials[materialIndex]);
+				meshNode->AddPolygonGroup(staticMesh, polyGroupIndex, material);
 			}else
 			{
 				// add animated mesh
 				AnimatedMesh * animatedMesh = scene->GetAnimatedMesh(meshIndex + animatedMeshIndexOffset);
-				meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, materials[materialIndex]);
+				meshNode->AddPolygonGroup(animatedMesh, polyGroupIndex, material);
 			}
 		}
         if (parentNode != scene) 

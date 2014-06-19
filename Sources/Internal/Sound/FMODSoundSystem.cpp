@@ -92,6 +92,8 @@ SoundSystem::~SoundSystem()
 
 void SoundSystem::InitFromQualitySettings()
 {
+    UnloadFMODProjects();
+
     QualitySettingsSystem * qSystem = QualitySettingsSystem::Instance();
     FilePath sfxConfig = qSystem->GetSFXQualityConfigPath(qSystem->GetCurSFXQuality());
     if(!sfxConfig.IsEmpty())

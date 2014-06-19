@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>462</width>
+    <width>477</width>
     <height>821</height>
    </rect>
   </property>
@@ -17,22 +17,13 @@
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="leftMargin">
-    <number>5</number>
-   </property>
-   <property name="topMargin">
-    <number>5</number>
-   </property>
-   <property name="rightMargin">
-    <number>5</number>
-   </property>
-   <property name="bottomMargin">
+   <property name="margin">
     <number>5</number>
    </property>
    <item>
-    <widget class="QPushButton" name="globalLODSettingsButton">
+    <widget class="QPushButton" name="lodEditorSettingsButton">
      <property name="text">
-      <string>Global LOD Settings</string>
+      <string>LOD Editor Settings</string>
      </property>
      <property name="icon">
       <iconset resource="QtIcons.qrc">
@@ -41,7 +32,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="frameGlobalSettings">
+    <widget class="QFrame" name="frameLodEditorSettings">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -55,16 +46,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <property name="leftMargin">
-       <number>5</number>
-      </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>5</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>5</number>
       </property>
       <item row="0" column="0">
@@ -79,7 +61,7 @@
          <enum>Qt::LeftToRight</enum>
         </property>
         <property name="text">
-         <string>LOD 0:</string>
+         <string>Mode:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -87,138 +69,9 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="EventFilterDoubleSpinBox" name="lod0Correction">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="minimum">
-         <double>-100.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>100.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
+       <widget class="QCheckBox" name="checkBoxLodEditorMode">
         <property name="text">
-         <string>LOD 1:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="EventFilterDoubleSpinBox" name="lod1Correction">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="minimum">
-         <double>-100.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>100.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="text">
-         <string>LOD 2:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="EventFilterDoubleSpinBox" name="lod2Correction">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="minimum">
-         <double>-100.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>100.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="text">
-         <string>LOD 3:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="EventFilterDoubleSpinBox" name="lod3Correction">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="minimum">
-         <double>-100.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>100.000000000000000</double>
+         <string>All Scene / Selection</string>
         </property>
        </widget>
       </item>
@@ -251,16 +104,7 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <property name="leftMargin">
-       <number>5</number>
-      </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>5</number>
-      </property>
-      <property name="bottomMargin">
+      <property name="margin">
        <number>5</number>
       </property>
       <item row="0" column="0" colspan="2">
@@ -351,18 +195,37 @@
       <enum>QFrame::Raised</enum>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <property name="leftMargin">
+      <property name="margin">
        <number>5</number>
       </property>
-      <property name="topMargin">
-       <number>5</number>
-      </property>
-      <property name="rightMargin">
-       <number>5</number>
-      </property>
-      <property name="bottomMargin">
-       <number>5</number>
-      </property>
+      <item row="0" column="0" colspan="2">
+       <widget class="DistanceSlider" name="distanceSlider">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
+        <property name="lineWidth">
+         <number>1</number>
+        </property>
+       </widget>
+      </item>
       <item row="3" column="0">
        <widget class="QLabel" name="lod2Name">
         <property name="sizePolicy">
@@ -498,34 +361,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="DistanceSlider" name="distanceSlider">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>30</height>
-         </size>
-        </property>
-        <property name="autoFillBackground">
-         <bool>false</bool>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="lineWidth">
-         <number>1</number>
-        </property>
-       </widget>
-      </item>
       <item row="7" column="0" colspan="2">
        <widget class="QPushButton" name="buttonDeleteLastLOD">
         <property name="text">
@@ -591,6 +426,13 @@
         </property>
        </widget>
       </item>
+      <item row="8" column="0" colspan="2">
+       <widget class="QPushButton" name="lastLodToFrontButton">
+        <property name="text">
+         <string>Copy last LOD to lod0</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -629,11 +471,7 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>globalLODSettingsButton</tabstop>
-  <tabstop>lod0Correction</tabstop>
-  <tabstop>lod1Correction</tabstop>
-  <tabstop>lod2Correction</tabstop>
-  <tabstop>lod3Correction</tabstop>
+  <tabstop>lodEditorSettingsButton</tabstop>
   <tabstop>viewLODButton</tabstop>
   <tabstop>enableForceDistance</tabstop>
   <tabstop>forceLayer</tabstop>

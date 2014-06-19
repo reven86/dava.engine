@@ -38,7 +38,6 @@
 #include "Platform/SystemTimer.h"
 #include "FileSystem/File.h"
 #include "Render/D3D9Helpers.h"
-#include "Render/ImageConvert.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/OGLHelpers.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -50,12 +49,11 @@
 #include <ApplicationServices/ApplicationServices.h>
 #endif //PLATFORMS
 
-#include "Render/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageConvert.h"
 #include "Render/OGLHelpers.h"
 
 #include "Render/TextureDescriptor.h"
-#include "Render/ImageLoader.h"
-
 #include "Render/GPUFamilyDescriptor.h"
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
@@ -253,6 +251,9 @@ void Texture::ReleaseTextureData()
     id = 0;
 	fboID = -1;
 	rboID = -1;
+#if defined(__DAVAENGINE_ANDROID__)
+    stencilRboID = -1;
+#endif
     isRenderTarget = false;
 }
 
@@ -595,8 +596,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 		for(size_t i = 0; i < faceNames.size(); ++i)
 		{
             Vector<Image *> imageFace;
-			ImageLoader::CreateFromFileByExtension(faceNames[i], imageFace, baseMipMap);
-			if(imageFace.size() == 0)
+            ImageSystem::Instance()->Load(faceNames[i], imageFace,baseMipMap);
+            if(imageFace.size() == 0)
 			{
 				Logger::Error("[Texture::LoadImages] Cannot open file %s", faceNames[i].GetAbsolutePathname().c_str());
 
@@ -624,8 +625,8 @@ bool Texture::LoadImages(eGPUFamily gpu, Vector<Image *> * images)
 	else
 	{
 		FilePath imagePathname = GPUFamilyDescriptor::CreatePathnameForGPU(texDescriptor, gpu);
-
-		ImageLoader::CreateFromFileByExtension(imagePathname, *images, baseMipMap);
+        ImageSystem::Instance()->Load(imagePathname, *images,baseMipMap);
+        
         if(images->size() == 1 && gpu == GPU_UNKNOWN && texDescriptor->GetGenerateMipMaps())
         {
             Image * img = *images->begin();

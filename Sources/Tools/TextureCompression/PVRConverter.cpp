@@ -34,9 +34,9 @@
 #include "Platform/Process.h"
 
 #include "Render/GPUFamilyDescriptor.h"
-#include "Render/LibPVRHelper.h"
-#include "Render/ImageLoader.h"
-#include "Render/Image.h"
+#include "Render/Image/LibPVRHelper.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/Image.h"
 
 #include "Base/GlobalEnum.h"
 
@@ -154,7 +154,8 @@ FilePath PVRConverter::ConvertPngToPvr(const TextureDescriptor &descriptor, eGPU
 		
     if(addCRC)
     {
-	    LibPVRHelper::AddCRCIntoMetaData(outputName);
+        LibPVRHelper helper;
+	    helper.AddCRCIntoMetaData(outputName);
     }
 	return outputName;
 }
@@ -164,7 +165,7 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
     FilePath filePath = FilePath::CreateWithNewExtension(descriptor.pathname, ".png");
 
     Vector<Image *> images;
-    ImageLoader::CreateFromFileByExtension(filePath, images);
+    ImageSystem::Instance()->Load(filePath, images);
 
     if(!images.size())
         return FilePath();
@@ -189,7 +190,7 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
     for(int32 i = 0; i < imgCount; ++i)
     {
         FilePath imgPath = dirPath + Format("mip%d.png", i);
-        ImageLoader::Save(images[i], imgPath);
+        ImageSystem::Instance()->Save(imgPath, images[i]);
 
         TextureDescriptor desc;
         desc.Initialize(&descriptor);
@@ -207,7 +208,8 @@ FilePath PVRConverter::ConvertNormalMapPngToPvr(const TextureDescriptor &descrip
 
     if(ret)
     {
-        LibPVRHelper::AddCRCIntoMetaData(outputName);
+        LibPVRHelper helper;
+        helper.AddCRCIntoMetaData(outputName);
         return outputName;
     }
     else

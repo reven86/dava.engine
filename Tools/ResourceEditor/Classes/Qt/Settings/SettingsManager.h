@@ -78,6 +78,7 @@ namespace Settings
     static const DAVA::FastName Internal_MaterialsLightViewMode("Internal/MaterialsLightViewMode");
     static const DAVA::FastName Internal_MaterialsShowLightmapCanvas("Internal/MaterialsShowLightmapCanvas");
     static const DAVA::FastName Internal_LicenceAccepted("Internal/LicenceAccepted");
+	static const DAVA::FastName Internal_LODEditorMode("Internal/LODEditorMode");
 };
 
 struct SettingsNode

@@ -409,6 +409,7 @@ bool HierarchyTreeController::NewProject(const QString& projectPath)
     // add project path to res folders (to allow loading fonts before everything else)
     FilePath bundleName(projectPath.toStdString());
     bundleName.MakeDirectoryPathname();
+    EditorFontManager::Instance()->SetProjectDataPath(bundleName.GetAbsolutePathname() + "Data/");
     EditorFontManager::Instance()->SetDefaultFontsPath(FilePath(bundleName.GetAbsolutePathname() + "Data/UI/Fonts/fonts.yaml"));
     
 	

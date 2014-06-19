@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>9F64CEE0-E7DB-48CB-83E4-16FC2E84D8E6</string>
+	<key>IDESourceControlProjectName</key>
+	<string>TemplateProjectMacOS</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</key>
+		<string>ssh://github.com/dava/dava.framework.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Projects/UnitTests/TemplateProjectMacOS.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/dava/dava.framework.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</string>
+			<key>IDESourceControlWCCName</key>
+			<string>dava</string>
+		</dict>
+	</array>
+</dict>
+</plist>

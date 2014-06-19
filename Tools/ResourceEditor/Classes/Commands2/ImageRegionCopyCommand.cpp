@@ -29,8 +29,8 @@
 
 
 #include "Commands2/ImageRegionCopyCommand.h"
-#include "Render/Image.h"
-#include "Render/ImageLoader.h"
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
 
 ImageRegionCopyCommand::ImageRegionCopyCommand(DAVA::Image* _dst, const DAVA::Vector2& dstPos, DAVA::Image* src, const DAVA::Rect &srcRect, DAVA::FilePath _savePath, DAVA::Image* _orig)
 	: Command2(CMDID_IMAGE_REGION_COPY, "Remove entity")
@@ -74,7 +74,7 @@ void ImageRegionCopyCommand::Undo()
         dst->InsertImage(orig, pos, DAVA::Rect(0, 0, orig->width, orig->height));
         if(!savePath.IsEmpty())
         {
-            DAVA::ImageLoader::Save(dst, savePath);
+            DAVA::ImageSystem::Instance()->Save(savePath, dst);
         }
     }
 }
@@ -86,7 +86,7 @@ void ImageRegionCopyCommand::Redo()
         dst->InsertImage(copy, pos, DAVA::Rect(0, 0, copy->width, copy->height));
         if(!savePath.IsEmpty())
         {
-            DAVA::ImageLoader::Save(dst, savePath);
+            DAVA::ImageSystem::Instance()->Save(savePath, dst);
         }
     }
 }

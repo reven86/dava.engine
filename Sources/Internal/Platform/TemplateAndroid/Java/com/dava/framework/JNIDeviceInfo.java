@@ -91,16 +91,15 @@ public class JNIDeviceInfo {
 		return System.getProperty("http.nonProxyHosts");
 	}
 	
-	static int GPU_UNKNOWN = -1;
-	static int GPU_POWERVR_IOS = 0;
-	static int GPU_POWERVR_ANDROID = 1;
-	static int GPU_TEGRA = 2;
-	static int GPU_MALI = 3;
-	static int GPU_ADRENO = 4;
+	static final int GPU_UNKNOWN = -1;
+	static final int GPU_POWERVR_IOS = 0;
+	static final int GPU_POWERVR_ANDROID = 1;
+	static final int GPU_TEGRA = 2;
+	static final int GPU_MALI = 3;
+	static final int GPU_ADRENO = 4;
 	
 	protected static void SetGPUFamily(GL10 gl)
 	{
-		
 		String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
 		
 		if (extensions.indexOf("GL_IMG_texture_compression_pvrtc") >= 0)

@@ -34,6 +34,8 @@
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
+#include "Render/Image/ImageFormatInterface.h"
+#include "Render/Image/CRCAdditionInterface.h"
 
 namespace DAVA 
 {
@@ -41,43 +43,49 @@ namespace DAVA
 class Image;
 class File;
 
-class LibDxtHelper
+class LibDdsHelper: public ImageFormatInterface, public CRCAdditionInterface
 {
 public:
-	
-	static bool IsDxtFile(const FilePath & fileName);
-	static bool IsDxtFile(File * file);
+    
+    LibDdsHelper();
+    
+    virtual bool IsImage(File *file) const;
+    
+    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const;
 
-	//input data only in RGBA8888
-	static bool WriteDdsFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap);
+  	//input data only in RGBA8888
+    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
 
-	static bool ReadDxtFile(const FilePath & fileName, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation = false);
-	static bool ReadDxtFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation = false);
-
+    //input data only in RGBA8888
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
+    
+    virtual uint32 GetDataSize(File * file) const;
+    
+    static eErrorCode ReadFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
+       
 	static bool DecompressImageToRGBA(const DAVA::Image & image, Vector<DAVA::Image*> &imageSet, bool forceSoftwareConvertation = false);
+    
+    static uint32 GetMipMapLevelsCount(const FilePath & fileName);
+	static uint32 GetMipMapLevelsCount(File * file);
+    
+	virtual bool AddCRCIntoMetaData(const FilePath &filePathname) const;
+	virtual uint32 GetCRCFromFile(const FilePath &filePathname) const;
+    
+private:
 
+    eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, bool isCubeMap) const;
+    
 	static PixelFormat GetPixelFormat(const FilePath & fileName);
 	static PixelFormat GetPixelFormat(File * file);
 	
 	static bool GetTextureSize(const FilePath & fileName, uint32 & width, uint32 & height);
 	static bool GetTextureSize(File * file, uint32 & width, uint32 & height);
-
-	static uint32 GetMipMapLevelsCount(const FilePath & fileName);
-	static uint32 GetMipMapLevelsCount(File * file);
-
-	static uint32 GetDataSize(const FilePath & fileName);
-	static uint32 GetDataSize(File * file);
-
-	static bool AddCRCIntoMetaData(const FilePath &filePathname);
-	static uint32 GetCRCFromFile(const FilePath &filePathname);
-	
-private:
-
+    
 	static bool GetCRCFromDDSHeader(const FilePath &filePathname, uint32* tag, uint32* outputCRC);
 	
 	//input data only in RGBA8888
-	static bool WriteDxtFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap);
-	static bool WriteAtcFile(const FilePath & fileName, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap);
+	static bool WriteDxtFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat, bool isCubeMap);
+	static bool WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat, bool isCubeMap);
 };
 
 };

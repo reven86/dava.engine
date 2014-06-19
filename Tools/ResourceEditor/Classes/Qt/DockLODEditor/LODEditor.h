@@ -55,12 +55,10 @@ public:
 
 protected slots:
 
-    void GlobalSettingsButtonReleased();
+    void LODEditorSettingsButtonReleased();
     void ViewLODButtonReleased();
     void EditLODButtonReleased();
     
-    
-    void LODCorrectionChanged(double value);
     void ForceDistanceStateChanged(int checked);
     void ForceDistanceChanged(int distance);
 
@@ -72,19 +70,21 @@ protected slots:
     void LODDistanceChangedBySpinbox(double value);
     void LODDistanceChangedBySlider(const QVector<int> &changedLayers, bool continuous);
     
+    //TODO: remove after lod editing implementation
+    void CopyLODToLod0Clicked();
+
     void CreatePlaneLODClicked();
 
     void ForceLayerActivated(int index);
+
+	void EditorModeChanged(int newMode);
     
 protected:
 
     void SetupInternalUI();
-    void InitCorrectionSpinBox(QDoubleSpinBox *spinbox, int index);
     void InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index);
     
     void SetupSceneSignals();
-    
-    void UpdateSpinboxColor(QDoubleSpinBox *spinbox);
     
     void AddLODRecurcive(DAVA::Entity *entity);
     void RemoveLODRecurcive(DAVA::Entity *entity);
@@ -92,7 +92,7 @@ protected:
     void SetSpinboxValue(QDoubleSpinBox *spinbox, double value);
     void SetForceLayerValues(int layersCount);
     
-    void InvertVisibility(QWidget *widget);
+	void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
     
     void UpdateWidgetVisibility();
     
@@ -101,6 +101,8 @@ private:
     QtPosSaver posSaver;
     
     EditorLODData *editedLODData;
+
+	bool allSceneModeEnabled;
 };
 
 #endif //#ifndef __LOD_EDITOR_H__

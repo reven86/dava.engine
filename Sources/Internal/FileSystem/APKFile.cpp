@@ -35,11 +35,14 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/ResourceArchive.h"
+#include "Platform/Mutex.h"
 
 #include <android/asset_manager.h>
 
 namespace DAVA
 {
+
+Mutex APKFile::mutex = Mutex();
 
 APKFile::APKFile()
     : DynamicMemoryFile()
@@ -54,6 +57,7 @@ APKFile::~APKFile()
 
 File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
 {
+	mutex.Lock();
 //	Logger::Debug("[APKFile::CreateFromAssets] wan't to create file %s", filePath.c_str());
 //
     FileSystem * fileSystem = FileSystem::Instance();
@@ -71,6 +75,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
 			int32 size = item.archive->LoadResource(relfilename, 0);
 			if ( size == -1 )
 			{
+				mutex.Unlock();
 				return 0;
 			}
             
@@ -79,6 +84,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
 
             APKFile *fileInstance = CreateFromData(relfilename, buffer, size, attributes);
             SafeDeleteArray(buffer);
+            mutex.Unlock();
 			return fileInstance;
 		}
 	}
@@ -87,6 +93,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
     if(isDirectory)
     {
         Logger::Error("[APKFile::CreateFromAssets] Can't create file because of it is directory (%s)", filePath.GetAbsolutePathname().c_str());
+        mutex.Unlock();
         return NULL;
     }
     
@@ -102,6 +109,7 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
     if(!asset)
     {
         Logger::Error("[APKFile::CreateFromAssets] Can't load asset for path %s", filePath.GetAbsolutePathname().c_str());
+        mutex.Unlock();
         return NULL;
     }
     
@@ -114,11 +122,19 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
     uint32 readSize = AAsset_read(asset, data, dataSize * sizeof(uint8));
     AAsset_close(asset);
 
+    if (readSize != dataSize)
+    {
+    	Logger::Error("IsMaiThread:%d, readSize:%d, dataSize:%d",
+    		Thread::IsMainThread() ? 1 : 0,
+    		readSize,
+    		dataSize);
+    }
     DVASSERT_MSG(readSize == dataSize * sizeof(uint8), "Can't read full file");
 
     APKFile *fileInstance = CreateFromData(filePath, data, readSize, attributes);
     DVASSERT_MSG(fileInstance, "Can't create dynamic file from memory");
     SafeDeleteArray(data);
+    mutex.Unlock();
     return fileInstance;
 }
     

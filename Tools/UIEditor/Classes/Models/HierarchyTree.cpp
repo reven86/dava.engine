@@ -62,9 +62,15 @@ HierarchyTree::HierarchyTree()
 	projectCreated = false;
 }
 
+HierarchyTree::~HierarchyTree()
+{
+    Clear();
+}
+
 void HierarchyTree::Clear()
 {
     rootNode.Clear();
+    UnlockProjectFiles(true);
 }
 
 bool HierarchyTree::Load(const QString& projectPath)
@@ -85,6 +91,10 @@ bool HierarchyTree::Load(const QString& projectPath)
 		return false;
 	}
 
+    // Build the list of file names to be locked.
+    List<QString> fileNames;
+    fileNames.push_back(projectPath);
+
     // NO Localization Data should exist at this point, otherwise automatic
     // LocalizedStrings obtaining will interfere with the loading process!
     LocalizationSystem::Instance()->Cleanup();
@@ -104,6 +114,7 @@ bool HierarchyTree::Load(const QString& projectPath)
     {
         FilePath::AddResourcesFolder(bundleName);
     }
+    EditorFontManager::Instance()->SetProjectDataPath(bundleName.GetAbsolutePathname() + "Data/");
     
     const YamlNode *font = projectRoot->Get(FONT_NODE);
     
@@ -161,15 +172,13 @@ bool HierarchyTree::Load(const QString& projectPath)
 		const String &platformName = platform->AsString();
 		HierarchyTreePlatformNode* platformNode = new HierarchyTreePlatformNode(&rootNode, QString::fromStdString(platformName));
         
-		result &= platformNode->Load(platform);
+		result &= platformNode->Load(platform, fileNames);
 		rootNode.AddTreeNode(platformNode);
         
         // Remember the platform to load its localization later.
         loadedPlatforms.insert(std::make_pair(platformNode, platform));
 	}
 
-
-    
     // After the project is loaded and tree is build, update the Tree Extradata with the texts from buttons just loaded.
     // Do this for all platforms and screens. The update direction is FROM Control TO Extra Data.
     UpdateExtraData(BaseMetadata::UPDATE_EXTRADATA_FROM_CONTROL);
@@ -208,6 +217,9 @@ bool HierarchyTree::Load(const QString& projectPath)
     // Do this for all platforms and screens.
 	HierarchyTreeController::Instance()->UpdateSelection(platformNode, screenNode);
 
+    // Can lock the project files here.
+    LockProjectFiles(fileNames);
+    
 	return result;
 }
 
@@ -487,7 +499,8 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
         
         if(!EditorFontManager::Instance()->GetDefaultFontsPath().IsEmpty())
         {
-            fontNode->Add(DEFAULT_FONTS_PATH_NODE, EditorFontManager::Instance()->GetDefaultFontsPath().GetFrameworkPath());
+
+            fontNode->Add(DEFAULT_FONTS_PATH_NODE, EditorFontManager::Instance()->GetDefaultFontsFrameworkPath());
         }
     }
     
@@ -512,7 +525,8 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
         EditorFontManager::Instance()->SaveLocalizedFonts();
     }
 
-    // Delete unused items from disk before saving.
+    // Unlock project files and delete unused items from disk before saving.
+    UnlockProjectFiles(false);
     HierarchyTreeController::Instance()->DeleteUnusedItemsFromDisk(projectPath);
 
     // Do the save itself.
@@ -541,9 +555,9 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	// Update Data directory last modified datetime - set currrent time
 	UpdateModificationDate(ResourcesManageHelper::GetDataPath(projectPath));
 
-	// Save project file
+	// Save project file.
 	result &= parser->SaveToYamlFile(projectFile.toStdString(), root, true);
-	
+
     // Return the Localized Values.
     UpdateExtraData(BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);
 
@@ -558,6 +572,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	}
 
     SafeRelease(parser);
+    LockProjectFiles();
 
 	return result;
 }
@@ -705,4 +720,43 @@ void HierarchyTree::UpdateModificationDate(const QString &path)
 	// 02/05/2014 - Request only for MACOS
 	utime(path.toStdString().c_str(), NULL);
 #endif
+}
+
+void HierarchyTree::LockProjectFiles()
+{
+    for (List<String>::iterator iter = projectLockedFiles.begin(); iter != projectLockedFiles.end(); iter ++)
+    {
+        const String& fileName = (*iter);
+        FileSystem::Instance()->LockFile(fileName, true);
+    }
+}
+
+void HierarchyTree::LockProjectFiles(const List<QString>& fileNames)
+{
+    for (List<QString>::const_iterator iter = fileNames.begin(); iter != fileNames.end(); iter ++)
+    {
+        const String& fileName = (*iter).toStdString();
+        if (FileSystem::Instance()->LockFile(fileName, true))
+        {
+            projectLockedFiles.push_back(fileName);
+        }
+        else
+        {
+            Logger::Warning("Unable to lock file %s", fileName.c_str());
+        }
+    }
+}
+
+void HierarchyTree::UnlockProjectFiles(bool needCleanup)
+{
+    for (List<String>::iterator iter = projectLockedFiles.begin(); iter != projectLockedFiles.end(); iter ++)
+    {
+        const String& fileName = (*iter);
+        FileSystem::Instance()->LockFile(fileName, false);
+    }
+
+    if (needCleanup)
+    {
+        projectLockedFiles.clear();
+    }
 }

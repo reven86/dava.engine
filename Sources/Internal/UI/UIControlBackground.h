@@ -257,6 +257,9 @@ public:
 	// WTF? Probably we should move it to protected to avoid problems in future? 
 	Color color;//!<Control color. By default is Color(1,1,1,1).
     
+
+	void SetShader(Shader *shader);
+
 protected:
 	void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
 	void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);
@@ -304,7 +307,8 @@ public:
 protected:
 	~UIControlBackground();
 	Color drawColor;
-	
+
+	Shader *shader;
 };
 	
 // Implementation	

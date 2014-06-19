@@ -112,6 +112,9 @@
 #include "Tools/DeveloperTools/DeveloperTools.h"
 #include "Render/Highlevel/VegetationRenderObject.h"
 
+#include "Classes/Qt/BeastDialog/BeastDialog.h"
+
+
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -498,8 +501,8 @@ void QtMainWindow::SetupToolBars()
 	// outline by object type
 	{
 		objectTypesWidget = new QComboBox();
-		objectTypesWidget->setMaximumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
-		objectTypesWidget->setMinimumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
+		//objectTypesWidget->setMaximumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
+		//objectTypesWidget->setMinimumWidth(ResourceEditor::DEFAULT_TOOLBAR_CONTROL_SIZE_WITH_TEXT);
 
 		const QList<QAction *> actions = ui->menuObjectTypes->actions();
         QActionGroup *group = new QActionGroup(ui->menuObjectTypes);
@@ -668,6 +671,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionCollapseSceneTree, SIGNAL(triggered()), ui->sceneTree, SLOT(CollapseAll()));
     QObject::connect(ui->actionAddLandscape, SIGNAL(triggered()), this, SLOT(OnAddLandscape()));
     QObject::connect(ui->actionAddSkybox, SIGNAL(triggered()), this, SLOT(OnAddSkybox()));
+	QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
@@ -705,9 +709,6 @@ void QtMainWindow::SetupActions()
 
 	QObject::connect(SceneSignals::Instance(), SIGNAL(SnapToLandscapeChanged(SceneEditor2*, bool)),
 					 this, SLOT(OnSnapToLandscapeChanged(SceneEditor2*, bool)));
-
-    QObject::connect(ui->actionAddSoundComponent, SIGNAL(triggered()), this, SLOT(OnAddSoundComponent()));
-    QObject::connect(ui->actionRemoveSoundComponent, SIGNAL(triggered()), this, SLOT(OnRemoveSoundComponent()));
 
     // Debug functions
 	QObject::connect(ui->actionGridCopy, SIGNAL(triggered()), developerTools, SLOT(OnDebugFunctionsGridCopy()));
@@ -856,8 +857,6 @@ void QtMainWindow::EnableProjectActions(bool enable)
 {
 	ui->actionNewScene->setEnabled(enable);
 	ui->actionOpenScene->setEnabled(enable);
-	ui->actionSaveScene->setEnabled(enable);
-	ui->actionSaveToFolder->setEnabled(enable);
 	ui->actionCubemapEditor->setEnabled(enable);
     ui->actionImageSplitter->setEnabled(enable);
 	ui->dockLibrary->setEnabled(enable);
@@ -1957,7 +1956,7 @@ void QtMainWindow::OnSaveTiledTexture()
 		Image *image = landscapeTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_OPAQUE);
 		if(image)
 		{
-			ImageLoader::Save(image, pathToSave);
+            ImageSystem::Instance()->Save(pathToSave, image);
 			SafeRelease(image);
 		}
 
@@ -2047,15 +2046,23 @@ void QtMainWindow::OnBeastAndSave()
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
 
-    int32 ret = ShowQuestion("Beast", "The operation will take a lot of time. After lightmaps are generated, scene will be saved. Do you want to proceed?", MB_FLAG_YES | MB_FLAG_NO, MB_FLAG_NO);
-    if(ret == MB_FLAG_NO) return;
+    if (!scene->IsLoaded() || scene->IsChanged())
+    {
+        if (!SaveScene(scene))
+            return;
+    }
+
+    BeastDialog dlg(this);
+    dlg.SetScene(scene);
+    const bool run = dlg.Exec();
+    if ( !run ) return;
 
 	if (!SaveTilemask(false))
 	{
 		return;
 	}
 
-	RunBeast();
+    RunBeast(dlg.GetPath());
 	SaveScene(scene);
 
     scene->ClearAllCommands();
@@ -2107,14 +2114,15 @@ void QtMainWindow::OnCameraLookFromTop()
 	}
 }
 
-void QtMainWindow::RunBeast()
+void QtMainWindow::RunBeast(const QString& outputPath)
 {
 #if defined (__DAVAENGINE_BEAST__)
 
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
 
-	scene->Exec(new BeastAction(scene, beastWaitDialog));
+    const DAVA::FilePath path = outputPath.toStdString();
+    scene->Exec(new BeastAction(scene, path, beastWaitDialog));
 
 	OnReloadTextures();
 
@@ -2237,7 +2245,8 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	{
 		return false;
 	}
-	KeyedArchive* customProps = landscape->GetCustomProperties();
+
+	KeyedArchive* customProps = GetOrCreateCustomProperties(landscape)->GetArchive();
 	if(NULL == customProps)
 	{
 		return false;
@@ -2245,7 +2254,8 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	
 	String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname());
 	customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,pathToSave);
-	return true;
+	
+    return true;
 }
 
 void QtMainWindow::OnHeightmapEditor()
@@ -2399,47 +2409,6 @@ void QtMainWindow::OnGrasEditor()
     }
 }
 
-void QtMainWindow::OnAddSoundComponent()
-{
-    SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    SceneSelectionSystem *ss = scene->selectionSystem;
-    if(ss->GetSelectionCount() > 0)
-    {
-        scene->BeginBatch("Add Action Component");
-
-        for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-        {
-            scene->Exec(new AddComponentCommand(ss->GetSelectionEntity(i), Component::CreateByType(Component::SOUND_COMPONENT)));
-        }
-
-        scene->EndBatch();
-    }
-}
-
-void QtMainWindow::OnRemoveSoundComponent()
-{
-    SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-
-    SceneSelectionSystem *ss = scene->selectionSystem;
-    if(ss->GetSelectionCount() > 0)
-    {
-        scene->BeginBatch("Add Action Component");
-
-        for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
-        {
-            SoundComponent * sc = GetSoundComponent(ss->GetSelectionEntity(i));
-            if(sc)
-            {
-                scene->Exec(new RemoveComponentCommand(ss->GetSelectionEntity(i), sc));
-            }
-        }
-
-        scene->EndBatch();
-    }
-}
 void QtMainWindow::OnBuildStaticOcclusion()
 {
     SceneEditor2* scene = GetCurrentScene();
@@ -2713,6 +2682,26 @@ void QtMainWindow::OnEmptyEntity()
 	scene->selectionSystem->SetSelection(newEntity);
 
 	newEntity->Release();
+}
+
+void QtMainWindow::OnAddWindEntity()
+{
+	SceneEditor2* scene = GetCurrentScene();
+	if(!scene) return;
+
+	Entity * windEntity = new Entity();
+	windEntity->SetName(ResourceEditor::WIND_NODE_NAME);
+
+	Matrix4 ltMx = Matrix4::MakeTranslation(Vector3(0.f, 0.f, 20.f));
+	GetTransformComponent(windEntity)->SetLocalTransform(&ltMx);
+
+	WindComponent * wind = new WindComponent();
+	windEntity->AddComponent(wind);
+
+	scene->Exec(new EntityAddCommand(windEntity, scene));
+	scene->selectionSystem->SetSelection(windEntity);
+
+	windEntity->Release();
 }
 
 bool QtMainWindow::LoadAppropriateTextureFormat()

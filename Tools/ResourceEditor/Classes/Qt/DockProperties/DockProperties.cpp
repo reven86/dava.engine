@@ -68,6 +68,7 @@ void DockProperties::Init()
     addComponentMenu->addAction(ui->actionAddQualitySettingsComponent);
     addComponentMenu->addAction(ui->actionAddStaticOcclusionComponent);
     addComponentMenu->addAction(ui->actionAddSoundComponent);
+    addComponentMenu->addAction(ui->actionAddWaveComponent);
     connect(ui->actionAddNewComponent, SIGNAL(triggered()), SLOT(OnAddAction()));
 }
 

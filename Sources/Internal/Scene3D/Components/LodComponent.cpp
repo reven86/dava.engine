@@ -144,7 +144,7 @@ void LodComponent::Deserialize(KeyedArchive *archive, SerializationContext *seri
 			}
 		}
 
-        if(serializationContext->GetVersion() < 11)
+        if(serializationContext->GetVersion() < OLD_LODS_SCENE_VERSION)
         {
             KeyedArchive *lodDataArch = archive->GetArchive("lc.loddata");
             if(NULL != lodDataArch)

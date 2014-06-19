@@ -31,7 +31,7 @@
 #include "SceneValidator.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Project/ProjectManager.h"
-#include "Render/LibPVRHelper.h"
+#include "Render/Image/LibPVRHelper.h"
 #include "Render/TextureDescriptor.h"
 
 #include "Qt/Main/QtUtils.h"
@@ -176,13 +176,15 @@ void SceneValidator::ValidateNodeCustomProperties(Entity * sceneNode)
 {
     if(!GetLight(sceneNode))
     {
-        KeyedArchive * props = sceneNode->GetCustomProperties();
-
-        props->DeleteKey("editor.staticlight.used");
-        props->DeleteKey("editor.staticlight.enable");
-        props->DeleteKey("editor.staticlight.castshadows");
-        props->DeleteKey("editor.staticlight.receiveshadows");
-        props->DeleteKey("lightmap.size");
+        KeyedArchive * props = GetCustomPropertiesArchieve(sceneNode);
+        if(props)
+        {
+            props->DeleteKey("editor.staticlight.used");
+            props->DeleteKey("editor.staticlight.enable");
+            props->DeleteKey("editor.staticlight.castshadows");
+            props->DeleteKey("editor.staticlight.receiveshadows");
+            props->DeleteKey("lightmap.size");
+        }
     }
 }
 
@@ -193,39 +195,12 @@ void SceneValidator::ValidateRenderComponent(Entity *ownerNode, Set<String> &err
     
     RenderObject *ro = rc->GetRenderObject();
     if(!ro) return;
-    
-    bool isSpeedTree = false;
 
     uint32 count = ro->GetRenderBatchCount();
     for(uint32 b = 0; b < count; ++b)
     {
         RenderBatch *renderBatch = ro->GetRenderBatch(b);
         ValidateRenderBatch(ownerNode, renderBatch, errorsLog);
-
-        isSpeedTree |= (renderBatch->GetMaterial() && renderBatch->GetMaterial()->GetMaterialTemplate()->name == NMaterialName::SPEEDTREE_LEAF);
-    }
-    
-    if(isSpeedTree && !IsPointerToExactClass<SpeedTreeObject>(ro))
-    {
-        Entity * parent = ownerNode->GetParent();
-        DVASSERT(parent);
-        Entity * nextEntity = parent->GetNextChild(ownerNode);
-
-        ownerNode->Retain();
-        parent->RemoveNode(ownerNode);
-
-        SpeedTreeObject * treeObject = new SpeedTreeObject();
-        ro->Clone(treeObject);
-        rc->SetRenderObject(treeObject);
-        treeObject->Release();
-
-        treeObject->RecalcBoundingBox();
-
-        if(nextEntity)
-            parent->InsertBeforeNode(ownerNode, nextEntity);
-        else
-            parent->AddNode(ownerNode);
-        ownerNode->Release();
     }
 
 	if(ro->GetType() == RenderObject::TYPE_LANDSCAPE)
@@ -399,11 +374,7 @@ void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NM
 
 VariantType* SceneValidator::GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key)
 {
-    if(!ownerNode)
-        return 0;
-
-    KeyedArchive * props = ownerNode->GetCustomProperties();
-
+    KeyedArchive * props = GetCustomPropertiesArchieve(ownerNode);
     if(!props)
         return 0;
 
@@ -415,7 +386,7 @@ VariantType* SceneValidator::GetCustomPropertyFromParentsTree(Entity *ownerNode,
 
 bool SceneValidator::NodeRemovingDisabled(Entity *node)
 {
-    KeyedArchive *customProperties = node->GetCustomProperties();
+    KeyedArchive *customProperties = GetCustomPropertiesArchieve(node);
     return (customProperties && customProperties->IsKeyExists(ResourceEditor::EDITOR_DO_NOT_REMOVE));
 }
 
@@ -666,8 +637,8 @@ bool SceneValidator::IsTextureDescriptorPath(const FilePath &path)
 
 void SceneValidator::ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog)
 {
-	KeyedArchive* customProps = landscapeEntity->GetCustomProperties();
-	if(customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP))
+	KeyedArchive* customProps = GetCustomPropertiesArchieve(landscapeEntity);
+	if(customProps && customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP))
 	{
 		String currentSaveName = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 		FilePath path = "/" + currentSaveName;

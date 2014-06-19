@@ -376,7 +376,7 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
 	Texture* customColorsTexture = customColorsSprite->GetTexture();
 
 	Image* image = customColorsTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	ImageLoader::Save(image, filePath);
+    ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 
 	StoreSaveFileName(filePath);
@@ -388,7 +388,8 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 	if(filePath.IsEmpty())
 		return false;
 
-	Vector<Image*> images = ImageLoader::CreateFromFileByContent(filePath);
+    Vector<Image*> images;
+    ImageSystem::Instance()->Load(filePath, images);
 	if(images.empty())
 		return false;
 
@@ -502,7 +503,7 @@ String CustomColorsSystem::GetRelativePathToProjectPath(const FilePath& absolute
 	if(absolutePath.IsEmpty())
 		return String();
 
-	return absolutePath.GetRelativePathname(FilePath(ProjectManager::Instance()->CurProjectPath().toStdString()));
+	return absolutePath.GetRelativePathname(ProjectManager::Instance()->CurProjectPath());
 }
 
 FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relativePath)
@@ -510,7 +511,7 @@ FilePath CustomColorsSystem::GetAbsolutePathFromProjectPath(const String& relati
 	if(relativePath.empty())
 		return FilePath();
 	
-	return (FilePath(ProjectManager::Instance()->CurProjectPath().toStdString()) + relativePath);
+	return ProjectManager::Instance()->CurProjectPath() + relativePath;
 }
 
 int32 CustomColorsSystem::GetBrushSize()

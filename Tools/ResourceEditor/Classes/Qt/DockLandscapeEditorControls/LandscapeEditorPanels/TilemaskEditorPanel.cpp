@@ -166,18 +166,15 @@ void TilemaskEditorPanel::ConnectToSignals()
 
 void TilemaskEditorPanel::StoreState()
 {
-	KeyedArchive* customProperties = GetActiveScene()->GetCustomProperties();
-	if (customProperties)
-	{
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN,
-								   (int32)sliderWidgetBrushSize->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MAX,
-								   (int32)sliderWidgetBrushSize->GetRangeMax());
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MIN,
-								   (int32)sliderWidgetStrength->GetRangeMin());
-		customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MAX,
-								   (int32)sliderWidgetStrength->GetRangeMax());
-	}
+	KeyedArchive* customProperties = GetOrCreateCustomProperties(GetActiveScene())->GetArchive();
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN,
+                               (int32)sliderWidgetBrushSize->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MAX,
+                               (int32)sliderWidgetBrushSize->GetRangeMax());
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MIN,
+                               (int32)sliderWidgetStrength->GetRangeMin());
+    customProperties->SetInt32(ResourceEditor::TILEMASK_EDITOR_STRENGTH_MAX,
+                               (int32)sliderWidgetStrength->GetRangeMax());
 }
 
 void TilemaskEditorPanel::RestoreState()
@@ -195,7 +192,7 @@ void TilemaskEditorPanel::RestoreState()
 	int32 strRangeMin = DEF_STRENGTH_MIN_VALUE;
 	int32 strRangeMax = DEF_STRENGTH_MAX_VALUE;
 
-	KeyedArchive* customProperties = sceneEditor->GetCustomProperties();
+	KeyedArchive* customProperties = GetCustomPropertiesArchieve(sceneEditor);
 	if (customProperties)
 	{
 		brushRangeMin = customProperties->GetInt32(ResourceEditor::TILEMASK_EDITOR_BRUSH_SIZE_MIN, DEF_BRUSH_MIN_SIZE);

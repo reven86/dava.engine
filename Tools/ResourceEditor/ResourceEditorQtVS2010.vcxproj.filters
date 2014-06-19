@@ -217,6 +217,9 @@
     <Filter Include="Classes\Qt\LicenceDialog">
       <UniqueIdentifier>{c8c29a9c-afc6-4b9c-b487-3d322a66bf50}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Qt\BeastDialog">
+      <UniqueIdentifier>{2dc3cc91-3dd3-49c3-b36a-f67af31c019c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\Collada\ColladaAnimatedMesh.cpp">
@@ -1962,6 +1965,12 @@
     <ClCompile Include="Classes\Commands2\RebuildTangentSpaceCommand.cpp">
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Qt\BeastDialog\BeastDialog.cpp">
+      <Filter>Classes\Qt\BeastDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Commands2\CopyLastLODCommand.cpp">
+      <Filter>Classes\Commands2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">
@@ -3455,10 +3464,16 @@
     <ClInclude Include="Classes\Qt\Settings\SettingsDialog.h">
       <Filter>Classes\Qt\Settings</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Qt\BeastDialog\BeastDialog.h">
+      <Filter>Classes\Qt\BeastDialog</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.h">
       <Filter>QtGenerated</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Commands2\RebuildTangentSpaceCommand.h">
+      <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Commands2\CopyLastLODCommand.h">
       <Filter>Classes\Commands2</Filter>
     </ClInclude>
   </ItemGroup>
@@ -3518,6 +3533,9 @@
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\LODEditor.ui">
+      <Filter>QtData</Filter>
+    </None>
+    <None Include="DataQt\BeastDialog.ui">
       <Filter>QtData</Filter>
     </None>
   </ItemGroup>

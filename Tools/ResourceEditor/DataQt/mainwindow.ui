@@ -237,7 +237,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -293,6 +293,7 @@
      <addaction name="actionParticleEffectNode"/>
      <addaction name="actionAddLandscape"/>
      <addaction name="actionAddSkybox"/>
+     <addaction name="actionAddWind"/>
      <addaction name="actionAddVegetation"/>
      <addaction name="separator"/>
      <addaction name="actionEditor_Sprite"/>
@@ -1822,6 +1823,9 @@
    <property name="toolTip">
     <string>Add skybox</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionCustomQuality">
    <property name="text">
@@ -1888,6 +1892,18 @@
     <string>ImageSplitter</string>
    </property>
   </action>
+  <action name="actionAddWind">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/wind.png</normaloff>:/QtIcons/wind.png</iconset>
+   </property>
+   <property name="text">
+    <string>Wind</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Wind</string>
+   </property>
+  </action>
   <action name="actionAddVegetation">
    <property name="icon">
     <iconset resource="QtIcons.qrc">
@@ -1952,6 +1968,14 @@
    </property>
    <property name="text">
     <string>Unlock Transform</string>
+   </property>
+  </action>
+  <action name="actionAddWaveComponent">
+   <property name="text">
+    <string>Add Wave Component</string>
+   </property>
+   <property name="toolTip">
+    <string>Add Wave Component</string>
    </property>
   </action>
   <action name="actionRebuildCurrentOcclusionCell">

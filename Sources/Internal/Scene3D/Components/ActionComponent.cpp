@@ -34,6 +34,8 @@
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 
 namespace DAVA
@@ -163,7 +165,7 @@ namespace DAVA
 	
 	void ActionComponent::StopSwitch(int32 switchIndex)
 	{
-		uint32 activeCount = 0;
+		uint32 markedCount = 0;
 		uint32 count = actions.size();
 		for(uint32 i = 0; i < count; ++i)
 		{
@@ -174,14 +176,14 @@ namespace DAVA
 				actions[i].markedForUpdate = false;
 			}
 			
-			if(actions[i].active)
+			if(actions[i].markedForUpdate)
 			{
-				activeCount++;
+				markedCount++;
 			}
 		}
 
 		if(started &&
-		   0 == activeCount)
+		   0 == markedCount)
 		{			
 			started = false;
 			allActionsActive = false;
@@ -198,6 +200,7 @@ namespace DAVA
 	
 	void ActionComponent::Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex)
 	{
+        bool wasMarked = false;
 		Vector<ActionComponent::ActionContainer>::iterator i = actions.begin();
 		for(; i < actions.end(); ++i)
 		{
@@ -206,12 +209,14 @@ namespace DAVA
 			   innerAction.entityName == entityName &&
 			   innerAction.switchIndex == switchIndex)
 			{
+                wasMarked = (*i).markedForUpdate;
 				actions.erase(i);
 				break;
 			}
 		}
 		
 		uint32 activeActionCount = 0;
+        uint32 markedCount = 0;
 		uint32 count = actions.size();
 		for(uint32 i = 0; i < count; ++i)
 		{
@@ -219,13 +224,19 @@ namespace DAVA
 			{
 				activeActionCount++;
 			}
+            if (actions[i].markedForUpdate)
+            {
+                markedCount++;
+            }
 		}
 		
 		bool prevActionsActive = allActionsActive;
 		allActionsActive = (activeActionCount == count);
 		
-		if(!prevActionsActive &&
-		   allActionsActive != prevActionsActive)
+        //we should un-watch in to cases
+        //a. if after removing it appears that all actions are already added
+        //b. if after removing marked action it appears we have no marked actions anymore
+		if ((!prevActionsActive && (allActionsActive != prevActionsActive)) || (wasMarked && !markedCount))        
 		{
 			entity->GetScene()->actionSystem->UnWatch(this);
 		}
@@ -298,6 +309,7 @@ namespace DAVA
 		{
 			actionComponent->actions[i] = actions[i];
 			actionComponent->actions[i].active = false;
+            actionComponent->actions[i].markedForUpdate = false;
 			actionComponent->actions[i].timer = 0.0f;
 		}
 		
@@ -368,6 +380,10 @@ namespace DAVA
 		{
 			OnActionSound(action);
 		}
+        else if(Action::TYPE_WAVE == action.type)
+        {
+            OnActionWave(action);
+        }
 	}
 	
 	void ActionComponent::OnActionParticleEffect(const Action& action)
@@ -404,6 +420,21 @@ namespace DAVA
 		}
 	}
 	
+    void ActionComponent::OnActionWave(const Action& action)
+    {
+        Entity* target = GetTargetEntity(action.entityName, entity);
+
+        if(target != NULL)
+        {
+            WaveComponent* component = GetWaveComponent(target);
+            if(component)
+            {
+                component->Trigger();
+            }
+
+        }
+    }
+
 	Entity* ActionComponent::GetTargetEntity(const FastName& name, Entity* parent)
 	{
         if(name == ACTION_COMPONENT_SELF_ENTITY_NAME)

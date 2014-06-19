@@ -80,7 +80,7 @@ uint32 MaterialOptimizer::GetOptimizedVertexFormat(Material::eType type)
 
         case Material::MATERIAL_SPEED_TREE_LEAF:
         {
-            optimazedFormat = EVF_VERTEX | EVF_COLOR | EVF_TANGENT | EVF_TEXCOORD0;
+            optimazedFormat = EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_PIVOT | EVF_FLEXIBILITY | EVF_ANGLE_SIN_COS;
         }break;
 
 		default:

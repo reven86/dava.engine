@@ -470,7 +470,7 @@ bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
 #if defined (__DAVAENGINE_WIN32__)
     if (isLock)
     {
-        HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hFile = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile != INVALID_HANDLE_VALUE)
         {
             lockedFileHandles[path] = hFile;

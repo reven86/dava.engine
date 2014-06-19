@@ -46,8 +46,8 @@ HangingObjectsHeight::HangingObjectsHeight(QWidget *parent /*= 0*/)
 	heightValue->setToolTip("Min height for hanging objects");
 	heightValue->setMinimum(-100);
 	heightValue->setMaximum(100);	
-	heightValue->setSingleStep(0.1);
-	heightValue->setDecimals(2);
+	heightValue->setSingleStep(0.01);
+	heightValue->setDecimals(4);
 
 	QLabel *caption = new QLabel("Min height:", this);
 

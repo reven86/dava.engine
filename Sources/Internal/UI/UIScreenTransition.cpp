@@ -33,8 +33,8 @@
 #include "Render/RenderHelper.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
-#include "Render/ImageLoader.h"
-#include "Render/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/Image.h"
 
 namespace DAVA 
 {

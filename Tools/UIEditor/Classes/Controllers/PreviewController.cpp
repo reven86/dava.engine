@@ -387,7 +387,7 @@ void PreviewController::MakeScreenshot(const String& fileName, DefaultScreen* sc
 
     ScopedPtr<Image> image(texture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND));
     image->ResizeCanvas(scaledScreenRect.dx, scaledScreenRect.dy);
-    ImageLoader::Save(image, fileName);
+    ImageSystem::Instance()->Save(fileName, image);
 }
 
 };

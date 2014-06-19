@@ -34,7 +34,7 @@
 #include "Render/Highlevel/Camera.h"
 #include "Render/ShaderCache.h"
 
-#include "Render/ImageLoader.h"
+#include "Render/Image/ImageSystem.h"
 
 namespace DAVA
 {

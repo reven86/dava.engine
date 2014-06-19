@@ -27,46 +27,58 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_IMAGELOADER_H__
-#define __DAVAENGINE_IMAGELOADER_H__
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "FileSystem/FilePath.h"
+#ifndef __SCENE_SYSTEM_TEST_H__
+#define __SCENE_SYSTEM_TEST_H__
 
-namespace DAVA 
-{
+#include "DAVAEngine.h"
+using namespace DAVA;
 
-class File;
-class Image;
-class ImageLoader
+#include "TestTemplate.h"
+
+class TestSceneSystem : public SceneSystem
 {
 public:
-
-    static bool CreateFromFileByExtension(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+    TestSceneSystem(Scene * scene);
+    ~TestSceneSystem();
     
-	static bool CreateFromFileByContent(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromFileByContent(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-
-    static bool Save(const Image *image, const FilePath & pathname);
+    virtual void RegisterEntity(Entity * entity);
+    virtual void UnregisterEntity(Entity * entity);
+    virtual void RegisterComponent(Entity * entity, Component * component);
+    virtual void UnregisterComponent(Entity * entity, Component * component);
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
     
+    /*uint32 registeredEntityCount;
+    uint32 unregisteredEntityCount;
+    uint32 addedComponentCount;
+    uint32 removedComponentCount;
+    uint32 filteredAddedEntityCount;
+    uint32 filteredRemovedEntityCount;*/
+
+    Set<Entity*> unfilteredEntities;
+    Set<Entity*> filteredEntities;
+};
+
+class SceneSystemTest : public TestTemplate<SceneSystemTest>
+{
 protected:
-
-    static bool CreateFromPNGFile(const FilePath & pathname, Vector<Image *> & imageSet);
-    static bool CreateFromJPEGFile(const FilePath & pathname, Vector<Image *> & imageSet);
-	static bool CreateFromPVRFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromDDSFile(const FilePath & pathname, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromPNG(File *file, Vector<Image *> & imageSet);
-    static bool CreateFromJPEG(File *file, Vector<Image *> & imageSet);
-	static bool CreateFromPVR(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
-	static bool CreateFromDDS(File *file, Vector<Image *> & imageSet, int32 baseMipmap = 0);
+    ~SceneSystemTest(){}
+public:
+	SceneSystemTest();
     
-    static bool IsPVRFile(File *file);
-    static bool IsPNGFile(File *file);
-	static bool IsDDSFile(File *file);
-    static bool IsJPEGFile(File *file);
-};
-	
+	virtual void LoadResources();
+	virtual void UnloadResources();
+    
+    void RegisterUnregisterAddRemoveTest(PerfFuncData * data);
+    
+    Scene * scene;
+    TestSceneSystem * testSceneSystemAction;
+    TestSceneSystem * testSceneSystemActionSound;
+    TestSceneSystem * testSceneSystemSound;
+    
+private:
 };
 
-#endif // __DAVAENGINE_IMAGELOADER_H__
+
+#endif //#ifndef __SCENE_SYSTEM_TEST_H__

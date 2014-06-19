@@ -429,7 +429,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 			contextMenu.addSeparator();
 			contextMenu.addAction(QIcon(":/QtIcons/save_as.png"), "Save Entity As...", this, SLOT(SaveEntityAs()));
 
-			DAVA::KeyedArchive *customProp = entity->GetCustomProperties();
+			DAVA::KeyedArchive *customProp = GetCustomPropertiesArchieve(entity);
 			if(NULL != customProp)
 			{
 				DAVA::FilePath ownerRef = customProp->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
@@ -460,17 +460,6 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 				particleEffectMenu->addAction(QIcon(":/QtIcons/stop.png"), "Stop", this, SLOT(StopEffect()));
 				particleEffectMenu->addAction(QIcon(":/QtIcons/restart.png"), "Restart", this, SLOT(RestartEffect()));
 			}
-
-			//      Disabled for 0.5.5 version
-			//		SceneEditor2* sceneEditor = treeModel->GetScene();
-			//		if(NULL != sceneEditor)
-			//		{
-			//			if(sceneEditor->selectionSystem->GetSelectionCount() > 1)
-			//			{
-			//				contextMenu.addSeparator();
-			//				contextMenu.addAction("Group to entity with merged LODs", QtMainWindow::Instance(), SLOT(OnUniteEntitiesWithLODs()));
-			//			}
-			//		}
 
 			if(selectionSize == 1)
 			{
@@ -606,9 +595,9 @@ void SceneTree::EditModel()
 		for(size_t i = 0; i < ss->GetSelectionCount(); ++i)
 		{
 			DAVA::Entity *entity = ss->GetSelectionEntity(i);
-			if(NULL != entity && NULL != entity->GetCustomProperties())
+            DAVA::KeyedArchive *archive = GetCustomPropertiesArchieve(entity);
+			if(archive)
 			{
-				DAVA::KeyedArchive *archive = entity->GetCustomProperties();
 				DAVA::FilePath entityRefPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
 				if(entityRefPath.Exists())
 				{
@@ -653,12 +642,16 @@ void SceneTree::ReloadModel()
 			for(size_t i = 0; i < selection.Size(); ++i)
 			{
 				DAVA::Entity *entity = selection.GetEntity(i);
-				DAVA::FilePath pathToReload(entity->GetCustomProperties()->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
-				if(!pathToReload.Exists())
-				{
-					wrongPathes += Format("\r\n%s : %s",entity->GetName().c_str(),
-										  pathToReload.GetAbsolutePathname().c_str());
-				}
+                DAVA::KeyedArchive *archive = GetCustomPropertiesArchieve(entity);
+                if(archive)
+                {
+                    DAVA::FilePath pathToReload(archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
+                    if(!pathToReload.Exists())
+                    {
+                        wrongPathes += Format("\r\n%s : %s",entity->GetName().c_str(),
+                                              pathToReload.GetAbsolutePathname().c_str());
+                    }
+                }
 			}
 			if(!wrongPathes.empty())
 			{
@@ -677,9 +670,10 @@ void SceneTree::ReloadModelAs()
 	if(NULL != sceneEditor)
 	{
 		DAVA::Entity *entity = sceneEditor->selectionSystem->GetSelectionEntity(0);
-		if(NULL != entity)
+        DAVA::KeyedArchive *archive = GetCustomPropertiesArchieve(entity);
+		if(NULL != archive)
 		{
-			DAVA::String ownerPath = entity->GetCustomProperties()->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
+			DAVA::String ownerPath = archive->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
 			if(ownerPath.empty())
 			{
 				FilePath p = sceneEditor->GetScenePath().GetDirectory();

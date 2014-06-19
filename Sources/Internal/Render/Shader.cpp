@@ -118,7 +118,10 @@ FastName attributeStrings[VERTEX_FORMAT_STREAM_MAX_COUNT] =
     FastName("inTangent"),
     FastName("inBinormal"),
     FastName("inJointWeight"),
-    FastName("inTime")
+    FastName("inTime"),
+    FastName("inPivot"),
+    FastName("inFlexibility"),
+    FastName("inAngleSinCos")
 };
 
 eShaderSemantic Shader::GetShaderSemanticByName(const FastName & name)
@@ -276,7 +279,7 @@ Shader::~Shader()
     ReleaseShaderData();
 }
 
-void Shader::ReleaseShaderData()
+void Shader::ReleaseShaderData(bool deleteShader/* = true*/)
 {
     SafeDeleteArray(attributeNames);
     //SafeDeleteArray(uniforms);
@@ -286,7 +289,8 @@ void Shader::ReleaseShaderData()
     SafeRelease(vertexShaderData);
     SafeRelease(fragmentShaderData);
     
-    DeleteShaders();
+    if (deleteShader)
+        DeleteShaders();
 
     activeAttributes = 0;
     activeUniforms = 0;
@@ -1211,7 +1215,18 @@ void Shader::BindDynamicParameters()
                 }
                 break;
             }
-
+            case PARAM_SPEED_TREE_TRUNK_OSCILLATION:
+            case PARAM_SPEED_TREE_LEAFS_OSCILLATION:
+            {
+                pointer_size _updateSemantic = GET_DYNAMIC_PARAM_UPDATE_SEMANTIC(currentUniform->shaderSemantic);
+                if (_updateSemantic != currentUniform->updateSemantic)
+                {
+                    Vector2 * param = (Vector2*)RenderManager::GetDynamicParam(currentUniform->shaderSemantic);
+                    SetUniformValueByUniform(currentUniform, *param);
+                    currentUniform->updateSemantic = _updateSemantic;
+                }
+                break;
+            }
             case PARAM_COLOR:
             {
                 const Color & c = RenderManager::Instance()->GetColor();
@@ -1334,6 +1349,8 @@ void Shader::Lost()
     program = 0;
     activeAttributes = 0;
     activeUniforms = 0;
+    
+    ReleaseShaderData(false);
 }
 
 void Shader::Invalidate()

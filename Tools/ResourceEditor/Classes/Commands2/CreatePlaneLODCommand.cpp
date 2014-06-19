@@ -30,6 +30,7 @@
 #include "Qt/Scene/SceneHelper.h"
 #include "Qt/Settings/SettingsManager.h"
 #include "Classes/CommandLine/TextureDescriptor/TextureDescriptorUtils.h"
+#include "Scene/SceneHelper.h"
 
 #include "Render/Material/NMaterialNames.h"
 
@@ -107,7 +108,6 @@ DAVA::Entity* CreatePlaneLODCommand::GetEntity() const
     return lodComponent->GetEntity();
 }
 
-
 void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camera * camera, DAVA::Texture * toTexture, DAVA::int32 fromLodLayer, const DAVA::Rect & viewport /* = DAVA::Rect(0, 0, -1, -1) */, bool clearTarget /* = true */)
 {
     DAVA::TexturesMap textures;
@@ -135,7 +135,11 @@ void CreatePlaneLODCommand::DrawToTexture(DAVA::Entity * fromEntity, DAVA::Camer
         RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
     Scene * tempScene = new Scene();
-    Entity * entity = fromEntity->Clone();
+    NMaterial * globalMaterial = fromEntity->GetScene()->GetGlobalMaterial();
+    if(globalMaterial)
+        tempScene->SetGlobalMaterial(globalMaterial->Clone());
+
+    Entity * entity = SceneHelper::CloneEntityWithMaterials(fromEntity);
 	entity->SetLocalTransform(DAVA::Matrix4::IDENTITY);
 
     tempScene->AddNode(entity);
@@ -301,7 +305,7 @@ void CreatePlaneLODCommand::CreatePlaneBatch()
 	NMaterial* material = NMaterial::CreateMaterialInstance(FastName(Format("%s_planes", fromEntity->GetName().c_str())),
 															NMaterialName::TEXTURED_ALPHATEST,
 															NMaterial::DEFAULT_QUALITY_NAME);
-	material->SetFlag(NMaterial::FLAG_VERTEXFOG, NMaterial::FlagOn);
+
 	NMaterialHelper::DisableStateFlags(PASS_FORWARD, material, RenderStateData::STATE_CULL);
 	material->SetTexture(NMaterial::TEXTURE_ALBEDO, TextureDescriptor::GetDescriptorPathname(textureSavePath));
 	
@@ -316,8 +320,7 @@ void CreatePlaneLODCommand::CreateTextureFiles()
     
     FilePath folder = textureSavePath.GetDirectory();
     FileSystem::Instance()->CreateDirectory(folder, true);
-    
-    ImageLoader::Save(planeImage, textureSavePath);
+    ImageSystem::Instance()->Save(textureSavePath, planeImage);
     TextureDescriptorUtils::CreateDescriptorIfNeed(textureSavePath);
 }
 

@@ -368,6 +368,12 @@ void EditorFontManager::ResetDefaultFont()
 	SafeRelease(defaultFont);
 }
 
+void EditorFontManager::SetProjectDataPath(const FilePath& path)
+{
+    Logger::FrameworkDebug("EditorFontManager::SetProjectDataPath %s", path.GetAbsolutePathname().c_str());
+    projectDataPath = path;
+}
+
 void EditorFontManager::SetDefaultFontsPath(const FilePath& path)
 {
     Logger::FrameworkDebug("EditorFontManager::SetDefaultFontsPath %s", path.GetAbsolutePathname().c_str());
@@ -377,6 +383,11 @@ void EditorFontManager::SetDefaultFontsPath(const FilePath& path)
 const FilePath& EditorFontManager::GetDefaultFontsPath()
 {
     return defaultFontsPath;
+}
+
+String EditorFontManager::GetDefaultFontsFrameworkPath()
+{
+    return "~res:/" + defaultFontsPath.GetRelativePathname(projectDataPath);
 }
 
 FilePath EditorFontManager::GetLocalizedFontsPath(const String &locale)

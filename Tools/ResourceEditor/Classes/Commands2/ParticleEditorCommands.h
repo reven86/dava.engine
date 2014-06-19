@@ -398,11 +398,11 @@ public:
 	CommandSaveParticleEmitterToYaml(ParticleEmitter* emitter, const FilePath& path);
 	virtual void Redo();
 
-	ParticleEmitter* GetEmitter() const {return selectedEmitter;};
+	ParticleEmitter* GetEmitter() const {return selectedEmitter;};    
 
 protected:
 	ParticleEmitter* selectedEmitter;
-	FilePath filePath;
+	FilePath filePath;    
 };
 
 /*

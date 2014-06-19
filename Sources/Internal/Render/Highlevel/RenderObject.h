@@ -78,7 +78,8 @@ public:
 		TYPE_SPRITE,			// Sprite Node
 		TYPE_PARTICLE_EMTITTER,  // Particle Emitter
 		TYPE_SKYBOX,
-        TYPE_VEGETATION
+        TYPE_VEGETATION,
+        TYPE_SPEED_TREE
     };
     
 	enum eFlags
@@ -119,6 +120,9 @@ public:
     void RemoveRenderBatch(RenderBatch * batch);
     void RemoveRenderBatch(uint32 batchIndex);
 
+    void SetRenderBatchLODIndex(uint32 batchIndex, int32 newLodIndex);
+    void SetRenderBatchSwitchIndex(uint32 batchIndex, int32 newSwitchIndex);
+
     void UpdateBatchesSortingTransforms();
 
     virtual void RecalcBoundingBox();
@@ -149,7 +153,7 @@ public:
     inline void SetBSphere(const Sphere & sphere);
     
     inline const AABBox3 & GetBoundingBox() const;
-    inline AABBox3 & GetWorldBoundingBox();
+    inline const AABBox3 & GetWorldBoundingBox() const;
     
     inline void SetWorldTransformPtr(Matrix4 * _worldTransform);
     inline Matrix4 * GetWorldTransformPtr() const;
@@ -288,7 +292,7 @@ inline const AABBox3 & RenderObject::GetBoundingBox() const
     return bbox;
 }
 
-inline AABBox3 & RenderObject::GetWorldBoundingBox()
+inline const AABBox3 & RenderObject::GetWorldBoundingBox() const
 {
     return worldBBox;
 }

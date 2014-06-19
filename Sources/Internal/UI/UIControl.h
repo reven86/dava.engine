@@ -520,7 +520,7 @@ public:
 		But this methods calls for their children.
 	 \returns control visibility.
 	 */
-	virtual bool GetVisible() const;
+	DAVA_DEPRECATED(virtual bool GetVisible() const);
    
 	/**
 	 \brief Sets contol visibility.
@@ -532,7 +532,7 @@ public:
 	 \param[in] isVisible new control visibility.
 	 \param[in] hierarchic use true if you want to all control children change visiblity.
 	 */
-	virtual void SetVisible(bool isVisible, bool hierarchic = true);
+	DAVA_DEPRECATED(virtual void SetVisible(bool isVisible, bool hierarchic = true));
 
     /**
      \brief Returns control visibility.

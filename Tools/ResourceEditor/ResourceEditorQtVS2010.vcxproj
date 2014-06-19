@@ -349,6 +349,7 @@
     <ClCompile Include="Classes\Commands2\CommandNotify.cpp" />
     <ClCompile Include="Classes\Commands2\CommandStack.cpp" />
     <ClCompile Include="Classes\Commands2\ConvertToShadowCommand.cpp" />
+    <ClCompile Include="Classes\Commands2\CopyLastLODCommand.cpp" />
     <ClCompile Include="Classes\Commands2\CreatePlaneLODCommand.cpp" />
     <ClCompile Include="Classes\Commands2\CustomColorsCommands2.cpp" />
     <ClCompile Include="Classes\Commands2\DAEConvertAction.cpp" />
@@ -398,6 +399,7 @@
     <ClCompile Include="Classes\FrameworkMain.cpp" />
     <ClCompile Include="Classes\GameCore.cpp" />
     <ClCompile Include="Classes\ImageTools\ImageTools.cpp" />
+    <ClCompile Include="Classes\Qt\BeastDialog\BeastDialog.cpp" />
     <ClCompile Include="Classes\Qt\CubemapEditor\ClickableQLabel.cpp" />
     <ClCompile Include="Classes\Qt\CubemapEditor\CubeListItemDelegate.cpp" />
     <ClCompile Include="Classes\Qt\CubemapEditor\CubemapEditorDialog.cpp" />
@@ -572,6 +574,7 @@
     <ClCompile Include="Classes\Qt\Tools\TileTexturePreviewWidget\TileTexturePreviewWidgetItemDelegate.cpp" />
     <ClCompile Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.cpp" />
     <ClCompile Include="Classes\SpritesPacker.cpp" />
+    <ClCompile Include="_GeneratedQt\BeastDialog\BeastDialog_moc.cpp" />
     <ClCompile Include="_GeneratedQt\CubemapEditor\ClickableQLabel_moc.cpp" />
     <ClCompile Include="_GeneratedQt\CubemapEditor\CubeListItemDelegate_moc.cpp" />
     <ClCompile Include="_GeneratedQt\CubemapEditor\CubemapEditorDialog_moc.cpp" />
@@ -989,6 +992,7 @@
     <ClInclude Include="Classes\Commands2\CommandNotify.h" />
     <ClInclude Include="Classes\Commands2\CommandStack.h" />
     <ClInclude Include="Classes\Commands2\ConvertToShadowCommand.h" />
+    <ClInclude Include="Classes\Commands2\CopyLastLODCommand.h" />
     <ClInclude Include="Classes\Commands2\CreatePlaneLODCommand.h" />
     <ClInclude Include="Classes\Commands2\CustomColorsCommands2.h" />
     <ClInclude Include="Classes\Commands2\DAEConvertAction.h" />
@@ -1040,6 +1044,7 @@
     <ClInclude Include="Classes\FrameworkMain.h" />
     <ClInclude Include="Classes\GameCore.h" />
     <ClInclude Include="Classes\ImageTools\ImageTools.h" />
+    <ClInclude Include="Classes\Qt\BeastDialog\BeastDialog.h" />
     <ClInclude Include="Classes\Qt\CubemapEditor\ClickableQLabel.h" />
     <ClInclude Include="Classes\Qt\CubemapEditor\CubeListItemDelegate.h" />
     <ClInclude Include="Classes\Qt\CubemapEditor\CubemapEditorDialog.h" />
@@ -1241,6 +1246,7 @@
     <None Include="DataQt\BaseAddEntityDialog.ui">
       <SubType>Designer</SubType>
     </None>
+    <None Include="DataQt\BeastDialog.ui" />
     <None Include="DataQt\CubemapEditorDialog.ui" />
     <None Include="DataQt\CubeMapTextureBrowser.ui" />
     <None Include="DataQt\ImageSplitter.ui" />

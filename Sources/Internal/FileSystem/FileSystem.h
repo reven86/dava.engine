@@ -68,7 +68,7 @@ public:
 		\param[in] filePath full path for the file we want to delete
 		\returns true if deletion was successful
 	 */
-    bool DeleteFile(const FilePath & filePath);
+	virtual bool DeleteFile(const FilePath & filePath);
 	
 	
 	/*
@@ -80,7 +80,7 @@ public:
 		\param[in] isRecursive if true trying to delete all subfolders, if not just trying to delete this directory
 		\returns true if this directory was deleted
 	 */
-    bool DeleteDirectory(const FilePath & path, bool isRecursive = true);
+	virtual bool DeleteDirectory(const FilePath & path, bool isRecursive = true);
 
 	
 	/*
@@ -90,7 +90,7 @@ public:
 		\param[in] isRecursive if true go into child directories and delete files there also, false by default
 		\returns number of deleted files
 	*/ 
-    uint32 DeleteDirectoryFiles(const FilePath & path, bool isRecursive = false);
+	virtual uint32 DeleteDirectoryFiles(const FilePath & path, bool isRecursive = false);
 
 	enum eCreateDirectoryResult
 	{
@@ -103,55 +103,55 @@ public:
 		\param[in] filepath where you want to create a directory
 		\returns true if directory created successfully
 	 */
-    eCreateDirectoryResult CreateDirectory(const FilePath & filePath, bool isRecursive = false);
+	virtual eCreateDirectoryResult CreateDirectory(const FilePath & filePath, bool isRecursive = false);
 	
 	/**
 		\brief Function to retrieve current working directory
 		\returns current working directory
 	 */
-    const FilePath & GetCurrentWorkingDirectory();
+	virtual const FilePath & GetCurrentWorkingDirectory();
 
 	/**
 		\brief Function to retrieve directory, which contain executable binary file
 		\returns current directory, with  executable file
 	 */
-    FilePath  GetCurrentExecutableDirectory();
+	virtual FilePath  GetCurrentExecutableDirectory();
 
 	/**
 		\brief Function to set current working directory
 		\param[in] newWorkingDirectory new working directory to be set
 		\returns true if directory set successfully
 	 */
-    bool SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory);
+	virtual bool SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory);
 	
 	/**
         \brief Function to retrieve current documents directory
         \returns current documents directory
      */
-    const FilePath & GetCurrentDocumentsDirectory();
+	virtual const FilePath & GetCurrentDocumentsDirectory();
     
     /**
          \brief Function to set current documents directory
          \param[in] newDocDirectory new documents directory to be set
      */
-    void SetCurrentDocumentsDirectory(const FilePath & newDocDirectory);
+	virtual void SetCurrentDocumentsDirectory(const FilePath & newDocDirectory);
     
     /**
          \brief Function to set current documents directory to default
      */
-    void SetDefaultDocumentsDirectory();
+	virtual void SetDefaultDocumentsDirectory();
     
     /**
          \brief Function to retrieve user's documents path
          \returns user's documents path
      */
-    const FilePath GetUserDocumentsPath();
+	virtual const FilePath GetUserDocumentsPath();
     
     /**
          \brief Function to retrieve public documents path
          \returns public documents path
      */
-    const FilePath GetPublicDocumentsPath();
+	virtual const FilePath GetPublicDocumentsPath();
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)  
     /**
@@ -164,13 +164,13 @@ public:
 	/**
 		\brief Function check if specified path is a regular file
 	*/
-    bool IsFile(const FilePath & pathToCheck);
+	virtual bool IsFile(const FilePath & pathToCheck);
 
 		
 	/**
 		\brief Function check if specified path is a directory
 	 */
-    bool IsDirectory(const FilePath & pathToCheck);
+	virtual bool IsDirectory(const FilePath & pathToCheck);
 	
 	/**
      \brief Function sets/removes exclusive lock to/from file.
@@ -178,14 +178,14 @@ public:
      \param[in] isLock true to lock file, false to unlock.
      \returns true if file was successfully locked/unlocked, false otherwise
 	 */
-    bool LockFile(const FilePath & filePath, bool isLock);
+	virtual bool LockFile(const FilePath & filePath, bool isLock);
 
     /**
      \brief Function checks whether the file is locked.
      \param[in] filePath The name of the file to be checked for lock.
      \returns true if file is locked, false if not locked
 	 */
-    bool IsFileLocked(const FilePath & filePath) const;
+	virtual bool IsFileLocked(const FilePath & filePath) const;
 
 	File *CreateFileForFrameworkPath(const FilePath & frameworkPath, uint32 attributes);
 
@@ -195,7 +195,7 @@ public:
 		\param[out] newFile The name of the new file.
 		\returns true if file was successfully copied, false otherwise
 	*/
-    bool CopyFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting = false);
+	virtual bool CopyFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting = false);
 
 	/**
 		\brief Moves an existing file to a new file.
@@ -204,7 +204,7 @@ public:
 		\param[in] overwriteExisting signal to overwrite existing file with name newFile.
 		\returns true if file was successfully moved, false otherwise
 	*/
-    bool MoveFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting = false);
+	virtual bool MoveFile(const FilePath & existingFile, const FilePath & newFile, bool overwriteExisting = false);
 
 	/**
 		\brief Copies directory to another existing directory.
@@ -212,7 +212,7 @@ public:
 		\param[out] destinationDirectory The name of the new file.
 		\returns true if all files were successfully copied, false otherwise.
 	*/
-    bool CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory, bool overwriteExisting = false);
+	virtual bool CopyDirectory(const FilePath & sourceDirectory, const FilePath & destinationDirectory, bool overwriteExisting = false);
     
     /**
         \brief Read whole file contents into new buffer. 
@@ -239,7 +239,7 @@ public:
 		\param[in] archiveName pathname or local filename of archive we want to attach
 		\param[in] attachPath path we attach our archive 
 	*/ 
-    void AttachArchive(const String & archiveName, const String & attachPath);
+	virtual void AttachArchive(const String & archiveName, const String & attachPath);
 
 	/**
 	 \brief Invokes the command processor to execute a command
@@ -251,7 +251,7 @@ public:
     
 private:
     
-    eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);
+	virtual eCreateDirectoryResult CreateExactDirectory(const FilePath & filePath);
 
 	FilePath currentWorkingDirectory;
     FilePath currentDocDirectory;

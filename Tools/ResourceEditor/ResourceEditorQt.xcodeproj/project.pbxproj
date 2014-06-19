@@ -12,6 +12,7 @@
 		0282B87118BC71E9006F1EE4 /* SoundComponentEditCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 0282B86F18BC71E9006F1EE4 /* SoundComponentEditCommands.cpp */; };
 		0282B87F18BC745C006F1EE4 /* FMODSoundBrowser_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 0282B87D18BC745C006F1EE4 /* FMODSoundBrowser_moc.cpp */; };
 		0282B88018BC745C006F1EE4 /* SoundComponentEditor_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 0282B87E18BC745C006F1EE4 /* SoundComponentEditor_moc.cpp */; };
+		029FE11A193F171D00973C06 /* CopyLastLODCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 029FE118193F171D00973C06 /* CopyLastLODCommand.cpp */; };
 		02E9E4101739612300C501BC /* libfmodevent.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E40E1739612300C501BC /* libfmodevent.dylib */; };
 		02E9E4111739612300C501BC /* libfmodex.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E40F1739612300C501BC /* libfmodex.dylib */; };
 		02F640801745372B0053F038 /* libfmodevent.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 02E9E40E1739612300C501BC /* libfmodevent.dylib */; };
@@ -42,6 +43,8 @@
 		64B9018A18BF7B15001E6CCC /* GrassEditorProxy.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018818BF7B15001E6CCC /* GrassEditorProxy.cpp */; };
 		64B9018D18BF7B25001E6CCC /* GrassEditorSystem.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018B18BF7B25001E6CCC /* GrassEditorSystem.cpp */; };
 		765A0ADB18CE0C7F0044516F /* MaterialTemplateModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */; };
+		765BA22F19406A9E005D6B4E /* BeastDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA22B19406A9E005D6B4E /* BeastDialog.cpp */; };
+		765BA23D19406B0B005D6B4E /* BeastDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */; };
 		76741C8818A3BDE20044A0BF /* CacheRequest.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76741C8618A3BDE20044A0BF /* CacheRequest.cpp */; };
 		76741C9118A3BE650044A0BF /* CacheRequest_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76741C9018A3BE650044A0BF /* CacheRequest_moc.cpp */; };
 		76A098A418E1968E00D442EB /* LicenceDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76A098A318E1968E00D442EB /* LicenceDialog_moc.cpp */; };
@@ -653,6 +656,8 @@
 		0282B87018BC71E9006F1EE4 /* SoundComponentEditCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundComponentEditCommands.h; sourceTree = "<group>"; };
 		0282B87D18BC745C006F1EE4 /* FMODSoundBrowser_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODSoundBrowser_moc.cpp; sourceTree = "<group>"; };
 		0282B87E18BC745C006F1EE4 /* SoundComponentEditor_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundComponentEditor_moc.cpp; sourceTree = "<group>"; };
+		029FE118193F171D00973C06 /* CopyLastLODCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CopyLastLODCommand.cpp; sourceTree = "<group>"; };
+		029FE119193F171D00973C06 /* CopyLastLODCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CopyLastLODCommand.h; sourceTree = "<group>"; };
 		02E9E40E1739612300C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		02E9E40F1739612300C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
 		17FB4BD01924B86800F3E3BC /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
@@ -706,6 +711,9 @@
 		6C21256244E578A9DE07EE60 /* xml_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = xml_macos; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
 		765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTemplateModel.cpp; sourceTree = "<group>"; };
 		765A0ADA18CE0C7F0044516F /* MaterialTemplateModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialTemplateModel.h; sourceTree = "<group>"; };
+		765BA22B19406A9E005D6B4E /* BeastDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BeastDialog.cpp; sourceTree = "<group>"; };
+		765BA22C19406A9E005D6B4E /* BeastDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BeastDialog.h; sourceTree = "<group>"; };
+		765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BeastDialog_moc.cpp; path = _GeneratedQt/BeastDialog/BeastDialog_moc.cpp; sourceTree = "<group>"; };
 		76741C8618A3BDE20044A0BF /* CacheRequest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CacheRequest.cpp; sourceTree = "<group>"; };
 		76741C8718A3BDE20044A0BF /* CacheRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CacheRequest.h; sourceTree = "<group>"; };
 		76741C9018A3BE650044A0BF /* CacheRequest_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CacheRequest_moc.cpp; sourceTree = "<group>"; };
@@ -1829,6 +1837,15 @@
 			name = QtPropertyDataValidator;
 			sourceTree = "<group>";
 		};
+		765BA22A19406A9E005D6B4E /* BeastDialog */ = {
+			isa = PBXGroup;
+			children = (
+				765BA22B19406A9E005D6B4E /* BeastDialog.cpp */,
+				765BA22C19406A9E005D6B4E /* BeastDialog.h */,
+			);
+			path = BeastDialog;
+			sourceTree = "<group>";
+		};
 		76A098A218E1967B00D442EB /* LicenceDialog */ = {
 			isa = PBXGroup;
 			children = (
@@ -1943,6 +1960,7 @@
 		E89DFBE4163ECBB800B51706 /* GeneratedQt */ = {
 			isa = PBXGroup;
 			children = (
+				765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */,
 				0282B87C18BC745C006F1EE4 /* SoundComponentEditor */,
 				76A098A218E1967B00D442EB /* LicenceDialog */,
 				76A0989A18E1965E00D442EB /* ui_LicenceDialog.h */,
@@ -3111,6 +3129,8 @@
 		E8C99008184CD0EB00AFBF3F /* Commands2 */ = {
 			isa = PBXGroup;
 			children = (
+				029FE118193F171D00973C06 /* CopyLastLODCommand.cpp */,
+				029FE119193F171D00973C06 /* CopyLastLODCommand.h */,
 				EAAC98901937335F00549BAD /* RebuildTangentSpaceCommand.cpp */,
 				EAAC98911937335F00549BAD /* RebuildTangentSpaceCommand.h */,
 				E8185C29190950E500AAD457 /* MaterialGlobalCommand.cpp */,
@@ -3252,6 +3272,7 @@
 		E8C99074184CD0EB00AFBF3F /* Qt */ = {
 			isa = PBXGroup;
 			children = (
+				765BA22A19406A9E005D6B4E /* BeastDialog */,
 				0282B86118BC71BC006F1EE4 /* SoundComponentEditor */,
 				76A098A518E196F800D442EB /* LicenceDialog */,
 				84EB52BB18B15E720094DAD9 /* ImageSplitterDialog */,
@@ -4576,6 +4597,7 @@
 				E8C992E2184CD0EC00AFBF3F /* SceneTreeDelegate.cpp in Build Sources */,
 				E8C99266184CD0EC00AFBF3F /* ColladaDocument.cpp in Build Sources */,
 				E8C991F6184CD0EC00AFBF3F /* btActivatingCollisionAlgorithm.cpp in Build Sources */,
+				029FE11A193F171D00973C06 /* CopyLastLODCommand.cpp in Build Sources */,
 				E8C9927B184CD0EC00AFBF3F /* SceneUtils.cpp in Build Sources */,
 				E8C99228184CD0EC00AFBF3F /* btStridingMeshInterface.cpp in Build Sources */,
 				E8C992B5184CD0EC00AFBF3F /* CubemapUtils.cpp in Build Sources */,
@@ -4617,6 +4639,7 @@
 				E8BAD7281859F50300C98C8D /* MimeDataHelper_moc.cpp in Build Sources */,
 				E8BAD752185A46BC00C98C8D /* LibraryWidget.cpp in Build Sources */,
 				E8C9928A184CD0EC00AFBF3F /* DynamicShadowCommands.cpp in Build Sources */,
+				765BA22F19406A9E005D6B4E /* BeastDialog.cpp in Build Sources */,
 				E8C9921D184CD0EC00AFBF3F /* btEmptyShape.cpp in Build Sources */,
 				E8C992D2184CD0EC00AFBF3F /* EmitterLayerWidget.cpp in Build Sources */,
 				E8C99203184CD0EC00AFBF3F /* btEmptyCollisionAlgorithm.cpp in Build Sources */,
@@ -4644,6 +4667,7 @@
 				E8C99232184CD0EC00AFBF3F /* btGenericPoolAllocator.cpp in Build Sources */,
 				E8C99282184CD0EC00AFBF3F /* Command2.cpp in Build Sources */,
 				E8C99309184CD0EC00AFBF3F /* HoodSystem.cpp in Build Sources */,
+				765BA23D19406B0B005D6B4E /* BeastDialog_moc.cpp in Build Sources */,
 				E8C992F8184CD0EC00AFBF3F /* CollisionBox.cpp in Build Sources */,
 				E8BAD6DC1859F50300C98C8D /* QTreeViewStateHelper_moc.cpp in Build Sources */,
 				E8BAD6BB1859F50300C98C8D /* LandscapeEditorShortcutManager_moc.cpp in Build Sources */,

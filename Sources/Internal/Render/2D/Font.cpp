@@ -300,6 +300,75 @@ bool Font::IsWordSeparator(char16 t) const
         case 12290:
         case 46:
             return true;
+        // chinese simplified and traditional
+        case 37:
+        case 62:
+        case 125: 
+        case 162: 
+        case 168: 
+        case 176:
+        case 711: 
+        case 713: 
+        case 8213: 
+        case 8214:
+        case 8222: 
+        case 8223: 
+        case 8224: 
+        case 8225: 
+        case 8250: 
+        case 8451: 
+        case 8758:
+        case 12291: 
+        case 12294: 
+        case 12296: 
+        case 12298:
+        case 12300:
+        case 12302:
+        case 12318:
+        case 65077:
+        case 65081:
+        case 65085:
+        case 65087:
+        case 65091:
+        case 65112:
+        case 65114:
+        case 65116:
+        case 65281:
+        case 65282:
+        case 65285:
+        case 65287:
+        case 65289:
+        case 65292:
+        case 65294:
+        case 65306:
+        case 65307:
+        case 65311:
+        case 65341:
+        case 65344:
+        case 65372:
+        case 65374:
+        case 8212:
+        case 8226:
+        case 8229:
+        case 8231:
+        case 9588:
+        case 65072:
+        case 65073:
+        case 65074:
+        case 65075:
+        case 65079:
+        case 65083:
+        case 65089:
+        case 65103:
+        case 65104:
+        case 65105:
+        case 65106:
+        case 65107:
+        case 65108:
+        case 65109:
+        case 65110:
+        case 65380:
+            return true;
     }
     
     return false;

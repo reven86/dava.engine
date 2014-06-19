@@ -27,14 +27,13 @@
 =====================================================================================*/
 
 
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/LibDdsHelper.h"
 
-#include "Render/LibDxtHelper.h"
-
-#include "Render/Image.h"
 #include "Render/Texture.h"
 #include "Render/RenderManager.h"
 #include "Render/PixelFormatDescriptor.h"
-
 #include <libdxt/nvtt.h>
 #include <libdxt/nvtt_extra.h>
 
@@ -242,40 +241,17 @@ PixelFormat QualcommHeler::GetDavaFormat(int32 format)
 	return FORMAT_INVALID;
 }
 
-bool LibDxtHelper::ReadDxtFile(const FilePath &fileName, Vector<Image*> &imageSet, int32 baseMipMap /*= 0*/, bool forceSoftwareConvertation /*=false*/)
-{
-	nvtt::Decompressor dec;
-
-	if(!NvttHelper::InitDecompressor(dec, fileName))
-	{
-		return false;
-	}
-	
-	return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap, forceSoftwareConvertation);
-}
-
-bool LibDxtHelper::ReadDxtFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap /*= 0*/, bool forceSoftwareConvertation /*=false*/)
-{
-	nvtt::Decompressor dec;
-
-	if(!NvttHelper::InitDecompressor(dec, file))
-	{
-		return false;
-	}
-	return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap,forceSoftwareConvertation);
-}
-
-bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
+bool LibDdsHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &imageSet, bool forceSoftwareConvertation)
 {
 	if(!(image.format >= FORMAT_DXT1 && image.format <= FORMAT_DXT5NM) )
 	{
-		Logger::Error("[LibDxtHelper::DecompressImageToRGBA] Wrong copression format (%d).", image.format);
+		Logger::Error("[LibDdsHelper::DecompressImageToRGBA] Wrong copression format (%d).", image.format);
 		return false;
 	}
 	nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(image.format);
 	if(nvtt::Format_BC5 == innerComprFormat)
 	{ 	//bc5 is unsupported, used to determinate fail in search
-		Logger::Error("[LibDxtHelper::DecompressImageToRGBA] Can't work with nvtt::Format_BC5.");
+		Logger::Error("[LibDdsHelper::DecompressImageToRGBA] Can't work with nvtt::Format_BC5.");
 		return false;
 	}
 		
@@ -312,6 +288,11 @@ bool LibDxtHelper::DecompressImageToRGBA(const Image & image, Vector<Image*> &im
 	return retValue;
 }
 
+LibDdsHelper::LibDdsHelper()
+{
+    supportedExtensions.push_back(".dds");
+}
+    
 bool NvttHelper::IsAtcFormat(nvtt::Format format)
 {
 	return (format == Format_ATC_RGB || format == Format_ATC_RGBA_EXPLICIT_ALPHA || format == Format_ATC_RGBA_INTERPOLATED_ALPHA);
@@ -570,62 +551,65 @@ bool NvttHelper::DecompressAtc(const nvtt::Decompressor & dec, DDSInfo info, Pix
 	return res;
 }
 
-bool LibDxtHelper::WriteDdsFile(const FilePath & fileNameOriginal, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap)
+bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat, bool isCubeMap)
 {
-	//creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
-	if(!fileNameOriginal.IsEqualToExtension(".dds"))
-    {
-		Logger::Error("[LibDxtHelper::WriteDxtFile] Wrong input file name (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-        return false;
-    }
-	
-	if (compressionFormat == FORMAT_ATC_RGB ||
-		compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
-		compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+#ifdef __DAVAENGINE_IPHONE__
+    
+    DVASSERT_MSG(false, "No necessary write compressed files on mobile");
+    return false;
+    
+#else
+	if(!((compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)||(compressionFormat == FORMAT_RGBA8888)))
 	{
-		return WriteAtcFile(fileNameOriginal, width, height, data, dataCount, compressionFormat, generateMipmaps, asNormalMap);
-	}
-	return WriteDxtFile(fileNameOriginal, width, height, data, dataCount, compressionFormat, generateMipmaps, asNormalMap);
-}
-
-bool LibDxtHelper::WriteDxtFile(const FilePath & fileNameOriginal, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap)
-{
-	if(!( (compressionFormat >= FORMAT_DXT1 && compressionFormat <= FORMAT_DXT5NM)|| (compressionFormat == FORMAT_RGBA8888)) )
-	{
-		Logger::Error("[LibDxtHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
+		Logger::Error("[LibDdsHelper::WriteDxtFile] Wrong copression format (%d).", compressionFormat);
 		return false;
 	}
 
     nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(compressionFormat);
     if(nvtt::Format_BC5 == innerComprFormat)
 	{ 	//bc5 is unsupported, used to determinate fail in search
-		Logger::Error("[LibDxtHelper::WriteDxtFile] Can't work with nvtt::Format_BC5.");
+		Logger::Error("[LibDdsHelper::WriteDxtFile] Can't work with nvtt::Format_BC5.");
+		return false;
+	}
+    if(imageSet.size() == 0)
+	{
+		Logger::Error("[LibDdsHelper::WriteDxtFile] Empty income image vector.");
 		return false;
 	}
     
-	uint32 imgDataSize = width * height * PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-	for(uint32 i = 0; i < dataCount; ++i)
-	{
-		NvttHelper::SwapBRChannels(data[i], imgDataSize);
-	}
-
-	nvtt::TextureType textureType = (dataCount > 1) ? nvtt::TextureType_Cube : nvtt::TextureType_2D;
+    nvtt::TextureType textureType = nvtt::TextureType_2D;
+    if(isCubeMap)
+    {
+        DVASSERT(imageSet.size() == Texture::CUBE_FACE_MAX_COUNT);
+        textureType = nvtt::TextureType_Cube;
+    }
+    int32 dataCount = imageSet.size();
 	InputOptions inputOptions;
-	inputOptions.setTextureLayout(textureType, width, height);
-    inputOptions.setMipmapGeneration(generateMipmaps);
-	
+	inputOptions.setTextureLayout(textureType, imageSet[0]->width, imageSet[0]->height);
+    inputOptions.setMipmapGeneration(dataCount > 1, dataCount - 1);
+
+    int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
 	for(uint32 i = 0; i < dataCount; ++i)
 	{
-		inputOptions.setMipmapData(data[i], width, height, 1, i);
+        uint32 imgDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
+        NvttHelper::SwapBRChannels(imageSet[i]->data, imgDataSize);
+        if(isCubeMap)
+        {
+            inputOptions.setMipmapData(imageSet[i]->data, imageSet[i]->width, imageSet[i]->height, 1, i);
+        }
+        else
+        {
+            inputOptions.setMipmapData(imageSet[i]->data, imageSet[i]->width, imageSet[i]->height, 1, 0, i);
+        }
+        NvttHelper::SwapBRChannels(imageSet[i]->data, imgDataSize);
 	}
 
 	CompressionOptions compressionOptions;
 	compressionOptions.setFormat(innerComprFormat);
-	if (FORMAT_DXT5NM == compressionFormat || asNormalMap)
+	if (FORMAT_DXT5NM == compressionFormat)
 	{
-        inputOptions.setNormalMap(true);
-        inputOptions.setNormalizeMipmaps(true);
-	}
+		inputOptions.setNormalMap(true);
+	}	
     
 	OutputOptions outputOptions;
 	FilePath fileName = FilePath::CreateWithNewExtension(fileNameOriginal, "_dds");
@@ -638,135 +622,117 @@ bool LibDxtHelper::WriteDxtFile(const FilePath & fileNameOriginal, int32 width, 
         FileSystem::Instance()->DeleteFile(fileNameOriginal);
         if(!FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true))
         {
-            Logger::Error("[LibDxtHelper::WriteDxtFile] Temporary dds file renamig failed.");
+            Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
             ret = false;
         }
     }
     else
     {
-		Logger::Error("[LibDxtHelper::WriteDxtFile] Error during writing DDS file (%s).", fileName.GetAbsolutePathname().c_str());
+		Logger::Error("[LibDdsHelper::WriteDxtFile] Error during writing DDS file (%s).", fileName.GetAbsolutePathname().c_str());
     }
     
 	return ret;
+#endif //__DAVAENGINE_IPHONE__
 }
 
-bool LibDxtHelper::WriteAtcFile(const FilePath & fileNameOriginal, int32 width, int32 height, uint8 ** data, uint32 dataCount, PixelFormat compressionFormat, bool generateMipmaps, bool asNormalMap)
+bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<Image *> &imageSet, PixelFormat compressionFormat, bool isCubeMap)
 {
-    bool ret = true;
+#ifdef __DAVAENGINE_IPHONE__
+    
+    DVASSERT_MSG(false, "Qualcomm doesn't provide texture converter library for ios");
+    return false;
+
+#else
 
 	if (compressionFormat != FORMAT_ATC_RGB &&
 		compressionFormat != FORMAT_ATC_RGBA_EXPLICIT_ALPHA &&
 		compressionFormat != FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
 	{
-		Logger::Error("[LibDxtHelper::WriteAtcFile] Wrong copression format (%d).", compressionFormat);
+		Logger::Error("[LibDdsHelper::WriteAtcFile] Wrong copression format (%d).", compressionFormat);
 		return false;
 	}
 	
 	//VI: calculate image buffer size
 	
 	int32 bufSize = 0;
-	Map<int32, int32> * mipSize = new Map<int32, int32>[dataCount];
-    Vector<Image *> * mipImages = new Vector<Image *>[dataCount];
-
-#define CLEANUP_IMAGES() \
-{ \
-    for(uint32 ii = 0; ii < dataCount; ++ii)\
-    for(uint32 kk = 0; kk < (uint32)mipImages[ii].size(); ++kk)\
-        SafeRelease(mipImages[ii][kk]);\
-} \
-
+    Vector<int32> mipSize;
+    mipSize.resize(imageSet.size());
+    int32 dataCount = imageSet.size();
+    if(imageSet.size() == 0)
+	{
+		Logger::Error("[LibDdsHelper::WriteAtcFile] Empty income image vector.");
+		return false;
+	}
+    
 	for(uint32 i = 0; i < dataCount; ++i)
 	{
-        Image * image0 = Image::CreateFromData(width, height, FORMAT_RGBA8888, data[i]);
-        if(asNormalMap)
-            image0->Normalize();
-
-        if(generateMipmaps)
-        {
-            mipImages[i] = image0->CreateMipMapsImages(asNormalMap);
-            SafeRelease(image0);
-        }
-        else
-        {
-            mipImages[i].push_back(image0);
-        }
-
-        uint32 mipImagesCount = mipImages[i].size();
-        for(uint32 k = 0; k < mipImagesCount; ++k)
-        {
-            Image * mipImage = mipImages[i][k];
-
-            TQonvertImage srcImg = {0};
-
-            srcImg.nWidth = mipImage->width;
-            srcImg.nHeight = mipImage->height;
-            srcImg.nFormat = Q_FORMAT_RGBA_8888;
-            srcImg.nDataSize = mipImage->dataSize;
-            srcImg.pData = mipImage->data;
-
-            TQonvertImage dstImg = {0};
-            dstImg.nWidth = mipImage->width;
-            dstImg.nHeight = mipImage->height;
-            dstImg.nFormat = QualcommHeler::GetQualcommFormat(compressionFormat);
-            dstImg.nDataSize = 0;
-            dstImg.pData = NULL;
-
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-            {
-                Logger::Error("[LibDxtHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-                CLEANUP_IMAGES();
-                return false;
-            }
-            bufSize += dstImg.nDataSize;
-            mipSize[i][mipImage->width] = dstImg.nDataSize;
-        }
+		TQonvertImage srcImg = {0};
+		
+		srcImg.nWidth = imageSet[i]->width;
+		srcImg.nHeight = imageSet[i]->height;
+		srcImg.nFormat = Q_FORMAT_RGBA_8888;
+		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * 4;
+		srcImg.pData = imageSet[i]->data;
+		
+		
+		TQonvertImage dstImg = {0};
+		dstImg.nWidth = imageSet[i]->width;
+		dstImg.nHeight = imageSet[i]->height;
+		dstImg.nFormat = QualcommHeler::GetQualcommFormat(compressionFormat);
+		dstImg.nDataSize = 0;
+		dstImg.pData = NULL;
+			
+		if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
+		{
+			Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
+			return false;
+		}
+        bufSize += dstImg.nDataSize;
+		mipSize[i] = dstImg.nDataSize;
 	}
 
 	//VI: convert faces
 	unsigned char* buffer = new unsigned char[bufSize];
 	unsigned char* tmpBuffer = buffer;
 
-    for(uint32 i = 0; i < dataCount; ++i)
-    {
-        uint32 mipImagesCount = mipImages[i].size();
-        for(uint32 k = 0; k < mipImagesCount; ++k)
-        {
-            Image * mipImage = mipImages[i][k];
-
-            TQonvertImage srcImg = {0};
-
-            srcImg.nWidth = mipImage->width;
-            srcImg.nHeight = mipImage->height;
-            srcImg.nFormat = Q_FORMAT_RGBA_8888;
-            srcImg.nDataSize = mipImage->dataSize;
-            srcImg.pData = mipImage->data;
-
-            TQonvertImage dstImg = {0};
-            dstImg.nWidth = mipImage->width;
-            dstImg.nHeight = mipImage->height;
-            dstImg.nFormat = QualcommHeler::GetQualcommFormat(compressionFormat);
-            dstImg.nDataSize = mipSize[i][mipImage->width];
-            dstImg.pData = tmpBuffer;
-            tmpBuffer += dstImg.nDataSize;
-
-            if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
-            {
-                Logger::Error("[LibDxtHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
-                CLEANUP_IMAGES();
-                return false;
-            }
-        }
-    }
-
+	for(uint32 i = 0; i < dataCount; ++i)
+	{
+		TQonvertImage srcImg = {0};
+		
+		srcImg.nWidth = imageSet[i]->width;
+		srcImg.nHeight = imageSet[i]->height;
+		srcImg.nFormat = Q_FORMAT_RGBA_8888;
+		srcImg.nDataSize = imageSet[i]->width * imageSet[i]->height * 4;
+		srcImg.pData = imageSet[i]->data;
+        
+        TQonvertImage dstImg = {0};
+		dstImg.nWidth = imageSet[i]->width;
+		dstImg.nHeight = imageSet[i]->height;
+		dstImg.nFormat = QualcommHeler::GetQualcommFormat(compressionFormat);
+        dstImg.nDataSize = mipSize[i];
+		dstImg.pData = tmpBuffer;
+		tmpBuffer += dstImg.nDataSize;
+			
+		if (Qonvert(&srcImg, &dstImg) != Q_SUCCESS || dstImg.nDataSize == 0)
+		{
+			Logger::Error("[LibDdsHelper::WriteAtcFile] Error converting (%s).", fileNameOriginal.GetAbsolutePathname().c_str());
+			SafeDeleteArray(buffer);
+			return false;
+		}
+	}
+	
 	nvtt::Format innerComprFormat = NvttHelper::GetNVTTFormatByPixelFormat(compressionFormat);
 	
-	nvtt::TextureType textureType = (dataCount > 1) ? nvtt::TextureType_Cube : nvtt::TextureType_2D;
+	nvtt::TextureType textureType = nvtt::TextureType_2D;
+    if(isCubeMap)
+    {
+        DVASSERT(imageSet.size() == Texture::CUBE_FACE_MAX_COUNT);
+        textureType = nvtt::TextureType_Cube;
+    }
 	InputOptions inputOptions;
-	inputOptions.setTextureLayout(textureType, width, height);
-    inputOptions.setMipmapGeneration(generateMipmaps, mipSize[0].size() - 1);
-    inputOptions.setNormalMap(asNormalMap);
-    inputOptions.setNormalizeMipmaps(asNormalMap);
-	
+	inputOptions.setTextureLayout(textureType, imageSet[0]->width, imageSet[0]->height);
+    inputOptions.setMipmapGeneration(dataCount > 1, dataCount - 1);
+
 	CompressionOptions compressionOptions;
 	compressionOptions.setFormat(innerComprFormat);
 	
@@ -786,36 +752,30 @@ bool LibDxtHelper::WriteAtcFile(const FilePath & fileNameOriginal, int32 width, 
 		FileSystem::Instance()->DeleteFile(fileNameOriginal);
 		res = FileSystem::Instance()->MoveFile(fileName, fileNameOriginal, true);
 		if (!res)
-			Logger::Error("[LibDxtHelper::WriteDxtFile] Temporary dds file renamig failed.");
+			Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
 	}
 	else
 	{
-		Logger::Error("[LibDxtHelper::WriteDxtFile] Temporary dds file renamig failed.");
+		Logger::Error("[LibDdsHelper::WriteDxtFile] Temporary dds file renamig failed.");
 	}
 
-	SafeDeleteArray(mipSize);
 	SafeDeleteArray(buffer);
 
-    CLEANUP_IMAGES();
-
 	return res;
-
-#undef CLEANUP_IMAGES
+#endif
 }
 	
-bool LibDxtHelper::IsDxtFile(const FilePath & filePathname)
+
+bool LibDdsHelper::IsImage(File * file) const
 {
 	nvtt::Decompressor dec;
-	return dec.initWithDDSFile(filePathname.GetAbsolutePathname().c_str());
+    
+	bool retValue = NvttHelper::InitDecompressor(dec,file);
+    file->Seek(0,  File::SEEK_FROM_START);
+    return retValue;
 }
 
-bool LibDxtHelper::IsDxtFile(File * file)
-{
-	nvtt::Decompressor dec;
-	return NvttHelper::InitDecompressor(dec,file);
-}
-
-PixelFormat LibDxtHelper::GetPixelFormat(const FilePath & fileName)
+PixelFormat LibDdsHelper::GetPixelFormat(const FilePath & fileName)
 {
 	nvtt::Decompressor dec;
 
@@ -827,7 +787,7 @@ PixelFormat LibDxtHelper::GetPixelFormat(const FilePath & fileName)
 	return NvttHelper::GetPixelFormat(dec);
 }
 
-PixelFormat LibDxtHelper::GetPixelFormat(File * file)
+PixelFormat LibDdsHelper::GetPixelFormat(File * file)
 {
 	nvtt::Decompressor dec;
 
@@ -839,7 +799,7 @@ PixelFormat LibDxtHelper::GetPixelFormat(File * file)
 	return NvttHelper::GetPixelFormat(dec);
 }
 
-uint32 LibDxtHelper::GetMipMapLevelsCount(const FilePath & fileName)
+uint32 LibDdsHelper::GetMipMapLevelsCount(const FilePath & fileName)
 {
 	nvtt::Decompressor dec;
 
@@ -851,7 +811,7 @@ uint32 LibDxtHelper::GetMipMapLevelsCount(const FilePath & fileName)
 	return NvttHelper::GetMipMapLevelsCount(dec);
 }
 
-uint32 LibDxtHelper::GetMipMapLevelsCount(File * file)
+uint32 LibDdsHelper::GetMipMapLevelsCount(File * file)
 {
 	nvtt::Decompressor dec;
 
@@ -863,19 +823,7 @@ uint32 LibDxtHelper::GetMipMapLevelsCount(File * file)
 	return NvttHelper::GetMipMapLevelsCount(dec);
 }
 
-uint32 LibDxtHelper::GetDataSize(const FilePath & fileName)
-{
-	nvtt::Decompressor dec;
-
-	if(!NvttHelper::InitDecompressor(dec, fileName))
-	{
-		return 0;
-	}
-
-	return NvttHelper::GetDataSize(dec);
-}
-
-uint32 LibDxtHelper::GetDataSize(File * file)
+uint32 LibDdsHelper::GetDataSize(File * file) const
 {
     nvtt::Decompressor dec ;
 
@@ -887,8 +835,7 @@ uint32 LibDxtHelper::GetDataSize(File * file)
 	return NvttHelper::GetDataSize(dec);
 }
 
-
-bool LibDxtHelper::GetTextureSize(const FilePath & fileName, uint32 & width, uint32 & height)
+bool LibDdsHelper::GetTextureSize(const FilePath & fileName, uint32 & width, uint32 & height)
 {
 	nvtt::Decompressor dec;
 
@@ -900,7 +847,7 @@ bool LibDxtHelper::GetTextureSize(const FilePath & fileName, uint32 & width, uin
 	return NvttHelper::GetTextureSize(dec, width, height);
 }
 
-bool LibDxtHelper::GetTextureSize(File * file, uint32 & width, uint32 & height)
+bool LibDdsHelper::GetTextureSize(File * file, uint32 & width, uint32 & height)
 {
 	nvtt::Decompressor dec ;
 
@@ -911,9 +858,8 @@ bool LibDxtHelper::GetTextureSize(File * file, uint32 & width, uint32 & height)
 
 	return NvttHelper::GetTextureSize(dec, width, height);
 }
-    
-
-bool LibDxtHelper::AddCRCIntoMetaData(const FilePath &filePathname)
+ 
+bool LibDdsHelper::AddCRCIntoMetaData(const FilePath &filePathname) const
 {
 	String fileNameStr = filePathname.GetAbsolutePathname();
 
@@ -921,32 +867,32 @@ bool LibDxtHelper::AddCRCIntoMetaData(const FilePath &filePathname)
     bool haveCRCTag = GetCRCFromDDSHeader(filePathname, &tag, &crc);
 	if(haveCRCTag)
 	{
-		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData] CRC is already added into %s", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] CRC is already added into %s", fileNameStr.c_str());
 		return false;
 	}
 	else if(crc != 0 || tag != 0)
 	{
-		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData] reserved for CRC place is used in %s", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] reserved for CRC place is used in %s", fileNameStr.c_str());
 		return false;
 	}
 
 	File *fileRead = File::Create(filePathname, File::READ | File::OPEN);
 	if(!fileRead)
 	{
-		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData] cannot open file %s", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData] cannot open file %s", fileNameStr.c_str());
 		return false;
 	}
     uint32 fileSize = fileRead->GetSize();
     char *fileBuffer = new char[fileSize];
 	if(!fileBuffer)
 	{
-		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot allocate buffer for file data");
+		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot allocate buffer for file data");
 		SafeRelease(fileRead);
 		return false;
 	}
     if(fileRead->Read(fileBuffer, fileSize) != fileSize)
 	{
-		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot read from file %s", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot read from file %s", fileNameStr.c_str());
 		SafeDeleteArray(fileBuffer);
 		SafeRelease(fileRead);
 		return false;
@@ -965,7 +911,7 @@ bool LibDxtHelper::AddCRCIntoMetaData(const FilePath &filePathname)
 	File *fileWrite = File::Create(tempFile, File::WRITE | File::CREATE);
 	if(!fileWrite)
 	{
-		Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot create file %s",
+		Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot create file %s",
 					  tempFile.GetAbsolutePathname().c_str());
 		return false;
 	}
@@ -981,27 +927,27 @@ bool LibDxtHelper::AddCRCIntoMetaData(const FilePath &filePathname)
 	}
     else
     {
-        Logger::Error("[LibDxtHelper::AddCRCIntoMetaData]: cannot write to file %s",
+        Logger::Error("[LibDdsHelper::AddCRCIntoMetaData]: cannot write to file %s",
                       tempFile.GetAbsolutePathname().c_str());
         FileSystem::Instance()->DeleteFile(tempFile);
         return false;
     }
 }
 
-bool LibDxtHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* outputTag, uint32* outputCRC)
+bool LibDdsHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* outputTag, uint32* outputCRC)
 {
 	String fileNameStr = filePathname.GetAbsolutePathname();
 	
 	File *fileRead = File::Create(filePathname, File::READ | File::OPEN);
 	if(!fileRead)
 	{
-		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader] cannot open file %s", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] cannot open file %s", fileNameStr.c_str());
 		return false;
 	}
 
-	if(!IsDxtFile(fileRead))
+	if(!ImageSystem::Instance()->GetImageFormatInterface(ImageSystem::FILE_FORMAT_DDS)->IsImage(fileRead))
 	{
-		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader] file %s isn't a dds one", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader] file %s isn't a dds one", fileNameStr.c_str());
 		SafeRelease(fileRead);
 		return false;
 	}
@@ -1010,7 +956,7 @@ bool LibDxtHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
 	uint32 tag = 0;
 	if(fileRead->Read(&tag,sizeof(tag)) != sizeof(tag))
 	{
-		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
 		SafeRelease(fileRead);
 		return false;
 	}
@@ -1018,7 +964,7 @@ bool LibDxtHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
 	uint32 crc = 0;
 	if(fileRead->Read(&crc,sizeof(crc)) != sizeof(crc))
 	{
-		Logger::Error("[LibDxtHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
+		Logger::Error("[LibDdsHelper::GetCRCFromDDSHeader]  cannot read file %s", fileNameStr.c_str());
 		SafeRelease(fileRead);
 		return false;
 	}
@@ -1030,7 +976,7 @@ bool LibDxtHelper::GetCRCFromDDSHeader(const FilePath &filePathname, uint32* out
 	return tag == METADATA_CRC_TAG;
 }
 
-uint32 LibDxtHelper::GetCRCFromFile(const FilePath &filePathname)
+uint32 LibDdsHelper::GetCRCFromFile(const FilePath &filePathname) const
 {
 	uint32 tag = 0, crc = 0;
 	bool success = GetCRCFromDDSHeader(filePathname, &tag, &crc);
@@ -1063,7 +1009,6 @@ uint32 NvttHelper::GetDataSize(nvtt::Decompressor & dec)
     GetInfo(dec, info);
     return info.dataSize;
 }
-
 
 bool NvttHelper::GetTextureSize(nvtt::Decompressor & dec, uint32 & width, uint32 & height)
 {
@@ -1197,6 +1142,66 @@ uint32 NvttHelper::GetCubeFaceId(uint32 nvttFaceDesc, int faceIndex)
 	}
 	
 	return faceId;
+}
+
+eErrorCode LibDdsHelper::ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap) const
+{
+    return ReadFile(infile, imageSet, baseMipMap, false);
+}
+
+eErrorCode LibDdsHelper::ReadFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap, bool forceSoftwareConvertation)
+{
+    if(NULL == file)
+    {
+        return ERROR_FILE_NOTFOUND;
+    }
+    nvtt::Decompressor dec;
+        
+    if(!NvttHelper::InitDecompressor(dec, file))
+    {
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+    
+    return NvttHelper::ReadDxtFile(dec, imageSet, baseMipMap,forceSoftwareConvertation) ? SUCCESS : ERROR_READ_FAIL;
+}
+ 
+eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+{
+    return WriteFile(fileName, imageSet, compressionFormat, false);
+}
+    
+eErrorCode LibDdsHelper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
+{
+    return WriteFile(fileName, imageSet, compressionFormat, true);
+}
+
+eErrorCode LibDdsHelper::WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat, bool isCubeMap) const
+{
+    if(imageSet[0]->format != FORMAT_RGBA8888)
+    {
+        Logger::Error("[LibDdsHelper::WriteFile] Wrong input format.");
+        return ERROR_WRITE_FAIL;
+    }
+    
+    if(isCubeMap && imageSet.size() != Texture::CUBE_FACE_MAX_COUNT)
+    {
+        Logger::Error("[LibDdsHelper::WriteFile] Wrong input image set.");
+        return ERROR_WRITE_FAIL;
+    }
+    //creating tmp dds file, nvtt accept only filename.dds as input, because of this the last letter befor "." should be changed to "_".
+	if(!fileName.IsEqualToExtension(".dds"))
+    {
+		Logger::Error("[LibDdsHelper::WriteFile] Wrong input file name (%s).", fileName.GetAbsolutePathname().c_str());
+        return ERROR_FILE_FORMAT_INCORRECT;
+    }
+	
+	if (compressionFormat == FORMAT_ATC_RGB ||
+		compressionFormat == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
+		compressionFormat == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
+	{
+		return WriteAtcFile(fileName, imageSet, compressionFormat, isCubeMap) ? SUCCESS : ERROR_WRITE_FAIL;
+	}
+	return WriteDxtFile(fileName, imageSet, compressionFormat, isCubeMap) ? SUCCESS : ERROR_WRITE_FAIL;
 }
 	
 };

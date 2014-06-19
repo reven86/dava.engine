@@ -49,7 +49,7 @@ void OwnersSignatureSystem::ProcessCommand(const Command2 *command, bool redo)
 {
 	if(IsCommandIdValid(command->GetId()))
 	{
-		KeyedArchive* properties = command->GetEntity()->GetCustomProperties();
+		KeyedArchive* properties = GetCustomPropertiesArchieve(command->GetEntity());
 		if(NULL != properties)
 		{
 			UpdateEntityOwner(properties);

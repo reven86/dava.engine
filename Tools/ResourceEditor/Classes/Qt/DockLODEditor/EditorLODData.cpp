@@ -34,6 +34,7 @@
 #include "Commands2/ChangeLODDistanceCommand.h"
 #include "Commands2/CreatePlaneLODCommand.h"
 #include "Commands2/DeleteLODCommand.h"
+#include "Commands2/CopyLastLODCommand.h"
 
 
 EditorLODData::EditorLODData()
@@ -42,6 +43,7 @@ EditorLODData::EditorLODData()
     ,   forceDistance(0.f)
     ,   forceLayer(DAVA::LodComponent::INVALID_LOD_LAYER)
     ,   activeScene(NULL)
+	,	allSceneModeEnabled(false)
 {
     connect(SceneSignals::Instance(), SIGNAL(Activated(SceneEditor2 *)), SLOT(SceneActivated(SceneEditor2 *)));
     connect(SceneSignals::Instance(), SIGNAL(Deactivated(SceneEditor2 *)), SLOT(SceneDeactivated(SceneEditor2 *)));
@@ -155,14 +157,14 @@ DAVA::uint32 EditorLODData::GetLayerTriangles(DAVA::uint32 layerNum) const
 
 void EditorLODData::SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected)
 {
-    if(activeScene == scene)
+    if(activeScene == scene && !allSceneModeEnabled)
     {
 		for(size_t i = 0; i < deselected->Size(); ++i)
 		{
 			ResetForceState(deselected->GetEntity(i));
 		}
 
-		GetDataFromSelection();
+		GetLODDataFromScene();
         UpdateForceData();
     }
 }
@@ -222,10 +224,10 @@ bool EditorLODData::GetForceDistanceEnabled() const
 }
 
 
-void EditorLODData::GetDataFromSelection()
+void EditorLODData::GetLODDataFromScene()
 {
     ClearLODData();
-    EnumerateSelectionLODs(activeScene);
+    EnumerateLODs();
 
     DAVA::int32 lodComponentsSize = lodData.size();
     if(lodComponentsSize)
@@ -302,15 +304,24 @@ void EditorLODData::AddTrianglesInfo(DAVA::uint32 triangles[], DAVA::LodComponen
 }
 
 
-void EditorLODData::EnumerateSelectionLODs(SceneEditor2 * scene)
+void EditorLODData::EnumerateLODs()
 {
-    EntityGroup selection = scene->selectionSystem->GetSelection();
-    
-    DAVA::uint32 count = selection.Size();
-    for(DAVA::uint32 i = 0; i < count; ++i)
-    {
-        EnumerateLODsRecursive(selection.GetEntity(i), lodData);
-    }
+	if(!activeScene) return;
+
+	if(allSceneModeEnabled)
+	{
+		EnumerateLODsRecursive(activeScene, lodData);
+	}
+	else
+	{
+		EntityGroup selection = activeScene->selectionSystem->GetSelection();
+
+		DAVA::uint32 count = selection.Size();
+		for(DAVA::uint32 i = 0; i < count; ++i)
+		{
+			EnumerateLODsRecursive(selection.GetEntity(i), lodData);
+		}
+	}
 }
 
 
@@ -350,7 +361,7 @@ DAVA::int32 EditorLODData::GetForceLayer() const
 void EditorLODData::SceneActivated(SceneEditor2 *scene)
 {
     activeScene = scene;
-    GetDataFromSelection();
+    GetLODDataFromScene();
     ClearForceData();
 }
 
@@ -372,7 +383,7 @@ void EditorLODData::SceneStructureChanged(SceneEditor2 *scene, DAVA::Entity *par
 
     if(activeScene == scene)
     {
-        GetDataFromSelection();
+        GetLODDataFromScene();
     }
 
     UpdateForceData();
@@ -398,10 +409,11 @@ void EditorLODData::CommandExecuted(SceneEditor2 *scene, const Command2* command
 		CommandBatch *batch = (CommandBatch *)command;
 		Command2 *firstCommand = batch->GetCommand(0);
 		if(firstCommand && (firstCommand->GetId() == CMDID_LOD_DISTANCE_CHANGE || 
+                            firstCommand->GetId() == CMDID_LOD_COPY_LAST_LOD ||
                             firstCommand->GetId() == CMDID_LOD_DELETE ||
                             firstCommand->GetId() == CMDID_LOD_CREATE_PLANE))
 		{
-			GetDataFromSelection();
+			GetLODDataFromScene();
 		}
     }
 }
@@ -415,6 +427,20 @@ void EditorLODData::CreatePlaneLOD(DAVA::int32 fromLayer, DAVA::uint32 textureSi
 
         for(DAVA::uint32 i = 0; i < componentsCount; ++i)
             activeScene->Exec(new CreatePlaneLODCommand(lodData[i], fromLayer, textureSize, texturePath));
+
+        activeScene->EndBatch();
+    }
+}
+
+void EditorLODData::CopyLastLodToLod0()
+{
+    DAVA::uint32 componentsCount = (DAVA::uint32)lodData.size();
+    if(componentsCount && activeScene)
+    {
+        activeScene->BeginBatch("LOD Added");
+
+        for(DAVA::uint32 i = 0; i < componentsCount; ++i)
+            activeScene->Exec(new CopyLastLODToLod0Command(lodData[i]));
 
         activeScene->EndBatch();
     }
@@ -438,8 +464,8 @@ FilePath EditorLODData::GetDefaultTexturePathForPlaneEntity()
     Entity * entity = lodData[0]->GetEntity();
 
     FilePath entityPath = activeScene->GetScenePath();
-    KeyedArchive * properties = entity->GetCustomProperties();
-    if(properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
+    KeyedArchive * properties = GetCustomPropertiesArchieve(entity);
+    if(properties && properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
         entityPath = FilePath(properties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, entityPath.GetAbsolutePathname()));
 
     String entityName = entity->GetName().c_str();
@@ -500,4 +526,12 @@ void EditorLODData::DeleteLastLOD()
         activeScene->EndBatch();
     }
 }
+
+void EditorLODData::EnableAllSceneMode( bool enabled )
+{
+	allSceneModeEnabled = enabled;
+
+	SceneActivated(activeScene);
+}
+
 

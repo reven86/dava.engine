@@ -65,7 +65,7 @@ struct ConvertA16toA8
     inline void operator()(const uint16 * input, uint8 *output)
     {
         uint16 pixel = *input;
-        *output = pixel;
+        *output = (uint8)pixel;
     }
 };
 
@@ -131,6 +131,15 @@ struct ConvertRGB565toRGBA8888
 		uint32 a = 0xFF;
 
  		*output = (r) | (g << 8) | (b << 16) | (a << 24);
+	}
+};
+
+struct ConvertA8toRGBA8888
+{
+	inline void operator()(const uint8 * input, uint32 *output)
+	{
+		uint32 pixel = *input;
+		*output = ((pixel) << 24) | (pixel << 16) | (pixel << 8) | pixel;
 	}
 };
 
@@ -207,13 +216,34 @@ template<class TYPE_IN, class TYPE_OUT, typename CONVERT_FUNC>
 class ConvertDirect
 {
 public:
-    void operator()(const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
-        void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+    void operator()(const void * inData, uint32 width, uint32 height, uint32 pitch, void * outData)
     {
-        CONVERT_FUNC func;
+		CONVERT_FUNC func;
         const uint8 * readPtr = reinterpret_cast<const uint8*>(inData);
         uint8 * writePtr = reinterpret_cast<uint8*>(outData);
-
+        
+        for (uint32 y = 0; y < height; ++y)
+        {
+            const TYPE_IN * readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
+            TYPE_OUT * writePtrLine = reinterpret_cast<TYPE_OUT*>(writePtr);
+            for (uint32 x = 0; x < width; ++x)
+            {
+                func(readPtrLine, writePtrLine);
+                readPtrLine++;
+                writePtrLine++;
+            }
+            readPtr += pitch; 
+            writePtr += pitch;
+        }
+    };
+    
+    void operator()(const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
+                    void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+    {
+		CONVERT_FUNC func;
+        const uint8 * readPtr = reinterpret_cast<const uint8*>(inData);
+        uint8 * writePtr = reinterpret_cast<uint8*>(outData);
+        
         for (uint32 y = 0; y < inHeight; ++y)
         {
             const TYPE_IN * readPtrLine = reinterpret_cast<const TYPE_IN*>(readPtr);
@@ -294,6 +324,13 @@ public:
         }
     }
 
+	static void ConvertImageDirect(Image *scrImage, Image *dstImage)
+	{
+		ConvertImageDirect(scrImage->format, dstImage->format, scrImage->data, scrImage->width, scrImage->height, scrImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(scrImage->format), 
+			dstImage->data, dstImage->width, dstImage->height, dstImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(dstImage->format));
+	}
+
+
 	static void ConvertImageDirect(PixelFormat inFormat, PixelFormat outFormat, const void * inData, uint32 inWidth, uint32 inHeight, uint32 inPitch, void * outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
 	{
 		if(inFormat == FORMAT_RGBA5551 && outFormat == FORMAT_RGBA8888)
@@ -314,6 +351,11 @@ public:
 		else if(inFormat == FORMAT_RGB565 && outFormat == FORMAT_RGBA8888)
 		{
 			ConvertDirect<uint16, uint32, ConvertRGB565toRGBA8888> convert;
+			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
+		}
+		else if(inFormat == FORMAT_A8 && outFormat == FORMAT_RGBA8888)
+		{
+			ConvertDirect<uint8, uint32, ConvertA8toRGBA8888> convert;
 			convert(inData, inWidth, inHeight, inPitch, outData, outWidth, outHeight, outPitch);
 		}
 	}

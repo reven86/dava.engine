@@ -29,8 +29,8 @@
 
 #include "Render/MipMapReplacer.h"
 #include "Render/Texture.h"
-#include "Render/ImageLoader.h"
-#include "Render/Image.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/Image/Image.h"
 #include "Render/RenderManager.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
@@ -98,7 +98,7 @@ void MipMapReplacer::ReplaceMipMap(Texture * texture, int32 level)
     if(!textureFilePath.IsEmpty())
     {
         Vector<Image*> mipImg;
-		ImageLoader::CreateFromFileByContent(textureFilePath, mipImg);
+        ImageSystem::Instance()->Load(textureFilePath, mipImg);
         if(mipImg.size())
         {
             uint32 mipMapSize = texture->width / (1 << level);

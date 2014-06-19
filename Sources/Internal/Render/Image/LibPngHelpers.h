@@ -33,8 +33,10 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
-#include "Render/Image.h"
 #include "FileSystem/FilePath.h"
+
+#include "Render/Image/Image.h"
+#include "Render/Image/ImageFormatInterface.h"
 
 namespace DAVA 
 {
@@ -43,17 +45,25 @@ class Texture;
 class Sprite;
 class Image;
 
-class LibPngWrapper
+class LibPngWrapper: public ImageFormatInterface
 {
 public:
     
-    static bool IsPngFile(File *file);
+    LibPngWrapper();
     
-	static int ReadPngFile(const FilePath & file, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
-	static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
-	static bool WritePngFile(const FilePath & fileName, int32 width, int32 height, uint8 * data, PixelFormat format);
+    virtual bool IsImage(File *file) const;
+    
+    virtual eErrorCode ReadFile(File *infile, Vector<Image *> &imageSet, int32 baseMipMap = 0) const;
+    
+    virtual eErrorCode WriteFile(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
+    
+    virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
 
-    static uint32 GetDataSize(const FilePath &filePathname);
+    virtual uint32 GetDataSize(File *infile) const;
+
+
+	static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
+
 
 };
 
@@ -66,10 +76,7 @@ public:
 	
 	bool Create(int32 _width, int32 _height);
 	bool CreateFromFBOSprite(Sprite * fboSprite);
-	
-	bool Load(const FilePath & filename);
-	bool Save(const FilePath & filename);
-	
+		
 	void DrawImage(int sx, int sy, PngImage * image);
 	void DrawRect(const Rect2i & rect, uint32 color);
 

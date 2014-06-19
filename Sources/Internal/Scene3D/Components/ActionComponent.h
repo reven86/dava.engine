@@ -49,9 +49,10 @@ namespace DAVA
 		{
 			enum eType
 			{
-				TYPE_NONE = 0,
-				TYPE_PARTICLE_EFFECT,
-				TYPE_SOUND
+                TYPE_NONE = 0,
+                TYPE_PARTICLE_EFFECT,
+                TYPE_SOUND,
+                TYPE_WAVE
 			};
 
 			enum eEvent
@@ -128,6 +129,7 @@ namespace DAVA
 		
 		void OnActionParticleEffect(const Action& action);
 		void OnActionSound(const Action& action);
+        void OnActionWave(const Action& action);
 		
 		Entity* GetTargetEntity(const FastName& name, Entity* parent);
 		
@@ -144,7 +146,7 @@ namespace DAVA
 			{
 			}
 			
-			ActionContainer(const Action& srcAction) : timer(0.0f), active(false)
+			ActionContainer(const Action& srcAction) : timer(0.0f), active(false), markedForUpdate(false)
 			{
 				action = srcAction;
 			}

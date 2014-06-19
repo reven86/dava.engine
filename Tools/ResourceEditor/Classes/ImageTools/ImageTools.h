@@ -69,7 +69,7 @@ struct Channels
     void ReleaseImages();
 };
 
-class ImageTools: public DAVA::ImageLoader
+class ImageTools
 {
 public:
     

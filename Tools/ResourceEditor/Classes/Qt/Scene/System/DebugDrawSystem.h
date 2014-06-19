@@ -56,8 +56,12 @@ public:
 	void SetRequestedObjectType(ResourceEditor::eSceneObjectType objectType);
 	ResourceEditor::eSceneObjectType GetRequestedObjectType() const;
 
-	void EnableHangingObjectsMode(bool enabled);
-	bool HangingObjectsModeEnabled() const;
+	inline void EnableHangingObjectsMode(bool enabled);
+	inline bool HangingObjectsModeEnabled() const;
+
+    //need be moved to testing tool
+    DAVA_DEPRECATED(inline void EnableSwithcesWithDifferentLODsMode(bool enabled));
+    DAVA_DEPRECATED(inline bool SwithcesWithDifferentLODsModeEnabled() const);
 
 protected:
 
@@ -71,10 +75,15 @@ protected:
 	void DrawHangingObjects(DAVA::Entity *entity);
 	void DrawEntityBox(DAVA::Entity *entity, const DAVA::Color &color);
 	void DrawStaticOcclusionComponent(DAVA::Entity *entity);
+	void DrawSwitchesWithDifferentLods(DAVA::Entity *entity);
+	void DrawWindNode(DAVA::Entity *entity);
 
 	//hanging objects 
 	bool IsObjectHanging(DAVA::Entity * entity);
-	DAVA::Vector3 GetLandscapePointAtCoordinates(const DAVA::Vector2& centerXY);
+    DAVA::Vector3 GetLandscapePointAtCoordinates(const DAVA::Vector2& centerXY);
+
+	static void GetLowestVertexes(const DAVA::RenderObject *ro, DAVA::Vector<DAVA::Vector3> &vertexes, const DAVA::Vector3 & scale);
+	static DAVA::float32 GetMinimalZ(const DAVA::RenderObject *ro);
 
 private:
 	SceneCollisionSystem *collSystem;
@@ -84,10 +93,31 @@ private:
     DAVA::Color objectTypeColor;
 
 	bool hangingObjectsModeEnabled;
+    bool switchesWithDifferentLodsEnabled;
 	
 	DAVA::UniqueHandle debugDrawState;
 };
 
+inline void DebugDrawSystem::EnableHangingObjectsMode( bool enabled )
+{
+    hangingObjectsModeEnabled = enabled;
+}
+
+inline bool DebugDrawSystem::HangingObjectsModeEnabled() const
+{
+    return hangingObjectsModeEnabled;
+}
+
+
+inline void DebugDrawSystem::EnableSwithcesWithDifferentLODsMode(bool enabled )
+{
+    switchesWithDifferentLodsEnabled = enabled;
+}
+
+inline bool DebugDrawSystem::SwithcesWithDifferentLODsModeEnabled() const
+{
+    return switchesWithDifferentLodsEnabled;
+}
 
 
 #endif // __DEBUG_DRAW_SYSTEM_H__

@@ -334,7 +334,7 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 
 
 
-	int16 * resultBuf = (int16*)buffer;
+	uint8 * resultBuf = (uint8*)buffer;
 
 	LoadString(str);
 	int32 strLen = str.length();
@@ -425,23 +425,14 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 					int32 realW = Min((int32)bitmap->width, (int32)(bufWidth - left)); 
 					int32 ind = top*bufWidth + left;
 					DVASSERT(ind >= 0);
-					int16 * writeBuf = resultBuf + ind;
+					uint8 * writeBuf = resultBuf + ind;
 					uint8 * readBuf = bitmap->buffer;
                     
-                    uint16 color = (((r >> 4)<<12) | ((g >> 4)<<8) | ((b >> 4) << 4));
 					for(int32 h = 0; h < realH; h++)
 					{
 						for(int32 w = 0; w < realW; w++)
 						{
-                            uint8 oldPix = *readBuf;
-							if(oldPix)
-							{
-								uint8 tempA = (oldPix*a)>>12;
-								DVASSERT(writeBuf-resultBuf <= bufWidth*bufHeight);
-								*writeBuf = (color | tempA);
-							}
-							++writeBuf;
-							++readBuf;
+							*writeBuf++ = *readBuf++;
 						}
 						writeBuf += bufWidth-realW;
 						// DF-1827 - Increment read buffer with proper value

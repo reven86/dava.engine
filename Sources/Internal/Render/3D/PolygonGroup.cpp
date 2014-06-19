@@ -57,6 +57,10 @@ PolygonGroup::PolygonGroup()
 	weightArray(0),
 	jointCountArray(0),
 	
+    flexArray(0),
+    angleArray(0),
+    pivotArray(0),
+
 	colorArray(0), 
 	indexArray(0), 
 	meshData(0),
@@ -174,6 +178,27 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         
         renderDataObject->SetStream(EVF_TEXCOORD3, TYPE_FLOAT, 3, vertexStride, cubeTextureCoordArray[3]);
 	}
+    if (vertexFormat & EVF_PIVOT)
+    {
+        pivotArray = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_PIVOT);
+
+        renderDataObject->SetStream(EVF_PIVOT, TYPE_FLOAT, 3, vertexStride, pivotArray);
+    }
+    if (vertexFormat & EVF_FLEXIBILITY)
+    {
+        flexArray = reinterpret_cast<float32*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_FLEXIBILITY);
+
+        renderDataObject->SetStream(EVF_FLEXIBILITY, TYPE_FLOAT, 1, vertexStride, flexArray);
+    }
+    if (vertexFormat & EVF_ANGLE_SIN_COS)
+    {
+        angleArray = reinterpret_cast<Vector2*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_ANGLE_SIN_COS);
+
+        renderDataObject->SetStream(EVF_ANGLE_SIN_COS, TYPE_FLOAT, 2, vertexStride, angleArray);
+    }
 }
 
 void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount)

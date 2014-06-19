@@ -31,7 +31,7 @@
 #define __DAVAENGINE_PNGIMAGEEXT_H__
 
 #include "Base/BaseTypes.h"
-#include "Render/Image.h"
+#include "Render/Image/Image.h"
 
 namespace DAVA
 {

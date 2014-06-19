@@ -269,6 +269,8 @@ namespace DAVA
 																	 InstanceMaterialState* oldMaterialState,
 																	 uint64 oldMaterialId)
 	{
+        if(!oldMaterial) return NULL;
+        
 		//VI: need to build the following material structure:
 		//VI:     INSTANCE_WITH_COMMON_PROPS_AND_TEXTURES
 		//VI:     (this instance has

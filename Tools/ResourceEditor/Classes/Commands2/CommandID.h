@@ -110,6 +110,7 @@ enum CommandID
 
 	CMDID_LOD_DISTANCE_CHANGE,
     CMDID_LOD_CREATE_PLANE,
+    CMDID_LOD_COPY_LAST_LOD, //TODO: remove after lod editing implementation
     CMDID_LOD_DELETE,
     
 	CMDID_BEAST,

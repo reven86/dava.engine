@@ -42,7 +42,7 @@ class QtWaitDialog;
 class BeastAction: public CommandAction
 {
 public:
-	BeastAction(SceneEditor2 *scene, QtWaitDialog *_waitDialog);
+    BeastAction(SceneEditor2 *scene, const DAVA::FilePath& outputPath, QtWaitDialog *_waitDialog);
 	~BeastAction();
 
 	virtual void Redo();
@@ -60,6 +60,7 @@ private:
 	QtWaitDialog * waitDialog;
 
 	SceneEditor2 *workingScene;
+    DAVA::FilePath outputPath;
 
 	DAVA::uint64 startTime;
 };

@@ -29,6 +29,7 @@
 
 #include "DXTTest.h"
 #include "TextureUtils.h"
+#include "Render/Image/ImageSystem.h"
 #include "Render/PixelFormatDescriptor.h"
 
 static const PixelFormat formats[] =
@@ -117,8 +118,12 @@ void DXTTest::TestFunction(PerfFuncData * data)
         Image *secondComparer = TextureUtils::CreateImageAsRGBA8888(dxtSprite);
         
         FilePath documentsPath = FileSystem::Instance()->GetCurrentDocumentsDirectory();
-        ImageLoader::Save(firstComparer, documentsPath + (Format("DXTTest/src_number_%d.png", currentTest)));
-        ImageLoader::Save(secondComparer, documentsPath + (Format("DXTTest/dst_number_%d.png", currentTest)));
+        
+        ImageSystem::Instance()->Save(documentsPath + Format("DXTTest/src_number_%d.png", currentTest), firstComparer);
+        ImageSystem::Instance()->Save(documentsPath + Format("DXTTest/dst_number_%d.png", currentTest), secondComparer);
+        
+        SafeRelease(firstComparer);
+        SafeRelease(secondComparer);
     }
 
     ++currentTest;
@@ -128,12 +133,10 @@ bool DXTTest::IsCurrentTestAccepted()
 {
     RenderManager::Caps deviceCaps = RenderManager::Instance()->GetCaps();
 
-#if defined (__DAVAENGINE_IPHONE__)
     if(!deviceCaps.isDXTSupported )
     {
         return false;
     }
-#endif //#if defined (__DAVAENGINE_IPHONE__)
 
         
     if((formats[currentTest] == FORMAT_RGBA16161616) && !deviceCaps.isFloat16Supported)

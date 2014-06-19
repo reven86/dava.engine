@@ -36,10 +36,7 @@ DAVA::Entity *SwitchEntityCreator::CreateSwitchEntity(const DAVA::Vector<DAVA::E
 	DAVA::Entity* switchEntity = new DAVA::Entity();
 	switchEntity->AddComponent(new DAVA::SwitchComponent());
 	switchEntity->SetName(ResourceEditor::SWITCH_NODE_NAME);
-
-	DAVA::KeyedArchive *customProperties = switchEntity->GetCustomProperties();
-	customProperties->SetBool(DAVA::Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME, false);
-
+    switchEntity->SetSolid(false);
 
 	DAVA::uint32 count = (DAVA::uint32)fromEntities.size();
 	DVASSERT(count <= MAX_SWITCH_COUNT);
@@ -56,9 +53,10 @@ DAVA::Entity *SwitchEntityCreator::CreateSwitchEntity(const DAVA::Vector<DAVA::E
 			singleMode = false;
 		}
 
-		DAVA::KeyedArchive *childProps = clonedEntities[i]->GetCustomProperties();
-		if(childProps->IsKeyExists("CollisionType"))
+		DAVA::KeyedArchive *childProps = GetCustomPropertiesArchieve(clonedEntities[i]);
+		if(childProps && childProps->IsKeyExists("CollisionType"))
 		{	
+            DAVA::KeyedArchive *customProperties = GetOrCreateCustomProperties(switchEntity)->GetArchive();
 			if(0 == i)
 			{
 				customProperties->SetInt32("CollisionType", childProps->GetInt32("CollisionType", 0));

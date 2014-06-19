@@ -253,6 +253,8 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 	const YamlNode * shadowColorNode = node->Get("shadowcolor");
 	const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
 	const YamlNode * textAlignNode = node->Get("textalign");
+    const YamlNode * textColorInheritTypeNode = node->Get("textcolorInheritType");
+    const YamlNode * shadowColorInheritTypeNode = node->Get("shadowcolorInheritType");
 
 	if (fontNode)
 	{
@@ -294,6 +296,16 @@ void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
 	{
 		SetText(LocalizedString(textNode->AsWString()));
 	}
+    
+    if (textColorInheritTypeNode)
+    {
+        GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(textColorInheritTypeNode));
+    }
+
+    if (shadowColorInheritTypeNode)
+    {
+        GetShadowBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(shadowColorInheritTypeNode));
+    }
 }
 
 YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
@@ -317,11 +329,25 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
         node->Set("textcolor", nodeValue);
     }
 
+    // Text Color Inherit Type.
+    int32 colorInheritType = (int32)GetTextBackground()->GetColorInheritType();
+    if (baseControl->GetTextBackground()->GetColorInheritType() != colorInheritType)
+    {
+        node->Set("textcolorInheritType", loader->GetColorInheritTypeNodeValue(colorInheritType));
+    }
+
     // ShadowColor
     if (baseControl->GetShadowColor() != shadowColor)
     {
         nodeValue->SetColor(shadowColor);
         node->Set("shadowcolor", nodeValue);
+    }
+
+    // Shadow Color Inherit Type.
+    colorInheritType = (int32)GetShadowBackground()->GetColorInheritType();
+    if (baseControl->GetShadowBackground()->GetColorInheritType() != colorInheritType)
+    {
+        node->Set("shadowcolorInheritType", loader->GetColorInheritTypeNodeValue(colorInheritType));
     }
 
 	// ShadowOffset
@@ -400,12 +426,34 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
         Sprite *sprite = textBlock->GetSprite();
         shadowBg->SetSprite(sprite, 0);
         textBg->SetSprite(sprite, 0);
+
+		Texture *tex = sprite->GetTexture();
+		if(tex && tex->GetFormat() == FORMAT_A8)
+		{
+			textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+			shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+		}
+		else
+		{
+			textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+			shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+		}
     }
     else
     {
         shadowBg->SetSprite(NULL, 0);
         textBg->SetSprite(NULL, 0);
     }
+}
+
+UIControlBackground* UIStaticText::GetTextBackground() const
+{
+    return textBg;
+}
+    
+UIControlBackground* UIStaticText::GetShadowBackground() const
+{
+    return shadowBg;
 }
 
 };

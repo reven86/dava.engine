@@ -90,6 +90,9 @@ public:
 	const Color &GetShadowColor() const;
 	const Vector2 &GetShadowOffset() const;
 
+    UIControlBackground* GetTextBackground() const;
+    UIControlBackground* GetShadowBackground() const;
+
 	// Animation methods for Text Color and Shadow Color.
 	virtual Animation *	TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
 	virtual Animation* ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
