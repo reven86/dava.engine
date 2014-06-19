@@ -13,11 +13,21 @@
 		0224B7341598AC2800CDEF9E /* libtheora_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7321598AC2800CDEF9E /* libtheora_macos.a */; };
 		0224B74A1598B40100CDEF9E /* libogg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7481598B40100CDEF9E /* libogg_ios.a */; };
 		0224B74B1598B40100CDEF9E /* libogg_macos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0224B7491598B40100CDEF9E /* libogg_macos.a */; };
+		022AA8DE1934CECD009A4B84 /* WaveComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022AA8DC1934CECD009A4B84 /* WaveComponent.cpp */; };
+		022AA8DF1934CECD009A4B84 /* WaveComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022AA8DC1934CECD009A4B84 /* WaveComponent.cpp */; };
+		022AA8E01934CECD009A4B84 /* WaveComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 022AA8DD1934CECD009A4B84 /* WaveComponent.h */; };
+		022AA8E11934CECD009A4B84 /* WaveComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 022AA8DD1934CECD009A4B84 /* WaveComponent.h */; };
+		022AA8E41934CED9009A4B84 /* WaveSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022AA8E21934CED9009A4B84 /* WaveSystem.cpp */; };
+		022AA8E51934CED9009A4B84 /* WaveSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 022AA8E21934CED9009A4B84 /* WaveSystem.cpp */; };
+		022AA8E61934CED9009A4B84 /* WaveSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 022AA8E31934CED9009A4B84 /* WaveSystem.h */; };
+		022AA8E71934CED9009A4B84 /* WaveSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 022AA8E31934CED9009A4B84 /* WaveSystem.h */; };
 		0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */; };
 		0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */; };
 		029BAE551859B81700478671 /* musicios.h in Headers */ = {isa = PBXBuildFile; fileRef = 029BAE511859B81700478671 /* musicios.h */; };
 		029BAE581859B81700478671 /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 029BAE541859B81700478671 /* SoundEvent.h */; };
 		029BAE591859C80500478671 /* musicios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 029BAE521859B81700478671 /* musicios.mm */; };
+		02A2FC5518D3064D0039E66A /* TreeToAnimatedTreeConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02A2FC5318D3064D0039E66A /* TreeToAnimatedTreeConverter.cpp */; };
+		02A2FC5618D3064D0039E66A /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC5418D3064D0039E66A /* TreeToAnimatedTreeConverter.h */; };
 		02C4E8CB18154E490052803E /* AutotestingDB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C85172181032EA002B7E1C /* AutotestingDB.cpp */; };
 		02C4E8CC18154E4D0052803E /* GameAPI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02C85174181032EA002B7E1C /* GameAPI.cpp */; };
 		02C4E8CD18154E520052803E /* AutotestingDB.h in Headers */ = {isa = PBXBuildFile; fileRef = 02C85173181032EA002B7E1C /* AutotestingDB.h */; };
@@ -25,6 +35,16 @@
 		02D4CFC018055E29007EC9EC /* FMODSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02D4CFB818055E29007EC9EC /* FMODSoundEvent.cpp */; };
 		02D4CFC118055E29007EC9EC /* FMODSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02D4CFB918055E29007EC9EC /* FMODSoundEvent.h */; };
 		02D4CFC418055E29007EC9EC /* FMODSoundSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02D4CFBC18055E29007EC9EC /* FMODSoundSystem.cpp */; };
+		02E9B4C619407C3E001DBDDF /* TreeToAnimatedTreeConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02A2FC5318D3064D0039E66A /* TreeToAnimatedTreeConverter.cpp */; };
+		02E9B4C719407C41001DBDDF /* TreeToAnimatedTreeConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = 02A2FC5418D3064D0039E66A /* TreeToAnimatedTreeConverter.h */; };
+		02E9B4C819407C48001DBDDF /* SpeedTreeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EB719237D33007762C0 /* SpeedTreeComponent.cpp */; };
+		02E9B4C919407C48001DBDDF /* SpeedTreeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EB819237D33007762C0 /* SpeedTreeComponent.h */; };
+		02E9B4CA19407C4B001DBDDF /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EBF19237D43007762C0 /* SpeedTreeUpdateSystem.cpp */; };
+		02E9B4CB19407C4B001DBDDF /* SpeedTreeUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EC019237D43007762C0 /* SpeedTreeUpdateSystem.h */; };
+		02E9B4CC19407C68001DBDDF /* WindSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EC119237D43007762C0 /* WindSystem.cpp */; };
+		02E9B4CD19407C68001DBDDF /* WindSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EC219237D43007762C0 /* WindSystem.h */; };
+		02E9B4CE19407C6B001DBDDF /* WindComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EB919237D33007762C0 /* WindComponent.cpp */; };
+		02E9B4CF19407C6B001DBDDF /* WindComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EBA19237D33007762C0 /* WindComponent.h */; };
 		02E9E3A11729669200C501BC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3A01729669200C501BC /* FMODUtils.h */; };
 		02E9E3E21734176D00C501BC /* SoundComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E3E01734176D00C501BC /* SoundComponent.cpp */; };
 		02E9E3E31734176D00C501BC /* SoundComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3E11734176D00C501BC /* SoundComponent.h */; };
@@ -34,6 +54,14 @@
 		02F6403E173A597A0053F038 /* libfmodex_iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3A3172967F300C501BC /* libfmodex_iphonesimulator.a */; };
 		02F64041173A5A950053F038 /* SoundUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02F6403F173A5A950053F038 /* SoundUpdateSystem.cpp */; };
 		02F64042173A5A950053F038 /* SoundUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02F64040173A5A950053F038 /* SoundUpdateSystem.h */; };
+		02FD7EBB19237D33007762C0 /* SpeedTreeComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EB719237D33007762C0 /* SpeedTreeComponent.cpp */; };
+		02FD7EBC19237D33007762C0 /* SpeedTreeComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EB819237D33007762C0 /* SpeedTreeComponent.h */; };
+		02FD7EBD19237D33007762C0 /* WindComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EB919237D33007762C0 /* WindComponent.cpp */; };
+		02FD7EBE19237D33007762C0 /* WindComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EBA19237D33007762C0 /* WindComponent.h */; };
+		02FD7EC319237D43007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EBF19237D43007762C0 /* SpeedTreeUpdateSystem.cpp */; };
+		02FD7EC419237D43007762C0 /* SpeedTreeUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EC019237D43007762C0 /* SpeedTreeUpdateSystem.h */; };
+		02FD7EC519237D43007762C0 /* WindSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7EC119237D43007762C0 /* WindSystem.cpp */; };
+		02FD7EC619237D43007762C0 /* WindSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02FD7EC219237D43007762C0 /* WindSystem.h */; };
 		02FD7F0A1924997C007762C0 /* Framework_Prefix.pch in Headers */ = {isa = PBXBuildFile; fileRef = AA747D9E0F9514B9006C5449 /* Framework_Prefix.pch */; };
 		02FD7F0B1924997C007762C0 /* AnimatedObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7A316B9326D002BD35F /* AnimatedObject.h */; };
 		02FD7F0C1924997C007762C0 /* Animation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7A516B9326D002BD35F /* Animation.h */; };
@@ -113,7 +141,6 @@
 		02FD7F561924997C007762C0 /* FileList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84616B9326D002BD35F /* FileList.h */; };
 		02FD7F571924997C007762C0 /* FilePath.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84816B9326D002BD35F /* FilePath.h */; };
 		02FD7F581924997C007762C0 /* FileSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84A16B9326D002BD35F /* FileSystem.h */; };
-		02FD7F591924997C007762C0 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 8465CD3718E4D46D005AA9F8 /* LibJpegHelper.h */; };
 		02FD7F5A1924997C007762C0 /* KeyedArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84D16B9326D002BD35F /* KeyedArchive.h */; };
 		02FD7F5B1924997C007762C0 /* KeyedArchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84F16B9326D002BD35F /* KeyedArchiver.h */; };
 		02FD7F5C1924997C007762C0 /* KeyedUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C85116B9326D002BD35F /* KeyedUnarchiver.h */; };
@@ -220,13 +247,7 @@
 		02FD7FC11924997C007762C0 /* ShadowRect.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94516B9326E002BD35F /* ShadowRect.h */; };
 		02FD7FC21924997C007762C0 /* ShadowVolume.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94716B9326E002BD35F /* ShadowVolume.h */; };
 		02FD7FC31924997C007762C0 /* ShadowVolumeRenderPass.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94916B9326E002BD35F /* ShadowVolumeRenderPass.h */; };
-		02FD7FC41924997C007762C0 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94B16B9326E002BD35F /* Image.h */; };
-		02FD7FC51924997C007762C0 /* ImageConvert.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94D16B9326E002BD35F /* ImageConvert.h */; };
-		02FD7FC61924997C007762C0 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94F16B9326E002BD35F /* ImageLoader.h */; };
 		02FD7FC71924997C007762C0 /* IndexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95016B9326E002BD35F /* IndexBuffer.h */; };
-		02FD7FC81924997C007762C0 /* LibDxtHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95216B9326E002BD35F /* LibDxtHelper.h */; };
-		02FD7FC91924997C007762C0 /* LibPngHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95416B9326E002BD35F /* LibPngHelpers.h */; };
-		02FD7FCA1924997C007762C0 /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95616B9326E002BD35F /* LibPVRHelper.h */; };
 		02FD7FCB1924997C007762C0 /* MaterialCompiler.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95916B9326E002BD35F /* MaterialCompiler.h */; };
 		02FD7FCC1924997C007762C0 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 021414151819851100925E51 /* DAVAClassRegistrator.h */; };
 		02FD7FCD1924997C007762C0 /* MaterialGraph.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95B16B9326E002BD35F /* MaterialGraph.h */; };
@@ -560,12 +581,6 @@
 		02FD81161924997C007762C0 /* ShadowRect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94416B9326E002BD35F /* ShadowRect.cpp */; };
 		02FD81171924997C007762C0 /* ShadowVolume.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94616B9326E002BD35F /* ShadowVolume.cpp */; };
 		02FD81181924997C007762C0 /* ShadowVolumeRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94816B9326E002BD35F /* ShadowVolumeRenderPass.cpp */; };
-		02FD81191924997C007762C0 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94A16B9326E002BD35F /* Image.cpp */; };
-		02FD811A1924997C007762C0 /* Image.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94C16B9326E002BD35F /* Image.mm */; };
-		02FD811B1924997C007762C0 /* ImageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94E16B9326E002BD35F /* ImageLoader.cpp */; };
-		02FD811C1924997C007762C0 /* LibDxtHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95116B9326E002BD35F /* LibDxtHelper.cpp */; };
-		02FD811D1924997C007762C0 /* LibPngHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95316B9326E002BD35F /* LibPngHelpers.cpp */; };
-		02FD811E1924997C007762C0 /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95516B9326E002BD35F /* LibPVRHelper.cpp */; };
 		02FD811F1924997C007762C0 /* MaterialCompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95816B9326E002BD35F /* MaterialCompiler.cpp */; };
 		02FD81201924997C007762C0 /* MaterialGraph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95A16B9326E002BD35F /* MaterialGraph.cpp */; };
 		02FD81211924997C007762C0 /* JobQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B03A18211BCE00934482 /* JobQueue.cpp */; };
@@ -651,7 +666,6 @@
 		02FD81711924997C007762C0 /* QualitySettingsComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8FC1301186972B60095D8FE /* QualitySettingsComponent.cpp */; };
 		02FD81721924997C007762C0 /* EventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA0416B9326E002BD35F /* EventSystem.cpp */; };
 		02FD81731924997C007762C0 /* ParticleRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA10607518892B7C00CB99A3 /* ParticleRenderObject.cpp */; };
-		02FD81741924997C007762C0 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8465CD3618E4D46D005AA9F8 /* LibJpegHelper.cpp */; };
 		02FD81751924997C007762C0 /* LightUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA0616B9326E002BD35F /* LightUpdateSystem.cpp */; };
 		02FD81761924997C007762C0 /* MaterialSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F43E2B186C5D4E006796CB /* MaterialSystem.cpp */; };
 		02FD81771924997C007762C0 /* LodSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA0816B9326E002BD35F /* LodSystem.cpp */; };
@@ -797,6 +811,22 @@
 		02FD82041924997C007762C0 /* libBox2D_iPhone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FEF4D38612C91A3A004B850E /* libBox2D_iPhone.a */; };
 		02FD82051924997C007762C0 /* libfreetype_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = EA7DEDD9144854E900D9E652 /* libfreetype_ios.a */; };
 		02FD82061924997C007762C0 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A0118E18AC6866222998E4C /* GameController.framework */; };
+		17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */; };
+		17675C1B19472C1400054F8F /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BEC19201BEF009E3E90 /* Image.cpp */; };
+		17675C1C19472C1400054F8F /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BED19201BEF009E3E90 /* Image.h */; };
+		17675C1D19472C1400054F8F /* Image.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BEE19201BEF009E3E90 /* Image.mm */; };
+		17675C1E19472C1400054F8F /* ImageConvert.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BEF19201BEF009E3E90 /* ImageConvert.h */; };
+		17675C1F19472C1400054F8F /* ImageFormatInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF019201BEF009E3E90 /* ImageFormatInterface.h */; };
+		17675C2019472C1400054F8F /* ImageSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF119201BEF009E3E90 /* ImageSystem.cpp */; };
+		17675C2119472C1400054F8F /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF219201BEF009E3E90 /* ImageSystem.h */; };
+		17675C2219472C1400054F8F /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */; };
+		17675C2319472C1400054F8F /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF419201BEF009E3E90 /* LibDdsHelper.h */; };
+		17675C2419472C1400054F8F /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */; };
+		17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibJpegHelper.h */; };
+		17675C2619472C1400054F8F /* LibPngHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF719201BEF009E3E90 /* LibPngHelpers.cpp */; };
+		17675C2719472C1400054F8F /* LibPngHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF819201BEF009E3E90 /* LibPngHelpers.h */; };
+		17675C2819472C1400054F8F /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */; };
+		17675C2919472C1400054F8F /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BFA19201BEF009E3E90 /* LibPVRHelper.h */; };
 		17816B8017B2748900B067E1 /* AllocatorFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */; };
 		17816B8117B2748900B067E1 /* AllocatorFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 17816B7F17B2748900B067E1 /* AllocatorFactory.h */; };
 		1799E51A16CCEBDA0058061F /* ParticleForce.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1799E51816CCEBDA0058061F /* ParticleForce.cpp */; };
@@ -813,6 +843,10 @@
 		17F53E3116D36FF3004D5099 /* UIWebView.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F53E2E16D36FF3004D5099 /* UIWebView.h */; };
 		17F53E3416D3705E004D5099 /* WebViewControliOS.h in Headers */ = {isa = PBXBuildFile; fileRef = 17F53E3216D3705E004D5099 /* WebViewControliOS.h */; };
 		17F53E3516D3705E004D5099 /* WebViewControliOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 17F53E3316D3705E004D5099 /* WebViewControliOS.mm */; };
+		17FFF903193F0218003D51DA /* MongodbClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7FD16B9326D002BD35F /* MongodbClient.cpp */; };
+		17FFF904193F0218003D51DA /* MongodbObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7FF16B9326D002BD35F /* MongodbObject.cpp */; };
+		17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FE16B9326D002BD35F /* MongodbClient.h */; };
+		17FFF906193F03AF003D51DA /* MongodbObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80016B9326D002BD35F /* MongodbObject.h */; };
 		1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1AD7C35D17D8951C00B9977C /* Vector.cpp */; };
 		496526D0167F173400107C70 /* libdxt_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 496526CF167F173400107C70 /* libdxt_ios.a */; };
 		497BF6E216F751ED00AC57C6 /* DeviceInfoiOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 497BF6E116F751ED00AC57C6 /* DeviceInfoiOS.mm */; };
@@ -834,6 +868,7 @@
 		624C87F218C6160F00E1049D /* DateTime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 624C87F018C6160F00E1049D /* DateTime.cpp */; };
 		624C87F318C6160F00E1049D /* DateTime.h in Headers */ = {isa = PBXBuildFile; fileRef = 624C87F118C6160F00E1049D /* DateTime.h */; };
 		6252BF2618ED506E00058754 /* libjpeg_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6252BF2518ED506E00058754 /* libjpeg_ios.a */; };
+		6272153E192265C7007B7DE9 /* CRCAdditionInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */; };
 		6280BAA518D6F7DC007809B7 /* DateTimeApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */; };
 		62BAA48F178EF915003DE32C /* MailComposeDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 62BAA48D178EF915003DE32C /* MailComposeDelegate.h */; };
 		62BAA492178EF952003DE32C /* MailComposeDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 62BAA491178EF952003DE32C /* MailComposeDelegate.mm */; };
@@ -843,8 +878,21 @@
 		641A620018CE0F61003359E7 /* FoliageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 641A61FE18CE0F61003359E7 /* FoliageSystem.h */; };
 		840ED3C916D506F900D2BA6C /* DPIHelperiOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 840ED3C816D506F900D2BA6C /* DPIHelperiOS.mm */; };
 		840ED3CB16D5070400D2BA6C /* DPIHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 840ED3CA16D5070400D2BA6C /* DPIHelper.h */; };
-		8465CD3818E4D46D005AA9F8 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8465CD3618E4D46D005AA9F8 /* LibJpegHelper.cpp */; };
-		8465CD3918E4D46D005AA9F8 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 8465CD3718E4D46D005AA9F8 /* LibJpegHelper.h */; };
+		84D18BFB19201BEF009E3E90 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BEC19201BEF009E3E90 /* Image.cpp */; };
+		84D18BFC19201BEF009E3E90 /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BED19201BEF009E3E90 /* Image.h */; };
+		84D18BFD19201BEF009E3E90 /* Image.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BEE19201BEF009E3E90 /* Image.mm */; };
+		84D18BFE19201BEF009E3E90 /* ImageConvert.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BEF19201BEF009E3E90 /* ImageConvert.h */; };
+		84D18BFF19201BEF009E3E90 /* ImageFormatInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF019201BEF009E3E90 /* ImageFormatInterface.h */; };
+		84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF119201BEF009E3E90 /* ImageSystem.cpp */; };
+		84D18C0119201BEF009E3E90 /* ImageSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF219201BEF009E3E90 /* ImageSystem.h */; };
+		84D18C0219201BEF009E3E90 /* LibDdsHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */; };
+		84D18C0319201BEF009E3E90 /* LibDdsHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF419201BEF009E3E90 /* LibDdsHelper.h */; };
+		84D18C0419201BEF009E3E90 /* LibJpegHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */; };
+		84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF619201BEF009E3E90 /* LibJpegHelper.h */; };
+		84D18C0619201BEF009E3E90 /* LibPngHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF719201BEF009E3E90 /* LibPngHelpers.cpp */; };
+		84D18C0719201BEF009E3E90 /* LibPngHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BF819201BEF009E3E90 /* LibPngHelpers.h */; };
+		84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */; };
+		84D18C0919201BEF009E3E90 /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BFA19201BEF009E3E90 /* LibPVRHelper.h */; };
 		84E5E0FE174D02EA0001C74F /* OpenUDIDApple.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */; };
 		84E5E0FF174D02EA0001C74F /* OpenUDIDApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = 84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */; };
 		84E5E102174D02F60001C74F /* OpenUDIDios.h in Headers */ = {isa = PBXBuildFile; fileRef = 84E5E100174D02F60001C74F /* OpenUDIDios.h */; };
@@ -1254,19 +1302,7 @@
 		E8B3CC0616B9326E002BD35F /* ShadowVolume.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94716B9326E002BD35F /* ShadowVolume.h */; };
 		E8B3CC0716B9326E002BD35F /* ShadowVolumeRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94816B9326E002BD35F /* ShadowVolumeRenderPass.cpp */; };
 		E8B3CC0816B9326E002BD35F /* ShadowVolumeRenderPass.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94916B9326E002BD35F /* ShadowVolumeRenderPass.h */; };
-		E8B3CC0916B9326E002BD35F /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94A16B9326E002BD35F /* Image.cpp */; };
-		E8B3CC0A16B9326E002BD35F /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94B16B9326E002BD35F /* Image.h */; };
-		E8B3CC0B16B9326E002BD35F /* Image.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94C16B9326E002BD35F /* Image.mm */; };
-		E8B3CC0C16B9326E002BD35F /* ImageConvert.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94D16B9326E002BD35F /* ImageConvert.h */; };
-		E8B3CC0D16B9326E002BD35F /* ImageLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94E16B9326E002BD35F /* ImageLoader.cpp */; };
-		E8B3CC0E16B9326E002BD35F /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94F16B9326E002BD35F /* ImageLoader.h */; };
 		E8B3CC0F16B9326E002BD35F /* IndexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95016B9326E002BD35F /* IndexBuffer.h */; };
-		E8B3CC1016B9326E002BD35F /* LibDxtHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95116B9326E002BD35F /* LibDxtHelper.cpp */; };
-		E8B3CC1116B9326E002BD35F /* LibDxtHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95216B9326E002BD35F /* LibDxtHelper.h */; };
-		E8B3CC1216B9326E002BD35F /* LibPngHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95316B9326E002BD35F /* LibPngHelpers.cpp */; };
-		E8B3CC1316B9326E002BD35F /* LibPngHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95416B9326E002BD35F /* LibPngHelpers.h */; };
-		E8B3CC1416B9326E002BD35F /* LibPVRHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95516B9326E002BD35F /* LibPVRHelper.cpp */; };
-		E8B3CC1516B9326E002BD35F /* LibPVRHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95616B9326E002BD35F /* LibPVRHelper.h */; };
 		E8B3CC1616B9326E002BD35F /* MaterialCompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95816B9326E002BD35F /* MaterialCompiler.cpp */; };
 		E8B3CC1716B9326E002BD35F /* MaterialCompiler.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95916B9326E002BD35F /* MaterialCompiler.h */; };
 		E8B3CC1816B9326E002BD35F /* MaterialGraph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95A16B9326E002BD35F /* MaterialGraph.cpp */; };
@@ -1569,11 +1605,17 @@
 		0224B7321598AC2800CDEF9E /* libtheora_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtheora_macos.a; path = ../../Libs/libs/libtheora_macos.a; sourceTree = "<group>"; };
 		0224B7481598B40100CDEF9E /* libogg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_ios.a; path = ../../Libs/libs/libogg_ios.a; sourceTree = "<group>"; };
 		0224B7491598B40100CDEF9E /* libogg_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libogg_macos.a; path = ../../Libs/libs/libogg_macos.a; sourceTree = "<group>"; };
+		022AA8DC1934CECD009A4B84 /* WaveComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WaveComponent.cpp; sourceTree = "<group>"; };
+		022AA8DD1934CECD009A4B84 /* WaveComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveComponent.h; sourceTree = "<group>"; };
+		022AA8E21934CED9009A4B84 /* WaveSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WaveSystem.cpp; sourceTree = "<group>"; };
+		022AA8E31934CED9009A4B84 /* WaveSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveSystem.h; sourceTree = "<group>"; };
 		0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
 		0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
 		029BAE511859B81700478671 /* musicios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = musicios.h; sourceTree = "<group>"; };
 		029BAE521859B81700478671 /* musicios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = musicios.mm; sourceTree = "<group>"; };
 		029BAE541859B81700478671 /* SoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundEvent.h; sourceTree = "<group>"; };
+		02A2FC5318D3064D0039E66A /* TreeToAnimatedTreeConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TreeToAnimatedTreeConverter.cpp; sourceTree = "<group>"; };
+		02A2FC5418D3064D0039E66A /* TreeToAnimatedTreeConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TreeToAnimatedTreeConverter.h; sourceTree = "<group>"; };
 		02C85172181032EA002B7E1C /* AutotestingDB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AutotestingDB.cpp; sourceTree = "<group>"; };
 		02C85173181032EA002B7E1C /* AutotestingDB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutotestingDB.h; sourceTree = "<group>"; };
 		02C85174181032EA002B7E1C /* GameAPI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameAPI.cpp; sourceTree = "<group>"; };
@@ -1590,6 +1632,14 @@
 		02E9E3E11734176D00C501BC /* SoundComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundComponent.h; sourceTree = "<group>"; };
 		02F6403F173A5A950053F038 /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
 		02F64040173A5A950053F038 /* SoundUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundUpdateSystem.h; sourceTree = "<group>"; };
+		02FD7EB719237D33007762C0 /* SpeedTreeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeComponent.cpp; sourceTree = "<group>"; };
+		02FD7EB819237D33007762C0 /* SpeedTreeComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpeedTreeComponent.h; sourceTree = "<group>"; };
+		02FD7EB919237D33007762C0 /* WindComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindComponent.cpp; sourceTree = "<group>"; };
+		02FD7EBA19237D33007762C0 /* WindComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindComponent.h; sourceTree = "<group>"; };
+		02FD7EBF19237D43007762C0 /* SpeedTreeUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeUpdateSystem.cpp; sourceTree = "<group>"; };
+		02FD7EC019237D43007762C0 /* SpeedTreeUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpeedTreeUpdateSystem.h; sourceTree = "<group>"; };
+		02FD7EC119237D43007762C0 /* WindSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindSystem.cpp; sourceTree = "<group>"; };
+		02FD7EC219237D43007762C0 /* WindSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindSystem.h; sourceTree = "<group>"; };
 		02FD820C1924997C007762C0 /* libFrameworkTesting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTesting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorFactory.cpp; sourceTree = "<group>"; };
 		17816B7F17B2748900B067E1 /* AllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorFactory.h; sourceTree = "<group>"; };
@@ -1629,6 +1679,7 @@
 		624C87F018C6160F00E1049D /* DateTime.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DateTime.cpp; sourceTree = "<group>"; };
 		624C87F118C6160F00E1049D /* DateTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateTime.h; sourceTree = "<group>"; };
 		6252BF2518ED506E00058754 /* libjpeg_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libjpeg_ios.a; path = ../../Libs/libs/libjpeg_ios.a; sourceTree = "<group>"; };
+		6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CRCAdditionInterface.h; path = Image/CRCAdditionInterface.h; sourceTree = "<group>"; };
 		6280BAA418D6F7DC007809B7 /* DateTimeApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DateTimeApple.mm; sourceTree = "<group>"; };
 		62BAA48D178EF915003DE32C /* MailComposeDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MailComposeDelegate.h; sourceTree = "<group>"; };
 		62BAA491178EF952003DE32C /* MailComposeDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MailComposeDelegate.mm; sourceTree = "<group>"; };
@@ -1638,8 +1689,21 @@
 		641A61FE18CE0F61003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		840ED3C816D506F900D2BA6C /* DPIHelperiOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DPIHelperiOS.mm; sourceTree = "<group>"; };
 		840ED3CA16D5070400D2BA6C /* DPIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DPIHelper.h; sourceTree = "<group>"; };
-		8465CD3618E4D46D005AA9F8 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibJpegHelper.cpp; sourceTree = "<group>"; };
-		8465CD3718E4D46D005AA9F8 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibJpegHelper.h; sourceTree = "<group>"; };
+		84D18BEC19201BEF009E3E90 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Image.cpp; path = Image/Image.cpp; sourceTree = "<group>"; };
+		84D18BED19201BEF009E3E90 /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Image.h; path = Image/Image.h; sourceTree = "<group>"; };
+		84D18BEE19201BEF009E3E90 /* Image.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Image.mm; path = Image/Image.mm; sourceTree = "<group>"; };
+		84D18BEF19201BEF009E3E90 /* ImageConvert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageConvert.h; path = Image/ImageConvert.h; sourceTree = "<group>"; };
+		84D18BF019201BEF009E3E90 /* ImageFormatInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageFormatInterface.h; path = Image/ImageFormatInterface.h; sourceTree = "<group>"; };
+		84D18BF119201BEF009E3E90 /* ImageSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageSystem.cpp; path = Image/ImageSystem.cpp; sourceTree = "<group>"; };
+		84D18BF219201BEF009E3E90 /* ImageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageSystem.h; path = Image/ImageSystem.h; sourceTree = "<group>"; };
+		84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibDdsHelper.cpp; path = Image/LibDdsHelper.cpp; sourceTree = "<group>"; };
+		84D18BF419201BEF009E3E90 /* LibDdsHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibDdsHelper.h; path = Image/LibDdsHelper.h; sourceTree = "<group>"; };
+		84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibJpegHelper.cpp; path = Image/LibJpegHelper.cpp; sourceTree = "<group>"; };
+		84D18BF619201BEF009E3E90 /* LibJpegHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibJpegHelper.h; path = Image/LibJpegHelper.h; sourceTree = "<group>"; };
+		84D18BF719201BEF009E3E90 /* LibPngHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPngHelpers.cpp; path = Image/LibPngHelpers.cpp; sourceTree = "<group>"; };
+		84D18BF819201BEF009E3E90 /* LibPngHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibPngHelpers.h; path = Image/LibPngHelpers.h; sourceTree = "<group>"; };
+		84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LibPVRHelper.cpp; path = Image/LibPVRHelper.cpp; sourceTree = "<group>"; };
+		84D18BFA19201BEF009E3E90 /* LibPVRHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LibPVRHelper.h; path = Image/LibPVRHelper.h; sourceTree = "<group>"; };
 		84E5E0FC174D02EA0001C74F /* OpenUDIDApple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDIDApple.h; sourceTree = "<group>"; };
 		84E5E0FD174D02EA0001C74F /* OpenUDIDApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = OpenUDIDApple.mm; sourceTree = "<group>"; };
 		84E5E100174D02F60001C74F /* OpenUDIDios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenUDIDios.h; sourceTree = "<group>"; };
@@ -2051,19 +2115,7 @@
 		E8B3C94716B9326E002BD35F /* ShadowVolume.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowVolume.h; sourceTree = "<group>"; };
 		E8B3C94816B9326E002BD35F /* ShadowVolumeRenderPass.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShadowVolumeRenderPass.cpp; sourceTree = "<group>"; };
 		E8B3C94916B9326E002BD35F /* ShadowVolumeRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowVolumeRenderPass.h; sourceTree = "<group>"; };
-		E8B3C94A16B9326E002BD35F /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
-		E8B3C94B16B9326E002BD35F /* Image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image.h; sourceTree = "<group>"; };
-		E8B3C94C16B9326E002BD35F /* Image.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Image.mm; sourceTree = "<group>"; };
-		E8B3C94D16B9326E002BD35F /* ImageConvert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageConvert.h; sourceTree = "<group>"; };
-		E8B3C94E16B9326E002BD35F /* ImageLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageLoader.cpp; sourceTree = "<group>"; };
-		E8B3C94F16B9326E002BD35F /* ImageLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageLoader.h; sourceTree = "<group>"; };
 		E8B3C95016B9326E002BD35F /* IndexBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IndexBuffer.h; sourceTree = "<group>"; };
-		E8B3C95116B9326E002BD35F /* LibDxtHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibDxtHelper.cpp; sourceTree = "<group>"; };
-		E8B3C95216B9326E002BD35F /* LibDxtHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibDxtHelper.h; sourceTree = "<group>"; };
-		E8B3C95316B9326E002BD35F /* LibPngHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibPngHelpers.cpp; sourceTree = "<group>"; };
-		E8B3C95416B9326E002BD35F /* LibPngHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibPngHelpers.h; sourceTree = "<group>"; };
-		E8B3C95516B9326E002BD35F /* LibPVRHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LibPVRHelper.cpp; sourceTree = "<group>"; };
-		E8B3C95616B9326E002BD35F /* LibPVRHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LibPVRHelper.h; sourceTree = "<group>"; };
 		E8B3C95816B9326E002BD35F /* MaterialCompiler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialCompiler.cpp; sourceTree = "<group>"; };
 		E8B3C95916B9326E002BD35F /* MaterialCompiler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialCompiler.h; sourceTree = "<group>"; };
 		E8B3C95A16B9326E002BD35F /* MaterialGraph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialGraph.cpp; sourceTree = "<group>"; };
@@ -2476,6 +2528,29 @@
 			name = "Other Sources";
 			sourceTree = "<group>";
 		};
+		84D18BEB19201BDA009E3E90 /* Image */ = {
+			isa = PBXGroup;
+			children = (
+				6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */,
+				84D18BEC19201BEF009E3E90 /* Image.cpp */,
+				84D18BED19201BEF009E3E90 /* Image.h */,
+				84D18BEE19201BEF009E3E90 /* Image.mm */,
+				84D18BEF19201BEF009E3E90 /* ImageConvert.h */,
+				84D18BF019201BEF009E3E90 /* ImageFormatInterface.h */,
+				84D18BF119201BEF009E3E90 /* ImageSystem.cpp */,
+				84D18BF219201BEF009E3E90 /* ImageSystem.h */,
+				84D18BF319201BEF009E3E90 /* LibDdsHelper.cpp */,
+				84D18BF419201BEF009E3E90 /* LibDdsHelper.h */,
+				84D18BF519201BEF009E3E90 /* LibJpegHelper.cpp */,
+				84D18BF619201BEF009E3E90 /* LibJpegHelper.h */,
+				84D18BF719201BEF009E3E90 /* LibPngHelpers.cpp */,
+				84D18BF819201BEF009E3E90 /* LibPngHelpers.h */,
+				84D18BF919201BEF009E3E90 /* LibPVRHelper.cpp */,
+				84D18BFA19201BEF009E3E90 /* LibPVRHelper.h */,
+			);
+			name = Image;
+			sourceTree = "<group>";
+		};
 		A695E52F18113327008A0F20 /* SceneFile */ = {
 			isa = PBXGroup;
 			children = (
@@ -2503,6 +2578,8 @@
 		CCEB54371886FF0C0018491F /* Converters */ = {
 			isa = PBXGroup;
 			children = (
+				02A2FC5318D3064D0039E66A /* TreeToAnimatedTreeConverter.cpp */,
+				02A2FC5418D3064D0039E66A /* TreeToAnimatedTreeConverter.h */,
 				CCEB54381886FF0C0018491F /* LodToLod2Converter.cpp */,
 				CCEB54391886FF0C0018491F /* LodToLod2Converter.h */,
 				CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */,
@@ -2928,8 +3005,7 @@
 		E8B3C8F916B9326D002BD35F /* Render */ = {
 			isa = PBXGroup;
 			children = (
-				8465CD3618E4D46D005AA9F8 /* LibJpegHelper.cpp */,
-				8465CD3718E4D46D005AA9F8 /* LibJpegHelper.h */,
+				84D18BEB19201BDA009E3E90 /* Image */,
 				E8ADAEC618CA1325000B251C /* PixelFormatDescriptor.cpp */,
 				E8ADAEC718CA1325000B251C /* PixelFormatDescriptor.h */,
 				A6919533183A6E9B00D598AE /* RenderStateData.h */,
@@ -2945,19 +3021,7 @@
 				E8B3C91116B9326D002BD35F /* Cursor.h */,
 				E8B3C91A16B9326D002BD35F /* Effects */,
 				E8B3C92316B9326D002BD35F /* Highlevel */,
-				E8B3C94A16B9326E002BD35F /* Image.cpp */,
-				E8B3C94B16B9326E002BD35F /* Image.h */,
-				E8B3C94C16B9326E002BD35F /* Image.mm */,
-				E8B3C94D16B9326E002BD35F /* ImageConvert.h */,
-				E8B3C94E16B9326E002BD35F /* ImageLoader.cpp */,
-				E8B3C94F16B9326E002BD35F /* ImageLoader.h */,
 				E8B3C95016B9326E002BD35F /* IndexBuffer.h */,
-				E8B3C95116B9326E002BD35F /* LibDxtHelper.cpp */,
-				E8B3C95216B9326E002BD35F /* LibDxtHelper.h */,
-				E8B3C95316B9326E002BD35F /* LibPngHelpers.cpp */,
-				E8B3C95416B9326E002BD35F /* LibPngHelpers.h */,
-				E8B3C95516B9326E002BD35F /* LibPVRHelper.cpp */,
-				E8B3C95616B9326E002BD35F /* LibPVRHelper.h */,
 				505EB41A18250C53009BEA3C /* OcclusionQuery.cpp */,
 				505EB41B18250C53009BEA3C /* OcclusionQuery.h */,
 				E8B3C95716B9326E002BD35F /* Material */,
@@ -3251,6 +3315,12 @@
 		E8B3C9AC16B9326E002BD35F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				022AA8DC1934CECD009A4B84 /* WaveComponent.cpp */,
+				022AA8DD1934CECD009A4B84 /* WaveComponent.h */,
+				02FD7EB719237D33007762C0 /* SpeedTreeComponent.cpp */,
+				02FD7EB819237D33007762C0 /* SpeedTreeComponent.h */,
+				02FD7EB919237D33007762C0 /* WindComponent.cpp */,
+				02FD7EBA19237D33007762C0 /* WindComponent.h */,
 				02E9E3E01734176D00C501BC /* SoundComponent.cpp */,
 				02E9E3E11734176D00C501BC /* SoundComponent.h */,
 				E8FC1301186972B60095D8FE /* QualitySettingsComponent.cpp */,
@@ -3292,6 +3362,12 @@
 		E8B3C9FD16B9326E002BD35F /* Systems */ = {
 			isa = PBXGroup;
 			children = (
+				022AA8E21934CED9009A4B84 /* WaveSystem.cpp */,
+				022AA8E31934CED9009A4B84 /* WaveSystem.h */,
+				02FD7EBF19237D43007762C0 /* SpeedTreeUpdateSystem.cpp */,
+				02FD7EC019237D43007762C0 /* SpeedTreeUpdateSystem.h */,
+				02FD7EC119237D43007762C0 /* WindSystem.cpp */,
+				02FD7EC219237D43007762C0 /* WindSystem.h */,
 				641A61FD18CE0F61003359E7 /* FoliageSystem.cpp */,
 				641A61FE18CE0F61003359E7 /* FoliageSystem.h */,
 				E8F43E2B186C5D4E006796CB /* MaterialSystem.cpp */,
@@ -3524,6 +3600,7 @@
 				02FD7F111924997C007762C0 /* KeyframeAnimation.h in Headers */,
 				02FD7F121924997C007762C0 /* LinearAnimation.h in Headers */,
 				02FD7F131924997C007762C0 /* NamedAnimationsList.h in Headers */,
+				02E9B4C919407C48001DBDDF /* SpeedTreeComponent.h in Headers */,
 				02FD7F141924997C007762C0 /* AutotestingSystem.h in Headers */,
 				02FD7F151924997C007762C0 /* StaticOcclusionComponent.h in Headers */,
 				02FD7F161924997C007762C0 /* Config.h in Headers */,
@@ -3535,6 +3612,7 @@
 				02FD7F1C1924997C007762C0 /* FoliageSystem.h in Headers */,
 				02FD7F1D1924997C007762C0 /* Data.h in Headers */,
 				02FD7F1E1924997C007762C0 /* DynamicObjectCache.h in Headers */,
+				17675C2319472C1400054F8F /* LibDdsHelper.h in Headers */,
 				02FD7F1F1924997C007762C0 /* EventDispatcher.h in Headers */,
 				02FD7F201924997C007762C0 /* Exception.h in Headers */,
 				02FD7F211924997C007762C0 /* FastName.h in Headers */,
@@ -3551,6 +3629,7 @@
 				02FD7F2C1924997C007762C0 /* Message.h in Headers */,
 				02FD7F2D1924997C007762C0 /* Meta.h in Headers */,
 				02FD7F2E1924997C007762C0 /* ObjectCreator.h in Headers */,
+				02E9B4C719407C41001DBDDF /* TreeToAnimatedTreeConverter.h in Headers */,
 				02FD7F2F1924997C007762C0 /* ObjectFactory.h in Headers */,
 				02FD7F301924997C007762C0 /* Observable.h in Headers */,
 				02FD7F311924997C007762C0 /* Observer.h in Headers */,
@@ -3580,6 +3659,7 @@
 				02FD7F491924997C007762C0 /* Replay.h in Headers */,
 				02FD7F4A1924997C007762C0 /* Stats.h in Headers */,
 				02FD7F4B1924997C007762C0 /* DLCSystem.h in Headers */,
+				022AA8E71934CED9009A4B84 /* WaveSystem.h in Headers */,
 				02FD7F4C1924997C007762C0 /* ParticleRenderObject.h in Headers */,
 				02FD7F4D1924997C007762C0 /* DLCUnpacker.h in Headers */,
 				EAAC98BF1937354800549BAD /* MeshUtils.h in Headers */,
@@ -3594,7 +3674,6 @@
 				02FD7F561924997C007762C0 /* FileList.h in Headers */,
 				02FD7F571924997C007762C0 /* FilePath.h in Headers */,
 				02FD7F581924997C007762C0 /* FileSystem.h in Headers */,
-				02FD7F591924997C007762C0 /* LibJpegHelper.h in Headers */,
 				02FD7F5A1924997C007762C0 /* KeyedArchive.h in Headers */,
 				02FD7F5B1924997C007762C0 /* KeyedArchiver.h in Headers */,
 				02FD7F5C1924997C007762C0 /* KeyedUnarchiver.h in Headers */,
@@ -3602,6 +3681,7 @@
 				02FD7F5E1924997C007762C0 /* LocalizationSystem.h in Headers */,
 				02FD7F5F1924997C007762C0 /* Logger.h in Headers */,
 				02FD7F601924997C007762C0 /* ResourceArchive.h in Headers */,
+				17675C2719472C1400054F8F /* LibPngHelpers.h in Headers */,
 				02FD7F611924997C007762C0 /* VariantType.h in Headers */,
 				02FD7F621924997C007762C0 /* XMLParser.h in Headers */,
 				02FD7F631924997C007762C0 /* YamlArchive.h in Headers */,
@@ -3612,6 +3692,7 @@
 				02FD7F681924997C007762C0 /* KeyboardDevice.h in Headers */,
 				02FD7F691924997C007762C0 /* AABBox2.h in Headers */,
 				02FD7F6A1924997C007762C0 /* AABBox3.h in Headers */,
+				022AA8E11934CECD009A4B84 /* WaveComponent.h in Headers */,
 				02FD7F6B1924997C007762C0 /* BezierSpline.h in Headers */,
 				02FD7F6C1924997C007762C0 /* Circle.h in Headers */,
 				02FD7F6D1924997C007762C0 /* Color.h in Headers */,
@@ -3646,6 +3727,7 @@
 				02FD7F8A1924997C007762C0 /* NetworkConnection.h in Headers */,
 				02FD7F8B1924997C007762C0 /* NetworkConnectionIPhone.h in Headers */,
 				02FD7F8C1924997C007762C0 /* NetworkDelegate.h in Headers */,
+				17675C1C19472C1400054F8F /* Image.h in Headers */,
 				02FD7F8D1924997C007762C0 /* NetworkPacket.h in Headers */,
 				02FD7F8E1924997C007762C0 /* TCPServer.h in Headers */,
 				02FD7F8F1924997C007762C0 /* StaticOcclusion.h in Headers */,
@@ -3654,6 +3736,7 @@
 				02FD7F921924997C007762C0 /* ParticleEmitter.h in Headers */,
 				02FD7F931924997C007762C0 /* ParticleLayer.h in Headers */,
 				02FD7F941924997C007762C0 /* ParticlePropertyLine.h in Headers */,
+				17675C1F19472C1400054F8F /* ImageFormatInterface.h in Headers */,
 				02FD7F951924997C007762C0 /* Mutex.h in Headers */,
 				02FD7F961924997C007762C0 /* SystemTimer.h in Headers */,
 				02FD7F971924997C007762C0 /* EAGLView.h in Headers */,
@@ -3688,6 +3771,7 @@
 				02FD7FB41924997C007762C0 /* Heightmap.h in Headers */,
 				02FD7FB51924997C007762C0 /* IRenderUpdatable.h in Headers */,
 				02FD7FB61924997C007762C0 /* LandscapeChunk.h in Headers */,
+				17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */,
 				02FD7FB71924997C007762C0 /* LandscapeCursor.h in Headers */,
 				02FD7FB81924997C007762C0 /* Light.h in Headers */,
 				02FD7FB91924997C007762C0 /* Mesh.h in Headers */,
@@ -3701,13 +3785,7 @@
 				02FD7FC11924997C007762C0 /* ShadowRect.h in Headers */,
 				02FD7FC21924997C007762C0 /* ShadowVolume.h in Headers */,
 				02FD7FC31924997C007762C0 /* ShadowVolumeRenderPass.h in Headers */,
-				02FD7FC41924997C007762C0 /* Image.h in Headers */,
-				02FD7FC51924997C007762C0 /* ImageConvert.h in Headers */,
-				02FD7FC61924997C007762C0 /* ImageLoader.h in Headers */,
 				02FD7FC71924997C007762C0 /* IndexBuffer.h in Headers */,
-				02FD7FC81924997C007762C0 /* LibDxtHelper.h in Headers */,
-				02FD7FC91924997C007762C0 /* LibPngHelpers.h in Headers */,
-				02FD7FCA1924997C007762C0 /* LibPVRHelper.h in Headers */,
 				02FD7FCB1924997C007762C0 /* MaterialCompiler.h in Headers */,
 				02FD7FCC1924997C007762C0 /* DAVAClassRegistrator.h in Headers */,
 				02FD7FCD1924997C007762C0 /* MaterialGraph.h in Headers */,
@@ -3772,6 +3850,7 @@
 				02FD80081924997C007762C0 /* PathManip.h in Headers */,
 				02FD80091924997C007762C0 /* PolygonGroupInstance.h in Headers */,
 				02FD800A1924997C007762C0 /* ProxyNode.h in Headers */,
+				02E9B4CB19407C4B001DBDDF /* SpeedTreeUpdateSystem.h in Headers */,
 				02FD800B1924997C007762C0 /* Scene.h in Headers */,
 				02FD800C1924997C007762C0 /* SceneAnimationMixer.h in Headers */,
 				02FD800D1924997C007762C0 /* SceneFile.h in Headers */,
@@ -3795,6 +3874,8 @@
 				02FD801F1924997C007762C0 /* SwitchSystem.h in Headers */,
 				02FD80201924997C007762C0 /* TransformSystem.h in Headers */,
 				02FD80211924997C007762C0 /* UserNode.h in Headers */,
+				02E9B4CD19407C68001DBDDF /* WindSystem.h in Headers */,
+				17675C2919472C1400054F8F /* LibPVRHelper.h in Headers */,
 				02FD80221924997C007762C0 /* SoundSystem.h in Headers */,
 				02FD80231924997C007762C0 /* ScrollHelper.h in Headers */,
 				02FD80241924997C007762C0 /* TheoraPlayer.h in Headers */,
@@ -3822,6 +3903,7 @@
 				02FD803A1924997C007762C0 /* UIScreenManager.h in Headers */,
 				02FD803B1924997C007762C0 /* musicios.h in Headers */,
 				02FD803C1924997C007762C0 /* UIScreenManageriPhone.h in Headers */,
+				17675C2119472C1400054F8F /* ImageSystem.h in Headers */,
 				02FD803D1924997C007762C0 /* UIScreenManageriPhoneImpl.h in Headers */,
 				02FD803E1924997C007762C0 /* SpeedTreeObject.h in Headers */,
 				02FD803F1924997C007762C0 /* UIScreenTransition.h in Headers */,
@@ -3836,6 +3918,7 @@
 				02FD80481924997C007762C0 /* Job.h in Headers */,
 				02FD80491924997C007762C0 /* HTTPDownloader.h in Headers */,
 				02FD804A1924997C007762C0 /* MD5.h in Headers */,
+				02E9B4CF19407C6B001DBDDF /* WindComponent.h in Headers */,
 				02FD804B1924997C007762C0 /* Random.h in Headers */,
 				02FD804C1924997C007762C0 /* StringFormat.h in Headers */,
 				02FD804D1924997C007762C0 /* UTF8Utils.h in Headers */,
@@ -3883,6 +3966,7 @@
 				02FD80771924997C007762C0 /* ActionUpdateSystem.h in Headers */,
 				02FD80781924997C007762C0 /* CRC32.h in Headers */,
 				02FD80791924997C007762C0 /* MaterialOptimazer.h in Headers */,
+				17675C1E19472C1400054F8F /* ImageConvert.h in Headers */,
 				02FD807A1924997C007762C0 /* SkyboxSystem.h in Headers */,
 				02FD807B1924997C007762C0 /* AllocatorFactory.h in Headers */,
 				02FD807C1924997C007762C0 /* SkyboxRenderObject.h in Headers */,
@@ -3905,6 +3989,7 @@
 				02FD808D1924997C007762C0 /* SerializationContext.h in Headers */,
 				02FD808E1924997C007762C0 /* RenderStateData.h in Headers */,
 				02FD808F1924997C007762C0 /* UIParticles.h in Headers */,
+				17675C2519472C1400054F8F /* LibJpegHelper.h in Headers */,
 				02FD80901924997C007762C0 /* UniqueStateSet.h in Headers */,
 				02FD80911924997C007762C0 /* TextureStateData.h in Headers */,
 				02FD80921924997C007762C0 /* GamepadDevice.h in Headers */,
@@ -3916,6 +4001,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84D18BFC19201BEF009E3E90 /* Image.h in Headers */,
 				AA747D9F0F9514B9006C5449 /* Framework_Prefix.pch in Headers */,
 				E8B3CA7F16B9326E002BD35F /* AnimatedObject.h in Headers */,
 				E8B3CA8116B9326E002BD35F /* Animation.h in Headers */,
@@ -3942,12 +4028,15 @@
 				E8B3CAA716B9326E002BD35F /* FastName.h in Headers */,
 				E8B3CAA816B9326E002BD35F /* FastNameMap.h in Headers */,
 				E8B3CAAA16B9326E002BD35F /* FixedSizePoolAllocator.h in Headers */,
+				02FD7EBC19237D33007762C0 /* SpeedTreeComponent.h in Headers */,
 				E8B3CAAB16B9326E002BD35F /* Hash.h in Headers */,
 				E8B3CAAC16B9326E002BD35F /* HashMap.h in Headers */,
 				E8B3CAAD16B9326E002BD35F /* Introspection.h in Headers */,
 				E8B3CAAE16B9326E002BD35F /* IntrospectionBase.h in Headers */,
 				E8B3CAAF16B9326E002BD35F /* IntrospectionCollection.h in Headers */,
+				02A2FC5618D3064D0039E66A /* TreeToAnimatedTreeConverter.h in Headers */,
 				E8B3CAB016B9326E002BD35F /* IntrospectionFlags.h in Headers */,
+				84D18C0119201BEF009E3E90 /* ImageSystem.h in Headers */,
 				E8B3CAB116B9326E002BD35F /* IntrospectionProperty.h in Headers */,
 				E8B3CAB216B9326E002BD35F /* Mallocator.h in Headers */,
 				E8B3CAB416B9326E002BD35F /* Message.h in Headers */,
@@ -3957,6 +4046,7 @@
 				E8B3CABA16B9326E002BD35F /* Observable.h in Headers */,
 				E8B3CABB16B9326E002BD35F /* Observer.h in Headers */,
 				E8B3CABD16B9326E002BD35F /* Radix.h in Headers */,
+				84D18BFF19201BEF009E3E90 /* ImageFormatInterface.h in Headers */,
 				E8B3CABE16B9326E002BD35F /* RefPtr.h in Headers */,
 				E8B3CABF16B9326E002BD35F /* ScopedPtr.h in Headers */,
 				E8B3CAC016B9326E002BD35F /* Singleton.h in Headers */,
@@ -3991,11 +4081,11 @@
 				E8B3CAF116B9326E002BD35F /* SceneSystem.h in Headers */,
 				E8B3CB1116B9326E002BD35F /* Bitstream.h in Headers */,
 				E8B3CB1316B9326E002BD35F /* DynamicMemoryFile.h in Headers */,
+				84D18C0919201BEF009E3E90 /* LibPVRHelper.h in Headers */,
 				E8B3CB1516B9326E002BD35F /* File.h in Headers */,
 				E8B3CB1716B9326E002BD35F /* FileList.h in Headers */,
 				E8B3CB1916B9326E002BD35F /* FilePath.h in Headers */,
 				E8B3CB1B16B9326E002BD35F /* FileSystem.h in Headers */,
-				8465CD3918E4D46D005AA9F8 /* LibJpegHelper.h in Headers */,
 				E8B3CB1E16B9326E002BD35F /* KeyedArchive.h in Headers */,
 				E8B3CB2016B9326E002BD35F /* KeyedArchiver.h in Headers */,
 				E8B3CB2216B9326E002BD35F /* KeyedUnarchiver.h in Headers */,
@@ -4031,6 +4121,7 @@
 				E8B3CB5516B9326E002BD35F /* NeonMath.h in Headers */,
 				E8B3CB5616B9326E002BD35F /* OOBBox.h in Headers */,
 				E8B3CB5716B9326E002BD35F /* Plane.h in Headers */,
+				84D18C0519201BEF009E3E90 /* LibJpegHelper.h in Headers */,
 				E8B3CB5916B9326E002BD35F /* Polygon2.h in Headers */,
 				E8B3CB5B16B9326E002BD35F /* Polygon3.h in Headers */,
 				EA10607718892B7C00CB99A3 /* ParticleGroup.h in Headers */,
@@ -4045,6 +4136,7 @@
 				E8B3CB6516B9326E002BD35F /* BaseNetworkConnection.h in Headers */,
 				E8B3CB6716B9326E002BD35F /* BTNetworkConnection.h in Headers */,
 				E8B3CB6A16B9326E002BD35F /* NetworkConnection.h in Headers */,
+				022AA8E61934CED9009A4B84 /* WaveSystem.h in Headers */,
 				E8B3CB6B16B9326E002BD35F /* NetworkConnectionIPhone.h in Headers */,
 				E8B3CB6E16B9326E002BD35F /* NetworkDelegate.h in Headers */,
 				E8B3CB7016B9326E002BD35F /* NetworkPacket.h in Headers */,
@@ -4102,14 +4194,8 @@
 				E8B3CC0416B9326E002BD35F /* ShadowRect.h in Headers */,
 				E8B3CC0616B9326E002BD35F /* ShadowVolume.h in Headers */,
 				E8B3CC0816B9326E002BD35F /* ShadowVolumeRenderPass.h in Headers */,
-				E8B3CC0A16B9326E002BD35F /* Image.h in Headers */,
-				E8B3CC0C16B9326E002BD35F /* ImageConvert.h in Headers */,
-				E8B3CC0E16B9326E002BD35F /* ImageLoader.h in Headers */,
 				E8B3CC0F16B9326E002BD35F /* IndexBuffer.h in Headers */,
-				E8B3CC1116B9326E002BD35F /* LibDxtHelper.h in Headers */,
 				EAAC98BE1937354800549BAD /* MeshUtils.h in Headers */,
-				E8B3CC1316B9326E002BD35F /* LibPngHelpers.h in Headers */,
-				E8B3CC1516B9326E002BD35F /* LibPVRHelper.h in Headers */,
 				E8B3CC1716B9326E002BD35F /* MaterialCompiler.h in Headers */,
 				021414171819851100925E51 /* DAVAClassRegistrator.h in Headers */,
 				E8B3CC1916B9326E002BD35F /* MaterialGraph.h in Headers */,
@@ -4146,6 +4232,7 @@
 				E8B3CC5516B9326E002BD35F /* Box2DHelper.h in Headers */,
 				E8B3CC5716B9326E002BD35F /* Box2DTileCollider.h in Headers */,
 				E8B3CC5916B9326E002BD35F /* GameObject.h in Headers */,
+				84D18BFE19201BEF009E3E90 /* ImageConvert.h in Headers */,
 				E89C58F418B24832002C25FE /* Atomic.h in Headers */,
 				E8B3CC5B16B9326E002BD35F /* GameObjectAnimations.h in Headers */,
 				E8B3CC5D16B9326E002BD35F /* GameObjectManager.h in Headers */,
@@ -4175,9 +4262,11 @@
 				E8B3CC9416B9326E002BD35F /* PolygonGroupInstance.h in Headers */,
 				E8B3CC9616B9326E002BD35F /* ProxyNode.h in Headers */,
 				E8B3CC9E16B9326E002BD35F /* Scene.h in Headers */,
+				84D18C0719201BEF009E3E90 /* LibPngHelpers.h in Headers */,
 				E8B3CCA016B9326E002BD35F /* SceneAnimationMixer.h in Headers */,
 				E8B3CCA216B9326E002BD35F /* SceneFile.h in Headers */,
 				E8B3CCA416B9326E002BD35F /* SceneFileV2.h in Headers */,
+				02FD7EBE19237D33007762C0 /* WindComponent.h in Headers */,
 				E8B3CCA616B9326E002BD35F /* SceneManager.h in Headers */,
 				E8B3CCAA16B9326E002BD35F /* SceneNodeAnimation.h in Headers */,
 				E8B3CCAC16B9326E002BD35F /* SceneNodeAnimationKey.h in Headers */,
@@ -4212,12 +4301,16 @@
 				E8B3CCFC16B9326E002BD35F /* UIHierarchy.h in Headers */,
 				E8B3CCFE16B9326E002BD35F /* UIHierarchyCell.h in Headers */,
 				E8B3CD0016B9326E002BD35F /* UIHierarchyNode.h in Headers */,
+				17FFF906193F03AF003D51DA /* MongodbObject.h in Headers */,
 				E8B3CD0216B9326E002BD35F /* UIHoleTransition.h in Headers */,
 				E8B3CD0416B9326E002BD35F /* UIJoypad.h in Headers */,
 				E8B3CD0616B9326E002BD35F /* UIList.h in Headers */,
+				84D18C0319201BEF009E3E90 /* LibDdsHelper.h in Headers */,
+				17FFF905193F03AA003D51DA /* MongodbClient.h in Headers */,
 				E8B3CD0816B9326E002BD35F /* UIListCell.h in Headers */,
 				E8B3CD0A16B9326E002BD35F /* UILoadingTransition.h in Headers */,
 				E8B3CD0C16B9326E002BD35F /* UIMoveInTransition.h in Headers */,
+				02FD7EC619237D43007762C0 /* WindSystem.h in Headers */,
 				A6AFDED218718538006E43A1 /* ShadowBlendMode.h in Headers */,
 				E8B3CD0E16B9326E002BD35F /* UIPopup.h in Headers */,
 				E8B3CD1016B9326E002BD35F /* UIScreen.h in Headers */,
@@ -4246,6 +4339,7 @@
 				E89CE92B16C54A36006BEFF4 /* SpriteObject.h in Headers */,
 				E89CE92D16C54A36006BEFF4 /* SpriteRenderBatch.h in Headers */,
 				CCB4C44716CBC65D00F2B085 /* ComponentHelpers.h in Headers */,
+				022AA8E01934CECD009A4B84 /* WaveComponent.h in Headers */,
 				1799E51B16CCEBDA0058061F /* ParticleForce.h in Headers */,
 				C7E76D3216DF69370041ED9A /* AutotestingSystemLua.h in Headers */,
 				17F53E2F16D36FF3004D5099 /* IWebViewControl.h in Headers */,
@@ -4256,6 +4350,7 @@
 				CC247FF416D69F1700183D40 /* UIAlertView_Modal.h in Headers */,
 				CC24801616DD17F300183D40 /* UserComponent.h in Headers */,
 				A69C9398186C377C00EAC8BC /* NMaterialTemplate.h in Headers */,
+				6272153E192265C7007B7DE9 /* CRCAdditionInterface.h in Headers */,
 				E8BD1F0D16DE4A9C00499E18 /* MailSender.h in Headers */,
 				E95B4C5D16DF78EE00880713 /* UISpinner.h in Headers */,
 				CC24804616E0E34300183D40 /* VectorSpinnerAdapter.h in Headers */,
@@ -4264,6 +4359,7 @@
 				CCC7A4A216F1D80C0061EA5D /* Landscape.h in Headers */,
 				CCC7A4A316F1D80C0061EA5D /* RenderFastNames.h in Headers */,
 				CCC7A4A716F1D8200061EA5D /* RenderState.h in Headers */,
+				02FD7EC419237D43007762C0 /* SpeedTreeUpdateSystem.h in Headers */,
 				CCC7A4AB16F1D8480061EA5D /* Entity.h in Headers */,
 				CCC7A4AF16F1D88C0061EA5D /* UpdateSystem.h in Headers */,
 				E8B6B3C71705DEB4004F665E /* DeviceInfo.h in Headers */,
@@ -4412,11 +4508,13 @@
 				02FD809B1924997C007762C0 /* KeyframeAnimation.cpp in Sources */,
 				02FD809C1924997C007762C0 /* LinearAnimation.cpp in Sources */,
 				02FD809D1924997C007762C0 /* AutotestingSystem.cpp in Sources */,
+				02E9B4C819407C48001DBDDF /* SpeedTreeComponent.cpp in Sources */,
 				02FD809E1924997C007762C0 /* OcclusionQuery.cpp in Sources */,
 				02FD809F1924997C007762C0 /* MongodbUpdateObject.cpp in Sources */,
 				02FD80A01924997C007762C0 /* BaseMath.cpp in Sources */,
 				02FD80A11924997C007762C0 /* BaseObject.cpp in Sources */,
 				02FD80A21924997C007762C0 /* BaseObjectChecker.cpp in Sources */,
+				02E9B4C619407C3E001DBDDF /* TreeToAnimatedTreeConverter.cpp in Sources */,
 				02FD80A31924997C007762C0 /* Data.cpp in Sources */,
 				02FD80A41924997C007762C0 /* DynamicObjectCache.cpp in Sources */,
 				02FD80A51924997C007762C0 /* EventDispatcher.cpp in Sources */,
@@ -4448,12 +4546,14 @@
 				02FD80BF1924997C007762C0 /* DynamicMemoryFile.cpp in Sources */,
 				02FD80C01924997C007762C0 /* File.cpp in Sources */,
 				02FD80C11924997C007762C0 /* FileList.cpp in Sources */,
+				022AA8E51934CED9009A4B84 /* WaveSystem.cpp in Sources */,
 				02FD80C21924997C007762C0 /* FilePath.cpp in Sources */,
 				02FD80C31924997C007762C0 /* FileSystem.cpp in Sources */,
 				02FD80C41924997C007762C0 /* FileSystemObjective.mm in Sources */,
 				02FD80C51924997C007762C0 /* KeyedArchive.cpp in Sources */,
 				02FD80C61924997C007762C0 /* KeyedArchiver.cpp in Sources */,
 				02FD80C71924997C007762C0 /* KeyedUnarchiver.cpp in Sources */,
+				02E9B4CC19407C68001DBDDF /* WindSystem.cpp in Sources */,
 				02FD80C81924997C007762C0 /* LocalizationIPhone.mm in Sources */,
 				02FD80C91924997C007762C0 /* LocalizationSystem.cpp in Sources */,
 				02FD80CA1924997C007762C0 /* Logger.cpp in Sources */,
@@ -4480,6 +4580,7 @@
 				02FD80DF1924997C007762C0 /* Polygon2.cpp in Sources */,
 				02FD80E01924997C007762C0 /* Polygon3.cpp in Sources */,
 				02FD80E11924997C007762C0 /* RectPacker.cpp in Sources */,
+				17675C1B19472C1400054F8F /* Image.cpp in Sources */,
 				02FD80E21924997C007762C0 /* Spline.cpp in Sources */,
 				02FD80E31924997C007762C0 /* BaseNetworkConnection.mm in Sources */,
 				02FD80E41924997C007762C0 /* BTNetworkConnection.mm in Sources */,
@@ -4513,6 +4614,7 @@
 				02FD81001924997C007762C0 /* RenderLayerManager.cpp in Sources */,
 				02FD81011924997C007762C0 /* PolygonGroup.cpp in Sources */,
 				02FD81021924997C007762C0 /* StaticMesh.cpp in Sources */,
+				17675C2219472C1400054F8F /* LibDdsHelper.cpp in Sources */,
 				02FD81031924997C007762C0 /* SwitchToRenerObjectConverter.cpp in Sources */,
 				02FD81041924997C007762C0 /* ColorOnlyEffect.cpp in Sources */,
 				02FD81051924997C007762C0 /* MultiTextureEffect.cpp in Sources */,
@@ -4535,12 +4637,6 @@
 				02FD81161924997C007762C0 /* ShadowRect.cpp in Sources */,
 				02FD81171924997C007762C0 /* ShadowVolume.cpp in Sources */,
 				02FD81181924997C007762C0 /* ShadowVolumeRenderPass.cpp in Sources */,
-				02FD81191924997C007762C0 /* Image.cpp in Sources */,
-				02FD811A1924997C007762C0 /* Image.mm in Sources */,
-				02FD811B1924997C007762C0 /* ImageLoader.cpp in Sources */,
-				02FD811C1924997C007762C0 /* LibDxtHelper.cpp in Sources */,
-				02FD811D1924997C007762C0 /* LibPngHelpers.cpp in Sources */,
-				02FD811E1924997C007762C0 /* LibPVRHelper.cpp in Sources */,
 				02FD811F1924997C007762C0 /* MaterialCompiler.cpp in Sources */,
 				02FD81201924997C007762C0 /* MaterialGraph.cpp in Sources */,
 				02FD81211924997C007762C0 /* JobQueue.cpp in Sources */,
@@ -4580,6 +4676,7 @@
 				02FD81431924997C007762C0 /* TextGameObject.cpp in Sources */,
 				02FD81441924997C007762C0 /* BillboardNode.cpp in Sources */,
 				02FD81451924997C007762C0 /* BoneNode.cpp in Sources */,
+				17675C2619472C1400054F8F /* LibPngHelpers.cpp in Sources */,
 				02FD81461924997C007762C0 /* BulletComponent.cpp in Sources */,
 				02FD81471924997C007762C0 /* CameraComponent.cpp in Sources */,
 				02FD81481924997C007762C0 /* RenderTechnique.cpp in Sources */,
@@ -4592,6 +4689,7 @@
 				02FD814F1924997C007762C0 /* RenderComponent.cpp in Sources */,
 				02FD81501924997C007762C0 /* SwitchComponent.cpp in Sources */,
 				02FD81511924997C007762C0 /* TransformComponent.cpp in Sources */,
+				17675C2419472C1400054F8F /* LibJpegHelper.cpp in Sources */,
 				02FD81521924997C007762C0 /* UpdatableComponent.cpp in Sources */,
 				02FD81531924997C007762C0 /* DataNode.cpp in Sources */,
 				02FD81541924997C007762C0 /* ImposterManager.cpp in Sources */,
@@ -4626,11 +4724,12 @@
 				EAAC98BD1937354800549BAD /* MeshUtils.cpp in Sources */,
 				02FD81711924997C007762C0 /* QualitySettingsComponent.cpp in Sources */,
 				02FD81721924997C007762C0 /* EventSystem.cpp in Sources */,
+				022AA8DF1934CECD009A4B84 /* WaveComponent.cpp in Sources */,
 				02FD81731924997C007762C0 /* ParticleRenderObject.cpp in Sources */,
-				02FD81741924997C007762C0 /* LibJpegHelper.cpp in Sources */,
 				02FD81751924997C007762C0 /* LightUpdateSystem.cpp in Sources */,
 				02FD81761924997C007762C0 /* MaterialSystem.cpp in Sources */,
 				02FD81771924997C007762C0 /* LodSystem.cpp in Sources */,
+				17675C2019472C1400054F8F /* ImageSystem.cpp in Sources */,
 				02FD81781924997C007762C0 /* ParticleEffectSystem.cpp in Sources */,
 				02FD81791924997C007762C0 /* RenderUpdateSystem.cpp in Sources */,
 				02FD817A1924997C007762C0 /* SwitchSystem.cpp in Sources */,
@@ -4660,6 +4759,7 @@
 				02FD81921924997C007762C0 /* UIScreen.cpp in Sources */,
 				02FD81931924997C007762C0 /* UIScreenManageriPhone.mm in Sources */,
 				02FD81941924997C007762C0 /* UIScreenManageriPhoneImpl.mm in Sources */,
+				17675C2819472C1400054F8F /* LibPVRHelper.cpp in Sources */,
 				02FD81951924997C007762C0 /* StaticOcclusionRenderPass.cpp in Sources */,
 				02FD81961924997C007762C0 /* UIScreenTransition.cpp in Sources */,
 				02FD81971924997C007762C0 /* StaticOcclusionRenderPass.cpp in Sources */,
@@ -4693,6 +4793,7 @@
 				02FD81B31924997C007762C0 /* DVAssertMessage.cpp in Sources */,
 				02FD81B41924997C007762C0 /* DVAssertMessageApple.mm in Sources */,
 				02FD81B51924997C007762C0 /* UIAlertView_Modal.m in Sources */,
+				02E9B4CE19407C6B001DBDDF /* WindComponent.cpp in Sources */,
 				02FD81B61924997C007762C0 /* RenderPassManager.cpp in Sources */,
 				02FD81B71924997C007762C0 /* UserComponent.cpp in Sources */,
 				02FD81B81924997C007762C0 /* MailSender.cpp in Sources */,
@@ -4703,6 +4804,7 @@
 				02FD81BD1924997C007762C0 /* UISpinner.cpp in Sources */,
 				02FD81BE1924997C007762C0 /* SpeedTreeObject.cpp in Sources */,
 				02FD81BF1924997C007762C0 /* NMaterialNames.cpp in Sources */,
+				17675C1D19472C1400054F8F /* Image.mm in Sources */,
 				02FD81C01924997C007762C0 /* UTF8UtilsMac.mm in Sources */,
 				02FD81C11924997C007762C0 /* UISwitch.cpp in Sources */,
 				02FD81C21924997C007762C0 /* Frustum.cpp in Sources */,
@@ -4710,6 +4812,7 @@
 				02FD81C41924997C007762C0 /* RenderState.cpp in Sources */,
 				02FD81C51924997C007762C0 /* Entity.cpp in Sources */,
 				02FD81C61924997C007762C0 /* UpdateSystem.cpp in Sources */,
+				02E9B4CA19407C4B001DBDDF /* SpeedTreeUpdateSystem.cpp in Sources */,
 				02FD81C71924997C007762C0 /* DeviceInfoiOS.mm in Sources */,
 				02FD81C81924997C007762C0 /* DeviceInfo.cpp in Sources */,
 				02FD81C91924997C007762C0 /* UIAggregatorControl.cpp in Sources */,
@@ -4776,11 +4879,13 @@
 				E8B3CA9F16B9326E002BD35F /* Data.cpp in Sources */,
 				EAAC98BC1937354800549BAD /* MeshUtils.cpp in Sources */,
 				E8B3CAA116B9326E002BD35F /* DynamicObjectCache.cpp in Sources */,
+				84D18C0819201BEF009E3E90 /* LibPVRHelper.cpp in Sources */,
 				E8B3CAA316B9326E002BD35F /* EventDispatcher.cpp in Sources */,
 				E8B3CAA616B9326E002BD35F /* FastName.cpp in Sources */,
 				E8B3CAA916B9326E002BD35F /* FixedSizePoolAllocator.cpp in Sources */,
 				E8B3CAB316B9326E002BD35F /* Message.cpp in Sources */,
 				E8B3CAB716B9326E002BD35F /* ObjectFactory.cpp in Sources */,
+				84D18BFD19201BEF009E3E90 /* Image.mm in Sources */,
 				E8B3CAB916B9326E002BD35F /* Observable.cpp in Sources */,
 				E8B3CABC16B9326E002BD35F /* Radix.cpp in Sources */,
 				E8B3CAC316B9326E002BD35F /* CollisionObject2.cpp in Sources */,
@@ -4823,6 +4928,7 @@
 				E8B3CB3316B9326E002BD35F /* XMLParser.mm in Sources */,
 				E8B3CB3416B9326E002BD35F /* YamlArchive.cpp in Sources */,
 				E8B3CB3616B9326E002BD35F /* YamlParser.cpp in Sources */,
+				84D18BFB19201BEF009E3E90 /* Image.cpp in Sources */,
 				E8B3CB3816B9326E002BD35F /* Accelerometer.cpp in Sources */,
 				E8B3CB3D16B9326E002BD35F /* AccelerometeriPhone.mm in Sources */,
 				E8B3CB3E16B9326E002BD35F /* InputSystem.cpp in Sources */,
@@ -4842,6 +4948,7 @@
 				E8B3CB6816B9326E002BD35F /* BTNetworkConnection.mm in Sources */,
 				E8B3CB6916B9326E002BD35F /* NetworkConnection.cpp in Sources */,
 				E8B3CB6C16B9326E002BD35F /* NetworkConnectionIPhone.mm in Sources */,
+				84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */,
 				E8B3CB6D16B9326E002BD35F /* NetworkDelegate.cpp in Sources */,
 				E8B3CB6F16B9326E002BD35F /* NetworkPacket.cpp in Sources */,
 				E8B3CB7216B9326E002BD35F /* TCPServer.mm in Sources */,
@@ -4864,10 +4971,12 @@
 				E8B3CBC116B9326E002BD35F /* FTFont.cpp in Sources */,
 				E8B3CBC316B9326E002BD35F /* GraphicsFont.cpp in Sources */,
 				E8B3CBC616B9326E002BD35F /* Sprite.cpp in Sources */,
+				022AA8E41934CED9009A4B84 /* WaveSystem.cpp in Sources */,
 				E8B3CBC816B9326E002BD35F /* TextBlock.cpp in Sources */,
 				E8B3CBCA16B9326E002BD35F /* AnimatedMesh.cpp in Sources */,
 				E8B3CBCC16B9326E002BD35F /* EdgeAdjacency.cpp in Sources */,
 				A6AFDED8187187D3006E43A1 /* RenderLayerManager.cpp in Sources */,
+				02FD7EBB19237D33007762C0 /* SpeedTreeComponent.cpp in Sources */,
 				E8B3CBCE16B9326E002BD35F /* PolygonGroup.cpp in Sources */,
 				E8B3CBD016B9326E002BD35F /* StaticMesh.cpp in Sources */,
 				CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */,
@@ -4890,14 +4999,9 @@
 				E8B3CBFF16B9326E002BD35F /* RenderPass.cpp in Sources */,
 				E8B3CC0116B9326E002BD35F /* RenderSystem.cpp in Sources */,
 				E8B3CC0316B9326E002BD35F /* ShadowRect.cpp in Sources */,
+				02FD7EC319237D43007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				E8B3CC0516B9326E002BD35F /* ShadowVolume.cpp in Sources */,
 				E8B3CC0716B9326E002BD35F /* ShadowVolumeRenderPass.cpp in Sources */,
-				E8B3CC0916B9326E002BD35F /* Image.cpp in Sources */,
-				E8B3CC0B16B9326E002BD35F /* Image.mm in Sources */,
-				E8B3CC0D16B9326E002BD35F /* ImageLoader.cpp in Sources */,
-				E8B3CC1016B9326E002BD35F /* LibDxtHelper.cpp in Sources */,
-				E8B3CC1216B9326E002BD35F /* LibPngHelpers.cpp in Sources */,
-				E8B3CC1416B9326E002BD35F /* LibPVRHelper.cpp in Sources */,
 				E8B3CC1616B9326E002BD35F /* MaterialCompiler.cpp in Sources */,
 				E8B3CC1816B9326E002BD35F /* MaterialGraph.cpp in Sources */,
 				CC84B04218211BCE00934482 /* JobQueue.cpp in Sources */,
@@ -4909,6 +5013,7 @@
 				E8B3CC2516B9326E002BD35F /* RenderDataObject.cpp in Sources */,
 				E8B3CC2716B9326E002BD35F /* RenderEffect.cpp in Sources */,
 				E8B3CC2916B9326E002BD35F /* RenderGrayscaleEffect.cpp in Sources */,
+				02A2FC5518D3064D0039E66A /* TreeToAnimatedTreeConverter.cpp in Sources */,
 				E8B3CC2B16B9326E002BD35F /* RenderHelper.cpp in Sources */,
 				E8B3CC2D16B9326E002BD35F /* RenderManager.cpp in Sources */,
 				E8B3CC3016B9326E002BD35F /* RenderManagerFactory.cpp in Sources */,
@@ -4946,6 +5051,7 @@
 				A611714D1860C2A500E18F8C /* StaticOcclusionSystem.cpp in Sources */,
 				E8983CC718C8A540002FB974 /* ES3Renderer.mm in Sources */,
 				E8B3CC7216B9326E002BD35F /* ParticleEffectComponent.cpp in Sources */,
+				17FFF903193F0218003D51DA /* MongodbClient.cpp in Sources */,
 				E8B3CC7616B9326E002BD35F /* RenderComponent.cpp in Sources */,
 				E8B3CC7816B9326E002BD35F /* SwitchComponent.cpp in Sources */,
 				E8B3CC7A16B9326E002BD35F /* TransformComponent.cpp in Sources */,
@@ -4977,19 +5083,21 @@
 				E8B3CCAF16B9326E002BD35F /* ShadowVolumeNode.cpp in Sources */,
 				E8B3CCB116B9326E002BD35F /* SkeletonNode.cpp in Sources */,
 				E8B3CCB316B9326E002BD35F /* SpriteNode.cpp in Sources */,
+				02FD7EC519237D43007762C0 /* WindSystem.cpp in Sources */,
 				E8B3CCB616B9326E002BD35F /* SwitchNode.cpp in Sources */,
 				E8B3CCB816B9326E002BD35F /* BaseProcessSystem.cpp in Sources */,
 				E8B3CCBA16B9326E002BD35F /* DebugRenderSystem.cpp in Sources */,
 				E8FC1303186972B60095D8FE /* QualitySettingsComponent.cpp in Sources */,
 				E8B3CCBE16B9326E002BD35F /* EventSystem.cpp in Sources */,
 				EA10607818892B7C00CB99A3 /* ParticleRenderObject.cpp in Sources */,
-				8465CD3818E4D46D005AA9F8 /* LibJpegHelper.cpp in Sources */,
 				E8B3CCC016B9326E002BD35F /* LightUpdateSystem.cpp in Sources */,
+				84D18C0419201BEF009E3E90 /* LibJpegHelper.cpp in Sources */,
 				E8F43E2D186C5D4E006796CB /* MaterialSystem.cpp in Sources */,
 				E8B3CCC216B9326E002BD35F /* LodSystem.cpp in Sources */,
 				E8B3CCC416B9326E002BD35F /* ParticleEffectSystem.cpp in Sources */,
 				E8B3CCC816B9326E002BD35F /* RenderUpdateSystem.cpp in Sources */,
 				E8B3CCCA16B9326E002BD35F /* SwitchSystem.cpp in Sources */,
+				022AA8DE1934CECD009A4B84 /* WaveComponent.cpp in Sources */,
 				E8B3CCCC16B9326E002BD35F /* TransformSystem.cpp in Sources */,
 				E8B3CCD016B9326E002BD35F /* UserNode.cpp in Sources */,
 				E8B3CCE716B9326E002BD35F /* ScrollHelper.cpp in Sources */,
@@ -5014,6 +5122,7 @@
 				E8B3CD0B16B9326E002BD35F /* UIMoveInTransition.cpp in Sources */,
 				E8B3CD0D16B9326E002BD35F /* UIPopup.cpp in Sources */,
 				E8B3CD0F16B9326E002BD35F /* UIScreen.cpp in Sources */,
+				84D18C0219201BEF009E3E90 /* LibDdsHelper.cpp in Sources */,
 				E8B3CD1516B9326E002BD35F /* UIScreenManageriPhone.mm in Sources */,
 				E8B3CD1716B9326E002BD35F /* UIScreenManageriPhoneImpl.mm in Sources */,
 				50C7D604186082D600D8936D /* StaticOcclusionRenderPass.cpp in Sources */,
@@ -5063,6 +5172,7 @@
 				E9E7982F16F0B45100745AF5 /* UISwitch.cpp in Sources */,
 				CCC7A49F16F1D80C0061EA5D /* Frustum.cpp in Sources */,
 				CCC7A4A116F1D80C0061EA5D /* Landscape.cpp in Sources */,
+				02FD7EBD19237D33007762C0 /* WindComponent.cpp in Sources */,
 				CCC7A4A616F1D8200061EA5D /* RenderState.cpp in Sources */,
 				CCC7A4AA16F1D8480061EA5D /* Entity.cpp in Sources */,
 				CCC7A4AE16F1D88C0061EA5D /* UpdateSystem.cpp in Sources */,
@@ -5083,6 +5193,7 @@
 				A6E4FDF51761D40200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
 				A6E4FDFB1761D83100B48E41 /* ActionUpdateSystem.cpp in Sources */,
 				A6A1E8691785688600AA3A86 /* CRC32.cpp in Sources */,
+				84D18C0619201BEF009E3E90 /* LibPngHelpers.cpp in Sources */,
 				4FDDEC5917A6920D00D9DDEA /* MaterialOptimazer.cpp in Sources */,
 				A66BC2F117AB98E800B6252E /* SkyboxSystem.cpp in Sources */,
 				17816B8017B2748900B067E1 /* AllocatorFactory.cpp in Sources */,
@@ -5093,6 +5204,7 @@
 				E8C0A6FE17D5D8EC00F8F93C /* UIScrollViewContainer.cpp in Sources */,
 				1AD7C35E17D8951C00B9977C /* Vector.cpp in Sources */,
 				17DC600B17DE16D40075813E /* UIMovieView.cpp in Sources */,
+				17FFF904193F0218003D51DA /* MongodbObject.cpp in Sources */,
 				17DC600F17DE18460075813E /* MovieViewControliOS.mm in Sources */,
 				EA84E17517FAC20100304C3C /* SpatialTree.cpp in Sources */,
 				02D4CFC018055E29007EC9EC /* FMODSoundEvent.cpp in Sources */,
