@@ -619,8 +619,8 @@ void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * root
 		}
 		control->LoadFromYamlNode(node, this);
 		parentControl->AddControl(control);
+        control->SetName(rootNode->GetItemKeyName(k));
 		LoadFromNode(control, node, true);
-		control->SetName(rootNode->GetItemKeyName(k));
 		SafeRelease(control);
 	}
     
