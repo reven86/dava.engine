@@ -51,7 +51,7 @@ public:
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
-    vritual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
+    virtual void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
     void SetFont(Font * font);
     void SetTextColor(const Color& color);
 
