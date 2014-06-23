@@ -82,7 +82,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	positionXSpinBox->setSingleStep(0.1);
 	positionXSpinBox->setDecimals(3);
 	positionLayout->addWidget(positionXSpinBox);
-	connect(positionXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+	connect(positionXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnEmitterPositionChanged()));
 
 	positionLayout->addStretch();
 	positionLayout->addWidget(new QLabel("Y:"));
@@ -92,7 +92,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	positionYSpinBox->setSingleStep(0.1);
 	positionYSpinBox->setDecimals(3);
 	positionLayout->addWidget(positionYSpinBox);
-	connect(positionYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+	connect(positionYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnEmitterPositionChanged()));
 
 	positionLayout->addStretch();
 	positionLayout->addWidget(new QLabel("Z:"));
@@ -102,7 +102,7 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	positionZSpinBox->setSingleStep(0.1);
 	positionZSpinBox->setDecimals(3);
 	positionLayout->addWidget(positionZSpinBox);
-	connect(positionZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnValueChanged()));
+	connect(positionZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnEmitterPositionChanged()));
 			
 	mainLayout->addLayout(positionLayout);	
 
@@ -114,6 +114,9 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 
 	emitterRadius = new TimeLineWidget(this);
 	InitWidget(emitterRadius);
+
+    emitterAngle = new  TimeLineWidget(this);
+    InitWidget(emitterAngle);
 
 	emitterColorWidget = new GradientPickerWidget(this);
 	InitWidget(emitterColorWidget);
@@ -150,6 +153,29 @@ void ParticleEmitterPropertiesWidget::InitWidget(QWidget *widget, bool connectWi
 		connect(widget, SIGNAL(ValueChanged()), this, SLOT(OnValueChanged()));
 }
 
+void ParticleEmitterPropertiesWidget::OnEmitterPositionChanged()
+{
+    if(blockSignals)
+        return;
+
+    DVASSERT(emitter != 0);
+    DVASSERT(effect != 0);
+
+    Vector3 position;
+    position.x = positionXSpinBox->value();
+    position.y = positionYSpinBox->value();
+    position.z = positionZSpinBox->value();
+
+    CommandUpdateEmitterPosition* commandUpdateEmitter = new CommandUpdateEmitterPosition(effect, emitter);
+    commandUpdateEmitter->Init(position);        
+
+    DVASSERT(activeScene != 0);
+    activeScene->Exec(commandUpdateEmitter);
+
+    Init(activeScene, effect, emitter, false, false);
+    emit ValueChanged();
+}
+
 void ParticleEmitterPropertiesWidget::OnValueChanged()
 {
 	if(blockSignals)
@@ -180,23 +206,28 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 	if(!emitterSize->GetValues(size.GetPropsPtr()))
 		return;
 
+
 	float32 life = emitterLife->value();
 	float32 currentLifeTime = emitter->lifeTime;
 	bool initEmittersByDef = FLOAT_EQUAL(life,currentLifeTime) ? false : true;	
 
 	bool isShortEffect = shortEffectCheckBox->isChecked();
-	Vector3 position;
-	position.x = positionXSpinBox->value();
-	position.y = positionYSpinBox->value();
-	position.z = positionZSpinBox->value();
+
+    PropLineWrapper<float32> propAngle;
+    PropLineWrapper<float32> propAngleVariation;
+    emitterAngle->GetValue(0, propAngle.GetPropsPtr());
+    emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
+	
 
 	CommandUpdateEmitter* commandUpdateEmitter = new CommandUpdateEmitter(emitter);
+
 	commandUpdateEmitter->Init(FastName(emitterNameLineEdit->text().toStdString().c_str()),
-							   position,
 							   type,
 							   emissionRange.GetPropLine(),
 							   emissionVector.GetPropLine(),
 							   radius.GetPropLine(),
+                               propAngle.GetPropLine(),
+                               propAngleVariation.GetPropLine(),
 							   colorOverLife.GetPropLine(),
 							   size.GetPropLine(),
 							   life,
@@ -205,14 +236,15 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 	DVASSERT(activeScene != 0);
 	activeScene->Exec(commandUpdateEmitter);
 
-	Init(activeScene, emitter, false, initEmittersByDef);
+	Init(activeScene, effect, emitter, false, initEmittersByDef);
 	emit ValueChanged();
 }
 
-void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEmitter *emitter, bool updateMinimize, bool needUpdateTimeLimits)
+void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEffectComponent *effect, DAVA::ParticleEmitter *emitter, bool updateMinimize, bool needUpdateTimeLimits)
 {
 	DVASSERT(emitter != 0);
 	this->emitter = emitter;
+    this->effect = effect;
 	SetActiveScene(scene);
 
 	blockSignals = true;
@@ -231,9 +263,11 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEm
 	emitterYamlPath->setText(QString::fromStdString(emitter->configPath.GetAbsolutePathname()));
 	emitterType->setCurrentIndex(emitter->emitterType);
 
-	positionXSpinBox->setValue((double)emitter->position.x);
-	positionYSpinBox->setValue((double)emitter->position.y);
-	positionZSpinBox->setValue((double)emitter->position.z);
+    int32 emitterId = effect->GetEmitterId(emitter);    
+    Vector3 position = (emitterId==-1)?Vector3(0,0,0):effect->GetSpawnPosition(emitterId);
+	positionXSpinBox->setValue((double)position.x);
+	positionYSpinBox->setValue((double)position.y);
+	positionZSpinBox->setValue((double)position.z);
 
 	if(!needUpdateTimeLimits)
 	{
@@ -267,6 +301,17 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEm
 	emitterRadius->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->radius)).GetProps(), Qt::blue, "radius");
 	// Radius cannot be negative.
 	emitterRadius->SetMinLimits(0.0f);
+
+    if(!needUpdateTimeLimits)
+    {
+        minTime = emitterAngle->GetMinBoundary();
+        maxTime = emitterAngle->GetMaxBoundary();
+    }
+    emitterAngle->Init(minTime, maxTime, minTimeLimit, maxTimeLimit, updateMinimize);
+    emitterAngle->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->emissionAngle)).GetProps(), Qt::blue, "emission angle base");
+    emitterAngle->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->emissionAngleVariation)).GetProps(), Qt::green, "emission angle spread");
+    emitterAngle->SetYLegendMark(DEGREE_MARK_CHARACTER);
+    
 
 	emitterColorWidget->Init(0.f, emitterLifeTime, "color over life");
 	emitterColorWidget->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(emitter->colorOverLife)).GetProps());
@@ -303,6 +348,7 @@ void ParticleEmitterPropertiesWidget::RestoreVisualState(KeyedArchive* visualSta
 	emitterEmissionRange->SetVisualState(visualStateProps->GetArchive("EMITTER_EMISSION_RANGE_PROPS"));
 	emitterEmissionVector->SetVisualState(visualStateProps->GetArchive("EMITTER_EMISSION_VECTOR_PROPS"));
 	emitterRadius->SetVisualState(visualStateProps->GetArchive("EMITTER_RADIUS_PROPS"));
+    emitterAngle->SetVisualState(visualStateProps->GetArchive("EMITTER_ANGLE_PROPS"));
 	emitterSize->SetVisualState(visualStateProps->GetArchive("EMITTER_SIZE_PROPS"));
 }
 
@@ -325,6 +371,10 @@ void ParticleEmitterPropertiesWidget::StoreVisualState(KeyedArchive* visualState
 	emitterRadius->GetVisualState(props);
 	visualStateProps->SetArchive("EMITTER_RADIUS_PROPS", props);
 
+    props->DeleteAllKeys();
+    emitterAngle->GetVisualState(props);
+    visualStateProps->SetArchive("EMITTER_ANGLE_PROPS", props);
+
 	props->DeleteAllKeys();
 	emitterSize->GetVisualState(props);
 	visualStateProps->SetArchive("EMITTER_SIZE_PROPS", props);
@@ -334,7 +384,7 @@ void ParticleEmitterPropertiesWidget::StoreVisualState(KeyedArchive* visualState
 
 void ParticleEmitterPropertiesWidget::Update()
 {
-	Init(activeScene, emitter, false);
+	Init(activeScene, effect, emitter, false);
 }
 
 bool ParticleEmitterPropertiesWidget::eventFilter(QObject * o, QEvent * e)

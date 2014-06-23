@@ -174,6 +174,7 @@ void ParticleEditorWidget::UpdateVisibleTimelinesForParticleEmitter()
 
 	// Update the visibility of particular timelines based on the emitter type.
 	bool radiusTimeLineVisible = false;
+    bool angleTimeLineVisible = false;
 	bool sizeTimeLineVisible = false;
 
 	switch (emitterPropertiesWidget->GetEmitter()->emitterType)
@@ -183,6 +184,7 @@ void ParticleEditorWidget::UpdateVisibleTimelinesForParticleEmitter()
 		case DAVA::ParticleEmitter::EMITTER_SHOCKWAVE:
 		{
 			radiusTimeLineVisible = true;
+            angleTimeLineVisible = true;
 			break;
 		}
 			
@@ -198,6 +200,7 @@ void ParticleEditorWidget::UpdateVisibleTimelinesForParticleEmitter()
 	}
 	
 	emitterPropertiesWidget->GetEmitterRadiusTimeline()->setVisible(radiusTimeLineVisible);
+    emitterPropertiesWidget->GetEmitterAngleTimeline()->setVisible(angleTimeLineVisible);
 	emitterPropertiesWidget->GetEmitterSizeTimeline()->setVisible(sizeTimeLineVisible);
 }
 

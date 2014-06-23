@@ -31,6 +31,7 @@
 #ifndef __DAVAENGINE_ACTION_COMPONENT_H__
 #define __DAVAENGINE_ACTION_COMPONENT_H__
 
+
 #include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
@@ -42,7 +43,6 @@ namespace DAVA
 	class ActionComponent : public Component
 	{
 	public:
-		
         const static DAVA::FastName ACTION_COMPONENT_SELF_ENTITY_NAME;
 
 		struct Action
@@ -50,63 +50,67 @@ namespace DAVA
 			enum eType
 			{
                 TYPE_NONE = 0,
-                TYPE_PARTICLE_EFFECT,
+                TYPE_PARTICLE_EFFECT_START,
                 TYPE_SOUND,
-                TYPE_WAVE
+                TYPE_WAVE,
+                TYPE_PARTICLE_EFFECT_STOP,
 			};
 
 			enum eEvent
 			{
 				EVENT_SWITCH_CHANGED = 0,
 				EVENT_ADDED_TO_SCENE,
+                EVENT_CUSTOM,
 
-				EVENTS_COUNT
+				EVENTS_COUNT,
 			};
 			
 			eType type;
 			eEvent eventType;
+            FastName userEventId;
 			int32 switchIndex;
 			float32 delay;
+            float32 delayVariation;
+            float32 actualDelay;
 			FastName entityName;
 			//VI: properties needed to control particle effect
 			int32 stopAfterNRepeats;
 			bool stopWhenEmpty;
-
 			
-			Action() : type(TYPE_NONE), eventType(EVENT_SWITCH_CHANGED), delay(0.0f), switchIndex(-1),
-						stopAfterNRepeats(-1), stopWhenEmpty(false)
+			Action()
+                : type(TYPE_NONE)
+                , userEventId("")
+                , eventType(EVENT_SWITCH_CHANGED)
+                , delay(0.0f)
+                , delayVariation(0.0f)
+                , actualDelay(0.0f)
+                , switchIndex(-1)
+                , stopAfterNRepeats(-1)
+                , stopWhenEmpty(false)
 			{				
 			}
-			
-			const Action& operator=(const Action& action)
-			{
-				type = action.type;
-				eventType = action.eventType;
-				delay = action.delay;
-				entityName = action.entityName;
-				switchIndex = action.switchIndex;
-				stopAfterNRepeats = action.stopAfterNRepeats;
-				stopWhenEmpty = action.stopWhenEmpty;
-				
-				return *this;
-			}
+
+            void actualizeDelay();
 			
 			INTROSPECTION(Action,
 						  NULL);
-
 		};
+
 	protected:
 		virtual ~ActionComponent();
+
 	public:
 		ActionComponent();
 		
 		void StartSwitch(int32 switchIndex = -1);
 		void StartAdd();
-		bool IsStarted();
+        void StartUser(const FastName& name);
+        bool IsStarted();
 		void StopAll();
 		void StopSwitch(int32 switchIndex = -1);
+        void StopUser(const FastName& name);
 		
-		void Add(ActionComponent::Action action);
+		void Add(const ActionComponent::Action& action);
 		void Remove(const ActionComponent::Action& action);
 		void Remove(const ActionComponent::Action::eType type, const FastName& entityName, const int switchIndex);
 		uint32 GetCount();
@@ -124,17 +128,15 @@ namespace DAVA
 		IMPLEMENT_COMPONENT_TYPE(ACTION_COMPONENT);
 		
 	private:
-		
 		void EvaluateAction(const Action& action);
 		
-		void OnActionParticleEffect(const Action& action);
+		void OnActionParticleEffectStart(const Action& action);
+        void OnActionParticleEffectStop(const Action& action);
 		void OnActionSound(const Action& action);
         void OnActionWave(const Action& action);
 		
 		Entity* GetTargetEntity(const FastName& name, Entity* parent);
-		
-	private:
-		
+
 		struct ActionContainer
 		{
 			Action action;

@@ -80,6 +80,8 @@
 	#define FILEPATH_MAP_KEY(key) key.GetAbsolutePathname()
 #endif //#ifdef USE_FILEPATH_IN_MAP
 
+#define REBUILD_TANGENT_SPACE_ON_IMPORT
+
 
 #endif // __DAVAENGINE_CONFIG_H__
 

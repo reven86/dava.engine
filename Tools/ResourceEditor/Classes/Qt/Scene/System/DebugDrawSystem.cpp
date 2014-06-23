@@ -105,8 +105,7 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 		DrawObjectBoxesByType(entity);
 		DrawUserNode(entity);
 		DrawLightNode(entity);
-		DrawHangingObjects(entity);
-        DrawStaticOcclusionComponent(entity);
+		DrawHangingObjects(entity);        
 		DrawSwitchesWithDifferentLods(entity);
 		DrawWindNode(entity);
         DrawSwitchesWithDifferentLods(entity);

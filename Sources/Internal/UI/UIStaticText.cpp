@@ -37,47 +37,47 @@
 #include "Render/2D/FontManager.h"
 #include "Animation/LinearAnimation.h"
 
-namespace DAVA 
+namespace DAVA
 {
-	
-UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/) 
+
+UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
 :	UIControl(rect, rectInAbsoluteCoordinates)
-	, textColor(1.0f, 1.0f, 1.0f, 1.0f)
-	, shadowOffset(0, 0)
-	, shadowColor(0, 0, 0, 1)
+    , textColor(1.0f, 1.0f, 1.0f, 1.0f)
+    , shadowOffset(0, 0)
+    , shadowColor(0, 0, 0, 1)
 {
     SetInputEnabled(false, false);
-	textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
-	background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-	background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
+    textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
+    background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
-	shadowBg = new UIControlBackground();
-	textBg = new UIControlBackground();
-	textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    shadowBg = new UIControlBackground();
+    textBg = new UIControlBackground();
+    textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
 }
 
 UIStaticText::~UIStaticText()
 {
-	SafeRelease(textBlock);
-	SafeRelease(shadowBg);
-	SafeRelease(textBg);
+    SafeRelease(textBlock);
+    SafeRelease(shadowBg);
+    SafeRelease(textBg);
 }
 
-	
+
 UIControl *UIStaticText::Clone()
 {
-	UIStaticText *t = new UIStaticText(GetRect());
-	t->CopyDataFrom(this);
-	return t;
+    UIStaticText *t = new UIStaticText(GetRect());
+    t->CopyDataFrom(this);
+    return t;
 }
-	
+
 void UIStaticText::CopyDataFrom(UIControl *srcControl)
 {
-	UIControl::CopyDataFrom(srcControl);
+    UIControl::CopyDataFrom(srcControl);
     UIStaticText *t = (UIStaticText *)srcControl;
 
-	SafeRelease(textBlock);
+    SafeRelease(textBlock);
     textBlock = t->textBlock->Clone();
 
     textColor = t->textColor;
@@ -85,28 +85,28 @@ void UIStaticText::CopyDataFrom(UIControl *srcControl)
     shadowOffset = t->shadowOffset;
 
     SafeRelease(shadowBg);
-	SafeRelease(textBg);
+    SafeRelease(textBg);
     shadowBg = t->shadowBg->Clone();
-	textBg = t->textBg->Clone();
+    textBg = t->textBg->Clone();
 }
-	
+
 UIStaticText *UIStaticText::CloneStaticText()
 {
-	return (UIStaticText *)Clone();
+    return (UIStaticText *)Clone();
 }
-	
+
 void UIStaticText::SetText(const WideString& _string, const Vector2 &requestedTextRectSize/* = Vector2(0,0)*/)
 {
-	textBlock->SetRectSize(size);
-	textBlock->SetText(_string, requestedTextRectSize);
-	PrepareSprite();
+    textBlock->SetRectSize(size);
+    textBlock->SetText(_string, requestedTextRectSize);
+    PrepareSprite();
 }
-	
+
 void UIStaticText::SetFittingOption(int32 fittingType)
 {
-	textBlock->SetRectSize(size);
-	textBlock->SetFittingOption(fittingType);
-	PrepareSprite();
+    textBlock->SetRectSize(size);
+    textBlock->SetFittingOption(fittingType);
+    PrepareSprite();
 }
 
 int32 UIStaticText::GetFittingOption() const
@@ -116,62 +116,62 @@ int32 UIStaticText::GetFittingOption() const
 
 void UIStaticText::SetFont(Font * _font)
 {
-	textBlock->SetRectSize(size);
-	textBlock->SetFont(_font);
-	PrepareSprite();
+    textBlock->SetRectSize(size);
+    textBlock->SetFont(_font);
+    PrepareSprite();
 }
 
 void UIStaticText::SetTextColor(const Color& color)
 {
-	textColor = color;
+    textColor = color;
 }
 
 void UIStaticText::SetShadowOffset(const Vector2 &offset)
 {
-	shadowOffset = offset;
+    shadowOffset = offset;
 }
 
 void UIStaticText::SetShadowColor(const Color &color)
 {
-	shadowColor = color;
+    shadowColor = color;
 }
-    
+
 void UIStaticText::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 {
-	textBlock->SetRectSize(size);
-	textBlock->SetMultiline(_isMultilineEnabled, bySymbol);
-	PrepareSprite();
+    textBlock->SetRectSize(size);
+    textBlock->SetMultiline(_isMultilineEnabled, bySymbol);
+    PrepareSprite();
 }
 
 bool UIStaticText::GetMultiline() const
 {
-	return textBlock->GetMultiline();
+    return textBlock->GetMultiline();
 }
 
 bool UIStaticText::GetMultilineBySymbol() const
 {
-	return textBlock->GetMultilineBySymbol();
+    return textBlock->GetMultilineBySymbol();
 }
 
 void UIStaticText::SetAlign(int32 _align)
 {
-	UIControl::SetSpriteAlign(_align);
+    UIControl::SetSpriteAlign(_align);
 }
 
 int32 UIStaticText::GetAlign() const
 {
-	return UIControl::GetSpriteAlign();
+    return UIControl::GetSpriteAlign();
 }
 
 void UIStaticText::SetTextAlign(int32 _align)
 {
-	textBg->SetAlign(_align);
-	textBlock->SetAlign(_align);
+    textBg->SetAlign(_align);
+    textBlock->SetAlign(_align);
 }
 
 int32 UIStaticText::GetTextAlign() const
 {
-	return textBg->GetAlign();
+    return textBg->GetAlign();
 }
 
 const Vector2 & UIStaticText::GetTextSize()
@@ -181,17 +181,17 @@ const Vector2 & UIStaticText::GetTextSize()
 
 const Color &UIStaticText::GetTextColor() const
 {
-	return textColor;
+    return textColor;
 }
 
 const Color &UIStaticText::GetShadowColor() const
 {
-	return shadowColor;
+    return shadowColor;
 }
 
 const Vector2 &UIStaticText::GetShadowOffset() const
 {
-	return shadowOffset;
+    return shadowOffset;
 }
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
@@ -207,16 +207,16 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	shadowBg->SetColorInheritType(GetBackground()->GetColorInheritType());
 	textBg->SetColorInheritType(GetBackground()->GetColorInheritType());
 
-	UIControl::Draw(geometricData);
+    UIControl::Draw(geometricData);
 
-	if(0 != shadowColor.a && (0 != shadowOffset.dx || 0 != shadowOffset.dy))
-	{
-		UIGeometricData shadowGeomData = geometricData;
+    if(0 != shadowColor.a && (0 != shadowOffset.dx || 0 != shadowOffset.dy))
+    {
+        UIGeometricData shadowGeomData = geometricData;
 
-		shadowGeomData.position += shadowOffset;
-		shadowGeomData.unrotatedRect += shadowOffset;
+        shadowGeomData.position += shadowOffset;
+        shadowGeomData.unrotatedRect += shadowOffset;
 
-		shadowBg->SetAlign(textBg->GetAlign());
+        shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
 		shadowBg->SetColor(shadowColor);
 		shadowBg->SetParentColor(GetBackground()->GetDrawColor());
@@ -229,74 +229,74 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 	textBg->Draw(geometricData);
 }
 
-    
+
 const Vector<WideString> & UIStaticText::GetMultilineStrings()
 {
     return textBlock->GetMultilineStrings();
 }
-	
+
 const WideString & UIStaticText::GetText()
 {
-	return textBlock->GetText();
+    return textBlock->GetText();
 }
 
 void UIStaticText::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
-	UIControl::LoadFromYamlNode(node, loader);
-	
-	const YamlNode * fontNode = node->Get("font");
-	const YamlNode * textNode = node->Get("text");
-	const YamlNode * multilineNode = node->Get("multiline");
+    UIControl::LoadFromYamlNode(node, loader);
+
+    const YamlNode * fontNode = node->Get("font");
+    const YamlNode * textNode = node->Get("text");
+    const YamlNode * multilineNode = node->Get("multiline");
     const YamlNode * multilineBySymbolNode = node->Get("multilineBySymbol");
     const YamlNode * fittingNode = node->Get("fitting");
-	const YamlNode * textColorNode = node->Get("textcolor");
-	const YamlNode * shadowColorNode = node->Get("shadowcolor");
-	const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
-	const YamlNode * textAlignNode = node->Get("textalign");
+    const YamlNode * textColorNode = node->Get("textcolor");
+    const YamlNode * shadowColorNode = node->Get("shadowcolor");
+    const YamlNode * shadowOffsetNode = node->Get("shadowoffset");
+    const YamlNode * textAlignNode = node->Get("textalign");
     const YamlNode * textColorInheritTypeNode = node->Get("textcolorInheritType");
     const YamlNode * shadowColorInheritTypeNode = node->Get("shadowcolorInheritType");
 
-	if (fontNode)
-	{
-		const String & fontName = fontNode->AsString();
-		Font * font = loader->GetFontByName(fontName);
-		SetFont(font);
-	}
+    if (fontNode)
+    {
+        const String & fontName = fontNode->AsString();
+        Font * font = loader->GetFontByName(fontName);
+        SetFont(font);
+    }
 
-	bool multiline = loader->GetBoolFromYamlNode(multilineNode, false);
+    bool multiline = loader->GetBoolFromYamlNode(multilineNode, false);
     bool multilineBySymbol = loader->GetBoolFromYamlNode(multilineBySymbolNode, false);
-	SetMultiline(multiline, multilineBySymbol);
-	
+    SetMultiline(multiline, multilineBySymbol);
+
     if(fittingNode)
     {
         SetFittingOption(loader->GetFittingOptionFromYamlNode(fittingNode));
     }
-    
-	if(textColorNode)
-	{
-		SetTextColor(textColorNode->AsColor());
-	}
 
-	if(shadowColorNode)
-	{
-		SetShadowColor(shadowColorNode->AsColor());
-	}
+    if(textColorNode)
+    {
+        SetTextColor(textColorNode->AsColor());
+    }
 
-	if(shadowOffsetNode)
-	{
-		SetShadowOffset(shadowOffsetNode->AsVector2());
-	}
+    if(shadowColorNode)
+    {
+        SetShadowColor(shadowColorNode->AsColor());
+    }
+
+    if(shadowOffsetNode)
+    {
+        SetShadowOffset(shadowOffsetNode->AsVector2());
+    }
 
     if (textAlignNode)
     {
         SetTextAlign(loader->GetAlignFromYamlNode(textAlignNode));
     }
 
-	if (textNode)
-	{
-		SetText(LocalizedString(textNode->AsWString()));
-	}
-    
+    if (textNode)
+    {
+        SetText(LocalizedString(textNode->AsWString()));
+    }
+
     if (textColorInheritTypeNode)
     {
         GetTextBackground()->SetColorInheritType((UIControlBackground::eColorInheritType)loader->GetColorInheritTypeFromNode(textColorInheritTypeNode));
@@ -312,7 +312,7 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
 {
     YamlNode *node = UIControl::SaveToYamlNode(loader);
 
-	UIStaticText *baseControl = new UIStaticText();	
+    UIStaticText *baseControl = new UIStaticText();
 
     //Temp variable
     VariantType *nodeValue = new VariantType();
@@ -350,7 +350,7 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
         node->Set("shadowcolorInheritType", loader->GetColorInheritTypeNodeValue(colorInheritType));
     }
 
-	// ShadowOffset
+    // ShadowOffset
     const Vector2 &shadowOffset = GetShadowOffset();
     if (baseControl->GetShadowOffset() != shadowOffset)
     {
@@ -360,65 +360,65 @@ YamlNode * UIStaticText::SaveToYamlNode(UIYamlLoader * loader)
 
     //Text
     nodeValue->SetWideString(GetText());
-    node->Set("text", nodeValue);    
+    node->Set("text", nodeValue);
     //Multiline
-	if (baseControl->textBlock->GetMultiline() != this->textBlock->GetMultiline())
-	{
-    	node->Set("multiline", this->textBlock->GetMultiline());
-	}
+    if (baseControl->textBlock->GetMultiline() != this->textBlock->GetMultiline())
+    {
+        node->Set("multiline", this->textBlock->GetMultiline());
+    }
     //multilineBySymbol
-	if (baseControl->textBlock->GetMultilineBySymbol() != this->textBlock->GetMultilineBySymbol())
-	{
-    	node->Set("multilineBySymbol", this->textBlock->GetMultilineBySymbol());
-	}
+    if (baseControl->textBlock->GetMultilineBySymbol() != this->textBlock->GetMultilineBySymbol())
+    {
+        node->Set("multilineBySymbol", this->textBlock->GetMultilineBySymbol());
+    }
     //fitting - Array of strings
-	if (baseControl->textBlock->GetFittingOption() != this->textBlock->GetFittingOption())
-	{
+    if (baseControl->textBlock->GetFittingOption() != this->textBlock->GetFittingOption())
+    {
         node->SetNodeToMap("fitting", loader->GetFittingOptionNodeValue(textBlock->GetFittingOption()));
-	}
+    }
 
-	// Align
+    // Text Align
     if (baseControl->GetTextAlign() != this->GetTextAlign())
     {
         node->SetNodeToMap("textalign", loader->GetAlignNodeValue(this->GetTextAlign()));
     }
 
-	// Draw type. Must be overriden for UITextControls.
+    // Draw type. Must be overriden for UITextControls.
     if (baseControl->GetBackground()->GetDrawType() != this->GetBackground()->GetDrawType())
     {
         node->Set("drawType", loader->GetDrawTypeNodeValue(this->GetBackground()->GetDrawType()));
     }
 
     SafeDelete(nodeValue);
-	SafeRelease(baseControl);
-    
+    SafeRelease(baseControl);
+
     return node;
 }
 
 Animation * UIStaticText::TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 0*/)
 {
-	LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &textColor, finalColor, time, interpolationFunc);
-	animation->Start(track);
-	return animation;
+    LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &textColor, finalColor, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
 }
 
 Animation * UIStaticText::ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 1*/)
 {
-	LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &shadowColor, finalColor, time, interpolationFunc);
-	animation->Start(track);
-	return animation;
+    LinearAnimation<Color> * animation = new LinearAnimation<Color>(this, &shadowColor, finalColor, time, interpolationFunc);
+    animation->Start(track);
+    return animation;
 }
 
 const Vector<int32> & UIStaticText::GetStringSizes() const
 {
-	return textBlock->GetStringSizes();
+    return textBlock->GetStringSizes();
 }
-    
+
 void UIStaticText::PrepareSprite()
 {
     ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &UIStaticText::PrepareSpriteInternal));
 }
-    
+
 void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, void *callerData)
 {
     if (textBlock->IsSpriteReady())
@@ -427,17 +427,17 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
         shadowBg->SetSprite(sprite, 0);
         textBg->SetSprite(sprite, 0);
 
-		Texture *tex = sprite->GetTexture();
-		if(tex && tex->GetFormat() == FORMAT_A8)
-		{
-			textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-			shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
-		}
-		else
-		{
-			textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-			shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-		}
+        Texture *tex = sprite->GetTexture();
+        if(tex && tex->GetFormat() == FORMAT_A8)
+        {
+            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8);
+        }
+        else
+        {
+            textBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+            shadowBg->SetShader(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+        }
     }
     else
     {
@@ -450,7 +450,7 @@ UIControlBackground* UIStaticText::GetTextBackground() const
 {
     return textBg;
 }
-    
+
 UIControlBackground* UIStaticText::GetShadowBackground() const
 {
     return shadowBg;

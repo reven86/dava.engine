@@ -1971,6 +1971,9 @@
     <ClCompile Include="Classes\Commands2\CopyLastLODCommand.cpp">
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
+    <ClCompile Include="_GeneratedQt\BeastDialog\BeastDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">

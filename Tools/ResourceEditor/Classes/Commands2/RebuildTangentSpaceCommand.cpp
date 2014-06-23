@@ -40,13 +40,7 @@ RebuildTangentSpaceCommand::RebuildTangentSpaceCommand(DAVA::RenderBatch *_rende
     DAVA::PolygonGroup *srcGroup = renderBatch->GetPolygonGroup();
     DVASSERT(srcGroup);
     originalGroup = new DAVA::PolygonGroup();
-    DAVA::MeshUtils::CopyGroupData(srcGroup, originalGroup);
-    if (computeBinormal)
-    {
-        DAVA::NMaterial *material = renderBatch->GetMaterial();
-        if (material)
-            materialBinormalFlagState = material->GetFlagValue(DAVA::NMaterial::FLAG_PRECOMPUTED_BINORMAL);
-    }
+    DAVA::MeshUtils::CopyGroupData(srcGroup, originalGroup);    
 }
 
 RebuildTangentSpaceCommand::~RebuildTangentSpaceCommand()
@@ -57,27 +51,9 @@ RebuildTangentSpaceCommand::~RebuildTangentSpaceCommand()
 void RebuildTangentSpaceCommand::Redo()
 {
     DAVA::MeshUtils::RebuildMeshTangentSpace(renderBatch->GetPolygonGroup(), computeBinormal);
-    if (computeBinormal)
-    {
-        DAVA::NMaterial *material = renderBatch->GetMaterial();
-        if (material)
-            material->SetFlag(DAVA::NMaterial::FLAG_PRECOMPUTED_BINORMAL, DAVA::NMaterial::FlagOn);
-    }
 }
 
 void RebuildTangentSpaceCommand::Undo()
 {
-    DAVA::MeshUtils::CopyGroupData(originalGroup, renderBatch->GetPolygonGroup());    
-    if (computeBinormal)
-    {
-        DAVA::NMaterial *material = renderBatch->GetMaterial();
-        if (material)
-        {
-            if (materialBinormalFlagState&DAVA::NMaterial::FlagInherited)
-                material->ResetFlag(DAVA::NMaterial::FLAG_PRECOMPUTED_BINORMAL);
-            else 
-                material->SetFlag(DAVA::NMaterial::FLAG_PRECOMPUTED_BINORMAL, (DAVA::NMaterial::eFlagValue)(materialBinormalFlagState&DAVA::NMaterial::FlagOn));
-        }
-        
-    }    
+    DAVA::MeshUtils::CopyGroupData(originalGroup, renderBatch->GetPolygonGroup());        
 }

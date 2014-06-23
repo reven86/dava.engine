@@ -156,12 +156,15 @@ public:
     void SetError(eError error);
     eError GetError();
     
-    void OptimizeScene(Entity * rootNode);
+    void OptimizeScene(Entity * rootNode);    
     bool RemoveEmptySceneNodes(Entity * rootNode);
     bool RemoveEmptyHierarchy(Entity * currentNode);
 	void ConvertShadows(Entity * rootNode);
+    void RebuildTangentSpace(Entity *entity);
     int32 removedNodeCount;
-    	
+    	    
+    void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
+
 	Scene* GetScene() {return scene;}
 
     SceneArchive *LoadSceneArchive(const FilePath & filename); //purely load data

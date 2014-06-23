@@ -726,7 +726,7 @@ void RenderManager::AttachRenderData()
     RENDERER_UPDATE_STATS(attachRenderDataCount++);
     
 	Shader * shader = hardwareState.shader;
-    uint32 currentAttributeMask = shader->GetAttributeMask();
+    uint32 currentAttributeMask = shader->GetRequiredVertexFormat();
     
     if (attachedRenderData == currentRenderData && cachedAttributeMask == currentAttributeMask)
     {

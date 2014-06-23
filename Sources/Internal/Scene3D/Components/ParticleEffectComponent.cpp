@@ -47,6 +47,7 @@ REGISTER_CLASS(ParticleEffectComponent)
 ParticleEffectComponent::ParticleEffectComponent()
 {
 	repeatsCount = -1;
+    currRepeatsCont = 0;
 	stopWhenEmpty = false;
 	clearOnRestart = true;
 	effectDuration = 100.0f;

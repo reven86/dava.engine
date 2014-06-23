@@ -175,6 +175,8 @@ public:
 			  RefPtr<PropertyLine<float32> > emissionRange,
 			  RefPtr<PropertyLine<Vector3> > emissionVector,
 			  RefPtr<PropertyLine<float32> > radius,
+              RefPtr<PropertyLine<float32> > emissionAngle,
+              RefPtr<PropertyLine<float32> > emissionAngleVariation,
 			  RefPtr<PropertyLine<Color> > colorOverLife,
 			  RefPtr<PropertyLine<Vector3> > size,
 			  float32 life,			  
@@ -191,6 +193,8 @@ protected:
 
 	ParticleEmitter::eType emitterType;
 	RefPtr<PropertyLine<float32> > emissionRange;
+    RefPtr<PropertyLine<float32> > emissionAngle;
+    RefPtr<PropertyLine<float32> > emissionAngleVariation;
 	RefPtr<PropertyLine<Vector3> > emissionVector;
 	RefPtr<PropertyLine<float32> > radius;
 	RefPtr<PropertyLine<Color> > colorOverLife;

@@ -41,7 +41,7 @@
 #include "Input/InputSystem.h"
 #include "Utils/StringFormat.h"
 
-namespace DAVA 
+namespace DAVA
 {
 	
 	UIControl::UIControl(const Rect &rect, bool rectInAbsoluteCoordinates/* = false*/)
@@ -133,7 +133,6 @@ namespace DAVA
 				UIControlSystem::Instance()->CancelInputs(this);
 			}
 		}
-
 		parent = newParent;
 		if(parent && needToRecalcFromAbsoluteCoordinates)
 		{
@@ -156,7 +155,7 @@ namespace DAVA
 		exclusiveInput = isExclusiveInput;
 		
 		if(hierarchic)
-		{	
+		{
 			List<UIControl*>::iterator it = childs.begin();
 			for(; it != childs.end(); ++it)
 			{
@@ -175,7 +174,7 @@ namespace DAVA
 		multiInput = isMultiInput;
 		
 		if(hierarchic)
-		{	
+		{
 			List<UIControl*>::iterator it = childs.begin();
 			for(; it != childs.end(); ++it)
 			{
@@ -385,8 +384,8 @@ namespace DAVA
 	}
 	
 	void UIControl::SetLeftAlign(int32 align)
-	{ 
-		// Set a property value		
+	{
+		// Set a property value
 		leftAlign = align;
 		
 		if (!leftAlignEnabled)
@@ -431,15 +430,15 @@ namespace DAVA
 	}
 
 	void UIControl::SetHCenterAlign(int32 align)
-	{	
+	{
 		hcenterAlign = align;
 		
 		if (!hcenterAlignEnabled)
 			return;
 		
-		UIControl *parentControl = this->GetParent();		
+		UIControl *parentControl = this->GetParent();
 		if (!parentControl)
-			return;		
+			return;
 			
 		int32 leftAlign = this->GetLeftAlign();
 		int32 rightAlign = this->GetRightAlign();
@@ -462,7 +461,7 @@ namespace DAVA
 		else // If only hcenter option is selected - set center of this control relative to it's parent center
 		{
 			relativePosition.x = GetCenterX(parentControl, align, this) + pivotPoint.x;
-		}	
+		}
 		
    	 	this->SetSize(controlSize);
 		this->SetPosition(relativePosition, false);
@@ -489,7 +488,7 @@ namespace DAVA
 		Vector2 controlSize = this->GetSize();
 		
 		if (!parentControl)
-			return;    	
+			return;
    	
 		if (this->GetLeftAlignEnabled())
 		{
@@ -570,9 +569,9 @@ namespace DAVA
 			return;
 
 		int32 topAlign = this->GetTopAlign();
-		int32 bottomAlign = this->GetBottomAlign();	
+		int32 bottomAlign = this->GetBottomAlign();
 		Vector2 relativePosition = this->GetPosition(false);
-		Vector2 controlSize = this->GetSize();		
+		Vector2 controlSize = this->GetSize();
 		
 		// Check if two align options selected simultaneously
 		if (this->GetTopAlignEnabled())
@@ -615,22 +614,22 @@ namespace DAVA
 		// Get current positon and size
 		Vector2 relativePosition = this->GetPosition(false);
 		Vector2 controlSize = this->GetSize();
-		UIControl *parentControl = this->GetParent();		
+		UIControl *parentControl = this->GetParent();
 		
 		if (!parentControl)
-			return;    	
+			return;
    	
 		if (this->GetTopAlignEnabled())
 		{
     		controlSize.y = GetSizeY(parentControl, topAlign, align);
 			RecalculatePivotPoint(Rect(0, 0, controlSize.x, controlSize.y));
-			relativePosition.y = (float32)topAlign + pivotPoint.y; 		
+			relativePosition.y = (float32)topAlign + pivotPoint.y;
 		}
 		else if (this->GetVCenterAlignEnabled())
 		{
     		controlSize.y = GetSizeY(parentControl, vcenterAlign, align, true);
 			RecalculatePivotPoint(Rect(0, 0, controlSize.x, controlSize.y));
-			relativePosition.y =  GetRelativeY(parentControl, vcenterAlign) + pivotPoint.y;			
+			relativePosition.y =  GetRelativeY(parentControl, vcenterAlign) + pivotPoint.y;
 		}
 		else //If only bottom option is on - just change relative position
 		{
@@ -648,7 +647,7 @@ namespace DAVA
 	
 	// Enable align options methods
 	void UIControl::SetLeftAlignEnabled(bool isEnabled)
-	{		
+	{
 		leftAlignEnabled = isEnabled;
 		if (isEnabled)
 		{
@@ -683,7 +682,7 @@ namespace DAVA
 	}
 
 	void UIControl::SetRightAlignEnabled(bool isEnabled)
-	{		
+	{
 		rightAlignEnabled = isEnabled;
 		if (isEnabled)
 		{
@@ -704,7 +703,7 @@ namespace DAVA
 	}
 
 	void UIControl::SetTopAlignEnabled(bool isEnabled)
-	{		
+	{
  		topAlignEnabled = isEnabled;
 		if(isEnabled)
 		{
@@ -757,7 +756,7 @@ namespace DAVA
 	bool UIControl::GetBottomAlignEnabled()
 	{
 		return bottomAlignEnabled;
-	}	
+	}
 	
 	void UIControl::SetBackground(UIControlBackground *newBg)
 	{
@@ -834,7 +833,7 @@ namespace DAVA
 	void UIControl::SetSize(const Vector2 &newSize)
 	{
 		size = newSize;
-		// Update size and align of childs		
+		// Update size and align of childs
 		RecalculateChildsSize();
 	}
 	
@@ -877,7 +876,7 @@ namespace DAVA
 			realScale.x = scale.x * parent->GetRealScale().x;
 			realScale.y = scale.y * parent->GetRealScale().y;
 		}
-		else 
+		else
 		{
 			realScale = scale;
 		}
@@ -941,7 +940,7 @@ namespace DAVA
 		}
 		
 		if(hierarchic)
-		{	
+		{
 			List<UIControl*>::iterator it = childs.begin();
 			for(; it != childs.end(); ++it)
 			{
@@ -949,7 +948,6 @@ namespace DAVA
 			}
 		}
 	}
-
 
     bool UIControl::GetRecursiveVisible() const
     {
@@ -1039,7 +1037,7 @@ namespace DAVA
 		}
 		
 		if(hierarchic)
-		{	
+		{
 			List<UIControl*>::iterator it = childs.begin();
 			for(; it != childs.end(); ++it)
 			{
@@ -1065,7 +1063,7 @@ namespace DAVA
 		}
 		
 		if(hierarchic)
-		{	
+		{
 			List<UIControl*>::iterator it = childs.begin();
 			for(; it != childs.end(); ++it)
 			{
@@ -1435,7 +1433,7 @@ namespace DAVA
 	
 	void UIControl::SystemWillDisappear()
 	{
-        if (GetHover()) 
+        if (GetHover())
         {
             UIControlSystem::Instance()->SetHoveredControl(NULL);
         }
@@ -1566,7 +1564,7 @@ namespace DAVA
 	
 
 	void UIControl::SystemUpdate(float32 timeElapsed)
-	{		
+	{
 		Update(timeElapsed);
 		isUpdated = true;
 		List<UIControl*>::iterator it = childs.begin();
@@ -1666,7 +1664,7 @@ namespace DAVA
 		DrawPivotPoint(unrotatedRect);
 
 		if(debugDrawEnabled && NULL != parent && parent->GetClipContents())
-		{	
+		{
 			RenderManager::Instance()->ClipPush();
 			RenderManager::Instance()->ClipRect(Rect(0, 0, -1, -1));
 			DrawDebugRect(drawData, true);
@@ -1787,7 +1785,7 @@ namespace DAVA
 			return false;
 		}
 		
-		switch (currentInput->phase) 
+		switch (currentInput->phase)
 		{
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
 			case UIEvent::PHASE_KEYCHAR:
@@ -1992,7 +1990,7 @@ namespace DAVA
 
 		//if(currentInput->touchLocker != this)
 		{
-			if(clipContents 
+			if(clipContents
                && (currentInput->phase != UIEvent::PHASE_DRAG 
                    && currentInput->phase != UIEvent::PHASE_ENDED
                    && currentInput->phase != UIEvent::PHASE_KEYCHAR
@@ -2126,7 +2124,7 @@ namespace DAVA
 		// Return node
 		YamlNode *node = new YamlNode(YamlNode::TYPE_MAP);
 		// Model UIControl to be used in comparing
-		UIControl *baseControl = new UIControl();		
+		UIControl *baseControl = new UIControl();
 
 		// Control name
 		//node->Set("name", this->GetName());
@@ -2165,7 +2163,7 @@ namespace DAVA
 		// Color
 		const Color &color =  this->GetBackground()->GetColor();
 		if (baseControl->GetBackground()->color != color)
-		{		
+		{
 			nodeValue->SetColor(color);
 			node->Set("color", nodeValue);
 		}
@@ -2346,7 +2344,7 @@ namespace DAVA
 		{
 			int32 leftAlign = leftAlignNode->AsInt();
 			SetLeftAlignEnabled(true);
-			SetLeftAlign(leftAlign);			
+			SetLeftAlign(leftAlign);
 		}
 		if (hcenterAlignNode)
 		{
@@ -2359,7 +2357,7 @@ namespace DAVA
 		{
 			int32 rightAlign = rightAlignNode->AsInt();
 			SetRightAlignEnabled(true);
-			SetRightAlign(rightAlign);			
+			SetRightAlign(rightAlign);
 		}
 		if (topAlignNode)
 		{
@@ -2641,7 +2639,7 @@ namespace DAVA
 	{
 		debugDrawEnabled = _debugDrawEnabled;
 		if(hierarchic)
-		{	
+		{
 			List<UIControl*>::iterator it = childs.begin();
 			for(; it != childs.end(); ++it)
 			{
@@ -2721,7 +2719,7 @@ namespace DAVA
 		if (this->GetTopAlignEnabled())
 		{
 			topAlign = (int32)controlRect.y;
-		}		
+		}
 		
 		UIControl *parent = this->GetParent();
 		if (!parent)
@@ -2746,7 +2744,7 @@ namespace DAVA
 			else
 			{
 				hcenterAlign = (int32)(controlRect.x - Round(parent->GetSize().x / 2) + Round(controlRect.dx / 2));
-			}			
+			}
 		}
 		// Set bottom align property
 		if (this->GetBottomAlignEnabled())
@@ -2764,11 +2762,11 @@ namespace DAVA
 			{
 				vcenterAlign = (int32)(controlRect.y - Round(parent->GetSize().y / 2));
 			}
-			else 
+			else
 			{
 				vcenterAlign = (int32)(controlRect.y - Round(parent->GetSize().y / 2) + Round(controlRect.dy / 2));
-			}			
-		}		
+			}
+		}
 	}
 	
 	void UIControl::RecalculateChildsSize()
@@ -2900,7 +2898,7 @@ namespace DAVA
 			float32 yMultiup = pivotPoint.y / oldRect.dy;
 			
 			pivotPoint.x = xMultiup * newRect.dx;
-			pivotPoint.y = yMultiup * newRect.dy;		
+			pivotPoint.y = yMultiup * newRect.dy;
 		}
 	}
 

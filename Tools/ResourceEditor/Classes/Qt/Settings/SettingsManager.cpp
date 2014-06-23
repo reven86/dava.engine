@@ -92,6 +92,8 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType((bool) false));
     CreateValue(Settings::Internal_LicenceAccepted, DAVA::VariantType((bool) false));
 	CreateValue(Settings::Internal_LODEditorMode, DAVA::VariantType((bool) false));
+
+    CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
 }
 
 DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)

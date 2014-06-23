@@ -526,6 +526,12 @@ void ColladaDocument::WriteStaticMesh(ColladaMesh * mesh, int meshIndex)
                 fwrite(&v.tangent, sizeof(Vector3), 1, sceneFP);
                 //Logger::FrameworkDebug("normal: %f %f %f", v.normal.x, v.normal.y, v.normal.z);
 			}
+            if (vertexFormat & EVF_BINORMAL)
+            {
+                v.binormal.Normalize();
+                fwrite(&v.binormal, sizeof(Vector3), 1, sceneFP);
+                //Logger::FrameworkDebug("normal: %f %f %f", v.normal.x, v.normal.y, v.normal.z);
+            }
             
             if (vertexFormat & EVF_TEXCOORD0)
             {

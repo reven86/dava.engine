@@ -103,6 +103,10 @@ public:
     
 	void UpdateEntityAfterLoad(Entity *entity);
 
+    int32 GetPrerequiredVertexFormat();
+    void SetPrerequiredVertexFormat(int32 format);
+     
+
 protected:
 
 	void RemoveModelsByType(const Vector<Entity *> & models);
@@ -138,6 +142,8 @@ protected:
     Vector<SFXQ> soundQualities;
 
 	FastNameMap<bool> qualityOptions;
+
+    int32 prerequiredVertexFromat;
 };
 	
 }

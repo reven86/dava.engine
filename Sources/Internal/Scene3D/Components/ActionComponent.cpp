@@ -38,15 +38,26 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 
+#include "Utils/Random.h"
+
+
 namespace DAVA
 {
+
+    void ActionComponent::Action::actualizeDelay()
+    {
+        actualDelay = static_cast<float32>( delay + Random::Instance()->RandFloat(delayVariation) );
+    }
+
+
 	REGISTER_CLASS(ActionComponent)
 
     const FastName ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME("*** Self ***");
 
-	ActionComponent::ActionComponent() : started(false), allActionsActive(false)
+	ActionComponent::ActionComponent()
+        : started(false)
+        , allActionsActive(false)
 	{
-		
 	}
 	
 	ActionComponent::~ActionComponent()
@@ -80,64 +91,98 @@ namespace DAVA
 		
 		return action;
 	}
-
 	
 	void ActionComponent::StartSwitch(int32 switchIndex)
 	{
 		if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_SWITCH_CHANGED))
 			return;
 
-		StopSwitch(switchIndex);		
-		uint32 markedCount = 0;
-		uint32 count = actions.size();
-		for(uint32 i = 0; i < count; ++i)
-		{
-			if((actions[i].action.eventType == Action::EVENT_SWITCH_CHANGED) && (actions[i].action.switchIndex == switchIndex))
-			{
-				actions[i].markedForUpdate = true;
-				markedCount++;
-			}
-		}
-		
-		if(markedCount > 0)
-		{
-			if(!started)
-			{
-				entity->GetScene()->actionSystem->Watch(this);
-			}
-			
-			started = true;
-			allActionsActive = false;
-		}
+        StopSwitch(switchIndex);
+        uint32 markedCount = 0;
+        uint32 count = actions.size();
+        for ( uint32 i = 0; i < count; ++i )
+        {
+            Action& action = actions[i].action;
+            if (( action.eventType == Action::EVENT_SWITCH_CHANGED ) && ( action.switchIndex == switchIndex ))
+            {
+                action.actualizeDelay();
+                actions[i].markedForUpdate = true;
+                markedCount++;
+            }
+        }
+
+        if ( markedCount > 0 )
+        {
+            if ( !started )
+            {
+                entity->GetScene()->actionSystem->Watch( this );
+            }
+
+            started = true;
+            allActionsActive = false;
+        }
 	}
+
 	void ActionComponent::StartAdd()
 	{		
-		if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_ADDED_TO_SCENE))
-			return;
-		uint32 markedCount = 0;
-		uint32 count = actions.size();
-		for(uint32 i = 0; i < count; ++i)
-		{
-			if(actions[i].action.eventType == Action::EVENT_ADDED_TO_SCENE)
-			{
-				actions[i].markedForUpdate = true;
-				markedCount++;
-			}
-		}
+        if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_ADDED_TO_SCENE))
+            return;
 
-		if(markedCount > 0)
-		{
-			if(!started)
-			{
-				entity->GetScene()->actionSystem->Watch(this);
-			}
+        uint32 markedCount = 0;
+        uint32 count = actions.size();
+        for ( uint32 i = 0; i < count; ++i )
+        {
+            Action& action = actions[i].action;
+            if (action.eventType == Action::EVENT_ADDED_TO_SCENE)
+            {
+                action.actualizeDelay();
+                actions[i].markedForUpdate = true;
+                markedCount++;
+            }
+        }
 
-			started = true;
-			allActionsActive = false;
-		}
-	}
+        if (markedCount > 0)
+        {
+            if (!started)
+            {
+                entity->GetScene()->actionSystem->Watch(this);
+            }
 
+            started = true;
+            allActionsActive = false;
+        }
+    }
 
+    void ActionComponent::StartUser(const FastName& name)
+    {
+        if (entity->GetScene()->actionSystem->IsBlockEvent(Action::EVENT_CUSTOM))
+            return;
+
+        StopUser(name);
+        uint32 markedCount = 0;
+        uint32 count = actions.size();
+        for (uint32 i = 0; i < count; ++i)
+        {
+            Action& action = actions[i].action;
+            if (( action.eventType == Action::EVENT_CUSTOM ) && ( action.userEventId == name ))
+            {
+                action.actualizeDelay();
+                actions[i].markedForUpdate = true;
+                markedCount++;
+            }
+        }
+
+        if (markedCount > 0)
+        {
+            if (!started)
+            {
+                entity->GetScene()->actionSystem->Watch(this);
+            }
+
+            started = true;
+            allActionsActive = false;
+        }
+    }
 	
 	bool ActionComponent::IsStarted()
 	{
@@ -169,7 +214,8 @@ namespace DAVA
 		uint32 count = actions.size();
 		for(uint32 i = 0; i < count; ++i)
 		{
-			if((actions[i].action.eventType == Action::EVENT_SWITCH_CHANGED) && (actions[i].action.switchIndex == switchIndex))
+            Action& action = actions[i].action;
+			if((action.eventType == Action::EVENT_SWITCH_CHANGED) && (action.switchIndex == switchIndex))
 			{
 				actions[i].active = false;
 				actions[i].timer = 0.0f;
@@ -191,8 +237,38 @@ namespace DAVA
 			entity->GetScene()->actionSystem->UnWatch(this);
 		}
 	}
+
+    void ActionComponent::StopUser(const FastName& name)
+    {
+        uint32 markedCount = 0;
+        uint32 count = actions.size();
+        for ( uint32 i = 0; i < count; ++i )
+        {
+            Action& action = actions[i].action;
+            if (( action.eventType == Action::EVENT_CUSTOM ) && ( action.userEventId == name ))
+            {
+                actions[i].active = false;
+                actions[i].timer = 0.0f;
+                actions[i].markedForUpdate = false;
+            }
+
+            if (actions[i].markedForUpdate)
+            {
+                markedCount++;
+            }
+        }
+
+        if ( started &&
+            0 == markedCount )
+        {
+            started = false;
+            allActionsActive = false;
+
+            entity->GetScene()->actionSystem->UnWatch(this);
+        }
+    }
 	
-	void ActionComponent::Add(ActionComponent::Action action)
+	void ActionComponent::Add(const ActionComponent::Action& action)
 	{
 		actions.push_back(ActionContainer(action));
 		allActionsActive = false;
@@ -273,7 +349,7 @@ namespace DAVA
 				{
 					container.timer += timeElapsed;
 					
-					if(container.timer >= container.action.delay)
+                    if ( container.timer >= container.action.actualDelay )
 					{
 						container.active = true;
 						EvaluateAction(container.action);
@@ -328,14 +404,17 @@ namespace DAVA
 			for(uint32 i = 0; i < count; ++i)
 			{
 				KeyedArchive* actionArchive = new KeyedArchive();
-				
-				actionArchive->SetUInt32("act.event", actions[i].action.eventType);
-				actionArchive->SetFloat("act.delay", actions[i].action.delay);
-				actionArchive->SetUInt32("act.type", actions[i].action.type);
-				actionArchive->SetString("act.entityName", String(actions[i].action.entityName.c_str() ? actions[i].action.entityName.c_str() : ""));
-				actionArchive->SetInt32("act.switchIndex", actions[i].action.switchIndex);
-				actionArchive->SetInt32("act.stopAfterNRepeats", actions[i].action.stopAfterNRepeats);
-				actionArchive->SetBool("act.stopWhenEmpty", actions[i].action.stopWhenEmpty);
+                const Action& action = actions[i].action;
+
+				actionArchive->SetUInt32("act.event", action.eventType);
+				actionArchive->SetFloat("act.delay", action.delay);
+                actionArchive->SetFloat( "act.delayVariation", action.delayVariation );
+				actionArchive->SetUInt32("act.type", action.type);
+                actionArchive->SetFastName("act.userEventId", action.userEventId);
+				actionArchive->SetString("act.entityName", String(action.entityName.c_str() ? action.entityName.c_str() : ""));
+				actionArchive->SetInt32("act.switchIndex", action.switchIndex);
+				actionArchive->SetInt32("act.stopAfterNRepeats", action.stopAfterNRepeats);
+				actionArchive->SetBool("act.stopWhenEmpty", action.stopWhenEmpty);
 			
 				archive->SetArchive(KeyedArchive::GenKeyFromIndex(i), actionArchive);
 				SafeRelease(actionArchive);
@@ -357,7 +436,9 @@ namespace DAVA
 				Action action;
 				action.eventType = (Action::eEvent)actionArchive->GetUInt32("act.event");
 				action.type = (Action::eType)actionArchive->GetUInt32("act.type");
+                action.userEventId = actionArchive->GetFastName("act.userEventId", FastName(""));
 				action.delay = actionArchive->GetFloat("act.delay");
+                action.delayVariation = actionArchive->GetFloat( "act.delayVariation" );
 				action.entityName = FastName(actionArchive->GetString("act.entityName").c_str());
 				action.switchIndex = actionArchive->GetInt32("act.switchIndex", -1);
 				action.stopAfterNRepeats = actionArchive->GetInt32("act.stopAfterNRepeats", -1);
@@ -369,24 +450,30 @@ namespace DAVA
 		
 		Component::Deserialize(archive, serializationContext);
 	}
-		
-	void ActionComponent::EvaluateAction(const Action& action)
+
+    void ActionComponent::EvaluateAction(const Action& action)
 	{
-		if(Action::TYPE_PARTICLE_EFFECT == action.type)
-		{
-			OnActionParticleEffect(action);
-		}
-		else if(Action::TYPE_SOUND == action.type)
-		{
-			OnActionSound(action);
-		}
-        else if(Action::TYPE_WAVE == action.type)
+        switch ( action.type )
         {
-            OnActionWave(action);
+        case Action::TYPE_PARTICLE_EFFECT_START:
+            OnActionParticleEffectStart( action );
+            break;
+        case Action::TYPE_PARTICLE_EFFECT_STOP:
+            OnActionParticleEffectStop( action );
+            break;
+        case Action::TYPE_SOUND:
+            OnActionSound( action );
+            break;
+        case Action::TYPE_WAVE:
+            OnActionWave( action );
+            break;
+        default:
+            DVASSERT( false );
+            break;
         }
 	}
 	
-	void ActionComponent::OnActionParticleEffect(const Action& action)
+	void ActionComponent::OnActionParticleEffectStart(const Action& action)
 	{
 		Entity* target = GetTargetEntity(action.entityName, entity);
 		
@@ -402,6 +489,20 @@ namespace DAVA
 			}
 		}
 	}
+
+    void ActionComponent::OnActionParticleEffectStop( const Action& action )
+    {
+        Entity* target = GetTargetEntity( action.entityName, entity );
+
+        if ( target != NULL )
+        {
+            ParticleEffectComponent* component = static_cast<ParticleEffectComponent*>( target->GetComponent( Component::PARTICLE_EFFECT_COMPONENT ) );
+            if ( component )
+            {
+                component->Stop(!action.stopWhenEmpty);
+            }
+        }
+    }
 	
 	void ActionComponent::OnActionSound(const Action& action)
 	{

@@ -35,6 +35,7 @@
 #include <QDialog>
 #include <QStyledItemDelegate>
 
+
 namespace Ui {
 class ActionComponentEditor;
 }
@@ -65,6 +66,8 @@ private:
 	
 	DAVA::ActionComponent* targetComponent;
 	ActionComponentEditor* componentEditor;
+    QMap< QString, int > actionTypes;
+    QMap< QString, int > eventTypes;
 };
 
 
@@ -86,9 +89,9 @@ private:
 	bool IsActionPresent(const DAVA::ActionComponent::Action action);
 	
 private slots:
-
 	void OnAddAction();
 	void OnRemoveAction();
+    void OnStartAction();
 	void OnSelectedItemChanged();
     
 private:
@@ -96,6 +99,10 @@ private:
 	
 	DAVA::ActionComponent* targetComponent;
 	ActionItemEditDelegate editDelegate;
+
+    QMap< int, QString > actionTypes;
+    QMap< int, QString > eventTypes;
+
 };
 
 #endif // ACTIONCOMPONENTEDITOR_H

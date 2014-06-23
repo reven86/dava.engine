@@ -568,7 +568,7 @@ void UIControlMetadata::SetSprite(const QString& value)
     }
     
     //If empty string value is used - remove sprite
-    if (value.isEmpty())
+    if (value.isEmpty() || value == StringConstants::NO_SPRITE_IS_SET)
     {
         GetActiveUIControl()->GetBackground()->SetSprite(NULL, 0); 
     }

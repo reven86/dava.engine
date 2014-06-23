@@ -442,14 +442,13 @@ void PolygonGroup::ReleaseData()
 	
 void PolygonGroup::BuildBuffers()
 {
+    UpdateDataPointersAndStreams();
     JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &PolygonGroup::BuildBuffersInternal));
 };
     
 void PolygonGroup::BuildBuffersInternal(BaseObject * caller, void * param, void *callerData)
 {
-    DVASSERT(Thread::IsMainThread());
-
-    UpdateDataPointersAndStreams();
+    DVASSERT(Thread::IsMainThread());    
     
     renderDataObject->BuildVertexBuffer(vertexCount);
     renderDataObject->SetIndices((eIndexFormat)indexFormat, (uint8*)indexArray, indexCount);
@@ -484,10 +483,8 @@ void PolygonGroup::Save(KeyedArchive * keyedArchive, SerializationContext * seri
 
 }
 
-void PolygonGroup::Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext)
-{
-    DataNode::Load(keyedArchive, serializationContext);
-    
+void PolygonGroup::LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags)
+{            
     vertexFormat = keyedArchive->GetInt32("vertexFormat");
     vertexStride = GetVertexSize(vertexFormat);
     vertexCount = keyedArchive->GetInt32("vertexCount");
@@ -505,10 +502,36 @@ void PolygonGroup::Load(KeyedArchive * keyedArchive, SerializationContext * seri
             Logger::Error("PolygonGroup::Load - Something is going wrong, size of vertex array is incorrect");
             return;
         }
-		SafeDeleteArray(meshData);
-        meshData = new uint8[vertexCount * vertexStride];
+		
         const uint8 * archiveData = keyedArchive->GetByteArray("vertices");
-        memcpy(meshData, archiveData, size);
+
+        if (vertexFormat&~requiredFlags) //not all streams in data are required - smart copy
+        {
+            int32 newFormat = vertexFormat&requiredFlags;
+            DVASSERT(newFormat);
+            int32 newVertexStride = GetVertexSize(newFormat);
+            SafeDeleteArray(meshData);        
+            meshData = new uint8[vertexCount * newVertexStride];                        
+            uint8 *dst = meshData;
+            const uint8 *src = &archiveData[0];
+            for (int32 i = 0; i < vertexCount; ++i)
+            {
+                for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+                {
+                    CopyData(&src, &dst, vertexFormat, newFormat, mask);
+                }
+            }
+            vertexFormat = newFormat;
+            vertexStride = newVertexStride;
+
+        }
+        else
+        {
+            SafeDeleteArray(meshData);        
+            meshData = new uint8[vertexCount * vertexStride];
+            Memcpy(meshData, archiveData, size); //all streams in data required - just copy
+        }
+        
     }
     
     indexFormat = keyedArchive->GetInt32("indexFormat");
@@ -539,7 +562,7 @@ void PolygonGroup::Load(KeyedArchive * keyedArchive, SerializationContext * seri
     renderDataObject = new RenderDataObject();
     UpdateDataPointersAndStreams();
     RecalcAABBox();
-    
+        
     BuildBuffers();
 }
     
@@ -595,7 +618,7 @@ public:
     DynamicObjectCacheData<Vertex>
 };*/
 
-void PolygonGroup::CopyData(uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
+void PolygonGroup::CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
 {
 	if (vertexFormat & format)
 	{
@@ -665,7 +688,7 @@ void PolygonGroup::OptimizeVertices(uint32 newVertexFormat, float32 eplison)
 	uint8 * newMeshData = new uint8[newVertexStride * vertexCount];
 	memset(newMeshData, 0, sizeof(newVertexStride * vertexCount));
 	
-	uint8 * tmpMesh = meshData;
+	const uint8 * tmpMesh = meshData;
 	uint8 * tmpNewMesh = newMeshData;
 	for (int32 i = 0; i < vertexCount; ++i)
 	{

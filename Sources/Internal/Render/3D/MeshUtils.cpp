@@ -31,7 +31,10 @@
 namespace DAVA
 {
 
-void MeshUtils::CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos)
+namespace MeshUtils
+{
+
+void CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos)
 {
     int32 srcFormat = srcGroup->GetFormat();
     int32 dstFormat = dstGroup->GetFormat();
@@ -60,7 +63,7 @@ void MeshUtils::CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *
     
 }
 
-void MeshUtils::CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup)
+void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup)
 {
     dstGroup->ReleaseData();
     dstGroup->AllocateData(srcGroup->GetFormat(), srcGroup->GetVertexCount(), srcGroup->GetIndexCount());
@@ -71,21 +74,22 @@ void MeshUtils::CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup)
     dstGroup->BuildBuffers();
 }
 
-void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=false*/)
+void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal/*=true*/)
 {
     DVASSERT(group->GetPrimitiveType() == PRIMITIVETYPE_TRIANGLELIST); //only triangle lists for now    
     DVASSERT(group->GetFormat()&EVF_TEXCOORD0);
+    DVASSERT(group->GetFormat()&EVF_NORMAL);
 
     Vector<FaceWork> faces;
     uint32 faceCount = group->GetIndexCount()/3;
     faces.resize(faceCount);
-    Vector<VertexWork> vertices_origin;
-    Vector<VertexWork> vertices_full;
-    vertices_origin.resize(group->GetVertexCount());
-    vertices_full.resize(group->GetIndexCount());
+    Vector<VertexWork> verticesOrigin;
+    Vector<VertexWork> verticesFull;
+    verticesOrigin.resize(group->GetVertexCount());
+    verticesFull.resize(group->GetIndexCount());
 
     for (uint32 i=0, sz = group->GetVertexCount(); i<sz; ++i)
-        vertices_origin[i].refIndex = i;
+        verticesOrigin[i].refIndex = i;
     //compute tangent for faces
     for (uint32 f=0; f<faceCount; ++f)
     {
@@ -100,8 +104,8 @@ void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBino
             group->GetCoord(originIndex, pos[i]);
             group->GetTexcoord(0, originIndex, texCoord[i]);
             
-            vertices_origin[originIndex].refIndices.push_back(workIndex);
-            vertices_full[f*3+i].refIndex = faces[f].indexOrigin[i];
+            verticesOrigin[originIndex].refIndices.push_back(workIndex);
+            verticesFull[f*3+i].refIndex = faces[f].indexOrigin[i];
         }                       
         
         float32 x10 = pos[1].x - pos[0].x;
@@ -129,26 +133,25 @@ void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBino
         Vector3 tangent = Vector3((v20 * x10 - v10 * x20) * d, (v20 * y10 - v10 * y20) * d, (v20 * z10 - v10 * z20) * d);
         Vector3 binormal = Vector3((x20 * u10 - x10 * u20) * d, (y20 * u10 - y10 * u20) * d, (z20 * u10 - z10 * u20) * d);
 
-         //should we normalize it here or only final result?
-        {
-            tangent.Normalize();
-            binormal.Normalize();
-        }
+         //should we normalize it here or only final result?        
+        tangent.Normalize();
+        binormal.Normalize();
+        
         faces[f].tangent = tangent;
         faces[f].binormal = binormal;
         for (int32 i=0; i<3; ++i)
         {
-            vertices_full[f*3+i].tangent = tangent;            
-            vertices_full[f*3+i].binormal = binormal;
+            verticesFull[f*3+i].tangent = tangent;            
+            verticesFull[f*3+i].binormal = binormal;
         }
     }
 
     /*smooth tangent space preventing mirrored uv's smooth*/
-    for (uint32 v = 0, sz = vertices_full.size(); v<sz; ++v)
+    for (uint32 v = 0, sz = verticesFull.size(); v<sz; ++v)
     {
         int32 faceId = v/3;
-        VertexWork& originVert = vertices_origin[vertices_full[v].refIndex];      
-        vertices_full[v].tbRatio = 1;
+        VertexWork& originVert = verticesOrigin[verticesFull[v].refIndex];      
+        verticesFull[v].tbRatio = 1;
         for (int32 iRef=0, refSz = originVert.refIndices.size(); iRef<refSz; ++iRef)
         {
             int32 refFaceId = originVert.refIndices[iRef]/3;
@@ -157,21 +160,21 @@ void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBino
             //check if uv's mirrored;            
             
             //here we use handness to find mirrored UV's - still not sure if it is better then using dot product (upd: experiments show it is really better)
-            Vector3 n1 = CrossProduct(vertices_full[v].tangent, vertices_full[v].binormal);
+            Vector3 n1 = CrossProduct(verticesFull[v].tangent, verticesFull[v].binormal);
             Vector3 n2 = CrossProduct(faces[refFaceId].tangent, faces[refFaceId].binormal);                        
             
             if (DotProduct(n1, n2)>0.0f)
             {
-                vertices_full[v].tangent+=faces[refFaceId].tangent;
-                vertices_full[v].binormal+=faces[refFaceId].binormal;
-                vertices_full[v].tbRatio++;
+                verticesFull[v].tangent+=faces[refFaceId].tangent;
+                verticesFull[v].binormal+=faces[refFaceId].binormal;
+                verticesFull[v].tbRatio++;
             }
             
         }
 
         //as we use normalized tangent space - we renormalize vertex TB instead of rescaling it - think later if it is ok
-        vertices_full[v].tangent.Normalize();
-        vertices_full[v].binormal.Normalize();                
+        verticesFull[v].tangent.Normalize();
+        verticesFull[v].binormal.Normalize();                
         
         /*float32 invScale = 1.0f/(float32)vertices_full[v].tbRatio;
         vertices_full[v].tangent*=invScale;
@@ -183,26 +186,26 @@ void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBino
     const float32 EPS = 0.00001f; //should be the same value as in exporter
     Vector<int32> groups;
     //unlock vertices that have different tangent/binormal but same ref
-    for (uint32 i=0, sz=vertices_origin.size(); i<sz; ++i)
+    for (uint32 i=0, sz=verticesOrigin.size(); i<sz; ++i)
     {        
-        DVASSERT(vertices_origin[i].refIndices.size()); //vertex with no reference triangles found?
+        DVASSERT(verticesOrigin[i].refIndices.size()); //vertex with no reference triangles found?
 
-        vertices_origin[i].tangent = vertices_full[vertices_origin[i].refIndices[0]].tangent;
-        vertices_origin[i].binormal = vertices_full[vertices_origin[i].refIndices[0]].binormal;
+        verticesOrigin[i].tangent = verticesFull[verticesOrigin[i].refIndices[0]].tangent;
+        verticesOrigin[i].binormal = verticesFull[verticesOrigin[i].refIndices[0]].binormal;
 
-        if (vertices_origin[i].refIndices.size()<=1) //1 and less references do not need unlock test
+        if (verticesOrigin[i].refIndices.size()<=1) //1 and less references do not need unlock test
             continue;
         groups.clear();
         groups.push_back(0);
-        vertices_full[vertices_origin[i].refIndices[0]].resultGroup = 0;
+        verticesFull[verticesOrigin[i].refIndices[0]].resultGroup = 0;
         //if has different refs, check different groups;
-        for (int32 refId=1, refSz = vertices_origin[i].refIndices.size(); refId<refSz; ++refId)
+        for (int32 refId=1, refSz = verticesOrigin[i].refIndices.size(); refId<refSz; ++refId)
         {
-            VertexWork& vertexRef = vertices_full[vertices_origin[i].refIndices[refId]];
+            VertexWork& vertexRef = verticesFull[verticesOrigin[i].refIndices[refId]];
             bool groupFound = false;
             for (int32 groupId = 0, groupSz = groups.size(); groupId<groupSz; ++groupId)
             {
-                const VertexWork& groupRef = vertices_full[vertices_origin[i].refIndices[groups[groupId]]];                
+                const VertexWork& groupRef = verticesFull[verticesOrigin[i].refIndices[groups[groupId]]];                
                 bool groupEqual = FLOAT_EQUAL_EPS(vertexRef.tangent.x, groupRef.tangent.x, EPS) && FLOAT_EQUAL_EPS(vertexRef.tangent.y, groupRef.tangent.y, EPS) && FLOAT_EQUAL_EPS(vertexRef.tangent.z, groupRef.tangent.z, EPS);
                 if (precomputeBinormal)
                     groupEqual &= FLOAT_EQUAL_EPS(vertexRef.binormal.x, groupRef.binormal.x, EPS) && FLOAT_EQUAL_EPS(vertexRef.binormal.y, groupRef.binormal.y, EPS) && FLOAT_EQUAL_EPS(vertexRef.binormal.z, groupRef.binormal.z, EPS);
@@ -226,13 +229,13 @@ void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBino
             groups[0] = i;
             for (int32 groupId = 1, groupSz = groups.size(); groupId<groupSz; ++groupId)
             {
-                vertices_origin.push_back(vertices_origin[i]);
-                groups[groupId] = vertices_origin.size()-1;
-                vertices_origin[groups[groupId]].refIndex = i;
+                verticesOrigin.push_back(verticesOrigin[i]);
+                groups[groupId] = verticesOrigin.size()-1;
+                verticesOrigin[groups[groupId]].refIndex = i;
             }
-            for (int32 refId=1, refSz = vertices_origin[i].refIndices.size(); refId<refSz; ++refId)
+            for (int32 refId=1, refSz = verticesOrigin[i].refIndices.size(); refId<refSz; ++refId)
             {
-                VertexWork& vertexRef = vertices_full[vertices_origin[i].refIndices[refId]];
+                VertexWork& vertexRef = verticesFull[verticesOrigin[i].refIndices[refId]];
                 vertexRef.refIndex = groups[vertexRef.resultGroup];
             }
         }
@@ -249,22 +252,22 @@ void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBino
     if (precomputeBinormal)
         vertexFormat|=EVF_BINORMAL;
     group->ReleaseData();
-    group->AllocateData(vertexFormat, vertices_origin.size(), vertices_full.size());
+    group->AllocateData(vertexFormat, verticesOrigin.size(), verticesFull.size());
 
     //copy vertices
-    for (uint32 i=0, sz = vertices_origin.size(); i<sz; ++i)
+    for (uint32 i=0, sz = verticesOrigin.size(); i<sz; ++i)
     {
-        CopyVertex(tmpGroup, vertices_origin[i].refIndex, group, i);   
+        CopyVertex(tmpGroup, verticesOrigin[i].refIndex, group, i);   
         Vector3 normal;
         group->GetNormal(i, normal);
         
-        Vector3 tangent = vertices_origin[i].tangent;
+        Vector3 tangent = verticesOrigin[i].tangent;
         tangent -=normal*DotProduct(tangent, normal);        
         tangent.Normalize();
         group->SetTangent(i, tangent);
         if (precomputeBinormal)
         {
-            Vector3 binormal = -vertices_origin[i].binormal;
+            Vector3 binormal = -verticesOrigin[i].binormal;
             binormal -=normal*DotProduct(binormal, normal);            
             binormal.Normalize();
             group->SetBinormal(i, binormal);
@@ -272,12 +275,12 @@ void MeshUtils::RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBino
     }
 
     //copy indices
-    for (int32 i = 0, sz = vertices_full.size(); i<sz; ++i)
-        group->SetIndex(i, vertices_full[i].refIndex);
+    for (int32 i = 0, sz = verticesFull.size(); i<sz; ++i)
+        group->SetIndex(i, verticesFull[i].refIndex);
 
     group->BuildBuffers();
 }
 
-
+};
 };
 

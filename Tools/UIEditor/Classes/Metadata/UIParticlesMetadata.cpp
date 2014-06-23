@@ -47,6 +47,15 @@ void UIParticlesMetadata::Start()
     }
 
     GetActiveUIParticles()->Start();
+    UIParticles* activeParticles = GetActiveUIParticles();
+    if (activeParticles->IsPaused())
+    {
+        activeParticles->Pause(false);
+    }
+    else
+    {
+        activeParticles->Start();
+    }
 }
 
 void UIParticlesMetadata::Stop()
@@ -66,7 +75,8 @@ void UIParticlesMetadata::Pause()
         return;
     }
     
-    GetActiveUIParticles()->Pause();
+    UIParticles* activeParticles = GetActiveUIParticles();
+    activeParticles->Pause(!activeParticles->IsPaused());
 }
 
 void UIParticlesMetadata::Restart()

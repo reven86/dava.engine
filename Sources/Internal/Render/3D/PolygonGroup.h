@@ -197,12 +197,12 @@ public:
     
     RenderDataObject * renderDataObject;
     
-    void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);
-    void Load(KeyedArchive * keyedArchive, SerializationContext * serializationContext);
+    void Save(KeyedArchive * keyedArchive, SerializationContext * serializationContext);    
+    void LoadPolygonData(KeyedArchive * keyedArchive, SerializationContext * serializationContext, int32 requiredFlags);
 
 private:
     void    UpdateDataPointersAndStreams();
-	void	CopyData(uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
+	void	CopyData(const uint8 ** meshData, uint8 ** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
 	bool	IsFloatDataEqual(const float32 ** meshData, const float32 ** optData, uint32 vertexFormat, uint32 format) const;
  	int32	OptimazeVertexes(const uint8 * meshData, Vector<uint8> & optMeshData, uint32 vertexFormat)	const;
 
@@ -386,7 +386,7 @@ inline void PolygonGroup::GetAngle(int32 i, Vector2 & _v)
 	
 inline void	PolygonGroup::GetIndex(int32 i, int32 &index)
 {
-	index = indexArray[i];
+	index = (uint16)indexArray[i];
 }
 	
 inline int32 PolygonGroup::GetVertexCount()
