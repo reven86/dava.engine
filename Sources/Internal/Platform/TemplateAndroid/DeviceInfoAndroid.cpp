@@ -157,6 +157,15 @@ int JniDeviceInfo::GetZBufferSize()
 	return 0;
 }
 
+int JniDeviceInfo::GetGPUFamily()
+{
+	jmethodID mid = GetMethodID("GetGPUFamily", "()I");
+	if (mid)
+		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+
+	return -1;
+}
+
 String DeviceInfo::GetVersion()
 {
 	JniDeviceInfo jniDeviceInfo;
@@ -225,6 +234,12 @@ int DeviceInfo::GetZBufferSize()
 {
 	JniDeviceInfo jniDeviceInfo;
 	return jniDeviceInfo.GetZBufferSize();
+}
+
+eGPUFamily DeviceInfo::GetGPUFamily()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return (eGPUFamily) jniDeviceInfo.GetGPUFamily();
 }
 
 }

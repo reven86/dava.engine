@@ -40,7 +40,8 @@
 const float32 HierarchyTreeScreenNode::POSITION_UNDEFINED = -1.0f;
 
 HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const QString& name) :
-	HierarchyTreeNode(name)
+	HierarchyTreeNode(name),
+    loaded(false)
 {
 	this->parent = parent;
 	this->screen = new ScreenControl();
@@ -53,7 +54,8 @@ HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* pare
 }
 
 HierarchyTreeScreenNode::HierarchyTreeScreenNode(HierarchyTreePlatformNode* parent, const HierarchyTreeScreenNode* base):
-	HierarchyTreeNode(base)
+	HierarchyTreeNode(base),
+    loaded(false)
 {
 	this->parent = parent;
 	this->screen = new ScreenControl();
@@ -172,13 +174,34 @@ bool HierarchyTreeScreenNode::IsNameExist(const QString &name, const HierarchyTr
 	return false;
 }
 
+bool HierarchyTreeScreenNode::Unload()
+{
+    if(loaded && !IsNeedSave())
+    {
+        Cleanup();
+        SafeRelease(screen);
+        this->screen = new ScreenControl();
+        if (parent)
+        {
+            screen->SetRect(Rect(0, 0, parent->GetWidth(), parent->GetHeight()));
+        }
+        loaded = false;
+        return true;
+    }
+    return false;
+}
+
 bool HierarchyTreeScreenNode::Load(const QString& path)
 {
-	ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
-	loader->Load(screen, path.toStdString());
-    guides.Load(path.toStdString());
-	
-	BuildHierarchyTree(this, screen->GetChildren());
+    if(!loaded)
+    {
+        ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
+        loader->Load(screen, path.toStdString());
+        guides.Load(path.toStdString());
+        
+        BuildHierarchyTree(this, screen->GetChildren());
+        loaded = true;
+    }
 	return true;
 }
 

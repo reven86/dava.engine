@@ -259,6 +259,7 @@ void HierarchyTreeAggregatorNode::ReplaceAggregator(HierarchyTreeControlNode *no
 	// Set aggregator ID for list if it has saved aggregator path and it is available in tree
 	if (list && list->GetAggregatorPath() == path)
 	{
+        SafeRelease(listDelegate);
 		listDelegate = new EditorListDelegate(list->GetRect(), list->GetOrientation());
 		// If loaded delegate has aggregator path - pass its id to delegate
 		listDelegate->SetAggregatorID(GetId());

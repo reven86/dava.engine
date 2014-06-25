@@ -115,6 +115,9 @@ ParticleEmitterPropertiesWidget::ParticleEmitterPropertiesWidget(QWidget* parent
 	emitterRadius = new TimeLineWidget(this);
 	InitWidget(emitterRadius);
 
+    emitterAngle = new  TimeLineWidget(this);
+    InitWidget(emitterAngle);
+
 	emitterColorWidget = new GradientPickerWidget(this);
 	InitWidget(emitterColorWidget);
 
@@ -203,11 +206,17 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 	if(!emitterSize->GetValues(size.GetPropsPtr()))
 		return;
 
+
 	float32 life = emitterLife->value();
 	float32 currentLifeTime = emitter->lifeTime;
 	bool initEmittersByDef = FLOAT_EQUAL(life,currentLifeTime) ? false : true;	
 
 	bool isShortEffect = shortEffectCheckBox->isChecked();
+
+    PropLineWrapper<float32> propAngle;
+    PropLineWrapper<float32> propAngleVariation;
+    emitterAngle->GetValue(0, propAngle.GetPropsPtr());
+    emitterAngle->GetValue(1, propAngleVariation.GetPropsPtr());
 	
 
 	CommandUpdateEmitter* commandUpdateEmitter = new CommandUpdateEmitter(emitter);
@@ -217,6 +226,8 @@ void ParticleEmitterPropertiesWidget::OnValueChanged()
 							   emissionRange.GetPropLine(),
 							   emissionVector.GetPropLine(),
 							   radius.GetPropLine(),
+                               propAngle.GetPropLine(),
+                               propAngleVariation.GetPropLine(),
 							   colorOverLife.GetPropLine(),
 							   size.GetPropLine(),
 							   life,
@@ -291,6 +302,17 @@ void ParticleEmitterPropertiesWidget::Init(SceneEditor2* scene, DAVA::ParticleEf
 	// Radius cannot be negative.
 	emitterRadius->SetMinLimits(0.0f);
 
+    if(!needUpdateTimeLimits)
+    {
+        minTime = emitterAngle->GetMinBoundary();
+        maxTime = emitterAngle->GetMaxBoundary();
+    }
+    emitterAngle->Init(minTime, maxTime, minTimeLimit, maxTimeLimit, updateMinimize);
+    emitterAngle->AddLine(0, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->emissionAngle)).GetProps(), Qt::blue, "emission angle base");
+    emitterAngle->AddLine(1, PropLineWrapper<float32>(PropertyLineHelper::GetValueLine(emitter->emissionAngleVariation)).GetProps(), Qt::green, "emission angle spread");
+    emitterAngle->SetYLegendMark(DEGREE_MARK_CHARACTER);
+    
+
 	emitterColorWidget->Init(0.f, emitterLifeTime, "color over life");
 	emitterColorWidget->SetValues(PropLineWrapper<Color>(PropertyLineHelper::GetValueLine(emitter->colorOverLife)).GetProps());
 
@@ -326,6 +348,7 @@ void ParticleEmitterPropertiesWidget::RestoreVisualState(KeyedArchive* visualSta
 	emitterEmissionRange->SetVisualState(visualStateProps->GetArchive("EMITTER_EMISSION_RANGE_PROPS"));
 	emitterEmissionVector->SetVisualState(visualStateProps->GetArchive("EMITTER_EMISSION_VECTOR_PROPS"));
 	emitterRadius->SetVisualState(visualStateProps->GetArchive("EMITTER_RADIUS_PROPS"));
+    emitterAngle->SetVisualState(visualStateProps->GetArchive("EMITTER_ANGLE_PROPS"));
 	emitterSize->SetVisualState(visualStateProps->GetArchive("EMITTER_SIZE_PROPS"));
 }
 
@@ -347,6 +370,10 @@ void ParticleEmitterPropertiesWidget::StoreVisualState(KeyedArchive* visualState
 	props->DeleteAllKeys();
 	emitterRadius->GetVisualState(props);
 	visualStateProps->SetArchive("EMITTER_RADIUS_PROPS", props);
+
+    props->DeleteAllKeys();
+    emitterAngle->GetVisualState(props);
+    visualStateProps->SetArchive("EMITTER_ANGLE_PROPS", props);
 
 	props->DeleteAllKeys();
 	emitterSize->GetVisualState(props);

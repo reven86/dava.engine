@@ -231,9 +231,9 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
     {
         Entity * node = *it;
 
-        if(node->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT))
+        KeyedArchive *props = GetCustomPropertiesArchieve(node);
+        if(props)
         {
-            KeyedArchive *props = node->GetCustomProperties();
             const Map<String, VariantType*> propsMap = props->GetArchieveData();
             
             auto endIt = propsMap.end();
@@ -248,6 +248,11 @@ void SceneExporter::RemoveEditorCustomProperties(Entity *rootNode)
                         props->DeleteKey(key);
                     }
                 }
+            }
+            
+			if(props->Count() == 0)
+            {
+                node->RemoveComponent(DAVA::Component::CUSTOM_PROPERTIES_COMPONENT);
             }
         }
     }

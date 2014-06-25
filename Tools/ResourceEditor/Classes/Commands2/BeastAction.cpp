@@ -42,10 +42,11 @@ using namespace DAVA;
 #if defined (__DAVAENGINE_BEAST__)
 
 //Beast
-BeastAction::BeastAction(SceneEditor2 *scene, QtWaitDialog *_waitDialog)
+BeastAction::BeastAction(SceneEditor2 *scene, const DAVA::FilePath& _outputPath, QtWaitDialog *_waitDialog)
 	: CommandAction(CMDID_BEAST, "Beast")
 	, workingScene(scene)
 	, waitDialog(_waitDialog)
+    , outputPath(_outputPath)
 {
 	beastManager = BeastProxy::Instance()->CreateManager();
 }
@@ -109,6 +110,7 @@ void BeastAction::Start()
 
 	FilePath path = GetLightmapDirectoryPath();
 	FileSystem::Instance()->CreateDirectory(path, false);
+    FileSystem::Instance()->CreateDirectory(outputPath, true);
 
 	BeastProxy::Instance()->SetLightmapsDirectory(beastManager, path);
 	BeastProxy::Instance()->Run(beastManager, workingScene);
@@ -142,7 +144,7 @@ void BeastAction::PackLightmaps()
 {
     FilePath scenePath = workingScene->GetScenePath();
 	FilePath inputDir = GetLightmapDirectoryPath();
-	FilePath outputDir = FilePath::CreateWithNewExtension(scenePath,  ".sc2_lightmaps/");
+    FilePath outputDir = outputPath;
 
 	FileSystem::Instance()->MoveFile(inputDir + "landscape.png", scenePath.GetDirectory() + "temp_landscape_lightmap.png", true);
 

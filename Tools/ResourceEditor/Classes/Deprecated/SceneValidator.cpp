@@ -176,13 +176,15 @@ void SceneValidator::ValidateNodeCustomProperties(Entity * sceneNode)
 {
     if(!GetLight(sceneNode))
     {
-        KeyedArchive * props = sceneNode->GetCustomProperties();
-
-        props->DeleteKey("editor.staticlight.used");
-        props->DeleteKey("editor.staticlight.enable");
-        props->DeleteKey("editor.staticlight.castshadows");
-        props->DeleteKey("editor.staticlight.receiveshadows");
-        props->DeleteKey("lightmap.size");
+        KeyedArchive * props = GetCustomPropertiesArchieve(sceneNode);
+        if(props)
+        {
+            props->DeleteKey("editor.staticlight.used");
+            props->DeleteKey("editor.staticlight.enable");
+            props->DeleteKey("editor.staticlight.castshadows");
+            props->DeleteKey("editor.staticlight.receiveshadows");
+            props->DeleteKey("lightmap.size");
+        }
     }
 }
 
@@ -370,11 +372,7 @@ void SceneValidator::ConvertIlluminationParamsFromProperty(Entity *ownerNode, NM
 
 VariantType* SceneValidator::GetCustomPropertyFromParentsTree(Entity *ownerNode, const String & key)
 {
-    if(!ownerNode)
-        return 0;
-
-    KeyedArchive * props = ownerNode->GetCustomProperties();
-
+    KeyedArchive * props = GetCustomPropertiesArchieve(ownerNode);
     if(!props)
         return 0;
 
@@ -386,7 +384,7 @@ VariantType* SceneValidator::GetCustomPropertyFromParentsTree(Entity *ownerNode,
 
 bool SceneValidator::NodeRemovingDisabled(Entity *node)
 {
-    KeyedArchive *customProperties = node->GetCustomProperties();
+    KeyedArchive *customProperties = GetCustomPropertiesArchieve(node);
     return (customProperties && customProperties->IsKeyExists(ResourceEditor::EDITOR_DO_NOT_REMOVE));
 }
 
@@ -637,8 +635,8 @@ bool SceneValidator::IsTextureDescriptorPath(const FilePath &path)
 
 void SceneValidator::ValidateCustomColorsTexture(Entity *landscapeEntity, Set<String> &errorsLog)
 {
-	KeyedArchive* customProps = landscapeEntity->GetCustomProperties();
-	if(customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP))
+	KeyedArchive* customProps = GetCustomPropertiesArchieve(landscapeEntity);
+	if(customProps && customProps->IsKeyExists(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP))
 	{
 		String currentSaveName = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);
 		FilePath path = "/" + currentSaveName;

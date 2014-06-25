@@ -136,8 +136,8 @@ public:
 
     const HierarchyTree& GetTree() const {return hierarchyTree;};
     
-	void UpdateSelection(const HierarchyTreePlatformNode* activePlatform,
-						 const HierarchyTreeScreenNode* activeScreen);
+	void UpdateSelection(HierarchyTreePlatformNode* activePlatform,
+                         HierarchyTreeScreenNode* activeScreen);
 
 	void UpdateSelection(const HierarchyTreeNode* activeItem);
 	
@@ -262,6 +262,9 @@ protected:
     
     // List of unused items to be deleted.
     List<BaseUnusedItem*> unusedItems;
+    
+    // List of loaded screens
+    List<HierarchyTreeScreenNode*> loadedScreenList;
 };
 
 #endif /* defined(__UIEditor__HierarchyTreeController__) */

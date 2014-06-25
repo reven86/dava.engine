@@ -39,6 +39,7 @@
 #include "Scene3D/SwitchNode.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Mesh.h"
+#include "Render/3D/MeshUtils.h"
 
 #include "Scene3D/SceneNodeAnimationList.h"
 #include "Scene3D/LodNode.h"
@@ -362,7 +363,13 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         scene->SetGlobalMaterial(globalMaterial);
     }
 		    
-    OptimizeScene(rootNode);	
+    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
+    ThreadIdJobWaiter waiter;
+    waiter.Wait();
+    UpdatePolygonGroupRequestedFormatRecursively(rootNode);
+    serializationContext.LoadPolygonGroupData(file);
+
+    OptimizeScene(rootNode);	            
     
 	rootNode->SceneDidLoaded();
     
@@ -467,6 +474,7 @@ bool SceneFileV2::SaveDataNode(DataNode * node, File * file)
     
 void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
 {
+    uint32 currFilePos = file->GetPos();
     KeyedArchive * archive = new KeyedArchive();
     archive->Load(file);
     
@@ -490,6 +498,11 @@ void SceneFileV2::LoadDataNode(DataNode * parent, File * file)
         }
         node->Load(archive, &serializationContext);
         AddToNodeMap(node);
+
+        if (name == "PolygonGroup")
+        {
+            serializationContext.AddLoadedPolygonGroup(static_cast<PolygonGroup*>(node), currFilePos);
+        }
         
         int32 childrenCount = archive->GetInt32("#childrenCount", 0);
         DVASSERT(0 == childrenCount && "We don't support hierarchical dataNodes load.");
@@ -703,7 +716,12 @@ Entity * SceneFileV2::LoadLight(Scene * scene, KeyedArchive * archive)
 {
     Entity * lightEntity = LoadEntity(scene, archive);
     
-    bool isDynamic = lightEntity->GetCustomProperties()->GetBool("editor.dynamiclight.enable", true);
+    bool isDynamic = true;
+    KeyedArchive *props = GetCustomPropertiesArchieve(lightEntity);
+    if(props)
+    {
+        isDynamic = props->GetBool("editor.dynamiclight.enable", true);
+    }
     
     Light * light = new Light();
     light->Load(archive, &serializationContext);
@@ -750,7 +768,7 @@ bool SceneFileV2::RemoveEmptySceneNodes(DAVA::Entity * currentNode)
     }
     if ((currentNode->GetChildrenCount() == 0) && (typeid(*currentNode) == typeid(Entity)))
     {
-        KeyedArchive *customProperties = currentNode->GetCustomProperties();
+        KeyedArchive *customProperties = GetCustomPropertiesArchieve(currentNode);
         bool doNotRemove = customProperties && customProperties->IsKeyExists("editor.donotremove");
         
         uint32 componentCount = currentNode->GetComponentCount();
@@ -829,8 +847,9 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
 
 
                 Entity * childNode = SafeRetain(currentNode->GetChild(0));
-                FastName currentName = currentNode->GetName();
-				KeyedArchive * currentProperties = currentNode->GetCustomProperties();
+
+				FastName currentName = currentNode->GetName();
+				KeyedArchive * currentProperties = GetCustomPropertiesArchieve(currentNode);
                 
                 //Logger::FrameworkDebug("remove node: %s %p", currentNode->GetName().c_str(), currentNode);
 				parent->InsertBeforeNode(childNode, currentNode);
@@ -841,13 +860,17 @@ bool SceneFileV2::RemoveEmptyHierarchy(Entity * currentNode)
                     childNode->SetName(currentName);
                 }
 				//merge custom properties
-				KeyedArchive * newProperties = childNode->GetCustomProperties();
-				const Map<String, VariantType*> & oldMap = currentProperties->GetArchieveData();
-				Map<String, VariantType*>::const_iterator itEnd = oldMap.end();
-				for(Map<String, VariantType*>::const_iterator it = oldMap.begin(); it != itEnd; ++it)
-				{
-					newProperties->SetVariant(it->first, *it->second);
-				}
+                
+                if(currentProperties)
+                {
+                    KeyedArchive * newProperties = GetOrCreateCustomProperties(childNode)->GetArchive();
+                    const Map<String, VariantType*> & oldMap = currentProperties->GetArchieveData();
+                    Map<String, VariantType*>::const_iterator itEnd = oldMap.end();
+                    for(Map<String, VariantType*>::const_iterator it = oldMap.begin(); it != itEnd; ++it)
+                    {
+                        newProperties->SetVariant(it->first, *it->second);
+                    }
+                }
 				
 				//VI: remove node after copying its properties since properties become invalid after node removal
 				parent->RemoveNode(currentNode);
@@ -1175,6 +1198,32 @@ void SceneFileV2::ReplaceOldNodes(Entity * currentNode)
 	}
 }
 
+
+void SceneFileV2::RebuildTangentSpace(Entity *entity)
+{
+    static int32 prerequiredFormat = EVF_TANGENT|EVF_NORMAL;
+    RenderObject *ro = GetRenderObject(entity);
+
+    if (ro)
+    {
+        for (int32 i=0, sz=ro->GetRenderBatchCount(); i<sz; ++i)
+        {
+            RenderBatch *renderBatch = ro->GetRenderBatch(i);
+            PolygonGroup *group = renderBatch->GetPolygonGroup();
+            if (group)
+            {
+                int32 format = group->GetFormat();
+                if (((format&prerequiredFormat)==prerequiredFormat)&&!(format&EVF_BINORMAL))
+                    MeshUtils::RebuildMeshTangentSpace(group, true);
+            }
+        }
+    }
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        RebuildTangentSpace(entity->GetChild(i));
+}
+
+ 
 void SceneFileV2::OptimizeScene(Entity * rootNode)
 {
     int32 beforeCount = rootNode->GetChildrenCountRecursive();
@@ -1192,12 +1241,17 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 	    lodConverter.ConvertLodToV2(rootNode);
 	    SwitchToRenerObjectConverter switchConverter;
 	    switchConverter.ConsumeSwitchedRenderObjects(rootNode);
-    }
+    }    
 	
     if(GetVersion() < TREE_ANIMATION_SCENE_VERSION)
     {
         TreeToAnimatedTreeConverter treeConverter;
         treeConverter.ConvertTrees(rootNode);
+    }
+
+    if (GetVersion() < PREREQUIRED_BINORMAL_SCENE_VERSION)
+    {     
+        RebuildTangentSpace(rootNode);
     }
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
@@ -1210,6 +1264,26 @@ void SceneFileV2::OptimizeScene(Entity * rootNode)
 //    }
     int32 nowCount = rootNode->GetChildrenCountRecursive();
     Logger::FrameworkDebug("nodes removed: %d before: %d, now: %d, diff: %d", removedNodeCount, beforeCount, nowCount, beforeCount - nowCount);
+}
+
+void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
+{
+    RenderObject *ro = GetRenderObject(entity);
+
+    if (ro && ro->GetType()!=RenderObject::TYPE_SKYBOX)
+    {
+        for (int32 i=0, sz=ro->GetRenderBatchCount(); i<sz; ++i)
+        {
+            RenderBatch *renderBatch = ro->GetRenderBatch(i);
+            PolygonGroup *group = renderBatch->GetPolygonGroup();
+            NMaterial *material = renderBatch->GetMaterial();
+            if (group && material)
+                serializationContext.AddRequestedPolygonGroupFormat(group, material->GetRequiredVertexFormat());            
+        }
+    }
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        UpdatePolygonGroupRequestedFormatRecursively(entity->GetChild(i));
 }
 
 void SceneFileV2::SetVersion( int32 version )

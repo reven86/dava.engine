@@ -61,6 +61,7 @@ public:
 
 	// Accessors to timelines.
 	TimeLineWidget* GetEmitterRadiusTimeline() {return emitterRadius;};
+    TimeLineWidget* GetEmitterAngleTimeline() {return emitterAngle;};
 	TimeLineWidget* GetEmitterSizeTimeline() {return emitterSize;};
 	TimeLineWidget* GetEmissionVectorTimeline() {return emitterEmissionVector;};
 
@@ -90,6 +91,7 @@ private:
 	TimeLineWidget* emitterEmissionVector;
 	TimeLineWidget* emitterRadius;
 	TimeLineWidget* emitterSize;
+    TimeLineWidget* emitterAngle;
 	EventFilterDoubleSpinBox* emitterLife;
 	GradientPickerWidget* emitterColorWidget;		
 

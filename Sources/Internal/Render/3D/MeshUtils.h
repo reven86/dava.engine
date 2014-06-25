@@ -36,14 +36,14 @@
 namespace DAVA
 {
 
-class MeshUtils
+namespace MeshUtils
 {
-public:
-    static void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal=false);
-    static void CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos);
-    static void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup);
 
-private:
+    void RebuildMeshTangentSpace(PolygonGroup *group, bool precomputeBinormal=true);
+    void CopyVertex(PolygonGroup *srcGroup, uint32 srcPos, PolygonGroup *dstGroup, uint32 dstPos);
+    void CopyGroupData(PolygonGroup *srcGroup, PolygonGroup *dstGroup);
+
+
     struct FaceWork
     {
         int32 indexOrigin[3];

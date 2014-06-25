@@ -18,5 +18,10 @@ void main()
     if (texColor.a < 0.9)
         discard;
 #endif
-	gl_FragColor = texColor * varColor;
+
+#ifdef IMAGE_A8
+    gl_FragColor = texColor.a * varColor;
+#else
+    gl_FragColor = texColor * varColor;
+#endif
 }

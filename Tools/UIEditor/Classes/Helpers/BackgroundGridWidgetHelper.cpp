@@ -124,8 +124,8 @@ const BackgroundGridWidgetHelper::SpellCheckingTypesData BackgroundGridWidgetHel
 const BackgroundGridWidgetHelper::AutoCorrectionTypesData BackgroundGridWidgetHelper::autoCorrectionTypesData[] =
 {
 	{UITextField::AUTO_CORRECTION_TYPE_DEFAULT,		"Default"},
-	{UITextField::AUTO_CORRECTION_TYPE_DEFAULT,		"No"},
-	{UITextField::AUTO_CORRECTION_TYPE_DEFAULT,		"Yes"}
+	{UITextField::AUTO_CORRECTION_TYPE_NO,		"No"},
+	{UITextField::AUTO_CORRECTION_TYPE_YES,		"Yes"}
 };
 
 const BackgroundGridWidgetHelper::AutoCapitalizationTypesData BackgroundGridWidgetHelper::autoCapitalizationTypesData[] =

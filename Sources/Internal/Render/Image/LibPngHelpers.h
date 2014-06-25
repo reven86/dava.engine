@@ -61,9 +61,9 @@ public:
 
     virtual uint32 GetDataSize(File *infile) const;
 
-protected:
-    
-  	static int ReadPngFile(File *infile, Image * image);
+
+	static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);
+
 
 };
 

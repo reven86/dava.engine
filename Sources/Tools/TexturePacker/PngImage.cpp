@@ -53,29 +53,23 @@ PngImageExt::~PngImageExt()
 bool PngImageExt::Read(const FilePath & filename)
 {
     SafeRelease(internalData);
-    
-    Vector<Image*> imageSet;
-    eErrorCode retCode = ImageSystem::Instance()->Load(filename, imageSet);
-    if(SUCCESS != retCode)
-    {
-        Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
-    }
-    else
-    {
-		Image *image = imageSet[0];
+	
+	File *fileRead = File::Create(filename, File::READ | File::OPEN);
+	if(!fileRead)
+	{
+		Logger::Error("[PngImageExt::Read] failed to open png file: %s", filename.GetAbsolutePathname().c_str());
+		return false;
+	}
 
-		if(image->GetPixelFormat() == FORMAT_RGBA8888)
-		{
-			internalData = image;
-			internalData->Retain();
-		}
-		else
-		{
-			internalData = Image::Create(image->width, image->height, FORMAT_RGBA8888);
-			ImageConvert::ConvertImageDirect(image, internalData);
-		}
-    }
-    for_each(imageSet.begin(), imageSet.end(), SafeRelease<Image>);
+	internalData = new Image();
+	int innerRetCode = LibPngWrapper::ReadPngFile(fileRead, internalData, FORMAT_RGBA8888);
+	if(innerRetCode != 1)
+	{
+		SafeRelease(internalData);
+		Logger::Error("[PngImageExt::Read] failed to read png file: %s", filename.GetAbsolutePathname().c_str());
+	}
+
+	SafeRelease(fileRead);
 	return (internalData != NULL);
 }
 

@@ -221,9 +221,10 @@ CreateControlCommand::CreateControlCommand(const QString& type, const QPoint& po
 	this->commandMode = CREATE_FROM_POINT;
 	this->parentNode = NULL;
 	this->redoNode = NULL;
+    this->insertAfterNode = NULL;
 }
 
-CreateControlCommand::CreateControlCommand(const QString& type, HierarchyTreeNode* parent)
+CreateControlCommand::CreateControlCommand(const QString& type, HierarchyTreeNode* parent, HierarchyTreeNode* insertAfter/*=NULL*/)
 {
 	this->type = type;
 	this->pos = pos;
@@ -232,6 +233,7 @@ CreateControlCommand::CreateControlCommand(const QString& type, HierarchyTreeNod
 	this->commandMode = CREATE_FROM_NODE;
 	this->parentNode = parent;
 	this->redoNode = NULL;
+    this->insertAfterNode = insertAfter;
 }
 
 void CreateControlCommand::Execute()
@@ -275,6 +277,12 @@ void CreateControlCommand::Execute()
 		return;
 	}
 	
+    if(insertAfterNode)
+    {
+        HierarchyTreeNode* node = HierarchyTreeController::Instance()->GetTree().GetNode(newControlID);
+        node->SetParent(parentNode, insertAfterNode);
+        HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
+    }
 	this->createdControlID = newControlID;
 }
 

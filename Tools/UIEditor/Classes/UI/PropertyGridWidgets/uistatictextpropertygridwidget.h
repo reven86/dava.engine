@@ -46,10 +46,7 @@ public:
     virtual void Initialize(BaseMetadata* activeMetadata);
     virtual void Cleanup();
     
-protected:
-    
-    //	virtual void InsertLocalizationFields();
-    
+protected:    
     // Update the widget with Localization Value when the key is changed.
     virtual void UpdateLocalizationValue();
     
@@ -66,15 +63,11 @@ protected:
     // Handle dependent checkboxes.
     virtual void UpdateCheckBoxWidgetWithPropertyValue(QCheckBox* checkBoxWidget, const QMetaProperty& curProperty);
 	virtual void OnPropertiesChangedFromExternalSource() {};
-    
+
+    // Handle comboboxes.
+    virtual void FillComboboxes();
+
 private:
-    
-    //	QLineEdit *localizationKeyNameLineEdit;
-    //	QLineEdit *localizationKeyTextLineEdit;
-    //	QLabel	*localizationKeyNameLabel;
-    //	QLabel	*localizationKeyTextLabel;
-    //	QCheckBox *multilineCheckBox;
-    //	QCheckBox *multilineBySymbolCheckBox;
 };
 
 #endif // UISTATICTEXTPROPERTYGRIDWIDGET_H

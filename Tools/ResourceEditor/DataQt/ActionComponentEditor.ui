@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>1020</width>
     <height>400</height>
    </rect>
   </property>
@@ -19,11 +19,20 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTableWidget" name="tableActions">
+     <property name="editTriggers">
+      <set>QAbstractItemView::AllEditTriggers</set>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="dragDropOverwriteMode">
+      <bool>false</bool>
+     </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
+      <enum>QAbstractItemView::SelectItems</enum>
      </property>
      <property name="verticalScrollMode">
       <enum>QAbstractItemView::ScrollPerPixel</enum>
@@ -31,15 +40,29 @@
      <property name="horizontalScrollMode">
       <enum>QAbstractItemView::ScrollPerPixel</enum>
      </property>
+     <attribute name="horizontalHeaderVisible">
+      <bool>true</bool>
+     </attribute>
      <attribute name="horizontalHeaderDefaultSectionSize">
       <number>150</number>
      </attribute>
      <attribute name="horizontalHeaderStretchLastSection">
       <bool>false</bool>
      </attribute>
+     <attribute name="verticalHeaderVisible">
+      <bool>false</bool>
+     </attribute>
+     <attribute name="verticalHeaderHighlightSections">
+      <bool>false</bool>
+     </attribute>
      <column>
       <property name="text">
        <string>EventType</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Event Name</string>
       </property>
      </column>
      <column>
@@ -55,6 +78,11 @@
      <column>
       <property name="text">
        <string>Delay</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Delay variation</string>
       </property>
      </column>
      <column>
@@ -75,7 +103,28 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1,0,0">
+     <item>
+      <widget class="QLineEdit" name="eventName">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="invokeEvent">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="QtIcons.qrc">
+         <normaloff>:/QtIcons/play.png</normaloff>:/QtIcons/play.png</iconset>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -131,6 +180,15 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <tabstops>
+  <tabstop>tableActions</tabstop>
+  <tabstop>eventName</tabstop>
+  <tabstop>invokeEvent</tabstop>
+  <tabstop>buttonAddItem</tabstop>
+  <tabstop>buttonRemoveItem</tabstop>
+ </tabstops>
+ <resources>
+  <include location="QtIcons.qrc"/>
+ </resources>
  <connections/>
 </ui>

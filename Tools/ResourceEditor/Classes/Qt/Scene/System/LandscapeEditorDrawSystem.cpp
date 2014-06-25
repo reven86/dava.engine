@@ -462,7 +462,7 @@ Vector2 LandscapeEditorDrawSystem::TranslatePoint(const Vector2& point, const Re
 
 KeyedArchive* LandscapeEditorDrawSystem::GetLandscapeCustomProperties()
 {
-	return landscapeNode->GetCustomProperties();
+	return GetOrCreateCustomProperties(landscapeNode)->GetArchive();
 }
 
 LandscapeEditorDrawSystem::eErrorType LandscapeEditorDrawSystem::EnableTilemaskEditing()

@@ -176,7 +176,7 @@ public:
         C c = dynamic_cast<C>(pObject);
         if (!c)
         {//assert emulation )
-            int *i = NULL;
+            int *i = 0;
             *(i) = 0;
         }
         return c;

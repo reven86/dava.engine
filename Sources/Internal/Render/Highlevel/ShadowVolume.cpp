@@ -482,7 +482,11 @@ void ShadowVolume::Load(KeyedArchive *archive, SerializationContext *serializati
 			PolygonGroup *pg = (PolygonGroup*)serializationContext->GetDataBlock(archive->GetVariant("sv.spg")->AsUInt64());
 			if(NULL != pg)
 			{
-				SetPolygonGroup(pg);
+                if (pg!=dataSource)
+                {
+                    SafeRelease(dataSource);
+                    dataSource = SafeRetain(pg);
+                }		
 			}
 		}
 	}

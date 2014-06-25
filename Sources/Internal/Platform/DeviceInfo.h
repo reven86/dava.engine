@@ -32,6 +32,7 @@
 #define __FRAMEWORK__DEVICEINFO__
 
 #include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
@@ -61,6 +62,7 @@ public:
     static String GetUDID();
     static WideString GetName();
     static int GetZBufferSize();
+    static eGPUFamily GetGPUFamily();
 };
 
 };

@@ -174,6 +174,10 @@ WebViewControl::~WebViewControl()
 	WebViewPolicyDelegate* w = (WebViewPolicyDelegate*)webViewPolicyDelegatePtr;
 	[w release];
 	webViewPolicyDelegatePtr = nil;
+    
+    WebViewControlUIDelegate* c = (WebViewControlUIDelegate*)webViewDelegatePtr;
+    [c release];
+    webViewDelegatePtr = nil;
 }
 
 void WebViewControl::SetDelegate(DAVA::IUIWebViewDelegate *delegate, DAVA::UIWebView* webView)

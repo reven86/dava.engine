@@ -37,6 +37,7 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
 #include "Render/Highlevel/Camera.h"
@@ -44,7 +45,6 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/SkyboxRenderObject.h"
 #include "Render/Highlevel/VegetationRenderObject.h"
-#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
@@ -364,5 +364,39 @@ QualitySettingsComponent * GetQualitySettingsComponent(const Entity * fromEntity
     
     return NULL;
 }
+    
+CustomPropertiesComponent * GetCustomProperties(const Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+		return (static_cast<CustomPropertiesComponent *>(fromEntity->GetComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
+    }
+    
+    return NULL;
+    
+}
+    
+CustomPropertiesComponent * GetOrCreateCustomProperties(Entity *fromEntity)
+{
+    if(fromEntity)
+    {
+        return (static_cast<CustomPropertiesComponent *>(fromEntity->GetOrCreateComponent(Component::CUSTOM_PROPERTIES_COMPONENT)));
+    }
+    
+    return NULL;
+}
+
+
+KeyedArchive * GetCustomPropertiesArchieve(const Entity *fromEntity)
+{
+    CustomPropertiesComponent * comp = GetCustomProperties(fromEntity);
+    if(comp)
+    {
+        return comp->GetArchive();
+    }
+    
+    return NULL;
+}
+
     
 }

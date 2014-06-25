@@ -100,7 +100,7 @@ protected:
 	void Prepare();
 	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
 	
-	void DrawToBuffer(Font *font, int16 *buf);
+	void DrawToBuffer(Font *font, uint8 *buf);
 
 	void ProcessAlign();
     

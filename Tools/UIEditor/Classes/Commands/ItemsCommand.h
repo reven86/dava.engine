@@ -128,7 +128,7 @@ class CreateControlCommand: public BaseCommand
 {
 public:
 	CreateControlCommand(const QString& type, const QPoint& pos);
-	CreateControlCommand(const QString& type, HierarchyTreeNode* parent);
+	CreateControlCommand(const QString& type, HierarchyTreeNode* parent, HierarchyTreeNode* insertAfter = NULL);
 
 	virtual void Execute();
 	void Rollback();
@@ -159,6 +159,9 @@ private:
 	
 	// Parent node, if defined.
 	HierarchyTreeNode* parentNode;
+    
+    // InsertAfter node, if defined.
+	HierarchyTreeNode* insertAfterNode;
 };
 
 class DeleteSelectedNodeCommand: public UndoableHierarchyTreeNodeCommand

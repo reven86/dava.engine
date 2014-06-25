@@ -211,9 +211,9 @@ bool HierarchyTreePlatformNode::Load(const YamlNode* platform, List<QString>& fi
             fileNames.push_back(screenPath);
 
 			HierarchyTreeScreenNode* screenNode = new HierarchyTreeScreenNode(this, QString::fromStdString(screenName));
-
+			
+            // Do not load screen now,it will be done on selecting it.
             FileSystem::Instance()->LockFile(screenPath.toStdString(), false);
-			result &= screenNode->Load(screenPath);
 			AddTreeNode(screenNode);
 		}
 	}
@@ -343,7 +343,11 @@ bool HierarchyTreePlatformNode::Save(YamlNode* node, bool saveAll)
 			continue;
 		
 		QString screenPath = GetScreenPath(screenNode->GetName());
-		result &= screenNode->Save(screenPath, saveAll);
+        if(screenNode->IsLoaded())
+        {
+            // Save only loaded (and thus may be changed) screens.
+            result &= screenNode->Save(screenPath, saveAll);
+        }
 		
 		screens->AddValueToArray(screenNode->GetName().toStdString());
 	}

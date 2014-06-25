@@ -458,8 +458,8 @@ FilePath EditorLODData::GetDefaultTexturePathForPlaneEntity()
     Entity * entity = lodData[0]->GetEntity();
 
     FilePath entityPath = activeScene->GetScenePath();
-    KeyedArchive * properties = entity->GetCustomProperties();
-    if(properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
+    KeyedArchive * properties = GetCustomPropertiesArchieve(entity);
+    if(properties && properties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
         entityPath = FilePath(properties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, entityPath.GetAbsolutePathname()));
 
     String entityName = entity->GetName().c_str();

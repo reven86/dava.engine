@@ -38,81 +38,84 @@
 //#include "Sprite.h"
 #include "Render/2D/TextBlock.h"
 
-namespace DAVA 
+namespace DAVA
 {
-class UIStaticText : public UIControl 
+class UIStaticText : public UIControl
 {
 protected:
-	virtual ~UIStaticText();
+    virtual ~UIStaticText();
 public:
-	
-	UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false); 
 
-	//if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
-	//if requested size is >0 - text creates int the rect with the requested size
-	//if requested size in <0 - rect creates for the all text size	
-	void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
-	void SetFont(Font * font);
+    UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
+
+    //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
+    //if requested size is >0 - text creates int the rect with the requested size
+    //if requested size in <0 - rect creates for the all text size
+    void SetText(const WideString & string, const Vector2 &requestedTextRectSize = Vector2(0,0));
+    void SetFont(Font * font);
     void SetTextColor(const Color& color);
 
-	void SetShadowColor(const Color &color);
-	void SetShadowOffset(const Vector2 &offset);
+    void SetShadowColor(const Color &color);
+    void SetShadowOffset(const Vector2 &offset);
 
-	void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
-	bool GetMultiline() const;
-	bool GetMultilineBySymbol() const;
+    void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
+    bool GetMultiline() const;
+    bool GetMultilineBySymbol() const;
 
-	void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
+    void SetFittingOption(int32 fittingType);//may be FITTING_DISABLED, FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
     int32 GetFittingOption() const;
-	
-	//for background sprite
-	virtual void SetAlign(int32 _align);
-	virtual int32 GetAlign() const;
 
-	virtual void SetTextAlign(int32 _align);
-	virtual int32 GetTextAlign() const;
+    //for background sprite
+    virtual void SetAlign(int32 _align);
+    virtual int32 GetAlign() const;
 
-	const Vector2 & GetTextSize();
-	
+    virtual void SetTextAlign(int32 _align);
+    virtual int32 GetTextAlign() const;
+
+    const Vector2 & GetTextSize();
+
     void PrepareSprite();
 
-	
-	const WideString & GetText();
+
+    const WideString & GetText();
     const Vector<WideString> & GetMultilineStrings();
-	
-	Font * GetFont() { return textBlock->GetFont(); }
-	
-	virtual UIControl *Clone();
-	virtual void CopyDataFrom(UIControl *srcControl);
-	UIStaticText *CloneStaticText();
-	TextBlock * GetTextBlock() { return textBlock; }
-	const Color &GetTextColor() const;
-	const Color &GetShadowColor() const;
-	const Vector2 &GetShadowOffset() const;
 
-	// Animation methods for Text Color and Shadow Color.
-	virtual Animation * TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
-	virtual Animation * ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
+    Font * GetFont() { return textBlock->GetFont(); }
 
-	const Vector<int32> & GetStringSizes() const;
+    virtual UIControl *Clone();
+    virtual void CopyDataFrom(UIControl *srcControl);
+    UIStaticText *CloneStaticText();
+    TextBlock * GetTextBlock() { return textBlock; }
+    const Color &GetTextColor() const;
+    const Color &GetShadowColor() const;
+    const Vector2 &GetShadowOffset() const;
+
+    UIControlBackground* GetTextBackground() const;
+    UIControlBackground* GetShadowBackground() const;
+
+    // Animation methods for Text Color and Shadow Color.
+    virtual Animation * TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
+    virtual Animation * ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
+
+    const Vector<int32> & GetStringSizes() const;
 
 protected:
     void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
 
-    
+
 protected:
-	Color textColor;
-	TextBlock *textBlock;
-	Vector2 shadowOffset;
-	Color shadowColor;
-	UIControlBackground *shadowBg;
-	UIControlBackground *textBg;
-	
-	virtual void Draw(const UIGeometricData &geometricData);
-	
+    Color textColor;
+    TextBlock *textBlock;
+    Vector2 shadowOffset;
+    Color shadowColor;
+    UIControlBackground *shadowBg;
+    UIControlBackground *textBg;
+
+    virtual void Draw(const UIGeometricData &geometricData);
+
 public:
-	void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
-	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
+    void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
+    virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 };
 };
 

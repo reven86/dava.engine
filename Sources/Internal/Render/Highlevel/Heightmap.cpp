@@ -111,7 +111,7 @@ void Heightmap::SaveToImage(const FilePath & filename)
 
     SafeDeleteArray(unpackedBytes);
     
-    ImageSystem::Instance()->Save(filename, image);
+    ImageSystem::Instance()->Save(filename, image, image->format);
     SafeRelease(image);
 }
   

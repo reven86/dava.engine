@@ -49,6 +49,8 @@ public:
     virtual void Draw(const UIGeometricData &geometricData);
 
     void TestFunction(PerfFuncData * data);
+
+    String GetGpuFamilyString(eGPUFamily gpuFamily);
 };
 
 #endif /* defined(__TEMPLATEPROJECTMACOS__DEVICEINFOTEST__) */

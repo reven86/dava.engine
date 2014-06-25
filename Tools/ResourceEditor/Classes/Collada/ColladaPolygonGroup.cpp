@@ -146,6 +146,11 @@ bool sortFunc(const ColladaVertex & a, const ColladaVertex & b)
 
 ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryPolygons * _polygons, ColladaVertexWeight * vertexWeightArray)
 {
+    bool rebuildTangentSpace = false;
+    #ifdef REBUILD_TANGENT_SPACE_ON_IMPORT
+    rebuildTangentSpace = true;
+    #endif
+
     vertexFormat = EVF_VERTEX | EVF_NORMAL;
 	parentMesh = _parentMesh;
 	polygons = _polygons;
@@ -158,16 +163,20 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryP
 	FCDGeometryPolygonsInput* pTexCoordInput0 = polygons->FindInput(FUDaeGeometryInput::TEXCOORD);
 	FCDGeometryPolygonsInput* pNormalInput = polygons->FindInput(FUDaeGeometryInput::NORMAL);
 	FCDGeometryPolygonsInput* pTangentInput = polygons->FindInput(FUDaeGeometryInput::TEXTANGENT);
+    FCDGeometryPolygonsInput* pBinormalInput = polygons->FindInput(FUDaeGeometryInput::TEXBINORMAL);
 
 	FCDGeometrySource* pVertexSource = polygons->GetParent()->FindSourceByType(FUDaeGeometryInput::POSITION);
 	FCDGeometrySource* pTexCoordSource0 = polygons->GetParent()->FindSourceByType(FUDaeGeometryInput::TEXCOORD);
 	FCDGeometrySource* pNormalSource = polygons->GetParent()->FindSourceByType(FUDaeGeometryInput::NORMAL);
 	FCDGeometrySource* pTangentSource = polygons->GetParent()->FindSourceByType(FUDaeGeometryInput::TEXTANGENT);
+    FCDGeometrySource* pBinormalSource = polygons->GetParent()->FindSourceByType(FUDaeGeometryInput::TEXBINORMAL);
 
     if (pTexCoordInput0 && pTexCoordSource0)
         vertexFormat |= EVF_TEXCOORD0;
     if (pTangentInput && pTangentSource)
         vertexFormat |= EVF_TANGENT;
+    if (pBinormalInput && pBinormalSource)
+        vertexFormat |= EVF_BINORMAL;
     
     FCDGeometryPolygonsInputList texCoordInputList;
     polygons->FindInputs(FUDaeGeometryInput::TEXCOORD, texCoordInputList);
@@ -209,7 +218,8 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryP
     int texIndexCount1 = -1;
 	int normalIndexCount = -1; 
     int tangentIndexCount = -1;
-	uint32 * vertexIndeces = 0, * normalIndeces = 0, * texIndices0 = 0, * texIndices1 = 0, *tangentIndices;
+    int binormalIndexCount = -1;
+	uint32 * vertexIndeces = 0, * normalIndeces = 0, * texIndices0 = 0, * texIndices1 = 0, *tangentIndices = 0, *binormalIndices = 0;
 
 	if (pVertexInput)
 	{
@@ -241,6 +251,12 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryP
 		tangentIndices = (uint32*)pTangentInput->GetIndices();
     }
 
+    if (pBinormalInput)
+    {
+        binormalIndexCount = (int)pBinormalInput->GetIndexCount();
+        binormalIndices = (uint32*)pBinormalInput->GetIndices();
+    }
+
 	triangleCount = vertexIndexCount / 3;
 	unoptimizedVerteces.resize(vertexIndexCount);	
 
@@ -258,6 +274,7 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryP
 		int vertexIndex = vertexIndeces[v];
 		int normalIndex = vertexIndex;
         int tangentIndex = vertexIndex; // seems it's just for some case where we do not have indices ??? 
+        int binormalIndex = vertexIndex; 
 		int tex0Index = vertexIndex;
 		int tex1Index = vertexIndex;
 
@@ -282,6 +299,12 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryP
             tangentIndex = tangentIndices[v];
             p = &pTangentSource->GetData()[tangentIndex * 3];
             tv.tangent.x = p[0]; tv.tangent.y = p[1]; tv.tangent.z = p[2];
+        }
+        if (pBinormalSource)
+        {
+            binormalIndex = binormalIndices[v];
+            p = &pBinormalSource->GetData()[binormalIndex * 3];
+            tv.binormal.x = p[0]; tv.binormal.y = p[1]; tv.binormal.z = p[2];
         }
 
 		if (pTexCoordSource0)
@@ -497,19 +520,37 @@ ColladaPolygonGroup::ColladaPolygonGroup(ColladaMesh * _parentMesh, FCDGeometryP
                 }
             }
             
-            if (pTangentSource)
+            if (!rebuildTangentSpace) //if we are going to rebuild tangent space later - no need to compare here
             {
-                if (!FLOAT_EQUAL_EPS( tvi->tangent.x, tvj->tangent.x, EPS))
+                if (pTangentSource)
                 {
-                    equalIJ = false;
+                    if (!FLOAT_EQUAL_EPS( tvi->tangent.x, tvj->tangent.x, EPS))
+                    {
+                        equalIJ = false;
+                    }
+                    if (!FLOAT_EQUAL_EPS( tvi->tangent.y, tvj->tangent.y, EPS))
+                    {
+                        equalIJ = false;
+                    }
+                    if (!FLOAT_EQUAL_EPS( tvi->tangent.z, tvj->tangent.z, EPS))
+                    {
+                        equalIJ = false;
+                    }
                 }
-                if (!FLOAT_EQUAL_EPS( tvi->tangent.y, tvj->tangent.y, EPS))
+                if (pBinormalSource)
                 {
-                    equalIJ = false;
-                }
-                if (!FLOAT_EQUAL_EPS( tvi->tangent.z, tvj->tangent.z, EPS))
-                {
-                    equalIJ = false;
+                    if (!FLOAT_EQUAL_EPS( tvi->binormal.x, tvj->binormal.x, EPS))
+                    {
+                        equalIJ = false;
+                    }
+                    if (!FLOAT_EQUAL_EPS( tvi->binormal.y, tvj->binormal.y, EPS))
+                    {
+                        equalIJ = false;
+                    }
+                    if (!FLOAT_EQUAL_EPS( tvi->binormal.z, tvj->binormal.z, EPS))
+                    {
+                        equalIJ = false;
+                    }
                 }
             }
 

@@ -51,9 +51,18 @@ using namespace DAVA;
 
 #define PNG_DEBUG 3
 
-
 namespace
 {
+    struct	PngImageRawData
+    {
+        File * file;
+    };
+    
+    void PngImageRead( png_structp pngPtr, png_bytep data, png_size_t size )
+    {
+        PngImageRawData * self = (PngImageRawData*)png_get_io_ptr( pngPtr );
+        self->file->Read( data, (uint32)size );
+    }
     
     void ReleaseWriteData(png_struct *& png_ptr, png_info *& info_ptr, unsigned char**& row_pointers, FILE *& fp, Image*& convertedImage)
     {
@@ -62,8 +71,11 @@ namespace
         png_destroy_write_struct(&png_ptr, &info_ptr);
         png_ptr = 0;
         info_ptr = 0;
-        fclose(fp);
-        fp = NULL;
+        if ( fp )
+        {
+            fclose( fp );
+            fp = NULL;
+        }
         SafeRelease(convertedImage);
     }
 
@@ -80,38 +92,6 @@ void abort_(const char * s, ...)
 	abort();
 }
 
-//int x, y;
-
-void convert_rawpp_to_bytestream(int32 width, int32 height, png_bytepp row_pointers, uint8 * data)
-{
-	for (int y = 0; y < height; y++) 
-	{
-		png_byte* row = row_pointers[y];
-		memcpy(data, row, width * 4);
-		data += width * 4;
-	}
-}
-
-void convert_bytestream_to_rawpp(int32 width, int32 height, uint8 * data, png_bytepp row_pointers)
-{
-	for (int y = 0; y < height; y++)
-	{
-		png_byte* row = row_pointers[y];
-		memcpy(row, data, width * 4);
-		data += width * 4;
-	}
-}
-
-struct	PngImageRawData
-{
-	File * file;
-};
-
-static void	PngImageRead(png_structp pngPtr, png_bytep data, png_size_t size)
-{
-	PngImageRawData * self = (PngImageRawData*)png_get_io_ptr(pngPtr);
-	self->file->Read(data, (uint32)size);
-}
 
 LibPngWrapper::LibPngWrapper()
 {
@@ -144,8 +124,10 @@ eErrorCode LibPngWrapper::ReadFile(File *infile, Vector<Image *> &imageSet, int3
     }
 }
 
-int LibPngWrapper::ReadPngFile(File *infile, Image * image)
+int LibPngWrapper::ReadPngFile(File *infile, Image * image, PixelFormat targetFormat/* = FORMAT_INVALID*/)
 {
+	DVASSERT(targetFormat == FORMAT_INVALID || targetFormat == FORMAT_RGBA8888);
+
 	png_structp png_ptr;
 	png_infop info_ptr;
 	
@@ -210,11 +192,19 @@ int LibPngWrapper::ReadPngFile(File *infile, Image * image)
 	if (color_type == PNG_COLOR_TYPE_GRAY ||
 		color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
     {
-        image->format = (bit_depth == 16) ? FORMAT_A16 : FORMAT_A8;
-        if(color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-        {
-            png_set_strip_alpha(png_ptr);
-        }
+		if(targetFormat == FORMAT_RGBA8888)
+		{
+			png_set_gray_to_rgb(png_ptr);
+			png_set_filler(png_ptr, 0xFFFF, PNG_FILLER_AFTER);
+		}
+		else
+		{
+			image->format = (bit_depth == 16) ? FORMAT_A16 : FORMAT_A8;
+			if(color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+			{
+				png_set_strip_alpha(png_ptr);
+			}
+		}
 	}
 	else if(color_type == PNG_COLOR_TYPE_PALETTE)
 	{

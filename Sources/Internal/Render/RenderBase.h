@@ -173,6 +173,7 @@ enum PixelFormat
     FORMAT_CLOSEST = 255 // fit PixelFormat at 8bits (PixelFormat format:8;)
 };
     
+// Please update JniDeviceInfo.java if change eGPUFamily enum
 enum eGPUFamily
 {
     GPU_UNKNOWN = -1,

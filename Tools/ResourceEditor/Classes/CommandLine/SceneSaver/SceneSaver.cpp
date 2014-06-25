@@ -266,7 +266,7 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 
 void SceneSaver::CopyReferencedObject( Entity *node)
 {
-	KeyedArchive *customProperties = node->GetCustomProperties();
+	KeyedArchive *customProperties = GetCustomPropertiesArchieve(node);
 	if(customProperties && customProperties->IsKeyExists(ResourceEditor::EDITOR_REFERENCE_TO_OWNER))
 	{
 		String path = customProperties->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER);
@@ -330,7 +330,7 @@ void SceneSaver::CopyCustomColorTexture(Scene *scene, const FilePath & sceneFold
 	Entity *land = FindLandscapeEntity(scene);
 	if(!land) return;
 
-	KeyedArchive* customProps = land->GetCustomProperties();
+	KeyedArchive* customProps = GetCustomPropertiesArchieve(land);
 	if(!customProps) return;
 
 	String pathname = customProps->GetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP);

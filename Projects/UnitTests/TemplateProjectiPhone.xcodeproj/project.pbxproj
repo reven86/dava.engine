@@ -25,6 +25,7 @@
 		4998996B18B238F7007A8DF2 /* RectSpriteTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4998996918B238F7007A8DF2 /* RectSpriteTest.cpp */; };
 		49A0DB291796F8050000970C /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49A0DB281796F8050000970C /* MessageUI.framework */; };
 		49C4331F1675F1A6000EA877 /* DXTTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C4331D1675F1A6000EA877 /* DXTTest.cpp */; };
+		5035302F194A4026006B66DB /* SceneSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5035302D194A4026006B66DB /* SceneSystemTest.cpp */; };
 		5C8B42A61589D866001B2597 /* SampleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C8B42A41589D866001B2597 /* SampleTest.cpp */; };
 		5C8D42441580E4D700441032 /* BaseScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C8D42421580E4D700441032 /* BaseScreen.cpp */; };
 		5CA2462E158F472100465879 /* EntityTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA2462C158F472100465879 /* EntityTest.cpp */; };
@@ -126,6 +127,8 @@
 		49A0DB281796F8050000970C /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		49C4331D1675F1A6000EA877 /* DXTTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DXTTest.cpp; sourceTree = "<group>"; };
 		49C4331E1675F1A6000EA877 /* DXTTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DXTTest.h; sourceTree = "<group>"; };
+		5035302D194A4026006B66DB /* SceneSystemTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SceneSystemTest.cpp; sourceTree = "<group>"; };
+		5035302E194A4026006B66DB /* SceneSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SceneSystemTest.h; sourceTree = "<group>"; };
 		5C8B42A41589D866001B2597 /* SampleTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SampleTest.cpp; sourceTree = "<group>"; };
 		5C8B42A51589D866001B2597 /* SampleTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SampleTest.h; sourceTree = "<group>"; };
 		5C8D42421580E4D700441032 /* BaseScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BaseScreen.cpp; sourceTree = "<group>"; };
@@ -327,6 +330,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				5035302D194A4026006B66DB /* SceneSystemTest.cpp */,
+				5035302E194A4026006B66DB /* SceneSystemTest.h */,
 				17DD1614193F506500B73BEE /* ParseTextTest.cpp */,
 				17DD1615193F506500B73BEE /* ParseTextTest.h */,
 				E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */,
@@ -577,6 +582,7 @@
 				495B66FF1796FA7F0017D8DD /* TransparentWebViewTest.cpp in Sources */,
 				4998996B18B238F7007A8DF2 /* RectSpriteTest.cpp in Sources */,
 				E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */,
+				5035302F194A4026006B66DB /* SceneSystemTest.cpp in Sources */,
 				74338640179D18CF0014FBD3 /* UIListTest.cpp in Sources */,
 				74338641179D18CF0014FBD3 /* UIScrollViewTest.cpp in Sources */,
 				7497447517B3D61800282DAA /* AlignTest.cpp in Sources */,

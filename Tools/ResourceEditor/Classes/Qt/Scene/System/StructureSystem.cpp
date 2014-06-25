@@ -269,10 +269,10 @@ void StructureSystem::ReloadEntities(const EntityGroup& entityGroup, bool saveLi
 
 		for(int i = 0; i < (int)entityGroup.Size(); ++i)
 		{
-			DAVA::Entity *entity = entityGroup.GetEntity(i);
-			if(NULL != entity)
+            DAVA::KeyedArchive * props = GetCustomPropertiesArchieve(entityGroup.GetEntity(i));
+			if(NULL != props)
 			{
-				DAVA::FilePath pathToReload(entity->GetCustomProperties()->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
+				DAVA::FilePath pathToReload(props->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER));
 				if(!pathToReload.IsEmpty())
 				{
 					refsToReload.insert(pathToReload);
@@ -373,7 +373,7 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 		{
 			DAVA::Vector3 entityPos = pos;
 
-			KeyedArchive *customProps = loadedEntity->GetCustomProperties();
+			KeyedArchive *customProps = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
             customProps->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, newModelPath.GetAbsolutePathname());
 
 			if(entityPos.IsZero() && FindLandscape(loadedEntity) == NULL)
@@ -528,7 +528,8 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 				loadedEntity->SetSolid(true);
 				loadedEntity->Retain();
 
-				loadedEntity->GetCustomProperties()->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
+                KeyedArchive *props = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
+				props->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
                 
                 CheckAndMarkSolid(loadedEntity);
 			}
@@ -712,18 +713,20 @@ void StructureSystem::SearchEntityByRef(DAVA::Entity *parent, const DAVA::FilePa
 		for(int i = 0; i < parent->GetChildrenCount(); ++i)
 		{
 			DAVA::Entity *entity = parent->GetChild(i);
-			DAVA::KeyedArchive *arch = entity->GetCustomProperties();
+			DAVA::KeyedArchive *arch = GetCustomPropertiesArchieve(entity);
+            
+            if(arch)
+            {
+                // if this entity has searched reference - add it to the set
+                if(DAVA::FilePath(arch->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, "")) == refToOwner)
+                {
+                    result.insert(entity);
+                    continue;
+                }
+            }
 
-			// if this entity has searched reference - add it to the set
-			if(DAVA::FilePath(arch->GetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, "")) == refToOwner)
-			{
-				result.insert(entity);
-			}
-			// else continue searching in child entities
-			else
-			{
-				SearchEntityByRef(entity, refToOwner, result);
-			}
+            // else continue searching in child entities
+            SearchEntityByRef(entity, refToOwner, result);
 		}
 	}
 }

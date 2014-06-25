@@ -105,8 +105,7 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 		DrawObjectBoxesByType(entity);
 		DrawUserNode(entity);
 		DrawLightNode(entity);
-		DrawHangingObjects(entity);
-        DrawStaticOcclusionComponent(entity);
+		DrawHangingObjects(entity);        
 		DrawSwitchesWithDifferentLods(entity);
 		DrawWindNode(entity);
         DrawSwitchesWithDifferentLods(entity);
@@ -126,9 +125,9 @@ void DebugDrawSystem::Draw(DAVA::Entity *entity)
 
 void DebugDrawSystem::DrawObjectBoxesByType(DAVA::Entity *entity)
 {
-	KeyedArchive * customProperties = entity->GetCustomProperties();
-    bool drawBox = false;
+	bool drawBox = false;
 
+	KeyedArchive * customProperties = GetCustomPropertiesArchieve(entity);
     if ( customProperties )
     {
         if ( customProperties->IsKeyExists( "CollisionType" ) )

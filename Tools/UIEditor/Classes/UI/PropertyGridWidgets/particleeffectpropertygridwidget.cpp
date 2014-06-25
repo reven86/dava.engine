@@ -57,6 +57,8 @@ void ParticleEffectPropertyGridWidget::Cleanup()
     UnregisterPushButtonWidgetForInvokeMethod(ui->startButton);
     UnregisterPushButtonWidgetForInvokeMethod(ui->stopButton);
     UnregisterPushButtonWidgetForInvokeMethod(ui->reloadButton);
+    UnregisterPushButtonWidgetForInvokeMethod(ui->pauseButton);
+    UnregisterPushButtonWidgetForInvokeMethod(ui->restartButton);
 
     disconnect(ui->selectEffectPathButton, SIGNAL(clicked()), this, SLOT(OnSelectEffectPathButtonClicked()));
     BasePropertyGridWidget::Cleanup();
@@ -89,6 +91,8 @@ void ParticleEffectPropertyGridWidget::UpdateButtons()
     ui->startButton->setEnabled(enableButtons);
     ui->stopButton->setEnabled(enableButtons);
     ui->reloadButton->setEnabled(enableButtons);
+    ui->pauseButton->setEnabled(enableButtons);
+    ui->restartButton->setEnabled(enableButtons);
 }
 
 void ParticleEffectPropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox *doubleSpinBoxWidget,

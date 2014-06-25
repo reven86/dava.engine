@@ -29,9 +29,14 @@
 
 
 #include "DVAssertMessage.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+
 #include "DVAssertMessageAndroid.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "ExternC/AndroidLayer.h"
+
+#include "AndroidCrashReport.h"
 
 using namespace DAVA;
 
@@ -65,4 +70,8 @@ void DVAssertMessage::InnerShow(eModalType modalType, const char* message)
 {
 	JniDVAssertMessage msg;
 	msg.ShowMessage(message);
+
+	AndroidCrashReport::ThrowExeption(message);
 }
+
+#endif

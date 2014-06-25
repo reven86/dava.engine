@@ -44,7 +44,7 @@ namespace DAVA
 Shader * RenderManager::FLAT_COLOR = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR = 0;
 Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_ALPHA_TEST = 0;
-Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = NULL;
+Shader * RenderManager::TEXTURE_MUL_FLAT_COLOR_IMAGE_A8 = 0;
 
 AutobindVariableData RenderManager::dynamicParameters[DYNAMIC_PARAMETERS_COUNT];
 uint32  RenderManager::dynamicParamersRequireUpdate;

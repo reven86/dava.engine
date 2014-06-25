@@ -123,13 +123,22 @@ public:
 	Scene(uint32 systemsMask = SCENE_SYSTEM_ALL_MASK);
 	
     /**
-        \brief Function to register node in scene. This function is called when you add node to the node that already in the scene. 
+        \brief Function to register entity in scene. This function is called when you add entity to scene.
      */
-    virtual void    RegisterNode(Entity * entity);
-    virtual void    UnregisterNode(Entity * entity);
+    void    RegisterEntity(Entity * entity);
+    /**
+        \brief Function to unregister entity from scene. This function is called when you remove entity from scene.
+     */
+    void    UnregisterEntity(Entity * entity);
     
-    virtual void    AddComponent(Entity * entity, Component * component);
-    virtual void    RemoveComponent(Entity * entity, Component * component);
+    /**
+        \brief Function to register component in scene. This function is called when you add any component to any entity in scene.
+     */
+    void    RegisterComponent(Entity * entity, Component * component);
+    /**
+        \brief Function to unregister component from scene. This function is called when you remove any component from any entity in scene.
+     */
+    void    UnregisterComponent(Entity * entity, Component * component);
     
     virtual void    AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool needProcess = false, SceneSystem * insertBeforeSceneForProcess = NULL);
     virtual void    RemoveSystem(SceneSystem * sceneSystem);

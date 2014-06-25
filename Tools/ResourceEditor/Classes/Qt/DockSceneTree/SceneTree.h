@@ -140,7 +140,7 @@ protected:
 	QString GetParticlesConfigPath();
 	
 	// Perform save for selected Emitters.
-	void PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName, bool updateEmitterWidget);
+	void PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName);
 
 	// Cleanup the selected Particle Editor items.
 	void CleanupParticleEditorSelectedItems();

@@ -114,12 +114,14 @@ public:
 
 	FastName name;
 
-	RefPtr< PropertyLine<Vector3> > emissionVector;
-    RefPtr< PropertyLine<float32> > emissionAngle;
+	RefPtr< PropertyLine<Vector3> > emissionVector;    
 	RefPtr< PropertyLine<float32> > emissionRange;
 	RefPtr< PropertyLine<float32> > radius;
 	RefPtr< PropertyLine<Color> > colorOverLife;
 	RefPtr< PropertyLine<Vector3> > size;	    
+
+    RefPtr< PropertyLine<float32> > emissionAngle;
+    RefPtr< PropertyLine<float32> > emissionAngleVariation;
 
 protected:
     virtual ~ParticleEmitter();

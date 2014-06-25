@@ -49,6 +49,7 @@ public:
 	String GetUDID();
 	String GetName();
 	int GetZBufferSize();
+	int GetGPUFamily();
 
 protected:
 	virtual jclass GetJavaClass() const;

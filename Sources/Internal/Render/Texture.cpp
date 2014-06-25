@@ -251,6 +251,9 @@ void Texture::ReleaseTextureData()
     id = 0;
 	fboID = -1;
 	rboID = -1;
+#if defined(__DAVAENGINE_ANDROID__)
+    stencilRboID = -1;
+#endif
     isRenderTarget = false;
 }
 

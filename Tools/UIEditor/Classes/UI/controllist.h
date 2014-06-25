@@ -41,6 +41,8 @@ public:
 	~ControlMimeData();
 
 	QString GetControlName() const {return controlName;};
+    
+    virtual bool hasFormat ( const QString & mimeType ) const;
 	
 private:
 	QString controlName;

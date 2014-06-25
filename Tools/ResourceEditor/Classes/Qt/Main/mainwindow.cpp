@@ -112,6 +112,9 @@
 #include "Tools/DeveloperTools/DeveloperTools.h"
 #include "Render/Highlevel/VegetationRenderObject.h"
 
+#include "Classes/Qt/BeastDialog/BeastDialog.h"
+
+
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
@@ -2043,15 +2046,23 @@ void QtMainWindow::OnBeastAndSave()
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
 
-    int32 ret = ShowQuestion("Beast", "The operation will take a lot of time. After lightmaps are generated, scene will be saved. Do you want to proceed?", MB_FLAG_YES | MB_FLAG_NO, MB_FLAG_NO);
-    if(ret == MB_FLAG_NO) return;
+    if (!scene->IsLoaded() || scene->IsChanged())
+    {
+        if (!SaveScene(scene))
+            return;
+    }
+
+    BeastDialog dlg(this);
+    dlg.SetScene(scene);
+    const bool run = dlg.Exec();
+    if ( !run ) return;
 
 	if (!SaveTilemask(false))
 	{
 		return;
 	}
 
-	RunBeast();
+    RunBeast(dlg.GetPath());
 	SaveScene(scene);
 
     scene->ClearAllCommands();
@@ -2103,14 +2114,15 @@ void QtMainWindow::OnCameraLookFromTop()
 	}
 }
 
-void QtMainWindow::RunBeast()
+void QtMainWindow::RunBeast(const QString& outputPath)
 {
 #if defined (__DAVAENGINE_BEAST__)
 
 	SceneEditor2* scene = GetCurrentScene();
 	if(!scene) return;
 
-	scene->Exec(new BeastAction(scene, beastWaitDialog));
+    const DAVA::FilePath path = outputPath.toStdString();
+    scene->Exec(new BeastAction(scene, path, beastWaitDialog));
 
 	OnReloadTextures();
 
@@ -2233,7 +2245,8 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	{
 		return false;
 	}
-	KeyedArchive* customProps = landscape->GetCustomProperties();
+
+	KeyedArchive* customProps = GetOrCreateCustomProperties(landscape)->GetArchive();
 	if(NULL == customProps)
 	{
 		return false;
@@ -2241,7 +2254,8 @@ bool QtMainWindow::SelectCustomColorsTexturePath()
 	
 	String pathToSave = selectedPathname.GetRelativePathname(ProjectManager::Instance()->CurProjectPath().GetAbsolutePathname());
 	customProps->SetString(ResourceEditor::CUSTOM_COLOR_TEXTURE_PROP,pathToSave);
-	return true;
+	
+    return true;
 }
 
 void QtMainWindow::OnHeightmapEditor()

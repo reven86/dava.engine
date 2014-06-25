@@ -45,8 +45,17 @@ UndoRedoController::~UndoRedoController()
 
 void UndoRedoController::Cleanup()
 {
-	CleanupStack(undoStack);
-	CleanupStack(redoStack);
+    for (Map<HierarchyTreeNode::HIERARCHYTREENODEID,Deque<BaseCommand*> >::iterator iter = undoStacks.begin(); iter!=undoStacks.end(); ++iter)
+    {
+        CleanupStack(iter->second);
+    }
+    undoStacks.clear();
+    for (Map<HierarchyTreeNode::HIERARCHYTREENODEID,Deque<BaseCommand*> >::iterator iter = redoStacks.begin(); iter!=redoStacks.end(); ++iter)
+    {
+        CleanupStack(iter->second);
+    }
+    redoStacks.clear();
+
 }
 
 void UndoRedoController::CleanupStack(Deque<BaseCommand*>& stackToCleanup)
@@ -66,12 +75,18 @@ void UndoRedoController::AddCommandToUndoStack(BaseCommand* command)
 	{
 		return;
 	}
-
+    
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
+    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+    
 	SafeRetain(command);
 	AddCommandToStack(undoStack, command);
 	
 	// Adding the Undo command should cleanup the Redo stack.
 	CleanupStack(redoStack);
+    undoStacks[idScreen] = undoStack;
+    redoStacks[idScreen] = redoStack;
 }
 
 bool UndoRedoController::Undo()
@@ -81,12 +96,20 @@ bool UndoRedoController::Undo()
 		return false;
 	}
 	
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
+    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+
+    
 	BaseCommand* command = undoStack.front();
 	AddCommandToStack(redoStack, command);
 	undoStack.pop_front();
 
 	command->ActivateCommandScreen();
 	command->Rollback();
+    
+    undoStacks[idScreen] = undoStack;
+    redoStacks[idScreen] = redoStack;
 	return true;
 }
 
@@ -98,23 +121,36 @@ bool UndoRedoController::Redo()
 		return false;
 	}
 	
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
+    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+
+    
 	BaseCommand* command = redoStack.front();
 	AddCommandToStack(undoStack, command);
 	redoStack.pop_front();
 	
 	command->ActivateCommandScreen();
 	command->Execute();
+    
+    undoStacks[idScreen] = undoStack;
+    redoStacks[idScreen] = redoStack;
 	return true;
 }
 
 // Can we perform Undo/Redo?
 bool UndoRedoController::CanUndo()
 {
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
+    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
 	return !undoStack.empty();
 }
 
 bool UndoRedoController::CanRedo()
 {
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
+    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+
 	return !redoStack.empty();
 }
 
@@ -131,6 +167,10 @@ void UndoRedoController::AddCommandToStack(Deque<BaseCommand*>& stackToAdd, Base
 
 void UndoRedoController::IncrementUnsavedChanges(bool forUndoStack)
 {
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
+    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+
 	Deque<BaseCommand*>& activeStack = forUndoStack ? undoStack : redoStack;
 	if (activeStack.empty())
 	{
@@ -138,10 +178,21 @@ void UndoRedoController::IncrementUnsavedChanges(bool forUndoStack)
 	}
 	
 	activeStack.front()->IncrementUnsavedChanges();
+    if (forUndoStack)
+    {
+        undoStacks[idScreen] = activeStack;
+    } else
+    {
+        redoStacks[idScreen] = activeStack;
+    }
 }
 
 void UndoRedoController::DecrementUnsavedChanges(bool forUndoStack)
 {
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = GetCurrentScreenId();
+    Deque<BaseCommand*> undoStack = undoStacks[idScreen];
+    Deque<BaseCommand*> redoStack = redoStacks[idScreen];
+
 	Deque<BaseCommand*>& activeStack = forUndoStack ? undoStack : redoStack;
 	if (activeStack.empty())
 	{
@@ -149,6 +200,24 @@ void UndoRedoController::DecrementUnsavedChanges(bool forUndoStack)
 	}
 	
 	activeStack.front()->DecrementUnsavedChanges();
+    if (forUndoStack)
+    {
+        undoStacks[idScreen] = activeStack;
+    } else
+    {
+        redoStacks[idScreen] = activeStack;
+    }
+}
+
+HierarchyTreeNode::HIERARCHYTREENODEID  UndoRedoController::GetCurrentScreenId()
+{
+    HierarchyTreeNode::HIERARCHYTREENODEID idScreen = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (NULL != activeScreen)
+    {
+        idScreen = activeScreen->GetId();
+    }
+    return idScreen;
 }
 
 void UndoRedoController::ResetUnsavedChanges()

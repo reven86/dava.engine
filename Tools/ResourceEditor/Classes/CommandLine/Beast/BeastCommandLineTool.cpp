@@ -49,13 +49,13 @@ BeastCommandLineTool::BeastCommandLineTool()
 void BeastCommandLineTool::PrintUsage()
 {
     printf("\n");
-    printf("-beast [-file [file]]\n");
-    printf("\twill beast scene file\n");
-    printf("\t-file - full pathname of scene for beasting \n");
-    
+    printf("-beast -file <file> -output <output_path>\n");
+    printf("\twill beast scene file and place output to output_path\n");
+    printf("\t-file - full pathname of scene for beasting\n");
+    printf("\t-output - full path for output of beasting\n");
     printf("\n");
     printf("Samples:\n");
-    printf("-beast -file /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/karelia.sc2\n");
+    printf("-beast -file /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/karelia.sc2 -output /Projects/WOT/wot.blitz/DataSource/3d/Maps/karelia/lightmap\n");
 
 }
 
@@ -67,12 +67,13 @@ DAVA::String BeastCommandLineTool::GetCommandLineKey()
 bool BeastCommandLineTool::InitializeFromCommandLine()
 {
     scenePathname = CommandLineParser::GetCommandParam(String("-file"));
-    if(scenePathname.IsEmpty())
+    outputPath = CommandLineParser::GetCommandParam( String( "-output" ) );
+    if (scenePathname.IsEmpty() || outputPath.IsEmpty())
     {
         errors.insert(String("Incorrect params for beasting of the scene"));
         return false;
     }
-    
+
     if(!scenePathname.IsEqualToExtension(".sc2"))
     {
         errors.insert(String("Wrong pathname. Need path ot *.sc2"));
@@ -89,7 +90,7 @@ void BeastCommandLineTool::Process()
 	{
 		//scene->Update(0.1f);
 
-		scene->Exec(new BeastAction(scene, NULL));
+        scene->Exec(new BeastAction( scene, outputPath, NULL ));
 
 		scene->Save();
 	}

@@ -89,9 +89,11 @@ public:
 	void InitDefaultFontFromPath(const DefaultFontPath& defaultFontPath);
 	QString GetDefaultFontName() const;
     
+    void SetProjectDataPath(const FilePath& path);
     void SetDefaultFontsPath(const FilePath& path);
     FilePath GetLocalizedFontsPath(const String &locale);
     const FilePath& GetDefaultFontsPath();
+    String GetDefaultFontsFrameworkPath();
     
 signals:
     void FontLoaded();
@@ -110,6 +112,7 @@ private:
 	Font* defaultFont;
 	Font* baseFont;
     
+    FilePath projectDataPath;
     FilePath defaultFontsPath;
     
     Vector<String> locales;

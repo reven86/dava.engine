@@ -89,7 +89,7 @@ NMaterial *ParticleEffectSystem::GetMaterial(Texture *texture, bool enableFog, b
 }
 
 
-ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest)	
+ParticleEffectSystem::ParticleEffectSystem(Scene * scene, bool _forceDisableDepthTest) :	SceneSystem(scene), forceDisableDepthTest(_forceDisableDepthTest), allowLodDegrade(false)	
 {	
     if (scene) //for 2d particles there would be no scene
     {
@@ -219,6 +219,7 @@ void ParticleEffectSystem::ImmediateEvent(Entity * entity, uint32 event)
 		if (effect->state == ParticleEffectComponent::STATE_STOPPED)
             AddToActive(effect);            
         effect->state = ParticleEffectComponent::STATE_STARTING;                    
+        effect->currRepeatsCont = 0;
     }
 	else if (event == EventSystem::STOP_PARTICLE_EFFECT)
 		RemoveFromActive(effect);
@@ -242,8 +243,10 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 		ParticleEffectComponent * effect = activeComponents[i];
         if (effect->activeLodLevel!=effect->desiredLodLevel)
             UpdateActiveLod(effect);
-        if (effect->state == ParticleEffectComponent::STATE_STARTING)        
+        if (effect->state == ParticleEffectComponent::STATE_STARTING)  
+        {            
             RunEffect(effect);
+        }
         
 		if (effect->isPaused) 
 			continue;
@@ -253,7 +256,7 @@ void ParticleEffectSystem::Process(float32 timeElapsed)
 		if (effectEnded)
 		{
 			effect->currRepeatsCont++;
-			if ((effect->repeatsCount==0)||(effect->currRepeatsCont<effect->repeatsCount)) //0 means infinite repeats
+			if (((effect->repeatsCount==0)||(effect->currRepeatsCont<effect->repeatsCount))&&(effect->state != ParticleEffectComponent::STATE_STOPPING)) //0 means infinite repeats
 			{
 				if (effect->clearOnRestart)
 					effect->ClearCurrentGroups();
@@ -299,7 +302,7 @@ void ParticleEffectSystem::UpdateActiveLod(ParticleEffectComponent *effect)
             group.visibleLod = group.layer->IsLodActive(effect->activeLodLevel);
     }    
 
-    if (effect->activeLodLevel == 0) //degrade existing groups if needed
+    if (allowLodDegrade && (effect->activeLodLevel == 0)) //degrade existing groups if needed
     {
         for (List<ParticleGroup>::iterator it = effect->effectData.groups.begin(), e=effect->effectData.groups.end(); it!=e;++it)
         {
@@ -639,7 +642,15 @@ void ParticleEffectSystem::PrepareEmitterParameters(Particle * particle, Particl
 		float32 curRadius = 1.0f;
 		if (group.emitter->radius)		
 			curRadius = group.emitter->radius->GetValue(group.time);		
-		float32 curAngle = PI_2 * (float32)Random::Instance()->RandFloat();
+
+        float32 angleBase = 0;
+        float32 angleVariation = PI_2;
+        if (group.emitter->emissionAngle)
+            angleBase = DegToRad(group.emitter->emissionAngle->GetValue(group.time));
+        if (group.emitter->emissionAngleVariation)
+            angleVariation = DegToRad(group.emitter->emissionAngleVariation->GetValue(group.time));
+
+		float32 curAngle = angleBase + angleVariation * (float32)Random::Instance()->RandFloat();
 		if (group.emitter->emitterType == ParticleEmitter::EMITTER_ONCIRCLE_VOLUME)		
 			curRadius *= (float32)Random::Instance()->RandFloat();		
 		float sinAngle = 0.0f;

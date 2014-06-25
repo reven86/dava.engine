@@ -68,9 +68,9 @@ void ParticleEmitter::Cleanup(bool needCleanupLayers)
 	lifeTime = PARTICLE_EMITTER_DEFAULT_LIFE_TIME;
 	emitterType = EMITTER_POINT;
 	emissionVector.Set(NULL);
-	emissionVector = RefPtr<PropertyLineValue<Vector3> >(new PropertyLineValue<Vector3>(Vector3(1.0f, 0.0f, 0.0f)));
-	emissionAngle.Set(NULL);
-	emissionAngle = RefPtr<PropertyLineValue<float32> >(new PropertyLineValue<float32>(0.0f));
+	emissionVector = RefPtr<PropertyLineValue<Vector3> >(new PropertyLineValue<Vector3>(Vector3(1.0f, 0.0f, 0.0f)));	
+	emissionAngle = NULL;
+    emissionAngleVariation = NULL;
 	emissionRange.Set(NULL);
 	emissionRange = RefPtr<PropertyLineValue<float32> >(new PropertyLineValue<float32>(0.0f));
 	size = RefPtr<PropertyLineValue<Vector3> >(0);
@@ -112,6 +112,11 @@ ParticleEmitter * ParticleEmitter::Clone()
 		clonedEmitter->emissionAngle = this->emissionAngle->Clone();
 		clonedEmitter->emissionAngle->Release();
 	}
+    if (this->emissionAngleVariation)
+    {
+        clonedEmitter->emissionAngleVariation = this->emissionAngleVariation->Clone();
+        clonedEmitter->emissionAngleVariation->Release();
+    }
 	if (this->emissionRange)
 	{
 		clonedEmitter->emissionRange = this->emissionRange->Clone();
@@ -314,6 +319,8 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
 			name = FastName(nameNode->AsString().c_str());
 		if (emitterNode->Get("emissionAngle"))
 			emissionAngle = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("emissionAngle"));
+        if (emitterNode->Get("emissionAngleVariation"))
+            emissionAngleVariation = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("emissionAngleVariation"));
         
 		if (emitterNode->Get("emissionVector"))
 			emissionVector = PropertyLineYamlReader::CreatePropertyLine<Vector3>(emitterNode->Get("emissionVector"));
@@ -377,7 +384,7 @@ void ParticleEmitter::LoadFromYaml(const FilePath & filename, bool preserveInher
             if (depthNode)
                 _size.y = depthNode->AsFloat();
             
-            size = new PropertyLineValue<Vector3>(_size);
+            size.Set(new PropertyLineValue<Vector3>(_size));
         }        	
 
 
@@ -421,6 +428,7 @@ void ParticleEmitter::SaveToYaml(const FilePath & filename)
     
     // Write the property lines.
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "emissionAngle", this->emissionAngle);
+    PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "emissionAngleVariation", this->emissionAngleVariation);
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "emissionRange", this->emissionRange);
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(emitterYamlNode, "emissionVector", this->emissionVector);
 

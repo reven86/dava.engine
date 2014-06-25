@@ -22,6 +22,7 @@
 		49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */; };
 		49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */; };
 		49C432081675E370000EA877 /* DXTTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C432061675E370000EA877 /* DXTTest.cpp */; };
+		50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50353034194A46C4006B66DB /* SceneSystemTest.cpp */; };
 		5C44737715B5A0FD00028948 /* SoundTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C44737515B5A0FD00028948 /* SoundTest.cpp */; };
 		5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CA2461B158F46D600465879 /* EntityTest.cpp */; };
 		5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CDC24FA156CC72400742348 /* SampleTest.cpp */; };
@@ -141,6 +142,8 @@
 		49C2B8F716F75A39006E24CB /* DeviceInfoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceInfoTest.h; path = Classes/DeviceInfoTest.h; sourceTree = "<group>"; };
 		49C432061675E370000EA877 /* DXTTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DXTTest.cpp; path = Classes/DXTTest.cpp; sourceTree = "<group>"; };
 		49C432071675E370000EA877 /* DXTTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DXTTest.h; path = Classes/DXTTest.h; sourceTree = "<group>"; };
+		50353033194A46C4006B66DB /* SceneSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SceneSystemTest.h; path = Classes/SceneSystemTest.h; sourceTree = "<group>"; };
+		50353034194A46C4006B66DB /* SceneSystemTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SceneSystemTest.cpp; path = Classes/SceneSystemTest.cpp; sourceTree = "<group>"; };
 		5C44737515B5A0FD00028948 /* SoundTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SoundTest.cpp; path = Classes/SoundTest.cpp; sourceTree = "<group>"; };
 		5C44737615B5A0FD00028948 /* SoundTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SoundTest.h; path = Classes/SoundTest.h; sourceTree = "<group>"; };
 		5C6EF11B15751E1B001E45AD /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -463,6 +466,8 @@
 		5CA2461A158F46CD00465879 /* EntityTest */ = {
 			isa = PBXGroup;
 			children = (
+				50353033194A46C4006B66DB /* SceneSystemTest.h */,
+				50353034194A46C4006B66DB /* SceneSystemTest.cpp */,
 				5CA2461B158F46D600465879 /* EntityTest.cpp */,
 				5CA2461C158F46D600465879 /* EntityTest.h */,
 			);
@@ -842,6 +847,8 @@
 				FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */,
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
+				50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */,
+				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
 				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,

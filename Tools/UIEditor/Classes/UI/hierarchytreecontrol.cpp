@@ -222,32 +222,25 @@ void HierarchyTreeControl::dropEvent(QDropEvent *event)
 
 void HierarchyTreeControl::HandleDropControlMimeData(QDropEvent *event, const ControlMimeData* mimeData)
 {
-	// Appropriate item is already selected, just create and execute appropriate command.
-	HierarchyTreeNode* parentNode = NULL;
-	const HierarchyTreeController::SELECTEDCONTROLNODES& selectedNodes = HierarchyTreeController::Instance()->GetActiveControlNodes();
-	if (selectedNodes.empty())
-	{
-		// Check whether the cursor in on Screen node.
-		QVariant data = itemAt(event->pos())->data(ITEM_ID);
-		HierarchyTreeNode::HIERARCHYTREENODEID screenNodeID = data.toInt();
-		HierarchyTreeNode* possiblyScreeNode = HierarchyTreeController::Instance()->GetTree().GetNode(screenNodeID);
-
-		if (dynamic_cast<HierarchyTreeScreenNode*>(possiblyScreeNode))
-		{
-			parentNode = possiblyScreeNode;
-		}
-	}
-	else
-	{
-		parentNode = (*selectedNodes.begin());
-	}
+    HierarchyTreeNode::HIERARCHYTREENODEID insertInTo = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
+	HierarchyTreeNode::HIERARCHYTREENODEID insertAfter = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
+	if (!GetMoveItemID(event, insertInTo, insertAfter))
+		return;
 	
-	if (!parentNode)
+    HierarchyTreeNode* parentNode = HierarchyTreeController::Instance()->GetTree().GetNode(insertInTo);
+    HierarchyTreeNode* insertAfterNode = HierarchyTreeController::Instance()->GetTree().GetNode(insertAfter);
+	if (dynamic_cast<HierarchyTreePlatformNode*>(parentNode) ||
+		dynamic_cast<HierarchyTreeAggregatorControlNode*>(parentNode))
 	{
 		return;
 	}
-
-	CreateControlCommand* cmd = new CreateControlCommand(mimeData->GetControlName(), parentNode);
+    
+	if (!parentNode)
+	{
+        return;
+	}
+    
+    CreateControlCommand* cmd = new CreateControlCommand(mimeData->GetControlName(), parentNode, insertAfterNode);
 	CommandsController::Instance()->ExecuteCommand(cmd);
 	SafeRelease(cmd);
 }
@@ -393,12 +386,6 @@ void HierarchyTreeControl::HandleDragMoveControlMimeData(QDragMoveEvent *event, 
 		return;
 	}
 	
-	// Expand the items while dragging control on them.
-	if (!item->isExpanded())
-	{
-		item->setExpanded(true);
-	}
-
 	scrollTo(indexAt(event->pos()));
 
 	HierarchyTreeControlNode* controlNode = dynamic_cast<HierarchyTreeControlNode*>(nodeToInsertControlTo);

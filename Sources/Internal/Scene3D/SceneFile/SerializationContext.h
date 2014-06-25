@@ -37,12 +37,13 @@
 
 namespace DAVA
 {
-    static const int32 SCENE_FILE_CURRENT_VERSION = 12;
+    static const int32 SCENE_FILE_CURRENT_VERSION = 13;
 
     static const int32 CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION = 8;
     static const int32 COMPONENTS_BY_NAME_SAVE_SCENE_VERSION = 10;
     static const int32 OLD_LODS_SCENE_VERSION = 11;
     static const int32 TREE_ANIMATION_SCENE_VERSION = 12;
+    static const int32 PREREQUIRED_BINORMAL_SCENE_VERSION = 13;
 
 
 	class Scene;
@@ -53,9 +54,17 @@ namespace DAVA
 	class NMaterial;
 	class Texture;
 	class NMaterial;
+    class PolygonGroup;
 
 	class SerializationContext
 	{
+    public:
+        struct PolygonGroupLoadInfo
+        {            
+            uint32 filePos;
+            int32 requestedFormat;
+            PolygonGroupLoadInfo():filePos(0), requestedFormat(0){}
+        };
 	private:
 		
 		struct MaterialBinding
@@ -80,8 +89,10 @@ namespace DAVA
 		Map<uint64, DataNode*> dataBlocks;
 		Map<uint64, NMaterial*> importedMaterials;
 		Vector<MaterialBinding> materialBindings;
+
+        Map<PolygonGroup*, PolygonGroupLoadInfo> loadedPolygonGroups;
 	
-	public:
+	public:        
 		
         SerializationContext();
 		~SerializationContext();
@@ -137,9 +148,8 @@ namespace DAVA
 		}
 		
 		inline void SetDataBlock(uint64 blockId, DataNode* data)
-		{
-            Map<uint64, DataNode*>::iterator it = dataBlocks.find(blockId);
-            DVASSERT(it == dataBlocks.end());
+		{            
+            DVASSERT(dataBlocks.find(blockId) == dataBlocks.end());
             
 			dataBlocks[blockId] = data;
 		}
@@ -197,6 +207,10 @@ namespace DAVA
 		Texture* PrepareTexture(uint32 textureTypeHint, Texture* tx);
 		
 		void ResolveMaterialBindings();
+
+        void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);
+        void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);
+        void LoadPolygonGroupData(File *file);
 	};
 };
 

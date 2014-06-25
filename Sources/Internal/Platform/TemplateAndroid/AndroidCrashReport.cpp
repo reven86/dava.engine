@@ -221,5 +221,17 @@ void AndroidCrashReport::SignalHandler(int signal, struct siginfo *siginfo, void
 	crashReport.ThrowJavaExpetion(crashSteps);
 }
 
+void AndroidCrashReport::ThrowExeption(const String& message)
+{
+	Vector<JniCrashReporter::CrashStep> crashSteps;
+
+	JniCrashReporter::CrashStep step;
+	step.module = message;
+	crashSteps.push_back(step);
+
+	JniCrashReporter crashReport;
+	crashReport.ThrowJavaExpetion(crashSteps);
+}
+
 
 } // namespace DAVA

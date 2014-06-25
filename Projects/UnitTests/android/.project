@@ -365,11 +365,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SplitTest.h</locationURI>
 		</link>
 		<link>
-			<name>src/Classes/TestTemplate.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/TestTemplate.cpp</locationURI>
-		</link>
-		<link>
 			<name>src/Classes/TestTemplate.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/TestTemplate.h</locationURI>
@@ -678,11 +673,6 @@
 			<name>bin/classes/Classes/SplitTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/SplitTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/TestTemplate.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/TestTemplate.cpp</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/TestTemplate.h</name>

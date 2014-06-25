@@ -129,7 +129,7 @@ public class JNIWebView {
 				webView.setWebViewClient(new InternalViewClient(id));
 				webView.getSettings().setJavaScriptEnabled(true);
 				webView.getSettings().setLoadWithOverviewMode(true);
-				webView.getSettings().setUseWideViewPort(true);
+				webView.getSettings().setUseWideViewPort(false);
 				webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 				
 				activity.addContentView(webView, params);

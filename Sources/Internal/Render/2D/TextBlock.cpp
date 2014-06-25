@@ -733,12 +733,11 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 	}
     else
 	{
-		int16 * buf = 0;
 		if (jobData->font->IsTextSupportsSoftwareRendering())
 		{
-			int bsz = cacheDx * cacheDy;
-			buf = new int16[bsz];
-			memset(buf, 0, bsz * sizeof(int16));
+			int32 bsz = cacheDx * cacheDy;
+			uint8 * buf = new uint8[bsz];
+			memset(buf, 0, bsz * sizeof(uint8));
 			
 			DrawToBuffer(jobData->font, buf);
             
@@ -758,7 +757,7 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 				}
 			}
 			
-			Texture *tex = Texture::CreateTextFromData(FORMAT_RGBA4444, (uint8*)buf, cacheDx, cacheDy, false, addInfo.c_str());
+			Texture *tex = Texture::CreateTextFromData(FORMAT_A8, buf, cacheDx, cacheDy, false, addInfo.c_str());
 			delete[] buf;
 			sprite = Sprite::CreateFromTexture(tex, 0, 0, cacheFinalSize.x, cacheFinalSize.y);
 			SafeRelease(tex);
@@ -788,7 +787,7 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
     mutex.Unlock();
 }
 
-void TextBlock::DrawToBuffer(Font *realFont, int16 *buf)
+void TextBlock::DrawToBuffer(Font *realFont, uint8 *buf)
 {
 	Size2i realSize;
 	if(!isMultilineEnabled || treatMultilineAsSingleLine)

@@ -234,6 +234,11 @@ WideString DeviceInfo::GetName()
     return WideString ( (wchar_t*) [ pSData bytes ], [ pSData length] / sizeof ( wchar_t ) );
 }
     
+eGPUFamily DeviceInfo::GetGPUFamily()
+{
+    return GPU_POWERVR_IOS;
+}
+    
 }
 
 #endif

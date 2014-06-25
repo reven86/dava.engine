@@ -97,7 +97,6 @@ const FastName NMaterial::FLAG_TEXTURESHIFT = FastName("TEXTURE0_SHIFT_ENABLED")
 const FastName NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT = FastName("TEXTURE0_ANIMATION_SHIFT");
 const FastName NMaterial::FLAG_WAVE_ANIMATION = FastName("WAVE_ANIMATION");
 const FastName NMaterial::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMALIZATION");
-const FastName NMaterial::FLAG_PRECOMPUTED_BINORMAL = FastName("PRECOMPUTED_BINORMAL");
 
 const FastName NMaterial::FLAG_FLATCOLOR = FastName("FLATCOLOR");
 const FastName NMaterial::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
@@ -206,7 +205,7 @@ NMaterial::NMaterial() :
 materialType(NMaterial::MATERIALTYPE_NONE),
 materialKey(0),
 parent(NULL),
-requiredVertexFormat(EVF_FORCE_DWORD),
+requiredVertexFormat(0),
 lightCount(0),
 illuminationParams(NULL),
 materialSetFlags(8),
@@ -1157,6 +1156,7 @@ void NMaterial::UpdateMaterialTemplate()
         DVASSERT(baseTechnique);
     }
 	
+    requiredVertexFormat = 0;
 	uint32 passCount = baseTechnique->GetPassCount();
 	for(uint32 i = 0; i < passCount; ++i)
 	{
@@ -1208,6 +1208,7 @@ void NMaterial::UpdateRenderPass(const FastName& passName,
 	
 	Shader* shader = pass->CompileShader(instanceDefines);
 	passInstance->SetShader(shader);
+    requiredVertexFormat |= shader->GetRequiredVertexFormat();
 	SafeRelease(shader);
 	
 	passInstance->SetRenderer(parentRenderState->renderer);
@@ -1761,6 +1762,7 @@ void NMaterial::SubclassRenderState(RenderStateData& newState)
 
 void NMaterial::UpdateShaderWithFlags()
 {
+    requiredVertexFormat = 0;
 	if(baseTechnique)
 	{
 		FastNameSet effectiveFlags(16);
@@ -1775,10 +1777,11 @@ void NMaterial::UpdateShaderWithFlags()
 			
 			Shader* shader = techniquePass->CompileShader(effectiveFlags);
 			pass->SetShader(shader);
+            requiredVertexFormat |= shader->GetRequiredVertexFormat();
 			SafeRelease(shader);
 			
             BuildTextureParamsCache(pass);
-			BuildActiveUniformsCacheParamsCache(pass);
+			BuildActiveUniformsCacheParamsCache(pass);                            
 		}
 	}
 
@@ -2731,9 +2734,7 @@ Vector<FastName> NMaterial::NMaterialStateDynamicFlagsInsp::MembersList(void *ob
 		ret.push_back(FLAG_TEXTURE0_ANIMATION_SHIFT);
 
 		ret.push_back(FLAG_WAVE_ANIMATION);
-		ret.push_back(FLAG_FAST_NORMALIZATION);
-
-        ret.push_back(FLAG_PRECOMPUTED_BINORMAL);
+		ret.push_back(FLAG_FAST_NORMALIZATION);        
 
 		ret.push_back(FLAG_SPECULAR);
 		ret.push_back(FLAG_TANGENT_SPACE_WATER_REFLECTIONS);
