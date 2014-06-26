@@ -565,7 +565,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void HideField(int id) {
@@ -580,7 +580,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void OpenKeyboard(int id) {
