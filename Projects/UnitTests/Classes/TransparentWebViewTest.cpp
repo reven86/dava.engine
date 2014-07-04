@@ -44,7 +44,7 @@ void TransparentWebViewTest::LoadResources()
 {
 	webView1 = new UIWebView(Rect(5, 5, 700, 500));
 	webView1->SetVisible(true);
-	webView1->OpenURL("http://ru.wikipedia.org/");
+	webView1->OpenURL("http://yandex.ru/");
 	AddControl(webView1);
 
 	FilePath srcDir("~res:/TestData/TransparentWebViewTest/");

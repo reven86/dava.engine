@@ -230,6 +230,7 @@ public:
         EVENT_FOCUS_SET             = 6,//!<Trigger when control becomes focused
         EVENT_FOCUS_LOST            = 7,//!<Trigger when control losts focus
         EVENT_TOUCH_UP_OUTSIDE		= 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
+		EVENT_ALL_ANIMATIONS_FINISHED	= 9,//!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
     };
 
@@ -490,7 +491,7 @@ public:
      \brief Returns actual control transformation and metrics.
      \returns control geometric data.
      */
-    virtual const UIGeometricData &GetGeometricData();
+    virtual const UIGeometricData &GetGeometricData() const;
 
     /**
      \brief Sets the scaled control rect.
@@ -519,7 +520,7 @@ public:
         But this methods calls for their children.
      \returns control visibility.
      */
-    DAVA_DEPRECATED(virtual bool GetVisible() const);
+    virtual bool GetVisible() const;
 
     /**
      \brief Sets contol visibility.
@@ -531,7 +532,7 @@ public:
      \param[in] isVisible new control visibility.
      \param[in] hierarchic use true if you want to all control children change visiblity.
      */
-    DAVA_DEPRECATED(virtual void SetVisible(bool isVisible, bool hierarchic = true));
+    virtual void SetVisible(bool isVisible, bool hierarchic = true);
 
     /**
      \brief Returns control visibility.
@@ -1189,7 +1190,7 @@ public:
      \param[in] expandWithFocus Is area should be expanded with focus.
      \returns True if inside the control rect.
      */
-    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false);
+    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false) const;
 
     virtual bool IsLostFocusAllowed(UIControl *newFocus);
 
@@ -1200,7 +1201,9 @@ public:
     virtual void OnFocusLost(UIControl *newFocus);
 
     virtual void OnFocused();
-
+    
+	virtual void OnAllAnimationsFinished();
+	
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
 
@@ -1226,8 +1229,6 @@ public:
     bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
     virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
 
-    void DumpInputs(int32 depthLevel);
-
 public:
 
     Vector2 relativePosition;//!<position in the parent control.
@@ -1252,6 +1253,8 @@ protected:
     int32 controlState;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
+	bool inputEnabled : 1;
+	bool focusEnabled : 1;
     bool exclusiveInput : 1;
     bool recursiveVisible : 1;
     bool visible : 1;
@@ -1272,8 +1275,6 @@ protected:
     bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
 
-    int32 inputProcessorsCount;
-
 
     int32 currentInputID;
     int32 touchesInside;
@@ -1287,8 +1288,8 @@ protected:
     int32 vcenterAlign;
     int32 bottomAlign;
 
-    Rect returnedRect;
-    UIGeometricData tempGeometricData;
+	Rect returnedRect;
+	mutable UIGeometricData tempGeometricData;
 
     EventDispatcher *eventDispatcher;
 
@@ -1315,21 +1316,12 @@ protected:
     Vector2	__touchStart;
     Vector2		__oldPosition;
 #endif
-
-    void RegisterInputProcessor();
-    void RegisterInputProcessors(int32 processorsCount);
-    void UnregisterInputProcessor();
-    void UnregisterInputProcessors(int32 processorsCount);
-
     void DrawDebugRect(const UIGeometricData &geometricData, bool useAlpha = false);
     void DrawPivotPoint(const Rect &drawRect);
 
 private:
     String	name;
     int32	tag;
-    bool inputEnabled : 1;
-    bool focusEnabled : 1;
-
 
     void RecalculateAlignProperties();
     void RecalculateChildsSize();
