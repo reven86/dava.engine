@@ -57,7 +57,17 @@ public:
 		
 	// Open the URL.
 	void OpenURL(const String& urlToOpen);
-    
+	// Load html page
+	void LoadHtmlString(const WideString& htmlString);
+	// Delete all cookies for target URL
+	void DeleteCookies(const String& targetUrl);
+	// Get cookie for specific domain and name
+	String GetCookie(const String& targetUrl, const String& name) const;
+	// Get the list of cookies for specific domain
+	Map<String, String> GetCookies(const String& targetUrl) const;
+	// Perfrom Java script, return script id
+	int32_t ExecuteJScript(const String& scriptString);
+	
     void OpenFromBuffer(const String& string, const FilePath& basePath);
     
 	// Overloaded virtual methods.
@@ -67,6 +77,9 @@ public:
 	virtual void SetPosition(const Vector2 &position, bool positionInAbsoluteCoordinates = false);
 	virtual void SetSize(const Vector2 &newSize);
 	virtual void SetVisible(bool isVisible, bool hierarchic = true);
+	
+	// Page scale property change
+	void SetScalesPageToFit(bool isScalesToFit);
 
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
 	virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);

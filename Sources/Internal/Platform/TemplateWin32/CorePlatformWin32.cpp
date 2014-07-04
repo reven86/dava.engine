@@ -30,6 +30,7 @@
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
 #include "Platform/TemplateWin32/WindowsSpecifics.h"
 #include "Platform/Thread.h"
+#include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -196,6 +197,11 @@ namespace DAVA
 		RenderManager::Create(Core::RENDERER_OPENGL);
 #endif
 		RenderManager::Instance()->Create(hInstance, hWindow);
+		// DF-2274 - Get actual screen resolution and save it inside DeviceInfo
+		int nScreenWidth = ::GetSystemMetrics(SM_CXSCREEN);
+		int nScreenHeight = ::GetSystemMetrics(SM_CYSCREEN);
+
+		DeviceInfo::SetScreenInfo(nScreenWidth, nScreenHeight, 1);
 
 		FrameworkDidLaunched();
 		KeyedArchive * options = Core::GetOptions();

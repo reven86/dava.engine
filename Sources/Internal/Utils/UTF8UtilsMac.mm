@@ -25,7 +25,7 @@
 namespace DAVA 
 {
 
-void UTF8Utils::EncodeToWideString(uint8 * string, int32 size, WideString & resultString)
+void UTF8Utils::EncodeToWideString(const uint8 * string, int32 size, WideString & resultString)
 {
 	char* buf = new char[size + 1];
 	memcpy(buf, string, size);

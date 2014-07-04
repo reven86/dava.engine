@@ -57,6 +57,7 @@ namespace DAVA
 static int32 fboCounter = 0;
 Vector<Vector2> Sprite::clippedTexCoords;
 Vector<Vector2> Sprite::clippedVertices;
+bool Sprite::spriteClipping = true;
 
 Mutex Sprite::spriteMapMutex;
 
@@ -101,6 +102,10 @@ void Sprite::DrawState::SetShader(Shader* _shader)
 }
 
 
+RenderDataObject* Sprite::spriteRenderObject = NULL;
+RenderDataStream* Sprite::vertexStream = NULL;
+RenderDataStream* Sprite::texCoordStream = NULL;
+
 Sprite::Sprite()
 {
 	textures = 0;
@@ -130,9 +135,17 @@ Sprite::Sprite()
 	resourceToVirtualFactor = 1.0f;
 	resourceToPhysicalFactor = 1.0f;
 
-	spriteRenderObject = new RenderDataObject();
-	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	if(spriteRenderObject == NULL)
+	{
+		spriteRenderObject = new RenderDataObject();
+		vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+		texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	}
+	else
+	{
+		spriteRenderObject->Retain();
+	}
+
 
 	//pivotPoint = Vector2(0.0f, 0.0f);
 	defaultPivotPoint = Vector2(0.0f, 0.0f);
@@ -689,7 +702,7 @@ int32 Sprite::Release()
 	if(GetRetainCount() == 1)
 	{
         spriteMapMutex.Lock();
-		SafeRelease(spriteRenderObject);
+		//SafeRelease(spriteRenderObject);
 		spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
         spriteMapMutex.Unlock();
 	}
@@ -738,6 +751,17 @@ Sprite::~Sprite()
 //	Logger::FrameworkDebug("Removing sprite");
 	Clear();
 
+	if(spriteRenderObject)
+	{
+		if(spriteRenderObject->GetRetainCount() == 1)
+		{
+		    SafeRelease(spriteRenderObject);
+		}
+		else
+		{
+		    spriteRenderObject->Release();
+		}
+	}
 }
 
 Texture* Sprite::GetTexture()
@@ -1343,7 +1367,9 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 void Sprite::Draw(DrawState * state)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	// DF-2897 - Do not draw sprite if its position is beyond screen
+	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW) ||
+		(!IsSpriteOnScreen(state) && spriteClipping))
 	{
 		return;
 	}
@@ -1897,6 +1923,33 @@ void Sprite::ReloadExistingTextures()
             Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
         }
     }
+}
+
+void Sprite::SetSpriteClipping(bool clipping)
+{
+	spriteClipping = clipping;
+}
+
+bool Sprite::IsSpriteOnScreen(DrawState * state)
+{
+	// DF-2897 - Calculate real size of texture and it's position
+	float32 realWidth = GetWidth() * state->scale.x;
+	float32 realHeight = GetHeight() * state->scale.y;
+	float32 xPosition = state->position.x - (state->pivotPoint.x * state->scale.x);
+	float32 yPosition = state->position.y - (state->pivotPoint.y * state->scale.y);
+
+	float32 screenWidth = Core::Instance()->GetVirtualScreenWidth();
+ 	float32 screenHeight = Core::Instance()->GetVirtualScreenHeight();
+
+	// If texuture has negative coordinates - do not draw it
+	// If texture is outside the screen - do not draw it
+	if ((xPosition + realWidth) < 0 || (yPosition + realHeight) < 0 ||
+			xPosition >=  screenWidth || yPosition >= screenHeight)
+	{
+		return false;
+	}
+	
+	return true;
 }
 
 };

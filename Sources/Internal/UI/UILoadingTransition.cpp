@@ -96,7 +96,7 @@ void UILoadingTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _ne
 	nextScreen = _nextScreen;
 	thread = 0;
 	animationTime = 0;
-}	
+}
 
 int32 UILoadingTransition::GetGroupId()
 {
@@ -174,7 +174,7 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
 		animationSprite->Draw(&drawState);
 	}
 }
-	
+
 bool UILoadingTransition::IsLoadingTransition()
 {
 	return true;

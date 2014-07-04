@@ -55,8 +55,8 @@ using namespace DAVA;
 - (void)webView:(WebView *)webView decidePolicyForNavigationAction:(NSDictionary *)actionInformation request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id<WebPolicyDecisionListener>)listener;
 
 - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
-
 - (void)setDelegate:(IUIWebViewDelegate*)d andWebView:(UIWebView*)w;
+- (void)onExecuteJScript:(NSArray *)result;
 
 @end
 
@@ -136,11 +136,23 @@ using namespace DAVA;
 	}
 }
 
+- (void)onExecuteJScript:(NSArray *)result
+{
+    if (delegate)
+    {
+        NSNumber* requestId = (NSNumber*)[result objectAtIndex:0];
+        NSString* requestResult = (NSString*)[result objectAtIndex:1];
+        delegate->OnExecuteJScript(webView, [requestId intValue], DAVA::String([requestResult UTF8String]));
+    }
+    [result release];
+}
+
 @end
 
+int32_t WebViewControl::runScriptID = 0;
 
 WebViewControl::WebViewControl() :
-    isWebViewVisible(true)
+	isWebViewVisible(true)
 {
 	NSRect emptyRect = NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f);	
 	webViewPtr = [[WebView alloc] initWithFrame:emptyRect frameName:nil groupName:nil];
@@ -198,6 +210,30 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 	[(WebView*)webViewPtr setMainFrameURL:nsURLPathToOpen];
 }
 
+void WebViewControl::LoadHtmlString(const WideString& htlmString)
+{
+	NSString* htmlPageToLoad = [[[NSString alloc] initWithBytes: htlmString.data()
+													   length: htlmString.size() * sizeof(wchar_t)
+													 encoding:NSUTF32LittleEndianStringEncoding] autorelease];
+    [[(WebView*)webViewPtr mainFrame] loadHTMLString:htmlPageToLoad baseURL:nil];
+}
+
+void WebViewControl::DeleteCookies(const String& targetUrl)
+{
+	NSString *targetUrlString = [NSString stringWithUTF8String:targetUrl.c_str()];
+	NSHTTPCookieStorage* cookies = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+	// Delete all cookies for specified URL
+	for(NSHTTPCookie *cookie in [cookies cookies])
+	{
+		if([[cookie domain] rangeOfString:targetUrlString].location != NSNotFound)
+	  	{
+       		[cookies deleteCookie:cookie];
+   	 	}
+	}
+	// Syncronized all changes with file system
+	[[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePath)
 {
     NSString* dataToOpen = [NSString stringWithUTF8String:string.c_str()];
@@ -240,4 +276,20 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 {
 	WebView* webView = (WebView*)webViewPtr;
 	[webView setDrawsBackground:(enabled ? NO : YES)];
+}
+
+int32_t WebViewControl::ExecuteJScript(const String& scriptString)
+{
+    int requestID = runScriptID++;
+    NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];
+    NSString *resultString = [(WebView*)webViewPtr stringByEvaluatingJavaScriptFromString:jScriptString];
+
+    WebViewPolicyDelegate* w = (WebViewPolicyDelegate*) webViewPolicyDelegatePtr;
+    if (w)
+    {
+        NSArray* array = [NSArray arrayWithObjects:[NSNumber numberWithInt:requestID], resultString, nil];
+        [array retain];
+        [w performSelector:@selector(onExecuteJScript:) withObject:array afterDelay:0.0];
+    }
+    return requestID;
 }

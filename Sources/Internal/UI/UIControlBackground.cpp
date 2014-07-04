@@ -37,6 +37,10 @@
 
 namespace DAVA
 {
+//Shared render data
+RenderDataObject* UIControlBackground::rdoObject = NULL;
+RenderDataStream* UIControlBackground::vertexStream = NULL;
+RenderDataStream* UIControlBackground::texCoordStream = NULL;
 
 UIControlBackground::UIControlBackground()
 :	spr(NULL)
@@ -52,11 +56,18 @@ UIControlBackground::UIControlBackground()
 ,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
 ,	lastDrawPos(0, 0)
 ,	tiledData(NULL)
-,   rdoObject(NULL)
-,   vertexStream(NULL)
-,   texCoordStream(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 {
+	if(rdoObject == NULL)
+	{
+		rdoObject = new RenderDataObject();
+		vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+		texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	}
+	else
+	{
+		rdoObject->Retain();
+	}
 }
 
 UIControlBackground *UIControlBackground::Clone()
@@ -68,20 +79,20 @@ UIControlBackground *UIControlBackground::Clone()
 
 void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 {
-    SafeRelease(spr);
-    spr = SafeRetain(srcBackground->spr);
-    frame = srcBackground->frame;
-    align = srcBackground->align;
 
-    SafeRelease(rdoObject);
-    SetDrawType((eDrawType)srcBackground->type);
-
-    color = srcBackground->color;
-    spriteModification = srcBackground->spriteModification;
-    colorInheritType = srcBackground->colorInheritType;
-    perPixelAccuracyType = srcBackground->perPixelAccuracyType;
-    leftStretchCap = srcBackground->leftStretchCap;
-    topStretchCap = srcBackground->topStretchCap;
+	SafeRelease(spr);
+	spr = SafeRetain(srcBackground->spr);
+	frame = srcBackground->frame;
+	align = srcBackground->align;
+	
+	SetDrawType((eDrawType)srcBackground->type);
+    
+	color = srcBackground->color;
+	spriteModification = srcBackground->spriteModification;
+	colorInheritType = srcBackground->colorInheritType;
+	perPixelAccuracyType = srcBackground->perPixelAccuracyType;
+	leftStretchCap = srcBackground->leftStretchCap;
+	topStretchCap = srcBackground->topStretchCap;
 
     SetShader(srcBackground->shader);
 }
@@ -89,10 +100,20 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 
 UIControlBackground::~UIControlBackground()
 {
-    SafeRelease(rdoObject);
-    SafeRelease(spr);
-    SafeRelease(shader);
-    ReleaseDrawData();
+	//SafeRelease(rdoObject);
+
+	if(rdoObject->GetRetainCount() == 1)
+	{
+		SafeRelease(rdoObject);
+	}
+	else
+	{
+		rdoObject->Release();
+	}
+
+	SafeRelease(spr);
+	SafeRelease(shader);
+	ReleaseDrawData();
 }
 
 Sprite*	UIControlBackground::GetSprite()
@@ -751,9 +772,9 @@ void UIControlBackground::DrawTiled(const UIGeometricData &gd, UniqueHandle rend
 
     RenderManager::Instance()->SetTextureState(textureHandle);
     RenderManager::Instance()->SetRenderState(renderState);
-    RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
-    RenderManager::Instance()->SetRenderData(rdoObject);
-    RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
+	RenderManager::Instance()->SetRenderEffect(RenderManager::TEXTURE_MUL_FLAT_COLOR);
+	RenderManager::Instance()->SetRenderData(rdoObject);
+	RenderManager::Instance()->DrawElements(PRIMITIVETYPE_TRIANGLELIST, td.indeces.size(), EIF_16, &td.indeces[0]);
 }
 
 void UIControlBackground::DrawFilled( const UIGeometricData &gd, UniqueHandle renderState )

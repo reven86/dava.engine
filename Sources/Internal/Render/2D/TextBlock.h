@@ -98,6 +98,7 @@ protected:
 	~TextBlock();
 	
 	void Prepare();
+	void Prepare2();
 	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
 	
 	void DrawToBuffer(Font *font, uint8 *buf);
@@ -134,6 +135,7 @@ protected:
     bool isMultilineBySymbolEnabled:1;
 	bool isPredrawed:1;
 	bool cacheUseJustify:1;
+	bool needDrawText:1;
     bool treatMultilineAsSingleLine:1;
 };
 

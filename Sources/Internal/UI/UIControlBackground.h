@@ -273,34 +273,34 @@ protected:
     float32 topStretchCap;
     int colorInheritType;
     int32 frame;
-
-    Vector2 lastDrawPos;
-    RenderDataObject * rdoObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
-
+	
+	Vector2 lastDrawPos;
+	static RenderDataObject * rdoObject;
+    static RenderDataStream * vertexStream;
+    static RenderDataStream * texCoordStream;
+    
     ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 
 private:
-    struct TiledDrawData
-    {
-        Vector< Vector2 > vertices;
-        Vector< Vector2 > texCoords;
+	struct TiledDrawData
+	{
+		Vector< Vector2 > vertices;
+		Vector< Vector2 > texCoords;
         Vector< uint16  > indeces;
-        void GenerateTileData();
-        void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
+		void GenerateTileData();
+		void GenerateAxisData( float32 size, float32 spriteSize, float32 textureSize, float32 stretchCap, Vector< Vector3 > &axisData );
 
-        Vector< Vector2 > transformedVertices;
-        void GenerateTransformData();
+		Vector< Vector2 > transformedVertices;
+		void GenerateTransformData();
 
-        Sprite *sprite;
-        int32 frame;
-        Vector2 size;
-        Vector2 stretchCap;
-        Matrix3 transformMatr;
-    };
+		Sprite *sprite;
+		int32 frame;
+		Vector2 size;
+		Vector2 stretchCap;
+		Matrix3 transformMatr;
+	};
 
-    TiledDrawData *tiledData;
+	TiledDrawData *tiledData;
 public:
     void ReleaseDrawData(); // Delete all spec draw data
 

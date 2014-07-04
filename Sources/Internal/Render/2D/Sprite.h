@@ -294,7 +294,7 @@ public:
 	 \brief Returns multiplyer to convert sprite to the physical coordinates.
 	 */
 	inline float32 GetResourceToPhysicalFactor() const;
-
+	
 	/**
 	 \brief Returns multiplyer to convert sprite to the virtual coordinates.
 	 */
@@ -315,7 +315,7 @@ public:
 	const FilePath & GetRelativePathname() const;
 
 	inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
-	RenderDataObject * spriteRenderObject;
+	static RenderDataObject * spriteRenderObject;
 
     /**
 	 \brief Removes all sprite data.
@@ -326,6 +326,8 @@ public:
 	 \brief Reloads the sprite.
 	 */
 	void Reload();
+	
+	static void SetSpriteClipping(bool clipping);
 
     /**
 	 \brief Reloads all sprites.
@@ -411,18 +413,21 @@ protected:
 //public:
 	float32 **rectsAndOffsets;
 
-	RenderDataStream * vertexStream;
-	RenderDataStream * texCoordStream;
+	static RenderDataStream * vertexStream;
+	static RenderDataStream * texCoordStream;
 	ePrimitiveType primitiveToDraw;
 	int32 vertexCount;
 
 	// For rendering of clipped objects
 	static Vector<Vector2> clippedTexCoords;
 	static Vector<Vector2> clippedVertices;
-
+	static bool spriteClipping;
 
 	//static bool batchingEnabled;
 	//static Vector<Vector2>
+	
+private:
+	bool IsSpriteOnScreen(DrawState * state);
 };
 
 

@@ -202,6 +202,7 @@ bool HierarchyTreeScreenNode::Load(const QString& path)
         BuildHierarchyTree(this, screen->GetChildren());
         loaded = true;
     }
+
 	return true;
 }
 
@@ -240,7 +241,7 @@ bool HierarchyTreeScreenNode::Save(const QString& path, bool saveAll)
 	bool saveResult = UIYamlLoader::Save(screen, path.toStdString(), true);
 	if (saveResult)
 	{
-        // Save the Guides - append their data to the existing screen YAML.
+	    // Save the Guides - append their data to the existing screen YAML.
         saveResult = guides.Save(path.toStdString(), File::APPEND | File::WRITE);
     }
 

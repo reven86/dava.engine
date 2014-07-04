@@ -52,7 +52,9 @@ class Animation : public EventDispatcher
 {
 public:
 /*
- */	
+ */
+ 	static const int32 INFINITE_LOOP = -1;
+		
 	enum
 	{
 		EVENT_ANIMATION_START = 1, 
@@ -79,7 +81,7 @@ protected:
 	virtual ~Animation();
 
 public:
-	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0); 
+	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0);
 	
 	virtual void	Reset();				
 	virtual void	Start(int _groupId);
@@ -131,7 +133,7 @@ inline void Animation::EnableReverse()
 
 inline void Animation::SetRepeatCount(int _repeatCount)
 {
-	repeatCount = _repeatCount - 1;
+	repeatCount = (_repeatCount == INFINITE_LOOP) ? INFINITE_LOOP : _repeatCount - 1;
 }
 
 inline void Animation::SetTagId(int tag)

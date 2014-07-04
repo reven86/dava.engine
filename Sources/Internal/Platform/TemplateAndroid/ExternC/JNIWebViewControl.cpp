@@ -46,4 +46,13 @@ extern "C"
 	{
 		DAVA::JniWebView::PageLoaded(id);
 	}
+
+	void Java_com_dava_framework_JNIWebView_OnExecuteJScript(JNIEnv* env, jobject classthis, int id, int requestId, jstring jResult)
+	{
+		char resultStr[1024];
+		CreateStringFromJni(env, jResult, resultStr);
+
+		DAVA::JniWebView::OnExecuteJScript(id, requestId, resultStr);
+	}
+
 };

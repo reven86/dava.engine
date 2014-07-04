@@ -141,7 +141,6 @@
 		02FD7F561924997C007762C0 /* FileList.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84616B9326D002BD35F /* FileList.h */; };
 		02FD7F571924997C007762C0 /* FilePath.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84816B9326D002BD35F /* FilePath.h */; };
 		02FD7F581924997C007762C0 /* FileSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84A16B9326D002BD35F /* FileSystem.h */; };
-		02FD7F591924997C007762C0 /* (null) in Headers */ = {isa = PBXBuildFile; };
 		02FD7F5A1924997C007762C0 /* KeyedArchive.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84D16B9326D002BD35F /* KeyedArchive.h */; };
 		02FD7F5B1924997C007762C0 /* KeyedArchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C84F16B9326D002BD35F /* KeyedArchiver.h */; };
 		02FD7F5C1924997C007762C0 /* KeyedUnarchiver.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C85116B9326D002BD35F /* KeyedUnarchiver.h */; };
@@ -248,13 +247,7 @@
 		02FD7FC11924997C007762C0 /* ShadowRect.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94516B9326E002BD35F /* ShadowRect.h */; };
 		02FD7FC21924997C007762C0 /* ShadowVolume.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94716B9326E002BD35F /* ShadowVolume.h */; };
 		02FD7FC31924997C007762C0 /* ShadowVolumeRenderPass.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C94916B9326E002BD35F /* ShadowVolumeRenderPass.h */; };
-		02FD7FC41924997C007762C0 /* (null) in Headers */ = {isa = PBXBuildFile; };
-		02FD7FC51924997C007762C0 /* (null) in Headers */ = {isa = PBXBuildFile; };
-		02FD7FC61924997C007762C0 /* (null) in Headers */ = {isa = PBXBuildFile; };
 		02FD7FC71924997C007762C0 /* IndexBuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95016B9326E002BD35F /* IndexBuffer.h */; };
-		02FD7FC81924997C007762C0 /* (null) in Headers */ = {isa = PBXBuildFile; };
-		02FD7FC91924997C007762C0 /* (null) in Headers */ = {isa = PBXBuildFile; };
-		02FD7FCA1924997C007762C0 /* (null) in Headers */ = {isa = PBXBuildFile; };
 		02FD7FCB1924997C007762C0 /* MaterialCompiler.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95916B9326E002BD35F /* MaterialCompiler.h */; };
 		02FD7FCC1924997C007762C0 /* DAVAClassRegistrator.h in Headers */ = {isa = PBXBuildFile; fileRef = 021414151819851100925E51 /* DAVAClassRegistrator.h */; };
 		02FD7FCD1924997C007762C0 /* MaterialGraph.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C95B16B9326E002BD35F /* MaterialGraph.h */; };
@@ -587,12 +580,6 @@
 		02FD81161924997C007762C0 /* ShadowRect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94416B9326E002BD35F /* ShadowRect.cpp */; };
 		02FD81171924997C007762C0 /* ShadowVolume.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94616B9326E002BD35F /* ShadowVolume.cpp */; };
 		02FD81181924997C007762C0 /* ShadowVolumeRenderPass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C94816B9326E002BD35F /* ShadowVolumeRenderPass.cpp */; };
-		02FD81191924997C007762C0 /* (null) in Sources */ = {isa = PBXBuildFile; };
-		02FD811A1924997C007762C0 /* (null) in Sources */ = {isa = PBXBuildFile; };
-		02FD811B1924997C007762C0 /* (null) in Sources */ = {isa = PBXBuildFile; };
-		02FD811C1924997C007762C0 /* (null) in Sources */ = {isa = PBXBuildFile; };
-		02FD811D1924997C007762C0 /* (null) in Sources */ = {isa = PBXBuildFile; };
-		02FD811E1924997C007762C0 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		02FD811F1924997C007762C0 /* MaterialCompiler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95816B9326E002BD35F /* MaterialCompiler.cpp */; };
 		02FD81201924997C007762C0 /* MaterialGraph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C95A16B9326E002BD35F /* MaterialGraph.cpp */; };
 		02FD81211924997C007762C0 /* JobQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B03A18211BCE00934482 /* JobQueue.cpp */; };
@@ -678,7 +665,6 @@
 		02FD81711924997C007762C0 /* QualitySettingsComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8FC1301186972B60095D8FE /* QualitySettingsComponent.cpp */; };
 		02FD81721924997C007762C0 /* EventSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA0416B9326E002BD35F /* EventSystem.cpp */; };
 		02FD81731924997C007762C0 /* ParticleRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA10607518892B7C00CB99A3 /* ParticleRenderObject.cpp */; };
-		02FD81741924997C007762C0 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		02FD81751924997C007762C0 /* LightUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA0616B9326E002BD35F /* LightUpdateSystem.cpp */; };
 		02FD81761924997C007762C0 /* MaterialSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8F43E2B186C5D4E006796CB /* MaterialSystem.cpp */; };
 		02FD81771924997C007762C0 /* LodSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3CA0816B9326E002BD35F /* LodSystem.cpp */; };
@@ -1143,6 +1129,10 @@
 		E8B3CACB16B9326E002BD35F /* Core.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7F416B9326D002BD35F /* Core.cpp */; };
 		E8B3CACC16B9326E002BD35F /* Core.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7F516B9326D002BD35F /* Core.h */; };
 		E8B3CAD216B9326E002BD35F /* DisplayMode.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FB16B9326D002BD35F /* DisplayMode.h */; };
+		E8B3CAD316B9326E002BD35F /* MongodbClient.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7FD16B9326D002BD35F /* MongodbClient.cpp */; };
+		E8B3CAD416B9326E002BD35F /* MongodbClient.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C7FE16B9326D002BD35F /* MongodbClient.h */; };
+		E8B3CAD516B9326E002BD35F /* MongodbObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C7FF16B9326D002BD35F /* MongodbObject.cpp */; };
+		E8B3CAD616B9326E002BD35F /* MongodbObject.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80016B9326D002BD35F /* MongodbObject.h */; };
 		E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80116B9326D002BD35F /* DAVAConfig.h */; };
 		E8B3CAD816B9326E002BD35F /* DAVAEngine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80216B9326D002BD35F /* DAVAEngine.cpp */; };
 		E8B3CAD916B9326E002BD35F /* DAVAEngine.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80316B9326D002BD35F /* DAVAEngine.h */; };
@@ -3776,7 +3766,6 @@
 				02FD7F571924997C007762C0 /* FilePath.h in Headers */,
 				64493E0D19476F4700AB2715 /* VegetationGeometry.h in Headers */,
 				02FD7F581924997C007762C0 /* FileSystem.h in Headers */,
-				02FD7F591924997C007762C0 /* (null) in Headers */,
 				02FD7F5A1924997C007762C0 /* KeyedArchive.h in Headers */,
 				02FD7F5B1924997C007762C0 /* KeyedArchiver.h in Headers */,
 				02FD7F5C1924997C007762C0 /* KeyedUnarchiver.h in Headers */,
@@ -3893,13 +3882,7 @@
 				02FD7FC11924997C007762C0 /* ShadowRect.h in Headers */,
 				02FD7FC21924997C007762C0 /* ShadowVolume.h in Headers */,
 				02FD7FC31924997C007762C0 /* ShadowVolumeRenderPass.h in Headers */,
-				02FD7FC41924997C007762C0 /* (null) in Headers */,
-				02FD7FC51924997C007762C0 /* (null) in Headers */,
-				02FD7FC61924997C007762C0 /* (null) in Headers */,
 				02FD7FC71924997C007762C0 /* IndexBuffer.h in Headers */,
-				02FD7FC81924997C007762C0 /* (null) in Headers */,
-				02FD7FC91924997C007762C0 /* (null) in Headers */,
-				02FD7FCA1924997C007762C0 /* (null) in Headers */,
 				02FD7FCB1924997C007762C0 /* MaterialCompiler.h in Headers */,
 				02FD7FCC1924997C007762C0 /* DAVAClassRegistrator.h in Headers */,
 				02FD7FCD1924997C007762C0 /* MaterialGraph.h in Headers */,
@@ -4174,6 +4157,8 @@
 				E8B3CACA16B9326E002BD35F /* ApplicationCore.h in Headers */,
 				E8B3CACC16B9326E002BD35F /* Core.h in Headers */,
 				E8B3CAD216B9326E002BD35F /* DisplayMode.h in Headers */,
+				E8B3CAD416B9326E002BD35F /* MongodbClient.h in Headers */,
+				E8B3CAD616B9326E002BD35F /* MongodbObject.h in Headers */,
 				E8B3CAD716B9326E002BD35F /* DAVAConfig.h in Headers */,
 				E8B3CAD916B9326E002BD35F /* DAVAEngine.h in Headers */,
 				E8B3CADB16B9326E002BD35F /* Backtrace.h in Headers */,
@@ -4768,12 +4753,6 @@
 				02FD81161924997C007762C0 /* ShadowRect.cpp in Sources */,
 				02FD81171924997C007762C0 /* ShadowVolume.cpp in Sources */,
 				02FD81181924997C007762C0 /* ShadowVolumeRenderPass.cpp in Sources */,
-				02FD81191924997C007762C0 /* (null) in Sources */,
-				02FD811A1924997C007762C0 /* (null) in Sources */,
-				02FD811B1924997C007762C0 /* (null) in Sources */,
-				02FD811C1924997C007762C0 /* (null) in Sources */,
-				02FD811D1924997C007762C0 /* (null) in Sources */,
-				02FD811E1924997C007762C0 /* (null) in Sources */,
 				02FD811F1924997C007762C0 /* MaterialCompiler.cpp in Sources */,
 				02FD81201924997C007762C0 /* MaterialGraph.cpp in Sources */,
 				02FD81211924997C007762C0 /* JobQueue.cpp in Sources */,
@@ -4866,7 +4845,6 @@
 				02FD81721924997C007762C0 /* EventSystem.cpp in Sources */,
 				022AA8DF1934CECD009A4B84 /* WaveComponent.cpp in Sources */,
 				02FD81731924997C007762C0 /* ParticleRenderObject.cpp in Sources */,
-				02FD81741924997C007762C0 /* (null) in Sources */,
 				02FD81751924997C007762C0 /* LightUpdateSystem.cpp in Sources */,
 				02FD81761924997C007762C0 /* MaterialSystem.cpp in Sources */,
 				02FD81771924997C007762C0 /* LodSystem.cpp in Sources */,
@@ -5034,6 +5012,8 @@
 				E8B3CAC716B9326E002BD35F /* Collisions.cpp in Sources */,
 				E8B3CAC916B9326E002BD35F /* ApplicationCore.cpp in Sources */,
 				E8B3CACB16B9326E002BD35F /* Core.cpp in Sources */,
+				E8B3CAD316B9326E002BD35F /* MongodbClient.cpp in Sources */,
+				E8B3CAD516B9326E002BD35F /* MongodbObject.cpp in Sources */,
 				EAADA0051892A48E001E1AA2 /* UIParticles.cpp in Sources */,
 				E8B3CAD816B9326E002BD35F /* DAVAEngine.cpp in Sources */,
 				E8B3CADA16B9326E002BD35F /* Backtrace.cpp in Sources */,
@@ -5679,7 +5659,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -5723,7 +5703,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -5767,7 +5747,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -5851,7 +5831,7 @@
 					./../../Libs/fmod/include,
 					./../../Libs/lua/include,
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
 				OTHER_CFLAGS = "-mno-thumb";
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",

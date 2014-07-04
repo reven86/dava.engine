@@ -133,11 +133,11 @@ Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _
 	return 0;
 }
 
-bool AnimationManager::IsAnimating(AnimatedObject * owner, int32 track)
+bool AnimationManager::IsAnimating(const AnimatedObject * owner, int32 track) const
 {
     DVASSERT(Thread::IsMainThread());
 
-	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	for (Vector<Animation*>::const_iterator t = animations.begin(); t != animations.end(); ++t)
 	{
 		Animation * animation = *t;
 
@@ -175,6 +175,20 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
     }
 
 	return 0;
+}
+
+bool AnimationManager::HasActiveAnimations(AnimatedObject * owner)
+{
+	for (Vector<Animation*>::iterator t = animations.begin(); t != animations.end(); ++t)
+	{
+		Animation * animation = *t;
+
+		if ((animation->owner == owner) && !(animation->state & Animation::STATE_FINISHED))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void AnimationManager::Update(float32 timeElapsed)

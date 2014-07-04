@@ -74,6 +74,23 @@ public class JNIDeviceInfo {
 		return JNIConfigChooser.GetDepthBufferSize();
 	}
 	
+	public static String GetHTTPProxyHost()
+	{		
+		return System.getProperty("http.proxyHost");
+	}
+	
+	public static int GetHTTPProxyPort()
+	{
+		String portStr = System.getProperty("http.proxyPort");
+	    int proxyPort = Integer.parseInt((portStr != null ? portStr : "-1"));
+	    return proxyPort;
+	}
+	
+	public static String GetHTTPNonProxyHosts()
+	{
+		return System.getProperty("http.nonProxyHosts");
+	}
+	
 	static final int GPU_UNKNOWN = -1;
 	static final int GPU_POWERVR_IOS = 0;
 	static final int GPU_POWERVR_ANDROID = 1;

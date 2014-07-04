@@ -68,6 +68,7 @@
 #include "SaveImageTest.h"
 #include "JPEGTest.h"
 #include "DateTimeTest.h"
+#include "UIParticlesTest.h"
 #include "SceneSystemTest.h"
 #include "ParseTextTest.h"
 
@@ -139,7 +140,7 @@ void GameCore::OnAppStarted()
  	new DLCTest();
  	new UIListTest();
  	new UIScrollViewTest();
- 
+ 	new UIParticlesTest();
     new ThreadSyncTest();
     new SceneSystemTest();
     

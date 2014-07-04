@@ -196,9 +196,16 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
-    textBlock->SetRectSize(size);
-    PrepareSprite();
-    textBlock->PreDraw();
+	if(GetText() == L"")
+	{
+		return;
+	}
+	textBlock->SetRectSize(size);
+	PrepareSprite();
+	textBlock->PreDraw();
+	
+	shadowBg->SetColorInheritType(GetBackground()->GetColorInheritType());
+	textBg->SetColorInheritType(GetBackground()->GetColorInheritType());
 
     UIControl::Draw(geometricData);
 
@@ -211,13 +218,15 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
-        shadowBg->SetDrawColor(shadowColor);
-        shadowBg->Draw(shadowGeomData);
-    }
+		shadowBg->SetColor(shadowColor);
+		shadowBg->SetParentColor(GetBackground()->GetDrawColor());
+		shadowBg->Draw(shadowGeomData);
+	}
 
-    textBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
-    textBg->SetDrawColor(textColor);
-    textBg->Draw(geometricData);
+	textBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
+	textBg->SetColor(textColor);
+	textBg->SetParentColor(GetBackground()->GetDrawColor());
+	textBg->Draw(geometricData);
 }
 
 

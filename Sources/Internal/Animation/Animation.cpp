@@ -135,7 +135,11 @@ void Animation::Update(float32 timeElapsed)
 				}else
 				{
 					time -= timeLength;
-					repeatCount--;
+					// Do not decrement repeat counter for loop
+					if (repeatCount != INFINITE_LOOP)
+					{
+						repeatCount--;
+					}
 				}
 			}
 		}else // 
@@ -152,7 +156,11 @@ void Animation::Update(float32 timeElapsed)
 				}else 
 				{
 					time -= timeLength;
-					repeatCount--;
+					// Do not decrement repeat counter for loop
+					if (repeatCount != INFINITE_LOOP)
+					{
+						repeatCount--;
+					}
 				}
 			}
 		}

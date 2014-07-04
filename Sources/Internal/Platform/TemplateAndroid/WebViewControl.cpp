@@ -30,16 +30,19 @@
 
 #include "WebViewControl.h"
 #include "FileSystem/Logger.h"
+#include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
+#include "ExternC/AndroidLayer.h"
 
 namespace DAVA
 {
 
-int WebViewControl::webViewIdCount = 0;
+int32_t WebViewControl::webViewIdCount = 0;
+int32_t WebViewControl::requestId = 0;
 
 jclass JniWebView::gJavaClass = NULL;
 const char* JniWebView::gJavaClassName = NULL;
 JniWebView::CONTROLS_MAP JniWebView::controls;
-
 
 jclass JniWebView::GetJavaClass() const
 {
@@ -78,6 +81,90 @@ void JniWebView::OpenURL(int id, const String& urlToOpen)
 		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jUrlToOpen);
 		GetEnvironment()->DeleteLocalRef(jUrlToOpen);
 	}
+}
+
+void JniWebView::LoadHtmlString(int id, const String& htmlString)
+{
+	jmethodID mid = GetMethodID("LoadHtmlString", "(ILjava/lang/String;)V");
+	if (mid)
+	{
+		jstring jHtmlStringToOpen = GetEnvironment()->NewStringUTF(htmlString.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jHtmlStringToOpen);
+		GetEnvironment()->DeleteLocalRef(jHtmlStringToOpen);
+	}
+}
+
+void JniWebView::ExecuteJScript(int id, int requestId, const String& scriptString)
+{
+	jmethodID mid = GetMethodID("ExecuteJScript", "(IILjava/lang/String;)V");
+	if (mid)
+	{
+		jstring jScriptToExecute = GetEnvironment()->NewStringUTF(scriptString.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, requestId, jScriptToExecute);
+		GetEnvironment()->DeleteLocalRef(jScriptToExecute);
+	}
+}
+
+void JniWebView::DeleteCookies(const String& targetURL)
+{
+	jmethodID mid = GetMethodID("DeleteCookies", "(Ljava/lang/String;)V");
+	if (mid)
+	{
+		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetURL.c_str());
+		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, jTargetURL);
+		GetEnvironment()->DeleteLocalRef(jTargetURL);
+	}
+}
+
+String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
+{
+	jmethodID mid = GetMethodID("GetCookie", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+	String returnStr = "";
+
+	if (mid)
+	{
+		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
+		jstring jName = GetEnvironment()->NewStringUTF(cookieName.c_str());
+		jobject item = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL, jName);
+
+		CreateStringFromJni(env, jstring(item), returnStr);
+
+		GetEnvironment()->DeleteLocalRef(jTargetURL);
+		GetEnvironment()->DeleteLocalRef(jName);
+	}
+
+	return returnStr;
+}
+
+Map<String, String> JniWebView::GetCookies(const String& targetUrl)
+{
+	jmethodID mid = GetMethodID("GetCookies", "(Ljava/lang/String;)[Ljava/lang/Object;");
+	Map<String, String> cookiesMap;
+
+	if (mid)
+	{
+		jstring jTargetURL = GetEnvironment()->NewStringUTF(targetUrl.c_str());
+
+		jobjectArray jArray = (jobjectArray) GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid, jTargetURL);
+		if (jArray)
+		{
+			jsize size = GetEnvironment()->GetArrayLength(jArray);
+			for (jsize i = 0; i < size; ++i)
+			{
+				jobject item = GetEnvironment()->GetObjectArrayElement(jArray, i);
+				String cookiesString = "";
+				CreateStringFromJni(env, jstring(item), cookiesString);
+
+				Vector<String> cookieEntry;
+				Split(cookiesString, "=", cookieEntry);
+				cookiesMap[cookieEntry[0]] = cookieEntry[1];
+			}
+		}
+
+		GetEnvironment()->DeleteLocalRef(jTargetURL);
+	}
+
+	return cookiesMap;
 }
 
 void JniWebView::OpenFromBuffer(int id, const String& string, const String& baseUrl)
@@ -155,6 +242,23 @@ void JniWebView::PageLoaded(int id)
 	}
 }
 
+void JniWebView::OnExecuteJScript(int id, int requestId, const String& result)
+{
+	CONTROLS_MAP::iterator iter = controls.find(id);
+	if (iter == controls.end())
+	{
+		Logger::Debug("Error web view id=%d", id);
+		return;
+	}
+
+	WebViewControl* control = iter->second;
+	IUIWebViewDelegate *delegate = control->delegate;
+	if (delegate)
+	{
+		delegate->OnExecuteJScript(control->webView, requestId, result);
+	}
+}
+
 WebViewControl::WebViewControl()
 {
 	delegate = NULL;
@@ -179,6 +283,38 @@ void WebViewControl::OpenURL(const String& urlToOpen)
 {
 	JniWebView jniWebView;
 	jniWebView.OpenURL(webViewId, urlToOpen);
+}
+
+void WebViewControl::LoadHtmlString(const WideString& urlToOpen)
+{
+	JniWebView jniWebView;
+	jniWebView.LoadHtmlString(webViewId, UTF8Utils::EncodeToUTF8(urlToOpen));
+}
+
+void WebViewControl::DeleteCookies(const String& targetUrl)
+{
+	JniWebView jniWebView;
+	jniWebView.DeleteCookies(targetUrl);
+}
+
+String WebViewControl::GetCookie(const String& url, const String& name) const
+{
+	JniWebView jniWebView;
+	return jniWebView.GetCookie(url, name);
+}
+// Get the list of cookies for specific domain
+Map<String, String> WebViewControl::GetCookies(const String& url) const
+{
+	JniWebView jniWebView;
+	return jniWebView.GetCookies(url);
+}
+
+int32_t WebViewControl::ExecuteJScript(const String& scriptString)
+{
+	requestId++;
+	JniWebView jniWebView;
+	jniWebView.ExecuteJScript(webViewId, requestId, scriptString);
+	return requestId;
 }
 
 void WebViewControl::OpenFromBuffer(const String& data, const FilePath& urlToOpen)

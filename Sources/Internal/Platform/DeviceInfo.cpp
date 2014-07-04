@@ -37,6 +37,8 @@
 namespace DAVA
 {
 
+DeviceInfo::ScreenInfo DeviceInfo::screenInfo;
+
 DeviceInfo::ePlatform DeviceInfo::GetPlatform()
 {
 	ePlatform platform = PLATFORM_UNKNOWN;
@@ -92,6 +94,17 @@ String DeviceInfo::GetPlatformString()
 	}
 
 	return res;
+}
+
+
+DeviceInfo::ScreenInfo DeviceInfo::GetScreenInfo()
+{
+	return screenInfo;
+}
+
+void DeviceInfo::SetScreenInfo(int32 w, int32 h, int32 scale)
+{
+	screenInfo = DeviceInfo::ScreenInfo(w, h, scale);
 }
 
 #ifndef __DAVAENGINE_ANDROID__

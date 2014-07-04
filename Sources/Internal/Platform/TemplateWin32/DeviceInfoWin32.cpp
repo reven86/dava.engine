@@ -71,6 +71,20 @@ String DeviceInfo::GetTimeZone()
 {
 	return "Not yet implemented";
 }
+String DeviceInfo::GetHTTPProxyHost()
+{
+	return "Not yet implemented";
+}
+
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	return "Not yet implemented";
+}
+
+int DeviceInfo::GetHTTPProxyPort()
+{
+	return 0;
+}
 
 String DeviceInfo::GetUDID()
 {

@@ -71,7 +71,7 @@
     backgroundView = [[BackgroundView alloc] initWithFrame:[glView frame]];
     [backgroundView setBackgroundColor:[UIColor clearColor]];
     [backgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight];
-    [backgroundView setMultipleTouchEnabled:YES]; // to pass touches to framework, see please DF-2796.
+    [backgroundView setMultipleTouchEnabled:NO]; // Disable multitouch for the whole project
 
     [glView addSubview:backgroundView];
     [backgroundView release];
