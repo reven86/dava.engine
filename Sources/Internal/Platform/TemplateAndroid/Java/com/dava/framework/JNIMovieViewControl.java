@@ -3,8 +3,6 @@ package com.dava.framework;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
@@ -26,6 +24,7 @@ public class JNIMovieViewControl {
 	private final static int playerStateNoReady = 0;
 	private final static int playerStateInprogress = 1;
 	private final static int playerStateReady = 2;
+	private final static int playerStatePlaying = 3;
 
 	private static class MovieControl {
 		public MovieControl(int id, RelativeLayout layout, VideoView view, MediaPlayer player) {
@@ -232,17 +231,16 @@ public class JNIMovieViewControl {
 				}
 				control.view.setLayoutParams(params);
 				
-				control.player.seekTo(0);
-				
-				Timer timer = new Timer();
-				timer.schedule(new TimerTask() {
+				control.player.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
 					
 					@Override
-					public void run() {
+					public void onSeekComplete(MediaPlayer mp) {
 						control.playerState = playerStateReady;
 						Play(control.id);
+						control.player.setOnSeekCompleteListener(null);
 					}
-				}, 500);
+				});
+				control.player.seekTo(0);
 			}
 		});
 		
@@ -293,8 +291,10 @@ public class JNIMovieViewControl {
 				
 				if (control.playerState == playerStateNoReady)
 					PrepareVideo(control);
-				else if (control.playerState == playerStateReady)
+				else if (control.playerState == playerStateReady) {
 					control.player.start();
+					control.playerState = playerStatePlaying;
+				}
 				return null;
 			}
 		});
@@ -342,7 +342,8 @@ public class JNIMovieViewControl {
 			return false;
 		
 		MovieControl control = controls.get(id);
-		if (control.playerState == playerStateInprogress)
+		if (control.playerState == playerStateInprogress ||
+			control.playerState == playerStateReady)
 			return true;
 		
 		MediaPlayer player = control.player;

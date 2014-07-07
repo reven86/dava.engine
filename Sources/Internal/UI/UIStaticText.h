@@ -90,8 +90,8 @@ public:
     const Color &GetShadowColor() const;
     const Vector2 &GetShadowOffset() const;
 
-    UIControlBackground* GetTextBackground() const;
-    UIControlBackground* GetShadowBackground() const;
+    inline UIControlBackground* GetTextBackground() const { return textBg; };
+    inline UIControlBackground* GetShadowBackground() const { return shadowBg; };
 
     // Animation methods for Text Color and Shadow Color.
     virtual Animation * TextColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
@@ -117,6 +117,7 @@ public:
     void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);
 };
+
 };
 
 #endif //__DAVAENGINE_UI_STATIC_TEXT_H__

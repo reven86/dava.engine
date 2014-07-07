@@ -446,14 +446,4 @@ void UIStaticText::PrepareSpriteInternal(DAVA::BaseObject *caller, void *param, 
     }
 }
 
-UIControlBackground* UIStaticText::GetTextBackground() const
-{
-    return textBg;
-}
-
-UIControlBackground* UIStaticText::GetShadowBackground() const
-{
-    return shadowBg;
-}
-
 };
