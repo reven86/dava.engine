@@ -104,7 +104,6 @@ protected:
 
     // Lock/unlock the project files.
     void LockProjectFiles(const List<QString>& fileNames);
-    void LockProjectFiles();
     void UnlockProjectFiles(bool needCleanup);
 
 private:

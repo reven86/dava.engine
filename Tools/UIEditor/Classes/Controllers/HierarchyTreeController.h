@@ -140,6 +140,7 @@ public:
                          HierarchyTreeScreenNode* activeScreen);
 
 	void UpdateSelection(const HierarchyTreeNode* activeItem);
+    void UpdateAggregators(const HierarchyTreePlatformNode* platform);
 	
 	void ChangeItemSelection(HierarchyTreeControlNode* control);
 	void SelectControl(HierarchyTreeControlNode* control);

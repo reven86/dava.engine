@@ -43,7 +43,6 @@ class SubcontrolsHelper
 public:
 	// Verify whether the control is subcontrol for its parent.
 	static bool ControlIsSubcontrol(UIControl* uiControl);
-	static QString FormatCopyName(QString baseName, const HierarchyTreeNode* parent);
 };
 }
 

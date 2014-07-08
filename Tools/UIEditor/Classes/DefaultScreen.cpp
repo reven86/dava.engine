@@ -493,8 +493,18 @@ void DefaultScreen::ApplyMoveDelta(const Vector2& delta)
 		UIControl* control = controlNode->GetUIObject();
 		if (control)
 		{
-			
-			control->SetPosition(startControlPos[control] + delta);
+            float32 parentsTotalAngle = control->GetParentsTotalAngle(false);
+            if(parentsTotalAngle != 0)
+            {
+                Matrix3 tmp;
+                tmp.BuildRotation(-parentsTotalAngle);
+                Vector2 rotatedVec = delta * tmp;
+                control->SetPosition(startControlPos[control] + rotatedVec);
+            }
+            else
+            {
+                control->SetPosition(startControlPos[control] + delta);
+            }
 		}
 	}
 }
@@ -1462,7 +1472,30 @@ int32 DefaultScreen::CalculateStickToGuidesDrag(Vector2& offset) const
         HierarchyTreeControlNode* controlNode = (*iter);
         if (controlNode && controlNode->GetUIObject())
         {
-            controlRects.push_back(controlNode->GetUIObject()->GetRect(true));
+            Rect rectControl = controlNode->GetUIObject()->GetRect(true);
+            Rect rectFinal = rectControl;
+            float32 fAngle = controlNode->GetUIObject()->GetAngle();
+            if(fAngle != 0)
+            {
+                // Complex case - angle is not 0. Particular fix for 90, 180 and 270 degrees goes here
+                if(FLOAT_EQUAL_EPS(fAngle, PI_05, 1e-4f))
+                {
+                    // 90
+                    rectFinal = Rect(rectControl.x - rectControl.dy, rectControl.y, rectControl.dy, rectControl.dx);
+                }
+                else if(FLOAT_EQUAL_EPS(fAngle, PI, 1e-4f))
+                {
+                    // 180
+                    rectFinal = Rect(rectControl.x - rectControl.dx, rectControl.y - rectControl.dy, rectControl.dx, rectControl.dy);
+                }
+                else if(FLOAT_EQUAL_EPS(fAngle, (PI+PI_05), 1e-4f))
+                {
+                    // 270
+                    rectFinal = Rect(rectControl.x, rectControl.y - rectControl.dx, rectControl.dy, rectControl.dx);
+                }
+                
+            }
+            controlRects.push_back(rectFinal);
         }
     }
     

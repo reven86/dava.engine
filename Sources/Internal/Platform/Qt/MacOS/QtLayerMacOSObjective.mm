@@ -75,8 +75,7 @@ void QtLayerMacOS::ProcessFrame()
 void QtLayerMacOS::AppFinished()
 {
     [openGLView removeFromSuperview];
-    [openGLView release];
-    
+
     Core::Instance()->SystemAppFinished();
     FrameworkWillTerminate();
     Core::Instance()->ReleaseSingletons();
@@ -86,6 +85,8 @@ void QtLayerMacOS::AppFinished()
         DAVA::MemoryManager::Instance()->FinalLog();
     }
 #endif
+    
+    [openGLView release];
 }
     
 void QtLayerMacOS::MouseMoved(float32 x, float32 y)

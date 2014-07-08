@@ -20,16 +20,20 @@ eRotationQuadrant UIControlResizeHelper::GetRotationQuadant(float32 angle)
     float32 cosAngle = 0.0f;
     SinCosFast(angle, sinAngle, cosAngle);
 
-    static float32 quadrantAngleSinCos = sqrtf(2) / 2; // 45 degrees.
-    if ((cosAngle >= 0) && (sinAngle < quadrantAngleSinCos) && (sinAngle > -quadrantAngleSinCos))
+    static float32 deg45InRad = DegToRad(45.0); // 45 degrees
+    float32 sin45 = 0.0f;
+    float32 cos45 = 0.0f;
+    SinCosFast(deg45InRad, sin45, cos45);
+    
+    if ((cosAngle >= 0) && (sinAngle <= sin45) && (sinAngle >= -sin45))
     {
         return QUADRANT_MINUS_PI_4_TO_PI_4;
     }
-    else if ((sinAngle > 0) && (fabs(cosAngle) < quadrantAngleSinCos))
+    else if ((sinAngle > 0) && (fabs(cosAngle) < cos45))
     {
         return QUADRANT_PI_4_TO_3PI_4;
     }
-    else if ((cosAngle < 0) && (sinAngle < quadrantAngleSinCos) && (sinAngle > -quadrantAngleSinCos))
+    else if ((cosAngle < 0) && (sinAngle <= sin45) && (sinAngle >= -sin45))
     {
         return QUADRANT_3PI_4_TO_4PI_3;
     }
@@ -145,26 +149,21 @@ Rect UIControlResizeHelper::ResizeControlInQuadrant0(ResizeType unrotatedResizeT
     Rect rect = resizeRect;
     const UIGeometricData &gd = uiControl->GetGeometricData();
 
-    // Clamp to minimum width/height.
     float32 offsetX = delta.x;
-    float offsetY = delta.y;
-    if (rect.dx - offsetX < MINIMUM_CONTROL_HEIGHT)
-    {
-        offsetX = rect.dx > MINIMUM_CONTROL_HEIGHT ? rect.dx - MINIMUM_CONTROL_HEIGHT : MINIMUM_CONTROL_HEIGHT;
-    }
-    if (rect.dy - offsetY < MINIMUM_CONTROL_WIDTH)
-    {
-        offsetY = rect.dx > MINIMUM_CONTROL_WIDTH ? rect.dy - MINIMUM_CONTROL_WIDTH : MINIMUM_CONTROL_WIDTH;
-    }
+    float32 offsetY = delta.y;
 
     switch (unrotatedResizeType)
 	{
         case ResizeTypeLeft:
         {
+            rect.dx = ClampDX(rect.dx - offsetX);
+            if(rect.dx == MINIMUM_CONTROL_HEIGHT)
+            {
+                 offsetX = resizeRect.dx - MINIMUM_CONTROL_HEIGHT;
+            }
+            
             rect.x += offsetX * gd.cosA;
             rect.y += offsetX * gd.sinA;
-            rect.dx = ClampDX(rect.dx - offsetX);
-
             break;
         }
 
@@ -176,9 +175,13 @@ Rect UIControlResizeHelper::ResizeControlInQuadrant0(ResizeType unrotatedResizeT
 
         case ResizeTypeTop:
         {
+            rect.dy = ClampDY(rect.dy - offsetY);
+            if(rect.dy == MINIMUM_CONTROL_WIDTH)
+            {
+                offsetY = resizeRect.dy - MINIMUM_CONTROL_WIDTH;
+            }
             rect.x -= (offsetY * gd.sinA);
             rect.y += (offsetY * gd.cosA);
-            rect.dy = ClampDY(rect.dy - offsetY);
             break;
         }
 
@@ -190,29 +193,44 @@ Rect UIControlResizeHelper::ResizeControlInQuadrant0(ResizeType unrotatedResizeT
 
         case ResizeTypeLeftTop:
         {
-            rect.x = rect.x + (offsetX * gd.cosA) - (offsetY * gd.sinA);
-            rect.y = rect.y + (offsetX * gd.sinA) + (offsetY * gd.cosA);
             rect.dx = ClampDX(rect.dx - offsetX);
             rect.dy = ClampDY(rect.dy - offsetY);
-
+            if(rect.dx == MINIMUM_CONTROL_HEIGHT)
+            {
+                offsetX = resizeRect.dx - MINIMUM_CONTROL_HEIGHT;
+            }
+            if(rect.dy == MINIMUM_CONTROL_WIDTH)
+            {
+                offsetY = resizeRect.dy - MINIMUM_CONTROL_WIDTH;
+            }
+            rect.x = rect.x + (offsetX * gd.cosA) - (offsetY * gd.sinA);
+            rect.y = rect.y + (offsetX * gd.sinA) + (offsetY * gd.cosA);
             break;
         }
 
         case ResizeTypeLeftBottom:
         {
+            rect.dx = ClampDX(rect.dx - offsetX);
+            if(rect.dx == MINIMUM_CONTROL_HEIGHT)
+            {
+                offsetX = resizeRect.dx - MINIMUM_CONTROL_HEIGHT;
+            }
             rect.x += offsetX * gd.cosA;
             rect.y += offsetX * gd.sinA;
-            rect.dx = ClampDX(rect.dx - offsetX);
             rect.dy = ClampDY(rect.dy + offsetY);
             break;
         }
 
         case ResizeTypeRigthTop:
         {
+            rect.dy = ClampDY(rect.dy - offsetY);
+            if(rect.dy == MINIMUM_CONTROL_WIDTH)
+            {
+                offsetY = resizeRect.dy - MINIMUM_CONTROL_WIDTH;
+            }
             rect.x -= (offsetY * gd.sinA);
             rect.y += (offsetY * gd.cosA);
             rect.dx = ClampDX(rect.dx + delta.x);
-            rect.dy = ClampDY(rect.dy - delta.y);
             break;
         }
 
@@ -351,23 +369,18 @@ Rect UIControlResizeHelper::ResizeControlInQuadrant2(ResizeType unrotatedResizeT
  
     float32 offsetX = delta.x;
     float32 offsetY = delta.y;
-    if (rect.dx + offsetX < MINIMUM_CONTROL_HEIGHT)
-    {
-        offsetX = rect.dx > MINIMUM_CONTROL_HEIGHT ? MINIMUM_CONTROL_HEIGHT - rect.dx : MINIMUM_CONTROL_HEIGHT;
-    }
-    if (rect.dy + offsetY < MINIMUM_CONTROL_WIDTH)
-    {
-        offsetY = rect.dy > MINIMUM_CONTROL_WIDTH ? MINIMUM_CONTROL_WIDTH - rect.dy : MINIMUM_CONTROL_WIDTH;
-    }
 
     switch (unrotatedResizeType)
 	{
         case ResizeTypeLeft:
         {
+            rect.dx = ClampDX(rect.dx + offsetX);
+            if(rect.dx == MINIMUM_CONTROL_HEIGHT)
+            {
+                offsetX = MINIMUM_CONTROL_HEIGHT - resizeRect.dx;
+            }
             rect.x -= offsetX * gd.cosA;
             rect.y -= offsetX * gd.sinA;
-            rect.dx = ClampDX(rect.dx + offsetX);
-            
             break;
         }
             
@@ -379,9 +392,13 @@ Rect UIControlResizeHelper::ResizeControlInQuadrant2(ResizeType unrotatedResizeT
             
         case ResizeTypeTop:
         {
+            rect.dy = ClampDY(rect.dy + offsetY);
+            if(rect.dy == MINIMUM_CONTROL_WIDTH)
+            {
+                offsetY = MINIMUM_CONTROL_WIDTH - resizeRect.dy;
+            }
             rect.x += (offsetY * gd.sinA);
             rect.y -= (offsetY * gd.cosA);
-            rect.dy = ClampDY(rect.dy + offsetY);
             break;
         }
             
@@ -393,29 +410,44 @@ Rect UIControlResizeHelper::ResizeControlInQuadrant2(ResizeType unrotatedResizeT
             
         case ResizeTypeLeftTop:
         {
-            rect.x = rect.x - (offsetX * gd.cosA) + (offsetY * gd.sinA);
-            rect.y = rect.y - (offsetX * gd.sinA) - (offsetY * gd.cosA);
             rect.dx = ClampDX(rect.dx + offsetX);
             rect.dy = ClampDY(rect.dy + offsetY);
-            
+            if(rect.dx == MINIMUM_CONTROL_HEIGHT)
+            {
+                offsetX = MINIMUM_CONTROL_HEIGHT - resizeRect.dx;
+            }
+            if(rect.dy == MINIMUM_CONTROL_WIDTH)
+            {
+                offsetY = MINIMUM_CONTROL_WIDTH - resizeRect.dy;
+            }
+            rect.x = rect.x - (offsetX * gd.cosA) + (offsetY * gd.sinA);
+            rect.y = rect.y - (offsetX * gd.sinA) - (offsetY * gd.cosA);
             break;
         }
             
         case ResizeTypeLeftBottom:
         {
+            rect.dx = ClampDX(rect.dx + offsetX);
+            if(rect.dx == MINIMUM_CONTROL_HEIGHT)
+            {
+                offsetX = MINIMUM_CONTROL_HEIGHT - resizeRect.dx;
+            }
+            rect.dy = ClampDY(rect.dy - offsetY);
             rect.x -= offsetX * gd.cosA;
             rect.y -= offsetX * gd.sinA;
-            rect.dx = ClampDX(rect.dx + offsetX);
-            rect.dy = ClampDY(rect.dy - offsetY);
             break;
         }
             
         case ResizeTypeRigthTop:
         {
+            rect.dy = ClampDY(rect.dy + delta.y);
+            if(rect.dy == MINIMUM_CONTROL_WIDTH)
+            {
+                offsetY = MINIMUM_CONTROL_WIDTH - resizeRect.dy;
+            }
+            rect.dx = ClampDX(rect.dx - delta.x);
             rect.x += (offsetY * gd.sinA);
             rect.y -= (offsetY * gd.cosA);
-            rect.dx = ClampDX(rect.dx - delta.x);
-            rect.dy = ClampDY(rect.dy + delta.y);
             break;
         }
             

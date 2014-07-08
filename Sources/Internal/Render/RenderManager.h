@@ -713,12 +713,23 @@ public:
 	void SetHWRenderTargetSprite(Sprite *renderTarget);
 	void SetHWRenderTargetTexture(Texture * renderTarget);
     
+    enum eClearBuffers
+    {
+        COLOR_BUFFER = 1,
+        DEPTH_BUFFER = 2,
+        STENCIL_BUFFER = 4,
+        
+        ALL_BUFFERS = COLOR_BUFFER | DEPTH_BUFFER | STENCIL_BUFFER
+    };
+    
     enum eDiscardAttachments
     {
         COLOR_ATTACHMENT = 1,
         DEPTH_ATTACHMENT = 2,
         STENCIL_ATTACHMENT = 4
-    };
+    };    
+
+
     /**
      \Hints renderer that attachment is not needed anymore 
      \param[in] attachments - bitmask of eDiscardAttachments

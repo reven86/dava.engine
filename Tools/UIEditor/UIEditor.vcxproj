@@ -44,6 +44,7 @@
     <ClCompile Include="Classes\Guides\GuidesManager.cpp" />
     <ClCompile Include="Classes\Helpers\BackgroundGridWidgetHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ColorHelper.cpp" />
+    <ClCompile Include="Classes\Helpers\CopyPasteHelper.cpp" />
     <ClCompile Include="Classes\Helpers\ListPropertyGridWidgetHelper.cpp" />
     <ClCompile Include="Classes\Helpers\LocalizationSystemHelper.cpp" />
     <ClCompile Include="Classes\Helpers\PropertiesHelper.cpp" />
@@ -340,6 +341,7 @@
     <ClInclude Include="Classes\Guides\GuidesManager.h" />
     <ClInclude Include="Classes\Helpers\BackgroundGridWidgetHelper.h" />
     <ClInclude Include="Classes\Helpers\ColorHelper.h" />
+    <ClInclude Include="Classes\Helpers\CopyPasteHelper.h" />
     <ClInclude Include="Classes\Helpers\ListPropertyGridWidgetHelper.h" />
     <ClInclude Include="Classes\Helpers\LocalizationSystemHelper.h" />
     <ClInclude Include="Classes\Helpers\PropertiesHelper.h" />

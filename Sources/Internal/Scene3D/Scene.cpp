@@ -120,6 +120,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , windSystem(0)
 	, sceneGlobalMaterial(0)
     , isDefaultGlobalMaterial(true)
+    , clearBuffers(RenderManager::ALL_BUFFERS)
 {   
 	CreateComponents();
 	CreateSystems();
@@ -782,15 +783,9 @@ void Scene::Draw()
 	{
 		//imposterManager->ProcessQueue();
 	}
- 
-	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
-    //RenderManager::Instance()->SetCullMode(FACE_BACK);
-    //RenderManager::Instance()->SetState(RenderState::DEFAULT_3D_STATE);
-    RenderManager::Instance()->FlushState();
-	RenderManager::Instance()->ClearDepthBuffer();       
     
     
-    renderSystem->Render();
+    renderSystem->Render(clearBuffers);
     
     //foliageSystem->DebugDrawVegetation();
     
@@ -1035,6 +1030,15 @@ void Scene::OptimizeBeforeExport()
         (*it)->ReleaseIlluminationParams();
 
     Entity::OptimizeBeforeExport();
+}
+
+void Scene::SetClearBuffers(uint32 buffers) 
+{
+    clearBuffers = buffers;
+}
+uint32 Scene::GetClearBuffers() const 
+{
+    return clearBuffers;
 }
 
 };

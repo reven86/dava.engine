@@ -834,6 +834,9 @@
     <ClCompile Include="Classes\UI\PropertyGridWidgets\Custom\guidepropertygridwidget.cpp">
       <Filter>Sources\UI\PropertyGridWidgets\Custom</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Helpers\CopyPasteHelper.cpp">
+      <Filter>Sources\Helpers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\DefaultScreen.h">
@@ -1337,6 +1340,9 @@
     <ClInclude Include="Classes\UI\PropertyGridWidgets\Custom\guidepropertygridwidget.h">
       <Filter>Sources\UI\PropertyGridWidgets\Custom</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Helpers\CopyPasteHelper.h">
+      <Filter>Sources\Helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="UI\createplatformdlg.ui">
@@ -1443,9 +1449,6 @@
     </None>
     <None Include="UI\guidepropertygridwidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>
-    </None>
-    <None Include="UI\localizationfontseditordialog.ui">
-      <Filter>Form Files</Filter>
     </None>
   </ItemGroup>
 </Project>

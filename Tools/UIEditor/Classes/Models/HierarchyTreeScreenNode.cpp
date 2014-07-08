@@ -303,7 +303,7 @@ void HierarchyTreeScreenNode::MoveNewGuide(const Vector2& pos)
     guides.MoveNewGuide(pos);
 }
 
-bool HierarchyTreeScreenNode::CanAcceptNewGuide()
+bool HierarchyTreeScreenNode::CanAcceptNewGuide() const
 {
     return guides.CanAcceptNewGuide();
 }
@@ -328,7 +328,7 @@ void HierarchyTreeScreenNode::MoveGuide(const Vector2& pos)
     guides.MoveGuide(pos);
 }
 
-const GuideData* HierarchyTreeScreenNode::GetMoveGuide()
+const GuideData* HierarchyTreeScreenNode::GetMoveGuide() const
 {
     return guides.GetMoveGuide();
 }

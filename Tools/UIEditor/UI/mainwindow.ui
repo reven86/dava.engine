@@ -191,7 +191,11 @@
          </widget>
         </item>
         <item>
-         <widget class="DavaGLWidget" name="davaGlWidget" native="true"/>
+         <widget class="DavaGLWidget" name="davaGlWidget" native="true">
+          <property name="focusPolicy">
+           <enum>Qt::StrongFocus</enum>
+          </property>
+         </widget>
         </item>
         <item>
          <spacer name="horizontalSpacer">
@@ -1101,6 +1105,11 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>davaGlWidget</tabstop>
+  <tabstop>scaleSlider</tabstop>
+  <tabstop>scaleCombo</tabstop>
+ </tabstops>
  <resources>
   <include location="../Data/icons.qrc"/>
  </resources>

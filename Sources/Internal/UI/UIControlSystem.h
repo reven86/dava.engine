@@ -322,6 +322,9 @@ public:
 	 */
 	int32 UnlockSwitch();
 
+    void UI3DViewAdded();
+    void UI3DViewRemoved();
+
 private:
 	/**
 	 \brief Instantly replace one screen to enother.
@@ -365,6 +368,8 @@ private:
 	int32 inputHeight;
 	float32 scaleFactor;
 	Vector2 inputOffset;
+
+    int32 ui3DViewCount;
 	
 	friend class UIScreenTransition;
 	friend class UIScreenManager;

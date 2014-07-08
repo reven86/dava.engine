@@ -27,39 +27,24 @@
 =====================================================================================*/
 
 
+#ifndef __COPYPASTE_HELPER_H__
+#define __COPYPASTE_HELPER_H__
 
+#include "HierarchyTreeController.h"
+#include <QString>
 
-#include "SubcontrolsHelper.h"
-namespace DAVA {
-
-bool SubcontrolsHelper::ControlIsSubcontrol(UIControl* uiControl)
+namespace DAVA
 {
-	if (!uiControl || !uiControl->GetParent())
-	{
-		return false;
-	}
-	
-	// Firstly try the control's method.
-	if (uiControl->IsSubcontrol())
-	{
-		return true;
-	}
-	
-	// Yuri Coder, 2013/04/01. For UIEditor there is no way to compare subcontrols just by pointers,
-	// since multiple Clone() calls may change the pointers' values. So currently lets compare by name.
-	// TODO: if the parent control will contain children with the same name as one of the subcontrols,
-	// this children will become uneditable. Think about the solution.
-	const List<UIControl*>& parentSubcontrols = uiControl->GetParent()->GetSubcontrols();
-	for (List<UIControl*>::const_iterator iter = parentSubcontrols.begin();
-		 iter != parentSubcontrols.end(); iter ++)
-	{
-		if ((*iter)->GetName() == uiControl->GetName())
-		{
-			return true;
-		}
-	}
-	
-	return false;
+class CopyPasteHelper
+{
+public:
+
+	static QString FormatCopyName(QString baseName, const HierarchyTreeNode* parent);
+    static void UpdateAggregators(HierarchyTreeControlNode* controlNode, HierarchyTreeNode* targetNode);
+    
+private:
+	static void UpdateAggregatorControls(HierarchyTreeControlNode* control, HierarchyTreePlatformNode* activePlatform);
+};
 }
 
-};
+#endif /* defined(__COPYPASTE_HELPER_H__) */

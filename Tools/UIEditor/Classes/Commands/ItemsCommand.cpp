@@ -30,7 +30,7 @@
 #include "ItemsCommand.h"
 #include "HierarchyTreeController.h"
 #include "ScreenWrapper.h"
-#include "SubcontrolsHelper.h"
+#include "CopyPasteHelper.h"
 
 UndoableHierarchyTreeNodeCommand::UndoableHierarchyTreeNodeCommand()
 {
@@ -539,7 +539,7 @@ void ChangeNodeHeirarchy::Execute()
 					{
 						if (targetPlatform->IsAggregatorOrScreenNamePresent(node->GetName()))
 						{
-							QString newName = SubcontrolsHelper::FormatCopyName(node->GetName(), targetNode);
+							QString newName = CopyPasteHelper::FormatCopyName(node->GetName(), targetNode);
 							node->SetName(newName);
 						}
 					}
@@ -553,6 +553,7 @@ void ChangeNodeHeirarchy::Execute()
 			{
 				isNodeSelected = HierarchyTreeController::Instance()->IsControlSelected(controlNode);
 				HierarchyTreeController::Instance()->UnselectControl(controlNode);
+                CopyPasteHelper::UpdateAggregators(controlNode, targetNode);
 			}
 
 			node->SetParent(targetNode, insertAfterNode);

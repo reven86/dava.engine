@@ -219,13 +219,13 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
 		shadowBg->SetColor(shadowColor);
-		shadowBg->SetParentColor(GetBackground()->GetDrawColor());
+		shadowBg->SetParentColor(parent->GetBackground()->GetDrawColor());
 		shadowBg->Draw(shadowGeomData);
 	}
 
 	textBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
 	textBg->SetColor(textColor);
-	textBg->SetParentColor(GetBackground()->GetDrawColor());
+	textBg->SetParentColor(parent->GetBackground()->GetDrawColor());
 	textBg->Draw(geometricData);
 }
 

@@ -461,6 +461,11 @@ bool FileSystem::IsDirectory(const FilePath & pathToCheck)
 
 bool FileSystem::LockFile(const FilePath & filePath, bool isLock)
 {
+    if (!IsFile(filePath))
+    {
+        return false;
+    }
+
     if (IsFileLocked(filePath) == isLock)
     {
         return true;

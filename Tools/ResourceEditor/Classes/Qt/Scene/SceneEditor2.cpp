@@ -55,6 +55,8 @@ SceneEditor2::SceneEditor2()
 	, isLoaded(false)
 	, isHUDVisible(true)
 {
+    SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
+
 	renderStats.Clear();
 
 	EditorCommandNotify *notify = new EditorCommandNotify(this);

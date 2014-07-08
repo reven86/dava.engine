@@ -130,6 +130,23 @@ List<HierarchyTreeScreenNode*> HierarchyTreeController::GetUnsavedScreens()
 	return hierarchyTree.GetUnsavedScreens();
 }
 
+void HierarchyTreeController::UpdateAggregators(const HierarchyTreePlatformNode* platform)
+{
+    if(platform)
+    {
+        const HierarchyTreeNode::HIERARCHYTREENODESLIST& childNodes = platform->GetChildNodes();
+        for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = childNodes.begin();
+             iter != childNodes.end(); iter ++)
+        {
+            HierarchyTreeAggregatorNode* aggregatorNode = dynamic_cast<HierarchyTreeAggregatorNode*>(*iter);
+            if (aggregatorNode)
+            {
+                aggregatorNode->UpdateHierarchyTree();
+            }
+        }
+    }
+}
+
 void HierarchyTreeController::UpdateSelection(HierarchyTreePlatformNode* activePlatform, HierarchyTreeScreenNode* activeScreen)
 {
     bool updateHierarchyTree = false;
@@ -143,6 +160,10 @@ void HierarchyTreeController::UpdateSelection(HierarchyTreePlatformNode* activeP
         
         LocalizationSystem::Instance()->Cleanup();
         activeScreen->Load(screenPath);
+      
+        // Update the screen aggregators after screen is loaded.
+        UpdateAggregators(activePlatform);
+
         updateHierarchyTree = true;
 
         hierarchyTree.UpdateControlsData(activeScreen);
