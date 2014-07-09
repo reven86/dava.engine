@@ -354,6 +354,11 @@ void UIParticles::SetStartDelay(float32 value)
 {
     startDelay = value;
 }
+
+void UIParticles::SetInheritPosition(bool inheritPosition)
+{
+	effect->SetInheritPosition(inheritPosition);
+}
     
 void UIParticles::HandleDelayedAction(float32 timeElapsed)
 {

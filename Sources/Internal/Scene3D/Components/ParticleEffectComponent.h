@@ -109,6 +109,7 @@ public:
     void SetReflectionVisible(bool visible);
     bool GetRefractionVisible() const;
     void SetRefractionVisible(bool visible);
+    void SetInheritPosition(bool inheritPosition);    
 
 private:
     void ClearGroup(ParticleGroup& group);
