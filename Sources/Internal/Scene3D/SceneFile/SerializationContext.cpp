@@ -226,7 +226,9 @@ namespace DAVA
 	};
 
 	SerializationContext::SerializationContext()
-	{ }
+	{
+        serializationFlags = 0;
+    }
 
 	SerializationContext::~SerializationContext()
 	{

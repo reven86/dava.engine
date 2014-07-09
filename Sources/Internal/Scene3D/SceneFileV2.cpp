@@ -1020,6 +1020,7 @@ bool SceneFileV2::ReplaceNodeAfterLoad(Entity * node)
 			lc->lodLayersArray[iLayer].distance = lod->GetLodLayerDistance(iLayer);
 			lc->lodLayersArray[iLayer].nearDistanceSq = lod->GetLodLayerNearSquare(iLayer);
 			lc->lodLayersArray[iLayer].farDistanceSq = lod->GetLodLayerFarSquare(iLayer);
+            lc->lodLayersArray[iLayer].lodIndex = (int8)iLayer;
 		}
 
 		List<LodNode::LodData*> oldLodData;

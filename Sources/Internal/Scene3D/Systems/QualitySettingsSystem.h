@@ -56,6 +56,8 @@ class QualitySettingsComponent;
 class QualitySettingsSystem: public StaticSingleton<QualitySettingsSystem>
 {
 public:
+    
+    static const FastName INVALID_QUALITY_NAME;
     static const FastName QUALITY_OPTION_VEGETATION_ANIMATION;
 
     QualitySettingsSystem();
@@ -92,6 +94,12 @@ public:
 
     FilePath GetSFXQualityConfigPath(const FastName &name) const;
     FilePath GetSFXQualityConfigPath(size_t index) const;
+    
+    int32 GetLODQualityCount() const;
+    const FastName& GetLODQualityName(int32 index);
+    
+    void SetCurrentLODQuality(const FastName& name);
+    const FastName& GetCurrentLODQuality() const;
 
     // ------------------------------------------
 
@@ -140,6 +148,10 @@ protected:
     //sounds
     int32 curSoundQuality;
     Vector<SFXQ> soundQualities;
+    
+    //LODs
+    int32 curLODQuality;
+    Vector<FastName> lodQualities;
 
 	FastNameMap<bool> qualityOptions;
 

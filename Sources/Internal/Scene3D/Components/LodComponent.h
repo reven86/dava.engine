@@ -62,10 +62,11 @@ public:
 		float32 distance;
 		float32 nearDistanceSq;
 		float32 farDistanceSq;
+        int8 lodIndex;
 
 		LodDistance();
 		void SetDistance(const float32 &newDistance);
-        float32 GetDistance() const { return distance; };
+        inline float32 GetDistance() const { return distance; };
         
 		void SetNearDistance(const float32 &newDistance);
 		void SetFarDistance(const float32 &newDistance);
@@ -73,6 +74,8 @@ public:
 		float32 GetNearDistance() const;
 		float32 GetFarDistance() const;
 
+        inline void SetLodIndex(int8 index);
+        inline int8 GetLodIndex() const;
 
         INTROSPECTION(LodDistance,
             PROPERTY("distance", "Distance", GetDistance, SetDistance, I_SAVE | I_VIEW)
@@ -93,8 +96,22 @@ public:
 		int32 layer;
 		bool isDummy;
 	};
+    
+    struct QualityContainer
+    {
+        FastName qualityName;
+        Vector<LodDistance> lodLayersArray;
+    };
+    
 protected:
-    ~LodComponent(){};
+    
+    ~LodComponent();
+    
+	void DeserializeWithQuality(KeyedArchive *archive, SerializationContext *serializationContext);
+    void DeserializeWithoutQuality(KeyedArchive *archive, SerializationContext *serializationContext);
+    
+    bool ApplyQuality(const FastName& qualityName, Vector<QualityContainer>& src, Vector<LodDistance>& dst);
+
 public:
 	LodComponent();
 	virtual Component * Clone(Entity * toEntity);
@@ -112,6 +129,8 @@ public:
 
 	DAVA_DEPRECATED(void GetLodData(Vector<LodData*> &retLodLayers));
 
+    Vector<QualityContainer>* qualityContainer;
+    
 	int32 currentLod;
 	Vector<LodData> lodLayers;
 	Vector<LodDistance> lodLayersArray;
@@ -189,6 +208,16 @@ void LodComponent::EnableRecursiveUpdate()
 bool LodComponent::IsRecursiveUpdate()
 {
     return (flags & RECURSIVE_UPDATE) != 0;
+}
+
+inline void LodComponent::LodDistance::SetLodIndex(int8 index)
+{
+    lodIndex = index;
+}
+    
+inline int8 LodComponent::LodDistance::GetLodIndex() const
+{
+    return lodIndex;
 }
     
 };

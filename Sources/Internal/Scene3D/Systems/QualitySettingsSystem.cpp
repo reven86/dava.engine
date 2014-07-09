@@ -35,11 +35,13 @@
 namespace DAVA
 {
 
+const FastName QualitySettingsSystem::INVALID_QUALITY_NAME;
 const FastName QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION("VEGETATION_ANIMATION");
 
 QualitySettingsSystem::QualitySettingsSystem()
     : curTextureQuality(0)
     , curSoundQuality(0)
+    , curLODQuality(-1)
     , prerequiredVertexFromat(EVF_FORCE_DWORD) //default format set to keep all streams
 {
     Load("~res:/quality.yaml");
@@ -199,6 +201,33 @@ void QualitySettingsSystem::Load(const FilePath &path)
                         }
                     }
 
+                }
+            }
+            
+            //lods
+            const YamlNode *lodsNode = rootNode->Get("lods");
+            if(NULL != lodsNode)
+            {
+                const YamlNode *defaultLODQualityName = lodsNode->Get("default");
+                const YamlNode *lodQualitiesNode = lodsNode->Get("qualities");
+                
+                DVASSERT(defaultLODQualityName);
+                DVASSERT(lodQualitiesNode);
+                
+                int32 lodQualityNodeCount = lodQualitiesNode->GetCount();
+                
+                if(lodQualityNodeCount > 0)
+                {
+                    lodQualities.resize(lodQualityNodeCount);
+                    for(int32 i = 0; i < lodQualityNodeCount; ++i)
+                    {
+                        const YamlNode* qualityNameNode = lodQualitiesNode->Get(i);
+                        lodQualities[i] = FastName(qualityNameNode->AsString());
+                    }
+                    
+                    SetCurrentLODQuality(FastName(defaultLODQualityName->AsString()));
+                    
+                    DVASSERT(curLODQuality >= 0);
                 }
             }
         }
@@ -479,6 +508,38 @@ bool QualitySettingsSystem::NeedLoadEntity(const Entity *entity)
     }
     
     return true;
+}
+
+int32 QualitySettingsSystem::GetLODQualityCount() const
+{
+    return lodQualities.size();
+}
+
+const FastName& QualitySettingsSystem::GetLODQualityName(int32 index)
+{
+   DVASSERT(index >= 0 && index < (int32)lodQualities.size());
+   return lodQualities[index];
+}
+    
+void QualitySettingsSystem::SetCurrentLODQuality(const FastName& name)
+{
+    curLODQuality = -1;
+    
+    size_t lodQualityCount = lodQualities.size();
+    for(size_t i = 0; i < lodQualityCount; ++i)
+    {
+        if(name == lodQualities[i])
+        {
+            curLODQuality = (int32)i;
+        }
+    }
+    
+    DVASSERT(curLODQuality >= 0);
+}
+    
+const FastName& QualitySettingsSystem::GetCurrentLODQuality() const
+{
+    return (curLODQuality >= 0) ? lodQualities[curLODQuality] : INVALID_QUALITY_NAME;
 }
 
 
