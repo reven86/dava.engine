@@ -600,7 +600,7 @@ void Scene::AddRootNode(Entity *node, const FilePath &rootNodePath)
 	//proxyNode->SetName(rootNodePath.GetAbsolutePathname());
 }
 
-Entity *Scene::GetRootNode(const FilePath &rootNodePath)
+Entity *Scene::GetRootNode(const FilePath &rootNodePath, uint32 flags)
 {
 	ProxyNodeMap::const_iterator it = rootNodes.find(FILEPATH_MAP_KEY(rootNodePath));
 	if (it != rootNodes.end())
@@ -621,7 +621,7 @@ Entity *Scene::GetRootNode(const FilePath &rootNodePath)
         uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
         SceneFileV2 *file = new SceneFileV2();
         file->EnableDebugLog(false);
-        file->LoadScene(rootNodePath, this);
+        file->LoadScene(rootNodePath, this, flags);
         SafeRelease(file);
 				
         uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;

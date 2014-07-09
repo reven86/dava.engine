@@ -32,6 +32,7 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 
 namespace DAVA
 {
@@ -100,23 +101,43 @@ void LodComponent::Serialize(KeyedArchive *archive, SerializationContext *serial
 
 	if(NULL != archive)
 	{
-		uint32 i;
-
 		archive->SetUInt32("lc.flags", flags);
 
-		KeyedArchive *lodDistArch = new KeyedArchive();
-		for (i = 0; i < MAX_LOD_LAYERS; ++i)
-		{
-			KeyedArchive *lodDistValuesArch = new KeyedArchive();
-			lodDistValuesArch->SetFloat("ld.distance", lodLayersArray[i].distance);
-			lodDistValuesArch->SetFloat("ld.neardistsq", lodLayersArray[i].nearDistanceSq);
-			lodDistValuesArch->SetFloat("ld.fardistsq", lodLayersArray[i].farDistanceSq);
-
-			lodDistArch->SetArchive(KeyedArchive::GenKeyFromIndex(i), lodDistValuesArch);
-			lodDistValuesArch->Release();
-		}
-		archive->SetArchive("lc.loddist", lodDistArch);
-		lodDistArch->Release();
+        DVASSERT(qualityContainer);
+        
+        if(NULL == qualityContainer)
+        {
+            PopulateQualityContainer();
+        }
+        
+        KeyedArchive* qualityContainerArchive = new KeyedArchive();
+        
+        size_t qualityCount = qualityContainer->size();
+        for(size_t qualityIndex = 0; qualityIndex < qualityCount; ++qualityIndex)
+        {
+            QualityContainer& containerItem = (*qualityContainer)[qualityIndex];
+            KeyedArchive* containerItemArchive = new KeyedArchive();
+            
+            size_t lodLayerCount = containerItem.lodLayersArray.size();
+            for (size_t i = 0; i < lodLayerCount; ++i)
+            {
+                KeyedArchive* lodDistValuesArch = new KeyedArchive();
+                lodDistValuesArch->SetFloat("ld.distance", containerItem.lodLayersArray[i].distance);
+                lodDistValuesArch->SetFloat("ld.neardistsq", containerItem.lodLayersArray[i].nearDistanceSq);
+                lodDistValuesArch->SetFloat("ld.fardistsq", containerItem.lodLayersArray[i].farDistanceSq);
+                lodDistValuesArch->SetInt32("ld.lodIndex", (int32)containerItem.lodLayersArray[i].lodIndex);
+                
+                containerItemArchive->SetArchive(KeyedArchive::GenKeyFromIndex(i), lodDistValuesArch);
+                SafeRelease(lodDistValuesArch);
+            }
+            
+            qualityContainerArchive->SetArchive(containerItem.qualityName.c_str(),
+                                                containerItemArchive);
+            SafeRelease(containerItemArchive);
+        }
+        
+        archive->SetArchive("ld.qualityContainer", qualityContainerArchive);
+        SafeRelease(qualityContainerArchive);
 	}
 }
 
@@ -247,16 +268,21 @@ void LodComponent::CopyLODSettings(const LodComponent * fromLOD)
     forceDistance = fromLOD->forceDistance;
     forceDistanceSq = fromLOD->forceDistanceSq;
     forceLodLayer = fromLOD->forceLodLayer;
+    
+    if(fromLOD->qualityContainer != NULL)
+    {
+        InitQualityContainer();
+        
+        (*qualityContainer) = *(fromLOD->qualityContainer);
+    }
+    else
+    {
+        SafeDelete(qualityContainer);
+    }
 }
 
 void LodComponent::DeserializeWithQuality(KeyedArchive *archive,
                                           SerializationContext *serializationContext)
-{
-        
-}
-    
-void LodComponent::DeserializeWithoutQuality(KeyedArchive *archive,
-                                             SerializationContext *serializationContext)
 {
     if(NULL != archive)
 	{
@@ -266,22 +292,77 @@ void LodComponent::DeserializeWithoutQuality(KeyedArchive *archive,
         forceDistanceSq = INVALID_DISTANCE;
         forceLodLayer = INVALID_LOD_LAYER;
         
+        const FastName& currentLodQuality = QualitySettingsSystem::Instance()->GetCurrentLODQuality();
+        DVASSERT(currentLodQuality.IsValid());
+        
+        KeyedArchive* qualityContainerArchive = archive->GetArchive("ld.qualityContainer");
+        DVASSERT(qualityContainerArchive);
+        DVASSERT(qualityContainerArchive->Count() > 0);
+
+        KeyedArchive* currentQualityLODArchive = qualityContainerArchive->GetArchive(currentLodQuality.c_str());
+        if(NULL == currentQualityLODArchive)
+        {
+           const Map<String, VariantType*>& allData = qualityContainerArchive->GetArchieveData();
+           Map<String, VariantType*>::const_iterator it = allData.begin();
+           
+           currentQualityLODArchive = qualityContainerArchive->GetArchive(it->first);
+        }
+        
+        LoadDistancesFromArchive(currentQualityLODArchive, lodLayersArray, currentQualityLODArchive->Count());
+        
+        if(serializationContext->TestSerializationFlags(SerializationContext::EDITOR_MODE))
+        {
+            const Map<String, VariantType*>& allData = qualityContainerArchive->GetArchieveData();
+            Map<String, VariantType*>::const_iterator it = allData.begin();
+            Map<String, VariantType*>::const_iterator itEnd = allData.end();
+            
+            InitQualityContainer();
+            
+            qualityContainer->resize(allData.size());
+            
+            size_t curIndex = 0;
+            while(it != itEnd)
+            {
+                KeyedArchive* lodArchive = it->second->AsKeyedArchive();
+                QualityContainer& containerItem = (*qualityContainer)[curIndex];
+                
+                containerItem.qualityName = FastName(it->first);
+                LoadDistancesFromArchive(lodArchive, containerItem.lodLayersArray, lodArchive->Count());
+                
+                ++curIndex;
+                ++it;
+            }
+        }
+	}
+    
+	flags |= NEED_UPDATE_AFTER_LOAD;
+	Component::Deserialize(archive, serializationContext);
+
+}
+    
+void LodComponent::DeserializeWithoutQuality(KeyedArchive *archive,
+                                             SerializationContext *serializationContext)
+{
+    if(NULL != archive)
+	{
+		if(archive->IsKeyExists("lc.flags"))
+        {
+            flags = archive->GetUInt32("lc.flags");
+        }
+        
+        forceDistance = INVALID_DISTANCE;
+        forceDistanceSq = INVALID_DISTANCE;
+        forceLodLayer = INVALID_LOD_LAYER;
+        
 		KeyedArchive *lodDistArch = archive->GetArchive("lc.loddist");
 		if(NULL != lodDistArch)
 		{
-			for(uint32 i = 0; i < MAX_LOD_LAYERS; ++i)
-			{
-				KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-				if(NULL != lodDistValuesArch)
-				{
-					lodLayersArray[i].distance = lodDistValuesArch->GetFloat("ld.distance");
-					lodLayersArray[i].nearDistanceSq = lodDistValuesArch->GetFloat("ld.neardistsq");
-					lodLayersArray[i].farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
-                    lodLayersArray[i].lodIndex = (int8)i;
-				}
-			}
-            
-            
+            LoadDistancesFromArchive(lodDistArch, lodLayersArray, MAX_LOD_LAYERS);
+        
+            if(serializationContext->TestSerializationFlags(SerializationContext::EDITOR_MODE))
+            {
+                PopulateQualityContainer();
+            }
 		}
         
         if(serializationContext->GetVersion() < OLD_LODS_SCENE_VERSION)
@@ -344,6 +425,41 @@ bool LodComponent::ApplyQuality(const FastName& qualityName,
     }
     
     return qualityApplied;
+}
+
+void LodComponent::PopulateQualityContainer()
+{
+    InitQualityContainer();
+    
+    QualitySettingsSystem* qualitySystem = QualitySettingsSystem::Instance();
+    int32 qualityCount = qualitySystem->GetLODQualityCount();
+    
+    qualityContainer->resize(qualityCount);
+    for(int32 i = 0; i < qualityCount; ++i)
+    {
+        QualityContainer& containerItem = (*qualityContainer)[i];
+        
+        containerItem.qualityName = qualitySystem->GetLODQualityName(i);
+        containerItem.lodLayersArray = lodLayersArray;
+    }
+}
+
+void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
+                                            Vector<LodDistance>& lodLayers,
+                                            uint32 maxDistanceCount)
+{
+    lodLayers.resize(maxDistanceCount);
+    for(uint32 i = 0; i < maxDistanceCount; ++i)
+    {
+        KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+        if(NULL != lodDistValuesArch)
+        {
+            lodLayers[i].distance = lodDistValuesArch->GetFloat("ld.distance");
+            lodLayers[i].nearDistanceSq = lodDistValuesArch->GetFloat("ld.neardistsq");
+            lodLayers[i].farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
+            lodLayers[i].lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : (int8)i;
+        }
+    }
 }
 
 };

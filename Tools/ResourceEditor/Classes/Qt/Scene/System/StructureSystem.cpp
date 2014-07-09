@@ -506,7 +506,7 @@ DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool 
 		}
 
 		// load entity from file
-		Entity *rootNode = sceneEditor->GetRootNode(sc2path);
+		Entity *rootNode = sceneEditor->GetRootNode(sc2path, SerializationContext::EDITOR_MODE);
         if(rootNode)
         {
             Entity *parentForOptimize = new Entity();

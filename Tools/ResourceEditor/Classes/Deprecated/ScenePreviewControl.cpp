@@ -245,7 +245,7 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
     {
         SceneFileV2 *file = new SceneFileV2();
         file->EnableDebugLog(false);
-        retError = file->LoadScene(pathToFile, editorScene);
+        retError = file->LoadScene(pathToFile, editorScene, SerializationContext::EDITOR_MODE);
         SafeRelease(file);
     }
     else
@@ -255,7 +255,7 @@ int32 ScenePreviewControl::OpenScene(const FilePath &pathToFile)
     
     if(SceneFileV2::ERROR_NO_ERROR == retError)
     {
-        rootNode = editorScene->GetRootNode(pathToFile);
+        rootNode = editorScene->GetRootNode(pathToFile, SerializationContext::EDITOR_MODE);
         if(rootNode)
         {
 			rootNode = rootNode->Clone();

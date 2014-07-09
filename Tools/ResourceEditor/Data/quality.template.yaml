@@ -63,3 +63,16 @@ materials:
   group: "Spherical Harmonics"
   quality: ["HIGH", "MEDIUM", "LOW"]
   default: "HIGH"
+
+lods:
+ default: "MEDIUM"
+ qualities:
+  -
+   quality: "HIGH"
+  -
+   quality: "MEDIUM"
+  -
+   quality: "LOW"
+
+
+

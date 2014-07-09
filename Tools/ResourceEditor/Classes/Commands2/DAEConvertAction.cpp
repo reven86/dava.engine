@@ -79,7 +79,7 @@ DAVA::Scene * DAEConvertAction::CreateSceneFromSce() const
     FilePath scePath = FilePath::CreateWithNewExtension(daePath, ".sce");
     
     Scene *scene = new Scene();
-    Entity *rootNode = scene->GetRootNode(scePath);
+    Entity *rootNode = scene->GetRootNode(scePath, SerializationContext::EDITOR_MODE);
 	if(rootNode)
 	{
 		rootNode = rootNode->Clone();

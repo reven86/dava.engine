@@ -111,6 +111,12 @@ protected:
     void DeserializeWithoutQuality(KeyedArchive *archive, SerializationContext *serializationContext);
     
     bool ApplyQuality(const FastName& qualityName, Vector<QualityContainer>& src, Vector<LodDistance>& dst);
+    inline void InitQualityContainer();
+    void PopulateQualityContainer();
+    
+    void LoadDistancesFromArchive(KeyedArchive* lodDistArch,
+                                  Vector<LodDistance>& lodLayers,
+                                  uint32 maxDistanceCount);
 
 public:
 	LodComponent();
@@ -126,6 +132,7 @@ public:
 	inline float32 GetLodLayerFar(int32 layerNum) const;
 	inline float32 GetLodLayerNearSquare(int32 layerNum) const;
 	inline float32 GetLodLayerFarSquare(int32 layerNum) const;
+    inline int8 GetLodLayerLodIndex(int32 layerNum) const;
 
 	DAVA_DEPRECATED(void GetLodData(Vector<LodData*> &retLodLayers));
 
@@ -218,6 +225,20 @@ inline void LodComponent::LodDistance::SetLodIndex(int8 index)
 inline int8 LodComponent::LodDistance::GetLodIndex() const
 {
     return lodIndex;
+}
+
+inline void LodComponent::InitQualityContainer()
+{
+    if(NULL == qualityContainer)
+    {
+        qualityContainer = new Vector<QualityContainer>();
+    }
+}
+
+inline int8 LodComponent::GetLodLayerLodIndex(int32 layerNum) const
+{
+    DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
+    return lodLayersArray[layerNum].lodIndex;
 }
     
 };

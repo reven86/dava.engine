@@ -221,7 +221,11 @@ void QualitySettingsSystem::Load(const FilePath &path)
                     lodQualities.resize(lodQualityNodeCount);
                     for(int32 i = 0; i < lodQualityNodeCount; ++i)
                     {
-                        const YamlNode* qualityNameNode = lodQualitiesNode->Get(i);
+                        const YamlNode* qualityNode = lodQualitiesNode->Get(i);
+                        const YamlNode* qualityNameNode = qualityNode->Get("quality");
+                        
+                        DVASSERT(qualityNameNode);
+                        
                         lodQualities[i] = FastName(qualityNameNode->AsString());
                     }
                     
@@ -531,6 +535,7 @@ void QualitySettingsSystem::SetCurrentLODQuality(const FastName& name)
         if(name == lodQualities[i])
         {
             curLODQuality = (int32)i;
+            break;
         }
     }
     

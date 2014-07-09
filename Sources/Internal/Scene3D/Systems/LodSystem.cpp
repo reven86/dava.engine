@@ -337,7 +337,7 @@ int32 LodSystem::FindProperLayer( float32 distance, const LodComponent *lodCompo
 	{
 		if (distance < lodComponent->GetLodLayerFarSquare(i))
 		{
-			layer = i;
+			layer = lodComponent->GetLodLayerLodIndex(i);
 		}
 	}
 

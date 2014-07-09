@@ -138,7 +138,7 @@ public:
     SceneFileV2();
     
     eError SaveScene(const FilePath & filename, Scene * _scene, SceneFileV2::eFileType fileType = SceneFileV2::SceneFile);
-    eError LoadScene(const FilePath & filename, Scene * _scene);
+    eError LoadScene(const FilePath & filename, Scene * _scene, uint32 flags = 0);
 
     void EnableDebugLog(bool _isDebugLogEnabled);
     bool DebugLogEnabled();

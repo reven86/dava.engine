@@ -218,6 +218,11 @@ namespace DAVA
         {
             return serializationFlags;
         }
+        
+        inline bool TestSerializationFlags(uint32 mask) const
+        {
+            return ((serializationFlags & mask) != 0);
+        }
 		
 		NMaterial* ConvertOldMaterialToNewMaterial(Material* oldMaterial,
 											InstanceMaterialState* oldMaterialState,

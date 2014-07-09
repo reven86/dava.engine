@@ -198,7 +198,7 @@ Entity* VegetationCustomGeometrySerializationDataReader::SelectDataVariation(Ent
 VegetationCustomGeometrySerializationData* VegetationCustomGeometrySerializationDataReader::ReadScene(const FilePath& scenePath)
 {
     Scene* scene = new Scene();
-    Entity* entity = scene->GetRootNode(scenePath);
+    Entity* entity = scene->GetRootNode(scenePath, 0);
     
     DVASSERT(entity && "Cannot load custom geometry scene specified!");
     

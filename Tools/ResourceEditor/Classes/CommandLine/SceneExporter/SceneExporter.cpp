@@ -84,7 +84,7 @@ void SceneExporter::ExportFile(const String &fileName, Set<String> &errorLog)
     
     //Load scene with *.sc2
     Scene *scene = new Scene();
-    Entity *rootNode = scene->GetRootNode(filePath);
+    Entity *rootNode = scene->GetRootNode(filePath, SerializationContext::EDITOR_MODE);
     if(rootNode)
     {
         int32 count = rootNode->GetChildrenCount();

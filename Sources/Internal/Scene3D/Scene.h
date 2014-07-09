@@ -201,7 +201,7 @@ public:
         \endcode
      */
     
-    Entity *GetRootNode(const FilePath &rootNodePath);
+    Entity *GetRootNode(const FilePath &rootNodePath, uint32 flags = 0);
     
     /**
         \brief Release root node by name.

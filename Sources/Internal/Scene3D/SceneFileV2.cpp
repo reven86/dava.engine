@@ -290,7 +290,7 @@ uint32 SceneFileV2::GetSerializableDataNodesCount(List<DataNode*>& nodeList)
 	return nodeCount;
 }
     
-SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _scene)
+SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _scene, uint32 flags)
 {
     File * file = File::Create(filename, File::OPEN | File::READ);
     if (!file)
@@ -327,6 +327,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
 	serializationContext.SetVersion(header.version);
 	serializationContext.SetScene(scene);
 	serializationContext.SetDefaultMaterialQuality(NMaterial::DEFAULT_QUALITY_NAME);
+    serializationContext.SetSerializationFlags(flags);
     
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load data objects");
