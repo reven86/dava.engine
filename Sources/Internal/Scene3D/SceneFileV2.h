@@ -165,7 +165,8 @@ public:
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
     
-    void LoadDelayedResourcesRecursively(Scene* scene);
+    void LoadDelayedResourcesRecursively(Scene* scene, Entity* rootNode);
+    void RemoveUnusedRenderBatchesRecursively(Entity* rootNode);
 
 	Scene* GetScene() {return scene;}
 
@@ -221,6 +222,8 @@ private:
 		
 	void WriteDescriptor(File* file, const Descriptor& descriptor) const;
 	void ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
+    
+    void RemoveUnusedLodRenderBatches(Entity* entity);
 	
     bool isDebugLogEnabled;
     bool isSaveForGame;

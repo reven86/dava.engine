@@ -369,7 +369,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     waiter.Wait();
     
     //VI: remove unused render batches here!
-    
+    if(false == serializationContext.TestSerializationFlags(SerializationContext::EDITOR_MODE))
+    {
+        RemoveUnusedRenderBatchesRecursively(rootNode);
+    }
     
     UpdatePolygonGroupRequestedFormatRecursively(rootNode);
     serializationContext.LoadPolygonGroupData(file);
@@ -377,7 +380,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     OptimizeScene(rootNode);	            
     
     //VI: load materials after render batches have been removed
-    LoadDelayedResourcesRecursively(scene);
+    LoadDelayedResourcesRecursively(scene, rootNode);
     
 	rootNode->SceneDidLoaded();
     
@@ -1295,10 +1298,10 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
         UpdatePolygonGroupRequestedFormatRecursively(entity->GetChild(i));
 }
 
-void SceneFileV2::LoadDelayedResourcesRecursively(Scene* scene)
+void SceneFileV2::LoadDelayedResourcesRecursively(Scene* scene, Entity* rootNode)
 {
     Set<NMaterial*> materials;
-    scene->materialSystem->BuildMaterialList(scene, materials);
+    scene->materialSystem->BuildMaterialList(rootNode, materials);
     
     Set<NMaterial*>::iterator end = materials.end();
     for(Set<NMaterial*>::iterator it = materials.begin();
@@ -1314,7 +1317,66 @@ void SceneFileV2::SetVersion( int32 version )
 	header.version = version;
 }
 
+void SceneFileV2::RemoveUnusedRenderBatchesRecursively(Entity* rootNode)
+{
+    if(rootNode->GetComponent(Component::LOD_COMPONENT))
+    {
+        RemoveUnusedLodRenderBatches(rootNode);
+    }
 
+    uint32 childrenCount = rootNode->GetChildrenCount();
+    for(uint32 i = 0; i < childrenCount; ++i)
+    {
+        RemoveUnusedRenderBatchesRecursively(rootNode->GetChild(i));
+    }
+}
+
+void SceneFileV2::RemoveUnusedLodRenderBatches(Entity* entity)
+{
+    DVASSERT(entity);
+    
+    LodComponent* lodComponent = (LodComponent*)entity->GetComponent(Component::LOD_COMPONENT);
+    
+    if(NULL != lodComponent)
+    {
+        RenderObject* ro = GetRenderObject(entity);
+        
+        if(ro)
+        {
+            Set<int32> requiredLodIndices;
+            uint32 lodDistanceCount = lodComponent->GetLodDistanceCount();
+            for(uint32 i = 0; i < lodDistanceCount; ++i)
+            {
+                requiredLodIndices.insert(lodComponent->GetLodLayerLodIndex(i));
+            }
+
+            uint32 renderBatchCount = ro->GetRenderBatchCount();
+            Vector<RenderBatch*> batchesToRemove;
+            
+            Set<int32>::iterator notFound = requiredLodIndices.end();
+            
+            for(uint32 i = 0; i < renderBatchCount; ++i)
+            {
+                int32 lodIndex = -1;
+                int32 switchIndex = -1;
+                
+                RenderBatch* renderBatch = ro->GetRenderBatch(i, lodIndex, switchIndex);
+                
+                if(lodIndex >= 0 &&
+                   requiredLodIndices.find(lodIndex) == notFound)
+                {
+                    batchesToRemove.push_back(renderBatch);
+                }
+            }
+            
+            uint32 batchesToRemoveCount = batchesToRemove.size();
+            for(uint32 i = 0; i < batchesToRemoveCount; ++i)
+            {
+                ro->RemoveRenderBatch(batchesToRemove[i]);
+            }
+        }
+    }
+}
 
 SceneArchive::~SceneArchive()
 {    

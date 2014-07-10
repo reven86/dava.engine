@@ -133,6 +133,7 @@ public:
 	inline float32 GetLodLayerNearSquare(int32 layerNum) const;
 	inline float32 GetLodLayerFarSquare(int32 layerNum) const;
     inline int8 GetLodLayerLodIndex(int32 layerNum) const;
+    inline uint32 GetLodDistanceCount() const;
 
 	DAVA_DEPRECATED(void GetLodData(Vector<LodData*> &retLodLayers));
 
@@ -239,6 +240,11 @@ inline int8 LodComponent::GetLodLayerLodIndex(int32 layerNum) const
 {
     DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
     return lodLayersArray[layerNum].lodIndex;
+}
+
+inline uint32 LodComponent::GetLodDistanceCount() const
+{
+    return (uint32)lodLayersArray.size();
 }
     
 };
