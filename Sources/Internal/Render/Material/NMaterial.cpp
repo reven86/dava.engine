@@ -549,7 +549,7 @@ void NMaterial::Load(KeyedArchive * archive,
 		    ++it)
 	    {
 		    String relativePathname = it->second->AsString();
-		    SetTexture(FastName(it->first), serializationContext->GetScenePath() + relativePathname);
+		    SetTextureWithDelayedLoad(FastName(it->first), serializationContext->GetScenePath() + relativePathname);
 	    }
     }
 	
@@ -2805,6 +2805,42 @@ void NMaterial::UpdateUniqueKey(uint64 newKeyValue)
 {
     materialKey = newKeyValue;
     pointer = newKeyValue;
+}
+
+void NMaterial::LoadDelayedResources()
+{
+    for(HashMap<FastName, TextureBucket*>::iterator it = textures.begin();
+		it != textures.end();
+		++it)
+	{
+        if(IsTextureActive(it->first))
+        {
+            TextureBucket* bucket = it->second;
+            
+            Texture* tx = Texture::CreateFromFile(bucket->GetPath(), it->first);
+            bucket->SetTexture(tx);
+            SafeRelease(tx);
+        }
+    }
+    
+    SetTexturesDirty();
+}
+
+void NMaterial::SetTextureWithDelayedLoad(const FastName& textureFastName,
+                                          const FilePath& texturePath)
+{
+    TextureBucket* bucket = textures.at(textureFastName);
+	if(NULL == bucket)
+	{
+		bucket = new TextureBucket();
+		textures.insert(textureFastName, bucket);
+	}
+	
+	if(bucket->GetPath() != texturePath)
+	{
+		bucket->SetTexture(NULL); //VI: texture WILL NOT BE RELOADED if it's not active in the current quality
+		bucket->SetPath(texturePath);
+	}
 }
 
 };

@@ -367,10 +367,17 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
     ThreadIdJobWaiter waiter;
     waiter.Wait();
+    
+    //VI: remove unused render batches here!
+    
+    
     UpdatePolygonGroupRequestedFormatRecursively(rootNode);
     serializationContext.LoadPolygonGroupData(file);
 
     OptimizeScene(rootNode);	            
+    
+    //VI: load materials after render batches have been removed
+    LoadDelayedResourcesRecursively(scene);
     
 	rootNode->SceneDidLoaded();
     
@@ -1286,6 +1293,20 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
 
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         UpdatePolygonGroupRequestedFormatRecursively(entity->GetChild(i));
+}
+
+void SceneFileV2::LoadDelayedResourcesRecursively(Scene* scene)
+{
+    Set<NMaterial*> materials;
+    scene->materialSystem->BuildMaterialList(scene, materials);
+    
+    Set<NMaterial*>::iterator end = materials.end();
+    for(Set<NMaterial*>::iterator it = materials.begin();
+        it != end;
+        ++it)
+    {
+        (*it)->LoadDelayedResources();
+    }
 }
 
 void SceneFileV2::SetVersion( int32 version )

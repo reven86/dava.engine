@@ -164,6 +164,8 @@ public:
     int32 removedNodeCount;
     	    
     void UpdatePolygonGroupRequestedFormatRecursively(Entity *entity);
+    
+    void LoadDelayedResourcesRecursively(Scene* scene);
 
 	Scene* GetScene() {return scene;}
 

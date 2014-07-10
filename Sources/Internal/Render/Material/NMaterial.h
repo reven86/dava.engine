@@ -280,6 +280,7 @@ public:
 		
 	virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
 	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+    void LoadDelayedResources();
 	
 	//SetQuality just sets desired quality level and does nothing more
 	void SetQuality(const FastName& stateName);
@@ -570,6 +571,7 @@ protected:
 
     FastName GetEffectiveQuality() const;
 	
+    void SetTextureWithDelayedLoad(const FastName& textureFastName, const FilePath& texturePath);
     
 public:
 	static bool IsRuntimeFlag(const FastName& flagName);

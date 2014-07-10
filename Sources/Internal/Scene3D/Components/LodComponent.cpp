@@ -286,7 +286,10 @@ void LodComponent::DeserializeWithQuality(KeyedArchive *archive,
 {
     if(NULL != archive)
 	{
-		if(archive->IsKeyExists("lc.flags")) flags = archive->GetUInt32("lc.flags");
+		if(archive->IsKeyExists("lc.flags"))
+        {
+            flags = archive->GetUInt32("lc.flags");
+        }
         
         forceDistance = INVALID_DISTANCE;
         forceDistanceSq = INVALID_DISTANCE;
