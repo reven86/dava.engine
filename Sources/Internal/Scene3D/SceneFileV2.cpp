@@ -363,16 +363,24 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     {
         scene->SetGlobalMaterial(globalMaterial);
     }
-		    
-    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
-    ThreadIdJobWaiter waiter;
-    waiter.Wait();
     
     //VI: remove unused render batches here!
     if(false == serializationContext.TestSerializationFlags(SerializationContext::EDITOR_MODE))
     {
-        RemoveUnusedRenderBatchesRecursively(rootNode);
+        Vector<Entity*> reducedEntities;
+        RemoveUnusedRenderBatchesRecursively(rootNode, reducedEntities);
+        
+        uint32 reducedEntityCount = reducedEntities.size();
+        for(uint32 i = 0; i < reducedEntityCount; ++i)
+        {
+            Entity* reducedEntity = reducedEntities[i];
+            reducedEntity->GetParent()->RemoveNode(reducedEntity);
+        }
     }
+		  
+    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
+    ThreadIdJobWaiter waiter;
+    waiter.Wait();
     
     UpdatePolygonGroupRequestedFormatRecursively(rootNode);
     serializationContext.LoadPolygonGroupData(file);
@@ -1317,21 +1325,21 @@ void SceneFileV2::SetVersion( int32 version )
 	header.version = version;
 }
 
-void SceneFileV2::RemoveUnusedRenderBatchesRecursively(Entity* rootNode)
+void SceneFileV2::RemoveUnusedRenderBatchesRecursively(Entity* rootNode, Vector<Entity*>& reducedEntities)
 {
     if(rootNode->GetComponent(Component::LOD_COMPONENT))
     {
-        RemoveUnusedLodRenderBatches(rootNode);
+        RemoveUnusedLodRenderBatches(rootNode, reducedEntities);
     }
 
     uint32 childrenCount = rootNode->GetChildrenCount();
     for(uint32 i = 0; i < childrenCount; ++i)
     {
-        RemoveUnusedRenderBatchesRecursively(rootNode->GetChild(i));
+        RemoveUnusedRenderBatchesRecursively(rootNode->GetChild(i), reducedEntities);
     }
 }
 
-void SceneFileV2::RemoveUnusedLodRenderBatches(Entity* entity)
+void SceneFileV2::RemoveUnusedLodRenderBatches(Entity* entity, Vector<Entity*>& reducedEntities)
 {
     DVASSERT(entity);
     
@@ -1373,6 +1381,11 @@ void SceneFileV2::RemoveUnusedLodRenderBatches(Entity* entity)
             for(uint32 i = 0; i < batchesToRemoveCount; ++i)
             {
                 ro->RemoveRenderBatch(batchesToRemove[i]);
+            }
+            
+            if(ro->GetRenderBatchCount() == 0)
+            {
+                reducedEntities.push_back(entity);
             }
         }
     }
