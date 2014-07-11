@@ -170,6 +170,8 @@ void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int i
 void LODEditor::SceneActivated(SceneEditor2 *scene)
 {
     //TODO: set gloabal scene settings
+    
+    PopulateLODNames();
 }
 
 
@@ -365,4 +367,19 @@ void LODEditor::EditorModeChanged(int newMode)
 	editedLODData->EnableAllSceneMode(allSceneModeEnabled);
 }
 
+void LODEditor::PopulateLODNames()
+{
+    DAVA::QualitySettingsSystem* qualitySettingsSystem = DAVA::QualitySettingsSystem::Instance();
+    uint32 lodCount = qualitySettingsSystem->GetLODQualityCount();
+    
+    if(ui->lodQualityBox->count() != lodCount)
+    {
+        ui->lodQualityBox->clear();
+        for(uint32 lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+        {
+            const FastName& lodQualityName = qualitySettingsSystem->GetLODQualityName(lodIndex);
+            ui->lodQualityBox->addItem(lodQualityName.c_str());
+        }
+    }
+}
 

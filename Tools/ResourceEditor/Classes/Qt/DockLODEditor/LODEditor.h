@@ -96,6 +96,8 @@ protected:
     
     void UpdateWidgetVisibility();
     
+    void PopulateLODNames();
+    
 private:
 	Ui::LODEditor *ui;
     QtPosSaver posSaver;
