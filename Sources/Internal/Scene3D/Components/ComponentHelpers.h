@@ -78,7 +78,9 @@ SoundComponent * GetSoundComponent(Entity * fromEntity);
 
 LodComponent * GetLodComponent(Entity *fromEntity);
 SwitchComponent* GetSwitchComponent(Entity *fromEntity);
-    
+
+uint32 GetMaxLodLayerIndex(Entity *fromEntity);
+uint32 GetMaxLodLayerIndex(LodComponent *fromComponent);
 uint32 GetLodLayersCount(Entity *fromEntity);
 uint32 GetLodLayersCount(LodComponent *fromComponent);
     

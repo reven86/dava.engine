@@ -208,6 +208,37 @@ SoundComponent * GetSoundComponent(Entity * fromEntity)
     return NULL;
 }
 
+uint32 GetMaxLodLayerIndex(Entity *fromEntity)
+{
+    if (!fromEntity) return 0;
+    
+    if(GetEffectComponent(fromEntity))
+        return LodComponent::MAX_LOD_LAYERS - 1;
+    
+    RenderObject *object = GetRenderObject(fromEntity);
+    if(!object)
+        return 0;
+    
+    return object->GetMaxLodIndex();
+}
+
+uint32 GetMaxLodLayerIndex(LodComponent *fromComponent)
+{
+    if(!fromComponent) return 0;
+    
+    Entity *entity = fromComponent->GetEntity();
+    
+    if(GetEffectComponent(entity))
+        return LodComponent::MAX_LOD_LAYERS - 1;
+    
+    RenderObject *object = GetRenderObject(entity);
+    if(!object)
+        return 0;
+    
+    return object->GetMaxLodIndex();
+}
+
+
 uint32 GetLodLayersCount(Entity *fromEntity)
 {
     if (!fromEntity) return 0;
@@ -219,7 +250,13 @@ uint32 GetLodLayersCount(Entity *fromEntity)
     if(!object) 
 		return 0;
     
-    return (object->GetMaxLodIndex() + 1);
+    LodComponent* lodComponent = GetLodComponent(fromEntity);
+    if(!lodComponent)
+    {
+        return 0;
+    }
+    
+    return lodComponent->lodLayersArray.size();
 }
     
 uint32 GetLodLayersCount(LodComponent *fromComponent)
@@ -235,7 +272,12 @@ uint32 GetLodLayersCount(LodComponent *fromComponent)
 	if(!object) 
 		return 0;
     
-    return (object->GetMaxLodIndex() + 1);
+    if(!fromComponent)
+    {
+        return 0;
+    }
+    
+    return fromComponent->lodLayersArray.size();
 }
 
 void RecursiveProcessMeshNode(Entity * curr, void * userData, void(*process)(Entity*, void *))

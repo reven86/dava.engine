@@ -99,7 +99,8 @@ void DeleteLODCommand::Redo()
     }
 
     //update distances
-    for(DAVA::int32 i = deletedLodIndex; i < DAVA::LodComponent::MAX_LOD_LAYERS-1; ++i)
+    DAVA::int32 lodCount = lodComponent->lodLayersArray.size();
+    for(DAVA::int32 i = deletedLodIndex; i < lodCount - 1; ++i)
     {
         lodComponent->lodLayersArray[i] = lodComponent->lodLayersArray[i+1];
     }

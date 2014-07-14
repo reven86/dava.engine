@@ -175,6 +175,8 @@ public:
     inline void EnableRecursiveUpdate();
     inline bool IsRecursiveUpdate();
     
+    inline static uint32 GetDefaultLod();
+    
 public:
     
     INTROSPECTION_EXTEND(LodComponent, Component,
@@ -192,19 +194,19 @@ int32 LodComponent::GetLodLayersCount() const
 
 float32 LodComponent::GetLodLayerDistance(int32 layerNum) const
 {
-	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
+	DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
 	return lodLayersArray[layerNum].distance;
 }
 
 float32 LodComponent::GetLodLayerNearSquare(int32 layerNum) const
 {
-	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
+	DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
 	return lodLayersArray[layerNum].nearDistanceSq;
 }
 
 float32 LodComponent::GetLodLayerFarSquare(int32 layerNum) const
 {
-	DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
+	DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
 	return lodLayersArray[layerNum].farDistanceSq;
 }
     
@@ -246,6 +248,12 @@ inline uint32 LodComponent::GetLodDistanceCount() const
 {
     return (uint32)lodLayersArray.size();
 }
+
+inline uint32 LodComponent::GetDefaultLod()
+{
+    return MAX_LOD_LAYERS - 1;
+}
+
     
 };
 

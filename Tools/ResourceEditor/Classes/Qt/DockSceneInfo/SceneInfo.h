@@ -48,12 +48,18 @@ protected:
     
     struct LODInfo
     {
-        DAVA::uint32 trianglesOnLod[DAVA::LodComponent::MAX_LOD_LAYERS];
+        DAVA::Vector<DAVA::uint32> trianglesOnLod;
         DAVA::uint32 trianglesOnObjects;
+        
+        LODInfo()
+        {
+            trianglesOnLod.resize(DAVA::LodComponent::MAX_LOD_LAYERS);
+        }
         
         void Clear()
         {
-            for(DAVA::int32 i = 0; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
+            DAVA::int32 lodCount = trianglesOnLod.size();
+            for(DAVA::int32 i = 0; i < lodCount; ++i)
             {
                 trianglesOnLod[i] = 0;
             }

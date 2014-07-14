@@ -190,7 +190,7 @@ void LodSystem::UpdateEntityAfterLoad(Entity * entity)
 	ParticleEffectComponent * effect = GetEffectComponent(entity);
 	if (effect)
 	{
-		lod->currentLod = LodComponent::MAX_LOD_LAYERS-1;
+		lod->currentLod = LodComponent::GetDefaultLod();
 		effect->SetDesiredLodLevel(lod->currentLod);
 	}
 	else if(lod->lodLayers.size() > 0)
@@ -246,7 +246,7 @@ void LodSystem::UpdateLod(Entity * entity, LodComponent* lodComponent, float32 p
 		}
         
         int32 layerNum = lodComponent->currentLod;
-        DVASSERT(0 <= layerNum && layerNum < LodComponent::MAX_LOD_LAYERS);
+        DVASSERT(0 <= layerNum && layerNum < lodComponent->lodLayersArray.size());
         
         if(lodComponent->IsRecursiveUpdate())
         {
@@ -285,7 +285,7 @@ bool LodSystem::RecheckLod(Entity * entity, LodComponent* lodComponent, float32 
 		return true;
 	}
 
-	int32 layersCount = LodComponent::MAX_LOD_LAYERS;
+	int32 layersCount = lodComponent->lodLayersArray.size();
 	float32 dst = CalculateDistanceToCamera(entity, lodComponent, camera);
 
 	

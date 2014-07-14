@@ -47,6 +47,7 @@
 
 struct DistanceWidget
 {
+    QCheckBox* check;
     QLabel *name;
     QDoubleSpinBox *distance;
 
@@ -54,10 +55,17 @@ struct DistanceWidget
     {
         name->setVisible(visible);
         distance->setVisible(visible);
+        check->setVisible(visible);
+    }
+    
+    void SetChecked(bool checked)
+    {
+        check->setChecked(checked);
     }
 };
 
-static DistanceWidget distanceWidgets[DAVA::LodComponent::MAX_LOD_LAYERS];
+static const uint32 DISTANCE_WIDGET_COUNT = 8;
+static DistanceWidget distanceWidgets[DISTANCE_WIDGET_COUNT];
 
 
 LODEditor::LODEditor(QWidget* parent)
@@ -106,12 +114,17 @@ void LODEditor::SetupInternalUI()
     
     connect(ui->distanceSlider, SIGNAL(DistanceChanged(const QVector<int> &, bool)), SLOT(LODDistanceChangedBySlider(const QVector<int> &, bool)));
     
-    InitDistanceSpinBox(ui->lod0Name, ui->lod0Distance, 0);
-    InitDistanceSpinBox(ui->lod1Name, ui->lod1Distance, 1);
-    InitDistanceSpinBox(ui->lod2Name, ui->lod2Distance, 2);
-    InitDistanceSpinBox(ui->lod3Name, ui->lod3Distance, 3);
+    InitDistanceSpinBox(ui->lod0Check, ui->lod0Name, ui->lod0Distance, 0);
+    InitDistanceSpinBox(ui->lod1Check, ui->lod1Name, ui->lod1Distance, 1);
+    InitDistanceSpinBox(ui->lod2Check, ui->lod2Name, ui->lod2Distance, 2);
+    InitDistanceSpinBox(ui->lod3Check, ui->lod3Name, ui->lod3Distance, 3);
+    InitDistanceSpinBox(ui->lod4Check, ui->lod4Name, ui->lod4Distance, 4);
+    InitDistanceSpinBox(ui->lod5Check, ui->lod5Name, ui->lod5Distance, 5);
+    InitDistanceSpinBox(ui->lod6Check, ui->lod6Name, ui->lod6Distance, 6);
+    InitDistanceSpinBox(ui->lod7Check, ui->lod7Name, ui->lod7Distance, 7);
     
-    SetForceLayerValues(DAVA::LodComponent::MAX_LOD_LAYERS);
+    DAVA::Set<DAVA::int32> dummyIndices;
+    SetForceLayerValues(dummyIndices);
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
 	connect(ui->checkBoxLodEditorMode, SIGNAL(stateChanged(int)), this, SLOT(EditorModeChanged(int)));
@@ -150,7 +163,7 @@ void LODEditor::ForceDistanceChanged(int distance)
 }
 
 
-void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int index)
+void LODEditor::InitDistanceSpinBox(QCheckBox* check, QLabel *name, QDoubleSpinBox *spinbox, int index)
 {
     spinbox->setRange(0.f, DAVA::LodComponent::MAX_LOD_DISTANCE);  //distance 
     spinbox->setProperty(ResourceEditor::TAG.c_str(), index);
@@ -162,8 +175,10 @@ void LODEditor::InitDistanceSpinBox(QLabel *name, QDoubleSpinBox *spinbox, int i
     
     distanceWidgets[index].name = name;
     distanceWidgets[index].distance = spinbox;
+    distanceWidgets[index].check = check;
     
     distanceWidgets->SetVisible(false);
+    distanceWidgets->SetChecked(false);
 }
 
 
@@ -172,6 +187,8 @@ void LODEditor::SceneActivated(SceneEditor2 *scene)
     //TODO: set gloabal scene settings
     
     PopulateLODNames();
+    editedLODData->SetLODQuality(QualitySettingsSystem::Instance()->GetCurrentLODQuality());
+    UpdateLodLayersSelection(editedLODData->GetLODQuality());
 }
 
 
@@ -185,26 +202,14 @@ void LODEditor::SceneDeactivated(SceneEditor2 *scene)
 
 void LODEditor::LODDataChanged()
 {
-    DAVA::uint32 lodLayersCount = editedLODData->GetLayersCount();
+    UpdateLodLayersSelection(FastName(ui->lodQualityBox->currentText().toAscii()));
     
-    ui->distanceSlider->SetLayersCount(lodLayersCount);
-    SetForceLayerValues(lodLayersCount);
+    const DAVA::Set<int32>& activeLodIndices = editedLODData->GetActiveLODIndices();
     
-    for (DAVA::uint32 i = 0; i < lodLayersCount; ++i)
-    {
-        distanceWidgets[i].SetVisible(true);
-        
-        DAVA::float32 distance = editedLODData->GetLayerDistance(i);
-        
-        SetSpinboxValue(distanceWidgets[i].distance, distance);
-        ui->distanceSlider->SetDistance(i, distance);
-        
-        distanceWidgets[i].name->setText(Format("%d. (%d):", i, editedLODData->GetLayerTriangles(i)).c_str());
-    }
-    for (DAVA::int32 i = lodLayersCount; i < DAVA::LodComponent::MAX_LOD_LAYERS; ++i)
-    {
-        distanceWidgets[i].SetVisible(false);
-    }
+    
+    ui->distanceSlider->SetLayersCount(activeLodIndices.size());
+    SetForceLayerValues(activeLodIndices);
+    
     
     UpdateWidgetVisibility();
 
@@ -274,20 +279,43 @@ void LODEditor::ForceLayerActivated(int index)
     editedLODData->SetForceLayer(layer);
 }
 
-void LODEditor::SetForceLayerValues(int layersCount)
+void LODEditor::SetForceLayerValues(const DAVA::Set<DAVA::int32>& lodIndices)
 {
     ui->forceLayer->clear();
     
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
-
-	int requestedIndex = editedLODData->GetForceLayer() + 1;
-	int itemsCount = Max(requestedIndex, layersCount);
-	for(DAVA::int32 i = 0; i < itemsCount; ++i)
+    
+    DAVA::Set<DAVA::int32>::const_iterator it = lodIndices.begin();
+    DAVA::Set<DAVA::int32>::const_iterator end = lodIndices.end();
+    while(it != end)
     {
-        ui->forceLayer->addItem(Format("%d", i).c_str(), QVariant(i));
+        int32 index = *it;
+        ui->forceLayer->addItem(Format("%d", index).c_str(), QVariant(index));
+        
+        ++it;
     }
     
-	ui->forceLayer->setCurrentIndex(requestedIndex);
+    int32 currentForceIndex = 0;
+    int32 indexToSelect = 0;
+    int32 forceLayerIndex = editedLODData->GetForceLayer();
+    
+    it = lodIndices.begin();
+    while(it != end)
+    {
+        int32 index = *it;
+        
+        if(editedLODData->GetForceLayer() == index)
+        {
+            indexToSelect = currentForceIndex;
+            break;
+        }
+        
+        currentForceIndex++;
+        
+        ++it;
+    }
+    
+    ui->forceLayer->setCurrentIndex(indexToSelect);
 }
 
 void LODEditor::LODEditorSettingsButtonReleased()
@@ -372,6 +400,7 @@ void LODEditor::PopulateLODNames()
     DAVA::QualitySettingsSystem* qualitySettingsSystem = DAVA::QualitySettingsSystem::Instance();
     uint32 lodCount = qualitySettingsSystem->GetLODQualityCount();
     
+    int32 currentIndex = -1;
     if(ui->lodQualityBox->count() != lodCount)
     {
         ui->lodQualityBox->clear();
@@ -379,7 +408,68 @@ void LODEditor::PopulateLODNames()
         {
             const FastName& lodQualityName = qualitySettingsSystem->GetLODQualityName(lodIndex);
             ui->lodQualityBox->addItem(lodQualityName.c_str());
+            
+            if(lodQualityName == qualitySettingsSystem->GetCurrentLODQuality())
+            {
+                currentIndex = (int32)lodIndex;
+            }
         }
+    }
+    
+    if(currentIndex >= 0)
+    {
+        ui->lodQualityBox->setCurrentIndex(currentIndex);
     }
 }
 
+void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
+{
+    if(lodQualityName.IsValid())
+    {
+        editedLODData->SetLODQuality(lodQualityName);
+        
+        const DAVA::Set<int32>& activeLodIndices = editedLODData->GetActiveLODIndices();
+        const DAVA::Set<int32>& allLodIndices = editedLODData->GetAllLODIndices();
+        
+        for (DAVA::int32 i = 0; i < COUNT_OF(distanceWidgets); ++i)
+        {
+            distanceWidgets[i].SetVisible(false);
+            distanceWidgets[i].SetChecked(false);
+        }
+        
+        DAVA::Set<int32>::const_iterator allIndicesIt = allLodIndices.begin();
+        DAVA::Set<int32>::const_iterator allIndicesEnd = allLodIndices.end();
+        while(allIndicesIt != allIndicesEnd)
+        {
+            int32 lodIndex = *allIndicesIt;
+            
+            if(lodIndex >= 0 && lodIndex < COUNT_OF(distanceWidgets))
+            {
+                distanceWidgets[lodIndex].SetVisible(true);
+                
+                DAVA::float32 distance = editedLODData->GetLayerDistance(lodIndex);
+                
+                SetSpinboxValue(distanceWidgets[lodIndex].distance, distance);
+                ui->distanceSlider->SetDistance(lodIndex, distance);
+                
+                distanceWidgets[lodIndex].name->setText(Format("%d. (%d):", lodIndex, editedLODData->GetLayerTriangles(lodIndex)).c_str());
+            }
+            
+            ++allIndicesIt;
+        }
+        
+        DAVA::Set<int32>::const_iterator activeIndicesIt = activeLodIndices.begin();
+        DAVA::Set<int32>::const_iterator activeIndicesEnd = activeLodIndices.end();
+        while(activeIndicesIt != activeIndicesEnd)
+        {
+            int32 lodIndex = *activeIndicesIt;
+            
+            if(lodIndex >= 0 && lodIndex < COUNT_OF(distanceWidgets))
+            {
+                distanceWidgets[lodIndex].SetChecked(true);
+            }
+            
+            ++activeIndicesIt;
+        }
+    }
+}

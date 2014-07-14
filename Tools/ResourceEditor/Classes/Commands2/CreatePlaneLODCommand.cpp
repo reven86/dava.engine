@@ -50,7 +50,7 @@ CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent,
     
 	savedDistances = lodComponent->lodLayersArray;
 
-    newLodIndex = GetLodLayersCount(lodComponent);
+    newLodIndex = GetMaxLodLayerIndex(lodComponent) + 1;
     DVASSERT(newLodIndex > 0);
     
     if(fromLodLayer == -1)

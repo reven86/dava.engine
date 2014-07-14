@@ -164,7 +164,8 @@ LodComponent::LodComponent()
 
 	flags = NEED_UPDATE_AFTER_LOAD;
 
-	for(int32 iLayer = 0; iLayer < MAX_LOD_LAYERS; ++iLayer)
+    uint32 layerCount = lodLayersArray.size();
+	for(int32 iLayer = 0; iLayer < layerCount; ++iLayer)
 	{
 		lodLayersArray[iLayer].SetDistance(GetDefaultDistance(iLayer));
 		lodLayersArray[iLayer].SetFarDistance(MAX_LOD_DISTANCE * 2);
@@ -180,7 +181,7 @@ LodComponent::~LodComponent()
 
 float32 LodComponent::GetDefaultDistance(int32 layer)
 {
-	float32 distance = MIN_LOD_DISTANCE + ((float32)(MAX_LOD_DISTANCE - MIN_LOD_DISTANCE) / (MAX_LOD_LAYERS-1)) * layer;
+	float32 distance = MIN_LOD_DISTANCE + ((float32)(MAX_LOD_DISTANCE - MIN_LOD_DISTANCE) / GetDefaultLod()) * layer;
 	return distance;
 }
 
@@ -210,7 +211,7 @@ void LodComponent::GetLodData(Vector<LodData*> &retLodLayers)
     
 void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
 {
-    DVASSERT(0 <= layerNum && layerNum < MAX_LOD_LAYERS);
+    DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
     
     if(INVALID_DISTANCE != distance)
     {

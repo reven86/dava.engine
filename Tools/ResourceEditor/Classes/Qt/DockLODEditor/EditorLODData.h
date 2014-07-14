@@ -43,10 +43,16 @@ class EditorLODData: public QObject
     Q_OBJECT
     
 public:
+    
+    static const DAVA::uint32 EDITOR_LOD_DATA_COUNT;
+    
+public:
 
     EditorLODData();
     virtual ~EditorLODData();
 
+    void SetLODQuality(const DAVA::FastName& lodQualityName);
+    const DAVA::FastName& GetLODQuality() const;
     
     DAVA::uint32 GetLayersCount() const;
     DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
@@ -72,7 +78,7 @@ public:
     DAVA::FilePath GetDefaultTexturePathForPlaneEntity();
 
     static void EnumerateLODsRecursive(DAVA::Entity *entity, DAVA::Vector<DAVA::LodComponent *> & lods);
-    static void AddTrianglesInfo(DAVA::uint32 triangles[], DAVA::LodComponent *lod, bool onlyVisibleBatches);
+    static void AddTrianglesInfo(DAVA::Vector<DAVA::uint32>& triangles, DAVA::LodComponent *lod, bool onlyVisibleBatches);
 
     //TODO: remove after lod editing implementation
     DAVA_DEPRECATED(void CopyLastLodToLod0());
@@ -80,6 +86,11 @@ public:
     bool CanDeleteLod();
 
 	void EnableAllSceneMode(bool enabled);
+    
+    const DAVA::Set<DAVA::int32>& GetActiveLODIndices() const;
+    const DAVA::Set<DAVA::int32>& GetAllLODIndices() const;
+    
+    void UpdateLODStateFromScene();
 
 signals:
     
@@ -104,19 +115,26 @@ protected:
     
     void UpdateForceData();
 
+    void CollectLodIndices();
+    void AddLodIndicesToSet(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayerArray,
+                            DAVA::Set<DAVA::int32>& indexSet);
     
     void EnumerateLODs();
+    DAVA::LodComponent::QualityContainer* GetQualityContainer(const DAVA::FastName& qualityName,
+                                                              DAVA::LodComponent* lodComponent);
 
     void ResetForceState(DAVA::Entity *entity);
-    
     
 protected:
 
     DAVA::uint32 lodLayersCount;
-    DAVA::float32 lodDistances[DAVA::LodComponent::MAX_LOD_LAYERS];
-    DAVA::uint32 lodTriangles[DAVA::LodComponent::MAX_LOD_LAYERS];
-
+    DAVA::Vector<DAVA::float32> lodDistances;
+    DAVA::Vector<DAVA::uint32> lodTriangles;
     
+    DAVA::Set<DAVA::int32> allLodIndices;
+    DAVA::Set<DAVA::int32> activeLodIndices;
+    DAVA::FastName currentLODQuality;
+
     bool forceDistanceEnabled;
     DAVA::float32 forceDistance;
     DAVA::int32 forceLayer;
