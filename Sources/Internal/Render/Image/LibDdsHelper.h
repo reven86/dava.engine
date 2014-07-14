@@ -60,7 +60,10 @@ public:
     virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
     
     virtual uint32 GetDataSize(File * file) const;
-    
+	virtual Size2i GetImageSize(File *infile) const;
+
+
+
     static eErrorCode ReadFile(File * file, Vector<Image*> &imageSet, int32 baseMipMap = 0, bool forceSoftwareConvertation = false);
        
 	static bool DecompressImageToRGBA(const DAVA::Image & image, Vector<DAVA::Image*> &imageSet, bool forceSoftwareConvertation = false);

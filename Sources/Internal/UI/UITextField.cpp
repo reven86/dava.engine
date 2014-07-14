@@ -99,6 +99,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
 ,	keyboardType(KEYBOARD_TYPE_DEFAULT)
 ,	returnKeyType(RETURN_KEY_DEFAULT)
 ,	enableReturnKeyAutomatically(false)
+,   showNativeControl(false)
 {
 #if defined(__DAVAENGINE_ANDROID__)
 	textFieldAndroid = new UITextFieldAndroid(this);
@@ -197,6 +198,16 @@ void UITextField::CloseKeyboard()
 	
 void UITextField::Update(float32 timeElapsed)
 {
+    if (showNativeControl)
+    {
+#ifdef __DAVAENGINE_IPHONE__
+        textFieldiPhone->ShowField();
+#elif defined(__DAVAENGINE_ANDROID__)
+        textFieldAndroid->ShowField();
+#endif
+        showNativeControl = false;
+    }
+    
 #ifdef __DAVAENGINE_IPHONE__
 	Rect rect = GetGeometricData().GetUnrotatedRect();//GetRect(true);
 	textFieldiPhone->UpdateRect(rect);
@@ -243,20 +254,17 @@ void UITextField::WillAppear()
 
 void UITextField::DidAppear()
 {
-#ifdef __DAVAENGINE_IPHONE__
-	textFieldiPhone->ShowField();
-#elif defined(__DAVAENGINE_ANDROID__)
-	textFieldAndroid->ShowField();
-#endif
+    showNativeControl = true;
 }
 
 void UITextField::WillDisappear()
 {
 #ifdef __DAVAENGINE_IPHONE__
-	textFieldiPhone->HideField();
+    textFieldiPhone->HideField();
 #elif defined(__DAVAENGINE_ANDROID__)
-	textFieldAndroid->HideField();
+    textFieldAndroid->HideField();
 #endif
+    showNativeControl = false;
 }
     
 void UITextField::OnFocused()

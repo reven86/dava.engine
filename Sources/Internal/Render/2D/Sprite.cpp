@@ -71,37 +71,6 @@ Sprite::DrawState::DrawState()
     //shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 }
 
-void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
-{
-    renderState = _renderState;
-    
-    /*if(_renderState != renderState)
-    {
-        if(renderState != InvalidUniqueHandle)
-        {
-            RenderManager::Instance()->ReleaseRenderState(renderState);
-        }
-            
-        renderState = _renderState;
-            
-        if(renderState != InvalidUniqueHandle)
-        {
-            RenderManager::Instance()->RetainRenderState(renderState);
-        }
-    }*/
-}
-
-void Sprite::DrawState::SetShader(Shader* _shader)
-{
-    shader = _shader;
-    /*if(_shader != shader)
-    {
-        SafeRelease(shader);
-        shader = SafeRetain(_shader);
-    }*/
-}
-
-
 RenderDataObject* Sprite::spriteRenderObject = NULL;
 RenderDataStream* Sprite::vertexStream = NULL;
 RenderDataStream* Sprite::texCoordStream = NULL;

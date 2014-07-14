@@ -103,6 +103,11 @@ Rect HierarchyTreeAggregatorNode::GetRect() const
     return this->rect;
 }
 
+Rect HierarchyTreeAggregatorNode::GetOwnRect() const
+{
+    return GetRect();
+}
+
 void HierarchyTreeAggregatorNode::SetParent(HierarchyTreeNode* node, HierarchyTreeNode* insertAfter)
 {
 	Rect rect = GetScreen()->GetRect();

@@ -5,36 +5,36 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>93C00280-35D1-4E7E-8CEF-273C56D10B08</string>
+	<string>A21A0282-41B0-42B4-B9A8-6F05BDE1C1A3</string>
 	<key>IDESourceControlProjectName</key>
 	<string>TemplateProjectiPhone</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</key>
-		<string>ssh://github.com/dava/dava.framework.git</string>
+		<key>500B7E23-20CD-4EDE-A898-E2888C6920BE</key>
+		<string>https://github.com/dava/dava.framework</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>Projects/UnitTests/TemplateProjectiPhone.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</key>
+		<key>500B7E23-20CD-4EDE-A898-E2888C6920BE</key>
 		<string>../../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>ssh://github.com/dava/dava.framework.git</string>
+	<string>https://github.com/dava/dava.framework</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>110</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</string>
+	<string>500B7E23-20CD-4EDE-A898-E2888C6920BE</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>DA18DEC1-6BCA-4896-9E0D-4F2DCC01E651</string>
+			<string>500B7E23-20CD-4EDE-A898-E2888C6920BE</string>
 			<key>IDESourceControlWCCName</key>
-			<string>dava</string>
+			<string>dava.framework</string>
 		</dict>
 	</array>
 </dict>

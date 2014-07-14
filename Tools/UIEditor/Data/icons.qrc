@@ -53,6 +53,8 @@
         <file>Icons/screenshot.png</file>
         <file>Icons/screenshot_folder.png</file>
         <file>Icons/lockguides.png</file>
+        <file>Icons/search-icon.png</file>
+        <file>Icons/ignore-case.png</file>
         <file>Icons/custom_icon.png</file>
     </qresource>
 </RCC>

@@ -379,6 +379,8 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         _scene->AddRootNode(rootNode, rootNodePathName);
     }
     
+    scene->OnSceneReady(rootNode);
+    
     SafeRelease(rootNode);
     SafeRelease(file);
     return GetError();

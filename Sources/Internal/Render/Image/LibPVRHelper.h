@@ -146,7 +146,9 @@ public:
     virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
     
     virtual uint32 GetDataSize(File *infile) const;
-    
+
+	virtual Size2i GetImageSize(File *infile) const;
+
     virtual bool AddCRCIntoMetaData(const FilePath &filePathname) const;
     virtual uint32 GetCRCFromFile(const FilePath &filePathname) const;
     

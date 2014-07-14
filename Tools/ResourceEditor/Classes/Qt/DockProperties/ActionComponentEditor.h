@@ -63,6 +63,7 @@ public:
 	void SetComponentEditor(ActionComponentEditor* editor);
 	
 private:
+    QWidget *createFloatEditor(QWidget *parent) const;
 	
 	DAVA::ActionComponent* targetComponent;
 	ActionComponentEditor* componentEditor;

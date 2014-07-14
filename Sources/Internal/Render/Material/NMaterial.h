@@ -39,11 +39,15 @@
 #include "Render/Material/NMaterialConsts.h"
 #include "Render/Material/NMaterialTemplate.h"
 #include "Render/Shader.h"
-#include "Render/RenderState.h"
 #include "Base/Introspection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Render/Material/RenderTechnique.h"
 #include "Render/Highlevel/RenderFastNames.h"
+
+#include "Render/Material/NMaterialStateDynamicTexturesInsp.h"
+#include "Render/Material/NMaterialStateDynamicFlagsInsp.h"
+#include "Render/Material/NMaterialStateDynamicPropertiesInsp.h"
+#include "Render/Material/NMaterialHelper.h"
 
 namespace DAVA
 {
@@ -72,30 +76,17 @@ struct IlluminationParams : public InspBase
     //this is a weak property since IlluminationParams exists only as a part of parent material
     NMaterial* parent;
 
-    IlluminationParams(NMaterial* parentMaterial = NULL) :
-    isUsed(true),
-    castShadow(true),
-    receiveShadow(true),
-    lightmapSize(LIGHTMAP_SIZE_DEFAULT),
-    parent(parentMaterial)
-    {
-    }
-
-    IlluminationParams(const IlluminationParams & params)
-    {
-        isUsed = params.isUsed;
-        castShadow = params.castShadow;
-        receiveShadow = params.receiveShadow;
-        lightmapSize = params.lightmapSize;
-        parent = NULL;
-    }
+    inline IlluminationParams(NMaterial* parentMaterial = NULL);
+ 
+    inline IlluminationParams(const IlluminationParams & params);
     
-    int32 GetLightmapSize() const;
+    inline int32 GetLightmapSize() const;
     void SetLightmapSize(const int32 &size);
+    
     void SetParent(NMaterial* parentMaterial);
-    NMaterial* GetParent() const;
+    inline NMaterial* GetParent() const;
 
-    INTROSPECTION(IlluminationParams,
+    inline INTROSPECTION(IlluminationParams,
         MEMBER(isUsed, "Use Illumination", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(castShadow, "Cast Shadow", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(receiveShadow, "Receive Shadow", I_SAVE | I_VIEW | I_EDIT)
@@ -110,43 +101,72 @@ public:
     uint8 size;
     uint8* data;
 	
-	NMaterialProperty()
-	{
-		type = Shader::UT_INT;
-		size = 0;
-		data = NULL;
-	}
+	inline NMaterialProperty();
 	
-	~NMaterialProperty()
-	{
-		SafeDeleteArray(data);
-	}
+	inline ~NMaterialProperty();
 	
-	NMaterialProperty* Clone()
-	{
-		NMaterialProperty* cloneProp = new NMaterialProperty();
-		
-		cloneProp->size = size;
-		cloneProp->type = type;
-		
-		if(data)
-		{
-			size_t dataSize = Shader::GetUniformTypeSize(type) * size;
-			cloneProp->data = new uint8[dataSize];
-			memcpy(cloneProp->data, data, dataSize);
-		}
-		
-		return cloneProp;
-	}
+	inline NMaterialProperty* Clone();
 };
 
 class Camera;
 class SerializationContext;
+
+/**
+ \ingroup materials
+ \brief This class represents render material. Relation between render batches
+ and materials is 1-to-1.
+ 
+ Each material consists of:
+ 
+ -  render technique. Render technique contains of set of passes. Each pass
+ represents shader used for rendering, render state for the shader,
+ set of render layers where render batch with the given material will be rendered
+ when the pass is active. Techniques are loaded from a persistent
+ description stored on the file system.
+ Material render state loaded with the technique may be modified at runtime.
+ This process is called subclassing.
+ 
+ -  set of flags. Flags alter shader of the technique and allow to add or
+ remove shader functionality at runtime (for example, turn fog on/off).
+ 
+ -  set of properties. Each property corresponds to the uniform required by the shader.
+ Material may contain properties that has no direct mapping to uniforms.
+ 
+ -  set of textures. Each texture corresponds to sampler required by the shader.
+ Material may contain textures that has no direct mapping to samplers.
+ 
+ Each material obeys to settings of quality system and uses technique depending
+ of the rules described for different levels of the quality. Material loads textures
+ for the given quality level but doesn't unload them when quality level were downgraded.
+ Set of flags and properties is shared between all quality levels.
+ 
+ Materials may be organized in hierarchical tree structure. Each node of hierarchy
+ may contain its own set of flags, properties, textures and have its own technique.
+ All these parameters are inherited by subnodes so material at the tree leaf
+ will inherit and provide to its shader all properties, textures and flags
+ from its predecessors even if they were not specified in the subnode directly.
+ Subnode at any level of tree hierarchy may override parent value.
+ Material searches values for textures, properties, flags in the following order:
+ self -> parent -> parent of parent -> etc...
+ 
+ Currently there are 3 material types:
+ -   GLOBAL material type. This is virtual root for all materials in the scene.
+ All default values and most commont properties are set here.
+ -   MATERIAL material type. This is middle level. All common flags, textures and properties are set here.
+ -   INSTANCE material type. This is material contained by render batches.
+ Properties and textures specific per render batch are set here.
+ 
+ */
+    
 class NMaterial : public DataNode
 {
 	friend class MaterialSystem;
 	friend class MaterialCompiler;
 	friend class NMaterialHelper;
+    
+    friend class NMaterialStateDynamicTexturesInsp;
+    friend class NMaterialStateDynamicFlagsInsp;
+    friend class NMaterialStateDynamicPropertiesInsp;
 	
 public:
 	
@@ -182,6 +202,7 @@ public:
 	static const FastName PARAM_UV_OFFSET;
 	static const FastName PARAM_UV_SCALE;
     static const FastName PARAM_LIGHTMAP_SIZE;
+    static const FastName PARAM_SHADOW_COLOR;
 
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
@@ -241,133 +262,456 @@ public:
 	
 	NMaterial();
 	
-	inline NMaterial* GetParent() const {return parent;}
+    /**
+	 \brief Returns parent material node in the hierarchy or NULL.
+	 \returns parent material.
+	 */
+	inline NMaterial* GetParent() const;
 	
-	//void AddChild(NMaterial* material, bool inheritTemlate = true);
-	//void RemoveChild(NMaterial* material);
+	/**
+	 \brief Sets parent material in the hierarchy.
+     Parent may not be the same as the target.
+     Parent may be NULL.
+	 \param[in] newParent pointer to the parent material
+	 \param[in] inheritTemplate use true if you want target material to inherit template from the parent.
+	 */
 	void SetParent(NMaterial* newParent, bool inheritTemplate = true);
-	inline uint32 GetChildrenCount() const
-	{
-		return children.size();
-	}
-
-	NMaterial* GetChild(uint32 index) const
-	{
-		DVASSERT(index >= 0 && index < children.size());
-		return children[index];
-	}
-		
+    
+    /**
+	 \brief Returns number of child materials in the hierarchy.
+	 \returns number of child materials.
+	 */
+	inline uint32 GetChildrenCount() const;
+	
+    /**
+	 \brief Returns material child by its index.
+     Index must be in a range between 0 and number of child materials.
+     \param[in] index child index
+	 \returns child material.
+	 */
+	inline NMaterial* GetChild(uint32 index) const;
+			
 	//{TODO: these should be removed and changed to a generic system
 	//setting properties via special setters
-//    uint32 GetLightCount() { return lightCount; };
-//    void SetLight(uint32 index, Light * light, bool forceUpdate);
-//    Light * GetLight(uint32 index) { return lights[index]; };
-	inline uint8 GetDynamicBindFlags() const {return dynamicBindFlags;}
+	inline uint8 GetDynamicBindFlags() const;
 	//}END TODO
 	
+    /**
+	 \brief Renders given polygon group with the current material.
+     \param[in] polygonGroup polygon group to render.
+	 */
     void Draw(PolygonGroup * polygonGroup);
+    
+    /**
+	 \brief Renders given render data object and index array with the current material.
+     \param[in] renderData render data object with set of geometry attribute streams.
+     \param[in] indices array of indices to render.
+     \param[in] indexCount number of indices to render.
+	 */
 	void Draw(RenderDataObject* renderData, uint16* indices = NULL, uint16 indexCount = 0);
 	
+    /**
+	 \brief Sets flag to the material affectively altering its shaders by define
+     corresponding to the flag.
+     \param[in] flag name of the flag. This value will be passed to the shader during compilation.
+     \param[in] flagValue value of the flag (on/off). Determines if the given flag name will be included to the set of defines.
+	 */
 	void SetFlag(const FastName& flag, eFlagValue flagValue);
+    
+    /**
+	 \brief Removes flag from the current material flag collection so flag value will be inherited from the parent.
+     \param[in] flag name of the flag. This value will be passed to the shader during compilation.
+	 */
     void ResetFlag(const FastName& flag);
-    //VI: this method returns current flag value witb bit "FlagInherited" set to 1 if flag value were take from the parent
+    
+    /**
+	 \brief Returns effective value of the given flag in relation to the given material.
+     Takes into account flag inheritance.
+     \param[in] flag name of the flag. This value will be passed to the shader during compilation.
+	 \returns flag value. FlagInherited bit will be set for values inherited from the parent.
+	 */
 	int32 GetFlagValue(const FastName& flag) const;
-    //VI: this mtehod is for testing in overall if the given flag is effective for this material object
+    
+    /**
+	 \brief Allows to check if the flag affects given material.
+     Takes into account flag inheritance.
+     \param[in] flag name of the flag. This value will be passed to the shader during compilation.
+	 \returns true if the flag is effective for the material.
+	 */
     bool IsFlagEffective(const FastName& flag) const;
     
+    /**
+	 \brief Binds render technique using pass name and camera.
+     Binding means:
+     - shader uniforms will be set
+     - textures will be set
+     - render state will be set
+     \param[in] passName name of the render pass.
+     \param[in] camera active camera.
+	 */
 	void BindMaterialTechnique(const FastName & passName, Camera* camera);
-	inline uint32 GetRequiredVertexFormat() {return requiredVertexFormat;}
-		
+    
+    /**
+	 \brief Returns set of flags representing vertex format required by the material.
+     That set of flags corresponds to shader attributes.
+	 \returns set of flags representing vertex format required by the material.
+	 */
+	inline uint32 GetRequiredVertexFormat() const;
+	
+    /**
+	 \brief Saves material to the keyed archive.
+     \param[in] archive object to save material to.
+     \param[in] serializationContext serialization context.
+	 */
 	virtual void Save(KeyedArchive * archive, SerializationContext * serializationContext);
+    
+    /**
+	 \brief Loads material from the keyed archive.
+     \param[in] archive object to load material from.
+     \param[in] serializationContext serialization context.
+	 */
 	virtual void Load(KeyedArchive * archive, SerializationContext * serializationContext);
 	
-	//SetQuality just sets desired quality level and does nothing more
+	/**
+	 \brief Sets desired quality level for the material.
+     This method just updates variable value and does nothing more.
+     \param[in] stateName name of quality level.
+	 */
 	void SetQuality(const FastName& stateName);
 	
-	//use ReloadQuality to apply desired quality level
+	/**
+	 \brief Applies desired quality level for the material.
+     This method updates the material using quality
+     level set by SetQuality.
+     \param[in] force use true to reload material even if the wuality level remained the same.
+	 */
 	bool ReloadQuality(bool force = false);
 	
-	//bool SwitchQuality(const FastName& stateName);
-	
+    /**
+	 \brief Creates copy of the material.
+     */
 	NMaterial* Clone();
+    
+    /**
+	 \brief Creates copy of the material with new name.
+     \param[in] newName name of new material.
+	 */
 	NMaterial* Clone(const String& newName);
-		
+	
+    /**
+	 \brief Returns data container used by art pipeline tools.
+     Creates new object if it was not inialized yet.
+	 \returns data container used by art pipeline tools.
+	 */
     IlluminationParams * GetIlluminationParams(bool createIfNeeded = true);
+    
+    /**
+	 \brief Deletes data container used by art pipeline tools.
+     It's safe to call this method if there is no such object created.
+     */
     void ReleaseIlluminationParams();
 	
-	// Work with textures and properties
+	/**
+	 \brief Removes texture from the material by sampler name.
+     If texture with the sampler name exists in the parent material
+     it will become effective for the material.
+     \param[in] textureFastName sampler name.
+	 */
     void RemoveTexture(const FastName& textureFastName);
-    //When you set texture by path it will be loaded only after it became active in the current material quality.
-    //SetTexture("cubemap", "~res:/cubemap.pvr") will not result in GetTexture("cubemap") returning a valid texture object.
-    //A valid texture object will be returned only if there's actually uniform named "cubemap" in the material.
+
+    /**
+	 \brief Set texture by sampler name.
+     When you set texture by path it will be loaded only after it became active in the current material quality.
+     SetTexture("cubemap", "~res:/cubemap.pvr") will not result in GetTexture("cubemap") returning a valid texture object.
+     A valid texture object will be returned only if there's actually uniform named "cubemap" in the material shader.
+     \param[in] textureFastName sampler name.
+     \param[in] texturePath path to texture file.
+	 */
     void SetTexture(const FastName& textureFastName, const FilePath& texturePath);
-    //VI: this method leaves texture intact. Allows to manipulate with FBO that has to be saved to some path
+    
+    /**
+	 \brief Set texture path by sampler name.
+     This method leaves texture intact.
+     Allows to manipulate FBO that has to be saved to some path.
+     \param[in] textureFastName sampler name.
+     \param[in] texturePath path to texture file.
+	 */
     void SetTexturePath(const FastName& textureFastName, const FilePath& texturePath);
-    //This method doesn't check for uniform in the material and always uses texture provided.
+    
+    /**
+	 \brief Set texture by sampler name.
+     This method doesn't check for uniform in the material and always uses texture provided.
+     \param[in] textureFastName sampler name.
+     \param[in] texture texture to use.
+	 */
 	void SetTexture(const FastName& textureFastName, Texture* texture);
     
+    /**
+	 \brief Returns texture by sampler name.
+     Return NULL if the texture was not loaded.
+     Returns texture from the current material only (doesn't take inheritance to account).
+     \param[in] textureFastName sampler name.
+	 \returns texture object for the given sampler name.
+	 */
     Texture * GetTexture(const FastName& textureFastName) const;
+    
+    /**
+	 \brief Returns texture path by sampler name.
+     Returns texture path from the current material only (doesn't take inheritance to account).
+     \param[in] textureFastName sampler name.
+	 \returns texture object for the given sampler name.
+	 */
 	const FilePath& GetTexturePath(const FastName& textureFastName) const;
     
+    /**
+	 \brief Returns texture by sampler name.
+     Return NULL if the texture was not loaded.
+     Takes inheritance to account.
+     \param[in] textureFastName sampler name.
+	 \returns texture object for the given sampler name.
+	 */
     Texture * GetEffectiveTexture(const FastName& textureFastName) const;
+    
+    /**
+	 \brief Returns texture path by sampler name.
+     Takes inheritance to account.
+     \param[in] textureFastName sampler name.
+	 \returns texture object for the given sampler name.
+	 */
 	const FilePath& GetEffectiveTexturePath(const FastName& textureFastName) const;
     
+    /**
+	 \brief Returns texture by index. Index doesn't correspond to sampler index.
+     Use this method for texture enumeration.
+     Return NULL if the texture was not loaded.
+     Returns texture from the current material only (doesn't take inheritance to account).
+     \param[in] index texture index.
+	 \returns texture object for the given texture index.
+	 */
     Texture * GetTexture(uint32 index) const;
+    
+    /**
+	 \brief Returns texture path by index. Index doesn't correspond to sampler index.
+     Use this method for texture enumeration.
+     Returns texture from the current material only (doesn't take inheritance to account).
+     \param[in] index texture index.
+	 \returns texture object for the given texture index.
+	 */
 	const FilePath& GetTexturePath(uint32 index) const;
+    
+    /**
+	 \brief Returns sampler name by index. Index doesn't correspond to sampler index.
+     Use this method for texture enumeration.
+     Returns texture from the current material only (doesn't take inheritance to account).
+     \param[in] index texture index.
+	 \returns sampler name for the given texture index.
+	 */
 	const FastName& GetTextureName(uint32 index) const;
+    
+    /**
+	 \brief Returns number of textures set to the material.
+     Use this method for texture enumeration.
+     Returns number of textures from the current material only (doesn't take inheritance to account).
+	 \returns number of textures.
+	 */
     uint32 GetTextureCount() const;
     
+    /**
+	 \brief Set property value by name.
+     Name usually corresponds to shader uniform name.
+     \param[in] keyName property name.
+     \param[in] type property type.
+     \param[in] size property size.
+     \param[in] data property value.
+	 */
     void SetPropertyValue(const FastName & keyName,
 						  Shader::eUniformType type,
 						  uint32 size,
 						  const void * data);
+    
+    /**
+	 \brief Returns property value by name.
+     Takes inheritance to account.
+     \param[in] keyName property name.
+	 \returns property value by name.
+	 */
 	NMaterialProperty* GetPropertyValue(const FastName & keyName) const;
+    
+    /**
+	 \brief Returns property value by name.
+     Returns property value from the current material only (doesn't take inheritance to account).
+     \param[in] keyName property name.
+	 \returns property value by name.
+	 */
 	NMaterialProperty* GetMaterialProperty(const FastName & keyName) const;
+    
+    /**
+	 \brief Removes property from the material by name.
+     Name usually corresponds to shader uniform name.
+     \param[in] keyName property name.
+	 */
 	void RemoveMaterialProperty(const FastName & keyName);
 	
+    /**
+	 \brief Set material name
+     \param[in] name material name.
+	 */
 	void SetMaterialName(const FastName& name);
-	inline const FastName& GetMaterialName() const {return materialName;}
-	
-	inline eMaterialType GetMaterialType() const {return materialType;}
-	
-	inline NMaterialKey GetMaterialKey() {return materialKey;}
-	
-	inline uint16 GetSortingKey() {return materialSortKey;}
-	
-    //void AssignRenderLayerIDs(RenderLayerManager * manager);
     
-    inline uint32 GetRenderLayerIDsBitmask() const { return renderLayerIDsBitmask; };
+    /**
+	 \brief Returns material name.
+	 \returns material name.
+	 */
+	inline const FastName& GetMaterialName() const;
+	
+    /**
+	 \brief Returns material type.
+	 \returns material type.
+	 */
+	inline eMaterialType GetMaterialType() const;
+	
+    /**
+	 \brief Returns material unique key.
+	 \returns material key.
+	 */
+	inline NMaterialKey GetMaterialKey() const;
+	
+    /**
+	 \brief Returns material sorting key.
+     Used by render layer to sort render batches.
+	 \returns material sorting key.
+	 */
+	inline uint16 GetSortingKey() const;
+    
+    /**
+	 \brief Returns mask of render layers where render batch with the giben material should be rendered.
+	 \returns material render layer mask.
+	 */
+    inline uint32 GetRenderLayerIDsBitmask() const;
+    
+    /**
+	 \brief Returns mask of render layers where render batch with the giben material should be rendered.
+	 \returns material render layer mask.
+	 */
     inline uint32 GetRenderLayers() const;
+    
+    /**
+	 \brief Set mask of render layers where render batch with the giben material should be rendered.
+     \param[in] mask of render layers.
+	 */
     inline void SetRenderLayers(uint32 bitmask);
     
+    /**
+	 \brief Returns render state for the render pass.
+     This method is fast but not thread-safe.
+     \param[in] passName pass name.
+	 \returns render state for the render pass.
+	 */
 	const RenderStateData& GetRenderState(const FastName& passName) const;
+    
+    /**
+	 \brief Returns render state for the render pass.
+     This method is slower but is thread-safe.
+     \param[in] passName pass name.
+	 \param[out] target output render state.
+	 */
     void GetRenderState(const FastName& passName, RenderStateData& target) const;
+    
+    /**
+	 \brief Allows to replace render state for the pass.
+     \param[in] passName pass name.
+	 \param[in] newState new render state.
+	 */
 	void SubclassRenderState(const FastName& passName, RenderStateData& newState);
+    
+    /**
+	 \brief Allows to replace render state for the PASS_FORWARD pass.
+	 \param[in] newState new render state.
+	 */
 	void SubclassRenderState(RenderStateData& newState);
     
+    /**
+	 \brief Creates and returns material object of INSTANCE type.
+	 \returns material object of INSTANCE type.
+	 */
 	static NMaterial* CreateMaterialInstance();
 	
+    /**
+	 \brief Creates and returns material object of INSTANCE type.
+     Also creates and initializes parent material of MATERIAL type.
+     Adds INSTANCE to MATERIAL as child.
+     \param[in] parentName parent object name.
+     \param[in] templateName material template name.
+     \param[in] defaultQuality quality name to set.
+	 \returns material object of INSTANCE type.
+	 */
 	static NMaterial* CreateMaterialInstance(const FastName& parentName,
 											 const FastName& templateName,
 											 const FastName& defaultQuality);
 	
+    /**
+	 \brief Creates and returns material object of MATERIAL type.
+     \param[in] parentName parent object name.
+     \param[in] templateName material template name.
+     \param[in] defaultQuality quality name to set.
+	 \returns material object of INSTANCE type.
+	 */
 	static NMaterial* CreateMaterial(const FastName& materialName,
 									 const FastName& templateName,
 									 const FastName& defaultQuality);
     
+    /**
+	 \brief Creates and returns material object of GLOBAL type.
+     \param[in] materialName object name.
+	 \returns material object of INSTANCE type.
+	 */
     static NMaterial* CreateGlobalMaterial(const FastName& materialName);
 
-	const NMaterialTemplate* GetMaterialTemplate() const {return materialTemplate;}
+    /**
+	 \brief Returns material template description.
+	 \returns material template description.
+	 */
+	inline const NMaterialTemplate* GetMaterialTemplate() const;
+    
+    /**
+	 \brief Sets material template.
+     Calling this method will totally change material render technique set
+     to correspond to target template: shader recompilation, texture loading etc will occur.
+     \param[in] templateName template name.
+	 */
     void SetMaterialTemplateName(const FastName& templateName);
+    
+    /**
+	 \brief Returns material template name.
+	 \returns material template name.
+	 */
     FastName GetMaterialTemplateName() const;
 
+    /**
+	 \brief Returns material quality group name. Used by quality system.
+	 \returns material group name.
+	 */
     FastName GetMaterialGroup() const;
+    
+    /**
+	 \brief Sets material quality group name. Used by quality system.
+     \param[in] group group name.
+	 */
     void SetMaterialGroup(const FastName &group);
 
+    /**
+	 \brief Rebuilds cache of shader parameters
+	 */
     void BuildActiveUniformsCacheParamsCache();
+    
+    /**
+	 \brief Marks all material properties as dirty to re-bind them to shader
+	 */
     void InvalidateProperties();
     
-    // set new materialKey and pointer to properly save all materials
+    /**
+	 \brief Sets new materialKey and pointer to properly save all materials
+	 */
     virtual void UpdateUniqueKey(uint64 newKeyValue);
     
 protected:
@@ -376,37 +720,17 @@ protected:
 	{
     public:
     
-		TextureBucket() : texture(NULL)
-		{ }
+		inline TextureBucket();
         
-        ~TextureBucket()
-        {
-            SafeRelease(texture);
-        }
+        inline ~TextureBucket();
         
-        inline void SetTexture(Texture* tx)
-        {
-            if(tx != texture)
-            {
-                SafeRelease(texture);
-                texture = SafeRetain(tx);
-            }
-        }
+        inline void SetTexture(Texture* tx);
         
-        inline Texture* GetTexture() const
-        {
-            return texture;
-        }
+        inline Texture* GetTexture() const;
         
-        inline void SetPath(const FilePath& filePath)
-        {
-            path = filePath;
-        }
+        inline void SetPath(const FilePath& filePath);
         
-        inline const FilePath& GetPath() const
-        {
-            return path;
-        }
+        inline const FilePath& GetPath() const;
 
     private:
 		Texture* texture; //VI: can be NULL
@@ -415,12 +739,8 @@ protected:
 		
 	struct UniformCacheEntry
 	{
-		UniformCacheEntry() :
-			uniform(NULL),
-			prop(NULL),
-			index(-1)
-		{ }
-
+		inline UniformCacheEntry();
+        
 		Shader::Uniform* uniform;
 		int32 index;
 		NMaterialProperty* prop;
@@ -430,23 +750,9 @@ protected:
 	{
     public:
 		
-		RenderPassInstance() :
-			textureIndexMap(8),
-			dirtyState(false),
-			texturesDirty(true),
-			activeUniformsCachePtr(NULL),
-			activeUniformsCacheSize(0),
-            propsDirty(true)
-		{
-			renderState.shader = NULL;
-		}
+		inline RenderPassInstance();
         
-        ~RenderPassInstance()
-        {
-            SetRenderStateHandle(InvalidUniqueHandle);
-            SetTextureStateHandle(InvalidUniqueHandle);
-            SafeRelease(renderState.shader);
-        }
+        inline ~RenderPassInstance();
         
         inline void SetShader(Shader* curShader);
         inline Shader* GetShader() const;
@@ -524,16 +830,13 @@ protected:
 	HashMap<FastName, int32> materialSetFlags; //VI: flags set in the current material only
 	
     uint32                  renderLayerIDsBitmask;
-	
-	//static Texture* stubCubemapTexture;
-	//static Texture* stub2dTexture;
-	
+		
 protected:
 	
 	virtual ~NMaterial();
 	
-	inline void SetMaterialType(eMaterialType matType) {materialType = matType;}
-	inline void SetMaterialKey(NMaterialKey key) {materialKey = key; pointer = key;}
+	inline void SetMaterialType(eMaterialType matType);
+	inline void SetMaterialKey(NMaterialKey key);
 	void SetMaterialTemplate(const NMaterialTemplate* matTemplate, const FastName& defaultQuality);
 	
 	void BuildEffectiveFlagSet(FastNameSet& effectiveFlagSet);
@@ -588,82 +891,6 @@ protected:
 	
 public:
 	
-	class NMaterialStateDynamicTexturesInsp : public InspInfoDynamic
-	{
-	public:
-		Vector<FastName> MembersList(void *object) const;
-		InspDesc MemberDesc(void *object, const FastName &member) const;
-		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberValueGet(void *object, const FastName &member) const;
-		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-
-	protected:
-		struct PropData
-		{
-			enum PropSource
-			{
-				SOURCE_UNKNOWN = 0x0,
-				SOURCE_SELF = 0x1,
-				SOURCE_PARENT = 0x2,
-				SOURCE_SHADER = 0x4
-			};
-
-			PropData() : source(SOURCE_UNKNOWN)
-			{ }
-
-			int source;
-			FilePath path;
-		};
-
-		const FastNameMap<PropData>* FindMaterialTextures(NMaterial *state, bool global) const;
-	};
-
-	class NMaterialStateDynamicFlagsInsp : public InspInfoDynamic
-	{
-	public:
-		Vector<FastName> MembersList(void *object) const;
-		InspDesc MemberDesc(void *object, const FastName &member) const;
-		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberValueGet(void *object, const FastName &member) const;
-		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-	};
-
-	class NMaterialStateDynamicPropertiesInsp : public InspInfoDynamic
-	{
-	public:
-		Vector<FastName> MembersList(void *object) const;
-		InspDesc MemberDesc(void *object, const FastName &member) const;
-		int MemberFlags(void *object, const FastName &member) const;
-		VariantType MemberValueGet(void *object, const FastName &member) const;
-		void MemberValueSet(void *object, const FastName &member, const VariantType &value);
-		
-	protected:
-		struct PropData
-		{
-			enum PropSource
-			{
-				SOURCE_UNKNOWN = 0x0,
-				SOURCE_SELF = 0x1,
-				SOURCE_PARENT = 0x2,
-				SOURCE_SHADER = 0x4
-			};
-			
-			PropData() : source(SOURCE_UNKNOWN)
-			{ }
-			
-			int source;
-			Shader::eUniformType type;
-			uint8 size;
-			uint8* data;
-		};
-		
-		bool isColor(const FastName &propName) const;
-		VariantType getVariant(const FastName &propName, const PropData &propData) const;
-		const FastNameMap<PropData>* FindMaterialProperties(NMaterial *state, bool global) const;
-	};
-	
-public:
-	
 	INTROSPECTION_EXTEND(NMaterial, DataNode,
 				  //(DAVA::CreateIspProp("materialName", "Material name", &NMaterial::GetMaterialName, &NMaterial::SetMaterialName, I_SAVE | I_EDIT | I_VIEW),
 				  MEMBER(materialName, "Material name", I_SAVE | I_EDIT | I_VIEW)
@@ -676,139 +903,304 @@ public:
 				  );
 
 };
-	
-	class NMaterialHelper
-	{
-	public:
-		
-		static void EnableStateFlags(const FastName& passName, NMaterial* target, uint32 stateFlags);
-		static void DisableStateFlags(const FastName& passName, NMaterial* target, uint32 stateFlags);
-		static void SetBlendMode(const FastName& passName, NMaterial* target, eBlendMode src, eBlendMode dst);
-		static void SwitchTemplate(NMaterial* material, const FastName& templateName);
-		static Texture* GetEffectiveTexture(const FastName& textureName, NMaterial* mat);
-        static void SetFillMode(const FastName& passName, NMaterial* mat, eFillMode fillMode);
-		
-		static bool IsAlphatest(const FastName& passName, NMaterial* mat);
-        static bool IsAlphablend(const FastName& passName, NMaterial* mat);
-		static bool IsTwoSided(const FastName& passName, NMaterial* mat);
-        static bool IsOpaque(const FastName& passName, NMaterial* mat);
-        static eFillMode GetFillMode(const FastName& passName, NMaterial* mat);
-	};
-    
-    inline uint32 NMaterial::GetRenderLayers() const
+
+inline void NMaterial::SetMaterialType(eMaterialType matType)
+{
+    materialType = matType;
+}
+
+inline void NMaterial::SetMaterialKey(NMaterialKey key)
+{
+    materialKey = key;
+    pointer = key;
+}
+
+inline uint32 NMaterial::GetRenderLayers() const
+{
+    return renderLayerIDsBitmask & ((1 << RENDER_LAYER_ID_BITMASK_MIN_POS) - 1);
+}
+
+
+void NMaterial::SetRenderLayers(uint32 bitmask)
+{
+    renderLayerIDsBitmask = bitmask;
+    RenderLayerID minLayerID = RENDER_LAYER_ID_BITMASK_MAX_MASK;
+    RenderLayerID maxLayerID = 0;
+    for (uint32 k = 0; k < RENDER_LAYER_ID_COUNT; ++k)
     {
-        return renderLayerIDsBitmask & ((1 << RENDER_LAYER_ID_BITMASK_MIN_POS) - 1);
+        if (bitmask & (1 << k))
+        {
+            RenderLayerID id = k;
+            minLayerID = Min(id, minLayerID);
+            maxLayerID = Max(id, maxLayerID);
+        }
     }
     
-    
-    void NMaterial::SetRenderLayers(uint32 bitmask)
+    if (renderLayerIDsBitmask)
     {
-        renderLayerIDsBitmask = bitmask;
-        RenderLayerID minLayerID = RENDER_LAYER_ID_BITMASK_MAX_MASK;
-        RenderLayerID maxLayerID = 0;
-        for (uint32 k = 0; k < RENDER_LAYER_ID_COUNT; ++k)
+        DVASSERT(minLayerID < RENDER_LAYER_ID_BITMASK_MIN_MASK);
+        DVASSERT(maxLayerID < RENDER_LAYER_ID_BITMASK_MAX_MASK);
+        renderLayerIDsBitmask |= (minLayerID << RENDER_LAYER_ID_BITMASK_MIN_POS);
+        renderLayerIDsBitmask |= (maxLayerID << RENDER_LAYER_ID_BITMASK_MAX_POS);
+    }
+}
+
+inline NMaterial::RenderPassInstance::RenderPassInstance() :
+textureIndexMap(8),
+dirtyState(false),
+texturesDirty(true),
+activeUniformsCachePtr(NULL),
+activeUniformsCacheSize(0),
+propsDirty(true)
+{
+    renderState.shader = NULL;
+}
+
+inline NMaterial::RenderPassInstance::~RenderPassInstance()
+{
+    SetRenderStateHandle(InvalidUniqueHandle);
+    SetTextureStateHandle(InvalidUniqueHandle);
+    SafeRelease(renderState.shader);
+}
+
+inline void NMaterial::RenderPassInstance::SetShader(Shader* curShader)
+{
+    if(renderState.shader != curShader)
+    {
+        SafeRelease(renderState.shader);
+        renderState.shader = SafeRetain(curShader);
+    }
+}
+
+inline Shader* NMaterial::RenderPassInstance::GetShader() const
+{
+    return renderState.shader;
+}
+
+inline UniqueHandle NMaterial::RenderPassInstance::GetRenderStateHandle() const
+{
+    return renderState.stateHandle;
+}
+
+inline void NMaterial::RenderPassInstance::SetRenderStateHandle(UniqueHandle handle)
+{
+    if(renderState.stateHandle != handle)
+    {
+        if(renderState.stateHandle != InvalidUniqueHandle)
         {
-            if (bitmask & (1 << k))
-            {
-                RenderLayerID id = k;
-                minLayerID = Min(id, minLayerID);
-                maxLayerID = Max(id, maxLayerID);
-            }
+            RenderManager::Instance()->ReleaseRenderState(renderState.stateHandle);
         }
         
-        if (renderLayerIDsBitmask)
+        renderState.stateHandle = handle;
+        
+        if(renderState.stateHandle != InvalidUniqueHandle)
         {
-            DVASSERT(minLayerID < RENDER_LAYER_ID_BITMASK_MIN_MASK);
-            DVASSERT(maxLayerID < RENDER_LAYER_ID_BITMASK_MAX_MASK);
-            renderLayerIDsBitmask |= (minLayerID << RENDER_LAYER_ID_BITMASK_MIN_POS);
-            renderLayerIDsBitmask |= (maxLayerID << RENDER_LAYER_ID_BITMASK_MAX_POS);
+            RenderManager::Instance()->RetainRenderState(renderState.stateHandle);
         }
     }
-    
-    inline void NMaterial::RenderPassInstance::SetShader(Shader* curShader)
-    {
-        if(renderState.shader != curShader)
-        {
-            SafeRelease(renderState.shader);
-            renderState.shader = SafeRetain(curShader);
-        }
-    }
-    
-    inline Shader* NMaterial::RenderPassInstance::GetShader() const
-    {
-        return renderState.shader;
-    }
-    
-    inline UniqueHandle NMaterial::RenderPassInstance::GetRenderStateHandle() const
-    {
-        return renderState.stateHandle;
-    }
-    
-    inline void NMaterial::RenderPassInstance::SetRenderStateHandle(UniqueHandle handle)
-    {
-        if(renderState.stateHandle != handle)
-        {
-            if(renderState.stateHandle != InvalidUniqueHandle)
-            {
-                RenderManager::Instance()->ReleaseRenderState(renderState.stateHandle);
-            }
-            
-            renderState.stateHandle = handle;
-            
-            if(renderState.stateHandle != InvalidUniqueHandle)
-            {
-                RenderManager::Instance()->RetainRenderState(renderState.stateHandle);
-            }
-        }
-    }
+}
 
-    inline UniqueHandle NMaterial::RenderPassInstance::GetTextureStateHandle() const
+inline UniqueHandle NMaterial::RenderPassInstance::GetTextureStateHandle() const
+{
+    return renderState.textureState;
+}
+
+inline void NMaterial::RenderPassInstance::SetTextureStateHandle(UniqueHandle handle)
+{
+    if(renderState.textureState != handle)
     {
-        return renderState.textureState;
-    }
-    
-    inline void NMaterial::RenderPassInstance::SetTextureStateHandle(UniqueHandle handle)
-    {
-        if(renderState.textureState != handle)
+        if(renderState.textureState != InvalidUniqueHandle)
         {
-            if(renderState.textureState != InvalidUniqueHandle)
-            {
-                RenderManager::Instance()->ReleaseTextureState(renderState.textureState);
-            }
-            
-            renderState.textureState = handle;
-            
-            if(renderState.textureState != InvalidUniqueHandle)
-            {
-                RenderManager::Instance()->RetainTextureState(renderState.textureState);
-            }
+            RenderManager::Instance()->ReleaseTextureState(renderState.textureState);
+        }
+        
+        renderState.textureState = handle;
+        
+        if(renderState.textureState != InvalidUniqueHandle)
+        {
+            RenderManager::Instance()->RetainTextureState(renderState.textureState);
         }
     }
+}
+
+inline void NMaterial::RenderPassInstance::SetRenderer(Core::eRenderer renderer)
+{
+    renderState.renderer = renderer;
+}
+
+inline Core::eRenderer NMaterial::RenderPassInstance::GetRenderer() const
+{
+    return renderState.renderer;
+}
+
+inline void NMaterial::RenderPassInstance::SetColor(const Color& color)
+{
+    renderState.color = color;
+}
+
+inline const Color& NMaterial::RenderPassInstance::GetColor() const
+{
+    return renderState.color;
+}
+
+inline void NMaterial::RenderPassInstance::FlushState()
+{
+    RenderManager::Instance()->FlushState(&renderState);
+}
+
+inline NMaterial* NMaterial::GetParent() const
+{
+    return parent;
+}
+
+inline uint32 NMaterial::GetChildrenCount() const
+{
+    return children.size();
+}
+
+inline NMaterial* NMaterial::GetChild(uint32 index) const
+{
+    DVASSERT(index >= 0 && index < children.size());
+    return children[index];
+}
+
+inline uint32 NMaterial::GetRequiredVertexFormat() const
+{
+    return requiredVertexFormat;
+}
+
+inline const FastName& NMaterial::GetMaterialName() const
+{
+    return materialName;
+}
+
+inline NMaterial::eMaterialType NMaterial::GetMaterialType() const
+{
+    return materialType;
+}
+
+inline NMaterial::NMaterialKey NMaterial::GetMaterialKey() const
+{
+    return materialKey;
+}
+	
+inline uint16 NMaterial::GetSortingKey() const
+{
+    return materialSortKey;
+}
+	
+inline uint32 NMaterial::GetRenderLayerIDsBitmask() const
+{
+    return renderLayerIDsBitmask;
+}
+
+inline const NMaterialTemplate* NMaterial::GetMaterialTemplate() const
+{
+    return materialTemplate;
+}
+
+inline uint8 NMaterial::GetDynamicBindFlags() const
+{
+    return dynamicBindFlags;
+}
+
+inline IlluminationParams::IlluminationParams(NMaterial* parentMaterial) :
+                                                                isUsed(true),
+                                                                castShadow(true),
+                                                                receiveShadow(true),
+                                                                lightmapSize(LIGHTMAP_SIZE_DEFAULT),
+                                                                parent(parentMaterial)
+{
+}
+
+inline IlluminationParams::IlluminationParams(const IlluminationParams & params)
+{
+    isUsed = params.isUsed;
+    castShadow = params.castShadow;
+    receiveShadow = params.receiveShadow;
+    lightmapSize = params.lightmapSize;
+    parent = NULL;
+}
+
+inline int32 IlluminationParams::GetLightmapSize() const
+{
+    return lightmapSize;
+}
+
+inline NMaterial* IlluminationParams::GetParent() const
+{
+    return parent;
+}
+
+inline NMaterialProperty::NMaterialProperty()
+{
+    type = Shader::UT_INT;
+    size = 0;
+    data = NULL;
+}
+
+inline NMaterialProperty::~NMaterialProperty()
+{
+    SafeDeleteArray(data);
+}
+
+inline NMaterialProperty* NMaterialProperty::Clone()
+{
+    NMaterialProperty* cloneProp = new NMaterialProperty();
     
-    inline void NMaterial::RenderPassInstance::SetRenderer(Core::eRenderer renderer)
+    cloneProp->size = size;
+    cloneProp->type = type;
+    
+    if(data)
     {
-        renderState.renderer = renderer;
+        size_t dataSize = Shader::GetUniformTypeSize(type) * size;
+        cloneProp->data = new uint8[dataSize];
+        memcpy(cloneProp->data, data, dataSize);
     }
     
-    inline Core::eRenderer NMaterial::RenderPassInstance::GetRenderer() const
+    return cloneProp;
+}
+
+inline NMaterial::TextureBucket::TextureBucket() : texture(NULL)
+{
+}
+
+inline NMaterial::TextureBucket::~TextureBucket()
+{
+    SafeRelease(texture);
+}
+
+inline void NMaterial::TextureBucket::SetTexture(Texture* tx)
+{
+    if(tx != texture)
     {
-        return renderState.renderer;
+        SafeRelease(texture);
+        texture = SafeRetain(tx);
     }
-    
-    inline void NMaterial::RenderPassInstance::SetColor(const Color& color)
-    {
-        renderState.color = color;
-    }
-    
-    inline const Color& NMaterial::RenderPassInstance::GetColor() const
-    {
-        return renderState.color;
-    }
-    
-    inline void NMaterial::RenderPassInstance::FlushState()
-    {
-        RenderManager::Instance()->FlushState(&renderState);
-    }
+}
+
+inline Texture* NMaterial::TextureBucket::GetTexture() const
+{
+    return texture;
+}
+
+inline void NMaterial::TextureBucket::SetPath(const FilePath& filePath)
+{
+    path = filePath;
+}
+
+inline const FilePath& NMaterial::TextureBucket::GetPath() const
+{
+    return path;
+}
+
+inline NMaterial::UniformCacheEntry::UniformCacheEntry() :
+uniform(NULL),
+prop(NULL),
+index(-1)
+{
+}
+
 
 };
 

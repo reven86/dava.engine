@@ -71,6 +71,7 @@
 #include "UIParticlesTest.h"
 #include "SceneSystemTest.h"
 #include "ParseTextTest.h"
+#include "ImageSizeTest.h"
 
 using namespace DAVA;
 
@@ -95,6 +96,8 @@ void GameCore::OnAppStarted()
 	RenderManager::Instance()->SetFPS(60);
 
     CreateDocumentsFolder();
+
+	new ImageSizeTest();
 
     new PVRTest();
  	new DXTTest();

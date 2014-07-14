@@ -37,6 +37,7 @@
 #include <QCheckBox>
 #include <QCompleter>
 #include <QLineEdit>
+#include <QRegExpValidator>
 
 
 namespace
@@ -206,6 +207,14 @@ void ActionComponentEditor::OnSelectedItemChanged()
 	ui->buttonRemoveItem->setEnabled(currentRow >= 0);
 }
 
+QWidget* ActionItemEditDelegate::createFloatEditor(QWidget *parent) const
+{
+    QLineEdit *sb = new QLineEdit(parent);
+    sb->setValidator(new QRegExpValidator(QRegExp("\\s*-?\\d*[,\\.]?\\d*\\s*")));
+
+    return sb;
+}
+
 DAVA::ActionComponent::Action ActionComponentEditor::GetDefaultAction()
 {
 	DAVA::ActionComponent::Action action;
@@ -337,13 +346,7 @@ QWidget* ActionItemEditDelegate::createEditor(QWidget *parent, const QStyleOptio
 		case COLUMN_DELAY:
         case COLUMN_DELAY_VARIATION:
 		{
-			QDoubleSpinBox* spinBox = new QDoubleSpinBox(parent);
-			spinBox->setMinimum(0.0f);
-			spinBox->setMaximum(3600.f);
-			spinBox->setSingleStep(0.01f);
-			
-			editor = spinBox;
-			
+			editor = createFloatEditor(parent);
 			break;
 		}
 			
@@ -448,17 +451,15 @@ void ActionItemEditDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 			
 		case COLUMN_DELAY:
 		{
-			QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
-			spinBox->setValue(currentAction.delay);
-			
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+			edit->setText(QString::number(currentAction.delay));
 			break;
 		}
 
         case COLUMN_DELAY_VARIATION:
         {
-            QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>( editor );
-            spinBox->setValue( currentAction.delayVariation );
-
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+			edit->setText(QString::number(currentAction.delayVariation));
             break;
         }
 
@@ -533,19 +534,17 @@ void ActionItemEditDelegate::setModelData(QWidget *editor, QAbstractItemModel *m
 			
 		case COLUMN_DELAY:
 		{
-			QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>(editor);
-			currentAction.delay = (DAVA::float32)spinBox->value();
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+            currentAction.delay = edit->text().toDouble();
 			model->setData(index, QString("%1").arg(currentAction.delay, 16, 'f', 2), Qt::EditRole);
-			
 			break;
 		}
 			
         case COLUMN_DELAY_VARIATION:
         {
-            QDoubleSpinBox* spinBox = static_cast<QDoubleSpinBox*>( editor );
-            currentAction.delayVariation = ( DAVA::float32 )spinBox->value();
-            model->setData( index, QString( "%1" ).arg( currentAction.delayVariation, 16, 'f', 2 ), Qt::EditRole );
-
+            QLineEdit *edit = static_cast<QLineEdit*>(editor);
+            currentAction.delayVariation = edit->text().toDouble();
+			model->setData(index, QString("%1").arg(currentAction.delayVariation, 16, 'f', 2), Qt::EditRole);
             break;
         }
 

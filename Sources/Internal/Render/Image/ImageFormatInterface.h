@@ -38,8 +38,8 @@
 namespace DAVA 
 {
 
-class Image;
 class File;
+class Image;
 
 class ImageFormatInterface
 {
@@ -56,6 +56,10 @@ public:
     virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const = 0;
     
     virtual uint32 GetDataSize(File *infile) const = 0;
+
+	Size2i GetImageSize(const FilePath & fileName) const;
+	virtual Size2i GetImageSize(File *infile) const = 0;
+
     
     inline bool IsFileExtensionSupported(const String& extension) const;
     

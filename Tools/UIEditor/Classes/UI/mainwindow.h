@@ -34,7 +34,7 @@
 #include <QCloseEvent>
 #include "ScreenWrapper.h"
 #include "EditorSettings.h"
-
+#include <QLineEdit>
 #include "PreviewController.h"
 
 namespace Ui {
@@ -160,6 +160,7 @@ private slots:
 
     // Notification from GL widget its resize is done.
     void OnGLWidgetResized();
+    void OnSearchPressed();
 
 private:
 	bool CloseProject();
@@ -233,6 +234,10 @@ private:
 
 	bool screenChangeUpdate;
     QString screenShotFolder;
+    
+    QLineEdit *findField;
+    void SearchControlsByName(QList<HierarchyTreeControlNode*>& foundNodes,const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName, bool ignoreCase) const;
+    QList<HierarchyTreeControlNode*> SearchScreenByName(const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName, bool ignoreCase) const;
 };
 
 #endif // MAINWINDOW_H

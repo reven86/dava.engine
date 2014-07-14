@@ -1462,6 +1462,18 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationSpatialData.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
@@ -2650,6 +2662,18 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClCompile>
@@ -2679,6 +2703,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
+      <Filter>Internal\Render\Image</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

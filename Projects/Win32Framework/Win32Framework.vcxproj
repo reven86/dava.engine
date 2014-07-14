@@ -491,7 +491,11 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterial.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialConsts.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialNames.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\RenderTechnique.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\MipmapReplacer.h" />
@@ -896,6 +900,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
@@ -907,7 +912,11 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraphNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterial.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialNames.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\RenderTechnique.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\MipmapReplacer.cpp" />

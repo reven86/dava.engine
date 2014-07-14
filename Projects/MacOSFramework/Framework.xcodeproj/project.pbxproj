@@ -836,6 +836,36 @@
 		6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963C18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
+		647EFC41195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
+		647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
+		647EFC43195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
+		647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
+		647EFC45195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
+		647EFC46195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
+		647EFC49195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
+		647EFC4A195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
+		647EFC4B195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
+		647EFC4C195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
+		647EFC4D195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
+		647EFC4E195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
+		647EFC51195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
+		647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
+		647EFC53195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
+		647EFC54195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
+		647EFC55195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
+		647EFC56195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
+		647EFC59195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
+		647EFC5A195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
+		647EFC5B195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
+		647EFC5C195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
+		647EFC5D195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
+		647EFC5E195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
+		64806B6D18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
+		64806B6E18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
+		64806B6F18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
+		64806B7018BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
+		64806B7118BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
+		64806B7218BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
 		644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
 		644C86BF19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
 		644C86C019476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
@@ -2224,6 +2254,9 @@
 		E8ADAEBC18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBD18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
 		E8ADAEBE18CA1226000B251C /* PixelFormatDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */; };
+		E8B47D29196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */; };
+		E8B47D2A196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */; };
+		E8B47D2B196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */; };
 		E8B4F8CF16EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B4F8D016EF377D0072442A /* UTF8UtilsMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */; };
 		E8B6B3B01705DB26004F665E /* DeviceInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840D24201703311400267C58 /* DeviceInfo.cpp */; };
@@ -2466,6 +2499,16 @@
 		641A61D818CDC2F4003359E7 /* FoliageSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FoliageSystem.cpp; sourceTree = "<group>"; };
 		641A61D918CDC2F4003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		6435963718C1FA3200862C31 /* AbstractQuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractQuadTree.h; sourceTree = "<group>"; };
+		647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicTexturesInsp.cpp; sourceTree = "<group>"; };
+		647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
+		647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicFlagsInsp.cpp; sourceTree = "<group>"; };
+		647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicFlagsInsp.h; sourceTree = "<group>"; };
+		647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicPropertiesInsp.cpp; sourceTree = "<group>"; };
+		647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicPropertiesInsp.h; sourceTree = "<group>"; };
+		647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialHelper.cpp; sourceTree = "<group>"; };
+		647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialHelper.h; sourceTree = "<group>"; };
+		64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VegetationRenderObject.cpp; sourceTree = "<group>"; };
+		64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VegetationRenderObject.h; sourceTree = "<group>"; };
 		644C86A819476A7100964F91 /* RenderBatchPool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderBatchPool.cpp; sourceTree = "<group>"; };
 		644C86A919476A7100964F91 /* RenderBatchPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderBatchPool.h; sourceTree = "<group>"; };
 		644C86AA19476A7100964F91 /* TextureSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureSheet.cpp; sourceTree = "<group>"; };
@@ -3135,6 +3178,7 @@
 		E89CE91116C549D2006BEFF4 /* libcurl_macos.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_macos.a; path = ../../Libs/libs/libcurl_macos.a; sourceTree = "<group>"; };
 		E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PixelFormatDescriptor.cpp; sourceTree = "<group>"; };
 		E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PixelFormatDescriptor.h; sourceTree = "<group>"; };
+		E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageFormatInterface.cpp; path = Image/ImageFormatInterface.cpp; sourceTree = "<group>"; };
 		E8B4F8CE16EF377D0072442A /* UTF8UtilsMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UTF8UtilsMac.mm; sourceTree = "<group>"; };
 		E8B6B3BA1705DD59004F665E /* DeviceInfoMacOS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceInfoMacOS.mm; sourceTree = "<group>"; };
 		E8B731A5180BF7EB00C7CF26 /* TeamcityOutputMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TeamcityOutputMac.mm; sourceTree = "<group>"; };
@@ -3368,6 +3412,7 @@
 		84CB66EB191FC8420086483D /* Image */ = {
 			isa = PBXGroup;
 			children = (
+				E8B47D28196D4F2900D8ADF6 /* ImageFormatInterface.cpp */,
 				62D1C35D1922624A00B8143B /* CRCAdditionInterface.h */,
 				84CB670A191FC8850086483D /* Image.cpp */,
 				84CB670B191FC8850086483D /* Image.h */,
@@ -4078,6 +4123,14 @@
 				A650F4B71864A10100D3278D /* NMaterialTemplate.h */,
 				A6DBFA6D1887D804006BE11C /* NMaterialNames.cpp */,
 				A6DBFA6E1887D804006BE11C /* NMaterialNames.h */,
+				647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */,
+				647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */,
+				647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */,
+				647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */,
+				647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */,
+				647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */,
+				647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */,
+				647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */,
 			);
 			path = Material;
 			sourceTree = "<group>";
@@ -4458,6 +4511,7 @@
 				176DE904174B5561007A983B /* Config.h in Headers */,
 				176DE905174B5561007A983B /* MongodbUpdateObject.h in Headers */,
 				176DE907174B5561007A983B /* BaseMath.h in Headers */,
+				647EFC46195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				176DE908174B5561007A983B /* BaseObject.h in Headers */,
 				176DE909174B5561007A983B /* BaseObjectChecker.h in Headers */,
 				176DE90A174B5561007A983B /* BaseTypes.h in Headers */,
@@ -4671,6 +4725,7 @@
 				176DE9C7174B5561007A983B /* UpdatableComponent.h in Headers */,
 				176DE9C8174B5561007A983B /* DataNode.h in Headers */,
 				176DE9C9174B5561007A983B /* Drawable.h in Headers */,
+				647EFC4E195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				176DE9CA174B5561007A983B /* ImposterManager.h in Headers */,
 				176DE9CB174B5561007A983B /* ImposterNode.h in Headers */,
 				176DE9CC174B5561007A983B /* LodNode.h in Headers */,
@@ -4724,8 +4779,10 @@
 				176DE9F8174B5561007A983B /* UIHierarchy.h in Headers */,
 				176DE9F9174B5561007A983B /* UIHierarchyCell.h in Headers */,
 				176DE9FA174B5561007A983B /* UIHierarchyNode.h in Headers */,
+				647EFC56195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				176DE9FB174B5561007A983B /* UIHoleTransition.h in Headers */,
 				0282B87918BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */,
+				647EFC5E195EEF2A0073B3CB /* NMaterialHelper.h in Headers */,
 				176DE9FC174B5561007A983B /* UIJoypad.h in Headers */,
 				176DE9FD174B5561007A983B /* UIList.h in Headers */,
 				176DE9FE174B5561007A983B /* UIListCell.h in Headers */,
@@ -4837,6 +4894,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				647EFC54195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				E8989D9B16BD24E500732C04 /* AnimatedObject.h in Headers */,
 				E8989D9D16BD24E500732C04 /* Animation.h in Headers */,
 				E8989D9F16BD24E500732C04 /* AnimationManager.h in Headers */,
@@ -4967,6 +5025,7 @@
 				E8989E7D16BD24E500732C04 /* Sphere.h in Headers */,
 				E8989E7F16BD24E500732C04 /* Spline.h in Headers */,
 				E8989E8016BD24E500732C04 /* Vector.h in Headers */,
+				647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				E8989E8116BD24E500732C04 /* BaseNetworkConnection.h in Headers */,
 				E8989E8316BD24E500732C04 /* BTNetworkConnection.h in Headers */,
 				84CB671A191FC8850086483D /* Image.h in Headers */,
@@ -5066,6 +5125,7 @@
 				E8989F9716BD24E500732C04 /* TransformComponent.h in Headers */,
 				E8989F9916BD24E500732C04 /* UpdatableComponent.h in Headers */,
 				E8989F9B16BD24E500732C04 /* DataNode.h in Headers */,
+				647EFC5C195EEF2A0073B3CB /* NMaterialHelper.h in Headers */,
 				E8989F9C16BD24E500732C04 /* Drawable.h in Headers */,
 				E8989FA016BD24E500732C04 /* ImposterManager.h in Headers */,
 				0282B87718BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */,
@@ -5177,6 +5237,7 @@
 				CCC7A43D16F1D6170061EA5D /* LandscapeChunk.h in Headers */,
 				62BD24C118C621EB00D2F0D3 /* DateTime.h in Headers */,
 				CCC7A44116F1D6170061EA5D /* LandscapeCursor.h in Headers */,
+				647EFC4C195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				CCC7A44516F1D6170061EA5D /* Light.h in Headers */,
 				CCC7A44916F1D6170061EA5D /* Mesh.h in Headers */,
 				CCC7A45116F1D6170061EA5D /* RenderBatch.h in Headers */,
@@ -5329,6 +5390,7 @@
 				E898A09916BD265400732C04 /* Component.h in Headers */,
 				E898A09A16BD265400732C04 /* SceneSystem.h in Headers */,
 				E898A09B16BD265400732C04 /* Bitstream.h in Headers */,
+				647EFC4D195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				E898A09C16BD265400732C04 /* DynamicMemoryFile.h in Headers */,
 				E898A09D16BD265400732C04 /* File.h in Headers */,
 				0214140B181984D600925E51 /* DAVAClassRegistrator.h in Headers */,
@@ -5356,6 +5418,7 @@
 				E898A0AE16BD265400732C04 /* KeyboardDevice.h in Headers */,
 				E898A0AF16BD265400732C04 /* AABBox2.h in Headers */,
 				E898A0B016BD265400732C04 /* AABBox3.h in Headers */,
+				647EFC5D195EEF2A0073B3CB /* NMaterialHelper.h in Headers */,
 				E898A0B116BD265400732C04 /* BezierSpline.h in Headers */,
 				E898A0B216BD265400732C04 /* Circle.h in Headers */,
 				E898A0B316BD265400732C04 /* Color.h in Headers */,
@@ -5418,6 +5481,7 @@
 				E898A0ED16BD265400732C04 /* EdgeAdjacency.h in Headers */,
 				E898A0EE16BD265400732C04 /* PolygonGroup.h in Headers */,
 				E898A0EF16BD265400732C04 /* StaticMesh.h in Headers */,
+				647EFC55195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				E898A0F016BD265400732C04 /* Cursor.h in Headers */,
 				E898A0F116BD265400732C04 /* ColorOnlyEffect.h in Headers */,
 				E898A0F216BD265400732C04 /* MultiTextureEffect.h in Headers */,
@@ -5521,6 +5585,7 @@
 				E898A16A16BD265400732C04 /* TransformSystem.h in Headers */,
 				E898A16C16BD265400732C04 /* UserNode.h in Headers */,
 				E843505A17FA0D3B00A25F04 /* TeamcityOutput.h in Headers */,
+				647EFC45195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				E898A17516BD265400732C04 /* SoundSystem.h in Headers */,
 				E898A17716BD265400732C04 /* ScrollHelper.h in Headers */,
 				E898A17816BD265400732C04 /* TheoraPlayer.h in Headers */,
@@ -5780,6 +5845,7 @@
 				176DEA59174B5561007A983B /* Radix.cpp in Sources */,
 				176DEA5A174B5561007A983B /* CollisionObject2.cpp in Sources */,
 				176DEA5B174B5561007A983B /* CollisionPolygons.cpp in Sources */,
+				E8B47D2B196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				176DEA5C174B5561007A983B /* Collisions.cpp in Sources */,
 				02FD7EDB19237D96007762C0 /* WindSystem.cpp in Sources */,
 				176DEA5D174B5561007A983B /* ApplicationCore.cpp in Sources */,
@@ -5884,6 +5950,7 @@
 				7A169348180EE619005F1FBC /* VectorSwig.cpp in Sources */,
 				176DEABC174B5561007A983B /* MaterialGraph.cpp in Sources */,
 				176DEABD174B5561007A983B /* MaterialGraphNode.cpp in Sources */,
+				647EFC4B195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				176DEABE174B5561007A983B /* NMaterial.cpp in Sources */,
 				176DEABF174B5561007A983B /* Material.cpp in Sources */,
 				176DEAC0174B5561007A983B /* RenderBase.cpp in Sources */,
@@ -5943,6 +6010,7 @@
 				176DEAEB174B5561007A983B /* MeshInstanceNode.cpp in Sources */,
 				176DEAEC174B5561007A983B /* ParticleEffectNode.cpp in Sources */,
 				176DEAED174B5561007A983B /* ParticleEmitterNode.cpp in Sources */,
+				647EFC5B195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */,
 				176DEAEE174B5561007A983B /* PathManip.cpp in Sources */,
 				641A61DC18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
 				176DEAEF174B5561007A983B /* PolygonGroupInstance.cpp in Sources */,
@@ -5985,6 +6053,7 @@
 				A6DBFA711887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				176DEB0C174B5561007A983B /* TheoraPlayer.cpp in Sources */,
 				176DEB0D174B5561007A983B /* UI3DView.cpp in Sources */,
+				647EFC53195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				176DEB0E174B5561007A983B /* UIButton.cpp in Sources */,
 				176DEB0F174B5561007A983B /* UIControl.cpp in Sources */,
 				176DEB10174B5561007A983B /* UIControlBackground.cpp in Sources */,
@@ -6039,6 +6108,7 @@
 				176DEB3E174B5561007A983B /* Heightmap.cpp in Sources */,
 				176DEB3F174B5561007A983B /* Landscape.cpp in Sources */,
 				176DEB40174B5561007A983B /* LandscapeChunk.cpp in Sources */,
+				647EFC43195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
 				176DEB41174B5561007A983B /* LandscapeCursor.cpp in Sources */,
 				176DEB42174B5561007A983B /* Light.cpp in Sources */,
 				176DEB43174B5561007A983B /* Mesh.cpp in Sources */,
@@ -6141,6 +6211,7 @@
 				E8989DF416BD24E500732C04 /* DAVAEngine.cpp in Sources */,
 				E8989DF616BD24E500732C04 /* Backtrace.cpp in Sources */,
 				17B3EA8618E9A3120069AE7A /* CoreMacOSPlatformBase.cpp in Sources */,
+				647EFC51195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				E8989DFB16BD24E500732C04 /* MemoryManager.cpp in Sources */,
 				E8989DFD16BD24E500732C04 /* Replay.cpp in Sources */,
 				EA106063188921FC00CB99A3 /* ParticleRenderObject.cpp in Sources */,
@@ -6282,6 +6353,7 @@
 				E8989F9816BD24E500732C04 /* UpdatableComponent.cpp in Sources */,
 				E8989F9A16BD24E500732C04 /* DataNode.cpp in Sources */,
 				E8989F9F16BD24E500732C04 /* ImposterManager.cpp in Sources */,
+				647EFC41195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
 				E8989FA116BD24E500732C04 /* ImposterNode.cpp in Sources */,
 				E8989FA316BD24E500732C04 /* LodNode.cpp in Sources */,
 				E8989FA516BD24E500732C04 /* MeshInstance.cpp in Sources */,
@@ -6351,11 +6423,13 @@
 				E898A02516BD24E500732C04 /* UILoadingTransition.cpp in Sources */,
 				E898A02716BD24E500732C04 /* UIMoveInTransition.cpp in Sources */,
 				E898A02916BD24E500732C04 /* UIPopup.cpp in Sources */,
+				647EFC59195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */,
 				E898A02B16BD24E500732C04 /* UIScreen.cpp in Sources */,
 				E898A03416BD24E500732C04 /* UIScreenManagerMacOS.cpp in Sources */,
 				E898A03616BD24E500732C04 /* UIScreenTransition.cpp in Sources */,
 				E898A03816BD24E500732C04 /* UIScrollBar.cpp in Sources */,
 				505EB40E1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */,
+				E8B47D29196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				E898A03A16BD24E500732C04 /* UISlider.cpp in Sources */,
 				84CB671E191FC8850086483D /* ImageSystem.cpp in Sources */,
 				E898A03C16BD24E500732C04 /* UIStaticText.cpp in Sources */,
@@ -6414,6 +6488,7 @@
 				CCC7A47316F1D6170061EA5D /* SpriteObject.cpp in Sources */,
 				CCC7A47716F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				CCC7A47D16F1D64D0061EA5D /* RenderState.cpp in Sources */,
+				647EFC49195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				CCC7A48316F1D6700061EA5D /* UpdateSystem.cpp in Sources */,
 				84CB6724191FC8850086483D /* LibPngHelpers.cpp in Sources */,
 				CCC7A48916F1D6B80061EA5D /* Entity.cpp in Sources */,
@@ -6514,6 +6589,7 @@
 				E898A1BD16BD265400732C04 /* DAVAEngine.cpp in Sources */,
 				E898A1BE16BD265400732C04 /* Backtrace.cpp in Sources */,
 				E898A1BF16BD265400732C04 /* MemoryManager.cpp in Sources */,
+				647EFC4A195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
 				E898A1C016BD265400732C04 /* Replay.cpp in Sources */,
 				641A61DB18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
 				E898A1C116BD265400732C04 /* Stats.cpp in Sources */,
@@ -6562,6 +6638,7 @@
 				E898A1E716BD265400732C04 /* Spline.cpp in Sources */,
 				E898A1E816BD265400732C04 /* BaseNetworkConnection.mm in Sources */,
 				E898A1E916BD265400732C04 /* BTNetworkConnection.mm in Sources */,
+				647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */,
 				E898A1EA16BD265400732C04 /* NetworkConnection.cpp in Sources */,
 				E898A1EB16BD265400732C04 /* NetworkConnectionIPhone.mm in Sources */,
 				E898A1EC16BD265400732C04 /* NetworkDelegate.cpp in Sources */,
@@ -6643,6 +6720,7 @@
 				02FD7EDA19237D96007762C0 /* WindSystem.cpp in Sources */,
 				E898A24816BD265400732C04 /* Box2DTileCollider.cpp in Sources */,
 				E898A24916BD265400732C04 /* GameObject.cpp in Sources */,
+				647EFC5A195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */,
 				E898A24A16BD265400732C04 /* GameObjectAnimations.cpp in Sources */,
 				E898A24B16BD265400732C04 /* GameObjectManager.cpp in Sources */,
 				E898A24C16BD265400732C04 /* TextGameObject.cpp in Sources */,
@@ -6704,6 +6782,7 @@
 				E898A28E16BD265400732C04 /* ScrollHelper.cpp in Sources */,
 				17B3EA8F18E9A4ED0069AE7A /* CoreMacOSPlatformQt.cpp in Sources */,
 				E898A28F16BD265400732C04 /* TheoraPlayer.cpp in Sources */,
+				E8B47D2A196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				A650F4B91864A10100D3278D /* NMaterialTemplate.cpp in Sources */,
 				E898A29016BD265400732C04 /* UI3DView.cpp in Sources */,
 				E898A29116BD265400732C04 /* UIButton.cpp in Sources */,
@@ -6783,6 +6862,7 @@
 				02FD7EE419237DA2007762C0 /* SpeedTreeComponent.cpp in Sources */,
 				CCC7A47016F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47416F1D6170061EA5D /* SpriteObject.cpp in Sources */,
+				647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
 				CCC7A47816F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				CCC7A47E16F1D64D0061EA5D /* RenderState.cpp in Sources */,
 				CCC7A48416F1D6700061EA5D /* UpdateSystem.cpp in Sources */,

@@ -63,10 +63,6 @@ public:
     static Image * CreatePinkPlaceholder(bool checkers = true);
     void MakePink(bool checkers = true);
 
-    
-    // \todo Change function name to Image::Create for consistency
-	static Vector2 GetImageSize(const FilePath & pathName);
-	
 	inline uint32 GetWidth() const;
 	inline uint32 GetHeight() const;
 	inline uint8 * GetData() const;

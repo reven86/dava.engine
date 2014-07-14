@@ -1554,7 +1554,8 @@ void QtMainWindow::OnAddVegetation()
 
         Entity* vegetationNode = new Entity();
         vegetationNode->AddComponent(rc);
-        vegetationNode->SetName(FastName("Vegetation"));
+        vegetationNode->SetName(ResourceEditor::VEGETATION_NODE_NAME);
+        vegetationNode->SetLocked(true);
 
         sceneEditor->Exec(new EntityAddCommand(vegetationNode, sceneEditor));
         sceneEditor->selectionSystem->SetSelection(vegetationNode);

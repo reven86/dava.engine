@@ -351,6 +351,7 @@ protected:
 	bool isPassword : 1;
 	bool enableReturnKeyAutomatically : 1;
 	bool showCursor : 1;
+    bool showNativeControl : 1;
 
     void RenderText();
 private:
