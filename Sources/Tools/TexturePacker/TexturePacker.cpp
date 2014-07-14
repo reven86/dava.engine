@@ -538,6 +538,12 @@ bool TexturePacker::WriteDefinition(const FilePath & /*excludeFolder*/, const Fi
             Logger::Warning("In sprite %s.psd frame %d has size bigger than sprite size. Frame will be cropped.", defFile->filename.GetBasename().c_str(), frame);
         }
 	}
+    
+    for (int frameNameLine = 0; frameNameLine < (int)defFile->frameNames.size(); ++frameNameLine)
+	{
+		String & frameName = defFile->frameNames[frameNameLine];
+		fprintf(fp, "%s\n", frameName.c_str());
+	}
 	
 	for (int pathInfoLine = 0; pathInfoLine < (int)defFile->pathsInfo.size(); ++pathInfoLine)
 	{
@@ -628,6 +634,12 @@ bool TexturePacker::WriteMultipleDefinition(const FilePath & /*excludeFolder*/, 
 			FileSystem::Instance()->DeleteFile(outputPath + fileName);
 			return false;
 		}
+	}
+    
+    for (int frameNameLine = 0; frameNameLine < (int)defFile->frameNames.size(); ++frameNameLine)
+	{
+		String & frameName = defFile->frameNames[frameNameLine];
+		fprintf(fp, "%s\n", frameName.c_str());
 	}
 	
 	for (int pathInfoLine = 0; pathInfoLine < (int)defFile->pathsInfo.size(); ++pathInfoLine)

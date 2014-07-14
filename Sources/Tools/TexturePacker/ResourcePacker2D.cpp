@@ -260,7 +260,10 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			int yOff = (int)bbox.yOff();
 			if (bbox.yNegative())
 				yOff = -yOff;
-			
+            
+			// Get and save layer name
+            defFile->frameNames.push_back(currentLayer.label());
+            
 			defFile->frameRects[k - 1] = Rect2i(xOff, yOff, (int32)bbox.width(), (int32)bbox.height());
 			
 			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());
