@@ -159,6 +159,11 @@ public:
      */
     virtual void SetFrame(int32 drawFrame);
     /**
+     \brief Sets Sprite frame you want to use.
+     \param[in] frameName Sprite frame name.
+     */
+	virtual void SetFrameByName(const String& frameName);
+    /**
      \brief Sets size of the left and right unscalable sprite part.
         Middle sprite part would be scaled along a full control width.
         Used for DRAW_STRETCH_HORIZONTAL, DRAW_STRETCH_BOTH draw types.

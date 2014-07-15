@@ -210,6 +210,15 @@ bool DefinitionFile::Load(const FilePath & _filename)
 			frameRects[i].dy++;	
 		}
 	}
+
+	for (int i = 0; i < frameCount; ++i)
+	{
+		char tmpString[512];
+		fgets(tmpString, sizeof(tmpString), fp);
+		frameNames.push_back(tmpString);
+		printf("fame: %d name: %s\n", i, tmpString);
+		if (feof(fp))break;
+	}	
 	
 	while(1)
 	{

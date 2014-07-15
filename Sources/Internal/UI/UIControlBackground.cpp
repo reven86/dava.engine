@@ -172,6 +172,11 @@ void UIControlBackground::SetFrame(int32 drawFrame)
     frame = drawFrame;
 }
 
+void UIControlBackground::SetFrameByName(const String& frameName)
+{
+	DVASSERT(spr);
+}	
+
 void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
