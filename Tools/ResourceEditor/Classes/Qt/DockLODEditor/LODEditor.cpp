@@ -202,7 +202,12 @@ void LODEditor::SceneDeactivated(SceneEditor2 *scene)
 
 void LODEditor::LODDataChanged()
 {
-    UpdateLodLayersSelection(FastName(ui->lodQualityBox->currentText().toAscii()));
+    if(ui->lodQualityBox->currentIndex() >= 0)
+    {
+        QString selection = ui->lodQualityBox->currentText();
+        FastName selectionFastName(selection.toStdString().c_str());
+        UpdateLodLayersSelection(selectionFastName);
+    }
     
     const DAVA::Set<int32>& activeLodIndices = editedLODData->GetActiveLODIndices();
     
@@ -285,37 +290,27 @@ void LODEditor::SetForceLayerValues(const DAVA::Set<DAVA::int32>& lodIndices)
     
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
     
-    DAVA::Set<DAVA::int32>::const_iterator it = lodIndices.begin();
-    DAVA::Set<DAVA::int32>::const_iterator end = lodIndices.end();
-    while(it != end)
+    DAVA::Vector<DAVA::int32> orderedIndices;
+    editedLODData->OrderIndices(lodIndices, orderedIndices);
+    
+    int32 currentForceIndex = -1;
+    uint32 orderedIndexCount = orderedIndices.size();
+    for(uint32 i = 0; i < orderedIndexCount; ++i)
     {
-        int32 index = *it;
+        int32 index = orderedIndices[i];
         ui->forceLayer->addItem(Format("%d", index).c_str(), QVariant(index));
-        
-        ++it;
-    }
-    
-    int32 currentForceIndex = 0;
-    int32 indexToSelect = 0;
-    int32 forceLayerIndex = editedLODData->GetForceLayer();
-    
-    it = lodIndices.begin();
-    while(it != end)
-    {
-        int32 index = *it;
         
         if(editedLODData->GetForceLayer() == index)
         {
-            indexToSelect = currentForceIndex;
-            break;
+            currentForceIndex = i;
         }
-        
-        currentForceIndex++;
-        
-        ++it;
+
     }
     
-    ui->forceLayer->setCurrentIndex(indexToSelect);
+    if(currentForceIndex >= 0)
+    {
+        ui->forceLayer->setCurrentIndex(currentForceIndex);
+    }
 }
 
 void LODEditor::LODEditorSettingsButtonReleased()
@@ -426,8 +421,6 @@ void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
 {
     if(lodQualityName.IsValid())
     {
-        editedLODData->SetLODQuality(lodQualityName);
-        
         const DAVA::Set<int32>& activeLodIndices = editedLODData->GetActiveLODIndices();
         const DAVA::Set<int32>& allLodIndices = editedLODData->GetAllLODIndices();
         
@@ -437,11 +430,12 @@ void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
             distanceWidgets[i].SetChecked(false);
         }
         
-        DAVA::Set<int32>::const_iterator allIndicesIt = allLodIndices.begin();
-        DAVA::Set<int32>::const_iterator allIndicesEnd = allLodIndices.end();
-        while(allIndicesIt != allIndicesEnd)
+        DAVA::Vector<DAVA::int32> orderedAllIndices;
+        editedLODData->OrderIndices(allLodIndices, orderedAllIndices);
+        uint32 allLodIndexCount = allLodIndices.size();
+        for(uint32 allLodIndex = 0; allLodIndex < allLodIndexCount; ++allLodIndex)
         {
-            int32 lodIndex = *allIndicesIt;
+            int32 lodIndex = orderedAllIndices[allLodIndex];
             
             if(lodIndex >= 0 && lodIndex < COUNT_OF(distanceWidgets))
             {
@@ -454,8 +448,7 @@ void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
                 
                 distanceWidgets[lodIndex].name->setText(Format("%d. (%d):", lodIndex, editedLODData->GetLayerTriangles(lodIndex)).c_str());
             }
-            
-            ++allIndicesIt;
+
         }
         
         DAVA::Set<int32>::const_iterator activeIndicesIt = activeLodIndices.begin();

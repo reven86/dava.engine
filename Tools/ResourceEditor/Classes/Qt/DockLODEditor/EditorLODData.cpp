@@ -624,3 +624,10 @@ void EditorLODData::UpdateLODStateFromScene()
     
     CollectLodIndices();
 }
+
+void EditorLODData::OrderIndices(const DAVA::Set<DAVA::int32>& indices,
+                  DAVA::Vector<DAVA::int32>& orderedIndices)
+{
+    orderedIndices.insert(orderedIndices.begin(), indices.begin(), indices.end());
+    std::sort(orderedIndices.begin(), orderedIndices.end());
+}

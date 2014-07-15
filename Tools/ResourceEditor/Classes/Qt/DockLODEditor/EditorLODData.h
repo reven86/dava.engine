@@ -90,6 +90,9 @@ public:
     const DAVA::Set<DAVA::int32>& GetActiveLODIndices() const;
     const DAVA::Set<DAVA::int32>& GetAllLODIndices() const;
     
+    void OrderIndices(const DAVA::Set<DAVA::int32>& indices,
+                      DAVA::Vector<DAVA::int32>& orderedIndices);
+    
     void UpdateLODStateFromScene();
 
 signals:
