@@ -79,6 +79,10 @@ SoundComponent * GetSoundComponent(Entity * fromEntity);
 LodComponent * GetLodComponent(Entity *fromEntity);
 SwitchComponent* GetSwitchComponent(Entity *fromEntity);
 
+void CollectSortedLodLayers(Entity *fromEntity, Vector<int32>& layers);
+void CollectSortedLodLayers(LodComponent *fromComponent, Vector<int32>& layers);
+void CollectLodLayers(Entity *fromEntity, Set<int32>& layers);
+void CollectLodLayers(LodComponent *fromComponent, Set<int32>& layers);
 uint32 GetMaxLodLayerIndex(Entity *fromEntity);
 uint32 GetMaxLodLayerIndex(LodComponent *fromComponent);
 uint32 GetLodLayersCount(Entity *fromEntity);

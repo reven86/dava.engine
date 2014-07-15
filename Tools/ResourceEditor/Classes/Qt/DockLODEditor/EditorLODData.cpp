@@ -231,6 +231,20 @@ void EditorLODData::GetLODDataFromScene()
         for(DAVA::int32 i = 0; i < lodComponentsSize; ++i)
         {
             //distances
+            
+            DAVA::Set<DAVA::int32> availableLodIndices;
+            CollectLodLayers(lodData[i], availableLodIndices);
+            for(DAVA::Set<DAVA::int32>::iterator it = availableLodIndices.begin(),
+                end = availableLodIndices.end();
+                it != end;
+                ++it)
+            {
+                uint32 lodLayerIndex = *it;
+                
+                lodDistances[lodLayerIndex] += lodData[i]->GetLodLayerDistance(layer);
+                ++lodComponentsCount[lodLayerIndex];
+            }
+            
             DAVA::int32 layersCount = GetLodLayersCount(lodData[i]);
             for(DAVA::int32 layer = 0; layer < layersCount; ++layer)
             {

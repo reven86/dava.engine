@@ -453,7 +453,7 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
                                             uint32 maxDistanceCount)
 {
     lodLayers.resize(maxDistanceCount);
-    for(uint32 i = 0; i < maxDistanceCount; ++i)
+    for(int32 i = 0; i < maxDistanceCount; ++i)
     {
         KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
         if(NULL != lodDistValuesArch)
@@ -461,7 +461,9 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
             lodLayers[i].distance = lodDistValuesArch->GetFloat("ld.distance");
             lodLayers[i].nearDistanceSq = lodDistValuesArch->GetFloat("ld.neardistsq");
             lodLayers[i].farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
-            lodLayers[i].lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : (int8)i;
+            
+            int8 currentLodIndex = (int8)Clamp(i - 1, 0, (int32)maxDistanceCount);
+            lodLayers[i].lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : currentLodIndex;
         }
     }
 }

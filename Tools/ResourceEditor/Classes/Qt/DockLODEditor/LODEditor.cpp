@@ -432,7 +432,7 @@ void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
         
         DAVA::Vector<DAVA::int32> orderedAllIndices;
         editedLODData->OrderIndices(allLodIndices, orderedAllIndices);
-        uint32 allLodIndexCount = allLodIndices.size();
+        uint32 allLodIndexCount = orderedAllIndices.size();
         for(uint32 allLodIndex = 0; allLodIndex < allLodIndexCount; ++allLodIndex)
         {
             int32 lodIndex = orderedAllIndices[allLodIndex];
@@ -444,25 +444,26 @@ void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
                 DAVA::float32 distance = editedLODData->GetLayerDistance(lodIndex);
                 
                 SetSpinboxValue(distanceWidgets[lodIndex].distance, distance);
-                ui->distanceSlider->SetDistance(lodIndex, distance);
                 
                 distanceWidgets[lodIndex].name->setText(Format("%d. (%d):", lodIndex, editedLODData->GetLayerTriangles(lodIndex)).c_str());
             }
 
         }
         
-        DAVA::Set<int32>::const_iterator activeIndicesIt = activeLodIndices.begin();
-        DAVA::Set<int32>::const_iterator activeIndicesEnd = activeLodIndices.end();
-        while(activeIndicesIt != activeIndicesEnd)
+        DAVA::Vector<DAVA::int32> orderedActiveIndices;
+        editedLODData->OrderIndices(activeLodIndices, orderedActiveIndices);
+        uint32 activeLodIndexCount = orderedActiveIndices.size();
+        for(uint32 activeLodIndex = 0; activeLodIndex < activeLodIndexCount; ++activeLodIndex)
         {
-            int32 lodIndex = *activeIndicesIt;
+            int32 lodIndex = orderedActiveIndices[activeLodIndex];
             
             if(lodIndex >= 0 && lodIndex < COUNT_OF(distanceWidgets))
             {
                 distanceWidgets[lodIndex].SetChecked(true);
+                
+                DAVA::float32 distance = editedLODData->GetLayerDistance(lodIndex);
+                ui->distanceSlider->SetDistance(lodIndex, distance);
             }
-            
-            ++activeIndicesIt;
         }
     }
 }
