@@ -210,6 +210,8 @@ public:
 	const Vector2 &GetDefaultPivotPoint() const;
 
 	//void SetFrame(int32 frm);
+    
+    int32 GetFrameByName(const String& frameName);
 
 	void SetDefaultPivotPoint(float32 x, float32 y);
 	void SetDefaultPivotPoint(const Vector2 &newPivotPoint);
@@ -382,6 +384,7 @@ protected:
 	int32	frame;
 
 	Vector2	defaultPivotPoint;
+    Vector<String> frameNames;
 	//Vector2	pivotPoint;
 
 	//Vector2	drawCoord;

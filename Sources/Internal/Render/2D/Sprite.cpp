@@ -348,6 +348,27 @@ void Sprite::InitFromFile(File *file)
 		frameVertices[i][6] *= resourceToVirtualFactor;
 		frameVertices[i][7] *= resourceToVirtualFactor;
 	}
+    
+    char frameName[128];
+    frameNames.clear();
+
+	for (int32 i = 0; i < frameCount; i++)
+	{
+    	String actualFrameName;
+        
+		if (file->ReadLine(tempBuf, 1024) == 0)
+        {
+        	actualFrameName = "";
+        }
+        else
+        {
+			sscanf(tempBuf, "%s", frameName);
+            actualFrameName = String(frameName);
+        }
+        
+		frameNames.push_back(actualFrameName);
+       // Logger::FrameworkDebug("Sprite::InitFromFile - Loaded frame name: %s", String(actualFrameName).c_str());
+    }
 
 //	Logger::FrameworkDebug("Frames created: %d", spr->frameCount);
 	//	center.x = width / 2;
@@ -797,6 +818,17 @@ void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
 void Sprite::SetFrame(int32 frm)
 {
 	frame = Max(0, Min(frm, frameCount - 1));
+}
+
+int32 Sprite::GetFrameByName(const String& frameName)
+{
+    for (int32 i = 0; i < frameCount; i++)
+	{
+    	if (frameNames[i].compare(frameName) == 0)
+        	return i;
+    }
+    
+    return 0;
 }
 
 /*void Sprite::SetPivotPoint(float32 x, float32 y)
