@@ -452,7 +452,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
     if(isDebugLogEnabled)
         Logger::FrameworkDebug("+ load data objects");
 
-    if (GetVersion().version >= 2)
+    if (header.version >= 2)
     {
         int32 dataNodeCount = 0;
         file->Read(&dataNodeCount, sizeof(int32));
@@ -511,32 +511,56 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 {
     SceneArchive *res = NULL;
     File * file = File::Create(filename, File::OPEN | File::READ);
-    if (!file)
-    {
-        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());        
-        return res;
-    }   
 
-    file->Read(&header, sizeof(Header));
-    int requiredVersion = 3;
-    if (    (header.signature[0] != 'S') 
-        ||  (header.signature[1] != 'F') 
-        ||  (header.signature[2] != 'V') 
-        ||  (header.signature[3] != '2'))
+    const bool headerValid = ReadHeader(header, file);
+    const int requiredVersion = 3;
+
+    if (!headerValid)
     {
-        Logger::Error("SceneFileV2::LoadScene header version is wrong: %d, required: %d", header.version, requiredVersion);
-        SafeRelease(file);        
+        SafeRelease(file);
         return res;
     }
 
-    if(header.version >= 10)
+    // load version tags
+    VersionInfo::SceneVersion version;
+    version.version = header.version;
+    const bool versionValid = ReadVersionTags(version, file);
+    if (!versionValid)
     {
-        ReadDescriptor(file, descriptor);
+        Logger::Error("SceneFileV2::LoadScene version tags are wrong");
+
+        SafeRelease(file);
+        return res;
+    }
+	
+	if(header.version >= 10)
+	{
+		ReadDescriptor(file, descriptor);
+	}
+
+    VersionInfo::eStatus status = VersionInfo::Instance()->TestVersion(version);
+    switch (status)
+    {
+    case VersionInfo::COMPATIBLE:
+        {
+            const String tags = VersionInfo::Instance()->UnsupportedTagsMessage(version);
+            Logger::Warning("SceneFileV2::LoadScene scene was saved with older version of framework. Saving scene will broke compatibility. Missed tags: %s", tags.c_str());
+        }
+        break;
+    case VersionInfo::INVALID:
+        {
+            const String tags = VersionInfo::Instance()->NoncompatibleTagsMessage(version);
+            Logger::Error( "SceneFileV2::LoadScene scene is incompatible with current version. Wrong tags: %s", tags.c_str());
+            SafeRelease(file);
+            return res;
+        }
+    default:
+        break;
     }
 
     res = new SceneArchive();
 
-    if (GetVersion().version >= 2)
+    if (header.version >= 2)
     {
         int32 dataNodeCount = 0;
         file->Read(&dataNodeCount, sizeof(int32));
