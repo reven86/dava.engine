@@ -124,6 +124,7 @@ void UIStaticText::SetFont(Font * _font)
 void UIStaticText::SetTextColor(const Color& color)
 {
     textColor = color;
+    textBg->SetColor(textColor);
 }
 
 void UIStaticText::SetShadowOffset(const Vector2 &offset)
@@ -134,6 +135,7 @@ void UIStaticText::SetShadowOffset(const Vector2 &offset)
 void UIStaticText::SetShadowColor(const Color &color)
 {
     shadowColor = color;
+    shadowBg->SetColor(shadowColor);
 }
 
 void UIStaticText::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
@@ -211,17 +213,19 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
-        shadowBg->SetColor(shadowColor);
-        shadowBg->SetParentColor(parent->GetBackground()->GetDrawColor());
         shadowBg->Draw(shadowGeomData);
     }
 
     textBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
-    textBg->SetColor(textColor);
-    textBg->SetParentColor(parent->GetBackground()->GetDrawColor());
     textBg->Draw(geometricData);
 }
 
+void UIStaticText::SetParentColor(const Color &parentColor)
+{
+    UIControl::SetParentColor(parentColor);
+    shadowBg->SetParentColor(parentColor);
+    textBg->SetParentColor(parentColor);
+}
 
 const Vector<WideString> & UIStaticText::GetMultilineStrings()
 {

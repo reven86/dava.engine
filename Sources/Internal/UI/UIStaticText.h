@@ -98,6 +98,7 @@ public:
     virtual Animation * ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
 
     const Vector<int32> & GetStringSizes() const;
+    virtual void SetParentColor(const Color &parentColor);
 
 protected:
     void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);

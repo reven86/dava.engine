@@ -278,6 +278,8 @@ public:
 
     virtual void SystemDraw(const UIGeometricData &geometricData);
 
+    virtual void SetParentColor(const Color &parentColor);
+
     virtual UIControl *Clone();
     virtual void CopyDataFrom(UIControl *srcControl);
     /**

@@ -600,6 +600,13 @@ namespace DAVA
         background = stateBacks[DRAW_STATE_UNPRESSED];
     }
 
+    void UIButton::SetParentColor( const Color &parentColor )
+    {
+        UIControl::SetParentColor(parentColor);
+        if (selectedText)
+            selectedText->SetParentColor(parentColor);
+    }
+
     UIControlBackground *UIButton::GetActualBackground(int32 state)
     {
         return stateBacks[BackgroundIndexForState(GetDrawStateForControlState(state))];
