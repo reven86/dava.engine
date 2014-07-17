@@ -99,7 +99,7 @@ void UITextFieldImpl_Custom::UpdateRect(const Rect & newRect, float32 timeElapse
 {
     if(newRect != staticText->GetRect(true))
     {
-        staticText->SetRect(Rect(Vector2(), textField->GetSize()), false);
+        staticText->SetRect(newRect, false);
         needRedraw = true;
     }
     
@@ -161,16 +161,6 @@ void UITextFieldImpl_Custom::SetFontSize(float32 size)
 void UITextFieldImpl_Custom::SetTextAlign(int32 align)
 {
     staticText->SetTextAlign(align);
-}
-
-void UITextFieldImpl_Custom::AddNativeControl()
-{
-    textField->AddControl(staticText);
-}
-
-void UITextFieldImpl_Custom::RemoveNativeControl()
-{
-    textField->RemoveControl(staticText);
 }
 
 void UITextFieldImpl_Custom::SetVisible( bool value )
@@ -249,7 +239,7 @@ void UITextFieldImpl_Custom::Input(UIEvent *currentInput)
 
 void UITextFieldImpl_Custom::Draw()
 {
-//    staticText->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+    staticText->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 }
 
 }

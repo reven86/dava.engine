@@ -55,9 +55,6 @@ public:
     virtual void SetFontSize(float32 size);
     virtual void SetTextAlign(int32 align);
 
-    virtual void AddNativeControl();
-    virtual void RemoveNativeControl();
-
     virtual void SetVisible(bool value);
 
     virtual void SetIsPassword(bool isPassword);
