@@ -35,11 +35,15 @@
 namespace DAVA
 {
 class UIStaticText;
+class BaseObject;
 class UITextFieldImpl_Custom: public UITextFieldImpl
 {
 public:
     UITextFieldImpl_Custom(UITextField* textfield);
-    ~UITextFieldImpl_Custom();
+    virtual ~UITextFieldImpl_Custom();
+
+    virtual void OpenKeyboard();
+    virtual void CloseKeyboard();
 
     virtual const WideString &GetText() const;
     virtual void SetText(const WideString & string);
@@ -50,6 +54,12 @@ public:
     virtual void SetFont(Font * font);
     virtual void SetFontSize(float32 size);
     virtual void SetTextAlign(int32 align);
+
+    virtual void AddNativeControl();
+    virtual void RemoveNativeControl();
+
+    virtual void SetVisible(bool value);
+
     virtual void SetIsPassword(bool isPassword);
 
     virtual uint32 GetCursorPos() const;
@@ -60,6 +70,7 @@ public:
 
 protected:
     WideString GetVisibleText() const;
+    void OnFocusLost(BaseObject * caller, void * param, void *callerData);
 
 private:
     UIStaticText *staticText;

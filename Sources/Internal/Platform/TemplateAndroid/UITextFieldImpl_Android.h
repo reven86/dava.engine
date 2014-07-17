@@ -60,8 +60,11 @@ public:
     virtual void SetKeyboardType(int32 value);
     virtual void SetReturnKeyType(int32 value);
     virtual void SetEnableReturnKeyAutomatically(bool value);
-    virtual void ShowField();
-    virtual void HideField();
+
+    virtual void AddNativeControl();
+    virtual void RemoveNativeControl();
+    virtual void SetVisible(bool value);
+
     virtual void OpenKeyboard();
     virtual void CloseKeyboard();
     virtual uint32 GetCursorPos() const;

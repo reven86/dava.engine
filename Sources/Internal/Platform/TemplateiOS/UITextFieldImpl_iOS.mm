@@ -380,17 +380,27 @@ void UITextFieldImpl_iOS::CloseKeyboard()
     [textFieldHolder->textField resignFirstResponder];
 }
 
-void UITextFieldImpl_iOS::ShowField()
+void UITextFieldImpl_iOS::AddNativeControl()
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     [[appDelegate glController].backgroundView addSubview:textFieldHolder];
 }
 
-void UITextFieldImpl_iOS::HideField()
+void UITextFieldImpl_iOS::RemoveNativeControl()
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
     [textFieldHolder removeFromSuperview];
+}
+
+void UITextFieldImpl_iOS::SetVisible(bool value)
+{
+    UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
+    if (textFieldHolder)
+    {
+        ::UITextField* textField = textFieldHolder->textField;
+        [textField setHidden: value == false];
+    }
 }
 
 void UITextFieldImpl_iOS::UpdateRect(const Rect & rect, float32 timeElapsed)

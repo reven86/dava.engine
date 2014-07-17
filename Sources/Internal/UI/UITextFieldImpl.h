@@ -59,8 +59,10 @@ public:
     
     virtual void SetTextAlign(int32 align){}
 
-    virtual void ShowField(){}
-    virtual void HideField(){}
+    virtual void AddNativeControl(){}
+    virtual void RemoveNativeControl(){}
+
+    virtual void SetVisible(bool value){}
     
     virtual void SetIsPassword(bool isPassword){}
 

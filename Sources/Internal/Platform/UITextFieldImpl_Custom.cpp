@@ -31,6 +31,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
 #include "Input/KeyboardDevice.h"
+#include "UI/UISystemKeyboard.h"
 
 namespace DAVA
 {
@@ -45,11 +46,27 @@ UITextFieldImpl_Custom::UITextFieldImpl_Custom(UITextField* tf)
 {
     staticText = new UIStaticText (textField->GetRect(true));
     staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    textField->AddEvent( UIControl::EVENT_FOCUS_LOST, Message(this, &UITextFieldImpl_Custom::OnFocusLost) );
 }
 
 UITextFieldImpl_Custom::~UITextFieldImpl_Custom()
 {
+    textField->RemoveEvent( UIControl::EVENT_FOCUS_LOST, Message(this, &UITextFieldImpl_Custom::OnFocusLost) );
     SafeRelease(staticText);
+}
+
+void UITextFieldImpl_Custom::OpenKeyboard()
+{
+    const Rect keyboardRect( Vector2( 0.0f, (float32)GetScreenHeight()), Vector2() );
+
+    UIControlSystem::Instance()->GetUISystemKeyboard()->SendWillShowNotification(keyboardRect);
+    UIControlSystem::Instance()->GetUISystemKeyboard()->SendDidShowNotification(keyboardRect);
+}
+
+void UITextFieldImpl_Custom::CloseKeyboard()
+{
+    UIControlSystem::Instance()->GetUISystemKeyboard()->SendWillHideNotification();
+    UIControlSystem::Instance()->GetUISystemKeyboard()->SendDidHideNotification();
 }
 
 WideString UITextFieldImpl_Custom::GetVisibleText() const
@@ -60,6 +77,11 @@ WideString UITextFieldImpl_Custom::GetVisibleText() const
     WideString passText = text;
     passText.replace(0, passText.length(), passText.length(), L'*');
     return passText;
+}
+
+void UITextFieldImpl_Custom::OnFocusLost( BaseObject * caller, void * param, void *callerData )
+{
+    needRedraw = true;
 }
 
 const WideString & UITextFieldImpl_Custom::GetText() const
@@ -77,7 +99,7 @@ void UITextFieldImpl_Custom::UpdateRect(const Rect & newRect, float32 timeElapse
 {
     if(newRect != staticText->GetRect(true))
     {
-        staticText->SetRect(newRect, false);
+        staticText->SetRect(Rect(Vector2(), textField->GetSize()), false);
         needRedraw = true;
     }
     
@@ -139,6 +161,21 @@ void UITextFieldImpl_Custom::SetFontSize(float32 size)
 void UITextFieldImpl_Custom::SetTextAlign(int32 align)
 {
     staticText->SetTextAlign(align);
+}
+
+void UITextFieldImpl_Custom::AddNativeControl()
+{
+    textField->AddControl(staticText);
+}
+
+void UITextFieldImpl_Custom::RemoveNativeControl()
+{
+    textField->RemoveControl(staticText);
+}
+
+void UITextFieldImpl_Custom::SetVisible( bool value )
+{
+    staticText->SetRecursiveVisible(value);
 }
 
 void UITextFieldImpl_Custom::SetIsPassword(bool isPasswordValue)
@@ -212,7 +249,7 @@ void UITextFieldImpl_Custom::Input(UIEvent *currentInput)
 
 void UITextFieldImpl_Custom::Draw()
 {
-    staticText->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+//    staticText->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 }
 
 }

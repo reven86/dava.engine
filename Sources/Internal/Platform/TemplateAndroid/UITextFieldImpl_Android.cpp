@@ -160,16 +160,23 @@ void UITextFieldImpl_Android::SetEnableReturnKeyAutomatically(bool value)
     jniField.SetEnableReturnKeyAutomatically(value);
 }
 
-void UITextFieldImpl_Android::HideField()
+void UITextFieldImpl_Android::RemoveNativeControl()
 {
-    JniTextField jniField(id);
-    jniField.HideField();
+    //native control removed from view on destruction
 }
 
-void UITextFieldImpl_Android::ShowField()
+void UITextFieldImpl_Android::AddNativeControl()
+{
+    //native control added to view on creation
+}
+
+void UITextFieldImpl_Android::SetVisible(bool value)
 {
     JniTextField jniField(id);
-    jniField.ShowField();
+    if(value)
+        jniField.ShowField();
+    else
+        jniField.HideField();
 }
 
 void UITextFieldImpl_Android::OpenKeyboard()

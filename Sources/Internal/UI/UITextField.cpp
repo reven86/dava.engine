@@ -99,11 +99,10 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
     textFieldImpl = new UITextFieldImpl_iOS(this);
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldImpl = new UITextFieldImpl_Android(this);
-    textFieldiPhone->SetVisible(false);
 #else
     textFieldImpl = new UITextFieldImpl_Custom(this);
 #endif
-	
+    textFieldImpl->SetVisible(false);
 }
 
 UITextField::~UITextField()
@@ -138,15 +137,15 @@ void UITextField::WillAppear()
 void UITextField::DidAppear()
 {
     UIControlSystem::Instance()->GetUISystemKeyboard()->AddListener( this );
-	textFieldImpl->ShowField();
+    textFieldImpl->AddNativeControl();
 }
 
 void UITextField::WillDisappear()
 {
-	textFieldImpl->HideField();
+    textFieldImpl->RemoveNativeControl();
     UIControlSystem::Instance()->GetUISystemKeyboard()->RemoveListener( this );
 }
-    
+
 void UITextField::OnFocused()
 {
 	textFieldImpl->OpenKeyboard();
@@ -522,36 +521,19 @@ void UITextField::SetVisible(bool isVisible, bool hierarchic)
 {
     UIControl::SetVisible(isVisible, hierarchic);
 
-    if (isVisible)
-        textFieldImpl->ShowField();
-    else
-        textFieldImpl->HideField();
+    textFieldImpl->SetVisible(visible && recursiveVisible);
 }
 
 void UITextField::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();
-
-#ifdef __DAVAENGINE_IPHONE__
-    textFieldiPhone->SetVisible(visible);
-#elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->SetVisible(visible);
-#else
-    staticText->SetRecursiveVisible(visible);
-#endif
+    textFieldImpl->SetVisible(visible);
 }
 
 void UITextField::WillBecomeInvisible()
 {
     UIControl::WillBecomeInvisible();
-
-#ifdef __DAVAENGINE_IPHONE__
-    textFieldiPhone->SetVisible(false);
-#elif defined(__DAVAENGINE_ANDROID__)
-    textFieldAndroid->SetVisible(false);
-#else
-    staticText->SetRecursiveVisible(false);
-#endif
+    textFieldImpl->SetVisible(false);
 }
 
 

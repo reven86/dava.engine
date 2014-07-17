@@ -696,8 +696,11 @@ void UIControlSystem::SetFocusedControl(UIControl *newFocused, bool forceSet)
     {
         if (forceSet || focusedControl->IsLostFocusAllowed(newFocused)) 
         {
-            focusedControl->SystemOnFocusLost(newFocused);
-            SafeRelease(focusedControl);
+            UIControl * lostFocusControl = focusedControl;
+            focusedControl = NULL;
+            lostFocusControl->SystemOnFocusLost(newFocused);
+            SafeRelease(lostFocusControl);
+
             focusedControl = SafeRetain(newFocused);
             if (focusedControl) 
             {
