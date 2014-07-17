@@ -511,6 +511,11 @@ SceneArchive *SceneFileV2::LoadSceneArchive(const FilePath & filename)
 {
     SceneArchive *res = NULL;
     File * file = File::Create(filename, File::OPEN | File::READ);
+    if (!file)
+    {
+        Logger::Error("SceneFileV2::LoadScene failed to create file: %s", filename.GetAbsolutePathname().c_str());
+        return res;
+    }   
 
     const bool headerValid = ReadHeader(header, file);
     const int requiredVersion = 3;
