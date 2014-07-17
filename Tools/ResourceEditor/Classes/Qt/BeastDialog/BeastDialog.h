@@ -8,6 +8,8 @@
 
 #include "ui_BeastDialog.h"
 
+#include "Beast/BeastProxy.h"
+
 
 class SceneEditor2;
 class QEventLoop;
@@ -25,12 +27,16 @@ public:
     void SetScene(SceneEditor2 *scene);
     bool Exec(QWidget *parent = 0);
     QString GetPath() const;
+    BeastProxy::eBeastMode GetMode() const;
 
 private slots:
     void OnStart();
     void OnCancel();
     void OnBrowse();
     void OnTextChanged();
+    void OnLightmapMode(bool checked);
+    void OnSHMode(bool checked);
+    void OnPreviewMode(bool checked);
 
 private:
     void closeEvent( QCloseEvent * event );
@@ -41,6 +47,8 @@ private:
     QPointer< QEventLoop > loop;
     SceneEditor2 *scene;
     bool result;
+
+    BeastProxy::eBeastMode beastMode;
 };
 
 

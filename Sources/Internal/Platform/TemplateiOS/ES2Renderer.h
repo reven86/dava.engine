@@ -46,6 +46,8 @@
 	// The OpenGL names for the framebuffer and renderbuffer used to render to this view
 	GLuint defaultFramebuffer, colorRenderbuffer;
     GLuint depthRenderbuffer;
+    
+    BOOL isGL30;
 }
 
 - (void) startRendering;
@@ -53,7 +55,7 @@
 - (BOOL) resizeFromLayer:(CAEAGLLayer *)layer;
 
 - (void) setCurrentContext;
-
+- (BOOL) getIsGL30;
 
 @end
 #endif // #if defined(__DAVAENGINE_IPHONE__)

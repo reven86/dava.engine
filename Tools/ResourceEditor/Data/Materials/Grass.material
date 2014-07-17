@@ -1,9 +1,9 @@
 RenderTechnique:
-    Layers: ["TransclucentRenderLayer"]
+    Layers: ["VegetationRenderLayer"]
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/Materials/Shaders/Default/materials"
-        UniqueDefines: ["MATERIAL_TEXTURE", "MATERIAL_GRASS", "ALPHABLEND"]
+        UniqueDefines: ["MATERIAL_TEXTURE", "ALPHABLEND"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"
             alphaFuncCmpValue: 0.0000

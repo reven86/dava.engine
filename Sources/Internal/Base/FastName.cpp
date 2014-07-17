@@ -31,6 +31,8 @@
 #include "FastName.h"
 #include "Debug/DVAssert.h"
 
+#include "Thread/LockGuard.h"
+
 namespace DAVA
 {
 
@@ -77,8 +79,11 @@ FastName::~FastName()
 
 void FastName::Init(const char * name)
 {
-    DVASSERT(NULL != name);
+	DVASSERT(NULL != name);
+	
     FastNameDB *db = FastNameDB::Instance();
+
+	LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
     
     // search if that name is already in hash
     if(db->namesHash.count(name))
@@ -136,6 +141,8 @@ void FastName::AddRef(int i) const
 
 void FastName::RemRef(int i) const
 {
+	LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
+
 	FastNameDB *db = FastNameDB::Instance();
 	DVASSERT(i >= -1 && i < (int)db->namesTable.size());
 	if (i >= 0)
@@ -143,6 +150,8 @@ void FastName::RemRef(int i) const
 		db->namesRefCounts[i]--;
 		if(0 == db->namesRefCounts[i])
 		{
+			DVASSERT(db->namesTable[i] && "Need be not NULL");
+
 			// remove name and index from hash
 			db->namesHash.erase(db->namesTable[i]);
 
@@ -158,14 +167,4 @@ void FastName::RemRef(int i) const
 	}
 }
     
-void FastName::Reset()
-{
-    if(IsValid())
-    {
-        RemRef(index);
-    }
-    
-    index = -1;
-}
-
 };

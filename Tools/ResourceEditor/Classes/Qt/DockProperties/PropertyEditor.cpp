@@ -854,7 +854,12 @@ void PropertyEditor::ActionEditComponent()
 		editor.SetComponent((DAVA::ActionComponent*)node->GetComponent(DAVA::Component::ACTION_COMPONENT));
 		editor.exec();
 
-		ResetProperties();
+        SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
+        curScene->selectionSystem->SetSelection(node);
+        if (editor.IsModified())
+        {
+            curScene->SetChanged(true);
+        }
 	}	
 }
 
@@ -909,8 +914,8 @@ void PropertyEditor::RebuildTangentSpace()
         QtPropertyDataIntrospection *data = dynamic_cast<QtPropertyDataIntrospection *>(btn->GetPropertyData());
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
         if(NULL != data && NULL != curScene)
-        {                                     
-            RenderBatch *batch = (RenderBatch *)data->object;
+        {            
+                RenderBatch *batch = (RenderBatch *)data->object;
             curScene->Exec(new RebuildTangentSpaceCommand(batch, true));
         }
     }

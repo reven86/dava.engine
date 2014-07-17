@@ -144,15 +144,22 @@
 {
 	NSRect rect = self.frame;
     NSRect boundRect = [self convertRectToBacking: rect];
-	RenderManager::Instance()->Init(boundRect.size.width, boundRect.size.height);
-	UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
     
-    Core::Instance()->UnregisterAllAvailableResourceSizes();
-    Core::Instance()->RegisterAvailableResourceSize(boundRect.size.width, boundRect.size.height, "Gfx");
+    if(RenderManager::Instance())
+        RenderManager::Instance()->Init(boundRect.size.width, boundRect.size.height);
     
-	Core::Instance()->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
-    Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
-	Core::Instance()->CalculateScaleMultipliers();
+    if(UIControlSystem::Instance())
+        UIControlSystem::Instance()->SetInputScreenAreaSize(rect.size.width, rect.size.height);
+    
+    if(Core::Instance())
+    {
+        Core::Instance()->UnregisterAllAvailableResourceSizes();
+        Core::Instance()->RegisterAvailableResourceSize(boundRect.size.width, boundRect.size.height, "Gfx");
+        
+        Core::Instance()->SetPhysicalScreenSize(boundRect.size.width, boundRect.size.height);
+        Core::Instance()->SetVirtualScreenSize(rect.size.width, rect.size.height);
+        Core::Instance()->CalculateScaleMultipliers();
+    }
 	
     isFirstDraw = true;
     

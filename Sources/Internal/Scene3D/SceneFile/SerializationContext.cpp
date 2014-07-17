@@ -453,14 +453,13 @@ namespace DAVA
 				SafeRelease(tex);
 			}
 		}
-		
-		if(Material::MATERIAL_SPEED_TREE_LEAF == oldMaterial->type)
-		{
-            instanceMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_COLOR_MUL, Shader::UT_FLOAT_VEC4, 1, &(oldMaterial->treeLeafColor));
-            instanceMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_MUL, Shader::UT_FLOAT, 1, &(oldMaterial->treeLeafOcclusionMul));
-			instanceMaterial->SetPropertyValue(NMaterial::PARAM_SPEED_TREE_LEAF_OCC_OFFSET, Shader::UT_FLOAT, 1, &(oldMaterial->treeLeafOcclusionOffset));
-		}
-		
+
+        if(Material::MATERIAL_SPEED_TREE_LEAF == oldMaterial->type)
+        {
+            instanceMaterial->SetPropertyValue(FastName("treeLeafColorMul"), Shader::UT_FLOAT_VEC4, 1, &(oldMaterial->treeLeafColor));
+            instanceMaterial->SetPropertyValue(FastName("treeLeafOcclusionMul"), Shader::UT_FLOAT, 1, &(oldMaterial->treeLeafOcclusionMul));
+            instanceMaterial->SetPropertyValue(FastName("treeLeafOcclusionOffset"), Shader::UT_FLOAT, 1, &(oldMaterial->treeLeafOcclusionOffset));
+        }
 		if(oldMaterialState)
 		{
 			if(Material::MATERIAL_UNLIT_TEXTURE_LIGHTMAP == oldMaterial->type)

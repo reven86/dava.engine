@@ -38,7 +38,9 @@
 #include "CommandsController.h"
 #include "PreviewController.h"
 #include "ControlCommands.h"
-#include "ReloadSpritesCommand.h"
+
+#include "TexturePacker/ResourcePacker2D.h"
+#include "ResourcesManageHelper.h"
 
 #include "AlignDistribute/AlignDistributeManager.h"
 #include "ResourcesManageHelper.h"
@@ -128,6 +130,23 @@ List<HierarchyTreeScreenNode*> HierarchyTreeController::GetUnsavedScreens()
 	return hierarchyTree.GetUnsavedScreens();
 }
 
+void HierarchyTreeController::UpdateAggregators(const HierarchyTreePlatformNode* platform)
+{
+    if(platform)
+    {
+        const HierarchyTreeNode::HIERARCHYTREENODESLIST& childNodes = platform->GetChildNodes();
+        for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = childNodes.begin();
+             iter != childNodes.end(); iter ++)
+        {
+            HierarchyTreeAggregatorNode* aggregatorNode = dynamic_cast<HierarchyTreeAggregatorNode*>(*iter);
+            if (aggregatorNode)
+            {
+                aggregatorNode->UpdateHierarchyTree();
+            }
+        }
+    }
+}
+
 void HierarchyTreeController::UpdateSelection(HierarchyTreePlatformNode* activePlatform, HierarchyTreeScreenNode* activeScreen)
 {
     bool updateHierarchyTree = false;
@@ -141,6 +160,10 @@ void HierarchyTreeController::UpdateSelection(HierarchyTreePlatformNode* activeP
         
         LocalizationSystem::Instance()->Cleanup();
         activeScreen->Load(screenPath);
+      
+        // Update the screen aggregators after screen is loaded.
+        UpdateAggregators(activePlatform);
+
         updateHierarchyTree = true;
 
         hierarchyTree.UpdateControlsData(activeScreen);
@@ -580,6 +603,7 @@ void HierarchyTreeController::DeleteNodesFiles(const HierarchyTreeNode::HIERARCH
 		{
 			screenNode->SetMarked(true);
 			QString path = screenNode->GetPlatform()->GetScreenPath(screenNode->GetName());
+            FileSystem::Instance()->LockFile(path.toStdString(), false);
 			FileSystem::Instance()->DeleteFile(path.toStdString());
 		}
 
@@ -587,6 +611,15 @@ void HierarchyTreeController::DeleteNodesFiles(const HierarchyTreeNode::HIERARCH
 		{
 			platformNode->SetMarked(true);
 			platformNode->SetChildrenMarked(true);
+
+			FileList* platformFiles = new FileList(platformNode->GetPlatformFolder());
+			int32 filesCount = platformFiles->GetCount();
+			for (int32 i = 0; i < filesCount; i ++)
+			{
+				FileSystem::Instance()->LockFile(platformFiles->GetPathname(i), false);
+			}
+			platformFiles->Release();
+
 			FileSystem::Instance()->DeleteDirectory(platformNode->GetPlatformFolder(), true);
 		}
 	}
@@ -793,11 +826,20 @@ bool HierarchyTreeController::CanPerformDistribute(eDistributeControlsType /*dis
 	return activeControlNodes.size() >= 3;
 }
 
-void HierarchyTreeController::RepackAndReloadSprites()
+ Set<String> HierarchyTreeController::RepackAndReloadSprites()
 {
-    ReloadSpritesCommand* cmd = new ReloadSpritesCommand(hierarchyTree.GetRootNode());
-    CommandsController::Instance()->ExecuteCommand(cmd);
-    SafeRelease(cmd);
+    Set<String> errorsSet;
+    ResourcePacker2D *resPacker = new ResourcePacker2D();
+	resPacker->InitFolders(ResourcesManageHelper::GetSpritesDatasourceDirectory().toStdString(),
+                           ResourcesManageHelper::GetSpritesDirectory().toStdString());
+    
+    resPacker->PackResources(GPU_PNG);
+    errorsSet = resPacker->GetErrors();
+	SafeDelete(resPacker);
+
+    Sprite::ReloadSprites();
+
+    return errorsSet;
 }
 
 void HierarchyTreeController::EnablePreview(const PreviewSettingsData& data, bool applyScale)

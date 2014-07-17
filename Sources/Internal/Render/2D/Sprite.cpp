@@ -70,37 +70,6 @@ Sprite::DrawState::DrawState()
     //shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 }
 
-void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
-{
-    renderState = _renderState;
-    
-    /*if(_renderState != renderState)
-    {
-        if(renderState != InvalidUniqueHandle)
-        {
-            RenderManager::Instance()->ReleaseRenderState(renderState);
-        }
-            
-        renderState = _renderState;
-            
-        if(renderState != InvalidUniqueHandle)
-        {
-            RenderManager::Instance()->RetainRenderState(renderState);
-        }
-    }*/
-}
-
-void Sprite::DrawState::SetShader(Shader* _shader)
-{
-    shader = _shader;
-    /*if(_shader != shader)
-    {
-        SafeRelease(shader);
-        shader = SafeRetain(_shader);
-    }*/
-}
-
-
 Sprite::Sprite()
 {
 	textures = 0;
@@ -143,70 +112,38 @@ Sprite* Sprite::PureCreate(const FilePath & spriteName, Sprite* forPointer)
 	if(spriteName.IsEmpty() || spriteName.GetType() == FilePath::PATH_IN_MEMORY)
 		return NULL;
 
-//	Logger::FrameworkDebug("pure create: %s", spriteName.c_str());
-//	Logger::FrameworkDebug("Sprite pure creation");
-	FilePath pathName = FilePath::CreateWithNewExtension(spriteName, ".txt");
-
-	// Yuri Coder, 2013/07/15. According to DF-1504 issue we have to sent the full existing
-	// path to GetScaledName.
-	FilePath scaledPath = GetScaledName(pathName);
-
-	Sprite *sprForScaledPath = GetSpriteFromMap(scaledPath);
-	if(sprForScaledPath)
+	Sprite *cachedSprite = GetSpriteFromMap(spriteName);
+	if(cachedSprite)
 	{
-		return sprForScaledPath;
+		return cachedSprite;
 	}
 
-	FilePath texturePath;
-	File * fp = LoadLocalizedFile(scaledPath, texturePath);
-	int32 sizeIndex = 0;
-	if (!fp)
-	{
-		Sprite *sprForPathName = GetSpriteFromMap(pathName);
-		if(sprForPathName)
-		{
-			return sprForPathName;
-		}
+    int32 resourceSizeIndex = 0;
+    File* spriteFile = GetSpriteFile(spriteName, resourceSizeIndex);
+    if (!spriteFile)
+    {
+        return NULL;
+    }
 
-		fp = LoadLocalizedFile(pathName, texturePath);
-		if(!fp)
-		{
-			Logger::Instance()->Warning("Failed to open sprite file: %s", pathName.GetAbsolutePathname().c_str());
-			return NULL;
-		}
-
-		sizeIndex = Core::Instance()->GetBaseResourceIndex();
-	}
-	else
-	{
-		sizeIndex = Core::Instance()->GetDesirableResourceIndex();
-	}
-
-	Sprite * spr = forPointer;
+    Sprite * spr = forPointer;
 	if (!spr)
 	{
 		spr = new Sprite();
 	}
-	spr->resourceSizeIndex = sizeIndex;
 
-	if(texturePath.IsEmpty())
-		spr->InitFromFile(fp, pathName);
-	else
-		spr->InitFromFile(fp, texturePath);
+	spr->resourceSizeIndex = resourceSizeIndex;
+    spr->relativePathname = spriteName;
 
+    spr->InitFromFile(spriteFile);
+	SafeRelease(spriteFile);
 
-	SafeRelease(fp);
-
-//	Logger::FrameworkDebug("Adding to map for key: %s", spr->relativePathname.c_str());
     spriteMapMutex.Lock();
 	spriteMap[FILEPATH_MAP_KEY(spr->relativePathname)] = spr;
     spriteMapMutex.Unlock();
-//	Logger::FrameworkDebug("Resetting sprite");
+
 	spr->Reset();
-//	Logger::FrameworkDebug("Returning pointer");
 	return spr;
 }
-
 
 Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 {
@@ -268,14 +205,14 @@ File * Sprite::LoadLocalizedFile(const FilePath & spritePathname, FilePath & tex
 	return fp;
 }
 
-void Sprite::InitFromFile(File *file, const FilePath &pathName)
+void Sprite::InitFromFile(File *file)
 {
 	bool usedForScale = false;//Думаю, после исправлений в конвертере, эта магия больше не нужна. Но переменную пока оставлю.
 
 //	uint64 timeSpriteRead = SystemTimer::Instance()->AbsoluteMS();
 
 	type = SPRITE_FROM_FILE;
-	relativePathname = pathName;
+    const FilePath& pathName = file->GetFilename();
 
 	char tempBuf[1024];
 	file->ReadLine(tempBuf, 1024);
@@ -292,7 +229,8 @@ void Sprite::InitFromFile(File *file, const FilePath &pathName)
 
 		FilePath tp = pathName.GetDirectory() + String(textureCharName);
 //		Logger::FrameworkDebug("Opening texture: %s", tp.c_str());
-		textures[k] = Texture::CreateFromFile(tp);
+        Texture* testTexture = Texture::CreateFromFile(tp);
+		textures[k] = testTexture;
 		textureNames[k] = tp;
 		DVASSERT_MSG(textures[k], "ERROR: Texture loading failed"/* + pathName*/);
 	}
@@ -413,14 +351,13 @@ void Sprite::InitFromFile(File *file, const FilePath &pathName)
 
 Sprite* Sprite::Create(const FilePath &spriteName)
 {
-	Sprite * spr = PureCreate(spriteName,NULL);
+	Sprite * spr = PureCreate(spriteName, NULL);
 	if (!spr)
 	{
 		Texture *pinkTexture = Texture::CreatePink();
-		// DF-1984 - Set sprite relative path name inside CreateFromTexture->InitFromTexture function
 		spr = CreateFromTexture(Vector2(16.f, 16.f), pinkTexture, Vector2(0.f, 0.f), Vector2(16.f, 16.f), spriteName);
-
 		spr->type = SPRITE_FROM_FILE;
+
 		pinkTexture->Release();
 	}
 	return spr;
@@ -1824,43 +1761,67 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState &pa
 	frame = localState.frame;
 }
 
+void Sprite::ReloadSprites()
+{
+	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
+	{
+        (it->second)->Reload();
+	}
+}
 
 void Sprite::Reload()
 {
 	if(type == SPRITE_FROM_FILE)
 	{
-		int32 sizeIndex = resourceSizeIndex;
+        ReloadExistingTextures();
+        Clear();
 
-		Clear();
-
-		resourceSizeIndex = sizeIndex;
-
-        FilePath pathName = FilePath::CreateWithNewExtension(relativePathname, ".txt");
-		File *fp = File::Create(pathName, File::READ | File::OPEN);
+        File *fp = GetSpriteFile(relativePathname, resourceSizeIndex);
 		if(fp)
 		{
-			InitFromFile(fp, relativePathname);
-
+			InitFromFile(fp);
 			SetFrame(frame);
-
 			SafeRelease(fp);
 		}
 		else
 		{
 			Logger::Warning("Unable to reload sprite %s", relativePathname.GetAbsolutePathname().c_str());
 
-			FilePath spriteName = relativePathname;
-
 			Texture *pinkTexture = Texture::CreatePink();
-			InitFromTexture(pinkTexture, 0, 0, 16.0f, 16.0f, 16, 16, false);
+			InitFromTexture(pinkTexture, 0, 0, 16.0f, 16.0f, 16, 16, false, relativePathname);
 			pinkTexture->Release();
 
 			type = SPRITE_FROM_FILE;
-			relativePathname = spriteName;
 		}
 	}
 }
-	
+    
+File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex)
+{
+    FilePath pathName = FilePath::CreateWithNewExtension(spriteName, ".txt");
+    FilePath scaledPath = GetScaledName(pathName);
+
+    FilePath texturePath;
+    File * fp = LoadLocalizedFile(scaledPath, texturePath);
+    if (!fp)
+    {
+        fp = LoadLocalizedFile(pathName, texturePath);
+        if(!fp)
+        {
+            Logger::Instance()->Warning("Failed to open sprite file: %s", pathName.GetAbsolutePathname().c_str());
+            return NULL;
+        }
+
+        resourceSizeIndex = Core::Instance()->GetBaseResourceIndex();
+    }
+    else
+    {
+        resourceSizeIndex = Core::Instance()->GetDesirableResourceIndex();
+    }
+
+    return fp;
+}
+
 void Sprite::RegisterTextureStates()
 {
 	textureHandles.resize(textureCount, InvalidUniqueHandle);
@@ -1886,6 +1847,25 @@ void Sprite::UnregisterTextureStates()
 			RenderManager::Instance()->ReleaseTextureState(textureHandles[i]);
 		}
 	}
+}
+
+void Sprite::ReloadExistingTextures()
+{
+    //this function need to be sure that textures really would reload
+    for(int32 i = 0; i < textureCount; ++i)
+    {
+        if(textures[i] && !textures[i]->GetPathname().IsEmpty())
+        {
+            if(textures[i]->GetPathname().Exists())
+            {
+                textures[i]->Reload();
+            }
+        }
+        else
+        {
+            Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
+        }
+    }
 }
 
 };

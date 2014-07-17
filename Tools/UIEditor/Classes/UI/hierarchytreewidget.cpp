@@ -251,6 +251,7 @@ void HierarchyTreeWidget::RestoreTreeItemSelectedStateRecursive(QTreeWidgetItem*
 		!parentItem->isSelected())
 	{
 		parentItem->setSelected(true);
+        this->ui->treeWidget->setCurrentItem(parentItem);
 	}
 
 	// Repeat for all children.

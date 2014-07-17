@@ -90,7 +90,7 @@ void BeastCommandLineTool::Process()
 	{
 		//scene->Update(0.1f);
 
-        scene->Exec(new BeastAction( scene, outputPath, NULL ));
+        scene->Exec(new BeastAction( scene, outputPath, BeastProxy::MODE_LIGHTMAPS, NULL ));
 
 		scene->Save();
 	}

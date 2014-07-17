@@ -104,6 +104,11 @@ RenderLayerManager::RenderLayerManager()
                                                             RENDER_LAYER_SHADOW_VOLUME_ID);
     InsertLayer(renderLayerShadowVolume);
     
+    RenderLayer * renderLayerVegetation = new RenderLayer(LAYER_VEGETATION,
+                                                          0,
+                                                          RENDER_LAYER_VEGETATION_ID);
+    InsertLayer(renderLayerVegetation);
+    
 }
 
 RenderLayerManager::~RenderLayerManager()

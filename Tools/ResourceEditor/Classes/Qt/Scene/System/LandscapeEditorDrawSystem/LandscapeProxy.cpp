@@ -53,10 +53,9 @@ LandscapeProxy::LandscapeProxy(Landscape* landscape, Entity* node)
 		texturesEnabled[i] = false;
 	}
 	
-	const DAVA::RenderStateData& default2dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_2D_BLEND);
-	DAVA::RenderStateData noBlendStateData;
-	memcpy(&noBlendStateData, &default2dState, sizeof(noBlendStateData));
-	
+    DAVA::RenderStateData noBlendStateData;
+    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_2D_BLEND, noBlendStateData);
+    
 	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
 	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
 	

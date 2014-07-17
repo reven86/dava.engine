@@ -112,6 +112,9 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	{
 		prevScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 		
+        if (prevScreen->IsOnScreen())
+            prevScreen->SystemWillBecomeInvisible();
+
 		prevScreen->SystemWillDisappear();
 		// prevScreen->UnloadResources();
 		if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
@@ -179,6 +182,8 @@ void UIScreenTransition::Update(float32 timeElapsed)
 		currentTime = duration;
 		UIControlSystem::Instance()->ReplaceScreen(nextScreen);
 		nextScreen->SystemDidAppear();
+        if (nextScreen->IsOnScreen())
+            nextScreen->SystemWillBecomeVisible();
 		ReleaseRenderTargets();
 		// go to next screen
 		UIControlSystem::Instance()->UnlockInput();

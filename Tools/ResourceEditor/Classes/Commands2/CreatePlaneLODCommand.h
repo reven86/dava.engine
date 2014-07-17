@@ -56,7 +56,9 @@ protected:
 
     void CreateTextureFiles();
     void DeleteTextureFiles();
-    
+
+    static bool IsHorisontalMesh(const DAVA::AABBox3 & bbox);
+
     DAVA::LodComponent * lodComponent;
     DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
     

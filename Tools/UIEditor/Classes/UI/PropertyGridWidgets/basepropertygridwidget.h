@@ -244,7 +244,7 @@ protected slots:
 protected:
     // Get the "dirty states" indexes for the particular property.
     QList<int> GetDirtyStateIndexesList(const QString& propertyName);
-
+    static const QString MULTIPLE_VALUE;
 private:
     // Palettes.
     QPalette clearPropertyPalette;

@@ -58,3 +58,8 @@ materials:
   group: "Vegetation"
   quality: ["HIGH", "LOW"]
   default: "HIGH"
+
+ -
+  group: "Spherical Harmonics"
+  quality: ["HIGH", "MEDIUM", "LOW"]
+  default: "HIGH"

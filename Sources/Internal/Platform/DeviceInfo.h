@@ -51,6 +51,30 @@ public:
 		PLATFORMS_COUNT
 	};
 
+    enum eNetworkType
+	{
+		NETWORK_TYPE_NOT_CONNECTED = 0,
+		NETWORK_TYPE_UNKNOWN,
+		NETWORK_TYPE_CELLULAR,
+		NETWORK_TYPE_WIFI,
+		NETWORK_TYPE_WIMAX,
+		NETWORK_TYPE_ETHERNET,
+		NETWORK_TYPE_BLUETOOTH,
+	};
+
+    static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
+    struct NetworkInfo
+    {
+        eNetworkType networkType;
+        int32 signalStrength; //(0-no signal, 100 - max signal)
+        
+        NetworkInfo()
+        {
+            networkType = NETWORK_TYPE_UNKNOWN;
+            signalStrength = SIGNAL_STRENGTH_UNKNOWN;
+        }
+    };
+
 	static ePlatform GetPlatform();
 	static String GetPlatformString();
 	static String GetVersion();
@@ -63,6 +87,7 @@ public:
     static WideString GetName();
     static int GetZBufferSize();
     static eGPUFamily GetGPUFamily();
+    static NetworkInfo GetNetworkInfo();
 };
 
 };

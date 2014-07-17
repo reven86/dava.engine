@@ -30,12 +30,25 @@ using namespace DAVA;
 {
 	if (self = [super init])
 	{
-		context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+        isGL30 = YES;
+        
+        context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
+        
+        if(nil == context)
+        {
+            isGL30 = NO;
+            context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+        }
         
         if (!context || ![EAGLContext setCurrentContext:context])
 		{
             [self release];
             return nil;
+        }
+        
+        if([context respondsToSelector:NSSelectorFromString(@"setMultiThreaded:")])
+        {
+            context.multiThreaded = YES;
         }
 
 		// Create default framebuffer object. The backing will be allocated for the current layer in -resizeFromLayer
@@ -63,8 +76,6 @@ using namespace DAVA;
     
 	// This application only creates a single default framebuffer which is already bound at this point.
 	// This call is redundant, but needed if dealing with multiple framebuffers.
-    glDepthMask(GL_TRUE);
-    RENDER_VERIFY(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
     
     glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
     glViewport(0, 0, backingWidth, backingHeight);
@@ -143,6 +154,11 @@ using namespace DAVA;
 - (GLuint) getDefaultFramebuffer
 {
     return defaultFramebuffer;
+}
+
+- (BOOL) getIsGL30
+{
+    return isGL30;
 }
 
 @end

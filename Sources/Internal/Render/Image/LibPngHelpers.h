@@ -60,6 +60,7 @@ public:
     virtual eErrorCode WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const;
 
     virtual uint32 GetDataSize(File *infile) const;
+	virtual Size2i GetImageSize(File *infile) const;
 
 
 	static int ReadPngFile(File *infile, Image * image, PixelFormat targetFormat = FORMAT_INVALID);

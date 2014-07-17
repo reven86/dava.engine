@@ -45,6 +45,7 @@ public:
 	static QString GetScreenIconPath();
 	static QString GetAggregatorIconPath();
 	static QString GetIgnoreIconPath();
+    static QString GetCustomIconPath();
 };
 
 #endif /* defined(__UIEDITOR__ICONHELPER__) */

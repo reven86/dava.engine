@@ -60,6 +60,7 @@ public:
 	static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
 	static const FastName PIXELLIT_ALPHATEST;
 	static const FastName SPEEDTREE_LEAF;
+    static const FastName SPHERICLIT_SPEEDTREE_LEAF;
 	static const FastName VERTEXCOLOR_OPAQUE;
 	static const FastName PIXELLIT_OPAQUE;
 	static const FastName TEXTURE_LIGHTMAP_ALPHABLEND;

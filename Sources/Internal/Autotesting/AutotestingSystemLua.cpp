@@ -394,7 +394,7 @@ UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, int32 index)
 
 	if(srcControl)
 	{
-		const List<UIControl*> children = srcControl->GetChildren();
+		const List<UIControl*> &children = srcControl->GetChildren();
 		int32 childIndex = 0;
 		for(List<UIControl*>::const_iterator it = children.begin(); it != children.end(); ++it, ++childIndex)
 		{

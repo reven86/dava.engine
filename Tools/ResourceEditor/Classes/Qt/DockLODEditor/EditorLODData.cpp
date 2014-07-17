@@ -344,6 +344,7 @@ void EditorLODData::SetForceLayer(DAVA::int32 layer)
     for(DAVA::uint32 i = 0; i < count; ++i)
     {
         lodData[i]->SetForceLodLayer(forceLayer);
+        lodData[i]->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
     }
 }
 

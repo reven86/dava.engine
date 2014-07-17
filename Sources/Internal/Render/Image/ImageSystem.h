@@ -73,12 +73,11 @@ public:
     eErrorCode Save(const FilePath & fileName, Image *image, PixelFormat compressionFormat = FORMAT_RGBA8888) const;
     
     inline ImageFormatInterface* GetImageFormatInterface(eSupportedImageFileFormats fileFormat) const;
+	ImageFormatInterface* GetImageFormatInterface(const FilePath & pathname) const;
+	ImageFormatInterface* GetImageFormatInterface(File *file) const;
     
 protected:
     
-    ImageFormatInterface* DetectImageFormatInterfaceByExtension(const FilePath & pathname) const;
-    
-    ImageFormatInterface* DetectImageFormatInterfaceByContent(File *file) const;
        
     ImageFormatInterface* wrappers[FILE_FORMAT_COUNT];
 };

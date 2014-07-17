@@ -33,7 +33,7 @@
 
 #include "DAVAEngine.h"
 #include "LandscapeEditorDrawSystem.h"
-#include "Render/Highlevel/VegetationRenderObject.h"
+#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 class SceneCollisionSystem;
 class SceneSelectionSystem;
@@ -92,7 +92,7 @@ public:
     DAVA::VegetationRenderObject *GetCurrentVegetationObject() const;
 
     static DAVA::Rect2i GetAffectedImageRect(DAVA::AABBox2 &area);
-
+    
 protected:
 	bool isEnabled;
     bool inDrawState;

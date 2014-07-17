@@ -36,16 +36,7 @@
     <property name="spacing">
      <number>3</number>
     </property>
-    <property name="leftMargin">
-     <number>1</number>
-    </property>
-    <property name="topMargin">
-     <number>1</number>
-    </property>
-    <property name="rightMargin">
-     <number>1</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>1</number>
     </property>
     <item>
@@ -78,16 +69,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -114,16 +96,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -162,16 +135,7 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -345,10 +309,16 @@
      <addaction name="actionDiffuse"/>
      <addaction name="actionSpecular"/>
     </widget>
+    <widget class="QMenu" name="menuDockWindows">
+     <property name="title">
+      <string>Dock Windows</string>
+     </property>
+    </widget>
     <addaction name="menuTexturesForGPU"/>
     <addaction name="menuLightView"/>
     <addaction name="separator"/>
     <addaction name="menuToolbars"/>
+    <addaction name="menuDockWindows"/>
     <addaction name="separator"/>
     <addaction name="actionShowEditorGizmo"/>
     <addaction name="actionLightmapCanvas"/>
@@ -562,16 +532,7 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>0</number>
      </property>
      <item>
@@ -617,16 +578,7 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="leftMargin">
-      <number>1</number>
-     </property>
-     <property name="topMargin">
-      <number>1</number>
-     </property>
-     <property name="rightMargin">
-      <number>1</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>1</number>
      </property>
      <item>
@@ -658,16 +610,7 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>0</number>
         </property>
         <item>
@@ -1535,10 +1478,10 @@
   </action>
   <action name="actionBeastAndSave">
    <property name="text">
-    <string>Generate Lightmaps</string>
+    <string>Run Beast</string>
    </property>
    <property name="toolTip">
-    <string>Generate Lightmaps</string>
+    <string>Run Beast</string>
    </property>
   </action>
   <action name="actionAddActionComponent">
@@ -1989,6 +1932,11 @@
    </property>
    <property name="text">
     <string>Undefined Collision</string>
+   </property>
+  </action>
+  <action name="action123">
+   <property name="text">
+    <string>123</string>
    </property>
   </action>
  </widget>

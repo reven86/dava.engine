@@ -134,6 +134,7 @@ public:
 	virtual UserData* GetUserData() const;
 	virtual void SetUserData(UserData* userdata);
 
+    virtual void SetToolTip(const QVariant& toolTip);
     virtual QVariant GetToolTip() const;
 
 	virtual const DAVA::MetaInfo* MetaInfo() const;
@@ -220,6 +221,8 @@ protected:
 	QVector<QtPropertyToolButton *> optionalButtons;
     
     QtPropertyDataValidator* validator;
+    
+    QVariant tooltipValue;
 
 	void SetModel(QtPropertyModel *model);
     void BuildCurrentValue();

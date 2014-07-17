@@ -156,6 +156,7 @@ void ProjectManager::ProjectClose()
         curProjectPath = "";
         curProjectPathDataSource = "";
         curProjectPathParticles = "";
+        SettingsManager::ResetPerProjectSettings();
         emit ProjectClosed();
 	}
 }

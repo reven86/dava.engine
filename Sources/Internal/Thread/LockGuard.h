@@ -26,52 +26,35 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#include "ReloadSpritesCommand.h"
 
-#include "TexturePacker/ResourcePacker2D.h"
-#include "ResourcesManageHelper.h"
-#include "UIControlStateHelper.h"
-#include "SpritesHelper.h"
-#include "errorsListDialog.h"
+#ifndef __DAVAENGINE_LOCK_GUARD_H__
+#define __DAVAENGINE_LOCK_GUARD_H__
 
-ReloadSpritesCommand::ReloadSpritesCommand(const HierarchyTreeNode* node) :
-    rootNode(node)
+#include "Platform/Mutex.h"
+
+namespace DAVA
 {
-}
-
-void ReloadSpritesCommand::Execute()
-{
-    RepackSprites();
-    ReloadSprites();
-}
-
-void ReloadSpritesCommand::RepackSprites()
-{
-	ResourcePacker2D *resPacker = new ResourcePacker2D();
-	resPacker->InitFolders(ResourcesManageHelper::GetSpritesDatasourceDirectory().toStdString(),
-                           ResourcesManageHelper::GetSpritesDirectory().toStdString());
     
-    resPacker->PackResources(GPU_UNKNOWN);
-	ShowErrorMessage(resPacker->GetErrors());
+struct AdoptLock_t { };
+const AdoptLock_t AdoptLock();
+
+template<typename MutexType>
+class LockGuard
+{
+public:
     
-	SafeDelete(resPacker);
-}
+    explicit LockGuard(MutexType& m) : mutex(m) { mutex.Lock(); }; //own and lock mutex
+    
+    LockGuard(MutexType& m, const AdoptLock_t &al) : mutex(m) { }; //just own mutex
+    
+    ~LockGuard() { mutex.Unlock(); } //unlock mutex
+    
+private:
+	LockGuard(const LockGuard&) { DVASSERT(false); }; // disable wrong using
+	LockGuard& operator=(const LockGuard&){ DVASSERT(false);  return *this; }; // disable wrong using
 
-void ReloadSpritesCommand::ReloadSprites()
-{
-    Set<Sprite*> spritesToReload = SpritesHelper::EnumerateSprites(rootNode);
-    for (Set<Sprite*>::iterator iter = spritesToReload.begin(); iter != spritesToReload.end(); iter ++)
-    {
-        (*iter)->Reload();
-    }
-}
-
-void ReloadSpritesCommand::ShowErrorMessage(const Set<String>& errorsSet)
-{
-	if (!errorsSet.empty())
-	{
-		ErrorsListDialog errorsDialog;
-		errorsDialog.InitializeErrorsList(errorsSet);
-		errorsDialog.exec();
-	}
-}
+    MutexType &mutex;
+};
+    
+};
+#endif //__DAVAENGINE_LOCK_GUARD_H__

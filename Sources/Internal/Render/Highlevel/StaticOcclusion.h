@@ -48,6 +48,7 @@ class RenderBatch;
 class RenderSystem;
 class Scene;
 class Sprite;
+class Landscape;
     
 class StaticOcclusionData
 {
@@ -56,7 +57,9 @@ public:
     ~StaticOcclusionData();
     
     void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox);
-    void SetVisibilityForObject(uint32 blockIndex, uint32 objectIndex, uint32 visible);
+    void EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
+    void DisableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
+    
     uint32 * GetBlockVisibilityData(uint32 blockIndex);
     StaticOcclusionData & operator= (const StaticOcclusionData & other);
     
@@ -85,6 +88,7 @@ public:
     inline void SetRenderSystem(RenderSystem * _renderSystem);
     
     void BuildOcclusionInParallel(Vector<RenderObject*> & renderObjects,
+                                  Landscape * landscape,
                                   StaticOcclusionData * currentData,
                                   eIndexRenew renewIndexEnum);
     
@@ -134,6 +138,7 @@ private:
     RenderSystem * renderSystem;
     Scene * scene;
     Vector<RenderObject*> renderObjectsArray;
+    Landscape * landscape;
     Map<RenderObject*, Vector<RenderObject*> > equalVisibilityArray;
 };
     

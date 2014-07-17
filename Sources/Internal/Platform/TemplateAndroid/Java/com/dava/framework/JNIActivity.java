@@ -3,8 +3,10 @@ package com.dava.framework;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import org.fmod.FMODAudioDevice;
 import com.bda.controller.Controller;
@@ -32,6 +34,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
     public abstract JNIGLSurfaceView GetSurfaceView();
     
     private static JNIActivity activity = null;
+    protected static SingalStrengthListner singalStrengthListner = null;
     
     public static JNIActivity GetActivity()
 	{
@@ -76,6 +79,15 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
+        
+
+        ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        if (cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting())
+        {
+        	TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+        	singalStrengthListner = new SingalStrengthListner();
+        	tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
+        }
     }
     
     @Override

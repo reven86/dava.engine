@@ -29,11 +29,16 @@
 #include "Scene3D/Systems/FoliageSystem.h"
 
 #include "Render/Highlevel/Landscape.h"
-#include "Render/Highlevel/VegetationRenderObject.h"
+#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Systems/WindSystem.h"
 
 namespace DAVA
 {
+    
+static const int16 MAX_ANIMATED_CELL_WIDTH = 2;
+static const int16 MIN_ANIMATED_CELL_WIDTH = 1;
+    
 FoliageSystem::FoliageSystem(Scene* scene) : SceneSystem(scene),
         landscapeEntity(NULL),
         foliageEntity(NULL)
@@ -83,7 +88,89 @@ void FoliageSystem::RemoveEntity(Entity * entity)
         SafeRelease(landscapeEntity);
     }
 }
-
+    
+void FoliageSystem::Process(float32 timeElapsed)
+{
+    VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
+    if(vegetationRO && vegetationRO->ReadyToRender())
+    {
+        WindSystem * windSystem = GetScene()->windSystem;
+        
+        Camera * camera = GetScene()->GetRenderSystem()->GetMainCamera();
+        Vector<AbstractQuadTreeNode<VegetationSpatialData>*> & visibleCells = vegetationRO->BuildVisibleCellList(camera);
+        uint32 cellsCount = visibleCells.size();
+        
+        Set<AbstractQuadTreeNode<VegetationSpatialData>* > updatableCells;
+        for(uint32 i = 0; i < cellsCount; ++i)
+        {
+            AbstractQuadTreeNode<VegetationSpatialData>* cell = visibleCells[i];
+            if(cell->data.width <= MAX_ANIMATED_CELL_WIDTH)
+            {
+                bool isMinAnimatedLod = (MIN_ANIMATED_CELL_WIDTH == cell->data.width);
+                if(isMinAnimatedLod)
+                {
+                    updatableCells.insert(cell->parent);
+                }
+                else
+                {
+                    updatableCells.insert(cell);
+                }
+            }
+        }
+        
+        Vector4 layersAnimationSpring = vegetationRO->GetLayersAnimationSpring();
+        const Vector4& layerAnimationDrag = vegetationRO->GetLayerAnimationDragCoefficient();
+        
+        Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator endIt = updatableCells.end();
+        for(Set<AbstractQuadTreeNode<VegetationSpatialData>* >::iterator it = updatableCells.begin();
+            it != endIt;
+            ++it)
+        {
+            AbstractQuadTreeNode<VegetationSpatialData>* cell = *it;
+            
+            VegetationSpatialData& cellData = cell->data;
+            
+            const Vector3 & min = cellData.bbox.min;
+            const Vector3 & max = cellData.bbox.max;
+            
+            Vector3 cellPos[4] = {
+                Vector3(min.x, min.y, max.z),
+                Vector3(min.x, max.y, max.z),
+                Vector3(max.x, min.y, max.z),
+                Vector3(max.x, max.y, max.z)
+            };
+            
+            for(uint32 layerIndex = 0; layerIndex < 4; ++layerIndex)
+            {
+                Vector3 windVec = windSystem->GetWind(cellPos[layerIndex]);
+                Vector2 windVec2D(windVec.x, windVec.y);
+                
+                Vector2 & offset = cellData.animationOffset[layerIndex];
+                Vector2 & velocity = cellData.animationVelocity[layerIndex];
+                
+                velocity += (windVec2D - layersAnimationSpring.data[layerIndex] * offset - layerAnimationDrag.data[layerIndex] * velocity * velocity.Length()) * timeElapsed;
+                offset += velocity * timeElapsed;
+            }
+            
+            if(cell->children != NULL)
+            {
+                for(uint32 childIndex = 0; childIndex < 4; ++childIndex)
+                {
+                    cell->children[childIndex]->data.animationOffset[0] = cellData.animationOffset[0];
+                    cell->children[childIndex]->data.animationOffset[1] = cellData.animationOffset[1];
+                    cell->children[childIndex]->data.animationOffset[2] = cellData.animationOffset[2];
+                    cell->children[childIndex]->data.animationOffset[3] = cellData.animationOffset[3];
+                    
+                    cell->children[childIndex]->data.animationVelocity[0] = cellData.animationVelocity[0];
+                    cell->children[childIndex]->data.animationVelocity[1] = cellData.animationVelocity[1];
+                    cell->children[childIndex]->data.animationVelocity[2] = cellData.animationVelocity[2];
+                    cell->children[childIndex]->data.animationVelocity[3] = cellData.animationVelocity[3];
+                }
+            }
+        }
+    }
+}
+    
 void FoliageSystem::SyncFoliageWithLandscape()
 {
     if(landscapeEntity && foliageEntity)
@@ -124,6 +211,15 @@ bool FoliageSystem::IsFoliageVisible() const
     VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
     
     return (NULL != vegetationRO) ? vegetationRO->GetVegetationVisible() : false;;
+}
+
+void FoliageSystem::DebugDrawVegetation()
+{
+    VegetationRenderObject* vegetationRO = GetVegetation(foliageEntity);
+    if(NULL != vegetationRO)
+    {
+        vegetationRO->DebugDrawVisibleNodes();
+    }
 }
 
 };

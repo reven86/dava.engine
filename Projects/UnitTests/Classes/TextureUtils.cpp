@@ -76,11 +76,17 @@ TextureUtils::CompareResult TextureUtils::CompareSprites(Sprite *first, Sprite *
 
 TextureUtils::CompareResult TextureUtils::CompareImages(Image *first, Image *second, PixelFormat format)
 {
-    DVASSERT(first->GetHeight() == second->GetHeight());
-    DVASSERT(first->GetWidth() == second->GetWidth());
-
     CompareResult compareResult = {0};
-    
+
+    if (first->GetWidth() != second->GetWidth() ||
+        first->GetHeight() != second->GetHeight())
+    {
+        DVASSERT_MSG(false, "Can't compare images of different dimensions.");
+
+        compareResult.difference = 100;
+        return compareResult;
+    }
+
     int32 imageSizeInBytes = (int32)(first->GetWidth() * first->GetHeight() * PixelFormatDescriptor::GetPixelFormatSizeInBytes(first->format));
 
     int32 step = 1;

@@ -6,6 +6,8 @@ uniform sampler2D lightmap = 1;
 uniform sampler2D vegetationmap = 2
 uniform sampler2D normalmap = 2;
 uniform sampler2D cubemap = 3;
+uniform sampler2D heightmap = 4;
+uniform sampler2D densitymap = 5;
 
 uniform float inGlossiness = 0.5;
 uniform float inSpecularity = 1.0;
@@ -68,7 +70,7 @@ varying mediump mat3 tbnToWorldMatrix;
 uniform sampler2D decal;
 #endif
 
-#if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS)
+#if defined(MATERIAL_DETAIL) || defined(MATERIAL_GRASS_BLEND)
 uniform sampler2D detail;
 #endif
 
@@ -78,7 +80,7 @@ uniform sampler2D lightmap;
 #endif
 
 //#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY) || defined(FRAME_BLEND)
-#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND) || defined(MATERIAL_GRASS)
+#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
 varying highp vec2 varTexCoord1;
 #endif
 
@@ -129,7 +131,7 @@ varying float varFogFactor;
 varying lowp float varLightmapSize;
 #endif
 
-#if defined(VERTEX_COLOR)
+#if defined(VERTEX_COLOR) || defined(SPHERICAL_LIT)
 varying lowp vec4 varVertexColor;
 #endif
 
@@ -153,9 +155,21 @@ vec3 FresnelShlickVec3(float NdotL, vec3 Cspec)
 	return Cspec + (1.0 - Cspec) * (pow(1.0 - NdotL, expf));
 }
 
-#if defined(MATERIAL_GRASS)
-uniform sampler2D vegetationmap;
+#if defined(MATERIAL_GRASS_TRANSFORM)
+
+#if defined(VEGETATION_DRAW_LOD_COLOR)
+uniform vec3 lodColor;
+#endif
+
+
+#if defined(MATERIAL_GRASS_BLEND)
 varying vec2 varTexCoord2;
+#endif
+
+#if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
+varying lowp vec3 varVegetationColor;
+#endif
+
 #endif
 
 void main()
@@ -163,16 +177,16 @@ void main()
     // FETCH PHASE
 #if defined(MATERIAL_TEXTURE)
     
-    #if defined(PIXEL_LIT) || defined(ALPHATEST) || defined(ALPHABLEND) || defined(VERTEX_LIT)
-        lowp vec4 textureColor0 = texture2D(albedo, varTexCoord0);
-    #else
-        lowp vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
-    #endif
+#if defined(PIXEL_LIT) || defined(ALPHATEST) || defined(ALPHABLEND) || defined(VERTEX_LIT)
+    lowp vec4 textureColor0 = texture2D(albedo, varTexCoord0);
+#else
+    lowp vec3 textureColor0 = texture2D(albedo, varTexCoord0).rgb;
+#endif
     
-    #if defined(FRAME_BLEND)
-        lowp vec4 blendFrameColor = texture2D(albedo, varTexCoord1);
-        textureColor0 = mix(textureColor0, blendFrameColor, varTime);
-    #endif
+#if defined(FRAME_BLEND)
+    lowp vec4 blendFrameColor = texture2D(albedo, varTexCoord1);
+    textureColor0 = mix(textureColor0, blendFrameColor, varTime);
+#endif
     
 #elif defined(MATERIAL_SKYBOX)
     lowp vec4 textureColor0 = textureCube(cubemap, varTexCoord0);
@@ -203,45 +217,45 @@ void main()
     lowp vec3 textureColor1 = texture2D(detail, varTexCoord1).rgb;
 #endif
     
-//#if defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
+    //#if defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
 #if defined(MATERIAL_LIGHTMAP)
     lowp vec3 textureColor1 = texture2D(lightmap, varTexCoord1).rgb;
 #endif
     
-//#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
+    //#if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(MATERIAL_VIEW_LIGHTMAP_ONLY)
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP)
-    #if defined(SETUP_LIGHTMAP)
-        vec3 lightGray = vec3(0.75, 0.75, 0.75);
-        vec3 darkGray = vec3(0.25, 0.25, 0.25);
-
-        bool isXodd;
-        bool isYodd;
-        if(fract(floor(varTexCoord1.x*varLightmapSize)/2.0) == 0.0)
-        {
-            isXodd = true;
-        }
-        else
-        {
-            isXodd = false;
-        }
-        if(fract(floor(varTexCoord1.y*varLightmapSize)/2.0) == 0.0)
-        {
-            isYodd = true;
-        }
-        else
-        {
-            isYodd = false;
-        }
+#if defined(SETUP_LIGHTMAP)
+    vec3 lightGray = vec3(0.75, 0.75, 0.75);
+    vec3 darkGray = vec3(0.25, 0.25, 0.25);
     
-        if((isXodd && isYodd) || (!isXodd && !isYodd))
-        {
-            textureColor1 = lightGray;
-        }
-        else
-        {
-            textureColor1 = darkGray;
-        }
-    #endif
+    bool isXodd;
+    bool isYodd;
+    if(fract(floor(varTexCoord1.x*varLightmapSize)/2.0) == 0.0)
+    {
+        isXodd = true;
+    }
+    else
+    {
+        isXodd = false;
+    }
+    if(fract(floor(varTexCoord1.y*varLightmapSize)/2.0) == 0.0)
+    {
+        isYodd = true;
+    }
+    else
+    {
+        isYodd = false;
+    }
+    
+    if((isXodd && isYodd) || (!isXodd && !isYodd))
+    {
+        textureColor1 = lightGray;
+    }
+    else
+    {
+        textureColor1 = darkGray;
+    }
+#endif
 #endif
     
     // DRAW PHASE
@@ -307,9 +321,9 @@ void main()
     //normal = vec3(0.0, 0.0, 1.0);
     
     float attenuation = lightIntensity0;
-    #if defined(DISTANCE_ATTENUATION)
-        attenuation /= (varPerPixelAttenuation * varPerPixelAttenuation);
-    #endif
+#if defined(DISTANCE_ATTENUATION)
+    attenuation /= (varPerPixelAttenuation * varPerPixelAttenuation);
+#endif
     
 #if !defined(FAST_NORMALIZATION)
     vec3 toLightNormalized = normalize(varToLightVec);
@@ -437,7 +451,7 @@ void main()
     gl_FragColor = vec4(color, 1.0);
 #endif
     
-#if defined(VERTEX_COLOR) || defined(SPEED_TREE_LEAF)
+#if defined(VERTEX_COLOR) || defined(SPEED_TREE_LEAF) || defined(SPHERICAL_LIT)
     gl_FragColor *= varVertexColor;
 #endif
     
@@ -461,28 +475,44 @@ void main()
 #endif
 #endif
     //    gl_FragColor.r += 0.5;
-    
-#if defined(MATERIAL_GRASS)
 
+#if defined(MATERIAL_GRASS_TRANSFORM)
+    
+#if defined(MATERIAL_GRASS_OPAQUE)
+    gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
+#endif
+    
+#if defined(MATERIAL_GRASS_BLEND)
+    
     gl_FragColor.a = gl_FragColor.a * varTexCoord2.x;
     
-#if defined(FRAMEBUFFER_FETCH)
-    //VI: fog is taken to account here
-    #if defined(VERTEX_FOG)
-        gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(fogColor, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, varFogFactor), gl_FragColor.a);
+    #if defined(FRAMEBUFFER_FETCH)
+        //VI: fog is taken to account here
+        #if defined(VERTEX_FOG)
+            gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, mix(fogColor, gl_FragColor.rgb * varVegetationColor * 2.0, varFogFactor), gl_FragColor.a);
+        #else
+            gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * varVegetationColor * 2.0, gl_FragColor.a);
+        #endif
     #else
-        gl_FragColor.rgb = mix(gl_LastFragData[0].rgb, gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0, gl_FragColor.a);
+        gl_FragColor.rgb = gl_FragColor.rgb * varVegetationColor * 2.0;
     #endif
-#else
-    gl_FragColor.rgb = gl_FragColor.rgb * texture2D(vegetationmap, varTexCoord1).rgb * 2.0;
+    
+#endif
+
+#if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
+
+#if defined(VEGETATION_DRAW_LOD_COLOR)
+    gl_FragColor.rgb += lodColor;
+#endif
+
 #endif
 
 #endif
     
 #if defined(VERTEX_FOG)
-    #if !defined(FRAMEBUFFER_FETCH) 
-        //VI: fog equation is inside of color equatin for framebuffer fetch
-        gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
-    #endif
+#if !defined(FRAMEBUFFER_FETCH)
+    //VI: fog equation is inside of color equation for framebuffer fetch
+    gl_FragColor.rgb = mix(fogColor, gl_FragColor.rgb, varFogFactor);
+#endif
 #endif
 }

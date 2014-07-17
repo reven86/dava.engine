@@ -46,8 +46,6 @@ class AndroidSystemDelegate
 public:
 	AndroidSystemDelegate(JavaVM *vm);
 
-	virtual void ShowKeyboard() = 0;
-	virtual void HideKeyboard() = 0;
 	virtual bool DownloadHttpFile(const String & url, const String & documentsPathname) = 0;
     
     virtual GLint RenderBuffer() = 0;

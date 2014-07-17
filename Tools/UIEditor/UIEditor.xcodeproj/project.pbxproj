@@ -112,7 +112,6 @@
 		171FA7FB17C4AE5E00C7F7F2 /* AlignHandlers.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 171FA7F917C4AE5D00C7F7F2 /* AlignHandlers.cpp */; };
 		173116C118ACBC9600893BA0 /* GuideCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173116BF18ACBC9600893BA0 /* GuideCommands.cpp */; };
 		173339E71694472600E98820 /* UndoRedoController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173339E51694472600E98820 /* UndoRedoController.cpp */; };
-		173A4C661855C60E008A1B97 /* ReloadSpritesCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173A4C641855C60E008A1B97 /* ReloadSpritesCommand.cpp */; };
 		173AC331162FFFC300A773F5 /* PropertiesGridController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC32F162FFFC300A773F5 /* PropertiesGridController.cpp */; };
 		173AC33A1630137400A773F5 /* controlpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC3381630137400A773F5 /* controlpropertygridwidget.cpp */; };
 		173AC33B1630137400A773F5 /* flagspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC3391630137400A773F5 /* flagspropertygridwidget.cpp */; };
@@ -248,6 +247,7 @@
 		74BCC56E18D05F3600C98406 /* errorslistdialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC56C18D05F3600C98406 /* errorslistdialog.cpp */; };
 		74BCC57518D0671E00C98406 /* errorslistdialog.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74BCC57418D0671E00C98406 /* errorslistdialog.ui */; };
 		74BCC57718D0673100C98406 /* errorslistdialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */; };
+		74BD37AA1938BB9F0073CF23 /* CopyPasteHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74BD37A81938BB9F0073CF23 /* CopyPasteHelper.cpp */; };
 		74CD181C18D84AE3004615A5 /* rootpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74CD181A18D84AE3004615A5 /* rootpropertygridwidget.cpp */; };
 		74EED62F16B187CF00262D63 /* alignspropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */; };
 		74EED63216B18C7600262D63 /* alignspropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 74EED63016B18C7600262D63 /* alignspropertygridwidget.cpp */; };
@@ -516,8 +516,6 @@
 		173116C018ACBC9600893BA0 /* GuideCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuideCommands.h; path = Commands/GuideCommands.h; sourceTree = "<group>"; };
 		173339E51694472600E98820 /* UndoRedoController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UndoRedoController.cpp; path = Controllers/UndoRedoController.cpp; sourceTree = "<group>"; };
 		173339E61694472600E98820 /* UndoRedoController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UndoRedoController.h; path = Controllers/UndoRedoController.h; sourceTree = "<group>"; };
-		173A4C641855C60E008A1B97 /* ReloadSpritesCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReloadSpritesCommand.cpp; path = Commands/ReloadSpritesCommand.cpp; sourceTree = "<group>"; };
-		173A4C651855C60E008A1B97 /* ReloadSpritesCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReloadSpritesCommand.h; path = Commands/ReloadSpritesCommand.h; sourceTree = "<group>"; };
 		173AC32F162FFFC300A773F5 /* PropertiesGridController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertiesGridController.cpp; path = Controllers/PropertiesGridController.cpp; sourceTree = "<group>"; };
 		173AC330162FFFC300A773F5 /* PropertiesGridController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PropertiesGridController.h; path = Controllers/PropertiesGridController.h; sourceTree = "<group>"; };
 		173AC3381630137400A773F5 /* controlpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = controlpropertygridwidget.cpp; path = PropertyGridWidgets/controlpropertygridwidget.cpp; sourceTree = "<group>"; };
@@ -768,6 +766,8 @@
 		74BCC57418D0671E00C98406 /* errorslistdialog.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = errorslistdialog.ui; sourceTree = "<group>"; };
 		74BCC57618D0673100C98406 /* errorslistdialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = errorslistdialog_moc.cpp; sourceTree = "<group>"; };
 		74BCC57818D0675A00C98406 /* ui_errorslistdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_errorslistdialog.h; sourceTree = "<group>"; };
+		74BD37A81938BB9F0073CF23 /* CopyPasteHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CopyPasteHelper.cpp; path = Helpers/CopyPasteHelper.cpp; sourceTree = "<group>"; };
+		74BD37A91938BB9F0073CF23 /* CopyPasteHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CopyPasteHelper.h; path = Helpers/CopyPasteHelper.h; sourceTree = "<group>"; };
 		74CD181A18D84AE3004615A5 /* rootpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rootpropertygridwidget.cpp; path = PropertyGridWidgets/rootpropertygridwidget.cpp; sourceTree = "<group>"; };
 		74CD181B18D84AE3004615A5 /* rootpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rootpropertygridwidget.h; path = PropertyGridWidgets/rootpropertygridwidget.h; sourceTree = "<group>"; };
 		74EED62E16B187CF00262D63 /* alignspropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = alignspropertygridwidget.ui; sourceTree = "<group>"; };
@@ -1141,6 +1141,8 @@
 		17112B5616392E880017E713 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				74BD37A81938BB9F0073CF23 /* CopyPasteHelper.cpp */,
+				74BD37A91938BB9F0073CF23 /* CopyPasteHelper.h */,
 				1707BA0F1709C90D00D69DC0 /* SubcontrolsHelper.cpp */,
 				1707BA101709C90D00D69DC0 /* SubcontrolsHelper.h */,
 				74893AD2165A8E8F006B2762 /* ResourcesManageHelper.cpp */,
@@ -1405,8 +1407,6 @@
 				C1BBE3551647DAC300EF3CA9 /* PasteCommand.h */,
 				49FD832D170B24E800F3B650 /* ImportCommands.cpp */,
 				49FD832E170B24E800F3B650 /* ImportCommands.h */,
-				173A4C641855C60E008A1B97 /* ReloadSpritesCommand.cpp */,
-				173A4C651855C60E008A1B97 /* ReloadSpritesCommand.h */,
 				1746932C18A3EFF40089EFF5 /* InvokeMethodCommand.cpp */,
 				1746932D18A3EFF40089EFF5 /* InvokeMethodCommand.h */,
 				173116BF18ACBC9600893BA0 /* GuideCommands.cpp */,
@@ -1600,7 +1600,6 @@
 				02D69C9916F08CEE00F3803F /* ui_sliderpropertygridwidget.h */,
 				02D69C9A16F08CEE00F3803F /* ui_statepropertygridwidget.h */,
 				C737D1F518D9C283005B4C8F /* ui_textpropertygridwidget.h */,
-				02D69C9C16F08CEE00F3803F /* ui_uitextfieldpropertygridwidget.h */,
 				17C411E018CA0B55002BA05F /* ui_joypadpropertygridwidget.h */,
 				17C411E118CA0B55002BA05F /* ui_previewsettingswidget.h */,
 			);
@@ -1986,6 +1985,7 @@
 				17660BBF186B221200CF7A14 /* RulerWidget_moc.cpp in Build Sources */,
 				C10740FF163A960D0069A640 /* BaseMetadataParams.cpp in Build Sources */,
 				17CED76C163ABD3B00F9B02D /* propertygridcontainerwidget.cpp in Build Sources */,
+				74BD37AA1938BB9F0073CF23 /* CopyPasteHelper.cpp in Build Sources */,
 				C1074160163E7B740069A640 /* ItemsCommand.cpp in Build Sources */,
 				17FBCE46163A7ED100FD96C0 /* UIControlStateHelper.cpp in Build Sources */,
 				C746392D18DCED0C0045C57B /* editfontdialog_moc.cpp in Build Sources */,
@@ -2079,7 +2079,6 @@
 				02D69CD416F08CEE00F3803F /* createplatformdlg_moc.cpp in Build Sources */,
 				1746932B18A3ED9D0089EFF5 /* UIParticlesMetadata.cpp in Build Sources */,
 				02D69CD516F08CEE00F3803F /* createscreendlg_moc.cpp in Build Sources */,
-				173A4C661855C60E008A1B97 /* ReloadSpritesCommand.cpp in Build Sources */,
 				02D69CD616F08CEE00F3803F /* davaglwidget_moc.cpp in Build Sources */,
 				02D69CD716F08CEE00F3803F /* localizationeditordialog_moc.cpp in Build Sources */,
 				02D69CD816F08CEE00F3803F /* fontmanagerdialog_moc.cpp in Build Sources */,

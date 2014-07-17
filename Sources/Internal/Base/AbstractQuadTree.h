@@ -40,6 +40,7 @@ struct AbstractQuadTreeNode
 {
     T data;
     AbstractQuadTreeNode<T>** children; //*[4]
+    AbstractQuadTreeNode<T>* parent;
     
     inline AbstractQuadTreeNode();
     inline ~AbstractQuadTreeNode();
@@ -74,6 +75,7 @@ template<typename T>
 inline AbstractQuadTreeNode<T>::AbstractQuadTreeNode()
 {
     children = NULL;
+    parent = NULL;
 }
     
 template<typename T>
@@ -153,6 +155,8 @@ void AbstractQuadTree<T>::BuildTreeNode(AbstractQuadTreeNode<T>* node, int32 cur
         for(uint32 i = 0; i < 4; ++i)
         {
             node->children[i] = new AbstractQuadTreeNode<T>();
+            node->children[i]->parent = node;
+            
             BuildTreeNode(node->children[i], currentDepth);
         }
     }

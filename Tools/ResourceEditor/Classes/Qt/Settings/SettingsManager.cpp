@@ -35,6 +35,7 @@
 
 // framework
 #include "FileSystem/KeyedArchive.h"
+#include "FileSystem/VariantType.h"
 #include "Render/RenderBase.h"
 
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
@@ -81,18 +82,19 @@ void SettingsManager::Init()
     CreateValue(Settings::Scene_DebugBoxUserScale, DAVA::VariantType(DAVA::float32(1.0)));
     CreateValue(Settings::Scene_DebugBoxParticleScale, DAVA::VariantType(DAVA::float32(1.0)));
 
-    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType((DAVA::int32) DAVA::GPU_UNKNOWN));
+    CreateValue(Settings::Internal_TextureViewGPU, DAVA::VariantType((DAVA::int32) DAVA::GPU_PNG));
 	CreateValue(Settings::Internal_LastProjectPath, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
 	CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
 	CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
 
 	CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType((DAVA::KeyedArchive *) NULL));
     CreateValue(Settings::Internal_MaterialsLightViewMode, DAVA::VariantType((DAVA::int32) EditorMaterialSystem::LIGHTVIEW_ALL));
     CreateValue(Settings::Internal_MaterialsShowLightmapCanvas, DAVA::VariantType((bool) false));
     CreateValue(Settings::Internal_LicenceAccepted, DAVA::VariantType((bool) false));
 	CreateValue(Settings::Internal_LODEditorMode, DAVA::VariantType((bool) false));
-
+    CreateValue(DAVA::FastName("Internal/RunActionEventWidget/CurrentType"), DAVA::VariantType((DAVA::uint32)0));
     CreateValue(DAVA::FastName("Internal/Beast/LightmapsDefaultDir"), DAVA::VariantType(DAVA::String("lightmaps")));
 }
 
@@ -186,8 +188,20 @@ void SettingsManager::CreateValue(const DAVA::FastName& pathName, const DAVA::Va
     settingsOrder.push_back(pathName);
 }
 
+void SettingsManager::ResetPerProjectSettings()
+{
+    SetValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
+}
+
 void SettingsManager::ResetToDefault()
 {
     SettingsManager::Instance()->Init();
+}
+
+void SettingsManager::UpdateGPUSettings()
+{
+    DAVA::VariantType oldGpu = GetValue(Settings::Internal_TextureViewGPU);
+    DAVA::VariantType newGpu = DAVA::VariantType(DAVA::GPUFamilyDescriptor::ConvertValueToGPU(oldGpu.AsInt32()));
+    SetValue(Settings::Internal_TextureViewGPU, newGpu);
 }
 

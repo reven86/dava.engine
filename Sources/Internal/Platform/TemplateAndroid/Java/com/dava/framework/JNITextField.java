@@ -10,6 +10,7 @@ import java.util.concurrent.FutureTask;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Looper;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
@@ -33,6 +34,9 @@ public class JNITextField {
 		public int id;
 	}
 	static Map<Integer, NativeEditText> controls = new HashMap<Integer, NativeEditText>();
+	
+	static final int NoActiveTextField = -1;
+	static int activeTextField = NoActiveTextField; 
 
 	final static String TAG = "JNITextField";
 	
@@ -234,7 +238,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static String GetText(int id) {
@@ -565,14 +569,20 @@ public class JNITextField {
 		if (text == null)
 			return;
 		
-		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+		JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+			
 			@Override
-			public Void call() throws Exception {
-				text.setVisibility(View.VISIBLE);
-				return null;
+			public void run() {
+				InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						text.setVisibility(View.VISIBLE);
+						return null;
+					}
+				});
+				task.AsyncRun();
 			}
 		});
-		task.Run();
 	}
 	
 	public static void HideField(int id) {
@@ -580,30 +590,51 @@ public class JNITextField {
 		if (text == null)
 			return;
 		
-		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+		if (id == activeTextField)
+			CloseKeyboard(id);
+		
+		JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+			
 			@Override
-			public Void call() throws Exception {
-				text.setVisibility(View.GONE);
-				return null;
+			public void run() {
+				InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						text.setVisibility(View.GONE);
+						return null;
+					}
+				});
+				task.AsyncRun();
 			}
 		});
-		task.Run();
 	}
 	
-	public static void OpenKeyboard(int id) {
+	public static void OpenKeyboard(final int id) {
 		final EditText text = GetEditText(id);
 		if (text == null)
 			return;
 		
-		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+		JNIActivity.GetActivity().PostEventToGL(new Runnable() {
+			
 			@Override
-			public Void call() throws Exception {
-				InputMethodManager imm = (InputMethodManager) JNIActivity.GetActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-				imm.showSoftInput(text, InputMethodManager.SHOW_IMPLICIT);
-				return null;
+			public void run() {
+				InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						text.setVisibility(EditText.VISIBLE);
+						text.requestFocus();
+						
+						InputMethodManager imm = (InputMethodManager) JNIActivity.GetActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+						imm.showSoftInput(text, InputMethodManager.SHOW_FORCED);
+						
+						activeTextField = id;
+						
+						return null;
+					}
+				});
+				task.AsyncRun();
 			}
 		});
-		task.Run();
 	}
 	
 	public static void CloseKeyboard(int id) {
@@ -611,16 +642,30 @@ public class JNITextField {
 		if (text == null)
 			return;
 		
-		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+		final Runnable runnable = new Runnable() {
+			
 			@Override
-			public Void call() throws Exception {
+			public void run() {
 				InputMethodManager imm = (InputMethodManager) JNIActivity.GetActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
 				imm.hideSoftInputFromWindow(text.getWindowToken(), 0);
 				text.clearFocus();
-				return null;
+				activeTextField = NoActiveTextField;
 			}
-		});
-		task.Run();
+		};
+		
+		if (Thread.currentThread() == Looper.getMainLooper().getThread())
+			runnable.run();
+		else
+		{
+			InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					runnable.run();
+					return null;
+				}
+			});
+			task.AsyncRun();
+		}
 	}
 	
 	public static void SetEnableReturnKeyAutomatically(int id, boolean value) {

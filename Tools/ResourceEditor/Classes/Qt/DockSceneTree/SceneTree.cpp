@@ -455,6 +455,7 @@ void SceneTree::ShowContextMenuEntity(DAVA::Entity *entity, int entityCustomFlag
 
 				particleEffectMenu->addAction(QIcon(":/QtIcons/emitter_particle.png"), "Add Emitter", this, SLOT(AddEmitter()));
                 particleEffectMenu->addAction(QIcon(":/QtIcons/savescene.png"), "Save Effect Emitters", this, SLOT(SaveEffectEmitters()));
+                particleEffectMenu->addAction(QIcon(":/QtIcons/savescene.png"), "Save Effect Emitters As...", this, SLOT(SaveEffectEmittersAs()));
 				particleEffectMenu->addSeparator();
 				particleEffectMenu->addAction(QIcon(":/QtIcons/play.png"), "Start", this, SLOT(StartEffect()));
 				particleEffectMenu->addAction(QIcon(":/QtIcons/stop.png"), "Stop", this, SLOT(StopEffect()));
@@ -948,17 +949,12 @@ void SceneTree::AddEmitter()
 
 void SceneTree::SaveEffectEmitters()
 {
-    SceneEditor2* sceneEditor = treeModel->GetScene();
-    if(!sceneEditor)
-        return;
-    QModelIndex realIndex = filteringProxyModel->mapToSource(currentIndex());    
-    ParticleEffectComponent *effect = DAVA::GetEffectComponent(SceneTreeItemEntity::GetEntity(treeModel->GetItem(realIndex)));
-    if (!effect)
-        return;
-    
+   PerformSaveEffectEmitters(false);
+}
 
-    for (int32 i=0, sz = effect->GetEmittersCount(); i!=sz; ++i)
-        PerformSaveEmitter(effect->GetEmitter(i), false);
+void SceneTree::SaveEffectEmittersAs()
+{
+    PerformSaveEffectEmitters(true);
 }
 
 void SceneTree::StartEffect()
@@ -1083,12 +1079,12 @@ void SceneTree::LoadEmitterFromYaml()
 
 void SceneTree::SaveEmitterToYaml()
 {
-	PerformSaveEmitter(selectedEmitter, false);
+	PerformSaveEmitter(selectedEmitter, false, QString());
 }
 
 void SceneTree::SaveEmitterToYamlAs()
 {
-	PerformSaveEmitter(selectedEmitter, true);
+	PerformSaveEmitter(selectedEmitter, true, QString());
 }
 
 
@@ -1244,7 +1240,7 @@ void SceneTree::RemoveForce()
 	treeModel->ResyncStructure(treeModel->invisibleRootItem(), sceneEditor);
 }
 
-void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName)
+void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileName, const QString& defaultName)
 {
 	SceneEditor2 *sceneEditor = treeModel->GetScene();
 	if(!sceneEditor)
@@ -1259,9 +1255,10 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
 	FilePath yamlPath;
     if (forceAskFileName)
     {
-        QString particlesPath = ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str();
+        FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+        QString particlesPath = defaultPath.IsEmpty()?ProjectManager::Instance()->CurProjectDataParticles().GetAbsolutePathname().c_str():defaultPath.GetAbsolutePathname().c_str();
         QString filePath = QtFileDialog::getSaveFileName(NULL, QString("Save Particle Emitter ")+QString(emitter->name.c_str()),
-                                                        particlesPath, QString("YAML File (*.yaml)"));
+                                                        particlesPath+defaultName, QString("YAML File (*.yaml)"));
 		
         if (filePath.isEmpty())
         {
@@ -1269,22 +1266,44 @@ void SceneTree::PerformSaveEmitter(ParticleEmitter *emitter, bool forceAskFileNa
         }
 
         yamlPath = FilePath(filePath.toStdString());
+
+        SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, VariantType(yamlPath.GetDirectory()));
 	}
 	
 
-		FilePath curEmitterFilePath;
-		if (forceAskFileName)
-		{
-			curEmitterFilePath = yamlPath;
-		}
-		else
-		{
-		curEmitterFilePath = emitter->configPath.IsEmpty() ? yamlPath : emitter->configPath;
-		}
+    FilePath curEmitterFilePath;
+    if (forceAskFileName)
+    {
+        curEmitterFilePath = yamlPath;
+    }
+    else
+    {
+        curEmitterFilePath = emitter->configPath.IsEmpty() ? yamlPath : emitter->configPath;
+    }
 
-	CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(emitter, curEmitterFilePath);
-		sceneEditor->Exec(command);
-	}
+    CommandSaveParticleEmitterToYaml* command = new CommandSaveParticleEmitterToYaml(emitter, curEmitterFilePath);
+    sceneEditor->Exec(command);
+}
+
+void SceneTree::PerformSaveEffectEmitters(bool forceAskFileName)
+{
+    SceneEditor2* sceneEditor = treeModel->GetScene();
+    if(!sceneEditor)
+        return;
+    QModelIndex realIndex = filteringProxyModel->mapToSource(currentIndex());    
+    Entity *entity = SceneTreeItemEntity::GetEntity(treeModel->GetItem(realIndex));
+    ParticleEffectComponent *effect = DAVA::GetEffectComponent(entity);
+    if (!effect)
+        return;
+
+    QString effectName(entity->GetName().c_str());
+    for (int32 i=0, sz = effect->GetEmittersCount(); i!=sz; ++i)
+    {
+        ParticleEmitter* emitter = effect->GetEmitter(i);
+        QString defName = effectName+"_"+QString::number(i+1)+"_"+QString(emitter->name.c_str())+".yaml";
+        PerformSaveEmitter(emitter, forceAskFileName, defName);
+    }
+}
 
 QString SceneTree::GetParticlesConfigPath()
 {

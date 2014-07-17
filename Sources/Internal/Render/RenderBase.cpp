@@ -280,7 +280,6 @@ const FastName DYNAMIC_PARAM_NAMES[] =
         
         FastName("flatColor"),
         FastName("globalTime"),
-        FastName("worldViewTranslate"),
         FastName("worldScale"),
 
         FastName("cameraPosition"), // PARAM_CAMERA_POS,
@@ -290,9 +289,16 @@ const FastName DYNAMIC_PARAM_NAMES[] =
         FastName("lightPosition0"),
         FastName("lightColor0"),
         FastName("lightAmbientColor0"),
-        
+
+        FastName("localBoundingBox"),
+        FastName("worldViewObjectCenter"),
+        FastName("boundingBoxSize"),
+
         FastName("trunkOscillationParams"),
         FastName("leafOscillationParams"),
+        FastName("speedTreeLightSmoothing"),
+
+        FastName("sphericalHarmonics[0]"),
 
         FastName("rtSize"),
         FastName("rtPixelSize"),

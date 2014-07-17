@@ -220,6 +220,9 @@
     <Filter Include="Classes\Qt\BeastDialog">
       <UniqueIdentifier>{2dc3cc91-3dd3-49c3-b36a-f67af31c019c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Qt\RunActionEventWidget">
+      <UniqueIdentifier>{71777903-26d3-481e-8719-e21e1510ee2d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\Collada\ColladaAnimatedMesh.cpp">
@@ -1962,6 +1965,9 @@
     <ClCompile Include="_GeneratedQt\Tools\DeveloperTools\DeveloperTools_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastPointCloud.cpp">
+      <Filter>Classes\Beast\Wrapper</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\Commands2\RebuildTangentSpaceCommand.cpp">
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
@@ -1972,6 +1978,12 @@
       <Filter>Classes\Commands2</Filter>
     </ClCompile>
     <ClCompile Include="_GeneratedQt\BeastDialog\BeastDialog_moc.cpp">
+      <Filter>QtGenerated</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Qt\RunActionEventWidget\RunActionEventWidget.cpp">
+      <Filter>Classes\Qt\RunActionEventWidget</Filter>
+    </ClCompile>
+    <ClCompile Include="_GeneratedQt\RunActionEventWidget\RunActionEventWidget_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
   </ItemGroup>
@@ -3473,11 +3485,20 @@
     <ClInclude Include="Classes\Qt\Tools\DeveloperTools\DeveloperTools.h">
       <Filter>QtGenerated</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastPointCloud.h">
+      <Filter>Classes\Beast\Wrapper</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\Commands2\RebuildTangentSpaceCommand.h">
       <Filter>Classes\Commands2</Filter>
     </ClInclude>
     <ClInclude Include="Classes\Commands2\CopyLastLODCommand.h">
       <Filter>Classes\Commands2</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Qt\RunActionEventWidget\RunActionEventWidget.h">
+      <Filter>Classes\Qt\RunActionEventWidget</Filter>
+    </ClInclude>
+    <ClInclude Include="_GeneratedQt\ui_RunActionEventWidget.h">
+      <Filter>QtGenerated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3539,6 +3560,9 @@
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\BeastDialog.ui">
+      <Filter>QtData</Filter>
+    </None>
+    <None Include="DataQt\RunActionEventWidget.ui">
       <Filter>QtData</Filter>
     </None>
   </ItemGroup>

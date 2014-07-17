@@ -259,24 +259,12 @@ void UISlider::RecalcButtonPos()
 	if (thumbButton)
 	{
 		thumbButton->relativePosition.x = Interpolation::Linear((float32)leftInactivePart, size.x - rightInactivePart, minValue, currentValue, maxValue);
-		clipPointRelative = thumbButton->relativePosition.x;
         thumbButton->relativePosition.y = GetSize().y / 2; // thumb button pivot point is on center.
 	}
 }
 
 void UISlider::SyncThumbWithSprite()
 {
-    // Get the thumb sprite size and update the sprite size/pos according to it.
-    if (thumbButton && thumbButton->GetSprite())
-    {
-        const Vector2 spriteSize = thumbButton->GetSprite()->GetSize();
-        thumbButton->SetSize(spriteSize);
-        
-        Vector2 spriteCenter = Vector2(spriteSize.x / 2.0f, spriteSize.y / 2.0f);
-        thumbButton->SetPosition(spriteCenter);
-        thumbButton->pivotPoint = spriteCenter;
-    }
-    
    	RecalcButtonPos();
 }
 
@@ -522,6 +510,12 @@ void UISlider::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 		this->maxDrawType= (UIControlBackground::eDrawType)loader->GetDrawTypeFromNode(maxDrawTypeNode);
         this->needSetMaxDrawType = true;
 	}
+    
+    const YamlNode * pivotNode = node->Get("pivot");
+    if (pivotNode)
+    {
+        pivotPoint = pivotNode->AsPoint();
+    }
 }
 
 void UISlider::SetSize(const DAVA::Vector2 &newSize)
@@ -567,6 +561,11 @@ YamlNode * UISlider::SaveToYamlNode(UIYamlLoader * loader)
 	value = this->GetMaxValue();
 	node->Set("maxValue", value);
 
+    VariantType *nodeValue = new VariantType();
+    nodeValue->SetVector2(this->pivotPoint);
+    node->Set("pivot", nodeValue);
+    SafeDelete(nodeValue);
+    
     return node;
 }
 	
@@ -616,7 +615,6 @@ void UISlider::CopyDataFrom(UIControl *srcControl)
 		PostInitBackground(bgMax);
 	}
 	
-	clipPointRelative = t->clipPointRelative;
 	relTouchPoint = t->relTouchPoint;
 }
 

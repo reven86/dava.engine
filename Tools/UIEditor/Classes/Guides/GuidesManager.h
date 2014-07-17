@@ -42,12 +42,25 @@ class GuidesManager : public QObject
     Q_OBJECT
 
 public:
+    class StickedRect : public Rect
+    {
+    public:
+        StickedRect(const Rect& rect, bool forceStick) :
+            Rect(rect),
+            isForceStick(forceStick) {};
+        
+        bool GetForceStick() const {return isForceStick;};
+
+    private:
+        bool isForceStick;
+    };
+
     GuidesManager();
     virtual ~GuidesManager();
     
     // Functionality related to adding new Guide.
     // Start to adding new guide is get - it might be cancelled though.
-    void StartNewGuide(GuideData::eGuideType guideType, const List<Rect>& rectsList);
+    void StartNewGuide(GuideData::eGuideType guideType, const List<StickedRect>& rectsList);
     
     // New guide (guide candidate) is moved.
     void MoveNewGuide(const Vector2& pos);
@@ -62,12 +75,13 @@ public:
     void CancelNewGuide();
 
     // Methods related to the moving existing guide.
-    bool StartMoveGuide(const Vector2& pos, const List<Rect>& rectsList);
+    bool StartMoveGuide(const Vector2& pos, const List<StickedRect>& rectsList);
     void MoveGuide(const Vector2& pos);
     
     Vector2 GetMoveGuideStartPos() const;
     const GuideData* GetMoveGuide() const;
     const GuideData* AcceptMoveGuide();
+    const GuideData* CancelMoveGuide();
 
     // Selected guides.
     bool AreGuidesSelected() const;
@@ -147,7 +161,7 @@ private:
     Vector2 moveGuideStartPos;
     
     // Stick rects for moving new/existing guide.
-    List<Rect> stickRects;
+    List<StickedRect> stickRects;
 
     // Current stick mode (may be a combination of different ones).
     int32 stickMode;

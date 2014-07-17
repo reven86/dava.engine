@@ -14,6 +14,7 @@
 		17675C1919472AFB00054F8F /* libFrameworkTesting.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02FD8257192A10A5007762C0 /* libFrameworkTesting.a */; };
 		1770DF4517DF446600000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4317DF446600000391 /* UIMovieTest.cpp */; };
 		1770DF4717DF497600000391 /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1770DF4617DF497600000391 /* MediaPlayer.framework */; };
+		17D4116E1973E95F00CF6BC0 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */; };
 		17DD1616193F506500B73BEE /* ParseTextTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17DD1614193F506500B73BEE /* ParseTextTest.cpp */; };
 		17DD1618193F512600B73BEE /* liblua_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17DD1617193F512600B73BEE /* liblua_ios.a */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
@@ -52,6 +53,7 @@
 		E832BD95170D5610004D88A0 /* FileListTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E832BD93170D5610004D88A0 /* FileListTest.cpp */; };
 		E832BDA0170D823C004D88A0 /* FileSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E832BD9E170D823C004D88A0 /* FileSystemTest.cpp */; };
 		E8679179175F607700C5A6A2 /* FormatsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8679177175F607700C5A6A2 /* FormatsTest.cpp */; };
+		E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E890390E196D4FCE003126C8 /* ImageSizeTest.cpp */; };
 		E8983CC118C89733002FB974 /* OpenGLES30FormatTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */; };
 		E8B6B3CA1705DED5004F665E /* LocalizationTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */; };
 		E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8BD1F0616DE4A7800499E18 /* eMailTest.cpp */; };
@@ -109,6 +111,7 @@
 		1770DF4317DF446600000391 /* UIMovieTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIMovieTest.cpp; sourceTree = "<group>"; };
 		1770DF4417DF446600000391 /* UIMovieTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIMovieTest.h; sourceTree = "<group>"; };
 		1770DF4617DF497600000391 /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
+		17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		17DD1614193F506500B73BEE /* ParseTextTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParseTextTest.cpp; sourceTree = "<group>"; };
 		17DD1615193F506500B73BEE /* ParseTextTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ParseTextTest.h; sourceTree = "<group>"; };
 		17DD1617193F512600B73BEE /* liblua_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua_ios.a; path = ../../Libs/libs/liblua_ios.a; sourceTree = "<group>"; };
@@ -180,6 +183,8 @@
 		E832BD9F170D823C004D88A0 /* FileSystemTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileSystemTest.h; sourceTree = "<group>"; };
 		E8679177175F607700C5A6A2 /* FormatsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FormatsTest.cpp; sourceTree = "<group>"; };
 		E8679178175F607700C5A6A2 /* FormatsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FormatsTest.h; sourceTree = "<group>"; };
+		E890390E196D4FCE003126C8 /* ImageSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageSizeTest.cpp; sourceTree = "<group>"; };
+		E890390F196D4FCE003126C8 /* ImageSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageSizeTest.h; sourceTree = "<group>"; };
 		E8983CBF18C89733002FB974 /* OpenGLES30FormatTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenGLES30FormatTest.cpp; sourceTree = "<group>"; };
 		E8983CC018C89733002FB974 /* OpenGLES30FormatTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenGLES30FormatTest.h; sourceTree = "<group>"; };
 		E8B6B3C81705DED5004F665E /* LocalizationTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LocalizationTest.cpp; sourceTree = "<group>"; };
@@ -236,6 +241,7 @@
 				FE76D9FF1163F316009E83B6 /* AudioToolbox.framework in Frameworks */,
 				FE76DA041163F32F009E83B6 /* QuartzCore.framework in Frameworks */,
 				FEFB01D311C8F28A00B65B8B /* GameKit.framework in Frameworks */,
+				17D4116E1973E95F00CF6BC0 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,6 +313,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				17D4116D1973E95F00CF6BC0 /* SystemConfiguration.framework */,
 				17DD1617193F512600B73BEE /* liblua_ios.a */,
 				C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */,
 				74AF633C18852FE100070C35 /* Security.framework */,
@@ -330,6 +337,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E890390E196D4FCE003126C8 /* ImageSizeTest.cpp */,
+				E890390F196D4FCE003126C8 /* ImageSizeTest.h */,
 				5035302D194A4026006B66DB /* SceneSystemTest.cpp */,
 				5035302E194A4026006B66DB /* SceneSystemTest.h */,
 				17DD1614193F506500B73BEE /* ParseTextTest.cpp */,
@@ -573,6 +582,7 @@
 				84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */,
 				C19E4FAA16C5488C00D0AC28 /* DLCSystemTests.cpp in Sources */,
 				E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */,
+				E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */,
 				CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */,
 				E81B47DA16F896070025AF23 /* FilePathTest.cpp in Sources */,
 				497BF6EE16F7565B00AC57C6 /* DeviceInfoTest.cpp in Sources */,

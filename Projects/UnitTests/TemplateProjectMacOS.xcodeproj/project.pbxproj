@@ -52,6 +52,7 @@
 		E87402D9172582DB00A4A75A /* FileSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87402D5172582DB00A4A75A /* FileSystemTest.cpp */; };
 		E87BB1E4162D5CCB001A5448 /* TextureUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87BB1E2162D5CCB001A5448 /* TextureUtils.cpp */; };
 		E87E23B7161334E5005DB5A8 /* PVRTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E87E23B5161334E5005DB5A8 /* PVRTest.cpp */; };
+		E8B47D31196D4F5200D8ADF6 /* ImageSizeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B47D2F196D4F5200D8ADF6 /* ImageSizeTest.cpp */; };
 		E8B6B3C11705DD97004F665E /* LocalizationTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B6B3BF1705DD97004F665E /* LocalizationTest.cpp */; };
 		E8EF78011669249000DA7BD2 /* CloneTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8EF77FF1669249000DA7BD2 /* CloneTest.cpp */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
@@ -206,6 +207,8 @@
 		E87BB1E3162D5CCB001A5448 /* TextureUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TextureUtils.h; path = Classes/TextureUtils.h; sourceTree = "<group>"; };
 		E87E23B5161334E5005DB5A8 /* PVRTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PVRTest.cpp; path = Classes/PVRTest.cpp; sourceTree = "<group>"; };
 		E87E23B6161334E5005DB5A8 /* PVRTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PVRTest.h; path = Classes/PVRTest.h; sourceTree = "<group>"; };
+		E8B47D2F196D4F5200D8ADF6 /* ImageSizeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImageSizeTest.cpp; path = Classes/ImageSizeTest.cpp; sourceTree = "<group>"; };
+		E8B47D30196D4F5200D8ADF6 /* ImageSizeTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ImageSizeTest.h; path = Classes/ImageSizeTest.h; sourceTree = "<group>"; };
 		E8B6B3BF1705DD97004F665E /* LocalizationTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LocalizationTest.cpp; path = Classes/LocalizationTest.cpp; sourceTree = "<group>"; };
 		E8B6B3C01705DD97004F665E /* LocalizationTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LocalizationTest.h; path = Classes/LocalizationTest.h; sourceTree = "<group>"; };
 		E8EF77FF1669249000DA7BD2 /* CloneTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CloneTest.cpp; path = Classes/CloneTest.cpp; sourceTree = "<group>"; };
@@ -415,6 +418,7 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				E8B47D2C196D4F4800D8ADF6 /* ImageSizeTest */,
 				E8490AA51923864A00C07E36 /* ParseTextTest */,
 				E8573EA318C890B0004A8B50 /* OpenGLES30 */,
 				840CB01F18EE088A00B722D0 /* JPEGTest */,
@@ -653,6 +657,15 @@
 			name = PVRTests;
 			sourceTree = "<group>";
 		};
+		E8B47D2C196D4F4800D8ADF6 /* ImageSizeTest */ = {
+			isa = PBXGroup;
+			children = (
+				E8B47D2F196D4F5200D8ADF6 /* ImageSizeTest.cpp */,
+				E8B47D30196D4F5200D8ADF6 /* ImageSizeTest.h */,
+			);
+			name = ImageSizeTest;
+			sourceTree = "<group>";
+		};
 		E8B6B3BD1705DD80004F665E /* LocaliztionTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -848,7 +861,6 @@
 				FEC3CA821283557F00541220 /* GameCore.cpp in Sources */,
 				5CDC24FE156CC72400742348 /* SampleTest.cpp in Sources */,
 				50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */,
-				5CDC24FF156CC72400742348 /* TestTemplate.cpp in Sources */,
 				E8573EA818C890E4004A8B50 /* OpenGLES30FormatTest.cpp in Sources */,
 				5CF22540157E555D00DF5395 /* BaseScreen.cpp in Sources */,
 				5CA2461D158F46D600465879 /* EntityTest.cpp in Sources */,
@@ -874,6 +886,7 @@
 				E8B6B3C11705DD97004F665E /* LocalizationTest.cpp in Sources */,
 				7410E83117146D5B0028AAAA /* UIListTest.cpp in Sources */,
 				749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */,
+				E8B47D31196D4F5200D8ADF6 /* ImageSizeTest.cpp in Sources */,
 				E87402D7172582DB00A4A75A /* FileListTest.cpp in Sources */,
 				E87402D8172582DB00A4A75A /* FilePathTest.cpp in Sources */,
 				E87402D9172582DB00A4A75A /* FileSystemTest.cpp in Sources */,

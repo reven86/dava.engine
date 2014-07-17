@@ -107,12 +107,21 @@ protected:
 
     void InitializeSpeedTreeInfoSelection();
 
+    void InitializeVegetationInfoSection();
+    
+    void InitializeLayersSection();
+    void UpdateLayersSectionStructure(SceneEditor2 *scene);
+
     void RefreshSceneGeneralInfo();
     void Refresh3DDrawInfo();
     void RefreshLODInfoInFrame();
     void RefreshLODInfoForSelection();
 
     void RefreshSpeedTreeInfoSelection();
+    
+    void RefreshVegetationInfoSection();
+    
+    void RefreshLayersSection();
     
 	void RefreshAllData(SceneEditor2 *scene);
 
@@ -127,8 +136,9 @@ protected:
     QtPropertyData * GetInfoHeader(const QString &key);
     
     void AddChild(const QString & key, QtPropertyData *parent);
+    void AddChild(const QString & key, const QString& toolTip, QtPropertyData *parent);
     void SetChild(const QString & key, const QVariant &value, QtPropertyData *parent);
-    
+    bool HasChild(const QString & key, QtPropertyData *parent);
     
     void CollectSceneData(SceneEditor2 *scene);
     void CollectParticlesData();

@@ -168,7 +168,7 @@ int TextureConvertor::Reconvert(DAVA::Scene *scene, eTextureConvertMode convertM
 				if(NULL != descriptor)
 				{
 					DVASSERT(descriptor->compression);
-					for(int gpu = DAVA::GPU_UNKNOWN + 1; gpu < DAVA::GPU_FAMILY_COUNT; ++gpu)
+					for(int gpu = 0; gpu < DAVA::GPU_DEVICE_COUNT; ++gpu)
 					{
 						if( ! GPUFamilyDescriptor::IsFormatSupported((eGPUFamily)gpu, (PixelFormat)descriptor->compression[gpu].format))
 						{
@@ -315,7 +315,7 @@ void TextureConvertor::jobRunNextConvert()
 
 			convertJobQueueSize = 0;
 
-			emit ConvertStatusImg("", DAVA::GPU_UNKNOWN);
+			emit ConvertStatusImg("", DAVA::GPU_PNG);
 			emit ConvertStatusQueue(0, 0);
 
 			if(NULL != waitDialog)
@@ -426,7 +426,7 @@ TextureInfo TextureConvertor::GetThumbnailThread(JobItem *item)
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_UNKNOWN);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
 		result.fileSize = fileSize;
 	}
 
@@ -471,7 +471,7 @@ TextureInfo TextureConvertor::GetOriginalThread(JobItem *item)
 			fileSize = QFileInfo(descriptor->GetSourceTexturePathname().GetAbsolutePathname().c_str()).size();
 		}
 
-		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_UNKNOWN);
+		result.dataSize = ImageTools::GetTexturePhysicalSize(descriptor, DAVA::GPU_PNG);
 		result.fileSize = fileSize;
 
 		if(result.images.size())
@@ -501,7 +501,7 @@ TextureInfo TextureConvertor::GetConvertedThread(JobItem *item)
 		DAVA::eGPUFamily gpu = (DAVA::eGPUFamily) item->type;
 
 		if( NULL != descriptor &&
-			gpu > DAVA::GPU_UNKNOWN && gpu < DAVA::GPU_FAMILY_COUNT && 
+			gpu >= 0 && gpu < DAVA::GPU_FAMILY_COUNT && 
 			descriptor->compression[gpu].format > DAVA::FORMAT_INVALID && descriptor->compression[gpu].format < DAVA::FORMAT_COUNT)
 		{
 			DAVA::FilePath compressedTexturePath = DAVA::GPUFamilyDescriptor::CreatePathnameForGPU(descriptor, gpu);

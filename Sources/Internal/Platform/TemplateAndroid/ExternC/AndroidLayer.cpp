@@ -176,20 +176,9 @@ void InitApplication(JNIEnv * env)
 {
 	if(!core)
 	{
-		//TODO: VK: think about
-// 		char *argv[] =
-// 		{
-// 			(char *)documentsFolderPath,
-// 			(char *)assetsFolderPath
-// 		}
-// 		int argc = 2;
-// 		DAVA::Core::Run(argc, argv, 0);
-
-
 		core = new DAVA::CorePlatformAndroid();
 		if(core)
 		{
-			//androidDelegate = new AndroidDelegate(env);
 			core->CreateAndroidWindow(documentsFolderPath, assetsFolderPath, androidLogTag, androidDelegate);
 		}
 		else
@@ -231,10 +220,6 @@ void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, job
 	bool retCreatePackageName = CreateStringFromJni(env, packageName, androidPackageName);
 
 	InitApplication(env);
-	if(androidDelegate)
-	{
-		androidDelegate->SetApplication(classthis, androidPackageName);
-	}
 }
 
 void Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis)
@@ -258,8 +243,6 @@ void Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject cl
 void Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis)
 {
 //	LOGI("___ ON TERMINATE ___");
-
-//	DeinitApplication();
 }
 // END OF JNIApplication
 
@@ -270,11 +253,6 @@ void Java_com_dava_framework_JNIActivity_nativeOnCreate(JNIEnv * env, jobject cl
 //	LOGI("___ ON CREATE ___ %p, %d;  isFirstRun = %d", env, classthis, isFirstRun);
 	if(core)
 	{
-		if(androidDelegate)
-		{
-			androidDelegate->SetActivity(classthis);
-		}
-
 		core->OnCreateActivity();
 
 //		DAVA::DownloadFileFromURLToDocuments("http://seriouswheels.com/pics-2011/def/2011-Edo-Competition-Mercedes-Benz-SLR-Black-Arrow-Exhaust-1024x768.jpg", "~doc:/device.yaml");
@@ -314,7 +292,6 @@ void Java_com_dava_framework_JNIActivity_nativeOnDestroy(JNIEnv * env, jobject c
 	if(core)
 	{
 		core->OnDestroyActivity();
-//		DeinitApplication();
 	}
 }
 
@@ -400,8 +377,6 @@ void Java_com_dava_framework_JNIRenderer_nativeRenderRecreated(JNIEnv * env, job
 		{
 			androidDelegate->SetBuffers(0, 0);
 		}
-
-//		core->RenderRecreated();
 	}
 }
 void Java_com_dava_framework_JNIApplication_SetAssetManager(JNIEnv * env, jobject classthis, jobject assetManager)

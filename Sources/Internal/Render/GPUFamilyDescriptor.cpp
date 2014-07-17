@@ -41,6 +41,19 @@ namespace DAVA
     
 GPUFamilyDescriptor::GPUData GPUFamilyDescriptor::gpuData[GPU_FAMILY_COUNT];
 
+void GPUFamilyDescriptor::GPUData::SetName(const String &newName)
+{
+    name = newName;
+    if(!name.empty())
+    {
+        prefix = "." + name;
+    }
+    else
+    {
+        prefix = "";
+    }
+}
+
 void GPUFamilyDescriptor::SetupGPUParameters()
 {
     SetupGPUFormats();
@@ -116,15 +129,20 @@ void GPUFamilyDescriptor::SetupGPUFormats()
     gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGB] = ".dds";
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_EXPLICIT_ALPHA] = ".dds";
 	gpuData[GPU_ADRENO].availableFormats[FORMAT_ATC_RGBA_INTERPOLATED_ALPHA] = ".dds";
+    
+    gpuData[GPU_PNG].availableFormats[FORMAT_RGBA8888] = ".png";
+    gpuData[GPU_PNG].availableFormats[FORMAT_A8] = ".png";
+
 }
 
 void GPUFamilyDescriptor::SetupGPUPostfixes()
 {
-    gpuData[GPU_POWERVR_IOS].name = "PowerVR_iOS";
-    gpuData[GPU_POWERVR_ANDROID].name = "PowerVR_Android";
-    gpuData[GPU_TEGRA].name = "tegra";
-    gpuData[GPU_MALI].name = "mali";
-    gpuData[GPU_ADRENO].name = "adreno";
+    gpuData[GPU_POWERVR_IOS].SetName("PowerVR_iOS");
+    gpuData[GPU_POWERVR_ANDROID].SetName("PowerVR_Android");
+    gpuData[GPU_TEGRA].SetName("tegra");
+    gpuData[GPU_MALI].SetName("mali");
+    gpuData[GPU_ADRENO].SetName("adreno");
+    gpuData[GPU_PNG].SetName("");
 }
 
     
@@ -143,23 +161,31 @@ eGPUFamily GPUFamilyDescriptor::GetGPUForPathname(const FilePath &pathname)
     {
         eGPUFamily gpu = (eGPUFamily)i;
         
-        String strForFind(Format(".%s.", gpuData[gpu].name.c_str()));
-        if(String::npos != filename.rfind(strForFind))
+        if(gpu == GPU_PNG)
         {
-            return gpu;
+            const String ext = pathname.GetExtension();
+            if(ext == ".png")
+                return GPU_PNG;
+        }
+        else
+        {
+            if(String::npos != filename.rfind(gpuData[i].prefix))
+            {
+                return gpu;
+            }
         }
     }
 
     
-    return GPU_UNKNOWN;
+    return GPU_INVALID;
 }
  
 FilePath GPUFamilyDescriptor::CreatePathnameForGPU(const TextureDescriptor *descriptor, const eGPUFamily gpuFamily)
 {
     DVASSERT(descriptor);
 
-	if(GPU_UNKNOWN == gpuFamily)
-		return CreatePathnameForGPU(descriptor->pathname, GPU_UNKNOWN, FORMAT_INVALID);
+	if(GPU_INVALID == gpuFamily)
+		return CreatePathnameForGPU(descriptor->pathname, GPU_INVALID, FORMAT_INVALID);
 
 	eGPUFamily requestedGPU = gpuFamily;
 	
@@ -202,12 +228,12 @@ eGPUFamily GPUFamilyDescriptor::GetGPUByName(const String & name)
         }
     }
     
-    return GPU_UNKNOWN;
+    return GPU_INVALID;
 }
 
 bool GPUFamilyDescriptor::IsFormatSupported(const eGPUFamily gpu, const PixelFormat format)
 {
-	if(gpu <= GPU_UNKNOWN || gpu >= GPU_FAMILY_COUNT)
+	if(gpu < 0 || gpu >= GPU_FAMILY_COUNT)
 	{
 		return false;
 	}
@@ -227,11 +253,11 @@ const String & GPUFamilyDescriptor::GetCompressedFileExtension(const eGPUFamily 
     
 String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const PixelFormat pixelFormat)
 {
-    DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
-
-    if(gpuFamily == GPU_UNKNOWN || pixelFormat == FORMAT_INVALID)
+    if(!IsGPUForDevice(gpuFamily) || pixelFormat == FORMAT_INVALID)
         return ".png";
-        
+
+    DVASSERT(gpuFamily < GPU_FAMILY_COUNT);
+    
     
     Map<PixelFormat, String>::const_iterator format = gpuData[gpuFamily].availableFormats.find(pixelFormat);
 	if(format == gpuData[gpuFamily].availableFormats.end())
@@ -240,9 +266,22 @@ String GPUFamilyDescriptor::GetFilenamePostfix(const eGPUFamily gpuFamily, const
 		return ".png";
 	}
 
-	String postfix = "." + gpuData[gpuFamily].name + format->second;
+	String postfix = gpuData[gpuFamily].prefix + format->second;
     return postfix;
 }
     
+eGPUFamily GPUFamilyDescriptor::ConvertValueToGPU(const int32 value)
+{
+    if(value >= 0 && value < GPU_FAMILY_COUNT) return (eGPUFamily)value;
+    if(value == -1) return GPU_PNG;
+
+    return GPU_INVALID;
+}
+
+bool GPUFamilyDescriptor::IsGPUForDevice(const eGPUFamily gpu)
+{
+    return (gpu >= 0 && gpu <= GPU_ADRENO);
+}
+
     
 };

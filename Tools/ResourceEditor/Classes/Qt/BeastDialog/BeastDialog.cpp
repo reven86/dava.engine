@@ -19,6 +19,7 @@ BeastDialog::BeastDialog(QWidget *parent)
     , ui(new Ui::BeastDialog())
     , scene(NULL)
     , result(false)
+    , beastMode(BeastProxy::MODE_LIGHTMAPS)
 {
     ui->setupUi(this);
 
@@ -28,6 +29,9 @@ BeastDialog::BeastDialog(QWidget *parent)
     connect(ui->cancel, SIGNAL( clicked() ), SLOT( OnCancel() ));
     connect(ui->browse, SIGNAL( clicked() ), SLOT( OnBrowse() ));
     connect(ui->output, SIGNAL( textChanged(const QString&) ), SLOT( OnTextChanged() ));
+    connect(ui->lightmapBeastModeButton, SIGNAL( clicked( bool ) ), SLOT( OnLightmapMode( bool ) ));
+    connect(ui->shBeastModeButton, SIGNAL( clicked( bool ) ), SLOT( OnSHMode( bool ) ));
+    connect(ui->previewButton, SIGNAL( clicked( bool ) ), SLOT( OnPreviewMode( bool ) ));
 }
 
 BeastDialog::~BeastDialog()
@@ -97,6 +101,33 @@ void BeastDialog::OnTextChanged()
     ui->output->setToolTip( text );
 }
 
+void BeastDialog::OnLightmapMode(bool checked)
+{
+    if(checked)
+    {
+        ui->foldersWidget->setDisabled(false);
+        beastMode = BeastProxy::MODE_LIGHTMAPS;
+    }
+}
+
+void BeastDialog::OnSHMode(bool checked)
+{
+    if(checked)
+    {
+        ui->foldersWidget->setDisabled(true);
+        beastMode = BeastProxy::MODE_SPHERICAL_HARMONICS;
+    }
+}
+
+void BeastDialog::OnPreviewMode(bool checked)
+{
+    if(checked)
+    {
+        ui->foldersWidget->setDisabled(true);
+        beastMode = BeastProxy::MODE_PREVIEW;
+    }
+}
+
 void BeastDialog::closeEvent( QCloseEvent * event )
 {
     Q_UNUSED(event);
@@ -112,6 +143,11 @@ QString BeastDialog::GetPath() const
 
     const QString path = QDir::toNativeSeparators(QString("%1/%2/").arg(root).arg(output));
     return path;
+}
+
+BeastProxy::eBeastMode BeastDialog::GetMode() const
+{
+    return beastMode;
 }
 
 QString BeastDialog::GetDefaultPath() const

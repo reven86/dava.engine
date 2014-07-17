@@ -38,8 +38,20 @@ QString IconHelper::GetIconPathForClassName(const QString &className)
 
 QString IconHelper::GetIconPathForUIControl(DAVA::UIControl *uiControl)
 {
-	QString className = QString::fromStdString(uiControl->GetClassName());
-	return GetIconPathForClassName(className);
+    if(uiControl->GetCustomControlType().length() != 0)
+    {
+        return GetCustomIconPath();
+    }
+    else
+    {
+        QString className = QString::fromStdString(uiControl->GetClassName());
+        return GetIconPathForClassName(className);
+    }
+}
+
+QString IconHelper::GetCustomIconPath()
+{
+    return ":/Icons/custom_icon.png";
 }
 
 QString IconHelper::GetPlatformIconPath()

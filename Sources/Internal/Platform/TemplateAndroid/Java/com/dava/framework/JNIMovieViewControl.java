@@ -3,8 +3,6 @@ package com.dava.framework;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
@@ -22,6 +20,11 @@ public class JNIMovieViewControl {
 	private final static int scalingModeAspectFit = 1;
 	private final static int scalingModeAspectFill = 2;
 	private final static int scalingModeFill = 3;
+	
+	private final static int playerStateNoReady = 0;
+	private final static int playerStateInprogress = 1;
+	private final static int playerStateReady = 2;
+	private final static int playerStatePlaying = 3;
 
 	private static class MovieControl {
 		public MovieControl(int id, RelativeLayout layout, VideoView view, MediaPlayer player) {
@@ -35,7 +38,7 @@ public class JNIMovieViewControl {
 		public RelativeLayout layout = null;
 		public VideoView view = null;
 		public MediaPlayer player = null;
-		public boolean isReady = false;
+		public int playerState = playerStateNoReady;
 		public boolean isResetedBeforeHide = false;
 		public String path = null;
 		public int scalingMode = scalingModeNone;
@@ -97,7 +100,7 @@ public class JNIMovieViewControl {
 									e.printStackTrace();
 								}
 							}
-							control.isReady = false;
+							control.playerState = playerStateNoReady;
 							control.isResetedBeforeHide = false;
 						}
 
@@ -175,7 +178,7 @@ public class JNIMovieViewControl {
 	}
 	
 	private static void PrepareVideo(final MovieControl control) {
-		
+		control.playerState = playerStateInprogress;
 		control.player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
 			
 			@Override
@@ -215,7 +218,7 @@ public class JNIMovieViewControl {
 						params.width = videoWidth * layoutHeight/ videoHeight;
 						params.leftMargin = params.rightMargin = (layoutWidth - params.width) / 2;
 					} else {
-						params.height = layoutWidth;
+						params.width = layoutWidth;
 						params.height = videoHeight * layoutWidth / videoWidth;
 						params.topMargin = params.bottomMargin = (layoutHeight - params.height) / 2;
 					}
@@ -228,17 +231,16 @@ public class JNIMovieViewControl {
 				}
 				control.view.setLayoutParams(params);
 				
-				control.isReady = true;
-				control.player.seekTo(0);
-				
-				Timer timer = new Timer();
-				timer.schedule(new TimerTask() {
+				control.player.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
 					
 					@Override
-					public void run() {
+					public void onSeekComplete(MediaPlayer mp) {
+						control.playerState = playerStateReady;
 						Play(control.id);
+						control.player.setOnSeekCompleteListener(null);
 					}
-				}, 500);
+				});
+				control.player.seekTo(0);
 			}
 		});
 		
@@ -287,10 +289,12 @@ public class JNIMovieViewControl {
 			public Void call() throws Exception {
 				MovieControl control = controls.get(id);
 				
-				if (!control.isReady)
+				if (control.playerState == playerStateNoReady)
 					PrepareVideo(control);
-				else
+				else if (control.playerState == playerStateReady) {
 					control.player.start();
+					control.playerState = playerStatePlaying;
+				}
 				return null;
 			}
 		});
@@ -310,7 +314,7 @@ public class JNIMovieViewControl {
 			public void run() {
 				MovieControl control = controls.get(id);
 				control.player.stop();
-				control.isReady = false;
+				control.playerState = playerStateNoReady;
 			}
 		});
 	}
@@ -337,7 +341,12 @@ public class JNIMovieViewControl {
 		if (!controls.containsKey(id))
 			return false;
 		
-		MediaPlayer player = controls.get(id).player;
+		MovieControl control = controls.get(id);
+		if (control.playerState == playerStateInprogress ||
+			control.playerState == playerStateReady)
+			return true;
+		
+		MediaPlayer player = control.player;
 		return player.isPlaying();
 	}
 }

@@ -323,6 +323,9 @@ public:
 	 */
 	int32 UnlockSwitch();
 
+    void UI3DViewAdded();
+    void UI3DViewRemoved();
+
     UISystemKeyboard * GetUISystemKeyboard() const { return keyboard; }
 
 private:
@@ -368,6 +371,8 @@ private:
 	int32 inputHeight;
 	float32 scaleFactor;
 	Vector2 inputOffset;
+
+    int32 ui3DViewCount;
 	
 	friend class UIScreenTransition;
 	friend class UIScreenManager;

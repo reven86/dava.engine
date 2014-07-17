@@ -738,71 +738,80 @@ void RenderManager::AttachRenderData()
         }
     }
     
+    bool vboChanged = ((NULL == attachedRenderData) || (NULL == currentRenderData) || (!currentRenderData->HasVertexAttachment()) || (attachedRenderData->vboBuffer != currentRenderData->vboBuffer) || (0 == currentRenderData->vboBuffer));
+    bool iboChanged = ((NULL == attachedRenderData) || (NULL == currentRenderData) || (!currentRenderData->HasVertexAttachment()) || (attachedRenderData->indexBuffer != currentRenderData->indexBuffer) || (0 == currentRenderData->indexBuffer));
+    
     attachedRenderData = currentRenderData;
-
+    
     const int DEBUG = 0;
     
     {
-        int32 currentEnabledStreams = 0;
-        
-        HWglBindBuffer(GL_ARRAY_BUFFER, currentRenderData->vboBuffer);
-        HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentRenderData->indexBuffer);
-        
-
-        
-        int32 size = (int32)currentRenderData->streamArray.size();
-        
-        //DVASSERT(size >= shader->GetAttributeCount() && "Shader attribute count higher than model attribute count");
-        if (size < shader->GetAttributeCount())
+        if(iboChanged)
         {
-            // Logger::Error("Shader attribute count higher than model attribute count");
+            HWglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, currentRenderData->indexBuffer);
         }
-        
-        for (int32 k = 0; k < size; ++k)
+    
+    
+        if(vboChanged)
         {
-            RenderDataStream * stream = currentRenderData->streamArray[k];
-            GLboolean normalized = GL_FALSE;
+            int32 currentEnabledStreams = 0;
             
-            int32 attribIndex = shader->GetAttributeIndex(stream->formatMark);
-            if (attribIndex != -1)
+            HWglBindBuffer(GL_ARRAY_BUFFER, currentRenderData->vboBuffer);
+            
+            int32 size = (int32)currentRenderData->streamArray.size();
+            
+            //DVASSERT(size >= shader->GetAttributeCount() && "Shader attribute count higher than model attribute count");
+            if (size < shader->GetAttributeCount())
             {
-                int32 attribIndexBitPos = (1 << attribIndex);
-
-				if(TYPE_UNSIGNED_BYTE == stream->type)
-				{
-					normalized = GL_TRUE;
-				}
-                RENDER_VERIFY(glVertexAttribPointer(attribIndex, stream->size, VERTEX_DATA_TYPE_TO_GL[stream->type], normalized, stream->stride, stream->pointer));
-                if (DEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
-
-                if (!(cachedEnabledStreams & attribIndexBitPos))  // enable only if it was not enabled on previous step
-                {
-                    RENDER_VERIFY(glEnableVertexAttribArray(attribIndex));
-                    if (DEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
-                }
-
-                currentEnabledStreams |= attribIndexBitPos;
+                // Logger::Error("Shader attribute count higher than model attribute count");
             }
-        };
-        
-        if(cachedEnabledStreams != currentEnabledStreams)
-        {
-            // now we should disable all attribs, that are was enable previously and should not be enabled now
-            int attribIndex = 0;
-            int32 streamsToDisable = (cachedEnabledStreams ^ currentEnabledStreams) & cachedEnabledStreams;
-            while(0 != streamsToDisable)
+            
+            for (int32 k = 0; k < size; ++k)
             {
-                if(streamsToDisable & 0x1)
+                RenderDataStream * stream = currentRenderData->streamArray[k];
+                GLboolean normalized = GL_FALSE;
+                
+                int32 attribIndex = shader->GetAttributeIndex(stream->formatMark);
+                if (attribIndex != -1)
                 {
-                    if(DEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
-                    RENDER_VERIFY(glDisableVertexAttribArray(attribIndex));
+                    int32 attribIndexBitPos = (1 << attribIndex);
+                    
+                    if(TYPE_UNSIGNED_BYTE == stream->type)
+                    {
+                        normalized = GL_TRUE;
+                    }
+                    RENDER_VERIFY(glVertexAttribPointer(attribIndex, stream->size, VERTEX_DATA_TYPE_TO_GL[stream->type], normalized, stream->stride, stream->pointer));
+                    if (DEBUG)Logger::FrameworkDebug("shader glVertexAttribPointer: %d", attribIndex);
+                    
+                    if (!(cachedEnabledStreams & attribIndexBitPos))  // enable only if it was not enabled on previous step
+                    {
+                        RENDER_VERIFY(glEnableVertexAttribArray(attribIndex));
+                        if (DEBUG)Logger::FrameworkDebug("shader glEnableVertexAttribArray: %d", attribIndex);
+                    }
+                    
+                    currentEnabledStreams |= attribIndexBitPos;
                 }
-
-                streamsToDisable = streamsToDisable >> 1;
-                attribIndex++;
             }
-
-            cachedEnabledStreams = currentEnabledStreams;
+            
+            if(cachedEnabledStreams != currentEnabledStreams)
+            {
+                // now we should disable all attribs, that are was enable previously and should not be enabled now
+                int attribIndex = 0;
+                int32 streamsToDisable = (cachedEnabledStreams ^ currentEnabledStreams) & cachedEnabledStreams;
+                while(0 != streamsToDisable)
+                {
+                    if(streamsToDisable & 0x1)
+                    {
+                        if(DEBUG)Logger::FrameworkDebug("shader glDisableVertexAttribArray: %d", attribIndex);
+                        RENDER_VERIFY(glDisableVertexAttribArray(attribIndex));
+                    }
+                    
+                    streamsToDisable = streamsToDisable >> 1;
+                    attribIndex++;
+                }
+                
+                cachedEnabledStreams = currentEnabledStreams;
+            }
         }
         
         cachedAttributeMask = currentAttributeMask;
@@ -928,6 +937,9 @@ void RenderManager::DiscardDepth()
 #if defined(__DAVAENGINE_ANDROID__)
 void RenderManager::Lost()
 {
+    cachedEnabledStreams = 0;
+    cachedAttributeMask = 0;
+    
     bufferBindingId[0] = 0;
     bufferBindingId[1] = 0;
 

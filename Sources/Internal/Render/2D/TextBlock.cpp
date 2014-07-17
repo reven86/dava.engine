@@ -444,10 +444,10 @@ void TextBlock::Prepare()
 							yBigger = true;
 							yMul = drawSize.y / textSize.dy;
 						}
-						else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.dy < drawSize.y * 0.95)
+						else if((isChanged || fittingType & FITTING_ENLARGE) && textSize.dy < drawSize.y * 0.9)
 						{
 							yLower = true;
-							yMul = (drawSize.y * 0.95f) / textSize.dy;
+							yMul = (drawSize.y * 0.9f) / textSize.dy;
 							if(yMul < 1.01f)
 							{
 								yLower = false;

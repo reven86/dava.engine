@@ -99,6 +99,7 @@ UITextField::UITextField(const Rect &rect, bool rectInAbsoluteCoordinates/*= fal
     textFieldImpl = new UITextFieldImpl_iOS(this);
 #elif defined(__DAVAENGINE_ANDROID__)
     textFieldImpl = new UITextFieldImpl_Android(this);
+    textFieldiPhone->SetVisible(false);
 #else
     textFieldImpl = new UITextFieldImpl_Custom(this);
 #endif
@@ -526,6 +527,33 @@ void UITextField::SetVisible(bool isVisible, bool hierarchic)
     else
         textFieldImpl->HideField();
 }
+
+void UITextField::WillBecomeVisible()
+{
+    UIControl::WillBecomeVisible();
+
+#ifdef __DAVAENGINE_IPHONE__
+    textFieldiPhone->SetVisible(visible);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetVisible(visible);
+#else
+    staticText->SetRecursiveVisible(visible);
+#endif
+}
+
+void UITextField::WillBecomeInvisible()
+{
+    UIControl::WillBecomeInvisible();
+
+#ifdef __DAVAENGINE_IPHONE__
+    textFieldiPhone->SetVisible(false);
+#elif defined(__DAVAENGINE_ANDROID__)
+    textFieldAndroid->SetVisible(false);
+#else
+    staticText->SetRecursiveVisible(false);
+#endif
+}
+
 
 void UITextField::Draw( const UIGeometricData &geometricData )
 {

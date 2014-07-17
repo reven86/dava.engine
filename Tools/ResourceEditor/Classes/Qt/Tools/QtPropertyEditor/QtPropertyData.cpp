@@ -466,9 +466,14 @@ QtPropertyData::UserData* QtPropertyData::GetUserData() const
 	return userData;
 }
 
+void QtPropertyData::SetToolTip(const QVariant& toolTip)
+{
+    tooltipValue = toolTip;
+}
+
 QVariant QtPropertyData::GetToolTip() const
 {
-    return QVariant();
+    return tooltipValue;
 }
 
 const DAVA::MetaInfo* QtPropertyData::MetaInfo() const

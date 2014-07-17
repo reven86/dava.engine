@@ -76,11 +76,11 @@ eErrorCode ImageSystem::Load(const FilePath & pathname, Vector<Image *> & imageS
 
 eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseMipmap) const
 {
-    ImageFormatInterface* properWrapper = DetectImageFormatInterfaceByExtension(file->GetFilename());
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(file->GetFilename());
     if (!properWrapper)
     {
         // Retry by content.
-        properWrapper = DetectImageFormatInterfaceByContent(file);
+        properWrapper = GetImageFormatInterface(file);
     }
     
     if (NULL == properWrapper || !properWrapper->IsImage(file))
@@ -93,7 +93,7 @@ eErrorCode ImageSystem::Load(File *file, Vector<Image *> & imageSet, int32 baseM
 
 eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
-    ImageFormatInterface* properWrapper = DetectImageFormatInterfaceByExtension(fileName);
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if(!properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
@@ -104,7 +104,7 @@ eErrorCode ImageSystem::SaveAsCubeMap(const FilePath & fileName, const Vector<Im
     
 eErrorCode ImageSystem::Save(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
-    ImageFormatInterface* properWrapper = DetectImageFormatInterfaceByExtension(fileName);
+    ImageFormatInterface* properWrapper = GetImageFormatInterface(fileName);
     if(!properWrapper)
     {
         return ERROR_FILE_FORMAT_INCORRECT;
@@ -124,7 +124,7 @@ eErrorCode ImageSystem::Save(const FilePath & fileName, Image *image, PixelForma
     return Save(fileName, imageSet, compressionFormat);
 }
     
-ImageFormatInterface* ImageSystem::DetectImageFormatInterfaceByExtension(const FilePath & pathname) const
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(const FilePath & pathname) const
 {
     String extension = pathname.GetExtension();
     for(int32 i = 0; i < FILE_FORMAT_COUNT ; ++i)
@@ -138,7 +138,7 @@ ImageFormatInterface* ImageSystem::DetectImageFormatInterfaceByExtension(const F
     return NULL;
 }
 
-ImageFormatInterface* ImageSystem::DetectImageFormatInterfaceByContent(File *file) const
+ImageFormatInterface* ImageSystem::GetImageFormatInterface(File *file) const
 {
     for(int32 i = 0; i < FILE_FORMAT_COUNT; ++i)
     {

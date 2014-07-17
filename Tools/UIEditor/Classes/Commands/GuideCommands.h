@@ -102,6 +102,22 @@ private:
     List<Vector2> guidesPositions;
 };
 
+// Delete the single guide.
+class DeleteSingleGuideCommand : public BaseGuideCommand
+{
+public:
+    DeleteSingleGuideCommand(const HierarchyTreeScreenNode* screenNode, const GuideData& guideData);
+
+    virtual void Execute();
+    virtual void Rollback();
+
+    virtual bool IsUndoRedoSupported() {return true;};
+
+private:
+    bool isFirstDeletePerformed;
+    GuideData guideDataToDelete;
+};
+
 // Delete the guides.
 class DeleteGuidesCommand : public BaseGuideCommand
 {

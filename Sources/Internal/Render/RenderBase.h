@@ -176,15 +176,16 @@ enum PixelFormat
 // Please update JniDeviceInfo.java if change eGPUFamily enum
 enum eGPUFamily
 {
-    GPU_UNKNOWN = -1,
-    
     GPU_POWERVR_IOS     =   0,
     GPU_POWERVR_ANDROID,
     GPU_TEGRA,
     GPU_MALI,
     GPU_ADRENO,
+    GPU_PNG,
+    GPU_FAMILY_COUNT,
     
-    GPU_FAMILY_COUNT
+    GPU_DEVICE_COUNT = GPU_PNG,
+    GPU_INVALID = 0x07
 };
     
 #if defined(__DAVAENGINE_OPENGL__)
@@ -473,7 +474,6 @@ enum eShaderSemantic
     
     PARAM_COLOR,
     PARAM_GLOBAL_TIME,
-    PARAM_WORLD_VIEW_TRANSLATE, // NEED TO RENAME TO objectPositionInCameraSpace
     PARAM_WORLD_SCALE,          
     
     PARAM_CAMERA_POS,
@@ -484,8 +484,15 @@ enum eShaderSemantic
     PARAM_LIGHT0_COLOR,
     PARAM_LIGHT0_AMBIENT_COLOR,
 
+    PARAM_LOCAL_BOUNDING_BOX,
+    PARAM_WORLD_VIEW_OBJECT_CENTER,
+    PARAM_BOUNDING_BOX_SIZE,
+
     PARAM_SPEED_TREE_TRUNK_OSCILLATION,
     PARAM_SPEED_TREE_LEAFS_OSCILLATION,
+    PARAM_SPEED_TREE_LIGHT_SMOOTHING,
+
+    PARAM_SPHERICAL_HARMONICS,
 
     PARAM_RT_SIZE,
     PARAM_RT_PIXEL_SIZE,
@@ -541,8 +548,5 @@ public:
 #else
 #define RENDER_GUARD
 #endif
-
-
-
 
 #endif // __DAVAENGINE_RENDER_BASE_H__

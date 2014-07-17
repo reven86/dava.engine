@@ -139,6 +139,12 @@
     <Filter Include="Internal\Render\Image">
       <UniqueIdentifier>{914f6632-0ccb-4e03-a362-22418143f0f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Render\Highlevel\Vegetation">
+      <UniqueIdentifier>{e44970a1-4a1f-4e97-aaf5-44659db3a9de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\Thread">
+      <UniqueIdentifier>{e940db21-ebe2-45bb-bc09-5f3e66960d95}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1380,9 +1386,6 @@
     <ClInclude Include="..\..\Sources\Internal\Base\Atomic.h">
       <Filter>Internal\Base\Radix</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\VegetationRenderObject.h">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
@@ -1422,7 +1425,6 @@
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Systems\WaveSystem.h">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Render\LibJpegHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h">
       <Filter>Internal\Render\3D</Filter>
@@ -1453,6 +1455,57 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
       <Filter>Internal\Render\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationSpatialData.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationMaterialTransformer.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationPropertyNames.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.h">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h">
+      <Filter>Internal\Thread</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\UI\UISystemKeyboard.h">
       <Filter>Internal\UI</Filter>
@@ -2557,9 +2610,6 @@
     <ClCompile Include="..\..\Sources\Internal\Base\AtomicWin32.cpp">
       <Filter>Internal\Base\Radix</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\VegetationRenderObject.cpp">
-      <Filter>Internal\Render\Highlevel</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\FoliageSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
@@ -2602,7 +2652,6 @@
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Systems\WaveSystem.cpp">
       <Filter>Internal\Scene3D\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Render\LibJpegHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\PixelFormatDescriptor.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp">
       <Filter>Internal\Render\3D</Filter>
@@ -2623,6 +2672,51 @@
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
+      <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\TextureSheet.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometry.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomGeometrySerializationData.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationCustomSLGeometry.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationFixedGeometry.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationGeometry.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationPropertyNames.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
+      <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\UI\UISystemKeyboard.cpp">

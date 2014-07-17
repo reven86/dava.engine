@@ -96,7 +96,7 @@ void ActionDisableNotPassable::Redo()
 	
 	sceneEditor->landscapeEditorDrawSystem->DisableNotPassableTerrain();
     
-    if(disabled &&
+    if(!disabled &&
        !sceneEditor->heightmapEditorSystem->IsLandscapeEditingEnabled())
     {
         sceneEditor->foliageSystem->SetFoliageVisible(true);

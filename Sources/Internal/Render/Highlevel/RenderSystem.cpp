@@ -258,7 +258,8 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
     {
         RenderBatch * batch = renderObject->GetRenderBatch(k);
         NMaterial * material = batch->GetMaterial();
-        if (material && material->IsDynamicLit())
+        uint8 bindFlags = material->GetDynamicBindFlags();
+        if (material && (bindFlags & NMaterial::DYNAMIC_BIND_LIGHT))
         {
 			needUpdate = true;
 			break;
@@ -387,12 +388,12 @@ void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 		renderHierarchy->DebugDraw(cameraMatrix);
 }
 
-void RenderSystem::Render()
+void RenderSystem::Render(uint32 clearBuffers)
 {
     TIME_PROFILE("RenderSystem::Render");
 
     
-    mainRenderPass->Draw(this);
+    mainRenderPass->Draw(this, clearBuffers);
     
     
     //Logger::FrameworkDebug("OccludedRenderBatchCount: %d", RenderManager::Instance()->GetStats().occludedRenderBatchCount);

@@ -71,6 +71,8 @@ protected:
 	// Override this method to setup the correct state of the control.
 	virtual void UpdateLineEditWidgetWithPropertyValue(QLineEdit* lineEditWidget,
 													   const QMetaProperty& curProperty);
+    
+    bool eventFilter(QObject *object, QEvent *event);
 protected slots:
 	void OnMorphToCustomControlClicked();
 	void OnResetMorphToCustomControlClicked();

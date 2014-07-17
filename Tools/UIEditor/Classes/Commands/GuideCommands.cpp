@@ -257,6 +257,48 @@ void MoveGuideCommand::Rollback()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+DeleteSingleGuideCommand::DeleteSingleGuideCommand(const HierarchyTreeScreenNode* screenNode,
+    const GuideData& guideData) :
+    BaseGuideCommand(screenNode),
+    isFirstDeletePerformed(false),
+    guideDataToDelete(guideData)
+{
+}
+
+void DeleteSingleGuideCommand::Execute()
+{
+    HierarchyTreeScreenNode* screen = dynamic_cast<HierarchyTreeScreenNode*>(HierarchyTreeController::Instance()->GetTree().GetNode(activeScreen));
+    if (!screen)
+    {
+        return;
+    }
+
+    if (!isFirstDeletePerformed)
+    {
+        screen->RemoveGuide(guideDataToDelete);
+        isFirstDeletePerformed = true;
+    }
+    else
+    {
+        RemoveRememberedGuide(guideDataToDelete);
+    }
+    
+    IncrementUnsavedChanges();
+    HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
+}
+
+void DeleteSingleGuideCommand::Rollback()
+{
+    if (isFirstDeletePerformed)
+    {
+        AddRememberedGuide(guideDataToDelete);
+        DecrementUnsavedChanges();
+        HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
 DeleteGuidesCommand::DeleteGuidesCommand(const HierarchyTreeScreenNode* screenNode) :
     BaseGuideCommand(screenNode),
     isFirstDeletePerformed(false)
@@ -307,6 +349,7 @@ void DeleteGuidesCommand::RemoveRememberedGuides()
 {
     for (List<GuideData>::iterator iter = deletedGuidesData.begin(); iter != deletedGuidesData.end(); iter ++)
     {
+        (*iter).SetSelected(false);
         RemoveRememberedGuide(*iter);
     }
 }

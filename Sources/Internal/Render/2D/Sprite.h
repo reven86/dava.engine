@@ -99,20 +99,13 @@ public:
 		void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
         
         //NOTE: be careful: this method doesn't retain shader.
-        void SetShader(Shader* _shader);
-        
-        inline Shader* GetShader() const
-        {
-            return shader;
-        }
-        
+        inline void SetShader(Shader* _shader);
         //NOTE: be careful: this method doesn't retain render state.
-        void SetRenderState(UniqueHandle _renderState);
+        inline void SetRenderState(UniqueHandle _renderState);
         
-        inline UniqueHandle GetRenderState()
-        {
-            return renderState;
-        }
+        inline Shader* GetShader() const;
+        inline UniqueHandle GetRenderState() const;
+
         
     private:
     
@@ -170,7 +163,7 @@ public:
 		\return 0 if sprite is unavailable and ptr to sprite if sprite is available
 	 */
 	static Sprite* PureCreate(const FilePath & spriteName, Sprite* forPointer = NULL);
-	void InitFromFile(File *file, const FilePath &pathName);
+	void InitFromFile(File *file);
 
 	/**
 	 \brief Function to create sprite from the already created texture.
@@ -317,17 +310,25 @@ public:
 	inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
 	RenderDataObject * spriteRenderObject;
 
+    /**
+	 \brief Removes all sprite data.
+	 */
+	void Clear();
+
+    /**
+	 \brief Reloads the sprite.
+	 */
 	void Reload();
+
+    /**
+	 \brief Reloads all sprites.
+	 */
+	static void ReloadSprites();
 
 protected:
 	Sprite();
 	Sprite(int32 sprWidth, int32 sprHeight, PixelFormat format);
 	virtual ~Sprite();
-
-	/**
-	 \brief Removes all sprite data.
-	 */
-	void Clear();
 	
     static Sprite* GetSpriteFromMap(const FilePath & pathname);
     static FilePath GetScaledName(const FilePath & spriteName);
@@ -336,6 +337,9 @@ protected:
 	void RegisterTextureStates();
 	void UnregisterTextureStates();
 
+    static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
+
+    void ReloadExistingTextures();
 //private:
 
     static Mutex spriteMapMutex;
@@ -498,6 +502,27 @@ inline float32 Sprite::GetResourceToVirtualFactor() const
 {
     return resourceToVirtualFactor;
 }
+
+inline Shader* Sprite::DrawState::GetShader() const
+{
+    return shader;
+}
+
+inline UniqueHandle Sprite::DrawState::GetRenderState() const
+{
+    return renderState;
+}
+
+void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
+{
+    renderState = _renderState;
+}
+
+void Sprite::DrawState::SetShader(Shader* _shader)
+{
+    shader = _shader;
+}
+
 
 };//end of namespace
 

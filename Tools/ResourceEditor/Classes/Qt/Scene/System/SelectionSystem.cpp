@@ -57,9 +57,8 @@ SceneSelectionSystem::SceneSelectionSystem(DAVA::Scene * scene, SceneCollisionSy
 	, selectionHasChanges(false)
     , invalidSelectionBoxes(false)
 {
-	const DAVA::RenderStateData& default3dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND);
-	DAVA::RenderStateData selectionStateData;
-	memcpy(&selectionStateData, &default3dState, sizeof(selectionStateData));
+    DAVA::RenderStateData selectionStateData;
+    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, selectionStateData);
 	
 	selectionStateData.state =	DAVA::RenderStateData::STATE_BLEND |
 								DAVA::RenderStateData::STATE_COLORMASK_ALL;

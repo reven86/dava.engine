@@ -20,7 +20,7 @@
    <item>
     <widget class="QTableWidget" name="tableActions">
      <property name="editTriggers">
-      <set>QAbstractItemView::AllEditTriggers</set>
+      <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
      </property>
      <property name="showDropIndicator" stdset="0">
       <bool>false</bool>
@@ -103,28 +103,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,1,0,0">
-     <item>
-      <widget class="QLineEdit" name="eventName">
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>0</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="invokeEvent">
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="QtIcons.qrc">
-         <normaloff>:/QtIcons/play.png</normaloff>:/QtIcons/play.png</iconset>
-       </property>
-      </widget>
-     </item>
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
@@ -182,8 +161,6 @@
  </widget>
  <tabstops>
   <tabstop>tableActions</tabstop>
-  <tabstop>eventName</tabstop>
-  <tabstop>invokeEvent</tabstop>
   <tabstop>buttonAddItem</tabstop>
   <tabstop>buttonRemoveItem</tabstop>
  </tabstops>

@@ -307,7 +307,12 @@ void HierarchyTreeControl::dragEnterEvent(QDragEnterEvent *event)
 
 void HierarchyTreeControl::HandleDragEnterControlMimeData(QDragEnterEvent *event, const ControlMimeData* /*mimeData*/)
 {
-	event->accept();
+    if (currentItem())
+    {
+        setCurrentItem(NULL);
+    }
+
+    event->accept();
 }
 
 void HierarchyTreeControl::HandleDragEnterHierarchyMimeData(QDragEnterEvent *event, const HierarchyTreeControlMimeData* mimeData)

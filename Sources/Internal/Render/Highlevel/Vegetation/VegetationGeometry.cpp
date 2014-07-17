@@ -26,31 +26,50 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  =====================================================================================*/
 
-#ifndef __RELOADSPRITESCOMMAND__H__
-#define __RELOADSPRITESCOMMAND__H__
+#include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 
-#include "BaseCommand.h"
-
-using namespace DAVA;
-
-class ReloadSpritesCommand: public BaseCommand
+namespace DAVA
 {
-public:
-public:
-	ReloadSpritesCommand(const HierarchyTreeNode* node);
 
-	virtual void Execute();
-	virtual bool IsUndoRedoSupported() {return false;};
+VegetationGeometry::VegetationGeometry() : materialTransform(NULL)
+{
+}
+
+VegetationGeometry::~VegetationGeometry()
+{
+    SafeDelete(materialTransform);
+}
+
+
+void VegetationGeometry::SetupCameraPositions(const AABBox3& bbox, Vector<Vector3>& positions)
+{
+    float32 z = bbox.min.z + (bbox.max.z - bbox.min.z) * 0.5f;
     
-protected:
-    // Repack/reload sprites.
-    void RepackSprites();
-    void ReloadSprites();
+    positions.push_back(Vector3(bbox.min.x, bbox.min.y, z));
+    positions.push_back(Vector3(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5f, bbox.min.y, z));
+    positions.push_back(Vector3(bbox.max.x, bbox.min.y, z));
+    positions.push_back(Vector3(bbox.max.x, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5f, z));
+    positions.push_back(Vector3(bbox.max.x, bbox.max.y, z));
+    positions.push_back(Vector3(bbox.min.x + (bbox.max.x - bbox.min.x) * 0.5f, bbox.max.y, z));
+    positions.push_back(Vector3(bbox.min.x, bbox.max.y, z));
+    positions.push_back(Vector3(bbox.min.x, bbox.min.y + (bbox.max.y - bbox.min.y) * 0.5f, z));
+}
 
-private:
-    const HierarchyTreeNode* rootNode;
-	
-	void ShowErrorMessage(const Set<String>& errorsSet);
-};
+uint32 VegetationGeometry::GetSortDirectionCount()
+{
+    return 8;
+}
 
-#endif /* defined(__RELOADSPRITESCOMMAND__H__) */
+void VegetationGeometry::ReleaseRenderData(Vector<VegetationRenderData*>& renderDataArray)
+{
+    size_t renderDataCount = renderDataArray.size();
+    for(size_t i = 0; i < renderDataCount; ++i)
+    {
+        renderDataArray[i]->ReleaseRenderData();
+        SafeDelete(renderDataArray[i]);
+    }
+    
+    renderDataArray.clear();
+}
+
+}

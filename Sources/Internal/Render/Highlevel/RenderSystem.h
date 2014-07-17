@@ -115,7 +115,7 @@ public:
     NMaterial *GetGlobalMaterial() const;
     
     void Update(float32 timeElapsed);
-    void Render();
+    void Render(uint32 clearBuffers);
     
     void MarkForUpdate(RenderObject * renderObject);
     void MarkForUpdate(Light * lightNode);
@@ -147,6 +147,8 @@ public:
     RenderHierarchy * GetRenderHierarchy(){return renderHierarchy;}
 
     inline bool IsRenderHierarchyInitialized() const {return hierarchyInitialized;}
+    
+    inline RenderPass* GetMainRenderPass() const;
     
 private:
 	void CreateSpatialTree();
@@ -212,6 +214,11 @@ inline Camera * RenderSystem::GetMainCamera() const
 inline Camera * RenderSystem::GetDrawCamera() const
 {
     return drawCamera;
+}
+
+inline RenderPass* RenderSystem::GetMainRenderPass() const
+{
+    return mainRenderPass;
 }
     
 } // ns

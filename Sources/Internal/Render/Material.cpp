@@ -1204,11 +1204,11 @@ void Material::Draw(PolygonGroup * group, InstanceMaterialState * instanceMateri
     // TODO: rethink this code
     if (group->renderDataObject->GetIndexBufferID() != 0)
     {
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, EIF_16, 0);
+        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, group->renderDataObject->GetIndexFormat(), 0);
     }
     else
     {
-        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, EIF_16, group->indexArray);
+        RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, group->indexCount, group->renderDataObject->GetIndexFormat(), group->indexArray);
     }
 
     

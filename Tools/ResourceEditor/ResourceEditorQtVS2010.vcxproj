@@ -183,6 +183,7 @@
     <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastMesh.cpp" />
     <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastMeshInstance.cpp" />
     <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastNameGenerator.cpp" />
+    <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastPointCloud.cpp" />
     <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastProxyImpl.cpp" />
     <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastResource.cpp" />
     <ClCompile Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastTexture.cpp" />
@@ -466,6 +467,7 @@
     <ClCompile Include="Classes\Qt\PlaneLODDialog\PlaneLODDialog.cpp" />
     <ClCompile Include="Classes\Qt\Project\ProjectManager.cpp" />
     <ClCompile Include="Classes\Qt\QualitySwitcher\QualitySwitcher.cpp" />
+    <ClCompile Include="Classes\Qt\RunActionEventWidget\RunActionEventWidget.cpp" />
     <ClCompile Include="Classes\Qt\Scene\EntityGroup.cpp" />
     <ClCompile Include="Classes\Qt\Scene\SceneEditor2.cpp" />
     <ClCompile Include="Classes\Qt\Scene\SceneHelper.cpp" />
@@ -644,6 +646,7 @@
     <ClCompile Include="_GeneratedQt\Project\ProjectManager_moc.cpp" />
     <ClCompile Include="_GeneratedQt\QtIcons_qrc.cpp" />
     <ClCompile Include="_GeneratedQt\QualitySwitcher\QualitySwitcher_moc.cpp" />
+    <ClCompile Include="_GeneratedQt\RunActionEventWidget\RunActionEventWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\EntityGroup_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\SceneEditor2_moc.cpp" />
     <ClCompile Include="_GeneratedQt\Scene\SceneHelper_moc.cpp" />
@@ -748,6 +751,7 @@
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastMesh.h" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastMeshInstance.h" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastNameGenerator.h" />
+    <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastPointCloud.h" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastProxyImpl.h" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastResource.h" />
     <ClInclude Include="..\..\..\dava.resourceeditor.beast\wrapper\BeastTexture.h" />
@@ -1110,6 +1114,7 @@
     <ClInclude Include="Classes\Qt\PlaneLODDialog\PlaneLODDialog.h" />
     <ClInclude Include="Classes\Qt\Project\ProjectManager.h" />
     <ClInclude Include="Classes\Qt\QualitySwitcher\QualitySwitcher.h" />
+    <ClInclude Include="Classes\Qt\RunActionEventWidget\RunActionEventWidget.h" />
     <ClInclude Include="Classes\Qt\Scene\EntityGroup.h" />
     <ClInclude Include="Classes\Qt\Scene\SceneEditor2.h" />
     <ClInclude Include="Classes\Qt\Scene\SceneHelper.h" />
@@ -1234,6 +1239,7 @@
     <ClInclude Include="_GeneratedQt\ui_mainwindow.h" />
     <ClInclude Include="_GeneratedQt\ui_materialeditor.h" />
     <ClInclude Include="_GeneratedQt\ui_ParticleProperty.h" />
+    <ClInclude Include="_GeneratedQt\ui_RunActionEventWidget.h" />
     <ClInclude Include="_GeneratedQt\ui_texturebrowser.h" />
     <ClInclude Include="_GeneratedQt\ui_treeimportdialog.h" />
     <ClInclude Include="_GeneratedQt\ui_waitdialog.h" />
@@ -1261,6 +1267,7 @@
     </None>
     <None Include="DataQt\ModificationWidget.ui" />
     <None Include="DataQt\ParticleProperty.ui" />
+    <None Include="DataQt\RunActionEventWidget.ui" />
     <None Include="DataQt\soundbrowser.ui" />
     <None Include="DataQt\soundcomponenteditor.ui" />
     <None Include="DataQt\texturebrowser.ui" />

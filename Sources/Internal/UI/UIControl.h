@@ -202,6 +202,7 @@ public:
 class UIControl : public AnimatedObject
 {
     friend class UIControlSystem;
+    friend class UIScreenTransition;
 public:
     /**
      \enum Control state bits.
@@ -505,6 +506,13 @@ public:
      \returns control angle in radians.
      */
     virtual float32 GetAngle() const;
+    
+    /**
+     \brief Returns control's parents total rotation angle in radians.
+     \returns control's parents total angle in radians.
+     */
+    virtual float32 GetParentsTotalAngle(bool includeOwn);
+
     /**
      \brief Sets contol rotation angle in radians.
         Control rotates around the pivot point.
@@ -1165,6 +1173,15 @@ public:
      */
     virtual void DrawAfterChilds(const UIGeometricData &geometricData);
 
+protected:
+    virtual void SystemWillBecomeVisible();
+    virtual void SystemWillBecomeInvisible();
+
+    virtual void WillBecomeVisible();
+    virtual void WillBecomeInvisible();
+
+public:
+
         //TODO: Борода напиши дескрипшн.
     virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
     /**
@@ -1179,8 +1196,14 @@ public:
 
 
     /**
-     \brief Returns control on screen status.
+     \brief Returns control in hierarchy status.
      \returns True if control in view hierarchy for now.
+     */
+    bool InViewHierarchy() const;
+
+    /**
+     \brief Returns control on screen status.
+     \returns True if control visible now.
      */
     bool IsOnScreen() const;
     /**

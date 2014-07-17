@@ -74,9 +74,7 @@ protected:
 	virtual void keyPressEvent(QKeyEvent *);
 	virtual void keyReleaseEvent(QKeyEvent *);
 
-#if defined (Q_WS_MAC)
 	virtual void mouseMoveEvent(QMouseEvent *);
-#endif //#if defined (Q_WS_MAC)
 
 #if defined(Q_WS_WIN)
 	virtual bool winEvent(MSG *message, long *result);

@@ -64,7 +64,7 @@ void GuidesManager::Cleanup()
     activeGuides.clear();
 }
     
-void GuidesManager::StartNewGuide(GuideData::eGuideType guideType, const List<Rect>& rectsList)
+void GuidesManager::StartNewGuide(GuideData::eGuideType guideType, const List<GuidesManager::StickedRect>& rectsList)
 {
     if (newGuide)
     {
@@ -231,7 +231,7 @@ bool GuidesManager::IsGuideExist(GuideData* guideData) const
     return false;
 }
 
-bool GuidesManager::StartMoveGuide(const Vector2& pos, const List<Rect>& rectsList)
+bool GuidesManager::StartMoveGuide(const Vector2& pos, const List<GuidesManager::StickedRect>& rectsList)
 {
     GuideData* selectedGuideData = NULL;
     if (AreGuidesLocked())
@@ -304,6 +304,21 @@ const GuideData* GuidesManager::GetMoveGuide() const
 
 const GuideData* GuidesManager::AcceptMoveGuide()
 {
+    GuideData* resultData = moveGuide;
+    moveGuide = NULL;
+    stickRects.clear();
+
+    return resultData;
+}
+
+const GuideData* GuidesManager::CancelMoveGuide()
+{
+    if (moveGuide)
+    {
+        moveGuide->SetPosition(GetMoveGuideStartPos());
+        moveGuide->SetSelected(false);
+    }
+
     GuideData* resultData = moveGuide;
     moveGuide = NULL;
     stickRects.clear();
@@ -589,7 +604,11 @@ Vector2 GuidesManager::CalculateDistanceToGuide(GuideData::eGuideType guideType,
 
     if (stickMode & StickToCenters)
     {
-        Vector2 distanceToCenter = rect.GetCenter() - guidePos;
+        Vector2 rectCenter = rect.GetCenter();
+        rectCenter.x = Round(rectCenter.x);
+        rectCenter.y = Round(rectCenter.y);
+        Vector2 distanceToCenter = rectCenter - guidePos;
+
         switch (guideType)
         {
             case GuideData::Horizontal:
@@ -653,16 +672,19 @@ void GuidesManager::MoveGuideSticked(GuideData* guideData, const Vector2& pos)
 {
     Vector2 minDistance(FLT_MAX, FLT_MAX);
     Rect closestRect;
-    for (List<Rect>::const_iterator iter = stickRects.begin(); iter != stickRects.end(); iter ++)
+    for (List<StickedRect>::const_iterator iter = stickRects.begin(); iter != stickRects.end(); iter ++)
     {
-        const Rect& rect = *iter;
+        const StickedRect& rect = *iter;
 
-        // Select only the rects which near the cursor pos.
-        Rect inflatedRect = Rect(rect.x - GUIDE_STICK_TRESHOLD_HALF, rect.y - GUIDE_STICK_TRESHOLD_HALF,
-                                 rect.dx + GUIDE_STICK_TRESHOLD, rect.dy + GUIDE_STICK_TRESHOLD);
-        if (inflatedRect.PointInside(pos) == false)
+        // Select both the rects which near the cursor pos and forced rects.
+        if (rect.GetForceStick() == false)
         {
-            continue;
+            Rect inflatedRect = Rect(rect.x - GUIDE_STICK_TRESHOLD_HALF, rect.y - GUIDE_STICK_TRESHOLD_HALF,
+                                     rect.dx + GUIDE_STICK_TRESHOLD, rect.dy + GUIDE_STICK_TRESHOLD);
+            if (inflatedRect.PointInside(pos) == false )
+            {
+                continue;
+            }
         }
 
         Vector2 distance = CalculateDistanceToGuide(guideData->GetType(), pos, rect);

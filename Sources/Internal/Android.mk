@@ -64,6 +64,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Effects/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Highlevel/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/Highlevel/Vegetation/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/Material/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
@@ -72,6 +73,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/SceneFile/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Thread/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \
@@ -114,21 +116,6 @@ LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcurl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libssl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libxml_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libpng_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libfreetype_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libyaml_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libmongodb_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/liblua_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libdxt_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libjpeg_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libcurl_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libTextureConverter_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libssl_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libcrypto_android.a
-#LOCAL_LDLIBS += $(LIBS_PATH)/libiconv_android.so
-#LOCAL_LDLIBS += $(LOCAL_PATH)/../../Libs/fmod/lib/libfmodex.so
-#LOCAL_LDLIBS += $(LOCAL_PATH)/../../Libs/fmod/lib/libfmodevent.so
 
 APP_PLATFORM_LEVEL := $(strip $(subst android-,,$(APP_PLATFORM)))
 IS_GL2_PLATFORM := $(shell (if [ $(APP_PLATFORM_LEVEL) -lt 18 ]; then echo "GLES2"; else echo "GLES3"; fi))

@@ -30,6 +30,15 @@
 
 #include "DAVAEngine.h"
 
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QDesktopServices>
+#include <QColorDialog>
+#include <QShortcut>
+#include <QKeySequence>
+#include <QMetaObject>
+#include <QMetaType>
+
 #include "mainwindow.h"
 #include "QtUtils.h"
 #include "Project/ProjectManager.h"
@@ -92,13 +101,6 @@
 #include "Tools/HangingObjectsHeight/HangingObjectsHeight.h"
 #include "Tools/ToolButtonWithWidget/ToolButtonWithWidget.h"
 
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QColorDialog>
-#include <QShortcut>
-#include <QKeySequence>
-
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Systems/SkyboxSystem.h"
 #include "Scene3D/Systems/MaterialSystem.h"
@@ -110,9 +112,10 @@
 #include "Deprecated/SceneValidator.h"
 
 #include "Tools/DeveloperTools/DeveloperTools.h"
-#include "Render/Highlevel/VegetationRenderObject.h"
+#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
+#include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 
 
 QtMainWindow::QtMainWindow(QWidget *parent)
@@ -136,10 +139,10 @@ QtMainWindow::QtMainWindow(QWidget *parent)
 
 	qApp->installEventFilter(this);
 
+	SetupDocks();
 	SetupMainMenu();
 	SetupToolBars();
 	SetupStatusBar();
-	SetupDocks();
 	SetupActions();
 	SetupShortCuts();
 
@@ -284,7 +287,7 @@ bool QtMainWindow::SaveSceneAs(SceneEditor2 *scene)
 
 DAVA::eGPUFamily QtMainWindow::GetGPUFormat()
 {
-	return (eGPUFamily) SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32();
+    return GPUFamilyDescriptor::ConvertValueToGPU(SettingsManager::GetValue(Settings::Internal_TextureViewGPU).AsInt32());
 }
 
 void QtMainWindow::SetGPUFormat(DAVA::eGPUFamily gpu)
@@ -421,15 +424,17 @@ void QtMainWindow::SetupTitle()
 
 void QtMainWindow::SetupMainMenu()
 {
-	ui->menuView->addAction(ui->dockSceneInfo->toggleViewAction());
-	ui->menuView->addAction(ui->dockLibrary->toggleViewAction());
-	ui->menuView->addAction(ui->dockProperties->toggleViewAction());
-	ui->menuView->addAction(ui->dockParticleEditor->toggleViewAction());
-	ui->menuView->addAction(ui->dockParticleEditorTimeLine->toggleViewAction());
-	ui->menuView->addAction(ui->dockSceneTree->toggleViewAction());
-	ui->menuView->addAction(ui->dockConsole->toggleViewAction());
-	ui->menuView->addAction(ui->dockLODEditor->toggleViewAction());
-	ui->menuView->addAction(ui->dockLandscapeEditorControls->toggleViewAction());
+ 	ui->menuDockWindows->addAction(ui->dockSceneInfo->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockLibrary->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockProperties->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockParticleEditor->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockParticleEditorTimeLine->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockSceneTree->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockConsole->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockLODEditor->toggleViewAction());
+	ui->menuDockWindows->addAction(ui->dockLandscapeEditorControls->toggleViewAction());
+
+    ui->menuDockWindows->addAction(dockActionEvent->toggleViewAction());
 
 	InitRecent();
 }
@@ -566,8 +571,15 @@ void QtMainWindow::SetupDocks()
 	QObject::connect(this, SIGNAL(TexturesReloaded()), ui->sceneInfo , SLOT(TexturesReloaded()));
 	QObject::connect(this, SIGNAL(SpritesReloaded()), ui->sceneInfo , SLOT(SpritesReloaded()));
     
-
     ui->libraryWidget->SetupSignals();
+
+    // Run Action Event dock
+    {
+        dockActionEvent = new QDockWidget("Run Action Event", this);
+        dockActionEvent->setWidget(new RunActionEventWidget());
+        dockActionEvent->setObjectName(QString( "dock_%1" ).arg(dockActionEvent->widget()->objectName()));
+        addDockWidget(Qt::RightDockWidgetArea, dockActionEvent);
+    }
     
 	ui->dockProperties->Init();
 }
@@ -592,7 +604,7 @@ void QtMainWindow::SetupActions()
 	ui->actionExportTegra->setData(GPU_TEGRA);
 	ui->actionExportMali->setData(GPU_MALI);
 	ui->actionExportAdreno->setData(GPU_ADRENO);
-	ui->actionExportPNG->setData(GPU_UNKNOWN);
+	ui->actionExportPNG->setData(GPU_PNG);
 	
 	// import
 #ifdef __DAVAENGINE_SPEEDTREE__
@@ -605,7 +617,7 @@ void QtMainWindow::SetupActions()
 	ui->actionReloadTegra->setData(GPU_TEGRA);
 	ui->actionReloadMali->setData(GPU_MALI);
 	ui->actionReloadAdreno->setData(GPU_ADRENO);
-	ui->actionReloadPNG->setData(GPU_UNKNOWN);
+	ui->actionReloadPNG->setData(GPU_PNG);
 	QObject::connect(ui->menuTexturesForGPU, SIGNAL(triggered(QAction *)), this, SLOT(OnReloadTexturesTriggered(QAction *)));
 	QObject::connect(ui->actionReloadTextures, SIGNAL(triggered()), this, SLOT(OnReloadTextures()));
 	QObject::connect(ui->actionReloadSprites, SIGNAL(triggered()), this, SLOT(OnReloadSprites()));
@@ -1240,7 +1252,7 @@ void QtMainWindow::OnReloadTextures()
 void QtMainWindow::OnReloadTexturesTriggered(QAction *reloadAction)
 {
 	DAVA::eGPUFamily gpu = (DAVA::eGPUFamily) reloadAction->data().toInt();
-	if(gpu >= DAVA::GPU_UNKNOWN && gpu < DAVA::GPU_FAMILY_COUNT)
+	if(gpu >= 0 && gpu < DAVA::GPU_FAMILY_COUNT)
 	{
 		SetGPUFormat(gpu);
 	}
@@ -1542,7 +1554,8 @@ void QtMainWindow::OnAddVegetation()
 
         Entity* vegetationNode = new Entity();
         vegetationNode->AddComponent(rc);
-        vegetationNode->SetName(FastName("Vegetation"));
+        vegetationNode->SetName(ResourceEditor::VEGETATION_NODE_NAME);
+        vegetationNode->SetLocked(true);
 
         sceneEditor->Exec(new EntityAddCommand(vegetationNode, sceneEditor));
         sceneEditor->selectionSystem->SetSelection(vegetationNode);
@@ -2062,7 +2075,7 @@ void QtMainWindow::OnBeastAndSave()
 		return;
 	}
 
-    RunBeast(dlg.GetPath());
+    RunBeast(dlg.GetPath(), dlg.GetMode());
 	SaveScene(scene);
 
     scene->ClearAllCommands();
@@ -2114,7 +2127,7 @@ void QtMainWindow::OnCameraLookFromTop()
 	}
 }
 
-void QtMainWindow::RunBeast(const QString& outputPath)
+void QtMainWindow::RunBeast(const QString& outputPath, BeastProxy::eBeastMode mode)
 {
 #if defined (__DAVAENGINE_BEAST__)
 
@@ -2122,9 +2135,12 @@ void QtMainWindow::RunBeast(const QString& outputPath)
 	if(!scene) return;
 
     const DAVA::FilePath path = outputPath.toStdString();
-    scene->Exec(new BeastAction(scene, path, beastWaitDialog));
+    scene->Exec(new BeastAction(scene, path, mode, beastWaitDialog));
 
-	OnReloadTextures();
+    if(mode == BeastProxy::MODE_LIGHTMAPS)
+    {
+	    OnReloadTextures();
+    }
 
 #endif //#if defined (__DAVAENGINE_BEAST__)
 }
@@ -2385,7 +2401,7 @@ void QtMainWindow::OnNotPassableTerrain()
 
 void QtMainWindow::OnGrasEditor()
 {
-    SceneEditor2* sceneEditor = GetCurrentScene();
+    /*SceneEditor2* sceneEditor = GetCurrentScene();
     if(!sceneEditor)
     {
         return;
@@ -2406,7 +2422,7 @@ void QtMainWindow::OnGrasEditor()
     {
         SceneSignals::Instance()->EmitGrassEditorToggled(sceneEditor);
         OnLandscapeEditorToggled(sceneEditor);
-    }
+    }*/
 }
 
 void QtMainWindow::OnBuildStaticOcclusion()
@@ -2706,7 +2722,7 @@ void QtMainWindow::OnAddWindEntity()
 
 bool QtMainWindow::LoadAppropriateTextureFormat()
 {
-	if (GetGPUFormat() != GPU_UNKNOWN)
+	if (GetGPUFormat() != GPU_PNG)
 	{
 		int answer = ShowQuestion("Inappropriate texture format",
 								  "Landscape editing is only allowed in PNG texture format.\nDo you want to reload textures in PNG format?",
@@ -2719,7 +2735,7 @@ bool QtMainWindow::LoadAppropriateTextureFormat()
 		OnReloadTexturesTriggered(ui->actionReloadPNG);
 	}
 
-	return (GetGPUFormat() == GPU_UNKNOWN);
+	return (GetGPUFormat() == GPU_PNG);
 }
 
 bool QtMainWindow::IsTilemaskModificationCommand(const Command2* cmd)
@@ -2901,4 +2917,3 @@ void QtMainWindow::OnSwitchWithDifferentLODs(bool checked)
         }
     }
 }
-

@@ -134,6 +134,8 @@ public:
     static const QRegExp& GetNameRegExp();
 
 protected:
+    virtual Rect GetOwnRect() const { return Rect(); };
+
 	HIERARCHYTREENODEID id;
 	
 	QString name;

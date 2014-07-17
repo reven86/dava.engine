@@ -713,12 +713,23 @@ public:
 	void SetHWRenderTargetSprite(Sprite *renderTarget);
 	void SetHWRenderTargetTexture(Texture * renderTarget);
     
+    enum eClearBuffers
+    {
+        COLOR_BUFFER = 1,
+        DEPTH_BUFFER = 2,
+        STENCIL_BUFFER = 4,
+        
+        ALL_BUFFERS = COLOR_BUFFER | DEPTH_BUFFER | STENCIL_BUFFER
+    };
+    
     enum eDiscardAttachments
     {
         COLOR_ATTACHMENT = 1,
         DEPTH_ATTACHMENT = 2,
         STENCIL_ATTACHMENT = 4
-    };
+    };    
+
+
     /**
      \Hints renderer that attachment is not needed anymore 
      \param[in] attachments - bitmask of eDiscardAttachments
@@ -808,7 +819,7 @@ inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const
         switch(shaderSemantic)
         {
             case PARAM_WORLD:
-                dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | ( 1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW)
+                dynamicParamersRequireUpdate |= ((1 << PARAM_INV_WORLD) | ( 1 << PARAM_WORLD_VIEW) | (1 << PARAM_INV_WORLD_VIEW) |  (1 << PARAM_WORLD_VIEW_OBJECT_CENTER)
                                                  | ( 1 << PARAM_WORLD_VIEW_PROJ) | (1 << PARAM_INV_WORLD_VIEW_PROJ) | (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) | (1 << PARAM_WORLD_INV_TRANSPOSE));
             break;
             case PARAM_VIEW:
@@ -819,7 +830,8 @@ inline void RenderManager::SetDynamicParam(eShaderSemantic shaderSemantic, const
                                                  |  (1 << PARAM_INV_WORLD_VIEW_PROJ)
                                                  |  (1 << PARAM_VIEW_PROJ)
                                                  |  (1 << PARAM_INV_VIEW_PROJ)
-                                                 |  (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) );
+                                                 |  (1 << PARAM_WORLD_VIEW_INV_TRANSPOSE) 
+                                                 |  (1 << PARAM_WORLD_VIEW_OBJECT_CENTER));
             break;
             case PARAM_PROJ:
                 dynamicParamersRequireUpdate |= ((1 << PARAM_INV_PROJ) | (1 << PARAM_VIEW_PROJ) | (1 << PARAM_INV_VIEW_PROJ) |
@@ -956,7 +968,7 @@ inline const void RenderManager::GetRenderStateData(UniqueHandle handle, RenderS
 {
     LockRenderState();
     const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(handle);
-    memcpy(&target, &parentState, sizeof(target));
+    target = parentState;
     UnlockRenderState();
 }
 
@@ -971,8 +983,7 @@ inline UniqueHandle RenderManager::SubclassRenderState(UniqueHandle parentStateH
 {
     LockRenderState();
     const RenderStateData& parentState = RenderManager::Instance()->GetRenderStateData(parentStateHandle);
-    RenderStateData derivedState;
-    memcpy(&derivedState, &parentState, sizeof(derivedState));
+    RenderStateData derivedState(parentState);
     UnlockRenderState();
     
     derivedState.state = renderStateFlags;

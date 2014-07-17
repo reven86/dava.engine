@@ -87,7 +87,7 @@ int32 SceneHelper::EnumerateModifiedTextures(DAVA::Scene *forScene, DAVA::Map<DA
 		DVASSERT(descriptor->compression);
 
 		DAVA::Vector< DAVA::eGPUFamily> markedGPUs;
-		for(int i = DAVA::GPU_UNKNOWN + 1; i < DAVA::GPU_FAMILY_COUNT; ++i)
+		for(int i = 0; i < DAVA::GPU_DEVICE_COUNT; ++i)
 		{
 			eGPUFamily gpu = (eGPUFamily)i;
 			if(GPUFamilyDescriptor::IsFormatSupported(gpu, (PixelFormat)descriptor->compression[gpu].format))

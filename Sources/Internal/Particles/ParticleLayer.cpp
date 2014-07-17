@@ -712,10 +712,12 @@ void ParticleLayer::SaveToYamlNode(const FilePath & configPath, YamlNode* parent
 
     // Truncate an extension of the sprite file.
     FilePath savePath = spritePath;
-    savePath.TruncateExtension();
-	String relativePath = savePath.GetRelativePathname(configPath.GetDirectory());
-	PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
-
+    if (!savePath.IsEmpty())
+    {        
+        savePath.TruncateExtension();
+	    String relativePath = savePath.GetRelativePathname(configPath.GetDirectory());
+	    PropertyLineYamlWriter::WritePropertyValueToYamlNode<String>(layerNode, "sprite", relativePath);
+    }
 
 	layerNode->Add("srcBlendFactor", BLEND_MODE_NAMES[(int32)srcBlendFactor]);
 	layerNode->Add("dstBlendFactor", BLEND_MODE_NAMES[(int32)dstBlendFactor]);

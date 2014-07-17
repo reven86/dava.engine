@@ -38,6 +38,15 @@
  name: "SpeedTreeLeaf"
  path: SpeedTreeLeaf.material
 -
+ name: "SphericalLit AllQualities SpeedTreeLeaf"
+ path: SphericalLitAllQualities.SpeedTreeLeaf.material
+-
+ name: "SphericalLit AllQualities Textured Alphatest"
+ path: SphericalLitAllQualities.Textured.Alphatest.material
+-
+ name: "SphericalLit AllQualities Textured Opaque"
+ path: SphericalLitAllQualities.Textured.Opaque.material
+-
  name: "Textured Alphablend"
  path: Textured.Alphablend.material
 -
@@ -112,6 +121,9 @@
 -
  name: "Grass"
  path: Grass.material
+-
+ name: "Textured Opaque.NoCull"
+ path: Textured.Opaque.NoCull.material
 -
  name: "Normalized BlinnPhong Per Vertex Opaque"
  path: NormalizedBlinnPhongPerVertex.Opaque.material

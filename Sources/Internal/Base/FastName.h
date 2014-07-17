@@ -34,9 +34,11 @@
 #include "Base/HashMap.h"
 #include "Base/StaticSingleton.h"
 
+#include "Platform/Mutex.h"
+
 namespace DAVA
 {
-
+class Mutex;
 struct FastNameDB : public StaticSingleton<FastNameDB>
 {
 	FastNameDB()
@@ -45,7 +47,8 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
 
 	~FastNameDB()
 	{
-		for(size_t i = 0; i < namesTable.size(); ++i)
+		const size_t count = namesTable.size();
+		for(size_t i = 0; i < count; ++i)
 		{
 			if(NULL != namesTable[i])
 			{
@@ -59,6 +62,8 @@ struct FastNameDB : public StaticSingleton<FastNameDB>
 	Vector<int> namesRefCounts;
 	Vector<int> namesEmptyIndexes;
 	HashMap<const char *, int> namesHash;
+
+	Mutex dbMutex;
 };
 
 class FastName
@@ -70,18 +75,7 @@ public:
     explicit FastName(const String & name);
 	~FastName();
 
-	void Reset();
-	
-	const char* c_str() const
-    {
-	    DVASSERT(index >= -1 && index < (int)FastNameDB::Instance()->namesTable.size());
-	    if(index >= 0)
-	    {
-		    return FastNameDB::Instance()->namesTable[index];
-	    }
-		
-	    return NULL;
-    }
+	inline const char* c_str() const;
 	
 	inline FastName& operator=(const FastName &_name);
 
@@ -182,7 +176,18 @@ bool FastName::IsValid() const
 	return (index >= 0);
 }
 
-};
+const char* FastName::c_str() const
+{
+	DVASSERT(index >= -1 && index < (int)FastNameDB::Instance()->namesTable.size());
+	if(index >= 0)
+	{
+		return FastNameDB::Instance()->namesTable[index];
+	}
 
+	return NULL;
+}
+
+
+};
 
 #endif // __DAVAENGINE_FAST_NAME__

@@ -936,9 +936,9 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 			poly.AddPoint(p2);
 			RenderHelper::Instance()->FillPolygon(poly, renderState);
 
-			p1.y = -p1.y;
-			p2.y = -p2.y;
-			p3.y = -p3.y;
+			p1.y = 2 * center.y - p1.y;
+			p2.y = 2 * center.y - p2.y;
+			p3.y = 2 * center.y - p3.y;
 
 			poly.Clear();
 			poly.AddPoint(p1);

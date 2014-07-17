@@ -56,6 +56,23 @@ bool HeightMapValidator::ValidateInternal(QVariant &v)
     }
     else if(path.IsEqualToExtension(".png"))
     {
+        DAVA::ImageFormatInterface *pngImageSystem = DAVA::ImageSystem::Instance()->GetImageFormatInterface(DAVA::ImageSystem::FILE_FORMAT_PNG);
+        DAVA::Size2i size = pngImageSystem->GetImageSize(path);
+        if(size.dx != size.dy)
+        {
+            notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap.",
+                                         path.GetAbsolutePathname().c_str());
+            return false;
+        }
+        
+        if(((size.dx & 1) == 0) || !DAVA::IsPowerOf2(size.dx - 1))
+        {
+            notifyMessage = DAVA::Format("\"%s\" has wrong size: landscape requires square heightmap with size (2^n + 1).",
+                                         path.GetAbsolutePathname().c_str());
+            return false;
+        }
+        
+        
         DAVA::Vector<DAVA::Image *> imageVector;
         DAVA::ImageSystem::Instance()->Load(path, imageVector);
         DVASSERT(imageVector.size());

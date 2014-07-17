@@ -165,8 +165,17 @@ void SceneSaver::SaveScene(Scene *scene, const FilePath &fileName, Set<String> &
     VegetationRenderObject* vegetation = FindVegetation(scene);
     if(vegetation)
     {
-        sceneUtils.AddFile(vegetation->GetVegetationMapPath());
-        sceneUtils.AddFile(vegetation->GetTextureSheetPath());
+        const FilePath& textureSheetPath = vegetation->GetTextureSheetPath();
+        if(!textureSheetPath.IsEmpty())
+        {
+            sceneUtils.AddFile(vegetation->GetTextureSheetPath());
+        }
+        
+        const FilePath vegetationCustomGeometry = vegetation->GetCustomGeometryPath();
+        if(!vegetationCustomGeometry.IsEmpty())
+        {
+            sceneUtils.AddFile(vegetationCustomGeometry);
+        }
     }
 
 	CopyReferencedObject(scene);
@@ -238,7 +247,7 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	}
 	else
 	{
-		FilePath pngPathname = GPUFamilyDescriptor::CreatePathnameForGPU(texturePathname, GPU_UNKNOWN, FORMAT_RGBA8888);
+		FilePath pngPathname = GPUFamilyDescriptor::CreatePathnameForGPU(texturePathname, GPU_PNG, FORMAT_RGBA8888);
 		sceneUtils.AddFile(pngPathname);
 	}
 	
@@ -246,7 +255,7 @@ void SceneSaver::CopyTexture(const FilePath &texturePathname)
 	//copy converted textures (*.pvr and *.dds)
     if(copyConverted)
     {
-        for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
+        for(int32 i = 0; i < GPU_DEVICE_COUNT; ++i)
         {
             eGPUFamily gpu = (eGPUFamily)i;
             

@@ -38,7 +38,7 @@ TextureProperties::TextureProperties( QWidget *parent /*= 0*/ )
 	: QtPropertyEditor(parent)
 	, curTextureDescriptor(NULL)
 	, skipPropSizeChanged(false)
-    , curGPU(DAVA::GPU_UNKNOWN)
+    , curGPU(DAVA::GPU_PNG)
 {
 	SetEditTracking(true);
 }
@@ -154,7 +154,7 @@ void TextureProperties::ReloadProperties()
 
 	if(NULL != curTextureDescriptor &&
 		curGPU >= 0 &&
-		curGPU < DAVA::GPU_FAMILY_COUNT)
+		curGPU < DAVA::GPU_DEVICE_COUNT)
 	{
 		QModelIndex headerIndex;
 		DAVA::InspBase *textureDrawSettings = &curTextureDescriptor->drawSettings;
@@ -372,7 +372,7 @@ void TextureProperties::OnItemEdited(const QModelIndex &index)
 void TextureProperties::LoadCurSizeToProp()
 {
 	if( NULL != curTextureDescriptor && NULL != propSizes && 
-		curGPU > DAVA::GPU_UNKNOWN && curGPU < DAVA::GPU_FAMILY_COUNT)
+		curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
 	{
 		QSize curSize(curTextureDescriptor->compression[curGPU].compressToWidth, curTextureDescriptor->compression[curGPU].compressToHeight);
 		int level = availableSizes.key(curSize, -1); 
@@ -390,7 +390,7 @@ void TextureProperties::LoadCurSizeToProp()
 void TextureProperties::SaveCurSizeFromProp()
 {
 	if( NULL != curTextureDescriptor && NULL != propSizes && 
-		curGPU > DAVA::GPU_UNKNOWN && curGPU < DAVA::GPU_FAMILY_COUNT)
+		curGPU >= 0 && curGPU < DAVA::GPU_DEVICE_COUNT)
 	{
 		int level = propSizes->GetValue().toInt();
 

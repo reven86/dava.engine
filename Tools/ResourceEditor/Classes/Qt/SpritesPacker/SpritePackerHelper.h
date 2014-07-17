@@ -59,8 +59,16 @@ protected:
 	void Pack(DAVA::eGPUFamily gpu);
 	void Reload();
 
+    // Stop particle effects and remember their started states.
+    void StopParticleEffects(Scene * scene);
+
+    // Restart particle effects which were initially started.
+    void RestartParticleEffects();
+
 	QFuture<void> *future;
 	QFutureWatcher<void> watcher;
+    
+    Map<ParticleEffectComponent*, bool> particleEffectsState;
 
 private slots:
     void threadRepackAllFinished();

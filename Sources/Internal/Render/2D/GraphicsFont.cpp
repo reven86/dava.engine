@@ -209,6 +209,13 @@ void GraphicsFont::SetSize(float32 _size)
 	fontScaleCoeff = size / (fdef->fontAscent + fdef->fontDescent);
 }
 
+void GraphicsFont::SetRenderSize(float32 renderSize)
+{
+    float32 rescale = renderSize/this->renderSize;
+    Font::SetRenderSize(renderSize);
+    fontScaleCoeff *= rescale;
+}
+
 YamlNode * GraphicsFont::SaveToYamlNode() const
 {
     YamlNode *node = Font::SaveToYamlNode();

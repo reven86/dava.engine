@@ -34,6 +34,8 @@
 #include "JniExtensions.h"
 #include "Base/BaseTypes.h"
 
+#if defined(__DAVAENGINE_ANDROID__)
+
 namespace DAVA
 {
 
@@ -50,6 +52,8 @@ public:
 	String GetName();
 	int GetZBufferSize();
 	int GetGPUFamily();
+	int GetNetworkType();
+	int GetSignalStrength(int networkType);
 
 protected:
 	virtual jclass GetJavaClass() const;
@@ -61,5 +65,7 @@ public:
 };
 
 };
+
+#endif //defined(__DAVAENGINE_ANDROID__)
 
 #endif /* defined(__FRAMEWORK__DEVICEINFOANDROID__) */

@@ -50,6 +50,7 @@
 #include "Dialogs/importdialog.h"
 #include "Dialogs/localizationeditordialog.h"
 #include "Dialogs/previewsettingsdialog.h"
+#include "Dialogs/errorslistdialog.h"
 
 #include "ImportCommands.h"
 #include "AlignDistribute/AlignDistributeEnums.h"
@@ -106,6 +107,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	this->setWindowTitle(ResourcesManageHelper::GetProjectTitle());
 
+    findField = new QLineEdit();
+    findField->setValidator(new QRegExpValidator(HierarchyTreeNode::GetNameRegExp(), this));
+    ui->findToolBar->addWidget(findField);
+    ui->findToolBar->addSeparator();
+    connect(findField, SIGNAL(returnPressed() ), this, SLOT(OnSearchPressed()));
+    connect(ui->actionFind,SIGNAL(triggered()),this, SLOT(OnSearchPressed()));
+    
 	int32 scalesCount = COUNT_OF(SCALE_PERCENTAGES);
 
 	// Setup the Scale Slider.
@@ -276,7 +284,7 @@ MainWindow::~MainWindow()
     }
 	
 	SaveMainWindowState();
-	
+	delete findField;
     delete ui;
 }
 
@@ -1479,8 +1487,15 @@ void MainWindow::OnPixelizationStateChanged()
 void MainWindow::RepackAndReloadSprites()
 {
     ScreenWrapper::Instance()->SetApplicationCursor(Qt::WaitCursor);
-    HierarchyTreeController::Instance()->RepackAndReloadSprites();
+    const Set<String>& errorsSet = HierarchyTreeController::Instance()->RepackAndReloadSprites();
     ScreenWrapper::Instance()->RestoreApplicationCursor();
+
+    if (!errorsSet.empty())
+	{
+		ErrorsListDialog errorsDialog;
+		errorsDialog.InitializeErrorsList(errorsSet);
+		errorsDialog.exec();
+	}
 }
 
 void MainWindow::SetBackgroundColorMenuTriggered(QAction* action)
@@ -1785,3 +1800,61 @@ void MainWindow::UpdateSaveButtons()
     ui->actionSave_All->setEnabled(hasUnsavedChanges);
 }
 
+
+void MainWindow::OnSearchPressed()
+{
+    QString partOfName = findField->text();
+    QList<HierarchyTreeControlNode*> foundNodes;
+    HierarchyTreeScreenNode* activeScreen = HierarchyTreeController::Instance()->GetActiveScreen();
+    if (NULL == activeScreen)
+    {
+        HierarchyTreePlatformNode* activePlatform = HierarchyTreeController::Instance()->GetActivePlatform();
+        if (activePlatform)
+        {
+            foundNodes = SearchScreenByName(activePlatform->GetChildNodes(),partOfName,ui->actionIgnoreCase->isChecked());
+        }
+    }
+    else
+    {
+        SearchControlsByName(foundNodes,activeScreen->GetChildNodes(),partOfName,ui->actionIgnoreCase->isChecked());
+    }
+    HierarchyTreeController::Instance()->ResetSelectedControl();
+    if (!foundNodes.empty())
+    {
+        HierarchyTreeController::Instance()->SynchronizeSelection(foundNodes);
+    }
+    
+}
+
+void MainWindow::SearchControlsByName(QList<HierarchyTreeControlNode*>& foundNodes,const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName,bool ignoreCase) const
+{
+    HierarchyTreeNode::HIERARCHYTREENODESCONSTITER it = nodes.begin();
+    for (; it!=nodes.end(); ++it)
+    {
+        HierarchyTreeControlNode * controlNode = static_cast<HierarchyTreeControlNode *>(*it);
+        const QString name = QString::fromStdString(controlNode->GetUIObject()->GetName());
+        Qt::CaseSensitivity cs = ignoreCase?Qt::CaseInsensitive:Qt::CaseSensitive;
+        if (name.contains(partOfName,cs))
+        {
+            foundNodes.push_back(controlNode);
+        }
+        SearchControlsByName(foundNodes,(*it)->GetChildNodes(),partOfName,ignoreCase);
+    }
+}
+
+QList<HierarchyTreeControlNode*> MainWindow::SearchScreenByName(const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName,bool ignoreCase) const
+{
+    QList<HierarchyTreeControlNode*> foundNodes;
+    HierarchyTreeNode::HIERARCHYTREENODESCONSTITER it = nodes.begin();
+    for (; it!=nodes.end(); ++it)
+    {
+        HierarchyTreeScreenNode * screenNode = static_cast<HierarchyTreeScreenNode *>(*it);
+        QString name = screenNode->GetName();
+        Qt::CaseSensitivity cs = ignoreCase?Qt::CaseInsensitive:Qt::CaseSensitive;
+        if (name.contains(partOfName,cs))
+        {
+            foundNodes.push_back(static_cast<HierarchyTreeControlNode *>(*it));
+        }
+    }
+    return foundNodes;
+}

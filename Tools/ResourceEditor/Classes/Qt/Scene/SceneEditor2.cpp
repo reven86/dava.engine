@@ -46,6 +46,7 @@
 #include "Scene3D/SceneFileV2.h"
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
 #include "Scene3D/Systems/RenderUpdateSystem.h"
+#include "Render/Highlevel/RenderBatchArray.h"
 
 const FastName MATERIAL_FOR_REBIND = FastName("Global");
 
@@ -54,6 +55,8 @@ SceneEditor2::SceneEditor2()
 	, isLoaded(false)
 	, isHUDVisible(true)
 {
+    SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
+
 	renderStats.Clear();
 
 	EditorCommandNotify *notify = new EditorCommandNotify(this);
