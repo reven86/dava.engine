@@ -136,14 +136,14 @@ void UITextField::WillAppear()
 
 void UITextField::DidAppear()
 {
-    UIControlSystem::Instance()->GetUISystemKeyboard()->AddListener( this );
     textFieldImpl->AddNativeControl();
+    UIControlSystem::Instance()->GetUISystemKeyboard()->AddListener( this );
 }
 
 void UITextField::WillDisappear()
 {
-    textFieldImpl->RemoveNativeControl();
     UIControlSystem::Instance()->GetUISystemKeyboard()->RemoveListener( this );
+    textFieldImpl->RemoveNativeControl();
 }
 
 void UITextField::OnFocused()
