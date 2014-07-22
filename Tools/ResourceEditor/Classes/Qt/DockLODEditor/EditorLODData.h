@@ -94,6 +94,7 @@ public:
 	void EnableAllSceneMode(bool enabled);
     
     const DAVA::Vector<DAVA::int32>& GetLODIndices() const;
+    const DAVA::Vector<DAVA::int32>& GetCurrentLODIndices() const;
     
     void UpdateLODStateFromScene();
     
@@ -162,6 +163,7 @@ protected:
     DAVA::FastName currentLODQuality;
     DAVA::Vector<EditorLodDataItem> lodInfo;
     DAVA::Vector<DAVA::int32> sortedLodIndices;
+    DAVA::Vector<DAVA::int32> sortedCurrentLodIndices;
     
     bool forceDistanceEnabled;
     DAVA::float32 forceDistance;

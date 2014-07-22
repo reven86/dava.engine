@@ -260,7 +260,7 @@ void LODEditor::LODDataChanged()
         
         UpdateLodLayersSelection(selectionFastName);
         
-        SetForceLayerValues(editedLODData->GetLODIndices());
+        SetForceLayerValues(editedLODData->GetCurrentLODIndices());
     }
     
     UpdateWidgetVisibility();

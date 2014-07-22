@@ -265,6 +265,7 @@ void EditorLODData::GetLODDataFromScene()
     if(lodComponentsSize)
     {
         DAVA::Set<DAVA::int32> layers;
+        DAVA::Set<DAVA::int32> currentQualityLayers;
         
         size_t lodInfoSize = lodInfo.size();
         
@@ -295,6 +296,8 @@ void EditorLODData::GetLODDataFromScene()
                 }
                 
                 ++lodComponentsCount[lodLayerIndex];
+                
+                currentQualityLayers.insert((DAVA::int32)lodData[i]->GetLodLayerLodIndex(lodLayerIndex));
             }
             
             //triangles
@@ -320,6 +323,10 @@ void EditorLODData::GetLODDataFromScene()
         sortedLodIndices.clear();
         sortedLodIndices.insert(sortedLodIndices.end(), layers.begin(), layers.end());
         std::sort(sortedLodIndices.begin(), sortedLodIndices.end());
+        
+        sortedCurrentLodIndices.clear();
+        sortedCurrentLodIndices.insert(sortedCurrentLodIndices.begin(), currentQualityLayers.begin(), currentQualityLayers.end());
+        std::sort(sortedCurrentLodIndices.begin(), sortedCurrentLodIndices.end());
 
         emit DataChanged();
     }
@@ -675,6 +682,11 @@ DAVA::uint32 EditorLODData::GetDistanceCount() const
 const DAVA::Vector<DAVA::int32>& EditorLODData::GetLODIndices() const
 {
     return sortedLodIndices;
+}
+
+const DAVA::Vector<DAVA::int32>& EditorLODData::GetCurrentLODIndices() const
+{
+    return sortedCurrentLodIndices;
 }
 
 void EditorLODData::MapLodIndexToDistanceIndex(DAVA::int32 lodIndex, const DAVA::Vector<DAVA::LodComponent::LodDistance>& lodDistances, DAVA::Vector<DAVA::int32>& indices)
