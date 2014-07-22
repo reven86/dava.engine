@@ -57,6 +57,9 @@ public:
     DAVA::uint32 GetLayersCount() const;
     DAVA::float32 GetLayerDistance(DAVA::uint32 layerNum) const;
     void SetLayerDistance(DAVA::uint32 layerNum, DAVA::float32 distance);
+    
+    DAVA::int32 GetLayerLodIndex(DAVA::uint32 layerNum) const;
+    void SetLayerLodIndex(DAVA::uint32 layerNum, DAVA::int32 lodIndex);
 
 	void UpdateDistances(const DAVA::Map<DAVA::uint32, DAVA::float32> & lodDistances);
 
@@ -70,6 +73,9 @@ public:
 
     void SetForceLayer(DAVA::int32 layer);
     DAVA::int32 GetForceLayer() const;
+    
+    bool IsEmptyLayer(DAVA::uint32 layerNum) const;
+    DAVA::uint32 GetDistanceCount() const;
 
     void GetLODDataFromScene();
 
@@ -87,13 +93,12 @@ public:
 
 	void EnableAllSceneMode(bool enabled);
     
-    const DAVA::Set<DAVA::int32>& GetActiveLODIndices() const;
-    const DAVA::Set<DAVA::int32>& GetAllLODIndices() const;
-    
-    void OrderIndices(const DAVA::Set<DAVA::int32>& indices,
-                      DAVA::Vector<DAVA::int32>& orderedIndices);
+    const DAVA::Vector<DAVA::int32>& GetLODIndices() const;
     
     void UpdateLODStateFromScene();
+    
+    void ResetLODData();
+    void ResetLODInfo();
 
 signals:
     
@@ -117,10 +122,6 @@ protected:
     void ClearForceData();
     
     void UpdateForceData();
-
-    void CollectLodIndices();
-    void AddLodIndicesToSet(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayerArray,
-                            DAVA::Set<DAVA::int32>& indexSet);
     
     void EnumerateLODs();
     DAVA::LodComponent::QualityContainer* GetQualityContainer(const DAVA::FastName& qualityName,
@@ -128,20 +129,43 @@ protected:
 
     void ResetForceState(DAVA::Entity *entity);
     
+    static void MapLodIndexToDistanceIndex(DAVA::int32 lodIndex, const DAVA::Vector<DAVA::LodComponent::LodDistance>& lodDistances, DAVA::Vector<DAVA::int32>& indices);
+    
 protected:
 
-    DAVA::uint32 lodLayersCount;
-    DAVA::Vector<DAVA::float32> lodDistances;
-    DAVA::Vector<DAVA::uint32> lodTriangles;
-    
-    DAVA::Set<DAVA::int32> allLodIndices;
-    DAVA::Set<DAVA::int32> activeLodIndices;
-    DAVA::FastName currentLODQuality;
+    struct EditorLodDataItem
+    {
+        DAVA::float32 lodDistance;
+        DAVA::uint32 lodTriangles;
+        DAVA::int32 lodIndex;
+        bool isEmpty;
+        
+        EditorLodDataItem()
+        {
+            MakeEmpty();
+        }
+        
+        void MakeEmpty()
+        {
+            lodIndex = -1;
+            lodDistance = 0.0f;
+            lodTriangles = 0.0f;
+            isEmpty = true;
+        }
+        
+        bool IsEmpty() const
+        {
+            return isEmpty;
+        }
+    };
 
+    DAVA::FastName currentLODQuality;
+    DAVA::Vector<EditorLodDataItem> lodInfo;
+    DAVA::Vector<DAVA::int32> sortedLodIndices;
+    
     bool forceDistanceEnabled;
     DAVA::float32 forceDistance;
     DAVA::int32 forceLayer;
-    
     
     DAVA::Vector<DAVA::LodComponent *> lodData;
     

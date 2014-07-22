@@ -144,7 +144,7 @@ public:
     inline float32 GetLodLayerFar(int32 layerNum);
     inline float32 GetLodLayerNearSquare(int32 layerNum);
     inline float32 GetLodLayerFarSquare(int32 layerNum);
-
+    
     static float32 GetDefaultDistance(int32 layer);
 
     void GetLodData(List<LodData*> &retLodLayers);

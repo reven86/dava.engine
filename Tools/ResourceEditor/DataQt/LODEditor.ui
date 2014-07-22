@@ -204,53 +204,6 @@
       <property name="margin">
        <number>5</number>
       </property>
-      <item row="10" column="1">
-       <widget class="QLabel" name="lod4Name">
-        <property name="text">
-         <string>0. (99999):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="1">
-       <widget class="QLabel" name="lod7Name">
-        <property name="text">
-         <string>0. (99999):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="11" column="1">
-       <widget class="QLabel" name="lod5Name">
-        <property name="text">
-         <string>0. (99999):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="3">
-       <widget class="EventFilterDoubleSpinBox" name="lod1Distance">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="minimum">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>1000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="14" column="1" colspan="3">
-       <widget class="QPushButton" name="createPlaneLodButton">
-        <property name="text">
-         <string>Create plane LOD</string>
-        </property>
-       </widget>
-      </item>
       <item row="8" column="1">
        <widget class="QLabel" name="lod2Name">
         <property name="sizePolicy">
@@ -263,6 +216,12 @@
          <size>
           <width>70</width>
           <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
          </size>
         </property>
         <property name="layoutDirection">
@@ -290,6 +249,12 @@
           <height>0</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
         </property>
@@ -298,58 +263,6 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="3">
-       <widget class="EventFilterDoubleSpinBox" name="lod3Distance">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="minimum">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>1000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="17" column="1" colspan="3">
-       <widget class="QPushButton" name="lastLodToFrontButton">
-        <property name="text">
-         <string>Copy last LOD to lod0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="1">
-       <widget class="QLabel" name="lod6Name">
-        <property name="text">
-         <string>0. (99999):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="13" column="3">
-       <widget class="QDoubleSpinBox" name="lod7Distance"/>
-      </item>
-      <item row="11" column="3">
-       <widget class="QDoubleSpinBox" name="lod5Distance"/>
-      </item>
-      <item row="10" column="3">
-       <widget class="QDoubleSpinBox" name="lod4Distance"/>
-      </item>
-      <item row="12" column="3">
-       <widget class="QDoubleSpinBox" name="lod6Distance"/>
-      </item>
-      <item row="9" column="0">
-       <widget class="QCheckBox" name="lod3Check">
-        <property name="text">
-         <string/>
         </property>
        </widget>
       </item>
@@ -367,6 +280,12 @@
           <height>0</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
         </property>
@@ -375,20 +294,6 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="15" column="1" colspan="3">
-       <widget class="QPushButton" name="buttonDeleteFirstLOD">
-        <property name="text">
-         <string>Delete First LOD</string>
-        </property>
-       </widget>
-      </item>
-      <item row="16" column="1" colspan="3">
-       <widget class="QPushButton" name="buttonDeleteLastLOD">
-        <property name="text">
-         <string>Delete Last LOD</string>
         </property>
        </widget>
       </item>
@@ -406,6 +311,12 @@
           <height>0</height>
          </size>
         </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="layoutDirection">
          <enum>Qt::LeftToRight</enum>
         </property>
@@ -416,71 +327,6 @@
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
         </property>
        </widget>
-      </item>
-      <item row="8" column="3">
-       <widget class="EventFilterDoubleSpinBox" name="lod2Distance">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="minimum">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>1000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QCheckBox" name="lod1Check">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="3">
-       <widget class="EventFilterDoubleSpinBox" name="lod0Distance">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="minimum">
-         <double>0.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>1000.000000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QCheckBox" name="lod2Check">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QCheckBox" name="lod0Check">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QComboBox" name="lodQualityBox"/>
       </item>
       <item row="0" column="0" colspan="4">
        <widget class="DistanceSlider" name="distanceSlider">
@@ -510,31 +356,153 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
-       <widget class="QCheckBox" name="lod4Check">
-        <property name="text">
-         <string/>
+      <item row="6" column="0">
+       <widget class="QComboBox" name="lod0LayerBox">
+        <property name="maximumSize">
+         <size>
+          <width>60</width>
+          <height>16777215</height>
+         </size>
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
-       <widget class="QCheckBox" name="lod5Check">
-        <property name="text">
-         <string/>
+      <item row="7" column="0">
+       <widget class="QComboBox" name="lod1LayerBox">
+        <property name="maximumSize">
+         <size>
+          <width>60</width>
+          <height>16777215</height>
+         </size>
         </property>
        </widget>
       </item>
-      <item row="12" column="0">
-       <widget class="QCheckBox" name="lod6Check">
+      <item row="10" column="0" colspan="4">
+       <widget class="QPushButton" name="createPlaneLodButton">
         <property name="text">
-         <string/>
+         <string>Create plane LOD</string>
         </property>
        </widget>
       </item>
-      <item row="13" column="0">
-       <widget class="QCheckBox" name="lod7Check">
+      <item row="11" column="0" colspan="4">
+       <widget class="QPushButton" name="buttonDeleteFirstLOD">
         <property name="text">
+         <string>Delete First LOD</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" colspan="4">
+       <widget class="QPushButton" name="buttonDeleteLastLOD">
+        <property name="text">
+         <string>Delete Last LOD</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0" colspan="4">
+       <widget class="QPushButton" name="lastLodToFrontButton">
+        <property name="text">
+         <string>Copy last LOD to lod0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="4">
+       <widget class="QComboBox" name="lodQualityBox"/>
+      </item>
+      <item row="8" column="0">
+       <widget class="QComboBox" name="lod2LayerBox">
+        <property name="maximumSize">
+         <size>
+          <width>60</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QComboBox" name="lod3LayerBox">
+        <property name="maximumSize">
+         <size>
+          <width>60</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2" colspan="2">
+       <widget class="EventFilterDoubleSpinBox" name="lod0Distance">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="suffix">
          <string/>
+        </property>
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="2" colspan="2">
+       <widget class="EventFilterDoubleSpinBox" name="lod1Distance">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="2" colspan="2">
+       <widget class="EventFilterDoubleSpinBox" name="lod2Distance">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="2" colspan="2">
+       <widget class="EventFilterDoubleSpinBox" name="lod3Distance">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
         </property>
        </widget>
       </item>

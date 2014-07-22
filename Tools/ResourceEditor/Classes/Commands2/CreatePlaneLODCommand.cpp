@@ -36,7 +36,7 @@
 
 using namespace DAVA;
 
-CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent, int32 _fromLodLayer, uint32 _textureSize, const DAVA::FilePath & texturePath)
+CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent, int32 _fromLodLayer, uint32 _textureSize, const DAVA::FilePath & texturePath, const DAVA::FastName& currentQuality)
     : Command2(CMDID_LOD_CREATE_PLANE, "Create Plane LOD")
     , newSwitchIndex(-1)
     , planeImage(NULL)
@@ -45,10 +45,13 @@ CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent,
     , textureSize(_textureSize)
     , lodComponent(_lodComponent)
     , textureSavePath(texturePath)
+    , qualityName(currentQuality)
+    , oldLayerCount(-1)
 {
     DVASSERT(GetRenderObject(GetEntity()));
     
-	savedDistances = lodComponent->lodLayersArray;
+    DVASSERT(lodComponent->qualityContainer);
+	savedDistances = *(lodComponent->qualityContainer);
 
     newLodIndex = GetMaxLodLayerIndex(lodComponent) + 1;
     DVASSERT(newLodIndex > 0);
@@ -78,7 +81,19 @@ void CreatePlaneLODCommand::Redo()
     
     ro->AddRenderBatch(planeBatch, newLodIndex, newSwitchIndex);
     
-    lodComponent->SetLodLayerDistance(newLodIndex, lodComponent->GetLodLayerDistance(newLodIndex-1) * 2);
+    DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+    DVASSERT(qualityItem);
+    
+    oldLayerCount = qualityItem->lodLayersArray.size();
+    
+    qualityItem->lodLayersArray.resize(qualityItem->lodLayersArray.size() + 1);
+
+    DAVA::int32 distanceIndex = qualityItem->lodLayersArray.size() - 1;
+    lodComponent->SetLodLayerDistance(distanceIndex,
+                                      lodComponent->GetLodLayerDistanceByLayerIndex(distanceIndex - 1) * 2,
+                                      qualityItem->lodLayersArray);
+    
+    lodComponent->SetQuality(qualityName);
 }
 
 void CreatePlaneLODCommand::Undo()
@@ -90,7 +105,8 @@ void CreatePlaneLODCommand::Undo()
 	ro->RemoveRenderBatch(planeBatch);
 
     //restore distances
-    lodComponent->lodLayersArray = savedDistances;
+    *(lodComponent->qualityContainer) = savedDistances;
+    lodComponent->SetQuality(qualityName);
 
     //fix visibility settings
     DAVA::int32 maxLodIndex = ro->GetMaxLodIndex();

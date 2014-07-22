@@ -44,10 +44,11 @@
 #include <QLineEdit>
 #include <QInputDialog>
 
+static const int32 MAX_LOD = 0x7FFFFFFF;
 
 struct DistanceWidget
 {
-    QCheckBox* check;
+    QComboBox* layerCombo;
     QLabel *name;
     QDoubleSpinBox *distance;
 
@@ -55,16 +56,63 @@ struct DistanceWidget
     {
         name->setVisible(visible);
         distance->setVisible(visible);
-        check->setVisible(visible);
+        layerCombo->setVisible(visible);
     }
     
-    void SetChecked(bool checked)
+    void SelectLod(int32 lod)
     {
-        check->setChecked(checked);
+        if(layerCombo)
+        {
+            uint32 currentIndex = 0;
+            
+            uint32 itemCount = layerCombo->count();
+            for(uint32 i = 0; i < itemCount; ++i)
+            {
+                QVariant itemData = layerCombo->itemData(i);
+                if(itemData.toInt() == lod)
+                {
+                    currentIndex = i;
+                    break;
+                }
+            }
+            
+            layerCombo->setCurrentIndex(currentIndex);
+        }
+    }
+    
+    int32 GetSelectedLod()
+    {
+        int32 currentLod = MAX_LOD;
+        int32 currentIndex = layerCombo->currentIndex();
+        
+        if(currentIndex >= 0)
+        {
+            QVariant itemData = layerCombo->itemData(currentIndex);
+            currentLod = itemData.toInt();
+        }
+        
+        return currentLod;
+    }
+    
+    void PopulateCombo(const DAVA::Vector<DAVA::int32>& layers)
+    {
+        layerCombo->blockSignals(true);
+        
+        layerCombo->clear();
+        
+        layerCombo->addItem(QString("--"), QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
+        
+        size_t layerCount = layers.size();
+        for(size_t i = 0; i < layerCount; ++i)
+        {
+            layerCombo->addItem(QString("%1").arg(layers[i]), QVariant(layers[i]));
+        }
+        
+        layerCombo->blockSignals(false);
     }
 };
 
-static const uint32 DISTANCE_WIDGET_COUNT = 8;
+static const uint32 DISTANCE_WIDGET_COUNT = 4;
 static DistanceWidget distanceWidgets[DISTANCE_WIDGET_COUNT];
 
 
@@ -114,16 +162,13 @@ void LODEditor::SetupInternalUI()
     
     connect(ui->distanceSlider, SIGNAL(DistanceChanged(const QVector<int> &, bool)), SLOT(LODDistanceChangedBySlider(const QVector<int> &, bool)));
     
-    InitDistanceSpinBox(ui->lod0Check, ui->lod0Name, ui->lod0Distance, 0);
-    InitDistanceSpinBox(ui->lod1Check, ui->lod1Name, ui->lod1Distance, 1);
-    InitDistanceSpinBox(ui->lod2Check, ui->lod2Name, ui->lod2Distance, 2);
-    InitDistanceSpinBox(ui->lod3Check, ui->lod3Name, ui->lod3Distance, 3);
-    InitDistanceSpinBox(ui->lod4Check, ui->lod4Name, ui->lod4Distance, 4);
-    InitDistanceSpinBox(ui->lod5Check, ui->lod5Name, ui->lod5Distance, 5);
-    InitDistanceSpinBox(ui->lod6Check, ui->lod6Name, ui->lod6Distance, 6);
-    InitDistanceSpinBox(ui->lod7Check, ui->lod7Name, ui->lod7Distance, 7);
+    InitDistanceSpinBox(ui->lod0LayerBox, ui->lod0Name, ui->lod0Distance, 0);
+    InitDistanceSpinBox(ui->lod1LayerBox, ui->lod1Name, ui->lod1Distance, 1);
+    InitDistanceSpinBox(ui->lod2LayerBox, ui->lod2Name, ui->lod2Distance, 2);
+    InitDistanceSpinBox(ui->lod3LayerBox, ui->lod3Name, ui->lod3Distance, 3);
     
-    DAVA::Set<DAVA::int32> dummyIndices;
+    DAVA::Vector<DAVA::int32> dummyIndices;
+    dummyIndices.resize(DAVA::LodComponent::MAX_LOD_LAYERS);
     SetForceLayerValues(dummyIndices);
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
@@ -134,6 +179,8 @@ void LODEditor::SetupInternalUI()
     connect(ui->createPlaneLodButton, SIGNAL(clicked()), this, SLOT(CreatePlaneLODClicked()));
     connect(ui->buttonDeleteFirstLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteFirstLOD()));
     connect(ui->buttonDeleteLastLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteLastLOD()));
+    
+    connect(ui->lodQualityBox, SIGNAL(currentIndexChanged (int)), this, SLOT(QualityNameChanged(int)));
 }
 
 void LODEditor::SetupSceneSignals()
@@ -163,7 +210,7 @@ void LODEditor::ForceDistanceChanged(int distance)
 }
 
 
-void LODEditor::InitDistanceSpinBox(QCheckBox* check, QLabel *name, QDoubleSpinBox *spinbox, int index)
+void LODEditor::InitDistanceSpinBox(QComboBox* lodCombo, QLabel *name, QDoubleSpinBox *spinbox, int index)
 {
     spinbox->setRange(0.f, DAVA::LodComponent::MAX_LOD_DISTANCE);  //distance 
     spinbox->setProperty(ResourceEditor::TAG.c_str(), index);
@@ -171,14 +218,16 @@ void LODEditor::InitDistanceSpinBox(QCheckBox* check, QLabel *name, QDoubleSpinB
     spinbox->setFocusPolicy(Qt::WheelFocus);
     spinbox->setKeyboardTracking(false);
     
+    lodCombo->setProperty(ResourceEditor::TAG.c_str(), index);
+    
     connect(spinbox, SIGNAL(valueChanged(double)), SLOT(LODDistanceChangedBySpinbox(double)));
+    connect(lodCombo, SIGNAL(currentIndexChanged (int)), this, SLOT(LodIndexChanged(int)));
     
     distanceWidgets[index].name = name;
     distanceWidgets[index].distance = spinbox;
-    distanceWidgets[index].check = check;
+    distanceWidgets[index].layerCombo = lodCombo;
     
-    distanceWidgets->SetVisible(false);
-    distanceWidgets->SetChecked(false);
+    distanceWidgets->SetVisible(true);
 }
 
 
@@ -206,15 +255,13 @@ void LODEditor::LODDataChanged()
     {
         QString selection = ui->lodQualityBox->currentText();
         FastName selectionFastName(selection.toStdString().c_str());
+        
+        ui->distanceSlider->SetLayersCount(DAVA::LodComponent::MAX_LOD_LAYERS);
+        
         UpdateLodLayersSelection(selectionFastName);
+        
+        SetForceLayerValues(editedLODData->GetLODIndices());
     }
-    
-    const DAVA::Set<int32>& activeLodIndices = editedLODData->GetActiveLODIndices();
-    
-    
-    ui->distanceSlider->SetLayersCount(activeLodIndices.size());
-    SetForceLayerValues(activeLodIndices);
-    
     
     UpdateWidgetVisibility();
 
@@ -284,20 +331,17 @@ void LODEditor::ForceLayerActivated(int index)
     editedLODData->SetForceLayer(layer);
 }
 
-void LODEditor::SetForceLayerValues(const DAVA::Set<DAVA::int32>& lodIndices)
+void LODEditor::SetForceLayerValues(const DAVA::Vector<DAVA::int32>& lodIndices)
 {
     ui->forceLayer->clear();
     
     ui->forceLayer->addItem("Auto", QVariant(DAVA::LodComponent::INVALID_LOD_LAYER));
     
-    DAVA::Vector<DAVA::int32> orderedIndices;
-    editedLODData->OrderIndices(lodIndices, orderedIndices);
-    
     int32 currentForceIndex = -1;
-    uint32 orderedIndexCount = orderedIndices.size();
-    for(uint32 i = 0; i < orderedIndexCount; ++i)
+    uint32 indexCount = lodIndices.size();
+    for(uint32 i = 0; i < indexCount; ++i)
     {
-        int32 index = orderedIndices[i];
+        int32 index = lodIndices[i];
         ui->forceLayer->addItem(Format("%d", index).c_str(), QVariant(index));
         
         if(editedLODData->GetForceLayer() == index)
@@ -392,6 +436,8 @@ void LODEditor::EditorModeChanged(int newMode)
 
 void LODEditor::PopulateLODNames()
 {
+    ui->lodQualityBox->blockSignals(true);
+    
     DAVA::QualitySettingsSystem* qualitySettingsSystem = DAVA::QualitySettingsSystem::Instance();
     uint32 lodCount = qualitySettingsSystem->GetLODQualityCount();
     
@@ -402,7 +448,8 @@ void LODEditor::PopulateLODNames()
         for(uint32 lodIndex = 0; lodIndex < lodCount; ++lodIndex)
         {
             const FastName& lodQualityName = qualitySettingsSystem->GetLODQualityName(lodIndex);
-            ui->lodQualityBox->addItem(lodQualityName.c_str());
+            
+            ui->lodQualityBox->addItem(lodQualityName.c_str(), lodQualityName.c_str());
             
             if(lodQualityName == qualitySettingsSystem->GetCurrentLODQuality())
             {
@@ -410,6 +457,8 @@ void LODEditor::PopulateLODNames()
             }
         }
     }
+    
+    ui->lodQualityBox->blockSignals(false);
     
     if(currentIndex >= 0)
     {
@@ -421,49 +470,58 @@ void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
 {
     if(lodQualityName.IsValid())
     {
-        const DAVA::Set<int32>& activeLodIndices = editedLODData->GetActiveLODIndices();
-        const DAVA::Set<int32>& allLodIndices = editedLODData->GetAllLODIndices();
+        const DAVA::Vector<DAVA::int32>& layers = editedLODData->GetLODIndices();
+        
+        ui->distanceSlider->SetLayersCount(editedLODData->GetDistanceCount());
         
         for (DAVA::int32 i = 0; i < COUNT_OF(distanceWidgets); ++i)
         {
-            distanceWidgets[i].SetVisible(false);
-            distanceWidgets[i].SetChecked(false);
-        }
-        
-        DAVA::Vector<DAVA::int32> orderedAllIndices;
-        editedLODData->OrderIndices(allLodIndices, orderedAllIndices);
-        uint32 allLodIndexCount = orderedAllIndices.size();
-        for(uint32 allLodIndex = 0; allLodIndex < allLodIndexCount; ++allLodIndex)
-        {
-            int32 lodIndex = orderedAllIndices[allLodIndex];
+            distanceWidgets[i].SetVisible(true);
+            distanceWidgets[i].PopulateCombo(layers);
             
-            if(lodIndex >= 0 && lodIndex < COUNT_OF(distanceWidgets))
+            DAVA::float32 distance = editedLODData->GetLayerDistance(i);
+            DAVA::int32 lodIndex = editedLODData->GetLayerLodIndex(i);
+            
+            SetSpinboxValue(distanceWidgets[i].distance, distance);
+            distanceWidgets[i].name->setText(Format("%d. (%d):", i, editedLODData->GetLayerTriangles(i)).c_str());
+            
+            distanceWidgets[i].layerCombo->blockSignals(true);
+            distanceWidgets[i].SelectLod(lodIndex);
+            distanceWidgets[i].layerCombo->blockSignals(false);
+            
+            if(!editedLODData->IsEmptyLayer(i))
             {
-                distanceWidgets[lodIndex].SetVisible(true);
-                
-                DAVA::float32 distance = editedLODData->GetLayerDistance(lodIndex);
-                
-                SetSpinboxValue(distanceWidgets[lodIndex].distance, distance);
-                
-                distanceWidgets[lodIndex].name->setText(Format("%d. (%d):", lodIndex, editedLODData->GetLayerTriangles(lodIndex)).c_str());
+                ui->distanceSlider->SetDistance(i, distance);
             }
+        }
+    }
+}
 
-        }
-        
-        DAVA::Vector<DAVA::int32> orderedActiveIndices;
-        editedLODData->OrderIndices(activeLodIndices, orderedActiveIndices);
-        uint32 activeLodIndexCount = orderedActiveIndices.size();
-        for(uint32 activeLodIndex = 0; activeLodIndex < activeLodIndexCount; ++activeLodIndex)
+void LODEditor::QualityNameChanged(int index)
+{
+    if(index >= 0)
+    {
+        QComboBox* srcBox = dynamic_cast<QComboBox*>(sender());
+        if(NULL != srcBox)
         {
-            int32 lodIndex = orderedActiveIndices[activeLodIndex];
+            FastName qualityName(srcBox->itemData(index).toString().toStdString().c_str());
             
-            if(lodIndex >= 0 && lodIndex < COUNT_OF(distanceWidgets))
-            {
-                distanceWidgets[lodIndex].SetChecked(true);
-                
-                DAVA::float32 distance = editedLODData->GetLayerDistance(lodIndex);
-                ui->distanceSlider->SetDistance(lodIndex, distance);
-            }
+            editedLODData->SetLODQuality(qualityName);
+        }
+    }
+}
+
+void LODEditor::LodIndexChanged(int index)
+{
+    if(index >= 0)
+    {
+        QComboBox* srcBox = dynamic_cast<QComboBox*>(sender());
+        if(NULL != srcBox)
+        {
+            int layerNum = srcBox->property(ResourceEditor::TAG.c_str()).toInt();
+            int lodIndex = srcBox->itemData(index).toInt();
+            
+            editedLODData->SetLayerLodIndex(layerNum, lodIndex);
         }
     }
 }

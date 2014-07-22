@@ -50,6 +50,7 @@ public:
 	static const float32 MIN_LOD_DISTANCE;
 	static const float32 MAX_LOD_DISTANCE;
 	static const float32 INVALID_DISTANCE;
+    static const float32 INFINITY_LOD_DISTANCE_SQ;
 
 	enum eFlags
 	{
@@ -76,6 +77,8 @@ public:
 
         inline void SetLodIndex(int8 index);
         inline int8 GetLodIndex() const;
+        
+        inline bool IsValid() const;
 
         INTROSPECTION(LodDistance,
             PROPERTY("distance", "Distance", GetDistance, SetDistance, I_SAVE | I_VIEW)
@@ -117,6 +120,8 @@ protected:
     void LoadDistancesFromArchive(KeyedArchive* lodDistArch,
                                   Vector<LodDistance>& lodLayers,
                                   uint32 maxDistanceCount);
+    
+    void SetLodLayerDistanceInternal(int32 layerNum, float32 distance, Vector<LodDistance>& layers);
 
 public:
 	LodComponent();
@@ -127,13 +132,19 @@ public:
 	static float32 GetDefaultDistance(int32 layer);
 
 	DAVA_DEPRECATED(inline int32 GetLodLayersCount() const);
-	inline float32 GetLodLayerDistance(int32 layerNum) const;
-	inline float32 GetLodLayerNear(int32 layerNum) const;
-	inline float32 GetLodLayerFar(int32 layerNum) const;
+	
+    inline float32 GetLodLayerDistance(int32 layerNum) const;
 	inline float32 GetLodLayerNearSquare(int32 layerNum) const;
 	inline float32 GetLodLayerFarSquare(int32 layerNum) const;
     inline int8 GetLodLayerLodIndex(int32 layerNum) const;
+    
+    inline float32 GetLodLayerDistanceByLayerIndex(int32 layerIndex) const;
+	inline float32 GetLodLayerNearSquareByLayerIndex(int32 layerIndex) const;
+	inline float32 GetLodLayerFarSquareByLayerIndex(int32 layerIndex) const;
+    
     inline uint32 GetLodDistanceCount() const;
+    
+    inline void SetQuality(const FastName& qualityName);
 
 	DAVA_DEPRECATED(void GetLodData(Vector<LodData*> &retLodLayers));
 
@@ -157,6 +168,7 @@ public:
          \param[in] distance near view distance for the layer
 	 */
     void SetLodLayerDistance(int32 layerNum, float32 distance);
+    void SetLodLayerDistance(int32 layerNum, float32 distance, Vector<LodDistance>& layers);
 
     
     /**
@@ -176,6 +188,8 @@ public:
     inline bool IsRecursiveUpdate();
     
     inline static uint32 GetDefaultLod();
+    
+    LodComponent::QualityContainer* FindQualityItem(const FastName& qualityName);
     
 public:
     
@@ -230,6 +244,14 @@ inline int8 LodComponent::LodDistance::GetLodIndex() const
     return lodIndex;
 }
 
+inline bool LodComponent::LodDistance::IsValid() const
+{
+    return (distance >= 0.0f) &&
+    (nearDistanceSq >= 0.0f) &&
+    (farDistanceSq >= 0.0f) &&
+    (farDistanceSq >= nearDistanceSq);
+}
+
 inline void LodComponent::InitQualityContainer()
 {
     if(NULL == qualityContainer)
@@ -252,6 +274,61 @@ inline uint32 LodComponent::GetLodDistanceCount() const
 inline uint32 LodComponent::GetDefaultLod()
 {
     return MAX_LOD_LAYERS - 1;
+}
+
+inline float32 LodComponent::GetLodLayerDistanceByLayerIndex(int32 layerIndex) const
+{
+    size_t lodLayersCount = lodLayersArray.size();
+    for(size_t i = 0; i < lodLayersCount; ++i)
+    {
+        const LodDistance& lodItem = lodLayersArray[i];
+        if(lodItem.lodIndex == layerIndex)
+        {
+            return lodItem.distance;
+        }
+    }
+    
+    return 0.0f;
+}
+    
+inline float32 LodComponent::GetLodLayerNearSquareByLayerIndex(int32 layerIndex) const
+{
+    size_t lodLayersCount = lodLayersArray.size();
+    for(size_t i = 0; i < lodLayersCount; ++i)
+    {
+        const LodDistance& lodItem = lodLayersArray[i];
+        if(lodItem.lodIndex == layerIndex)
+        {
+            return lodItem.nearDistanceSq;
+        }
+    }
+    
+    return 0.0f;
+
+}
+    
+inline float32 LodComponent::GetLodLayerFarSquareByLayerIndex(int32 layerIndex) const
+{
+    size_t lodLayersCount = lodLayersArray.size();
+    for(size_t i = 0; i < lodLayersCount; ++i)
+    {
+        const LodDistance& lodItem = lodLayersArray[i];
+        if(lodItem.lodIndex == layerIndex)
+        {
+            return lodItem.farDistanceSq;
+        }
+    }
+    
+    return 0.0f;
+
+}
+
+inline void LodComponent::SetQuality(const FastName& qualityName)
+{
+    if(qualityContainer != NULL)
+    {
+        ApplyQuality(qualityName, *qualityContainer, lodLayersArray);
+    }
 }
 
     

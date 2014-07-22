@@ -42,6 +42,7 @@ REGISTER_CLASS(LodComponent)
 const float32 LodComponent::INVALID_DISTANCE = -1.f;
 const float32 LodComponent::MIN_LOD_DISTANCE = 0.f;
 const float32 LodComponent::MAX_LOD_DISTANCE = 1000.f;
+const float32 LodComponent::INFINITY_LOD_DISTANCE_SQ = 10000.0f * 10000.0f;
 
 LodComponent::LodDistance::LodDistance()
 {
@@ -211,29 +212,35 @@ void LodComponent::GetLodData(Vector<LodData*> &retLodLayers)
     
 void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
 {
-    DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
+    SetLodLayerDistance(layerNum, distance, lodLayersArray);
+}
+
+void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance, Vector<LodDistance>& layers)
+{
+    DVASSERT(0 <= layerNum && layerNum < layers.size());
     
     if(INVALID_DISTANCE != distance)
     {
         float32 nearDistance = distance * 0.95f;
         float32 farDistance = distance * 1.05f;
         
-        if(GetLodLayersCount() - 1 == layerNum)
+        if(layers.size() - 1 == layerNum)
         {
-            lodLayersArray[layerNum].SetFarDistance(MAX_LOD_DISTANCE * 1.05f);
+            layers[layerNum].SetFarDistance(MAX_LOD_DISTANCE * 1.05f);
         }
         if(layerNum)
         {
-            lodLayersArray[layerNum-1].SetFarDistance(farDistance);
+            layers[layerNum-1].SetFarDistance(farDistance);
         }
         
-        lodLayersArray[layerNum].SetDistance(distance);
-        lodLayersArray[layerNum].SetNearDistance(nearDistance);
+        layers[layerNum].SetDistance(distance);
+        layers[layerNum].SetNearDistance(nearDistance);
     }
-    else 
+    else
     {
-        lodLayersArray[layerNum].SetDistance(distance);
+        layers[layerNum].SetDistance(distance);
     }
+
 }
 
 void LodComponent::SetForceLodLayer(int32 layer)
@@ -452,20 +459,75 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
                                             Vector<LodDistance>& lodLayers,
                                             uint32 maxDistanceCount)
 {
-    lodLayers.resize(maxDistanceCount);
+    uint32 validDistanceCount = 0;
     for(int32 i = 0; i < maxDistanceCount; ++i)
     {
         KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
         if(NULL != lodDistValuesArch)
         {
-            lodLayers[i].distance = lodDistValuesArch->GetFloat("ld.distance");
-            lodLayers[i].nearDistanceSq = lodDistValuesArch->GetFloat("ld.neardistsq");
-            lodLayers[i].farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
+            LodDistance testDistance;
             
-            int8 currentLodIndex = (int8)Clamp(i - 1, 0, (int32)maxDistanceCount);
-            lodLayers[i].lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : currentLodIndex;
+            testDistance.distance = lodDistValuesArch->GetFloat("ld.distance");
+            testDistance.nearDistanceSq = lodDistValuesArch->GetFloat("ld.neardistsq");
+            testDistance.farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
+            testDistance.lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : (int8)i;
+            
+            if(testDistance.IsValid())
+            {
+                validDistanceCount++;
+            }
         }
     }
+    
+    lodLayers.resize(validDistanceCount);
+    uint32 lodLayerIndex = 0;
+    for(int32 i = 0; i < maxDistanceCount; ++i)
+    {
+        KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+        if(NULL != lodDistValuesArch)
+        {
+            LodDistance testDistance;
+            
+            testDistance.distance = lodDistValuesArch->GetFloat("ld.distance");
+            testDistance.nearDistanceSq = lodDistValuesArch->GetFloat("ld.neardistsq");
+            testDistance.farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
+            testDistance.lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : (int8)i;
+            
+            if(testDistance.IsValid())
+            {
+                lodLayers[lodLayerIndex] = testDistance;
+                lodLayerIndex++;
+            }
+        }
+    }
+    
+    if(validDistanceCount > 0)
+    {
+        lodLayers[lodLayers.size() - 1].farDistanceSq = LodComponent::INFINITY_LOD_DISTANCE_SQ;
+    }
 }
+
+LodComponent::QualityContainer* LodComponent::FindQualityItem(const FastName& qualityName)
+{
+    LodComponent::QualityContainer* item = NULL;
+    
+    if(qualityContainer)
+    {
+        size_t qualityCount = qualityContainer->size();
+        for(size_t i = 0; i < qualityCount; ++i)
+        {
+            QualityContainer& containerItem = (*qualityContainer)[i];
+            
+            if(qualityName == containerItem.qualityName)
+            {
+                item = &containerItem;
+                break;
+            }
+        }
+    }
+    
+    return item;
+}
+
 
 };

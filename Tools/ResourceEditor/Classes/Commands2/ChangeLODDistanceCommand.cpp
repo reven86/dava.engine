@@ -32,12 +32,14 @@
 
 using namespace DAVA;
 
-ChangeLODDistanceCommand::ChangeLODDistanceCommand(DAVA::LodComponent *lod, DAVA::int32 lodLayer, DAVA::float32 distance)
+ChangeLODDistanceCommand::ChangeLODDistanceCommand(DAVA::LodComponent *lod, DAVA::int32 lodLayer, DAVA::float32 distance, DAVA::FastName& qualityName)
 	: Command2(CMDID_LOD_DISTANCE_CHANGE, "Change LOD Distance")
 	, lodComponent(lod)
 	, layer(lodLayer)
 	, newDistance(distance)
 	, oldDistance(0)
+    , quality(qualityName)
+    , oldLayerCount(0)
 {
 
 }
@@ -45,16 +47,42 @@ ChangeLODDistanceCommand::ChangeLODDistanceCommand(DAVA::LodComponent *lod, DAVA
 void ChangeLODDistanceCommand::Redo()
 {
 	if(!lodComponent) return;
+    
+    DVASSERT(lodComponent->qualityContainer);
+    
+    LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(quality);
+    
+    DVASSERT(qualityItem);
+    
+    oldLayerCount = qualityItem->lodLayersArray.size();
+    
+    if(qualityItem->lodLayersArray.size() <= layer)
+    {
+        qualityItem->lodLayersArray.resize(layer + 1);
+    }
 
-	oldDistance = lodComponent->GetLodLayerDistance(layer);
-	lodComponent->SetLodLayerDistance(layer, newDistance);
+	oldDistance = qualityItem->lodLayersArray[layer].distance;
+	lodComponent->SetLodLayerDistance(layer, newDistance, qualityItem->lodLayersArray);
+    
+    lodComponent->SetQuality(quality);
 }
 
 void ChangeLODDistanceCommand::Undo()
 {
 	if(!lodComponent) return;
-
-	lodComponent->SetLodLayerDistance(layer, oldDistance);
+    
+    LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(quality);
+    
+    DVASSERT(qualityItem);
+    
+	lodComponent->SetLodLayerDistance(layer, oldDistance, qualityItem->lodLayersArray);
+    
+    if(oldLayerCount < qualityItem->lodLayersArray.size())
+    {
+       qualityItem->lodLayersArray.resize(oldLayerCount);
+    }
+    
+    lodComponent->SetQuality(quality);
 }
 
 Entity * ChangeLODDistanceCommand::GetEntity() const

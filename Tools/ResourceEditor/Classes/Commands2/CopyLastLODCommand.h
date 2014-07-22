@@ -38,7 +38,7 @@ class CopyLastLODToLod0Command: public Command2
 {
     public:
     //TODO: remove after lod editing implementation
-    DAVA_DEPRECATED(CopyLastLODToLod0Command(DAVA::LodComponent *lod));
+    DAVA_DEPRECATED(CopyLastLODToLod0Command(DAVA::LodComponent *lod, const DAVA::FastName currentQuality));
     ~CopyLastLODToLod0Command();
 
     virtual void Undo();
@@ -48,6 +48,8 @@ class CopyLastLODToLod0Command: public Command2
     DAVA::LodComponent *lodComponent;
     DAVA::Vector<DAVA::RenderBatch *> newBatches;
     DAVA::Vector<DAVA::int32> switchIndices;
+    
+    DAVA::FastName qualityName;
 };
 
 #endif // __COPY_LAST_LOD_COMMAND_H__

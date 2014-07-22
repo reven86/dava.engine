@@ -44,7 +44,7 @@ class QDoubleSpinBox;
 class QLineEdit;
 class SceneEditor2;
 class EditorLODData;
-class QCheckBox;
+class QComboBox;
 
 class LODEditor: public QWidget
 {
@@ -80,10 +80,13 @@ protected slots:
 
 	void EditorModeChanged(int newMode);
     
+    void QualityNameChanged(int index);
+    void LodIndexChanged(int index);
+    
 protected:
 
     void SetupInternalUI();
-    void InitDistanceSpinBox(QCheckBox* check, QLabel *name, QDoubleSpinBox *spinbox, int index);
+    void InitDistanceSpinBox(QComboBox* lodCombo, QLabel *name, QDoubleSpinBox *spinbox, int index);
     
     void SetupSceneSignals();
     
@@ -91,7 +94,7 @@ protected:
     void RemoveLODRecurcive(DAVA::Entity *entity);
     
     void SetSpinboxValue(QDoubleSpinBox *spinbox, double value);
-    void SetForceLayerValues(const DAVA::Set<DAVA::int32>& lodIndices);
+    void SetForceLayerValues(const DAVA::Vector<DAVA::int32>& lodIndices);
     
 	void InvertFrameVisibility(QFrame *frame, QPushButton *frameButton);
     

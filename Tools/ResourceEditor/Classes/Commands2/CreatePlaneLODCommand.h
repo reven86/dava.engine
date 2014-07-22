@@ -38,7 +38,7 @@ Copyright (c) 2008, binaryzebra
 class CreatePlaneLODCommand : public Command2
 {
 public:
-	CreatePlaneLODCommand(DAVA::LodComponent * lodComponent, DAVA::int32 fromLodLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath);
+	CreatePlaneLODCommand(DAVA::LodComponent * lodComponent, DAVA::int32 fromLodLayer, DAVA::uint32 textureSize, const DAVA::FilePath & texturePath, const DAVA::FastName& currentQuality);
     ~CreatePlaneLODCommand();
 
     virtual void Undo();
@@ -60,7 +60,7 @@ protected:
     static bool IsHorisontalMesh(const DAVA::AABBox3 & bbox);
 
     DAVA::LodComponent * lodComponent;
-    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
+    DAVA::Vector<DAVA::LodComponent::QualityContainer> savedDistances;
     
     DAVA::RenderBatch * planeBatch;
     DAVA::Image *planeImage;
@@ -71,6 +71,9 @@ protected:
     DAVA::int32 fromLodLayer;
     DAVA::uint32 textureSize;
     DAVA::FilePath textureSavePath;
+    
+    DAVA::FastName qualityName;
+    DAVA::int32 oldLayerCount;
 };
 
 

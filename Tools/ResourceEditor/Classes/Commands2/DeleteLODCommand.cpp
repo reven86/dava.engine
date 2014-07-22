@@ -35,18 +35,20 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent *lod, DAVA::int32 lodIndex, DAVA::int32 switchIndex)
+DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent *lod, DAVA::int32 lodIndex, DAVA::int32 switchIndex, const DAVA::FastName& currentQuality)
 	: Command2(CMDID_LOD_DELETE, "Delete LOD")
 	, lodComponent(lod)
     , deletedLodIndex(lodIndex)
     , requestedSwitchIndex(switchIndex)
+    , qualityName(currentQuality)
 {
     DVASSERT(lodComponent);
     DAVA::RenderObject *ro = DAVA::GetRenderObject(GetEntity());
     DVASSERT(ro);
     DVASSERT(ro->GetType() != DAVA::RenderObject::TYPE_PARTICLE_EMTITTER);
 
-    savedDistances = lodComponent->lodLayersArray;
+    DVASSERT(lodComponent->qualityContainer);
+    savedDistances = *(lodComponent->qualityContainer);
 }
 
 DeleteLODCommand::~DeleteLODCommand()
@@ -63,58 +65,40 @@ void DeleteLODCommand::Redo()
 {
     DVASSERT(deletedBatches.size() == 0);
 
-    DAVA::Entity *entity = GetEntity();
-    DAVA::RenderObject *ro = DAVA::GetRenderObject(entity);
-
-    //save renderbatches
-    DAVA::int32 count = (DAVA::int32)ro->GetRenderBatchCount();
-    for(DAVA::int32 i = count-1; i >= 0; --i)
+    DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+    
+    DVASSERT(qualityItem);
+    
+    for(DAVA::Vector<DAVA::LodComponent::LodDistance>::iterator it = qualityItem->lodLayersArray.begin();
+        it != qualityItem->lodLayersArray.end();
+        ++it)
     {
-        DAVA::int32 lodIndex = 0, switchIndex = 0;
-        DAVA::RenderBatch *batch = ro->GetRenderBatch(i, lodIndex, switchIndex);
-        if(lodIndex == deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
+        DAVA::LodComponent::LodDistance& lodDistanceItem = *it;
+        if(deletedLodIndex == lodDistanceItem.lodIndex)
         {
-            DeleteRenderBatchCommand *command = new DeleteRenderBatchCommand(entity, ro, i);
-            deletedBatches.push_back(command);
-
-            RedoInternalCommand(command);
+            it = qualityItem->lodLayersArray.erase(it);
+            
+            if(qualityItem->lodLayersArray.end() == it)
+            {
+                break;
+            }
         }
     }
     
-    //update indexes
-    count = ro->GetRenderBatchCount();
-    for(DAVA::int32 i = (DAVA::int32)count - 1; i >= 0; --i)
+    if(qualityItem->lodLayersArray.size() > 0)
     {
-        DAVA::int32 lodIndex = 0, switchIndex = 0;
-        DAVA::RenderBatch *batch = ro->GetRenderBatch(i, lodIndex, switchIndex);
-        if(lodIndex > deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
-        {
-            batch->Retain();
-            
-            ro->RemoveRenderBatch(i);
-            ro->AddRenderBatch(batch, lodIndex - 1, switchIndex);
-            
-            batch->Release();
-        }
-    }
-
-    //update distances
-    DAVA::int32 lodCount = lodComponent->lodLayersArray.size();
-    for(DAVA::int32 i = deletedLodIndex; i < lodCount - 1; ++i)
-    {
-        lodComponent->lodLayersArray[i] = lodComponent->lodLayersArray[i+1];
+        qualityItem->lodLayersArray[qualityItem->lodLayersArray.size() - 1].SetFarDistance(2 * DAVA::LodComponent::MAX_LOD_DISTANCE);
+        
+        lodComponent->SetLodLayerDistance(0, 0, qualityItem->lodLayersArray);
+        qualityItem->lodLayersArray[0].SetNearDistance(0.0f);
     }
     
-    //last lod
-    DAVA::uint32 layersSize = ro->GetMaxLodIndex() + 1;
-    if(layersSize)
-    {
-        lodComponent->lodLayersArray[layersSize-1].SetFarDistance(2 * DAVA::LodComponent::MAX_LOD_DISTANCE);
-    }
+    lodComponent->SetQuality(qualityName);
     
-    //first lod
-    lodComponent->SetLodLayerDistance(0, 0);
-    lodComponent->lodLayersArray[0].SetNearDistance(0.0f);
+    if(!ContainsLodIndex(deletedLodIndex))
+    {
+        DeleteRenderBatches();
+    }
     
     //visual part
     lodComponent->currentLod = DAVA::LodComponent::INVALID_LOD_LAYER;
@@ -125,25 +109,8 @@ void DeleteLODCommand::Undo()
 {
     DAVA::RenderObject *ro = DAVA::GetRenderObject(GetEntity());
 
-    //restore lodindexes
-    DAVA::uint32 count = ro->GetRenderBatchCount();
-    for(DAVA::int32 i = (DAVA::int32)count - 1; i >= 0; --i)
-    {
-        DAVA::int32 lodIndex = 0, switchIndex = 0;
-        DAVA::RenderBatch *batch = ro->GetRenderBatch(i, lodIndex, switchIndex);
-        if(lodIndex >= deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
-        {
-            batch->Retain();
-            
-            ro->RemoveRenderBatch(i);
-            ro->AddRenderBatch(batch, lodIndex + 1, switchIndex);
-            
-            batch->Release();
-        }
-    }
-
     //restore batches
-    count = (DAVA::uint32)deletedBatches.size();
+    DAVA::uint32 count = (DAVA::uint32)deletedBatches.size();
     for(DAVA::uint32 i = 0; i < count; ++i)
     {
         UndoInternalCommand(deletedBatches[i]);
@@ -152,7 +119,9 @@ void DeleteLODCommand::Undo()
     deletedBatches.clear();
 
     //restore lodlayers and disatnces
-    lodComponent->lodLayersArray = savedDistances;
+    (*lodComponent->qualityContainer) = savedDistances;
+    
+    lodComponent->SetQuality(qualityName);
 }
 
 
@@ -166,5 +135,49 @@ const DAVA::Vector<DeleteRenderBatchCommand *> & DeleteLODCommand::GetRenderBatc
     return deletedBatches;
 }
 
+bool DeleteLODCommand::ContainsLodIndex(DAVA::int32 lodIndex)
+{
+    bool containsIndex = false;
+    
+    size_t qualityCount = lodComponent->qualityContainer->size();
+    for(size_t qualityIndex = 0; qualityIndex < qualityCount; ++qualityIndex)
+    {
+        DAVA::LodComponent::QualityContainer& qualityContainer = (*lodComponent->qualityContainer)[qualityIndex];
+        
+        size_t distanceCount = qualityContainer.lodLayersArray.size();
+        for(size_t distanceIndex = 0; distanceIndex < distanceCount; ++distanceIndex)
+        {
+            DAVA::LodComponent::LodDistance& distanceInfo = qualityContainer.lodLayersArray[distanceIndex];
+         
+            if(lodIndex == distanceInfo.lodIndex)
+            {
+                containsIndex = true;
+                break;
+            }
+        }
+    }
+    
+    return containsIndex;
+}
 
+void DeleteLODCommand::DeleteRenderBatches()
+{
+    DAVA::Entity *entity = GetEntity();
+    DAVA::RenderObject *ro = DAVA::GetRenderObject(entity);
+    
+    //save renderbatches
+    DAVA::int32 count = (DAVA::int32)ro->GetRenderBatchCount();
+    for(DAVA::int32 i = count-1; i >= 0; --i)
+    {
+        DAVA::int32 lodIndex = 0, switchIndex = 0;
+        DAVA::RenderBatch *batch = ro->GetRenderBatch(i, lodIndex, switchIndex);
+        if(lodIndex == deletedLodIndex && (requestedSwitchIndex == switchIndex || requestedSwitchIndex == -1))
+        {
+            DeleteRenderBatchCommand *command = new DeleteRenderBatchCommand(entity, ro, i);
+            deletedBatches.push_back(command);
+            
+            RedoInternalCommand(command);
+        }
+    }
+}
 

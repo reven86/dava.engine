@@ -37,7 +37,7 @@
 class ChangeLODDistanceCommand: public Command2
 {
 public:
-	ChangeLODDistanceCommand(DAVA::LodComponent *lod, DAVA::int32 lodLayer, DAVA::float32 distance);
+	ChangeLODDistanceCommand(DAVA::LodComponent *lod, DAVA::int32 lodLayer, DAVA::float32 distance, DAVA::FastName& qualityName);
 
 	virtual void Undo();
 	virtual void Redo();
@@ -49,6 +49,9 @@ protected:
 	DAVA::int32 layer;
 	DAVA::float32 newDistance;
 	DAVA::float32 oldDistance;
+    size_t oldLayerCount;
+    
+    DAVA::FastName quality;
 };
 
 #endif // __CHANGE_LOD_DISTANCE_COMMAND_H__
