@@ -30,6 +30,7 @@
 #include "Render/2D/Font.h"
 #include "Core/Core.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "FontManager.h"
 
 #include "Utils/StringFormat.h"

@@ -78,15 +78,23 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForLocalizedText()
     for (int i = 0; i < statesCount; i ++)
     {
         UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
-        if (curState == GetReferenceState())
-        {
-            continue;
-        }
-            
+
         bool curStateDirty = (GetLocalizedTextKeyForState(curState) !=
                               GetLocalizedTextKeyForState(GetReferenceState()));
         SetStateDirtyForProperty(curState, PropertyNames::LOCALIZED_TEXT_KEY_PROPERTY_NAME, curStateDirty);
     }
+}
+
+QString DAVA::UIButtonMetadata::GetLocalizedTextKeyForState( UIControl::eControlState controlState ) const
+{
+    // Return the localization key from the Hierarchy Tree node.
+    HierarchyTreeNode *node = this->GetActiveTreeNode();
+    if (node)
+    {
+        controlState = UIButton::DrawStateToControlState(GetActiveUIButton()->GetActualTextBlockState(UIButton::ControlStateToDrawState(controlState)));
+        return WideString2QString(node->GetExtraData().GetLocalizationKey(controlState));
+    }
+    return QString();
 }
 
 Font * UIButtonMetadata::GetFont()
@@ -770,21 +778,15 @@ void UIButtonMetadata::InitializeControl(const String& controlName, const Vector
         WideString controlText = StringToWString(button->GetName());
         HierarchyTreeNode* activeNode = GetTreeNode(i);
     
-        // Initialize the button for all states.
-        int statesCount = UIControlStateHelper::GetUIControlStatesCount();
-        for (int stateID = 0; stateID < statesCount; stateID ++)
-        {
-            UIControl::eControlState state = UIControlStateHelper::GetUIControlState(stateID);
-            button->SetStateFont(state, EditorFontManager::Instance()->GetDefaultFont());
-            button->SetStateText(state, controlText);
-            button->SetStateTextAlign(state, ALIGN_HCENTER | ALIGN_VCENTER);
-
-            // Button is state-aware.
-            activeNode->GetExtraData().SetLocalizationKey(controlText, state);
-        }
-        
         // Define some properties for the reference state.
-        button->SetStateDrawType(GetReferenceState(), UIControlBackground::DRAW_SCALE_TO_RECT);
+        UIControl::eControlState refState = GetReferenceState();
+        button->SetStateFont(refState, EditorFontManager::Instance()->GetDefaultFont());
+        button->SetStateText(refState, controlText);
+        button->SetStateTextAlign(refState, ALIGN_HCENTER | ALIGN_VCENTER);
+        button->SetStateDrawType(refState, UIControlBackground::DRAW_SCALE_TO_RECT);
+
+        // Button is state-aware.
+        activeNode->GetExtraData().SetLocalizationKey(controlText, refState);
     }
 }
 
@@ -802,7 +804,7 @@ void UIButtonMetadata::UpdateExtraData(HierarchyTreeNodeExtraData& extraData, eE
     for (int stateID = 0; stateID < statesCount; stateID ++)
     {
         UIControl::eControlState state = UIControlStateHelper::GetUIControlState(stateID);
-        UIStaticText* textControl = button->GetStateTextControl(state);
+        UIStaticText* textControl = button->GetTextBlock(UIButton::ControlStateToDrawState(state));
         if (!textControl)
         {
             continue;

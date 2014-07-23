@@ -27,9 +27,11 @@
 =====================================================================================*/
 
 #include "SoundComponent.h"
+#include "TransformComponent.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
 #include "Base/FastName.h"
+#include "ComponentHelpers.h"
 
 namespace DAVA
 {
@@ -51,6 +53,20 @@ void SoundComponent::AddSoundEvent(SoundEvent * _event)
 
     SafeRetain(_event);
     events.push_back(_event);
+
+    TransformComponent * transformCoponent = GetTransformComponent(entity);
+    if(transformCoponent)
+    {
+        const Matrix4 & worldTransform = transformCoponent->GetWorldTransform();
+        Vector3 translation = worldTransform.GetTranslationVector();
+        _event->SetPosition(translation);
+
+        if(_event->IsDirectional())
+        {
+            Vector3 worldDirection = MultiplyVectorMat3x3(GetLocalDirection(), worldTransform);
+            _event->SetDirection(worldDirection);
+        }
+    }
 }
 
 void SoundComponent::RemoveSoundEvent(SoundEvent * event)
@@ -72,7 +88,10 @@ void SoundComponent::RemoveAllEvents()
 {
     uint32 eventsCount = events.size();
     for(uint32 i = 0; i < eventsCount; ++i)
+    {
+        events[i]->Stop();
         SafeRelease(events[i]);
+    }
 
     events.clear();
 }
@@ -87,9 +106,10 @@ Component * SoundComponent::Clone(Entity * toEntity)
     SoundComponent * soundComponent = new SoundComponent();
     soundComponent->SetEntity(toEntity);
     
+    SoundSystem * soundSystem = SoundSystem::Instance();
     int32 eventCount = events.size();
     for(int32 i = 0; i < eventCount; ++i)
-        soundComponent->AddSoundEvent(events[i]);
+        soundComponent->AddSoundEvent(soundSystem->CloneEvent(events[i]));
     
     soundComponent->localDirection = localDirection;
 

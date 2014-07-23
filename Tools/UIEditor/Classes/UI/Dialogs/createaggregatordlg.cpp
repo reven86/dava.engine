@@ -30,6 +30,7 @@
 #include "Classes/UI/Dialogs/createaggregatordlg.h"
 #include "ui_createaggregatordlg.h"
 #include "HierarchyTreeController.h"
+#include "LibraryController.h"
 
 #include <QMessageBox>
 
@@ -104,7 +105,14 @@ void CreateAggregatorDlg::accept()
 		
 		if(paltfromNode && !paltfromNode->IsAggregatorOrScreenNamePresent(name))
 		{
-			QDialog::accept();
+            if(LibraryController::Instance()->IsControlNameExists(name))
+            {
+                errorMsg = "Please fill aggregator name field with unique value.\r\n The same name with any of library controls is forbidden.";
+            }
+            else
+            {
+                QDialog::accept();
+            }
 		}
 		else
 		{

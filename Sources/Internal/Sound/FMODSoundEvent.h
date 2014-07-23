@@ -72,7 +72,8 @@ public:
     virtual void GetEventParametersInfo(Vector<SoundEventParameterInfo> & paramsInfo) const;
 
     virtual String GetEventName() const;
-    
+    virtual float32 GetMaxDistance() const;
+
 protected:
     FMODSoundEvent(const FastName & eventName);
     void ApplyParamsToEvent(FMOD::Event * event);

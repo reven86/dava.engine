@@ -208,9 +208,9 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	int32 fullTiledWidth = fullTiledTexture->GetWidth();
 	int32 fullTiledHeight = fullTiledTexture->GetHeight();
 	Sprite* fullTiledSprite = Sprite::CreateFromTexture(fullTiledTexture, 0, 0,
-														(float32)fullTiledWidth, (float32)fullTiledHeight);
+														(float32)fullTiledWidth, (float32)fullTiledHeight, true);
 
-	Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)fullTiledWidth, (float32)fullTiledHeight, FORMAT_RGBA8888);
+	Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)fullTiledWidth, (float32)fullTiledHeight, FORMAT_RGBA8888, true);
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
 	
     Sprite::DrawState drawState;
@@ -223,7 +223,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	if (notPassableTexture && texturesEnabled[TEXTURE_TYPE_NOT_PASSABLE])
 	{
 		RenderManager::Instance()->SetColor(Color::White);
-		notPassableSprite = Sprite::CreateFromTexture(notPassableTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight);
+		notPassableSprite = Sprite::CreateFromTexture(notPassableTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
         drawState.Reset();
 		notPassableSprite->Draw(&drawState);
@@ -235,7 +235,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	if (customColorsTexture && texturesEnabled[TEXTURE_TYPE_CUSTOM_COLORS])
 	{
 		RenderManager::Instance()->SetColor(1.f, 1.f, 1.f, .5f);
-		customColorsSprite = Sprite::CreateFromTexture(customColorsTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight);
+		customColorsSprite = Sprite::CreateFromTexture(customColorsTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
         drawState.Reset();
 		customColorsSprite->Draw(&drawState);
@@ -248,7 +248,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	if (visibilityCheckToolTexture && texturesEnabled[TEXTURE_TYPE_VISIBILITY_CHECK_TOOL])
 	{
 		RenderManager::Instance()->SetColor(Color::White);
-		visibilityCheckToolSprite = Sprite::CreateFromTexture(visibilityCheckToolTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight);
+		visibilityCheckToolSprite = Sprite::CreateFromTexture(visibilityCheckToolTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
         drawState.Reset();
 		visibilityCheckToolSprite->Draw(&drawState);
@@ -260,7 +260,7 @@ void LandscapeProxy::UpdateDisplayedTexture()
 	if (rulerToolTexture && texturesEnabled[TEXTURE_TYPE_RULER_TOOL])
 	{
 		RenderManager::Instance()->SetColor(Color::White);
-		rulerToolSprite = Sprite::CreateFromTexture(rulerToolTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight);
+		rulerToolSprite = Sprite::CreateFromTexture(rulerToolTexture, 0, 0, (float32)fullTiledWidth, (float32)fullTiledHeight, true);
         
         drawState.Reset();
 		rulerToolSprite->Draw(&drawState);
@@ -439,8 +439,8 @@ void LandscapeProxy::InitTilemaskSprites()
 		SafeRelease(tilemaskSprites[TILEMASK_SPRITE_DESTINATION]);
 
 		float32 texSize = (float32)GetLandscapeTexture(Landscape::TEXTURE_TILE_MASK)->GetWidth();
-		tilemaskSprites[TILEMASK_SPRITE_SOURCE] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888);
-		tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888);
+		tilemaskSprites[TILEMASK_SPRITE_SOURCE] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888, true);
+		tilemaskSprites[TILEMASK_SPRITE_DESTINATION] = Sprite::CreateAsRenderTarget(texSize, texSize, FORMAT_RGBA8888, true);
 	}
 }
 

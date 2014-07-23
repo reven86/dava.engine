@@ -262,9 +262,17 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo> & pa
 {
     paramsInfo.clear();
 
-    FMOD::EventSystem * fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
     FMOD::Event * event = 0;
-    fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event);
+    if(fmodEventInstances.size())
+    {
+        event = fmodEventInstances[0];
+    }
+    else
+    {
+        FMOD::EventSystem * fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
+        fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event);
+    }
+
     if(!event)
         return;
 
@@ -292,6 +300,19 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo> & pa
 String FMODSoundEvent::GetEventName() const
 {
      return String(eventName.c_str());
+}
+
+float32 FMODSoundEvent::GetMaxDistance() const
+{
+    float32 distance = 0;
+    FMOD::Event * fmodEventInfo = 0;
+    SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+    if(fmodEventInfo)
+    {
+        fmodEventInfo->getPropertyByIndex(FMOD_EVENTPROPERTY_3D_MAXDISTANCE, &distance);
+    }
+
+    return distance;
 }
 
 FMOD_RESULT F_CALLBACK FMODSoundEvent::FMODEventCallback(FMOD_EVENT *event, FMOD_EVENT_CALLBACKTYPE type, void *param1, void *param2, void *userdata)

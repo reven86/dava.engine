@@ -36,6 +36,7 @@
 #include "Core/Core.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "FileSystem/FilePath.h"
 
 #include <ft2build.h>

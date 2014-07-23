@@ -121,6 +121,9 @@ public:
     void ClearOcclusionObjects();
     void CollectOcclusionObjectsRecursively(Entity *entity);
 
+    void InvalidateOcclusion();
+    void InvalidateOcclusionIndicesRecursively(Entity *entity);
+
 
 private:
     Camera * camera;

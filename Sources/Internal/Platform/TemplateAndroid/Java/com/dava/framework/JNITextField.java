@@ -216,7 +216,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void UpdateRect(final int id, final float x, final float y,
@@ -285,7 +285,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetIsPassword(int id, final boolean isPassword) {
@@ -337,7 +337,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetTextAlign(int id, final int align) {
@@ -368,7 +368,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetInputEnabled(int id, final boolean value) {
@@ -383,7 +383,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetAutoCapitalizationType(int id, final int autoCapitalizationType) {
@@ -417,7 +417,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetAutoCorrectionType(int id, final int autoCorrectionType) {
@@ -443,7 +443,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetSpellCheckingType(int id, final int spellCheckingType) {
@@ -469,7 +469,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 		
 	public static void SetKeyboardType(int id, final int keyboardType) {
@@ -513,7 +513,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetReturnKeyType(int id, final int returnKeyType) {
@@ -554,7 +554,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void ShowField(int id) {

@@ -594,5 +594,19 @@ void StaticOcclusionSystem::CollectOcclusionObjectsRecursively(Entity *entity)
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         CollectOcclusionObjectsRecursively(entity->GetChild(i));
 }
+
+void StaticOcclusionSystem::InvalidateOcclusion()
+{    
+    InvalidateOcclusionIndicesRecursively(GetScene());
+    indexedRenderObjects.clear();
+}
+void StaticOcclusionSystem::InvalidateOcclusionIndicesRecursively(Entity *entity)
+{
+    RenderObject * ro = GetRenderObject(entity);
+    if (ro)
+        ro->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        InvalidateOcclusionIndicesRecursively(entity->GetChild(i));
+}
     
 };

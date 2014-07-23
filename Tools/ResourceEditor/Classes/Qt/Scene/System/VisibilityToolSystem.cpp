@@ -558,7 +558,7 @@ void VisibilityToolSystem::DrawVisibilityAreaPoints(const Vector<DAVA::Vector3> 
 
 		manager->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
 		manager->SetColor(areaPointColors[colorIndex]);
-		helper->DrawPoint(pos, 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
+		helper->DrawPoint(pos / Core::GetVirtualToPhysicalFactor(), 5.f, DAVA::RenderState::RENDERSTATE_2D_BLEND);
 	}
 
 	manager->ResetColor();

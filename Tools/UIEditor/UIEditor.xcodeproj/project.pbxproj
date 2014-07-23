@@ -89,6 +89,10 @@
 		02E9E449173A3AED00C501BC /* libfmodevent.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E447173A3AED00C501BC /* libfmodevent.dylib */; };
 		02E9E44A173A3AED00C501BC /* libfmodex.dylib in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 02E9E448173A3AED00C501BC /* libfmodex.dylib */; };
 		0C6D4628EE0B0D1479A20551 /* AGL.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = C6766F86E49E9C8701C8E637 /* AGL.framework */; };
+		155D77C4197DB65D006AEBCD /* UIListCellPropertyGridWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 155D77C2197DB65D006AEBCD /* UIListCellPropertyGridWidget.cpp */; };
+		155D77C7197DBAAE006AEBCD /* UIListCellPropertyGridWidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 155D77C6197DBAAE006AEBCD /* UIListCellPropertyGridWidget_moc.cpp */; };
+		155D77CA197DCAB2006AEBCD /* UIListCellMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 155D77C8197DCAB2006AEBCD /* UIListCellMetadata.cpp */; };
+		155D77CC197DCB64006AEBCD /* UIListCellMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 155D77CB197DCB64006AEBCD /* UIListCellMetadata_moc.cpp */; };
 		1700E418162EB2C20069650D /* basepropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1700E416162EB2C20069650D /* basepropertygridwidget.cpp */; };
 		1700E41D162EB8C60069650D /* rectpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1700E41B162EB8C60069650D /* rectpropertygridwidget.cpp */; };
 		1707BA111709C90D00D69DC0 /* SubcontrolsHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 1707BA0F1709C90D00D69DC0 /* SubcontrolsHelper.cpp */; };
@@ -477,6 +481,13 @@
 		02D69C9A16F08CEE00F3803F /* ui_statepropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_statepropertygridwidget.h; sourceTree = "<group>"; };
 		02E9E447173A3AED00C501BC /* libfmodevent.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodevent.dylib; path = ../../Libs/fmod/lib/macos/libfmodevent.dylib; sourceTree = "<group>"; };
 		02E9E448173A3AED00C501BC /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../../Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = "<group>"; };
+		155D77C2197DB65D006AEBCD /* UIListCellPropertyGridWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIListCellPropertyGridWidget.cpp; path = PropertyGridWidgets/UIListCellPropertyGridWidget.cpp; sourceTree = "<group>"; };
+		155D77C3197DB65D006AEBCD /* UIListCellPropertyGridWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIListCellPropertyGridWidget.h; path = PropertyGridWidgets/UIListCellPropertyGridWidget.h; sourceTree = "<group>"; };
+		155D77C6197DBAAE006AEBCD /* UIListCellPropertyGridWidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIListCellPropertyGridWidget_moc.cpp; sourceTree = "<group>"; };
+		155D77C8197DCAB2006AEBCD /* UIListCellMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIListCellMetadata.cpp; path = Metadata/UIListCellMetadata.cpp; sourceTree = "<group>"; };
+		155D77C9197DCAB2006AEBCD /* UIListCellMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIListCellMetadata.h; path = Metadata/UIListCellMetadata.h; sourceTree = "<group>"; };
+		155D77CB197DCB64006AEBCD /* UIListCellMetadata_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIListCellMetadata_moc.cpp; sourceTree = "<group>"; };
+		155D77CD197DCB9F006AEBCD /* ui_UIListCellPropertyGridWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_UIListCellPropertyGridWidget.h; sourceTree = "<group>"; };
 		1700E416162EB2C20069650D /* basepropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = basepropertygridwidget.cpp; path = PropertyGridWidgets/basepropertygridwidget.cpp; sourceTree = "<group>"; };
 		1700E417162EB2C20069650D /* basepropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = basepropertygridwidget.h; path = PropertyGridWidgets/basepropertygridwidget.h; sourceTree = "<group>"; };
 		1700E41B162EB8C60069650D /* rectpropertygridwidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rectpropertygridwidget.cpp; path = PropertyGridWidgets/rectpropertygridwidget.cpp; sourceTree = "<group>"; };
@@ -942,6 +953,7 @@
 		02D69C4616F08CED00F3803F /* Metadata */ = {
 			isa = PBXGroup;
 			children = (
+				155D77CB197DCB64006AEBCD /* UIListCellMetadata_moc.cpp */,
 				179DCDA31918E2C700BE6F43 /* UI3DViewMetadata_moc.cpp */,
 				17C4116718C9CE01002BA05F /* UIJoypadMetadata_moc.cpp */,
 				17183C3418C8800400491E66 /* UIMovieViewMetadata_moc.cpp */,
@@ -1026,6 +1038,7 @@
 		02D69C7616F08CED00F3803F /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
+				155D77C6197DBAAE006AEBCD /* UIListCellPropertyGridWidget_moc.cpp */,
 				170A18B1190F8FD700252A1F /* webviewpropertygridwidget_moc.cpp */,
 				17C411B118CA0B1E002BA05F /* joypadpropertygridwidget_moc.cpp */,
 				17A1226718F44AC800780837 /* Custom */,
@@ -1083,6 +1096,8 @@
 		1700E40B162EAD760069650D /* PropertyGridWidgets */ = {
 			isa = PBXGroup;
 			children = (
+				155D77C2197DB65D006AEBCD /* UIListCellPropertyGridWidget.cpp */,
+				155D77C3197DB65D006AEBCD /* UIListCellPropertyGridWidget.h */,
 				170A18AC190F8EF300252A1F /* webviewpropertygridwidget.cpp */,
 				170A18AD190F8EF300252A1F /* webviewpropertygridwidget.h */,
 				17C411AE18CA0966002BA05F /* joypadpropertygridwidget.cpp */,
@@ -1268,6 +1283,8 @@
 		176D3958162C3C8C0099AACF /* Metadata */ = {
 			isa = PBXGroup;
 			children = (
+				155D77C8197DCAB2006AEBCD /* UIListCellMetadata.cpp */,
+				155D77C9197DCAB2006AEBCD /* UIListCellMetadata.h */,
 				179DCD9B1918DFD800BE6F43 /* UI3DViewMetadata.cpp */,
 				179DCD9C1918DFD800BE6F43 /* UI3DViewMetadata.h */,
 				17A1225318F43D7C00780837 /* Custom */,
@@ -1537,6 +1554,7 @@
 		C15C2FC9162AD5DD00818631 /* GeneratedFiles */ = {
 			isa = PBXGroup;
 			children = (
+				155D77CD197DCB9F006AEBCD /* ui_UIListCellPropertyGridWidget.h */,
 				17A1226A18F4515400780837 /* ui_guidepropertygridwidget.h */,
 				17716B5518A90DB0005BA215 /* Guides */,
 				17660BBD186B21EF00CF7A14 /* Ruler */,
@@ -1956,6 +1974,7 @@
 				C14FF9C2162EE4DF00F77F70 /* controllist.cpp in Build Sources */,
 				7426F56518D85918003D3D25 /* rootpropertygridwidget_moc.cpp in Build Sources */,
 				17E897F3162FEB3600A2A946 /* MetadataFactory.cpp in Build Sources */,
+				155D77CA197DCAB2006AEBCD /* UIListCellMetadata.cpp in Build Sources */,
 				173AC331162FFFC300A773F5 /* PropertiesGridController.cpp in Build Sources */,
 				173AC33A1630137400A773F5 /* controlpropertygridwidget.cpp in Build Sources */,
 				173AC33B1630137400A773F5 /* flagspropertygridwidget.cpp in Build Sources */,
@@ -2018,6 +2037,7 @@
 				1710178B16EE197900BC7AE0 /* UIListMetadata.cpp in Build Sources */,
 				1710179016EE2F3200BC7AE0 /* UISpinnerMetadata.cpp in Build Sources */,
 				1746932818A3E99D0089EFF5 /* particleeffectpropertygridwidget_moc.cpp in Build Sources */,
+				155D77CC197DCB64006AEBCD /* UIListCellMetadata_moc.cpp in Build Sources */,
 				174226D518A276F3003D53F4 /* editpreviewsettingsdialog.cpp in Build Sources */,
 				02D69C9D16F08CEE00F3803F /* BaseCommand_moc.cpp in Build Sources */,
 				02D69C9E16F08CEE00F3803F /* ChangePropertyCommand_moc.cpp in Build Sources */,
@@ -2039,6 +2059,7 @@
 				02D69CAC16F08CEE00F3803F /* BackgroundGridWidgetHelper_moc.cpp in Build Sources */,
 				17C4116818C9CE01002BA05F /* UIJoypadMetadata_moc.cpp in Build Sources */,
 				02D69CAD16F08CEE00F3803F /* LocalizationSystemHelper_moc.cpp in Build Sources */,
+				155D77C7197DBAAE006AEBCD /* UIListCellPropertyGridWidget_moc.cpp in Build Sources */,
 				02D69CAE16F08CEE00F3803F /* PropertiesHelper_moc.cpp in Build Sources */,
 				C746392318DCE8640045C57B /* editfontdialog.cpp in Build Sources */,
 				02D69CAF16F08CEE00F3803F /* ResourcesManageHelper_moc.cpp in Build Sources */,
@@ -2156,6 +2177,7 @@
 				17C411B018CA0966002BA05F /* joypadpropertygridwidget.cpp in Build Sources */,
 				74BCC57718D0673100C98406 /* errorslistdialog_moc.cpp in Build Sources */,
 				84B61F7B1727CF560011E66D /* textpropertygridwidget_moc.cpp in Build Sources */,
+				155D77C4197DB65D006AEBCD /* UIListCellPropertyGridWidget.cpp in Build Sources */,
 				1712331E1741118F0051D960 /* PropertyNames.cpp in Build Sources */,
 				749EBEF4178D9C3000D0699F /* ListPropertyGridWidgetHelper.cpp in Build Sources */,
 				1746932E18A3EFF40089EFF5 /* InvokeMethodCommand.cpp in Build Sources */,

@@ -31,6 +31,7 @@
 #include "Render/Material/MaterialGraph.h"
 
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/StringFormat.h"
 #include "Render/Shader.h"

@@ -503,7 +503,7 @@ void VegetationRenderObject::PrepareToRenderMultipleMaterials(Camera *camera)
             posScale.y = treeNode->data.bbox.min.y - unitWorldSize[resolutionIndex].y * (indexBufferIndex / RESOLUTION_TILES_PER_ROW[resolutionIndex]);
             posScale.z = distanceScale;
             
-            switchLodScale.x = resolutionIndex;
+            switchLodScale.x = (float32)resolutionIndex;
             switchLodScale.y = Clamp(1.0f - (treeNode->data.cameraDistance / resolutionRanges[resolutionIndex].y), 0.0f, 1.0f);
             
             for(uint32 i = 0; i < 4; ++i)
@@ -607,7 +607,7 @@ void VegetationRenderObject::PrepareToRenderSingleMaterial(Camera *camera)
         posScale.y = treeNode->data.bbox.min.y - unitWorldSize[resolutionIndex].y * (indexBufferIndex / RESOLUTION_TILES_PER_ROW[resolutionIndex]);
         posScale.z = distanceScale;
         
-        switchLodScale.x = resolutionIndex;
+        switchLodScale.x = (float32)resolutionIndex;
         switchLodScale.y = Clamp(1.0f - (treeNode->data.cameraDistance / resolutionRanges[resolutionIndex].y), 0.0f, 1.0f);
         
         for(uint32 i = 0; i < 4; ++i)
@@ -799,7 +799,7 @@ void VegetationRenderObject::BuildVisibleCellList(const Vector3& cameraPoint,
                 
                 uint32 resolutionId = MapToResolution(refDistance);
                 if(node->IsTerminalLeaf() ||
-                   RESOLUTION_CELL_SQUARE[resolutionId] >= node->data.GetResolutionId())
+                   RESOLUTION_CELL_SQUARE[resolutionId] >= (uint32)node->data.GetResolutionId())
                 {
                     AddVisibleCell(node, MAX_VISIBLE_CLIPPING_DISTANCE,
                                    cellList);
@@ -893,8 +893,8 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
     
 float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 {
-    uint32 hX = heightmapToVegetationMapScale.x * x;
-    uint32 hY = heightmapToVegetationMapScale.y * y;
+    uint32 hX = (uint32)(heightmapToVegetationMapScale.x * x);
+    uint32 hY = (uint32)(heightmapToVegetationMapScale.y * y);
     
     uint16 left = (hX > 0) ? *(heightmap->Data() + ((hY * heightmap->Size()) + hX - 1)) : *(heightmap->Data() + ((hY * heightmap->Size()) + hX));
     uint16 right = (hX < halfWidth) ? *(heightmap->Data() + ((hY * heightmap->Size()) + hX + 1)) : *(heightmap->Data() + ((hY * heightmap->Size()) + hX));

@@ -42,6 +42,7 @@
 #include "SubcontrolsHelper.h"
 #include "ResourcesManageHelper.h"
 #include "WidgetSignalsBlocker.h"
+#include "LibraryController.h"
 
 #include "regexpinputdialog.h"
 
@@ -251,6 +252,7 @@ void HierarchyTreeWidget::RestoreTreeItemSelectedStateRecursive(QTreeWidgetItem*
 		!parentItem->isSelected())
 	{
 		parentItem->setSelected(true);
+        ui->treeWidget->setCurrentItem(parentItem);
 	}
 
 	// Repeat for all children.
@@ -637,6 +639,14 @@ void HierarchyTreeWidget::OnRenameControlAction()
 				msgBox.exec();
 				return;
 			}
+             // Do not allow library control name
+            if(LibraryController::Instance()->IsControlNameExists(newName))
+            {
+                QMessageBox msgBox;
+                msgBox.setText("A library control with the same name already exist. Please fill the name field with unique value.");
+                msgBox.exec();
+                return;
+            }
 		}
 		
 		ControlRenameCommand* cmd = new ControlRenameCommand(node->GetId(), itemName, newName);

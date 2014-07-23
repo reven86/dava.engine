@@ -55,6 +55,12 @@ public:
 	int GetNetworkType();
 	int GetSignalStrength(int networkType);
 
+	DAVA::int64 GetInternalStorageCapacity();
+	DAVA::int64 GetInternalStorageFree();
+	DAVA::int64 GetExternalStorageCapacity();
+	DAVA::int64 GetExternalStorageFree();
+	bool IsExternalStoragePresent();
+
 protected:
 	virtual jclass GetJavaClass() const;
 	virtual const char* GetJavaClassName() const;

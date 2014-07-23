@@ -28,7 +28,6 @@
 
 #include "LodToLod2Converter.h"
 
-#pragma message("LodToLod2Converter remove static int32 emptyEntities = 0;")
 static int32 emptyEntities = 0;
 
 void LodToLod2Converter::ConvertLodToV2(Entity * scene)

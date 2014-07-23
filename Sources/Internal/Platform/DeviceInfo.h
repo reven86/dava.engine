@@ -75,6 +75,19 @@ public:
         }
     };
 
+    struct StorageRecord
+    {
+        String name;
+        int64 totalSpace;
+        int64 freeSpace;
+
+        StorageRecord()
+        :   name("")
+        ,   totalSpace(0)
+        ,   freeSpace(0)
+        {}
+    };
+
 	static ePlatform GetPlatform();
 	static String GetPlatformString();
 	static String GetVersion();
@@ -88,7 +101,7 @@ public:
     static int GetZBufferSize();
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
-    static String GetNetworkTypeString();
+    static List<StorageRecord> GetStorageList();
 };
 
 };

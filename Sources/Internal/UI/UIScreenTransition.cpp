@@ -95,10 +95,6 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	nextScreen = _nextScreen;
 	prevScreen = _prevScreen;
 	
-	Rect screenRect = Rect(Core::Instance()->GetVirtualScreenXMin() , Core::Instance()->GetVirtualScreenYMin()
-						   , Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()
-						   , Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin());
-	
 	RenderManager::Instance()->SetRenderTarget(renderTargetPrevScreen);
 	RenderManager::Instance()->SetVirtualViewOffset();
 	RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -106,12 +102,13 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
     RenderManager::Instance()->FlushState();
     RenderManager::Instance()->Clear(Color(0.0f, 0.0f, 0.0f, 1.0f), 1.0f, 0);
     
-    
-	int32 prevScreenGroupId = 0;
 	if (prevScreen)
 	{
 		prevScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 		
+        if (prevScreen->IsOnScreen())
+            prevScreen->SystemWillBecomeInvisible();
+
 		prevScreen->SystemWillDisappear();
 		// prevScreen->UnloadResources();
 		if (prevScreen->GetGroupId() != nextScreen->GetGroupId())
@@ -179,6 +176,8 @@ void UIScreenTransition::Update(float32 timeElapsed)
 		currentTime = duration;
 		UIControlSystem::Instance()->ReplaceScreen(nextScreen);
 		nextScreen->SystemDidAppear();
+        if (nextScreen->IsOnScreen())
+            nextScreen->SystemWillBecomeVisible();
 		ReleaseRenderTargets();
 		// go to next screen
 		UIControlSystem::Instance()->UnlockInput();

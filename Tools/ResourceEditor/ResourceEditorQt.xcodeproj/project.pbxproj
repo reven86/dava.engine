@@ -43,8 +43,6 @@
 		64B9018718BF7ADE001E6CCC /* GrassEditorPanel_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018618BF7ADE001E6CCC /* GrassEditorPanel_moc.cpp */; };
 		64B9018A18BF7B15001E6CCC /* GrassEditorProxy.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018818BF7B15001E6CCC /* GrassEditorProxy.cpp */; };
 		64B9018D18BF7B25001E6CCC /* GrassEditorSystem.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018B18BF7B25001E6CCC /* GrassEditorSystem.cpp */; };
-		763DCF001964524200D94EB3 /* VersionInfoWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 763DCEFE1964524200D94EB3 /* VersionInfoWidget.cpp */; };
-		763DCF0B1964546C00D94EB3 /* VersionInfoWidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 763DCF0A1964546C00D94EB3 /* VersionInfoWidget_moc.cpp */; };
 		765A0ADB18CE0C7F0044516F /* MaterialTemplateModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */; };
 		765BA22F19406A9E005D6B4E /* BeastDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA22B19406A9E005D6B4E /* BeastDialog.cpp */; };
 		765BA23D19406B0B005D6B4E /* BeastDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */; };
@@ -720,9 +718,6 @@
 		64B9018C18BF7B25001E6CCC /* GrassEditorSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrassEditorSystem.h; sourceTree = "<group>"; };
 		6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtOpenGL.framework; path = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtOpenGL.framework"; sourceTree = "<absolute>"; };
 		6C21256244E578A9DE07EE60 /* xml_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = xml_macos; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
-		763DCEFE1964524200D94EB3 /* VersionInfoWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VersionInfoWidget.cpp; path = DebugTools/VersionInfoWidget/VersionInfoWidget.cpp; sourceTree = "<group>"; };
-		763DCEFF1964524200D94EB3 /* VersionInfoWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VersionInfoWidget.h; path = DebugTools/VersionInfoWidget/VersionInfoWidget.h; sourceTree = "<group>"; };
-		763DCF0A1964546C00D94EB3 /* VersionInfoWidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VersionInfoWidget_moc.cpp; path = _GeneratedQt/DebugTools/VersionInfoWidget/VersionInfoWidget_moc.cpp; sourceTree = "<group>"; };
 		765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTemplateModel.cpp; sourceTree = "<group>"; };
 		765A0ADA18CE0C7F0044516F /* MaterialTemplateModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialTemplateModel.h; sourceTree = "<group>"; };
 		765BA22B19406A9E005D6B4E /* BeastDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BeastDialog.cpp; sourceTree = "<group>"; };
@@ -1859,23 +1854,6 @@
 			name = QtPropertyDataValidator;
 			sourceTree = "<group>";
 		};
-		763DCF081964524A00D94EB3 /* DebugTools */ = {
-			isa = PBXGroup;
-			children = (
-				763DCF091964525900D94EB3 /* VersionInfoWidget */,
-			);
-			name = DebugTools;
-			sourceTree = "<group>";
-		};
-		763DCF091964525900D94EB3 /* VersionInfoWidget */ = {
-			isa = PBXGroup;
-			children = (
-				763DCEFE1964524200D94EB3 /* VersionInfoWidget.cpp */,
-				763DCEFF1964524200D94EB3 /* VersionInfoWidget.h */,
-			);
-			name = VersionInfoWidget;
-			sourceTree = "<group>";
-		};
 		765BA22A19406A9E005D6B4E /* BeastDialog */ = {
 			isa = PBXGroup;
 			children = (
@@ -1999,7 +1977,6 @@
 		E89DFBE4163ECBB800B51706 /* GeneratedQt */ = {
 			isa = PBXGroup;
 			children = (
-				763DCF0A1964546C00D94EB3 /* VersionInfoWidget_moc.cpp */,
 				76BA73E319583B840029DC61 /* RunActionEventWidget_moc.cpp */,
 				765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */,
 				0282B87C18BC745C006F1EE4 /* SoundComponentEditor */,
@@ -3311,7 +3288,6 @@
 		E8C99074184CD0EB00AFBF3F /* Qt */ = {
 			isa = PBXGroup;
 			children = (
-				763DCF081964524A00D94EB3 /* DebugTools */,
 				76BA73D9195839710029DC61 /* RunActionEventWidget.cpp */,
 				76BA73DA195839710029DC61 /* RunActionEventWidget.h */,
 				765BA22A19406A9E005D6B4E /* BeastDialog */,
@@ -4512,7 +4488,6 @@
 				E8C992BD184CD0EC00AFBF3F /* RulerToolPanel.cpp in Build Sources */,
 				E8BAD6F21859F50300C98C8D /* CollisionRenderObject_moc.cpp in Build Sources */,
 				E8C9922E184CD0EC00AFBF3F /* btTriangleMesh.cpp in Build Sources */,
-				763DCF0B1964546C00D94EB3 /* VersionInfoWidget_moc.cpp in Build Sources */,
 				E8BAD72F1859F50300C98C8D /* QtPropertyDataInspColl_moc.cpp in Build Sources */,
 				E8C992FB184CD0EC00AFBF3F /* CollisionRenderObject.cpp in Build Sources */,
 				E8C9934B184CD0EC00AFBF3F /* TileTexturePreviewWidget.cpp in Build Sources */,
@@ -4588,7 +4563,6 @@
 				E8C9931E184CD0EC00AFBF3F /* TextureBrowser.cpp in Build Sources */,
 				E8BAD70F1859F50300C98C8D /* TilemaskEditorSystem_moc.cpp in Build Sources */,
 				E8C99275184CD0EC00AFBF3F /* ImageSplitterTool.cpp in Build Sources */,
-				763DCF001964524200D94EB3 /* VersionInfoWidget.cpp in Build Sources */,
 				E8C992D4184CD0EC00AFBF3F /* LayerForceWidget.cpp in Build Sources */,
 				E8C99200184CD0EC00AFBF3F /* btConvexConvexAlgorithm.cpp in Build Sources */,
 				E8C9929B184CD0EC00AFBF3F /* RemoveComponentCommand.cpp in Build Sources */,

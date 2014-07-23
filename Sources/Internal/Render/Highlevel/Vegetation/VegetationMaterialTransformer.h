@@ -45,6 +45,7 @@ class VegetationMaterialTransformer
 {
 public:
     virtual void TransformMaterialOnCreate(NMaterial* mat) = 0;
+    virtual ~VegetationMaterialTransformer() {};
 };
 };
 

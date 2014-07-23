@@ -210,6 +210,8 @@ void UIControlSystem::ProcessScreenLogic()
                 {
                     if(currentScreen)
                     {
+                        if (currentScreen->IsOnScreen())
+                            currentScreen->SystemWillBecomeInvisible();
                         currentScreen->SystemWillDisappear();
                         if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
                         {
@@ -222,6 +224,8 @@ void UIControlSystem::ProcessScreenLogic()
                     loadingTransition->SystemWillAppear();
                     currentScreen = loadingTransition;
                     loadingTransition->SystemDidAppear();
+                    if (loadingTransition->IsOnScreen())
+                        loadingTransition->SystemWillBecomeVisible();
                 }
 			}
 		}
@@ -230,6 +234,8 @@ void UIControlSystem::ProcessScreenLogic()
 			// if we have current screen we call events, unload resources for it group
 			if(currentScreen)
 			{
+                if (currentScreen->IsOnScreen())
+                    currentScreen->SystemWillBecomeInvisible();
 				currentScreen->SystemWillDisappear();
 				if ((nextScreenProcessed == 0) || (currentScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
 				{
@@ -248,6 +254,8 @@ void UIControlSystem::ProcessScreenLogic()
             if (nextScreenProcessed)
             {
 				nextScreenProcessed->SystemDidAppear();
+                if (nextScreenProcessed->IsOnScreen())
+                    nextScreenProcessed->SystemWillBecomeVisible();
             }
 			
 			UnlockInput();

@@ -48,7 +48,6 @@
 #include "Platform/DPIHelper.h"
 #include "Base/AllocatorFactory.h"
 #include "Render/2D/FTFont.h"
-#include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -141,7 +140,6 @@ void Core::CreateSingletons()
 	new RenderHelper();
     new RenderLayerManager();
 	new PerformanceSettings();
-    new VersionInfo();
     new ImageSystem();
 	
 #if defined __DAVAENGINE_IPHONE__
@@ -199,7 +197,6 @@ void Core::ReleaseSingletons()
 
 	InputSystem::Instance()->Release();
 	JobManager::Instance()->Release();
-    VersionInfo::Instance()->Release();
 	AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
     ImageSystem::Instance()->Release();

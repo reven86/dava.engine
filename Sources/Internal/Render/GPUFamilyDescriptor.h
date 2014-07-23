@@ -45,8 +45,10 @@ public:
     
     struct GPUData
     {
-        eGPUFamily gpuFamilyID;
+        void SetName(const String & newName);
+        
         String name;
+        String prefix;
         
         Map<PixelFormat, String> availableFormats;
     };
@@ -69,6 +71,9 @@ public:
     static eGPUFamily GetGPUByName(const String & name);
 	
 	static bool IsFormatSupported(const eGPUFamily gpu, const PixelFormat format);
+    
+    static eGPUFamily ConvertValueToGPU(const int32 value);
+    static bool IsGPUForDevice(const eGPUFamily gpu);
     
 protected:
 

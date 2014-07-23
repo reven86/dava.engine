@@ -252,10 +252,6 @@ bool EditorSettings::GetEnableImposters()
 	return settings->GetBool("enableImposters", true);
 }
 
-eGPUFamily EditorSettings::GetTextureViewGPU()
-{
-    return (eGPUFamily)settings->GetInt32(String("TextureViewGPU"), GPU_UNKNOWN);
-}
 void EditorSettings::SetTextureViewGPU(int32 gpu)
 {
     settings->SetInt32(String("TextureViewGPU"), gpu);

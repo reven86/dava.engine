@@ -47,7 +47,7 @@ class TextureDescriptor
 
     static const int32 DATE_BUFFER_SIZE = 20;
     static const int32 LINE_SIZE = 256;
-    static const int8 CURRENT_VERSION = 7;
+    static const int8 CURRENT_VERSION = 8;
     
 	enum eSignatures
 	{
@@ -193,8 +193,8 @@ protected:
     
     
     void ConvertToCurrentVersion(int8 version, int32 signature, File *file);
-	void LoadVersion5(int32 signature, File *file);
 	void LoadVersion6(int32 signature, File *file);
+	void LoadVersion7(int32 signature, File *file);
     
 	uint32 ReadSourceCRC() const;
 	uint32 GetConvertedCRC(eGPUFamily forGPU) const;

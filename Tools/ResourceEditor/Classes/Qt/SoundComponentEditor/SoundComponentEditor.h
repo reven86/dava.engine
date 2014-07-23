@@ -69,7 +69,7 @@ private:
 
     void FillEventsList();
 
-    void AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo & param);
+    void AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo & param, float32 currentParamValue);
     void ClearParamsFrame();
     void FillEventParamsFrame();
 

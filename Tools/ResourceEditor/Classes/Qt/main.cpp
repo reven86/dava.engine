@@ -99,6 +99,10 @@ int main(int argc, char *argv[])
 
 
 	new SettingsManager();
+    //TODO convert old settings to new gpu values
+    SettingsManager::UpdateGPUSettings();
+    //END of TODO
+    
 	new EditorConfig();
     ParticleEmitter::FORCE_DEEP_CLONE = true;
 

@@ -32,7 +32,7 @@
 #include "Render/Texture.h"
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/Entity.h"
-
+#include "Platform/DeviceInfo.h"
 
 using namespace DAVA;
 
@@ -43,6 +43,7 @@ ENUM_DECLARE(eGPUFamily)
 	ENUM_ADD_DESCR(GPU_TEGRA, "tegra");
 	ENUM_ADD_DESCR(GPU_MALI, "mali");
 	ENUM_ADD_DESCR(GPU_ADRENO, "adreno");
+	ENUM_ADD_DESCR(GPU_PNG, "PNG");
 }
 
 ENUM_DECLARE(Texture::TextureWrap)
@@ -120,6 +121,16 @@ ENUM_DECLARE(Entity::EntityFlags)
     ENUM_ADD_DESCR(Entity::TRANSFORM_DIRTY, "TRANSFORM_DIRTY");
     ENUM_ADD_DESCR(Entity::NODE_DELETED, "NODE_DELETED");
     ENUM_ADD_DESCR(Entity::SCENE_LIGHTS_MODIFIED, "SCENE_LIGHTS_MODIFIED");
+}
+
+ENUM_DECLARE(DeviceInfo::ePlatform)
+{
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_IOS, "iOS");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_IOS_SIMULATOR, "iOS Simulator");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_MACOS, "MacOS");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_ANDROID, "Android");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN, "Unknown");
 }
 
 /*

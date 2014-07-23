@@ -45,7 +45,7 @@ using namespace DAVA;
 
 SceneExporter::SceneExporter()
 {
-    exportForGPU = GPU_UNKNOWN;
+    exportForGPU = GPU_PNG;
 	quality = TextureConverter::ECQ_DEFAULT;
 	optimizeOnExport = true;
 }
@@ -295,7 +295,8 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
     descriptor->exportedAsGpuFamily = exportForGPU;
     descriptor->format = descriptor->GetPixelFormatForCompression(exportForGPU);
 
-    if((descriptor->exportedAsGpuFamily != GPU_UNKNOWN) && (descriptor->format == FORMAT_INVALID))
+    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
+    if(GPUFamilyDescriptor::IsGPUForDevice(gpu) && (descriptor->format == FORMAT_INVALID))
     {
         errorLog.insert(Format("Not selected export format for pathname %s", pathname.GetAbsolutePathname().c_str()));
         
@@ -320,8 +321,9 @@ bool SceneExporter::ExportTextureDescriptor(const FilePath &pathname, Set<String
 bool SceneExporter::ExportTexture(const TextureDescriptor * descriptor, Set<String> &errorLog)
 {
     CompressTextureIfNeed(descriptor, errorLog);
-    
-    if(descriptor->exportedAsGpuFamily == GPU_UNKNOWN)
+
+    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
+    if(!GPUFamilyDescriptor::IsGPUForDevice(gpu))
     {
 		bool copyResult = true;
 		
@@ -423,7 +425,8 @@ bool SceneExporter::ExportVegetation(Scene *scene, Set<String> &errorLog)
 
 void SceneExporter::CompressTextureIfNeed(const TextureDescriptor * descriptor, Set<String> &errorLog)
 {
-    if(descriptor->exportedAsGpuFamily == GPU_UNKNOWN)
+    eGPUFamily gpu = GPUFamilyDescriptor::ConvertValueToGPU(descriptor->exportedAsGpuFamily);
+    if(!GPUFamilyDescriptor::IsGPUForDevice(gpu))
         return;
     
     

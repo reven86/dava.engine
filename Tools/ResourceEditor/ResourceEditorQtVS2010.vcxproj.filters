@@ -223,12 +223,6 @@
     <Filter Include="Classes\Qt\RunActionEventWidget">
       <UniqueIdentifier>{71777903-26d3-481e-8719-e21e1510ee2d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Qt\DebugTools">
-      <UniqueIdentifier>{acaf6298-768f-4dd8-8f86-4da1f4e28d61}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Qt\DebugTools\VersionInfoWidget">
-      <UniqueIdentifier>{5bf73ad8-d14f-48a7-88da-3142464bc5f1}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\Collada\ColladaAnimatedMesh.cpp">
@@ -1992,12 +1986,6 @@
     <ClCompile Include="_GeneratedQt\RunActionEventWidget\RunActionEventWidget_moc.cpp">
       <Filter>QtGenerated</Filter>
     </ClCompile>
-    <ClCompile Include="Classes\Qt\DebugTools\VersionInfoWidget\VersionInfoWidget.cpp">
-      <Filter>Classes\Qt\DebugTools\VersionInfoWidget</Filter>
-    </ClCompile>
-    <ClCompile Include="_GeneratedQt\DebugTools\VersionInfoWidget\VersionInfoWidget_moc.cpp">
-      <Filter>QtGenerated</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\Collada\ColladaAnimatedMesh.h">
@@ -3506,17 +3494,11 @@
     <ClInclude Include="Classes\Commands2\CopyLastLODCommand.h">
       <Filter>Classes\Commands2</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>QtGenerated</Filter>
-    </ClInclude>
     <ClInclude Include="Classes\Qt\RunActionEventWidget\RunActionEventWidget.h">
       <Filter>Classes\Qt\RunActionEventWidget</Filter>
     </ClInclude>
     <ClInclude Include="_GeneratedQt\ui_RunActionEventWidget.h">
       <Filter>QtGenerated</Filter>
-    </ClInclude>
-    <ClInclude Include="Classes\Qt\DebugTools\VersionInfoWidget\VersionInfoWidget.h">
-      <Filter>Classes\Qt\DebugTools\VersionInfoWidget</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -3578,9 +3560,6 @@
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\BeastDialog.ui">
-      <Filter>QtData</Filter>
-    </None>
-    <None Include="DataQt\VersionInfoWidget.ui">
       <Filter>QtData</Filter>
     </None>
     <None Include="DataQt\RunActionEventWidget.ui">

@@ -30,6 +30,7 @@
 
 #include "UI/UIJoypad.h"
 #include "FileSystem/Logger.h"
+#include "FileSystem/YamlNode.h"
 
 
 namespace DAVA 

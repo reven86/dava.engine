@@ -28,6 +28,7 @@
 
 #include "Render/Highlevel/Vegetation/TextureSheet.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 
 namespace DAVA
 {

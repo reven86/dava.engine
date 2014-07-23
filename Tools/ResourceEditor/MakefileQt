@@ -20,10 +20,10 @@ QT_DIR_MOC := Classes/Qt
 QT_UI_FILES := $(wildcard $(QT_DIR_UI)/*.ui)
 QT_UI_FILES_GEN := $(addprefix $(QT_DIR_OUTPUT)/ui_, $(notdir $(QT_UI_FILES:.ui=.h)))
 
-QT_MOC_FILES := $(wildcard $(QT_DIR_MOC)/*.h) $(wildcard $(QT_DIR_MOC)/**/*.h)  $(wildcard $(QT_DIR_MOC)/**/**/*.h) $(wildcard $(QT_DIR_MOC)/**/**/**/*.h) $(wildcard $(QT_DIR_MOC)/**/**/**/**/*.h)
+QT_MOC_FILES := $(wildcard $(QT_DIR_MOC)/*.h) $(wildcard $(QT_DIR_MOC)/**/*.h)  $(wildcard $(QT_DIR_MOC)/**/**/*.h) $(wildcard $(QT_DIR_MOC)/**/**/**/*.h)
 QT_MOC_FILES_GEN := $(subst $(QT_DIR_MOC), $(QT_DIR_OUTPUT), $(QT_MOC_FILES:.h=_moc.cpp))
 
-QT_MOC_FILES_ADDI := $(subst .needmeta, , $(wildcard $(QT_DIR_MOC)/*.needmeta) $(wildcard $(QT_DIR_MOC)/**/*.needmeta) $(wildcard $(QT_DIR_MOC)/**/**/*.needmeta) $(wildcard $(QT_DIR_MOC)/**/**/**/*.needmeta) $(wildcard $(QT_DIR_MOC)/**/**/**/**/*.needmeta))
+QT_MOC_FILES_ADDI := $(subst .needmeta, , $(wildcard $(QT_DIR_MOC)/*.needmeta) $(wildcard $(QT_DIR_MOC)/**/*.needmeta) $(wildcard $(QT_DIR_MOC)/**/**/*.needmeta) $(wildcard $(QT_DIR_MOC)/**/**/**/*.needmeta))
 QT_MOC_FILES_GEN_ADDI := $(subst $(QT_DIR_MOC), $(QT_DIR_OUTPUT), $(QT_MOC_FILES_ADDI:.cpp=_moca.cpp))
 
 QT_QRC_FILES := $(wildcard $(QT_DIR_QRC)/*.qrc) $(wildcard $(QT_DIR_QRC)/**/*.qrc) $(wildcard $(QT_DIR_QRC)/**/**/*.qrc) $(wildcard $(QT_DIR_QRC)/**/**/**/*.qrc)

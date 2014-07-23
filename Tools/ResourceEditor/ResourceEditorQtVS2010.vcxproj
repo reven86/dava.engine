@@ -64,7 +64,7 @@
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <PreprocessorDefinitions>_WINDOWS;WIN32;DAVA_DEBUG;QT_DLL;QT_OPENGL_LIB;QT_GUI_LIB;QT_NETWORK_LIB;QT_CORE_LIB;QT_HAVE_MMX;QT_HAVE_3DNOW;QT_HAVE_SSE;QT_HAVE_MMXEXT;QT_HAVE_SSE2;QT_THREAD_SUPPORT;_DEBUG;_CRT_SECURE_NO_DEPRECATE;__DAVAENGINE_RESOURCEEDITOR__;DAVA_QT;__DAVAENGINE_BEAST__;__DAVAENGINE_SPEEDTREE__;DAVA_FMOD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -407,7 +407,6 @@
     <ClCompile Include="Classes\Qt\CubemapEditor\CubeMapTextureBrowser.cpp" />
     <ClCompile Include="Classes\Qt\CubemapEditor\CubemapUtils.cpp" />
     <ClCompile Include="Classes\Qt\CubemapEditor\MaterialHelper.cpp" />
-    <ClCompile Include="Classes\Qt\DebugTools\VersionInfoWidget\VersionInfoWidget.cpp" />
     <ClCompile Include="Classes\Qt\DockConsole\Console.cpp" />
     <ClCompile Include="Classes\Qt\DockConsole\ConsoleView.cpp" />
     <ClCompile Include="Classes\Qt\DockConsole\ConsoleWidget.cpp" />
@@ -584,7 +583,6 @@
     <ClCompile Include="_GeneratedQt\CubemapEditor\CubeMapTextureBrowser_moc.cpp" />
     <ClCompile Include="_GeneratedQt\CubemapEditor\CubemapUtils_moc.cpp" />
     <ClCompile Include="_GeneratedQt\CubemapEditor\MaterialHelper_moc.cpp" />
-    <ClCompile Include="_GeneratedQt\DebugTools\VersionInfoWidget\VersionInfoWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockConsole\ConsoleView_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockConsole\ConsoleWidget_moc.cpp" />
     <ClCompile Include="_GeneratedQt\DockConsole\Console_moc.cpp" />
@@ -1057,7 +1055,6 @@
     <ClInclude Include="Classes\Qt\CubemapEditor\CubeMapTextureBrowser.h" />
     <ClInclude Include="Classes\Qt\CubemapEditor\CubemapUtils.h" />
     <ClInclude Include="Classes\Qt\CubemapEditor\MaterialHelper.h" />
-    <ClInclude Include="Classes\Qt\DebugTools\VersionInfoWidget\VersionInfoWidget.h" />
     <ClInclude Include="Classes\Qt\DockConsole\Console.h" />
     <ClInclude Include="Classes\Qt\DockConsole\ConsoleView.h" />
     <ClInclude Include="Classes\Qt\DockConsole\ConsoleWidget.h" />
@@ -1233,7 +1230,6 @@
     <ClInclude Include="Classes\Qt\Tools\ToolButtonWithWidget\ToolButtonWithWidget.h" />
     <ClInclude Include="Classes\SpritesPacker.h" />
     <ClInclude Include="Classes\StringConstants.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="_GeneratedQt\ui_ActionComponentEditor.h" />
     <ClInclude Include="_GeneratedQt\ui_BaseAddEntityDialog.h" />
     <ClInclude Include="_GeneratedQt\ui_CubemapEditorDialog.h" />
@@ -1277,7 +1273,6 @@
     <None Include="DataQt\texturebrowser.ui" />
     <None Include="DataQt\SetSwitchIndexView.ui" />
     <None Include="DataQt\treeimportdialog.ui" />
-    <None Include="DataQt\VersionInfoWidget.ui" />
     <None Include="DataQt\VisibilityToolView.ui" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -33,6 +33,7 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
+#include "FileSystem/YamlNode.h"
 
 namespace DAVA 
 {

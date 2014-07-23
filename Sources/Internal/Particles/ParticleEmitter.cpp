@@ -31,6 +31,7 @@
 #include "Particles/ParticleLayer.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
 
 
 namespace DAVA 

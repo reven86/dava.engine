@@ -96,7 +96,7 @@ void StaticOcclusion::BuildOcclusionInParallel(Vector<RenderObject*> & renderObj
     if (!renderTargetTexture)
         renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
     if (!renderTargetSprite)
-        renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT);
+        renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT);
     
     /* Set<uint16> busyIndices;
     for (uint32 k = 0; k < renderObjects.size(); ++k)
@@ -295,7 +295,7 @@ void StaticOcclusion::RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ)
             for (uint32 stepX = 0; stepX <= stepCount; ++stepX)
                 for (uint32 stepY = 0; stepY <= stepCount; ++stepY)
                 {
-                    Vector3 renderPosition = startPosition + directionX * stepX * stepSize + directionY * stepY * stepSize;
+                    Vector3 renderPosition = startPosition + directionX * (float32)stepX * stepSize + directionY * (float32)stepY * stepSize;
                     
                     if (landscape)
                     {
@@ -324,7 +324,7 @@ void StaticOcclusion::RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ)
                     // Do Render
                     
                     RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
-                    RenderManager::Instance()->SetViewport(Rect(0, 0, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT), true);                    
+                    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT), true);                    
                     
                     //camera->SetupDynamicParameters();
                     
