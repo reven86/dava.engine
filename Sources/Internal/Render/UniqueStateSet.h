@@ -56,7 +56,7 @@ public:
 	
 private:
 
-    int CountFreeSlots();
+    int32 CountFreeSlots();
 	
 	Vector<T> values;
 	Vector<int32> refCounters;
@@ -93,7 +93,7 @@ UniqueHandle UniqueStateSet<T>::MakeUnique(const T& objRef)
 			freeSlot = i;
 		}
 			
-		if(objRef.Equals(values[i]) &&
+		if((objRef == values[i]) &&
            refCounters[i] > 0)
 		{
 			handle = i;
@@ -157,7 +157,7 @@ void UniqueStateSet<T>::ReleaseUnique(UniqueHandle handle)
 }
 
 template<typename T>
-int UniqueStateSet<T>::CountFreeSlots()
+int32 UniqueStateSet<T>::CountFreeSlots()
 {
     int slotCount = 0;
     

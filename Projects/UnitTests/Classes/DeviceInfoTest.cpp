@@ -28,28 +28,43 @@
 
 
 #include "DeviceInfoTest.h"
-#include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
 
 DeviceInfoTest::DeviceInfoTest()
-:	TestTemplate<DeviceInfoTest>("DeviceInfoTest")
+:	UITestTemplate<DeviceInfoTest>("DeviceInfoTest"),
+    deviceInfoText(NULL)
 {
 	RegisterFunction(this, &DeviceInfoTest::TestFunction, Format("DeviceInfo test"), NULL);
 }
 
 void DeviceInfoTest::LoadResources()
 {
+    UITestTemplate::LoadResources();
+    Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    DVASSERT(font);
+	font->SetSize(20);
+	
+    Rect textRect = GetRect();
+    textRect.SetPosition(textRect.GetPosition() + Vector2(1.0f, 31.0f));
+    textRect.SetSize(textRect.GetSize() - Vector2(1.0f, 31.0f));
+
+	deviceInfoText = new UIStaticText(textRect);
+    deviceInfoText->SetMultiline(true);
+    deviceInfoText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    deviceInfoText->SetFont(font);
+    deviceInfoText->SetTextColor(Color::White);
+    deviceInfoText->SetDebugDraw(true);
+
+    AddControl(deviceInfoText);
 }
 
 void DeviceInfoTest::UnloadResources()
 {
+    UITestTemplate::UnloadResources();
+    SafeRelease(deviceInfoText);
 }
 
-void DeviceInfoTest::Draw(const DAVA::UIGeometricData &geometricData)
-{
-}
-
-void DeviceInfoTest::TestFunction(TestTemplate<DeviceInfoTest>::PerfFuncData *data)
+void DeviceInfoTest::DidAppear()
 {
     String platform = DeviceInfo::GetPlatformString();
     String version = DeviceInfo::GetVersion();
@@ -60,55 +75,67 @@ void DeviceInfoTest::TestFunction(TestTemplate<DeviceInfoTest>::PerfFuncData *da
     String timezone = DeviceInfo::GetTimeZone();
     String udid = DeviceInfo::GetUDID();
     WideString name = DeviceInfo::GetName();
+    
+    String deviceInfoString;
+    deviceInfoString += Format("Platform: %s\n", platform.c_str());
+    deviceInfoString += Format("OS version: %s\n", version.c_str());
+	deviceInfoString += Format("Manufacturer: %s\n", manufacturer.c_str());
+	deviceInfoString += Format("Model: %s\n", model.c_str());
+	deviceInfoString += Format("Locale: %s\n", locale.c_str());
+	deviceInfoString += Format("Region: %s\n", region.c_str());
+	deviceInfoString += Format("Time zone: %s\n", timezone.c_str());
+    deviceInfoString += Format("UDID: %s\n", udid.c_str());
+    deviceInfoString += Format("Name: %s\n", WStringToString(name).c_str());
+    deviceInfoString += Format("ZBufferSize: %d\n", DeviceInfo::GetZBufferSize());
+	const eGPUFamily gpu = DeviceInfo::GetGPUFamily();
+	if(gpu == GPU_INVALID)
+	{
+		deviceInfoString += "GPU family: INVALID\n";
+	}
+	else
+	{
+		deviceInfoString += Format("GPU family: %s\n", GPUFamilyDescriptor::GetGPUName(gpu).c_str());
+	}
+    deviceInfoString += Format("Network connection type: %s\n", GetNetworkTypeString().c_str());
+    deviceInfoString += Format("Network signal strength: %i%%", DeviceInfo::GetNetworkInfo().signalStrength);
 
+    deviceInfoText->SetText(StringToWString(deviceInfoString));
 	Logger::Debug("********** Device info **********");
-	Logger::Debug("Platform: %s", platform.c_str());
-	Logger::Debug("OS version: %s", version.c_str());
-	Logger::Debug("Manufacturer: %s", manufacturer.c_str());
-	Logger::Debug("Model: %s", model.c_str());
-	Logger::Debug("Locale: %s", locale.c_str());
-	Logger::Debug("Region: %s", region.c_str());
-	Logger::Debug("Time zone: %s", timezone.c_str());
-    Logger::Debug("UDID: %s", udid.c_str());
-    Logger::Debug("Name: %s", WStringToString(name).c_str());
-    Logger::Debug("ZBufferSize: %d", DeviceInfo::GetZBufferSize());
-    Logger::Debug("GPU family: %s", GetGpuFamilyString(DeviceInfo::GetGPUFamily()).c_str());
+	Logger::Debug(deviceInfoString.c_str());
 	Logger::Debug("********** Device info **********");
-
-	data->testData.message = "DeviceInfo test - passed";
-	TEST_VERIFY(true);
 }
 
-String DeviceInfoTest::GetGpuFamilyString(eGPUFamily gpuFamily)
+void DeviceInfoTest::TestFunction(TestTemplate<DeviceInfoTest>::PerfFuncData *data)
 {
-    String res;
-    switch (gpuFamily)
+	return;
+}
+
+String DeviceInfoTest::GetNetworkTypeString()
+{
+    static const struct
     {
-        case DAVA::GPU_ADRENO:
-            res = "Adreno";
-            break;
-
-        case DAVA::GPU_MALI:
-            res = "Mali";
-            break;
-
-        case DAVA::GPU_POWERVR_ANDROID:
-            res = "PowerVR Android";
-            break;
-
-        case DAVA::GPU_POWERVR_IOS:
-            res = "PowerVR iOS";
-            break;
-
-        case DAVA::GPU_TEGRA:
-            res = "Tegra";
-            break;
-
-        case DAVA::GPU_UNKNOWN:
-        default:
-            res = "Unknown GPU family";
-            break;
+        DeviceInfo::eNetworkType networkType;
+        String networkTypeString;
+    } networkTypesMap[] =
+    {
+        { DeviceInfo::NETWORK_TYPE_NOT_CONNECTED, "Not Connected" },
+        { DeviceInfo::NETWORK_TYPE_CELLULAR, "Cellular" },
+        { DeviceInfo::NETWORK_TYPE_WIFI, "Wi-Fi" },
+        { DeviceInfo::NETWORK_TYPE_WIMAX, "WiMAX" },
+        { DeviceInfo::NETWORK_TYPE_ETHERNET, "Ehternet" },
+        { DeviceInfo::NETWORK_TYPE_BLUETOOTH, "Bluetooth" },
+        { DeviceInfo::NETWORK_TYPE_UNKNOWN, "Unknown" }
+    };
+    
+    const DeviceInfo::NetworkInfo& networkInfo = DeviceInfo::GetNetworkInfo();
+    uint32 networkTypesCount = COUNT_OF(networkTypesMap);
+    for (uint32 i = 0; i < networkTypesCount; i ++)
+    {
+        if (networkTypesMap[i].networkType == networkInfo.networkType)
+        {
+            return networkTypesMap[i].networkTypeString;
+        }
     }
-
-    return res;
+    
+    return "Unknown";
 }

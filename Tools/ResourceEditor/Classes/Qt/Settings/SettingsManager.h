@@ -65,6 +65,10 @@ namespace Settings
     static const DAVA::FastName Scene_DebugBoxScale("Scene/DebugBoxScale");
     static const DAVA::FastName Scene_DebugBoxUserScale("Scene/DebugBoxUserScale");
     static const DAVA::FastName Scene_DebugBoxParticleScale("Scene/DebugBoxParticleScale");
+
+    static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
+    static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
+    static const DAVA::FastName Scene_Sound_SoundObjectSphereColor("Scene/Sound/SoundObjectSphereColor");
     
     // this settings won't be shown in settings dialog
     // and are used only by application
@@ -108,6 +112,8 @@ public:
 
     static void ResetToDefault();
 
+    DAVA_DEPRECATED(static void UpdateGPUSettings());
+    
 protected:
     DAVA::Vector<DAVA::FastName> settingsOrder;
     DAVA::FastNameMap<SettingsNode> settingsMap;

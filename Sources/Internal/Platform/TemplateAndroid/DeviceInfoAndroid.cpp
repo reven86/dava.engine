@@ -166,6 +166,84 @@ int JniDeviceInfo::GetGPUFamily()
 	return -1;
 }
 
+int JniDeviceInfo::GetNetworkType()
+{
+	jmethodID mid = GetMethodID("GetNetworkType", "()I");
+	if (mid)
+		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+
+	return 0;
+}
+
+int JniDeviceInfo::GetSignalStrength(int networkType)
+{
+	jmethodID mid = GetMethodID("GetSignalStrength", "(I)I");
+	if (mid)
+		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid, networkType);
+
+	return 0;
+}
+
+DAVA::int64 JniDeviceInfo::GetInternalStorageCapacity()
+{
+	jmethodID mid = GetMethodID("GetInternalStorageCapacity", "()J");
+
+	DAVA::int64 ret = 0;
+	if (mid)
+	{
+		ret = GetEnvironment()->CallStaticLongMethod(GetJavaClass(), mid);
+	}
+	return ret;
+}
+
+DAVA::int64 JniDeviceInfo::GetInternalStorageFree()
+{
+	jmethodID mid = GetMethodID("GetInternalStorageFree", "()J");
+
+	DAVA::int64 ret = 0;
+	if (mid)
+	{
+		ret = GetEnvironment()->CallStaticLongMethod(GetJavaClass(), mid);
+	}
+	return ret;
+}
+
+DAVA::int64 JniDeviceInfo::GetExternalStorageCapacity()
+{
+	jmethodID mid = GetMethodID("GetExternalStorageCapacity", "()J");
+
+	DAVA::int64 ret = 0;
+	if (mid)
+	{
+		ret = GetEnvironment()->CallStaticLongMethod(GetJavaClass(), mid);
+	}
+	return ret;
+}
+
+DAVA::int64 JniDeviceInfo::GetExternalStorageFree()
+{
+	jmethodID mid = GetMethodID("GetExternalStorageFree", "()J");
+
+	DAVA::int64 ret = 0;
+	if (mid)
+	{
+		ret = GetEnvironment()->CallStaticLongMethod(GetJavaClass(), mid);
+	}
+	return ret;
+}
+
+bool JniDeviceInfo::IsExternalStoragePresent()
+{
+	jmethodID mid = GetMethodID("IsExternalStoragePresent", "()Z");
+
+	int ret = false;
+	if (mid)
+	{
+		ret = GetEnvironment()->CallStaticLongMethod(GetJavaClass(), mid);
+	}
+	return ret;
+}
+
 String DeviceInfo::GetVersion()
 {
 	JniDeviceInfo jniDeviceInfo;
@@ -240,6 +318,39 @@ eGPUFamily DeviceInfo::GetGPUFamily()
 {
 	JniDeviceInfo jniDeviceInfo;
 	return (eGPUFamily) jniDeviceInfo.GetGPUFamily();
+}
+
+DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
+{
+	DeviceInfo::NetworkInfo info;
+	JniDeviceInfo jniDeviceInfo;
+	info.networkType = (DeviceInfo::eNetworkType) jniDeviceInfo.GetNetworkType();
+	info.signalStrength = jniDeviceInfo.GetSignalStrength(info.networkType);
+	return info;
+}
+
+List<DeviceInfo::StorageRecord> DeviceInfo::GetStorageList()
+{
+	JniDeviceInfo jniDeviceInfo;
+
+    List<DeviceInfo::StorageRecord> l;
+
+    StorageRecord internalMemory;
+    internalMemory.name = "Internal memory";
+    internalMemory.totalSpace = jniDeviceInfo.GetInternalStorageCapacity();
+    internalMemory.freeSpace = jniDeviceInfo.GetInternalStorageFree();
+    l.push_back(internalMemory);
+
+    if (jniDeviceInfo.IsExternalStoragePresent())
+    {
+    	StorageRecord externalMemory;
+    	externalMemory.name = "External memory";
+    	externalMemory.totalSpace = jniDeviceInfo.GetExternalStorageCapacity();
+    	externalMemory.freeSpace = jniDeviceInfo.GetExternalStorageFree();
+		l.push_back(externalMemory);
+    }
+
+    return l;
 }
 
 }

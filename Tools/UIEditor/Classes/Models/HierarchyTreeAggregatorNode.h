@@ -69,6 +69,10 @@ public:
 	const FilePath& GetPath();
 
 	void UpdateHierarchyTree();
+    
+protected:
+    virtual Rect GetOwnRect() const;
+
 private:
 	void CopyAggregatorControls();
 	void ReplaceAggregator(HierarchyTreeControlNode* node);

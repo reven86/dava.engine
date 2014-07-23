@@ -856,7 +856,10 @@ void PropertyEditor::ActionEditComponent()
 
         SceneEditor2 *curScene = QtMainWindow::Instance()->GetCurrentScene();
         curScene->selectionSystem->SetSelection(node);
-		//ResetProperties();
+        if (editor.IsModified())
+        {
+            curScene->SetChanged(true);
+        }
 	}	
 }
 

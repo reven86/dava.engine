@@ -56,6 +56,7 @@ protected:
 
     // Set the text of the button.
     virtual void SetLocalizedTextKey(const QString& value);
+    virtual QString GetLocalizedTextKeyForState(UIControl::eControlState controlState) const;
 
     // Helper to access active UI Button.
     UIButton* GetActiveUIButton() const;

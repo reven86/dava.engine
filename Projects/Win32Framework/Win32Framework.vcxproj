@@ -114,8 +114,9 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -135,8 +136,9 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
       <AdditionalOptions>/VERBOSE:LIB /ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
@@ -155,6 +157,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;libcurl.lib;ws2_32.lib;winmm.lib;wldap32.lib;lua_win.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -191,6 +194,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>freetype246MT.lib;opengl32.lib;glew32.lib;libogg_static.lib;libvorbis_static.lib;libvorbisfile_static.lib;libyaml_win.lib;libxml_win.lib;pnglib_win.lib;libmongodb_win.lib;libtheora_win.lib;PVRTexLib32.lib;libdxt.lib;TextureConverter.lib;fmodex_vc.lib;fmod_event.lib;iphlpapi.lib;libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -246,7 +250,6 @@
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingDB.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystem.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\AutotestingSystemLua.h" />
-    <ClInclude Include="..\..\Sources\Internal\Autotesting\Config.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\GameAPI.h" />
     <ClInclude Include="..\..\Sources\Internal\Autotesting\MongodbUpdateObject.h" />
     <ClInclude Include="..\..\Sources\Internal\Base\AllocatorFactory.h" />
@@ -338,6 +341,7 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\VariantType.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\XMLParser.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlArchive.h" />
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h" />
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlParser.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\Accelerometer.h" />
     <ClInclude Include="..\..\Sources\Internal\Input\AccelerometeriPhone.h" />
@@ -491,7 +495,11 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterial.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialConsts.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialNames.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.h" />
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\Material\RenderTechnique.h" />
     <ClInclude Include="..\..\Sources\Internal\Render\MipmapReplacer.h" />
@@ -614,6 +622,7 @@
     <ClInclude Include="..\..\Sources\Internal\Sound\FMODUtils.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundEvent.h" />
     <ClInclude Include="..\..\Sources\Internal\Sound\SoundSystem.h" />
+    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\ScrollHelper.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\TheoraPlayer.h" />
     <ClInclude Include="..\..\Sources\Internal\UI\UI3DView.h" />
@@ -663,6 +672,7 @@
     <ClInclude Include="..\..\Sources\Internal\Utils\TeamcityOutput.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\UTF8Utils.h" />
     <ClInclude Include="..\..\Sources\Internal\Utils\Utils.h" />
+    <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp" />
@@ -782,6 +792,7 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\VariantType.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\XMLParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlArchive.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlParser.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\Accelerometer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Input\GamepadDevice.cpp" />
@@ -896,6 +907,7 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderData.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageSystem.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibDdsHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibJpegHelper.cpp" />
@@ -907,7 +919,11 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialGraphNode.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\MaterialOptimazer.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterial.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialNames.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialTemplate.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\Material\RenderTechnique.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Render\MipmapReplacer.cpp" />
@@ -1070,6 +1086,7 @@
     <ClCompile Include="..\..\Sources\Internal\Utils\UTF8UtilsWin32.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\Utils.cpp" />
     <ClCompile Include="..\..\Sources\Internal\Utils\UtilsWin32.cpp" />
+    <ClCompile Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

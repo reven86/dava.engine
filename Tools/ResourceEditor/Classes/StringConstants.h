@@ -36,6 +36,7 @@ using namespace DAVA;
 namespace ResourceEditor 
 {
 	// Node names
+	static const DAVA::FastName VEGETATION_NODE_NAME = DAVA::FastName("Vegetation");
 	static const DAVA::FastName LANDSCAPE_NODE_NAME = DAVA::FastName("Landscape");
 	static const DAVA::FastName LIGHT_NODE_NAME = DAVA::FastName("Light");
 	static const DAVA::FastName SERVICE_NODE_NAME = DAVA::FastName("Servicenode");

@@ -142,6 +142,9 @@
     <Filter Include="Internal\Render\Highlevel\Vegetation">
       <UniqueIdentifier>{e44970a1-4a1f-4e97-aaf5-44659db3a9de}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\Thread">
+      <UniqueIdentifier>{e940db21-ebe2-45bb-bc09-5f3e66960d95}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -876,9 +879,6 @@
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h">
       <Filter>Internal\Database</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Autotesting\Config.h">
-      <Filter>Internal\Autotesting</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h">
       <Filter>Internal\Debug</Filter>
     </ClInclude>
@@ -1462,6 +1462,18 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.h">
+      <Filter>Internal\Render\Material</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationSpatialData.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClInclude>
@@ -1497,6 +1509,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.h">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Thread\LockGuard.h">
+      <Filter>Internal\Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h">
+      <Filter>Internal\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
+      <Filter>Internal\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2650,6 +2671,18 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Image\LibPVRHelper.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialHelper.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicFlagsInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicPropertiesInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Material\NMaterialStateDynamicTexturesInsp.cpp">
+      <Filter>Internal\Render\Material</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\RenderBatchPool.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
     </ClCompile>
@@ -2679,6 +2712,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\Vegetation\VegetationRenderObject.cpp">
       <Filter>Internal\Render\Highlevel\Vegetation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\Image\ImageFormatInterface.cpp">
+      <Filter>Internal\Render\Image</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.cpp">
+      <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
+      <Filter>Internal\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

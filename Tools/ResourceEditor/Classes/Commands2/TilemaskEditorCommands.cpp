@@ -120,10 +120,9 @@ ModifyTilemaskCommand::ModifyTilemaskCommand(LandscapeProxy* landscapeProxy, con
 	this->updatedRect = updatedRect;
 	this->landscapeProxy = SafeRetain(landscapeProxy);
 	
-	const DAVA::RenderStateData& default2dState = DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_2D_BLEND);
-	DAVA::RenderStateData noBlendStateData;
-	memcpy(&noBlendStateData, &default2dState, sizeof(noBlendStateData));
-	
+    DAVA::RenderStateData noBlendStateData;
+    DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_2D_BLEND, noBlendStateData);
+    
 	noBlendStateData.sourceFactor = DAVA::BLEND_ONE;
 	noBlendStateData.destFactor = DAVA::BLEND_ZERO;
 	
@@ -205,7 +204,7 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 	int32 width = texture->GetWidth();
 	int32 height = texture->GetHeight();
     
-	Sprite* resSprite = Sprite::CreateAsRenderTarget((float32)width, (float32)height, FORMAT_RGBA8888);
+	Sprite* resSprite = Sprite::CreateAsRenderTarget((float32)width, (float32)height, FORMAT_RGBA8888, true);
 	RenderManager::Instance()->SetRenderTarget(resSprite);
     
     RenderManager::Instance()->SetColor(Color::White);
@@ -218,9 +217,11 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 	s->Draw(&drawState);
 	SafeRelease(s);
     
+    Rect rect = ConvertPhysicalToVirtual(updatedRect);
+    
     RenderManager::Instance()->Reset();
 	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(updatedRect);
+	RenderManager::Instance()->SetClip(rect);
     
     RenderManager::Instance()->SetColor(Color::White);
     RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
@@ -231,7 +232,7 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 	s = Sprite::CreateFromTexture(t, 0, 0, (float32)t->GetWidth(), (float32)t->GetHeight());
     
     drawState.Reset();
-	drawState.SetPosition(updatedRect.x, updatedRect.y);
+	drawState.SetPosition(rect.x, rect.y);
     drawState.SetRenderState(noBlendDrawState);
 	s->Draw(&drawState);
     
@@ -247,9 +248,11 @@ Sprite* ModifyTilemaskCommand::ApplyImageToTexture(DAVA::Image *image, DAVA::Tex
 
 void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
 {
+    Rect rect = ConvertPhysicalToVirtual(updatedRect);
+    
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
 	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(updatedRect);
+	RenderManager::Instance()->SetClip(rect);
 
     RenderManager::Instance()->SetColor(Color::White);
 	
@@ -259,7 +262,7 @@ void ModifyTilemaskCommand::ApplyImageToSprite(Image* image, Sprite* dstSprite)
 	
     Sprite::DrawState drawState;
     drawState.SetRenderState(noBlendDrawState);
-	drawState.SetPosition(updatedRect.x, updatedRect.y);
+	drawState.SetPosition(rect.x, rect.y);
 	srcSprite->Draw(&drawState);
     
 	RenderManager::Instance()->ClipPop();

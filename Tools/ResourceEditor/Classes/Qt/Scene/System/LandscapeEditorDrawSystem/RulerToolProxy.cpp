@@ -34,7 +34,7 @@ RulerToolProxy::RulerToolProxy(int32 size)
 :	size(size)
 ,	spriteChanged(false)
 {
-	rulerToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888);
+	rulerToolSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
 }
 
 RulerToolProxy::~RulerToolProxy()

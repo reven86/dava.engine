@@ -171,6 +171,7 @@ ScenePreviewControl::ScenePreviewControl(const Rect & rect)
     rootNode = NULL;
     
     editorScene = new Scene();
+    editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
 
     // Camera setup
     cameraController = new PreviewCameraController();
@@ -208,6 +209,7 @@ void ScenePreviewControl::RecreateScene()
     }
     
     editorScene = new Scene();
+    editorScene->SetClearBuffers(RenderManager::DEPTH_BUFFER | RenderManager::STENCIL_BUFFER);
     SetScene(editorScene);
     cameraController->SetScene(editorScene);
 }

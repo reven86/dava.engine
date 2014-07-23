@@ -56,21 +56,22 @@ LibraryController::~LibraryController()
 void LibraryController::Init(LibraryWidget* widget)
 {
 	this->widget = widget;
-	AddControl("UIControl", new UIControl());
-	AddControl("UIButton", new UIButton());
-	AddControl("UIStaticText", new UIStaticText());
-	AddControl("UITextField", new UITextField());
-	AddControl("UISlider", new UISlider());
-	AddControl("UIList", new UIList());
-	AddControl("UIScrollBar", new UIScrollBar());
-	AddControl("UIScrollView", new UIScrollView());
-	AddControl("UISpinner", new UISpinner());
-	AddControl("UISwitch", new UISwitch());
-    AddControl("UIParticles", new UIParticles());
-	AddControl("UIWebView", new UIWebView());
-    AddControl("UIMovieView", new UIMovieView());
-    AddControl("UIJoypad", new UIJoypad());
-    AddControl("UI3DView", new UI3DView());
+    AddControl("UIControl"      , new UIControl());
+    AddControl("UIButton"       , new UIButton());
+	AddControl("UIStaticText"   , new UIStaticText());
+	AddControl("UITextField"    , new UITextField());
+	AddControl("UISlider"       , new UISlider());
+	AddControl("UIList"         , new UIList());
+	AddControl("UIScrollBar"    , new UIScrollBar());
+	AddControl("UIScrollView"   , new UIScrollView());
+	AddControl("UISpinner"      , new UISpinner());
+	AddControl("UISwitch"       , new UISwitch());
+    AddControl("UIParticles"    , new UIParticles());
+	AddControl("UIWebView"      , new UIWebView());
+    AddControl("UIMovieView"    , new UIMovieView());
+    AddControl("UIJoypad"       , new UIJoypad());
+    AddControl("UI3DView"       , new UI3DView());
+    AddControl("UIListCell"     , new UIListCell());
 }
 
 void LibraryController::AddControl(HierarchyTreeAggregatorNode* node)

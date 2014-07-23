@@ -63,7 +63,7 @@ WideString QStrint2WideString(const QString& str)
 #endif
 }
 
-QString WideString2QStrint(const WideString& str)
+QString WideString2QString(const WideString& str)
 {
 #ifdef __DAVAENGINE_MACOS__
 	return QString::fromStdWString(str);

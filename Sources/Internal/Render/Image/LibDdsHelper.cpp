@@ -108,7 +108,10 @@ public:
 	static uint32 GetMipMapLevelsCount(nvtt::Decompressor & dec);
 	
 	static uint32 GetDataSize(nvtt::Decompressor & dec);
-	
+
+	static Size2i GetImageSize(nvtt::Decompressor & dec);
+
+
 	static bool GetInfo(nvtt::Decompressor & dec, DDSInfo &info);
 	
 	static void SwapBRChannels(uint8* data, uint32 size);
@@ -593,7 +596,7 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
     inputOptions.setMipmapGeneration(dataCount > 1, dataCount - 1);
 
     int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-	for(uint32 i = 0; i < dataCount; ++i)
+	for(int32 i = 0; i < dataCount; ++i)
 	{
         uint32 imgDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
         NvttHelper::SwapBRChannels(imageSet[i]->data, imgDataSize);
@@ -667,7 +670,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 		return false;
 	}
 
-	for(uint32 i = 0; i < dataCount; ++i)
+	for(int32 i = 0; i < dataCount; ++i)
 	{
 		TQonvertImage srcImg = {0};
 
@@ -698,7 +701,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 	unsigned char* buffer = new unsigned char[bufSize];
 	unsigned char* tmpBuffer = buffer;
 
-	for(uint32 i = 0; i < dataCount; ++i)
+	for(int32 i = 0; i < dataCount; ++i)
 	{
 		TQonvertImage srcImg = {0};
 
@@ -836,6 +839,18 @@ uint32 LibDdsHelper::GetDataSize(File * file) const
 	}
 
 	return NvttHelper::GetDataSize(dec);
+}
+
+Size2i LibDdsHelper::GetImageSize(File *file) const
+{
+	nvtt::Decompressor dec ;
+
+	if(!NvttHelper::InitDecompressor(dec, file))
+	{
+		return Size2i();
+	}
+
+	return NvttHelper::GetImageSize(dec);
 }
 
 bool LibDdsHelper::GetTextureSize(const FilePath & fileName, uint32 & width, uint32 & height)
@@ -1011,6 +1026,13 @@ uint32 NvttHelper::GetDataSize(nvtt::Decompressor & dec)
     DDSInfo info;
     GetInfo(dec, info);
     return info.dataSize;
+}
+
+Size2i NvttHelper::GetImageSize(nvtt::Decompressor & dec)
+{
+	DDSInfo info;
+	GetInfo(dec, info);
+	return Size2i(info.width, info.height);
 }
 
 bool NvttHelper::GetTextureSize(nvtt::Decompressor & dec, uint32 & width, uint32 & height)

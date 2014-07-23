@@ -1,12 +1,19 @@
 package com.dava.framework;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.security.NoSuchAlgorithmException;
-import java.security.MessageDigest;
-import java.math.BigInteger;
 import javax.microedition.khronos.opengles.GL10;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
+import android.os.StatFs;
 import android.provider.Settings.Secure;
 
 public class JNIDeviceInfo {
@@ -101,6 +108,109 @@ public class JNIDeviceInfo {
 	{
 		return gpuFamily;
 	}
+	
+	private static final int NETWORK_TYPE_NOT_CONNECTED = 0;
+	private static final int NETWORK_TYPE_UNKNOWN = 1;
+	private static final int NETWORK_TYPE_MOBILE = 2;
+	private static final int NETWORK_TYPE_WIFI = 3;
+	private static final int NETWORK_TYPE_WIMAX = 4;
+	private static final int NETWORK_TYPE_ETHERNET = 5;
+	private static final int NETWORK_TYPE_BLUETOOTH = 6;
+	
+	public static int GetNetworkType() {
+		ConnectivityManager cm = (ConnectivityManager)JNIActivity.GetActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = cm.getActiveNetworkInfo();
+		if (info == null || !info.isConnected())
+			return NETWORK_TYPE_NOT_CONNECTED;
+		
+		int netType = info.getType();
+		switch (netType) {
+		case ConnectivityManager.TYPE_MOBILE:
+			return NETWORK_TYPE_MOBILE;
+		case ConnectivityManager.TYPE_WIFI:
+			return NETWORK_TYPE_WIFI;
+		case ConnectivityManager.TYPE_WIMAX:
+			return NETWORK_TYPE_WIMAX;
+		case ConnectivityManager.TYPE_ETHERNET:
+			return NETWORK_TYPE_ETHERNET;
+		case ConnectivityManager.TYPE_BLUETOOTH:
+			return NETWORK_TYPE_BLUETOOTH;
+		}
+		return NETWORK_TYPE_UNKNOWN;
+	}
+	
+	private static final int MaxSignalLevel = 100; 
+	
+	public static int GetSignalStrength(int networkType) {
+		switch (networkType) {
+		case NETWORK_TYPE_WIFI: {
+			WifiManager wifiManager = (WifiManager) JNIActivity.GetActivity().getSystemService(Context.WIFI_SERVICE);
+			WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+			return WifiManager.calculateSignalLevel(wifiInfo.getRssi(), MaxSignalLevel);
+		}
+		
+		case NETWORK_TYPE_MOBILE: {
+			if (JNIActivity.singalStrengthListner != null) {
+				//Get the GSM Signal Strength, valid values are (0-31, 99) as defined in TS 27.007 8.5
+				int sign = JNIActivity.singalStrengthListner.GetSignalStrength();
+				if (sign == 99)
+					return -1;
+				return (int)(MaxSignalLevel * sign / 31.f); 
+			}
+			else
+				return 0;
+		}
+		
+		case NETWORK_TYPE_ETHERNET:
+			return MaxSignalLevel;
+		}
+		return 0;
+	}
 
+	public static long GetInternalStorageCapacity()
+	{
+        StatFs statFs = new StatFs(Environment.getDataDirectory().getPath());
+        long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+        return capacity;
+	}
+
+	public static long GetInternalStorageFree()
+	{
+		StatFs statFs = new StatFs(Environment.getDataDirectory().getPath());
+		long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+		return free;
+	}
+
+	public static long GetExternalStorageCapacity()
+	{
+		if (IsExternalStoragePresent())
+		{
+			String path = Environment.getExternalStorageDirectory().getPath();
+            StatFs statFs = new StatFs(path);
+            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+            return capacity;
+        }
+
+		return 0;
+	}
+
+	public static long GetExternalStorageFree()
+	{
+		if (IsExternalStoragePresent())
+		{
+			String path = Environment.getExternalStorageDirectory().getPath();
+            StatFs statFs = new StatFs(path);
+            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+            return free;
+        }
+
+		return 0;
+	}
+	
+	public static boolean IsExternalStoragePresent()
+	{
+		return android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
+	}
+	
 	public static native void SetJString(String str);
 }

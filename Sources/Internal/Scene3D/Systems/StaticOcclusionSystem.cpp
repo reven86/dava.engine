@@ -36,6 +36,7 @@
 #include "Sound/SoundSystem.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/StaticOcclusion.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/LodComponent.h"
@@ -138,6 +139,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     // Prepare render objects
     Vector<Entity*> entities;
     Vector<RenderObject*> renderObjectsArray;
+    Landscape * landscape = 0;
     GetScene()->GetChildEntitiesWithComponent(entities, Component::RENDER_COMPONENT);
     
     uint32 size = (uint32)entities.size();
@@ -152,10 +154,25 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
             renderObjectsArray.push_back(renderObject);
             renderObject->SetFlags(renderObject->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
         }
+        if (RenderObject::TYPE_LANDSCAPE == renderObject->GetType())
+        {
+            landscape = DynamicTypeCheck<Landscape*>(renderObject);
+        }
     }
     
     // Prepare occlusion
-    componentInProgress = (StaticOcclusionDataComponent*)entity->GetOrCreateComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
+    componentInProgress = (StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
+    if (componentInProgress)
+    {
+        /*
+            We detach component from system, to let system know that this data is not valid right now.
+            Entity will be removed from system that apply occlusion information.
+         */
+        entity->DetachComponent(componentInProgress);
+    }else
+    {
+        componentInProgress = new StaticOcclusionDataComponent();
+    }
     
     StaticOcclusionData & data = componentInProgress->GetData();
     
@@ -166,13 +183,16 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
                   occlusionComponent->GetSubdivisionsZ(),
                   size,
                   worldBox);
+
+        GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
     }
     
     staticOcclusion->SetScene(GetScene());
     staticOcclusion->SetRenderSystem(GetScene()->GetRenderSystem());
-    staticOcclusion->BuildOcclusionInParallel(renderObjectsArray, &data, (StaticOcclusion::eIndexRenew)renewIndex);
+    staticOcclusion->BuildOcclusionInParallel(renderObjectsArray, landscape, &data, (StaticOcclusion::eIndexRenew)renewIndex);
     
     SceneForceLod(0);
+    UpdateSwitchMaterialRecursively(GetScene());
     
     Map<RenderObject*, Vector<RenderObject*> > equalRenderObjects;
     staticOcclusion->SetEqualVisibilityVector(equalRenderObjects);
@@ -182,8 +202,6 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     
 void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData)
 {
-    StaticOcclusionDataComponent * componentInProgress = (StaticOcclusionDataComponent *)messageData;
-
     if (StaticOcclusion::LEAVE_OLD_INDICES == renewIndex)
     {
         const Vector3 & position = camera->GetPosition();
@@ -202,6 +220,7 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
         activeIndex = -1;
         
         SceneForceLod(LodComponent::INVALID_LOD_LAYER);
+        RestoreSwitchMaterials();
     }
     else
     {
@@ -225,12 +244,11 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
 void StaticOcclusionBuildSystem::FinishBuildOcclusion(DAVA::BaseObject *bo, void *messageData, void *callerData)
 {
     Component * prevComponent = entities[activeIndex]->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
-    if (prevComponent != componentInProgress)
-    {
-        // Replace component, only if it's new
-        entities[activeIndex]->RemoveComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
-        entities[activeIndex]->AddComponent(componentInProgress);
-    }
+
+    // We've detached component so we verify that here we still do not have this component.
+    DVASSERT(prevComponent == 0);
+
+    entities[activeIndex]->AddComponent(componentInProgress);
     componentInProgress = 0;
     
     activeIndex++;
@@ -242,8 +260,12 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion(DAVA::BaseObject *bo, void
         // not final index add more occlusion build cycle
         messageQueue.AddMessage(Message(this, &StaticOcclusionBuildSystem::StartBuildOcclusion));
     }
-    
+ 
     SceneForceLod(LodComponent::INVALID_LOD_LAYER);
+    RestoreSwitchMaterials();
+
+    Scene *scene = GetScene();
+    scene->staticOcclusionSystem->CollectOcclusionObjectsRecursively(scene);
 }
     
 bool StaticOcclusionBuildSystem::IsInBuild() const
@@ -277,6 +299,55 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
     GetScene()->lodSystem->Process(0.0f);
 }
 
+void StaticOcclusionBuildSystem::UpdateSwitchMaterialRecursively(Entity *entity)
+{
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        UpdateSwitchMaterialRecursively(entity->GetChild(i));
+
+    RenderObject *ro = GetRenderObject(entity);
+    if (ro)
+    {
+        bool isSwitch = false;        
+        for (int32 i=0, sz = ro->GetRenderBatchCount(); i<sz; ++i)
+        {
+            int32 li = 0;
+            int32 si = 0;
+            ro->GetRenderBatch(i, li, si);
+            if (si>0)
+            {
+                isSwitch = true;
+                break;
+            }
+        }
+
+        if (isSwitch)
+        {
+            for (int32 i=0, sz = ro->GetRenderBatchCount(); i<sz; ++i)
+            {
+                NMaterial *mat = ro->GetRenderBatch(i)->GetMaterial();
+                if (mat&&originalRenderStateData.find(mat)==originalRenderStateData.end())
+                {
+                    RenderStateData data;
+                    mat->GetRenderState(PASS_FORWARD, data);
+                    originalRenderStateData[mat]=data;
+                    data.state = data.state & ~RenderStateData::STATE_DEPTH_WRITE;
+                    mat->SubclassRenderState(PASS_FORWARD, data);
+                }
+            }
+        }
+
+    }
+    
+}
+
+void StaticOcclusionBuildSystem::RestoreSwitchMaterials()
+{
+    for (Map<NMaterial*, RenderStateData>::iterator it = originalRenderStateData.begin(), e = originalRenderStateData.end(); it!=e; ++it)
+        it->first->SubclassRenderState(PASS_FORWARD, it->second);
+    
+    originalRenderStateData.clear();
+}
+
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
     messageQueue.DispatchMessages();
@@ -296,11 +367,19 @@ void StaticOcclusionSystem::UndoOcclusionVisibility()
         if (!ro)continue;
         ro->SetFlags(ro->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
     }
-
+    
+    activePVSSet = 0;
+    activeBlockIndex = 0;
 }
 
 void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockIndex, StaticOcclusionData * data)
 {
+//#define LOG_DEBUG_OCCLUSION_APPLY
+#if defined(LOG_DEBUG_OCCLUSION_APPLY)
+    uint32 visCount = 0;
+    uint32 invisCount = 0;
+#endif
+    
     uint32 * bitdata = data->GetBlockVisibilityData(blockIndex);
     uint32 size = (uint32)indexedRenderObjects.size();
     for (uint32 k = 0; k < size; ++k)
@@ -312,11 +391,20 @@ void StaticOcclusionSystem::ProcessStaticOcclusionForOneDataSet(uint32 blockInde
         if (bitdata[index] & (1 << shift))
         {
             ro->SetFlags(ro->GetFlags() | RenderObject::VISIBLE_STATIC_OCCLUSION);
+#if defined(LOG_DEBUG_OCCLUSION_APPLY)
+            visCount++;
+#endif
         }else
         {
             ro->SetFlags(ro->GetFlags() & ~RenderObject::VISIBLE_STATIC_OCCLUSION);
+#if defined(LOG_DEBUG_OCCLUSION_APPLY)
+            invisCount++;
+#endif
         }
     }
+#if defined(LOG_DEBUG_OCCLUSION_APPLY)
+    Logger::Debug("apply cell: %d vis:%d invis:%d", blockIndex, visCount, invisCount);
+#endif
 }
 
     
@@ -382,44 +470,90 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     if (notInPVS)
     {
         UndoOcclusionVisibility();
-        activePVSSet = 0;
-        activeBlockIndex = 0;
     }
     
     if (needUpdatePVS)
     {
         ProcessStaticOcclusionForOneDataSet(activeBlockIndex, activePVSSet);
     }
-    
-    
-    
 }
+    
+void StaticOcclusionSystem::RegisterEntity(Entity *entity)
+{
+    SceneSystem::RegisterEntity(entity);
+    
+    RenderObject * renderObject = GetRenderObject(entity);
+    if (renderObject)
+    {
+        AddRenderObjectToOcclusion(renderObject);
+    }
+}
+    
+void StaticOcclusionSystem::UnregisterEntity(Entity *entity)
+{
+    RenderObject * renderObject = GetRenderObject(entity);
+    if (renderObject)
+    {
+        RemoveRenderObjectFromOcclusion(renderObject);
+    }
+    SceneSystem::UnregisterEntity(entity);
+}
+    
+void StaticOcclusionSystem::RegisterComponent(Entity *entity, Component * component)
+{
+    SceneSystem::RegisterComponent(entity, component);
+    
+    if (component->GetType() == Component::RENDER_COMPONENT)
+    {
+        RenderObject * ro = GetRenderObject(entity);
+        if (ro)
+        {
+            AddRenderObjectToOcclusion(ro);
+        }
+    }
+}
+    
+void StaticOcclusionSystem::UnregisterEntity(Entity *entity, Component * component)
+{
+    if (component->GetType() == Component::RENDER_COMPONENT)
+    {
+        RenderObject * ro = GetRenderObject(entity);
+        if (ro)
+        {
+            RemoveRenderObjectFromOcclusion(ro);
+        }
+    }
+    SceneSystem::UnregisterComponent(entity, component);
+}
+
     
 void StaticOcclusionSystem::AddEntity(Entity * entity)
 {
     staticOcclusionComponents.push_back((StaticOcclusionDataComponent*)entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT));
-    SceneDidLoaded();
 }
     
-void StaticOcclusionSystem::SceneDidLoaded()
+void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject * renderObject)
 {
-    // Recalc indices
-    Vector<Entity*> entities;
-    Vector<RenderObject*> renderObjectsArray;
-    GetScene()->GetChildEntitiesWithComponent(entities, Component::RENDER_COMPONENT);
-    
-    uint32 size = (uint32)entities.size();
-    renderObjectsArray.resize(size);
-    for(uint32 k = 0; k < size; ++k)
-        renderObjectsArray[k] = GetRenderObject(entities[k]);
-    
-    indexedRenderObjects.resize(size);
-    for (uint32 k = 0; k < size; ++k)
+    /*
+        registed all render objects in occlusion array, when they added to scene
+     */
+    if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
     {
-        if (renderObjectsArray[k]->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
-        {
-            indexedRenderObjects[renderObjectsArray[k]->GetStaticOcclusionIndex()] = renderObjectsArray[k];
-        }
+        indexedRenderObjects.resize(Max((uint32)indexedRenderObjects.size(), (uint32)(renderObject->GetStaticOcclusionIndex() + 1)));
+        DVASSERT(indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] == 0);
+        indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = renderObject;
+    }
+}
+    
+void StaticOcclusionSystem::RemoveRenderObjectFromOcclusion(RenderObject * renderObject)
+{
+    /*
+        If object removed from scene, remove it from occlusion array, for safety.
+     */
+    if (renderObject->GetStaticOcclusionIndex() != INVALID_STATIC_OCCLUSION_INDEX)
+    {
+        DVASSERT(renderObject->GetStaticOcclusionIndex() < indexedRenderObjects.size());
+        indexedRenderObjects[renderObject->GetStaticOcclusionIndex()] = 0;
     }
 }
     
@@ -430,6 +564,8 @@ void StaticOcclusionSystem::RemoveEntity(Entity * entity)
         StaticOcclusionDataComponent * component = staticOcclusionComponents[k];
         if (component == entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT))
         {
+            UndoOcclusionVisibility();
+            
             staticOcclusionComponents[k] = staticOcclusionComponents[(uint32)staticOcclusionComponents.size() - 1];
             staticOcclusionComponents.pop_back();
             break;
@@ -437,5 +573,40 @@ void StaticOcclusionSystem::RemoveEntity(Entity * entity)
     }
 }
 
+
+void StaticOcclusionSystem::ClearOcclusionObjects()
+{
+    for (int32 i=0, sz = indexedRenderObjects.size(); i<sz; ++i)
+    {
+        if (indexedRenderObjects[i])
+            indexedRenderObjects[i]->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
+    }
+    indexedRenderObjects.clear();
+}
+void StaticOcclusionSystem::CollectOcclusionObjectsRecursively(Entity *entity)
+{
+    RenderObject * renderObject = GetRenderObject(entity);
+    if (renderObject)
+    {
+        AddRenderObjectToOcclusion(renderObject);
+    }
+
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        CollectOcclusionObjectsRecursively(entity->GetChild(i));
+}
+
+void StaticOcclusionSystem::InvalidateOcclusion()
+{    
+    InvalidateOcclusionIndicesRecursively(GetScene());
+    indexedRenderObjects.clear();
+}
+void StaticOcclusionSystem::InvalidateOcclusionIndicesRecursively(Entity *entity)
+{
+    RenderObject * ro = GetRenderObject(entity);
+    if (ro)
+        ro->SetStaticOcclusionIndex(INVALID_STATIC_OCCLUSION_INDEX);
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        InvalidateOcclusionIndicesRecursively(entity->GetChild(i));
+}
     
 };

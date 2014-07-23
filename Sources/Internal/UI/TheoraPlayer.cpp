@@ -29,6 +29,7 @@
 
 
 #include "UI/TheoraPlayer.h"
+#include "FileSystem/YamlNode.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
@@ -219,8 +220,8 @@ void TheoraPlayer::OpenFile(const FilePath &path)
         th_setup_free(theoraData->thSetup);
     theoraData->thSetup = 0;
 
-    frameBufferW = binCeil(theoraData->thInfo.pic_width);
-    frameBufferH = binCeil(theoraData->thInfo.pic_height);
+    frameBufferW = NextPowerOf2(theoraData->thInfo.pic_width);
+    frameBufferH = NextPowerOf2(theoraData->thInfo.pic_height);
     
     frameBuffer = new unsigned char[frameBufferW * frameBufferH * 4];
     
@@ -286,7 +287,7 @@ void TheoraPlayer::Update(float32 timeElapsed)
 
             if(th_decode_packetin(theoraData->thCtx, &theoraData->packet, &theoraData->videoBufGranulePos) == 0)
             {
-                if((videoBufTime = th_granule_time(theoraData->thCtx, theoraData->videoBufGranulePos)) >= videoTime)
+                if((videoBufTime = (float32)th_granule_time(theoraData->thCtx, theoraData->videoBufGranulePos)) >= videoTime)
                     isVideoBufReady = true;
                 else
                     pp_inc = (pp_level > 0)? -1 : 0;
@@ -331,10 +332,10 @@ void TheoraPlayer::Update(float32 timeElapsed)
                     const unsigned char Y = *(theoraData->yuvBuffer[0].data + yShift + j);
                     const unsigned char U = *(theoraData->yuvBuffer[1].data + uShift + j / 2);
                     const unsigned char V = *(theoraData->yuvBuffer[2].data + vShift + j / 2);
-                
-                    frameBuffer[index]   = ClampFloatToByte(Y + 1.371f * (V - 128));
-                    frameBuffer[index+1] = ClampFloatToByte(Y - 0.698f * (V - 128) - 0.336f * (U - 128));
-                    frameBuffer[index+2] = ClampFloatToByte(Y + 1.732f * (U - 128));
+
+                    frameBuffer[index]   = (uint8)Clamp(Y + 1.371f * (V - 128), 0.f, 255.f);
+                    frameBuffer[index+1] = (uint8)Clamp(Y - 0.698f * (V - 128) - 0.336f * (U - 128), 0.f, 255.f);
+                    frameBuffer[index+2] = (uint8)Clamp(Y + 1.732f * (U - 128), 0.f, 255.f);
                     frameBuffer[index+3] = 255;
                 }
                 else
@@ -347,7 +348,7 @@ void TheoraPlayer::Update(float32 timeElapsed)
         if(!ret)
         {
             Texture * tex = Texture::CreateFromData(FORMAT_RGBA8888, frameBuffer, frameBufferW, frameBufferH, false);
-            Sprite * spr = Sprite::CreateFromTexture(tex, 0, 0, tex->width, tex->height);
+            Sprite * spr = Sprite::CreateFromTexture(tex, 0, 0, (float32)tex->width, (float32)tex->height);
             spr->ConvertToVirtualSize();
 
             SafeRelease(tex);
@@ -376,24 +377,6 @@ void TheoraPlayer::Update(float32 timeElapsed)
     }
 }
 
-unsigned char TheoraPlayer::ClampFloatToByte(const float &value)
-{
-    char result = (char)value;
-    
-    (value < 0) ? result = 0 : NULL;
-    (value > 255) ? result = 255 : NULL;
-    
-    return (unsigned char)result;
-}
-
-uint32 TheoraPlayer::binCeil(uint32 value)
-{
-    uint32 bin = 1;
-    while (bin < value)
-        bin *= 2;
-    return bin;
-}
-
 void TheoraPlayer::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 {
     UIControl::LoadFromYamlNode(node, loader);
@@ -408,9 +391,9 @@ void TheoraPlayer::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader
     {
         Rect rect = rectNode->AsRect();
         if(rect.dx == -1)
-            rect.dx = theoraData->thInfo.pic_width;
+            rect.dx = (float32)theoraData->thInfo.pic_width;
         if(rect.dy == -1)
-            rect.dy = theoraData->thInfo.pic_height;
+            rect.dy = (float32)theoraData->thInfo.pic_height;
         
         SetRect(rect);
     }

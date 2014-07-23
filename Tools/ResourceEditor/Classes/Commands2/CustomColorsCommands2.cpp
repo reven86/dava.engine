@@ -162,11 +162,13 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 	
 	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
 	
+    Rect rect = ConvertPhysicalToVirtual(updatedRect);
+    
 	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(updatedRect);
+	RenderManager::Instance()->SetClip(rect);
 
     Sprite::DrawState drawState;
-    drawState.SetPosition(updatedRect.x, updatedRect.y);
+    drawState.SetPosition(rect.x, rect.y);
 	sprite->Draw(&drawState);
 	
 	RenderManager::Instance()->ClipPop();

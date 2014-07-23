@@ -175,6 +175,7 @@ public slots:
     
     void OnBuildStaticOcclusion();
     void OnRebuildCurrentOcclusionCell();
+    void OnInavalidateStaticOcclusion();
 
 	void OnCameraSpeed0();
 	void OnCameraSpeed1();

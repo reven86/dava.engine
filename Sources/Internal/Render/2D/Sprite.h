@@ -99,20 +99,13 @@ public:
 		void BuildStateFromParentAndLocal(const Sprite::DrawState &parentState, const Sprite::DrawState &localState);
         
         //NOTE: be careful: this method doesn't retain shader.
-        void SetShader(Shader* _shader);
-        
-        inline Shader* GetShader() const
-        {
-            return shader;
-        }
-        
+        inline void SetShader(Shader* _shader);
         //NOTE: be careful: this method doesn't retain render state.
-        void SetRenderState(UniqueHandle _renderState);
+        inline void SetRenderState(UniqueHandle _renderState);
         
-        inline UniqueHandle GetRenderState()
-        {
-            return renderState;
-        }
+        inline Shader* GetShader() const;
+        inline UniqueHandle GetRenderState() const;
+
         
     private:
     
@@ -509,6 +502,27 @@ inline float32 Sprite::GetResourceToVirtualFactor() const
 {
     return resourceToVirtualFactor;
 }
+
+inline Shader* Sprite::DrawState::GetShader() const
+{
+    return shader;
+}
+
+inline UniqueHandle Sprite::DrawState::GetRenderState() const
+{
+    return renderState;
+}
+
+void Sprite::DrawState::SetRenderState(UniqueHandle _renderState)
+{
+    renderState = _renderState;
+}
+
+void Sprite::DrawState::SetShader(Shader* _shader)
+{
+    shader = _shader;
+}
+
 
 };//end of namespace
 

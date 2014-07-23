@@ -31,6 +31,7 @@
 #include "Base/BaseTypes.h"
 #include "Entity/SceneSystem.h"
 #include "Base/Message.h"
+#include "Render/RenderStateData.h"
 
 namespace DAVA
 {
@@ -39,6 +40,7 @@ class RenderObject;
 class StaticOcclusion;
 class StaticOcclusionData;
 class StaticOcclusionDataComponent;
+class NMaterial;
 
 class MessageQueue
 {
@@ -79,6 +81,9 @@ private:
     void OcclusionBuildStep(BaseObject * bo, void * messageData, void * callerData);
     void FinishBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
     void SceneForceLod(int32 layerIndex);
+
+    void UpdateSwitchMaterialRecursively(Entity *entity);
+    void RestoreSwitchMaterials();
     
     Camera * camera;
     Vector<Entity*> entities;
@@ -88,6 +93,8 @@ private:
     uint32 buildStepsCount;
     uint32 buildStepRemains;
     uint32 renewIndex;
+
+    Map<NMaterial* , RenderStateData> originalRenderStateData;
 };
     
 // System that allow to use occlusion information during rendering
@@ -98,10 +105,25 @@ public:
     virtual ~StaticOcclusionSystem();
     
     inline void SetCamera(Camera * camera);
+    
+    virtual void RegisterEntity(Entity *entity);
+    virtual void UnregisterEntity(Entity *entity);
+    virtual void RegisterComponent(Entity *entity, Component * component);
+    virtual void UnregisterEntity(Entity *entity, Component * component);
+    
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
     virtual void Process(float32 timeElapsed);
-    virtual void SceneDidLoaded();
+    
+    void AddRenderObjectToOcclusion(RenderObject * renderObject);
+    void RemoveRenderObjectFromOcclusion(RenderObject * renderObject);
+
+    void ClearOcclusionObjects();
+    void CollectOcclusionObjectsRecursively(Entity *entity);
+
+    void InvalidateOcclusion();
+    void InvalidateOcclusionIndicesRecursively(Entity *entity);
+
 
 private:
     Camera * camera;

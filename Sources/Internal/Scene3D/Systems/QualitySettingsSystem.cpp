@@ -31,6 +31,7 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Scene.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 
 namespace DAVA
 {

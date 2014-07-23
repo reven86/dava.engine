@@ -130,7 +130,7 @@ void TextureDescriptorTool::ReadCompressionParams()
     PixelFormatDescriptor::InitializePixelFormatDescriptors();
     
 	compressionParams.clear();
-	for(int32 i = GPU_POWERVR_IOS; i < GPU_FAMILY_COUNT; ++i)
+	for(int32 i = 0; i < GPU_FAMILY_COUNT; ++i)
 	{
 		eGPUFamily gpu = (eGPUFamily)i;
 		String gpuFlag = "-" + GPUFamilyDescriptor::GetGPUName(gpu);

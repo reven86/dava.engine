@@ -30,6 +30,7 @@
 #include "Render/Material/RenderTechnique.h"
 #include "Render/ShaderCache.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "Base/HashMap.h"
 
 namespace DAVA

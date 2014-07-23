@@ -76,9 +76,18 @@ void ScreenControl::Draw( const UIGeometricData &geometricData )
 
     UIGeometricData backGd;
     backGd.scale = Vector2(1.0f, 1.0f);
-	backGd.position.x = pos.x * scale.x;
+    if (screenShotMode)
+    {
+        backGd.position.x = 0.0f;
+        backGd.position.y = 0.0f;
+    }
+    else
+    {
+        backGd.position.x = pos.x * scale.x;
+        backGd.position.y = pos.y * scale.y;
+    }
+
     backGd.size.x = size.x * scale.x;
-    backGd.position.y = pos.y * scale.y;
     backGd.size.y = size.y * scale.y;
     backGd.AddToGeometricData(geometricData);
     chequeredBackground->Draw(backGd);

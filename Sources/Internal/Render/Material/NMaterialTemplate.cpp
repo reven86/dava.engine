@@ -28,6 +28,7 @@
  =====================================================================================*/
 
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Render/Material/NMaterialTemplate.h"
 

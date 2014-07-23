@@ -32,6 +32,7 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControl.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/2D/GraphicsFont.h"
 #include "Render/2D/FontManager.h"

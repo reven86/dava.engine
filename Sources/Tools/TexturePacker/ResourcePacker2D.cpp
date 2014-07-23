@@ -77,7 +77,7 @@ void ResourcePacker2D::PackResources(eGPUFamily forGPU)
                   outputGfxDirectory.GetAbsolutePathname().c_str(),
                   excludeDirectory.GetAbsolutePathname().c_str());
 
-    Logger::FrameworkDebug("For GPU: %s", (GPU_UNKNOWN != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
+    Logger::FrameworkDebug("For GPU: %s", (GPU_INVALID != forGPU) ? GPUFamilyDescriptor::GetGPUName(forGPU).c_str() : "Unknown");
 
     
 	requestedGPUFamily = forGPU;

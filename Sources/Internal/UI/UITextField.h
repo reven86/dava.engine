@@ -202,7 +202,11 @@ public:
 	 \brief Sets contol input processing ability.
 	 */
 	virtual void SetInputEnabled(bool isEnabled, bool hierarchic = true);
+protected:
+    virtual void WillBecomeVisible();
+    virtual void WillBecomeInvisible();
 
+public:
 	/**
 	 \brief Returns the font of control
 	 \returns Font font of the control

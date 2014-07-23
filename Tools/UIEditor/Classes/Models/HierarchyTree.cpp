@@ -506,9 +506,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
             fontNode->Add(DEFAULT_FONTS_PATH_NODE, EditorFontManager::Instance()->GetDefaultFontsFrameworkPath());
         }
     }
-    
 
-	
 	YamlNode* platforms = new YamlNode(YamlNode::TYPE_MAP);
 	root->SetNodeToMap( PLATFORMS_NODE, platforms );
 
@@ -533,6 +531,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
     HierarchyTreeController::Instance()->DeleteUnusedItemsFromDisk(projectPath);
 
     // Do the save itself.
+	List<QString> fileNames;
 	for (HierarchyTreeNode::HIERARCHYTREENODESLIST::const_iterator iter = rootNode.GetChildNodes().begin();
 		 iter != rootNode.GetChildNodes().end();
 		 ++iter)
@@ -541,7 +540,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 		if (!platformNode)
 			continue;
 		// In case platform is changed - we should always perform "Save All" sequence
-		bool res = platformNode->Save(platforms, (platformNode->IsNeedSave() || saveAll));
+		bool res = platformNode->Save(platforms, (platformNode->IsNeedSave() || saveAll), fileNames);
 		if (res)
 		{
 			platformNode->ResetUnsavedChanges();
@@ -560,6 +559,7 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 
 	// Save project file.
 	result &= parser->SaveToYamlFile(projectFile.toStdString(), root, true);
+	fileNames.push_back(projectFile);
 
     // Return the Localized Values.
     UpdateExtraData(BaseMetadata::UPDATE_CONTROL_FROM_EXTRADATA_LOCALIZED);
@@ -574,8 +574,11 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 		rootNode.ResetUnsavedChanges();
 	}
 
-    SafeRelease(parser);
-    LockProjectFiles();
+	SafeRelease(parser);
+
+	// List of files to be locked might be changed after save (if new platforms/screens are added).
+	projectLockedFiles.clear();
+	LockProjectFiles(fileNames);
 
 	return result;
 }
@@ -733,15 +736,6 @@ void HierarchyTree::UpdateModificationDate(const QString &path)
 	// 02/05/2014 - Request only for MACOS
 	utime(path.toStdString().c_str(), NULL);
 #endif
-}
-
-void HierarchyTree::LockProjectFiles()
-{
-    for (List<String>::iterator iter = projectLockedFiles.begin(); iter != projectLockedFiles.end(); iter ++)
-    {
-        const String& fileName = (*iter);
-        FileSystem::Instance()->LockFile(fileName, true);
-    }
 }
 
 void HierarchyTree::LockProjectFiles(const List<QString>& fileNames)

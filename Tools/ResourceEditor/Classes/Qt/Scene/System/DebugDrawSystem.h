@@ -71,7 +71,8 @@ protected:
 	void DrawObjectBoxesByType(DAVA::Entity *entity);
 	void DrawUserNode(DAVA::Entity *entity);
 	void DrawLightNode(DAVA::Entity *entity);
-	void DrawSoundNode(DAVA::Entity *entity);
+    void DrawSoundNode(DAVA::Entity *entity);
+    void DrawSelectedSoundNode(DAVA::Entity *entity);
 	void DrawHangingObjects(DAVA::Entity *entity);
 	void DrawEntityBox(DAVA::Entity *entity, const DAVA::Color &color);
 	void DrawStaticOcclusionComponent(DAVA::Entity *entity);

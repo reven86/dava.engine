@@ -68,7 +68,7 @@ QString UISpinnerMetadata::GetPrevButtonText()
 	UIStaticText* textControl = GetPrevButton()->GetStateTextControl(this->uiControlStates[GetActiveStateIndex()]);
 	if (textControl)
 	{
-		return WideString2QStrint(textControl->GetText());
+		return WideString2QString(textControl->GetText());
 	}
 	
 	return QString();
@@ -97,7 +97,7 @@ QString UISpinnerMetadata::GetNextButtonText()
 	UIStaticText* textControl = GetNextButton()->GetStateTextControl(this->uiControlStates[GetActiveStateIndex()]);
 	if (textControl)
 	{
-		return WideString2QStrint(textControl->GetText());
+		return WideString2QString(textControl->GetText());
 	}
 	
 	return QString();

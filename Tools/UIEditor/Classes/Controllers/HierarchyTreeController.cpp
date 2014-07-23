@@ -833,7 +833,7 @@ bool HierarchyTreeController::CanPerformDistribute(eDistributeControlsType /*dis
 	resPacker->InitFolders(ResourcesManageHelper::GetSpritesDatasourceDirectory().toStdString(),
                            ResourcesManageHelper::GetSpritesDirectory().toStdString());
     
-    resPacker->PackResources(GPU_UNKNOWN);
+    resPacker->PackResources(GPU_PNG);
     errorsSet = resPacker->GetErrors();
 	SafeDelete(resPacker);
 

@@ -403,8 +403,8 @@ void VegetationCustomSLGeometry::GenerateClusterPositionData(const Vector<Vegeta
             uint32 matrixCellX = cellX / layerMaxClusters;
             uint32 matrixCellY = cellY / layerMaxClusters;
             
-            float32 randomX = unitSize.x * Random::Instance()->RandFloat();
-            float32 randomY = unitSize.y * Random::Instance()->RandFloat();
+            float32 randomX = unitSize.x * (float32)Random::Instance()->RandFloat();
+            float32 randomY = unitSize.y * (float32)Random::Instance()->RandFloat();
             
             
             
@@ -415,8 +415,8 @@ void VegetationCustomSLGeometry::GenerateClusterPositionData(const Vector<Vegeta
             cluster.pos = Vector3((matrixCellX * unitSize.x) + randomX,
                                   (matrixCellY * unitSize.y) + randomY,
                                   0.0f);
-            cluster.rotation = layerParamsData.instanceRotationVariation * (Random::Instance()->RandFloat() - 0.5f);
-            cluster.scale = 1.0f - layerParamsData.instanceScaleVariation * Random::Instance()->RandFloat();
+            cluster.rotation = layerParamsData.instanceRotationVariation * ((float32)Random::Instance()->RandFloat() - 0.5f);
+            cluster.scale = 1.0f - layerParamsData.instanceScaleVariation * (float32)Random::Instance()->RandFloat();
             cluster.densityId = densityId[clusterIndex];
             cluster.layerId = layerIndex;
             
@@ -558,8 +558,8 @@ void VegetationCustomSLGeometry::GenerateVertexData(const Vector<CustomGeometryE
             vertex.binormal.y = clusterData.position.pos.y + clusterGeometry.pivot.y;
             vertex.binormal.z = clusterData.position.pos.z + clusterGeometry.pivot.z;
             
-            vertex.tangent.x = clusterData.resolutionId;
-            vertex.tangent.y = clusterData.position.layerId;
+            vertex.tangent.x = (float32)clusterData.resolutionId;
+            vertex.tangent.y = (float32)clusterData.position.layerId;
             vertex.tangent.z = Max(0.0f, ((vertex.coord.z - clusterGeometry.pivot.z) / (clusterGeometry.bbox.max.z - clusterGeometry.pivot.z)));
             
             vertex.texCoord0 = clusterGeometry.sourceTextureCoords[vertexIndex];

@@ -143,13 +143,16 @@ void SoundComponentEditor::FillEventParamsFrame()
     {
         DAVA::SoundEvent::SoundEventParameterInfo & param = params[i];
         if(param.name != "(distance)" && param.name != "(event angle)" && param.name != "(listener angle)")
-            AddSliderWidget(param);
+        {
+            float32 currentParamValue = selectedEvent->GetParameterValue(FastName(param.name));
+            AddSliderWidget(param, currentParamValue);
+        }
     }
 }
 
 void SoundComponentEditor::OnPlay()
 {
-    if(selectedEvent)
+    if(selectedEvent && !selectedEvent->IsActive())
         selectedEvent->Trigger();
 }
 
@@ -220,7 +223,7 @@ void SoundComponentEditor::OnSliderMoved(int value)
         selectedEvent->SetParameterValue(DAVA::FastName(paramName), newParamValue);
 }
 
-void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo & param)
+void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo & param, float32 currentParamValue)
 {
     QGridLayout * layout = dynamic_cast<QGridLayout *>(ui->paramsFrame->layout());
     
@@ -238,7 +241,7 @@ void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventPar
 
     if(selectedEvent)
     {
-        int currentValue = (param.currentValue - param.minValue) / (param.maxValue - param.minValue) * 1000;
+        int currentValue = (currentParamValue - param.minValue) / (param.maxValue - param.minValue) * 1000;
         slider->setValue(currentValue);
     }
 

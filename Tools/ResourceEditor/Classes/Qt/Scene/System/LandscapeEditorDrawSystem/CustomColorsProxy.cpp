@@ -38,7 +38,7 @@ CustomColorsProxy::CustomColorsProxy(int32 size)
     , size(size)
     , changes(0)
 {
-	customColorsSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888);
+	customColorsSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
 	UpdateSpriteFromConfig();
 }
 

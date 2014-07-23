@@ -43,6 +43,8 @@ public:
 
     virtual void ImmediateEvent(Entity * entity, uint32 event);
     virtual void Process(float32 timeElapsed);
+
+    virtual void RemoveEntity(Entity * entity);
 };
     
 } // ns

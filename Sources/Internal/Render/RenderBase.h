@@ -176,15 +176,16 @@ enum PixelFormat
 // Please update JniDeviceInfo.java if change eGPUFamily enum
 enum eGPUFamily
 {
-    GPU_UNKNOWN = -1,
-    
     GPU_POWERVR_IOS     =   0,
     GPU_POWERVR_ANDROID,
     GPU_TEGRA,
     GPU_MALI,
     GPU_ADRENO,
+    GPU_PNG,
+    GPU_FAMILY_COUNT,
     
-    GPU_FAMILY_COUNT
+    GPU_DEVICE_COUNT = GPU_PNG,
+    GPU_INVALID = 0x07
 };
     
 #if defined(__DAVAENGINE_OPENGL__)

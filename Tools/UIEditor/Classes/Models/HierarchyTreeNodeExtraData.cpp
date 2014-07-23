@@ -35,23 +35,11 @@ using namespace DAVA;
 
 HierarchyTreeNodeExtraData::HierarchyTreeNodeExtraData()
 {
-    // Init the map.
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_NORMAL, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_PRESSED_INSIDE, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_PRESSED_OUTSIDE, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_DISABLED, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_SELECTED, WideString()));
-    this->localizationKeysMap.insert(std::make_pair(UIControl::STATE_HOVER, WideString()));
 }
 
 // Access to Localization Key.
 void HierarchyTreeNodeExtraData::SetLocalizationKey(const WideString& localizationKey, UIControl::eControlState state)
 {
-    if (!ValidateControlState(state))
-    {
-        return;
-    }
-
     this->localizationKeysMap[state] = localizationKey;
 }
     

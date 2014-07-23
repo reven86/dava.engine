@@ -299,7 +299,7 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
         }
         
         float32 clusterVisualSize = cellData.geometryScale.x * (clusterBBox.max.x - clusterBBox.min.x);
-        uint32 clustersInRow = unitSize.x / clusterVisualSize;
+        uint32 clustersInRow = (uint32)(unitSize.x / clusterVisualSize);
         if(clustersInRow <= 0)
         {
             clustersInRow = 1;
@@ -318,7 +318,7 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
             
             Vector2 matrixCellStart(unitSize.x * matrixIndexX, unitSize.y * matrixIndexY);
             
-            float32 randomOffsetX = clusterVisualSize * (clusterIndex % clustersInRow) + clusterVisualSize * (0.5f - Random::Instance()->RandFloat());//unitSize.x * Random::Instance()->RandFloat();
+            float32 randomOffsetX = clusterVisualSize * (clusterIndex % clustersInRow) + clusterVisualSize * (0.5f - (float32)Random::Instance()->RandFloat());//unitSize.x * Random::Instance()->RandFloat();
             float32 randomOffsetY = atomicOffsetY * shuffleDepth[clusterIndex]; //unitSize.y * Random::Instance()->RandFloat();
             
             Vector3 clusterCenter(matrixCellStart.x + randomOffsetX, matrixCellStart.y + randomOffsetY, 0.0f);
@@ -338,8 +338,8 @@ void VegetationFixedGeometry::GenerateVertices(uint32 maxClusters,
                 
                 vertex.binormal = clusterCenter;
                 
-                vertex.tangent.y = layerIndex;
-                vertex.tangent.z = densityId;
+                vertex.tangent.y = (float32)layerIndex;
+                vertex.tangent.z = (float32)densityId;
                 
                 vertex.texCoord0.x = cellData.coords[clusterVertexIndex % MAX_CELL_TEXTURE_COORDS].x;
                 vertex.texCoord0.y = cellData.coords[clusterVertexIndex % MAX_CELL_TEXTURE_COORDS].y;
@@ -445,7 +445,7 @@ void VegetationFixedGeometry::PrepareIndexBufferData(uint32 indexBufferIndex,
                     DVASSERT(vertexIndex >= 0 && vertexIndex < vertexData.size());
                     
                     VegetationVertex& vertex = vertexData[vertexIndex];
-                    vertex.tangent.x = resolutionIndex;
+                    vertex.tangent.x = (float32)resolutionIndex;
                     
                     indexBufferBBox.AddPoint(vertex.coord);
                     

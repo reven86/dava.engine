@@ -27,10 +27,12 @@
     <ClInclude Include="Classes\FilePathTest.h" />
     <ClInclude Include="Classes\FileSystemTest.h" />
     <ClInclude Include="Classes\FormatsTest.h" />
+    <ClInclude Include="Classes\ImageSizeTest.h" />
     <ClInclude Include="Classes\JPEGTest.h" />
     <ClInclude Include="Classes\OpenGLES30FormatTest.h" />
     <ClInclude Include="Classes\ParseTextTest.h" />
     <ClInclude Include="Classes\SaveImageTest.h" />
+    <ClInclude Include="Classes\SceneSystemTest.h" />
     <ClInclude Include="Classes\StringFormatTest.h" />
     <ClInclude Include="Classes\FrameworkMain.h" />
     <ClInclude Include="Classes\GameCore.h" />
@@ -71,10 +73,12 @@
     <ClCompile Include="Classes\FilePathTest.cpp" />
     <ClCompile Include="Classes\FileSystemTest.cpp" />
     <ClCompile Include="Classes\FormatsTest.cpp" />
+    <ClCompile Include="Classes\ImageSizeTest.cpp" />
     <ClCompile Include="Classes\JPEGTest.cpp" />
     <ClCompile Include="Classes\OpenGLES30FormatTest.cpp" />
     <ClCompile Include="Classes\ParseTextTest.cpp" />
     <ClCompile Include="Classes\SaveImageTest.cpp" />
+    <ClCompile Include="Classes\SceneSystemTest.cpp" />
     <ClCompile Include="Classes\StringFormatTest.cpp" />
     <ClCompile Include="Classes\FrameworkMain.cpp" />
     <ClCompile Include="Classes\GameCore.cpp" />

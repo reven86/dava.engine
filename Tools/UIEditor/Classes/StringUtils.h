@@ -44,7 +44,7 @@ QString TruncateFileExtension(const QString& fileName, const QString& extension)
 WideString QStrint2WideString(const QString& str);
 
 //convert WideString to QString
-QString WideString2QStrint(const WideString& str);
+QString WideString2QString(const WideString& str);
 
 };
 

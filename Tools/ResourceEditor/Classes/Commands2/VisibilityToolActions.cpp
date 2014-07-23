@@ -140,7 +140,7 @@ void ActionSetVisibilityPoint::Redo()
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
     Sprite::DrawState drawState;
-    drawState.SetPosition(redoVisibilityPoint - cursorSprite->GetSize() / 2.f);
+    drawState.SetPosition((redoVisibilityPoint - cursorSprite->GetSize() / 2.f) / Core::GetVirtualToPhysicalFactor());
 	cursorSprite->Draw(&drawState);
 
 	RenderManager::Instance()->RestoreRenderTarget();
@@ -225,13 +225,15 @@ void ActionSetVisibilityArea::ApplyImage(DAVA::Image *image)
 
 	RenderManager::Instance()->SetRenderTarget(visibilityToolSprite);
 
+    Rect rect = ConvertPhysicalToVirtual(updatedRect);
+    
 	RenderManager::Instance()->ClipPush();
-	RenderManager::Instance()->SetClip(updatedRect);
+	RenderManager::Instance()->SetClip(rect);
 
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
     
     Sprite::DrawState drawState;
-    drawState.SetPosition(updatedRect.x, updatedRect.y);
+    drawState.SetPosition(rect.x, rect.y);
 	sprite->Draw(&drawState);
 
 	RenderManager::Instance()->ClipPop();

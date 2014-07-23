@@ -340,6 +340,70 @@ uint32 LibPngWrapper::GetDataSize(File * infile ) const
 	return imageSize;
 }
 
+Size2i LibPngWrapper::GetImageSize(File *infile) const
+{
+	Size2i imageSize;
+
+	if (!infile)
+	{
+		return imageSize;
+	}
+
+	char sig[8];
+	infile->Read(sig, 8);
+	if (!png_check_sig((unsigned char *) sig, 8))
+	{
+		return imageSize;
+	}
+
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png_ptr)
+	{
+		return imageSize;
+	}
+
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr)
+	{
+		png_destroy_read_struct(&png_ptr, (png_infopp) NULL, (png_infopp) NULL);
+		return imageSize;
+	}
+
+	if (setjmp(png_jmpbuf(png_ptr)))
+	{
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		return imageSize;
+	}
+
+	PngImageRawData	raw;
+	raw.file = infile;
+	png_set_read_fn (png_ptr, &raw, PngImageRead);
+
+
+	png_set_sig_bytes(png_ptr, 8);
+	png_read_info(png_ptr, info_ptr);
+
+
+	int bit_depth;
+	int color_type;
+
+	png_uint_32 width;
+	png_uint_32 height;
+
+
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
+
+	imageSize.dx = width;
+	imageSize.dy = height;
+
+	/* Clean up. */
+	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+	return imageSize;
+}
+
+
+
 eErrorCode LibPngWrapper::WriteFileAsCubeMap(const FilePath & fileName, const Vector<Image *> &imageSet, PixelFormat compressionFormat) const
 {
     Logger::Error("[LibPngWrapper::WriteFileAsCubeMap] For png cubeMaps are not supported");

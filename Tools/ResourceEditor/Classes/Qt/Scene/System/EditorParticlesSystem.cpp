@@ -162,9 +162,12 @@ void EditorParticlesSystem::DrawSizeCircleShockWave(DAVA::Entity *effectEntity, 
 	//float32 time = emitter->GetTime();
 	float32 time = GetEffectComponent(effectEntity)->GetCurrTime();
 	float32 emitterRadius = (emitter->radius) ? emitter->radius->GetValue(time) : 0.0f;
+    Vector3 emissionVector(0,0,1);
+    if (emitter->emissionVector)
+        emissionVector = emitter->emissionVector->GetValue(time);
 
     RenderManager::Instance()->SetDynamicParam(DAVA::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, (DAVA::pointer_size)&DAVA::Matrix4::IDENTITY);
-	DAVA::RenderHelper::Instance()->DrawCircle3D(center, emitter->emissionVector->GetValue(time), emitterRadius, true, renderState);
+	DAVA::RenderHelper::Instance()->DrawCircle3D(center, emissionVector, emitterRadius, true, renderState);
 }
 
 void EditorParticlesSystem::DrawSizeCircle(DAVA::Entity *effectEntity, DAVA::ParticleEmitter *emitter, DAVA::Vector3 center)

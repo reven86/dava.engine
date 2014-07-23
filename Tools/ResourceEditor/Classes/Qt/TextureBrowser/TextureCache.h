@@ -116,7 +116,7 @@ private:
 
 	size_t curThumbnailWeight;
 	size_t curOriginalWeight;
-	size_t curConvertedWeight[DAVA::GPU_FAMILY_COUNT];
+	size_t curConvertedWeight[DAVA::GPU_DEVICE_COUNT];
 
     static const size_t maxThumbnailCount = 100;
 	static const size_t maxOrigCount = 1;
@@ -126,7 +126,7 @@ private:
 
     CacheMap cacheThumbnail;
 	CacheMap cacheOriginal;
-	CacheMap cacheConverted[DAVA::GPU_FAMILY_COUNT];
+	CacheMap cacheConverted[DAVA::GPU_DEVICE_COUNT];
 };
 
 Q_DECLARE_METATYPE( QList<QImage> )

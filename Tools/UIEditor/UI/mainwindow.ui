@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1037</width>
+    <width>1250</width>
     <height>700</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>960</width>
+    <width>1024</width>
     <height>700</height>
    </size>
   </property>
@@ -30,7 +30,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -333,7 +342,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1037</width>
+     <width>1250</width>
      <height>22</height>
     </rect>
    </property>
@@ -521,6 +530,25 @@
     <number>1</number>
    </attribute>
    <widget class="PreviewSettingsWidget" name="dockWidgetContents"/>
+  </widget>
+  <widget class="QToolBar" name="findToolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionIgnoreCase"/>
+   <addaction name="actionFind"/>
   </widget>
   <action name="actionOpen_project">
    <property name="enabled">
@@ -1058,6 +1086,39 @@
    </property>
    <property name="toolTip">
     <string>Lock Guides</string>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/search-icon.png</normaloff>:/Icons/search-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Find</string>
+   </property>
+   <property name="toolTip">
+    <string>Find control or screen</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionIgnoreCase">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../Data/icons.qrc">
+     <normaloff>:/Icons/ignore-case.png</normaloff>:/Icons/ignore-case.png</iconset>
+   </property>
+   <property name="text">
+    <string>IgnoreCase</string>
+   </property>
+   <property name="toolTip">
+    <string>Ignore Case</string>
    </property>
   </action>
  </widget>

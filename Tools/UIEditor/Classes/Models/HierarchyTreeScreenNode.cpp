@@ -460,9 +460,9 @@ const GuidesManager& HierarchyTreeScreenNode::GetGuidesManager() const
     return guides;
 }
 
-List<Rect> HierarchyTreeScreenNode::GetControlRectsList(bool includeScreenBounds) const
+List<GuidesManager::StickedRect> HierarchyTreeScreenNode::GetControlRectsList(bool includeScreenBounds) const
 {
-    List<Rect> rectsList;
+    List<GuidesManager::StickedRect> rectsList;
     
     const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = GetChildNodes();
 
@@ -474,16 +474,23 @@ List<Rect> HierarchyTreeScreenNode::GetControlRectsList(bool includeScreenBounds
 
     if (includeScreenBounds)
     {
-        const Vector2& screenSize = GetPlatform()->GetSize();
-        rectsList.push_back(Rect(0, 0, screenSize.x, screenSize.y));
+        // Screen/platform bounds are always forced to be sticked.
+        rectsList.push_back(GuidesManager::StickedRect(GetOwnRect(), true));
     }
 
     return rectsList;
 }
 
-void HierarchyTreeScreenNode::GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<Rect>& rectsList) const
+Rect HierarchyTreeScreenNode::GetOwnRect() const
 {
-    rectsList.push_back(rootNode->GetUIObject()->GetRect(true));
+    const Vector2& screenSize = GetPlatform()->GetSize();
+    return Rect(0, 0, screenSize.x, screenSize.y);
+}
+
+void HierarchyTreeScreenNode::GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<GuidesManager::StickedRect>& rectsList) const
+{
+    // Inner controls aren't forced to be sticked.
+    rectsList.push_back(GuidesManager::StickedRect(rootNode->GetUIObject()->GetRect(true), false));
 
     const HierarchyTreeNode::HIERARCHYTREENODESLIST& children = rootNode->GetChildNodes();
     for (HierarchyTreeNode::HIERARCHYTREENODESCONSTITER iter = children.begin(); iter != children.end(); iter ++)

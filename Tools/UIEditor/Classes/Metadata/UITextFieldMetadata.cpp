@@ -52,7 +52,7 @@ QString UITextFieldMetadata::GetText() const
     {
         return QString();
     }
-    return WideString2QStrint(GetActiveUITextField()->GetText());
+    return WideString2QString(GetActiveUITextField()->GetText());
 }
 
 

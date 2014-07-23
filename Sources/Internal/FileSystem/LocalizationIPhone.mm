@@ -25,10 +25,11 @@ namespace DAVA
 void LocalizationIPhone::SelecePreferedLocalizationForPath(const FilePath &directoryPath)
 {
     NSString * lang = [[NSUserDefaults standardUserDefaults] stringForKey:@"lang"];
+    String lid;
     
     if(lang)
     {
-        String lid = [lang UTF8String];
+        lid = [lang UTF8String];
 		File *fl = File::Create(directoryPath + (lid + ".yaml"), File::OPEN|File::READ);
 		if(fl)
 		{
@@ -41,20 +42,44 @@ void LocalizationIPhone::SelecePreferedLocalizationForPath(const FilePath &direc
     else
     {
         NSArray *ar = [NSLocale preferredLanguages];
-        for (int i = 0; i < (int)[ar count]; i++) 
-        {
-            String lid = [[ar objectAtIndex:i] UTF8String];
 
-            Logger::Info("LocalizationIPhone:: pref lang = %s", lid.c_str());
-            File *fl = File::Create(directoryPath + (lid + ".yaml"), File::OPEN|File::READ);
-            if(fl)
-            {
-                Logger::Info("LocalizationIPhone:: selected lang = %s", lid.c_str());
-                LocalizationSystem::Instance()->SetCurrentLocale(lid);
-                SafeRelease(fl);
-                return;
-            }
+        lid = [[ar objectAtIndex:0] UTF8String];
+
+        Logger::Info("LocalizationIPhone:: pref lang = %s", lid.c_str());
+        File *fl = File::Create(directoryPath + (lid + ".yaml"), File::OPEN|File::READ);
+        if(fl)
+        {
+            Logger::Info("LocalizationIPhone:: selected lang = %s", lid.c_str());
+            LocalizationSystem::Instance()->SetCurrentLocale(lid);
+            SafeRelease(fl);
+            return;
         }
+    }
+    
+    // we can reach this point only if we don't have yaml file for the preferred language
+    if(lid.size() > 2)
+    {
+        String langPart = lid.substr(0, 2);
+        Logger::Info("LocalizationIPhone:: pref lang = %s not found, trying to check language part %s", lid.c_str(), langPart.c_str());
+        File *fl1 = File::Create(directoryPath + (langPart + ".yaml"), File::OPEN|File::READ);
+        if(fl1)
+        {
+            Logger::Info("LocalizationIPhone:: selected lang = %s", langPart.c_str());
+            LocalizationSystem::Instance()->SetCurrentLocale(langPart);
+            SafeRelease(fl1);
+            return;
+        }
+        Logger::Info("LocalizationIPhone:: pref lang = %s language part %s not found", lid.c_str(), langPart.c_str());
+    }
+    
+    // we can reach this point only if we don't have yaml file for the language part of the preferred language
+    File *fl2 = File::Create(directoryPath + ("en.yaml"), File::OPEN|File::READ);
+    if(fl2)
+    {
+        Logger::Info("LocalizationIPhone:: selected lang = en (default)");
+        LocalizationSystem::Instance()->SetCurrentLocale("en");
+        SafeRelease(fl2);
+        return;
     }
 }
 };

@@ -141,12 +141,13 @@ public:
     const GuidesManager& GetGuidesManager() const;
 
     // Access to the list of control rects for this node.
-    List<Rect> GetControlRectsList(bool includeScreenBounds) const;
-    void GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<Rect>& rectsList) const;
+    List<GuidesManager::StickedRect> GetControlRectsList(bool includeScreenBounds) const;
+    void GetControlRectsListRecursive(const HierarchyTreeControlNode* rootNode, List<GuidesManager::StickedRect>& rectsList) const;
     
     bool IsLoaded() const {return loaded;}
 
 protected:
+    virtual Rect GetOwnRect() const;
 	void CombineRectWithChild(Rect& rect) const;
     
     // Initialize the control before adding to hierarchy tree.

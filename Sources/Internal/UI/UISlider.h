@@ -120,7 +120,6 @@ protected:
 	UIControl * bgMin;
 	UIControl * bgMax;
 
-	float32 clipPointRelative;
 	Vector2 relTouchPoint;
 
 	UIControlBackground::eDrawType minDrawType;

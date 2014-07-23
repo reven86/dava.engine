@@ -72,6 +72,7 @@ void TextDrawSystem::Draw()
 
 		if(NULL != font)
 		{
+            DAVA::RenderManager::Instance()->Setup2DMatrices();
 			DAVA::RenderManager::Instance()->SetRenderOrientation(DAVA::Core::SCREEN_ORIENTATION_PORTRAIT);
             DAVA::RenderManager::Instance()->SetRenderState(DAVA::RenderState::RENDERSTATE_2D_BLEND);
             DAVA::RenderManager::Instance()->FlushState();

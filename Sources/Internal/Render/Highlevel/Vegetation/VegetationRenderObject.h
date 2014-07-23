@@ -481,7 +481,7 @@ inline const FilePath& VegetationRenderObject::GetVegetationTexture() const
 
 inline void VegetationRenderObject::SetClusterLimit(const uint32& maxClusters)
 {
-    Vector4 tmpVec(maxClusters, maxClusters, maxClusters, maxClusters);
+    Vector4 tmpVec((float32)maxClusters, (float32)maxClusters, (float32)maxClusters, (float32)maxClusters);
     SetLayerClusterLimit(tmpVec);
 }
 
@@ -642,10 +642,10 @@ inline void VegetationRenderObject::SetLayerClusterLimit(const Vector4& maxClust
 
 inline Vector4 VegetationRenderObject::GetLayerClusterLimit() const
 {
-    return Vector4(layerParams[0].maxClusterCount,
-                   layerParams[1].maxClusterCount,
-                   layerParams[2].maxClusterCount,
-                   layerParams[3].maxClusterCount);
+    return Vector4((float32)layerParams[0].maxClusterCount,
+                   (float32)layerParams[1].maxClusterCount,
+                   (float32)layerParams[2].maxClusterCount,
+                   (float32)layerParams[3].maxClusterCount);
 }
 
 inline void VegetationRenderObject::SetScaleVariation(const Vector4& scaleVariation)

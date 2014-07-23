@@ -45,7 +45,7 @@ QString UITextControlMetadata::GetLocalizedTextKeyForState(UIControl::eControlSt
     HierarchyTreeNode* node = this->GetActiveTreeNode();
     if (node)
     {
-        return WideString2QStrint(node->GetExtraData().GetLocalizationKey(controlState));
+        return WideString2QString(node->GetExtraData().GetLocalizationKey(controlState));
     }
     
     return QString();

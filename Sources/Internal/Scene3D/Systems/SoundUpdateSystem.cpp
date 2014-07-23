@@ -93,4 +93,17 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
     }
 }
 
+void SoundUpdateSystem::RemoveEntity(Entity * entity)
+{
+    SoundComponent * sc = GetSoundComponent(entity);
+    DVASSERT(sc);
+
+    uint32 eventsCount = sc->GetEventsCount();
+    for(uint32 i = 0; i < eventsCount; ++i)
+    {
+        SoundEvent * sound = sc->GetSoundEvent(i);
+        sound->Stop();
+    }
+}
+
 };
