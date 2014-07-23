@@ -190,7 +190,7 @@ void LodSystem::UpdateEntityAfterLoad(Entity * entity)
 	ParticleEffectComponent * effect = GetEffectComponent(entity);
 	if (effect)
 	{
-		lod->currentLod = LodComponent::GetDefaultLod();
+		lod->currentLod = lod->lodLayersArray.size() - 1;
 		effect->SetDesiredLodLevel(lod->currentLod);
 	}
 	else if(lod->lodLayers.size() > 0)

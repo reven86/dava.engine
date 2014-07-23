@@ -460,6 +460,12 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
                                             uint32 maxDistanceCount)
 {
     uint32 validDistanceCount = 0;
+    
+    LodDistance prevTestDistance;
+    prevTestDistance.distance = -1.0f;
+    prevTestDistance.farDistanceSq = -1.0f;
+    prevTestDistance.nearDistanceSq = -1.0f;
+    
     for(int32 i = 0; i < maxDistanceCount; ++i)
     {
         KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
@@ -472,12 +478,19 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
             testDistance.farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
             testDistance.lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : (int8)i;
             
-            if(testDistance.IsValid())
+            if(testDistance.IsValid() &&
+               testDistance.IsValidInSequence(prevTestDistance))
             {
                 validDistanceCount++;
             }
+            
+            prevTestDistance = testDistance;
         }
     }
+    
+    prevTestDistance.distance = -1.0f;
+    prevTestDistance.farDistanceSq = -1.0f;
+    prevTestDistance.nearDistanceSq = -1.0f;
     
     lodLayers.resize(validDistanceCount);
     uint32 lodLayerIndex = 0;
@@ -493,11 +506,14 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
             testDistance.farDistanceSq = lodDistValuesArch->GetFloat("ld.fardistsq");
             testDistance.lodIndex = (lodDistValuesArch->IsKeyExists("ld.lodIndex")) ? (int8)lodDistValuesArch->GetInt32("ld.lodIndex") : (int8)i;
             
-            if(testDistance.IsValid())
+            if(testDistance.IsValid() &&
+               testDistance.IsValidInSequence(prevTestDistance))
             {
                 lodLayers[lodLayerIndex] = testDistance;
                 lodLayerIndex++;
             }
+            
+            prevTestDistance = testDistance;
         }
     }
     

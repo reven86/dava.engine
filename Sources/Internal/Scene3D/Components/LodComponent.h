@@ -79,6 +79,7 @@ public:
         inline int8 GetLodIndex() const;
         
         inline bool IsValid() const;
+        inline bool IsValidInSequence(const LodDistance& prevDistance) const;
 
         INTROSPECTION(LodDistance,
             PROPERTY("distance", "Distance", GetDistance, SetDistance, I_SAVE | I_VIEW)
@@ -251,6 +252,14 @@ inline bool LodComponent::LodDistance::IsValid() const
     (farDistanceSq >= 0.0f) &&
     (farDistanceSq >= nearDistanceSq);
 }
+
+inline bool LodComponent::LodDistance::IsValidInSequence(const LodDistance& prevDistance) const
+{
+    return (distance > prevDistance.distance &&
+            nearDistanceSq > prevDistance.nearDistanceSq &&
+            farDistanceSq > prevDistance.farDistanceSq);
+}
+
 
 inline void LodComponent::InitQualityContainer()
 {
