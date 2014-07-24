@@ -364,6 +364,16 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
         scene->SetGlobalMaterial(globalMaterial);
     }
     
+    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
+    ThreadIdJobWaiter waiter;
+    waiter.Wait();
+    
+    UpdatePolygonGroupRequestedFormatRecursively(rootNode);
+    
+    serializationContext.LoadPolygonGroupData(file);
+    
+    OptimizeScene(rootNode);
+    
     //VI: remove unused render batches here!
     if(false == serializationContext.TestSerializationFlags(SerializationContext::EDITOR_MODE))
     {
@@ -377,15 +387,6 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath & filename, Scene * _s
             reducedEntity->GetParent()->RemoveNode(reducedEntity);
         }
     }
-		  
-    //as we are going to take information about required attribute streams from shader - we are to wait for shader compilation
-    ThreadIdJobWaiter waiter;
-    waiter.Wait();
-    
-    UpdatePolygonGroupRequestedFormatRecursively(rootNode);
-    serializationContext.LoadPolygonGroupData(file);
-
-    OptimizeScene(rootNode);	            
     
     //VI: load materials after render batches have been removed
     LoadDelayedResourcesRecursively(scene, rootNode);
@@ -1294,7 +1295,11 @@ void SceneFileV2::UpdatePolygonGroupRequestedFormatRecursively(Entity *entity)
             PolygonGroup *group = renderBatch->GetPolygonGroup();
             NMaterial *material = renderBatch->GetMaterial();
             if (group && material)
-                serializationContext.AddRequestedPolygonGroupFormat(group, material->GetRequiredVertexFormat());            
+            {
+                serializationContext.AddRequestedPolygonGroupFormat(group, material->GetRequiredVertexFormat());
+                
+                serializationContext.AddLoadedPolygonGroupReference(group);
+            }
         }
     }
 
@@ -1325,7 +1330,7 @@ void SceneFileV2::RemoveUnusedRenderBatchesRecursively(Entity* rootNode, Vector<
 {
     if(rootNode->GetComponent(Component::LOD_COMPONENT))
     {
-        RemoveUnusedLodRenderBatches(rootNode, reducedEntities);
+        RemoveUnusedLodRenderBatches(rootNode, serializationContext, reducedEntities);
     }
 
     uint32 childrenCount = rootNode->GetChildrenCount();
@@ -1335,7 +1340,7 @@ void SceneFileV2::RemoveUnusedRenderBatchesRecursively(Entity* rootNode, Vector<
     }
 }
 
-void SceneFileV2::RemoveUnusedLodRenderBatches(Entity* entity, Vector<Entity*>& reducedEntities)
+void SceneFileV2::RemoveUnusedLodRenderBatches(Entity* entity, SerializationContext& context, Vector<Entity*>& reducedEntities)
 {
     DVASSERT(entity);
     
@@ -1376,7 +1381,16 @@ void SceneFileV2::RemoveUnusedLodRenderBatches(Entity* entity, Vector<Entity*>& 
             uint32 batchesToRemoveCount = batchesToRemove.size();
             for(uint32 i = 0; i < batchesToRemoveCount; ++i)
             {
-                ro->RemoveRenderBatch(batchesToRemove[i]);
+                RenderBatch* batch = batchesToRemove[i];
+                
+                PolygonGroup* pg = batch->GetPolygonGroup();
+                
+                if(pg)
+                {
+                    context.RemoveLoadedPolygonGroupReference(pg);
+                }
+            
+                ro->RemoveRenderBatch(batch);
             }
             
             if(ro->GetRenderBatchCount() == 0)

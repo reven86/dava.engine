@@ -70,7 +70,10 @@ namespace DAVA
         {            
             uint32 filePos;
             int32 requestedFormat;
-            PolygonGroupLoadInfo():filePos(0), requestedFormat(0){}
+            bool dirty;
+            int32 refCount;
+            
+            PolygonGroupLoadInfo():filePos(0), requestedFormat(0), dirty(false), refCount(0) {}
         };
 	private:
 		
@@ -235,6 +238,8 @@ namespace DAVA
         void AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos);
         void AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format);
         void LoadPolygonGroupData(File *file);
+        void AddLoadedPolygonGroupReference(PolygonGroup *group);
+        void RemoveLoadedPolygonGroupReference(PolygonGroup *group);
 	};
 };
 

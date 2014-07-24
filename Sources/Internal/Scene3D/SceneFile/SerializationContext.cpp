@@ -497,6 +497,7 @@ namespace DAVA
 void SerializationContext::AddLoadedPolygonGroup(PolygonGroup *group, uint32 dataFilePos)
 {
     DVASSERT(loadedPolygonGroups.find(group)==loadedPolygonGroups.end());
+    
     PolygonGroupLoadInfo loadInfo;
     loadInfo.filePos = dataFilePos;
     loadedPolygonGroups[group] = loadInfo;
@@ -504,7 +505,31 @@ void SerializationContext::AddLoadedPolygonGroup(PolygonGroup *group, uint32 dat
 void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup *group, int32 format)
 {
     DVASSERT(loadedPolygonGroups.find(group)!=loadedPolygonGroups.end());
-    loadedPolygonGroups[group].requestedFormat|=format;
+    PolygonGroupLoadInfo& loadInfo = loadedPolygonGroups[group];
+    
+    loadInfo.requestedFormat|=format;
+    loadInfo.dirty = true;
+}
+
+void SerializationContext::AddLoadedPolygonGroupReference(PolygonGroup *group)
+{
+    DVASSERT(loadedPolygonGroups.find(group)!=loadedPolygonGroups.end());
+    PolygonGroupLoadInfo& loadInfo = loadedPolygonGroups[group];
+    
+    loadInfo.refCount++;
+}
+    
+void SerializationContext::RemoveLoadedPolygonGroupReference(PolygonGroup *group)
+{
+    DVASSERT(loadedPolygonGroups.find(group)!=loadedPolygonGroups.end());
+    PolygonGroupLoadInfo& loadInfo = loadedPolygonGroups[group];
+    
+    loadInfo.refCount--;
+    
+    if(loadInfo.refCount <= 0)
+    {
+        loadedPolygonGroups.erase(loadedPolygonGroups.find(group));
+    }
 }
 
 void SerializationContext::LoadPolygonGroupData(File *file)
@@ -512,11 +537,16 @@ void SerializationContext::LoadPolygonGroupData(File *file)
     int32 prerequiredVertexFormat = QualitySettingsSystem::Instance()->GetPrerequiredVertexFormat();
     for (Map<PolygonGroup*, PolygonGroupLoadInfo>::iterator it = loadedPolygonGroups.begin(), e = loadedPolygonGroups.end(); it!=e; ++it)
     {
-        file->Seek(it->second.filePos, File::SEEK_FROM_START);
-        KeyedArchive * archive = new KeyedArchive();
-        archive->Load(file);        
-        it->first->LoadPolygonData(archive, this, it->second.requestedFormat | prerequiredVertexFormat);
-        SafeRelease(archive);        
+        DVASSERT(it->second.dirty); //VI: sanity check to ensure format has been set
+        
+        if(it->second.refCount > 0)
+        {
+            file->Seek(it->second.filePos, File::SEEK_FROM_START);
+            KeyedArchive * archive = new KeyedArchive();
+            archive->Load(file);
+            it->first->LoadPolygonData(archive, this, it->second.requestedFormat | prerequiredVertexFormat);
+            SafeRelease(archive);
+        }
     }
 }
 }

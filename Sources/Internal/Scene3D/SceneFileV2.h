@@ -156,7 +156,7 @@ public:
     void SetError(eError error);
     eError GetError();
     
-    void OptimizeScene(Entity * rootNode);    
+    void OptimizeScene(Entity * rootNode);
     bool RemoveEmptySceneNodes(Entity * rootNode);
     bool RemoveEmptyHierarchy(Entity * currentNode);
 	void ConvertShadows(Entity * rootNode);
@@ -223,7 +223,7 @@ private:
 	void WriteDescriptor(File* file, const Descriptor& descriptor) const;
 	void ReadDescriptor(File* file, /*out*/ Descriptor& descriptor);
     
-    void RemoveUnusedLodRenderBatches(Entity* entity, Vector<Entity*>& reducedEntities);
+    void RemoveUnusedLodRenderBatches(Entity* entity, SerializationContext& context, Vector<Entity*>& reducedEntities);
 	
     bool isDebugLogEnabled;
     bool isSaveForGame;

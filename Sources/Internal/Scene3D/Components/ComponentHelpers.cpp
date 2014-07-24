@@ -314,18 +314,14 @@ uint32 GetMaxLodLayerIndex(LodComponent *fromComponent)
 
 uint32 GetLodLayersCount(Entity *fromEntity)
 {
-    Set<int32> layers;
-    CollectLodLayers(fromEntity, layers);
+    LodComponent* lodComponent = GetLodComponent(fromEntity);
     
-    return layers.size();
+    return GetLodLayersCount(lodComponent);
 }
     
 uint32 GetLodLayersCount(LodComponent *fromComponent)
 {
-    Set<int32> layers;
-    CollectLodLayers(fromComponent, layers);
-    
-    return layers.size();
+    return (fromComponent) ? fromComponent->lodLayersArray.size() : 0;
 }
 
 void RecursiveProcessMeshNode(Entity * curr, void * userData, void(*process)(Entity*, void *))
