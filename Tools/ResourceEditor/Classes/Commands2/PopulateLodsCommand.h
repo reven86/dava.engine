@@ -28,18 +28,18 @@
 
 
 
-#ifndef __LOD_INDEX_CHANGE_COMMAND_H__
-#define __LOD_INDEX_CHANGE_COMMAND_H__
+#ifndef __POPULATE_LODS_COMMAND_H__
+#define __POPULATE_LODS_COMMAND_H__
 
 #include "Commands2/Command2.h"
 #include "Scene3D/Components/LodComponent.h"
 
-class LodIndexChangeCommand : public Command2
+class PopulateLodsCommand : public Command2
 {
 public:
-
-	LodIndexChangeCommand(DAVA::int32 layerNum, DAVA::int32 lodIndex, DAVA::LodComponent * component, const DAVA::FastName& currentQuality);
-	~LodIndexChangeCommand();
+    
+	PopulateLodsCommand(DAVA::LodComponent * component);
+	~PopulateLodsCommand();
     
 	virtual void Undo();
 	virtual void Redo();
@@ -47,18 +47,9 @@ public:
     virtual DAVA::Entity* GetEntity() const;
     
 private:
-
-    void Redo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray);
-    void Undo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray);
-
-private:
-
+    
     DAVA::LodComponent* lodComponent;
-    DAVA::FastName qualityName;
-    DAVA::int32 targetLayerNumber;
-    DAVA::int32 targetLodIndex;
-    DAVA::int32 storedLodIndex;
-    size_t oldLayerCount;
+    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
 };
 
 

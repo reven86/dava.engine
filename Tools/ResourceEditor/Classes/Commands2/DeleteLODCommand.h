@@ -60,7 +60,7 @@ protected:
     DAVA::int32 requestedSwitchIndex;
     DAVA::FastName qualityName;
     
-    DAVA::Vector<DAVA::LodComponent::QualityContainer> savedDistances;
+    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
     DAVA::Vector<DeleteRenderBatchCommand *> deletedBatches;
 };
 

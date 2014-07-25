@@ -404,9 +404,6 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="4">
-       <widget class="QComboBox" name="lodQualityBox"/>
-      </item>
       <item row="8" column="0">
        <widget class="QComboBox" name="lod2LayerBox">
         <property name="maximumSize">
@@ -503,6 +500,16 @@
         </property>
         <property name="maximum">
          <double>1000.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" colspan="2">
+       <widget class="QComboBox" name="lodQualityBox"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QPushButton" name="populateLodsButton">
+        <property name="text">
+         <string>Create LODs</string>
         </property>
        </widget>
       </item>

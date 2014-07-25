@@ -60,6 +60,8 @@ protected slots:
     void ViewLODButtonReleased();
     void EditLODButtonReleased();
     
+    void PopulateLodsButtonClicked();
+    
     void ForceDistanceStateChanged(int checked);
     void ForceDistanceChanged(int distance);
 

@@ -116,7 +116,6 @@ protected:
     
     bool ApplyQuality(const FastName& qualityName, Vector<QualityContainer>& src, Vector<LodDistance>& dst);
     inline void InitQualityContainer();
-    void PopulateQualityContainer();
     
     void LoadDistancesFromArchive(KeyedArchive* lodDistArch,
                                   Vector<LodDistance>& lodLayers,
@@ -191,6 +190,7 @@ public:
     inline static uint32 GetDefaultLod();
     
     LodComponent::QualityContainer* FindQualityItem(const FastName& qualityName);
+    void PopulateQualityContainer();
     
 public:
     

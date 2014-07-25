@@ -60,7 +60,7 @@ protected:
     static bool IsHorisontalMesh(const DAVA::AABBox3 & bbox);
 
     DAVA::LodComponent * lodComponent;
-    DAVA::Vector<DAVA::LodComponent::QualityContainer> savedDistances;
+    DAVA::Vector<DAVA::LodComponent::LodDistance> savedDistances;
     
     DAVA::RenderBatch * planeBatch;
     DAVA::Image *planeImage;

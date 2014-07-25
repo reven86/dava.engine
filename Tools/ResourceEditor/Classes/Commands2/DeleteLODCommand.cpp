@@ -47,8 +47,8 @@ DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent *lod, DAVA::int32 lodIndex
     DVASSERT(ro);
     DVASSERT(ro->GetType() != DAVA::RenderObject::TYPE_PARTICLE_EMTITTER);
 
-    DVASSERT(lodComponent->qualityContainer);
-    savedDistances = *(lodComponent->qualityContainer);
+    DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+	savedDistances = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
 }
 
 DeleteLODCommand::~DeleteLODCommand()
@@ -66,34 +66,36 @@ void DeleteLODCommand::Redo()
     DVASSERT(deletedBatches.size() == 0);
 
     DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    DVASSERT(qualityItem);
-    
-    for(DAVA::Vector<DAVA::LodComponent::LodDistance>::iterator it = qualityItem->lodLayersArray.begin();
-        it != qualityItem->lodLayersArray.end();
+    for(DAVA::Vector<DAVA::LodComponent::LodDistance>::iterator it = lodLayersArray.begin();
+        it != lodLayersArray.end();
         ++it)
     {
         DAVA::LodComponent::LodDistance& lodDistanceItem = *it;
         if(deletedLodIndex == lodDistanceItem.lodIndex)
         {
-            it = qualityItem->lodLayersArray.erase(it);
+            it = lodLayersArray.erase(it);
             
-            if(qualityItem->lodLayersArray.end() == it)
+            if(lodLayersArray.end() == it)
             {
                 break;
             }
         }
     }
     
-    if(qualityItem->lodLayersArray.size() > 0)
+    if(lodLayersArray.size() > 0)
     {
-        qualityItem->lodLayersArray[qualityItem->lodLayersArray.size() - 1].SetFarDistance(2 * DAVA::LodComponent::MAX_LOD_DISTANCE);
+        lodLayersArray[lodLayersArray.size() - 1].SetFarDistance(2 * DAVA::LodComponent::MAX_LOD_DISTANCE);
         
-        lodComponent->SetLodLayerDistance(0, 0, qualityItem->lodLayersArray);
-        qualityItem->lodLayersArray[0].SetNearDistance(0.0f);
+        lodComponent->SetLodLayerDistance(0, 0, lodLayersArray);
+        lodLayersArray[0].SetNearDistance(0.0f);
     }
     
-    lodComponent->SetQuality(qualityName);
+    if(qualityItem != NULL)
+    {
+        lodComponent->SetQuality(qualityName);
+    }
     
     if(!ContainsLodIndex(deletedLodIndex))
     {
@@ -117,11 +119,17 @@ void DeleteLODCommand::Undo()
         DAVA::SafeDelete(deletedBatches[i]);
     }
     deletedBatches.clear();
-
-    //restore lodlayers and disatnces
-    (*lodComponent->qualityContainer) = savedDistances;
     
-    lodComponent->SetQuality(qualityName);
+    DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+    if(qualityItem != NULL)
+    {
+        qualityItem->lodLayersArray = savedDistances;
+        lodComponent->SetQuality(qualityName);
+    }
+    else
+    {
+        lodComponent->lodLayersArray = savedDistances;
+    }
 }
 
 
@@ -139,7 +147,7 @@ bool DeleteLODCommand::ContainsLodIndex(DAVA::int32 lodIndex)
 {
     bool containsIndex = false;
     
-    size_t qualityCount = lodComponent->qualityContainer->size();
+    size_t qualityCount = (lodComponent->qualityContainer != NULL) ? lodComponent->qualityContainer->size() : 0;
     for(size_t qualityIndex = 0; qualityIndex < qualityCount; ++qualityIndex)
     {
         DAVA::LodComponent::QualityContainer& qualityContainer = (*lodComponent->qualityContainer)[qualityIndex];
@@ -149,6 +157,21 @@ bool DeleteLODCommand::ContainsLodIndex(DAVA::int32 lodIndex)
         {
             DAVA::LodComponent::LodDistance& distanceInfo = qualityContainer.lodLayersArray[distanceIndex];
          
+            if(lodIndex == distanceInfo.lodIndex)
+            {
+                containsIndex = true;
+                break;
+            }
+        }
+    }
+    
+    if(!containsIndex)
+    {
+        size_t distanceCount = lodComponent->lodLayersArray.size();
+        for(size_t distanceIndex = 0; distanceIndex < distanceCount; ++distanceIndex)
+        {
+            DAVA::LodComponent::LodDistance& distanceInfo = lodComponent->lodLayersArray[distanceIndex];
+        
             if(lodIndex == distanceInfo.lodIndex)
             {
                 containsIndex = true;

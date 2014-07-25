@@ -49,53 +49,38 @@ LodIndexChangeCommand::~LodIndexChangeCommand()
 
 void LodIndexChangeCommand::Undo()
 {
-    if(NULL == lodComponent ||
-       NULL == lodComponent->qualityContainer)
+    if(NULL == lodComponent)
     {
         return;
     }
     
     DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
-    DVASSERT(qualityItem);
-    DVASSERT(targetLayerNumber >= 0 &&
-             targetLayerNumber < qualityItem->lodLayersArray.size());
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    qualityItem->lodLayersArray[targetLayerNumber].lodIndex = storedLodIndex;
+    Undo(lodLayersArray);
     
-    
-    if(oldLayerCount < qualityItem->lodLayersArray.size())
+    if(qualityItem)
     {
-        qualityItem->lodLayersArray.resize(oldLayerCount);
+        lodComponent->SetQuality(qualityName);
     }
-    
-    lodComponent->SetQuality(qualityName);
 }
 
 void LodIndexChangeCommand::Redo()
 {
-    if(NULL == lodComponent ||
-       NULL == lodComponent->qualityContainer)
+    if(NULL == lodComponent)
     {
         return;
     }
     
     DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
-    DVASSERT(qualityItem);
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    oldLayerCount = qualityItem->lodLayersArray.size();
+    Redo(lodLayersArray);
     
-    if(qualityItem->lodLayersArray.size() <= targetLayerNumber)
+    if(qualityItem)
     {
-        qualityItem->lodLayersArray.resize(targetLayerNumber + 1);
+        lodComponent->SetQuality(qualityName);
     }
-    
-    DVASSERT(targetLayerNumber >= 0 &&
-             targetLayerNumber < qualityItem->lodLayersArray.size());
-    
-    storedLodIndex = qualityItem->lodLayersArray[targetLayerNumber].lodIndex;
-    qualityItem->lodLayersArray[targetLayerNumber].lodIndex = targetLodIndex;
-    
-    lodComponent->SetQuality(qualityName);
 }
 
 DAVA::Entity* LodIndexChangeCommand::GetEntity() const
@@ -104,4 +89,33 @@ DAVA::Entity* LodIndexChangeCommand::GetEntity() const
 		return lodComponent->GetEntity();
     
 	return NULL;
+}
+
+void LodIndexChangeCommand::Redo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray)
+{
+    oldLayerCount = lodLayersArray.size();
+    
+    if(lodLayersArray.size() <= targetLayerNumber)
+    {
+        lodLayersArray.resize(targetLayerNumber + 1);
+    }
+    
+    DVASSERT(targetLayerNumber >= 0 &&
+             targetLayerNumber < lodLayersArray.size());
+    
+    storedLodIndex = lodLayersArray[targetLayerNumber].lodIndex;
+    lodLayersArray[targetLayerNumber].lodIndex = targetLodIndex;
+}
+
+void LodIndexChangeCommand::Undo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray)
+{
+    DVASSERT(targetLayerNumber >= 0 &&
+             targetLayerNumber < lodLayersArray.size());
+    
+    lodLayersArray[targetLayerNumber].lodIndex = storedLodIndex;
+    
+    if(oldLayerCount < lodLayersArray.size())
+    {
+        lodLayersArray.resize(oldLayerCount);
+    }
 }

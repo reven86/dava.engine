@@ -42,6 +42,11 @@ public:
 	virtual void Undo();
 	virtual void Redo();
 	virtual DAVA::Entity* GetEntity() const;
+    
+protected:
+    
+    void Redo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray);
+    void Undo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray);
 
 protected:
 

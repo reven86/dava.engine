@@ -27,39 +27,47 @@
  =====================================================================================*/
 
 
+#include "Commands2/PopulateLodsCommand.h"
 
-#ifndef __LOD_INDEX_CHANGE_COMMAND_H__
-#define __LOD_INDEX_CHANGE_COMMAND_H__
-
-#include "Commands2/Command2.h"
-#include "Scene3D/Components/LodComponent.h"
-
-class LodIndexChangeCommand : public Command2
+PopulateLodsCommand::PopulateLodsCommand(DAVA::LodComponent * component) :
+    Command2(CMDID_POPULATE_LODS, "Populate LODs"),
+    lodComponent(component)
 {
-public:
-
-	LodIndexChangeCommand(DAVA::int32 layerNum, DAVA::int32 lodIndex, DAVA::LodComponent * component, const DAVA::FastName& currentQuality);
-	~LodIndexChangeCommand();
+    DVASSERT(lodComponent);
     
-	virtual void Undo();
-	virtual void Redo();
+    savedDistances = lodComponent->lodLayersArray;
+}
+
+PopulateLodsCommand::~PopulateLodsCommand()
+{
     
-    virtual DAVA::Entity* GetEntity() const;
+}
+
+void PopulateLodsCommand::Undo()
+{
+    if(lodComponent)
+    {
+        SafeDelete(lodComponent->qualityContainer);
+        
+        lodComponent->lodLayersArray = savedDistances;
+    }
+}
+
+void PopulateLodsCommand::Redo()
+{
+    if(lodComponent)
+    {
+        DVASSERT(NULL == lodComponent->qualityContainer);
+        
+        lodComponent->PopulateQualityContainer();
+    }
+}
+
+DAVA::Entity* PopulateLodsCommand::GetEntity() const
+{
+    if(lodComponent)
+		return lodComponent->GetEntity();
     
-private:
+	return NULL;
 
-    void Redo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray);
-    void Undo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray);
-
-private:
-
-    DAVA::LodComponent* lodComponent;
-    DAVA::FastName qualityName;
-    DAVA::int32 targetLayerNumber;
-    DAVA::int32 targetLodIndex;
-    DAVA::int32 storedLodIndex;
-    size_t oldLayerCount;
-};
-
-
-#endif /* defined(__LOD_INDEX_CHANGE_COMMAND_H__) */
+}

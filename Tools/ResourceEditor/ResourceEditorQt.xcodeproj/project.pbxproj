@@ -37,6 +37,7 @@
 		62C29DB818BF94BD0019EA6C /* SizeDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C29DB618BF94BD0019EA6C /* SizeDialog.cpp */; };
 		62C47F75189A9CBC008996F1 /* QtPropertyDataValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C47F73189A9CBB008996F1 /* QtPropertyDataValidator.cpp */; };
 		62C8751B189698E5000E398E /* RegExpValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 62C87519189698E5000E398E /* RegExpValidator.cpp */; };
+		642F0F111982871B001F7A02 /* PopulateLodsCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 642F0F0F1982871B001F7A02 /* PopulateLodsCommand.cpp */; };
 		64336916197D4FFE00CB8924 /* LodIndexChangeCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64336914197D4FFE00CB8924 /* LodIndexChangeCommand.cpp */; };
 		643BE8FF18C74B1C00D824FE /* ImageRegionCopyCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 643BE8FD18C74B1C00D824FE /* ImageRegionCopyCommand.cpp */; };
 		64533A9F18E0344800941529 /* MaterialTemplateModel_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64533A9E18E0344800941529 /* MaterialTemplateModel_moc.cpp */; };
@@ -707,6 +708,8 @@
 		62C47F74189A9CBB008996F1 /* QtPropertyDataValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QtPropertyDataValidator.h; sourceTree = "<group>"; };
 		62C87519189698E5000E398E /* RegExpValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RegExpValidator.cpp; path = QtPropertyDataValidator/RegExpValidator.cpp; sourceTree = "<group>"; };
 		62C8751A189698E5000E398E /* RegExpValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RegExpValidator.h; path = QtPropertyDataValidator/RegExpValidator.h; sourceTree = "<group>"; };
+		642F0F0F1982871B001F7A02 /* PopulateLodsCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PopulateLodsCommand.cpp; sourceTree = "<group>"; };
+		642F0F101982871B001F7A02 /* PopulateLodsCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopulateLodsCommand.h; sourceTree = "<group>"; };
 		64336914197D4FFE00CB8924 /* LodIndexChangeCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LodIndexChangeCommand.cpp; sourceTree = "<group>"; };
 		64336915197D4FFE00CB8924 /* LodIndexChangeCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LodIndexChangeCommand.h; sourceTree = "<group>"; };
 		643BE8FD18C74B1C00D824FE /* ImageRegionCopyCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageRegionCopyCommand.cpp; sourceTree = "<group>"; };
@@ -3243,6 +3246,8 @@
 				E8C9904F184CD0EB00AFBF3F /* VisibilityToolActions.h */,
 				64336914197D4FFE00CB8924 /* LodIndexChangeCommand.cpp */,
 				64336915197D4FFE00CB8924 /* LodIndexChangeCommand.h */,
+				642F0F0F1982871B001F7A02 /* PopulateLodsCommand.cpp */,
+				642F0F101982871B001F7A02 /* PopulateLodsCommand.h */,
 			);
 			name = Commands2;
 			path = Classes/Commands2;
@@ -4250,6 +4255,7 @@
 				E8C994DE184CD6F900AFBF3F /* SpeedTreeImporter.cpp in Build Sources */,
 				E8C9931A184CD0EC00AFBF3F /* SettingsManager.cpp in Build Sources */,
 				E8C9922C184CD0EC00AFBF3F /* btTriangleIndexVertexArray.cpp in Build Sources */,
+				642F0F111982871B001F7A02 /* PopulateLodsCommand.cpp in Build Sources */,
 				E8BAD6F41859F50300C98C8D /* CustomColorsSystem_moc.cpp in Build Sources */,
 				E8C992DD184CD0EC00AFBF3F /* DockProperties.cpp in Build Sources */,
 				E8BAD5D31859F48600C98C8D /* MaterialAssignSystem.cpp in Build Sources */,

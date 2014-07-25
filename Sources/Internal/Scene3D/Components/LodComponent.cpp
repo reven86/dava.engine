@@ -370,10 +370,10 @@ void LodComponent::DeserializeWithoutQuality(KeyedArchive *archive,
 		{
             LoadDistancesFromArchive(lodDistArch, lodLayersArray, MAX_LOD_LAYERS);
         
-            if(serializationContext->TestSerializationFlags(SerializationContext::EDITOR_MODE))
-            {
-                PopulateQualityContainer();
-            }
+            //if(serializationContext->TestSerializationFlags(SerializationContext::EDITOR_MODE))
+            //{
+            //    PopulateQualityContainer();
+            //}
 		}
         
         if(serializationContext->GetVersion() < OLD_LODS_SCENE_VERSION)

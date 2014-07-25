@@ -50,8 +50,8 @@ CreatePlaneLODCommand::CreatePlaneLODCommand(DAVA::LodComponent * _lodComponent,
 {
     DVASSERT(GetRenderObject(GetEntity()));
     
-    DVASSERT(lodComponent->qualityContainer);
-	savedDistances = *(lodComponent->qualityContainer);
+    DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+	savedDistances = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
 
     newLodIndex = GetMaxLodLayerIndex(lodComponent) + 1;
     DVASSERT(newLodIndex > 0);
@@ -82,18 +82,21 @@ void CreatePlaneLODCommand::Redo()
     ro->AddRenderBatch(planeBatch, newLodIndex, newSwitchIndex);
     
     DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
-    DVASSERT(qualityItem);
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    oldLayerCount = qualityItem->lodLayersArray.size();
+    oldLayerCount = lodLayersArray.size();
     
-    qualityItem->lodLayersArray.resize(qualityItem->lodLayersArray.size() + 1);
+    lodLayersArray.resize(lodLayersArray.size() + 1);
 
-    DAVA::int32 distanceIndex = qualityItem->lodLayersArray.size() - 1;
+    DAVA::int32 distanceIndex = lodLayersArray.size() - 1;
     lodComponent->SetLodLayerDistance(distanceIndex,
                                       lodComponent->GetLodLayerDistanceByLayerIndex(distanceIndex - 1) * 2,
-                                      qualityItem->lodLayersArray);
+                                      lodLayersArray);
     
-    lodComponent->SetQuality(qualityName);
+    if(qualityItem != NULL)
+    {
+        lodComponent->SetQuality(qualityName);
+    }
 }
 
 void CreatePlaneLODCommand::Undo()
@@ -105,8 +108,16 @@ void CreatePlaneLODCommand::Undo()
 	ro->RemoveRenderBatch(planeBatch);
 
     //restore distances
-    *(lodComponent->qualityContainer) = savedDistances;
-    lodComponent->SetQuality(qualityName);
+    DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+    if(qualityItem != NULL)
+    {
+        qualityItem->lodLayersArray = savedDistances;
+        lodComponent->SetQuality(qualityName);
+    }
+    else
+    {
+        lodComponent->lodLayersArray = savedDistances;
+    }
 
     //fix visibility settings
     DAVA::int32 maxLodIndex = ro->GetMaxLodIndex();

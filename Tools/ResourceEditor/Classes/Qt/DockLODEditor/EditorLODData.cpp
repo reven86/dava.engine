@@ -36,6 +36,7 @@
 #include "Commands2/DeleteLODCommand.h"
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/LodIndexChangeCommand.h"
+#include "Commands2/PopulateLodsCommand.h"
 
 const DAVA::uint32 EditorLODData::EDITOR_LOD_DATA_COUNT = 4;
 
@@ -497,7 +498,8 @@ void EditorLODData::CommandExecuted(SceneEditor2 *scene, const Command2* command
                             firstCommand->GetId() == CMDID_LOD_COPY_LAST_LOD ||
                             firstCommand->GetId() == CMDID_LOD_DELETE ||
                             firstCommand->GetId() == CMDID_LOD_CREATE_PLANE ||
-                            firstCommand->GetId() == CMDID_SET_LOD_INDEX))
+                            firstCommand->GetId() == CMDID_SET_LOD_INDEX ||
+                            firstCommand->GetId() == CMDID_POPULATE_LODS))
 		{
             UpdateLODStateFromScene();
 			GetLODDataFromScene();
@@ -700,5 +702,42 @@ void EditorLODData::MapLodIndexToDistanceIndex(DAVA::int32 lodIndex, const DAVA:
         {
             indices.push_back(i);
         }
+    }
+}
+
+bool EditorLODData::IsQualityAvailable() const
+{
+    DAVA::uint32 componentsCount = (DAVA::uint32)lodData.size();
+    bool lodQualityAvailable = true;
+    
+    for(DAVA::uint32 i = 0; i < componentsCount; ++i)
+    {
+        DAVA::LodComponent* lodComponent = lodData[i];
+        if(NULL == lodComponent->qualityContainer)
+        {
+            lodQualityAvailable = false;
+            break;
+        }
+    }
+    
+    return lodQualityAvailable;
+}
+
+void EditorLODData::PopulateQualityContainer()
+{
+    DAVA::uint32 componentsCount = (DAVA::uint32)lodData.size();
+    if(componentsCount && activeScene)
+    {
+        activeScene->BeginBatch("Populate quality containers");
+        
+        for(DAVA::uint32 i = 0; i < componentsCount; ++i)
+        {
+            if(NULL == lodData[i]->qualityContainer)
+            {
+                activeScene->Exec(new PopulateLodsCommand(lodData[i]));
+            }
+        }
+        
+        activeScene->EndBatch();
     }
 }

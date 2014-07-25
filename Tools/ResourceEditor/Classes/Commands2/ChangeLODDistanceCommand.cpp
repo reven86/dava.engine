@@ -48,23 +48,15 @@ void ChangeLODDistanceCommand::Redo()
 {
 	if(!lodComponent) return;
     
-    DVASSERT(lodComponent->qualityContainer);
-    
     LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(quality);
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    DVASSERT(qualityItem);
+    Redo(lodLayersArray);
     
-    oldLayerCount = qualityItem->lodLayersArray.size();
-    
-    if(qualityItem->lodLayersArray.size() <= layer)
+    if(qualityItem != NULL)
     {
-        qualityItem->lodLayersArray.resize(layer + 1);
+        lodComponent->SetQuality(quality);
     }
-
-	oldDistance = qualityItem->lodLayersArray[layer].distance;
-	lodComponent->SetLodLayerDistance(layer, newDistance, qualityItem->lodLayersArray);
-    
-    lodComponent->SetQuality(quality);
 }
 
 void ChangeLODDistanceCommand::Undo()
@@ -72,17 +64,14 @@ void ChangeLODDistanceCommand::Undo()
 	if(!lodComponent) return;
     
     LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(quality);
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    DVASSERT(qualityItem);
+    Undo(lodLayersArray);
     
-	lodComponent->SetLodLayerDistance(layer, oldDistance, qualityItem->lodLayersArray);
-    
-    if(oldLayerCount < qualityItem->lodLayersArray.size())
+    if(qualityItem != NULL)
     {
-       qualityItem->lodLayersArray.resize(oldLayerCount);
+        lodComponent->SetQuality(quality);
     }
-    
-    lodComponent->SetQuality(quality);
 }
 
 Entity * ChangeLODDistanceCommand::GetEntity() const
@@ -93,4 +82,25 @@ Entity * ChangeLODDistanceCommand::GetEntity() const
 	return NULL;
 }
 
+void ChangeLODDistanceCommand::Redo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray)
+{
+    oldLayerCount = lodLayersArray.size();
+    
+    if(lodLayersArray.size() <= layer)
+    {
+        lodLayersArray.resize(layer + 1);
+    }
+    
+	oldDistance = lodLayersArray[layer].distance;
+	lodComponent->SetLodLayerDistance(layer, newDistance, lodLayersArray);
+}
 
+void ChangeLODDistanceCommand::Undo(DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray)
+{
+    lodComponent->SetLodLayerDistance(layer, oldDistance, lodLayersArray);
+    
+    if(oldLayerCount < lodLayersArray.size())
+    {
+        lodLayersArray.resize(oldLayerCount);
+    }
+}

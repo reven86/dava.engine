@@ -168,7 +168,7 @@ void LODEditor::SetupInternalUI()
     InitDistanceSpinBox(ui->lod3LayerBox, ui->lod3Name, ui->lod3Distance, 3);
     
     DAVA::Vector<DAVA::int32> dummyIndices;
-    dummyIndices.resize(DAVA::LodComponent::MAX_LOD_LAYERS);
+    dummyIndices.resize(DAVA::LodComponent::MAX_LOD_LAYERS, 0);
     SetForceLayerValues(dummyIndices);
     connect(ui->forceLayer, SIGNAL(activated(int)), SLOT(ForceLayerActivated(int)));
 
@@ -181,6 +181,8 @@ void LODEditor::SetupInternalUI()
     connect(ui->buttonDeleteLastLOD, SIGNAL(clicked()), editedLODData, SLOT(DeleteLastLOD()));
     
     connect(ui->lodQualityBox, SIGNAL(currentIndexChanged (int)), this, SLOT(QualityNameChanged(int)));
+    
+    connect(ui->populateLodsButton, SIGNAL(clicked()), this, SLOT(PopulateLodsButtonClicked()));
 }
 
 void LODEditor::SetupSceneSignals()
@@ -342,7 +344,7 @@ void LODEditor::SetForceLayerValues(const DAVA::Vector<DAVA::int32>& lodIndices)
     for(uint32 i = 0; i < indexCount; ++i)
     {
         int32 index = lodIndices[i];
-        ui->forceLayer->addItem(Format("%d", index).c_str(), QVariant(index));
+        ui->forceLayer->addItem(Format("%d", index).c_str(), QVariant(i));
         
         if(editedLODData->GetForceLayer() == index)
         {
@@ -494,6 +496,10 @@ void LODEditor::UpdateLodLayersSelection(const DAVA::FastName& lodQualityName)
                 ui->distanceSlider->SetDistance(i, distance);
             }
         }
+        
+        bool isQualityAvailable = editedLODData->IsQualityAvailable();
+        ui->lodQualityBox->setEnabled(isQualityAvailable);
+        ui->populateLodsButton->setEnabled(!isQualityAvailable);
     }
 }
 
@@ -524,4 +530,9 @@ void LODEditor::LodIndexChanged(int index)
             editedLODData->SetLayerLodIndex(layerNum, lodIndex);
         }
     }
+}
+
+void LODEditor::PopulateLodsButtonClicked()
+{
+    editedLODData->PopulateQualityContainer();
 }

@@ -134,6 +134,8 @@ enum CommandID
     CMDID_CLONE_LAST_BATCH,
     
     CMDID_SET_LOD_INDEX,
+    
+    CMDID_POPULATE_LODS,
 
 	CMDID_USER		= 0xF000
 };

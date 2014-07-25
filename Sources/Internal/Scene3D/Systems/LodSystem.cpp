@@ -238,23 +238,25 @@ void LodSystem::UpdateLod(Entity * entity, LodComponent* lodComponent, float32 p
 
 	if (oldLod != lodComponent->currentLod) 
 	{
-		ParticleEffectComponent * effect = GetEffectComponent(entity);
-		if (effect)
-		{			
-			effect->SetDesiredLodLevel(lodComponent->currentLod);
-			return;
-		}
-        
         int32 layerNum = lodComponent->currentLod;
         DVASSERT(0 <= layerNum && layerNum < lodComponent->lodLayersArray.size());
         
+        int32 lodIndex = lodComponent->GetLodLayerLodIndex(layerNum);
+
+		ParticleEffectComponent * effect = GetEffectComponent(entity);
+		if (effect)
+		{			
+			effect->SetDesiredLodLevel(lodIndex);
+			return;
+		}
+        
         if(lodComponent->IsRecursiveUpdate())
         {
-            SetEntityLodRecursive(entity, layerNum);
+            SetEntityLodRecursive(entity, lodIndex);
         }
         else
         {
-            SetEntityLod(entity, layerNum);
+            SetEntityLod(entity, lodIndex);
         }
 	}
 }
@@ -337,7 +339,7 @@ int32 LodSystem::FindProperLayer( float32 distance, const LodComponent *lodCompo
 	{
 		if (distance < lodComponent->GetLodLayerFarSquare(i))
 		{
-			layer = lodComponent->GetLodLayerLodIndex(i);
+			layer = i;
 		}
 	}
 

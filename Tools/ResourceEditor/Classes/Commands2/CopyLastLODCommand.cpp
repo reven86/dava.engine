@@ -75,15 +75,14 @@ void CopyLastLODToLod0Command::Redo()
     uint32 maxLodLayerIndex = GetMaxLodLayerIndex(lodComponent) + 1;
     
     DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    DVASSERT(qualityItem);
+    lodLayersArray.insert(lodLayersArray.begin(), LodComponent::LodDistance());
     
-    qualityItem->lodLayersArray.insert(qualityItem->lodLayersArray.begin(), LodComponent::LodDistance());
+    lodComponent->SetLodLayerDistance(0, 0.f, lodLayersArray);
+    lodComponent->SetLodLayerDistance(1, 2.f, lodLayersArray);
     
-    lodComponent->SetLodLayerDistance(0, 0.f, qualityItem->lodLayersArray);
-    lodComponent->SetLodLayerDistance(1, 2.f, qualityItem->lodLayersArray);
-    
-    qualityItem->lodLayersArray[0].lodIndex = (DAVA::int8)maxLodLayerIndex;
+    lodLayersArray[0].lodIndex = (DAVA::int8)maxLodLayerIndex;
     
     uint32 newBatchCount = newBatches.size();
     for(uint32 ri = 0; ri < newBatchCount; ++ri)
@@ -91,7 +90,10 @@ void CopyLastLODToLod0Command::Redo()
         ro->AddRenderBatch(newBatches[ri], maxLodLayerIndex, switchIndices[ri]);
     }
     
-    lodComponent->SetQuality(qualityName);
+    if(qualityItem != NULL)
+    {
+        lodComponent->SetQuality(qualityName);
+    }
 }
  
 void CopyLastLODToLod0Command::Undo()
@@ -101,21 +103,21 @@ void CopyLastLODToLod0Command::Undo()
     RenderObject * ro = GetRenderObject(GetEntity());
     DVASSERT(ro);
     
-    uint32 lodId = (*lodComponent->qualityContainer)[0].lodLayersArray[0].lodIndex;
-    
     DAVA::LodComponent::QualityContainer* qualityItem = lodComponent->FindQualityItem(qualityName);
+    DAVA::Vector<DAVA::LodComponent::LodDistance>& lodLayersArray = (NULL == qualityItem) ? lodComponent->lodLayersArray : qualityItem->lodLayersArray;
     
-    DVASSERT(qualityItem);
-    
-    qualityItem->lodLayersArray.erase(qualityItem->lodLayersArray.begin());
+    lodLayersArray.erase(lodLayersArray.begin());
         
-    lodComponent->SetLodLayerDistance(0, 0.f, qualityItem->lodLayersArray);
+    lodComponent->SetLodLayerDistance(0, 0.f, lodLayersArray);
     
     uint32 newBatchCount = newBatches.size();
     for(uint32 ri = 0; ri < newBatchCount; ++ri)
         ro->RemoveRenderBatch(newBatches[ri]);
 
-    lodComponent->SetQuality(qualityName);
+    if(qualityItem != NULL)
+    {
+        lodComponent->SetQuality(qualityName);
+    }
 }
  
 Entity * CopyLastLODToLod0Command::GetEntity() const
