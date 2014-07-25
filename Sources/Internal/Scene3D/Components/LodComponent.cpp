@@ -166,7 +166,7 @@ LodComponent::LodComponent()
 	flags = NEED_UPDATE_AFTER_LOAD;
 
     uint32 layerCount = lodLayersArray.size();
-	for(int32 iLayer = 0; iLayer < layerCount; ++iLayer)
+	for(uint32 iLayer = 0; iLayer < layerCount; ++iLayer)
 	{
 		lodLayersArray[iLayer].SetDistance(GetDefaultDistance(iLayer));
 		lodLayersArray[iLayer].SetFarDistance(MAX_LOD_DISTANCE * 2);
@@ -217,7 +217,7 @@ void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
 
 void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance, Vector<LodDistance>& layers)
 {
-    DVASSERT(0 <= layerNum && layerNum < layers.size());
+    DVASSERT(0 <= layerNum && layerNum < (int32)layers.size());
     
     if(INVALID_DISTANCE != distance)
     {
@@ -466,7 +466,7 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
     prevTestDistance.farDistanceSq = -1.0f;
     prevTestDistance.nearDistanceSq = -1.0f;
     
-    for(int32 i = 0; i < maxDistanceCount; ++i)
+    for(uint32 i = 0; i < maxDistanceCount; ++i)
     {
         KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
         if(NULL != lodDistValuesArch)
@@ -494,7 +494,7 @@ void LodComponent::LoadDistancesFromArchive(KeyedArchive* lodDistArch,
     
     lodLayers.resize(validDistanceCount);
     uint32 lodLayerIndex = 0;
-    for(int32 i = 0; i < maxDistanceCount; ++i)
+    for(uint32 i = 0; i < maxDistanceCount; ++i)
     {
         KeyedArchive *lodDistValuesArch = lodDistArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
         if(NULL != lodDistValuesArch)

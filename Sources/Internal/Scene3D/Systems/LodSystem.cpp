@@ -239,7 +239,7 @@ void LodSystem::UpdateLod(Entity * entity, LodComponent* lodComponent, float32 p
 	if (oldLod != lodComponent->currentLod) 
 	{
         int32 layerNum = lodComponent->currentLod;
-        DVASSERT(0 <= layerNum && layerNum < lodComponent->lodLayersArray.size());
+        DVASSERT(0 <= layerNum && layerNum < (int32)lodComponent->lodLayersArray.size());
         
         int32 lodIndex = lodComponent->GetLodLayerLodIndex(layerNum);
 

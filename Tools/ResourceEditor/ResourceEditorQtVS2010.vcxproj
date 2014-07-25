@@ -368,6 +368,7 @@
     <ClCompile Include="Classes\Commands2\KeyedArchiveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\LandscapeEditorDrawSystemActions.cpp" />
     <ClCompile Include="Classes\Commands2\LandscapeSetTexturesCommands.cpp" />
+    <ClCompile Include="Classes\Commands2\LodIndexChangeCommand.cpp" />
     <ClCompile Include="Classes\Commands2\MaterialGlobalCommand.cpp" />
     <ClCompile Include="Classes\Commands2\MaterialSwitchParentCommand.cpp" />
     <ClCompile Include="Classes\Commands2\MetaObjModifyCommand.cpp" />
@@ -377,6 +378,7 @@
     <ClCompile Include="Classes\Commands2\ParticleForceRemoveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\ParticleLayerMoveCommand.cpp" />
     <ClCompile Include="Classes\Commands2\ParticleLayerRemoveCommand.cpp" />
+    <ClCompile Include="Classes\Commands2\PopulateLodsCommand.cpp" />
     <ClCompile Include="Classes\Commands2\RebuildTangentSpaceCommand.cpp" />
     <ClCompile Include="Classes\Commands2\RemoveComponentCommand.cpp" />
     <ClCompile Include="Classes\Commands2\RulerToolActions.cpp" />
@@ -1014,6 +1016,7 @@
     <ClInclude Include="Classes\Commands2\KeyedArchiveCommand.h" />
     <ClInclude Include="Classes\Commands2\LandscapeEditorDrawSystemActions.h" />
     <ClInclude Include="Classes\Commands2\LandscapeSetTexturesCommands.h" />
+    <ClInclude Include="Classes\Commands2\LodIndexChangeCommand.h" />
     <ClInclude Include="Classes\Commands2\MaterialGlobalCommand.h" />
     <ClInclude Include="Classes\Commands2\MaterialSwitchParentCommand.h" />
     <ClInclude Include="Classes\Commands2\MetaObjModifyCommand.h" />
@@ -1023,6 +1026,7 @@
     <ClInclude Include="Classes\Commands2\ParticleForceRemoveCommand.h" />
     <ClInclude Include="Classes\Commands2\ParticleLayerMoveCommand.h" />
     <ClInclude Include="Classes\Commands2\ParticleLayerRemoveCommand.h" />
+    <ClInclude Include="Classes\Commands2\PopulateLodsCommand.h" />
     <ClInclude Include="Classes\Commands2\RebuildTangentSpaceCommand.h" />
     <ClInclude Include="Classes\Commands2\RemoveComponentCommand.h" />
     <ClInclude Include="Classes\Commands2\RulerToolActions.h" />

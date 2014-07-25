@@ -209,19 +209,19 @@ int32 LodComponent::GetLodLayersCount() const
 
 float32 LodComponent::GetLodLayerDistance(int32 layerNum) const
 {
-	DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
+	DVASSERT(0 <= layerNum && layerNum < (int32)lodLayersArray.size());
 	return lodLayersArray[layerNum].distance;
 }
 
 float32 LodComponent::GetLodLayerNearSquare(int32 layerNum) const
 {
-	DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
+	DVASSERT(0 <= layerNum && layerNum < (int32)lodLayersArray.size());
 	return lodLayersArray[layerNum].nearDistanceSq;
 }
 
 float32 LodComponent::GetLodLayerFarSquare(int32 layerNum) const
 {
-	DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
+	DVASSERT(0 <= layerNum && layerNum < (int32)lodLayersArray.size());
 	return lodLayersArray[layerNum].farDistanceSq;
 }
     
@@ -271,7 +271,7 @@ inline void LodComponent::InitQualityContainer()
 
 inline int8 LodComponent::GetLodLayerLodIndex(int32 layerNum) const
 {
-    DVASSERT(0 <= layerNum && layerNum < lodLayersArray.size());
+    DVASSERT(0 <= layerNum && layerNum < (int32)lodLayersArray.size());
     return lodLayersArray[layerNum].lodIndex;
 }
 
