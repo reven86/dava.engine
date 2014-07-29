@@ -172,12 +172,9 @@ void UIControlBackground::SetFrame(int32 drawFrame)
     frame = drawFrame;
 }
 
-void UIControlBackground::SetFrameByName(const String& frameName)
+void UIControlBackground::SetFrame(const String& frameName)
 {
-	if (frameName.empty())
-    {
-    	return;
-    }
+    DVASSERT(frameName.empty());
 	DVASSERT(spr);
     SetFrame(spr->GetFrameByName(frameName));
 }

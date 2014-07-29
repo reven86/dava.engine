@@ -300,7 +300,7 @@ public:
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] frame Sprite frame name.
      */
-	virtual void SetSpriteFrameByName(const String& frameName);
+	virtual void SetSpriteFrame(const String& frameName);
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.
