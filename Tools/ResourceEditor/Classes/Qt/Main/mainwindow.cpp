@@ -2716,21 +2716,29 @@ bool QtMainWindow::SaveTilemask(bool forAllTabs /* = true */)
 
 void QtMainWindow::OnRenderToCubemap()
 {
-    DAVA::Texture *cubemap = DAVA::Texture::CreateFBO(1024, 1024, DAVA::FORMAT_RGBA8888, DAVA::Texture::DEPTH_RENDERBUFFER, DAVA::Texture::TEXTURE_CUBE);
+    const int32 cubeSize = 16;
+    DAVA::Texture *cubemap = DAVA::Texture::CreateFBO(cubeSize, cubeSize, DAVA::FORMAT_RGBA8888, DAVA::Texture::DEPTH_RENDERBUFFER, DAVA::Texture::TEXTURE_CUBE);
     
     SceneEditor2 *scene = GetCurrentScene();
-    if(scene && scene->skyboxSystem->IsSkyboxPresent())
+    if(scene)
     {
         scene->renderSystem->RenderToCubemap(cubemap, scene);
         
-        DAVA::Entity * skyEntity = scene->skyboxSystem->GetSkyboxEntity();
-        DAVA::SkyboxRenderObject *skyBox = GetSkybox(skyEntity);
-        skyBox->SetTexture(cubemap);
+        if(scene->skyboxSystem->IsSkyboxPresent())
+        {
+            DAVA::Entity * skyEntity = scene->skyboxSystem->GetSkyboxEntity();
+            DAVA::SkyboxRenderObject *skyBox = GetSkybox(skyEntity);
+            skyBox->SetTexture(cubemap);
+        }
         
         Vector<Image *> images;
         cubemap->CreateCubemapImages(RenderState::RENDERSTATE_2D_OPAQUE, images);
 
-        ImageLoader::SaveCubemap(images, "/Users/victorkleschenko/Downloads/Cubemap/cumebap.png");
+        FilePath savePath = "/Users/victorkleschenko/Downloads/Cubemap/cumebap.png";
+        FileSystem::Instance()->CreateDirectory(savePath.GetDirectory(), true);
+        ImageLoader::SaveCubemap(images, savePath);
+        
+        cubemap->texDescriptor->Save(TextureDescriptor::GetDescriptorPathname(savePath));
     }
     
     SafeRelease(cubemap);
