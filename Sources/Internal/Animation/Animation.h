@@ -53,6 +53,8 @@ class Animation : public EventDispatcher
 public:
 /*
  */	
+ 	static const int32 INFINITE_LOOP = -1;
+		
 	enum
 	{
 		EVENT_ANIMATION_START = 1, 
@@ -79,10 +81,10 @@ protected:
 	virtual ~Animation();
 
 public:
-	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int _defaultState = 0); 
+	Animation(AnimatedObject * _owner, float32 _animationTimeLength, Interpolation::FuncType _interpolationFunc, int32 _defaultState = 0); 
 	
 	virtual void	Reset();				
-	virtual void	Start(int _groupId);
+	virtual void	Start(int32 _groupId);
 	virtual void	Stop();
 	virtual void	Pause(bool isPaused);
 
@@ -98,16 +100,16 @@ public:
 	virtual void OnCancel();
 	
 	inline void EnableReverse();
-	inline void SetRepeatCount(int k);
+	inline void SetRepeatCount(int32 k);
 	
-	inline void SetTagId(int tag);
-	inline int GetTagId();
+	inline void SetTagId(int32 tag);
+	inline int32 GetTagId();
 	inline void SetTimeMultiplier(float32 m);
 	inline float32 GetTimeMultiplier();
 	inline AnimatedObject * GetOwner();
 	
 protected:
-	int		state;
+	int32 state;
 	float32	time;					// [0, animationTimeLength]
 	float32	timeLength;				// length of animation in seconds
 	float32 normalizedTime;			// [0, 1];
@@ -115,11 +117,11 @@ protected:
 	AnimatedObject * owner;
 	
 	Animation * next;
-	int groupId;					//	animation group id to group animations one after another 
-	int repeatCount;
+	int32 groupId;					//	animation group id to group animations one after another 
+	int32 repeatCount;
 
-    int tagId; // tag animations with numbers
-    float32 timeMultiplier;	
+	int32 tagId; // tag animations with numbers
+	float32 timeMultiplier;	
 	
 	friend class AnimationManager;
 };
@@ -129,17 +131,24 @@ inline void Animation::EnableReverse()
 	state |= STATE_REVERSE;
 }
 
-inline void Animation::SetRepeatCount(int _repeatCount)
+inline void Animation::SetRepeatCount(int32 _repeatCount)
 {
-	repeatCount = _repeatCount - 1;
+	if((0 == _repeatCount) || (INFINITE_LOOP == _repeatCount))
+	{
+		repeatCount = _repeatCount;
+	}
+	else
+	{
+		repeatCount = _repeatCount - 1;
+	}
 }
 
-inline void Animation::SetTagId(int tag)
+inline void Animation::SetTagId(int32 tag)
 {
     tagId = tag;
 }
 
-inline int Animation::GetTagId()
+inline int32 Animation::GetTagId()
 {
     return tagId;
 }
