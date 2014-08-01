@@ -94,7 +94,7 @@ void UIWebView::DeleteCookies(const String& targetUrl)
 	webViewControl->DeleteCookies(targetUrl);
 }
 
-int32_t UIWebView::ExecuteJScript(const String& scriptString)
+int32 UIWebView::ExecuteJScript(const String& scriptString)
 {
 	return webViewControl->ExecuteJScript(scriptString);
 }

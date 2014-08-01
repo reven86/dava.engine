@@ -58,7 +58,7 @@ public:
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& targetUrl) const;
 	// Perfrom Java script
-	virtual int32_t ExecuteJScript(const String& scriptString);
+	virtual int32 ExecuteJScript(const String& scriptString);
 
     virtual void OpenFromBuffer(const String& string, const FilePath& basePath);
     

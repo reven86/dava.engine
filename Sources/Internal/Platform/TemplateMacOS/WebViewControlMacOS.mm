@@ -149,7 +149,7 @@ using namespace DAVA;
 
 @end
 
-int32_t WebViewControl::runScriptID = 0;
+int32 WebViewControl::runScriptID = 0;
 
 WebViewControl::WebViewControl() :
     isWebViewVisible(true)
@@ -278,7 +278,7 @@ void WebViewControl::SetBackgroundTransparency(bool enabled)
 	[webView setDrawsBackground:(enabled ? NO : YES)];
 }
 
-int32_t WebViewControl::ExecuteJScript(const String& scriptString)
+int32 WebViewControl::ExecuteJScript(const String& scriptString)
 {
     int requestID = runScriptID++;
     NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];

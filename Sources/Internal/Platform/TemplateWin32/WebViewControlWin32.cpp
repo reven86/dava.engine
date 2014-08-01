@@ -734,7 +734,7 @@ bool WebBrowserContainer::GetNextCacheEntry(HANDLE cacheEnumHandle, LPINTERNET_C
 	return bResult ? true : false;
 }
 
-int32_t WebBrowserContainer::ExecuteJScript(const String& targetScript)
+int32 WebBrowserContainer::ExecuteJScript(const String& targetScript)
 {
 	IDispatch *m_pDisp = NULL; 
     webBrowser->get_Document(&m_pDisp);
@@ -927,7 +927,7 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 	return Map<String, String>();
 }
 
-int32_t WebViewControl::ExecuteJScript(const String& targetScript)
+int32 WebViewControl::ExecuteJScript(const String& targetScript)
 {
 	if (browserContainer)
 	{

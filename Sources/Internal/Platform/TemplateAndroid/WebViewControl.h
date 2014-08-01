@@ -63,7 +63,7 @@ public:
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url) const;
 	// Perform Java script
-	virtual int32_t ExecuteJScript(const String& scriptString);
+	virtual int32 ExecuteJScript(const String& scriptString);
 	
 	void OpenFromBuffer(const String& string, const FilePath& basePath);
 
@@ -75,11 +75,11 @@ public:
 	virtual void SetBackgroundTransparency(bool enabled);
 
 private:
-	static int32_t webViewIdCount;
-	int32_t webViewId;
+	static int32 webViewIdCount;
+	int32 webViewId;
 	IUIWebViewDelegate *delegate;
 	UIWebView* webView;
-	static int32_t requestId;
+	static int32 requestId;
 };
 
 class JniWebView: public JniExtension

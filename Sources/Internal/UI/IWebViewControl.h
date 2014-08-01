@@ -31,7 +31,6 @@
 #ifndef __DAVAENGINE_IWEBVIEWCONTROL_H__
 #define __DAVAENGINE_IWEBVIEWCONTROL_H__
 
-//#include <stdint.h>
 #include "Math/MathConstants.h"
 #include "Math/Math2D.h"
 #include "Math/Vector.h"
@@ -52,7 +51,7 @@ public:
 	};
 
 	virtual eAction URLChanged(DAVA::UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) = 0;
-	virtual void OnExecuteJScript(DAVA::UIWebView* webview, int32_t requestId, const String& result) {};
+	virtual void OnExecuteJScript(DAVA::UIWebView* webview, int32 requestId, const String& result) {};
 	
 	virtual void PageLoaded(DAVA::UIWebView* webview) = 0;
 	virtual void SwipeGesture(bool left){};
@@ -80,7 +79,7 @@ public:
 	// Get the list of cookies for specific domain
 	virtual Map<String, String> GetCookies(const String& url) const { return Map<String, String>(); };
 	// Execute javascript command, return request ID
-	virtual int32_t ExecuteJScript(const String& scriptString) { return 0; };
+	virtual int32 ExecuteJScript(const String& scriptString) { return 0; };
 	
     virtual void OpenFromBuffer(const String& string, const DAVA::FilePath& basePath) = 0;
     

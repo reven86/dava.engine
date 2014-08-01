@@ -294,7 +294,7 @@ Map<String, String> WebViewControl::GetCookies(const String& targetUrl) const
 	return resultMap;
 }
 
-int32_t WebViewControl::ExecuteJScript(const String& scriptString)
+int32 WebViewControl::ExecuteJScript(const String& scriptString)
 {
     int requestID = runScriptID++;
 	NSString *jScriptString = [NSString stringWithUTF8String:scriptString.c_str()];

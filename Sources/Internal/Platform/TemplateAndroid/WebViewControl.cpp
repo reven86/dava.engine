@@ -37,8 +37,8 @@
 namespace DAVA
 {
 
-int32_t WebViewControl::webViewIdCount = 0;
-int32_t WebViewControl::requestId = 0;
+int32 WebViewControl::webViewIdCount = 0;
+int32 WebViewControl::requestId = 0;
 
 jclass JniWebView::gJavaClass = NULL;
 const char* JniWebView::gJavaClassName = NULL;
@@ -309,7 +309,7 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
 	return jniWebView.GetCookies(url);
 }
 
-int32_t WebViewControl::ExecuteJScript(const String& scriptString)
+int32 WebViewControl::ExecuteJScript(const String& scriptString)
 {
 	requestId++;
 	JniWebView jniWebView;
