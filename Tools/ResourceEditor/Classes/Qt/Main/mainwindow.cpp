@@ -2734,7 +2734,7 @@ void QtMainWindow::OnRenderToCubemap()
         Vector<Image *> images;
         cubemap->CreateCubemapImages(RenderState::RENDERSTATE_2D_OPAQUE, images);
 
-        FilePath savePath = "/Users/victorkleschenko/Downloads/Cubemap/cumebap.png";
+        FilePath savePath = "~doc:/Cubemap/cumebap.png";
         FileSystem::Instance()->CreateDirectory(savePath.GetDirectory(), true);
         ImageLoader::SaveCubemap(images, savePath);
         
