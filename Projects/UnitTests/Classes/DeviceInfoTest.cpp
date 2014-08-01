@@ -28,6 +28,7 @@
 
 
 #include "DeviceInfoTest.h"
+#include "Platform/DeviceInfo.h"
 #include "Platform/DateTime.h"
 
 DeviceInfoTest::DeviceInfoTest()
@@ -74,6 +75,9 @@ void DeviceInfoTest::DidAppear()
     String region = DeviceInfo::GetRegion();
     String timezone = DeviceInfo::GetTimeZone();
     String udid = DeviceInfo::GetUDID();
+    String proxyHost = DeviceInfo::GetHTTPProxyHost();
+    int proxyPort = DeviceInfo::GetHTTPProxyPort();
+    String proxyExculde = DeviceInfo::GetHTTPNonProxyHosts();
     WideString name = DeviceInfo::GetName();
     List<DeviceInfo::StorageInfo> storages = DeviceInfo::GetStoragesList();
     
@@ -88,6 +92,9 @@ void DeviceInfoTest::DidAppear()
     deviceInfoString += Format("UDID: %s\n", udid.c_str());
     deviceInfoString += Format("Name: %s\n", WStringToString(name).c_str());
     deviceInfoString += Format("ZBufferSize: %d\n", DeviceInfo::GetZBufferSize());
+    deviceInfoString += Format("Proxy Host: %s\n", proxyHost.c_str());
+    deviceInfoString += Format("Proxy Port: %d\n", proxyPort);
+    deviceInfoString += Format("Proxy Exclude Hosts: %s\n", proxyExculde.c_str());
 	const eGPUFamily gpu = DeviceInfo::GetGPUFamily();
 	if(gpu == GPU_INVALID)
 	{

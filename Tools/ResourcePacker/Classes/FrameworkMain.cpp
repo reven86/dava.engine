@@ -48,6 +48,7 @@ void PrintUsage()
     printf("\t-usage or --help to display this help\n");
     printf("\t-exo - extended output\n"); 
     printf("\t-v or --verbose - detailed output\n");
+    printf("\t-s or --silent - silent mode. Log only warnings and errors.\n");
     printf("\t-teamcity - extra output in teamcity format\n");
 
     printf("\n");
@@ -185,6 +186,11 @@ void FrameworkDidLaunched()
 
             Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
         }
+
+	if (CommandLineParser::CommandIsFound(String("-s")) || CommandLineParser::CommandIsFound(String("-silent")))
+	{
+		Logger::Instance()->SetLogLevel(Logger::LEVEL_WARNING);
+	}
 
         if(CommandLineParser::CommandIsFound(String("-teamcity")))
         {

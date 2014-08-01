@@ -37,7 +37,6 @@
 
 #include "InputTest.h"
 #include "UI/UIMovieView.h"
-#include "UI/UIScrollView.h"
 
 using namespace DAVA;
 
@@ -47,6 +46,8 @@ static const float INPUT_TEST_AUTO_CLOSE_TIME = 30.0f;
 class UIWebViewDelegate: public IUIWebViewDelegate
 {
 	virtual eAction URLChanged(UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick);
+
+    void OnExecuteJScript(DAVA::UIWebView* webview, int32_t requestId, const String& result);
 
 	virtual void PageLoaded(UIWebView* webview);
 };
@@ -106,11 +107,15 @@ IUIWebViewDelegate::eAction UIWebViewDelegate::URLChanged(UIWebView* webview, co
 	return IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
+void UIWebViewDelegate::OnExecuteJScript(DAVA::UIWebView* webview, int32_t requestId, const String& result)
+{
+    Logger::Debug("OnExecuteJScript result:%s", result.c_str());
+}
+
 void UIWebViewDelegate::PageLoaded(UIWebView* webview)
 {
 	webview->SetVisible(true);
 }
-
 
 InputTest::InputTest() :
  TestTemplate<InputTest>("InputTest")
@@ -242,7 +247,7 @@ void InputTest::LoadResources()
 	webView2 = new UIWebView(Rect(305, 300, 440, 190));
     webView2->SetVisible(false);
     webView2->SetDelegate((UIWebViewDelegate*)delegate);
-	webView2->OpenURL("http://www.google.com");
+	webView2->LoadHtmlString(L"<html><head><title>Test JavaScript Title</title></head><body>LINK TO DAVA - <a id='testLink' href='http://www.davaconsulting.com/'>HELLO DAVA</a></body></html>");
 	webView2->SetBounces(true);
 	AddControl(webView2);
 

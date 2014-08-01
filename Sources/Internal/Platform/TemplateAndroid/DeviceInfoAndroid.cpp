@@ -155,6 +155,45 @@ int32 JniDeviceInfo::GetZBufferSize()
 	return 0;
 }
 
+String JniDeviceInfo::GetHTTPProxyHost()
+{
+	jmethodID mid = GetMethodID("GetHTTPProxyHost", "()Ljava/lang/String;");
+	String returnStr = "";
+
+	if (mid)
+	{
+		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
+		CreateStringFromJni(env, jstring(obj), returnStr);
+	}
+
+	return returnStr;
+}
+
+String JniDeviceInfo::GetHTTPNonProxyHosts()
+{
+	jmethodID mid = GetMethodID("GetHTTPNonProxyHosts", "()Ljava/lang/String;");
+	String returnStr = "";
+
+	if (mid)
+	{
+		jobject obj = GetEnvironment()->CallStaticObjectMethod(GetJavaClass(), mid);
+		CreateStringFromJni(env, jstring(obj), returnStr);
+	}
+
+	return returnStr;
+}
+
+int JniDeviceInfo::GetHTTPProxyPort()
+{
+	jmethodID mid = GetMethodID("GetHTTPProxyPort", "()I");
+	if (mid)
+	{
+		return GetEnvironment()->CallStaticIntMethod(GetJavaClass(), mid);
+	}
+
+	return 0;
+}
+
 int32 JniDeviceInfo::GetGPUFamily()
 {
 	jmethodID mid = GetMethodID("GetGPUFamily", "()I");
@@ -369,6 +408,24 @@ int DeviceInfo::GetZBufferSize()
 {
 	JniDeviceInfo jniDeviceInfo;
 	return jniDeviceInfo.GetZBufferSize();
+}
+
+String DeviceInfo::GetHTTPProxyHost()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPProxyHost();
+}
+
+String DeviceInfo::GetHTTPNonProxyHosts()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPNonProxyHosts();
+}
+
+int DeviceInfo::GetHTTPProxyPort()
+{
+	JniDeviceInfo jniDeviceInfo;
+	return jniDeviceInfo.GetHTTPProxyPort();
 }
 
 eGPUFamily DeviceInfo::GetGPUFamily()

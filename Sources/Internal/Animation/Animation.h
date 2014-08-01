@@ -133,7 +133,8 @@ inline void Animation::EnableReverse()
 
 inline void Animation::SetRepeatCount(int32 _repeatCount)
 {
-	if((0 == _repeatCount) || (INFINITE_LOOP == _repeatCount))
+// 	if((0 == _repeatCount) || (INFINITE_LOOP == _repeatCount))
+	if(INFINITE_LOOP == _repeatCount)
 	{
 		repeatCount = _repeatCount;
 	}

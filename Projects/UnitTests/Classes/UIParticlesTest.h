@@ -26,58 +26,47 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __UIPARTICLES_TEST__
+#define __UIPARTICLES_TEST__
 
+#include "DAVAEngine.h"
 
-#ifndef __FRAMEWORK__DEVICEINFOANDROID__
-#define __FRAMEWORK__DEVICEINFOANDROID__
+using namespace DAVA;
 
-#include "JniExtensions.h"
-#include "Base/BaseTypes.h"
+#include "TestTemplate.h"
 
-#include "../../Platform/DeviceInfo.h"
-
-#if defined(__DAVAENGINE_ANDROID__)
-
-namespace DAVA
+class UIParticlesTest: public TestTemplate<UIParticlesTest>
 {
-
-class JniDeviceInfo: public JniExtension
-{
-public:
-	String GetVersion();
-	String GetManufacturer();
-	String GetModel();
-	String GetLocale();
-	String GetRegion();
-	String GetTimeZone();
-	String GetUDID();
-	String GetName();
-	String GetHTTPProxyHost();
-	String GetHTTPNonProxyHosts();
-	int GetHTTPProxyPort();
-	int32 GetZBufferSize();
-	int32 GetGPUFamily();
-	int32 GetNetworkType();
-	int32 GetSignalStrength(int networkType);
-
-	bool IsPrimaryExternalStoragePresent();
-	DeviceInfo::StorageInfo GetInternalStorageInfo();
-	DeviceInfo::StorageInfo GetPrimaryExternalStorageInfo();
-	List<DeviceInfo::StorageInfo> GetSecondaryExternalStoragesList();
-
 protected:
-	virtual jclass GetJavaClass() const;
-	virtual const char* GetJavaClassName() const;
-
-	DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
-
+    ~UIParticlesTest(){}
 public:
-	static jclass gJavaClass;
-	static const char* gJavaClassName;
+	UIParticlesTest();
+
+	virtual void LoadResources();
+	virtual void UnloadResources();
+	virtual bool RunTest(int32 testNum);
+	
+	virtual void DidAppear();	
+	virtual void Update(float32 timeElapsed);
+	
+	void TestFunction(PerfFuncData * data);
+	
+private:
+	void ButtonPressed(BaseObject *obj, void *data, void *callerData);
+	void LoadParticlesFromYaml();
+	void StopParticles();
+	void PauseParticles();
+	void StartParticles();
+	
+private:
+	UIButton* 		finishTestBtn;
+	bool 			testFinished;
+	UIParticles*	particle1;
+	UIParticles*	particle2;
+	UIParticles*	particle3;
+	UIParticles*	particle4;
+	
+	float32 onScreenTime;
 };
 
-};
-
-#endif //defined(__DAVAENGINE_ANDROID__)
-
-#endif /* defined(__FRAMEWORK__DEVICEINFOANDROID__) */
+#endif /* defined(__UIPARTICLES_TEST__) */
