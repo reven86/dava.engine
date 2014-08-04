@@ -688,7 +688,6 @@ void QtMainWindow::SetupActions()
 			
 	QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 	
-	QObject::connect(ui->actionSetShadowColor, SIGNAL(triggered()), this, SLOT(OnSetShadowColor()));
 	QObject::connect(ui->actionDynamicBlendModeAlpha, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeAlpha()));
 	QObject::connect(ui->actionDynamicBlendModeMultiply, SIGNAL(triggered()), this, SLOT(OnShadowBlendModeMultiply()));
 	QObject::connect(ui->menuDynamicShadowBlendMode, SIGNAL(aboutToShow()), this, SLOT(OnShadowBlendModeWillShow()));
@@ -941,7 +940,6 @@ void QtMainWindow::EnableSceneActions(bool enable)
 
 	ui->actionDynamicBlendModeAlpha->setEnabled(enable);
 	ui->actionDynamicBlendModeMultiply->setEnabled(enable);
-	ui->actionSetShadowColor->setEnabled(enable);
 
 	ui->actionHangingObjects->setEnabled(enable);
 
@@ -1843,21 +1841,6 @@ void QtMainWindow::LoadMaterialLightViewMode()
 void QtMainWindow::LoadLandscapeEditorState(SceneEditor2* scene)
 {
 	OnLandscapeEditorToggled(scene);
-}
-
-void QtMainWindow::OnSetShadowColor()
-{
-	SceneEditor2* scene = GetCurrentScene();
-    if(!scene) return;
-    if(NULL == FindLandscape(scene))
-	{
-		ShowErrorDialog(ResourceEditor::NO_LANDSCAPE_ERROR_MESSAGE);
-		return;
-	}
-	
-    QColor color = QColorDialog::getColor(ColorToQColor(scene->GetShadowColor()), 0, tr("Shadow Color"), QColorDialog::ShowAlphaChannel);
-
-	scene->Exec(new ChangeDynamicShadowColorCommand(scene, QColorToColor(color)));
 }
 
 void QtMainWindow::OnShadowBlendModeWillShow()

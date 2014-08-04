@@ -105,7 +105,7 @@ private slots:
 
 	void OnUnsavedChangesNumberChanged();
 
-    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
+    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType expandType);
 
 	// Adjust size
 	void OnAdjustSize();

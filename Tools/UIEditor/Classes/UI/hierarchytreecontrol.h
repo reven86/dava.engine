@@ -57,6 +57,13 @@ public:
     explicit HierarchyTreeControl(QWidget *parent = 0);
     ~HierarchyTreeControl();
 
+    // Expand the tree items in a deferred way.
+    void StartExpandTimer(QTreeWidgetItem* nodeItem, bool needCheckMousePos);
+    void StopExpandTimer();
+
+    // Expand the item in the "reverse" way (child-to-parent) and scroll to the child one.
+    void ExpandItemAndScrollTo(QTreeWidgetItem* item);
+
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent * event);
 	
@@ -88,8 +95,6 @@ private:
 
 	Vector<int32> GetPositionKey(QTreeWidgetItem* item) const;
 
-    void StopExpandTimer();
-
 	struct SortedItems {
 		QTreeWidgetItem* item;
 		Vector<int32> positionKey;
@@ -103,7 +108,8 @@ private:
 	static bool SortByInternalIndex(const SortedItems &first, const SortedItems &second);
     
     QTimer* expandTimer;
-    HierarchyTreeNode::HIERARCHYTREENODEID expandNodeID;
+    QTreeWidgetItem* expandNodeItem;
+    bool expandCheckMousePos;
 };
 
 #endif // HIERARCHYTREECONTROL_H

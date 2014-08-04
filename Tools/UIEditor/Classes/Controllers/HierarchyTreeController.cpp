@@ -248,7 +248,7 @@ void HierarchyTreeController::ChangeItemSelection(HierarchyTreeControlNode* cont
 		SelectControl(control);
 }
 
-void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control)
+void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control, eExpandControlType expandType)
 {
 	if (IsControlSelected(control))
 	{
@@ -259,7 +259,7 @@ void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control)
 	InsertSelectedControlToList(control);
 	
 	emit AddSelectedControl(control);
-	emit SelectedControlNodesChanged(activeControlNodes);
+	emit SelectedControlNodesChanged(activeControlNodes, expandType);
 }
 
 void HierarchyTreeController::UnselectControl(HierarchyTreeControlNode* control, bool emitSelectedControlNodesChanged)

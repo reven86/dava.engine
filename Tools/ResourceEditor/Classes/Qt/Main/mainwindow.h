@@ -160,7 +160,6 @@ public slots:
 	void OnShowSettings();
 	void OnOpenHelp();
 
-	void OnSetShadowColor();
 	void OnShadowBlendModeWillShow();
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();

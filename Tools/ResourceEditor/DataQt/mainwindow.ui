@@ -201,7 +201,7 @@
      <x>0</x>
      <y>0</y>
      <width>1103</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -393,7 +393,6 @@
     <addaction name="actionReloadShader"/>
     <addaction name="actionConvertModifiedTextures"/>
     <addaction name="separator"/>
-    <addaction name="actionSetShadowColor"/>
     <addaction name="menuDynamicShadowBlendMode"/>
     <addaction name="separator"/>
     <addaction name="actionHeightMapEditor"/>
@@ -730,7 +729,6 @@
    </attribute>
    <addaction name="actionReloadSprites"/>
    <addaction name="actionReloadShader"/>
-   <addaction name="actionSetShadowColor"/>
    <addaction name="actionConvertModifiedTextures"/>
   </widget>
   <widget class="QDockWidget" name="dockLibrary">
@@ -1384,15 +1382,6 @@
   <action name="actionSetupSkybox">
    <property name="text">
     <string>Setup Skybox</string>
-   </property>
-  </action>
-  <action name="actionSetShadowColor">
-   <property name="icon">
-    <iconset resource="QtIcons.qrc">
-     <normaloff>:/QtIcons/color.png</normaloff>:/QtIcons/color.png</iconset>
-   </property>
-   <property name="text">
-    <string>Dynamic Shadow Color</string>
    </property>
   </action>
   <action name="actionDynamicBlendModeAlpha">

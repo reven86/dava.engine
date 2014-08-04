@@ -41,6 +41,9 @@ namespace DAVA
 const float32 LodComponent::INVALID_DISTANCE = -1.f;
 const float32 LodComponent::MIN_LOD_DISTANCE = 0.f;
 const float32 LodComponent::MAX_LOD_DISTANCE = 1000.f;
+    
+const float32 NEAR_DISTANCE_COEFF = 1.05f;
+const float32 FAR_DISTANCE_COEFF = 0.95f;
 
 LodComponent::LodDistance::LodDistance()
 {
@@ -195,8 +198,7 @@ LodComponent::LodComponent()
 
 	for(int32 iLayer = 0; iLayer < MAX_LOD_LAYERS; ++iLayer)
 	{
-		lodLayersArray[iLayer].SetDistance(GetDefaultDistance(iLayer));
-		lodLayersArray[iLayer].SetFarDistance(MAX_LOD_DISTANCE * 2);
+        SetLodLayerDistance(iLayer, GetDefaultDistance(iLayer));
 	}
 
 	lodLayersArray[0].SetNearDistance(0.0f);
@@ -238,12 +240,12 @@ void LodComponent::SetLodLayerDistance(int32 layerNum, float32 distance)
     
     if(INVALID_DISTANCE != distance)
     {
-        float32 nearDistance = distance * 0.95f;
-        float32 farDistance = distance * 1.05f;
+        float32 nearDistance = distance * NEAR_DISTANCE_COEFF;
+        float32 farDistance = distance * FAR_DISTANCE_COEFF;
         
         if(GetLodLayersCount() - 1 == layerNum)
         {
-            lodLayersArray[layerNum].SetFarDistance(MAX_LOD_DISTANCE * 1.05f);
+            lodLayersArray[layerNum].SetFarDistance(MAX_LOD_DISTANCE * FAR_DISTANCE_COEFF);
         }
         if(layerNum)
         {

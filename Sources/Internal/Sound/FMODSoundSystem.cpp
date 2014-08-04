@@ -79,7 +79,7 @@ SoundSystem::SoundSystem()
 #ifdef DAVA_FMOD_PROFILE
     FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_ENABLE_PROFILE, extraDriverData));
 #else
-    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_ENABLE_PROFILE, extraDriverData));
+    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL, extraDriverData));
 #endif
     
     FMOD::EventCategory * masterCategory = 0;
