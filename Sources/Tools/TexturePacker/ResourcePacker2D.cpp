@@ -268,12 +268,10 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
             	Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
             }
             // Check if layer name is unique
-            for (int i = 0; i < (int)defFile->frameNames.size() - 1; ++i)
+            Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
+			if (it != defFile->frameNames.end())
             {
-            	if (defFile->frameNames[i] == layerName)
-                {
-                	Logger::Warning("* WARNING * - %s layer %d name is not unique!!!", psdName.c_str(), k - 1);
-                }
+            	Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
             }
 
             defFile->frameNames.push_back(layerName);

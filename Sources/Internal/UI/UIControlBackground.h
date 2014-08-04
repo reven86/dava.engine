@@ -162,7 +162,7 @@ public:
      \brief Sets Sprite frame you want to use.
      \param[in] frameName Sprite frame name.
      */
-	virtual void SetFrame(const String& frameName);
+	virtual void SetFrame(const FastName& frameName);
     /**
      \brief Sets size of the left and right unscalable sprite part.
         Middle sprite part would be scaled along a full control width.

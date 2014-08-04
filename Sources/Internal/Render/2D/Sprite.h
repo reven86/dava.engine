@@ -132,6 +132,8 @@ public:
 		,	X_OFFSET_TO_ACTIVE
 		,	Y_OFFSET_TO_ACTIVE
 	};
+    
+    const static int32 INVALID_FRAME_INDEX = -1; //Use it when we try to get sprite frame using invalid frameName
 
 	/**
 	 \brief Function to create sprite. This is convinience function and it return sprite in any case.
@@ -211,7 +213,7 @@ public:
 
 	//void SetFrame(int32 frm);
     
-    int32 GetFrameByName(const String& frameName);
+    int32 GetFrameByName(const FastName& frameName);
 
 	void SetDefaultPivotPoint(float32 x, float32 y);
 	void SetDefaultPivotPoint(const Vector2 &newPivotPoint);
@@ -384,7 +386,7 @@ protected:
 	int32	frame;
 
 	Vector2	defaultPivotPoint;
-    Vector<String> frameNames;
+    Vector<FastName> frameNames;
 	//Vector2	pivotPoint;
 
 	//Vector2	drawCoord;

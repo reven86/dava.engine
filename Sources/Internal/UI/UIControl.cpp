@@ -374,7 +374,7 @@ namespace DAVA
     {
         background->SetFrame(spriteFrame);
     }
-	void UIControl::SetSpriteFrame(const String& frameName)
+	void UIControl::SetSpriteFrame(const FastName& frameName)
 	{
 		background->SetFrame(frameName);
 	}

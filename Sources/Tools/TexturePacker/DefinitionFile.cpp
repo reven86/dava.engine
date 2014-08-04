@@ -73,6 +73,9 @@ void DefinitionFile::LoadPNG(const FilePath & _filename, const FilePath & pathTo
 	frameRects[0].y = 0;
 	frameRects[0].dx = spriteWidth;
 	frameRects[0].dy = spriteHeight;
+    
+    frameNames.resize(frameCount);
+    frameNames[0] = String();
 
 	FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, 0);
 	FileSystem::Instance()->CopyFile(_filename, fileWrite);
@@ -103,6 +106,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 
 
 	frameRects = new Rect2i[frameCount];
+    frameNames.resize(frameCount);
 	for (int k = 0; k < frameCount; ++k)
 	{
 		PngImageExt frameX;
@@ -126,7 +130,7 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 		frameRects[k].dx = reducedRect.dx;
 		frameRects[k].dy = reducedRect.dy;
 	
-	
+		frameNames[k] = String();
 		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
 		{
 			
@@ -178,8 +182,10 @@ bool DefinitionFile::Load(const FilePath & _filename)
 	
 	for (int i = 0; i < frameCount; ++i)
 	{
-		fscanf(fp, "%d %d %d %d\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy);
+        char frameName[128];
+		fscanf(fp, "%d %d %d %d %s\n", &frameRects[i].x, &frameRects[i].y, &frameRects[i].dx, &frameRects[i].dy, frameName);
 		Logger::FrameworkDebug("[DefinitionFile] frame: %d w: %d h: %d", i, frameRects[i].dx, frameRects[i].dy);
+        frameNames[i] = String(frameName);
 		
 		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
 		{
@@ -210,15 +216,6 @@ bool DefinitionFile::Load(const FilePath & _filename)
 			frameRects[i].dy++;	
 		}
 	}
-
-	for (int i = 0; i < frameCount; ++i)
-	{
-		char tmpString[512];
-		fgets(tmpString, sizeof(tmpString), fp);
-		frameNames.push_back(tmpString);
-		printf("fame: %d name: %s\n", i, tmpString);
-		if (feof(fp))break;
-	}	
 	
 	while(1)
 	{

@@ -286,7 +286,7 @@ void Sprite::InitFromFile(File *file)
 		file->ReadLine(tempBuf, 1024);
 		sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
         //DVASSERT(!String(frameName).empty());
-		frameNames[i] = String(frameName);
+		frameNames[i] = String(frameName).empty() ? FastName() : FastName(frameName);
         
 		rectsAndOffsets[i][0] = (float32)x;
 		rectsAndOffsets[i][1] = (float32)y;
@@ -801,15 +801,20 @@ void Sprite::SetFrame(int32 frm)
 	frame = Max(0, Min(frm, frameCount - 1));
 }
 
-int32 Sprite::GetFrameByName(const String& frameName)
+int32 Sprite::GetFrameByName(const FastName& frameName)
 {
+	if (!frameName.IsValid())
+    {
+		return INVALID_FRAME_INDEX;
+    }
+    
     for (int32 i = 0; i < frameCount; i++)
 	{
-    	if (frameNames[i].compare(frameName) == 0)
+    	if (frameNames[i] == frameName)
         	return i;
     }
     
-    return 0;
+    return INVALID_FRAME_INDEX;
 }
 
 /*void Sprite::SetPivotPoint(float32 x, float32 y)
