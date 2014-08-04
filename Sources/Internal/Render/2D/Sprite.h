@@ -320,6 +320,8 @@ public:
 	 */
 	void Reload();
 
+	static void SetSpriteClipping(bool clipping);
+
     /**
 	 \brief Reloads all sprites.
 	 */
@@ -412,10 +414,13 @@ protected:
 	// For rendering of clipped objects
 	static Vector<Vector2> clippedTexCoords;
 	static Vector<Vector2> clippedVertices;
-
+	static bool spriteClipping;
 
 	//static bool batchingEnabled;
 	//static Vector<Vector2>
+	
+private:
+	bool IsSpriteOnScreen(DrawState * state);
 };
 
 

@@ -98,7 +98,7 @@ protected:
 	~TextBlock();
 	
 	void Prepare();
-	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
+	void PrepareInternal();
 	
 	void DrawToBuffer(Font *font, uint8 *buf);
 
@@ -135,6 +135,7 @@ protected:
 	bool isPredrawed:1;
 	bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
+	bool needPrepareInternal:1;
 };
 
 }; //end of namespace

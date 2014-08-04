@@ -191,9 +191,11 @@ const Vector2 &UIStaticText::GetShadowOffset() const
 
 void UIStaticText::Draw(const UIGeometricData &geometricData)
 {
+	if(GetText().empty()) return;
+
     textBlock->SetRectSize(size);
+	textBlock->PreDraw();
     PrepareSprite();
-    textBlock->PreDraw();
 
     UIControl::Draw(geometricData);
 

@@ -57,6 +57,7 @@ namespace DAVA
 static int32 fboCounter = 0;
 Vector<Vector2> Sprite::clippedTexCoords;
 Vector<Vector2> Sprite::clippedVertices;
+bool Sprite::spriteClipping = true;
 
 Mutex Sprite::spriteMapMutex;
 
@@ -1312,7 +1313,9 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 void Sprite::Draw(DrawState * state)
 {
-	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW))
+	// DF-2897 - Do not draw sprite if its position is beyond screen
+	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::SPRITE_DRAW) ||
+		(spriteClipping && !IsSpriteOnScreen(state)))
 	{
 		return;
 	}
@@ -1866,6 +1869,34 @@ void Sprite::ReloadExistingTextures()
             Logger::Error("[Sprite::ReloadSpriteTextures] Something strange with texture_%d", i);
         }
     }
+}
+
+void Sprite::SetSpriteClipping(bool clipping)
+{
+	spriteClipping = clipping;
+}
+
+bool Sprite::IsSpriteOnScreen(DrawState * state)
+{
+	Rect clipRect = RenderManager::Instance()->currentClip;
+	if(clipRect.dx == -1)
+	{
+		clipRect.dx = Core::Instance()->GetVirtualScreenWidth();
+	}
+	if(clipRect.dy == -1)
+	{
+		clipRect.dy = Core::Instance()->GetVirtualScreenHeight();
+	}
+
+	// DF-2897 - Calculate real size of texture and it's position
+	float32 realWidth = GetWidth() * state->scale.x;
+	float32 realHeight = GetHeight() * state->scale.y;
+	float32 xPosition = state->position.x - (state->pivotPoint.x * state->scale.x);
+	float32 yPosition = state->position.y - (state->pivotPoint.y * state->scale.y);
+
+	const Rect spriteRect(xPosition, yPosition, realWidth, realHeight);
+
+	return clipRect.RectIntersects(spriteRect);
 }
 
 };

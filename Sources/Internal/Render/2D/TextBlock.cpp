@@ -42,41 +42,23 @@
 namespace DAVA 
 {
     
-struct TextBlockData
-{
-    TextBlockData(): font(NULL) { };
-    ~TextBlockData() { SafeRelease(font); };
     
-    Font *font;
-};
-    
-    
-    
-    
-//TODO: использовать мапу	
-static	Vector<TextBlock *> registredBlocks;
+static	Set<TextBlock *> registredBlocks;
 	
 void RegisterTextBlock(TextBlock *tbl)
 {
-	registredBlocks.push_back(tbl);
+	registredBlocks.insert(tbl);
 }
 	
 void UnregisterTextBlock(TextBlock *tbl)
 {
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
-	{
-		if (tbl == *it) 
-		{
-			registredBlocks.erase(it);
-			return;
-		}
-	}
+	registredBlocks.erase(tbl);
 }
 
 void TextBlock::ScreenResolutionChanged()
 {
 	Logger::FrameworkDebug("Regenerate text blocks");
-	for(Vector<TextBlock *>::iterator it = registredBlocks.begin(); it != registredBlocks.end(); it++)
+	for(Set<TextBlock *>::iterator it = registredBlocks.begin(), endIt = registredBlocks.end(); it != endIt; it++)
 	{
 		(*it)->Prepare();
 	}
@@ -708,38 +690,34 @@ void TextBlock::Prepare()
         cacheFinalSize.y = (float32)dy / Core::GetVirtualToPhysicalFactor();
     }
 
-    TextBlockData *jobData = new TextBlockData();
-    jobData->font = SafeRetain(font);
-    
-    mutex.Unlock();
-
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
+	needPrepareInternal = true;
+	mutex.Unlock();
 }
 
-void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
+void TextBlock::PrepareInternal()
 {
+	DVASSERT(Thread::IsMainThread());
+
 #if 1
     
-    TextBlockData *jobData = (TextBlockData *)param;
-    
     mutex.Lock();
+	needPrepareInternal = false;
 
     SafeRelease(sprite);
-	if(!jobData->font || text == L"")
+	if(!font || text == L"")
 	{
-        SafeDelete(jobData);
         mutex.Unlock();
 		return;
 	}
     else
 	{
-		if (jobData->font->IsTextSupportsSoftwareRendering())
+		if (font->IsTextSupportsSoftwareRendering())
 		{
 			int32 bsz = cacheDx * cacheDy;
 			uint8 * buf = new uint8[bsz];
 			memset(buf, 0, bsz * sizeof(uint8));
 			
-			DrawToBuffer(jobData->font, buf);
+			DrawToBuffer(font, buf);
             
             String addInfo;
 			if(!isMultilineEnabled || treatMultilineAsSingleLine)
@@ -783,7 +761,7 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 #endif 
     
 
-    SafeDelete(jobData);
+//    SafeDelete(jobData);
     mutex.Unlock();
 }
 
@@ -880,6 +858,13 @@ void TextBlock::DrawToBuffer(Font *realFont, uint8 *buf)
 	
 void TextBlock::PreDraw()
 {
+	DVASSERT(Thread::IsMainThread());
+
+	if(needPrepareInternal)
+	{
+		PrepareInternal();
+	}
+
 	if (isPredrawed)
 	{
 		return;
