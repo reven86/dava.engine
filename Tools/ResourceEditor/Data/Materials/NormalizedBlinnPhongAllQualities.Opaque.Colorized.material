@@ -1,4 +1,0 @@
-MaterialTemplate:
-    HIGH : "~res:/Materials/NormalizedBlinnPhongPerPixel.Opaque.Colorized.material"
-    MEDIUM: "~res:/Materials/NormalizedBlinnPhongPerPixelFast.Opaque.Colorized.material"
-    LOW : "~res:/Materials/NormalizedBlinnPhongPerVertex.Opaque.Colorized.material"

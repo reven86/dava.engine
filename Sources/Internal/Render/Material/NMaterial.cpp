@@ -60,8 +60,8 @@ const FastName NMaterial::TEXTURE_LIGHTMAP("lightmap");
 const FastName NMaterial::TEXTURE_DECAL("decal");
 const FastName NMaterial::TEXTURE_CUBEMAP("cubemap");
 const FastName NMaterial::TEXTURE_HEIGHTMAP("heightmap");
-const FastName NMaterial::TEXTURE_TILEMASK("tilemask");
-const FastName NMaterial::TEXTURE_TILETEXTURE("tiletexture");
+const FastName NMaterial::TEXTURE_DECALMASK("decalmask");
+const FastName NMaterial::TEXTURE_DECALTEXTURE("decaltexture");
 
 const FastName NMaterial::TEXTURE_DYNAMIC_REFLECTION("dynamicReflection");
 const FastName NMaterial::TEXTURE_DYNAMIC_REFRACTION("dynamicRefraction");
@@ -86,7 +86,7 @@ const FastName NMaterial::PARAM_UV_OFFSET("uvOffset");
 const FastName NMaterial::PARAM_UV_SCALE("uvScale");
 const FastName NMaterial::PARAM_LIGHTMAP_SIZE("lightmapSize");
 const FastName NMaterial::PARAM_SHADOW_COLOR("shadowColor");
-const FastName NMaterial::PARAM_TILE_SCALE("tileCoordScale0");
+const FastName NMaterial::PARAM_DECAL_TILE_SCALE("decalTileCoordScale");
 const FastName NMaterial::PARAM_RCP_SCREEN_SIZE("rcpScreenSize");
 const FastName NMaterial::PARAM_SCREEN_OFFSET("screenOffset");
 
@@ -608,13 +608,15 @@ bool NMaterial::ReloadQuality(bool force)
 	{
 		ret = true;
 		currentQuality = effectiveQuality;
-		
+		        
 		if(NMaterial::MATERIALTYPE_INSTANCE == materialType)
 		{
 			OnInstanceQualityChanged();
 		}
 		else if(NMaterial::MATERIALTYPE_MATERIAL == materialType)
 		{
+            SetQuality(currentQuality);
+
 			UpdateMaterialTemplate();
 			
 			LoadActiveTextures();

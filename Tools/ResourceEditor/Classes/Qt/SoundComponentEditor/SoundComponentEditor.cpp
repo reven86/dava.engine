@@ -56,6 +56,7 @@ SoundComponentEditor::SoundComponentEditor(SceneEditor2* _scene, QWidget *parent
     QObject::connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(OnStop()));
     QObject::connect(ui->addEventBut, SIGNAL(clicked()), this, SLOT(OnAddEvent()));
     QObject::connect(ui->removeEventBut, SIGNAL(clicked()), this, SLOT(OnRemoveEvent()));
+    QObject::connect(ui->autoTriggerCheckBox, SIGNAL(clicked(bool)), this, SLOT(OnAutoTrigger(bool)));
 
     QObject::connect(ui->listWidget, SIGNAL(itemClicked(QListWidgetItem *)), this, SLOT(OnEventSelected(QListWidgetItem *)));
 
@@ -88,17 +89,33 @@ void SoundComponentEditor::OnEventSelected(QListWidgetItem * item)
         if(!data.isNull())
         {
             DAVA::int32 index = data.toInt();
-            selectedEvent = component->GetSoundEvent(index);
+            selectedEventIndex = index;
         }
         ui->removeEventBut->setDisabled(false);
     }
     else
     {
-        selectedEvent = 0;
+        selectedEventIndex = -1;
         ui->removeEventBut->setDisabled(true);
     }
 
     FillEventParamsFrame();
+}
+
+void SoundComponentEditor::OnAutoTrigger(bool checked)
+{
+    if(selectedEventIndex != -1)
+    {
+        uint32 flags = component->GetSoundEventFlags(selectedEventIndex);
+        if(checked)
+        {
+            scene->Exec(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags | SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+        }
+        else
+        {
+            scene->Exec(new SetSoundEventFlagsCommand(entity, selectedEventIndex, flags & ~SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER));
+        }
+    }
 }
 
 void SoundComponentEditor::FillEventsList()
@@ -111,12 +128,11 @@ void SoundComponentEditor::FillEventsList()
     DAVA::int32 eventsCount = component->GetEventsCount();
     for(DAVA::int32 i = 0; i < eventsCount; ++i)
     {
-        DAVA::SoundEvent * event = component->GetSoundEvent(i);
-        QListWidgetItem * item = new QListWidgetItem(QString(event->GetEventName().c_str()));
+        QListWidgetItem * item = new QListWidgetItem(QString(component->GetSoundEvent(i)->GetEventName().c_str()));
         item->setData(Qt::UserRole, i);
         ui->listWidget->addItem(item);
 
-        if(event == selectedEvent)
+        if(i == selectedEventIndex)
         {
             item->setSelected(true);
             OnEventSelected(item);
@@ -128,23 +144,28 @@ void SoundComponentEditor::FillEventParamsFrame()
 {
     ClearParamsFrame();
 
-    if(!selectedEvent)
+    if(selectedEventIndex == -1)
         return;
 
-    ui->eventNameLabel->setText(QString(selectedEvent->GetEventName().c_str()));
+    SoundEvent * soundEvent = component->GetSoundEvent(selectedEventIndex);
+
+    ui->eventNameLabel->setText(QString(soundEvent->GetEventName().c_str()));
 
     ui->playButton->setDisabled(false);
     ui->stopButton->setDisabled(false);
+    ui->autoTriggerCheckBox->setDisabled(false);
+
+    ui->autoTriggerCheckBox->setChecked((component->GetSoundEventFlags(selectedEventIndex) & SoundComponent::FLAG_AUTO_DISTANCE_TRIGGER) > 0);
 
     DAVA::Vector<DAVA::SoundEvent::SoundEventParameterInfo> params;
-    selectedEvent->GetEventParametersInfo(params);
+    soundEvent->GetEventParametersInfo(params);
     DAVA::int32 paramsCount = params.size();
     for(DAVA::int32 i = 0; i < paramsCount; i++)
     {
         DAVA::SoundEvent::SoundEventParameterInfo & param = params[i];
         if(param.name != "(distance)" && param.name != "(event angle)" && param.name != "(listener angle)")
         {
-            float32 currentParamValue = selectedEvent->GetParameterValue(FastName(param.name));
+            float32 currentParamValue = soundEvent->GetParameterValue(FastName(param.name));
             AddSliderWidget(param, currentParamValue);
         }
     }
@@ -152,14 +173,14 @@ void SoundComponentEditor::FillEventParamsFrame()
 
 void SoundComponentEditor::OnPlay()
 {
-    if(selectedEvent && !selectedEvent->IsActive())
-        selectedEvent->Trigger();
+    if(selectedEventIndex != -1 && !component->GetSoundEvent(selectedEventIndex)->IsActive())
+        component->GetSoundEvent(selectedEventIndex)->Trigger();
 }
 
 void SoundComponentEditor::OnStop()
 {
-    if(selectedEvent)
-        selectedEvent->Stop();
+    if(selectedEventIndex != -1)
+        component->GetSoundEvent(selectedEventIndex)->Stop();
 }
 
 void SoundComponentEditor::OnAddEvent()
@@ -174,7 +195,7 @@ void SoundComponentEditor::OnAddEvent()
 
             scene->Exec(new AddSoundEventCommand(component->GetEntity(), sEvent));
 
-            selectedEvent = sEvent;
+            selectedEventIndex = component->GetEventsCount() - 1;
 
             SafeRelease(sEvent);
         }
@@ -185,9 +206,9 @@ void SoundComponentEditor::OnAddEvent()
 
 void SoundComponentEditor::OnRemoveEvent()
 {
-    if(selectedEvent && component)
+    if(selectedEventIndex != -1 && component)
     {
-        scene->Exec(new RemoveSoundEventCommand(component->GetEntity(), selectedEvent));
+        scene->Exec(new RemoveSoundEventCommand(component->GetEntity(), component->GetSoundEvent(selectedEventIndex)));
     }
 
     OnEventSelected(0);
@@ -219,8 +240,8 @@ void SoundComponentEditor::OnSliderMoved(int value)
 
     QToolTip::showText(QCursor::pos(), QString("%1").arg(newParamValue), slider);
 
-    if(selectedEvent)
-        selectedEvent->SetParameterValue(DAVA::FastName(paramName), newParamValue);
+    if(selectedEventIndex != -1)
+        component->GetSoundEvent(selectedEventIndex)->SetParameterValue(DAVA::FastName(paramName), newParamValue);
 }
 
 void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventParameterInfo & param, float32 currentParamValue)
@@ -239,7 +260,7 @@ void SoundComponentEditor::AddSliderWidget(const DAVA::SoundEvent::SoundEventPar
     slider->setProperty("minValue", param.minValue);
     slider->setProperty("maxValue", param.maxValue);
 
-    if(selectedEvent)
+    if(selectedEventIndex != -1)
     {
         int currentValue = (currentParamValue - param.minValue) / (param.maxValue - param.minValue) * 1000;
         slider->setValue(currentValue);
@@ -272,6 +293,7 @@ void SoundComponentEditor::ClearParamsFrame()
 
     ui->playButton->setDisabled(true);
     ui->stopButton->setDisabled(true);
+    ui->autoTriggerCheckBox->setDisabled(true);
 
     ui->eventNameLabel->clear();
 }

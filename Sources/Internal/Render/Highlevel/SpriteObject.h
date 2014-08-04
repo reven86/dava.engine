@@ -40,11 +40,10 @@ namespace DAVA
 class SpriteObject: public RenderObject
 {
 public:
-    SpriteObject();
 	SpriteObject(const FilePath &pathToSprite, int32 frame = 0
 				, const Vector2 &reqScale = Vector2(1.0f, 1.0f)
 				, const Vector2 &pivotPoint = Vector2(0.0f, 0.0f));
-	SpriteObject(Sprite *spr, int32 frame = 0
+	SpriteObject(Sprite *spr = NULL, int32 frame = 0
 				, const Vector2 &reqScale = Vector2(1.0f, 1.0f)
 				, const Vector2 &pivotPoint = Vector2(0.0f, 0.0f));
 
@@ -112,12 +111,13 @@ protected:
 
 
 public:
-
-	INTROSPECTION_EXTEND(SpriteObject, RenderObject, 
-		NULL
-	);
+    INTROSPECTION_EXTEND(SpriteObject, RenderObject, 
+        PROPERTY("frame", "frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
+        ENUMERATION("sprite type", "sprite type", GetSpriteType, SetSpriteType, I_SAVE | I_VIEW | I_EDIT)
+    );
 };
 
+ENUM_DECLARE(SpriteObject::eSpriteType);
 
 };
 

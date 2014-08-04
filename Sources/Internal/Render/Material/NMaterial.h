@@ -179,8 +179,8 @@ public:
 	static const FastName TEXTURE_DECAL;
 	static const FastName TEXTURE_CUBEMAP;
     static const FastName TEXTURE_HEIGHTMAP;
-    static const FastName TEXTURE_TILEMASK;
-    static const FastName TEXTURE_TILETEXTURE;
+    static const FastName TEXTURE_DECALMASK;
+    static const FastName TEXTURE_DECALTEXTURE;
     
     static const FastName TEXTURE_DYNAMIC_REFLECTION;
     static const FastName TEXTURE_DYNAMIC_REFRACTION;
@@ -205,7 +205,7 @@ public:
 	static const FastName PARAM_UV_SCALE;
     static const FastName PARAM_LIGHTMAP_SIZE;
     static const FastName PARAM_SHADOW_COLOR;
-    static const FastName PARAM_TILE_SCALE;
+    static const FastName PARAM_DECAL_TILE_SCALE;
     static const FastName PARAM_RCP_SCREEN_SIZE;
     static const FastName PARAM_SCREEN_OFFSET;
     

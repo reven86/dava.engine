@@ -43,7 +43,7 @@ public:
     
     virtual bool Trigger();
     virtual bool IsActive() const;
-    virtual void Stop();
+    virtual void Stop(bool force = false);
     virtual void SetPaused(bool paused);
     
     virtual void SetVolume(float32 volume);

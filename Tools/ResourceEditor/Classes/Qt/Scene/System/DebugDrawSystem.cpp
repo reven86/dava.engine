@@ -322,24 +322,22 @@ void DebugDrawSystem::DrawSelectedSoundNode(DAVA::Entity *entity)
         if(debugTextFont)
             fontHeight = debugTextFont->GetFontHeight();
 
-        bool hasDirectionSound = false;
         uint32 eventsCount = sc->GetEventsCount();
         for(uint32 i = 0; i < eventsCount; ++i)
         {
             SoundEvent * sEvent = sc->GetSoundEvent(i);
             float32 distance = sEvent->GetMaxDistance();
-            hasDirectionSound |= sEvent->IsDirectional();
 
             DAVA::RenderManager::Instance()->SetColor(settings->GetValue(Settings::Scene_Sound_SoundObjectSphereColor).AsColor());
             DAVA::RenderHelper::Instance()->FillSphere(Vector3(), distance, debugDrawState);
 
             sceneEditor->textDrawSystem->DrawText(sceneEditor->textDrawSystem->ToPos2d(position) - Vector2(0.f, fontHeight - 2.f) * i, sEvent->GetEventName(), Color::White, TextDrawSystem::Center);
-        }
 
-        if(hasDirectionSound)
-        {
-            DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.0f, 1.0f, 0.3f, 1.0f));
-            DAVA::RenderHelper::Instance()->DrawArrow(Vector3(), sc->GetLocalDirection(), 10.f, 1.f, debugDrawState);
+            if(sEvent->IsDirectional())
+            {
+                DAVA::RenderManager::Instance()->SetColor(DAVA::Color(0.0f, 1.0f, 0.3f, 1.0f));
+                DAVA::RenderHelper::Instance()->DrawArrow(Vector3(), sc->GetLocalDirection(i), 10.f, 1.f, debugDrawState);
+            }
         }
     }
 }

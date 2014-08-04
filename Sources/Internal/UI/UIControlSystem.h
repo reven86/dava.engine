@@ -356,7 +356,7 @@ private:
     UIControl *focusedControl;
 
 	UIControl * popupContainer;
-	Vector<UIPopup*> popupsToRemove;
+	Set<UIPopup*> popupsToRemove;
 	
 	int32 lockInputCounter;
 	

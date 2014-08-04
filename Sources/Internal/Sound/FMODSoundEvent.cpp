@@ -107,7 +107,9 @@ bool FMODSoundEvent::Trigger()
     {
         Logger::Error("[FMODSoundEvent::Trigger()] Failed to retrieve event by %d on eventID: %s", result, eventName.c_str());
     }
-    
+
+    PerformEvent(EVENT_TRIGGERED);
+
     return fmodEvent != 0;
 }
 
@@ -162,7 +164,7 @@ void FMODSoundEvent::UpdateInstancesPosition()
     }
 }
     
-void FMODSoundEvent::Stop()
+void FMODSoundEvent::Stop(bool force /* = false */)
 {
     SoundSystem * soundSystem = SoundSystem::Instance();
 
@@ -172,7 +174,7 @@ void FMODSoundEvent::Stop()
 	{
         FMOD::Event * fEvent = instancesCopy[i];
 		FMOD_VERIFY(fEvent->setCallback(0, 0));
-        FMOD_VERIFY(fEvent->stop());
+        FMOD_VERIFY(fEvent->stop(force));
 
 		PerformEvent(SoundEvent::EVENT_END);
 		soundSystem->ReleaseOnUpdate(this);

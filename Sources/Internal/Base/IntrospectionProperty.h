@@ -218,6 +218,43 @@ namespace DAVA
 		const SetterPtr setter;
 	};
 
+    // Этот класс по сути специализация IntrospectionProperty, с той лишь разницой, что
+    // аргумертом Set/Get функций является перечисление.
+    template<typename T, typename V>
+    class InspPropParamEnum : public InspMember
+    {
+    public:
+        typedef V	 (T::*GetterPtr)() const;
+        typedef void (T::*SetterPtr)(V);
+
+        InspPropParamEnum(const char *_name, const InspDesc &_desc, const MetaInfo *_type, GetterPtr _g, SetterPtr _s, int _flags)
+            : InspMember(_name, _desc, 0, _type, _flags), getter(_g), setter(_s)
+        { }
+
+        virtual VariantType Value(void *object) const
+        {
+            T* realObj = (T *) object;
+            DAVA::int32 storeValue = static_cast<DAVA::int32>((realObj->*getter)());
+            return VariantType::LoadData(&storeValue, DAVA::MetaInfo::Instance<DAVA::int32>());
+        }
+
+        virtual void SetValue(void *object, const VariantType &val) const
+        {
+            T* realObj = (T *) object;
+            DAVA::int32 storeValue = 0;
+            VariantType::SaveData(&storeValue, DAVA::MetaInfo::Instance<DAVA::int32>(), val);
+            (realObj->*setter)(static_cast<V>(storeValue));
+        }
+
+        virtual void* Pointer(void *object) const { return NULL; };
+        virtual void* Data(void *object) const { return NULL; };
+
+    protected:
+        const GetterPtr getter;
+        const SetterPtr setter;
+    };
+    
+
 	// Набор функций для автоматического вывода параметро и создания IntrospectionProperty или IntrospectionPropertyRef
 	// в зависимости от входных типов
 	template<typename TT, typename VV>
@@ -320,83 +357,18 @@ namespace DAVA
 	}
 
 	// param simple
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::int32 (TT::*_g)() const, void (TT::*_s)(DAVA::int32), int _flags)
+	template<typename TT, typename VV>
+	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, VV (TT::*_g)() const, void (TT::*_s)(VV), int _flags)
 	{
-		return new InspPropParamSimple<TT, DAVA::int32>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::int32>(), _g, _s, _flags);
+		return new InspPropParamSimple<TT, VV>(_name, _desc, DAVA::MetaInfo::Instance<VV>(), _g, _s, _flags);
 	}
 
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::uint32 (TT::*_g)() const, void (TT::*_s)(DAVA::uint32), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::uint32>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::uint32>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::int64 (TT::*_g)() const, void (TT::*_s)(DAVA::int64), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::int64>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::int64>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::uint64 (TT::*_g)() const, void (TT::*_s)(DAVA::uint64), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::uint64>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::uint64>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, bool (TT::*_g)() const, void (TT::*_s)(bool), int _flags)
-	{
-		return new InspPropParamSimple<TT, bool>(_name, _desc, DAVA::MetaInfo::Instance<bool>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::int8 (TT::*_g)() const, void (TT::*_s)(DAVA::int8), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::int8>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::int8>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::uint8 (TT::*_g)() const, void (TT::*_s)(DAVA::uint8), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::uint8>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::uint8>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::int16 (TT::*_g)() const, void (TT::*_s)(DAVA::int16), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::int16>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::int16>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::uint16 (TT::*_g)() const, void (TT::*_s)(DAVA::uint16), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::uint16>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::uint16>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::char8 (TT::*_g)() const, void (TT::*_s)(DAVA::char8), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::char8>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::char8>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::char16 (TT::*_g)() const, void (TT::*_s)(DAVA::char16), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::char16>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::char16>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::float32 (TT::*_g)() const, void (TT::*_s)(DAVA::float32), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::float32>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::float32>(), _g, _s, _flags);
-	}
-
-	template<typename TT>
-	DAVA::InspMember* CreateIspProp(const char *_name, const InspDesc &_desc, DAVA::float64 (TT::*_g)() const, void (TT::*_s)(DAVA::float64), int _flags)
-	{
-		return new InspPropParamSimple<TT, DAVA::float64>(_name, _desc, DAVA::MetaInfo::Instance<DAVA::float64>(), _g, _s, _flags);
-	}
+    // param enum
+    template<typename TT, typename VV>
+    DAVA::InspMember* CreateInspEnum(const char *_name, const char *_desc, VV (TT::*_g)() const, void (TT::*_s)(VV), int _flags)
+    {
+        return new InspPropParamEnum<TT, VV>(_name, InspDesc(_desc, GlobalEnumMap<VV>::Instance()), DAVA::MetaInfo::Instance<VV>(), _g, _s, _flags);
+    }
 };
 
 #endif // __DAVAENGINE_INTROSPECTION_PROPERTY_H__

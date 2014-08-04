@@ -1,0 +1,4 @@
+MaterialTemplate:
+    HIGH : "~res:/Materials/NormalizedBlinnPhongPerPixel.Opaque.TiledDecal.material"
+    MEDIUM: "~res:/Materials/NormalizedBlinnPhongPerPixelFast.Opaque.TiledDecal.material"
+    LOW : "~res:/Materials/NormalizedBlinnPhongPerVertex.Opaque.TiledDecal.material"

@@ -36,7 +36,7 @@
 #include "FileSystem/FileSystem.h"
 
 
-ENUM_DECLARE(DAVA::TextureConverter::eConvertQuality)
+ENUM_IMPLEMENTATION(DAVA::TextureConverter::eConvertQuality)
 {
     ENUM_ADD_DESCR(DAVA::TextureConverter::ECQ_FAST, "Developer Quality");
     ENUM_ADD_DESCR(DAVA::TextureConverter::ECQ_FASTEST, "Lower Quality");

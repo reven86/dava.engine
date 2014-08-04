@@ -110,11 +110,26 @@ HierarchyTreeNode::HIERARCHYTREENODESIDLIST HierarchyTreeControlMimeData::GetIte
 }
 
 HierarchyTreeControl::HierarchyTreeControl(QWidget *parent) :
-    QTreeWidget(parent)
+    QTreeWidget(parent),
+    expandNodeID(HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY)
 {
 	setAcceptDrops(true);
 	setAutoScroll(true);
 	setDropIndicatorShown(true);
+    
+    expandTimer = new QTimer();
+    expandTimer->setSingleShot(true);
+    
+    static const int expandInterval = 1500; //ms
+    expandTimer->setInterval(expandInterval);
+    connect(expandTimer, SIGNAL(timeout()), this, SLOT(OnExpandTimer()));
+}
+
+HierarchyTreeControl::~HierarchyTreeControl()
+{
+    StopExpandTimer();
+    disconnect(expandTimer, SIGNAL(timeout()), this, SLOT(OnExpandTimer()));
+    SafeDelete(expandTimer);
 }
 
 void HierarchyTreeControl::contextMenuEvent(QContextMenuEvent * event)
@@ -240,6 +255,8 @@ void HierarchyTreeControl::HandleDropControlMimeData(QDropEvent *event, const Co
         return;
 	}
     
+    StopExpandTimer();
+    
     CreateControlCommand* cmd = new CreateControlCommand(mimeData->GetControlName(), parentNode, insertAfterNode);
 	CommandsController::Instance()->ExecuteCommand(cmd);
 	SafeRelease(cmd);
@@ -303,6 +320,11 @@ void HierarchyTreeControl::dragEnterEvent(QDragEnterEvent *event)
 	
 	// Not ours...
 	event->ignore();
+}
+
+void HierarchyTreeControl::dragLeaveEvent(QDragLeaveEvent */*event*/)
+{
+    StopExpandTimer();
 }
 
 void HierarchyTreeControl::HandleDragEnterControlMimeData(QDragEnterEvent *event, const ControlMimeData* /*mimeData*/)
@@ -390,8 +412,18 @@ void HierarchyTreeControl::HandleDragMoveControlMimeData(QDragMoveEvent *event, 
 		HierarchyTreeController::Instance()->ResetSelectedControl();
 		return;
 	}
-	
-	scrollTo(indexAt(event->pos()));
+
+    // Don't allow to drop the control to the screen which isn't loaded.
+    HierarchyTreeScreenNode* screenNode = dynamic_cast<HierarchyTreeScreenNode*>(nodeToInsertControlTo);
+    if (screenNode && !screenNode->IsLoaded())
+    {
+        return;
+    }
+
+    scrollTo(indexAt(event->pos()));
+    expandNodeID = insertInto;
+    expandTimer->stop();
+    expandTimer->start();
 
 	HierarchyTreeControlNode* controlNode = dynamic_cast<HierarchyTreeControlNode*>(nodeToInsertControlTo);
 	if (controlNode)
@@ -419,6 +451,13 @@ void HierarchyTreeControl::HandleDragMoveHierarchyMimeData(QDragMoveEvent *event
 	{
 		node = (HierarchyTreeNode*) HierarchyTreeController::Instance()->GetTree().GetRootNode();
 	}
+
+    // Don't allow to drop something to the screen which isn't loaded.
+    HierarchyTreeScreenNode* screenNode = dynamic_cast<HierarchyTreeScreenNode*>(node);
+    if (screenNode && !screenNode->IsLoaded())
+    {
+        return;
+    }
 
 	HierarchyTreeAggregatorControlNode* aggregatorControlNode = dynamic_cast<HierarchyTreeAggregatorControlNode*>(node);
 	if (aggregatorControlNode)
@@ -481,4 +520,38 @@ bool HierarchyTreeControl::GetMoveItemID(QDropEvent *event, HierarchyTreeNode::H
 		return false;
 
 	return true;
+}
+
+void HierarchyTreeControl::StopExpandTimer()
+{
+    expandNodeID = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
+    expandTimer->stop();
+}
+
+void HierarchyTreeControl::OnExpandTimer()
+{
+    if (expandNodeID == HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY)
+    {
+        // Nothing to expand.
+        return;
+    }
+
+    QModelIndex modelIndex = indexAt(mapFromGlobal(QCursor::pos()));
+    if (!modelIndex.isValid())
+    {
+        return;
+    }
+
+    QTreeWidgetItem* selectedItem = itemFromIndex(modelIndex);
+    if (!selectedItem)
+    {
+        return;
+    }
+    
+    QVariant data = selectedItem->data(ITEM_ID);
+    HierarchyTreeNode::HIERARCHYTREENODEID currentNodeID = data.toInt();
+    if (currentNodeID == expandNodeID)
+    {
+        expandItem(selectedItem);
+    }
 }
