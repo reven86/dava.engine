@@ -71,6 +71,10 @@ Sprite::DrawState::DrawState()
     //shader = SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR);
 }
 
+RenderDataObject* Sprite::spriteRenderObject = NULL;
+RenderDataStream* Sprite::vertexStream = NULL;
+RenderDataStream* Sprite::texCoordStream = NULL;
+
 Sprite::Sprite()
 {
 	textures = 0;
@@ -100,9 +104,16 @@ Sprite::Sprite()
 	resourceToVirtualFactor = 1.0f;
 	resourceToPhysicalFactor = 1.0f;
 
-	spriteRenderObject = new RenderDataObject();
-	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	if(spriteRenderObject == NULL)
+	{
+		spriteRenderObject = new RenderDataObject();
+		vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+		texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	}
+	else
+	{
+		spriteRenderObject->Retain();
+	}
 
 	//pivotPoint = Vector2(0.0f, 0.0f);
 	defaultPivotPoint = Vector2(0.0f, 0.0f);
@@ -659,7 +670,6 @@ int32 Sprite::Release()
 	if(GetRetainCount() == 1)
 	{
         spriteMapMutex.Lock();
-		SafeRelease(spriteRenderObject);
 		spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
         spriteMapMutex.Unlock();
 	}
@@ -708,6 +718,17 @@ Sprite::~Sprite()
 //	Logger::FrameworkDebug("Removing sprite");
 	Clear();
 
+	if(spriteRenderObject)
+	{
+		if(spriteRenderObject->GetRetainCount() == 1)
+		{
+			SafeRelease(spriteRenderObject);
+		}
+		else
+		{
+			spriteRenderObject->Release();
+		}
+	}
 }
 
 Texture* Sprite::GetTexture()

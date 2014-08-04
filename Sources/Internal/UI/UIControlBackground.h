@@ -275,9 +275,9 @@ protected:
     int32 frame;
 
     Vector2 lastDrawPos;
-    RenderDataObject * rdoObject;
-    RenderDataStream * vertexStream;
-    RenderDataStream * texCoordStream;
+	static RenderDataObject * rdoObject;
+	static RenderDataStream * vertexStream;
+	static RenderDataStream * texCoordStream;
 
     ePerPixelAccuracyType perPixelAccuracyType;//!<Is sprite should be drawn with per pixel accuracy. Used for texts, for example.
 

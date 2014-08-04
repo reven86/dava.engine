@@ -37,6 +37,10 @@
 
 namespace DAVA
 {
+//Shared render data
+RenderDataObject* UIControlBackground::rdoObject = NULL;
+RenderDataStream* UIControlBackground::vertexStream = NULL;
+RenderDataStream* UIControlBackground::texCoordStream = NULL;
 
 UIControlBackground::UIControlBackground()
 :	spr(NULL)
@@ -52,11 +56,18 @@ UIControlBackground::UIControlBackground()
 ,	perPixelAccuracyType(PER_PIXEL_ACCURACY_DISABLED)
 ,	lastDrawPos(0, 0)
 ,	tiledData(NULL)
-,   rdoObject(NULL)
-,   vertexStream(NULL)
-,   texCoordStream(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 {
+	if(rdoObject == NULL)
+	{
+		rdoObject = new RenderDataObject();
+		vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+		texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+	}
+	else
+	{
+		rdoObject->Retain();
+	}
 }
 
 UIControlBackground *UIControlBackground::Clone()
@@ -73,7 +84,6 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
     frame = srcBackground->frame;
     align = srcBackground->align;
 
-    SafeRelease(rdoObject);
     SetDrawType((eDrawType)srcBackground->type);
 
     color = srcBackground->color;
@@ -89,10 +99,18 @@ void UIControlBackground::CopyDataFrom(UIControlBackground *srcBackground)
 
 UIControlBackground::~UIControlBackground()
 {
-    SafeRelease(rdoObject);
     SafeRelease(spr);
     SafeRelease(shader);
     ReleaseDrawData();
+
+	if(rdoObject->GetRetainCount() == 1)
+	{
+		SafeRelease(rdoObject);
+	}
+	else
+	{
+		rdoObject->Release();
+	}
 }
 
 Sprite*	UIControlBackground::GetSprite()

@@ -58,7 +58,7 @@ void UnregisterTextBlock(TextBlock *tbl)
 void TextBlock::ScreenResolutionChanged()
 {
 	Logger::FrameworkDebug("Regenerate text blocks");
-	for(Set<TextBlock *>::iterator it = registredBlocks.begin(), endIt = registredBlocks.end(); it != endIt; it++)
+	for(Set<TextBlock *>::iterator it = registredBlocks.begin(), endIt = registredBlocks.end(); it != endIt; ++it)
 	{
 		(*it)->Prepare();
 	}
@@ -761,7 +761,6 @@ void TextBlock::PrepareInternal()
 #endif 
     
 
-//    SafeDelete(jobData);
     mutex.Unlock();
 }
 
