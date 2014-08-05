@@ -86,6 +86,9 @@ public:
     bool IsCursorPining();
     void SetCursorPining(bool isPin);
     
+    void EnableMultitouch(bool enabled);
+    bool IsMultitouchEnabled() const;
+    
 protected:
     
     KeyboardDevice *keyboard;
@@ -93,6 +96,8 @@ protected:
 
     Vector<InputCallback> callbacks;
     bool pinCursor;
+    
+    bool isMultitouchEnabled;
 };
 };
 
