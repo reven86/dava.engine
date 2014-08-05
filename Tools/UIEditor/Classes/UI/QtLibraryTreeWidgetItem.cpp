@@ -26,47 +26,20 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#include "QtLibraryTreeWidgetItem.h"
 
-#ifndef CONTROLLIST_H
-#define CONTROLLIST_H
-
-#include <QTreeWidget>
-#include <QMimeData>
-#include "HierarchyTreeNode.h"
-
-class ControlMimeData: public QMimeData
+QtLibraryTreeWidgetItem::QtLibraryTreeWidgetItem(QTreeWidgetItem *parent) :
+    QTreeWidgetItem(parent),
+    itemId(0)
 {
-	Q_OBJECT
-public:
-	ControlMimeData(HierarchyTreeNode::HIERARCHYTREENODEID itemId);
-	~ControlMimeData();
+}
 
-    HierarchyTreeNode::HIERARCHYTREENODEID GetControlId() const {return controlId;};
-    
-    virtual bool hasFormat ( const QString & mimeType ) const;
-	
-private:
-    HierarchyTreeNode::HIERARCHYTREENODEID controlId;
-    
-};
-
-class ControlList : public QTreeWidget
+HierarchyTreeNode::HIERARCHYTREENODEID QtLibraryTreeWidgetItem::GetItemId()
 {
-    Q_OBJECT
-public:
-    explicit ControlList(QWidget *parent = 0);
-    
-protected:
-	virtual QStringList mimeTypes() const;
-    virtual QMimeData *mimeData(const QList<QTreeWidgetItem*> items) const;
-    virtual bool dropMimeData(QTreeWidgetItem *parent, int index,
-                              const QMimeData *data, Qt::DropAction action);
-    virtual Qt::DropActions supportedDropActions() const;
+	return itemId;
+}
 
-signals:
-    
-public slots:
-    
-};
-
-#endif // CONTROLLIST_H
+void QtLibraryTreeWidgetItem::SetItemId(HierarchyTreeNode::HIERARCHYTREENODEID ID)
+{
+	itemId = ID;
+}

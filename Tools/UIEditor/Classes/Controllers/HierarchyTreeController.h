@@ -131,8 +131,8 @@ public:
 
 	// Two separate versions of CreateNewControl method - by its position (when control is dropped
 	// to the screen) and by its direct parent (when the control is dropped to the tree).
-	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(const QString& type, const QPoint& position);
-	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(const QString& strType, const Vector2& position,																				 HierarchyTreeNode* parentNode);
+	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(HierarchyTreeNode::HIERARCHYTREENODEID typeId, const QPoint& position);
+	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(HierarchyTreeNode::HIERARCHYTREENODEID typeId, const Vector2& position,																				 HierarchyTreeNode* parentNode);
 
 	// Return any kind of node (one or multiple) back to the scene.
 	void ReturnNodeToScene(HierarchyTreeNode* nodeToReturn);

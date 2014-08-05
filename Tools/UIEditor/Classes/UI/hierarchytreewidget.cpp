@@ -37,6 +37,7 @@
 #include "ItemsCommand.h"
 #include "ControlCommands.h"
 #include "CommandsController.h"
+#include "LibraryController.h"
 #include "CopyPasteController.h"
 #include "IconHelper.h"
 #include "SubcontrolsHelper.h"
@@ -194,7 +195,9 @@ void HierarchyTreeWidget::OnTreeUpdated(bool needRestoreSelection)
 			AddControlItem(screenItem, screenNode->GetChildNodes());
 		}
 	}
-
+	
+    LibraryController::Instance()->UpdateLibrary();
+    
 	// Restore the selected items only after the tree is fully built.
 	int itemsCount = ui->treeWidget->topLevelItemCount();
 	for (int i = 0; i < itemsCount; i ++)
