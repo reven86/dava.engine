@@ -308,6 +308,7 @@ public:
 	const FilePath & GetRelativePathname() const;
 
 	inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
+	static RenderDataObject * spriteRenderObject;
 
     /**
 	 \brief Removes all sprite data.
@@ -405,7 +406,6 @@ protected:
 //public:
 	float32 **rectsAndOffsets;
 
-	static RenderDataObject * spriteRenderObject;
 	static RenderDataStream * vertexStream;
 	static RenderDataStream * texCoordStream;
 	ePrimitiveType primitiveToDraw;
