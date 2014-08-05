@@ -16,6 +16,7 @@
 #include "BaseTypes.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Platform/DeviceInfo.h"
 
 #import <UIKit/UIKit.h>
 #import "HelperAppDelegate.h"
@@ -56,7 +57,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 			}
 		}
 
-		DeviceInfo::SetScreenInfo(width, height, scale);
+        DAVA::DeviceInfo::SetScreenInfo(width, height, scale);
 
 		DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
 		DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
