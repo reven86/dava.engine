@@ -34,7 +34,7 @@
 #include "JniExtensions.h"
 #include "Base/BaseTypes.h"
 
-#include "../../Platform/DeviceInfo.h"
+#include "Platform/DeviceInfo.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 

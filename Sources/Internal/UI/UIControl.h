@@ -231,6 +231,7 @@ public:
         EVENT_FOCUS_SET             = 6,//!<Trigger when control becomes focused
         EVENT_FOCUS_LOST            = 7,//!<Trigger when control losts focus
         EVENT_TOUCH_UP_OUTSIDE		= 8,//!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
+		EVENT_ALL_ANIMATIONS_FINISHED	= 9,//!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
     };
 
@@ -491,7 +492,7 @@ public:
      \brief Returns actual control transformation and metrics.
      \returns control geometric data.
      */
-    virtual const UIGeometricData &GetGeometricData();
+    virtual const UIGeometricData &GetGeometricData() const;
 
     /**
      \brief Sets the scaled control rect.
@@ -1219,7 +1220,7 @@ public:
      \param[in] expandWithFocus Is area should be expanded with focus.
      \returns True if inside the control rect.
      */
-    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false);
+    virtual bool IsPointInside(const Vector2 &point, bool expandWithFocus = false) const;
 
     virtual bool IsLostFocusAllowed(UIControl *newFocus);
 
@@ -1231,6 +1232,8 @@ public:
 
     virtual void OnFocused();
 
+	virtual void OnAllAnimationsFinished();
+	
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
 
@@ -1318,7 +1321,7 @@ protected:
     int32 bottomAlign;
 
     Rect returnedRect;
-    UIGeometricData tempGeometricData;
+    mutable UIGeometricData tempGeometricData;
 
     EventDispatcher *eventDispatcher;
 

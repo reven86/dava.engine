@@ -769,7 +769,7 @@ namespace DAVA
         return background;
     }
 
-    const UIGeometricData &UIControl::GetGeometricData()
+    const UIGeometricData &UIControl::GetGeometricData() const
     {
         tempGeometricData.position = relativePosition;
         tempGeometricData.size = size;
@@ -1764,7 +1764,7 @@ namespace DAVA
         RenderManager::Instance()->SetColor(oldColor);
     }
 
-    bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/)
+    bool UIControl::IsPointInside(const Vector2 &_point, bool expandWithFocus/* = false*/) const
     {
         Vector2 point = _point;
 
