@@ -31,6 +31,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "Animation/LinearAnimation.h"
+#include "Animation/AnimationManager.h"
 #include "Debug/DVAssert.h"
 #include "Render/RenderManager.h"
 #include "Base/ObjectFactory.h"
@@ -1137,6 +1138,7 @@ namespace DAVA
 
         isIteratorCorrupted = true;
     }
+    
     void UIControl::RemoveControl(UIControl *control)
     {
         if (NULL == control)
@@ -2696,6 +2698,11 @@ namespace DAVA
         return animation;
     }
 
+    void UIControl::OnAllAnimationsFinished()
+    {
+        PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
+    }
+	
     void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic/* = false*/)
     {
         debugDrawEnabled = _debugDrawEnabled;
