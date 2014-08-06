@@ -240,12 +240,13 @@ void HierarchyTreeController::UpdateSelection(const HierarchyTreeNode* activeIte
 	emit SelectedTreeItemChanged(activeItem);
 }
 
-void HierarchyTreeController::ChangeItemSelection(HierarchyTreeControlNode* control)
+void HierarchyTreeController::ChangeItemSelection(HierarchyTreeControlNode* control,
+                                                  eExpandControlType expandType)
 {
 	if (IsControlSelected(control))
 		UnselectControl(control);
 	else
-		SelectControl(control);
+		SelectControl(control, expandType);
 }
 
 void HierarchyTreeController::SelectControl(HierarchyTreeControlNode* control, eExpandControlType expandType)

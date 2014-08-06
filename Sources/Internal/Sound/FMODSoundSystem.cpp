@@ -586,8 +586,15 @@ void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
 
         if(!events.size())
         {
-            RemoveExchangingWithLast(soundGroups, i);
-            --i;
+            if(soundGroups.size() == 1)
+            {
+                soundGroups.clear();
+            }
+            else
+            {
+                RemoveExchangingWithLast(soundGroups, i);
+                --i;
+            }
         }
     }
 }

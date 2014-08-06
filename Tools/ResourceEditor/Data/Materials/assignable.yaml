@@ -143,9 +143,6 @@
  name: "Normalized BlinnPhong With All Qualities Opaque"
  path: NormalizedBlinnPhongAllQualities.Opaque.material
 -
- name: "Normalized BlinnPhong With All Qualities Opaque Tiled Decal"
- path: NormalizedBlinnPhongAllQualities.Opaque.TiledDecal.material
--
  name: "Normalized BlinnPhong With All Qualities Alphatest"
  path: NormalizedBlinnPhongAllQualities.Alphatest.material
 -

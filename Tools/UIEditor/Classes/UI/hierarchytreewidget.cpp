@@ -379,7 +379,7 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
         else
         {
             // Switch the selection state of the control instead of just selecting it (see DF-2838).
-            HierarchyTreeController::Instance()->ChangeItemSelection(selectedControl);
+            HierarchyTreeController::Instance()->ChangeItemSelection(selectedControl, HierarchyTreeController::NoExpand);
         }
 	}
     else

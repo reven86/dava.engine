@@ -151,7 +151,7 @@ public:
 	void UpdateSelection(const HierarchyTreeNode* activeItem);
     void UpdateAggregators(const HierarchyTreePlatformNode* platform);
 	
-	void ChangeItemSelection(HierarchyTreeControlNode* control);
+	void ChangeItemSelection(HierarchyTreeControlNode* control, eExpandControlType expandType = ImmediateExpand);
 	void SelectControl(HierarchyTreeControlNode* control, eExpandControlType expandType = ImmediateExpand);
 	void UnselectControl(HierarchyTreeControlNode* control, bool emitSelectedControlNodesChanged = true);
 	bool IsControlSelected(HierarchyTreeControlNode* control) const;

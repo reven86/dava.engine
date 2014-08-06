@@ -27,11 +27,13 @@
 =====================================================================================*/
 
 
-
-#include "Classes/UI/hierarchytreecontrol.h"
 #include <QAction>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QHeaderView>
+
+#include "Classes/UI/hierarchytreecontrol.h"
+
 #include "HierarchyTreeController.h"
 #include "HierarchyTreeAggregatorControlNode.h"
 #include "ItemsCommand.h"
@@ -117,7 +119,12 @@ HierarchyTreeControl::HierarchyTreeControl(QWidget *parent) :
 	setAcceptDrops(true);
 	setAutoScroll(true);
 	setDropIndicatorShown(true);
-    
+
+    header()->setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+    header()->setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+    header()->setResizeMode(0, QHeaderView::ResizeToContents);
+    header()->setStretchLastSection(false);
+
     expandTimer = new QTimer();
     expandTimer->setSingleShot(true);
     

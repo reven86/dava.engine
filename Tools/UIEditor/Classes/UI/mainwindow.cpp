@@ -186,7 +186,7 @@ MainWindow::MainWindow(QWidget *parent) :
 			SLOT(OnSelectedScreenChanged()));
 	
     connect(HierarchyTreeController::Instance(),
-			SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType expandType)),
+			SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType)),
 			this,
 			SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &,HierarchyTreeController::eExpandControlType)));
 
