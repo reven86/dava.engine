@@ -37,9 +37,9 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 	unsigned int height = [mainScreen bounds].size.height;
 	eScreenOrientation orientation = Instance()->GetScreenOrientation();
 
-//	if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
-//		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
-//		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
+	if ((orientation==SCREEN_ORIENTATION_LANDSCAPE_LEFT)||
+		(orientation==SCREEN_ORIENTATION_LANDSCAPE_RIGHT)||
+		(orientation==SCREEN_ORIENTATION_LANDSCAPE_AUTOROTATE))
 	{
 		width = [mainScreen bounds].size.height;
 		height = [mainScreen bounds].size.width;
@@ -47,14 +47,11 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 		
 	unsigned int scale = 1;
 		
-//	if (DAVA::Core::IsAutodetectContentScaleFactor())
-	{
-		if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
-			&& [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ]) 
-		{
-			scale = (unsigned int)[[::UIScreen mainScreen] scale];
-		}
-	}
+    if ([::UIScreen instancesRespondToSelector: @selector(scale) ]
+        && [::UIView instancesRespondToSelector: @selector(contentScaleFactor) ])
+    {
+        scale = (unsigned int)[[::UIScreen mainScreen] scale];
+    }
 
     DeviceInfo::SetScreenInfo(width, height, scale);
 
