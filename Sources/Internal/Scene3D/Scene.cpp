@@ -1090,27 +1090,22 @@ void Scene::ImportShadowColor(Entity * rootNode)
 {
     if(NULL != sceneGlobalMaterial)
     {
-        NMaterialProperty* propShadowColor = sceneGlobalMaterial->GetMaterialProperty(NMaterial::PARAM_SHADOW_COLOR);
-        if(NULL == propShadowColor)
-        {
-            Entity * landscapeNode = FindLandscapeEntity(rootNode);
-            
-            if(NULL != landscapeNode)
-            {
-                // try to get shadow color for landscape
-                KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
-                if (props->IsKeyExists("ShadowColor"))
-                {
-                    Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
-                    sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR,
-                                                          Shader::UT_FLOAT_VEC4,
-                                                          1,
-                                                          shadowColor.color);
-                    
-                    props->DeleteKey("ShadowColor");
-                }
-            }
-        }
+		Entity * landscapeNode = FindLandscapeEntity(rootNode);
+		if(NULL != landscapeNode)
+		{
+			// try to get shadow color for landscape
+			KeyedArchive * props = GetCustomPropertiesArchieve(landscapeNode);
+			if (props->IsKeyExists("ShadowColor"))
+			{
+				Color shadowColor = props->GetVariant("ShadowColor")->AsColor();
+				sceneGlobalMaterial->SetPropertyValue(NMaterial::PARAM_SHADOW_COLOR,
+					Shader::UT_FLOAT_VEC4,
+					1,
+					shadowColor.color);
+
+				props->DeleteKey("ShadowColor");
+			}
+		}
     }
 }
 

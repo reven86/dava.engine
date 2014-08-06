@@ -49,6 +49,9 @@ namespace Settings
     static const DAVA::FastName General_MaterialEditor_LodColor2("General/MaterialEditor/LodColor2");
     static const DAVA::FastName General_MaterialEditor_LodColor3("General/MaterialEditor/LodColor3");
     
+    static const DAVA::FastName General_HeighMaskTool_Color0("General/HeighMaskTool/Color0");
+    static const DAVA::FastName General_HeighMaskTool_Color1("General/HeighMaskTool/Color1");
+    
 	static const DAVA::FastName Scene_GridStep("Scene/GridStep");
 	static const DAVA::FastName Scene_GridSize("Scene/GridSize");
 	static const DAVA::FastName Scene_CameraSpeed0("Scene/CameraSpeed0");

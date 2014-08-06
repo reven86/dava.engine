@@ -965,7 +965,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                     // also modify childs transform to make them be at
                     // right position after parent entity changed
-                    for(size_t i = 0; i < en->GetChildrenCount(); ++i)
+                    for(size_t i = 0; i < (size_t)en->GetChildrenCount(); ++i)
                     {
                         DAVA::Entity *childEntity = en->GetChild(i);
 
@@ -1006,7 +1006,7 @@ void EntityModificationSystem::BakeGeometry(const EntityGroup &entities, BakeMod
 
                 // transform child entities with inversed parent transformation
                 transform.Inverse();
-                for(size_t i = 0; i < entity->GetChildrenCount(); ++i)
+                for(size_t i = 0; i < (size_t)entity->GetChildrenCount(); ++i)
                 {
                     DAVA::Entity *childEntity = entity->GetChild(i);
                     sceneEditor->Exec(new TransformCommand(childEntity, childEntity->GetLocalTransform(), childEntity->GetLocalTransform() * transform));

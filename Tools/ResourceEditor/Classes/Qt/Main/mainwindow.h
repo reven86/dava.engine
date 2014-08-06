@@ -54,6 +54,7 @@ class HangingObjectsHeight;
 class DeveloperTools;
 class VersionInfoWidget;
 
+
 class QtMainWindow
     : public QMainWindow
     , public DAVA::Singleton<QtMainWindow>
@@ -205,6 +206,8 @@ public slots:
     void OnReloadShaders();
 
     void OnSwitchWithDifferentLODs(bool checked);
+
+    void OnGenerateHeightDelta();
     
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);

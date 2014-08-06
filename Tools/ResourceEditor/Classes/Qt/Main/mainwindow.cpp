@@ -118,6 +118,10 @@
 #include "DebugTools/VersionInfoWidget/VersionInfoWidget.h"
 #include "Classes/Qt/RunActionEventWidget/RunActionEventWidget.h"
 
+#include "Classes/Commands2/PaintHeightDeltaAction.h"
+
+#include "Tools/HeightDeltaTool/HeightDeltaTool.h"
+
 
 QtMainWindow::QtMainWindow(QWidget *parent)
 	: QMainWindow(parent)
@@ -445,12 +449,10 @@ void QtMainWindow::SetupToolBars()
 {
 	QAction *actionMainToolBar = ui->mainToolBar->toggleViewAction();
 	QAction *actionModifToolBar = ui->modificationToolBar->toggleViewAction();
-	QAction *actionViewModeToolBar = ui->viewModeToolBar->toggleViewAction();
 	QAction *actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
 
 	ui->menuToolbars->addAction(actionMainToolBar);
 	ui->menuToolbars->addAction(actionModifToolBar);
-	ui->menuToolbars->addAction(actionViewModeToolBar);
 	ui->menuToolbars->addAction(actionLandscapeToolbar);
 	ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
     ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
@@ -714,6 +716,8 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionBuildStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnBuildStaticOcclusion()));
     QObject::connect(ui->actionRebuildCurrentOcclusionCell, SIGNAL(triggered()), this, SLOT(OnRebuildCurrentOcclusionCell()));
     QObject::connect(ui->actionInvalidateStaticOcclusion, SIGNAL(triggered()), this, SLOT(OnInavalidateStaticOcclusion()));
+    
+    connect(ui->actionHeightmap_Delta_Tool, SIGNAL(triggered()), this, SLOT(OnGenerateHeightDelta()));
     
 	//Help
     QObject::connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(OnOpenHelp()));
@@ -2933,4 +2937,14 @@ void QtMainWindow::DebugVersionInfo()
     }
 
     versionInfoWidget->show();
+}
+
+void QtMainWindow::OnGenerateHeightDelta()
+{
+    HeightDeltaTool *w = new HeightDeltaTool( this );
+    w->setWindowFlags( Qt::Window );
+    w->setAttribute( Qt::WA_DeleteOnClose );
+    w->SetOutputTemplate( "h_", QString() );
+    
+    w->show();
 }

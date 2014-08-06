@@ -171,8 +171,6 @@ bool SceneEditor2::Load(const DAVA::FilePath &path)
 		commandStack.SetClean(true);
     }
 
-	UpdateShadowColorFromLandscape();
-
     SceneValidator::Instance()->ValidateSceneAndShowErrors(this, path);
     
 	SceneSignals::Instance()->EmitLoaded(this);
@@ -501,37 +499,6 @@ void SceneEditor2::EditorCommandNotify::CleanChanged(bool clean)
 	}
 }
 
-void SceneEditor2::UpdateShadowColorFromLandscape()
-{
-	// try to get shadow color for landscape
-	Entity *land = FindLandscapeEntity(this);
-	if(!land || !GetRenderSystem()) return;
-
-	KeyedArchive * props = GetCustomPropertiesArchieve(land);
-	if (props && props->IsKeyExists("ShadowColor"))
-	{
-		GetRenderSystem()->SetShadowRectColor(props->GetVariant("ShadowColor")->AsColor());
-	}
-}
-
-void SceneEditor2::SetShadowColor( const Color &color )
-{
-	Entity *land = FindLandscapeEntity(this);
-	if(!land) return;
-
-	KeyedArchive * props = GetOrCreateCustomProperties(land)->GetArchive();
-	props->SetVariant("ShadowColor", VariantType(color));
-
-	UpdateShadowColorFromLandscape();
-}
-
-const Color SceneEditor2::GetShadowColor() const
-{
-	if(GetRenderSystem())
-		return GetRenderSystem()->GetShadowRectColor();
-
-	return Color::White;
-}
 
 void SceneEditor2::SetShadowBlendMode(DAVA::ShadowPassBlendMode::eBlend blend)
 {

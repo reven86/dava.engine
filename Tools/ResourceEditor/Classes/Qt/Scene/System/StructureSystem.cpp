@@ -406,7 +406,6 @@ void StructureSystem::Add(const DAVA::FilePath &newModelPath, const DAVA::Vector
 			// 
 			// œÂÂÌÂÒÚË ‚ Load Ë Á‡‚‡ÎË‰ÂÈÚËÚ¸ ÚÓÎ¸ÍÓ ÔÓ‰„ÛÊÂÌÌÛ˛ Entity
 			// -->
-			sceneEditor->UpdateShadowColorFromLandscape();
             SceneValidator::Instance()->ValidateSceneAndShowErrors(sceneEditor, sceneEditor->GetScenePath());
 			// <--
             

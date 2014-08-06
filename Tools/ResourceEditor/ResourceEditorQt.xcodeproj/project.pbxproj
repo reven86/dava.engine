@@ -43,8 +43,11 @@
 		64B9018718BF7ADE001E6CCC /* GrassEditorPanel_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018618BF7ADE001E6CCC /* GrassEditorPanel_moc.cpp */; };
 		64B9018A18BF7B15001E6CCC /* GrassEditorProxy.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018818BF7B15001E6CCC /* GrassEditorProxy.cpp */; };
 		64B9018D18BF7B25001E6CCC /* GrassEditorSystem.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64B9018B18BF7B25001E6CCC /* GrassEditorSystem.cpp */; };
+		64FA1F24198914350004981D /* PaintHeightDeltaAction.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 64FA1F22198914350004981D /* PaintHeightDeltaAction.cpp */; };
 		763DCF001964524200D94EB3 /* VersionInfoWidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 763DCEFE1964524200D94EB3 /* VersionInfoWidget.cpp */; };
 		763DCF0B1964546C00D94EB3 /* VersionInfoWidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 763DCF0A1964546C00D94EB3 /* VersionInfoWidget_moc.cpp */; };
+		76524BE61992208B00F805AB /* HeightDeltaTool.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76524BE41992208B00F805AB /* HeightDeltaTool.cpp */; };
+		76524BE91992212200F805AB /* HeightDeltaTool_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 76524BE81992212200F805AB /* HeightDeltaTool_moc.cpp */; };
 		765A0ADB18CE0C7F0044516F /* MaterialTemplateModel.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */; };
 		765BA22F19406A9E005D6B4E /* BeastDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA22B19406A9E005D6B4E /* BeastDialog.cpp */; };
 		765BA23D19406B0B005D6B4E /* BeastDialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 765BA23C19406B0B005D6B4E /* BeastDialog_moc.cpp */; };
@@ -718,11 +721,16 @@
 		64B9018918BF7B15001E6CCC /* GrassEditorProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrassEditorProxy.h; sourceTree = "<group>"; };
 		64B9018B18BF7B25001E6CCC /* GrassEditorSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GrassEditorSystem.cpp; sourceTree = "<group>"; };
 		64B9018C18BF7B25001E6CCC /* GrassEditorSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GrassEditorSystem.h; sourceTree = "<group>"; };
+		64FA1F22198914350004981D /* PaintHeightDeltaAction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PaintHeightDeltaAction.cpp; sourceTree = "<group>"; };
+		64FA1F23198914350004981D /* PaintHeightDeltaAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PaintHeightDeltaAction.h; sourceTree = "<group>"; };
 		6AB05FD3B5F9D1E725443AAE /* QtOpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtOpenGL.framework; path = "~/QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtOpenGL.framework"; sourceTree = "<absolute>"; };
 		6C21256244E578A9DE07EE60 /* xml_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = xml_macos; path = ../../Libs/libs/libxml_macos.a; sourceTree = "<group>"; };
 		763DCEFE1964524200D94EB3 /* VersionInfoWidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VersionInfoWidget.cpp; path = DebugTools/VersionInfoWidget/VersionInfoWidget.cpp; sourceTree = "<group>"; };
 		763DCEFF1964524200D94EB3 /* VersionInfoWidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VersionInfoWidget.h; path = DebugTools/VersionInfoWidget/VersionInfoWidget.h; sourceTree = "<group>"; };
 		763DCF0A1964546C00D94EB3 /* VersionInfoWidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VersionInfoWidget_moc.cpp; path = _GeneratedQt/DebugTools/VersionInfoWidget/VersionInfoWidget_moc.cpp; sourceTree = "<group>"; };
+		76524BE41992208B00F805AB /* HeightDeltaTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HeightDeltaTool.cpp; sourceTree = "<group>"; };
+		76524BE51992208B00F805AB /* HeightDeltaTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeightDeltaTool.h; sourceTree = "<group>"; };
+		76524BE81992212200F805AB /* HeightDeltaTool_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HeightDeltaTool_moc.cpp; sourceTree = "<group>"; };
 		765A0AD918CE0C7F0044516F /* MaterialTemplateModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MaterialTemplateModel.cpp; sourceTree = "<group>"; };
 		765A0ADA18CE0C7F0044516F /* MaterialTemplateModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MaterialTemplateModel.h; sourceTree = "<group>"; };
 		765BA22B19406A9E005D6B4E /* BeastDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BeastDialog.cpp; sourceTree = "<group>"; };
@@ -1876,6 +1884,23 @@
 			name = VersionInfoWidget;
 			sourceTree = "<group>";
 		};
+		76524BE31992208B00F805AB /* HeightDeltaTool */ = {
+			isa = PBXGroup;
+			children = (
+				76524BE41992208B00F805AB /* HeightDeltaTool.cpp */,
+				76524BE51992208B00F805AB /* HeightDeltaTool.h */,
+			);
+			path = HeightDeltaTool;
+			sourceTree = "<group>";
+		};
+		76524BE71992212200F805AB /* HeightDeltaTool */ = {
+			isa = PBXGroup;
+			children = (
+				76524BE81992212200F805AB /* HeightDeltaTool_moc.cpp */,
+			);
+			path = HeightDeltaTool;
+			sourceTree = "<group>";
+		};
 		765BA22A19406A9E005D6B4E /* BeastDialog */ = {
 			isa = PBXGroup;
 			children = (
@@ -2364,6 +2389,7 @@
 		E8BAD65F1859F50300C98C8D /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				76524BE71992212200F805AB /* HeightDeltaTool */,
 				E86F97C518DB2990007330E1 /* DeveloperTools */,
 				E8BAD6601859F50300C98C8D /* AddParticleEmitterDialog */,
 				E8BAD6621859F50300C98C8D /* AddSkyboxDialog */,
@@ -3261,6 +3287,8 @@
 				E8C9904D184CD0EB00AFBF3F /* TransformCommand.h */,
 				E8C9904E184CD0EB00AFBF3F /* VisibilityToolActions.cpp */,
 				E8C9904F184CD0EB00AFBF3F /* VisibilityToolActions.h */,
+				64FA1F22198914350004981D /* PaintHeightDeltaAction.cpp */,
+				64FA1F23198914350004981D /* PaintHeightDeltaAction.h */,
 			);
 			name = Commands2;
 			path = Classes/Commands2;
@@ -3755,6 +3783,7 @@
 		E8C9917F184CD0EB00AFBF3F /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				76524BE31992208B00F805AB /* HeightDeltaTool */,
 				E86F97BA18DB2978007330E1 /* DeveloperTools */,
 				4FA41987188EA4C500395C70 /* RunGuard */,
 				E8C99180184CD0EB00AFBF3F /* AddParticleEmitterDialog */,
@@ -4293,6 +4322,7 @@
 				E8BAD5D51859F48600C98C8D /* MaterialItem.cpp in Build Sources */,
 				E8C99233184CD0EC00AFBF3F /* btGImpactBvh.cpp in Build Sources */,
 				E8C991F7184CD0EC00AFBF3F /* btBox2dBox2dCollisionAlgorithm.cpp in Build Sources */,
+				76524BE61992208B00F805AB /* HeightDeltaTool.cpp in Build Sources */,
 				E8BAD71E1859F50300C98C8D /* AddParticleEmitterDialog_moc.cpp in Build Sources */,
 				E8C99306184CD0EC00AFBF3F /* NormalHood.cpp in Build Sources */,
 				E8C99292184CD0EC00AFBF3F /* LandscapeEditorDrawSystemActions.cpp in Build Sources */,
@@ -4442,6 +4472,7 @@
 				E8BAD7451859F50300C98C8D /* TileTexturePreviewWidgetItemDelegate_moc.cpp in Build Sources */,
 				E8C992B7184CD0EC00AFBF3F /* Console.cpp in Build Sources */,
 				A6D8279E1877175E0006A5DD /* PlaneLODDialog.cpp in Build Sources */,
+				76524BE91992212200F805AB /* HeightDeltaTool_moc.cpp in Build Sources */,
 				E8BAD6D81859F50300C98C8D /* SceneTreeModel_moc.cpp in Build Sources */,
 				E8BAD7381859F50300C98C8D /* QtPropertyItem_moc.cpp in Build Sources */,
 				E8BAD7071859F50300C98C8D /* VisibilityToolProxy_moc.cpp in Build Sources */,
@@ -4656,6 +4687,7 @@
 				E8C991FE184CD0EC00AFBF3F /* btConvex2dConvex2dAlgorithm.cpp in Build Sources */,
 				E8C99289184CD0EC00AFBF3F /* DAEConvertAction.cpp in Build Sources */,
 				E8BAD757185A46DE00C98C8D /* LibraryFilteringModel_moc.cpp in Build Sources */,
+				64FA1F24198914350004981D /* PaintHeightDeltaAction.cpp in Build Sources */,
 				E8C99251184CD0EC00AFBF3F /* btSliderConstraint.cpp in Build Sources */,
 				E8C991EE184CD0EC00AFBF3F /* btCollisionAlgorithm.cpp in Build Sources */,
 				E8BAD6B71859F50300C98C8D /* LandscapeEditorBasePanel_moc.cpp in Build Sources */,
