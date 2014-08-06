@@ -646,21 +646,6 @@ void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 	frameVertices[frame][7] = yOff + rectsAndOffsets[frame][3];
 }
 
-<<<<<<< HEAD
-int32 Sprite::Release()
-{
-	if(GetRetainCount() == 1)
-	{
-        spriteMapMutex.Lock();
-		spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
-        spriteMapMutex.Unlock();
-	}
-
-	return BaseObject::Release();
-}
-
-=======
->>>>>>> development
 void Sprite::Clear()
 {
 	UnregisterTextureStates();
