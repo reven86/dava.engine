@@ -66,5 +66,8 @@ namespace DAVA
     
     const FastName NMaterialName::PARTICLES = FastName("~res:/Materials/Particles/Particles.material");
     const FastName NMaterialName::PARTICLES_FRAMEBLEND = FastName("~res:/Materials/Particles/ParticlesFrameBlend.material");
-  
+
+    const FastName NMaterialName::DEBUG_DRAW_OPAQUE = FastName("~res:/Materials/DebugDraw/Debug.Opaque.material");
+    const FastName NMaterialName::DEBUG_DRAW_ALPHABLEND = FastName("~res:/Materials/DebugDraw/Debug.Alphablend.material");
+      
 };

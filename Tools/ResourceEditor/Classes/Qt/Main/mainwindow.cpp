@@ -557,6 +557,12 @@ void QtMainWindow::SetupStatusBar()
 	onSceneSelectStatusBtn->setMaximumSize(QSize(16, 16));
 	ui->statusBar->insertPermanentWidget(0, onSceneSelectStatusBtn);
 
+    QToolButton *staticOcclusionStatusBtn = new QToolButton();
+    staticOcclusionStatusBtn->setDefaultAction(ui->actionShowStaticOcclusion);
+    staticOcclusionStatusBtn->setAutoRaise(true);
+    staticOcclusionStatusBtn->setMaximumSize(QSize(16, 16));
+    ui->statusBar->insertPermanentWidget(0, staticOcclusionStatusBtn);
+
 	QObject::connect(ui->sceneTabWidget->GetDavaWidget(), SIGNAL(Resized(int, int)), ui->statusBar, SLOT(OnSceneGeometryChaged(int, int)));
 }
 
@@ -630,6 +636,7 @@ void QtMainWindow::SetupActions()
 	QObject::connect(ui->actionShowEditorGizmo, SIGNAL(toggled(bool)), this, SLOT(OnEditorGizmoToggle(bool)));
     QObject::connect(ui->actionLightmapCanvas, SIGNAL(toggled(bool)), this, SLOT(OnViewLightmapCanvas(bool)));
 	QObject::connect(ui->actionOnSceneSelection, SIGNAL(toggled(bool)), this, SLOT(OnAllowOnSceneSelectionToggle(bool)));
+    QObject::connect(ui->actionShowStaticOcclusion, SIGNAL(toggled(bool)), this, SLOT(OnShowStaticOcclusionToggle(bool)));
 
 	// scene undo/redo
 	QObject::connect(ui->actionUndo, SIGNAL(triggered()), this, SLOT(OnUndo()));
@@ -1247,6 +1254,11 @@ void QtMainWindow::OnAllowOnSceneSelectionToggle(bool allow)
 	{
 		scene->selectionSystem->SetSelectionAllowed(allow);
 	}
+}
+
+void QtMainWindow::OnShowStaticOcclusionToggle(bool show)
+{
+    RenderManager::Instance()->GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION, show);
 }
 
 void QtMainWindow::OnReloadTextures()

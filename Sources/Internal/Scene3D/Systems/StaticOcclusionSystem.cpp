@@ -36,11 +36,14 @@
 #include "Sound/SoundSystem.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/StaticOcclusion.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/LodComponent.h"
 #include "Scene3D/Systems/LodSystem.h"
+#include "Render/Material/NMaterialNames.h"
+#include "Render/Highlevel/Landscape.h"
 
 namespace DAVA
 {
@@ -73,10 +76,14 @@ StaticOcclusionBuildSystem::StaticOcclusionBuildSystem(Scene * scene)
     staticOcclusion = 0;
     activeIndex = -1;
     componentInProgress = 0;
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED); 
 }
 
 StaticOcclusionBuildSystem::~StaticOcclusionBuildSystem()
 {
+    GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
     SafeDelete(staticOcclusion);
 }
 
@@ -88,6 +95,39 @@ void StaticOcclusionBuildSystem::AddEntity(Entity * entity)
 void StaticOcclusionBuildSystem::RemoveEntity(Entity * entity)
 {
     entities.erase( std::remove( entities.begin(), entities.end(), entity ), entities.end() );
+}
+
+void StaticOcclusionBuildSystem::ImmediateEvent(Entity * entity, uint32 event)
+{
+    StaticOcclusionComponent *component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    DVASSERT(component);
+    if (component->GetPlaceOnLandscape()&&((event == EventSystem::WORLD_TRANSFORM_CHANGED)||(event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED)))
+    {
+        component->cellHeightOffset.clear();
+        component->cellHeightOffset.resize(component->GetSubdivisionsX()*component->GetSubdivisionsY(), 0);
+        /*place on landscape*/
+        Landscape *landscape = FindLandscape(GetScene());
+        AABBox3 localBox = component->GetBoundingBox();
+        Vector3 boxSize = localBox.GetSize();        
+        AABBox3 bbox;
+        localBox.GetTransformedBox(GetTransformComponent(entity)->GetWorldTransform(), bbox);
+        uint32 xSubdivisions = component->GetSubdivisionsX();
+        uint32 ySubdivisions = component->GetSubdivisionsY();
+        boxSize.x /= xSubdivisions;
+        boxSize.y /= ySubdivisions;
+        
+        if (landscape)
+        {
+            //place on landscape
+            for (uint32 xs = 0; xs<xSubdivisions; ++xs)
+                for (uint32 ys = 0; ys<ySubdivisions; ++ys)
+                {                    
+                    Vector3 v = bbox.min + Vector3(boxSize.x * (xs + 0.5f), boxSize.y * (ys + 0.5f), 0);
+                    if (landscape->PlacePoint(v, v))
+                       component->cellHeightOffset[xs+ys*xSubdivisions] = v.z - bbox.min.z;
+                }
+        }        
+    }    
 }
     
 void StaticOcclusionBuildSystem::Build()
@@ -182,7 +222,8 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
                   occlusionComponent->GetSubdivisionsY(),
                   occlusionComponent->GetSubdivisionsZ(),
                   size,
-                  worldBox);
+                  worldBox,
+                  occlusionComponent->GetCellHeightOffsets());
 
         GetScene()->staticOcclusionSystem->ClearOcclusionObjects();
     }
@@ -192,7 +233,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion(BaseObject * bo, void * mes
     staticOcclusion->BuildOcclusionInParallel(renderObjectsArray, landscape, &data, (StaticOcclusion::eIndexRenew)renewIndex);
     
     SceneForceLod(0);
-    UpdateSwitchMaterialRecursively(GetScene());
+    UpdateMaterialsForOcclusionRecursively(GetScene());
     
     Map<RenderObject*, Vector<RenderObject*> > equalRenderObjects;
     staticOcclusion->SetEqualVisibilityVector(equalRenderObjects);
@@ -220,7 +261,7 @@ void StaticOcclusionBuildSystem::OcclusionBuildStep(BaseObject * bo, void * mess
         activeIndex = -1;
         
         SceneForceLod(LodComponent::INVALID_LOD_LAYER);
-        RestoreSwitchMaterials();
+        RestoreOcclusionMaterials();
     }
     else
     {
@@ -262,7 +303,7 @@ void StaticOcclusionBuildSystem::FinishBuildOcclusion(DAVA::BaseObject *bo, void
     }
  
     SceneForceLod(LodComponent::INVALID_LOD_LAYER);
-    RestoreSwitchMaterials();
+    RestoreOcclusionMaterials();
 
     Scene *scene = GetScene();
     scene->staticOcclusionSystem->CollectOcclusionObjectsRecursively(scene);
@@ -299,10 +340,10 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
     GetScene()->lodSystem->Process(0.0f);
 }
 
-void StaticOcclusionBuildSystem::UpdateSwitchMaterialRecursively(Entity *entity)
+void StaticOcclusionBuildSystem::UpdateMaterialsForOcclusionRecursively(Entity *entity)
 {
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
-        UpdateSwitchMaterialRecursively(entity->GetChild(i));
+        UpdateMaterialsForOcclusionRecursively(entity->GetChild(i));
 
     RenderObject *ro = GetRenderObject(entity);
     if (ro)
@@ -320,27 +361,26 @@ void StaticOcclusionBuildSystem::UpdateSwitchMaterialRecursively(Entity *entity)
             }
         }
 
-        if (isSwitch)
+        
+        for (int32 i=0, sz = ro->GetRenderBatchCount(); i<sz; ++i)
         {
-            for (int32 i=0, sz = ro->GetRenderBatchCount(); i<sz; ++i)
+            NMaterial *mat = ro->GetRenderBatch(i)->GetMaterial();
+            if (mat&&originalRenderStateData.find(mat)==originalRenderStateData.end())
             {
-                NMaterial *mat = ro->GetRenderBatch(i)->GetMaterial();
-                if (mat&&originalRenderStateData.find(mat)==originalRenderStateData.end())
-                {
-                    RenderStateData data;
-                    mat->GetRenderState(PASS_FORWARD, data);
-                    originalRenderStateData[mat]=data;
+                RenderStateData data;
+                mat->GetRenderState(PASS_FORWARD, data);
+                originalRenderStateData[mat]=data;
+                data.state = data.state & ~RenderStateData::STATE_CULL;
+                if (isSwitch)                    
                     data.state = data.state & ~RenderStateData::STATE_DEPTH_WRITE;
-                    mat->SubclassRenderState(PASS_FORWARD, data);
-                }
+                mat->SubclassRenderState(PASS_FORWARD, data);
             }
-        }
-
+        }        
     }
     
 }
 
-void StaticOcclusionBuildSystem::RestoreSwitchMaterials()
+void StaticOcclusionBuildSystem::RestoreOcclusionMaterials()
 {
     for (Map<NMaterial*, RenderStateData>::iterator it = originalRenderStateData.begin(), e = originalRenderStateData.end(); it!=e; ++it)
         it->first->SubclassRenderState(PASS_FORWARD, it->second);
@@ -443,28 +483,26 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     {
         StaticOcclusionData * data = &staticOcclusionComponents[k]->GetData();
         if (!data)return;
-        
-        if (data->bbox.IsInside(position))
-        {
-            uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
-            uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);
-            uint32 z = (uint32)((position.z - data->bbox.min.z) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);
-            
-            // IsInside function take borders into account.
-            
-            if ((x < data->sizeX) && (y < data->sizeY) && (z < data->sizeZ))
-            {
-                uint32 blockIndex = z * (data->sizeX * data->sizeY) + y * (data->sizeX) + (x);
 
-                if ((activePVSSet != data) || (activeBlockIndex != blockIndex))
-                {
-                    activePVSSet = data;
-                    activeBlockIndex = blockIndex;
-                    needUpdatePVS = true;
-                }
-                notInPVS = false;
+        
+        uint32 x = (uint32)((position.x - data->bbox.min.x) / (data->bbox.max.x - data->bbox.min.x) * (float32)data->sizeX);
+        uint32 y = (uint32)((position.y - data->bbox.min.y) / (data->bbox.max.y - data->bbox.min.y) * (float32)data->sizeY);
+        float32 dH = data->cellHeightOffset?data->cellHeightOffset[x+y*data->sizeX]:0;        
+        uint32 z = (uint32)((position.z - (data->bbox.min.z+dH)) / (data->bbox.max.z - data->bbox.min.z) * (float32)data->sizeZ);                    
+            
+        if ((x < data->sizeX) && (y < data->sizeY) && (z < data->sizeZ))
+        {
+            uint32 blockIndex = z * (data->sizeX * data->sizeY) + y * (data->sizeX) + (x);
+
+            if ((activePVSSet != data) || (activeBlockIndex != blockIndex))
+            {
+                activePVSSet = data;
+                activeBlockIndex = blockIndex;
+                needUpdatePVS = true;
             }
+            notInPVS = false;
         }
+        
     }
     
     if (notInPVS)
@@ -608,5 +646,297 @@ void StaticOcclusionSystem::InvalidateOcclusionIndicesRecursively(Entity *entity
     for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
         InvalidateOcclusionIndicesRecursively(entity->GetChild(i));
 }
+
+
+
+StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene *scene):SceneSystem(scene)
+{
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
+
+    debugOpaqueMaterial = NMaterial::CreateMaterial(FastName("Debug_Opaque_Material"),  NMaterialName::DEBUG_DRAW_OPAQUE, NMaterial::DEFAULT_QUALITY_NAME);		
+    debugAlphablendMaterial = NMaterial::CreateMaterial(FastName("Debug_Alphablend_Material"),  NMaterialName::DEBUG_DRAW_ALPHABLEND, NMaterial::DEFAULT_QUALITY_NAME);	
+}
+
+StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
+{
+    GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
+    GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
+    SafeRelease(debugOpaqueMaterial);
+    SafeRelease(debugAlphablendMaterial);
+}
+
+void StaticOcclusionDebugDrawSystem::AddEntity(Entity * entity)
+{
+    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    Matrix4 * worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
+    //create render object
+    ScopedPtr<RenderObject> debugRenderObject(new RenderObject());
+    ScopedPtr<RenderBatch> gridBatch(new RenderBatch());
+    ScopedPtr<PolygonGroup> gridPolygonGroup(CreateStaticOcclusionDebugDrawGrid(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), staticOcclusionComponent->GetCellHeightOffsets()));
+    ScopedPtr<NMaterial> gridMaterialInstance(NMaterial::CreateMaterialInstance());
+    gridMaterialInstance->SetParent(debugAlphablendMaterial);
+    Color col(0.0f, 0.3f, 0.1f, 0.2f);
+    gridMaterialInstance->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &col);
+    gridBatch->SetPolygonGroup(gridPolygonGroup);
+    gridBatch->SetMaterial(gridMaterialInstance);
+    
+
+
+    ScopedPtr<RenderBatch> coverBatch(new RenderBatch());
+    ScopedPtr<PolygonGroup> coverPolygonGroup(CreateStaticOcclusionDebugDrawCover(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), gridPolygonGroup));
+        
+    ScopedPtr<NMaterial> coverMaterialInstance(NMaterial::CreateMaterialInstance());
+    coverMaterialInstance->SetParent(debugAlphablendMaterial);
+    Color colCover(0.1f, 0.5f, 0.1f, 0.3f);
+    coverMaterialInstance->SetPropertyValue(NMaterial::PARAM_FLAT_COLOR, Shader::UT_FLOAT_VEC4, 1, &colCover);
+    coverBatch->SetPolygonGroup(coverPolygonGroup);
+    coverBatch->SetMaterial(coverMaterialInstance);
+    
+    
+    debugRenderObject->AddRenderBatch(coverBatch);
+    debugRenderObject->AddRenderBatch(gridBatch);
+    
+    debugRenderObject->SetWorldTransformPtr(worldTransformPointer);
+    GetScene()->renderSystem->MarkForUpdate(debugRenderObject);
+
+    entity->AddComponent(new StaticOcclusionDebugDrawComponent(debugRenderObject));    
+    GetScene()->GetRenderSystem()->RenderPermanent(debugRenderObject);        
+}
+
+void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity * entity)
+{
+    StaticOcclusionDebugDrawComponent *debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent *>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
+    DVASSERT(debugDrawComponent);    
+    GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
+    entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);    
+}
+void StaticOcclusionDebugDrawSystem::ImmediateEvent(Entity * entity, uint32 event)
+{
+    
+    StaticOcclusionDebugDrawComponent *debugDrawComponent = static_cast<StaticOcclusionDebugDrawComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT));
+    StaticOcclusionComponent *staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
+    {
+        // Update new transform pointer, and mark that transform is changed
+        Matrix4 * worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
+        RenderObject * object = debugDrawComponent->GetRenderObject();
+        if(NULL != object)
+        {
+            object->SetWorldTransformPtr(worldTransformPointer);
+            entity->GetScene()->renderSystem->MarkForUpdate(object);
+        }        
+    }
+
+    if ((event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED) || (staticOcclusionComponent->GetPlaceOnLandscape()))
+    {                
+        ScopedPtr<PolygonGroup> gridPolygonGroup(CreateStaticOcclusionDebugDrawGrid(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), staticOcclusionComponent->GetCellHeightOffsets()));
+        ScopedPtr<PolygonGroup> coverPolygonGroup(CreateStaticOcclusionDebugDrawCover(staticOcclusionComponent->GetBoundingBox(), staticOcclusionComponent->GetSubdivisionsX(), staticOcclusionComponent->GetSubdivisionsY(), staticOcclusionComponent->GetSubdivisionsZ(), gridPolygonGroup));
+        RenderObject *debugRenderObject = debugDrawComponent->GetRenderObject();        
+        debugRenderObject->GetRenderBatch(0)->SetPolygonGroup(coverPolygonGroup);
+        debugRenderObject->GetRenderBatch(1)->SetPolygonGroup(gridPolygonGroup);
+        debugRenderObject->RecalcBoundingBox();
+        entity->GetScene()->renderSystem->MarkForUpdate(debugRenderObject);
+    }
+}
+
+#define IDX_BY_POS(xc, yc, zc) ((zc) + (zSubdivisions+1)*((yc) + (xc) * ySubdivisions))*4
+
+PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset)
+{
+    int32 vertexCount = xSubdivisions * ySubdivisions * 4 * (zSubdivisions + 1);
+    int32 indexCount = xSubdivisions * ySubdivisions * zSubdivisions * 12 * 2; //12 lines per box 2 indices per line
+    
+    PolygonGroup *res = new PolygonGroup();
+    res->SetPrimitiveType(PRIMITIVETYPE_LINELIST);    
+    res->AllocateData(EVF_VERTEX, vertexCount, indexCount);    
+
+    Vector3 boxSize = boundingBox.GetSize();
+    boxSize.x /= xSubdivisions;
+    boxSize.y /= ySubdivisions;
+    boxSize.z /= zSubdivisions;
+    
+    //vertices
+    //as we are going to place blocks on landscape we are to treat each column as independent - not sharing vertices between columns. we can still share vertices within 1 column
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+            for (uint32 zs = 0; zs < (zSubdivisions+1); ++zs)  
+            {                                
+                int32 vBase = IDX_BY_POS(xs, ys, zs);                
+                float32 hOffset = cellHeightOffset?cellHeightOffset[xs+ys*xSubdivisions] :0;
+                res->SetCoord(vBase + 0, boundingBox.min + Vector3(boxSize.x * xs, boxSize.y * ys, boxSize.z * zs + hOffset));
+                res->SetCoord(vBase + 1, boundingBox.min + Vector3(boxSize.x * (xs+1), boxSize.y * ys, boxSize.z * zs + hOffset));
+                res->SetCoord(vBase + 2, boundingBox.min + Vector3(boxSize.x * (xs+1), boxSize.y * (ys+1), boxSize.z * zs + hOffset));
+                res->SetCoord(vBase + 3, boundingBox.min + Vector3(boxSize.x * xs, boxSize.y * (ys+1), boxSize.z * zs + hOffset));
+            }        
+    //indices     
+    //in pair indexOffset, z
+    const static int32 indexOffsets[]={0,0, 1,0, 1,0, 2,0, 2,0, 3,0, 3,0, 0,0,  //bot
+                                       0,0, 0,1, 1,0, 1,1, 2,0, 2,1, 3,0, 3,1,  //mid
+                                       0,1, 1,1, 1,1, 2,1, 2,1, 3,1, 3,1, 0,1}; //top
+
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+            for (uint32 zs = 0; zs < zSubdivisions; ++zs)
+            {
+                int32 iBase = (zs + zSubdivisions*(ys + xs * ySubdivisions)) * 24;
+                int32 vBase[2] = {IDX_BY_POS(xs, ys, zs), IDX_BY_POS(xs, ys, zs+1)};
+                for (int32 i=0; i<24; i++)
+                    res->SetIndex(iBase + i, indexOffsets[i*2] + vBase[indexOffsets[i*2+1]]);
+
+            }
+
+
+    
+
+    res->BuildBuffers();    
+    return res;
+}
+
+PolygonGroup* StaticOcclusionDebugDrawSystem::CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup)
+{
+    
+    int32 xSideIndexCount = xSubdivisions * 6 * 2; 
+    int32 ySideIndexCount = ySubdivisions * 6 * 2;
+    int32 xySideIndexCount =  xSideIndexCount + ySideIndexCount;
+    int32 zSideIndexCount = xSubdivisions * xSubdivisions * 6 * 2;
+    int32 totalSideIndexCount = xySideIndexCount+zSideIndexCount;
+    int32 xExtraIndexCount = (xSubdivisions-1) * (ySubdivisions) * 6 * 2;
+    int32 yExtraIndexCount = (ySubdivisions-1) * (xSubdivisions) * 6 * 2;
+    int32 indexCount = totalSideIndexCount+xExtraIndexCount+yExtraIndexCount;
+
+    PolygonGroup *res = new PolygonGroup();    
+    res->AllocateData(0, 0, indexCount);    
+
+    Vector3 boxSize = boundingBox.GetSize();
+    boxSize.x /= xSubdivisions;
+    boxSize.y /= ySubdivisions;
+    boxSize.z /= zSubdivisions;
+
+    //left and right
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+    {
+        int32 iBase = xs*6*2;
+
+        res->SetIndex(iBase+0, IDX_BY_POS(xs, 0, 0));
+        res->SetIndex(iBase+1, IDX_BY_POS(xs, 0, 0)+1);
+        res->SetIndex(iBase+2, IDX_BY_POS(xs, 0, zSubdivisions)+1);
+        res->SetIndex(iBase+3, IDX_BY_POS(xs, 0, 0));
+        res->SetIndex(iBase+4, IDX_BY_POS(xs, 0, zSubdivisions)+1);
+        res->SetIndex(iBase+5, IDX_BY_POS(xs, 0, zSubdivisions));
+
+        iBase = xs*6*2+6;
+
+        res->SetIndex(iBase+0, IDX_BY_POS(xs, ySubdivisions-1, 0)+3);
+        res->SetIndex(iBase+1, IDX_BY_POS(xs, ySubdivisions-1, 0)+2);
+        res->SetIndex(iBase+2, IDX_BY_POS(xs, ySubdivisions-1, zSubdivisions)+2);
+        res->SetIndex(iBase+3, IDX_BY_POS(xs, ySubdivisions-1, 0)+3);
+        res->SetIndex(iBase+4, IDX_BY_POS(xs, ySubdivisions-1, zSubdivisions)+2);
+        res->SetIndex(iBase+5, IDX_BY_POS(xs, ySubdivisions-1, zSubdivisions)+3);
+    }
+
+    //front and back
+    for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+    {
+        int32 iBase = xSideIndexCount + ys*6*2;
+
+        res->SetIndex(iBase+0, IDX_BY_POS(0, ys, 0));
+        res->SetIndex(iBase+1, IDX_BY_POS(0, ys, 0)+3);
+        res->SetIndex(iBase+2, IDX_BY_POS(0, ys, zSubdivisions)+3);
+        res->SetIndex(iBase+3, IDX_BY_POS(0, ys, 0));
+        res->SetIndex(iBase+4, IDX_BY_POS(0, ys, zSubdivisions)+3);
+        res->SetIndex(iBase+5, IDX_BY_POS(0, ys, zSubdivisions));
+
+        iBase = xSideIndexCount + ys*6*2+6;
+
+        res->SetIndex(iBase+0, IDX_BY_POS(xSubdivisions-1, ys, 0)+1);
+        res->SetIndex(iBase+1, IDX_BY_POS(xSubdivisions-1, ys, 0)+2);
+        res->SetIndex(iBase+2, IDX_BY_POS(xSubdivisions-1, ys, zSubdivisions)+2);
+        res->SetIndex(iBase+3, IDX_BY_POS(xSubdivisions-1, ys, 0)+1);
+        res->SetIndex(iBase+4, IDX_BY_POS(xSubdivisions-1, ys, zSubdivisions)+2);
+        res->SetIndex(iBase+5, IDX_BY_POS(xSubdivisions-1, ys, zSubdivisions)+1);
+    }
+    
+    //bot and top
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+        {
+            int32 iBase = xySideIndexCount + (ys*xSubdivisions+xs)*6*2;
+            int32 vBase = IDX_BY_POS(xs, ys, 0);
+            res->SetIndex(iBase+0, vBase+0);
+            res->SetIndex(iBase+1, vBase+1);
+            res->SetIndex(iBase+2, vBase+2);
+            res->SetIndex(iBase+3, vBase+0);
+            res->SetIndex(iBase+4, vBase+2);
+            res->SetIndex(iBase+5, vBase+3);
+
+            iBase = xySideIndexCount + (ys*xSubdivisions+xs)*6*2 + 6;
+            vBase = IDX_BY_POS(xs, ys, zSubdivisions);
+            res->SetIndex(iBase+0, vBase+0);
+            res->SetIndex(iBase+1, vBase+1);
+            res->SetIndex(iBase+2, vBase+2);
+            res->SetIndex(iBase+3, vBase+0);
+            res->SetIndex(iBase+4, vBase+2);
+            res->SetIndex(iBase+5, vBase+3);
+        }
+
+    //extras across x axis
+    for (uint32 xs = 0; xs < (xSubdivisions-1); ++xs)
+        for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+        {
+            int32 iBase = totalSideIndexCount + (xs*ySubdivisions+ys) * 6 * 2;
+            int32 vBase1 = IDX_BY_POS(xs, ys, 0);
+            int32 vBase2 = IDX_BY_POS(xs+1, ys, 0);
+            res->SetIndex(iBase+0, vBase1+1);
+            res->SetIndex(iBase+1, vBase1+2);
+            res->SetIndex(iBase+2, vBase2+3);
+            res->SetIndex(iBase+3, vBase1+1);
+            res->SetIndex(iBase+4, vBase2+3);
+            res->SetIndex(iBase+5, vBase2+0);
+
+            iBase += 6;
+            vBase1 = IDX_BY_POS(xs, ys, zSubdivisions);
+            vBase2 = IDX_BY_POS(xs+1, ys, zSubdivisions);
+            res->SetIndex(iBase+0, vBase1+1);
+            res->SetIndex(iBase+1, vBase1+2);
+            res->SetIndex(iBase+2, vBase2+3);
+            res->SetIndex(iBase+3, vBase1+1);
+            res->SetIndex(iBase+4, vBase2+3);
+            res->SetIndex(iBase+5, vBase2+0);
+        }
+
+    //extras across y axis
+    for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+        for (uint32 ys = 0; ys < (ySubdivisions-1); ++ys)
+        {
+            int32 iBase = totalSideIndexCount + xExtraIndexCount + (ys*xSubdivisions+xs) * 6 * 2;
+            int32 vBase1 = IDX_BY_POS(xs, ys, 0);
+            int32 vBase2 = IDX_BY_POS(xs, ys+1, 0);
+            res->SetIndex(iBase+0, vBase1+2);
+            res->SetIndex(iBase+1, vBase1+3);
+            res->SetIndex(iBase+2, vBase2+0);
+            res->SetIndex(iBase+3, vBase1+2);
+            res->SetIndex(iBase+4, vBase2+0);
+            res->SetIndex(iBase+5, vBase2+1);
+
+            iBase += 6;
+            vBase1 = IDX_BY_POS(xs, ys, zSubdivisions);
+            vBase2 = IDX_BY_POS(xs, ys+1, zSubdivisions);
+            res->SetIndex(iBase+0, vBase1+2);
+            res->SetIndex(iBase+1, vBase1+3);
+            res->SetIndex(iBase+2, vBase2+0);
+            res->SetIndex(iBase+3, vBase1+2);
+            res->SetIndex(iBase+4, vBase2+0);
+            res->SetIndex(iBase+5, vBase2+1);
+        }
+
+    res->BuildBuffers();
+    res->renderDataObject->AttachVertices(gridPolygonGroup->renderDataObject);
+    res->aabbox=gridPolygonGroup->aabbox;
+    return res;
+}
+
+#undef IDX_BY_POS
+
     
 };

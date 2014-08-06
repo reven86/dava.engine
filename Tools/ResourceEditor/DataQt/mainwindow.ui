@@ -322,6 +322,7 @@
     <addaction name="separator"/>
     <addaction name="actionShowEditorGizmo"/>
     <addaction name="actionLightmapCanvas"/>
+    <addaction name="actionShowStaticOcclusion"/>
     <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
@@ -1932,6 +1933,21 @@
   <action name="actionInvalidateStaticOcclusion">
    <property name="text">
     <string>Invalidate Static Occlusion</string>
+   </property>
+  </action>
+  <action name="actionShowStaticOcclusion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/so.png</normaloff>:/QtIcons/so.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Static Occlusion</string>
    </property>
   </action>
  </widget>

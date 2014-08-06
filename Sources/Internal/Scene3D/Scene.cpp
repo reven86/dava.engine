@@ -118,6 +118,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
 	, materialSystem(0)
     , foliageSystem(0)
     , windSystem(0)
+    , staticOcclusionDebugDrawSystem(0)
 	, sceneGlobalMaterial(0)
     , isDefaultGlobalMaterial(true)
     , clearBuffers(RenderManager::ALL_BUFFERS)
@@ -417,6 +418,19 @@ void Scene::UnregisterEntity(Entity * entity)
     }
 }
 
+void Scene::RegisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity)
+{
+    system->RegisterEntity(entity);
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        RegisterEntitiesInSystemRecursively(system, entity->GetChild(i));
+}
+void Scene::UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity)
+{
+    system->UnregisterEntity(entity);
+    for (int32 i=0, sz = entity->GetChildrenCount(); i<sz; ++i)
+        UnregisterEntitiesInSystemRecursively(system, entity->GetChild(i));
+}
+
 void Scene::RegisterComponent(Entity * entity, Component * component)
 {
     DVASSERT(entity && component);
@@ -500,10 +514,12 @@ void Scene::AddSystem(SceneSystem * sceneSystem, uint32 componentFlags, bool nee
         }
     }
     DVASSERT(needProcess == wasInsertedForUpdate);
+    RegisterEntitiesInSystemRecursively(sceneSystem, this);
 }
     
 void Scene::RemoveSystem(SceneSystem * sceneSystem)
 {
+    UnregisterEntitiesInSystemRecursively(sceneSystem, this);
     Vector<SceneSystem*>::iterator endIt = systemsToProcess.end();
     for(Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != endIt; ++it)
     {
@@ -730,6 +746,17 @@ void Scene::Update(float timeElapsed)
     TIME_PROFILE("Scene::Update");
     
     uint64 time = SystemTimer::Instance()->AbsoluteMS();
+
+    bool needShowStaticOcclusion = RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION);
+    if (needShowStaticOcclusion&&!staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, (1 << Component::STATIC_OCCLUSION_COMPONENT), false, renderUpdateSystem);
+    }else if (!needShowStaticOcclusion&&staticOcclusionDebugDrawSystem)
+    {
+        RemoveSystem(staticOcclusionDebugDrawSystem);
+        SafeDelete(staticOcclusionDebugDrawSystem);
+    }
 
     uint32 size = (uint32)systemsToProcess.size();
     for (uint32 k = 0; k < size; ++k)

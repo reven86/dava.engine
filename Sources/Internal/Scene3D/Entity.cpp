@@ -1099,7 +1099,8 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 	for(uint32 i = 0; i < components.size(); ++i)
 	{
 		if(NULL != components[i])
-		{
+		{                       
+            DVASSERT(i < Component::DEBUG_COMPONENTS); //Bad idea to allocate debug components in vector
 			//don't save empty custom properties
 			if(Component::CUSTOM_PROPERTIES_COMPONENT == i)
 			{
@@ -1140,6 +1141,9 @@ void Entity::Save(KeyedArchive * archive, SerializationContext * serializationCo
 		it != componentsMap.end();
 		++it)
 	{
+        //dont save debug components
+        if (it->first > Component::DEBUG_COMPONENTS) 
+            continue; 
 		Vector<Component*>* componentsVector = it->second;
 			
 		if(NULL != componentsVector)

@@ -703,6 +703,7 @@ void SceneEditor2::RemoveSystems()
 {
 	if(editorLightSystem)
 	{
+        editorLightSystem->SetCameraLightEnabled(false);
 		RemoveSystem(editorLightSystem);
 		SafeDelete(editorLightSystem);
 	}
