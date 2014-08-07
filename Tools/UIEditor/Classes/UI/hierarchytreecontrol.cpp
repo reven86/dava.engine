@@ -474,6 +474,13 @@ void HierarchyTreeControl::HandleDragMoveHierarchyMimeData(QDragMoveEvent *event
 
 	if (mimeData->IsDropEnable(node))
 	{
+        QTreeWidgetItem* item = itemAt(event->pos());
+        if (item)
+        {
+            scrollTo(indexAt(event->pos()));
+            StartExpandTimer(item, true);
+        }
+
 		event->accept();
 	}
 }
