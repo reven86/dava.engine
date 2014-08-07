@@ -30,20 +30,16 @@
 #include "DeviceInfoTest.h"
 #include "Platform/DateTime.h"
 
-float32 DeviceInfoTest::AUTO_CLOSE_TIME = 30.f;
-
 DeviceInfoTest::DeviceInfoTest()
-:	TestTemplate<DeviceInfoTest>("DeviceInfoTest"),
-    deviceInfoText(NULL),
-    finishTestBtn(NULL),
-    testFinished(false),
-    onScreenTime(0.0f)
+:	UITestTemplate<DeviceInfoTest>("DeviceInfoTest"),
+    deviceInfoText(NULL)
 {
 	RegisterFunction(this, &DeviceInfoTest::TestFunction, Format("DeviceInfo test"), NULL);
 }
 
 void DeviceInfoTest::LoadResources()
 {
+    UITestTemplate::LoadResources();
     Font *font = FTFont::Create("~res:/Fonts/korinna.ttf");
     DVASSERT(font);
 	font->SetSize(20);
@@ -60,26 +56,16 @@ void DeviceInfoTest::LoadResources()
     deviceInfoText->SetDebugDraw(true);
 
     AddControl(deviceInfoText);
-    
-    finishTestBtn = new UIButton(Rect(1, 1, 100, 29));
-	finishTestBtn->SetStateFont(0xFF, font);
-    finishTestBtn->SetStateFontColor(0xFF, Color::White);
-	finishTestBtn->SetStateText(0xFF, L"Finish test");
-	finishTestBtn->SetDebugDraw(true);
-	finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DeviceInfoTest::ButtonPressed));
-	AddControl(finishTestBtn);
 }
 
 void DeviceInfoTest::UnloadResources()
 {
+    UITestTemplate::UnloadResources();
     SafeRelease(deviceInfoText);
-    SafeRelease(finishTestBtn);
 }
 
 void DeviceInfoTest::DidAppear()
 {
-    onScreenTime = 0.0f;
-    
     String platform = DeviceInfo::GetPlatformString();
     String version = DeviceInfo::GetVersion();
     String manufacturer = DeviceInfo::GetManufacturer();
@@ -89,8 +75,8 @@ void DeviceInfoTest::DidAppear()
     String timezone = DeviceInfo::GetTimeZone();
     String udid = DeviceInfo::GetUDID();
     WideString name = DeviceInfo::GetName();
-    List<DeviceInfo::StorageRecord> storages = DeviceInfo::GetStorageList();
-
+    List<DeviceInfo::StorageInfo> storages = DeviceInfo::GetStoragesList();
+    
     String deviceInfoString;
     deviceInfoString += Format("Platform: %s\n", platform.c_str());
     deviceInfoString += Format("OS version: %s\n", version.c_str());
@@ -114,10 +100,43 @@ void DeviceInfoTest::DidAppear()
     deviceInfoString += Format("Network connection type: %s\n", GetNetworkTypeString().c_str());
     deviceInfoString += Format("Network signal strength: %i%%\n", DeviceInfo::GetNetworkInfo().signalStrength);
 
-    List<DeviceInfo::StorageRecord>::const_iterator iter = storages.begin();
+    List<DeviceInfo::StorageInfo>::const_iterator iter = storages.begin();
     for (;iter != storages.end(); ++iter)
     {
-    	deviceInfoString += Format("%s; Capacity: %lld; Free: %lld\n", iter->name.c_str(), iter->totalSpace, iter->freeSpace);
+    	String storageName;
+
+    	switch(iter->type)
+    	{
+    		case DeviceInfo::STORAGE_TYPE_INTERNAL:
+    			storageName = "Internal storage";
+    			break;
+
+    		case DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL:
+    			storageName = "Primary external storage";
+    			break;
+
+    		case DeviceInfo::STORAGE_TYPE_SECONDARY_EXTERNAL:
+    			storageName = "Secondary external storage";
+    			break;
+
+    		default:
+    			storageName = "Unknown storage";
+    			break;
+    	}
+
+    	String str;
+    	if (iter->emulated)
+    	{
+    		str += "; emulated";
+    	}
+    	if (iter->readOnly)
+    	{
+    		str += "; read only";
+    	}
+
+    	deviceInfoString += Format("%s: path: %s; capacity: %s; free: %s%s\n", storageName.c_str(),
+    			iter->path.GetAbsolutePathname().c_str(), FormatStorageSize(iter->totalSpace).c_str(),
+    			FormatStorageSize(iter->freeSpace).c_str(), str.c_str());
     }
 
     deviceInfoText->SetText(StringToWString(deviceInfoString));
@@ -126,34 +145,25 @@ void DeviceInfoTest::DidAppear()
 	Logger::Debug("********** Device info **********");
 }
 
-void DeviceInfoTest::Update(float32 timeElapsed)
+String DeviceInfoTest::FormatStorageSize(int64 size)
 {
-    onScreenTime += timeElapsed;
-    if(onScreenTime > AUTO_CLOSE_TIME)
-    {
-        testFinished = true;
-    }
-    
-    TestTemplate<DeviceInfoTest>::Update(timeElapsed);
-}
+	const char prefix[] = {' ', 'K', 'M', 'G'};
 
-bool DeviceInfoTest::RunTest(int32 testNum)
-{
-	TestTemplate<DeviceInfoTest>::RunTest(testNum);
-	return testFinished;
+	float32 res = (float)size;
+	int32 i = 0;
+
+	while (i < sizeof(prefix) - 1 && res >= 1024.f)
+	{
+		++i;
+		res /= 1024.f;
+	}
+
+	return Format("%.2f %cB", res, prefix[i]);
 }
 
 void DeviceInfoTest::TestFunction(TestTemplate<DeviceInfoTest>::PerfFuncData *data)
 {
 	return;
-}
-
-void DeviceInfoTest::ButtonPressed(BaseObject *obj, void *data, void *callerData)
-{
-    if (obj == finishTestBtn)
-	{
-		testFinished = true;
-	}
 }
 
 String DeviceInfoTest::GetNetworkTypeString()

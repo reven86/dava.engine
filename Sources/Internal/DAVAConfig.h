@@ -58,20 +58,22 @@
 // This flag allow to enable profiling stats 
 //#define __DAVAENGINE_ENABLE_DEBUG_STATS__
 
-// Switch on/off messege box in assertion situation. In case this flag is
-// enabled the assertion message will be displayed even in release builds.
+//suppress 'deprecated' warning
+#define DAVAENGINE_HIDE_DEPRECATED
 
+// Switch on/off message box in assertion situation. In case this flag is
+// enabled the assertion message will be displayed even in release builds.
 #if defined(__DAVAENGINE_DEBUG__)   //always enable full DVASSERT service for debug configurations
     #define ENABLE_ASSERT_LOGGING
+#ifndef __DAVAENGINE_AUTOTESTING__
     #define ENABLE_ASSERT_MESSAGE
+#endif
     #define ENABLE_ASSERT_BREAK
 #else //not defined __DAVAENGINE_DEBUG__    // can disable or select any dvassert service
     #define ENABLE_ASSERT_LOGGING
     #define ENABLE_ASSERT_MESSAGE
 //    #define ENABLE_ASSERT_BREAK
 #endif //
-
-
 
 #define USE_FILEPATH_IN_MAP
 #ifdef USE_FILEPATH_IN_MAP

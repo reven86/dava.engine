@@ -37,8 +37,6 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
-//do not create lower cube face
-const int SKYBOX_VERTEX_COUNT = (5 * 6);
 
 namespace DAVA
 {

@@ -596,7 +596,7 @@ bool LibDdsHelper::WriteDxtFile(const FilePath & fileNameOriginal, const Vector<
     inputOptions.setMipmapGeneration(dataCount > 1, dataCount - 1);
 
     int32 pixelSize = PixelFormatDescriptor::GetPixelFormatSizeInBytes(FORMAT_RGBA8888);
-	for(uint32 i = 0; i < dataCount; ++i)
+	for(int32 i = 0; i < dataCount; ++i)
 	{
         uint32 imgDataSize = imageSet[i]->width * imageSet[i]->height * pixelSize;
         NvttHelper::SwapBRChannels(imageSet[i]->data, imgDataSize);
@@ -670,7 +670,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 		return false;
 	}
 
-	for(uint32 i = 0; i < dataCount; ++i)
+	for(int32 i = 0; i < dataCount; ++i)
 	{
 		TQonvertImage srcImg = {0};
 
@@ -701,7 +701,7 @@ bool LibDdsHelper::WriteAtcFile(const FilePath & fileNameOriginal, const Vector<
 	unsigned char* buffer = new unsigned char[bufSize];
 	unsigned char* tmpBuffer = buffer;
 
-	for(uint32 i = 0; i < dataCount; ++i)
+	for(int32 i = 0; i < dataCount; ++i)
 	{
 		TQonvertImage srcImg = {0};
 

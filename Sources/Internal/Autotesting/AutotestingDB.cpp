@@ -174,7 +174,7 @@ namespace DAVA
 			dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
 			dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
 			dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
-			dbUpdateObject->AddString("FramewrokRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
+			dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
 			// TODO: After realization GetOsVersion() DF-3940
 			dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
 			dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
@@ -188,190 +188,6 @@ namespace DAVA
 		return dbUpdateData;
 	}
 
-
-	// GROUP Level
-	KeyedArchive *AutotestingDB::FindOrInsertGroupArchive(KeyedArchive* buildArchive, const String &groupId)
-	{
-		Logger::Debug("AutotestingDB::FindInsertGroupArchive Group=%s", groupId.c_str());
-
-		KeyedArchive* currentGroupArchive = NULL;
-		currentGroupArchive = SafeRetain(buildArchive->GetArchive(groupId, NULL));
-
-		if(!currentGroupArchive)
-		{
-			currentGroupArchive = new KeyedArchive();
-
-			currentGroupArchive->SetString("Name", groupId);
-			currentGroupArchive->SetString("Date", AutotestingSystem::Instance()->testsDate);
-
-			buildArchive->SetArchive(groupId, currentGroupArchive);
-			Logger::Debug("AutotestingDB::FindInsertGroupArchive new Group=%s", groupId.c_str());
-		}
-		SafeRelease(currentGroupArchive);
-		
-		currentGroupArchive = buildArchive->GetArchive(groupId);
-
-		return currentGroupArchive;
-	}
-
-
-	// TEST Level
-	KeyedArchive *AutotestingDB::FindOrInsertTestArchive(MongodbUpdateObject* dbUpdateObject, const String &testId)
-	{
-		Logger::Debug("AutotestingDB::FindOrInsertTestArchive testId=%s", testId.c_str());
-
-		KeyedArchive* dbUpdateData = FindOrInsertBuildArchive(dbUpdateObject, "");
-
-		KeyedArchive* currentGroupArchive = dbUpdateData->GetArchive(AutotestingSystem::Instance()->groupName, NULL);
-		
-		if (! currentGroupArchive)
-		{
-			AutotestingSystem::Instance()->ForceQuit(Format("Couldn't find archive for %s device", AutotestingSystem::Instance()->groupName.c_str()));
-		}
-
-		KeyedArchive* currentTestArchive = SafeRetain(currentGroupArchive->GetArchive(testId, NULL));
-
-		if(!currentTestArchive)
-		{
-			currentTestArchive = new KeyedArchive();
-
-			currentTestArchive->SetString("Name", AutotestingSystem::Instance()->testName);
-			currentTestArchive->SetString("FileName", AutotestingSystem::Instance()->testFileName);
-
-			currentGroupArchive->SetArchive(testId, currentTestArchive);
-			Logger::Debug("AutotestingDB::FindOrInsertTestArchive new %s", testId.c_str());
-		}
-		SafeRelease(currentTestArchive);
-		currentTestArchive = currentGroupArchive->GetArchive(testId);
-
-		return currentTestArchive;
-	}
-
-	KeyedArchive *AutotestingDB::InsertTestArchive(KeyedArchive* currentGroupArchive, const String &testId)
-	{
-		Logger::Debug("AutotestingDB::InsertTestArchive testId=%s", testId.c_str());
-		KeyedArchive* currentTestArchive = new KeyedArchive();
-
-		currentTestArchive->SetString("FileName", AutotestingSystem::Instance()->testFileName);
-		currentTestArchive->SetBool("Success", false);
-
-		KeyedArchive* stepsArchive = new KeyedArchive();
-		currentTestArchive->SetArchive(AUTOTESTING_STEPS, stepsArchive);
-		SafeRelease(stepsArchive);
-
-		currentGroupArchive->SetArchive(testId, currentTestArchive);
-		Logger::Debug("AutotestingDB::InsertTestArchive new %s", testId.c_str());
-
-		SafeRelease(currentTestArchive);
-		currentTestArchive = currentGroupArchive->GetArchive(testId);
-
-		return currentTestArchive;
-	}
-
-	
-	// STEP Level
-	KeyedArchive *AutotestingDB::FindOrInsertStepArchive(KeyedArchive *testArchive, const String &stepId)
-	{
-		Logger::Debug("AutotestingDB::FindOrInsertTestStepArchive stepId=%s", stepId.c_str());
-
-		KeyedArchive* currentTestStepArchive = NULL;
-		KeyedArchive* testStepsArchive = NULL;
-
-		testStepsArchive = SafeRetain(testArchive->GetArchive(AUTOTESTING_STEPS, NULL));
-		if(testStepsArchive)
-		{
-			currentTestStepArchive = SafeRetain(testStepsArchive->GetArchive(stepId, NULL));
-		}
-
-		if(!currentTestStepArchive)
-		{
-			currentTestStepArchive = new KeyedArchive();
-			if(!testStepsArchive)
-			{
-				testStepsArchive = new KeyedArchive();
-				testArchive->SetArchive(AUTOTESTING_STEPS, testStepsArchive);
-				SafeRelease(testStepsArchive);
-				testStepsArchive = SafeRetain(testArchive->GetArchive(AUTOTESTING_STEPS));
-			}
-			testStepsArchive->SetArchive(stepId, currentTestStepArchive);
-			Logger::Debug("AutotestingDB::FindOrInsertTestStepArchive new %s", stepId.c_str());
-		}
-		SafeRelease(currentTestStepArchive);
-		currentTestStepArchive = testStepsArchive->GetArchive(stepId);
-		SafeRelease(testStepsArchive);
-
-		//Logger::Debug("AutotestingSystem::FindOrInsertTestStepArchive finish");
-		return currentTestStepArchive;
-	}
-
-	KeyedArchive *AutotestingDB::InsertStepArchive(KeyedArchive *testArchive, const String &stepId, const String &description)
-	{
-		Logger::Debug("AutotestingDB::InsertStepArchive stepId=%s description=%s", stepId.c_str(), description.c_str());
-
-		KeyedArchive* currentStepArchive = NULL;
-		KeyedArchive* testStepsArchive = NULL;
-
-		testStepsArchive = SafeRetain(testArchive->GetArchive(AUTOTESTING_STEPS, NULL));
-		if(!testStepsArchive)
-		{
-			testStepsArchive = new KeyedArchive();
-			testArchive->SetArchive(AUTOTESTING_STEPS, testStepsArchive);
-			SafeRelease(testStepsArchive);
-			testStepsArchive = SafeRetain(testArchive->GetArchive(AUTOTESTING_STEPS));
-		}
-
-		currentStepArchive = new KeyedArchive();
-		currentStepArchive->SetString("Description", description.c_str());
-		currentStepArchive->SetBool("Success", false);
-
-		KeyedArchive* logArchive = new KeyedArchive();
-		currentStepArchive->SetArchive(AUTOTESTING_LOG, logArchive);
-		SafeRelease(logArchive);
-
-		testStepsArchive->SetArchive(stepId, currentStepArchive);
-		Logger::Debug("AutotestingDB::InsertStepArchive new %s", stepId.c_str());
-
-		SafeRelease(currentStepArchive);
-		currentStepArchive = testStepsArchive->GetArchive(stepId);
-		SafeRelease(testStepsArchive);
-
-		return currentStepArchive;
-	}
-	
-	KeyedArchive *AutotestingDB::FindOrInsertTestStepLogEntryArchive(KeyedArchive *testStepArchive, const String &logId)
-	{
-		Logger::Debug("AutotestingDB::FindOrInsertTestStepLogEntryArchive logId=%s", logId.c_str());
-
-		KeyedArchive* currentTestStepLogEntryArchive = NULL;
-		KeyedArchive* testStepLogArchive = NULL;
-
-		testStepLogArchive = SafeRetain(testStepArchive->GetArchive(AUTOTESTING_LOG, NULL));
-		if(testStepLogArchive)
-		{
-			currentTestStepLogEntryArchive = SafeRetain(testStepLogArchive->GetArchive(logId, NULL));
-		}
-
-		if(!currentTestStepLogEntryArchive)
-		{
-			currentTestStepLogEntryArchive = new KeyedArchive();
-			if(!testStepLogArchive)
-			{
-				testStepLogArchive = new KeyedArchive();
-				testStepArchive->SetArchive(AUTOTESTING_LOG, testStepLogArchive);
-				SafeRelease(testStepLogArchive);
-				testStepLogArchive = SafeRetain(testStepArchive->GetArchive(AUTOTESTING_LOG));
-			}
-			testStepLogArchive->SetArchive(logId, currentTestStepLogEntryArchive);
-		}
-		SafeRelease(currentTestStepLogEntryArchive);
-		currentTestStepLogEntryArchive = testStepLogArchive->GetArchive(logId);
-		SafeRelease(testStepLogArchive);
-
-		//Logger::Debug("AutotestingSystem::FindOrInsertTestStepLogEntryArchive finish");
-		return currentTestStepLogEntryArchive;
-	}
-
-
 	void AutotestingDB::Log(const String &level, const String &message)
 	{
 		Logger::Debug("AutotestingDB::Log [%s]%s", level.c_str(), message.c_str());
@@ -382,16 +198,42 @@ namespace DAVA
 		AutotestingSystem::Instance()->logIndex++;
 
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
-		KeyedArchive* currentTestArchive = FindOrInsertTestArchive(dbUpdateObject, testId);
-		KeyedArchive* currentStepArchive = FindOrInsertStepArchive(currentTestArchive, stepId); 
 
-		KeyedArchive* logEntry = FindOrInsertTestStepLogEntryArchive(currentStepArchive, logId);
+		// Launch data
+		dbUpdateObject->SetUniqueObjectName();
+
+		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
+		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
+		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
+		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
+		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
+		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
+		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
+		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
+		dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
+		dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
+
+		// Test data
+		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName.c_str());
+		dbUpdateObject->AddString("Test", testId.c_str());
+		dbUpdateObject->AddString("Step", stepId.c_str());
+		dbUpdateObject->AddString("Log", logId.c_str());
+
+
+		// Log data
+		String currentTime = AutotestingSystem::Instance()->GetCurrentTimeString();
+		dbUpdateObject->AddString("Type", level);
+		dbUpdateObject->AddString("Time", currentTime);
+		dbUpdateObject->AddString("Message", message);
+		/*KeyedArchive* logEntry = new KeyedArchive();
 
 		logEntry->SetString("Type", level);
-		String currentTime = AutotestingSystem::Instance()->GetCurrentTimeString();
+		
 		logEntry->SetString("Time", currentTime);
 		logEntry->SetString("Message", message);
+		dbUpdateObject->Add*/
 
+		dbUpdateObject->LoadData();
 		SaveToDB(dbUpdateObject);
 		SafeRelease(dbUpdateObject);
 		
@@ -399,6 +241,7 @@ namespace DAVA
 		Logger::Debug("AutotestingSystem::Log FINISH  summary time %d", finishTime - startTime);
 	}
 
+	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadCommand(const String & device)
 	{
 		Logger::Debug("AutotestingDB::ReadCommand device=%s", device.c_str());
@@ -415,6 +258,7 @@ namespace DAVA
 		return result;
 	}
 
+	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadState(const String & device)
 	{
 		Logger::Debug("AutotestingDB::ReadState device=%s", device.c_str());
@@ -430,6 +274,7 @@ namespace DAVA
 		return result;
 	}
 
+	// DEPRECATED: Rewrite for new DB conception
 	String AutotestingDB::ReadString(const String & name)
 	{
 		Logger::Debug("AutotestingSystem::ReadString name=%s", name.c_str());
@@ -447,19 +292,40 @@ namespace DAVA
 
 	bool AutotestingDB::SaveKeyedArchiveToDB(const String &archiveName, KeyedArchive *archive, const String &docName)
 	{
-		bool ret = false;
+		Logger::Debug("AutotestingDB::SaveKeyedArchiveToDB %s to %s", archiveName.c_str(), docName.c_str());
+		String testId = AutotestingSystem::Instance()->GetTestId();
+		String stepId = AutotestingSystem::Instance()->GetStepId();
+		
 		MongodbUpdateObject* dbUpdateObject = new MongodbUpdateObject();
 
-		KeyedArchive* currentBuildArchive = AutotestingDB::Instance()->FindOrInsertBuildArchive(dbUpdateObject, "");
-		KeyedArchive* currentGroupArchive = AutotestingDB::Instance()->FindOrInsertGroupArchive(currentBuildArchive, AutotestingSystem::Instance()->groupName);
+		// Launch data
+		dbUpdateObject->SetUniqueObjectName();
 
-		currentGroupArchive->SetArchive(archiveName.c_str(), archive);
-		currentGroupArchive->SetString("Map", docName.c_str());
-		ret = SaveToDB(dbUpdateObject);
-		//SafeRelease(currentBuildArchive);
-		//SafeRelease(currentGroupArchive);
-		SafeRelease(dbUpdateObject);
-		return ret;
+		dbUpdateObject->AddString("Platform", AUTOTESTING_PLATFORM_NAME);
+		dbUpdateObject->AddString("Date", AutotestingSystem::Instance()->buildDate.c_str());
+		dbUpdateObject->AddString("Device", AutotestingSystem::Instance()->deviceName.c_str());			
+		dbUpdateObject->AddString("BuildId", AutotestingSystem::Instance()->buildId.c_str());
+		dbUpdateObject->AddString("Branch", AutotestingSystem::Instance()->branch.c_str());
+		dbUpdateObject->AddString("BranchRevision", AutotestingSystem::Instance()->branchRev.c_str());
+		dbUpdateObject->AddString("Framework", AutotestingSystem::Instance()->framework.c_str());
+		dbUpdateObject->AddString("FrameworkRevision", AutotestingSystem::Instance()->frameworkRev.c_str());
+		dbUpdateObject->AddString("OSVersion", DeviceInfo::GetVersion());
+		dbUpdateObject->AddString("Model", DeviceInfo::GetModel());
+
+		// Test data
+		dbUpdateObject->AddString("Group", AutotestingSystem::Instance()->groupName.c_str());
+		dbUpdateObject->AddString("Test", testId.c_str());
+		dbUpdateObject->AddString("Step", stepId.c_str());
+
+
+		// Insert Archive
+		dbUpdateObject->AddString("Type", docName.c_str());
+		dbUpdateObject->AddString("Name", archiveName.c_str());
+		dbUpdateObject->LoadData();
+		dbUpdateObject->GetData()->SetArchive(archiveName.c_str(), archive);
+		
+
+		return SaveToDB(dbUpdateObject);;
 	}
 
 	bool AutotestingDB::SaveToDB(MongodbUpdateObject *dbUpdateObject)
@@ -496,6 +362,7 @@ namespace DAVA
 		}
 	}
 
+	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteCommand(const String & device, const String & command)
 	{
 		Logger::Debug("AutotestingDB::WriteCommand device=%s command=%s", device.c_str(), command.c_str());
@@ -510,6 +377,7 @@ namespace DAVA
 		//Logger::Debug("AutotestingSystem::WriteCommand finish");
 	}
 
+	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteState(const String & device, const String & state)
 	{
 		Logger::Debug("AutotestingDB::WriteState device=%s state=%s", device.c_str(), state.c_str());
@@ -526,6 +394,7 @@ namespace DAVA
 		//Logger::Debug("AutotestingSystem::WriteState finish");
 	}
 
+	// DEPRECATED: Rewrite for new DB conception
 	void AutotestingDB::WriteString(const String & name, const String & text)
 	{
 		Logger::Debug("AutotestingSystem::WriteString name=%s text=%s", name.c_str(), text.c_str());

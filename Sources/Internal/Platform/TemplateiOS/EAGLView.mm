@@ -305,7 +305,7 @@ void MoveTouchsToVector(void *inTouches, DAVA::Vector<DAVA::UIEvent> *outTouches
 	for(UITouch *curTouch in ar)
 	{
 		DAVA::UIEvent newTouch;
-		newTouch.tid = (DAVA::int32)curTouch;
+		newTouch.tid = (DAVA::int32)(DAVA::pointer_size)curTouch;
 //		newTouch.buttonId = DAVA::UIEvent::BUTTON_1;
 		CGPoint p = [curTouch locationInView: curTouch.view ];
 		newTouch.physPoint.x = p.x;

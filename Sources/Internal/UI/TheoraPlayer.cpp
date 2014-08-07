@@ -29,6 +29,7 @@
 
 
 #include "UI/TheoraPlayer.h"
+#include "FileSystem/YamlNode.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 

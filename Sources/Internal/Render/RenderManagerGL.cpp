@@ -239,7 +239,6 @@ void RenderManager::BeginFrame()
 
 void RenderManager::PrepareRealMatrix()
 {
-    bool isMappingMatrixChanged = mappingMatrixChanged;
     if (mappingMatrixChanged)
     {
         mappingMatrixChanged = false;
@@ -248,31 +247,15 @@ void RenderManager::PrepareRealMatrix()
 	
         if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
         {
-            Vector2 oldCurrentDrawScale = currentDrawScale;
-            Vector2 oldCurrentDrawOffset = currentDrawOffset;
-
             currentDrawScale = realDrawScale;
             currentDrawOffset = realDrawOffset;
 
-            
             Matrix4 glTranslate, glScale;
             glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
             glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
             
-            
-            //Matrix4 oldMatrix = renderer2d.viewMatrix;
-            
             renderer2d.viewMatrix = glScale * glTranslate;
             SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-            
-            //DVASSERT(oldMatrix != renderer2d.viewMatrix);
-    //        Logger::FrameworkDebug("2D matricies recalculated");
-    //        Matrix4 modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-    //        Logger::FrameworkDebug("Model matrix");
-    //        modelViewSave.Dump();
-    //        Matrix4 projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-    //        Logger::FrameworkDebug("Proj matrix");
-    //        projectionSave.Dump();
         }
     }
     

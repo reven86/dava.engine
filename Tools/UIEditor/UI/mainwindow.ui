@@ -30,16 +30,7 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="leftMargin">
-     <number>0</number>
-    </property>
-    <property name="topMargin">
-     <number>0</number>
-    </property>
-    <property name="rightMargin">
-     <number>0</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
@@ -533,7 +524,7 @@
   </widget>
   <widget class="QToolBar" name="findToolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Search Toolbar</string>
    </property>
    <property name="iconSize">
     <size>

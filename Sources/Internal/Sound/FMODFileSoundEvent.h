@@ -61,7 +61,7 @@ public:
 
     virtual bool IsActive() const;
     virtual bool Trigger();
-    virtual void Stop();
+    virtual void Stop(bool force = false);
     virtual void SetPaused(bool paused);
     
 	virtual void SetPosition(const Vector3 & position);
@@ -79,6 +79,7 @@ public:
     virtual void GetEventParametersInfo(Vector<SoundEventParameterInfo> & paramsInfo) const { return; };
 
     virtual String GetEventName() const { return fileName.GetFrameworkPath(); };
+    virtual float32 GetMaxDistance() const { return -1.f; };
 
 protected:
 	FMODFileSoundEvent(const FilePath & fileName, uint32 flags, int32 priority);

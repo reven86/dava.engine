@@ -36,7 +36,6 @@
 
 namespace DAVA
 {
-static const int32 FORMAT_STRING_SIZE = 2048;
 static const int32 FORMAT_STRING_MAX_LEN = 512;
 
 //static char8 formatString8[FORMAT_STRING_SIZE];
@@ -250,7 +249,7 @@ int32 do_div(int64 &n, int32 base)
 		if (tail >= pow(10.f, precision))
 		{
 			whole++;
-			tail -= pow(10.f, precision);
+			tail -= (int32)pow(10.f, precision);
 		}
 		
         type = SIGN | LEFT;
@@ -581,7 +580,7 @@ int32 do_div(int64 &n, int32 base)
                     {
                         /* print counted ascii string */
                         char8 * pus = va_arg(args, char8 *);
-                        if ((pus == NULL))
+                        if (pus == NULL)
                         {
                             sw = L"<NULL>";
                             while ((*sw) != 0)
@@ -591,7 +590,7 @@ int32 do_div(int64 &n, int32 base)
                         }
                         else
                         {
-                            for (i = 0; pus[i] && i < strlen(pus); i++)
+                            for (i = 0; pus[i] && i < (int32)strlen(pus); i++)
                             {
                                 *str++ = (char16)(pus[i]);
                             }
@@ -601,7 +600,7 @@ int32 do_div(int64 &n, int32 base)
                     {
                         /* print counted unicode string */
                         char16* pus = va_arg(args, char16*);
-                        if ((pus == NULL))
+                        if (pus == NULL)
                         {
                             sw = L"<NULL>";
                             while ((*sw) != 0)
@@ -611,7 +610,7 @@ int32 do_div(int64 &n, int32 base)
                         }
                         else
                         {
-                            for (i = 0; pus[i] && i < wcslen(pus); ++i) // / sizeof(WCHAR); i++)
+                            for (i = 0; pus[i] && i < (int32)wcslen(pus); ++i) // / sizeof(WCHAR); i++)
                             {
                                 *str++ = pus[i];
                             }

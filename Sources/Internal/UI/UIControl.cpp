@@ -39,6 +39,7 @@
 #include "Utils/Utils.h"
 #include "Input/InputSystem.h"
 #include "Utils/StringFormat.h"
+#include "FileSystem/YamlNode.h"
 
 namespace DAVA
 {
@@ -2390,7 +2391,7 @@ namespace DAVA
         SetRect(rect);
 
         int frame = 0;
-        if (frameNode)frame = frameNode->AsInt();
+        if (frameNode)frame = frameNode->AsInt32();
 
         if(spriteNode)
         {
@@ -2407,38 +2408,38 @@ namespace DAVA
 
         if (leftAlignNode)
         {
-            int32 leftAlign = leftAlignNode->AsInt();
+            int32 leftAlign = leftAlignNode->AsInt32();
             SetLeftAlignEnabled(true);
             SetLeftAlign(leftAlign);
         }
         if (hcenterAlignNode)
         {
-            int32 hcenterAlign = hcenterAlignNode->AsInt();
+            int32 hcenterAlign = hcenterAlignNode->AsInt32();
             SetHCenterAlignEnabled(true);
             SetHCenterAlign(hcenterAlign);
 
         }
         if (rightAlignNode)
         {
-            int32 rightAlign = rightAlignNode->AsInt();
+            int32 rightAlign = rightAlignNode->AsInt32();
             SetRightAlignEnabled(true);
             SetRightAlign(rightAlign);
         }
         if (topAlignNode)
         {
-            int32 topAlign = topAlignNode->AsInt();
+            int32 topAlign = topAlignNode->AsInt32();
             SetTopAlignEnabled(true);
             SetTopAlign(topAlign);
         }
         if (vcenterAlignNode)
         {
-            int32 vcenterAlign = vcenterAlignNode->AsInt();
+            int32 vcenterAlign = vcenterAlignNode->AsInt32();
             SetVCenterAlignEnabled(true);
             SetVCenterAlign(vcenterAlign);
         }
         if (bottomAlignNode)
         {
-            int32 bottomAlign = bottomAlignNode->AsInt();
+            int32 bottomAlign = bottomAlignNode->AsInt32();
             SetBottomAlignEnabled(true);
             SetBottomAlign(bottomAlign);
         }
@@ -2519,7 +2520,7 @@ namespace DAVA
 
         if(tagNode)
         {
-            tag = tagNode->AsInt();
+            tag = tagNode->AsInt32();
         }
 
         if(spriteModificationNode)

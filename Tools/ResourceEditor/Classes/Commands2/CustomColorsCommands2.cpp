@@ -68,16 +68,19 @@ void ActionEnableCustomColors::Redo()
 	{
 		ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(enablingError));
 	}
-    if (!sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->IsTextureLoaded())
+    else
     {
-        ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
-        sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->ResetLoadedState();
-    }
-    
-    if(success &&
-       LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
-    {
-        sceneEditor->foliageSystem->SetFoliageVisible(false);
+        if (!sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->IsTextureLoaded())
+        {
+            ShowErrorDialog(LandscapeEditorDrawSystem::GetDescriptionByError(LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_CUSTOMCOLORS_ABSENT));
+            sceneEditor->landscapeEditorDrawSystem->GetCustomColorsProxy()->ResetLoadedState();
+        }
+        
+        if(success &&
+           LandscapeEditorDrawSystem::LANDSCAPE_EDITOR_SYSTEM_NO_ERRORS == enablingError)
+        {
+            sceneEditor->foliageSystem->SetFoliageVisible(false);
+        }
     }
 
 	SceneSignals::Instance()->EmitCustomColorsToggled(sceneEditor);

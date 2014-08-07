@@ -34,6 +34,8 @@
 #include "JniExtensions.h"
 #include "Base/BaseTypes.h"
 
+#include "../../Platform/DeviceInfo.h"
+
 #if defined(__DAVAENGINE_ANDROID__)
 
 namespace DAVA
@@ -50,20 +52,21 @@ public:
 	String GetTimeZone();
 	String GetUDID();
 	String GetName();
-	int GetZBufferSize();
-	int GetGPUFamily();
-	int GetNetworkType();
-	int GetSignalStrength(int networkType);
+	int32 GetZBufferSize();
+	int32 GetGPUFamily();
+	int32 GetNetworkType();
+	int32 GetSignalStrength(int networkType);
 
-	DAVA::int64 GetInternalStorageCapacity();
-	DAVA::int64 GetInternalStorageFree();
-	DAVA::int64 GetExternalStorageCapacity();
-	DAVA::int64 GetExternalStorageFree();
-	bool IsExternalStoragePresent();
+	bool IsPrimaryExternalStoragePresent();
+	DeviceInfo::StorageInfo GetInternalStorageInfo();
+	DeviceInfo::StorageInfo GetPrimaryExternalStorageInfo();
+	List<DeviceInfo::StorageInfo> GetSecondaryExternalStoragesList();
 
 protected:
 	virtual jclass GetJavaClass() const;
 	virtual const char* GetJavaClassName() const;
+
+	DeviceInfo::StorageInfo StorageInfoFromJava(jobject object);
 
 public:
 	static jclass gJavaClass;

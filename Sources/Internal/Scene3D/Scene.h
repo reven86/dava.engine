@@ -38,6 +38,7 @@
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/SceneFileV2.h"
+#include "Scene3D/SceneFile/VersionInfo.h"
 
 namespace DAVA
 {
@@ -78,6 +79,7 @@ class ActionUpdateSystem;
 class SkyboxSystem;
 class MaterialSystem;
 class StaticOcclusionSystem;
+class StaticOcclusionDebugDrawSystem;
 class SpeedTreeUpdateSystem;
 class FoliageSystem;
 class WindSystem;
@@ -129,7 +131,7 @@ public:
     /**
         \brief Function to unregister entity from scene. This function is called when you remove entity from scene.
      */
-    void    UnregisterEntity(Entity * entity);
+    void    UnregisterEntity(Entity * entity);    
     
     /**
         \brief Function to register component in scene. This function is called when you add any component to any entity in scene.
@@ -165,8 +167,10 @@ public:
     MaterialSystem *materialSystem;
     SpeedTreeUpdateSystem* speedTreeUpdateSystem;
     FoliageSystem* foliageSystem;
+    VersionInfo::SceneVersion version;
     WindSystem * windSystem;
     WaveSystem * waveSystem;
+    StaticOcclusionDebugDrawSystem *staticOcclusionDebugDrawSystem;
     
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
@@ -268,6 +272,9 @@ public:
 
 protected:
     void UpdateLights();
+
+    void RegisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
+    void UnregisterEntitiesInSystemRecursively(SceneSystem *system, Entity * entity);
 
 	uint64 updateTime;
 

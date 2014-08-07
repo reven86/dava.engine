@@ -94,7 +94,7 @@ protected:
     virtual void SetFittingType(int value);
 
     // Get the localized text for particular control state.
-    QString GetLocalizedTextKeyForState(UIControl::eControlState controlState) const;
+    virtual QString GetLocalizedTextKeyForState(UIControl::eControlState controlState) const;
     
     // Update the static text extra data based on update style.
     void UpdateStaticTextExtraData(UIStaticText* staticText, UIControl::eControlState state,

@@ -36,7 +36,7 @@
 #include "Main/mainwindow.h"
 #include "Main/davaglwidget.h"
 #include "Project/ProjectManager.h"
-#include "Utils/TeamcityOutput.h"
+#include "TeamcityOutput/TeamcityOutput.h"
 #include "TexturePacker/CommandLineParser.h"
 #include "TexturePacker/ResourcePacker2D.h"
 #include "TextureCompression/PVRConverter.h"
@@ -106,7 +106,6 @@ int main(int argc, char *argv[])
 	new EditorConfig();
     ParticleEmitter::FORCE_DEEP_CLONE = true;
 
-
     const QString appUid = "{AA5497E4-6CE2-459A-B26F-79AAF05E0C6B}";
     const QString appUidPath = QCryptographicHash::hash( (appUid + a.applicationDirPath() ).toUtf8(), QCryptographicHash::Sha1 ).toHex();
     RunGuard runGuard( appUidPath );
@@ -122,8 +121,6 @@ int main(int argc, char *argv[])
 		DavaGLWidget* davaGL = new DavaGLWidget();
         RenderManager::Instance()->DetectRenderingCapabilities();
 
-		//DAVA::TeamcityOutput *out = new DAVA::TeamcityOutput();
-		//DAVA::Logger::AddCustomOutput(out);
 
 		cmdLine.InitalizeTool();
 		if(!cmdLine.IsToolInitialized())
@@ -206,3 +203,4 @@ void UnpackHelpDoc()
 	}
 	SettingsManager::SetValue(Settings::Internal_EditorVersion, VariantType(String(RESOURCE_EDITOR_VERSION)));
 }
+

@@ -1675,7 +1675,7 @@ void DefaultScreen::BacklightControl(const Vector2& position)
 		if (!HierarchyTreeController::Instance()->IsControlSelected(newSelectedNode))
 		{
 			HierarchyTreeController::Instance()->ResetSelectedControl();
-			HierarchyTreeController::Instance()->SelectControl(newSelectedNode);
+			HierarchyTreeController::Instance()->SelectControl(newSelectedNode, HierarchyTreeController::DeferredExpand);
 		}
 	}
 	else if (HierarchyTreeController::Instance()->GetActiveControlNodes().size())

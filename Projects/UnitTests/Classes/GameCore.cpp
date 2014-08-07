@@ -72,6 +72,7 @@
 #include "ParseTextTest.h"
 #include "ImageSizeTest.h"
 
+
 using namespace DAVA;
 
 GameCore::GameCore()
@@ -97,9 +98,8 @@ void GameCore::OnAppStarted()
     CreateDocumentsFolder();
 
 	new ImageSizeTest();
-
     new DeviceInfoTest();
-    
+
     new PVRTest();
  	new DXTTest();
     new JPEGTest();

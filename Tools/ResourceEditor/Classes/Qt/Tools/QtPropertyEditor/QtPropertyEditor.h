@@ -104,7 +104,8 @@ protected slots:
 	virtual void OnItemEdited(const QModelIndex &);
 	virtual void OnUpdateTimeout();
 
-	virtual void rowsAboutToBeOp(const QModelIndex & parent, int start, int end);
+	virtual void rowsAboutToBeInserted(const QModelIndex & parent, int start, int end);
+	virtual void rowsAboutToBeRemoved(const QModelIndex & parent, int start, int end);
 	virtual void rowsOp(const QModelIndex & parent, int start, int end);
 
 private:

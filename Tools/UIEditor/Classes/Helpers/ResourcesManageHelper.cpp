@@ -150,7 +150,7 @@ QString ResourcesManageHelper::GetDefaultSpritesPath(const QString& currentSprit
 	// If sprite is already set - we should use its directory as default for file dialog
 	if (!currentSpritePath.isEmpty() && currentSpritePath.compare(StringConstants::NO_SPRITE_IS_SET) != 0)
 	{
-		FilePath spriteAbsolutePath(currentSpritePath.toStdString());
+		FilePath spriteAbsolutePath(currentSpritePath.toStdString() + ".txt");
 		QFileInfo fileInfo(QString::fromStdString(spriteAbsolutePath.GetAbsolutePathname()));
 		return fileInfo.absoluteDir().absolutePath();
 	}

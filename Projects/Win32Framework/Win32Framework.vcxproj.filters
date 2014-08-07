@@ -879,9 +879,6 @@
     <ClInclude Include="..\..\Sources\Internal\Database\MongodbObject.h">
       <Filter>Internal\Database</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Autotesting\Config.h">
-      <Filter>Internal\Autotesting</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Debug\Backtrace.h">
       <Filter>Internal\Debug</Filter>
     </ClInclude>
@@ -1257,9 +1254,6 @@
     <ClInclude Include="..\..\Sources\Internal\Platform\Process.h">
       <Filter>Internal\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\Utils\TeamcityOutput.h">
-      <Filter>Internal\Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.h">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClInclude>
@@ -1438,6 +1432,9 @@
     <ClInclude Include="..\..\Sources\Internal\Render\3D\MeshUtils.h">
       <Filter>Internal\Render\3D</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Scene3D\SceneFile\VersionInfo.h">
+      <Filter>Internal\Scene3D\SceneFile</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Render\Image\CRCAdditionInterface.h">
       <Filter>Internal\Render\Image</Filter>
     </ClInclude>
@@ -1518,6 +1515,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.h">
       <Filter>Internal\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
+      <Filter>Internal\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2478,9 +2478,6 @@
     <ClCompile Include="..\..\Sources\Internal\Platform\Process.cpp">
       <Filter>Internal\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\Utils\TeamcityOutput.cpp">
-      <Filter>Internal\Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\SoundComponent.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
@@ -2653,6 +2650,9 @@
     <ClCompile Include="..\..\Sources\Internal\Render\3D\MeshUtils.cpp">
       <Filter>Internal\Render\3D</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Scene3D\SceneFile\VersionInfo.cpp">
+      <Filter>Internal\Scene3D\SceneFile</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\Image\Image.cpp">
       <Filter>Internal\Render\Image</Filter>
     </ClCompile>
@@ -2718,6 +2718,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Utils\VirtualToPhysicalHelper.cpp">
       <Filter>Internal\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
+      <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\OGLHelpers.cpp">
+      <Filter>Internal\Render</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

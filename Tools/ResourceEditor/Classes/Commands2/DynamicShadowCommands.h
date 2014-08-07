@@ -35,24 +35,6 @@
 #include "Render/Highlevel/ShadowVolumeRenderPass.h"
 
 class SceneEditor2;
-class ChangeDynamicShadowColorCommand : public Command2
-{
-public:
-	ChangeDynamicShadowColorCommand(SceneEditor2 *scene, const DAVA::Color & color);
-
-	virtual void Undo();
-	virtual void Redo();
-
-	virtual DAVA::Entity* GetEntity() const;
-
-private:
-
-	DAVA::Color oldColor;
-	DAVA::Color newColor;
-	SceneEditor2 *scene;
-};
-
-
 class ChangeDynamicShadowModeCommand : public Command2
 {
 public:

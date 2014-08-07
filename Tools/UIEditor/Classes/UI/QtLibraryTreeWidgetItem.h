@@ -26,73 +26,26 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
+#ifndef __QT_LIBRARY_TREE_WIDGET_ITEM_H__
+#define __QT_LIBRARY_TREE_WIDGET_ITEM_H__
 
+#include <QTreeWidgetItem>
+#include "HierarchyTreeNode.h"
 
-#include "Utils/TeamcityOutput.h"
-#include "Utils/Utils.h"
-
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
-
-namespace DAVA
+class QtLibraryTreeWidgetItem : public QTreeWidgetItem
 {
+	Q_OBJECT
+
+public:
+	QtLibraryTreeWidgetItem(QTreeWidgetItem * parent);
     
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char8 *text) const
-{
-    String outStr = NormalizeString(text);
-	String status = "NORMAL";
-    switch (ll)
-    {
-        case Logger::LEVEL_ERROR:
-			status = "ERROR";
-            break;
-
-        case Logger::LEVEL_WARNING:
-			status = "WARNING";
-            break;
-            
-        default:
-            break;
-    }
-
-    String output = "##teamcity[message text=\'" + outStr + "\' errorDetails=\'\' status=\'" + status + "\']\n";
-    PlatformOutput(output);
-}
-
-void TeamcityOutput::Output(Logger::eLogLevel ll, const char16 *text) const
-{
-    WideString wstr = text;
-    Output(ll, WStringToString(wstr).c_str());
-}
-
-String TeamcityOutput::NormalizeString(const char8 *text) const
-{
-    String str = text;
+	HierarchyTreeNode::HIERARCHYTREENODEID GetItemId();
+    void SetItemId(HierarchyTreeNode::HIERARCHYTREENODEID ID);
     
-    StringReplace(str, "|", "||");
+protected:
+	HierarchyTreeNode::HIERARCHYTREENODEID itemId;
 
-    StringReplace(str, "'", "|'");
-    StringReplace(str, "\n", "|n");
-    StringReplace(str, "\r", "|r");
 
-//    StringReplace(str, "\u0085", "|x");
-//     StringReplace(str, "\u2028", "|l");
-//     StringReplace(str, "\u2029", "|p");
+};
 
-    StringReplace(str, "[", "|[");
-    StringReplace(str, "]", "|]");
-    
-    return str;
-}
-	
-#if defined (__DAVAENGINE_WIN32__)
-void TeamcityOutput::PlatformOutput(const String &text) const
-{
-    OutputDebugStringA(text.c_str());
-}
-#endif //#if defined (__DAVAENGINE_WIN32__)
-    
-}; // end of namespace DAVA
-
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-
+#endif /* defined(__QT_LIBRARY_TREE_WIDGET_ITEM_H__) */

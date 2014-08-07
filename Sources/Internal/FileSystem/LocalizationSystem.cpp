@@ -34,6 +34,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
 #include "Sound/SoundSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 #include "FileSystem/LocalizationIPhone.h"

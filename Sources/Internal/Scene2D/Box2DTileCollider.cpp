@@ -112,7 +112,7 @@ namespace DAVA
 			b2Body *tileBody = manager->box2DWorld->CreateBody(&bDef);
 			bodyVector[mapIndex] = tileBody;
 			tileBody->SetTiled(true);
-			tileBody->SetUserData((void *)mapIndex);
+			tileBody->SetUserData(reinterpret_cast<void*>(mapIndex));
 					
 			tileBody->CreateFixture(&(rangesVector[newR].fixtureDef));
 		}
@@ -173,7 +173,7 @@ namespace DAVA
 				}
 				bodyVector[i] = tileBody;
 				tileBody->SetTiled(true);
-				tileBody->SetUserData((void *)i);
+				tileBody->SetUserData(reinterpret_cast<void*>(i));
 				
 				tileBody->CreateFixture(&fixtureDef);
 			}

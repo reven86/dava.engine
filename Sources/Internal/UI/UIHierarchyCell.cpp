@@ -29,6 +29,7 @@
 
 
 #include "UI/UIHierarchyCell.h"
+#include "UI/UIStaticText.h"
 
 namespace DAVA 
 {

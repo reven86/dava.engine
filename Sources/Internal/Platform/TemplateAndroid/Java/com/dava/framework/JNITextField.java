@@ -15,6 +15,7 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
 import android.text.method.PasswordTransformationMethod;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -111,6 +112,14 @@ public class JNITextField {
 		}
 	}
 
+	private static float GetScaledDensity()
+	{
+		DisplayMetrics dm = new DisplayMetrics();
+		JNIActivity.GetActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+		return dm.scaledDensity;
+	}
+
 	public static void Create(final int id, final float x, final float y,
 			final float dx, final float dy) {
 		if (controls.containsKey(id)) {
@@ -139,7 +148,7 @@ public class JNITextField {
 				params.gravity = Gravity.LEFT | Gravity.TOP;
 				text.setPadding(0, 0, 0, 0);
 				text.setSingleLine(true);
-				int fontSize = (int) (20);
+				int fontSize = (int) (20 * GetScaledDensity());
 				text.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize);
 				text.setBackgroundColor(Color.TRANSPARENT);
 				text.setTextColor(Color.WHITE);
@@ -216,7 +225,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void UpdateRect(final int id, final float x, final float y,
@@ -281,11 +290,11 @@ public class JNITextField {
 		InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 			@Override
 			public Void call() throws Exception {
-				text.setTextSize(TypedValue.COMPLEX_UNIT_PX, size);
+				text.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)(size * GetScaledDensity()));
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetIsPassword(int id, final boolean isPassword) {
@@ -337,7 +346,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetTextAlign(int id, final int align) {
@@ -368,7 +377,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 
 	public static void SetInputEnabled(int id, final boolean value) {
@@ -383,7 +392,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetAutoCapitalizationType(int id, final int autoCapitalizationType) {
@@ -417,7 +426,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetAutoCorrectionType(int id, final int autoCorrectionType) {
@@ -443,7 +452,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetSpellCheckingType(int id, final int spellCheckingType) {
@@ -469,7 +478,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 		
 	public static void SetKeyboardType(int id, final int keyboardType) {
@@ -513,7 +522,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void SetReturnKeyType(int id, final int returnKeyType) {
@@ -554,7 +563,7 @@ public class JNITextField {
 				return null;
 			}
 		});
-		task.Run();
+		task.AsyncRun();
 	}
 	
 	public static void ShowField(int id) {

@@ -37,11 +37,13 @@
 #include "ItemsCommand.h"
 #include "ControlCommands.h"
 #include "CommandsController.h"
+#include "LibraryController.h"
 #include "CopyPasteController.h"
 #include "IconHelper.h"
 #include "SubcontrolsHelper.h"
 #include "ResourcesManageHelper.h"
 #include "WidgetSignalsBlocker.h"
+#include "LibraryController.h"
 
 #include "regexpinputdialog.h"
 
@@ -72,9 +74,9 @@ HierarchyTreeWidget::HierarchyTreeWidget(QWidget *parent) :
 	
 	connect(HierarchyTreeController::Instance(), SIGNAL(HierarchyTreeUpdated(bool)), this, SLOT(OnTreeUpdated(bool)));
 	connect(HierarchyTreeController::Instance(),
-			SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &)),
+			SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType)),
 			this,
-			SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &)));
+			SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType)));
 	
 	connect(ui->treeWidget, SIGNAL(ShowCustomMenu(const QPoint&)), this, SLOT(OnShowCustomMenu(const QPoint&)));
 	connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(OnTreeItemChanged(QTreeWidgetItem*, int)));
@@ -193,7 +195,9 @@ void HierarchyTreeWidget::OnTreeUpdated(bool needRestoreSelection)
 			AddControlItem(screenItem, screenNode->GetChildNodes());
 		}
 	}
-
+	
+    LibraryController::Instance()->UpdateLibrary();
+    
 	// Restore the selected items only after the tree is fully built.
 	int itemsCount = ui->treeWidget->topLevelItemCount();
 	for (int i = 0; i < itemsCount; i ++)
@@ -251,7 +255,7 @@ void HierarchyTreeWidget::RestoreTreeItemSelectedStateRecursive(QTreeWidgetItem*
 		!parentItem->isSelected())
 	{
 		parentItem->setSelected(true);
-        this->ui->treeWidget->setCurrentItem(parentItem);
+        ui->treeWidget->setCurrentItem(parentItem);
 	}
 
 	// Repeat for all children.
@@ -375,7 +379,7 @@ void HierarchyTreeWidget::on_treeWidget_itemSelectionChanged()
         else
         {
             // Switch the selection state of the control instead of just selecting it (see DF-2838).
-            HierarchyTreeController::Instance()->ChangeItemSelection(selectedControl);
+            HierarchyTreeController::Instance()->ChangeItemSelection(selectedControl, HierarchyTreeController::NoExpand);
         }
 	}
     else
@@ -465,14 +469,15 @@ void HierarchyTreeWidget::ResetSelection()
 	}
 }
 
-void HierarchyTreeWidget::OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &selectedControls)
+void HierarchyTreeWidget::OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &selectedControls, HierarchyTreeController::eExpandControlType expandType)
 {
 	if (internalSelectionChanged)
 		return;
 	
 	internalSelectionChanged = true;
 	ResetSelection();
-	
+	ui->treeWidget->StopExpandTimer();
+
 	TREEITEMS items = GetAllItems();
 	for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedControls.begin();
 		 iter != selectedControls.end();
@@ -485,15 +490,26 @@ void HierarchyTreeWidget::OnSelectedControlNodesChanged(const HierarchyTreeContr
             QTreeWidgetItem* item = itemIter->second;
 			item->setSelected(true);
 			
-			// Force show selected item
-            QTreeWidgetItem* parentItem = item->parent();
-            while (parentItem)
+			// Force show selected item, if requested.
+            if (expandType == HierarchyTreeController::ImmediateExpand)
             {
-                parentItem->setExpanded(true);
-                parentItem = parentItem->parent();
+                ui->treeWidget->ExpandItemAndScrollTo(item);
             }
 		}
 	}
+
+    // Check whether we need to perform deferred expand.
+    if ((selectedControls.size() == 1) &&
+        (expandType == HierarchyTreeController::DeferredExpand ||
+        expandType == HierarchyTreeController::DeferredExpandWithMouseCheck))
+    {
+        const HierarchyTreeControlNode* node = selectedControls.front();
+		TREEITEMS::iterator itemIter = items.find(node->GetId());
+        if (itemIter != items.end())
+        {
+            ui->treeWidget->StartExpandTimer(itemIter->second, expandType == HierarchyTreeController::DeferredExpandWithMouseCheck);
+        }
+    }
 
 	internalSelectionChanged = false;
 }
@@ -638,6 +654,14 @@ void HierarchyTreeWidget::OnRenameControlAction()
 				msgBox.exec();
 				return;
 			}
+             // Do not allow library control name
+            if(LibraryController::Instance()->IsControlNameExists(newName))
+            {
+                QMessageBox msgBox;
+                msgBox.setText("A library control with the same name already exist. Please fill the name field with unique value.");
+                msgBox.exec();
+                return;
+            }
 		}
 		
 		ControlRenameCommand* cmd = new ControlRenameCommand(node->GetId(), itemName, newName);

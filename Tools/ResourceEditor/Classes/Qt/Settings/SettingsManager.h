@@ -49,6 +49,9 @@ namespace Settings
     static const DAVA::FastName General_MaterialEditor_LodColor2("General/MaterialEditor/LodColor2");
     static const DAVA::FastName General_MaterialEditor_LodColor3("General/MaterialEditor/LodColor3");
     
+    static const DAVA::FastName General_HeighMaskTool_Color0("General/HeighMaskTool/Color0");
+    static const DAVA::FastName General_HeighMaskTool_Color1("General/HeighMaskTool/Color1");
+    
 	static const DAVA::FastName Scene_GridStep("Scene/GridStep");
 	static const DAVA::FastName Scene_GridSize("Scene/GridSize");
 	static const DAVA::FastName Scene_CameraSpeed0("Scene/CameraSpeed0");
@@ -65,6 +68,10 @@ namespace Settings
     static const DAVA::FastName Scene_DebugBoxScale("Scene/DebugBoxScale");
     static const DAVA::FastName Scene_DebugBoxUserScale("Scene/DebugBoxUserScale");
     static const DAVA::FastName Scene_DebugBoxParticleScale("Scene/DebugBoxParticleScale");
+
+    static const DAVA::FastName Scene_Sound_SoundObjectDraw("Scene/Sound/SoundObjectDraw");
+    static const DAVA::FastName Scene_Sound_SoundObjectBoxColor("Scene/Sound/SoundObjectBoxColor");
+    static const DAVA::FastName Scene_Sound_SoundObjectSphereColor("Scene/Sound/SoundObjectSphereColor");
     
     // this settings won't be shown in settings dialog
     // and are used only by application

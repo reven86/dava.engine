@@ -43,6 +43,7 @@ namespace DAVA
 UI3DView::UI3DView(const Rect &rect, bool rectInAbsoluteCoordinates)
     :   UIControl(rect, rectInAbsoluteCoordinates)
     ,   scene(0)
+    ,   registeredInUIControlSystem(false)
 {
 
 }
@@ -146,13 +147,21 @@ UIControl* UI3DView::Clone()
     return ui3DView;
 }
 
-void UI3DView::DidAppear()
+void UI3DView::WillBecomeVisible()
 {
-    UIControlSystem::Instance()->UI3DViewAdded();
+    if (!registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = true;
+        UIControlSystem::Instance()->UI3DViewAdded();
+    }
 }
-void UI3DView::DidDisappear()
+void UI3DView::WillBecomeInvisible()
 {
-    UIControlSystem::Instance()->UI3DViewRemoved();
+    if (registeredInUIControlSystem)
+    {
+        registeredInUIControlSystem = false;
+        UIControlSystem::Instance()->UI3DViewRemoved();
+    }
 }
 
 }

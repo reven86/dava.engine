@@ -52,6 +52,8 @@ class QtLabelWithActions;
 class LandscapeDialog;
 class HangingObjectsHeight;
 class DeveloperTools;
+class VersionInfoWidget;
+
 
 class QtMainWindow
     : public QMainWindow
@@ -113,6 +115,7 @@ public slots:
 	void OnEditorGizmoToggle(bool show);
     void OnViewLightmapCanvas(bool show);
 	void OnAllowOnSceneSelectionToggle(bool allow);
+    void OnShowStaticOcclusionToggle(bool show);
 
 	void OnReloadTextures();
 	void OnReloadTexturesTriggered(QAction *reloadAction);
@@ -159,7 +162,6 @@ public slots:
 	void OnShowSettings();
 	void OnOpenHelp();
 
-	void OnSetShadowColor();
 	void OnShadowBlendModeWillShow();
 	void OnShadowBlendModeAlpha();
 	void OnShadowBlendModeMultiply();
@@ -204,6 +206,8 @@ public slots:
     void OnReloadShaders();
 
     void OnSwitchWithDifferentLODs(bool checked);
+
+    void OnGenerateHeightDelta();
     
 protected:
 	virtual bool eventFilter(QObject *object, QEvent *event);
@@ -230,7 +234,7 @@ protected:
 	
 	bool SelectCustomColorsTexturePath();
 	
-protected slots:
+private slots:
 	void ProjectOpened(const QString &path);
 	void ProjectClosed();
 
@@ -240,12 +244,11 @@ protected slots:
 	void SceneSelectionChanged(SceneEditor2 *scene, const EntityGroup *selected, const EntityGroup *deselected);
 
     void OnGlobalInvalidateTimeout();
-
 	void EditorLightEnabled(bool enabled);
-
 	void OnSnapToLandscapeChanged(SceneEditor2* scene, bool isSpanToLandscape);
-
 	void UnmodalDialogFinished(int);
+
+    void DebugVersionInfo();
 
 private:
 	Ui::MainWindow *ui;
@@ -292,6 +295,7 @@ private:
 
     //Need for any debug functionality
     DeveloperTools *developerTools;
+    QPointer<VersionInfoWidget> versionInfoWidget;
 };
 
 

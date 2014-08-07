@@ -104,8 +104,7 @@ static FastName TILEMASK_COLOR_PROPS_NAMES[] =
 	INVALID_PROPERTY_NAME,
     INVALID_PROPERTY_NAME
 };
-	
-const float32 DEFAULT_FOG_DENSITY = 0.006f;
+
 	
 //#define DRAW_OLD_STYLE
 // const float32 LandscapeNode::TEXTURE_TILE_FULL_SIZE = 2048;

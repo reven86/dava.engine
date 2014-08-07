@@ -1,14 +1,21 @@
 package com.dava.framework;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
-import java.security.NoSuchAlgorithmException;
-import java.security.MessageDigest;
-import java.math.BigInteger;
 import javax.microedition.khronos.opengles.GL10;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -18,7 +25,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings.Secure;
-import android.util.Log;
 
 public class JNIDeviceInfo {
 	final static String TAG = "JNIDeviceInfo";
@@ -124,7 +130,7 @@ public class JNIDeviceInfo {
 	public static int GetNetworkType() {
 		ConnectivityManager cm = (ConnectivityManager)JNIActivity.GetActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo info = cm.getActiveNetworkInfo();
-		if (!info.isConnected())
+		if (info == null || !info.isConnected())
 			return NETWORK_TYPE_NOT_CONNECTED;
 		
 		int netType = info.getType();
@@ -171,49 +177,147 @@ public class JNIDeviceInfo {
 		return 0;
 	}
 
-	public static long GetInternalStorageCapacity()
+	public static class StorageInfo
 	{
-        StatFs statFs = new StatFs(Environment.getDataDirectory().getPath());
-        long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-        return capacity;
+		public final String path;
+
+		public final boolean readOnly;
+		public final boolean emulated;
+
+		public final long capacity;
+		public final long freeSpace;
+
+		StorageInfo(String path, boolean readOnly, boolean emulated, long capacity, long freeSpace)
+		{
+			this.path = path;
+			this.readOnly = readOnly;
+			this.emulated = emulated;
+			this.capacity = capacity;
+			this.freeSpace = freeSpace;
+		}
 	}
 
-	public static long GetInternalStorageFree()
+	public static StorageInfo GetInternalStorageInfo()
 	{
-		StatFs statFs = new StatFs(Environment.getDataDirectory().getPath());
+		String path = Environment.getDataDirectory().getPath();
+		StatFs statFs = new StatFs(path);
+
+		long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
 		long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
-		return free;
+
+		return new StorageInfo(path, false, false, capacity, free);
 	}
 
-	public static long GetExternalStorageCapacity()
+	public static boolean IsPrimaryExternalStoragePresent()
 	{
-		if (IsExternalStoragePresent())
+		String state = Environment.getExternalStorageState();
+		if (state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	public static StorageInfo GetPrimaryExternalStorageInfo()
+	{
+		if (IsPrimaryExternalStoragePresent())
 		{
 			String path = Environment.getExternalStorageDirectory().getPath();
-            StatFs statFs = new StatFs(path);
+			StatFs statFs = new StatFs(path);
+
             long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
-            return capacity;
-        }
-
-		return 0;
-	}
-
-	public static long GetExternalStorageFree()
-	{
-		if (IsExternalStoragePresent())
-		{
-			String path = Environment.getExternalStorageDirectory().getPath();
-            StatFs statFs = new StatFs(path);
             long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
-            return free;
+
+            boolean isEmulated = Environment.isExternalStorageEmulated();
+            boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
+
+            return new StorageInfo(path, isReadOnly, isEmulated, capacity, free);
         }
 
-		return 0;
+		return new StorageInfo("", false, false, -1, -1);
 	}
-	
-	public static boolean IsExternalStoragePresent()
+
+	public static StorageInfo[] GetSecondaryExternalStoragesList()
 	{
-		return android.os.Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
+		List<StorageInfo> infos = new ArrayList<StorageInfo>();
+
+		HashSet<String> paths = new HashSet<String>();
+		paths.add(Environment.getExternalStorageDirectory().getPath());
+
+		BufferedReader reader = null;
+		try
+		{
+			reader = new BufferedReader(new FileReader("/proc/mounts"));
+
+			String line;
+			while ((line = reader.readLine()) != null)
+			{
+				if (line.contains("vfat") || line.contains("/mnt"))
+				{
+					StringTokenizer tokens = new StringTokenizer(line, " ");
+					String unused = tokens.nextToken(); //device
+					String mountPoint = tokens.nextToken(); //mount point
+
+					if (paths.contains(mountPoint))
+					{
+					    continue;
+					}
+
+					unused = tokens.nextToken(); //file system
+
+					List<String> flags = Arrays.asList(tokens.nextToken().split(",")); //flags
+					boolean readonly = flags.contains("ro");
+
+					if (!line.contains("/mnt/secure")
+						&& !line.contains("/mnt/asec")
+						&& !line.contains("/mnt/obb")
+						&& !line.contains("/dev/mapper")
+						&& !line.contains("tmpfs"))
+					{
+						paths.add(mountPoint);
+
+						StatFs statFs = null;
+						try
+						{
+							statFs = new StatFs(mountPoint);
+						}
+						catch (Exception e)
+						{
+							continue;
+						}
+
+			            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+			            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+
+						infos.add(new StorageInfo(mountPoint, readonly, false, capacity, free));
+					}
+				}
+			}
+		}
+		catch (FileNotFoundException e)
+		{
+		}
+		catch (IOException e)
+		{
+		}
+		finally
+		{
+			if (reader != null)
+			{
+				try
+				{
+					reader.close();
+				}
+				catch (IOException e)
+				{
+				}
+			}
+		}
+
+		StorageInfo[] arr = new StorageInfo[infos.size()];
+		infos.toArray(arr);
+		return arr;
 	}
 	
 	public static native void SetJString(String str);

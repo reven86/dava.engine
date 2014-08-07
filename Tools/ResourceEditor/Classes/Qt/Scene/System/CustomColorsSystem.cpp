@@ -269,7 +269,7 @@ Image* CustomColorsSystem::CreateToolImage(int32 sideSize, const FilePath& fileP
 	}
 	
 	SafeRelease(toolImageSprite);
-	toolImageSprite = Sprite::CreateFromTexture(toolTexture, 0.f, 0.f, sideSize, sideSize);
+	toolImageSprite = Sprite::CreateFromTexture(toolTexture, 0.f, 0.f, sideSize, sideSize, true);
 	toolImageSprite->GetTexture()->GeneratePixelesation();
 	
 	SafeRelease(toolTexture);
@@ -289,8 +289,10 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 	Vector2 spritePos = cursorPosition - spriteSize / 2.f;
 	
     Sprite::DrawState drawState;
-	drawState.SetScaleSize(spriteSize.x, spriteSize.y,
-                           toolImageSprite->GetWidth(), toolImageSprite->GetHeight());
+	drawState.SetScaleSize(spriteSize.x / Core::GetVirtualToPhysicalFactor(),
+                           spriteSize.y / Core::GetVirtualToPhysicalFactor(),
+                           toolImageSprite->GetWidth(),
+                           toolImageSprite->GetHeight());
 	drawState.SetPosition(spritePos / Core::GetVirtualToPhysicalFactor());
 	toolImageSprite->Draw(&drawState);
 	

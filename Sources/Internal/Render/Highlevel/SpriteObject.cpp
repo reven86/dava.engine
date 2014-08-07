@@ -34,21 +34,16 @@
 
 #include "Render/Material/NMaterialNames.h"
 
-namespace DAVA 
-{
 
-SpriteObject::SpriteObject()
-    : RenderObject()
-    , sprite(NULL)
+ENUM_IMPLEMENTATION(DAVA::SpriteObject::eSpriteType)
 {
-    Texture* t = Texture::CreatePink();
-    Sprite *spr = Sprite::CreateFromTexture(t, 0, 0, t->GetWidth(), t->GetHeight());
-    Init(spr, 0, Vector2(1.f, 1.f), Vector2(0.f, 0.f));
-
-    SafeRelease(spr);
-    SafeRelease(t);
+    ENUM_ADD_DESCR(DAVA::SpriteObject::SPRITE_OBJECT, "SPRITE_OBJECT");
+    ENUM_ADD_DESCR(DAVA::SpriteObject::SPRITE_BILLBOARD, "SPRITE_BILLBOARD");
+    ENUM_ADD_DESCR(DAVA::SpriteObject::SPRITE_BILLBOARD_TO_CAMERA, "SPRITE_BILLBOARD_TO_CAMERA");
 }
 
+namespace DAVA 
+{
 SpriteObject::SpriteObject(const FilePath &pathToSprite, int32 _frame
 							, const Vector2 &reqScale, const Vector2 &pivotPoint)
 	:   RenderObject()

@@ -333,7 +333,7 @@ void MainWindow::ShowUpdateDialog(QQueue<UpdateTask> & tasks)
         if(!tasks.isEmpty())
         {
             //application update
-            UpdateDialog dialog(tasks, this);
+            UpdateDialog dialog(tasks, appManager, this);
             connect(&dialog, SIGNAL(AppInstalled(QString, QString, AppVersion)),
                         appManager, SLOT(OnAppInstalled(QString,QString,AppVersion)));
             dialog.setWindowModality(Qt::ApplicationModal);

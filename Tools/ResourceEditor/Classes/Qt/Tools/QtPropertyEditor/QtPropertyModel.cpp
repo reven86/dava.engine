@@ -234,7 +234,7 @@ QModelIndex QtPropertyModel::indexFromItem(QtPropertyData *data) const
 			int row = parent->ChildIndex(data);
 			if(row >= 0)
 			{
-				ret = createIndex(row, 1, parent);
+				ret = createIndex(row, 0, parent);
 			}
 		}
 	}
@@ -347,12 +347,6 @@ void QtPropertyModel::DataAboutToBeAdded(QtPropertyData *parent, int first, int 
 	if(NULL != parent)
 	{
 		QModelIndex index = indexFromItem(parent);
-		if(index.isValid())
-		{
-			// same index, but column will be 0
-			index = index.sibling(index.row(), 0);
-		}
-
 		beginInsertRows(index, first, last);
 	}
 }
@@ -367,12 +361,6 @@ void QtPropertyModel::DataAboutToBeRemoved(QtPropertyData *parent, int first, in
 	if(NULL != parent)
 	{
 		QModelIndex index = indexFromItem(parent);
-		if(index.isValid())
-		{
-			// same index, but column will be 0
-			index = index.sibling(index.row(), 0);
-		}
-
 		beginRemoveRows(index, first, last);
 	}
 }

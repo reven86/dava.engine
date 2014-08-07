@@ -33,6 +33,7 @@
 		7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497446617B3C38D00282DAA /* AlignTest.cpp */; };
 		749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */; };
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
+		76762412196D5F6C00E4CC65 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 76359F15196C20D300DF2A57 /* libFrameworkTools.a */; };
 		840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840CB02218EE08C600B722D0 /* JPEGTest.cpp */; };
 		84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -76,6 +77,34 @@
 			proxyType = 2;
 			remoteGlobalIDString = 176DEB77174B5561007A983B;
 			remoteInfo = FrameworkNPAPI;
+		};
+		76359F14196C20D300DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698542917CE38C0001E9FDE;
+			remoteInfo = FrameworkTools;
+		};
+		76359F16196C20D300DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543717CE38D8001E9FDE;
+			remoteInfo = FrameworkToolsQt;
+		};
+		76359F18196C20D300DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A698543F17CE38E5001E9FDE;
+			remoteInfo = FrameworkToolsNPAPI;
+		};
+		76359F1A196C20ED00DF2A57 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = A698542817CE38C0001E9FDE;
+			remoteInfo = FrameworkTools;
 		};
 		E81F2AEC16BFA49100C4545E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -170,6 +199,7 @@
 		749A3DCC17B8CF400008EC12 /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
 		749A3DCD17B8CF400008EC12 /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignTest.h; path = Classes/AlignTest.h; sourceTree = "<group>"; };
 		74AF6340188530CD00070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
 		840CB02218EE08C600B722D0 /* JPEGTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JPEGTest.cpp; path = Classes/JPEGTest.cpp; sourceTree = "<group>"; };
 		840CB02318EE08C600B722D0 /* JPEGTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JPEGTest.h; path = Classes/JPEGTest.h; sourceTree = "<group>"; };
 		84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DateTimeTest.cpp; path = Classes/DateTimeTest.cpp; sourceTree = "<group>"; };
@@ -237,6 +267,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				76762412196D5F6C00E4CC65 /* libFrameworkTools.a in Frameworks */,
 				74AF6341188530CD00070C35 /* Security.framework in Frameworks */,
 				1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */,
 				1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */,
@@ -320,6 +351,7 @@
 		29B97314FDCFA39411CA2CEA /* TemplateProjectMacOS */ = {
 			isa = PBXGroup;
 			children = (
+				76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */,
 				02E9E45C173A43A900C501BC /* libfmodevent.dylib */,
 				02E9E45D173A43A900C501BC /* libfmodex.dylib */,
 				C151B18E16D37E2700E09BAF /* WebKit.framework */,
@@ -532,6 +564,16 @@
 				749A3DCD17B8CF400008EC12 /* AlignTest.h */,
 			);
 			name = AlignTest;
+			sourceTree = "<group>";
+		};
+		76359F0D196C20D300DF2A57 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				76359F15196C20D300DF2A57 /* libFrameworkTools.a */,
+				76359F17196C20D300DF2A57 /* libFrameworkToolsQt.a */,
+				76359F19196C20D300DF2A57 /* libFrameworkToolsNPAPI.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		840CB01F18EE088A00B722D0 /* JPEGTest */ = {
@@ -753,6 +795,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				76359F1B196C20ED00DF2A57 /* PBXTargetDependency */,
 				FE93072B12C28C1100A33E69 /* PBXTargetDependency */,
 			);
 			name = TemplateProjectMacOS;
@@ -787,6 +830,10 @@
 					ProductGroup = FE98930C11638F3C00500198 /* Products */;
 					ProjectRef = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
 				},
+				{
+					ProductGroup = 76359F0D196C20D300DF2A57 /* Products */;
+					ProjectRef = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -801,6 +848,27 @@
 			fileType = archive.ar;
 			path = libFrameworkNPAPI.a;
 			remoteRef = 1770DF5517DF6CAE00000391 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		76359F15196C20D300DF2A57 /* libFrameworkTools.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkTools.a;
+			remoteRef = 76359F14196C20D300DF2A57 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		76359F17196C20D300DF2A57 /* libFrameworkToolsQt.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsQt.a;
+			remoteRef = 76359F16196C20D300DF2A57 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		76359F19196C20D300DF2A57 /* libFrameworkToolsNPAPI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkToolsNPAPI.a;
+			remoteRef = 76359F18196C20D300DF2A57 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		E81F2AED16BFA49100C4545E /* libFrameworkQt.a */ = {
@@ -904,6 +972,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		76359F1B196C20ED00DF2A57 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = FrameworkTools;
+			targetProxy = 76359F1A196C20ED00DF2A57 /* PBXContainerItemProxy */;
+		};
 		FE93072B12C28C1100A33E69 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Framework;
@@ -947,6 +1020,7 @@
 					./../../Sources/External,
 					/opt/local/include/,
 					../../Libs/include,
+					./../../Sources/Tools,
 				);
 				INFOPLIST_FILE = "TemplateProjectMacOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -973,6 +1047,7 @@
 					./../../Sources/External,
 					/opt/local/include/,
 					../../Libs/include,
+					./../../Sources/Tools,
 				);
 				INFOPLIST_FILE = "TemplateProjectMacOS-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";

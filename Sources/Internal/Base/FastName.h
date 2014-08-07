@@ -114,6 +114,9 @@ private:
 	
 FastName& FastName::operator=(const FastName &_name)
 {
+    if((*this) == _name)
+        return *this;
+
 	RemRef(index);
 		
 	index = _name.index;

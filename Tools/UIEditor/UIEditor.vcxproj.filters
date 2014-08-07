@@ -837,6 +837,18 @@
     <ClCompile Include="Classes\Helpers\CopyPasteHelper.cpp">
       <Filter>Sources\Helpers</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Metadata\UIListCellMetadata.cpp">
+      <Filter>Sources\Metadata</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Metadata\UIListCellMetadata_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\PropertyGridWidgets\UIListCellPropertyGridWidget.cpp">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\UIListCellPropertyGridWidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Classes\DefaultScreen.h">
@@ -1343,6 +1355,15 @@
     <ClInclude Include="Classes\Helpers\CopyPasteHelper.h">
       <Filter>Sources\Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Metadata\UIListCellMetadata.h">
+      <Filter>Sources\Metadata</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\PropertyGridWidgets\UIListCellPropertyGridWidget.h">
+      <Filter>Sources\UI\PropertyGridWidgets</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_UIListCellPropertyGridWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="UI\createplatformdlg.ui">
@@ -1448,6 +1469,9 @@
       <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
     <None Include="UI\guidepropertygridwidget.ui">
+      <Filter>Form Files\PropertyGridWidgets</Filter>
+    </None>
+    <None Include="UI\UIListCellPropertyGridWidget.ui">
       <Filter>Form Files\PropertyGridWidgets</Filter>
     </None>
   </ItemGroup>

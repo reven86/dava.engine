@@ -138,21 +138,33 @@ namespace DAVA
 		// Возвращает указатель на член интроспекции по заданному имени, или NULL если такой не найден.
 		const InspMember* Member(const char* name) const
 		{
-			const InspMember *member = NULL;
-
 			for(int i = 0; i < members_count; ++i)
 			{
 				if(NULL != members[i])
 				{
 					if(members[i]->name == name)
 					{
-						member = members[i];
-						break;
+						return members[i];
 					}
 				}
 			}
 
-			return member;
+            //Второй проход с strcpm необходим, т.к. под дебагом и строковые литералы могут иметь разные указатели.
+            //Под релизом же, строковые литералы лучше сначала проверить по указателям, т.к. имеет место быть оптимизация компилятором.
+            //Очевидно, что первый проход в принципе не будет работать для runtime строк. 
+            //Поэтому, TODO-ка: переделаь интроспекцию на FastName, будет работать во всех случаях и, к тому же, иногда быстрее.
+            for(int i = 0; i < members_count; ++i)
+            {
+                if(NULL != members[i])
+                {
+                    if(strcmp(members[i]->name, name) == 0)
+                    {
+                        return members[i];
+                    }
+                }
+            }
+
+			return NULL;
 		}
 
 		// Возвращает указатель на базовую интроспекцию, или NULL если такой не существует.
@@ -277,6 +289,10 @@ namespace DAVA
 // Определение члена интроспекции, как свойства. Доступ к нему осуществляется через функци Get/Set. 
 #define PROPERTY(_name, _desc, _getter, _setter, _flags) \
 	DAVA::CreateIspProp(_name, _desc, &ObjectT::_getter, &ObjectT::_setter, _flags),
+
+// Определение члена интроспекции, как перечисления. Доступ к нему осуществляется через функци Get/Set. 
+#define ENUMERATION(_name, _desc, _getter, _setter, _flags) \
+    DAVA::CreateInspEnum(_name, _desc, &ObjectT::_getter, &ObjectT::_setter, _flags),
 
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \

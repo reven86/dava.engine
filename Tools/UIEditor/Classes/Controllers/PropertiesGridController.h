@@ -75,7 +75,7 @@ public slots:
     
     // Emitted by Hierarchy Tree Controller when Control Nodes selection is changed
     // (can contain one or more Control Nodes).
-    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &selectedNodes);
+    void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &selectedNodes, HierarchyTreeController::eExpandControlType expandType);
     
     // Selected State is changed.
 	void OnSelectedStateChanged(UIControl::eControlState newState);

@@ -190,7 +190,7 @@ bool MusicIOSSoundEvent::Trigger()
     return [(AvSound*)avSound play];
 }
 
-void MusicIOSSoundEvent::Stop()
+void MusicIOSSoundEvent::Stop(bool force /* = false */)
 {
     [(AvSound*)avSound stop];
 }

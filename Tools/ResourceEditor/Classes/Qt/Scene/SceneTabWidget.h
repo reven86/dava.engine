@@ -66,7 +66,7 @@ public:
 	~SceneTabWidget();
 
 	int OpenTab();
-	int OpenTab(const DAVA::FilePath &scenePapth);
+	int OpenTab(const DAVA::FilePath &scenePath);
 	bool CloseTab(int index);
     bool CloseAllTabs();
     
@@ -131,6 +131,8 @@ protected:
 	int FindTab(const DAVA::FilePath & scenePath);
 
 private:
+    bool TestSceneCompatibility(const DAVA::FilePath &scenePath);
+
 	int newSceneCounter;
 	SceneEditor2 *curScene;
 };

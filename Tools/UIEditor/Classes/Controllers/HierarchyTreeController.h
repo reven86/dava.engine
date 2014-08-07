@@ -57,6 +57,15 @@ class HierarchyTreeController: public QObject, public Singleton<HierarchyTreeCon
 	Q_OBJECT
 	
 public:
+    // How the selected tree item should be expanded when selected.
+    enum eExpandControlType
+    {
+        NoExpand,                       // No expanding needed
+        DeferredExpand,                 // Deferred (delayed) force expand
+        DeferredExpandWithMouseCheck,   // Deffered expand with check whether mouse is on the control.
+        ImmediateExpand                 // Immediate expand.
+    };
+
     // Unused hierarchy items - needed to delete them after save.
     class BaseUnusedItem
     {
@@ -122,8 +131,8 @@ public:
 
 	// Two separate versions of CreateNewControl method - by its position (when control is dropped
 	// to the screen) and by its direct parent (when the control is dropped to the tree).
-	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(const QString& type, const QPoint& position);
-	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(const QString& strType, const Vector2& position,																				 HierarchyTreeNode* parentNode);
+	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(HierarchyTreeNode::HIERARCHYTREENODEID typeId, const QPoint& position);
+	HierarchyTreeNode::HIERARCHYTREENODEID CreateNewControl(HierarchyTreeNode::HIERARCHYTREENODEID typeId, const Vector2& position,																				 HierarchyTreeNode* parentNode);
 
 	// Return any kind of node (one or multiple) back to the scene.
 	void ReturnNodeToScene(HierarchyTreeNode* nodeToReturn);
@@ -142,8 +151,8 @@ public:
 	void UpdateSelection(const HierarchyTreeNode* activeItem);
     void UpdateAggregators(const HierarchyTreePlatformNode* platform);
 	
-	void ChangeItemSelection(HierarchyTreeControlNode* control);
-	void SelectControl(HierarchyTreeControlNode* control);
+	void ChangeItemSelection(HierarchyTreeControlNode* control, eExpandControlType expandType = ImmediateExpand);
+	void SelectControl(HierarchyTreeControlNode* control, eExpandControlType expandType = ImmediateExpand);
 	void UnselectControl(HierarchyTreeControlNode* control, bool emitSelectedControlNodesChanged = true);
 	bool IsControlSelected(HierarchyTreeControlNode* control) const;
 	void ResetSelectedControl();
@@ -215,7 +224,7 @@ signals:
 	
 	void AddSelectedControl(const HierarchyTreeControlNode*);
 	void RemoveSelectedControl(const HierarchyTreeControlNode*);
-	void SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
+	void SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType expandType = ImmediateExpand);
 	
 	void SelectedTreeItemChanged(const HierarchyTreeNode*);
 	

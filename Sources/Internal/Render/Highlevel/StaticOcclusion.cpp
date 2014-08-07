@@ -77,6 +77,7 @@ void StaticOcclusion::BuildOcclusionInParallel(Vector<RenderObject*> & renderObj
     
     currentData = _currentData;
     occlusionAreaRect = currentData->bbox;
+    cellHeightOffset = currentData->cellHeightOffset;
     xBlockCount = currentData->sizeX;
     yBlockCount = currentData->sizeY;
     zBlockCount = currentData->sizeZ;
@@ -96,7 +97,7 @@ void StaticOcclusion::BuildOcclusionInParallel(Vector<RenderObject*> & renderObj
     if (!renderTargetTexture)
         renderTargetTexture = Texture::CreateFBO(RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT, FORMAT_RGBA8888, Texture::DEPTH_RENDERBUFFER);
     if (!renderTargetSprite)
-        renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT);
+        renderTargetSprite = Sprite::CreateFromTexture(renderTargetTexture, 0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT);
     
     /* Set<uint16> busyIndices;
     for (uint32 k = 0; k < renderObjects.size(); ++k)
@@ -160,6 +161,10 @@ AABBox3 StaticOcclusion::GetCellBox(uint32 x, uint32 y, uint32 z)
     Vector3 min(occlusionAreaRect.min.x + x * size.x,
                 occlusionAreaRect.min.y + y * size.y,
                 occlusionAreaRect.min.z + z * size.z);
+    if (cellHeightOffset)
+    {
+        min.z += cellHeightOffset[x+y*xBlockCount];
+    }
     AABBox3 blockBBox(min, Vector3(min.x + size.x, min.y + size.y, min.z + size.z));
     return blockBBox;
 }
@@ -295,7 +300,7 @@ void StaticOcclusion::RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ)
             for (uint32 stepX = 0; stepX <= stepCount; ++stepX)
                 for (uint32 stepY = 0; stepY <= stepCount; ++stepY)
                 {
-                    Vector3 renderPosition = startPosition + directionX * stepX * stepSize + directionY * stepY * stepSize;
+                    Vector3 renderPosition = startPosition + directionX * (float32)stepX * stepSize + directionY * (float32)stepY * stepSize;
                     
                     if (landscape)
                     {
@@ -324,7 +329,7 @@ void StaticOcclusion::RenderFrame(uint32 cellX, uint32 cellY, uint32 cellZ)
                     // Do Render
                     
                     RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
-                    RenderManager::Instance()->SetViewport(Rect(0, 0, RENDER_TARGET_WIDTH, RENDER_TARGET_HEIGHT), true);                    
+                    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT), true);                    
                     
                     //camera->SetupDynamicParameters();
                     
@@ -498,6 +503,7 @@ StaticOcclusionData::StaticOcclusionData()
     , sizeX(5)
     , sizeY(5)
     , sizeZ(2)
+    , cellHeightOffset(0)
 {
     
 }
@@ -505,6 +511,7 @@ StaticOcclusionData::StaticOcclusionData()
 StaticOcclusionData::~StaticOcclusionData()
 {
     SafeDeleteArray(data);
+    SafeDeleteArray(cellHeightOffset);
 }
     
 StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData & other)
@@ -519,14 +526,24 @@ StaticOcclusionData & StaticOcclusionData::operator= (const StaticOcclusionData 
     SafeDeleteArray(data);
     data = new uint32[(blockCount * objectCount / 32)];
     memcpy(data, other.data, (blockCount * objectCount / 32) * 4);
+
+    SafeDeleteArray(cellHeightOffset);
+    if (other.cellHeightOffset)
+    {
+        cellHeightOffset = new float32[sizeX*sizeY];
+        memcpy(cellHeightOffset, other.cellHeightOffset, sizeof(float32)*sizeX*sizeY);
+    }
+    
+    
     return *this;
 }
 
 
-void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint32 _objectCount, const AABBox3 & _bbox)
+void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint32 _objectCount, const AABBox3 & _bbox, const float32 *_cellHeightOffset)
 {
     //DVASSERT(data == 0);
     SafeDeleteArray(data);
+    SafeDeleteArray(cellHeightOffset);    
     
     objectCount = _objectCount;
     sizeX = _sizeX;
@@ -539,6 +556,13 @@ void StaticOcclusionData::Init(uint32 _sizeX, uint32 _sizeY, uint32 _sizeZ, uint
     
     data = new uint32[(blockCount * objectCount / 32)];
     memset(data, 0, (blockCount * objectCount / 32) * 4);
+
+    if (_cellHeightOffset)
+    {
+        cellHeightOffset = new float32[sizeX*sizeY];
+        memcpy(cellHeightOffset, _cellHeightOffset, sizeof(float32)*sizeX*sizeY);
+    }
+
 }
 
 void StaticOcclusionData::EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex)

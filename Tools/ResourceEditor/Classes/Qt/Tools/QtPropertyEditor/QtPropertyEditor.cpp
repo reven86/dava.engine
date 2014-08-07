@@ -45,15 +45,15 @@ QtPropertyEditor::QtPropertyEditor(QWidget *parent /* = 0 */)
 	curModel = new QtPropertyModel(viewport());
 	setModel(curModel);
 
-	curItemDelegate = new QtPropertyItemDelegate(curModel);
+	curItemDelegate = new QtPropertyItemDelegate(this, curModel);
 	setItemDelegate(curItemDelegate);
 
 	QObject::connect(this, SIGNAL(clicked(const QModelIndex &)), this, SLOT(OnItemClicked(const QModelIndex &)));
 	QObject::connect(this, SIGNAL(expanded(const QModelIndex &)), this, SLOT(OnExpanded(const QModelIndex &)));
 	QObject::connect(this, SIGNAL(collapsed(const QModelIndex &)), this, SLOT(OnCollapsed(const QModelIndex &)));
 	QObject::connect(curModel, SIGNAL(PropertyEdited(const QModelIndex &)), this, SLOT(OnItemEdited(const QModelIndex &)));
-	QObject::connect(curModel, SIGNAL(rowsAboutToBeInserted(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeOp(const QModelIndex &, int, int)));
-	QObject::connect(curModel, SIGNAL(rowsAboutToBeRemoved(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeOp(const QModelIndex &, int, int)));
+	QObject::connect(curModel, SIGNAL(rowsAboutToBeInserted(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeInserted(const QModelIndex &, int, int)));
+	QObject::connect(curModel, SIGNAL(rowsAboutToBeRemoved(const QModelIndex &, int, int)), this, SLOT(rowsAboutToBeRemoved(const QModelIndex &, int, int)));
 	QObject::connect(curModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)), this, SLOT(rowsOp(const QModelIndex &, int, int)));
 	QObject::connect(curModel, SIGNAL(rowsRemoved(const QModelIndex &, int, int)), this, SLOT(rowsOp(const QModelIndex &, int, int)));
 	QObject::connect(&updateTimer, SIGNAL(timeout()), this, SLOT(OnUpdateTimeout()));
@@ -280,7 +280,12 @@ void QtPropertyEditor::OnItemEdited(const QModelIndex &index)
 	emit PropertyEdited(index);
 }
 
-void QtPropertyEditor::rowsAboutToBeOp(const QModelIndex & parent, int start, int end)
+void QtPropertyEditor::rowsAboutToBeInserted(const QModelIndex & parent, int start, int end)
+{
+	curItemDelegate->invalidateButtons();
+}
+
+void QtPropertyEditor::rowsAboutToBeRemoved(const QModelIndex & parent, int start, int end)
 {
 	curItemDelegate->invalidateButtons();
 }

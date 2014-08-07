@@ -69,6 +69,7 @@ public:
     
     void SerializeEvent(const SoundEvent * sEvent, KeyedArchive *toArchive);
     SoundEvent * DeserializeEvent(KeyedArchive *archive);
+    SoundEvent * CloneEvent(const SoundEvent * sEvent);
 
     void Update(float32 timeElapsed);
     void Suspend();
@@ -126,6 +127,8 @@ protected:
     void RemoveSoundEventFromGroups(SoundEvent * event);
 
 	void ReleaseOnUpdate(SoundEvent * sound);
+
+    FastName FindGroupByEvent(const SoundEvent * soundEvent);
 
 	Vector<SoundEvent *> soundsToReleaseOnUpdate;
 

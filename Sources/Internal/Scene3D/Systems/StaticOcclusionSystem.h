@@ -41,6 +41,7 @@ class StaticOcclusion;
 class StaticOcclusionData;
 class StaticOcclusionDataComponent;
 class NMaterial;
+class PolygonGroup;
 
 class MessageQueue
 {
@@ -63,6 +64,7 @@ public:
     virtual void AddEntity(Entity * entity);
     virtual void RemoveEntity(Entity * entity);
     virtual void Process(float32 timeElapsed);
+    virtual void ImmediateEvent(Entity * entity, uint32 event);
     
     inline void SetCamera(Camera * camera);
 
@@ -82,8 +84,8 @@ private:
     void FinishBuildOcclusion(BaseObject * bo, void * messageData, void * callerData);
     void SceneForceLod(int32 layerIndex);
 
-    void UpdateSwitchMaterialRecursively(Entity *entity);
-    void RestoreSwitchMaterials();
+    void UpdateMaterialsForOcclusionRecursively(Entity *entity);
+    void RestoreOcclusionMaterials();
     
     Camera * camera;
     Vector<Entity*> entities;
@@ -138,6 +140,24 @@ private:
     Vector<StaticOcclusionDataComponent*> staticOcclusionComponents;
     Vector<RenderObject*> indexedRenderObjects;
 
+};
+
+
+class StaticOcclusionDebugDrawSystem : public SceneSystem
+{
+public:
+    StaticOcclusionDebugDrawSystem(Scene *scene);    
+
+    virtual void AddEntity(Entity * entity);
+    virtual void RemoveEntity(Entity * entity);
+    virtual void ImmediateEvent(Entity * entity, uint32 event);    
+
+
+    static PolygonGroup* CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);
+    static PolygonGroup* CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup);
+    ~StaticOcclusionDebugDrawSystem();    
+private:
+    NMaterial *debugOpaqueMaterial, *debugAlphablendMaterial;
 };
     
 inline void StaticOcclusionBuildSystem::SetCamera(Camera * _camera)

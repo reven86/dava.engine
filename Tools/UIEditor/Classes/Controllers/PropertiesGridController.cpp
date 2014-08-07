@@ -52,9 +52,9 @@ void PropertiesGridController::ConnectToSignals()
             SLOT(OnSelectedTreeItemChanged(const HierarchyTreeNode*)));
 
     connect(HierarchyTreeController::Instance(),
-            SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES&)),
+            SIGNAL(SelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES&, HierarchyTreeController::eExpandControlType)),
             this,
-            SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES)));
+            SLOT(OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES, HierarchyTreeController::eExpandControlType)));
 }
 
 PropertiesGridController::~PropertiesGridController()
@@ -106,7 +106,7 @@ void PropertiesGridController::SetActiveUIControlStates(const Vector<UIControl::
 }
 
 void PropertiesGridController::OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES
-                                                             &selectedNodes)
+                                                             &selectedNodes, HierarchyTreeController::eExpandControlType expandType)
 {
     if (selectedNodes.size() == 0)
     {
