@@ -279,14 +279,13 @@ void Sprite::InitFromFile(File *file)
 //		originalVertices[i] = new float32[4];
 		texCoords[i] = new GLfloat[8];
 		rectsAndOffsets[i] = new GLfloat[6];
-    	char frameName[128];
+    	char frameName[128] = {0};;
     	
 		int32 x, y, dx,dy, xOff, yOff;
 
 		file->ReadLine(tempBuf, 1024);
 		sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
-        //DVASSERT(!String(frameName).empty());
-		frameNames[i] = String(frameName).empty() ? FastName() : FastName(frameName);
+		frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
         
 		rectsAndOffsets[i][0] = (float32)x;
 		rectsAndOffsets[i][1] = (float32)y;

@@ -75,7 +75,6 @@ void DefinitionFile::LoadPNG(const FilePath & _filename, const FilePath & pathTo
 	frameRects[0].dy = spriteHeight;
     
     frameNames.resize(frameCount);
-    frameNames[0] = String();
 
 	FilePath fileWrite = FramePathHelper::GetFramePathAbsolute(pathToProcess, nameWithoutExt, 0);
 	FileSystem::Instance()->CopyFile(_filename, fileWrite);
@@ -130,7 +129,6 @@ bool DefinitionFile::LoadPNGDef(const FilePath & _filename, const FilePath & pat
 		frameRects[k].dx = reducedRect.dx;
 		frameRects[k].dy = reducedRect.dy;
 	
-		frameNames[k] = String();
 		if (CommandLineParser::Instance()->IsFlagSet("--add0pixel"))
 		{
 			

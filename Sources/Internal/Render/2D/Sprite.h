@@ -213,7 +213,7 @@ public:
 
 	//void SetFrame(int32 frm);
     
-    int32 GetFrameByName(const FastName& frameName);
+    int32 GetFrameByName(const FastName& frameName) const;
 
 	void SetDefaultPivotPoint(float32 x, float32 y);
 	void SetDefaultPivotPoint(const Vector2 &newPivotPoint);
