@@ -26,23 +26,10 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "VirtualToPhysicalHelper.h"
-#include "Base/BaseMath.h"
-#include "Core/Core.h"
+
+#include "Render/2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA
 {
 
-Rect ConvertPhysicalToVirtual(const Rect & _rect)
-{
-    Rect rect(_rect);
-    rect.x /= Core::GetVirtualToPhysicalFactor();
-    rect.y /= Core::GetVirtualToPhysicalFactor();
-    rect.dx /= Core::GetVirtualToPhysicalFactor();
-    rect.dy /= Core::GetVirtualToPhysicalFactor();
-    
-    return rect;
-}
-
 };
-

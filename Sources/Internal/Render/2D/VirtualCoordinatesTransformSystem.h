@@ -26,23 +26,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#include "VirtualToPhysicalHelper.h"
+
+#ifndef __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
+#define __DAVAENGINE_VIRTUAL_COORDINATES_SYSTEM_H__
+
+#include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Core/Core.h"
+#include "Base/Singleton.h"
 
 namespace DAVA
 {
 
-Rect ConvertPhysicalToVirtual(const Rect & _rect)
+class VirtualCoordinatesTransformSystem : public Singleton<VirtualCoordinatesTransformSystem>
 {
-    Rect rect(_rect);
-    rect.x /= Core::GetVirtualToPhysicalFactor();
-    rect.y /= Core::GetVirtualToPhysicalFactor();
-    rect.dx /= Core::GetVirtualToPhysicalFactor();
-    rect.dy /= Core::GetVirtualToPhysicalFactor();
-    
-    return rect;
-}
+public:
+    VirtualCoordinatesTransformSystem() {};
+    virtual ~VirtualCoordinatesTransformSystem() {};
 
+    void SetVirtualScreenSize(const Vector2 & vector);
+    void SetPhysicalScreenSize(const Vector2 & vector);
+    const Vector2 & GetVirtualScreenSize();
+    const Vector2 & GetPhysicalScreenSize();
+
+    Vector2 ConvertPhysicalToVirtual(const Vector2 & vector);
+    Vector2 ConvertVirtualToPhysical(const Vector2 & vector);
+    Vector2 ConvertResourceToVirtual(const Vector2 & vector, DAVA::int32 resourceIndex);
+    Rect ConvertPhysicalToVirtual(const Rect & rect);
+    Rect ConvertVirtualToPhysical(const Rect & rect);
+    Rect ConvertResourceToVirtual(const Rect & rect, int32 resourceIndex);
 };
 
+};
+#endif
