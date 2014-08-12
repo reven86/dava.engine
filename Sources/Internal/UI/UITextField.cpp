@@ -278,7 +278,6 @@ void UITextField::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         if (font)
         {
             SetFont(font);
-            SetFontSize((float32)font->GetFontHeight());
         }
     }
     
@@ -538,10 +537,30 @@ void UITextField::WillBecomeInvisible()
 }
 
 
-void UITextField::Draw( const UIGeometricData &geometricData )
+void UITextField::Draw(const UIGeometricData &geometricData)
 {
-    UIControl::Draw( geometricData );
+    UIControl::Draw(geometricData);
     textFieldImpl->Draw();
+}
+
+const Color & UITextField::GetShadowColor() const
+{
+    return textFieldImpl->GetTextShadowColor();
+}
+
+void UITextField::SetShadowColor(const Color &color)
+{
+    textFieldImpl->SetTextShadowColor(color);
+}
+
+const Vector2 & UITextField::GetShadowOffset() const
+{
+    return textFieldImpl->GetTextShadowOffset();
+}
+
+void UITextField::SetShadowOffset(const Vector2 &offset)
+{
+    textFieldImpl->SetTextShadowOffset(offset);
 }
 
 }; // namespace

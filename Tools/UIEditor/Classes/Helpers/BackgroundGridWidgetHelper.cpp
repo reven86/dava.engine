@@ -29,6 +29,7 @@
 
 
 #include "BackgroundGridWidgetHelper.h"
+#include "Render/2D/TextBlock.h"
 using namespace DAVA;
 
 const BackgroundGridWidgetHelper::DrawTypesData BackgroundGridWidgetHelper::drawTypesData[] =

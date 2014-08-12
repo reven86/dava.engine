@@ -49,6 +49,9 @@ public:
 
     virtual const Color &GetTextColor() const;
     virtual void SetTextColor(const Color &color);
+    virtual const Color &GetTextShadowColor() const;
+    virtual const Vector2 &GetTextShadowOffset() const;
+    virtual void SetFont(Font * font);
     virtual void SetFontSize(float32 size);
     
     virtual void SetTextAlign(int32 align);

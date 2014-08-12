@@ -230,5 +230,22 @@ void UITextFieldImpl_Android::TextFieldShouldReturn(uint32_t id)
 
     control->GetDelegate()->TextFieldShouldReturn(control);
 }
+
+const Color &UITextFieldImpl_Android::GetTextShadowColor() const
+{
+    return Color::White;
+}
+
+const Vector2 &UITextFieldImpl_Android::GetTextShadowOffset() const
+{
+    static const Vecto2 zeroVector;
+    return zeroVector;
+}
+
+void UITextFieldImpl_Android::SetFont(Font * font)
+{
+    SetFontSize((float32)font->GetFontHeight());
+}
+
 };
 #endif //#if defined(__DAVAENGINE_ANDROID__)

@@ -34,6 +34,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
+#include "UI/UIStaticText.h"
 #include "FileSystem/FilePath.h"
 
 namespace DAVA 

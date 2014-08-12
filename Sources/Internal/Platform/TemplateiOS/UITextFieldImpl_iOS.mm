@@ -327,6 +327,11 @@ void UITextFieldImpl_iOS::SetTextColor(const Color &color)
     textFieldHolder->textField.textColor = [UIColor colorWithRed:color.r green:color.g blue:color.b alpha:color.a];
 }
 
+void UITextFieldImpl_iOS::SetFont(Font * font)
+{
+    SetFontSize((float32)font->GetFontHeight());
+}
+
 void UITextFieldImpl_iOS::SetFontSize(float size)
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
@@ -533,6 +538,18 @@ void UITextFieldImpl_iOS::SetCursorPos(uint32 pos)
     UITextPosition *end = [textField positionFromPosition:start offset:0];
     [textField setSelectedTextRange:[textField textRangeFromPosition:start toPosition:end]];
 }
+
+const Color &UITextFieldImpl_iOS::GetTextShadowColor() const
+{
+    return Color::White;
+}
+
+const Vector2 &UITextFieldImpl_iOS::GetTextShadowOffset() const
+{
+    static const Vecto2 zeroVector;
+    return zeroVector;
+}
+
 };
 
 #endif

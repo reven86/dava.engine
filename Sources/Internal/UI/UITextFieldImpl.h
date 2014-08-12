@@ -38,6 +38,7 @@ class Color;
 class UITextField;
 class UIEvent;
 class Font;
+class Vector2;
 
 class UITextFieldImpl
 {
@@ -53,6 +54,11 @@ public:
 
     virtual const Color &GetTextColor() const = 0;
     virtual void SetTextColor(const Color &color){}
+    virtual const Color &GetTextShadowColor() const = 0;
+    virtual void SetTextShadowColor(const Color &color){}
+    virtual const Vector2 &GetTextShadowOffset() const = 0;
+    virtual void SetTextShadowOffset(const Vector2 &offset){}
+
     virtual Font *GetFont() const { return NULL; }
     virtual void SetFont(Font * font){}
     virtual void SetFontSize(float32 size){}

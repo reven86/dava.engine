@@ -50,9 +50,12 @@ public:
     virtual void UpdateRect(const Rect & rect, float32 timeElapsed);
     virtual const Color &GetTextColor() const;
     virtual void SetTextColor(const Color &color);
+    virtual const Color &GetTextShadowColor() const;
+    virtual void SetTextShadowColor(const Color &color);
+    virtual const Vector2 &GetTextShadowOffset() const;
+    virtual void SetTextShadowOffset(const Vector2 &offset);
     virtual Font *GetFont() const;
     virtual void SetFont(Font * font);
-    virtual void SetFontSize(float32 size);
     virtual void SetTextAlign(int32 align);
 
     virtual void SetVisible(bool value);

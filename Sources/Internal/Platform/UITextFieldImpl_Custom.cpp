@@ -118,16 +118,14 @@ void UITextFieldImpl_Custom::UpdateRect(const Rect & newRect, float32 timeElapse
     if (!needRedraw)
         return;
 
-    if(textField == UIControlSystem::Instance()->GetFocusedControl())
+
+    WideString visibleText = GetVisibleText();
+
+    if(textField == UIControlSystem::Instance()->GetFocusedControl() && showCursor)
     {
-        WideString txt = GetVisibleText();
-        txt += showCursor ? L"|" : L" ";
-        staticText->SetText(txt);
+        visibleText += showCursor ? L"|" : L" ";
     }
-    else
-    {
-        staticText->SetText(GetVisibleText());
-    }
+    staticText->SetText(visibleText);
     needRedraw = false;
 }
 
@@ -149,13 +147,6 @@ Font * UITextFieldImpl_Custom::GetFont() const
 void UITextFieldImpl_Custom::SetFont(Font * font)
 {
     staticText->SetFont(font);
-}
-
-void UITextFieldImpl_Custom::SetFontSize(float32 size)
-{
-    ScopedPtr<Font> newFont(staticText->GetFont()->Clone());
-    newFont->SetSize(size);
-    SetFont(newFont);
 }
 
 void UITextFieldImpl_Custom::SetTextAlign(int32 align)
@@ -240,6 +231,26 @@ void UITextFieldImpl_Custom::Input(UIEvent *currentInput)
 void UITextFieldImpl_Custom::Draw()
 {
     staticText->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+}
+
+const Color &UITextFieldImpl_Custom::GetTextShadowColor() const
+{
+    return staticText->GetShadowColor();
+}
+
+void UITextFieldImpl_Custom::SetTextShadowColor(const Color &color)
+{
+    staticText->SetShadowColor(color);
+}
+
+const Vector2 &UITextFieldImpl_Custom::GetTextShadowOffset() const
+{
+    return staticText->GetShadowOffset();
+}
+
+void UITextFieldImpl_Custom::SetTextShadowOffset(const Vector2 &offset)
+{
+    staticText->SetShadowOffset(offset);
 }
 
 }

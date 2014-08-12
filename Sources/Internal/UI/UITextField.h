@@ -226,6 +226,12 @@ public:
 	 \param[in] fontColor font used for text draw of the states.
 	 */
     virtual void SetTextColor(const Color& fontColor);
+
+    const Color &GetShadowColor() const;
+    void SetShadowColor(const Color &color);
+
+    const Vector2 &GetShadowOffset() const;
+    void SetShadowOffset(const Vector2 &offset);
 	/**
 	 \brief Sets the size of the font.
 	 \param[in] size font size to be set.
