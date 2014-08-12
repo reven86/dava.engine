@@ -546,7 +546,7 @@ const Color &UITextFieldImpl_iOS::GetTextShadowColor() const
 
 const Vector2 &UITextFieldImpl_iOS::GetTextShadowOffset() const
 {
-    static const Vecto2 zeroVector;
+    static const Vector2 zeroVector;
     return zeroVector;
 }
 
