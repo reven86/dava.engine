@@ -36,6 +36,7 @@
 #include "ui_davaglwidget.h"
 
 #include <QApplication>
+#include <QMessageBox>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -51,6 +52,7 @@
 	#include "Platform/Qt/Win32/QtLayerWin32.h"
 	#include "Platform/Qt/Win32/CorePlatformWin32Qt.h"
 #endif //#if defined (__DAVAENGINE_MACOS__)
+
 
 DavaGLWidget::DavaGLWidget(QWidget *parent)
 	: QWidget(parent)
@@ -240,13 +242,12 @@ int DavaGLWidget::GetFPS() const
 	return fps;
 }
 
-
 void DavaGLWidget::Render()
 {
 	QElapsedTimer frameTimer;
 	frameTimer.start();
 
-	if(isEnabled())
+	if(isEnabled() && DAVA::QtLayer::Instance()->IsDAVAEngineEnabled())
 	{
 		DAVA::QtLayer::Instance()->ProcessFrame();
 	}
@@ -285,4 +286,9 @@ void DavaGLWidget::EnableCustomPaintFlags(bool enable)
 	setAttribute(Qt::WA_OpaquePaintEvent, enable);
 	setAttribute(Qt::WA_NoSystemBackground, enable);
 	setAttribute(Qt::WA_PaintOnScreen, enable);
+}
+
+void DavaGLWidget::ShowAssertMessage(const char * message)
+{
+    QMessageBox::critical(this, "", message);
 }

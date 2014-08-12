@@ -33,6 +33,7 @@
 #include "UI/UIYamlLoader.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FontManager.h"
+#include "FileSystem/YamlNode.h"
 #include "UI/UISystemKeyboard.h"
 
 #include "Input/KeyboardDevice.h"

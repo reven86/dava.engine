@@ -30,6 +30,7 @@
 
 #include "UI/UIScrollBar.h"
 #include "Base/ObjectFactory.h"
+#include "FileSystem/YamlNode.h"
 
 namespace DAVA 
 {

@@ -223,7 +223,6 @@ void StaticOcclusionRenderPass::Draw(RenderSystem * renderSystem, uint32 clearBu
 //    glDepthMask(GL_TRUE);
 //    glDepthFunc(GL_LESS);
 //    glColorMask(true, true, true, true);
-    int32 x = 0;
 }
 
 };

@@ -187,19 +187,12 @@ public:
     static Sprite* CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded = false, bool inVirtualSpace = false);
     static Sprite* CreateFromSourceData(const uint8* data, uint32 size, bool contentScaleIncluded = false, bool inVirtualSpace = false);
 
-	/*
-	 \brief Function to prepare sprite tiling. Shifts texture coordinates by approximately 1 pixel to the center. Tiled sprites can be drawn using scale and there will be no empty pixels between them.
-	 */
-	void PrepareForTiling();
-
 	void SetOffsetsForFrame(int frame, float32 xOff, float32 yOff);
 
+	Texture* GetTexture() const;
+	Texture* GetTexture(int32 frameNumber) const;
 
-	virtual int32 Release();
-	Texture* GetTexture();
-	Texture* GetTexture(int32 frameNumber);
-
-	UniqueHandle GetTextureHandle(int32 frameNumber);
+	UniqueHandle GetTextureHandle(int32 frameNumber) const;
 
 	int32 GetFrameCount() const;
 
@@ -209,38 +202,14 @@ public:
 
 	const Vector2 &GetDefaultPivotPoint() const;
 
-	//void SetFrame(int32 frm);
-
 	void SetDefaultPivotPoint(float32 x, float32 y);
 	void SetDefaultPivotPoint(const Vector2 &newPivotPoint);
 
-	//void SetPivotPoint(float32 x, float32 y);
-	//void SetPivotPoint(const Vector2 &newPivotPoint);
-
-	//void SetPosition(float32 x, float32 y);
-	//void SetPosition(const Vector2 &drawPos);
-
-	//void SetAngle(float32 angleInRadians);
-
-	//void SetScale(float32 xScale, float32 yScale);
-	//void SetScale(const Vector2 &newScale);
-
-	//void SetScaleSize(float32 width, float32 height);//scale size overrides standart scale
-	//void SetScaleSize(const Vector2 &drawSize);
-
 	void SetModification(int32 modif);
 
-	//void ResetPivotPoint();
-
-	//void ResetAngle();
 	void ResetModification();
-	//void ResetScale();
 	void Reset();//Reset do not resets the pivot point
 
-	void BeginBatching();
-	void EndBatching();
-
-	//void Draw();
 	void Draw(DrawState * state);
 	/**
 	 \brief	Draw sprite by the 4 verticies.

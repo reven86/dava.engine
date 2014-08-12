@@ -94,7 +94,7 @@ public:
 	void SetUIControlStates(const Vector<UIControl::eControlState>& controlStates);
 
     // Apply move for all controls.
-    virtual void ApplyMove(const Vector2&) {};
+    virtual void ApplyMove(const Vector2&, bool /*alignControlsToIntegerPos*/) {};
     
     // Apply resize for all controls.
     virtual void ApplyResize(const Rect& /*originalRect*/, const Rect& /*newRect*/) {};
@@ -154,7 +154,7 @@ protected:
     HierarchyTreeNode::HIERARCHYTREENODEID GetActiveTreeNodeID() const;
     
     // Helper to access active UI Control.
-    UIControl* GetActiveUIControl() const;
+    virtual UIControl* GetActiveUIControl() const;
 
     // Get the UI control class name.
     virtual QString GetUIControlClassName() const { return QString(); };

@@ -69,6 +69,7 @@ static const FastName LAYER_TRANSLUCENT("TransclucentRenderLayer");
 static const FastName LAYER_AFTER_TRANSLUCENT("AfterTransclucentRenderLayer");
 static const FastName LAYER_SHADOW_VOLUME("ShadowVolumeRenderLayer");
 static const FastName LAYER_VEGETATION("VegetationRenderLayer");
+static const FastName LAYER_DEBUG_DRAW("DebugRenderLayer");
     
 enum eRenderLayerID
 {
@@ -80,6 +81,7 @@ enum eRenderLayerID
     RENDER_LAYER_AFTER_TRANSLUCENT_ID = 5,
     RENDER_LAYER_SHADOW_VOLUME_ID = 6,
     RENDER_LAYER_VEGETATION_ID = 7,
+    RENDER_LAYER_DEBUG_DRAW_ID = 8,
     RENDER_LAYER_ID_COUNT,
 };
     

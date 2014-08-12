@@ -67,6 +67,8 @@ private:
 	//void SetDefaultItemFont(QStandardItem *item, QString defaultFontName, QString fontName);
 	QStandardItem* CreateFontItem(QString itemText, QString fontName, QString defaultFontName);
 
+    void ValidateFont(const Font* font) const;
+
 private slots:
     void OkButtonClicked();
     void SetDefaultButtonClicked();

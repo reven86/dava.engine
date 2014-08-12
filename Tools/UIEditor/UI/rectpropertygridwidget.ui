@@ -63,7 +63,7 @@
      <string>Size:</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="pivotYSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="pivotYDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>210</x>
@@ -72,11 +72,11 @@
       <height>25</height>
      </rect>
     </property>
-    <property name="minimum">
-     <number>-10000</number>
-    </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -111,7 +111,7 @@
      <string>Y:</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="relativeXSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="relativeXDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>100</x>
@@ -120,11 +120,11 @@
       <height>25</height>
      </rect>
     </property>
-    <property name="minimum">
-     <number>-10000</number>
-    </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_13">
@@ -146,7 +146,7 @@
      <string>Y:</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="pivotXSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="pivotXDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>100</x>
@@ -155,11 +155,11 @@
       <height>25</height>
      </rect>
     </property>
-    <property name="minimum">
-     <number>-10000</number>
-    </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_5">
@@ -175,7 +175,7 @@
      <string>Angle:</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="sizeYSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="sizeYDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>210</x>
@@ -185,10 +185,13 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
-   <widget class="QSpinBox" name="absoluteXSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="absoluteXDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>100</x>
@@ -198,10 +201,13 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
-   <widget class="QSpinBox" name="relativeYSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="relativeYDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>210</x>
@@ -210,11 +216,11 @@
       <height>25</height>
      </rect>
     </property>
-    <property name="minimum">
-     <number>-10000</number>
-    </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -230,7 +236,7 @@
      <string>Relative:</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="sizeXSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="sizeXDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>100</x>
@@ -240,7 +246,10 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_9">
@@ -278,7 +287,7 @@
      <number>360</number>
     </property>
    </widget>
-   <widget class="QSpinBox" name="absoluteYSpinBox">
+   <widget class="AdjustablePointDoubleSpinBox" name="absoluteYDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>210</x>
@@ -288,7 +297,10 @@
      </rect>
     </property>
     <property name="maximum">
-     <number>10000</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_7">
@@ -414,15 +426,22 @@
    </widget>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AdjustablePointDoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>AdjustablePointDoubleSpinBox.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
-  <tabstop>relativeXSpinBox</tabstop>
-  <tabstop>relativeYSpinBox</tabstop>
-  <tabstop>absoluteXSpinBox</tabstop>
-  <tabstop>absoluteYSpinBox</tabstop>
-  <tabstop>sizeXSpinBox</tabstop>
-  <tabstop>sizeYSpinBox</tabstop>
-  <tabstop>pivotXSpinBox</tabstop>
-  <tabstop>pivotYSpinBox</tabstop>
+  <tabstop>relativeXDoubleSpinBox</tabstop>
+  <tabstop>relativeYDoubleSpinBox</tabstop>
+  <tabstop>absoluteXDoubleSpinBox</tabstop>
+  <tabstop>absoluteYDoubleSpinBox</tabstop>
+  <tabstop>sizeXDoubleSpinBox</tabstop>
+  <tabstop>sizeYDoubleSpinBox</tabstop>
+  <tabstop>pivotXDoubleSpinBox</tabstop>
+  <tabstop>pivotYDoubleSpinBox</tabstop>
   <tabstop>centerPivotPointButton</tabstop>
   <tabstop>angleSpinBox</tabstop>
  </tabstops>

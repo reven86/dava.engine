@@ -312,7 +312,6 @@ void ShaderCache::ParseDefaultVariable(ShaderAsset * asset, const String & input
         const String & type = tokens[1];
         const String & name = tokens[2];
         const String & equals = tokens[3];
-        const String & type2 = tokens[4];
         
         DVASSERT(equals == "=");
         

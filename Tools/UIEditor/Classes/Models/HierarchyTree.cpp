@@ -35,7 +35,6 @@
 #include "HierarchyTreeControlNode.h"
 #include "HierarchyTreeNode.h"
 #include "HierarchyTreeController.h"
-#include "LibraryController.h"
 
 #include "MetadataFactory.h"
 #include "ResourcesManageHelper.h"
@@ -434,12 +433,6 @@ void HierarchyTree::DeleteNodes(const HierarchyTreeNode::HIERARCHYTREENODESLIST&
 		{
 			controlNode->GetParent()->RemoveTreeNode(controlNode, deleteNodeFromMemory, deleteNodeFromScene);
 			continue;
-		}
-		
-		HierarchyTreeAggregatorNode* aggregatorNode = dynamic_cast<HierarchyTreeAggregatorNode*>(node);
-		if (aggregatorNode)
-		{
-			LibraryController::Instance()->RemoveControl(aggregatorNode);
 		}
 		
 		HierarchyTreeScreenNode* screenNode = dynamic_cast<HierarchyTreeScreenNode*>(node);

@@ -31,6 +31,7 @@
 #include "CommandsController.h"
 #include "ChangePropertyCommand.h"
 #include "PropertiesHelper.h"
+#include "LibraryController.h"
 
 #include <QEvent>
 #include <QMessageBox>
@@ -91,6 +92,15 @@ void RootPropertyGridWidget::HandleLineEditEditingFinished(QLineEdit* senderWidg
 			
 		return;
 	}
+
+    // Do not allow library control name
+    if(LibraryController::Instance()->IsControlNameExists(senderWidget->text()))
+    {
+        QMessageBox msgBox;
+        msgBox.setText("A library control with the same name already exist. Please fill the name field with unique value.");
+        msgBox.exec();
+        return;
+    }
 	
 	BaseCommand* command = new ChangePropertyCommand<QString>(activeMetadata, iter->second, senderWidget->text());
     CommandsController::Instance()->ExecuteCommand(command);

@@ -32,7 +32,10 @@
 #include "CorePlatformWin32.h"
 using namespace DAVA;
 
+#pragma warning(push)
+#pragma warning(disable: 4717) //'ATL::CCRTAllocator::free' : recursive on all control paths, function will cause runtime stack overflow
 #include <atlbase.h>
+#pragma warning(pop)
 #include <atlcom.h>
 #include <ExDisp.h>
 #include <ExDispid.h>

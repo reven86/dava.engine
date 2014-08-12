@@ -37,6 +37,7 @@
 #include "Grid/GridVisualizer.h"
 
 #include "DefaultScreen.h"
+#include "ScreenWrapper.h"
 
 ScreenControl::ScreenControl() :
     screenShotMode(false)
@@ -68,7 +69,7 @@ void ScreenControl::SetPos(const Vector2& value)
     this->pos = value;
 }
 
-void ScreenControl::Draw( const UIGeometricData &geometricData )
+void ScreenControl::Draw(const UIGeometricData & /*geometricData*/)
 {
     // Draw "transparent" (cheqered) backgound under the control.
     RenderManager::Instance()->PushDrawMatrix();
@@ -76,17 +77,30 @@ void ScreenControl::Draw( const UIGeometricData &geometricData )
 
     UIGeometricData backGd;
     backGd.scale = Vector2(1.0f, 1.0f);
-	backGd.position.x = pos.x * scale.x;
-    backGd.size.x = size.x * scale.x;
-    backGd.position.y = pos.y * scale.y;
-    backGd.size.y = size.y * scale.y;
-    backGd.AddToGeometricData(geometricData);
+    if (screenShotMode)
+    {
+        backGd.position.x = 0.0f;
+        backGd.position.y = 0.0f;
+    }
+    else
+    {
+        backGd.position.x = Max(0.0f, pos.x * scale.x);
+        backGd.position.y = Max(0.0f, pos.y * scale.y);
+    }
+
+    const Vector2& screenSize = ScreenWrapper::Instance()->GetBackgroundFrameRect().GetSize() * scale;
+    backGd.size.x = Min(size.x * scale.x, screenSize.x);
+    backGd.size.y = Min(size.y * scale.y, screenSize.y);
+
+    backGd.size.x = Min(backGd.size.x, (size.x + pos.x) * scale.x);
+    backGd.size.y = Min(backGd.size.y, (size.y + pos.y) * scale.y);
+
     chequeredBackground->Draw(backGd);
 
     RenderManager::Instance()->PopDrawMatrix();
 }
 
-void ScreenControl::DrawAfterChilds(const UIGeometricData &geometricData)
+void ScreenControl::DrawAfterChilds(const UIGeometricData & /*geometricData*/)
 {
     // Draw the grid over the control.
     GridVisualizer::Instance()->DrawGridIfNeeded( GetRect(), RenderState::RENDERSTATE_2D_BLEND);

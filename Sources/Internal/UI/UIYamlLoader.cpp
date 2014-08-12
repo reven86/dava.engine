@@ -32,8 +32,10 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControl.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/2D/GraphicsFont.h"
+#include "Render/2D/DFFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
 
@@ -542,7 +544,7 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
             const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
             if(fontVerticalSpacingNode)
             {
-                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
+                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
             }
             
 			//fontMap[t->first] = font;
@@ -573,18 +575,45 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
             const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
             if(fontVerticalSpacingNode)
             {
-                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
+                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt32());
             }
             
             const YamlNode * fontHorizontalSpacingNode = node->Get("horizontalSpacing");
             if(fontHorizontalSpacingNode)
             {
-                font->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt());
+                font->SetHorizontalSpacing(fontHorizontalSpacingNode->AsInt32());
             }
             
 			//fontMap[t->first] = font;
 			FontManager::Instance()->SetFontName(font, t->first);
             SafeRelease(font);
+		}
+		else if (type == "DFFont")
+		{
+			// parse font
+			const YamlNode * fontNameNode = node->Get("name");
+			if (!fontNameNode)continue;
+			
+			float32 fontSize = 10.0f;
+			const YamlNode * fontSizeNode = node->Get("size");
+			if (fontSizeNode)fontSize = fontSizeNode->AsFloat();
+			
+			DFFont * font = DFFont::Create(fontNameNode->AsString());
+            if (!font)
+            {
+                continue;
+            }
+			
+			font->SetSize(fontSize);
+			
+            const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
+            if(fontVerticalSpacingNode)
+            {
+                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
+            }
+            
+			//fontMap[t->first] = font;
+			FontManager::Instance()->SetFontName(font, t->first);
 		}
 	}
 }
@@ -601,6 +630,7 @@ void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * root
 		const String & type = typeNode->AsString();
 		if (type == "FTFont")continue;
 		if (type == "GraphicsFont")continue;
+		if (type == "DFFont") continue;
 
 		// Base Type might be absent.
 		const YamlNode* baseTypeNode = node->Get("baseType");

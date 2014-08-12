@@ -169,10 +169,10 @@ void RadixSort(int64 *array, int offset, int end, int shift)
         for (x=0; x<256; ++x) {
             temp = x > 0 ? pointer[x] - pointer[x-1] : pointer[0] - offset;
             if (temp > 64) {
-                RadixSort(array, pointer[x] - temp, pointer[x], shift);
+                RadixSort(array, (int)(pointer[x] - temp), (int)pointer[x], shift);
             } else if (temp > 1) {
                 // std::sort(array + (pointer[x] - temp), array + pointer[x]);
-                insertion_sort_64(array, pointer[x] - temp, pointer[x]);
+                insertion_sort_64(array, (int)(pointer[x] - temp), (int)pointer[x]);
             }
         }
     }

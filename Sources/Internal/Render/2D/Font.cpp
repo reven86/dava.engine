@@ -30,6 +30,7 @@
 #include "Render/2D/Font.h"
 #include "Core/Core.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "FontManager.h"
 
 #include "Utils/StringFormat.h"
@@ -141,7 +142,7 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
     
 	resultVector.clear();
     
-    Vector<int32> sizes;
+    Vector<float32> sizes;
 	GetStringSize(text, &sizes);
 	if(sizes.size() == 0)
 	{
@@ -189,7 +190,7 @@ void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & 
         }
         else
         {
-            currentLineDx += sizes[pos];
+            currentLineDx += (int32)sizes[pos];
         }
     }
     
@@ -396,7 +397,7 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 	int state = SKIP;
 	int totalSize = (int)text.length();
 	
-	Vector<int32> sizes;
+	Vector<float32> sizes;
 	GetStringSize(text, &sizes);
     if(sizes.size() == 0)
     {
@@ -447,7 +448,7 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
 				    {
                     
                         //calculate current line width
-					    int currentLineWidth = 0;
+					    float32 currentLineWidth = 0;
 
 					    int32 startPos = (separator.IsLineInitialized()) ? separator.currentLineStart : 0;
 					    for (int i = startPos; i < pos ; i++)
@@ -522,18 +523,18 @@ void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRec
                                 DVASSERT(0);
                             }
                         }
+                    }
 
-					    if (IsSpace(t) || IsLineEnd(t)) state = SKIP; // if cur char is space go to skip
-					    else if (t == 0) state = FINISH;
-                        else if(wasSeparator && !isSeparator)
-                        {
-                            // good char after separator
-					        separator.lastWordStart = pos;
-					        separator.lastWordEnd = pos;
-					        if (!separator.IsLineInitialized()) separator.currentLineStart = pos;
-                        }
-                        wasSeparator = isSeparator;
-				    }
+					if (IsSpace(t) || IsLineEnd(t)) state = SKIP; // if cur char is space go to skip
+					else if (t == 0) state = FINISH;
+                    else if(wasSeparator && !isSeparator)
+                    {
+                        // good char after separator
+					    separator.lastWordStart = pos;
+					    separator.lastWordEnd = pos;
+					    if (!separator.IsLineInitialized()) separator.currentLineStart = pos;
+                    }
+                    wasSeparator = isSeparator;
                 }
 				break;
 			case FINISH:
@@ -577,16 +578,6 @@ YamlNode * Font::SaveToYamlNode() const
     SafeDelete(nodeValue);
     
     return node;
-}
-
-Size2i Font::DrawString(float32 /*offsetX*/, float32 /*offsetY*/, const WideString & /*str*/, int32 /*justifyWidth*/)
-{
-	return Size2i(0, 0);
-}
-
-Size2i Font::DrawStringToBuffer(void * /*buffer*/, int32 /*bufWidth*/, int32 /*bufHeight*/, int32 /*offsetX*/, int32 /*offsetY*/, int32 /*justifyWidth*/, int32 /*spaceAddon*/, const WideString & /*str*/, bool /*contentScaleIncluded*/)
-{
-	return  Size2i(0, 0);
 }
 
 };

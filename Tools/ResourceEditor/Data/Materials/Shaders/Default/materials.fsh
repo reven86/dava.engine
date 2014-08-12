@@ -3,12 +3,15 @@ uniform sampler2D albedo = 0;
 uniform sampler2D decal = 1;
 uniform sampler2D detail = 1;
 uniform sampler2D lightmap = 1;
+uniform sampler2D decalmask = 1;
 uniform sampler2D vegetationmap = 2
 uniform sampler2D normalmap = 2;
 uniform sampler2D cubemap = 3;
 uniform sampler2D heightmap = 4;
 uniform sampler2D densitymap = 5;
+uniform sampler2D decaltexture = 6;
 
+uniform float normalScale = 1.0;
 uniform float inGlossiness = 0.5;
 uniform float inSpecularity = 1.0;
 uniform vec3 metalFresnelReflectance = vec3(0.5, 0.5, 0.5);
@@ -91,6 +94,14 @@ uniform float lightIntensity0;
 uniform float inSpecularity;
 uniform float physicalFresnelReflectance;
 uniform vec3 metalFresnelReflectance;
+uniform float normalScale;
+#endif
+
+#if defined(TILED_DECAL)
+uniform sampler2D decalmask;
+uniform sampler2D decaltexture;
+uniform lowp vec4 decalTileColor;
+varying vec2 varDecalTileTexCoord;
 #endif
 
 #if defined(VERTEX_LIT) || defined(PIXEL_LIT)
@@ -272,7 +283,13 @@ void main()
     #endif
 
     #if defined(VIEW_ALBEDO)
-        color *= textureColor0.rgb;
+        #if defined(TILED_DECAL)
+            lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
+            color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
+        #else
+            color *= textureColor0.rgb;
+        #endif
     #endif
 
     #if defined(VIEW_SPECULAR)
@@ -295,7 +312,13 @@ void main()
     #endif
         
     #if defined(VIEW_ALBEDO)
-        color *= textureColor0.rgb;
+        #if defined(TILED_DECAL)
+            lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
+            color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
+        #else
+            color *= textureColor0.rgb;
+        #endif
     #endif
     
     #if defined(VIEW_SPECULAR)
@@ -316,8 +339,9 @@ void main()
 #elif defined(PIXEL_LIT)
     // lookup normal from normal map, move from [0, 1] to  [-1, 1] range, normalize
     vec3 normal = 2.0 * texture2D (normalmap, varTexCoord0).rgb - 1.0;
-    //normal = normalize (normal);
-   	normal.z = sqrt(1.0 - (normal.x * normal.x + normal.y * normal.y));
+    normal.xy *= normalScale;
+    normal = normalize (normal);
+   	//normal.z = sqrt(1.0 - (normal.x * normal.x + normal.y * normal.y));
     //normal = vec3(0.0, 0.0, 1.0);
     
     float attenuation = lightIntensity0;
@@ -415,7 +439,13 @@ void main()
     #endif
     
     #if defined(VIEW_ALBEDO)
-        color *= textureColor0.rgb;
+        #if defined(TILED_DECAL)
+            lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
+            color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
+        #else
+            color *= textureColor0.rgb;
+        #endif
     #endif
     
     #if defined(VIEW_SPECULAR)

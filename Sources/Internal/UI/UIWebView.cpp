@@ -30,6 +30,7 @@
 
 #include "UIWebView.h"
 #include "Render/RenderManager.h"
+#include "FileSystem/YamlNode.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "../Platform/TemplateMacOS/WebViewControlMacOS.h"

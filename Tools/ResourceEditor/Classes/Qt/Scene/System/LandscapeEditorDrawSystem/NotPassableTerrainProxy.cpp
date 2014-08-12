@@ -36,10 +36,8 @@ NotPassableTerrainProxy::NotPassableTerrainProxy()
 	LoadColorsArray();
 	
 	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
-	notPassableMapSprite = Sprite::CreateAsRenderTarget(2048,
-														2048,
-														DAVA::FORMAT_RGBA8888,
-														true);
+	notPassableMapSprite = Sprite::CreateAsRenderTarget(2048, 2048, DAVA::FORMAT_RGBA8888, true);
+    notPassableMapSprite->ConvertToVirtualSize();
 }
 
 NotPassableTerrainProxy::~NotPassableTerrainProxy()
@@ -155,7 +153,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	float32 tanCoef = angleHeightDelta / angleCellDistance;
 	
 	Texture *notPassableMap = notPassableMapSprite->GetTexture();
-	float32 dx = (float32)notPassableMap->GetWidth() / (float32)(heightmap->Size() - 1);
+	float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
 	
 	RenderManager* renderManager = RenderManager::Instance();
 	RenderHelper* renderHelper = RenderHelper::Instance();

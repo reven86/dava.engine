@@ -33,6 +33,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/File.h"
 #include "FileSystem/KeyedArchive.h"
+#include "FileSystem/YamlNode.h"
 
 #include <sstream>
 #include <iostream>

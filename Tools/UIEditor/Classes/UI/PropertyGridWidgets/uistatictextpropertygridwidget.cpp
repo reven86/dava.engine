@@ -157,7 +157,7 @@ void UIStaticTextPropertyGridWidget::UpdateLocalizationValue()
     // Key is known now - determine and set the value.
     QString localizationKey = ui->localizationKeyNameLineEdit->text();
     WideString localizationValue = LocalizationSystem::Instance()->GetLocalizedString(QStrint2WideString(localizationKey));
-	ui->localizationKeyTextLineEdit->setText(WideString2QStrint(localizationValue));
+	ui->localizationKeyTextLineEdit->setText(WideString2QString(localizationValue));
     
     // Also update the "dirty" style for the "Value"
     PROPERTYGRIDWIDGETSITER iter = this->propertyGridWidgetsMap.find(ui->localizationKeyNameLineEdit);

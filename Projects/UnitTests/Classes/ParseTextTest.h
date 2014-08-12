@@ -59,6 +59,8 @@ private:
 
     UIStaticText *wrapBySymbolLong;
     UIStaticText *wrapByWordLong;
+
+	Font::eFontType requestedFontType;
 };
 
 #endif /* defined(__PARSE_TEXT_TEST_H__) */

@@ -59,6 +59,7 @@ public:
     void Finish();
     bool IsFinished();
 
+	void SetUniqueObjectName();
     void SetObjectName(const String &objectname);
     String GetObjectName();
 

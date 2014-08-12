@@ -90,7 +90,7 @@ void FastName::Init(const char * name)
     {
         // already exist, so we just need to set the same index to this object
         index = db->namesHash[name];
-        AddRef(index);
+        db->namesRefCounts[index]++;
     }
     else
     {
@@ -131,6 +131,8 @@ void FastName::Init(const char * name)
 
 void FastName::AddRef(int i) const
 {
+    LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
+
 	FastNameDB *db = FastNameDB::Instance();
 	DVASSERT(i >= -1 && i < (int)db->namesTable.size());
     if(i >= 0)

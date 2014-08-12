@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.TelephonyManager;
@@ -80,14 +81,18 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
         
-
-        ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
-        if (cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting())
-        {
-        	TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
-        	singalStrengthListner = new SingalStrengthListner();
-        	tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
-        }
+        try {
+        	ConnectivityManager cm = (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
+        	NetworkInfo networkInfo = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        	if (cm != null && networkInfo != null && networkInfo.isConnectedOrConnecting())
+            {
+            	TelephonyManager tm = (TelephonyManager)getSystemService(TELEPHONY_SERVICE);
+            	singalStrengthListner = new SingalStrengthListner();
+            	tm.listen(singalStrengthListner, SingalStrengthListner.LISTEN_SIGNAL_STRENGTHS);
+            }
+		} catch (Exception e) {
+			Log.d("", "no singalStrengthListner");
+		}
     }
     
     @Override

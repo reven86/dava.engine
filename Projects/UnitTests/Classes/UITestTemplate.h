@@ -64,7 +64,7 @@ private:
 
 
 template <class T>
-const float32 UITestTemplate<T>::TEST_TIME = 130.f;
+const float32 UITestTemplate<T>::TEST_TIME = 30.f;
 
 template <class T>
 UITestTemplate<T>::UITestTemplate(const String & screenName)

@@ -1,17 +1,29 @@
 package com.dava.framework;
 
-import java.util.Locale;
-import java.util.TimeZone;
-import java.security.NoSuchAlgorithmException;
-import java.security.MessageDigest;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.StringTokenizer;
+import java.util.TimeZone;
 import javax.microedition.khronos.opengles.GL10;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
+import android.os.StatFs;
 import android.provider.Settings.Secure;
 
 public class JNIDeviceInfo {
@@ -88,18 +100,40 @@ public class JNIDeviceInfo {
 	
 	protected static void SetGPUFamily(GL10 gl)
 	{
-		String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
-		
-		if (extensions.indexOf("GL_IMG_texture_compression_pvrtc") >= 0)
-			gpuFamily = GPU_POWERVR_ANDROID;
-		else if (extensions.indexOf("GL_NV_draw_texture") >= 0)
+		String renderer = gl.glGetString(GL10.GL_RENDERER).toLowerCase();
+
+		gpuFamily = GPU_UNKNOWN;
+
+		if (renderer.indexOf("tegra") >= 0)
+		{
 			gpuFamily = GPU_TEGRA;
-		else if (extensions.indexOf("GL_AMD_compressed_ATC_texture") >= 0)
+		}
+		else if (renderer.indexOf("powervr") >= 0)
+		{
+			gpuFamily = GPU_POWERVR_ANDROID;
+		}
+		else if (renderer.indexOf("adreno") >= 0)
+		{
 			gpuFamily = GPU_ADRENO;
-		else if (extensions.indexOf("GL_OES_compressed_ETC1_RGB8_texture") >= 0)
+		}
+		else if (renderer.indexOf("mali") >= 0)
+		{
 			gpuFamily = GPU_MALI;
-		else
-			gpuFamily = GPU_UNKNOWN;
+		}
+
+		if (gpuFamily == GPU_UNKNOWN)
+		{
+			String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
+		
+			if (extensions.indexOf("GL_IMG_texture_compression_pvrtc") >= 0)
+				gpuFamily = GPU_POWERVR_ANDROID;
+			else if (extensions.indexOf("GL_NV_draw_texture") >= 0)
+				gpuFamily = GPU_TEGRA;
+			else if (extensions.indexOf("GL_AMD_compressed_ATC_texture") >= 0)
+				gpuFamily = GPU_ADRENO;
+			else if (extensions.indexOf("GL_OES_compressed_ETC1_RGB8_texture") >= 0)
+				gpuFamily = GPU_MALI;
+		}
 	}
 	
 	public static int GetGPUFamily()
@@ -118,7 +152,7 @@ public class JNIDeviceInfo {
 	public static int GetNetworkType() {
 		ConnectivityManager cm = (ConnectivityManager)JNIActivity.GetActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo info = cm.getActiveNetworkInfo();
-		if (!info.isConnected())
+		if (info == null || !info.isConnected())
 			return NETWORK_TYPE_NOT_CONNECTED;
 		
 		int netType = info.getType();
@@ -163,6 +197,149 @@ public class JNIDeviceInfo {
 			return MaxSignalLevel;
 		}
 		return 0;
+	}
+
+	public static class StorageInfo
+	{
+		public final String path;
+
+		public final boolean readOnly;
+		public final boolean emulated;
+
+		public final long capacity;
+		public final long freeSpace;
+
+		StorageInfo(String path, boolean readOnly, boolean emulated, long capacity, long freeSpace)
+		{
+			this.path = path;
+			this.readOnly = readOnly;
+			this.emulated = emulated;
+			this.capacity = capacity;
+			this.freeSpace = freeSpace;
+		}
+	}
+
+	public static StorageInfo GetInternalStorageInfo()
+	{
+		String path = Environment.getDataDirectory().getPath();
+		StatFs statFs = new StatFs(path);
+
+		long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+		long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+
+		return new StorageInfo(path, false, false, capacity, free);
+	}
+
+	public static boolean IsPrimaryExternalStoragePresent()
+	{
+		String state = Environment.getExternalStorageState();
+		if (state.equals(Environment.MEDIA_MOUNTED) || state.equals(Environment.MEDIA_MOUNTED_READ_ONLY))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	public static StorageInfo GetPrimaryExternalStorageInfo()
+	{
+		if (IsPrimaryExternalStoragePresent())
+		{
+			String path = Environment.getExternalStorageDirectory().getPath();
+			StatFs statFs = new StatFs(path);
+
+            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+
+            boolean isEmulated = Environment.isExternalStorageEmulated();
+            boolean isReadOnly = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
+
+            return new StorageInfo(path, isReadOnly, isEmulated, capacity, free);
+        }
+
+		return new StorageInfo("", false, false, -1, -1);
+	}
+
+	public static StorageInfo[] GetSecondaryExternalStoragesList()
+	{
+		List<StorageInfo> infos = new ArrayList<StorageInfo>();
+
+		HashSet<String> paths = new HashSet<String>();
+		paths.add(Environment.getExternalStorageDirectory().getPath());
+
+		BufferedReader reader = null;
+		try
+		{
+			reader = new BufferedReader(new FileReader("/proc/mounts"));
+
+			String line;
+			while ((line = reader.readLine()) != null)
+			{
+				if (line.contains("vfat") || line.contains("/mnt"))
+				{
+					StringTokenizer tokens = new StringTokenizer(line, " ");
+					String unused = tokens.nextToken(); //device
+					String mountPoint = tokens.nextToken(); //mount point
+
+					if (paths.contains(mountPoint))
+					{
+					    continue;
+					}
+
+					unused = tokens.nextToken(); //file system
+
+					List<String> flags = Arrays.asList(tokens.nextToken().split(",")); //flags
+					boolean readonly = flags.contains("ro");
+
+					if (!line.contains("/mnt/secure")
+						&& !line.contains("/mnt/asec")
+						&& !line.contains("/mnt/obb")
+						&& !line.contains("/dev/mapper")
+						&& !line.contains("tmpfs"))
+					{
+						paths.add(mountPoint);
+
+						StatFs statFs = null;
+						try
+						{
+							statFs = new StatFs(mountPoint);
+						}
+						catch (Exception e)
+						{
+							continue;
+						}
+
+			            long capacity = (long)statFs.getBlockCount() * (long)statFs.getBlockSize();
+			            long free = (long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize();
+
+						infos.add(new StorageInfo(mountPoint, readonly, false, capacity, free));
+					}
+				}
+			}
+		}
+		catch (FileNotFoundException e)
+		{
+		}
+		catch (IOException e)
+		{
+		}
+		finally
+		{
+			if (reader != null)
+			{
+				try
+				{
+					reader.close();
+				}
+				catch (IOException e)
+				{
+				}
+			}
+		}
+
+		StorageInfo[] arr = new StorageInfo[infos.size()];
+		infos.toArray(arr);
+		return arr;
 	}
 	
 	public static native void SetJString(String str);

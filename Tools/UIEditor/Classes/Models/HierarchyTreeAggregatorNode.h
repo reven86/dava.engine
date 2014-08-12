@@ -45,8 +45,7 @@ public:
 	typedef Set<HierarchyTreeControlNode*> CHILDS;
 
 	HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent, const QString& name, const Rect& rect);
-	HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent,
-								const HierarchyTreeAggregatorNode* base);
+	HierarchyTreeAggregatorNode(HierarchyTreePlatformNode* parent, const HierarchyTreeAggregatorNode* base);
 	~HierarchyTreeAggregatorNode();
 
 	void AddChild(HierarchyTreeControlNode* node);
@@ -63,7 +62,8 @@ public:
 	
 	bool Load(const Rect& rect, const QString& path);
 	bool Save(YamlNode* node, const QString& path, bool saveAll);
-	
+    
+    virtual void ReturnTreeNodeToScene();	
 	virtual void SetName(const QString& name);
 	
 	const FilePath& GetPath();

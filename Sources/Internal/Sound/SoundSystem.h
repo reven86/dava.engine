@@ -37,6 +37,7 @@
 #include "Base/EventDispatcher.h"
 #include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
+#include "Platform/Mutex.h"
 
 #ifdef DAVA_FMOD
 namespace FMOD
@@ -60,6 +61,8 @@ class FMODSoundEvent;
 class Component;
 class SoundSystem : public Singleton<SoundSystem>
 {
+    static Mutex soundGroupsMutex;
+    
 public:
     SoundSystem();
     ~SoundSystem();
@@ -69,6 +72,7 @@ public:
     
     void SerializeEvent(const SoundEvent * sEvent, KeyedArchive *toArchive);
     SoundEvent * DeserializeEvent(KeyedArchive *archive);
+    SoundEvent * CloneEvent(const SoundEvent * sEvent);
 
     void Update(float32 timeElapsed);
     void Suspend();
@@ -126,6 +130,8 @@ protected:
     void RemoveSoundEventFromGroups(SoundEvent * event);
 
 	void ReleaseOnUpdate(SoundEvent * sound);
+
+    FastName FindGroupByEvent(const SoundEvent * soundEvent);
 
 	Vector<SoundEvent *> soundsToReleaseOnUpdate;
 

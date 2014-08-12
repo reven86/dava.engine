@@ -167,7 +167,10 @@ void PixelFormatDescriptor::InitializePixelFormatDescriptors()
 #else 
     SetPixelDescription(FORMAT_A16, FastName("A16"), 16, GL_UNSIGNED_SHORT, GL_ALPHA, GL_ALPHA, true, false);
 #endif
-	SetPixelDescription(FORMAT_RGBA16161616, FastName("RGBA16161616"), 64, GL_HALF_FLOAT, GL_RGBA, GL_RGBA, caps.isFloat16Supported);
+    
+	SetPixelDescription(FORMAT_RGBA16161616, FastName("RGBA16161616"), 64, GetHalfFloatID(), GL_RGBA, GL_RGBA, caps.isFloat16Supported);
+    
+    
 	SetPixelDescription(FORMAT_RGBA32323232, FastName("RGBA32323232"), 128, GL_FLOAT, GL_RGBA, GL_RGBA, caps.isFloat32Supported);
 
 	SetPixelDescription(FORMAT_PVR4, FastName("PVR4"), 4, GL_UNSIGNED_BYTE, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG, caps.isPVRTCSupported, true);

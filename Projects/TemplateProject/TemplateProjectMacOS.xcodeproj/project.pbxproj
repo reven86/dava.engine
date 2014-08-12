@@ -14,6 +14,9 @@
 		5C383CBF15F6083400C5906B /* libFramework.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C383CBC15F6070900C5906B /* libFramework.a */; };
 		5C9676601520C0BF00EF0237 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C96765F1520C0BF00EF0237 /* libz.dylib */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		CCE2CA1B197950D900D8086F /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCE2CA1A197950D900D8086F /* AVFoundation.framework */; };
+		CCE2CA1D1979510600D8086F /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCE2CA1C1979510600D8086F /* CoreMedia.framework */; };
+		CCE2CA1F1979511B00D8086F /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CCE2CA1E1979511B00D8086F /* WebKit.framework */; };
 		FE444EEB1153A1D500F5EFD6 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */; };
 		FE9892E511638EF700500198 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E111638EF700500198 /* InfoPlist.strings */; };
 		FE9892E611638EF700500198 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = FE9892E311638EF700500198 /* MainMenu.xib */; };
@@ -22,7 +25,6 @@
 		FEC3CA811283557F00541220 /* FrameworkMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CA6F1283557F00541220 /* FrameworkMain.cpp */; };
 		FEC3CA821283557F00541220 /* GameCore.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CA711283557F00541220 /* GameCore.cpp */; };
 		FEC3CA871283557F00541220 /* TestScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FEC3CA7B1283557F00541220 /* TestScreen.cpp */; };
-		FEC9202813BA2EAA006F347F /* TemplateProjectMacOS-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = FEC9202713BA2EAA006F347F /* TemplateProjectMacOS-Info.plist */; };
 		FEFCD5EE12AE50860060A1A1 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = FEFCD5E712AE50860060A1A1 /* Data */; };
 /* End PBXBuildFile section */
 
@@ -40,6 +42,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = D2AAC07D0554694100DB518D;
 			remoteInfo = Framework;
+		};
+		CCE2CA1419794F4F00D8086F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE408F951541C9650001D712 /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E898A2C416BD265400732C04;
+			remoteInfo = FrameworkQt;
+		};
+		CCE2CA1619794F4F00D8086F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FE408F951541C9650001D712 /* Framework.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 176DEB77174B5561007A983B;
+			remoteInfo = FrameworkNPAPI;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -67,6 +83,9 @@
 		4F47207017450A0E0040A308 /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = ../dava.framework/Libs/fmod/lib/macos/libfmodex.dylib; sourceTree = SOURCE_ROOT; };
 		5C96765F1520C0BF00EF0237 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		8D1107320486CEB800E47090 /* TemplateProjectMacOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TemplateProjectMacOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CCE2CA1A197950D900D8086F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		CCE2CA1C1979510600D8086F /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
+		CCE2CA1E1979511B00D8086F /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		FE408F951541C9650001D712 /* Framework.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Framework.xcodeproj; path = ../dava.framework/Projects/MacOSFramework/Framework.xcodeproj; sourceTree = "<group>"; };
 		FE444EEA1153A1D500F5EFD6 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		FE5288A4132FA5EB000FE4F0 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
@@ -90,6 +109,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CCE2CA1F1979511B00D8086F /* WebKit.framework in Frameworks */,
+				CCE2CA1D1979510600D8086F /* CoreMedia.framework in Frameworks */,
+				CCE2CA1B197950D900D8086F /* AVFoundation.framework in Frameworks */,
 				4F47207117450A0E0040A308 /* libfmodevent.dylib in Frameworks */,
 				4F47207217450A0E0040A308 /* libfmodex.dylib in Frameworks */,
 				5C383CBF15F6083400C5906B /* libFramework.a in Frameworks */,
@@ -169,6 +191,9 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				CCE2CA1E1979511B00D8086F /* WebKit.framework */,
+				CCE2CA1C1979510600D8086F /* CoreMedia.framework */,
+				CCE2CA1A197950D900D8086F /* AVFoundation.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
 				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
 			);
@@ -179,6 +204,8 @@
 			isa = PBXGroup;
 			children = (
 				5C383CBC15F6070900C5906B /* libFramework.a */,
+				CCE2CA1519794F4F00D8086F /* libFrameworkQt.a */,
+				CCE2CA1719794F4F00D8086F /* libFrameworkNPAPI.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -236,7 +263,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0510;
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "TemplateProjectMacOS" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -271,6 +298,20 @@
 			remoteRef = 5C383CBB15F6070900C5906B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		CCE2CA1519794F4F00D8086F /* libFrameworkQt.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkQt.a;
+			remoteRef = CCE2CA1419794F4F00D8086F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		CCE2CA1719794F4F00D8086F /* libFrameworkNPAPI.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libFrameworkNPAPI.a;
+			remoteRef = CCE2CA1619794F4F00D8086F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -282,7 +323,6 @@
 				FE9892E611638EF700500198 /* MainMenu.xib in Resources */,
 				FEA30C361231362D00E691CC /* version.plist in Resources */,
 				FEFCD5EE12AE50860060A1A1 /* Data in Resources */,
-				FEC9202813BA2EAA006F347F /* TemplateProjectMacOS-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,6 +390,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
@@ -363,6 +404,7 @@
 					"\"$(SRCROOT)/../dava.framework/Libs/fmod/lib/macos\"",
 				);
 				PRODUCT_NAME = TemplateProjectMacOS;
+				VALID_ARCHS = x86_64;
 			};
 			name = Debug;
 		};
@@ -370,6 +412,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -381,13 +424,14 @@
 					"\"$(SRCROOT)/../dava.framework/Libs/fmod/lib/macos\"",
 				);
 				PRODUCT_NAME = TemplateProjectMacOS;
+				VALID_ARCHS = x86_64;
 			};
 			name = Release;
 		};
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = DAVA_DEBUG;
@@ -399,6 +443,7 @@
 					./../dava.framework/Sources/Internal,
 					./../dava.framework/Sources/External,
 					/opt/local/include/,
+					./../dava.framework/Libs/include,
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
@@ -413,7 +458,7 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LIBRARY = "libstdc++";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
@@ -423,6 +468,7 @@
 					./../dava.framework/Sources/Internal,
 					./../dava.framework/Sources/External,
 					/opt/local/include/,
+					./../dava.framework/Libs/include,
 				);
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",

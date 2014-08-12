@@ -18,6 +18,7 @@
     <ClInclude Include="Classes\Config.h" />
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\DeviceInfoTest.h" />
+    <ClInclude Include="Classes\DFFontTest.h" />
     <ClInclude Include="Classes\DLCSystemTests.h" />
     <ClInclude Include="Classes\DPITest.h" />
     <ClInclude Include="Classes\DXTTest.h" />
@@ -64,6 +65,7 @@
     <ClCompile Include="Classes\ComponentsTest.cpp" />
     <ClCompile Include="Classes\DateTimeTest.cpp" />
     <ClCompile Include="Classes\DeviceInfoTest.cpp" />
+    <ClCompile Include="Classes\DFFontTest.cpp" />
     <ClCompile Include="Classes\DLCSystemTests.cpp" />
     <ClCompile Include="Classes\DPITest.cpp" />
     <ClCompile Include="Classes\DXTTest.cpp" />
@@ -101,6 +103,14 @@
     <ClCompile Include="Classes\UIMovieTest.cpp" />
     <ClCompile Include="Classes\UIScrollViewTest.cpp" />
     <ClCompile Include="Win32Specific\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Win32Framework\FrameworkTools.vcxproj">
+      <Project>{8785b31f-e437-4ff7-b66e-5975f59e18d4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Win32Framework\Win32Framework.vcxproj">
+      <Project>{a6472d47-5050-406d-89e9-4725192e32f2}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A31689CE-A339-464E-8D7E-49EF2AF81AA4}</ProjectGuid>
@@ -145,7 +155,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;DAVA_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -168,7 +178,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../../Sources/Tools;./../../Sources/Internal;./../../Sources/External;./../../Libs/glew/Include;./../../Libs/include;$(DXSDK_DIR)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>

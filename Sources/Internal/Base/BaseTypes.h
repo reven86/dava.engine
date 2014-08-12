@@ -336,6 +336,7 @@ enum eAlign
 //#endif//#if !defined(__DAVAENGINE_ANDROID__)
 
 
+#ifndef DAVAENGINE_HIDE_DEPRECATED
 #ifdef __GNUC__
 #define DAVA_DEPRECATED(func) func __attribute__ ((deprecated))
 #elif defined(_MSC_VER)
@@ -344,6 +345,9 @@ enum eAlign
 #pragma message("WARNING: You need to implement DAVA_DEPRECATED for this compiler")
 #define DAVA_DEPRECATED(func) func
 #endif
+#else
+#define DAVA_DEPRECATED(func) func
+#endif //DAVAENGINE_HIDE_DEPRECATED
     
 enum eErrorCode
 {

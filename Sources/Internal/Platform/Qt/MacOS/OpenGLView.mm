@@ -16,6 +16,8 @@
 #import "OpenGLView.h"
 #include "DAVAEngine.h"
 
+#include "Platform/Qt/QtLayer.h"
+
 #if defined(__DAVAENGINE_MACOS__)
 
 
@@ -178,7 +180,7 @@
 
 - (void)drawRect:(NSRect)theRect
 {
-    if(willQuit)
+    if(willQuit || !QtLayer::Instance()->IsDAVAEngineEnabled())
         return;
     
 	DAVA::RenderManager::Instance()->Lock();

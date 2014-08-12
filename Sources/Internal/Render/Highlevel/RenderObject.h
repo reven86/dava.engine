@@ -239,7 +239,7 @@ protected:
 
 public:
 	INTROSPECTION_EXTEND(RenderObject, AnimatedObject,
-        MEMBER(type, "Type", I_SAVE | I_VIEW | I_EDIT)
+        MEMBER(type, "Type", I_SAVE | I_VIEW)
                          
         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
         MEMBER(debugFlags, "Debug Flags", I_SAVE | I_VIEW | I_EDIT)

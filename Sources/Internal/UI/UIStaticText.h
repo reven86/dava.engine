@@ -48,6 +48,8 @@ public:
 
     UIStaticText(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
+    virtual void Draw(const UIGeometricData &geometricData);
+    virtual void SetParentColor(const Color &parentColor);
     //if requested size is 0 - text creates in the rect with size of the drawRect on draw phase
     //if requested size is >0 - text creates int the rect with the requested size
     //if requested size in <0 - rect creates for the all text size
@@ -77,14 +79,13 @@ public:
     void PrepareSprite();
 
 
-    const WideString & GetText();
-    const Vector<WideString> & GetMultilineStrings();
+    const WideString & GetText() const;
+    const Vector<WideString> & GetMultilineStrings() const;
 
-    Font * GetFont() { return textBlock->GetFont(); }
+    Font * GetFont() const { return textBlock->GetFont(); }
 
-    virtual UIControl *Clone();
+    virtual UIStaticText *Clone();
     virtual void CopyDataFrom(UIControl *srcControl);
-    UIStaticText *CloneStaticText();
     TextBlock * GetTextBlock() { return textBlock; }
     const Color &GetTextColor() const;
     const Color &GetShadowColor() const;
@@ -98,21 +99,16 @@ public:
     virtual Animation * ShadowColorAnimation(const Color & finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
 
     const Vector<int32> & GetStringSizes() const;
-    virtual void SetParentColor(const Color &parentColor);
 
 protected:
     void PrepareSpriteInternal(BaseObject * caller, void * param, void *callerData);
 
 
 protected:
-    Color textColor;
     TextBlock *textBlock;
     Vector2 shadowOffset;
-    Color shadowColor;
     UIControlBackground *shadowBg;
     UIControlBackground *textBg;
-
-    virtual void Draw(const UIGeometricData &geometricData);
 
 public:
     void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);

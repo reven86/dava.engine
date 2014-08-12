@@ -31,6 +31,7 @@
 #include "Particles/ParticleLayer.h"
 #include "Utils/StringFormat.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/YamlNode.h"
 
 
 namespace DAVA 
@@ -52,7 +53,9 @@ void PartilceEmitterLoadProxy::Load(KeyedArchive *archive, SerializationContext 
 		emitterFilename = archive->GetString("pe.configpath");
 }
 
-ParticleEmitter::ParticleEmitter() : requireDeepClone(true)
+ParticleEmitter::ParticleEmitter() 
+    : requireDeepClone(true)
+    , shortEffect(false)
 {        
 	Cleanup(false);
 }

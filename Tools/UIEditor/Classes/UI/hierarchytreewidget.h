@@ -68,7 +68,7 @@ protected slots:
 
 private slots:
     void on_treeWidget_itemSelectionChanged();
-	void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &);
+	void OnSelectedControlNodesChanged(const HierarchyTreeController::SELECTEDCONTROLNODES &, HierarchyTreeController::eExpandControlType expandType);
 	void OnShowCustomMenu(const QPoint& pos);
 	void OnDeleteControlAction();
 	void OnRenameControlAction();

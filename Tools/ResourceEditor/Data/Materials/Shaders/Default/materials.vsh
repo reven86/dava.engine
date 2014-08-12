@@ -1,3 +1,7 @@
+<CONFIG>
+uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
+<VERTEX_SHADER>
+
 #ifdef GL_ES
 // define default precision for float, vec, mat.
 precision highp float;
@@ -127,6 +131,10 @@ uniform vec3 boundingBoxSize;
 	
 #endif
 
+#if defined(TILED_DECAL)
+uniform vec2 decalTileCoordScale;
+#endif
+
 // OUTPUT ATTRIBUTES
 #if defined(MATERIAL_SKYBOX)
 varying vec3 varTexCoord0;
@@ -138,6 +146,9 @@ varying vec2 varTexCoord0;
 varying vec2 varTexCoord1;
 #endif
 
+#if defined(TILED_DECAL)
+varying vec2 varDecalTileTexCoord;
+#endif
 
 #if defined(VERTEX_LIT)
 varying lowp float varDiffuseColor;
@@ -651,7 +662,11 @@ void main()
 #if defined(TEXTURE0_ANIMATION_SHIFT)
     varTexCoord0 += tex0ShiftPerSecond * globalTime;
 #endif
-		
+	
+#if defined(TILED_DECAL)
+    varDecalTileTexCoord = varTexCoord0 * decalTileCoordScale;
+#endif
+    
 #if defined(MATERIAL_DECAL) || defined(MATERIAL_DETAIL) || defined(MATERIAL_LIGHTMAP) || defined(FRAME_BLEND)
 	
 	#if defined(SETUP_LIGHTMAP)

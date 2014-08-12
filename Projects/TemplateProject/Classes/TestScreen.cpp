@@ -31,98 +31,28 @@
 
 void TestScreen::LoadResources()
 {
-	manager = GameObjectManager::Create();
-	bigBox = GameObject::Create(FilePath("~res:/Gfx/GameObjects/blueboxbig"));
-	bigBox->SetPivotPoint(ALIGN_HCENTER | ALIGN_VCENTER);
-	bigBox->SetPosition(200, 200);
-	manager->AddObject(bigBox.Get());
-
-	smallBox = GameObject::Create(FilePath("~res:/Gfx/GameObjects/bluebox"));
-	smallBox->SetPivotPoint(ALIGN_HCENTER | ALIGN_VCENTER);
-	bigBox->AddObject(smallBox.Get());
-
-	smallCircle = GameObject::Create(FilePath("~res:/Gfx/GameObjects/bluecircle"));
-	smallCircle->SetPosition(bigBox->GetSize());
-	smallCircle->SetPivotPoint(ALIGN_HCENTER | ALIGN_VCENTER);
-	bigBox->AddObject(smallCircle.Get());
-	
-	bigBox->SetAngle(DegToRad(30.0f));
-	time = 0.0f;
-	
-	bigBoxParticles = GameObject::Create(FilePath("~res:/Gfx/GameObjects/blueboxbig"));
-	bigBoxParticles->SetPivotPoint(ALIGN_HCENTER | ALIGN_VCENTER);
-	bigBoxParticles->SetPosition(200, 100);
-	manager->AddObject(bigBoxParticles.Get());
-	
-	bigBoxEmitter = new ParticleEmitterObject(); 
-	bigBoxEmitter->LoadFromYaml(FilePath("~res:/Particles/sparkles.yaml"));
-	bigBoxEmitter->SetPriority(10);
-	
-	smallCircle->AddObject(bigBoxEmitter.Get());
-
-    testSprite = Sprite::Create("~res:/Gfx/GameObjects/bluecircle");
 }
 
 void TestScreen::UnloadResources()
 {
-	SafeRelease(testSprite);
-	SafeRelease(manager);
 }
 
 void TestScreen::WillAppear()
 {
-    
 }
 
 void TestScreen::WillDisappear()
 {
-	
 }
 
 void TestScreen::Input(UIEvent * event)
 {
-	if (event->phase == UIEvent::PHASE_KEYCHAR)
-	{
-		if (event->keyChar == '1')
-		{
-			Core::Instance()->ToggleFullscreen();
-		}
-	}
 }
 
 void TestScreen::Update(float32 timeElapsed)
 {
-	// scaling test
-	time += timeElapsed;
-	float32 scale = 1.0f + 0.3f * sinf(time);
-	bigBox->SetScale(scale, scale);
-					
-	// 
-	bigBox->SetAngle(bigBox->GetAngle() + DegToRad(5.0f) * timeElapsed);
-	smallBox->SetAngle(smallBox->GetAngle() + DegToRad(20.0f) * timeElapsed);
-	smallCircle->SetAngle(smallCircle->GetAngle() - DegToRad(20.0f) * timeElapsed);
-	manager->Update(timeElapsed);
 }
 
 void TestScreen::Draw(const UIGeometricData &geometricData)
 {
-	manager->Draw();
-
-
-	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-	testSprite->SetPosition(0.0f, 200.0f);
-	testSprite->Draw();
-
-	testSprite->SetPosition(200.0f, 200.0f);
-	testSprite->SetScale(0.5f, 0.5f);
-	testSprite->Draw();
-
-	testSprite->SetPosition(300.0f, 200.0f);
-	testSprite->SetScale(0.3f, 0.3f);
-	testSprite->Draw();
-
-	testSprite->SetPosition(400.0f, 200.0f);
-	testSprite->SetScale(0.1f, 0.1f);
-	testSprite->Draw();
 }

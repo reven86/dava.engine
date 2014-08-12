@@ -31,6 +31,7 @@
 #define __DAVAENGINE_PARTICLES_PROPERTY_LINE_H__
 
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 #include "Base/RefPtr.h"
 #include <limits>
 

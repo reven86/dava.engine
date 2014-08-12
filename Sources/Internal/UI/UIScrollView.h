@@ -31,12 +31,15 @@
 #ifndef __DAVAENGINE_UISCROLLVIEW_H__
 #define __DAVAENGINE_UISCROLLVIEW_H__
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "UI/UIControl.h"
+#include "UI/UIScrollBar.h"
 
 namespace DAVA
 {
 
 class UIScrollViewContainer;
+class ScrollHelper;
 
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {

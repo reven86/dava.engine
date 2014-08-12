@@ -1261,3 +1261,28 @@ QString QtPropertyDataDavaVariant::GetDefaultOpenDialogPath()
 {
     return defaultOpenDialogPath;
 }
+
+
+QtPropertyDataDavaVariantSubValue::QtPropertyDataDavaVariantSubValue(QtPropertyDataDavaVariant* _parentVariant, DAVA::VariantType const& subvalue)
+    : QtPropertyDataDavaVariant(subvalue)
+    , parentVariant(_parentVariant)
+    , trackParent(true)
+{
+}
+
+void QtPropertyDataDavaVariantSubValue::SetValueInternal(QVariant const& value)
+{
+    QtPropertyDataDavaVariant::SetValueInternal(value);
+    if(NULL != parentVariant && trackParent)
+    {
+        parentVariant->MeSetFromChilds();
+        parentVariant->ChildsSetFromMe();
+    }
+
+    trackParent = true;
+}
+
+bool QtPropertyDataDavaVariantSubValue::IsMergable() const
+{
+    return false;
+}

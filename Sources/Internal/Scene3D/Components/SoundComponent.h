@@ -40,9 +40,30 @@
 namespace DAVA 
 {
 
+class SoundComponent;
+struct SoundComponentElement
+{
+    SoundComponentElement(SoundEvent * _soundEvent, uint32 _flags, const Vector3 & _localDirection) : 
+         soundEvent(_soundEvent), 
+         flags(_flags),
+         localDirection(_localDirection)
+         {}
+
+    SoundEvent * soundEvent;
+    Vector3 localDirection;
+    uint32 flags;
+
+    INTROSPECTION(SoundComponentElement, NULL);
+};
+
 class SoundComponent : public Component
 {
 public:
+    enum eEventFlags
+    {
+        FLAG_AUTO_DISTANCE_TRIGGER = 1 << 0
+    };
+
     SoundComponent();
     virtual ~SoundComponent();
 
@@ -54,22 +75,25 @@ public:
     inline uint32 GetEventsCount() const;
     inline SoundEvent * GetSoundEvent(uint32 index) const;
 
-    void AddSoundEvent(SoundEvent * event);
+    void SetSoundEventFlags(uint32 eventIndex, uint32 flags);
+    inline uint32 GetSoundEventFlags(uint32 eventIndex) const;
+
+    void AddSoundEvent(SoundEvent * _event, uint32 flags = 0, const Vector3 & direction = Vector3(1.f, 0.f, 0.f));
     void RemoveSoundEvent(SoundEvent * event);
     void RemoveAllEvents();
-    
-    void SetLocalDirection(const Vector3 & direction);
-    inline const Vector3 & GetLocalDirection() const;
+
+    void SetLocalDirection(uint32 eventIndex, const Vector3 & direction);
+    void SetLocalDirection(const DAVA::Vector3 &direction);
+    inline const Vector3 & GetLocalDirection(uint32 eventIndex) const;
 
     IMPLEMENT_COMPONENT_TYPE(SOUND_COMPONENT);
     
 protected:
-    Vector<SoundEvent *> events;
-    Vector3 localDirection;
+    Vector<SoundComponentElement> events;
 
 public:
     INTROSPECTION_EXTEND(SoundComponent, Component,
-        MEMBER(localDirection, "localDirection", I_SAVE | I_VIEW | I_EDIT)
+        COLLECTION(events, "events", I_SAVE | I_VIEW | I_EDIT)
         );
 };
 
@@ -77,7 +101,7 @@ public:
 inline SoundEvent * SoundComponent::GetSoundEvent(uint32 index) const
 {
     DVASSERT(index >= 0 && index < (uint32)events.size());
-    return events[index];
+    return events[index].soundEvent;
 }
 
 inline uint32 SoundComponent::GetEventsCount() const
@@ -85,9 +109,16 @@ inline uint32 SoundComponent::GetEventsCount() const
     return events.size();
 }
 
-inline const Vector3 & SoundComponent::GetLocalDirection() const
+inline uint32 SoundComponent::GetSoundEventFlags(uint32 index) const
 {
-    return localDirection;
+    DVASSERT(index >= 0 && index < (uint32)events.size());
+    return events[index].flags;
+}
+
+inline const Vector3 & SoundComponent::GetLocalDirection(uint32 index) const
+{
+    DVASSERT(index >= 0 && index < (uint32)events.size());
+    return events[index].localDirection;
 }
 
 };

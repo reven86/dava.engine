@@ -39,6 +39,10 @@
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
 
+#include "Render/2D/TextBlockSoftwareRender.h"
+#include "Render/2D/TextBlockGraphicsRender.h"
+#include "Render/2D/TextBlockDistanceRender.h"
+
 namespace DAVA 
 {
     
@@ -55,6 +59,8 @@ struct TextBlockData
     
 //TODO: использовать мапу	
 static	Vector<TextBlock *> registredBlocks;
+	
+#define NEW_RENDER 1
 	
 void RegisterTextBlock(TextBlock *tbl)
 {
@@ -97,25 +103,24 @@ TextBlock::TextBlock()
     , cacheDy(0)
 {
 	font = NULL;
-	constFont = NULL;
 	isMultilineEnabled = false;
 	fittingType = FITTING_DISABLED;
-	sprite = NULL;
+
+	needRedraw = true;
+
 	originalFontSize = 0.1f;
 	align = ALIGN_HCENTER|ALIGN_VCENTER;
 	RegisterTextBlock(this);
-	isPredrawed = true;
     isMultilineBySymbolEnabled = false;
     treatMultilineAsSingleLine = false;
     
-    pointsStr = L"";
+	textBlockRender = NULL;
 }
 
 TextBlock::~TextBlock()
 {
-	SafeRelease(sprite);
+	SafeRelease(textBlockRender);
 	SafeRelease(font);
-	SafeRelease(constFont);
 	UnregisterTextBlock(this);
 }
 
@@ -135,6 +140,25 @@ void TextBlock::SetFont(Font * _font)
 	font = SafeRetain(_font);
 
 	originalFontSize = font->GetSize();
+	
+	SafeRelease(textBlockRender);
+	switch (font->GetFontType()) {
+		case Font::TYPE_FT:
+			textBlockRender = new TextBlockSoftwareRender(this);
+			break;
+		case Font::TYPE_GRAPHICAL:
+			textBlockRender = new TextBlockGraphicsRender(this);
+			break;
+		case Font::TYPE_DISTANCE:
+			textBlockRender = new TextBlockDistanceRender(this);
+			break;
+			
+		default:
+			DVASSERT(!"Unknown font type");
+			break;
+	}
+	
+	needRedraw = true;
 
     mutex.Unlock();
 	Prepare();
@@ -146,12 +170,23 @@ void TextBlock::SetRectSize(const Vector2 & size)
 	if (rectSize != size)
 	{
 		rectSize = size;
+        needRedraw = true;
 
         mutex.Unlock();
 		Prepare();
         return;
 	}
     mutex.Unlock();
+}
+	
+void TextBlock::SetPosition(const Vector2& position)
+{
+	this->position = position;
+}
+	
+void TextBlock::SetPivotPoint(const Vector2& pivotPoint)
+{
+	this->pivotPoint = pivotPoint;
 }
 
 void TextBlock::SetText(const WideString & _string, const Vector2 &requestedTextRectSize)
@@ -164,7 +199,8 @@ void TextBlock::SetText(const WideString & _string, const Vector2 &requestedText
 	}
 	requestedSize = requestedTextRectSize;
 	text = _string;
-    
+    needRedraw = true;
+
     mutex.Unlock();
 	Prepare();
 }
@@ -176,6 +212,7 @@ void TextBlock::SetMultiline(bool _isMultilineEnabled, bool bySymbol)
 	{
         isMultilineBySymbolEnabled = bySymbol;
 		isMultilineEnabled = _isMultilineEnabled;
+        needRedraw = true;
 
         mutex.Unlock();
 		Prepare();
@@ -190,6 +227,7 @@ void TextBlock::SetFittingOption(int32 _fittingType)
 	if (fittingType != _fittingType)
 	{
 		fittingType = _fittingType;
+        needRedraw = true;
 
         mutex.Unlock();
 		Prepare();
@@ -253,6 +291,7 @@ void TextBlock::SetAlign(int32 _align)
 	if (align != _align) 
 	{
 		align = _align;
+        needRedraw = true;
 
         mutex.Unlock();
 		Prepare();
@@ -273,6 +312,10 @@ Sprite * TextBlock::GetSprite()
 {
     mutex.Lock();
 
+	Sprite* sprite = NULL;
+	if (textBlockRender)
+		sprite = textBlockRender->GetSprite();
+
 	DVASSERT(sprite);
 	if (!sprite) 
 	{
@@ -287,27 +330,33 @@ Sprite * TextBlock::GetSprite()
 	
 bool TextBlock::IsSpriteReady()
 {
-    mutex.Lock();
-    mutex.Unlock();
+	mutex.Lock();
+    Sprite* sprite = NULL;
+	if (textBlockRender)
+    {
+        sprite = textBlockRender->GetSprite();
+    }
 
+    mutex.Unlock();
 	return sprite != NULL;
 }
 
-
-
 void TextBlock::Prepare()
 {
-    mutex.Lock();
+	Retain();
+	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal));
+}
 
-    if(!font || text == L"")
-    {
-        cacheFinalSize = Vector2(0.f, 0.f);
-        cacheW = 0;
-        cacheDx = 0;
-        cacheDy = 0;
-    }
-    else
-    {
+void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
+{
+	if(!font || text == L"")
+	{
+        Release();
+		return;
+	}
+	
+	if(needRedraw)
+	{
 		bool useJustify = ((align & ALIGN_HJUSTIFY) != 0);
 		font->SetSize(originalFontSize);
 		Vector2 drawSize = rectSize;
@@ -407,8 +456,6 @@ void TextBlock::Prepare()
                         
                         --startPos;
                         ++endPos;
-                        
-                        savedStr = pointsStr;
                     }
                 }
             }
@@ -706,194 +753,32 @@ void TextBlock::Prepare()
 		cacheW = w;
 		cacheFinalSize.x = (float32)dx / Core::GetVirtualToPhysicalFactor();
         cacheFinalSize.y = (float32)dy / Core::GetVirtualToPhysicalFactor();
-    }
-
-    TextBlockData *jobData = new TextBlockData();
-    jobData->font = SafeRetain(font);
-    
-    mutex.Unlock();
-
-	ScopedPtr<Job> job = JobManager::Instance()->CreateJob(JobManager::THREAD_MAIN, Message(this, &TextBlock::PrepareInternal, jobData));
-}
-
-void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerData)
-{
-#if 1
-    
-    TextBlockData *jobData = (TextBlockData *)param;
-    
-    mutex.Lock();
-
-    SafeRelease(sprite);
-	if(!jobData->font || text == L"")
-	{
-        SafeDelete(jobData);
-        mutex.Unlock();
-		return;
-	}
-    else
-	{
-		if (jobData->font->IsTextSupportsSoftwareRendering())
-		{
-			int32 bsz = cacheDx * cacheDy;
-			uint8 * buf = new uint8[bsz];
-			memset(buf, 0, bsz * sizeof(uint8));
-			
-			DrawToBuffer(jobData->font, buf);
-            
-            String addInfo;
-			if(!isMultilineEnabled || treatMultilineAsSingleLine)
-			{
-				addInfo = WStringToString(text.c_str());
-			}
-			else
-			{
-				if (multilineStrings.size() >= 1)
-				{
-					addInfo = WStringToString(multilineStrings[0].c_str());
-				}else
-				{
-					addInfo = "empty";
-				}
-			}
-			
-			Texture *tex = Texture::CreateTextFromData(FORMAT_A8, buf, cacheDx, cacheDy, false, addInfo.c_str());
-			delete[] buf;
-			sprite = Sprite::CreateFromTexture(tex, 0, 0, cacheFinalSize.x, cacheFinalSize.y);
-			SafeRelease(tex);
-		}
-		else 
-		{
-			//omg 8888!
-			sprite = Sprite::CreateAsRenderTarget(cacheFinalSize.x, cacheFinalSize.y, FORMAT_RGBA8888);
-			if (sprite && sprite->GetTexture())
-			{
-				if (!isMultilineEnabled || treatMultilineAsSingleLine)
-					sprite->GetTexture()->SetDebugInfo(WStringToString(text));
-				else if (isMultilineEnabled)
-				{
-					if (multilineStrings.size() > 0)
-						sprite->GetTexture()->SetDebugInfo(WStringToString(multilineStrings[0]));
-				}
-			}				
-		}
         
-        isPredrawed = false;
-	}
-#endif 
-    
-
-    SafeDelete(jobData);
-    mutex.Unlock();
-}
-
-void TextBlock::DrawToBuffer(Font *realFont, uint8 *buf)
-{
-	Size2i realSize;
-	if(!isMultilineEnabled || treatMultilineAsSingleLine)
-	{
-        WideString drawText = text;
-        if(pointsStr.length())
+        if (textBlockRender)
         {
-            drawText = pointsStr;
+			textBlockRender->Prepare();
         }
-        
-		if (buf)
-		{
-			realSize = realFont->DrawStringToBuffer(buf, cacheDx, cacheDy, 0, 0, 0, 0, drawText, true);
-		}
-		else
-		{
-			if (cacheUseJustify) 
-			{
-                realSize = realFont->DrawString(0, 0, drawText, (int32)ceilf(Core::GetVirtualToPhysicalFactor() * cacheW));
-			}
-			else 
-			{
-                realSize = realFont->DrawString(0, 0, drawText);
-			}
-		}
-	}
-	else
-	{
-		uint32 yOffset = 0;
-		int32 fontHeight = realFont->GetFontHeight() + realFont->GetVerticalSpacing();
-		for (int32 line = 0; line < (int32)multilineStrings.size(); ++line)
-		{
-			if (line >= (int32)multilineStrings.size() - 1) 
-			{
-				cacheUseJustify = false;
-			}
-			int32 xo = 0;
-			if(align & ALIGN_RIGHT)
-			{
-				xo = (int32)(cacheFinalSize.x - stringSizes[line]);
-				if(xo < 0)
-				{
-					xo = 0;
-				}
-			}
-			else if(align & ALIGN_HCENTER)
-			{
-				xo = (int32)(cacheFinalSize.x - stringSizes[line]) / 2;
-				if(xo < 0)
-				{
-					xo = 0;
-				}
-			}
-			Size2i ds;
-			if (buf)
-			{
-				if (cacheUseJustify) 
-				{
-					ds = realFont->DrawStringToBuffer(buf, cacheDx, cacheDy, (int32)(Core::GetVirtualToPhysicalFactor() * xo), (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-						(int32)ceilf(Core::GetVirtualToPhysicalFactor() * cacheW), (int32)ceilf(Core::GetVirtualToPhysicalFactor() * stringSizes[line]), multilineStrings[line], true);
-				}
-				else 
-				{
-					ds = realFont->DrawStringToBuffer(buf, cacheDx, cacheDy, (int32)(Core::GetVirtualToPhysicalFactor() * xo), (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-						0, 0, multilineStrings[line], true);
-				}
-				
-			}
-			else 
-			{
-				if (cacheUseJustify) 
-				{
-					ds = realFont->DrawString((float32)xo, (float32)yOffset, multilineStrings[line], (int32)ceilf(Core::GetVirtualToPhysicalFactor() * cacheW));
-				}
-				else 
-				{
-					ds = realFont->DrawString((float32)xo, (float32)yOffset, multilineStrings[line], 0);
-				}
-				
-			}
-			
-			
-			realSize.dx = Max(realSize.dx, (int32)(Core::GetPhysicalToVirtualFactor() * ds.dx));
-			yOffset += fontHeight;
-			realSize.dy = yOffset;
-		}	
-	}
-}
 
+        needRedraw = false;
+    }
+    
+    mutex.Unlock();
+	Release();
+}
 	
 void TextBlock::PreDraw()
 {
-	if (isPredrawed)
+	if (textBlockRender)
 	{
-		return;
+		textBlockRender->PreDraw();
 	}
+}
 	
-	isPredrawed = true;
-	
-	if (!font->IsTextSupportsSoftwareRendering())
+void TextBlock::Draw(const Color& textColor, const Vector2* offset/* = NULL*/)
+{
+	if (textBlockRender)
 	{
-		RenderManager::Instance()->SetRenderTarget(sprite);
-
-		DrawToBuffer(font, NULL);
-		
-		RenderManager::Instance()->RestoreRenderTarget();
+		textBlockRender->Draw(textColor, offset);
 	}
 }
     

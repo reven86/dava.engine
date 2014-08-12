@@ -335,10 +335,7 @@ void UIStaticTextMetadata::SetFittingType(int value)
         return;
     }
 
-    // Changing Fitting Option affects the font which might be reused
-    // by other controls, so clone the existing one.
     UIStaticText* staticText = GetActiveStaticText();
-    CloneFont(staticText);
     staticText->SetFittingOption(value);
 }
 

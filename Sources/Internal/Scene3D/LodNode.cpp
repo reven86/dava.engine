@@ -80,8 +80,7 @@ LodNode::LodNode()
 {
     for(int32 iLayer = 0; iLayer < MAX_LOD_LAYERS; ++iLayer)
     {
-        lodLayersArray[iLayer].SetDistance(GetDefaultDistance(iLayer));
-        lodLayersArray[iLayer].SetFarDistance(MAX_LOD_DISTANCE * 2);
+        SetLodLayerDistance(iLayer, GetDefaultDistance(iLayer));
     }
 
 //    lodLayersArray[0].SetDistance(0.0f);

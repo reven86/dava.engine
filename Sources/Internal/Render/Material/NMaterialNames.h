@@ -74,6 +74,9 @@ public:
 	
 	static const FastName PARTICLES;
 	static const FastName PARTICLES_FRAMEBLEND;
+
+    static const FastName DEBUG_DRAW_OPAQUE;
+    static const FastName DEBUG_DRAW_ALPHABLEND;
 };
 };
 

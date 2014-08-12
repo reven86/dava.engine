@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7696281E196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */; };
+		7696281F196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */; };
+		76962820196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */; };
+		76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7696281D196BF80D0064C3A0 /* TeamcityOutput.h */; };
+		76962822196BF80D0064C3A0 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7696281D196BF80D0064C3A0 /* TeamcityOutput.h */; };
+		76962823196BF80D0064C3A0 /* TeamcityOutput.h in Headers */ = {isa = PBXBuildFile; fileRef = 7696281D196BF80D0064C3A0 /* TeamcityOutput.h */; };
 		A69854BC17CE41EC001E9FDE /* DXTConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854A917CE41EC001E9FDE /* DXTConverter.cpp */; };
 		A69854BD17CE41EC001E9FDE /* DXTConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854A917CE41EC001E9FDE /* DXTConverter.cpp */; };
 		A69854BE17CE41EC001E9FDE /* DXTConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A69854A917CE41EC001E9FDE /* DXTConverter.cpp */; };
@@ -70,6 +76,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TeamcityOutput.cpp; path = TeamcityOutput/TeamcityOutput.cpp; sourceTree = "<group>"; };
+		7696281D196BF80D0064C3A0 /* TeamcityOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TeamcityOutput.h; path = TeamcityOutput/TeamcityOutput.h; sourceTree = "<group>"; };
 		A698542917CE38C0001E9FDE /* libFrameworkTools.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTools.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A698543717CE38D8001E9FDE /* libFrameworkToolsQt.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkToolsQt.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		A698543F17CE38E5001E9FDE /* libFrameworkToolsNPAPI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkToolsNPAPI.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,6 +128,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		76962824196BF8130064C3A0 /* TeamcitOutput */ = {
+			isa = PBXGroup;
+			children = (
+				7696281C196BF80D0064C3A0 /* TeamcityOutput.cpp */,
+				7696281D196BF80D0064C3A0 /* TeamcityOutput.h */,
+			);
+			name = TeamcitOutput;
+			sourceTree = "<group>";
+		};
 		A698542017CE38BF001E9FDE = {
 			isa = PBXGroup;
 			children = (
@@ -141,6 +158,7 @@
 		A69854A717CE41EC001E9FDE /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				76962824196BF8130064C3A0 /* TeamcitOutput */,
 				A69854A817CE41EC001E9FDE /* TextureCompression */,
 				A69854AD17CE41EC001E9FDE /* TexturePacker */,
 			);
@@ -194,6 +212,7 @@
 				A69854CB17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
 				A69854D117CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				A69854D717CE41EC001E9FDE /* FramePathHelper.h in Headers */,
+				76962821196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
 				A69854DD17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				A69854E317CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854E917CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
@@ -211,6 +230,7 @@
 				A69854CC17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
 				A69854D217CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				A69854D817CE41EC001E9FDE /* FramePathHelper.h in Headers */,
+				76962822196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
 				A69854DE17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				A69854E417CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854EA17CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
@@ -228,6 +248,7 @@
 				A69854CD17CE41EC001E9FDE /* CommandLineParser.h in Headers */,
 				A69854D317CE41EC001E9FDE /* DefinitionFile.h in Headers */,
 				A69854D917CE41EC001E9FDE /* FramePathHelper.h in Headers */,
+				76962823196BF80D0064C3A0 /* TeamcityOutput.h in Headers */,
 				A69854DF17CE41EC001E9FDE /* ImagePacker.h in Headers */,
 				A69854E517CE41EC001E9FDE /* PngImage.h in Headers */,
 				A69854EB17CE41EC001E9FDE /* ResourcePacker2D.h in Headers */,
@@ -328,6 +349,7 @@
 				A69854CE17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D417CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
 				A69854DA17CE41EC001E9FDE /* ImagePacker.cpp in Sources */,
+				7696281E196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E017CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E617CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854EC17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
@@ -345,6 +367,7 @@
 				A69854CF17CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D517CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
 				A69854DB17CE41EC001E9FDE /* ImagePacker.cpp in Sources */,
+				7696281F196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E117CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E717CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854ED17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,
@@ -362,6 +385,7 @@
 				A69854D017CE41EC001E9FDE /* DefinitionFile.cpp in Sources */,
 				A69854D617CE41EC001E9FDE /* FramePathHelper.cpp in Sources */,
 				A69854DC17CE41EC001E9FDE /* ImagePacker.cpp in Sources */,
+				76962820196BF80D0064C3A0 /* TeamcityOutput.cpp in Sources */,
 				A69854E217CE41EC001E9FDE /* PngImage.cpp in Sources */,
 				A69854E817CE41EC001E9FDE /* ResourcePacker2D.cpp in Sources */,
 				A69854EE17CE41EC001E9FDE /* TexturePacker.cpp in Sources */,

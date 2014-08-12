@@ -410,6 +410,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         uniformStruct->shaderSemantic = shaderSemantic;
         uniformStruct->type = (eUniformType)type;
         uniformStruct->size = size;
+        uniformStruct->updateSemantic = 0;
 
         void* value = uniformData + uniformOffsets[k] + sizeof(Uniform);
         uint16 valueSize = GetUniformTypeSize((eUniformType)type) * size;
@@ -510,7 +511,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
                 RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
                 
                 
-                for(uint32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
+                for(int32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
                 {
                     Matrix2* m = (Matrix2*)(((uint8*)value) + paramIndex * sizeof(Matrix2));
                     Matrix2 t;
@@ -527,7 +528,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
             {
                 RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
                 
-                for(uint32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
+                for(int32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
                 {
 
                     Matrix3* m = (Matrix3*)(((uint8*)value) + paramIndex * sizeof(Matrix3));
@@ -545,7 +546,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
             {
                 RENDER_VERIFY(glGetUniformfv(program, uniformStruct->location, (float32*)value));
                 
-                for(uint32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
+                for(int32 paramIndex = 0; paramIndex < uniformStruct->size; ++paramIndex)
                 {
                     Matrix4* m = (Matrix4*)(((uint8*)value) + paramIndex * sizeof(Matrix4));
                     m->Transpose();

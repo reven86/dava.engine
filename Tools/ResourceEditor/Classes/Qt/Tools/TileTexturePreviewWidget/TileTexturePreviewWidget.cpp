@@ -316,9 +316,9 @@ Image* TileTexturePreviewWidget::MultiplyImageWithColor(DAVA::Image *image, cons
 
 	Texture* srcTexture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 												  width, height, false);
-	Sprite* srcSprite = Sprite::CreateFromTexture(srcTexture, 0, 0, width, height);
+	Sprite* srcSprite = Sprite::CreateFromTexture(srcTexture, 0, 0, width, height, true);
 
-	Sprite* dstSprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888);
+	Sprite* dstSprite = Sprite::CreateAsRenderTarget(width, height, FORMAT_RGBA8888, true);
 
 	RenderManager::Instance()->SetRenderTarget(dstSprite);
 	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 1.f);

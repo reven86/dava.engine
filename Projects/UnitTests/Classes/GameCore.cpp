@@ -61,6 +61,7 @@
 #include "UIScrollViewTest.h"
 #include "ThreadSyncTest.h"
 #include "UIMovieTest.h"
+#include "DFFontTest.h"
 #include "ComponentsTest.h"
 #include "RectSpriteTest.h"
 #include "OpenGLES30FormatTest.h"
@@ -71,6 +72,7 @@
 #include "SceneSystemTest.h"
 #include "ParseTextTest.h"
 #include "ImageSizeTest.h"
+
 
 using namespace DAVA;
 
@@ -97,9 +99,8 @@ void GameCore::OnAppStarted()
     CreateDocumentsFolder();
 
 	new ImageSizeTest();
-
     new DeviceInfoTest();
-    
+
     new PVRTest();
  	new DXTTest();
     new JPEGTest();

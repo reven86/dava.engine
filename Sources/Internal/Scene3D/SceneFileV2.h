@@ -37,6 +37,7 @@
 #include "Utils/Utils.h"
 #include "FileSystem/File.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Scene3D/SceneFile/VersionInfo.h"
 
 namespace DAVA
 {
@@ -118,6 +119,19 @@ protected:
     
 class SceneFileV2 : public BaseObject
 {
+private:
+    struct Header
+    {
+        Header()
+            : version(0)
+            , nodeCount(0)
+        {};
+
+        char    signature[4];
+        int32   version;
+        int32   nodeCount;
+    };
+
 protected:
     virtual ~SceneFileV2();
 
@@ -127,6 +141,7 @@ public:
         ERROR_VERSION_IS_TOO_OLD = 1,
         ERROR_FAILED_TO_CREATE_FILE = 2,
         ERROR_FILE_WRITE_ERROR = 3,
+        ERROR_VERSION_TAGS_INVALID = 4,
     };
 
 	enum eFileType
@@ -139,6 +154,7 @@ public:
     
     eError SaveScene(const FilePath & filename, Scene * _scene, SceneFileV2::eFileType fileType = SceneFileV2::SceneFile);
     eError LoadScene(const FilePath & filename, Scene * _scene);
+    static VersionInfo::SceneVersion LoadSceneVersion( const FilePath & filename );
 
     void EnableDebugLog(bool _isDebugLogEnabled);
     bool DebugLogEnabled();
@@ -151,8 +167,8 @@ public:
     
     //DataNode * GetNodeByPointer(uint64 pointer);
     
-	void SetVersion(int32 version);
-    int32 GetVersion();
+    void SetVersion(const VersionInfo::SceneVersion& version);
+    const VersionInfo::SceneVersion& GetVersion() const;
     void SetError(eError error);
     eError GetError();
     
@@ -170,16 +186,10 @@ public:
     SceneArchive *LoadSceneArchive(const FilePath & filename); //purely load data
 	
 private:
+    static bool ReadHeader(Header& header, File * file);
+    static bool ReadVersionTags(VersionInfo::SceneVersion& version, File * file);
     void AddToNodeMap(DataNode * node);
 
-    struct Header
-    {
-		Header() : version(0), nodeCount(0) {;};
-
-        char    signature[4];
-        int32   version;
-        int32   nodeCount;
-    };
     Header header;
 	
 	struct Descriptor

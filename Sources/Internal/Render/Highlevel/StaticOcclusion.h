@@ -56,7 +56,7 @@ public:
     StaticOcclusionData();
     ~StaticOcclusionData();
     
-    void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox);
+    void Init(uint32 sizeX, uint32 sizeY, uint32 sizeZ, uint32 objectCount, const AABBox3 & bbox, const float32 *_cellHeightOffset);
     void EnableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
     void DisableVisibilityForObject(uint32 blockIndex, uint32 objectIndex);
     
@@ -70,6 +70,7 @@ public:
     uint32  blockCount;
     uint32  objectCount;
     uint32 * data;
+    float32* cellHeightOffset;
 };
 
 class StaticOcclusion
@@ -120,6 +121,7 @@ private:
     Set<RenderObject*> frameGlobalVisibleInfo;
     
     AABBox3  occlusionAreaRect;
+    float32 *cellHeightOffset;
     uint32 xBlockCount;
     uint32 yBlockCount;
     uint32 zBlockCount;

@@ -32,7 +32,7 @@
 #include "UI/UIButton.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
-
+#include "FileSystem/YamlNode.h"
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
@@ -442,7 +442,7 @@ void UISlider::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 		
 		if (spriteNode)
 		{
-			SetThumbSprite(spriteNode->AsString(), frameNode->AsInt());
+			SetThumbSprite(spriteNode->AsString(), frameNode->AsInt32());
 		}
 	}
 	
@@ -458,7 +458,7 @@ void UISlider::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 		
 		if (spriteNode)
 		{
-			SetMinSprite(spriteNode->AsString(), frameNode->AsInt());
+			SetMinSprite(spriteNode->AsString(), frameNode->AsInt32());
 		}
 	}
 	
@@ -474,7 +474,7 @@ void UISlider::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
 		
 		if (spriteNode)
 		{
-			SetMaxSprite(spriteNode->AsString(), frameNode->AsInt());
+			SetMaxSprite(spriteNode->AsString(), frameNode->AsInt32());
 		}
 	}
 	

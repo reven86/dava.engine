@@ -937,9 +937,9 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 
             if (!RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
             {
-                glGenRenderbuffers(1, &stencilRboID);
-                glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
+                RENDER_VERIFY(glGenRenderbuffers(1, &stencilRboID));
+                RENDER_VERIFY(glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID));
+                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height));
             }
         }
 #endif
@@ -1101,12 +1101,12 @@ Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
     }
     else
     {
-        Sprite *renderTarget = Sprite::CreateAsRenderTarget((float32)width, (float32)height, texDescriptor->format);
+        Sprite *renderTarget = Sprite::CreateAsRenderTarget((float32)width, (float32)height, texDescriptor->format, true);
         RenderManager::Instance()->SetRenderTarget(renderTarget);
 
         RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
-		Sprite *drawTexture = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height);
+		Sprite *drawTexture = Sprite::CreateFromTexture(this, 0, 0, (float32)width, (float32)height, true);
 
         Sprite::DrawState drawState;
         drawState.SetPosition(0, 0);

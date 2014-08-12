@@ -32,7 +32,7 @@
 #include "GameCore.h"
 #include "TexturePacker/CommandLineParser.h"
 
-#include "Render/ImageConvert.h"
+#include "Render/Image/ImageConvert.h"
 
 using namespace DAVA;
  
@@ -62,14 +62,14 @@ bool CheckPosition(int32 commandPosition)
 void UnpackFile(const FilePath & sourceImagePath)
 {
     Vector<Image *> images;
-    ImageLoader::CreateFromFileByExtension(sourceImagePath, images, 0);
+    ImageSystem::Instance()->Load(sourceImagePath, images);
     
     if(images.size() != 0)
     {
         Image *image = images[0];
         if((FORMAT_RGBA8888 == image->format) || (FORMAT_A8 == image->format) || (FORMAT_A16 == image->format))
         {
-            ImageLoader::Save(image, FilePath::CreateWithNewExtension(sourceImagePath,".png"));
+            ImageSystem::Instance()->Save(FilePath::CreateWithNewExtension(sourceImagePath,".png"), image, image->format);
         }
         else
         {
@@ -78,7 +78,7 @@ void UnpackFile(const FilePath & sourceImagePath)
 			ImageConvert::ConvertImageDirect(image->format, savedImage->format, image->data, image->width, image->height, image->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(image->format), 
 					savedImage->data, savedImage->width, savedImage->height, savedImage->width * PixelFormatDescriptor::GetPixelFormatSizeInBytes(savedImage->format));
 
-			ImageLoader::Save(savedImage, FilePath::CreateWithNewExtension(sourceImagePath,".png"));
+            ImageSystem::Instance()->Save(FilePath::CreateWithNewExtension(sourceImagePath,".png"), savedImage);
 			savedImage->Release();
         }
         

@@ -67,7 +67,7 @@ protected:
 	bool isEnabled;
 	DAVA::Entity *cameraLight;
 
-	DAVA::int32 lightCountOnScene;
+	DAVA::int32 lightCountOnScene;    
 };
 
 

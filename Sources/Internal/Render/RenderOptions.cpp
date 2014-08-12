@@ -39,6 +39,8 @@ RenderOptions::RenderOptions()
 	{
 		options[i] = true;
 	}		
+
+    options[DEBUG_DRAW_STATIC_OCCLUSION] = false;
 }
 
 bool RenderOptions::IsOptionEnabled(RenderOption option)

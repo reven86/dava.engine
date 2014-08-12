@@ -127,8 +127,8 @@ private:
 class CreateControlCommand: public BaseCommand
 {
 public:
-	CreateControlCommand(const QString& type, const QPoint& pos);
-	CreateControlCommand(const QString& type, HierarchyTreeNode* parent, HierarchyTreeNode* insertAfter = NULL);
+	CreateControlCommand(HierarchyTreeNode::HIERARCHYTREENODEID typeId, const QPoint& pos);
+	CreateControlCommand(HierarchyTreeNode::HIERARCHYTREENODEID typeId, HierarchyTreeNode* parent, HierarchyTreeNode* insertAfter = NULL);
 
 	virtual void Execute();
 	void Rollback();
@@ -145,7 +145,8 @@ protected:
 private:
 	QString type;
 	QPoint pos;
-
+    
+	HierarchyTreeNode::HIERARCHYTREENODEID typeId;
 	HierarchyTreeNode::HIERARCHYTREENODEID createdControlID;
 	
 	// Prepare the information needed for Redo.
@@ -170,7 +171,7 @@ public:
 	DeleteSelectedNodeCommand(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes, bool needDeleteFiles = false);
 	
 	virtual void Execute();
-	void Rollback();
+	virtual void Rollback();
 	virtual bool IsUndoRedoSupported() {return true;};
 
 	virtual void IncrementUnsavedChanges();

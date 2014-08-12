@@ -76,6 +76,9 @@ public:
         
         LAYER_OCCLUSION_STATS,
 
+        ENABLE_STATIC_OCCLUSION,
+        DEBUG_DRAW_STATIC_OCCLUSION,
+
 		OPTIONS_COUNT
 	};
 

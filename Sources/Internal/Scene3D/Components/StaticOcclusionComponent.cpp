@@ -29,6 +29,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
 {
@@ -42,6 +43,7 @@ StaticOcclusionComponent::StaticOcclusionComponent()
     ySubdivisions = 2;
     zSubdivisions = 2;
     boundingBox = AABBox3(Vector3(0.0f, 0.0f, 0.0f), Vector3(20.0f, 20.0f, 20.0f));
+    placeOnLandscape = false;
 }
 
 Component * StaticOcclusionComponent::Clone(Entity * toEntity)
@@ -52,6 +54,8 @@ Component * StaticOcclusionComponent::Clone(Entity * toEntity)
     newComponent->SetSubdivisionsY(ySubdivisions);
     newComponent->SetSubdivisionsZ(zSubdivisions);
     newComponent->SetBoundingBox(boundingBox);
+    newComponent->SetPlaceOnLandscape(placeOnLandscape);
+    newComponent->cellHeightOffset = cellHeightOffset;
 	return newComponent;
 }
 
@@ -65,6 +69,9 @@ void StaticOcclusionComponent::Serialize(KeyedArchive *archive, SerializationCon
         archive->SetUInt32("soc.xsub", xSubdivisions);
         archive->SetUInt32("soc.ysub", ySubdivisions);
         archive->SetUInt32("soc.zsub", zSubdivisions);
+        archive->SetBool("soc.placeOnLandscape", placeOnLandscape);
+        if (placeOnLandscape)
+            archive->SetByteArray("soc.cellHeightOffset", (uint8*)(&cellHeightOffset.front()), xSubdivisions*ySubdivisions*sizeof(float32));
 	}
 }
 
@@ -76,6 +83,13 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive *archive, SerializationC
         xSubdivisions = archive->GetUInt32("soc.xsub", 1);
         ySubdivisions = archive->GetUInt32("soc.ysub", 1);
         zSubdivisions = archive->GetUInt32("soc.zsub", 1);
+        placeOnLandscape = archive->GetBool("soc.placeOnLandscape", false);
+        if (placeOnLandscape)
+        {
+            cellHeightOffset.resize(xSubdivisions*ySubdivisions, 0);
+            DVASSERT(xSubdivisions*ySubdivisions*sizeof(float32) == archive->GetByteArraySize("soc.cellHeightOffset"));            
+            memcpy(&cellHeightOffset.front(), archive->GetByteArray("soc.cellHeightOffset"), xSubdivisions*ySubdivisions*sizeof(float32));            
+        }
     }
 
 	Component::Deserialize(archive, serializationContext);
@@ -110,7 +124,9 @@ void StaticOcclusionDataComponent::Serialize(KeyedArchive *archive, Serializatio
         archive->SetUInt32("sodc.subX", data.sizeX);
         archive->SetUInt32("sodc.subY", data.sizeY);
         archive->SetUInt32("sodc.subZ", data.sizeZ);
-        archive->SetByteArray("sodc.data", (uint8*)data.data, data.blockCount * data.objectCount / 32 * 4);
+        archive->SetByteArray("sodc.data", (uint8*)data.data, data.blockCount * data.objectCount / 32 * 4);      
+        if (data.cellHeightOffset)
+            archive->SetByteArray("sodc.cellHeightOffset", (uint8*)data.cellHeightOffset, data.sizeX*data.sizeY*sizeof(float32));
     }
 }
     
@@ -128,11 +144,56 @@ void StaticOcclusionDataComponent::Deserialize(KeyedArchive *archive, Serializat
         data.data = new uint32[data.blockCount * data.objectCount / 32];
         DVASSERT(data.blockCount * data.objectCount / 32 * 4 == archive->GetByteArraySize("sodc.data"));
         memcpy(data.data, archive->GetByteArray("sodc.data"), data.blockCount * data.objectCount / 32 * 4);
+
+        if (archive->IsKeyExists("sodc.cellHeightOffset"))
+        {
+            data.cellHeightOffset = new float32[data.sizeX*data.sizeY];
+            DVASSERT(data.sizeX*data.sizeY*sizeof(float32) == archive->GetByteArraySize("sodc.cellHeightOffset"));
+            memcpy(data.cellHeightOffset, archive->GetByteArray("sodc.cellHeightOffset"), data.sizeX*data.sizeY*sizeof(float32));
+        }
     }
     
 	Component::Deserialize(archive, serializationContext);
 }
 
+StaticOcclusionDebugDrawComponent::StaticOcclusionDebugDrawComponent(RenderObject *object)
+{
+    renderObject = SafeRetain(object);
+}
+
+StaticOcclusionDebugDrawComponent::~StaticOcclusionDebugDrawComponent()
+{
+    SafeRelease(renderObject);
+}    
+    
+RenderObject * StaticOcclusionDebugDrawComponent::GetRenderObject() const
+{
+    return renderObject;
+}
+    
+Component * StaticOcclusionDebugDrawComponent::Clone(Entity * toEntity)
+{
+    RenderObject *clonedRO = NULL;
+    if(NULL != renderObject)
+    {        
+        clonedRO = renderObject->Clone(clonedRO);
+    }
+    StaticOcclusionDebugDrawComponent * component = new StaticOcclusionDebugDrawComponent(clonedRO);
+	component->SetEntity(toEntity);    
+
+    return component;
+}
+	
+
+void StaticOcclusionDebugDrawComponent::Serialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+	DVASSERT(false&&"Should not Serialize debug components. Check entity::save");
+}
+
+void StaticOcclusionDebugDrawComponent::Deserialize(KeyedArchive *archive, SerializationContext *serializationContext)
+{
+	DVASSERT(false&&"Should not Deserialize debug components. Check entity::save");
+}
 
 
 }

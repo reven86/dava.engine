@@ -67,15 +67,15 @@ void GuidePropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     if (selectedGuide->GetType() == GuideData::Horizontal)
     {
         SetPropertyBlockName(HORZ_GUIDE_PROPERTY_BLOCK_NAME);
-        ui->positionSpinBox->setValue(selectedGuide->GetPosition().y);
-        connect(ui->positionSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnGuidePositionChanged(int)));
+        ui->positionDoubleSpinBox->setValue(selectedGuide->GetPosition().y);
     }
     else
     {
         SetPropertyBlockName(VERT_GUIDE_PROPERTY_BLOCK_NAME);
-        ui->positionSpinBox->setValue(selectedGuide->GetPosition().x);
-        connect(ui->positionSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnGuidePositionChanged(int)));
+        ui->positionDoubleSpinBox->setValue(selectedGuide->GetPosition().x);
     }
+
+    connect(ui->positionDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnGuidePositionChanged(double)));
 
     connect(&metadata->GetActiveScreen()->GetGuidesManager(), SIGNAL(GuideMoved(GuideData*)), this, SLOT(OnGuideMoved(GuideData*)));
 }
@@ -89,7 +89,7 @@ void GuidePropertyGridWidget::Cleanup()
         return;
     }
 
-    disconnect(ui->positionSpinBox, SIGNAL(valueChanged(int)), this, SLOT(OnGuidePositionChanged(int)));
+    disconnect(ui->positionDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(OnGuidePositionChanged(double)));
     disconnect(&metadata->GetActiveScreen()->GetGuidesManager(), SIGNAL(GuideMoved(GuideData*)), this, SLOT(OnGuideMoved(GuideData*)));
 }
 
@@ -100,11 +100,11 @@ GuideMetadata* GuidePropertyGridWidget::GetGuideMetadata()
 
 void GuidePropertyGridWidget::OnGuideMoved(GuideData* guideData)
 {
-    WidgetSignalsBlocker blocker(ui->positionSpinBox);
-    ui->positionSpinBox->setValue(guideData->GetType() == GuideData::Horizontal ? guideData->GetPosition().y : guideData->GetPosition().x);
+    WidgetSignalsBlocker blocker(ui->positionDoubleSpinBox);
+    ui->positionDoubleSpinBox->setValue(guideData->GetType() == GuideData::Horizontal ? guideData->GetPosition().y : guideData->GetPosition().x);
 }
 
-void GuidePropertyGridWidget::OnGuidePositionChanged(int value)
+void GuidePropertyGridWidget::OnGuidePositionChanged(double value)
 {
     GuideMetadata* metadata = GetGuideMetadata();
     if (!metadata || !metadata->GetActiveScreen())

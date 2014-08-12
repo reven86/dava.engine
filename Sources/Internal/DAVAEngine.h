@@ -59,6 +59,7 @@
 #include "UI/ScrollHelper.h"
 #include "Debug/Replay.h"
 #include "Utils/Random.h"
+#include "Utils/VirtualToPhysicalHelper.h"
 
 #include "Base/ObjectFactory.h"
 #include "Base/FixedSizePoolAllocator.h"
@@ -99,6 +100,7 @@
 #include "FileSystem/KeyedArchive.h"
 
 #include "FileSystem/XMLParser.h"
+#include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/Parser.h"
 #include "FileSystem/FilePath.h"
@@ -139,6 +141,7 @@
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
+#include "Render/2D/DFFont.h"
 
 // UI
 #include "UI/UIControl.h"

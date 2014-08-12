@@ -33,6 +33,7 @@
 #include "applicationmanager.h"
 #include "errormessanger.h"
 #include "processhelper.h"
+#include "mainwindow.h"
 #include "defines.h"
 #include <QNetworkReply>
 #include <QDir>
@@ -41,7 +42,7 @@
 #include <QDebug>
 #include <QTreeView>
 
-UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, QWidget *parent) :
+UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, ApplicationManager * _appManager, QWidget *parent) :
     QDialog(parent, Qt::WindowTitleHint | Qt::CustomizeWindowHint),
     ui(new Ui::UpdateDialog),
     currentDownload(0),
@@ -49,7 +50,8 @@ UpdateDialog::UpdateDialog(const QQueue<UpdateTask> & taskQueue, QWidget *parent
     currentLogItem(0),
     currentTopLogItem(0),
     unpacker(0),
-    lastErrorCode(0)
+    lastErrorCode(0),
+    appManager(_appManager)
 {
     ui->setupUi(this);
     ui->progressBar->setValue(0);
@@ -109,21 +111,43 @@ void UpdateDialog::StartNextTask()
 
         UpdateTask task = tasks.front();
 
-        const QString & archiveFilepath = FileManager::Instance()->GetTempDownloadFilepath();
+        if(task.isRemoveBranch)
+        {
+            AddTopLogValue(QString("Removing branch %1:").arg(task.branchID));
 
-        outputFile.setFileName(archiveFilepath);
-        outputFile.open(QFile::WriteOnly);
-        currentDownload = networkManager->get(QNetworkRequest(QUrl(task.version.url)));
-        connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
-        connect(currentDownload, SIGNAL(readyRead()), this, SLOT(DownloadReadyRead()));
-        connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)),
-                this, SLOT(NetworkError(QNetworkReply::NetworkError)));
-        connect(currentDownload, SIGNAL(downloadProgress(qint64,qint64)),
-                this, SLOT(DownloadProgress(qint64,qint64)));
+            if(appManager->RemoveBranch(task.branchID))
+            {
+                AddLogValue("Removing Complete!");
+                CompleteLog();
 
-        AddTopLogValue(QString("Installing %1 (%2) %3:").arg(task.appID).arg(task.branchID).arg(task.version.id));
+                emit UpdateDownloadProgress(100);
+            }
+            else
+            {
+                AddLogValue("Removing Failed!");
+                BreakLog();
+            }
 
-        AddLogValue("Downloading file...");
+            tasks.dequeue();
+            StartNextTask();
+        }
+        else
+        {
+            const QString & archiveFilepath = FileManager::Instance()->GetTempDownloadFilepath();
+
+            outputFile.setFileName(archiveFilepath);
+            outputFile.open(QFile::WriteOnly);
+            currentDownload = networkManager->get(QNetworkRequest(QUrl(task.version.url)));
+
+            connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
+            connect(currentDownload, SIGNAL(readyRead()), this, SLOT(DownloadReadyRead()));
+            connect(currentDownload, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(NetworkError(QNetworkReply::NetworkError)));
+            connect(currentDownload, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(DownloadProgress(qint64,qint64)));
+
+            AddTopLogValue(QString("Installing %1 (%2) %3:").arg(task.appID).arg(task.branchID).arg(task.version.id));
+
+            AddLogValue("Downloading file...");
+        }
     }
     else
     {

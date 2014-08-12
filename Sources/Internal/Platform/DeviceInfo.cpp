@@ -70,5 +70,12 @@ int DeviceInfo::GetZBufferSize()
 {
 	return 24;
 }
+
+List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
+{
+    List<DeviceInfo::StorageInfo> l;
+    return l;
+}
+    
 #endif
 }

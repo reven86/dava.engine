@@ -30,8 +30,8 @@
 
 
 #include "UIScrollView.h"
-#include "Base/ObjectFactory.h"
 #include "UI/UIScrollViewContainer.h"
+#include "UI/ScrollHelper.h"
 
 namespace DAVA 
 {

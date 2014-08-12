@@ -45,33 +45,32 @@ namespace DAVA
 	{
 		friend class UIList;
 	public:
-        UIListCell();
 		/**
 		 \brief Constructor.
 		 \param[in] rect Used only size part of the rect. Incoming rect size can be modified by the UIList if this is neccesary.
 		 \param[in] cellIdentifier literal identifier to represents cell type. For example: "Name cell", "Phone number cell", etc.
 		 */
-		UIListCell(const Rect &rect, const String &cellIdentifier, const FilePath &aggregatorPath = FilePath());
+		UIListCell(const Rect &rect = Rect(), const String &cellIdentifier = String(), const FilePath &aggregatorPath = FilePath());
 
         /**
 		 \brief Returns cell's identifier.
 		 \returns identifier
 		 */
-        const String & GetIdentifier();
-        
+        const String & GetIdentifier() const;
+
+        /**
+		 \brief set cell's identifier.
+		 \param[in] new cell identifier
+		 */
+        void SetIdentifier(const String &identifier);
 		/**
 		 \brief Returns current cell sequence number in the list.
 		 \returns list item index
 		 */
-		int32 GetIndex();
+		int32 GetIndex() const;
         
-        virtual UIControl *Clone();
+        virtual UIListCell *Clone();
         void CopyDataFrom(UIControl *srcControl);
-        /**
-         \brief Creates the absoulutely identic copy of the list cell.
-         \returns copy of the control
-         */
-        UIListCell* CloneListCell();
         
         virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
         virtual YamlNode * SaveToYamlNode(UIYamlLoader * loader);

@@ -32,20 +32,22 @@
 
 #include <QTreeWidget>
 #include <QMimeData>
+#include "HierarchyTreeNode.h"
 
 class ControlMimeData: public QMimeData
 {
 	Q_OBJECT
 public:
-	ControlMimeData(const QString& controlName);
+	ControlMimeData(HierarchyTreeNode::HIERARCHYTREENODEID itemId);
 	~ControlMimeData();
 
-	QString GetControlName() const {return controlName;};
+    HierarchyTreeNode::HIERARCHYTREENODEID GetControlId() const {return controlId;};
     
     virtual bool hasFormat ( const QString & mimeType ) const;
 	
 private:
-	QString controlName;
+    HierarchyTreeNode::HIERARCHYTREENODEID controlId;
+    
 };
 
 class ControlList : public QTreeWidget

@@ -328,13 +328,13 @@ void VegetationCustomGeometry::GenerateClusterPositionData(uint32 layerMaxCluste
         uint32 matrixCellX = cellX / layerMaxClusters;
         uint32 matrixCellY = cellY / layerMaxClusters;
         
-        float32 randomX = unitSize.x * Random::Instance()->RandFloat();
-        float32 randomY = unitSize.y * Random::Instance()->RandFloat();
+        float32 randomX = unitSize.x * (float32)Random::Instance()->RandFloat();
+        float32 randomY = unitSize.y * (float32)Random::Instance()->RandFloat();
         
         cluster.pos = Vector3((matrixCellX * unitSize.x) + randomX,
                               (matrixCellY * unitSize.y) + randomY,
                               0.0f);
-        cluster.rotation = MAX_ROTATION_ANGLE * (Random::Instance()->RandFloat() - 0.5f);
+        cluster.rotation = MAX_ROTATION_ANGLE * ((float32)Random::Instance()->RandFloat() - 0.5f);
         cluster.densityId = densityId[clusterIndex];
         cluster.matrixIndex = matrixCellX + matrixCellY * resolutionTilesPerRow[0];
         
@@ -441,9 +441,9 @@ void VegetationCustomGeometry::GenerateVertexData(Vector<Vector3>& sourcePositio
             
             vertex.binormal = clusterData.position.pos;
             
-            vertex.tangent.x = clusterData.resolutionId;
-            vertex.tangent.y = clusterData.layerId;
-            vertex.tangent.z = clusterData.position.densityId;
+            vertex.tangent.x = (float32)clusterData.resolutionId;
+            vertex.tangent.y = (float32)clusterData.layerId;
+            vertex.tangent.z = (float32)clusterData.position.densityId;
             
             vertex.texCoord0 = sourceTextureCoords[vertexIndex];
             

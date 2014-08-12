@@ -121,15 +121,11 @@ namespace DAVA
 
 
 #if defined (__DAVAENGINE_IPHONE__)
-    
-    #define GL_HALF_FLOAT GL_HALF_FLOAT_OES
     #define glDeleteFramebuffers glDeleteFramebuffersOES
     #define glDeleteRenderbuffers glDeleteRenderbuffersOES
     #define glGenerateMipmap glGenerateMipmapOES
 	#define glBindFramebuffer glBindFramebufferOES
     #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
-	#define GL_DEPTH24_STENCIL8 GL_DEPTH24_STENCIL8_OES
-    
 #elif defined(__DAVAENGINE_ANDROID__)
     
     #define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT16_OES
@@ -178,6 +174,8 @@ namespace DAVA
 	#define DAVA_GL_DEPTH_COMPONENT GL_DEPTH_COMPONENT
 #endif //#if defined (__DAVAENGINE_IPHONE__)
     
+    
+int32 GetHalfFloatID();
     
 };
 #endif // #if defined(__DAVAENGINE_OPENGL__)

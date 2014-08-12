@@ -36,13 +36,15 @@
 #include "Sound/FMODFileSoundEvent.h"
 #include "Sound/FMODSoundEvent.h"
 #include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlNode.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
 #include "musicios.h"
 #endif
 
-#define MAX_SOUND_CHANNELS 64
+#define MAX_SOUND_CHANNELS 48
+#define MAX_SOUND_VIRTUAL_CHANNELS 64
 
 namespace DAVA
 {
@@ -55,6 +57,8 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void * handle, void * userda
 static const FastName SEREALIZE_EVENTTYPE_EVENTFILE("eventFromFile");
 static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
 
+Mutex SoundSystem::soundGroupsMutex;
+    
 SoundSystem::SoundSystem()
 {
     DVASSERT(sizeof(FMOD_VECTOR) == sizeof(Vector3));
@@ -70,17 +74,20 @@ SoundSystem::SoundSystem()
 #endif
     
 	FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
+	FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
+    
+    FMOD_VERIFY(fmodSystem->setSoftwareChannels(MAX_SOUND_CHANNELS));
+    
 #ifdef DAVA_FMOD_PROFILE
-    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_ENABLE_PROFILE, extraDriverData));
+    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL | FMOD_INIT_ENABLE_PROFILE, extraDriverData));
 #else
-    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_CHANNELS, FMOD_INIT_NORMAL, extraDriverData));
+    FMOD_VERIFY(fmodEventSystem->init(MAX_SOUND_VIRTUAL_CHANNELS, FMOD_INIT_NORMAL, extraDriverData));
 #endif
     
     FMOD::EventCategory * masterCategory = 0;
     FMOD_VERIFY(fmodEventSystem->getCategory("master", &masterCategory));
     FMOD_VERIFY(masterCategory->getChannelGroup(&masterEventChannelGroup));
     
-	FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
     FMOD_VERIFY(fmodSystem->getMasterChannelGroup(&masterChannelGroup));
     FMOD_VERIFY(fmodSystem->setFileSystem(DAVA_FMOD_FILE_OPENCALLBACK, DAVA_FMOD_FILE_CLOSECALLBACK, DAVA_FMOD_FILE_READCALLBACK, DAVA_FMOD_FILE_SEEKCALLBACK, 0, 0, -1));
 }
@@ -175,31 +182,9 @@ void SoundSystem::SerializeEvent(const SoundEvent * sEvent, KeyedArchive *toArch
     }
 #endif //__DAVAENGINE_IPHONE__
 
-    FastName groupName;
-    bool groupWasFound = false;
-    Vector<SoundGroup>::iterator it = soundGroups.begin();
-    Vector<SoundGroup>::iterator itEnd = soundGroups.end();
-    for(;it != itEnd; ++it)
-    {
-        Vector<SoundEvent *> & events = it->events;
-        Vector<SoundEvent *>::const_iterator itEv = events.begin();
-        Vector<SoundEvent *>::const_iterator itEvEnd = events.end();
-        for(;itEv != itEvEnd; ++itEv)
-        {
-            if((*itEv) == sEvent)
-            {
-                groupName = it->name;
-                groupWasFound = true;
-                break;
-            }
-        }
-        if(groupWasFound)
-            break;
-    }
-    if(groupWasFound)
-    {
+    FastName groupName = FindGroupByEvent(sEvent);
+    if(groupName.IsValid())
         toArchive->SetFastName("groupName", groupName);
-    }
 }
 
 SoundEvent * SoundSystem::DeserializeEvent(KeyedArchive *archive)
@@ -225,6 +210,65 @@ SoundEvent * SoundSystem::DeserializeEvent(KeyedArchive *archive)
     }
 
     return 0;
+}
+
+SoundEvent * SoundSystem::CloneEvent(const SoundEvent * sEvent)
+{
+    DVASSERT(sEvent);
+
+    SoundEvent * clonedSound = 0;
+    if(IsPointerToExactClass<FMODFileSoundEvent>(sEvent))
+    {
+        FMODFileSoundEvent * sound = (FMODFileSoundEvent *)sEvent;
+        clonedSound = CreateSoundEventFromFile(sound->fileName, FindGroupByEvent(sound), sound->flags, sound->priority);
+    }
+    else if(IsPointerToExactClass<FMODSoundEvent>(sEvent))
+    {
+        FMODSoundEvent * sound = (FMODSoundEvent *)sEvent;
+        clonedSound = CreateSoundEventByID(sound->eventName, FindGroupByEvent(sound));
+    }
+#ifdef __DAVAENGINE_IPHONE__
+    else if(IsPointerToExactClass<MusicIOSSoundEvent>(sEvent))
+    {
+        MusicIOSSoundEvent * musicEvent = (MusicIOSSoundEvent *)sEvent;
+
+        uint32 flags = SoundEvent::SOUND_EVENT_CREATE_STREAM;
+        if(musicEvent->GetLoopCount() == -1)
+            flags |= SoundEvent::SOUND_EVENT_CREATE_LOOP;
+
+        clonedSound = CreateSoundEventFromFile(musicEvent->GetEventName(), FindGroupByEvent(sEvent), flags);
+    }
+#endif //__DAVAENGINE_IPHONE__
+
+    DVASSERT(clonedSound)
+    return clonedSound;
+}
+
+FastName SoundSystem::FindGroupByEvent(const SoundEvent * soundEvent)
+{
+    FastName groupName;
+    bool groupWasFound = false;
+    Vector<SoundGroup>::iterator it = soundGroups.begin();
+    Vector<SoundGroup>::iterator itEnd = soundGroups.end();
+    for(;it != itEnd; ++it)
+    {
+        Vector<SoundEvent *> & events = it->events;
+        Vector<SoundEvent *>::const_iterator itEv = events.begin();
+        Vector<SoundEvent *>::const_iterator itEvEnd = events.end();
+        for(;itEv != itEvEnd; ++itEv)
+        {
+            if((*itEv) == soundEvent)
+            {
+                groupName = it->name;
+                groupWasFound = true;
+                break;
+            }
+        }
+        if(groupWasFound)
+            break;
+    }
+
+    return groupName;
 }
 
 void SoundSystem::ParseSFXConfig(const FilePath & configPath)
@@ -479,6 +523,7 @@ void SoundSystem::ReleaseAllEventWaveData()
     
 void SoundSystem::SetGroupVolume(const FastName & groupName, float32 volume)
 {
+    soundGroupsMutex.Lock();
     for(size_t i = 0; i < soundGroups.size(); ++i)
     {
         SoundGroup & group = soundGroups[i];
@@ -493,21 +538,30 @@ void SoundSystem::SetGroupVolume(const FastName & groupName, float32 volume)
             break;
         }
     }
+    soundGroupsMutex.Unlock();
 }
 
 float32 SoundSystem::GetGroupVolume(const FastName & groupName)
 {
+    soundGroupsMutex.Lock();
+    float32 ret = -1.f;
     for(size_t i = 0; i < soundGroups.size(); ++i)
     {
         SoundGroup & group = soundGroups[i];
         if(group.name == groupName)
-            return group.volume;
+        {
+            ret = group.volume;
+            break;
+        }
     }
-    return -1.f;
+    soundGroupsMutex.Unlock();
+    return ret;
 }
 
 void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * event)
 {
+    soundGroupsMutex.Lock();
+    
     for(size_t i = 0; i < soundGroups.size(); ++i)
     {
         SoundGroup & group = soundGroups[i];
@@ -515,6 +569,8 @@ void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * 
         {
             event->SetVolume(group.volume);
             group.events.push_back(event);
+            
+            soundGroupsMutex.Unlock();
             return;
         }
     }
@@ -525,31 +581,30 @@ void SoundSystem::AddSoundEventToGroup(const FastName & groupName, SoundEvent * 
     group.events.push_back(event);
 
     soundGroups.push_back(group);
+    
+    soundGroupsMutex.Unlock();
 }
     
 void SoundSystem::RemoveSoundEventFromGroups(SoundEvent * event)
 {
-    Vector<SoundGroup>::iterator it = soundGroups.begin();
-    while(it != soundGroups.end())
+    for(uint32 i = 0; i < (uint32)soundGroups.size(); ++i)
     {
-        Vector<SoundEvent *> & events = it->events;
-        Vector<SoundEvent *>::iterator itEv = events.begin();
-        Vector<SoundEvent *>::const_iterator itEvEnd = events.end();
-        while(itEv != itEvEnd)
+        Vector<SoundEvent *> & events = soundGroups[i].events;
+        uint32 eventsCount = events.size();
+        for(uint32 k = 0; k < eventsCount; k++)
         {
-            if((*itEv) == event)
+            if(events[k] == event)
             {
-                it->events.erase(itEv);
+                RemoveExchangingWithLast(events, k);
                 break;
             }
-
-            ++itEv;
         }
 
         if(!events.size())
-            it = soundGroups.erase(it);
-        else
-            ++it;
+        {
+            RemoveExchangingWithLast(soundGroups, i);
+            --i;
+        }
     }
 }
     
