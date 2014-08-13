@@ -35,6 +35,7 @@
 #include "Debug/DVAssert.h"
 #include "Platform/SystemTimer.h"
 #include "Debug/Replay.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA 
 {
@@ -327,11 +328,10 @@ void UIControlSystem::Draw()
         RenderManager::Instance()->Clear(Color(0,0,0,0), 1.0f, 0);        
         RenderManager::Instance()->SetRenderState(prevState);
     }
-//	if(currentScreen && (!currentPopup || currentPopup->isTransparent))
+
 	if (currentScreen)
 	{
 		currentScreen->SystemDraw(baseGeometricData);
-//		currentScreen->SystemDraw(Rect(0, 0, RenderManager::Instance()->GetScreenWidth(), RenderManager::Instance()->GetScreenHeight()));
 	}
 
 	popupContainer->SystemDraw(baseGeometricData);
@@ -673,10 +673,10 @@ UIControl *UIControlSystem::GetExclusiveInputLocker()
     
 void UIControlSystem::ScreenSizeChanged()
 {
-    popupContainer->SystemScreenSizeDidChanged(Rect(Core::Instance()->GetVirtualScreenXMin()
-                                                 , Core::Instance()->GetVirtualScreenYMin()
-                                                 , Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()
-                                                 , Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()));
+    popupContainer->SystemScreenSizeDidChanged(Rect(VirtualCoordinates::GetVirtualScreenXMin()
+                                                 , VirtualCoordinates::GetVirtualScreenYMin()
+                                                 , VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()
+                                                 , VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenYMin()));
 }
 
 void UIControlSystem::SetHoveredControl(UIControl *newHovered)
@@ -749,18 +749,18 @@ void UIControlSystem::CalculateScaleMultipliers()
 {
 	
 	float32 w, h;
-	w = (float32)Core::Instance()->GetVirtualScreenWidth() / (float32)inputWidth;
-	h = (float32)Core::Instance()->GetVirtualScreenHeight() / (float32)inputHeight;
+	w = (float32)VirtualCoordinates::GetVirtualScreenWidth() / (float32)inputWidth;
+	h = (float32)VirtualCoordinates::GetVirtualScreenHeight() / (float32)inputHeight;
 	inputOffset.x = inputOffset.y = 0;
 	if(w > h)
 	{
 		scaleFactor = w;
-		inputOffset.y = 0.5f * ((float32)Core::Instance()->GetVirtualScreenHeight() - (float32)inputHeight * scaleFactor);
+		inputOffset.y = 0.5f * ((float32)VirtualCoordinates::GetVirtualScreenHeight() - (float32)inputHeight * scaleFactor);
 	}
 	else
 	{
 		scaleFactor = h;
-		inputOffset.x = 0.5f * ((float32)Core::Instance()->GetVirtualScreenWidth() - (float32)inputWidth * scaleFactor);
+		inputOffset.x = 0.5f * ((float32)VirtualCoordinates::GetVirtualScreenWidth() - (float32)inputWidth * scaleFactor);
 	}
 }
 
@@ -843,7 +843,7 @@ void UIControlSystem::RemoveScreenSwitchListener(ScreenSwitchListener * listener
 void UIControlSystem::NotifyListenersWillSwitch( UIScreen* screen )
 {
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = screenSwitchListenersCopy.size();
+    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
     for(uint32 i = 0; i < listenersCount; ++i)
         screenSwitchListenersCopy[i]->OnScreenWillSwitch( screen );
 }
@@ -851,7 +851,7 @@ void UIControlSystem::NotifyListenersWillSwitch( UIScreen* screen )
 void UIControlSystem::NotifyListenersDidSwitch( UIScreen* screen )
 {
     Vector<ScreenSwitchListener*> screenSwitchListenersCopy = screenSwitchListeners;
-    uint32 listenersCount = screenSwitchListenersCopy.size();
+    uint32 listenersCount = (uint32)screenSwitchListenersCopy.size();
     for(uint32 i = 0; i < listenersCount; ++i)
         screenSwitchListenersCopy[i]->OnScreenDidSwitch( screen );
 }

@@ -38,6 +38,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/FilePath.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 #include <ft2build.h>
 #include <freetype/ftglyph.h>
@@ -303,7 +304,7 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
     
 	FT_Error error;
 
-	float32 virtualToPhysicalFactor = Core::GetVirtualToPhysicalFactor();
+	float32 virtualToPhysicalFactor = VirtualCoordinates::GetVirtualToPhysicalFactor();
 
 	// virtualToPhysicalFactor scaling
 	{
@@ -479,7 +480,7 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 	}
 	else
 	{
-		return Size2i((int32)ceilf(Core::GetPhysicalToVirtualFactor()*(maxWidth)), GetFontHeight(size));
+		return Size2i((int32)ceilf(VirtualCoordinates::GetPhysicalToVirtualFactor()*(maxWidth)), GetFontHeight(size));
 	}
 }
 

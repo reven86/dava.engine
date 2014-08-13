@@ -253,16 +253,6 @@ public:
 	void SetClipPolygon(Polygon2 * clipPolygon);
 
 	/**
-	 \brief Returns multiplyer to convert sprite to the physical coordinates.
-	 */
-	inline float32 GetResourceToPhysicalFactor() const;
-
-	/**
-	 \brief Returns multiplyer to convert sprite to the virtual coordinates.
-	 */
-    inline float32 GetResourceToVirtualFactor() const;
-
-	/**
 	 \brief Returns texture coordinates for the requested frame.
 	 */
 	float32 *GetTextureVerts(int32 frame);
@@ -365,8 +355,8 @@ protected:
 
 	int32 resourceSizeIndex;
 
-	float32 resourceToVirtualFactor;
-	float32 resourceToPhysicalFactor;
+	//float32 resourceToVirtualFactor;
+	//float32 resourceToPhysicalFactor;
 
 	eSpriteType type;
 
@@ -460,16 +450,6 @@ inline void Sprite::DrawState::SetPerPixelAccuracyUsage(bool needToUse)
 inline int32 Sprite::GetResourceSizeIndex() const
 {
 	return resourceSizeIndex;
-}
-
-inline float32 Sprite::GetResourceToPhysicalFactor() const
-{
-	return resourceToPhysicalFactor;
-}
-
-inline float32 Sprite::GetResourceToVirtualFactor() const
-{
-    return resourceToVirtualFactor;
 }
 
 inline Shader* Sprite::DrawState::GetShader() const

@@ -32,7 +32,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FontManager.h"
-
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include "Utils/StringFormat.h"
 #include "Utils/CRC32.h"
 
@@ -133,7 +133,7 @@ int32 Font::GetVerticalSpacing() const
     
 void Font::SplitTextBySymbolsToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
-	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
+	int32 targetWidth = (int32)(targetRectSize.dx * VirtualCoordinates::GetVirtualToPhysicalFactor());
     int32 totalSize = (int)text.length();
     
     int32 currentLineStart = 0;
@@ -377,7 +377,7 @@ bool Font::IsWordSeparator(char16 t) const
     
 void Font::SplitTextToStrings(const WideString & text, const Vector2 & targetRectSize, Vector<WideString> & resultVector)
 {
-	int32 targetWidth = (int32)(targetRectSize.dx * Core::GetVirtualToPhysicalFactor());
+	int32 targetWidth = (int32)(targetRectSize.dx * VirtualCoordinates::GetVirtualToPhysicalFactor());
 
 	enum
 	{

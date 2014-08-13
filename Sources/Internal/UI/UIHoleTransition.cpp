@@ -70,9 +70,9 @@ void UIHoleTransition::Update(float32 timeElapsed)
 	for (int k = 0; k < clipPoly.pointCount; ++k)
 	{
 		realPoly.points[k] = clipPoly.points[k];
-		realPoly.points[k] -= Vector2(GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f);
+		realPoly.points[k] -= Vector2(VirtualCoordinates::GetVirtualScreenWidth() / 2.0f, VirtualCoordinates::GetVirtualScreenHeight() / 2.0f);
 		realPoly.points[k] *= scaleCoef;
-		realPoly.points[k] += Vector2(GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f);
+		realPoly.points[k] += Vector2(VirtualCoordinates::GetVirtualScreenWidth() / 2.0f, VirtualCoordinates::GetVirtualScreenHeight() / 2.0f);
 	}
 }
 
@@ -97,7 +97,7 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     
 	RenderManager::Instance()->SetColor(0.0f, 0.0f, 0.0f, 1.0f);
-	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f, (float32)GetScreenWidth(), (float32)GetScreenHeight()), drawState.GetRenderState());
+	RenderHelper::Instance()->FillRect(Rect(0.0f, 0.0f, (float32)VirtualCoordinates::GetVirtualScreenWidth(), (float32)VirtualCoordinates::GetVirtualScreenHeight()), drawState.GetRenderState());
 	RenderManager::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
     drawState.SetPosition(geometricData.position);

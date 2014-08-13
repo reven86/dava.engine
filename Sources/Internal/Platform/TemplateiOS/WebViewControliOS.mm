@@ -232,14 +232,14 @@ void WebViewControl::SetRect(const Rect& rect)
 
 	
     // Minimum recalculations are needed, no swapping, no rotation.
-    webViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-    webViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
+    webViewRect.origin.x = rect.x * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
+    webViewRect.origin.y = rect.y * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
 			
-    webViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-    webViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
+    webViewRect.size.width = rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
+    webViewRect.size.height = rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
 
-    webViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-    webViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
+    webViewRect.origin.x += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().x;
+    webViewRect.origin.y += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().y;
 
 	
 	// Apply the Retina scale divider, if any.

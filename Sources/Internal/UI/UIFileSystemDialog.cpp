@@ -34,13 +34,19 @@
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include <algorithm>
 
 namespace DAVA
 {
 
 UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
-: UIControl(Rect(GetScreenWidth()/2, GetScreenHeight()/2, GetScreenWidth()*2/3, GetScreenHeight()*4/5))
+    : UIControl(Rect(VirtualCoordinates::GetVirtualScreenWidth() / 2.f,
+                     VirtualCoordinates::GetVirtualScreenHeight() / 2.f,
+                     VirtualCoordinates::GetVirtualScreenWidth() * 2.f / 3.f,
+                     VirtualCoordinates::GetVirtualScreenHeight() * 4.f / 5.f
+                     )
+                )
 {
     fontPath = _fontPath;
     
@@ -53,9 +59,9 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     extensionFilter.push_back(".*");
     
     
-    cellH = float32((int32)GetScreenHeight()/20.0f);
+    cellH = VirtualCoordinates::GetVirtualScreenHeight() / 20.0f;
     cellH = Max(cellH, 32.0f);
-    float32 border = float32((int32)GetScreenHeight()/64.0f);
+    float32 border = VirtualCoordinates::GetVirtualScreenHeight() / 64.0f;
     float32 halfBorder = float32(int32(border/2.0f));
     fileListView = new UIList(Rect(border, border + cellH, size.x - border*2.0f, size.y - cellH*3.0f - border*3.0f), UIList::ORIENTATION_VERTICAL);
     fileListView->SetDelegate(this);

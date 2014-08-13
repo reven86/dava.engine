@@ -47,7 +47,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
-
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include "Render/Material/NMaterialNames.h"
 
 namespace DAVA
@@ -1672,7 +1672,7 @@ Texture * Landscape::CreateLandscapeTexture()
  
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
-    projection.glOrtho(0, TEXTURE_TILE_FULL_SIZE * Core::GetVirtualToPhysicalFactor(), 0, TEXTURE_TILE_FULL_SIZE * Core::GetVirtualToPhysicalFactor(), 0, 1);
+    projection.glOrtho(0, TEXTURE_TILE_FULL_SIZE * VirtualCoordinates::GetVirtualToPhysicalFactor(), 0, TEXTURE_TILE_FULL_SIZE * VirtualCoordinates::GetVirtualToPhysicalFactor(), 0, 1);
     
     Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
     RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);

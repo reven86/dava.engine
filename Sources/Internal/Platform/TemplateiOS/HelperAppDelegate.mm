@@ -14,6 +14,7 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 #include "BaseTypes.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 
 
@@ -54,7 +55,7 @@ int DAVA::Core::Run(int argc, char * argv[], AppHandle handle)
 			}
 		}
 		DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(width, height);
-		DAVA::Core::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
+        VirtualCoordinatesTransformSystem::Instance()->SetPhysicalScreenSize(width*scale, height*scale);
 	}
 		
 	int retVal = UIApplicationMain(argc, argv, nil, nil);

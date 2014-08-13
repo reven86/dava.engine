@@ -62,6 +62,12 @@
 		02E9E438173964DA00C501BC /* SoundUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E435173964DA00C501BC /* SoundUpdateSystem.cpp */; };
 		02E9E439173964DA00C501BC /* SoundUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E436173964DA00C501BC /* SoundUpdateSystem.h */; };
 		02E9E43A173964DA00C501BC /* SoundUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E436173964DA00C501BC /* SoundUpdateSystem.h */; };
+		02EC80D91999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
+		02EC80DA1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
+		02EC80DB1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
+		02EC80DC1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
+		02EC80DD1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
+		02EC80DE1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
 		02FD7ED319237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */; };
 		02FD7ED419237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */; };
 		02FD7ED519237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */; };
@@ -271,7 +277,6 @@
 		176DE9A5174B5561007A983B /* RenderGrayscaleEffect.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8816BD24E400732C04 /* RenderGrayscaleEffect.h */; };
 		176DE9A6174B5561007A983B /* RenderHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8A16BD24E400732C04 /* RenderHelper.h */; };
 		176DE9A7174B5561007A983B /* RenderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8C16BD24E400732C04 /* RenderManager.h */; };
-		176DE9A8174B5561007A983B /* RenderManagerGL20.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9116BD24E400732C04 /* RenderManagerGL20.h */; };
 		176DE9A9174B5561007A983B /* RenderOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9316BD24E500732C04 /* RenderOptions.h */; };
 		176DE9AA174B5561007A983B /* RenderResource.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9516BD24E500732C04 /* RenderResource.h */; };
 		176DE9AB174B5561007A983B /* RGBColor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9816BD24E500732C04 /* RGBColor.h */; };
@@ -537,7 +542,6 @@
 		176DEAC5174B5561007A983B /* RenderManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8B16BD24E400732C04 /* RenderManager.cpp */; };
 		176DEAC6174B5561007A983B /* RenderManagerFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */; };
 		176DEAC7174B5561007A983B /* RenderManagerGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */; };
-		176DEAC8174B5561007A983B /* RenderManagerGL20.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */; };
 		176DEAC9174B5561007A983B /* RenderOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9216BD24E400732C04 /* RenderOptions.cpp */; };
 		176DEACA174B5561007A983B /* RenderResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9416BD24E500732C04 /* RenderResource.cpp */; };
 		176DEACB174B5561007A983B /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9916BD24E500732C04 /* Shader.cpp */; };
@@ -837,36 +841,6 @@
 		6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963C18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
-		647EFC41195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
-		647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
-		647EFC43195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
-		647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
-		647EFC45195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
-		647EFC46195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
-		647EFC49195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
-		647EFC4A195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
-		647EFC4B195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
-		647EFC4C195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
-		647EFC4D195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
-		647EFC4E195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
-		647EFC51195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
-		647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
-		647EFC53195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
-		647EFC54195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
-		647EFC55195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
-		647EFC56195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
-		647EFC59195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
-		647EFC5A195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
-		647EFC5B195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
-		647EFC5C195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
-		647EFC5D195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
-		647EFC5E195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
-		64806B6D18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
-		64806B6E18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
-		64806B6F18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
-		64806B7018BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
-		64806B7118BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
-		64806B7218BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
 		644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
 		644C86BF19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
 		644C86C019476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
@@ -1132,7 +1106,6 @@
 		C172EC0C18C9F1E9004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0218C9F1E9004309CF /* TextBlockDistanceRender.cpp */; };
 		C172EC0D18C9F1E9004309CF /* TextBlockDistanceRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC0318C9F1E9004309CF /* TextBlockDistanceRender.h */; };
 		C172EC0E18C9F1E9004309CF /* TextBlockGraphicsRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0418C9F1E9004309CF /* TextBlockGraphicsRender.cpp */; };
-		C172EC0F18C9F1E9004309CF /* TextBlockGraphicsRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC0518C9F1E9004309CF /* TextBlockGraphicsRender.h */; };
 		C172EC1018C9F1E9004309CF /* TextBlockRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0618C9F1E9004309CF /* TextBlockRender.cpp */; };
 		C172EC1118C9F1E9004309CF /* TextBlockRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC0718C9F1E9004309CF /* TextBlockRender.h */; };
 		C172EC1218C9F1E9004309CF /* TextBlockSoftwareRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0818C9F1E9004309CF /* TextBlockSoftwareRender.cpp */; };
@@ -2458,6 +2431,8 @@
 		02E9E4221739616800C501BC /* SoundComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundComponent.h; sourceTree = "<group>"; };
 		02E9E435173964DA00C501BC /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
 		02E9E436173964DA00C501BC /* SoundUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundUpdateSystem.h; sourceTree = "<group>"; };
+		02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesTransformSystem.cpp; sourceTree = "<group>"; };
+		02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesTransformSystem.h; sourceTree = "<group>"; };
 		02FD7ECF19237D96007762C0 /* SpeedTreeUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeUpdateSystem.cpp; sourceTree = "<group>"; };
 		02FD7ED019237D96007762C0 /* SpeedTreeUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SpeedTreeUpdateSystem.h; sourceTree = "<group>"; };
 		02FD7ED119237D96007762C0 /* WindSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindSystem.cpp; sourceTree = "<group>"; };
@@ -2547,16 +2522,6 @@
 		641A61D818CDC2F4003359E7 /* FoliageSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FoliageSystem.cpp; sourceTree = "<group>"; };
 		641A61D918CDC2F4003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		6435963718C1FA3200862C31 /* AbstractQuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractQuadTree.h; sourceTree = "<group>"; };
-		647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicTexturesInsp.cpp; sourceTree = "<group>"; };
-		647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
-		647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicFlagsInsp.cpp; sourceTree = "<group>"; };
-		647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicFlagsInsp.h; sourceTree = "<group>"; };
-		647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicPropertiesInsp.cpp; sourceTree = "<group>"; };
-		647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicPropertiesInsp.h; sourceTree = "<group>"; };
-		647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialHelper.cpp; sourceTree = "<group>"; };
-		647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialHelper.h; sourceTree = "<group>"; };
-		64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VegetationRenderObject.cpp; sourceTree = "<group>"; };
-		64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VegetationRenderObject.h; sourceTree = "<group>"; };
 		644C86A819476A7100964F91 /* RenderBatchPool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderBatchPool.cpp; sourceTree = "<group>"; };
 		644C86A919476A7100964F91 /* RenderBatchPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderBatchPool.h; sourceTree = "<group>"; };
 		644C86AA19476A7100964F91 /* TextureSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureSheet.cpp; sourceTree = "<group>"; };
@@ -4026,8 +3991,6 @@
 				E8989C8C16BD24E400732C04 /* RenderManager.h */,
 				E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */,
 				E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */,
-				E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */,
-				E8989C9116BD24E400732C04 /* RenderManagerGL20.h */,
 				E8989C9216BD24E400732C04 /* RenderOptions.cpp */,
 				E8989C9316BD24E500732C04 /* RenderOptions.h */,
 				E8989C9416BD24E500732C04 /* RenderResource.cpp */,
@@ -4053,6 +4016,8 @@
 		E8989C1616BD24E400732C04 /* 2D */ = {
 			isa = PBXGroup;
 			children = (
+				02EC80D71999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp */,
+				02EC80D81999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h */,
 				C172EC0018C9F1E9004309CF /* DFFont.cpp */,
 				C172EC0118C9F1E9004309CF /* DFFont.h */,
 				C172EC0218C9F1E9004309CF /* TextBlockDistanceRender.cpp */,
@@ -4943,6 +4908,7 @@
 				644C86E119476A7100964F91 /* VegetationFixedGeometry.h in Headers */,
 				176DEA35174B5561007A983B /* RenderState.h in Headers */,
 				76199F3C192DF73D008A47E2 /* VersionInfo.h in Headers */,
+				02EC80DE1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				176DEA36174B5561007A983B /* UpdateSystem.h in Headers */,
 				176DEA37174B5561007A983B /* Entity.h in Headers */,
 				176DEA38174B5561007A983B /* CRC32.h in Headers */,
@@ -5111,6 +5077,7 @@
 				E8989E7516BD24E500732C04 /* Polygon2.h in Headers */,
 				E8989E7716BD24E500732C04 /* Polygon3.h in Headers */,
 				E8989E7816BD24E500732C04 /* Quaternion.h in Headers */,
+				02EC80DC1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				E8989E7916BD24E500732C04 /* Ray.h in Headers */,
 				E8989E7A16BD24E500732C04 /* Rect.h in Headers */,
 				E8989E7C16BD24E500732C04 /* RectPacker.h in Headers */,
@@ -5677,6 +5644,7 @@
 				E898A16416BD265400732C04 /* LightUpdateSystem.h in Headers */,
 				E898A16516BD265400732C04 /* LodSystem.h in Headers */,
 				E898A16616BD265400732C04 /* ParticleEffectSystem.h in Headers */,
+				02EC80DD1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				E898A16816BD265400732C04 /* RenderUpdateSystem.h in Headers */,
 				E898A16916BD265400732C04 /* SwitchSystem.h in Headers */,
 				644C86CE19476A7100964F91 /* VegetationCustomGeometry.h in Headers */,
@@ -6012,6 +5980,7 @@
 				176DEA92174B5561007A983B /* NetworkDelegate.cpp in Sources */,
 				176DEA93174B5561007A983B /* NetworkPacket.cpp in Sources */,
 				176DEA94174B5561007A983B /* TCPServer.mm in Sources */,
+				02EC80DB1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				176DEA95174B5561007A983B /* WFNetworkConnection.mm in Sources */,
 				176DEA96174B5561007A983B /* Particle.cpp in Sources */,
 				176DEA97174B5561007A983B /* ParticleEmitter.cpp in Sources */,
@@ -6150,7 +6119,6 @@
 				02FD7EEB19237DA2007762C0 /* WindComponent.cpp in Sources */,
 				176DEB07174B5561007A983B /* UserNode.cpp in Sources */,
 				C172EC4C18CA0ADA004309CF /* TextBlockDistanceRender.cpp in Sources */,
-				176DEB08174B5561007A983B /* Sound.cpp in Sources */,
 				02141409181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
 				176DEB0B174B5561007A983B /* ScrollHelper.cpp in Sources */,
 				7A169343180EE619005F1FBC /* AutotestingSystemLua.cpp in Sources */,
@@ -6361,6 +6329,7 @@
 				E8989E6016BD24E500732C04 /* AABBox3.cpp in Sources */,
 				E8989E6216BD24E500732C04 /* BezierSpline.cpp in Sources */,
 				CC931B26188EC95F000375F9 /* SwitchToRenerObjectConverter.cpp in Sources */,
+				02EC80D91999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				E8989E6616BD24E500732C04 /* Math2D.cpp in Sources */,
 				E8989E6E16BD24E500732C04 /* Matrix4.cpp in Sources */,
 				E8989E7016BD24E500732C04 /* NeonMath.cpp in Sources */,
@@ -6965,6 +6934,7 @@
 				CCC7A44816F1D6170061EA5D /* Mesh.cpp in Sources */,
 				CCC7A45016F1D6170061EA5D /* RenderBatch.cpp in Sources */,
 				CCC7A45816F1D6170061EA5D /* RenderLayer.cpp in Sources */,
+				02EC80DA1999F9F900F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				02FD7EEA19237DA2007762C0 /* WindComponent.cpp in Sources */,
 				CCC7A45C16F1D6170061EA5D /* RenderObject.cpp in Sources */,
 				155D77D9197DD22E006AEBCD /* YamlNode.cpp in Sources */,

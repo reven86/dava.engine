@@ -23,10 +23,6 @@
 		022AA8E71934CED9009A4B84 /* WaveSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 022AA8E31934CED9009A4B84 /* WaveSystem.h */; };
 		0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */; };
 		0282B8B318BC8C88006F1EE4 /* FMODFileSoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */; };
-		02864523197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
-		02864524197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */; };
-		02864525197960F200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */; };
-		02864526197960F200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */; };
 		029BAE551859B81700478671 /* musicios.h in Headers */ = {isa = PBXBuildFile; fileRef = 029BAE511859B81700478671 /* musicios.h */; };
 		029BAE581859B81700478671 /* SoundEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 029BAE541859B81700478671 /* SoundEvent.h */; };
 		029BAE591859C80500478671 /* musicios.mm in Sources */ = {isa = PBXBuildFile; fileRef = 029BAE521859B81700478671 /* musicios.mm */; };
@@ -56,6 +52,14 @@
 		02E9E3A11729669200C501BC /* FMODUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3A01729669200C501BC /* FMODUtils.h */; };
 		02E9E3E21734176D00C501BC /* SoundComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02E9E3E01734176D00C501BC /* SoundComponent.cpp */; };
 		02E9E3E31734176D00C501BC /* SoundComponent.h in Headers */ = {isa = PBXBuildFile; fileRef = 02E9E3E11734176D00C501BC /* SoundComponent.h */; };
+		02EC80F4199B43AE00F8DA4F /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F0199B43AE00F8DA4F /* RenderSystem2D.cpp */; };
+		02EC80F5199B43AE00F8DA4F /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F0199B43AE00F8DA4F /* RenderSystem2D.cpp */; };
+		02EC80F6199B43AE00F8DA4F /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */; };
+		02EC80F7199B43AE00F8DA4F /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */; };
+		02EC80F8199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
+		02EC80F9199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
+		02EC80FA199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
+		02EC80FB199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
 		02F6403B173A597A0053F038 /* libfmodevent_iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3D01734165D00C501BC /* libfmodevent_iphoneos.a */; };
 		02F6403C173A597A0053F038 /* libfmodevent_iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3D11734165D00C501BC /* libfmodevent_iphonesimulator.a */; };
 		02F6403D173A597A0053F038 /* libfmodex_iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3A2172967F300C501BC /* libfmodex_iphoneos.a */; };
@@ -1695,8 +1699,6 @@
 		022AA8E31934CED9009A4B84 /* WaveSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WaveSystem.h; sourceTree = "<group>"; };
 		0282B8B018BC8C88006F1EE4 /* FMODFileSoundEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FMODFileSoundEvent.cpp; sourceTree = "<group>"; };
 		0282B8B118BC8C88006F1EE4 /* FMODFileSoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMODFileSoundEvent.h; sourceTree = "<group>"; };
-		02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualToPhysicalHelper.cpp; sourceTree = "<group>"; };
-		02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualToPhysicalHelper.h; sourceTree = "<group>"; };
 		029BAE511859B81700478671 /* musicios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = musicios.h; sourceTree = "<group>"; };
 		029BAE521859B81700478671 /* musicios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = musicios.mm; sourceTree = "<group>"; };
 		029BAE541859B81700478671 /* SoundEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundEvent.h; sourceTree = "<group>"; };
@@ -1718,6 +1720,10 @@
 		02E9E3D11734165D00C501BC /* libfmodevent_iphonesimulator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfmodevent_iphonesimulator.a; path = ../../Libs/fmod/lib/iphone/libfmodevent_iphonesimulator.a; sourceTree = "<group>"; };
 		02E9E3E01734176D00C501BC /* SoundComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundComponent.cpp; sourceTree = "<group>"; };
 		02E9E3E11734176D00C501BC /* SoundComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundComponent.h; sourceTree = "<group>"; };
+		02EC80F0199B43AE00F8DA4F /* RenderSystem2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderSystem2D.cpp; sourceTree = "<group>"; };
+		02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderSystem2D.h; sourceTree = "<group>"; };
+		02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesTransformSystem.cpp; sourceTree = "<group>"; };
+		02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesTransformSystem.h; sourceTree = "<group>"; };
 		02F6403F173A5A950053F038 /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
 		02F64040173A5A950053F038 /* SoundUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundUpdateSystem.h; sourceTree = "<group>"; };
 		02FD7EB719237D33007762C0 /* SpeedTreeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeComponent.cpp; sourceTree = "<group>"; };
@@ -2601,6 +2607,17 @@
 			name = FMOD;
 			sourceTree = "<group>";
 		};
+		02EC80EF199B43AE00F8DA4F /* RenderSystem2D */ = {
+			isa = PBXGroup;
+			children = (
+				02EC80F0199B43AE00F8DA4F /* RenderSystem2D.cpp */,
+				02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */,
+				02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */,
+				02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */,
+			);
+			path = RenderSystem2D;
+			sourceTree = "<group>";
+		};
 		034768DFFF38A50411DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -3245,6 +3262,7 @@
 		E8B3C8FA16B9326D002BD35F /* 2D */ = {
 			isa = PBXGroup;
 			children = (
+				02EC80EF199B43AE00F8DA4F /* RenderSystem2D */,
 				C172EC2218C9F9D4004309CF /* TextBlockDistanceRender.cpp */,
 				C172EC2318C9F9D4004309CF /* TextBlockDistanceRender.h */,
 				C172EC2418C9F9D4004309CF /* TextBlockGraphicsRender.cpp */,
@@ -3700,8 +3718,6 @@
 		E8B3CA7016B9326E002BD35F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				02864521197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp */,
-				02864522197960F200ABCAA0 /* VirtualToPhysicalHelper.h */,
 				A6A1E8671785688600AA3A86 /* CRC32.cpp */,
 				A6A1E8681785688600AA3A86 /* CRC32.h */,
 				E8B3CA7116B9326E002BD35F /* HTTPDownloader.h */,
@@ -3823,6 +3839,7 @@
 				02FD7F271924997C007762C0 /* IntrospectionBase.h in Headers */,
 				02FD7F281924997C007762C0 /* IntrospectionCollection.h in Headers */,
 				02FD7F291924997C007762C0 /* IntrospectionFlags.h in Headers */,
+				02EC80FB199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				02FD7F2A1924997C007762C0 /* IntrospectionProperty.h in Headers */,
 				02FD7F2B1924997C007762C0 /* Mallocator.h in Headers */,
 				02FD7F2C1924997C007762C0 /* Message.h in Headers */,
@@ -3885,6 +3902,7 @@
 				02FD7F5F1924997C007762C0 /* Logger.h in Headers */,
 				02FD7F601924997C007762C0 /* ResourceArchive.h in Headers */,
 				17675C2719472C1400054F8F /* LibPngHelpers.h in Headers */,
+				02EC80F7199B43AE00F8DA4F /* RenderSystem2D.h in Headers */,
 				02FD7F611924997C007762C0 /* VariantType.h in Headers */,
 				02FD7F621924997C007762C0 /* XMLParser.h in Headers */,
 				02FD7F631924997C007762C0 /* YamlArchive.h in Headers */,
@@ -3922,7 +3940,6 @@
 				02FD7F7F1924997C007762C0 /* ParticleGroup.h in Headers */,
 				02FD7F801924997C007762C0 /* Quaternion.h in Headers */,
 				02FD7F811924997C007762C0 /* Ray.h in Headers */,
-				02864526197960F200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				02FD7F821924997C007762C0 /* Rect.h in Headers */,
 				02FD7F831924997C007762C0 /* RectPacker.h in Headers */,
 				02FD7F841924997C007762C0 /* Sphere.h in Headers */,
@@ -4401,6 +4418,7 @@
 				E8B3CBD216B9326E002BD35F /* Cursor.h in Headers */,
 				E8B3CBDC16B9326E002BD35F /* ColorOnlyEffect.h in Headers */,
 				E8B3CBDE16B9326E002BD35F /* MultiTextureEffect.h in Headers */,
+				02EC80F6199B43AE00F8DA4F /* RenderSystem2D.h in Headers */,
 				E8FC1304186972B60095D8FE /* QualitySettingsComponent.h in Headers */,
 				E8B3CBE016B9326E002BD35F /* TextureMulColorAlphaTestEffect.h in Headers */,
 				E8B3CBE216B9326E002BD35F /* TextureMulColorEffect.h in Headers */,
@@ -4445,6 +4463,7 @@
 				A6AFDEDC187187D3006E43A1 /* VisibilityArray.h in Headers */,
 				E8B3CC3516B9326E002BD35F /* RenderOptions.h in Headers */,
 				E8B3CC3716B9326E002BD35F /* RenderResource.h in Headers */,
+				02EC80FA199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
 				E8B3CC3A16B9326E002BD35F /* RGBColor.h in Headers */,
 				E8B3CC3C16B9326E002BD35F /* Shader.h in Headers */,
 				E8B3CC4116B9326E002BD35F /* SharedFBO.h in Headers */,
@@ -4561,7 +4580,6 @@
 				E8B3CD1F16B9326E002BD35F /* UISlider.h in Headers */,
 				E8B3CD2116B9326E002BD35F /* UIStaticText.h in Headers */,
 				E8B3CD2316B9326E002BD35F /* UITextField.h in Headers */,
-				02864525197960F200ABCAA0 /* VirtualToPhysicalHelper.h in Headers */,
 				64493E1C19476F4700AB2715 /* VegetationSpatialData.h in Headers */,
 				624C87F318C6160F00E1049D /* DateTime.h in Headers */,
 				E8B3CD2416B9326E002BD35F /* UITextFieldiPhone.h in Headers */,
@@ -4843,6 +4861,7 @@
 				02FD80ED1924997C007762C0 /* ParticleLayer.cpp in Sources */,
 				02FD80EE1924997C007762C0 /* ParticlePropertyLine.cpp in Sources */,
 				02FD80EF1924997C007762C0 /* Mutex.cpp in Sources */,
+				02EC80F5199B43AE00F8DA4F /* RenderSystem2D.cpp in Sources */,
 				64493DF719476F4700AB2715 /* TextureSheet.cpp in Sources */,
 				02FD80F01924997C007762C0 /* SystemTimer.cpp in Sources */,
 				02FD80F11924997C007762C0 /* EAGLView.mm in Sources */,
@@ -5019,6 +5038,7 @@
 				02FD818F1924997C007762C0 /* UILoadingTransition.cpp in Sources */,
 				02FD81901924997C007762C0 /* UIMoveInTransition.cpp in Sources */,
 				02FD81911924997C007762C0 /* UIPopup.cpp in Sources */,
+				02EC80F9199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				02FD81921924997C007762C0 /* UIScreen.cpp in Sources */,
 				02FD81931924997C007762C0 /* UIScreenManageriPhone.mm in Sources */,
 				02FD81941924997C007762C0 /* UIScreenManageriPhoneImpl.mm in Sources */,
@@ -5106,7 +5126,6 @@
 				02FD81E41924997C007762C0 /* FMODSoundEvent.cpp in Sources */,
 				02FD81E51924997C007762C0 /* FMODSoundSystem.cpp in Sources */,
 				02FD81E61924997C007762C0 /* AutotestingDB.cpp in Sources */,
-				02864524197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */,
 				02FD81E71924997C007762C0 /* GameAPI.cpp in Sources */,
 				02FD81E81924997C007762C0 /* NMaterialConsts.cpp in Sources */,
 				02FD81E91924997C007762C0 /* ShaderCache.cpp in Sources */,
@@ -5378,6 +5397,7 @@
 				E8B3CCEF16B9326E002BD35F /* UIControl.cpp in Sources */,
 				E8B3CCF116B9326E002BD35F /* UIControlBackground.cpp in Sources */,
 				64493E1819476F4700AB2715 /* VegetationRenderObject.cpp in Sources */,
+				02EC80F4199B43AE00F8DA4F /* RenderSystem2D.cpp in Sources */,
 				64493E0219476F4700AB2715 /* VegetationCustomSLGeometry.cpp in Sources */,
 				E8B3CCF316B9326E002BD35F /* UIControlSystem.cpp in Sources */,
 				E8B3CCF516B9326E002BD35F /* UIEvent.cpp in Sources */,
@@ -5474,6 +5494,7 @@
 				4FDDEC5917A6920D00D9DDEA /* MaterialOptimazer.cpp in Sources */,
 				A66BC2F117AB98E800B6252E /* SkyboxSystem.cpp in Sources */,
 				17816B8017B2748900B067E1 /* AllocatorFactory.cpp in Sources */,
+				02EC80F8199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
 				A679102917B3CF2D000AA2F2 /* SkyboxRenderObject.cpp in Sources */,
 				17D7E5F717A6C06B00861981 /* UIDismissionHandlerAlertView.mm in Sources */,
 				EA56555317CE00E100426EB8 /* PerformanceSettings.cpp in Sources */,
@@ -5495,7 +5516,6 @@
 				A695E52D18113315008A0F20 /* RenderHierarchy.cpp in Sources */,
 				A695E53218113327008A0F20 /* SerializationContext.cpp in Sources */,
 				CC84B03E18211BCE00934482 /* Job.cpp in Sources */,
-				02864523197960F200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */,
 				17D4116B1973E4B700CF6BC0 /* Reachability.mm in Sources */,
 				9A0116F3967F43C036364993 /* GamepadDevice.mm in Sources */,
 				624C87F218C6160F00E1049D /* DateTime.cpp in Sources */,

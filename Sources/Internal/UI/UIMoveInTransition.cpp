@@ -80,8 +80,8 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
     
 	if(type <= FROM_BOTTOM)
 	{
-		float32 endXPos[4] = {(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), -(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), 0.0f, 0.0f};
-		float32 endYPos[4] = {0.0f, 0.0f, (Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()), -(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin())};
+		float32 endXPos[4] = {(VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()), -(VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()), 0.0f, 0.0f};
+		float32 endYPos[4] = {0.0f, 0.0f, (VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenYMin()), -(VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenYMin())};
 		float32 xPrevPosition = endXPos[type] * normalizedTime;
 		float32 yPrevPosition = endYPos[type] * normalizedTime;
 		float32 xNextPosition = xPrevPosition - endXPos[type];
@@ -104,8 +104,8 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 	}
 	else 
 	{
-		float32 endXPos[4] = {(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), -(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()), 0.0f, 0.0f};
-		float32 endYPos[4] = {0.0f, 0.0f, (Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin()), -(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin())};
+		float32 endXPos[4] = {(VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()), -(VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()), 0.0f, 0.0f};
+		float32 endYPos[4] = {0.0f, 0.0f, (VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenYMin()), -(VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenYMin())};
 		float32 xPrevPosition = endXPos[type - 4] * normalizedTime;
 		float32 yPrevPosition = endYPos[type - 4] * normalizedTime;
 		float32 xNextPosition = xPrevPosition - endXPos[type - 4];

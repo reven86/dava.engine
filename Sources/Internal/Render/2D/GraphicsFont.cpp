@@ -29,6 +29,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/2D/GraphicsFont.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/File.h"
 #include "Debug/DVAssert.h"
@@ -448,7 +449,7 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
 
-		float32 newSize = Round((currentX - prevX) * Core::GetVirtualToPhysicalFactor());
+		float32 newSize = Round((currentX - prevX) * VirtualCoordinates::GetVirtualToPhysicalFactor());
 		
 		if(charSizes)
 			charSizes->push_back(newSize);

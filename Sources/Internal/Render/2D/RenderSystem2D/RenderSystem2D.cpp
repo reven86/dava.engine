@@ -27,14 +27,19 @@
 =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_VIRTUAL_TO_PHYSICAL_H__
-#define __DAVAENGINE_VIRTUAL_TO_PHYSICAL_H__
-
-#include "Base/BaseMath.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 namespace DAVA
 {
-    DAVA::Rect ConvertPhysicalToVirtual(const DAVA::Rect & rect);
-}
-#endif // __DAVAENGINE_VIRTUAL_TO_PHYSICAL_H__
 
+RenderSystem2D::RenderSystem2D()
+{
+    
+}
+
+RenderSystem2D::~RenderSystem2D()
+{
+	
+}
+ 
+};

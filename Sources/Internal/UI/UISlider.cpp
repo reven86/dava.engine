@@ -36,6 +36,7 @@
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA 
 {
@@ -343,7 +344,7 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	{
 		bgMin->GetBackground()->SetParentColor(GetBackground()->GetDrawColor());
 		RenderManager::Instance()->ClipPush();
-		RenderManager::Instance()->ClipRect(Rect(Core::Instance()->GetVirtualScreenXMin(), 0, clipPointAbsolute - Core::Instance()->GetVirtualScreenXMin(), (float32)GetScreenHeight()));
+		RenderManager::Instance()->ClipRect(Rect(VirtualCoordinates::GetVirtualScreenXMin(), 0, clipPointAbsolute - VirtualCoordinates::GetVirtualScreenXMin(), (float32)VirtualCoordinates::GetVirtualScreenHeight()));
 		bgMin->Draw(geometricData);
 		RenderManager::Instance()->ClipPop();
 	}
@@ -351,7 +352,7 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	{
 		bgMax->GetBackground()->SetParentColor(GetBackground()->GetDrawColor());
 		RenderManager::Instance()->ClipPush();
-		RenderManager::Instance()->ClipRect(Rect(clipPointAbsolute, 0, Core::Instance()->GetVirtualScreenXMax() - clipPointAbsolute, (float32)GetScreenHeight()));
+		RenderManager::Instance()->ClipRect(Rect(clipPointAbsolute, 0, VirtualCoordinates::GetVirtualScreenXMax() - clipPointAbsolute, (float32)VirtualCoordinates::GetVirtualScreenHeight()));
 		bgMax->Draw(geometricData);
 		RenderManager::Instance()->ClipPop();
 	}

@@ -34,6 +34,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Thread/LockGuard.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 #define NOT_DEF_CHAR 0xffff
 
@@ -351,7 +352,7 @@ Size2i DFFont::DrawStringToBuffer(const WideString & str,
         }
         float32 charWidth = (charDescription.xAdvance + nextKerning) * sizeScale;
         if (charSizes)
-            charSizes->push_back(charWidth * Core::GetVirtualToPhysicalFactor());
+            charSizes->push_back(VirtualCoordinates::GetVirtualToPhysicalFactor() * charWidth);
         lastX += charWidth;
         
         charDrawed++;

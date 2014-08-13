@@ -22,6 +22,7 @@
 #include "UI/UITextField.h"
 #include "UI/UITextFieldiPhone.h"
 #include "Core/Core.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 #import <HelperAppDelegate.h>
 
@@ -76,23 +77,25 @@ float GetUITextViewSizeDivider()
 	{
         float divider = GetUITextViewSizeDivider();
         
-        self.bounds = CGRectMake(0.0f, 0.0f, DAVA::Core::Instance()->GetPhysicalScreenWidth()/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/divider);
+        self.bounds = CGRectMake(0.0f, 0.0f, DAVA::VirtualCoordinates::GetPhysicalScreenWidth()/divider, DAVA::VirtualCoordinates::GetPhysicalScreenHeight()/divider);
         
-		self.center = CGPointMake(DAVA::Core::Instance()->GetPhysicalScreenWidth()/2/divider, DAVA::Core::Instance()->GetPhysicalScreenHeight()/2/divider);
+		self.center = CGPointMake(DAVA::VirtualCoordinates::GetPhysicalScreenWidth()/2/divider, DAVA::VirtualCoordinates::GetPhysicalScreenHeight()/2.f/divider);
 		self.userInteractionEnabled = TRUE;
 		textInputAllowed = YES;
 
 		cppTextField = tf;
 		DAVA::Rect rect = tf->GetRect();
-		textField = [[UITextField alloc] initWithFrame: CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) 
-                                                                   * DAVA::Core::GetVirtualToPhysicalFactor()
-																   , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-																   , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
-																   , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor())];
-		textField.frame = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-									 , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()
-									 , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()
-									 , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor());
+		textField = [[UITextField alloc] initWithFrame:
+                     CGRectMake((rect.x - DAVA::VirtualCoordinates::GetVirtualScreenXMin())
+                                * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
+                                , (rect.y - DAVA::VirtualCoordinates::GetVirtualScreenYMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
+                                , rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
+                                , rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor())];
+        
+		textField.frame = CGRectMake((rect.x - DAVA::VirtualCoordinates::GetVirtualScreenXMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
+									 , (rect.y - DAVA::VirtualCoordinates::GetVirtualScreenYMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
+									 , rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
+									 , rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor());
         
 		textField.delegate = self;
 		
@@ -505,7 +508,7 @@ namespace DAVA
     void UITextFieldiPhone::SetFontSize(float size)
     {
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        float scaledSize = size * Core::GetVirtualToPhysicalFactor();
+        float scaledSize = size * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
         
         if( [[::UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)])
         {
@@ -631,10 +634,10 @@ namespace DAVA
     {
         float divider = GetUITextViewSizeDivider();
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        CGRect cgRect = CGRectMake((rect.x - DAVA::Core::Instance()->GetVirtualScreenXMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                                   , (rect.y - DAVA::Core::Instance()->GetVirtualScreenYMin()) * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                                   , rect.dx * DAVA::Core::GetVirtualToPhysicalFactor()/divider
-                                   , rect.dy * DAVA::Core::GetVirtualToPhysicalFactor()/divider);
+        CGRect cgRect = CGRectMake((rect.x - DAVA::VirtualCoordinates::GetVirtualScreenXMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider
+                                   , (rect.y - DAVA::VirtualCoordinates::GetVirtualScreenYMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider
+                                   , rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider
+                                   , rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider);
         textFieldHolder->textField.frame = cgRect;
     }
 	

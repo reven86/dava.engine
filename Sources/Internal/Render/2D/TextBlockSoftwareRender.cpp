@@ -28,6 +28,7 @@
 
 
 #include "Render/2D/TextBlockSoftwareRender.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include "Core/Core.h"
 #include "Utils/Utils.h"
 
@@ -84,17 +85,17 @@ Size2i TextBlockSoftwareRender::DrawTextML(const WideString& drawText, int32 x, 
 	if (textBlock->cacheUseJustify)
 	{
 		return ftFont->DrawStringToBuffer(buf, x, y,
-										  (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-										  (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
-										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w),
-										  (int32)ceilf(Core::GetVirtualToPhysicalFactor() * lineSize),
+										  (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
+										  (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
+										  (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * w),
+										  (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * lineSize),
 										  drawText,
 										  true);
 	}
 
 	return ftFont->DrawStringToBuffer(buf, x, y,
-								     (int32)(Core::GetVirtualToPhysicalFactor() * xOffset),
-								     (int32)(Core::GetVirtualToPhysicalFactor() * yOffset),
+								     (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * xOffset),
+								     (int32)(VirtualCoordinates::GetVirtualToPhysicalFactor() * yOffset),
 									 0,
 									 0,
 									 drawText,

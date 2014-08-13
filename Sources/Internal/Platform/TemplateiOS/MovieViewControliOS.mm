@@ -84,14 +84,14 @@ void MovieViewControl::SetRect(const Rect& rect)
 
 	CGRect playerViewRect = player.view.frame;
 	
-    playerViewRect.origin.x = rect.x * DAVA::Core::GetVirtualToPhysicalFactor();
-    playerViewRect.origin.y = rect.y * DAVA::Core::GetVirtualToPhysicalFactor();
+    playerViewRect.origin.x = rect.x * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
+    playerViewRect.origin.y = rect.y * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
 			
-    playerViewRect.size.width = rect.dx * DAVA::Core::GetVirtualToPhysicalFactor();
-    playerViewRect.size.height = rect.dy * DAVA::Core::GetVirtualToPhysicalFactor();
+    playerViewRect.size.width = rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
+    playerViewRect.size.height = rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
 			
-    playerViewRect.origin.x += Core::Instance()->GetPhysicalDrawOffset().x;
-    playerViewRect.origin.y += Core::Instance()->GetPhysicalDrawOffset().y;
+    playerViewRect.origin.x += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().x;
+    playerViewRect.origin.y += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().y;
 			
 		
 	

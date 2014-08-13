@@ -38,7 +38,7 @@
 #include "Core/Core.h"
 #include "Job/JobManager.h"
 #include "Job/JobWaiter.h"
-
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/2D/TextBlockGraphicsRender.h"
 #include "Render/2D/TextBlockDistanceRender.h"
@@ -740,8 +740,8 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
 		
 		
 		//calc texture size
-		int32 dx = (int32)ceilf(Core::GetVirtualToPhysicalFactor() * w);
-		int32 dy = (int32)ceilf(Core::GetVirtualToPhysicalFactor() * h);
+		int32 dx = (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * w);
+		int32 dy = (int32)ceilf(VirtualCoordinates::GetVirtualToPhysicalFactor() * h);
 		
 		cacheUseJustify = useJustify;
 		cacheDx = dx;
@@ -751,8 +751,8 @@ void TextBlock::PrepareInternal(BaseObject * caller, void * param, void *callerD
         EnsurePowerOf2(cacheDy);
         
 		cacheW = w;
-		cacheFinalSize.x = (float32)dx / Core::GetVirtualToPhysicalFactor();
-        cacheFinalSize.y = (float32)dy / Core::GetVirtualToPhysicalFactor();
+		cacheFinalSize.x = (float32)dx / VirtualCoordinates::GetVirtualToPhysicalFactor();
+        cacheFinalSize.y = (float32)dy / VirtualCoordinates::GetVirtualToPhysicalFactor();
         
         if (textBlockRender)
         {

@@ -35,7 +35,7 @@
 #include "Core/Core.h"
 #include "Render/OGLHelpers.h"
 #include "Render/Shader.h"
-
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/FileSystem.h"
@@ -609,15 +609,7 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
     
 	if (renderTarget == NULL)
 	{
-//#if defined(__DAVAENGINE_IPHONE__)
-//		RENDER_VERIFY(glBindFramebufferOES(GL_FRAMEBUFFER_OES, fboViewFramebuffer));
-//#elif defined(__DAVAENGINE_ANDROID__)
-////        renderTarget->GetTexture()->renderTargetModified = true;
-//#else //Non ES platforms
-//		RENDER_VERIFY(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboViewFramebuffer));
-//#endif //PLATFORMS
         HWglBindFBO(fboViewFramebuffer);
-
         
         SetViewport(Rect(0, 0, -1, -1), true);
 
@@ -626,54 +618,32 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 	else
 	{
 		renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
-//#if defined(__DAVAENGINE_IPHONE__)
-//		RENDER_VERIFY(glBindFramebufferOES(GL_FRAMEBUFFER_OES, renderTarget->GetTexture()->fboID));
-//#elif defined(__DAVAENGINE_ANDROID__)
-//		BindFBO(renderTarget->GetTexture()->fboID);
-//        renderTarget->GetTexture()->renderTargetModified = true;
-//#else //Non ES platforms
-//		RENDER_VERIFY(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, renderTarget->GetTexture()->fboID));
-//#endif //PLATFORMS
-		HWglBindFBO(renderTarget->GetTexture()->fboID);
-//#if defined(__DAVAENGINE_ANDROID__)
-//        renderTarget->GetTexture()->renderTargetModified = true;
-//#endif //#if defined(__DAVAENGINE_ANDROID__)
-
         
-        SetViewport(Rect(0, 0, (float32)(renderTarget->GetTexture()->width), (float32)(renderTarget->GetTexture()->height)), true);
-
-//		RENDER_VERIFY(glMatrixMode(GL_PROJECTION));
-//		RENDER_VERIFY(glLoadIdentity());
-//#if defined(__DAVAENGINE_IPHONE__)
-//		RENDER_VERIFY(glOrthof(0.0f, renderTarget->GetTexture()->width, 0.0f, renderTarget->GetTexture()->height, -1.0f, 1.0f));
-//#else 
-//		RENDER_VERIFY(glOrtho(0.0f, renderTarget->GetTexture()->width, 0.0f, renderTarget->GetTexture()->height, -1.0f, 1.0f));
-//#endif
+		HWglBindFBO(renderTarget->GetTexture()->fboID);
+        
+        SetViewport(Rect(0, 0,
+                         (float32)(renderTarget->GetTexture()->width),
+                         (float32)(renderTarget->GetTexture()->height)), true);
 
         renderer2d.projMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
         SetDynamicParam (PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
         
-		//RENDER_VERIFY(glMatrixMode(GL_MODELVIEW));
-		//RENDER_VERIFY(glLoadIdentity());
         IdentityModelMatrix();
 		IdentityMappingMatrix(); 
 
-		viewMappingDrawScale.x = renderTarget->GetResourceToPhysicalFactor();
-		viewMappingDrawScale.y = renderTarget->GetResourceToPhysicalFactor();
+        float32 scale = VirtualCoordinates::GetResourceToPhysicalFactor(renderTarget->GetResourceSizeIndex());
+		viewMappingDrawScale.x = viewMappingDrawScale.y = scale;
+        
         mappingMatrixChanged = true;
-//		Logger::FrameworkDebug("Sets with render target: Scale %.4f,    Offset: %.4f, %.4f", viewMappingDrawScale.x, viewMappingDrawOffset.x, viewMappingDrawOffset.y);
+        
 		RemoveClip();
 	}
 }
 
 void RenderManager::SetHWRenderTargetTexture(Texture * renderTarget)
 {
-    //currentRenderTarget = renderTarget;
 	renderOrientation = Core::SCREEN_ORIENTATION_TEXTURE;
-	//IdentityModelMatrix();
-	//IdentityMappingMatrix();
 	HWglBindFBO(renderTarget->fboID);
-	//RemoveClip();
 }
 
 

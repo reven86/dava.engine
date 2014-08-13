@@ -17,6 +17,7 @@
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -154,7 +155,8 @@
 		}
         
 		DAVA::RenderManager::Instance()->SetRenderContextId(DAVA::EglGetCurrentContext());
-        DAVA::RenderManager::Instance()->Init(DAVA::Core::Instance()->GetPhysicalScreenWidth(), DAVA::Core::Instance()->GetPhysicalScreenHeight());
+        DAVA::RenderManager::Instance()->Init(DAVA::VirtualCoordinates::GetPhysicalScreenWidth(),
+                                              DAVA::VirtualCoordinates::GetPhysicalScreenHeight());
         DAVA::RenderManager::Instance()->DetectRenderingCapabilities();
         
 		self.multipleTouchEnabled = YES;

@@ -59,7 +59,6 @@
 #include "UI/ScrollHelper.h"
 #include "Debug/Replay.h"
 #include "Utils/Random.h"
-#include "Utils/VirtualToPhysicalHelper.h"
 
 #include "Base/ObjectFactory.h"
 #include "Base/FixedSizePoolAllocator.h"
@@ -130,7 +129,8 @@
 #include "Render/RenderHelper.h"
 #include "Render/Cursor.h"
 #include "Render/MipmapReplacer.h"
-#include "Render/2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 // Fonts
 #include "Render/2D/Font.h"

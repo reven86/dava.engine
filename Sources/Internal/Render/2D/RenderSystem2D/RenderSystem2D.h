@@ -27,9 +27,32 @@
 =====================================================================================*/
 
 
-#include "Render/2D/VirtualCoordinatesTransformSystem.h"
+#ifndef __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
+#define	__DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
+
+#include "Base/BaseTypes.h"
+#include "Base/Singleton.h"
 
 namespace DAVA
 {
 
+class Font;
+class Sprite;
+class TextBlock;
+class RenderDataObject;
+class RenderSystem2D : public Singleton<RenderSystem2D>
+{
+public:
+    RenderSystem2D();
+    virtual ~RenderSystem2D();
+    
+    void Draw(Sprite * sprite);
+    void Draw(RenderDataObject * rdo);
+    void Draw(TextBlock * textblock);
+    void Draw(Font * font);
 };
+    
+} // ns
+
+#endif	/* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */
+

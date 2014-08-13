@@ -42,6 +42,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 #define NEW_PPA
 
@@ -80,11 +81,9 @@ Sprite::Sprite()
 	frameVertices = 0;
 	texCoords = 0;
 	rectsAndOffsets = 0;
-//	originalVertices = 0;
 
 	size.dx = 24;
 	size.dy = 24;
-//	originalSize = size;
 	frameCount = 0;
 	//frame = 0;
 
@@ -96,8 +95,8 @@ Sprite::Sprite()
 
 	clipPolygon = 0;
 
-	resourceToVirtualFactor = 1.0f;
-	resourceToPhysicalFactor = 1.0f;
+//	resourceToVirtualFactor = 1.0f;
+//	resourceToPhysicalFactor = 1.0f;
 
 	spriteRenderObject = new RenderDataObject();
 	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
@@ -165,18 +164,21 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 
 FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
-	String::size_type pos = spriteName.GetAbsolutePathname().find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));
+    VirtualCoordinatesTransformSystem * virtualCoordsSystem = VirtualCoordinatesTransformSystem::Instance();
+    String baseResourceFolder = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetBaseResourceIndex());
+    
+	String::size_type pos = spriteName.GetAbsolutePathname().find(baseResourceFolder);
 	if(String::npos != pos)
 	{
 		String pathname = spriteName.GetAbsolutePathname();
 
 		String subStrPath = pathname.substr(0, pos);
-		String resFolder = Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex());
-		String footer = pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
+		String resFolder = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetDesirableResourceIndex());
+        String footer = pathname.substr(pos + baseResourceFolder.length());
 
 		return pathname.substr(0, pos)
-						+ Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex())
-						+ pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
+						+ resFolder
+						+ pathname.substr(pos + baseResourceFolder.length());
 	}
 
 	return spriteName;
@@ -209,8 +211,6 @@ void Sprite::InitFromFile(File *file)
 {
 	bool usedForScale = false;//Думаю, после исправлений в конвертере, эта магия больше не нужна. Но переменную пока оставлю.
 
-//	uint64 timeSpriteRead = SystemTimer::Instance()->AbsoluteMS();
-
 	type = SPRITE_FROM_FILE;
     const FilePath& pathName = file->GetFilename();
 
@@ -219,7 +219,6 @@ void Sprite::InitFromFile(File *file)
 	sscanf(tempBuf, "%d", &textureCount);
 	textures = new Texture*[textureCount];
 	textureNames = new FilePath[textureCount];
-//	timeSpriteRead = SystemTimer::Instance()->AbsoluteMS() - timeSpriteRead;
 
 	char textureCharName[128];
 	for (int32 k = 0; k < textureCount; ++k)
@@ -228,7 +227,6 @@ void Sprite::InitFromFile(File *file)
 		sscanf(tempBuf, "%s", textureCharName);
 
 		FilePath tp = pathName.GetDirectory() + String(textureCharName);
-//		Logger::FrameworkDebug("Opening texture: %s", tp.c_str());
         Texture* testTexture = Texture::CreateFromFile(tp);
 		textures[k] = testTexture;
 		textureNames[k] = tp;
@@ -237,25 +235,16 @@ void Sprite::InitFromFile(File *file)
 	
 	RegisterTextureStates();
 
-	resourceToVirtualFactor = Core::Instance()->GetResourceToVirtualFactor(resourceSizeIndex);
-	resourceToPhysicalFactor = Core::Instance()->GetResourceToPhysicalFactor(resourceSizeIndex);
-
-//	uint64 timeSpriteRead2 = SystemTimer::Instance()->AbsoluteMS();
-
 	int32 width, height;
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d %d", &width, &height);
-	size.dx = (float32)width;
-	size.dy = (float32)height;
-//	originalSize = size;
-	size.dx *= resourceToVirtualFactor;
-	size.dy *= resourceToVirtualFactor;
+    size = VirtualCoordinates::ConvertResourceToVirtual(Vector2(width, height), resourceSizeIndex);
+    
 	file->ReadLine(tempBuf, 1024);
 	sscanf(tempBuf, "%d", &frameCount);
 
 	texCoords = new GLfloat*[frameCount];
 	frameVertices = new GLfloat*[frameCount];
-//	originalVertices = new float32*[frameCount];
 	rectsAndOffsets = new float32*[frameCount];
 	frameTextureIndex = new int32[frameCount];
 
@@ -263,7 +252,6 @@ void Sprite::InitFromFile(File *file)
 	for (int32 i = 0; i < frameCount; i++)
 	{
 		frameVertices[i] = new GLfloat[8];
-//		originalVertices[i] = new float32[4];
 		texCoords[i] = new GLfloat[8];
 		rectsAndOffsets[i] = new GLfloat[6];
 
@@ -274,23 +262,20 @@ void Sprite::InitFromFile(File *file)
 
 		rectsAndOffsets[i][0] = (float32)x;
 		rectsAndOffsets[i][1] = (float32)y;
-//		rectsAndOffsets[i][2] = (float32)dx;
-//		rectsAndOffsets[i][3] = (float32)dy;
-//		rectsAndOffsets[i][4] = (float32)xOff;
-//		rectsAndOffsets[i][5] = (float32)yOff;
-//		originalVertices[i][0] = (float32)dx;
-//		originalVertices[i][1] = (float32)dy;
-//		originalVertices[i][2] = (float32)xOff;
-//		originalVertices[i][3] = (float32)yOff;
 
-		frameVertices[i][0] = (float32)xOff;
-		frameVertices[i][1] = (float32)yOff;
-		frameVertices[i][2] = (float32)(xOff + dx);
-		frameVertices[i][3] = (float32)yOff;
-		frameVertices[i][4] = (float32)xOff;
-		frameVertices[i][5] = (float32)(yOff + dy);
-		frameVertices[i][6] = (float32)(xOff + dx);
-		frameVertices[i][7] = (float32)(yOff + dy);
+        Vector2 vx1 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff, yOff), resourceSizeIndex);
+        Vector2 vx2 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff + dx, yOff), resourceSizeIndex);
+        Vector2 vx3 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff, yOff + dy), resourceSizeIndex);
+        Vector2 vx4 = VirtualCoordinates::ConvertResourceToVirtual(Vector2(xOff + dx, yOff + dy), resourceSizeIndex);
+        
+		frameVertices[i][0] = vx1.x;
+		frameVertices[i][1] = vx1.y;
+		frameVertices[i][2] = vx2.x;
+		frameVertices[i][3] = vx2.y;
+		frameVertices[i][4] = vx3.x;
+		frameVertices[i][5] = vx3.y;
+		frameVertices[i][6] = vx4.x;
+		frameVertices[i][7] = vx4.y;
 
 		float32 xof = 0;
 		float32 yof = 0;
@@ -308,11 +293,11 @@ void Sprite::InitFromFile(File *file)
 			}
 		}
 
-
-		rectsAndOffsets[i][2] = dx * resourceToVirtualFactor;
-		rectsAndOffsets[i][3] = dy * resourceToVirtualFactor;
-		rectsAndOffsets[i][4] = xOff * resourceToVirtualFactor;
-		rectsAndOffsets[i][5] = yOff * resourceToVirtualFactor;
+        Rect rect = VirtualCoordinates::ConvertResourceToVirtual(Rect(dx, dy, xOff, yOff), resourceSizeIndex);
+		rectsAndOffsets[i][2] = rect.x;
+		rectsAndOffsets[i][3] = rect.y;
+		rectsAndOffsets[i][4] = rect.dx;
+		rectsAndOffsets[i][5] = rect.dy;
 
 		dx += x;
 		dy += y;
@@ -325,27 +310,10 @@ void Sprite::InitFromFile(File *file)
 		texCoords[i][5] = ((GLfloat)dy - yof) / textures[frameTextureIndex[i]]->height;
 		texCoords[i][6] = ((GLfloat)dx - xof) / textures[frameTextureIndex[i]]->width;
 		texCoords[i][7] = ((GLfloat)dy - yof) / textures[frameTextureIndex[i]]->height;
-
-		frameVertices[i][0] *= resourceToVirtualFactor;
-		frameVertices[i][1] *= resourceToVirtualFactor;
-		frameVertices[i][2] *= resourceToVirtualFactor;
-		frameVertices[i][3] *= resourceToVirtualFactor;
-		frameVertices[i][4] *= resourceToVirtualFactor;
-		frameVertices[i][5] *= resourceToVirtualFactor;
-		frameVertices[i][6] *= resourceToVirtualFactor;
-		frameVertices[i][7] *= resourceToVirtualFactor;
 	}
-
-//	Logger::FrameworkDebug("Frames created: %d", spr->frameCount);
-	//	center.x = width / 2;
-	//	center.y = height / 2;
 
 	defaultPivotPoint.x = 0;
 	defaultPivotPoint.y = 0;
-
-//	timeSpriteRead2 = SystemTimer::Instance()->AbsoluteMS() - timeSpriteRead2;
-//  Logger::FrameworkDebug("Sprite: %s time:%lld", relativePathname.c_str(), timeSpriteRead2 + timeSpriteRead);
-
 }
 
 
@@ -372,15 +340,15 @@ Sprite* Sprite::CreateAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelF
 
 void Sprite::InitAsRenderTarget(float32 sprWidth, float32 sprHeight, PixelFormat textureFormat, bool contentScaleIncluded)
 {
+    Vector2 spriteSize(sprWidth, sprHeight);
 	if (!contentScaleIncluded)
 	{
-		sprWidth = sprWidth * Core::GetVirtualToPhysicalFactor();
-		sprHeight = sprHeight * Core::GetVirtualToPhysicalFactor();
+        spriteSize = VirtualCoordinates::ConvertVirtualToPhysical(spriteSize);
 	}
 
-	Texture *t = Texture::CreateFBO((int32)ceilf(sprWidth), (int32)ceilf(sprHeight), textureFormat, Texture::DEPTH_NONE);
+	Texture *t = Texture::CreateFBO((int32)ceilf(spriteSize.x), (int32)ceilf(spriteSize.y), textureFormat, Texture::DEPTH_NONE);
 
-	this->InitFromTexture(t, 0, 0, sprWidth, sprHeight, -1, -1, true);
+	this->InitFromTexture(t, 0, 0, spriteSize.x, spriteSize.y, -1, -1, true);
 
 	t->Release();
 
@@ -435,15 +403,13 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
     Sprite* sprite = NULL;
     if (texture)
     {
-        float32 sprWidth = (float32)width;
-		float32 sprHeight = (float32)height;
+        Vector2 sprSize(width, height);
         if(inVirtualSpace)
         {
-            sprWidth *= Core::GetPhysicalToVirtualFactor();
-            sprHeight *= Core::GetPhysicalToVirtualFactor();
+            sprSize = VirtualCoordinates::ConvertPhysicalToVirtual(sprSize);
         }
         
-        sprite = Sprite::CreateFromTexture(texture, 0, 0, sprWidth, sprHeight, contentScaleIncluded);
+        sprite = Sprite::CreateFromTexture(texture, 0, 0, sprSize.x, sprSize.y, contentScaleIncluded);
         
         if(inVirtualSpace)
         {
@@ -503,20 +469,18 @@ Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncl
 
 void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset, float32 sprWidth, float32 sprHeight, int32 targetWidth, int32 targetHeight, bool contentScaleIncluded, const FilePath &spriteName /* = FilePath() */)
 {
+    Vector2 offset(xOffset, yOffset);
+    size = Vector2(sprWidth, sprHeight);
 	if (!contentScaleIncluded)
 	{
-		xOffset = (int32)(Core::GetVirtualToPhysicalFactor() * xOffset);
-		yOffset = (int32)(Core::GetVirtualToPhysicalFactor() * yOffset);
+        offset = VirtualCoordinates::ConvertVirtualToPhysical(offset);
 	}
 	else
 	{
-		sprWidth = Core::GetPhysicalToVirtualFactor() * sprWidth;
-		sprHeight = Core::GetPhysicalToVirtualFactor() * sprHeight;
+        size = VirtualCoordinates::ConvertPhysicalToVirtual(size);
 	}
 
-	resourceToPhysicalFactor = Core::GetVirtualToPhysicalFactor();
-	resourceToVirtualFactor = Core::GetPhysicalToVirtualFactor();
-	resourceSizeIndex = Core::Instance()->GetDesirableResourceIndex();
+	resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex();
 
 	this->type = SPRITE_FROM_TEXTURE;
 	this->textureCount = 1;
@@ -530,38 +494,30 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 		this->textureNames[0] = this->textures[0]->GetPathname();
 	}
 
-//	int32 width = sprWidth;
 	this->size.dx = (float32)sprWidth;
-
-//	int32 height = sprHeight;
 	this->size.dy = (float32)sprHeight;
 
-//	Logger::FrameworkDebug("Init from texture: %.4fx%.4f", sprWidth, sprWidth);
-
-//	this->originalSize = this->size;
 	this->defaultPivotPoint.x = 0;
 	this->defaultPivotPoint.y = 0;
 	this->frameCount = 1;
 
 	this->texCoords = new GLfloat*[this->frameCount];
 	this->frameVertices = new GLfloat*[this->frameCount];
-//	this->originalVertices = new GLfloat*[this->frameCount];
 	this->rectsAndOffsets = new GLfloat*[this->frameCount];
 	this->frameTextureIndex = new int32[this->frameCount];
 
 	for (int i = 0;	i < this->frameCount; i++)
 	{
 		this->frameVertices[i] = new GLfloat[8];
-//		this->originalVertices[i] = new GLfloat[4];
 		this->texCoords[i] = new GLfloat[8];
 		this->rectsAndOffsets[i] = new GLfloat[6];
 		this->frameTextureIndex[i] = 0;
 
 		float32 x, y, dx,dy, xOff, yOff;
-		x = (float32)xOffset;
-		y = (float32)yOffset;
-		dx = sprWidth * Core::GetVirtualToPhysicalFactor();
-		dy = sprHeight * Core::GetVirtualToPhysicalFactor();
+		x = offset.x;
+		y = offset.y;
+		dx = sprWidth * VirtualCoordinates::GetVirtualToPhysicalFactor();
+		dy = sprHeight * VirtualCoordinates::GetVirtualToPhysicalFactor();
 		xOff = 0;
 		yOff = 0;
 
@@ -571,11 +527,6 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 		this->rectsAndOffsets[i][3] = sprHeight;
 		this->rectsAndOffsets[i][4] = (float32)xOff;
 		this->rectsAndOffsets[i][5] = (float32)yOff;
-
-//		this->originalVertices[i][0] = (float32)dx;
-//		this->originalVertices[i][1] = (float32)dy;
-//		this->originalVertices[i][2] = (float32)xOff;
-//		this->originalVertices[i][3] = (float32)yOff;
 
 		this->frameVertices[i][0] = (float32)xOff;
 		this->frameVertices[i][1] = (float32)yOff;
@@ -621,9 +572,6 @@ void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
 	rectsAndOffsets[frame][4] = xOff;
 	rectsAndOffsets[frame][5] = yOff;
 
-//	originalVertices[frame][2] = xOff / Core::Instance()->GetResourceToVirtualFactor(resourceSizeIndex);
-//	originalVertices[frame][3] = yOff / Core::Instance()->GetResourceToVirtualFactor(resourceSizeIndex);
-
 	frameVertices[frame][0] = xOff;
 	frameVertices[frame][1] = yOff;
 	frameVertices[frame][2] = xOff + rectsAndOffsets[frame][2];
@@ -649,21 +597,12 @@ void Sprite::Clear()
 		for (int i = 0;	i < frameCount; i++)
 		{
 			SafeDeleteArray(frameVertices[i]);
-			//			SafeDeleteArray(originalVertices[i]);
 			SafeDeleteArray(texCoords[i]);
 			SafeDeleteArray(rectsAndOffsets[i]);
 		}
 	}
-	//	if(maxCollisionPoints != 0)
-	//	{
-	//		for (int i = 0;	i < frameCount; i++)
-	//		{
-	//			[collision[i] release];
-	//		}
-	//		SAFE_DELETE_ARRAY(collision);
-	//	}
+    
 	SafeDeleteArray(frameVertices);
-	//	SafeDeleteArray(originalVertices);
 	SafeDeleteArray(texCoords);
 	SafeDeleteArray(rectsAndOffsets);
 	SafeDeleteArray(frameTextureIndex);
@@ -686,7 +625,6 @@ Texture* Sprite::GetTexture() const
 
 Texture* Sprite::GetTexture(int32 frameNumber) const
 {
-//	DVASSERT(frameNumber > -1 && frameNumber < frameCount);
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return textures[frameTextureIndex[frameNumber]];
 }
@@ -699,7 +637,6 @@ UniqueHandle Sprite::GetTextureHandle(int32 frameNumber) const
 
 float32 *Sprite::GetTextureVerts(int32 frameNumber)
 {
-//	DVASSERT(frame > -1 && frame < frameCount);
 	frameNumber = Clamp(frameNumber, 0, frameCount - 1);
 	return texCoords[frameNumber];
 }
@@ -760,14 +697,8 @@ void Sprite::SetModification(int32 modif)
 
 void Sprite::Reset()
 {
-	//drawCoord.x = 0;
-	//drawCoord.y = 0;
-	//frame = 0;
 	flags = 0;
-	//rotateAngle = 0.0f;
 	modification = 0;
-	//SetScale(1.0f, 1.0f);
-	//ResetPivotPoint();
 	clipPolygon = 0;
 }
 
@@ -829,8 +760,8 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 					RenderManager::Instance()->SetPhysicalViewScale();
 #else
-					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
-					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
+					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
+					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
 					tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[2];//x1
 					tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[5];//y1
 #endif
@@ -857,8 +788,8 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 					RenderManager::Instance()->SetPhysicalViewScale();
 #else
-					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
-					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
+					tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
+					tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
 					tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[2];//x1
 					tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[5];//y1
 #endif
@@ -889,9 +820,9 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 						RenderManager::Instance()->SetPhysicalViewScale();
 #else
-						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
+						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
 						tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[2];//x1
-						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
+						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
 						tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[1];//y2
 #endif
 					}
@@ -916,9 +847,9 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 						RenderManager::Instance()->SetPhysicalViewScale();
 #else
-						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x2
+						tempVertices[2] = tempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
 						tempVertices[0] = tempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[2];//x1
-						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
+						tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
 						tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[1];//y2
 #endif
 					}
@@ -946,8 +877,8 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 						RenderManager::Instance()->SetPhysicalViewScale();
 #else
-						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
+						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
+						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
 						tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[0];//x2
 						tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[5];//y1
 #endif
@@ -973,8 +904,8 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 						RenderManager::Instance()->SetPhysicalViewScale();
 #else
-						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y2
+						tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
+						tempVertices[5] = tempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
 						tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[0];//x2
 						tempVertices[1] = tempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[5];//y1
 #endif
@@ -1005,8 +936,8 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 				RenderManager::Instance()->SetPhysicalViewScale();
 #else
-				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
+				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
+				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
 				tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + tempVertices[0];//x2
 				tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + tempVertices[1];//y2
 #endif
@@ -1031,8 +962,8 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
 
 				RenderManager::Instance()->SetPhysicalViewScale();
 #else
-				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//x1
-				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * Core::GetVirtualToPhysicalFactor() + 0.5f) * Core::GetPhysicalToVirtualFactor();//y1
+				tempVertices[0] = tempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
+				tempVertices[1] = tempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
 				tempVertices[2] = tempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + tempVertices[0];//x2
 				tempVertices[5] = tempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + tempVertices[1];//y2
 #endif
@@ -1083,8 +1014,9 @@ inline void Sprite::PrepareSpriteRenderData(Sprite::DrawState * state)
         clippedTexCoords.reserve(clipPolygon->GetPointCount());
         
 		Texture * t = GetTexture(frame);
-		float32 adjWidth = 1.f / t->width / resourceToVirtualFactor;
-		float32 adjHeight = 1.f / t->height / resourceToVirtualFactor;
+        Vector2 virtualTexSize = VirtualCoordinates::ConvertResourceToVirtual(Vector2(t->width, t->height), resourceSizeIndex) ;
+		float32 adjWidth = 1.f / virtualTexSize.x;
+		float32 adjHeight = 1.f / virtualTexSize.y;
 
 		if( flags & EST_SCALE )
 		{
@@ -1398,8 +1330,8 @@ void Sprite::PrepareForNewSize()
     
 	String pathname = relativePathname.GetAbsolutePathname();
 
-	int pos = (int)pathname.find(Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()));
-	String scaledName = pathname.substr(0, pos) + Core::Instance()->GetResourceFolder(Core::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + Core::Instance()->GetResourceFolder(Core::Instance()->GetBaseResourceIndex()).length());
+	int pos = (int)pathname.find(VirtualCoordinatesTransformSystem::Instance()->GetResourceFolder(VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex()));
+	String scaledName = pathname.substr(0, pos) + VirtualCoordinatesTransformSystem::Instance()->GetResourceFolder(VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + VirtualCoordinatesTransformSystem::Instance()->GetResourceFolder(VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex()).length());
 
 	Logger::FrameworkDebug("Seraching for file: %s", scaledName.c_str());
 
@@ -1418,7 +1350,6 @@ void Sprite::PrepareForNewSize()
 	Clear();
     
     spriteMapMutex.Lock();
-//	Logger::FrameworkDebug("erasing from sprite from map");
 	spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
 
@@ -1442,11 +1373,6 @@ void Sprite::PrepareForNewSize()
 	resourceSizeIndex = 0;
 
 	clipPolygon = 0;
-
-	resourceToVirtualFactor = 1.0f;
-
-    resourceToPhysicalFactor = 1.0f;
-    
     
 	PureCreate(pathname.substr(0, pathname.length() - 4), this);
 //TODO: следующая строка кода написада здесь только до тех времен
@@ -1464,7 +1390,7 @@ void Sprite::ValidateForSize()
 	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
 	{
 		Sprite *sp = it->second;
-		if (sp->type == SPRITE_FROM_FILE && Core::Instance()->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
+		if (sp->type == SPRITE_FROM_FILE && VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
 		{
 			spritesToReload.push_back(sp);
 		}
@@ -1503,8 +1429,8 @@ void Sprite::SetClipPolygon(Polygon2 * _clipPolygon)
 
 void Sprite::ConvertToVirtualSize()
 {
-	float32 virtualToPhysicalFactor = Core::Instance()->GetVirtualToPhysicalFactor();
-	float32 resourceToVirtualFactor = Core::Instance()->GetResourceToVirtualFactor(GetResourceSizeIndex());
+	float32 virtualToPhysicalFactor = VirtualCoordinates::GetVirtualToPhysicalFactor();
+	float32 resourceToVirtualFactor = VirtualCoordinates::GetResourceToVirtualFactor(GetResourceSizeIndex());
 
 	frameVertices[0][0] *= virtualToPhysicalFactor * resourceToVirtualFactor;
 	frameVertices[0][1] *= virtualToPhysicalFactor * resourceToVirtualFactor;
@@ -1614,11 +1540,11 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeInde
             return NULL;
         }
 
-        resourceSizeIndex = Core::Instance()->GetBaseResourceIndex();
+        resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex();
     }
     else
     {
-        resourceSizeIndex = Core::Instance()->GetDesirableResourceIndex();
+        resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex();
     }
 
     return fp;

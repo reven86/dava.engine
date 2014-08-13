@@ -34,6 +34,7 @@
 #include "Core/Core.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA
 {
@@ -256,10 +257,6 @@ void UIControlBackground::SetParentColor(const Color &parentColor)
 void UIControlBackground::Draw(const UIGeometricData &geometricData)
 {
     Rect drawRect = geometricData.GetUnrotatedRect();
-//	if(drawRect.x > RenderManager::Instance()->GetScreenWidth() || drawRect.y > RenderManager::Instance()->GetScreenHeight() || drawRect.x + drawRect.dx < 0 || drawRect.y + drawRect.dy < 0)
-//	{//TODO: change to screen size from control system and sizes from sprite
-//		return;
-//	}
 
     RenderManager::Instance()->SetColor(drawColor.r, drawColor.g, drawColor.b, drawColor.a);
 
@@ -540,7 +537,7 @@ void UIControlBackground::DrawStretched(const Rect &drawRect, UniqueHandle rende
     float32 dx = drawRect.dx - ( Max( 0.0f, -leftOffset ) + Max( 0.0f, -rightOffset  ) ) * scaleFactorX;
     float32 dy = drawRect.dy - ( Max( 0.0f, -topOffset  ) + Max( 0.0f, -bottomOffset ) ) * scaleFactorY;
 
-    const float32 resMulFactor = 1.0f / Core::Instance()->GetResourceToVirtualFactor(spr->GetResourceSizeIndex());
+    const float32 resMulFactor = 1.0f / VirtualCoordinates::GetResourceToVirtualFactor(spr->GetResourceSizeIndex());
 //	if (spr->IsUseContentScale())
 //	{
         texDx *= resMulFactor;
@@ -796,10 +793,11 @@ void UIControlBackground::TiledDrawData::GenerateTileData()
     Texture *texture = sprite->GetTexture(frame);
 
     Vector< Vector3 > cellsWidth;
-    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), (float32)texture->GetWidth() * sprite->GetResourceToVirtualFactor(), stretchCap.x, cellsWidth );
+    float32 spriteResToVirFactor = VirtualCoordinates::GetResourceToVirtualFactor(sprite->GetResourceSizeIndex());
+    GenerateAxisData( size.x, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_WIDTH), (float32)texture->GetWidth() * spriteResToVirFactor, stretchCap.x, cellsWidth );
 
     Vector< Vector3 > cellsHeight;
-    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * sprite->GetResourceToVirtualFactor(), stretchCap.y, cellsHeight );
+    GenerateAxisData( size.y, sprite->GetRectOffsetValueForFrame(frame, Sprite::ACTIVE_HEIGHT), (float32)texture->GetHeight() * spriteResToVirFactor, stretchCap.y, cellsHeight );
 
     int32 vertexCount = 4 * cellsHeight.size() * cellsWidth.size();
     vertices.resize( vertexCount );

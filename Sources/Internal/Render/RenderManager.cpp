@@ -37,6 +37,7 @@
 #include "Render/ShaderCache.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA
 {
@@ -385,11 +386,11 @@ void RenderManager::ClipRect(const Rect &rect)
 	Rect r = currentClip;
 	if(r.dx < 0)
 	{
-		r.dx = (float32)retScreenWidth * Core::GetPhysicalToVirtualFactor();
+		r.dx = (float32)retScreenWidth * VirtualCoordinates::GetPhysicalToVirtualFactor();
 	}
 	if(r.dy < 0)
 	{
-		r.dy = (float32)retScreenHeight * Core::GetPhysicalToVirtualFactor();
+		r.dy = (float32)retScreenHeight * VirtualCoordinates::GetPhysicalToVirtualFactor();
 	}
 	
 	r = r.Intersection(rect);
@@ -600,21 +601,21 @@ void RenderManager::SetPhysicalViewScale()
 void RenderManager::SetPhysicalViewOffset()
 {
     mappingMatrixChanged = true;
-	viewMappingDrawOffset = Core::Instance()->GetPhysicalDrawOffset();
+	viewMappingDrawOffset = VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset();
 }
 
 void RenderManager::SetVirtualViewScale()
 {
     mappingMatrixChanged = true;
-	viewMappingDrawScale.x = Core::GetVirtualToPhysicalFactor();
-	viewMappingDrawScale.y = Core::GetVirtualToPhysicalFactor();
+	viewMappingDrawScale.x = VirtualCoordinates::GetVirtualToPhysicalFactor();
+	viewMappingDrawScale.y = VirtualCoordinates::GetVirtualToPhysicalFactor();
 }
 
 void RenderManager::SetVirtualViewOffset()
 {
     mappingMatrixChanged = true;
-	viewMappingDrawOffset.x -= Core::Instance()->GetVirtualScreenXMin() * viewMappingDrawScale.x;
-	viewMappingDrawOffset.y -= Core::Instance()->GetVirtualScreenYMin() * viewMappingDrawScale.y;
+	viewMappingDrawOffset.x -= VirtualCoordinates::GetVirtualScreenXMin() * viewMappingDrawScale.x;
+	viewMappingDrawOffset.y -= VirtualCoordinates::GetVirtualScreenYMin() * viewMappingDrawScale.y;
 }
 	
 void RenderManager::PushDrawMatrix()

@@ -67,17 +67,17 @@ void UIScreenTransition::CreateRenderTargets()
     /*copy of default 3d blend with alpha write only - to minimize state changes*/
     alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
 
-    uint32 width = (uint32)Core::Instance()->GetPhysicalScreenWidth();//(Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin());
-    uint32 height = (uint32)Core::Instance()->GetPhysicalScreenHeight();//(Core::Instance()->GetVirtualScreenYMax() - Core::Instance()->GetVirtualScreenYMin());
+    uint32 width = (uint32)VirtualCoordinates::GetVirtualScreenWidth();
+    uint32 height = (uint32)VirtualCoordinates::GetVirtualScreenHeight();
     
     Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
     Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
 	
 	renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height);
-	renderTargetPrevScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
+	renderTargetPrevScreen->SetDefaultPivotPoint(-VirtualCoordinates::GetVirtualScreenXMin(), -VirtualCoordinates::GetVirtualScreenYMin());
 	
 	renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height);
-	renderTargetNextScreen->SetDefaultPivotPoint(-Core::Instance()->GetVirtualScreenXMin(), -Core::Instance()->GetVirtualScreenYMin());
+	renderTargetNextScreen->SetDefaultPivotPoint(-VirtualCoordinates::GetVirtualScreenXMin(), -VirtualCoordinates::GetVirtualScreenYMin());
 
     SafeRelease(tex1);
     SafeRelease(tex2);
@@ -204,7 +204,7 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
 
     
 	drawState.SetScale(0.5f, 1.0f);
-	drawState.SetPosition((Core::Instance()->GetVirtualScreenXMax() - Core::Instance()->GetVirtualScreenXMin()) / 2.0f, 0);
+	drawState.SetPosition((VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()) / 2.0f, 0);
     
 	renderTargetNextScreen->Draw(&drawState);
 }
