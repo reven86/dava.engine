@@ -114,7 +114,6 @@ protected:
 	
 
 	Vector2 rectSize;
-	bool needRedraw;
 	Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
