@@ -56,8 +56,9 @@ class Font : public BaseObject
 public:
 	enum eFontType 
 	{
-			TYPE_FT = 0	//!< freetype-based
-		,	TYPE_GRAPHICAL //!< sprite-based
+			TYPE_FT = 0		//!< freetype-based
+		,	TYPE_GRAPHICAL	//!< sprite-based
+		,	TYPE_DISTANCE	//!< distance-based
 	};
 protected:
 	virtual ~Font();
@@ -141,7 +142,7 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i GetStringSize(const WideString & str, Vector<int32> *charSizes = 0) const = 0;
+	virtual Size2i GetStringSize(const WideString & str, Vector<float32> *charSizes = 0) const = 0;
 
 	/**
 		\brief Checks if symbol is present in font.
@@ -165,31 +166,6 @@ public:
 		\brief Tests if two fonts are the same.
 	*/
 	virtual bool IsEqual(const Font *font) const;
-
-	/**
-		\brief Draw string to screen.
-		\param[in] offsetX - starting X offset
-		\param[in] offsetY - starting Y offset
-		\param[in] str - string to draw
-		\param[in] justifyWidth - reserved
-		\returns bounding rect for string in pixels
-	*/
-	virtual Size2i DrawString(float32 offsetX, float32 offsetY, const WideString & str, int32 justifyWidth = 0);
-
-	/**
-		\brief Draw string to memory buffer
-		\param[in, out] buffer - destination buffer
-		\param[in] bufWidth - buffer width in pixels
-		\param[in] bufHeight - buffer height in pixels
-		\param[in] offsetX - starting X offset
-		\param[in] offsetY - starting Y offset
-		\param[in] justifyWidth - TODO
-		\param[in] spaceAddon - TODO
-		\param[in] str - string to draw
-		\param[in] contentScaleIncluded - TODO
-		\returns bounding rect for string in pixels
-	*/
-	virtual Size2i DrawStringToBuffer(void * buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString & str, bool contentScaleIncluded = false);
 
 	//TODO: get rid of this
 	virtual bool IsTextSupportsSoftwareRendering() const { return false; };

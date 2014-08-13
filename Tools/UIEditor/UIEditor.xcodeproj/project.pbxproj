@@ -171,6 +171,7 @@
 		17A6305A18AA2BDD00957C77 /* GuideMimeData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17A6305818AA2BDD00957C77 /* GuideMimeData.cpp */; };
 		17A6305C18AA2C7200957C77 /* GuideMimeData_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17A6305B18AA2C7200957C77 /* GuideMimeData_moc.cpp */; };
 		17B0617518892C1500FD8007 /* WebKit.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17B0617418892C1500FD8007 /* WebKit.framework */; };
+		17BB5AB61990F30700F5D94F /* AdjustablePointDoubleSpinBox.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17BB5AB41990F30700F5D94F /* AdjustablePointDoubleSpinBox.cpp */; };
 		17C1FD2018F54A6700CEA911 /* guidepropertygridwidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17C1FD1F18F54A6700CEA911 /* guidepropertygridwidget.ui */; };
 		17C4116118C9BE3D002BA05F /* UIJoypadMetadata.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C4115F18C9BE3D002BA05F /* UIJoypadMetadata.cpp */; };
 		17C4116818C9CE01002BA05F /* UIJoypadMetadata_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17C4116718C9CE01002BA05F /* UIJoypadMetadata_moc.cpp */; };
@@ -193,6 +194,7 @@
 		17DF04EB1636850C001F7ED2 /* platformpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17DF04E71636850C001F7ED2 /* platformpropertygridwidget.cpp */; };
 		17DF04EC1636850C001F7ED2 /* screenpropertygridwidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17DF04E91636850C001F7ED2 /* screenpropertygridwidget.cpp */; };
 		17E1927617FDB39E002E1506 /* DistributeHandlers.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17E1927417FDB39E002E1506 /* DistributeHandlers.cpp */; };
+		17E2449A199125F800465AB0 /* AdjustablePointDoubleSpinBox_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17E24499199125F800465AB0 /* AdjustablePointDoubleSpinBox_moc.cpp */; };
 		17E897F3162FEB3600A2A946 /* MetadataFactory.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17E897F1162FEB3600A2A946 /* MetadataFactory.cpp */; };
 		17F6F49E1647B234003FFA0E /* HierarchyTreeNodeExtraData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17F6F49C1647B234003FFA0E /* HierarchyTreeNodeExtraData.cpp */; };
 		17FBCE46163A7ED100FD96C0 /* UIControlStateHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17FBCE44163A7ED100FD96C0 /* UIControlStateHelper.cpp */; };
@@ -204,9 +206,12 @@
 		17FF15E216400160001B130F /* fontmanagerdialog.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17FF15DF16400160001B130F /* fontmanagerdialog.ui */; };
 		17FF15F91640069E001B130F /* localizationeditordialog.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 17FF15F81640069E001B130F /* localizationeditordialog.ui */; };
 		17FF160016400A75001B130F /* localizationeditordialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 17FF15FE16400A75001B130F /* localizationeditordialog.cpp */; };
+		49220EEF196552C4006E88C5 /* TextureDescriptorUtils.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 49220EED196552C4006E88C5 /* TextureDescriptorUtils.cpp */; };
 		497774C0170DB808004CE2FB /* importdialogfilewidget_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 497774BF170DB808004CE2FB /* importdialogfilewidget_moc.cpp */; };
 		497774C2170DB80F004CE2FB /* importdialog_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 497774C1170DB80F004CE2FB /* importdialog_moc.cpp */; };
 		498B61FD16F76E2C009D4417 /* IconHelper.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 498B61FB16F76E2C009D4417 /* IconHelper.cpp */; };
+		498FEAF019643D84007E1660 /* BaseValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 498FEAEB19643D84007E1660 /* BaseValidator.cpp */; };
+		498FEAF419644C61007E1660 /* DistanceFontValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 498FEAF219644C61007E1660 /* DistanceFontValidator.cpp */; };
 		49B0263F1709D6B5001E28CC /* importdialog.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 49B0263E1709D6B5001E28CC /* importdialog.ui */; };
 		49B026421709D6BD001E28CC /* importdialogfilewidget.ui in Bundle Resources */ = {isa = PBXBuildFile; fileRef = 49B026411709D6BD001E28CC /* importdialogfilewidget.ui */; };
 		49B0264C1709DA7D001E28CC /* importdialogfilewidget.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 49B0264A1709DA7D001E28CC /* importdialogfilewidget.cpp */; };
@@ -629,6 +634,8 @@
 		17AB665116EDF86B00634657 /* UIListMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIListMetadata.cpp; path = Metadata/UIListMetadata.cpp; sourceTree = "<group>"; };
 		17AB665216EDF86B00634657 /* UIListMetadata.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UIListMetadata.h; path = Metadata/UIListMetadata.h; sourceTree = "<group>"; };
 		17B0617418892C1500FD8007 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.8.sdk/System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
+		17BB5AB41990F30700F5D94F /* AdjustablePointDoubleSpinBox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AdjustablePointDoubleSpinBox.cpp; sourceTree = "<group>"; };
+		17BB5AB51990F30700F5D94F /* AdjustablePointDoubleSpinBox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AdjustablePointDoubleSpinBox.h; sourceTree = "<group>"; };
 		17C0678918ABC909000A1CE0 /* GuidesEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GuidesEnums.h; path = Guides/GuidesEnums.h; sourceTree = "<group>"; };
 		17C1FD1F18F54A6700CEA911 /* guidepropertygridwidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = guidepropertygridwidget.ui; sourceTree = "<group>"; };
 		17C4115F18C9BE3D002BA05F /* UIJoypadMetadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UIJoypadMetadata.cpp; path = Metadata/UIJoypadMetadata.cpp; sourceTree = "<group>"; };
@@ -668,6 +675,7 @@
 		17DF04EA1636850C001F7ED2 /* screenpropertygridwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = screenpropertygridwidget.h; path = PropertyGridWidgets/screenpropertygridwidget.h; sourceTree = "<group>"; };
 		17E1927417FDB39E002E1506 /* DistributeHandlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DistributeHandlers.cpp; path = AlignDistribute/DistributeHandlers.cpp; sourceTree = "<group>"; };
 		17E1927517FDB39E002E1506 /* DistributeHandlers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DistributeHandlers.h; path = AlignDistribute/DistributeHandlers.h; sourceTree = "<group>"; };
+		17E24499199125F800465AB0 /* AdjustablePointDoubleSpinBox_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AdjustablePointDoubleSpinBox_moc.cpp; sourceTree = "<group>"; };
 		17E897C9162EE92C00A2A946 /* propertygridcontainerwidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = propertygridcontainerwidget.h; path = PropertyGridWidgets/propertygridcontainerwidget.h; sourceTree = "<group>"; };
 		17E897F1162FEB3600A2A946 /* MetadataFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MetadataFactory.cpp; path = Metadata/MetadataFactory.cpp; sourceTree = "<group>"; };
 		17E897F2162FEB3600A2A946 /* MetadataFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MetadataFactory.h; path = Metadata/MetadataFactory.h; sourceTree = "<group>"; };
@@ -690,12 +698,18 @@
 		2A689518AF9C22C7AA97C9EF /* ogg_macos */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = ogg_macos; path = ../dava.framework/Libs/libs/libogg_macos.a; sourceTree = "<group>"; };
 		336CB11D929F5E35FA69020F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		419FFB6CDDEB353FF0A4F469 /* QtCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QtCore.framework; path = ../../../../QtSDK/Desktop/Qt/4.8.1/gcc/lib/QtCore.framework; sourceTree = "<group>"; };
+		49220EED196552C4006E88C5 /* TextureDescriptorUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureDescriptorUtils.cpp; sourceTree = "<group>"; };
+		49220EEE196552C4006E88C5 /* TextureDescriptorUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureDescriptorUtils.h; sourceTree = "<group>"; };
 		497774BD170DB7F2004CE2FB /* ui_importdialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_importdialog.h; sourceTree = "<group>"; };
 		497774BE170DB7F2004CE2FB /* ui_importdialogfilewidget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ui_importdialogfilewidget.h; sourceTree = "<group>"; };
 		497774BF170DB808004CE2FB /* importdialogfilewidget_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = importdialogfilewidget_moc.cpp; sourceTree = "<group>"; };
 		497774C1170DB80F004CE2FB /* importdialog_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = importdialog_moc.cpp; sourceTree = "<group>"; };
 		498B61FB16F76E2C009D4417 /* IconHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IconHelper.cpp; sourceTree = "<group>"; };
 		498B61FC16F76E2C009D4417 /* IconHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IconHelper.h; sourceTree = "<group>"; };
+		498FEAEB19643D84007E1660 /* BaseValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BaseValidator.cpp; path = Validators/BaseValidator.cpp; sourceTree = "<group>"; };
+		498FEAEC19643D84007E1660 /* BaseValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BaseValidator.h; path = Validators/BaseValidator.h; sourceTree = "<group>"; };
+		498FEAF219644C61007E1660 /* DistanceFontValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DistanceFontValidator.cpp; path = Validators/DistanceFontValidator.cpp; sourceTree = "<group>"; };
+		498FEAF319644C61007E1660 /* DistanceFontValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DistanceFontValidator.h; path = Validators/DistanceFontValidator.h; sourceTree = "<group>"; };
 		49B0263E1709D6B5001E28CC /* importdialog.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = importdialog.ui; sourceTree = "<group>"; };
 		49B026411709D6BD001E28CC /* importdialogfilewidget.ui */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = importdialogfilewidget.ui; sourceTree = "<group>"; };
 		49B0264A1709DA7D001E28CC /* importdialogfilewidget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = importdialogfilewidget.cpp; sourceTree = "<group>"; };
@@ -1000,6 +1014,7 @@
 		02D69C6A16F08CED00F3803F /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				17E24499199125F800465AB0 /* AdjustablePointDoubleSpinBox_moc.cpp */,
 				178D10EF188406A100529DA8 /* QtColorLineEdit_moc.cpp */,
 				178D10EA1883FED600529DA8 /* QColorWidget_moc.cpp */,
 				497774BF170DB808004CE2FB /* importdialogfilewidget_moc.cpp */,
@@ -1511,8 +1526,21 @@
 				748955FB1641620200070AE1 /* QColorWidget.cpp */,
 				178D10EC188405F800529DA8 /* QtColorLineEdit.cpp */,
 				178D10ED188405F800529DA8 /* QtColorLineEdit.h */,
+				17BB5AB41990F30700F5D94F /* AdjustablePointDoubleSpinBox.cpp */,
+				17BB5AB51990F30700F5D94F /* AdjustablePointDoubleSpinBox.h */,
 			);
 			name = CustomContols;
+			sourceTree = "<group>";
+		};
+		498FEAE319643D51007E1660 /* Validators */ = {
+			isa = PBXGroup;
+			children = (
+				498FEAEB19643D84007E1660 /* BaseValidator.cpp */,
+				498FEAEC19643D84007E1660 /* BaseValidator.h */,
+				498FEAF219644C61007E1660 /* DistanceFontValidator.cpp */,
+				498FEAF319644C61007E1660 /* DistanceFontValidator.h */,
+			);
+			name = Validators;
 			sourceTree = "<group>";
 		};
 		5C190C9615AEC58B005731F8 /* Products */ = {
@@ -1627,6 +1655,7 @@
 		C15C2FDF162AD6E400818631 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				498FEAE319643D51007E1660 /* Validators */,
 				176B4ED418682ADE0020798C /* Grid */,
 				17660BB4186B1D8D00CF7A14 /* Ruler */,
 				171FA7EC17C4A3EA00C7F7F2 /* AlignDistribute */,
@@ -1652,6 +1681,8 @@
 				C1C62A23162C33FC000C1B32 /* ScreenWrapper.h */,
 				1719682017CE4BD400053905 /* ScaleSlider.cpp */,
 				1719682117CE4BD400053905 /* ScaleSlider.h */,
+				49220EED196552C4006E88C5 /* TextureDescriptorUtils.cpp */,
+				49220EEE196552C4006E88C5 /* TextureDescriptorUtils.h */,
 				17F2EF2916355E1000DEE054 /* Commands */,
 				176D3951162C38FF0099AACF /* Controllers */,
 				17112B5616392E880017E713 /* Helpers */,
@@ -2051,6 +2082,7 @@
 				02D69CA516F08CEE00F3803F /* PropertiesGridController_moc.cpp in Build Sources */,
 				17A6305218AA2B3500957C77 /* GuidesManager_moc.cpp in Build Sources */,
 				02D69CA616F08CEE00F3803F /* UndoRedoController_moc.cpp in Build Sources */,
+				498FEAF019643D84007E1660 /* BaseValidator.cpp in Build Sources */,
 				02D69CA716F08CEE00F3803F /* DefaultScreen_moc.cpp in Build Sources */,
 				02D69CA816F08CEE00F3803F /* EditorFontManager_moc.cpp in Build Sources */,
 				02D69CA916F08CEE00F3803F /* EditorSettings_moc.cpp in Build Sources */,
@@ -2094,6 +2126,7 @@
 				02D69CCF16F08CEE00F3803F /* ScreenControl_moc.cpp in Build Sources */,
 				02D69CD016F08CEE00F3803F /* ScreenManager_moc.cpp in Build Sources */,
 				02D69CD116F08CEE00F3803F /* ScreenWrapper_moc.cpp in Build Sources */,
+				49220EEF196552C4006E88C5 /* TextureDescriptorUtils.cpp in Build Sources */,
 				02D69CD216F08CEE00F3803F /* StringUtils_moc.cpp in Build Sources */,
 				74CD181C18D84AE3004615A5 /* rootpropertygridwidget.cpp in Build Sources */,
 				02D69CD316F08CEE00F3803F /* controllist_moc.cpp in Build Sources */,
@@ -2129,6 +2162,7 @@
 				17FC1336189F8F50009D83A8 /* previewsettingsdialog.cpp in Build Sources */,
 				17C8578118C493B300FBB5EF /* previewsettingswidget.cpp in Build Sources */,
 				02D69CED16F08CEE00F3803F /* StateComboBoxItemDelegate_moc.cpp in Build Sources */,
+				17E2449A199125F800465AB0 /* AdjustablePointDoubleSpinBox_moc.cpp in Build Sources */,
 				C737D1ED18D9B855005B4C8F /* uistatictextpropertygridwidget.cpp in Build Sources */,
 				C18593D616F30B56005D30E2 /* LibraryController.cpp in Build Sources */,
 				C18593E216F30C06005D30E2 /* HierarchyTreeAggregatorControlNode.cpp in Build Sources */,
@@ -2169,6 +2203,7 @@
 				17716B5818A90DC3005BA215 /* GuideData_moc.cpp in Build Sources */,
 				748A997D1726D7A700C6411B /* UIScrollViewMetadata.cpp in Build Sources */,
 				17A1226618F4499300780837 /* guidepropertygridwidget.cpp in Build Sources */,
+				498FEAF419644C61007E1660 /* DistanceFontValidator.cpp in Build Sources */,
 				748A997F1726DAB300C6411B /* UIScrollViewMetadata_moc.cpp in Build Sources */,
 				74AD4BD11727DBA50082EFB3 /* scrollviewpropertygridwidget.cpp in Build Sources */,
 				17C5A56D18C86D4E00064AFF /* UIWebViewMetadata.cpp in Build Sources */,
@@ -2194,6 +2229,7 @@
 				174E1FBF17F3483600C7EC10 /* regexpinputdialog.cpp in Build Sources */,
 				174E1FC617F3485A00C7EC10 /* regexpinputdialog_moc.cpp in Build Sources */,
 				171FA7F117C4A48B00C7F7F2 /* AlignDistributeManager.cpp in Build Sources */,
+				17BB5AB61990F30700F5D94F /* AdjustablePointDoubleSpinBox.cpp in Build Sources */,
 				171FA7F817C4A7F400C7F7F2 /* ControlsPositionData.cpp in Build Sources */,
 				171FA7FB17C4AE5E00C7F7F2 /* AlignHandlers.cpp in Build Sources */,
 				17E1927617FDB39E002E1506 /* DistributeHandlers.cpp in Build Sources */,

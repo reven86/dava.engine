@@ -105,7 +105,7 @@ QVariant QtPropertyModel::data(const QModelIndex & index, int role /* = Qt::Disp
 			switch(role)
 			{
 			case Qt::DisplayRole:
-            case Qt::ToolTipRole:
+                        case Qt::ToolTipRole:
 				ret = data->GetName();
 				break;
 			case Qt::FontRole:

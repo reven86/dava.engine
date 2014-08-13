@@ -548,6 +548,7 @@ public:
 #if defined(__DAVAENGINE_OPENGL__)
     void HWglBindBuffer(GLenum target, GLuint  	buffer);
     GLuint bufferBindingId[2];
+    void HWglDeleteBuffers(GLsizei count, const GLuint * buffers);
     
     int32 HWglGetLastTextureID(int textureType);
 	void HWglBindTexture(int32 tId, uint32 textureType = Texture::TEXTURE_2D);

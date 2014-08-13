@@ -583,7 +583,7 @@ void DefaultScreen::DoKeyboardMove(eKeyboardMoveDirection moveDirection)
     }
     else
     {
-        MoveControl(delta);
+        MoveControl(delta, true);
     }
 }
 
@@ -660,9 +660,9 @@ void DefaultScreen::MoveGuides(eKeyboardMoveDirection moveDirection, const Vecto
     SafeRelease(cmd);
 }
 
-void DefaultScreen::MoveControl(const Vector2& delta)
+void DefaultScreen::MoveControl(const Vector2& delta, bool alignControlToIntegerPos)
 {
-	ControlsMoveCommand* cmd = new ControlsMoveCommand(GetActiveMoveControls(), delta);
+	ControlsMoveCommand* cmd = new ControlsMoveCommand(GetActiveMoveControls(), delta, alignControlToIntegerPos);
 	CommandsController::Instance()->ExecuteCommand(cmd);
 	SafeRelease(cmd);
 }
@@ -1126,7 +1126,7 @@ void DefaultScreen::MouseInputDrag(const DAVA::UIEvent* event)
         return;
     }
 
-	Vector2 delta = GetInputDelta(event->point);
+	Vector2 delta = GetInputDelta(event->point).delta;
 	
 	if (inputState == InputStateSelection)
 	{
@@ -1176,9 +1176,9 @@ void DefaultScreen::MouseInputEnd(const DAVA::UIEvent* event)
 
 	if (inputState == InputStateDrag)
 	{
-		Vector2 delta = GetInputDelta(event->point);
+        DefaultScreen::InputDelta inputDelta = GetInputDelta(event->point);
 		ResetMoveDelta();
-		MoveControl(delta);
+		MoveControl(inputDelta.delta, !(inputDelta.isStickedToX | inputDelta.isStickedToY));
 		startControlPos.clear();
 	}
 	
@@ -1382,9 +1382,9 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 	
 }
 
-Vector2 DefaultScreen::GetInputDelta(const Vector2& point, bool applyScale)
+DefaultScreen::InputDelta DefaultScreen::GetInputDelta(const Vector2& point, bool applyScale)
 {
-    Vector2 delta = AlignToNearestScale(point - inputPos);
+    Vector2 delta = point - inputPos;
     HierarchyTreeScreenNode* screenNode = HierarchyTreeController::Instance()->GetActiveScreen();
 
     // Sticking to guides is supported  both for Drag and Size modes.
@@ -1421,9 +1421,6 @@ Vector2 DefaultScreen::GetInputDelta(const Vector2& point, bool applyScale)
             isStickedToY = false;
         }
 
-        // Align to the zoom level to avoid fraction parts in coords.
-        stickDelta = AlignToNearestScale(stickDelta);
-    
         // Calculate the final delta, depending on what axes we are sticked to.
         delta.x = isStickedToX ? stickDelta.x : delta.x;
         delta.y = isStickedToY ? stickDelta.y : delta.y;
@@ -1436,7 +1433,8 @@ Vector2 DefaultScreen::GetInputDelta(const Vector2& point, bool applyScale)
 	}
 
     prevDragPoint = point;
-	return delta;
+    
+    return InputDelta(delta, isStickedToX, isStickedToY);
 }
 
 int32 DefaultScreen::CalculateStickToGuides(Vector2& offset) const
@@ -1780,7 +1778,7 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 		}
 
 		// In this particular case don't take Scale into account.
-		Vector2 delta = GetInputDelta(pos, false);
+		Vector2 delta = GetInputDelta(pos, false).delta;
 		ScreenWrapper::Instance()->RequestViewMove(-delta);
 		inputPos = pos;
 	}
@@ -1919,16 +1917,6 @@ void DefaultScreen::DrawGuides()
 
     RenderManager::Instance()->SetColor(oldColor);
     RenderManager::Instance()->ClipPop();
-}
-
-Vector2 DefaultScreen::AlignToNearestScale(const Vector2& value) const
-{
-    Vector2 result;
-    
-    result.x = Round(value.x / scale.x) * scale.x;
-    result.y = Round(value.y / scale.y) * scale.y;
-    
-    return result;
 }
 
 // Screen scale/position is changed.

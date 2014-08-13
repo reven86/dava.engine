@@ -47,7 +47,6 @@ PasteCommand::~PasteCommand()
 	// Nothing is to be cleaned up - Pasted Items are under control of Hierarchy Tree.
 }
 
-
 void PasteCommand::Execute()
 {
 	HierarchyTreeController::Instance()->ResetSelectedControl();

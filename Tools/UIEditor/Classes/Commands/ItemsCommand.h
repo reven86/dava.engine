@@ -171,7 +171,7 @@ public:
 	DeleteSelectedNodeCommand(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes, bool needDeleteFiles = false);
 	
 	virtual void Execute();
-	void Rollback();
+	virtual void Rollback();
 	virtual bool IsUndoRedoSupported() {return true;};
 
 	virtual void IncrementUnsavedChanges();

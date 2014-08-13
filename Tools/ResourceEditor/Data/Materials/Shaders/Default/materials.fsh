@@ -99,10 +99,8 @@ uniform float normalScale;
 
 #if defined(TILED_DECAL)
 uniform sampler2D decalmask;
-uniform lowp vec4 detailColor0;
-uniform lowp vec4 detailColor1;
-uniform lowp vec4 detailColor2;
 uniform sampler2D decaltexture;
+uniform lowp vec4 decalTileColor;
 varying vec2 varDecalTileTexCoord;
 #endif
 
@@ -287,7 +285,7 @@ void main()
     #if defined(VIEW_ALBEDO)
         #if defined(TILED_DECAL)
             lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
-            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
             color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
         #else
             color *= textureColor0.rgb;
@@ -316,7 +314,7 @@ void main()
     #if defined(VIEW_ALBEDO)
         #if defined(TILED_DECAL)
             lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
-            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
             color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
         #else
             color *= textureColor0.rgb;
@@ -443,7 +441,7 @@ void main()
     #if defined(VIEW_ALBEDO)
         #if defined(TILED_DECAL)
             lowp float maskSample = texture2D(decalmask, varTexCoord0).a;
-            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba;
+            lowp vec4 tileColor = texture2D(decaltexture, varDecalTileTexCoord).rgba * decalTileColor;
             color *= textureColor0.rgb + (tileColor.rgb - textureColor0.rgb) * tileColor.a * maskSample;
         #else
             color *= textureColor0.rgb;

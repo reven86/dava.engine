@@ -290,10 +290,6 @@ namespace DAVA
 #define PROPERTY(_name, _desc, _getter, _setter, _flags) \
 	DAVA::CreateIspProp(_name, _desc, &ObjectT::_getter, &ObjectT::_setter, _flags),
 
-// Определение члена интроспекции, как перечисления. Доступ к нему осуществляется через функци Get/Set. 
-#define ENUMERATION(_name, _desc, _getter, _setter, _flags) \
-    DAVA::CreateInspEnum(_name, _desc, &ObjectT::_getter, &ObjectT::_setter, _flags),
-
 // Определение члена интроспекции, как коллекции. Доступ - см. IntrospectionCollection
 #define COLLECTION(_name, _desc, _flags) \
 	DAVA::CreateInspColl(&((ObjectT *) 0)->_name, #_name, _desc, (int) ((long int) &((ObjectT *) 0)->_name), DAVA::MetaInfo::Instance(&ObjectT::_name), _flags),

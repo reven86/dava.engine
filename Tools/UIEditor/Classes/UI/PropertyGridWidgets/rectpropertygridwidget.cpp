@@ -35,6 +35,8 @@
 #include "CommandsController.h"
 #include "CenterPivotPointCommand.h"
 
+#include "WidgetSignalsBlocker.h"
+
 static const QString RECT_PROPERTY_BLOCK_NAME = "Rect";
 
 RectPropertyGridWidget::RectPropertyGridWidget(QWidget *parent) :
@@ -60,17 +62,17 @@ void RectPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     PROPERTIESMAP propertiesMap = BuildMetadataPropertiesMap();
     
     // Initialize the widgets. TODO - understand how to re-use property names!
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "RelativeX", ui->relativeXSpinBox);
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "RelativeY", ui->relativeYSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "RelativeX", ui->relativeXDoubleSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "RelativeY", ui->relativeYDoubleSpinBox);
 
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "AbsoluteX", ui->absoluteXSpinBox);
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "AbsoluteY", ui->absoluteYSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "AbsoluteX", ui->absoluteXDoubleSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "AbsoluteY", ui->absoluteYDoubleSpinBox);
 
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "SizeX", ui->sizeXSpinBox);
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "SizeY", ui->sizeYSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "SizeX", ui->sizeXDoubleSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "SizeY", ui->sizeYDoubleSpinBox);
     
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "PivotX", ui->pivotXSpinBox);
-    RegisterSpinBoxWidgetForProperty(propertiesMap, "PivotY", ui->pivotYSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "PivotX", ui->pivotXDoubleSpinBox);
+    RegisterDoubleSpinBoxWidgetForProperty(propertiesMap, "PivotY", ui->pivotYDoubleSpinBox);
 
     RegisterSpinBoxWidgetForProperty(propertiesMap, "Angle", ui->angleSpinBox);
 
@@ -85,14 +87,14 @@ void RectPropertyGridWidget::Cleanup()
     BasePropertyGridWidget::Cleanup();
     disconnect(ui->centerPivotPointButton, SIGNAL(clicked()), this, SLOT(OnCenterPivotPointButtonClicked()));
 
-    UnregisterSpinBoxWidget(ui->relativeXSpinBox);
-    UnregisterSpinBoxWidget(ui->relativeYSpinBox);
-    UnregisterSpinBoxWidget(ui->absoluteXSpinBox);
-    UnregisterSpinBoxWidget(ui->absoluteYSpinBox);
-    UnregisterSpinBoxWidget(ui->sizeXSpinBox);
-    UnregisterSpinBoxWidget(ui->sizeYSpinBox);
-    UnregisterSpinBoxWidget(ui->pivotXSpinBox);
-    UnregisterSpinBoxWidget(ui->pivotYSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->relativeXDoubleSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->relativeYDoubleSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->absoluteXDoubleSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->absoluteYDoubleSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->sizeXDoubleSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->sizeYDoubleSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->pivotXDoubleSpinBox);
+    UnregisterDoubleSpinBoxWidget(ui->pivotYDoubleSpinBox);
     UnregisterSpinBoxWidget(ui->angleSpinBox);
 }
 
@@ -125,12 +127,12 @@ void RectPropertyGridWidget::UpdateHorizontalWidgetsState()
 		
 	// Change relative X position spinbox state according to align properties
 	bool disableRelativeX = leftAlignEnabled || hcenterAlignEnabled || rightAlignEnabled;
-	ui->relativeXSpinBox->setDisabled(disableRelativeX);
-	ui->absoluteXSpinBox->setDisabled(disableRelativeX);
+	ui->relativeXDoubleSpinBox->setDisabled(disableRelativeX);
+	ui->absoluteXDoubleSpinBox->setDisabled(disableRelativeX);
 		
 	// Change size X spinbox state according to align properties
 	bool disableSizeX = IsTwoAlignsEnabled(leftAlignEnabled, hcenterAlignEnabled, rightAlignEnabled);
-	ui->sizeXSpinBox->setDisabled(disableSizeX);
+	ui->sizeXDoubleSpinBox->setDisabled(disableSizeX);
 }
 
 void RectPropertyGridWidget::UpdateVerticalWidgetsState()
@@ -142,12 +144,12 @@ void RectPropertyGridWidget::UpdateVerticalWidgetsState()
 		
 	// Change relative Y position spinbox state according to align properties
 	bool disableRelativeY = topAlignEnabled || vcenterAlignEnabled || bottomAlignEnabled;
-	ui->relativeYSpinBox->setDisabled(disableRelativeY);
-	ui->absoluteYSpinBox->setDisabled(disableRelativeY);
+	ui->relativeYDoubleSpinBox->setDisabled(disableRelativeY);
+	ui->absoluteYDoubleSpinBox->setDisabled(disableRelativeY);
 		
 	// Change size Y spinbox state according to align properties
 	bool disableSizeY = IsTwoAlignsEnabled(topAlignEnabled, vcenterAlignEnabled, bottomAlignEnabled);
-	ui->sizeYSpinBox->setDisabled(disableSizeY);
+	ui->sizeYDoubleSpinBox->setDisabled(disableSizeY);
 }
 
 bool RectPropertyGridWidget::IsTwoAlignsEnabled(bool first, bool center, bool second)
@@ -170,4 +172,46 @@ void RectPropertyGridWidget::OnCenterPivotPointButtonClicked()
 	SafeRelease(command);
 
 	CommandsController::Instance()->EmitUpdatePropertyValues();
+}
+
+void RectPropertyGridWidget::UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubleSpinBox *spinBox, const QMetaProperty& curProperty)
+{
+    bool isPropertyValueDiffers = false;
+    double value =
+    PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata,
+                                                   curProperty.name(),
+                                                   isPropertyValueDiffers);
+
+    {
+        WidgetSignalsBlocker blocker(spinBox);
+        AdjustablePointDoubleSpinBox* customSpinBox = dynamic_cast<AdjustablePointDoubleSpinBox*>(spinBox);
+        if (customSpinBox)
+        {
+            customSpinBox->SetValueAndAdjustPoint(value);
+        }
+        else
+        {
+            spinBox->setValue(value);
+        }
+    }
+
+    UpdateWidgetPalette(spinBox, curProperty.name());
+}
+
+void RectPropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox* /*doubleSpinBox*/, const PROPERTYGRIDWIDGETSITER &iter, const double value)
+{
+    if (activeMetadata == NULL)
+    {
+        return;
+    }
+
+    double curValue = PropertiesHelper::GetAllPropertyValues<double>(this->activeMetadata, iter->second.getProperty().name());
+	if (curValue == value)
+	{
+		return;
+	}
+
+    BaseCommand* command = new ChangeDoublePropertyCommand(activeMetadata, iter->second, value);
+    CommandsController::Instance()->ExecuteCommand(command);
+	SafeRelease(command);
 }

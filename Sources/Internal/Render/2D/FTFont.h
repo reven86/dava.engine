@@ -89,7 +89,7 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
 		\returns bounding rect for string in pixels
 	*/
-	virtual Size2i		GetStringSize(const WideString & str, Vector<int32> *charSizes = NULL) const;
+	virtual Size2i		GetStringSize(const WideString & str, Vector<float32> *charSizes = NULL) const;
 
 	/**
 		\brief Get height of highest symbol in font.

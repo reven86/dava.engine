@@ -117,18 +117,40 @@ public class JNIDeviceInfo {
 	
 	protected static void SetGPUFamily(GL10 gl)
 	{
-		String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
-		
-		if (extensions.indexOf("GL_IMG_texture_compression_pvrtc") >= 0)
-			gpuFamily = GPU_POWERVR_ANDROID;
-		else if (extensions.indexOf("GL_NV_draw_texture") >= 0)
+		String renderer = gl.glGetString(GL10.GL_RENDERER).toLowerCase();
+
+		gpuFamily = GPU_UNKNOWN;
+
+		if (renderer.indexOf("tegra") >= 0)
+		{
 			gpuFamily = GPU_TEGRA;
-		else if (extensions.indexOf("GL_AMD_compressed_ATC_texture") >= 0)
+		}
+		else if (renderer.indexOf("powervr") >= 0)
+		{
+			gpuFamily = GPU_POWERVR_ANDROID;
+		}
+		else if (renderer.indexOf("adreno") >= 0)
+		{
 			gpuFamily = GPU_ADRENO;
-		else if (extensions.indexOf("GL_OES_compressed_ETC1_RGB8_texture") >= 0)
+		}
+		else if (renderer.indexOf("mali") >= 0)
+		{
 			gpuFamily = GPU_MALI;
-		else
-			gpuFamily = GPU_UNKNOWN;
+		}
+
+		if (gpuFamily == GPU_UNKNOWN)
+		{
+			String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
+		
+			if (extensions.indexOf("GL_IMG_texture_compression_pvrtc") >= 0)
+				gpuFamily = GPU_POWERVR_ANDROID;
+			else if (extensions.indexOf("GL_NV_draw_texture") >= 0)
+				gpuFamily = GPU_TEGRA;
+			else if (extensions.indexOf("GL_AMD_compressed_ATC_texture") >= 0)
+				gpuFamily = GPU_ADRENO;
+			else if (extensions.indexOf("GL_OES_compressed_ETC1_RGB8_texture") >= 0)
+				gpuFamily = GPU_MALI;
+		}
 	}
 	
 	public static int GetGPUFamily()

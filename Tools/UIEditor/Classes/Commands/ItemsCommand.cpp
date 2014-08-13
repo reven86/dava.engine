@@ -244,7 +244,6 @@ void CreateControlCommand::Execute()
 		HierarchyTreeController::Instance()->ReturnNodeToScene(redoNode);
 		return;
 	}
-
 	
 	// The command is executed for the first time; create the node.
 	HierarchyTreeNode::HIERARCHYTREENODEID newControlID = HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY;
@@ -283,6 +282,7 @@ void CreateControlCommand::Execute()
         node->SetParent(parentNode, insertAfterNode);
         HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
     }
+
 	this->createdControlID = newControlID;
 }
 
@@ -514,56 +514,55 @@ void ChangeNodeHeirarchy::Execute()
 		return;
 	}
 
-	
+    bool isHierarchyChanged = false;
 	for (HierarchyTreeNode::HIERARCHYTREENODESIDLIST::iterator iter = items.begin();
 		 iter != items.end();
 		 ++iter)
 	{
 		HierarchyTreeNode* node = HierarchyTreeController::Instance()->GetTree().GetNode((*iter));
-		if (node)
-		{
-			if (dynamic_cast<HierarchyTreeScreenNode*>(node))
-			{
-				HierarchyTreeNode* sourceNode = node->GetParent();
+        if (!node || node == targetNode)
+        {
+        	// Should never happen.
+        	DVASSERT(false);
+        	return;
+        }
 
-				if (sourceNode != targetNode)
-				{
-					HierarchyTreeNode::HIERARCHYTREENODESLIST screens;
-					screens.push_back(node);
-					HierarchyTreeController::Instance()->DeleteNodesFiles(screens);
-					
-					// If we insert aggregators or screens into platform - check inserted items name. We should not
-					// insert items with existing names.
-					HierarchyTreePlatformNode* targetPlatform = dynamic_cast<HierarchyTreePlatformNode*>(targetNode);
-					if (targetPlatform)
-					{
-						if (targetPlatform->IsAggregatorOrScreenNamePresent(node->GetName()))
-						{
-							QString newName = CopyPasteHelper::FormatCopyName(node->GetName(), targetNode);
-							node->SetName(newName);
-						}
-					}
-				}
-			}
+        if (dynamic_cast<HierarchyTreeScreenNode*>(node))
+        {
+            HierarchyTreeNode* sourceNode = node->GetParent();
+            if (sourceNode != targetNode)
+            {
+                HierarchyTreeNode::HIERARCHYTREENODESLIST screens;
+                screens.push_back(node);
+                HierarchyTreeController::Instance()->DeleteNodesFiles(screens);
 
-			//YZ backlight parent rect
-			bool isNodeSelected = false;
-			HierarchyTreeControlNode* controlNode = dynamic_cast<HierarchyTreeControlNode*>(node);
-			if (controlNode)
-			{
-				isNodeSelected = HierarchyTreeController::Instance()->IsControlSelected(controlNode);
-				HierarchyTreeController::Instance()->UnselectControl(controlNode);
-                CopyPasteHelper::UpdateAggregators(controlNode, targetNode);
-			}
+                // If we insert aggregators or screens into platform - check inserted items name.
+                // We should not insert items with existing names.
+                HierarchyTreePlatformNode* targetPlatform = dynamic_cast<HierarchyTreePlatformNode*>(targetNode);
+                if (targetPlatform && targetPlatform->IsAggregatorOrScreenNamePresent(node->GetName()))
+                {
+                    QString newName = CopyPasteHelper::FormatCopyName(node->GetName(), targetNode);
+                    node->SetName(newName);
+                }
+            }
+        }
+        
+        //YZ backlight parent rect
+        bool isNodeSelected = false;
+        HierarchyTreeControlNode* controlNode = dynamic_cast<HierarchyTreeControlNode*>(node);
+        if (controlNode)
+        {
+            isNodeSelected = HierarchyTreeController::Instance()->IsControlSelected(controlNode);
+            HierarchyTreeController::Instance()->UnselectControl(controlNode);
+            CopyPasteHelper::UpdateAggregators(controlNode, targetNode);
+        }
 
-			node->SetParent(targetNode, insertAfterNode);
-			//insertAfterNode = node;
-			
-			if (isNodeSelected)
-			{
-				HierarchyTreeController::Instance()->SelectControl(controlNode);
-			}
-		}
+        isHierarchyChanged = true;
+        node->SetParent(targetNode, insertAfterNode);
+        if (isNodeSelected)
+        {
+            HierarchyTreeController::Instance()->SelectControl(controlNode);
+        }
 	}
 	
 	HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated(false);

@@ -79,6 +79,9 @@
     <Filter Include="Sources\UI\PropertyGridWidgets\Custom">
       <UniqueIdentifier>{5524db80-47d1-4dcd-ae89-8617d0ea1efd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\Validators">
+      <UniqueIdentifier>{f165eff1-89e2-46d3-9158-d3296ccca9e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Classes\DefaultScreen.cpp">
@@ -834,6 +837,15 @@
     <ClCompile Include="Classes\UI\PropertyGridWidgets\Custom\guidepropertygridwidget.cpp">
       <Filter>Sources\UI\PropertyGridWidgets\Custom</Filter>
     </ClCompile>
+    <ClCompile Include="Classes\Validators\BaseValidator.cpp">
+      <Filter>Sources\Validators</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\Validators\DistanceFontValidator.cpp">
+      <Filter>Sources\Validators</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\TextureDescriptorUtils.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
     <ClCompile Include="Classes\Helpers\CopyPasteHelper.cpp">
       <Filter>Sources\Helpers</Filter>
     </ClCompile>
@@ -847,6 +859,12 @@
       <Filter>Sources\UI\PropertyGridWidgets</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\UI\PropertyGridWidgets\UIListCellPropertyGridWidget_moc.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Classes\UI\AdjustablePointDoubleSpinBox.cpp">
+      <Filter>Sources\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\UI\AdjustablePointDoubleSpinBox_moc.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1352,6 +1370,15 @@
     <ClInclude Include="Classes\UI\PropertyGridWidgets\Custom\guidepropertygridwidget.h">
       <Filter>Sources\UI\PropertyGridWidgets\Custom</Filter>
     </ClInclude>
+    <ClInclude Include="Classes\Validators\BaseValidator.h">
+      <Filter>Sources\Validators</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\Validators\DistanceFontValidator.h">
+      <Filter>Sources\Validators</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\TextureDescriptorUtils.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
     <ClInclude Include="Classes\Helpers\CopyPasteHelper.h">
       <Filter>Sources\Helpers</Filter>
     </ClInclude>
@@ -1360,9 +1387,12 @@
     </ClInclude>
     <ClInclude Include="Classes\UI\PropertyGridWidgets\UIListCellPropertyGridWidget.h">
       <Filter>Sources\UI\PropertyGridWidgets</Filter>
-    </ClInclude>
+   	 </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_UIListCellPropertyGridWidget.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Classes\UI\AdjustablePointDoubleSpinBox.h">
+      <Filter>Sources\UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

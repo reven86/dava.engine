@@ -37,6 +37,7 @@ namespace Ui {
 class RectPropertyGridWidget;
 }
 
+class AdjustablePointDoubleSpinBox;
 class RectPropertyGridWidget : public BasePropertyGridWidget
 {
     Q_OBJECT
@@ -50,6 +51,12 @@ public:
 
 protected:
 	virtual void HandleChangePropertySucceeded(const QString& propertyName);
+
+    virtual void UpdateDoubleSpinBoxWidgetWithPropertyValue(QDoubleSpinBox *spinBoxWidget,
+                                                            const QMetaProperty& curProperty);
+    virtual void ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox *doubleSpinBox,
+                                                  const PROPERTYGRIDWIDGETSITER &iter,
+                                                  const double value);
 
 protected slots:
 	void OnCenterPivotPointButtonClicked();

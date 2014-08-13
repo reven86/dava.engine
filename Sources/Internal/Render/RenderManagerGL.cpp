@@ -165,7 +165,7 @@ void RenderManager::DetectRenderingCapabilities()
     caps.isFloat16Supported = IsGLExtensionSupported("GL_OES_texture_half_float");
     caps.isFloat32Supported = IsGLExtensionSupported("GL_OES_texture_float");
 	caps.isATCSupported = IsGLExtensionSupported("GL_AMD_compressed_ATC_texture");
-    caps.isGlDepth24Stencil8Supported = IsGLExtensionSupported("GL_DEPTH24_STENCIL8");
+    caps.isGlDepth24Stencil8Supported = IsGLExtensionSupported("GL_DEPTH24_STENCIL8") || IsGLExtensionSupported("GL_OES_packed_depth_stencil");
     caps.isGlDepthNvNonLinearSupported = IsGLExtensionSupported("GL_DEPTH_COMPONENT16_NONLINEAR_NV");
     
 #   if (__ANDROID_API__ < 18)
@@ -691,6 +691,29 @@ void RenderManager::DiscardFramebufferHW(uint32 attachments)
     if (attachments&STENCIL_ATTACHMENT)
         discards[discardsCount++]=GL_STENCIL_ATTACHMENT;
     RENDER_VERIFY(glDiscardFramebufferEXT(GL_FRAMEBUFFER, discardsCount, discards));
+#endif
+}
+    
+void RenderManager::HWglDeleteBuffers(GLsizei count, const GLuint * buffers)
+{
+    // TODO: this is, probably, temporary fix.
+    for(uint32 n = 0; n < (uint32)count; ++n)
+    {
+        if(bufferBindingId[0] == buffers[n])
+        {
+            RENDER_VERIFY(glBindBuffer(GL_ARRAY_BUFFER, 0));
+            bufferBindingId[0] = 0;
+        }
+        else if (bufferBindingId[1] == buffers[n])
+        {
+            RENDER_VERIFY(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+            bufferBindingId[1] = 0;
+        }
+    }
+#if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
+    RENDER_VERIFY(glDeleteBuffersARB(count, buffers));
+#else
+    RENDER_VERIFY(glDeleteBuffers(count, buffers));
 #endif
 }
     

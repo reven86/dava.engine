@@ -44,6 +44,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsolu
 	touchTreshold(DEFAULT_TOUCH_TRESHOLD),
 	enableHorizontalScroll(true),
 	enableVerticalScroll(true),
+    scrollStartMovement(false),
 	newPos(0.f, 0.f),
 	oldPos(0.f, 0.f),
 	lockTouch(false),
