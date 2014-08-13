@@ -800,7 +800,7 @@ void Sprite::SetFrame(int32 frm)
 	frame = Max(0, Min(frm, frameCount - 1));
 }
 
-int32 Sprite::GetFrameByName(const FastName& frameName)
+int32 Sprite::GetFrameByName(const FastName& frameName) const
 {
 	if (!frameName.IsValid())
     {
