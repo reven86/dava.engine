@@ -205,9 +205,9 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     {
 		textBlock->Draw(GetShadowColor(), &shadowOffset);
         UIGeometricData shadowGeomData = geometricData;
-
-        shadowGeomData.position += shadowOffset;
-        shadowGeomData.unrotatedRect += shadowOffset;
+        shadowGeomData.position = shadowOffset;
+        shadowGeomData.size = GetSize();
+        shadowGeomData.AddToGeometricData(geometricData);
 
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());

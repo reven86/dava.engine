@@ -102,9 +102,9 @@ void UIButton::CopyDataFrom(UIControl *srcControl)
     }
 }
 
-void UIButton::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
+void UIButton::SetRect(const Rect &rect)
 {
-    UIControl::SetRect(rect, rectInAbsoluteCoordinates);
+    UIControl::SetRect(rect);
 
     UpdateStateTextControlSize();
 }

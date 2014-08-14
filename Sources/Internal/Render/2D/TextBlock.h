@@ -107,7 +107,8 @@ protected:
 	
 	void Prepare();
 	void PrepareInternal();
-	
+	void CalculateCacheParams();
+
 	void DrawToBuffer(Font *font, uint8 *buf);
 
 	void ProcessAlign();

@@ -734,7 +734,7 @@ UIControl *UIControlSystem::GetFocusedControl()
     
 
 	
-const UIGeometricData &UIControlSystem::GetBaseGeometricData()
+const UIGeometricData &UIControlSystem::GetBaseGeometricData() const
 {
 	return baseGeometricData;	
 }

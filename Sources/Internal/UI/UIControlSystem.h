@@ -231,7 +231,7 @@ public:
 	 
 	 \returns GeometricData uset for the base draw
 	 */
-	const UIGeometricData &GetBaseGeometricData();
+	const UIGeometricData &GetBaseGeometricData() const;
 	
 	/**
 	 \brief Sets input with the requested ID to the required control.
