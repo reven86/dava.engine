@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "Render/2D/Sprite.h"
 
 namespace DAVA
 {
@@ -46,7 +47,7 @@ public:
     RenderSystem2D();
     virtual ~RenderSystem2D();
     
-    void Draw(Sprite * sprite);
+    void Draw(Sprite * sprite, Sprite::DrawState * state);
     void Draw(RenderDataObject * rdo);
     void Draw(TextBlock * textblock);
     void Draw(Font * font);

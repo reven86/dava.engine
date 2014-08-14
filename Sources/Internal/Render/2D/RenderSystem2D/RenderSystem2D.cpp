@@ -42,4 +42,9 @@ RenderSystem2D::~RenderSystem2D()
 	
 }
  
+void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
+{
+    
+}
+
 };

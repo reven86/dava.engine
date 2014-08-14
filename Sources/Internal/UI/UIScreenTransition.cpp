@@ -67,8 +67,8 @@ void UIScreenTransition::CreateRenderTargets()
     /*copy of default 3d blend with alpha write only - to minimize state changes*/
     alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
 
-    uint32 width = (uint32)VirtualCoordinates::GetVirtualScreenWidth();
-    uint32 height = (uint32)VirtualCoordinates::GetVirtualScreenHeight();
+    uint32 width = (uint32)VirtualCoordinates::GetPhysicalScreenWidth();
+    uint32 height = (uint32)VirtualCoordinates::GetPhysicalScreenHeight();
     
     Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
     Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);

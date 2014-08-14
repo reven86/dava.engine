@@ -95,9 +95,6 @@ Sprite::Sprite()
 
 	clipPolygon = 0;
 
-//	resourceToVirtualFactor = 1.0f;
-//	resourceToPhysicalFactor = 1.0f;
-
 	spriteRenderObject = new RenderDataObject();
 	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
 	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
@@ -480,7 +477,7 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
         size = VirtualCoordinates::ConvertPhysicalToVirtual(size);
 	}
 
-	resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex();
+	resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex();
 
 	this->type = SPRITE_FROM_TEXTURE;
 	this->textureCount = 1;
@@ -493,9 +490,6 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 	{
 		this->textureNames[0] = this->textures[0]->GetPathname();
 	}
-
-	this->size.dx = (float32)sprWidth;
-	this->size.dy = (float32)sprHeight;
 
 	this->defaultPivotPoint.x = 0;
 	this->defaultPivotPoint.y = 0;
@@ -516,26 +510,26 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
 		float32 x, y, dx,dy, xOff, yOff;
 		x = offset.x;
 		y = offset.y;
-		dx = sprWidth * VirtualCoordinates::GetVirtualToPhysicalFactor();
-		dy = sprHeight * VirtualCoordinates::GetVirtualToPhysicalFactor();
+		dx = size.x * VirtualCoordinates::GetVirtualToPhysicalFactor();
+		dy = size.y * VirtualCoordinates::GetVirtualToPhysicalFactor();
 		xOff = 0;
 		yOff = 0;
 
 		this->rectsAndOffsets[i][0] = (float32)x;
 		this->rectsAndOffsets[i][1] = (float32)y;
-		this->rectsAndOffsets[i][2] = sprWidth;
-		this->rectsAndOffsets[i][3] = sprHeight;
+		this->rectsAndOffsets[i][2] = size.x;
+		this->rectsAndOffsets[i][3] = size.y;
 		this->rectsAndOffsets[i][4] = (float32)xOff;
 		this->rectsAndOffsets[i][5] = (float32)yOff;
 
 		this->frameVertices[i][0] = (float32)xOff;
 		this->frameVertices[i][1] = (float32)yOff;
-		this->frameVertices[i][2] = (float32)xOff + sprWidth;
+		this->frameVertices[i][2] = (float32)xOff + size.x;
 		this->frameVertices[i][3] = (float32)yOff;
 		this->frameVertices[i][4] = (float32)xOff;
-		this->frameVertices[i][5] = (float32)(yOff + sprHeight);
-		this->frameVertices[i][6] = (float32)(xOff + sprWidth);
-		this->frameVertices[i][7] = (float32)(yOff + sprHeight);
+		this->frameVertices[i][5] = (float32)(yOff + size.y);
+		this->frameVertices[i][6] = (float32)(xOff + size.x);
+		this->frameVertices[i][7] = (float32)(yOff + size.y);
 
 
 		dx += x;

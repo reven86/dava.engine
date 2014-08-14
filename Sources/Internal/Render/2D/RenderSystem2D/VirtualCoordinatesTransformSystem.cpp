@@ -107,7 +107,7 @@ void VirtualCoordinatesTransformSystem::CalculateScaleMultipliers()
         {
             allowedSizes[i].toVirtual = (float32)virtualScreenHeight / (float32)allowedSizes[i].height;
             allowedSizes[i].toPhysical = (float32)physicalScreenHeight / (float32)allowedSizes[i].height;
-            if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD)
+            if (fabs(allowedSizes[i].toPhysical - 1.0f) < desD) 
             {
                 desD = fabsf(allowedSizes[i].toPhysical - 1.0f);
                 desirableIndex = i;
@@ -277,6 +277,16 @@ int32 VirtualCoordinatesTransformSystem::GetVirtualScreenHeight()
     return virtualScreenHeight;
 }
 
+int32 VirtualCoordinatesTransformSystem::GetRequestedVirtualScreenWidth()
+{
+    return requestedVirtualScreenWidth;
+}
+
+int32 VirtualCoordinatesTransformSystem::GetRequestedVirtualScreenHeight()
+{
+    return requestedVirtualScreenHeight;
+}
+    
 int32 VirtualCoordinatesTransformSystem::GetVirtualScreenXMin()
 {
     return -(int32)Round(drawOffset.x * physicalToVirtual);
