@@ -30,12 +30,13 @@
 
 #include "ParseTextTest.h"
 
-ParseTextTest::ParseTextTest()
+ParseTextTest::ParseTextTest(Font::eFontType fontType)
 :   UITestTemplate<ParseTextTest>("ParseTextTest")
 ,   wrapBySymbolShort(NULL)
 ,   wrapByWordShort(NULL)
 ,   wrapBySymbolLong(NULL)
 ,   wrapByWordLong(NULL)
+,   requestedFontType(fontType)
 {
     RegisterFunction(this, &ParseTextTest::ParseTestFunction, Format("ParseTextTest"), NULL);
 }

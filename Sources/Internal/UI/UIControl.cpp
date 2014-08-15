@@ -1584,7 +1584,7 @@ namespace DAVA
         if(debugDrawEnabled)
         {
             RenderManager::Instance()->ClipPush();
-            RenderManager::Instance()->ClipRect(Rect(0, 0, -1, -1));
+            RenderManager::Instance()->RemoveClip();
             DrawDebugRect(drawData, false);
             DrawPivotPoint(unrotatedRect);
             RenderManager::Instance()->ClipPop();

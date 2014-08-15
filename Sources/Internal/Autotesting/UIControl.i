@@ -42,9 +42,9 @@ public:
 
 	UIControl(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 	
-	virtual const Rect & GetRect(bool absoluteCoordinates = false);
+	inline const Rect GetRect() const;
     
-	virtual const Vector2 &GetPosition(bool absoluteCoordinates = false);
+	inline const Vector2 &GetPosition() const;
 	
 	virtual const Vector2 &GetSize() const;
 
