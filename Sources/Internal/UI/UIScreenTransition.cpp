@@ -35,6 +35,7 @@
 #include "UI/UIControlSystem.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/Image/Image.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -200,13 +201,12 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
 	drawState.SetScale(0.5f, 1.0f);
 	drawState.SetPosition(0, 0);
     
-	renderTargetPrevScreen->Draw(&drawState);
-
+    RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
     
 	drawState.SetScale(0.5f, 1.0f);
 	drawState.SetPosition((VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()) / 2.0f, 0);
-    
-	renderTargetNextScreen->Draw(&drawState);
+
+    RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
 }
 	
 void UIScreenTransition::SetDuration(float32 timeInSeconds)

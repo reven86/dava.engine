@@ -51,6 +51,7 @@
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
@@ -136,6 +137,7 @@ void Core::CreateSingletons()
     new VersionInfo();
     new ImageSystem();
     new VirtualCoordinatesTransformSystem();
+    new RenderSystem2D();
 	
 #if defined __DAVAENGINE_IPHONE__
 	new AccelerometeriPhoneImpl();

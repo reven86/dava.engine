@@ -32,6 +32,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
+#include "Render/RenderBase.h"
 #include "Render/2D/Sprite.h"
 
 namespace DAVA
@@ -41,6 +42,7 @@ class Font;
 class Sprite;
 class TextBlock;
 class RenderDataObject;
+class RenderDataStream;
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
 public:
@@ -51,6 +53,21 @@ public:
     void Draw(RenderDataObject * rdo);
     void Draw(TextBlock * textblock);
     void Draw(Font * font);
+    
+    //should be private
+    void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
+    
+private:
+    //sprite draw
+	float32 spriteTempVertices[8];
+    RenderDataObject * spriteRenderObject;
+    RenderDataStream * spriteVertexStream;
+	RenderDataStream * spriteTexCoordStream;
+	ePrimitiveType spritePrimitiveToDraw;
+	int32 spriteVertexCount;
+    
+    Vector<Vector2> spriteClippedTexCoords;
+	Vector<Vector2> spriteClippedVertices;
 };
     
 } // ns

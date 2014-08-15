@@ -41,6 +41,7 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/OGLHelpers.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 #if defined(__DAVAENGINE_IPHONE__) 
 #include <CoreGraphics/CoreGraphics.h>
@@ -1111,7 +1112,7 @@ Image * Texture::CreateImageFromMemory(UniqueHandle renderState)
         Sprite::DrawState drawState;
         drawState.SetPosition(0, 0);
         drawState.SetRenderState(renderState);
-        drawTexture->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(drawTexture, &drawState);
 
         RenderManager::Instance()->RestoreRenderTarget();
         

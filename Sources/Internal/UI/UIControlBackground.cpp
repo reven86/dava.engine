@@ -35,6 +35,7 @@
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 namespace DAVA
 {
@@ -334,8 +335,7 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
             }
 
             lastDrawPos = drawState.position;
-
-            spr->Draw(&drawState);
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
@@ -373,8 +373,8 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
 //			spr->SetScale(drawRect.dx / spr->GetSize().dx, drawRect.dy / spr->GetSize().dy);
 //			spr->SetPivotPoint(geometricData.pivotPoint.x / (geometricData.size.x / spr->GetSize().dx), geometricData.pivotPoint.y / (geometricData.size.y / spr->GetSize().dy));
 //			spr->SetAngle(geometricData.angle);
-
-            spr->Draw(&drawState);
+            
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 
@@ -472,8 +472,8 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
             }
 
             lastDrawPos = drawState.position;
-
-            spr->Draw(&drawState);
+            
+            RenderSystem2D::Instance()->Draw(spr, &drawState);
         }
         break;
 

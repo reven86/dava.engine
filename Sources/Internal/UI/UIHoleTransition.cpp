@@ -33,6 +33,7 @@
 #include "Platform/SystemTimer.h"
 #include "Render/RenderManager.h"
 #include "Render/RenderHelper.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -105,14 +106,12 @@ void UIHoleTransition::Draw(const UIGeometricData &geometricData)
     if (normalizedTime < 0.5f)
     {
         renderTargetPrevScreen->SetClipPolygon(&realPoly);
-        
-        renderTargetPrevScreen->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
     }
     else
     {
         renderTargetNextScreen->SetClipPolygon(&realPoly);
-        
-        renderTargetNextScreen->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
     }
     
 	/*Texture * tx = renderTargetPrevScreen->GetTexture();

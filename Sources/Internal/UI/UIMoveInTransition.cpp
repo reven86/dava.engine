@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -95,12 +96,10 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 		{
 			drawState.SetPosition(0, 0);
 		}
-        
-		renderTargetPrevScreen->Draw(&drawState);
-		
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
 		
 		drawState.SetPosition(xNextPosition, yNextPosition);
-		renderTargetNextScreen->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
 	}
 	else 
 	{
@@ -120,12 +119,10 @@ void UIMoveInTransition::Draw(const UIGeometricData &geometricData)
 			drawState.SetPosition(0, 0);
 		}
         
-		renderTargetNextScreen->Draw(&drawState);
-
+        RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
 		
 		drawState.SetPosition(xPrevPosition, yPrevPosition);
-		renderTargetPrevScreen->Draw(&drawState);
-		
+        RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
 	}
 
 

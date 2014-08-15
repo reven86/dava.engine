@@ -34,6 +34,7 @@
 #include "UI/UIControlSystem.h"
 #include "Debug/Replay.h"
 #include "Job/JobWaiter.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 namespace DAVA 
 {
@@ -157,7 +158,7 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
         Sprite::DrawState drawState;
         drawState.SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
         drawState.SetPosition(geometricData.position);
- 		backgroundSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(backgroundSprite, &drawState);
     }
 
 	if (animationSprite)
@@ -171,7 +172,7 @@ void UILoadingTransition::Draw(const UIGeometricData &geometricData)
         drawState.SetFrame(frame);
         drawState.SetPosition(geometricData.position);
         
-		animationSprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(animationSprite, &drawState);
 	}
 }
 	

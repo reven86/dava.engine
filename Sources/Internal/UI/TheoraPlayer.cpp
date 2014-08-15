@@ -30,6 +30,7 @@
 
 #include "UI/TheoraPlayer.h"
 #include "FileSystem/YamlNode.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 #if !defined(__DAVAENGINE_ANDROID__)
 
@@ -406,8 +407,7 @@ void TheoraPlayer::Draw(const UIGeometricData &geometricData)
     {
         Sprite::DrawState drawState;
         drawState.SetPosition(geometricData.position);
-        
-        sprite->Draw(&drawState);
+        RenderSystem2D::Instance()->Draw(sprite, &drawState);
     }
 }
     

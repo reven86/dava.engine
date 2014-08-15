@@ -55,6 +55,7 @@ enum eSpriteModification
 
 class Shader;
 class Texture;
+class RenderSystem2D;
 
 /**
 	\ingroup render_2d
@@ -68,7 +69,7 @@ class Sprite : public BaseObject
 public:
 	class DrawState
 	{
-        friend class Sprite;
+        friend class RenderSystem2D;
         
     public:
     
@@ -113,8 +114,6 @@ public:
         UniqueHandle renderState;
 
 	};
-
-    friend class DrawState;
 
 	enum eSpriteType
 	{
@@ -210,15 +209,14 @@ public:
 	void ResetModification();
 	void Reset();//Reset do not resets the pivot point
 
-	void Draw(DrawState * state);
+	//void Draw(DrawState * state);
 	/**
 	 \brief	Draw sprite by the 4 verticies.
 		The vertices sequence is (xLeft,yTop), (xRight,yTop), (xLeft,yBottom), (xRight,yBottom)
 	 \param v poiterto the array of the four Vector2 objects.
 	 */
-	void DrawPoints(Vector2 *verticies, DrawState* drawState);
-
-	void DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawState* drawState);
+//	void DrawPoints(Vector2 *verticies, DrawState* drawState);
+//	void DrawPoints(Vector2 *verticies, Vector2 *textureCoordinates, DrawState* drawState);
 
 	inline int32 GetResourceSizeIndex() const;
 
@@ -251,7 +249,7 @@ public:
 		\brief Set polygon to draw the sprite with specific clip. Resets to null after draw.
 	 */
 	void SetClipPolygon(Polygon2 * clipPolygon);
-
+    
 	/**
 	 \brief Returns texture coordinates for the requested frame.
 	 */
@@ -266,8 +264,8 @@ public:
 
 	const FilePath & GetRelativePathname() const;
 
-	inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
-	RenderDataObject * spriteRenderObject;
+	//inline void PrepareSpriteRenderData(Sprite::DrawState * drawState);
+	//RenderDataObject * spriteRenderObject;
 
     /**
 	 \brief Removes all sprite data.
@@ -299,7 +297,6 @@ protected:
     static File* GetSpriteFile(const FilePath & spriteName, int32& resourceSizeIndex);
 
     void ReloadExistingTextures();
-//private:
 
     static Mutex spriteMapMutex;
 
@@ -325,27 +322,17 @@ protected:
 	float32 **frameVertices;
 	float32 **texCoords;
 
-//	float32 **originalVertices;
-
 	Polygon2 * clipPolygon;
 
 	void PrepareForNewSize();
-    void SetFrame(int32 frm);
+    //void SetFrame(int32 frm);
 
 	Vector2	size;
-//	Vector2 originalSize;
 
-	int32	frameCount;
-	int32	frame;
+	int32 frameCount;
+	//int32	frame;
 
 	Vector2	defaultPivotPoint;
-	//Vector2	pivotPoint;
-
-	//Vector2	drawCoord;
-
-	//float32	rotateAngle;
-
-	//Vector2	scale;
 
 	bool isPreparedForTiling;
 
@@ -355,26 +342,20 @@ protected:
 
 	int32 resourceSizeIndex;
 
-	//float32 resourceToVirtualFactor;
-	//float32 resourceToPhysicalFactor;
-
 	eSpriteType type;
 
-//public:
 	float32 **rectsAndOffsets;
 
-	RenderDataStream * vertexStream;
-	RenderDataStream * texCoordStream;
-	ePrimitiveType primitiveToDraw;
-	int32 vertexCount;
-
-	// For rendering of clipped objects
-	static Vector<Vector2> clippedTexCoords;
-	static Vector<Vector2> clippedVertices;
-
-
-	//static bool batchingEnabled;
-	//static Vector<Vector2>
+//	RenderDataStream * vertexStream;
+//	RenderDataStream * texCoordStream;
+//	ePrimitiveType primitiveToDraw;
+//	int32 vertexCount;
+//
+//	// For rendering of clipped objects
+//	static Vector<Vector2> clippedTexCoords;
+//	static Vector<Vector2> clippedVertices;
+    
+    friend class RenderSystem2D;
 };
 
 
@@ -389,7 +370,7 @@ inline void Sprite::DrawState::Reset()
 	scale.x = 1.0f;
 	scale.y = 1.0f;
 	angle = 0.0f;
-	//frame = 0;
+	frame = 0;
 	flags = 0;
 	usePerPixelAccuracy = false;
 	precomputedAngle = 0.0f;

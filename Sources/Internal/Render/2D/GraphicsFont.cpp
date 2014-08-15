@@ -30,6 +30,7 @@
 #include "Base/BaseTypes.h"
 #include "Render/2D/GraphicsFont.h"
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/File.h"
 #include "Debug/DVAssert.h"
@@ -444,7 +445,7 @@ Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string,
 			state.SetScale(fontScaleCoeff, fontScaleCoeff);
 			state.SetPosition(drawX, drawY);
         
-			fontSprite->Draw(&state);
+            RenderSystem2D::Instance()->Draw(fontSprite, &state);
 		}
 
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
