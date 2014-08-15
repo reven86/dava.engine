@@ -66,7 +66,7 @@ public:
 		\param[in] track id of track you want to check or -1 if you want to check if any tracks animating now
 		\returns true if object is animating on the requested tracks
 	 */
-	const bool	IsAnimating(int32 track = -1) const;
+	bool	IsAnimating(int32 track = -1) const;
 	/**
 		\brief Load animated object animations from yaml
 	 */
