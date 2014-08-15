@@ -56,7 +56,7 @@ void AnimationManager::RemoveAnimationInternal(BaseObject * caller, void * param
 {
     Animation * animation = (Animation*)param;
 
-	Vector<Animation*>::const_iterator endIt = animations.end();
+	Vector<Animation*>::iterator endIt = animations.end();
 	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		if (*t == animation)
@@ -71,7 +71,7 @@ void AnimationManager::StopAnimations()
 {
     DVASSERT(Thread::IsMainThread());
     
-	Vector<Animation*>::const_iterator endIt = animations.end();
+	Vector<Animation*>::iterator endIt = animations.end();
 	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
@@ -96,7 +96,7 @@ void AnimationManager::DeleteAnimationInternal(BaseObject * caller, void * param
 {
     DeleteAnimationsData * data = (DeleteAnimationsData*)param;
 
-	Vector<Animation*>::const_iterator endIt = animations.end();
+	Vector<Animation*>::iterator endIt = animations.end();
 	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
@@ -121,7 +121,7 @@ Animation * AnimationManager::FindLastAnimation(AnimatedObject * _owner, int32 _
 {
     DVASSERT(Thread::IsMainThread());
     
-	Vector<Animation*>::const_iterator endIt = animations.end();
+	Vector<Animation*>::iterator endIt = animations.end();
 	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
@@ -165,7 +165,7 @@ Animation * AnimationManager::FindPlayingAnimation(AnimatedObject * owner, int32
 {
     DVASSERT(Thread::IsMainThread());
 
-	Vector<Animation*>::const_iterator endIt = animations.end();
+	Vector<Animation*>::iterator endIt = animations.end();
 	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
 	{
 		Animation * animation = *t;
@@ -189,9 +189,9 @@ bool AnimationManager::HasActiveAnimations(AnimatedObject * owner)
 	DVASSERT(Thread::IsMainThread());
 
 	Vector<Animation*>::const_iterator endIt = animations.end();
-	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+	for (Vector<Animation*>::const_iterator t = animations.begin(); t != endIt; ++t)
 	{
-		Animation * animation = *t;
+		const Animation * animation = *t;
 
 		if ((animation->owner == owner) && !(animation->state & Animation::STATE_FINISHED))
 		{
@@ -287,7 +287,7 @@ void AnimationManager::PauseAnimations(bool isPaused, int tag)
 {
     DVASSERT(Thread::IsMainThread());
 
-	Vector<Animation*>::const_iterator endIt = animations.end();
+	Vector<Animation*>::iterator endIt = animations.end();
 	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
     {
         Animation * &a = *t;
@@ -303,7 +303,7 @@ void AnimationManager::SetAnimationsMultiplier(float32 f, int tag)
 {
     DVASSERT(Thread::IsMainThread());
     
-	Vector<Animation*>::const_iterator endIt = animations.end();
+	Vector<Animation*>::iterator endIt = animations.end();
 	for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
     {
         Animation * &a = *t;

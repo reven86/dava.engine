@@ -180,14 +180,14 @@ void FrameworkDidLaunched()
             Logger::Instance()->SetLogLevel(Logger::LEVEL_INFO);
         }
         
-        if(CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("-verbose")))
+        if(CommandLineParser::CommandIsFound(String("-v")) || CommandLineParser::CommandIsFound(String("--verbose")))
         {
             CommandLineParser::Instance()->SetVerbose(true);
 
             Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
         }
 
-	if (CommandLineParser::CommandIsFound(String("-s")) || CommandLineParser::CommandIsFound(String("-silent")))
+	if (CommandLineParser::CommandIsFound(String("-s")) || CommandLineParser::CommandIsFound(String("--silent")))
 	{
 		Logger::Instance()->SetLogLevel(Logger::LEVEL_WARNING);
 	}
