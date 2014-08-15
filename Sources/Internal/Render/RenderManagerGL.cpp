@@ -242,9 +242,11 @@ void RenderManager::PrepareRealMatrix()
     if (mappingMatrixChanged)
     {
         mappingMatrixChanged = false;
-        Vector2 realDrawScale(viewMappingDrawScale.x * userDrawScale.x, viewMappingDrawScale.y * userDrawScale.y);
-        Vector2 realDrawOffset(viewMappingDrawOffset.x + userDrawOffset.x * viewMappingDrawScale.x, viewMappingDrawOffset.y + userDrawOffset.y * viewMappingDrawScale.y);
-	
+        
+        Vector2 realDrawScale = userDrawScale * VirtualCoordinates::GetVirtualToPhysicalFactor();
+        Vector2 realDrawOffset = (userDrawOffset - Vector2(VirtualCoordinates::GetVirtualScreenXMin(), VirtualCoordinates::GetVirtualScreenYMin()))
+                                    * VirtualCoordinates::GetVirtualToPhysicalFactor();
+        
         if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
         {
             currentDrawScale = realDrawScale;
@@ -417,9 +419,9 @@ void RenderManager::SetRenderOrientation(int32 orientation)
     
 	RENDER_VERIFY(;);
 
-	IdentityMappingMatrix();
-	SetVirtualViewScale();
-	SetVirtualViewOffset();
+//	IdentityMappingMatrix();
+//	SetVirtualViewScale();
+//	SetVirtualViewOffset();
 
 }
 
@@ -629,10 +631,10 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
         SetDynamicParam (PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
         
         IdentityModelMatrix();
-		IdentityMappingMatrix(); 
+//		IdentityMappingMatrix(); 
 
-        float32 scale = VirtualCoordinates::GetResourceToPhysicalFactor(renderTarget->GetResourceSizeIndex());
-		viewMappingDrawScale.x = viewMappingDrawScale.y = scale;
+        //float32 scale = VirtualCoordinates::GetResourceToPhysicalFactor(renderTarget->GetResourceSizeIndex());
+		//viewMappingDrawScale.x = viewMappingDrawScale.y = scale;
         
         mappingMatrixChanged = true;
         

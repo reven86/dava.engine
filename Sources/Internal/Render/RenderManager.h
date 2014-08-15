@@ -462,7 +462,7 @@ public:
     const Vector2& GetDrawScale() const;
 
 	void IdentityDrawMatrix();
-	void IdentityMappingMatrix();
+//	void IdentityMappingMatrix();
 	void IdentityModelMatrix();
 	
 	/*
@@ -471,16 +471,16 @@ public:
 				Думаю что пока воспоминания свежи, напиши документацию по системе виртуальных преобразований
 				Можешь писать на русском - я переведу потом.
 	 */
-	void SetPhysicalViewScale();
-	void SetPhysicalViewOffset();
-	void SetVirtualViewScale();
-	void SetVirtualViewOffset();
+//	void SetPhysicalViewScale();
+//	void SetPhysicalViewOffset();
+//	void SetVirtualViewScale();
+//	void SetVirtualViewOffset();
 
 	void PushDrawMatrix();
     void PopDrawMatrix();
 
-    void PushMappingMatrix();
-	void PopMappingMatrix();
+//    void PushMappingMatrix();
+//	void PopMappingMatrix();
     
     void SetRenderContextId(uint64 contextId);
 	uint64 GetRenderContextId();
@@ -614,8 +614,8 @@ protected:
 	Vector2 userDrawScale;
 
 	//need to think about optimization two matrices (userDraw matrix and mapping matrix) to the one matrix
-	Vector2 viewMappingDrawOffset;
-	Vector2 viewMappingDrawScale;
+//	Vector2 viewMappingDrawOffset;
+//	Vector2 viewMappingDrawScale;
 
 	Vector2 currentDrawOffset;
 	Vector2 currentDrawScale;

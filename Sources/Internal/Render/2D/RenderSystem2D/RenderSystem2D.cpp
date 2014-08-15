@@ -33,8 +33,6 @@
 
 namespace DAVA
 {
-
-#define NEW_PPA
     
 RenderSystem2D::RenderSystem2D()
 {
@@ -144,19 +142,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                 }
                 else
                 {
-#if !defined (NEW_PPA)
-                    spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y2
-                    spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[2];//x1
-                    spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[5];//y1
-                    
-                    RenderManager::Instance()->SetPhysicalViewScale();
-#else
                     spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
                     spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
                     spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
                     spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
-#endif
                 }
             }
             else
@@ -172,19 +161,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                 }
                 else
                 {
-#if !defined (NEW_PPA)
-                    spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x2
-                    spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y2
-                    spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[2];//x1
-                    spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[5];//y1
-                    
-                    RenderManager::Instance()->SetPhysicalViewScale();
-#else
                     spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
                     spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
                     spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
                     spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
-#endif
                 }
             }
         }
@@ -204,19 +184,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                     }
                     else
                     {
-#if !defined (NEW_PPA)
-                        spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x2
-                        spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y1
-                        spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[1];//y2
-                        
-                        RenderManager::Instance()->SetPhysicalViewScale();
-#else
                         spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
                         spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[2];//x1
                         spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
                         spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
-#endif
                     }
                 }
                 else
@@ -231,19 +202,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                     }
                     else
                     {
-#if !defined (NEW_PPA)
-                        spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x2
-                        spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[2];//x1
-                        spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y1
-                        spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[1];//y2
-                        
-                        RenderManager::Instance()->SetPhysicalViewScale();
-#else
                         spriteTempVertices[2] = spriteTempVertices[6] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x2
                         spriteTempVertices[0] = spriteTempVertices[4] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[2];//x1
                         spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
                         spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
-#endif
                     }
                 }
             }
@@ -261,19 +223,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                     }
                     else
                     {
-#if !defined (NEW_PPA)
-                        spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y2
-                        spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[0];//x2
-                        spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[5];//y1
-                        
-                        RenderManager::Instance()->SetPhysicalViewScale();
-#else
                         spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
                         spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
                         spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
                         spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[5];//y1
-#endif
                     }
                 }
                 else
@@ -288,19 +241,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
                     }
                     else
                     {
-#if !defined (NEW_PPA)
-                        spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x1
-                        spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y2
-                        spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[0];//x2
-                        spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[5];//y1
-                        
-                        RenderManager::Instance()->SetPhysicalViewScale();
-#else
                         spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
                         spriteTempVertices[5] = spriteTempVertices[7] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y2
                         spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
                         spriteTempVertices[1] = spriteTempVertices[3] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[5];//y1
-#endif
                     }
                 }
             }
@@ -320,19 +264,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
             }
             else
             {
-#if !defined (NEW_PPA)
-                spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y1
-                spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[0];//x2
-                spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[1];//y2
-                
-                RenderManager::Instance()->SetPhysicalViewScale();
-#else
                 spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] * scaleX + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
                 spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] * scaleY + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
                 spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * scaleX + spriteTempVertices[0];//x2
                 spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * scaleY + spriteTempVertices[1];//y2
-#endif
             }
         }
         else
@@ -346,19 +281,10 @@ void RenderSystem2D::PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState 
             }
             else
             {
-#if !defined (NEW_PPA)
-                spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//x1
-                spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f);//y1
-                spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[0];//x2
-                spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) * VirtualCoordinates::GetVirtualToPhysicalFactor() + spriteTempVertices[1];//y2
-                
-                RenderManager::Instance()->SetPhysicalViewScale();
-#else
                 spriteTempVertices[0] = spriteTempVertices[4] = floorf((frameVertices[frame][0] + x) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//x1
                 spriteTempVertices[1] = spriteTempVertices[3] = floorf((frameVertices[frame][1] + y) * VirtualCoordinates::GetVirtualToPhysicalFactor() + 0.5f) * VirtualCoordinates::GetPhysicalToVirtualFactor();//y1
                 spriteTempVertices[2] = spriteTempVertices[6] = (frameVertices[frame][2] - frameVertices[frame][0]) + spriteTempVertices[0];//x2
                 spriteTempVertices[5] = spriteTempVertices[7] = (frameVertices[frame][5] - frameVertices[frame][1]) + spriteTempVertices[1];//y2
-#endif
             }
             
         }

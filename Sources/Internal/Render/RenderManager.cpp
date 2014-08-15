@@ -92,8 +92,8 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 	userDrawOffset = Vector2(0, 0);
 	userDrawScale = Vector2(1, 1);
 
-	viewMappingDrawOffset = Vector2(0, 0);
-	viewMappingDrawScale = Vector2(1, 1);
+//	viewMappingDrawOffset = Vector2(0, 0);
+//	viewMappingDrawScale = Vector2(1, 1);
 
 	currentDrawOffset = Vector2(0, 0);
 	currentDrawScale = Vector2(1, 1);
@@ -433,7 +433,7 @@ void RenderManager::SetRenderTarget(Sprite *renderTarget)
 		
 	ClipPush();
 	PushDrawMatrix();
-	PushMappingMatrix();
+//	PushMappingMatrix();
 	IdentityDrawMatrix();
 	SetHWRenderTargetSprite(renderTarget);
 }
@@ -451,7 +451,7 @@ void RenderManager::RestoreRenderTarget()
 	SetHWRenderTargetSprite(rt.spr);
 
 	PopDrawMatrix();
-	PopMappingMatrix();
+//	PopMappingMatrix();
 	ClipPop();
 }
 
@@ -573,12 +573,12 @@ void RenderManager::IdentityDrawMatrix()
 	userDrawOffset.y = 0.0f;
 }
 
-void RenderManager::IdentityMappingMatrix()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset = Vector2(0.0f, 0.0f);
-	viewMappingDrawScale = Vector2(1.0f, 1.0f);
-}
+//void RenderManager::IdentityMappingMatrix()
+//{
+//    mappingMatrixChanged = true;
+//	viewMappingDrawOffset = Vector2(0.0f, 0.0f);
+//	viewMappingDrawScale = Vector2(1.0f, 1.0f);
+//}
 	
 void RenderManager::IdentityModelMatrix()
 {
@@ -591,32 +591,32 @@ void RenderManager::IdentityModelMatrix()
     
 	
 	
-void RenderManager::SetPhysicalViewScale()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawScale.x = 1.0f;
-	viewMappingDrawScale.y = 1.0f;
-}
+//void RenderManager::SetPhysicalViewScale()
+//{
+//    mappingMatrixChanged = true;
+//	viewMappingDrawScale.x = 1.0f;
+//	viewMappingDrawScale.y = 1.0f;
+//}
+//
+//void RenderManager::SetPhysicalViewOffset()
+//{
+//    mappingMatrixChanged = true;
+//	viewMappingDrawOffset = VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset();
+//}
 
-void RenderManager::SetPhysicalViewOffset()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset = VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset();
-}
-
-void RenderManager::SetVirtualViewScale()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawScale.x = VirtualCoordinates::GetVirtualToPhysicalFactor();
-	viewMappingDrawScale.y = VirtualCoordinates::GetVirtualToPhysicalFactor();
-}
-
-void RenderManager::SetVirtualViewOffset()
-{
-    mappingMatrixChanged = true;
-	viewMappingDrawOffset.x -= VirtualCoordinates::GetVirtualScreenXMin() * viewMappingDrawScale.x;
-	viewMappingDrawOffset.y -= VirtualCoordinates::GetVirtualScreenYMin() * viewMappingDrawScale.y;
-}
+//void RenderManager::SetVirtualViewScale()
+//{
+//    mappingMatrixChanged = true;
+//	viewMappingDrawScale.x = VirtualCoordinates::GetVirtualToPhysicalFactor();
+//	viewMappingDrawScale.y = VirtualCoordinates::GetVirtualToPhysicalFactor();
+//}
+//
+//void RenderManager::SetVirtualViewOffset()
+//{
+//    mappingMatrixChanged = true;
+//	viewMappingDrawOffset.x -= VirtualCoordinates::GetVirtualScreenXMin() * viewMappingDrawScale.x;
+//	viewMappingDrawOffset.y -= VirtualCoordinates::GetVirtualScreenYMin() * viewMappingDrawScale.y;
+//}
 	
 void RenderManager::PushDrawMatrix()
 {
@@ -636,24 +636,24 @@ void RenderManager::PopDrawMatrix()
 	PrepareRealMatrix();
 }
 	
-void RenderManager::PushMappingMatrix()
-{
-	DrawMatrix dm;
-	dm.userDrawOffset = viewMappingDrawOffset;
-	dm.userDrawScale = viewMappingDrawScale;
-	mappingMatrixStack.push(dm);
-}
-
-void RenderManager::PopMappingMatrix()
-{
-	IdentityMappingMatrix();
-	DrawMatrix dm = mappingMatrixStack.top();
-	mappingMatrixStack.pop();
-	viewMappingDrawOffset = dm.userDrawOffset;
-	viewMappingDrawScale = dm.userDrawScale;
-    DVASSERT(mappingMatrixChanged == true);
-	PrepareRealMatrix();
-}
+//void RenderManager::PushMappingMatrix()
+//{
+//	DrawMatrix dm;
+//	dm.userDrawOffset = viewMappingDrawOffset;
+//	dm.userDrawScale = viewMappingDrawScale;
+//	mappingMatrixStack.push(dm);
+//}
+//
+//void RenderManager::PopMappingMatrix()
+//{
+//	IdentityMappingMatrix();
+//	DrawMatrix dm = mappingMatrixStack.top();
+//	mappingMatrixStack.pop();
+//	viewMappingDrawOffset = dm.userDrawOffset;
+//	viewMappingDrawScale = dm.userDrawScale;
+//    DVASSERT(mappingMatrixChanged == true);
+//	PrepareRealMatrix();
+//}
 
 void RenderManager::SetCursor(Cursor * _cursor)
 {

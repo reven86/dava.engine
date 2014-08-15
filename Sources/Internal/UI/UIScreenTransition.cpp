@@ -97,7 +97,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	prevScreen = _prevScreen;
 	
 	RenderManager::Instance()->SetRenderTarget(renderTargetPrevScreen);
-	RenderManager::Instance()->SetVirtualViewOffset();
+//	RenderManager::Instance()->SetVirtualViewOffset();
 	RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
@@ -135,7 +135,7 @@ void UIScreenTransition::StartTransition(UIScreen * _prevScreen, UIScreen * _nex
 	//
 	
 	RenderManager::Instance()->SetRenderTarget(renderTargetNextScreen);
-	RenderManager::Instance()->SetVirtualViewOffset();
+//	RenderManager::Instance()->SetVirtualViewOffset();
     RenderManager::Instance()->ResetColor(); //SetColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
     RenderManager::Instance()->FlushState();
