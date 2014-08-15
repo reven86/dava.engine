@@ -50,15 +50,13 @@ public:
     virtual ~RenderSystem2D();
     
     void Draw(Sprite * sprite, Sprite::DrawState * state);
-    void Draw(RenderDataObject * rdo);
     void Draw(TextBlock * textblock);
     void Draw(Font * font);
     
-    //should be private
-    void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
-    
 private:
     //sprite draw
+    void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
+    
 	float32 spriteTempVertices[8];
     RenderDataObject * spriteRenderObject;
     RenderDataStream * spriteVertexStream;

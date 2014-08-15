@@ -55,8 +55,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 		return;
 	}
     
-    DVASSERT(state->frame < sprite->frameCount);
-    
 	PrepareSpriteRenderData(sprite, state);
     
 	if(sprite->clipPolygon)
@@ -86,7 +84,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 	}
     
     RenderManager::Instance()->SetRenderState(state->renderState);
-	RenderManager::Instance()->SetTextureState(sprite->textureHandles[sprite->frameTextureIndex[state->frame]]);
+	RenderManager::Instance()->SetTextureState(sprite->GetTextureHandle(state->frame));
 	RenderManager::Instance()->SetRenderData(spriteRenderObject);
     RenderManager::Instance()->SetRenderEffect(state->shader);
  	RenderManager::Instance()->DrawArrays(spritePrimitiveToDraw, 0, spriteVertexCount);
