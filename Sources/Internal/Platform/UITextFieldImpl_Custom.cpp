@@ -55,20 +55,6 @@ UITextFieldImpl_Custom::~UITextFieldImpl_Custom()
     SafeRelease(staticText);
 }
 
-void UITextFieldImpl_Custom::OpenKeyboard()
-{
-    const Rect keyboardRect( Vector2( 0.0f, (float32)GetScreenHeight()), Vector2() );
-
-    UIControlSystem::Instance()->GetUISystemKeyboard()->SendWillShowNotification(keyboardRect);
-    UIControlSystem::Instance()->GetUISystemKeyboard()->SendDidShowNotification(keyboardRect);
-}
-
-void UITextFieldImpl_Custom::CloseKeyboard()
-{
-    UIControlSystem::Instance()->GetUISystemKeyboard()->SendWillHideNotification();
-    UIControlSystem::Instance()->GetUISystemKeyboard()->SendDidHideNotification();
-}
-
 WideString UITextFieldImpl_Custom::GetVisibleText() const
 {
     if (!isPassword)

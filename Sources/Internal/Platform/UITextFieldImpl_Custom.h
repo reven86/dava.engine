@@ -42,9 +42,6 @@ public:
     UITextFieldImpl_Custom(UITextField* textfield);
     virtual ~UITextFieldImpl_Custom();
 
-    virtual void OpenKeyboard();
-    virtual void CloseKeyboard();
-
     virtual const WideString &GetText() const;
     virtual void SetText(const WideString & string);
     virtual void UpdateRect(const Rect & rect, float32 timeElapsed);

@@ -42,7 +42,6 @@ class UISystemKeyboard: public BaseObject
 {
     friend UISystemKeyboardImpl;
     friend class UIControlSystem;
-    friend class UITextFieldImpl_Custom;
     ~UISystemKeyboard();
 protected:
     UISystemKeyboard();
