@@ -279,7 +279,7 @@ void Sprite::InitFromFile(File *file)
 //		originalVertices[i] = new float32[4];
 		texCoords[i] = new GLfloat[8];
 		rectsAndOffsets[i] = new GLfloat[6];
-    	char frameName[128] = {0};;
+    	char frameName[128] = {0};
     	
 		int32 x, y, dx,dy, xOff, yOff;
 
