@@ -271,7 +271,6 @@
 		176DE9A5174B5561007A983B /* RenderGrayscaleEffect.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8816BD24E400732C04 /* RenderGrayscaleEffect.h */; };
 		176DE9A6174B5561007A983B /* RenderHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8A16BD24E400732C04 /* RenderHelper.h */; };
 		176DE9A7174B5561007A983B /* RenderManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C8C16BD24E400732C04 /* RenderManager.h */; };
-		176DE9A8174B5561007A983B /* RenderManagerGL20.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9116BD24E400732C04 /* RenderManagerGL20.h */; };
 		176DE9A9174B5561007A983B /* RenderOptions.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9316BD24E500732C04 /* RenderOptions.h */; };
 		176DE9AA174B5561007A983B /* RenderResource.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9516BD24E500732C04 /* RenderResource.h */; };
 		176DE9AB174B5561007A983B /* RGBColor.h in Headers */ = {isa = PBXBuildFile; fileRef = E8989C9816BD24E500732C04 /* RGBColor.h */; };
@@ -537,7 +536,6 @@
 		176DEAC5174B5561007A983B /* RenderManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8B16BD24E400732C04 /* RenderManager.cpp */; };
 		176DEAC6174B5561007A983B /* RenderManagerFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */; };
 		176DEAC7174B5561007A983B /* RenderManagerGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */; };
-		176DEAC8174B5561007A983B /* RenderManagerGL20.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */; };
 		176DEAC9174B5561007A983B /* RenderOptions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9216BD24E400732C04 /* RenderOptions.cpp */; };
 		176DEACA174B5561007A983B /* RenderResource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9416BD24E500732C04 /* RenderResource.cpp */; };
 		176DEACB174B5561007A983B /* Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8989C9916BD24E500732C04 /* Shader.cpp */; };
@@ -837,36 +835,6 @@
 		6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963C18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
 		6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */ = {isa = PBXBuildFile; fileRef = 6435963718C1FA3200862C31 /* AbstractQuadTree.h */; };
-		647EFC41195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
-		647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
-		647EFC43195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */; };
-		647EFC44195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
-		647EFC45195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
-		647EFC46195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */; };
-		647EFC49195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
-		647EFC4A195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
-		647EFC4B195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */; };
-		647EFC4C195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
-		647EFC4D195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
-		647EFC4E195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */; };
-		647EFC51195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
-		647EFC52195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
-		647EFC53195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */; };
-		647EFC54195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
-		647EFC55195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
-		647EFC56195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */; };
-		647EFC59195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
-		647EFC5A195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
-		647EFC5B195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */; };
-		647EFC5C195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
-		647EFC5D195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
-		647EFC5E195EEF2A0073B3CB /* NMaterialHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = 647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */; };
-		64806B6D18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
-		64806B6E18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
-		64806B6F18BB6CD10015FC03 /* VegetationRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */; };
-		64806B7018BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
-		64806B7118BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
-		64806B7218BB6CD10015FC03 /* VegetationRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = 64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */; };
 		644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
 		644C86BF19476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
 		644C86C019476A7100964F91 /* RenderBatchPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 644C86A819476A7100964F91 /* RenderBatchPool.cpp */; };
@@ -1044,6 +1012,90 @@
 		9A0114DFC94738EDBF7B7A79 /* GamepadManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 9A01174F88AF59687E8EA7B1 /* GamepadManager.h */; };
 		9A01188C3CE745EA32A7DD33 /* GamepadDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A011951C57E3EEDBCB3EF43 /* GamepadDevice.cpp */; };
 		9A0119EF8F7D1F04F61B31DF /* GamepadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A0114540185567784808C54 /* GamepadManager.cpp */; };
+		A62CE409199A41EE00BF5375 /* FramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE405199A41EE00BF5375 /* FramebufferAttachment.cpp */; };
+		A62CE40A199A41EE00BF5375 /* FramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE405199A41EE00BF5375 /* FramebufferAttachment.cpp */; };
+		A62CE40B199A41EE00BF5375 /* FramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE405199A41EE00BF5375 /* FramebufferAttachment.cpp */; };
+		A62CE40C199A41EE00BF5375 /* FramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE406199A41EE00BF5375 /* FramebufferAttachment.h */; };
+		A62CE40D199A41EE00BF5375 /* FramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE406199A41EE00BF5375 /* FramebufferAttachment.h */; };
+		A62CE40E199A41EE00BF5375 /* FramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE406199A41EE00BF5375 /* FramebufferAttachment.h */; };
+		A62CE40F199A41EE00BF5375 /* RenderTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE407199A41EE00BF5375 /* RenderTarget.cpp */; };
+		A62CE410199A41EE00BF5375 /* RenderTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE407199A41EE00BF5375 /* RenderTarget.cpp */; };
+		A62CE411199A41EE00BF5375 /* RenderTarget.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE407199A41EE00BF5375 /* RenderTarget.cpp */; };
+		A62CE412199A41EE00BF5375 /* RenderTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE408199A41EE00BF5375 /* RenderTarget.h */; };
+		A62CE413199A41EE00BF5375 /* RenderTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE408199A41EE00BF5375 /* RenderTarget.h */; };
+		A62CE414199A41EE00BF5375 /* RenderTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE408199A41EE00BF5375 /* RenderTarget.h */; };
+		A62CE417199A432400BF5375 /* ColorFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE415199A432300BF5375 /* ColorFramebufferAttachment.cpp */; };
+		A62CE418199A432400BF5375 /* ColorFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE415199A432300BF5375 /* ColorFramebufferAttachment.cpp */; };
+		A62CE419199A432400BF5375 /* ColorFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE415199A432300BF5375 /* ColorFramebufferAttachment.cpp */; };
+		A62CE41A199A432400BF5375 /* ColorFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE416199A432300BF5375 /* ColorFramebufferAttachment.h */; };
+		A62CE41B199A432400BF5375 /* ColorFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE416199A432300BF5375 /* ColorFramebufferAttachment.h */; };
+		A62CE41C199A432400BF5375 /* ColorFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE416199A432300BF5375 /* ColorFramebufferAttachment.h */; };
+		A62CE41F199A433D00BF5375 /* StencilFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE41D199A433D00BF5375 /* StencilFramebufferAttachment.cpp */; };
+		A62CE420199A433D00BF5375 /* StencilFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE41D199A433D00BF5375 /* StencilFramebufferAttachment.cpp */; };
+		A62CE421199A433D00BF5375 /* StencilFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE41D199A433D00BF5375 /* StencilFramebufferAttachment.cpp */; };
+		A62CE422199A433D00BF5375 /* StencilFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE41E199A433D00BF5375 /* StencilFramebufferAttachment.h */; };
+		A62CE423199A433D00BF5375 /* StencilFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE41E199A433D00BF5375 /* StencilFramebufferAttachment.h */; };
+		A62CE424199A433D00BF5375 /* StencilFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE41E199A433D00BF5375 /* StencilFramebufferAttachment.h */; };
+		A62CE427199A435200BF5375 /* DepthFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE425199A435200BF5375 /* DepthFramebufferAttachment.cpp */; };
+		A62CE428199A435200BF5375 /* DepthFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE425199A435200BF5375 /* DepthFramebufferAttachment.cpp */; };
+		A62CE429199A435200BF5375 /* DepthFramebufferAttachment.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE425199A435200BF5375 /* DepthFramebufferAttachment.cpp */; };
+		A62CE42A199A435200BF5375 /* DepthFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE426199A435200BF5375 /* DepthFramebufferAttachment.h */; };
+		A62CE42B199A435200BF5375 /* DepthFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE426199A435200BF5375 /* DepthFramebufferAttachment.h */; };
+		A62CE42C199A435200BF5375 /* DepthFramebufferAttachment.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE426199A435200BF5375 /* DepthFramebufferAttachment.h */; };
+		A62CE42F199A446200BF5375 /* RenderTargetFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE42D199A446100BF5375 /* RenderTargetFactory.cpp */; };
+		A62CE430199A446200BF5375 /* RenderTargetFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE42D199A446100BF5375 /* RenderTargetFactory.cpp */; };
+		A62CE431199A446200BF5375 /* RenderTargetFactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE42D199A446100BF5375 /* RenderTargetFactory.cpp */; };
+		A62CE432199A446200BF5375 /* RenderTargetFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE42E199A446100BF5375 /* RenderTargetFactory.h */; };
+		A62CE433199A446200BF5375 /* RenderTargetFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE42E199A446100BF5375 /* RenderTargetFactory.h */; };
+		A62CE434199A446200BF5375 /* RenderTargetFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE42E199A446100BF5375 /* RenderTargetFactory.h */; };
+		A62CE437199A44EA00BF5375 /* RenderTargetDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE435199A44EA00BF5375 /* RenderTargetDescriptor.cpp */; };
+		A62CE438199A44EA00BF5375 /* RenderTargetDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE435199A44EA00BF5375 /* RenderTargetDescriptor.cpp */; };
+		A62CE439199A44EA00BF5375 /* RenderTargetDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE435199A44EA00BF5375 /* RenderTargetDescriptor.cpp */; };
+		A62CE43A199A44EA00BF5375 /* RenderTargetDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE436199A44EA00BF5375 /* RenderTargetDescriptor.h */; };
+		A62CE43B199A44EA00BF5375 /* RenderTargetDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE436199A44EA00BF5375 /* RenderTargetDescriptor.h */; };
+		A62CE43C199A44EA00BF5375 /* RenderTargetDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE436199A44EA00BF5375 /* RenderTargetDescriptor.h */; };
+		A62CE43F199A44FC00BF5375 /* FramebufferDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE43D199A44FC00BF5375 /* FramebufferDescriptor.cpp */; };
+		A62CE440199A44FC00BF5375 /* FramebufferDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE43D199A44FC00BF5375 /* FramebufferDescriptor.cpp */; };
+		A62CE441199A44FC00BF5375 /* FramebufferDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE43D199A44FC00BF5375 /* FramebufferDescriptor.cpp */; };
+		A62CE442199A44FC00BF5375 /* FramebufferDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE43E199A44FC00BF5375 /* FramebufferDescriptor.h */; };
+		A62CE443199A44FC00BF5375 /* FramebufferDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE43E199A44FC00BF5375 /* FramebufferDescriptor.h */; };
+		A62CE444199A44FC00BF5375 /* FramebufferDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE43E199A44FC00BF5375 /* FramebufferDescriptor.h */; };
+		A62CE447199A46E300BF5375 /* RenderTextureDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE445199A46E300BF5375 /* RenderTextureDescriptor.cpp */; };
+		A62CE448199A46E300BF5375 /* RenderTextureDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE445199A46E300BF5375 /* RenderTextureDescriptor.cpp */; };
+		A62CE449199A46E300BF5375 /* RenderTextureDescriptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE445199A46E300BF5375 /* RenderTextureDescriptor.cpp */; };
+		A62CE44A199A46E300BF5375 /* RenderTextureDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE446199A46E300BF5375 /* RenderTextureDescriptor.h */; };
+		A62CE44B199A46E300BF5375 /* RenderTextureDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE446199A46E300BF5375 /* RenderTextureDescriptor.h */; };
+		A62CE44C199A46E300BF5375 /* RenderTextureDescriptor.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE446199A46E300BF5375 /* RenderTextureDescriptor.h */; };
+		A62CE450199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE44E199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp */; };
+		A62CE451199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE44E199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp */; };
+		A62CE452199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE44E199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp */; };
+		A62CE453199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE44F199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h */; };
+		A62CE454199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE44F199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h */; };
+		A62CE455199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE44F199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h */; };
+		A62CE458199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE456199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp */; };
+		A62CE459199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE456199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp */; };
+		A62CE45A199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE456199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp */; };
+		A62CE45B199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE457199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h */; };
+		A62CE45C199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE457199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h */; };
+		A62CE45D199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE457199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h */; };
+		A62CE460199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE45E199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp */; };
+		A62CE461199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE45E199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp */; };
+		A62CE462199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE45E199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp */; };
+		A62CE463199A622300BF5375 /* StencilFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE45F199A622300BF5375 /* StencilFramebufferAttachmentOGL.h */; };
+		A62CE464199A622300BF5375 /* StencilFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE45F199A622300BF5375 /* StencilFramebufferAttachmentOGL.h */; };
+		A62CE465199A622300BF5375 /* StencilFramebufferAttachmentOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE45F199A622300BF5375 /* StencilFramebufferAttachmentOGL.h */; };
+		A62CE468199A636600BF5375 /* RenderTargetOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE466199A636600BF5375 /* RenderTargetOGL.cpp */; };
+		A62CE469199A636600BF5375 /* RenderTargetOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE466199A636600BF5375 /* RenderTargetOGL.cpp */; };
+		A62CE46A199A636600BF5375 /* RenderTargetOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE466199A636600BF5375 /* RenderTargetOGL.cpp */; };
+		A62CE46B199A636600BF5375 /* RenderTargetOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE467199A636600BF5375 /* RenderTargetOGL.h */; };
+		A62CE46C199A636600BF5375 /* RenderTargetOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE467199A636600BF5375 /* RenderTargetOGL.h */; };
+		A62CE46D199A636600BF5375 /* RenderTargetOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE467199A636600BF5375 /* RenderTargetOGL.h */; };
+		A62CE470199A637E00BF5375 /* RenderTargetFactoryOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE46E199A637E00BF5375 /* RenderTargetFactoryOGL.cpp */; };
+		A62CE471199A637E00BF5375 /* RenderTargetFactoryOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE46E199A637E00BF5375 /* RenderTargetFactoryOGL.cpp */; };
+		A62CE472199A637E00BF5375 /* RenderTargetFactoryOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A62CE46E199A637E00BF5375 /* RenderTargetFactoryOGL.cpp */; };
+		A62CE473199A637E00BF5375 /* RenderTargetFactoryOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE46F199A637E00BF5375 /* RenderTargetFactoryOGL.h */; };
+		A62CE474199A637E00BF5375 /* RenderTargetFactoryOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE46F199A637E00BF5375 /* RenderTargetFactoryOGL.h */; };
+		A62CE475199A637E00BF5375 /* RenderTargetFactoryOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A62CE46F199A637E00BF5375 /* RenderTargetFactoryOGL.h */; };
 		A63BCD6A17EB26E300EA4811 /* Process.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A63BCD6817EB26E300EA4811 /* Process.cpp */; };
 		A63BCD6B17EB26E300EA4811 /* Process.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A63BCD6817EB26E300EA4811 /* Process.cpp */; };
 		A63BCD6C17EB26E300EA4811 /* Process.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A63BCD6817EB26E300EA4811 /* Process.cpp */; };
@@ -1062,6 +1114,12 @@
 		A670F2F11847A99E0030E075 /* TextureStateData.h in Headers */ = {isa = PBXBuildFile; fileRef = A670F2EF1847A99E0030E075 /* TextureStateData.h */; };
 		A670F2F21847A99E0030E075 /* TextureStateData.h in Headers */ = {isa = PBXBuildFile; fileRef = A670F2EF1847A99E0030E075 /* TextureStateData.h */; };
 		A670F2F31847A99E0030E075 /* TextureStateData.h in Headers */ = {isa = PBXBuildFile; fileRef = A670F2EF1847A99E0030E075 /* TextureStateData.h */; };
+		A6773CD3199E2834002D2B18 /* FramebufferAttachmentHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6773CD1199E2834002D2B18 /* FramebufferAttachmentHelper.cpp */; };
+		A6773CD4199E2834002D2B18 /* FramebufferAttachmentHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6773CD1199E2834002D2B18 /* FramebufferAttachmentHelper.cpp */; };
+		A6773CD5199E2834002D2B18 /* FramebufferAttachmentHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6773CD1199E2834002D2B18 /* FramebufferAttachmentHelper.cpp */; };
+		A6773CD6199E2834002D2B18 /* FramebufferAttachmentHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A6773CD2199E2834002D2B18 /* FramebufferAttachmentHelper.h */; };
+		A6773CD7199E2834002D2B18 /* FramebufferAttachmentHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A6773CD2199E2834002D2B18 /* FramebufferAttachmentHelper.h */; };
+		A6773CD8199E2834002D2B18 /* FramebufferAttachmentHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = A6773CD2199E2834002D2B18 /* FramebufferAttachmentHelper.h */; };
 		A679101F17B3C71B000AA2F2 /* SkyboxRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A679101D17B3C71B000AA2F2 /* SkyboxRenderObject.cpp */; };
 		A679102017B3C71B000AA2F2 /* SkyboxRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A679101D17B3C71B000AA2F2 /* SkyboxRenderObject.cpp */; };
 		A679102117B3C71B000AA2F2 /* SkyboxRenderObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A679101D17B3C71B000AA2F2 /* SkyboxRenderObject.cpp */; };
@@ -1132,7 +1190,6 @@
 		C172EC0C18C9F1E9004309CF /* TextBlockDistanceRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0218C9F1E9004309CF /* TextBlockDistanceRender.cpp */; };
 		C172EC0D18C9F1E9004309CF /* TextBlockDistanceRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC0318C9F1E9004309CF /* TextBlockDistanceRender.h */; };
 		C172EC0E18C9F1E9004309CF /* TextBlockGraphicsRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0418C9F1E9004309CF /* TextBlockGraphicsRender.cpp */; };
-		C172EC0F18C9F1E9004309CF /* TextBlockGraphicsRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC0518C9F1E9004309CF /* TextBlockGraphicsRender.h */; };
 		C172EC1018C9F1E9004309CF /* TextBlockRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0618C9F1E9004309CF /* TextBlockRender.cpp */; };
 		C172EC1118C9F1E9004309CF /* TextBlockRender.h in Headers */ = {isa = PBXBuildFile; fileRef = C172EC0718C9F1E9004309CF /* TextBlockRender.h */; };
 		C172EC1218C9F1E9004309CF /* TextBlockSoftwareRender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC0818C9F1E9004309CF /* TextBlockSoftwareRender.cpp */; };
@@ -2547,16 +2604,6 @@
 		641A61D818CDC2F4003359E7 /* FoliageSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FoliageSystem.cpp; sourceTree = "<group>"; };
 		641A61D918CDC2F4003359E7 /* FoliageSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FoliageSystem.h; sourceTree = "<group>"; };
 		6435963718C1FA3200862C31 /* AbstractQuadTree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractQuadTree.h; sourceTree = "<group>"; };
-		647EFC3F195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicTexturesInsp.cpp; sourceTree = "<group>"; };
-		647EFC40195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicTexturesInsp.h; sourceTree = "<group>"; };
-		647EFC47195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicFlagsInsp.cpp; sourceTree = "<group>"; };
-		647EFC48195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicFlagsInsp.h; sourceTree = "<group>"; };
-		647EFC4F195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialStateDynamicPropertiesInsp.cpp; sourceTree = "<group>"; };
-		647EFC50195EE8EB0073B3CB /* NMaterialStateDynamicPropertiesInsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialStateDynamicPropertiesInsp.h; sourceTree = "<group>"; };
-		647EFC57195EEF2A0073B3CB /* NMaterialHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialHelper.cpp; sourceTree = "<group>"; };
-		647EFC58195EEF2A0073B3CB /* NMaterialHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialHelper.h; sourceTree = "<group>"; };
-		64806B6B18BB6CD10015FC03 /* VegetationRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VegetationRenderObject.cpp; sourceTree = "<group>"; };
-		64806B6C18BB6CD10015FC03 /* VegetationRenderObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VegetationRenderObject.h; sourceTree = "<group>"; };
 		644C86A819476A7100964F91 /* RenderBatchPool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderBatchPool.cpp; sourceTree = "<group>"; };
 		644C86A919476A7100964F91 /* RenderBatchPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderBatchPool.h; sourceTree = "<group>"; };
 		644C86AA19476A7100964F91 /* TextureSheet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureSheet.cpp; sourceTree = "<group>"; };
@@ -2626,12 +2673,42 @@
 		9A01174F88AF59687E8EA7B1 /* GamepadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GamepadManager.h; sourceTree = "<group>"; };
 		9A01179DABA55A139AC4C1DF /* GamepadDevice.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GamepadDevice.h; sourceTree = "<group>"; };
 		9A011951C57E3EEDBCB3EF43 /* GamepadDevice.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GamepadDevice.cpp; sourceTree = "<group>"; };
+		A62CE405199A41EE00BF5375 /* FramebufferAttachment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FramebufferAttachment.cpp; sourceTree = "<group>"; };
+		A62CE406199A41EE00BF5375 /* FramebufferAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramebufferAttachment.h; sourceTree = "<group>"; };
+		A62CE407199A41EE00BF5375 /* RenderTarget.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTarget.cpp; sourceTree = "<group>"; };
+		A62CE408199A41EE00BF5375 /* RenderTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderTarget.h; sourceTree = "<group>"; };
+		A62CE415199A432300BF5375 /* ColorFramebufferAttachment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorFramebufferAttachment.cpp; sourceTree = "<group>"; };
+		A62CE416199A432300BF5375 /* ColorFramebufferAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorFramebufferAttachment.h; sourceTree = "<group>"; };
+		A62CE41D199A433D00BF5375 /* StencilFramebufferAttachment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StencilFramebufferAttachment.cpp; sourceTree = "<group>"; };
+		A62CE41E199A433D00BF5375 /* StencilFramebufferAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StencilFramebufferAttachment.h; sourceTree = "<group>"; };
+		A62CE425199A435200BF5375 /* DepthFramebufferAttachment.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DepthFramebufferAttachment.cpp; sourceTree = "<group>"; };
+		A62CE426199A435200BF5375 /* DepthFramebufferAttachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DepthFramebufferAttachment.h; sourceTree = "<group>"; };
+		A62CE42D199A446100BF5375 /* RenderTargetFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTargetFactory.cpp; sourceTree = "<group>"; };
+		A62CE42E199A446100BF5375 /* RenderTargetFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderTargetFactory.h; sourceTree = "<group>"; };
+		A62CE435199A44EA00BF5375 /* RenderTargetDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTargetDescriptor.cpp; sourceTree = "<group>"; };
+		A62CE436199A44EA00BF5375 /* RenderTargetDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderTargetDescriptor.h; sourceTree = "<group>"; };
+		A62CE43D199A44FC00BF5375 /* FramebufferDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FramebufferDescriptor.cpp; sourceTree = "<group>"; };
+		A62CE43E199A44FC00BF5375 /* FramebufferDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramebufferDescriptor.h; sourceTree = "<group>"; };
+		A62CE445199A46E300BF5375 /* RenderTextureDescriptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTextureDescriptor.cpp; sourceTree = "<group>"; };
+		A62CE446199A46E300BF5375 /* RenderTextureDescriptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderTextureDescriptor.h; sourceTree = "<group>"; };
+		A62CE44E199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ColorFramebufferAttachmentOGL.cpp; sourceTree = "<group>"; };
+		A62CE44F199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorFramebufferAttachmentOGL.h; sourceTree = "<group>"; };
+		A62CE456199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DepthFramebufferAttachmentOGL.cpp; sourceTree = "<group>"; };
+		A62CE457199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DepthFramebufferAttachmentOGL.h; sourceTree = "<group>"; };
+		A62CE45E199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = StencilFramebufferAttachmentOGL.cpp; sourceTree = "<group>"; };
+		A62CE45F199A622300BF5375 /* StencilFramebufferAttachmentOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StencilFramebufferAttachmentOGL.h; sourceTree = "<group>"; };
+		A62CE466199A636600BF5375 /* RenderTargetOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTargetOGL.cpp; sourceTree = "<group>"; };
+		A62CE467199A636600BF5375 /* RenderTargetOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderTargetOGL.h; sourceTree = "<group>"; };
+		A62CE46E199A637E00BF5375 /* RenderTargetFactoryOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderTargetFactoryOGL.cpp; sourceTree = "<group>"; };
+		A62CE46F199A637E00BF5375 /* RenderTargetFactoryOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderTargetFactoryOGL.h; sourceTree = "<group>"; };
 		A63BCD6817EB26E300EA4811 /* Process.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Process.cpp; sourceTree = "<group>"; };
 		A63BCD6917EB26E300EA4811 /* Process.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Process.h; sourceTree = "<group>"; };
 		A650F4B61864A10100D3278D /* NMaterialTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialTemplate.cpp; sourceTree = "<group>"; };
 		A650F4B71864A10100D3278D /* NMaterialTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialTemplate.h; sourceTree = "<group>"; };
 		A66533E717F98EC100B8906A /* Serializable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Serializable.h; sourceTree = "<group>"; };
 		A670F2EF1847A99E0030E075 /* TextureStateData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureStateData.h; sourceTree = "<group>"; };
+		A6773CD1199E2834002D2B18 /* FramebufferAttachmentHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FramebufferAttachmentHelper.cpp; sourceTree = "<group>"; };
+		A6773CD2199E2834002D2B18 /* FramebufferAttachmentHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FramebufferAttachmentHelper.h; sourceTree = "<group>"; };
 		A679101D17B3C71B000AA2F2 /* SkyboxRenderObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SkyboxRenderObject.cpp; sourceTree = "<group>"; };
 		A679101E17B3C71B000AA2F2 /* SkyboxRenderObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SkyboxRenderObject.h; sourceTree = "<group>"; };
 		A68290B917F5EEF9007BAFDC /* SerializationContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SerializationContext.cpp; sourceTree = "<group>"; };
@@ -3494,6 +3571,51 @@
 			name = Image;
 			sourceTree = "<group>";
 		};
+		A62CE404199A41EE00BF5375 /* RenderTarget */ = {
+			isa = PBXGroup;
+			children = (
+				A62CE44D199A61D100BF5375 /* OpenGL */,
+				A62CE405199A41EE00BF5375 /* FramebufferAttachment.cpp */,
+				A62CE406199A41EE00BF5375 /* FramebufferAttachment.h */,
+				A62CE407199A41EE00BF5375 /* RenderTarget.cpp */,
+				A62CE408199A41EE00BF5375 /* RenderTarget.h */,
+				A62CE415199A432300BF5375 /* ColorFramebufferAttachment.cpp */,
+				A62CE416199A432300BF5375 /* ColorFramebufferAttachment.h */,
+				A62CE41D199A433D00BF5375 /* StencilFramebufferAttachment.cpp */,
+				A62CE41E199A433D00BF5375 /* StencilFramebufferAttachment.h */,
+				A62CE425199A435200BF5375 /* DepthFramebufferAttachment.cpp */,
+				A62CE426199A435200BF5375 /* DepthFramebufferAttachment.h */,
+				A62CE42D199A446100BF5375 /* RenderTargetFactory.cpp */,
+				A62CE42E199A446100BF5375 /* RenderTargetFactory.h */,
+				A62CE435199A44EA00BF5375 /* RenderTargetDescriptor.cpp */,
+				A62CE436199A44EA00BF5375 /* RenderTargetDescriptor.h */,
+				A62CE43D199A44FC00BF5375 /* FramebufferDescriptor.cpp */,
+				A62CE43E199A44FC00BF5375 /* FramebufferDescriptor.h */,
+				A62CE445199A46E300BF5375 /* RenderTextureDescriptor.cpp */,
+				A62CE446199A46E300BF5375 /* RenderTextureDescriptor.h */,
+			);
+			path = RenderTarget;
+			sourceTree = "<group>";
+		};
+		A62CE44D199A61D100BF5375 /* OpenGL */ = {
+			isa = PBXGroup;
+			children = (
+				A62CE44E199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp */,
+				A62CE44F199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h */,
+				A62CE456199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp */,
+				A62CE457199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h */,
+				A62CE45E199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp */,
+				A62CE45F199A622300BF5375 /* StencilFramebufferAttachmentOGL.h */,
+				A62CE466199A636600BF5375 /* RenderTargetOGL.cpp */,
+				A62CE467199A636600BF5375 /* RenderTargetOGL.h */,
+				A62CE46E199A637E00BF5375 /* RenderTargetFactoryOGL.cpp */,
+				A62CE46F199A637E00BF5375 /* RenderTargetFactoryOGL.h */,
+				A6773CD1199E2834002D2B18 /* FramebufferAttachmentHelper.cpp */,
+				A6773CD2199E2834002D2B18 /* FramebufferAttachmentHelper.h */,
+			);
+			path = OpenGL;
+			sourceTree = "<group>";
+		};
 		A6B97D9917E20A5A00CBD64C /* SceneFile */ = {
 			isa = PBXGroup;
 			children = (
@@ -3984,6 +4106,7 @@
 		E8989C1516BD24E400732C04 /* Render */ = {
 			isa = PBXGroup;
 			children = (
+				A62CE404199A41EE00BF5375 /* RenderTarget */,
 				84CB66EB191FC8420086483D /* Image */,
 				E8ADAEB718CA1226000B251C /* PixelFormatDescriptor.cpp */,
 				E8ADAEB818CA1226000B251C /* PixelFormatDescriptor.h */,
@@ -4026,8 +4149,6 @@
 				E8989C8C16BD24E400732C04 /* RenderManager.h */,
 				E8989C8E16BD24E400732C04 /* RenderManagerFactory.cpp */,
 				E8989C8F16BD24E400732C04 /* RenderManagerGL.cpp */,
-				E8989C9016BD24E400732C04 /* RenderManagerGL20.cpp */,
-				E8989C9116BD24E400732C04 /* RenderManagerGL20.h */,
 				E8989C9216BD24E400732C04 /* RenderOptions.cpp */,
 				E8989C9316BD24E500732C04 /* RenderOptions.h */,
 				E8989C9416BD24E500732C04 /* RenderResource.cpp */,
@@ -4607,9 +4728,11 @@
 				176DE90E174B5561007A983B /* Exception.h in Headers */,
 				176DE90F174B5561007A983B /* FastName.h in Headers */,
 				176DE910174B5561007A983B /* FastNameMap.h in Headers */,
+				A62CE44C199A46E300BF5375 /* RenderTextureDescriptor.h in Headers */,
 				176DE911174B5561007A983B /* FixedSizePoolAllocator.h in Headers */,
 				176DE912174B5561007A983B /* Hash.h in Headers */,
 				176DE913174B5561007A983B /* HashMap.h in Headers */,
+				A62CE475199A637E00BF5375 /* RenderTargetFactoryOGL.h in Headers */,
 				176DE914174B5561007A983B /* Introspection.h in Headers */,
 				176DE915174B5561007A983B /* IntrospectionBase.h in Headers */,
 				176DE916174B5561007A983B /* IntrospectionCollection.h in Headers */,
@@ -4630,6 +4753,7 @@
 				176DE924174B5561007A983B /* StaticSingleton.h in Headers */,
 				176DE925174B5561007A983B /* TemplateHelpers.h in Headers */,
 				E89C58E618B2458E002C25FE /* Atomic.h in Headers */,
+				A62CE46D199A636600BF5375 /* RenderTargetOGL.h in Headers */,
 				176DE926174B5561007A983B /* CollisionObject2.h in Headers */,
 				176DE927174B5561007A983B /* CollisionPolygons.h in Headers */,
 				176DE928174B5561007A983B /* Collisions.h in Headers */,
@@ -4640,6 +4764,7 @@
 				176DE92C174B5561007A983B /* CoreMacOS_OpenGL.h in Headers */,
 				176DE92D174B5561007A983B /* DisplayMode.h in Headers */,
 				176DE92E174B5561007A983B /* MongodbClient.h in Headers */,
+				A62CE45D199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h in Headers */,
 				176DE92F174B5561007A983B /* MongodbObject.h in Headers */,
 				176DE930174B5561007A983B /* DAVAConfig.h in Headers */,
 				176DE931174B5561007A983B /* DAVAEngine.h in Headers */,
@@ -4695,6 +4820,7 @@
 				176DE95E174B5561007A983B /* Matrix4.h in Headers */,
 				176DE95F174B5561007A983B /* NeonMath.h in Headers */,
 				176DE960174B5561007A983B /* OOBBox.h in Headers */,
+				A62CE42C199A435200BF5375 /* DepthFramebufferAttachment.h in Headers */,
 				176DE961174B5561007A983B /* Plane.h in Headers */,
 				176DE962174B5561007A983B /* Polygon2.h in Headers */,
 				E8FC12FB1869726A0095D8FE /* QualitySettingsSystem.h in Headers */,
@@ -4716,6 +4842,7 @@
 				176DE970174B5561007A983B /* NetworkPacket.h in Headers */,
 				176DE971174B5561007A983B /* TCPServer.h in Headers */,
 				176DE972174B5561007A983B /* WFNetworkConnection.h in Headers */,
+				A62CE455199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h in Headers */,
 				176DE973174B5561007A983B /* Particle.h in Headers */,
 				176DE974174B5561007A983B /* ParticleEmitter.h in Headers */,
 				176DE977174B5561007A983B /* ParticleLayer.h in Headers */,
@@ -4741,6 +4868,7 @@
 				176DE98B174B5561007A983B /* EdgeAdjacency.h in Headers */,
 				176DE98C174B5561007A983B /* PolygonGroup.h in Headers */,
 				176DE98D174B5561007A983B /* StaticMesh.h in Headers */,
+				A62CE414199A41EE00BF5375 /* RenderTarget.h in Headers */,
 				176DE98E174B5561007A983B /* Cursor.h in Headers */,
 				50B06925186D4C4C00B44A39 /* RenderLayerManager.h in Headers */,
 				644C86D519476A7100964F91 /* VegetationCustomGeometrySerializationData.h in Headers */,
@@ -4758,8 +4886,10 @@
 				176DE99B174B5561007A983B /* MaterialGraph.h in Headers */,
 				176DE99C174B5561007A983B /* MaterialGraphNode.h in Headers */,
 				176DE99D174B5561007A983B /* NMaterial.h in Headers */,
+				A62CE40E199A41EE00BF5375 /* FramebufferAttachment.h in Headers */,
 				176DE99E174B5561007A983B /* NMaterialConsts.h in Headers */,
 				6435963D18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
+				A6773CD8199E2834002D2B18 /* FramebufferAttachmentHelper.h in Headers */,
 				176DE99F174B5561007A983B /* Material.h in Headers */,
 				176DE9A0174B5561007A983B /* OGLHelpers.h in Headers */,
 				CC84B02D18211A9000934482 /* JobWaiter.h in Headers */,
@@ -4816,6 +4946,7 @@
 				647EFC4E195EE2ED0073B3CB /* NMaterialStateDynamicFlagsInsp.h in Headers */,
 				176DE9CA174B5561007A983B /* ImposterManager.h in Headers */,
 				176DE9CB174B5561007A983B /* ImposterNode.h in Headers */,
+				A62CE41C199A432400BF5375 /* ColorFramebufferAttachment.h in Headers */,
 				176DE9CC174B5561007A983B /* LodNode.h in Headers */,
 				176DE9CD174B5561007A983B /* MeshInstance.h in Headers */,
 				176DE9CE174B5561007A983B /* MeshInstanceNode.h in Headers */,
@@ -4837,6 +4968,7 @@
 				176DE9DA174B5561007A983B /* SceneNodeAnimationKey.h in Headers */,
 				50ED334F1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */,
 				176DE9DB174B5561007A983B /* SceneNodeAnimationList.h in Headers */,
+				A62CE444199A44FC00BF5375 /* FramebufferDescriptor.h in Headers */,
 				176DE9DC174B5561007A983B /* ShadowVolumeNode.h in Headers */,
 				176DE9DD174B5561007A983B /* SkeletonNode.h in Headers */,
 				176DE9DE174B5561007A983B /* SpriteNode.h in Headers */,
@@ -4871,6 +5003,7 @@
 				176DE9FB174B5561007A983B /* UIHoleTransition.h in Headers */,
 				0282B87918BC72BE006F1EE4 /* FMODFileSoundEvent.h in Headers */,
 				647EFC5E195EEF2A0073B3CB /* NMaterialHelper.h in Headers */,
+				A62CE465199A622300BF5375 /* StencilFramebufferAttachmentOGL.h in Headers */,
 				176DE9FC174B5561007A983B /* UIJoypad.h in Headers */,
 				176DE9FD174B5561007A983B /* UIList.h in Headers */,
 				176DE9FE174B5561007A983B /* UIListCell.h in Headers */,
@@ -4897,6 +5030,7 @@
 				176DEA0E174B5561007A983B /* StringFormat.h in Headers */,
 				176DEA0F174B5561007A983B /* UTF8Utils.h in Headers */,
 				176DEA10174B5561007A983B /* Utils.h in Headers */,
+				A62CE424199A433D00BF5375 /* StencilFramebufferAttachment.h in Headers */,
 				176DEA11174B5561007A983B /* GlobalEventSystem.h in Headers */,
 				176DEA12174B5561007A983B /* ComponentHelpers.h in Headers */,
 				176DEA13174B5561007A983B /* ParticleForce.h in Headers */,
@@ -4951,6 +5085,7 @@
 				176DEA3B174B5561007A983B /* FMODUtils.h in Headers */,
 				176DEA3F174B5561007A983B /* SoundComponent.h in Headers */,
 				176DEA40174B5561007A983B /* SoundUpdateSystem.h in Headers */,
+				A62CE434199A446200BF5375 /* RenderTargetFactory.h in Headers */,
 				17F687E2174B63C0000783FD /* NPAPIEntryPoint.h in Headers */,
 				17E2706F174CB1660019EF87 /* NPAPIPluginMacOS.h in Headers */,
 				1795E4BF174CB87700050F64 /* NPAPIOpenGLLayerMacOS.h in Headers */,
@@ -4971,6 +5106,7 @@
 				A66533EA17F98EC100B8906A /* Serializable.h in Headers */,
 				A63BCD6F17EB26E300EA4811 /* Process.h in Headers */,
 				EA84E17117FAC0B400304C3C /* SpatialTree.h in Headers */,
+				A62CE43C199A44EA00BF5375 /* RenderTargetDescriptor.h in Headers */,
 				644C86FC19476A7100964F91 /* VegetationRenderObject.h in Headers */,
 				024DF6EE17FDE4C400138748 /* FMODSoundEvent.h in Headers */,
 				A69B7A4A1834CD640093AF7F /* RenderStateData.h in Headers */,
@@ -4995,6 +5131,7 @@
 				E8989DAE16BD24E500732C04 /* AutotestingSystem.h in Headers */,
 				E8989DAF16BD24E500732C04 /* Config.h in Headers */,
 				84CB6727191FC8850086483D /* LibPVRHelper.h in Headers */,
+				A62CE45B199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h in Headers */,
 				0214140A181984D600925E51 /* DAVAClassRegistrator.h in Headers */,
 				E8989DB116BD24E500732C04 /* MongodbUpdateObject.h in Headers */,
 				02FD8267192A3859007762C0 /* WaveSystem.h in Headers */,
@@ -5032,6 +5169,7 @@
 				E8989DD716BD24E500732C04 /* Observer.h in Headers */,
 				E8989DD916BD24E500732C04 /* Radix.h in Headers */,
 				E8989DDA16BD24E500732C04 /* RefPtr.h in Headers */,
+				A62CE41A199A432400BF5375 /* ColorFramebufferAttachment.h in Headers */,
 				E8989DDB16BD24E500732C04 /* ScopedPtr.h in Headers */,
 				E8989DDC16BD24E500732C04 /* Singleton.h in Headers */,
 				E8989DDD16BD24E500732C04 /* StaticSingleton.h in Headers */,
@@ -5046,6 +5184,7 @@
 				E8989DE816BD24E500732C04 /* Core.h in Headers */,
 				E8989DEB16BD24E500732C04 /* CoreMacOS_CarbonWindow.h in Headers */,
 				E8989DED16BD24E500732C04 /* CoreMacOS_OpenGL.h in Headers */,
+				A62CE412199A41EE00BF5375 /* RenderTarget.h in Headers */,
 				E8989DEE16BD24E500732C04 /* DisplayMode.h in Headers */,
 				E8989DF016BD24E500732C04 /* MongodbClient.h in Headers */,
 				E8989DF216BD24E500732C04 /* MongodbObject.h in Headers */,
@@ -5061,12 +5200,14 @@
 				E8989E0016BD24E500732C04 /* Stats.h in Headers */,
 				E8989E0216BD24E500732C04 /* DLCSystem.h in Headers */,
 				E8989E0616BD24E500732C04 /* DLCUnpacker.h in Headers */,
+				A62CE473199A637E00BF5375 /* RenderTargetFactoryOGL.h in Headers */,
 				E8989E0816BD24E500732C04 /* FileDownloader.h in Headers */,
 				E8989E0916BD24E500732C04 /* DoxygenDocumenation.h in Headers */,
 				84CB671C191FC8850086483D /* ImageConvert.h in Headers */,
 				E8989E0B16BD24E500732C04 /* Component.h in Headers */,
 				E8989E0D16BD24E500732C04 /* SceneSystem.h in Headers */,
 				E8989E2D16BD24E500732C04 /* Bitstream.h in Headers */,
+				A62CE44A199A46E300BF5375 /* RenderTextureDescriptor.h in Headers */,
 				E8989E2F16BD24E500732C04 /* DynamicMemoryFile.h in Headers */,
 				E8989E3116BD24E500732C04 /* File.h in Headers */,
 				E8989E3316BD24E500732C04 /* FileList.h in Headers */,
@@ -5099,6 +5240,7 @@
 				E8989E6816BD24E500732C04 /* Math2DTemplateClasses.h in Headers */,
 				E8989E6916BD24E500732C04 /* MathConstants.h in Headers */,
 				E8989E6A16BD24E500732C04 /* MathDefines.h in Headers */,
+				A6773CD6199E2834002D2B18 /* FramebufferAttachmentHelper.h in Headers */,
 				E8989E6B16BD24E500732C04 /* MathHelpers.h in Headers */,
 				E8989E6C16BD24E500732C04 /* Matrix2.h in Headers */,
 				E8989E6D16BD24E500732C04 /* Matrix3.h in Headers */,
@@ -5146,6 +5288,7 @@
 				E8989EDC16BD24E500732C04 /* FontManager.h in Headers */,
 				E8989EDE16BD24E500732C04 /* FTFont.h in Headers */,
 				644C86E819476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
+				A62CE43A199A44EA00BF5375 /* RenderTargetDescriptor.h in Headers */,
 				E8989EE016BD24E500732C04 /* GraphicsFont.h in Headers */,
 				E8989EE116BD24E500732C04 /* GridSprite.h in Headers */,
 				E8989EE316BD24E500732C04 /* Sprite.h in Headers */,
@@ -5213,6 +5356,7 @@
 				644C86CD19476A7100964F91 /* VegetationCustomGeometry.h in Headers */,
 				E8989F9316BD24E500732C04 /* RenderComponent.h in Headers */,
 				E8989F9516BD24E500732C04 /* SwitchComponent.h in Headers */,
+				A62CE422199A433D00BF5375 /* StencilFramebufferAttachment.h in Headers */,
 				E8989F9716BD24E500732C04 /* TransformComponent.h in Headers */,
 				E8989F9916BD24E500732C04 /* UpdatableComponent.h in Headers */,
 				E8989F9B16BD24E500732C04 /* DataNode.h in Headers */,
@@ -5236,9 +5380,11 @@
 				E8989FBC16BD24E500732C04 /* SceneAnimationMixer.h in Headers */,
 				E8989FBE16BD24E500732C04 /* SceneFile.h in Headers */,
 				E8989FC016BD24E500732C04 /* SceneFileV2.h in Headers */,
+				A62CE442199A44FC00BF5375 /* FramebufferDescriptor.h in Headers */,
 				CC931B24188EC95F000375F9 /* LodToLod2Converter.h in Headers */,
 				E8989FC216BD24E500732C04 /* SceneManager.h in Headers */,
 				E8989FC616BD24E500732C04 /* SceneNodeAnimation.h in Headers */,
+				A62CE463199A622300BF5375 /* StencilFramebufferAttachmentOGL.h in Headers */,
 				84CB6721191FC8850086483D /* LibDdsHelper.h in Headers */,
 				E8989FC816BD24E500732C04 /* SceneNodeAnimationKey.h in Headers */,
 				E8989FCA16BD24E500732C04 /* SceneNodeAnimationList.h in Headers */,
@@ -5259,6 +5405,8 @@
 				E8989FE516BD24E500732C04 /* RenderUpdateSystem.h in Headers */,
 				E8989FE716BD24E500732C04 /* SwitchSystem.h in Headers */,
 				E8989FE916BD24E500732C04 /* TransformSystem.h in Headers */,
+				A62CE46B199A636600BF5375 /* RenderTargetOGL.h in Headers */,
+				A62CE40C199A41EE00BF5375 /* FramebufferAttachment.h in Headers */,
 				E8989FED16BD24E500732C04 /* UserNode.h in Headers */,
 				E898A00016BD24E500732C04 /* SoundSystem.h in Headers */,
 				E898A00416BD24E500732C04 /* ScrollHelper.h in Headers */,
@@ -5309,6 +5457,7 @@
 				17B3EA9518E9A64C0069AE7A /* CorePlatformMacOS.h in Headers */,
 				840ED3E116D5089E00D2BA6C /* DPIHelper.h in Headers */,
 				171F938616CE6F28007038AB /* UIWebView.h in Headers */,
+				A62CE42A199A435200BF5375 /* DepthFramebufferAttachment.h in Headers */,
 				17F53E2216D36DDE004D5099 /* IWebViewControl.h in Headers */,
 				50A3043E18575C370082CA8D /* StaticOcclusion.h in Headers */,
 				C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */,
@@ -5346,6 +5495,7 @@
 				CCC7A46916F1D6170061EA5D /* ShadowRect.h in Headers */,
 				CCC7A46D16F1D6170061EA5D /* ShadowVolume.h in Headers */,
 				CCC7A47116F1D6170061EA5D /* ShadowVolumeRenderPass.h in Headers */,
+				A62CE432199A446200BF5375 /* RenderTargetFactory.h in Headers */,
 				CCC7A47516F1D6170061EA5D /* SpriteObject.h in Headers */,
 				CCC7A47916F1D6170061EA5D /* SpriteRenderBatch.h in Headers */,
 				CCC7A47F16F1D64D0061EA5D /* RenderState.h in Headers */,
@@ -5360,6 +5510,7 @@
 				644C86F419476A7100964F91 /* VegetationRenderData.h in Headers */,
 				748A99751726C5EE00C6411B /* UIScrollView.h in Headers */,
 				74D1EABA172E950700EDE0B7 /* UIScrollViewContainer.h in Headers */,
+				A62CE453199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h in Headers */,
 				6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
 				02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */,
 				02A2FC3518D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */,
@@ -5417,6 +5568,7 @@
 				E898A05C16BD265400732C04 /* NamedAnimationsList.h in Headers */,
 				E898A05F16BD265400732C04 /* AutotestingSystem.h in Headers */,
 				E898A06016BD265400732C04 /* Config.h in Headers */,
+				A62CE44B199A46E300BF5375 /* RenderTextureDescriptor.h in Headers */,
 				E898A06116BD265400732C04 /* MongodbUpdateObject.h in Headers */,
 				E898A06316BD265400732C04 /* BaseMath.h in Headers */,
 				E898A06416BD265400732C04 /* BaseObject.h in Headers */,
@@ -5426,8 +5578,10 @@
 				E898A06816BD265400732C04 /* DynamicObjectCache.h in Headers */,
 				E898A06916BD265400732C04 /* EventDispatcher.h in Headers */,
 				02FD7EED19237DA2007762C0 /* WindComponent.h in Headers */,
+				A62CE41B199A432400BF5375 /* ColorFramebufferAttachment.h in Headers */,
 				E898A06A16BD265400732C04 /* Exception.h in Headers */,
 				E898A06B16BD265400732C04 /* FastName.h in Headers */,
+				A62CE43B199A44EA00BF5375 /* RenderTargetDescriptor.h in Headers */,
 				E898A06C16BD265400732C04 /* FastNameMap.h in Headers */,
 				E898A06D16BD265400732C04 /* FixedSizePoolAllocator.h in Headers */,
 				E898A06E16BD265400732C04 /* Hash.h in Headers */,
@@ -5463,6 +5617,7 @@
 				E898A08716BD265400732C04 /* CoreMacOS_CarbonWindow.h in Headers */,
 				E898A08816BD265400732C04 /* CoreMacOS_OpenGL.h in Headers */,
 				A6DBFA731887D804006BE11C /* NMaterialNames.h in Headers */,
+				A62CE433199A446200BF5375 /* RenderTargetFactory.h in Headers */,
 				644C86FB19476A7100964F91 /* VegetationRenderObject.h in Headers */,
 				E898A08916BD265400732C04 /* DisplayMode.h in Headers */,
 				E898A08A16BD265400732C04 /* MongodbClient.h in Headers */,
@@ -5544,9 +5699,11 @@
 				E898A0C816BD265400732C04 /* BaseNetworkConnection.h in Headers */,
 				02FD7EDD19237D96007762C0 /* WindSystem.h in Headers */,
 				E898A0C916BD265400732C04 /* BTNetworkConnection.h in Headers */,
+				A62CE42B199A435200BF5375 /* DepthFramebufferAttachment.h in Headers */,
 				E898A0CA16BD265400732C04 /* NetworkConnection.h in Headers */,
 				E898A0CB16BD265400732C04 /* NetworkConnectionIPhone.h in Headers */,
 				E898A0CC16BD265400732C04 /* NetworkDelegate.h in Headers */,
+				A62CE443199A44FC00BF5375 /* FramebufferDescriptor.h in Headers */,
 				E898A0CD16BD265400732C04 /* NetworkPacket.h in Headers */,
 				E898A0CE16BD265400732C04 /* TCPServer.h in Headers */,
 				E898A0CF16BD265400732C04 /* WFNetworkConnection.h in Headers */,
@@ -5568,6 +5725,7 @@
 				CC931B29188EC95F000375F9 /* SwitchToRenerObjectConverter.h in Headers */,
 				E898A0E516BD265400732C04 /* Font.h in Headers */,
 				E898A0E616BD265400732C04 /* FontManager.h in Headers */,
+				A62CE45C199A620C00BF5375 /* DepthFramebufferAttachmentOGL.h in Headers */,
 				E8C486F1196BC9AC0082E634 /* LockGuard.h in Headers */,
 				E898A0E716BD265400732C04 /* FTFont.h in Headers */,
 				E898A0E816BD265400732C04 /* GraphicsFont.h in Headers */,
@@ -5585,7 +5743,9 @@
 				E898A0F216BD265400732C04 /* MultiTextureEffect.h in Headers */,
 				E898A0F316BD265400732C04 /* TextureMulColorAlphaTestEffect.h in Headers */,
 				E898A0F416BD265400732C04 /* TextureMulColorEffect.h in Headers */,
+				A6773CD7199E2834002D2B18 /* FramebufferAttachmentHelper.h in Headers */,
 				E898A10C16BD265400732C04 /* IndexBuffer.h in Headers */,
+				A62CE454199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h in Headers */,
 				644C86D419476A7100964F91 /* VegetationCustomGeometrySerializationData.h in Headers */,
 				E89C58E518B2458E002C25FE /* Atomic.h in Headers */,
 				E898A11016BD265400732C04 /* MaterialCompiler.h in Headers */,
@@ -5593,6 +5753,7 @@
 				E898A11216BD265400732C04 /* MaterialGraphNode.h in Headers */,
 				02FD8268192A3859007762C0 /* WaveSystem.h in Headers */,
 				50ED334E1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */,
+				A62CE464199A622300BF5375 /* StencilFramebufferAttachmentOGL.h in Headers */,
 				E898A11316BD265400732C04 /* NMaterial.h in Headers */,
 				E898A11416BD265400732C04 /* NMaterialConsts.h in Headers */,
 				E898A11516BD265400732C04 /* Material.h in Headers */,
@@ -5697,9 +5858,11 @@
 				E898A17E16BD265400732C04 /* UIEvent.h in Headers */,
 				E898A17F16BD265400732C04 /* UIFadeTransition.h in Headers */,
 				E898A18016BD265400732C04 /* UIFileSystemDialog.h in Headers */,
+				A62CE423199A433D00BF5375 /* StencilFramebufferAttachment.h in Headers */,
 				E898A18116BD265400732C04 /* UIHierarchy.h in Headers */,
 				E898A18216BD265400732C04 /* UIHierarchyCell.h in Headers */,
 				E898A18316BD265400732C04 /* UIHierarchyNode.h in Headers */,
+				A62CE46C199A636600BF5375 /* RenderTargetOGL.h in Headers */,
 				E898A18416BD265400732C04 /* UIHoleTransition.h in Headers */,
 				E898A18516BD265400732C04 /* UIJoypad.h in Headers */,
 				A650F4BC1864A10100D3278D /* NMaterialTemplate.h in Headers */,
@@ -5736,6 +5899,7 @@
 				E83F10A216D6721D00C6ED39 /* DVAssertMessage.h in Headers */,
 				CC24800B16DD174E00183D40 /* UserComponent.h in Headers */,
 				E9EA496F16DF93FA00C44B6F /* UISpinner.h in Headers */,
+				A62CE474199A637E00BF5375 /* RenderTargetFactoryOGL.h in Headers */,
 				E9E798AC16F0BE7600745AF5 /* UISwitch.h in Headers */,
 				CCC7A42816F1D6170061EA5D /* Camera.h in Headers */,
 				17FB4BB71923B9A400F3E3BC /* UIWebView.h in Headers */,
@@ -5745,6 +5909,7 @@
 				CCC7A43616F1D6170061EA5D /* IRenderUpdatable.h in Headers */,
 				CCC7A43A16F1D6170061EA5D /* Landscape.h in Headers */,
 				CCC7A43E16F1D6170061EA5D /* LandscapeChunk.h in Headers */,
+				A62CE413199A41EE00BF5375 /* RenderTarget.h in Headers */,
 				17FB4BBE1923B9DB00F3E3BC /* MovieViewControlMacOS.h in Headers */,
 				644C86C819476A7100964F91 /* TextureSheet.h in Headers */,
 				17B3EA9218E9A4ED0069AE7A /* CoreMacOSPlatformQt.h in Headers */,
@@ -5765,6 +5930,7 @@
 				50B06924186D4C4C00B44A39 /* RenderLayerManager.h in Headers */,
 				CCC7A47616F1D6170061EA5D /* SpriteObject.h in Headers */,
 				CCC7A47A16F1D6170061EA5D /* SpriteRenderBatch.h in Headers */,
+				A62CE40D199A41EE00BF5375 /* FramebufferAttachment.h in Headers */,
 				02FD7EE719237DA2007762C0 /* SpeedTreeComponent.h in Headers */,
 				CCC7A48016F1D64D0061EA5D /* RenderState.h in Headers */,
 				CCC7A48616F1D6700061EA5D /* UpdateSystem.h in Headers */,
@@ -5946,6 +6112,7 @@
 				176DEA5A174B5561007A983B /* CollisionObject2.cpp in Sources */,
 				176DEA5B174B5561007A983B /* CollisionPolygons.cpp in Sources */,
 				E8B47D2B196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
+				A62CE452199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp in Sources */,
 				176DEA5C174B5561007A983B /* Collisions.cpp in Sources */,
 				02FD7EDB19237D96007762C0 /* WindSystem.cpp in Sources */,
 				176DEA5D174B5561007A983B /* ApplicationCore.cpp in Sources */,
@@ -5956,6 +6123,7 @@
 				176DEA60174B5561007A983B /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				176DEA61174B5561007A983B /* CoreMacOS_OpenGL.cpp in Sources */,
 				176DEA62174B5561007A983B /* MongodbClient.cpp in Sources */,
+				A62CE441199A44FC00BF5375 /* FramebufferDescriptor.cpp in Sources */,
 				176DEA63174B5561007A983B /* MongodbObject.cpp in Sources */,
 				176DEA64174B5561007A983B /* DAVAEngine.cpp in Sources */,
 				176DEA65174B5561007A983B /* Backtrace.cpp in Sources */,
@@ -5963,11 +6131,13 @@
 				176DEA67174B5561007A983B /* Replay.cpp in Sources */,
 				176DEA68174B5561007A983B /* Stats.cpp in Sources */,
 				176DEA69174B5561007A983B /* DLCSystem.cpp in Sources */,
+				A6773CD5199E2834002D2B18 /* FramebufferAttachmentHelper.cpp in Sources */,
 				176DEA6A174B5561007A983B /* DLCUnpacker.cpp in Sources */,
 				176DEA6B174B5561007A983B /* FileDownloader.cpp in Sources */,
 				176DEA6C174B5561007A983B /* Component.cpp in Sources */,
 				176DEA6D174B5561007A983B /* SceneSystem.cpp in Sources */,
 				644C86C019476A7100964F91 /* RenderBatchPool.cpp in Sources */,
+				A62CE411199A41EE00BF5375 /* RenderTarget.cpp in Sources */,
 				176DEA6E174B5561007A983B /* Bitstream.cpp in Sources */,
 				CC84B01E18211A9000934482 /* JobManager.cpp in Sources */,
 				176DEA6F174B5561007A983B /* DynamicMemoryFile.cpp in Sources */,
@@ -6031,6 +6201,7 @@
 				176DEAA6174B5561007A983B /* ThreadMacOS.mm in Sources */,
 				176DEAA7174B5561007A983B /* Font.cpp in Sources */,
 				176DEAA8174B5561007A983B /* FontManager.cpp in Sources */,
+				A62CE472199A637E00BF5375 /* RenderTargetFactoryOGL.cpp in Sources */,
 				176DEAA9174B5561007A983B /* FTFont.cpp in Sources */,
 				176DEAAA174B5561007A983B /* GraphicsFont.cpp in Sources */,
 				176DEAAB174B5561007A983B /* Sprite.cpp in Sources */,
@@ -6047,6 +6218,7 @@
 				50A3044618575C370082CA8D /* StaticOcclusionRenderPass.cpp in Sources */,
 				176DEAB4174B5561007A983B /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				176DEAB5174B5561007A983B /* TextureMulColorEffect.cpp in Sources */,
+				A62CE46A199A636600BF5375 /* RenderTargetOGL.cpp in Sources */,
 				176DEABB174B5561007A983B /* MaterialCompiler.cpp in Sources */,
 				7A169348180EE619005F1FBC /* VectorSwig.cpp in Sources */,
 				176DEABC174B5561007A983B /* MaterialGraph.cpp in Sources */,
@@ -6115,7 +6287,9 @@
 				647EFC5B195EEF2A0073B3CB /* NMaterialHelper.cpp in Sources */,
 				176DEAEE174B5561007A983B /* PathManip.cpp in Sources */,
 				641A61DC18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
+				A62CE431199A446200BF5375 /* RenderTargetFactory.cpp in Sources */,
 				176DEAEF174B5561007A983B /* PolygonGroupInstance.cpp in Sources */,
+				A62CE462199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp in Sources */,
 				7A169345180EE619005F1FBC /* AutotestingSystemSwig.cpp in Sources */,
 				176DEAF0174B5561007A983B /* ProxyNode.cpp in Sources */,
 				7A16934F180EE75A005F1FBC /* AutotestingDB.cpp in Sources */,
@@ -6150,7 +6324,6 @@
 				02FD7EEB19237DA2007762C0 /* WindComponent.cpp in Sources */,
 				176DEB07174B5561007A983B /* UserNode.cpp in Sources */,
 				C172EC4C18CA0ADA004309CF /* TextBlockDistanceRender.cpp in Sources */,
-				176DEB08174B5561007A983B /* Sound.cpp in Sources */,
 				02141409181984D600925E51 /* DAVAClassRegistrator.cpp in Sources */,
 				176DEB0B174B5561007A983B /* ScrollHelper.cpp in Sources */,
 				7A169343180EE619005F1FBC /* AutotestingSystemLua.cpp in Sources */,
@@ -6182,6 +6355,8 @@
 				176DEB21174B5561007A983B /* UIScreenTransition.cpp in Sources */,
 				176DEB22174B5561007A983B /* UIScrollBar.cpp in Sources */,
 				176DEB23174B5561007A983B /* UISlider.cpp in Sources */,
+				A62CE421199A433D00BF5375 /* StencilFramebufferAttachment.cpp in Sources */,
+				A62CE439199A44EA00BF5375 /* RenderTargetDescriptor.cpp in Sources */,
 				176DEB24174B5561007A983B /* UIStaticText.cpp in Sources */,
 				A6D8279A187716F30006A5DD /* Color.cpp in Sources */,
 				176DEB25174B5561007A983B /* UITextField.cpp in Sources */,
@@ -6196,6 +6371,7 @@
 				176DEB2D174B5561007A983B /* GlobalEventSystem.cpp in Sources */,
 				176DEB2E174B5561007A983B /* ComponentHelpers.cpp in Sources */,
 				176DEB2F174B5561007A983B /* ParticleForce.cpp in Sources */,
+				A62CE429199A435200BF5375 /* DepthFramebufferAttachment.cpp in Sources */,
 				176DEB30174B5561007A983B /* DPIHelperMacOS.mm in Sources */,
 				176DEB31174B5561007A983B /* UIWebView.cpp in Sources */,
 				176DEB32174B5561007A983B /* DVAssertMessage.cpp in Sources */,
@@ -6207,6 +6383,7 @@
 				176DEB38174B5561007A983B /* UISpinner.cpp in Sources */,
 				176DEB39174B5561007A983B /* UTF8UtilsMac.mm in Sources */,
 				176DEB3A174B5561007A983B /* UISwitch.cpp in Sources */,
+				A62CE419199A432400BF5375 /* ColorFramebufferAttachment.cpp in Sources */,
 				176DEB3B174B5561007A983B /* Camera.cpp in Sources */,
 				176DEB3C174B5561007A983B /* CullingSystem.cpp in Sources */,
 				C172EC5218CA0AEB004309CF /* DFFont.cpp in Sources */,
@@ -6224,10 +6401,12 @@
 				176DEB47174B5561007A983B /* RenderObject.cpp in Sources */,
 				176DEB48174B5561007A983B /* RenderPass.cpp in Sources */,
 				176DEB49174B5561007A983B /* RenderSystem.cpp in Sources */,
+				A62CE40B199A41EE00BF5375 /* FramebufferAttachment.cpp in Sources */,
 				76199F3F192DF73D008A47E2 /* VersionInfo.cpp in Sources */,
 				176DEB4A174B5561007A983B /* ShadowRect.cpp in Sources */,
 				176DEB4B174B5561007A983B /* ShadowVolume.cpp in Sources */,
 				176DEB4C174B5561007A983B /* ShadowVolumeRenderPass.cpp in Sources */,
+				A62CE449199A46E300BF5375 /* RenderTextureDescriptor.cpp in Sources */,
 				176DEB4D174B5561007A983B /* SpriteObject.cpp in Sources */,
 				7A169346180EE619005F1FBC /* RectSwig.cpp in Sources */,
 				176DEB4E174B5561007A983B /* SpriteRenderBatch.cpp in Sources */,
@@ -6263,6 +6442,7 @@
 				505EB4101824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */,
 				A679102117B3C71B000AA2F2 /* SkyboxRenderObject.cpp in Sources */,
 				EA56554C17CDFF4B00426EB8 /* PerformanceSettings.cpp in Sources */,
+				A62CE45A199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp in Sources */,
 				50A5186B17B256000022E8FA /* RenderBatchArray.cpp in Sources */,
 				50A5186D17B256040022E8FA /* RenderHierarchy.cpp in Sources */,
 				50A5187217B256250022E8FA /* ShaderCache.cpp in Sources */,
@@ -6282,7 +6462,9 @@
 			files = (
 				E8989D9A16BD24E500732C04 /* AnimatedObject.cpp in Sources */,
 				A6D82798187716F30006A5DD /* Color.cpp in Sources */,
+				A62CE447199A46E300BF5375 /* RenderTextureDescriptor.cpp in Sources */,
 				E8989D9C16BD24E500732C04 /* Animation.cpp in Sources */,
+				A62CE460199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp in Sources */,
 				E8989D9E16BD24E500732C04 /* AnimationManager.cpp in Sources */,
 				E8989DA016BD24E500732C04 /* BezierSplineAnimation.cpp in Sources */,
 				E8989DA216BD24E500732C04 /* Interpolation.cpp in Sources */,
@@ -6312,6 +6494,7 @@
 				E8989DE516BD24E500732C04 /* ApplicationCore.cpp in Sources */,
 				E8989DE716BD24E500732C04 /* Core.cpp in Sources */,
 				E8989DE916BD24E500732C04 /* CoreMacOS.cpp in Sources */,
+				A62CE450199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp in Sources */,
 				E8989DEA16BD24E500732C04 /* CoreMacOS_CarbonWindow.cpp in Sources */,
 				E8989DEC16BD24E500732C04 /* CoreMacOS_OpenGL.cpp in Sources */,
 				E8989DEF16BD24E500732C04 /* MongodbClient.cpp in Sources */,
@@ -6325,6 +6508,7 @@
 				C172EC0C18C9F1E9004309CF /* TextBlockDistanceRender.cpp in Sources */,
 				E8989DFD16BD24E500732C04 /* Replay.cpp in Sources */,
 				EA106063188921FC00CB99A3 /* ParticleRenderObject.cpp in Sources */,
+				A62CE43F199A44FC00BF5375 /* FramebufferDescriptor.cpp in Sources */,
 				E8989DFF16BD24E500732C04 /* Stats.cpp in Sources */,
 				E8989E0116BD24E500732C04 /* DLCSystem.cpp in Sources */,
 				E8F43E24186C3D02006796CB /* MaterialSystem.cpp in Sources */,
@@ -6345,6 +6529,7 @@
 				E8989E3B16BD24E500732C04 /* KeyedArchiver.cpp in Sources */,
 				E8989E3D16BD24E500732C04 /* KeyedUnarchiver.cpp in Sources */,
 				E8989E4116BD24E500732C04 /* LocalizationSystem.cpp in Sources */,
+				A62CE437199A44EA00BF5375 /* RenderTargetDescriptor.cpp in Sources */,
 				E8989E4316BD24E500732C04 /* Logger.cpp in Sources */,
 				E8989E4616BD24E500732C04 /* LoggerMacOS.mm in Sources */,
 				E8989E4916BD24E500732C04 /* ResourceArchive.cpp in Sources */,
@@ -6353,6 +6538,7 @@
 				E8989E4D16BD24E500732C04 /* XMLParser.cpp in Sources */,
 				E8989E4F16BD24E500732C04 /* XMLParser.mm in Sources */,
 				E8989E5016BD24E500732C04 /* YamlArchive.cpp in Sources */,
+				A62CE40F199A41EE00BF5375 /* RenderTarget.cpp in Sources */,
 				E8989E5216BD24E500732C04 /* YamlParser.cpp in Sources */,
 				E8989E5416BD24E500732C04 /* Accelerometer.cpp in Sources */,
 				E8989E5A16BD24E500732C04 /* InputSystem.cpp in Sources */,
@@ -6392,9 +6578,11 @@
 				E8989ED416BD24E500732C04 /* Thread.cpp in Sources */,
 				E8989ED716BD24E500732C04 /* ThreadMacOS.mm in Sources */,
 				EAADA0001892A458001E1AA2 /* UIParticles.cpp in Sources */,
+				A62CE458199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp in Sources */,
 				644C86DC19476A7100964F91 /* VegetationFixedGeometry.cpp in Sources */,
 				E8989ED916BD24E500732C04 /* Font.cpp in Sources */,
 				E8989EDB16BD24E500732C04 /* FontManager.cpp in Sources */,
+				A62CE470199A637E00BF5375 /* RenderTargetFactoryOGL.cpp in Sources */,
 				0286451319795E1200ABCAA0 /* VirtualToPhysicalHelper.cpp in Sources */,
 				E8989EDD16BD24E500732C04 /* FTFont.cpp in Sources */,
 				E8989EDF16BD24E500732C04 /* GraphicsFont.cpp in Sources */,
@@ -6403,6 +6591,7 @@
 				E8989EE416BD24E500732C04 /* TextBlock.cpp in Sources */,
 				E8989EE616BD24E500732C04 /* AnimatedMesh.cpp in Sources */,
 				E8989EE816BD24E500732C04 /* EdgeAdjacency.cpp in Sources */,
+				A62CE427199A435200BF5375 /* DepthFramebufferAttachment.cpp in Sources */,
 				E8989EEA16BD24E500732C04 /* PolygonGroup.cpp in Sources */,
 				E8989EEC16BD24E500732C04 /* StaticMesh.cpp in Sources */,
 				E8989EEF16BD24E500732C04 /* CursorMacOS.mm in Sources */,
@@ -6523,12 +6712,14 @@
 				E898A01316BD24E500732C04 /* UIFadeTransition.cpp in Sources */,
 				E898A01516BD24E500732C04 /* UIFileSystemDialog.cpp in Sources */,
 				50B06920186D4C4C00B44A39 /* RenderLayerManager.cpp in Sources */,
+				A62CE417199A432400BF5375 /* ColorFramebufferAttachment.cpp in Sources */,
 				E898A01716BD24E500732C04 /* UIHierarchy.cpp in Sources */,
 				641A61DA18CDC2F4003359E7 /* FoliageSystem.cpp in Sources */,
 				E8FC12F2186972560095D8FE /* QualitySettingsComponent.cpp in Sources */,
 				644C86BE19476A7100964F91 /* RenderBatchPool.cpp in Sources */,
 				E898A01916BD24E500732C04 /* UIHierarchyCell.cpp in Sources */,
 				E898A01B16BD24E500732C04 /* UIHierarchyNode.cpp in Sources */,
+				A62CE41F199A433D00BF5375 /* StencilFramebufferAttachment.cpp in Sources */,
 				E898A01D16BD24E500732C04 /* UIHoleTransition.cpp in Sources */,
 				A6DBFA6F1887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				E898A01F16BD24E500732C04 /* UIJoypad.cpp in Sources */,
@@ -6545,6 +6736,7 @@
 				505EB40E1824CEC5009BEA3C /* OcclusionQuery.cpp in Sources */,
 				E8B47D29196D4F2900D8ADF6 /* ImageFormatInterface.cpp in Sources */,
 				E898A03A16BD24E500732C04 /* UISlider.cpp in Sources */,
+				A62CE468199A636600BF5375 /* RenderTargetOGL.cpp in Sources */,
 				C172EC1018C9F1E9004309CF /* TextBlockRender.cpp in Sources */,
 				84CB671E191FC8850086483D /* ImageSystem.cpp in Sources */,
 				E898A03C16BD24E500732C04 /* UIStaticText.cpp in Sources */,
@@ -6582,6 +6774,7 @@
 				E9E798A916F0BE7600745AF5 /* UISwitch.cpp in Sources */,
 				CCC7A42516F1D6170061EA5D /* Camera.cpp in Sources */,
 				CCC7A42916F1D6170061EA5D /* CullingSystem.cpp in Sources */,
+				A62CE42F199A446200BF5375 /* RenderTargetFactory.cpp in Sources */,
 				CCC7A42D16F1D6170061EA5D /* Frustum.cpp in Sources */,
 				CCC7A43116F1D6170061EA5D /* Heightmap.cpp in Sources */,
 				CCC7A43716F1D6170061EA5D /* Landscape.cpp in Sources */,
@@ -6608,6 +6801,7 @@
 				84CB6724191FC8850086483D /* LibPngHelpers.cpp in Sources */,
 				CCC7A48916F1D6B80061EA5D /* Entity.cpp in Sources */,
 				74A909AB1701FA51003FDB31 /* CRC32.cpp in Sources */,
+				A62CE409199A41EE00BF5375 /* FramebufferAttachment.cpp in Sources */,
 				50ED334A1858B5A200A917D5 /* StaticOcclusionComponent.cpp in Sources */,
 				840D24221703311400267C58 /* DeviceInfo.cpp in Sources */,
 				E8B6B3BB1705DD59004F665E /* DeviceInfoMacOS.mm in Sources */,
@@ -6616,6 +6810,7 @@
 				748A99731726C5EE00C6411B /* UIScrollView.cpp in Sources */,
 				74D1EAB8172E950700EDE0B7 /* UIScrollViewContainer.cpp in Sources */,
 				E845D4E11732B5DF000DA8E7 /* FilePathObjective.mm in Sources */,
+				A6773CD3199E2834002D2B18 /* FramebufferAttachmentHelper.cpp in Sources */,
 				E8951B741738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */,
 				02E9E4231739616800C501BC /* SoundComponent.cpp in Sources */,
 				02E9E437173964DA00C501BC /* SoundUpdateSystem.cpp in Sources */,
@@ -6663,6 +6858,7 @@
 				E898A19E16BD265400732C04 /* BezierSplineAnimation.cpp in Sources */,
 				E898A19F16BD265400732C04 /* Interpolation.cpp in Sources */,
 				E898A1A016BD265400732C04 /* KeyframeAnimation.cpp in Sources */,
+				A62CE438199A44EA00BF5375 /* RenderTargetDescriptor.cpp in Sources */,
 				7A169340180EE618005F1FBC /* UIControlSwig.cpp in Sources */,
 				E898A1A116BD265400732C04 /* LinearAnimation.cpp in Sources */,
 				E898A1A416BD265400732C04 /* AutotestingSystem.cpp in Sources */,
@@ -6725,6 +6921,7 @@
 				E898A1D016BD265400732C04 /* KeyedUnarchiver.cpp in Sources */,
 				C172EC4918CA0AD3004309CF /* TextBlockDistanceRender.cpp in Sources */,
 				E898A1D116BD265400732C04 /* LocalizationSystem.cpp in Sources */,
+				A62CE420199A433D00BF5375 /* StencilFramebufferAttachment.cpp in Sources */,
 				E8ADAEBA18CA1226000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				7A169354180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				02FD826D192A3861007762C0 /* WaveComponent.cpp in Sources */,
@@ -6737,6 +6934,7 @@
 				E898A1D816BD265400732C04 /* XMLParser.mm in Sources */,
 				E898A1D916BD265400732C04 /* YamlArchive.cpp in Sources */,
 				E898A1DA16BD265400732C04 /* YamlParser.cpp in Sources */,
+				A62CE428199A435200BF5375 /* DepthFramebufferAttachment.cpp in Sources */,
 				E898A1DB16BD265400732C04 /* Accelerometer.cpp in Sources */,
 				E898A1DC16BD265400732C04 /* InputSystem.cpp in Sources */,
 				E898A1DD16BD265400732C04 /* KeyboardDevice.cpp in Sources */,
@@ -6774,6 +6972,7 @@
 				E898A20516BD265400732C04 /* Thread.cpp in Sources */,
 				E898A20616BD265400732C04 /* ThreadMacOS.mm in Sources */,
 				E898A20716BD265400732C04 /* Font.cpp in Sources */,
+				A62CE459199A620C00BF5375 /* DepthFramebufferAttachmentOGL.cpp in Sources */,
 				E898A20816BD265400732C04 /* FontManager.cpp in Sources */,
 				E898A20916BD265400732C04 /* FTFont.cpp in Sources */,
 				E898A20A16BD265400732C04 /* GraphicsFont.cpp in Sources */,
@@ -6805,6 +7004,8 @@
 				02FD7ED419237D96007762C0 /* SpeedTreeUpdateSystem.cpp in Sources */,
 				50ED334B1858B5A200A917D5 /* StaticOcclusionComponent.cpp in Sources */,
 				E898A23316BD265400732C04 /* RenderDataObject.cpp in Sources */,
+				A62CE448199A46E300BF5375 /* RenderTextureDescriptor.cpp in Sources */,
+				A62CE451199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.cpp in Sources */,
 				E898A23416BD265400732C04 /* RenderEffect.cpp in Sources */,
 				84E975C7191FCE0A0054CCF9 /* LibDdsHelper.cpp in Sources */,
 				644C86EC19476A7100964F91 /* VegetationPropertyNames.cpp in Sources */,
@@ -6837,6 +7038,7 @@
 				E898A24A16BD265400732C04 /* GameObjectAnimations.cpp in Sources */,
 				E898A24B16BD265400732C04 /* GameObjectManager.cpp in Sources */,
 				E898A24C16BD265400732C04 /* TextGameObject.cpp in Sources */,
+				A62CE461199A622300BF5375 /* StencilFramebufferAttachmentOGL.cpp in Sources */,
 				E898A24D16BD265400732C04 /* BillboardNode.cpp in Sources */,
 				E898A24E16BD265400732C04 /* BoneNode.cpp in Sources */,
 				E898A25116BD265400732C04 /* BulletComponent.cpp in Sources */,
@@ -6846,6 +7048,8 @@
 				7A16934E180EE75A005F1FBC /* AutotestingDB.cpp in Sources */,
 				84E975C5191FCE030054CCF9 /* ImageSystem.cpp in Sources */,
 				A6DBFA701887D804006BE11C /* NMaterialNames.cpp in Sources */,
+				A62CE430199A446200BF5375 /* RenderTargetFactory.cpp in Sources */,
+				A62CE418199A432400BF5375 /* ColorFramebufferAttachment.cpp in Sources */,
 				E898A25516BD265400732C04 /* LodComponent.cpp in Sources */,
 				E898A25616BD265400732C04 /* ParticleEffectComponent.cpp in Sources */,
 				E898A25816BD265400732C04 /* RenderComponent.cpp in Sources */,
@@ -6904,9 +7108,11 @@
 				E898A29316BD265400732C04 /* UIControlBackground.cpp in Sources */,
 				E898A29416BD265400732C04 /* UIControlSystem.cpp in Sources */,
 				E898A29516BD265400732C04 /* UIEvent.cpp in Sources */,
+				A62CE40A199A41EE00BF5375 /* FramebufferAttachment.cpp in Sources */,
 				E898A29616BD265400732C04 /* UIFadeTransition.cpp in Sources */,
 				E898A29716BD265400732C04 /* UIFileSystemDialog.cpp in Sources */,
 				644C86E319476A7100964F91 /* VegetationGeometry.cpp in Sources */,
+				A62CE469199A636600BF5375 /* RenderTargetOGL.cpp in Sources */,
 				02FD8265192A3859007762C0 /* WaveSystem.cpp in Sources */,
 				E898A29816BD265400732C04 /* UIHierarchy.cpp in Sources */,
 				E898A29916BD265400732C04 /* UIHierarchyCell.cpp in Sources */,
@@ -6977,6 +7183,8 @@
 				02FD7EE419237DA2007762C0 /* SpeedTreeComponent.cpp in Sources */,
 				CCC7A47016F1D6170061EA5D /* ShadowVolumeRenderPass.cpp in Sources */,
 				CCC7A47416F1D6170061EA5D /* SpriteObject.cpp in Sources */,
+				A6773CD4199E2834002D2B18 /* FramebufferAttachmentHelper.cpp in Sources */,
+				A62CE410199A41EE00BF5375 /* RenderTarget.cpp in Sources */,
 				647EFC42195EDD890073B3CB /* NMaterialStateDynamicTexturesInsp.cpp in Sources */,
 				CCC7A47816F1D6170061EA5D /* SpriteRenderBatch.cpp in Sources */,
 				CCC7A47E16F1D64D0061EA5D /* RenderState.cpp in Sources */,
@@ -6988,6 +7196,7 @@
 				E8B6B3B01705DB26004F665E /* DeviceInfo.cpp in Sources */,
 				E8B6B3BC1705DD59004F665E /* DeviceInfoMacOS.mm in Sources */,
 				748A99741726C5EE00C6411B /* UIScrollView.cpp in Sources */,
+				A62CE471199A637E00BF5375 /* RenderTargetFactoryOGL.cpp in Sources */,
 				74D1EAB9172E950700EDE0B7 /* UIScrollViewContainer.cpp in Sources */,
 				E845D4E21732B5DF000DA8E7 /* FilePathObjective.mm in Sources */,
 				E8951B751738FEEC00755339 /* GPUFamilyDescriptor.cpp in Sources */,
@@ -7015,6 +7224,7 @@
 				C172EC5118CA0AEA004309CF /* DFFont.cpp in Sources */,
 				A63BCD6B17EB26E300EA4811 /* Process.cpp in Sources */,
 				EA84E16D17FAC0B400304C3C /* SpatialTree.cpp in Sources */,
+				A62CE440199A44FC00BF5375 /* FramebufferDescriptor.cpp in Sources */,
 				C172EC4A18CA0AD6004309CF /* TextBlockGraphicsRender.cpp in Sources */,
 				024DF6EA17FDE4C400138748 /* FMODSoundEvent.cpp in Sources */,
 				024DF6F617FDE4C400138748 /* FMODSoundSystem.cpp in Sources */,

@@ -980,6 +980,11 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 	state = STATE_VALID;
 }
 
+GLuint Texture::MapFaceNameToGLName(Texture::CubemapFace faceName)
+{
+    return CUBE_FACE_GL_NAMES[faceName];
+}
+
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 
 

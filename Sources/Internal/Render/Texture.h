@@ -224,6 +224,10 @@ public:
 
 	inline TextureState GetState() const;
 
+#if defined(__DAVAENGINE_OPENGL__)
+    static GLuint MapFaceNameToGLName(Texture::CubemapFace faceName);
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 	virtual void Lost();
 	virtual void Invalidate();
