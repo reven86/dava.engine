@@ -104,17 +104,6 @@ Sprite::Sprite()
 	resourceToVirtualFactor = 1.0f;
 	resourceToPhysicalFactor = 1.0f;
 
-	if(spriteRenderObject == NULL)
-	{
-		spriteRenderObject = new RenderDataObject();
-		vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-		texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-	}
-	else
-	{
-		spriteRenderObject->Retain();
-	}
-
 	//pivotPoint = Vector2(0.0f, 0.0f);
 	defaultPivotPoint = Vector2(0.0f, 0.0f);
 }
@@ -688,18 +677,6 @@ Sprite::~Sprite()
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
 	Clear();
-
-	if(spriteRenderObject)
-	{
-		if(spriteRenderObject->GetRetainCount() == 1)
-		{
-			SafeRelease(spriteRenderObject);
-		}
-		else
-		{
-			spriteRenderObject->Release();
-		}
-	}
 }
 
 Texture* Sprite::GetTexture() const
@@ -1721,6 +1698,20 @@ bool Sprite::IsSpriteOnScreen(DrawState * state)
 	const Rect spriteRect(xPosition, yPosition, realWidth, realHeight);
 
 	return clipRect.RectIntersects(spriteRect);
+}
+
+void Sprite::CreateRenderObject()
+{
+	DVASSERT(spriteRenderObject == NULL && "Need be not initalized");
+	spriteRenderObject = new RenderDataObject();
+	vertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+	texCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+}
+
+void Sprite::ReleaseRenderObject()
+{
+	vertexStream = texCoordStream = NULL;
+	SafeRelease(spriteRenderObject);
 }
 
 };

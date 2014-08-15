@@ -260,6 +260,10 @@ public:
 
     void SetShader(Shader *shader);
 
+	static void CreateRenderObject();
+	static void ReleaseRenderObject();
+
+
 protected:
     void DrawStretched(const Rect &drawRect, UniqueHandle renderState);
     void DrawTiled(const UIGeometricData &geometricData, UniqueHandle renderState);

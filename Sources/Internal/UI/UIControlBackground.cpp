@@ -58,16 +58,6 @@ UIControlBackground::UIControlBackground()
 ,	tiledData(NULL)
 ,	shader(SafeRetain(RenderManager::TEXTURE_MUL_FLAT_COLOR))
 {
-	if(rdoObject == NULL)
-	{
-		rdoObject = new RenderDataObject();
-		vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
-		texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-	}
-	else
-	{
-		rdoObject->Retain();
-	}
 }
 
 UIControlBackground *UIControlBackground::Clone()
@@ -102,15 +92,6 @@ UIControlBackground::~UIControlBackground()
     SafeRelease(spr);
     SafeRelease(shader);
     ReleaseDrawData();
-
-	if(rdoObject->GetRetainCount() == 1)
-	{
-		SafeRelease(rdoObject);
-	}
-	else
-	{
-		rdoObject->Release();
-	}
 }
 
 Sprite*	UIControlBackground::GetSprite()
@@ -935,6 +916,22 @@ void UIControlBackground::SetShader(Shader *_shader)
         SafeRelease(shader);
         shader = SafeRetain(_shader);
     }
+}
+
+void UIControlBackground::CreateRenderObject()
+{
+	DVASSERT(rdoObject == NULL && "Need be not initialized");
+
+	rdoObject = new RenderDataObject();
+	vertexStream = rdoObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
+	texCoordStream = rdoObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+
+}
+
+void UIControlBackground::ReleaseRenderObject()
+{
+	vertexStream = texCoordStream = NULL;
+	SafeRelease(rdoObject);
 }
 
 

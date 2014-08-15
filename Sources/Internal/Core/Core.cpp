@@ -160,6 +160,9 @@ void Core::CreateSingletons()
 	Thread::InitMainThread();
 #endif
     
+	Sprite::CreateRenderObject();
+	UIControlBackground::CreateRenderObject();
+
     RegisterDAVAClasses();
     
     CheckDataTypeSizes();
@@ -175,6 +178,9 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+	UIControlBackground::ReleaseRenderObject();
+	Sprite::ReleaseRenderObject();
+
 	PerformanceSettings::Instance()->Release();
 	RenderHelper::Instance()->Release();
 	UIScreenManager::Instance()->Release();

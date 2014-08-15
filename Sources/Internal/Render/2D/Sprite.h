@@ -296,6 +296,9 @@ public:
 	 */
 	static void ReloadSprites();
 
+	static void CreateRenderObject();
+	static void ReleaseRenderObject();
+
 protected:
 	Sprite();
 	Sprite(int32 sprWidth, int32 sprHeight, PixelFormat format);
