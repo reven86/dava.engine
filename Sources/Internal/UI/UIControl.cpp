@@ -48,7 +48,6 @@ namespace DAVA
     {
         parent = NULL;
         controlState = STATE_NORMAL;
-        recursiveVisible = true;
         visible = true;
         visibleForUIEditor = true;
         /*
@@ -892,16 +891,16 @@ namespace DAVA
         }
     }
 
-    void UIControl::SetRecursiveVisible(bool isVisible)
+    void UIControl::SetVisible(bool isVisible)
     {
-        if (recursiveVisible == isVisible)
+        if (visible == isVisible)
             return;
 
-        recursiveVisible = isVisible;
+        visible = isVisible;
 
         if (parent && parent->IsOnScreen())
         {
-            if (recursiveVisible)
+            if (visible)
                 SystemWillBecomeVisible();
             else
                 SystemWillBecomeInvisible();
@@ -1033,7 +1032,7 @@ namespace DAVA
             control->SystemDidAppear();
         }
 
-        if (IsOnScreen() && control->GetRecursiveVisible())
+        if (IsOnScreen() && control->GetVisible())
             control->SystemWillBecomeVisible();
 
         isIteratorCorrupted = true;
@@ -1050,7 +1049,7 @@ namespace DAVA
         {
             if((*it) == control)
             {
-                if (IsOnScreen() && control->GetRecursiveVisible())
+                if (IsOnScreen() && control->GetVisible())
                     control->SystemWillBecomeInvisible();
 
                 bool inHierarchy = InViewHierarchy();
@@ -1138,7 +1137,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetRecursiveVisible())
+                if (IsOnScreen() && control->GetVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1170,7 +1169,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetRecursiveVisible())
+                if (IsOnScreen() && control->GetVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1275,7 +1274,6 @@ namespace DAVA
         name = srcControl->name;
 
         controlState = srcControl->controlState;
-        recursiveVisible = srcControl->recursiveVisible;
         visible = srcControl->visible;
         visibleForUIEditor = srcControl->visibleForUIEditor;
         inputEnabled = srcControl->inputEnabled;
@@ -1338,10 +1336,10 @@ namespace DAVA
         if(UIControlSystem::Instance()->GetScreen() == this ||
            UIControlSystem::Instance()->GetPopupContainer() == this)
         {
-            return GetRecursiveVisible();
+            return GetVisible();
         }
 
-        if( !GetRecursiveVisible() || !parent )
+        if( !GetVisible() || !parent )
             return false;
 
         return parent->IsOnScreen();
@@ -1512,7 +1510,7 @@ namespace DAVA
 
     void UIControl::SystemDraw(const UIGeometricData &geometricData)
     {
-        if( !recursiveVisible )
+        if( !visible )
             return;
 
         UIControlSystem::Instance()->drawCounter++;
@@ -1870,7 +1868,7 @@ namespace DAVA
         UIControlSystem::Instance()->inputCounter++;
         isUpdated = true;
 
-        if( !recursiveVisible )
+        if( !visible )
             return false;
 
         //if(currentInput->touchLocker != this)
@@ -2006,7 +2004,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetRecursiveVisible())
+            if ((*it)->GetVisible())
                 (*it)->SystemWillBecomeVisible();
         }
     }
@@ -2030,7 +2028,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetRecursiveVisible())
+            if ((*it)->GetVisible())
                 (*it)->SystemWillBecomeInvisible();
         }
 
@@ -2057,10 +2055,10 @@ namespace DAVA
 
         // Control name
         //node->Set("name", this->GetName());
-        // Recursive Visible
-        if (baseControl->GetRecursiveVisible() != GetRecursiveVisible())
+        // Visible
+        if (baseControl->GetVisible() != GetVisible())
         {
-            node->Set("recursiveVisible", GetRecursiveVisible());
+            node->Set("visible", GetVisible());
         }
         // Enabled
         if (baseControl->GetDisabled() != this->GetDisabled())
@@ -2309,12 +2307,19 @@ namespace DAVA
             SetClipContents(clipContents);
         }
 
+        const YamlNode * visibleNode = node->Get("visible");
         const YamlNode * recursiveVisibleNode = node->Get("recursiveVisible");
-        if(recursiveVisibleNode)
+        bool visibilityFlag = true;
+        if(visibleNode)
         {
-            bool isVisible = loader->GetBoolFromYamlNode(recursiveVisibleNode, true);
-            SetRecursiveVisible(isVisible);
+            visibilityFlag = loader->GetBoolFromYamlNode(visibleNode, true);
         }
+        if (recursiveVisibleNode)
+        {
+            visibilityFlag &= loader->GetBoolFromYamlNode(recursiveVisibleNode, true);
+        }
+
+        SetVisible(visibilityFlag);
 
         if (pivotNode)
         {
@@ -2491,16 +2496,17 @@ namespace DAVA
         return animation;
     }
 
-    void UIControl::RecursiveVisibleAnimationCallback( BaseObject * caller, void * param, void *callerData )
+    void UIControl::VisibleAnimationCallback( BaseObject * caller, void * param, void *callerData )
     {
         bool visible = ( pointer_size(param) > 0 );
-        SetRecursiveVisible(visible);
+        SetVisible(visible);
     }
 
-    Animation * UIControl::RecursiveVisibleAnimation(bool visible, int32 track/* = 0*/)
+    Animation * UIControl::VisibleAnimation(bool visible, int32 track/* = 0*/)
     {
         Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::RecursiveVisibleAnimationCallback, (void*)(pointer_size)visible));
+        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::
+                                                                      VisibleAnimationCallback, (void*)(pointer_size)visible));
         animation->Start(track);
         return animation;
     }

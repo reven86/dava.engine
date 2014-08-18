@@ -82,7 +82,7 @@ void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
 void UIWebView::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();
-    UpdateNativeControlVisible(GetRecursiveVisible());
+    UpdateNativeControlVisible(GetVisible());
 }
 
 void UIWebView::WillBecomeInvisible()
@@ -103,9 +103,9 @@ void UIWebView::SetSize(const Vector2 &newSize)
     UpdateControlRect();
 }
 
-void UIWebView::SetRecursiveVisible(bool isVisible)
+void UIWebView::SetVisible(bool isVisible)
 {
-	UIControl::SetRecursiveVisible(isVisible);
+	UIControl::SetVisible(isVisible);
     if (IsOnScreen())
         UpdateNativeControlVisible(isVisible);
 }

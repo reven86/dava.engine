@@ -331,24 +331,24 @@ void UIControlMetadata::SetAngle(float value)
     GetActiveUIControl()->SetAngle(DegToRad(value));
 }
 
-bool UIControlMetadata::GetRecursiveVisible() const
+bool UIControlMetadata::GetVisible() const
 {
     if (!VerifyActiveParamID())
     {
         return false;
     }
 
-    return GetActiveUIControl()->GetRecursiveVisible();
+    return GetActiveUIControl()->GetVisible();
 }
 
-void UIControlMetadata::SetRecursiveVisible(const bool value)
+void UIControlMetadata::SetVisible(const bool value)
 {
     if (!VerifyActiveParamID())
     {
         return;
     }
 
-    GetActiveUIControl()->SetRecursiveVisible(value);
+    GetActiveUIControl()->SetVisible(value);
 }
 
 bool UIControlMetadata::GetInput() const
@@ -1024,7 +1024,7 @@ void UIControlMetadata::SetUIControlVisible(const bool value)
         return;
     }
     
-    GetActiveUIControl()->SetRecursiveVisible(value);
+    GetActiveUIControl()->SetVisible(value);
 }
 
 };

@@ -80,7 +80,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QCheckBox" name="recursiveVisibleCheckBox">
+   <widget class="QCheckBox" name="visibleCheckBox">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -90,13 +90,13 @@
      </rect>
     </property>
     <property name="text">
-     <string>Recursive Visible</string>
+     <string>Visible</string>
     </property>
    </widget>
   </widget>
  </widget>
  <tabstops>
-  <tabstop>recursiveVisibleCheckBox</tabstop>
+  <tabstop>visibleCheckBox</tabstop>
   <tabstop>inputCheckBox</tabstop>
   <tabstop>clipContentsCheckbox</tabstop>
   <tabstop>initialStateComboBox</tabstop>

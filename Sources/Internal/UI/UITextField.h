@@ -267,7 +267,7 @@ public:
 
 	void SetTextAlign(int32 align);
 
-    virtual void SetRecursiveVisible(bool isVisible);
+    virtual void SetVisible(bool isVisible);
 
     virtual void SetSize(const DAVA::Vector2 &newSize);
 

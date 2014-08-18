@@ -576,7 +576,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \returns control visibility.
      */
-    inline bool GetRecursiveVisible() const;
+    inline bool GetVisible() const;
 
     /**
      \brief Sets contol recursive visibility.
@@ -584,7 +584,7 @@ public:
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \param[in] isVisible new control visibility.
      */
-    virtual void SetRecursiveVisible(bool isVisible);
+    virtual void SetVisible(bool isVisible);
 
     /**
      \brief Returns control input processing ability.
@@ -984,13 +984,13 @@ public:
      */
     Animation *		DisabledAnimation(bool disabled, bool hierarhic = true, int32 track = 0);
     /**
-     \brief Starts control recursive visible animation. This animation changing control visibility
+     \brief Starts control visible animation. This animation changing control visibility
         on the next frame after the animation start.
      \param[in] visible New control recursive visible value.
      \param[in] track animation track. 0 by default.
      \returns Animation object
      */
-    Animation *		RecursiveVisibleAnimation(bool visible, int32 track = 0);
+    Animation *		VisibleAnimation(bool visible, int32 track = 0);
     /**
      \brief Starts control removation animation. This animation removes control from the parent
      on the next frame  after the animation start.
@@ -1011,7 +1011,7 @@ public:
 protected:
     void TouchableAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void DisabledAnimationCallback(BaseObject * caller, void * param, void *callerData);
-    void RecursiveVisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
+    void VisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void RemoveControlAnimationCallback(BaseObject * caller, void * param, void *callerData);
 
 public:
@@ -1296,7 +1296,6 @@ protected:
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
-    bool recursiveVisible : 1;
     bool visible : 1;
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
@@ -1423,9 +1422,9 @@ Rect UIControl::GetRect() const
     return Rect(relativePosition - pivotPoint, size);
 }
 
-bool UIControl::GetRecursiveVisible() const
+bool UIControl::GetVisible() const
 {
-    return recursiveVisible;
+    return visible;
 }
 
 bool UIControl::GetInputEnabled() const

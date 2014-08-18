@@ -79,7 +79,7 @@ class UIControlMetadata : public BaseMetadata
 	Q_PROPERTY(float TopBottomStretchCap READ GetTopBottomStretchCap WRITE SetTopBottomStretchCap);
 
     // Flag Properties
-    Q_PROPERTY(bool RecursiveVisible READ GetRecursiveVisible WRITE SetRecursiveVisible);
+    Q_PROPERTY(bool Visible READ GetVisible WRITE SetVisible);
     Q_PROPERTY(bool Input READ GetInput WRITE SetInput);
     Q_PROPERTY(bool ClipContents READ GetClipContents WRITE SetClipContents);
 	
@@ -186,8 +186,8 @@ protected:
     virtual int GetSpriteModification();
 
     //Boolean gettes/setters
-    bool GetRecursiveVisible() const;
-    virtual void SetRecursiveVisible(const bool value);
+    bool GetVisible() const;
+    virtual void SetVisible(const bool value);
 
     bool GetInput() const;
     void SetInput(const bool value);
