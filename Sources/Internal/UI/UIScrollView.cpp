@@ -152,7 +152,7 @@ Vector2 UIScrollView::GetMaxSize(UIControl * parentControl, Vector2 currentMaxSi
 		
 		const Rect &childRect = childControl->GetRect();
         
-        if (childControl->GetVisible())
+        if (childControl->GetRecursiveVisible())
         {
             // Calculate control full "length" and "height"
             float32 controlSizeX = Abs(parentOffset.x) + childRect.x + childRect.dx;

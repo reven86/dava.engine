@@ -161,7 +161,7 @@ void UIScrollViewMetadata::SetContentSizeY(float value)
 void UIScrollViewMetadata::SetVisible(const bool value)
 {
     // UIAggregator must update its children hierarchically.
-    SetUIControlVisible(value, true);
+    SetUIControlVisible(value);
 }
 
 }

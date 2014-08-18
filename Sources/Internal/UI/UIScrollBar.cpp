@@ -273,11 +273,11 @@ void UIScrollBar::Draw(const UIGeometricData &geometricData)
 					slider->size.y = GetValidSliderSize(slider->size.y);
                     if (slider->size.y >= size.y) 
                     {
-                        slider->SetVisible(false, true);
+                        slider->SetRecursiveVisible(false);
                     }
                     else 
                     {
-                        slider->SetVisible(true, true);
+                        slider->SetRecursiveVisible(true);
                     }
                 }
                     //TODO: optimize
@@ -307,11 +307,11 @@ void UIScrollBar::Draw(const UIGeometricData &geometricData)
 					slider->size.x = GetValidSliderSize(slider->size.x);
                     if (slider->size.x >= size.x) 
                     {
-                        slider->SetVisible(false, true);
+                        slider->SetRecursiveVisible(false);
                     }
                     else 
                     {
-                        slider->SetVisible(true, true);
+                        slider->SetRecursiveVisible(true);
                     }
                 }
                 slider->relativePosition.x = (size.x - slider->size.x) * (viewPos / (totalSize - visibleArea));

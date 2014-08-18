@@ -957,9 +957,9 @@ void UITextField::SetCursorPos(uint32 pos)
     // TODO! implement for other OS!
 }
 
-void UITextField::SetVisible(bool isVisible, bool hierarchic)
+void UITextField::SetRecursiveVisible(bool isVisible)
 {
-    UIControl::SetVisible(isVisible, hierarchic);
+    UIControl::SetRecursiveVisible(isVisible);
 
 #ifdef __DAVAENGINE_IPHONE__
 	textFieldiPhone->SetVisible(isVisible);

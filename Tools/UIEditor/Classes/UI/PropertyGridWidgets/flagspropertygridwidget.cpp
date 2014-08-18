@@ -64,7 +64,6 @@ void FlagsPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
     PROPERTIESMAP propertiesMap = BuildMetadataPropertiesMap();
 
     // Initialize the widgets.
-    RegisterCheckBoxWidgetForProperty(propertiesMap, "Visible", ui->visibleCheckBox);
     RegisterCheckBoxWidgetForProperty(propertiesMap, "RecursiveVisible", ui->recursiveVisibleCheckBox);
     RegisterCheckBoxWidgetForProperty(propertiesMap, "Input", ui->inputCheckBox);
     RegisterCheckBoxWidgetForProperty(propertiesMap, "ClipContents", ui->clipContentsCheckbox);
@@ -79,7 +78,6 @@ void FlagsPropertyGridWidget::Cleanup()
 {
     BasePropertyGridWidget::Cleanup();
 
-    UnregisterCheckBoxWidget(ui->visibleCheckBox);
     UnregisterCheckBoxWidget(ui->inputCheckBox);
     UnregisterCheckBoxWidget(ui->clipContentsCheckbox);
 

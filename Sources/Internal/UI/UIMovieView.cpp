@@ -77,9 +77,9 @@ void UIMovieView::SetSize(const Vector2 &newSize)
 	movieViewControl->SetRect(newRect);
 }
 	
-void UIMovieView::SetVisible(bool isVisible, bool hierarchic)
+void UIMovieView::SetRecursiveVisible(bool isVisible)
 {
-	UIControl::SetVisible(isVisible, hierarchic);
+	UIControl::SetRecursiveVisible(isVisible);
 	movieViewControl->SetVisible(isVisible);
 }
 
@@ -133,7 +133,7 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 void UIMovieView::WillAppear()
 {
     UIControl::WillAppear();
-    movieViewControl->SetVisible(GetVisible());
+    movieViewControl->SetVisible(GetRecursiveVisible());
 }
 
 void UIMovieView::WillDisappear()

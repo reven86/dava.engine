@@ -572,27 +572,6 @@ public:
 
     /**
      \brief Returns control visibility.
-        Invisible controls don't process any inputs. But allows input processing for their children.
-        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
-        But this methods calls for their children.
-     \returns control visibility.
-     */
-    DAVA_DEPRECATED(virtual bool GetVisible() const);// use GetRecursiveVisible instead
-
-    /**
-     \brief Sets contol visibility.
-        Invisible controls don't process any inputs. But allows input processing for their children.
-        Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
-        But this methods calls for their children.
-        It's always better to remove part of controls hierarchy from the parent then to make them invisible.
-        Visibility is usually used for the single control.
-     \param[in] isVisible new control visibility.
-     \param[in] hierarchic use true if you want to all control children change visiblity.
-     */
-    DAVA_DEPRECATED(virtual void SetVisible(bool isVisible, bool hierarchic = true));// use SetRecursiveVisible instead;
-
-    /**
-     \brief Returns control visibility.
         Invisible controls don't process any inputs.
         Also for invisible controls didn't calls Draw() and DrawAfterChilds() methods.
      \returns control visibility.
@@ -1005,15 +984,6 @@ public:
      */
     Animation *		DisabledAnimation(bool disabled, bool hierarhic = true, int32 track = 0);
     /**
-     \brief Starts control visible animation. This animation changing control visibility
-        on the next frame after the animation start.
-     \param[in] visible New control visible value.
-     \param[in] hierarhic Is value need to be changed in all coltrol children.
-     \param[in] track animation track. 0 by default.
-     \returns Animation object
-     */
-    Animation *		VisibleAnimation(bool visible, bool hierarhic = true, int32 track = 0);
-    /**
      \brief Starts control recursive visible animation. This animation changing control visibility
         on the next frame after the animation start.
      \param[in] visible New control recursive visible value.
@@ -1041,7 +1011,6 @@ public:
 protected:
     void TouchableAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void DisabledAnimationCallback(BaseObject * caller, void * param, void *callerData);
-    void VisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void RecursiveVisibleAnimationCallback(BaseObject * caller, void * param, void *callerData);
     void RemoveControlAnimationCallback(BaseObject * caller, void * param, void *callerData);
 
