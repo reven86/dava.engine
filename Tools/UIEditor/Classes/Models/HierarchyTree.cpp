@@ -162,7 +162,7 @@ bool HierarchyTree::Load(const QString& projectPath)
     EditorFontManager::Instance()->LoadLocalizedFonts();
     
 	const YamlNode* platforms = projectRoot->Get(PLATFORMS_NODE);
-	for (int32 i = 0; i < platforms->GetCount(); i++)
+	for (uint32 i = 0; i < platforms->GetCount(); i++)
 	{
 		const String &platformName = platforms->GetItemKeyName(i);
         if (platformName.empty())
