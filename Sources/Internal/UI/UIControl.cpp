@@ -892,30 +892,6 @@ namespace DAVA
         }
     }
 
-
-    bool UIControl::GetVisible() const
-    {
-        return visible;
-    }
-
-    void UIControl::SetVisible(bool isVisible, bool hierarchic/* = true*/)
-    {
-        if (!isVisible && visible)
-        {
-            UIControlSystem::Instance()->CancelInputs(this);
-        }
-        visible = isVisible;
-
-        if(hierarchic)
-        {
-            List<UIControl*>::iterator it = childs.begin();
-            for(; it != childs.end(); ++it)
-            {
-                (*it)->SetVisible(isVisible, hierarchic);
-            }
-        }
-    }
-
     void UIControl::SetRecursiveVisible(bool isVisible)
     {
         if (recursiveVisible == isVisible)
@@ -2086,11 +2062,6 @@ namespace DAVA
         {
             node->Set("recursiveVisible", GetRecursiveVisible());
         }
-        // Visible
-        if (baseControl->GetVisible() != this->GetVisible())
-        {
-            node->Set("visible", this->GetVisible());
-        }
         // Enabled
         if (baseControl->GetDisabled() != this->GetDisabled())
         {
@@ -2345,13 +2316,6 @@ namespace DAVA
             SetRecursiveVisible(isVisible);
         }
 
-        const YamlNode * visibleNode = node->Get("visible");
-        if(visibleNode)
-        {
-            bool visible = loader->GetBoolFromYamlNode(visibleNode, false);
-            SetVisible(visible);
-        }
-
         if (pivotNode)
         {
             if (pivotNode->GetType() == YamlNode::TYPE_STRING)
@@ -2527,29 +2491,10 @@ namespace DAVA
         return animation;
     }
 
-    void UIControl::VisibleAnimationCallback(BaseObject * caller, void * param, void *callerData)
-    {
-        bool * params = (bool*)param;
-        SetVisible(params[0], params[1]);
-        delete[]params;
-    }
-
     void UIControl::RecursiveVisibleAnimationCallback( BaseObject * caller, void * param, void *callerData )
     {
         bool visible = ( pointer_size(param) > 0 );
         SetRecursiveVisible(visible);
-    }
-
-    Animation * UIControl::VisibleAnimation(bool visible, bool hierarhic/* = true*/, int32 track/* = 0*/)
-    {
-        //TODO: change to bool animation - Dizz
-        Animation * animation = new Animation(this, 0.01f, Interpolation::LINEAR);
-        bool * params = new bool[2];
-        params[0] = visible;
-        params[1] = hierarhic;
-        animation->AddEvent(Animation::EVENT_ANIMATION_START, Message(this, &UIControl::VisibleAnimationCallback, (void*)params));
-        animation->Start(track);
-        return animation;
     }
 
     Animation * UIControl::RecursiveVisibleAnimation(bool visible, int32 track/* = 0*/)
