@@ -46,7 +46,6 @@
 #include "DXTTest.h"
 #include "KeyedArchiveYamlTest.h"
 #include "CloneTest.h"
-#include "DLCSystemTests.h"
 #include "DPITest.h"
 #include "EMailTest.h"
 #include "InputTest.h"
@@ -73,6 +72,7 @@
 #include "SceneSystemTest.h"
 #include "ParseTextTest.h"
 #include "ImageSizeTest.h"
+#include "DLCDownloadTest.h"
 
 using namespace DAVA;
 
@@ -97,6 +97,8 @@ void GameCore::OnAppStarted()
 	RenderManager::Instance()->SetFPS(60);
 
     CreateDocumentsFolder();
+
+    new DLCDownloadTest();
 
 	new ImageSizeTest();
     new DeviceInfoTest();
@@ -143,7 +145,6 @@ void GameCore::OnAppStarted()
  	new MemoryAllocatorsTest();
  	new HashMapTest();
  	new KeyedArchiveYamlTest();
- 	new DLCTest();
  	new UIListTest();
  	new UIScrollViewTest();
  	new UIParticlesTest();
@@ -222,7 +223,7 @@ void GameCore::OnResume()
 void GameCore::OnDeviceLocked()
 {
 //    Logger::Debug("GameCore::OnDeviceLocked");
-    Core::Instance()->Quit();
+    //Core::Instance()->Quit();
 }
 
 void GameCore::OnBackground()

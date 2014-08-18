@@ -21,6 +21,7 @@
 		17FB4BD11924B86800F3E3BC /* AVFoundation.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17FB4BD01924B86800F3E3BC /* AVFoundation.framework */; };
 		17FB4BDC1924B9AD00F3E3BC /* CoreMedia.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 17FB4BDB1924B9AD00F3E3BC /* CoreMedia.framework */; };
 		491BC46C18A393A4001CE353 /* TexturePathValidator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 491BC46A18A393A4001CE353 /* TexturePathValidator.cpp */; };
+		4F53ED6319A2430100D3869D /* Security.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 4F53ED6219A2430100D3869D /* Security.framework */; };
 		4FA419631886E3D400395C70 /* TextureInfo_moc.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 4FA419621886E3D400395C70 /* TextureInfo_moc.cpp */; };
 		4FA4198A188EA4C500395C70 /* RunGuard.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 4FA41988188EA4C500395C70 /* RunGuard.cpp */; };
 		4FAC89C5190BF3C2005CECA5 /* SettingsDialog.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 4FAC89C3190BF3C2005CECA5 /* SettingsDialog.cpp */; };
@@ -681,6 +682,7 @@
 		4911729918C629B200D5F948 /* TextureConvertMode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextureConvertMode.h; sourceTree = "<group>"; };
 		491BC46A18A393A4001CE353 /* TexturePathValidator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = TexturePathValidator.cpp; path = QtPropertyDataValidator/TexturePathValidator.cpp; sourceTree = "<group>"; };
 		491BC46B18A393A4001CE353 /* TexturePathValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TexturePathValidator.h; path = QtPropertyDataValidator/TexturePathValidator.h; sourceTree = "<group>"; };
+		4F53ED6219A2430100D3869D /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		4FA4195A1886E3BD00395C70 /* TextureInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureInfo.h; sourceTree = "<group>"; };
 		4FA419621886E3D400395C70 /* TextureInfo_moc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureInfo_moc.cpp; sourceTree = "<group>"; };
 		4FA41988188EA4C500395C70 /* RunGuard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RunGuard.cpp; sourceTree = "<group>"; };
@@ -1752,6 +1754,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F53ED6319A2430100D3869D /* Security.framework in Frameworks & Libraries */,
 				17FB4BDC1924B9AD00F3E3BC /* CoreMedia.framework in Frameworks & Libraries */,
 				17FB4BD11924B86800F3E3BC /* AVFoundation.framework in Frameworks & Libraries */,
 				A69D4043188940CF0093F7AA /* WebKit.framework in Frameworks & Libraries */,
@@ -1800,6 +1803,7 @@
 		05596AB53D8D521C69802C27 /* ResourceEditorQt */ = {
 			isa = PBXGroup;
 			children = (
+				4F53ED6219A2430100D3869D /* Security.framework */,
 				17FB4BDB1924B9AD00F3E3BC /* CoreMedia.framework */,
 				17FB4BD91924B9A400F3E3BC /* CoreMediaIO.framework */,
 				17FB4BD01924B86800F3E3BC /* AVFoundation.framework */,

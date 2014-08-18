@@ -681,11 +681,11 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             if (stateSprite)
             {
                 //Create array yamlnode and add it to map
-                YamlNode *spriteNode = new YamlNode(YamlNode::TYPE_ARRAY);
+                YamlNode *spriteNode = YamlNode::CreateArrayNode(YamlNode::AR_FLOW_REPRESENTATION);
 
-                spriteNode->AddValueToArray(GetSpriteFrameworkPath(stateSprite));
-                spriteNode->AddValueToArray(stateBackground->GetFrame());
-                spriteNode->AddValueToArray(stateBackground->GetModification());
+                spriteNode->Add(GetSpriteFrameworkPath(stateSprite));
+                spriteNode->Add(stateBackground->GetFrame());
+                spriteNode->Add(stateBackground->GetModification());
                 node->AddNodeToMap(Format("stateSprite%s", statePostfix.c_str()), spriteNode);
             }
 

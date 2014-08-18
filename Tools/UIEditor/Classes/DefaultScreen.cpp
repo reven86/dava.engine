@@ -361,7 +361,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
 		if (!control)
 			continue;
 
-		if (!control->GetRecursiveVisible())
+		if (!control->GetVisible())
 			continue;
 
         SmartSelection* currList = list;
@@ -429,7 +429,7 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
         if (!control)
             continue;
 
-        if (!control->GetRecursiveVisible())
+        if (!control->GetVisible())
             continue;
 
         bool controlVisible = IsControlVisible(control);
@@ -1799,7 +1799,7 @@ bool DefaultScreen::IsControlContentVisible( const UIControl *control ) const
     List<UIControl*>::const_iterator end = children.end();
     for(; iter != end; ++iter)
     {
-        if (!control->GetRecursiveVisible())
+        if (!control->GetVisible())
         {
             continue;
         }

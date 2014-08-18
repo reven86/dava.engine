@@ -98,8 +98,8 @@ public:
 	 */
 	static bool Save(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode);
 	
-    YamlNode* SaveToNode(UIControl * parentControl, YamlNode * rootNode, int saveIndex = 0);
-    void SaveChildren(UIControl* parentControl, YamlNode * parentNode, int saveIndex = 0);
+    YamlNode* SaveToNode(UIControl * parentControl, YamlNode * rootNode);
+    void SaveChildren(UIControl* parentControl, YamlNode * parentNode);
 
 	bool ProcessSave(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode);
 

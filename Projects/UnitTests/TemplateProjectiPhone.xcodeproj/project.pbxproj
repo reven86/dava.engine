@@ -45,10 +45,10 @@
 		C172EC3418C9FA00004309CF /* DFFontTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC3218C9FA00004309CF /* DFFontTest.cpp */; };
 		C12DE7A218E322B2002EEBB4 /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */; };
 		C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */; };
-		C19E4FAA16C5488C00D0AC28 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C19E4FA816C5488C00D0AC28 /* DLCSystemTests.cpp */; };
 		CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC24802416DF6CE000183D40 /* InputTest.cpp */; };
 		CE1AA0781625B8D40005BE5E /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CE1AA0771625B8D40005BE5E /* KeyedArchiveTest.cpp */; };
 		CEC6DA17162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CEC6DA16162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp */; };
+		D7FEF1171982839600B2C7AF /* DLCDownloadTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF1151982839600B2C7AF /* DLCDownloadTest.cpp */; };
 		E801A588183FAB8E00D5B770 /* ComponentsTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E801A586183FAB8E00D5B770 /* ComponentsTest.cpp */; };
 		E80842BA1639147A002A6A77 /* TextureUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E80842B81639147A002A6A77 /* TextureUtils.cpp */; };
 		E81B47DA16F896070025AF23 /* FilePathTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81B47D816F896070025AF23 /* FilePathTest.cpp */; };
@@ -168,14 +168,14 @@
 		C12DE7A118E322B2002EEBB4 /* AssetsLibrary.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AssetsLibrary.framework; path = System/Library/Frameworks/AssetsLibrary.framework; sourceTree = SDKROOT; };
 		C166A6EF18E31B4700007C2D /* SaveImageTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SaveImageTest.cpp; sourceTree = "<group>"; };
 		C166A6F018E31B4700007C2D /* SaveImageTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SaveImageTest.h; sourceTree = "<group>"; };
-		C19E4FA816C5488C00D0AC28 /* DLCSystemTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLCSystemTests.cpp; sourceTree = "<group>"; };
-		C19E4FA916C5488C00D0AC28 /* DLCSystemTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLCSystemTests.h; sourceTree = "<group>"; };
 		CC24802416DF6CE000183D40 /* InputTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InputTest.cpp; sourceTree = "<group>"; };
 		CC24802516DF6CE000183D40 /* InputTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InputTest.h; sourceTree = "<group>"; };
 		CE1AA0761625B8A70005BE5E /* KeyedArchiveTest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyedArchiveTest.h; sourceTree = "<group>"; };
 		CE1AA0771625B8D40005BE5E /* KeyedArchiveTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedArchiveTest.cpp; sourceTree = "<group>"; };
 		CEC6DA15162D959B009E5F1D /* KeyedArchiveYamlTest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KeyedArchiveYamlTest.h; sourceTree = "<group>"; };
 		CEC6DA16162D95A6009E5F1D /* KeyedArchiveYamlTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = KeyedArchiveYamlTest.cpp; sourceTree = "<group>"; };
+		D7FEF1151982839600B2C7AF /* DLCDownloadTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLCDownloadTest.cpp; sourceTree = "<group>"; };
+		D7FEF1161982839600B2C7AF /* DLCDownloadTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLCDownloadTest.h; sourceTree = "<group>"; };
 		E801A586183FAB8E00D5B770 /* ComponentsTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ComponentsTest.cpp; sourceTree = "<group>"; };
 		E801A587183FAB8E00D5B770 /* ComponentsTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ComponentsTest.h; sourceTree = "<group>"; };
 		E80842B81639147A002A6A77 /* TextureUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TextureUtils.cpp; sourceTree = "<group>"; };
@@ -347,6 +347,8 @@
 		5C7BE30F156E0EF400F9F538 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				D7FEF1151982839600B2C7AF /* DLCDownloadTest.cpp */,
+				D7FEF1161982839600B2C7AF /* DLCDownloadTest.h */,
 				C172EC3218C9FA00004309CF /* DFFontTest.cpp */,
 				C172EC3318C9FA00004309CF /* DFFontTest.h */,
 				E890390E196D4FCE003126C8 /* ImageSizeTest.cpp */,
@@ -393,8 +395,6 @@
 				E8BD1F0716DE4A7800499E18 /* eMailTest.h */,
 				84C8F71316D3D16000FAC7DF /* DPITest.cpp */,
 				84C8F71416D3D16000FAC7DF /* DPITest.h */,
-				C19E4FA816C5488C00D0AC28 /* DLCSystemTests.cpp */,
-				C19E4FA916C5488C00D0AC28 /* DLCSystemTests.h */,
 				E81F2AF316BFA4E600C4545E /* MaterialCompilerTest.cpp */,
 				E81F2AF416BFA4E600C4545E /* MaterialCompilerTest.h */,
 				49C4331D1675F1A6000EA877 /* DXTTest.cpp */,
@@ -594,9 +594,9 @@
 				E81F2AF516BFA4E600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				C166A6F118E31B4700007C2D /* SaveImageTest.cpp in Sources */,
 				84C8F71516D3D16000FAC7DF /* DPITest.cpp in Sources */,
-				C19E4FAA16C5488C00D0AC28 /* DLCSystemTests.cpp in Sources */,
 				E8BD1F0816DE4A7800499E18 /* eMailTest.cpp in Sources */,
 				74F7355F18F596D000685E69 /* UIParticlesTest.cpp in Sources */,
+				D7FEF1171982839600B2C7AF /* DLCDownloadTest.cpp in Sources */,
 				E8903910196D4FCE003126C8 /* ImageSizeTest.cpp in Sources */,
 				CC24802616DF6CE000183D40 /* InputTest.cpp in Sources */,
 				E81B47DA16F896070025AF23 /* FilePathTest.cpp in Sources */,

@@ -337,34 +337,18 @@ bool UIControlMetadata::GetVisible() const
     {
         return false;
     }
-    
+
     return GetActiveUIControl()->GetVisible();
 }
 
 void UIControlMetadata::SetVisible(const bool value)
-{
-    // Don't set Visible flag hierarchically for common UI Controls.
-    SetUIControlVisible(value, false);
-}
-
-bool UIControlMetadata::GetRecursiveVisible() const
-{
-    if (!VerifyActiveParamID())
-    {
-        return false;
-    }
-
-    return GetActiveUIControl()->GetRecursiveVisible();
-}
-
-void UIControlMetadata::SetRecursiveVisible(const bool value)
 {
     if (!VerifyActiveParamID())
     {
         return;
     }
 
-    GetActiveUIControl()->SetRecursiveVisible(value);
+    GetActiveUIControl()->SetVisible(value);
 }
 
 bool UIControlMetadata::GetInput() const
@@ -1033,14 +1017,14 @@ void UIControlMetadata::ResizeScrollViewContent(UIControl * control)
 	}
 }
 
-void UIControlMetadata::SetUIControlVisible(const bool value, bool hierarchic)
+void UIControlMetadata::SetUIControlVisible(const bool value)
 {
     if (!VerifyActiveParamID())
     {
         return;
     }
     
-    GetActiveUIControl()->SetVisible(value, hierarchic);
+    GetActiveUIControl()->SetVisible(value);
 }
 
 };

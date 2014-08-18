@@ -213,12 +213,15 @@ public:
 #elif defined(__DAVAENGINE_ANDROID__)
 private:
 	static ThreadId glThreadId;
+	static ThreadId backgroundUpdateThreadId;
 private:
 	friend void	* PthreadMain(void * param);
 	void StartAndroid();
 public:
 	static void	InitMainThread();
 	static void	InitGLThread();
+	static void RegisterBackgroundThread();
+	static void UnRegisterBackgroundThread();
 #else //PLATFORMS
 	// other platforms
 #endif //PLATFORMS	

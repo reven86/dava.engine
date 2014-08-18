@@ -33,6 +33,7 @@
 #include "Render/Highlevel/Light.h"
 #include "Scene3D/Entity.h"
 #include "Platform/DeviceInfo.h"
+#include "DLC/DLC.h"
 
 using namespace DAVA;
 
@@ -131,6 +132,20 @@ ENUM_DECLARE(DeviceInfo::ePlatform)
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_ANDROID, "Android");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN, "Unknown");
+}
+
+ENUM_DECLARE(DLC::DLCError)
+{
+    ENUM_ADD(DLC::DE_NO_ERROR);
+    ENUM_ADD(DLC::DE_WAS_CANCELED);
+    ENUM_ADD(DLC::DE_INIT_ERROR);
+    ENUM_ADD(DLC::DE_CHECK_ERROR);
+    ENUM_ADD(DLC::DE_READ_ERROR);
+    ENUM_ADD(DLC::DE_WRITE_ERROR);
+    ENUM_ADD(DLC::DE_CONNECT_ERROR);
+    ENUM_ADD(DLC::DE_DOWNLOAD_ERROR);
+    ENUM_ADD(DLC::DE_PATCH_ERROR_LITE);
+    ENUM_ADD(DLC::DE_PATCH_ERROR_FULL);
 }
 
 /*

@@ -50,6 +50,8 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
+#include "DLC/Downloader/DownloadManager.h"
+#include "DLC/Downloader/CurlDownloader.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
@@ -159,12 +161,14 @@ void Core::CreateSingletons()
 #if defined(__DAVAENGINE_WIN32__)
 	Thread::InitMainThread();
 #endif
+
+    new DownloadManager();
+    DownloadManager::Instance()->SetDownloader(new CurlDownloader());
     
 	Sprite::CreateRenderObject();
 	UIControlBackground::CreateRenderObject();
 
     RegisterDAVAClasses();
-    
     CheckDataTypeSizes();
 }
 
@@ -181,6 +185,7 @@ void Core::ReleaseSingletons()
 	UIControlBackground::ReleaseRenderObject();
 	Sprite::ReleaseRenderObject();
 
+    DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
 	RenderHelper::Instance()->Release();
 	UIScreenManager::Instance()->Release();
@@ -697,6 +702,7 @@ void Core::SystemProcessFrame()
 			}
 		}
 		
+        DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
 		core->Update(frameDelta);
         InputSystem::Instance()->OnAfterUpdate();

@@ -80,7 +80,6 @@ class UIControlMetadata : public BaseMetadata
 
     // Flag Properties
     Q_PROPERTY(bool Visible READ GetVisible WRITE SetVisible);
-    Q_PROPERTY(bool RecursiveVisible READ GetRecursiveVisible WRITE SetRecursiveVisible);
     Q_PROPERTY(bool Input READ GetInput WRITE SetInput);
     Q_PROPERTY(bool ClipContents READ GetClipContents WRITE SetClipContents);
 	
@@ -190,9 +189,6 @@ protected:
     bool GetVisible() const;
     virtual void SetVisible(const bool value);
 
-    bool GetRecursiveVisible() const;
-    virtual void SetRecursiveVisible(const bool value);
-
     bool GetInput() const;
     void SetInput(const bool value);
 
@@ -253,7 +249,7 @@ protected:
     void UpdateThumbSizeForUIControlThumb();
 
     // Verify whether UIControl exists and set its visible flag.
-    void SetUIControlVisible(const bool isVisible, bool hierarchic);
+    void SetUIControlVisible(const bool isVisible);
 
 private:
 	void ResizeScrollViewContent(UIControl *control);

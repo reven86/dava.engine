@@ -114,6 +114,7 @@
 		171FA7F117C4A48B00C7F7F2 /* AlignDistributeManager.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 171FA7EF17C4A48B00C7F7F2 /* AlignDistributeManager.cpp */; };
 		171FA7F817C4A7F400C7F7F2 /* ControlsPositionData.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 171FA7F617C4A7F400C7F7F2 /* ControlsPositionData.cpp */; };
 		171FA7FB17C4AE5E00C7F7F2 /* AlignHandlers.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 171FA7F917C4AE5D00C7F7F2 /* AlignHandlers.cpp */; };
+		1723533E19A24EBB00E3212C /* Security.framework in Frameworks & Libraries */ = {isa = PBXBuildFile; fileRef = 1723533D19A24EBB00E3212C /* Security.framework */; };
 		173116C118ACBC9600893BA0 /* GuideCommands.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173116BF18ACBC9600893BA0 /* GuideCommands.cpp */; };
 		173339E71694472600E98820 /* UndoRedoController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173339E51694472600E98820 /* UndoRedoController.cpp */; };
 		173AC331162FFFC300A773F5 /* PropertiesGridController.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = 173AC32F162FFFC300A773F5 /* PropertiesGridController.cpp */; };
@@ -528,6 +529,7 @@
 		171FA7F717C4A7F400C7F7F2 /* ControlsPositionData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ControlsPositionData.h; path = AlignDistribute/ControlsPositionData.h; sourceTree = "<group>"; };
 		171FA7F917C4AE5D00C7F7F2 /* AlignHandlers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignHandlers.cpp; path = AlignDistribute/AlignHandlers.cpp; sourceTree = "<group>"; };
 		171FA7FA17C4AE5D00C7F7F2 /* AlignHandlers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignHandlers.h; path = AlignDistribute/AlignHandlers.h; sourceTree = "<group>"; };
+		1723533D19A24EBB00E3212C /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		173116BF18ACBC9600893BA0 /* GuideCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GuideCommands.cpp; path = Commands/GuideCommands.cpp; sourceTree = "<group>"; };
 		173116C018ACBC9600893BA0 /* GuideCommands.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GuideCommands.h; path = Commands/GuideCommands.h; sourceTree = "<group>"; };
 		173339E51694472600E98820 /* UndoRedoController.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = UndoRedoController.cpp; path = Controllers/UndoRedoController.cpp; sourceTree = "<group>"; };
@@ -920,6 +922,7 @@
 				17183C3F18C8830000491E66 /* AVFoundation.framework in Frameworks & Libraries */,
 				77C663449ABEE93BEE5F2771 /* Cocoa.framework in Frameworks & Libraries */,
 				17183C4118C8833A00491E66 /* CoreMedia.framework in Frameworks & Libraries */,
+				1723533E19A24EBB00E3212C /* Security.framework in Frameworks & Libraries */,
 			);
 			name = "Frameworks & Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1087,6 +1090,7 @@
 		05596AB53D8D521C69802C27 /* TemplateProjectQt */ = {
 			isa = PBXGroup;
 			children = (
+				1723533D19A24EBB00E3212C /* Security.framework */,
 				17183C4018C8833A00491E66 /* CoreMedia.framework */,
 				17183C3E18C8830000491E66 /* AVFoundation.framework */,
 				17B0617418892C1500FD8007 /* WebKit.framework */,

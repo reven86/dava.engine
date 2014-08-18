@@ -198,7 +198,7 @@ void UIListMetadata::UpdateListCellSize()
 void UIListMetadata::SetVisible(const bool value)
 {
     // UIList must update its children hierarchically.
-    SetUIControlVisible(value, true);
+    SetUIControlVisible(value);
 }
 
 };

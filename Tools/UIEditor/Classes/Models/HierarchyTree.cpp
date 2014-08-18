@@ -162,15 +162,14 @@ bool HierarchyTree::Load(const QString& projectPath)
     EditorFontManager::Instance()->LoadLocalizedFonts();
     
 	const YamlNode* platforms = projectRoot->Get(PLATFORMS_NODE);
-	for (int32 i = 0; i < platforms->GetCount(); i++)
+	for (uint32 i = 0; i < platforms->GetCount(); i++)
 	{
-		const YamlNode* platform = platforms->Get(i);
-		if (!platform)
-			continue;
-		
-		const String &platformName = platform->AsString();
+		const String &platformName = platforms->GetItemKeyName(i);
+        if (platformName.empty())
+            continue;
+
 		HierarchyTreePlatformNode* platformNode = new HierarchyTreePlatformNode(&rootNode, QString::fromStdString(platformName));
-        
+        const YamlNode* platform = platforms->Get(i);
 		result &= platformNode->Load(platform, fileNames);
 		rootNode.AddTreeNode(platformNode);
         
@@ -483,11 +482,11 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
             YamlNode* fontPathNode = new YamlNode(YamlNode::TYPE_ARRAY);
             
             // Put font path
-            fontPathNode->AddValueToArray(fontPath.GetFrameworkPath());
+            fontPathNode->Add(fontPath.GetFrameworkPath());
             // Put font sprite path if it available
             if (!fontSpritePath.IsEmpty())
             {
-                fontPathNode->AddValueToArray(fontSpritePath.GetFrameworkPath());
+                fontPathNode->Add(fontSpritePath.GetFrameworkPath());
             }
             // Insert array into node
             fontNode->AddNodeToMap(DEFAULT_FONT_PATH_NODE, fontPathNode);
@@ -544,14 +543,13 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 
     PreviewController::Instance()->SavePreviewSettings(root);
 
-	YamlParser* parser = YamlParser::Create();
 	// Create project sub-directories
 	QDir().mkpath(ResourcesManageHelper::GetPlatformRootPath(projectPath));
 	// Update Data directory last modified datetime - set currrent time
 	UpdateModificationDate(ResourcesManageHelper::GetDataPath(projectPath));
 
 	// Save project file.
-	result &= parser->SaveToYamlFile(projectFile.toStdString(), root, true);
+	result &= YamlEmitter::SaveToYamlFile(projectFile.toStdString(), root);
 	fileNames.push_back(projectFile);
 
     // Return the Localized Values.
@@ -566,8 +564,6 @@ bool HierarchyTree::DoSave(const QString& projectPath, bool saveAll)
 	{
 		rootNode.ResetUnsavedChanges();
 	}
-
-	SafeRelease(parser);
 
 	// List of files to be locked might be changed after save (if new platforms/screens are added).
 	projectLockedFiles.clear();

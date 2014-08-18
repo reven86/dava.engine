@@ -77,9 +77,9 @@ void UIMovieView::SetSize(const Vector2 &newSize)
 	movieViewControl->SetRect(newRect);
 }
 	
-void UIMovieView::SetVisible(bool isVisible, bool hierarchic)
+void UIMovieView::SetVisible(bool isVisible)
 {
-	UIControl::SetVisible(isVisible, hierarchic);
+	UIControl::SetVisible(isVisible);
 	movieViewControl->SetVisible(isVisible);
 }
 
