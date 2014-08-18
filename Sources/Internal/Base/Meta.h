@@ -143,10 +143,10 @@ namespace DAVA
 				//
 				// PointerTraits<T>::result - вернет true, если тип Т является указателем, а
 				// PointerTraits<IntrospectionT>::PointeeType - вернет тип указателя 
-                introspection = DAVA::GetIntrospection<typename Select<PointerTraits<IntrospectionT>::result, typename PointerTraits<IntrospectionT>::PointeeType, IntrospectionT>::Result>();
+                introspection = DAVA::GetIntrospection<typename Select<PointerTraits<IntrospectionT>::result, typename PointerTraits<IntrospectionT>::PointerType, IntrospectionT>::Result>();
 
 				// Получение указателя на функцию извлечения интроспекции из объекта
-				introspectionFnPtr = &DAVA::GetIntrospectionByObject<typename Select<PointerTraits<IntrospectionT>::result, typename PointerTraits<IntrospectionT>::PointeeType, IntrospectionT>::Result>;
+				introspectionFnPtr = &DAVA::GetIntrospectionByObject<typename Select<PointerTraits<IntrospectionT>::result, typename PointerTraits<IntrospectionT>::PointerType, IntrospectionT>::Result>;
             }
         }
 

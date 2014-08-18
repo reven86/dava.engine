@@ -30,21 +30,20 @@
 #ifndef __DAVAENGINE_TEMPLATEHELPERS_H__
 #define __DAVAENGINE_TEMPLATEHELPERS_H__
 
-//#include "Base/BaseTypes.h"
-//#include "Base/BaseObjectChecker.h"
-//#include "Debug/DVAssert.h"
-//#include "DAVAConfig.h"
-//#include "Base/RefPtr.h"
-//#include "Render/RenderBase.h"
 #include <typeinfo>
 
 namespace DAVA
 {
 
-	// Alexandresky style compile time assertion. 
-template <bool> struct CompileTimeError;
-template <> struct CompileTimeError<true> {};
-#define COMPILER_ASSERT(expr)  (DAVA::CompileTimeError<(expr)!=0>());
+// Alexandresky style compile time assertion. 
+template <bool>
+struct CompileTimeError;
+
+template <>
+struct CompileTimeError<true> 
+{};
+
+#define COMPILER_ASSERT(expr) DAVA::CompileTimeError<(expr)>();
 
 template<bool C, typename T = void>
 struct EnableIf
@@ -57,13 +56,13 @@ struct EnableIf<false, T>
 { };
 
 template <int v>
-class Int2Type
+struct Int2Type
 {
     enum {value = v };
 };
     
 template <class T>
-class Type2Type
+struct Type2Type
 {
     typedef T OriginalType;
 };
@@ -114,26 +113,39 @@ public:
 #define SUPERSUBCLASS(SUPER, SUB) (Conversion<const SUB*, const SUPER*>::exists && !Conversion<const SUPER*, const void*>::sameType) 
 
 class NullType{};
+
+template<typename U>
+struct IsNullType
+{
+	enum{ result = false };
+};
+
+template<>
+struct IsNullType<NullType>
+{
+	enum{ result = true };
+};
+
 struct EmptyType{};
     
 template<typename U>
 struct PointerTraits
 {
     enum{result = false };
-    typedef NullType PointeeType;
+    typedef NullType PointerType;
 };
 template <typename U>
 struct PointerTraits<U*>
 {
     enum{result = true };
-    typedef U PointeeType;
+    typedef U PointerType;
 };
 
 template<typename U>
 struct ReferenceTraits
 {
     enum{result = false };
-    typedef NullType ReferenceType;
+	typedef NullType ReferenceType;
 };
 template <typename U>
 struct ReferenceTraits<U&>
@@ -160,6 +172,90 @@ public:
     enum {isPointer = PointerTraits<T>::result };    
     enum {isReference = ReferenceTraits<T>::result };   
     enum {isPointerToMemberFunction = P2MTraits<T>::result };
+	typedef typename Select<isPointer || isReference, T, const T&>::Result ParamType;
+	typedef typename Select<isReference, typename ReferenceTraits<T>::ReferenceType, T>::Result NonRefType;
+};
+
+// type list
+template <class T, class U>
+struct Typelist
+{
+	typedef T Head;
+	typedef U Tail;
+};
+
+// type list operations
+namespace TL
+{
+	// append type
+	template <class TList, class T>
+	struct Append;
+
+	template <>
+	struct Append<NullType, NullType>
+	{
+		typedef NullType Result;
+	};
+
+	template <class T>
+	struct Append<NullType, T>
+	{
+		typedef Typelist<T, NullType> Result;
+	};
+
+	template <class Head, class Tail>
+	struct Append<NullType, Typelist<Head, Tail> >
+	{
+		typedef Typelist<Head, Tail> Result;
+	};
+
+	template <class Head, class Tail, class T>
+	struct Append<Typelist<Head, Tail>, T>
+	{
+		typedef Typelist<Head, typename Append<Tail, T>::Result> Result;
+	};
+
+	template <class Head, class Tail>
+	struct Append<Typelist<Head, Tail>, NullType>
+	{
+		typedef Typelist<Head, Tail> Result;
+	};
+
+	// type at given index
+	template <class TList, unsigned int index>
+	struct TypeAt;
+
+	template <class Head, class Tail>
+	struct TypeAt<Typelist<Head, Tail>, 0>
+	{
+		typedef Head Result;
+	};
+
+	template <class Head, class Tail, unsigned int i>
+	struct TypeAt<Typelist<Head, Tail>, i>
+	{
+		typedef typename TypeAt<Tail, i - 1>::Result Result;
+	};
+
+	// type at given index with default type, when no such index 
+	template <class TList, unsigned int index, typename DefaultType = NullType>
+	struct TypeAtNonStrict
+	{
+		typedef DefaultType Result;
+	};
+
+	template <class Head, class Tail, typename DefaultType>
+	struct TypeAtNonStrict<Typelist<Head, Tail>, 0, DefaultType>
+	{
+		typedef Head Result;
+	};
+
+	template <class Head, class Tail, unsigned int i, typename DefaultType>
+	struct TypeAtNonStrict<Typelist<Head, Tail>, i, DefaultType>
+	{
+		typedef typename
+			TypeAtNonStrict<Tail, i - 1, DefaultType>::Result Result;
+	};
 };
 
 template<bool>
@@ -224,7 +320,7 @@ struct IsEnum : public IsEnumImpl<__is_enum(T)>
 		if (pObject)
         {
 			COMPILER_ASSERT(TypeTraits<C>::isPointer);
-			if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointeeType))
+			if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
             {
                 return static_cast<C>(pObject);
             }
@@ -260,7 +356,6 @@ struct IsEnum : public IsEnumImpl<__is_enum(T)>
     
     
 };
-
 
 #endif // __DAVAENGINE_TEMPLATEHELPERS_H__
 

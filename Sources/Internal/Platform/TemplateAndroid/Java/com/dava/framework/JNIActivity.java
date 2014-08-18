@@ -7,6 +7,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.NotificationCompat.Builder;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import org.fmod.FMODAudioDevice;
@@ -93,6 +94,8 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 		} catch (Exception e) {
 			Log.d("", "no singalStrengthListner");
 		}
+        
+        JNINotification.Init();
     }
     
     @Override
@@ -254,5 +257,9 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
 	
 	public void PostEventToGL(Runnable event) {
 		glView.queueEvent(event);
+	}
+	
+	public void InitNotification(Builder builder) {
+		Log.e("JNIActivity", "Need to implement InitNotification");
 	}
 }

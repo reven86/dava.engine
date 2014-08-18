@@ -51,6 +51,9 @@ public:
 	inline float32 GetMaxValue();
 	void SetMinMaxValue(float32 _minValue, float32 _maxValue);
 	
+    virtual void AddControl(UIControl *control);
+    virtual void RemoveControl(UIControl *control);
+
 	virtual void Draw(const UIGeometricData &geometricData);
 	
 	inline bool IsEventsContinuos();

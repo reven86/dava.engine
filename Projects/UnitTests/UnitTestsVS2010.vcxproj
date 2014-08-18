@@ -19,7 +19,7 @@
     <ClInclude Include="Classes\DateTimeTest.h" />
     <ClInclude Include="Classes\DeviceInfoTest.h" />
     <ClInclude Include="Classes\DFFontTest.h" />
-    <ClInclude Include="Classes\DLCSystemTests.h" />
+    <ClInclude Include="Classes\DLCDownloadTest.h" />
     <ClInclude Include="Classes\DPITest.h" />
     <ClInclude Include="Classes\DXTTest.h" />
     <ClInclude Include="Classes\EMailTest.h" />
@@ -66,7 +66,7 @@
     <ClCompile Include="Classes\DateTimeTest.cpp" />
     <ClCompile Include="Classes\DeviceInfoTest.cpp" />
     <ClCompile Include="Classes\DFFontTest.cpp" />
-    <ClCompile Include="Classes\DLCSystemTests.cpp" />
+    <ClCompile Include="Classes\DLCDownloadTest.cpp" />
     <ClCompile Include="Classes\DPITest.cpp" />
     <ClCompile Include="Classes\DXTTest.cpp" />
     <ClCompile Include="Classes\EMailTest.cpp" />

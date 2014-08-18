@@ -98,14 +98,22 @@ File * File::CreateFromSystemPath(const FilePath &filename, uint32 attributes)
 
 	FILE * file = 0;
 	uint32 size = 0;
-	if ((attributes & File::OPEN) && (attributes & File::READ))
-	{
-		file = fopen(filename.GetAbsolutePathname().c_str(),"rb");
-		if (!file)return NULL;
+    if((attributes & File::OPEN) && (attributes & File::READ))
+    {
+        if(attributes & File::WRITE)
+        {
+    		file = fopen(filename.GetAbsolutePathname().c_str(),"r+b");
+        }
+        else
+        {
+            file = fopen(filename.GetAbsolutePathname().c_str(),"rb");
+        }
+
+		if (!file) return NULL;
 		fseek(file, 0, SEEK_END);
 		size = ftell(file);
-		fseek(file, 0, SEEK_SET);
-	}
+        fseek(file, 0, SEEK_SET);
+    }
 	else if ((attributes & File::CREATE) && (attributes & File::WRITE))
 	{
 		file = fopen(filename.GetAbsolutePathname().c_str(),"wb");
@@ -154,22 +162,34 @@ uint32 File::Read(void * pointerToData, uint32 dataSize)
 uint32 File::ReadString(char8 * destinationBuffer, uint32 destinationBufferSize)
 {
 	uint32 writeIndex = 0;
-	while(!IsEof())
-	{
-		uint8 currentChar;
-		Read(&currentChar, 1);
-		
-		if (writeIndex < destinationBufferSize)
-		{
-			destinationBuffer[writeIndex] = currentChar;
-		}else 
-		{
-			Logger::Warning("File::ReadString buffer size is too small for this string.");
-		}
-		writeIndex++;
-		if(currentChar == 0)break;	
-	}
-	return writeIndex - 1;
+	uint8 currentChar = 0;
+
+    if(destinationBufferSize > 0)
+    {
+	    while(Read(&currentChar, 1) > 0)
+	    {
+		    if(writeIndex < destinationBufferSize)
+		    {
+			    destinationBuffer[writeIndex] = currentChar;
+        		writeIndex++;
+		    }
+            else 
+		    {
+                currentChar = 0;
+			    Logger::Warning("File::ReadString buffer size is too small for this string.");
+		    }
+
+            if(currentChar == 0)
+            {
+                writeIndex--;
+                break;	
+            }
+	    }
+
+        destinationBuffer[writeIndex] = 0;
+    }
+
+	return writeIndex;
 }
     
 uint32 File::ReadString(String & destinationString)
@@ -180,9 +200,15 @@ uint32 File::ReadString(String & destinationString)
 		uint8 currentChar;
 		Read(&currentChar, 1);
 		
-		destinationString += currentChar;
-		writeIndex++;
-		if(currentChar == 0)break;
+        if(0 != currentChar)
+        {
+	    	destinationString += currentChar;
+    		writeIndex++;
+        }
+        else
+        {
+    		break;
+        }
 	}
 	return writeIndex - 1;
 }

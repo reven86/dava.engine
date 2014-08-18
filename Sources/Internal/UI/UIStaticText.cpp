@@ -202,7 +202,7 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     if(!FLOAT_EQUAL(shadowBg->GetDrawColor().a, 0.0f) && (!FLOAT_EQUAL(shadowOffset.dx, 0.0f) || !FLOAT_EQUAL(shadowOffset.dy, 0.0f)))
     {
 		textBlock->Draw(GetShadowColor(), &shadowOffset);
-        UIGeometricData shadowGeomData = geometricData;
+        UIGeometricData shadowGeomData;
         shadowGeomData.position = shadowOffset;
         shadowGeomData.size = GetSize();
         shadowGeomData.AddToGeometricData(geometricData);
