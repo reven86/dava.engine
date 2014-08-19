@@ -241,7 +241,7 @@ protected:
 	virtual void Input(UIEvent *currentInput);
 	virtual bool SystemInput(UIEvent *currentInput);// Internal method used by ControlSystem
 
-	virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates = FALSE);
+	virtual void SetRect(const Rect &rect);
 
 	virtual void Draw(const UIGeometricData &geometricData);
 

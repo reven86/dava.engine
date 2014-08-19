@@ -53,6 +53,9 @@
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
+#include "Platform/TemplateAndroid/NotificationAndroid.h"
+
+#include "Utils/UTF8Utils.h"
 
 extern "C"
 {
@@ -120,6 +123,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
+	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNINotification", &DAVA::JniNotification::gJavaClass, &DAVA::JniNotification::gJavaClassName);
 	DAVA::Thread::InitMainThread();
 
 
@@ -170,6 +174,11 @@ void CreateWStringFromJni(JNIEnv* env, jstring jniString, DAVA::WideString& stri
 		string.assign(raw, raw + len);
 		env->ReleaseStringChars(jniString, raw);
 	}
+}
+
+jstring CreateJString(JNIEnv* env, const DAVA::WideString& string)
+{
+	return env->NewStringUTF(DAVA::UTF8Utils::EncodeToUTF8(string).c_str());
 }
 
 void InitApplication(JNIEnv * env)

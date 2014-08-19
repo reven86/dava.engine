@@ -124,71 +124,6 @@ Font * GraphicsFont::Clone() const
 	return cloneFont;
 }
 
-Size2i GraphicsFont::GetStringSize(const WideString & string, Vector<int32> *charSizes) const
-{
-	uint32 length = (uint32)string.length();
-	if (length == 0)
-		return Size2i(0, 0); //YZ: return size (0,0) for empty string
-	
-	uint16 prevChIndex = GraphicsFontDefinition::INVALID_CHARACTER_INDEX;
-	Sprite::DrawState state;
-	
-	float32 currentX = 0;
-	float32 prevX = 0;
-	float32 sizeFix = 0.0f;
-	for (uint32 indexInString = 0; indexInString < length; ++indexInString)
-	{
-		char16 c = string[indexInString];
-		uint16 chIndex = fdef->CharacterToIndex(c);
-		
-		
-		if (indexInString == 0)
-		{
-			DVASSERT(chIndex < fdef->tableLenght);
-			sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff;
-			currentX -= sizeFix;
-		}
-		
-		if (chIndex == GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
-		{
-            if(c != '\n')
-                Logger::Error("*** Error: can't find character %c in font", c);
-			if (charSizes)charSizes->push_back(0); // push zero size if character is not available
-			continue;
-		}
-		
-		if (prevChIndex != GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
-		{
-			//Logger::FrameworkDebug("kern: %c-%c = %f", string[indexInString - 1], c,  GetDistanceFromAtoB(prevChIndex, chIndex));
-			DVASSERT(chIndex < fdef->tableLenght);
-			currentX += GetDistanceFromAtoB(prevChIndex, chIndex);
-		}
-			
-		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
-//		if (c == ' ')currentX += fdef->characterWidthTable[chIndex] * fontScaleCoeff;
-//		else currentX += fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::ACTIVE_WIDTH) * fontScaleCoeff;
-		
-		// BORODA: Probably charSizes should be float??? 
-		int32 newSize = (int32)(currentX + sizeFix - prevX);
-		newSize = (int32)((float32)newSize*Core::GetVirtualToPhysicalFactor());
-		if (charSizes)charSizes->push_back(newSize);
-		prevX = currentX;
-		prevChIndex = chIndex;
-	}
-	prevX = currentX;
-	
-	DVASSERT(prevChIndex < fdef->tableLenght);
-
-	currentX -= (fdef->characterWidthTable[prevChIndex] + horizontalSpacing) * fontScaleCoeff;
-	currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)) * fontScaleCoeff; // characterWidthTable[prevChIndex];
-
-//	float32 lastCharSize = fdef->characterWidthTable[prevChIndex] * fontScaleCoeff;
-//	float32 lastCharSize = fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH) * fontScaleCoeff;
-//	currentX += lastCharSize; // characterWidthTable[prevChIndex];
-	if (charSizes)charSizes->push_back((int32)(currentX + sizeFix - prevX));
-	return Size2i((int32)(currentX + sizeFix + 1.5f), GetFontHeight());
-}
-	
 bool GraphicsFont::IsCharAvaliable(char16 ch) const
 {
 	return (fdef->CharacterToIndex(ch) != GraphicsFontDefinition::INVALID_CHARACTER_INDEX);
@@ -422,91 +357,107 @@ float32 GraphicsFont::GetDistanceFromAtoB(int32 prevChIndex, int32 chIndex) cons
 	return currentX * fontScaleCoeff;
 }
 
-Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth)
+Size2i GraphicsFont::GetStringSize(const WideString& str, Vector<float32> *charSizes) const
 {
-	uint32 length = (uint32)string.length();
-    if(length==0) return Size2i();
+	return DrawString(0.f, 0.f, str, 0, 0, charSizes, false);
+}
+
+Size2i GraphicsFont::DrawString(float32 x, float32 y, const WideString & string, int32 justifyWidth, int32 spaceAddon, Vector<float32> *charSizes, bool draw) const
+{
+	const uint32 length = string.length();
+	if(length == 0) return Size2i();
+
+	uint32 countSpace = 0;
+	for(uint32 i = 0; i < length; ++i)
+	{
+		if( L' ' == string[i])
+		{
+			countSpace++;
+		}
+    }
+
+    int32 justifyOffset = 0;
+    int32 fixJustifyOffset = 0;
+    if (countSpace > 0 && justifyWidth > 0 && spaceAddon > 0)
+    {
+        int32 diff = justifyWidth - spaceAddon;
+        justifyOffset =  diff / countSpace;
+        fixJustifyOffset = diff - justifyOffset*countSpace;
+    }
     
 	uint16 prevChIndex = GraphicsFontDefinition::INVALID_CHARACTER_INDEX;
-	Sprite::DrawState state;
 
+	Sprite::DrawState state;
 	state.SetPerPixelAccuracyUsage(true);
 	
 	float32 currentX = x;
+	float32 prevX = currentX;
 	float32 currentY = y;
 	float32 sizeFix = 0.0f;
-	//Logger::FrameworkDebug("%S startX:%f", string.c_str(), currentX);
 	for (uint32 indexInString = 0; indexInString < length; ++indexInString)
 	{
-		char16 c = string[indexInString];
-		uint16 chIndex = fdef->CharacterToIndex(c);
+		const char16 c = string[indexInString];
+		const uint16 chIndex = fdef->CharacterToIndex(c);
 		
+        if (justifyOffset > 0 && c == L' ')
+        {
+            currentX += justifyOffset;
+            if (fixJustifyOffset > 0)
+            {
+                currentX++;
+                fixJustifyOffset--;
+            }
+        }
+        
 		if (indexInString == 0)
 		{
+			DVASSERT(chIndex < fdef->tableLenght);
 			sizeFix = fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff;
 			currentX -= sizeFix;
+			prevX = currentX;
 		}
 		
 		if (chIndex == GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
 		{
             if(c != '\n')
                 Logger::Error("*** Error: can't find character %c in font", c);
+
+			if (charSizes) 
+				charSizes->push_back(0); // push zero size if character is not available
+
 			continue;
 		}
 		
 		if (prevChIndex != GraphicsFontDefinition::INVALID_CHARACTER_INDEX)
 		{
-			//Logger::FrameworkDebug("kern: %c-%c = %f", string[indexInString - 1], c,  GetDistanceFromAtoB(prevChIndex, chIndex));
+			DVASSERT(chIndex < fdef->tableLenght);
 			currentX += GetDistanceFromAtoB(prevChIndex, chIndex);
 		}
-		
-		state.SetFrame(chIndex);
-		// draw on baseline Y = currentY - fontSprite->GetHeight() + charTopBottomPadding + fontDescent
 
-		float32 drawX = currentX;
-		float32 drawY = currentY - fontSprite->GetHeight() * fontScaleCoeff + (fdef->charTopBottomPadding + fdef->fontDescent + fdef->fontAscent) * fontScaleCoeff;
+		if(draw)
+		{
+			float32 drawX = currentX + fdef->characterPreShift[chIndex] * fontScaleCoeff;
+			float32 drawY = currentY - fontSprite->GetHeight() * fontScaleCoeff + (fdef->charTopBottomPadding + fdef->fontDescent + fdef->fontAscent) * fontScaleCoeff;
 		
-		
-		//if (indexInString != 0)
-		drawX += fdef->characterPreShift[chIndex] * fontScaleCoeff;
-		
-		
-		state.SetScale(fontScaleCoeff, fontScaleCoeff);
-		state.SetPosition(drawX, drawY);
+			state.SetFrame(chIndex);
+			state.SetScale(fontScaleCoeff, fontScaleCoeff);
+			state.SetPosition(drawX, drawY);
         
-		fontSprite->Draw(&state);
+			fontSprite->Draw(&state);
+		}
 
-//		RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//		RenderManager::Instance()->DrawRect(Rect(drawX + fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff, drawY + fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::Y_OFFSET_TO_ACTIVE) * fontScaleCoeff, fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::ACTIVE_WIDTH), fontSprite->GetHeight() * fontScaleCoeff));
-//		RenderManager::Instance()->ResetColor();
-		
 		currentX += (fdef->characterWidthTable[chIndex] + horizontalSpacing) * fontScaleCoeff;
-//		Logger::FrameworkDebug("%c w:%f pos: %f\n", c, fdef->characterWidthTable[chIndex] * fontScaleCoeff, currentX); 
-//		if (c == ' ')currentX += fdef->characterWidthTable[chIndex] * fontScaleCoeff;
-//		else currentX += fontSprite->GetRectOffsetValueForFrame(chIndex, Sprite::ACTIVE_WIDTH) * fontScaleCoeff;
 
+		float32 newSize = Round((currentX - prevX) * Core::GetVirtualToPhysicalFactor());
+		
+		if(charSizes)
+			charSizes->push_back(newSize);
+		
+		prevX += newSize;
 		prevChIndex = chIndex;
 	}
 
-	currentX -= (fdef->characterWidthTable[prevChIndex] + horizontalSpacing) * fontScaleCoeff;
-	currentX += (fdef->characterPreShift[prevChIndex] + fontSprite->GetRectOffsetValueForFrame(prevChIndex, Sprite::ACTIVE_WIDTH)) * fontScaleCoeff; // characterWidthTable[prevChIndex];
-	
-//	Sprite::DrawState drwState;
-//	float32 drawX = 100;
-//	float32 drawY = 100;
-//	drwState.SetFrame(1);
-//	drwState.SetPosition(drawX, drawY);
-//	fontSprite->Draw(&drwState);
-//	
-//	RenderManager::Instance()->SetColor(1.0f, 0.0f, 0.0f, 1.0f);
-//	RenderManager::Instance()->DrawRect(Rect(drawX + fontSprite->GetRectOffsetValueForFrame(1, Sprite::X_OFFSET_TO_ACTIVE) * fontScaleCoeff
-//											 , drawY + fontSprite->GetRectOffsetValueForFrame(1, Sprite::Y_OFFSET_TO_ACTIVE) * fontScaleCoeff
-//											 , fdef->characterWidthTable[1]
-//											 , fontSprite->GetHeight() * fontScaleCoeff));
-//	RenderManager::Instance()->ResetColor();
-	
-	
-	return Size2i((int32)(currentX + sizeFix + 1.5f - x), GetFontHeight());
+	return Size2i((int32)(ceilf(currentX + sizeFix - x)), GetFontHeight());
 }
 
 };

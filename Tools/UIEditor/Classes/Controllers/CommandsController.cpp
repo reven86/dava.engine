@@ -52,12 +52,12 @@ void CommandsController::ExecuteCommand(BaseCommand* command)
 {
 	SafeRetain(command);
     command->Execute();
+    
+    undoRedoController.AddCommandToUndoStack(command);
+    undoRedoController.IncrementUnsavedChanges(true);
 
-	undoRedoController.AddCommandToUndoStack(command);
-	undoRedoController.IncrementUnsavedChanges(true);
-
-	emit UndoRedoAvailabilityChanged();
-	emit UnsavedChangesNumberChanged();
+    emit UndoRedoAvailabilityChanged();
+    emit UnsavedChangesNumberChanged();
 
 	SafeRelease(command);
 }

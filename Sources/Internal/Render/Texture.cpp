@@ -937,9 +937,9 @@ void Texture::HWglCreateFBOBuffersInternal(BaseObject * caller, void * param, vo
 
             if (!RenderManager::Instance()->GetCaps().isGlDepth24Stencil8Supported)
             {
-                glGenRenderbuffers(1, &stencilRboID);
-                glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID);
-                glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height);
+                RENDER_VERIFY(glGenRenderbuffers(1, &stencilRboID));
+                RENDER_VERIFY(glBindRenderbuffer(GL_RENDERBUFFER, stencilRboID));
+                RENDER_VERIFY(glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, width, height));
             }
         }
 #endif

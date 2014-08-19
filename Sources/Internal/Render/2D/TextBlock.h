@@ -42,6 +42,11 @@
 namespace DAVA
 {
 
+class TextBlockRender;
+class TextBlockSoftwareRender;
+class TextBlockGraphicsRender;
+class TextBlockDistanceRender;
+	
 /**
 	\ingroup render_2d
 	\brief Class to render text on the screen. 
@@ -65,6 +70,8 @@ public:
 	
 	virtual void SetFont(Font * font);
 	virtual void SetRectSize(const Vector2 & size);
+	virtual void SetPosition(const Vector2& position);
+	virtual void SetPivotPoint(const Vector2& pivotPoint);
 	virtual void SetAlign(int32 align);
 	virtual int32 GetAlign();
 	
@@ -88,6 +95,7 @@ public:
     const Vector2 & GetTextSize();
 
 	void PreDraw();
+	void Draw(const Color& textColor, const Vector2* offset = NULL);
 
     TextBlock * Clone();
 
@@ -99,12 +107,15 @@ protected:
 	
 	void Prepare();
 	void PrepareInternal(BaseObject * caller, void * param, void *callerData);
-	
+	void CalculateCacheParams();
+
 	void DrawToBuffer(Font *font, uint8 *buf);
 
 	void ProcessAlign();
-    
+	
+
 	Vector2 rectSize;
+        bool needRedraw;
 	Vector2 requestedSize;
 
     Vector2 cacheFinalSize;
@@ -116,8 +127,11 @@ protected:
 	int32 cacheW;
 
     int32 fittingType;
+	Vector2 position;
+	Vector2 pivotPoint;
 	int32 align;
 
+	Font * font;
 	WideString text;
     WideString pointsStr;
 	Vector<WideString> multilineStrings;
@@ -125,16 +139,17 @@ protected:
     
     Mutex mutex;
 
-    Font * font;
-	Font * constFont;
-	Sprite * sprite;
-
-    
 	bool isMultilineEnabled:1;
     bool isMultilineBySymbolEnabled:1;
 	bool isPredrawed:1;
 	bool cacheUseJustify:1;
     bool treatMultilineAsSingleLine:1;
+
+	friend class TextBlockRender;
+	friend class TextBlockSoftwareRender;
+	friend class TextBlockGraphicsRender;
+	friend class TextBlockDistanceRender;
+	TextBlockRender* textBlockRender;
 };
 
 }; //end of namespace

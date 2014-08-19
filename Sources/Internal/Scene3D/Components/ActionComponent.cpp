@@ -461,8 +461,11 @@ namespace DAVA
         case Action::TYPE_PARTICLE_EFFECT_STOP:
             OnActionParticleEffectStop( action );
             break;
-        case Action::TYPE_SOUND:
-            OnActionSound( action );
+        case Action::TYPE_SOUND_START:
+            OnActionSoundStart( action );
+            break;
+        case Action::TYPE_SOUND_STOP:
+            OnActionSoundStop( action );
             break;
         case Action::TYPE_WAVE:
             OnActionWave( action );
@@ -504,7 +507,7 @@ namespace DAVA
         }
     }
 	
-	void ActionComponent::OnActionSound(const Action& action)
+	void ActionComponent::OnActionSoundStart(const Action& action)
 	{
 		Entity* target = GetTargetEntity(action.entityName, entity);
 		
@@ -520,7 +523,24 @@ namespace DAVA
 
 		}
 	}
-	
+
+    void ActionComponent::OnActionSoundStop(const Action& action)
+    {
+        Entity* target = GetTargetEntity(action.entityName, entity);
+
+        if(target != NULL)
+        {
+            SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
+            if(component)
+            {
+                int32 eventsCount = component->GetEventsCount();
+                for(int32 i = 0; i < eventsCount; ++i)
+                    component->GetSoundEvent(i)->Stop();
+            }
+
+        }
+    }
+
     void ActionComponent::OnActionWave(const Action& action)
     {
         Entity* target = GetTargetEntity(action.entityName, entity);

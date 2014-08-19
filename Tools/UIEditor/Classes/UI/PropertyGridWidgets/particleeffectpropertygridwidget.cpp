@@ -112,7 +112,7 @@ void ParticleEffectPropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleS
 			return;
 		}
         
-		BaseCommand* command = new ChangePropertyCommand<double>(activeMetadata, iter->second, value);
+		BaseCommand* command = new ChangeDoublePropertyCommand(activeMetadata, iter->second, value);
   	  	CommandsController::Instance()->ExecuteCommand(command);
    		SafeRelease(command);
 		return;

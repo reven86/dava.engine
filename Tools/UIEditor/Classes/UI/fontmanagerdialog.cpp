@@ -33,6 +33,7 @@
 #include "EditorFontManager.h"
 #include "EditorSettings.h"
 #include "TexturePacker/ResourcePacker2D.h"
+#include "Validators/DistanceFontValidator.h"
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -46,6 +47,7 @@ static const QString FONT_TABLE_NAME_COLUMN = "Font Name";
 static const QString FONT_TABLE_TYPE_COLUMN = "Font Type";
 static const QString FONT_TYPE_BASIC = "Basic";
 static const QString FONT_TYPE_GRAPHIC = "Graphics";
+static const QString FONT_TYPE_DISTANCE = "Distance";
 static const QString LOAD_FONT_ERROR_MESSAGE = "Can't load font %1! Try again or select another one.";
 static const QString LOAD_FONT_ERROR_INFO_TEXT = "An error occured while loading font...";
 
@@ -167,7 +169,11 @@ void FontManagerDialog::UpdateTableViewContents()
             {
                 item = CreateFontItem(FONT_TYPE_GRAPHIC, fontName, defFontName);
             }
-            else
+            else if (fontName.contains(".df"))
+			{
+				item = CreateFontItem(FONT_TYPE_DISTANCE, fontName, defFontName);
+			}
+			else
             {
 				item = CreateFontItem(FONT_TYPE_BASIC, fontName, defFontName);
             }						
@@ -191,12 +197,35 @@ void FontManagerDialog::OkButtonClicked()
            
         if (returnFont)
         {
+            ValidateFont(returnFont);
+
             //Set dialog resulting font - it corresponds to selected font by user
             dialogResultFont = returnFont->Clone();
 			SafeRelease(returnFont);
             //Set dialog result as QDialog::Accepted and close it
             accept();
         }
+    }
+}
+
+void FontManagerDialog::ValidateFont(const Font* font) const
+{
+    switch (font->GetFontType())
+    {
+        case Font::TYPE_DISTANCE:
+        {
+            const DFFont* distanceFont = static_cast<const DFFont*>(font);
+            DistanceFontValidator validator;
+ 
+            QString texPath = QString::fromStdString(distanceFont->GetTexture()->GetPathname().GetAbsolutePathname());
+            QVariant val = QVariant(texPath);
+            validator.Validate(val);
+
+            break;
+        }
+
+        default:
+            break;
     }
 }
 
@@ -276,6 +305,11 @@ Font* FontManagerDialog::GetSelectedFont(QItemSelectionModel *selectionModel)
         QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontName);
         //Try to create font to validate it
         returnFont = FTFont::Create(fontPath.toStdString());
+	}
+	else if (fontType == FONT_TYPE_DISTANCE)
+	{
+		QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontName);
+        returnFont = DFFont::Create(fontPath.toStdString());
 	}
 	
 	if (!returnFont)

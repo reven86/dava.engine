@@ -29,6 +29,7 @@
 
 #include "sliderpropertygridwidget.h"
 #include "ui_sliderpropertygridwidget.h"
+#include "backgroundpropertygridwidget.h"
 
 #include "PropertyNames.h"
 #include "BackgroundGridWidgetHelper.h"
@@ -47,6 +48,13 @@ SliderPropertyGridWidget::SliderPropertyGridWidget(QWidget *parent) :
     ui(new Ui::SliderPropertyGridWidget)
 {
     ui->setupUi(this);
+
+    minBgControl = new BackgroundPropertyGridWidget("Min Background", "Min");
+    maxBgControl = new BackgroundPropertyGridWidget("Max Background", "Max");
+
+    ui->groupBox->layout()->addWidget(minBgControl);
+    ui->groupBox->layout()->addWidget(maxBgControl);
+
     SetPropertyBlockName(SLIDER_PROPERTY_BLOCK_NAME);
 	ConnectToSignals();
 	
@@ -67,7 +75,9 @@ void SliderPropertyGridWidget::ConnectToSignals()
 void SliderPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 {
     BasePropertyGridWidget::Initialize(activeMetadata);
-	
+    minBgControl->Initialize(activeMetadata);
+    maxBgControl->Initialize(activeMetadata);
+
     // Build the properties map to make the properties search faster.
     PROPERTIESMAP propertiesMap = BuildMetadataPropertiesMap();
 
@@ -80,6 +90,9 @@ void SliderPropertyGridWidget::Initialize(BaseMetadata* activeMetadata)
 void SliderPropertyGridWidget::Cleanup()
 {
     BasePropertyGridWidget::Cleanup();
+    minBgControl->Cleanup();
+    maxBgControl->Cleanup();
+
 	UnregisterDoubleSpinBoxWidget(ui->valueSpin);
     UnregisterDoubleSpinBoxWidget(ui->minValueSpin);
     UnregisterDoubleSpinBoxWidget(ui->maxValueSpin);
@@ -105,7 +118,7 @@ void SliderPropertyGridWidget::ProcessDoubleSpinBoxValueChanged(QDoubleSpinBox *
 			return;
 		}
 
-		BaseCommand* command = new ChangePropertyCommand<double>(activeMetadata, iter->second, value);
+		BaseCommand* command = new ChangeDoublePropertyCommand(activeMetadata, iter->second, value);
   	  	CommandsController::Instance()->ExecuteCommand(command);
    		SafeRelease(command);
 		return;

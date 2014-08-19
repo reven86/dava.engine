@@ -68,16 +68,12 @@ void GlobalEnumMap<T>::Register(const int e, const char *s)
 	Instance()->Register(e, s);
 }
 
-#define ENUM_DECLARE(eType) template<> class HasInsp<eType> { public: static const bool result = false; };
-#define ENUM_IMPLEMENTATION(eType) template<> void GlobalEnumMap<eType>::RegisterAll()
+#define ENUM_DECLARE(eType) template<> void GlobalEnumMap<eType>::RegisterAll()
 #define ENUM_ADD(eValue) Register(eValue, #eValue)
 #define ENUM_ADD_DESCR(eValue, eDescr) Register(eValue, eDescr)
 
 // Define:
-//	in header
 //	ENUM_DECLARE(AnyEnumType)
-//	in cpp
-//	ENUM_IMPLEMENTATION(AnyEnumType)
 //	{
 //		ENUM_ADDS(AnyEnumType::Value1);
 //		ENUM_ADD_DESCR(AnyEnumType::Value2, "Value2");

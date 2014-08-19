@@ -104,9 +104,9 @@ void UIListMetadata::SetOrientation(int value)
 	GetActiveUIList()->SetOrientation((UIList::eListOrientation)value);
 }
 
-void UIListMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign)
+void UIListMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign, bool alignToIntegerPos)
 {
-	UIControlMetadata::SetActiveControlRect(rect, restoreAlign);
+	UIControlMetadata::SetActiveControlRect(rect, restoreAlign, alignToIntegerPos);
 	UpdateListCellSize();
 }
 

@@ -114,17 +114,10 @@ void RenderDataObject::DeleteBuffersInternal(BaseObject * caller, void * param, 
 	DestructorContainer * container = (DestructorContainer*)param;
 	DVASSERT(container);
 #if defined(__DAVAENGINE_OPENGL__)
-#if defined(__DAVAENGINE_OPENGL_ARB_VBO__)
 	if (container->vboBuffer)
-		RENDER_VERIFY(glDeleteBuffersARB(1, &container->vboBuffer));
+		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &container->vboBuffer));
 	if (container->indexBuffer)
-		RENDER_VERIFY(glDeleteBuffersARB(1, &container->indexBuffer));
-#else 
-	if (container->vboBuffer)
-		RENDER_VERIFY(glDeleteBuffers(1, &container->vboBuffer));
-	if (container->indexBuffer)
-		RENDER_VERIFY(glDeleteBuffers(1, &container->indexBuffer));
-#endif
+		RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &container->indexBuffer));
 #endif
 	SafeDelete(container);
 }
@@ -221,7 +214,7 @@ void RenderDataObject::BuildVertexBufferInternal(BaseObject * caller, void * par
     
     if (vboBuffer)
     {
-        RENDER_VERIFY(glDeleteBuffers(1, &vboBuffer));
+        RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &vboBuffer));
         vboBuffer = 0;
     }
     
@@ -284,7 +277,7 @@ void RenderDataObject::BuildIndexBufferInternal(BaseObject * caller, void * para
 #else
     if (indexBuffer)
     {
-        RENDER_VERIFY(glDeleteBuffers(1, &indexBuffer));
+        RENDER_VERIFY(RenderManager::Instance()->HWglDeleteBuffers(1, &indexBuffer));
         indexBuffer = 0;
     }
     RENDER_VERIFY(glGenBuffers(1, &indexBuffer));

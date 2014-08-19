@@ -522,7 +522,14 @@ WideString UITextField::GetAppliedChanges(int32 replacementLocation, int32 repla
     
     if(replacementLocation >= 0)
     {
-        txt.replace(replacementLocation, replacementLength, replacementString);
+        if(replacementLocation <= (int32)txt.length())
+        {
+            txt.replace(replacementLocation, replacementLength, replacementString);
+        }
+        else
+        {
+            Logger::Error("[UITextField::GetAppliedChanges] - index out of bounds.");
+        }
     }
     
     return txt;

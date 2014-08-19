@@ -637,34 +637,24 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Core/DisplayMode.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/DLC/DLCSystem.cpp</name>
+			<name>Internal/DLC/DLC.cpp</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/DLCSystem.cpp</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/DLC.cpp</locationURI>
 		</link>
 		<link>
-			<name>Internal/DLC/DLCSystem.h</name>
+			<name>Internal/DLC/DLC.h</name>
 			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/DLCSystem.h</locationURI>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/DLC.h</locationURI>
 		</link>
 		<link>
-			<name>Internal/DLC/DLCUnpacker.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/DLCUnpacker.cpp</locationURI>
+			<name>Internal/DLC/Downloader</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Internal/DLC/DLCUnpacker.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/DLCUnpacker.h</locationURI>
-		</link>
-		<link>
-			<name>Internal/DLC/FileDownloader.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/FileDownloader.cpp</locationURI>
-		</link>
-		<link>
-			<name>Internal/DLC/FileDownloader.h</name>
-			<type>1</type>
-			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/FileDownloader.h</locationURI>
+			<name>Internal/DLC/Patcher</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
 			<name>Internal/Database/MongodbClient.cpp</name>
@@ -1660,6 +1650,16 @@
 			<name>Internal/Platform/Mutex.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/Mutex.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/Notification.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/Notification.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/Notification.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/Notification.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/OpenUDIDApple.h</name>
@@ -3022,6 +3022,86 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Base/Radix/Radix.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/DLC/Downloader/.DS_Store</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/.DS_Store</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/CurlDownloader.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/CurlDownloader.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/CurlDownloader.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/CurlDownloader.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/DownloadManager.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/DownloadManager.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/DownloadManager.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/DownloadManager.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/Downloader.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/Downloader.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/Downloader.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/Downloader.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/DownloaderCommon.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/DownloaderCommon.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Downloader/DownloaderCommon.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Downloader/DownloaderCommon.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/BSDiff.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/BSDiff.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/BSDiff.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/BSDiff.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/PatchFile.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/PatchFile.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/PatchFile.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/PatchFile.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/ZLibStream.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/ZLibStream.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/ZLibStream.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/ZLibStream.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/bsdiff</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Internal/Math/Neon/NeonMath.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Math/Neon/NeonMath.cpp</locationURI>
@@ -3145,6 +3225,16 @@
 			<name>Internal/Platform/TemplateAndroid/MovieViewControlAndroid.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/MovieViewControlAndroid.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/NotificationAndroid.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/NotificationAndroid.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/NotificationAndroid.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/NotificationAndroid.h</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/TemplateAndroid/WebViewControl.cpp</name>
@@ -4147,6 +4237,31 @@
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Scene3D/Systems/UpdateSystem.h</locationURI>
 		</link>
 		<link>
+			<name>Internal/DLC/Patcher/bsdiff/LICENCE</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/bsdiff/LICENCE</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/bsdiff/README.md</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/bsdiff/README.md</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/bsdiff/bs_common.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/bsdiff/bs_common.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/bsdiff/bs_diff.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/bsdiff/bs_diff.c</locationURI>
+		</link>
+		<link>
+			<name>Internal/DLC/Patcher/bsdiff/bs_patch.c</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/DLC/Patcher/bsdiff/bs_patch.c</locationURI>
+		</link>
+		<link>
 			<name>Internal/Platform/Qt/MacOS/CorePlatformMacOS.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/Qt/MacOS/CorePlatformMacOS.cpp</locationURI>
@@ -4225,6 +4340,21 @@
 			<name>Internal/Platform/TemplateAndroid/ExternC/AndroidLayer.h</name>
 			<type>1</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/AndroidLayer.h</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/ExternC/JNIDownloadManager.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/JNIDownloadManager.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/ExternC/JNIForegroundUpdateThread.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/JNIForegroundUpdateThread.cpp</locationURI>
+		</link>
+		<link>
+			<name>Internal/Platform/TemplateAndroid/ExternC/JNINotification.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Platform/TemplateAndroid/ExternC/JNINotification.cpp</locationURI>
 		</link>
 		<link>
 			<name>Internal/Platform/TemplateAndroid/ExternC/JNITextField.cpp</name>

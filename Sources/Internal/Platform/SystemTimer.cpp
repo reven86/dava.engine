@@ -84,8 +84,9 @@ SystemTimer::SystemTimer()
 {
     globalTime = 0.0f;
     pauseMultiplier = 1.0f;
-
 #if defined(__DAVAENGINE_WIN32__)
+    t0 = 0;
+    QueryPerformanceCounter(&tLi);
 	bHighTimerSupport = QueryPerformanceFrequency(&liFrequency);
 	if (bHighTimerSupport)
 	{

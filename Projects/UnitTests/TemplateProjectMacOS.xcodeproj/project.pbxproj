@@ -19,7 +19,6 @@
 		1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF5717DF6CC200000391 /* UIMovieTest.cpp */; };
 		495B67091797DCA30017D8DD /* TransparentWebViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 495B67071797DCA30017D8DD /* TransparentWebViewTest.cpp */; };
 		49637DFA18B20D79008A3398 /* RectSpriteTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49637DF818B20D79008A3398 /* RectSpriteTest.cpp */; };
-		49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */; };
 		49C2B8F816F75A39006E24CB /* DeviceInfoTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */; };
 		49C432081675E370000EA877 /* DXTTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 49C432061675E370000EA877 /* DXTTest.cpp */; };
 		50353035194A46C4006B66DB /* SceneSystemTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 50353034194A46C4006B66DB /* SceneSystemTest.cpp */; };
@@ -33,14 +32,15 @@
 		7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7497446617B3C38D00282DAA /* AlignTest.cpp */; };
 		749A1B4F174A73130082B080 /* UIScrollViewTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 749A1B4D174A73130082B080 /* UIScrollViewTest.cpp */; };
 		74AF6341188530CD00070C35 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74AF6340188530CD00070C35 /* Security.framework */; };
-		76762412196D5F6C00E4CC65 /* libFrameworkTools.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 76359F15196C20D300DF2A57 /* libFrameworkTools.a */; };
 		840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 840CB02218EE08C600B722D0 /* JPEGTest.cpp */; };
 		84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		C151B19116D37E8300E09BAF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C151B18E16D37E2700E09BAF /* WebKit.framework */; };
 		C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */; };
+		C172EC1918C9F412004309CF /* DFFontTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C172EC1718C9F412004309CF /* DFFontTest.cpp */; };
 		C177F28016D227A70036F02B /* InputTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C177F27E16D227A70036F02B /* InputTest.cpp */; };
 		C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C18046C816D52EC900DC24D8 /* DPITest.cpp */; };
+		D7E6C5BD1982562C00B96D1A /* DLCDownloadTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */; };
 		E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */; };
 		E83604F1163FEB4C0061A636 /* KeyedArchiveTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */; };
 		E83604F2163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E83604EF163FEB4C0061A636 /* KeyedArchiveYamlTest.cpp */; };
@@ -77,34 +77,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 176DEB77174B5561007A983B;
 			remoteInfo = FrameworkNPAPI;
-		};
-		76359F14196C20D300DF2A57 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A698542917CE38C0001E9FDE;
-			remoteInfo = FrameworkTools;
-		};
-		76359F16196C20D300DF2A57 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A698543717CE38D8001E9FDE;
-			remoteInfo = FrameworkToolsQt;
-		};
-		76359F18196C20D300DF2A57 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A698543F17CE38E5001E9FDE;
-			remoteInfo = FrameworkToolsNPAPI;
-		};
-		76359F1A196C20ED00DF2A57 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = A698542817CE38C0001E9FDE;
-			remoteInfo = FrameworkTools;
 		};
 		E81F2AEC16BFA49100C4545E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -166,8 +138,6 @@
 		495B67081797DCA30017D8DD /* TransparentWebViewTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TransparentWebViewTest.h; path = Classes/TransparentWebViewTest.h; sourceTree = "<group>"; };
 		49637DF818B20D79008A3398 /* RectSpriteTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RectSpriteTest.cpp; path = Classes/RectSpriteTest.cpp; sourceTree = "<group>"; };
 		49637DF918B20D79008A3398 /* RectSpriteTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RectSpriteTest.h; path = Classes/RectSpriteTest.h; sourceTree = "<group>"; };
-		49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DLCSystemTests.cpp; path = Classes/DLCSystemTests.cpp; sourceTree = "<group>"; };
-		49B774CC16B188A900A80FA3 /* DLCSystemTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DLCSystemTests.h; path = Classes/DLCSystemTests.h; sourceTree = "<group>"; };
 		49C2B8F616F75A39006E24CB /* DeviceInfoTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DeviceInfoTest.cpp; path = Classes/DeviceInfoTest.cpp; sourceTree = "<group>"; };
 		49C2B8F716F75A39006E24CB /* DeviceInfoTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DeviceInfoTest.h; path = Classes/DeviceInfoTest.h; sourceTree = "<group>"; };
 		49C432061675E370000EA877 /* DXTTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DXTTest.cpp; path = Classes/DXTTest.cpp; sourceTree = "<group>"; };
@@ -199,7 +169,6 @@
 		749A3DCC17B8CF400008EC12 /* AlignTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AlignTest.cpp; path = Classes/AlignTest.cpp; sourceTree = "<group>"; };
 		749A3DCD17B8CF400008EC12 /* AlignTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlignTest.h; path = Classes/AlignTest.h; sourceTree = "<group>"; };
 		74AF6340188530CD00070C35 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = FrameworkTools.xcodeproj; path = ../MacOSFramework/FrameworkTools.xcodeproj; sourceTree = "<group>"; };
 		840CB02218EE08C600B722D0 /* JPEGTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JPEGTest.cpp; path = Classes/JPEGTest.cpp; sourceTree = "<group>"; };
 		840CB02318EE08C600B722D0 /* JPEGTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JPEGTest.h; path = Classes/JPEGTest.h; sourceTree = "<group>"; };
 		84E2926D18DA5D4300B5D4C9 /* DateTimeTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DateTimeTest.cpp; path = Classes/DateTimeTest.cpp; sourceTree = "<group>"; };
@@ -208,10 +177,14 @@
 		C151B18E16D37E2700E09BAF /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		C151B1BE16D50BDA00E09BAF /* eMailTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eMailTest.cpp; path = Classes/eMailTest.cpp; sourceTree = "<group>"; };
 		C151B1BF16D50BDA00E09BAF /* eMailTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = eMailTest.h; path = Classes/eMailTest.h; sourceTree = "<group>"; };
+		C172EC1718C9F412004309CF /* DFFontTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DFFontTest.cpp; path = Classes/DFFontTest.cpp; sourceTree = "<group>"; };
+		C172EC1818C9F412004309CF /* DFFontTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DFFontTest.h; path = Classes/DFFontTest.h; sourceTree = "<group>"; };
 		C177F27E16D227A70036F02B /* InputTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = InputTest.cpp; path = Classes/InputTest.cpp; sourceTree = "<group>"; };
 		C177F27F16D227A70036F02B /* InputTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InputTest.h; path = Classes/InputTest.h; sourceTree = "<group>"; };
 		C18046C816D52EC900DC24D8 /* DPITest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DPITest.cpp; path = Classes/DPITest.cpp; sourceTree = "<group>"; };
 		C18046C916D52ECA00DC24D8 /* DPITest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DPITest.h; path = Classes/DPITest.h; sourceTree = "<group>"; };
+		D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DLCDownloadTest.cpp; path = Classes/DLCDownloadTest.cpp; sourceTree = "<group>"; };
+		D7E6C5BC1982562C00B96D1A /* DLCDownloadTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DLCDownloadTest.h; path = Classes/DLCDownloadTest.h; sourceTree = "<group>"; };
 		E81F2AEE16BFA4A600C4545E /* MaterialCompilerTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MaterialCompilerTest.cpp; path = Classes/MaterialCompilerTest.cpp; sourceTree = "<group>"; };
 		E81F2AEF16BFA4A600C4545E /* MaterialCompilerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MaterialCompilerTest.h; path = Classes/MaterialCompilerTest.h; sourceTree = "<group>"; };
 		E83604ED163FEB4C0061A636 /* KeyedArchiveTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = KeyedArchiveTest.cpp; path = Classes/KeyedArchiveTest.cpp; sourceTree = "<group>"; };
@@ -267,7 +240,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				76762412196D5F6C00E4CC65 /* libFrameworkTools.a in Frameworks */,
 				74AF6341188530CD00070C35 /* Security.framework in Frameworks */,
 				1767A19B183D227A000DE581 /* CoreMedia.framework in Frameworks */,
 				1767A195183D1B4A000DE581 /* AVFoundation.framework in Frameworks */,
@@ -351,7 +323,6 @@
 		29B97314FDCFA39411CA2CEA /* TemplateProjectMacOS */ = {
 			isa = PBXGroup;
 			children = (
-				76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */,
 				02E9E45C173A43A900C501BC /* libfmodevent.dylib */,
 				02E9E45D173A43A900C501BC /* libfmodex.dylib */,
 				C151B18E16D37E2700E09BAF /* WebKit.framework */,
@@ -423,8 +394,8 @@
 		49B774CA16B1889A00A80FA3 /* DLCTest */ = {
 			isa = PBXGroup;
 			children = (
-				49B774CB16B188A900A80FA3 /* DLCSystemTests.cpp */,
-				49B774CC16B188A900A80FA3 /* DLCSystemTests.h */,
+				D7E6C5BB1982562C00B96D1A /* DLCDownloadTest.cpp */,
+				D7E6C5BC1982562C00B96D1A /* DLCDownloadTest.h */,
 			);
 			name = DLCTest;
 			sourceTree = "<group>";
@@ -450,6 +421,7 @@
 		5C1066D8156D351400912A45 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				C172EC1418C9F406004309CF /* DFFont */,
 				E8B47D2C196D4F4800D8ADF6 /* ImageSizeTest */,
 				E8490AA51923864A00C07E36 /* ParseTextTest */,
 				E8573EA318C890B0004A8B50 /* OpenGLES30 */,
@@ -566,16 +538,6 @@
 			name = AlignTest;
 			sourceTree = "<group>";
 		};
-		76359F0D196C20D300DF2A57 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				76359F15196C20D300DF2A57 /* libFrameworkTools.a */,
-				76359F17196C20D300DF2A57 /* libFrameworkToolsQt.a */,
-				76359F19196C20D300DF2A57 /* libFrameworkToolsNPAPI.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		840CB01F18EE088A00B722D0 /* JPEGTest */ = {
 			isa = PBXGroup;
 			children = (
@@ -601,6 +563,15 @@
 				C151B1BF16D50BDA00E09BAF /* eMailTest.h */,
 			);
 			name = eMailTest;
+			sourceTree = "<group>";
+		};
+		C172EC1418C9F406004309CF /* DFFont */ = {
+			isa = PBXGroup;
+			children = (
+				C172EC1718C9F412004309CF /* DFFontTest.cpp */,
+				C172EC1818C9F412004309CF /* DFFontTest.h */,
+			);
+			name = DFFont;
 			sourceTree = "<group>";
 		};
 		C177F27C16D2279B0036F02B /* InputTest */ = {
@@ -795,7 +766,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				76359F1B196C20ED00DF2A57 /* PBXTargetDependency */,
 				FE93072B12C28C1100A33E69 /* PBXTargetDependency */,
 			);
 			name = TemplateProjectMacOS;
@@ -830,10 +800,6 @@
 					ProductGroup = FE98930C11638F3C00500198 /* Products */;
 					ProjectRef = FE98930B11638F3C00500198 /* Framework.xcodeproj */;
 				},
-				{
-					ProductGroup = 76359F0D196C20D300DF2A57 /* Products */;
-					ProjectRef = 76359F0C196C20D300DF2A57 /* FrameworkTools.xcodeproj */;
-				},
 			);
 			projectRoot = "";
 			targets = (
@@ -848,27 +814,6 @@
 			fileType = archive.ar;
 			path = libFrameworkNPAPI.a;
 			remoteRef = 1770DF5517DF6CAE00000391 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		76359F15196C20D300DF2A57 /* libFrameworkTools.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libFrameworkTools.a;
-			remoteRef = 76359F14196C20D300DF2A57 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		76359F17196C20D300DF2A57 /* libFrameworkToolsQt.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libFrameworkToolsQt.a;
-			remoteRef = 76359F16196C20D300DF2A57 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		76359F19196C20D300DF2A57 /* libFrameworkToolsNPAPI.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libFrameworkToolsNPAPI.a;
-			remoteRef = 76359F18196C20D300DF2A57 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		E81F2AED16BFA49100C4545E /* libFrameworkQt.a */ = {
@@ -946,7 +891,6 @@
 				49C432081675E370000EA877 /* DXTTest.cpp in Sources */,
 				E81F2AF016BFA4A600C4545E /* MaterialCompilerTest.cpp in Sources */,
 				6260B9E418E9C225002DA65F /* SaveImageTest.cpp in Sources */,
-				49B774CD16B188A900A80FA3 /* DLCSystemTests.cpp in Sources */,
 				C177F28016D227A70036F02B /* InputTest.cpp in Sources */,
 				C151B1C016D50BDA00E09BAF /* eMailTest.cpp in Sources */,
 				C18046CA16D52ECA00DC24D8 /* DPITest.cpp in Sources */,
@@ -962,21 +906,18 @@
 				84E2926F18DA5D4300B5D4C9 /* DateTimeTest.cpp in Sources */,
 				E8679174175F407200C5A6A2 /* FormatsTest.cpp in Sources */,
 				7497446817B3C38D00282DAA /* AlignTest.cpp in Sources */,
+				C172EC1918C9F412004309CF /* DFFontTest.cpp in Sources */,
 				840CB02418EE08C600B722D0 /* JPEGTest.cpp in Sources */,
 				02F8B01417CF994300D5A334 /* ThreadSyncTest.cpp in Sources */,
 				E8490AA8192386B600C07E36 /* ParseTextTest.cpp in Sources */,
 				1770DF5917DF6CC200000391 /* UIMovieTest.cpp in Sources */,
+				D7E6C5BD1982562C00B96D1A /* DLCDownloadTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		76359F1B196C20ED00DF2A57 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = FrameworkTools;
-			targetProxy = 76359F1A196C20ED00DF2A57 /* PBXContainerItemProxy */;
-		};
 		FE93072B12C28C1100A33E69 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Framework;

@@ -2130,7 +2130,7 @@ PVRFile * LibPVRHelper::ReadFile(const FilePath &filePathname, bool readMetaData
     
 PVRFile * LibPVRHelper::ReadFile( File *file, bool readMetaData /*= false*/, bool readData /*= false*/)
 {
-    if(!file) return false;
+    if(!file) return NULL;
         
     PVRFile *pvrFile = new PVRFile();
         

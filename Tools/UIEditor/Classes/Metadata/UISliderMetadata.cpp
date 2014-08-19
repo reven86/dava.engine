@@ -31,6 +31,7 @@
 #include "UISliderMetadata.h"
 #include "StringUtils.h"
 #include "StringConstants.h"
+#include "ColorHelper.h"
 
 using namespace DAVA;
 
@@ -126,4 +127,452 @@ void UISliderMetadata::ApplyResize(const Rect& /*originalRect*/, const Rect& new
     }	
 	
     GetActiveUISlider()->SetRect(newRect);
+}
+
+QColor UISliderMetadata::GetMinColor() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return UIControlBackground::DRAW_ALIGNED;
+    }
+    
+    return ColorHelper::DAVAColorToQTColor(GetActiveUISlider()->GetBgMin()->GetColor());
+}
+
+void UISliderMetadata::SetMinColor(const QColor& value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+
+    GetActiveUISlider()->GetBgMin()->SetColor(ColorHelper::QTColorToDAVAColor(value));
+}
+
+int UISliderMetadata::GetMinDrawType() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return UIControlBackground::DRAW_ALIGNED;
+    }
+    
+    return GetActiveUISlider()->GetBgMin()->GetDrawType();
+}
+
+void UISliderMetadata::SetMinDrawType(int value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMin()->SetDrawType((UIControlBackground::eDrawType)value);
+}
+
+int UISliderMetadata::GetMinColorInheritType() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return UIControlBackground::COLOR_MULTIPLY_ON_PARENT;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMin()->GetColorInheritType();
+}
+
+void UISliderMetadata::SetMinColorInheritType(int value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMin()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+}
+
+int UISliderMetadata::GetMinAlign() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return ALIGN_LEFT;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMin()->GetAlign();
+}
+
+void UISliderMetadata::SetMinAlign(int value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+
+    GetActiveUISlider()->GetBgMin()->SetAlign(value);
+}
+
+float UISliderMetadata::GetMinLeftRightStretchCap() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return -1.0;
+    }
+
+    return GetActiveUISlider()->GetBgMin()->GetLeftRightStretchCap();
+}
+
+void UISliderMetadata::SetMinLeftRightStretchCap(float value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMin()->SetLeftRightStretchCap(value);
+}
+
+float UISliderMetadata::GetMinTopBottomStretchCap() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return -1.0;
+    }
+
+    return GetActiveUISlider()->GetBgMin()->GetTopBottomStretchCap();
+}
+
+void UISliderMetadata::SetMinTopBottomStretchCap(float value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMin()->SetTopBottomStretchCap(value);
+}
+
+void UISliderMetadata::SetMinSprite(const QString& value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+
+    //If empty string value is used - remove sprite
+    if (value.isEmpty())
+    {
+        GetActiveUISlider()->GetBgMin()->SetSprite(NULL, 0);
+    }
+    else
+    {
+        Sprite* sprite = Sprite::Create(value.toStdString());
+        if (sprite)
+        {
+            GetActiveUISlider()->GetBgMin()->SetSprite(sprite, 0);
+            SafeRelease(sprite);
+        }
+    }
+}
+
+QString UISliderMetadata::GetMinSprite() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return QString();
+    }
+    
+    Sprite* sprite = GetActiveUISlider()->GetBgMin()->GetSprite();
+    if (sprite)
+    {
+        return QString::fromStdString(sprite->GetRelativePathname().GetAbsolutePathname());
+    }
+    
+    return StringConstants::NO_SPRITE_IS_SET;
+}
+
+void UISliderMetadata::SetMinSpriteFrame(int value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+    
+    Sprite* sprite = GetActiveUISlider()->GetBgMin()->GetSprite();
+    if (sprite && sprite->GetFrameCount() > value)
+    {
+        GetActiveUISlider()->GetBgMin()->SetFrame(value);
+    }
+}
+
+int UISliderMetadata::GetMinSpriteFrame() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return -1;
+    }
+    
+    if (GetActiveUISlider()->GetBgMin()->GetSprite())
+    {
+        return GetActiveUISlider()->GetBgMin()->GetFrame();
+    }
+    
+    return 0;
+}
+
+void UISliderMetadata::SetMinSpriteModification(int value)
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return;
+    }
+
+    Sprite* sprite = GetActiveUISlider()->GetBgMin()->GetSprite();
+    if (sprite)
+    {
+        GetActiveUISlider()->GetBgMin()->SetModification(value);
+    }
+}
+
+int UISliderMetadata::GetMinSpriteModification() const
+{
+    if (!VerifyActiveParamIDAndMinBackground())
+    {
+        return -1;
+    }
+
+    Sprite* sprite = GetActiveUISlider()->GetBgMin()->GetSprite();
+    if (sprite)
+    {
+        return GetActiveUISlider()->GetBgMin()->GetModification();
+    }
+
+    return 0;
+}
+
+// Max Background.
+
+QColor UISliderMetadata::GetMaxColor() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return UIControlBackground::DRAW_ALIGNED;
+    }
+
+    return ColorHelper::DAVAColorToQTColor(GetActiveUISlider()->GetBgMax()->GetColor());
+}
+
+void UISliderMetadata::SetMaxColor(const QColor& value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+
+    GetActiveUISlider()->GetBgMax()->SetColor(ColorHelper::QTColorToDAVAColor(value));
+}
+
+int UISliderMetadata::GetMaxDrawType() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return UIControlBackground::DRAW_ALIGNED;
+    }
+
+    return GetActiveUISlider()->GetBgMax()->GetDrawType();
+}
+
+void UISliderMetadata::SetMaxDrawType(int value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMax()->SetDrawType((UIControlBackground::eDrawType)value);
+}
+
+int UISliderMetadata::GetMaxColorInheritType() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return UIControlBackground::COLOR_MULTIPLY_ON_PARENT;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMax()->GetColorInheritType();
+}
+
+void UISliderMetadata::SetMaxColorInheritType(int value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMax()->SetColorInheritType((UIControlBackground::eColorInheritType)value);
+}
+
+int UISliderMetadata::GetMaxAlign() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return ALIGN_LEFT;
+    }
+    
+    return (int)GetActiveUISlider()->GetBgMax()->GetAlign();
+}
+
+void UISliderMetadata::SetMaxAlign(int value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMax()->SetAlign(value);
+}
+
+float UISliderMetadata::GetMaxLeftRightStretchCap() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return -1.0;
+    }
+
+    return GetActiveUISlider()->GetBgMax()->GetLeftRightStretchCap();
+}
+
+void UISliderMetadata::SetMaxLeftRightStretchCap(float value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    GetActiveUISlider()->GetBgMax()->SetLeftRightStretchCap(value);
+}
+
+float UISliderMetadata::GetMaxTopBottomStretchCap() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return -1.0;
+    }
+    
+    return GetActiveUISlider()->GetBgMax()->GetTopBottomStretchCap();
+}
+
+void UISliderMetadata::SetMaxTopBottomStretchCap(float value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+
+    GetActiveUISlider()->GetBgMax()->SetTopBottomStretchCap(value);
+}
+
+void UISliderMetadata::SetMaxSprite(const QString& value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    //If empty string value is used - remove sprite
+    if (value.isEmpty())
+    {
+        GetActiveUISlider()->GetBgMax()->SetSprite(NULL, 0);
+    }
+    else
+    {
+        Sprite* sprite = Sprite::Create(value.toStdString());
+        if (sprite)
+        {
+            GetActiveUISlider()->GetBgMax()->SetSprite(sprite, 0);
+            SafeRelease(sprite);
+        }
+    }
+}
+
+QString UISliderMetadata::GetMaxSprite() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return QString();
+    }
+
+    Sprite* sprite = GetActiveUISlider()->GetBgMax()->GetSprite();
+    if (sprite)
+    {
+        return QString::fromStdString(sprite->GetRelativePathname().GetAbsolutePathname());
+    }
+
+    return StringConstants::NO_SPRITE_IS_SET;
+}
+
+void UISliderMetadata::SetMaxSpriteFrame(int value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    Sprite* sprite = GetActiveUISlider()->GetBgMax()->GetSprite();
+    if (sprite && sprite->GetFrameCount() > value)
+    {
+        GetActiveUISlider()->GetBgMax()->SetFrame(value);
+    }
+}
+
+int UISliderMetadata::GetMaxSpriteFrame() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return -1;
+    }
+    
+    if (GetActiveUISlider()->GetBgMax()->GetSprite())
+    {
+        return GetActiveUISlider()->GetBgMax()->GetFrame();
+    }
+    
+    return 0;
+}
+
+void UISliderMetadata::SetMaxSpriteModification(int value)
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return;
+    }
+    
+    Sprite* sprite = GetActiveUISlider()->GetBgMax()->GetSprite();
+    if (sprite)
+    {
+        GetActiveUISlider()->GetBgMax()->SetModification(value);
+    }
+}
+
+int UISliderMetadata::GetMaxSpriteModification() const
+{
+    if (!VerifyActiveParamIDAndMaxBackground())
+    {
+        return -1;
+    }
+
+    Sprite* sprite = GetActiveUISlider()->GetBgMax()->GetSprite();
+    if (sprite)
+    {
+        return GetActiveUISlider()->GetBgMax()->GetModification();
+    }
+
+    return 0;
+}
+
+bool UISliderMetadata::VerifyActiveParamIDAndMinBackground() const
+{
+    return VerifyActiveParamID() && GetActiveUISlider()->GetBgMin();
+}
+
+bool UISliderMetadata::VerifyActiveParamIDAndMaxBackground() const
+{
+    return VerifyActiveParamID() && GetActiveUISlider()->GetBgMax();
 }

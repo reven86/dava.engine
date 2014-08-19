@@ -47,7 +47,6 @@ QPointF CenterPivotPointCommand::PreprocessPropertyValue(const COMMANDDATAVECTIT
 	}
 
 	// Calculate the new Pivot Point value controlNode->GetUIObject() - place it in the center of the object.
-	// Note - UIEditor's coords should remain integer, so need rounding here.
 	Vector2 pivotPoint = controlNode->GetUIObject()->GetSize();
-	return QPointF(Round(pivotPoint.x / 2.0f), Round(pivotPoint.y / 2.0f));
+	return QPointF(pivotPoint.x / 2.0f, pivotPoint.y / 2.0f);
 }

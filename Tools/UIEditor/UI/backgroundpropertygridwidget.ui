@@ -1,301 +1,387 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>BackGroundPropertyGridWidget</class>
- <widget class="QWidget" name="BackGroundPropertyGridWidget">
+ <class>BackgroundPropertyGridWidget</class>
+ <widget class="QWidget" name="BackgroundPropertyGridWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>300</width>
-    <height>233</height>
+    <height>245</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
     <width>300</width>
-    <height>233</height>
+    <height>245</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QGroupBox" name="groupBox">
-   <property name="geometry">
-    <rect>
-     <x>1</x>
-     <y>1</y>
-     <width>299</width>
-     <height>231</height>
-    </rect>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="margin">
+    <number>1</number>
    </property>
-   <property name="title">
-    <string/>
-   </property>
-   <widget class="QLabel" name="colorLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>28</y>
-      <width>62</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Color:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="spriteLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>58</y>
-      <width>62</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Sprite:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="frameLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>88</y>
-      <width>62</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Frame:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="drawTypeLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>115</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Draw type:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="colorInheritLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>137</y>
-      <width>62</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Color 
+   <item>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>245</height>
+      </size>
+     </property>
+     <property name="title">
+      <string/>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="margin">
+       <number>1</number>
+      </property>
+      <item>
+       <widget class="QWidget" name="headerPanel" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="baseSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <widget class="QLabel" name="backgroundNameLabel">
+         <property name="geometry">
+          <rect>
+           <x>8</x>
+           <y>0</y>
+           <width>251</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>backgroundNameLabel</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="expandButton">
+         <property name="geometry">
+          <rect>
+           <x>265</x>
+           <y>2</y>
+           <width>18</width>
+           <height>18</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>+</string>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="detailsPanel" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>200</height>
+         </size>
+        </property>
+        <widget class="QLabel" name="AlignLabel">
+         <property name="geometry">
+          <rect>
+           <x>9</x>
+           <y>146</y>
+           <width>62</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Align:</string>
+         </property>
+        </widget>
+        <widget class="QColorWidget" name="selectColorWidget" native="true">
+         <property name="geometry">
+          <rect>
+           <x>79</x>
+           <y>1</y>
+           <width>206</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>206</width>
+           <height>22</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>206</width>
+           <height>42</height>
+          </size>
+         </property>
+        </widget>
+        <widget class="QLabel" name="drawTypeLabel">
+         <property name="geometry">
+          <rect>
+           <x>9</x>
+           <y>87</y>
+           <width>71</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Draw type:</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="openSpriteButton">
+         <property name="geometry">
+          <rect>
+           <x>234</x>
+           <y>28</y>
+           <width>30</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="drawTypeComboBox">
+         <property name="geometry">
+          <rect>
+           <x>79</x>
+           <y>82</y>
+           <width>209</width>
+           <height>26</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="tbSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>240</x>
+           <y>171</y>
+           <width>46</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>999</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="tbStretchLabel">
+         <property name="geometry">
+          <rect>
+           <x>153</x>
+           <y>176</y>
+           <width>81</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Vert. Stretch:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="lrStretchLabel">
+         <property name="geometry">
+          <rect>
+           <x>8</x>
+           <y>176</y>
+           <width>81</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Hor. Stretch:</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="lrSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>89</x>
+           <y>171</y>
+           <width>46</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>999</number>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="frameSpinBox">
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>56</y>
+           <width>41</width>
+           <height>25</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="colorInheritLabel">
+         <property name="geometry">
+          <rect>
+           <x>9</x>
+           <y>109</y>
+           <width>62</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Color 
 inherit:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="AlignLabel">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>174</y>
-      <width>62</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Align:</string>
-    </property>
-   </widget>
-   <widget class="QColorWidget" name="selectColorWidget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>81</x>
-      <y>25</y>
-      <width>206</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>206</width>
-      <height>22</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>206</width>
-      <height>22</height>
-     </size>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="spriteLineEdit">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>81</x>
-      <y>56</y>
-      <width>154</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="readOnly">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="openSpriteButton">
-    <property name="geometry">
-     <rect>
-      <x>235</x>
-      <y>56</y>
-      <width>30</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>...</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="drawTypeComboBox">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>110</y>
-      <width>209</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="colorInheritComboBox">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>139</y>
-      <width>209</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="alignComboBox">
-    <property name="geometry">
-     <rect>
-      <x>80</x>
-      <y>168</y>
-      <width>209</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="frameSpinBox">
-    <property name="geometry">
-     <rect>
-      <x>81</x>
-      <y>84</y>
-      <width>41</width>
-      <height>25</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="removeSpriteButton">
-    <property name="geometry">
-     <rect>
-      <x>265</x>
-      <y>56</y>
-      <width>22</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>x</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="lrStretchLabel">
-    <property name="geometry">
-     <rect>
-      <x>9</x>
-      <y>204</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Hor. Stretch:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="tbStretchLabel">
-    <property name="geometry">
-     <rect>
-      <x>154</x>
-      <y>204</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Vert. Stretch:</string>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="lrSpinBox">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>199</y>
-      <width>46</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>0</number>
-    </property>
-    <property name="maximum">
-     <number>999</number>
-    </property>
-   </widget>
-   <widget class="QSpinBox" name="tbSpinBox">
-    <property name="geometry">
-     <rect>
-      <x>241</x>
-      <y>199</y>
-      <width>46</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="minimum">
-     <number>0</number>
-    </property>
-    <property name="maximum">
-     <number>999</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="modificationLabel">
-    <property name="geometry">
-     <rect>
-      <x>125</x>
-      <y>88</y>
-      <width>71</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Reflection:</string>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="modificationComboBox">
-    <property name="geometry">
-     <rect>
-      <x>195</x>
-      <y>83</y>
-      <width>95</width>
-      <height>26</height>
-     </rect>
-    </property>
-   </widget>
-  </widget>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="modificationComboBox">
+         <property name="geometry">
+          <rect>
+           <x>194</x>
+           <y>55</y>
+           <width>95</width>
+           <height>26</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="removeSpriteButton">
+         <property name="geometry">
+          <rect>
+           <x>264</x>
+           <y>28</y>
+           <width>22</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>x</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="colorLabel">
+         <property name="geometry">
+          <rect>
+           <x>9</x>
+           <y>4</y>
+           <width>62</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Color:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="spriteLabel">
+         <property name="geometry">
+          <rect>
+           <x>9</x>
+           <y>30</y>
+           <width>62</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sprite:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="colorInheritComboBox">
+         <property name="geometry">
+          <rect>
+           <x>79</x>
+           <y>111</y>
+           <width>209</width>
+           <height>26</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="spriteLineEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>80</x>
+           <y>28</y>
+           <width>154</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="frameLabel">
+         <property name="geometry">
+          <rect>
+           <x>9</x>
+           <y>60</y>
+           <width>62</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Frame:</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="modificationLabel">
+         <property name="geometry">
+          <rect>
+           <x>124</x>
+           <y>60</y>
+           <width>71</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Reflection:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="alignComboBox">
+         <property name="geometry">
+          <rect>
+           <x>79</x>
+           <y>140</y>
+           <width>209</width>
+           <height>26</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>
@@ -304,15 +390,6 @@ inherit:</string>
    <header>qcolorwidget.h</header>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>spriteLineEdit</tabstop>
-  <tabstop>openSpriteButton</tabstop>
-  <tabstop>removeSpriteButton</tabstop>
-  <tabstop>frameSpinBox</tabstop>
-  <tabstop>drawTypeComboBox</tabstop>
-  <tabstop>colorInheritComboBox</tabstop>
-  <tabstop>alignComboBox</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

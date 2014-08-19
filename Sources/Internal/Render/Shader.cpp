@@ -410,6 +410,7 @@ void Shader::RecompileInternal(BaseObject * caller, void * param, void *callerDa
         uniformStruct->shaderSemantic = shaderSemantic;
         uniformStruct->type = (eUniformType)type;
         uniformStruct->size = size;
+        uniformStruct->updateSemantic = 0;
 
         void* value = uniformData + uniformOffsets[k] + sizeof(Uniform);
         uint16 valueSize = GetUniformTypeSize((eUniformType)type) * size;

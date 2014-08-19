@@ -145,6 +145,12 @@
     <Filter Include="Internal\Thread">
       <UniqueIdentifier>{e940db21-ebe2-45bb-bc09-5f3e66960d95}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Internal\DLC\Patcher">
+      <UniqueIdentifier>{99a0f84c-8f10-4225-b742-de1df099c7ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internal\DLC\Downloader">
+      <UniqueIdentifier>{56f56b47-79c3-4bbc-adef-7d96d2c55443}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\External\Box2D\Box2D.h">
@@ -1113,15 +1119,6 @@
     <ClInclude Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.h">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DLC\FileDownloader.h">
-      <Filter>Internal\DLC</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DLC\DLCSystem.h">
-      <Filter>Internal\DLC</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\Internal\DLC\DLCUnpacker.h">
-      <Filter>Internal\DLC</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\Base\Serializable.h">
       <Filter>Internal\Base</Filter>
     </ClInclude>
@@ -1517,6 +1514,63 @@
       <Filter>Internal\Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlNode.h">
+      <Filter>Internal\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_common.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\BSDiff.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.h">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Bind.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Function.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Base\Functor.h">
+      <Filter>Internal\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\DLC.h">
+      <Filter>Internal\DLC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\CurlDownloader.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\Downloader.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\DownloaderCommon.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\DLC\Downloader\DownloadManager.h">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\DFFont.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.h">
+      <Filter>Internal\Render\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Platform\Notification.h">
+      <Filter>Internal\Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>
@@ -2319,15 +2373,6 @@
     <ClCompile Include="..\..\Sources\Internal\Render\Highlevel\SpriteObject.cpp">
       <Filter>Internal\Render\Highlevel</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DLC\DLCSystem.cpp">
-      <Filter>Internal\DLC</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DLC\DLCUnpacker.cpp">
-      <Filter>Internal\DLC</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Internal\DLC\FileDownloader.cpp">
-      <Filter>Internal\DLC</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Scene3D\Components\ComponentHelpers.cpp">
       <Filter>Internal\Scene3D\Components</Filter>
     </ClCompile>
@@ -2722,8 +2767,59 @@
     <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlNode.cpp">
       <Filter>Internal\FileSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_diff.c">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\bsdiff\bs_patch.c">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\BSDiff.cpp">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\PatchFile.cpp">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Patcher\ZLibStream.cpp">
+      <Filter>Internal\DLC\Patcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\DLC.cpp">
+      <Filter>Internal\DLC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\CurlDownloader.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\Downloader.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\DownloaderCommon.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\DLC\Downloader\DownloadManager.cpp">
+      <Filter>Internal\DLC\Downloader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\FileSystem\YamlEmitter.cpp">
+      <Filter>Internal\FileSystem</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Render\OGLHelpers.cpp">
       <Filter>Internal\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\DFFont.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockDistanceRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockGraphicsRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Render\2D\TextBlockSoftwareRender.cpp">
+      <Filter>Internal\Render\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp">
+      <Filter>Internal\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

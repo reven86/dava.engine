@@ -35,6 +35,7 @@
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlEmitter.h"
 #include "Sound/SoundSystem.h"
 #if defined(__DAVAENGINE_IPHONE__)
 #include "FileSystem/LocalizationIPhone.h"
@@ -221,23 +222,16 @@ bool LocalizationSystem::SaveToYamlFile(const StringFile* stringFile)
 		return false;
 	}
 
-	YamlParser* parser = YamlParser::Create();
-	if (!parser)
-	{
-		return false;
-	}
-	
-	YamlNode *node = new YamlNode(YamlNode::TYPE_MAP);
+	YamlNode *node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
 	for (Map<WideString, WideString>::const_iterator iter = stringFile->strings.begin();
 		 iter != stringFile->strings.end(); iter ++)
 	{
-		node->Add(WStringToString(iter->first), iter->second);
+		node->Add(UTF8Utils::EncodeToUTF8(iter->first), iter->second);
 	}
 	
-	bool result = parser->SaveStringsList(stringFile->pathName, node);
+	bool result = YamlEmitter::SaveToYamlFile(stringFile->pathName, node);
 
 	SafeRelease(node);
-	SafeRelease(parser);
 	return result;
 }
 

@@ -467,13 +467,6 @@ bool GuidesManager::Save(const FilePath& fileName, uint32 fileAttr)
         return true;
     }
 
-    YamlParser * parser = YamlParser::Create();
-    if (!parser)
-    {
-        Logger::Error("GuidesManager::Save: error while creating YAML parser!");
-        return false;
-    }
-
     YamlNode* rootNode = new YamlNode(YamlNode::TYPE_MAP);
     YamlNode* guidesNode = new YamlNode(YamlNode::TYPE_MAP);
     rootNode->AddNodeToMap("guides", guidesNode);
@@ -490,8 +483,7 @@ bool GuidesManager::Save(const FilePath& fileName, uint32 fileAttr)
         guideIndex ++;
     }
 
-    bool saveResult = parser->SaveToYamlFile(fileName, rootNode, true, fileAttr);
-    SafeRelease(parser);
+    bool saveResult = YamlEmitter::SaveToYamlFile(fileName, rootNode, fileAttr);
 
     return saveResult;
 }
@@ -605,8 +597,6 @@ Vector2 GuidesManager::CalculateDistanceToGuide(GuideData::eGuideType guideType,
     if (stickMode & StickToCenters)
     {
         Vector2 rectCenter = rect.GetCenter();
-        rectCenter.x = Round(rectCenter.x);
-        rectCenter.y = Round(rectCenter.y);
         Vector2 distanceToCenter = rectCenter - guidePos;
 
         switch (guideType)

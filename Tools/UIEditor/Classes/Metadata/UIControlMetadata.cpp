@@ -408,7 +408,7 @@ void UIControlMetadata::SetClipContents(const bool value)
     GetActiveUIControl()->SetClipContents(value);
 }
 
-void UIControlMetadata::ApplyMove(const Vector2& moveDelta)
+void UIControlMetadata::ApplyMove(const Vector2& moveDelta, bool alignControlsToIntegerPos)
 {
     if (!VerifyActiveParamID())
     {
@@ -437,8 +437,8 @@ void UIControlMetadata::ApplyMove(const Vector2& moveDelta)
 	Vector2 pivotPoint = GetActiveUIControl()->pivotPoint;
 	rect.x -= pivotPoint.x;
 	rect.y -= pivotPoint.y;
-	
-	SetActiveControlRect(rect, false);
+
+	SetActiveControlRect(rect, false, alignControlsToIntegerPos);
 }
 
 void UIControlMetadata::ApplyResize(const Rect& /*originalRect*/, const Rect& newRect)
@@ -935,7 +935,7 @@ void UIControlMetadata::SetBottomAlignEnabled(const bool value)
 	GetActiveUIControl()->SetBottomAlignEnabled(value);
 }
 
-void UIControlMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign)
+void UIControlMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign, bool alignToIntegerPos)
 {
 	// Save/restore Align Data before changing the Control Rect, if requested.
 	UIControl* activeControl = GetActiveUIControl();
@@ -947,6 +947,14 @@ void UIControlMetadata::SetActiveControlRect(const Rect& rect, bool restoreAlign
 	}
 
 	activeControl->SetRect(rect);
+    
+    if (alignToIntegerPos)
+    {
+        Vector2 controlPos = activeControl->GetPosition();
+        controlPos.x = Round(controlPos.x);
+        controlPos.y = Round(controlPos.y);
+        activeControl->SetPosition(controlPos);
+    }
 
 	if (restoreAlign)
 	{

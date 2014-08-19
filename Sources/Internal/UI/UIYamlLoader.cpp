@@ -31,10 +31,12 @@
 #include "Base/ObjectFactory.h"
 #include "Platform/SystemTimer.h"
 #include "UI/UIControl.h"
-#include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlEmitter.h"
+#include "FileSystem/YamlParser.h"
 #include "FileSystem/FileSystem.h"
 #include "Render/2D/GraphicsFont.h"
+#include "Render/2D/DFFont.h"
 #include "Render/2D/FontManager.h"
 #include "Render/2D/TextBlock.h"
 
@@ -213,13 +215,13 @@ int32 UIYamlLoader::GetFittingOptionFromYamlNode( const YamlNode * fittingNode )
 //Vector<String> UIYamlLoader::GetAlignNodeValue(int32 align)
 YamlNode * UIYamlLoader::GetAlignNodeValue(int32 align)
 {
-	YamlNode *alignNode = new YamlNode(YamlNode::TYPE_ARRAY);
+	YamlNode *alignNode = YamlNode::CreateArrayNode(YamlNode::AR_FLOW_REPRESENTATION);
 	String horzAlign = "HCENTER";
 	String vertAlign = "VCENTER";
 
     if (align == ALIGN_HJUSTIFY)
     {
-        alignNode->AddValueToArray("HJUSTIFY");
+        alignNode->Add("HJUSTIFY");
         return alignNode;
     }
 
@@ -249,33 +251,33 @@ YamlNode * UIYamlLoader::GetAlignNodeValue(int32 align)
 		vertAlign = "BOTTOM";
 	}
 	
-	alignNode->AddValueToArray(horzAlign);
-	alignNode->AddValueToArray(vertAlign);
+	alignNode->Add(horzAlign);
+	alignNode->Add(vertAlign);
 	
 	return alignNode;
 }
 
 YamlNode * UIYamlLoader::GetFittingOptionNodeValue( int32 fitting ) const
 {
-    YamlNode *fittingNode = new YamlNode(YamlNode::TYPE_ARRAY);
+    YamlNode *fittingNode = YamlNode::CreateArrayNode(YamlNode::AR_FLOW_REPRESENTATION);
 
     if( fitting == TextBlock::FITTING_DISABLED )
     {
-        fittingNode->AddValueToArray("DISABLED");
+        fittingNode->Add("DISABLED");
     }
     else
     {
         if( fitting & TextBlock::FITTING_ENLARGE )
         {
-            fittingNode->AddValueToArray("ENLARGE");
+            fittingNode->Add("ENLARGE");
         }
         if( fitting & TextBlock::FITTING_REDUCE )
         {
-            fittingNode->AddValueToArray("REDUCE");
+            fittingNode->Add("REDUCE");
         }
         if( fitting & TextBlock::FITTING_POINTS )
         {
-            fittingNode->AddValueToArray("POINTS");
+            fittingNode->Add("POINTS");
         }
     }
     return fittingNode;
@@ -351,13 +353,6 @@ void UIYamlLoader::LoadFonts(const FilePath & yamlPathname)
     
 bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
 {
-    YamlParser * parser = YamlParser::Create();
-    
-    if (!parser)
-    {
-        Logger::Error("ProcessSave: error while creating YAML parser!");
-        return false;
-    }
     bool res = false;
     
     //save used fonts
@@ -386,9 +381,8 @@ bool UIYamlLoader::SaveFonts(const FilePath & yamlPathname)
         }
     }
     
-    res = parser->SaveToYamlFile(yamlPathname, fontsNode, true, File::CREATE | File::WRITE);
-    
-    SafeRelease(parser);
+    res = YamlEmitter::SaveToYamlFile(yamlPathname, fontsNode, File::CREATE | File::WRITE);
+
     return res;
 }
 
@@ -463,14 +457,7 @@ void UIYamlLoader::ProcessLoad(UIControl * rootControl, const FilePath & yamlPat
 bool UIYamlLoader::ProcessSave(UIControl * rootControl, const FilePath & yamlPathname, bool skipRootNode)
 {
     uint64 t1 = SystemTimer::Instance()->AbsoluteMS();
-    YamlParser * parser = YamlParser::Create();
 
-    if (!parser)
-    {
-        Logger::Error("ProcessSave: error while creating YAML parser!");
-        return false;
-    }
-    
     DVASSERT(rootControl);
     YamlNode* resultNode = SaveToNode(rootControl, NULL);
 
@@ -497,13 +484,12 @@ bool UIYamlLoader::ProcessSave(UIControl * rootControl, const FilePath & yamlPat
     }
 
     //resultNode
-    parser->SaveToYamlFile(yamlPathname, fontsNode, true, fileAttr);
+    YamlEmitter::SaveToYamlFile(yamlPathname, fontsNode, fileAttr);
     fileAttr = File::APPEND | File::WRITE;
 #endif
 	
     // Save the resulting YAML file to the path passed.
-    bool savedOK = parser->SaveToYamlFile(yamlPathname, resultNode, skipRootNode, fileAttr);
-    SafeRelease(parser);
+    bool savedOK = YamlEmitter::SaveToYamlFile(yamlPathname, resultNode, fileAttr);
     
     SafeRelease(resultNode);
     
@@ -587,6 +573,33 @@ void UIYamlLoader::LoadFontsFromNode(const YamlNode * rootNode)
 			FontManager::Instance()->SetFontName(font, t->first);
             SafeRelease(font);
 		}
+		else if (type == "DFFont")
+		{
+			// parse font
+			const YamlNode * fontNameNode = node->Get("name");
+			if (!fontNameNode)continue;
+			
+			float32 fontSize = 10.0f;
+			const YamlNode * fontSizeNode = node->Get("size");
+			if (fontSizeNode)fontSize = fontSizeNode->AsFloat();
+			
+			DFFont * font = DFFont::Create(fontNameNode->AsString());
+            if (!font)
+            {
+                continue;
+            }
+			
+			font->SetSize(fontSize);
+			
+            const YamlNode * fontVerticalSpacingNode = node->Get("verticalSpacing");
+            if(fontVerticalSpacingNode)
+            {
+                font->SetVerticalSpacing(fontVerticalSpacingNode->AsInt());
+            }
+            
+			//fontMap[t->first] = font;
+			FontManager::Instance()->SetFontName(font, t->first);
+		}
 	}
 }
     
@@ -602,6 +615,7 @@ void UIYamlLoader::LoadFromNode(UIControl * parentControl, const YamlNode * root
 		const String & type = typeNode->AsString();
 		if (type == "FTFont")continue;
 		if (type == "GraphicsFont")continue;
+		if (type == "DFFont") continue;
 
 		// Base Type might be absent.
 		const YamlNode* baseTypeNode = node->Get("baseType");
@@ -670,8 +684,7 @@ UIControl* UIYamlLoader::CreateControl(const String& type, const String& baseTyp
 	return control;
 }
 
-YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentNode,
-                                   int saveIndex)
+YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentNode)
 {
     // Save ourselves and all children.
     YamlNode* childNode = parentControl->SaveToYamlNode(this);
@@ -680,24 +693,18 @@ YamlNode* UIYamlLoader::SaveToNode(UIControl * parentControl, YamlNode * parentN
         parentNode->AddNodeToMap(parentControl->GetName(), childNode);
     }
 
-    SaveChildren(parentControl, childNode, saveIndex);
+    SaveChildren(parentControl, childNode);
 
     return childNode;
 }
 
-void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode, int saveIndex)
+void UIYamlLoader::SaveChildren(UIControl* parentControl, YamlNode * parentNode)
 {
-    // "Relative Depth" is needed to save the order of the nodes - it is important!
-    parentNode->Set(YamlNode::SAVE_INDEX_NAME, saveIndex);
-    
-    int currentSaveIndex = 0;
-    
 	const List<UIControl*>& children = parentControl->GetRealChildren();
 	for (List<UIControl*>::const_iterator childIter = children.begin(); childIter != children.end(); childIter ++)
     {
         UIControl* childControl = (*childIter);
-        SaveToNode(childControl, parentNode, currentSaveIndex);
-        currentSaveIndex ++;
+        SaveToNode(childControl, parentNode);
     }
 }
 

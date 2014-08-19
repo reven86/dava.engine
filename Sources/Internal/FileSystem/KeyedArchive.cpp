@@ -34,6 +34,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/VariantType.h"
+#include "FileSystem/YamlEmitter.h"
 
 namespace DAVA 
 {
@@ -168,11 +169,11 @@ bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
         return false;
     }
 
-    const Vector<YamlNode*> &rootVector = archieveNode->AsVector();
-    for (Vector<YamlNode*>::const_iterator it = rootVector.begin(); it != rootVector.end(); ++it)
+    int32 count = archieveNode->GetCount();
+    for (int32 i = 0; i < count; ++i)
     {
-		const YamlNode * node = *it;
-		const String &variableNameToArchMap = node->AsString();
+		const YamlNode * node = archieveNode->Get(i);
+		const String &variableNameToArchMap = archieveNode->GetItemKeyName(i);
 
         VariantType *value = new VariantType(node->AsVariantType());
                 
@@ -191,16 +192,10 @@ bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
    
 bool KeyedArchive::SaveToYamlFile(const FilePath & pathName)
 {
-    File * archive = File::Create(pathName, File::CREATE|File::WRITE);
-	if (NULL == archive)
-        return false;
-    
-	ScopedPtr<YamlNode> node( new YamlNode(YamlNode::TYPE_STRING) );
-    node->InitFromKeyedArchive(this);
-    node->PrintToFile(archive);
- 
-	SafeRelease(archive);
-	return true;
+    ScopedPtr<YamlNode> node( YamlNode::CreateMapNode() );
+    node->Set(VariantType::TYPENAME_KEYED_ARCHIVE, VariantType(this));
+
+    return YamlEmitter::SaveToYamlFile(pathName, node);
 }
 
 void KeyedArchive::SetBool(const String & key, bool value)

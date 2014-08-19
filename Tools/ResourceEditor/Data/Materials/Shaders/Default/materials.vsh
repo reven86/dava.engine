@@ -1,5 +1,5 @@
 <CONFIG>
-uniform float decalTileCoordScale = 1.0;
+uniform vec2 decalTileCoordScale = vec2(1.0, 1.0);
 <VERTEX_SHADER>
 
 #ifdef GL_ES
@@ -132,7 +132,7 @@ uniform vec3 boundingBoxSize;
 #endif
 
 #if defined(TILED_DECAL)
-uniform float decalTileCoordScale;
+uniform vec2 decalTileCoordScale;
 #endif
 
 // OUTPUT ATTRIBUTES

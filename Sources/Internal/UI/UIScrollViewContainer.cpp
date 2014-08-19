@@ -44,6 +44,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect &rect, bool rectInAbsolu
 	touchTreshold(DEFAULT_TOUCH_TRESHOLD),
 	enableHorizontalScroll(true),
 	enableVerticalScroll(true),
+    scrollStartMovement(false),
 	newPos(0.f, 0.f),
 	oldPos(0.f, 0.f),
 	lockTouch(false),
@@ -71,11 +72,11 @@ void UIScrollViewContainer::CopyDataFrom(UIControl *srcControl)
 	UIControl::CopyDataFrom(srcControl);
 }
 
-void UIScrollViewContainer::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
+void UIScrollViewContainer::SetRect(const Rect &rect)
 {
-	UIControl::SetRect(rect, rectInAbsoluteCoordinates);
+	UIControl::SetRect(rect);
 	
-	UIControl *parent = this->GetParent();
+	UIControl *parent = GetParent();
 	if (parent)
 	{
 		Rect parentRect = parent->GetRect();

@@ -62,20 +62,23 @@
      <string>Guide position:</string>
     </property>
    </widget>
-   <widget class="QSpinBox" name="positionSpinBox">
+   <widget class="QDoubleSpinBox" name="positionDoubleSpinBox">
     <property name="geometry">
      <rect>
       <x>110</x>
       <y>30</y>
-      <width>61</width>
+      <width>71</width>
       <height>25</height>
      </rect>
     </property>
-    <property name="minimum">
-     <number>-9999</number>
+    <property name="decimals">
+     <number>1</number>
     </property>
     <property name="maximum">
-     <number>9999</number>
+     <double>9999.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>1.000000000000000</double>
     </property>
    </widget>
   </widget>
