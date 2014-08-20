@@ -185,7 +185,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         refractionTexture = Texture::CreateFBO(REFRACTION_TEX_SIZE, REFRACTION_TEX_SIZE, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);                  
     }   
         
-    RenderManager::Instance()->ClipPush();
+//    RenderSystem2D::Instance()->ClipPush();
     Rect viewportSave = RenderManager::Instance()->GetViewport();
     uint32 currFboId = RenderManager::Instance()->HWglGetLastFBO();
     int32 currRenderOrientation = RenderManager::Instance()->GetRenderOrientation();
@@ -216,7 +216,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
     RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
     RenderManager::Instance()->SetRenderOrientation(currRenderOrientation);
     RenderManager::Instance()->SetViewport(viewportSave, true);
-    RenderManager::Instance()->ClipPop();
+//    RenderManager::Instance()->ClipPop();
 
 
     renderSystem->GetDrawCamera()->SetupDynamicParameters();    		

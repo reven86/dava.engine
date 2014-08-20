@@ -34,6 +34,7 @@
 #include "Render/RenderHelper.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 
 namespace DAVA 
@@ -93,14 +94,14 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_3D_BLEND);
 	
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
-    viewportRc = viewportRect;
+    viewportRc = VirtualCoordinates::ConvertVirtualToPhysical(viewportRect);
     
-    RenderManager::Instance()->PushDrawMatrix();
+    RenderSystem2D::Instance()->PushDrawMatrix();
 //	RenderManager::Instance()->PushMappingMatrix();
     int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
     
     Rect viewportSave = RenderManager::Instance()->GetViewport();
-    RenderManager::Instance()->SetViewport(viewportRect, false);
+    RenderManager::Instance()->SetViewport(viewportRc, false);
     
     
     if (scene)
@@ -111,11 +112,11 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     RenderManager::Instance()->SetRenderOrientation(renderOrientation);
     
 
-	RenderManager::Instance()->PopDrawMatrix();
+	RenderSystem2D::Instance()->PopDrawMatrix();
 //	RenderManager::Instance()->PopMappingMatrix();
 	
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
-    RenderManager::Instance()->Setup2DMatrices();
+    RenderSystem2D::Instance()->Setup2DMatrices();
 	
         //    modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
         //    Logger::Info("Model matrix");

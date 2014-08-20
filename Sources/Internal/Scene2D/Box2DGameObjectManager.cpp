@@ -31,6 +31,7 @@
 #include "FileSystem/Logger.h"
 #include "Collision/CollisionObject2.h"
 #include "Render/RenderManager.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "Scene2D/Box2DGameObject.h"
 
 namespace DAVA
@@ -150,16 +151,16 @@ void Box2DGameObjectManager::Draw()
 
 	if(debugDraw)
 	{
-        RenderManager::Instance()->PushDrawMatrix();
-        RenderManager::Instance()->SetDrawTranslate(cameraPosition);
-        RenderManager::Instance()->SetDrawScale(cameraScale);
+        RenderSystem2D::Instance()->PushDrawMatrix();
+        RenderSystem2D::Instance()->SetDrawTranslate(cameraPosition);
+        RenderSystem2D::Instance()->SetDrawScale(cameraScale);
 
 		//debugDraw->SetCameraPos(drawState.position);
         //debugDraw->SetPTDRatio(pixelsInMeterRatio * GetCameraScale());
 		box2DWorld->SetDebugDraw(debugDraw);
 		box2DWorld->DrawDebugData();
 
-        RenderManager::Instance()->PopDrawMatrix();
+        RenderSystem2D::Instance()->PopDrawMatrix();
 	}
 }
 	

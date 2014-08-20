@@ -39,11 +39,191 @@ RenderSystem2D::RenderSystem2D()
     spriteRenderObject = new RenderDataObject();
     spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
     spriteTexCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
+    
+	userDrawOffset = Vector2(0, 0);
+	userDrawScale = Vector2(1, 1);
+    
+	currentDrawOffset = Vector2(0, 0);
+	currentDrawScale = Vector2(1, 1);
+    mappingMatrixChanged = true;
 }
 
 RenderSystem2D::~RenderSystem2D()
 {
 	SafeRelease(spriteRenderObject);
+}
+
+void RenderSystem2D::Reset()
+{
+	userDrawOffset = Vector2(0, 0);
+	userDrawScale = Vector2(1, 1);
+	
+	currentDrawOffset = Vector2(0, 0);
+	currentDrawScale = Vector2(1, 1);
+    mappingMatrixChanged = true;
+    
+	currentClip.x = 0;
+	currentClip.y = 0;
+	currentClip.dx = -1;
+	currentClip.dy = -1;
+}
+    
+void RenderSystem2D::SetDrawTranslate(const Vector2 &offset)
+{
+    mappingMatrixChanged = true;
+    userDrawOffset.x += offset.x * userDrawScale.x;
+    userDrawOffset.y += offset.y * userDrawScale.y;
+}
+
+void RenderSystem2D::SetDrawTranslate(const Vector3 &offset)
+{
+    mappingMatrixChanged = true;
+    userDrawOffset.x += offset.x * userDrawScale.x;
+    userDrawOffset.y += offset.y * userDrawScale.y;
+}
+
+const Vector2& RenderSystem2D::GetDrawTranslate() const
+{
+    return userDrawOffset;
+}
+
+void RenderSystem2D::SetDrawScale(const Vector2 &scale)
+{
+    mappingMatrixChanged = true;
+    userDrawScale.x *= scale.x;
+    userDrawScale.y *= scale.y;
+}
+
+const Vector2& RenderSystem2D::GetDrawScale() const
+{
+    return userDrawScale;
+}
+
+void RenderSystem2D::IdentityDrawMatrix()
+{
+    mappingMatrixChanged = true;
+    userDrawScale.x = 1.0f;
+    userDrawScale.y = 1.0f;
+    
+    userDrawOffset.x = 0.0f;
+    userDrawOffset.y = 0.0f;
+}
+
+void RenderSystem2D::IdentityModelMatrix()
+{
+    mappingMatrixChanged = true;
+    currentDrawOffset = Vector2(0.0f, 0.0f);
+    currentDrawScale = Vector2(1.0f, 1.0f);
+    
+    viewMatrix = Matrix4::IDENTITY;
+}
+
+void RenderSystem2D::PushDrawMatrix()
+{
+    DrawMatrix dm;
+    dm.userDrawOffset = userDrawOffset;
+    dm.userDrawScale = userDrawScale;
+    matrixStack.push(dm);
+}
+
+void RenderSystem2D::PopDrawMatrix()
+{
+    IdentityDrawMatrix();
+    DrawMatrix dm = matrixStack.top();
+    matrixStack.pop();
+    userDrawOffset = dm.userDrawOffset;
+    userDrawScale = dm.userDrawScale;
+    PrepareRealMatrix();
+}
+    
+void RenderSystem2D::Setup2DMatrices()
+{
+    PrepareRealMatrix();
+    
+    Matrix4 glTranslate, glScale;
+    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
+    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
+    viewMatrix = glScale * glTranslate;
+    
+    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
+    RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
+}
+    
+void RenderSystem2D::PrepareRealMatrix()
+{
+    if (mappingMatrixChanged)
+    {
+        mappingMatrixChanged = false;
+        
+        Vector2 realDrawScale = userDrawScale * VirtualCoordinates::GetVirtualToPhysicalFactor();
+        Vector2 realDrawOffset = (userDrawOffset - Vector2(VirtualCoordinates::GetVirtualScreenXMin(), VirtualCoordinates::GetVirtualScreenYMin()))
+        * VirtualCoordinates::GetVirtualToPhysicalFactor();
+        
+        if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
+        {
+            currentDrawScale = realDrawScale;
+            currentDrawOffset = realDrawOffset;
+            
+            Matrix4 glTranslate, glScale;
+            glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
+            glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
+            
+            viewMatrix = glScale * glTranslate;
+            RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
+        }
+    }
+}
+
+void RenderSystem2D::SetClip(const Rect &rect)
+{
+    currentClip = rect;
+    RenderManager::Instance()->SetHWClip(VirtualCoordinates::ConvertVirtualToPhysical(currentClip));
+}
+
+void RenderSystem2D::RemoveClip()
+{
+    currentClip = Rect(0,0,-1,-1);
+    RenderManager::Instance()->SetHWClip(currentClip);
+}
+
+void RenderSystem2D::ClipRect(const Rect &rect)
+{
+    Rect r = currentClip;
+    float32 retScreenWidth = (float32)RenderManager::Instance()->GetScreenWidth();
+    float32 retScreenHeight = (float32)RenderManager::Instance()->GetScreenHeight();
+    if(r.dx < 0)
+    {
+        r.dx = (float32)retScreenWidth * VirtualCoordinates::GetPhysicalToVirtualFactor();
+    }
+    if(r.dy < 0)
+    {
+        r.dy = (float32)retScreenHeight * VirtualCoordinates::GetPhysicalToVirtualFactor();
+    }
+    
+    r = r.Intersection(rect);
+    
+    currentClip = r;
+    RenderManager::Instance()->SetHWClip(VirtualCoordinates::ConvertVirtualToPhysical(currentClip));
+}
+
+void RenderSystem2D::ClipPush()
+{
+    clipStack.push(currentClip);
+}
+
+void RenderSystem2D::ClipPop()
+{
+    if(clipStack.empty())
+    {
+        Rect r(0, 0, -1, -1);
+        SetClip(r);
+    }
+    else
+    {
+        Rect r = clipStack.top();
+        SetClip(r);
+    }
+    clipStack.pop();
 }
 
 void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
@@ -53,11 +233,13 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 		return;
 	}
     
+    PrepareRealMatrix();
+    
 	PrepareSpriteRenderData(sprite, state);
     
 	if(sprite->clipPolygon)
 	{
-		RenderManager::Instance()->ClipPush();
+		ClipPush();
 		Rect clipRect;
 		if( sprite->flags & Sprite::EST_SCALE )
 		{
@@ -78,7 +260,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
                             , sprite->GetRectOffsetValueForFrame( state->frame, Sprite::ACTIVE_HEIGHT ) );
 		}
         
-		RenderManager::Instance()->ClipRect(clipRect);
+		ClipRect(clipRect);
 	}
     
     RenderManager::Instance()->SetRenderState(state->renderState);
@@ -89,7 +271,7 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
     
 	if(sprite->clipPolygon)
 	{
-		RenderManager::Instance()->ClipPop();
+		ClipPop();
 	}
 }
     

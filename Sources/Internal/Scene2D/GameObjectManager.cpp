@@ -31,6 +31,7 @@
 #include "FileSystem/Logger.h"
 #include "Collision/CollisionObject2.h"
 #include "Render/RenderManager.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 
 /*
 	/TODO optimize object manager
@@ -274,9 +275,9 @@ void GameObjectManager::Draw()
 	//eBlendMode srcMode = RenderManager::Instance()->GetSrcBlend();
 	//eBlendMode destMode = RenderManager::Instance()->GetDestBlend();
 	
-        RenderManager::Instance()->PushDrawMatrix();
-        RenderManager::Instance()->SetDrawTranslate(cameraPosition);
-        RenderManager::Instance()->SetDrawScale(cameraScale);
+        RenderSystem2D::Instance()->PushDrawMatrix();
+        RenderSystem2D::Instance()->SetDrawTranslate(cameraPosition);
+        RenderSystem2D::Instance()->SetDrawScale(cameraScale);
 
     const List<GameObject*>::iterator currentObjEnd = objects.end();
 	for(List<GameObject*>::iterator currentObj = objects.begin(); currentObj != currentObjEnd; ++currentObj)
@@ -288,7 +289,7 @@ void GameObjectManager::Draw()
 		    object->Draw();
 	}
 	
-        RenderManager::Instance()->PopDrawMatrix();
+    RenderSystem2D::Instance()->PopDrawMatrix();
 
 	//RenderManager::Instance()->SetBlendMode(srcMode, destMode);
     RenderManager::Instance()->ResetColor();

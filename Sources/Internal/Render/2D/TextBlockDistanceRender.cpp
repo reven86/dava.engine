@@ -30,6 +30,7 @@
 #include "Render/RenderManager.h"
 #include "Core/Core.h"
 #include "Render/ShaderCache.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA 
@@ -143,21 +144,8 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
     
-    bool needClipPop = false;
-    if (textBlock->requestedSize.dx == 0 && textBlock->requestedSize.dy == 0)
-    {
-        RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect((float32)xOffset, (float32)yOffset, textBlock->rectSize.dx, textBlock->rectSize.dy));
-        needClipPop = true;
-    }
-    else if (textBlock->requestedSize.dx > 0 && textBlock->requestedSize.dy > 0)
-    {
-        RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect((float32)xOffset, (float32)yOffset, textBlock->requestedSize.dx, textBlock->requestedSize.dy));
-        needClipPop = true;
-    }
-    RenderManager::Instance()->PushDrawMatrix();
-    RenderManager::Instance()->SetDrawTranslate(Vector2((float32)xOffset, (float32)yOffset));
+    RenderSystem2D::Instance()->PushDrawMatrix();
+    RenderSystem2D::Instance()->SetDrawTranslate(Vector2((float32)xOffset, (float32)yOffset));
 
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
@@ -176,11 +164,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
-    RenderManager::Instance()->PopDrawMatrix();
-    if (needClipPop)
-    {
-        RenderManager::Instance()->ClipPop();
-    }
+    RenderSystem2D::Instance()->PopDrawMatrix();
 }
 	
 Size2i TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

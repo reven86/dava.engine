@@ -36,6 +36,7 @@
 #include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA 
@@ -229,8 +230,8 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	const Rect & aRect =  thumbButton->GetGeometricData().GetUnrotatedRect();
 	float32 clipPointAbsolute = aRect.x + aRect.dx * 0.5f;
 
-    const Vector2& drawTranslate = RenderManager::Instance()->GetDrawTranslate();
-    const Vector2& drawScale = RenderManager::Instance()->GetDrawScale();
+    const Vector2& drawTranslate = RenderSystem2D::Instance()->GetDrawTranslate();
+    const Vector2& drawScale = RenderSystem2D::Instance()->GetDrawScale();
 
     float32 screenXMin = (VirtualCoordinates::GetVirtualScreenXMin() - drawTranslate.x) / drawScale.x;
     float32 screenXMax = (VirtualCoordinates::GetVirtualScreenXMax() - drawTranslate.x) / drawScale.x;
@@ -240,18 +241,18 @@ void UISlider::Draw(const UIGeometricData &geometricData)
 	if (minBackground)
 	{
 		minBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
+		RenderSystem2D::Instance()->ClipPush();
+        RenderSystem2D::Instance()->ClipRect(Rect(screenXMin, screenYMin, clipPointAbsolute - screenXMin, screenYMax));
 		minBackground->Draw(geometricData);
-		RenderManager::Instance()->ClipPop();
+		RenderSystem2D::Instance()->ClipPop();
 	}
 	if (maxBackground)
 	{
 		maxBackground->SetParentColor(GetBackground()->GetDrawColor());
-		RenderManager::Instance()->ClipPush();
-        RenderManager::Instance()->ClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
+		RenderSystem2D::Instance()->ClipPush();
+        RenderSystem2D::Instance()->ClipRect(Rect(clipPointAbsolute, screenYMin, screenXMax - clipPointAbsolute, screenYMax));
 		maxBackground->Draw(geometricData);
-		RenderManager::Instance()->ClipPop();
+		RenderSystem2D::Instance()->ClipPop();
 	}
 
 	if (!minBackground && !maxBackground)

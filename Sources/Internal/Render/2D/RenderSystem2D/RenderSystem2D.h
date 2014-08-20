@@ -53,7 +53,60 @@ public:
     void Draw(TextBlock * textblock);
     void Draw(Font * font);
     
+//////from RenderManager
+	void PrepareRealMatrix();
+    
+    void SetDrawTranslate(const Vector2 &offset);
+	void SetDrawTranslate(const Vector3 &offset);
+    const Vector2& GetDrawTranslate() const;
+    
+	void SetDrawScale(const Vector2 &scale);
+    const Vector2& GetDrawScale() const;
+    
+	void IdentityDrawMatrix();
+	void IdentityModelMatrix();
+    
+	void PushDrawMatrix();
+    void PopDrawMatrix();
+    
+    void Reset();
+    
+    void SetClip(const Rect &rect);
+	void ClipRect(const Rect &rect);
+	void RemoveClip();
+    
+	void ClipPush();
+	void ClipPop();
+    
+protected:
+    Matrix4 viewMatrix;
+    
+public:
+    void Setup2DMatrices();
+    
+//////*from RenderManager
+    
 private:
+    //transform
+	typedef struct DrawMatrix_t
+	{
+		Vector2 userDrawOffset;
+		Vector2 userDrawScale;
+	} DrawMatrix;
+    
+    Vector2 userDrawOffset;
+	Vector2 userDrawScale;
+    
+	Vector2 currentDrawOffset;
+	Vector2 currentDrawScale;
+    
+    bool mappingMatrixChanged;
+    
+    std::stack<DrawMatrix> matrixStack;
+	std::stack<Rect> clipStack;
+    
+	Rect currentClip;
+    
     //sprite draw
     void PrepareSpriteRenderData(Sprite * sprite, Sprite::DrawState * drawState);
     

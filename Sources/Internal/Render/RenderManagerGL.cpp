@@ -35,7 +35,7 @@
 #include "Core/Core.h"
 #include "Render/OGLHelpers.h"
 #include "Render/Shader.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/FileSystem.h"
@@ -222,12 +222,12 @@ void RenderManager::BeginFrame()
 	SetRenderOrientation(Core::Instance()->GetScreenOrientation());
 	DVASSERT(!currentRenderTarget);
 	//DVASSERT(!currentRenderEffect);
-	DVASSERT(clipStack.empty());
+//	DVASSERT(clipStack.empty());
 	DVASSERT(renderTargetStack.empty());
 	Reset();
 	isInsideDraw = true;
     
-    //ClearUniformMatrices();
+    RenderSystem2D::Instance()->Reset();
 }
 	
 //void RenderManager::SetDrawOffset(const Vector2 &offset)
@@ -235,40 +235,7 @@ void RenderManager::BeginFrame()
 //	glMatrixMode(GL_PROJECTION);
 //	glTranslatef(offset.x, offset.y, 0.0f);
 //	glMatrixMode(GL_MODELVIEW);
-//}
-
-void RenderManager::PrepareRealMatrix()
-{
-    if (mappingMatrixChanged)
-    {
-        mappingMatrixChanged = false;
-        
-        Vector2 realDrawScale = userDrawScale * VirtualCoordinates::GetVirtualToPhysicalFactor();
-        Vector2 realDrawOffset = (userDrawOffset - Vector2(VirtualCoordinates::GetVirtualScreenXMin(), VirtualCoordinates::GetVirtualScreenYMin()))
-                                    * VirtualCoordinates::GetVirtualToPhysicalFactor();
-        
-        if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
-        {
-            currentDrawScale = realDrawScale;
-            currentDrawOffset = realDrawOffset;
-
-            Matrix4 glTranslate, glScale;
-            glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-            glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-            
-            renderer2d.viewMatrix = glScale * glTranslate;
-            SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-        }
-    }
-    
-    Matrix4 glTranslate, glScale;
-    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-    
-    Matrix4 check = glScale * glTranslate;
-    DVASSERT(check == renderer2d.viewMatrix);
-}
-	
+//}	
 
 void RenderManager::EndFrame()
 {
@@ -374,14 +341,14 @@ void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates
         return;
     }
 
-    PrepareRealMatrix();
+//    PrepareRealMatrix();
     
 
-	int32 x = (int32)(rect.x * currentDrawScale.x + currentDrawOffset.x);
-	int32 y = (int32)(rect.y * currentDrawScale.y + currentDrawOffset.y);
+	int32 x = (int32)(rect.x /* *currentDrawScale.x + currentDrawOffset.x */ );
+	int32 y = (int32)(rect.y /* *currentDrawScale.y + currentDrawOffset.y */ );
 	int32 width, height;
-    width = (int32)(rect.dx * currentDrawScale.x);
-    height = (int32)(rect.dy * currentDrawScale.y);    
+    width = (int32)(rect.dx /* *currentDrawScale.x */);
+    height = (int32)(rect.dy /* *currentDrawScale.y */);
     
     if (renderOrientation!=Core::SCREEN_ORIENTATION_TEXTURE)
     {
@@ -404,18 +371,20 @@ void RenderManager::SetRenderOrientation(int32 orientation)
 	
     if (orientation != Core::SCREEN_ORIENTATION_TEXTURE)
     {
-        renderer2d.projMatrix.glOrtho(0.0f, (float32)frameBufferWidth, (float32)frameBufferHeight, 0.0f, -1.0f, 1.0f);
-    }else{
-        renderer2d.projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
+        projMatrix.glOrtho(0.0f, (float32)frameBufferWidth, (float32)frameBufferHeight, 0.0f, -1.0f, 1.0f);
+    }
+    else
+    {
+        projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
                                       0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(), -1.0f, 1.0f);
     }
     retScreenWidth = frameBufferWidth;
     retScreenHeight = frameBufferHeight;
 	
     
-    SetDynamicParam(PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
+    SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
 
-    IdentityModelMatrix();
+//    IdentityModelMatrix();
     
 	RENDER_VERIFY(;);
 
@@ -432,14 +401,14 @@ void RenderManager::SetCullOrder(eCullOrder cullOrder)
     
 void RenderManager::FlushState()
 {
-	PrepareRealMatrix();
+//	PrepareRealMatrix();
     
     currentState.Flush(&hardwareState);
 }
 
 void RenderManager::FlushState(RenderState * stateBlock)
 {
-	PrepareRealMatrix();
+//	PrepareRealMatrix();
 	
 	stateBlock->Flush(&hardwareState);
 }
@@ -581,17 +550,17 @@ void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 
 void RenderManager::SetHWClip(const Rect &rect)
 {
-	PrepareRealMatrix();
-	currentClip = rect;
+//	PrepareRealMatrix();
+//	currentClip = rect;
 	if(rect.dx < 0 || rect.dy < 0)
 	{
 		RENDER_VERIFY(glDisable(GL_SCISSOR_TEST));
 		return;
 	}
-	int32 x = (int32)(rect.x * currentDrawScale.x + currentDrawOffset.x);
-	int32 y = (int32)(rect.y * currentDrawScale.y + currentDrawOffset.y);
-	int32 x2= (int32)ceilf((rect.dx + rect.x) * currentDrawScale.x + currentDrawOffset.x);
-	int32 y2= (int32)ceilf((rect.dy + rect.y) * currentDrawScale.y + currentDrawOffset.y);
+	int32 x = (int32)(rect.x /* * currentDrawScale.x + currentDrawOffset.x */);
+	int32 y = (int32)(rect.y /* * currentDrawScale.y + currentDrawOffset.y */);
+	int32 x2= (int32)ceilf((rect.dx + rect.x)/* * currentDrawScale.x + currentDrawOffset.x */);
+	int32 y2= (int32)ceilf((rect.dy + rect.y)/* * currentDrawScale.y + currentDrawOffset.y */);
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
@@ -627,18 +596,18 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
                          (float32)(renderTarget->GetTexture()->width),
                          (float32)(renderTarget->GetTexture()->height)), true);
 
-        renderer2d.projMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
-        SetDynamicParam (PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
+        projMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
+        SetDynamicParam (PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
         
-        IdentityModelMatrix();
+//        IdentityModelMatrix();
 //		IdentityMappingMatrix(); 
 
         //float32 scale = VirtualCoordinates::GetResourceToPhysicalFactor(renderTarget->GetResourceSizeIndex());
 		//viewMappingDrawScale.x = viewMappingDrawScale.y = scale;
         
-        mappingMatrixChanged = true;
+//        mappingMatrixChanged = true;
         
-		RemoveClip();
+//		RemoveClip();
 	}
 }
 

@@ -37,7 +37,6 @@
 #include "Render/ShaderCache.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 
 namespace DAVA
 {
@@ -88,16 +87,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 	debugEnabled = false;
 	fboViewRenderbuffer = 0;
 	fboViewFramebuffer = 0;
-	
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-
-//	viewMappingDrawOffset = Vector2(0, 0);
-//	viewMappingDrawScale = Vector2(1, 1);
-
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
 	
 	isInsideDraw = false;
 
@@ -269,23 +258,6 @@ void RenderManager::Reset()
 	ResetColor();
 
 	currentRenderTarget = NULL;
-
-	currentClip.x = 0;
-	currentClip.y = 0;
-	currentClip.dx = -1;
-	currentClip.dy = -1;
-	
-//	for (uint32 idx = 0; idx < MAX_TEXTURE_LEVELS; ++idx)
-//        currentTexture[idx] = 0;
-
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-	
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
-	//currentState.Reset(false);
-//	glLoadIdentity();
 }
 
 int32 RenderManager::GetRenderOrientation()
@@ -370,53 +342,7 @@ void RenderManager::SetRenderData(RenderDataObject * object)
 {
     currentRenderData = object;
 }
-		
-void RenderManager::SetClip(const Rect &rect)
-{
-	SetHWClip(rect);
-}
-	
-void RenderManager::RemoveClip()
-{
-	SetHWClip(Rect(0,0,-1,-1));
-}
 
-void RenderManager::ClipRect(const Rect &rect)
-{
-	Rect r = currentClip;
-	if(r.dx < 0)
-	{
-		r.dx = (float32)retScreenWidth * VirtualCoordinates::GetPhysicalToVirtualFactor();
-	}
-	if(r.dy < 0)
-	{
-		r.dy = (float32)retScreenHeight * VirtualCoordinates::GetPhysicalToVirtualFactor();
-	}
-	
-	r = r.Intersection(rect);
-	SetHWClip(r);
-}
-
-void RenderManager::ClipPush()
-{
-	clipStack.push(currentClip);
-}
-
-void RenderManager::ClipPop()
-{
-	if(clipStack.empty())
-	{
-		Rect r(0, 0, -1, -1);
-		SetClip(r);
-	}
-	else
-	{
-		Rect r = clipStack.top();
-		SetClip(r);
-	}
-	clipStack.pop();
-}
-	
 void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 {
 	fboViewRenderbuffer = _viewRenderbuffer;
@@ -431,10 +357,10 @@ void RenderManager::SetRenderTarget(Sprite *renderTarget)
 	rt.orientation = renderOrientation;
 	renderTargetStack.push(rt);
 		
-	ClipPush();
-	PushDrawMatrix();
+//	ClipPush();
+//	PushDrawMatrix();
 //	PushMappingMatrix();
-	IdentityDrawMatrix();
+//	IdentityDrawMatrix();
 	SetHWRenderTargetSprite(renderTarget);
 }
 
@@ -450,9 +376,9 @@ void RenderManager::RestoreRenderTarget()
 	renderTargetStack.pop();
 	SetHWRenderTargetSprite(rt.spr);
 
-	PopDrawMatrix();
+//	PopDrawMatrix();
 //	PopMappingMatrix();
-	ClipPop();
+//	ClipPop();
 }
 
 bool RenderManager::IsRenderTarget()
@@ -530,130 +456,6 @@ int32 RenderManager::GetFPS()
 {
 	return fps;
 }
-	
-	
-void RenderManager::SetDrawTranslate(const Vector2 &offset)
-{
-    mappingMatrixChanged = true;
-	userDrawOffset.x += offset.x * userDrawScale.x;
-	userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-void RenderManager::SetDrawTranslate(const Vector3 &offset)
-{
-    mappingMatrixChanged = true;
-    userDrawOffset.x += offset.x * userDrawScale.x;
-    userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-const Vector2& RenderManager::GetDrawTranslate() const
-{
-    return userDrawOffset;
-}
-
-void RenderManager::SetDrawScale(const Vector2 &scale)
-{
-    mappingMatrixChanged = true;
-	userDrawScale.x *= scale.x;
-	userDrawScale.y *= scale.y;
-}
-
-const Vector2& RenderManager::GetDrawScale() const
-{
-    return userDrawScale;
-}
-	
-void RenderManager::IdentityDrawMatrix()
-{
-    mappingMatrixChanged = true;
-	userDrawScale.x = 1.0f;
-	userDrawScale.y = 1.0f;
-
-	userDrawOffset.x = 0.0f;
-	userDrawOffset.y = 0.0f;
-}
-
-//void RenderManager::IdentityMappingMatrix()
-//{
-//    mappingMatrixChanged = true;
-//	viewMappingDrawOffset = Vector2(0.0f, 0.0f);
-//	viewMappingDrawScale = Vector2(1.0f, 1.0f);
-//}
-	
-void RenderManager::IdentityModelMatrix()
-{
-    mappingMatrixChanged = true;
-    currentDrawOffset = Vector2(0.0f, 0.0f);
-    currentDrawScale = Vector2(1.0f, 1.0f);
-
-    renderer2d.viewMatrix = Matrix4::IDENTITY;
-}
-    
-	
-	
-//void RenderManager::SetPhysicalViewScale()
-//{
-//    mappingMatrixChanged = true;
-//	viewMappingDrawScale.x = 1.0f;
-//	viewMappingDrawScale.y = 1.0f;
-//}
-//
-//void RenderManager::SetPhysicalViewOffset()
-//{
-//    mappingMatrixChanged = true;
-//	viewMappingDrawOffset = VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset();
-//}
-
-//void RenderManager::SetVirtualViewScale()
-//{
-//    mappingMatrixChanged = true;
-//	viewMappingDrawScale.x = VirtualCoordinates::GetVirtualToPhysicalFactor();
-//	viewMappingDrawScale.y = VirtualCoordinates::GetVirtualToPhysicalFactor();
-//}
-//
-//void RenderManager::SetVirtualViewOffset()
-//{
-//    mappingMatrixChanged = true;
-//	viewMappingDrawOffset.x -= VirtualCoordinates::GetVirtualScreenXMin() * viewMappingDrawScale.x;
-//	viewMappingDrawOffset.y -= VirtualCoordinates::GetVirtualScreenYMin() * viewMappingDrawScale.y;
-//}
-	
-void RenderManager::PushDrawMatrix()
-{
-	DrawMatrix dm;
-	dm.userDrawOffset = userDrawOffset;
-	dm.userDrawScale = userDrawScale;
-	matrixStack.push(dm);
-}
-
-void RenderManager::PopDrawMatrix()
-{
-	IdentityDrawMatrix();
-	DrawMatrix dm = matrixStack.top();
-	matrixStack.pop();
-	userDrawOffset = dm.userDrawOffset;
-	userDrawScale = dm.userDrawScale;
-	PrepareRealMatrix();
-}
-	
-//void RenderManager::PushMappingMatrix()
-//{
-//	DrawMatrix dm;
-//	dm.userDrawOffset = viewMappingDrawOffset;
-//	dm.userDrawScale = viewMappingDrawScale;
-//	mappingMatrixStack.push(dm);
-//}
-//
-//void RenderManager::PopMappingMatrix()
-//{
-//	IdentityMappingMatrix();
-//	DrawMatrix dm = mappingMatrixStack.top();
-//	mappingMatrixStack.pop();
-//	viewMappingDrawOffset = dm.userDrawOffset;
-//	viewMappingDrawScale = dm.userDrawScale;
-//    DVASSERT(mappingMatrixChanged == true);
-//	PrepareRealMatrix();
-//}
 
 void RenderManager::SetCursor(Cursor * _cursor)
 {
@@ -830,19 +632,4 @@ void RenderManager::VerifyRenderContext()
 #endif
 }
     
-    
-void RenderManager::Setup2DMatrices()
-{
-    Matrix4 glTranslate, glScale;
-    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-    renderer2d.viewMatrix = glScale * glTranslate;
-    
-    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_VIEW, &renderer2d.viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-    RenderManager::SetDynamicParam(PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
-}
-    
-
-	
 };
