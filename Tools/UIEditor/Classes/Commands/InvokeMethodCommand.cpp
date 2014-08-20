@@ -39,21 +39,19 @@ InvokeMethodCommand::~InvokeMethodCommand()
 {
 }
 
-BaseCommand::eExecuteResult InvokeMethodCommand::Execute()
+void InvokeMethodCommand::Execute()
 {
     if (commandMetadata == NULL)
     {
-        return BaseCommand::Failed;
+        return;
     }
-    
+
     // Set the same property for all Params inside the metadata.
     int paramsCount = commandMetadata->GetParamsCount();
     for (BaseMetadataParams::METADATAPARAMID i = 0; i < paramsCount; i ++)
     {
         QMetaObject::invokeMethod(commandMetadata, commandMethodName.c_str());
     }
-    
-    return BaseCommand::Success;
 }
 
 void InvokeMethodCommand::Rollback()

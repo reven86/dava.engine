@@ -48,7 +48,7 @@ public:
 	virtual bool IsPointInside(const Vector2& point, bool expandWithFocus);
     virtual void Draw(const UIGeometricData &geometricData);
     virtual void DrawAfterChilds(const UIGeometricData &geometricData);
-
+    virtual YamlNode* SaveToYamlNode(UIYamlLoader * loader);
     void SetScale(const Vector2& value);
     void SetPos(const Vector2& value);
     void SetScreenshotMode(bool value);

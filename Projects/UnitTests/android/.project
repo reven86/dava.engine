@@ -51,7 +51,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.fullBuildTarget</key>
-					<value> -j 8</value>
+					<value>NDK_DEBUG=1 -j 8</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.stopOnError</key>
@@ -155,14 +155,14 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.h</locationURI>
 		</link>
 		<link>
-			<name>src/Classes/DLCSystemTests.cpp</name>
+			<name>src/Classes/DLCDownloadTest.cpp</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.cpp</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCDownloadTest.cpp</locationURI>
 		</link>
 		<link>
-			<name>src/Classes/DLCSystemTests.h</name>
+			<name>src/Classes/DLCDownloadTest.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCDownloadTest.h</locationURI>
 		</link>
 		<link>
 			<name>src/Classes/DPITest.cpp</name>
@@ -428,211 +428,6 @@
 			<name>src/Classes/eMailTest.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Classes/eMailTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/BaseScreen.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/BaseScreen.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/BaseScreen.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/BaseScreen.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/CloneTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/CloneTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/CloneTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/CloneTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/Config.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/Config.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/ControlRotationTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/ControlRotationTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/ControlRotationTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DLCSystemTests.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DLCSystemTests.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DLCSystemTests.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DPITest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DPITest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DPITest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DPITest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DXTTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DXTTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DXTTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DXTTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DateTimeTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DateTimeTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DateTimeTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DateTimeTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DeviceInfoTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DeviceInfoTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/DeviceInfoTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/DeviceInfoTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/EntityTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/EntityTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/EntityTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/EntityTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/FormatsTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/FormatsTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/FormatsTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/FormatsTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/FrameworkMain.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/FrameworkMain.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/FrameworkMain.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/FrameworkMain.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/GameCore.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/GameCore.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/GameCore.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/GameCore.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/HashMapTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/HashMapTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/HashMapTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/HashMapTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/InputTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/InputTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/InputTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/InputTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/KeyedArchiveTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/KeyedArchiveTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/KeyedArchiveTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/KeyedArchiveTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/KeyedArchiveYamlTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/KeyedArchiveYamlTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/KeyedArchiveYamlTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/KeyedArchiveYamlTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/LocalizationTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/LocalizationTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/LocalizationTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/LocalizationTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/MaterialCompilerTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/MaterialCompilerTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/MaterialCompilerTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/MaterialCompilerTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/MemoryAllocatorsTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/MemoryAllocatorsTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/MemoryAllocatorsTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/MemoryAllocatorsTest.h</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/PVRTest.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/PVRTest.cpp</locationURI>
-		</link>
-		<link>
-			<name>bin/classes/Classes/PVRTest.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Classes/PVRTest.h</locationURI>
 		</link>
 		<link>
 			<name>bin/classes/Classes/SampleTest.cpp</name>

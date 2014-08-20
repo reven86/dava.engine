@@ -66,7 +66,7 @@ public:
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent * event);
-	
+	virtual void scrollTo(const QModelIndex &index, ScrollHint hint = EnsureVisible);
 	virtual QMimeData *mimeData(const QList<QTreeWidgetItem*> items) const;
 	
     void dropEvent(QDropEvent *event);

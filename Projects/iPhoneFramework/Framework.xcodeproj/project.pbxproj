@@ -139,10 +139,7 @@
 		02FD7F481924997C007762C0 /* MemoryManager.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80B16B9326D002BD35F /* MemoryManager.h */; };
 		02FD7F491924997C007762C0 /* Replay.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80D16B9326D002BD35F /* Replay.h */; };
 		02FD7F4A1924997C007762C0 /* Stats.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80F16B9326D002BD35F /* Stats.h */; };
-		02FD7F4B1924997C007762C0 /* DLCSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81216B9326D002BD35F /* DLCSystem.h */; };
 		02FD7F4C1924997C007762C0 /* ParticleRenderObject.h in Headers */ = {isa = PBXBuildFile; fileRef = EA10607618892B7C00CB99A3 /* ParticleRenderObject.h */; };
-		02FD7F4D1924997C007762C0 /* DLCUnpacker.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81616B9326D002BD35F /* DLCUnpacker.h */; };
-		02FD7F4E1924997C007762C0 /* FileDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81816B9326D002BD35F /* FileDownloader.h */; };
 		02FD7F4F1924997C007762C0 /* RenderTechnique.h in Headers */ = {isa = PBXBuildFile; fileRef = A69C9396186C377C00EAC8BC /* RenderTechnique.h */; };
 		02FD7F501924997C007762C0 /* DoxygenDocumenation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81916B9326D002BD35F /* DoxygenDocumenation.h */; };
 		02FD7F511924997C007762C0 /* Component.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81C16B9326D002BD35F /* Component.h */; };
@@ -499,9 +496,6 @@
 		02FD80B61924997C007762C0 /* MemoryManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80A16B9326D002BD35F /* MemoryManager.cpp */; };
 		02FD80B71924997C007762C0 /* Replay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80C16B9326D002BD35F /* Replay.cpp */; };
 		02FD80B81924997C007762C0 /* Stats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80E16B9326D002BD35F /* Stats.cpp */; };
-		02FD80B91924997C007762C0 /* DLCSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81116B9326D002BD35F /* DLCSystem.cpp */; };
-		02FD80BA1924997C007762C0 /* DLCUnpacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81516B9326D002BD35F /* DLCUnpacker.cpp */; };
-		02FD80BB1924997C007762C0 /* FileDownloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81716B9326D002BD35F /* FileDownloader.cpp */; };
 		02FD80BC1924997C007762C0 /* Component.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81B16B9326D002BD35F /* Component.cpp */; };
 		02FD80BD1924997C007762C0 /* SceneSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81D16B9326D002BD35F /* SceneSystem.cpp */; };
 		02FD80BE1924997C007762C0 /* Bitstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C83F16B9326D002BD35F /* Bitstream.cpp */; };
@@ -831,6 +825,10 @@
 		155D77E9197DD265006AEBCD /* YamlNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 155D77E6197DD265006AEBCD /* YamlNode.cpp */; };
 		155D77EA197DD265006AEBCD /* YamlNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 155D77E7197DD265006AEBCD /* YamlNode.h */; };
 		155D77EB197DD265006AEBCD /* YamlNode.h in Headers */ = {isa = PBXBuildFile; fileRef = 155D77E7197DD265006AEBCD /* YamlNode.h */; };
+		15D311901982861500919AAA /* YamlEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15D3118E1982861500919AAA /* YamlEmitter.cpp */; };
+		15D311911982861500919AAA /* YamlEmitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15D3118E1982861500919AAA /* YamlEmitter.cpp */; };
+		15D311921982861500919AAA /* YamlEmitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 15D3118F1982861500919AAA /* YamlEmitter.h */; };
+		15D311931982861500919AAA /* YamlEmitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 15D3118F1982861500919AAA /* YamlEmitter.h */; };
 		17675C1A19472C1400054F8F /* CRCAdditionInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 6272153D192265C7007B7DE9 /* CRCAdditionInterface.h */; };
 		17675C1B19472C1400054F8F /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 84D18BEC19201BEF009E3E90 /* Image.cpp */; };
 		17675C1C19472C1400054F8F /* Image.h in Headers */ = {isa = PBXBuildFile; fileRef = 84D18BED19201BEF009E3E90 /* Image.h */; };
@@ -1081,6 +1079,44 @@
 		CCEB543D1886FF0C0018491F /* LodToLod2Converter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB54391886FF0C0018491F /* LodToLod2Converter.h */; };
 		CCEB543E1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */; };
 		CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */ = {isa = PBXBuildFile; fileRef = CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */; };
+		D7FEF13B19864E5C00B2C7AF /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12319864E5C00B2C7AF /* DLC.cpp */; };
+		D7FEF13C19864E5C00B2C7AF /* DLC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12319864E5C00B2C7AF /* DLC.cpp */; };
+		D7FEF13D19864E5C00B2C7AF /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12419864E5C00B2C7AF /* DLC.h */; };
+		D7FEF13E19864E5C00B2C7AF /* DLC.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12419864E5C00B2C7AF /* DLC.h */; };
+		D7FEF13F19864E5C00B2C7AF /* CurlDownloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12619864E5C00B2C7AF /* CurlDownloader.cpp */; };
+		D7FEF14019864E5C00B2C7AF /* CurlDownloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12619864E5C00B2C7AF /* CurlDownloader.cpp */; };
+		D7FEF14119864E5C00B2C7AF /* CurlDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12719864E5C00B2C7AF /* CurlDownloader.h */; };
+		D7FEF14219864E5C00B2C7AF /* CurlDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12719864E5C00B2C7AF /* CurlDownloader.h */; };
+		D7FEF14319864E5C00B2C7AF /* Downloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12819864E5C00B2C7AF /* Downloader.cpp */; };
+		D7FEF14419864E5C00B2C7AF /* Downloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12819864E5C00B2C7AF /* Downloader.cpp */; };
+		D7FEF14519864E5C00B2C7AF /* Downloader.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12919864E5C00B2C7AF /* Downloader.h */; };
+		D7FEF14619864E5C00B2C7AF /* Downloader.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12919864E5C00B2C7AF /* Downloader.h */; };
+		D7FEF14719864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12A19864E5C00B2C7AF /* DownloaderCommon.cpp */; };
+		D7FEF14819864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12A19864E5C00B2C7AF /* DownloaderCommon.cpp */; };
+		D7FEF14919864E5C00B2C7AF /* DownloaderCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12B19864E5C00B2C7AF /* DownloaderCommon.h */; };
+		D7FEF14A19864E5C00B2C7AF /* DownloaderCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12B19864E5C00B2C7AF /* DownloaderCommon.h */; };
+		D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12C19864E5C00B2C7AF /* DownloadManager.cpp */; };
+		D7FEF14C19864E5C00B2C7AF /* DownloadManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF12C19864E5C00B2C7AF /* DownloadManager.cpp */; };
+		D7FEF14D19864E5C00B2C7AF /* DownloadManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12D19864E5C00B2C7AF /* DownloadManager.h */; };
+		D7FEF14E19864E5C00B2C7AF /* DownloadManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF12D19864E5C00B2C7AF /* DownloadManager.h */; };
+		D7FEF14F19864E5C00B2C7AF /* bs_common.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13019864E5C00B2C7AF /* bs_common.h */; };
+		D7FEF15019864E5C00B2C7AF /* bs_common.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13019864E5C00B2C7AF /* bs_common.h */; };
+		D7FEF15119864E5C00B2C7AF /* bs_diff.c in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13119864E5C00B2C7AF /* bs_diff.c */; };
+		D7FEF15219864E5C00B2C7AF /* bs_diff.c in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13119864E5C00B2C7AF /* bs_diff.c */; };
+		D7FEF15319864E5C00B2C7AF /* bs_patch.c in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13219864E5C00B2C7AF /* bs_patch.c */; };
+		D7FEF15419864E5C00B2C7AF /* bs_patch.c in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13219864E5C00B2C7AF /* bs_patch.c */; };
+		D7FEF15519864E5C00B2C7AF /* BSDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13519864E5C00B2C7AF /* BSDiff.cpp */; };
+		D7FEF15619864E5C00B2C7AF /* BSDiff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13519864E5C00B2C7AF /* BSDiff.cpp */; };
+		D7FEF15719864E5C00B2C7AF /* BSDiff.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13619864E5C00B2C7AF /* BSDiff.h */; };
+		D7FEF15819864E5C00B2C7AF /* BSDiff.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13619864E5C00B2C7AF /* BSDiff.h */; };
+		D7FEF15919864E5C00B2C7AF /* PatchFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13719864E5C00B2C7AF /* PatchFile.cpp */; };
+		D7FEF15A19864E5C00B2C7AF /* PatchFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13719864E5C00B2C7AF /* PatchFile.cpp */; };
+		D7FEF15B19864E5C00B2C7AF /* PatchFile.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13819864E5C00B2C7AF /* PatchFile.h */; };
+		D7FEF15C19864E5C00B2C7AF /* PatchFile.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13819864E5C00B2C7AF /* PatchFile.h */; };
+		D7FEF15D19864E5C00B2C7AF /* ZLibStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13919864E5C00B2C7AF /* ZLibStream.cpp */; };
+		D7FEF15E19864E5C00B2C7AF /* ZLibStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D7FEF13919864E5C00B2C7AF /* ZLibStream.cpp */; };
+		D7FEF15F19864E5C00B2C7AF /* ZLibStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13A19864E5C00B2C7AF /* ZLibStream.h */; };
+		D7FEF16019864E5C00B2C7AF /* ZLibStream.h in Headers */ = {isa = PBXBuildFile; fileRef = D7FEF13A19864E5C00B2C7AF /* ZLibStream.h */; };
 		E81F2B0516BFF65700C4545E /* libcurl_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E81F2B0416BFF65700C4545E /* libcurl_ios.a */; };
 		E8373BD817268CD9001A9770 /* UIAggregatorControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */; };
 		E8373BD917268CD9001A9770 /* UIAggregatorControl.h in Headers */ = {isa = PBXBuildFile; fileRef = E8373BD717268CD9001A9770 /* UIAggregatorControl.h */; };
@@ -1193,12 +1229,6 @@
 		E8B3CAE216B9326E002BD35F /* Replay.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80D16B9326D002BD35F /* Replay.h */; };
 		E8B3CAE316B9326E002BD35F /* Stats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C80E16B9326D002BD35F /* Stats.cpp */; };
 		E8B3CAE416B9326E002BD35F /* Stats.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C80F16B9326D002BD35F /* Stats.h */; };
-		E8B3CAE516B9326E002BD35F /* DLCSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81116B9326D002BD35F /* DLCSystem.cpp */; };
-		E8B3CAE616B9326E002BD35F /* DLCSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81216B9326D002BD35F /* DLCSystem.h */; };
-		E8B3CAE916B9326E002BD35F /* DLCUnpacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81516B9326D002BD35F /* DLCUnpacker.cpp */; };
-		E8B3CAEA16B9326E002BD35F /* DLCUnpacker.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81616B9326D002BD35F /* DLCUnpacker.h */; };
-		E8B3CAEB16B9326E002BD35F /* FileDownloader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81716B9326D002BD35F /* FileDownloader.cpp */; };
-		E8B3CAEC16B9326E002BD35F /* FileDownloader.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81816B9326D002BD35F /* FileDownloader.h */; };
 		E8B3CAED16B9326E002BD35F /* DoxygenDocumenation.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81916B9326D002BD35F /* DoxygenDocumenation.h */; };
 		E8B3CAEE16B9326E002BD35F /* Component.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E8B3C81B16B9326D002BD35F /* Component.cpp */; };
 		E8B3CAEF16B9326E002BD35F /* Component.h in Headers */ = {isa = PBXBuildFile; fileRef = E8B3C81C16B9326D002BD35F /* Component.h */; };
@@ -1737,6 +1767,8 @@
 		02FD820C1924997C007762C0 /* libFrameworkTesting.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFrameworkTesting.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		155D77E6197DD265006AEBCD /* YamlNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlNode.cpp; sourceTree = "<group>"; };
 		155D77E7197DD265006AEBCD /* YamlNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlNode.h; sourceTree = "<group>"; };
+		15D3118E1982861500919AAA /* YamlEmitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YamlEmitter.cpp; sourceTree = "<group>"; };
+		15D3118F1982861500919AAA /* YamlEmitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YamlEmitter.h; sourceTree = "<group>"; };
 		17816B7E17B2748900B067E1 /* AllocatorFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AllocatorFactory.cpp; sourceTree = "<group>"; };
 		17816B7F17B2748900B067E1 /* AllocatorFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllocatorFactory.h; sourceTree = "<group>"; };
 		1799E51816CCEBDA0058061F /* ParticleForce.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParticleForce.cpp; sourceTree = "<group>"; };
@@ -1942,6 +1974,27 @@
 		CCEB543A1886FF0C0018491F /* SwitchToRenerObjectConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SwitchToRenerObjectConverter.cpp; sourceTree = "<group>"; };
 		CCEB543B1886FF0C0018491F /* SwitchToRenerObjectConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SwitchToRenerObjectConverter.h; sourceTree = "<group>"; };
 		D2AAC07E0554694100DB518D /* libFramework.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFramework.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7FEF12319864E5C00B2C7AF /* DLC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLC.cpp; sourceTree = "<group>"; };
+		D7FEF12419864E5C00B2C7AF /* DLC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLC.h; sourceTree = "<group>"; };
+		D7FEF12619864E5C00B2C7AF /* CurlDownloader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CurlDownloader.cpp; sourceTree = "<group>"; };
+		D7FEF12719864E5C00B2C7AF /* CurlDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CurlDownloader.h; sourceTree = "<group>"; };
+		D7FEF12819864E5C00B2C7AF /* Downloader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Downloader.cpp; sourceTree = "<group>"; };
+		D7FEF12919864E5C00B2C7AF /* Downloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Downloader.h; sourceTree = "<group>"; };
+		D7FEF12A19864E5C00B2C7AF /* DownloaderCommon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DownloaderCommon.cpp; sourceTree = "<group>"; };
+		D7FEF12B19864E5C00B2C7AF /* DownloaderCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloaderCommon.h; sourceTree = "<group>"; };
+		D7FEF12C19864E5C00B2C7AF /* DownloadManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DownloadManager.cpp; sourceTree = "<group>"; };
+		D7FEF12D19864E5C00B2C7AF /* DownloadManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DownloadManager.h; sourceTree = "<group>"; };
+		D7FEF13019864E5C00B2C7AF /* bs_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bs_common.h; sourceTree = "<group>"; };
+		D7FEF13119864E5C00B2C7AF /* bs_diff.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bs_diff.c; sourceTree = "<group>"; };
+		D7FEF13219864E5C00B2C7AF /* bs_patch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = bs_patch.c; sourceTree = "<group>"; };
+		D7FEF13319864E5C00B2C7AF /* LICENCE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENCE; sourceTree = "<group>"; };
+		D7FEF13419864E5C00B2C7AF /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		D7FEF13519864E5C00B2C7AF /* BSDiff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BSDiff.cpp; sourceTree = "<group>"; };
+		D7FEF13619864E5C00B2C7AF /* BSDiff.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BSDiff.h; sourceTree = "<group>"; };
+		D7FEF13719864E5C00B2C7AF /* PatchFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PatchFile.cpp; sourceTree = "<group>"; };
+		D7FEF13819864E5C00B2C7AF /* PatchFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PatchFile.h; sourceTree = "<group>"; };
+		D7FEF13919864E5C00B2C7AF /* ZLibStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZLibStream.cpp; sourceTree = "<group>"; };
+		D7FEF13A19864E5C00B2C7AF /* ZLibStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZLibStream.h; sourceTree = "<group>"; };
 		E80D2FB2164D51A100C13D70 /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		E81F2B0416BFF65700C4545E /* libcurl_ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcurl_ios.a; path = ../../Libs/libs/libcurl_ios.a; sourceTree = "<group>"; };
 		E8373BD617268CD9001A9770 /* UIAggregatorControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UIAggregatorControl.cpp; sourceTree = "<group>"; };
@@ -2057,12 +2110,6 @@
 		E8B3C80D16B9326D002BD35F /* Replay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Replay.h; sourceTree = "<group>"; };
 		E8B3C80E16B9326D002BD35F /* Stats.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Stats.cpp; sourceTree = "<group>"; };
 		E8B3C80F16B9326D002BD35F /* Stats.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Stats.h; sourceTree = "<group>"; };
-		E8B3C81116B9326D002BD35F /* DLCSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLCSystem.cpp; sourceTree = "<group>"; };
-		E8B3C81216B9326D002BD35F /* DLCSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLCSystem.h; sourceTree = "<group>"; };
-		E8B3C81516B9326D002BD35F /* DLCUnpacker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DLCUnpacker.cpp; sourceTree = "<group>"; };
-		E8B3C81616B9326D002BD35F /* DLCUnpacker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DLCUnpacker.h; sourceTree = "<group>"; };
-		E8B3C81716B9326D002BD35F /* FileDownloader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileDownloader.cpp; sourceTree = "<group>"; };
-		E8B3C81816B9326D002BD35F /* FileDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileDownloader.h; sourceTree = "<group>"; };
 		E8B3C81916B9326D002BD35F /* DoxygenDocumenation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DoxygenDocumenation.h; sourceTree = "<group>"; };
 		E8B3C81B16B9326D002BD35F /* Component.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Component.cpp; sourceTree = "<group>"; };
 		E8B3C81C16B9326D002BD35F /* Component.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Component.h; sourceTree = "<group>"; };
@@ -2772,6 +2819,47 @@
 			path = Converters;
 			sourceTree = "<group>";
 		};
+		D7FEF12519864E5C00B2C7AF /* Downloader */ = {
+			isa = PBXGroup;
+			children = (
+				D7FEF12619864E5C00B2C7AF /* CurlDownloader.cpp */,
+				D7FEF12719864E5C00B2C7AF /* CurlDownloader.h */,
+				D7FEF12819864E5C00B2C7AF /* Downloader.cpp */,
+				D7FEF12919864E5C00B2C7AF /* Downloader.h */,
+				D7FEF12A19864E5C00B2C7AF /* DownloaderCommon.cpp */,
+				D7FEF12B19864E5C00B2C7AF /* DownloaderCommon.h */,
+				D7FEF12C19864E5C00B2C7AF /* DownloadManager.cpp */,
+				D7FEF12D19864E5C00B2C7AF /* DownloadManager.h */,
+			);
+			path = Downloader;
+			sourceTree = "<group>";
+		};
+		D7FEF12E19864E5C00B2C7AF /* Patcher */ = {
+			isa = PBXGroup;
+			children = (
+				D7FEF12F19864E5C00B2C7AF /* bsdiff */,
+				D7FEF13519864E5C00B2C7AF /* BSDiff.cpp */,
+				D7FEF13619864E5C00B2C7AF /* BSDiff.h */,
+				D7FEF13719864E5C00B2C7AF /* PatchFile.cpp */,
+				D7FEF13819864E5C00B2C7AF /* PatchFile.h */,
+				D7FEF13919864E5C00B2C7AF /* ZLibStream.cpp */,
+				D7FEF13A19864E5C00B2C7AF /* ZLibStream.h */,
+			);
+			path = Patcher;
+			sourceTree = "<group>";
+		};
+		D7FEF12F19864E5C00B2C7AF /* bsdiff */ = {
+			isa = PBXGroup;
+			children = (
+				D7FEF13019864E5C00B2C7AF /* bs_common.h */,
+				D7FEF13119864E5C00B2C7AF /* bs_diff.c */,
+				D7FEF13219864E5C00B2C7AF /* bs_patch.c */,
+				D7FEF13319864E5C00B2C7AF /* LICENCE */,
+				D7FEF13419864E5C00B2C7AF /* README.md */,
+			);
+			path = bsdiff;
+			sourceTree = "<group>";
+		};
 		E8B3C7A116B9326D002BD35F /* Animation */ = {
 			isa = PBXGroup;
 			children = (
@@ -2950,12 +3038,10 @@
 		E8B3C81016B9326D002BD35F /* DLC */ = {
 			isa = PBXGroup;
 			children = (
-				E8B3C81116B9326D002BD35F /* DLCSystem.cpp */,
-				E8B3C81216B9326D002BD35F /* DLCSystem.h */,
-				E8B3C81516B9326D002BD35F /* DLCUnpacker.cpp */,
-				E8B3C81616B9326D002BD35F /* DLCUnpacker.h */,
-				E8B3C81716B9326D002BD35F /* FileDownloader.cpp */,
-				E8B3C81816B9326D002BD35F /* FileDownloader.h */,
+				D7FEF12319864E5C00B2C7AF /* DLC.cpp */,
+				D7FEF12419864E5C00B2C7AF /* DLC.h */,
+				D7FEF12519864E5C00B2C7AF /* Downloader */,
+				D7FEF12E19864E5C00B2C7AF /* Patcher */,
 			);
 			path = DLC;
 			sourceTree = "<group>";
@@ -2974,6 +3060,8 @@
 		E8B3C83C16B9326D002BD35F /* FileSystem */ = {
 			isa = PBXGroup;
 			children = (
+				15D3118E1982861500919AAA /* YamlEmitter.cpp */,
+				15D3118F1982861500919AAA /* YamlEmitter.h */,
 				155D77E6197DD265006AEBCD /* YamlNode.cpp */,
 				155D77E7197DD265006AEBCD /* YamlNode.h */,
 				E8B3C83F16B9326D002BD35F /* Bitstream.cpp */,
@@ -3870,18 +3958,16 @@
 				02FD7F431924997C007762C0 /* RenderLayerManager.h in Headers */,
 				02FD7F441924997C007762C0 /* DVAssert.h in Headers */,
 				02FD7F451924997C007762C0 /* List.h in Headers */,
+				D7FEF16019864E5C00B2C7AF /* ZLibStream.h in Headers */,
 				02FD7F461924997C007762C0 /* ListAllocator.h in Headers */,
 				02FD7F471924997C007762C0 /* FMODFileSoundEvent.h in Headers */,
 				02FD7F481924997C007762C0 /* MemoryManager.h in Headers */,
 				02FD7F491924997C007762C0 /* Replay.h in Headers */,
 				02FD7F4A1924997C007762C0 /* Stats.h in Headers */,
-				02FD7F4B1924997C007762C0 /* DLCSystem.h in Headers */,
 				64493DF919476F4700AB2715 /* TextureSheet.h in Headers */,
 				022AA8E71934CED9009A4B84 /* WaveSystem.h in Headers */,
 				02FD7F4C1924997C007762C0 /* ParticleRenderObject.h in Headers */,
-				02FD7F4D1924997C007762C0 /* DLCUnpacker.h in Headers */,
 				EAAC98BF1937354800549BAD /* MeshUtils.h in Headers */,
-				02FD7F4E1924997C007762C0 /* FileDownloader.h in Headers */,
 				02FD7F4F1924997C007762C0 /* RenderTechnique.h in Headers */,
 				02FD7F501924997C007762C0 /* DoxygenDocumenation.h in Headers */,
 				02FD7F511924997C007762C0 /* Component.h in Headers */,
@@ -3898,6 +3984,7 @@
 				02FD7F5B1924997C007762C0 /* KeyedArchiver.h in Headers */,
 				02FD7F5C1924997C007762C0 /* KeyedUnarchiver.h in Headers */,
 				02FD7F5D1924997C007762C0 /* LocalizationIPhone.h in Headers */,
+				D7FEF15819864E5C00B2C7AF /* BSDiff.h in Headers */,
 				02FD7F5E1924997C007762C0 /* LocalizationSystem.h in Headers */,
 				02FD7F5F1924997C007762C0 /* Logger.h in Headers */,
 				02FD7F601924997C007762C0 /* ResourceArchive.h in Headers */,
@@ -3940,6 +4027,7 @@
 				02FD7F7F1924997C007762C0 /* ParticleGroup.h in Headers */,
 				02FD7F801924997C007762C0 /* Quaternion.h in Headers */,
 				02FD7F811924997C007762C0 /* Ray.h in Headers */,
+				D7FEF15019864E5C00B2C7AF /* bs_common.h in Headers */,
 				02FD7F821924997C007762C0 /* Rect.h in Headers */,
 				02FD7F831924997C007762C0 /* RectPacker.h in Headers */,
 				02FD7F841924997C007762C0 /* Sphere.h in Headers */,
@@ -3948,9 +4036,11 @@
 				02FD7F871924997C007762C0 /* Vector.h in Headers */,
 				02FD7F881924997C007762C0 /* BaseNetworkConnection.h in Headers */,
 				02FD7F891924997C007762C0 /* BTNetworkConnection.h in Headers */,
+				15D311931982861500919AAA /* YamlEmitter.h in Headers */,
 				02FD7F8A1924997C007762C0 /* NetworkConnection.h in Headers */,
 				02FD7F8B1924997C007762C0 /* NetworkConnectionIPhone.h in Headers */,
 				02FD7F8C1924997C007762C0 /* NetworkDelegate.h in Headers */,
+				D7FEF15C19864E5C00B2C7AF /* PatchFile.h in Headers */,
 				17675C1C19472C1400054F8F /* Image.h in Headers */,
 				02FD7F8D1924997C007762C0 /* NetworkPacket.h in Headers */,
 				02FD7F8E1924997C007762C0 /* TCPServer.h in Headers */,
@@ -4012,6 +4102,7 @@
 				02FD7FC21924997C007762C0 /* ShadowVolume.h in Headers */,
 				02FD7FC31924997C007762C0 /* ShadowVolumeRenderPass.h in Headers */,
 				02FD7FC41924997C007762C0 /* (null) in Headers */,
+				D7FEF14A19864E5C00B2C7AF /* DownloaderCommon.h in Headers */,
 				02FD7FC51924997C007762C0 /* (null) in Headers */,
 				02FD7FC61924997C007762C0 /* (null) in Headers */,
 				02FD7FC71924997C007762C0 /* IndexBuffer.h in Headers */,
@@ -4137,6 +4228,7 @@
 				647EFC72195F0AC40073B3CB /* NMaterialHelper.h in Headers */,
 				02FD80391924997C007762C0 /* UIScreen.h in Headers */,
 				02FD803A1924997C007762C0 /* UIScreenManager.h in Headers */,
+				D7FEF14619864E5C00B2C7AF /* Downloader.h in Headers */,
 				02FD803B1924997C007762C0 /* musicios.h in Headers */,
 				647EFC7A195F0AC40073B3CB /* NMaterialStateDynamicPropertiesInsp.h in Headers */,
 				02FD803C1924997C007762C0 /* UIScreenManageriPhone.h in Headers */,
@@ -4165,6 +4257,7 @@
 				02FD80521924997C007762C0 /* ComponentHelpers.h in Headers */,
 				02FD80531924997C007762C0 /* ParticleForce.h in Headers */,
 				02FD80541924997C007762C0 /* AutotestingSystemLua.h in Headers */,
+				D7FEF14E19864E5C00B2C7AF /* DownloadManager.h in Headers */,
 				02FD80551924997C007762C0 /* IWebViewControl.h in Headers */,
 				02FD80561924997C007762C0 /* UIWebView.h in Headers */,
 				02FD80571924997C007762C0 /* WebViewControliOS.h in Headers */,
@@ -4185,6 +4278,7 @@
 				02FD80641924997C007762C0 /* RenderState.h in Headers */,
 				02FD80651924997C007762C0 /* Entity.h in Headers */,
 				02FD80661924997C007762C0 /* UpdateSystem.h in Headers */,
+				D7FEF14219864E5C00B2C7AF /* CurlDownloader.h in Headers */,
 				02FD80671924997C007762C0 /* DeviceInfo.h in Headers */,
 				02FD80681924997C007762C0 /* IntrospectionDynamic.h in Headers */,
 				02FD80691924997C007762C0 /* StaticOcclusionRenderPass.h in Headers */,
@@ -4218,6 +4312,7 @@
 				647EFC7E195F0AC40073B3CB /* NMaterialStateDynamicTexturesInsp.h in Headers */,
 				02FD80851924997C007762C0 /* MovieViewControliOS.h in Headers */,
 				02FD80861924997C007762C0 /* SpatialTree.h in Headers */,
+				D7FEF13E19864E5C00B2C7AF /* DLC.h in Headers */,
 				02FD80871924997C007762C0 /* FMODSoundEvent.h in Headers */,
 				02FD80881924997C007762C0 /* AutotestingDB.h in Headers */,
 				02FD80891924997C007762C0 /* GameAPI.h in Headers */,
@@ -4311,10 +4406,7 @@
 				E8B3CAE216B9326E002BD35F /* Replay.h in Headers */,
 				E8B3CAE416B9326E002BD35F /* Stats.h in Headers */,
 				17D4116A1973E4B700CF6BC0 /* Reachability.h in Headers */,
-				E8B3CAE616B9326E002BD35F /* DLCSystem.h in Headers */,
 				EA10607918892B7C00CB99A3 /* ParticleRenderObject.h in Headers */,
-				E8B3CAEA16B9326E002BD35F /* DLCUnpacker.h in Headers */,
-				E8B3CAEC16B9326E002BD35F /* FileDownloader.h in Headers */,
 				A69C939A186C377C00EAC8BC /* RenderTechnique.h in Headers */,
 				E8B3CAED16B9326E002BD35F /* DoxygenDocumenation.h in Headers */,
 				E8B3CAEF16B9326E002BD35F /* Component.h in Headers */,
@@ -4329,7 +4421,9 @@
 				E8B3CB1E16B9326E002BD35F /* KeyedArchive.h in Headers */,
 				E8B3CB2016B9326E002BD35F /* KeyedArchiver.h in Headers */,
 				E8B3CB2216B9326E002BD35F /* KeyedUnarchiver.h in Headers */,
+				D7FEF15B19864E5C00B2C7AF /* PatchFile.h in Headers */,
 				E8B3CB2316B9326E002BD35F /* LocalizationIPhone.h in Headers */,
+				D7FEF14119864E5C00B2C7AF /* CurlDownloader.h in Headers */,
 				E8B3CB2616B9326E002BD35F /* LocalizationSystem.h in Headers */,
 				C172EC3118C9F9D4004309CF /* TextBlockSoftwareRender.h in Headers */,
 				E8B3CB2816B9326E002BD35F /* Logger.h in Headers */,
@@ -4343,6 +4437,7 @@
 				E8B3CB3F16B9326E002BD35F /* InputSystem.h in Headers */,
 				E8B3CB4116B9326E002BD35F /* KeyboardDevice.h in Headers */,
 				E8B3CB4316B9326E002BD35F /* AABBox2.h in Headers */,
+				D7FEF15F19864E5C00B2C7AF /* ZLibStream.h in Headers */,
 				E8B3CB4516B9326E002BD35F /* AABBox3.h in Headers */,
 				E8B3CB4716B9326E002BD35F /* BezierSpline.h in Headers */,
 				E8B3CB4816B9326E002BD35F /* Circle.h in Headers */,
@@ -4356,6 +4451,7 @@
 				E8B3CB4F16B9326E002BD35F /* MathHelpers.h in Headers */,
 				E8B3CB5016B9326E002BD35F /* Matrix2.h in Headers */,
 				A611714E1860C2A500E18F8C /* StaticOcclusionSystem.h in Headers */,
+				D7FEF14F19864E5C00B2C7AF /* bs_common.h in Headers */,
 				CC84B04518211BCE00934482 /* JobWaiter.h in Headers */,
 				E8B3CB5116B9326E002BD35F /* Matrix3.h in Headers */,
 				E8B3CB5316B9326E002BD35F /* Matrix4.h in Headers */,
@@ -4371,6 +4467,7 @@
 				E8B3CB5C16B9326E002BD35F /* Quaternion.h in Headers */,
 				E8B3CB5D16B9326E002BD35F /* Ray.h in Headers */,
 				E8B3CB5E16B9326E002BD35F /* Rect.h in Headers */,
+				D7FEF14D19864E5C00B2C7AF /* DownloadManager.h in Headers */,
 				64493E1A19476F4700AB2715 /* VegetationRenderObject.h in Headers */,
 				64493E0E19476F4700AB2715 /* VegetationMaterialTransformer.h in Headers */,
 				E8B3CB6016B9326E002BD35F /* RectPacker.h in Headers */,
@@ -4381,6 +4478,7 @@
 				E8B3CB6516B9326E002BD35F /* BaseNetworkConnection.h in Headers */,
 				E8B3CB6716B9326E002BD35F /* BTNetworkConnection.h in Headers */,
 				E8B3CB6A16B9326E002BD35F /* NetworkConnection.h in Headers */,
+				D7FEF14919864E5C00B2C7AF /* DownloaderCommon.h in Headers */,
 				022AA8E61934CED9009A4B84 /* WaveSystem.h in Headers */,
 				E8B3CB6B16B9326E002BD35F /* NetworkConnectionIPhone.h in Headers */,
 				E8B3CB6E16B9326E002BD35F /* NetworkDelegate.h in Headers */,
@@ -4464,6 +4562,7 @@
 				E8B3CC3516B9326E002BD35F /* RenderOptions.h in Headers */,
 				E8B3CC3716B9326E002BD35F /* RenderResource.h in Headers */,
 				02EC80FA199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
+				D7FEF14519864E5C00B2C7AF /* Downloader.h in Headers */,
 				E8B3CC3A16B9326E002BD35F /* RGBColor.h in Headers */,
 				E8B3CC3C16B9326E002BD35F /* Shader.h in Headers */,
 				E8B3CC4116B9326E002BD35F /* SharedFBO.h in Headers */,
@@ -4520,9 +4619,11 @@
 				E8B3CCA416B9326E002BD35F /* SceneFileV2.h in Headers */,
 				02FD7EBE19237D33007762C0 /* WindComponent.h in Headers */,
 				E8B3CCA616B9326E002BD35F /* SceneManager.h in Headers */,
+				D7FEF15719864E5C00B2C7AF /* BSDiff.h in Headers */,
 				E8B3CCAA16B9326E002BD35F /* SceneNodeAnimation.h in Headers */,
 				E8B3CCAC16B9326E002BD35F /* SceneNodeAnimationKey.h in Headers */,
 				E8B3CCAE16B9326E002BD35F /* SceneNodeAnimationList.h in Headers */,
+				15D311921982861500919AAA /* YamlEmitter.h in Headers */,
 				E8B3CCB016B9326E002BD35F /* ShadowVolumeNode.h in Headers */,
 				E8B3CCB216B9326E002BD35F /* SkeletonNode.h in Headers */,
 				E8B3CCB416B9326E002BD35F /* SpriteNode.h in Headers */,
@@ -4535,6 +4636,7 @@
 				E8B3CCC316B9326E002BD35F /* LodSystem.h in Headers */,
 				CCEB543F1886FF0C0018491F /* SwitchToRenerObjectConverter.h in Headers */,
 				E8B3CCC516B9326E002BD35F /* ParticleEffectSystem.h in Headers */,
+				D7FEF13D19864E5C00B2C7AF /* DLC.h in Headers */,
 				64493DF419476F4700AB2715 /* RenderBatchPool.h in Headers */,
 				E8B3CCC916B9326E002BD35F /* RenderUpdateSystem.h in Headers */,
 				E8B3CCCB16B9326E002BD35F /* SwitchSystem.h in Headers */,
@@ -4798,9 +4900,6 @@
 				E84E5BE81988D99200686C14 /* OGLHelpers.cpp in Sources */,
 				02FD80B71924997C007762C0 /* Replay.cpp in Sources */,
 				02FD80B81924997C007762C0 /* Stats.cpp in Sources */,
-				02FD80B91924997C007762C0 /* DLCSystem.cpp in Sources */,
-				02FD80BA1924997C007762C0 /* DLCUnpacker.cpp in Sources */,
-				02FD80BB1924997C007762C0 /* FileDownloader.cpp in Sources */,
 				02FD80BC1924997C007762C0 /* Component.cpp in Sources */,
 				02FD80BD1924997C007762C0 /* SceneSystem.cpp in Sources */,
 				02FD80BE1924997C007762C0 /* Bitstream.cpp in Sources */,
@@ -4812,6 +4911,7 @@
 				155D77E9197DD265006AEBCD /* YamlNode.cpp in Sources */,
 				02FD80C31924997C007762C0 /* FileSystem.cpp in Sources */,
 				17D4116C1973E7BE00CF6BC0 /* Reachability.mm in Sources */,
+				D7FEF15219864E5C00B2C7AF /* bs_diff.c in Sources */,
 				02FD80C41924997C007762C0 /* FileSystemObjective.mm in Sources */,
 				02FD80C51924997C007762C0 /* KeyedArchive.cpp in Sources */,
 				02FD80C61924997C007762C0 /* KeyedArchiver.cpp in Sources */,
@@ -4852,6 +4952,7 @@
 				02FD80E51924997C007762C0 /* NetworkConnection.cpp in Sources */,
 				02FD80E61924997C007762C0 /* NetworkConnectionIPhone.mm in Sources */,
 				02AD131719767DFB00567AD2 /* VersionInfo.cpp in Sources */,
+				D7FEF15E19864E5C00B2C7AF /* ZLibStream.cpp in Sources */,
 				02FD80E71924997C007762C0 /* NetworkDelegate.cpp in Sources */,
 				02FD80E81924997C007762C0 /* NetworkPacket.cpp in Sources */,
 				02FD80E91924997C007762C0 /* TCPServer.mm in Sources */,
@@ -4981,6 +5082,8 @@
 				02FD815A1924997C007762C0 /* ParticleEmitterNode.cpp in Sources */,
 				02FD815B1924997C007762C0 /* JobWaiter.cpp in Sources */,
 				02FD815C1924997C007762C0 /* DateTimeApple.mm in Sources */,
+				D7FEF15419864E5C00B2C7AF /* bs_patch.c in Sources */,
+				D7FEF13C19864E5C00B2C7AF /* DLC.cpp in Sources */,
 				02FD815D1924997C007762C0 /* PathManip.cpp in Sources */,
 				02FD815E1924997C007762C0 /* AtomicMacOS.mm in Sources */,
 				02FD815F1924997C007762C0 /* JobManager.cpp in Sources */,
@@ -4995,6 +5098,7 @@
 				02FD81681924997C007762C0 /* SceneNodeAnimation.cpp in Sources */,
 				02FD81691924997C007762C0 /* SceneNodeAnimationKey.cpp in Sources */,
 				02FD816A1924997C007762C0 /* SceneNodeAnimationList.cpp in Sources */,
+				15D311911982861500919AAA /* YamlEmitter.cpp in Sources */,
 				02FD816B1924997C007762C0 /* ShadowVolumeNode.cpp in Sources */,
 				02FD816C1924997C007762C0 /* SkeletonNode.cpp in Sources */,
 				02FD816D1924997C007762C0 /* SpriteNode.cpp in Sources */,
@@ -5016,6 +5120,7 @@
 				02FD817A1924997C007762C0 /* SwitchSystem.cpp in Sources */,
 				02FD817B1924997C007762C0 /* TransformSystem.cpp in Sources */,
 				02FD817C1924997C007762C0 /* UserNode.cpp in Sources */,
+				D7FEF15A19864E5C00B2C7AF /* PatchFile.cpp in Sources */,
 				02FD817D1924997C007762C0 /* ScrollHelper.cpp in Sources */,
 				02FD817E1924997C007762C0 /* TheoraPlayer.cpp in Sources */,
 				02FD817F1924997C007762C0 /* UI3DView.cpp in Sources */,
@@ -5032,6 +5137,7 @@
 				02FD81891924997C007762C0 /* UIHierarchyNode.cpp in Sources */,
 				02FD818A1924997C007762C0 /* FoliageSystem.cpp in Sources */,
 				02FD818B1924997C007762C0 /* UIHoleTransition.cpp in Sources */,
+				D7FEF15619864E5C00B2C7AF /* BSDiff.cpp in Sources */,
 				02FD818C1924997C007762C0 /* UIJoypad.cpp in Sources */,
 				02FD818D1924997C007762C0 /* UIList.cpp in Sources */,
 				02FD818E1924997C007762C0 /* UIListCell.cpp in Sources */,
@@ -5069,6 +5175,7 @@
 				02FD81AD1924997C007762C0 /* UIControlSwig.cpp in Sources */,
 				02FD81AE1924997C007762C0 /* VectorSwig.cpp in Sources */,
 				02FD81AF1924997C007762C0 /* UIWebView.cpp in Sources */,
+				D7FEF14C19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
 				02FD81B01924997C007762C0 /* WebViewControliOS.mm in Sources */,
 				02FD81B11924997C007762C0 /* DPIHelperiOS.mm in Sources */,
 				02FD81B31924997C007762C0 /* DVAssertMessage.cpp in Sources */,
@@ -5098,10 +5205,12 @@
 				02FD81C81924997C007762C0 /* DeviceInfo.cpp in Sources */,
 				02FD81C91924997C007762C0 /* UIAggregatorControl.cpp in Sources */,
 				02FD81CA1924997C007762C0 /* FilePathObjective.mm in Sources */,
+				D7FEF14019864E5C00B2C7AF /* CurlDownloader.cpp in Sources */,
 				02FD81CB1924997C007762C0 /* SoundComponent.cpp in Sources */,
 				02FD81CC1924997C007762C0 /* SoundUpdateSystem.cpp in Sources */,
 				02FD81CD1924997C007762C0 /* OpenUDIDApple.mm in Sources */,
 				02FD81CE1924997C007762C0 /* OpenUDIDios.mm in Sources */,
+				D7FEF14819864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */,
 				02FD81CF1924997C007762C0 /* KeyedArchiveSwig.cpp in Sources */,
 				02FD81D01924997C007762C0 /* MailComposeDelegate.mm in Sources */,
 				02FD81D11924997C007762C0 /* GlobalEnum.cpp in Sources */,
@@ -5132,6 +5241,7 @@
 				02FD81EA1924997C007762C0 /* RenderBatchArray.cpp in Sources */,
 				02FD81EB1924997C007762C0 /* RenderHierarchy.cpp in Sources */,
 				02FD81EC1924997C007762C0 /* SerializationContext.cpp in Sources */,
+				D7FEF14419864E5C00B2C7AF /* Downloader.cpp in Sources */,
 				02FD81ED1924997C007762C0 /* Job.cpp in Sources */,
 				02FD81EE1924997C007762C0 /* GamepadDevice.mm in Sources */,
 				02FD81EF1924997C007762C0 /* DateTime.cpp in Sources */,
@@ -5147,6 +5257,7 @@
 				E8B3CA8016B9326E002BD35F /* Animation.cpp in Sources */,
 				E8ADAEC818CA1325000B251C /* PixelFormatDescriptor.cpp in Sources */,
 				E8B3CA8216B9326E002BD35F /* AnimationManager.cpp in Sources */,
+				D7FEF14319864E5C00B2C7AF /* Downloader.cpp in Sources */,
 				E8B3CA8416B9326E002BD35F /* BezierSplineAnimation.cpp in Sources */,
 				E8B3CA8616B9326E002BD35F /* Interpolation.cpp in Sources */,
 				E8B3CA8816B9326E002BD35F /* KeyframeAnimation.cpp in Sources */,
@@ -5181,15 +5292,13 @@
 				E8B3CADF16B9326E002BD35F /* MemoryManager.cpp in Sources */,
 				E8B3CAE116B9326E002BD35F /* Replay.cpp in Sources */,
 				E8B3CAE316B9326E002BD35F /* Stats.cpp in Sources */,
-				E8B3CAE516B9326E002BD35F /* DLCSystem.cpp in Sources */,
-				E8B3CAE916B9326E002BD35F /* DLCUnpacker.cpp in Sources */,
-				E8B3CAEB16B9326E002BD35F /* FileDownloader.cpp in Sources */,
 				E8B3CAEE16B9326E002BD35F /* Component.cpp in Sources */,
 				E8B3CAF016B9326E002BD35F /* SceneSystem.cpp in Sources */,
 				E8B3CB1016B9326E002BD35F /* Bitstream.cpp in Sources */,
 				E8B3CB1216B9326E002BD35F /* DynamicMemoryFile.cpp in Sources */,
 				E8B3CB1416B9326E002BD35F /* File.cpp in Sources */,
 				E8B3CB1616B9326E002BD35F /* FileList.cpp in Sources */,
+				D7FEF15519864E5C00B2C7AF /* BSDiff.cpp in Sources */,
 				E8B3CB1816B9326E002BD35F /* FilePath.cpp in Sources */,
 				E8B3CB1A16B9326E002BD35F /* FileSystem.cpp in Sources */,
 				E8B3CB1C16B9326E002BD35F /* FileSystemObjective.mm in Sources */,
@@ -5233,12 +5342,15 @@
 				84D18C0019201BEF009E3E90 /* ImageSystem.cpp in Sources */,
 				E8B3CB6D16B9326E002BD35F /* NetworkDelegate.cpp in Sources */,
 				E8B3CB6F16B9326E002BD35F /* NetworkPacket.cpp in Sources */,
+				D7FEF14B19864E5C00B2C7AF /* DownloadManager.cpp in Sources */,
 				E8B3CB7216B9326E002BD35F /* TCPServer.mm in Sources */,
 				E8B3CB7416B9326E002BD35F /* WFNetworkConnection.mm in Sources */,
 				E8B3CB7516B9326E002BD35F /* Particle.cpp in Sources */,
 				E8B3CB7716B9326E002BD35F /* ParticleEmitter.cpp in Sources */,
 				E8B3CB7D16B9326E002BD35F /* ParticleLayer.cpp in Sources */,
+				D7FEF15919864E5C00B2C7AF /* PatchFile.cpp in Sources */,
 				E8B3CB8316B9326E002BD35F /* ParticlePropertyLine.cpp in Sources */,
+				D7FEF15119864E5C00B2C7AF /* bs_diff.c in Sources */,
 				E8B3CB8E16B9326E002BD35F /* Mutex.cpp in Sources */,
 				E8B3CB9E16B9326E002BD35F /* SystemTimer.cpp in Sources */,
 				E8B3CBA116B9326E002BD35F /* EAGLView.mm in Sources */,
@@ -5276,6 +5388,7 @@
 				E8B3CBEC16B9326E002BD35F /* LandscapeCursor.cpp in Sources */,
 				E8B3CBF216B9326E002BD35F /* Light.cpp in Sources */,
 				E8B3CBF416B9326E002BD35F /* Mesh.cpp in Sources */,
+				D7FEF15D19864E5C00B2C7AF /* ZLibStream.cpp in Sources */,
 				E8B3CBF816B9326E002BD35F /* RenderBatch.cpp in Sources */,
 				E8B3CBFB16B9326E002BD35F /* RenderLayer.cpp in Sources */,
 				A61171471860C24D00E18F8C /* StaticOcclusion.cpp in Sources */,
@@ -5289,6 +5402,7 @@
 				C172EC2C18C9F9D4004309CF /* TextBlockGraphicsRender.cpp in Sources */,
 				E8B3CC1616B9326E002BD35F /* MaterialCompiler.cpp in Sources */,
 				E8B3CC1816B9326E002BD35F /* MaterialGraph.cpp in Sources */,
+				D7FEF13B19864E5C00B2C7AF /* DLC.cpp in Sources */,
 				CC84B04218211BCE00934482 /* JobQueue.cpp in Sources */,
 				E8B3CC1A16B9326E002BD35F /* MaterialGraphNode.cpp in Sources */,
 				C172EC2A18C9F9D4004309CF /* TextBlockDistanceRender.cpp in Sources */,
@@ -5330,6 +5444,7 @@
 				E8B3CC5C16B9326E002BD35F /* GameObjectManager.cpp in Sources */,
 				E8B3CC5E16B9326E002BD35F /* TextGameObject.cpp in Sources */,
 				E8B3CC6016B9326E002BD35F /* BillboardNode.cpp in Sources */,
+				15D311901982861500919AAA /* YamlEmitter.cpp in Sources */,
 				E8B3CC6216B9326E002BD35F /* BoneNode.cpp in Sources */,
 				E8B3CC6816B9326E002BD35F /* BulletComponent.cpp in Sources */,
 				E8B3CC6A16B9326E002BD35F /* CameraComponent.cpp in Sources */,
@@ -5457,9 +5572,12 @@
 				E8BD1F0C16DE4A9C00499E18 /* MailSender.cpp in Sources */,
 				0282B8B218BC8C88006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				647EFC73195F0AC40073B3CB /* NMaterialStateDynamicFlagsInsp.cpp in Sources */,
+				D7FEF14719864E5C00B2C7AF /* DownloaderCommon.cpp in Sources */,
+				D7FEF13F19864E5C00B2C7AF /* CurlDownloader.cpp in Sources */,
 				E8BD1F0E16DE4A9C00499E18 /* MailSenderMacOS.mm in Sources */,
 				E8FC1307186972C80095D8FE /* QualitySettingsSystem.cpp in Sources */,
 				E95B4C5C16DF78EE00880713 /* UISpinner.cpp in Sources */,
+				D7FEF15319864E5C00B2C7AF /* bs_patch.c in Sources */,
 				A6AFDEFC1871C3D1006E43A1 /* SpeedTreeObject.cpp in Sources */,
 				A6DBFA7E1887E3D5006BE11C /* NMaterialNames.cpp in Sources */,
 				E8CBDFC716EE10EE00F70C8F /* UTF8UtilsMac.mm in Sources */,

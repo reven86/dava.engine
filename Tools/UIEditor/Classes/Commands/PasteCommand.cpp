@@ -47,7 +47,7 @@ PasteCommand::~PasteCommand()
 	// Nothing is to be cleaned up - Pasted Items are under control of Hierarchy Tree.
 }
 
-BaseCommand::eExecuteResult PasteCommand::Execute()
+void PasteCommand::Execute()
 {
 	HierarchyTreeController::Instance()->ResetSelectedControl();
 	
@@ -57,7 +57,7 @@ BaseCommand::eExecuteResult PasteCommand::Execute()
 	{
 		// We are performing Rollback after Execute.
 		ReturnPastedControlsToScene();
-		return BaseCommand::Success;
+		return;
 	}
 
 	// This is the first Execute - remember the items to be pasted.
@@ -141,7 +141,6 @@ BaseCommand::eExecuteResult PasteCommand::Execute()
 	}
 	
 	HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated();
-    return BaseCommand::Success;
 }
 
 void PasteCommand::Rollback()

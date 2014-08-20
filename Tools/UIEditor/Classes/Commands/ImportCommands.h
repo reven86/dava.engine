@@ -82,7 +82,7 @@ public:
 	ImportScreensCommand(HierarchyTreeNode::HIERARCHYTREENODEID platformId,
 						 const Vector<ImportDialog::FileItem>& files);
 
-	virtual eExecuteResult Execute();
+	virtual void Execute();
 	virtual void Rollback();
 
 private:
@@ -100,7 +100,7 @@ public:
 						  const QSize& platformSize,
 						  const Vector<ImportDialog::FileItem>& files);
 
-	virtual eExecuteResult Execute();
+	virtual void Execute();
 	virtual void Rollback();
 
 private:

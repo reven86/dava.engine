@@ -46,19 +46,11 @@ namespace DAVA {
 class BaseCommand: public BaseObject
 {
 public:
-    // Command execution result
-    enum eExecuteResult
-    {
-        Success = 0,
-        Cancelled,
-        Failed,
-    };
-
     BaseCommand();
     virtual ~BaseCommand();
 
     // Execute command.
-    virtual eExecuteResult Execute() = 0;
+    virtual void Execute() = 0;
 
     // Rollback command (only for the commands which does support Undo/Redo).
     virtual void Rollback() {};

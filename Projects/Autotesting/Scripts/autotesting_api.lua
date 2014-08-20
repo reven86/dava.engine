@@ -332,7 +332,7 @@ function IsVisible(element, background)
 		result = true
 	end
 	
-	--Log("Element " ..  element .. " is visible on " .. tostring(background) .. "= " .. tostring(result))
+	Log("Element " ..  element .. " is visible on " .. tostring(background) .. "= " .. tostring(result))
 	return result
 end
 

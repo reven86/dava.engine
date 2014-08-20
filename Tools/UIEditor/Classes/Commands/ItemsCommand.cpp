@@ -89,7 +89,7 @@ CreatePlatformCommand::CreatePlatformCommand(const QString& name, const Vector2&
 	this->size = size;
 }
 
-BaseCommand::eExecuteResult CreatePlatformCommand::Execute()
+void CreatePlatformCommand::Execute()
 {
 	if (this->redoNode == NULL)
 	{
@@ -100,8 +100,6 @@ BaseCommand::eExecuteResult CreatePlatformCommand::Execute()
 	{
 		ReturnRedoNodeToScene();
 	}
-    
-    return BaseCommand::Success;
 }
 
 void CreatePlatformCommand::Rollback()
@@ -134,7 +132,7 @@ CreateScreenCommand::CreateScreenCommand(const QString& name, HierarchyTreeNode:
 	this->platformId = platformId;
 }
 
-BaseCommand::eExecuteResult CreateScreenCommand::Execute()
+void CreateScreenCommand::Execute()
 {
 	if (this->redoNode == NULL)
 	{
@@ -145,8 +143,6 @@ BaseCommand::eExecuteResult CreateScreenCommand::Execute()
 	{
 		ReturnRedoNodeToScene();
 	}
-
-    return BaseCommand::Success;
 }
 
 void CreateScreenCommand::Rollback()
@@ -180,7 +176,7 @@ UndoableHierarchyTreeNodeCommand()
 	this->rect = rect;
 }
 
-BaseCommand::eExecuteResult CreateAggregatorCommand::Execute()
+void CreateAggregatorCommand::Execute()
 {
 	if (this->redoNode == NULL)
 	{
@@ -191,8 +187,6 @@ BaseCommand::eExecuteResult CreateAggregatorCommand::Execute()
 	{
 		ReturnRedoNodeToScene();
 	}
-
-    return BaseCommand::Success;
 }
 
 void CreateAggregatorCommand::Rollback()
@@ -242,13 +236,13 @@ CreateControlCommand::CreateControlCommand(HierarchyTreeNode::HIERARCHYTREENODEI
     this->insertAfterNode = insertAfter;
 }
 
-BaseCommand::eExecuteResult CreateControlCommand::Execute()
+void CreateControlCommand::Execute()
 {
 	if (this->redoNode)
 	{
 		// Need to recover the node previously deleted.
 		HierarchyTreeController::Instance()->ReturnNodeToScene(redoNode);
-		return BaseCommand::Success;
+		return;
 	}
 	
 	// The command is executed for the first time; create the node.
@@ -279,7 +273,7 @@ BaseCommand::eExecuteResult CreateControlCommand::Execute()
 	if (newControlID == HierarchyTreeNode::HIERARCHYTREENODEID_EMPTY)
 	{
 		// The control wasn't created.
-		return BaseCommand::Failed;
+		return;
 	}
 	
     if(insertAfterNode)
@@ -290,7 +284,6 @@ BaseCommand::eExecuteResult CreateControlCommand::Execute()
     }
 
 	this->createdControlID = newControlID;
-    return BaseCommand::Success;
 }
 
 void CreateControlCommand::Rollback()
@@ -343,7 +336,7 @@ DeleteSelectedNodeCommand::DeleteSelectedNodeCommand(const HierarchyTreeNode::HI
 	parentId = itemNode->GetParent()->GetId();
 }
 
-BaseCommand::eExecuteResult DeleteSelectedNodeCommand::Execute()
+void DeleteSelectedNodeCommand::Execute()
 {
 	if (this->redoNodes.size() == 0)
 	{
@@ -353,7 +346,6 @@ BaseCommand::eExecuteResult DeleteSelectedNodeCommand::Execute()
 
 	// Delete the node from scene, but keep in memory.
 	HierarchyTreeController::Instance()->DeleteNodes(this->nodes, false, true, this->deleteFiles);
-    return BaseCommand::Success;
 }
 
 void DeleteSelectedNodeCommand::StoreParentsOfRemovingAggregatorControls(const HierarchyTreeNode::HIERARCHYTREENODESLIST& nodes)
@@ -512,14 +504,14 @@ void ChangeNodeHeirarchy::StorePreviousParents()
 	}
 }
 
-BaseCommand::eExecuteResult ChangeNodeHeirarchy::Execute()
+void ChangeNodeHeirarchy::Execute()
 {
 	HierarchyTreeNode* targetNode = HierarchyTreeController::Instance()->GetTree().GetNode(targetNodeID);
 	HierarchyTreeNode* insertAfterNode = HierarchyTreeController::Instance()->GetTree().GetNode(afterNodeID);
 	if (!targetNode)
 	{
 		// Possible in Redo case if some changes in tree were made.
-		return BaseCommand::Success;
+		return;
 	}
 
     bool isHierarchyChanged = false;
@@ -530,10 +522,9 @@ BaseCommand::eExecuteResult ChangeNodeHeirarchy::Execute()
 		HierarchyTreeNode* node = HierarchyTreeController::Instance()->GetTree().GetNode((*iter));
         if (!node || node == targetNode)
         {
-            // node == targetNode case happens in MacOS when Escape is pressed while a user is dropping
-            // a new control to the screen.
-            // This is Qt defect https://bugreports.qt-project.org/browse/QTBUG-4075
-            continue;
+        	// Should never happen.
+        	DVASSERT(false);
+        	return;
         }
 
         if (dynamic_cast<HierarchyTreeScreenNode*>(node))
@@ -576,8 +567,6 @@ BaseCommand::eExecuteResult ChangeNodeHeirarchy::Execute()
 	
 	HierarchyTreeController::Instance()->EmitHierarchyTreeUpdated(false);
 	HierarchyTreeController::Instance()->ResetSelectedControl();
-    
-    return isHierarchyChanged ? BaseCommand::Success : BaseCommand::Cancelled;
 }
 
 void ChangeNodeHeirarchy::Rollback()

@@ -63,7 +63,7 @@ public:
      */
     UIButton(const Rect &rect = Rect(), bool rectInAbsoluteCoordinates = false);
 
-    virtual void SetRect(const Rect &rect, bool rectInAbsoluteCoordinates = false );
+    virtual void SetRect(const Rect &rect);
 
     virtual void SetSize(const Vector2 &newSize);
 

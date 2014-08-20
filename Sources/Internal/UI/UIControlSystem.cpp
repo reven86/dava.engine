@@ -130,8 +130,8 @@ void UIControlSystem::AddPopup(UIPopup *newPopup)
         return;
     }
 
-	newPopup->LoadGroup();
-	popupContainer->AddControl(newPopup);
+    newPopup->LoadGroup();
+    popupContainer->AddControl(newPopup);
 }
 	
 void UIControlSystem::RemovePopup(UIPopup *popup)
@@ -734,7 +734,7 @@ UIControl *UIControlSystem::GetFocusedControl()
     
 
 	
-const UIGeometricData &UIControlSystem::GetBaseGeometricData()
+const UIGeometricData &UIControlSystem::GetBaseGeometricData() const
 {
 	return baseGeometricData;	
 }

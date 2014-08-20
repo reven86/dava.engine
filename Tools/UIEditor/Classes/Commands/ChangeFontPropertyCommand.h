@@ -66,7 +66,7 @@ public:
                                 const ChangeFontPropertyCommandData& editFontDialogResult);
     virtual ~ChangeFontPropertyCommand();
     
-    virtual eExecuteResult Execute();
+    virtual void Execute();
     
 	virtual void Rollback();
 	
@@ -81,7 +81,7 @@ public:
     FontRenameCommand(Font* _font, const String &_originalName, const String &newName);
     
 public:
-	virtual eExecuteResult Execute();
+	virtual void Execute();
 	virtual void Rollback();
 	
 	virtual bool IsUndoRedoSupported() {return true;};
