@@ -27,6 +27,7 @@
  =====================================================================================*/
 
 #include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
+#include "Render/RenderManager.h"
 
 namespace DAVA
 {
@@ -38,19 +39,19 @@ void FramebufferAttachmentHelper::UpdateTextureAttachmentProperties(GLuint targe
 {
     if(Texture::TEXTURE_2D == tx->textureType)
     {
-        glFramebufferTexture2D(GL_FRAMEBUFFER,
+        RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER,
                                target,
                                GL_TEXTURE_2D,
                                tx->id,
-                               mipLevel);
+                               mipLevel));
     }
     else
     {
-        glFramebufferTexture2D(GL_FRAMEBUFFER,
+        RENDER_VERIFY(glFramebufferTexture2D(GL_FRAMEBUFFER,
                                target,
                                Texture::MapFaceNameToGLName(face),
                                tx->id,
-                               mipLevel);
+                               mipLevel));
     }
 }
 

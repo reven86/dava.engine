@@ -1108,6 +1108,12 @@
 		A650F4BB1864A10100D3278D /* NMaterialTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = A650F4B71864A10100D3278D /* NMaterialTemplate.h */; };
 		A650F4BC1864A10100D3278D /* NMaterialTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = A650F4B71864A10100D3278D /* NMaterialTemplate.h */; };
 		A650F4BD1864A10100D3278D /* NMaterialTemplate.h in Headers */ = {isa = PBXBuildFile; fileRef = A650F4B71864A10100D3278D /* NMaterialTemplate.h */; };
+		A6540C7319A3A1F300D38C9A /* RenderDataReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6540C7119A3A1F300D38C9A /* RenderDataReader.cpp */; };
+		A6540C7419A3A1F300D38C9A /* RenderDataReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6540C7119A3A1F300D38C9A /* RenderDataReader.cpp */; };
+		A6540C7519A3A1F300D38C9A /* RenderDataReader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6540C7119A3A1F300D38C9A /* RenderDataReader.cpp */; };
+		A6540C7619A3A1F300D38C9A /* RenderDataReader.h in Headers */ = {isa = PBXBuildFile; fileRef = A6540C7219A3A1F300D38C9A /* RenderDataReader.h */; };
+		A6540C7719A3A1F300D38C9A /* RenderDataReader.h in Headers */ = {isa = PBXBuildFile; fileRef = A6540C7219A3A1F300D38C9A /* RenderDataReader.h */; };
+		A6540C7819A3A1F300D38C9A /* RenderDataReader.h in Headers */ = {isa = PBXBuildFile; fileRef = A6540C7219A3A1F300D38C9A /* RenderDataReader.h */; };
 		A66533E817F98EC100B8906A /* Serializable.h in Headers */ = {isa = PBXBuildFile; fileRef = A66533E717F98EC100B8906A /* Serializable.h */; };
 		A66533E917F98EC100B8906A /* Serializable.h in Headers */ = {isa = PBXBuildFile; fileRef = A66533E717F98EC100B8906A /* Serializable.h */; };
 		A66533EA17F98EC100B8906A /* Serializable.h in Headers */ = {isa = PBXBuildFile; fileRef = A66533E717F98EC100B8906A /* Serializable.h */; };
@@ -1177,6 +1183,12 @@
 		A6E4FE141761D9E100B48E41 /* ActionUpdateSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E4FE071761D97C00B48E41 /* ActionUpdateSystem.cpp */; };
 		A6E4FE151761D9E500B48E41 /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FE081761D97C00B48E41 /* ActionUpdateSystem.h */; };
 		A6E4FE161761D9E700B48E41 /* ActionUpdateSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E4FE081761D97C00B48E41 /* ActionUpdateSystem.h */; };
+		A6E51D8E19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E51D8C19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp */; };
+		A6E51D8F19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E51D8C19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp */; };
+		A6E51D9019A3AA1200EC3A88 /* RenderDataReaderOGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A6E51D8C19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp */; };
+		A6E51D9119A3AA1200EC3A88 /* RenderDataReaderOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E51D8D19A3AA1200EC3A88 /* RenderDataReaderOGL.h */; };
+		A6E51D9219A3AA1200EC3A88 /* RenderDataReaderOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E51D8D19A3AA1200EC3A88 /* RenderDataReaderOGL.h */; };
+		A6E51D9319A3AA1200EC3A88 /* RenderDataReaderOGL.h in Headers */ = {isa = PBXBuildFile; fileRef = A6E51D8D19A3AA1200EC3A88 /* RenderDataReaderOGL.h */; };
 		C151B17716D3747E00E09BAF /* DVAssertMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */; };
 		C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C151B17516D3747E00E09BAF /* DVAssertMessage.h */; };
 		C151B17916D3747E00E09BAF /* DVAssertMessageApple.mm in Sources */ = {isa = PBXBuildFile; fileRef = C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */; };
@@ -2705,6 +2717,8 @@
 		A63BCD6917EB26E300EA4811 /* Process.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Process.h; sourceTree = "<group>"; };
 		A650F4B61864A10100D3278D /* NMaterialTemplate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NMaterialTemplate.cpp; sourceTree = "<group>"; };
 		A650F4B71864A10100D3278D /* NMaterialTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NMaterialTemplate.h; sourceTree = "<group>"; };
+		A6540C7119A3A1F300D38C9A /* RenderDataReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderDataReader.cpp; sourceTree = "<group>"; };
+		A6540C7219A3A1F300D38C9A /* RenderDataReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderDataReader.h; sourceTree = "<group>"; };
 		A66533E717F98EC100B8906A /* Serializable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Serializable.h; sourceTree = "<group>"; };
 		A670F2EF1847A99E0030E075 /* TextureStateData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextureStateData.h; sourceTree = "<group>"; };
 		A6773CD1199E2834002D2B18 /* FramebufferAttachmentHelper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FramebufferAttachmentHelper.cpp; sourceTree = "<group>"; };
@@ -2728,6 +2742,8 @@
 		A6E4FE021761D96C00B48E41 /* CustomPropertiesComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomPropertiesComponent.h; sourceTree = "<group>"; };
 		A6E4FE071761D97C00B48E41 /* ActionUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ActionUpdateSystem.cpp; sourceTree = "<group>"; };
 		A6E4FE081761D97C00B48E41 /* ActionUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionUpdateSystem.h; sourceTree = "<group>"; };
+		A6E51D8C19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderDataReaderOGL.cpp; sourceTree = "<group>"; };
+		A6E51D8D19A3AA1200EC3A88 /* RenderDataReaderOGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderDataReaderOGL.h; sourceTree = "<group>"; };
 		C151B17416D3747E00E09BAF /* DVAssertMessage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DVAssertMessage.cpp; sourceTree = "<group>"; };
 		C151B17516D3747E00E09BAF /* DVAssertMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DVAssertMessage.h; sourceTree = "<group>"; };
 		C151B17616D3747E00E09BAF /* DVAssertMessageApple.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DVAssertMessageApple.mm; sourceTree = "<group>"; };
@@ -3593,6 +3609,8 @@
 				A62CE43E199A44FC00BF5375 /* FramebufferDescriptor.h */,
 				A62CE445199A46E300BF5375 /* RenderTextureDescriptor.cpp */,
 				A62CE446199A46E300BF5375 /* RenderTextureDescriptor.h */,
+				A6540C7119A3A1F300D38C9A /* RenderDataReader.cpp */,
+				A6540C7219A3A1F300D38C9A /* RenderDataReader.h */,
 			);
 			path = RenderTarget;
 			sourceTree = "<group>";
@@ -3612,6 +3630,8 @@
 				A62CE46F199A637E00BF5375 /* RenderTargetFactoryOGL.h */,
 				A6773CD1199E2834002D2B18 /* FramebufferAttachmentHelper.cpp */,
 				A6773CD2199E2834002D2B18 /* FramebufferAttachmentHelper.h */,
+				A6E51D8C19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp */,
+				A6E51D8D19A3AA1200EC3A88 /* RenderDataReaderOGL.h */,
 			);
 			path = OpenGL;
 			sourceTree = "<group>";
@@ -4864,6 +4884,7 @@
 				176DE988174B5561007A983B /* Sprite.h in Headers */,
 				02FD7EDE19237D96007762C0 /* WindSystem.h in Headers */,
 				176DE989174B5561007A983B /* TextBlock.h in Headers */,
+				A6540C7819A3A1F300D38C9A /* RenderDataReader.h in Headers */,
 				176DE98A174B5561007A983B /* AnimatedMesh.h in Headers */,
 				176DE98B174B5561007A983B /* EdgeAdjacency.h in Headers */,
 				176DE98C174B5561007A983B /* PolygonGroup.h in Headers */,
@@ -5071,6 +5092,7 @@
 				176DEA30174B5561007A983B /* ShadowRect.h in Headers */,
 				176DEA31174B5561007A983B /* ShadowVolume.h in Headers */,
 				176DEA32174B5561007A983B /* ShadowVolumeRenderPass.h in Headers */,
+				A6E51D9319A3AA1200EC3A88 /* RenderDataReaderOGL.h in Headers */,
 				176DEA33174B5561007A983B /* SpriteObject.h in Headers */,
 				17FB4BBC1923B9D900F3E3BC /* MovieViewControlMacOS.h in Headers */,
 				176DEA34174B5561007A983B /* SpriteRenderBatch.h in Headers */,
@@ -5511,6 +5533,7 @@
 				748A99751726C5EE00C6411B /* UIScrollView.h in Headers */,
 				74D1EABA172E950700EDE0B7 /* UIScrollViewContainer.h in Headers */,
 				A62CE453199A61FB00BF5375 /* ColorFramebufferAttachmentOGL.h in Headers */,
+				A6E51D9119A3AA1200EC3A88 /* RenderDataReaderOGL.h in Headers */,
 				6435963B18C1FA3200862C31 /* AbstractQuadTree.h in Headers */,
 				02E9E3AB17296D4200C501BC /* FMODUtils.h in Headers */,
 				02A2FC3518D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */,
@@ -5542,6 +5565,7 @@
 				1770DF5117DF67E500000391 /* MovieViewControlMacOS.h in Headers */,
 				A63BCD6D17EB26E300EA4811 /* Process.h in Headers */,
 				644C86C719476A7100964F91 /* TextureSheet.h in Headers */,
+				A6540C7619A3A1F300D38C9A /* RenderDataReader.h in Headers */,
 				EA84E16F17FAC0B400304C3C /* SpatialTree.h in Headers */,
 				024DF6EC17FDE4C400138748 /* FMODSoundEvent.h in Headers */,
 				A69B7A481834CD640093AF7F /* RenderStateData.h in Headers */,
@@ -5856,6 +5880,7 @@
 				E898A17D16BD265400732C04 /* UIControlSystem.h in Headers */,
 				84E975C4191FCDFF0054CCF9 /* ImageFormatInterface.h in Headers */,
 				E898A17E16BD265400732C04 /* UIEvent.h in Headers */,
+				A6540C7719A3A1F300D38C9A /* RenderDataReader.h in Headers */,
 				E898A17F16BD265400732C04 /* UIFadeTransition.h in Headers */,
 				E898A18016BD265400732C04 /* UIFileSystemDialog.h in Headers */,
 				A62CE423199A433D00BF5375 /* StencilFramebufferAttachment.h in Headers */,
@@ -5899,6 +5924,7 @@
 				E83F10A216D6721D00C6ED39 /* DVAssertMessage.h in Headers */,
 				CC24800B16DD174E00183D40 /* UserComponent.h in Headers */,
 				E9EA496F16DF93FA00C44B6F /* UISpinner.h in Headers */,
+				A6E51D9219A3AA1200EC3A88 /* RenderDataReaderOGL.h in Headers */,
 				A62CE474199A637E00BF5375 /* RenderTargetFactoryOGL.h in Headers */,
 				E9E798AC16F0BE7600745AF5 /* UISwitch.h in Headers */,
 				CCC7A42816F1D6170061EA5D /* Camera.h in Headers */,
@@ -6158,6 +6184,7 @@
 				176DEA7D174B5561007A983B /* XMLParser.cpp in Sources */,
 				176DEA7E174B5561007A983B /* XMLParser.mm in Sources */,
 				176DEA7F174B5561007A983B /* YamlArchive.cpp in Sources */,
+				A6540C7519A3A1F300D38C9A /* RenderDataReader.cpp in Sources */,
 				176DEA80174B5561007A983B /* YamlParser.cpp in Sources */,
 				176DEA81174B5561007A983B /* Accelerometer.cpp in Sources */,
 				176DEA82174B5561007A983B /* InputSystem.cpp in Sources */,
@@ -6279,6 +6306,7 @@
 				176DEAE6174B5561007A983B /* DataNode.cpp in Sources */,
 				176DEAE7174B5561007A983B /* ImposterManager.cpp in Sources */,
 				176DEAE8174B5561007A983B /* ImposterNode.cpp in Sources */,
+				A6E51D9019A3AA1200EC3A88 /* RenderDataReaderOGL.cpp in Sources */,
 				176DEAE9174B5561007A983B /* LodNode.cpp in Sources */,
 				176DEAEA174B5561007A983B /* MeshInstance.cpp in Sources */,
 				176DEAEB174B5561007A983B /* MeshInstanceNode.cpp in Sources */,
@@ -6721,6 +6749,7 @@
 				E898A01B16BD24E500732C04 /* UIHierarchyNode.cpp in Sources */,
 				A62CE41F199A433D00BF5375 /* StencilFramebufferAttachment.cpp in Sources */,
 				E898A01D16BD24E500732C04 /* UIHoleTransition.cpp in Sources */,
+				A6540C7319A3A1F300D38C9A /* RenderDataReader.cpp in Sources */,
 				A6DBFA6F1887D804006BE11C /* NMaterialNames.cpp in Sources */,
 				E898A01F16BD24E500732C04 /* UIJoypad.cpp in Sources */,
 				E898A02116BD24E500732C04 /* UIList.cpp in Sources */,
@@ -6756,6 +6785,7 @@
 				C7FBCFBC16CD1FE5006F1B3F /* UIControlSwig.cpp in Sources */,
 				C7FBCFBE16CD1FE5006F1B3F /* VectorSwig.cpp in Sources */,
 				1799E52616CCEC030058061F /* ParticleForce.cpp in Sources */,
+				A6E51D8E19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp in Sources */,
 				62BD24C018C621EB00D2F0D3 /* DateTime.cpp in Sources */,
 				840ED3E316D5095000D2BA6C /* DPIHelperMacOS.mm in Sources */,
 				644C86C419476A7100964F91 /* TextureSheet.cpp in Sources */,
@@ -6880,6 +6910,7 @@
 				E898A1AF16BD265400732C04 /* Message.cpp in Sources */,
 				E898A1B016BD265400732C04 /* ObjectFactory.cpp in Sources */,
 				E898A1B116BD265400732C04 /* Observable.cpp in Sources */,
+				A6540C7419A3A1F300D38C9A /* RenderDataReader.cpp in Sources */,
 				E898A1B216BD265400732C04 /* Radix.cpp in Sources */,
 				E898A1B316BD265400732C04 /* CollisionObject2.cpp in Sources */,
 				17B061701889264F00FD8007 /* UIMovieView.cpp in Sources */,
@@ -6941,6 +6972,7 @@
 				E898A1DE16BD265400732C04 /* AABBox2.cpp in Sources */,
 				E898A1DF16BD265400732C04 /* AABBox3.cpp in Sources */,
 				E898A1E016BD265400732C04 /* BezierSpline.cpp in Sources */,
+				A6E51D8F19A3AA1200EC3A88 /* RenderDataReaderOGL.cpp in Sources */,
 				E898A1E116BD265400732C04 /* Math2D.cpp in Sources */,
 				E898A1E216BD265400732C04 /* Matrix4.cpp in Sources */,
 				E898A1E316BD265400732C04 /* NeonMath.cpp in Sources */,

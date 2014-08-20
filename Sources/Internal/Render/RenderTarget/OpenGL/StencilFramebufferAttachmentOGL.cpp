@@ -30,6 +30,8 @@
 #include "Render/RenderTarget/OpenGL/StencilFramebufferAttachmentOGL.h"
 #include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
 
+#include "Render/RenderManager.h"
+
 namespace DAVA
 {
 
@@ -58,7 +60,7 @@ StencilFramebufferAttachmentOGL::~StencilFramebufferAttachmentOGL()
 {
     if(renderbufferId != 0)
     {
-        glDeleteRenderbuffers(1, &renderbufferId);
+        RENDER_VERIFY(glDeleteRenderbuffers(1, &renderbufferId));
     }
 
     if(resolveTexture != NULL)
@@ -76,11 +78,11 @@ void StencilFramebufferAttachmentOGL::AttachRenderBuffer()
 {
     if(depthStencil != NULL)
     {
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->renderbufferId);
+        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthStencil->renderbufferId));
     }
     else if(renderbufferId != 0)
     {
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferId);
+        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferId));
     }
     else if(resolveTexture != NULL)
     {

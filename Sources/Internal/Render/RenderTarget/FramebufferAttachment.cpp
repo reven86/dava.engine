@@ -35,7 +35,9 @@ namespace DAVA
 FramebufferAttachment::FramebufferAttachment(FramebufferDescriptor::FramebufferType type) :
     mipLevel(0),
     cubeFace(Texture::CUBE_FACE_POSITIVE_X),
-    framebufferType(type)
+    framebufferType(type),
+    preRenderAction(FramebufferDescriptor::PRE_ACTION_DONTCARE),
+    postRenderAction(FramebufferDescriptor::POST_ACTION_DONTCARE)
 {
 }
 
@@ -111,6 +113,36 @@ void FramebufferAttachment::SetPostRenderAction(FramebufferDescriptor::PostRende
 FramebufferDescriptor::PostRenderAction FramebufferAttachment::GetPostRenderAction() const
 {
     return postRenderAction;
+}
+
+void FramebufferAttachment::SetFramebufferFormat(FramebufferDescriptor::FramebufferFormat format)
+{
+    framebufferFormat = format;
+}
+
+FramebufferDescriptor::FramebufferFormat FramebufferAttachment::GetFramebufferFormat() const
+{
+    return framebufferFormat;
+}
+
+void FramebufferAttachment::SetFramebufferWidth(uint32 width)
+{
+    framebufferWidth = width;
+}
+
+uint32 FramebufferAttachment::GetFramebufferWidth() const
+{
+    return framebufferWidth;
+}
+
+void FramebufferAttachment::SetFramebufferHeight(uint32 height)
+{
+    framebufferHeight = height;
+}
+
+uint32 FramebufferAttachment::GetFramebufferHeight() const
+{
+    return framebufferHeight;
 }
 
 };

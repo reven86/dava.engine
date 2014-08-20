@@ -70,8 +70,6 @@ public:
 
         FORMAT_STENCIL8,
 
-        FORMAT_DEPTH24_STENCIL8,
-
         FORMAT_COUNT
     };
 

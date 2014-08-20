@@ -55,6 +55,9 @@ public:
 
     FramebufferAttachment(FramebufferDescriptor::FramebufferType type);
 
+    virtual Texture* Lock();
+    virtual void Unlock(Texture* tx);
+
     void SetActiveMipLevel(uint32 activeLevel);
     uint32 GetActiveMipLevel() const;
 
@@ -67,8 +70,14 @@ public:
     void SetPostRenderAction(FramebufferDescriptor::PostRenderAction action);
     FramebufferDescriptor::PostRenderAction GetPostRenderAction() const;
 
-    virtual Texture* Lock();
-    virtual void Unlock(Texture* tx);
+    void SetFramebufferFormat(FramebufferDescriptor::FramebufferFormat format);
+    FramebufferDescriptor::FramebufferFormat GetFramebufferFormat() const;
+
+    void SetFramebufferWidth(uint32 width);
+    uint32 GetFramebufferWidth() const;
+
+    void SetFramebufferHeight(uint32 height);
+    uint32 GetFramebufferHeight() const;
 
     FramebufferDescriptor::FramebufferType GetFramebufferType() const;
 
@@ -79,6 +88,10 @@ protected:
     FramebufferDescriptor::FramebufferType framebufferType;
     FramebufferDescriptor::PreRenderAction preRenderAction;
     FramebufferDescriptor::PostRenderAction postRenderAction;
+    FramebufferDescriptor::FramebufferFormat framebufferFormat;
+
+    uint32 framebufferWidth;
+    uint32 framebufferHeight;
 };
 
 };

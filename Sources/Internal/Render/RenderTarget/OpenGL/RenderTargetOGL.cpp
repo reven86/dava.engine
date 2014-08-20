@@ -46,7 +46,7 @@ RenderTargetOGL::~RenderTargetOGL()
 
     if(framebufferId != 0)
     {
-        glDeleteFramebuffers(1, &framebufferId);
+        RENDER_VERIFY(glDeleteFramebuffers(1, &framebufferId));
     }
 }
 
@@ -54,13 +54,11 @@ void RenderTargetOGL::Initialize()
 {
     DVASSERT(0 == framebufferId);
 
-    glGenFramebuffers(1, &framebufferId);
+    RENDER_VERIFY(glGenFramebuffers(1, &framebufferId));
 }
 
 void RenderTargetOGL::BindRenderTarget()
 {
-    DVASSERT(0 == prevFramebufferId);
-
     prevFramebufferId = RenderManager::Instance()->HWglGetLastFBO();
 
     RenderManager::Instance()->HWglBindFBO(framebufferId);
@@ -114,12 +112,25 @@ void RenderTargetOGL::BeginRender()
 {
     DVASSERT(renderBuffersAttached);
 
+    RenderManager::Instance()->ClipPush();
+	RenderManager::Instance()->PushDrawMatrix();
+	RenderManager::Instance()->PushMappingMatrix();
+	RenderManager::Instance()->IdentityDrawMatrix();
+
     BindRenderTarget();
+
+    ProcessPreRenderActions();
 }
 
 void RenderTargetOGL::EndRender()
 {
+    ProcessPostRenderActions();
+
     UnbindRenderTarget();
+
+    RenderManager::Instance()->PopDrawMatrix();
+	RenderManager::Instance()->PopMappingMatrix();
+	RenderManager::Instance()->ClipPop();
 }
 
 void RenderTargetOGL::AddColorAttachment(ColorFramebufferAttachmentOGL* attachment)
@@ -143,6 +154,117 @@ void RenderTargetOGL::SetStencilAttachment(StencilFramebufferAttachmentOGL* atta
         SafeRelease(stencilAttachment);
         stencilAttachment = SafeRetain(attachment);
     }
+}
+
+void RenderTargetOGL::ProcessPreRenderActions()
+{
+    bool needClearColor = false;
+    size_t colorAttachmentCount = colorAttachments.size();
+    for(size_t i = 0; i < colorAttachmentCount; ++i)
+    {
+        if(colorAttachments[i]->GetPreRenderAction() == FramebufferDescriptor::PRE_ACTION_CLEAR)
+        {
+            needClearColor = true;
+            break;
+        }
+    }
+
+    bool needClearDepth = (depthAttachment != NULL &&
+                           depthAttachment->GetPreRenderAction() == FramebufferDescriptor::PRE_ACTION_CLEAR);
+
+    bool needClearStencil = (stencilAttachment != NULL &&
+                             stencilAttachment->GetPreRenderAction() == FramebufferDescriptor::PRE_ACTION_CLEAR);
+
+    Rect viewport;
+    CalculateViewport(viewport);
+    RenderManager::Instance()->SetViewport(viewport, true);
+    RenderManager::Instance()->RemoveClip();
+
+    if(needClearColor &&
+       needClearDepth &&
+       needClearStencil)
+    {
+        RenderManager::Instance()->Clear(clearColor, clearDepth, clearStencil);
+    }
+    else
+    {
+        if(needClearColor)
+        {
+            RenderManager::Instance()->ClearWithColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+        }
+
+        if(needClearDepth)
+        {
+            RenderManager::Instance()->ClearDepthBuffer(clearDepth);
+        }
+
+        if(needClearStencil)
+        {
+            RenderManager::Instance()->ClearStencilBuffer(clearStencil);
+        }
+    }
+}
+
+void RenderTargetOGL::ProcessPostRenderActions()
+{
+    uint32 discardFlags = 0;
+
+    size_t colorAttachmentCount = colorAttachments.size();
+    for(size_t i = 0; i < colorAttachmentCount; ++i)
+    {
+        if(colorAttachments[i]->GetPostRenderAction() == FramebufferDescriptor::POST_ACTION_DONTCARE)
+        {
+            discardFlags = discardFlags | RenderManager::COLOR_ATTACHMENT;
+            break;
+        }
+    }
+
+    if(depthAttachment != NULL &&
+       depthAttachment->GetPostRenderAction() == FramebufferDescriptor::POST_ACTION_DONTCARE)
+    {
+        discardFlags = discardFlags | RenderManager::DEPTH_ATTACHMENT;
+    }
+
+    if(stencilAttachment != NULL &&
+       stencilAttachment->GetPostRenderAction() == FramebufferDescriptor::POST_ACTION_DONTCARE)
+    {
+        discardFlags = discardFlags | RenderManager::STENCIL_ATTACHMENT;
+    }
+
+    if(discardFlags != 0)
+    {
+        RenderManager::Instance()->DiscardFramebufferHW(discardFlags);
+    }
+}
+
+void RenderTargetOGL::CalculateViewport(Rect& viewport)
+{
+    uint32 maxWidth = 0;
+    uint32 maxHeight = 0;
+
+    size_t colorAttachmentCount = colorAttachments.size();
+    for(size_t i = 0; i < colorAttachmentCount; ++i)
+    {
+        FramebufferAttachment* attachment = colorAttachments[i];
+
+        uint32 attachmentWidth = attachment->GetFramebufferWidth();
+        uint32 attachmentHeight = attachment->GetFramebufferHeight();
+
+        if(attachmentWidth > maxWidth)
+        {
+            maxWidth = attachmentWidth;
+        }
+
+        if(attachmentHeight > maxHeight)
+        {
+            maxHeight = attachmentHeight;
+        }
+    }
+
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.dx = (float32)maxWidth;
+    viewport.dy = (float32)maxHeight;
 }
 
 };

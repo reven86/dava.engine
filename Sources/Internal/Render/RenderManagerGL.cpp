@@ -44,6 +44,9 @@
 
 #ifdef __DAVAENGINE_OPENGL__
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+#include "Render/RenderTarget/OpenGL/RenderTargetFactoryOGL.h"
+
 namespace DAVA
 {
 	
@@ -86,11 +89,15 @@ bool RenderManager::Create(HINSTANCE _hInstance, HWND _hWnd)
 
 	glewInit();
 
+    RenderTargetFactory::InitFactory(new RenderTargetFactoryOGL());
+
 	return true;
 }
 
 void RenderManager::Release()
 {
+    RenderTargetFactory::ReleaseFactory();
+
 	Singleton<RenderManager>::Release();
 
 	wglMakeCurrent(0, 0);
@@ -114,7 +121,7 @@ bool RenderManager::Create()
 	
 void RenderManager::Release()
 {
-	
+    RenderTargetFactory::ReleaseFactory();
 }
 
 #endif //#if defined(__DAVAENGINE_WIN32__)

@@ -38,6 +38,10 @@
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
 
+#if defined (__DAVAENGINE_OPENGL__)
+#include "Render/RenderTarget/OpenGL/RenderTargetFactoryOGL.h"
+#endif
+
 namespace DAVA
 {
     
@@ -150,6 +154,10 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
     SetDynamicParam(PARAM_PROJ, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     
     GetOptions()->SetOption(RenderOptions::LAYER_OCCLUSION_STATS, false);
+
+#if defined (__DAVAENGINE_OPENGL__)
+    RenderTargetFactory::InitFactory(new RenderTargetFactoryOGL());
+#endif
 }
 	
 RenderManager::~RenderManager()

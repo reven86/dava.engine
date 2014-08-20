@@ -35,18 +35,48 @@ namespace DAVA
 {
 
 class RenderTargetOGL;
-class RenderTargetFactoryOGL
+class RenderTargetFactoryOGL : public RenderTargetFactory
 {
 public:
 
+    RenderTargetFactoryOGL();
+    virtual ~RenderTargetFactoryOGL();
+
     virtual RenderTarget* CreateRenderTarget(const RenderTargetDescriptor& rtDesc);
+    virtual RenderDataReader* GetRenderDataReader();
+
+    static PixelFormat MapFramebufferFormatToOGLFormat(FramebufferDescriptor::FramebufferFormat format);
 
 protected:
 
     void InitColorRenderTargets(RenderTargetOGL* renderTarget, const RenderTargetDescriptor& rtDesc);
-    void InitDepthRenderTarget(RenderTargetOGL* renderTarget, const RenderTargetDescriptor& rtDesc);
-    void InitStencilRenderTarget(RenderTargetOGL* renderTarget, const RenderTargetDescriptor& rtDesc);
-    void InitDepthStencilRenderTarget(RenderTargetOGL* renderTarget, const RenderTargetDescriptor& rtDesc);
+    void InitDepthRenderTarget(RenderTargetOGL* renderTarget, const RenderTargetDescriptor& rtDesc,
+                               GLuint depthFormat);
+    void InitStencilRenderTarget(RenderTargetOGL* renderTarget, const RenderTargetDescriptor& rtDesc,
+                                 GLuint stencilFormat);
+    void InitDepthStencilRenderTarget(RenderTargetOGL* renderTarget, const RenderTargetDescriptor& rtDesc,
+                                      GLuint depthStencilFormat);
+
+    Texture* CreateResolveTexture(const FramebufferDescriptor& framebufferDesc,
+                                  const RenderTextureDescriptor& textureDesc) const;
+
+    template<class T> T* CreateFramebufferAttachment(const RenderTargetDescriptor::FramebufferInfo* framebufferDesc,
+                                                     GLuint requestedInternalFormat);
+
+    FramebufferAttachment* NewAttachment(const RenderTargetDescriptor::FramebufferInfo* framebufferDesc,
+                                         Texture* tx);
+    FramebufferAttachment* NewAttachment(const RenderTargetDescriptor::FramebufferInfo* framebufferDesc,
+                                         GLuint bufferId);
+
+    bool MapDepthStencilFormatToInternalFormat(const RenderTargetDescriptor& rtDesc,
+                                               GLuint& outDepthFormat,
+                                               GLuint& outStencilFormat);
+    bool MapColorFormatToInternalFormat(const FramebufferDescriptor& framebufferDesc,
+                                        GLuint& outColorFormat);
+
+protected:
+
+    RenderDataReader* renderDataReader;
 };
 
 };

@@ -29,6 +29,7 @@
 
 #include "Render/RenderTarget/OpenGL/DepthFramebufferAttachmentOGL.h"
 #include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
+#include "Render/RenderManager.h"
 
 namespace DAVA
 {
@@ -49,7 +50,7 @@ DepthFramebufferAttachmentOGL::~DepthFramebufferAttachmentOGL()
 {
     if(0 != renderbufferId)
     {
-        glDeleteRenderbuffers(1, &renderbufferId);
+        RENDER_VERIFY(glDeleteRenderbuffers(1, &renderbufferId));
     }
 
     SafeRelease(resolveTexture);
@@ -66,15 +67,12 @@ void DepthFramebufferAttachmentOGL::AttachRenderBuffer()
     }
     else
     {
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbufferId);
+        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbufferId));
     }
 }
 
 Texture* DepthFramebufferAttachmentOGL::Lock()
 {
-    //VI: TODO: think about using glReadPixels
-    //in case when Lock() is called on a renderbuffer without a resolve texture.
-
     return SafeRetain(resolveTexture);
 }
 

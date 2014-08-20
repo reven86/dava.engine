@@ -56,8 +56,8 @@ public:
 
     RenderTarget();
 
-    virtual void BeginRender();
-    virtual void EndRender();
+    virtual void BeginRender() = 0;
+    virtual void EndRender() = 0;
 
     ColorFramebufferAttachment* GetColorAttachment(uint32 index = 0);
     uint32 GetColorAttachmentCount();

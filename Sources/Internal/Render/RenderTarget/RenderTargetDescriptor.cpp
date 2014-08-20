@@ -31,6 +31,10 @@
 namespace DAVA
 {
 
+RenderTargetDescriptor::RenderTargetDescriptor() : clearDepth(0.0f), clearStencil(0)
+{
+}
+
 void RenderTargetDescriptor::AddFramebuffer(FramebufferDescriptor framebuffer)
 {
     DVASSERT(framebuffer.IsValid());
@@ -184,6 +188,36 @@ RenderTargetDescriptor::FramebufferInfo* RenderTargetDescriptor::GetFramebufferI
     }
 
     return curInfo;
+}
+
+void RenderTargetDescriptor::SetClearColor(Color color)
+{
+    clearColor = color;
+}
+
+const Color& RenderTargetDescriptor::GetClearColor() const
+{
+    return clearColor;
+}
+
+void RenderTargetDescriptor::SetClearDepth(float32 value)
+{
+    clearDepth = value;
+}
+
+float32 RenderTargetDescriptor::GetClearDepth() const
+{
+    return clearDepth;
+}
+
+void RenderTargetDescriptor::SetClearStencil(uint32 value)
+{
+    clearStencil = value;
+}
+
+uint32 RenderTargetDescriptor::GetClearStencil() const
+{
+    return clearStencil;
 }
 
 };

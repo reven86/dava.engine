@@ -1003,16 +1003,82 @@ void QtMainWindow::SceneCommandExecuted(SceneEditor2 *scene, const Command2* com
 // Mainwindow Qt actions
 // ###################################################################################################
 
+#include "Render/RenderTarget/RenderTarget.h"
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 void QtMainWindow::OnProjectOpen()
 {
-    FilePath incomePath = ProjectManager::Instance()->ProjectOpenDialog();
+    FramebufferDescriptor colorFramebuffer(FramebufferDescriptor::FRAMEBUFFER_COLOR0,
+                                           FramebufferDescriptor::FORMAT_RGBA8888,
+                                           FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                           FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                           1024,
+                                           1024);
+    RenderTextureDescriptor textureDescriptor(Texture::TEXTURE_2D,
+                                              Texture::WRAP_CLAMP_TO_EDGE,
+                                              Texture::WRAP_CLAMP_TO_EDGE,
+                                              Texture::FILTER_LINEAR_MIPMAP_LINEAR,
+                                              Texture::FILTER_LINEAR_MIPMAP_LINEAR);
+
+    FramebufferDescriptor depthFramebuffer(FramebufferDescriptor::FRAMEBUFFER_DEPTH,
+                                           FramebufferDescriptor::FORMAT_DEPTH24,
+                                           FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                           FramebufferDescriptor::POST_ACTION_DONTCARE,
+                                           1024,
+                                           1024);
+
+    FramebufferDescriptor stencilFramebuffer(FramebufferDescriptor::FRAMEBUFFER_STENCIL,
+                                             FramebufferDescriptor::FORMAT_STENCIL8,
+                                             FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                             FramebufferDescriptor::POST_ACTION_DONTCARE,
+                                             1024,
+                                             1024);
+
+    RenderTargetDescriptor rtDesc;
+
+    rtDesc.SetClearColor(Color(1.0f, 0.0f, 0.0f, 1.0f));
+    rtDesc.SetClearDepth(0.0f);
+    rtDesc.SetClearStencil(0);
+
+    rtDesc.AddFramebuffer(colorFramebuffer, textureDescriptor);
+    rtDesc.AddFramebuffer(depthFramebuffer);
+    rtDesc.AddFramebuffer(stencilFramebuffer);
+
+    DVASSERT(rtDesc.Validate());
+
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
+
+    DVASSERT(renderTarget);
+
+    renderTarget->BeginRender();
+
+    //TODO: add some render code here
+
+    renderTarget->EndRender();
+
+    Texture* tx = renderTarget->GetColorAttachment(0)->Lock();
+
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    Image* textureData = renderDataReader->ReadTextureData(tx);
+
+    ImageSystem::Instance()->Save("~doc:/test_image.png", textureData);
+
+    SafeRelease(textureData);
+    SafeRelease(renderDataReader);
+
+    renderTarget->GetColorAttachment(0)->Unlock(tx);
+
+    SafeRelease(renderTarget);
+    
+    /*FilePath incomePath = ProjectManager::Instance()->ProjectOpenDialog();
     
     if(!incomePath.IsEmpty() &&
        ProjectManager::Instance()->CurProjectPath() != incomePath &&
        ui->sceneTabWidget->CloseAllTabs())
     {
         ProjectManager::Instance()->ProjectOpen(incomePath);
-    }
+    }*/
 }
 
 void QtMainWindow::OnProjectClose()

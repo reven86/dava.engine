@@ -29,6 +29,7 @@
 
 #include "Render/RenderTarget/OpenGL/ColorFramebufferAttachmentOGL.h"
 #include "Render/RenderTarget/OpenGL/FramebufferAttachmentHelper.h"
+#include "Render/RenderManager.h"
 
 namespace DAVA
 {
@@ -62,7 +63,7 @@ ColorFramebufferAttachmentOGL::~ColorFramebufferAttachmentOGL()
 {
     if(renderbufferId != 0)
     {
-        glDeleteRenderbuffers(1, &renderbufferId);
+        RENDER_VERIFY(glDeleteRenderbuffers(1, &renderbufferId));
     }
 
     SafeRelease(resolveTexture);
@@ -70,9 +71,6 @@ ColorFramebufferAttachmentOGL::~ColorFramebufferAttachmentOGL()
 
 Texture* ColorFramebufferAttachmentOGL::Lock()
 {
-    //VI: TODO: think about using glReadPixels
-    //in case when Lock() is called on a renderbuffer without a resolve texture.
-
     return SafeRetain(resolveTexture);
 }
 
@@ -92,7 +90,7 @@ void ColorFramebufferAttachmentOGL::AttachRenderBuffer()
     }
     else
     {
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, COLOR_ATTACHMENT_ID_MAP[framebufferType], GL_RENDERBUFFER, renderbufferId);
+        RENDER_VERIFY(glFramebufferRenderbuffer(GL_FRAMEBUFFER, COLOR_ATTACHMENT_ID_MAP[framebufferType], GL_RENDERBUFFER, renderbufferId));
     }
 }
 

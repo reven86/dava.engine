@@ -27,47 +27,30 @@
  =====================================================================================*/
 
 
-#ifndef __DAVAENGINE_STENCILFRAMEBUFFERATTACHMENTOGL_H__
-#define __DAVAENGINE_STENCILFRAMEBUFFERATTACHMENTOGL_H__
+#ifndef __DAVAENGINE_RENDERDATAREADEROGL_H__
+#define __DAVAENGINE_RENDERDATAREADEROGL_H__
 
-#include "Render/RenderTarget/StencilFramebufferAttachment.h"
-#include "Render/RenderTarget/OpenGL/DepthFramebufferAttachmentOGL.h"
+#include "Render/RenderTarget/RenderTargetDescriptor.h"
+#include "Render/RenderTarget/RenderDataReader.h"
 
 namespace DAVA
 {
 
-class StencilFramebufferAttachmentOGL : public StencilFramebufferAttachment
+class RenderDataReaderOGL : public RenderDataReader
 {
-friend class RenderTargetFactoryOGL;
-
-protected:
-
-    virtual ~StencilFramebufferAttachmentOGL();
-
 public:
 
-    StencilFramebufferAttachmentOGL(GLuint bufferId);
-    StencilFramebufferAttachmentOGL(Texture* tx);
-    StencilFramebufferAttachmentOGL(DepthFramebufferAttachmentOGL* sharedDepthStencil);
-
-    void AttachRenderBuffer();
-
-    virtual Texture* Lock();
-    virtual void Unlock(Texture* tx);
-    
-protected:
-
-    virtual void OnActiveMipLevelChanged();
-    virtual void OnActiveFaceChanged();
+    virtual Image* ReadTextureData(Texture* tx);
+    virtual Image* ReadColorData(RenderTarget* renderTarget);
+    virtual Image* ReadCurrentColorData(PixelFormat pixelFormat, uint32 width, uint32 height);
 
 protected:
 
-    GLuint renderbufferId;
-    Texture* resolveTexture;
+    bool GetImageInfo(RenderTarget* renderTarget, PixelFormat& outPixelFormat, uint32& outWidth, uint32& outHeight);
 
-    DepthFramebufferAttachmentOGL* depthStencil;
+    void FillTextureDataReaderDescriptor(Texture* sourceTexture, RenderTargetDescriptor& outDesc);
 };
 
 };
 
-#endif /* defined(__DAVAENGINE_STENCILFRAMEBUFFERATTACHMENTOGL_H__) */
+#endif /* defined(__DAVAENGINE_RENDERDATAREADEROGL_H__) */

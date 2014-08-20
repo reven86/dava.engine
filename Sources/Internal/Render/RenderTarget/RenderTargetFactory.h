@@ -35,6 +35,7 @@
 
 #include "Render/RenderTarget/RenderTargetDescriptor.h"
 #include "Render/RenderTarget/RenderTarget.h"
+#include "Render/RenderTarget/RenderDataReader.h"
 
 namespace DAVA
 {
@@ -53,6 +54,7 @@ public:
     static void ReleaseFactory();
 
     virtual RenderTarget* CreateRenderTarget(const RenderTargetDescriptor& rtDesc) = 0;
+    virtual RenderDataReader* GetRenderDataReader() = 0;
 
 protected:
 
