@@ -35,6 +35,7 @@
 #include "FileSystem/File.h"
 #include "Base/DynamicObjectCache.h"
 #include "Base/FastNameMap.h"
+#include "DAVAConfig.h"
 //#include "Base/HashMap.h"
 
 namespace DAVA
@@ -166,8 +167,8 @@ private:
 };
     
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
-#define TIME_PROFILE(name) static FastName fastName(name); TimeMeasure timeMeasure(fastName);
-#define IMM_TIME_PROFILE(name) static FastName fastName(name); ImmediateTimeMeasure immTimeMeasure(fastName);
+#define TIME_PROFILE(name) static FastName fastNameTime(name); TimeMeasure timeMeasure(fastNameTime);
+#define IMM_TIME_PROFILE(name) static FastName fastNameIMM(name); ImmediateTimeMeasure immTimeMeasure(fastNameIMM);
 #else
 #define TIME_PROFILE(name)
 #define IMM_TIME_PROFILE(name)

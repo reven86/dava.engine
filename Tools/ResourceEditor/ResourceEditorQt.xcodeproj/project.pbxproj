@@ -87,6 +87,7 @@
 		E86F97CF18DB38F1007330E1 /* CloneLastBatchCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E86F97CD18DB38F1007330E1 /* CloneLastBatchCommand.cpp */; };
 		E879F45D189802680008E0B1 /* DeleteLODCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E879F45B189802680008E0B1 /* DeleteLODCommand.cpp */; };
 		E881535118883A630028AFD3 /* InspDynamicModifyCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E881534F18883A630028AFD3 /* InspDynamicModifyCommand.cpp */; };
+		E8897BA5197D726800BC4B60 /* LandscapeEditorSystem.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8897BA3197D726800BC4B60 /* LandscapeEditorSystem.cpp */; };
 		E89DFD30163ED2A900B51706 /* DataQt in Bundle Resources */ = {isa = PBXBuildFile; fileRef = E89DFD2F163ED2A900B51706 /* DataQt */; };
 		E8AA9ACB1901001500334823 /* BakeTransformCommand.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8AA9AC91901001500334823 /* BakeTransformCommand.cpp */; };
 		E8ACC89418A3EA1B00F26ABC /* SwitchEntityCreator.cpp in Build Sources */ = {isa = PBXBuildFile; fileRef = E8ACC89218A3EA1B00F26ABC /* SwitchEntityCreator.cpp */; };
@@ -796,6 +797,8 @@
 		E879F45C189802680008E0B1 /* DeleteLODCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeleteLODCommand.h; sourceTree = "<group>"; };
 		E881534F18883A630028AFD3 /* InspDynamicModifyCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InspDynamicModifyCommand.cpp; sourceTree = "<group>"; };
 		E881535018883A630028AFD3 /* InspDynamicModifyCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InspDynamicModifyCommand.h; sourceTree = "<group>"; };
+		E8897BA3197D726800BC4B60 /* LandscapeEditorSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LandscapeEditorSystem.cpp; sourceTree = "<group>"; };
+		E8897BA4197D726800BC4B60 /* LandscapeEditorSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LandscapeEditorSystem.h; sourceTree = "<group>"; };
 		E89DFD2F163ED2A900B51706 /* DataQt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = DataQt; sourceTree = "<group>"; };
 		E8AA9AC91901001500334823 /* BakeTransformCommand.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BakeTransformCommand.cpp; sourceTree = "<group>"; };
 		E8AA9ACA1901001500334823 /* BakeTransformCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BakeTransformCommand.h; sourceTree = "<group>"; };
@@ -3619,6 +3622,8 @@
 		E8C99114184CD0EB00AFBF3F /* System */ = {
 			isa = PBXGroup;
 			children = (
+				E8897BA3197D726800BC4B60 /* LandscapeEditorSystem.cpp */,
+				E8897BA4197D726800BC4B60 /* LandscapeEditorSystem.h */,
 				64B9018B18BF7B25001E6CCC /* GrassEditorSystem.cpp */,
 				64B9018C18BF7B25001E6CCC /* GrassEditorSystem.h */,
 				E8D417C3188160C800A76E21 /* EditorMaterialSystem.cpp */,
@@ -4628,6 +4633,7 @@
 				E8C99200184CD0EC00AFBF3F /* btConvexConvexAlgorithm.cpp in Build Sources */,
 				E8C9929B184CD0EC00AFBF3F /* RemoveComponentCommand.cpp in Build Sources */,
 				E8C9926D184CD0EC00AFBF3F /* ColladaScene.cpp in Build Sources */,
+				E8897BA5197D726800BC4B60 /* LandscapeEditorSystem.cpp in Build Sources */,
 				E8C992F7184CD0EC00AFBF3F /* CameraSystem.cpp in Build Sources */,
 				E8BAD6B01859F50300C98C8D /* CubemapUtils_moc.cpp in Build Sources */,
 				E8BAD7351859F50300C98C8D /* QtPropertyData_moc.cpp in Build Sources */,

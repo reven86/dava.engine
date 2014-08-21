@@ -44,42 +44,22 @@
 #include "Project/ProjectManager.h"
 
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	cursorSize(120)
 ,	drawColor(Color(0.f, 0.f, 0.f, 0.f))
 ,	toolImageSprite(NULL)
-,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	originalImage(NULL)
 ,	colorIndex(0)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    cursorSize = 120;
 
-	SetColor(colorIndex);
-	
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
+    SetColor(colorIndex);
 }
 
 CustomColorsSystem::~CustomColorsSystem()
 {
-	SafeRelease(cursorTexture);
 	SafeRelease(toolImageSprite);
-}
-
-bool CustomColorsSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
-}
-
-LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing()
@@ -228,33 +208,6 @@ void CustomColorsSystem::FinishEditing()
 	}
 }
 
-void CustomColorsSystem::UpdateCursorPosition()
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-		
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-		
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
-	}
-}
 
 void CustomColorsSystem::UpdateToolImage(bool force)
 {

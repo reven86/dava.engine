@@ -44,15 +44,15 @@ public:
     {
         DE_NO_ERROR = 0,
 
-        DE_WAS_CANCELED,
-        DE_INIT_ERROR,
-        DE_CHECK_ERROR,
-        DE_READ_ERROR,
-        DE_WRITE_ERROR,
-        DE_CONNECT_ERROR,
-        DE_DOWNLOAD_ERROR,
-        DE_PATCH_ERROR_LITE,
-        DE_PATCH_ERROR_FULL
+        DE_WAS_CANCELED,        // DLC was canceled
+        DE_INIT_ERROR,          // Some unhanded errors occurred during DLC initialization
+        DE_DOWNLOAD_ERROR,      // Some unhanded errors occurred during DLC download step
+        DE_PATCH_ERROR_LITE,    // Some unhanded errors occurred during applying lite patch (user can still try to force full patch applying)
+        DE_PATCH_ERROR_FULL,    // Some unhanded errors occurred during applying full patch
+        DE_CHECK_ERROR,         // There is no DLC info or DLC patch on remote host
+        DE_READ_ERROR,          // Can't read file
+        DE_WRITE_ERROR,         // Can't write file
+        DE_CONNECT_ERROR        // Can't connect to remote host
     };
 
     enum DLCState
@@ -71,14 +71,15 @@ public:
 
     /**
         \brief Create DLC state machine, that will check or apply patch from given URL.
-        \param[in] dlcUrl - remote server url.
+        \param[in] url - remote server url.
         \param[in] sourceDir - local directory, containing original files, that should be patched.
         \param[in] desrinationDir - local directory, where patched files should be stored. Can be the same as sourceDir.
         \param[in] workingDir - local directory, where DLC temporary files should be stored.
-        \param[in] gVersion - current game version. Depending on this parameter, will be searched DLC info-file on a given (by URL parameter) remote server.
+        \param[in] gameVersion - current game version. Depending on this parameter, will be searched DLC info-file on a given (by URL parameter) remote server.
+        \param[in] resVersionPath - path to file, where resources version is stored. This file will be re-wrote after patch finished.
         \param[in] forceFullUpdate - "true" value will force full-patch to be downloaded from the server. "false" leaves patch version to be determined automatically.
     */
-    DLC(const String &dclUrl, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, uint32 gVersion, bool forceFullUpdate = false);
+    DLC(const String &url, const FilePath &sourceDir, const FilePath &destinationDir, const FilePath &workingDir, const String &gameVersion, const FilePath &resVersionPath, bool forceFullUpdate = false);
     ~DLC();
 
     /**
@@ -214,8 +215,8 @@ protected:
     void PatchingThread(BaseObject *caller, void *callerData, void *userData);
 
     // helper functions
-    uint32 ReadUint32(const FilePath &path);
-    void WriteUint32(const FilePath &path, uint32 value);
+    bool ReadUint32(const FilePath &path, uint32 &value);
+    bool WriteUint32(const FilePath &path, uint32 value);
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
     

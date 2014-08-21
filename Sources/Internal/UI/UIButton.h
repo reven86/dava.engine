@@ -289,6 +289,7 @@ private:
     UIControlBackground *GetActualBackground(eButtonDrawState drawState) const  { return stateBacks[GetActualBackgroundState(drawState)]; }
     UIControlBackground *GetOrCreateBackground(eButtonDrawState drawState);
     void SetBackground(eButtonDrawState drawState, UIControlBackground * newBackground);
+    UIControlBackground *CreateDefaultBackground() const{ return new UIControlBackground(); }
 
     eButtonDrawState GetActualTextBlockState(eButtonDrawState drawState) const;
     UIStaticText *GetActualTextBlockForState(int32 state) const;
@@ -296,6 +297,7 @@ private:
     UIStaticText *GetActualTextBlock(eButtonDrawState drawState) const  { return stateTexts[GetActualTextBlockState(drawState)]; }
     UIStaticText *GetOrCreateTextBlock(eButtonDrawState drawState);
     void SetTextBlock(eButtonDrawState drawState, UIStaticText * newTextBlock);
+    UIStaticText *CreateDefaultTextBlock() const;
 
     void UpdateStateTextControlSize();
 };

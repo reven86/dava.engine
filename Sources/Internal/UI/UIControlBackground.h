@@ -271,7 +271,7 @@ protected:
 
     Sprite *spr;
     int32 align;
-    int32 type;
+    eDrawType type;
     int32 spriteModification;
     float32 leftStretchCap;
     float32 topStretchCap;

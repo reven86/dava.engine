@@ -46,8 +46,7 @@
 static const float32 DENSITY_THRESHOLD = 0.1f;
 
 GrassEditorSystem::GrassEditorSystem(Scene* scene)
-: SceneSystem(scene)
-, isEnabled(false)
+: LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/squareCursor.tex")
 , inDrawState(false)
 , vegetationMap(NULL)
 , vegetationMapCopy(NULL)
@@ -58,18 +57,10 @@ GrassEditorSystem::GrassEditorSystem(Scene* scene)
 , curLayer(0)
 , curVegetation(NULL)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/squareCursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
 }
 
 GrassEditorSystem::~GrassEditorSystem()
 {
-	SafeRelease(cursorTexture);
     SafeRelease(vegetationMap);
     SafeRelease(vegetationMapCopy);
     SafeRelease(curVegetation);
@@ -80,7 +71,7 @@ void GrassEditorSystem::Update(DAVA::float32 timeElapsed)
 
 void GrassEditorSystem::ProcessUIEvent(DAVA::UIEvent *event)
 {
-    if(isEnabled && NULL != vegetationMap)
+    if(enabled && NULL != vegetationMap)
     {
         UpdateCursorPos();
 
@@ -198,11 +189,6 @@ bool GrassEditorSystem::EnableGrassEdit(bool enable)
     }*/
 
     return ret;
-}
-
-bool GrassEditorSystem::IsEnabledGrassEdit() const
-{
-    return isEnabled;
 }
 
 void GrassEditorSystem::UpdateCursorPos()
