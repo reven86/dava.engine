@@ -173,6 +173,11 @@ void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
                 //rdoObject->SetStream()
             }
         }
+            
+        default:
+        {
+            break;
+        }
     }
     ReleaseDrawData();
 }
@@ -633,6 +638,10 @@ void UIControlBackground::DrawStretched(const Rect &drawRect, UniqueHandle rende
             texCoords[25] = texCoords[27] = texCoords[29] = texCoords[31] = (texY + texDy) / textureHeight;
         }
         break;
+        default:
+        {
+            break;
+        }
     }
 
 //	if (Core::GetContentScaleFactor() != 1.0 && RenderManager::IsRenderTarget())
