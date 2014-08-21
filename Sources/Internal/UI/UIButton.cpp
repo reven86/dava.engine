@@ -102,9 +102,9 @@ void UIButton::CopyDataFrom(UIControl *srcControl)
     }
 }
 
-void UIButton::SetRect(const Rect &rect, bool rectInAbsoluteCoordinates/* = FALSE*/)
+void UIButton::SetRect(const Rect &rect)
 {
-    UIControl::SetRect(rect, rectInAbsoluteCoordinates);
+    UIControl::SetRect(rect);
 
     UpdateStateTextControlSize();
 }
@@ -418,7 +418,7 @@ UIControlBackground *UIButton::GetOrCreateBackground(eButtonDrawState drawState)
     if (!GetBackground(drawState))
     {
         UIControlBackground* targetBack = GetActualBackground(drawState);
-        ScopedPtr<UIControlBackground> stateBackground( targetBack ? targetBack->Clone() : new UIControlBackground() );
+        ScopedPtr<UIControlBackground> stateBackground( targetBack ? targetBack->Clone() : CreateDefaultBackground() );
         SetBackground(drawState, stateBackground);
     }
 
@@ -430,7 +430,7 @@ UIStaticText *UIButton::GetOrCreateTextBlock(eButtonDrawState drawState)
     if (!GetTextBlock(drawState))
     {
         UIStaticText* targetTextBlock = GetActualTextBlock(drawState);
-        ScopedPtr<UIStaticText> stateTextBlock( targetTextBlock ? targetTextBlock->Clone() : new UIStaticText(Rect(0, 0, size.x, size.y)) );
+        ScopedPtr<UIStaticText> stateTextBlock( targetTextBlock ? targetTextBlock->Clone() : CreateDefaultTextBlock() );
         SetTextBlock(drawState, stateTextBlock);
     }
     return GetTextBlock(drawState);
@@ -524,7 +524,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
         if (stateSpriteNode || stateDrawTypeNode || stateAlignNode ||
             colorInheritNode || colorNode)
         {
-            ScopedPtr<UIControlBackground> stateBackground(new UIControlBackground());
+            ScopedPtr<UIControlBackground> stateBackground(CreateDefaultBackground());
             SetBackground(drawState, stateBackground);
 
             if (stateSpriteNode)
@@ -603,7 +603,7 @@ void UIButton::LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader)
             stateShadowColorNode || stateShadowOffsetNode || stateFittingOptionNode ||
             stateTextNode || multilineNode || multilineBySymbolNode)
         {
-            ScopedPtr<UIStaticText> stateTextBlock(new UIStaticText(Rect(0, 0, size.x, size.y)));
+            ScopedPtr<UIStaticText> stateTextBlock(CreateDefaultTextBlock());
             SetTextBlock(drawState, stateTextBlock);
 
             if (stateFontNode)
@@ -681,11 +681,11 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
             if (stateSprite)
             {
                 //Create array yamlnode and add it to map
-                YamlNode *spriteNode = new YamlNode(YamlNode::TYPE_ARRAY);
+                YamlNode *spriteNode = YamlNode::CreateArrayNode(YamlNode::AR_FLOW_REPRESENTATION);
 
-                spriteNode->AddValueToArray(GetSpriteFrameworkPath(stateSprite));
-                spriteNode->AddValueToArray(stateBackground->GetFrame());
-                spriteNode->AddValueToArray(stateBackground->GetModification());
+                spriteNode->Add(GetSpriteFrameworkPath(stateSprite));
+                spriteNode->Add(stateBackground->GetFrame());
+                spriteNode->Add(stateBackground->GetModification());
                 node->AddNodeToMap(Format("stateSprite%s", statePostfix.c_str()), spriteNode);
             }
 
@@ -734,7 +734,7 @@ YamlNode * UIButton::SaveToYamlNode(UIYamlLoader * loader)
         const UIStaticText *stateTextBlock = GetTextBlock(drawState);
         if (stateTextBlock)
         {
-            ScopedPtr<UIStaticText> baseStaticText( new UIStaticText() );
+            ScopedPtr<UIStaticText> baseStaticText(CreateDefaultTextBlock());
             Font *stateFont = stateTextBlock->GetFont();
             node->Set(Format("stateFont%s", statePostfix.c_str()), FontManager::Instance()->GetFontName(stateFont));
 
@@ -826,4 +826,10 @@ void UIButton::UpdateStateTextControlSize()
         }
     }
 }
+
+UIStaticText * UIButton::CreateDefaultTextBlock() const
+{
+    return new UIStaticText(Rect(Vector2(), GetSize()));
+}
+
 };

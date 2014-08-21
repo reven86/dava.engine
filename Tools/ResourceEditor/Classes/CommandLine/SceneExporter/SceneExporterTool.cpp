@@ -39,8 +39,10 @@ using namespace DAVA;
 void SceneExporterTool::PrintUsage()
 {
     printf("\n");
-    printf("-sceneexporter [-indir [directory]] [-outdir [directory]] [-processdir [directory]] [-processfile [directory]] [-format]\n");
+    printf("-sceneexporter [-scene|-texture] [-indir [directory]] [-outdir [directory]] [-processdir [directory]] [-processfile [directory]] [-format]\n");
     printf("\twill export scene file from DataSource/3d to Data/3d\n");
+    printf("\t-scene - target object is scene, so we need to export *.sc2 files\n");
+    printf("\t-texture - target object is texture, so we need to export *.tex files\n");
     printf("\t-indir - path for Poject/DataSource/3d/ folder \n");
     printf("\t-outdir - path for Poject/Data/3d/ folder\n");
     printf("\t-processdir - foldername from DataSource/3d/ for exporting\n");
@@ -51,9 +53,10 @@ void SceneExporterTool::PrintUsage()
 
     printf("\n");
     printf("Samples:\n");
-    printf("-sceneexporter -export -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processdir Maps/objects/ -quality 3\n");
-    printf("-sceneexporter -export -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2 -forceclose\n");
-
+    printf("-sceneexporter -scene -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processdir Maps/objects/ -quality 3\n");
+    printf("-sceneexporter -scene -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/level.sc2\n");
+    printf("-sceneexporter -texture -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processdir Maps/objects/images/ -quality 3\n");
+    printf("-sceneexporter -texture -indir /Users/User/Project/DataSource/3d -outdir /Users/User/Project/Data/3d/ -processfile Maps/objects/images/stone.tex\n");
 }
 
 DAVA::String SceneExporterTool::GetCommandLineKey()
@@ -64,6 +67,7 @@ DAVA::String SceneExporterTool::GetCommandLineKey()
 bool SceneExporterTool::InitializeFromCommandLine()
 {
     commandAction = ACTION_NONE;
+    commandObject = OBJECT_SCENE;
     
     inFolder = CommandLineParser::GetCommandParam(String("-indir"));
     outFolder = CommandLineParser::GetCommandParam(String("-outdir"));
@@ -106,9 +110,17 @@ bool SceneExporterTool::InitializeFromCommandLine()
         return false;
     }
     
+    if(CommandLineParser::CommandIsFound("-scene"))
+    {
+        commandObject = OBJECT_SCENE;
+    }
+    else if(CommandLineParser::CommandIsFound("-texture"))
+    {
+        commandObject = OBJECT_TEXTURE;
+    }
+    
 	optimizeOnExport = (CommandLineParser::CommandIsFound(String("-saveNormals")) == false);
 
-    
     return true;
 }
 
@@ -127,13 +139,27 @@ void SceneExporterTool::Process()
 	exporter.EnableOptimizations(optimizeOnExport);
 	exporter.SetCompressionQuality(quality);
     
-    if(commandAction == ACTION_EXPORT_FILE)
+    if(ACTION_EXPORT_FILE == commandAction)
     {
-        exporter.ExportFile(filename, errors);
+        if(OBJECT_SCENE == commandObject)
+        {
+            exporter.ExportSceneFile(filename, errors);
+        }
+        else if(OBJECT_TEXTURE == commandObject)
+        {
+            exporter.ExportTextureFile(filename, errors);
+        }
     }
     else if(commandAction == ACTION_EXPORT_FOLDER)
     {
-        exporter.ExportFolder(foldername, errors);
+        if(OBJECT_SCENE == commandObject)
+        {
+            exporter.ExportSceneFolder(foldername, errors);
+        }
+        else if(OBJECT_TEXTURE == commandObject)
+        {
+            exporter.ExportTextureFolder(foldername, errors);
+        }
     }
 }
 

@@ -360,7 +360,7 @@ void HierarchyTreeControl::dragEnterEvent(QDragEnterEvent *event)
 	event->ignore();
 }
 
-void HierarchyTreeControl::dragLeaveEvent(QDragLeaveEvent */*event*/)
+void HierarchyTreeControl::dragLeaveEvent(QDragLeaveEvent * /*event*/)
 {
     StopExpandTimer();
 }

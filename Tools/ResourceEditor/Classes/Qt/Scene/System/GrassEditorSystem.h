@@ -31,18 +31,15 @@
 #ifndef __RESOURCEEDITORQT__GRASSEDITORSYSTEM__
 #define __RESOURCEEDITORQT__GRASSEDITORSYSTEM__
 
-#include "DAVAEngine.h"
+#include "LandscapeEditorSystem.h"
 #include "LandscapeEditorDrawSystem.h"
 #include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
 
-class SceneCollisionSystem;
-class SceneSelectionSystem;
-class EntityModificationSystem;
 class Command2;
 
 using namespace DAVA;
 
-class GrassEditorSystem: public DAVA::SceneSystem
+class GrassEditorSystem: public LandscapeEditorSystem
 {
 public:
     enum BrushMode
@@ -69,7 +66,6 @@ public:
     void ProcessCommand(const Command2 *command, bool redo);
 
     bool EnableGrassEdit(bool enable);
-    bool IsEnabledGrassEdit() const;
 
     void SetLayerVisible(uint8 layer, bool visible);
     bool IsLayerVisible(uint8 layer) const;
@@ -94,7 +90,6 @@ public:
     static DAVA::Rect2i GetAffectedImageRect(DAVA::AABBox2 &area);
     
 protected:
-	bool isEnabled;
     bool inDrawState;
 
     DAVA::Vector2 curCursorPos;
@@ -108,13 +103,6 @@ protected:
     uint8 curDensity;
     uint8 curLayer;
 
-	SceneCollisionSystem* collisionSystem;
-	SceneSelectionSystem* selectionSystem;
-	EntityModificationSystem* modifSystem;
-	LandscapeEditorDrawSystem* drawSystem;
-
-	Texture* cursorTexture;
-    DAVA::Vector2 cursorPosition;
     DAVA::VegetationMap *vegetationMap;
     DAVA::VegetationMap *vegetationMapCopy;
     DAVA::VegetationRenderObject *curVegetation; 

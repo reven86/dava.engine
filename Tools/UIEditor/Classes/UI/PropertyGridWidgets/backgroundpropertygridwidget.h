@@ -1,86 +1,80 @@
 /*==================================================================================
-    Copyright (c) 2008, binaryzebra
-    All rights reserved.
+ Copyright (c) 2008, binaryzebra
+ All rights reserved.
+ 
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+ * Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of the binaryzebra nor the
+ names of its contributors may be used to endorse or promote products
+ derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ =====================================================================================*/
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    * Neither the name of the binaryzebra nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE binaryzebra AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL binaryzebra BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-=====================================================================================*/
-
-
-#ifndef BACKGROUNDPROPERTYGRIDWIDGET_H
-#define BACKGROUNDPROPERTYGRIDWIDGET_H
-
-#include <QWidget>
+#ifndef BACKGROUNDEPROPERTYGRIDWIDGET_H
+#define BACKGROUNDEPROPERTYGRIDWIDGET_H
 
 #include "basepropertygridwidget.h"
-#include "StateComboBoxItemDelegate.h"
+#include <QWidget>
 
 namespace Ui {
-class BackGroundPropertyGridWidget;
+class BackgroundPropertyGridWidget;
 }
 
-class BackGroundPropertyGridWidget : public BasePropertyGridWidget
+class BackgroundPropertyGridWidget : public BasePropertyGridWidget
 {
     Q_OBJECT
 
 public:
-    explicit BackGroundPropertyGridWidget(QWidget *parent = 0);
-    ~BackGroundPropertyGridWidget();
+    explicit BackgroundPropertyGridWidget(const QString& controlName, const QString& propPrefix = QString(), QWidget *parent = 0);
+    ~BackgroundPropertyGridWidget();
 
     virtual void Initialize(BaseMetadata* activeMetadata);
     virtual void Cleanup();
 
-private:
-    Ui::BackGroundPropertyGridWidget *ui;
+    void ForceExpand(bool value);
+    
+protected slots:
+    void OnExpandButtonPressed();
+    void OnOpenSpriteDialog();
+    void OnRemoveSprite();
 
 protected:
-    // Connect/disconnect to the signals.
-    void ConnectToSignals();
+    void ProcessComboboxValueChanged(QComboBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter, const QString& value);
+    void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
 
-	virtual void HandleChangePropertySucceeded(const QString& propertyName);
-
-    // Background Control contains Comboboxes which should be processed in the specific way.
-    virtual void ProcessComboboxValueChanged(QComboBox* senderWidget, const PROPERTYGRIDWIDGETSITER& iter,
-                                             const QString& value);
-    virtual void UpdateComboBoxWidgetWithPropertyValue(QComboBox* comboBoxWidget, const QMetaProperty& curProperty);
-	
-	virtual void OnPropertiesChangedFromExternalSource() {};
-
-    // Fill the combos with appropriate values.
     void FillComboboxes();
+    void UpdateDetailsWidget();
+    
+    void SetStretchCapMaxValues();
+    void HandleDrawTypeComboBox();
 
-    // Handler for the custom combobox values.
     void CustomProcessComboboxValueChanged(const PROPERTYGRIDWIDGETSITER& iter, int value);
 
-	//handle elements according drawType
-	void HandleDrawTypeComboBox();
-	
-private:
-	void SetStretchCapMaxValues();
+    // Get the property name with the prefix specified for this widget.
+    String GetPrefixedPropertyName(const char* propertyName);
 
-private slots:
-    void OpenSpriteDialog();
-    void RemoveSprite();
+private:
+    Ui::BackgroundPropertyGridWidget *ui;
+
+    bool isDetailsVisible;
+    String propertyPrefix;
 };
 
-#endif // BACKGROUNDPROPERTYGRIDWIDGET_H
+#endif // BACKGROUNDEPROPERTYGRIDWIDGET_H

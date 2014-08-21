@@ -45,7 +45,33 @@ class UISliderMetadata : public UIControlMetadata
     Q_PROPERTY(float SliderValue READ GetSliderValue WRITE SetSliderValue);
 	Q_PROPERTY(float SliderMinValue READ GetSliderMinValue WRITE SetSliderMinValue);
 	Q_PROPERTY(float SliderMaxValue READ GetSliderMaxValue WRITE SetSliderMaxValue);
-	  
+
+    // Min Background properties.
+    Q_PROPERTY(QColor MinBackgroundColor READ GetMinColor WRITE SetMinColor);
+    Q_PROPERTY(QString MinSprite READ GetMinSprite WRITE SetMinSprite);
+    Q_PROPERTY(int MinSpriteFrame READ GetMinSpriteFrame WRITE SetMinSpriteFrame);
+	Q_PROPERTY(int MinSpriteModification READ GetMinSpriteModification WRITE SetMinSpriteModification);
+    Q_PROPERTY(int MinDrawType READ GetMinDrawType WRITE SetMinDrawType);
+    Q_PROPERTY(int MinColorInheritType READ GetMinColorInheritType WRITE SetMinColorInheritType);
+    Q_PROPERTY(int MinAlign READ GetMinAlign WRITE SetMinAlign);
+    
+	Q_PROPERTY(float MinLeftRightStretchCap READ GetMinLeftRightStretchCap WRITE SetMinLeftRightStretchCap);
+	Q_PROPERTY(float MinTopBottomStretchCap READ GetMinTopBottomStretchCap WRITE SetMinTopBottomStretchCap);
+    
+    // Max Background Properties
+    Q_PROPERTY(QColor MaxBackgroundColor READ GetMaxColor WRITE SetMaxColor);
+
+    Q_PROPERTY(QString MaxSprite READ GetMaxSprite WRITE SetMaxSprite);
+    Q_PROPERTY(int MaxSpriteFrame READ GetMaxSpriteFrame WRITE SetMaxSpriteFrame);
+	Q_PROPERTY(int MaxSpriteModification READ GetMaxSpriteModification WRITE SetMaxSpriteModification);
+    
+    Q_PROPERTY(int MaxDrawType READ GetMaxDrawType WRITE SetMaxDrawType);
+    Q_PROPERTY(int MaxColorInheritType READ GetMaxColorInheritType WRITE SetMaxColorInheritType);
+    Q_PROPERTY(int MaxAlign READ GetMaxAlign WRITE SetMaxAlign);
+    
+	Q_PROPERTY(float MaxLeftRightStretchCap READ GetMaxLeftRightStretchCap WRITE SetMaxLeftRightStretchCap);
+	Q_PROPERTY(float MaxTopBottomStretchCap READ GetMaxTopBottomStretchCap WRITE SetMaxTopBottomStretchCap);
+
 public:
     UISliderMetadata(QObject* parent = 0);
     
@@ -57,7 +83,11 @@ protected:
     virtual QString GetUIControlClassName() const { return "UISlider"; };
 	// Override Resize function
 	virtual void ApplyResize(const Rect& originalRect, const Rect& newRect);
-		
+	
+	// Helper sanity check functions to avoid code duplication.
+    bool VerifyActiveParamIDAndMinBackground() const;
+    bool VerifyActiveParamIDAndMaxBackground() const;
+    
     // Helper to access active UI Slider.
     UISlider* GetActiveUISlider() const;
 	
@@ -70,6 +100,62 @@ protected:
     void SetSliderMinValue(float value);
     float GetSliderMaxValue() const;
     void SetSliderMaxValue(float value);
+    
+    // Min Background.
+    virtual QColor GetMinColor() const;
+    virtual void SetMinColor(const QColor& value);
+    
+    virtual int GetMinDrawType() const;
+    virtual void SetMinDrawType(int value);
+    
+    virtual int GetMinColorInheritType() const;
+    virtual void SetMinColorInheritType(int value);
+    
+    virtual int GetMinAlign() const;
+    virtual void SetMinAlign(int value);
+    
+	virtual float GetMinLeftRightStretchCap() const;
+	virtual void SetMinLeftRightStretchCap(float value);
+	
+	virtual float GetMinTopBottomStretchCap() const;
+	virtual void SetMinTopBottomStretchCap(float value);
+
+    virtual QString GetMinSprite() const;
+    virtual void SetMinSprite(const QString& value);
+    
+    virtual void SetMinSpriteFrame(int value);
+    virtual int GetMinSpriteFrame() const;
+
+    virtual int GetMinSpriteModification() const;
+	virtual void SetMinSpriteModification(int value);
+    
+    // Max Background.
+    virtual QColor GetMaxColor() const;
+    virtual void SetMaxColor(const QColor& value);
+
+    virtual int GetMaxDrawType() const;
+    virtual void SetMaxDrawType(int value);
+    
+    virtual int GetMaxColorInheritType() const;
+    virtual void SetMaxColorInheritType(int value);
+    
+    virtual int GetMaxAlign() const;
+    virtual void SetMaxAlign(int value);
+    
+	virtual float GetMaxLeftRightStretchCap() const;
+	virtual void SetMaxLeftRightStretchCap(float value);
+	
+	virtual float GetMaxTopBottomStretchCap() const;
+	virtual void SetMaxTopBottomStretchCap(float value);
+    
+    virtual void SetMaxSprite(const QString& value);
+    virtual QString GetMaxSprite() const;
+
+    virtual int GetMaxSpriteFrame() const;
+    virtual void SetMaxSpriteFrame(int value);
+
+    virtual int GetMaxSpriteModification() const;
+	virtual void SetMaxSpriteModification(int value);
 };
 
 };

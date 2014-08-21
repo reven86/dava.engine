@@ -50,9 +50,13 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
     background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
-    shadowBg = new UIControlBackground();
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    textBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
+
+    shadowBg = new UIControlBackground();
+    shadowBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    shadowBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
 
     SetTextColor(Color::White);
     SetShadowColor(Color::Black);
@@ -202,10 +206,10 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
     if(!FLOAT_EQUAL(shadowBg->GetDrawColor().a, 0.0f) && (!FLOAT_EQUAL(shadowOffset.dx, 0.0f) || !FLOAT_EQUAL(shadowOffset.dy, 0.0f)))
     {
 		textBlock->Draw(GetShadowColor(), &shadowOffset);
-        UIGeometricData shadowGeomData = geometricData;
-
-        shadowGeomData.position += shadowOffset;
-        shadowGeomData.unrotatedRect += shadowOffset;
+        UIGeometricData shadowGeomData;
+        shadowGeomData.position = shadowOffset;
+        shadowGeomData.size = GetSize();
+        shadowGeomData.AddToGeometricData(geometricData);
 
         shadowBg->SetAlign(textBg->GetAlign());
         shadowBg->SetPerPixelAccuracyType(background->GetPerPixelAccuracyType());
@@ -220,8 +224,9 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
     UIControl::SetParentColor(parentColor);
-    shadowBg->SetParentColor(parentColor);
-    textBg->SetParentColor(parentColor);
+    const Color &backDrawColor = GetBackground()->GetDrawColor();
+    shadowBg->SetParentColor(backDrawColor);
+    textBg->SetParentColor(backDrawColor);
 }
 
 const Vector<WideString> & UIStaticText::GetMultilineStrings() const

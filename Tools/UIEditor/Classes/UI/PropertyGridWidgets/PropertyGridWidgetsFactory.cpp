@@ -87,7 +87,8 @@ PropertyGridWidgetsFactory::PropertyGridWidgetsFactory()
     uiTextFieldWidget = new UITextFieldPropertyGridWidget();
     registeredWidgets.push_back(uiTextFieldWidget);
 
-    backgroundWidget = new BackGroundPropertyGridWidget();
+    backgroundWidget = new BackgroundPropertyGridWidget("Background", "");
+    backgroundWidget->ForceExpand(true);
     registeredWidgets.push_back(backgroundWidget);
 	    
     flagsWidget = new FlagsPropertyGridWidget();

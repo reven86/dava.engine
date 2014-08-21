@@ -47,10 +47,13 @@ WideString HierarchyTreeNodeExtraData::GetLocalizationKey(UIControl::eControlSta
 {
     if (!ValidateControlState(state))
     {
-        return WideString();
+        // Re-try with the default state.
+        state = UIControl::STATE_NORMAL;
+        if (!ValidateControlState(state))
+        {
+            return WideString();
+        }
     }
-
-    //return this->localizationKeysMap[state];
     
     Map<UIControl::eControlState, WideString>::const_iterator iter = this->localizationKeysMap.find(state);
     return iter->second;
@@ -61,7 +64,7 @@ bool HierarchyTreeNodeExtraData::ValidateControlState(UIControl::eControlState s
     Map<UIControl::eControlState, WideString>::const_iterator iter = this->localizationKeysMap.find(state);
     if (iter == this->localizationKeysMap.end())
     {
-        Logger::Error("UIControlState %i is invalid in HierarchyTreeNodeExtraData!");
+        Logger::Error("UIControlState %i is invalid in HierarchyTreeNodeExtraData!", state);
         return false;
     }
     

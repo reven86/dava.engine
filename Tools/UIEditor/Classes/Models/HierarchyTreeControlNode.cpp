@@ -274,12 +274,18 @@ void HierarchyTreeControlNode::RemoveTreeNodeFromScene()
 	{
 		return;
 	}
-	
+
+    // Don't touch the subcontrol nodes - they are controlled by the parent control itself.
+    List<UIControl*> subControlNodes = uiObject->GetSubcontrols();
 	for (HIERARCHYTREENODESLIST::iterator iter = childNodes.begin(); iter != childNodes.end(); ++iter)
 	{
 		HierarchyTreeControlNode* control = dynamic_cast<HierarchyTreeControlNode*>(*iter);
-		if (!control)
+		if (!control || std::find(subControlNodes.begin(), subControlNodes.end(), control->GetUIObject())
+            != subControlNodes.end())
+        {
 			continue;
+        }
+
 		control->RemoveTreeNodeFromScene();
 	}
 	

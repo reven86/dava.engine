@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-sceneexporter -export -indir /Users/victorkleschenko/Work/WoT/wot.blitz_lighting/DataSource/3d/ -outdir /Users/victorkleschenko/Work/WoT/wot.blitz_lighting/Data/3d -processdir Tanks"
+            argument = "-sceneexporter -texture -indir /Users/victorkleschenko/Work/WoT/wot.blitz_art/DataSource/3d/ -outdir /Users/victorkleschenko/Work/WoT/wot.blitz_art/Data/3d -processfile Tanks/France/images/FCM_50t_track.tex -gpu adreno"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument

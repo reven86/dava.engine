@@ -53,6 +53,13 @@
 #include "Platform/TemplateAndroid/MovieViewControlAndroid.h"
 #include "FileSystem/LocalizationAndroid.h"
 #include "Platform/TemplateAndroid/FileListAndroid.h"
+#include "Platform/TemplateAndroid/NotificationAndroid.h"
+
+#include "Utils/UTF8Utils.h"
+
+#if defined(__DAVAENGINE_PROFILE__)
+#include "prof.h"
+#endif //#if defined(__DAVAENGINE_PROFILE__)
 
 extern "C"
 {
@@ -120,6 +127,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved)
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNILocalization", &DAVA::JniLocalization::gJavaClass, &DAVA::JniLocalization::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIFileList", &DAVA::JniFileList::gJavaClass, &DAVA::JniFileList::gJavaClassName);
 	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNIDateTime", &DAVA::JniDateTime::gJavaClass, &DAVA::JniDateTime::gJavaClassName);
+	DAVA::JniExtension::SetJavaClass(env, "com/dava/framework/JNINotification", &DAVA::JniNotification::gJavaClass, &DAVA::JniNotification::gJavaClassName);
 	DAVA::Thread::InitMainThread();
 
 
@@ -170,6 +178,11 @@ void CreateWStringFromJni(JNIEnv* env, jstring jniString, DAVA::WideString& stri
 		string.assign(raw, raw + len);
 		env->ReleaseStringChars(jniString, raw);
 	}
+}
+
+jstring CreateJString(JNIEnv* env, const DAVA::WideString& string)
+{
+	return env->NewStringUTF(DAVA::UTF8Utils::EncodeToUTF8(string).c_str());
 }
 
 void InitApplication(JNIEnv * env)
@@ -265,6 +278,16 @@ void Java_com_dava_framework_JNIActivity_nativeOnStart(JNIEnv * env, jobject cla
 
 	if(core)
 	{
+#if defined(__DAVAENGINE_PROFILE__)
+
+#define STR_EXPAND(tok) #tok
+#define STR(tok) STR_EXPAND(tok)
+        
+        const char *moduleName = STR(__DAVAENGINE_MODULE_NAME__);
+		LOGI("____MODULE___ ___ %s", moduleName);
+        monstartup(moduleName);
+#endif //#if defined(__DAVAENGINE_PROFILE__)
+        
 		core->StartVisible();
 	}
 }
@@ -276,6 +299,10 @@ void Java_com_dava_framework_JNIActivity_nativeOnStop(JNIEnv * env, jobject clas
 	if(core)
 	{
 		core->StopVisible();
+        
+#if defined(__DAVAENGINE_PROFILE__)
+        moncleanup();
+#endif //#if defined(__DAVAENGINE_PROFILE__)
 	}
 }
 

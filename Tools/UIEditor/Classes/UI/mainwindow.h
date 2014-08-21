@@ -237,7 +237,7 @@ private:
     
     QLineEdit *findField;
     void SearchControlsByName(QList<HierarchyTreeControlNode*>& foundNodes,const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName, bool ignoreCase) const;
-    QList<HierarchyTreeControlNode*> SearchScreenByName(const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName, bool ignoreCase) const;
+    QList<HierarchyTreeScreenNode*> SearchScreenByName(const HierarchyTreeNode::HIERARCHYTREENODESLIST nodes, const  QString partOfName, bool ignoreCase) const;
 };
 
 #endif // MAINWINDOW_H

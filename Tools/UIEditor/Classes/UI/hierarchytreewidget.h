@@ -48,6 +48,7 @@ class HierarchyTreeWidget : public QWidget
 public:
     explicit HierarchyTreeWidget(QWidget *parent = 0);
     ~HierarchyTreeWidget();
+    void ScrollTo(HierarchyTreeNode *node);
 	
 private:
 	typedef Set<HierarchyTreeNode::HIERARCHYTREENODEID> EXPANDEDITEMS;
@@ -56,6 +57,8 @@ private:
 	// Restore the selected/expanded tree item state.
 	void RestoreTreeItemSelectedStateRecursive(QTreeWidgetItem* parentItem, const EXPANDEDITEMS& selectedItems);
 	void RestoreTreeItemExpandedStateRecursive(QTreeWidgetItem* parentItem, const EXPANDEDITEMS& expandedItems);
+    
+    void HandleItemSelectionChanged();
 signals:
 	void CreateNewScreen();
 	void CreateNewAggregator();

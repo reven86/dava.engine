@@ -383,13 +383,13 @@ void main()
         pos = clusterCenter + vec4(planeDirection.x, planeDirection.y, inPosition.z, 0.0);
     #endif
     
-        highp vec2 hUV = vec2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
+        highp vec2 hUVheight = vec2(clamp(1.0 - (0.5 * worldSize.x - clusterCenter.x) / worldSize.x, 0.0, 1.0),
                         clamp(1.0 - (0.5 * worldSize.y - clusterCenter.y) / worldSize.y, 0.0, 1.0));
     
-        hUV = vec2(clamp(hUV.x * heightmapScale.x, 0.0, 1.0),
-                   clamp(hUV.y * heightmapScale.y, 0.0, 1.0));
+        hUVheight = vec2(clamp(hUVheight.x * heightmapScale.x, 0.0, 1.0),
+                   clamp(hUVheight.y * heightmapScale.y, 0.0, 1.0));
     
-        highp vec4 heightVec = texture2DLod(heightmap, hUV, 0.0);
+        highp vec4 heightVec = texture2DLod(heightmap, hUVheight, 0.0);
         float height = dot(heightVec, vec4(0.93751430533303, 0.05859464408331, 0.00366216525521, 0.00022888532845)) * worldSize.z;
     
     
@@ -406,7 +406,8 @@ void main()
         varTexCoord2.x = clusterLodScale;
 #endif
     
-        vec4 vegetationMask = texture2DLod(vegetationmap, hUV, 0.0);
+        highp vec2 hUVcolor = vec2(hUVheight.x, 1.0 - hUVheight.y);
+        vec4 vegetationMask = texture2DLod(vegetationmap, hUVcolor, 0.0);
     
 #if defined(MATERIAL_GRASS_OPAQUE) || defined(MATERIAL_GRASS_BLEND)
         varVegetationColor = vegetationMask.rgb;

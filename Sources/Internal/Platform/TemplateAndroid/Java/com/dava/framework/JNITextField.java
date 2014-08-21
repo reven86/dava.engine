@@ -117,7 +117,7 @@ public class JNITextField {
 		DisplayMetrics dm = new DisplayMetrics();
 		JNIActivity.GetActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
 
-		return dm.scaledDensity;
+		return Math.min(2.0f, dm.scaledDensity);
 	}
 
 	public static void Create(final int id, final float x, final float y,

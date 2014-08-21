@@ -41,42 +41,22 @@
 #include "Commands2/VisibilityToolActions.h"
 
 VisibilityToolSystem::VisibilityToolSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	cursorSize(120)
-,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	originalImage(NULL)
 ,	state(VT_STATE_NORMAL)
 ,	textureLevel(Landscape::TEXTURE_TILE_FULL)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
+    cursorSize = 120;
 
 	crossTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/setPointCursor.tex");
 	crossTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
 }
 
 VisibilityToolSystem::~VisibilityToolSystem()
 {
-	SafeRelease(cursorTexture);
 	SafeRelease(crossTexture);
-}
-
-bool VisibilityToolSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
-}
-
-LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType VisibilityToolSystem::EnableLandscapeEditing()
@@ -162,7 +142,7 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 		return;
 	}
 
-	UpdateCursorPosition(landscapeSize);
+	UpdateCursorPosition();
 
 	if (state != VT_STATE_SET_AREA && state != VT_STATE_SET_POINT)
 	{
@@ -213,33 +193,6 @@ void VisibilityToolSystem::ProcessUIEvent(DAVA::UIEvent *event)
 	}
 }
 
-void VisibilityToolSystem::UpdateCursorPosition(int32 landscapeSize)
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
-	}
-}
 
 void VisibilityToolSystem::ResetAccumulatorRect()
 {

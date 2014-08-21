@@ -72,6 +72,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="minimum">
+     <double>-9999.000000000000000</double>
+    </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
     </property>
@@ -120,6 +123,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="minimum">
+     <double>-9999.000000000000000</double>
+    </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
     </property>
@@ -155,6 +161,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="minimum">
+     <double>-9999.000000000000000</double>
+    </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
     </property>
@@ -184,6 +193,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="minimum">
+     <double>0.000000000000000</double>
+    </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
     </property>
@@ -200,6 +212,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="minimum">
+     <double>-9999.000000000000000</double>
+    </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
     </property>
@@ -215,6 +230,9 @@
       <width>80</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="minimum">
+     <double>-9999.000000000000000</double>
     </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
@@ -244,6 +262,9 @@
       <width>80</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="minimum">
+     <double>0.000000000000000</double>
     </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
@@ -295,6 +316,9 @@
       <width>80</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="minimum">
+     <double>-9999.000000000000000</double>
     </property>
     <property name="maximum">
      <double>9999.000000000000000</double>
