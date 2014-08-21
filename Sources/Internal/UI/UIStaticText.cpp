@@ -50,9 +50,13 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
     background->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     background->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
-    shadowBg = new UIControlBackground();
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    textBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
+
+    shadowBg = new UIControlBackground();
+    shadowBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+    shadowBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
 
     SetTextColor(Color::White);
     SetShadowColor(Color::Black);

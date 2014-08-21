@@ -624,6 +624,8 @@ void Core::SystemAppFinished()
 
 void Core::SystemProcessFrame()
 {
+    IMM_TIME_PROFILE(FastName("Core::SystemProcessFrame"));
+    
 #ifdef __DAVAENGINE_NVIDIA_TEGRA_PROFILE__
 	static bool isInit = false;
 	static EGLuint64NV frequency;

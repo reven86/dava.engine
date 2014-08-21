@@ -75,17 +75,39 @@ LocalizationSystem::~LocalizationSystem()
 	
 void LocalizationSystem::InitWithDirectory(const FilePath &directoryPath)
 {
+    SetDirectory(directoryPath);
+    Init();
+}
+
+void LocalizationSystem::SetDirectory(const FilePath &directoryPath)
+{
     DVASSERT(directoryPath.IsDirectoryPathname());
-    
     this->directoryPath = directoryPath;
 #if defined(__DAVAENGINE_IPHONE__)
 	LocalizationIPhone::SelecePreferedLocalizationForPath(directoryPath);
 #elif defined(__DAVAENGINE_ANDROID__)
     LocalizationAndroid::SelecePreferedLocalization();
 #endif
+}
+
+void LocalizationSystem::Init()
+{
 	LoadStringFile(langId, directoryPath + (langId + ".yaml"));
 }
-	
+
+    
+    
+const char * LocalizationSystem::GetDeviceLocale()
+{
+#if defined(__DAVAENGINE_IPHONE__)
+	return LocalizationIPhone::GetDeviceLang();
+#elif defined(__DAVAENGINE_ANDROID__)
+    return LocalizationAndroid::GetDeviceLang().c_str();
+#else
+    return "ru";
+#endif
+}
+    
 const String &LocalizationSystem::GetCurrentLocale()
 {
 	return langId;

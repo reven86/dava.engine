@@ -506,6 +506,7 @@
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\NotPassableTerrainProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\RulerToolProxy.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\VisibilityToolProxy.cpp" />
+    <ClCompile Include="Classes\Qt\Scene\System\LandscapeEditorSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\ModifSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\OwnersSignatureSystem.cpp" />
     <ClCompile Include="Classes\Qt\Scene\System\RulerToolSystem.cpp" />
@@ -1160,6 +1161,7 @@
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\NotPassableTerrainProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\RulerToolProxy.h" />
     <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorDrawSystem\VisibilityToolProxy.h" />
+    <ClInclude Include="Classes\Qt\Scene\System\LandscapeEditorSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\ModifSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\OwnersSignatureSystem.h" />
     <ClInclude Include="Classes\Qt\Scene\System\RulerToolSystem.h" />

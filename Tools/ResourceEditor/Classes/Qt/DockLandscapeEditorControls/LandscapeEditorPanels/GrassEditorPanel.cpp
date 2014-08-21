@@ -22,7 +22,7 @@ GrassEditorPanel::~GrassEditorPanel()
 
 bool GrassEditorPanel::GetEditorEnabled()
 {
-	return GetActiveScene()->grassEditorSystem->IsEnabledGrassEdit();
+	return GetActiveScene()->grassEditorSystem->IsLandscapeEditingEnabled();
 }
 
 void GrassEditorPanel::OnEditorEnabled()
