@@ -137,16 +137,12 @@ bool UIScrollViewContainer::SystemInput(UIEvent *currentTouch)
 		return false;
 	}
 
-	bool controlEnabled = ((controlState & STATE_DISABLED) == 0);
 	if (currentTouch->touchLocker != this)
 	{
 		controlState |= STATE_DISABLED; //this funny code is written to fix bugs with calling Input() twice.
 	}
 	bool systemInput = UIControl::SystemInput(currentTouch);
-	if (controlEnabled)
-	{
-		controlState &= ~STATE_DISABLED; //All this control must be reengeneried
-	}
+    controlState &= ~STATE_DISABLED; //All this control must be reengeneried
 
 	if (currentTouch->GetInputHandledType() == UIEvent::INPUT_HANDLED_HARD)
 	{
