@@ -224,8 +224,9 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
     UIControl::SetParentColor(parentColor);
-    shadowBg->SetParentColor(parentColor);
-    textBg->SetParentColor(parentColor);
+    const Color &backDrawColor = GetBackground()->GetDrawColor();
+    shadowBg->SetParentColor(backDrawColor);
+    textBg->SetParentColor(backDrawColor);
 }
 
 const Vector<WideString> & UIStaticText::GetMultilineStrings() const

@@ -173,11 +173,9 @@ void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
                 //rdoObject->SetStream()
             }
         }
-            
-        default:
-        {
-            break;
-        }
+        break;
+    default:
+        break;
     }
     ReleaseDrawData();
 }
@@ -501,6 +499,8 @@ void UIControlBackground::Draw(const UIGeometricData &geometricData)
         case DRAW_TILED:
             DrawTiled(geometricData, drawState.GetRenderState());
         break;
+        default:
+            break;
     }
 
     RenderManager::Instance()->ResetColor();
