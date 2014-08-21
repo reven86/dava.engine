@@ -189,15 +189,13 @@ void RenderSystem2D::RemoveClip()
 void RenderSystem2D::ClipRect(const Rect &rect)
 {
     Rect r = currentClip;
-    float32 retScreenWidth = (float32)RenderManager::Instance()->GetScreenWidth();
-    float32 retScreenHeight = (float32)RenderManager::Instance()->GetScreenHeight();
     if(r.dx < 0)
     {
-        r.dx = (float32)retScreenWidth * VirtualCoordinates::GetPhysicalToVirtualFactor();
+        r.dx = (float32)VirtualCoordinates::GetVirtualScreenWidth();
     }
     if(r.dy < 0)
     {
-        r.dy = (float32)retScreenHeight * VirtualCoordinates::GetPhysicalToVirtualFactor();
+        r.dy = (float32)VirtualCoordinates::GetVirtualScreenHeight();
     }
     
     r = r.Intersection(rect);

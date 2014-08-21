@@ -317,7 +317,7 @@ void ImposterNode::UpdateImposter()
 	RenderManager::Instance()->ClearDepthBuffer();
 	//RenderManager::Instance()->RemoveState(RenderState::STATE_SCISSOR_TEST);
 
-	RenderManager::Instance()->SetViewport(Rect(block->offset.x, block->offset.y, block->size.dx, block->size.dy), true);
+	RenderManager::Instance()->SetViewport(Rect(block->offset.x, block->offset.y, block->size.dx, block->size.dy));
 
 
 	imposterCamera->SetTarget(center);
@@ -328,7 +328,7 @@ void ImposterNode::UpdateImposter()
 	RenderManager::Instance()->FlushState();
 	child->Draw();
 
-	RenderManager::Instance()->SetViewport(oldViewport, true);
+	RenderManager::Instance()->SetViewport(oldViewport);
 
 	isReady = true;
 	state = STATE_IMPOSTER;

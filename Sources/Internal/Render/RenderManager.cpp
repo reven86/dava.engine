@@ -79,8 +79,6 @@ RenderManager::RenderManager(Core::eRenderer _renderer)
 
 	frameBufferWidth = 0;
 	frameBufferHeight = 0;
-	retScreenWidth = 0;
-	retScreenHeight = 0;
 
 	fps = 60;
 
@@ -264,15 +262,6 @@ int32 RenderManager::GetRenderOrientation()
 {
 	return renderOrientation;
 }
-	
-int32 RenderManager::GetScreenWidth()
-{
-	return retScreenWidth;	
-}
-int32 RenderManager::GetScreenHeight()
-{
-	return retScreenHeight;
-}
 
 void RenderManager::SetColor(float32 r, float32 g, float32 b, float32 a)
 {
@@ -351,16 +340,11 @@ void RenderManager::InitFBO(GLuint _viewRenderbuffer, GLuint _viewFramebuffer)
 
 void RenderManager::SetRenderTarget(Sprite *renderTarget)
 {
-//	Logger::Info("Set Render target");
 	RenderTarget rt;
 	rt.spr = currentRenderTarget;
 	rt.orientation = renderOrientation;
 	renderTargetStack.push(rt);
-		
-//	ClipPush();
-//	PushDrawMatrix();
-//	PushMappingMatrix();
-//	IdentityDrawMatrix();
+    
 	SetHWRenderTargetSprite(renderTarget);
 }
 
@@ -371,14 +355,9 @@ void RenderManager::SetRenderTarget(Texture * renderTarget)
 
 void RenderManager::RestoreRenderTarget()
 {
-//	Logger::Info("Restore Render target");
 	RenderTarget rt = renderTargetStack.top();
 	renderTargetStack.pop();
 	SetHWRenderTargetSprite(rt.spr);
-
-//	PopDrawMatrix();
-//	PopMappingMatrix();
-//	ClipPop();
 }
 
 bool RenderManager::IsRenderTarget()

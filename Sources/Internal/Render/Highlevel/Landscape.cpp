@@ -47,7 +47,6 @@
 #include "Render/Material/NMaterial.h"
 #include "Scene3D/Systems/MaterialSystem.h"
 #include "Scene3D/Systems/FoliageSystem.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
 #include "Render/Material/NMaterialNames.h"
 
 namespace DAVA
@@ -1620,10 +1619,10 @@ Texture * Landscape::CreateLandscapeTexture()
     Vector<float32> ftVertexes;
     Vector<float32> ftTextureCoords;
     
-    float32 x0 = 0;
-    float32 y0 = 0;
-    float32 x1 = TEXTURE_TILE_FULL_SIZE;
-    float32 y1 = TEXTURE_TILE_FULL_SIZE;
+    float32 x0 = 0.f;
+    float32 y0 = 0.f;
+    float32 x1 = 1.f;
+    float32 y1 = 1.f;
     
     //triangle 1
     //0, 0
@@ -1665,18 +1664,18 @@ Texture * Landscape::CreateLandscapeTexture()
     
     Texture *fullTiled = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888, Texture::DEPTH_NONE);
     RenderManager::Instance()->SetRenderTarget(fullTiled);
-    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()), true);
+    RenderManager::Instance()->SetViewport(Rect(0.f, 0.f, (float32)fullTiled->GetWidth(), (float32)fullTiled->GetHeight()));
 
 
 	RenderManager::Instance()->ClearWithColor(1.f, 1.f, 1.f, 1.f);
  
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, (pointer_size)&Matrix4::IDENTITY);
     Matrix4 projection;
-    projection.glOrtho(0, TEXTURE_TILE_FULL_SIZE * VirtualCoordinates::GetVirtualToPhysicalFactor(), 0, TEXTURE_TILE_FULL_SIZE * VirtualCoordinates::GetVirtualToPhysicalFactor(), 0, 1);
+    projection.glOrtho(0.f, TEXTURE_TILE_FULL_SIZE,
+                       0.f, TEXTURE_TILE_FULL_SIZE, -1.f, 1.f);
     
     Matrix4 *oldProjection = (Matrix4*)RenderManager::GetDynamicParam(PARAM_PROJ);
     RenderManager::SetDynamicParam(PARAM_PROJ, &projection, UPDATE_SEMANTIC_ALWAYS);
-    //RenderManager::Instance()->SetState(RenderState::DEFAULT_2D_STATE);
     
     prevLodLayer = -1;
 
@@ -1705,7 +1704,7 @@ Texture * Landscape::CreateLandscapeTexture()
 #endif //#ifdef __DAVAENGINE_OPENGL__
     
     RenderManager::SetDynamicParam(PARAM_PROJ, &oldProjection, UPDATE_SEMANTIC_ALWAYS);
-	RenderManager::Instance()->SetViewport(oldViewport, true);
+	RenderManager::Instance()->SetViewport(oldViewport);
     SafeRelease(ftRenderData);
     
     return fullTiled;

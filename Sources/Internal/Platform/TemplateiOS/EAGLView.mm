@@ -59,19 +59,6 @@
 				[self setContentScaleFactor: scf];
 			}
 		}
-//		if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-//		{
-////			[self setFrame:CGRectMake(0, 768, 1024, 768)];
-//			[self setFrame:CGRectMake(0, 0, 768, 1024)];
-//
-////			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(768, 1024);
-//			
-//		}
-//		else
-//		{
-//			// The device is an iPhone or iPod touch.
-////			DAVA::UIControlSystem::Instance()->SetInputScreenAreaSize(320, 480);
-//		}
 
 		// Subscribe to "keyboard change frame" notifications to block GL while keyboard change is performed (see please DF-2012 for details).
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillChangeFrame:) name:UIKeyboardWillChangeFrameNotification object:nil];

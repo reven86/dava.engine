@@ -270,7 +270,7 @@ public:
         \brief 
         
      */
-    void SetViewport(const Rect & rect, bool precaleulatedCoordinates);
+    void SetViewport(const Rect & rect);
     
     
     void SetCullOrder(eCullOrder cullOrder);
@@ -544,19 +544,6 @@ protected:
     DAVA_DEPRECATED(void RectFromRenderOrientationToViewport(Rect & rect));
 
 public:
-	/**
-	 \brief 
-	 \returns 
-	 */
-	int32 GetScreenWidth();
-	
-	/** 
-	 \brief 
-	 \returns 
-	 */
-	int32 GetScreenHeight();
-	
-	
 	typedef struct RenderTarget_t 
     {
         Sprite *spr;
@@ -597,8 +584,6 @@ public:
     
 	int32 frameBufferWidth;
 	int32 frameBufferHeight;
-	int32 retScreenWidth;
-	int32 retScreenHeight;
 	
 	int32 fps;
 

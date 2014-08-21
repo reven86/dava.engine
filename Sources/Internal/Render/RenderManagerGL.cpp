@@ -217,25 +217,16 @@ bool RenderManager::IsDeviceLost()
 void RenderManager::BeginFrame()
 {
     stats.Clear();
-    SetViewport(Rect(0, 0, -1, -1), true);
+    SetViewport(Rect(0, 0, -1, -1));
 	
 	SetRenderOrientation(Core::Instance()->GetScreenOrientation());
 	DVASSERT(!currentRenderTarget);
-	//DVASSERT(!currentRenderEffect);
-//	DVASSERT(clipStack.empty());
 	DVASSERT(renderTargetStack.empty());
 	Reset();
 	isInsideDraw = true;
     
     RenderSystem2D::Instance()->Reset();
 }
-	
-//void RenderManager::SetDrawOffset(const Vector2 &offset)
-//{
-//	glMatrixMode(GL_PROJECTION);
-//	glTranslatef(offset.x, offset.y, 0.0f);
-//	glMatrixMode(GL_MODELVIEW);
-//}	
 
 void RenderManager::EndFrame()
 {
@@ -319,50 +310,25 @@ void RenderManager::MakeGLScreenShot()
 #endif //#if defined(__DAVAENGINE_OPENGL__)
 }
     
-void RenderManager::SetViewport(const Rect & rect, bool precaleulatedCoordinates)
-{    
-    if ((rect.dx < 0.0f) && (rect.dy < 0.0f))
+void RenderManager::SetViewport(const Rect & rect)
+{
+    viewport = rect;
+    if ((viewport.dx < 0.0f) && (viewport.dy < 0.0f))
     {
-        viewport = rect;
         if (currentRenderTarget)
         {
-            RENDER_VERIFY(glViewport(0, 0, currentRenderTarget->GetTexture()->GetWidth(), currentRenderTarget->GetTexture()->GetHeight()));
+            viewport.dx = currentRenderTarget->GetTexture()->GetWidth();
+            viewport.dy = currentRenderTarget->GetTexture()->GetHeight();
         }
         else
         {
-            RENDER_VERIFY(glViewport(0, 0, frameBufferWidth, frameBufferHeight));
+            viewport.dx = frameBufferWidth;
+            viewport.dy = frameBufferHeight;
         }
-        return;
-    }
-    if (precaleulatedCoordinates) 
-    {
-        viewport = rect;
-        RENDER_VERIFY(glViewport((int32)rect.x, (int32)rect.y, (int32)rect.dx, (int32)rect.dy));
-        return;
-    }
-
-//    PrepareRealMatrix();
-    
-
-	int32 x = (int32)(rect.x /* *currentDrawScale.x + currentDrawOffset.x */ );
-	int32 y = (int32)(rect.y /* *currentDrawScale.y + currentDrawOffset.y */ );
-	int32 width, height;
-    width = (int32)(rect.dx /* *currentDrawScale.x */);
-    height = (int32)(rect.dy /* *currentDrawScale.y */);
-    
-    if (renderOrientation!=Core::SCREEN_ORIENTATION_TEXTURE)
-    {
-        y = frameBufferHeight - y - height;
     }
     
-    RENDER_VERIFY(glViewport(x, y, width, height));
-    viewport.x = (float32)x;
-    viewport.y = (float32)y;
-    viewport.dx = (float32)width;
-    viewport.dy = (float32)height;
+    RENDER_VERIFY(glViewport((int32)viewport.x, (int32)viewport.y, (int32)viewport.dx, (int32)viewport.dy));
 }
-
-    
 
 // Viewport management
 void RenderManager::SetRenderOrientation(int32 orientation)
@@ -376,22 +342,12 @@ void RenderManager::SetRenderOrientation(int32 orientation)
     else
     {
         projMatrix.glOrtho(0.0f, (float32)currentRenderTarget->GetTexture()->GetWidth(),
-                                      0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(), -1.0f, 1.0f);
+                           0.0f, (float32)currentRenderTarget->GetTexture()->GetHeight(), -1.0f, 1.0f);
     }
-    retScreenWidth = frameBufferWidth;
-    retScreenHeight = frameBufferHeight;
-	
     
     SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
 
-//    IdentityModelMatrix();
-    
 	RENDER_VERIFY(;);
-
-//	IdentityMappingMatrix();
-//	SetVirtualViewScale();
-//	SetVirtualViewOffset();
-
 }
 
 void RenderManager::SetCullOrder(eCullOrder cullOrder)
@@ -401,15 +357,11 @@ void RenderManager::SetCullOrder(eCullOrder cullOrder)
     
 void RenderManager::FlushState()
 {
-//	PrepareRealMatrix();
-    
     currentState.Flush(&hardwareState);
 }
 
 void RenderManager::FlushState(RenderState * stateBlock)
 {
-//	PrepareRealMatrix();
-	
 	stateBlock->Flush(&hardwareState);
 }
 
@@ -550,23 +502,21 @@ void RenderManager::Clear(const Color & color, float32 depth, int32 stencil)
 
 void RenderManager::SetHWClip(const Rect &rect)
 {
-//	PrepareRealMatrix();
-//	currentClip = rect;
 	if(rect.dx < 0 || rect.dy < 0)
 	{
 		RENDER_VERIFY(glDisable(GL_SCISSOR_TEST));
 		return;
 	}
-	int32 x = (int32)(rect.x /* * currentDrawScale.x + currentDrawOffset.x */);
-	int32 y = (int32)(rect.y /* * currentDrawScale.y + currentDrawOffset.y */);
-	int32 x2= (int32)ceilf((rect.dx + rect.x)/* * currentDrawScale.x + currentDrawOffset.x */);
-	int32 y2= (int32)ceilf((rect.dy + rect.y)/* * currentDrawScale.y + currentDrawOffset.y */);
+	int32 x = (int32)(rect.x);
+	int32 y = (int32)(rect.y);
+	int32 x2= (int32)ceilf((rect.dx + rect.x));
+	int32 y2= (int32)ceilf((rect.dy + rect.y));
 	int32 width = x2 - x;
 	int32 height = y2 - y;
     
-    if (renderOrientation!=Core::SCREEN_ORIENTATION_TEXTURE)
+    if (renderOrientation != Core::SCREEN_ORIENTATION_TEXTURE)
     {
-        y = frameBufferHeight/* * Core::GetVirtualToPhysicalFactor()*/ - y - height;
+        y = frameBufferHeight - y - height;
     }
 	
 	RENDER_VERIFY(glEnable(GL_SCISSOR_TEST));
@@ -582,7 +532,7 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
 	{
         HWglBindFBO(fboViewFramebuffer);
         
-        SetViewport(Rect(0, 0, -1, -1), true);
+        SetViewport(Rect(0, 0, -1, -1));
 
 		SetRenderOrientation(Core::Instance()->GetScreenOrientation());
 	}
@@ -592,22 +542,10 @@ void RenderManager::SetHWRenderTargetSprite(Sprite *renderTarget)
         
 		HWglBindFBO(renderTarget->GetTexture()->fboID);
         
-        SetViewport(Rect(0, 0,
-                         (float32)(renderTarget->GetTexture()->width),
-                         (float32)(renderTarget->GetTexture()->height)), true);
+        SetViewport(Rect(0, 0, -1, -1));
 
         projMatrix.glOrtho(0.0f, (float32)renderTarget->GetTexture()->width, 0.0f, (float32)renderTarget->GetTexture()->height, -1.0f, 1.0f);
-        SetDynamicParam (PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
-        
-//        IdentityModelMatrix();
-//		IdentityMappingMatrix(); 
-
-        //float32 scale = VirtualCoordinates::GetResourceToPhysicalFactor(renderTarget->GetResourceSizeIndex());
-		//viewMappingDrawScale.x = viewMappingDrawScale.y = scale;
-        
-//        mappingMatrixChanged = true;
-        
-//		RemoveClip();
+        SetDynamicParam(PARAM_PROJ, &projMatrix, UPDATE_SEMANTIC_ALWAYS);
 	}
 }
 

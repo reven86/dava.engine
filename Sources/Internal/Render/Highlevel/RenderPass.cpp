@@ -193,7 +193,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         
     RenderManager::Instance()->SetHWRenderTargetTexture(reflectionTexture);
     //discard everything here
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
+    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
     reflectionPass->SetWaterLevel(waterBox.max.z);
     reflectionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
@@ -205,7 +205,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         
     RenderManager::Instance()->SetHWRenderTargetTexture(refractionTexture);
         
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE), true);            
+    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)REFLECTION_TEX_SIZE, (float32)REFLECTION_TEX_SIZE));
 
     refractionPass->SetWaterLevel(waterBox.min.z);
     refractionPass->Draw(renderSystem, RenderManager::ALL_BUFFERS);
@@ -215,7 +215,7 @@ void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem * r
         
     RenderManager::Instance()->HWglBindFBO(currFboId?currFboId:RenderManager::Instance()->GetFBOViewFramebuffer());
     RenderManager::Instance()->SetRenderOrientation(currRenderOrientation);
-    RenderManager::Instance()->SetViewport(viewportSave, true);
+    RenderManager::Instance()->SetViewport(viewportSave);
 //    RenderManager::Instance()->ClipPop();
 
 

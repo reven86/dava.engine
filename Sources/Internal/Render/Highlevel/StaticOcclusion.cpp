@@ -329,7 +329,7 @@ namespace DAVA
                         // Do Render
                         
                         RenderManager::Instance()->SetRenderTarget(renderTargetSprite);
-                        RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT), true);
+                        RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)RENDER_TARGET_WIDTH, (float32)RENDER_TARGET_HEIGHT));
                         
                         //camera->SetupDynamicParameters();
                         

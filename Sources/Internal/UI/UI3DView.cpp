@@ -97,33 +97,24 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     viewportRc = VirtualCoordinates::ConvertVirtualToPhysical(viewportRect);
     
     RenderSystem2D::Instance()->PushDrawMatrix();
-//	RenderManager::Instance()->PushMappingMatrix();
     int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
     
     Rect viewportSave = RenderManager::Instance()->GetViewport();
-    RenderManager::Instance()->SetViewport(viewportRc, false);
+    RenderManager::Instance()->SetViewport(viewportRc);
     
     
     if (scene)
         scene->Draw();
 
         
-    RenderManager::Instance()->SetViewport(viewportSave, true);
+    RenderManager::Instance()->SetViewport(viewportSave);
     RenderManager::Instance()->SetRenderOrientation(renderOrientation);
     
 
 	RenderSystem2D::Instance()->PopDrawMatrix();
-//	RenderManager::Instance()->PopMappingMatrix();
 	
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderSystem2D::Instance()->Setup2DMatrices();
-	
-        //    modelViewSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-        //    Logger::Info("Model matrix");
-        //    modelViewSave.Dump();
-        //    projectionSave = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_PROJECTION);
-        //    Logger::Info("Proj matrix");
-        //    projectionSave.Dump();
 #endif
 }
     
