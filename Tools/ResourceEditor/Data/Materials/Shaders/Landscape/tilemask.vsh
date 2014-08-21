@@ -95,7 +95,7 @@ void main()
     float LdotH = max (dot (toLightDir, H), 0.0);
     float NdotV = max (dot (normal, toCameraNormalized), 0.0);
     
-    vec3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
+    //vec3 fresnelIn = FresnelShlickVec3(NdotL, metalFresnelReflectance);
     vec3 fresnelOut = FresnelShlickVec3(NdotV, metalFresnelReflectance);
     float specularity = inSpecularity;
     
