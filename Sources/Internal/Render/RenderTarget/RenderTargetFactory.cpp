@@ -59,4 +59,96 @@ void RenderTargetFactory::ReleaseFactory()
     SafeRelease(instance);
 }
 
+void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+                                       uint32 width,
+                                       uint32 height,
+                                       RenderTargetDescriptor& outDesc)
+{
+    DVASSERT(((flags & RenderTargetFactory::ATTACHMENT_COLOR) | (flags & RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE)) <= RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE);
+    DVASSERT(((flags & RenderTargetFactory::ATTACHMENT_DEPTH) | (flags & RenderTargetFactory::ATTACHMENT_DEPTH_TEXTURE)) <= RenderTargetFactory::ATTACHMENT_DEPTH_TEXTURE);
+    DVASSERT(((flags & RenderTargetFactory::ATTACHMENT_STENCIL) | (flags & RenderTargetFactory::ATTACHMENT_STENCIL_TEXTURE)) <= RenderTargetFactory::ATTACHMENT_STENCIL_TEXTURE);
+
+
+    RenderTextureDescriptor textureDescriptor(Texture::TEXTURE_2D,
+                                              Texture::WRAP_CLAMP_TO_EDGE,
+                                              Texture::WRAP_CLAMP_TO_EDGE,
+                                              Texture::FILTER_LINEAR_MIPMAP_LINEAR,
+                                              Texture::FILTER_LINEAR_MIPMAP_LINEAR);
+
+    if(flags & RenderTargetFactory::ATTACHMENT_COLOR)
+    {
+        FramebufferDescriptor colorFramebuffer(FramebufferDescriptor::FRAMEBUFFER_COLOR0,
+                                               FramebufferDescriptor::FORMAT_RGBA8888,
+                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                               FramebufferDescriptor::POST_ACTION_STORE,
+                                               width,
+                                               height);
+
+        outDesc.AddFramebuffer(colorFramebuffer);
+    }
+    else if(flags & RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE)
+    {
+        FramebufferDescriptor colorFramebuffer(FramebufferDescriptor::FRAMEBUFFER_COLOR0,
+                                               FramebufferDescriptor::FORMAT_RGBA8888,
+                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                               FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                               width,
+                                               height);
+
+        outDesc.AddFramebuffer(colorFramebuffer, textureDescriptor);
+    }
+
+    if(flags & RenderTargetFactory::ATTACHMENT_DEPTH)
+    {
+        FramebufferDescriptor depthFramebuffer(FramebufferDescriptor::FRAMEBUFFER_DEPTH,
+                                               FramebufferDescriptor::FORMAT_DEPTH24,
+                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                               FramebufferDescriptor::POST_ACTION_DONTCARE,
+                                               width,
+                                               height);
+
+        outDesc.AddFramebuffer(depthFramebuffer);
+    }
+    else if(flags & RenderTargetFactory::ATTACHMENT_DEPTH_TEXTURE)
+    {
+        FramebufferDescriptor depthFramebuffer(FramebufferDescriptor::FRAMEBUFFER_DEPTH,
+                                               FramebufferDescriptor::FORMAT_DEPTH24,
+                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                               FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                               width,
+                                               height);
+
+        outDesc.AddFramebuffer(depthFramebuffer, textureDescriptor);
+    }
+
+    if(flags & RenderTargetFactory::ATTACHMENT_STENCIL)
+    {
+        FramebufferDescriptor stencilFramebuffer(FramebufferDescriptor::FRAMEBUFFER_STENCIL,
+                                               FramebufferDescriptor::FORMAT_STENCIL8,
+                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                               FramebufferDescriptor::POST_ACTION_DONTCARE,
+                                               width,
+                                               height);
+
+        outDesc.AddFramebuffer(stencilFramebuffer);
+    }
+    else if(flags & RenderTargetFactory::ATTACHMENT_STENCIL_TEXTURE)
+    {
+        FramebufferDescriptor stencilFramebuffer(FramebufferDescriptor::FRAMEBUFFER_STENCIL,
+                                                 FramebufferDescriptor::FORMAT_STENCIL8,
+                                                 FramebufferDescriptor::PRE_ACTION_CLEAR,
+                                                 FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                                 width,
+                                                 height);
+
+        outDesc.AddFramebuffer(stencilFramebuffer, textureDescriptor);
+    }
+
+    outDesc.SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
+    outDesc.SetClearDepth(0.0f);
+    outDesc.SetClearStencil(0);
+
+    DVASSERT(outDesc.Validate());
+}
+
 };

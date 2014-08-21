@@ -32,6 +32,11 @@
 namespace DAVA
 {
 
+bool ColorAttachmentSortPredicate(FramebufferAttachment* first, FramebufferAttachment* second)
+{
+    return (first->GetFramebufferType() < second->GetFramebufferType());
+}
+
 RenderTarget::RenderTarget() :  depthAttachment(NULL),
                                 stencilAttachment(NULL)
 {
@@ -133,6 +138,16 @@ void RenderTarget::SetClearStencil(int32 stencilValue)
 uint32 RenderTarget::GetClearStencil() const
 {
     return clearStencil;
+}
+
+void RenderTarget::SortColorAttachments()
+{
+    if(colorAttachments.size() > 1)
+    {
+        std::sort(colorAttachments.begin(),
+                  colorAttachments.end(),
+                  ColorAttachmentSortPredicate);
+    }
 }
 
 };

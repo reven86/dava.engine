@@ -45,6 +45,48 @@
 namespace DAVA
 {
 
+/**
+\brief
+
+Usage example (the following sample will produce yellow .png file with 1024x1024 dimensions):
+
+ RenderTargetDescriptor rtDesc;
+ RenderTargetFactory::Instance()->ConstructGenericTargetDescription(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+ 1024,
+ 1024,
+ rtDesc);
+
+ rtDesc.SetClearColor(Color(1.0f, 1.0f, 0.0f, 1.0f));
+
+ RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
+ RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+ DVASSERT(renderTarget);
+
+ renderTarget->BeginRender();
+
+ //TODO: add some render code here
+
+ renderTarget->EndRender();
+
+ Texture* tx = renderTarget->GetColorAttachment()->Lock();
+ 
+ //you may use texture directly for texturing
+ //for example material->SetTexture(NMaterial::TEXTURE_DETAIL, tx);
+
+ Image* textureData = renderDataReader->ReadTextureData(tx);
+
+ ImageSystem::Instance()->Save("~doc:/test_image.png", textureData);
+
+ SafeRelease(textureData);
+ SafeRelease(renderDataReader);
+
+ renderTarget->GetColorAttachment()->Unlock(tx);
+
+ SafeRelease(renderTarget);
+
+*/
+
 class RenderTarget : public BaseObject
 {
 
@@ -77,6 +119,7 @@ public:
 protected:
 
     void AddUniqueColorAttachment(ColorFramebufferAttachment* attachment);
+    void SortColorAttachments();
 
 protected:
 

@@ -85,6 +85,8 @@ void RenderTargetOGL::AttachRenderBuffers()
 {
     if(false == renderBuffersAttached)
     {
+        SortColorAttachments();
+
         size_t colorBufferCount = colorAttachments.size();
         for(size_t i = 0; i < colorBufferCount; ++i)
         {

@@ -42,6 +42,20 @@ namespace DAVA
 
 class RenderTargetFactory : public BaseObject
 {
+
+public:
+
+    enum GenericAttachmentFlags
+    {
+        ATTACHMENT_NONE = 0,
+        ATTACHMENT_COLOR = 1,
+        ATTACHMENT_DEPTH = 2,
+        ATTACHMENT_STENCIL = 4,
+        ATTACHMENT_COLOR_TEXTURE = 8,
+        ATTACHMENT_DEPTH_TEXTURE = 16,
+        ATTACHMENT_STENCIL_TEXTURE = 32
+    };
+
 protected:
 
     virtual ~RenderTargetFactory();
@@ -55,6 +69,11 @@ public:
 
     virtual RenderTarget* CreateRenderTarget(const RenderTargetDescriptor& rtDesc) = 0;
     virtual RenderDataReader* GetRenderDataReader() = 0;
+
+    void ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+                                           uint32 width,
+                                           uint32 height,
+                                           RenderTargetDescriptor& outDesc);
 
 protected:
 
