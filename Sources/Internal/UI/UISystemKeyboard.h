@@ -42,16 +42,15 @@ class UISystemKeyboard: public BaseObject
 {
     friend UISystemKeyboardImpl;
     friend class UIControlSystem;
-    friend class UITextFieldImpl_Custom;
     ~UISystemKeyboard();
 protected:
     UISystemKeyboard();
 public:
-    void AddListener( UISystemKeyboardListener * listener );
-    void RemoveListener( UISystemKeyboardListener * listener );
+    void AddListener(UISystemKeyboardListener * listener);
+    void RemoveListener(UISystemKeyboardListener * listener);
 protected:
-    void SendWillShowNotification( const Rect &keyboardRect );
-    void SendDidShowNotification( const Rect &keyboardRect );
+    void SendWillShowNotification(const Rect &keyboardRect);
+    void SendDidShowNotification(const Rect &keyboardRect);
     void SendWillHideNotification();
     void SendDidHideNotification();
 private:

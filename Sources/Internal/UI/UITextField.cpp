@@ -137,6 +137,8 @@ void UITextField::WillAppear()
 
 void UITextField::DidAppear()
 {
+    Rect rect = GetGeometricData().GetUnrotatedRect();
+    textFieldImpl->UpdateRect(rect, 0.0f);
     textFieldImpl->AddNativeControl();
     UIControlSystem::Instance()->GetUISystemKeyboard()->AddListener( this );
 }

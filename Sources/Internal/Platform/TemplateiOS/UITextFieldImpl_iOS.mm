@@ -317,7 +317,10 @@ UITextFieldImpl_iOS::~UITextFieldImpl_iOS()
 const Color &UITextFieldImpl_iOS::GetTextColor() const
 {
     UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)nativeClassPtr;
-    [textFieldHolder->textField.textColor getRed:&textColor.r green:&textColor.g blue:&textColor.b alpha:&textColor.a];
+    CGFloat color[4];
+    [textFieldHolder->textField.textColor getRed:&color[0] green:&color[1] blue:&color[2] alpha:&color[3]];
+    textColor = Color(color[0], color[1], color[2], color[3]);
+    
     return textColor;
 }
 

@@ -41,37 +41,37 @@ UISystemKeyboard::~UISystemKeyboard()
 UISystemKeyboard::UISystemKeyboard()
     : impl( NULL )
 {
-    impl = new UISystemKeyboardImpl( this );
+    impl = new UISystemKeyboardImpl(this);
 }
 
-void UISystemKeyboard::AddListener( UISystemKeyboardListener * listener )
+void UISystemKeyboard::AddListener(UISystemKeyboardListener * listener)
 {
-    listeners.insert( listener );
+    listeners.insert(listener);
 }
 
-void UISystemKeyboard::RemoveListener( UISystemKeyboardListener * listener )
+void UISystemKeyboard::RemoveListener(UISystemKeyboardListener * listener)
 {
-    listeners.erase( listener );
+    listeners.erase(listener);
 }
 
-void UISystemKeyboard::SendWillShowNotification( const Rect &keyboardRect )
+void UISystemKeyboard::SendWillShowNotification(const Rect &keyboardRect)
 {
     Set<UISystemKeyboardListener *> listenersCopy = listeners;
     Set<UISystemKeyboardListener *>::iterator it = listenersCopy.begin();
     Set<UISystemKeyboardListener *>::iterator end = listenersCopy.end();
     for( ; it != end; ++it )
     {
-        (*it)->OnKeyboardWillShow( keyboardRect );
+        (*it)->OnKeyboardWillShow(keyboardRect);
     }
 }
-void UISystemKeyboard::SendDidShowNotification( const Rect &keyboardRect )
+void UISystemKeyboard::SendDidShowNotification(const Rect &keyboardRect)
 {
     Set<UISystemKeyboardListener *> listenersCopy = listeners;
     Set<UISystemKeyboardListener *>::iterator it = listenersCopy.begin();
     Set<UISystemKeyboardListener *>::iterator end = listenersCopy.end();
     for( ; it != end; ++it )
     {
-        (*it)->OnKeyboardDidShow( keyboardRect );
+        (*it)->OnKeyboardDidShow(keyboardRect);
     }
 }
 void UISystemKeyboard::SendWillHideNotification()
@@ -96,3 +96,4 @@ void UISystemKeyboard::SendDidHideNotification()
 }
 
 }
+

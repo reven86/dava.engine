@@ -238,7 +238,7 @@ const Color &UITextFieldImpl_Android::GetTextShadowColor() const
 
 const Vector2 &UITextFieldImpl_Android::GetTextShadowOffset() const
 {
-    static const Vecto2 zeroVector;
+    static const Vector2 zeroVector;
     return zeroVector;
 }
 
