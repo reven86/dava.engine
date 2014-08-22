@@ -28,7 +28,7 @@
 
 
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
-#include "VirtualCoordinatesTransformSystem.h"
+#include "VirtualCoordinatesSystem.h"
 #include "Render/RenderManager.h"
 
 namespace DAVA
@@ -156,8 +156,8 @@ void RenderSystem2D::PrepareRealMatrix()
         mappingMatrixChanged = false;
         
         Vector2 realDrawScale = userDrawScale * VirtualCoordinates::GetVirtualToPhysicalFactor();
-        Vector2 realDrawOffset = (userDrawOffset - Vector2(VirtualCoordinates::GetVirtualScreenXMin(), VirtualCoordinates::GetVirtualScreenYMin()))
-        * VirtualCoordinates::GetVirtualToPhysicalFactor();
+        Vector2 realDrawOffset = (userDrawOffset - ScreenSizes::GetFullVirtualScreenRect().GetPosition())
+            * VirtualCoordinates::GetVirtualToPhysicalFactor();
         
         if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
         {
@@ -191,11 +191,11 @@ void RenderSystem2D::ClipRect(const Rect &rect)
     Rect r = currentClip;
     if(r.dx < 0)
     {
-        r.dx = (float32)VirtualCoordinates::GetVirtualScreenWidth();
+        r.dx = (float32)ScreenSizes::GetVirtualScreenSize().dx;
     }
     if(r.dy < 0)
     {
-        r.dy = (float32)VirtualCoordinates::GetVirtualScreenHeight();
+        r.dy = (float32)ScreenSizes::GetVirtualScreenSize().dy;
     }
     
     r = r.Intersection(rect);

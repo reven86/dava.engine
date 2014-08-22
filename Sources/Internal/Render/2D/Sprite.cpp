@@ -42,7 +42,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
 #include "FileSystem/DynamicMemoryFile.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 #define NEW_PPA
 
@@ -161,7 +161,7 @@ Sprite* Sprite::GetSpriteFromMap(const FilePath &pathname)
 
 FilePath Sprite::GetScaledName(const FilePath &spriteName)
 {
-    VirtualCoordinatesTransformSystem * virtualCoordsSystem = VirtualCoordinatesTransformSystem::Instance();
+    VirtualCoordinatesSystem * virtualCoordsSystem = VirtualCoordinatesSystem::Instance();
     String baseResourceFolder = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetBaseResourceIndex());
     
 	String::size_type pos = spriteName.GetAbsolutePathname().find(baseResourceFolder);
@@ -477,7 +477,7 @@ void Sprite::InitFromTexture(Texture *fromTexture, int32 xOffset, int32 yOffset,
         size = VirtualCoordinates::ConvertPhysicalToVirtual(size);
 	}
 
-	resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex();
+	resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
 
 	this->type = SPRITE_FROM_TEXTURE;
 	this->textureCount = 1;
@@ -720,8 +720,8 @@ void Sprite::PrepareForNewSize()
     
 	String pathname = relativePathname.GetAbsolutePathname();
 
-	int pos = (int)pathname.find(VirtualCoordinatesTransformSystem::Instance()->GetResourceFolder(VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex()));
-	String scaledName = pathname.substr(0, pos) + VirtualCoordinatesTransformSystem::Instance()->GetResourceFolder(VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + VirtualCoordinatesTransformSystem::Instance()->GetResourceFolder(VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex()).length());
+	int pos = (int)pathname.find(VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()));
+	String scaledName = pathname.substr(0, pos) + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex()) + pathname.substr(pos + VirtualCoordinatesSystem::Instance()->GetResourceFolder(VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex()).length());
 
 	Logger::FrameworkDebug("Seraching for file: %s", scaledName.c_str());
 
@@ -779,7 +779,7 @@ void Sprite::ValidateForSize()
 	for(SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
 	{
 		Sprite *sp = it->second;
-		if (sp->type == SPRITE_FROM_FILE && VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
+		if (sp->type == SPRITE_FROM_FILE && VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
 		{
 			spritesToReload.push_back(sp);
 		}
@@ -929,11 +929,11 @@ File* Sprite::GetSpriteFile(const FilePath & spriteName, int32& resourceSizeInde
             return NULL;
         }
 
-        resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetBaseResourceIndex();
+        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetBaseResourceIndex();
     }
     else
     {
-        resourceSizeIndex = VirtualCoordinatesTransformSystem::Instance()->GetDesirableResourceIndex();
+        resourceSizeIndex = VirtualCoordinatesSystem::Instance()->GetDesirableResourceIndex();
     }
 
     return fp;

@@ -83,17 +83,12 @@ void MovieViewControl::SetRect(const Rect& rect)
 	MPMoviePlayerController* player = (MPMoviePlayerController*)moviePlayerController;
 
 	CGRect playerViewRect = player.view.frame;
-	
-    playerViewRect.origin.x = rect.x * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-    playerViewRect.origin.y = rect.y * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-			
-    playerViewRect.size.width = rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-    playerViewRect.size.height = rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-			
-    playerViewRect.origin.x += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().x;
-    playerViewRect.origin.y += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().y;
-			
-		
+    
+    Rect physicalRect = VirtualCoordinates::ConvertVirtualToPhysical(rect);
+    playerViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+    playerViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    playerViewRect.size.width = physicalRect.dx;
+    playerViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
 	float scaleDivider = GetScaleDivider();

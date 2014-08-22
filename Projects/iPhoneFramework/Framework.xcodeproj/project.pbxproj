@@ -56,10 +56,10 @@
 		02EC80F5199B43AE00F8DA4F /* RenderSystem2D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F0199B43AE00F8DA4F /* RenderSystem2D.cpp */; };
 		02EC80F6199B43AE00F8DA4F /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */; };
 		02EC80F7199B43AE00F8DA4F /* RenderSystem2D.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */; };
-		02EC80F8199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
-		02EC80F9199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */; };
-		02EC80FA199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
-		02EC80FB199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */; };
+		02EC80F8199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp */; };
+		02EC80F9199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp */; };
+		02EC80FA199B43AE00F8DA4F /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesSystem.h */; };
+		02EC80FB199B43AE00F8DA4F /* VirtualCoordinatesSystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesSystem.h */; };
 		02F6403B173A597A0053F038 /* libfmodevent_iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3D01734165D00C501BC /* libfmodevent_iphoneos.a */; };
 		02F6403C173A597A0053F038 /* libfmodevent_iphonesimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3D11734165D00C501BC /* libfmodevent_iphonesimulator.a */; };
 		02F6403D173A597A0053F038 /* libfmodex_iphoneos.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 02E9E3A2172967F300C501BC /* libfmodex_iphoneos.a */; };
@@ -1752,8 +1752,8 @@
 		02E9E3E11734176D00C501BC /* SoundComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundComponent.h; sourceTree = "<group>"; };
 		02EC80F0199B43AE00F8DA4F /* RenderSystem2D.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderSystem2D.cpp; sourceTree = "<group>"; };
 		02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderSystem2D.h; sourceTree = "<group>"; };
-		02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesTransformSystem.cpp; sourceTree = "<group>"; };
-		02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesTransformSystem.h; sourceTree = "<group>"; };
+		02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VirtualCoordinatesSystem.cpp; sourceTree = "<group>"; };
+		02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VirtualCoordinatesSystem.h; sourceTree = "<group>"; };
 		02F6403F173A5A950053F038 /* SoundUpdateSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SoundUpdateSystem.cpp; sourceTree = "<group>"; };
 		02F64040173A5A950053F038 /* SoundUpdateSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SoundUpdateSystem.h; sourceTree = "<group>"; };
 		02FD7EB719237D33007762C0 /* SpeedTreeComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedTreeComponent.cpp; sourceTree = "<group>"; };
@@ -2659,8 +2659,8 @@
 			children = (
 				02EC80F0199B43AE00F8DA4F /* RenderSystem2D.cpp */,
 				02EC80F1199B43AE00F8DA4F /* RenderSystem2D.h */,
-				02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp */,
-				02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h */,
+				02EC80F2199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp */,
+				02EC80F3199B43AE00F8DA4F /* VirtualCoordinatesSystem.h */,
 			);
 			path = RenderSystem2D;
 			sourceTree = "<group>";
@@ -3927,7 +3927,7 @@
 				02FD7F271924997C007762C0 /* IntrospectionBase.h in Headers */,
 				02FD7F281924997C007762C0 /* IntrospectionCollection.h in Headers */,
 				02FD7F291924997C007762C0 /* IntrospectionFlags.h in Headers */,
-				02EC80FB199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
+				02EC80FB199B43AE00F8DA4F /* VirtualCoordinatesSystem.h in Headers */,
 				02FD7F2A1924997C007762C0 /* IntrospectionProperty.h in Headers */,
 				02FD7F2B1924997C007762C0 /* Mallocator.h in Headers */,
 				02FD7F2C1924997C007762C0 /* Message.h in Headers */,
@@ -4561,7 +4561,7 @@
 				A6AFDEDC187187D3006E43A1 /* VisibilityArray.h in Headers */,
 				E8B3CC3516B9326E002BD35F /* RenderOptions.h in Headers */,
 				E8B3CC3716B9326E002BD35F /* RenderResource.h in Headers */,
-				02EC80FA199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.h in Headers */,
+				02EC80FA199B43AE00F8DA4F /* VirtualCoordinatesSystem.h in Headers */,
 				D7FEF14519864E5C00B2C7AF /* Downloader.h in Headers */,
 				E8B3CC3A16B9326E002BD35F /* RGBColor.h in Headers */,
 				E8B3CC3C16B9326E002BD35F /* Shader.h in Headers */,
@@ -5144,7 +5144,7 @@
 				02FD818F1924997C007762C0 /* UILoadingTransition.cpp in Sources */,
 				02FD81901924997C007762C0 /* UIMoveInTransition.cpp in Sources */,
 				02FD81911924997C007762C0 /* UIPopup.cpp in Sources */,
-				02EC80F9199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
+				02EC80F9199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp in Sources */,
 				02FD81921924997C007762C0 /* UIScreen.cpp in Sources */,
 				02FD81931924997C007762C0 /* UIScreenManageriPhone.mm in Sources */,
 				02FD81941924997C007762C0 /* UIScreenManageriPhoneImpl.mm in Sources */,
@@ -5612,7 +5612,7 @@
 				4FDDEC5917A6920D00D9DDEA /* MaterialOptimazer.cpp in Sources */,
 				A66BC2F117AB98E800B6252E /* SkyboxSystem.cpp in Sources */,
 				17816B8017B2748900B067E1 /* AllocatorFactory.cpp in Sources */,
-				02EC80F8199B43AE00F8DA4F /* VirtualCoordinatesTransformSystem.cpp in Sources */,
+				02EC80F8199B43AE00F8DA4F /* VirtualCoordinatesSystem.cpp in Sources */,
 				A679102917B3CF2D000AA2F2 /* SkyboxRenderObject.cpp in Sources */,
 				17D7E5F717A6C06B00861981 /* UIDismissionHandlerAlertView.mm in Sources */,
 				EA56555317CE00E100426EB8 /* PerformanceSettings.cpp in Sources */,
@@ -5871,6 +5871,7 @@
 					"\"$(SRCROOT)/../../Libs/fmod/lib\"",
 					"\"$(SRCROOT)/../../Libs/fmod/lib/iphone\"",
 				);
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Framework;
 			};

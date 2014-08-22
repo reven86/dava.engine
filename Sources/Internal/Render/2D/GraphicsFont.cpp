@@ -29,7 +29,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/2D/GraphicsFont.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "Render/RenderManager.h"
 #include "FileSystem/File.h"

@@ -68,15 +68,10 @@ void UIScreen::SystemWillAppear()
 {
     UIControl::SystemWillAppear();
 
-    if (fullScreenRect.dx != VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()
-        || fullScreenRect.dy != VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenYMin())
+    if (fullScreenRect.dx != ScreenSizes::GetFullVirtualScreenRect().dx
+        || fullScreenRect.dy != ScreenSizes::GetFullVirtualScreenRect().dy)
     {
-        Rect fsr;
-        fsr.x = VirtualCoordinates::GetVirtualScreenXMin();
-        fsr.y = VirtualCoordinates::GetVirtualScreenYMin();
-        fsr.dx = VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin();
-        fsr.dy = VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenYMin();
-        SystemScreenSizeDidChanged(fsr);
+        SystemScreenSizeDidChanged(ScreenSizes::GetFullVirtualScreenRect());
     }
 }
 
@@ -123,34 +118,37 @@ void UIScreen::FillScreenBorders(const UIGeometricData &geometricData)
 	drawData.AddToGeometricData(geometricData);
 
 	Rect drawRect = drawData.GetUnrotatedRect();
-	if (VirtualCoordinates::GetVirtualScreenXMin() < 0)
+    Rect fullRect = ScreenSizes::GetFullVirtualScreenRect();
+    Vector2 virtualSize = Vector2((float32)ScreenSizes::GetVirtualScreenSize().dx,
+                                  (float32)ScreenSizes::GetVirtualScreenSize().dy);
+	if (fullRect.x < 0)
 	{
 		RenderHelper::Instance()->FillRect(Rect(
-													VirtualCoordinates::GetVirtualScreenXMin()
+													fullRect.x
 												 ,	0
-												 ,	-VirtualCoordinates::GetVirtualScreenXMin()
-												 ,	VirtualCoordinates::GetVirtualScreenHeight())
+												 ,	-fullRect.x
+												 ,	virtualSize.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 		RenderHelper::Instance()->FillRect(Rect(
-												 VirtualCoordinates::GetVirtualScreenWidth()
+												 virtualSize.x
 												 ,	0
-												 ,	VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenWidth()
-												 ,	VirtualCoordinates::GetVirtualScreenHeight())
+												 ,	fullRect.x + fullRect.dx - virtualSize.x
+												 ,	virtualSize.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 	}
 	else 
 	{
 		RenderHelper::Instance()->FillRect(Rect(
 													0
-												 ,	VirtualCoordinates::GetVirtualScreenYMin()
-												 ,	VirtualCoordinates::GetVirtualScreenWidth()+1
-												 ,	-VirtualCoordinates::GetVirtualScreenYMin())
+												 ,	fullRect.y
+												 ,	virtualSize.y + 1
+												 ,	-fullRect.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 		RenderHelper::Instance()->FillRect(Rect(
 												 0
-												 ,	VirtualCoordinates::GetVirtualScreenHeight()
-												 ,	VirtualCoordinates::GetVirtualScreenWidth()+1
-												 ,	VirtualCoordinates::GetVirtualScreenYMax() - VirtualCoordinates::GetVirtualScreenHeight())
+												 ,	virtualSize.y
+												 ,	virtualSize.x + 1
+												 ,	fullRect.y + fullRect.dy - virtualSize.y)
                                                  ,  RenderState::RENDERSTATE_2D_BLEND);
 	}
 

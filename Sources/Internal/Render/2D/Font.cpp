@@ -32,7 +32,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "FontManager.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 #include "Utils/StringFormat.h"
 #include "Utils/CRC32.h"
 

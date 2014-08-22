@@ -22,7 +22,7 @@
 #include "UI/UITextField.h"
 #include "UI/UITextFieldiPhone.h"
 #include "Core/Core.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 #import <HelperAppDelegate.h>
 
@@ -77,25 +77,22 @@ float GetUITextViewSizeDivider()
 	{
         float divider = GetUITextViewSizeDivider();
         
-        self.bounds = CGRectMake(0.0f, 0.0f, DAVA::VirtualCoordinates::GetPhysicalScreenWidth()/divider, DAVA::VirtualCoordinates::GetPhysicalScreenHeight()/divider);
+        self.bounds = CGRectMake(0.0f, 0.0f,
+                                 DAVA::ScreenSizes::GetPhysicalScreenSize().dx / divider,
+                                 DAVA::ScreenSizes::GetPhysicalScreenSize().dy / divider);
         
-		self.center = CGPointMake(DAVA::VirtualCoordinates::GetPhysicalScreenWidth()/2/divider, DAVA::VirtualCoordinates::GetPhysicalScreenHeight()/2.f/divider);
+		self.center = CGPointMake(DAVA::ScreenSizes::GetPhysicalScreenSize().dx / 2.f / divider,
+                                  DAVA::ScreenSizes::GetPhysicalScreenSize().dy / 2.f / divider);
 		self.userInteractionEnabled = TRUE;
 		textInputAllowed = YES;
 
 		cppTextField = tf;
-		DAVA::Rect rect = tf->GetRect();
-		textField = [[UITextField alloc] initWithFrame:
-                     CGRectMake((rect.x - DAVA::VirtualCoordinates::GetVirtualScreenXMin())
-                                * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
-                                , (rect.y - DAVA::VirtualCoordinates::GetVirtualScreenYMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
-                                , rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
-                                , rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor())];
-        
-		textField.frame = CGRectMake((rect.x - DAVA::VirtualCoordinates::GetVirtualScreenXMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
-									 , (rect.y - DAVA::VirtualCoordinates::GetVirtualScreenYMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
-									 , rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()
-									 , rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor());
+		DAVA::Rect physicalRect = DAVA::VirtualCoordinates::ConvertVirtualToPhysical(tf->GetRect());
+        CGRect nativeRect = CGRectMake(  physicalRect.x + DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x
+                                       , physicalRect.y + DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y
+                                       , physicalRect.dx
+                                       , physicalRect.dy);
+		textField = [[UITextField alloc] initWithFrame: nativeRect];
         
 		textField.delegate = self;
 		
@@ -455,12 +452,12 @@ float GetUITextViewSizeDivider()
 
 	// Recalculate to virtual coordinates.
 	DAVA::Vector2 keyboardOrigin(keyboardFrame.origin.x, keyboardFrame.origin.y);
-	keyboardOrigin *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardOrigin += DAVA::UIControlSystem::Instance()->GetInputOffset();
+	keyboardOrigin *= DAVA::VirtualCoordinatesSystem::Instance()->GetInputScaleFactor();
+	keyboardOrigin += DAVA::VirtualCoordinatesSystem::Instance()->GetInputOffset();
 	
 	DAVA::Vector2 keyboardSize(keyboardFrame.size.width, keyboardFrame.size.height);
-	keyboardSize *= DAVA::UIControlSystem::Instance()->GetScaleFactor();
-	keyboardSize += DAVA::UIControlSystem::Instance()->GetInputOffset();
+	keyboardSize *= DAVA::VirtualCoordinatesSystem::Instance()->GetInputScaleFactor();
+	keyboardSize += DAVA::VirtualCoordinatesSystem::Instance()->GetInputOffset();
 
 	cppTextField->GetDelegate()->OnKeyboardShown(DAVA::Rect(keyboardOrigin, keyboardSize));
 }
@@ -634,11 +631,15 @@ namespace DAVA
     {
         float divider = GetUITextViewSizeDivider();
         UITextFieldHolder * textFieldHolder = (UITextFieldHolder*)objcClassPtr;
-        CGRect cgRect = CGRectMake((rect.x - DAVA::VirtualCoordinates::GetVirtualScreenXMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider
-                                   , (rect.y - DAVA::VirtualCoordinates::GetVirtualScreenYMin()) * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider
-                                   , rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider
-                                   , rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor()/divider);
-        textFieldHolder->textField.frame = cgRect;
+        
+        DAVA::Rect physicalRect = DAVA::VirtualCoordinates::ConvertVirtualToPhysical(rect);
+        DAVA::Vector2 physicalOffset = DAVA::VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+        CGRect nativeRect = CGRectMake(  (physicalRect.x + physicalOffset.x) / divider
+                                       , (physicalRect.y + physicalOffset.y) / divider
+                                       , physicalRect.dx / divider
+                                       , physicalRect.dy / divider);
+        
+        textFieldHolder->textField.frame = nativeRect;
     }
 	
     void UITextFieldiPhone::SetText(std::wstring & string)

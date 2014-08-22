@@ -68,17 +68,17 @@ void UIScreenTransition::CreateRenderTargets()
     /*copy of default 3d blend with alpha write only - to minimize state changes*/
     alphaClearStateHandle = RenderManager::Instance()->SubclassRenderState(RenderState::RENDERSTATE_3D_BLEND, RenderStateData::STATE_DEPTH_WRITE | RenderStateData::STATE_DEPTH_TEST | RenderStateData::STATE_CULL | RenderStateData::STATE_COLORMASK_ALPHA);
 
-    uint32 width = (uint32)VirtualCoordinates::GetPhysicalScreenWidth();
-    uint32 height = (uint32)VirtualCoordinates::GetPhysicalScreenHeight();
+    uint32 width = (uint32)ScreenSizes::GetPhysicalScreenSize().dx;
+    uint32 height = (uint32)ScreenSizes::GetPhysicalScreenSize().dy;
     
     Texture * tex1 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
     Texture * tex2 = Texture::CreateFBO(width, height, FORMAT_RGB565, Texture::DEPTH_RENDERBUFFER);
 	
 	renderTargetPrevScreen = Sprite::CreateFromTexture(tex1, 0, 0, (float32)width, (float32)height);
-	renderTargetPrevScreen->SetDefaultPivotPoint(-VirtualCoordinates::GetVirtualScreenXMin(), -VirtualCoordinates::GetVirtualScreenYMin());
+	renderTargetPrevScreen->SetDefaultPivotPoint(- ScreenSizes::GetFullVirtualScreenRect().GetPosition());
 	
 	renderTargetNextScreen = Sprite::CreateFromTexture(tex2, 0, 0, (float32)width, (float32)height);
-	renderTargetNextScreen->SetDefaultPivotPoint(-VirtualCoordinates::GetVirtualScreenXMin(), -VirtualCoordinates::GetVirtualScreenYMin());
+	renderTargetNextScreen->SetDefaultPivotPoint(- ScreenSizes::GetFullVirtualScreenRect().GetPosition());
 
     SafeRelease(tex1);
     SafeRelease(tex2);
@@ -204,7 +204,7 @@ void UIScreenTransition::Draw(const UIGeometricData &geometricData)
     RenderSystem2D::Instance()->Draw(renderTargetPrevScreen, &drawState);
     
 	drawState.SetScale(0.5f, 1.0f);
-	drawState.SetPosition((VirtualCoordinates::GetVirtualScreenXMax() - VirtualCoordinates::GetVirtualScreenXMin()) / 2.0f, 0);
+	drawState.SetPosition((ScreenSizes::GetFullVirtualScreenRect().dx) / 2.0f, 0);
 
     RenderSystem2D::Instance()->Draw(renderTargetNextScreen, &drawState);
 }

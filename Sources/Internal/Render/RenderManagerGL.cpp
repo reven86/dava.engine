@@ -326,6 +326,10 @@ void RenderManager::SetViewport(const Rect & rect)
             viewport.dy = frameBufferHeight;
         }
     }
+    else if (renderOrientation != Core::SCREEN_ORIENTATION_TEXTURE)
+    {
+        viewport.y = frameBufferHeight - viewport.y - viewport.dy;
+    }
     
     RENDER_VERIFY(glViewport((int32)viewport.x, (int32)viewport.y, (int32)viewport.dx, (int32)viewport.dy));
 }

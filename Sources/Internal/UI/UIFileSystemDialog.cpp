@@ -34,17 +34,17 @@
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Platform/SystemTimer.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 #include <algorithm>
 
 namespace DAVA
 {
 
 UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
-    : UIControl(Rect(VirtualCoordinates::GetVirtualScreenWidth() / 2.f,
-                     VirtualCoordinates::GetVirtualScreenHeight() / 2.f,
-                     VirtualCoordinates::GetVirtualScreenWidth() * 2.f / 3.f,
-                     VirtualCoordinates::GetVirtualScreenHeight() * 4.f / 5.f
+    : UIControl(Rect(ScreenSizes::GetVirtualScreenSize().dx / 2.f,
+                     ScreenSizes::GetVirtualScreenSize().dy / 2.f,
+                     ScreenSizes::GetVirtualScreenSize().dx * 2.f / 3.f,
+                     ScreenSizes::GetVirtualScreenSize().dy * 4.f / 5.f
                      )
                 )
 {
@@ -59,9 +59,9 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath &_fontPath)
     extensionFilter.push_back(".*");
     
     
-    cellH = VirtualCoordinates::GetVirtualScreenHeight() / 20.0f;
+    cellH = ScreenSizes::GetVirtualScreenSize().dy / 20.0f;
     cellH = Max(cellH, 32.0f);
-    float32 border = VirtualCoordinates::GetVirtualScreenHeight() / 64.0f;
+    float32 border = ScreenSizes::GetVirtualScreenSize().dy / 64.0f;
     float32 halfBorder = float32(int32(border/2.0f));
     fileListView = new UIList(Rect(border, border + cellH, size.x - border*2.0f, size.y - cellH*3.0f - border*3.0f), UIList::ORIENTATION_VERTICAL);
     fileListView->SetDelegate(this);

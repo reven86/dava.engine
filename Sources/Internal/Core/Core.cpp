@@ -50,7 +50,7 @@
 #include "Render/2D/FTFont.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Render/Image/ImageSystem.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
@@ -138,7 +138,7 @@ void Core::CreateSingletons()
 	new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
-    new VirtualCoordinatesTransformSystem();
+    new VirtualCoordinatesSystem();
     new RenderSystem2D();
 	
 #if defined __DAVAENGINE_IPHONE__
@@ -400,9 +400,9 @@ ApplicationCore * Core::GetApplicationCore()
 	
 void Core::SystemAppStarted()
 {
-	if (VirtualCoordinatesTransformSystem::Instance()->NeedToRecalculateMultipliers())
+	if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 	{
-		VirtualCoordinatesTransformSystem::Instance()->CalculateScaleMultipliers();
+		VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 		/*  Question to Hottych: Does it really necessary here? 
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
@@ -473,9 +473,9 @@ void Core::SystemProcessFrame()
 #endif //#if !defined(__DAVAENGINE_ANDROID__)
 
 		// recalc frame inside begin / end frame
-		if (VirtualCoordinatesTransformSystem::Instance()->NeedToRecalculateMultipliers())
+		if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 		{
-			VirtualCoordinatesTransformSystem::Instance()->CalculateScaleMultipliers();
+			VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 			RenderManager::Instance()->SetRenderOrientation(screenOrientation);
             UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();

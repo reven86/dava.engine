@@ -230,17 +230,11 @@ void WebViewControl::SetRect(const Rect& rect)
 {
 	CGRect webViewRect = [(UIWebView*)webViewPtr frame];
 
-	
-    // Minimum recalculations are needed, no swapping, no rotation.
-    webViewRect.origin.x = rect.x * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-    webViewRect.origin.y = rect.y * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-			
-    webViewRect.size.width = rect.dx * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-    webViewRect.size.height = rect.dy * DAVA::VirtualCoordinates::GetVirtualToPhysicalFactor();
-
-    webViewRect.origin.x += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().x;
-    webViewRect.origin.y += VirtualCoordinatesTransformSystem::Instance()->GetPhysicalDrawOffset().y;
-
+    Rect physicalRect = VirtualCoordinates::ConvertVirtualToPhysical(rect);
+    webViewRect.origin.x = physicalRect.x + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().x;
+    webViewRect.origin.y = physicalRect.y + VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset().y;
+    webViewRect.size.width = physicalRect.dx;
+    webViewRect.size.height = physicalRect.dy;
 	
 	// Apply the Retina scale divider, if any.
 	float scaleDivider = GetScaleDivider();

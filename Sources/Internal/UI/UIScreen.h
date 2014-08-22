@@ -36,7 +36,7 @@
 #include "Render/RenderManager.h"
 #include "Utils/Utils.h"
 #include "Core/Core.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -57,8 +57,8 @@ protected:
 public:
 	UIScreen(const Rect &rect = Rect(0.0f,
                                      0.0f,
-                            (float32)VirtualCoordinates::GetVirtualScreenWidth(),
-                            (float32)VirtualCoordinates::GetVirtualScreenHeight()
+                                     (float32)ScreenSizes::GetVirtualScreenSize().dx,
+                                     (float32)ScreenSizes::GetVirtualScreenSize().dy
                                      ));
 
 	/**

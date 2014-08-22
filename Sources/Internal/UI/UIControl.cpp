@@ -41,7 +41,7 @@
 #include "Utils/StringFormat.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 namespace DAVA
 {
@@ -1677,8 +1677,8 @@ namespace DAVA
 
         if(InputSystem::Instance()->IsCursorPining())
         {
-            point.x = VirtualCoordinates::GetVirtualScreenWidth() / 2;
-            point.y = VirtualCoordinates::GetVirtualScreenHeight() / 2;
+            point.x = ScreenSizes::GetVirtualScreenSize().dx / 2.f;
+            point.y = ScreenSizes::GetVirtualScreenSize().dx / 2.f;
         }
 
         const UIGeometricData &gd = GetGeometricData();

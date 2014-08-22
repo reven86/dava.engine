@@ -37,7 +37,7 @@
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
-#include "Render/2D/RenderSystem2D/VirtualCoordinatesTransformSystem.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 namespace DAVA 
 {
@@ -233,10 +233,11 @@ void UISlider::Draw(const UIGeometricData &geometricData)
     const Vector2& drawTranslate = RenderSystem2D::Instance()->GetDrawTranslate();
     const Vector2& drawScale = RenderSystem2D::Instance()->GetDrawScale();
 
-    float32 screenXMin = (VirtualCoordinates::GetVirtualScreenXMin() - drawTranslate.x) / drawScale.x;
-    float32 screenXMax = (VirtualCoordinates::GetVirtualScreenXMax() - drawTranslate.x) / drawScale.x;
+    Rect fullVirtualScreen = ScreenSizes::GetFullVirtualScreenRect();
+    float32 screenXMin = (fullVirtualScreen.x - drawTranslate.x) / drawScale.x;
+    float32 screenXMax = (fullVirtualScreen.x + fullVirtualScreen.dx - drawTranslate.x) / drawScale.x;
     float32 screenYMin = - drawTranslate.y / drawScale.y;
-    float32 screenYMax = (VirtualCoordinates::GetVirtualScreenHeight() - drawTranslate.y) / drawScale.y;
+    float32 screenYMax = (ScreenSizes::GetVirtualScreenSize().dy - drawTranslate.y) / drawScale.y;
 
 	if (minBackground)
 	{
