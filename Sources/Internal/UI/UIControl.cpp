@@ -859,6 +859,7 @@ namespace DAVA
         if (!parent)
         {
             SetRect(rect);
+            return;
         }
 
         Rect localRect = rect;

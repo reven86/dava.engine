@@ -41,11 +41,9 @@
 #include <QApplication>
 
 TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
-:	SceneSystem(scene)
-,	enabled(false)
+:	LandscapeEditorSystem(scene, "~res:/LandscapeEditor/Tools/cursor/cursor.tex")
 ,	editingIsEnabled(false)
 ,	curToolSize(0)
-,	cursorSize(120)
 ,	toolImage(NULL)
 ,	toolImageSprite(NULL)
 ,	strength(0.25f)
@@ -53,7 +51,6 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	tileTextureNum(0)
 ,	toolSprite(NULL)
 ,	stencilSprite(NULL)
-,	prevCursorPos(Vector2(-1.f, -1.f))
 ,	toolSpriteUpdated(false)
 ,	needCreateUndo(false)
 ,	toolImageIndex(0)
@@ -62,17 +59,11 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 ,	copyPasteTo(-1.f, -1.f)
 ,	textureLevel(Landscape::TEXTURE_TILE_MASK)
 {
-	cursorTexture = Texture::CreateFromFile("~res:/LandscapeEditor/Tools/cursor/cursor.tex");
-	cursorTexture->SetWrapMode(Texture::WRAP_CLAMP_TO_EDGE, Texture::WRAP_CLAMP_TO_EDGE);
-	
+    cursorSize = 120;
+    
     tileMaskEditorShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor"), FastNameSet()));
     tileMaskCopyPasteShader = SafeRetain(ShaderCache::Instance()->Get(FastName("~res:/Materials/Shaders/Landscape/tilemask-editor-copypaste"), FastNameSet()));
 
-	collisionSystem = ((SceneEditor2 *) GetScene())->collisionSystem;
-	selectionSystem = ((SceneEditor2 *) GetScene())->selectionSystem;
-	modifSystem = ((SceneEditor2 *) GetScene())->modifSystem;
-	drawSystem = ((SceneEditor2 *) GetScene())->landscapeEditorDrawSystem;
-	
     DAVA::RenderStateData noBlendStateData;
     DAVA::RenderManager::Instance()->GetRenderStateData(DAVA::RenderState::RENDERSTATE_3D_BLEND, noBlendStateData);
     
@@ -84,7 +75,6 @@ TilemaskEditorSystem::TilemaskEditorSystem(Scene* scene)
 
 TilemaskEditorSystem::~TilemaskEditorSystem()
 {
-	SafeRelease(cursorTexture);
 	SafeRelease(tileMaskEditorShader);
 	SafeRelease(tileMaskCopyPasteShader);
 	SafeRelease(toolImage);
@@ -93,11 +83,6 @@ TilemaskEditorSystem::~TilemaskEditorSystem()
 	SafeRelease(stencilSprite);
 
 	RenderManager::Instance()->ReleaseRenderState(noBlendDrawState);
-}
-
-LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::IsCanBeEnabled()
-{
-	return drawSystem->VerifyLandscape();
 }
 
 LandscapeEditorDrawSystem::eErrorType TilemaskEditorSystem::EnableLandscapeEditing()
@@ -162,11 +147,6 @@ bool TilemaskEditorSystem::DisableLandscapeEdititing()
 	
 	enabled = false;
 	return !enabled;
-}
-
-bool TilemaskEditorSystem::IsLandscapeEditingEnabled() const
-{
-	return enabled;
 }
 
 void TilemaskEditorSystem::Process(float32 timeElapsed)
@@ -356,34 +336,6 @@ void TilemaskEditorSystem::SetTileTexture(uint32 tileTexture)
 	}
 	
 	tileTextureNum = tileTexture;
-}
-
-void TilemaskEditorSystem::UpdateCursorPosition()
-{
-	Vector3 landPos;
-	isIntersectsLandscape = false;
-	if (collisionSystem->LandRayTestFromCamera(landPos))
-	{
-		isIntersectsLandscape = true;
-		Vector2 point(landPos.x, landPos.y);
-		
-		point.x = (float32)((int32)point.x);
-		point.y = (float32)((int32)point.y);
-		
-		AABBox3 box = drawSystem->GetLandscapeProxy()->GetLandscapeBoundingBox();
-		
-		cursorPosition.x = (point.x - box.min.x) * (landscapeSize - 1) / (box.max.x - box.min.x);
-		cursorPosition.y = (point.y - box.min.y) * (landscapeSize - 1) / (box.max.y - box.min.y);
-		cursorPosition.x = (int32)cursorPosition.x;
-		cursorPosition.y = (int32)cursorPosition.y;
-		
-		drawSystem->SetCursorPosition(cursorPosition);
-	}
-	else
-	{
-		// hide cursor
-		drawSystem->SetCursorPosition(DAVA::Vector2(-100, -100));
-	}
 }
 
 void TilemaskEditorSystem::UpdateToolImage(bool force)

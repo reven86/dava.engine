@@ -69,7 +69,7 @@ public:
 	void SetRenderer(LandscapeRenderer* renderer);
 	LandscapeRenderer* GetRenderer();
 
-	AABBox3 GetLandscapeBoundingBox();
+	const AABBox3 & GetLandscapeBoundingBox();
 	Texture* GetLandscapeTexture(Landscape::eTextureLevel level);
 	Color GetLandscapeTileColor(Landscape::eTextureLevel level);
 	void SetLandscapeTileColor(Landscape::eTextureLevel level, const Color& color);

@@ -123,6 +123,8 @@ void UIButtonMetadata::SetFont(Font * font)
 		{
 			GetActiveUIButton()->SetStateFont(this->uiControlStates[i], localizedFont);
 		}
+
+        UpdateExtraDataLocalizationKey();
         UpdatePropertyDirtyFlagForFont();
     }
 }
@@ -163,48 +165,6 @@ float UIButtonMetadata::GetFontSize() const
     return GetFontSizeForState(this->uiControlStates[GetActiveStateIndex()]);
 }
 
-//void UIButtonMetadata::SetFontSize(float fontSize)
-//{
-//    if (!VerifyActiveParamID())
-//    {
-//        return;
-//    }
-//
-//	for (uint32 i = 0; i < this->GetStatesCount(); ++i)
-//	{
-//		UIStaticText *buttonText = GetActiveUIButton()->GetStateTextControl(this->uiControlStates[i]);
-//		if (!buttonText)
-//		{
-//			return;
-//		}
-//    
-//		Font *font = buttonText->GetFont();
-//		if (!font)
-//		{
-//			return;
-//		}
-//
-//		Font* newFont = font->Clone();
-//		newFont->SetSize(fontSize);
-//		buttonText->SetFont(newFont);
-//		newFont->Release();
-//	}
-//
-//    UpdatePropertyDirtyFlagForFontSize();
-//}
-
-//void UIButtonMetadata::UpdatePropertyDirtyFlagForFontSize()
-//{
-//    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
-//    for (int i = 0; i < statesCount; i ++)
-//    {
-//        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
-//
-//        bool curStateDirty = (GetFontSizeForState(curState) !=
-//                              GetFontSizeForState(GetReferenceState()));
-//        SetStateDirtyForProperty(curState, PropertyNames::FONT_SIZE_PROPERTY_NAME, curStateDirty);
-//    }
-//}
 
 float UIButtonMetadata::GetFontSizeForState(UIControl::eControlState state) const
 {
@@ -247,6 +207,7 @@ void UIButtonMetadata::SetFontColor(const QColor& value)
 		GetActiveUIButton()->SetStateFontColor(this->uiControlStates[i], ColorHelper::QTColorToDAVAColor(value));
 	}
 
+    UpdateExtraDataLocalizationKey();
     UpdatePropertyDirtyFlagForFontColor();
 }
 
@@ -280,6 +241,8 @@ void UIButtonMetadata::SetShadowOffsetX(float offset)
 			referenceButtonText->SetShadowOffset(shadowOffset);
 		}
 	}
+
+    UpdateExtraDataLocalizationKey();
 }
 	
 float UIButtonMetadata::GetShadowOffsetY() const
@@ -312,6 +275,8 @@ void UIButtonMetadata::SetShadowOffsetY(float offset)
 			referenceButtonText->SetShadowOffset(shadowOffset);
 		}
 	}
+
+    UpdateExtraDataLocalizationKey();
 }
 	
 QColor UIButtonMetadata::GetShadowColor() const
@@ -343,6 +308,8 @@ void UIButtonMetadata::SetShadowColor(const QColor& value)
 			referenceButtonText->SetShadowColor(ColorHelper::QTColorToDAVAColor(value));
 		}
 	}
+
+    UpdateExtraDataLocalizationKey();
 }
 
 void UIButtonMetadata::UpdatePropertyDirtyFlagForFontColor()
@@ -722,6 +689,7 @@ void UIButtonMetadata::SetTextAlign(int align)
 		GetActiveUIButton()->SetStateTextAlign(this->uiControlStates[i], align);
 	}
 
+    UpdateExtraDataLocalizationKey();
 	UpdatePropertyDirtyFlagForTextAlign();
 }
 
@@ -846,6 +814,7 @@ void UIButtonMetadata::SetFittingType(int value)
         }
     }
 
+    UpdateExtraDataLocalizationKey();
     UpdatePropertyDirtyFlagForFittingType();
 }
 
@@ -982,7 +951,6 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
 {
     UpdatePropertyDirtyFlagForLocalizedText();
     UpdatePropertyDirtyFlagForFont();
-    //UpdatePropertyDirtyFlagForFontSize();
     UpdatePropertyDirtyFlagForColor();
 
     UpdatePropertyDirtyFlagForSpriteName();
@@ -996,4 +964,39 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     
     UpdatePropertyDirtyFlagForLeftRightStretchCap();
     UpdatePropertyDirtyFlagForTopBottomStretchCap();
+}
+
+void UIButtonMetadata::UpdateExtraDataLocalizationKey()
+{
+    UIButton* button = GetActiveUIButton();
+    HierarchyTreeNode* node = this->GetActiveTreeNode();
+    if (!node || !button)
+    {
+        return;
+    }
+
+    for(uint32 i = 0; i < GetStatesCount(); ++i)
+	{
+        UIControl::eControlState curState = uiControlStates[i];
+        if (node->GetExtraData().IsLocalizationKeyExist(curState))
+        {
+            // There is already localization key for this string - no need to update it.
+            continue;
+        }
+
+        UIButton::eButtonDrawState drawState = button->ControlStateToDrawState(curState);
+
+        // Sanity check to verify whether appropriate textblock was created.
+        if (!button->GetTextBlock(drawState))
+        {
+            continue;
+        }
+
+        // Get the reference draw state.
+        UIButton::eButtonDrawState refDrawState = button->GetActualTextBlockState(button->GetStateReplacer(drawState));
+        const WideString& referenceLocalizationKey = node->GetExtraData().GetLocalizationKey(button->DrawStateToControlState(refDrawState));
+
+        // Update the current localization key with the reference one.
+        node->GetExtraData().SetLocalizationKey(referenceLocalizationKey, button->DrawStateToControlState(drawState));
+    }
 }

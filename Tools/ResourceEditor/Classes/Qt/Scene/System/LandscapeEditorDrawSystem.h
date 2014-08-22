@@ -122,7 +122,7 @@ public:
 	void SaveTileMaskTexture();
 	void ResetTileMaskTexture();
 
-	eErrorType VerifyLandscape();
+	eErrorType VerifyLandscape() const;
 
 	Landscape * GetBaseLandscape() const;
 	

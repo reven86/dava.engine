@@ -63,8 +63,12 @@ String JniLocalization::GetLocale()
 
 void LocalizationAndroid::SelecePreferedLocalization()
 {
-	JniLocalization jniLocalization;
-	LocalizationSystem::Instance()->SetCurrentLocale(jniLocalization.GetLocale());
+	LocalizationSystem::Instance()->SetCurrentLocale(GetDeviceLang());
 }
 
+String LocalizationAndroid::GetDeviceLang(void)
+{
+    JniLocalization jniLocalization;
+    return jniLocalization.GetLocale();
+}
 };

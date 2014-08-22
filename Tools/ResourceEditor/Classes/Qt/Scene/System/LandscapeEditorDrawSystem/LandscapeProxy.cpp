@@ -116,7 +116,7 @@ void LandscapeProxy::SetDisplayingTexture(DAVA::Texture *texture)
 	displayingTexture = SafeRetain(texture);
 }
 
-AABBox3 LandscapeProxy::GetLandscapeBoundingBox()
+const AABBox3 & LandscapeProxy::GetLandscapeBoundingBox()
 {
 	return baseLandscape->GetBoundingBox();
 }

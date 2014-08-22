@@ -34,7 +34,7 @@ NotPassableTerrainProxy::NotPassableTerrainProxy()
 :	enabled(false)
 {
 	LoadColorsArray();
-	
+	 
 	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
 	notPassableMapSprite = Sprite::CreateAsRenderTarget(2048, 2048, DAVA::FORMAT_RGBA8888, true);
     notPassableMapSprite->ConvertToVirtualSize();
@@ -145,46 +145,46 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	{
 		return;
 	}
-
-	Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
+    
+	const Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
 	
-	float32 angleCellDistance = landSize.x / (float32)(heightmap->Size() - 1);
-	float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
-	float32 tanCoef = angleHeightDelta / angleCellDistance;
+	const float32 angleCellDistance = landSize.x / (float32)(heightmap->Size() - 1);
+	const float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
+	const float32 tanCoef = angleHeightDelta / angleCellDistance;
 	
 	Texture *notPassableMap = notPassableMapSprite->GetTexture();
-	float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
+	const float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
 	
 	RenderManager* renderManager = RenderManager::Instance();
 	RenderHelper* renderHelper = RenderHelper::Instance();
 	
 	renderManager->SetRenderTarget(notPassableMapSprite);
 	
-	Rect drawRect(forRect.x * dx, forRect.y * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
+	const Rect drawRect(forRect.x * dx, (heightmap->Size() - (forRect.y + forRect.dy)) * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
 	renderManager->ClipPush();
 	renderManager->SetClip(drawRect);
 	
 	renderManager->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
-	int32 lastY = (int32)(forRect.y + forRect.dy);
-	int32 lastX = (int32)(forRect.x + forRect.dx);
+	const int32 lastY = (int32)(forRect.y + forRect.dy);
+	const int32 lastX = (int32)(forRect.x + forRect.dx);
 	for (int32 y = (int32)forRect.y; y < lastY; ++y)
 	{
-		int32 yOffset = y * heightmap->Size();
+		const int32 yOffset = y * heightmap->Size();
+        const float32 ydx = (heightmap->Size() - y - 1) * dx;
 		for (int32 x = (int32)forRect.x; x < lastX; ++x)
 		{
-			uint16 currentPoint = heightmap->Data()[yOffset + x];
-			uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
-			uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmap->Size()];
+			const uint16 currentPoint = heightmap->Data()[yOffset + x];
+			const uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
+			const uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmap->Size()];
 			
-			uint16 deltaRight = (uint16)abs((int32)currentPoint - (int32)rightPoint);
-			uint16 deltaBottom = (uint16)abs((int32)currentPoint - (int32)bottomPoint);
+			const uint16 deltaRight = (uint16)abs((int32)currentPoint - (int32)rightPoint);
+			const uint16 deltaBottom = (uint16)abs((int32)currentPoint - (int32)bottomPoint);
 			
-			float32 tanRight = (float32)deltaRight * tanCoef;
-			float32 tanBottom = (float32)deltaBottom * tanCoef;
+			const float32 tanRight = (float32)deltaRight * tanCoef;
+			const float32 tanBottom = (float32)deltaBottom * tanCoef;
 			
-			float32 ydx = y * dx;
-			float32 xdx = x * dx;
+			const float32 xdx = x * dx;
 			
 			Color color;
 
@@ -197,7 +197,7 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 			if(PickColor(tanBottom, color))
 			{
 				renderManager->SetColor(color);
-				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx + dx)), DAVA::RenderState::RENDERSTATE_2D_BLEND);
+				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx - dx)), DAVA::RenderState::RENDERSTATE_2D_BLEND);
 			}
 			
 		}

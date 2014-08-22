@@ -181,6 +181,9 @@ protected:
 
     // Recover dirty flags.
     void RecoverPropertyDirtyFlags();
+
+    // Update the localization key.
+    void UpdateExtraDataLocalizationKey();
 };
 
 };

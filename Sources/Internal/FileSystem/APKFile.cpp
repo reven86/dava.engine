@@ -58,8 +58,7 @@ APKFile::~APKFile()
 File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
 {
 	mutex.Lock();
-//	Logger::Debug("[APKFile::CreateFromAssets] wan't to create file %s", filePath.c_str());
-//
+
     FileSystem * fileSystem = FileSystem::Instance();
 	for (List<FileSystem::ResourceArchiveItem>::iterator ai = fileSystem->resourceArchiveList.begin();
          ai != fileSystem->resourceArchiveList.end(); ++ai)
@@ -108,14 +107,13 @@ File * APKFile::CreateFromAssets(const FilePath &filePath, uint32 attributes)
     AAsset * asset = AAssetManager_open(assetManager, filePath.GetAbsolutePathname().c_str(), AASSET_MODE_UNKNOWN);
     if(!asset)
     {
-        Logger::Error("[APKFile::CreateFromAssets] Can't load asset for path %s", filePath.GetAbsolutePathname().c_str());
+//        Logger::Error("[APKFile::CreateFromAssets] Can't load asset for path %s", filePath.GetAbsolutePathname().c_str());
         mutex.Unlock();
         return NULL;
     }
     
 
     int32 dataSize = AAsset_getLength(asset);
-//    Logger::Debug("[APKFile::CreateFromAssets] fileSize is %d (%s)", dataSize, filePath.c_str());
 
     uint8 *data = new uint8[dataSize];
     
@@ -159,8 +157,6 @@ APKFile * APKFile::CreateFromData(const FilePath &filePath, const uint8 * data, 
 	fl->Write(data, dataSize);
 	fl->fileAttributes = attributes;
 	fl->currentPtr = 0;
-
-//	Logger::Debug("[APKFile::CreateFromData] fileSize is %d (%s) (%p) ", dataSize, filePath.c_str(), fl);
     
     return fl;
 }

@@ -31,19 +31,17 @@
 #ifndef __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 #define __RESOURCEEDITORQT__TILEMASKEDITORSYSTEM__
 
-#include "DAVAEngine.h"
+#include "LandscapeEditorSystem.h"
+
+
 #include "Commands2/MetaObjModifyCommand.h"
 #include "LandscapeEditorDrawSystem.h"
 
 #include "Render/UniqueStateSet.h"
 
-class SceneCollisionSystem;
-class SceneSelectionSystem;
-class EntityModificationSystem;
-
 using namespace DAVA;
 
-class TilemaskEditorSystem: public DAVA::SceneSystem
+class TilemaskEditorSystem: public LandscapeEditorSystem
 {
 public:
 	enum eTilemaskDrawType
@@ -59,7 +57,6 @@ public:
 	
 	LandscapeEditorDrawSystem::eErrorType EnableLandscapeEditing();
 	bool DisableLandscapeEdititing();
-	bool IsLandscapeEditingEnabled() const;
 	
 	virtual void Process(DAVA::float32 timeElapsed);
 	void ProcessUIEvent(DAVA::UIEvent *event);
@@ -83,16 +80,6 @@ public:
 	eTilemaskDrawType GetDrawingType();
 
 protected:
-	bool enabled;
-	
-	SceneCollisionSystem* collisionSystem;
-	SceneSelectionSystem* selectionSystem;
-	EntityModificationSystem* modifSystem;
-	LandscapeEditorDrawSystem* drawSystem;
-	
-	int32 landscapeSize;
-	Texture* cursorTexture;
-	uint32 cursorSize;
 	uint32 curToolSize;
 	Image* toolImage;
 	Sprite* toolImageSprite;
@@ -104,9 +91,6 @@ protected:
 	FilePath toolImagePath;
 	int32 toolImageIndex;
 	
-	bool isIntersectsLandscape;
-	Vector2 cursorPosition;
-	Vector2 prevCursorPos;
 	Vector2 copyPasteFrom;
 	Vector2 copyPasteTo;
 	
@@ -127,7 +111,6 @@ protected:
 
 	Landscape::eTextureLevel textureLevel;
 
-	void UpdateCursorPosition();
 	void UpdateToolImage(bool force = false);
 	void UpdateBrushTool();
 	Image* CreateToolImage(int32 sideSize, const FilePath& filePath);
@@ -140,8 +123,6 @@ protected:
 	void CreateMaskFromTexture(Texture* texture);
 
 	void CreateUndoPoint();
-
-	LandscapeEditorDrawSystem::eErrorType IsCanBeEnabled();
 
 	void InitSprites();
 
