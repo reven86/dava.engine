@@ -151,16 +151,15 @@ void Box2DGameObjectManager::Draw()
 
 	if(debugDraw)
 	{
-        RenderSystem2D::Instance()->PushDrawMatrix();
-        RenderSystem2D::Instance()->SetDrawTranslate(cameraPosition);
-        RenderSystem2D::Instance()->SetDrawScale(cameraScale);
-
-		//debugDraw->SetCameraPos(drawState.position);
-        //debugDraw->SetPTDRatio(pixelsInMeterRatio * GetCameraScale());
+        Matrix4 worldMx;
+        worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
+        worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
+        RenderManager::SetDynamicParam(PARAM_WORLD, &worldMx, UPDATE_SEMANTIC_ALWAYS);
+        
 		box2DWorld->SetDebugDraw(debugDraw);
 		box2DWorld->DrawDebugData();
 
-        RenderSystem2D::Instance()->PopDrawMatrix();
+        RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
 	}
 }
 	

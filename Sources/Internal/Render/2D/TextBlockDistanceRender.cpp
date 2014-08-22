@@ -144,8 +144,10 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
 		yOffset += (int32)((textBlock->rectSize.dy - renderRect.dy) * 0.5f);
 	}
     
-    RenderSystem2D::Instance()->PushDrawMatrix();
-    RenderSystem2D::Instance()->SetDrawTranslate(Vector2((float32)xOffset, (float32)yOffset));
+    const Matrix4 * oldMatrix = (Matrix4 *)RenderManager::GetDynamicParam(PARAM_WORLD);
+    Matrix4 offsetMatrix;
+    offsetMatrix.glTranslate((float32)xOffset, (float32)yOffset, 0.f);
+    RenderManager::SetDynamicParam(PARAM_WORLD, &offsetMatrix, UPDATE_SEMANTIC_ALWAYS);
 
     RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderManager::Instance()->SetTextureState(dfFont->GetTextureHandler());
@@ -164,7 +166,7 @@ void TextBlockDistanceRender::Draw(const Color& textColor, const Vector2* offset
     
 	RenderManager::Instance()->HWDrawElements(PRIMITIVETYPE_TRIANGLELIST, charDrawed * 6, EIF_16, this->indexBuffer);
     
-    RenderSystem2D::Instance()->PopDrawMatrix();
+    RenderManager::SetDynamicParam(PARAM_WORLD, oldMatrix, UPDATE_SEMANTIC_ALWAYS);
 }
 	
 Size2i TextBlockDistanceRender::DrawTextSL(const WideString& drawText, int32 x, int32 y, int32 w)

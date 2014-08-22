@@ -39,13 +39,6 @@ RenderSystem2D::RenderSystem2D()
     spriteRenderObject = new RenderDataObject();
     spriteVertexStream = spriteRenderObject->SetStream(EVF_VERTEX, TYPE_FLOAT, 2, 0, 0);
     spriteTexCoordStream  = spriteRenderObject->SetStream(EVF_TEXCOORD0, TYPE_FLOAT, 2, 0, 0);
-    
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-    
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
 }
 
 RenderSystem2D::~RenderSystem2D()
@@ -55,123 +48,30 @@ RenderSystem2D::~RenderSystem2D()
 
 void RenderSystem2D::Reset()
 {
-	userDrawOffset = Vector2(0, 0);
-	userDrawScale = Vector2(1, 1);
-	
-	currentDrawOffset = Vector2(0, 0);
-	currentDrawScale = Vector2(1, 1);
-    mappingMatrixChanged = true;
-    
 	currentClip.x = 0;
 	currentClip.y = 0;
 	currentClip.dx = -1;
 	currentClip.dy = -1;
-}
     
-void RenderSystem2D::SetDrawTranslate(const Vector2 &offset)
-{
-    mappingMatrixChanged = true;
-    userDrawOffset.x += offset.x * userDrawScale.x;
-    userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-void RenderSystem2D::SetDrawTranslate(const Vector3 &offset)
-{
-    mappingMatrixChanged = true;
-    userDrawOffset.x += offset.x * userDrawScale.x;
-    userDrawOffset.y += offset.y * userDrawScale.y;
-}
-
-const Vector2& RenderSystem2D::GetDrawTranslate() const
-{
-    return userDrawOffset;
-}
-
-void RenderSystem2D::SetDrawScale(const Vector2 &scale)
-{
-    mappingMatrixChanged = true;
-    userDrawScale.x *= scale.x;
-    userDrawScale.y *= scale.y;
-}
-
-const Vector2& RenderSystem2D::GetDrawScale() const
-{
-    return userDrawScale;
-}
-
-void RenderSystem2D::IdentityDrawMatrix()
-{
-    mappingMatrixChanged = true;
-    userDrawScale.x = 1.0f;
-    userDrawScale.y = 1.0f;
-    
-    userDrawOffset.x = 0.0f;
-    userDrawOffset.y = 0.0f;
-}
-
-void RenderSystem2D::IdentityModelMatrix()
-{
-    mappingMatrixChanged = true;
-    currentDrawOffset = Vector2(0.0f, 0.0f);
-    currentDrawScale = Vector2(1.0f, 1.0f);
-    
-    viewMatrix = Matrix4::IDENTITY;
-}
-
-void RenderSystem2D::PushDrawMatrix()
-{
-    DrawMatrix dm;
-    dm.userDrawOffset = userDrawOffset;
-    dm.userDrawScale = userDrawScale;
-    matrixStack.push(dm);
-}
-
-void RenderSystem2D::PopDrawMatrix()
-{
-    IdentityDrawMatrix();
-    DrawMatrix dm = matrixStack.top();
-    matrixStack.pop();
-    userDrawOffset = dm.userDrawOffset;
-    userDrawScale = dm.userDrawScale;
-    PrepareRealMatrix();
+    Setup2DMatrices();
 }
     
 void RenderSystem2D::Setup2DMatrices()
 {
-    PrepareRealMatrix();
-    
-    Matrix4 glTranslate, glScale;
-    glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-    glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-    viewMatrix = glScale * glTranslate;
-    
     RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
     RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
 }
-    
-void RenderSystem2D::PrepareRealMatrix()
+
+void RenderSystem2D::ScreenSizeChanged()
 {
-    if (mappingMatrixChanged)
-    {
-        mappingMatrixChanged = false;
-        
-        Vector2 realDrawScale = userDrawScale * VirtualCoordinates::GetVirtualToPhysicalFactor();
-        Vector2 realDrawOffset = (userDrawOffset - ScreenSizes::GetFullVirtualScreenRect().GetPosition())
-            * VirtualCoordinates::GetVirtualToPhysicalFactor();
-        
-        if (realDrawScale != currentDrawScale || realDrawOffset != currentDrawOffset)
-        {
-            currentDrawScale = realDrawScale;
-            currentDrawOffset = realDrawOffset;
-            
-            Matrix4 glTranslate, glScale;
-            glTranslate.glTranslate(currentDrawOffset.x, currentDrawOffset.y, 0.0f);
-            glScale.glScale(currentDrawScale.x, currentDrawScale.y, 1.0f);
-            
-            viewMatrix = glScale * glTranslate;
-            RenderManager::SetDynamicParam(PARAM_VIEW, &viewMatrix, UPDATE_SEMANTIC_ALWAYS);
-        }
-    }
+    Matrix4 glTranslate, glScale;
+    
+    float32 scale = VirtualCoordinates::GetVirtualToPhysicalFactor();
+    Vector2 realDrawOffset = VirtualCoordinatesSystem::Instance()->GetPhysicalDrawOffset();
+    
+    glTranslate.glTranslate(realDrawOffset.x, realDrawOffset.y, 0.0f);
+    glScale.glScale(scale, scale, 1.0f);
+    viewMatrix = glScale * glTranslate;
 }
 
 void RenderSystem2D::SetClip(const Rect &rect)
@@ -230,8 +130,6 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 	{
 		return;
 	}
-    
-    PrepareRealMatrix();
     
 	PrepareSpriteRenderData(sprite, state);
     

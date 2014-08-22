@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/2D/RenderSystem2D/RenderSystem2D.h"
+#include "Render/2D/RenderSystem2D/VirtualCoordinatesSystem.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "../Platform/TemplateMacOS/WebViewControlMacOS.h"
@@ -135,9 +136,6 @@ void UIWebView::SetGestures(bool value)
 void UIWebView::UpdateControlRect()
 {
     Rect rect = GetRect(true);
-
-    rect.SetPosition(rect.GetPosition() * RenderSystem2D::Instance()->GetDrawScale() + RenderSystem2D::Instance()->GetDrawTranslate());
-    rect.SetSize(rect.GetSize() * RenderSystem2D::Instance()->GetDrawScale());
 
     webViewControl->SetRect(rect);
 }

@@ -272,13 +272,11 @@ void GameObjectManager::ProcessChangesStack()
 
 void GameObjectManager::Draw()
 {
-	//eBlendMode srcMode = RenderManager::Instance()->GetSrcBlend();
-	//eBlendMode destMode = RenderManager::Instance()->GetDestBlend();
-	
-        RenderSystem2D::Instance()->PushDrawMatrix();
-        RenderSystem2D::Instance()->SetDrawTranslate(cameraPosition);
-        RenderSystem2D::Instance()->SetDrawScale(cameraScale);
-
+    Matrix4 worldMx;
+    worldMx.glTranslate(cameraPosition.x, cameraPosition.y, 0.f);
+    worldMx = worldMx * Matrix4::MakeScale(Vector3(cameraScale.x, cameraScale.y, 1.f));
+    RenderManager::SetDynamicParam(PARAM_WORLD, &worldMx, UPDATE_SEMANTIC_ALWAYS);
+    
     const List<GameObject*>::iterator currentObjEnd = objects.end();
 	for(List<GameObject*>::iterator currentObj = objects.begin(); currentObj != currentObjEnd; ++currentObj)
 	{
@@ -289,9 +287,8 @@ void GameObjectManager::Draw()
 		    object->Draw();
 	}
 	
-    RenderSystem2D::Instance()->PopDrawMatrix();
+    RenderManager::SetDynamicParam(PARAM_WORLD, &Matrix4::IDENTITY, UPDATE_SEMANTIC_ALWAYS);
 
-	//RenderManager::Instance()->SetBlendMode(srcMode, destMode);
     RenderManager::Instance()->ResetColor();
 }
 

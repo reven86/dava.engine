@@ -574,8 +574,10 @@ void AutotestingSystemLua::TouchDown(const Vector2 &point, int32 touchId)
     touchDown.phase = UIEvent::PHASE_BEGAN;
     touchDown.tid = touchId;
     touchDown.tapCount = 1;
-    UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchDown.physPoint);
-    UIControlSystem::Instance()->RecalculatePointToVirtual(touchDown.physPoint, touchDown.point);
+    touchDown.physPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToPhysical(point);
+    touchDown.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
+    //UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchDown.physPoint);
+    //UIControlSystem::Instance()->RecalculatePointToVirtual(touchDown.physPoint, touchDown.point); ?? physPoint to point ??
         
     ProcessInput(touchDown);
 }
@@ -588,8 +590,10 @@ void AutotestingSystemLua::TouchMove(const Vector2 &point, int32 touchId)
     UIEvent touchMove;
     touchMove.tid = touchId;
     touchMove.tapCount = 1;
-    UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchMove.physPoint);
-    UIControlSystem::Instance()->RecalculatePointToVirtual(touchMove.physPoint, touchMove.point);
+    touchMove.physPoint = VirtualCoordinatesSystem::Instance()->ConvertInputToPhysical(point);
+    touchMove.point = VirtualCoordinatesSystem::Instance()->ConvertInputToVirtual(point);
+//    UIControlSystem::Instance()->RecalculatePointToPhysical(point, touchMove.physPoint);
+//    UIControlSystem::Instance()->RecalculatePointToVirtual(touchMove.physPoint, touchMove.point); ?? physPoint to point ??
     
     if(AutotestingSystem::Instance()->IsTouchDown(touchId))
     {

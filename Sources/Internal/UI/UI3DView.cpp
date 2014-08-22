@@ -96,7 +96,6 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
     const Rect & viewportRect = geometricData.GetUnrotatedRect();
     viewportRc = VirtualCoordinates::ConvertVirtualToPhysical(viewportRect);
     
-    RenderSystem2D::Instance()->PushDrawMatrix();
     int32 renderOrientation = RenderManager::Instance()->GetRenderOrientation();
     
     Rect viewportSave = RenderManager::Instance()->GetViewport();
@@ -109,9 +108,6 @@ void UI3DView::Draw(const UIGeometricData & geometricData)
         
     RenderManager::Instance()->SetViewport(viewportSave);
     RenderManager::Instance()->SetRenderOrientation(renderOrientation);
-    
-
-	RenderSystem2D::Instance()->PopDrawMatrix();
 	
 	RenderManager::Instance()->SetRenderState(RenderState::RENDERSTATE_2D_BLEND);
     RenderSystem2D::Instance()->Setup2DMatrices();
