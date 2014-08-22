@@ -900,7 +900,7 @@ namespace DAVA
         if (visible == isVisible)
         {
             return;
-		}
+        }
 
         bool oldSystemVisible = GetSystemVisible();
         visible = isVisible;
@@ -1056,7 +1056,7 @@ namespace DAVA
             control->SystemDidAppear();
         }
 
-        if (IsOnScreen() && control->GetVisible())
+        if (IsOnScreen() && control->GetSystemVisible())
             control->SystemWillBecomeVisible();
 
         isIteratorCorrupted = true;
@@ -1073,7 +1073,7 @@ namespace DAVA
         {
             if((*it) == control)
             {
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeInvisible();
 
                 bool inHierarchy = InViewHierarchy();
@@ -1161,7 +1161,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1193,7 +1193,7 @@ namespace DAVA
                     control->SystemDidAppear();
                 }
 
-                if (IsOnScreen() && control->GetVisible())
+                if (IsOnScreen() && control->GetSystemVisible())
                     control->SystemWillBecomeVisible();
 
                 isIteratorCorrupted = true;
@@ -1360,7 +1360,7 @@ namespace DAVA
         if(UIControlSystem::Instance()->GetScreen() == this ||
            UIControlSystem::Instance()->GetPopupContainer() == this)
         {
-            return GetVisible();
+            return GetSystemVisible();
         }
 
         if( !GetSystemVisible() || !parent )
@@ -1534,7 +1534,7 @@ namespace DAVA
 
     void UIControl::SystemDraw(const UIGeometricData &geometricData)
     {
-        if( !visible || !visibleForUIEditor )
+        if (!GetSystemVisible())
             return;
 
         UIControlSystem::Instance()->drawCounter++;
@@ -1689,7 +1689,7 @@ namespace DAVA
 
     bool UIControl::SystemProcessInput(UIEvent *currentInput)
     {
-        if(!inputEnabled || !visible || controlState & STATE_DISABLED)
+        if(!inputEnabled || !GetSystemVisible() || controlState & STATE_DISABLED)
         {
             return false;
         }
@@ -1886,7 +1886,7 @@ namespace DAVA
         UIControlSystem::Instance()->inputCounter++;
         isUpdated = true;
 
-        if( !visible )
+        if( !GetSystemVisible() )
             return false;
 
         //if(currentInput->touchLocker != this)
@@ -2022,7 +2022,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetVisible())
+            if ((*it)->GetSystemVisible())
                 (*it)->SystemWillBecomeVisible();
         }
     }
@@ -2046,7 +2046,7 @@ namespace DAVA
         List<UIControl*>::const_iterator end = childs.end();
         for (; it != end; ++it)
         {
-            if ((*it)->GetVisible())
+            if ((*it)->GetSystemVisible())
                 (*it)->SystemWillBecomeInvisible();
         }
 
