@@ -52,11 +52,9 @@ UIStaticText::UIStaticText(const Rect &rect, bool rectInAbsoluteCoordinates/* = 
 
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
-    textBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
 
     shadowBg = new UIControlBackground();
     shadowBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
-    shadowBg->SetColorInheritType(UIControlBackground::COLOR_MULTIPLY_ON_PARENT);
 
     SetTextColor(Color::White);
     SetShadowColor(Color::Black);
@@ -224,9 +222,8 @@ void UIStaticText::Draw(const UIGeometricData &geometricData)
 void UIStaticText::SetParentColor(const Color &parentColor)
 {
     UIControl::SetParentColor(parentColor);
-    const Color &backDrawColor = GetBackground()->GetDrawColor();
-    shadowBg->SetParentColor(backDrawColor);
-    textBg->SetParentColor(backDrawColor);
+    shadowBg->SetParentColor(parentColor);
+    textBg->SetParentColor(parentColor);
 }
 
 const Vector<WideString> & UIStaticText::GetMultilineStrings() const

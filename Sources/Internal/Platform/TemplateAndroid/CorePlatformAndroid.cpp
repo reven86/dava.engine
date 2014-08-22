@@ -158,11 +158,12 @@ namespace DAVA
 		Logger::Debug("[CorePlatformAndroid::UpdateScreenMode] done");
 	}
 
-	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPath, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
+	void CorePlatformAndroid::CreateAndroidWindow(const char8 *docPathEx, const char8 *docPathIn, const char8 *assets, const char8 *logTag, AndroidSystemDelegate * sysDelegate)
 	{
 		androidDelegate = sysDelegate;
-		externalStorage = docPath;
-
+		externalStorage = docPathEx;
+		internalStorage = docPathIn;
+	
 		Core::CreateSingletons();
 
 		Logger::SetTag(logTag);

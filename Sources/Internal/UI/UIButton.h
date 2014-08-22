@@ -260,8 +260,8 @@ protected:
     enum eButtonDrawState
     {
             DRAW_STATE_UNPRESSED = 0
-        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_PRESSED_OUTSIDE
+        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_DISABLED
         ,	DRAW_STATE_SELECTED
         ,	DRAW_STATE_HOVERED

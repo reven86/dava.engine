@@ -38,6 +38,11 @@ HierarchyTreeNodeExtraData::HierarchyTreeNodeExtraData()
 }
 
 // Access to Localization Key.
+bool HierarchyTreeNodeExtraData::IsLocalizationKeyExist(UIControl::eControlState state) const
+{
+    return localizationKeysMap.find(state) != localizationKeysMap.end();
+}
+
 void HierarchyTreeNodeExtraData::SetLocalizationKey(const WideString& localizationKey, UIControl::eControlState state)
 {
     this->localizationKeysMap[state] = localizationKey;
@@ -47,12 +52,7 @@ WideString HierarchyTreeNodeExtraData::GetLocalizationKey(UIControl::eControlSta
 {
     if (!ValidateControlState(state))
     {
-        // Re-try with the default state.
-        state = UIControl::STATE_NORMAL;
-        if (!ValidateControlState(state))
-        {
-            return WideString();
-        }
+        return WideString();
     }
     
     Map<UIControl::eControlState, WideString>::const_iterator iter = this->localizationKeysMap.find(state);

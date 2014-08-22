@@ -87,7 +87,7 @@ protected:
 
     // Sprite getter/setter.
     virtual void SetSprite(const QString& value);
-    virtual QString GetSprite();
+    virtual QString GetSprite() const;
     
     virtual void SetSpriteFrame(int value);
     virtual int GetSpriteFrame();
@@ -179,8 +179,20 @@ protected:
     float GetTopBottomStretchCapForState(UIControl::eControlState state) const;
     void UpdatePropertyDirtyFlagForTopBottomStretchCap();
 
+    // Shadow offset&color.
+    float GetShadowOffsetXForState(UIControl::eControlState state) const;
+    float GetShadowOffsetYForState(UIControl::eControlState state) const;
+    QColor GetShadowColorForState(UIControl::eControlState state) const;
+
+    void UpdatePropertyDirtyFlagForShadowOffsetX();
+    void UpdatePropertyDirtyFlagForShadowOffsetY();
+    void UpdatePropertyDirtyFlagForShadowColor();
+
     // Recover dirty flags.
     void RecoverPropertyDirtyFlags();
+
+    // Update the localization key.
+    void UpdateExtraDataLocalizationKey();
 };
 
 };

@@ -95,7 +95,7 @@ UIControlBackground::~UIControlBackground()
     ReleaseDrawData();
 }
 
-Sprite*	UIControlBackground::GetSprite()
+Sprite*	UIControlBackground::GetSprite() const
 {
     return spr;
 }

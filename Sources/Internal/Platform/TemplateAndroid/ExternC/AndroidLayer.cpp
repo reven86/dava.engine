@@ -66,7 +66,7 @@ extern "C"
 	jint JNI_OnLoad(JavaVM *vm, void *reserved);
 
 	//JNIApplication
-	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring path, jstring apppath, jstring logTag, jstring packageName);
+	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnConfigurationChanged(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnLowMemory(JNIEnv * env, jobject classthis);
 	JNIEXPORT void JNICALL Java_com_dava_framework_JNIApplication_OnTerminate(JNIEnv * env, jobject classthis);
@@ -97,7 +97,8 @@ extern "C"
 DAVA::CorePlatformAndroid *core = NULL;
 
 #define MAX_PATH_SZ 260
-char documentsFolderPath[MAX_PATH_SZ];
+char documentsFolderPathEx[MAX_PATH_SZ];
+char documentsFolderPathIn[MAX_PATH_SZ];
 char folderDocuments[MAX_PATH_SZ];
 char assetsFolderPath[MAX_PATH_SZ];
 char androidLogTag[MAX_PATH_SZ];
@@ -192,7 +193,7 @@ void InitApplication(JNIEnv * env)
 		core = new DAVA::CorePlatformAndroid();
 		if(core)
 		{
-			core->CreateAndroidWindow(documentsFolderPath, assetsFolderPath, androidLogTag, androidDelegate);
+			core->CreateAndroidWindow(documentsFolderPathEx, documentsFolderPathIn, assetsFolderPath, androidLogTag, androidDelegate);
 		}
 		else
 		{
@@ -223,12 +224,13 @@ void DeinitApplication()
 // private static native void OnLowMemory();
 // private static native void OnTerminate()
 
-void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring path, jstring apppath, jstring logTag, jstring packageName)
+void Java_com_dava_framework_JNIApplication_OnCreateApplication(JNIEnv* env, jobject classthis, jstring externalPath, jstring internalPath, jstring apppath, jstring logTag, jstring packageName)
 {
 	bool retCreateLogTag = CreateStringFromJni(env, logTag, androidLogTag);
 //	LOGI("___ OnCreateApplication __ %d", classthis);
 
-	bool retCreatedDocuments = CreateStringFromJni(env, path, documentsFolderPath);
+	bool retCreatedExDocuments = CreateStringFromJni(env, externalPath, documentsFolderPathEx);
+	bool retCreatedInDocuments = CreateStringFromJni(env, internalPath, documentsFolderPathIn);
 	bool retCreatedAssets = CreateStringFromJni(env, apppath, assetsFolderPath);
 	bool retCreatePackageName = CreateStringFromJni(env, packageName, androidPackageName);
 

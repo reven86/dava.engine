@@ -485,6 +485,24 @@ Sprite* Sprite::CreateFromSourceData(const uint8* data, uint32 size, bool conten
     return sprite;
 }
 
+String Sprite::GetPathString( const Sprite *sprite )
+{
+    if (!sprite)
+    {
+        return "";
+    }
+
+    FilePath path(sprite->GetRelativePathname());
+    String pathName = "";
+    if (!path.IsEmpty())
+    {
+        path.TruncateExtension();
+        pathName = path.GetFrameworkPath();
+    }
+
+    return pathName;
+}
+
 Sprite* Sprite::CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded /* = false*/, bool inVirtualSpace /* = false */)
 {
     Vector<Image*> images;
