@@ -403,7 +403,6 @@ void Core::SystemAppStarted()
 	if (VirtualCoordinatesSystem::Instance()->WasScreenSizeChanged())
 	{
 		VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
-        RenderSystem2D::Instance()->ScreenSizeChanged();
 		/*  Question to Hottych: Does it really necessary here?
             RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
          */
@@ -478,7 +477,6 @@ void Core::SystemProcessFrame()
 		{
 			VirtualCoordinatesSystem::Instance()->ScreenSizeChanged();
 			RenderManager::Instance()->SetRenderOrientation(screenOrientation);
-            RenderSystem2D::Instance()->ScreenSizeChanged();
             UIScreenManager::Instance()->ScreenSizeChanged();
             UIControlSystem::Instance()->ScreenSizeChanged();
 		}

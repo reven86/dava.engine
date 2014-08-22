@@ -131,6 +131,8 @@ void RenderSystem2D::Draw(Sprite * sprite, Sprite::DrawState * state)
 		return;
 	}
     
+    Setup2DMatrices();
+    
 	PrepareSpriteRenderData(sprite, state);
     
 	if(sprite->clipPolygon)
