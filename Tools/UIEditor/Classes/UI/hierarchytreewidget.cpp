@@ -894,26 +894,11 @@ void HierarchyTreeWidget::OnTreeItemChanged(QTreeWidgetItem *item, int column)
 	bool currentVisibleFlag = (item->checkState(column) == Qt::Checked);
 	
 	WidgetSignalsBlocker blocker(this);
-	UpdateVisibleFlagRecursive(item, column, currentVisibleFlag);
-}
-
-void HierarchyTreeWidget::UpdateVisibleFlagRecursive(QTreeWidgetItem* rootItem, int column, bool flagValue)
-{
-	HierarchyTreeControlNode* controlNode = GetControlNodeByTreeItem(rootItem);
-	if (!controlNode)
+    HierarchyTreeControlNode* controlNode = GetControlNodeByTreeItem(item);
+	if (controlNode)
 	{
-		return;
-	}
-
-	rootItem->setCheckState(column, flagValue ? Qt::Checked : Qt::Unchecked);
-	controlNode->SetVisibleFlag(flagValue);
-	
-	// Repeat for all children.
-	int childCount = rootItem->childCount();
-	for (int count = 0; count < childCount; count ++)
-	{
-		UpdateVisibleFlagRecursive(rootItem->child(count), column, flagValue);
-	}
+        controlNode->SetVisibleFlag(currentVisibleFlag);
+    }
 }
 
 HierarchyTreeControlNode* HierarchyTreeWidget::GetControlNodeByTreeItem(QTreeWidgetItem* item)

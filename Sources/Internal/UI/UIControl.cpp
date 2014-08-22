@@ -911,16 +911,15 @@ namespace DAVA
         }
     }
 
-    void UIControl::SetVisibleForUIEditor(bool value, bool hierarchic/* = true*/)
+    void UIControl::SetVisibleForUIEditor(bool value)
     {
         visibleForUIEditor = value;
-        if(hierarchic)
+        if (parent && parent->IsOnScreen())
         {
-            List<UIControl*>::iterator it = childs.begin();
-            for(; it != childs.end(); ++it)
-            {
-                (*it)->SetVisibleForUIEditor(value, hierarchic);
-            }
+            if (visibleForUIEditor)
+                SystemWillBecomeVisible();
+            else
+                SystemWillBecomeInvisible();
         }
     }
 
@@ -1514,7 +1513,7 @@ namespace DAVA
 
     void UIControl::SystemDraw(const UIGeometricData &geometricData)
     {
-        if( !visible )
+        if( !visible || !visibleForUIEditor )
             return;
 
         UIControlSystem::Instance()->drawCounter++;
@@ -1533,10 +1532,7 @@ namespace DAVA
             RenderManager::Instance()->ClipRect(unrotatedRect);
         }
 
-        if(visible && visibleForUIEditor)
-        {
-            Draw(drawData);
-        }
+        Draw(drawData);
 
         isIteratorCorrupted = false;
         List<UIControl*>::iterator it = childs.begin();
@@ -1547,10 +1543,7 @@ namespace DAVA
             DVASSERT(!isIteratorCorrupted);
         }
 
-        if(visible && visibleForUIEditor)
-        {
-            DrawAfterChilds(drawData);
-        }
+        DrawAfterChilds(drawData);
 
         if(clipContents)
         {

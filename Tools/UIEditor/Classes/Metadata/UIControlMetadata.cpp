@@ -1017,14 +1017,4 @@ void UIControlMetadata::ResizeScrollViewContent(UIControl * control)
 	}
 }
 
-void UIControlMetadata::SetUIControlVisible(const bool value)
-{
-    if (!VerifyActiveParamID())
-    {
-        return;
-    }
-    
-    GetActiveUIControl()->SetVisible(value);
-}
-
 };

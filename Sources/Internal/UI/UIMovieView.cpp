@@ -76,12 +76,6 @@ void UIMovieView::SetSize(const Vector2 &newSize)
 	Rect newRect = GetRect();
 	movieViewControl->SetRect(newRect);
 }
-	
-void UIMovieView::SetVisible(bool isVisible)
-{
-	UIControl::SetVisible(isVisible);
-	movieViewControl->SetVisible(isVisible);
-}
 
 void UIMovieView::Play()
 {
@@ -130,15 +124,15 @@ void UIMovieView::SystemDraw(const UIGeometricData &geometricData)
 #endif
 }
 
-void UIMovieView::WillAppear()
+void UIMovieView::WillBecomeVisible()
 {
-    UIControl::WillAppear();
+    UIControl::WillBecomeVisible();
     movieViewControl->SetVisible(GetVisible());
 }
 
-void UIMovieView::WillDisappear()
+void UIMovieView::WillBecomeInvisible()
 {
-    UIControl::WillDisappear();
+    UIControl::WillBecomeInvisible();
     movieViewControl->SetVisible(false);
 }
 

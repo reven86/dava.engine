@@ -81,8 +81,6 @@ public:
 	virtual UIControl *Clone();
 	virtual void CopyDataFrom(UIControl *srcControl);
 
-	virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
-
     // Synchronize thumb size/position according to the thumb sprite.
     void SyncThumbWithSprite();
 

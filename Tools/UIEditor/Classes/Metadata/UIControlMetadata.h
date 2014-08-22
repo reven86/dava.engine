@@ -248,9 +248,6 @@ protected:
     // Refresh the thumb size for UISlider.
     void UpdateThumbSizeForUIControlThumb();
 
-    // Verify whether UIControl exists and set its visible flag.
-    void SetUIControlVisible(const bool isVisible);
-
 private:
 	void ResizeScrollViewContent(UIControl *control);
 

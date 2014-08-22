@@ -103,7 +103,6 @@ private:
 
 	// "UI Editor Visible Flag" behavior.
 	HierarchyTreeControlNode* GetControlNodeByTreeItem(QTreeWidgetItem* item);
-	void UpdateVisibleFlagRecursive(QTreeWidgetItem* rootItem, int column, bool flagValue);
 
 private:
 	bool internalSelectionChanged;

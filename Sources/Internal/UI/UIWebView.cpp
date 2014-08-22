@@ -103,13 +103,6 @@ void UIWebView::SetSize(const Vector2 &newSize)
     UpdateControlRect();
 }
 
-void UIWebView::SetVisible(bool isVisible)
-{
-	UIControl::SetVisible(isVisible);
-    if (IsOnScreen())
-        UpdateNativeControlVisible(isVisible);
-}
-
 void UIWebView::SetBackgroundTransparency(bool enabled)
 {
 	this->webViewControl->SetBackgroundTransparency(enabled);

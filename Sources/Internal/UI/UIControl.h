@@ -1273,7 +1273,7 @@ public:
 
     // Get/set visible flag for UI editor. Should not be serialized.
     bool GetVisibleForUIEditor() const { return visibleForUIEditor; };
-    virtual void SetVisibleForUIEditor(bool value, bool hierarchic = true);
+    virtual void SetVisibleForUIEditor(bool value);
 
     void DumpInputs(int32 depthLevel);
 
