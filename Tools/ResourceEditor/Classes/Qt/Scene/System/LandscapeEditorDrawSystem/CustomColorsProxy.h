@@ -33,6 +33,8 @@
 
 #include "DAVAEngine.h"
 
+#include "Render/RenderTarget/RenderTarget.h"
+
 using namespace DAVA;
 
 class CustomColorsProxy: public BaseObject
@@ -41,8 +43,7 @@ protected:
 	~CustomColorsProxy();
 public:
 	CustomColorsProxy(int32 size);
-	
-	Sprite* GetSprite();
+
 	void UpdateRect(const Rect& rect);
 	
 	void ResetSpriteChanged();
@@ -59,15 +60,25 @@ public:
 	void DecrementChanges();
 	
 	void UpdateSpriteFromConfig();
-	
+
+    /////////////////////////////////
+    RenderTarget* GetRenderTarget();
+    Texture* GetRenderTexture();
+	/////////////////////////////////
+
 protected:
-	Sprite* customColorsSprite;
+
 	Rect changedRect;
 	bool spriteChanged;
     bool textureLoaded;
 	int32 size;
 
 	int32 changes;
+
+    //////////////////////////////////
+    RenderTarget* renderTarget;
+    Texture* renderTexture;
+    //////////////////////////////////
 };
 
 #endif /* defined(__RESOURCEEDITORQT__CUSTOMCOLORSPROXY__) */

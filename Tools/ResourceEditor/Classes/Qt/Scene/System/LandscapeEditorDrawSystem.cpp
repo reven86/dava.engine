@@ -306,7 +306,7 @@ void LandscapeEditorDrawSystem::Process(DAVA::float32 timeElapsed)
 	{
 		if (landscapeProxy)
 		{
-			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetSprite()->GetTexture());
+			landscapeProxy->SetCustomColorsTexture(customColorsProxy->GetRenderTexture());
 		}
 		customColorsProxy->ResetSpriteChanged();
 	}

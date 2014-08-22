@@ -122,6 +122,7 @@ void RenderTargetOGL::BeginRender()
     Rect viewport;
     CalculateViewport(viewport);
 
+    //VI: I believe all this stuff like render orientation doesn't belong to RenderManager
     RenderManager::Instance()->SetRenderOrientation(Core::SCREEN_ORIENTATION_TEXTURE, viewport.dx, viewport.dy);
 
     BindRenderTarget();

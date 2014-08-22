@@ -43,6 +43,8 @@
 #include "Deprecated/EditorConfig.h"
 #include "Project/ProjectManager.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 CustomColorsSystem::CustomColorsSystem(Scene* scene)
 :	SceneSystem(scene)
 ,	enabled(false)
@@ -120,7 +122,7 @@ LandscapeEditorDrawSystem::eErrorType CustomColorsSystem::EnableLandscapeEditing
 	drawSystem->SetCursorTexture(cursorTexture);
 	drawSystem->SetCursorSize(cursorSize);
 	
-	Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetSprite()->GetTexture();
+	Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetRenderTexture();
 	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(customColorsTexture);
 	drawSystem->GetLandscapeProxy()->SetCustomColorsTextureEnabled(true);
 	
@@ -279,9 +281,9 @@ Image* CustomColorsSystem::CreateToolImage(int32 sideSize, const FilePath& fileP
 
 void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 {
-	Sprite* colorSprite = drawSystem->GetCustomColorsProxy()->GetSprite();
+    RenderTarget* drawTarget = drawSystem->GetCustomColorsProxy()->GetRenderTarget();
 	
-	RenderManager::Instance()->SetRenderTarget(colorSprite);
+	drawTarget->BeginRender();
 
 	RenderManager::Instance()->SetColor(drawColor);
 
@@ -296,10 +298,11 @@ void CustomColorsSystem::UpdateBrushTool(float32 timeElapsed)
 	drawState.SetPosition(spritePos / Core::GetVirtualToPhysicalFactor());
 	toolImageSprite->Draw(&drawState);
 	
-	RenderManager::Instance()->RestoreRenderTarget();
+	drawTarget->EndRender();
+
 	RenderManager::Instance()->SetColor(Color::White);
 	
-	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(colorSprite->GetTexture());
+	drawSystem->GetLandscapeProxy()->SetCustomColorsTexture(drawSystem->GetCustomColorsProxy()->GetRenderTexture());
 	
 	Rect updatedRect;
 	updatedRect.SetCenter(spritePos);
@@ -352,7 +355,13 @@ void CustomColorsSystem::SetColor(int32 colorIndex)
 void CustomColorsSystem::StoreOriginalState()
 {
 	DVASSERT(originalImage == NULL);
-	originalImage = drawSystem->GetCustomColorsProxy()->GetSprite()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+
+    RenderDataReader* dataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
+    originalImage = dataReader->ReadColorData(drawSystem->GetCustomColorsProxy()->GetRenderTarget());
+
+    SafeRelease(dataReader);
+
 	ResetAccumulatorRect();
 }
 
@@ -375,10 +384,13 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath &filePath)
 	if(filePath.IsEmpty())
 		return;
 
-	Sprite* customColorsSprite = drawSystem->GetCustomColorsProxy()->GetSprite();
-	Texture* customColorsTexture = customColorsSprite->GetTexture();
+    RenderTarget* drawTarget = drawSystem->GetCustomColorsProxy()->GetRenderTarget();
+    RenderDataReader* dataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
 
-	Image* image = customColorsTexture->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+    Image* image = dataReader->ReadColorData(drawTarget);
+
+    SafeRelease(dataReader);
+
     ImageSystem::Instance()->Save(filePath, image);
 	SafeRelease(image);
 
@@ -410,12 +422,15 @@ bool CustomColorsSystem::LoadTexture( const DAVA::FilePath &filePath, bool creat
 		{
 			StoreOriginalState();
 		}
-		RenderManager::Instance()->SetRenderTarget(drawSystem->GetCustomColorsProxy()->GetSprite());
+
+        RenderTarget* drawTarget = drawSystem->GetCustomColorsProxy()->GetRenderTarget();
+        drawTarget->BeginRender();
         
         Sprite::DrawState drawState;
 		sprite->Draw(&drawState);
         
-		RenderManager::Instance()->RestoreRenderTarget();
+		drawTarget->EndRender();
+
 		AddRectToAccumulator(Rect(Vector2(0.f, 0.f), Vector2(texture->GetWidth(), texture->GetHeight())));
 
 		SafeRelease(sprite);

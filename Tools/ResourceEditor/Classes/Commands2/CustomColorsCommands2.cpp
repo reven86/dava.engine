@@ -36,6 +36,8 @@
 
 #include "../Qt/Main/QtUtils.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 ActionEnableCustomColors::ActionEnableCustomColors(SceneEditor2* forSceneEditor)
 :	CommandAction(CMDID_CUSTOM_COLORS_ENABLE)
 ,	sceneEditor(forSceneEditor)
@@ -127,13 +129,17 @@ ModifyCustomColorsCommand::ModifyCustomColorsCommand(Image* originalImage,
 {
 	this->updatedRect = updatedRect;
 	this->customColorsProxy = SafeRetain(customColorsProxy);
+
+    RenderTarget* drawTarget = customColorsProxy->GetRenderTarget();
+    RenderDataReader* dataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
 	
-	Image* currentImage = customColorsProxy->GetSprite()->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
+	Image* currentImage = dataReader->ReadColorData(drawTarget);
 	
 	undoImage = Image::CopyImageRegion(originalImage, updatedRect);
 	redoImage = Image::CopyImageRegion(currentImage, updatedRect);
 	
 	SafeRelease(currentImage);
+    SafeRelease(dataReader);
 }
 
 ModifyCustomColorsCommand::~ModifyCustomColorsCommand()
@@ -157,13 +163,13 @@ void ModifyCustomColorsCommand::Redo()
 
 void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 {
-	Sprite* customColorsSprite = customColorsProxy->GetSprite();
+    RenderTarget* drawTarget = customColorsProxy->GetRenderTarget();
 	
 	Texture* texture = Texture::CreateFromData(image->GetPixelFormat(), image->GetData(),
 											   image->GetWidth(), image->GetHeight(), false);
 	Sprite* sprite = Sprite::CreateFromTexture(texture, 0, 0, (float32)texture->GetWidth(), (float32)texture->GetHeight());
 	
-	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
+	drawTarget->BeginRender();
 	
     Rect rect = ConvertPhysicalToVirtual(updatedRect);
     
@@ -175,7 +181,7 @@ void ModifyCustomColorsCommand::ApplyImage(DAVA::Image *image)
 	sprite->Draw(&drawState);
 	
 	RenderManager::Instance()->ClipPop();
-	RenderManager::Instance()->RestoreRenderTarget();
+	drawTarget->EndRender();
 	
 	customColorsProxy->UpdateRect(updatedRect);
 	

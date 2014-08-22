@@ -31,6 +31,8 @@
 #include "CustomColorsProxy.h"
 #include "Deprecated/EditorConfig.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 CustomColorsProxy::CustomColorsProxy(int32 size)
     : changedRect(Rect())
     , spriteChanged(false)
@@ -38,8 +40,18 @@ CustomColorsProxy::CustomColorsProxy(int32 size)
     , size(size)
     , changes(0)
 {
-	customColorsSprite = Sprite::CreateAsRenderTarget((float32)size, (float32)size, FORMAT_RGBA8888, true);
-	UpdateSpriteFromConfig();
+    RenderTargetDescriptor rtDesc;
+    RenderTargetFactory::Instance()->ConstructGenericTargetDescription(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                       size,
+                                                                       size,
+                                                                       FramebufferDescriptor::PRE_ACTION_LOAD,
+                                                                       FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                                                       rtDesc);
+
+    renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
+    renderTexture = renderTarget->GetColorAttachment()->Lock();
+
+    UpdateSpriteFromConfig();
 }
 
 void CustomColorsProxy::ResetLoadedState( bool isLoaded )
@@ -54,12 +66,8 @@ bool CustomColorsProxy::IsTextureLoaded() const
 
 CustomColorsProxy::~CustomColorsProxy()
 {
-	SafeRelease(customColorsSprite);
-}
-
-Sprite* CustomColorsProxy::GetSprite()
-{
-	return customColorsSprite;
+    renderTarget->GetColorAttachment()->Unlock(renderTexture);
+	SafeRelease(renderTarget);
 }
 
 void CustomColorsProxy::ResetSpriteChanged()
@@ -113,17 +121,32 @@ void CustomColorsProxy::DecrementChanges()
 
 void CustomColorsProxy::UpdateSpriteFromConfig()
 {
-	if(NULL == customColorsSprite)
+	if(NULL == renderTarget)
 	{
 		return;
 	}
 		
-	RenderManager::Instance()->SetRenderTarget(customColorsSprite);
 	Vector<Color> customColors = EditorConfig::Instance()->GetColorPropertyValues("LandscapeCustomColors");
 	if (customColors.size())
 	{
 		Color color = customColors.front();
+
+        renderTarget->BeginRender();
+
 		RenderManager::Instance()->ClearWithColor(color.r, color.g, color.b, color.a);
+
+        renderTarget->EndRender();
 	}
-	RenderManager::Instance()->RestoreRenderTarget();
 }
+
+///////////////////////////////////////
+RenderTarget* CustomColorsProxy::GetRenderTarget()
+{
+    return renderTarget;
+}
+
+Texture* CustomColorsProxy::GetRenderTexture()
+{
+    return renderTexture;
+}
+///////////////////////////////////////

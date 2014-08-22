@@ -75,6 +75,25 @@ public:
                                            uint32 height,
                                            RenderTargetDescriptor& outDesc);
 
+    void ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+                                           uint32 width,
+                                           uint32 height,
+                                           FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                           FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                           RenderTargetDescriptor& outDesc);
+
+    void ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+                                           uint32 width,
+                                           uint32 height,
+                                           FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                           FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                           FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                           FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                           FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                           FramebufferDescriptor::PostRenderAction stencilPostRenderAction,
+                                           RenderTargetDescriptor& outDesc);
+
+
 protected:
 
     static RenderTargetFactory* instance;

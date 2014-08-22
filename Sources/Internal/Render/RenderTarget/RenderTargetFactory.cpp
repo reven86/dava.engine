@@ -64,6 +64,85 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
                                        uint32 height,
                                        RenderTargetDescriptor& outDesc)
 {
+    FramebufferDescriptor::PreRenderAction colorPreRenderAction = FramebufferDescriptor::PRE_ACTION_DONTCARE;
+    FramebufferDescriptor::PostRenderAction colorPostRenderAction = FramebufferDescriptor::POST_ACTION_DONTCARE;
+
+    if(flags & RenderTargetFactory::ATTACHMENT_COLOR)
+    {
+        colorPreRenderAction = FramebufferDescriptor::PRE_ACTION_CLEAR;
+        colorPostRenderAction = FramebufferDescriptor::POST_ACTION_STORE;
+    }
+    else if(flags & RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE)
+    {
+        colorPreRenderAction = FramebufferDescriptor::PRE_ACTION_CLEAR;
+        colorPostRenderAction = FramebufferDescriptor::POST_ACTION_RESOLVE;
+    }
+
+    ConstructGenericTargetDescription(flags,
+                                      width,
+                                      height,
+                                      colorPreRenderAction,
+                                      colorPostRenderAction,
+                                      outDesc);
+}
+
+void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+                                                            uint32 width,
+                                                            uint32 height,
+                                                            FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                                            FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                                            RenderTargetDescriptor& outDesc)
+{
+    FramebufferDescriptor::PreRenderAction depthPreRenderAction = FramebufferDescriptor::PRE_ACTION_DONTCARE;
+    FramebufferDescriptor::PostRenderAction depthPostRenderAction = FramebufferDescriptor::POST_ACTION_DONTCARE;
+    FramebufferDescriptor::PreRenderAction stencilPreRenderAction = FramebufferDescriptor::PRE_ACTION_DONTCARE;
+    FramebufferDescriptor::PostRenderAction stencilPostRenderAction = FramebufferDescriptor::POST_ACTION_DONTCARE;
+
+    if(flags & RenderTargetFactory::ATTACHMENT_DEPTH)
+    {
+        depthPreRenderAction = FramebufferDescriptor::PRE_ACTION_CLEAR;
+        depthPostRenderAction = FramebufferDescriptor::POST_ACTION_DONTCARE;
+    }
+    else if(flags & RenderTargetFactory::ATTACHMENT_DEPTH_TEXTURE)
+    {
+        depthPreRenderAction = FramebufferDescriptor::PRE_ACTION_CLEAR;
+        depthPostRenderAction = FramebufferDescriptor::POST_ACTION_RESOLVE;
+    }
+
+    if(flags & RenderTargetFactory::ATTACHMENT_STENCIL)
+    {
+        stencilPreRenderAction = FramebufferDescriptor::PRE_ACTION_CLEAR;
+        stencilPostRenderAction = FramebufferDescriptor::POST_ACTION_DONTCARE;
+    }
+    else if(flags & RenderTargetFactory::ATTACHMENT_STENCIL_TEXTURE)
+    {
+        stencilPreRenderAction = FramebufferDescriptor::PRE_ACTION_CLEAR;
+        stencilPostRenderAction = FramebufferDescriptor::POST_ACTION_RESOLVE;
+    }
+
+    ConstructGenericTargetDescription(flags,
+                                      width,
+                                      height,
+                                      colorPreRenderAction,
+                                      colorPostRenderAction,
+                                      depthPreRenderAction,
+                                      depthPostRenderAction,
+                                      stencilPreRenderAction,
+                                      stencilPostRenderAction,
+                                      outDesc);
+}
+
+void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
+                                                            uint32 width,
+                                                            uint32 height,
+                                                            FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                                            FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                                            FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                                            FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                                            FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                                            FramebufferDescriptor::PostRenderAction stencilPostRenderAction,
+                                                            RenderTargetDescriptor& outDesc)
+{
     DVASSERT(((flags & RenderTargetFactory::ATTACHMENT_COLOR) | (flags & RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE)) <= RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE);
     DVASSERT(((flags & RenderTargetFactory::ATTACHMENT_DEPTH) | (flags & RenderTargetFactory::ATTACHMENT_DEPTH_TEXTURE)) <= RenderTargetFactory::ATTACHMENT_DEPTH_TEXTURE);
     DVASSERT(((flags & RenderTargetFactory::ATTACHMENT_STENCIL) | (flags & RenderTargetFactory::ATTACHMENT_STENCIL_TEXTURE)) <= RenderTargetFactory::ATTACHMENT_STENCIL_TEXTURE);
@@ -79,8 +158,8 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     {
         FramebufferDescriptor colorFramebuffer(FramebufferDescriptor::FRAMEBUFFER_COLOR0,
                                                FramebufferDescriptor::FORMAT_RGBA8888,
-                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
-                                               FramebufferDescriptor::POST_ACTION_STORE,
+                                               colorPreRenderAction,
+                                               colorPostRenderAction,
                                                width,
                                                height);
 
@@ -90,8 +169,8 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     {
         FramebufferDescriptor colorFramebuffer(FramebufferDescriptor::FRAMEBUFFER_COLOR0,
                                                FramebufferDescriptor::FORMAT_RGBA8888,
-                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
-                                               FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                               colorPreRenderAction,
+                                               colorPostRenderAction,
                                                width,
                                                height);
 
@@ -102,8 +181,8 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     {
         FramebufferDescriptor depthFramebuffer(FramebufferDescriptor::FRAMEBUFFER_DEPTH,
                                                FramebufferDescriptor::FORMAT_DEPTH24,
-                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
-                                               FramebufferDescriptor::POST_ACTION_DONTCARE,
+                                               depthPreRenderAction,
+                                               depthPostRenderAction,
                                                width,
                                                height);
 
@@ -113,8 +192,8 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     {
         FramebufferDescriptor depthFramebuffer(FramebufferDescriptor::FRAMEBUFFER_DEPTH,
                                                FramebufferDescriptor::FORMAT_DEPTH24,
-                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
-                                               FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                               depthPreRenderAction,
+                                               depthPostRenderAction,
                                                width,
                                                height);
 
@@ -124,11 +203,11 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     if(flags & RenderTargetFactory::ATTACHMENT_STENCIL)
     {
         FramebufferDescriptor stencilFramebuffer(FramebufferDescriptor::FRAMEBUFFER_STENCIL,
-                                               FramebufferDescriptor::FORMAT_STENCIL8,
-                                               FramebufferDescriptor::PRE_ACTION_CLEAR,
-                                               FramebufferDescriptor::POST_ACTION_DONTCARE,
-                                               width,
-                                               height);
+                                                 FramebufferDescriptor::FORMAT_STENCIL8,
+                                                 stencilPreRenderAction,
+                                                 stencilPostRenderAction,
+                                                 width,
+                                                 height);
 
         outDesc.AddFramebuffer(stencilFramebuffer);
     }
@@ -136,8 +215,8 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     {
         FramebufferDescriptor stencilFramebuffer(FramebufferDescriptor::FRAMEBUFFER_STENCIL,
                                                  FramebufferDescriptor::FORMAT_STENCIL8,
-                                                 FramebufferDescriptor::PRE_ACTION_CLEAR,
-                                                 FramebufferDescriptor::POST_ACTION_RESOLVE,
+                                                 stencilPreRenderAction,
+                                                 stencilPostRenderAction,
                                                  width,
                                                  height);
 
@@ -147,8 +226,9 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     outDesc.SetClearColor(Color(0.0f, 0.0f, 0.0f, 0.0f));
     outDesc.SetClearDepth(0.0f);
     outDesc.SetClearStencil(0);
-
+    
     DVASSERT(outDesc.Validate());
 }
+
 
 };
