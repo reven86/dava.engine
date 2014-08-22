@@ -82,7 +82,7 @@ void UIWebView::OpenFromBuffer(const String& string, const FilePath& basePath)
 void UIWebView::WillBecomeVisible()
 {
     UIControl::WillBecomeVisible();
-    UpdateNativeControlVisible(GetVisible());
+    UpdateNativeControlVisible(true);
 }
 
 void UIWebView::WillBecomeInvisible()

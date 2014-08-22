@@ -914,13 +914,6 @@ namespace DAVA
     void UIControl::SetVisibleForUIEditor(bool value)
     {
         visibleForUIEditor = value;
-        if (parent && parent->IsOnScreen())
-        {
-            if (visibleForUIEditor)
-                SystemWillBecomeVisible();
-            else
-                SystemWillBecomeInvisible();
-        }
     }
 
     void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic/* = true*/)

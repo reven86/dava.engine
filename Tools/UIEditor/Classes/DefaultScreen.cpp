@@ -374,7 +374,7 @@ void DefaultScreen::SmartGetSelectedControl(SmartSelection* list, const Hierarch
             currList = newList;
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             SmartGetSelectedControl(currList, node, point);
         }
@@ -441,7 +441,7 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
                 list.push_back(node);
         }
 
-        if (controlVisible || IsControlContentVisible(control))
+        if (controlVisible)
         {
             GetSelectedControl(list, rect, node);
         }
@@ -1787,31 +1787,6 @@ void DefaultScreen::HandleScreenMove(const DAVA::UIEvent* event)
 bool DefaultScreen::IsControlVisible(const UIControl* uiControl) const
 {
     return (uiControl->GetVisibleForUIEditor() && uiControl->GetVisible());
-}
-
-bool DefaultScreen::IsControlContentVisible( const UIControl *control ) const
-{
-    const List<UIControl*>& children = control->GetChildren();
-    if( children.empty() )
-        return false;
-
-    List<UIControl*>::const_iterator iter = children.begin();
-    List<UIControl*>::const_iterator end = children.end();
-    for(; iter != end; ++iter)
-    {
-        if (!control->GetVisible())
-        {
-            continue;
-        }
-
-        if (IsControlVisible(*iter))
-            return true;
-
-        if (IsControlContentVisible(*iter))
-            return true;
-    }
-
-    return false;
 }
 
 void DefaultScreen::SetScreenControl(ScreenControl* control)
