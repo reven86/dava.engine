@@ -119,9 +119,14 @@ void RenderTargetOGL::BeginRender()
 	RenderManager::Instance()->PushMappingMatrix();
 	RenderManager::Instance()->IdentityDrawMatrix();
 
+    Rect viewport;
+    CalculateViewport(viewport);
+
+    RenderManager::Instance()->SetRenderOrientation(Core::SCREEN_ORIENTATION_TEXTURE, viewport.dx, viewport.dy);
+
     BindRenderTarget();
 
-    ProcessPreRenderActions();
+    ProcessPreRenderActions(viewport);
 }
 
 void RenderTargetOGL::EndRender()
@@ -129,6 +134,8 @@ void RenderTargetOGL::EndRender()
     ProcessPostRenderActions();
 
     UnbindRenderTarget();
+
+    RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
 
     RenderManager::Instance()->PopDrawMatrix();
 	RenderManager::Instance()->PopMappingMatrix();
@@ -158,7 +165,7 @@ void RenderTargetOGL::SetStencilAttachment(StencilFramebufferAttachmentOGL* atta
     }
 }
 
-void RenderTargetOGL::ProcessPreRenderActions()
+void RenderTargetOGL::ProcessPreRenderActions(const Rect& viewport)
 {
     bool needClearColor = false;
     size_t colorAttachmentCount = colorAttachments.size();
@@ -177,8 +184,7 @@ void RenderTargetOGL::ProcessPreRenderActions()
     bool needClearStencil = (stencilAttachment != NULL &&
                              stencilAttachment->GetPreRenderAction() == FramebufferDescriptor::PRE_ACTION_CLEAR);
 
-    Rect viewport;
-    CalculateViewport(viewport);
+
     RenderManager::Instance()->SetViewport(viewport, true);
     RenderManager::Instance()->RemoveClip();
 
@@ -251,6 +257,38 @@ void RenderTargetOGL::CalculateViewport(Rect& viewport)
 
         uint32 attachmentWidth = attachment->GetFramebufferWidth();
         uint32 attachmentHeight = attachment->GetFramebufferHeight();
+
+        if(attachmentWidth > maxWidth)
+        {
+            maxWidth = attachmentWidth;
+        }
+
+        if(attachmentHeight > maxHeight)
+        {
+            maxHeight = attachmentHeight;
+        }
+    }
+
+    if(depthAttachment != NULL)
+    {
+        uint32 attachmentWidth = depthAttachment->GetFramebufferWidth();
+        uint32 attachmentHeight = depthAttachment->GetFramebufferHeight();
+
+        if(attachmentWidth > maxWidth)
+        {
+            maxWidth = attachmentWidth;
+        }
+
+        if(attachmentHeight > maxHeight)
+        {
+            maxHeight = attachmentHeight;
+        }
+    }
+
+    if(stencilAttachment != NULL)
+    {
+        uint32 attachmentWidth = stencilAttachment->GetFramebufferWidth();
+        uint32 attachmentHeight = stencilAttachment->GetFramebufferHeight();
 
         if(attachmentWidth > maxWidth)
         {

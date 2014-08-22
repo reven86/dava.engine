@@ -260,6 +260,7 @@ public:
 	 \param[in] orientation
 	 */
 	void SetRenderOrientation(int32 orientation);
+    void SetRenderOrientation(int32 orientation, float32 width, float32 height);
 	/** 
 	 \brief 
 	 \returns 

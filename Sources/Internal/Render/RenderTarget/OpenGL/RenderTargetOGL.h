@@ -71,7 +71,7 @@ public:
 protected:
 
     bool CheckRenderTargetCompleteness();
-    void ProcessPreRenderActions();
+    void ProcessPreRenderActions(const Rect& viewport);
     void ProcessPostRenderActions();
 
     void CalculateViewport(Rect& viewport);

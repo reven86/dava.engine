@@ -30,19 +30,35 @@
 
 #include "NotPassableTerrainProxy.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 NotPassableTerrainProxy::NotPassableTerrainProxy()
 :	enabled(false)
 {
 	LoadColorsArray();
 	
 	notPassableAngleTan = (float32)tan(DegToRad((float32)NOT_PASSABLE_ANGLE));
-	notPassableMapSprite = Sprite::CreateAsRenderTarget(2048, 2048, DAVA::FORMAT_RGBA8888, true);
-    notPassableMapSprite->ConvertToVirtualSize();
+
+    //////////////////////////////////
+
+    RenderTargetDescriptor rtDesc;
+    RenderTargetFactory::Instance()->ConstructGenericTargetDescription(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
+                                                                       2048,
+                                                                       2048,
+                                                                       rtDesc);
+
+    nonPassableDrawTarget = RenderTargetFactory::Instance()->CreateRenderTarget(rtDesc);
+    nonPassableDrawTexture = nonPassableDrawTarget->GetColorAttachment()->Lock();
+
+    /////////////////////////////////
 }
 
 NotPassableTerrainProxy::~NotPassableTerrainProxy()
 {
-	SafeRelease(notPassableMapSprite);
+    nonPassableDrawTarget->GetColorAttachment()->Unlock(nonPassableDrawTexture);
+    SafeRelease(nonPassableDrawTarget);
+
+    nonPassableDrawTexture = NULL;
 }
 
 void NotPassableTerrainProxy::LoadColorsArray()
@@ -134,7 +150,7 @@ bool NotPassableTerrainProxy::IsEnabled() const
 
 Texture* NotPassableTerrainProxy::GetTexture()
 {
-	return notPassableMapSprite->GetTexture();
+    return nonPassableDrawTexture;
 }
 
 void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
@@ -147,45 +163,46 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 	}
 
 	Vector3 landSize = landscapeBoundingBox.max - landscapeBoundingBox.min;
-	
+
 	float32 angleCellDistance = landSize.x / (float32)(heightmap->Size() - 1);
 	float32 angleHeightDelta = landSize.z / (float32)(Heightmap::MAX_VALUE - 1);
 	float32 tanCoef = angleHeightDelta / angleCellDistance;
-	
-	Texture *notPassableMap = notPassableMapSprite->GetTexture();
-	float32 dx = (float32)notPassableMapSprite->GetWidth() / (float32)(heightmap->Size() - 1);
-	
+
+	float32 dx = (float32)nonPassableDrawTarget->GetColorAttachment()->GetFramebufferWidth() / (float32)(heightmap->Size() - 1);
+
 	RenderManager* renderManager = RenderManager::Instance();
 	RenderHelper* renderHelper = RenderHelper::Instance();
-	
-	renderManager->SetRenderTarget(notPassableMapSprite);
-	
+
+	nonPassableDrawTarget->BeginRender();
+
+    RenderHelper::Instance()->Setup2dCanvas((float32)nonPassableDrawTexture->width,
+                                            (float32)nonPassableDrawTexture->height);
+
 	Rect drawRect(forRect.x * dx, forRect.y * dx, (forRect.dx - 1)* dx, (forRect.dy - 1) * dx);
-	renderManager->ClipPush();
 	renderManager->SetClip(drawRect);
-	
-	renderManager->ClearWithColor(0.f, 0.f, 0.f, 0.f);
 
 	int32 lastY = (int32)(forRect.y + forRect.dy);
 	int32 lastX = (int32)(forRect.x + forRect.dx);
 	for (int32 y = (int32)forRect.y; y < lastY; ++y)
 	{
 		int32 yOffset = y * heightmap->Size();
+
+        float32 ydx = y * dx;
+
 		for (int32 x = (int32)forRect.x; x < lastX; ++x)
 		{
 			uint16 currentPoint = heightmap->Data()[yOffset + x];
 			uint16 rightPoint = heightmap->Data()[yOffset + x + 1];
 			uint16 bottomPoint = heightmap->Data()[yOffset + x + heightmap->Size()];
-			
+
 			uint16 deltaRight = (uint16)abs((int32)currentPoint - (int32)rightPoint);
 			uint16 deltaBottom = (uint16)abs((int32)currentPoint - (int32)bottomPoint);
-			
+
 			float32 tanRight = (float32)deltaRight * tanCoef;
 			float32 tanBottom = (float32)deltaBottom * tanCoef;
-			
-			float32 ydx = y * dx;
+
 			float32 xdx = x * dx;
-			
+
 			Color color;
 
 			if(PickColor(tanRight, color))
@@ -193,19 +210,17 @@ void NotPassableTerrainProxy::UpdateTexture(DAVA::Heightmap *heightmap,
 				renderManager->SetColor(color);
 				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2((xdx + dx), ydx), DAVA::RenderState::RENDERSTATE_2D_BLEND);
 			}
-			
+
 			if(PickColor(tanBottom, color))
 			{
 				renderManager->SetColor(color);
 				renderHelper->DrawLine(Vector2(xdx, ydx), Vector2(xdx, (ydx + dx)), DAVA::RenderState::RENDERSTATE_2D_BLEND);
 			}
-			
+
 		}
 	}
-	
+
 	renderManager->ResetColor();
-	
-	renderManager->ClipPop();
-	
-	renderManager->RestoreRenderTarget();
+
+	nonPassableDrawTarget->EndRender();
 }

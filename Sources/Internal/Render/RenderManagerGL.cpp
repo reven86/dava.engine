@@ -427,7 +427,43 @@ void RenderManager::SetRenderOrientation(int32 orientation)
 	IdentityMappingMatrix();
 	SetVirtualViewScale();
 	SetVirtualViewOffset();
+}
 
+void RenderManager::SetRenderOrientation(int32 orientation, float32 width, float32 height)
+{
+	renderOrientation = orientation;
+
+    if (orientation != Core::SCREEN_ORIENTATION_TEXTURE)
+    {
+        renderer2d.projMatrix.glOrtho(0.0f,
+                                      (float32)frameBufferWidth,
+                                      (float32)frameBufferHeight,
+                                      0.0f,
+                                      -1.0f,
+                                      1.0f);
+    }
+    else
+    {
+        renderer2d.projMatrix.glOrtho(0.0f,
+                                      width,
+                                      0.0f,
+                                      height,
+                                      -1.0f,
+                                      1.0f);
+    }
+
+    retScreenWidth = frameBufferWidth;
+    retScreenHeight = frameBufferHeight;
+
+    SetDynamicParam(PARAM_PROJ, &renderer2d.projMatrix, UPDATE_SEMANTIC_ALWAYS);
+
+    IdentityModelMatrix();
+
+	RENDER_VERIFY(;);
+
+	IdentityMappingMatrix();
+	SetVirtualViewScale();
+	SetVirtualViewOffset();
 }
 
 void RenderManager::SetCullOrder(eCullOrder cullOrder)

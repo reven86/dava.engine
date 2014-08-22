@@ -1192,4 +1192,14 @@ void RenderHelper::DrawCornerBox(const AABBox3 & bbox, float32 lineWidth, Unique
 		rangeMax = lineWidthMax;
 	}
 #endif
+
+    void RenderHelper::Setup2dCanvas(float32 canvasWidth, float32 canvasHeight)
+    {
+        RenderManager::Instance()->SetViewport(Rect(0, 0, canvasWidth, canvasHeight), true);
+
+        RenderManager::Instance()->IdentityModelMatrix();
+        RenderManager::Instance()->IdentityMappingMatrix();
+
+        RenderManager::Instance()->RemoveClip();
+    }
 };

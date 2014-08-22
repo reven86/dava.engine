@@ -32,6 +32,7 @@
 #include "Render/RenderManager.h"
 #include "Render/PixelFormatDescriptor.h"
 #include "Render/Image/Image.h"
+#include "Render/RenderHelper.h"
 
 namespace DAVA
 {
@@ -45,17 +46,9 @@ Image* RenderDataReaderOGL::ReadTextureData(Texture* tx)
 
     renderTarget->BeginRender();
 
+    RenderHelper::Instance()->Setup2dCanvas((float32)tx->width, (float32)tx->height);
+
     Sprite* drawSprite = Sprite::CreateFromTexture(tx, 0, 0, (float32)tx->width, (float32)tx->height, true);
-
-    RenderManager::Instance()->SetViewport(Rect(0, 0, (float32)(tx->width), (float32)(tx->height)), true);
-
-    RenderManager::Instance()->GetRenderer2D()->projMatrix.glOrtho(0.0f, (float32)tx->width, 0.0f, (float32)tx->height, -1.0f, 1.0f);
-    RenderManager::Instance()->SetDynamicParam(PARAM_PROJ, &(RenderManager::Instance()->GetRenderer2D()->projMatrix), UPDATE_SEMANTIC_ALWAYS);
-
-    RenderManager::Instance()->IdentityModelMatrix();
-    RenderManager::Instance()->IdentityMappingMatrix();
-
-    RenderManager::Instance()->RemoveClip();
 
     Sprite::DrawState drawState;
     drawState.SetPosition(0, 0);

@@ -33,6 +33,8 @@
 
 #include "DAVAEngine.h"
 
+#include "Render/RenderTarget/RenderTarget.h"
+
 using namespace DAVA;
 
 class NotPassableTerrainProxy
@@ -66,9 +68,17 @@ private:
 	};
 	
 	bool enabled;
-	Sprite* notPassableMapSprite;
+
 	DAVA::float32 notPassableAngleTan;
 	DAVA::Vector<TerrainColor> angleColor;
+
+
+    ///////////////////////////////////////
+
+    Texture* nonPassableDrawTexture;
+    RenderTarget* nonPassableDrawTarget;
+
+    //////////////////////////////////////
 	
 	void LoadColorsArray();
 	bool PickColor(DAVA::float32 tan, DAVA::Color& color) const;

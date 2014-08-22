@@ -243,6 +243,8 @@ public:
 	void GetLineWidthRange(int32& rangeMin, int32& rangeMax);
 #endif
 
+    void Setup2dCanvas(float32 canvasWidth, float32 canvasHeight);
+
 private:
     RenderDataObject * renderDataObject;
     RenderDataStream * vertexStream; 
