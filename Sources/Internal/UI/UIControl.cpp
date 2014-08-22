@@ -898,22 +898,50 @@ namespace DAVA
     void UIControl::SetVisible(bool isVisible)
     {
         if (visible == isVisible)
-            return;
-
-        visible = isVisible;
-
-        if (parent && parent->IsOnScreen())
         {
-            if (visible)
-                SystemWillBecomeVisible();
-            else
-                SystemWillBecomeInvisible();
+            return;
+		}
+
+        bool oldSystemVisible = GetSystemVisible();
+        visible = isVisible;
+        if (GetSystemVisible() == oldSystemVisible)
+        {
+            return;
         }
+
+        SystemNotifyVisibilityChanged();
     }
 
     void UIControl::SetVisibleForUIEditor(bool value)
     {
+        if (visibleForUIEditor == value)
+        {
+            return;
+        }
+
+        bool oldSystemVisible = GetSystemVisible();
         visibleForUIEditor = value;
+        if (GetSystemVisible() == oldSystemVisible)
+        {
+            return;
+        }
+
+        SystemNotifyVisibilityChanged();
+    }
+
+    void UIControl::SystemNotifyVisibilityChanged()
+    {
+        if (parent && parent->IsOnScreen())
+        {
+            if (GetSystemVisible())
+            {
+                SystemWillBecomeVisible();
+            }
+            else
+            {
+                SystemWillBecomeInvisible();
+            }
+        }
     }
 
     void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic/* = true*/)
@@ -1335,7 +1363,7 @@ namespace DAVA
             return GetVisible();
         }
 
-        if( !GetVisible() || !parent )
+        if( !GetSystemVisible() || !parent )
             return false;
 
         return parent->IsOnScreen();

@@ -1380,6 +1380,9 @@ private:
     float32 GetRelativeX(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
     float32 GetRelativeY(UIControl *parent, int32 align);
     float32 GetRelativeY(UIControl *parent, int32 align, UIControl* child, bool useHalfParentSize = false);
+    
+    inline bool GetSystemVisible() const;
+    void SystemNotifyVisibilityChanged();
 };
 
 const Vector2 & UIControl::GetPivotPoint() const
@@ -1456,6 +1459,12 @@ int32 UIControl::GetState() const
 {
     return controlState;
 }
+    
+bool UIControl::GetSystemVisible() const
+{
+    return visible & visibleForUIEditor;
+}
+
 };
 
 #endif
