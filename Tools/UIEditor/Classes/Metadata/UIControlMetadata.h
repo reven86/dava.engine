@@ -178,7 +178,7 @@ protected:
     // Sprite getter/setter. Also virtual one - its implementation is different
     // for different control types.
     virtual void SetSprite(const QString& value);
-    virtual QString GetSprite();
+    virtual QString GetSprite() const;
 
     virtual void SetSpriteFrame(int value);
     virtual int GetSpriteFrame();
