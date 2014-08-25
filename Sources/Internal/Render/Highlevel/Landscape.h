@@ -43,7 +43,7 @@
 
 #include "Scene3D/SceneFile/SerializationContext.h"
 
-//#define LANDSCAPE_SPECULAR_LIT 1
+#define LANDSCAPE_SPECULAR_LIT 1
 
 namespace DAVA
 {
@@ -266,9 +266,12 @@ public:
 	
 	void SetLandscapeHeight(float32 newHeight);
     
+    void Create(NMaterial *fromMaterial = NULL);
     void Save(KeyedArchive * archive, SerializationContext * serializationContext);
     void Load(KeyedArchive * archive, SerializationContext * serializationContext);
+
     DAVA_DEPRECATED(void LoadFog(KeyedArchive * archive, SerializationContext * serializationContext));
+    DAVA_DEPRECATED(void LoadMaterialProps(KeyedArchive * archive, SerializationContext * serializationContext));
     
     // TODO: Need comment here
 	bool PlacePoint(const Vector3 & point, Vector3 & result, Vector3 * normal = 0) const;
@@ -288,7 +291,7 @@ public:
 	virtual RenderObject * Clone(RenderObject *newObject);
 
 	int32 GetDrawIndices() const;
-    
+	
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
 protected:
@@ -418,31 +421,16 @@ protected:
 	uint32 drawIndices;
 	
 	void SetDefaultValues();
-    
+
     FoliageSystem* foliageSystem;
 
 public:
    
-#if defined(LANDSCAPE_SPECULAR_LIT)
     INTROSPECTION_EXTEND(Landscape, RenderObject,
-         
-        MEMBER(tiledShaderMode, "Tiled Shader Mode", I_SAVE | I_VIEW | I_EDIT)
-
-		PROPERTY("specularColor", "Specular Color", GetSpecularColor, SetSpecularColor, I_SAVE | I_VIEW | I_EDIT)
-		PROPERTY("specularShininess", "Specular Shininess", GetSpecularShininess, SetSpecularShininess, I_SAVE | I_VIEW | I_EDIT)
-		PROPERTY("specularMap", "Specular Map", GetSpecularMapPath, SetSpecularMapPath, I_SAVE | I_VIEW | I_EDIT)
-
+        PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
+        PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
+        PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
 		);
-#else
-
-	    INTROSPECTION_EXTEND(Landscape, RenderObject,
-            PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
-            PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
-            PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
-		);
-
-#endif
-    
 };
 
 };

@@ -110,7 +110,7 @@ void UpdateSystem::Process(float32 timeElapsed)
 
 void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 {
-    TIME_PROFILE("UpdateSystem::UpdatePreTransform");
+//    TIME_PROFILE("UpdateSystem::UpdatePreTransform");
 
 	uint32 size = updatesBeforeTransform.size();
 	for(uint32 i = 0; i < size; ++i)
@@ -121,7 +121,7 @@ void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 
 void UpdateSystem::UpdatePostTransform(float32 timeElapsed)
 {
-    TIME_PROFILE("UpdateSystem::UpdatePostTransform");
+//    TIME_PROFILE("UpdateSystem::UpdatePostTransform");
 
 	uint32 size = updatesAfterTransform.size();
 	for(uint32 i = 0; i < size; ++i)

@@ -61,7 +61,7 @@ void TransformSystem::UnlinkTransform(int32 childIndex)
 
 void TransformSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("TransformSystem::Process");
+//    TIME_PROFILE("TransformSystem::Process");
     
     passedNodes = 0;
     multipliedNodes = 0;

@@ -89,8 +89,8 @@
  name: "Skyobject"
  path: Skyobject.material
 -
- name: "Landscape"
- path: TileMask.material
+ name: "Landscape AllQualities"
+ path: TileMaskAllQualities.material
 -
  name: "VertexLit Reflection"
  path: VertexLit.Reflection.Opaque.material

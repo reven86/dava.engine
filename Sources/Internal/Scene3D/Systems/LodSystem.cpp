@@ -53,7 +53,7 @@ LodSystem::LodSystem(Scene * scene)
 
 void LodSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("LodSystem::Process");
+//    TIME_PROFILE("LodSystem::Process");
     
     SetCamera(GetScene()->GetCurrentCamera());
 

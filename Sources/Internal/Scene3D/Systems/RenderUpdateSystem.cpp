@@ -107,7 +107,7 @@ void RenderUpdateSystem::RemoveEntity(Entity * entity)
     
 void RenderUpdateSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("RenderUpdateSystem::Process");
+//    TIME_PROFILE("RenderUpdateSystem::Process");
 
     RenderSystem * renderSystem = GetScene()->GetRenderSystem();
     renderSystem->SetMainCamera(GetScene()->GetCurrentCamera());

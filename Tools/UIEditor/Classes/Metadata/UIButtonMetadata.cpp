@@ -1008,6 +1008,57 @@ void UIButtonMetadata::UpdatePropertyDirtyFlagForShadowColor()
     }
 }
 
+int UIButtonMetadata::GetFontShadowColorInheritType() const
+{
+    if (!VerifyActiveParamID())
+    {
+        return UIControlBackground::COLOR_IGNORE_PARENT;
+    }
+    
+    return GetFontShadowColorInheritTypeForState(uiControlStates[GetActiveStateIndex()]);
+}
+
+void UIButtonMetadata::SetFontShadowColorInheritType(int value)
+{
+    if (!VerifyActiveParamID())
+    {
+        return;
+    }
+
+    for (uint32 i = 0; i < this->GetStatesCount(); ++i)
+	{
+        UIControl::eControlState state = uiControlStates[i];
+        GetActiveUIButton()->SetStateFontColorInheritType(state, (UIControlBackground::eColorInheritType)value);
+    }
+
+    UpdateExtraDataLocalizationKey();
+    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
+}
+
+int UIButtonMetadata::GetFontShadowColorInheritTypeForState(UIControl::eControlState state) const
+{
+    UIStaticText* textControl = GetActiveUIButton()->GetStateTextControl(state);
+    if (textControl)
+    {
+        return textControl->GetTextBackground()->GetColorInheritType();
+    }
+    
+    return UIControlBackground::COLOR_IGNORE_PARENT;
+}
+
+void UIButtonMetadata::UpdatePropertyDirtyFlagForFontShadowColorInheritType()
+{
+    int statesCount = UIControlStateHelper::GetUIControlStatesCount();
+    for (int i = 0; i < statesCount; i ++)
+    {
+        UIControl::eControlState curState = UIControlStateHelper::GetUIControlState(i);
+        
+        bool curStateDirty = (GetFontShadowColorInheritTypeForState(curState) !=
+                              GetFontShadowColorInheritTypeForState(GetReferenceState()));
+        SetStateDirtyForProperty(curState, PropertyNames::FONT_SHADOW_COLOR_INHERIT_TYPE_PROPERTY_NAME, curStateDirty);
+    }
+}
+
 void UIButtonMetadata::RecoverPropertyDirtyFlags()
 {
     UpdatePropertyDirtyFlagForLocalizedText();
@@ -1022,6 +1073,7 @@ void UIButtonMetadata::RecoverPropertyDirtyFlags()
     UpdatePropertyDirtyFlagForAlign();
     
     UpdatePropertyDirtyFlagForFittingType();
+    UpdatePropertyDirtyFlagForFontShadowColorInheritType();
     
     UpdatePropertyDirtyFlagForLeftRightStretchCap();
     UpdatePropertyDirtyFlagForTopBottomStretchCap();
@@ -1065,3 +1117,4 @@ void UIButtonMetadata::UpdateExtraDataLocalizationKey()
         node->GetExtraData().SetLocalizationKey(referenceLocalizationKey, button->DrawStateToControlState(drawState));
     }
 }
+

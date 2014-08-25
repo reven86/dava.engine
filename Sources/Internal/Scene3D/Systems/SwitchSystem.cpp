@@ -50,7 +50,7 @@ SwitchSystem::SwitchSystem(Scene * scene)
 
 void SwitchSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("SwitchSystem::Process");
+//    TIME_PROFILE("SwitchSystem::Process");
 	Set<Entity*>::iterator it;
 	Set<Entity*>::const_iterator itEnd = updatableEntities.end();
 	for(it = updatableEntities.begin(); it != itEnd; ++it)

@@ -64,7 +64,7 @@ DebugRenderSystem::~DebugRenderSystem()
 
 void DebugRenderSystem::Process(float32 timeElapsed)
 {
-    TIME_PROFILE("DebugRenderSystem::Process");
+//    TIME_PROFILE("DebugRenderSystem::Process");
 
     SetCamera(GetScene()->GetCurrentCamera());
 

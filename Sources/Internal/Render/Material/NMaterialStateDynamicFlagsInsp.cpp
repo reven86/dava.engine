@@ -41,10 +41,14 @@ Vector<FastName> NMaterialStateDynamicFlagsInsp::MembersList(void *object) const
     
     if(0 == ret.size())
     {
-        ret.reserve(10);
+        ret.reserve(11);
         
         ret.push_back(NMaterial::FLAG_VERTEXFOG);
         ret.push_back(NMaterial::FLAG_FOG_LINEAR);
+        ret.push_back(NMaterial::FLAG_FOG_HALFSPACE);
+        ret.push_back(NMaterial::FLAG_FOG_HALFSPACE_LINEAR);
+        ret.push_back(NMaterial::FLAG_FOG_ATMOSPHERE);
+
         ret.push_back(NMaterial::FLAG_FLATCOLOR);
         ret.push_back(NMaterial::FLAG_TEXTURESHIFT);
         ret.push_back(NMaterial::FLAG_TEXTURE0_ANIMATION_SHIFT);

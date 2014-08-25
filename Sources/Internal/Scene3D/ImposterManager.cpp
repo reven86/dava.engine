@@ -104,7 +104,7 @@ void ImposterManager::Update(float32 frameTime)
 
 void ImposterManager::Draw()
 {
-    TIME_PROFILE("ImposterManager::Draw");
+//    TIME_PROFILE("ImposterManager::Draw");
 	if(!RenderManager::Instance()->GetOptions()->IsOptionEnabled(RenderOptions::IMPOSTERS_ENABLE))
 	{
 		return;
