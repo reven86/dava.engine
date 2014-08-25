@@ -118,7 +118,7 @@ Image * TextureUtils::CreateImageAsRGBA8888(Sprite *sprite)
     
     
     Sprite::DrawState drawState;
-    sprite->Draw(&drawState);
+    RenderSystem2D::Instance()->Draw(sprite, &drawState);
     
     RenderManager::Instance()->RestoreRenderTarget();
     
