@@ -70,6 +70,26 @@ public:
     virtual RenderTarget* CreateRenderTarget(const RenderTargetDescriptor& rtDesc) = 0;
     virtual RenderDataReader* GetRenderDataReader() = 0;
 
+    RenderTarget* CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+                                     uint32 width,
+                                     uint32 height);
+
+    RenderTarget* CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+                                     uint32 width,
+                                     uint32 height,
+                                     FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                     FramebufferDescriptor::PostRenderAction colorPostRenderAction);
+
+    RenderTarget* CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+                                     uint32 width,
+                                     uint32 height,
+                                     FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                     FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                     FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                     FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                     FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                     FramebufferDescriptor::PostRenderAction stencilPostRenderAction);
+
     void ConstructGenericTargetDescription(RenderTargetFactory::GenericAttachmentFlags flags,
                                            uint32 width,
                                            uint32 height,

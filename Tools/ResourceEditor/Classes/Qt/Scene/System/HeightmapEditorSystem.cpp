@@ -40,6 +40,8 @@
 #include "Main/QtUtils.h"
 #include "HoodSystem.h"
 
+#include "Render/RenderTarget/RenderTargetFactory.h"
+
 #include <QApplication>
 
 HeightmapEditorSystem::HeightmapEditorSystem(Scene* scene)
@@ -290,14 +292,20 @@ void HeightmapEditorSystem::UpdateToolImage(bool force)
 
 Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
 {
-	Sprite *dstSprite = Sprite::CreateAsRenderTarget((float32)sideSize, (float32)sideSize, FORMAT_RGBA8888, true);
+    uint32 renderTargetWidth = (uint32)ceilf(sideSize * Core::GetVirtualToPhysicalFactor());
+    uint32 renderTargetHeight = (uint32)ceilf(sideSize * Core::GetVirtualToPhysicalFactor());
+
+    RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR,
+                                                                                     renderTargetWidth,
+                                                                                     renderTargetHeight);
+
+    RenderDataReader* renderDataReader = RenderTargetFactory::Instance()->GetRenderDataReader();
+
 	Texture *srcTex = Texture::CreateFromFile(filePath);
 	Sprite *srcSprite = Sprite::CreateFromTexture(srcTex, 0, 0, (float32)srcTex->GetWidth(), (float32)srcTex->GetHeight(), true);
-	
-	RenderManager::Instance()->SetRenderTarget(dstSprite);
-	
-	RenderManager::Instance()->ClearWithColor(0.f, 0.f, 0.f, 0.f);
-		
+
+    renderTarget->BeginRender();
+
 	RenderManager::Instance()->SetColor(Color::White);
 	
     Sprite::DrawState drawState;
@@ -305,17 +313,20 @@ Image* HeightmapEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fi
                            (float32)sideSize / Core::GetVirtualToPhysicalFactor(),
                            srcSprite->GetWidth(),
                            srcSprite->GetHeight());
-    drawState.SetPosition(Vector2((dstSprite->GetTexture()->GetWidth() - sideSize)/2.0f,
-                                  (dstSprite->GetTexture()->GetHeight() - sideSize)/2.0f) / Core::GetVirtualToPhysicalFactor());
+    drawState.SetPosition(Vector2((renderTargetWidth - (uint32)sideSize)/2.0f,
+                                  (renderTargetHeight - (uint32)sideSize)/2.0f) / Core::GetVirtualToPhysicalFactor());
 	srcSprite->Draw(&drawState);
-	RenderManager::Instance()->RestoreRenderTarget();
-	
-	Image *retImage = dstSprite->GetTexture()->CreateImageFromMemory(RenderState::RENDERSTATE_2D_BLEND);
-	
+
+    Image *retImage = renderDataReader->ReadCurrentColorData(FORMAT_RGBA8888, renderTargetWidth, renderTargetHeight);
+
+    renderTarget->EndRender();
+
 	SafeRelease(srcSprite);
 	SafeRelease(srcTex);
-	SafeRelease(dstSprite);
-	
+
+    SafeRelease(renderTarget);
+    SafeRelease(renderDataReader);
+
 	return retImage;
 }
 

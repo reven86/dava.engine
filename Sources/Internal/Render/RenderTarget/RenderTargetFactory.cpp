@@ -230,5 +230,52 @@ void RenderTargetFactory::ConstructGenericTargetDescription(RenderTargetFactory:
     DVASSERT(outDesc.Validate());
 }
 
+RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+                                 uint32 width,
+                                 uint32 height)
+{
+    RenderTargetDescriptor rtDesc;
+    ConstructGenericTargetDescription(flags, width, height, rtDesc);
+
+    return CreateRenderTarget(rtDesc);
+}
+
+RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+                                 uint32 width,
+                                 uint32 height,
+                                 FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                 FramebufferDescriptor::PostRenderAction colorPostRenderAction)
+{
+    RenderTargetDescriptor rtDesc;
+    ConstructGenericTargetDescription(flags, width, height, colorPreRenderAction, colorPostRenderAction, rtDesc);
+
+    return CreateRenderTarget(rtDesc);
+
+}
+
+RenderTarget* RenderTargetFactory::CreateRenderTarget(RenderTargetFactory::GenericAttachmentFlags flags,
+                                 uint32 width,
+                                 uint32 height,
+                                 FramebufferDescriptor::PreRenderAction colorPreRenderAction,
+                                 FramebufferDescriptor::PostRenderAction colorPostRenderAction,
+                                 FramebufferDescriptor::PreRenderAction depthPreRenderAction,
+                                 FramebufferDescriptor::PostRenderAction depthPostRenderAction,
+                                 FramebufferDescriptor::PreRenderAction stencilPreRenderAction,
+                                 FramebufferDescriptor::PostRenderAction stencilPostRenderAction)
+{
+    RenderTargetDescriptor rtDesc;
+    ConstructGenericTargetDescription(flags,
+                                      width,
+                                      height,
+                                      colorPreRenderAction,
+                                      colorPostRenderAction,
+                                      depthPreRenderAction,
+                                      depthPostRenderAction,
+                                      stencilPreRenderAction,
+                                      stencilPostRenderAction,
+                                      rtDesc);
+
+    return CreateRenderTarget(rtDesc);
+}
 
 };
