@@ -298,6 +298,11 @@ public:
      \param[in] spriteFrame Sprite frame.
      */
     virtual void SetSpriteFrame(int32 spriteFrame);
+	 /**
+     \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
+     \param[in] frame Sprite frame name.
+     */
+	virtual void SetSpriteFrame(const FastName& frameName);
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.

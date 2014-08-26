@@ -268,7 +268,21 @@ DefinitionFile * ResourcePacker2D::ProcessPSD(const FilePath & processDirectoryP
 			int yOff = (int)bbox.yOff();
 			if (bbox.yNegative())
 				yOff = -yOff;
-			
+            
+			// Get and save layer name
+            String layerName = currentLayer.label();
+            if (layerName.empty())
+            {
+            	Logger::Warning("* WARNING * - %s layer %d has empty name!!!", psdName.c_str(), k - 1);
+            }
+            // Check if layer name is unique
+            Vector<String>::iterator it = find(defFile->frameNames.begin(), defFile->frameNames.end(), layerName);
+			if (it != defFile->frameNames.end())
+            {
+            	Logger::Warning("* WARNING * - %s layer %d name %s is not unique!!!", psdName.c_str(), k - 1, layerName.c_str());
+            }
+
+            defFile->frameNames.push_back(layerName);
 			defFile->frameRects[k - 1] = Rect2i(xOff, yOff, (int32)bbox.width(), (int32)bbox.height());
 			
 			//printf("Percent: %d Aspect: %d Greater: %d Less: %d\n", (int)bbox.percent(), (int)bbox.aspect(), (int)bbox.greater(), (int)bbox.less());

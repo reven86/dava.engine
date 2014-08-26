@@ -260,19 +260,21 @@ void Sprite::InitFromFile(File *file)
 	rectsAndOffsets = new float32*[frameCount];
 	frameTextureIndex = new int32[frameCount];
 
-
+	frameNames.resize(frameCount);
 	for (int32 i = 0; i < frameCount; i++)
 	{
 		frameVertices[i] = new GLfloat[8];
 //		originalVertices[i] = new float32[4];
 		texCoords[i] = new GLfloat[8];
 		rectsAndOffsets[i] = new GLfloat[6];
-
+    	char frameName[128] = {0};
+    	
 		int32 x, y, dx,dy, xOff, yOff;
 
 		file->ReadLine(tempBuf, 1024);
-		sscanf(tempBuf, "%d %d %d %d %d %d %d", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i]);
-
+		sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
+		frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
+        
 		rectsAndOffsets[i][0] = (float32)x;
 		rectsAndOffsets[i][1] = (float32)y;
 //		rectsAndOffsets[i][2] = (float32)dx;
@@ -336,7 +338,6 @@ void Sprite::InitFromFile(File *file)
 		frameVertices[i][6] *= resourceToVirtualFactor;
 		frameVertices[i][7] *= resourceToVirtualFactor;
 	}
-
 //	Logger::FrameworkDebug("Frames created: %d", spr->frameCount);
 	//	center.x = width / 2;
 	//	center.y = height / 2;
@@ -743,6 +744,22 @@ void Sprite::SetDefaultPivotPoint(const Vector2 &newPivotPoint)
 void Sprite::SetFrame(int32 frm)
 {
 	frame = Clamp(frm, 0, frameCount - 1);
+}
+
+int32 Sprite::GetFrameByName(const FastName& frameName) const
+{
+	if (!frameName.IsValid())
+    {
+		return INVALID_FRAME_INDEX;
+    }
+    
+    for (int32 i = 0; i < frameCount; i++)
+	{
+    	if (frameNames[i] == frameName)
+        	return i;
+    }
+    
+    return INVALID_FRAME_INDEX;
 }
 
 void Sprite::SetModification(int32 modif)

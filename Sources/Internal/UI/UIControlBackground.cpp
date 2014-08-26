@@ -150,6 +150,16 @@ void UIControlBackground::SetFrame(int32 drawFrame)
     frame = drawFrame;
 }
 
+void UIControlBackground::SetFrame(const FastName& frameName)
+{
+    DVASSERT(spr);
+    int32 frameInd = spr->GetFrameByName(frameName);
+    if (frameInd != Sprite::INVALID_FRAME_INDEX)
+    {
+    	SetFrame(frameInd);
+    }
+}
+
 void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
