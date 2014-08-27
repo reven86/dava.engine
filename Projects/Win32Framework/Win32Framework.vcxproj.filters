@@ -1573,6 +1573,12 @@
     <ClInclude Include="..\..\Sources\Internal\FileSystem\YamlEmitter.h">
       <Filter>Internal\FileSystem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\JobScheduler.h">
+      <Filter>Internal\Job</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Internal\Job\WorkerThread.h">
+      <Filter>Internal\Job</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\External\Box2D\Collision\b2BroadPhase.cpp">
@@ -2820,6 +2826,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\Internal\Platform\Notification.cpp">
       <Filter>Internal\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Job\JobScheduler.cpp">
+      <Filter>Internal\Job</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Internal\Job\WorkerThread.cpp">
+      <Filter>Internal\Job</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

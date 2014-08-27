@@ -117,6 +117,7 @@ public:
     static eGPUFamily GetGPUFamily();
     static NetworkInfo GetNetworkInfo();
     static List<StorageInfo> GetStoragesList();
+    static int32 GetCPUCoresCount();
 };
 
 };

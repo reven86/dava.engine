@@ -61,18 +61,18 @@ public:
 
     static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
 
-	Job(const Message & message, const Thread::ThreadId & creatorThreadId, uint32 flags);
+	Job(const Message & message, const Thread::ThreadId & creatorThreadId, uint32 flags, int32 tag = -1);
 	eState GetState();
+    void SetState(eState newState);
 	ePerformedWhere PerformedWhere();
     const Message & GetMessage();
 
     uint32 GetFlags() const;
+    int32 GetTag() const;
     
     void Perform();
 
 protected:
-
-	void SetState(eState newState);
 	void SetPerformedOn(ePerformedWhere performedWhere);
 
 	Message message;
@@ -82,6 +82,7 @@ protected:
 	ePerformedWhere performedWhere;
 
     uint32 flags;
+    int32 tag;
 
 	friend class MainThreadJobQueue;
 	friend class JobManager;
@@ -96,6 +97,11 @@ const Message & Job::GetMessage()
 inline uint32 Job::GetFlags() const
 {
     return flags;
+}
+
+inline int32 Job::GetTag() const
+{
+    return tag;
 }
 
 }

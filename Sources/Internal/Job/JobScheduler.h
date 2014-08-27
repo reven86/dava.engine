@@ -45,7 +45,7 @@ public:
     JobScheduler(int32 workerThreadsCount);
     ~JobScheduler();
     
-    void PushJob(Job * job);
+    void PushJob(Job * job); //0...MAX_TAG_VALUE
     void PushIdleThread(WorkerThread * thread);
     void Schedule();
     
@@ -62,6 +62,9 @@ private:
     List<WorkerThread*> idleThreads;
     Mutex idleThreadsMutex;
     WorkerThread * PopIdleThread();
+
+    static const int32 MAX_TAG_VALUE = 999;
+    Vector<int32> taggedJobsCount;
 };
 
 }

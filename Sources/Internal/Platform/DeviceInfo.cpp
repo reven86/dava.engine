@@ -76,6 +76,16 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
     List<DeviceInfo::StorageInfo> l;
     return l;
 }
-    
+
+int32 DeviceInfo::GetCPUCoresCount()
+{
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+    return 4;
+#else
+    return 2;
+#endif
+}
+
+
 #endif
 }

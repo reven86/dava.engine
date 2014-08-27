@@ -29,6 +29,7 @@
 #include "Job/JobScheduler.h"
 #include "Job/WorkerThread.h"
 #include "Thread/LockGuard.h"
+#include "Job/Job.h"
 
 namespace DAVA
 {
@@ -42,6 +43,8 @@ JobScheduler::JobScheduler(int32 _workerThreadsCount)
         workerThreads.push_back(thread);
         PushIdleThread(thread);
     }
+
+    taggedJobsCount.resize(MAX_TAG_VALUE);
 }
 
 JobScheduler::~JobScheduler()
@@ -57,6 +60,14 @@ JobScheduler::~JobScheduler()
 
 void JobScheduler::PushJob(Job * job)
 {
+    int32 tag = job->GetTag();
+    DVASSERT(tag >= -1 && tag <= MAX_TAG_VALUE && "tag must be in -1...999 range");
+    
+    if(tag >= 0)
+    {
+        AtomicIncrement(taggedJobsCount[tag]);
+    }
+
     jobQueueMutex.Lock();
     jobQueue.push_back(job);
     jobQueueMutex.Unlock();
