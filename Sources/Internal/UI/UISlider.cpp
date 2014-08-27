@@ -487,7 +487,7 @@ void UISlider::SaveBackground(const char* prefix, UIControlBackground* backgroun
     Sprite *sprite = background->GetSprite();
     if (sprite)
     {
-        rootNode->Set(Format("%ssprite", prefix), GetSpriteFrameworkPath(sprite));
+        rootNode->Set(Format("%ssprite", prefix), Sprite::GetPathString(sprite));
     }
     int32 frame = background->GetFrame();
     if (baseBackground->GetFrame() != frame)

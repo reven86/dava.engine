@@ -237,7 +237,7 @@ void UIParticles::Load(const FilePath& path)
     }
     else
     {
-        effectPath = FilePath();
+        effectPath = path;
     }
 }
 
@@ -255,6 +255,11 @@ void UIParticles::Reload()
 const FilePath& UIParticles::GetEffectPath() const
 {
     return effectPath;
+}
+
+bool UIParticles::IsEffectLoaded() const
+{
+    return (effect != NULL);
 }
 
 void UIParticles::SetAutostart(bool value)

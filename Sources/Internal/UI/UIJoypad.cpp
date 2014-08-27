@@ -331,7 +331,7 @@ YamlNode*  UIJoypad::SaveToYamlNode(DAVA::UIYamlLoader *loader)
     // Sprite
     if (stick && stick->GetSprite())
     {
-        node->Set("stickSprite", GetSpriteFrameworkPath(stick->GetSprite()));
+        node->Set("stickSprite", Sprite::GetPathString(stick->GetSprite()));
         node->Set("stickFrame", stick->GetFrame());
     }
 

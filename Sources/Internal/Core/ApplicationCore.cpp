@@ -55,6 +55,8 @@ ApplicationCore::~ApplicationCore()
 	
 void ApplicationCore::Update(float32 timeElapsed)
 {
+	TIME_PROFILE("ApplicationCore::Update");
+
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Update(timeElapsed);
 #endif
@@ -65,6 +67,8 @@ void ApplicationCore::Update(float32 timeElapsed)
 
 void ApplicationCore::Draw()
 {
+	TIME_PROFILE("ApplicationCore::Draw");
+
 	UIControlSystem::Instance()->Draw();	
 #ifdef __DAVAENGINE_AUTOTESTING__
     AutotestingSystem::Instance()->Draw();

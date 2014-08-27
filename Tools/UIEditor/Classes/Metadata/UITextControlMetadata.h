@@ -56,6 +56,9 @@ class UITextControlMetadata : public UIControlMetadata
 	Q_PROPERTY(int TextAlign READ GetTextAlign WRITE SetTextAlign);
     Q_PROPERTY(int FittingType READ GetFittingType WRITE SetFittingType);
 
+    // Font color/shadow color inherit types.
+    Q_PROPERTY(int FontShadowColorInheritType READ GetFontShadowColorInheritType WRITE SetFontShadowColorInheritType);
+
 public:
     UITextControlMetadata(QObject* parent = 0);
     QString GetLocalizedTextValue();
@@ -90,6 +93,9 @@ protected:
 	Vector2 GetOffsetY(const Vector2& currentOffset, float offsetY);
 
     // These methods should not be overriden for the UITextField, that's why not pure virtual.
+    virtual int GetFontShadowColorInheritType() const;
+    virtual void SetFontShadowColorInheritType(int value);
+
     virtual int GetFittingType() const;
     virtual void SetFittingType(int value);
 

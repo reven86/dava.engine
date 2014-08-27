@@ -194,6 +194,13 @@ public:
     virtual void SetStateFontColor(int32 state, const Color& fontColor);
 
     /**
+     \brief Sets the color inherit type of the text and shadow for particular state.
+     \param[in] state state bit mask to set value for.
+     \param[in] color font used for text draw of the states.
+     */
+    void SetStateFontColorInheritType(int32 state, UIControlBackground::eColorInheritType colorInheritType);
+
+    /**
      \brief Sets the color of the shadow for particular state.
      \param[in] state state bit mask to set value for.
      \param[in] color font used for text draw of the states.
@@ -260,8 +267,8 @@ protected:
     enum eButtonDrawState
     {
             DRAW_STATE_UNPRESSED = 0
-        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_PRESSED_OUTSIDE
+        ,	DRAW_STATE_PRESSED_INSIDE
         ,	DRAW_STATE_DISABLED
         ,	DRAW_STATE_SELECTED
         ,	DRAW_STATE_HOVERED

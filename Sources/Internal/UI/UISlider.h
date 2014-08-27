@@ -47,8 +47,8 @@ public:
 
     virtual void SetSize(const DAVA::Vector2 &newSize);
 
-	inline float32 GetMinValue();
-	inline float32 GetMaxValue();
+	inline float32 GetMinValue() const;
+	inline float32 GetMaxValue() const;
 	void SetMinMaxValue(float32 _minValue, float32 _maxValue);
 	
     virtual void AddControl(UIControl *control);
@@ -56,9 +56,9 @@ public:
 
 	virtual void Draw(const UIGeometricData &geometricData);
 	
-	inline bool IsEventsContinuos();
+	inline bool IsEventsContinuos() const;
 	inline void SetEventsContinuos(bool isEventsContinuos);
-	inline float32 GetValue();
+	inline float32 GetValue() const;
     
     void SetMaxValue(float32 value);
     void SetMinValue(float32 value);
@@ -66,10 +66,10 @@ public:
 
     
     void SetThumb(UIControl *newThumb);
-    inline UIControl *GetThumb();
+    inline UIControl *GetThumb() const;
 	
-	inline UIControlBackground *GetBgMin();
-	inline UIControlBackground *GetBgMax();
+	inline UIControlBackground *GetBgMin() const;
+	inline UIControlBackground *GetBgMax() const;
 
 	virtual void LoadFromYamlNode(const YamlNode * node, UIYamlLoader * loader);
 	virtual void LoadFromYamlNodeCompleted();
@@ -122,22 +122,22 @@ private:
 };
     
     
-inline UIControl *UISlider::GetThumb()
+inline UIControl *UISlider::GetThumb() const
 {
     return thumbButton;
 }
 
-inline UIControlBackground *UISlider::GetBgMin()
+inline UIControlBackground *UISlider::GetBgMin() const
 {
 	return minBackground;
 }
 
-inline UIControlBackground *UISlider::GetBgMax()
+inline UIControlBackground *UISlider::GetBgMax() const
 {
 	return maxBackground;
 }
 
-inline bool UISlider::IsEventsContinuos()
+inline bool UISlider::IsEventsContinuos() const
 {
 	return isEventsContinuos;
 }
@@ -147,17 +147,17 @@ inline void UISlider::SetEventsContinuos(bool _isEventsContinuos)
 	isEventsContinuos = _isEventsContinuos;	
 }
 	
-inline float32 UISlider::GetValue()
+inline float32 UISlider::GetValue() const
 {
 	return currentValue;
 }
 
-inline float32 UISlider::GetMinValue()
+inline float32 UISlider::GetMinValue() const
 {
 	return minValue;
 }
 	
-inline float32 UISlider::GetMaxValue()
+inline float32 UISlider::GetMaxValue() const
 {
 	return maxValue;
 }

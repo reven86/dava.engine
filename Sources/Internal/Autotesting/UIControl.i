@@ -68,6 +68,10 @@ public:
     
 	UIControl *GetParent();
 
+	DAVA::int32 GetState() const;
+
+	int32 GetFrame() const;
+
 protected:
 	virtual ~UIControl();
 

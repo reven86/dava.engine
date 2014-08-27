@@ -64,7 +64,7 @@ WideString JniDateTime::AsWString(const WideString& format, const String& countr
         GetEnvironment()->DeleteLocalRef(jFormat);
         GetEnvironment()->DeleteLocalRef(jCountryCode);
 		char str[256] = {0};
-		CreateStringFromJni(env, jstring(obj), str);
+		CreateStringFromJni(GetEnvironment(), jstring(obj), str);
 		WideString retWString;
 		UTF8Utils::EncodeToWideString((uint8*)str, 256, retWString);
 		return retWString;

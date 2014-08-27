@@ -494,6 +494,7 @@ public class JNITextField {
 				inputFlags &= ~(InputType.TYPE_CLASS_NUMBER |
 						InputType.TYPE_CLASS_TEXT |
 						InputType.TYPE_TEXT_VARIATION_URI |
+						InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS |
 						EditorInfo.TYPE_CLASS_TEXT);
 				
 				switch (keyboardType) {
@@ -506,10 +507,13 @@ public class JNITextField {
 					break;
 
 				case 3: // KEYBOARD_TYPE_URL
-				case 7: // KEYBOARD_TYPE_EMAIL_ADDRESS
 				case 9: // KEYBOARD_TYPE_TWITTER
 					inputFlags |= InputType.TYPE_CLASS_TEXT
 							| InputType.TYPE_TEXT_VARIATION_URI;
+					break;
+
+				case 7: // KEYBOARD_TYPE_EMAIL_ADDRESS
+					inputFlags |= InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
 					break;
 
 				case 0: // KEYBOARD_TYPE_DEFAULT

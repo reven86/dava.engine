@@ -54,7 +54,7 @@
 SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
 	: SceneSystem(scene)
 	, curSceneCamera(NULL)
-	, activeSpeedArrayIndex(0)
+	, activeSpeedIndex(0)
 	, curViewAngleZ(0)
 	, curViewAngleY(0)
 	, maxViewAngle(89.0f)
@@ -65,11 +65,6 @@ SceneCameraSystem::SceneCameraSystem(DAVA::Scene * scene)
     , cameraShouldIgnoreKeyboard(false)
 {
 	renderState = RenderManager::Instance()->Subclass3DRenderState(RenderStateData::STATE_COLORMASK_ALL | RenderStateData::STATE_DEPTH_WRITE);
-	
-	cameraSpeedArray.push_back(SettingsManager::GetValue(Settings::Scene_CameraSpeed0).AsFloat());
-	cameraSpeedArray.push_back(SettingsManager::GetValue(Settings::Scene_CameraSpeed1).AsFloat());
-	cameraSpeedArray.push_back(SettingsManager::GetValue(Settings::Scene_CameraSpeed2).AsFloat());
-	cameraSpeedArray.push_back(SettingsManager::GetValue(Settings::Scene_CameraSpeed3).AsFloat());
 }
 
 SceneCameraSystem::~SceneCameraSystem()
@@ -122,29 +117,28 @@ DAVA::Vector3 SceneCameraSystem::GetCameraDirection() const
 
 DAVA::float32 SceneCameraSystem::GetMoveSpeed()
 {
-	return cameraSpeedArray[activeSpeedArrayIndex];
+    DAVA::float32 speed = 1.0;
+
+    switch(activeSpeedIndex)
+    {
+        case 0: speed = SettingsManager::GetValue(Settings::Scene_CameraSpeed0).AsFloat(); break;
+        case 1: speed = SettingsManager::GetValue(Settings::Scene_CameraSpeed1).AsFloat(); break;
+        case 2: speed = SettingsManager::GetValue(Settings::Scene_CameraSpeed2).AsFloat(); break;
+        case 3: speed = SettingsManager::GetValue(Settings::Scene_CameraSpeed3).AsFloat(); break;
+    }
+
+	return speed;
 }
 
 DAVA::uint32 SceneCameraSystem::GetActiveSpeedIndex()
 {
-	return activeSpeedArrayIndex;
+	return activeSpeedIndex;
 }
 
 void SceneCameraSystem::SetMoveSpeedArrayIndex(DAVA::uint32 index)
 {
 	DVASSERT(index < 4);
-	activeSpeedArrayIndex = index;
-}
-
-void SceneCameraSystem::SetMoveSpeed(DAVA::float32 speed, DAVA::uint32 index)
-{
-	DVASSERT(index < 4);
-	cameraSpeedArray[index] = speed;
-}
-
-DAVA::float32 SceneCameraSystem::GetMoveSpeed(uint32 index)
-{
-	return cameraSpeedArray[index];
+	activeSpeedIndex = index;
 }
 
 void SceneCameraSystem::SetViewportRect(const DAVA::Rect &rect)
@@ -395,7 +389,7 @@ void SceneCameraSystem::ProcessKeyboardMove(DAVA::float32 timeElapsed)
 {
 	if(NULL != curSceneCamera && !curSceneCamera->GetIsOrtho())
 	{
-		DAVA::float32 moveSpeed = cameraSpeedArray[activeSpeedArrayIndex] * timeElapsed;        
+		DAVA::float32 moveSpeed = GetMoveSpeed() * timeElapsed;        
 
         // since pressing shortcuts with camera movement keys could produce camera flickering,
         // camera should ignore movement till both - modifier keys and movement keys - are released

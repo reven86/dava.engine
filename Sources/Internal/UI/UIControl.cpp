@@ -253,24 +253,6 @@ namespace DAVA
         return false;
     }
 
-    String UIControl::GetSpriteFrameworkPath( const Sprite* sprite)
-    {
-        if (!sprite)
-        {
-            return "";
-        }
-
-        FilePath path(sprite->GetRelativePathname());
-        String pathName = "";
-        if (!path.IsEmpty())
-        {
-            path.TruncateExtension();
-            pathName = path.GetFrameworkPath();
-        }
-
-        return pathName;
-    }
-
     void UIControl::SetName(const String & _name)
     {
         name = _name;
@@ -304,7 +286,7 @@ namespace DAVA
         controlState = state;
     }
 
-    Sprite* UIControl::GetSprite()
+    Sprite* UIControl::GetSprite() const
     {
         return background->GetSprite();
     }
@@ -858,6 +840,7 @@ namespace DAVA
         if (!parent)
         {
             SetRect(rect);
+            return;
         }
 
         Rect localRect = rect;
@@ -2097,7 +2080,7 @@ namespace DAVA
         Sprite *sprite =  this->GetSprite();
         if (sprite)
         {
-            node->Set("sprite", GetSpriteFrameworkPath(sprite));
+            node->Set("sprite", Sprite::GetPathString(sprite));
         }
 
         // Color

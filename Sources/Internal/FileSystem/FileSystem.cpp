@@ -421,7 +421,7 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath & newWorkingDirectory
 bool FileSystem::IsFile(const FilePath & pathToCheck)
 {
 #if defined(__DAVAENGINE_ANDROID__)
-	const String& path = pathToCheck.GetAbsolutePathname();
+	const String& path = pathToCheck.GetAbsoluteAssetPathnameTruncated();
 	if (IsAPKPath(path))
 		return (fileSet.find(path) != fileSet.end());
 #endif

@@ -167,8 +167,8 @@ private:
 };
     
 #if defined(__DAVAENGINE_ENABLE_DEBUG_STATS__)
-#define TIME_PROFILE(name) static FastName fastNameTime(name); TimeMeasure timeMeasure(fastNameTime);
-#define IMM_TIME_PROFILE(name) static FastName fastNameIMM(name); ImmediateTimeMeasure immTimeMeasure(fastNameIMM);
+#define TIME_PROFILE(name) TimeMeasure timeMeasure(FastName(name));
+#define IMM_TIME_PROFILE(name) ImmediateTimeMeasure immTimeMeasure(FastName(name));
 #else
 #define TIME_PROFILE(name)
 #define IMM_TIME_PROFILE(name)

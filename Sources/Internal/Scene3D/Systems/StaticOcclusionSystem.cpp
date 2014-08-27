@@ -44,6 +44,7 @@
 #include "Scene3D/Systems/LodSystem.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Highlevel/Landscape.h"
+#include "Debug/Stats.h"
 
 namespace DAVA
 {
@@ -465,6 +466,8 @@ StaticOcclusionSystem::~StaticOcclusionSystem()
 
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
+    TIME_PROFILE("StaticOcclusionSystem::Process")
+
     SetCamera(GetScene()->GetCurrentCamera());
 
     // Verify that system is initialized

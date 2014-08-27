@@ -187,6 +187,8 @@ public:
     static Sprite* CreateFromSourceFile(const FilePath& path, bool contentScaleIncluded = false, bool inVirtualSpace = false);
     static Sprite* CreateFromSourceData(const uint8* data, uint32 size, bool contentScaleIncluded = false, bool inVirtualSpace = false);
 
+    static String GetPathString( const Sprite *sprite);
+
 	void SetOffsetsForFrame(int frame, float32 xOff, float32 yOff);
 
 	Texture* GetTexture() const;

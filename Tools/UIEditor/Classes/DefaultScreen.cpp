@@ -450,7 +450,7 @@ void DefaultScreen::GetSelectedControl(HierarchyTreeNode::HIERARCHYTREENODESLIST
 
 HierarchyTreeController::SELECTEDCONTROLNODES DefaultScreen::GetActiveMoveControls() const
 {
-	HierarchyTreeController::SELECTEDCONTROLNODES list = HierarchyTreeController::Instance()->GetActiveControlNodes();
+	const HierarchyTreeController::SELECTEDCONTROLNODES &list = HierarchyTreeController::Instance()->GetActiveControlNodes();
 	
 	//YZ we need apply only for parent object
 	HierarchyTreeController::SELECTEDCONTROLNODES selectedList;
@@ -1349,8 +1349,8 @@ void DefaultScreen::KeyboardInput(const DAVA::UIEvent* event)
 		{
 			if (InputSystem::Instance()->GetKeyboard()->IsKeyPressed(DVKEY_CTRL))
 			{
-                HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
-                if (selectedList.size() == 0)
+                const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();                
+                if (selectedList.empty())
                 {
                     // No controls selected - paste to screen.
                     HierarchyTreeScreenNode* activeScreenNode = HierarchyTreeController::Instance()->GetActiveScreen();
@@ -1463,7 +1463,7 @@ int32 DefaultScreen::CalculateStickToGuidesDrag(Vector2& offset) const
     }
 
     // Build the list of selected controls' rects and send it to the alignment.
-    HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
+    const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
     List<Rect> controlRects;
     for (HierarchyTreeController::SELECTEDCONTROLNODES::const_iterator iter = selectedList.begin(); iter != selectedList.end(); ++iter)
     {
@@ -1643,8 +1643,8 @@ bool DefaultScreen::NeedCalculateStickMode(HierarchyTreeScreenNode* screenNode) 
         return false;
     }
     
-    HierarchyTreeController::SELECTEDCONTROLNODES selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
-    if (selectedList.size() == 0)
+    const HierarchyTreeController::SELECTEDCONTROLNODES &selectedList = HierarchyTreeController::Instance()->GetActiveControlNodes();
+    if (selectedList.empty())
     {
         return false;
     }
