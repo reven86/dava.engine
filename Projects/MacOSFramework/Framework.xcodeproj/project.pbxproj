@@ -1179,6 +1179,21 @@
 		CC24804216E0DF2800183D40 /* VectorSpinnerAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = CC24804116E0DF2800183D40 /* VectorSpinnerAdapter.h */; };
 		CC2C2F83197D4B960001E75D /* UIMovieView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17DC5FFE17DE11650075813E /* UIMovieView.cpp */; };
 		CC2C2F84197D4B960001E75D /* MovieViewControlMacOS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1770DF4E17DF67E500000391 /* MovieViewControlMacOS.mm */; };
+		CC8033B619ACE6680086BB33 /* WorkerThread.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033B519ACE6680086BB33 /* WorkerThread.h */; };
+		CC8033B719ACE6680086BB33 /* WorkerThread.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033B519ACE6680086BB33 /* WorkerThread.h */; };
+		CC8033B819ACE6680086BB33 /* WorkerThread.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033B519ACE6680086BB33 /* WorkerThread.h */; };
+		CC8033BA19ADAFB90086BB33 /* WorkerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC8033B919ADAFB90086BB33 /* WorkerThread.cpp */; };
+		CC8033BB19ADAFB90086BB33 /* WorkerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC8033B919ADAFB90086BB33 /* WorkerThread.cpp */; };
+		CC8033BC19ADAFB90086BB33 /* WorkerThread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC8033B919ADAFB90086BB33 /* WorkerThread.cpp */; };
+		CC8033BE19ADB6FE0086BB33 /* Bind.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033BD19ADB6FE0086BB33 /* Bind.h */; };
+		CC8033BF19ADB6FE0086BB33 /* Bind.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033BD19ADB6FE0086BB33 /* Bind.h */; };
+		CC8033C019ADB6FE0086BB33 /* Bind.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033BD19ADB6FE0086BB33 /* Bind.h */; };
+		CC8033CF19ADCDB20086BB33 /* JobScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC8033CD19ADCDB20086BB33 /* JobScheduler.cpp */; };
+		CC8033D019ADCDB20086BB33 /* JobScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC8033CD19ADCDB20086BB33 /* JobScheduler.cpp */; };
+		CC8033D119ADCDB20086BB33 /* JobScheduler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC8033CD19ADCDB20086BB33 /* JobScheduler.cpp */; };
+		CC8033D219ADCDB20086BB33 /* JobScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033CE19ADCDB20086BB33 /* JobScheduler.h */; };
+		CC8033D319ADCDB20086BB33 /* JobScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033CE19ADCDB20086BB33 /* JobScheduler.h */; };
+		CC8033D419ADCDB20086BB33 /* JobScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = CC8033CE19ADCDB20086BB33 /* JobScheduler.h */; };
 		CC84B01618211A9000934482 /* Job.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B00E18211A9000934482 /* Job.cpp */; };
 		CC84B01718211A9000934482 /* Job.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B00E18211A9000934482 /* Job.cpp */; };
 		CC84B01818211A9000934482 /* Job.cpp in Sources */ = {isa = PBXBuildFile; fileRef = CC84B00E18211A9000934482 /* Job.cpp */; };
@@ -2696,6 +2711,11 @@
 		CC24800616DD174E00183D40 /* UserComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = UserComponent.cpp; sourceTree = "<group>"; };
 		CC24800716DD174E00183D40 /* UserComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserComponent.h; sourceTree = "<group>"; };
 		CC24804116E0DF2800183D40 /* VectorSpinnerAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VectorSpinnerAdapter.h; sourceTree = "<group>"; };
+		CC8033B519ACE6680086BB33 /* WorkerThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WorkerThread.h; path = Job/WorkerThread.h; sourceTree = "<group>"; };
+		CC8033B919ADAFB90086BB33 /* WorkerThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WorkerThread.cpp; path = Job/WorkerThread.cpp; sourceTree = "<group>"; };
+		CC8033BD19ADB6FE0086BB33 /* Bind.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bind.h; sourceTree = "<group>"; };
+		CC8033CD19ADCDB20086BB33 /* JobScheduler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobScheduler.cpp; path = Job/JobScheduler.cpp; sourceTree = "<group>"; };
+		CC8033CE19ADCDB20086BB33 /* JobScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JobScheduler.h; path = Job/JobScheduler.h; sourceTree = "<group>"; };
 		CC84B00E18211A9000934482 /* Job.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Job.cpp; path = Job/Job.cpp; sourceTree = "<group>"; };
 		CC84B00F18211A9000934482 /* Job.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Job.h; path = Job/Job.h; sourceTree = "<group>"; };
 		CC84B01018211A9000934482 /* JobManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JobManager.cpp; path = Job/JobManager.cpp; sourceTree = "<group>"; };
@@ -3533,6 +3553,8 @@
 		CC84B00D18211A5600934482 /* Job */ = {
 			isa = PBXGroup;
 			children = (
+				CC8033CD19ADCDB20086BB33 /* JobScheduler.cpp */,
+				CC8033CE19ADCDB20086BB33 /* JobScheduler.h */,
 				CC84B00E18211A9000934482 /* Job.cpp */,
 				CC84B00F18211A9000934482 /* Job.h */,
 				CC84B01018211A9000934482 /* JobManager.cpp */,
@@ -3541,6 +3563,8 @@
 				CC84B01318211A9000934482 /* JobQueue.h */,
 				CC84B01418211A9000934482 /* JobWaiter.cpp */,
 				CC84B01518211A9000934482 /* JobWaiter.h */,
+				CC8033B519ACE6680086BB33 /* WorkerThread.h */,
+				CC8033B919ADAFB90086BB33 /* WorkerThread.cpp */,
 			);
 			name = Job;
 			sourceTree = "<group>";
@@ -3647,6 +3671,7 @@
 		E8989AD916BD24E400732C04 /* Base */ = {
 			isa = PBXGroup;
 			children = (
+				CC8033BD19ADB6FE0086BB33 /* Bind.h */,
 				E89C58E718B245A6002C25FE /* AtomicMacOS.mm */,
 				E89C58E318B2458E002C25FE /* Atomic.h */,
 				E8BAD5AE185213F100C98C8D /* IntrospectionDynamic.cpp */,
@@ -4860,6 +4885,7 @@
 				176DE9B7174B5561007A983B /* Box2DTileCollider.h in Headers */,
 				17FB4BB61923B97F00F3E3BC /* UIScrollViewContainer.h in Headers */,
 				176DE9B8174B5561007A983B /* GameObject.h in Headers */,
+				CC8033C019ADB6FE0086BB33 /* Bind.h in Headers */,
 				E8C486F2196BC9AC0082E634 /* LockGuard.h in Headers */,
 				176DE9B9174B5561007A983B /* GameObjectAnimations.h in Headers */,
 				644C86FF19476A7100964F91 /* VegetationSpatialData.h in Headers */,
@@ -4960,6 +4986,7 @@
 				176DEA07174B5561007A983B /* UISlider.h in Headers */,
 				02FD7ED819237D96007762C0 /* SpeedTreeUpdateSystem.h in Headers */,
 				176DEA08174B5561007A983B /* UIStaticText.h in Headers */,
+				CC8033B819ACE6680086BB33 /* WorkerThread.h in Headers */,
 				176DEA09174B5561007A983B /* UITextField.h in Headers */,
 				176DEA0A174B5561007A983B /* UIYamlLoader.h in Headers */,
 				176DEA0B174B5561007A983B /* HTTPDownloader.h in Headers */,
@@ -4990,6 +5017,7 @@
 				176DEA1D174B5561007A983B /* UISwitch.h in Headers */,
 				176DEA1E174B5561007A983B /* Camera.h in Headers */,
 				176DEA1F174B5561007A983B /* CullingSystem.h in Headers */,
+				CC8033D419ADCDB20086BB33 /* JobScheduler.h in Headers */,
 				50A3044018575C370082CA8D /* StaticOcclusion.h in Headers */,
 				02A2FC3718D2E7460039E66A /* TreeToAnimatedTreeConverter.h in Headers */,
 				176DEA20174B5561007A983B /* Frustum.h in Headers */,
@@ -5095,6 +5123,7 @@
 				76199F3A192DF73D008A47E2 /* VersionInfo.h in Headers */,
 				E8989DCB16BD24E500732C04 /* IntrospectionCollection.h in Headers */,
 				E8989DCC16BD24E500732C04 /* IntrospectionFlags.h in Headers */,
+				CC8033BE19ADB6FE0086BB33 /* Bind.h in Headers */,
 				E8989DCD16BD24E500732C04 /* IntrospectionProperty.h in Headers */,
 				C1A711DE198B82EA00EE9E37 /* Notification.h in Headers */,
 				E8989DCE16BD24E500732C04 /* Mallocator.h in Headers */,
@@ -5222,6 +5251,7 @@
 				E8989EDE16BD24E500732C04 /* FTFont.h in Headers */,
 				D7E6C5AF198255C000B96D1A /* DownloadManager.h in Headers */,
 				644C86E819476A7100964F91 /* VegetationMaterialTransformer.h in Headers */,
+				CC8033D219ADCDB20086BB33 /* JobScheduler.h in Headers */,
 				E8989EE016BD24E500732C04 /* GraphicsFont.h in Headers */,
 				E8989EE116BD24E500732C04 /* GridSprite.h in Headers */,
 				E8989EE316BD24E500732C04 /* Sprite.h in Headers */,
@@ -5391,6 +5421,7 @@
 				171F938616CE6F28007038AB /* UIWebView.h in Headers */,
 				17F53E2216D36DDE004D5099 /* IWebViewControl.h in Headers */,
 				50A3043E18575C370082CA8D /* StaticOcclusion.h in Headers */,
+				CC8033B619ACE6680086BB33 /* WorkerThread.h in Headers */,
 				C151B17816D3747E00E09BAF /* DVAssertMessage.h in Headers */,
 				C151B17C16D3755000E09BAF /* WebViewControlMacOS.h in Headers */,
 				C151B1B816D4FF6A00E09BAF /* MailSender.h in Headers */,
@@ -5667,6 +5698,7 @@
 				E898A0F216BD265400732C04 /* MultiTextureEffect.h in Headers */,
 				E898A0F316BD265400732C04 /* TextureMulColorAlphaTestEffect.h in Headers */,
 				E898A0F416BD265400732C04 /* TextureMulColorEffect.h in Headers */,
+				CC8033BF19ADB6FE0086BB33 /* Bind.h in Headers */,
 				E898A10C16BD265400732C04 /* IndexBuffer.h in Headers */,
 				644C86D419476A7100964F91 /* VegetationCustomGeometrySerializationData.h in Headers */,
 				E89C58E518B2458E002C25FE /* Atomic.h in Headers */,
@@ -5674,6 +5706,7 @@
 				E898A11116BD265400732C04 /* MaterialGraph.h in Headers */,
 				E898A11216BD265400732C04 /* MaterialGraphNode.h in Headers */,
 				02FD8268192A3859007762C0 /* WaveSystem.h in Headers */,
+				CC8033D319ADCDB20086BB33 /* JobScheduler.h in Headers */,
 				50ED334E1858B5A200A917D5 /* StaticOcclusionComponent.h in Headers */,
 				E898A11316BD265400732C04 /* NMaterial.h in Headers */,
 				E898A11416BD265400732C04 /* NMaterialConsts.h in Headers */,
@@ -5861,6 +5894,7 @@
 				E8B6B3B11705DB26004F665E /* DeviceInfo.h in Headers */,
 				E8951B771738FEEC00755339 /* GPUFamilyDescriptor.h in Headers */,
 				748A99761726C5EE00C6411B /* UIScrollView.h in Headers */,
+				CC8033B719ACE6680086BB33 /* WorkerThread.h in Headers */,
 				74D1EABB172E950700EDE0B7 /* UIScrollViewContainer.h in Headers */,
 				02E9E4321739622E00C501BC /* FMODUtils.h in Headers */,
 				02E9E4341739623900C501BC /* SoundComponent.h in Headers */,
@@ -6104,6 +6138,7 @@
 				176DEA9A174B5561007A983B /* ParticleLayer.cpp in Sources */,
 				176DEA9C174B5561007A983B /* ParticlePropertyLine.cpp in Sources */,
 				176DEA9E174B5561007A983B /* Mutex.cpp in Sources */,
+				CC8033BC19ADAFB90086BB33 /* WorkerThread.cpp in Sources */,
 				CC84B01818211A9000934482 /* Job.cpp in Sources */,
 				0282B87618BC72BE006F1EE4 /* FMODFileSoundEvent.cpp in Sources */,
 				176DEA9F174B5561007A983B /* SystemTimer.cpp in Sources */,
@@ -6342,6 +6377,7 @@
 				1795E4BA174CB86800050F64 /* NPAPIPluginMacOS.mm in Sources */,
 				7A169355180EE75A005F1FBC /* GameAPI.cpp in Sources */,
 				1795E4BB174CB86D00050F64 /* NPAPIOpenGLLayerMacOS.mm in Sources */,
+				CC8033D119ADCDB20086BB33 /* JobScheduler.cpp in Sources */,
 				1795E4C4174CC24D00050F64 /* NPAPICorePlatformMacOS.cpp in Sources */,
 				A6E4FE0C1761D9C600B48E41 /* ActionComponent.cpp in Sources */,
 				A6E4FE101761D9D200B48E41 /* CustomPropertiesComponent.cpp in Sources */,
@@ -6510,6 +6546,7 @@
 				E8989EFB16BD24E500732C04 /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E8989EFD16BD24E500732C04 /* TextureMulColorEffect.cpp in Sources */,
 				E8989F3216BD24E500732C04 /* MaterialCompiler.cpp in Sources */,
+				CC8033CF19ADCDB20086BB33 /* JobScheduler.cpp in Sources */,
 				E8989F3416BD24E500732C04 /* MaterialGraph.cpp in Sources */,
 				E8989F3616BD24E500732C04 /* MaterialGraphNode.cpp in Sources */,
 				E8989F3816BD24E500732C04 /* NMaterial.cpp in Sources */,
@@ -6609,6 +6646,7 @@
 				E8989FE416BD24E500732C04 /* RenderUpdateSystem.cpp in Sources */,
 				E8989FE616BD24E500732C04 /* SwitchSystem.cpp in Sources */,
 				E8989FE816BD24E500732C04 /* TransformSystem.cpp in Sources */,
+				CC8033BA19ADAFB90086BB33 /* WorkerThread.cpp in Sources */,
 				E8989FEC16BD24E500732C04 /* UserNode.cpp in Sources */,
 				E898A00316BD24E500732C04 /* ScrollHelper.cpp in Sources */,
 				E898A00516BD24E500732C04 /* TheoraPlayer.cpp in Sources */,
@@ -6864,6 +6902,7 @@
 				4F53ED4519A23BF200D3869D /* bs_diff.c in Sources */,
 				E898A1EF16BD265400732C04 /* WFNetworkConnection.mm in Sources */,
 				E898A1F016BD265400732C04 /* Particle.cpp in Sources */,
+				CC8033D019ADCDB20086BB33 /* JobScheduler.cpp in Sources */,
 				E898A1F116BD265400732C04 /* ParticleEmitter.cpp in Sources */,
 				E898A1F416BD265400732C04 /* ParticleLayer.cpp in Sources */,
 				E898A1F716BD265400732C04 /* ParticlePropertyLine.cpp in Sources */,
@@ -6891,6 +6930,7 @@
 				CC84B01D18211A9000934482 /* JobManager.cpp in Sources */,
 				E898A21216BD265400732C04 /* ColorOnlyEffect.cpp in Sources */,
 				E898A21316BD265400732C04 /* MultiTextureEffect.cpp in Sources */,
+				CC8033BB19ADAFB90086BB33 /* WorkerThread.cpp in Sources */,
 				E898A21416BD265400732C04 /* TextureMulColorAlphaTestEffect.cpp in Sources */,
 				E898A21516BD265400732C04 /* TextureMulColorEffect.cpp in Sources */,
 				76199F3E192DF73D008A47E2 /* VersionInfo.cpp in Sources */,

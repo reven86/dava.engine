@@ -28,6 +28,7 @@
 
 #include "Job/JobQueue.h"
 #include "Job/Job.h"
+#include "Job/JobManager.h"
 
 namespace DAVA
 {
@@ -42,6 +43,7 @@ void MainThreadJobQueue::Update()
 		mutex.Unlock();
 
 		job->Perform();
+        JobManager::Instance()->OnJobCompleted(job);
 
         if(job->GetFlags() & Job::RETAIN_WHILE_NOT_COMPLETED)
         {

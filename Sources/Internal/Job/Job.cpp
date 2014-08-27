@@ -44,7 +44,6 @@ Job::Job(const Message & _message, const Thread::ThreadId & _creatorThreadId, ui
 void Job::Perform()
 {
 	message(this);
-	JobManager::Instance()->OnJobCompleted(this);
 }
 
 Job::eState Job::GetState()

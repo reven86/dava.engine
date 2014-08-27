@@ -52,6 +52,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
+#include "Job/JobScheduler.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
@@ -115,6 +116,7 @@ void Core::CreateSingletons()
 	new Logger();
 	new AllocatorFactory();
 	new JobManager();
+    new JobScheduler(3);
 	new FileSystem();
     FilePath::InitializeBundleName();
 	
@@ -203,6 +205,7 @@ void Core::ReleaseSingletons()
 #endif
 
 	InputSystem::Instance()->Release();
+    JobScheduler::Instance()->Release();
 	JobManager::Instance()->Release();
     VersionInfo::Instance()->Release();
 	AllocatorFactory::Instance()->Release();

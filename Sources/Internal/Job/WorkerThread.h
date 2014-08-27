@@ -26,78 +26,50 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_H__
-#define __DAVAENGINE_JOB_H__
+#ifndef __DAVAENGINE_WORKER_THREAD_H__
+#define __DAVAENGINE_WORKER_THREAD_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
 #include "Platform/Thread.h"
 
 namespace DAVA
 {
 
+class Job;
+class JobScheduler;
 
-class Job : public BaseObject
+class WorkerThread
 {
 public:
-	enum eState
-	{
-		STATUS_UNDONE,
-		STATUS_DONE
-	};
-
-	enum ePerformedWhere
-	{
-		PERFORMED_ON_CREATOR_THREAD,
-		PERFORMED_ON_MAIN_THREAD
-	};
-
-    enum eCreationFlags
-    {
-        NO_FLAGS = 0,
-        RETAIN_WHILE_NOT_COMPLETED = 1 << 0, //<! job will retain underlying BaseObject if one is found in Message, and release when job is done
-    };
-
-    static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
-
-	Job(const Message & message, const Thread::ThreadId & creatorThreadId, uint32 flags);
-	eState GetState();
-	ePerformedWhere PerformedWhere();
-    const Message & GetMessage();
-
-    uint32 GetFlags() const;
+    WorkerThread(JobScheduler * scheduler);
+    ~WorkerThread();
     
-    void Perform();
-
-protected:
-
-	void SetState(eState newState);
-	void SetPerformedOn(ePerformedWhere performedWhere);
-
-	Message message;
-	Thread::ThreadId creatorThreadId;
-
-	eState state;
-	ePerformedWhere performedWhere;
-
-    uint32 flags;
-
-	friend class MainThreadJobQueue;
-	friend class JobManager;
+    void SetActiveJob(Job * job);
+    void Wake();
+    void Stop();
+    
+private:
+    void ThreadFunc(BaseObject * bo, void * userParam, void * callerParam);
+    bool needStop;
+    
+    JobScheduler * scheduler;
+    Thread * thread;
+    ConditionalVariable cv;
+    
+    Job * activeJob;
 };
 
-inline 
-const Message & Job::GetMessage()
+inline void WorkerThread::SetActiveJob(Job * job)
 {
-    return message;
+    DVASSERT(activeJob == 0);
+    activeJob = job;
 }
 
-inline uint32 Job::GetFlags() const
+inline void WorkerThread::Wake()
 {
-    return flags;
+    Thread::Signal(&cv);
+}
+    
 }
 
-}
-
-#endif //__DAVAENGINE_JOB_H__
+#endif //__DAVAENGINE_WORKER_THREAD_H__

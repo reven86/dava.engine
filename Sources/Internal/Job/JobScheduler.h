@@ -26,78 +26,44 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_H__
-#define __DAVAENGINE_JOB_H__
+#ifndef __DAVAENGINE_JOB_SCHEDULER_H__
+#define __DAVAENGINE_JOB_SCHEDULER_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
-#include "Platform/Thread.h"
+#include "Platform/Mutex.h"
+#include "Base/Singleton.h"
 
 namespace DAVA
 {
 
+class Job;
+class WorkerThread;
 
-class Job : public BaseObject
+class JobScheduler : public Singleton<JobScheduler>
 {
 public:
-	enum eState
-	{
-		STATUS_UNDONE,
-		STATUS_DONE
-	};
-
-	enum ePerformedWhere
-	{
-		PERFORMED_ON_CREATOR_THREAD,
-		PERFORMED_ON_MAIN_THREAD
-	};
-
-    enum eCreationFlags
-    {
-        NO_FLAGS = 0,
-        RETAIN_WHILE_NOT_COMPLETED = 1 << 0, //<! job will retain underlying BaseObject if one is found in Message, and release when job is done
-    };
-
-    static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
-
-	Job(const Message & message, const Thread::ThreadId & creatorThreadId, uint32 flags);
-	eState GetState();
-	ePerformedWhere PerformedWhere();
-    const Message & GetMessage();
-
-    uint32 GetFlags() const;
+    JobScheduler(int32 workerThreadsCount);
+    ~JobScheduler();
     
-    void Perform();
-
-protected:
-
-	void SetState(eState newState);
-	void SetPerformedOn(ePerformedWhere performedWhere);
-
-	Message message;
-	Thread::ThreadId creatorThreadId;
-
-	eState state;
-	ePerformedWhere performedWhere;
-
-    uint32 flags;
-
-	friend class MainThreadJobQueue;
-	friend class JobManager;
+    void PushJob(Job * job);
+    void PushIdleThread(WorkerThread * thread);
+    void Schedule();
+    
+private:
+    const int32 workerThreadsCount;
+    Mutex scheduleMutex;
+    
+    List<Job*> jobQueue;
+    Mutex jobQueueMutex;
+    Job * PopJob();
+    
+    Vector<WorkerThread*> workerThreads;
+    
+    List<WorkerThread*> idleThreads;
+    Mutex idleThreadsMutex;
+    WorkerThread * PopIdleThread();
 };
 
-inline 
-const Message & Job::GetMessage()
-{
-    return message;
 }
 
-inline uint32 Job::GetFlags() const
-{
-    return flags;
-}
-
-}
-
-#endif //__DAVAENGINE_JOB_H__
+#endif //__DAVAENGINE_JOB_SCHEDULER_H__

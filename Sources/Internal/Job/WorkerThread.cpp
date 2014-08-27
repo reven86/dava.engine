@@ -26,78 +26,45 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_H__
-#define __DAVAENGINE_JOB_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
-#include "Platform/Thread.h"
+#include "Job/WorkerThread.h"
+#include "Job/Job.h"
+#include "Job/JobScheduler.h"
 
 namespace DAVA
 {
 
-
-class Job : public BaseObject
+WorkerThread::WorkerThread(JobScheduler * _scheduler)
+:   activeJob(0),
+    needStop(false),
+    scheduler(_scheduler)
 {
-public:
-	enum eState
-	{
-		STATUS_UNDONE,
-		STATUS_DONE
-	};
+    thread = Thread::Create(Message(this, &WorkerThread::ThreadFunc));
+    thread->Start();
+}
 
-	enum ePerformedWhere
-	{
-		PERFORMED_ON_CREATOR_THREAD,
-		PERFORMED_ON_MAIN_THREAD
-	};
+WorkerThread::~WorkerThread()
+{
+    SafeRelease(thread);
+}
 
-    enum eCreationFlags
+void WorkerThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerParam)
+{
+    while(!needStop)
     {
-        NO_FLAGS = 0,
-        RETAIN_WHILE_NOT_COMPLETED = 1 << 0, //<! job will retain underlying BaseObject if one is found in Message, and release when job is done
-    };
+        while(activeJob)
+        {
+            activeJob->Perform();
+            activeJob = 0;
+            scheduler->PushIdleThread(this);
+            scheduler->Schedule();
+        }
+        Thread::Wait(&cv);
+    }
+}
 
-    static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
-
-	Job(const Message & message, const Thread::ThreadId & creatorThreadId, uint32 flags);
-	eState GetState();
-	ePerformedWhere PerformedWhere();
-    const Message & GetMessage();
-
-    uint32 GetFlags() const;
-    
-    void Perform();
-
-protected:
-
-	void SetState(eState newState);
-	void SetPerformedOn(ePerformedWhere performedWhere);
-
-	Message message;
-	Thread::ThreadId creatorThreadId;
-
-	eState state;
-	ePerformedWhere performedWhere;
-
-    uint32 flags;
-
-	friend class MainThreadJobQueue;
-	friend class JobManager;
-};
-
-inline 
-const Message & Job::GetMessage()
+void WorkerThread::Stop()
 {
-    return message;
-}
-
-inline uint32 Job::GetFlags() const
-{
-    return flags;
+    needStop = true;
 }
 
 }
-
-#endif //__DAVAENGINE_JOB_H__

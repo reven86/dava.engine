@@ -68,6 +68,7 @@ ScopedPtr<Job> JobManager::CreateJob(eThreadType threadType, const Message & mes
 		{
 			job->SetPerformedOn(Job::PERFORMED_ON_CREATOR_THREAD);
 			job->Perform();
+            OnJobCompleted(job);
 		}
 		else
 		{

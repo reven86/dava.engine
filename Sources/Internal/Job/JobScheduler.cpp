@@ -26,78 +26,96 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =====================================================================================*/
 
-#ifndef __DAVAENGINE_JOB_H__
-#define __DAVAENGINE_JOB_H__
-
-#include "Base/BaseTypes.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
-#include "Platform/Thread.h"
+#include "Job/JobScheduler.h"
+#include "Job/WorkerThread.h"
+#include "Thread/LockGuard.h"
 
 namespace DAVA
 {
 
-
-class Job : public BaseObject
+JobScheduler::JobScheduler(int32 _workerThreadsCount)
+:   workerThreadsCount(_workerThreadsCount)
 {
-public:
-	enum eState
-	{
-		STATUS_UNDONE,
-		STATUS_DONE
-	};
-
-	enum ePerformedWhere
-	{
-		PERFORMED_ON_CREATOR_THREAD,
-		PERFORMED_ON_MAIN_THREAD
-	};
-
-    enum eCreationFlags
+    for(int32 i = 0; i < workerThreadsCount; ++i)
     {
-        NO_FLAGS = 0,
-        RETAIN_WHILE_NOT_COMPLETED = 1 << 0, //<! job will retain underlying BaseObject if one is found in Message, and release when job is done
-    };
+        WorkerThread * thread = new WorkerThread(this);
+        workerThreads.push_back(thread);
+        PushIdleThread(thread);
+    }
+}
 
-    static const uint32 DEFAULT_FLAGS = RETAIN_WHILE_NOT_COMPLETED;
+JobScheduler::~JobScheduler()
+{
+    for(int32 i = 0; i < workerThreadsCount; ++i)
+    {
+        WorkerThread * wt = workerThreads[i];
+        wt->Stop();
+        delete wt;
+    }
+    workerThreads.clear();
+}
 
-	Job(const Message & message, const Thread::ThreadId & creatorThreadId, uint32 flags);
-	eState GetState();
-	ePerformedWhere PerformedWhere();
-    const Message & GetMessage();
-
-    uint32 GetFlags() const;
+void JobScheduler::PushJob(Job * job)
+{
+    jobQueueMutex.Lock();
+    jobQueue.push_back(job);
+    jobQueueMutex.Unlock();
     
-    void Perform();
+    Schedule();
+}
 
-protected:
-
-	void SetState(eState newState);
-	void SetPerformedOn(ePerformedWhere performedWhere);
-
-	Message message;
-	Thread::ThreadId creatorThreadId;
-
-	eState state;
-	ePerformedWhere performedWhere;
-
-    uint32 flags;
-
-	friend class MainThreadJobQueue;
-	friend class JobManager;
-};
-
-inline 
-const Message & Job::GetMessage()
+Job * JobScheduler::PopJob()
 {
-    return message;
+    LockGuard<Mutex> guard(jobQueueMutex);
+    
+    Job * job = 0;
+    if(!jobQueue.empty())
+    {
+        job = *jobQueue.begin();
+        jobQueue.pop_front();
+    }
+    
+    return job;
 }
 
-inline uint32 Job::GetFlags() const
+void JobScheduler::PushIdleThread(WorkerThread * thread)
 {
-    return flags;
+    LockGuard<Mutex> guard(idleThreadsMutex);
+    idleThreads.push_back(thread);
+}
+
+WorkerThread * JobScheduler::PopIdleThread()
+{
+    LockGuard<Mutex> guard(idleThreadsMutex);
+    
+    WorkerThread * thread = 0;
+    if(!idleThreads.empty())
+    {
+        thread = *idleThreads.begin();
+        idleThreads.pop_front();
+    }
+    
+    return thread;
+}
+
+void JobScheduler::Schedule()
+{
+    LockGuard<Mutex> guard(scheduleMutex);
+
+    WorkerThread * idleThread = PopIdleThread();
+    if(idleThread)
+    {
+        Job * job = PopJob();
+        if(job)
+        {
+            idleThread->SetActiveJob(job);
+            idleThread->Wake();
+        }
+        else
+        {
+            PushIdleThread(idleThread);
+        }
+    }
 }
 
 }
-
-#endif //__DAVAENGINE_JOB_H__
