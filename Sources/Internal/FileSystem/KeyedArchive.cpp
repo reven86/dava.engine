@@ -256,10 +256,13 @@ void KeyedArchive::SetFastName(const String & key, const FastName & value)
 
 void KeyedArchive::SetByteArray(const String & key, const uint8 * value, int32 arraySize)
 {
-    DeleteKey(key);
-	VariantType *variantValue = new VariantType();
-	variantValue->SetByteArray(value, arraySize);
-	objectMap[key] = variantValue;
+	if(GetByteArray(key) != value)
+	{
+		DeleteKey(key);
+		VariantType *variantValue = new VariantType();
+		variantValue->SetByteArray(value, arraySize);
+		objectMap[key] = variantValue;
+	}
 }
 
 void KeyedArchive::SetVariant(const String & key, const VariantType &value)
@@ -280,10 +283,13 @@ void KeyedArchive::SetByteArrayFromArchive(const String & key, KeyedArchive * ar
 
 void KeyedArchive::SetArchive(const String & key, KeyedArchive * archive)
 {
-    DeleteKey(key);
-	VariantType *variantValue = new VariantType();
-	variantValue->SetKeyedArchive(archive);
-	objectMap[key] = variantValue;
+	if(GetArchive(key) != archive)
+	{
+		DeleteKey(key);
+		VariantType *variantValue = new VariantType();
+		variantValue->SetKeyedArchive(archive);
+		objectMap[key] = variantValue;
+	}
 }
 
 void KeyedArchive::SetInt64(const String & key, const int64 &value)

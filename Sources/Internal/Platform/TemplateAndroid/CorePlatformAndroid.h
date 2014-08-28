@@ -108,8 +108,6 @@ private:
 
     void ResizeView(int32 w, int32 h);
 
-    
-
 private:
 	int32 width;
 	int32 height;
@@ -124,7 +122,6 @@ private:
 	Vector<DAVA::UIEvent> totalTouches;
 
 	AndroidSystemDelegate *androidDelegate;
-	AAssetManager * assetMngr;
 
 	String externalStorage;
 	String internalStorage;

@@ -270,27 +270,16 @@ void JniTextField::SetEnableReturnKeyAutomatically(bool value)
 	}
 }
 
-void JniTextField::HideField()
+void JniTextField::SetVisible(bool isVisible)
 {
-	jmethodID mid = GetMethodID("HideField", "(I)V");
+	jmethodID mid = GetMethodID("SetVisible", "(IZ)V");
 	if (mid)
 	{
 		GetEnvironment()->CallStaticVoidMethod(
 				GetJavaClass(),
 				mid,
-				id);
-	}
-}
-
-void JniTextField::ShowField()
-{
-	jmethodID mid = GetMethodID("ShowField", "(I)V");
-	if (mid)
-	{
-		GetEnvironment()->CallStaticVoidMethod(
-				GetJavaClass(),
-				mid,
-				id);
+				id,
+				isVisible);
 	}
 }
 
@@ -419,24 +408,10 @@ DAVA::int32 UITextFieldAndroid::GetTextAlign()
 	return align;
 }
 
-void UITextFieldAndroid::ShowField()
-{
-	JniTextField jniTextField(id);
-	jniTextField.ShowField();
-}
-
-void UITextFieldAndroid::HideField()
-{
-	JniTextField jniTextField(id);
-	jniTextField.HideField();
-}
-
 void UITextFieldAndroid::SetVisible(bool isVisible)
 {
-	if (isVisible)
-		ShowField();
-	else
-		HideField();
+	JniTextField jniTextField(id);
+	jniTextField.SetVisible(isVisible);
 }
 
 void UITextFieldAndroid::SetIsPassword(bool isPassword)

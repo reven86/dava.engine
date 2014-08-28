@@ -98,7 +98,11 @@ public:
         \returns pathname value
 	 */
     const String GetAbsolutePathname() const;
-    
+
+#ifdef __DAVAENGINE_ANDROID__
+    const String GetAbsoluteAssetPathnameTruncated() const;
+#endif //__DAVAENGINE_ANDROID__
+
 	/**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
         \returns filename value

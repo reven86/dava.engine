@@ -291,7 +291,7 @@ void RenderSystem::FindNearestLights(RenderObject * renderObject)
 			const Vector3 & lightPosition = light->GetPosition();
 			
 			float32 squareDistanceToLight = (position - lightPosition).SquareLength();
-			if (squareDistanceToLight < squareMinDistance)
+			if ((!nearestLight) || (squareDistanceToLight < squareMinDistance))
 			{
 				squareMinDistance = squareDistanceToLight;
 				nearestLight = light;

@@ -177,6 +177,11 @@ public:
 	void SetThreadId(const ThreadId & threadId);
 	ThreadId GetThreadId();
 
+#if defined(__DAVAENGINE_ANDROID__)
+	static void AttachToJVM();
+	static void DetachFromJVM();
+#endif
+
 private:
     ~Thread();
 	Thread(const Message& msg);
@@ -213,15 +218,14 @@ public:
 #elif defined(__DAVAENGINE_ANDROID__)
 private:
 	static ThreadId glThreadId;
-	static ThreadId backgroundUpdateThreadId;
 private:
 	friend void	* PthreadMain(void * param);
 	void StartAndroid();
 public:
 	static void	InitMainThread();
 	static void	InitGLThread();
-	static void RegisterBackgroundThread();
-	static void UnRegisterBackgroundThread();
+private:
+	uint32 attachedToJVMCount;
 #else //PLATFORMS
 	// other platforms
 #endif //PLATFORMS	

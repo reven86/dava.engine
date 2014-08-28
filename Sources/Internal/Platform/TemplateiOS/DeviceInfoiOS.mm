@@ -277,7 +277,12 @@ DeviceInfo::NetworkInfo DeviceInfo::GetNetworkInfo()
     // No way to determine signal strength under iOS.
     return networkInfo;
 }
-    
+
+int32 DeviceInfo::GetCpuCount()
+{
+    return (int32)[[NSProcessInfo processInfo] processorCount];
+}
+
 }
 
 #endif

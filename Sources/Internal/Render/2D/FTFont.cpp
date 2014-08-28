@@ -350,9 +350,7 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 	FT_Vector * advances = new FT_Vector[strLen];
 	Prepare(advances);
 
-    const int spaceWidth = (face->glyph->metrics.width >> 6) >> 1;
-    
-	int32 lastRight = 0; //charSizes helper
+    int32 lastRight = 0; //charSizes helper
     int32 justifyOffset = 0;
     int32 fixJustifyOffset = 0;
     if (countSpace > 0 && justifyWidth > 0 && spaceAddon > 0)
@@ -398,9 +396,6 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 			continue;
 		}
 
-		pen.x += advances[i].x;
-		pen.y += advances[i].y;
-
 		FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
 
 		float32 bboxSize = ceilf(((float32)(faceBboxYMax-faceBboxYMin))/64.f);
@@ -419,14 +414,20 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 				int32 width = bitmap->width;
 				//int32 height = bitmap->rows;
 
+				if(0 == width && ' ' == str[i])
+				{
+					width = advances[i].x >> 6;
+					left = pen.x >> 6;
+				}
+				
 				if(charSizes)
 				{
 					if(0 == width)
 					{
                         if(str[i] == ' ')
                         {
-                            charSizes->push_back((float32)spaceWidth);
-                            lastRight += spaceWidth;
+                            charSizes->push_back((float32)width);
+                            lastRight += width;
                         }
                         else
                         {
@@ -474,6 +475,9 @@ Size2i FTInternalFont::DrawString(const WideString& str, void * buffer, int32 bu
 				}
 			}
 		}
+		
+		pen.x += advances[i].x;
+		pen.y += advances[i].y;
 
 		FT_Done_Glyph(image);
 	}
@@ -523,7 +527,6 @@ void FTInternalFont::SetFTCharSize(float32 size) const
 void FTInternalFont::Prepare(FT_Vector * advances)
 {
 	FT_Vector	* prevAdvance = 0;
-	FT_Vector	extent = {0, 0};
 	FT_UInt		prevIndex   = 0;
 	const bool		useKerning = (FT_HAS_KERNING(face) > 0);
 	const int32		size = glyphs.size();
@@ -558,30 +561,10 @@ void FTInternalFont::Prepare(FT_Vector * advances)
 			//	prevAdvance->x = Round(prevAdvance->x);
 			//	prevAdvance->y = Round(prevAdvance->y);
 			//}
-
-			extent.x += prevAdvance->x;
-			extent.y += prevAdvance->y;
 		}
 
 		prevIndex   = glyph.index;
 		prevAdvance = &advances[i];
-	}
-
-	if(prevAdvance)
-	{
-		//if(handle->hinted)
-		//{
-		//	prevAdvance->x = Round(prevAdvance->x);
-		//	prevAdvance->y = Round(prevAdvance->y);
-		//}
-
-		extent.x += prevAdvance->x;
-		extent.y += prevAdvance->y;
-	}
-
-	if(size > 0)
-	{
-		advances[size-1] = extent;
 	}
 }
 

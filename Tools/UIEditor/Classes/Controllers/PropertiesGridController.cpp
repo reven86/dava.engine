@@ -66,14 +66,14 @@ const HierarchyTreeNode* PropertiesGridController::GetActiveTreeNode() const
     return this->activeNode;
 }
 
-const HierarchyTreeController::SELECTEDCONTROLNODES PropertiesGridController::GetActiveTreeNodesList() const
+const HierarchyTreeController::SELECTEDCONTROLNODES &PropertiesGridController::GetActiveTreeNodesList() const
 {
-    return this->activeNodes;
+    return activeNodes;
 }
 
-Vector<UIControl::eControlState> PropertiesGridController::GetActiveUIControlStates() const
+const Vector<UIControl::eControlState> &PropertiesGridController::GetActiveUIControlStates() const
 {
-	return this->activeUIControlStates;
+	return activeUIControlStates;
 }
 
 void PropertiesGridController::SetActiveUIControlStates(const Vector<UIControl::eControlState>& newStates)

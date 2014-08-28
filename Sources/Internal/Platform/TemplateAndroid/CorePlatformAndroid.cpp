@@ -39,6 +39,7 @@ extern void FrameworkWillTerminate();
 #include "Platform/Thread.h"
 #include "Input/InputSystem.h"
 #include "FileSystem/FileSystem.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
 namespace DAVA
 {
@@ -165,6 +166,8 @@ namespace DAVA
 		internalStorage = docPathIn;
 	
 		Core::CreateSingletons();
+
+		AssetsManager::Instance()->Init(assets);
 
 		Logger::SetTag(logTag);
 	}
@@ -344,16 +347,6 @@ namespace DAVA
 		newEvent.timestamp = time;
 
 		return newEvent;
-	}
-
-	AAssetManager * CorePlatformAndroid::GetAssetManager()
-	{
-		return assetMngr;
-	}
-
-	void CorePlatformAndroid::SetAssetManager(AAssetManager * mngr)
-	{
-		assetMngr = mngr;
 	}
 
 	void CorePlatformAndroid::OnInput(int32 action, int32 id, float32 x, float32 y, float64 time, int32 source, int32 tapCount)

@@ -570,8 +570,10 @@ public class JNITextField {
 		task.AsyncRun();
 	}
 	
-	public static void ShowField(int id) {
+	public static void SetVisible(int id, boolean isVisible)
+	{
 		final EditText text = GetEditText(id);
+		final boolean visible = isVisible;
 		if (text == null)
 			return;
 		
@@ -582,31 +584,7 @@ public class JNITextField {
 				InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
 					@Override
 					public Void call() throws Exception {
-						text.setVisibility(View.VISIBLE);
-						return null;
-					}
-				});
-				task.AsyncRun();
-			}
-		});
-	}
-	
-	public static void HideField(int id) {
-		final EditText text = GetEditText(id);
-		if (text == null)
-			return;
-		
-		if (id == activeTextField)
-			CloseKeyboard(id);
-		
-		JNIActivity.GetActivity().PostEventToGL(new Runnable() {
-			
-			@Override
-			public void run() {
-				InternalTask<Void> task = new InternalTask<Void>(text, new Callable<Void>() {
-					@Override
-					public Void call() throws Exception {
-						text.setVisibility(View.GONE);
+						text.setVisibility(visible ? View.VISIBLE : View.GONE);
 						return null;
 					}
 				});

@@ -88,7 +88,7 @@ void JniMovieViewControl::OpenMovie(const FilePath& moviePath, const OpenMoviePa
 	jmethodID mid = GetMethodID("OpenMovie", "(ILjava/lang/String;I)V");
 	if (mid)
 	{
-		jstring jMoviePath = GetEnvironment()->NewStringUTF(moviePath.GetAbsolutePathname().c_str());
+		jstring jMoviePath = GetEnvironment()->NewStringUTF(moviePath.GetAbsoluteAssetPathnameTruncated().c_str());
 		GetEnvironment()->CallStaticVoidMethod(GetJavaClass(), mid, id, jMoviePath, params.scalingMode);
 		GetEnvironment()->DeleteLocalRef(jMoviePath);
 	}

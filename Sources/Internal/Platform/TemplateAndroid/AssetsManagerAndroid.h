@@ -27,19 +27,39 @@
 =====================================================================================*/
 
 
+#ifndef __DAVAENGINE_ASSETS_MANAGER_ANDROID_H__
+#define __DAVAENGINE_ASSETS_MANAGER_ANDROID_H__
 
-#include "AndroidLayer.h"
-#include "Platform/Thread.h"
+#include "Base/BaseTypes.h"
+#include "Base/Singleton.h"
 
-extern "C"
+#if defined(__DAVAENGINE_ANDROID__)
+
+class zip;
+
+namespace DAVA
 {
-	void Java_com_dava_framework_JNIBackgroundUpdateThread_RegisterBackgroundThread(JNIEnv * env, jobject classthis)
-	{
-		DAVA::Thread::RegisterBackgroundThread();
-	}
 
-	void Java_com_dava_framework_JNIBackgroundUpdateThread_UnRegisterBackgroundThread(JNIEnv * env, jobject classthis)
-	{
-		DAVA::Thread::UnRegisterBackgroundThread();
-	}
+class AssetsManager: public Singleton<AssetsManager>
+{
+
+public:
+	AssetsManager();
+	virtual ~AssetsManager();
+
+	void Init(const String& packageName);
+
+	const String& GetPackageName() const {return packageName;};
+	zip* GetApplicationPackage() const {return applicationPackage;};
+
+private:
+	String packageName;
+
+	zip* applicationPackage;
 };
+
+};
+
+#endif // #if defined(__DAVAENGINE_ANDROID__)
+
+#endif // __DAVAENGINE_ASSETS_MANAGER_ANDROID_H__

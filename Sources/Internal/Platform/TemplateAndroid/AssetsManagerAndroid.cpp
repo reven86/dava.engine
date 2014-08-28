@@ -27,16 +27,42 @@
 =====================================================================================*/
 
 
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Utils/Utils.h"
+#include "zip/zip.h"
 
-#include "AndroidLayer.h"
-#include "Platform/Notification.h"
+#if defined(__DAVAENGINE_ANDROID__)
 
-extern "C"
+namespace DAVA
 {
-	void Java_com_dava_framework_JNINotification_UpdateNotification(JNIEnv * env, jobject classthis)
+
+AssetsManager::AssetsManager()
+:	packageName("")
+,	applicationPackage(NULL)
+{
+}
+
+AssetsManager::~AssetsManager()
+{
+	if (applicationPackage)
 	{
-		DAVA::Notification::ForegroundUpdateCallback callback = DAVA::Notification::Instance()->GetForegroundUpdateCallback();
-		if (callback != DAVA::Notification::ForegroundUpdateCallback(NULL))
-			callback();
+		zip_close(applicationPackage);
+		applicationPackage = NULL;
 	}
-};
+}
+
+void AssetsManager::Init(const String& packageName)
+{
+	DVASSERT_MSG(applicationPackage == NULL, "[AssetsManager::Init] Package should be initialized only once.");
+
+	applicationPackage = zip_open(packageName.c_str(), 0, NULL);
+	if (applicationPackage == NULL)
+	{
+		DVASSERT_MSG(false, "[CorePlatformAndroid::InitApplicationPackage] Could not initialize application package.");
+		applicationPackage = NULL;
+	}
+}
+
+}
+
+#endif // #if defined(__DAVAENGINE_ANDROID__)

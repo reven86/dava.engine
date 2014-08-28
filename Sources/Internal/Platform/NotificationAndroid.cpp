@@ -32,81 +32,91 @@
 #include "Platform/Notification.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-
+#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+#include "Mutex.h"
+#include "Thread/LockGuard.h"
 
-using namespace DAVA;
+namespace DAVA
+{
 
-jclass JniNotification::gJavaClass = NULL;
-const char* JniNotification::gJavaClassName = NULL;
+jclass JniLocalNotification::gJavaClass = NULL;
+const char* JniLocalNotification::gJavaClassName = NULL;
 
-jclass JniNotification::GetJavaClass() const
+jclass JniLocalNotification::GetJavaClass() const
 {
 	return gJavaClass;
 }
 
-const char* JniNotification::GetJavaClassName() const
+const char* JniLocalNotification::GetJavaClassName() const
 {
 	return gJavaClassName;
 }
 
-void JniNotification::ShowNotifitaionWithProgress(uint32 id,
+void LocalNotification::Hide()
+{
+	LockGuard<Mutex> mutexGuard(javaCallMutex);
+
+	GetEnvironment()->CallStaticVoidMethod(
+					GetJavaClass(),
+					GetMethodID("HideNotification", "(I)V"),
+					id);
+
+	text = L"";
+	title = L"";
+
+	isChanged = false;
+}
+
+void LocalNotificationProgress::ShowNotifitaionWithProgress(uint32 id,
 			const WideString& title,
 			const WideString& text,
 			int32 maxValue,
 			int32 value)
 {
-	jmethodID mid = GetMethodID("ShowNotifitaionWithProgress", "(ILjava/lang/String;Ljava/lang/String;II)V");
-	if (mid)
-	{
-		jstring jStrTitle = CreateJString(GetEnvironment(), title);
-		jstring jStrText = CreateJString(GetEnvironment(), text);
-		GetEnvironment()->CallStaticVoidMethod(
-						GetJavaClass(),
-						mid,
-						id,
-						jStrTitle,
-						jStrText,
-						maxValue,
-						value);
-		GetEnvironment()->DeleteLocalRef(jStrTitle);
-		GetEnvironment()->DeleteLocalRef(jStrText);
-	}
+	LockGuard<Mutex> mutexGuard(javaCallMutex);
+
+	JNIEnv *env = GetEnvironment();
+
+	jstring jStrTitle = CreateJString(env, title);
+	jstring jStrText = CreateJString(env, text);
+
+	env->CallStaticVoidMethod(
+					GetJavaClass(),
+					GetMethodID("NotifyProgress", "(ILjava/lang/String;Ljava/lang/String;II)V"),
+					id,
+					jStrTitle,
+					jStrText,
+					maxValue,
+					value);
+
+	env->DeleteLocalRef(jStrTitle);
+	env->DeleteLocalRef(jStrText);
 }
 
-void JniNotification::HideNotification(uint32 id)
+
+void LocalNotificationText::ShowNotificationWithText(uint32 id,
+		const WideString& title,
+		const WideString& text)
 {
-	jmethodID mid = GetMethodID("HideNotification", "(I)V");
-	if (mid)
-	{
-		GetEnvironment()->CallStaticVoidMethod(
-						GetJavaClass(),
-						mid,
-						id);
-	}
+	LockGuard<Mutex> mutexGuard(javaCallMutex);
+
+	JNIEnv *env = GetEnvironment();
+
+	jstring jStrTitle = CreateJString(env, title);
+	jstring jStrText = CreateJString(env, text);
+
+	env->CallStaticVoidMethod(
+					GetJavaClass(),
+					GetMethodID("NotifyText", "(ILjava/lang/String;Ljava/lang/String;)V"),
+					id,
+					jStrTitle,
+					jStrText);
+
+	env->DeleteLocalRef(jStrTitle);
+	env->DeleteLocalRef(jStrText);
 }
 
-void Notification::ShowNotifitaion(uint32 id,
-			const WideString& title,
-			const WideString& text)
-{
-	ShowNotifitaionWithProgress(id, title, text, 0, 0);
-}
-
-void Notification::ShowNotifitaionWithProgress(uint32 id,
-			const WideString& title,
-			const WideString& text,
-			int32 maxValue,
-			int32 value)
-{
-	JniNotification jni;
-	jni.ShowNotifitaionWithProgress(id, title, text, maxValue, value);
-}
-
-void Notification::HideNotification(uint32 id)
-{
-	JniNotification jni;
-	jni.HideNotification(id);
 }
 
 #endif

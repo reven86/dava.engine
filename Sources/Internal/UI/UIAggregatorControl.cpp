@@ -66,8 +66,7 @@ void UIAggregatorControl::LoadFromYamlNode(const YamlNode * node, UIYamlLoader *
 	{
 		aggregatorPath = FilePath(pathNode->AsString());
 		// DF-2230 - Pass relative path to loader
-		ScopedPtr<UIYamlLoader> loader( new UIYamlLoader() );
-		loader->Load(this, aggregatorPath);
+		UIYamlLoader::Load(this, aggregatorPath);
 	}
 }
 

@@ -37,6 +37,8 @@
 #include "Sound/FMODSoundEvent.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "Debug/Stats.h"
+
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
@@ -342,6 +344,8 @@ void SoundSystem::UnloadFMODProjects()
 
 void SoundSystem::Update(float32 timeElapsed)
 {
+	TIME_PROFILE("SoundSystem::Update");
+
 	fmodEventSystem->update();
     
 	uint32 size = soundsToReleaseOnUpdate.size();

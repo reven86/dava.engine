@@ -54,6 +54,11 @@
 #include "DLC/Downloader/CurlDownloader.h"
 #include "Job/JobScheduler.h"
 #include "Platform/DeviceInfo.h"
+#include "Platform/Notification.h"
+
+#if defined(__DAVAENGINE_ANDROID__)
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#endif
 
 #if defined(__DAVAENGINE_IPHONE__)
 #include "Input/AccelerometeriPhone.h"
@@ -148,7 +153,11 @@ void Core::CreateSingletons()
 	new PerformanceSettings();
     new VersionInfo();
     new ImageSystem();
-	
+
+#if defined(__DAVAENGINE_ANDROID__)
+    new AssetsManager();
+#endif
+
 #if defined __DAVAENGINE_IPHONE__
 	new AccelerometeriPhoneImpl();
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -167,6 +176,8 @@ void Core::CreateSingletons()
 
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
+
+    new LocalNotificationController();
     
     RegisterDAVAClasses();
     CheckDataTypeSizes();
@@ -182,6 +193,7 @@ void Core::CreateRenderManager()
         
 void Core::ReleaseSingletons()
 {
+	LocalNotificationController::Instance()->Release();
     DownloadManager::Instance()->Release();
 	PerformanceSettings::Instance()->Release();
 	RenderHelper::Instance()->Release();
@@ -212,6 +224,10 @@ void Core::ReleaseSingletons()
 	AllocatorFactory::Instance()->Release();
 	Logger::Instance()->Release();
     ImageSystem::Instance()->Release();
+
+#if defined(__DAVAENGINE_ANDROID__)
+    AssetsManager::Instance()->Release();
+#endif
 }
 
 void Core::SetOptions(KeyedArchive * archiveOfOptions)
@@ -700,6 +716,7 @@ void Core::SystemProcessFrame()
 			}
 		}
 		
+		LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
 		JobManager::Instance()->Update();
 		core->Update(frameDelta);

@@ -33,6 +33,7 @@
 
 #include "DeviceInfoAndroid.h"
 #include "ExternC/AndroidLayer.h"
+#include "unistd.h"
 
 DAVA::String intermediateStr;
 
@@ -408,6 +409,11 @@ List<DeviceInfo::StorageInfo> DeviceInfo::GetStoragesList()
 	std::copy(secondaryList.begin(), secondaryList.end(), back_inserter(l));
 
     return l;
+}
+
+int32 DeviceInfo::GetCpuCount()
+{
+	return sysconf(_SC_NPROCESSORS_CONF);
 }
 
 }

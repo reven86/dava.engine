@@ -131,6 +131,7 @@ LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libjpeg_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcurl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libssl_android.a
 LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libcrypto_android.a
+LOCAL_LDLIBS += $(LIBS_PATH)/android/$(TARGET_ARCH_ABI)/libzip_android.a
 
 APP_PLATFORM_LEVEL := $(strip $(subst android-,,$(APP_PLATFORM)))
 IS_GL2_PLATFORM := $(shell (if [ $(APP_PLATFORM_LEVEL) -lt 18 ]; then echo "GLES2"; else echo "GLES3"; fi))
