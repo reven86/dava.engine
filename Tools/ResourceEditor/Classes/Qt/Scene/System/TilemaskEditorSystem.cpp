@@ -545,7 +545,7 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
 	SafeRelease(srcTex);
 	SafeRelease(renderTarget);
 
-    ImageSystem::Instance()->Save("~doc:/test_image_0.png", retImage);
+    //ImageSystem::Instance()->Save("~doc:/test_image_0.png", retImage);
 	
 	return retImage;
 }
