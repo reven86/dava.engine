@@ -30,6 +30,7 @@
 #include "Job/WorkerThread.h"
 #include "Thread/LockGuard.h"
 #include "Job/Job.h"
+#include "Job/JobWaiter.h"
 
 namespace DAVA
 {
@@ -129,16 +130,54 @@ void JobScheduler::Schedule()
     }
 }
 
+
+
 void JobScheduler::OnJobCompleted(Job * job)
 {
     int32 tag = job->GetTag();
     if(tag >= 0)
     {
+        LockGuard<Mutex> guard(waiterMutex);
         AtomicDecrement(taggedJobsCount[tag]);
         if(taggedJobsCount[tag] == 0)
         {
-            //notify all jobs completed
+            //notify that all jobs completed
+            Map<int32, TaggedWorkerJobsWaiter*>::iterator it = taggedJobsWaiters.find(tag);
+            if(taggedJobsWaiters.end() != it)
+            {
+                Thread::Signal((*it).second->GetConditionalVariable());
+            }
         }
+    }
+}
+
+JobManager::eWaiterRegistrationResult JobScheduler::RegisterWaiter(TaggedWorkerJobsWaiter * waiter)
+{
+    LockGuard<Mutex> guard(waiterMutex);
+
+    JobManager::eWaiterRegistrationResult result = JobManager::WAITER_WILL_WAIT;
+
+    if(0 == taggedJobsCount[waiter->GetTag()])
+    {
+        result = JobManager::WAITER_RETURN_IMMEDIATELY;
+    }
+    else
+    {
+        taggedJobsWaiters[waiter->GetTag()] = waiter;
+    }
+
+    return result;
+}
+
+void JobScheduler::UnregisterWaiter(TaggedWorkerJobsWaiter * waiter)
+{
+    LockGuard<Mutex> guard(waiterMutex);
+
+    int32 tag = waiter->GetTag();
+    Map<int32, TaggedWorkerJobsWaiter*>::iterator it = taggedJobsWaiters.find(tag);
+    if(taggedJobsWaiters.end() != it)
+    {
+        taggedJobsWaiters.erase(it);
     }
 }
 

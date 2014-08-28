@@ -67,17 +67,30 @@ private:
 	ConditionalVariable cv;
 };
 
+/////
 class TaggedWorkerJobsWaiter
 {
 public:
     TaggedWorkerJobsWaiter(int32 tag);
     ~TaggedWorkerJobsWaiter();
     void Wait();
+    ConditionalVariable * GetConditionalVariable();
+    int32 GetTag();
     
 private:
     int32 tag;
     ConditionalVariable cv;
 };
+
+inline ConditionalVariable * TaggedWorkerJobsWaiter::GetConditionalVariable()
+{
+    return &cv;
+}
+
+inline int32 TaggedWorkerJobsWaiter::GetTag()
+{
+    return tag;
+}
 
 }
 

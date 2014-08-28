@@ -108,8 +108,10 @@ TaggedWorkerJobsWaiter::~TaggedWorkerJobsWaiter()
 
 void TaggedWorkerJobsWaiter::Wait()
 {
-    JobScheduler::Instance()->RegisterWaiter(this);
-    Thread::Wait(&cv);
+    if(JobManager::WAITER_WILL_WAIT == JobScheduler::Instance()->RegisterWaiter(this))
+    {
+        Thread::Wait(&cv);
+    }
 }
 
 }

@@ -72,7 +72,8 @@ private:
     static const int32 MAX_TAG_VALUE = 999;
     Vector<int32> taggedJobsCount;
     
-    Map<int32, 
+    Map<int32, TaggedWorkerJobsWaiter*> taggedJobsWaiters;
+    Mutex waiterMutex;
 };
 
 }

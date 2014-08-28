@@ -55,6 +55,7 @@ void WorkerThread::ThreadFunc(BaseObject * bo, void * userParam, void * callerPa
         {
             activeJob->Perform();
             activeJob->SetState(Job::STATUS_DONE);
+            scheduler->OnJobCompleted(activeJob);
             activeJob = 0;
             scheduler->PushIdleThread(this);
             scheduler->Schedule();
