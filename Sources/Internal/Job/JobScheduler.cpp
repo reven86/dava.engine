@@ -129,4 +129,17 @@ void JobScheduler::Schedule()
     }
 }
 
+void JobScheduler::OnJobCompleted(Job * job)
+{
+    int32 tag = job->GetTag();
+    if(tag >= 0)
+    {
+        AtomicDecrement(taggedJobsCount[tag]);
+        if(taggedJobsCount[tag] == 0)
+        {
+            //notify all jobs completed
+        }
+    }
+}
+
 }

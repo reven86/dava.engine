@@ -32,12 +32,14 @@
 #include "Base/BaseTypes.h"
 #include "Platform/Mutex.h"
 #include "Base/Singleton.h"
+#include "Job/JobManager.h"
 
 namespace DAVA
 {
 
 class Job;
 class WorkerThread;
+class TaggedWorkerJobsWaiter;
 
 class JobScheduler : public Singleton<JobScheduler>
 {
@@ -48,6 +50,10 @@ public:
     void PushJob(Job * job); //0...MAX_TAG_VALUE
     void PushIdleThread(WorkerThread * thread);
     void Schedule();
+    void OnJobCompleted(Job * job);
+    
+    JobManager::eWaiterRegistrationResult RegisterWaiter(TaggedWorkerJobsWaiter * waiter);
+    void UnregisterWaiter(TaggedWorkerJobsWaiter * waiter);
     
 private:
     const int32 workerThreadsCount;
@@ -65,6 +71,8 @@ private:
 
     static const int32 MAX_TAG_VALUE = 999;
     Vector<int32> taggedJobsCount;
+    
+    Map<int32, 
 };
 
 }

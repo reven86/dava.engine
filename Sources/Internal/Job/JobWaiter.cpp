@@ -28,10 +28,12 @@
 
 #include "Job/JobWaiter.h"
 #include "Job/JobManager.h"
+#include "Job/JobScheduler.h"
 
 namespace DAVA
 {
 
+//////
 ThreadIdJobWaiter::ThreadIdJobWaiter(Thread::ThreadId _threadId/* = Thread::GetCurrentThreadId()*/)
 :	threadId(_threadId)
 {
@@ -63,7 +65,7 @@ ConditionalVariable * ThreadIdJobWaiter::GetConditionalVariable()
 }
 
 
-
+//////
 JobInstanceWaiter::JobInstanceWaiter(Job * _job)
 :	job(_job)
 {
@@ -93,6 +95,21 @@ Job * JobInstanceWaiter::GetJob()
 	return job;
 }
 
+//////
+TaggedWorkerJobsWaiter::TaggedWorkerJobsWaiter(int32 _tag)
+:   tag(_tag)
+{
+}
 
+TaggedWorkerJobsWaiter::~TaggedWorkerJobsWaiter()
+{
+    JobScheduler::Instance()->UnregisterWaiter(this);
+}
+
+void TaggedWorkerJobsWaiter::Wait()
+{
+    JobScheduler::Instance()->RegisterWaiter(this);
+    Thread::Wait(&cv);
+}
 
 }

@@ -67,6 +67,18 @@ private:
 	ConditionalVariable cv;
 };
 
+class TaggedWorkerJobsWaiter
+{
+public:
+    TaggedWorkerJobsWaiter(int32 tag);
+    ~TaggedWorkerJobsWaiter();
+    void Wait();
+    
+private:
+    int32 tag;
+    ConditionalVariable cv;
+};
+
 }
 
 #endif //__DAVAENGINE_JOB_WAITER_H__
