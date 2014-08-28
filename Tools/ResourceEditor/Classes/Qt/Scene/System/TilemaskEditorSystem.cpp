@@ -508,13 +508,17 @@ void TilemaskEditorSystem::UpdateBrushTool()
 Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& filePath)
 {
     uint32 renderTargetSize = (uint32)sideSize;
+
     RenderTarget* renderTarget = RenderTargetFactory::Instance()->CreateRenderTarget(RenderTargetFactory::ATTACHMENT_COLOR_TEXTURE,
                                                                                      renderTargetSize,
                                                                                      renderTargetSize);
 
-	Texture *srcTex = Texture::CreateFromFile(filePath);
+    Texture *srcTex = Texture::CreateFromFile(filePath);
 	Sprite *srcSprite = Sprite::CreateFromTexture(srcTex, 0, 0, (float32)srcTex->GetWidth(), (float32)srcTex->GetHeight(), true);
-	
+
+    RenderManager::Instance()->SetTextureState(RenderState::TEXTURESTATE_EMPTY);
+    RenderManager::Instance()->FlushState();
+
 	renderTarget->BeginRender();
 
 	RenderManager::Instance()->SetColor(Color::White);
@@ -526,6 +530,7 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
                            srcSprite->GetHeight());
 	drawState.SetPosition(Vector2((renderTargetSize - sideSize)/2.0f,
                                   (renderTargetSize - sideSize)/2.0f) / Core::GetVirtualToPhysicalFactor());
+
 	srcSprite->Draw(&drawState);
 
 	renderTarget->EndRender();
@@ -544,8 +549,6 @@ Image* TilemaskEditorSystem::CreateToolImage(int32 sideSize, const FilePath& fil
 	SafeRelease(srcSprite);
 	SafeRelease(srcTex);
 	SafeRelease(renderTarget);
-
-    //ImageSystem::Instance()->Save("~doc:/test_image_0.png", retImage);
 	
 	return retImage;
 }

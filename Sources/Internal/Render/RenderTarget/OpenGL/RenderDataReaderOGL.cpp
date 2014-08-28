@@ -87,9 +87,30 @@ Image* RenderDataReaderOGL::ReadColorData(RenderTarget* renderTarget)
 
         renderTargetOGL->BindRenderTarget();
 
+        uint32 framebufferWidth = renderTargetOGL->GetColorAttachment()->GetFramebufferWidth();
+        uint32 framebufferHeight = renderTargetOGL->GetColorAttachment()->GetFramebufferHeight();
+
+        Rect viewport(0.0f, 0.0f, (float)framebufferWidth, (float32)framebufferHeight);
+
+        RenderManager::Instance()->ClipPush();
+        RenderManager::Instance()->PushDrawMatrix();
+        RenderManager::Instance()->PushMappingMatrix();
+        RenderManager::Instance()->IdentityDrawMatrix();
+
+        //VI: I believe all this stuff like render orientation doesn't belong to RenderManager
+        RenderManager::Instance()->SetRenderOrientation(Core::SCREEN_ORIENTATION_TEXTURE, viewport.dx, viewport.dy);
+        RenderManager::Instance()->SetViewport(viewport, true);
+        RenderManager::Instance()->RemoveClip();
+
         resultImage = ReadCurrentColorData(imageFormat, width, height);
 
         renderTargetOGL->UnbindRenderTarget();
+
+        //VI: I believe all this stuff like render orientation doesn't belong to RenderManager
+        RenderManager::Instance()->SetRenderOrientation(Core::Instance()->GetScreenOrientation());
+        RenderManager::Instance()->PopDrawMatrix();
+        RenderManager::Instance()->PopMappingMatrix();
+        RenderManager::Instance()->ClipPop();
     }
     else
     {
